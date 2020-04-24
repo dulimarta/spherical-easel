@@ -1,7 +1,23 @@
 <template>
   <div>
     <h2>Easel main</h2>
-    <div ref="content"></div>
+    <div>
+      <v-btn-toggle v-model="editMode" @change="switchEditMode">
+        <v-btn value="none">
+          <v-icon>mdi-cursor-pointer</v-icon>
+        </v-btn>
+        <v-btn value="point">
+          <v-icon>mdi-vector-point</v-icon>
+        </v-btn>
+        <v-btn value="line">
+          <v-icon>mdi-vector-line</v-icon>
+        </v-btn>
+        <v-btn value="circle">
+          <v-icon>mdi-vector-circle-variant</v-icon>
+        </v-btn>
+      </v-btn-toggle>
+    </div>
+    <div ref="content" id="content"></div>
   </div>
 </template>
 
@@ -9,11 +25,17 @@
 /* eslint-disable no-debugger */
 import { Component, Vue } from "vue-property-decorator";
 import * as THREE from "three";
+import CursorHandler from "../events/CursorHandler";
+import NormalPointHandler from "../events/NormalPointHandler";
+
 @Component
 export default class Easel extends Vue {
-  renderer: THREE.WebGLRenderer;
-  scene: THREE.Scene;
-  camera: THREE.Camera;
+  private renderer: THREE.WebGLRenderer;
+  private scene: THREE.Scene;
+  private camera: THREE.Camera;
+  private editMode = "none";
+  private currentHandler: CursorHandler | null = null;
+  private normalTracker: NormalPointHandler;
   constructor() {
     super();
     this.scene = new THREE.Scene();
@@ -24,9 +46,11 @@ export default class Easel extends Vue {
       0.1,
       1000
     );
+    this.normalTracker = new NormalPointHandler({ canvas: this.renderer.domElement, camera: this.camera, scene: this.scene });
   }
+
   mounted() {
-    // debugger;
+    debugger; // eslint-disable-line
     this.camera.position.set(0, 0, 5);
     this.scene.add(new THREE.AxesHelper(2));
     this.renderer.setSize(window.innerWidth, window.innerHeight);
@@ -47,7 +71,24 @@ export default class Easel extends Vue {
     this.renderer && this.renderer.render(this.scene, this.camera);
     requestAnimationFrame(() => this.renderIt());
   }
+
+  switchEditMode() {
+    console.debug("Edit mode ", this.editMode);
+    this.currentHandler?.deactivate();
+    switch (this.editMode) {
+      case "none":
+        this.currentHandler = null;
+        break;
+      case "point":
+        this.currentHandler = this.normalTracker;
+        break;
+    }
+    this.currentHandler?.activate();
+  }
 }
 </script>
-
-<style scoped></style>
+<style scoped>
+#content {
+  border: 2px solid red;
+}
+</style>
