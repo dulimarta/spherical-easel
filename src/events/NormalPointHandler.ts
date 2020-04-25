@@ -1,7 +1,7 @@
 import { Vector3, Quaternion, Vector2 } from "three";
-import Arrow from "../3d-objs/Arrow";
+import Arrow from "@/3d-objs/Arrow";
 import CursorHandler from "./CursorHandler";
-import Vertex from "../3d-objs/Vertex";
+import Vertex from "@/3d-objs/Vertex";
 const Y_AXIS = new Vector3(0, 1, 0);
 
 export default class NormalPointHandler extends CursorHandler {

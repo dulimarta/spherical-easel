@@ -25,9 +25,9 @@
 /* eslint-disable no-debugger */
 import { Component, Vue } from "vue-property-decorator";
 import * as THREE from "three";
-import CursorHandler from "../events/CursorHandler";
-import NormalPointHandler from "../events/NormalPointHandler";
-import LineHandler from "../events/LineHandler";
+import CursorHandler from "@/events/CursorHandler";
+import NormalPointHandler from "@/events/NormalPointHandler";
+import LineHandler from "@/events/LineHandler";
 
 @Component
 export default class Easel extends Vue {

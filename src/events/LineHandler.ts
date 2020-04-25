@@ -9,12 +9,12 @@ import {
   Scene
 } from "three";
 import CursorHandler from "./CursorHandler";
-import Arrow from "../3d-objs/Arrow";
+import Arrow from "@/3d-objs/Arrow";
+import Vertex from "@/3d-objs/Vertex";
 
 // This circle is on the XY-plane
 const UNIT_CIRCLE = new EllipseCurve(0, 0, 1, 1, 0, 2 * Math.PI, false, 0);
-const Y_AXIS = new Vector3(0, 1, 0);
-const Z_AXIS = new Vector3(0, 0, 1);
+const Z_AXIS = new Vector3(0, 0, 1); // Orientation of the circle "at rest"
 
 export default class LineHandler extends CursorHandler {
   private startPoint: Vector3;
@@ -25,7 +25,8 @@ export default class LineHandler extends CursorHandler {
   private isMouseDown: boolean;
   private isOnSphere: boolean;
   private isCircleAdded: boolean;
-  private circle: Line;
+  private geodesic: Line;
+  private startDot: Vertex;
   constructor({
     canvas,
     camera,
@@ -38,13 +39,14 @@ export default class LineHandler extends CursorHandler {
     super({ canvas, camera, scene });
     this.startPoint = new Vector3();
     this.endPoint = new Vector3();
+    this.startDot = new Vertex();
     this.currentSurfacePoint = new Vector3();
     this.circleQuaternion = new Quaternion();
     this.normalArrow = new Arrow(1.5, 0xff6600);
     this.isMouseDown = false;
     this.isOnSphere = false;
     this.isCircleAdded = false;
-    this.circle = new Line(
+    this.geodesic = new Line(
       // Subdivide the circle into 60 points
       new BufferGeometry().setFromPoints(UNIT_CIRCLE.getPoints(60)),
       new LineBasicMaterial({ color: 0xff0000 })
@@ -74,7 +76,8 @@ export default class LineHandler extends CursorHandler {
       if (this.isMouseDown) {
         if (!this.isCircleAdded) {
           this.isCircleAdded = true;
-          this.scene.add(this.circle);
+          this.scene.add(this.geodesic);
+          this.scene.add(this.startDot);
         }
         // Reorient the geodesic circle using the cross product
         // of the start and end points
@@ -84,21 +87,27 @@ export default class LineHandler extends CursorHandler {
         // The circle is on XY-plane, its default orientation is the Z-axis
         // Determine the quaternion to rotate the circle to the desired orientation
         this.circleQuaternion.setFromUnitVectors(Z_AXIS, tmp.normalize());
-        this.circle.rotation.set(0, 0, 0);
-        this.circle.applyQuaternion(this.circleQuaternion);
+        this.geodesic.rotation.set(0, 0, 0);
+        this.geodesic.applyQuaternion(this.circleQuaternion);
       }
     }
     if (this.isCircleAdded && !this.isOnSphere) {
-      this.scene.remove(this.circle);
+      this.scene.remove(this.geodesic);
+      this.scene.remove(this.startDot);
       this.isCircleAdded = false;
     }
   };
 
   downHandler = (event: MouseEvent) => {
-    // if (!this.active) return;
     this.isMouseDown = true;
     if (this.isOnSphere) {
       // Record the first point of the geodesic circle
+      this.startDot.position.set(
+        this.currentSurfacePoint.x,
+        this.currentSurfacePoint.y,
+        this.currentSurfacePoint.z
+      );
+      this.scene.add(this.startDot);
       this.startPoint.set(
         this.currentSurfacePoint.x,
         this.currentSurfacePoint.y,
@@ -111,7 +120,8 @@ export default class LineHandler extends CursorHandler {
     this.isMouseDown = false;
     if (this.isOnSphere) {
       // Record the second point of the geodesic circle
-      this.scene.remove(this.circle);
+      this.scene.remove(this.geodesic);
+      this.scene.remove(this.startDot);
       this.isCircleAdded = false;
       this.endPoint.set(
         this.currentSurfacePoint.x,
