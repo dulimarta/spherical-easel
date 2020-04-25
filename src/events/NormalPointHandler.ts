@@ -44,7 +44,7 @@ export default class NormalPointHandler extends CursorHandler {
     if (!this.isOnSphere) this.scene.remove(this.normalArrow);
   };
 
-  clickIt() {
+  clickIt = () => {
     if (this.isOnSphere) {
       const vtx = new Vertex();
       vtx.position.set(
@@ -54,7 +54,7 @@ export default class NormalPointHandler extends CursorHandler {
       );
       this.scene.add(vtx);
     }
-  }
+  };
 
   activate = () => {
     this.canvas.addEventListener("mousemove", this.moveIt);

@@ -11,6 +11,9 @@
         <v-btn value="line">
           <v-icon>mdi-vector-line</v-icon>
         </v-btn>
+        <v-btn value="segment">
+          <v-icon>mdi-vector-radius</v-icon>
+        </v-btn>
         <v-btn value="circle">
           <v-icon>mdi-vector-circle-variant</v-icon>
         </v-btn>
@@ -28,6 +31,7 @@ import * as THREE from "three";
 import CursorHandler from "@/events/CursorHandler";
 import NormalPointHandler from "@/events/NormalPointHandler";
 import LineHandler from "@/events/LineHandler";
+import SegmentHandler from "@/events/SegmentHandler";
 
 @Component
 export default class Easel extends Vue {
@@ -38,6 +42,8 @@ export default class Easel extends Vue {
   private currentHandler: CursorHandler | null = null;
   private normalTracker: NormalPointHandler;
   private lineTracker: LineHandler;
+  private segmentTracker: SegmentHandler;
+
   private editHint = "Select mode...";
   constructor() {
     super();
@@ -54,6 +60,10 @@ export default class Easel extends Vue {
       camera: this.camera,
       scene: this.scene    });
     this.lineTracker = new LineHandler({
+      canvas: this.renderer.domElement,
+      camera: this.camera,
+      scene: this.scene    });
+    this.segmentTracker = new SegmentHandler({
       canvas: this.renderer.domElement,
       camera: this.camera,
       scene: this.scene    });
@@ -99,6 +109,10 @@ export default class Easel extends Vue {
         this.currentHandler = this.lineTracker;
         this.editHint = "Drag the mouse to add a geodesic circle"
         break;
+      case "segment":
+        this.currentHandler = this.segmentTracker;
+        this.editHint = "Drag the mouse to add a geodesic segment"
+        break;
       default:
         this.currentHandler = null;
     }
@@ -107,7 +121,4 @@ export default class Easel extends Vue {
 }
 </script>
 <style scoped>
-#content {
-  border: 2px solid red;
-}
 </style>
