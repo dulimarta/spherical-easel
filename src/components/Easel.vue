@@ -1,7 +1,6 @@
 <template>
   <div>
-    <h2>Easel main</h2>
-    <div>
+    <v-container>
       <v-btn-toggle v-model="editMode" @change="switchEditMode">
         <v-btn value="none">
           <v-icon>mdi-cursor-pointer</v-icon>
@@ -16,7 +15,8 @@
           <v-icon>mdi-vector-circle-variant</v-icon>
         </v-btn>
       </v-btn-toggle>
-    </div>
+      <span class="body-1 ml-2">{{editHint}}</span>
+    </v-container>
     <div ref="content" id="content"></div>
   </div>
 </template>
@@ -27,6 +27,7 @@ import { Component, Vue } from "vue-property-decorator";
 import * as THREE from "three";
 import CursorHandler from "../events/CursorHandler";
 import NormalPointHandler from "../events/NormalPointHandler";
+import LineHandler from "../events/LineHandler";
 
 @Component
 export default class Easel extends Vue {
@@ -36,6 +37,8 @@ export default class Easel extends Vue {
   private editMode = "none";
   private currentHandler: CursorHandler | null = null;
   private normalTracker: NormalPointHandler;
+  private lineTracker: LineHandler;
+  private editHint = "Select mode...";
   constructor() {
     super();
     this.scene = new THREE.Scene();
@@ -46,11 +49,18 @@ export default class Easel extends Vue {
       0.1,
       1000
     );
-    this.normalTracker = new NormalPointHandler({ canvas: this.renderer.domElement, camera: this.camera, scene: this.scene });
+    this.normalTracker = new NormalPointHandler({
+      canvas: this.renderer.domElement,
+      camera: this.camera,
+      scene: this.scene    });
+    this.lineTracker = new LineHandler({
+      canvas: this.renderer.domElement,
+      camera: this.camera,
+      scene: this.scene    });
   }
 
   mounted() {
-    debugger; // eslint-disable-line
+    // debugger; // eslint-disable-line
     this.camera.position.set(0, 0, 5);
     this.scene.add(new THREE.AxesHelper(2));
     this.renderer.setSize(window.innerWidth, window.innerHeight);
@@ -74,14 +84,23 @@ export default class Easel extends Vue {
 
   switchEditMode() {
     console.debug("Edit mode ", this.editMode);
+    // debugger; // eslint-disable-line
     this.currentHandler?.deactivate();
     switch (this.editMode) {
       case "none":
         this.currentHandler = null;
+        this.editHint = "Select mode...";
         break;
       case "point":
         this.currentHandler = this.normalTracker;
+        this.editHint = "Left click to add a new point"
         break;
+      case "line":
+        this.currentHandler = this.lineTracker;
+        this.editHint = "Drag the mouse to add a geodesic circle"
+        break;
+      default:
+        this.currentHandler = null;
     }
     this.currentHandler?.activate();
   }

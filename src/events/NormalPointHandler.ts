@@ -25,38 +25,26 @@ export default class NormalPointHandler extends CursorHandler {
   }
 
   moveIt = (event: MouseEvent) => {
-    const { x, y } = this.toNormalizeScreenCoord(event);
-    this.mouse.x = x;
-    this.mouse.y = y;
-    this.rayCaster.setFromCamera(this.mouse, this.camera);
-    const intersects = this.rayCaster.intersectObjects(this.scene.children);
+    const out = this.intersectionWithSphere(event);
     this.isOnSphere = false;
-    if (intersects.length > 0) {
-      console.debug(`moveIt detects ${intersects.length} object`);
-      intersects
-        .filter(r => {
-          console.debug("Intersect with ", r.object.type);
-          return r.object.type === "Mesh";
-        })
-        .forEach(m => {
-          console.debug("Detect a mesh", m.object);
-          this.isOnSphere = true;
-          this.currentPoint.set(m.point.x, m.point.y, m.point.z);
-          this.scene.add(this.normalArrow);
-          this.normalArrow.position.set(m.point.x, m.point.y, m.point.z);
-          this.normalDirection.set(m.point.x, m.point.y, m.point.z);
-          this.normalRotation.setFromUnitVectors(
-            Y_AXIS,
-            this.normalDirection.normalize()
-          );
-          this.normalArrow.rotation.set(0, 0, 0);
-          this.normalArrow.applyQuaternion(this.normalRotation);
-        });
+    if (out) {
+      this.isOnSphere = true;
+      this.currentPoint.set(out.x, out.y, out.z);
+      this.scene.add(this.normalArrow);
+      this.normalArrow.position.set(out.x, out.y, out.z);
+      this.normalDirection.set(out.x, out.y, out.z);
+      // The default orientation of the arrow is the Y-axis
+      this.normalRotation.setFromUnitVectors(
+        Y_AXIS,
+        this.normalDirection.normalize()
+      );
+      this.normalArrow.rotation.set(0, 0, 0);
+      this.normalArrow.applyQuaternion(this.normalRotation);
     }
     if (!this.isOnSphere) this.scene.remove(this.normalArrow);
   };
 
-  clickIt = () => {
+  clickIt() {
     if (this.isOnSphere) {
       const vtx = new Vertex();
       vtx.position.set(
@@ -66,12 +54,13 @@ export default class NormalPointHandler extends CursorHandler {
       );
       this.scene.add(vtx);
     }
-  };
+  }
 
   activate = () => {
     this.canvas.addEventListener("mousemove", this.moveIt);
     this.canvas.addEventListener("mousedown", this.clickIt);
   };
+
   deactivate = () => {
     this.canvas.removeEventListener("mousemove", this.moveIt);
     this.canvas.removeEventListener("mousedown", this.clickIt);
