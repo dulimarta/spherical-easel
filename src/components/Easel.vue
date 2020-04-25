@@ -32,6 +32,7 @@ import CursorHandler from "@/events/CursorHandler";
 import NormalPointHandler from "@/events/NormalPointHandler";
 import LineHandler from "@/events/LineHandler";
 import SegmentHandler from "@/events/SegmentHandler";
+import RingHandler from "@/events/RingHandler"
 
 @Component
 export default class Easel extends Vue {
@@ -43,6 +44,7 @@ export default class Easel extends Vue {
   private normalTracker: NormalPointHandler;
   private lineTracker: LineHandler;
   private segmentTracker: SegmentHandler;
+  private ringTracker: RingHandler;
 
   private editHint = "Select mode...";
   constructor() {
@@ -67,6 +69,11 @@ export default class Easel extends Vue {
       canvas: this.renderer.domElement,
       camera: this.camera,
       scene: this.scene    });
+    this.ringTracker = new RingHandler({
+      canvas: this.renderer.domElement,
+      camera: this.camera,
+      scene: this.scene    });
+
   }
 
   mounted() {
@@ -93,7 +100,7 @@ export default class Easel extends Vue {
   }
 
   switchEditMode() {
-    console.debug("Edit mode ", this.editMode);
+    // console.debug("Edit mode ", this.editMode);
     // debugger; // eslint-disable-line
     this.currentHandler?.deactivate();
     switch (this.editMode) {
@@ -112,6 +119,10 @@ export default class Easel extends Vue {
       case "segment":
         this.currentHandler = this.segmentTracker;
         this.editHint = "Drag the mouse to add a geodesic segment"
+        break;
+      case "circle":
+        this.currentHandler = this.ringTracker;
+        this.editHint = "Start with the center and drag to create a ring";
         break;
       default:
         this.currentHandler = null;

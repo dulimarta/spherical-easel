@@ -14,14 +14,13 @@ import Vertex from "@/3d-objs/Vertex";
 
 // This circle is on the XY-plane
 const UNIT_CIRCLE = new EllipseCurve(0, 0, 1, 1, 0, 2 * Math.PI, false, 0);
-const Z_AXIS = new Vector3(0, 0, 1); // Orientation of the circle "at rest"
 
 export default class LineHandler extends CursorHandler {
   private startPoint: Vector3;
   private endPoint: Vector3;
   private currentSurfacePoint: Vector3;
   private circleQuaternion: Quaternion;
-  private normalArrow: Arrow;
+  // private normalArrow: Arrow;
   private isMouseDown: boolean;
   private isOnSphere: boolean;
   private isCircleAdded: boolean;
@@ -42,7 +41,7 @@ export default class LineHandler extends CursorHandler {
     this.startDot = new Vertex();
     this.currentSurfacePoint = new Vector3();
     this.circleQuaternion = new Quaternion();
-    this.normalArrow = new Arrow(1.5, 0xff6600);
+    // this.normalArrow = new Arrow(1.5, 0xff6600);
     this.isMouseDown = false;
     this.isOnSphere = false;
     this.isCircleAdded = false;
@@ -86,7 +85,7 @@ export default class LineHandler extends CursorHandler {
         tmp.crossVectors(this.startPoint, this.endPoint);
         // The circle is on XY-plane, its default orientation is the Z-axis
         // Determine the quaternion to rotate the circle to the desired orientation
-        this.circleQuaternion.setFromUnitVectors(Z_AXIS, tmp.normalize());
+        this.circleQuaternion.setFromUnitVectors(this.Z_AXIS, tmp.normalize());
         this.geodesic.rotation.set(0, 0, 0);
         this.geodesic.applyQuaternion(this.circleQuaternion);
       }
