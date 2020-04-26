@@ -6,15 +6,13 @@ import {
   LineBasicMaterial,
   Quaternion,
   Camera,
-  Scene,
-  Matrix4
+  Scene
 } from "three";
 import CursorHandler from "./CursorHandler";
 import Vertex from "@/3d-objs/Vertex";
 
 // This circle is on the XY-plane
 const UNIT_CIRCLE = new EllipseCurve(0, 0, 1.0, 1.0, 0, 2 * Math.PI, false, 0);
-const Z_AXIS = new Vector3(0, 0, 1); // Orientation of the circle "at rest"
 
 export default class CirleHandler extends CursorHandler {
   private startPoint: Vector3;
@@ -85,7 +83,7 @@ export default class CirleHandler extends CursorHandler {
         tmp.set(this.startPoint.x, this.startPoint.y, this.startPoint.z);
         // The circle is on XY-plane, its default orientation is the Z-axis
         // Determine the quaternion to rotate the circle to the desired orientation
-        this.circleQuaternion.setFromUnitVectors(Z_AXIS, tmp.normalize());
+        this.circleQuaternion.setFromUnitVectors(this.Z_AXIS, tmp.normalize());
         this.ring.rotation.set(0, 0, 0);
         this.ring.position.set(0, 0, 0);
         this.ring.applyQuaternion(this.circleQuaternion);

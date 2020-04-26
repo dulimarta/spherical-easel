@@ -14,8 +14,6 @@ import Vertex from "@/3d-objs/Vertex";
 
 // This circle is on the XY-plane
 const UNIT_CIRCLE = new EllipseCurve(0, 0, 1.0, 1.0, 0, Math.PI / 2, false, 0);
-const X_AXIS = new Vector3(1, 0, 0); // Orientation of the circle "at rest"
-const Z_AXIS = new Vector3(0, 0, 1); // Orientation of the circle "at rest"
 
 export default class Segment extends CursorHandler {
   private startPoint: Vector3;
@@ -106,7 +104,7 @@ export default class Segment extends CursorHandler {
         // as our reference to rotate the circle to track the mouse point
         // tmp2.set(this.startPoint.x, this.startPoint.y, this.startPoint.z);
         // tmp2.set(this.startPoint.x, this.startPoint.y, this.startPoint.z);
-        this.circleQuaternion.setFromUnitVectors(Z_AXIS, tmp1.normalize());
+        this.circleQuaternion.setFromUnitVectors(this.Z_AXIS, tmp1.normalize());
         tmp2.set(1, 0, 0);
         tmp2.applyQuaternion(this.circleQuaternion);
         const rotAngle = tmp2.angleTo(this.startPoint);
@@ -123,7 +121,7 @@ export default class Segment extends CursorHandler {
     }
   };
 
-  downHandler = (event: MouseEvent) => {
+  downHandler = (/*event: MouseEvent*/) => {
     this.isMouseDown = true;
     if (this.isOnSphere) {
       // Record the first point of the geodesic circle
@@ -141,7 +139,7 @@ export default class Segment extends CursorHandler {
     }
   };
 
-  upHandler = (event: MouseEvent) => {
+  upHandler = (/*event: MouseEvent*/) => {
     this.isMouseDown = false;
     if (this.isOnSphere) {
       // Record the second point of the geodesic circle

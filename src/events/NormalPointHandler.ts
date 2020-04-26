@@ -2,7 +2,6 @@ import { Vector3, Quaternion, Vector2 } from "three";
 import Arrow from "@/3d-objs/Arrow";
 import CursorHandler from "./CursorHandler";
 import Vertex from "@/3d-objs/Vertex";
-const Y_AXIS = new Vector3(0, 1, 0);
 
 export default class NormalPointHandler extends CursorHandler {
   private currentPoint: Vector3;
@@ -15,7 +14,7 @@ export default class NormalPointHandler extends CursorHandler {
     super(args);
     this.mouse = new Vector2();
     this.currentPoint = new Vector3();
-    this.normalArrow = new Arrow(0.75, 0xff8000);
+    this.normalArrow = new Arrow(0.6, 0.06, 0xff8000);
     this.normalDirection = new Vector3();
     this.normalRotation = new Quaternion();
     this.isOnSphere = false;
@@ -35,7 +34,7 @@ export default class NormalPointHandler extends CursorHandler {
       this.normalDirection.set(out.x, out.y, out.z);
       // The default orientation of the arrow is the Y-axis
       this.normalRotation.setFromUnitVectors(
-        Y_AXIS,
+        this.Y_AXIS,
         this.normalDirection.normalize()
       );
       this.normalArrow.rotation.set(0, 0, 0);
