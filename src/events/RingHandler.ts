@@ -64,8 +64,9 @@ export default class CirleHandler extends CursorHandler {
   moveHandler = (event: MouseEvent) => {
     // debugger; // eslint-disable-line
     this.isOnSphere = false;
-    const hitPoint = this.intersectionWithSphere(event);
-    if (hitPoint) {
+    const result = this.intersectionWithSphere(event);
+    if (result) {
+      const hitPoint = result.point;
       this.isOnSphere = true;
 
       this.currentSurfacePoint.set(hitPoint.x, hitPoint.y, hitPoint.z);

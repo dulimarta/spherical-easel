@@ -2,28 +2,11 @@
   <div>
     <v-container>
       <v-row align="center">
-        <v-btn-toggle v-model="editMode" @change="switchEditMode">
-          <v-btn value="none">
-            <v-icon>mdi-cursor-pointer</v-icon>
-          </v-btn>
-          <v-btn value="point">
-            <v-icon>mdi-vector-point</v-icon>
-          </v-btn>
-          <v-btn value="line">
-            <v-icon>mdi-vector-line</v-icon>
-          </v-btn>
-          <v-btn value="segment">
-            <v-icon>mdi-vector-radius</v-icon>
-          </v-btn>
-          <v-btn value="circle">
-            <v-icon>mdi-vector-circle-variant</v-icon>
-          </v-btn>
-        </v-btn-toggle>
         <span class="body-1 ml-2">{{editHint}}</span>
         <v-spacer />
-        <v-switch v-show='editMode==="none"' v-model="showSphereControl"
+        <!-- <v-switch v-show='editMode==="none"' v-model="showSphereControl"
           label="Sphere Control">
-        </v-switch>
+        </v-switch> -->
       </v-row>
       <v-row justify="center" ref="content" id="content">
 
@@ -44,13 +27,14 @@ import NormalPointHandler from "@/events/NormalPointHandler";
 import LineHandler from "@/events/LineHandler";
 import SegmentHandler from "@/events/SegmentHandler";
 import RingHandler from "@/events/RingHandler"
+import SETTINGS from "@/global-settings"
+import { AppState } from '../store';
 
 @Component
 export default class Easel extends Vue {
   private renderer: THREE.WebGLRenderer;
   private scene: THREE.Scene;
   private camera: THREE.PerspectiveCamera;
-  private editMode = "none";
   private currentHandler: CursorHandler | null = null;
   private normalTracker: NormalPointHandler;
   private lineTracker: LineHandler;
@@ -60,6 +44,7 @@ export default class Easel extends Vue {
   private sphere: THREE.Mesh;
   private editHint = "Select mode...";
   private showSphereControl = false;
+  private storeWatcher: (() => void) | null = null;
 
   constructor() {
     super();
@@ -72,6 +57,8 @@ export default class Easel extends Vue {
       0.1,
       1000
     );
+
+    console.debug("Camera layers", this.camera.layers);
     this.normalTracker = new NormalPointHandler({
       canvas: this.renderer.domElement,
       camera: this.camera,
@@ -90,24 +77,34 @@ export default class Easel extends Vue {
       scene: this.scene    });
     this.controls = new TransformControls(this.camera, this.renderer.domElement);
     this.sphere = new THREE.Mesh(
-      new THREE.SphereGeometry(1, 24, 28),
-      new THREE.MeshPhongMaterial({ color: 0xffffff, transparent: true, opacity: 0.7 })
+      new THREE.SphereGeometry(SETTINGS.sphere.radius, 24, 28),
+      new THREE.MeshPhongMaterial({ color: SETTINGS.sphere.color, transparent: true, opacity: SETTINGS.sphere.opacity })
     );
+    this.sphere.layers.enable(SETTINGS.INTERSECTION_LAYER);
     this.$store.commit('setSphere', this.sphere);
-    // this.sphere.add(new Axes(2));
+    this.sphere.add(new Axes(1.5));
     this.scene.add(this.sphere);
     console.debug("Constructor");
     this.camera.position.set(1.5, 1.5, 3);
     this.camera.lookAt(0, 0, 0);
-    this.scene.add(new THREE.AxesHelper(2));
+    const axesHelper = new THREE.AxesHelper(SETTINGS.sphere.radius * 1.25);
+    axesHelper.layers.disableAll();  // exclude axeshelper from being searched by Raycaster
+    this.scene.add(axesHelper);
     const pointLight = new THREE.PointLight(0xffffff, 1, 100);
     pointLight.position.set(0, 5, 10);
     this.scene.add(pointLight);
     this.controls.setMode('rotate');
+    this.controls.setSpace('global');
     this.controls.setSize(2);
     this.scene.add(this.controls);
     window.addEventListener("resize", this.onWindowResized);
 
+  }
+
+  created() {
+    this.storeWatcher = this.$store.watch(
+      (state: AppState) => state.editMode,
+      this.switchEditMode)
   }
 
   mounted() {
@@ -141,7 +138,7 @@ export default class Easel extends Vue {
   };
 
   @Watch('showSphereControl')
-  onSphereControlChanged(value: boolean, oldValue: boolean) {
+  onSphereControlChanged(value: boolean /*, oldValue: boolean*/) {
     if (value) {
       this.controls.attach(this.sphere);
     } else {
@@ -149,9 +146,10 @@ export default class Easel extends Vue {
     }
 
   }
-  switchEditMode() {
+
+  switchEditMode(mode: string) {
     this.currentHandler?.deactivate();
-    switch (this.editMode) {
+    switch (mode) {
       case "none":
         if (this.showSphereControl)
           this.controls.attach(this.sphere);

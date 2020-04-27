@@ -74,9 +74,10 @@ export default class Segment extends CursorHandler {
   moveHandler = (event: MouseEvent) => {
     // debugger; // eslint-disable-line
     this.isOnSphere = false;
-    const hitPoint = this.intersectionWithSphere(event);
-    if (hitPoint) {
+    const result = this.intersectionWithSphere(event);
+    if (result) {
       this.isOnSphere = true;
+      const hitPoint = result.point;
 
       this.currentSurfacePoint.set(hitPoint.x, hitPoint.y, hitPoint.z);
       this.endPoint.set(hitPoint.x, hitPoint.y, hitPoint.z);

@@ -1,5 +1,14 @@
-import { Camera, Raycaster, Scene, Vector2, Vector3 } from "three";
+import {
+  Camera,
+  Intersection,
+  Raycaster,
+  Scene,
+  Vector2,
+  Vector3
+} from "three";
+import SETTINGS from "@/global-settings";
 import AppStore from "@/store";
+
 export default abstract class CursorHandler {
   protected readonly X_AXIS = new Vector3(1, 0, 0);
   protected readonly Y_AXIS = new Vector3(0, 1, 0);
@@ -25,6 +34,8 @@ export default abstract class CursorHandler {
     this.camera = camera;
     this.scene = scene;
     this.rayCaster = new Raycaster();
+    this.rayCaster.layers.enable(SETTINGS.INTERSECTION_LAYER);
+    // this.rayCaster.layers.set(1);
     this.mouse = new Vector2();
   }
   toNormalizeScreenCoord = (event: MouseEvent) => {
@@ -34,7 +45,7 @@ export default abstract class CursorHandler {
     return { x, y };
   };
 
-  intersectionWithSphere(event: MouseEvent): Vector3 | null {
+  intersectionWithSphere(event: MouseEvent): Intersection | null {
     const { x, y } = this.toNormalizeScreenCoord(event);
     this.mouse.x = x;
     this.mouse.y = y;
@@ -43,11 +54,13 @@ export default abstract class CursorHandler {
     const intersects = this.rayCaster.intersectObjects(this.scene.children);
     if (intersects.length === 0) return null;
     const objs = intersects.filter(r => {
-      // console.debug("Intersect with ", r.object.type);
+      console.debug("Intersect with ", r.object.type);
       return r.object.type === "Mesh";
     });
     if (objs.length == 0) return null;
-    else return objs[0].point;
+    else {
+      return objs[0];
+    }
   }
   abstract activate(): void;
   abstract deactivate(): void;
