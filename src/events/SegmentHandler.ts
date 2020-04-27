@@ -41,7 +41,7 @@ export default class Segment extends CursorHandler {
     this.startDot = new Vertex();
     this.currentSurfacePoint = new Vector3();
     this.circleQuaternion = new Quaternion();
-    this.normalArrow = new Arrow(1.5, 0xff6600);
+    this.normalArrow = new Arrow(1.5, 0.2, 0xff6600);
     this.isMouseDown = false;
     this.isOnSphere = false;
     this.isCircleAdded = false;

@@ -51,7 +51,8 @@ export default class NormalPointHandler extends CursorHandler {
         this.currentPoint.y,
         this.currentPoint.z
       );
-      this.scene.add(vtx);
+      this.store.commit("addVertex", vtx);
+      // this.scene.add(vtx);
     }
   };
 

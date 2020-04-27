@@ -25,8 +25,10 @@
           label="Sphere Control">
         </v-switch>
       </v-row>
+      <v-row justify="center" ref="content" id="content">
+
+      </v-row>
     </v-container>
-    <div ref="content" id="content"></div>
   </div>
 </template>
 
@@ -47,7 +49,7 @@ import RingHandler from "@/events/RingHandler"
 export default class Easel extends Vue {
   private renderer: THREE.WebGLRenderer;
   private scene: THREE.Scene;
-  private camera: THREE.Camera;
+  private camera: THREE.PerspectiveCamera;
   private editMode = "none";
   private currentHandler: CursorHandler | null = null;
   private normalTracker: NormalPointHandler;
@@ -63,6 +65,7 @@ export default class Easel extends Vue {
     super();
     this.scene = new THREE.Scene();
     this.renderer = new THREE.WebGLRenderer();
+    this.renderer.setPixelRatio(window.devicePixelRatio);
     this.camera = new THREE.PerspectiveCamera(
       75,
       window.innerWidth / window.innerHeight,
@@ -88,29 +91,33 @@ export default class Easel extends Vue {
     this.controls = new TransformControls(this.camera, this.renderer.domElement);
     this.sphere = new THREE.Mesh(
       new THREE.SphereGeometry(1, 24, 28),
-      new THREE.MeshLambertMaterial({ color: 0xffdd00 })
+      new THREE.MeshPhongMaterial({ color: 0xffffff, transparent: true, opacity: 0.7 })
     );
-    this.sphere.add(new Axes(2));
+    this.$store.commit('setSphere', this.sphere);
+    // this.sphere.add(new Axes(2));
     this.scene.add(this.sphere);
     console.debug("Constructor");
+    this.camera.position.set(1.5, 1.5, 3);
+    this.camera.lookAt(0, 0, 0);
+    this.scene.add(new THREE.AxesHelper(2));
+    const pointLight = new THREE.PointLight(0xffffff, 1, 100);
+    pointLight.position.set(0, 5, 10);
+    this.scene.add(pointLight);
+    this.controls.setMode('rotate');
+    this.controls.setSize(2);
+    this.scene.add(this.controls);
+    window.addEventListener("resize", this.onWindowResized);
+
   }
 
   mounted() {
     console.debug("Mounted");
     // debugger; // eslint-disable-line
-    this.camera.position.set(3, 3, 5);
-    this.camera.lookAt(0, 0, 0);
-    this.scene.add(new THREE.AxesHelper(2));
-    this.renderer.setSize(window.innerWidth, window.innerHeight);
-    const pointLight = new THREE.PointLight(0xffffff, 1, 100);
-    pointLight.position.set(0, 5, 10);
-    this.scene.add(pointLight);
+    // this.renderer.setSize(window.innerWidth, window.innerHeight);
     const el = this.$refs.content as HTMLBaseElement;
     el.appendChild(this.renderer.domElement);
     // this.controls.attach(this.sphere);
-    this.controls.setMode('rotate');
-    this.controls.setSize(2);
-    this.scene.add(this.controls);
+    this.onWindowResized();
     requestAnimationFrame(() => this.renderIt());
   }
 
@@ -118,6 +125,20 @@ export default class Easel extends Vue {
     this.renderer && this.renderer.render(this.scene, this.camera);
     requestAnimationFrame(() => this.renderIt());
   }
+
+  onWindowResized = () => {
+    const el = this.$refs.content as HTMLBaseElement;
+    if (!el) return;
+    if (el) {
+      const size = Math.min(el.clientWidth, 640);
+      console.log(`Window resize ${el.clientWidth}x${el.clientHeight}`);
+      // this.renderer.domElement.width = size;
+      // this.renderer.domElement.height = size;
+      this.camera.aspect = 1;
+      this.camera.updateProjectionMatrix();
+      this.renderer.setSize(size, size);
+    }
+  };
 
   @Watch('showSphereControl')
   onSphereControlChanged(value: boolean, oldValue: boolean) {
@@ -129,13 +150,11 @@ export default class Easel extends Vue {
 
   }
   switchEditMode() {
-    // console.debug("Edit mode ", this.editMode);
-    // debugger; // eslint-disable-line
     this.currentHandler?.deactivate();
     switch (this.editMode) {
       case "none":
-        this.controls.attach(this.sphere);
-
+        if (this.showSphereControl)
+          this.controls.attach(this.sphere);
         this.controls.removeEventListener('change', this.renderIt);
         this.currentHandler = null;
         this.editHint = "Select mode...";

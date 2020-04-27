@@ -1,4 +1,5 @@
 import { Camera, Raycaster, Scene, Vector2, Vector3 } from "three";
+import AppStore from "@/store";
 export default abstract class CursorHandler {
   protected readonly X_AXIS = new Vector3(1, 0, 0);
   protected readonly Y_AXIS = new Vector3(0, 1, 0);
@@ -9,6 +10,7 @@ export default abstract class CursorHandler {
   protected scene: Scene;
   protected rayCaster: Raycaster;
   protected mouse: Vector2;
+  protected store = AppStore;
   // private intersectionPoint: Vector3;
   constructor({
     canvas,
@@ -27,8 +29,8 @@ export default abstract class CursorHandler {
   }
   toNormalizeScreenCoord = (event: MouseEvent) => {
     const target = event.target as HTMLCanvasElement;
-    const x = 2 * (event.offsetX / target.width) - 1;
-    const y = 1 - 2 * (event.offsetY / target.height);
+    const x = 2 * (event.offsetX / target.clientWidth) - 1;
+    const y = 1 - 2 * (event.offsetY / target.clientHeight);
     return { x, y };
   };
 
@@ -37,6 +39,7 @@ export default abstract class CursorHandler {
     this.mouse.x = x;
     this.mouse.y = y;
     this.rayCaster.setFromCamera(this.mouse, this.camera);
+
     const intersects = this.rayCaster.intersectObjects(this.scene.children);
     if (intersects.length === 0) return null;
     const objs = intersects.filter(r => {
