@@ -2,7 +2,7 @@ import { Vector3, Quaternion, Vector2, Matrix4 } from "three";
 import Arrow from "@/3d-objs/Arrow";
 import CursorHandler from "./CursorHandler";
 import Vertex from "@/3d-objs/Vertex";
-
+import SETTINGS from "@/global-settings";
 export default class NormalPointHandler extends CursorHandler {
   private currentPoint: Vector3;
   private normalDirection: Vector3;
@@ -63,7 +63,7 @@ export default class NormalPointHandler extends CursorHandler {
 
   clickIt = () => {
     if (this.isOnSphere) {
-      const vtx = new Vertex();
+      const vtx = new Vertex(0.03);
       vtx.position.set(
         this.currentPoint.x,
         this.currentPoint.y,
@@ -77,6 +77,9 @@ export default class NormalPointHandler extends CursorHandler {
   activate = () => {
     this.canvas.addEventListener("mousemove", this.moveIt);
     this.canvas.addEventListener("mousedown", this.clickIt);
+    this.rayCaster.layers.disableAll();
+    this.rayCaster.layers.enable(SETTINGS.layers.sphere);
+    debugger; // eslint-disable-line
   };
 
   deactivate = () => {

@@ -11,6 +11,7 @@ import {
 import CursorHandler from "./CursorHandler";
 import Arrow from "@/3d-objs/Arrow";
 import Vertex from "@/3d-objs/Vertex";
+import SETTINGS from "@/global-settings";
 
 // This circle is on the XY-plane
 const UNIT_CIRCLE = new EllipseCurve(0, 0, 1, 1, 0, 2 * Math.PI, false, 0);
@@ -55,6 +56,10 @@ export default class LineHandler extends CursorHandler {
     this.canvas.addEventListener("mousemove", this.moveHandler);
     this.canvas.addEventListener("mousedown", this.downHandler);
     this.canvas.addEventListener("mouseup", this.upHandler);
+    this.rayCaster.layers.disableAll();
+    // debugger; // eslint-disable-line
+    this.rayCaster.layers.enable(SETTINGS.layers.sphere);
+    this.rayCaster.layers.enable(SETTINGS.layers.vertex);
   };
 
   deactivate = () => {
@@ -64,9 +69,9 @@ export default class LineHandler extends CursorHandler {
   };
 
   moveHandler = (event: MouseEvent) => {
-    // debugger; // eslint-disable-line
     this.isOnSphere = false;
     const result = this.intersectionWithSphere(event);
+    console.debug("Linehandler mousemove", result);
     if (result) {
       this.isOnSphere = true;
       const hitPoint = result.point;

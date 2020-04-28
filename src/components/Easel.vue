@@ -4,11 +4,8 @@
       <v-row align="center">
         <span class="body-1 ml-2">{{ editHint }}</span>
         <v-spacer />
-        <v-switch
-          v-show="editMode === 'none'"
-          v-model="showSphereControl"
-          label="Sphere Control"
-        >
+        <v-switch v-show="editMode === 'none'" v-model="showSphereControl"
+          label="Sphere Control">
         </v-switch>
       </v-row>
       <v-row justify="center" ref="content" id="content"> </v-row>
@@ -93,7 +90,8 @@ export default class Easel extends Vue {
         opacity: SETTINGS.sphere.opacity
       })
     );
-    this.sphere.layers.enable(SETTINGS.INTERSECTION_LAYER);
+    this.sphere.name = "MainSphere";
+    this.sphere.layers.enable(SETTINGS.layers.sphere);
     this.$store.commit("setSphere", this.sphere);
     this.sphere.add(new Axes(1.5));
     this.scene.add(this.sphere);
@@ -101,7 +99,7 @@ export default class Easel extends Vue {
     this.camera.position.set(1.5, 1.5, 3);
     this.camera.lookAt(0, 0, 0);
     const axesHelper = new THREE.AxesHelper(SETTINGS.sphere.radius * 1.25);
-    axesHelper.layers.disableAll(); // exclude axeshelper from being searched by Raycaster
+    // axesHelper.layers.disableAll(); // exclude axeshelper from being searched by Raycaster
     this.scene.add(axesHelper);
     const pointLight = new THREE.PointLight(0xffffff, 1, 100);
     pointLight.position.set(0, 5, 10);

@@ -4,5 +4,9 @@ export default {
     color: 0xffffff,
     opacity: 0.7
   },
-  INTERSECTION_LAYER: 2
+  layers: {
+    sphere: 2,
+    vertex: 3
+  }
+  // INTERSECTION_LAYER: 2
 };
