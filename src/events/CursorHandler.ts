@@ -1,13 +1,17 @@
 import {
   Camera,
-  Intersection,
+  // Intersection,
+  Mesh,
   Raycaster,
   Scene,
   Vector2,
-  Vector3
+  Vector3,
+  MeshPhongMaterial,
+  Layers
 } from "three";
 // import SETTINGS from "@/global-settings";
 import AppStore from "@/store";
+import Vertex from "@/3d-objs/Vertex";
 
 const RAYCASTER = new Raycaster();
 export default abstract class CursorHandler {
@@ -20,7 +24,12 @@ export default abstract class CursorHandler {
   protected scene: Scene;
   protected rayCaster: Raycaster;
   protected mouse: Vector2;
-  protected store = AppStore;
+  protected store = AppStore; // Vuex global state
+  protected currentPoint: Vector3;
+  protected hitObject: Mesh | null = null;
+  protected isOnSphere: boolean;
+  protected theSphere: Mesh | null = null;
+
   // private intersectionPoint: Vector3;
   constructor({
     canvas,
@@ -38,6 +47,8 @@ export default abstract class CursorHandler {
     // this.rayCaster.layers.enable(SETTINGS.layers.sphere);
     // this.rayCaster.layers.set(1);
     this.mouse = new Vector2();
+    this.currentPoint = new Vector3();
+    this.isOnSphere = false;
   }
 
   toNormalizeScreenCoord = (event: MouseEvent) => {
@@ -47,26 +58,45 @@ export default abstract class CursorHandler {
     return { x, y };
   };
 
-  intersectionWithSphere(event: MouseEvent): Intersection | null {
+  mapCursorToSphere = (event: MouseEvent) => {
     const { x, y } = this.toNormalizeScreenCoord(event);
     this.mouse.x = x;
     this.mouse.y = y;
     this.rayCaster.setFromCamera(this.mouse, this.camera);
 
-    const intersects = this.rayCaster.intersectObjects(
+    // The result of intersection is sorted by distance (closer objects first)
+    const intersections = this.rayCaster.intersectObjects(
       this.scene.children,
-      true // TRUE:recursive search
+      true // recursive search
     );
-    if (intersects.length === 0) return null;
-    const objs = intersects.filter(r => {
-      console.debug("Intersect with ", r.object.type, r.object.name);
-      return r.object.type === "Mesh";
-    });
-    if (objs.length == 0) return null;
-    else {
-      return objs[0];
+    if (this.hitObject !== null) {
+      // Turn off emissive color on the currently selected object
+      (this.hitObject.material as MeshPhongMaterial).emissive.set(0);
+      this.hitObject = null;
     }
-  }
+    this.isOnSphere = false;
+    this.currentPoint.set(Number.NaN, Number.NaN, Number.NaN);
+    if (intersections.length == 0) {
+      return;
+    }
+    this.isOnSphere = true;
+    const hitTarget = intersections[0];
+    if (hitTarget.object instanceof Vertex) {
+      console.debug("Intersect with a vertex", hitTarget.object.name);
+      this.currentPoint.copy(hitTarget.object.position);
+    } else if (hitTarget.object instanceof Mesh) {
+      this.theSphere = hitTarget.object;
+      console.debug("Intersect with sphere", hitTarget.object.name);
+      this.currentPoint.copy(hitTarget.point);
+    } else {
+      /* What to do here? */
+      this.isOnSphere = false;
+    }
+  };
+
+  isLayerEnable = (l: Layers, m: number): boolean =>
+    ((l.mask >> m) & 0x1) !== 0;
+
   abstract activate(): void;
   abstract deactivate(): void;
 }

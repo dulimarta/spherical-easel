@@ -2,6 +2,7 @@ import {
   Vector3,
   EllipseCurve,
   BufferGeometry,
+  Intersection,
   Line,
   LineBasicMaterial,
   Quaternion,
@@ -9,7 +10,7 @@ import {
   Scene
 } from "three";
 import CursorHandler from "./CursorHandler";
-import Arrow from "@/3d-objs/Arrow";
+// import Arrow from "@/3d-objs/Arrow";
 import Vertex from "@/3d-objs/Vertex";
 import SETTINGS from "@/global-settings";
 
@@ -23,7 +24,7 @@ export default class LineHandler extends CursorHandler {
   private circleQuaternion: Quaternion;
   // private normalArrow: Arrow;
   private isMouseDown: boolean;
-  private isOnSphere: boolean;
+  // private isOnSphere: boolean;
   private isCircleAdded: boolean;
   private geodesic: Line;
   private startDot: Vertex;
@@ -57,7 +58,6 @@ export default class LineHandler extends CursorHandler {
     this.canvas.addEventListener("mousedown", this.downHandler);
     this.canvas.addEventListener("mouseup", this.upHandler);
     this.rayCaster.layers.disableAll();
-    // debugger; // eslint-disable-line
     this.rayCaster.layers.enable(SETTINGS.layers.sphere);
     this.rayCaster.layers.enable(SETTINGS.layers.vertex);
   };
@@ -68,21 +68,25 @@ export default class LineHandler extends CursorHandler {
     this.canvas.removeEventListener("mouseup", this.upHandler);
   };
 
-  moveHandler = (event: MouseEvent) => {
+  moveHandler = (/*event: MouseEvent*/) => {
     this.isOnSphere = false;
-    const result = this.intersectionWithSphere(event);
-    console.debug("Linehandler mousemove", result);
-    if (result) {
+    const result: Intersection[] = []; //this.intersectionWithSphere(event);
+    if (result.length > 0) {
+      // console.debug("Linehandler mousemove", result);
       this.isOnSphere = true;
-      const hitPoint = result.point;
-
-      this.currentSurfacePoint.set(hitPoint.x, hitPoint.y, hitPoint.z);
-      this.endPoint.set(hitPoint.x, hitPoint.y, hitPoint.z);
+      const hitTarget = result[0];
+      if (this.isLayerEnable(hitTarget.object.layers, SETTINGS.layers.vertex)) {
+        this.currentSurfacePoint.copy(hitTarget.object.position);
+        this.endPoint.copy(hitTarget.object.position);
+      } else {
+        this.currentSurfacePoint.copy(hitTarget.point);
+        this.endPoint.copy(hitTarget.point);
+      }
       if (this.isMouseDown) {
         if (!this.isCircleAdded) {
           this.isCircleAdded = true;
           this.scene.add(this.geodesic);
-          this.scene.add(this.startDot);
+          // this.scene.add(this.startDot);
         }
         // Reorient the geodesic circle using the cross product
         // of the start and end points
@@ -103,36 +107,32 @@ export default class LineHandler extends CursorHandler {
     }
   };
 
-  downHandler = (event: MouseEvent) => {
+  downHandler = (/*event: MouseEvent*/) => {
     this.isMouseDown = true;
-    if (this.isOnSphere) {
+    if (this.isOnSphere && this.hitObject) {
+      const selected = this.hitObject;
       // Record the first point of the geodesic circle
-      this.startDot.position.set(
-        this.currentSurfacePoint.x,
-        this.currentSurfacePoint.y,
-        this.currentSurfacePoint.z
-      );
-      this.scene.add(this.startDot);
-      this.startPoint.set(
-        this.currentSurfacePoint.x,
-        this.currentSurfacePoint.y,
-        this.currentSurfacePoint.z
-      );
+      if (this.isLayerEnable(selected.layers, SETTINGS.layers.sphere)) {
+        // Click on the sphere
+        this.startDot.position.copy(this.currentSurfacePoint);
+        this.scene.add(this.startDot);
+        this.startPoint.copy(this.currentSurfacePoint);
+      } else if (this.isLayerEnable(selected.layers, SETTINGS.layers.vertex)) {
+        // Click on a vertex
+        // Use that vertex as the starting point of the geodesic line
+        this.startPoint.copy(selected.position);
+      }
     }
   };
 
-  upHandler = (event: MouseEvent) => {
+  upHandler = (/*event: MouseEvent*/) => {
     this.isMouseDown = false;
     if (this.isOnSphere) {
       // Record the second point of the geodesic circle
       this.scene.remove(this.geodesic);
       this.scene.remove(this.startDot);
       this.isCircleAdded = false;
-      this.endPoint.set(
-        this.currentSurfacePoint.x,
-        this.currentSurfacePoint.y,
-        this.currentSurfacePoint.z
-      );
+      this.endPoint.copy(this.currentSurfacePoint);
     }
   };
 }

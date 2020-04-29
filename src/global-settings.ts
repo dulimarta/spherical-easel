@@ -5,6 +5,7 @@ export default {
     opacity: 0.7
   },
   layers: {
+    /* Seperate Mesh objects into different layers so it will be easier to filter Raycaster intersection */
     sphere: 2,
     vertex: 3
   }

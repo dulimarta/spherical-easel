@@ -2,6 +2,7 @@ import {
   Vector3,
   EllipseCurve,
   BufferGeometry,
+  Intersection,
   Line,
   LineBasicMaterial,
   Quaternion,
@@ -11,6 +12,7 @@ import {
 import CursorHandler from "./CursorHandler";
 import Arrow from "@/3d-objs/Arrow";
 import Vertex from "@/3d-objs/Vertex";
+import SETTINGS from "@/global-settings";
 
 // This circle is on the XY-plane
 const UNIT_CIRCLE = new EllipseCurve(0, 0, 1.0, 1.0, 0, Math.PI / 2, false, 0);
@@ -22,7 +24,7 @@ export default class Segment extends CursorHandler {
   private circleQuaternion: Quaternion;
   private normalArrow: Arrow;
   private isMouseDown: boolean;
-  private isOnSphere: boolean;
+  // private isOnSphere: boolean;
   private isCircleAdded: boolean;
   private geodesic: Line;
   private startDot: Vertex;
@@ -63,6 +65,8 @@ export default class Segment extends CursorHandler {
     this.canvas.addEventListener("mousemove", this.moveHandler);
     this.canvas.addEventListener("mousedown", this.downHandler);
     this.canvas.addEventListener("mouseup", this.upHandler);
+    this.rayCaster.layers.enable(SETTINGS.layers.sphere);
+    this.rayCaster.layers.enable(SETTINGS.layers.vertex);
   };
 
   deactivate = () => {
@@ -71,21 +75,21 @@ export default class Segment extends CursorHandler {
     this.canvas.removeEventListener("mouseup", this.upHandler);
   };
 
-  moveHandler = (event: MouseEvent) => {
+  moveHandler = (/*event: MouseEvent*/) => {
     // debugger; // eslint-disable-line
     this.isOnSphere = false;
-    const result = this.intersectionWithSphere(event);
-    if (result) {
+    const result: Intersection[] = []; //this.intersectionWithSphere(event);
+    if (result.length > 0) {
       this.isOnSphere = true;
-      const hitPoint = result.point;
+      const hitPoint = result[0].point;
 
-      this.currentSurfacePoint.set(hitPoint.x, hitPoint.y, hitPoint.z);
-      this.endPoint.set(hitPoint.x, hitPoint.y, hitPoint.z);
+      this.currentSurfacePoint.copy(hitPoint);
+      this.endPoint.copy(hitPoint);
       if (this.isMouseDown) {
         if (!this.isCircleAdded) {
           this.isCircleAdded = true;
           this.scene.add(this.geodesic);
-          this.scene.add(this.startDot);
+          // this.scene.add(this.startDot);
         }
         // Reorient the geodesic circle using the cross product
         // of the start and end points
@@ -103,8 +107,8 @@ export default class Segment extends CursorHandler {
         this.geodesic.rotation.set(0, 0, 0);
         // The circle is on XY-plane, we will use point (R, 0, 0)
         // as our reference to rotate the circle to track the mouse point
-        // tmp2.set(this.startPoint.x, this.startPoint.y, this.startPoint.z);
-        // tmp2.set(this.startPoint.x, this.startPoint.y, this.startPoint.z);
+        // tmp2.copy(this.startPoint);
+        // tmp2.copy(this.startPoint);
         this.circleQuaternion.setFromUnitVectors(this.Z_AXIS, tmp1.normalize());
         tmp2.set(1, 0, 0);
         tmp2.applyQuaternion(this.circleQuaternion);
@@ -124,19 +128,16 @@ export default class Segment extends CursorHandler {
 
   downHandler = (/*event: MouseEvent*/) => {
     this.isMouseDown = true;
-    if (this.isOnSphere) {
+    if (this.isOnSphere && this.hitObject) {
+      const selected = this.hitObject;
       // Record the first point of the geodesic circle
-      this.startDot.position.set(
-        this.currentSurfacePoint.x,
-        this.currentSurfacePoint.y,
-        this.currentSurfacePoint.z
-      );
-      this.scene.add(this.startDot);
-      this.startPoint.set(
-        this.currentSurfacePoint.x,
-        this.currentSurfacePoint.y,
-        this.currentSurfacePoint.z
-      );
+      if (this.isLayerEnable(selected.layers, SETTINGS.layers.sphere)) {
+        this.startDot.position.copy(this.currentSurfacePoint);
+        this.scene.add(this.startDot);
+        this.startPoint.copy(this.currentSurfacePoint);
+      } else if (this.isLayerEnable(selected.layers, SETTINGS.layers.vertex)) {
+        this.startPoint.copy(selected.position);
+      }
     }
   };
 
@@ -147,11 +148,7 @@ export default class Segment extends CursorHandler {
       this.scene.remove(this.geodesic);
       this.scene.remove(this.startDot);
       this.isCircleAdded = false;
-      this.endPoint.set(
-        this.currentSurfacePoint.x,
-        this.currentSurfacePoint.y,
-        this.currentSurfacePoint.z
-      );
+      this.endPoint.copy(this.currentSurfacePoint);
     }
   };
 }

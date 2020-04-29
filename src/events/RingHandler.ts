@@ -2,6 +2,7 @@ import {
   Vector3,
   EllipseCurve,
   BufferGeometry,
+  Intersection,
   Line,
   LineBasicMaterial,
   Quaternion,
@@ -20,7 +21,7 @@ export default class CirleHandler extends CursorHandler {
   private currentSurfacePoint: Vector3;
   private circleQuaternion: Quaternion;
   private isMouseDown: boolean;
-  private isOnSphere: boolean;
+  // private isOnSphere: boolean;
   private isCircleAdded: boolean;
   private ring: Line;
   private startDot: Vertex;
@@ -61,16 +62,16 @@ export default class CirleHandler extends CursorHandler {
     this.canvas.removeEventListener("mouseup", this.upHandler);
   };
 
-  moveHandler = (event: MouseEvent) => {
+  moveHandler = (/*event: MouseEvent*/) => {
     // debugger; // eslint-disable-line
     this.isOnSphere = false;
-    const result = this.intersectionWithSphere(event);
-    if (result) {
-      const hitPoint = result.point;
+    const result: Intersection[] = []; //this.intersectionWithSphere(event);
+    if (result.length > 0) {
+      const hitPoint = result[0].point;
       this.isOnSphere = true;
 
-      this.currentSurfacePoint.set(hitPoint.x, hitPoint.y, hitPoint.z);
-      this.endPoint.set(hitPoint.x, hitPoint.y, hitPoint.z);
+      this.currentSurfacePoint.copy(hitPoint);
+      this.endPoint.copy(hitPoint);
       if (this.isMouseDown) {
         if (!this.isCircleAdded) {
           this.isCircleAdded = true;
@@ -81,7 +82,7 @@ export default class CirleHandler extends CursorHandler {
         // of the start and end points
         const tmp = new Vector3();
         // Use the cross product to determine the desired orientation of geodesic circle
-        tmp.set(this.startPoint.x, this.startPoint.y, this.startPoint.z);
+        tmp.copy(this.startPoint);
         // The circle is on XY-plane, its default orientation is the Z-axis
         // Determine the quaternion to rotate the circle to the desired orientation
         this.circleQuaternion.setFromUnitVectors(this.Z_AXIS, tmp.normalize());
@@ -104,36 +105,24 @@ export default class CirleHandler extends CursorHandler {
     }
   };
 
-  downHandler = (event: MouseEvent) => {
+  downHandler = (/*event: MouseEvent*/) => {
     this.isMouseDown = true;
     if (this.isOnSphere) {
       // Record the first point of the geodesic circle
-      this.startDot.position.set(
-        this.currentSurfacePoint.x,
-        this.currentSurfacePoint.y,
-        this.currentSurfacePoint.z
-      );
+      this.startDot.position.copy(this.currentSurfacePoint);
       this.scene.add(this.startDot);
-      this.startPoint.set(
-        this.currentSurfacePoint.x,
-        this.currentSurfacePoint.y,
-        this.currentSurfacePoint.z
-      );
+      this.startPoint.copy(this.currentSurfacePoint);
     }
   };
 
-  upHandler = (event: MouseEvent) => {
+  upHandler = (/*event: MouseEvent*/) => {
     this.isMouseDown = false;
     if (this.isOnSphere) {
       // Record the second point of the geodesic circle
       this.scene.remove(this.ring);
       this.scene.remove(this.startDot);
       this.isCircleAdded = false;
-      this.endPoint.set(
-        this.currentSurfacePoint.x,
-        this.currentSurfacePoint.y,
-        this.currentSurfacePoint.z
-      );
+      this.endPoint.copy(this.currentSurfacePoint);
     }
   };
 }

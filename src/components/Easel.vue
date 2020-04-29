@@ -93,9 +93,10 @@ export default class Easel extends Vue {
     this.sphere.name = "MainSphere";
     this.sphere.layers.enable(SETTINGS.layers.sphere);
     this.$store.commit("setSphere", this.sphere);
+
     this.sphere.add(new Axes(1.5));
     this.scene.add(this.sphere);
-    console.debug("Constructor");
+    console.debug("Constructor: sphere ID", this.sphere.id);
     this.camera.position.set(1.5, 1.5, 3);
     this.camera.lookAt(0, 0, 0);
     const axesHelper = new THREE.AxesHelper(SETTINGS.sphere.radius * 1.25);
