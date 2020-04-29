@@ -69,7 +69,7 @@ export default abstract class CursorHandler {
       this.scene.children,
       true // recursive search
     );
-    if (this.hitObject !== null) {
+    if (this.hitObject instanceof Vertex) {
       // Turn off emissive color on the currently selected object
       (this.hitObject.material as MeshPhongMaterial).emissive.set(0);
       this.hitObject = null;
@@ -84,13 +84,14 @@ export default abstract class CursorHandler {
     this.canvas.style.cursor = "pointer";
     const hitTarget = intersections[0];
     if (hitTarget.object instanceof Vertex) {
-      console.debug("Intersect with a vertex", hitTarget.object.name);
+      // console.debug("Intersect with a vertex", hitTarget.object.name);
       this.currentPoint.copy(hitTarget.object.position);
       this.theSphere?.localToWorld(this.currentPoint);
       this.hitObject = hitTarget.object;
+      (this.hitObject?.material as MeshPhongMaterial).emissive.set(0xff0000);
     } else if (hitTarget.object instanceof Mesh) {
       this.theSphere = hitTarget.object;
-      console.debug("Intersect with sphere", hitTarget.object.name);
+      // console.debug("Intersect with sphere", hitTarget.object.name);
       this.currentPoint.copy(hitTarget.point);
       this.hitObject = hitTarget.object;
     } else {

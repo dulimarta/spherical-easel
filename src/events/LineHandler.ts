@@ -6,8 +6,7 @@ import {
   LineBasicMaterial,
   Quaternion,
   Camera,
-  Scene,
-  MeshPhongMaterial
+  Scene
 } from "three";
 import CursorHandler from "./CursorHandler";
 // import Arrow from "@/3d-objs/Arrow";
@@ -18,18 +17,18 @@ import SETTINGS from "@/global-settings";
 const UNIT_CIRCLE = new EllipseCurve(0, 0, 1, 1, 0, 2 * Math.PI, false, 0);
 
 export default class LineHandler extends CursorHandler {
-  private startPoint: Vector3;
-  private endPoint: Vector3;
-  private geodesicDirection: Vector3;
-  private sphereDirection: Vector3;
+  protected startPoint: Vector3;
+  protected endPoint: Vector3;
+  protected geodesicDirection: Vector3;
+  // private sphereDirection: Vector3;
   // private currentSurfacePoint: Vector3;
-  private circleQuaternion: Quaternion;
+  protected circleQuaternion: Quaternion;
   // private normalArrow: Arrow;
-  private isMouseDown: boolean;
+  protected isMouseDown: boolean;
   // private isOnSphere: boolean;
-  private isCircleAdded: boolean;
-  private geodesic: Line;
-  private startDot: Vertex;
+  protected isCircleAdded: boolean;
+  protected geodesic: Line;
+  protected startDot: Vertex;
   constructor({
     canvas,
     camera,
@@ -43,7 +42,7 @@ export default class LineHandler extends CursorHandler {
     this.startPoint = new Vector3();
     this.endPoint = new Vector3();
     this.geodesicDirection = new Vector3();
-    this.sphereDirection = new Vector3();
+    // this.sphereDirection = new Vector3();
     this.startDot = new Vertex();
     this.circleQuaternion = new Quaternion();
     // this.normalArrow = new Arrow(1.5, 0xff6600);
@@ -71,31 +70,30 @@ export default class LineHandler extends CursorHandler {
   };
 
   mouseMoved = (event: MouseEvent) => {
-    this.mapCursorToSphere(event);
-    if (!this.isOnSphere) return;
-    if (this.hitObject instanceof Vertex)
-      (this.hitObject?.material as MeshPhongMaterial).emissive.set(0xff0000);
-    if (this.isMouseDown && this.theSphere) {
-      if (!this.isCircleAdded) {
-        this.isCircleAdded = true;
-        this.scene.add(this.geodesic);
-        // this.scene.add(this.startDot);
-      }
-      // Use cross product of the start and current point to
-      // determine the geodesic circle direction
-      // TODO: adjustment required when the sphere is not at the origin
-      this.geodesicDirection.crossVectors(this.startPoint, this.currentPoint);
-      this.theSphere.getWorldDirection(this.sphereDirection);
+    // console.debug("LineHandler::mousemoved");
 
-      this.circleQuaternion.setFromUnitVectors(
-        this.Z_AXIS,
-        this.geodesicDirection.normalize()
-        // this.geodesicDirection.normalize()
-      );
-      this.geodesic.rotation.set(0, 0, 0);
-      this.geodesic.applyQuaternion(this.circleQuaternion);
-    }
-    if (this.isCircleAdded && !this.isOnSphere) {
+    this.mapCursorToSphere(event);
+    if (this.isOnSphere) {
+      if (this.isMouseDown && this.theSphere) {
+        // console.debug("LineHandler::mousedragged");
+        if (!this.isCircleAdded) {
+          this.isCircleAdded = true;
+          this.scene.add(this.geodesic);
+          this.scene.add(this.startDot);
+        }
+        // Use cross product of the start and current point to
+        // determine the geodesic circle direction
+        // TODO: adjustment required when the sphere is not at the origin
+        this.geodesicDirection.crossVectors(this.startPoint, this.currentPoint);
+        this.circleQuaternion.setFromUnitVectors(
+          this.Z_AXIS, // Default circle orientation
+          this.geodesicDirection.normalize() // desired circle orientation
+          // this.geodesicDirection.normalize()
+        );
+        this.geodesic.rotation.set(0, 0, 0);
+        this.geodesic.applyQuaternion(this.circleQuaternion);
+      }
+    } else if (this.isCircleAdded) {
       this.scene.remove(this.geodesic);
       this.scene.remove(this.startDot);
       this.isCircleAdded = false;
@@ -115,10 +113,10 @@ export default class LineHandler extends CursorHandler {
       } else {
         // Click on an open area on the sphere, tthe hit position is measured
         // with respect to the world coordinate frame
-        this.startDot.position.copy(this.currentPoint);
         this.scene.add(this.startDot);
         this.startPoint.copy(this.currentPoint);
       }
+      this.startDot.position.copy(this.currentPoint);
     }
   };
 

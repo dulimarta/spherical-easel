@@ -1,4 +1,4 @@
-import { Vector3, Quaternion, Vector2, Matrix4, Camera, Scene } from "three";
+import { Vector3, Quaternion, Vector2, Camera, Scene } from "three";
 import Arrow from "@/3d-objs/Arrow";
 import CursorHandler from "./CursorHandler";
 import Vertex from "@/3d-objs/Vertex";
@@ -8,7 +8,7 @@ export default class NormalPointHandler extends CursorHandler {
   private normalArrow: Arrow;
   private normalRotation: Quaternion;
   private isNormalAdded: boolean;
-  private sphereCoordFrame: Matrix4;
+  // private sphereCoordFrame: Matrix4;
 
   constructor(args: {
     canvas: HTMLCanvasElement;
@@ -21,7 +21,6 @@ export default class NormalPointHandler extends CursorHandler {
     this.normalArrow = new Arrow(0.6, 0.06, 0xff8000);
     this.normalDirection = new Vector3();
     this.normalRotation = new Quaternion();
-    this.sphereCoordFrame = new Matrix4();
     this.isNormalAdded = false;
     // this.arrow.position.set(0, 1, 0);
     // scene.add(this.arrow);
@@ -30,7 +29,7 @@ export default class NormalPointHandler extends CursorHandler {
 
   mouseMoved = (event: MouseEvent) => {
     this.mapCursorToSphere(event);
-    console.debug("OnSphere?", this.isOnSphere);
+    // console.debug("OnSphere?", this.isOnSphere);
     if (this.isOnSphere) {
       if (!this.isNormalAdded) {
         this.scene.add(this.normalArrow);
