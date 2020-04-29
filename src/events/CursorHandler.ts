@@ -75,19 +75,24 @@ export default abstract class CursorHandler {
       this.hitObject = null;
     }
     this.isOnSphere = false;
+    this.canvas.style.cursor = "default";
     this.currentPoint.set(Number.NaN, Number.NaN, Number.NaN);
     if (intersections.length == 0) {
       return;
     }
     this.isOnSphere = true;
+    this.canvas.style.cursor = "pointer";
     const hitTarget = intersections[0];
     if (hitTarget.object instanceof Vertex) {
       console.debug("Intersect with a vertex", hitTarget.object.name);
       this.currentPoint.copy(hitTarget.object.position);
+      this.theSphere?.localToWorld(this.currentPoint);
+      this.hitObject = hitTarget.object;
     } else if (hitTarget.object instanceof Mesh) {
       this.theSphere = hitTarget.object;
       console.debug("Intersect with sphere", hitTarget.object.name);
       this.currentPoint.copy(hitTarget.point);
+      this.hitObject = hitTarget.object;
     } else {
       /* What to do here? */
       this.isOnSphere = false;

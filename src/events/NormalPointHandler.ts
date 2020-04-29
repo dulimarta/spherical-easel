@@ -52,17 +52,18 @@ export default class NormalPointHandler extends CursorHandler {
     }
   };
 
-  clickIt = () => {
+  mousePressed = () => {
     if (this.isOnSphere && this.theSphere) {
       // The intersection point is returned as a point in the WORLD coordinate
       // To add the point to the sphere we have to transform it using the
       // INVERSE of the sphere coordinate frame matrix
-      this.sphereCoordFrame.getInverse(this.theSphere.matrixWorld);
-      console.debug("Sphere CF (inverse)", this.sphereCoordFrame.elements);
-      this.currentPoint.applyMatrix4(this.sphereCoordFrame);
+      // this.sphereCoordFrame.getInverse(this.theSphere.matrixWorld);
+      // console.debug("Sphere CF (inverse)", this.sphereCoordFrame.elements);
+      // this.currentPoint.applyMatrix4(this.sphereCoordFrame);
 
-      const vtx = new Vertex(0.03);
+      const vtx = new Vertex(0.06);
       vtx.position.copy(this.currentPoint);
+      this.theSphere.worldToLocal(vtx.position);
       console.debug(`Inserted ${vtx.name} at `, vtx.position);
       this.theSphere.add(vtx);
       // this.store.commit("addVertex", vtx);
@@ -71,13 +72,13 @@ export default class NormalPointHandler extends CursorHandler {
 
   activate = () => {
     this.canvas.addEventListener("mousemove", this.mouseMoved);
-    this.canvas.addEventListener("mousedown", this.clickIt);
+    this.canvas.addEventListener("mousedown", this.mousePressed);
     this.rayCaster.layers.disableAll();
     this.rayCaster.layers.enable(SETTINGS.layers.sphere);
   };
 
   deactivate = () => {
     this.canvas.removeEventListener("mousemove", this.mouseMoved);
-    this.canvas.removeEventListener("mousedown", this.clickIt);
+    this.canvas.removeEventListener("mousedown", this.mousePressed);
   };
 }

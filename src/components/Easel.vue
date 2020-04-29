@@ -19,7 +19,8 @@ import { Component, Vue, Watch } from "vue-property-decorator";
 import * as THREE from "three";
 // import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import { TransformControls } from "three/examples/jsm/controls/TransformControls";
-import Axes from "../3d-objs/Axes";
+import Axes from "@/3d-objs/Axes";
+import Vertex from "@/3d-objs/Vertex";
 import CursorHandler from "@/events/CursorHandler";
 import NormalPointHandler from "@/events/NormalPointHandler";
 import LineHandler from "@/events/LineHandler";
@@ -90,6 +91,17 @@ export default class Easel extends Vue {
         opacity: SETTINGS.sphere.opacity
       })
     );
+    // Add random vertices (for development only)
+
+    if (process.env.NODE_ENV === "development") {
+      for (let k = 0; k < 3; k++) {
+        const v = new Vertex(0.04);
+        v.position.set(Math.random(), Math.random(), Math.random());
+        v.position.normalize();
+        v.position.multiplyScalar(SETTINGS.sphere.radius);
+        this.sphere.add(v);
+      }
+    }
     this.sphere.name = "MainSphere";
     this.sphere.layers.enable(SETTINGS.layers.sphere);
     this.$store.commit("setSphere", this.sphere);
@@ -110,6 +122,8 @@ export default class Easel extends Vue {
     this.controls.setSize(2);
     this.scene.add(this.controls);
     window.addEventListener("resize", this.onWindowResized);
+    window.addEventListener('keypress', this.keyPressed);
+    this.renderer.domElement.focus();
   }
 
   created() {
@@ -134,6 +148,17 @@ export default class Easel extends Vue {
     requestAnimationFrame(() => this.renderIt());
   }
 
+  keyPressed = (event: KeyboardEvent) => {
+    console.debug("Key press is ", event.keyCode, event);
+    const sphere = this.scene.getObjectByName("MainSphere");
+    switch (event.code) {
+      case "KeyR":
+        sphere?.rotation.set(0, 0, 0);
+        break;
+      default:
+    }
+
+  }
   renderIt() {
     this.renderer && this.renderer.render(this.scene, this.camera);
     requestAnimationFrame(() => this.renderIt());
@@ -144,9 +169,6 @@ export default class Easel extends Vue {
     if (!el) return;
     if (el) {
       const size = Math.min(el.clientWidth, 640);
-      console.log(`Window resize ${el.clientWidth}x${el.clientHeight}`);
-      // this.renderer.domElement.width = size;
-      // this.renderer.domElement.height = size;
       this.camera.aspect = 1;
       this.camera.updateProjectionMatrix();
       this.renderer.setSize(size, size);

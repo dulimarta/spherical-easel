@@ -20,6 +20,10 @@
             <v-icon>mdi-vector-circle-variant</v-icon>
           </v-btn>
         </v-btn-toggle>
+        <span>Key Shortcut</span>
+        <ul>
+          <li>"R": reset sphere orientation</li>
+        </ul>
       </v-container>
     </v-navigation-drawer>
     <v-app-bar app color="primary" dark clipped-left>
