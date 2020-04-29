@@ -32,7 +32,7 @@
           contain min-width="100"
           src="https://cdn.vuetifyjs.com/images/logos/vuetify-name-dark.png"
           width="100" /-->
-        Spherical Geometry
+        Spherical Easel 2.0
       </div>
 
       <v-spacer></v-spacer>
