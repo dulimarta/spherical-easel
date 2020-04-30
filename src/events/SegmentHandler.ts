@@ -62,6 +62,8 @@ export default class SegmentHandler extends LineHandler {
 
       // Adjust the arc angle of the unit circle
       UNIT_CIRCLE.aEndAngle = Math.abs(segmentAngle);
+      // To prevent potential memory leak: remove the current geometry object ()
+      this.geodesic.geometry.dispose();
       this.geodesic.geometry.setFromPoints(UNIT_CIRCLE.getPoints(60));
 
       // Determine the direction of the geodesic circle

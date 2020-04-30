@@ -4,8 +4,11 @@
       <v-row align="center">
         <span class="body-1 ml-2">{{ editHint }}</span>
         <v-spacer />
-        <v-switch v-show="editMode === 'none'" v-model="showSphereControl"
-          label="Sphere Control">
+        <v-switch
+          v-show="editMode === 'none'"
+          v-model="showSphereControl"
+          label="Sphere Control"
+        >
         </v-switch>
       </v-row>
       <v-row justify="center" ref="content" id="content"> </v-row>
@@ -26,6 +29,7 @@ import NormalPointHandler from "@/events/NormalPointHandler";
 import LineHandler from "@/events/LineHandler";
 import SegmentHandler from "@/events/SegmentHandler";
 import RingHandler from "@/events/RingHandler";
+import MoveHandler from "@/events/MoveHandler";
 import SETTINGS from "@/global-settings";
 import { AppState } from "../store";
 
@@ -38,6 +42,7 @@ export default class Easel extends Vue {
   private normalTracker: NormalPointHandler;
   private lineTracker: LineHandler;
   private segmentTracker: SegmentHandler;
+  private moveTracker: MoveHandler;
   private ringTracker: RingHandler;
   private controls: TransformControls;
   private sphere: THREE.Mesh;
@@ -79,10 +84,11 @@ export default class Easel extends Vue {
       camera: this.camera,
       scene: this.scene
     });
-    this.controls = new TransformControls(
-      this.camera,
-      this.renderer.domElement
-    );
+    this.moveTracker = new MoveHandler({
+      canvas: this.renderer.domElement,
+      camera: this.camera,
+      scene: this.scene
+    });
     this.sphere = new THREE.Mesh(
       new THREE.SphereGeometry(SETTINGS.sphere.radius, 24, 28),
       new THREE.MeshPhongMaterial({
@@ -92,7 +98,6 @@ export default class Easel extends Vue {
       })
     );
     // Add random vertices (for development only)
-
     if (process.env.NODE_ENV === "development") {
       for (let k = 0; k < 3; k++) {
         const v = new Vertex(0.04);
@@ -106,27 +111,30 @@ export default class Easel extends Vue {
     this.sphere.layers.enable(SETTINGS.layers.sphere);
     this.$store.commit("setSphere", this.sphere);
 
-    this.sphere.add(new Axes(1.5));
+    this.sphere.add(new Axes(1.5, 0.05));
     this.scene.add(this.sphere);
     console.debug("Constructor: sphere ID", this.sphere.id);
-    this.camera.position.set(1.5, 1.5, 3);
+    this.camera.position.set(1.25, 1.25, 2);
     this.camera.lookAt(0, 0, 0);
-    const axesHelper = new THREE.AxesHelper(SETTINGS.sphere.radius * 1.25);
+    // const axesHelper = new THREE.AxesHelper(SETTINGS.sphere.radius * 1.25);
     // axesHelper.layers.disableAll(); // exclude axeshelper from being searched by Raycaster
-    this.scene.add(axesHelper);
+    // this.scene.add(axesHelper);
     const pointLight = new THREE.PointLight(0xffffff, 1, 100);
     pointLight.position.set(0, 5, 10);
     this.scene.add(pointLight);
+    this.controls = new TransformControls(
+      this.camera,
+      this.renderer.domElement
+    );
     this.controls.setMode("rotate");
-    this.controls.setSpace("global");
-    this.controls.setSize(2);
-    this.scene.add(this.controls);
+    this.controls.setSpace("global"); // select between "global" or "local"
+    this.controls.setSize(3);
     window.addEventListener("resize", this.onWindowResized);
-    window.addEventListener('keypress', this.keyPressed);
-    this.renderer.domElement.focus();
+    window.addEventListener("keypress", this.keyPressed);
   }
 
   created() {
+    // VueJS lifecycle function
     this.storeWatcher = this.$store.watch(
       (state: AppState) => state.editMode,
       this.switchEditMode
@@ -134,10 +142,12 @@ export default class Easel extends Vue {
   }
 
   destroyed() {
+    // VueJS lifecycle function
     this.storeWatcher && this.storeWatcher();
   }
 
   mounted() {
+    // VieJS lifecycle function
     console.debug("Mounted");
     // debugger; // eslint-disable-line
     // this.renderer.setSize(window.innerWidth, window.innerHeight);
@@ -145,7 +155,7 @@ export default class Easel extends Vue {
     el.appendChild(this.renderer.domElement);
     // this.controls.attach(this.sphere);
     this.onWindowResized();
-    requestAnimationFrame(() => this.renderIt());
+    requestAnimationFrame(this.renderIt);
   }
 
   keyPressed = (event: KeyboardEvent) => {
@@ -157,11 +167,11 @@ export default class Easel extends Vue {
         break;
       default:
     }
+  };
 
-  }
   renderIt() {
     this.renderer && this.renderer.render(this.scene, this.camera);
-    requestAnimationFrame(() => this.renderIt());
+    requestAnimationFrame(this.renderIt);
   }
 
   onWindowResized = () => {
@@ -175,24 +185,32 @@ export default class Easel extends Vue {
     }
   };
 
+  // VueJS data watcher function
   @Watch("showSphereControl")
   onSphereControlChanged(value: boolean /*, oldValue: boolean*/) {
     if (value) {
+      this.scene.add(this.controls);
       this.controls.attach(this.sphere);
     } else {
       this.controls.detach();
+      this.scene.remove(this.controls);
     }
   }
 
   switchEditMode(mode: string) {
     this.editMode = mode;
-    this.currentHandler?.deactivate();
+    this.currentHandler?.deactivate(); // Unrefister the current mouse handler
     switch (mode) {
       case "none":
-        if (this.showSphereControl) this.controls.attach(this.sphere);
+        // if (this.showSphereControl) this.controls.attach(this.sphere);
         this.controls.removeEventListener("change", this.renderIt);
         this.currentHandler = null;
         this.editHint = "Select mode...";
+        break;
+      case "move":
+        this.controls.detach();
+        this.currentHandler = this.moveTracker;
+        this.editHint = "Drag object to move it";
         break;
       case "point":
         this.controls.detach();
@@ -212,12 +230,13 @@ export default class Easel extends Vue {
       case "circle":
         this.controls.detach();
         this.currentHandler = this.ringTracker;
-        this.editHint = "Start with the center and drag to create a ring";
+        this.editHint =
+          "Start with the circle center and drag to create a ring";
         break;
       default:
         this.currentHandler = null;
     }
-    this.currentHandler?.activate();
+    this.currentHandler?.activate(); // Register the new mouse handler
   }
 }
 </script>

@@ -54,16 +54,12 @@ export default class NormalPointHandler extends CursorHandler {
   mousePressed = () => {
     if (this.isOnSphere && this.theSphere) {
       // The intersection point is returned as a point in the WORLD coordinate
-      // To add the point to the sphere we have to transform it using the
-      // INVERSE of the sphere coordinate frame matrix
-      // this.sphereCoordFrame.getInverse(this.theSphere.matrixWorld);
-      // console.debug("Sphere CF (inverse)", this.sphereCoordFrame.elements);
-      // this.currentPoint.applyMatrix4(this.sphereCoordFrame);
+      // But when a new vertex is added to the sphere, we have to convert
+      // for the world coordinate frame to the sphere coordinate frame
 
-      const vtx = new Vertex(0.06);
+      const vtx = new Vertex(0.03);
       vtx.position.copy(this.currentPoint);
       this.theSphere.worldToLocal(vtx.position);
-      console.debug(`Inserted ${vtx.name} at `, vtx.position);
       this.theSphere.add(vtx);
       // this.store.commit("addVertex", vtx);
     }
