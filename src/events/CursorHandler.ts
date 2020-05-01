@@ -1,19 +1,19 @@
 import {
   Camera,
-  // Intersection,
   Mesh,
   Raycaster,
   Scene,
   Vector2,
   Vector3,
   MeshPhongMaterial,
-  Layers
+  Layers,
+  TorusBufferGeometry
 } from "three";
-// import SETTINGS from "@/global-settings";
 import AppStore from "@/store";
 import Vertex from "@/3d-objs/Vertex";
-
+import SETTINGS from "@/global-settings";
 const RAYCASTER = new Raycaster();
+
 export default abstract class CursorHandler {
   protected readonly X_AXIS = new Vector3(1, 0, 0);
   protected readonly Y_AXIS = new Vector3(0, 1, 0);
@@ -29,8 +29,8 @@ export default abstract class CursorHandler {
   protected hitObject: Mesh | null = null;
   protected isOnSphere: boolean;
   protected theSphere: Mesh | null = null;
+  protected geodesicRing: Mesh;
 
-  // private intersectionPoint: Vector3;
   constructor({
     canvas,
     camera,
@@ -44,11 +44,13 @@ export default abstract class CursorHandler {
     this.camera = camera;
     this.scene = scene;
     this.rayCaster = RAYCASTER;
-    // this.rayCaster.layers.enable(SETTINGS.layers.sphere);
-    // this.rayCaster.layers.set(1);
     this.mouse = new Vector2();
     this.currentPoint = new Vector3();
     this.isOnSphere = false;
+    this.geodesicRing = new Mesh(
+      new TorusBufferGeometry(SETTINGS.sphere.radius, 0.01, 6, 60),
+      new MeshPhongMaterial({ color: 0xffffff })
+    );
   }
 
   toNormalizeScreenCoord = (event: MouseEvent) => {

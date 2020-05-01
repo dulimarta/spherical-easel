@@ -1,34 +1,17 @@
-import {
-  Vector3,
-  EllipseCurve,
-  BufferGeometry,
-  Line,
-  LineBasicMaterial,
-  Matrix4,
-  Quaternion,
-  Camera,
-  Scene
-} from "three";
+import { Vector3, Matrix4, Quaternion, Camera, Scene } from "three";
 import CursorHandler from "./CursorHandler";
 // import Arrow from "@/3d-objs/Arrow";
 import Vertex from "@/3d-objs/Vertex";
 import SETTINGS from "@/global-settings";
 
-// This circle is on the XY-plane
-const UNIT_CIRCLE = new EllipseCurve(0, 0, 1, 1, 0, 2 * Math.PI, false, 0);
-
 export default class LineHandler extends CursorHandler {
   protected startPoint: Vector3;
   protected endPoint: Vector3;
   protected geodesicDirection: Vector3;
-  // private sphereDirection: Vector3;
-  // private currentSurfacePoint: Vector3;
   protected circleQuaternion: Quaternion;
   // private normalArrow: Arrow;
   protected isMouseDown: boolean;
-  // private isOnSphere: boolean;
   protected isCircleAdded: boolean;
-  protected geodesic: Line;
   protected startDot: Vertex;
   constructor({
     canvas,
@@ -43,17 +26,11 @@ export default class LineHandler extends CursorHandler {
     this.startPoint = new Vector3();
     this.endPoint = new Vector3();
     this.geodesicDirection = new Vector3();
-    // this.sphereDirection = new Vector3();
     this.startDot = new Vertex();
     this.circleQuaternion = new Quaternion();
     // this.normalArrow = new Arrow(1.5, 0xff6600);
     this.isMouseDown = false;
     this.isCircleAdded = false;
-    this.geodesic = new Line(
-      // Subdivide the circle into 60 points
-      new BufferGeometry().setFromPoints(UNIT_CIRCLE.getPoints(60)),
-      new LineBasicMaterial({ color: 0xff0000 })
-    );
   }
 
   activate = () => {
@@ -81,10 +58,10 @@ export default class LineHandler extends CursorHandler {
     const desiredY = new Vector3().crossVectors(desiredZ, desiredX);
     const desiredRot = new Matrix4().makeBasis(desiredX, desiredY, desiredZ);
 
-    this.geodesic.rotation.set(0, 0, 0);
+    this.geodesicRing.rotation.set(0, 0, 0);
 
     this.circleQuaternion.setFromRotationMatrix(desiredRot);
-    this.geodesic.applyQuaternion(this.circleQuaternion);
+    this.geodesicRing.applyQuaternion(this.circleQuaternion);
   };
 
   mouseMoved = (event: MouseEvent) => {
@@ -96,13 +73,13 @@ export default class LineHandler extends CursorHandler {
         // console.debug("LineHandler::mousedragged");
         if (!this.isCircleAdded) {
           this.isCircleAdded = true;
-          this.scene.add(this.geodesic);
+          this.scene.add(this.geodesicRing);
           this.scene.add(this.startDot);
         }
         this.tiltGeodesicPlane();
       }
     } else if (this.isCircleAdded) {
-      this.scene.remove(this.geodesic);
+      this.scene.remove(this.geodesicRing);
       this.scene.remove(this.startDot);
       this.isCircleAdded = false;
     }
@@ -132,7 +109,7 @@ export default class LineHandler extends CursorHandler {
     this.isMouseDown = false;
     if (this.isOnSphere) {
       // Record the second point of the geodesic circle
-      this.scene.remove(this.geodesic);
+      this.scene.remove(this.geodesicRing);
       this.scene.remove(this.startDot);
       this.isCircleAdded = false;
       this.endPoint.copy(this.currentPoint);
