@@ -3,10 +3,11 @@
     <!--  Use the "cliopped" attribute to keep the navigation drawer 
     below the app toolbar-->
     <v-navigation-drawer app clipped permanent color="accent" width="320">
-      <v-container class="pa-3">
+      <!-- pa-4: padding all 16px -->
+      <v-container class="pa-4">
         <div class="body-1 font-weight-bold">Basic Tools</div>
-        <v-btn-toggle v-model="editMode" @change="switchEditMode"
-          class="mr-2">
+        <!-- mr-2: margin right 8 px -->
+        <v-btn-toggle v-model="editMode" @change="switchEditMode" class="mr-2">
           <v-btn value="none">
             <v-icon>mdi-cursor-pointer</v-icon>
           </v-btn>
@@ -14,16 +15,16 @@
             <v-icon>mdi-cursor-move</v-icon>
           </v-btn>
           <v-btn value="point">
-            <v-icon dense>mdi-vector-point</v-icon>
+            <v-icon>mdi-vector-point</v-icon>
           </v-btn>
           <v-btn value="line">
-            <v-icon dense>mdi-vector-line</v-icon>
+            <v-icon>mdi-vector-line</v-icon>
           </v-btn>
           <v-btn value="segment">
-            <v-icon dense>mdi-vector-radius</v-icon>
+            <v-icon>mdi-vector-radius</v-icon>
           </v-btn>
           <v-btn value="circle">
-            <v-icon dense>mdi-vector-circle-variant</v-icon>
+            <v-icon>mdi-vector-circle-variant</v-icon>
           </v-btn>
         </v-btn-toggle>
         <div class="body-1 font-weight-bold">Key Shortcut</div>
@@ -36,9 +37,14 @@
     the "clipped" attr of the nav drawer -->
     <v-app-bar app color="primary" dark clipped-left>
       <div class="d-flex align-center">
-        <v-img alt="Vuetify Logo" class="shrink mr-2" contain
+        <v-img
+          alt="Vuetify Logo"
+          class="shrink mr-2"
+          contain
           src="https://cdn.vuetifyjs.com/images/logos/vuetify-logo-dark.png"
-          transition="scale-transition" width="40" />
+          transition="scale-transition"
+          width="40"
+        />
 
         <!--v-img alt="Vuetify Name" class="shrink mt-1 hidden-sm-and-down"
           contain min-width="100"
@@ -48,7 +54,6 @@
       </div>
 
       <v-spacer></v-spacer>
-
     </v-app-bar>
 
     <v-content>
@@ -58,10 +63,10 @@
 </template>
 
 <script lang="ts">
-import Vue from 'vue';
-import Easel from "./components/Easel.vue"
+import Vue from "vue";
+import Easel from "./components/Easel.vue";
 export default Vue.extend({
-  name: 'App',
+  name: "App",
 
   components: {
     Easel
@@ -73,7 +78,7 @@ export default Vue.extend({
   }),
   methods: {
     switchEditMode() {
-      this.$store.commit('setEditMode', this.editMode);
+      this.$store.commit("setEditMode", this.editMode);
     }
   }
 });

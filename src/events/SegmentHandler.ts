@@ -47,7 +47,6 @@ export default class SegmentHandler extends LineHandler {
   };
 
   mouseMoved = (event: MouseEvent) => {
-    // console.debug("SegmentHandler::mousemoved");
     this.mapCursorToSphere(event);
     if (this.isOnSphere) {
       if (this.isMouseDown && this.theSphere) {
@@ -62,36 +61,13 @@ export default class SegmentHandler extends LineHandler {
 
       // Adjust the arc angle of the unit circle
       UNIT_CIRCLE.aEndAngle = Math.abs(segmentAngle);
+
       // To prevent potential memory leak: remove the current geometry object ()
       this.geodesic.geometry.dispose();
       this.geodesic.geometry.setFromPoints(UNIT_CIRCLE.getPoints(60));
 
-      // Determine the direction of the geodesic circle
-      this.geodesicDirection.crossVectors(this.startPoint, this.currentPoint);
-      this.geodesicDirection.normalize();
-
-      this.geodesic.rotation.set(0, 0, 0);
-
-      // Determine the quaternion to rotate the geodesic circle X-axis
-      // to the starting point of the arc segment
-
-      this.tmpVector.copy(this.startPoint).normalize();
-      this.circleQuaternion.setFromUnitVectors(this.X_AXIS, this.tmpVector);
-      this.geodesic.applyQuaternion(this.circleQuaternion);
-
-      // Determine the quaternion to align the Z axis of the geodesic circle
-      this.geodesic.getWorldDirection(this.tmpVector).normalize();
-      this.circleQuaternion.setFromUnitVectors(
-        this.tmpVector,
-        this.geodesicDirection
-      );
-
-      // console.debug(
-      //   "Rotate around red dot",
-      //   MathUtils.radToDeg(rotAngle).toFixed(3)
-      // );
-
-      this.geodesic.applyQuaternion(this.circleQuaternion);
+      // Reuse the function in the parent class
+      this.tiltGeodesicPlane();
     } else if (this.isCircleAdded) {
       this.scene.remove(this.geodesic);
       this.scene.remove(this.startDot);

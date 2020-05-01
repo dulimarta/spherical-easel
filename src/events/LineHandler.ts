@@ -4,6 +4,7 @@ import {
   BufferGeometry,
   Line,
   LineBasicMaterial,
+  Matrix4,
   Quaternion,
   Camera,
   Scene
@@ -54,6 +55,7 @@ export default class LineHandler extends CursorHandler {
       new LineBasicMaterial({ color: 0xff0000 })
     );
   }
+
   activate = () => {
     this.canvas.addEventListener("mousemove", this.mouseMoved);
     this.canvas.addEventListener("mousedown", this.mousePressed);
@@ -69,6 +71,22 @@ export default class LineHandler extends CursorHandler {
     this.canvas.removeEventListener("mouseup", this.mouseReleased);
   };
 
+  tiltGeodesicPlane = () => {
+    // Using the triad method to determine the rotation matrix
+    // https://en.wikipedia.org/wiki/Triad_method
+    const desiredZ = new Vector3()
+      .crossVectors(this.startPoint, this.currentPoint)
+      .normalize();
+    const desiredX = new Vector3().copy(this.startPoint).normalize();
+    const desiredY = new Vector3().crossVectors(desiredZ, desiredX);
+    const desiredRot = new Matrix4().makeBasis(desiredX, desiredY, desiredZ);
+
+    this.geodesic.rotation.set(0, 0, 0);
+
+    this.circleQuaternion.setFromRotationMatrix(desiredRot);
+    this.geodesic.applyQuaternion(this.circleQuaternion);
+  };
+
   mouseMoved = (event: MouseEvent) => {
     // console.debug("LineHandler::mousemoved");
 
@@ -81,17 +99,7 @@ export default class LineHandler extends CursorHandler {
           this.scene.add(this.geodesic);
           this.scene.add(this.startDot);
         }
-        // Use cross product of the start and current point to
-        // determine the geodesic circle direction
-        // TODO: adjustment required when the sphere is not at the origin
-        this.geodesicDirection.crossVectors(this.startPoint, this.currentPoint);
-        this.circleQuaternion.setFromUnitVectors(
-          this.Z_AXIS, // Default circle orientation
-          this.geodesicDirection.normalize() // desired circle orientation
-          // this.geodesicDirection.normalize()
-        );
-        this.geodesic.rotation.set(0, 0, 0);
-        this.geodesic.applyQuaternion(this.circleQuaternion);
+        this.tiltGeodesicPlane();
       }
     } else if (this.isCircleAdded) {
       this.scene.remove(this.geodesic);

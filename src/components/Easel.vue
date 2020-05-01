@@ -2,6 +2,7 @@
   <div>
     <v-container>
       <v-row align="center">
+        <!--- ml-2: margin left 8 px -->
         <span class="body-1 ml-2">{{ editHint }}</span>
         <v-spacer />
         <v-switch
@@ -199,7 +200,7 @@ export default class Easel extends Vue {
 
   switchEditMode(mode: string) {
     this.editMode = mode;
-    this.currentHandler?.deactivate(); // Unrefister the current mouse handler
+    this.currentHandler?.deactivate(); // Unregister the current mouse handler
     switch (mode) {
       case "none":
         // if (this.showSphereControl) this.controls.attach(this.sphere);
