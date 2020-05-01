@@ -90,7 +90,9 @@ export default abstract class CursorHandler {
       this.currentPoint.copy(hitTarget.object.position);
       this.theSphere?.localToWorld(this.currentPoint);
       this.hitObject = hitTarget.object;
-      (this.hitObject?.material as MeshPhongMaterial).emissive.set(0xff0000);
+      (this.hitObject?.material as MeshPhongMaterial).emissive.set(
+        SETTINGS.vertex.glowColor
+      );
     } else if (hitTarget.object instanceof Mesh) {
       this.theSphere = hitTarget.object;
       // console.debug("Intersect with sphere", hitTarget.object.name);

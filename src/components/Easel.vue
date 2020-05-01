@@ -5,11 +5,8 @@
         <!--- ml-2: margin left 8 px -->
         <span class="body-1 ml-2">{{ editHint }}</span>
         <v-spacer />
-        <v-switch
-          v-show="editMode === 'none'"
-          v-model="showSphereControl"
-          label="Sphere Control"
-        >
+        <v-switch v-show="editMode === 'none'" v-model="showSphereControl"
+          label="Sphere Control">
         </v-switch>
       </v-row>
       <v-row justify="center" ref="content" id="content"> </v-row>
@@ -33,6 +30,7 @@ import RingHandler from "@/events/RingHandler";
 import MoveHandler from "@/events/MoveHandler";
 import SETTINGS from "@/global-settings";
 import { AppState } from "../store";
+import { LineBasicMaterial, ArcCurve, BufferGeometry, Quaternion } from "three";
 
 @Component
 export default class Easel extends Vue {
@@ -57,6 +55,7 @@ export default class Easel extends Vue {
     this.scene = new THREE.Scene();
     this.renderer = new THREE.WebGLRenderer();
     this.renderer.setPixelRatio(window.devicePixelRatio);
+    this.renderer.setClearColor(0xffffff);
     this.camera = new THREE.PerspectiveCamera(
       75,
       window.innerWidth / window.innerHeight,
@@ -90,29 +89,25 @@ export default class Easel extends Vue {
       camera: this.camera,
       scene: this.scene
     });
+    const sphereGeometry = new THREE.SphereGeometry(
+      SETTINGS.sphere.radius,
+      30,
+      60
+    );
+
     this.sphere = new THREE.Mesh(
-      new THREE.SphereGeometry(SETTINGS.sphere.radius, 24, 28),
-      new THREE.MeshPhongMaterial({
+      sphereGeometry,
+      new THREE.MeshBasicMaterial({
         color: SETTINGS.sphere.color,
         transparent: true,
         opacity: SETTINGS.sphere.opacity
       })
     );
-    // Add random vertices (for development only)
-    if (process.env.NODE_ENV === "development") {
-      for (let k = 0; k < 3; k++) {
-        const v = new Vertex(0.04);
-        v.position.set(Math.random(), Math.random(), Math.random());
-        v.position.normalize();
-        v.position.multiplyScalar(SETTINGS.sphere.radius);
-        this.sphere.add(v);
-      }
-    }
+
     this.sphere.name = "MainSphere";
     this.sphere.layers.enable(SETTINGS.layers.sphere);
     this.$store.commit("setSphere", this.sphere);
 
-    this.sphere.add(new Axes(1.5, 0.05));
     this.scene.add(this.sphere);
     console.debug("Constructor: sphere ID", this.sphere.id);
     this.camera.position.set(1.25, 1.25, 2);
@@ -130,6 +125,31 @@ export default class Easel extends Vue {
     this.controls.setMode("rotate");
     this.controls.setSpace("global"); // select between "global" or "local"
     this.controls.setSize(3);
+
+    // Add a circle silhouette to mark sphere boundary
+    const circleBorder = new THREE.Mesh(
+      new THREE.TorusBufferGeometry(SETTINGS.sphere.radius * 1.08, 0.01, 6, 60),
+      new LineBasicMaterial({ color: 0x000000 })
+    );
+    const q = new Quaternion();
+
+    // Transform the circle so it stays parallel to the camera view plane.
+    this.camera.getWorldQuaternion(q);
+    circleBorder.applyQuaternion(q);
+    this.scene.add(circleBorder);
+    // Add random vertices (for development only)
+    if (process.env.NODE_ENV === "development") {
+      // this.sphere.add(new Axes(1.5, 0.05));
+
+      for (let k = 0; k < 3; k++) {
+        const v = new Vertex(SETTINGS.vertex.size);
+        v.position.set(Math.random(), Math.random(), Math.random());
+        v.position.normalize();
+        v.position.multiplyScalar(SETTINGS.sphere.radius);
+        this.sphere.add(v);
+      }
+    }
+
     window.addEventListener("resize", this.onWindowResized);
     window.addEventListener("keypress", this.keyPressed);
   }
@@ -241,4 +261,9 @@ export default class Easel extends Vue {
   }
 }
 </script>
-<style scoped></style>
+<style scoped>
+#content {
+  border: 1px solid black;
+  margin: 8px;
+}
+</style>

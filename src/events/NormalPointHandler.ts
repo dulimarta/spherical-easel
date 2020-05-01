@@ -18,7 +18,7 @@ export default class NormalPointHandler extends CursorHandler {
     super(args);
     this.mouse = new Vector2();
     // this.currentPoint = new Vector3(); // Cursor world coordinate position on the sphere
-    this.normalArrow = new Arrow(0.6, 0.06, 0xff8000);
+    this.normalArrow = new Arrow(0.3, 0.03, 0xff8000);
     this.normalDirection = new Vector3();
     this.normalRotation = new Quaternion();
     this.isNormalAdded = false;
