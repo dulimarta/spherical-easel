@@ -3,6 +3,7 @@ import Arrow from "@/3d-objs/Arrow";
 import CursorHandler from "./CursorHandler";
 import Vertex from "@/3d-objs/Vertex";
 import SETTINGS from "@/global-settings";
+
 export default class NormalPointHandler extends CursorHandler {
   private normalDirection: Vector3;
   private normalArrow: Arrow;
@@ -57,11 +58,11 @@ export default class NormalPointHandler extends CursorHandler {
       // But when a new vertex is added to the sphere, we have to convert
       // for the world coordinate frame to the sphere coordinate frame
 
-      const vtx = new Vertex(0.03);
+      const vtx = new Vertex();
       vtx.position.copy(this.currentPoint);
       this.theSphere.worldToLocal(vtx.position);
       this.theSphere.add(vtx);
-      // this.store.commit("addVertex", vtx);
+      this.store.commit("addVertex", vtx);
     }
   };
 

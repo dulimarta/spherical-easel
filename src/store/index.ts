@@ -6,12 +6,17 @@ Vue.use(Vuex);
 export interface AppState {
   sphere: Mesh | null;
   editMode: string;
+  vertices: VertexInfo[];
 }
-
+export interface VertexInfo {
+  id: number;
+  name: string;
+}
 export default new Vuex.Store({
   state: {
     sphere: null,
-    editMode: "none"
+    editMode: "line",
+    vertices: []
   } as AppState,
   mutations: {
     setSphere(state, sph: Mesh) {
@@ -21,7 +26,7 @@ export default new Vuex.Store({
       state.editMode = mode;
     },
     addVertex(state, vertex: Mesh) {
-      state.sphere?.add(vertex);
+      state.vertices.push({ id: vertex.id, name: vertex.name });
     }
   },
   actions: {},

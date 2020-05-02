@@ -64,7 +64,7 @@
 
 <script lang="ts">
 import Vue from "vue";
-import Easel from "./components/Easel.vue";
+import Easel from "@/components/Easel.vue";
 export default Vue.extend({
   name: "App",
 

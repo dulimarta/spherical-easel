@@ -1,26 +1,38 @@
 <template>
   <div>
     <v-container>
-      <v-row align="center">
-        <!--- ml-2: margin left 8 px -->
-        <span class="body-1 ml-2">{{ editHint }}</span>
-        <v-spacer />
-        <v-switch v-show="editMode === 'none'" v-model="showSphereControl"
-          label="Sphere Control">
-        </v-switch>
+      <v-row>
+        <v-col cols="9">
+          <!--- ml-2: margin left 8 px -->
+          <v-row>
+            <span class="body-1 ml-2">{{ editHint }}</span>
+            <v-spacer />
+            <v-switch
+              v-show="editMode === 'none'"
+              class="mr-4"
+              v-model="showSphereControl"
+              label="Sphere Control"
+            >
+            </v-switch>
+          </v-row>
+          <div justify="center" ref="content" id="content"></div>
+        </v-col>
+        <v-col cols="3">
+          <ObjectTree></ObjectTree>
+        </v-col>
       </v-row>
-      <v-row justify="center" ref="content" id="content"> </v-row>
     </v-container>
   </div>
 </template>
 
 <script lang="ts">
 /* eslint-disable no-debugger */
-import { Component, Vue, Watch } from "vue-property-decorator";
+import { Vue, Watch } from "vue-property-decorator";
+import Component from "vue-class-component";
 import * as THREE from "three";
 // import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import { TransformControls } from "three/examples/jsm/controls/TransformControls";
-import Axes from "@/3d-objs/Axes";
+// import Axes from "@/3d-objs/Axes";
 import Vertex from "@/3d-objs/Vertex";
 import CursorHandler from "@/events/CursorHandler";
 import NormalPointHandler from "@/events/NormalPointHandler";
@@ -29,10 +41,10 @@ import SegmentHandler from "@/events/SegmentHandler";
 import RingHandler from "@/events/RingHandler";
 import MoveHandler from "@/events/MoveHandler";
 import SETTINGS from "@/global-settings";
-import { AppState } from "../store";
-import { LineBasicMaterial, ArcCurve, BufferGeometry, Quaternion } from "three";
+import { State, Mutation } from "vuex-class";
+import ObjectTree from "./ObjectTree.vue";
 
-@Component
+@Component({ components: { ObjectTree } })
 export default class Easel extends Vue {
   private renderer: THREE.WebGLRenderer;
   private scene: THREE.Scene;
@@ -46,9 +58,15 @@ export default class Easel extends Vue {
   private controls: TransformControls;
   private sphere: THREE.Mesh;
   private editHint = "Select mode...";
-  private editMode = "none";
   private showSphereControl = false;
-  private storeWatcher: (() => void) | null = null;
+  private sphericalObjects = [];
+
+  // Declarations linked to Vuex store
+  @State("editMode")
+  private editMode!: string;
+
+  @Mutation
+  private addVertex!: (v: Vertex) => void;
 
   constructor() {
     super();
@@ -106,7 +124,7 @@ export default class Easel extends Vue {
 
     this.sphere.name = "MainSphere";
     this.sphere.layers.enable(SETTINGS.layers.sphere);
-    this.$store.commit("setSphere", this.sphere);
+    // this.$store.commit("setSphere", this.sphere);
 
     this.scene.add(this.sphere);
     console.debug("Constructor: sphere ID", this.sphere.id);
@@ -129,9 +147,9 @@ export default class Easel extends Vue {
     // Add a circle silhouette to mark sphere boundary
     const circleBorder = new THREE.Mesh(
       new THREE.TorusBufferGeometry(SETTINGS.sphere.radius * 1.08, 0.01, 6, 60),
-      new LineBasicMaterial({ color: 0x000000 })
+      new THREE.LineBasicMaterial({ color: 0x000000 })
     );
-    const q = new Quaternion();
+    const q = new THREE.Quaternion();
 
     // Transform the circle so it stays parallel to the camera view plane.
     this.camera.getWorldQuaternion(q);
@@ -146,25 +164,13 @@ export default class Easel extends Vue {
         v.position.set(Math.random(), Math.random(), Math.random());
         v.position.normalize();
         v.position.multiplyScalar(SETTINGS.sphere.radius);
+        this.addVertex(v);
         this.sphere.add(v);
       }
     }
 
     window.addEventListener("resize", this.onWindowResized);
     window.addEventListener("keypress", this.keyPressed);
-  }
-
-  created() {
-    // VueJS lifecycle function
-    this.storeWatcher = this.$store.watch(
-      (state: AppState) => state.editMode,
-      this.switchEditMode
-    );
-  }
-
-  destroyed() {
-    // VueJS lifecycle function
-    this.storeWatcher && this.storeWatcher();
   }
 
   mounted() {
@@ -218,8 +224,8 @@ export default class Easel extends Vue {
     }
   }
 
+  @Watch("editMode")
   switchEditMode(mode: string) {
-    this.editMode = mode;
     this.currentHandler?.deactivate(); // Unregister the current mouse handler
     switch (mode) {
       case "none":
@@ -264,6 +270,6 @@ export default class Easel extends Vue {
 <style scoped>
 #content {
   border: 1px solid black;
-  margin: 8px;
+  margin: 4px;
 }
 </style>
