@@ -7,12 +7,8 @@
           <v-row>
             <span class="body-1 ml-2">{{ editHint }}</span>
             <v-spacer />
-            <v-switch
-              v-show="editMode === 'none'"
-              class="mr-4"
-              v-model="showSphereControl"
-              label="Sphere Control"
-            >
+            <v-switch v-show="editMode === 'none'" class="mr-4"
+              v-model="showSphereControl" label="Sphere Control">
             </v-switch>
           </v-row>
           <div justify="center" ref="content" id="content"></div>

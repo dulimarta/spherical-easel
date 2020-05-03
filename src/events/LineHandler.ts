@@ -13,6 +13,8 @@ export default class LineHandler extends CursorHandler {
   protected isMouseDown: boolean;
   protected isCircleAdded: boolean;
   protected startDot: Vertex;
+  private startVertex: Vertex | null = null;
+  private endVertex: Vertex | null = null;
   constructor({
     canvas,
     camera,
@@ -87,6 +89,7 @@ export default class LineHandler extends CursorHandler {
 
   mousePressed = (/*event: MouseEvent*/) => {
     this.isMouseDown = true;
+    this.startVertex = null;
     if (this.isOnSphere) {
       const selected = this.hitObject;
       // Record the first point of the geodesic circle
@@ -95,11 +98,13 @@ export default class LineHandler extends CursorHandler {
         this.startPoint.copy(selected.position);
         // Convert the coordinate with respect to the world coordinate frame
         this.theSphere?.localToWorld(this.startPoint);
+        this.startVertex = this.hitObject;
       } else {
         // Click on an open area on the sphere, tthe hit position is measured
         // with respect to the world coordinate frame
         this.scene.add(this.startDot);
         this.startPoint.copy(this.currentPoint);
+        this.startVertex = null;
       }
       this.startDot.position.copy(this.currentPoint);
     }
@@ -107,12 +112,44 @@ export default class LineHandler extends CursorHandler {
 
   mouseReleased = (/*event: MouseEvent*/) => {
     this.isMouseDown = false;
-    if (this.isOnSphere) {
+    if (this.isOnSphere && this.theSphere) {
       // Record the second point of the geodesic circle
       this.scene.remove(this.geodesicRing);
       this.scene.remove(this.startDot);
       this.isCircleAdded = false;
       this.endPoint.copy(this.currentPoint);
+      const newLine = this.geodesicRing.clone();
+      this.theSphere.add(newLine);
+      if (this.startVertex === null) {
+        // Starting point landed on an open space
+        // we have to create a new vertex
+        const vtx = new Vertex();
+        vtx.position.copy(this.startPoint);
+        this.theSphere.worldToLocal(vtx.position);
+        this.theSphere.add(vtx);
+        this.startVertex = vtx;
+        this.store.commit("addVertex", vtx);
+      }
+      if (this.hitObject instanceof Vertex) {
+        this.endVertex = this.hitObject;
+      } else {
+        // Endpoint landed on an open space
+        // we have to create a new vertex
+        const vtx = new Vertex();
+        vtx.position.copy(this.currentPoint);
+        this.theSphere.worldToLocal(vtx.position);
+        this.theSphere.add(vtx);
+        this.endVertex = vtx;
+        this.store.commit("addVertex", vtx);
+      }
+
+      this.store.commit("addLine", {
+        line: newLine,
+        startPoint: this.startVertex,
+        endPoint: this.endVertex
+      });
+      this.startVertex = null;
+      this.endVertex = null;
     }
   };
 }
