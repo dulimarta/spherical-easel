@@ -3,8 +3,7 @@
     <h2>Object Tree</h2>
     <h3>Vertices</h3>
     <v-treeview dense hoverable activatable active-class="warning"
-      :items="iVertices" @input="onInput" @update:active="updateActive"
-      @update:open="updateOpen"></v-treeview>
+      :items="iVertices" @update:active="updateActive"></v-treeview>
     <h3>Lines</h3>
     <v-treeview dense hoverable activatable active-class="warning"
       :items="iLines"></v-treeview>
@@ -37,17 +36,24 @@ export default class ObjectTree extends Vue {
 
   // TODO: the getter function seems to be sluggish?
   get iVertices() {
-    return this.vertices.map(z => ({ id: z.ref.id, name: z.ref.name }));
+    return this.vertices.map(z => ({
+      id: z.ref.id,
+      name: z.ref.name,
+      children: z.incidentLines.map(x => ({
+        id: x.ref.id, name: x.ref.name
+      }))
+    }));
   }
 
   get iLines() {
-    return this.lines.map(z => ({ id: z.ref.id, name: z.ref.name }))
-  }
-  onInput() {
-    console.debug("On input");
-  }
-  updateOpen() {
-    console.debug("Update open");
+    return this.lines.map(z => ({
+      id: z.ref.id,
+      name: z.ref.name,
+      children: [
+        { id: z.start.ref.id, name: "Start " + z.start.ref.name },
+        { id: z.end.ref.id, name: "End at" + z.end.ref.name }
+      ]
+    }))
   }
   updateActive(args: number[]) {
     // console.debug("Active", what);

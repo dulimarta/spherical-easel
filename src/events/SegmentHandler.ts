@@ -31,6 +31,7 @@ export default class SegmentHandler extends LineHandler {
     this.canvas.addEventListener("mouseup", this.mouseReleased);
     this.rayCaster.layers.enable(SETTINGS.layers.sphere);
     this.rayCaster.layers.enable(SETTINGS.layers.vertex);
+    // The following line automatically calls Line setter function
     this.geodesicRing.isSegment = true;
   };
 

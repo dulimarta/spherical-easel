@@ -3,7 +3,7 @@ import Arrow from "@/3d-objs/Arrow";
 import CursorHandler from "./CursorHandler";
 import Vertex from "@/3d-objs/Vertex";
 import SETTINGS from "@/global-settings";
-
+import { AddVertexCommand } from "@/commands/AddVertexCommand";
 export default class NormalPointHandler extends CursorHandler {
   private normalDirection: Vector3;
   private normalArrow: Arrow;
@@ -61,8 +61,7 @@ export default class NormalPointHandler extends CursorHandler {
       const vtx = new Vertex();
       vtx.position.copy(this.currentPoint);
       this.theSphere.worldToLocal(vtx.position);
-      this.theSphere.add(vtx);
-      this.store.commit("addVertex", vtx);
+      new AddVertexCommand(vtx).execute();
     }
   };
 

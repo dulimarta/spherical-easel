@@ -3,7 +3,6 @@ import Vuex from "vuex";
 import { Mesh } from "three";
 import { AppState, SEVertex } from "@/types";
 import Line from "@/3d-objs/Line";
-
 Vue.use(Vuex);
 
 const findVertex = (arr: SEVertex[], id: number): SEVertex | null => {
@@ -19,6 +18,12 @@ export default new Vuex.Store({
     lines: []
   } as AppState,
   mutations: {
+    // init(state) {
+    //   state.sphere = null;
+    //   state.editMode = "none";
+    //   state.vertices = [];
+    //   state.lines = [];
+    // },
     setSphere(state, sph: Mesh) {
       state.sphere = sph;
     },
@@ -27,6 +32,14 @@ export default new Vuex.Store({
     },
     addVertex(state, vertex: Mesh) {
       state.vertices.push({ ref: vertex, incidentLines: [] });
+      state.sphere?.add(vertex);
+    },
+    removeVertex(state, vertexId: number) {
+      const pos = state.vertices.findIndex(x => x.ref.id === vertexId);
+      if (pos >= 0) {
+        state.sphere?.remove(state.vertices[pos].ref);
+        state.vertices.splice(pos, 1);
+      }
     },
     addLine(
       state,
@@ -44,6 +57,13 @@ export default new Vuex.Store({
         start.incidentLines.push(newLine);
         end.incidentLines.push(newLine);
         state.lines.push(newLine);
+      }
+    },
+    removeLine(state, lineId: number) {
+      const pos = state.lines.findIndex(x => x.ref.id === lineId);
+      if (pos >= 0) {
+        state.sphere?.remove(state.lines[pos].ref);
+        state.lines.splice(pos, 1);
       }
     }
   },

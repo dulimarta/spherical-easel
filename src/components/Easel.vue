@@ -37,8 +37,9 @@ import SegmentHandler from "@/events/SegmentHandler";
 import RingHandler from "@/events/RingHandler";
 import MoveHandler from "@/events/MoveHandler";
 import SETTINGS from "@/global-settings";
-import { State, Mutation } from "vuex-class";
+import { State } from "vuex-class";
 import ObjectTree from "./ObjectTree.vue";
+import { AddVertexCommand } from '../commands/AddVertexCommand';
 
 @Component({ components: { ObjectTree } })
 export default class Easel extends Vue {
@@ -61,8 +62,8 @@ export default class Easel extends Vue {
   @State("editMode")
   private editMode!: string;
 
-  @Mutation
-  private addVertex!: (v: Vertex) => void;
+  // @Mutation
+  // private addVertex!: (v: Vertex) => void;
 
   constructor() {
     super();
@@ -120,7 +121,7 @@ export default class Easel extends Vue {
 
     this.sphere.name = "MainSphere";
     this.sphere.layers.enable(SETTINGS.layers.sphere);
-    // this.$store.commit("setSphere", this.sphere);
+    this.$store.commit("setSphere", this.sphere);
 
     this.scene.add(this.sphere);
     console.debug("Constructor: sphere ID", this.sphere.id);
@@ -160,8 +161,7 @@ export default class Easel extends Vue {
         v.position.set(Math.random(), Math.random(), Math.random());
         v.position.normalize();
         v.position.multiplyScalar(SETTINGS.sphere.radius);
-        this.addVertex(v);
-        this.sphere.add(v);
+        new AddVertexCommand(v).execute();
       }
     }
 

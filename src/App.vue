@@ -7,7 +7,8 @@
       <v-container class="pa-4">
         <div class="body-1 font-weight-bold">Basic Tools</div>
         <!-- mr-2: margin right 8 px -->
-        <v-btn-toggle v-model="editMode" @change="switchEditMode" class="mr-2">
+        <v-btn-toggle v-model="editMode" @change="switchEditMode"
+          class="mr-2">
           <v-btn value="none">
             <v-icon>mdi-cursor-pointer</v-icon>
           </v-btn>
@@ -27,6 +28,7 @@
             <v-icon>mdi-vector-circle-variant</v-icon>
           </v-btn>
         </v-btn-toggle>
+        <v-btn @click="undoEdit">Undo</v-btn>
         <div class="body-1 font-weight-bold">Key Shortcut</div>
         <ul>
           <li>"R": reset sphere orientation</li>
@@ -37,14 +39,9 @@
     the "clipped" attr of the nav drawer -->
     <v-app-bar app color="primary" dark clipped-left>
       <div class="d-flex align-center">
-        <v-img
-          alt="Vuetify Logo"
-          class="shrink mr-2"
-          contain
+        <v-img alt="Vuetify Logo" class="shrink mr-2" contain
           src="https://cdn.vuetifyjs.com/images/logos/vuetify-logo-dark.png"
-          transition="scale-transition"
-          width="40"
-        />
+          transition="scale-transition" width="40" />
 
         <!--v-img alt="Vuetify Name" class="shrink mt-1 hidden-sm-and-down"
           contain min-width="100"
@@ -65,6 +62,7 @@
 <script lang="ts">
 import Vue from "vue";
 import Easel from "@/components/Easel.vue";
+import { Command } from "@/commands/Comnand";
 export default Vue.extend({
   name: "App",
 
@@ -79,7 +77,14 @@ export default Vue.extend({
   methods: {
     switchEditMode() {
       this.$store.commit("setEditMode", this.editMode);
+    },
+    undoEdit() {
+      Command.undo();
     }
+  },
+  mounted() {
+    // this.$store.commit('init');
+    // Command.setStore(this.$store);
   }
 });
 </script>

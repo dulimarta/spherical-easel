@@ -3,7 +3,8 @@ import CursorHandler from "./CursorHandler";
 // import Arrow from "@/3d-objs/Arrow";
 import Vertex from "@/3d-objs/Vertex";
 import SETTINGS from "@/global-settings";
-
+import { AddVertexCommand } from "@/commands/AddVertexCommand";
+import { AddLineCommand } from "@/commands/AddLineCommand.1";
 export default class LineHandler extends CursorHandler {
   protected startPoint: Vector3;
   protected endPoint: Vector3;
@@ -38,6 +39,7 @@ export default class LineHandler extends CursorHandler {
     this.rayCaster.layers.disableAll();
     this.rayCaster.layers.enable(SETTINGS.layers.sphere);
     this.rayCaster.layers.enable(SETTINGS.layers.vertex);
+    // The following line automatically calls Line setter functionby default
     this.geodesicRing.isSegment = false;
   };
 
@@ -59,6 +61,7 @@ export default class LineHandler extends CursorHandler {
           this.scene.add(this.geodesicRing);
           this.scene.add(this.startDot);
         }
+        // The following line automatically calls Line setter function
         this.geodesicRing.endPoint = this.currentPoint;
       }
     } else if (this.isCircleAdded) {
@@ -87,6 +90,7 @@ export default class LineHandler extends CursorHandler {
         this.startPoint.copy(this.currentPoint);
         this.startVertex = null;
       }
+      // The following line automatically calls Line setter function
       this.geodesicRing.startPoint = this.currentPoint;
       this.startDot.position.copy(this.currentPoint);
     }
@@ -108,9 +112,8 @@ export default class LineHandler extends CursorHandler {
         const vtx = new Vertex();
         vtx.position.copy(this.startPoint);
         this.theSphere.worldToLocal(vtx.position);
-        this.theSphere.add(vtx);
         this.startVertex = vtx;
-        this.store.commit("addVertex", vtx);
+        new AddVertexCommand(vtx).execute();
       }
       if (this.hitObject instanceof Vertex) {
         this.endVertex = this.hitObject;
@@ -120,16 +123,15 @@ export default class LineHandler extends CursorHandler {
         const vtx = new Vertex();
         vtx.position.copy(this.currentPoint);
         this.theSphere.worldToLocal(vtx.position);
-        this.theSphere.add(vtx);
         this.endVertex = vtx;
-        this.store.commit("addVertex", vtx);
+        new AddVertexCommand(vtx).execute();
       }
 
-      this.store.commit("addLine", {
+      new AddLineCommand({
         line: newLine,
         startPoint: this.startVertex,
         endPoint: this.endVertex
-      });
+      }).execute();
       this.startVertex = null;
       this.endVertex = null;
     }
