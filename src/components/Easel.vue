@@ -2,7 +2,7 @@
   <div>
     <v-container>
       <v-row>
-        <v-col cols="9">
+        <v-col cols="8">
           <!--- ml-2: margin left 8 px -->
           <v-row>
             <span class="body-1 ml-2">{{ editHint }}</span>
@@ -13,8 +13,8 @@
           </v-row>
           <div justify="center" ref="content" id="content"></div>
         </v-col>
-        <v-col cols="3">
-          <ObjectTree></ObjectTree>
+        <v-col cols="4" class="accent">
+          <ObjectTree v-bind:scene="scene"></ObjectTree>
         </v-col>
       </v-row>
     </v-container>
@@ -22,7 +22,7 @@
 </template>
 
 <script lang="ts">
-/* eslint-disable no-debugger */
+
 import { Vue, Watch } from "vue-property-decorator";
 import Component from "vue-class-component";
 import * as THREE from "three";
@@ -172,11 +172,9 @@ export default class Easel extends Vue {
   mounted() {
     // VieJS lifecycle function
     console.debug("Mounted");
-    // debugger; // eslint-disable-line
     // this.renderer.setSize(window.innerWidth, window.innerHeight);
     const el = this.$refs.content as HTMLBaseElement;
     el.appendChild(this.renderer.domElement);
-    // this.controls.attach(this.sphere);
     this.onWindowResized();
     requestAnimationFrame(this.renderIt);
   }

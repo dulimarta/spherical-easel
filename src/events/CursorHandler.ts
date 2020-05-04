@@ -6,12 +6,12 @@ import {
   Vector2,
   Vector3,
   MeshPhongMaterial,
-  Layers,
-  TorusBufferGeometry
+  Layers
 } from "three";
 import AppStore from "@/store";
 import Vertex from "@/3d-objs/Vertex";
 import SETTINGS from "@/global-settings";
+import Line from "@/3d-objs/Line";
 const RAYCASTER = new Raycaster();
 
 export default abstract class CursorHandler {
@@ -29,7 +29,7 @@ export default abstract class CursorHandler {
   protected hitObject: Mesh | null = null;
   protected isOnSphere: boolean;
   protected theSphere: Mesh | null = null;
-  protected geodesicRing: Mesh;
+  protected geodesicRing: Line;
 
   constructor({
     canvas,
@@ -47,10 +47,7 @@ export default abstract class CursorHandler {
     this.mouse = new Vector2();
     this.currentPoint = new Vector3();
     this.isOnSphere = false;
-    this.geodesicRing = new Mesh(
-      new TorusBufferGeometry(SETTINGS.sphere.radius, 0.01, 6, 60),
-      new MeshPhongMaterial({ color: 0xffffff })
-    );
+    this.geodesicRing = new Line();
   }
 
   toNormalizeScreenCoord = (event: MouseEvent) => {

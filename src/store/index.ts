@@ -2,6 +2,7 @@ import Vue from "vue";
 import Vuex from "vuex";
 import { Mesh } from "three";
 import { AppState, SEVertex } from "@/types";
+import Line from "@/3d-objs/Line";
 
 Vue.use(Vuex);
 
@@ -13,7 +14,7 @@ const findVertex = (arr: SEVertex[], id: number): SEVertex | null => {
 export default new Vuex.Store({
   state: {
     sphere: null,
-    editMode: "line",
+    editMode: "none",
     vertices: [],
     lines: []
   } as AppState,
@@ -33,13 +34,13 @@ export default new Vuex.Store({
         line,
         startPoint,
         endPoint
-      }: { line: Mesh; startPoint: Mesh; endPoint: Mesh }
+      }: { line: Line; startPoint: Mesh; endPoint: Mesh }
     ) {
       // Find both end points in the current list of vertices
       const start = findVertex(state.vertices, startPoint.id);
       const end = findVertex(state.vertices, endPoint.id);
       if (start !== null && end !== null) {
-        const newLine = { ref: line, start, end, isSegment: false };
+        const newLine = { ref: line, start, end, isSegment: line.isSegment };
         start.incidentLines.push(newLine);
         end.incidentLines.push(newLine);
         state.lines.push(newLine);

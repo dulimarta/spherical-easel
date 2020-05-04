@@ -1,4 +1,4 @@
-import { Vector3, Camera, Scene, TorusBufferGeometry } from "three";
+import { Vector3, Camera, Scene } from "three";
 import LineHandler from "./LineHandler";
 // import Arrow from "@/3d-objs/Arrow";
 import Vertex from "@/3d-objs/Vertex";
@@ -31,44 +31,12 @@ export default class SegmentHandler extends LineHandler {
     this.canvas.addEventListener("mouseup", this.mouseReleased);
     this.rayCaster.layers.enable(SETTINGS.layers.sphere);
     this.rayCaster.layers.enable(SETTINGS.layers.vertex);
+    this.geodesicRing.isSegment = true;
   };
 
   deactivate = () => {
     this.canvas.removeEventListener("mousemove", this.mouseMoved);
     this.canvas.removeEventListener("mousedown", this.mousePressed);
     this.canvas.removeEventListener("mouseup", this.mouseReleased);
-  };
-
-  mouseMoved = (event: MouseEvent) => {
-    this.mapCursorToSphere(event);
-    if (this.isOnSphere) {
-      if (this.isMouseDown && this.theSphere) {
-        if (!this.isCircleAdded) {
-          this.isCircleAdded = true;
-          this.scene.add(this.geodesicRing);
-        }
-
-        // Determine the angle between the starting point and the current point
-        const segmentAngle = this.startPoint.angleTo(this.currentPoint);
-
-        // Adjust the arc angle of the unit circle
-        // To prevent potential memory leak: remove the current geometry object ()
-        this.geodesicRing.geometry.dispose();
-        this.geodesicRing.geometry = new TorusBufferGeometry(
-          SETTINGS.sphere.radius,
-          0.01,
-          60,
-          6,
-          segmentAngle
-        );
-
-        // Reuse the function in the parent class
-        this.tiltGeodesicPlane();
-      }
-    } else if (this.isCircleAdded) {
-      this.scene.remove(this.geodesicRing);
-      this.scene.remove(this.startDot);
-      this.isCircleAdded = false;
-    }
   };
 }

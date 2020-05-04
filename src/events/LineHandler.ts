@@ -1,4 +1,4 @@
-import { Vector3, Matrix4, Quaternion, Camera, Scene } from "three";
+import { Vector3, Camera, Scene } from "three";
 import CursorHandler from "./CursorHandler";
 // import Arrow from "@/3d-objs/Arrow";
 import Vertex from "@/3d-objs/Vertex";
@@ -7,8 +7,6 @@ import SETTINGS from "@/global-settings";
 export default class LineHandler extends CursorHandler {
   protected startPoint: Vector3;
   protected endPoint: Vector3;
-  protected geodesicDirection: Vector3;
-  protected circleQuaternion: Quaternion;
   // private normalArrow: Arrow;
   protected isMouseDown: boolean;
   protected isCircleAdded: boolean;
@@ -27,9 +25,7 @@ export default class LineHandler extends CursorHandler {
     super({ canvas, camera, scene });
     this.startPoint = new Vector3();
     this.endPoint = new Vector3();
-    this.geodesicDirection = new Vector3();
     this.startDot = new Vertex();
-    this.circleQuaternion = new Quaternion();
     // this.normalArrow = new Arrow(1.5, 0xff6600);
     this.isMouseDown = false;
     this.isCircleAdded = false;
@@ -42,28 +38,13 @@ export default class LineHandler extends CursorHandler {
     this.rayCaster.layers.disableAll();
     this.rayCaster.layers.enable(SETTINGS.layers.sphere);
     this.rayCaster.layers.enable(SETTINGS.layers.vertex);
+    this.geodesicRing.isSegment = false;
   };
 
   deactivate = () => {
     this.canvas.removeEventListener("mousemove", this.mouseMoved);
     this.canvas.removeEventListener("mousedown", this.mousePressed);
     this.canvas.removeEventListener("mouseup", this.mouseReleased);
-  };
-
-  tiltGeodesicPlane = () => {
-    // Using the triad method to determine the rotation matrix
-    // https://en.wikipedia.org/wiki/Triad_method
-    const desiredZ = new Vector3()
-      .crossVectors(this.startPoint, this.currentPoint)
-      .normalize();
-    const desiredX = new Vector3().copy(this.startPoint).normalize();
-    const desiredY = new Vector3().crossVectors(desiredZ, desiredX);
-    const desiredRot = new Matrix4().makeBasis(desiredX, desiredY, desiredZ);
-
-    this.geodesicRing.rotation.set(0, 0, 0);
-
-    this.circleQuaternion.setFromRotationMatrix(desiredRot);
-    this.geodesicRing.applyQuaternion(this.circleQuaternion);
   };
 
   mouseMoved = (event: MouseEvent) => {
@@ -78,7 +59,7 @@ export default class LineHandler extends CursorHandler {
           this.scene.add(this.geodesicRing);
           this.scene.add(this.startDot);
         }
-        this.tiltGeodesicPlane();
+        this.geodesicRing.endPoint = this.currentPoint;
       }
     } else if (this.isCircleAdded) {
       this.scene.remove(this.geodesicRing);
@@ -106,6 +87,7 @@ export default class LineHandler extends CursorHandler {
         this.startPoint.copy(this.currentPoint);
         this.startVertex = null;
       }
+      this.geodesicRing.startPoint = this.currentPoint;
       this.startDot.position.copy(this.currentPoint);
     }
   };
@@ -118,7 +100,7 @@ export default class LineHandler extends CursorHandler {
       this.scene.remove(this.startDot);
       this.isCircleAdded = false;
       this.endPoint.copy(this.currentPoint);
-      const newLine = this.geodesicRing.clone();
+      const newLine = this.geodesicRing.clone(true); // true:recursive clone
       this.theSphere.add(newLine);
       if (this.startVertex === null) {
         // Starting point landed on an open space
