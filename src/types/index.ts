@@ -5,7 +5,10 @@ import { Mesh } from "three";
 
 export interface SEVertex {
   ref: Mesh;
-  incidentLines: SELine[];
+  startOf: SELine[];
+  endOf: SELine[];
+  centerOf: SERing[];
+  circumOf: SERing[];
 }
 
 export interface SELine {
@@ -14,11 +17,16 @@ export interface SELine {
   end: SEVertex;
   isSegment: boolean;
 }
-
+export interface SERing {
+  ref: Mesh;
+  center: SEVertex;
+  point: SEVertex;
+}
 export interface AppState {
   sphere: Mesh | null;
   editMode: string;
   vertices: SEVertex[];
   lines: SELine[];
+  rings: SERing[];
 }
 // }

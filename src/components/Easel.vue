@@ -1,22 +1,15 @@
 <template>
   <div>
     <v-container>
+      <!--- ml-2: margin left 8 px -->
       <v-row>
-        <v-col cols="8">
-          <!--- ml-2: margin left 8 px -->
-          <v-row>
-            <span class="body-1 ml-2">{{ editHint }}</span>
-            <v-spacer />
-            <v-switch v-show="editMode === 'none'" class="mr-4"
-              v-model="showSphereControl" label="Sphere Control">
-            </v-switch>
-          </v-row>
-          <div justify="center" ref="content" id="content"></div>
-        </v-col>
-        <v-col cols="4" class="accent">
-          <ObjectTree v-bind:scene="scene"></ObjectTree>
-        </v-col>
+        <span class="body-1 ml-2">{{ editHint }}</span>
+        <v-spacer />
+        <v-switch v-show="editMode === 'none'" class="mr-4"
+          v-model="showSphereControl" label="Sphere Control">
+        </v-switch>
       </v-row>
+      <div justify="center" ref="content" id="content"></div>
     </v-container>
   </div>
 </template>

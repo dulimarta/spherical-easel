@@ -3,8 +3,9 @@ import CursorHandler from "./CursorHandler";
 // import Arrow from "@/3d-objs/Arrow";
 import Vertex from "@/3d-objs/Vertex";
 import SETTINGS from "@/global-settings";
+import { CommandGroup } from "@/commands/CommandGroup";
 import { AddVertexCommand } from "@/commands/AddVertexCommand";
-import { AddLineCommand } from "@/commands/AddLineCommand.1";
+import { AddLineCommand } from "@/commands/AddLineCommand";
 export default class LineHandler extends CursorHandler {
   protected startPoint: Vector3;
   protected endPoint: Vector3;
@@ -103,6 +104,7 @@ export default class LineHandler extends CursorHandler {
       this.endPoint.copy(this.currentPoint);
       const newLine = this.geodesicRing.clone(true); // true:recursive clone
       // this.theSphere.add(newLine);
+      const lineGroup = new CommandGroup();
       if (this.startVertex === null) {
         // Starting point landed on an open space
         // we have to create a new vertex
@@ -110,7 +112,7 @@ export default class LineHandler extends CursorHandler {
         vtx.position.copy(this.startPoint);
         this.theSphere.worldToLocal(vtx.position);
         this.startVertex = vtx;
-        new AddVertexCommand(vtx).execute();
+        lineGroup.addCommand(new AddVertexCommand(vtx));
       }
       if (this.hitObject instanceof Vertex) {
         this.endVertex = this.hitObject;
@@ -121,14 +123,18 @@ export default class LineHandler extends CursorHandler {
         vtx.position.copy(this.currentPoint);
         this.theSphere.worldToLocal(vtx.position);
         this.endVertex = vtx;
-        new AddVertexCommand(vtx).execute();
+        lineGroup.addCommand(new AddVertexCommand(vtx));
       }
 
-      new AddLineCommand({
-        line: newLine,
-        startPoint: this.startVertex,
-        endPoint: this.endVertex
-      }).execute();
+      lineGroup
+        .addCommand(
+          new AddLineCommand({
+            line: newLine,
+            startPoint: this.startVertex,
+            endPoint: this.endVertex
+          })
+        )
+        .execute();
       this.startVertex = null;
       this.endVertex = null;
     }

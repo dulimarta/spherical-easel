@@ -23,6 +23,9 @@ export abstract class Command {
     }
   }
 
+  static undoEnabled = (): boolean => Command.commandHistory.length > 0;
+  static redoEnabled = (): boolean => Command.redoHistory.length > 0;
+
   static redo() {
     if (Command.redoHistory.length === 0) return;
     const nextAction = Command.redoHistory.pop();
