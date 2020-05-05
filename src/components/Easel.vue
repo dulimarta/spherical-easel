@@ -78,7 +78,6 @@ export default class Easel extends Vue {
       1000
     );
 
-    console.debug("Camera layers", this.camera.layers);
     this.normalTracker = new NormalPointHandler({
       canvas: this.renderer.domElement,
       camera: this.camera,
@@ -124,7 +123,6 @@ export default class Easel extends Vue {
     this.$store.commit("setSphere", this.sphere);
 
     this.scene.add(this.sphere);
-    console.debug("Constructor: sphere ID", this.sphere.id);
     this.camera.position.set(1.25, 1.25, 2);
     this.camera.lookAt(0, 0, 0);
     // const axesHelper = new THREE.AxesHelper(SETTINGS.sphere.radius * 1.25);
@@ -171,8 +169,6 @@ export default class Easel extends Vue {
 
   mounted() {
     // VieJS lifecycle function
-    console.debug("Mounted");
-    // this.renderer.setSize(window.innerWidth, window.innerHeight);
     const el = this.$refs.content as HTMLBaseElement;
     el.appendChild(this.renderer.domElement);
     this.onWindowResized();
@@ -180,7 +176,6 @@ export default class Easel extends Vue {
   }
 
   keyPressed = (event: KeyboardEvent) => {
-    console.debug("Key press is ", event.keyCode, event);
     const sphere = this.scene.getObjectByName("MainSphere");
     switch (event.code) {
       case "KeyR":

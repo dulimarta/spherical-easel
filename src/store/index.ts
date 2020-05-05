@@ -57,6 +57,7 @@ export default new Vuex.Store({
         start.incidentLines.push(newLine);
         end.incidentLines.push(newLine);
         state.lines.push(newLine);
+        state.sphere?.add(line);
       }
     },
     removeLine(state, lineId: number) {

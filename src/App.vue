@@ -12,23 +12,63 @@
           <v-btn value="none">
             <v-icon>mdi-cursor-pointer</v-icon>
           </v-btn>
-          <v-btn value="move">
-            <v-icon>mdi-cursor-move</v-icon>
-          </v-btn>
-          <v-btn value="point">
-            <v-icon>mdi-vector-point</v-icon>
-          </v-btn>
-          <v-btn value="line">
-            <v-icon>mdi-vector-line</v-icon>
-          </v-btn>
-          <v-btn value="segment">
-            <v-icon>mdi-vector-radius</v-icon>
-          </v-btn>
-          <v-btn value="circle">
-            <v-icon>mdi-vector-circle-variant</v-icon>
-          </v-btn>
+          <v-tooltip bottom>
+            <template v-slot:activator={on}>
+              <v-btn value="move" v-on="on">
+                <v-icon>mdi-cursor-move</v-icon>
+              </v-btn>
+            </template>
+            <span>Move object</span>
+          </v-tooltip>
+          <v-tooltip bottom>
+            <template v-slot:activator={on}>
+              <v-btn value="point" v-on="on">
+                <v-icon>mdi-vector-point</v-icon>
+              </v-btn>
+            </template>
+            <span>Insert point</span>
+          </v-tooltip>
+          <v-tooltip bottom>
+            <template v-slot:activator={on}>
+              <v-btn value="line" v-on="on">
+                <v-icon>mdi-vector-line</v-icon>
+              </v-btn>
+            </template>
+            <span>Insert line</span>
+          </v-tooltip>
+          <v-tooltip bottom>
+            <template v-slot:activator={on}>
+              <v-btn value="segment" v-on="on">
+                <v-icon>mdi-vector-radius</v-icon>
+              </v-btn>
+            </template>
+            <span>Insert segment</span>
+          </v-tooltip>
+          <v-tooltip bottom>
+            <template v-slot:activator={on}>
+              <v-btn value="circle" v-on="on">
+                <v-icon>mdi-vector-circle-variant</v-icon>
+              </v-btn>
+            </template>
+            <span>Insert circle</span>
+          </v-tooltip>
         </v-btn-toggle>
-        <v-btn @click="undoEdit">Undo</v-btn>
+        <v-tooltip bottom>
+          <template v-slot:activator={on}>
+            <v-btn @click="undoEdit" v-on="on">
+              <v-icon>mdi-undo</v-icon>
+            </v-btn>
+          </template>
+          <span>Undo last action</span>
+        </v-tooltip>
+        <v-tooltip bottom>
+          <template v-slot:activator={on}>
+            <v-btn @click="redoAction" v-on="on">
+              <v-icon>mdi-redo</v-icon>
+            </v-btn>
+          </template>
+          <span>Redo action</span>
+        </v-tooltip>
         <div class="body-1 font-weight-bold">Key Shortcut</div>
         <ul>
           <li>"R": reset sphere orientation</li>
@@ -80,6 +120,9 @@ export default Vue.extend({
     },
     undoEdit() {
       Command.undo();
+    },
+    redoAction() {
+      Command.redo();
     }
   },
   mounted() {

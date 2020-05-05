@@ -39,7 +39,7 @@ export default class LineHandler extends CursorHandler {
     this.rayCaster.layers.disableAll();
     this.rayCaster.layers.enable(SETTINGS.layers.sphere);
     this.rayCaster.layers.enable(SETTINGS.layers.vertex);
-    // The following line automatically calls Line setter functionby default
+    // The following line automatically calls Line setter function by default
     this.geodesicRing.isSegment = false;
   };
 
@@ -50,12 +50,9 @@ export default class LineHandler extends CursorHandler {
   };
 
   mouseMoved = (event: MouseEvent) => {
-    // console.debug("LineHandler::mousemoved");
-
     this.mapCursorToSphere(event);
     if (this.isOnSphere) {
       if (this.isMouseDown && this.theSphere) {
-        // console.debug("LineHandler::mousedragged");
         if (!this.isCircleAdded) {
           this.isCircleAdded = true;
           this.scene.add(this.geodesicRing);
@@ -84,7 +81,7 @@ export default class LineHandler extends CursorHandler {
         this.theSphere?.localToWorld(this.startPoint);
         this.startVertex = this.hitObject;
       } else {
-        // Click on an open area on the sphere, tthe hit position is measured
+        // Click on an open area on the sphere, the hit position is measured
         // with respect to the world coordinate frame
         this.scene.add(this.startDot);
         this.startPoint.copy(this.currentPoint);
@@ -105,7 +102,7 @@ export default class LineHandler extends CursorHandler {
       this.isCircleAdded = false;
       this.endPoint.copy(this.currentPoint);
       const newLine = this.geodesicRing.clone(true); // true:recursive clone
-      this.theSphere.add(newLine);
+      // this.theSphere.add(newLine);
       if (this.startVertex === null) {
         // Starting point landed on an open space
         // we have to create a new vertex

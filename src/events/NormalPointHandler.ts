@@ -30,7 +30,6 @@ export default class NormalPointHandler extends CursorHandler {
 
   mouseMoved = (event: MouseEvent) => {
     this.mapCursorToSphere(event);
-    // console.debug("OnSphere?", this.isOnSphere);
     if (this.isOnSphere) {
       if (!this.isNormalAdded) {
         this.scene.add(this.normalArrow);

@@ -46,7 +46,6 @@ export default class CirleHandler extends CursorHandler {
 
   mouseMoved = (event: MouseEvent) => {
     this.mapCursorToSphere(event);
-    // console.debug("RingHandler::mousemoved on sphere?", this.isOnSphere);
     if (this.isOnSphere) {
       if (this.isMouseDown && this.theSphere) {
         if (!this.isCircleAdded) {

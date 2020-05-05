@@ -50,13 +50,12 @@ export default class ObjectTree extends Vue {
       id: z.ref.id,
       name: z.ref.name,
       children: [
-        { id: z.start.ref.id, name: "Start " + z.start.ref.name },
-        { id: z.end.ref.id, name: "End at" + z.end.ref.name }
+        { id: z.start.ref.id, name: "Start:" + z.start.ref.name },
+        { id: z.end.ref.id, name: "End:" + z.end.ref.name }
       ]
     }))
   }
   updateActive(args: number[]) {
-    // console.debug("Active", what);
     if (args.length > 0) {
       if (this.selectedVertex) {
         (this.selectedVertex.material as MeshLambertMaterial).emissive.set(0);
