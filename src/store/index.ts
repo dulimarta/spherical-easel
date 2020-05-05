@@ -1,7 +1,8 @@
 import Vue from "vue";
 import Vuex from "vuex";
-import { Mesh } from "three";
+import { Mesh, MeshPhongMaterial } from "three";
 import { AppState, SEVertex, SELine, SERing } from "@/types";
+import Vertex from "@/3d-objs/Vertex";
 import Line from "@/3d-objs/Line";
 import Ring from "@/3d-objs/Circle";
 Vue.use(Vuex);
@@ -32,7 +33,7 @@ export default new Vuex.Store({
     setEditMode(state, mode: string) {
       state.editMode = mode;
     },
-    addVertex(state, vertex: Mesh) {
+    addVertex(state, vertex: Vertex) {
       state.vertices.push({
         ref: vertex,
         startOf: [],
@@ -46,6 +47,7 @@ export default new Vuex.Store({
       const pos = state.vertices.findIndex(x => x.ref.id === vertexId);
       if (pos >= 0) {
         state.sphere?.remove(state.vertices[pos].ref);
+        (state.vertices[pos].ref.material as MeshPhongMaterial).emissive.set(0);
         state.vertices.splice(pos, 1);
       }
     },
@@ -55,7 +57,7 @@ export default new Vuex.Store({
         line,
         startPoint,
         endPoint
-      }: { line: Line; startPoint: Mesh; endPoint: Mesh }
+      }: { line: Line; startPoint: Vertex; endPoint: Vertex }
     ) {
       // Find both end points in the current list of vertices
       const start = findVertex(state.vertices, startPoint.id);
@@ -97,6 +99,8 @@ export default new Vuex.Store({
         }
         // Remove it from the sphere
         state.sphere?.remove(victimLine.ref);
+        (victimLine.ref.material as MeshPhongMaterial).emissive.set(0);
+
         state.lines.splice(pos, 1); // Remove the line from the list
       }
     },
@@ -147,6 +151,8 @@ export default new Vuex.Store({
         }
         // Remove it from the sphere
         state.sphere?.remove(victimRing.ref);
+        (victimRing.ref.material as MeshPhongMaterial).emissive.set(0);
+
         state.rings.splice(ringPos, 1); // Remove the line from the list
       }
     }

@@ -2,6 +2,7 @@ import CursorHandler from "./CursorHandler";
 import { Camera, Scene } from "three";
 import SETTINGS from "@/global-settings";
 import Vertex from "@/3d-objs/Vertex";
+
 export default class MoveHandler extends CursorHandler {
   private isDragging = false;
   private moveTarget: Vertex | null = null;
@@ -12,11 +13,33 @@ export default class MoveHandler extends CursorHandler {
   }) {
     super(args);
   }
+
   mouseMoved = (event: MouseEvent) => {
     this.mapCursorToSphere(event);
     if (this.isDragging && this.moveTarget instanceof Vertex) {
       this.theSphere?.worldToLocal(this.currentPoint);
       this.moveTarget.position.copy(this.currentPoint);
+      const pos = this.store.state.vertices.find(
+        v => v.ref.id === this.moveTarget?.id
+      );
+      if (pos) {
+        // Update all lines whose start point is this vertex
+        pos.startOf.forEach(z => {
+          z.ref.startPoint = this.currentPoint;
+        });
+        // Update all lines whose end point is this vertex
+        pos.endOf.forEach(z => {
+          z.ref.endPoint = this.currentPoint;
+        });
+        // Update all cicles whose center point is this vertex
+        pos.centerOf.forEach(z => {
+          z.ref.centerPoint = this.currentPoint;
+        });
+        // Update all cicles whose circum point is this vertex
+        pos.circumOf.forEach(z => {
+          z.ref.circlePoint = this.currentPoint;
+        });
+      }
     }
   };
 

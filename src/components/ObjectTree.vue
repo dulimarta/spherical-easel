@@ -6,21 +6,19 @@
       :items="iVertices" @update:active="updateActive"></v-treeview>
     <h4>Lines</h4>
     <v-treeview dense hoverable activatable active-class="warning"
-      :items="iLines"></v-treeview>
+      :items="iLines" @update:active="updateActive"></v-treeview>
     <h4>Circles</h4>
     <v-treeview dense hoverable activatable active-class="warning"
-      :items="iCircles"></v-treeview>
+      :items="iCircles" @update:active="updateActive"></v-treeview>
   </div>
 </template>
 
 <script lang="ts">
 import Vue from "vue";
 import Component from "vue-class-component";
-import Vertex from "@/3d-objs/Vertex";
 import { State } from "vuex-class";
 import { SEVertex, SELine, SERing } from "@/types";
-import { MeshLambertMaterial, Mesh, MeshPhongMaterial } from 'three';
-import { Prop } from 'vue-property-decorator';
+import { Mesh, MeshPhongMaterial } from 'three';
 
 @Component
 export default class ObjectTree extends Vue {

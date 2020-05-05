@@ -132,7 +132,7 @@ export default Vue.extend({
 
   data: () => ({
     editMode: "none",
-    minified: false
+    minified: true
     //
   }),
   computed: {

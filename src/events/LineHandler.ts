@@ -102,7 +102,7 @@ export default class LineHandler extends CursorHandler {
       this.scene.remove(this.startDot);
       this.isCircleAdded = false;
       this.endPoint.copy(this.currentPoint);
-      const newLine = this.geodesicRing.clone(true); // true:recursive clone
+      const newLine = this.geodesicRing.clone(); // true:recursive clone
       // this.theSphere.add(newLine);
       const lineGroup = new CommandGroup();
       if (this.startVertex === null) {

@@ -53,9 +53,13 @@ export default class Circle extends Mesh {
     this.outer.copy(position);
     this.readjust();
   }
-  clone(recursive?: boolean): this {
-    const dup = super.clone(recursive);
-    dup.name = "Circle-" + dup.id;
-    return dup;
+
+  clone(): this {
+    const dup = new Circle(this.center, this.outer);
+    dup.name = this.name;
+    dup.rotation.copy(this.rotation);
+    dup.position.copy(this.position);
+    dup.scale.copy(this.scale);
+    return dup as this;
   }
 }

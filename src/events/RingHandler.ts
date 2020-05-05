@@ -1,9 +1,8 @@
-import { Vector3, Quaternion, Camera, Scene } from "three";
+import { Vector3, Camera, Scene } from "three";
 import CursorHandler from "./CursorHandler";
 import Vertex from "@/3d-objs/Vertex";
 import SETTINGS from "@/global-settings";
 import Circle from "@/3d-objs/Circle";
-import { Command } from "@/commands/Comnand";
 import { CommandGroup } from "@/commands/CommandGroup";
 import { AddVertexCommand } from "@/commands/AddVertexCommand";
 import { AddRingCommand } from "@/commands/AddRingCommand";
@@ -112,7 +111,7 @@ export default class CirleHandler extends CursorHandler {
       this.scene.remove(this.startDot);
       this.isCircleAdded = false;
       this.endPoint.copy(this.currentPoint);
-      const newRing = this.ring.clone(true);
+      const newRing = this.ring.clone();
       const ringGroup = new CommandGroup();
       if (this.startVertex === null) {
         // Starting point landed on an open space

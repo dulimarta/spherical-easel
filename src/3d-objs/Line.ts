@@ -4,8 +4,7 @@ import {
   MeshPhongMaterial,
   Vector3,
   Matrix4,
-  BufferGeometry,
-  Geometry
+  BufferGeometry
 } from "three";
 import SETTINGS from "@/global-settings";
 const desiredXAxis = new Vector3();
@@ -71,14 +70,16 @@ export default class Line extends Mesh {
 
   // It looks like we have to define our own clone() function
   // The builtin clone() does not seem to work correctly
-  clone(recursive?: boolean): this {
-    const dup = super.clone(recursive);
-    const geoDup = this.geometry.clone() as BufferGeometry & Geometry;
-    dup.geometry.copy(geoDup);
-    //(dup.geometry as BufferGeometry).copy(this.geometry.clone());
-    // Use the setter to automatically sets the name
-    dup.isSegment = this._segment;
-
-    return dup;
+  clone(): this {
+    const dup = new Line(this.start, this.end, this._segment);
+    (dup.geometry as BufferGeometry).copy(
+      (this.geometry as BufferGeometry).clone()
+    );
+    dup.rotation.copy(this.rotation);
+    dup._segment = this._segment;
+    dup.name = (dup._segment ? "Segment-" : "Line-") + this.id;
+    dup.start.copy(this.start);
+    dup.end.copy(this.end);
+    return dup as this;
   }
 }

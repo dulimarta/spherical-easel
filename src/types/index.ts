@@ -1,10 +1,11 @@
 // Declaration of all internal data types
 
-// declare module "SphericalEasel" {
 import { Mesh } from "three";
-
+import Vertex from "@/3d-objs/Vertex";
+import Line from "@/3d-objs/Line";
+import Circle from "@/3d-objs/Circle";
 export interface SEVertex {
-  ref: Mesh;
+  ref: Vertex;
   startOf: SELine[];
   endOf: SELine[];
   centerOf: SERing[];
@@ -12,13 +13,13 @@ export interface SEVertex {
 }
 
 export interface SELine {
-  ref: Mesh;
+  ref: Line;
   start: SEVertex;
   end: SEVertex;
   isSegment: boolean;
 }
 export interface SERing {
-  ref: Mesh;
+  ref: Circle;
   center: SEVertex;
   point: SEVertex;
 }
