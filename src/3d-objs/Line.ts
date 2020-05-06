@@ -23,9 +23,9 @@ export default class Line extends Mesh {
     this._segment = segment || false;
     this.geometry = new TorusBufferGeometry(
       SETTINGS.sphere.radius,
-      /* thickness */ 0.01,
-      /* tubular segments */ 6,
-      /* radial segments */ 60,
+      /* thickness */ SETTINGS.line.thickness,
+      /* tubular segments */ 12,
+      /* radial segments */ 120,
       2 * Math.PI
     );
     this.material = new MeshPhongMaterial({ color: 0xffffff });

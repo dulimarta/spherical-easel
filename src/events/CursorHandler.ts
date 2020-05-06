@@ -57,6 +57,15 @@ export default abstract class CursorHandler {
     return { x, y };
   };
 
+  vec3tostr(v: Vector3): string {
+    return `(${v.x.toFixed(2)}, ${v.y.toFixed(2)},${v.z.toFixed(2)})`;
+  }
+
+  /**
+   * Map mouse 2D viewport position to 3D local coordinate on the sphere
+   *
+   * @memberof CursorHandler
+   */
   mapCursorToSphere = (event: MouseEvent) => {
     const { x, y } = this.toNormalizeScreenCoord(event);
     this.mouse.x = x;
@@ -80,11 +89,13 @@ export default abstract class CursorHandler {
       return;
     }
     this.isOnSphere = true;
+    // change cursor shape when it is on the sphere
     this.canvas.style.cursor = "pointer";
-    const hitTarget = intersections[0];
+    const hitTarget =
+      intersections[0]; /* select the intersection closes to the viewer */
     if (hitTarget.object instanceof Vertex) {
+      /* the vertex coordinate is local to the sphere */
       this.currentPoint.copy(hitTarget.object.position);
-      this.theSphere?.localToWorld(this.currentPoint);
       this.hitObject = hitTarget.object;
       (this.hitObject?.material as MeshPhongMaterial).emissive.set(
         SETTINGS.vertex.glowColor
@@ -92,11 +103,14 @@ export default abstract class CursorHandler {
     } else if (hitTarget.object instanceof Mesh) {
       this.theSphere = hitTarget.object;
       this.currentPoint.copy(hitTarget.point);
+      /* The coordinate of the hitpoint is in the world coordinate frame, we must convert it to local frame on the sphere */
+      this.theSphere?.worldToLocal(this.currentPoint);
       this.hitObject = hitTarget.object;
     } else {
       /* What to do here? */
       this.isOnSphere = false;
     }
+    console.debug("Current position", this.vec3tostr(this.currentPoint));
   };
 
   isLayerEnable = (l: Layers, m: number): boolean =>

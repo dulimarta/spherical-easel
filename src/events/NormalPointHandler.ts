@@ -36,7 +36,9 @@ export default class NormalPointHandler extends CursorHandler {
         this.isNormalAdded = true;
       }
       this.normalArrow.position.copy(this.currentPoint);
+      this.theSphere?.localToWorld(this.normalArrow.position);
       this.normalDirection.copy(this.currentPoint);
+      this.theSphere?.localToWorld(this.normalDirection);
 
       // The default orientation of the arrow is the Y-axis
       this.normalRotation.setFromUnitVectors(
@@ -59,7 +61,7 @@ export default class NormalPointHandler extends CursorHandler {
 
       const vtx = new Vertex();
       vtx.position.copy(this.currentPoint);
-      this.theSphere.worldToLocal(vtx.position);
+      // this.theSphere.worldToLocal(vtx.position);
       new AddVertexCommand(vtx).execute();
     }
   };

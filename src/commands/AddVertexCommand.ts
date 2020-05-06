@@ -7,12 +7,15 @@ export class AddVertexCommand extends Command {
     super();
     this.arg = arg;
   }
+
   do() {
     AddVertexCommand.store.commit("addVertex", this.arg);
   }
+
   saveState() {
     this.lastState = this.arg.id;
   }
+
   restoreState() {
     Command.store.commit("removeVertex", this.lastState);
   }

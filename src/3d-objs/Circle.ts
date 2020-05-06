@@ -5,7 +5,7 @@ import {
   MeshPhongMaterial,
   Matrix4
 } from "three";
-// import SETTINGS from "@/global-settings";
+import SETTINGS from "@/global-settings";
 
 const desiredXAxis = new Vector3();
 const desiredYAxis = new Vector3();
@@ -21,9 +21,9 @@ export default class Circle extends Mesh {
     this.outer = outer || new Vector3(1, 0, 0);
     this.geometry = new TorusBufferGeometry(
       1.0,
-      0.01 /* thickness */,
-      6 /* tubular segments */,
-      60 /* radial segments */,
+      SETTINGS.line.thickness /* thickness */,
+      12 /* tubular segments */,
+      120 /* radial segments */,
       2 * Math.PI
     );
     this.material = new MeshPhongMaterial({ color: 0xffffff });

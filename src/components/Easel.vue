@@ -21,7 +21,7 @@ import Component from "vue-class-component";
 import * as THREE from "three";
 // import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import { TransformControls } from "three/examples/jsm/controls/TransformControls";
-// import Axes from "@/3d-objs/Axes";
+import Axes from "@/3d-objs/Axes";
 import Vertex from "@/3d-objs/Vertex";
 import CursorHandler from "@/events/CursorHandler";
 import NormalPointHandler from "@/events/NormalPointHandler";
@@ -145,7 +145,7 @@ export default class Easel extends Vue {
     this.scene.add(circleBorder);
     // Add random vertices (for development only)
     if (process.env.NODE_ENV === "development") {
-      // this.sphere.add(new Axes(1.5, 0.05));
+      this.sphere.add(new Axes(1.5, 0.05));
 
       for (let k = 0; k < 3; k++) {
         const v = new Vertex(SETTINGS.vertex.size);

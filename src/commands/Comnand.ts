@@ -36,19 +36,22 @@ export abstract class Command {
   }
 
   execute() {
+    // Keep this command in the history stack
     Command.commandHistory.push(this);
     this.saveState(); /* Allow the command to save necessary data to restore later */
-    this.do(); /* perform the actual action */
+    this.do(); /* perform the actual action of this command */
   }
 
-  // Child classes of Command must implement the following functions
+  // Child classes of Command must implement the following abstract methods
 
-  // Perform necessary action to restore the app state
+  // restoreState: Perform necessary action to restore the app state.
+  // The operation(s) implemented in restoreState() are usually opposite of the
+  // operation(s) implemented in do()
   abstract restoreState(): void;
 
-  // Save require information to restore the app state
+  // saveSTate: Save require information to restore the app state
   abstract saveState(): void;
 
-  // Perform necessary action to alter the app state
+  // do: Perform necessary action to alter the app state
   abstract do(): void;
 }

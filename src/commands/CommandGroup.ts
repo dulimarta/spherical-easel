@@ -1,3 +1,7 @@
+/**
+ * This class is needed to group several commands together so
+ * one single call to undo() undoes multiple effects
+ */
 import { Command } from "./Comnand";
 export class CommandGroup extends Command {
   private subCommands: Command[] = [];
@@ -12,6 +16,7 @@ export class CommandGroup extends Command {
       x.restoreState();
     });
   }
+
   saveState(): void {
     this.subCommands.forEach(x => {
       x.saveState();

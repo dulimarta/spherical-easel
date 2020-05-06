@@ -56,15 +56,15 @@ export default class LineHandler extends CursorHandler {
       if (this.isMouseDown && this.theSphere) {
         if (!this.isCircleAdded) {
           this.isCircleAdded = true;
-          this.scene.add(this.geodesicRing);
-          this.scene.add(this.startDot);
+          this.theSphere.add(this.geodesicRing);
+          // this.scene.add(this.startDot);
         }
         // The following line automatically calls Line setter function
         this.geodesicRing.endPoint = this.currentPoint;
       }
     } else if (this.isCircleAdded) {
-      this.scene.remove(this.geodesicRing);
-      this.scene.remove(this.startDot);
+      this.theSphere?.remove(this.geodesicRing);
+      this.theSphere?.remove(this.startDot);
       this.isCircleAdded = false;
     }
   };
@@ -76,15 +76,12 @@ export default class LineHandler extends CursorHandler {
       const selected = this.hitObject;
       // Record the first point of the geodesic circle
       if (selected instanceof Vertex) {
-        // Click on existing vertex, its position is local w.r.t to the sphere
+        /* the vertex coordinate is local on the sphere */
         this.startPoint.copy(selected.position);
-        // Convert the coordinate with respect to the world coordinate frame
-        this.theSphere?.localToWorld(this.startPoint);
         this.startVertex = this.hitObject;
       } else {
-        // Click on an open area on the sphere, the hit position is measured
-        // with respect to the world coordinate frame
-        this.scene.add(this.startDot);
+        /* this.currentPoint is already converted to local sphere coordinate frame */
+        this.theSphere?.add(this.startDot);
         this.startPoint.copy(this.currentPoint);
         this.startVertex = null;
       }
@@ -98,8 +95,8 @@ export default class LineHandler extends CursorHandler {
     this.isMouseDown = false;
     if (this.isOnSphere && this.theSphere) {
       // Record the second point of the geodesic circle
-      this.scene.remove(this.geodesicRing);
-      this.scene.remove(this.startDot);
+      this.theSphere.remove(this.geodesicRing);
+      this.theSphere.remove(this.startDot);
       this.isCircleAdded = false;
       this.endPoint.copy(this.currentPoint);
       const newLine = this.geodesicRing.clone(); // true:recursive clone
@@ -110,7 +107,7 @@ export default class LineHandler extends CursorHandler {
         // we have to create a new vertex
         const vtx = new Vertex();
         vtx.position.copy(this.startPoint);
-        this.theSphere.worldToLocal(vtx.position);
+        // this.theSphere.worldToLocal(vtx.position);
         this.startVertex = vtx;
         lineGroup.addCommand(new AddVertexCommand(vtx));
       }
@@ -121,7 +118,6 @@ export default class LineHandler extends CursorHandler {
         // we have to create a new vertex
         const vtx = new Vertex();
         vtx.position.copy(this.currentPoint);
-        this.theSphere.worldToLocal(vtx.position);
         this.endVertex = vtx;
         lineGroup.addCommand(new AddVertexCommand(vtx));
       }
