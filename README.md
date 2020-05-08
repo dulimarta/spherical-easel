@@ -37,5 +37,5 @@ After typing `yarn serve`, use your browser to open `localhost:8080` (or whateve
 
 ```bash
 yarn build        # to build for production
-yarn lint         # ro run linter program
+yarn lint         # to run linter program
 ```
