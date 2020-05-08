@@ -19,9 +19,9 @@ export default abstract class CursorHandler {
   protected readonly Y_AXIS = new Vector3(0, 1, 0);
   protected readonly Z_AXIS = new Vector3(0, 0, 1);
 
-  protected camera: Camera;
-  protected canvas: HTMLCanvasElement;
-  protected scene: Scene;
+  protected readonly camera: Camera;
+  protected readonly canvas: HTMLCanvasElement;
+  private readonly scene: Scene;
   protected rayCaster: Raycaster;
   protected mouse: Vector2;
   protected store = AppStore; // Vuex global state
@@ -110,7 +110,6 @@ export default abstract class CursorHandler {
       /* What to do here? */
       this.isOnSphere = false;
     }
-    console.debug("Current position", this.vec3tostr(this.currentPoint));
   };
 
   isLayerEnable = (l: Layers, m: number): boolean =>

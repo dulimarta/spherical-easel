@@ -9,20 +9,22 @@
           v-model="showSphereControl" label="Sphere Control">
         </v-switch>
       </v-row>
-      <div justify="center" ref="content" id="content"></div>
+      <div justify="center" ref="content" id="content">
+
+      </div>
     </v-container>
   </div>
 </template>
 
 <script lang="ts">
 
-import { Vue, Watch } from "vue-property-decorator";
+import { Vue, Watch, Prop } from "vue-property-decorator";
 import Component from "vue-class-component";
 import * as THREE from "three";
 // import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import { TransformControls } from "three/examples/jsm/controls/TransformControls";
-import Axes from "@/3d-objs/Axes";
-import Vertex from "@/3d-objs/Vertex";
+// import Axes from "@/3d-objs/Axes";
+// import Vertex from "@/3d-objs/Vertex";
 import CursorHandler from "@/events/CursorHandler";
 import NormalPointHandler from "@/events/NormalPointHandler";
 import LineHandler from "@/events/LineHandler";
@@ -32,11 +34,18 @@ import MoveHandler from "@/events/MoveHandler";
 import SETTINGS from "@/global-settings";
 import { State } from "vuex-class";
 import ObjectTree from "./ObjectTree.vue";
-import { AddVertexCommand } from '../commands/AddVertexCommand';
-
+// import { AddVertexCommand } from '../commands/AddVertexCommand';
+import { WebGLRenderer } from 'three';
+import { setupScene } from "@/initApp"
 @Component({ components: { ObjectTree } })
 export default class Easel extends Vue {
-  private renderer: THREE.WebGLRenderer;
+
+  @Prop(WebGLRenderer)
+  readonly renderer!: THREE.WebGLRenderer
+
+  @Prop(HTMLCanvasElement)
+  readonly canvas!: HTMLCanvasElement;
+
   private scene: THREE.Scene;
   private camera: THREE.PerspectiveCamera;
   private currentHandler: CursorHandler | null = null;
@@ -49,21 +58,17 @@ export default class Easel extends Vue {
   private sphere: THREE.Mesh;
   private editHint = "Select mode...";
   private showSphereControl = false;
-  private sphericalObjects = [];
 
-  // Declarations linked to Vuex store
+
   @State("editMode")
   private editMode!: string;
 
-  // @Mutation
-  // private addVertex!: (v: Vertex) => void;
-
   constructor() {
     super();
-    this.scene = new THREE.Scene();
-    this.renderer = new THREE.WebGLRenderer();
-    this.renderer.setPixelRatio(window.devicePixelRatio);
-    this.renderer.setClearColor(0xffffff);
+
+    const { scene, sphere } = setupScene();
+    this.scene = scene;
+    this.sphere = sphere;
     this.camera = new THREE.PerspectiveCamera(
       75,
       window.innerWidth / window.innerHeight,
@@ -96,34 +101,14 @@ export default class Easel extends Vue {
       camera: this.camera,
       scene: this.scene
     });
-    const sphereGeometry = new THREE.SphereGeometry(
-      SETTINGS.sphere.radius,
-      30,
-      60
-    );
 
-    this.sphere = new THREE.Mesh(
-      sphereGeometry,
-      new THREE.MeshBasicMaterial({
-        color: SETTINGS.sphere.color,
-        transparent: true,
-        opacity: SETTINGS.sphere.opacity
-      })
-    );
-
-    this.sphere.name = "MainSphere";
-    this.sphere.layers.enable(SETTINGS.layers.sphere);
     this.$store.commit("setSphere", this.sphere);
 
-    this.scene.add(this.sphere);
     this.camera.position.set(1.25, 1.25, 2);
     this.camera.lookAt(0, 0, 0);
     // const axesHelper = new THREE.AxesHelper(SETTINGS.sphere.radius * 1.25);
     // axesHelper.layers.disableAll(); // exclude axeshelper from being searched by Raycaster
     // this.scene.add(axesHelper);
-    const pointLight = new THREE.PointLight(0xffffff, 1, 100);
-    pointLight.position.set(0, 5, 10);
-    this.scene.add(pointLight);
     this.controls = new TransformControls(
       this.camera,
       this.renderer.domElement
@@ -143,18 +128,6 @@ export default class Easel extends Vue {
     this.camera.getWorldQuaternion(q);
     circleBorder.applyQuaternion(q);
     this.scene.add(circleBorder);
-    // Add random vertices (for development only)
-    if (process.env.NODE_ENV === "development") {
-      this.sphere.add(new Axes(1.5, 0.05));
-
-      for (let k = 0; k < 3; k++) {
-        const v = new Vertex(SETTINGS.vertex.size);
-        v.position.set(Math.random(), Math.random(), Math.random());
-        v.position.normalize();
-        v.position.multiplyScalar(SETTINGS.sphere.radius);
-        new AddVertexCommand(v).execute();
-      }
-    }
 
     window.addEventListener("resize", this.onWindowResized);
     window.addEventListener("keypress", this.keyPressed);
@@ -162,8 +135,10 @@ export default class Easel extends Vue {
 
   mounted() {
     // VieJS lifecycle function
+    // if (!this.canvas) {
     const el = this.$refs.content as HTMLBaseElement;
-    el.appendChild(this.renderer.domElement);
+    el.appendChild(this.canvas);
+    // }
     this.onWindowResized();
     requestAnimationFrame(this.renderIt);
   }

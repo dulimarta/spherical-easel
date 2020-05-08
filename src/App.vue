@@ -91,7 +91,7 @@
       </div>
     </v-navigation-drawer>
     <v-navigation-drawer app permanent right clipped>
-      <ObjectTree :scene="sphere" />
+      <!-- <ObjectTree :scene="sphere" /> -->
     </v-navigation-drawer>
     <!-- the "clipped-left" attribute works together with 
     the "clipped" attr of the nav drawer -->
@@ -112,7 +112,10 @@
     </v-app-bar>
 
     <v-content>
-      <Easel></Easel>
+
+      <Easel :renderer="renderer" :canvas="canvas">
+      </Easel>
+
     </v-content>
   </v-app>
 </template>
@@ -122,40 +125,47 @@ import Vue from "vue";
 import Easel from "@/components/Easel.vue";
 import ObjectTree from "@/components/ObjectTree.vue"
 import { Command } from "@/commands/Comnand";
-import { mapState } from 'vuex';
-export default Vue.extend({
-  name: "App",
+// import { mapState } from 'vuex';
+import { WebGLRenderer } from 'three';
+import Component from 'vue-class-component';
+// import { State } from 'vuex-class';
 
+@Component({
   components: {
     Easel, ObjectTree
-  },
-
-  data: () => ({
-    editMode: "none",
-    minified: true
-    //
-  }),
-  computed: {
-    ...mapState(["sphere"])
-  },
-  methods: {
-    switchEditMode() {
-      this.$store.commit("setEditMode", this.editMode);
-    },
-    undoEdit() {
-      Command.undo();
-    },
-    redoAction() {
-      Command.redo();
-    },
-    // cantUndo() { return Command.canUndo() === false },
-    // cantRedo: () => !Command.canRedo(),
-  },
-  mounted() {
-    // this.$store.commit('init');
-    // Command.setStore(this.$store);
   }
-});
+})
+export default class App extends Vue {
+  private editMode = "none";
+  private minified = true;
+  private renderer: WebGLRenderer;
+  private canvas: HTMLCanvasElement;
+  // @State
+  // sphere!: THREE.Mesh;
+  //
+  constructor() {
+    super();
+    this.renderer = new WebGLRenderer({ antialias: true });
+    this.canvas = this.renderer.domElement;
+    // ({ canvas: this.$refs.cvs as HTMLCanvasElement });
+    this.renderer.setPixelRatio(window.devicePixelRatio);
+    this.renderer.setClearColor(0xffffff);
+  }
+
+
+  switchEditMode() {
+    this.$store.commit("setEditMode", this.editMode);
+  }
+  undoEdit() {
+    Command.undo();
+  }
+  redoAction() {
+    Command.redo();
+  }
+  // cantUndo() { return Command.canUndo() === false },
+  // cantRedo: () => !Command.canRedo(),
+}
+
 </script>
 <style lang="scss" scoped>
 #leftDrawer {
