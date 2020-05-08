@@ -11,8 +11,9 @@
   -->
   <v-app app>
     <v-app-bar app color="primary" dark clipped-left clipped-right>
-      <!-- This is where the file and export (to EPS, TIKZ, GIF?) operations will go -->
-      <v-app-bar-nav-icon></v-app-bar-nav-icon>
+      <!-- This is where the file and export (to EPS, TIKZ, animated GIF?) operations will go 
+      Also request a feature and report a bug-->
+      <v-app-bar-nav-icon @click="fileSystemsDrawerDisplay = true"></v-app-bar-nav-icon>
       <div class="d-flex align-center">
         <v-img
           alt="Spherical Easel Logo"
@@ -27,10 +28,63 @@
       <v-spacer></v-spacer>
       <!-- This will open up the settings ?drawer ?window for setting the language, decimals 
       display and other global options-->
-      <v-btn icon>
+      <v-btn icon @click="globalSettingsDrawerDisplay=true">
         <v-icon>mdi-cog</v-icon>
       </v-btn>
     </v-app-bar>
+    <!-- This is where the file and export (to EPS, TIKZ, animated GIF?) operations will go 
+    Also request a feature and report a big-->
+    <v-navigation-drawer v-model="fileSystemsDrawerDisplay" absolute temporary>
+      <v-list nav dense>
+        <v-list-item-group v-model="group" active-class="deep-purple--text text--accent-4">
+          <v-list-item>
+            <v-list-item-icon>
+              <v-icon>mdi-upload</v-icon>
+            </v-list-item-icon>
+            <v-list-item-title>Load</v-list-item-title>
+          </v-list-item>
+
+          <v-list-item>
+            <v-list-item-icon>
+              <v-icon>mdi-download</v-icon>
+            </v-list-item-icon>
+            <v-list-item-title>Save</v-list-item-title>
+          </v-list-item>
+        </v-list-item-group>
+      </v-list>
+    </v-navigation-drawer>
+
+    <!-- This will open up the settings ?drawer ?window for setting the language, decimals 
+    display and other global options-->
+    <v-navigation-drawer v-model="globalSettingsDrawerDisplay" right absolute temporary width="30%">
+      <v-container>
+        <v-row>
+          <v-col cols="12">
+            <p>Select a Language</p>
+
+            <v-select
+              v-model="currentLanguage"
+              class="my-2"
+              :items="languages"
+              item-value="currentLanguage"
+              :value="currentLanguage"
+            ></v-select>
+            <p>The current language is {{ currentLanguage }}.</p>
+          </v-col>
+        </v-row>
+      </v-container>
+      <!-- <v-select
+        v-model="select"
+        :hint="`${select.state}, ${select.abbr}`"
+        :items="items"
+        item-text="state"
+        item-value="abbr"
+        label="Select"
+        persistent-hint
+        return-object
+        single-line
+      ></v-select>-->
+    </v-navigation-drawer>
 
     <!--  
       This is the left drawer component that contains that the
@@ -55,6 +109,7 @@
       bottom
       color="accent"
       :mini-variant="leftDrawerMinified"
+      class="elevation-5"
     >
       <v-container fluid v-if="!leftDrawerMinified" class="ma-0 pa-0">
         <v-tabs v-model="activeLeftDrawerTab">
@@ -251,7 +306,11 @@ export default Vue.extend({
   data: () => ({
     editMode: "none",
     leftDrawerMinified: false,
-    activeLeftDrawerTab: "toolListTab"
+    activeLeftDrawerTab: "toolListTab",
+    fileSystemsDrawerDisplay: false,
+    globalSettingsDrawerDisplay: false,
+    languages: ["English", "Klingon"],
+    currentLanguage: "Klingon"
   }),
   computed: {
     ...mapState(["sphere"])
