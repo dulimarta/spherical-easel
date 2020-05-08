@@ -105,13 +105,14 @@ export default class ObjectTree extends Vue {
   updateActive(args: number[]) {
 
     if (args.length > 0) {
+
+      // Turn off highlight on the currently selected object
       if (this.selectedObject) {
         (this.selectedObject.material as MeshPhongMaterial).emissive.set(0);
       }
 
-
+      // Highlight the current selection in red (0xff0000)
       this.selectedObject = this.sphere.getObjectById(args[0]) as Mesh;
-
       if (this.selectedObject)
         (this.selectedObject.material as MeshPhongMaterial).emissive
           .set(0xff0000);

@@ -110,7 +110,7 @@ export default abstract class CursorHandler {
       /* What to do here? */
       this.isOnSphere = false;
     }
-    console.debug("Current position", this.vec3tostr(this.currentPoint));
+    // console.debug("Current position", this.vec3tostr(this.currentPoint));
   };
 
   isLayerEnable = (l: Layers, m: number): boolean =>

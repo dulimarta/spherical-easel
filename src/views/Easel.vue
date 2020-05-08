@@ -31,7 +31,7 @@ import RingHandler from "@/events/RingHandler";
 import MoveHandler from "@/events/MoveHandler";
 import SETTINGS from "@/global-settings";
 import { State } from "vuex-class";
-import ObjectTree from "./ObjectTree.vue";
+import ObjectTree from "@/components/ObjectTree.vue";
 import { AddVertexCommand } from '../commands/AddVertexCommand';
 
 @Component({ components: { ObjectTree } })
