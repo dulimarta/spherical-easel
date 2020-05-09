@@ -37,11 +37,12 @@ import ObjectTree from "./ObjectTree.vue";
 // import { AddVertexCommand } from '../commands/AddVertexCommand';
 import { WebGLRenderer } from 'three';
 import { setupScene } from "@/initApp"
+
 @Component({ components: { ObjectTree } })
 export default class Easel extends Vue {
 
   @Prop(WebGLRenderer)
-  readonly renderer!: THREE.WebGLRenderer
+  readonly renderer!: WebGLRenderer;
 
   @Prop(HTMLCanvasElement)
   readonly canvas!: HTMLCanvasElement;
@@ -135,10 +136,13 @@ export default class Easel extends Vue {
 
   mounted() {
     // VieJS lifecycle function
-    // if (!this.canvas) {
-    const el = this.$refs.content as HTMLBaseElement;
-    el.appendChild(this.canvas);
-    // }
+
+    // During testting canvas is set to null and appendChild() will fail
+    if (this.canvas instanceof HTMLCanvasElement) {
+      const el = this.$refs.content as HTMLBaseElement;
+      el.appendChild(this.canvas);
+    }
+
     this.onWindowResized();
     requestAnimationFrame(this.renderIt);
   }

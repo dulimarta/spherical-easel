@@ -128,6 +128,7 @@ import { Command } from "@/commands/Comnand";
 // import { mapState } from 'vuex';
 import { WebGLRenderer } from 'three';
 import Component from 'vue-class-component';
+import { Inject } from 'vue-property-decorator';
 // import { State } from 'vuex-class';
 
 @Component({
@@ -138,16 +139,17 @@ import Component from 'vue-class-component';
 export default class App extends Vue {
   private editMode = "none";
   private minified = true;
-  private renderer: WebGLRenderer;
+
+  // Use dependency injection to let us mock the renderer
+  // with a fake implementation during testing
+  @Inject()
+  private renderer!: WebGLRenderer;
+
   private canvas: HTMLCanvasElement;
-  // @State
-  // sphere!: THREE.Mesh;
-  //
+
   constructor() {
     super();
-    this.renderer = new WebGLRenderer({ antialias: true });
     this.canvas = this.renderer.domElement;
-    // ({ canvas: this.$refs.cvs as HTMLCanvasElement });
     this.renderer.setPixelRatio(window.devicePixelRatio);
     this.renderer.setClearColor(0xffffff);
   }

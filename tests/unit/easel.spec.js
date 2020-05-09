@@ -6,7 +6,12 @@ import Vuetify from "vuetify";
 import { MockRenderer } from "../stub-modules/MockRenderer"
 Vue.use(Vuetify);
 
-describe("HelloWorld.vue", () => {
+const mockStore = {
+  mutations: {
+    setSphere() { }
+  }
+}
+describe("Easel.vue", () => {
   let localVue;
   let store;
   let vuetify;
@@ -14,13 +19,14 @@ describe("HelloWorld.vue", () => {
     vuetify = new Vuetify();
     localVue = createLocalVue();
     localVue.use(Vuex);
-    store = new Vuex.Store({});
+    store = new Vuex.Store(mockStore);
   });
 
   it("is an instance", () => {
     const wrapper = shallowMount(Easel, {
       propsData: {
-        renderer: new MockRenderer()
+        renderer: new MockRenderer(),
+        canvas: null
       },
       localVue,
       store
