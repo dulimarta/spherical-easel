@@ -28,6 +28,8 @@ export default class Line extends Mesh {
       /* radial segments */ 120,
       2 * Math.PI
     );
+    this.name = (this._segment ? "Segment-" : "Line-") + this.id;
+
     this.material = new MeshPhongMaterial({ color: 0xffffff });
   }
 
@@ -77,7 +79,6 @@ export default class Line extends Mesh {
     );
     dup.rotation.copy(this.rotation);
     dup._segment = this._segment;
-    dup.name = (dup._segment ? "Segment-" : "Line-") + this.id;
     dup.start.copy(this.start);
     dup.end.copy(this.end);
     return dup as this;

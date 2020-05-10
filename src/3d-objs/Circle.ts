@@ -56,7 +56,6 @@ export default class Circle extends Mesh {
 
   clone(): this {
     const dup = new Circle(this.center, this.outer);
-    dup.name = this.name;
     dup.rotation.copy(this.rotation);
     dup.position.copy(this.position);
     dup.scale.copy(this.scale);
