@@ -1,16 +1,23 @@
-// Use command design pattern to implement undo
-// let history: Command[] = [];
+/** This class uses the Command Design Pattern to
+ * wraps actions into objects.
+ * The most important abstract method of this class is the `do()`
+ * method, it performs the action wrapped by the object
+ * 
+ * In order to support undo feature, each command must also
+ * implement the restoreState() method to revert the effects of the action.
+ * The constructor of every subclass must take the arguments needed to perform
+ * the actual action of the command.
+*/
+
 import { Store } from "vuex";
 import { AppState } from "@/types";
 import AppStore from "@/store";
 export abstract class Command {
   protected static store: Store<AppState> = AppStore;
-  static commandHistory: Command[] = [];
-  static redoHistory: Command[] = [];
+
+  static commandHistory: Command[] = []; // stack of executed commands
+  static redoHistory: Command[] = []; // stack of undone commands
   protected lastState: any;
-  // static setStore(st: Store<AppState>) {
-  //   this.store = st;
-  // }
   static undo() {
     if (Command.commandHistory.length === 0) return;
 
@@ -48,6 +55,8 @@ export abstract class Command {
   // The operation(s) implemented in restoreState() are usually opposite of the
   // operation(s) implemented in do()
   abstract restoreState(): void;
+
+  // TODO: consider merging saveState() and do(). They are always invoked one after the other
 
   // saveSTate: Save require information to restore the app state
   abstract saveState(): void;

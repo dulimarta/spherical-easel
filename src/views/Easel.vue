@@ -1,28 +1,38 @@
 <template>
-  <div>
-    <v-container>
-      <!--- ml-2: margin left 8 px -->
-      <v-row>
+  <v-container fluid>
+    <!--- ml-2: margin left 8 px -->
+    <v-row>
+      <!---
+      VUetify grid system uses 12-column layout.
+      In the following setup, 
+      (1) the editHint text will occupy 75% of the panel width
+      (2) the toggle switch will occupy 25% of the panel width
+      (3) the canvas will will in the entire width
+      --->
+      <v-col cols="9">
         <span class="body-1 ml-2">{{ editHint }}</span>
-        <v-spacer />
+      </v-col>
+      <v-col cols="3">
         <v-switch v-show="editMode === 'none'" class="mr-4"
           v-model="showSphereControl" label="Sphere Control">
         </v-switch>
-      </v-row>
-      <div justify="center" ref="content" id="content"></div>
-    </v-container>
-  </div>
+      </v-col>
+      <v-col cols="12" ref="content" id="content" class="pa-2">
+        <!--- HTML canvas will go here --->
+      </v-col>
+    </v-row>
+  </v-container>
 </template>
 
 <script lang="ts">
 
-import { Vue, Watch } from "vue-property-decorator";
+import { Vue, Watch, Prop } from "vue-property-decorator";
 import Component from "vue-class-component";
 import * as THREE from "three";
 // import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import { TransformControls } from "three/examples/jsm/controls/TransformControls";
-import Axes from "@/3d-objs/Axes";
-import Vertex from "@/3d-objs/Vertex";
+// import Axes from "@/3d-objs/Axes";
+// import Vertex from "@/3d-objs/Vertex";
 import CursorHandler from "@/events/CursorHandler";
 import NormalPointHandler from "@/events/NormalPointHandler";
 import LineHandler from "@/events/LineHandler";
@@ -32,11 +42,18 @@ import MoveHandler from "@/events/MoveHandler";
 import SETTINGS from "@/global-settings";
 import { State } from "vuex-class";
 import ObjectTree from "@/components/ObjectTree.vue";
-import { AddVertexCommand } from '../commands/AddVertexCommand';
+import { WebGLRenderer } from 'three';
+import { setupScene } from "@/initApp"
 
 @Component({ components: { ObjectTree } })
 export default class Easel extends Vue {
-  private renderer: THREE.WebGLRenderer;
+
+  @Prop(WebGLRenderer)
+  readonly renderer!: WebGLRenderer;
+
+  @Prop(HTMLCanvasElement)
+  readonly canvas!: HTMLCanvasElement;
+
   private scene: THREE.Scene;
   private camera: THREE.PerspectiveCamera;
   private currentHandler: CursorHandler | null = null;
@@ -49,21 +66,18 @@ export default class Easel extends Vue {
   private sphere: THREE.Mesh;
   private editHint = "Select mode...";
   private showSphereControl = false;
-  private sphericalObjects = [];
+  private width = 0;
+  private height = 0
 
-  // Declarations linked to Vuex store
   @State("editMode")
   private editMode!: string;
 
-  // @Mutation
-  // private addVertex!: (v: Vertex) => void;
-
   constructor() {
     super();
-    this.scene = new THREE.Scene();
-    this.renderer = new THREE.WebGLRenderer();
-    this.renderer.setPixelRatio(window.devicePixelRatio);
-    this.renderer.setClearColor(0xffffff);
+
+    const { scene, sphere } = setupScene();
+    this.scene = scene;
+    this.sphere = sphere;
     this.camera = new THREE.PerspectiveCamera(
       75,
       window.innerWidth / window.innerHeight,
@@ -96,34 +110,14 @@ export default class Easel extends Vue {
       camera: this.camera,
       scene: this.scene
     });
-    const sphereGeometry = new THREE.SphereGeometry(
-      SETTINGS.sphere.radius,
-      30,
-      60
-    );
 
-    this.sphere = new THREE.Mesh(
-      sphereGeometry,
-      new THREE.MeshBasicMaterial({
-        color: SETTINGS.sphere.color,
-        transparent: true,
-        opacity: SETTINGS.sphere.opacity
-      })
-    );
-
-    this.sphere.name = "MainSphere";
-    this.sphere.layers.enable(SETTINGS.layers.sphere);
     this.$store.commit("setSphere", this.sphere);
 
-    this.scene.add(this.sphere);
     this.camera.position.set(1.25, 1.25, 2);
     this.camera.lookAt(0, 0, 0);
     // const axesHelper = new THREE.AxesHelper(SETTINGS.sphere.radius * 1.25);
     // axesHelper.layers.disableAll(); // exclude axeshelper from being searched by Raycaster
     // this.scene.add(axesHelper);
-    const pointLight = new THREE.PointLight(0xffffff, 1, 100);
-    pointLight.position.set(0, 5, 10);
-    this.scene.add(pointLight);
     this.controls = new TransformControls(
       this.camera,
       this.renderer.domElement
@@ -143,18 +137,6 @@ export default class Easel extends Vue {
     this.camera.getWorldQuaternion(q);
     circleBorder.applyQuaternion(q);
     this.scene.add(circleBorder);
-    // Add random vertices (for development only)
-    if (process.env.NODE_ENV === "development") {
-      this.sphere.add(new Axes(1.5, 0.05));
-
-      for (let k = 0; k < 3; k++) {
-        const v = new Vertex(SETTINGS.vertex.size);
-        v.position.set(Math.random(), Math.random(), Math.random());
-        v.position.normalize();
-        v.position.multiplyScalar(SETTINGS.sphere.radius);
-        new AddVertexCommand(v).execute();
-      }
-    }
 
     window.addEventListener("resize", this.onWindowResized);
     window.addEventListener("keypress", this.keyPressed);
@@ -162,8 +144,14 @@ export default class Easel extends Vue {
 
   mounted() {
     // VieJS lifecycle function
-    const el = this.$refs.content as HTMLBaseElement;
-    el.appendChild(this.renderer.domElement);
+
+    // During testting canvas is set to null and appendChild() will fail
+    if (this.canvas instanceof HTMLCanvasElement) {
+      const el = this.$refs.content as HTMLBaseElement;
+
+      el.appendChild(this.canvas);
+    }
+
     this.onWindowResized();
     requestAnimationFrame(this.renderIt);
   }
@@ -185,9 +173,14 @@ export default class Easel extends Vue {
 
   onWindowResized = () => {
     const el = this.$refs.content as HTMLBaseElement;
-    if (!el) return;
     if (el) {
-      const size = Math.min(el.clientWidth, 640);
+      this.height = el.clientHeight;
+      this.width = el.clientWidth;
+      const availHeight = window.innerHeight - el.offsetTop;
+      console.debug(`Height ${el.clientHeight}, 
+       Offset top ${el.offsetTop}, Viewport height:
+      ${window.innerHeight}`);
+      const size = Math.min(el.clientWidth, availHeight);
       this.camera.aspect = 1;
       this.camera.updateProjectionMatrix();
       this.renderer.setSize(size, size);
@@ -251,6 +244,9 @@ export default class Easel extends Vue {
 </script>
 <style scoped>
 #content {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
   border: 1px solid black;
   margin: 4px;
 }

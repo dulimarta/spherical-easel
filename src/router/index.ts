@@ -1,14 +1,23 @@
 import Vue from "vue";
 import VueRouter, { RouteConfig } from "vue-router";
 import Easel from "@/views/Easel.vue";
+import { WebGLRenderer } from 'three';
 
 Vue.use(VueRouter);
+
+const renderer = new WebGLRenderer({ antialias: true });
+renderer.setPixelRatio(window.devicePixelRatio);
+renderer.setClearColor(0xffffff);
 
 const routes: Array<RouteConfig> = [
   {
     path: "/",
     name: "Home",
-    component: Easel
+    component: Easel,
+    props: {
+      renderer,
+      canvas: renderer.domElement
+    }
   },
   {
     path: "/settings",

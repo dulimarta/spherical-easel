@@ -4,18 +4,17 @@
   underlying Document Object Model. We can use this template for specifiying
   locations in the document with the "id" class.  
 -->
+
 <template>
   <!-- 
     This is the main application that must contain all the vuetify components.
     There can be only one of these environments.
   -->
   <v-app app>
+
     <v-app-bar app color="primary" dark dense clipped-left clipped-right>
-      <!-- This is where the file and export (to EPS, TIKZ, animated GIF?) operations will go 
-      Also request a feature and report a bug-->
       <v-app-bar-nav-icon @click="fileSystemsDrawerDisplay = true">
       </v-app-bar-nav-icon>
-
       <div class="d-flex align-center">
         <router-link to="/">
           <v-img alt="Spherical Easel Logo" class="shrink mr-2" contain
@@ -26,6 +25,8 @@
       </div>
 
       <v-spacer></v-spacer>
+      <!-- This is where the file and export (to EPS, TIKZ, animated GIF?) operations will go 
+      Also request a feature and report a bug-->
       <!-- This will open up the settings ?drawer ?window for setting the language, decimals 
       display and other global options-->
       <v-btn icon @click="globalSettingsDrawerDisplay=true">
@@ -34,10 +35,150 @@
         <v-icon>mdi-cog</v-icon>
       </v-btn>
     </v-app-bar>
+
+    <!--  
+      This is the left drawer component that contains that the
+      tools and a list of the objects that have been created in two tabs
+      
+      Use the "clipped" attribute to keep the navigation drawer 
+      below the app toolbar
+      Use the "bottom" attribute to have this menu appear at the bottom on mobile
+      
+      The line ":mini-variant="leftDrawerMinified" is shorthand for 
+      'v-bind:mini-variant="leftDrawerMinified"'
+      this is a bond between the attribute 'mini-varient' (a Vue property of a navigation drawer)
+      and the expression 'leftDrawerMinified' (a user name bolean variable)
+      this means that when the expression 'leftDrawerMinified' changes the attribute 'mini-variant' 
+      will update.
+    -->
+
+    <!--  Use the "cliopped" attribute to keep the navigation drawer 
+    below the app toolbar-->
+    <v-navigation-drawer id="leftDrawer" app clipped color="accent"
+      permanent :mini-variant="leftDrawerMinified">
+      <v-container id="leftnav" fluid>
+        <div>
+          <v-btn icon @click="leftDrawerMinified = !leftDrawerMinified">
+            <v-icon v-if="leftDrawerMinified">mdi-arrow-right</v-icon>
+            <v-icon v-else>mdi-arrow-left</v-icon>
+          </v-btn>
+        </div>
+        <div v-if="!leftDrawerMinified">
+          <v-tabs v-model="activeLeftDrawerTab">
+            <v-tab class="tabs-margin-padding">
+              <v-icon left>mdi-calculator</v-icon>
+            </v-tab>
+            <v-tab class="tabs-margin-padding">
+              <v-icon left>mdi-format-list-bulleted</v-icon>
+            </v-tab>
+
+            <v-tab-item>
+              <div class="pa-1">
+                <h3 class="body-1 font-weight-bold">Basic Tools</h3>
+                <v-btn-toggle v-model="editMode" @change="switchEditMode"
+                  class="mr-2"
+                  v-bind:style="{ flexDirection: leftDrawerMinified ? 'column' : 'row' }">
+                  <v-tooltip bottom>
+                    <template v-slot:activator="{ on }">
+                      <v-btn value="none" v-on="on">
+                        <v-icon>mdi-cursor-pointer</v-icon>
+                      </v-btn>
+                    </template>
+                    <span>None</span>
+                  </v-tooltip>
+
+                  <v-tooltip bottom>
+                    <template v-slot:activator="{ on }">
+                      <v-btn value="move" v-on="on">
+                        <v-icon>mdi-cursor-move</v-icon>
+                      </v-btn>
+                    </template>
+                    <span>Move object</span>
+                  </v-tooltip>
+                  <v-tooltip bottom>
+                    <template v-slot:activator="{ on }">
+                      <v-btn value="point" v-on="on">
+                        <v-icon>mdi-vector-point</v-icon>
+                      </v-btn>
+                    </template>
+                    <span>Insert point</span>
+                  </v-tooltip>
+                  <v-tooltip bottom>
+                    <template v-slot:activator="{ on }">
+                      <v-btn value="line" v-on="on">
+                        <v-icon>mdi-vector-line</v-icon>
+                      </v-btn>
+                    </template>
+                    <span>Insert line</span>
+                  </v-tooltip>
+                  <v-tooltip bottom>
+                    <template v-slot:activator="{ on }">
+                      <v-btn value="segment" v-on="on">
+                        <v-icon>mdi-vector-radius</v-icon>
+                      </v-btn>
+                    </template>
+                    <span>Insert segment</span>
+                  </v-tooltip>
+                  <v-tooltip bottom>
+                    <template v-slot:activator="{ on }">
+                      <v-btn value="circle" v-on="on">
+                        <v-icon>mdi-vector-circle-variant</v-icon>
+                      </v-btn>
+                    </template>
+                    <span>Insert circle</span>
+                  </v-tooltip>
+                </v-btn-toggle>
+                <h3 class="body-1 font-weight-bold">Edit Tools</h3>
+                <v-btn-toggle
+                  v-bind:style="{ flexDirection: leftDrawerMinified ? 'column' : 'row' }">
+                  <v-tooltip bottom>
+                    <template v-slot:activator="{ on }">
+                      <v-btn @click="undoEdit" v-on="on">
+                        <v-icon>mdi-undo</v-icon>
+                      </v-btn>
+                    </template>
+                    <span>Undo last action</span>
+                  </v-tooltip>
+                  <v-tooltip bottom>
+                    <template v-slot:activator="{ on }">
+                      <v-btn @click="redoAction" v-on="on">
+                        <v-icon>mdi-redo</v-icon>
+                      </v-btn>
+                    </template>
+                    <span>Redo action</span>
+                  </v-tooltip>
+                </v-btn-toggle>
+                <div class="ml-2" style="height:100%;">
+                  <div v-show="!leftDrawerMinified">
+                    <h3 class="body-1 font-weight-bold">Key Shortcut
+                    </h3>
+                    <ul>
+                      <li>"R": reset sphere orientation</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </v-tab-item>
+            <v-tab-item>
+              <!-- 
+      This component is the "right drawer". Eventually I want this to contain access to the
+      tools that will format the objects and when minimized it will be hidden and 
+      inaccessible.
+    -->
+              <ObjectTree :scene="sphere"></ObjectTree>
+            </v-tab-item>
+          </v-tabs>
+        </div>
+      </v-container>
+      <div id="leftnavicons" v-if="leftDrawerMinified">
+        <v-icon class="my-2">mdi-calculator</v-icon>
+        <v-icon class="my-2">mdi-format-list-bulleted</v-icon>
+      </div>
+    </v-navigation-drawer>
     <!-- This is where the file and export (to EPS, TIKZ, animated GIF?) operations will go 
     Also request a feature and report a big-->
-    <v-navigation-drawer v-model="fileSystemsDrawerDisplay" absolute
-      temporary>
+    <!-- TODO: Move this to Easel.vue? --->
+    <!--v-navigation-drawer v-model="fileSystemsDrawerDisplay" temporary>
       <v-list nav dense>
         <v-list-item-group v-model="group"
           active-class="deep-purple--text text--accent-4">
@@ -56,11 +197,12 @@
           </v-list-item>
         </v-list-item-group>
       </v-list>
-    </v-navigation-drawer>
+    </v-navigation-drawer-->
 
     <!-- This will open up the settings ?drawer ?window for setting the language, decimals 
     display and other global options-->
-    <v-navigation-drawer v-model="globalSettingsDrawerDisplay" right
+    <!-- TODO: move this to the "Settings.vue" view -->
+    <!-- <v-navigation-drawer v-model="globalSettingsDrawerDisplay" right
       absolute temporary width="30%">
       <v-container>
         <v-row>
@@ -74,193 +216,18 @@
           </v-col>
         </v-row>
       </v-container>
-      <!-- <v-select
-        v-model="select"
-        :hint="`${select.state}, ${select.abbr}`"
-        :items="items"
-        item-text="state"
-        item-value="abbr"
-        label="Select"
-        persistent-hint
-        return-object
-        single-line
-      ></v-select>-->
-    </v-navigation-drawer>
-
-    <!--  
-      This is the left drawer component that contains that the
-      tools and a list of the objects that have been created in two tabs
-      
-      Use the "clipped" attribute to keep the navigation drawer 
-      below the app toolbar
-      
-      Use the "bottom" attribute to have this menu appear at the bottom on mobile
-      
-      The line ":mini-variant="leftDrawerMinified" is shorthand for 
-      'v-bind:mini-variant="leftDrawerMinified"'
-      this is a bond between the attribute 'mini-varient' (a Vue property of a navigation drawer)
-      and the expression 'leftDrawerMinified' (a user name bolean variable)
-      this means that when the expression 'leftDrawerMinified' changes the attribute 'mini-varient' 
-      will update.
-    -->
-    <v-navigation-drawer app clipped permanent bottom color="accent"
-      :mini-variant="leftDrawerMinified" class="elevation-5">
-      <v-container fluid v-if="!leftDrawerMinified" class="ma-0 pa-0">
-        <v-tabs v-model="activeLeftDrawerTab">
-          <v-container fluid class="ma-0 pa-0">
-            <v-row class="ma-0 pa-0">
-              <v-col class="ma-0 pa-0">
-                <v-row align="start" justify="start">
-                  <v-btn class="mt-2 pa-0 ml-3" icon
-                    @click="leftDrawerMinified = !leftDrawerMinified">
-                    <v-icon>mdi-arrow-left</v-icon>
-                  </v-btn>
-                  <v-tab class="tabs-margin-padding"
-                    :href="`#toolListTab`">
-                    <v-icon left>mdi-calculator</v-icon>
-                  </v-tab>
-                  <v-tab class="tabs-margin-padding"
-                    :href="`#objectListTab`">
-                    <v-icon left>mdi-format-list-bulleted</v-icon>
-                  </v-tab>
-                </v-row>
-              </v-col>
-            </v-row>
-          </v-container>
-          <v-tabs-items v-model="activeLeftDrawerTab">
-            <v-tab-item :value="`toolListTab`">
-              <v-container fluid>
-                <div class="ml-2" style="height:100%;">
-                  <h3 class="body-1 font-weight-bold">Basic Tools</h3>
-                  <v-btn-toggle v-model="editMode" @change="switchEditMode"
-                    class="mr-2"
-                    v-bind:style="{ flexDirection: leftDrawerMinified ? 'column' : 'row' }">
-                    <v-tooltip bottom>
-                      <template v-slot:activator="{ on }">
-                        <v-btn value="none" v-on="on">
-                          <v-icon>mdi-cursor-pointer</v-icon>
-                        </v-btn>
-                      </template>
-                      <span>None</span>
-                    </v-tooltip>
-
-                    <v-tooltip bottom>
-                      <template v-slot:activator="{ on }">
-                        <v-btn value="move" v-on="on">
-                          <v-icon>mdi-cursor-move</v-icon>
-                        </v-btn>
-                      </template>
-                      <span>Move object</span>
-                    </v-tooltip>
-                    <v-tooltip bottom>
-                      <template v-slot:activator="{ on }">
-                        <v-btn value="point" v-on="on">
-                          <v-icon>mdi-vector-point</v-icon>
-                        </v-btn>
-                      </template>
-                      <span>Insert point</span>
-                    </v-tooltip>
-                    <v-tooltip bottom>
-                      <template v-slot:activator="{ on }">
-                        <v-btn value="line" v-on="on">
-                          <v-icon>mdi-vector-line</v-icon>
-                        </v-btn>
-                      </template>
-                      <span>Insert line</span>
-                    </v-tooltip>
-                    <v-tooltip bottom>
-                      <template v-slot:activator="{ on }">
-                        <v-btn value="segment" v-on="on">
-                          <v-icon>mdi-vector-radius</v-icon>
-                        </v-btn>
-                      </template>
-                      <span>Insert segment</span>
-                    </v-tooltip>
-                    <v-tooltip bottom>
-                      <template v-slot:activator="{ on }">
-                        <v-btn value="circle" v-on="on">
-                          <v-icon>mdi-vector-circle-variant</v-icon>
-                        </v-btn>
-                      </template>
-                      <span>Insert circle</span>
-                    </v-tooltip>
-                  </v-btn-toggle>
-                  <h3 class="body-1 font-weight-bold">Edit Tools</h3>
-                  <v-btn-toggle
-                    v-bind:style="{ flexDirection: leftDrawerMinified ? 'column' : 'row' }">
-                    <v-tooltip bottom>
-                      <template v-slot:activator="{ on }">
-                        <v-btn @click="undoEdit" v-on="on">
-                          <v-icon>mdi-undo</v-icon>
-                        </v-btn>
-                      </template>
-                      <span>Undo last action</span>
-                    </v-tooltip>
-                    <v-tooltip bottom>
-                      <template v-slot:activator="{ on }">
-                        <v-btn @click="redoAction" v-on="on">
-                          <v-icon>mdi-redo</v-icon>
-                        </v-btn>
-                      </template>
-                      <span>Redo action</span>
-                    </v-tooltip>
-                  </v-btn-toggle>
-                  <div v-show="!leftDrawerMinified">
-                    <h3 class="body-1 font-weight-bold">Key Shortcut</h3>
-                    <ul>
-                      <li>"R": reset sphere orientation</li>
-                    </ul>
-                  </div>
-                </div>
-              </v-container>
-            </v-tab-item>
-
-            <v-tab-item :value="`objectListTab`">
-              <v-card flat>
-                <ObjectTree :scene="sphere" />
-              </v-card>
-            </v-tab-item>
-          </v-tabs-items>
-        </v-tabs>
-      </v-container>
-
-      <v-container fluid v-else style="height: 100%;">
-        <v-row align="start" no-gutters style="height: 1%;">
-          <v-col>
-            <v-btn icon @click="leftDrawerMinified = !leftDrawerMinified">
-              <v-icon>mdi-arrow-right</v-icon>
-            </v-btn>
-          </v-col>
-        </v-row>
-        <v-row align="center" no-gutters style="height: 100%;">
-          <v-col>
-            <v-btn icon
-              @click="leftDrawerMinified = !leftDrawerMinified; activeLeftDrawerTab = 'toolListTab'">
-              <v-icon>mdi-calculator</v-icon>
-            </v-btn>
-            <v-btn icon
-              @click="leftDrawerMinified = !leftDrawerMinified; activeLeftDrawerTab = 'objectListTab'">
-              <v-icon>mdi-format-list-bulleted</v-icon>
-            </v-btn>
-          </v-col>
-        </v-row>
-      </v-container>
-    </v-navigation-drawer>
-
-    <!-- 
-      This component is the "right drawer". Eventually I want this to contain access to the
-      tools that will format the objects and when minimized it will be hidden and 
-      inaccessible.
-    -->
-    <!-- <v-navigation-drawer app permanent right clipped>
-      <ObjectTree :scene="sphere" />
-    </v-navigation-drawer>-->
+    </v-navigation-drawer> -->
 
     <!-- 
       This is the main window of the app. All other components are display on top of this element
     -->
     <v-content>
-      <router-view></router-view>
+      <router-view>
+      </router-view>
+      <!--div>
+        <Easel :renderer="renderer" :canvas="canvas">
+        </Easel>
+      </div-->
 
     </v-content>
   </v-app>
@@ -272,76 +239,90 @@
 -->
 <script lang="ts">
 import Vue from "vue";
-// import Easel from "@/components/Easel.vue";
+import Easel from "@/views/Easel.vue";
 import ObjectTree from "@/components/ObjectTree.vue";
 import { Command } from "@/commands/Comnand";
-import { mapState } from "vuex";
+// import { mapState } from "vuex";
+import { WebGLRenderer, Mesh } from 'three';
+import Component from 'vue-class-component';
+import { Inject } from 'vue-property-decorator';
+import { State } from 'vuex-class';
 
-/*
-  This is command is simlar to the 'var App = new Vue (args)' command, but it is 
-  better for some reason that I don't understand yet.  
-*/
-export default Vue.extend({
-  name: "App",
 
-  components: {
-    // Easel,
-    ObjectTree
-  },
+@Component({
+  components: {    Easel, ObjectTree
+  }
+})
+export default class App extends Vue {
+  private editMode = "none";
+  private leftDrawerMinified = false;
+  private activeLeftDrawerTab = null;
+  private fileSystemsDrawerDisplay = false;
+  private globalSettingsDrawerDisplay = false;
+  private languages = ["English", "Klingon"];
+  private group = "";
+  private currentLanguage = "Klingon";
 
-  data: () => ({
-    editMode: "none",
-    leftDrawerMinified: false,
-    activeLeftDrawerTab: "toolListTab",
-    fileSystemsDrawerDisplay: false,
-    globalSettingsDrawerDisplay: false,
-    languages: ["English", "Klingon"],
-    group: "",
-    currentLanguage: "Klingon"
-  }),
-  computed: {
-    ...mapState(["sphere"])
-  },
-  methods: {
-    switchEditMode() {
-      this.$store.commit("setEditMode", this.editMode);
-    },
-    showSettingsView() {
-      /* force left drawer to minity */
-      this.leftDrawerMinified = true;
-      this.$router.push({ path: "/settings" })
-    },
-    undoEdit() {
-      Command.undo();
-    },
-    redoAction() {
-      Command.redo();
-    }
-    // cantUndo() { return Command.canUndo() === false },
-    // cantRedo: () => !Command.canRedo(),
-  },
+  // Use dependency injection to let us mock the renderer
+  // with a fake implementation during testing
+  @Inject()
+  private renderer!: WebGLRenderer;
+
+  private canvas: HTMLCanvasElement;
+
+  @State
+  private sphere!: Mesh;
+  constructor() {
+    super();
+    this.canvas = this.renderer.domElement;
+    this.renderer.setPixelRatio(window.devicePixelRatio);
+    this.renderer.setClearColor(0xffffff);
+  }
   mounted() {
     // this.$store.commit('init');
     // Command.setStore(this.$store);
   }
-});
-</script>
 
+  switchEditMode() {
+    this.$store.commit("setEditMode", this.editMode);
+  }
+  showSettingsView() {
+    /* force left drawer to minity */
+    this.leftDrawerMinified = true;
+    this.$router.push({ path: "/settings" })
+  }
+
+  undoEdit() {
+    Command.undo();
+  }
+  redoAction() {
+    Command.redo();
+  }
+  // cantUndo() { return Command.canUndo() === false },
+  // cantRedo: () => !Command.canRedo(),
+}
+
+</script>
 <style lang="scss" scoped>
 /* I removed the use of the style for the left drawer of this because it messed with the spacing of the 
 tabs in the notMinified contains and the placement of the buttons in the minified container */
-#leftDrawer {
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  :last-child {
-    align-self: flex-end;
-  }
-}
 
 // Where is this style used?
 // Override the default behavior of Vuetify <v-btn-toggle> elementv-btn-toggle>
+#leftnav {
+  display: flex;
+  flex-direction: column;
+
+  div:first-child {
+    align-self: flex-end;
+  }
+}
+#leftnavicons {
+  height: 80vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
 .v-btn-toggle {
   flex-wrap: wrap;
 }

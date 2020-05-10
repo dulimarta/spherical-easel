@@ -32,13 +32,13 @@ export default class NormalPointHandler extends CursorHandler {
     this.mapCursorToSphere(event);
     if (this.isOnSphere) {
       if (!this.isNormalAdded) {
-        this.scene.add(this.normalArrow);
+        this.theSphere?.add(this.normalArrow);
         this.isNormalAdded = true;
       }
       this.normalArrow.position.copy(this.currentPoint);
-      this.theSphere?.localToWorld(this.normalArrow.position);
+      // this.theSphere?.localToWorld(this.normalArrow.position);
       this.normalDirection.copy(this.currentPoint);
-      this.theSphere?.localToWorld(this.normalDirection);
+      // this.theSphere?.localToWorld(this.normalDirection);
 
       // The default orientation of the arrow is the Y-axis
       this.normalRotation.setFromUnitVectors(
@@ -48,7 +48,7 @@ export default class NormalPointHandler extends CursorHandler {
       this.normalArrow.rotation.set(0, 0, 0);
       this.normalArrow.applyQuaternion(this.normalRotation);
     } else {
-      this.scene.remove(this.normalArrow);
+      this.theSphere?.remove(this.normalArrow);
       this.isNormalAdded = false;
     }
   };
