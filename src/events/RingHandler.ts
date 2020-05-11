@@ -17,15 +17,13 @@ export default class CirleHandler extends CursorHandler {
   private startVertex: Vertex | null = null;
   private endVertex: Vertex | null = null;
   constructor({
-    canvas,
     camera,
     scene
   }: {
-    canvas: HTMLCanvasElement;
     camera: Camera;
     scene: Scene;
   }) {
-    super({ canvas, camera, scene });
+    super({ camera, scene });
     this.startPoint = new Vector3();
     this.endPoint = new Vector3();
     this.startDot = new Vertex();
@@ -34,22 +32,13 @@ export default class CirleHandler extends CursorHandler {
     this.ring = new Circle();
   }
   activate = () => {
-    this.canvas.addEventListener("mousemove", this.mouseMoved);
-    this.canvas.addEventListener("mousedown", this.mousePressed);
-    this.canvas.addEventListener("mouseup", this.mouseReleased);
     this.rayCaster.layers.disableAll();
     this.rayCaster.layers.enable(SETTINGS.layers.sphere);
     this.rayCaster.layers.enable(SETTINGS.layers.vertex);
   };
 
-  deactivate = () => {
-    this.canvas.removeEventListener("mousemove", this.mouseMoved);
-    this.canvas.removeEventListener("mousedown", this.mousePressed);
-    this.canvas.removeEventListener("mouseup", this.mouseReleased);
-  };
-
-  mouseMoved = (event: MouseEvent) => {
-    this.mapCursorToSphere(event);
+  mouseMoved(event: MouseEvent) {
+    super.mouseMoved(event);
     if (this.isOnSphere) {
       if (this.isMouseDown && this.theSphere) {
         if (!this.isCircleAdded) {
@@ -64,9 +53,9 @@ export default class CirleHandler extends CursorHandler {
       this.theSphere?.remove(this.startDot);
       this.isCircleAdded = false;
     }
-  };
+  }
 
-  mousePressed = (/*event: MouseEvent*/) => {
+  mousePressed(event: MouseEvent) {
     this.isMouseDown = true;
     if (this.isOnSphere) {
       const selected = this.hitObject;
@@ -81,9 +70,9 @@ export default class CirleHandler extends CursorHandler {
       this.startDot.position.copy(this.currentPoint);
       this.ring.centerPoint = this.currentPoint;
     }
-  };
+  }
 
-  mouseReleased = (/*event: MouseEvent*/) => {
+  mouseReleased(event: MouseEvent) {
     this.isMouseDown = false;
     if (this.isOnSphere && this.theSphere) {
       // Record the second point of the geodesic circle
@@ -98,7 +87,6 @@ export default class CirleHandler extends CursorHandler {
         // we have to create a new vertex
         const vtx = new Vertex();
         vtx.position.copy(this.startPoint);
-        // this.theSphere.worldToLocal(vtx.position);
         this.startVertex = vtx;
         ringGroup.addCommand(new AddVertexCommand(vtx));
       }
@@ -109,7 +97,6 @@ export default class CirleHandler extends CursorHandler {
         // we have to create a new vertex
         const vtx = new Vertex();
         vtx.position.copy(this.currentPoint);
-        // this.theSphere.worldToLocal(vtx.position);
         this.endVertex = vtx;
         ringGroup.addCommand(new AddVertexCommand(vtx));
       }
@@ -126,5 +113,5 @@ export default class CirleHandler extends CursorHandler {
       this.startVertex = null;
       this.endVertex = null;
     }
-  };
+  }
 }

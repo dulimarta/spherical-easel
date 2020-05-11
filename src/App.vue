@@ -223,12 +223,8 @@
     -->
     <v-content>
       <router-view>
+        <!-- this is the spot where the views controlled by Vue Router will be rendred -->
       </router-view>
-      <!--div>
-        <Easel :renderer="renderer" :canvas="canvas">
-        </Easel>
-      </div-->
-
     </v-content>
   </v-app>
 </template>
@@ -239,10 +235,8 @@
 -->
 <script lang="ts">
 import Vue from "vue";
-import Easel from "@/views/Easel.vue";
 import ObjectTree from "@/components/ObjectTree.vue";
 import { Command } from "@/commands/Comnand";
-// import { mapState } from "vuex";
 import { WebGLRenderer, Mesh } from 'three';
 import Component from 'vue-class-component';
 import { Inject } from 'vue-property-decorator';
@@ -250,7 +244,8 @@ import { State } from 'vuex-class';
 
 
 @Component({
-  components: {    Easel, ObjectTree
+  components: {
+    ObjectTree
   }
 })
 export default class App extends Vue {

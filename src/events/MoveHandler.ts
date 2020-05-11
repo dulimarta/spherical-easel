@@ -9,13 +9,12 @@ export default class MoveHandler extends CursorHandler {
   constructor(args: {
     camera: Camera;
     scene: Scene;
-    canvas: HTMLCanvasElement;
   }) {
     super(args);
   }
 
-  mouseMoved = (event: MouseEvent) => {
-    this.mapCursorToSphere(event);
+  mouseMoved(event: MouseEvent) {
+    super.mouseMoved(event);
     if (this.isDragging && this.moveTarget instanceof Vertex) {
       this.moveTarget.position.copy(this.currentPoint);
       const vtx = this.store.state.vertices.find(
@@ -40,32 +39,21 @@ export default class MoveHandler extends CursorHandler {
         });
       }
     }
-  };
+  }
 
-  mousePressed = () => {
+  mousePressed(event: MouseEvent) {
     this.isDragging = true;
     if (this.hitObject instanceof Vertex) this.moveTarget = this.hitObject;
-  };
+  }
 
-  mouseReleased = () => {
+  mouseReleased(event: MouseEvent) {
     this.isDragging = false;
     this.moveTarget = null;
-  };
+  }
 
   activate() {
-    this.canvas.addEventListener("mousemove", this.mouseMoved);
-    this.canvas.addEventListener("mousedown", this.mousePressed);
-    this.canvas.addEventListener("mouseup", this.mouseReleased);
-    // this.canvas.addEventListener("mousedown", this.mousePressed);
-    // this.canvas.addEventListener("mouseup", this.mouseReleased);
     this.rayCaster.layers.disableAll();
     this.rayCaster.layers.enable(SETTINGS.layers.sphere);
     this.rayCaster.layers.enable(SETTINGS.layers.vertex);
-  }
-
-  deactivate() {
-    this.canvas.removeEventListener("mousemove", this.mouseMoved);
-    this.canvas.removeEventListener("mousedown", this.mousePressed);
-    this.canvas.removeEventListener("mouseup", this.mouseReleased);
   }
 }
