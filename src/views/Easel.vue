@@ -33,7 +33,7 @@ import * as THREE from "three";
 import { TransformControls } from "three/examples/jsm/controls/TransformControls";
 // import Axes from "@/3d-objs/Axes";
 // import Vertex from "@/3d-objs/Vertex";
-import CursorHandler from "@/events/CursorHandler";
+import { ToolStrategy } from "@/events/ToolStrategy";
 import NormalPointHandler from "@/events/NormalPointHandler";
 import LineHandler from "@/events/LineHandler";
 import SegmentHandler from "@/events/SegmentHandler";
@@ -56,12 +56,15 @@ export default class Easel extends Vue {
 
   private scene: THREE.Scene;
   private camera: THREE.PerspectiveCamera;
-  private currentHandler: CursorHandler | null = null;
-  private normalTracker: NormalPointHandler;
-  private lineTracker: LineHandler;
-  private segmentTracker: SegmentHandler;
-  private moveTracker: MoveHandler;
-  private ringTracker: RingHandler;
+
+  // Use the Strategy design pattern to enable switching of
+  // different tool algorithms at runtime
+  private currentTool: ToolStrategy | null;
+  private pointTool: NormalPointHandler;
+  private lineTool: LineHandler;
+  private segmentTool: SegmentHandler;
+  private moveTool: MoveHandler;
+  private ringTool: RingHandler;
   private controls: TransformControls;
   private sphere: THREE.Mesh;
   private editHint = "Select mode...";
@@ -84,29 +87,25 @@ export default class Easel extends Vue {
       0.1,
       1000
     );
-
-    this.normalTracker = new NormalPointHandler({
+    this.currentTool = null;
+    this.pointTool = new NormalPointHandler({
+      camera: this.camera,
+      scene: this.scene
+    });
+    this.lineTool = new LineHandler({
+      camera: this.camera,
+      scene: this.scene
+    });
+    this.segmentTool = new SegmentHandler({
       canvas: this.renderer.domElement,
       camera: this.camera,
       scene: this.scene
     });
-    this.lineTracker = new LineHandler({
-      canvas: this.renderer.domElement,
+    this.ringTool = new RingHandler({
       camera: this.camera,
       scene: this.scene
     });
-    this.segmentTracker = new SegmentHandler({
-      canvas: this.renderer.domElement,
-      camera: this.camera,
-      scene: this.scene
-    });
-    this.ringTracker = new RingHandler({
-      canvas: this.renderer.domElement,
-      camera: this.camera,
-      scene: this.scene
-    });
-    this.moveTracker = new MoveHandler({
-      canvas: this.renderer.domElement,
+    this.moveTool = new MoveHandler({
       camera: this.camera,
       scene: this.scene
     });
@@ -142,6 +141,21 @@ export default class Easel extends Vue {
     window.addEventListener("keypress", this.keyPressed);
   }
 
+  handleMouseMoved(e: MouseEvent) {
+    // WHen currentTool is NULL, the following line does nothing
+    this.currentTool?.mouseMoved(e);
+  }
+
+  handleMousePressed(e: MouseEvent) {
+    // WHen currentTool is NULL, the following line does nothing
+    this.currentTool?.mousePressed(e)
+  }
+
+  handleMouseReleased(e: MouseEvent) {
+    // WHen currentTool is NULL, the following line does nothing
+    this.currentTool?.mouseReleased(e)
+  }
+
   mounted() {
     // VieJS lifecycle function
 
@@ -150,10 +164,21 @@ export default class Easel extends Vue {
       const el = this.$refs.content as HTMLBaseElement;
 
       el.appendChild(this.canvas);
+      this.canvas.addEventListener("mousemove", this.handleMouseMoved);
+      this.canvas.addEventListener("mousedown", this.handleMousePressed);
+      this.canvas.addEventListener("mouseup", this.handleMouseReleased);
     }
 
     this.onWindowResized();
     requestAnimationFrame(this.renderIt);
+  }
+
+  beforeDestroy() {
+    // VieJS lifecycle function
+    this.canvas.removeEventListener("mousemove", this.handleMouseMoved);
+    this.canvas.removeEventListener("mousedown", this.handleMousePressed);
+    this.canvas.removeEventListener("mouseup", this.handleMouseReleased);
+
   }
 
   keyPressed = (event: KeyboardEvent) => {
@@ -177,9 +202,9 @@ export default class Easel extends Vue {
       this.height = el.clientHeight;
       this.width = el.clientWidth;
       const availHeight = window.innerHeight - el.offsetTop;
-      console.debug(`Height ${el.clientHeight}, 
-       Offset top ${el.offsetTop}, Viewport height:
-      ${window.innerHeight}`);
+      // console.debug(`Height ${el.clientHeight}, 
+      //  Offset top ${el.offsetTop}, Viewport height:
+      // ${window.innerHeight}`);
       const size = Math.min(el.clientWidth, availHeight);
       this.camera.aspect = 1;
       this.camera.updateProjectionMatrix();
@@ -201,44 +226,42 @@ export default class Easel extends Vue {
 
   @Watch("editMode")
   switchEditMode(mode: string) {
-    this.currentHandler?.deactivate(); // Unregister the current mouse handler
+    // this.currentHandler?.deactivate(); // Unregister the current mouse handler
     switch (mode) {
       case "none":
-        // if (this.showSphereControl) this.controls.attach(this.sphere);
-        this.controls.removeEventListener("change", this.renderIt);
-        this.currentHandler = null;
+        //     // if (this.showSphereControl) this.controls.attach(this.sphere);
+        //     this.controls.removeEventListener("change", this.renderIt);
+        this.currentTool = null;
         this.editHint = "Select mode...";
         break;
       case "move":
-        this.controls.detach();
-        this.currentHandler = this.moveTracker;
+        this.currentTool = this.moveTool;
         this.editHint = "Drag object to move it";
         break;
       case "point":
-        this.controls.detach();
-        this.currentHandler = this.normalTracker;
+        //     this.controls.detach();
+        //     this.currentHandler = this.normalTracker;
+        this.currentTool = this.pointTool;
         this.editHint = "Left click to add a new point";
         break;
       case "line":
-        this.controls.detach();
-        this.currentHandler = this.lineTracker;
+        this.currentTool = this.lineTool;
         this.editHint = "Drag the mouse to add a geodesic circle";
         break;
       case "segment":
-        this.controls.detach();
-        this.currentHandler = this.segmentTracker;
+        this.currentTool = this.segmentTool;
         this.editHint = "Drag the mouse to add a geodesic segment";
         break;
       case "circle":
-        this.controls.detach();
-        this.currentHandler = this.ringTracker;
+        this.currentTool = this.ringTool;
         this.editHint =
           "Start with the circle center and drag to create a ring";
         break;
       default:
-        this.currentHandler = null;
+      //     this.currentHandler = null;
     }
-    this.currentHandler?.activate(); // Register the new mouse handler
+    this.currentTool?.activate();
+    // this.currentHandler?.activate(); // Register the new mouse handler
   }
 }
 </script>

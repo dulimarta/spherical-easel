@@ -7,7 +7,6 @@ import SETTINGS from "@/global-settings";
 export default class SegmentHandler extends LineHandler {
   private tmpVector: Vector3;
   constructor({
-    canvas,
     camera,
     scene
   }: {
@@ -15,7 +14,7 @@ export default class SegmentHandler extends LineHandler {
     camera: Camera;
     scene: Scene;
   }) {
-    super({ canvas, camera, scene });
+    super({ camera, scene });
     this.tmpVector = new Vector3();
     const redDot = new Vertex(0.05, 0xff0000);
     redDot.position.set(1.0, 0, 0);
@@ -26,18 +25,10 @@ export default class SegmentHandler extends LineHandler {
   }
 
   activate = () => {
-    this.canvas.addEventListener("mousemove", this.mouseMoved);
-    this.canvas.addEventListener("mousedown", this.mousePressed);
-    this.canvas.addEventListener("mouseup", this.mouseReleased);
     this.rayCaster.layers.enable(SETTINGS.layers.sphere);
     this.rayCaster.layers.enable(SETTINGS.layers.vertex);
     // The following line automatically calls Line setter function
     this.geodesicRing.isSegment = true;
   };
 
-  deactivate = () => {
-    this.canvas.removeEventListener("mousemove", this.mouseMoved);
-    this.canvas.removeEventListener("mousedown", this.mousePressed);
-    this.canvas.removeEventListener("mouseup", this.mouseReleased);
-  };
 }

@@ -12,15 +12,15 @@ import AppStore from "@/store";
 import Vertex from "@/3d-objs/Vertex";
 import SETTINGS from "@/global-settings";
 import Line from "@/3d-objs/Line";
+import { ToolStrategy } from './ToolStrategy';
 const RAYCASTER = new Raycaster();
 
-export default abstract class CursorHandler {
+export default class CursorHandler implements ToolStrategy {
   protected readonly X_AXIS = new Vector3(1, 0, 0);
   protected readonly Y_AXIS = new Vector3(0, 1, 0);
   protected readonly Z_AXIS = new Vector3(0, 0, 1);
 
   protected readonly camera: Camera;
-  protected readonly canvas: HTMLCanvasElement;
   private readonly scene: Scene;
   protected rayCaster: Raycaster;
   protected mouse: Vector2;
@@ -32,15 +32,12 @@ export default abstract class CursorHandler {
   protected geodesicRing: Line;
 
   constructor({
-    canvas,
     camera,
     scene
   }: {
-    canvas: HTMLCanvasElement;
     camera: Camera;
     scene: Scene;
   }) {
-    this.canvas = canvas;
     this.camera = camera;
     this.scene = scene;
     this.rayCaster = RAYCASTER;
@@ -48,6 +45,18 @@ export default abstract class CursorHandler {
     this.currentPoint = new Vector3();
     this.isOnSphere = false;
     this.geodesicRing = new Line();
+  }
+
+  activate(): void {
+    throw new Error("Method not implemented.");
+  }
+
+  mousePressed(event: MouseEvent): void {
+    throw new Error("Method not implemented.");
+  }
+
+  mouseReleased(event: MouseEvent): void {
+    throw new Error("Method not implemented.");
   }
 
   toNormalizeScreenCoord = (event: MouseEvent) => {
@@ -66,7 +75,7 @@ export default abstract class CursorHandler {
    *
    * @memberof CursorHandler
    */
-  mapCursorToSphere = (event: MouseEvent) => {
+  mouseMoved(event: MouseEvent) {
     const { x, y } = this.toNormalizeScreenCoord(event);
     this.mouse.x = x;
     this.mouse.y = y;
@@ -83,14 +92,17 @@ export default abstract class CursorHandler {
       this.hitObject = null;
     }
     this.isOnSphere = false;
-    this.canvas.style.cursor = "default";
+    const canvas = (event.target) as HTMLCanvasElement;
+
+    canvas.style.cursor = "default";
     this.currentPoint.set(Number.NaN, Number.NaN, Number.NaN);
     if (intersections.length == 0) {
       return;
     }
+    console.log("Intersection count: ", intersections.length);
     this.isOnSphere = true;
     // change cursor shape when it is on the sphere
-    this.canvas.style.cursor = "pointer";
+    canvas.style.cursor = "pointer";
     const hitTarget =
       intersections[0]; /* select the intersection closes to the viewer */
     if (hitTarget.object instanceof Vertex) {
@@ -110,12 +122,5 @@ export default abstract class CursorHandler {
       /* What to do here? */
       this.isOnSphere = false;
     }
-    // console.debug("Current position", this.vec3tostr(this.currentPoint));
-  };
-
-  isLayerEnable = (l: Layers, m: number): boolean =>
-    ((l.mask >> m) & 0x1) !== 0;
-
-  abstract activate(): void;
-  abstract deactivate(): void;
+  }
 }

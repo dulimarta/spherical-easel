@@ -12,7 +12,6 @@ export default class NormalPointHandler extends CursorHandler {
   // private sphereCoordFrame: Matrix4;
 
   constructor(args: {
-    canvas: HTMLCanvasElement;
     camera: Camera;
     scene: Scene;
   }) {
@@ -28,17 +27,15 @@ export default class NormalPointHandler extends CursorHandler {
     // this.handler = this.mouseMoved.bind(this);
   }
 
-  mouseMoved = (event: MouseEvent) => {
-    this.mapCursorToSphere(event);
-    if (this.isOnSphere) {
+  mouseMoved(event: MouseEvent) {
+    super.mouseMoved(event);
+    if (this.isOnSphere && this.theSphere) {
       if (!this.isNormalAdded) {
-        this.theSphere?.add(this.normalArrow);
+        this.theSphere.add(this.normalArrow);
         this.isNormalAdded = true;
       }
       this.normalArrow.position.copy(this.currentPoint);
-      // this.theSphere?.localToWorld(this.normalArrow.position);
       this.normalDirection.copy(this.currentPoint);
-      // this.theSphere?.localToWorld(this.normalDirection);
 
       // The default orientation of the arrow is the Y-axis
       this.normalRotation.setFromUnitVectors(
@@ -51,7 +48,7 @@ export default class NormalPointHandler extends CursorHandler {
       this.theSphere?.remove(this.normalArrow);
       this.isNormalAdded = false;
     }
-  };
+  }
 
   mousePressed = () => {
     if (this.isOnSphere && this.theSphere) {
@@ -61,20 +58,12 @@ export default class NormalPointHandler extends CursorHandler {
 
       const vtx = new Vertex();
       vtx.position.copy(this.currentPoint);
-      // this.theSphere.worldToLocal(vtx.position);
       new AddVertexCommand(vtx).execute();
     }
   };
 
   activate = () => {
-    this.canvas.addEventListener("mousemove", this.mouseMoved);
-    this.canvas.addEventListener("mousedown", this.mousePressed);
     this.rayCaster.layers.disableAll();
     this.rayCaster.layers.enable(SETTINGS.layers.sphere);
-  };
-
-  deactivate = () => {
-    this.canvas.removeEventListener("mousemove", this.mouseMoved);
-    this.canvas.removeEventListener("mousedown", this.mousePressed);
   };
 }

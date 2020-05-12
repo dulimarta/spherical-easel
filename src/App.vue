@@ -145,7 +145,13 @@
       The router controls this background and it can be Easel or settings or...
     -->
     <v-content>
+<<<<<<< HEAD
       <router-view></router-view>
+=======
+      <router-view>
+        <!-- this is the spot where the views controlled by Vue Router will be rendred -->
+      </router-view>
+>>>>>>> 593c49db8a1e3d869c0dcbe73c76314859e89f8c
     </v-content>
   </v-app>
 </template>
@@ -156,8 +162,8 @@
 -->
 <script lang="ts">
 import Vue from "vue";
-import Easel from "@/views/Easel.vue";
 import ObjectTree from "@/components/ObjectTree.vue";
+<<<<<<< HEAD
 import ToolButtons from "@/components/ToolButtons.vue";
 //import { Command } from "@/commands/Comnand";
 // import { mapState } from "vuex";
@@ -169,6 +175,19 @@ import SETTINGS from "@/global-settings";
 
 @Component({
   components: { Easel, ObjectTree, ToolButtons }
+=======
+import { Command } from "@/commands/Comnand";
+import { WebGLRenderer, Mesh } from 'three';
+import Component from 'vue-class-component';
+import { Inject } from 'vue-property-decorator';
+import { State } from 'vuex-class';
+
+
+@Component({
+  components: {
+    ObjectTree
+  }
+>>>>>>> 593c49db8a1e3d869c0dcbe73c76314859e89f8c
 })
 export default class App extends Vue {
   private leftDrawerMinified = false;
