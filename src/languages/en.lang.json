@@ -1,0 +1,32 @@
+{
+  "main": {
+    "BasicTools": "Basic Tools",
+    "EditTools": "Edit Tools",
+    "SphericalEaselMainTitle": "Spherical Easel",
+    "KeyShortCut": "Key Short Cut",
+    "ToolsTabToolTip": "Tools",
+    "ObjectsTabToolTip": "Objects",
+    "ResetSphereOrientation": "Press \"R\" to reset sphere orientation",
+    "UndoLastAction": "Undo last action",
+    "RedoLastAction": "Redo last action"
+  },
+  "tools": {
+    "RotateSphereToolTipMessage": "Rotate Sphere",
+    "RotateSphereToolUseMessage": "Click and drag to rotate the sphere.",
+    "MoveObjectToolTipMessage": "Move object",
+    "MoveObjectToolUseMessage": "Click and drag an object to move it. Movable objects include labels, free points, and line segments with antipodal endpoings. Hold the SHIFT key to select from the back of the sphere.",
+    "CreatePointToolTipMessage": "Insert point",
+    "CreatePointToolUseMessage": "Click to insert a free point.",
+    "CreateLineToolTipMessage": "Insert line",
+    "CreateLineToolUseMessage": "Click and drag to insert a line defined by two points.",
+    "CreateLineSegmentToolTipMessage": "Insert segment",
+    "CreateLineSegmentToolUseMessage": "Click and drag to insert line segment defined by two points.",
+    "CreateCircleToolTipMessage": "Insert circle",
+    "CreateCircelToolUseMessage": "Click and drag to insert a circle with a given center point and through a second point."
+  },
+  "objects": {
+    "points": "Points",
+    "lines": "Lines",
+    "circles": "Circles"
+  }
+}
