@@ -6,11 +6,12 @@ import createContext from 'gl';
 export class MockRenderer extends WebGLRenderer {
 
     constructor() {
-
-        super({ context: createContext(256, 256) });
+        const glContext = createContext(256, 256);
+        super({ context: glContext });
         // Set domElement to null to prevent it from
         // being attached to the DOM tree
-        this.domElement = null;
+        this.domElement = glContext.canvas;
+        // this.extensions = new WebGLExtensions(glContext)
     }
     setPixelRatio() {
         console.debug("Stub method")
@@ -18,4 +19,5 @@ export class MockRenderer extends WebGLRenderer {
     setClearColor() {
         console.debug("Stub method")
     }
+
 }

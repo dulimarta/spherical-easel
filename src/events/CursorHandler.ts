@@ -6,7 +6,7 @@ import {
   Vector2,
   Vector3,
   MeshPhongMaterial,
-  Layers
+  // Layers
 } from "three";
 import AppStore from "@/store";
 import Vertex from "@/3d-objs/Vertex";
@@ -51,10 +51,12 @@ export default class CursorHandler implements ToolStrategy {
     throw new Error("Method not implemented.");
   }
 
+  //eslint-disable-next-line
   mousePressed(event: MouseEvent): void {
     throw new Error("Method not implemented.");
   }
 
+  //eslint-disable-next-line
   mouseReleased(event: MouseEvent): void {
     throw new Error("Method not implemented.");
   }

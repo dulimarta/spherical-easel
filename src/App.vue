@@ -75,8 +75,9 @@
             <v-tab-item>
               <div class="pa-1">
                 <h3 class="body-1 font-weight-bold">Basic Tools</h3>
+                <!-- Keep the id attribute, it is used for testing --->
                 <v-btn-toggle v-model="editMode" @change="switchEditMode"
-                  class="mr-2"
+                  class="mr-2" id="basicTools"
                   v-bind:style="{ flexDirection: leftDrawerMinified ? 'column' : 'row' }">
                   <v-tooltip bottom>
                     <template v-slot:activator="{ on }">

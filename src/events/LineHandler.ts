@@ -58,6 +58,7 @@ export default class LineHandler extends CursorHandler {
     }
   }
 
+  //eslint-disable-next-line
   mousePressed(event: MouseEvent) {
     this.isMouseDown = true;
     this.startVertex = null;
@@ -80,7 +81,8 @@ export default class LineHandler extends CursorHandler {
     }
   }
 
-  mouseReleased(/*event: MouseEvent*/) {
+  //eslint-disable-next-line
+  mouseReleased(event: MouseEvent) {
     this.isMouseDown = false;
     if (this.isOnSphere && this.theSphere) {
       // Record the second point of the geodesic circle
