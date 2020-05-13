@@ -30,7 +30,8 @@ export interface AppState {
   lines: SELine[];
   rings: SERing[];
 }
-export interface ToolButtonType { // Declare the type to avoid warning
+/* This interface lists all the properties that each tool/button must have. */
+export interface ToolButtonType {
   id: number;
   editModeValue: string;
   displayToolUseMessage: boolean;

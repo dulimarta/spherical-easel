@@ -1,5 +1,5 @@
 <template>
-  <div class="pa-1" id="objectTreeContainer">
+  <div class="pa-1 accent" id="objectTreeContainer">
     <h4>{{ $t('message.objects.points') }}</h4>
     <v-treeview
       dense
