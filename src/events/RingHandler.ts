@@ -55,6 +55,7 @@ export default class CirleHandler extends CursorHandler {
     }
   }
 
+  // eslint-disable-next-line
   mousePressed(event: MouseEvent) {
     this.isMouseDown = true;
     if (this.isOnSphere) {
@@ -72,6 +73,7 @@ export default class CirleHandler extends CursorHandler {
     }
   }
 
+  // eslint-disable-next-line
   mouseReleased(event: MouseEvent) {
     this.isMouseDown = false;
     if (this.isOnSphere && this.theSphere) {

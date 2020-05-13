@@ -41,11 +41,13 @@ export default class MoveHandler extends CursorHandler {
     }
   }
 
+  //eslint-disable-next-line
   mousePressed(event: MouseEvent) {
     this.isDragging = true;
     if (this.hitObject instanceof Vertex) this.moveTarget = this.hitObject;
   }
 
+  //eslint-disable-next-line
   mouseReleased(event: MouseEvent) {
     this.isDragging = false;
     this.moveTarget = null;

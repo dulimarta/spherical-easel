@@ -1,47 +1,51 @@
 <template>
   <div class="pa-1" id="toolButtonContainer">
     <div id="BasicToolGroup" v-show="nonEmptyGroup('basic')">
-      <h3 class="body-1 font-weight-bold">{{ $t('message.toolGroups.BasicTools') }}</h3>
-      <v-btn-toggle v-model="editMode" @change="switchEditMode" class="mr-2 d-flex flex-wrap">
+      <h3 class="body-1 font-weight-bold">
+        {{ $t('message.toolGroups.BasicTools') }}</h3>
+      <v-btn-toggle v-model="editMode" @change="switchEditMode"
+        class="mr-2 d-flex flex-wrap">
+        <!--- Use Array.filter to select only basic tools -->
         <ToolButton
-          v-for="button in buttonList"
-          :key="button.id"
-          :button="button"
-          toolGroup="basic"
-          v-on:displayOnlyThisToolUseMessage="displayOnlyThisToolUseMessageFunc"
-        ></ToolButton>
+          v-for="button in buttonList.filter(b => b.toolGroup === 'basic')"
+          :key="button.id" :button="button"
+          v-on:displayOnlyThisToolUseMessage="displayOnlyThisToolUseMessageFunc">
+        </ToolButton>
       </v-btn-toggle>
     </div>
 
     <div id="AdvanceToolGroup" v-show="nonEmptyGroup('advanced')">
-      <h3 class="body-1 font-weight-bold">{{ $t('message.toolGroups.AdvancedTools') }}</h3>
-      <v-btn-toggle v-model="editMode" @change="switchEditMode" class="mr-2 d-flex flex-wrap">
+      <h3 class="body-1 font-weight-bold">
+        {{ $t('message.toolGroups.AdvancedTools') }}</h3>
+      <v-btn-toggle v-model="editMode" @change="switchEditMode"
+        class="mr-2 d-flex flex-wrap">
+        <!--- Use Array.filter to select only andvanced tools -->
         <ToolButton
-          v-for="button in buttonList"
-          :key="button.id"
-          :button="button"
-          toolGroup="advanced"
-          v-on:displayOnlyThisToolUseMessage="displayOnlyThisToolUseMessageFunc"
-        ></ToolButton>
+          v-for="button in buttonList.filter(b => b.toolGroup === 'advanced')"
+          :key="button.id" :button="button"
+          v-on:displayOnlyThisToolUseMessage="displayOnlyThisToolUseMessageFunc">
+        </ToolButton>
       </v-btn-toggle>
     </div>
 
-    <div id="TransformationalToolGroup" v-show="nonEmptyGroup('transformational')">
-      <h3 class="body-1 font-weight-bold">{{ $t('message.toolGroups.TransformationalTools') }}</h3>
-      <v-btn-toggle v-model="editMode" @change="switchEditMode" class="mr-2 d-flex flex-wrap">
-        <ToolButton
-          v-for="button in buttonList"
-          :key="button.id"
-          :button="button"
-          toolGroup="transformational"
-          v-on:displayOnlyThisToolUseMessage="displayOnlyThisToolUseMessageFunc"
-        ></ToolButton>
+    <div id="TransformationalToolGroup"
+      v-show="nonEmptyGroup('transformational')">
+      <h3 class="body-1 font-weight-bold">
+        {{ $t('message.toolGroups.TransformationalTools') }}</h3>
+      <v-btn-toggle v-model="editMode" @change="switchEditMode"
+        class="mr-2 d-flex flex-wrap">
+        <ToolButton v-for="button in buttonList" :key="button.id"
+          :button="button" toolGroup="transformational"
+          v-on:displayOnlyThisToolUseMessage="displayOnlyThisToolUseMessageFunc">
+        </ToolButton>
       </v-btn-toggle>
     </div>
 
-    <h3 class="body-1 font-weight-bold">{{ $t('message.toolGroups.EditTools') }}</h3>
+    <h3 class="body-1 font-weight-bold">
+      {{ $t('message.toolGroups.EditTools') }}</h3>
     <v-btn-toggle>
-      <v-tooltip bottom :open-delay="toolTipOpenDelay" :close-delay="toolTipCloseDelay">
+      <v-tooltip bottom :open-delay="toolTipOpenDelay"
+        :close-delay="toolTipCloseDelay">
         <template v-slot:activator="{ on }">
           <v-btn @click="undoEdit" v-on="on">
             <v-icon>mdi-undo</v-icon>
@@ -49,7 +53,8 @@
         </template>
         <span>{{ $t('message.main.UndoLastAction') }}</span>
       </v-tooltip>
-      <v-tooltip bottom :open-delay="toolTipOpenDelay" :close-delay="toolTipCloseDelay">
+      <v-tooltip bottom :open-delay="toolTipOpenDelay"
+        :close-delay="toolTipCloseDelay">
         <template v-slot:activator="{ on }">
           <v-btn @click="redoAction" v-on="on">
             <v-icon>mdi-redo</v-icon>
@@ -60,7 +65,8 @@
     </v-btn-toggle>
     <div class="ml-2" style="height:100%;">
       <div>
-        <h3 class="body-1 font-weight-bold">{{ $t('message.toolGroups.KeyShortCut') }}</h3>
+        <h3 class="body-1 font-weight-bold">
+          {{ $t('message.toolGroups.KeyShortCut') }}</h3>
         <ul>
           <li>{{ $t('message.toolGroups.ResetSphereOrientation') }}</li>
         </ul>
@@ -75,7 +81,7 @@ import Component from "vue-class-component";
 import SETTINGS from "@/global-settings";
 import { Command } from "@/commands/Comnand";
 import ToolButton from "@/components/ToolButton.vue";
-
+import { ToolButtonType } from "@/types";
 @Component({
   components: { ToolButton }
 })
@@ -88,7 +94,7 @@ export default class ToolButtons extends Vue {
   put it. This is the list of tools that should be displayed*/
   private buttonDisplayList = SETTINGS.userButtonDisplayList;
 
-  private buttonList = [
+  private buttonList: ToolButtonType[] = [
     {
       id: 0,
       editModeValue: "rotate",

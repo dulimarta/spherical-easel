@@ -11,7 +11,7 @@
     There can be only one of these environments.
   -->
   <v-app app>
-    <v-app-bar app color="primary" dark dense clipped-left clipped-right>
+    <v-app-bar app color="primary" dark dense clipped-left>
       <v-app-bar-nav-icon @click="fileSystemsDrawerDisplay = true"></v-app-bar-nav-icon>
       <div class="d-flex align-center">
         <router-link to="/">
@@ -54,8 +54,8 @@
       will update.
     -->
 
-    <!--  Use the "cliopped" attribute to keep the navigation drawer 
-    below the app toolbar-->
+    <!--  Use the "clipped" attribute to keep the navigation drawer 
+    below the app toolbar, width should be specified as number only (without unit)-->
     <v-navigation-drawer
       id="leftDrawer"
       app
@@ -63,7 +63,7 @@
       color="accent"
       permanent
       :mini-variant="leftDrawerMinified"
-      width="300px"
+      width="300"
     >
       <v-container id="leftnav" fluid>
         <div>
@@ -248,5 +248,10 @@ tabs in the notMinified contains and the placement of the buttons in the minifie
 }
 .v-btn-toggle {
   flex-wrap: wrap;
+}
+
+.tabs-margin-padding {
+  padding: 0px 0px 0px 0px;
+  margin: 12px 0px 0px 0px;
 }
 </style>

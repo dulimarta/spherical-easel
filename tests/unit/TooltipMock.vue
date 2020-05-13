@@ -1,7 +1,6 @@
 <template>
   <div>
     <slot name="activator={on}"></slot>
-    <p>********</p>
     <slot></slot>
   </div>
 </template>
