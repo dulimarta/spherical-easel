@@ -28,5 +28,12 @@ export default {
   },
   /*A list of which buttons to display - adjusted by the users settings.
   This does NOT belong here but I don't know where else to put it at the moment*/
-  buttonDisplayList: ["none", "point", "circle", "move", "line", "segment"]
+  userButtonDisplayList: [
+    "rotate",
+    "point",
+    "circle",
+    "move",
+    "line",
+    "segment"
+  ]
 };

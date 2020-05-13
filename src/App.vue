@@ -169,7 +169,7 @@ import { State } from "vuex-class";
 import SETTINGS from "@/global-settings";
 
 @Component({
-  components: { Easel, ObjectTree, ToolButtons }
+  components: { ObjectTree, ToolButtons }
 })
 export default class App extends Vue {
   private leftDrawerMinified = false;

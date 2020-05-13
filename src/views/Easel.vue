@@ -13,9 +13,12 @@
         <span class="body-1 ml-2">{{ editHint }}</span>
       </v-col>
       <v-col cols="3">
-        <v-switch v-show="editMode === 'none'" class="mr-4"
-          v-model="showSphereControl" label="Sphere Control">
-        </v-switch>
+        <v-switch
+          v-show="editMode === 'none'"
+          class="mr-4"
+          v-model="showSphereControl"
+          label="Sphere Control"
+        ></v-switch>
       </v-col>
       <v-col cols="12" ref="content" id="content" class="pa-2">
         <!--- HTML canvas will go here --->
@@ -25,7 +28,6 @@
 </template>
 
 <script lang="ts">
-
 import { Vue, Watch, Prop } from "vue-property-decorator";
 import Component from "vue-class-component";
 import * as THREE from "three";
@@ -42,12 +44,11 @@ import MoveHandler from "@/events/MoveHandler";
 import SETTINGS from "@/global-settings";
 import { State } from "vuex-class";
 import ObjectTree from "@/components/ObjectTree.vue";
-import { WebGLRenderer } from 'three';
-import { setupScene } from "@/initApp"
+import { WebGLRenderer } from "three";
+import { setupScene } from "@/initApp";
 
 @Component({ components: { ObjectTree } })
 export default class Easel extends Vue {
-
   @Prop(WebGLRenderer)
   readonly renderer!: WebGLRenderer;
 
@@ -70,7 +71,7 @@ export default class Easel extends Vue {
   private editHint = "Select mode...";
   private showSphereControl = false;
   private width = 0;
-  private height = 0
+  private height = 0;
 
   @State("editMode")
   private editMode!: string;
@@ -148,12 +149,12 @@ export default class Easel extends Vue {
 
   handleMousePressed(e: MouseEvent) {
     // WHen currentTool is NULL, the following line does nothing
-    this.currentTool?.mousePressed(e)
+    this.currentTool?.mousePressed(e);
   }
 
   handleMouseReleased(e: MouseEvent) {
     // WHen currentTool is NULL, the following line does nothing
-    this.currentTool?.mouseReleased(e)
+    this.currentTool?.mouseReleased(e);
   }
 
   mounted() {
@@ -178,7 +179,6 @@ export default class Easel extends Vue {
     this.canvas.removeEventListener("mousemove", this.handleMouseMoved);
     this.canvas.removeEventListener("mousedown", this.handleMousePressed);
     this.canvas.removeEventListener("mouseup", this.handleMouseReleased);
-
   }
 
   keyPressed = (event: KeyboardEvent) => {
@@ -202,7 +202,7 @@ export default class Easel extends Vue {
       this.height = el.clientHeight;
       this.width = el.clientWidth;
       const availHeight = window.innerHeight - el.offsetTop;
-      // console.debug(`Height ${el.clientHeight}, 
+      // console.debug(`Height ${el.clientHeight},
       //  Offset top ${el.offsetTop}, Viewport height:
       // ${window.innerHeight}`);
       const size = Math.min(el.clientWidth, availHeight);
@@ -228,7 +228,7 @@ export default class Easel extends Vue {
   switchEditMode(mode: string) {
     // this.currentHandler?.deactivate(); // Unregister the current mouse handler
     switch (mode) {
-      case "none":
+      case "rotate":
         //     // if (this.showSphereControl) this.controls.attach(this.sphere);
         //     this.controls.removeEventListener("change", this.renderIt);
         this.currentTool = null;
