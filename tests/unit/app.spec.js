@@ -2,7 +2,7 @@ import { shallowMount, createLocalVue, mount } from "@vue/test-utils";
 import App from "@/App.vue";
 import Vue from "vue";
 import Vuex from "vuex";
-import VueRouter from "vue-router";
+// import VueRouter from "vue-router";
 import Vuetify from "vuetify";
 
 Vue.use(Vuetify);

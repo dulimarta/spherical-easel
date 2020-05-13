@@ -21,3 +21,6 @@ yarn-error.log*
 *.sw?
 
 screenshots/*
+
+*.js
+*.js.map

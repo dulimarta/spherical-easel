@@ -15,7 +15,7 @@ const findVertex = (arr: SEVertex[], id: number): SEVertex | null => {
 export default new Vuex.Store({
   state: {
     sphere: null,
-    editMode: "none",
+    editMode: "rotate",
     vertices: [],
     lines: [],
     rings: []
@@ -23,7 +23,7 @@ export default new Vuex.Store({
   mutations: {
     // init(state) {
     //   state.sphere = null;
-    //   state.editMode = "none";
+    //   state.editMode = "rotate";
     //   state.vertices = [];
     //   state.lines = [];
     // },

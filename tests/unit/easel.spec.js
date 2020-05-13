@@ -32,6 +32,7 @@ describe("Easel.vue", () => {
         canvas: null
       },
       localVue,
+      vuetify,
       store
     });
   });
