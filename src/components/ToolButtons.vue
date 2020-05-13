@@ -160,6 +160,9 @@ export default class ToolButtons extends Vue {
   redoAction() {
     Command.redo();
   }
+  // cantUndo() { return Command.canUndo() === false },
+  // cantRedo: () => !Command.canRedo(),
+
   /* This returns true only if there is at least one tool that needs to be displayed in the
   group. */
   nonEmptyGroup(str: string): boolean {

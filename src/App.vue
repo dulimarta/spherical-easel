@@ -76,7 +76,7 @@
           <v-tabs v-model="activeLeftDrawerTab" grow centered>
             <v-tooltip bottom :open-delay="toolTipOpenDelay" :close-delay="toolTipCloseDelay">
               <template v-slot:activator="{ on }">
-                <v-tab class="tabs-margin-padding" href="#toolListTab" v-on="on">
+                <v-tab class="mt-3 pa-0" href="#toolListTab" v-on="on">
                   <v-icon left>mdi-calculator</v-icon>
                 </v-tab>
               </template>
@@ -85,7 +85,7 @@
 
             <v-tooltip bottom :open-delay="toolTipOpenDelay" :close-delay="toolTipCloseDelay">
               <template v-slot:activator="{ on }">
-                <v-tab class="tabs-margin-padding" href="#objectListTab" v-on="on">
+                <v-tab class="mt-3 pa-0" href="#objectListTab" v-on="on">
                   <v-icon left>mdi-format-list-bulleted</v-icon>
                 </v-tab>
               </template>
@@ -223,14 +223,6 @@ export default class App extends Vue {
   log(item: any) {
     console.log(item);
   }
-  /*   undoEdit() {
-    Command.undo();
-  }
-  redoAction() {
-    Command.redo();
-  } */
-  // cantUndo() { return Command.canUndo() === false },
-  // cantRedo: () => !Command.canRedo(),
 }
 </script>
 
@@ -256,14 +248,5 @@ tabs in the notMinified contains and the placement of the buttons in the minifie
 }
 .v-btn-toggle {
   flex-wrap: wrap;
-}
-toolTipDelays {
-  opendelay: 500;
-  closedelay: 2000;
-}
-
-.tabs-margin-padding {
-  padding: 0px 0px 0px 0px;
-  margin: 12px 0px 0px 0px;
 }
 </style>
