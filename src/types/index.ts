@@ -30,4 +30,14 @@ export interface AppState {
   lines: SELine[];
   rings: SERing[];
 }
+export interface ToolButtonType { // Declare the type to avoid warning
+  id: number;
+  editModeValue: string;
+  displayToolUseMessage: boolean;
+  displayedName: string;
+  icon: string;
+  toolGroup: string;
+  toolUseMessage: string;
+  toolTipMessage: string;
+}
 // }

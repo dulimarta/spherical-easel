@@ -1,33 +1,24 @@
 <template>
-  <div
-    class="pa-0"
-    id="button.id"
-    v-if="(buttonDisplayList.indexOf(button.editModeValue) !== -1) &&
-          (button.toolGroup===toolGroup)"
-  >
-    <v-tooltip bottom :open-delay="toolTipOpenDelay" :close-delay="toolTipCloseDelay">
+  <div class="pa-0" id="button.id" v-if="(buttonDisplayList.indexOf(button.editModeValue) !== -1) /*&&
+          (button.toolGroup===toolGroup)*/">
+    <v-tooltip bottom :open-delay="toolTipOpenDelay"
+      :close-delay="toolTipCloseDelay">
       <template v-slot:activator="{ on }">
-        <v-btn
-          icon
-          text
-          :value="button.editModeValue"
-          v-on="on"
-          @click="$emit('displayOnlyThisToolUseMessage',button.id); displayToolUseMessage = true;"
-        >
+        <!-- FIXME: unused event triggered by $emit -->
+        <v-btn icon text :value="button.editModeValue" v-on="on"
+          @click="$emit('displayOnlyThisToolUseMessage',button.id); displayToolUseMessage = true;">
           <v-icon>{{ button.icon }}</v-icon>
         </v-btn>
       </template>
       <span>{{ $t('message.buttons.' + button.toolTipMessage) }}</span>
     </v-tooltip>
-    <v-snackbar
-      v-model="displayToolUseMessage"
-      bottom
-      left
+    <!--- FIXME: length compare with 38 may break when using bigger fonts --->
+    <v-snackbar v-model="displayToolUseMessage" bottom left
       :timeout="toolUseMessageDelay"
-      :multi-line="($t('message.buttons.'+ button.displayedName) +': ' + $t('message.buttons.' + button.toolUseMessage)).length>38"
-    >
+      :multi-line="($t('message.buttons.'+ button.displayedName) +': ' + $t('message.buttons.' + button.toolUseMessage)).length>38">
       <span>
-        <strong class="red--text">{{$t('message.buttons.'+ button.displayedName) +': '}}</strong>
+        <strong
+          class="red--text">{{$t('message.buttons.'+ button.displayedName) +': '}}</strong>
         {{ $t('message.buttons.' + button.toolUseMessage) }}
       </span>
       <v-btn color="red" text @click="displayToolUseMessage = false" icon>
@@ -42,6 +33,7 @@ import Vue from "vue";
 import Component from "vue-class-component";
 import SETTINGS from "@/global-settings";
 import { Prop, Watch } from "vue-property-decorator";
+import { ToolButtonType } from "@/types"
 
 @Component
 export default class ToolButton extends Vue {
@@ -65,11 +57,11 @@ export default class ToolButton extends Vue {
   /* Allow us to bind the button object in the parent (=ToolButtons) with the button object in the
   child */
   @Prop({ default: null })
-  button!: object;
+  button!: ToolButtonType;
 
   /* Allow us to pass a value in the parent (=ToolButtons) to the child */
-  @Prop({ default: null })
-  toolGroup!: string;
+  // @Prop({ default: null })
+  // toolGroup!: string;
 
   /* @Watch if button.displayToolUseMessage changes then set displayToolUseMessage to false so
       that multiple snackbars are not displayed at the same time*/
@@ -89,5 +81,3 @@ export default class ToolButton extends Vue {
  
 /* &&
           (button.toolGroup===toolGroup) */
-
-
