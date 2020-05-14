@@ -1,0 +1,45 @@
+{
+  "main": {
+    "SphericalEaselMainTitle": "Spherical Easel",
+    "ToolsTabToolTip": "Alat",
+    "ObjectsTabToolTip": "Objek",
+    "UndoLastAction": "Batalkan Aksi Terakhir",
+    "RedoLastAction": "Ulang Aksi Terakhir"
+  },
+  "toolGroups": {
+    "BasicTools": "Alat Dasar",
+    "AdvancedTools": "Alat Tambahan",
+    "TransformationalTools": "Transformasi",
+    "EditTools": "Suntingan",
+    "KeyShortCut": "Tombol",
+    "ResetSphereOrientation": "Tekan 'R' putar bola ke orientasi awal"
+  },
+  "buttons": {
+    "RotateDisplayedName": "Putar",
+    "RotateSphereToolTipMessage": "Putar Bola",
+    "RotateSphereToolUseMessage": "Tekan dan geser mouse untuk memutar bola.",
+    "MoveDisplayedName": "Geser",
+    "MoveObjectToolTipMessage": "Geser Objek",
+    "MoveObjectToolUseMessage": "Tekan dan geser mouse untuk pindahkan objek (label, titik bebas, garis, titik antipodal. Gunakan tombol SHIFT untuk menggeser object disisi belakang bola.",
+    "CreatePointDisplayedName": "Titik",
+    "CreatePointToolTipMessage": "Tambahkan titik",
+    "CreatePointToolUseMessage": "Tekan mouse untuk tambahkan titik bebas.",
+    "CreateLineDisplayedName": "Garis",
+    "CreateLineToolTipMessage": "Tambahkan garis",
+    "CreateLineToolUseMessage": "Tekan dan geser mouse untuk tambahkan garis melewati dua titik.",
+    "CreateLineSegmentDisplayedName": "Segmen Garis",
+    "CreateLineSegmentToolTipMessage": "Tambahkan segmen garis",
+    "CreateLineSegmentToolUseMessage": "Tekan dan geser mouse umtuk tambahkan segmen garis melewati dua titik.",
+    "CreateCircleDisplayedName": "Lingkaran",
+    "CreateCircleToolTipMessage": "Tambahkan lingkaran",
+    "CreateCircleToolUseMessage": "Tekan dan geser untuk tambahkan lingkaran dengan titik pusan dan titik luar."
+  },
+  "settings": {
+    "title": "Setelan"
+  },
+  "objects": {
+    "points": "Titik",
+    "lines": "Garis",
+    "circles": "Lingkaran"
+  }
+}

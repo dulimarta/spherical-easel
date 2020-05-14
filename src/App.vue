@@ -20,7 +20,7 @@
             src="./assets/SphericalEaselLogo.gif"
             transition="scale-transition" width="40" />
         </router-link>
-        <v-toolbar-title>{{ $t('message.main.SphericalEaselMainTitle') }}
+        <v-toolbar-title>{{ $t('main.SphericalEaselMainTitle') }}
         </v-toolbar-title>
       </div>
 

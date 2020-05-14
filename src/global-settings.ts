@@ -35,5 +35,11 @@ export default {
     "move",
     "line",
     "segment"
+  ],
+  supportedLanguages: [
+    { locale: "en", name: "English" },
+    { locale: "id", name: "Bahasa Indonesia" }
   ]
+
+
 };

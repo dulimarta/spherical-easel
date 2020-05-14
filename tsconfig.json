@@ -14,7 +14,9 @@
     "types": [
       "webpack-env",
       "vuetify",
-      "jest"
+      "jest",
+      "webpack",
+      "webpack-env"
     ],
     "typeRoots": [
       "./node_modules/@types",

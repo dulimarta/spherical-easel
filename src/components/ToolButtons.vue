@@ -2,7 +2,7 @@
   <div class="pa-1" id="toolButtonContainer">
     <div id="BasicToolGroup" v-show="nonEmptyGroup('basic')">
       <h3 class="body-1 font-weight-bold">
-        {{ $t('message.toolGroups.BasicTools') }}</h3>
+        {{ $t('toolGroups.BasicTools') }}</h3>
       <v-btn-toggle v-model="editMode" @change="switchEditMode"
         class="mr-2 d-flex flex-wrap">
         <!--- Use Array.filter to select only basic tools -->
@@ -16,7 +16,7 @@
 
     <div id="AdvanceToolGroup" v-show="nonEmptyGroup('advanced')">
       <h3 class="body-1 font-weight-bold">
-        {{ $t('message.toolGroups.AdvancedTools') }}</h3>
+        {{ $t('toolGroups.AdvancedTools') }}</h3>
       <v-btn-toggle v-model="editMode" @change="switchEditMode"
         class="mr-2 d-flex flex-wrap">
         <!--- Use Array.filter to select only andvanced tools -->
@@ -31,7 +31,7 @@
     <div id="TransformationalToolGroup"
       v-show="nonEmptyGroup('transformational')">
       <h3 class="body-1 font-weight-bold">
-        {{ $t('message.toolGroups.TransformationalTools') }}</h3>
+        {{ $t('toolGroups.TransformationalTools') }}</h3>
       <v-btn-toggle v-model="editMode" @change="switchEditMode"
         class="mr-2 d-flex flex-wrap">
         <ToolButton v-for="button in buttonList" :key="button.id"
@@ -42,7 +42,7 @@
     </div>
 
     <h3 class="body-1 font-weight-bold">
-      {{ $t('message.toolGroups.EditTools') }}</h3>
+      {{ $t('toolGroups.EditTools') }}</h3>
     <v-btn-toggle>
       <v-tooltip bottom :open-delay="toolTipOpenDelay"
         :close-delay="toolTipCloseDelay">
@@ -51,7 +51,7 @@
             <v-icon>mdi-undo</v-icon>
           </v-btn>
         </template>
-        <span>{{ $t('message.main.UndoLastAction') }}</span>
+        <span>{{ $t('main.UndoLastAction') }}</span>
       </v-tooltip>
       <v-tooltip bottom :open-delay="toolTipOpenDelay"
         :close-delay="toolTipCloseDelay">
@@ -60,15 +60,15 @@
             <v-icon>mdi-redo</v-icon>
           </v-btn>
         </template>
-        <span>{{ $t('message.main.RedoLastAction') }}</span>
+        <span>{{ $t('main.RedoLastAction') }}</span>
       </v-tooltip>
     </v-btn-toggle>
     <div class="ml-2" style="height:100%;">
       <div>
         <h3 class="body-1 font-weight-bold">
-          {{ $t('message.toolGroups.KeyShortCut') }}</h3>
+          {{ $t('toolGroups.KeyShortCut') }}</h3>
         <ul>
-          <li>{{ $t('message.toolGroups.ResetSphereOrientation') }}</li>
+          <li>{{ $t('toolGroups.ResetSphereOrientation') }}</li>
         </ul>
       </div>
     </div>
@@ -151,7 +151,7 @@ export default class ToolButtons extends Vue {
       displayedName: "CreateCircleDisplayedName",
       icon: "mdi-vector-circle-variant",
       toolTipMessage: "CreateCircleToolTipMessage",
-      toolUseMessage: "CreateCircelToolUseMessage",
+      toolUseMessage: "CreateCircleToolUseMessage",
       displayToolUseMessage: false,
       toolGroup: "advanced"
     }

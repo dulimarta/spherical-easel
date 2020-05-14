@@ -10,16 +10,15 @@
           <v-icon>{{ button.icon }}</v-icon>
         </v-btn>
       </template>
-      <span>{{ $t('message.buttons.' + button.toolTipMessage) }}</span>
+      <span>{{ $t('buttons.' + button.toolTipMessage) }}</span>
     </v-tooltip>
     <!--- FIXME: length compare with 38 may break when using bigger fonts --->
     <v-snackbar v-model="displayToolUseMessage" bottom left
-      :timeout="toolUseMessageDelay"
-      :multi-line="($t('message.buttons.'+ button.displayedName) +': ' + $t('message.buttons.' + button.toolUseMessage)).length>38">
+      :timeout="toolUseMessageDelay" multi-line>
       <span>
         <strong
-          class="red--text">{{$t('message.buttons.'+ button.displayedName) +': '}}</strong>
-        {{ $t('message.buttons.' + button.toolUseMessage) }}
+          class="red--text">{{$t('buttons.'+ button.displayedName) +': '}}</strong>
+        {{ $t('buttons.' + button.toolUseMessage) }}
       </span>
       <v-btn color="red" text @click="displayToolUseMessage = false" icon>
         <v-icon>mdi-close</v-icon>

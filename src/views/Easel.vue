@@ -58,7 +58,7 @@
                   <v-icon left>mdi-calculator</v-icon>
                 </v-tab>
               </template>
-              <span>{{ $t('message.main.ToolsTabToolTip') }}</span>
+              <span>{{ $t('main.ToolsTabToolTip') }}</span>
             </v-tooltip>
 
             <v-tooltip bottom :open-delay="toolTipOpenDelay"
@@ -68,7 +68,7 @@
                   <v-icon left>mdi-format-list-bulleted</v-icon>
                 </v-tab>
               </template>
-              <span>{{ $t('message.main.ObjectsTabToolTip') }}</span>
+              <span>{{ $t('main.ObjectsTabToolTip') }}</span>
             </v-tooltip>
 
             <v-tab-item value="toolListTab">
