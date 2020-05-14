@@ -30,83 +30,11 @@
       <!-- This will open up the settings ?drawer ?window for setting the language, decimals 
       display and other global options-->
       <!-- <v-btn icon @click="globalSettingsDrawerDisplay=true">{{language}}</v-btn> -->
-      <v-btn icon @click="showSettingsView">
+      <router-link to="/settings">
         <v-icon>mdi-cog</v-icon>
-      </v-btn>
+      </router-link>
     </v-app-bar>
 
-    <!--  
-      This is the left drawer component that contains that the
-      tools and a list of the objects that have been created in two tabs
-      
-      Use the "clipped" attribute to keep the navigation drawer 
-      below the app toolbar
-      Use the "bottom" attribute to have this menu appear at the bottom on mobile
-      
-      The line ":mini-variant="leftDrawerMinified" is shorthand for 
-      'v-bind:mini-variant="leftDrawerMinified"'
-      this is a bond between the attribute 'mini-varient' (a Vue property of a navigation drawer)
-      and the expression 'leftDrawerMinified' (a user name bolean variable)
-      this means that when the expression 'leftDrawerMinified' changes the attribute 'mini-variant' 
-      will update.
-    -->
-
-    <!--  Use the "clipped" attribute to keep the navigation drawer 
-    below the app toolbar, width should be specified as number only (without unit) -->
-    <v-navigation-drawer id="leftDrawer" app clipped color="accent"
-      permanent :mini-variant="leftDrawerMinified" width="300">
-      <v-container id="leftnav" fluid>
-        <div>
-          <v-btn icon @click="leftDrawerMinified = !leftDrawerMinified;">
-            <v-icon v-if="leftDrawerMinified">mdi-arrow-right</v-icon>
-            <v-icon v-else>mdi-arrow-left</v-icon>
-          </v-btn>
-        </div>
-        <div v-if="!leftDrawerMinified">
-          <v-tabs v-model="activeLeftDrawerTab" grow centered>
-            <v-tooltip bottom :open-delay="toolTipOpenDelay"
-              :close-delay="toolTipCloseDelay">
-              <template v-slot:activator="{ on }">
-                <v-tab class="tabs-margin-padding" href="#toolListTab"
-                  v-on="on">
-                  <v-icon left>mdi-calculator</v-icon>
-                </v-tab>
-              </template>
-              <span>{{ $t('message.main.ToolsTabToolTip') }}</span>
-            </v-tooltip>
-
-            <v-tooltip bottom :open-delay="toolTipOpenDelay"
-              :close-delay="toolTipCloseDelay">
-              <template v-slot:activator="{ on }">
-                <v-tab class="tabs-margin-padding" href="#objectListTab"
-                  v-on="on">
-                  <v-icon left>mdi-format-list-bulleted</v-icon>
-                </v-tab>
-              </template>
-              <span>{{ $t('message.main.ObjectsTabToolTip') }}</span>
-            </v-tooltip>
-
-            <v-tab-item value="toolListTab">
-              <ToolButtons></ToolButtons>
-            </v-tab-item>
-            <v-tab-item value="objectListTab">
-              <ObjectTree :scene="sphere"></ObjectTree>
-            </v-tab-item>
-          </v-tabs>
-        </div>
-      </v-container>
-      <div id="leftnavicons" v-if="leftDrawerMinified"
-        @click="unMinifyLeftDrawer">
-        <v-btn icon
-          @click="leftDrawerMinified = !leftDrawerMinified; activeLeftDrawerTab='toolListTab'">
-          <v-icon class="ml-3 my-2">mdi-calculator</v-icon>
-        </v-btn>
-        <v-btn icon
-          @click="leftDrawerMinified = !leftDrawerMinified; activeLeftDrawerTab='objectListTab'">
-          <v-icon class="ml-3 my-2">mdi-format-list-bulleted</v-icon>
-        </v-btn>
-      </div>
-    </v-navigation-drawer>
     <!-- This is where the file and export (to EPS, TIKZ, animated GIF?) operations will go 
     Also request a feature and report a big-->
     <!-- TODO: Move this to Easel.vue? --->
@@ -149,29 +77,18 @@
 -->
 <script lang="ts">
 import Vue from "vue";
-import ObjectTree from "@/components/ObjectTree.vue";
-import ToolButtons from "@/components/ToolButtons.vue";
+// import ObjectTree from "@/components/ObjectTree.vue";
 //import { Command } from "@/commands/Comnand";
 // import { mapState } from "vuex";
 import { WebGLRenderer, Mesh } from "three";
 import Component from "vue-class-component";
 import { Inject } from "vue-property-decorator";
 import { State } from "vuex-class";
-import SETTINGS from "@/global-settings";
 
-@Component({
-  components: { ObjectTree, ToolButtons }
-})
+@Component
 export default class App extends Vue {
-  private leftDrawerMinified = false;
-  private activeLeftDrawerTab = "toolListTab";
   private fileSystemsDrawerDisplay = false;
   private globalSettingsDrawerDisplay = false;
-
-  private group = "";
-  private toolTipOpenDelay = SETTINGS.toolTip.openDelay;
-  private toolTipCloseDelay = SETTINGS.toolTip.closeDelay;
-  private snackbar = false;
 
   // Use dependency injection to let us mock the renderer
   // with a fake implementation during testing
@@ -193,64 +110,8 @@ export default class App extends Vue {
     // Command.setStore(this.$store);
   }
 
-  showSettingsView() {
-    /* force left drawer to minify
-    I would like it to be either not displayed or to be disabled so all buttons don't work*/
-    this.leftDrawerMinified = true;
-    this.$router.push({ path: "/settings" });
-  }
-
-  /*  
-   This allows the user to maximumize the left drawer by clicking in the navigation drawer
-  'leftDrawerMinified = !leftDrawerMinified' doesn't work because when you click on the icons
-   in the minified left drawer they first unMinify the drawer and
-   then 'leftDrawerMinified = !leftDrawerMinified' would reminify it and nothing happens 
-   */
-  unMinifyLeftDrawer() {
-    if (this.leftDrawerMinified) {
-      this.leftDrawerMinified = false;
-    }
-  }
-  log(item: any) {
-    console.log(item);
-  }
-  /*   undoEdit() {
-    Command.undo();
-  }
-  redoAction() {
-    Command.redo();
-  } */
-  // cantUndo() { return Command.canUndo() === false },
-  // cantRedo: () => !Command.canRedo(),
+  // log(item: any) {
+  //   console.log(item);
+  // }
 }
 </script>
-
-<style lang="scss" scoped>
-/* I removed the use of the style for the left drawer of this because it messed with the spacing of the 
-tabs in the notMinified contains and the placement of the buttons in the minified container */
-
-// Where is this style used?
-// Override the default behavior of Vuetify <v-btn-toggle> elementv-btn-toggle>
-#leftnav {
-  display: flex;
-  flex-direction: column;
-
-  div:first-child {
-    align-self: flex-end;
-  }
-}
-#leftnavicons {
-  height: 80vh;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
-.v-btn-toggle {
-  flex-wrap: wrap;
-}
-
-.tabs-margin-padding {
-  padding: 0px 0px 0px 0px;
-  margin: 12px 0px 0px 0px;
-}
-</style>

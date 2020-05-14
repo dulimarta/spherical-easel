@@ -166,28 +166,24 @@ export default class ToolButtons extends Vue {
   redoAction() {
     Command.redo();
   }
-  /* This returns true only if there is at least one tool that needs to be displayed in the
-  group. */
-  nonEmptyGroup(str: string): boolean {
-    for (const btn of this.buttonList) {
-      if (
-        this.buttonDisplayList.indexOf(btn.editModeValue) !== -1 &&
-        btn.toolGroup === str
-      ) {
-        return true;
-      }
-    }
-    return false;
+  /* This returns true only if there is at least one tool that needs to be displayed in the group. */
+  nonEmptyGroup(groupName: string): boolean {
+    return this.buttonList.filter(b => b.toolGroup === groupName).length > 0;
   }
 
   /* This turns off all other snackbar displays so that multiple snackbar (toolUseMessages) are 
   not displayed at the same time.  */
   displayOnlyThisToolUseMessageFunc(id: number) {
-    for (const btn of this.buttonList) {
-      if (btn.id !== id) {
+    // Alternative solution: use Array high-order functions
+    this.buttonList.filter(btn => btn.id !== id)
+      .forEach(btn => {
         btn.displayToolUseMessage = !btn.displayToolUseMessage;
-      }
-    }
+      })
+    // for (const btn of this.buttonList) {
+    //   if (btn.id !== id) {
+    //     btn.displayToolUseMessage = !btn.displayToolUseMessage;
+    //   }
+    // }
   }
 
   log(item: object) {

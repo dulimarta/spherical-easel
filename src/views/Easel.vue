@@ -1,30 +1,98 @@
 <template>
-  <v-container fluid>
-    <!--- ml-2: margin left 8 px -->
-    <v-row>
-      <!---
+  <div>
+    <v-container fluid>
+      <!--- ml-2: margin left 8 px -->
+      <v-row>
+        <!---
       VUetify grid system uses 12-column layout.
       In the following setup, 
       (1) the editHint text will occupy 75% of the panel width
       (2) the toggle switch will occupy 25% of the panel width
       (3) the canvas will will in the entire width
       --->
-      <v-col cols="9">
-        <span class="body-1 ml-2">{{ editHint }}</span>
-      </v-col>
-      <v-col cols="3">
-        <v-switch
-          v-show="editMode === 'none'"
-          class="mr-4"
-          v-model="showSphereControl"
-          label="Sphere Control"
-        ></v-switch>
-      </v-col>
-      <v-col cols="12" ref="content" id="content" class="pa-2">
-        <!--- HTML canvas will go here --->
-      </v-col>
-    </v-row>
-  </v-container>
+        <v-col cols="9">
+          <span class="body-1 ml-2">{{ editHint }}</span>
+        </v-col>
+        <v-col cols="3">
+          <v-switch v-show="editMode === 'none'" class="mr-4"
+            v-model="showSphereControl" label="Sphere Control"></v-switch>
+        </v-col>
+        <v-col cols="12" ref="content" id="content" class="pa-2">
+          <!--- HTML canvas will go here --->
+        </v-col>
+      </v-row>
+    </v-container>
+    <!--  
+      This is the left drawer component that contains that the
+      tools and a list of the objects that have been created in two tabs
+      
+      Use the "clipped" attribute to keep the navigation drawer 
+      below the app toolbar
+      Use the "bottom" attribute to have this menu appear at the bottom on mobile
+      
+      The line ":mini-variant="leftDrawerMinified" is shorthand for 
+      'v-bind:mini-variant="leftDrawerMinified"'
+      this is a bond between the attribute 'mini-varient' (a Vue property of a navigation drawer)
+      and the expression 'leftDrawerMinified' (a user name bolean variable)
+      this means that when the expression 'leftDrawerMinified' changes the attribute 'mini-variant' 
+      will update.
+    -->
+
+    <!--  Use the "clipped" attribute to keep the navigation drawer 
+    below the app toolbar, width should be specified as number only (without unit) -->
+    <v-navigation-drawer id="leftDrawer" app clipped color="accent"
+      permanent :mini-variant="leftDrawerMinified" width="300">
+      <v-container id="leftnav" fluid>
+        <div>
+          <v-btn icon @click="leftDrawerMinified = !leftDrawerMinified;">
+            <v-icon v-if="leftDrawerMinified">mdi-arrow-right</v-icon>
+            <v-icon v-else>mdi-arrow-left</v-icon>
+          </v-btn>
+        </div>
+        <div v-if="!leftDrawerMinified">
+          <v-tabs v-model="activeLeftDrawerTab" grow centered>
+            <v-tooltip bottom :open-delay="toolTipOpenDelay"
+              :close-delay="toolTipCloseDelay">
+              <template v-slot:activator="{ on }">
+                <v-tab class="mt-3" href="#toolListTab" v-on="on">
+                  <v-icon left>mdi-calculator</v-icon>
+                </v-tab>
+              </template>
+              <span>{{ $t('message.main.ToolsTabToolTip') }}</span>
+            </v-tooltip>
+
+            <v-tooltip bottom :open-delay="toolTipOpenDelay"
+              :close-delay="toolTipCloseDelay">
+              <template v-slot:activator="{ on }">
+                <v-tab class="mt-3" href="#objectListTab" v-on="on">
+                  <v-icon left>mdi-format-list-bulleted</v-icon>
+                </v-tab>
+              </template>
+              <span>{{ $t('message.main.ObjectsTabToolTip') }}</span>
+            </v-tooltip>
+
+            <v-tab-item value="toolListTab">
+              <ToolButtons></ToolButtons>
+            </v-tab-item>
+            <v-tab-item value="objectListTab">
+              <ObjectTree :scene="sphere"></ObjectTree>
+            </v-tab-item>
+          </v-tabs>
+        </div>
+      </v-container>
+      <div id="leftnavicons" v-if="leftDrawerMinified"
+        @click="unMinifyLeftDrawer">
+        <v-btn icon
+          @click="leftDrawerMinified = !leftDrawerMinified; activeLeftDrawerTab='toolListTab'">
+          <v-icon class="ml-3 my-2">mdi-calculator</v-icon>
+        </v-btn>
+        <v-btn icon
+          @click="leftDrawerMinified = !leftDrawerMinified; activeLeftDrawerTab='objectListTab'">
+          <v-icon class="ml-3 my-2">mdi-format-list-bulleted</v-icon>
+        </v-btn>
+      </div>
+    </v-navigation-drawer>
+  </div>
 </template>
 
 <script lang="ts">
@@ -44,10 +112,12 @@ import MoveHandler from "@/events/MoveHandler";
 import SETTINGS from "@/global-settings";
 import { State } from "vuex-class";
 import ObjectTree from "@/components/ObjectTree.vue";
+import ToolButtons from "@/components/ToolButtons.vue";
+
 import { WebGLRenderer } from "three";
 import { setupScene } from "@/initApp";
 
-@Component({ components: { ObjectTree } })
+@Component({ components: { ObjectTree, ToolButtons } })
 export default class Easel extends Vue {
   @Prop(WebGLRenderer)
   readonly renderer!: WebGLRenderer;
@@ -57,6 +127,11 @@ export default class Easel extends Vue {
 
   private scene: THREE.Scene;
   private camera: THREE.PerspectiveCamera;
+
+  private leftDrawerMinified = false;
+  private activeLeftDrawerTab = "toolListTab";
+  private toolTipOpenDelay = SETTINGS.toolTip.openDelay;
+  private toolTipCloseDelay = SETTINGS.toolTip.closeDelay;
 
   // Use the Strategy design pattern to enable switching of
   // different tool algorithms at runtime
@@ -263,14 +338,52 @@ export default class Easel extends Vue {
     this.currentTool?.activate();
     // this.currentHandler?.activate(); // Register the new mouse handler
   }
+
+  /*  
+ This allows the user to maximumize the left drawer by clicking in the navigation drawer
+'leftDrawerMinified = !leftDrawerMinified' doesn't work because when you click on the icons
+ in the minified left drawer they first unMinify the drawer and
+ then 'leftDrawerMinified = !leftDrawerMinified' would reminify it and nothing happens 
+ */
+  unMinifyLeftDrawer() {
+    if (this.leftDrawerMinified) {
+      this.leftDrawerMinified = false;
+    }
+  }
+
 }
 </script>
-<style scoped>
+<style lang="scss" scoped>
 #content {
   display: flex;
   flex-direction: row;
   justify-content: center;
   border: 1px solid black;
   margin: 4px;
+}
+#leftnav {
+  display: flex;
+  flex-direction: column;
+
+  div:first-child {
+    align-self: flex-end;
+  }
+}
+#leftnavicons {
+  height: 80vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+/* Override the default behavior of Vuetify <v-btn-toggle> elementv-btn-toggle> */
+.v-btn-toggle {
+  flex-wrap: wrap;
+}
+
+/* The following style rule can be replaced with Vuetify class "mt-3" 
+ (margin-top: 3 x 4px) */
+.tabs-margin-padding {
+  padding: 0px 0px 0px 0px;
+  margin: 12px 0px 0px 0px;
 }
 </style>
