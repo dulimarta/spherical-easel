@@ -60,12 +60,12 @@ export default class Line extends Mesh {
     this.name = (value ? "Segment-" : "Line-") + this.id;
   }
 
-  set startPoint(position: Vector3) {
+  set startV3Point(position: Vector3) {
     this.start.copy(position);
     this.calculateRotation();
   }
 
-  set endPoint(position: Vector3) {
+  set endV3Point(position: Vector3) {
     this.end.copy(position);
     this.calculateRotation();
   }

@@ -1,41 +1,38 @@
 import CursorHandler from "./CursorHandler";
 import { Camera, Scene } from "three";
 import SETTINGS from "@/global-settings";
-import Vertex from "@/3d-objs/Vertex";
+import Point from "@/3d-objs/Point";
 
 export default class MoveHandler extends CursorHandler {
   private isDragging = false;
-  private moveTarget: Vertex | null = null;
-  constructor(args: {
-    camera: Camera;
-    scene: Scene;
-  }) {
+  private moveTarget: Point | null = null;
+  constructor(args: { camera: Camera; scene: Scene }) {
     super(args);
   }
 
   mouseMoved(event: MouseEvent) {
     super.mouseMoved(event);
-    if (this.isDragging && this.moveTarget instanceof Vertex) {
-      this.moveTarget.position.copy(this.currentPoint);
-      const vtx = this.store.state.vertices.find(
+    if (this.isDragging && this.moveTarget instanceof Point) {
+      this.moveTarget.position.copy(this.currentV3Point);
+      const vtx = this.store.state.points.find(
         v => v.ref.id === this.moveTarget?.id
       );
       if (vtx) {
-        // Update all lines having this vertex as start point
+        // Update all lines having this point as start point
         vtx.startOf.forEach(z => {
-          z.ref.startPoint = this.currentPoint;
+          z.ref.startV3Point = this.currentV3Point;
         });
-        // Update all lines having this vertex as end point
+        // Update all lines having this point as end point
         vtx.endOf.forEach(z => {
-          z.ref.endPoint = this.currentPoint;
+          z.ref.endV3Point = this.currentV3Point;
         });
-        // Update all circles having this vertex as center point
+        // Update all circles having this point as center point
         vtx.centerOf.forEach(z => {
-          z.ref.centerPoint = this.currentPoint;
+          z.ref.centerPoint = this.currentV3Point;
         });
-        // Update all circles having this vertex as circum point
+        // Update all circles having this point as circum point
         vtx.circumOf.forEach(z => {
-          z.ref.circlePoint = this.currentPoint;
+          z.ref.circlePoint = this.currentV3Point;
         });
       }
     }
@@ -44,7 +41,7 @@ export default class MoveHandler extends CursorHandler {
   //eslint-disable-next-line
   mousePressed(event: MouseEvent) {
     this.isDragging = true;
-    if (this.hitObject instanceof Vertex) this.moveTarget = this.hitObject;
+    if (this.hitObject instanceof Point) this.moveTarget = this.hitObject;
   }
 
   //eslint-disable-next-line
@@ -56,6 +53,6 @@ export default class MoveHandler extends CursorHandler {
   activate() {
     this.rayCaster.layers.disableAll();
     this.rayCaster.layers.enable(SETTINGS.layers.sphere);
-    this.rayCaster.layers.enable(SETTINGS.layers.vertex);
+    this.rayCaster.layers.enable(SETTINGS.layers.point);
   }
 }

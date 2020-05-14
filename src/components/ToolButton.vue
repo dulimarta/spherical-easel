@@ -1,11 +1,12 @@
 <template>
-  <div class="pa-0" id="button.id" v-if="(buttonDisplayList.indexOf(button.editModeValue) !== -1) /*&&
-          (button.toolGroup===toolGroup)*/">
+  <!-- Displays a button only if the user has permission to see it. -->
+  <div class="pa-0" id="button.id"
+    v-if="(buttonDisplayList.indexOf(button.editModeValue) !== -1)">
+    <!-- The button is wrapped in to tooltip vue component -->
     <v-tooltip bottom :open-delay="toolTipOpenDelay"
       :close-delay="toolTipCloseDelay">
       <template v-slot:activator="{ on }">
-        <!-- FIXME: unused event triggered by $emit -->
-        <v-btn icon text :value="button.editModeValue" v-on="on"
+        <v-btn icon :value="button.editModeValue" v-on="on"
           @click="$emit('displayOnlyThisToolUseMessage',button.id); displayToolUseMessage = true;">
           <v-icon>{{ button.icon }}</v-icon>
         </v-btn>
@@ -17,11 +18,11 @@
       :timeout="toolUseMessageDelay" multi-line>
       <span>
         <strong
-          class="red--text">{{$t('buttons.'+ button.displayedName) +': '}}</strong>
+          class="warning--text">{{$t('buttons.'+ button.displayedName) +': '}}</strong>
         {{ $t('buttons.' + button.toolUseMessage) }}
       </span>
-      <v-btn color="red" text @click="displayToolUseMessage = false" icon>
-        <v-icon>mdi-close</v-icon>
+      <v-btn @click="displayToolUseMessage = false" icon>
+        <v-icon color="success">mdi-close</v-icon>
       </v-btn>
     </v-snackbar>
   </div>
@@ -30,12 +31,14 @@
 <script lang="ts">
 import Vue from "vue";
 import Component from "vue-class-component";
-import SETTINGS from "@/global-settings";
 import { Prop, Watch } from "vue-property-decorator";
-import { ToolButtonType } from "@/types"
+import { ToolButtonType } from "@/types";
+import SETTINGS from "@/global-settings";
 
+/* This component (i.e. ToolButton) has no sub-components so this declaration is empty */
 @Component
 export default class ToolButton extends Vue {
+  /* Use the global settings to set the variables bound to the toolTipOpen/CloseDelay & toolUse */
   private toolTipOpenDelay = SETTINGS.toolTip.openDelay;
   private toolTipCloseDelay = SETTINGS.toolTip.closeDelay;
   private toolUseMessageDelay = SETTINGS.toolUse.delay;
@@ -56,27 +59,18 @@ export default class ToolButton extends Vue {
   /* Allow us to bind the button object in the parent (=ToolButtons) with the button object in the
   child */
   @Prop({ default: null })
-  button!: ToolButtonType;
-
-  /* Allow us to pass a value in the parent (=ToolButtons) to the child */
-  // @Prop({ default: null })
-  // toolGroup!: string;
+  button!: ToolButtonType; /* Whaat does !: mean? It tells typescript not to worry about button not
+  being assigned. It excludes the possibility that button won't be assigned. 
+  https://stackoverflow.com/questions/50983838/what-does-mean-in-typescript    */
 
   /* @Watch if button.displayToolUseMessage changes then set displayToolUseMessage to false so
-      that multiple snackbars are not displayed at the same time*/
+      that multiple snackbars tool use messages are not displayed at the same time*/
   @Watch("button.displayToolUseMessage")
   protected onButtonChanged() {
     this.displayToolUseMessage = false;
-  }
-
-  log(item: object) {
-    console.log(item);
   }
 }
 </script>
 
 <style lang="scss">
 </style>
- 
-/* &&
-          (button.toolGroup===toolGroup) */

@@ -11,7 +11,7 @@
       (3) the canvas will will in the entire width
       --->
         <v-col cols="9">
-          <span class="body-1 ml-2">{{ editHint }}</span>
+          <!-- <span class="body-1 ml-2">{{ editHint }}</span> -->
         </v-col>
         <v-col cols="3">
           <v-switch v-show="editMode === 'none'" class="mr-4"
@@ -102,12 +102,12 @@ import * as THREE from "three";
 // import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import { TransformControls } from "three/examples/jsm/controls/TransformControls";
 // import Axes from "@/3d-objs/Axes";
-// import Vertex from "@/3d-objs/Vertex";
+// import Point from "@/3d-objs/Point";
 import { ToolStrategy } from "@/events/ToolStrategy";
 import NormalPointHandler from "@/events/NormalPointHandler";
 import LineHandler from "@/events/LineHandler";
 import SegmentHandler from "@/events/SegmentHandler";
-import RingHandler from "@/events/RingHandler";
+import CircleHandler from "@/events/CircleHandler";
 import MoveHandler from "@/events/MoveHandler";
 import SETTINGS from "@/global-settings";
 import { State } from "vuex-class";
@@ -140,10 +140,9 @@ export default class Easel extends Vue {
   private lineTool: LineHandler;
   private segmentTool: SegmentHandler;
   private moveTool: MoveHandler;
-  private ringTool: RingHandler;
+  private circleTool: CircleHandler;
   private controls: TransformControls;
   private sphere: THREE.Mesh;
-  private editHint = "Select mode...";
   private showSphereControl = false;
   private width = 0;
   private height = 0;
@@ -177,7 +176,7 @@ export default class Easel extends Vue {
       camera: this.camera,
       scene: this.scene
     });
-    this.ringTool = new RingHandler({
+    this.circleTool = new CircleHandler({
       camera: this.camera,
       scene: this.scene
     });
@@ -307,30 +306,23 @@ export default class Easel extends Vue {
         //     // if (this.showSphereControl) this.controls.attach(this.sphere);
         //     this.controls.removeEventListener("change", this.renderIt);
         this.currentTool = null;
-        this.editHint = "Select mode...";
         break;
       case "move":
         this.currentTool = this.moveTool;
-        this.editHint = "Drag object to move it";
         break;
       case "point":
         //     this.controls.detach();
         //     this.currentHandler = this.normalTracker;
         this.currentTool = this.pointTool;
-        this.editHint = "Left click to add a new point";
         break;
       case "line":
         this.currentTool = this.lineTool;
-        this.editHint = "Drag the mouse to add a geodesic circle";
         break;
       case "segment":
         this.currentTool = this.segmentTool;
-        this.editHint = "Drag the mouse to add a geodesic segment";
         break;
       case "circle":
-        this.currentTool = this.ringTool;
-        this.editHint =
-          "Start with the circle center and drag to create a ring";
+        this.currentTool = this.circleTool;
         break;
       default:
       //     this.currentHandler = null;
@@ -382,8 +374,8 @@ export default class Easel extends Vue {
 
 /* The following style rule can be replaced with Vuetify class "mt-3" 
  (margin-top: 3 x 4px) */
-.tabs-margin-padding {
-  padding: 0px 0px 0px 0px;
-  margin: 12px 0px 0px 0px;
-}
+// .tabs-margin-padding {
+//   padding: 0px 0px 0px 0px;
+//   margin: 12px 0px 0px 0px;
+// }
 </style>

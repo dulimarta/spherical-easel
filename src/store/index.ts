@@ -1,13 +1,13 @@
 import Vue from "vue";
 import Vuex from "vuex";
 import { Mesh, MeshPhongMaterial } from "three";
-import { AppState, SEVertex, SELine, SERing } from "@/types";
-import Vertex from "@/3d-objs/Vertex";
+import { AppState, SEPoint, SELine, SECircle } from "@/types";
+import Point from "@/3d-objs/Point";
 import Line from "@/3d-objs/Line";
-import Ring from "@/3d-objs/Circle";
+import Circle from "@/3d-objs/Circle";
 Vue.use(Vuex);
 
-const findVertex = (arr: SEVertex[], id: number): SEVertex | null => {
+const findPoint = (arr: SEPoint[], id: number): SEPoint | null => {
   const out = arr.filter(v => v.ref.id === id);
   return out.length > 0 ? out[0] : null;
 };
@@ -16,9 +16,9 @@ export default new Vuex.Store({
   state: {
     sphere: null,
     editMode: "rotate",
-    vertices: [],
+    points: [],
     lines: [],
-    rings: []
+    circles: []
   } as AppState,
   mutations: {
     // init(state) {
@@ -33,22 +33,22 @@ export default new Vuex.Store({
     setEditMode(state, mode: string) {
       state.editMode = mode;
     },
-    addVertex(state, vertex: Vertex) {
-      state.vertices.push({
-        ref: vertex,
+    addPoint(state, point: Point) {
+      state.points.push({
+        ref: point,
         startOf: [],
         endOf: [],
         centerOf: [],
         circumOf: []
       });
-      state.sphere?.add(vertex);
+      state.sphere?.add(point);
     },
-    removeVertex(state, vertexId: number) {
-      const pos = state.vertices.findIndex(x => x.ref.id === vertexId);
+    removePoint(state, pointId: number) {
+      const pos = state.points.findIndex(x => x.ref.id === pointId);
       if (pos >= 0) {
-        state.sphere?.remove(state.vertices[pos].ref);
-        (state.vertices[pos].ref.material as MeshPhongMaterial).emissive.set(0);
-        state.vertices.splice(pos, 1);
+        state.sphere?.remove(state.points[pos].ref);
+        (state.points[pos].ref.material as MeshPhongMaterial).emissive.set(0);
+        state.points.splice(pos, 1);
       }
     },
     addLine(
@@ -57,11 +57,11 @@ export default new Vuex.Store({
         line,
         startPoint,
         endPoint
-      }: { line: Line; startPoint: Vertex; endPoint: Vertex }
+      }: { line: Line; startPoint: Point; endPoint: Point }
     ) {
-      // Find both end points in the current list of vertices
-      const start = findVertex(state.vertices, startPoint.id);
-      const end = findVertex(state.vertices, endPoint.id);
+      // Find both end points in the current list of points
+      const start = findPoint(state.points, startPoint.id);
+      const end = findPoint(state.points, endPoint.id);
       if (start !== null && end !== null) {
         const newLine = { ref: line, start, end, isSegment: line.isSegment };
         start.startOf.push(newLine);
@@ -76,26 +76,26 @@ export default new Vuex.Store({
         /* victim line is found */
         const victimLine: SELine = state.lines[pos];
 
-        // Locate the start vertex of this victim line
-        const sVertexPos = state.vertices.findIndex(
+        // Locate the start point of this victim line
+        const sPointPos = state.points.findIndex(
           v => v.ref.id == victimLine.start.ref.id
         );
-        if (sVertexPos >= 0) {
-          const pos = state.vertices[sVertexPos].startOf.findIndex(
+        if (sPointPos >= 0) {
+          const pos = state.points[sPointPos].startOf.findIndex(
             (z: SELine) => z.ref.id === victimLine.ref.id
           );
-          if (pos >= 0) state.vertices[sVertexPos].startOf.splice(pos, 1);
+          if (pos >= 0) state.points[sPointPos].startOf.splice(pos, 1);
         }
 
-        // Locate the end vertex of this victim line
-        const eVertexPos = state.vertices.findIndex(
+        // Locate the end point of this victim line
+        const ePointPos = state.points.findIndex(
           v => v.ref.id == victimLine.end.ref.id
         );
-        if (eVertexPos >= 0) {
-          const pos = state.vertices[eVertexPos].endOf.findIndex(
+        if (ePointPos >= 0) {
+          const pos = state.points[ePointPos].endOf.findIndex(
             (z: SELine) => z.ref.id === victimLine.ref.id
           );
-          if (pos >= 0) state.vertices[eVertexPos].endOf.splice(pos, 1);
+          if (pos >= 0) state.points[ePointPos].endOf.splice(pos, 1);
         }
         // Remove it from the sphere
         state.sphere?.remove(victimLine.ref);
@@ -104,56 +104,56 @@ export default new Vuex.Store({
         state.lines.splice(pos, 1); // Remove the line from the list
       }
     },
-    addRing(
+    addCircle(
       state,
       {
-        ring,
+        circle,
         centerPoint,
         circlePoint
-      }: { ring: Ring; centerPoint: Mesh; circlePoint: Mesh }
+      }: { circle: Circle; centerPoint: Mesh; circlePoint: Mesh }
     ) {
-      const start = findVertex(state.vertices, centerPoint.id);
-      const end = findVertex(state.vertices, circlePoint.id);
+      const start = findPoint(state.points, centerPoint.id);
+      const end = findPoint(state.points, circlePoint.id);
       if (start !== null && end !== null) {
-        const newRing = { ref: ring, center: start, point: end };
-        start.centerOf.push(newRing);
-        end.circumOf.push(newRing);
-        state.rings.push(newRing);
-        state.sphere?.add(ring);
+        const newCircle = { ref: circle, center: start, point: end };
+        start.centerOf.push(newCircle);
+        end.circumOf.push(newCircle);
+        state.circles.push(newCircle);
+        state.sphere?.add(circle);
       }
     },
-    removeRing(state, ringId: number) {
-      const ringPos = state.rings.findIndex(x => x.ref.id === ringId);
-      if (ringPos >= 0) {
+    removeCircle(state, circleId: number) {
+      const circlePos = state.circles.findIndex(x => x.ref.id === circleId);
+      if (circlePos >= 0) {
         /* victim line is found */
-        const victimRing: SERing = state.rings[ringPos];
+        const victimCircle: SECircle = state.circles[circlePos];
 
-        // Locate the start vertex of this victim line
-        const sVertexPos = state.vertices.findIndex(
-          v => v.ref.id == victimRing.center.ref.id
+        // Locate the start point of this victim line
+        const sPointPos = state.points.findIndex(
+          v => v.ref.id == victimCircle.center.ref.id
         );
-        if (sVertexPos >= 0) {
-          const spos = state.vertices[sVertexPos].centerOf.findIndex(
-            (r: SERing) => r.ref.id === victimRing.ref.id
+        if (sPointPos >= 0) {
+          const spos = state.points[sPointPos].centerOf.findIndex(
+            (r: SECircle) => r.ref.id === victimCircle.ref.id
           );
-          if (spos >= 0) state.vertices[sVertexPos].circumOf.splice(spos, 1);
+          if (spos >= 0) state.points[sPointPos].circumOf.splice(spos, 1);
         }
 
-        // Locate the end vertex of this victim line
-        const eVertexPos = state.vertices.findIndex(
-          v => v.ref.id == victimRing.point.ref.id
+        // Locate the end point of this victim line
+        const ePointPos = state.points.findIndex(
+          v => v.ref.id == victimCircle.point.ref.id
         );
-        if (eVertexPos >= 0) {
-          const epos = state.vertices[eVertexPos].circumOf.findIndex(
-            (r: SERing) => r.ref.id === victimRing.ref.id
+        if (ePointPos >= 0) {
+          const epos = state.points[ePointPos].circumOf.findIndex(
+            (r: SECircle) => r.ref.id === victimCircle.ref.id
           );
-          if (epos >= 0) state.vertices[eVertexPos].circumOf.splice(epos, 1);
+          if (epos >= 0) state.points[ePointPos].circumOf.splice(epos, 1);
         }
         // Remove it from the sphere
-        state.sphere?.remove(victimRing.ref);
-        (victimRing.ref.material as MeshPhongMaterial).emissive.set(0);
+        state.sphere?.remove(victimCircle.ref);
+        (victimCircle.ref.material as MeshPhongMaterial).emissive.set(0);
 
-        state.rings.splice(ringPos, 1); // Remove the line from the list
+        state.circles.splice(circlePos, 1); // Remove the line from the list
       }
     }
   },

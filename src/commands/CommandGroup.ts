@@ -2,7 +2,7 @@
  * This class is needed to group several commands together so
  * one single call to undo() undoes multiple effects
  */
-import { Command } from "./Comnand";
+import { Command } from "./Command";
 export class CommandGroup extends Command {
   private subCommands: Command[] = [];
 

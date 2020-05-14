@@ -11,9 +11,15 @@
     There can be only one of these environments.
   -->
   <v-app app>
+    <!-- This is the main app bar in the window. Notice the internationalization in the toolbar
+    title where $t('key') means that the key should be looked up in the current language file named
+    ##.lang.json.-->
     <v-app-bar app color="primary" dark dense clipped-left>
+      <!-- This is where the file and export (to EPS, TIKZ, animated GIF?) operations will go 
+      Also request a feature and report a bug-->
       <v-app-bar-nav-icon @click="fileSystemsDrawerDisplay = true">
       </v-app-bar-nav-icon>
+
       <div class="d-flex align-center">
         <router-link to="/">
           <v-img alt="Spherical Easel Logo" class="shrink mr-2" contain
@@ -72,17 +78,16 @@
 </template>
 
 <!-- 
-  script is code for binding the output of the user actions to desired changes
-  in the display (not sure) 
+  This section is for Typescript code (note lang="ts") for binding the output of the user 
+  actions to desired changes in the display and the rest of the app. 
 -->
 <script lang="ts">
 import Vue from "vue";
-// import ObjectTree from "@/components/ObjectTree.vue";
-//import { Command } from "@/commands/Comnand";
-// import { mapState } from "vuex";
-import { WebGLRenderer, Mesh } from "three";
+/* Import the custom components */
 import Component from "vue-class-component";
-import { Inject } from "vue-property-decorator";
+import { Inject } from "vue-property-decorator"
+/* TODO: What does this do? */
+import { WebGLRenderer, Mesh } from "three";
 import { State } from "vuex-class";
 
 @Component
@@ -97,6 +102,7 @@ export default class App extends Vue {
 
   private canvas: HTMLCanvasElement;
 
+  /* TODO: I'm not sure what this does. */
   @State
   private sphere!: Mesh;
   constructor() {

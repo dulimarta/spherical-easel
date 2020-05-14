@@ -2,7 +2,7 @@
   <div class="pa-1" id="objectTreeContainer">
     <h4>{{ $t('objects.points') }}</h4>
     <v-treeview dense hoverable activatable active-class="warning"
-      :items="iVertices" @update:active="updateActive"></v-treeview>
+      :items="iPoints" @update:active="updateActive"></v-treeview>
     <h4>{{ $t('objects.lines') }}</h4>
     <v-treeview dense hoverable activatable active-class="warning"
       :items="iLines" @update:active="updateActive"></v-treeview>
@@ -16,7 +16,7 @@
 import Vue from "vue";
 import Component from "vue-class-component";
 import { State } from "vuex-class";
-import { SEVertex, SELine, SERing } from "@/types";
+import { SEPoint, SELine, SECircle } from "@/types";
 import { Mesh, MeshPhongMaterial } from "three";
 
 @Component
@@ -27,17 +27,17 @@ export default class ObjectTree extends Vue {
   readonly sphere!: Mesh;
 
   @State
-  private vertices!: SEVertex[];
+  private points!: SEPoint[];
 
   @State
   private lines!: SELine[];
 
   @State
-  private rings!: SERing[];
+  private circles!: SECircle[];
 
   // TODO: the getter function seems to be sluggish?
-  get iVertices() {
-    return this.vertices.map(z => ({
+  get iPoints() {
+    return this.points.map(z => ({
       id: z.ref.id,
       name: z.ref.name,
       children: [
@@ -90,7 +90,7 @@ export default class ObjectTree extends Vue {
   }
 
   get iCircles() {
-    return this.rings.map(r => ({
+    return this.circles.map(r => ({
       id: r.ref.id,
       name: r.ref.name,
       children: [
