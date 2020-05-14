@@ -1,15 +1,12 @@
 import CursorHandler from "./CursorHandler";
 import { Camera, Scene } from "three";
 import SETTINGS from "@/global-settings";
-import Vertex from "@/3d-objs/Vertex";
+import Vertex from "@/3d-objs/Point";
 
 export default class MoveHandler extends CursorHandler {
   private isDragging = false;
   private moveTarget: Vertex | null = null;
-  constructor(args: {
-    camera: Camera;
-    scene: Scene;
-  }) {
+  constructor(args: { camera: Camera; scene: Scene }) {
     super(args);
   }
 
@@ -17,23 +14,23 @@ export default class MoveHandler extends CursorHandler {
     super.mouseMoved(event);
     if (this.isDragging && this.moveTarget instanceof Vertex) {
       this.moveTarget.position.copy(this.currentPoint);
-      const vtx = this.store.state.vertices.find(
+      const vtx = this.store.state.points.find(
         v => v.ref.id === this.moveTarget?.id
       );
       if (vtx) {
-        // Update all lines having this vertex as start point
+        // Update all lines having this point as start point
         vtx.startOf.forEach(z => {
           z.ref.startPoint = this.currentPoint;
         });
-        // Update all lines having this vertex as end point
+        // Update all lines having this point as end point
         vtx.endOf.forEach(z => {
           z.ref.endPoint = this.currentPoint;
         });
-        // Update all circles having this vertex as center point
+        // Update all circles having this point as center point
         vtx.centerOf.forEach(z => {
           z.ref.centerPoint = this.currentPoint;
         });
-        // Update all circles having this vertex as circum point
+        // Update all circles having this point as circum point
         vtx.circumOf.forEach(z => {
           z.ref.circlePoint = this.currentPoint;
         });
@@ -56,6 +53,6 @@ export default class MoveHandler extends CursorHandler {
   activate() {
     this.rayCaster.layers.disableAll();
     this.rayCaster.layers.enable(SETTINGS.layers.sphere);
-    this.rayCaster.layers.enable(SETTINGS.layers.vertex);
+    this.rayCaster.layers.enable(SETTINGS.layers.point);
   }
 }

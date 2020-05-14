@@ -37,9 +37,9 @@ export default class Circle extends Mesh {
     rotationMatrix.makeBasis(desiredXAxis, desiredYAxis, desiredZAxis);
     this.position.set(0, 0, 0);
     const angle = this.center.angleTo(this.outer);
-    const ringRadius = Math.sin(angle);
+    const circleRadius = Math.sin(angle);
     const translateDistance = Math.cos(angle);
-    this.scale.set(ringRadius, ringRadius, 1);
+    this.scale.set(circleRadius, circleRadius, 1);
     this.translateZ(translateDistance);
     this.rotation.setFromRotationMatrix(rotationMatrix);
   }

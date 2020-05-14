@@ -1,10 +1,10 @@
 import { Vector3, Camera, Scene } from "three";
 import CursorHandler from "./CursorHandler";
 // import Arrow from "@/3d-objs/Arrow";
-import Vertex from "@/3d-objs/Vertex";
+import Vertex from "@/3d-objs/Point";
 import SETTINGS from "@/global-settings";
 import { CommandGroup } from "@/commands/CommandGroup";
-import { AddVertexCommand } from "@/commands/AddVertexCommand";
+import { AddPointCommand } from "@/commands/AddPointCommand";
 import { AddLineCommand } from "@/commands/AddLineCommand";
 export default class LineHandler extends CursorHandler {
   protected startPoint: Vector3;
@@ -15,13 +15,7 @@ export default class LineHandler extends CursorHandler {
   protected startDot: Vertex;
   private startVertex: Vertex | null = null;
   private endVertex: Vertex | null = null;
-  constructor({
-    camera,
-    scene
-  }: {
-    camera: Camera;
-    scene: Scene;
-  }) {
+  constructor({ camera, scene }: { camera: Camera; scene: Scene }) {
     super({ camera, scene });
     this.startPoint = new Vector3();
     this.endPoint = new Vector3();
@@ -34,7 +28,7 @@ export default class LineHandler extends CursorHandler {
   activate = () => {
     this.rayCaster.layers.disableAll();
     this.rayCaster.layers.enable(SETTINGS.layers.sphere);
-    this.rayCaster.layers.enable(SETTINGS.layers.vertex);
+    this.rayCaster.layers.enable(SETTINGS.layers.point);
     // The following line automatically calls Line setter function by default
     this.geodesicRing.isSegment = false;
   };
@@ -66,7 +60,7 @@ export default class LineHandler extends CursorHandler {
       const selected = this.hitObject;
       // Record the first point of the geodesic circle
       if (selected instanceof Vertex) {
-        /* the vertex coordinate is local on the sphere */
+        /* the point coordinate is local on the sphere */
         this.startPoint.copy(selected.position);
         this.startVertex = this.hitObject;
       } else {
@@ -94,21 +88,21 @@ export default class LineHandler extends CursorHandler {
       const lineGroup = new CommandGroup();
       if (this.startVertex === null) {
         // Starting point landed on an open space
-        // we have to create a new vertex
+        // we have to create a new point
         const vtx = new Vertex();
         vtx.position.copy(this.startPoint);
         this.startVertex = vtx;
-        lineGroup.addCommand(new AddVertexCommand(vtx));
+        lineGroup.addCommand(new AddPointCommand(vtx));
       }
       if (this.hitObject instanceof Vertex) {
         this.endVertex = this.hitObject;
       } else {
         // Endpoint landed on an open space
-        // we have to create a new vertex
+        // we have to create a new point
         const vtx = new Vertex();
         vtx.position.copy(this.currentPoint);
         this.endVertex = vtx;
-        lineGroup.addCommand(new AddVertexCommand(vtx));
+        lineGroup.addCommand(new AddPointCommand(vtx));
       }
 
       lineGroup

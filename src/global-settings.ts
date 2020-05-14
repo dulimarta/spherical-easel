@@ -7,7 +7,7 @@ export default {
   line: {
     thickness: 0.01
   },
-  vertex: {
+  point: {
     size: 0.02,
     color: 0x004080,
     glowColor: 0xff0000
@@ -15,7 +15,7 @@ export default {
   layers: {
     /* Seperate Mesh objects into different layers so it will be easier to filter Raycaster intersection */
     sphere: 2,
-    vertex: 3
+    point: 3
   },
   /* Controls the lenght of time the tool tip are displayed */
   toolTip: {

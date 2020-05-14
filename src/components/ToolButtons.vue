@@ -73,7 +73,7 @@
     <v-btn-toggle class="accent">
       <v-tooltip bottom :open-delay="toolTipOpenDelay" :close-delay="toolTipCloseDelay">
         <template v-slot:activator="{ on }">
-          <v-btn @click="undoEdit" v-on="on">
+          <v-btn icon @click="undoEdit" v-on="on">
             <v-icon>mdi-undo</v-icon>
           </v-btn>
         </template>
@@ -81,7 +81,7 @@
       </v-tooltip>
       <v-tooltip bottom :open-delay="toolTipOpenDelay" :close-delay="toolTipCloseDelay">
         <template v-slot:activator="{ on }">
-          <v-btn @click="redoAction" v-on="on">
+          <v-btn icon @click="redoAction" v-on="on">
             <v-icon>mdi-redo</v-icon>
           </v-btn>
         </template>

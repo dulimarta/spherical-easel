@@ -34,7 +34,7 @@
 import Vue from "vue";
 import Component from "vue-class-component";
 import { State } from "vuex-class";
-import { SEVertex, SELine, SERing } from "@/types";
+import { SEPoint, SELine, SECircle } from "@/types";
 import { Mesh, MeshPhongMaterial } from "three";
 
 @Component
@@ -45,13 +45,13 @@ export default class ObjectTree extends Vue {
   readonly sphere!: Mesh;
 
   @State
-  private vertices!: SEVertex[];
+  private vertices!: SEPoint[];
 
   @State
   private lines!: SELine[];
 
   @State
-  private rings!: SERing[];
+  private circles!: SECircle[];
 
   // TODO: the getter function seems to be sluggish?
   get iVertices() {
@@ -108,7 +108,7 @@ export default class ObjectTree extends Vue {
   }
 
   get iCircles() {
-    return this.rings.map(r => ({
+    return this.circles.map(r => ({
       id: r.ref.id,
       name: r.ref.name,
       children: [

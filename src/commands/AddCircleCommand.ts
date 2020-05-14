@@ -1,36 +1,36 @@
-import { Command } from "./Comnand";
-import Vertex from "@/3d-objs/Vertex";
+import { Command } from "./Command";
+import Point from "@/3d-objs/Point";
 import Circle from "@/3d-objs/Circle";
 
 export class AddRingCommand extends Command {
-  private ring: Circle;
-  private center: Vertex;
-  private circlePoint: Vertex;
+  private circle: Circle;
+  private center: Point;
+  private circlePoint: Point;
   constructor({
-    ring,
+    circle,
     centerPoint,
     circlePoint
   }: {
-    ring: Circle;
-    centerPoint: Vertex;
-    circlePoint: Vertex;
+    circle: Circle;
+    centerPoint: Point;
+    circlePoint: Point;
   }) {
     super();
-    this.ring = ring;
+    this.circle = circle;
     this.center = centerPoint;
     this.circlePoint = circlePoint;
   }
 
   do() {
     Command.store.commit("addRing", {
-      ring: this.ring,
+      circle: this.circle,
       centerPoint: this.center,
       circlePoint: this.circlePoint
     });
   }
 
   saveState() {
-    this.lastState = this.ring.id;
+    this.lastState = this.circle.id;
   }
 
   restoreState() {

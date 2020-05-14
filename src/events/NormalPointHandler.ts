@@ -1,9 +1,9 @@
 import { Vector3, Quaternion, Vector2, Camera, Scene } from "three";
 import Arrow from "@/3d-objs/Arrow";
 import CursorHandler from "./CursorHandler";
-import Vertex from "@/3d-objs/Vertex";
+import Vertex from "@/3d-objs/Point";
 import SETTINGS from "@/global-settings";
-import { AddVertexCommand } from "@/commands/AddVertexCommand";
+import { AddPointCommand } from "@/commands/AddPointCommand";
 export default class NormalPointHandler extends CursorHandler {
   private normalDirection: Vector3;
   private normalArrow: Arrow;
@@ -11,10 +11,7 @@ export default class NormalPointHandler extends CursorHandler {
   private isNormalAdded: boolean;
   // private sphereCoordFrame: Matrix4;
 
-  constructor(args: {
-    camera: Camera;
-    scene: Scene;
-  }) {
+  constructor(args: { camera: Camera; scene: Scene }) {
     super(args);
     this.mouse = new Vector2();
     // this.currentPoint = new Vector3(); // Cursor world coordinate position on the sphere
@@ -53,12 +50,12 @@ export default class NormalPointHandler extends CursorHandler {
   mousePressed = () => {
     if (this.isOnSphere && this.theSphere) {
       // The intersection point is returned as a point in the WORLD coordinate
-      // But when a new vertex is added to the sphere, we have to convert
+      // But when a new point is added to the sphere, we have to convert
       // for the world coordinate frame to the sphere coordinate frame
 
       const vtx = new Vertex();
       vtx.position.copy(this.currentPoint);
-      new AddVertexCommand(vtx).execute();
+      new AddPointCommand(vtx).execute();
     }
   };
 

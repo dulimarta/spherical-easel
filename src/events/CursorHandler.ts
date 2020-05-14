@@ -5,14 +5,14 @@ import {
   Scene,
   Vector2,
   Vector3,
-  MeshPhongMaterial,
+  MeshPhongMaterial
   // Layers
 } from "three";
 import AppStore from "@/store";
-import Vertex from "@/3d-objs/Vertex";
+import Vertex from "@/3d-objs/Point";
 import SETTINGS from "@/global-settings";
 import Line from "@/3d-objs/Line";
-import { ToolStrategy } from './ToolStrategy';
+import { ToolStrategy } from "./ToolStrategy";
 const RAYCASTER = new Raycaster();
 
 export default class CursorHandler implements ToolStrategy {
@@ -31,13 +31,7 @@ export default class CursorHandler implements ToolStrategy {
   protected theSphere: Mesh | null = null;
   protected geodesicRing: Line;
 
-  constructor({
-    camera,
-    scene
-  }: {
-    camera: Camera;
-    scene: Scene;
-  }) {
+  constructor({ camera, scene }: { camera: Camera; scene: Scene }) {
     this.camera = camera;
     this.scene = scene;
     this.rayCaster = RAYCASTER;
@@ -94,7 +88,7 @@ export default class CursorHandler implements ToolStrategy {
       this.hitObject = null;
     }
     this.isOnSphere = false;
-    const canvas = (event.target) as HTMLCanvasElement;
+    const canvas = event.target as HTMLCanvasElement;
 
     canvas.style.cursor = "default";
     this.currentPoint.set(Number.NaN, Number.NaN, Number.NaN);
@@ -108,11 +102,11 @@ export default class CursorHandler implements ToolStrategy {
     const hitTarget =
       intersections[0]; /* select the intersection closes to the viewer */
     if (hitTarget.object instanceof Vertex) {
-      /* the vertex coordinate is local to the sphere */
+      /* the point coordinate is local to the sphere */
       this.currentPoint.copy(hitTarget.object.position);
       this.hitObject = hitTarget.object;
       (this.hitObject?.material as MeshPhongMaterial).emissive.set(
-        SETTINGS.vertex.glowColor
+        SETTINGS.point.glowColor
       );
     } else if (hitTarget.object instanceof Mesh) {
       this.theSphere = hitTarget.object;

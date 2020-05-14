@@ -2,12 +2,12 @@
  * wraps actions into objects.
  * The most important abstract method of this class is the `do()`
  * method, it performs the action wrapped by the object
- * 
+ *
  * In order to support undo feature, each command must also
  * implement the restoreState() method to revert the effects of the action.
  * The constructor of every subclass must take the arguments needed to perform
  * the actual action of the command.
-*/
+ */
 
 import { Store } from "vuex";
 import { AppState } from "@/types";

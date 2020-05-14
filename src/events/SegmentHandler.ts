@@ -1,7 +1,7 @@
 import { Vector3, Camera, Scene } from "three";
 import LineHandler from "./LineHandler";
 // import Arrow from "@/3d-objs/Arrow";
-import Vertex from "@/3d-objs/Vertex";
+import Vertex from "@/3d-objs/Point";
 import SETTINGS from "@/global-settings";
 
 export default class SegmentHandler extends LineHandler {
@@ -26,9 +26,8 @@ export default class SegmentHandler extends LineHandler {
 
   activate = () => {
     this.rayCaster.layers.enable(SETTINGS.layers.sphere);
-    this.rayCaster.layers.enable(SETTINGS.layers.vertex);
+    this.rayCaster.layers.enable(SETTINGS.layers.point);
     // The following line automatically calls Line setter function
     this.geodesicRing.isSegment = true;
   };
-
 }

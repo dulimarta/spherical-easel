@@ -1,19 +1,19 @@
-import { Command } from "./Comnand";
-import Vertex from "@/3d-objs/Vertex";
+import { Command } from "./Command";
+import Point from "@/3d-objs/Point";
 import Line from "@/3d-objs/Line";
 
 export class AddLineCommand extends Command {
   private line: Line;
-  private startPoint: Vertex;
-  private endPoint: Vertex;
+  private startPoint: Point;
+  private endPoint: Point;
   constructor({
     line,
     startPoint,
     endPoint
   }: {
     line: Line;
-    startPoint: Vertex;
-    endPoint: Vertex;
+    startPoint: Point;
+    endPoint: Point;
   }) {
     super();
     this.line = line;

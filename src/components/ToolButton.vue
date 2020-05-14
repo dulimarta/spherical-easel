@@ -8,7 +8,6 @@
         snackbar messages except the one emiting this event.-->
         <v-btn
           icon
-          text
           :value="button.editModeValue"
           v-on="on"
           @click="$emit('displayOnlyThisToolUseMessage',button.id); displayToolUseMessage = true;"
@@ -25,7 +24,7 @@
       bottom
       left
       :timeout="toolUseMessageDelay"
-      :multi-line="($t('message.buttons.'+ button.displayedName) +': ' + $t('message.buttons.' + button.toolUseMessage)).length>38"
+      multi-line
     >
       <span>
         <strong class="warning--text">{{$t('message.buttons.'+ button.displayedName) +': '}}</strong>
@@ -69,7 +68,9 @@ export default class ToolButton extends Vue {
   /* Allow us to bind the button object in the parent (=ToolButtons) with the button object in the
   child */
   @Prop({ default: null })
-  button!: ToolButtonType;
+  button!: ToolButtonType; /* Whaat does !: mean? It tells typescript not to worry about button not
+  being assigned. It excludes the possibility that button won't be assigned. 
+  https://stackoverflow.com/questions/50983838/what-does-mean-in-typescript    */
 
   /* @Watch if button.displayToolUseMessage changes then set displayToolUseMessage to false so
       that multiple snackbars tool use messages are not displayed at the same time*/
