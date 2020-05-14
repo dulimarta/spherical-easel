@@ -1,26 +1,26 @@
 import { Vector3, Camera, Scene } from "three";
 import CursorHandler from "./CursorHandler";
-import Vertex from "@/3d-objs/Point";
+import Point from "@/3d-objs/Point";
 import SETTINGS from "@/global-settings";
 import Circle from "@/3d-objs/Circle";
 import { CommandGroup } from "@/commands/CommandGroup";
 import { AddPointCommand } from "@/commands/AddPointCommand";
-import { AddRingCommand } from "@/commands/AddCircleCommand";
+import { AddCircleCommand } from "@/commands/AddCircleCommand";
 
-export default class CirleHandler extends CursorHandler {
-  private startPoint: Vector3;
-  private endPoint: Vector3;
+export default class CircleHandler extends CursorHandler {
+  private startV3Point: Vector3;
+  private endV3Point: Vector3;
   private isMouseDown: boolean;
   private isCircleAdded: boolean;
-  private startDot: Vertex;
+  private startDot: Point;
   private circle: Circle;
-  private startVertex: Vertex | null = null;
-  private endVertex: Vertex | null = null;
+  private startPoint: Point | null = null;
+  private endPoint: Point | null = null;
   constructor({ camera, scene }: { camera: Camera; scene: Scene }) {
     super({ camera, scene });
-    this.startPoint = new Vector3();
-    this.endPoint = new Vector3();
-    this.startDot = new Vertex();
+    this.startV3Point = new Vector3();
+    this.endV3Point = new Vector3();
+    this.startDot = new Point();
     this.isMouseDown = false;
     this.isCircleAdded = false;
     this.circle = new Circle();
@@ -40,7 +40,7 @@ export default class CirleHandler extends CursorHandler {
           this.theSphere.add(this.circle);
           this.theSphere.add(this.startDot);
         }
-        this.circle.circlePoint = this.currentPoint;
+        this.circle.circlePoint = this.currentV3Point;
       }
     } else if (this.isCircleAdded) {
       this.theSphere?.remove(this.circle);
@@ -54,16 +54,16 @@ export default class CirleHandler extends CursorHandler {
     this.isMouseDown = true;
     if (this.isOnSphere) {
       const selected = this.hitObject;
-      if (selected instanceof Vertex) {
-        this.startPoint.copy(selected.position);
-        this.startVertex = this.hitObject;
+      if (selected instanceof Point) {
+        this.startV3Point.copy(selected.position);
+        this.startPoint = this.hitObject;
       } else {
         this.theSphere?.add(this.startDot);
-        this.startPoint.copy(this.currentPoint);
-        this.startVertex = null;
+        this.startV3Point.copy(this.currentV3Point);
+        this.startPoint = null;
       }
-      this.startDot.position.copy(this.currentPoint);
-      this.circle.centerPoint = this.currentPoint;
+      this.startDot.position.copy(this.currentV3Point);
+      this.circle.centerPoint = this.currentV3Point;
     }
   }
 
@@ -75,39 +75,39 @@ export default class CirleHandler extends CursorHandler {
       this.theSphere.remove(this.circle);
       this.theSphere.remove(this.startDot);
       this.isCircleAdded = false;
-      this.endPoint.copy(this.currentPoint);
-      const newRing = this.circle.clone();
-      const ringGroup = new CommandGroup();
-      if (this.startVertex === null) {
+      this.endV3Point.copy(this.currentV3Point);
+      const newCircle = this.circle.clone();
+      const circleGroup = new CommandGroup();
+      if (this.startPoint === null) {
         // Starting point landed on an open space
         // we have to create a new point
-        const vtx = new Vertex();
-        vtx.position.copy(this.startPoint);
-        this.startVertex = vtx;
-        ringGroup.addCommand(new AddPointCommand(vtx));
+        const vtx = new Point();
+        vtx.position.copy(this.startV3Point);
+        this.startPoint = vtx;
+        circleGroup.addCommand(new AddPointCommand(vtx));
       }
-      if (this.hitObject instanceof Vertex) {
-        this.endVertex = this.hitObject;
+      if (this.hitObject instanceof Point) {
+        this.endPoint = this.hitObject;
       } else {
-        // Endpoint landed on an open space
+        // endV3Point landed on an open space
         // we have to create a new point
-        const vtx = new Vertex();
-        vtx.position.copy(this.currentPoint);
-        this.endVertex = vtx;
-        ringGroup.addCommand(new AddPointCommand(vtx));
+        const vtx = new Point();
+        vtx.position.copy(this.currentV3Point);
+        this.endPoint = vtx;
+        circleGroup.addCommand(new AddPointCommand(vtx));
       }
 
-      ringGroup
+      circleGroup
         .addCommand(
-          new AddRingCommand({
-            circle: newRing,
-            centerPoint: this.startVertex,
-            circlePoint: this.endVertex
+          new AddCircleCommand({
+            circle: newCircle,
+            centerPoint: this.startPoint,
+            circlePoint: this.endPoint
           })
         )
         .execute();
-      this.startVertex = null;
-      this.endVertex = null;
+      this.startPoint = null;
+      this.endPoint = null;
     }
   }
 }

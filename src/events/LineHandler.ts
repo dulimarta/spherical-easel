@@ -1,25 +1,25 @@
 import { Vector3, Camera, Scene } from "three";
 import CursorHandler from "./CursorHandler";
 // import Arrow from "@/3d-objs/Arrow";
-import Vertex from "@/3d-objs/Point";
+import Point from "@/3d-objs/Point";
 import SETTINGS from "@/global-settings";
 import { CommandGroup } from "@/commands/CommandGroup";
 import { AddPointCommand } from "@/commands/AddPointCommand";
 import { AddLineCommand } from "@/commands/AddLineCommand";
 export default class LineHandler extends CursorHandler {
-  protected startPoint: Vector3;
-  protected endPoint: Vector3;
+  protected startV3Point: Vector3;
+  protected endV3Point: Vector3;
   // private normalArrow: Arrow;
   protected isMouseDown: boolean;
   protected isCircleAdded: boolean;
-  protected startDot: Vertex;
-  private startVertex: Vertex | null = null;
-  private endVertex: Vertex | null = null;
+  protected startDot: Point;
+  private startPoint: Point | null = null;
+  private endPoint: Point | null = null;
   constructor({ camera, scene }: { camera: Camera; scene: Scene }) {
     super({ camera, scene });
-    this.startPoint = new Vector3();
-    this.endPoint = new Vector3();
-    this.startDot = new Vertex();
+    this.startV3Point = new Vector3();
+    this.endV3Point = new Vector3();
+    this.startDot = new Point();
     // this.normalArrow = new Arrow(1.5, 0xff6600);
     this.isMouseDown = false;
     this.isCircleAdded = false;
@@ -30,7 +30,7 @@ export default class LineHandler extends CursorHandler {
     this.rayCaster.layers.enable(SETTINGS.layers.sphere);
     this.rayCaster.layers.enable(SETTINGS.layers.point);
     // The following line automatically calls Line setter function by default
-    this.geodesicRing.isSegment = false;
+    this.line.isSegment = false;
   };
 
   mouseMoved(event: MouseEvent) {
@@ -39,14 +39,14 @@ export default class LineHandler extends CursorHandler {
       if (this.isMouseDown && this.theSphere) {
         if (!this.isCircleAdded) {
           this.isCircleAdded = true;
-          this.theSphere.add(this.geodesicRing);
+          this.theSphere.add(this.line);
           // this.scene.add(this.startDot);
         }
         // The following line automatically calls Line setter function
-        this.geodesicRing.endPoint = this.currentPoint;
+        this.line.endV3Point = this.currentV3Point;
       }
     } else if (this.isCircleAdded) {
-      this.theSphere?.remove(this.geodesicRing);
+      this.theSphere?.remove(this.line);
       this.theSphere?.remove(this.startDot);
       this.isCircleAdded = false;
     }
@@ -55,23 +55,23 @@ export default class LineHandler extends CursorHandler {
   //eslint-disable-next-line
   mousePressed(event: MouseEvent) {
     this.isMouseDown = true;
-    this.startVertex = null;
+    this.startPoint = null;
     if (this.isOnSphere) {
       const selected = this.hitObject;
       // Record the first point of the geodesic circle
-      if (selected instanceof Vertex) {
+      if (selected instanceof Point) {
         /* the point coordinate is local on the sphere */
-        this.startPoint.copy(selected.position);
-        this.startVertex = this.hitObject;
+        this.startV3Point.copy(selected.position);
+        this.startPoint = this.hitObject;
       } else {
-        /* this.currentPoint is already converted to local sphere coordinate frame */
+        /* this.currentV3Point is already converted to local sphere coordinate frame */
         this.theSphere?.add(this.startDot);
-        this.startPoint.copy(this.currentPoint);
-        this.startVertex = null;
+        this.startV3Point.copy(this.currentV3Point);
+        this.startPoint = null;
       }
       // The following line automatically calls Line setter function
-      this.geodesicRing.startPoint = this.currentPoint;
-      this.startDot.position.copy(this.currentPoint);
+      this.line.startV3Point = this.currentV3Point;
+      this.startDot.position.copy(this.currentV3Point);
     }
   }
 
@@ -80,28 +80,28 @@ export default class LineHandler extends CursorHandler {
     this.isMouseDown = false;
     if (this.isOnSphere && this.theSphere) {
       // Record the second point of the geodesic circle
-      this.theSphere.remove(this.geodesicRing);
+      this.theSphere.remove(this.line);
       this.theSphere.remove(this.startDot);
       this.isCircleAdded = false;
-      this.endPoint.copy(this.currentPoint);
-      const newLine = this.geodesicRing.clone(); // true:recursive clone
+      this.endV3Point.copy(this.currentV3Point);
+      const newLine = this.line.clone(); // true:recursive clone
       const lineGroup = new CommandGroup();
-      if (this.startVertex === null) {
+      if (this.startPoint === null) {
         // Starting point landed on an open space
         // we have to create a new point
-        const vtx = new Vertex();
-        vtx.position.copy(this.startPoint);
-        this.startVertex = vtx;
+        const vtx = new Point();
+        vtx.position.copy(this.startV3Point);
+        this.startPoint = vtx;
         lineGroup.addCommand(new AddPointCommand(vtx));
       }
-      if (this.hitObject instanceof Vertex) {
-        this.endVertex = this.hitObject;
+      if (this.hitObject instanceof Point) {
+        this.endPoint = this.hitObject;
       } else {
-        // Endpoint landed on an open space
+        // endV3Point landed on an open space
         // we have to create a new point
-        const vtx = new Vertex();
-        vtx.position.copy(this.currentPoint);
-        this.endVertex = vtx;
+        const vtx = new Point();
+        vtx.position.copy(this.currentV3Point);
+        this.endPoint = vtx;
         lineGroup.addCommand(new AddPointCommand(vtx));
       }
 
@@ -109,13 +109,13 @@ export default class LineHandler extends CursorHandler {
         .addCommand(
           new AddLineCommand({
             line: newLine,
-            startPoint: this.startVertex,
-            endPoint: this.endVertex
+            startPoint: this.startPoint,
+            endPoint: this.endPoint
           })
         )
         .execute();
-      this.startVertex = null;
-      this.endVertex = null;
+      this.startPoint = null;
+      this.endPoint = null;
     }
   }
 }

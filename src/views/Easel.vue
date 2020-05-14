@@ -35,7 +35,7 @@ import * as THREE from "three";
 // import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import { TransformControls } from "three/examples/jsm/controls/TransformControls";
 // import Axes from "@/3d-objs/Axes";
-// import Vertex from "@/3d-objs/Vertex";
+// import Point from "@/3d-objs/Point";
 import { ToolStrategy } from "@/events/ToolStrategy";
 import NormalPointHandler from "@/events/NormalPointHandler";
 import LineHandler from "@/events/LineHandler";

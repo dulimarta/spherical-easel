@@ -6,7 +6,7 @@ import {
   PointLight
 } from "three";
 import Axes from "@/3d-objs/Axes";
-import Vertex from "@/3d-objs/Point";
+import Point from "@/3d-objs/Point";
 import { AddPointCommand } from "@/commands/AddPointCommand";
 import SETTINGS from "@/global-settings";
 export function setupScene() {
@@ -35,7 +35,7 @@ export function setupScene() {
     // Add random vertices (for development only)
 
     for (let k = 0; k < 3; k++) {
-      const v = new Vertex(SETTINGS.point.size);
+      const v = new Point(SETTINGS.point.size);
       v.position.set(Math.random(), Math.random(), Math.random());
       v.position.normalize();
       v.position.multiplyScalar(SETTINGS.sphere.radius);

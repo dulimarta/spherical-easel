@@ -2,7 +2,7 @@ import { Mesh, SphereGeometry, MeshPhongMaterial } from "three";
 
 import SETTINGS from "@/global-settings";
 
-export default class Vertex extends Mesh {
+export default class Point extends Mesh {
   constructor(size?: number, color?: number) {
     super();
     this.geometry = new SphereGeometry(size || SETTINGS.point.size, 20, 20);

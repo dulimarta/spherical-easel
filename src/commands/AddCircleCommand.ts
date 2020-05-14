@@ -2,7 +2,7 @@ import { Command } from "./Command";
 import Point from "@/3d-objs/Point";
 import Circle from "@/3d-objs/Circle";
 
-export class AddRingCommand extends Command {
+export class AddCircleCommand extends Command {
   private circle: Circle;
   private center: Point;
   private circlePoint: Point;
@@ -22,7 +22,7 @@ export class AddRingCommand extends Command {
   }
 
   do() {
-    Command.store.commit("addRing", {
+    Command.store.commit("addCircle", {
       circle: this.circle,
       centerPoint: this.center,
       circlePoint: this.circlePoint
@@ -34,6 +34,6 @@ export class AddRingCommand extends Command {
   }
 
   restoreState() {
-    Command.store.commit("removeRing", this.lastState);
+    Command.store.commit("removeCircle", this.lastState);
   }
 }

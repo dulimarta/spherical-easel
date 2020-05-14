@@ -6,7 +6,7 @@
       hoverable
       activatable
       active-class="warning"
-      :items="iVertices"
+      :items="iPoints"
       @update:active="updateActive"
     ></v-treeview>
     <h4>{{ $t('message.objects.lines') }}</h4>
@@ -45,7 +45,7 @@ export default class ObjectTree extends Vue {
   readonly sphere!: Mesh;
 
   @State
-  private vertices!: SEPoint[];
+  private points!: SEPoint[];
 
   @State
   private lines!: SELine[];
@@ -54,8 +54,8 @@ export default class ObjectTree extends Vue {
   private circles!: SECircle[];
 
   // TODO: the getter function seems to be sluggish?
-  get iVertices() {
-    return this.vertices.map(z => ({
+  get iPoints() {
+    return this.points.map(z => ({
       id: z.ref.id,
       name: z.ref.name,
       children: [

@@ -7,7 +7,7 @@ import Line from "@/3d-objs/Line";
 import Circle from "@/3d-objs/Circle";
 Vue.use(Vuex);
 
-const findVertex = (arr: SEPoint[], id: number): SEPoint | null => {
+const findPoint = (arr: SEPoint[], id: number): SEPoint | null => {
   const out = arr.filter(v => v.ref.id === id);
   return out.length > 0 ? out[0] : null;
 };
@@ -33,7 +33,7 @@ export default new Vuex.Store({
     setEditMode(state, mode: string) {
       state.editMode = mode;
     },
-    addVertex(state, point: Point) {
+    addPoint(state, point: Point) {
       state.points.push({
         ref: point,
         startOf: [],
@@ -43,7 +43,7 @@ export default new Vuex.Store({
       });
       state.sphere?.add(point);
     },
-    removeVertex(state, pointId: number) {
+    removePoint(state, pointId: number) {
       const pos = state.points.findIndex(x => x.ref.id === pointId);
       if (pos >= 0) {
         state.sphere?.remove(state.points[pos].ref);
@@ -60,8 +60,8 @@ export default new Vuex.Store({
       }: { line: Line; startPoint: Point; endPoint: Point }
     ) {
       // Find both end points in the current list of points
-      const start = findVertex(state.points, startPoint.id);
-      const end = findVertex(state.points, endPoint.id);
+      const start = findPoint(state.points, startPoint.id);
+      const end = findPoint(state.points, endPoint.id);
       if (start !== null && end !== null) {
         const newLine = { ref: line, start, end, isSegment: line.isSegment };
         start.startOf.push(newLine);
@@ -77,25 +77,25 @@ export default new Vuex.Store({
         const victimLine: SELine = state.lines[pos];
 
         // Locate the start point of this victim line
-        const sVertexPos = state.points.findIndex(
+        const sPointPos = state.points.findIndex(
           v => v.ref.id == victimLine.start.ref.id
         );
-        if (sVertexPos >= 0) {
-          const pos = state.points[sVertexPos].startOf.findIndex(
+        if (sPointPos >= 0) {
+          const pos = state.points[sPointPos].startOf.findIndex(
             (z: SELine) => z.ref.id === victimLine.ref.id
           );
-          if (pos >= 0) state.points[sVertexPos].startOf.splice(pos, 1);
+          if (pos >= 0) state.points[sPointPos].startOf.splice(pos, 1);
         }
 
         // Locate the end point of this victim line
-        const eVertexPos = state.points.findIndex(
+        const ePointPos = state.points.findIndex(
           v => v.ref.id == victimLine.end.ref.id
         );
-        if (eVertexPos >= 0) {
-          const pos = state.points[eVertexPos].endOf.findIndex(
+        if (ePointPos >= 0) {
+          const pos = state.points[ePointPos].endOf.findIndex(
             (z: SELine) => z.ref.id === victimLine.ref.id
           );
-          if (pos >= 0) state.points[eVertexPos].endOf.splice(pos, 1);
+          if (pos >= 0) state.points[ePointPos].endOf.splice(pos, 1);
         }
         // Remove it from the sphere
         state.sphere?.remove(victimLine.ref);
@@ -104,7 +104,7 @@ export default new Vuex.Store({
         state.lines.splice(pos, 1); // Remove the line from the list
       }
     },
-    addRing(
+    addCircle(
       state,
       {
         circle,
@@ -112,8 +112,8 @@ export default new Vuex.Store({
         circlePoint
       }: { circle: Circle; centerPoint: Mesh; circlePoint: Mesh }
     ) {
-      const start = findVertex(state.points, centerPoint.id);
-      const end = findVertex(state.points, circlePoint.id);
+      const start = findPoint(state.points, centerPoint.id);
+      const end = findPoint(state.points, circlePoint.id);
       if (start !== null && end !== null) {
         const newCircle = { ref: circle, center: start, point: end };
         start.centerOf.push(newCircle);
@@ -122,36 +122,36 @@ export default new Vuex.Store({
         state.sphere?.add(circle);
       }
     },
-    removeRing(state, circleId: number) {
+    removeCircle(state, circleId: number) {
       const circlePos = state.circles.findIndex(x => x.ref.id === circleId);
       if (circlePos >= 0) {
         /* victim line is found */
-        const victimRing: SECircle = state.circles[circlePos];
+        const victimCircle: SECircle = state.circles[circlePos];
 
         // Locate the start point of this victim line
-        const sVertexPos = state.points.findIndex(
-          v => v.ref.id == victimRing.center.ref.id
+        const sPointPos = state.points.findIndex(
+          v => v.ref.id == victimCircle.center.ref.id
         );
-        if (sVertexPos >= 0) {
-          const spos = state.points[sVertexPos].centerOf.findIndex(
-            (r: SECircle) => r.ref.id === victimRing.ref.id
+        if (sPointPos >= 0) {
+          const spos = state.points[sPointPos].centerOf.findIndex(
+            (r: SECircle) => r.ref.id === victimCircle.ref.id
           );
-          if (spos >= 0) state.points[sVertexPos].circumOf.splice(spos, 1);
+          if (spos >= 0) state.points[sPointPos].circumOf.splice(spos, 1);
         }
 
         // Locate the end point of this victim line
-        const eVertexPos = state.points.findIndex(
-          v => v.ref.id == victimRing.point.ref.id
+        const ePointPos = state.points.findIndex(
+          v => v.ref.id == victimCircle.point.ref.id
         );
-        if (eVertexPos >= 0) {
-          const epos = state.points[eVertexPos].circumOf.findIndex(
-            (r: SECircle) => r.ref.id === victimRing.ref.id
+        if (ePointPos >= 0) {
+          const epos = state.points[ePointPos].circumOf.findIndex(
+            (r: SECircle) => r.ref.id === victimCircle.ref.id
           );
-          if (epos >= 0) state.points[eVertexPos].circumOf.splice(epos, 1);
+          if (epos >= 0) state.points[ePointPos].circumOf.splice(epos, 1);
         }
         // Remove it from the sphere
-        state.sphere?.remove(victimRing.ref);
-        (victimRing.ref.material as MeshPhongMaterial).emissive.set(0);
+        state.sphere?.remove(victimCircle.ref);
+        (victimCircle.ref.material as MeshPhongMaterial).emissive.set(0);
 
         state.circles.splice(circlePos, 1); // Remove the line from the list
       }

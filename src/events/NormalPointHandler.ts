@@ -1,7 +1,7 @@
 import { Vector3, Quaternion, Vector2, Camera, Scene } from "three";
 import Arrow from "@/3d-objs/Arrow";
 import CursorHandler from "./CursorHandler";
-import Vertex from "@/3d-objs/Point";
+import Point from "@/3d-objs/Point";
 import SETTINGS from "@/global-settings";
 import { AddPointCommand } from "@/commands/AddPointCommand";
 export default class NormalPointHandler extends CursorHandler {
@@ -31,8 +31,8 @@ export default class NormalPointHandler extends CursorHandler {
         this.theSphere.add(this.normalArrow);
         this.isNormalAdded = true;
       }
-      this.normalArrow.position.copy(this.currentPoint);
-      this.normalDirection.copy(this.currentPoint);
+      this.normalArrow.position.copy(this.currentV3Point);
+      this.normalDirection.copy(this.currentV3Point);
 
       // The default orientation of the arrow is the Y-axis
       this.normalRotation.setFromUnitVectors(
@@ -53,8 +53,8 @@ export default class NormalPointHandler extends CursorHandler {
       // But when a new point is added to the sphere, we have to convert
       // for the world coordinate frame to the sphere coordinate frame
 
-      const vtx = new Vertex();
-      vtx.position.copy(this.currentPoint);
+      const vtx = new Point();
+      vtx.position.copy(this.currentV3Point);
       new AddPointCommand(vtx).execute();
     }
   };

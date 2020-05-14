@@ -9,7 +9,7 @@ import {
   // Layers
 } from "three";
 import AppStore from "@/store";
-import Vertex from "@/3d-objs/Point";
+import Point from "@/3d-objs/Point";
 import SETTINGS from "@/global-settings";
 import Line from "@/3d-objs/Line";
 import { ToolStrategy } from "./ToolStrategy";
@@ -25,20 +25,20 @@ export default class CursorHandler implements ToolStrategy {
   protected rayCaster: Raycaster;
   protected mouse: Vector2;
   protected store = AppStore; // Vuex global state
-  protected currentPoint: Vector3;
+  protected currentV3Point: Vector3;
   protected hitObject: Mesh | null = null;
   protected isOnSphere: boolean;
   protected theSphere: Mesh | null = null;
-  protected geodesicRing: Line;
+  protected line: Line;
 
   constructor({ camera, scene }: { camera: Camera; scene: Scene }) {
     this.camera = camera;
     this.scene = scene;
     this.rayCaster = RAYCASTER;
     this.mouse = new Vector2();
-    this.currentPoint = new Vector3();
+    this.currentV3Point = new Vector3();
     this.isOnSphere = false;
-    this.geodesicRing = new Line();
+    this.line = new Line();
   }
 
   activate(): void {
@@ -82,7 +82,7 @@ export default class CursorHandler implements ToolStrategy {
       this.scene.children,
       true // recursive search
     );
-    if (this.hitObject instanceof Vertex) {
+    if (this.hitObject instanceof Point) {
       // Turn off emissive color on the currently selected object
       (this.hitObject.material as MeshPhongMaterial).emissive.set(0);
       this.hitObject = null;
@@ -91,7 +91,7 @@ export default class CursorHandler implements ToolStrategy {
     const canvas = event.target as HTMLCanvasElement;
 
     canvas.style.cursor = "default";
-    this.currentPoint.set(Number.NaN, Number.NaN, Number.NaN);
+    this.currentV3Point.set(Number.NaN, Number.NaN, Number.NaN);
     if (intersections.length == 0) {
       return;
     }
@@ -101,18 +101,18 @@ export default class CursorHandler implements ToolStrategy {
     canvas.style.cursor = "pointer";
     const hitTarget =
       intersections[0]; /* select the intersection closes to the viewer */
-    if (hitTarget.object instanceof Vertex) {
+    if (hitTarget.object instanceof Point) {
       /* the point coordinate is local to the sphere */
-      this.currentPoint.copy(hitTarget.object.position);
+      this.currentV3Point.copy(hitTarget.object.position);
       this.hitObject = hitTarget.object;
       (this.hitObject?.material as MeshPhongMaterial).emissive.set(
         SETTINGS.point.glowColor
       );
     } else if (hitTarget.object instanceof Mesh) {
       this.theSphere = hitTarget.object;
-      this.currentPoint.copy(hitTarget.point);
+      this.currentV3Point.copy(hitTarget.point);
       /* The coordinate of the hitpoint is in the world coordinate frame, we must convert it to local frame on the sphere */
-      this.theSphere?.worldToLocal(this.currentPoint);
+      this.theSphere?.worldToLocal(this.currentV3Point);
       this.hitObject = hitTarget.object;
     } else {
       /* What to do here? */
