@@ -1,24 +1,31 @@
 <template>
   <!-- Displays a button only if the user has permission to see it. -->
-  <div class="pa-0" id="button.id"
-    v-if="(buttonDisplayList.indexOf(button.editModeValue) !== -1)">
+  <div class="pa-0" id="button.id" v-if="(buttonDisplayList.indexOf(button.editModeValue) !== -1)">
     <!-- The button is wrapped in to tooltip vue component -->
-    <v-tooltip bottom :open-delay="toolTipOpenDelay"
-      :close-delay="toolTipCloseDelay">
+    <v-tooltip bottom :open-delay="toolTipOpenDelay" :close-delay="toolTipCloseDelay">
       <template v-slot:activator="{ on }">
-        <v-btn icon :value="button.editModeValue" v-on="on"
-          @click="$emit('displayOnlyThisToolUseMessage',button.id); displayToolUseMessage = true;">
+        <v-btn
+          icon
+          :value="button.editModeValue"
+          v-on="on"
+          @click="$emit('displayOnlyThisToolUseMessage',button.id); displayToolUseMessage = true;"
+        >
           <v-icon>{{ button.icon }}</v-icon>
         </v-btn>
       </template>
       <span>{{ $t('buttons.' + button.toolTipMessage) }}</span>
     </v-tooltip>
-    <!--- FIXME: length compare with 38 may break when using bigger fonts --->
-    <v-snackbar v-model="displayToolUseMessage" bottom left
-      :timeout="toolUseMessageDelay" multi-line>
+    <!--- To Check: Does the property multi-line allow the snackbars to be formated correctly
+    automatically when the message is many lines long due to font or number of characters? --->
+    <v-snackbar
+      v-model="displayToolUseMessage"
+      bottom
+      left
+      :timeout="toolUseMessageDelay"
+      multi-line
+    >
       <span>
-        <strong
-          class="warning--text">{{$t('buttons.'+ button.displayedName) +': '}}</strong>
+        <strong class="warning--text">{{$t('buttons.'+ button.displayedName) +': '}}</strong>
         {{ $t('buttons.' + button.toolUseMessage) }}
       </span>
       <v-btn @click="displayToolUseMessage = false" icon>
@@ -59,7 +66,7 @@ export default class ToolButton extends Vue {
   /* Allow us to bind the button object in the parent (=ToolButtons) with the button object in the
   child */
   @Prop({ default: null })
-  button!: ToolButtonType; /* Whaat does !: mean? It tells typescript not to worry about button not
+  button!: ToolButtonType; /* What does !: mean? It tells typescript not to worry about button not
   being assigned. It excludes the possibility that button won't be assigned. 
   https://stackoverflow.com/questions/50983838/what-does-mean-in-typescript    */
 

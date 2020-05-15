@@ -1,17 +1,21 @@
 <template>
   <div class="pa-1 accent" id="toolButtonContainer">
-    <!-- The Basic Tool Group only shown if the user has permission to use a tool in this group. -->
+    <!-- The Basic Tool Group only shown if the user has permission to use a tool in this group.
+    Note the use of the translation $t(key_value).-->
     <div id="BasicToolGroup" v-show="nonEmptyGroup('basic')">
-      <h3 class="body-1 font-weight-bold">
-        {{ $t('toolGroups.BasicTools') }}</h3>
-      <v-btn-toggle v-model="editMode" @change="switchEditMode"
-        class="mr-2 d-flex flex-wrap accent">
+      <h3 class="body-1 font-weight-bold">{{ $t('toolGroups.BasicTools') }}</h3>
+      <v-btn-toggle
+        v-model="editMode"
+        @change="switchEditMode"
+        class="mr-2 d-flex flex-wrap accent"
+      >
         <!--- Use Array.filter to select only basic tools -->
         <ToolButton
           v-for="button in buttonList.filter(b => b.toolGroup === 'basic')"
-          :key="button.id" :button="button"
-          v-on:displayOnlyThisToolUseMessage="displayOnlyThisToolUseMessageFunc">
-        </ToolButton>
+          :key="button.id"
+          :button="button"
+          v-on:displayOnlyThisToolUseMessage="displayOnlyThisToolUseMessageFunc"
+        ></ToolButton>
       </v-btn-toggle>
     </div>
 
@@ -20,16 +24,19 @@
       group. Note the use of the translation $t(key_value).
     -->
     <div id="AdvanceToolGroup" v-show="nonEmptyGroup('advanced')">
-      <h3 class="body-1 font-weight-bold">
-        {{ $t('toolGroups.AdvancedTools') }}</h3>
-      <v-btn-toggle v-model="editMode" @change="switchEditMode"
-        class="mr-2 d-flex flex-wrap accent">
-        <!--- Use Array.filter to select only andvanced tools -->
+      <h3 class="body-1 font-weight-bold">{{ $t('toolGroups.AdvancedTools') }}</h3>
+      <v-btn-toggle
+        v-model="editMode"
+        @change="switchEditMode"
+        class="mr-2 d-flex flex-wrap accent"
+      >
+        <!--- Use Array.filter to select only advanced tools -->
         <ToolButton
           v-for="button in buttonList.filter(b => b.toolGroup === 'advanced')"
-          :key="button.id" :button="button"
-          v-on:displayOnlyThisToolUseMessage="displayOnlyThisToolUseMessageFunc">
-        </ToolButton>
+          :key="button.id"
+          :button="button"
+          v-on:displayOnlyThisToolUseMessage="displayOnlyThisToolUseMessageFunc"
+        ></ToolButton>
       </v-btn-toggle>
     </div>
 
@@ -37,27 +44,28 @@
       The Transformational Tool Group only shown if the user has permission to use a tool in this 
       group. Note the use of the translation $t(key_value).
     -->
-    <div id="TransformationalToolGroup"
-      v-show="nonEmptyGroup('transformational')">
-      <h3 class="body-1 font-weight-bold">
-        {{ $t('toolGroups.TransformationalTools') }}</h3>
-      <v-btn-toggle v-model="editMode" @change="switchEditMode"
-        class="mr-2 d-flex flex-wrap accent">
-        <ToolButton v-for="button in buttonList" :key="button.id"
-          :button="button" toolGroup="transformational"
-          v-on:displayOnlyThisToolUseMessage="displayOnlyThisToolUseMessageFunc">
-        </ToolButton>
+    <div id="TransformationalToolGroup" v-show="nonEmptyGroup('transformational')">
+      <h3 class="body-1 font-weight-bold">{{ $t('toolGroups.TransformationalTools') }}</h3>
+      <v-btn-toggle
+        v-model="editMode"
+        @change="switchEditMode"
+        class="mr-2 d-flex flex-wrap accent"
+      >
+        <ToolButton
+          v-for="button in buttonList"
+          :key="button.id"
+          :button="button"
+          toolGroup="transformational"
+          v-on:displayOnlyThisToolUseMessage="displayOnlyThisToolUseMessageFunc"
+        ></ToolButton>
       </v-btn-toggle>
     </div>
 
-    <h3 class="body-1 font-weight-bold">
-      {{ $t('toolGroups.EditTools') }}</h3>
+    <h3 class="body-1 font-weight-bold">{{ $t('toolGroups.EditTools') }}</h3>
     <v-btn-toggle class="accent">
-      <v-tooltip bottom :open-delay="toolTipOpenDelay"
-        :close-delay="toolTipCloseDelay">
-
+      <v-tooltip bottom :open-delay="toolTipOpenDelay" :close-delay="toolTipCloseDelay">
         <!-- TODO: Move these edit controls to the the panel containing the sphere. 
-    When not available they should be greyed out (i.e. disabled).-->
+        When not available they should be greyed out (i.e. disabled).-->
         <template v-slot:activator="{ on }">
           <v-btn icon @click="undoEdit" v-on="on">
             <v-icon>mdi-undo</v-icon>
@@ -65,8 +73,7 @@
         </template>
         <span>{{ $t('main.UndoLastAction') }}</span>
       </v-tooltip>
-      <v-tooltip bottom :open-delay="toolTipOpenDelay"
-        :close-delay="toolTipCloseDelay">
+      <v-tooltip bottom :open-delay="toolTipOpenDelay" :close-delay="toolTipCloseDelay">
         <template v-slot:activator="{ on }">
           <v-btn icon @click="redoAction" v-on="on">
             <v-icon>mdi-redo</v-icon>
@@ -79,8 +86,7 @@
     <!-- TODO: Move this into a tool tip somewhere. -->
     <div class="ml-2" style="height:100%;">
       <div>
-        <h3 class="body-1 font-weight-bold">
-          {{ $t('toolGroups.KeyShortCut') }}</h3>
+        <h3 class="body-1 font-weight-bold">{{ $t('toolGroups.KeyShortCut') }}</h3>
         <ul>
           <li>{{ $t('toolGroups.ResetSphereOrientation') }}</li>
         </ul>
@@ -99,6 +105,8 @@ import { ToolButtonType } from "@/types";
 
 /* Import the global settings. */
 import SETTINGS from "@/global-settings";
+
+/* Import Command so we can use the command paradigm */
 import { Command } from "@/commands/Command";
 
 /* Declare the components used in this component. */
@@ -116,7 +124,34 @@ export default class ToolButtons extends Vue {
   /* This is a variable that does NOT belong in the global settings but I don't know where else to 
   put it. This is the list of tools that should be displayed*/
   private buttonDisplayList = SETTINGS.userButtonDisplayList;
+  /* Writes the current state/edit mode to the store, where the Easel view can read it. */
+  switchEditMode() {
+    this.$store.commit("setEditMode", this.editMode);
+  }
 
+  /* Undoes the last user action that changed the state of the sphere. */
+  undoEdit() {
+    Command.undo();
+  }
+  /* Redoes the last user action that changed the state of the sphere. */
+  redoAction() {
+    Command.redo();
+  }
+  /* This returns true only if there is at least one tool that needs to be displayed in the group. */
+  nonEmptyGroup(groupName: string): boolean {
+    return this.buttonList.filter(b => b.toolGroup === groupName).length > 0;
+  }
+
+  /* This turns off all other snackbar/toolUseMessage displays so that multiple 
+  snackbar/toolUseMessages are not displayed at the same time.  */
+  displayOnlyThisToolUseMessageFunc(id: number) {
+    // Alternative solution: use Array high-order functions
+    this.buttonList
+      .filter(btn => btn.id !== id)
+      .forEach(btn => {
+        btn.displayToolUseMessage = !btn.displayToolUseMessage;
+      });
+  }
   /* A list of all the buttons that are possible to display/use. Only those that the User has
   permission to use will be available. */
   private buttonList: ToolButtonType[] = [
@@ -181,39 +216,6 @@ export default class ToolButtons extends Vue {
       toolGroup: "advanced"
     }
   ];
-
-  /* Writes the current state/edit mode to the store, where the Easel view can read it. */
-  switchEditMode() {
-    this.$store.commit("setEditMode", this.editMode);
-  }
-
-  /* Undoes the last user action that changed the state of the sphere. */
-  undoEdit() {
-    Command.undo();
-  }
-  /* Redoes the last user action that changed the state of the sphere. */
-  redoAction() {
-    Command.redo();
-  }
-  /* This returns true only if there is at least one tool that needs to be displayed in the group. */
-  nonEmptyGroup(groupName: string): boolean {
-    return this.buttonList.filter(b => b.toolGroup === groupName).length > 0;
-  }
-
-  /* This turns off all other snackbar/toolUseMessage displays so that multiple 
-  snackbar/toolUseMessages are not displayed at the same time.  */
-  displayOnlyThisToolUseMessageFunc(id: number) {
-    // Alternative solution: use Array high-order functions
-    this.buttonList.filter(btn => btn.id !== id)
-      .forEach(btn => {
-        btn.displayToolUseMessage = !btn.displayToolUseMessage;
-      })
-    // for (const btn of this.buttonList) {
-    //   if (btn.id !== id) {
-    //     btn.displayToolUseMessage = !btn.displayToolUseMessage;
-    //   }
-    // }
-  }
 }
 </script> 
 

@@ -17,12 +17,12 @@ export default {
     sphere: 2,
     point: 3
   },
-  /* Controls the lenght of time the tool tip are displayed */
+  /* Controls the length of time (in ms) the tool tip are displayed */
   toolTip: {
     openDelay: 500,
     closeDelay: 250
   },
-  /* Sets the length of time that the tool use display message is displayed in a snackbar */
+  /* Sets the length of time (in ms) that the tool use display message is displayed in a snackbar */
   toolUse: {
     delay: 2000
   },
@@ -40,6 +40,4 @@ export default {
     { locale: "en", name: "English" },
     { locale: "id", name: "Bahasa Indonesia" }
   ]
-
-
 };

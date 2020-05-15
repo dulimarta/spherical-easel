@@ -6,6 +6,8 @@ Vue.use(Vuetify);
 
 import colors from "vuetify/es5/util/colors";
 
+/* This allows us to set the global style variables to adjust the look and feel of the 
+app from one central place. */
 const vuetify = new Vuetify({
   icons: { iconfont: "mdiSvg" },
   theme: {

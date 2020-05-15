@@ -17,53 +17,30 @@
     <v-app-bar app color="primary" dark dense clipped-left>
       <!-- This is where the file and export (to EPS, TIKZ, animated GIF?) operations will go 
       Also request a feature and report a bug-->
-      <v-app-bar-nav-icon @click="fileSystemsDrawerDisplay = true">
-      </v-app-bar-nav-icon>
+      <v-app-bar-nav-icon @click="fileSystemsDrawerDisplay = true"></v-app-bar-nav-icon>
 
       <div class="d-flex align-center">
         <router-link to="/">
-          <v-img alt="Spherical Easel Logo" class="shrink mr-2" contain
+          <v-img
+            alt="Spherical Easel Logo"
+            class="shrink mr-2"
+            contain
             src="./assets/SphericalEaselLogo.gif"
-            transition="scale-transition" width="40" />
+            transition="scale-transition"
+            width="40"
+          />
         </router-link>
-        <v-toolbar-title>{{ $t('main.SphericalEaselMainTitle') }}
-        </v-toolbar-title>
+        <v-toolbar-title>{{ $t('main.SphericalEaselMainTitle') }}</v-toolbar-title>
       </div>
 
       <v-spacer></v-spacer>
-      <!-- This is where the file and export (to EPS, TIKZ, animated GIF?) operations will go 
-      Also request a feature and report a bug-->
-      <!-- This will open up the settings ?drawer ?window for setting the language, decimals 
+
+      <!-- This will open up the global settings view setting the language, decimals 
       display and other global options-->
-      <!-- <v-btn icon @click="globalSettingsDrawerDisplay=true">{{language}}</v-btn> -->
       <router-link to="/settings">
         <v-icon>mdi-cog</v-icon>
       </router-link>
     </v-app-bar>
-
-    <!-- This is where the file and export (to EPS, TIKZ, animated GIF?) operations will go 
-    Also request a feature and report a big-->
-    <!-- TODO: Move this to Easel.vue? --->
-    <!--v-navigation-drawer v-model="fileSystemsDrawerDisplay" temporary>
-      <v-list nav dense>
-        <v-list-item-group v-model="group"
-          active-class="deep-purple--text text--accent-4">
-          <v-list-item>
-            <v-list-item-icon>
-              <v-icon>mdi-upload</v-icon>
-            </v-list-item-icon>
-            <v-list-item-title>Load</v-list-item-title>
-          </v-list-item>
-
-          <v-list-item>
-            <v-list-item-icon>
-              <v-icon>mdi-download</v-icon>
-            </v-list-item-icon>
-            <v-list-item-title>Save</v-list-item-title>
-          </v-list-item>
-        </v-list-item-group>
-      </v-list>
-    </v-navigation-drawer-->
 
     <!-- 
       This is the main window of the app. All other components are display on top of this element
@@ -85,15 +62,20 @@
 import Vue from "vue";
 /* Import the custom components */
 import Component from "vue-class-component";
-import { Inject } from "vue-property-decorator"
-/* TODO: What does this do? */
+import { Inject } from "vue-property-decorator";
+
+/* WebGLRenderer and Mesh allows the creation and display of three diminsional objects using the 
+package threeJS  */
 import { WebGLRenderer, Mesh } from "three";
+
+/* This allows for the State of the app to be initialized with in vuex store */
 import { State } from "vuex-class";
 
+/* This view has no (sub)components (but the Easel view does) so this is empty*/
 @Component
 export default class App extends Vue {
-  private fileSystemsDrawerDisplay = false;
-  private globalSettingsDrawerDisplay = false;
+  /*   private fileSystemsDrawerDisplay = false;
+  private globalSettingsDrawerDisplay = false; */
 
   // Use dependency injection to let us mock the renderer
   // with a fake implementation during testing
@@ -102,7 +84,8 @@ export default class App extends Vue {
 
   private canvas: HTMLCanvasElement;
 
-  /* TODO: I'm not sure what this does. */
+  /* I think that this initializes the State variable. To start the command based paradigm of
+  mostifing the State. */
   @State
   private sphere!: Mesh;
   constructor() {
