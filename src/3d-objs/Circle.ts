@@ -1,33 +1,43 @@
 import {
-  Mesh,
+  // Mesh,
   Vector3,
-  TorusBufferGeometry,
-  MeshPhongMaterial,
-  Matrix4
+  Matrix4,
+  BufferGeometry,
+  Float32BufferAttribute,
+  Line,
+  LineBasicMaterial
 } from "three";
 import SETTINGS from "@/global-settings";
+
 
 const desiredXAxis = new Vector3();
 const desiredYAxis = new Vector3();
 const desiredZAxis = new Vector3();
 const rotationMatrix = new Matrix4();
 
-export default class Circle extends Mesh {
+export default class Circle extends Line {
   private center: Vector3;
   private outer: Vector3;
+
   constructor(center?: Vector3, outer?: Vector3) {
     super();
     this.center = center || new Vector3(0, 0, 0);
     this.outer = outer || new Vector3(1, 0, 0);
-    this.geometry = new TorusBufferGeometry(
-      1.0,
-      SETTINGS.line.thickness /* thickness */,
-      12 /* tubular segments */,
-      120 /* radial segments */,
-      2 * Math.PI
-    );
-    this.material = new MeshPhongMaterial({ color: 0xffffff });
-    this.name = "Circle-" + this.id;
+    const radius = this.center?.distanceTo(this.outer);
+    const vertices = [];
+    // debugger; // eslint-disable-line
+    const N = SETTINGS.circle.radialSegments;
+    for (let k = 0; k <= N; k++) {
+      const angle = k * 2 * Math.PI / N;
+      // Build the circle on the XY plane
+      vertices.push(radius * Math.cos(angle), radius * Math.sin(angle), 0.4);
+    }
+    this.geometry = new BufferGeometry();
+    this.geometry.setAttribute('position',
+      new Float32BufferAttribute(vertices, 3));
+    this.material = new LineBasicMaterial({ color: 0x000000, linewidth: SETTINGS.line.thickness });
+    this.scale.setScalar(1);
+    // this.name = "Circle-" + this.id;
   }
 
   private readjust() {

@@ -1,12 +1,6 @@
 import Two from "two.js";
-import {
-  Mesh,
-  Scene,
-  MeshBasicMaterial,
-  SphereGeometry,
-  PointLight
-} from "three";
-import Axes from "@/3d-objs/Axes";
+import { Mesh, Scene, MeshBasicMaterial, SphereGeometry } from "three";
+// import Axes from "@/3d-objs/Axes";
 import Point from "@/3d-objs/Point";
 import { AddPointCommand } from "@/commands/AddPointCommand";
 import SETTINGS from "@/global-settings";

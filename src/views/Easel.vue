@@ -38,7 +38,11 @@
         <!-- These the navigation arrows TODO: I would like these to be in the same row as the
         tabs-->
         <div>
-          <v-btn v-if="leftDrawerMinified" icon @click="setMinificationOfLeftDrawer(false)">
+          <v-btn
+            v-if="leftDrawerMinified"
+            icon
+            @click="setMinificationOfLeftDrawer(false)"
+          >
             <v-icon>mdi-arrow-right</v-icon>
           </v-btn>
           <v-btn v-else icon @click="setMinificationOfLeftDrawer(true)">
@@ -49,22 +53,30 @@
         <div v-if="!leftDrawerMinified">
           <!-- Two tabs set up TODO: fix the behavior of the tabs-->
           <v-tabs v-model="activeLeftDrawerTab" centered grow>
-            <v-tooltip bottom :open-delay="toolTipOpenDelay" :close-delay="toolTipCloseDelay">
+            <v-tooltip
+              bottom
+              :open-delay="toolTipOpenDelay"
+              :close-delay="toolTipCloseDelay"
+            >
               <template v-slot:activator="{ on }">
                 <v-tab class="mt-3" href="#toolListTab" v-on="on">
                   <v-icon left>mdi-calculator</v-icon>
                 </v-tab>
               </template>
-              <span>{{ $t('main.ToolsTabToolTip') }}</span>
+              <span>{{ $t("main.ToolsTabToolTip") }}</span>
             </v-tooltip>
 
-            <v-tooltip bottom :open-delay="toolTipOpenDelay" :close-delay="toolTipCloseDelay">
+            <v-tooltip
+              bottom
+              :open-delay="toolTipOpenDelay"
+              :close-delay="toolTipCloseDelay"
+            >
               <template v-slot:activator="{ on }">
                 <v-tab class="mt-3" href="#objectListTab" v-on="on">
                   <v-icon left>mdi-format-list-bulleted</v-icon>
                 </v-tab>
               </template>
-              <span>{{ $t('main.ObjectsTabToolTip') }}</span>
+              <span>{{ $t("main.ObjectsTabToolTip") }}</span>
             </v-tooltip>
 
             <v-tab-item value="toolListTab">
@@ -77,13 +89,26 @@
         </div>
       </v-container>
       <!-- This is the minified version of the left drawer with icon buttons for maximizing it -->
-      <div id="leftnavicons" v-if="leftDrawerMinified" @click="setMinificationOfLeftDrawer(false)">
-        <v-btn icon @click="setMinificationOfLeftDrawer(false); activeLeftDrawerTab='toolListTab'">
+      <div
+        id="leftnavicons"
+        v-if="leftDrawerMinified"
+        @click="setMinificationOfLeftDrawer(false)"
+      >
+        <v-btn
+          icon
+          @click="
+            setMinificationOfLeftDrawer(false);
+            activeLeftDrawerTab = 'toolListTab';
+          "
+        >
           <v-icon class="ml-3 my-2">mdi-calculator</v-icon>
         </v-btn>
         <v-btn
           icon
-          @click="setMinificationOfLeftDrawer(false); activeLeftDrawerTab='objectListTab'"
+          @click="
+            setMinificationOfLeftDrawer(false);
+            activeLeftDrawerTab = 'objectListTab';
+          "
         >
           <v-icon class="ml-3 my-2">mdi-format-list-bulleted</v-icon>
         </v-btn>
@@ -93,20 +118,20 @@
 </template>
 
 <script lang="ts">
-/* This is Vue app and we need the Watch and Prop methods(?) for the class style declarations in 
+/* This is Vue app and we need the Watch and Prop methods(?) for the class style declarations in
 TypeScript*/
 import { Vue, Watch, Prop } from "vue-property-decorator";
-
+import VueComponent from "vue";
 /* Import the package two.js for rendering the sphere and objects */
 import Two from "two.js";
 
 /* The intial setup of the sphere object in two.js is done in initApp.ts */
 import { setupScene } from "@/initApp";
 
-/* ToolStrategy is an interface that lists the methods (that will be overridden with handlers) 
-that are need to interpret the event (mouse pressed, mouse release, moused moved etc.) depending 
+/* ToolStrategy is an interface that lists the methods (that will be overridden with handlers)
+that are need to interpret the event (mouse pressed, mouse release, moused moved etc.) depending
 on the current mode. For example, if the current mode is "point", the current tools is set to
-NormalPoint Handler, and the mouse pressed event creates a point at the point of mouse press 
+NormalPoint Handler, and the mouse pressed event creates a point at the point of mouse press
 and ignores the mouse release and move events.   */
 import { ToolStrategy } from "@/events/ToolStrategy";
 import NormalPointHandler from "@/events/NormalPointHandler";
@@ -131,16 +156,16 @@ export default class Easel extends Vue {
   /* Declaring canvas (of HTMLCanvasElement type) as a property allows the parent of this view
   to bind a variable in the parent (called canvas) with this child variable called canvas. I
   think that this allows the router to display the different views (easel, settings, about...) */
-  @Prop(HTMLCanvasElement)
-  readonly canvas!: HTMLCanvasElement;
+  @Prop(SVGElement)
+  readonly canvas!: SVGElement;
 
   /* These store the current width and height of the availble space for displaying the view.
-   These are automatically updated when the window is resized. They are used to find the largest 
+   These are automatically updated when the window is resized. They are used to find the largest
    square to display the view in */
   private width = 300;
   private height = 300;
 
-  /* These are use to display the current state of the sphere. The background, midground, and 
+  /* These are use to display the current state of the sphere. The background, midground, and
   foreground are draw in that order inside of the main sphereCanvas. */
   private sphereCanvas: Two;
   private foreground: Two.Group;
@@ -158,12 +183,12 @@ export default class Easel extends Vue {
   /*  Use the Strategy design pattern to enable switching of
   different tool algorithms at runtime, See the comment where these classes (modules?) are imported */
   private currentTool: ToolStrategy | null;
-  private pointTool: NormalPointHandler;
-  private lineTool: LineHandler;
-  private segmentTool: SegmentHandler;
-  private moveTool: MoveHandler;
-  private circleTool: CircleHandler;
-  private controls: TransformControls;
+  // private pointTool: NormalPointHandler;
+  // private lineTool: LineHandler;
+  // private segmentTool: SegmentHandler;
+  // private moveTool: MoveHandler;
+  // private circleTool: CircleHandler;
+  // private controls: TransformControls;
 
   /* Variable to control the width and border size of the left drawer */
   private leftDrawerProperties = {
@@ -210,7 +235,7 @@ export default class Easel extends Vue {
     /* this.$store.commit("setSphere", this.sphere); */
 
     window.addEventListener("resize", this.onWindowResized);
-    window.addEventListener("keypress", this.keyPressed);
+    // window.addEventListener("keypress", this.keyPressed);
   }
 
   handleMouseMoved(e: MouseEvent) {
@@ -232,7 +257,8 @@ export default class Easel extends Vue {
   // mounted is excuted only once like a setup of the canvas
   mounted() {
     // During testting canvas is set to null and appendChild() will fail
-    if (this.canvas instanceof HTMLCanvasElement) {
+    // debugger; // eslint-disable-line
+    if (this.canvas instanceof SVGElement) {
       const el = this.$refs.content as HTMLBaseElement;
 
       // QUESTION: Should the sphereCanvas be added to this.canvas and then this.canvas added to el?
@@ -249,7 +275,7 @@ export default class Easel extends Vue {
     this.onWindowResized();
     /* requestAnimationFrame(this.renderIt); */
 
-    /* Methods to set up a border on the left drawer 
+    /* Methods to set up a border on the left drawer
      and allow it to be adjustable while respecting the minification*/
     this.setLeftDrawerBorderWidth(this.leftDrawerProperties.borderWidth);
     this.setLeftDrawerBorderEvents();
@@ -291,8 +317,8 @@ export default class Easel extends Vue {
       this.sphereCanvas.width = size;
       this.sphereCanvas.height = size;
 
-      this.canvas.width = size;
-      this.canvas.height = size;
+      // this.canvas.width = size;
+      // this.canvas.height = size;
 
       //Create new boundary circle
       // TODO: fix so the boundary circle is never covered up by the scroll bars or bottom of
@@ -332,21 +358,21 @@ export default class Easel extends Vue {
         this.currentTool = null;
         break;
       case "move":
-        this.currentTool = this.moveTool;
+        // this.currentTool = this.moveTool;
         break;
       case "point":
         //     this.controls.detach();
         //     this.currentHandler = this.normalTracker;
-        this.currentTool = this.pointTool;
+        // this.currentTool = this.pointTool;
         break;
       case "line":
-        this.currentTool = this.lineTool;
+        // this.currentTool = this.lineTool;
         break;
       case "segment":
-        this.currentTool = this.segmentTool;
+        // this.currentTool = this.segmentTool;
         break;
       case "circle":
-        this.currentTool = this.circleTool;
+        // this.currentTool = this.circleTool;
         break;
       default:
       //     this.currentHandler = null;
@@ -355,11 +381,11 @@ export default class Easel extends Vue {
     // this.currentHandler?.activate(); // Register the new mouse handler
   }
 
-  /*  
+  /*
  This allows the user to maximumize the left drawer by clicking in the navigation drawer
 'leftDrawerMinified = !leftDrawerMinified' doesn't work because when you click on the icons
  in the minified left drawer they first unMinify the drawer and
- then 'leftDrawerMinified = !leftDrawerMinified' would reminify it and nothing happens 
+ then 'leftDrawerMinified = !leftDrawerMinified' would reminify it and nothing happens
  This also sets the border with to zero in the minified state so that you can't adjust it.
  In the minified state the border is set to its usual size
  */
@@ -377,9 +403,10 @@ export default class Easel extends Vue {
 
   /* Set the width of the border to allow it to be adjustable or not (when minified)*/
   setLeftDrawerBorderWidth(size: number) {
-    const leftDrawerBorder = this.$refs.leftDrawer.$el.querySelector(
+    const leftDrawerElement = (this.$refs.leftDrawer as VueComponent).$el;
+    const leftDrawerBorder = leftDrawerElement.querySelector(
       ".v-navigation-drawer__border"
-    );
+    ) as HTMLElement;
     leftDrawerBorder.style.width = size + "px";
     leftDrawerBorder.style.cursor = "ew-resize";
     leftDrawerBorder.style.color = "black"; //This doesn't work. Why? Does a parent override this?
@@ -387,13 +414,13 @@ export default class Easel extends Vue {
 
   setLeftDrawerBorderEvents() {
     const minWidth = this.leftDrawerProperties.minWidth;
-    const el = this.$refs.leftDrawer.$el; //I'm not sure why this an error or how to fix it.
+    const el = (this.$refs.leftDrawer as VueComponent).$el; //I'm not sure why this an error or how to fix it.
     const leftDrawerBorder = el.querySelector(".v-navigation-drawer__border");
     const direction = el.classList.contains("v-navigation-drawer--right")
       ? "right"
       : "left";
 
-    function resizeLeftDrawer(e) {
+    function resizeLeftDrawer(e: MouseEvent) {
       //change the mouse to let the user know the drawer can be resized
       document.body.style.cursor = "ew-resize";
       //correctly compute the width of the adjusted drawer from the right or left
@@ -403,28 +430,28 @@ export default class Easel extends Vue {
           : e.clientX;
       //only adjust the width if it is bigger than the minimum
       if (newWidth >= minWidth) {
-        el.style.width = newWidth + "px";
+        (el as HTMLElement).style.width = newWidth + "px";
       }
     }
 
     //On mouse down add a listener to track the changes in the position of the mouse.
-    leftDrawerBorder.addEventListener(
+    leftDrawerBorder?.addEventListener(
       "mousedown",
-      e => {
+      ((e: MouseEvent) => {
         if (e.offsetX <= this.leftDrawerProperties.borderWidth) {
-          el.style.transition = "initial";
+          (el as HTMLElement).style.transition = "initial";
           //add a listener to activley resize the left drawer as the mouse is moved
           document.addEventListener("mousemove", resizeLeftDrawer, false);
         }
-      },
+      }) as EventListener,
       false
     );
 
     document.addEventListener(
       "mouseup",
       () => {
-        el.style.transition = "";
-        this.leftDrawerProperties.width = el.style.width;
+        (el as HTMLElement).style.transition = "";
+        // this.leftDrawerProperties.width = (el as HTMLElement).style.width;
         document.body.style.cursor = "";
         document.removeEventListener("mousemove", resizeLeftDrawer, false);
         this.onWindowResized(); //I need a command so that the window is repainted so the sphere grows/shrinks

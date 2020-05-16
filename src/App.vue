@@ -17,7 +17,7 @@
     <v-app-bar app color="primary" dark dense clipped-left>
       <!-- This is where the file and export (to EPS, TIKZ, animated GIF?) operations will go 
       Also request a feature and report a bug-->
-      <v-app-bar-nav-icon @click="fileSystemsDrawerDisplay = true"></v-app-bar-nav-icon>
+      <v-app-bar-nav-icon></v-app-bar-nav-icon>
 
       <div class="d-flex align-center">
         <router-link to="/">
@@ -30,7 +30,9 @@
             width="40"
           />
         </router-link>
-        <v-toolbar-title>{{ $t('main.SphericalEaselMainTitle') }}</v-toolbar-title>
+        <v-toolbar-title>
+          {{ $t("main.SphericalEaselMainTitle") }}
+        </v-toolbar-title>
       </div>
 
       <v-spacer></v-spacer>
@@ -71,17 +73,15 @@ import { State } from "vuex-class";
 @Component
 export default class App extends Vue {
   /* The canvasElement containing each of the views */
-  private canvas: HTMLCanvasElement;
+  // private canvas: HTMLCanvasElement;
 
   /* I think that this initializes the State variable. To start the command based paradigm of
   mostifing the State??? */
-  @State
-  private sphere!: Mesh;
+  // @State
+  // private sphere!: Mesh;
   constructor() {
     super();
-    this.canvas = this.renderer.domElement;
-    this.renderer.setPixelRatio(window.devicePixelRatio);
-    this.renderer.setClearColor(0xffffff);
+    // this.canvas = this.renderer.domElement;
   }
   mounted() {
     // this.$store.commit('init');

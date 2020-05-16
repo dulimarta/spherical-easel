@@ -1,13 +1,11 @@
 import Vue from "vue";
 import VueRouter, { RouteConfig } from "vue-router";
 import Easel from "@/views/Easel.vue";
-import { WebGLRenderer } from 'three';
+import { SVGRenderer } from 'three/examples/jsm/renderers/SVGRenderer';
 
 Vue.use(VueRouter);
 
-const renderer = new WebGLRenderer({ antialias: true });
-renderer.setPixelRatio(window.devicePixelRatio);
-renderer.setClearColor(0xffffff);
+const renderer = new SVGRenderer();
 
 const routes: Array<RouteConfig> = [
   {

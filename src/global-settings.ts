@@ -1,4 +1,8 @@
 export default {
+  sphere: {
+    // The sphere section is temporary fix to avoid compile errors
+    radius: 1
+  },
   /* controls the display of the boundary circle (the intersection of the sphere and the screen) */
   boundaryCircle: {
     linewidth: 3,
@@ -7,7 +11,10 @@ export default {
     //nofill
   },
   line: {
-    thickness: 0.01
+    thickness: 5
+  },
+  circle: {
+    radialSegments: 120 /* the number of line segments to approximate circles */
   },
   point: {
     size: 0.02,
