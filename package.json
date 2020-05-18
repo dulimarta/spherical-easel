@@ -10,8 +10,10 @@
     "i18n:report": "vue-cli-service i18n:report --src './src/**/*.?(js|vue)' --locales './src/languages/**/*.json'"
   },
   "dependencies": {
+    "@types/two.js": "^0.7.2",
     "core-js": "^3.6.4",
     "three": "^0.115.0",
+    "two.js": "^0.7.0-stable.1",
     "vue": "^2.6.11",
     "vue-class-component": "^7.2.3",
     "vue-i18n": "^8.17.5",

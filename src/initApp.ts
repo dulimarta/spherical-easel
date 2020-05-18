@@ -1,3 +1,4 @@
+import Two from "two.js";
 import {
   Mesh,
   Scene,
@@ -10,38 +11,25 @@ import Point from "@/3d-objs/Point";
 import { AddPointCommand } from "@/commands/AddPointCommand";
 import SETTINGS from "@/global-settings";
 export function setupScene() {
-  const scene = new Scene();
-  const sphereGeometry = new SphereGeometry(SETTINGS.sphere.radius, 30, 60);
+  const sphereCanvas = new Two({ width: 300, height: 300 });
+  const background = sphereCanvas.makeGroup(); //Put into canvas first so it is drawn first
+  const midground = sphereCanvas.makeGroup(); // second to be drawn
+  const foreground = sphereCanvas.makeGroup(); // third to be drawn
 
-  const sphere = new Mesh(
-    sphereGeometry,
-    new MeshBasicMaterial({
-      color: SETTINGS.sphere.color,
-      transparent: true,
-      opacity: SETTINGS.sphere.opacity
-    })
-  );
+  //this boundary circle is the only object in the midground (and should always be the only one)
+  const boundaryCircle = new Two.Ellipse(150, 150, 150, 150);
+  boundaryCircle.linewidth = SETTINGS.boundaryCircle.linewidth;
+  boundaryCircle.stroke = SETTINGS.boundaryCircle.color;
+  boundaryCircle.opacity = SETTINGS.boundaryCircle.opacity;
+  boundaryCircle.noFill();
 
-  sphere.name = "MainSphere";
-  sphere.layers.enable(SETTINGS.layers.sphere);
-  scene.add(sphere);
-  const pointLight = new PointLight(0xffffff, 1, 100);
-  pointLight.position.set(0, 5, 10);
-  scene.add(pointLight);
+  // Add the boundary circel to the misground
+  midground.add(boundaryCircle);
 
+  /* 
   if (process.env.NODE_ENV === "development") {
-    sphere.add(new Axes(1.5, 0.05));
+    
+  } */
 
-    // Add random vertices (for development only)
-
-    for (let k = 0; k < 3; k++) {
-      const v = new Point(SETTINGS.point.size);
-      v.position.set(Math.random(), Math.random(), Math.random());
-      v.position.normalize();
-      v.position.multiplyScalar(SETTINGS.sphere.radius);
-      new AddPointCommand(v).execute();
-    }
-  }
-
-  return { scene, sphere };
+  return { foreground, midground, background, sphereCanvas };
 }

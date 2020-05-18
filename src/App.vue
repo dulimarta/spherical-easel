@@ -64,28 +64,17 @@ import Vue from "vue";
 import Component from "vue-class-component";
 import { Inject } from "vue-property-decorator";
 
-/* WebGLRenderer and Mesh allows the creation and display of three diminsional objects using the 
-package threeJS  */
-import { WebGLRenderer, Mesh } from "three";
-
 /* This allows for the State of the app to be initialized with in vuex store */
 import { State } from "vuex-class";
 
 /* This view has no (sub)components (but the Easel view does) so this is empty*/
 @Component
 export default class App extends Vue {
-  /*   private fileSystemsDrawerDisplay = false;
-  private globalSettingsDrawerDisplay = false; */
-
-  // Use dependency injection to let us mock the renderer
-  // with a fake implementation during testing
-  @Inject()
-  private renderer!: WebGLRenderer;
-
+  /* The canvasElement containing each of the views */
   private canvas: HTMLCanvasElement;
 
   /* I think that this initializes the State variable. To start the command based paradigm of
-  mostifing the State. */
+  mostifing the State??? */
   @State
   private sphere!: Mesh;
   constructor() {
@@ -98,9 +87,5 @@ export default class App extends Vue {
     // this.$store.commit('init');
     // Command.setStore(this.$store);
   }
-
-  // log(item: any) {
-  //   console.log(item);
-  // }
 }
 </script>

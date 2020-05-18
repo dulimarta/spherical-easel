@@ -1,8 +1,10 @@
 export default {
-  sphere: {
-    radius: 1.0,
-    color: 0xffff00,
-    opacity: 0.5
+  /* controls the display of the boundary circle (the intersection of the sphere and the screen) */
+  boundaryCircle: {
+    linewidth: 3,
+    color: "black",
+    opacity: 1
+    //nofill
   },
   line: {
     thickness: 0.01

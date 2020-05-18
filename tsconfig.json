@@ -11,28 +11,12 @@
     "allowSyntheticDefaultImports": true,
     "sourceMap": true,
     "baseUrl": ".",
-    "types": [
-      "webpack-env",
-      "vuetify",
-      "jest",
-      "webpack",
-      "webpack-env"
-    ],
-    "typeRoots": [
-      "./node_modules/@types",
-      "./node_modules/vuetify/types"
-    ],
+    "types": ["webpack-env", "vuetify", "jest", "webpack", "webpack-env"],
+    "typeRoots": ["./node_modules/@types", "./node_modules/vuetify/types"],
     "paths": {
-      "@/*": [
-        "src/*"
-      ]
+      "@/*": ["src/*"]
     },
-    "lib": [
-      "esnext",
-      "dom",
-      "dom.iterable",
-      "scripthost"
-    ]
+    "lib": ["esnext", "dom", "dom.iterable", "scripthost"]
   },
   "include": [
     "src/**/*.ts",
@@ -43,7 +27,5 @@
     "tests/stub-modules/MockRenderer.js",
     "tests/stub-modules/MockRenderer.js"
   ],
-  "exclude": [
-    "node_modules"
-  ]
+  "exclude": ["node_modules"]
 }

@@ -1,30 +1,9 @@
 <template>
   <div>
     <v-container fluid>
-      <!--- ml-2: margin left 8 px -->
-      <v-row>
-        <!---
-      VUetify grid system uses 12-column layout.
-      In the following setup, 
-      (1) the editHint text will occupy 75% of the panel width
-      (2) the toggle switch will occupy 25% of the panel width
-      (3) the canvas will will in the entire width
-        --->
-        <v-col cols="9">
-          <!-- <span class="body-1 ml-2">{{ editHint }}</span> -->
-        </v-col>
-        <v-col cols="3">
-          <v-switch
-            v-show="editMode === 'rotate'"
-            class="mr-4"
-            v-model="showSphereControl"
-            label="Sphere Control"
-          ></v-switch>
-        </v-col>
-        <v-col cols="12" ref="content" id="content" class="pa-2">
-          <!--- HTML canvas will go here --->
-        </v-col>
-      </v-row>
+      <div cols="12" ref="content" id="content" class="pa-2">
+        <!--- HTML canvas will go here --->
+      </div>
     </v-container>
     <!--  
       This is the left drawer component that contains that the
@@ -92,7 +71,7 @@
               <ToolButtons></ToolButtons>
             </v-tab-item>
             <v-tab-item value="objectListTab">
-              <ObjectTree :scene="sphere"></ObjectTree>
+              <!-- <ObjectTree :scene="sphere"></ObjectTree> -->
             </v-tab-item>
           </v-tabs>
         </div>
@@ -115,17 +94,14 @@
 
 <script lang="ts">
 /* This is Vue app and we need the Watch and Prop methods(?) for the class style declarations in 
-Typescript*/
+TypeScript*/
 import { Vue, Watch, Prop } from "vue-property-decorator";
 
-/* Import the package threeJS and various modules for rendering the sphere and objects */
-import * as THREE from "three";
-import { WebGLRenderer } from "three";
+/* Import the package two.js for rendering the sphere and objects */
+import Two from "two.js";
+
+/* The intial setup of the sphere object in two.js is done in initApp.ts */
 import { setupScene } from "@/initApp";
-import { TransformControls } from "three/examples/jsm/controls/TransformControls";
-// import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
-// import Axes from "@/3d-objs/Axes";
-// import Point from "@/3d-objs/Point";
 
 /* ToolStrategy is an interface that lists the methods (that will be overridden with handlers) 
 that are need to interpret the event (mouse pressed, mouse release, moused moved etc.) depending 
@@ -152,27 +128,24 @@ import ToolButtons from "@/components/ToolButtons.vue";
 
 @Component({ components: { ObjectTree, ToolButtons } })
 export default class Easel extends Vue {
-  /* Declaring renderer (of WebGLRenderer type) as a property allows the parent of this view
-  to bind a variable in the parent (called renderer?!?) with this child variable called renderer */
-  @Prop(WebGLRenderer)
-  readonly renderer!: WebGLRenderer;
-
   /* Declaring canvas (of HTMLCanvasElement type) as a property allows the parent of this view
-  to bind a variable in the parent (called canvas?!?) with this child variable called canvas */
+  to bind a variable in the parent (called canvas) with this child variable called canvas. I
+  think that this allows the router to display the different views (easel, settings, about...) */
   @Prop(HTMLCanvasElement)
   readonly canvas!: HTMLCanvasElement;
-
-  /* Variable for controling the threeJS scene */
-  private scene: THREE.Scene;
-  private camera: THREE.PerspectiveCamera;
-  private sphere: THREE.Mesh;
-  private showSphereControl = false; /* Controls the display of the sliders for sphere rotation */
 
   /* These store the current width and height of the availble space for displaying the view.
    These are automatically updated when the window is resized. They are used to find the largest 
    square to display the view in */
-  private width = 0;
-  private height = 0;
+  private width = 300;
+  private height = 300;
+
+  /* These are use to display the current state of the sphere. The background, midground, and 
+  foreground are draw in that order inside of the main sphereCanvas. */
+  private sphereCanvas: Two;
+  private foreground: Two.Group;
+  private midground: Two.Group;
+  private background: Two.Group;
 
   /* Controls the behavior of the left drawer and which tab is active */
   private leftDrawerMinified = false; // intial the drawer is displayed
@@ -194,7 +167,7 @@ export default class Easel extends Vue {
 
   /* Variable to control the width and border size of the left drawer */
   private leftDrawerProperties = {
-    width: 300, //intital width and stores the current width (including the minified)
+    width: 300, //initial width and stores the current width (including the minified)
     borderWidth: 3, //the width for the border of the left drawer set to zero when minimfied
     minWidth: 250, //The minimum width: minWidth<=adjustedWidth is true always
     adjustedWidth: 300 // The value after the user has adjusted the width of the drawer
@@ -205,18 +178,14 @@ export default class Easel extends Vue {
 
   constructor() {
     super();
+    const { foreground, midground, background, sphereCanvas } = setupScene();
+    this.sphereCanvas = sphereCanvas;
+    this.foreground = foreground;
+    this.midground = midground;
+    this.background = background;
 
-    const { scene, sphere } = setupScene();
-    this.scene = scene;
-    this.sphere = sphere;
-    this.camera = new THREE.PerspectiveCamera(
-      75,
-      window.innerWidth / window.innerHeight,
-      0.1,
-      1000
-    );
     this.currentTool = null;
-    this.pointTool = new NormalPointHandler({
+    /*    this.pointTool = new NormalPointHandler({
       camera: this.camera,
       scene: this.scene
     });
@@ -236,34 +205,9 @@ export default class Easel extends Vue {
     this.moveTool = new MoveHandler({
       camera: this.camera,
       scene: this.scene
-    });
+    }); */
 
-    this.$store.commit("setSphere", this.sphere);
-
-    this.camera.position.set(1.25, 1.25, 2);
-    this.camera.lookAt(0, 0, 0);
-    // const axesHelper = new THREE.AxesHelper(SETTINGS.sphere.radius * 1.25);
-    // axesHelper.layers.disableAll(); // exclude axeshelper from being searched by Raycaster
-    // this.scene.add(axesHelper);
-    this.controls = new TransformControls(
-      this.camera,
-      this.renderer.domElement
-    );
-    this.controls.setMode("rotate");
-    this.controls.setSpace("global"); // select between "global" or "local"
-    this.controls.setSize(3);
-
-    // Add a circle silhouette to mark sphere boundary
-    const circleBorder = new THREE.Mesh(
-      new THREE.TorusBufferGeometry(SETTINGS.sphere.radius * 1.08, 0.01, 6, 60),
-      new THREE.LineBasicMaterial({ color: 0x000000 })
-    );
-    const q = new THREE.Quaternion();
-
-    // Transform the circle so it stays parallel to the camera view plane.
-    this.camera.getWorldQuaternion(q);
-    circleBorder.applyQuaternion(q);
-    this.scene.add(circleBorder);
+    /* this.$store.commit("setSphere", this.sphere); */
 
     window.addEventListener("resize", this.onWindowResized);
     window.addEventListener("keypress", this.keyPressed);
@@ -284,21 +228,26 @@ export default class Easel extends Vue {
     this.currentTool?.mouseReleased(e);
   }
 
+  // VueJS lifecycle function see https://vuejs.org/v2/guide/instance.html#Lifecycle-Diagram
+  // mounted is excuted only once like a setup of the canvas
   mounted() {
-    // VueJS lifecycle function
-
     // During testting canvas is set to null and appendChild() will fail
     if (this.canvas instanceof HTMLCanvasElement) {
       const el = this.$refs.content as HTMLBaseElement;
 
-      el.appendChild(this.canvas);
+      // QUESTION: Should the sphereCanvas be added to this.canvas and then this.canvas added to el?
+      // it seems to work fine this way.
+      // el.appendChild(this.canvas);
+      //
+      this.sphereCanvas.appendTo(el);
+      this.sphereCanvas.update();
       this.canvas.addEventListener("mousemove", this.handleMouseMoved);
       this.canvas.addEventListener("mousedown", this.handleMousePressed);
       this.canvas.addEventListener("mouseup", this.handleMouseReleased);
     }
 
     this.onWindowResized();
-    requestAnimationFrame(this.renderIt);
+    /* requestAnimationFrame(this.renderIt); */
 
     /* Methods to set up a border on the left drawer 
      and allow it to be adjustable while respecting the minification*/
@@ -306,6 +255,8 @@ export default class Easel extends Vue {
     this.setLeftDrawerBorderEvents();
   }
 
+  // VueJS lifecycle function see https://vuejs.org/v2/guide/instance.html#Lifecycle-Diagram
+  // this is exited at the end of the life of the canvas
   beforeDestroy() {
     // VueJS lifecycle function
     this.canvas.removeEventListener("mousemove", this.handleMouseMoved);
@@ -314,47 +265,62 @@ export default class Easel extends Vue {
   }
 
   keyPressed = (event: KeyboardEvent) => {
-    const sphere = this.scene.getObjectByName("MainSphere");
+    /* const sphere = this.scene.getObjectByName("MainSphere");
     switch (event.code) {
       case "KeyR":
         sphere?.rotation.set(0, 0, 0);
         break;
       default:
-    }
+    } */
   };
 
   renderIt() {
-    this.renderer && this.renderer.render(this.scene, this.camera);
-    requestAnimationFrame(this.renderIt);
+    /* this.renderer && this.renderer.render(this.scene, this.camera);
+    requestAnimationFrame(this.renderIt); */
   }
 
   onWindowResized = () => {
     const el = this.$refs.content as HTMLBaseElement;
     if (el) {
+      /* Compute the available height and width of the window */
       this.height = el.clientHeight;
       this.width = el.clientWidth;
       const availHeight = window.innerHeight - el.offsetTop;
-      // console.debug(`Height ${el.clientHeight},
-      //  Offset top ${el.offsetTop}, Viewport height:
-      // ${window.innerHeight}`);
+
       const size = Math.min(el.clientWidth, availHeight);
-      this.camera.aspect = 1;
-      this.camera.updateProjectionMatrix();
-      this.renderer.setSize(size, size);
+      this.sphereCanvas.width = size;
+      this.sphereCanvas.height = size;
+
+      this.canvas.width = size;
+      this.canvas.height = size;
+
+      //Create new boundary circle
+      // TODO: fix so the boundary circle is never covered up by the scroll bars or bottom of
+      // screen.  The scroll bars should NEVER appear on the this Easel window
+      // change -8 and -9 below something automatically calculuated like innerWidth/height
+      // When coming back from the settings page the sphere is too big...
+      const boundaryCircle = new Two.Ellipse(
+        size / 2 - 8, // The center is shifted over
+        size / 2,
+        size / 2 - 9,
+        size / 2 - 9
+      );
+      boundaryCircle.linewidth = SETTINGS.boundaryCircle.linewidth;
+      boundaryCircle.stroke = SETTINGS.boundaryCircle.color;
+      boundaryCircle.opacity = SETTINGS.boundaryCircle.opacity;
+      boundaryCircle.noFill();
+
+      // remove the old boundary circle
+      this.midground.remove(this.midground.children[0]);
+
+      /*  add the new boundary circle to the midground. This
+      should always be the only object in the midground */
+      this.midground.add(boundaryCircle);
+
+      /* Update the sphereCanvas */
+      this.sphereCanvas.update();
     }
   };
-
-  // VueJS data watcher function
-  @Watch("showSphereControl")
-  onSphereControlChanged(value: boolean /*, oldValue: boolean*/) {
-    if (value) {
-      this.scene.add(this.controls);
-      this.controls.attach(this.sphere);
-    } else {
-      this.controls.detach();
-      this.scene.remove(this.controls);
-    }
-  }
 
   @Watch("editMode")
   switchEditMode(mode: string) {
