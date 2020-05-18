@@ -99,7 +99,7 @@ export default new Vuex.Store({
         }
         // Remove it from the sphere
         state.sphere?.remove(victimLine.ref);
-        (victimLine.ref.material as MeshPhongMaterial).emissive.set(0);
+        victimLine.ref.highlight();
 
         state.lines.splice(pos, 1); // Remove the line from the list
       }

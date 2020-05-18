@@ -187,7 +187,7 @@ export default class Easel extends Vue {
   different tool algorithms at runtime, See the comment where these classes (modules?) are imported */
   private currentTool: ToolStrategy | null;
   private pointTool!: NormalPointHandler;
-  // private lineTool: LineHandler;
+  private lineTool!: LineHandler;
   // private segmentTool: SegmentHandler;
   // private moveTool: MoveHandler;
   // private circleTool: CircleHandler;
@@ -244,6 +244,7 @@ export default class Easel extends Vue {
   handleMouseMoved(e: MouseEvent) {
     // When currentTool is NULL, the following line does nothing
     this.currentTool?.mouseMoved(e);
+    e.preventDefault();
   }
 
   handleMousePressed(e: MouseEvent) {
@@ -355,6 +356,7 @@ export default class Easel extends Vue {
   @Watch("editMode")
   switchEditMode(mode: string) {
     // this.currentHandler?.deactivate(); // Unregister the current mouse handler
+    debugger; // eslint-disable-line
     this.currentTool = null;
     switch (mode) {
       case "rotate":
@@ -370,7 +372,7 @@ export default class Easel extends Vue {
         this.currentTool = this.pointTool;
         break;
       case "line":
-        // this.currentTool = this.lineTool;
+        this.currentTool = this.lineTool;
         break;
       case "segment":
         // this.currentTool = this.segmentTool;
@@ -469,14 +471,7 @@ export default class Easel extends Vue {
 
 <style lang="scss" scoped>
 #canvasContainer {
-  // display: flex;
-  // flex-direction: column;
-  // justify-content: center;
-  border: 3px dashed green;
-  margin: 2px; // remove gap between canvas and its parent
-  path {
-    border: 2px solid orange;
-  }
+  border: 2px solid gray;
 }
 #leftnav {
   display: flex;
@@ -490,7 +485,7 @@ export default class Easel extends Vue {
   height: 80vh;
   display: flex;
   flex-direction: column;
-  justify-content: flex-start;
+  justify-content: center;
 }
 /* Override the default behavior of Vuetify <v-btn-toggle> elementv-btn-toggle> */
 .v-btn-toggle {

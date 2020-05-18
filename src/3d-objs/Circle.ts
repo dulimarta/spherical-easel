@@ -4,7 +4,7 @@ import {
   Matrix4,
   BufferGeometry,
   Float32BufferAttribute,
-  Line,
+  Line as ThreeJSLine,
   LineBasicMaterial
 } from "three";
 import SETTINGS from "@/global-settings";
@@ -15,7 +15,7 @@ const desiredYAxis = new Vector3();
 const desiredZAxis = new Vector3();
 const rotationMatrix = new Matrix4();
 
-export default class Circle extends Line {
+export default class Circle extends ThreeJSLine {
   private center: Vector3;
   private outer: Vector3;
 
@@ -30,7 +30,7 @@ export default class Circle extends Line {
     for (let k = 0; k <= N; k++) {
       const angle = k * 2 * Math.PI / N;
       // Build the circle on the XY plane
-      vertices.push(radius * Math.cos(angle), radius * Math.sin(angle), 0.4);
+      vertices.push(radius * Math.cos(angle), radius * Math.sin(angle), 0);
     }
     this.geometry = new BufferGeometry();
     this.geometry.setAttribute('position',

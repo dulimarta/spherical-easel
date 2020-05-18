@@ -6,9 +6,9 @@ import Point from "@/3d-objs/Point";
 export default class MoveHandler extends CursorHandler {
   private isDragging = false;
   private moveTarget: Point | null = null;
-  constructor(args: { camera: Camera; scene: Scene }) {
-    super(args);
-  }
+  // constructor(args: { camera: Camera; scene: Scene }) {
+  //   super(args);
+  // }
 
   mouseMoved(event: MouseEvent) {
     super.mouseMoved(event);

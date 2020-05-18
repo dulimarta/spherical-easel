@@ -15,8 +15,8 @@ export default class LineHandler extends CursorHandler {
   protected startDot: Point;
   private startPoint: Point | null = null;
   private endPoint: Point | null = null;
-  constructor({ camera, scene }: { camera: Camera; scene: Scene }) {
-    super({ camera, scene });
+  constructor({ camera, scene, target }: { camera: Camera; scene: Scene; target: Element }) {
+    super({ camera, scene, target });
     this.startV3Point = new Vector3();
     this.endV3Point = new Vector3();
     this.startDot = new Point();
@@ -36,6 +36,7 @@ export default class LineHandler extends CursorHandler {
   mouseMoved(event: MouseEvent) {
     super.mouseMoved(event);
     if (this.isOnSphere) {
+      console.debug("LineHandler on sphere");
       if (this.isMouseDown && this.theSphere) {
         if (!this.isCircleAdded) {
           this.isCircleAdded = true;
@@ -46,6 +47,7 @@ export default class LineHandler extends CursorHandler {
         this.line.endV3Point = this.currentV3Point;
       }
     } else if (this.isCircleAdded) {
+      console.debug("LineHandler off sphere");
       this.theSphere?.remove(this.line);
       this.theSphere?.remove(this.startDot);
       this.isCircleAdded = false;

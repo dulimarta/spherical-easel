@@ -11,7 +11,7 @@ export default {
     //nofill
   },
   line: {
-    thickness: 5
+    thickness: 3 /* in pixels */
   },
   circle: {
     radialSegments: 120 /* the number of line segments to approximate circles */

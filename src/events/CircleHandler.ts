@@ -16,8 +16,8 @@ export default class CircleHandler extends CursorHandler {
   private circle: Circle;
   private startPoint: Point | null = null;
   private endPoint: Point | null = null;
-  constructor({ camera, scene }: { camera: Camera; scene: Scene }) {
-    super({ camera, scene });
+  constructor({ camera, scene, target }: { camera: Camera; scene: Scene, target: Element }) {
+    super({ camera, scene, target });
     this.startV3Point = new Vector3();
     this.endV3Point = new Vector3();
     this.startDot = new Point();

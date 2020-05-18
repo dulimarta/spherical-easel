@@ -11,7 +11,7 @@ export default class NormalPointHandler extends CursorHandler {
   private isNormalAdded: boolean;
   // private sphereCoordFrame: Matrix4;
 
-  constructor(args: { camera: Camera; scene: Scene }) {
+  constructor(args: { camera: Camera; scene: Scene; target: Element }) {
     super(args);
     this.mouse = new Vector2();
     // this.currentPoint = new Vector3(); // Cursor world coordinate position on the sphere
@@ -29,6 +29,7 @@ export default class NormalPointHandler extends CursorHandler {
     if (this.isOnSphere && this.theSphere) {
       if (!this.isNormalAdded) {
         this.theSphere.add(this.normalArrow);
+        console.debug("Arrow added");
         this.isNormalAdded = true;
       }
       this.normalArrow.position.copy(this.currentV3Point);
@@ -43,6 +44,7 @@ export default class NormalPointHandler extends CursorHandler {
       this.normalArrow.applyQuaternion(this.normalRotation);
     } else {
       this.theSphere?.remove(this.normalArrow);
+      console.debug("Arrow removed");
       this.isNormalAdded = false;
     }
   }
@@ -60,6 +62,7 @@ export default class NormalPointHandler extends CursorHandler {
   };
 
   activate = () => {
+    // debugger; // eslint-disable-line
     this.rayCaster.layers.disableAll();
     this.rayCaster.layers.enable(SETTINGS.layers.sphere);
   };

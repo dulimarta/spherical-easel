@@ -11,12 +11,14 @@ import i18n from "./i18n";
 Vue.use(VueI18n);
 
 Vue.config.productionTip = false;
+const renderer = new SVGRenderer();
+renderer.setQuality("high");
 
 new Vue({
   i18n,
   provide: {
     // Use dependency injection to provide a mocked renderer during testing
-    renderer: new SVGRenderer()
+    renderer
   },
   router,
   store,

@@ -8,13 +8,14 @@ export default class SegmentHandler extends LineHandler {
   private tmpVector: Vector3;
   constructor({
     camera,
-    scene
+    scene, target
   }: {
-    canvas: HTMLCanvasElement;
+
     camera: Camera;
     scene: Scene;
+    target: Element
   }) {
-    super({ camera, scene });
+    super({ camera, scene, target });
     this.tmpVector = new Vector3();
     const redDot = new Point(0.05, 0xff0000);
     redDot.position.set(1.0, 0, 0);
