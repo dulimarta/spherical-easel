@@ -5,6 +5,7 @@
         <!--- HTML canvas will go here --->
       </div>
     </v-container>
+
     <!--  
       This is the left drawer component that contains that the
       tools and a list of the objects that have been created in two tabs
@@ -114,6 +115,8 @@
         </v-btn>
       </div>
     </v-navigation-drawer>
+    <!-- <event-handler :element="$refs.canvasContainer"
+      @mousedown="handleMousePressed" /> -->
   </div>
 </template>
 
@@ -183,7 +186,7 @@ export default class Easel extends Vue {
   /*  Use the Strategy design pattern to enable switching of
   different tool algorithms at runtime, See the comment where these classes (modules?) are imported */
   private currentTool: ToolStrategy | null;
-  // private pointTool: NormalPointHandler;
+  private pointTool!: NormalPointHandler;
   // private lineTool: LineHandler;
   // private segmentTool: SegmentHandler;
   // private moveTool: MoveHandler;
@@ -234,7 +237,7 @@ export default class Easel extends Vue {
 
     /* this.$store.commit("setSphere", this.sphere); */
 
-    window.addEventListener("resize", this.onWindowResized);
+    // window.addEventListener("resize", this.onWindowResized, false);
     // window.addEventListener("keypress", this.keyPressed);
   }
 
@@ -272,6 +275,7 @@ export default class Easel extends Vue {
       this.canvas.addEventListener("mouseup", this.handleMouseReleased);
     }
 
+    window.addEventListener("resize", this.onWindowResized);
     this.onWindowResized();
     /* requestAnimationFrame(this.renderIt); */
 
@@ -351,6 +355,7 @@ export default class Easel extends Vue {
   @Watch("editMode")
   switchEditMode(mode: string) {
     // this.currentHandler?.deactivate(); // Unregister the current mouse handler
+    this.currentTool = null;
     switch (mode) {
       case "rotate":
         //     // if (this.showSphereControl) this.controls.attach(this.sphere);
@@ -362,8 +367,7 @@ export default class Easel extends Vue {
         break;
       case "point":
         //     this.controls.detach();
-        //     this.currentHandler = this.normalTracker;
-        // this.currentTool = this.pointTool;
+        this.currentTool = this.pointTool;
         break;
       case "line":
         // this.currentTool = this.lineTool;
@@ -375,7 +379,7 @@ export default class Easel extends Vue {
         // this.currentTool = this.circleTool;
         break;
       default:
-      //     this.currentHandler = null;
+        this.currentTool = null;
     }
     this.currentTool?.activate();
     // this.currentHandler?.activate(); // Register the new mouse handler
@@ -464,12 +468,15 @@ export default class Easel extends Vue {
 </script>
 
 <style lang="scss" scoped>
-#content {
-  display: flex;
-  flex-direction: row;
-  justify-content: center;
-  border: 1px solid black;
-  margin: 4px;
+#canvasContainer {
+  // display: flex;
+  // flex-direction: column;
+  // justify-content: center;
+  border: 3px dashed green;
+  margin: 2px; // remove gap between canvas and its parent
+  path {
+    border: 2px solid orange;
+  }
 }
 #leftnav {
   display: flex;
@@ -483,7 +490,7 @@ export default class Easel extends Vue {
   height: 80vh;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-start;
 }
 /* Override the default behavior of Vuetify <v-btn-toggle> elementv-btn-toggle> */
 .v-btn-toggle {
