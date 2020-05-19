@@ -1,11 +1,14 @@
 export default {
+  viewport: {
+    width: 512, height: 512
+  },
   sphere: {
-    radius: 1.0,
+    radius: 250,
     color: 0xffff00,
     opacity: 0.5
   },
   line: {
-    thickness: 0.01
+    thickness: 3
   },
   point: {
     size: 0.02,

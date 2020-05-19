@@ -10,13 +10,6 @@
       (2) the toggle switch will occupy 25% of the panel width
       (3) the canvas will will in the entire width
       --->
-        <v-col cols="9">
-          <!-- <span class="body-1 ml-2">{{ editHint }}</span> -->
-        </v-col>
-        <v-col cols="3">
-          <v-switch v-show="editMode === 'none'" class="mr-4"
-            v-model="showSphereControl" label="Sphere Control"></v-switch>
-        </v-col>
         <v-col cols="12" ref="content" id="content" class="pa-2">
           <!--- HTML canvas will go here --->
         </v-col>
@@ -75,7 +68,7 @@
               <ToolButtons></ToolButtons>
             </v-tab-item>
             <v-tab-item value="objectListTab">
-              <ObjectTree :scene="sphere"></ObjectTree>
+              <!-- <ObjectTree :scene="sphere"></ObjectTree> -->
             </v-tab-item>
           </v-tabs>
         </div>
@@ -116,7 +109,8 @@ import ToolButtons from "@/components/ToolButtons.vue";
 
 import { WebGLRenderer } from "three";
 import { setupScene } from "@/initApp";
-
+import Two from "two.js";
+import Circle from '../3d-objs/Circle';
 @Component({ components: { ObjectTree, ToolButtons } })
 export default class Easel extends Vue {
   @Prop(WebGLRenderer)
@@ -125,7 +119,7 @@ export default class Easel extends Vue {
   @Prop(HTMLCanvasElement)
   readonly canvas!: HTMLCanvasElement;
 
-  private scene: THREE.Scene;
+  private scene: Two;
   private camera: THREE.PerspectiveCamera;
 
   private leftDrawerMinified = false;
@@ -136,13 +130,13 @@ export default class Easel extends Vue {
   // Use the Strategy design pattern to enable switching of
   // different tool algorithms at runtime
   private currentTool: ToolStrategy | null;
-  private pointTool: NormalPointHandler;
-  private lineTool: LineHandler;
-  private segmentTool: SegmentHandler;
-  private moveTool: MoveHandler;
-  private circleTool: CircleHandler;
+  // private pointTool: NormalPointHandler;
+  // private lineTool: LineHandler;
+  // private segmentTool: SegmentHandler;
+  // private moveTool: MoveHandler;
+  // private circleTool: CircleHandler;
   private controls: TransformControls;
-  private sphere: THREE.Mesh;
+  // private sphere: THREE.Mesh;
   private showSphereControl = false;
   private width = 0;
   private height = 0;
@@ -153,9 +147,16 @@ export default class Easel extends Vue {
   constructor() {
     super();
 
-    const { scene, sphere } = setupScene();
-    this.scene = scene;
-    this.sphere = sphere;
+
+    // this.TWO.scene.scale = 50;
+
+    // const rect = this.TWO.makeCircle(0, 0, 128);
+
+    // rect.fill = 'rgb(255, 100,100)';
+    // rect.noStroke();
+    // const scene = setupScene();
+    this.scene = setupScene();
+    // this.sphere = sphere;
     this.camera = new THREE.PerspectiveCamera(
       75,
       window.innerWidth / window.innerHeight,
@@ -163,29 +164,29 @@ export default class Easel extends Vue {
       1000
     );
     this.currentTool = null;
-    this.pointTool = new NormalPointHandler({
-      camera: this.camera,
-      scene: this.scene
-    });
-    this.lineTool = new LineHandler({
-      camera: this.camera,
-      scene: this.scene
-    });
-    this.segmentTool = new SegmentHandler({
-      canvas: this.renderer.domElement,
-      camera: this.camera,
-      scene: this.scene
-    });
-    this.circleTool = new CircleHandler({
-      camera: this.camera,
-      scene: this.scene
-    });
-    this.moveTool = new MoveHandler({
-      camera: this.camera,
-      scene: this.scene
-    });
+    // this.pointTool = new NormalPointHandler({
+    //   camera: this.camera,
+    //   scene: this.scene
+    // });
+    // this.lineTool = new LineHandler({
+    //   camera: this.camera,
+    //   scene: this.scene
+    // });
+    // this.segmentTool = new SegmentHandler({
+    //   canvas: this.renderer.domElement,
+    //   camera: this.camera,
+    //   scene: this.scene
+    // });
+    // this.circleTool = new CircleHandler({
+    //   camera: this.camera,
+    //   scene: this.scene
+    // });
+    // this.moveTool = new MoveHandler({
+    //   camera: this.camera,
+    //   scene: this.scene
+    // });
 
-    this.$store.commit("setSphere", this.sphere);
+    // this.$store.commit("setSphere", this.sphere);
 
     this.camera.position.set(1.25, 1.25, 2);
     this.camera.lookAt(0, 0, 0);
@@ -201,16 +202,16 @@ export default class Easel extends Vue {
     this.controls.setSize(3);
 
     // Add a circle silhouette to mark sphere boundary
-    const circleBorder = new THREE.Mesh(
-      new THREE.TorusBufferGeometry(SETTINGS.sphere.radius * 1.08, 0.01, 6, 60),
-      new THREE.LineBasicMaterial({ color: 0x000000 })
-    );
+    const circleBorder = new Circle();
+
+
     const q = new THREE.Quaternion();
 
     // Transform the circle so it stays parallel to the camera view plane.
     this.camera.getWorldQuaternion(q);
-    circleBorder.applyQuaternion(q);
-    this.scene.add(circleBorder);
+    // circleBorder.applyQuaternion(q);
+    // this.scene.add(circleBorder);
+    // this.TWO.add(circleBorder);
 
     window.addEventListener("resize", this.onWindowResized);
     window.addEventListener("keypress", this.keyPressed);
@@ -232,6 +233,11 @@ export default class Easel extends Vue {
   }
 
   mounted() {
+    debugger; //eslint-disable-line
+    const parent = this.$refs.content as HTMLElement;
+    this.scene.appendTo(parent);
+  }
+  mountedUnused() {
     // VieJS lifecycle function
 
     // During testting canvas is set to null and appendChild() will fail
@@ -256,18 +262,18 @@ export default class Easel extends Vue {
   }
 
   keyPressed = (event: KeyboardEvent) => {
-    const sphere = this.scene.getObjectByName("MainSphere");
+    // const sphere = this.scene.getObjectByName("MainSphere");
     switch (event.code) {
       case "KeyR":
-        sphere?.rotation.set(0, 0, 0);
+        // sphere?.rotation.set(0, 0, 0);
         break;
       default:
     }
   };
 
   renderIt() {
-    this.renderer && this.renderer.render(this.scene, this.camera);
-    requestAnimationFrame(this.renderIt);
+    // this.renderer && this.renderer.render(this.scene, this.camera);
+    // requestAnimationFrame(this.renderIt);
   }
 
   onWindowResized = () => {
@@ -290,11 +296,11 @@ export default class Easel extends Vue {
   @Watch("showSphereControl")
   onSphereControlChanged(value: boolean /*, oldValue: boolean*/) {
     if (value) {
-      this.scene.add(this.controls);
-      this.controls.attach(this.sphere);
+      // this.scene.add(this.controls);
+      // this.controls.attach(this.sphere);
     } else {
       this.controls.detach();
-      this.scene.remove(this.controls);
+      // this.scene.remove(this.controls);
     }
   }
 
@@ -308,21 +314,21 @@ export default class Easel extends Vue {
         this.currentTool = null;
         break;
       case "move":
-        this.currentTool = this.moveTool;
+        // this.currentTool = this.moveTool;
         break;
       case "point":
         //     this.controls.detach();
         //     this.currentHandler = this.normalTracker;
-        this.currentTool = this.pointTool;
+        // this.currentTool = this.pointTool;
         break;
       case "line":
-        this.currentTool = this.lineTool;
+        // this.currentTool = this.lineTool;
         break;
       case "segment":
-        this.currentTool = this.segmentTool;
+        // this.currentTool = this.segmentTool;
         break;
       case "circle":
-        this.currentTool = this.circleTool;
+        // this.currentTool = this.circleTool;
         break;
       default:
       //     this.currentHandler = null;
@@ -350,9 +356,10 @@ export default class Easel extends Vue {
   display: flex;
   flex-direction: row;
   justify-content: center;
-  border: 1px solid black;
+  background-color: beige;
   margin: 4px;
 }
+
 #leftnav {
   display: flex;
   flex-direction: column;

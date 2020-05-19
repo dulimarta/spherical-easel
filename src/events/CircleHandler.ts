@@ -37,13 +37,13 @@ export default class CircleHandler extends CursorHandler {
       if (this.isMouseDown && this.theSphere) {
         if (!this.isCircleAdded) {
           this.isCircleAdded = true;
-          this.theSphere.add(this.circle);
+          // this.theSphere.add(this.circle);
           this.theSphere.add(this.startDot);
         }
         this.circle.circlePoint = this.currentV3Point;
       }
     } else if (this.isCircleAdded) {
-      this.theSphere?.remove(this.circle);
+      // this.theSphere?.remove(this.circle);
       this.theSphere?.remove(this.startDot);
       this.isCircleAdded = false;
     }
@@ -72,7 +72,7 @@ export default class CircleHandler extends CursorHandler {
     this.isMouseDown = false;
     if (this.isOnSphere && this.theSphere) {
       // Record the second point of the geodesic circle
-      this.theSphere.remove(this.circle);
+      // this.theSphere.remove(this.circle);
       this.theSphere.remove(this.startDot);
       this.isCircleAdded = false;
       this.endV3Point.copy(this.currentV3Point);

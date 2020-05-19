@@ -62,7 +62,7 @@ export default class ObjectTree extends Vue {
           name: "Center of",
           children: z.centerOf.map(x => ({
             id: x.ref.id,
-            name: x.ref.name
+            // name: x.ref.name
           }))
         },
         {
@@ -70,7 +70,7 @@ export default class ObjectTree extends Vue {
           name: "Circumpoint of",
           children: z.circumOf.map(x => ({
             id: x.ref.id,
-            name: x.ref.name
+            // name: x.ref.name
           }))
         }
       ] /* remove node with empty children*/
@@ -92,7 +92,7 @@ export default class ObjectTree extends Vue {
   get iCircles() {
     return this.circles.map(r => ({
       id: r.ref.id,
-      name: r.ref.name,
+      // name: r.ref.name,
       children: [
         { id: r.center.ref.id, name: "Center:" + r.center.ref.name },
         { id: r.point.ref.id, name: "Point:" + r.point.ref.name }

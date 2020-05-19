@@ -1,36 +1,15 @@
-import {
-  Mesh,
-  Scene,
-  MeshBasicMaterial,
-  SphereGeometry,
-  PointLight
-} from "three";
-import Axes from "@/3d-objs/Axes";
+// import Axes from "@/3d-objs/Axes";
 import Point from "@/3d-objs/Point";
 import { AddPointCommand } from "@/commands/AddPointCommand";
+import Two from "two.js"
 import SETTINGS from "@/global-settings";
 export function setupScene() {
-  const scene = new Scene();
-  const sphereGeometry = new SphereGeometry(SETTINGS.sphere.radius, 30, 60);
-
-  const sphere = new Mesh(
-    sphereGeometry,
-    new MeshBasicMaterial({
-      color: SETTINGS.sphere.color,
-      transparent: true,
-      opacity: SETTINGS.sphere.opacity
-    })
-  );
-
-  sphere.name = "MainSphere";
-  sphere.layers.enable(SETTINGS.layers.sphere);
-  scene.add(sphere);
-  const pointLight = new PointLight(0xffffff, 1, 100);
-  pointLight.position.set(0, 5, 10);
-  scene.add(pointLight);
-
+  const two = new Two({ width: SETTINGS.viewport.width, height: SETTINGS.viewport.height, autostart: true });
+  two.scene.translation.set(two.width / 2, two.height / 2);
+  const mainCircle = two.makeCircle(0, 0, SETTINGS.sphere.radius);
+  mainCircle.linewidth = SETTINGS.line.thickness;
   if (process.env.NODE_ENV === "development") {
-    sphere.add(new Axes(1.5, 0.05));
+    // sphere.add(new Axes(1.5, 0.05));
 
     // Add random vertices (for development only)
 
@@ -43,5 +22,5 @@ export function setupScene() {
     }
   }
 
-  return { scene, sphere };
+  return two;
 }
