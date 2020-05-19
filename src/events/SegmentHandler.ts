@@ -3,18 +3,12 @@ import LineHandler from "./LineHandler";
 // import Arrow from "@/3d-objs/Arrow";
 import Point from "@/3d-objs/Point";
 import SETTINGS from "@/global-settings";
+import Two from 'two.js';
 
 export default class SegmentHandler extends LineHandler {
   private tmpVector: Vector3;
-  constructor({
-    camera,
-    scene
-  }: {
-    canvas: HTMLCanvasElement;
-    camera: Camera;
-    scene: Scene;
-  }) {
-    super({ camera, scene });
+  constructor(scene: Two) {
+    super(scene);
     this.tmpVector = new Vector3();
     const redDot = new Point(0.05, 0xff0000);
     redDot.position.set(1.0, 0, 0);

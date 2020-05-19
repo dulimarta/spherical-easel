@@ -1,4 +1,4 @@
-import { Vector3, Camera, Scene } from "three";
+import { Vector3 } from "three";
 import CursorHandler from "./CursorHandler";
 // import Arrow from "@/3d-objs/Arrow";
 import Point from "@/3d-objs/Point";
@@ -6,6 +6,7 @@ import SETTINGS from "@/global-settings";
 import { CommandGroup } from "@/commands/CommandGroup";
 import { AddPointCommand } from "@/commands/AddPointCommand";
 import { AddLineCommand } from "@/commands/AddLineCommand";
+import Two from 'two.js';
 export default class LineHandler extends CursorHandler {
   protected startV3Point: Vector3;
   protected endV3Point: Vector3;
@@ -15,8 +16,8 @@ export default class LineHandler extends CursorHandler {
   protected startDot: Point;
   private startPoint: Point | null = null;
   private endPoint: Point | null = null;
-  constructor({ camera, scene }: { camera: Camera; scene: Scene }) {
-    super({ camera, scene });
+  constructor(scene: Two) {
+    super(scene);
     this.startV3Point = new Vector3();
     this.endV3Point = new Vector3();
     this.startDot = new Point();
@@ -43,7 +44,7 @@ export default class LineHandler extends CursorHandler {
           // this.scene.add(this.startDot);
         }
         // The following line automatically calls Line setter function
-        this.line.endV3Point = this.currentV3Point;
+        // this.line.endV3Point = this.currentPoint;
       }
     } else if (this.isCircleAdded) {
       this.theSphere?.remove(this.line);
@@ -64,14 +65,14 @@ export default class LineHandler extends CursorHandler {
         this.startV3Point.copy(selected.position);
         this.startPoint = this.hitObject;
       } else {
-        /* this.currentV3Point is already converted to local sphere coordinate frame */
+        /* this.currentPoint is already converted to local sphere coordinate frame */
         this.theSphere?.add(this.startDot);
-        this.startV3Point.copy(this.currentV3Point);
+        // this.startV3Point.copy(this.currentPoint);
         this.startPoint = null;
       }
       // The following line automatically calls Line setter function
-      this.line.startV3Point = this.currentV3Point;
-      this.startDot.position.copy(this.currentV3Point);
+      // this.line.startV3Point = this.currentPoint;
+      // this.startDot.position.copy(this.currentPoint);
     }
   }
 
@@ -83,7 +84,7 @@ export default class LineHandler extends CursorHandler {
       this.theSphere.remove(this.line);
       this.theSphere.remove(this.startDot);
       this.isCircleAdded = false;
-      this.endV3Point.copy(this.currentV3Point);
+      // this.endV3Point.copy(this.currentPoint);
       const newLine = this.line.clone(); // true:recursive clone
       const lineGroup = new CommandGroup();
       if (this.startPoint === null) {
@@ -100,7 +101,7 @@ export default class LineHandler extends CursorHandler {
         // endV3Point landed on an open space
         // we have to create a new point
         const vtx = new Point();
-        vtx.position.copy(this.currentV3Point);
+        // vtx.position.copy(this.currentPoint);
         this.endPoint = vtx;
         lineGroup.addCommand(new AddPointCommand(vtx));
       }

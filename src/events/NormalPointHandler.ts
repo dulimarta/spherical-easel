@@ -1,48 +1,38 @@
-import { Vector3, Quaternion, Vector2, Camera, Scene } from "three";
 import Arrow from "@/3d-objs/Arrow";
 import CursorHandler from "./CursorHandler";
 import Point from "@/3d-objs/Point";
 import SETTINGS from "@/global-settings";
 import { AddPointCommand } from "@/commands/AddPointCommand";
+import Two from 'two.js';
 export default class NormalPointHandler extends CursorHandler {
-  private normalDirection: Vector3;
   private normalArrow: Arrow;
-  private normalRotation: Quaternion;
   private isNormalAdded: boolean;
-  // private sphereCoordFrame: Matrix4;
 
-  constructor(args: { camera: Camera; scene: Scene }) {
-    super(args);
-    this.mouse = new Vector2();
-    // this.currentPoint = new Vector3(); // Cursor world coordinate position on the sphere
-    this.normalArrow = new Arrow(0.3, 0.03, 0xff8000);
-    this.normalDirection = new Vector3();
-    this.normalRotation = new Quaternion();
+  constructor(scene: Two) {
+    super(scene);
+    this.normalArrow = new Arrow(0.5 /* length in the "world" */, 0xff8000);
     this.isNormalAdded = false;
-    // this.arrow.position.set(0, 1, 0);
-    // scene.add(this.arrow);
-    // this.handler = this.mouseMoved.bind(this);
   }
 
   mouseMoved(event: MouseEvent) {
     super.mouseMoved(event);
-    if (this.isOnSphere && this.theSphere) {
+    if (this.isOnSphere) {
       if (!this.isNormalAdded) {
-        this.theSphere.add(this.normalArrow);
+        this.canvas.add(this.normalArrow);
         this.isNormalAdded = true;
       }
-      this.normalArrow.position.copy(this.currentV3Point);
-      this.normalDirection.copy(this.currentV3Point);
-
-      // The default orientation of the arrow is the Y-axis
-      this.normalRotation.setFromUnitVectors(
-        this.Y_AXIS,
-        this.normalDirection.normalize()
-      );
-      this.normalArrow.rotation.set(0, 0, 0);
-      this.normalArrow.applyQuaternion(this.normalRotation);
+      const x = this.currentSpherePoint.x;
+      const y = this.currentSpherePoint.y;
+      // projected length of the arrow on the XY plane
+      const projectedLength = Math.sqrt(x * x + y * y);
+      // Y-axis on screen is positive going down, but
+      // Y-axis ih the world coordinate is positive going up
+      const angle = Math.atan2(-y, x);
+      this.normalArrow.translation.set(this.currentScreenPoint.x - this.canvas.width / 2, this.currentScreenPoint.y - this.canvas.height / 2);
+      this.normalArrow.length = projectedLength;
+      this.normalArrow.rotation = angle;
     } else {
-      this.theSphere?.remove(this.normalArrow);
+      this.canvas.remove(this.normalArrow);
       this.isNormalAdded = false;
     }
   }
@@ -54,7 +44,7 @@ export default class NormalPointHandler extends CursorHandler {
       // for the world coordinate frame to the sphere coordinate frame
 
       const vtx = new Point();
-      vtx.position.copy(this.currentV3Point);
+      // vtx.position.copy(this.currentPoint);
       new AddPointCommand(vtx).execute();
     }
   };

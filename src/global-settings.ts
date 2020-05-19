@@ -2,8 +2,8 @@ export default {
   viewport: {
     width: 512, height: 512
   },
-  sphere: {
-    radius: 250,
+  sphere: { /* We always assume a UNIT sphere */
+    radius: 240, /* in pixels */
     color: 0xffff00,
     opacity: 0.5
   },

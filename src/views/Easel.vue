@@ -98,10 +98,10 @@ import { TransformControls } from "three/examples/jsm/controls/TransformControls
 // import Point from "@/3d-objs/Point";
 import { ToolStrategy } from "@/events/ToolStrategy";
 import NormalPointHandler from "@/events/NormalPointHandler";
-import LineHandler from "@/events/LineHandler";
-import SegmentHandler from "@/events/SegmentHandler";
-import CircleHandler from "@/events/CircleHandler";
-import MoveHandler from "@/events/MoveHandler";
+// import LineHandler from "@/events/LineHandler";
+// import SegmentHandler from "@/events/SegmentHandler";
+// import CircleHandler from "@/events/CircleHandler";
+// import MoveHandler from "@/events/MoveHandler";
 import SETTINGS from "@/global-settings";
 import { State } from "vuex-class";
 import ObjectTree from "@/components/ObjectTree.vue";
@@ -110,7 +110,7 @@ import ToolButtons from "@/components/ToolButtons.vue";
 import { WebGLRenderer } from "three";
 import { setupScene } from "@/initApp";
 import Two from "two.js";
-import Circle from '../3d-objs/Circle';
+// import Circle from '../3d-objs/Circle';
 @Component({ components: { ObjectTree, ToolButtons } })
 export default class Easel extends Vue {
   @Prop(WebGLRenderer)
@@ -130,7 +130,7 @@ export default class Easel extends Vue {
   // Use the Strategy design pattern to enable switching of
   // different tool algorithms at runtime
   private currentTool: ToolStrategy | null;
-  // private pointTool: NormalPointHandler;
+  private pointTool: NormalPointHandler;
   // private lineTool: LineHandler;
   // private segmentTool: SegmentHandler;
   // private moveTool: MoveHandler;
@@ -164,10 +164,7 @@ export default class Easel extends Vue {
       1000
     );
     this.currentTool = null;
-    // this.pointTool = new NormalPointHandler({
-    //   camera: this.camera,
-    //   scene: this.scene
-    // });
+    this.pointTool = new NormalPointHandler(this.scene);
     // this.lineTool = new LineHandler({
     //   camera: this.camera,
     //   scene: this.scene
@@ -202,7 +199,7 @@ export default class Easel extends Vue {
     this.controls.setSize(3);
 
     // Add a circle silhouette to mark sphere boundary
-    const circleBorder = new Circle();
+    // const circleBorder = new Circle();
 
 
     const q = new THREE.Quaternion();
@@ -233,10 +230,13 @@ export default class Easel extends Vue {
   }
 
   mounted() {
-    debugger; //eslint-disable-line
     const parent = this.$refs.content as HTMLElement;
     this.scene.appendTo(parent);
+    this.scene.play();
+    // debugger; //eslint-disable-line
+    parent.firstChild?.addEventListener("mousemove", this.handleMouseMoved as EventListener);
   }
+
   mountedUnused() {
     // VieJS lifecycle function
 
@@ -306,7 +306,9 @@ export default class Easel extends Vue {
 
   @Watch("editMode")
   switchEditMode(mode: string) {
+    debugger; //eslint-disable-line
     // this.currentHandler?.deactivate(); // Unregister the current mouse handler
+    this.currentTool = null;
     switch (mode) {
       case "rotate":
         //     // if (this.showSphereControl) this.controls.attach(this.sphere);
@@ -319,7 +321,7 @@ export default class Easel extends Vue {
       case "point":
         //     this.controls.detach();
         //     this.currentHandler = this.normalTracker;
-        // this.currentTool = this.pointTool;
+        this.currentTool = this.pointTool;
         break;
       case "line":
         // this.currentTool = this.lineTool;

@@ -6,6 +6,7 @@ import Circle from "@/3d-objs/Circle";
 import { CommandGroup } from "@/commands/CommandGroup";
 import { AddPointCommand } from "@/commands/AddPointCommand";
 import { AddCircleCommand } from "@/commands/AddCircleCommand";
+import Two from 'two.js';
 
 export default class CircleHandler extends CursorHandler {
   private startV3Point: Vector3;
@@ -16,8 +17,8 @@ export default class CircleHandler extends CursorHandler {
   private circle: Circle;
   private startPoint: Point | null = null;
   private endPoint: Point | null = null;
-  constructor({ camera, scene }: { camera: Camera; scene: Scene }) {
-    super({ camera, scene });
+  constructor(scene: Two) {
+    super(scene);
     this.startV3Point = new Vector3();
     this.endV3Point = new Vector3();
     this.startDot = new Point();
@@ -40,7 +41,7 @@ export default class CircleHandler extends CursorHandler {
           // this.theSphere.add(this.circle);
           this.theSphere.add(this.startDot);
         }
-        this.circle.circlePoint = this.currentV3Point;
+        // this.circle.circlePoint = this.currentPoint;
       }
     } else if (this.isCircleAdded) {
       // this.theSphere?.remove(this.circle);
@@ -59,11 +60,11 @@ export default class CircleHandler extends CursorHandler {
         this.startPoint = this.hitObject;
       } else {
         this.theSphere?.add(this.startDot);
-        this.startV3Point.copy(this.currentV3Point);
+        // this.startV3Point.copy(this.currentPoint);
         this.startPoint = null;
       }
-      this.startDot.position.copy(this.currentV3Point);
-      this.circle.centerPoint = this.currentV3Point;
+      // this.startDot.position.copy(this.currentPoint);
+      // this.circle.centerPoint = this.currentPoint;
     }
   }
 
@@ -75,7 +76,7 @@ export default class CircleHandler extends CursorHandler {
       // this.theSphere.remove(this.circle);
       this.theSphere.remove(this.startDot);
       this.isCircleAdded = false;
-      this.endV3Point.copy(this.currentV3Point);
+      // this.endV3Point.copy(this.currentPoint);
       const newCircle = this.circle.clone();
       const circleGroup = new CommandGroup();
       if (this.startPoint === null) {
@@ -92,7 +93,7 @@ export default class CircleHandler extends CursorHandler {
         // endV3Point landed on an open space
         // we have to create a new point
         const vtx = new Point();
-        vtx.position.copy(this.currentV3Point);
+        // vtx.position.copy(this.currentPoint);
         this.endPoint = vtx;
         circleGroup.addCommand(new AddPointCommand(vtx));
       }
