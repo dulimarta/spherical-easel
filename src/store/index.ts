@@ -41,13 +41,13 @@ export default new Vuex.Store({
         centerOf: [],
         circumOf: []
       });
-      state.sphere?.add(point);
+      // state.sphere?.add(point);
     },
     removePoint(state, pointId: number) {
       const pos = state.points.findIndex(x => x.ref.id === pointId);
       if (pos >= 0) {
-        state.sphere?.remove(state.points[pos].ref);
-        (state.points[pos].ref.material as MeshPhongMaterial).emissive.set(0);
+        // state.sphere?.remove(state.points[pos].ref);
+        // (state.points[pos].ref.material as MeshPhongMaterial).emissive.set(0);
         state.points.splice(pos, 1);
       }
     },
@@ -67,11 +67,11 @@ export default new Vuex.Store({
         start.startOf.push(newLine);
         end.endOf.push(newLine);
         state.lines.push(newLine);
-        state.sphere?.add(line);
+        // state.sphere?.add(line);
       }
     },
     removeLine(state, lineId: number) {
-      const pos = state.lines.findIndex(x => x.ref.id === lineId);
+      const pos = -1; // state.lines.findIndex(x => x.ref.id === lineId);
       if (pos >= 0) {
         /* victim line is found */
         const victimLine: SELine = state.lines[pos];
@@ -98,8 +98,8 @@ export default new Vuex.Store({
           if (pos >= 0) state.points[ePointPos].endOf.splice(pos, 1);
         }
         // Remove it from the sphere
-        state.sphere?.remove(victimLine.ref);
-        (victimLine.ref.material as MeshPhongMaterial).emissive.set(0);
+        // state.sphere?.remove(victimLine.ref);
+        // (victimLine.ref.material as MeshPhongMaterial).emissive.set(0);
 
         state.lines.splice(pos, 1); // Remove the line from the list
       }

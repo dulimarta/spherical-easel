@@ -6,12 +6,10 @@ import SETTINGS from "@/global-settings";
 import Two from 'two.js';
 
 export default class SegmentHandler extends LineHandler {
-  private tmpVector: Vector3;
   constructor(scene: Two) {
     super(scene);
-    this.tmpVector = new Vector3();
     const redDot = new Point(0.05, 0xff0000);
-    redDot.position.set(1.0, 0, 0);
+    redDot.positionOnSphere.set(1.0, 0, 0);
     // const greenDot = new Point(0.05, 0x00ff44);
     // greenDot.position.set(0, 1.0, 0);
     // this.smallCircle.add(redDot);

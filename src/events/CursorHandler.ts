@@ -55,7 +55,8 @@ export default class CursorHandler implements ToolStrategy {
 
   //eslint-disable-next-line
   mouseReleased(event: MouseEvent): void {
-    throw new Error("Method not implemented.");
+    // throw new Error("Method not implemented.");
+    // Intentionall left blank
   }
 
   /**
@@ -89,16 +90,16 @@ export default class CursorHandler implements ToolStrategy {
     this.mouse.y = y;
     const len = this.mouse.length();
     if (len < 1) {
-      const zCoord = Math.sqrt(1 - len);
-      this.currentSpherePoint.set(x, y, zCoord);
+      const zCoordinate = Math.sqrt(1 - len);
+      this.currentSpherePoint.set(x, y, zCoordinate);
 
       this.isOnSphere = true;
       this.currentPoint.copy(this.mouse);
-      console.debug("Mouse location", event.offsetX, event.offsetY, this.currentPoint);
+      console.debug(`Mouse location (${event.offsetX},${event.offsetY}) ` +
+        `Sphere position ${this.vec3tostr(this.currentSpherePoint)}`);
     } else {
       this.isOnSphere = false;
       this.currentSpherePoint.set(NaN, NaN, NaN);
-      console.debug("OFF sphere");
     }
     // this.rayCaster.setFromCamera(this.mouse, this.camera);
 

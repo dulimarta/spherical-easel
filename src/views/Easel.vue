@@ -98,7 +98,7 @@ import { TransformControls } from "three/examples/jsm/controls/TransformControls
 // import Point from "@/3d-objs/Point";
 import { ToolStrategy } from "@/events/ToolStrategy";
 import NormalPointHandler from "@/events/NormalPointHandler";
-// import LineHandler from "@/events/LineHandler";
+import LineHandler from "@/events/LineHandler";
 // import SegmentHandler from "@/events/SegmentHandler";
 // import CircleHandler from "@/events/CircleHandler";
 // import MoveHandler from "@/events/MoveHandler";
@@ -113,11 +113,11 @@ import Two from "two.js";
 // import Circle from '../3d-objs/Circle';
 @Component({ components: { ObjectTree, ToolButtons } })
 export default class Easel extends Vue {
-  @Prop(WebGLRenderer)
-  readonly renderer!: WebGLRenderer;
+  // @Prop(WebGLRenderer)
+  // readonly renderer!: WebGLRenderer;
 
-  @Prop(HTMLCanvasElement)
-  readonly canvas!: HTMLCanvasElement;
+  // @Prop(HTMLCanvasElement)
+  // readonly canvas!: HTMLCanvasElement;
 
   private scene: Two;
   private camera: THREE.PerspectiveCamera;
@@ -131,11 +131,11 @@ export default class Easel extends Vue {
   // different tool algorithms at runtime
   private currentTool: ToolStrategy | null;
   private pointTool: NormalPointHandler;
-  // private lineTool: LineHandler;
+  private lineTool: LineHandler;
   // private segmentTool: SegmentHandler;
   // private moveTool: MoveHandler;
   // private circleTool: CircleHandler;
-  private controls: TransformControls;
+  // private controls: TransformControls;
   // private sphere: THREE.Mesh;
   private showSphereControl = false;
   private width = 0;
@@ -165,10 +165,7 @@ export default class Easel extends Vue {
     );
     this.currentTool = null;
     this.pointTool = new NormalPointHandler(this.scene);
-    // this.lineTool = new LineHandler({
-    //   camera: this.camera,
-    //   scene: this.scene
-    // });
+    this.lineTool = new LineHandler(this.scene);
     // this.segmentTool = new SegmentHandler({
     //   canvas: this.renderer.domElement,
     //   camera: this.camera,
@@ -190,13 +187,13 @@ export default class Easel extends Vue {
     // const axesHelper = new THREE.AxesHelper(SETTINGS.sphere.radius * 1.25);
     // axesHelper.layers.disableAll(); // exclude axeshelper from being searched by Raycaster
     // this.scene.add(axesHelper);
-    this.controls = new TransformControls(
-      this.camera,
-      this.renderer.domElement
-    );
-    this.controls.setMode("rotate");
-    this.controls.setSpace("global"); // select between "global" or "local"
-    this.controls.setSize(3);
+    // this.controls = new TransformControls(
+    //   this.camera,
+    //   this.renderer.domElement
+    // );
+    // this.controls.setMode("rotate");
+    // this.controls.setSpace("global"); // select between "global" or "local"
+    // this.controls.setSize(3);
 
     // Add a circle silhouette to mark sphere boundary
     // const circleBorder = new Circle();
@@ -231,34 +228,25 @@ export default class Easel extends Vue {
 
   mounted() {
     const parent = this.$refs.content as HTMLElement;
-    this.scene.appendTo(parent);
-    this.scene.play();
-    // debugger; //eslint-disable-line
-    parent.firstChild?.addEventListener("mousemove", this.handleMouseMoved as EventListener);
-  }
-
-  mountedUnused() {
-    // VieJS lifecycle function
-
-    // During testting canvas is set to null and appendChild() will fail
-    if (this.canvas instanceof HTMLCanvasElement) {
-      const el = this.$refs.content as HTMLBaseElement;
-
-      el.appendChild(this.canvas);
-      this.canvas.addEventListener("mousemove", this.handleMouseMoved);
-      this.canvas.addEventListener("mousedown", this.handleMousePressed);
-      this.canvas.addEventListener("mouseup", this.handleMouseReleased);
+    // During testting scene is set to null and appendTo() will fail
+    if (this.scene instanceof Two) {
+      this.scene.appendTo(parent);
+      this.scene.play();
+      // debugger; //eslint-disable-line
+      parent.firstChild?.addEventListener("mousemove", this.handleMouseMoved as EventListener);
+      parent.firstChild?.addEventListener("mousedown", this.handleMousePressed as EventListener);
+      parent.firstChild?.addEventListener("mouseup", this.handleMouseReleased as EventListener);
     }
-
-    this.onWindowResized();
-    requestAnimationFrame(this.renderIt);
+    // this.onWindowResized();
+    // requestAnimationFrame(this.renderIt); // Not needed when using TwoJS?
   }
 
   beforeDestroy() {
     // VieJS lifecycle function
-    this.canvas.removeEventListener("mousemove", this.handleMouseMoved);
-    this.canvas.removeEventListener("mousedown", this.handleMousePressed);
-    this.canvas.removeEventListener("mouseup", this.handleMouseReleased);
+    const parent = this.$refs.content as HTMLElement;
+    parent.firstChild?.removeEventListener("mousemove", this.handleMouseMoved as EventListener);
+    parent.firstChild?.removeEventListener("mousedown", this.handleMousePressed as EventListener);
+    parent.firstChild?.removeEventListener("mouseup", this.handleMouseReleased as EventListener);
   }
 
   keyPressed = (event: KeyboardEvent) => {
@@ -288,7 +276,7 @@ export default class Easel extends Vue {
       const size = Math.min(el.clientWidth, availHeight);
       this.camera.aspect = 1;
       this.camera.updateProjectionMatrix();
-      this.renderer.setSize(size, size);
+      // this.renderer.setSize(size, size);
     }
   };
 
@@ -299,7 +287,7 @@ export default class Easel extends Vue {
       // this.scene.add(this.controls);
       // this.controls.attach(this.sphere);
     } else {
-      this.controls.detach();
+      // this.controls.detach();
       // this.scene.remove(this.controls);
     }
   }
@@ -324,7 +312,7 @@ export default class Easel extends Vue {
         this.currentTool = this.pointTool;
         break;
       case "line":
-        // this.currentTool = this.lineTool;
+        this.currentTool = this.lineTool;
         break;
       case "segment":
         // this.currentTool = this.segmentTool;

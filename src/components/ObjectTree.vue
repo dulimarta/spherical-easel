@@ -46,7 +46,7 @@ export default class ObjectTree extends Vue {
           name: "Start of",
           children: z.startOf.map(x => ({
             id: x.ref.id,
-            name: x.ref.name
+            // name: x.ref.name
           }))
         },
         {
@@ -54,7 +54,7 @@ export default class ObjectTree extends Vue {
           name: "End of",
           children: z.endOf.map(x => ({
             id: x.ref.id,
-            name: x.ref.name
+            // name: x.ref.name
           }))
         },
         {
@@ -81,7 +81,7 @@ export default class ObjectTree extends Vue {
   get iLines() {
     return this.lines.map(z => ({
       id: z.ref.id,
-      name: z.ref.name,
+      // name: z.ref.name,
       children: [
         { id: z.start.ref.id, name: "Start:" + z.start.ref.name },
         { id: z.end.ref.id, name: "End:" + z.end.ref.name }

@@ -1,4 +1,4 @@
-import { Vector3, Camera, Scene } from "three";
+import { Vector3 } from "three";
 import CursorHandler from "./CursorHandler";
 import Point from "@/3d-objs/Point";
 import SETTINGS from "@/global-settings";
@@ -39,13 +39,13 @@ export default class CircleHandler extends CursorHandler {
         if (!this.isCircleAdded) {
           this.isCircleAdded = true;
           // this.theSphere.add(this.circle);
-          this.theSphere.add(this.startDot);
+          this.canvas.add(this.startDot);
         }
         // this.circle.circlePoint = this.currentPoint;
       }
     } else if (this.isCircleAdded) {
       // this.theSphere?.remove(this.circle);
-      this.theSphere?.remove(this.startDot);
+      this.canvas.remove(this.startDot);
       this.isCircleAdded = false;
     }
   }
@@ -57,9 +57,9 @@ export default class CircleHandler extends CursorHandler {
       const selected = this.hitObject;
       if (selected instanceof Point) {
         this.startV3Point.copy(selected.position);
-        this.startPoint = this.hitObject;
+        // this.startPoint = this.hitObject;
       } else {
-        this.theSphere?.add(this.startDot);
+        this.canvas.add(this.startDot);
         // this.startV3Point.copy(this.currentPoint);
         this.startPoint = null;
       }
@@ -74,7 +74,7 @@ export default class CircleHandler extends CursorHandler {
     if (this.isOnSphere && this.theSphere) {
       // Record the second point of the geodesic circle
       // this.theSphere.remove(this.circle);
-      this.theSphere.remove(this.startDot);
+      this.canvas.remove(this.startDot);
       this.isCircleAdded = false;
       // this.endV3Point.copy(this.currentPoint);
       const newCircle = this.circle.clone();
@@ -83,7 +83,9 @@ export default class CircleHandler extends CursorHandler {
         // Starting point landed on an open space
         // we have to create a new point
         const vtx = new Point();
-        vtx.position.copy(this.startV3Point);
+        vtx.positionOnSphere
+
+          .copy(this.startV3Point);
         this.startPoint = vtx;
         circleGroup.addCommand(new AddPointCommand(vtx));
       }
