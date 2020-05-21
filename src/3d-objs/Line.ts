@@ -1,7 +1,9 @@
-import { Vector3 } from "three";
+import { Vector3, Vector2 } from "three";
 import Two from "two.js";
 import SETTINGS from "@/global-settings";
+import Point from "./Point";
 
+const NegXAxis = new Vector3(-1, 0, 0);
 /**
  * Geodesic line on a circle
  *
@@ -12,9 +14,10 @@ import SETTINGS from "@/global-settings";
 export default class Line extends Two.Group {
   private start: Vector3;
   private end: Vector3;
-  private normalDirection: Vector3;
+  public normalDirection: Vector3;
 
-  private scaleVector: Two.Vector;
+  private majorAxisDirection: Vector3 = new Vector3();
+
   private segment: boolean;
   private frontHalf: Two.Path;
   private backHalf: Two.Path;
@@ -41,14 +44,19 @@ export default class Line extends Two.Group {
     this.backHalf = this.frontHalf.clone();
     this.backHalf.rotation = Math.PI;
     this.backHalf.stroke = "gray";
-    (this.backHalf as any).dashes.push(10, 3); // render as dashed lines
-    this.backHalf.linewidth = 5;
+    (this.backHalf as any).dashes.push(10, 5); // render as dashed lines
+    this.backHalf.linewidth = 3;
     this.start = start || new Vector3(1, 0, 0);
     this.end = end || new Vector3(0, 1, 0);
     this.normalDirection = new Vector3();
     this.segment = segment || false;
-    this.scaleVector = new Two.Vector(1, 1);
-    this.add(this.frontHalf, this.backHalf);
+    // this.scaleVector = new Two.Vector(1, 1);
+    this.add(this.frontHalf);
+    if (!segment) {
+      // FIXME: how to handle segments longer than 180 degrees?
+      // Line segment does not a back semicircle
+      this.add(this.backHalf);
+    }
   }
 
   private deformIntoEllipse() {
@@ -60,10 +68,15 @@ export default class Line extends Two.Group {
     // The ellipse major axis on the XY plane is perpendicular
     // to the circle normal [Nx,Ny,Nz]. We can fix the direction of
     // the major axis to [Ny,-Nx, 0] and use these numbers to compute the angle
+    this.majorAxisDirection
+      .set(-this.normalDirection.y, this.normalDirection.x, 0)
+      .normalize();
+    // this.leftMarker.positionOnSphere = this.majorAxisDirection;
     const angleToMajorAxis = Math.atan2(
       this.normalDirection.x,
       this.normalDirection.y
     );
+    this.rotation = angleToMajorAxis;
 
     // Calculate the length of its minor axes from the non-rotated ellipse
     const cosAngle = Math.cos(angleToMajorAxis);
@@ -75,25 +88,41 @@ export default class Line extends Two.Group {
 
     // Use ellipse equation to compute minorAxis given than majorAxis is 1
     const minorAxis = Math.sqrt((py * py) / (1 - px * px));
-
-    this.scaleVector.set(1, minorAxis * Math.sign(this.normalDirection.z));
-
-    // FIXME: TwoJS issue: scaling the shape also make the line thinner
-    (this.frontHalf as any).scale = this.scaleVector;
-    (this.backHalf as any).scale = this.scaleVector;
-
-    this.rotation = angleToMajorAxis;
+    let numSubdivs = this.frontHalf.vertices.length;
+    const radius = SETTINGS.sphere.radius;
+    // When the Z-value is negative, the front semicircle
+    // is projected above the back semicircle
+    const flipSign = Math.sign(this.normalDirection.z);
     if (this.segment) {
+      // FIXME: the position or arc end points are not accurate
       // Readjust arc length
-      // const angle = this.start.angleTo(this.end);
-      // this.geometry.dispose();
-      // this.geometry = new TorusBufferGeometry(
-      //   SETTINGS.sphere.radius,
-      //   /* thickness */ 0.01,
-      //   /* tubular segments */ 6,
-      //   /* radial segments */ 60,
-      //   angle
-      // );
+
+      const startAngle = this.majorAxisDirection.angleTo(this.start);
+      const totalArcLength = this.start.angleTo(this.end);
+      // TODO: how to handle length > 180 degrees
+      this.frontHalf.vertices.forEach((v, pos) => {
+        const angle = startAngle + (pos * totalArcLength) / numSubdivs;
+        // Don't need flipSign here because cos(-alpha) = cos(alpha)
+        v.x = -radius * Math.cos(angle);
+
+        // When flipSign (Z-coord of the circle normal) is negative
+        // the semicircle must be reflected onto the Y-axis
+        v.y = minorAxis * radius * Math.sin(flipSign * angle);
+      });
+    } else {
+      // reposition all vertices of the front semicircle
+      this.frontHalf.vertices.forEach((v, pos) => {
+        const angle = (flipSign * (pos * Math.PI)) / numSubdivs;
+        v.x = radius * Math.cos(angle);
+        v.y = minorAxis * radius * Math.sin(angle);
+      });
+      // reposition all vertices of the back semicircle
+      numSubdivs = this.backHalf.vertices.length;
+      this.backHalf.vertices.forEach((v, pos) => {
+        const angle = (flipSign * (pos * Math.PI)) / numSubdivs;
+        v.x = radius * Math.cos(angle);
+        v.y = minorAxis * radius * Math.sin(angle);
+      });
     }
   }
 

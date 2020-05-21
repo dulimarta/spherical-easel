@@ -1,7 +1,9 @@
 import { Vector3 } from "three";
 import CursorHandler from "./CursorHandler";
-// import Arrow from "@/3d-objs/Arrow"; // for debugging
+import Arrow from "@/3d-objs/Arrow"; // for debugging
 import Point from "@/3d-objs/Point";
+import Line from "@/3d-objs/Line";
+
 import SETTINGS from "@/global-settings";
 import { CommandGroup } from "@/commands/CommandGroup";
 import { AddPointCommand } from "@/commands/AddPointCommand";
@@ -10,27 +12,30 @@ import Two from "two.js";
 export default class LineHandler extends CursorHandler {
   protected startV3Point: Vector3;
   protected tmpVector: Vector3;
-  // private circleOrientation: Arrow; // for debugging only
+  protected circleOrientation: Arrow; // for debugging only
   protected isMouseDown: boolean;
   protected isCircleAdded: boolean;
   protected startDot: Point;
   private startPoint: Point | null = null;
   private endPoint: Point | null = null;
+  protected line: Line;
 
-  constructor(scene: Two) {
+  constructor(scene: Two, isSegment?: boolean) {
     super(scene);
     this.startV3Point = new Vector3();
     this.tmpVector = new Vector3();
     this.startDot = new Point();
-    // this.circleOrientation = new Arrow(0.5, 0x006600); // debug only
+    this.line = new Line(undefined, undefined, isSegment);
+
+    this.circleOrientation = new Arrow(0.5, 0x006600); // debug only
     this.isMouseDown = false;
     this.isCircleAdded = false;
   }
 
   activate = () => {
-    this.rayCaster.layers.disableAll();
-    this.rayCaster.layers.enable(SETTINGS.layers.sphere);
-    this.rayCaster.layers.enable(SETTINGS.layers.point);
+    // this.rayCaster.layers.disableAll();
+    // this.rayCaster.layers.enable(SETTINGS.layers.sphere);
+    // this.rayCaster.layers.enable(SETTINGS.layers.point);
     // The following line automatically calls Line setter function by default
     this.line.isSegment = false;
   };
@@ -49,14 +54,14 @@ export default class LineHandler extends CursorHandler {
         this.tmpVector
           .crossVectors(this.startV3Point, this.currentSpherePoint)
           .normalize();
-        // this.circleOrientation.sphereLocation = this.tmpVector; // for debugging
+        this.circleOrientation.sphereLocation = this.tmpVector; // for debugging
         this.line.endPoint = this.currentSpherePoint;
       }
     } else if (this.isCircleAdded) {
       console.debug("LineHandler: OFF sphere");
       this.canvas.remove(this.line);
       this.canvas.remove(this.startDot);
-      // this.canvas.remove(this.circleOrientation); // for debugging
+      this.canvas.remove(this.circleOrientation); // for debugging
       this.isCircleAdded = false;
     }
   }

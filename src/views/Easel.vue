@@ -33,35 +33,48 @@
 
     <!--  Use the "clipped" attribute to keep the navigation drawer 
     below the app toolbar, width should be specified as number only (without unit) -->
-    <v-navigation-drawer id="leftDrawer" app clipped color="accent"
-      permanent :mini-variant="leftDrawerMinified" width="300">
+    <v-navigation-drawer
+      id="leftDrawer"
+      app
+      clipped
+      color="accent"
+      permanent
+      :mini-variant="leftDrawerMinified"
+      width="300"
+    >
       <v-container id="leftnav" fluid>
         <div>
-          <v-btn icon @click="leftDrawerMinified = !leftDrawerMinified;">
+          <v-btn icon @click="leftDrawerMinified = !leftDrawerMinified">
             <v-icon v-if="leftDrawerMinified">mdi-arrow-right</v-icon>
             <v-icon v-else>mdi-arrow-left</v-icon>
           </v-btn>
         </div>
         <div v-if="!leftDrawerMinified">
           <v-tabs v-model="activeLeftDrawerTab" grow centered>
-            <v-tooltip bottom :open-delay="toolTipOpenDelay"
-              :close-delay="toolTipCloseDelay">
+            <v-tooltip
+              bottom
+              :open-delay="toolTipOpenDelay"
+              :close-delay="toolTipCloseDelay"
+            >
               <template v-slot:activator="{ on }">
                 <v-tab class="mt-3" href="#toolListTab" v-on="on">
                   <v-icon left>mdi-calculator</v-icon>
                 </v-tab>
               </template>
-              <span>{{ $t('main.ToolsTabToolTip') }}</span>
+              <span>{{ $t("main.ToolsTabToolTip") }}</span>
             </v-tooltip>
 
-            <v-tooltip bottom :open-delay="toolTipOpenDelay"
-              :close-delay="toolTipCloseDelay">
+            <v-tooltip
+              bottom
+              :open-delay="toolTipOpenDelay"
+              :close-delay="toolTipCloseDelay"
+            >
               <template v-slot:activator="{ on }">
                 <v-tab class="mt-3" href="#objectListTab" v-on="on">
                   <v-icon left>mdi-format-list-bulleted</v-icon>
                 </v-tab>
               </template>
-              <span>{{ $t('main.ObjectsTabToolTip') }}</span>
+              <span>{{ $t("main.ObjectsTabToolTip") }}</span>
             </v-tooltip>
 
             <v-tab-item value="toolListTab">
@@ -73,14 +86,27 @@
           </v-tabs>
         </div>
       </v-container>
-      <div id="leftnavicons" v-if="leftDrawerMinified"
-        @click="unMinifyLeftDrawer">
-        <v-btn icon
-          @click="leftDrawerMinified = !leftDrawerMinified; activeLeftDrawerTab='toolListTab'">
+      <div
+        id="leftnavicons"
+        v-if="leftDrawerMinified"
+        @click="unMinifyLeftDrawer"
+      >
+        <v-btn
+          icon
+          @click="
+            leftDrawerMinified = !leftDrawerMinified;
+            activeLeftDrawerTab = 'toolListTab';
+          "
+        >
           <v-icon class="ml-3 my-2">mdi-calculator</v-icon>
         </v-btn>
-        <v-btn icon
-          @click="leftDrawerMinified = !leftDrawerMinified; activeLeftDrawerTab='objectListTab'">
+        <v-btn
+          icon
+          @click="
+            leftDrawerMinified = !leftDrawerMinified;
+            activeLeftDrawerTab = 'objectListTab';
+          "
+        >
           <v-icon class="ml-3 my-2">mdi-format-list-bulleted</v-icon>
         </v-btn>
       </div>
@@ -91,7 +117,6 @@
 <script lang="ts">
 import { Vue, Watch, Prop } from "vue-property-decorator";
 import Component from "vue-class-component";
-import * as THREE from "three";
 // import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import { TransformControls } from "three/examples/jsm/controls/TransformControls";
 // import Axes from "@/3d-objs/Axes";
@@ -99,7 +124,7 @@ import { TransformControls } from "three/examples/jsm/controls/TransformControls
 import { ToolStrategy } from "@/events/ToolStrategy";
 import NormalPointHandler from "@/events/NormalPointHandler";
 import LineHandler from "@/events/LineHandler";
-// import SegmentHandler from "@/events/SegmentHandler";
+import SegmentHandler from "@/events/SegmentHandler";
 // import CircleHandler from "@/events/CircleHandler";
 // import MoveHandler from "@/events/MoveHandler";
 import SETTINGS from "@/global-settings";
@@ -107,7 +132,6 @@ import { State } from "vuex-class";
 import ObjectTree from "@/components/ObjectTree.vue";
 import ToolButtons from "@/components/ToolButtons.vue";
 
-import { WebGLRenderer } from "three";
 import { setupScene } from "@/initApp";
 import Two from "two.js";
 // import Circle from '../3d-objs/Circle';
@@ -120,7 +144,6 @@ export default class Easel extends Vue {
   // readonly canvas!: HTMLCanvasElement;
 
   private scene: Two;
-  private camera: THREE.PerspectiveCamera;
 
   private leftDrawerMinified = false;
   private activeLeftDrawerTab = "toolListTab";
@@ -132,7 +155,7 @@ export default class Easel extends Vue {
   private currentTool: ToolStrategy | null;
   private pointTool: NormalPointHandler;
   private lineTool: LineHandler;
-  // private segmentTool: SegmentHandler;
+  private segmentTool: SegmentHandler;
   // private moveTool: MoveHandler;
   // private circleTool: CircleHandler;
   // private controls: TransformControls;
@@ -147,7 +170,6 @@ export default class Easel extends Vue {
   constructor() {
     super();
 
-
     // this.TWO.scene.scale = 50;
 
     // const rect = this.TWO.makeCircle(0, 0, 128);
@@ -157,20 +179,10 @@ export default class Easel extends Vue {
     // const scene = setupScene();
     this.scene = setupScene();
     // this.sphere = sphere;
-    this.camera = new THREE.PerspectiveCamera(
-      75,
-      window.innerWidth / window.innerHeight,
-      0.1,
-      1000
-    );
     this.currentTool = null;
     this.pointTool = new NormalPointHandler(this.scene);
     this.lineTool = new LineHandler(this.scene);
-    // this.segmentTool = new SegmentHandler({
-    //   canvas: this.renderer.domElement,
-    //   camera: this.camera,
-    //   scene: this.scene
-    // });
+    this.segmentTool = new SegmentHandler(this.scene);
     // this.circleTool = new CircleHandler({
     //   camera: this.camera,
     //   scene: this.scene
@@ -182,8 +194,6 @@ export default class Easel extends Vue {
 
     // this.$store.commit("setSphere", this.sphere);
 
-    this.camera.position.set(1.25, 1.25, 2);
-    this.camera.lookAt(0, 0, 0);
     // const axesHelper = new THREE.AxesHelper(SETTINGS.sphere.radius * 1.25);
     // axesHelper.layers.disableAll(); // exclude axeshelper from being searched by Raycaster
     // this.scene.add(axesHelper);
@@ -197,15 +207,6 @@ export default class Easel extends Vue {
 
     // Add a circle silhouette to mark sphere boundary
     // const circleBorder = new Circle();
-
-
-    const q = new THREE.Quaternion();
-
-    // Transform the circle so it stays parallel to the camera view plane.
-    this.camera.getWorldQuaternion(q);
-    // circleBorder.applyQuaternion(q);
-    // this.scene.add(circleBorder);
-    // this.TWO.add(circleBorder);
 
     window.addEventListener("resize", this.onWindowResized);
     window.addEventListener("keypress", this.keyPressed);
@@ -233,10 +234,20 @@ export default class Easel extends Vue {
       this.scene.appendTo(parent);
       this.scene.play();
       // debugger; //eslint-disable-line
-      parent.firstChild?.addEventListener("mousemove", this.handleMouseMoved as EventListener);
-      parent.firstChild?.addEventListener("mousedown", this.handleMousePressed as EventListener);
-      parent.firstChild?.addEventListener("mouseup", this.handleMouseReleased as EventListener);
+      parent.firstChild?.addEventListener(
+        "mousemove",
+        this.handleMouseMoved as EventListener
+      );
+      parent.firstChild?.addEventListener(
+        "mousedown",
+        this.handleMousePressed as EventListener
+      );
+      parent.firstChild?.addEventListener(
+        "mouseup",
+        this.handleMouseReleased as EventListener
+      );
     }
+    // TODO: handle resize?
     // this.onWindowResized();
     // requestAnimationFrame(this.renderIt); // Not needed when using TwoJS?
   }
@@ -244,9 +255,18 @@ export default class Easel extends Vue {
   beforeDestroy() {
     // VieJS lifecycle function
     const parent = this.$refs.content as HTMLElement;
-    parent.firstChild?.removeEventListener("mousemove", this.handleMouseMoved as EventListener);
-    parent.firstChild?.removeEventListener("mousedown", this.handleMousePressed as EventListener);
-    parent.firstChild?.removeEventListener("mouseup", this.handleMouseReleased as EventListener);
+    parent.firstChild?.removeEventListener(
+      "mousemove",
+      this.handleMouseMoved as EventListener
+    );
+    parent.firstChild?.removeEventListener(
+      "mousedown",
+      this.handleMousePressed as EventListener
+    );
+    parent.firstChild?.removeEventListener(
+      "mouseup",
+      this.handleMouseReleased as EventListener
+    );
   }
 
   keyPressed = (event: KeyboardEvent) => {
@@ -259,12 +279,8 @@ export default class Easel extends Vue {
     }
   };
 
-  renderIt() {
-    // this.renderer && this.renderer.render(this.scene, this.camera);
-    // requestAnimationFrame(this.renderIt);
-  }
-
   onWindowResized = () => {
+    // TODO: finish this method
     const el = this.$refs.content as HTMLBaseElement;
     if (el) {
       this.height = el.clientHeight;
@@ -274,8 +290,6 @@ export default class Easel extends Vue {
       //  Offset top ${el.offsetTop}, Viewport height:
       // ${window.innerHeight}`);
       const size = Math.min(el.clientWidth, availHeight);
-      this.camera.aspect = 1;
-      this.camera.updateProjectionMatrix();
       // this.renderer.setSize(size, size);
     }
   };
@@ -294,7 +308,6 @@ export default class Easel extends Vue {
 
   @Watch("editMode")
   switchEditMode(mode: string) {
-    debugger; //eslint-disable-line
     // this.currentHandler?.deactivate(); // Unregister the current mouse handler
     this.currentTool = null;
     switch (mode) {
@@ -315,7 +328,7 @@ export default class Easel extends Vue {
         this.currentTool = this.lineTool;
         break;
       case "segment":
-        // this.currentTool = this.segmentTool;
+        this.currentTool = this.segmentTool;
         break;
       case "circle":
         // this.currentTool = this.circleTool;
@@ -338,7 +351,6 @@ export default class Easel extends Vue {
       this.leftDrawerMinified = false;
     }
   }
-
 }
 </script>
 <style lang="scss" scoped>

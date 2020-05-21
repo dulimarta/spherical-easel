@@ -1,14 +1,9 @@
-import {
-  Mesh,
-  Raycaster,
-  Vector3,
-} from "three";
+import { Mesh, Raycaster, Vector3 } from "three";
 import AppStore from "@/store";
 // import Point from "@/3d-objs/Point";
 // import SETTINGS from "@/global-settings";
-import Line from "@/3d-objs/Line";
 import { ToolStrategy } from "./ToolStrategy";
-import Two, { BoundingClientRect, Vector } from 'two.js';
+import Two, { BoundingClientRect, Vector } from "two.js";
 const RAYCASTER = new Raycaster();
 
 export default class CursorHandler implements ToolStrategy {
@@ -27,10 +22,8 @@ export default class CursorHandler implements ToolStrategy {
   protected hitObject: Mesh | null = null;
   protected isOnSphere: boolean;
   protected theSphere: Mesh | null = null;
-  protected line: Line;
   private boundingBox: BoundingClientRect;
   constructor(scene: Two) {
-    // this.camera = camera;
     this.canvas = scene;
     // the bounding rectangle is used for
     // conversion between screen and world coordinates
@@ -41,7 +34,6 @@ export default class CursorHandler implements ToolStrategy {
     this.currentSpherePoint = new Vector3();
     this.currentScreenPoint = new Two.Vector(0, 0);
     this.isOnSphere = false;
-    this.line = new Line();
   }
 
   activate(): void {
@@ -68,8 +60,12 @@ export default class CursorHandler implements ToolStrategy {
     // const target = event.target as HTMLElement;
     this.currentScreenPoint.x = event.offsetX;
     this.currentScreenPoint.y = event.offsetY;
-    const x = 2 * ((event.offsetX - this.boundingBox.left) / this.boundingBox.width) - 1;
-    const y = 1 - 2 * ((event.offsetY - this.boundingBox.top) / this.boundingBox.height);
+    const x =
+      2 * ((event.offsetX - this.boundingBox.left) / this.boundingBox.width) -
+      1;
+    const y =
+      1 -
+      2 * ((event.offsetY - this.boundingBox.top) / this.boundingBox.height);
     return { x, y };
   };
 
@@ -83,7 +79,6 @@ export default class CursorHandler implements ToolStrategy {
    * @memberof CursorHandler
    */
   mouseMoved(event: MouseEvent) {
-
     const { x, y } = this.toNormalizeScreenCoord(event);
 
     this.mouse.x = x;
@@ -95,8 +90,10 @@ export default class CursorHandler implements ToolStrategy {
 
       this.isOnSphere = true;
       this.currentPoint.copy(this.mouse);
-      console.debug(`Mouse location (${event.offsetX},${event.offsetY}) ` +
-        `Sphere position ${this.vec3tostr(this.currentSpherePoint)}`);
+      // console.debug(
+      //   `Mouse location (${event.offsetX},${event.offsetY}) ` +
+      //     `Sphere position ${this.vec3tostr(this.currentSpherePoint)}`
+      // );
     } else {
       this.isOnSphere = false;
       this.currentSpherePoint.set(NaN, NaN, NaN);
