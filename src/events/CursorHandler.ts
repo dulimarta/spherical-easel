@@ -92,7 +92,7 @@ export default class CursorHandler implements ToolStrategy {
     if (len < 1) {
       const zCoordinate = Math.sqrt(1 - len);
       this.currentSpherePoint.set(x, y, zCoordinate);
-      console.debug("Sphere point", this.vec3tostr(this.currentSpherePoint));
+      // console.debug("Sphere point", this.vec3tostr(this.currentSpherePoint));
       this.isOnSphere = true;
       this.currentPoint.copy(this.mouse);
       // console.debug(

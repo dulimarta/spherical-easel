@@ -1,3 +1,5 @@
+/** @format */
+
 import Vue from "vue";
 import Vuex from "vuex";
 import { Mesh, MeshPhongMaterial } from "three";
@@ -123,7 +125,8 @@ export default new Vuex.Store({
       }
     },
     removeCircle(state, circleId: number) {
-      const circlePos = state.circles.findIndex(x => x.ref.id === circleId);
+      // FIXME
+      const circlePos = -1; // state.circles.findIndex(x => x.ref.id === circleId);
       if (circlePos >= 0) {
         /* victim line is found */
         const victimCircle: SECircle = state.circles[circlePos];

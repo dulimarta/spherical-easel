@@ -9,35 +9,54 @@ const desiredXAxis = new Vector3();
 const desiredYAxis = new Vector3();
 const desiredZAxis = new Vector3();
 const transformMatrix = new Matrix4();
-const SUBDDIVISIONS = 120;
+const SUBDIVISIONS = 50;
 
 /**
  * For drawning surface circle
  */
-export default class Circle extends Two.Path {
+export default class Circle extends Two.Group {
   private center_: Vector3; // Can't use "center", name conflict with TwoJS
   private outer: Vector3;
-
+  private frontHalf: Two.Path;
+  private backHalf: Two.Path;
   private tmpVector: Vector3; // for temporary calculation
   private tmpMatrix: Matrix4; // for temporary calculation
   private vtx: Vector2[];
   constructor(center?: Vector3, outer?: Vector3) {
-    const vertices: Two.Vector[] = [];
-
-    for (let k = 0; k < SUBDDIVISIONS; k++) {
-      const angle = (2 * k * Math.PI) / 120;
-      vertices.push(
+    super();
+    const frontVertices: Two.Vector[] = [];
+    const backVertices: Two.Vector[] = [];
+    for (let k = 0; k < SUBDIVISIONS; k++) {
+      const angle = (k * Math.PI) / SUBDIVISIONS; // [0, pi)
+      frontVertices.push(
         new Two.Vector(
           SETTINGS.sphere.radius * Math.cos(angle),
           SETTINGS.sphere.radius * Math.sin(angle)
         )
       );
+      backVertices.push(
+        new Two.Vector(
+          SETTINGS.sphere.radius * Math.cos(angle + Math.PI), // [pi, 2*pi)
+          SETTINGS.sphere.radius * Math.sin(angle + Math.PI)
+        )
+      );
     }
-    super(vertices, true, false);
-    this.vtx = vertices.map(v => new Vector2(v.x, v.y));
+    this.frontHalf = new Two.Path(frontVertices, false, false);
+    this.backHalf = new Two.Path(backVertices, false, false);
+    this.add(this.backHalf);
+    this.add(this.frontHalf);
+    this.vtx = [];
+    frontVertices.forEach(v => {
+      this.vtx.push(new Vector2(v.x, v.y));
+    });
+    backVertices.forEach(v => {
+      this.vtx.push(new Vector2(v.x, v.y));
+    });
     this.noFill();
-    this.linewidth = 4;
-    (this as any).dashes.push(10, 5);
+    this.frontHalf.linewidth = 4;
+    this.backHalf.linewidth = 2;
+    // draw the backhalf using dashed line
+    (this.backHalf as any).dashes.push(10, 5);
     this.center_ = center || new Vector3(0, 0, 0);
     this.outer = outer || new Vector3(1, 0, 0);
     this.tmpVector = new Vector3();
@@ -68,12 +87,68 @@ export default class Circle extends Two.Path {
     transformMatrix.multiply(this.tmpMatrix);
 
     // Recalculate the 2D coordinate of the TwoJS path
-    this.vertices.forEach((v, pos) => {
-      this.tmpVector.set(this.vtx[pos].x, this.vtx[pos].y, 0);
+    // As we drag the mouse, the number of vertices in the front half
+    // and back half are dynamically changing and to avoid
+    // allocating and de-allocating arrays, we dynamically transfers
+    // elements between the two
+
+    let posIndex = 0;
+    let negIndex = 0;
+    let frontLen = this.frontHalf.vertices.length;
+    let backLen = this.backHalf.vertices.length;
+    let firstNeg = -1;
+    let firstPos = -1;
+    this.vtx.forEach((v, pos) => {
+      this.tmpVector.set(v.x, v.y, 0);
       this.tmpVector.applyMatrix4(transformMatrix);
-      v.x = this.tmpVector.x;
-      v.y = -this.tmpVector.y;
+
+      // When the Z-coordinate is negative, the vertex belongs the
+      // the back semi circle
+      if (this.tmpVector.z > 0) {
+        if (firstPos === -1) firstPos = pos;
+        if (posIndex >= frontLen) {
+          // Steal one element from the backHalf
+          const extra = this.backHalf.vertices.pop();
+          this.frontHalf.vertices.push(extra!);
+          backLen--;
+          frontLen++;
+        }
+        this.frontHalf.vertices[posIndex].x = this.tmpVector.x;
+        this.frontHalf.vertices[posIndex].y = -this.tmpVector.y;
+        posIndex++;
+      } else {
+        if (firstNeg === -1) firstNeg = pos;
+        if (negIndex >= backLen) {
+          // Steal one element from the frontHalf
+          const extra = this.frontHalf.vertices.pop();
+          this.backHalf.vertices.push(extra!);
+          frontLen--;
+          backLen++;
+        }
+        negIndex++;
+      }
     });
+    // console.debug(
+    //   `First negative at ${firstNeg} length ${backLen}, first positive at ${firstPos} length ${frontLen}`
+    // );
+    if (backLen == 0) this.frontHalf.closed = true;
+    else {
+      this.frontHalf.closed = false;
+      if (firstPos !== 0) {
+        // the negative vertices (Z-val < 0) are split into two
+        // non-consecutive groups (separated by positive vertices)
+        // The first negative  group is at indices [0, firstPos)
+        // The second negative group starts at index firstPos + frontLen
+        // Rearrange the negative vertices to remove this gap
+        for (let k = 0; k < backLen; k++) {
+          const index = (firstPos + frontLen + k) % this.vtx.length;
+          this.tmpVector.set(this.vtx[index].x, this.vtx[index].y, 0);
+          this.tmpVector.applyMatrix4(transformMatrix);
+          this.backHalf.vertices[k].x = this.tmpVector.x;
+          this.backHalf.vertices[k].y = -this.tmpVector.y;
+        }
+      }
+    }
   }
 
   set centerPoint(position: Vector3) {
