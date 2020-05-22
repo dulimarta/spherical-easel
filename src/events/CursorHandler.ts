@@ -1,3 +1,5 @@
+/** @format */
+
 import { Mesh, Raycaster, Vector3 } from "three";
 import AppStore from "@/store";
 // import Point from "@/3d-objs/Point";
@@ -60,6 +62,9 @@ export default class CursorHandler implements ToolStrategy {
     // const target = event.target as HTMLElement;
     this.currentScreenPoint.x = event.offsetX;
     this.currentScreenPoint.y = event.offsetY;
+    // console.debug(
+    //   `Screen point (${this.currentScreenPoint.x}. ${this.currentScreenPoint.y})`
+    // );
     const x =
       2 * ((event.offsetX - this.boundingBox.left) / this.boundingBox.width) -
       1;
@@ -87,7 +92,7 @@ export default class CursorHandler implements ToolStrategy {
     if (len < 1) {
       const zCoordinate = Math.sqrt(1 - len);
       this.currentSpherePoint.set(x, y, zCoordinate);
-
+      console.debug("Sphere point", this.vec3tostr(this.currentSpherePoint));
       this.isOnSphere = true;
       this.currentPoint.copy(this.mouse);
       // console.debug(

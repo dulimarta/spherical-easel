@@ -1,3 +1,5 @@
+/** @format */
+
 import { Vector3 } from "three";
 import CursorHandler from "./CursorHandler";
 import Point from "@/3d-objs/Point";
@@ -6,7 +8,7 @@ import Circle from "@/3d-objs/Circle";
 import { CommandGroup } from "@/commands/CommandGroup";
 import { AddPointCommand } from "@/commands/AddPointCommand";
 import { AddCircleCommand } from "@/commands/AddCircleCommand";
-import Two from 'two.js';
+import Two from "two.js";
 
 export default class CircleHandler extends CursorHandler {
   private startV3Point: Vector3;
@@ -35,17 +37,17 @@ export default class CircleHandler extends CursorHandler {
   mouseMoved(event: MouseEvent) {
     super.mouseMoved(event);
     if (this.isOnSphere) {
-      if (this.isMouseDown && this.theSphere) {
+      if (this.isMouseDown) {
         if (!this.isCircleAdded) {
           this.isCircleAdded = true;
-          // this.theSphere.add(this.circle);
+          this.canvas.add(this.circle);
           this.canvas.add(this.startDot);
         }
-        // this.circle.circlePoint = this.currentPoint;
+        this.circle.circlePoint = this.currentSpherePoint;
       }
     } else if (this.isCircleAdded) {
-      // this.theSphere?.remove(this.circle);
-      this.canvas.remove(this.startDot);
+      this.circle.remove(); // remove from its parent
+      this.startDot.remove();
       this.isCircleAdded = false;
     }
   }
@@ -63,17 +65,17 @@ export default class CircleHandler extends CursorHandler {
         // this.startV3Point.copy(this.currentPoint);
         this.startPoint = null;
       }
-      // this.startDot.position.copy(this.currentPoint);
-      // this.circle.centerPoint = this.currentPoint;
+      this.startDot.positionOnSphere = this.currentSpherePoint;
+      this.circle.centerPoint = this.currentSpherePoint;
     }
   }
 
   // eslint-disable-next-line
   mouseReleased(event: MouseEvent) {
     this.isMouseDown = false;
-    if (this.isOnSphere && this.theSphere) {
+    if (this.isOnSphere) {
       // Record the second point of the geodesic circle
-      // this.theSphere.remove(this.circle);
+      this.circle.remove();
       this.canvas.remove(this.startDot);
       this.isCircleAdded = false;
       // this.endV3Point.copy(this.currentPoint);
@@ -83,9 +85,7 @@ export default class CircleHandler extends CursorHandler {
         // Starting point landed on an open space
         // we have to create a new point
         const vtx = new Point();
-        vtx.positionOnSphere
-
-          .copy(this.startV3Point);
+        vtx.positionOnSphere.copy(this.startV3Point);
         this.startPoint = vtx;
         circleGroup.addCommand(new AddPointCommand(vtx));
       }

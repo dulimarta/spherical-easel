@@ -33,15 +33,8 @@
 
     <!--  Use the "clipped" attribute to keep the navigation drawer 
     below the app toolbar, width should be specified as number only (without unit) -->
-    <v-navigation-drawer
-      id="leftDrawer"
-      app
-      clipped
-      color="accent"
-      permanent
-      :mini-variant="leftDrawerMinified"
-      width="300"
-    >
+    <v-navigation-drawer id="leftDrawer" app clipped color="accent"
+      permanent :mini-variant="leftDrawerMinified" width="300">
       <v-container id="leftnav" fluid>
         <div>
           <v-btn icon @click="leftDrawerMinified = !leftDrawerMinified">
@@ -51,11 +44,8 @@
         </div>
         <div v-if="!leftDrawerMinified">
           <v-tabs v-model="activeLeftDrawerTab" grow centered>
-            <v-tooltip
-              bottom
-              :open-delay="toolTipOpenDelay"
-              :close-delay="toolTipCloseDelay"
-            >
+            <v-tooltip bottom :open-delay="toolTipOpenDelay"
+              :close-delay="toolTipCloseDelay">
               <template v-slot:activator="{ on }">
                 <v-tab class="mt-3" href="#toolListTab" v-on="on">
                   <v-icon left>mdi-calculator</v-icon>
@@ -64,11 +54,8 @@
               <span>{{ $t("main.ToolsTabToolTip") }}</span>
             </v-tooltip>
 
-            <v-tooltip
-              bottom
-              :open-delay="toolTipOpenDelay"
-              :close-delay="toolTipCloseDelay"
-            >
+            <v-tooltip bottom :open-delay="toolTipOpenDelay"
+              :close-delay="toolTipCloseDelay">
               <template v-slot:activator="{ on }">
                 <v-tab class="mt-3" href="#objectListTab" v-on="on">
                   <v-icon left>mdi-format-list-bulleted</v-icon>
@@ -86,27 +73,18 @@
           </v-tabs>
         </div>
       </v-container>
-      <div
-        id="leftnavicons"
-        v-if="leftDrawerMinified"
-        @click="unMinifyLeftDrawer"
-      >
-        <v-btn
-          icon
-          @click="
+      <div id="leftnavicons" v-if="leftDrawerMinified"
+        @click="unMinifyLeftDrawer">
+        <v-btn icon @click="
             leftDrawerMinified = !leftDrawerMinified;
             activeLeftDrawerTab = 'toolListTab';
-          "
-        >
+          ">
           <v-icon class="ml-3 my-2">mdi-calculator</v-icon>
         </v-btn>
-        <v-btn
-          icon
-          @click="
+        <v-btn icon @click="
             leftDrawerMinified = !leftDrawerMinified;
             activeLeftDrawerTab = 'objectListTab';
-          "
-        >
+          ">
           <v-icon class="ml-3 my-2">mdi-format-list-bulleted</v-icon>
         </v-btn>
       </div>
@@ -125,7 +103,7 @@ import { ToolStrategy } from "@/events/ToolStrategy";
 import NormalPointHandler from "@/events/NormalPointHandler";
 import LineHandler from "@/events/LineHandler";
 import SegmentHandler from "@/events/SegmentHandler";
-// import CircleHandler from "@/events/CircleHandler";
+import CircleHandler from "@/events/CircleHandler";
 // import MoveHandler from "@/events/MoveHandler";
 import SETTINGS from "@/global-settings";
 import { State } from "vuex-class";
@@ -157,7 +135,7 @@ export default class Easel extends Vue {
   private lineTool: LineHandler;
   private segmentTool: SegmentHandler;
   // private moveTool: MoveHandler;
-  // private circleTool: CircleHandler;
+  private circleTool: CircleHandler;
   // private controls: TransformControls;
   // private sphere: THREE.Mesh;
   private showSphereControl = false;
@@ -183,10 +161,7 @@ export default class Easel extends Vue {
     this.pointTool = new NormalPointHandler(this.scene);
     this.lineTool = new LineHandler(this.scene);
     this.segmentTool = new SegmentHandler(this.scene);
-    // this.circleTool = new CircleHandler({
-    //   camera: this.camera,
-    //   scene: this.scene
-    // });
+    this.circleTool = new CircleHandler(this.scene);
     // this.moveTool = new MoveHandler({
     //   camera: this.camera,
     //   scene: this.scene
@@ -331,7 +306,7 @@ export default class Easel extends Vue {
         this.currentTool = this.segmentTool;
         break;
       case "circle":
-        // this.currentTool = this.circleTool;
+        this.currentTool = this.circleTool;
         break;
       default:
       //     this.currentHandler = null;
@@ -354,12 +329,18 @@ export default class Easel extends Vue {
 }
 </script>
 <style lang="scss" scoped>
+/** @format */
+
 #content {
   display: flex;
   flex-direction: row;
   justify-content: center;
-  background-color: beige;
+  // background-color: beige;
+  border: 2px solid red;
   margin: 4px;
+  svg {
+    background: greenyellow;
+  }
 }
 
 #leftnav {

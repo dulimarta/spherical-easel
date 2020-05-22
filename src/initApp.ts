@@ -1,7 +1,9 @@
+/** @format */
+
 // import Axes from "@/3d-objs/Axes";
 import Point from "@/3d-objs/Point";
 import { AddPointCommand } from "@/commands/AddPointCommand";
-import Two from "two.js"
+import Two from "two.js";
 import SETTINGS from "@/global-settings";
 export function setupScene() {
   const two = new Two({
