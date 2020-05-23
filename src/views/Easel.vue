@@ -81,7 +81,7 @@
               <ToolButtons></ToolButtons>
             </v-tab-item>
             <v-tab-item value="objectListTab">
-              <!-- <ObjectTree :scene="sphere"></ObjectTree> -->
+              <ObjectTree :scene="canvas"></ObjectTree>
             </v-tab-item>
           </v-tabs>
         </div>
@@ -144,6 +144,7 @@ export default class Easel extends Vue {
   // readonly canvas!: HTMLCanvasElement;
 
   private scene: Two;
+  private canvas: Two.Group;
 
   private leftDrawerMinified = false;
   private activeLeftDrawerTab = "toolListTab";
@@ -179,6 +180,7 @@ export default class Easel extends Vue {
     // const scene = setupScene();
     const { two, canvas } = setupScene();
     this.scene = two;
+    this.canvas = canvas;
     // this.sphere = sphere;
     this.currentTool = null;
     this.pointTool = new NormalPointHandler(canvas);
