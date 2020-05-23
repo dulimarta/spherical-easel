@@ -86,11 +86,11 @@ export default class CursorHandler implements ToolStrategy {
 
     const sx = x * SETTINGS.sphere.radius + this.boundingBox.width / 2;
     const sy = y * SETTINGS.sphere.radius + this.boundingBox.height / 2;
-    console.debug(
-      `Offset (${event.offsetX},${event.offsetY}) => (${x.toFixed(
-        2
-      )},${y.toFixed(2)}) => (${sx.toFixed(1)},${sy.toFixed(1)})`
-    );
+    // console.debug(
+    //   `Offset (${event.offsetX},${event.offsetY}) => (${x.toFixed(
+    //     2
+    //   )},${y.toFixed(2)}) => (${sx.toFixed(1)},${sy.toFixed(1)})`
+    // );
     this.mouse.x = x;
     this.mouse.y = y;
     const len = this.mouse.length();

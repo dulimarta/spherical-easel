@@ -1,6 +1,6 @@
 /** @format */
 
-import { Vector3, Vector2, Matrix4 } from "three";
+import { Vector3, Matrix4 } from "three";
 import Two from "two.js";
 import SETTINGS from "@/global-settings";
 import Point from "./Point";
@@ -76,6 +76,88 @@ export default class Line extends Two.Group {
     this.noFill();
   }
 
+  deformIn2D() {
+    // The circle plane passes through three points the origin (0,0,0)
+    // and the two points (start (S) and end (E)). The normal of this plane
+    // is the cross product of SxE
+    console.debug(
+      "Start",
+      this.start.x.toFixed(2),
+      this.start.y.toFixed(2),
+      this.start.z.toFixed(2)
+    );
+    console.debug(
+      "End",
+      this.end.x.toFixed(2),
+      this.end.y.toFixed(2),
+      this.end.z.toFixed(2)
+    );
+
+    this.normalDirection.crossVectors(this.start, this.end).normalize();
+
+    // The ellipse major axis on the XY plane is perpendicular
+    // to the circle normal [Nx,Ny,Nz]. We can fix the direction of
+    // the major axis to [-Ny,Nx, 0] (pointing "left") and use these numbers to compute the angle
+    this.majorAxisDirection
+      .set(-this.normalDirection.y, this.normalDirection.x, 0)
+      .normalize();
+
+    // this.leftMarker.positionOnSphere = this.majorAxisDirection;
+    const angleToMajorAxis = Math.atan2(
+      this.majorAxisDirection.y,
+      this.majorAxisDirection.x
+    );
+    console.debug("Angle of major axis", angleToMajorAxis);
+    this.rotation = angleToMajorAxis;
+
+    // Calculate the length of its minor axes from the non-rotated ellipse
+    const cosAngle = Math.cos(angleToMajorAxis); // cos(-x) = cos(x)
+    const sinAngle = Math.sin(-angleToMajorAxis);
+    // (Px,Py) is the projected start point of the non-rotated ellipse
+    // apply the reverse rotation to the start point
+    const px = cosAngle * this.start.x - sinAngle * this.start.y;
+    const py = sinAngle * this.start.x + cosAngle * this.start.y;
+
+    // Use ellipse equation to compute minorAxis given than majorAxis is 1
+    const minorAxis = Math.sqrt((py * py) / (1 - px * px));
+    let numSubdivs = this.frontHalf.vertices.length;
+    const radius = SETTINGS.sphere.radius;
+    // When the Z-value is negative, the front semicircle
+    // is projected above the back semicircle
+    const flipSign = Math.sign(this.normalDirection.z);
+    if (this.segment) {
+      // FIXME: the position or arc end points are not accurate
+      // Readjust arc length
+
+      const startAngle = this.majorAxisDirection.angleTo(this.start);
+      const totalArcLength = this.start.angleTo(this.end);
+      // TODO: how to handle length > 180 degrees
+      this.frontHalf.vertices.forEach((v, pos) => {
+        const angle = startAngle + (pos * totalArcLength) / numSubdivs;
+        // Don't need flipSign here because cos(-alpha) = cos(alpha)
+        v.x = radius * Math.cos(angle);
+
+        // When flipSign (Z-coord of the circle normal) is negative
+        // the semicircle must be reflected onto the Y-axis
+        v.y = minorAxis * radius * Math.sin(flipSign * angle);
+      });
+    } else {
+      // reposition all vertices of the front semicircle
+      this.frontHalf.vertices.forEach((v, pos) => {
+        const angle = (flipSign * (pos * Math.PI)) / numSubdivs;
+        v.x = radius * Math.cos(angle);
+        v.y = minorAxis * radius * Math.sin(angle);
+      });
+      // reposition all vertices of the back semicircle
+      numSubdivs = this.backHalf.vertices.length;
+      this.backHalf.vertices.forEach((v, pos) => {
+        const angle = (flipSign * (pos * Math.PI)) / numSubdivs;
+        v.x = radius * Math.cos(angle);
+        v.y = -minorAxis * radius * Math.sin(angle);
+      });
+    }
+  }
+
   private deformIntoEllipse() {
     desiredZAxis.crossVectors(this.start, this.end).normalize();
     desiredXAxis.copy(this.start).normalize();
@@ -135,12 +217,14 @@ export default class Line extends Two.Group {
 
   set startPoint(position: Vector3) {
     this.start.copy(position);
-    this.deformIntoEllipse();
+    // this.deformIntoEllipse();
+    this.deformIn2D();
   }
 
   set endPoint(position: Vector3) {
     this.end.copy(position);
-    this.deformIntoEllipse();
+    // this.deformIntoEllipse();
+    this.deformIn2D();
   }
 
   // It looks like we have to define our own clone() function
