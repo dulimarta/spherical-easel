@@ -1,13 +1,14 @@
+/** @format */
+
 import CursorHandler from "./CursorHandler";
-// import { Camera, Scene } from "three";
 import SETTINGS from "@/global-settings";
 import Point from "@/3d-objs/Point";
-import Two from 'two.js';
+import Two from "two.js";
 
 export default class MoveHandler extends CursorHandler {
   private isDragging = false;
   private moveTarget: Point | null = null;
-  constructor(scene: Two) {
+  constructor(scene: Two.Group) {
     super(scene);
   }
 

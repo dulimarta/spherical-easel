@@ -1,3 +1,5 @@
+/** @format */
+
 import Arrow from "@/3d-objs/Arrow";
 import CursorHandler from "./CursorHandler";
 import Point from "@/3d-objs/Point";
@@ -7,7 +9,7 @@ export default class NormalPointHandler extends CursorHandler {
   private normalArrow: Arrow;
   private isNormalAdded: boolean;
 
-  constructor(scene: Two) {
+  constructor(scene: Two.Group) {
     super(scene);
     this.normalArrow = new Arrow(
       0.5 /* relative length with respect to the unit circle */,

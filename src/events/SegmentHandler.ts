@@ -1,3 +1,5 @@
+/** @format */
+
 import { Vector3, Camera, Scene } from "three";
 import LineHandler from "./LineHandler";
 // import Arrow from "@/3d-objs/Arrow";
@@ -8,7 +10,7 @@ import Two from "two.js";
 export default class SegmentHandler extends LineHandler {
   // private marker = new Point(5, 0xff0000);
   // private majorAxisDir = new Vector3();
-  constructor(scene: Two) {
+  constructor(scene: Two.Group) {
     super(scene, true /* segment of ine */);
     // this.marker.positionOnSphere = new Vector3(1.0, 0, 0);
     // this.canvas.add(this.marker);

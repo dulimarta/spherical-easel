@@ -1,3 +1,5 @@
+/** @format */
+
 import { Vector3 } from "three";
 import CursorHandler from "./CursorHandler";
 import Arrow from "@/3d-objs/Arrow"; // for debugging
@@ -20,7 +22,7 @@ export default class LineHandler extends CursorHandler {
   private endPoint: Point | null = null;
   protected line: Line;
 
-  constructor(scene: Two, isSegment?: boolean) {
+  constructor(scene: Two.Group, isSegment?: boolean) {
     super(scene);
     this.startV3Point = new Vector3();
     this.tmpVector = new Vector3();

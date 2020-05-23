@@ -1,9 +1,11 @@
 export default {
   viewport: {
-    width: 600, height: 600
+    width: 700,
+    height: 700
   },
-  sphere: { /* We always assume a UNIT sphere */
-    radius: 300, /* in pixels */
+  sphere: {
+    /* We always assume a UNIT sphere */
+    radius: 250 /* in pixels */,
     color: 0xffff00,
     opacity: 0.5
   },
@@ -43,6 +45,4 @@ export default {
     { locale: "en", name: "English" },
     { locale: "id", name: "Bahasa Indonesia" }
   ]
-
-
 };

@@ -49,10 +49,10 @@ export default class Arrow extends Two.Group {
     this.length = Math.sqrt(v.x * v.x + v.y * v.y);
     // Y-axis on screen is positive going down, but
     // Y-axis ih the world coordinate is positive going up
-    this.rotation = Math.atan2(-v.y, v.x);
+    this.rotation = Math.atan2(v.y, v.x);
     this.translation.set(
       v.x * SETTINGS.sphere.radius,
-      -v.y * SETTINGS.sphere.radius
+      v.y * SETTINGS.sphere.radius
     );
   }
 }

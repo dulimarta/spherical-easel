@@ -3,36 +3,35 @@
 import { Mesh, Raycaster, Vector3 } from "three";
 import AppStore from "@/store";
 // import Point from "@/3d-objs/Point";
-// import SETTINGS from "@/global-settings";
+import SETTINGS from "@/global-settings";
 import { ToolStrategy } from "./ToolStrategy";
 import Two, { BoundingClientRect, Vector } from "two.js";
 const RAYCASTER = new Raycaster();
 
+/* FIXME: The 3D position and the projected 2D positions are off by a few pixels???*/
 export default class CursorHandler implements ToolStrategy {
   protected readonly X_AXIS = new Vector3(1, 0, 0);
   protected readonly Y_AXIS = new Vector3(0, 1, 0);
   protected readonly Z_AXIS = new Vector3(0, 0, 1);
 
   // protected readonly camera: Camera;
-  protected readonly canvas: Two;
+  protected readonly canvas: Two.Group;
   protected rayCaster: Raycaster;
   protected mouse: Two.Vector;
   protected store = AppStore; // Vuex global state
-  protected currentPoint: Vector; // TODO: remove this variable?
   protected currentSpherePoint: Vector3;
-  protected currentScreenPoint: Vector;
+  private currentScreenPoint: Vector;
   protected hitObject: Mesh | null = null;
   protected isOnSphere: boolean;
-  protected theSphere: Mesh | null = null;
   private boundingBox: BoundingClientRect;
-  constructor(scene: Two) {
+  constructor(scene: Two.Group) {
     this.canvas = scene;
     // the bounding rectangle is used for
     // conversion between screen and world coordinates
-    this.boundingBox = scene.scene.getBoundingClientRect();
+    this.boundingBox = scene.getBoundingClientRect();
+    console.debug("Bounding box", this.boundingBox);
     this.rayCaster = RAYCASTER;
     this.mouse = new Two.Vector(0, 0);
-    this.currentPoint = new Two.Vector(0, 0);
     this.currentSpherePoint = new Vector3();
     this.currentScreenPoint = new Two.Vector(0, 0);
     this.isOnSphere = false;
@@ -50,7 +49,7 @@ export default class CursorHandler implements ToolStrategy {
   //eslint-disable-next-line
   mouseReleased(event: MouseEvent): void {
     // throw new Error("Method not implemented.");
-    // Intentionall left blank
+    // Intentionally left blank
   }
 
   /**
@@ -59,18 +58,17 @@ export default class CursorHandler implements ToolStrategy {
    * @memberof CursorHandler
    */
   toNormalizeScreenCoord = (event: MouseEvent) => {
-    // const target = event.target as HTMLElement;
     this.currentScreenPoint.x = event.offsetX;
     this.currentScreenPoint.y = event.offsetY;
     // console.debug(
     //   `Screen point (${this.currentScreenPoint.x}. ${this.currentScreenPoint.y})`
     // );
     const x =
-      2 * ((event.offsetX - this.boundingBox.left) / this.boundingBox.width) -
+      (2 * (event.offsetX - this.boundingBox.left)) / this.boundingBox.width -
       1;
     const y =
       1 -
-      2 * ((event.offsetY - this.boundingBox.top) / this.boundingBox.height);
+      (2 * (event.offsetY - this.boundingBox.top)) / this.boundingBox.height;
     return { x, y };
   };
 
@@ -86,15 +84,22 @@ export default class CursorHandler implements ToolStrategy {
   mouseMoved(event: MouseEvent) {
     const { x, y } = this.toNormalizeScreenCoord(event);
 
+    const sx = x * SETTINGS.sphere.radius + this.boundingBox.width / 2;
+    const sy = y * SETTINGS.sphere.radius + this.boundingBox.height / 2;
+    console.debug(
+      `Offset (${event.offsetX},${event.offsetY}) => (${x.toFixed(
+        2
+      )},${y.toFixed(2)}) => (${sx.toFixed(1)},${sy.toFixed(1)})`
+    );
     this.mouse.x = x;
     this.mouse.y = y;
     const len = this.mouse.length();
     if (len < 1) {
+      // The cursor is inside the unit circle
       const zCoordinate = Math.sqrt(1 - len);
       this.currentSpherePoint.set(x, y, zCoordinate);
-      // console.debug("Sphere point", this.vec3tostr(this.currentSpherePoint));
       this.isOnSphere = true;
-      this.currentPoint.copy(this.mouse);
+      // this.currentPoint.copy(this.mouse);
       // console.debug(
       //   `Mouse location (${event.offsetX},${event.offsetY}) ` +
       //     `Sphere position ${this.vec3tostr(this.currentSpherePoint)}`

@@ -19,7 +19,7 @@ export default class CircleHandler extends CursorHandler {
   private circle: Circle;
   private startPoint: Point | null = null;
   private endPoint: Point | null = null;
-  constructor(scene: Two) {
+  constructor(scene: Two.Group) {
     super(scene);
     this.startV3Point = new Vector3();
     this.endV3Point = new Vector3();

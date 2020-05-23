@@ -114,7 +114,7 @@ export default class Circle extends Two.Group {
           frontLen++;
         }
         this.frontHalf.vertices[posIndex].x = this.tmpVector.x;
-        this.frontHalf.vertices[posIndex].y = -this.tmpVector.y;
+        this.frontHalf.vertices[posIndex].y = this.tmpVector.y;
         posIndex++;
       } else {
         if (firstNeg === -1) firstNeg = pos;
@@ -145,7 +145,7 @@ export default class Circle extends Two.Group {
           this.tmpVector.set(this.vtx[index].x, this.vtx[index].y, 0);
           this.tmpVector.applyMatrix4(transformMatrix);
           this.backHalf.vertices[k].x = this.tmpVector.x;
-          this.backHalf.vertices[k].y = -this.tmpVector.y;
+          this.backHalf.vertices[k].y = this.tmpVector.y;
         }
       }
     }

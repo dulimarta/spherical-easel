@@ -11,12 +11,31 @@ export function setupScene() {
     height: SETTINGS.viewport.height,
     autostart: true
   });
+  const sphereCanvas = two.makeGroup();
+  sphereCanvas.translation.set(two.width / 2, two.height / 2);
 
+  // Flip Y-coordinate positive Y-axis is up (north)
+  (sphereCanvas as any).scale = new Two.Vector(1, -1);
+  const mainCircle = new Two.Circle(0, 0, SETTINGS.sphere.radius);
+  mainCircle.noFill();
+  mainCircle.linewidth = SETTINGS.line.thickness;
+  sphereCanvas.add(mainCircle);
+  const welcome = new Two.Text(
+    "Just a text",
+    -SETTINGS.sphere.radius,
+    -SETTINGS.sphere.radius,
+    {
+      stroke: "green",
+      size: 24
+    }
+  );
+
+  // DO NOT flip the Y-coordinate on the text layer
+  const foreground = two.makeGroup();
+  foreground.translation.set(two.width / 2, two.height / 2);
+  foreground.add(welcome);
   // Translate the origin from the upper-left corner to the center
   // of the viewport
-  two.scene.translation.set(two.width / 2, two.height / 2);
-  const mainCircle = two.makeCircle(0, 0, SETTINGS.sphere.radius);
-  mainCircle.linewidth = SETTINGS.line.thickness;
   if (process.env.NODE_ENV === "development") {
     // sphere.add(new Axes(1.5, 0.05));
 
@@ -31,5 +50,5 @@ export function setupScene() {
     }
   }
 
-  return two;
+  return { two, canvas: sphereCanvas };
 }
