@@ -53,8 +53,8 @@ export default class MoveHandler extends CursorHandler {
   }
 
   activate() {
-    this.rayCaster.layers.disableAll();
-    this.rayCaster.layers.enable(SETTINGS.layers.sphere);
-    this.rayCaster.layers.enable(SETTINGS.layers.point);
+    // this.rayCaster.layers.disableAll();
+    // this.rayCaster.layers.enable(SETTINGS.layers.sphere);
+    // this.rayCaster.layers.enable(SETTINGS.layers.point);
   }
 }

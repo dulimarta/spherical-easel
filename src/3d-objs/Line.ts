@@ -1,10 +1,7 @@
-/** @format */
-
 import { Vector3, Matrix4 } from "three";
 import Two from "two.js";
 import SETTINGS from "@/global-settings";
 import Point from "./Point";
-
 const desiredXAxis = new Vector3();
 const desiredYAxis = new Vector3();
 const desiredZAxis = new Vector3();
@@ -94,7 +91,7 @@ export default class Line extends Two.Group {
     );
 
     this.normalDirection.crossVectors(this.start, this.end).normalize();
-
+    console.debug(this.normalDirection.toFixed(2));
     // The ellipse major axis on the XY plane is perpendicular
     // to the circle normal [Nx,Ny,Nz]. We can fix the direction of
     // the major axis to [-Ny,Nx, 0] (pointing "left") and use these numbers to compute the angle
@@ -102,6 +99,7 @@ export default class Line extends Two.Group {
       .set(-this.normalDirection.y, this.normalDirection.x, 0)
       .normalize();
 
+    console.debug(this.majorAxisDirection.toFixed(3));
     // this.leftMarker.positionOnSphere = this.majorAxisDirection;
     const angleToMajorAxis = Math.atan2(
       this.majorAxisDirection.y,

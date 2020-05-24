@@ -18,9 +18,10 @@ export default {
     glowColor: 0xff0000
   },
   layers: {
-    /* Seperate Mesh objects into different layers so it will be easier to filter Raycaster intersection */
-    sphere: 2,
-    point: 3
+    /* Seperate objects into different layers: background, foreground, etc */
+    totalLayers: 2,
+    SPHERE: 0,
+    LABEL: 1
   },
   /* Controls the lenght of time the tool tip are displayed */
   toolTip: {

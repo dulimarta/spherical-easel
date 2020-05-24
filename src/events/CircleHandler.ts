@@ -29,9 +29,9 @@ export default class CircleHandler extends CursorHandler {
     this.circle = new Circle();
   }
   activate = () => {
-    this.rayCaster.layers.disableAll();
-    this.rayCaster.layers.enable(SETTINGS.layers.sphere);
-    this.rayCaster.layers.enable(SETTINGS.layers.point);
+    // this.rayCaster.layers.disableAll();
+    // this.rayCaster.layers.enable(SETTINGS.layers.sphere);
+    // this.rayCaster.layers.enable(SETTINGS.layers.point);
   };
 
   mouseMoved(event: MouseEvent) {
