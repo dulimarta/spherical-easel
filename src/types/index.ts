@@ -4,6 +4,15 @@ import { Mesh } from "three";
 import Point from "@/3d-objs/Point";
 import Line from "@/3d-objs/Line";
 import Circle from "@/3d-objs/Circle";
+
+export interface HiLite {
+  // fillCol: string;
+  // oldFill: Two.Color;
+  highlight(): void;
+  noHighlight(): void;
+}
+
+// import Two from "two.js";
 export interface SEPoint {
   ref: Point;
   startOf: SELine[];
@@ -24,7 +33,7 @@ export interface SECircle {
   point: SEPoint;
 }
 export interface AppState {
-  sphere: Mesh | null;
+  // sphere: Mesh | null;
   editMode: string;
   points: SEPoint[];
   lines: SELine[];
@@ -41,4 +50,5 @@ export interface ToolButtonType {
   toolUseMessage: string;
   toolTipMessage: string;
 }
+
 // }

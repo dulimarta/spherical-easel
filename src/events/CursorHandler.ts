@@ -1,12 +1,12 @@
 /** @format */
 
-import { Mesh, Raycaster, Vector3 } from "three";
+import { Vector3 } from "three";
 import AppStore from "@/store";
-// import Point from "@/3d-objs/Point";
+import Point from "@/3d-objs/Point";
+import Line from "@/3d-objs/Line";
 import SETTINGS from "@/global-settings";
 import { ToolStrategy } from "./ToolStrategy";
 import Two, { BoundingClientRect, Vector } from "two.js";
-const RAYCASTER = new Raycaster();
 
 /* FIXME: The 3D position and the projected 2D positions are off by a few pixels???*/
 export default class CursorHandler implements ToolStrategy {
@@ -16,12 +16,12 @@ export default class CursorHandler implements ToolStrategy {
 
   // protected readonly camera: Camera;
   protected readonly canvas: Two.Group;
-  protected rayCaster: Raycaster;
+  // protected rayCaster: Raycaster;
   protected mouse: Two.Vector;
   protected store = AppStore; // Vuex global state
   protected currentSpherePoint: Vector3;
   private currentScreenPoint: Vector;
-  protected hitObject: Mesh | null = null;
+  protected hitObject: Point | Line | null = null;
   protected isOnSphere: boolean;
   private boundingBox: BoundingClientRect;
   constructor(scene: Two.Group) {
@@ -30,7 +30,7 @@ export default class CursorHandler implements ToolStrategy {
     // conversion between screen and world coordinates
     this.boundingBox = scene.getBoundingClientRect();
     console.debug("Bounding box", this.boundingBox);
-    this.rayCaster = RAYCASTER;
+    // this.rayCaster = RAYCASTER;
     this.mouse = new Two.Vector(0, 0);
     this.currentSpherePoint = new Vector3();
     this.currentScreenPoint = new Two.Vector(0, 0);
@@ -52,6 +52,25 @@ export default class CursorHandler implements ToolStrategy {
     // Intentionally left blank
   }
 
+  findNearByObjects(
+    mousePos: Vector,
+    spherePoint: Vector3,
+    root: Two.Group
+  ): Two.Object[] {
+    // Apply canvas transformation to the mouse position
+    mousePos.subSelf(root.translation);
+    if ((root.scale as any) instanceof Two.Vector) {
+      const sv = (root.scale as any) as Two.Vector;
+      mousePos.multiplySelf(sv);
+    } else {
+      mousePos.multiplyScalar(root.scale);
+    }
+    return root.children.filter((obj, pos) => {
+      // console.debug((obj as Two.Path).id);
+      // Consider a "hit" when the object is within 5 pixels of the mouse
+      return obj.translation.distanceTo(mousePos) < 5;
+    });
+  }
   /**
    * Convert mouse event location to X,Y coordinate within a unit square
    * @param event the mouse event
@@ -71,10 +90,6 @@ export default class CursorHandler implements ToolStrategy {
       (2 * (event.offsetY - this.boundingBox.top)) / this.boundingBox.height;
     return { x, y };
   };
-
-  vec3tostr(v: Vector3): string {
-    return `(${v.x.toFixed(2)}, ${v.y.toFixed(2)},${v.z.toFixed(2)})`;
-  }
 
   /**
    * Map mouse 2D viewport position to 3D local coordinate on the sphere
@@ -100,10 +115,24 @@ export default class CursorHandler implements ToolStrategy {
       this.currentSpherePoint.set(x, y, zCoordinate);
       this.isOnSphere = true;
       // this.currentPoint.copy(this.mouse);
-      // console.debug(
-      //   `Mouse location (${event.offsetX},${event.offsetY}) ` +
-      //     `Sphere position ${this.vec3tostr(this.currentSpherePoint)}`
-      // );
+      console.debug(
+        `Mouse location (${event.offsetX},${event.offsetY}) ` +
+          `Sphere position ${this.currentSpherePoint.toFixed(2)}`
+      );
+      if (this.hitObject) {
+        this.hitObject.noHighlight();
+      }
+      this.findNearByObjects(
+        this.currentScreenPoint,
+        this.currentSpherePoint,
+        this.canvas
+      ).forEach(obj => {
+        console.debug("Intersected", (obj as Two.Path).id);
+        if (obj instanceof Point || obj instanceof Line) {
+          this.hitObject = obj;
+          obj.highlight();
+        }
+      });
     } else {
       this.isOnSphere = false;
       this.currentSpherePoint.set(NaN, NaN, NaN);

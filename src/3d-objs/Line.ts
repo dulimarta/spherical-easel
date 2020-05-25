@@ -1,7 +1,8 @@
 import { Vector3, Matrix4 } from "three";
-import Two from "two.js";
+import Two, { Color } from "two.js";
 import SETTINGS from "@/global-settings";
 import Point from "./Point";
+import { HiLite } from "@/types";
 const desiredXAxis = new Vector3();
 const desiredYAxis = new Vector3();
 const desiredZAxis = new Vector3();
@@ -14,11 +15,12 @@ const SUBDIVS = 100;
  *
  * @export
  * @class Line
- * @extends {Mesh}
+ * @extends {Two.Group}
  */
-export default class Line extends Two.Group {
+export default class Line extends Two.Group implements HiLite {
   private start: Vector3;
   private end: Vector3;
+  private name = "";
   public normalDirection: Vector3;
 
   private majorAxisDirection: Vector3 = new Vector3();
@@ -69,7 +71,18 @@ export default class Line extends Two.Group {
       // FIXME: how to handle segments longer than 180 degrees?
       // Line segment does not a back semicircle
       this.add(this.backHalf);
+      this.name = "Line-" + this.id;
+    } else {
+      this.name = "Segment-" + this.id;
     }
+    this.noFill();
+  }
+  highlight(): void {
+    this.fill = "red";
+  }
+
+  noHighlight(): void {
+    // throw new Error("Method not implemented.");
     this.noFill();
   }
 

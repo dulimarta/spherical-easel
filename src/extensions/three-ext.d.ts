@@ -8,8 +8,19 @@ export {};
 // with 3-decimal place per field.
 
 // out is :(3.000, 4.000, 5.000)
+declare module "three/src/math/Vector2" {
+  interface Vector2 {
+    /** Pretty format vector into decimal numbers of the requested precision
+     * @param precision the number of decimal places for each coordinate
+     */
+    toFixed(precision: number): string;
+  }
+}
 declare module "three/src/math/Vector3" {
   interface Vector3 {
+    /** Pretty format vector into decimal numbers of the requested precision
+     * @param precision the number of decimal places for each coordinate
+     */
     toFixed(precision: number): string;
   }
 }

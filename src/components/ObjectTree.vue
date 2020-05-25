@@ -1,32 +1,14 @@
 <template>
   <div class="pa-1" id="objectTreeContainer">
     <h4>{{ $t("objects.points") }}</h4>
-    <v-treeview
-      dense
-      hoverable
-      activatable
-      active-class="warning"
-      :items="iPoints"
-      @update:active="updateActive"
-    ></v-treeview>
+    <v-treeview dense hoverable activatable active-class="warning"
+      :items="iPoints" @update:active="updateActive"></v-treeview>
     <h4>{{ $t("objects.lines") }}</h4>
-    <v-treeview
-      dense
-      hoverable
-      activatable
-      active-class="warning"
-      :items="iLines"
-      @update:active="updateActive"
-    ></v-treeview>
+    <v-treeview dense hoverable activatable active-class="warning"
+      :items="iLines" @update:active="updateActive"></v-treeview>
     <h4>{{ $t("objects.circles") }}</h4>
-    <v-treeview
-      dense
-      hoverable
-      activatable
-      active-class="warning"
-      :items="iCircles"
-      @update:active="updateActive"
-    ></v-treeview>
+    <v-treeview dense hoverable activatable active-class="warning"
+      :items="iCircles" @update:active="updateActive"></v-treeview>
   </div>
 </template>
 
@@ -34,12 +16,11 @@
 import Vue from "vue";
 import Component from "vue-class-component";
 import { State } from "vuex-class";
-import { SEPoint, SELine, SECircle } from "@/types";
+import { SEPoint, SELine, SECircle, HiLite } from "@/types";
 
 import { Prop } from "vue-property-decorator";
 // import { Mesh, MeshPhongMaterial } from "three";
 import Two from "two.js";
-import { debug } from "webpack";
 import Point from "../3d-objs/Point";
 
 @Component
@@ -127,17 +108,15 @@ export default class ObjectTree extends Vue {
   updateActive(args: number[]) {
     if (args.length > 0) {
       // Turn off highlight on the currently selected object
-      if (this.selectedObject instanceof Point) {
-        this.selectedObject.fill = this.oldFillColor as Two.Color;
+      if ((this.selectedObject as any).noHighlight) {
+        (this.selectedObject as any).noHighlight();
       }
 
       // Highlight the current selection in red (0xff0000)
       this.selectedObject = (this.scene.children as any).ids[args[0]];
       // this.selectedObject = this.sphere.getObjectById(args[0]) as Mesh;
-      if (this.selectedObject instanceof Point) {
-        this.oldFillColor = this.selectedObject.fill;
-
-        this.selectedObject.fill = "red";
+      if ((this.selectedObject as any).highlight) {
+        (this.selectedObject as any).highlight()
       }
     }
   }

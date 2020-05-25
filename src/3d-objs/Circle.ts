@@ -17,6 +17,7 @@ const SUBDIVISIONS = 50;
 export default class Circle extends Two.Group {
   private center_: Vector3; // Can't use "center", name conflict with TwoJS
   private outer: Vector3;
+  public name = "";
   private frontHalf: Two.Path;
   private backHalf: Two.Path;
   private tmpVector: Vector3; // for temporary calculation
@@ -61,6 +62,7 @@ export default class Circle extends Two.Group {
     this.outer = outer || new Vector3(1, 0, 0);
     this.tmpVector = new Vector3();
     this.tmpMatrix = new Matrix4();
+    this.name = "Circle-" + this.id;
   }
 
   // TODO: split the circle into front and back semicircles
@@ -128,13 +130,16 @@ export default class Circle extends Two.Group {
         negIndex++;
       }
     });
-    // console.debug(
-    //   `First negative at ${firstNeg} length ${backLen}, first positive at ${firstPos} length ${frontLen}`
-    // );
+    console.debug(
+      `First negative at ${firstNeg} length ${backLen}, first positive at ${firstPos} length ${frontLen}`
+    );
     if (backLen == 0) this.frontHalf.closed = true;
     else {
+      // FIXME: back half is broken when moving the mouse near the upper left
+      // or upper right arc of the boundary circle
       this.frontHalf.closed = false;
-      if (firstPos !== 0) {
+      this.backHalf.closed = false;
+      if (firstPos !== 0 && firstPos < backLen) {
         // the negative vertices (Z-val < 0) are split into two
         // non-consecutive groups (separated by positive vertices)
         // The first negative  group is at indices [0, firstPos)
@@ -146,6 +151,18 @@ export default class Circle extends Two.Group {
           this.tmpVector.applyMatrix4(transformMatrix);
           this.backHalf.vertices[k].x = this.tmpVector.x;
           this.backHalf.vertices[k].y = this.tmpVector.y;
+        }
+      }
+
+      if (firstNeg !== 0 && firstNeg < frontLen) {
+        // the positive vertices (Z-val > 0) are split into two
+        // non-consecutive groups
+        for (let k = 0; k < frontLen; k++) {
+          const index = (firstNeg + backLen + k) % this.vtx.length;
+          this.tmpVector.set(this.vtx[index].x, this.vtx[index].y, 0);
+          this.tmpVector.applyMatrix4(transformMatrix);
+          this.frontHalf.vertices[k].x = this.tmpVector.x;
+          this.frontHalf.vertices[k].y = this.tmpVector.y;
         }
       }
     }

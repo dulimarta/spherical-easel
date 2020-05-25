@@ -33,15 +33,8 @@
 
     <!--  Use the "clipped" attribute to keep the navigation drawer 
     below the app toolbar, width should be specified as number only (without unit) -->
-    <v-navigation-drawer
-      id="leftDrawer"
-      app
-      clipped
-      color="accent"
-      permanent
-      :mini-variant="leftDrawerMinified"
-      width="300"
-    >
+    <v-navigation-drawer id="leftDrawer" app clipped color="accent"
+      permanent :mini-variant="leftDrawerMinified" width="300">
       <v-container id="leftnav" fluid>
         <div>
           <v-btn icon @click="leftDrawerMinified = !leftDrawerMinified">
@@ -51,11 +44,8 @@
         </div>
         <div v-if="!leftDrawerMinified">
           <v-tabs v-model="activeLeftDrawerTab" grow centered>
-            <v-tooltip
-              bottom
-              :open-delay="toolTipOpenDelay"
-              :close-delay="toolTipCloseDelay"
-            >
+            <v-tooltip bottom :open-delay="toolTipOpenDelay"
+              :close-delay="toolTipCloseDelay">
               <template v-slot:activator="{ on }">
                 <v-tab class="mt-3" href="#toolListTab" v-on="on">
                   <v-icon left>mdi-calculator</v-icon>
@@ -64,11 +54,8 @@
               <span>{{ $t("main.ToolsTabToolTip") }}</span>
             </v-tooltip>
 
-            <v-tooltip
-              bottom
-              :open-delay="toolTipOpenDelay"
-              :close-delay="toolTipCloseDelay"
-            >
+            <v-tooltip bottom :open-delay="toolTipOpenDelay"
+              :close-delay="toolTipCloseDelay">
               <template v-slot:activator="{ on }">
                 <v-tab class="mt-3" href="#objectListTab" v-on="on">
                   <v-icon left>mdi-format-list-bulleted</v-icon>
@@ -86,27 +73,18 @@
           </v-tabs>
         </div>
       </v-container>
-      <div
-        id="leftnavicons"
-        v-if="leftDrawerMinified"
-        @click="unMinifyLeftDrawer"
-      >
-        <v-btn
-          icon
-          @click="
+      <div id="leftnavicons" v-if="leftDrawerMinified"
+        @click="unMinifyLeftDrawer">
+        <v-btn icon @click="
             leftDrawerMinified = !leftDrawerMinified;
             activeLeftDrawerTab = 'toolListTab';
-          "
-        >
+          ">
           <v-icon class="ml-3 my-2">mdi-calculator</v-icon>
         </v-btn>
-        <v-btn
-          icon
-          @click="
+        <v-btn icon @click="
             leftDrawerMinified = !leftDrawerMinified;
             activeLeftDrawerTab = 'objectListTab';
-          "
-        >
+          ">
           <v-icon class="ml-3 my-2">mdi-format-list-bulleted</v-icon>
         </v-btn>
       </div>
@@ -115,10 +93,8 @@
 </template>
 
 <script lang="ts">
-import { Vue, Watch, Prop } from "vue-property-decorator";
+import { Vue, Watch } from "vue-property-decorator";
 import Component from "vue-class-component";
-// import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
-import { TransformControls } from "three/examples/jsm/controls/TransformControls";
 // import Axes from "@/3d-objs/Axes";
 // import Point from "@/3d-objs/Point";
 import { ToolStrategy } from "@/events/ToolStrategy";
@@ -192,7 +168,7 @@ export default class Easel extends Vue {
     //   scene: this.scene
     // });
 
-    // this.$store.commit("setSphere", this.sphere);
+    this.$store.commit("init");
 
     // const axesHelper = new THREE.AxesHelper(SETTINGS.sphere.radius * 1.25);
     // axesHelper.layers.disableAll(); // exclude axeshelper from being searched by Raycaster

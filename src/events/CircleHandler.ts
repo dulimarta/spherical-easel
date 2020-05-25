@@ -58,11 +58,11 @@ export default class CircleHandler extends CursorHandler {
     if (this.isOnSphere) {
       const selected = this.hitObject;
       if (selected instanceof Point) {
-        this.startV3Point.copy(selected.position);
+        this.startV3Point.copy(selected.positionOnSphere);
         // this.startPoint = this.hitObject;
       } else {
         this.canvas.add(this.startDot);
-        // this.startV3Point.copy(this.currentPoint);
+        this.startV3Point.copy(this.currentSpherePoint);
         this.startPoint = null;
       }
       this.startDot.positionOnSphere = this.currentSpherePoint;

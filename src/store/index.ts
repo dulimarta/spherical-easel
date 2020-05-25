@@ -16,22 +16,23 @@ const findPoint = (arr: SEPoint[], id: number): SEPoint | null => {
 
 export default new Vuex.Store({
   state: {
-    sphere: null,
+    // sphere: null,
     editMode: "rotate",
     points: [],
     lines: [],
     circles: []
   } as AppState,
   mutations: {
-    // init(state) {
-    //   state.sphere = null;
-    //   state.editMode = "rotate";
-    //   state.vertices = [];
-    //   state.lines = [];
-    // },
-    setSphere(state, sph: Mesh) {
-      state.sphere = sph;
+    init(state) {
+      // state.sphere = null;
+      state.editMode = "";
+      state.points = [];
+      state.lines = [];
+      state.circles = [];
     },
+    // setSphere(state, sph: Mesh) {
+    //   state.sphere = sph;
+    // },
     setEditMode(state, mode: string) {
       state.editMode = mode;
     },
