@@ -4,9 +4,9 @@
 import { Vector3 } from "three";
 import Two, { Color } from "two.js";
 import globalSettings from "@/global-settings";
-import { HiLite } from "@/types";
+import { Glowable } from "@/types";
 
-export default class Point extends Two.Circle implements HiLite {
+export default class Point extends Two.Circle implements Glowable {
   // Can't use position because of conflict with TwoJS property
   private _posOnSphere: Vector3;
   public name: string;
@@ -31,12 +31,12 @@ export default class Point extends Two.Circle implements HiLite {
 
     this.name = "Point-" + this.id;
   }
-  highlight(): void {
+  glow(): void {
     this.oldFill = this.fill;
     this.fill = "red";
   }
 
-  noHighlight(): void {
+  noGlow(): void {
     this.fill = this.oldFill;
   }
 
@@ -46,7 +46,15 @@ export default class Point extends Two.Circle implements HiLite {
       pos.x * globalSettings.sphere.radius,
       pos.y * globalSettings.sphere.radius
     );
+    console.debug(
+      "3D position",
+      pos.toFixed(2),
+      "translation amout ",
+      this.translation.x.toFixed(2),
+      this.translation.y.toFixed(2)
+    );
   }
+
   get positionOnSphere() {
     return this._posOnSphere;
   }

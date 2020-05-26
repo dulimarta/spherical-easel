@@ -12,12 +12,12 @@ import { AddPointCommand } from "@/commands/AddPointCommand";
 import { AddLineCommand } from "@/commands/AddLineCommand";
 import Two from "two.js";
 export default class LineHandler extends CursorHandler {
-  protected startV3Point: Vector3;
+  protected startV3Point: Vector3; // The starting point of the line
   protected tmpVector: Vector3;
   protected circleOrientation: Arrow; // for debugging only
   protected isMouseDown: boolean;
   protected isCircleAdded: boolean;
-  protected startDot: Point;
+  protected startMarker: Point;
   private startPoint: Point | null = null;
   private endPoint: Point | null = null;
   protected line: Line;
@@ -26,7 +26,7 @@ export default class LineHandler extends CursorHandler {
     super(scene);
     this.startV3Point = new Vector3();
     this.tmpVector = new Vector3();
-    this.startDot = new Point();
+    this.startMarker = new Point(5, 0xff8800);
     this.line = new Line(undefined, undefined, isSegment);
 
     this.circleOrientation = new Arrow(0.5, 0x006600); // debug only
@@ -47,9 +47,9 @@ export default class LineHandler extends CursorHandler {
     if (this.isOnSphere) {
       if (this.isMouseDown) {
         if (!this.isCircleAdded) {
+          // Do we need to show the preview circle?
           this.isCircleAdded = true;
           this.canvas.add(this.line);
-          this.canvas.add(this.startDot);
           // this.canvas.add(this.circleOrientation); // for debugging
         }
         // The following line automatically calls Line setter function
@@ -61,9 +61,9 @@ export default class LineHandler extends CursorHandler {
       }
     } else if (this.isCircleAdded) {
       console.debug("LineHandler: OFF sphere");
-      this.canvas.remove(this.line);
-      this.canvas.remove(this.startDot);
-      this.canvas.remove(this.circleOrientation); // for debugging
+      this.line.remove();
+      this.startMarker.remove();
+      this.circleOrientation.remove(); // for debugging
       this.isCircleAdded = false;
     }
   }
@@ -75,22 +75,22 @@ export default class LineHandler extends CursorHandler {
     if (this.isOnSphere) {
       const selected = this.hitObject;
 
-      // FIXME: enable picking current points
       // Record the first point of the geodesic circle
       if (selected instanceof Point) {
+        console.debug("Pressed on an existing point");
         /* the point coordinate is local on the sphere */
-        // this.startV3Point.copy(selected.position);
-        // this.startPoint = this.hitObject;
+        this.startV3Point.copy(selected.positionOnSphere);
+        this.startPoint = this.hitObject as Point;
       } else {
+        console.debug("Pressed on open area");
         /* this.currentPoint is already converted to local sphere coordinate frame */
-        this.canvas.add(this.startDot);
-        // this.startV3Point.copy(this.currentPoint);
+        this.canvas.add(this.startMarker);
+        this.startMarker.positionOnSphere = this.currentSpherePoint;
+        this.startV3Point.copy(this.currentSpherePoint);
         this.startPoint = null;
       }
       // The following line automatically calls Line setter function
       this.line.startPoint = this.currentSpherePoint;
-      this.startV3Point.copy(this.currentSpherePoint);
-      this.startDot.positionOnSphere = this.currentSpherePoint;
     }
   }
 
@@ -99,8 +99,8 @@ export default class LineHandler extends CursorHandler {
     this.isMouseDown = false;
     if (this.isOnSphere) {
       // Record the second point of the geodesic circle
-      this.canvas.remove(this.line);
-      this.canvas.remove(this.startDot);
+      this.line.remove();
+      this.startMarker.remove();
       // this.canvas.remove(this.circleOrientation); // for debugging
       this.isCircleAdded = false;
       // this.endV3Point.copy(this.currentPoint);
@@ -110,7 +110,7 @@ export default class LineHandler extends CursorHandler {
         // Starting point landed on an open space
         // we have to create a new point
         const vtx = new Point();
-        // vtx.position.copy(this.startV3Point);
+        vtx.positionOnSphere = this.startV3Point;
         this.startPoint = vtx;
         lineGroup.addCommand(new AddPointCommand(vtx));
       }
@@ -120,7 +120,7 @@ export default class LineHandler extends CursorHandler {
         // endV3Point landed on an open space
         // we have to create a new point
         const vtx = new Point();
-        // vtx.position.copy(this.currentPoint);
+        vtx.positionOnSphere = this.currentSpherePoint;
         this.endPoint = vtx;
         lineGroup.addCommand(new AddPointCommand(vtx));
       }

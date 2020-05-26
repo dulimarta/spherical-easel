@@ -169,6 +169,7 @@ export default class Easel extends Vue {
     // });
 
     this.$store.commit("init");
+    this.$store.commit("setSphere", this.canvas);
 
     // const axesHelper = new THREE.AxesHelper(SETTINGS.sphere.radius * 1.25);
     // axesHelper.layers.disableAll(); // exclude axeshelper from being searched by Raycaster

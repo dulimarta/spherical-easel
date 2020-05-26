@@ -22,7 +22,7 @@ export default class Circle extends Two.Group {
   private backHalf: Two.Path;
   private tmpVector: Vector3; // for temporary calculation
   private tmpMatrix: Matrix4; // for temporary calculation
-  private vtx: Vector2[];
+  private originalVertices: Vector2[];
   constructor(center?: Vector3, outer?: Vector3) {
     super();
     const frontVertices: Two.Vector[] = [];
@@ -46,12 +46,12 @@ export default class Circle extends Two.Group {
     this.backHalf = new Two.Path(backVertices, false, false);
     this.add(this.backHalf);
     this.add(this.frontHalf);
-    this.vtx = [];
+    this.originalVertices = [];
     frontVertices.forEach(v => {
-      this.vtx.push(new Vector2(v.x, v.y));
+      this.originalVertices.push(new Vector2(v.x, v.y));
     });
     backVertices.forEach(v => {
-      this.vtx.push(new Vector2(v.x, v.y));
+      this.originalVertices.push(new Vector2(v.x, v.y));
     });
     this.noFill();
     this.frontHalf.linewidth = 4;
@@ -100,7 +100,7 @@ export default class Circle extends Two.Group {
     let backLen = this.backHalf.vertices.length;
     let firstNeg = -1;
     let firstPos = -1;
-    this.vtx.forEach((v, pos) => {
+    this.originalVertices.forEach((v, pos) => {
       this.tmpVector.set(v.x, v.y, 0);
       this.tmpVector.applyMatrix4(transformMatrix);
 
@@ -146,8 +146,13 @@ export default class Circle extends Two.Group {
         // The second negative group starts at index firstPos + frontLen
         // Rearrange the negative vertices to remove this gap
         for (let k = 0; k < backLen; k++) {
-          const index = (firstPos + frontLen + k) % this.vtx.length;
-          this.tmpVector.set(this.vtx[index].x, this.vtx[index].y, 0);
+          const index =
+            (firstPos + frontLen + k) % this.originalVertices.length;
+          this.tmpVector.set(
+            this.originalVertices[index].x,
+            this.originalVertices[index].y,
+            0
+          );
           this.tmpVector.applyMatrix4(transformMatrix);
           this.backHalf.vertices[k].x = this.tmpVector.x;
           this.backHalf.vertices[k].y = this.tmpVector.y;
@@ -158,8 +163,12 @@ export default class Circle extends Two.Group {
         // the positive vertices (Z-val > 0) are split into two
         // non-consecutive groups
         for (let k = 0; k < frontLen; k++) {
-          const index = (firstNeg + backLen + k) % this.vtx.length;
-          this.tmpVector.set(this.vtx[index].x, this.vtx[index].y, 0);
+          const index = (firstNeg + backLen + k) % this.originalVertices.length;
+          this.tmpVector.set(
+            this.originalVertices[index].x,
+            this.originalVertices[index].y,
+            0
+          );
           this.tmpVector.applyMatrix4(transformMatrix);
           this.frontHalf.vertices[k].x = this.tmpVector.x;
           this.frontHalf.vertices[k].y = this.tmpVector.y;
@@ -178,11 +187,27 @@ export default class Circle extends Two.Group {
     this.readjust();
   }
 
-  // clone(): this {
-  //   const dup = new Circle(this.center, this.outer);
-  //   dup.rotation.copy(this.rotation);
-  //   dup.position.copy(this.position);
-  //   dup.scale.copy(this.scale);
-  //   return dup as this;
-  // }
+  clone(): this {
+    const dup = new Circle(this.center_, this.outer);
+    dup.rotation = this.rotation;
+    dup.translation.copy(this.translation);
+
+    // The clone has equal nunber of vertices for the front and back halves
+    while (dup.frontHalf.vertices.length > this.frontHalf.vertices.length) {
+      // Transfer from fronthalf to backhalf
+      dup.backHalf.vertices.push(dup.frontHalf.vertices.pop()!);
+    }
+    while (dup.backHalf.vertices.length > this.backHalf.vertices.length) {
+      // Transfer from backHalf to fronthalf
+      dup.frontHalf.vertices.push(dup.backHalf.vertices.pop()!);
+    }
+    dup.frontHalf.vertices.forEach((v, pos) => {
+      v.copy(this.frontHalf.vertices[pos]);
+    });
+    dup.backHalf.vertices.forEach((v, pos) => {
+      v.copy(this.backHalf.vertices[pos]);
+    });
+    //   dup.scale.copy(this.scale);
+    return dup as this;
+  }
 }

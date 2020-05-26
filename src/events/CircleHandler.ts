@@ -59,7 +59,7 @@ export default class CircleHandler extends CursorHandler {
       const selected = this.hitObject;
       if (selected instanceof Point) {
         this.startV3Point.copy(selected.positionOnSphere);
-        // this.startPoint = this.hitObject;
+        this.startPoint = this.hitObject as Point;
       } else {
         this.canvas.add(this.startDot);
         this.startV3Point.copy(this.currentSpherePoint);
@@ -85,7 +85,7 @@ export default class CircleHandler extends CursorHandler {
         // Starting point landed on an open space
         // we have to create a new point
         const vtx = new Point();
-        vtx.positionOnSphere.copy(this.startV3Point);
+        vtx.positionOnSphere = this.startV3Point;
         this.startPoint = vtx;
         circleGroup.addCommand(new AddPointCommand(vtx));
       }
@@ -95,7 +95,7 @@ export default class CircleHandler extends CursorHandler {
         // endV3Point landed on an open space
         // we have to create a new point
         const vtx = new Point();
-        // vtx.position.copy(this.currentPoint);
+        vtx.positionOnSphere = this.currentSpherePoint;
         this.endPoint = vtx;
         circleGroup.addCommand(new AddPointCommand(vtx));
       }

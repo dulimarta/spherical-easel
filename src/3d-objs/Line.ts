@@ -2,7 +2,7 @@ import { Vector3, Matrix4 } from "three";
 import Two, { Color } from "two.js";
 import SETTINGS from "@/global-settings";
 import Point from "./Point";
-import { HiLite } from "@/types";
+import { Glowable } from "@/types";
 const desiredXAxis = new Vector3();
 const desiredYAxis = new Vector3();
 const desiredZAxis = new Vector3();
@@ -17,10 +17,13 @@ const SUBDIVS = 100;
  * @class Line
  * @extends {Two.Group}
  */
-export default class Line extends Two.Group implements HiLite {
+export default class Line extends Two.Group implements Glowable {
   private start: Vector3;
   private end: Vector3;
-  private name = "";
+  public name = "";
+  private oldFrontStroke: Two.Color = "";
+  private oldBackStroke: Two.Color = "";
+  // public id = "";
   public normalDirection: Vector3;
 
   private majorAxisDirection: Vector3 = new Vector3();
@@ -77,34 +80,27 @@ export default class Line extends Two.Group implements HiLite {
     }
     this.noFill();
   }
-  highlight(): void {
-    this.fill = "red";
+  glow(): void {
+    this.oldFrontStroke = this.frontHalf.stroke;
+    this.oldBackStroke = this.backHalf.stroke;
+    this.frontHalf.stroke = "red";
+    this.backHalf.stroke = "red";
   }
 
-  noHighlight(): void {
-    // throw new Error("Method not implemented.");
-    this.noFill();
+  noGlow(): void {
+    this.frontHalf.stroke = this.oldFrontStroke;
+    this.backHalf.stroke = this.oldBackStroke;
   }
 
   deformIn2D() {
     // The circle plane passes through three points the origin (0,0,0)
     // and the two points (start (S) and end (E)). The normal of this plane
     // is the cross product of SxE
-    console.debug(
-      "Start",
-      this.start.x.toFixed(2),
-      this.start.y.toFixed(2),
-      this.start.z.toFixed(2)
-    );
-    console.debug(
-      "End",
-      this.end.x.toFixed(2),
-      this.end.y.toFixed(2),
-      this.end.z.toFixed(2)
-    );
+    // console.debug("Start", this.start.toFixed(2));
+    // console.debug("End", this.end.toFixed(2));
 
     this.normalDirection.crossVectors(this.start, this.end).normalize();
-    console.debug(this.normalDirection.toFixed(2));
+    // console.debug(this.normalDirection.toFixed(2));
     // The ellipse major axis on the XY plane is perpendicular
     // to the circle normal [Nx,Ny,Nz]. We can fix the direction of
     // the major axis to [-Ny,Nx, 0] (pointing "left") and use these numbers to compute the angle
@@ -112,13 +108,13 @@ export default class Line extends Two.Group implements HiLite {
       .set(-this.normalDirection.y, this.normalDirection.x, 0)
       .normalize();
 
-    console.debug(this.majorAxisDirection.toFixed(3));
+    // console.debug(this.majorAxisDirection.toFixed(3));
     // this.leftMarker.positionOnSphere = this.majorAxisDirection;
     const angleToMajorAxis = Math.atan2(
       this.majorAxisDirection.y,
       this.majorAxisDirection.x
     );
-    console.debug("Angle of major axis", angleToMajorAxis);
+    // console.debug("Angle of major axis", angleToMajorAxis);
     this.rotation = angleToMajorAxis;
 
     // Calculate the length of its minor axes from the non-rotated ellipse
@@ -226,6 +222,10 @@ export default class Line extends Two.Group implements HiLite {
     // this.name = (value ? "Segment-" : "Line-") + this.id;
   }
 
+  get isSegment() {
+    return this.segment;
+  }
+
   set startPoint(position: Vector3) {
     this.start.copy(position);
     // this.deformIntoEllipse();
@@ -240,15 +240,23 @@ export default class Line extends Two.Group implements HiLite {
 
   // It looks like we have to define our own clone() function
   // The builtin clone() does not seem to work correctly
-  // clone(): this {
-  //   const dup = new Line(this.start, this.end, this._segment);
-  //   (dup.geometry as BufferGeometry).copy(
-  //     (this.geometry as BufferGeometry).clone()
-  //   );
-  //   dup.rotation.copy(this.rotation);
-  //   dup._segment = this._segment;
-  //   dup.start.copy(this.start);
-  //   dup.end.copy(this.end);
-  //   return dup as this;
-  // }
+  clone(): this {
+    const dup = new Line(this.start, this.end, this.segment);
+    //   (dup.geometry as BufferGeometry).copy(
+    //     (this.geometry as BufferGeometry).clone()
+    //   );
+    //   dup.rotation.copy(this.rotation);
+    dup.name = this.name;
+    dup.segment = this.segment;
+    dup.rotation = this.rotation;
+    dup.normalDirection.copy(this.normalDirection);
+
+    dup.frontHalf.vertices.forEach((v, pos) => {
+      v.copy(this.frontHalf.vertices[pos]);
+    });
+    dup.backHalf.vertices.forEach((v, pos) => {
+      v.copy(this.backHalf.vertices[pos]);
+    });
+    return dup as this;
+  }
 }

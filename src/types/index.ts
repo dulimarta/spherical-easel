@@ -1,15 +1,13 @@
 // Declaration of all internal data types
 
-import { Mesh } from "three";
+import Two from "two.js";
 import Point from "@/3d-objs/Point";
 import Line from "@/3d-objs/Line";
 import Circle from "@/3d-objs/Circle";
 
-export interface HiLite {
-  // fillCol: string;
-  // oldFill: Two.Color;
-  highlight(): void;
-  noHighlight(): void;
+export interface Glowable {
+  glow(): void;
+  noGlow(): void;
 }
 
 // import Two from "two.js";
@@ -27,13 +25,14 @@ export interface SELine {
   end: SEPoint;
   isSegment: boolean;
 }
+
 export interface SECircle {
   ref: Circle;
   center: SEPoint;
   point: SEPoint;
 }
 export interface AppState {
-  // sphere: Mesh | null;
+  sphere: Two.Group | null;
   editMode: string;
   points: SEPoint[];
   lines: SELine[];

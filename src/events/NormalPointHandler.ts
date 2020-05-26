@@ -40,7 +40,6 @@ export default class NormalPointHandler extends CursorHandler {
 
       const vtx = new Point();
       vtx.positionOnSphere = this.currentSpherePoint;
-      this.canvas.add(vtx);
       new AddPointCommand(vtx).execute();
     }
   };

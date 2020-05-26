@@ -16,7 +16,7 @@
 import Vue from "vue";
 import Component from "vue-class-component";
 import { State } from "vuex-class";
-import { SEPoint, SELine, SECircle, HiLite } from "@/types";
+import { SEPoint, SELine, SECircle, Glowable } from "@/types";
 
 import { Prop } from "vue-property-decorator";
 // import { Mesh, MeshPhongMaterial } from "three";
@@ -50,16 +50,16 @@ export default class ObjectTree extends Vue {
           id: 0,
           name: "Start of",
           children: z.startOf.map(x => ({
-            id: x.ref.id
-            // name: x.ref.name
+            id: x.ref.id,
+            name: x.ref.name
           }))
         },
         {
           id: 1,
           name: "End of",
           children: z.endOf.map(x => ({
-            id: x.ref.id
-            // name: x.ref.name
+            id: x.ref.id,
+            name: x.ref.name
           }))
         },
         {
@@ -86,7 +86,7 @@ export default class ObjectTree extends Vue {
   get iLines() {
     return this.lines.map(z => ({
       id: z.ref.id,
-      // name: z.ref.name,
+      name: z.ref.name,
       children: [
         { id: z.start.ref.id, name: "Start:" + z.start.ref.name },
         { id: z.end.ref.id, name: "End:" + z.end.ref.name }
@@ -106,17 +106,20 @@ export default class ObjectTree extends Vue {
   }
 
   updateActive(args: number[]) {
+    // debugger; //eslint-disable-line
+
+    // Unfortunately, we can't test instanceof an interface in TypeScript
+    if (this.selectedObject && (this.selectedObject as any).noGlow) {
+      (this.selectedObject as any).noGlow();
+    }
     if (args.length > 0) {
       // Turn off highlight on the currently selected object
-      if ((this.selectedObject as any).noHighlight) {
-        (this.selectedObject as any).noHighlight();
-      }
 
       // Highlight the current selection in red (0xff0000)
       this.selectedObject = (this.scene.children as any).ids[args[0]];
       // this.selectedObject = this.sphere.getObjectById(args[0]) as Mesh;
-      if ((this.selectedObject as any).highlight) {
-        (this.selectedObject as any).highlight()
+      if ((this.selectedObject as any).glow) {
+        (this.selectedObject as any).glow()
       }
     }
   }

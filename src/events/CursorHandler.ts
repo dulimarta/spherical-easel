@@ -115,22 +115,23 @@ export default class CursorHandler implements ToolStrategy {
       this.currentSpherePoint.set(x, y, zCoordinate);
       this.isOnSphere = true;
       // this.currentPoint.copy(this.mouse);
-      console.debug(
-        `Mouse location (${event.offsetX},${event.offsetY}) ` +
-          `Sphere position ${this.currentSpherePoint.toFixed(2)}`
-      );
+      // console.debug(
+      //   `Mouse location (${event.offsetX},${event.offsetY}) ` +
+      //     `Sphere position ${this.currentSpherePoint.toFixed(2)}`
+      // );
       if (this.hitObject) {
-        this.hitObject.noHighlight();
+        this.hitObject.noGlow();
       }
+      this.hitObject = null;
       this.findNearByObjects(
         this.currentScreenPoint,
         this.currentSpherePoint,
         this.canvas
       ).forEach(obj => {
-        console.debug("Intersected", (obj as Two.Path).id);
+        // console.debug("Intersected", (obj as Two.Path).id);
         if (obj instanceof Point || obj instanceof Line) {
           this.hitObject = obj;
-          obj.highlight();
+          obj.glow();
         }
       });
     } else {
