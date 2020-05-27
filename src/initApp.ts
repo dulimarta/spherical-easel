@@ -1,7 +1,5 @@
 /** @format */
 
-// import Axes from "@/3d-objs/Axes";
-import Point from "@/plotables/Point";
 import { AddPointCommand } from "@/commands/AddPointCommand";
 import Two from "two.js";
 import SETTINGS from "@/global-settings";

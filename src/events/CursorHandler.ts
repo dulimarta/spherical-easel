@@ -113,7 +113,7 @@ export default abstract class CursorHandler implements ToolStrategy {
       //     `Sphere position ${this.currentSpherePoint.toFixed(2)}`
       // );
       if (this.hitObject) {
-        this.hitObject.noGlow();
+        this.hitObject.normalStyle();
       }
       this.hitObject = null;
       this.findNearByObjects(
@@ -124,7 +124,7 @@ export default abstract class CursorHandler implements ToolStrategy {
         // console.debug("Intersected", (obj as Two.Path).id);
         if (obj instanceof Point || obj instanceof Line) {
           this.hitObject = obj;
-          obj.glow();
+          obj.glowStyle();
         }
       });
     } else {

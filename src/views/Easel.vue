@@ -33,8 +33,15 @@
 
     <!--  Use the "clipped" attribute to keep the navigation drawer 
     below the app toolbar, width should be specified as number only (without unit) -->
-    <v-navigation-drawer id="leftDrawer" app clipped color="accent"
-      permanent :mini-variant="leftDrawerMinified" width="300">
+    <v-navigation-drawer
+      id="leftDrawer"
+      app
+      clipped
+      color="accent"
+      permanent
+      :mini-variant="leftDrawerMinified"
+      width="300"
+    >
       <v-container id="leftnav" fluid>
         <div>
           <v-btn icon @click="leftDrawerMinified = !leftDrawerMinified">
@@ -44,8 +51,11 @@
         </div>
         <div v-if="!leftDrawerMinified">
           <v-tabs v-model="activeLeftDrawerTab" grow centered>
-            <v-tooltip bottom :open-delay="toolTipOpenDelay"
-              :close-delay="toolTipCloseDelay">
+            <v-tooltip
+              bottom
+              :open-delay="toolTipOpenDelay"
+              :close-delay="toolTipCloseDelay"
+            >
               <template v-slot:activator="{ on }">
                 <v-tab class="mt-3" href="#toolListTab" v-on="on">
                   <v-icon left>mdi-calculator</v-icon>
@@ -54,8 +64,11 @@
               <span>{{ $t("main.ToolsTabToolTip") }}</span>
             </v-tooltip>
 
-            <v-tooltip bottom :open-delay="toolTipOpenDelay"
-              :close-delay="toolTipCloseDelay">
+            <v-tooltip
+              bottom
+              :open-delay="toolTipOpenDelay"
+              :close-delay="toolTipCloseDelay"
+            >
               <template v-slot:activator="{ on }">
                 <v-tab class="mt-3" href="#objectListTab" v-on="on">
                   <v-icon left>mdi-format-list-bulleted</v-icon>
@@ -73,18 +86,27 @@
           </v-tabs>
         </div>
       </v-container>
-      <div id="leftnavicons" v-if="leftDrawerMinified"
-        @click="unMinifyLeftDrawer">
-        <v-btn icon @click="
+      <div
+        id="leftnavicons"
+        v-if="leftDrawerMinified"
+        @click="unMinifyLeftDrawer"
+      >
+        <v-btn
+          icon
+          @click="
             leftDrawerMinified = !leftDrawerMinified;
             activeLeftDrawerTab = 'toolListTab';
-          ">
+          "
+        >
           <v-icon class="ml-3 my-2">mdi-calculator</v-icon>
         </v-btn>
-        <v-btn icon @click="
+        <v-btn
+          icon
+          @click="
             leftDrawerMinified = !leftDrawerMinified;
             activeLeftDrawerTab = 'objectListTab';
-          ">
+          "
+        >
           <v-icon class="ml-3 my-2">mdi-format-list-bulleted</v-icon>
         </v-btn>
       </div>
@@ -103,7 +125,7 @@ import LineHandler from "@/events/LineHandler";
 import SegmentHandler from "@/events/SegmentHandler";
 import CircleHandler from "@/events/CircleHandler";
 
-import RotateHandler from "@/events/RotateHandler"
+import RotateHandler from "@/events/RotateHandler";
 // import MoveHandler from "@/events/MoveHandler";
 import SETTINGS from "@/global-settings";
 import { State } from "vuex-class";
@@ -113,8 +135,8 @@ import ToolButtons from "@/components/ToolButtons.vue";
 import { setupScene } from "@/initApp";
 import Two from "two.js";
 // import Point from '../plotables/Point';
-import { PositionVisitor } from "@/visitors/PositionVisitor"
-import { SEPoint } from '@/models/SEPoint';
+import { PositionVisitor } from "@/visitors/PositionVisitor";
+import { SEPoint } from "@/models/SEPoint";
 // import Circle from '../3d-objs/Circle';
 @Component({ components: { ObjectTree, ToolButtons } })
 export default class Easel extends Vue {
@@ -139,6 +161,7 @@ export default class Easel extends Vue {
   private lineTool: LineHandler;
   private segmentTool: SegmentHandler;
   private rotateTool: RotateHandler;
+  private visitor: PositionVisitor;
   // private moveTool: MoveHandler;
   private circleTool: CircleHandler;
   // private controls: TransformControls;
@@ -170,6 +193,7 @@ export default class Easel extends Vue {
     this.segmentTool = new SegmentHandler(canvas);
     this.circleTool = new CircleHandler(canvas);
     this.rotateTool = new RotateHandler(canvas);
+    this.visitor = new PositionVisitor();
     // this.moveTool = new MoveHandler({
     //   camera: this.camera,
     //   scene: this.scene
@@ -194,34 +218,35 @@ export default class Easel extends Vue {
 
     window.addEventListener("resize", this.onWindowResized);
     window.addEventListener("keypress", this.keyPressed);
-    window.addEventListener("sphere-rotate", this.handleSphereRotation as EventListener)
+    // RotateHandler emits a custom event "sphere-rotate"
+    window.addEventListener(
+      "sphere-rotate",
+      this.handleSphereRotation as EventListener
+    );
   }
 
-  handleSphereRotation(e: CustomEvent) {
-    const pv = new PositionVisitor();
-    pv.setTransform(e.detail.transform);
-    this.$store.state.points
-      .forEach((p: SEPoint) => {
-        pv.positionUpdateVisitor(p);
-      });
-
+  handleSphereRotation(e: CustomEvent): void {
+    this.visitor.setTransform(e.detail.transform);
+    this.$store.state.points.forEach((p: SEPoint) => {
+      this.visitor.actionOnPoint(p);
+    });
   }
-  handleMouseMoved(e: MouseEvent) {
+  handleMouseMoved(e: MouseEvent): void {
     // WHen currentTool is NULL, the following line does nothing
     this.currentTool?.mouseMoved(e);
   }
 
-  handleMousePressed(e: MouseEvent) {
+  handleMousePressed(e: MouseEvent): void {
     // WHen currentTool is NULL, the following line does nothing
     this.currentTool?.mousePressed(e);
   }
 
-  handleMouseReleased(e: MouseEvent) {
+  handleMouseReleased(e: MouseEvent): void {
     // WHen currentTool is NULL, the following line does nothing
     this.currentTool?.mouseReleased(e);
   }
 
-  mounted() {
+  mounted(): void {
     const parent = this.$refs.content as HTMLElement;
     // During testting scene is set to null and appendTo() will fail
     if (this.scene instanceof Two) {
@@ -246,7 +271,7 @@ export default class Easel extends Vue {
     // requestAnimationFrame(this.renderIt); // Not needed when using TwoJS?
   }
 
-  beforeDestroy() {
+  beforeDestroy(): void {
     // VieJS lifecycle function
     const parent = this.$refs.content as HTMLElement;
     parent.firstChild?.removeEventListener(
@@ -263,7 +288,7 @@ export default class Easel extends Vue {
     );
   }
 
-  keyPressed = (event: KeyboardEvent) => {
+  keyPressed = (event: KeyboardEvent): void => {
     // const sphere = this.scene.getObjectByName("MainSphere");
     switch (event.code) {
       case "KeyR":
@@ -273,7 +298,7 @@ export default class Easel extends Vue {
     }
   };
 
-  onWindowResized = () => {
+  onWindowResized = (): void => {
     // TODO: finish this method
     const el = this.$refs.content as HTMLBaseElement;
     if (el) {
@@ -290,7 +315,7 @@ export default class Easel extends Vue {
 
   // VueJS data watcher function
   @Watch("showSphereControl")
-  onSphereControlChanged(value: boolean /*, oldValue: boolean*/) {
+  onSphereControlChanged(value: boolean /*, oldValue: boolean*/): void {
     if (value) {
       // this.scene.add(this.controls);
       // this.controls.attach(this.sphere);
@@ -301,7 +326,7 @@ export default class Easel extends Vue {
   }
 
   @Watch("editMode")
-  switchEditMode(mode: string) {
+  switchEditMode(mode: string): void {
     // this.currentHandler?.deactivate(); // Unregister the current mouse handler
     this.currentTool = null;
     switch (mode) {
@@ -340,7 +365,7 @@ export default class Easel extends Vue {
  in the minified left drawer they first unMinify the drawer and
  then 'leftDrawerMinified = !leftDrawerMinified' would reminify it and nothing happens 
  */
-  unMinifyLeftDrawer() {
+  unMinifyLeftDrawer(): void {
     if (this.leftDrawerMinified) {
       this.leftDrawerMinified = false;
     }

@@ -1,13 +1,11 @@
 import { Vector3, Matrix4 } from "three";
 import Two, { Color } from "two.js";
 import SETTINGS from "@/global-settings";
-import Point from "../plotables/Point";
-import { Glowable } from "@/types";
+import { Stylable } from "@/plotables/Styleable";
 const desiredXAxis = new Vector3();
 const desiredYAxis = new Vector3();
 const desiredZAxis = new Vector3();
 const transformMatrix = new Matrix4();
-const NegXAxis = new Vector3(-1, 0, 0);
 
 const SUBDIVS = 100;
 /**
@@ -17,7 +15,7 @@ const SUBDIVS = 100;
  * @class Line
  * @extends {Two.Group}
  */
-export default class Line extends Two.Group implements Glowable {
+export default class Line extends Two.Group implements Stylable {
   private start: Vector3;
   private end: Vector3;
   public name = "";
@@ -80,19 +78,23 @@ export default class Line extends Two.Group implements Glowable {
     }
     this.noFill();
   }
-  glow(): void {
+  glowStyle(): void {
     this.oldFrontStroke = this.frontHalf.stroke;
     this.oldBackStroke = this.backHalf.stroke;
     this.frontHalf.stroke = "red";
     this.backHalf.stroke = "red";
   }
 
-  noGlow(): void {
+  backgroundStyle(): void {
+    /* TODO: complete this */
+  }
+
+  normalStyle(): void {
     this.frontHalf.stroke = this.oldFrontStroke;
     this.backHalf.stroke = this.oldBackStroke;
   }
 
-  deformIn2D() {
+  private deformIn2D(): void {
     // The circle plane passes through three points the origin (0,0,0)
     // and the two points (start (S) and end (E)). The normal of this plane
     // is the cross product of SxE
@@ -165,7 +167,7 @@ export default class Line extends Two.Group implements Glowable {
     }
   }
 
-  private deformIntoEllipse() {
+  private deformIntoEllipse(): void {
     desiredZAxis.crossVectors(this.start, this.end).normalize();
     desiredXAxis.copy(this.start).normalize();
     desiredYAxis.crossVectors(desiredZAxis, desiredXAxis);

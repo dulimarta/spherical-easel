@@ -1,22 +1,28 @@
 /** @format */
 
 // import SETTINGS from "@/global-settings";
-import { Vector3 } from "three";
 import Two, { Color } from "two.js";
-import globalSettings from "@/global-settings";
-import { Glowable } from "@/types";
+import { Stylable } from "@/plotables/Styleable";
+import { SEPoint } from "@/models/SEPoint";
 
-export default class Point extends Two.Circle implements Glowable {
-  // Can't use position because of conflict with TwoJS property
-  private _posOnSphere: Vector3;
+/**
+ * Each Point object is uniquely associated with a SEPoint object.
+ * As part of plotables, Point concerns mainly with the visual appearance, but
+ * SEPoint concerns mainly with geometry computations.
+ */
+export default class Point extends Two.Circle implements Stylable {
   private pointColor: Color;
+
+  // The owner link is needed because all the mouse tools interact
+  // with the TwoJS object but we have to link it with the corresponding
+  // model object.
+  public owner!: SEPoint; // this field will be initialized by the SEPoint owner
   public name: string;
-  private oldFill: Color;
+
   constructor(size?: number, color?: number) {
     // Default 3-pixel wide
     super(0, 0, size || 6);
     // 3D position of the point on the sphere surface
-    this._posOnSphere = new Vector3();
 
     // Use "black" as default color, convert to CSS Hex string
     if (color) {
@@ -28,43 +34,24 @@ export default class Point extends Two.Circle implements Glowable {
       this.fill = "#" + hexColor;
     } else this.fill = "hsl(240, 100%, 40%)";
     this.pointColor = this.fill;
-    this.oldFill = this.fill;
     this.noStroke();
 
     this.name = "Point-" + this.id;
   }
-  glow(): void {
-    this.oldFill = this.fill;
+
+  glowStyle(): void {
     this.fill = "red";
   }
 
-  noGlow(): void {
-    this.fill = this.oldFill;
+  backgroundStyle(): void {
+    this.fill = "gray";
+    this.stroke = "black";
+    this.scale = 0.6;
   }
 
-  set positionOnSphere(pos: Vector3) {
-    this._posOnSphere.copy(pos);
-    this.translation.set(
-      pos.x * globalSettings.sphere.radius,
-      pos.y * globalSettings.sphere.radius
-    );
-    if (pos.z < 0) {
-      this.fill = "red";
-      this.scale = 0.8;
-    } else {
-      this.fill = this.pointColor;
-      this.scale = 1;
-    }
-    // console.debug(
-    //   "3D position",
-    //   pos.toFixed(2),
-    //   "translation amount ",
-    //   this.translation.x.toFixed(2),
-    //   this.translation.y.toFixed(2)
-    // );
-  }
-
-  get positionOnSphere() {
-    return this._posOnSphere;
+  normalStyle(): void {
+    this.fill = this.pointColor;
+    this.noStroke();
+    this.scale = 1;
   }
 }

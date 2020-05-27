@@ -8,10 +8,6 @@ import { SEPoint } from "@/models/SEPoint";
 /**
  * Each visual object has its own way of making itself "glow"
  */
-export interface Glowable {
-  glow(): void;
-  noGlow(): void;
-}
 
 // import Two from "two.js";
 

@@ -5,6 +5,7 @@ import CursorHandler from "./CursorHandler";
 import Point from "@/plotables/Point";
 import { AddPointCommand } from "@/commands/AddPointCommand";
 import Two from "two.js";
+import { SEPoint } from "@/models/SEPoint";
 export default class NormalPointHandler extends CursorHandler {
   private normalArrow: Arrow;
   private isNormalAdded: boolean;
@@ -38,7 +39,7 @@ export default class NormalPointHandler extends CursorHandler {
       // But when a new point is added to the sphere, we have to convert
       // for the world coordinate frame to the sphere coordinate frame
 
-      const vtx = new Point();
+      const vtx = new SEPoint(new Point());
       vtx.positionOnSphere = this.currentSpherePoint;
       new AddPointCommand(vtx).execute();
     }

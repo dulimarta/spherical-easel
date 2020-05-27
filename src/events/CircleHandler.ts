@@ -9,6 +9,7 @@ import { CommandGroup } from "@/commands/CommandGroup";
 import { AddPointCommand } from "@/commands/AddPointCommand";
 import { AddCircleCommand } from "@/commands/AddCircleCommand";
 import Two from "two.js";
+import { SEPoint } from "@/models/SEPoint";
 
 export default class CircleHandler extends CursorHandler {
   private startV3Point: Vector3;
@@ -58,14 +59,14 @@ export default class CircleHandler extends CursorHandler {
     if (this.isOnSphere) {
       const selected = this.hitObject;
       if (selected instanceof Point) {
-        this.startV3Point.copy(selected.positionOnSphere);
+        this.startV3Point.copy(selected.owner.positionOnSphere);
         this.startPoint = this.hitObject as Point;
       } else {
         this.canvas.add(this.startDot);
         this.startV3Point.copy(this.currentSpherePoint);
         this.startPoint = null;
       }
-      this.startDot.positionOnSphere = this.currentSpherePoint;
+      this.startDot.owner.positionOnSphere = this.currentSpherePoint;
       this.circle.centerPoint = this.currentSpherePoint;
     }
   }
@@ -84,9 +85,9 @@ export default class CircleHandler extends CursorHandler {
       if (this.startPoint === null) {
         // Starting point landed on an open space
         // we have to create a new point
-        const vtx = new Point();
+        const vtx = new SEPoint(new Point());
         vtx.positionOnSphere = this.startV3Point;
-        this.startPoint = vtx;
+        this.startPoint = vtx.ref;
         circleGroup.addCommand(new AddPointCommand(vtx));
       }
       if (this.hitObject instanceof Point) {
@@ -94,9 +95,9 @@ export default class CircleHandler extends CursorHandler {
       } else {
         // endV3Point landed on an open space
         // we have to create a new point
-        const vtx = new Point();
+        const vtx = new SEPoint(new Point());
         vtx.positionOnSphere = this.currentSpherePoint;
-        this.endPoint = vtx;
+        this.endPoint = vtx.ref;
         circleGroup.addCommand(new AddPointCommand(vtx));
       }
 

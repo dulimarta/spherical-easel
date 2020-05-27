@@ -11,13 +11,14 @@ import { CommandGroup } from "@/commands/CommandGroup";
 import { AddPointCommand } from "@/commands/AddPointCommand";
 import { AddLineCommand } from "@/commands/AddLineCommand";
 import Two from "two.js";
+import { SEPoint } from "@/models/SEPoint";
 export default class LineHandler extends CursorHandler {
   protected startV3Point: Vector3; // The starting point of the line
   protected tmpVector: Vector3;
   protected circleOrientation: Arrow; // for debugging only
   protected isMouseDown: boolean;
   protected isCircleAdded: boolean;
-  protected startMarker: Point;
+  protected startMarker: SEPoint;
   private startPoint: Point | null = null;
   private endPoint: Point | null = null;
   protected line: Line;
@@ -26,7 +27,7 @@ export default class LineHandler extends CursorHandler {
     super(scene);
     this.startV3Point = new Vector3();
     this.tmpVector = new Vector3();
-    this.startMarker = new Point(5, 0xff8800);
+    this.startMarker = new SEPoint(new Point(5, 0xff8800));
     this.line = new Line(undefined, undefined, isSegment);
 
     this.circleOrientation = new Arrow(0.5, 0x006600); // debug only
@@ -62,7 +63,7 @@ export default class LineHandler extends CursorHandler {
     } else if (this.isCircleAdded) {
       console.debug("LineHandler: OFF sphere");
       this.line.remove();
-      this.startMarker.remove();
+      this.startMarker.ref.remove();
       this.circleOrientation.remove(); // for debugging
       this.isCircleAdded = false;
     }
@@ -79,12 +80,12 @@ export default class LineHandler extends CursorHandler {
       if (selected instanceof Point) {
         console.debug("Pressed on an existing point");
         /* the point coordinate is local on the sphere */
-        this.startV3Point.copy(selected.positionOnSphere);
+        this.startV3Point.copy(selected.owner.positionOnSphere);
         this.startPoint = this.hitObject as Point;
       } else {
         console.debug("Pressed on open area");
         /* this.currentPoint is already converted to local sphere coordinate frame */
-        this.canvas.add(this.startMarker);
+        this.canvas.add(this.startMarker.ref);
         this.startMarker.positionOnSphere = this.currentSpherePoint;
         this.startV3Point.copy(this.currentSpherePoint);
         this.startPoint = null;
@@ -100,7 +101,7 @@ export default class LineHandler extends CursorHandler {
     if (this.isOnSphere) {
       // Record the second point of the geodesic circle
       this.line.remove();
-      this.startMarker.remove();
+      this.startMarker.ref.remove();
       // this.canvas.remove(this.circleOrientation); // for debugging
       this.isCircleAdded = false;
       // this.endV3Point.copy(this.currentPoint);
@@ -109,9 +110,9 @@ export default class LineHandler extends CursorHandler {
       if (this.startPoint === null) {
         // Starting point landed on an open space
         // we have to create a new point
-        const vtx = new Point();
+        const vtx = new SEPoint(new Point());
         vtx.positionOnSphere = this.startV3Point;
-        this.startPoint = vtx;
+        this.startPoint = vtx.ref;
         lineGroup.addCommand(new AddPointCommand(vtx));
       }
       if (this.hitObject instanceof Point) {
@@ -119,9 +120,9 @@ export default class LineHandler extends CursorHandler {
       } else {
         // endV3Point landed on an open space
         // we have to create a new point
-        const vtx = new Point();
+        const vtx = new SEPoint(new Point());
         vtx.positionOnSphere = this.currentSpherePoint;
-        this.endPoint = vtx;
+        this.endPoint = vtx.ref;
         lineGroup.addCommand(new AddPointCommand(vtx));
       }
 

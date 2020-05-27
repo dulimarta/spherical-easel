@@ -40,7 +40,7 @@ yarn build        # to build for production
 yarn lint         # to run linter program
 ```
 
-### Documenation
+### Documentation
 
 The `docs` subdirectory is reserved for documentation files built using [VuePress](https://vuepress.vuejs.org/).
 
