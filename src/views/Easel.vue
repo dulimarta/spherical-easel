@@ -194,10 +194,10 @@ export default class Easel extends Vue {
 
     window.addEventListener("resize", this.onWindowResized);
     window.addEventListener("keypress", this.keyPressed);
-    window.addEventListener("sphere-rotate", this.handleSpherRotation as EventListener)
+    window.addEventListener("sphere-rotate", this.handleSphereRotation as EventListener)
   }
 
-  handleSpherRotation(e: CustomEvent) {
+  handleSphereRotation(e: CustomEvent) {
     const pv = new PositionVisitor();
     pv.setTransform(e.detail.transform);
     this.$store.state.points

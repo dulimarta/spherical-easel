@@ -17,17 +17,32 @@
     <v-app-bar app color="primary" dark dense clipped-left>
       <!-- This is where the file and export (to EPS, TIKZ, animated GIF?) operations will go 
       Also request a feature and report a bug-->
-      <v-app-bar-nav-icon @click="fileSystemsDrawerDisplay = true">
-      </v-app-bar-nav-icon>
+      <v-app-bar-nav-icon
+        @click="fileSystemsDrawerDisplay = true"
+      ></v-app-bar-nav-icon>
 
       <div class="d-flex align-center">
         <router-link to="/">
-          <v-img alt="Spherical Easel Logo" class="shrink mr-2" contain
+          <v-img
+            alt="Spherical Easel Logo"
+            class="shrink mr-2"
+            contain
             src="./assets/SphericalEaselLogo.gif"
-            transition="scale-transition" width="40" />
+            transition="scale-transition"
+            width="40"
+          />
         </router-link>
-        <v-toolbar-title>{{ $t('main.SphericalEaselMainTitle') }}
+        <v-toolbar-title>
+          {{ $t("main.SphericalEaselMainTitle") }}
         </v-toolbar-title>
+        <v-tooltip left>
+          <template v-slot:activator="{ on }">
+            <a href="/docs">
+              <v-icon class="ml-2" v-on="on">mdi-help-circle</v-icon>
+            </a>
+          </template>
+          <span>Open Doc</span>
+        </v-tooltip>
       </div>
 
       <v-spacer></v-spacer>
@@ -85,7 +100,7 @@
 import Vue from "vue";
 /* Import the custom components */
 import Component from "vue-class-component";
-import { Inject } from "vue-property-decorator"
+import { Inject } from "vue-property-decorator";
 /* TODO: What does this do? */
 import { WebGLRenderer, Mesh } from "three";
 import { State } from "vuex-class";
