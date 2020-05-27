@@ -39,3 +39,13 @@ After typing `yarn serve`, use your browser to open `localhost:8080` (or whateve
 yarn build        # to build for production
 yarn lint         # to run linter program
 ```
+
+### Documenation
+
+The `docs` subdirectory is reserved for documentation files built using [VuePress](https://vuepress.vuejs.org/).
+
+To view the documentation page:
+
+```bash
+yarn docs:serve
+```

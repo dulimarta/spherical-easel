@@ -1,0 +1,1 @@
+This document describe various design decisions of the app
