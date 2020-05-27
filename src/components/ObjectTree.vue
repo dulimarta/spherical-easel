@@ -1,12 +1,12 @@
 <template>
   <div class="pa-1" id="objectTreeContainer">
-    <h4>{{ $t('objects.points') }}</h4>
+    <h4>{{ $t("objects.points") }}</h4>
     <v-treeview dense hoverable activatable active-class="warning"
       :items="iPoints" @update:active="updateActive"></v-treeview>
-    <h4>{{ $t('objects.lines') }}</h4>
+    <h4>{{ $t("objects.lines") }}</h4>
     <v-treeview dense hoverable activatable active-class="warning"
       :items="iLines" @update:active="updateActive"></v-treeview>
-    <h4>{{ $t('objects.circles') }}</h4>
+    <h4>{{ $t("objects.circles") }}</h4>
     <v-treeview dense hoverable activatable active-class="warning"
       :items="iCircles" @update:active="updateActive"></v-treeview>
   </div>
@@ -16,15 +16,20 @@
 import Vue from "vue";
 import Component from "vue-class-component";
 import { State } from "vuex-class";
-import { SEPoint, SELine, SECircle } from "@/types";
-import { Mesh, MeshPhongMaterial } from "three";
+import { SELine, SECircle } from "@/types";
+
+import { Prop } from "vue-property-decorator";
+// import { Mesh, MeshPhongMaterial } from "three";
+import Two from "two.js";
+import { SEPoint } from '@/models/SEPoint';
+// import Point from "@/plotables/Point";
 
 @Component
 export default class ObjectTree extends Vue {
-  private selectedObject: Mesh | null = null;
+  private selectedObject: Two.Object | null = null;
 
-  @State
-  readonly sphere!: Mesh;
+  @Prop(Two.Group)
+  readonly scene!: Two.Group;
 
   @State
   private points!: SEPoint[];
@@ -34,6 +39,7 @@ export default class ObjectTree extends Vue {
 
   @State
   private circles!: SECircle[];
+  private oldFillColor: Two.Color | undefined = undefined;
 
   // TODO: the getter function seems to be sluggish?
   get iPoints() {
@@ -44,7 +50,7 @@ export default class ObjectTree extends Vue {
         {
           id: 0,
           name: "Start of",
-          children: z.startOf.map(x => ({
+          children: z.startOf.map((x: SELine) => ({
             id: x.ref.id,
             name: x.ref.name
           }))
@@ -52,7 +58,7 @@ export default class ObjectTree extends Vue {
         {
           id: 1,
           name: "End of",
-          children: z.endOf.map(x => ({
+          children: z.endOf.map((x: SELine) => ({
             id: x.ref.id,
             name: x.ref.name
           }))
@@ -60,17 +66,17 @@ export default class ObjectTree extends Vue {
         {
           id: 2,
           name: "Center of",
-          children: z.centerOf.map(x => ({
-            id: x.ref.id,
-            name: x.ref.name
+          children: z.centerOf.map((x: SECircle) => ({
+            id: x.ref.id
+            // name: x.ref.name
           }))
         },
         {
           id: 3,
           name: "Circumpoint of",
-          children: z.circumOf.map(x => ({
-            id: x.ref.id,
-            name: x.ref.name
+          children: z.circumOf.map((x: SECircle) => ({
+            id: x.ref.id
+            // name: x.ref.name
           }))
         }
       ] /* remove node with empty children*/
@@ -92,7 +98,7 @@ export default class ObjectTree extends Vue {
   get iCircles() {
     return this.circles.map(r => ({
       id: r.ref.id,
-      name: r.ref.name,
+      // name: r.ref.name,
       children: [
         { id: r.center.ref.id, name: "Center:" + r.center.ref.name },
         { id: r.point.ref.id, name: "Point:" + r.point.ref.name }
@@ -101,18 +107,21 @@ export default class ObjectTree extends Vue {
   }
 
   updateActive(args: number[]) {
+    // debugger; //eslint-disable-line
+
+    // Unfortunately, we can't test instanceof an interface in TypeScript
+    if (this.selectedObject && (this.selectedObject as any).noGlow) {
+      (this.selectedObject as any).noGlow();
+    }
     if (args.length > 0) {
       // Turn off highlight on the currently selected object
-      if (this.selectedObject) {
-        (this.selectedObject.material as MeshPhongMaterial).emissive.set(0);
-      }
 
       // Highlight the current selection in red (0xff0000)
-      this.selectedObject = this.sphere.getObjectById(args[0]) as Mesh;
-      if (this.selectedObject)
-        (this.selectedObject.material as MeshPhongMaterial).emissive.set(
-          0xff0000
-        );
+      this.selectedObject = (this.scene.children as any).ids[args[0]];
+      // this.selectedObject = this.sphere.getObjectById(args[0]) as Mesh;
+      if ((this.selectedObject as any).glow) {
+        (this.selectedObject as any).glow()
+      }
     }
   }
 }

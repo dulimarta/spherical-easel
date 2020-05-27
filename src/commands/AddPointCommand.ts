@@ -1,22 +1,22 @@
 import { Command } from "./Command";
-import Point from "@/3d-objs/Point";
+import { SEPoint } from "@/models/SEPoint";
 
 export class AddPointCommand extends Command {
-  private arg: Point;
-  constructor(arg: Point) {
+  private arg: SEPoint;
+  constructor(arg: SEPoint) {
     super();
     this.arg = arg;
   }
 
-  do() {
+  do(): void {
     AddPointCommand.store.commit("addPoint", this.arg);
   }
 
-  saveState() {
+  saveState(): void {
     this.lastState = this.arg.id;
   }
 
-  restoreState() {
+  restoreState(): void {
     Command.store.commit("removePoint", this.lastState);
   }
 }

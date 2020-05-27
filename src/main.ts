@@ -1,3 +1,4 @@
+// <reference path="@/extensions/three-ext.d.ts" />
 import Vue from "vue";
 import App from "./App.vue";
 import router from "./router";
@@ -7,6 +8,7 @@ import vuetify from "./plugins/vuetify";
 import { SVGRenderer } from "three/examples/jsm/renderers/SVGRenderer"
 import VueI18n from "vue-i18n";
 import i18n from "./i18n";
+import "@/extensions/three.extensions";
 
 Vue.use(VueI18n);
 

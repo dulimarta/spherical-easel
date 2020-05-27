@@ -1,9 +1,19 @@
 <template>
   <div>
     <v-container fluid>
-      <div cols="12" ref="content" id="content" class="pa-2">
-        <!--- HTML canvas will go here --->
-      </div>
+      <!--- ml-2: margin left 8 px -->
+      <v-row>
+        <!---
+      VUetify grid system uses 12-column layout.
+      In the following setup, 
+      (1) the editHint text will occupy 75% of the panel width
+      (2) the toggle switch will occupy 25% of the panel width
+      (3) the canvas will will in the entire width
+      --->
+        <v-col cols="12" ref="content" id="content" class="pa-2">
+          <!--- HTML canvas will go here --->
+        </v-col>
+      </v-row>
     </v-container>
 
     <!--  
@@ -23,10 +33,9 @@
     -->
 
     <!--  Use the "clipped" attribute to keep the navigation drawer 
-    below the app toolbar, width should be specified as number only (without unit)-->
+    below the app toolbar, width should be specified as number only (without unit) -->
     <v-navigation-drawer
       id="leftDrawer"
-      ref="leftDrawer"
       app
       clipped
       color="accent"
@@ -84,7 +93,7 @@
               <ToolButtons></ToolButtons>
             </v-tab-item>
             <v-tab-item value="objectListTab">
-              <!-- <ObjectTree :scene="sphere"></ObjectTree> -->
+              <ObjectTree :scene="canvas"></ObjectTree>
             </v-tab-item>
           </v-tabs>
         </div>
@@ -107,7 +116,7 @@
         <v-btn
           icon
           @click="
-            setMinificationOfLeftDrawer(false);
+            leftDrawerMinified = !leftDrawerMinified;
             activeLeftDrawerTab = 'objectListTab';
           "
         >
@@ -121,62 +130,46 @@
 </template>
 
 <script lang="ts">
-/* This is Vue app and we need the Watch and Prop methods(?) for the class style declarations in
-TypeScript*/
-import { Vue, Watch, Prop } from "vue-property-decorator";
 import VueComponent from "vue";
-/* Import the package two.js for rendering the sphere and objects */
-import Two from "two.js";
-
-/* The intial setup of the sphere object in two.js is done in initApp.ts */
-import { setupScene } from "@/initApp";
-
-/* ToolStrategy is an interface that lists the methods (that will be overridden with handlers)
-that are need to interpret the event (mouse pressed, mouse release, moused moved etc.) depending
-on the current mode. For example, if the current mode is "point", the current tools is set to
-NormalPoint Handler, and the mouse pressed event creates a point at the point of mouse press
-and ignores the mouse release and move events.   */
+import { Vue, Watch } from "vue-property-decorator";
+import Component from "vue-class-component";
+// import Axes from "@/3d-objs/Axes";
+// import Point from "@/3d-objs/Point";
 import { ToolStrategy } from "@/events/ToolStrategy";
 import NormalPointHandler from "@/events/NormalPointHandler";
 import LineHandler from "@/events/LineHandler";
 import SegmentHandler from "@/events/SegmentHandler";
 import CircleHandler from "@/events/CircleHandler";
-import MoveHandler from "@/events/MoveHandler";
 
-/* Import the global settings */
+import RotateHandler from "@/events/RotateHandler";
+// import MoveHandler from "@/events/MoveHandler";
 import SETTINGS from "@/global-settings";
 
 /* Import the State so we can follow the command paradigm */
 import { State } from "vuex-class";
 
 /* Import the components for the contents of the navigation drawer */
-import Component from "vue-class-component";
 import ObjectTree from "@/components/ObjectTree.vue";
 import ToolButtons from "@/components/ToolButtons.vue";
 
+import { setupScene } from "@/initApp";
+import Two from "two.js";
+// import Point from '../plotables/Point';
+import { PositionVisitor } from "@/visitors/PositionVisitor";
+import { SEPoint } from "@/models/SEPoint";
+// import Circle from '../3d-objs/Circle';
 @Component({ components: { ObjectTree, ToolButtons } })
 export default class Easel extends Vue {
-  /* Declaring canvas (of HTMLCanvasElement type) as a property allows the parent of this view
-  to bind a variable in the parent (called canvas) with this child variable called canvas. I
-  think that this allows the router to display the different views (easel, settings, about...) */
-  @Prop(SVGElement)
-  readonly canvas!: SVGElement;
+  // @Prop(WebGLRenderer)
+  // readonly renderer!: WebGLRenderer;
 
-  /* These store the current width and height of the availble space for displaying the view.
-   These are automatically updated when the window is resized. They are used to find the largest
-   square to display the view in */
-  private width = 300;
-  private height = 300;
+  // @Prop(HTMLCanvasElement)
+  // readonly canvas!: HTMLCanvasElement;
 
-  /* These are use to display the current state of the sphere. The background, midground, and
-  foreground are draw in that order inside of the main sphereCanvas. */
-  private sphereCanvas: Two;
-  private foreground: Two.Group;
-  private midground: Two.Group;
-  private background: Two.Group;
+  private scene: Two;
+  private canvas: Two.Group;
 
-  /* Controls the behavior of the left drawer and which tab is active */
-  private leftDrawerMinified = false; // intial the drawer is displayed
+  private leftDrawerMinified = false;
   private activeLeftDrawerTab = "toolListTab";
 
   /* Copy global setting to local variable */
@@ -186,14 +179,18 @@ export default class Easel extends Vue {
   /*  Use the Strategy design pattern to enable switching of
   different tool algorithms at runtime, See the comment where these classes (modules?) are imported */
   private currentTool: ToolStrategy | null;
-  private pointTool!: NormalPointHandler;
-  private lineTool!: LineHandler;
-  // private segmentTool: SegmentHandler;
+  private pointTool: NormalPointHandler;
+  private lineTool: LineHandler;
+  private segmentTool: SegmentHandler;
+  private rotateTool: RotateHandler;
+  private visitor: PositionVisitor;
   // private moveTool: MoveHandler;
-  // private circleTool: CircleHandler;
+  private circleTool: CircleHandler;
   // private controls: TransformControls;
-
-  /* Variable to control the width and border size of the left drawer */
+  // private sphere: THREE.Mesh;
+  private showSphereControl = false;
+  private width = 0;
+  private height = 0;
   private leftDrawerProperties = {
     width: 300, //initial width and stores the current width (including the minified)
     borderWidth: 3, //the width for the border of the left drawer set to zero when minimfied
@@ -206,111 +203,137 @@ export default class Easel extends Vue {
 
   constructor() {
     super();
-    const { foreground, midground, background, sphereCanvas } = setupScene();
-    this.sphereCanvas = sphereCanvas;
-    this.foreground = foreground;
-    this.midground = midground;
-    this.background = background;
+    // const { foreground, midground, background, sphereCanvas } = setupScene();
+    // this.sphereCanvas = sphereCanvas;
+    // this.foreground = foreground;
+    // this.midground = midground;
+    // this.background = background;
 
+    // this.TWO.scene.scale = 50;
+
+    // const rect = this.TWO.makeCircle(0, 0, 128);
+
+    // rect.fill = 'rgb(255, 100,100)';
+    // rect.noStroke();
+    // const scene = setupScene();
+    const { two, canvas } = setupScene();
+    this.scene = two;
+    this.canvas = canvas;
+    // this.sphere = sphere;
     this.currentTool = null;
-    /*    this.pointTool = new NormalPointHandler({
-      camera: this.camera,
-      scene: this.scene
-    });
-    this.lineTool = new LineHandler({
-      camera: this.camera,
-      scene: this.scene
-    });
-    this.segmentTool = new SegmentHandler({
-      canvas: this.renderer.domElement,
-      camera: this.camera,
-      scene: this.scene
-    });
-    this.circleTool = new CircleHandler({
-      camera: this.camera,
-      scene: this.scene
-    });
-    this.moveTool = new MoveHandler({
-      camera: this.camera,
-      scene: this.scene
-    }); */
+    this.pointTool = new NormalPointHandler(canvas);
+    this.lineTool = new LineHandler(canvas);
+    this.segmentTool = new SegmentHandler(canvas);
+    this.circleTool = new CircleHandler(canvas);
+    this.rotateTool = new RotateHandler(canvas);
+    this.visitor = new PositionVisitor();
+    // this.moveTool = new MoveHandler({
+    //   camera: this.camera,
+    //   scene: this.scene
+    // });
 
-    /* this.$store.commit("setSphere", this.sphere); */
+    this.$store.commit("init");
+    this.$store.commit("setSphere", this.canvas);
 
-    // window.addEventListener("resize", this.onWindowResized, false);
-    // window.addEventListener("keypress", this.keyPressed);
+    // const axesHelper = new THREE.AxesHelper(SETTINGS.sphere.radius * 1.25);
+    // axesHelper.layers.disableAll(); // exclude axeshelper from being searched by Raycaster
+    // this.scene.add(axesHelper);
+    // this.controls = new TransformControls(
+    //   this.camera,
+    //   this.renderer.domElement
+    // );
+    // this.controls.setMode("rotate");
+    // this.controls.setSpace("global"); // select between "global" or "local"
+    // this.controls.setSize(3);
+
+    // Add a circle silhouette to mark sphere boundary
+    // const circleBorder = new Circle();
+
+    window.addEventListener("resize", this.onWindowResized);
+    window.addEventListener("keypress", this.keyPressed);
+    // RotateHandler emits a custom event "sphere-rotate"
+    window.addEventListener(
+      "sphere-rotate",
+      this.handleSphereRotation as EventListener
+    );
   }
 
-  handleMouseMoved(e: MouseEvent) {
-    // When currentTool is NULL, the following line does nothing
+  handleSphereRotation(e: CustomEvent): void {
+    this.visitor.setTransform(e.detail.transform);
+    this.$store.state.points.forEach((p: SEPoint) => {
+      this.visitor.actionOnPoint(p);
+    });
+  }
+  handleMouseMoved(e: MouseEvent): void {
+    // WHen currentTool is NULL, the following line does nothing
     this.currentTool?.mouseMoved(e);
     e.preventDefault();
   }
 
-  handleMousePressed(e: MouseEvent) {
-    // When currentTool is NULL, the following line does nothing
+  handleMousePressed(e: MouseEvent): void {
+    // WHen currentTool is NULL, the following line does nothing
     this.currentTool?.mousePressed(e);
   }
 
-  handleMouseReleased(e: MouseEvent) {
-    // When currentTool is NULL, the following line does nothing
+  handleMouseReleased(e: MouseEvent): void {
+    // WHen currentTool is NULL, the following line does nothing
     this.currentTool?.mouseReleased(e);
   }
 
-  // VueJS lifecycle function see https://vuejs.org/v2/guide/instance.html#Lifecycle-Diagram
-  // mounted is excuted only once like a setup of the canvas
-  mounted() {
-    // During testting canvas is set to null and appendChild() will fail
-    // debugger; // eslint-disable-line
-    if (this.canvas instanceof SVGElement) {
-      const el = this.$refs.content as HTMLBaseElement;
-
-      // QUESTION: Should the sphereCanvas be added to this.canvas and then this.canvas added to el?
-      // it seems to work fine this way.
-      // el.appendChild(this.canvas);
-      //
-      this.sphereCanvas.appendTo(el);
-      this.sphereCanvas.update();
-      this.canvas.addEventListener("mousemove", this.handleMouseMoved);
-      this.canvas.addEventListener("mousedown", this.handleMousePressed);
-      this.canvas.addEventListener("mouseup", this.handleMouseReleased);
+  mounted(): void {
+    const parent = this.$refs.content as HTMLElement;
+    // During testting scene is set to null and appendTo() will fail
+    if (this.scene instanceof Two) {
+      this.scene.appendTo(parent);
+      this.scene.play();
+      // debugger; //eslint-disable-line
+      parent.firstChild?.addEventListener(
+        "mousemove",
+        this.handleMouseMoved as EventListener
+      );
+      parent.firstChild?.addEventListener(
+        "mousedown",
+        this.handleMousePressed as EventListener
+      );
+      parent.firstChild?.addEventListener(
+        "mouseup",
+        this.handleMouseReleased as EventListener
+      );
     }
-
-    window.addEventListener("resize", this.onWindowResized);
-    this.onWindowResized();
-    /* requestAnimationFrame(this.renderIt); */
-
-    /* Methods to set up a border on the left drawer
-     and allow it to be adjustable while respecting the minification*/
-    this.setLeftDrawerBorderWidth(this.leftDrawerProperties.borderWidth);
-    this.setLeftDrawerBorderEvents();
+    // TODO: handle resize?
+    // this.onWindowResized();
+    // requestAnimationFrame(this.renderIt); // Not needed when using TwoJS?
   }
 
-  // VueJS lifecycle function see https://vuejs.org/v2/guide/instance.html#Lifecycle-Diagram
-  // this is exited at the end of the life of the canvas
-  beforeDestroy() {
-    // VueJS lifecycle function
-    this.canvas.removeEventListener("mousemove", this.handleMouseMoved);
-    this.canvas.removeEventListener("mousedown", this.handleMousePressed);
-    this.canvas.removeEventListener("mouseup", this.handleMouseReleased);
+  beforeDestroy(): void {
+    // VieJS lifecycle function
+    const parent = this.$refs.content as HTMLElement;
+    parent.firstChild?.removeEventListener(
+      "mousemove",
+      this.handleMouseMoved as EventListener
+    );
+    parent.firstChild?.removeEventListener(
+      "mousedown",
+      this.handleMousePressed as EventListener
+    );
+    parent.firstChild?.removeEventListener(
+      "mouseup",
+      this.handleMouseReleased as EventListener
+    );
   }
 
-  keyPressed = (event: KeyboardEvent) => {
-    /* const sphere = this.scene.getObjectByName("MainSphere");
+  keyPressed = (event: KeyboardEvent): void => {
+    // const sphere = this.scene.getObjectByName("MainSphere");
     switch (event.code) {
       case "KeyR":
-        sphere?.rotation.set(0, 0, 0);
+        // sphere?.rotation.set(0, 0, 0);
         break;
       default:
-    } */
+    }
   };
 
-  renderIt() {
-    /* this.renderer && this.renderer.render(this.scene, this.camera);
-    requestAnimationFrame(this.renderIt); */
-  }
-
-  onWindowResized = () => {
+  onWindowResized = (): void => {
+    // TODO: finish this method
     const el = this.$refs.content as HTMLBaseElement;
     if (el) {
       /* Compute the available height and width of the window */
@@ -319,50 +342,31 @@ export default class Easel extends Vue {
       const availHeight = window.innerHeight - el.offsetTop;
 
       const size = Math.min(el.clientWidth, availHeight);
-      this.sphereCanvas.width = size;
-      this.sphereCanvas.height = size;
-
-      // this.canvas.width = size;
-      // this.canvas.height = size;
-
-      //Create new boundary circle
-      // TODO: fix so the boundary circle is never covered up by the scroll bars or bottom of
-      // screen.  The scroll bars should NEVER appear on the this Easel window
-      // change -8 and -9 below something automatically calculuated like innerWidth/height
-      // When coming back from the settings page the sphere is too big...
-      const boundaryCircle = new Two.Ellipse(
-        size / 2 - 8, // The center is shifted over
-        size / 2,
-        size / 2 - 9,
-        size / 2 - 9
-      );
-      boundaryCircle.linewidth = SETTINGS.boundaryCircle.linewidth;
-      boundaryCircle.stroke = SETTINGS.boundaryCircle.color;
-      boundaryCircle.opacity = SETTINGS.boundaryCircle.opacity;
-      boundaryCircle.noFill();
-
-      // remove the old boundary circle
-      this.midground.remove(this.midground.children[0]);
-
-      /*  add the new boundary circle to the midground. This
-      should always be the only object in the midground */
-      this.midground.add(boundaryCircle);
-
-      /* Update the sphereCanvas */
-      this.sphereCanvas.update();
+      // this.renderer.setSize(size, size);
     }
   };
 
+  // VueJS data watcher function
+  @Watch("showSphereControl")
+  onSphereControlChanged(value: boolean /*, oldValue: boolean*/): void {
+    if (value) {
+      // this.scene.add(this.controls);
+      // this.controls.attach(this.sphere);
+    } else {
+      // this.controls.detach();
+      // this.scene.remove(this.controls);
+    }
+  }
+
   @Watch("editMode")
-  switchEditMode(mode: string) {
+  switchEditMode(mode: string): void {
     // this.currentHandler?.deactivate(); // Unregister the current mouse handler
-    debugger; // eslint-disable-line
     this.currentTool = null;
     switch (mode) {
       case "rotate":
         //     // if (this.showSphereControl) this.controls.attach(this.sphere);
         //     this.controls.removeEventListener("change", this.renderIt);
-        this.currentTool = null;
+        this.currentTool = this.rotateTool;
         break;
       case "move":
         // this.currentTool = this.moveTool;
@@ -375,10 +379,10 @@ export default class Easel extends Vue {
         this.currentTool = this.lineTool;
         break;
       case "segment":
-        // this.currentTool = this.segmentTool;
+        this.currentTool = this.segmentTool;
         break;
       case "circle":
-        // this.currentTool = this.circleTool;
+        this.currentTool = this.circleTool;
         break;
       default:
         this.currentTool = null;
@@ -466,13 +470,24 @@ export default class Easel extends Vue {
       false
     );
   }
+  unMinifyLeftDrawer(): void {
+    if (this.leftDrawerMinified) {
+      this.leftDrawerMinified = false;
+    }
+  }
 }
 </script>
 
 <style lang="scss" scoped>
-#canvasContainer {
-  border: 2px solid gray;
+#content {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  // background-color: beige;
+  border: 1px solid red;
+  margin: 50px;
 }
+
 #leftnav {
   display: flex;
   flex-direction: column;

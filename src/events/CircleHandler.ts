@@ -1,50 +1,50 @@
-import { Vector3, Camera, Scene } from "three";
+/** @format */
+
+import { Vector3 } from "three";
 import CursorHandler from "./CursorHandler";
-import Point from "@/3d-objs/Point";
-import SETTINGS from "@/global-settings";
+import Point from "@/plotables/Point";
+// import SETTINGS from "@/global-settings";
 import Circle from "@/3d-objs/Circle";
 import { CommandGroup } from "@/commands/CommandGroup";
 import { AddPointCommand } from "@/commands/AddPointCommand";
 import { AddCircleCommand } from "@/commands/AddCircleCommand";
+import Two from "two.js";
+import { SEPoint } from "@/models/SEPoint";
 
 export default class CircleHandler extends CursorHandler {
   private startV3Point: Vector3;
-  private endV3Point: Vector3;
   private isMouseDown: boolean;
   private isCircleAdded: boolean;
-  private startDot: Point;
   private circle: Circle;
   private startPoint: Point | null = null;
   private endPoint: Point | null = null;
-  constructor({ camera, scene, target }: { camera: Camera; scene: Scene, target: Element }) {
-    super({ camera, scene, target });
+  constructor(scene: Two.Group) {
+    super(scene);
     this.startV3Point = new Vector3();
-    this.endV3Point = new Vector3();
-    this.startDot = new Point();
     this.isMouseDown = false;
     this.isCircleAdded = false;
     this.circle = new Circle();
   }
   activate = () => {
-    this.rayCaster.layers.disableAll();
-    this.rayCaster.layers.enable(SETTINGS.layers.sphere);
-    this.rayCaster.layers.enable(SETTINGS.layers.point);
+    // this.rayCaster.layers.disableAll();
+    // this.rayCaster.layers.enable(SETTINGS.layers.sphere);
+    // this.rayCaster.layers.enable(SETTINGS.layers.point);
   };
 
   mouseMoved(event: MouseEvent) {
     super.mouseMoved(event);
     if (this.isOnSphere) {
-      if (this.isMouseDown && this.theSphere) {
+      if (this.isMouseDown) {
         if (!this.isCircleAdded) {
           this.isCircleAdded = true;
-          this.theSphere.add(this.circle);
-          this.theSphere.add(this.startDot);
+          this.canvas.add(this.circle);
+          this.canvas.add(this.startMarker.ref);
         }
-        this.circle.circlePoint = this.currentV3Point;
+        this.circle.circlePoint = this.currentSpherePoint;
       }
     } else if (this.isCircleAdded) {
-      this.theSphere?.remove(this.circle);
-      this.theSphere?.remove(this.startDot);
+      this.circle.remove(); // remove from its parent
+      this.startMarker.ref.remove();
       this.isCircleAdded = false;
     }
   }
@@ -55,35 +55,35 @@ export default class CircleHandler extends CursorHandler {
     if (this.isOnSphere) {
       const selected = this.hitObject;
       if (selected instanceof Point) {
-        this.startV3Point.copy(selected.position);
-        this.startPoint = this.hitObject;
+        this.startV3Point.copy(selected.owner.positionOnSphere);
+        this.startPoint = this.hitObject as Point;
       } else {
-        this.theSphere?.add(this.startDot);
-        this.startV3Point.copy(this.currentV3Point);
+        this.canvas.add(this.startMarker.ref);
+        this.startV3Point.copy(this.currentSpherePoint);
         this.startPoint = null;
       }
-      this.startDot.position.copy(this.currentV3Point);
-      this.circle.centerPoint = this.currentV3Point;
+      this.startMarker.positionOnSphere = this.currentSpherePoint;
+      this.circle.centerPoint = this.currentSpherePoint;
     }
   }
 
   // eslint-disable-next-line
   mouseReleased(event: MouseEvent) {
     this.isMouseDown = false;
-    if (this.isOnSphere && this.theSphere) {
+    if (this.isOnSphere) {
       // Record the second point of the geodesic circle
-      this.theSphere.remove(this.circle);
-      this.theSphere.remove(this.startDot);
+      this.circle.remove();
+      this.canvas.remove(this.startMarker.ref);
       this.isCircleAdded = false;
-      this.endV3Point.copy(this.currentV3Point);
+      // this.endV3Point.copy(this.currentPoint);
       const newCircle = this.circle.clone();
       const circleGroup = new CommandGroup();
       if (this.startPoint === null) {
         // Starting point landed on an open space
         // we have to create a new point
-        const vtx = new Point();
-        vtx.position.copy(this.startV3Point);
-        this.startPoint = vtx;
+        const vtx = new SEPoint(new Point());
+        vtx.positionOnSphere = this.startV3Point;
+        this.startPoint = vtx.ref;
         circleGroup.addCommand(new AddPointCommand(vtx));
       }
       if (this.hitObject instanceof Point) {
@@ -91,9 +91,9 @@ export default class CircleHandler extends CursorHandler {
       } else {
         // endV3Point landed on an open space
         // we have to create a new point
-        const vtx = new Point();
-        vtx.position.copy(this.currentV3Point);
-        this.endPoint = vtx;
+        const vtx = new SEPoint(new Point());
+        vtx.positionOnSphere = this.currentSpherePoint;
+        this.endPoint = vtx.ref;
         circleGroup.addCommand(new AddPointCommand(vtx));
       }
 

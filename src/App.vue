@@ -33,6 +33,14 @@
         <v-toolbar-title>
           {{ $t("main.SphericalEaselMainTitle") }}
         </v-toolbar-title>
+        <v-tooltip left>
+          <template v-slot:activator="{ on }">
+            <a href="/docs">
+              <v-icon class="ml-2" v-on="on">mdi-help-circle</v-icon>
+            </a>
+          </template>
+          <span>Open Doc</span>
+        </v-tooltip>
       </div>
 
       <v-spacer></v-spacer>
@@ -67,6 +75,8 @@ import Component from "vue-class-component";
 import { Inject } from "vue-property-decorator";
 
 /* This allows for the State of the app to be initialized with in vuex store */
+/* TODO: What does this do? */
+import { WebGLRenderer, Mesh } from "three";
 import { State } from "vuex-class";
 
 /* This view has no (sub)components (but the Easel view does) so this is empty*/

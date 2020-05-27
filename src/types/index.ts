@@ -1,16 +1,15 @@
 // Declaration of all internal data types
 
-import { Mesh } from "three";
-import Point from "@/3d-objs/Point";
+import Two from "two.js";
 import Line from "@/3d-objs/Line";
 import Circle from "@/3d-objs/Circle";
-export interface SEPoint {
-  ref: Point;
-  startOf: SELine[];
-  endOf: SELine[];
-  centerOf: SECircle[];
-  circumOf: SECircle[];
-}
+import { SEPoint } from "@/models/SEPoint";
+
+/**
+ * Each visual object has its own way of making itself "glow"
+ */
+
+// import Two from "two.js";
 
 export interface SELine {
   ref: Line;
@@ -18,13 +17,14 @@ export interface SELine {
   end: SEPoint;
   isSegment: boolean;
 }
+
 export interface SECircle {
   ref: Circle;
   center: SEPoint;
   point: SEPoint;
 }
 export interface AppState {
-  sphere: Mesh | null;
+  sphere: Two.Group | null;
   editMode: string;
   points: SEPoint[];
   lines: SELine[];
@@ -41,4 +41,5 @@ export interface ToolButtonType {
   toolUseMessage: string;
   toolTipMessage: string;
 }
+
 // }

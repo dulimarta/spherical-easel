@@ -1,20 +1,17 @@
 export default {
-  sphere: {
-    // The sphere section is temporary fix to avoid compile errors
-    radius: 1
+  viewport: {
+    width: 700,
+    height: 700
   },
-  /* controls the display of the boundary circle (the intersection of the sphere and the screen) */
-  boundaryCircle: {
-    linewidth: 3,
-    color: "black",
-    opacity: 1
-    //nofill
+  sphere: {
+    // TODO: Rename this to boundaryCircle
+    /* We always assume a UNIT sphere */
+    radius: 250 /* in pixels */,
+    color: 0xffff00,
+    opacity: 0.5
   },
   line: {
-    thickness: 3 /* in pixels */
-  },
-  circle: {
-    radialSegments: 120 /* the number of line segments to approximate circles */
+    thickness: 3
   },
   point: {
     size: 0.02,
@@ -22,9 +19,10 @@ export default {
     glowColor: 0xff0000
   },
   layers: {
-    /* Seperate Mesh objects into different layers so it will be easier to filter Raycaster intersection */
-    sphere: 2,
-    point: 3
+    /* Seperate objects into different layers: background, foreground, etc */
+    totalLayers: 2,
+    SPHERE: 0,
+    LABEL: 1
   },
   /* Controls the length of time (in ms) the tool tip are displayed */
   toolTip: {

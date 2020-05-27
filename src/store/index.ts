@@ -1,10 +1,13 @@
+/** @format */
+
 import Vue from "vue";
 import Vuex from "vuex";
-import { Mesh, MeshPhongMaterial } from "three";
-import { AppState, SEPoint, SELine, SECircle } from "@/types";
-import Point from "@/3d-objs/Point";
+import Two from "two.js";
+import { AppState, SELine, SECircle } from "@/types";
+import Point from "@/plotables/Point";
 import Line from "@/3d-objs/Line";
 import Circle from "@/3d-objs/Circle";
+import { SEPoint } from "@/models/SEPoint";
 Vue.use(Vuex);
 
 const findPoint = (arr: SEPoint[], id: number): SEPoint | null => {
@@ -21,44 +24,38 @@ export default new Vuex.Store({
     circles: []
   } as AppState,
   mutations: {
-    // init(state) {
-    //   state.sphere = null;
-    //   state.editMode = "rotate";
-    //   state.vertices = [];
-    //   state.lines = [];
-    // },
-    setSphere(state, sph: Mesh) {
+    init(state: AppState): void {
+      state.sphere = null;
+      state.editMode = "";
+      state.points = [];
+      state.lines = [];
+      state.circles = [];
+    },
+    setSphere(state: AppState, sph: Two.Group): void {
       state.sphere = sph;
     },
-    setEditMode(state, mode: string) {
+    setEditMode(state: AppState, mode: string): void {
       state.editMode = mode;
     },
-    addPoint(state, point: Point) {
-      state.points.push({
-        ref: point,
-        startOf: [],
-        endOf: [],
-        centerOf: [],
-        circumOf: []
-      });
-      state.sphere?.add(point);
+    addPoint(state: AppState, point: SEPoint): void {
+      state.points.push(point);
+      state.sphere?.add(point.ref);
     },
-    removePoint(state, pointId: number) {
-      const pos = state.points.findIndex(x => x.ref.id === pointId);
+    removePoint(state: AppState, pointId: number): void {
+      const pos = state.points.findIndex(x => x.id === pointId);
       if (pos >= 0) {
-        state.sphere?.remove(state.points[pos].ref);
-        (state.points[pos].ref.material as MeshPhongMaterial).emissive.set(0);
+        state.points[pos].ref.remove();
         state.points.splice(pos, 1);
       }
     },
     addLine(
-      state,
+      state: AppState,
       {
         line,
         startPoint,
         endPoint
       }: { line: Line; startPoint: Point; endPoint: Point }
-    ) {
+    ): void {
       // Find both end points in the current list of points
       const start = findPoint(state.points, startPoint.id);
       const end = findPoint(state.points, endPoint.id);
@@ -70,7 +67,7 @@ export default new Vuex.Store({
         state.sphere?.add(line);
       }
     },
-    removeLine(state, lineId: number) {
+    removeLine(state: AppState, lineId: string): void {
       const pos = state.lines.findIndex(x => x.ref.id === lineId);
       if (pos >= 0) {
         /* victim line is found */
@@ -98,20 +95,19 @@ export default new Vuex.Store({
           if (pos >= 0) state.points[ePointPos].endOf.splice(pos, 1);
         }
         // Remove it from the sphere
-        state.sphere?.remove(victimLine.ref);
-        victimLine.ref.highlight();
+        victimLine.ref.remove();
 
         state.lines.splice(pos, 1); // Remove the line from the list
       }
     },
     addCircle(
-      state,
+      state: AppState,
       {
         circle,
         centerPoint,
         circlePoint
-      }: { circle: Circle; centerPoint: Mesh; circlePoint: Mesh }
-    ) {
+      }: { circle: Circle; centerPoint: Point; circlePoint: Point }
+    ): void {
       const start = findPoint(state.points, centerPoint.id);
       const end = findPoint(state.points, circlePoint.id);
       if (start !== null && end !== null) {
@@ -122,7 +118,8 @@ export default new Vuex.Store({
         state.sphere?.add(circle);
       }
     },
-    removeCircle(state, circleId: number) {
+    removeCircle(state: AppState, circleId: string): void {
+      // FIXME
       const circlePos = state.circles.findIndex(x => x.ref.id === circleId);
       if (circlePos >= 0) {
         /* victim line is found */
@@ -150,8 +147,7 @@ export default new Vuex.Store({
           if (epos >= 0) state.points[ePointPos].circumOf.splice(epos, 1);
         }
         // Remove it from the sphere
-        state.sphere?.remove(victimCircle.ref);
-        (victimCircle.ref.material as MeshPhongMaterial).emissive.set(0);
+        victimCircle.ref.remove();
 
         state.circles.splice(circlePos, 1); // Remove the line from the list
       }
