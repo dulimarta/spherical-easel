@@ -3,7 +3,7 @@
 import { Vector3 } from "three";
 import CursorHandler from "./CursorHandler";
 import Arrow from "@/3d-objs/Arrow"; // for debugging
-import Point from "@/3d-objs/Point";
+import Point from "@/plotables/Point";
 import Line from "@/3d-objs/Line";
 
 import SETTINGS from "@/global-settings";

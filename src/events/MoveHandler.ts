@@ -2,7 +2,7 @@
 
 import CursorHandler from "./CursorHandler";
 import SETTINGS from "@/global-settings";
-import Point from "@/3d-objs/Point";
+import Point from "@/plotables/Point";
 import Two from "two.js";
 
 export default class MoveHandler extends CursorHandler {

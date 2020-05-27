@@ -2,12 +2,12 @@
 
 import Vue from "vue";
 import Vuex from "vuex";
-import { Mesh } from "three";
 import Two from "two.js";
-import { AppState, SEPoint, SELine, SECircle } from "@/types";
-import Point from "@/3d-objs/Point";
+import { AppState, SELine, SECircle } from "@/types";
+import Point from "@/plotables/Point";
 import Line from "@/3d-objs/Line";
 import Circle from "@/3d-objs/Circle";
+import { SEPoint } from "@/models/SEPoint";
 Vue.use(Vuex);
 
 const findPoint = (arr: SEPoint[], id: number): SEPoint | null => {
@@ -38,13 +38,7 @@ export default new Vuex.Store({
       state.editMode = mode;
     },
     addPoint(state, point: Point) {
-      state.points.push({
-        ref: point,
-        startOf: [],
-        endOf: [],
-        centerOf: [],
-        circumOf: []
-      });
+      state.points.push(new SEPoint(point));
       state.sphere?.add(point);
     },
     removePoint(state, pointId: number) {
@@ -102,7 +96,6 @@ export default new Vuex.Store({
         }
         // Remove it from the sphere
         victimLine.ref.remove();
-        // (victimLine.ref.material as MeshPhongMaterial).emissive.set(0);
 
         state.lines.splice(pos, 1); // Remove the line from the list
       }
@@ -113,7 +106,7 @@ export default new Vuex.Store({
         circle,
         centerPoint,
         circlePoint
-      }: { circle: Circle; centerPoint: Mesh; circlePoint: Mesh }
+      }: { circle: Circle; centerPoint: Point; circlePoint: Point }
     ) {
       const start = findPoint(state.points, centerPoint.id);
       const end = findPoint(state.points, circlePoint.id);
@@ -155,7 +148,6 @@ export default new Vuex.Store({
         }
         // Remove it from the sphere
         victimCircle.ref.remove();
-        // (victimCircle.ref.material as MeshPhongMaterial).emissive.set(0);
 
         state.circles.splice(circlePos, 1); // Remove the line from the list
       }

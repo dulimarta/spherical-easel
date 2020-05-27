@@ -1,9 +1,6 @@
 /** @format */
 
-import { Vector3, Camera, Scene } from "three";
 import LineHandler from "./LineHandler";
-// import Arrow from "@/3d-objs/Arrow";
-import Point from "@/3d-objs/Point";
 import SETTINGS from "@/global-settings";
 import Two from "two.js";
 

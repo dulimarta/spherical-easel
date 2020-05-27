@@ -1,7 +1,7 @@
 import { Vector3, Matrix4 } from "three";
 import Two, { Color } from "two.js";
 import SETTINGS from "@/global-settings";
-import Point from "./Point";
+import Point from "../plotables/Point";
 import { Glowable } from "@/types";
 const desiredXAxis = new Vector3();
 const desiredYAxis = new Vector3();

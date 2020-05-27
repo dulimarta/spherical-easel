@@ -1,5 +1,5 @@
 import { Command } from "./Command";
-import Point from "@/3d-objs/Point";
+import Point from "@/plotables/Point";
 
 export class AddPointCommand extends Command {
   private arg: Point;

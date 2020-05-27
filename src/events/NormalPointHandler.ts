@@ -2,7 +2,7 @@
 
 import Arrow from "@/3d-objs/Arrow";
 import CursorHandler from "./CursorHandler";
-import Point from "@/3d-objs/Point";
+import Point from "@/plotables/Point";
 import { AddPointCommand } from "@/commands/AddPointCommand";
 import Two from "two.js";
 export default class NormalPointHandler extends CursorHandler {
@@ -44,6 +44,9 @@ export default class NormalPointHandler extends CursorHandler {
     }
   };
 
+  mouseReleased() {
+    /* None */
+  }
   activate = () => {
     // this.rayCaster.layers.disableAll();
     // this.rayCaster.layers.enable(SETTINGS.layers.sphere);

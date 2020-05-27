@@ -2,7 +2,7 @@
 
 import { Vector3 } from "three";
 import CursorHandler from "./CursorHandler";
-import Point from "@/3d-objs/Point";
+import Point from "@/plotables/Point";
 import SETTINGS from "@/global-settings";
 import Circle from "@/3d-objs/Circle";
 import { CommandGroup } from "@/commands/CommandGroup";

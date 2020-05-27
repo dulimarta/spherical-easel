@@ -16,12 +16,13 @@
 import Vue from "vue";
 import Component from "vue-class-component";
 import { State } from "vuex-class";
-import { SEPoint, SELine, SECircle, Glowable } from "@/types";
+import { SELine, SECircle } from "@/types";
 
 import { Prop } from "vue-property-decorator";
 // import { Mesh, MeshPhongMaterial } from "three";
 import Two from "two.js";
-import Point from "../3d-objs/Point";
+import { SEPoint } from '@/models/SEPoint';
+// import Point from "@/plotables/Point";
 
 @Component
 export default class ObjectTree extends Vue {
@@ -49,7 +50,7 @@ export default class ObjectTree extends Vue {
         {
           id: 0,
           name: "Start of",
-          children: z.startOf.map(x => ({
+          children: z.startOf.map((x: SELine) => ({
             id: x.ref.id,
             name: x.ref.name
           }))
@@ -57,7 +58,7 @@ export default class ObjectTree extends Vue {
         {
           id: 1,
           name: "End of",
-          children: z.endOf.map(x => ({
+          children: z.endOf.map((x: SELine) => ({
             id: x.ref.id,
             name: x.ref.name
           }))
@@ -65,7 +66,7 @@ export default class ObjectTree extends Vue {
         {
           id: 2,
           name: "Center of",
-          children: z.centerOf.map(x => ({
+          children: z.centerOf.map((x: SECircle) => ({
             id: x.ref.id
             // name: x.ref.name
           }))
@@ -73,7 +74,7 @@ export default class ObjectTree extends Vue {
         {
           id: 3,
           name: "Circumpoint of",
-          children: z.circumOf.map(x => ({
+          children: z.circumOf.map((x: SECircle) => ({
             id: x.ref.id
             // name: x.ref.name
           }))

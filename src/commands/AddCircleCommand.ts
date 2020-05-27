@@ -1,5 +1,5 @@
 import { Command } from "./Command";
-import Point from "@/3d-objs/Point";
+import Point from "@/plotables/Point";
 import Circle from "@/3d-objs/Circle";
 
 export class AddCircleCommand extends Command {

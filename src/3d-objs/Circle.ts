@@ -191,7 +191,8 @@ export default class Circle extends Two.Group {
     const dup = new Circle(this.center_, this.outer);
     dup.rotation = this.rotation;
     dup.translation.copy(this.translation);
-
+    dup.frontHalf.closed = this.frontHalf.closed;
+    dup.backHalf.closed = this.backHalf.closed;
     // The clone has equal nunber of vertices for the front and back halves
     while (dup.frontHalf.vertices.length > this.frontHalf.vertices.length) {
       // Transfer from fronthalf to backhalf

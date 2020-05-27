@@ -2,14 +2,14 @@
 
 import { Vector3 } from "three";
 import AppStore from "@/store";
-import Point from "@/3d-objs/Point";
+import Point from "@/plotables/Point";
 import Line from "@/3d-objs/Line";
 import SETTINGS from "@/global-settings";
 import { ToolStrategy } from "./ToolStrategy";
 import Two, { BoundingClientRect, Vector } from "two.js";
 
 /* FIXME: The 3D position and the projected 2D positions are off by a few pixels???*/
-export default class CursorHandler implements ToolStrategy {
+export default abstract class CursorHandler implements ToolStrategy {
   protected readonly X_AXIS = new Vector3(1, 0, 0);
   protected readonly Y_AXIS = new Vector3(0, 1, 0);
   protected readonly Z_AXIS = new Vector3(0, 0, 1);
@@ -20,7 +20,7 @@ export default class CursorHandler implements ToolStrategy {
   protected mouse: Two.Vector;
   protected store = AppStore; // Vuex global state
   protected currentSpherePoint: Vector3;
-  private currentScreenPoint: Vector;
+  protected currentScreenPoint: Vector;
   protected hitObject: Point | Line | null = null;
   protected isOnSphere: boolean;
   private boundingBox: BoundingClientRect;
@@ -37,20 +37,13 @@ export default class CursorHandler implements ToolStrategy {
     this.isOnSphere = false;
   }
 
-  activate(): void {
-    throw new Error("Method not implemented.");
-  }
+  abstract activate(): void;
 
   //eslint-disable-next-line
-  mousePressed(event: MouseEvent): void {
-    throw new Error("Method not implemented.");
-  }
+  abstract mousePressed(event: MouseEvent): void;
 
   //eslint-disable-next-line
-  mouseReleased(event: MouseEvent): void {
-    // throw new Error("Method not implemented.");
-    // Intentionally left blank
-  }
+  abstract mouseReleased(event: MouseEvent): void;
 
   findNearByObjects(
     mousePos: Vector,

@@ -102,6 +102,8 @@ import NormalPointHandler from "@/events/NormalPointHandler";
 import LineHandler from "@/events/LineHandler";
 import SegmentHandler from "@/events/SegmentHandler";
 import CircleHandler from "@/events/CircleHandler";
+
+import RotateHandler from "@/events/RotateHandler"
 // import MoveHandler from "@/events/MoveHandler";
 import SETTINGS from "@/global-settings";
 import { State } from "vuex-class";
@@ -110,6 +112,9 @@ import ToolButtons from "@/components/ToolButtons.vue";
 
 import { setupScene } from "@/initApp";
 import Two from "two.js";
+// import Point from '../plotables/Point';
+import { PositionVisitor } from "@/visitors/PositionVisitor"
+import { SEPoint } from '@/models/SEPoint';
 // import Circle from '../3d-objs/Circle';
 @Component({ components: { ObjectTree, ToolButtons } })
 export default class Easel extends Vue {
@@ -133,6 +138,7 @@ export default class Easel extends Vue {
   private pointTool: NormalPointHandler;
   private lineTool: LineHandler;
   private segmentTool: SegmentHandler;
+  private rotateTool: RotateHandler;
   // private moveTool: MoveHandler;
   private circleTool: CircleHandler;
   // private controls: TransformControls;
@@ -163,6 +169,7 @@ export default class Easel extends Vue {
     this.lineTool = new LineHandler(canvas);
     this.segmentTool = new SegmentHandler(canvas);
     this.circleTool = new CircleHandler(canvas);
+    this.rotateTool = new RotateHandler(canvas);
     // this.moveTool = new MoveHandler({
     //   camera: this.camera,
     //   scene: this.scene
@@ -187,8 +194,18 @@ export default class Easel extends Vue {
 
     window.addEventListener("resize", this.onWindowResized);
     window.addEventListener("keypress", this.keyPressed);
+    window.addEventListener("sphere-rotate", this.handleSpherRotation as EventListener)
   }
 
+  handleSpherRotation(e: CustomEvent) {
+    const pv = new PositionVisitor();
+    pv.setTransform(e.detail.transform);
+    this.$store.state.points
+      .forEach((p: SEPoint) => {
+        pv.positionUpdateVisitor(p);
+      });
+
+  }
   handleMouseMoved(e: MouseEvent) {
     // WHen currentTool is NULL, the following line does nothing
     this.currentTool?.mouseMoved(e);
@@ -291,7 +308,7 @@ export default class Easel extends Vue {
       case "rotate":
         //     // if (this.showSphereControl) this.controls.attach(this.sphere);
         //     this.controls.removeEventListener("change", this.renderIt);
-        this.currentTool = null;
+        this.currentTool = this.rotateTool;
         break;
       case "move":
         // this.currentTool = this.moveTool;
