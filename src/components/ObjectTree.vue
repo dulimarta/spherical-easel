@@ -1,14 +1,32 @@
 <template>
   <div class="pa-1" id="objectTreeContainer">
     <h4>{{ $t("objects.points") }}</h4>
-    <v-treeview dense hoverable activatable active-class="warning"
-      :items="iPoints" @update:active="updateActive"></v-treeview>
+    <v-treeview
+      dense
+      hoverable
+      activatable
+      active-class="warning"
+      :items="iPoints"
+      @update:active="updateActive"
+    ></v-treeview>
     <h4>{{ $t("objects.lines") }}</h4>
-    <v-treeview dense hoverable activatable active-class="warning"
-      :items="iLines" @update:active="updateActive"></v-treeview>
+    <v-treeview
+      dense
+      hoverable
+      activatable
+      active-class="warning"
+      :items="iLines"
+      @update:active="updateActive"
+    ></v-treeview>
     <h4>{{ $t("objects.circles") }}</h4>
-    <v-treeview dense hoverable activatable active-class="warning"
-      :items="iCircles" @update:active="updateActive"></v-treeview>
+    <v-treeview
+      dense
+      hoverable
+      activatable
+      active-class="warning"
+      :items="iCircles"
+      @update:active="updateActive"
+    ></v-treeview>
   </div>
 </template>
 
@@ -16,12 +34,13 @@
 import Vue from "vue";
 import Component from "vue-class-component";
 import { State } from "vuex-class";
-import { SELine, SECircle } from "@/types";
+import { SECircle } from "@/types";
 
 import { Prop } from "vue-property-decorator";
 // import { Mesh, MeshPhongMaterial } from "three";
 import Two from "two.js";
-import { SEPoint } from '@/models/SEPoint';
+import { SEPoint } from "@/models/SEPoint";
+import { SELine } from "@/models/SELine";
 // import Point from "@/plotables/Point";
 
 @Component
@@ -85,12 +104,12 @@ export default class ObjectTree extends Vue {
   }
 
   get iLines() {
-    return this.lines.map(z => ({
+    return this.lines.map((z: SELine) => ({
       id: z.ref.id,
       name: z.ref.name,
       children: [
-        { id: z.start.ref.id, name: "Start:" + z.start.ref.name },
-        { id: z.end.ref.id, name: "End:" + z.end.ref.name }
+        { id: z.start?.ref.id, name: "Start:" + z.start?.ref.name },
+        { id: z.end?.ref.id, name: "End:" + z.end?.ref.name }
       ]
     }));
   }
@@ -120,7 +139,7 @@ export default class ObjectTree extends Vue {
       this.selectedObject = (this.scene.children as any).ids[args[0]];
       // this.selectedObject = this.sphere.getObjectById(args[0]) as Mesh;
       if ((this.selectedObject as any).glow) {
-        (this.selectedObject as any).glow()
+        (this.selectedObject as any).glow();
       }
     }
   }

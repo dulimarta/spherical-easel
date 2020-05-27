@@ -3,7 +3,7 @@
 import { Vector3 } from "three";
 import AppStore from "@/store";
 import Point from "@/plotables/Point";
-import Line from "@/3d-objs/Line";
+import Line from "@/plotables/Line";
 import SETTINGS from "@/global-settings";
 import { ToolStrategy } from "./ToolStrategy";
 import Two, { BoundingClientRect, Vector } from "two.js";

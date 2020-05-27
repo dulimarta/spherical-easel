@@ -1,4 +1,5 @@
 import { SEPoint } from "@/models/SEPoint";
+import { SELine } from "@/models/SELine";
 /**
  * Use the Visitor design pattern to apply operation on different types
  * of geometric objects. The non-abstract class that implements this
@@ -6,10 +7,10 @@ import { SEPoint } from "@/models/SEPoint";
  */
 export interface Visitor {
   actionOnPoint(p: SEPoint): void;
+  actionOnLine(x: SELine): void;
 
   // TODO: add the following abstract methods later
   /*
-  actionOnLine(x:SELine): void;
   actionOnCircle(x:SECircle): void;
   */
 }

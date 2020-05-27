@@ -1,10 +1,11 @@
 import Point from "../plotables/Point";
-import { SELine, SECircle } from "@/types";
+import { SECircle } from "@/types";
 import { Visitable } from "@/visitors/Visitable";
 import { Visitor } from "@/visitors/Visitor";
 import { SENode } from "./SENode";
 import { Vector3 } from "three";
 import SETTINGS from "@/global-settings";
+import { SELine } from "./SELine";
 
 export class SEPoint extends SENode implements Visitable {
   private _posOnSphere: Vector3;

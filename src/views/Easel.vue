@@ -157,6 +157,7 @@ import Two from "two.js";
 // import Point from '../plotables/Point';
 import { PositionVisitor } from "@/visitors/PositionVisitor";
 import { SEPoint } from "@/models/SEPoint";
+import { SELine } from "@/models/SELine";
 // import Circle from '../3d-objs/Circle';
 @Component({ components: { ObjectTree, ToolButtons } })
 export default class Easel extends Vue {
@@ -262,6 +263,9 @@ export default class Easel extends Vue {
     this.visitor.setTransform(e.detail.transform);
     this.$store.state.points.forEach((p: SEPoint) => {
       this.visitor.actionOnPoint(p);
+    });
+    this.$store.state.lines.forEach((l: SELine) => {
+      this.visitor.actionOnLine(l);
     });
   }
   handleMouseMoved(e: MouseEvent): void {

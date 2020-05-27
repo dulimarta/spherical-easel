@@ -4,7 +4,7 @@ import { Vector3 } from "three";
 import CursorHandler from "./CursorHandler";
 import Arrow from "@/3d-objs/Arrow"; // for debugging
 import Point from "@/plotables/Point";
-import Line from "@/3d-objs/Line";
+import Line from "@/plotables/Line";
 
 import SETTINGS from "@/global-settings";
 import { CommandGroup } from "@/commands/CommandGroup";
@@ -12,6 +12,7 @@ import { AddPointCommand } from "@/commands/AddPointCommand";
 import { AddLineCommand } from "@/commands/AddLineCommand";
 import Two from "two.js";
 import { SEPoint } from "@/models/SEPoint";
+import { SELine } from "@/models/SELine";
 export default class LineHandler extends CursorHandler {
   protected startV3Point: Vector3; // The starting point of the line
   protected tmpVector: Vector3;
@@ -127,9 +128,9 @@ export default class LineHandler extends CursorHandler {
       lineGroup
         .addCommand(
           new AddLineCommand({
-            line: newLine,
-            startPoint: this.startPoint,
-            endPoint: this.endPoint
+            line: new SELine(newLine, newLine.normalDirection),
+            startPoint: new SEPoint(this.startPoint),
+            endPoint: new SEPoint(this.endPoint)
           })
         )
         .execute();

@@ -1,22 +1,9 @@
 // Declaration of all internal data types
 
 import Two from "two.js";
-import Line from "@/3d-objs/Line";
 import Circle from "@/3d-objs/Circle";
 import { SEPoint } from "@/models/SEPoint";
-
-/**
- * Each visual object has its own way of making itself "glow"
- */
-
-// import Two from "two.js";
-
-export interface SELine {
-  ref: Line;
-  start: SEPoint;
-  end: SEPoint;
-  isSegment: boolean;
-}
+import { SELine } from "@/models/SELine";
 
 export interface SECircle {
   ref: Circle;

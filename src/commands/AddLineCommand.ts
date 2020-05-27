@@ -1,19 +1,21 @@
 import { Command } from "./Command";
 import Point from "@/plotables/Point";
-import Line from "@/3d-objs/Line";
+import Line from "@/plotables/Line";
+import { SELine } from "@/models/SELine";
+import { SEPoint } from "@/models/SEPoint";
 
 export class AddLineCommand extends Command {
-  private line: Line;
-  private startPoint: Point;
-  private endPoint: Point;
+  private line: SELine;
+  private startPoint: SEPoint;
+  private endPoint: SEPoint;
   constructor({
     line,
     startPoint,
     endPoint
   }: {
-    line: Line;
-    startPoint: Point;
-    endPoint: Point;
+    line: SELine;
+    startPoint: SEPoint;
+    endPoint: SEPoint;
   }) {
     super();
     this.line = line;

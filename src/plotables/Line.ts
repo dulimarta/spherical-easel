@@ -2,9 +2,10 @@ import { Vector3, Matrix4 } from "three";
 import Two, { Color } from "two.js";
 import SETTINGS from "@/global-settings";
 import { Stylable } from "@/plotables/Styleable";
+import { SELine } from "@/models/SELine";
 const desiredXAxis = new Vector3();
 const desiredYAxis = new Vector3();
-const desiredZAxis = new Vector3();
+// const desiredZAxis = new Vector3();
 const transformMatrix = new Matrix4();
 
 const SUBDIVS = 100;
@@ -16,12 +17,13 @@ const SUBDIVS = 100;
  * @extends {Two.Group}
  */
 export default class Line extends Two.Group implements Stylable {
+  // Declare owner as non-null, this field will be initialized by the associated owner
+  public owner?: SELine | null = null;
   private start: Vector3;
   private end: Vector3;
   public name = "";
   private oldFrontStroke: Two.Color = "";
   private oldBackStroke: Two.Color = "";
-  // public id = "";
   public normalDirection: Vector3;
 
   private majorAxisDirection: Vector3 = new Vector3();
@@ -30,6 +32,7 @@ export default class Line extends Two.Group implements Stylable {
   private frontHalf: Two.Path;
   private backHalf: Two.Path;
   private points: Vector3[];
+
   constructor(start?: Vector3, end?: Vector3, segment?: boolean) {
     super();
     const radius = SETTINGS.sphere.radius;
@@ -95,13 +98,6 @@ export default class Line extends Two.Group implements Stylable {
   }
 
   private deformIn2D(): void {
-    // The circle plane passes through three points the origin (0,0,0)
-    // and the two points (start (S) and end (E)). The normal of this plane
-    // is the cross product of SxE
-    // console.debug("Start", this.start.toFixed(2));
-    // console.debug("End", this.end.toFixed(2));
-
-    this.normalDirection.crossVectors(this.start, this.end).normalize();
     // console.debug(this.normalDirection.toFixed(2));
     // The ellipse major axis on the XY plane is perpendicular
     // to the circle normal [Nx,Ny,Nz]. We can fix the direction of
@@ -168,10 +164,10 @@ export default class Line extends Two.Group implements Stylable {
   }
 
   private deformIntoEllipse(): void {
-    desiredZAxis.crossVectors(this.start, this.end).normalize();
+    // desiredZAxis.crossVectors(this.start, this.end).normalize();
     desiredXAxis.copy(this.start).normalize();
-    desiredYAxis.crossVectors(desiredZAxis, desiredXAxis);
-    transformMatrix.makeBasis(desiredXAxis, desiredYAxis, desiredZAxis);
+    desiredYAxis.crossVectors(this.normalDirection, desiredXAxis);
+    transformMatrix.makeBasis(desiredXAxis, desiredYAxis, this.normalDirection);
     let firstPos = -1;
     let firstNeg = -1;
     let lastSign = 0;
@@ -230,16 +226,28 @@ export default class Line extends Two.Group implements Stylable {
 
   set startPoint(position: Vector3) {
     this.start.copy(position);
-    // this.deformIntoEllipse();
+    // The circle plane passes through three points the origin (0,0,0)
+    // and the two points (start (S) and end (E)).
+    // The normal of this plane is the cross product of SxE
+
+    this.normalDirection.crossVectors(this.start, this.end).normalize(); // this.deformIntoEllipse();
     this.deformIn2D();
   }
 
   set endPoint(position: Vector3) {
     this.end.copy(position);
+    this.normalDirection.crossVectors(this.start, this.end).normalize(); // this.deformIntoEllipse();
     // this.deformIntoEllipse();
     this.deformIn2D();
   }
+  set orientation(dir: Vector3) {
+    this.normalDirection.copy(dir);
+    this.deformIn2D();
+  }
 
+  get orientation() {
+    return this.normalDirection;
+  }
   // It looks like we have to define our own clone() function
   // The builtin clone() does not seem to work correctly
   clone(): this {
