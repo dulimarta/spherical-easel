@@ -6,13 +6,14 @@
         <!--- VUetify grid system uses 12-column layout. 
         Setting the attribute cols="12" means the v-col below
         takes 100% of the available width. Therefore programmatically we can only control the height using Vue style binding -->
-        <v-col cols="12" id="contentWrapper" ref="contentWrapper"
-          :style="{height: viewportHeight}">
-          <div id="content" ref="content"
-            :style="{transform: transformStyle}">
-            <!--- HTML canvas will go here --->
+        <v-col cols="12" id="contentWrapper" ref="contentWrapper">
+          <zoom-viewport :view-height="viewHeight" :min-zoom="0.3"
+            :max-zoom="1.5">
+            <div id="content" ref="content">
+              <!--- HTML canvas will go here --->
 
-          </div>
+            </div>
+          </zoom-viewport>
         </v-col>
       </v-row>
     </v-container>
@@ -78,7 +79,8 @@
               <ToolButtons></ToolButtons>
             </v-tab-item>
             <v-tab-item value="objectListTab">
-              <ObjectTree :scene="canvas"></ObjectTree>
+              <ObjectTree :scene="canvas">
+              </ObjectTree>
             </v-tab-item>
           </v-tabs>
         </div>
@@ -127,7 +129,7 @@ import { State } from "vuex-class";
 /* Import the components for the contents of the navigation drawer */
 import ObjectTree from "@/components/ObjectTree.vue";
 import ToolButtons from "@/components/ToolButtons.vue";
-
+import ZoomViewport from "@/components/ZoomViewport.vue"
 import { setupScene } from "@/initApp";
 import Two from "two.js";
 // import Point from '../plotables/Point';
@@ -135,7 +137,7 @@ import { PositionVisitor } from "@/visitors/PositionVisitor";
 import { SEPoint } from "@/models/SEPoint";
 import { SELine } from "@/models/SELine";
 // import Circle from '../3d-objs/Circle';
-@Component({ components: { ObjectTree, ToolButtons } })
+@Component({ components: { ObjectTree, ToolButtons, ZoomViewport } })
 export default class Easel extends Vue {
   // @Prop(WebGLRenderer)
   // readonly renderer!: WebGLRenderer;
@@ -144,7 +146,7 @@ export default class Easel extends Vue {
   // readonly canvas!: HTMLCanvasElement;
 
   private scene!: Two;
-  private canvas!: Two.Group;
+  private canvas?: Two.Group | null = null;
 
   private leftDrawerMinified = false;
   private activeLeftDrawerTab = "toolListTab";
@@ -166,20 +168,13 @@ export default class Easel extends Vue {
   // private controls: TransformControls;
   // private sphere: THREE.Mesh;
   private showSphereControl = false;
-  private bgColor = "transparent"
-  private transformStyle = "scale(1)"
   private viewHeight = 600;
-  private viewScaleFactor = 1;
   private leftDrawerProperties = {
     width: 300, //initial width and stores the current width (including the minified)
     borderWidth: 3, //the width for the border of the left drawer set to zero when minimfied
     minWidth: 250, //The minimum width: minWidth<=adjustedWidth is true always
     adjustedWidth: 300 // The value after the user has adjusted the width of the drawer
   };
-
-  get viewportHeight(): string {
-    return this.viewHeight + "px";
-  }
 
   @State("editMode")
   private editMode!: string;
@@ -233,11 +228,10 @@ export default class Easel extends Vue {
     /* We have to move setupScene() call to "mounted" so we can check the actual screen space */
     const { two, canvas } = setupScene(actualWidth, actualHeight);
     this.scene = two;
+    this.canvas = canvas;
 
     // Hack to add our own CSS class
     ((two.renderer as any).domElement as HTMLElement).classList.add("se-geo");
-
-    this.canvas = canvas;
     // this.sphere = sphere;
     this.currentTool = null;
     this.pointTool = new NormalPointHandler(canvas);
@@ -254,7 +248,6 @@ export default class Easel extends Vue {
     this.$store.commit("setSphere", this.canvas);
 
     // During testting scene is set to null and appendTo() will fail
-    (this.$refs.contentWrapper as HTMLElement).addEventListener("wheel", this.mouseScrolled);
     if (this.scene instanceof Two) {
       this.scene.appendTo(svgParent);
       this.scene.play();
@@ -278,24 +271,6 @@ export default class Easel extends Vue {
     this.setLeftDrawerBorderEvents();
   }
 
-  mouseScrolled(e: MouseWheelEvent): void {
-    const parentBox = (this.$refs.contentWrapper as HTMLElement).getBoundingClientRect();
-    // Calculate percentage w.r.t viewport height
-    const scrollFraction = e.deltaY / parentBox.height;
-    // Positive scroll: scale up/zoom in
-    // Negative scroll: scale down/zoom out
-    const scaleFactor = 1 + scrollFraction;
-    this.viewScaleFactor *= scaleFactor;
-    // How far is the mouse from the center of the viewport
-    const dx = Math.floor(e.offsetX - (parentBox.width / 2));
-    const dy = Math.floor(e.offsetY - (parentBox.height / 2));
-
-    // Use composite transform to scale from the current mouse position (dx,dy)
-    this.transformStyle =
-      `translate(${dx}px,${dy}px) ` + /* translate to origin */
-      `scale(${this.viewScaleFactor}) ` + /* scale from origin */
-      `translate(${-dx}px,${-dy}px)`; /* translate back to mouse location */
-  }
   handleSphereRotation(e: CustomEvent): void {
     this.visitor?.setTransform(e.detail.transform);
     this.$store.state.points.forEach((p: SEPoint) => {
@@ -319,12 +294,6 @@ export default class Easel extends Vue {
   handleMouseReleased(e: MouseEvent): void {
     // WHen currentTool is NULL, the following line does nothing
     this.currentTool?.mouseReleased(e);
-  }
-
-  get canvasStyle(): any {
-    return {
-      background: this.bgColor
-    }
   }
 
   beforeDestroy(): void {
@@ -354,7 +323,7 @@ export default class Easel extends Vue {
     }
   };
 
-  onWindowResized = (): void => {
+  onWindowResized(): void {
     // TODO: finish this method
     const el = this.$refs.content as HTMLBaseElement;
     if (el) {
@@ -367,7 +336,7 @@ export default class Easel extends Vue {
       // this.scene.scene.scale = size / SETTINGS.viewport.width;
 
     }
-  };
+  }
 
   // VueJS data watcher function
   @Watch("showSphereControl")
