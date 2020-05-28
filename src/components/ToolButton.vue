@@ -1,15 +1,13 @@
 <template>
   <!-- Displays a button only if the user has permission to see it. -->
-  <div class="pa-0" id="button.id" v-if="(buttonDisplayList.indexOf(button.editModeValue) !== -1)">
+  <div class="pa-0" id="button.id"
+    v-if="(buttonDisplayList.indexOf(button.editModeValue) !== -1)">
     <!-- The button is wrapped in to tooltip vue component -->
-    <v-tooltip bottom :open-delay="toolTipOpenDelay" :close-delay="toolTipCloseDelay">
+    <v-tooltip bottom :open-delay="toolTipOpenDelay"
+      :close-delay="toolTipCloseDelay">
       <template v-slot:activator="{ on }">
-        <v-btn
-          icon
-          :value="button.editModeValue"
-          v-on="on"
-          @click="$emit('displayOnlyThisToolUseMessage',button.id); displayToolUseMessage = true;"
-        >
+        <v-btn icon :value="button.editModeValue" v-on="on"
+          @click="$emit('displayOnlyThisToolUseMessage',button.id); displayToolUseMessage = true;">
           <v-icon>{{ button.icon }}</v-icon>
         </v-btn>
       </template>
@@ -17,15 +15,11 @@
     </v-tooltip>
     <!--- To Check: Does the property multi-line allow the snackbars to be formated correctly
     automatically when the message is many lines long due to font or number of characters? --->
-    <v-snackbar
-      v-model="displayToolUseMessage"
-      bottom
-      left
-      :timeout="toolUseMessageDelay"
-      multi-line
-    >
+    <v-snackbar v-model="displayToolUseMessage" bottom left
+      :timeout="toolUseMessageDelay" multi-line>
       <span>
-        <strong class="warning--text">{{$t('buttons.'+ button.displayedName) +': '}}</strong>
+        <strong
+          class="warning--text">{{$t('buttons.'+ button.displayedName) +': '}}</strong>
         {{ $t('buttons.' + button.toolUseMessage) }}
       </span>
       <v-btn @click="displayToolUseMessage = false" icon>
@@ -72,10 +66,10 @@ export default class ToolButton extends Vue {
 
   /* @Watch if button.displayToolUseMessage changes then set displayToolUseMessage to false so
       that multiple snackbars tool use messages are not displayed at the same time*/
-  @Watch("button.displayToolUseMessage")
-  protected onButtonChanged() {
-    this.displayToolUseMessage = false;
-  }
+  // @Watch("button.displayToolUseMessage")
+  // protected onButtonChanged() {
+  //   this.displayToolUseMessage = false;
+  // }
 }
 </script>
 

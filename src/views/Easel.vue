@@ -3,15 +3,16 @@
     <v-container fluid>
       <!--- ml-2: margin left 8 px -->
       <v-row>
-        <!---
-      VUetify grid system uses 12-column layout.
-      In the following setup, 
-      (1) the editHint text will occupy 75% of the panel width
-      (2) the toggle switch will occupy 25% of the panel width
-      (3) the canvas will will in the entire width
-      --->
-        <v-col cols="12" ref="content" id="content" class="pa-2">
-          <!--- HTML canvas will go here --->
+        <!--- VUetify grid system uses 12-column layout. 
+        Setting the attribute cols="12" means the v-col below
+        takes 100% of the available width. Therefore programmatically we can only control the height using Vue style binding -->
+        <v-col cols="12" id="contentWrapper" ref="contentWrapper"
+          :style="{height: viewportHeight}">
+          <div id="content" ref="content"
+            :style="{transform: transformStyle}">
+            <!--- HTML canvas will go here --->
+
+          </div>
         </v-col>
       </v-row>
     </v-container>
@@ -34,8 +35,8 @@
 
     <!--  Use the "clipped" attribute to keep the navigation drawer 
     below the app toolbar, width should be specified as number only (without unit) -->
-    <v-navigation-drawer id="leftDrawer" app clipped color="accent"
-      permanent :mini-variant="leftDrawerMinified" bottom
+    <v-navigation-drawer id="leftDrawer" ref="leftDrawer" app clipped
+      color="accent" permanent :mini-variant="leftDrawerMinified" bottom
       :width="leftDrawerProperties.width">
       <v-container id="leftnav" fluid>
         <!-- These the navigation arrows TODO: I would like these to be in the same row as the
@@ -142,8 +143,8 @@ export default class Easel extends Vue {
   // @Prop(HTMLCanvasElement)
   // readonly canvas!: HTMLCanvasElement;
 
-  private scene: Two;
-  private canvas: Two.Group;
+  private scene!: Two;
+  private canvas!: Two.Group;
 
   private leftDrawerMinified = false;
   private activeLeftDrawerTab = "toolListTab";
@@ -154,19 +155,21 @@ export default class Easel extends Vue {
 
   /*  Use the Strategy design pattern to enable switching of
   different tool algorithms at runtime, See the comment where these classes (modules?) are imported */
-  private currentTool: ToolStrategy | null;
-  private pointTool: NormalPointHandler;
-  private lineTool: LineHandler;
-  private segmentTool: SegmentHandler;
-  private rotateTool: RotateHandler;
-  private visitor: PositionVisitor;
+  private currentTool: ToolStrategy | null = null;
+  private pointTool: NormalPointHandler | null = null;
+  private lineTool: LineHandler | null = null;
+  private segmentTool: SegmentHandler | null = null;
+  private rotateTool: RotateHandler | null = null;
+  private visitor: PositionVisitor | null = null;
   // private moveTool: MoveHandler;
-  private circleTool: CircleHandler;
+  private circleTool: CircleHandler | null = null;
   // private controls: TransformControls;
   // private sphere: THREE.Mesh;
   private showSphereControl = false;
-  private width = 0;
-  private height = 0;
+  private bgColor = "transparent"
+  private transformStyle = "scale(1)"
+  private viewHeight = 600;
+  private viewScaleFactor = 1;
   private leftDrawerProperties = {
     width: 300, //initial width and stores the current width (including the minified)
     borderWidth: 3, //the width for the border of the left drawer set to zero when minimfied
@@ -174,26 +177,66 @@ export default class Easel extends Vue {
     adjustedWidth: 300 // The value after the user has adjusted the width of the drawer
   };
 
+  get viewportHeight(): string {
+    return this.viewHeight + "px";
+  }
+
   @State("editMode")
   private editMode!: string;
 
   constructor() {
     super();
+    this.$store.commit("init");
+    // window.addEventListener("resize", this.onWindowResized);
+    window.addEventListener("keypress", this.keyPressed);
+    // RotateHandler emits a custom event "sphere-rotate"
+    window.addEventListener(
+      "sphere-rotate",
+      this.handleSphereRotation as EventListener
+    );
+  }
+  mounted(): void {
+    const desiredAspectRatio = SETTINGS.viewportAspectRatio.width / SETTINGS.viewportAspectRatio.height;
+    const svgParent = this.$refs.content as HTMLElement;
+    const parentBox = svgParent.getBoundingClientRect();
+
+    // Available height is the browser viewport height minus
+    // the top position of the view relative to the browser top edge
+    const availHeight = window.innerHeight - parentBox.top;
+
+    // Available with is the browser viewport width minus
+    // the left position of the view relative to the browser left edge
+    const availWidth = window.innerWidth - parentBox.left;
+
+    // Compute the ideal dimension while maintaining aspect ratio
+    const idealHeight = availWidth / desiredAspectRatio;
+    const idealWidth = availHeight * desiredAspectRatio;
+    let actualWidth, actualHeight;
+    if (idealHeight > availHeight) {
+      /* view is too tall, set its height to available height */
+      actualWidth = idealWidth;
+      actualHeight = availHeight;
+      this.viewHeight = availHeight;
+    } else {
+      /* view is too wide, set its width to available width */
+      actualWidth = availWidth;
+      actualHeight = idealHeight;
+      this.viewHeight = idealHeight;
+    }
+
     // const { foreground, midground, background, sphereCanvas } = setupScene();
     // this.sphereCanvas = sphereCanvas;
     // this.foreground = foreground;
     // this.midground = midground;
     // this.background = background;
 
-    // this.TWO.scene.scale = 50;
-
-    // const rect = this.TWO.makeCircle(0, 0, 128);
-
-    // rect.fill = 'rgb(255, 100,100)';
-    // rect.noStroke();
-    // const scene = setupScene();
-    const { two, canvas } = setupScene();
+    /* We have to move setupScene() call to "mounted" so we can check the actual screen space */
+    const { two, canvas } = setupScene(actualWidth, actualHeight);
     this.scene = two;
+
+    // Hack to add our own CSS class
+    ((two.renderer as any).domElement as HTMLElement).classList.add("se-geo");
+
     this.canvas = canvas;
     // this.sphere = sphere;
     this.currentTool = null;
@@ -208,39 +251,58 @@ export default class Easel extends Vue {
     //   scene: this.scene
     // });
 
-    this.$store.commit("init");
     this.$store.commit("setSphere", this.canvas);
 
-    // const axesHelper = new THREE.AxesHelper(SETTINGS.sphere.radius * 1.25);
-    // axesHelper.layers.disableAll(); // exclude axeshelper from being searched by Raycaster
-    // this.scene.add(axesHelper);
-    // this.controls = new TransformControls(
-    //   this.camera,
-    //   this.renderer.domElement
-    // );
-    // this.controls.setMode("rotate");
-    // this.controls.setSpace("global"); // select between "global" or "local"
-    // this.controls.setSize(3);
-
-    // Add a circle silhouette to mark sphere boundary
-    // const circleBorder = new Circle();
-
-    window.addEventListener("resize", this.onWindowResized);
-    window.addEventListener("keypress", this.keyPressed);
-    // RotateHandler emits a custom event "sphere-rotate"
-    window.addEventListener(
-      "sphere-rotate",
-      this.handleSphereRotation as EventListener
-    );
+    // During testting scene is set to null and appendTo() will fail
+    (this.$refs.contentWrapper as HTMLElement).addEventListener("wheel", this.mouseScrolled);
+    if (this.scene instanceof Two) {
+      this.scene.appendTo(svgParent);
+      this.scene.play();
+      // debugger; //eslint-disable-line
+      svgParent.firstChild?.addEventListener(
+        "mousemove",
+        this.handleMouseMoved as EventListener
+      );
+      svgParent.firstChild?.addEventListener(
+        "mousedown",
+        this.handleMousePressed as EventListener
+      );
+      svgParent.firstChild?.addEventListener(
+        "mouseup",
+        this.handleMouseReleased as EventListener
+      );
+    }
+    // TODO: handle resize?
+    // this.onWindowResized();
+    // requestAnimationFrame(this.renderIt); // Not needed when using TwoJS?
+    this.setLeftDrawerBorderEvents();
   }
 
+  mouseScrolled(e: MouseWheelEvent): void {
+    const parentBox = (this.$refs.contentWrapper as HTMLElement).getBoundingClientRect();
+    // Calculate percentage w.r.t viewport height
+    const scrollFraction = e.deltaY / parentBox.height;
+    // Positive scroll: scale up/zoom in
+    // Negative scroll: scale down/zoom out
+    const scaleFactor = 1 + scrollFraction;
+    this.viewScaleFactor *= scaleFactor;
+    // How far is the mouse from the center of the viewport
+    const dx = Math.floor(e.offsetX - (parentBox.width / 2));
+    const dy = Math.floor(e.offsetY - (parentBox.height / 2));
+
+    // Use composite transform to scale from the current mouse position (dx,dy)
+    this.transformStyle =
+      `translate(${dx}px,${dy}px) ` + /* translate to origin */
+      `scale(${this.viewScaleFactor}) ` + /* scale from origin */
+      `translate(${-dx}px,${-dy}px)`; /* translate back to mouse location */
+  }
   handleSphereRotation(e: CustomEvent): void {
-    this.visitor.setTransform(e.detail.transform);
+    this.visitor?.setTransform(e.detail.transform);
     this.$store.state.points.forEach((p: SEPoint) => {
-      this.visitor.actionOnPoint(p);
+      this.visitor?.actionOnPoint(p);
     });
     this.$store.state.lines.forEach((l: SELine) => {
-      this.visitor.actionOnLine(l);
+      this.visitor?.actionOnLine(l);
     });
   }
   handleMouseMoved(e: MouseEvent): void {
@@ -259,29 +321,10 @@ export default class Easel extends Vue {
     this.currentTool?.mouseReleased(e);
   }
 
-  mounted(): void {
-    const parent = this.$refs.content as HTMLElement;
-    // During testting scene is set to null and appendTo() will fail
-    if (this.scene instanceof Two) {
-      this.scene.appendTo(parent);
-      this.scene.play();
-      // debugger; //eslint-disable-line
-      parent.firstChild?.addEventListener(
-        "mousemove",
-        this.handleMouseMoved as EventListener
-      );
-      parent.firstChild?.addEventListener(
-        "mousedown",
-        this.handleMousePressed as EventListener
-      );
-      parent.firstChild?.addEventListener(
-        "mouseup",
-        this.handleMouseReleased as EventListener
-      );
+  get canvasStyle(): any {
+    return {
+      background: this.bgColor
     }
-    // TODO: handle resize?
-    // this.onWindowResized();
-    // requestAnimationFrame(this.renderIt); // Not needed when using TwoJS?
   }
 
   beforeDestroy(): void {
@@ -315,13 +358,14 @@ export default class Easel extends Vue {
     // TODO: finish this method
     const el = this.$refs.content as HTMLBaseElement;
     if (el) {
+      const box = el.getBoundingClientRect();
       /* Compute the available height and width of the window */
-      this.height = el.clientHeight;
-      this.width = el.clientWidth;
-      const availHeight = window.innerHeight - el.offsetTop;
+      const availHeight = window.innerHeight - box.top;
+      console.debug(box.width, box.height, box.top, window.innerHeight);
+      const size = Math.min(box.width, box.height, availHeight);
+      (this.scene.renderer as any).setSize(size, size);
+      // this.scene.scene.scale = size / SETTINGS.viewport.width;
 
-      const size = Math.min(el.clientWidth, availHeight);
-      // this.renderer.setSize(size, size);
     }
   };
 
@@ -457,14 +501,20 @@ export default class Easel extends Vue {
 }
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 #content {
   display: flex;
   flex-direction: row;
   justify-content: center;
-  // background-color: beige;
-  border: 1px solid red;
-  margin: 50px;
+}
+#contentWrapper {
+  overflow: hidden;
+  border: 2px dashed red;
+}
+
+svg.se-geo {
+  overflow: hidden;
+  // border: 3px solid navy;
 }
 
 #leftnav {

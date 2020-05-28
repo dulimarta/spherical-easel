@@ -28,7 +28,8 @@ export class PositionVisitor implements Visitor {
     tmp.applyMatrix3(this.normalMatrix);
     m.normalDirection.copy(tmp);
 
-    // m.ref.normalDirection = tmp;
+    // Transform the normal vector of the circle?
+    // m.ref.orientation = tmp;
     // Transform both end points of the plotable line
     tmp.copy(m.ref.startPoint);
     tmp.applyMatrix4(this.transformMatrix);

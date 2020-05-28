@@ -1,14 +1,20 @@
 export default {
-  viewport: {
-    width: 700,
-    height: 700
+  viewportAspectRatio: {
+    /* Use aspect ratio, and allow the canvas to fit available space.
+     * This is only the aspect ration of the containing viewport, aspect ratio
+     * of the sphere canvas is always 1:1
+     */
+    width: 4,
+    height: 3
   },
   sphere: {
     // TODO: Rename this to boundaryCircle
     /* We always assume a UNIT sphere */
     radius: 250 /* in pixels */,
-    color: 0xffff00,
-    opacity: 0.5
+    color: "black",
+    opacity: 1,
+    linewidth: 2,
+    numPoints: 36
   },
   line: {
     thickness: 3
