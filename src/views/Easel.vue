@@ -8,7 +8,7 @@
         takes 100% of the available width. Therefore programmatically we can only control the height using Vue style binding -->
         <v-col cols="12" id="contentWrapper" ref="contentWrapper">
           <zoom-viewport :view-height="viewHeight" :min-zoom="0.3"
-            :max-zoom="1.5">
+            :max-zoom="10">
             <div id="content" ref="content">
               <!--- HTML canvas will go here --->
 

@@ -68,17 +68,25 @@ export default class ZoomViewport extends Vue {
     // Positive scroll: scale up/zoom in
     // Negative scroll: scale down/zoom out 
     this.scaleFactor *= 1 + scrollFraction;
-    // How far is the mouse from the center of the viewport
-    const tx = Math.floor(e.offsetX - (this.parentBox.width / 2));
-    const ty = Math.floor(e.offsetY - (this.parentBox.height / 2));
+    if (this.scaleFactor > 1) {
+      // When zooming bigger than the original size, 
+      // use the current mouse position as the scale origin
 
-    // Use composite transform to scale from the current mouse position (e.offsetX, e.offsetY)
-    // Order of these three transformations are important.
-    // The browser applies them from right to left
-    this.transformStyle =
-      `translate(${tx}px,${ty}px) ` + /* translate back to mouse position */
-      `scale(${this.scaleFactor}) ` + /* scale from origin */
-      `translate(${-tx}px,${-ty}px)`; /* translate mouse position to origin */
+      // How far is the mouse from the center of the viewport
+      const tx = Math.floor(e.offsetX - (this.parentBox.width / 2));
+      const ty = Math.floor(e.offsetY - (this.parentBox.height / 2));
+
+      // Use composite transform to scale from the current mouse position (e.offsetX, e.offsetY)
+      // Order of these three transformations are important.
+      // The browser applies them from right to left
+      this.transformStyle =
+        `translate(${tx}px,${ty}px) ` + /* translate back to mouse position */
+        `scale(${this.scaleFactor}) ` + /* scale from origin */
+        `translate(${-tx}px,${-ty}px)`; /* translate mouse position to origin */
+    } else {
+      // when zooming (out) smaller than the original size, scale from the origin
+      this.transformStyle = `scale(${this.scaleFactor})`;
+    }
 
   }
 }
