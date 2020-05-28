@@ -51,10 +51,10 @@ export default new Vuex.Store({
     addLine(
       state: AppState,
       {
-        line /*,
+        line,
         startPoint,
-        endPoint*/
-      }: { line: SELine /*; startPoint: Point; endPoint: Point */ }
+        endPoint
+      }: { line: SELine; startPoint: Point; endPoint: Point }
     ): void {
       // Find both end points in the current list of points
       // const start = findPoint(state.points, startPoint.id);

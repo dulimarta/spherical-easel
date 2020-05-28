@@ -1,12 +1,8 @@
 import { Vector3, Matrix4 } from "three";
-import Two, { Color } from "two.js";
+import Two, { Color, Ellipse } from "two.js";
 import SETTINGS from "@/global-settings";
 import { Stylable } from "@/plotables/Styleable";
 import { SELine } from "@/models/SELine";
-const desiredXAxis = new Vector3();
-const desiredYAxis = new Vector3();
-// const desiredZAxis = new Vector3();
-const transformMatrix = new Matrix4();
 
 const SUBDIVS = 100;
 /**
@@ -28,6 +24,10 @@ export default class Line extends Two.Group implements Stylable {
 
   private majorAxisDirection: Vector3 = new Vector3();
   private tmpVector: Vector3;
+  private desiredXAxis = new Vector3();
+  private desiredYAxis = new Vector3();
+  // const desiredZAxis = new Vector3();
+  private transformMatrix = new Matrix4();
   private segment: boolean;
   private frontHalf: Two.Path;
   private backHalf: Two.Path;
@@ -44,6 +44,7 @@ export default class Line extends Two.Group implements Stylable {
       const py = radius * Math.sin(angle);
       vertices.push(new Two.Vector(px, py));
     }
+    // Generate 3D coordinates of the entire circle
     this.points = [];
     for (let k = 0; k < 2 * SUBDIVS; k++) {
       const angle = (2 * k * Math.PI) / (2 * SUBDIVS);
@@ -65,9 +66,14 @@ export default class Line extends Two.Group implements Stylable {
     this.backHalf.stroke = "gray";
     (this.backHalf as any).dashes.push(10, 5); // render as dashed lines
     this.backHalf.linewidth = 3;
-    this.start = start || new Vector3(1, 0, 0);
-    this.end = end || new Vector3(0, 1, 0);
+    // Be sure to clone() the incoming start and end points
+    // Otherwise update by other Line will affect this one!
+    if (start) this.start = start.clone();
+    else this.start = new Vector3(1, 0, 0);
+    if (end) this.end = end.clone();
+    else this.end = new Vector3(0, 1, 0);
     this.normalDirection = new Vector3();
+    this.normalDirection.crossVectors(this.start, this.end);
     this.segment = segment || false;
     // this.scaleVector = new Two.Vector(1, 1);
     this.add(this.frontHalf);
@@ -81,6 +87,7 @@ export default class Line extends Two.Group implements Stylable {
     }
     this.noFill();
   }
+
   glowStyle(): void {
     this.oldFrontStroke = this.frontHalf.stroke;
     this.oldBackStroke = this.backHalf.stroke;
@@ -97,6 +104,7 @@ export default class Line extends Two.Group implements Stylable {
     this.backHalf.stroke = this.oldBackStroke;
   }
 
+  // Recalculate the ellipse in 2D
   private deformIn2D(): void {
     // console.debug(this.normalDirection.toFixed(2));
     // The ellipse major axis on the XY plane is perpendicular
@@ -163,18 +171,24 @@ export default class Line extends Two.Group implements Stylable {
     }
   }
 
+  /** Reorient the unit circle in 3D and then project the points to 2D
+   */
   private deformIntoEllipse(): void {
     // desiredZAxis.crossVectors(this.start, this.end).normalize();
-    desiredXAxis.copy(this.start).normalize();
-    desiredYAxis.crossVectors(this.normalDirection, desiredXAxis);
-    transformMatrix.makeBasis(desiredXAxis, desiredYAxis, this.normalDirection);
+    this.desiredXAxis.copy(this.start).normalize();
+    this.desiredYAxis.crossVectors(this.normalDirection, this.desiredXAxis);
+    this.transformMatrix.makeBasis(
+      this.desiredXAxis,
+      this.desiredYAxis,
+      this.normalDirection
+    );
     let firstPos = -1;
     let firstNeg = -1;
     let lastSign = 0;
 
     this.points.forEach((v, pos) => {
       this.tmpVector.copy(v);
-      this.tmpVector.applyMatrix4(transformMatrix);
+      this.tmpVector.applyMatrix4(this.transformMatrix);
       if (lastSign * this.tmpVector.z < 0) {
         if (this.tmpVector.z > 0) firstPos = pos;
         if (this.tmpVector.z < 0) firstNeg = pos;
@@ -192,7 +206,7 @@ export default class Line extends Two.Group implements Stylable {
           Math.sin(angle) * SETTINGS.sphere.radius,
           0
         );
-        this.tmpVector.applyMatrix4(transformMatrix);
+        this.tmpVector.applyMatrix4(this.transformMatrix);
         v.x = this.tmpVector.x;
         v.y = this.tmpVector.y;
       });
@@ -200,14 +214,14 @@ export default class Line extends Two.Group implements Stylable {
       for (let k = 0; k < SUBDIVS; k++) {
         const idx = (firstPos + k) % (2 * SUBDIVS);
         this.tmpVector.copy(this.points[idx]);
-        this.tmpVector.applyMatrix4(transformMatrix);
+        this.tmpVector.applyMatrix4(this.transformMatrix);
         this.frontHalf.vertices[k].x = this.tmpVector.x;
         this.frontHalf.vertices[k].y = this.tmpVector.y;
       }
       for (let k = 0; k < SUBDIVS; k++) {
         const idx = (firstNeg + k) % (2 * SUBDIVS);
         this.tmpVector.copy(this.points[idx]);
-        this.tmpVector.applyMatrix4(transformMatrix);
+        this.tmpVector.applyMatrix4(this.transformMatrix);
         this.backHalf.vertices[k].x = this.tmpVector.x;
         this.backHalf.vertices[k].y = this.tmpVector.y;
       }
@@ -220,7 +234,7 @@ export default class Line extends Two.Group implements Stylable {
     // this.name = (value ? "Segment-" : "Line-") + this.id;
   }
 
-  get isSegment() {
+  get isSegment(): boolean {
     return this.segment;
   }
 
@@ -229,23 +243,32 @@ export default class Line extends Two.Group implements Stylable {
     // The circle plane passes through three points the origin (0,0,0)
     // and the two points (start (S) and end (E)).
     // The normal of this plane is the cross product of SxE
-
-    this.normalDirection.crossVectors(this.start, this.end).normalize(); // this.deformIntoEllipse();
+    this.normalDirection.crossVectors(this.start, this.end).normalize();
+    // this.deformIntoEllipse();
     this.deformIn2D();
+  }
+
+  get startPoint() {
+    return this.start;
   }
 
   set endPoint(position: Vector3) {
     this.end.copy(position);
-    this.normalDirection.crossVectors(this.start, this.end).normalize(); // this.deformIntoEllipse();
+    this.normalDirection.crossVectors(this.start, this.end).normalize();
     // this.deformIntoEllipse();
     this.deformIn2D();
   }
+
+  get endPoint() {
+    return this.end;
+  }
+
   set orientation(dir: Vector3) {
     this.normalDirection.copy(dir);
     this.deformIn2D();
   }
 
-  get orientation() {
+  get orientation(): Vector3 {
     return this.normalDirection;
   }
   // It looks like we have to define our own clone() function
@@ -257,9 +280,11 @@ export default class Line extends Two.Group implements Stylable {
     //   );
     //   dup.rotation.copy(this.rotation);
     dup.name = this.name;
+    dup.start.copy(this.start);
+    dup.end.copy(this.end);
+    dup.normalDirection.copy(this.normalDirection);
     dup.segment = this.segment;
     dup.rotation = this.rotation;
-    dup.normalDirection.copy(this.normalDirection);
 
     dup.frontHalf.vertices.forEach((v, pos) => {
       v.copy(this.frontHalf.vertices[pos]);

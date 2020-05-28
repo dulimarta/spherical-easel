@@ -19,10 +19,22 @@ export class PositionVisitor implements Visitor {
     this.tmpVector.applyMatrix4(this.transformMatrix);
     p.positionOnSphere = this.tmpVector;
   }
+
   actionOnLine(m: SELine): void {
-    // Transform both end points
-    this.tmpVector.copy(m.ref.orientation);
-    this.tmpVector.applyMatrix3(this.normalMatrix);
-    m.normalDirection = this.tmpVector;
+    // console.debug(`Updating SELine ${m.id}, Line ${m.ref.id}`);
+    // Transform the normal of this line
+    const tmp = new Vector3();
+    tmp.copy(m.normalDirection);
+    tmp.applyMatrix3(this.normalMatrix);
+    m.normalDirection.copy(tmp);
+
+    // m.ref.normalDirection = tmp;
+    // Transform both end points of the plotable line
+    tmp.copy(m.ref.startPoint);
+    tmp.applyMatrix4(this.transformMatrix);
+    m.ref.startPoint = tmp; // use the setter function
+    tmp.copy(m.ref.endPoint);
+    tmp.applyMatrix4(this.transformMatrix);
+    m.ref.endPoint = this.tmpVector; // use the setter function
   }
 }

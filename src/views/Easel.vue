@@ -34,25 +34,15 @@
 
     <!--  Use the "clipped" attribute to keep the navigation drawer 
     below the app toolbar, width should be specified as number only (without unit) -->
-    <v-navigation-drawer
-      id="leftDrawer"
-      app
-      clipped
-      color="accent"
-      permanent
-      :mini-variant="leftDrawerMinified"
-      bottom
-      :width="leftDrawerProperties.width"
-    >
+    <v-navigation-drawer id="leftDrawer" app clipped color="accent"
+      permanent :mini-variant="leftDrawerMinified" bottom
+      :width="leftDrawerProperties.width">
       <v-container id="leftnav" fluid>
         <!-- These the navigation arrows TODO: I would like these to be in the same row as the
         tabs-->
         <div>
-          <v-btn
-            v-if="leftDrawerMinified"
-            icon
-            @click="setMinificationOfLeftDrawer(false)"
-          >
+          <v-btn v-if="leftDrawerMinified" icon
+            @click="setMinificationOfLeftDrawer(false)">
             <v-icon>mdi-arrow-right</v-icon>
           </v-btn>
           <v-btn v-else icon @click="setMinificationOfLeftDrawer(true)">
@@ -63,11 +53,8 @@
         <div v-if="!leftDrawerMinified">
           <!-- Two tabs set up TODO: fix the behavior of the tabs-->
           <v-tabs v-model="activeLeftDrawerTab" centered grow>
-            <v-tooltip
-              bottom
-              :open-delay="toolTipOpenDelay"
-              :close-delay="toolTipCloseDelay"
-            >
+            <v-tooltip bottom :open-delay="toolTipOpenDelay"
+              :close-delay="toolTipCloseDelay">
               <template v-slot:activator="{ on }">
                 <v-tab class="mt-3" href="#toolListTab" v-on="on">
                   <v-icon left>mdi-calculator</v-icon>
@@ -76,11 +63,8 @@
               <span>{{ $t("main.ToolsTabToolTip") }}</span>
             </v-tooltip>
 
-            <v-tooltip
-              bottom
-              :open-delay="toolTipOpenDelay"
-              :close-delay="toolTipCloseDelay"
-            >
+            <v-tooltip bottom :open-delay="toolTipOpenDelay"
+              :close-delay="toolTipCloseDelay">
               <template v-slot:activator="{ on }">
                 <v-tab class="mt-3" href="#objectListTab" v-on="on">
                   <v-icon left>mdi-format-list-bulleted</v-icon>
@@ -99,27 +83,18 @@
         </div>
       </v-container>
       <!-- This is the minified version of the left drawer with icon buttons for maximizing it -->
-      <div
-        id="leftnavicons"
-        v-if="leftDrawerMinified"
-        @click="setMinificationOfLeftDrawer(false)"
-      >
-        <v-btn
-          icon
-          @click="
+      <div id="leftnavicons" v-if="leftDrawerMinified"
+        @click="setMinificationOfLeftDrawer(false)">
+        <v-btn icon @click="
             setMinificationOfLeftDrawer(false);
             activeLeftDrawerTab = 'toolListTab';
-          "
-        >
+          ">
           <v-icon class="ml-3 my-2">mdi-calculator</v-icon>
         </v-btn>
-        <v-btn
-          icon
-          @click="
+        <v-btn icon @click="
             leftDrawerMinified = !leftDrawerMinified;
             activeLeftDrawerTab = 'objectListTab';
-          "
-        >
+          ">
           <v-icon class="ml-3 my-2">mdi-format-list-bulleted</v-icon>
         </v-btn>
       </div>
@@ -403,7 +378,7 @@ export default class Easel extends Vue {
  This also sets the border with to zero in the minified state so that you can't adjust it.
  In the minified state the border is set to its usual size
  */
-  setMinificationOfLeftDrawer(value: boolean) {
+  setMinificationOfLeftDrawer(value: boolean): void {
     if (value) {
       this.leftDrawerProperties.adjustedWidth = this.leftDrawerProperties.width;
       this.leftDrawerMinified = true; //minifies the left drawer
@@ -416,7 +391,7 @@ export default class Easel extends Vue {
   }
 
   /* Set the width of the border to allow it to be adjustable or not (when minified)*/
-  setLeftDrawerBorderWidth(size: number) {
+  setLeftDrawerBorderWidth(size: number): void {
     const leftDrawerElement = (this.$refs.leftDrawer as VueComponent).$el;
     const leftDrawerBorder = leftDrawerElement.querySelector(
       ".v-navigation-drawer__border"
@@ -426,7 +401,7 @@ export default class Easel extends Vue {
     leftDrawerBorder.style.color = "black"; //This doesn't work. Why? Does a parent override this?
   }
 
-  setLeftDrawerBorderEvents() {
+  setLeftDrawerBorderEvents(): void {
     const minWidth = this.leftDrawerProperties.minWidth;
     const el = (this.$refs.leftDrawer as VueComponent).$el; //I'm not sure why this an error or how to fix it.
     const leftDrawerBorder = el.querySelector(".v-navigation-drawer__border");

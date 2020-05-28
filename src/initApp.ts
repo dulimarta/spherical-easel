@@ -7,7 +7,8 @@ export function setupScene() {
   const two = new Two({
     width: SETTINGS.viewport.width,
     height: SETTINGS.viewport.height,
-    autostart: true
+    autostart: true,
+    ratio: window.devicePixelRatio
   });
   const sphereCanvas = two.makeGroup();
   sphereCanvas.translation.set(two.width / 2, two.height / 2);
@@ -19,7 +20,7 @@ export function setupScene() {
   mainCircle.linewidth = SETTINGS.line.thickness;
   sphereCanvas.add(mainCircle);
   const welcome = new Two.Text(
-    "Just a text",
+    `Just a text ${window.devicePixelRatio}`,
     -SETTINGS.sphere.radius,
     -SETTINGS.sphere.radius,
     {

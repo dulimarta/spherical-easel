@@ -97,7 +97,7 @@ export default abstract class CursorHandler implements ToolStrategy {
    *
    * @memberof CursorHandler
    */
-  mouseMoved(event: MouseEvent) {
+  mouseMoved(event: MouseEvent): void {
     const { x, y } = this.toNormalizeScreenCoord(event);
 
     const sx = x * SETTINGS.sphere.radius + this.boundingBox.width / 2;
