@@ -3,22 +3,29 @@
     <v-container fluid>
       <!--- ml-2: margin left 8 px -->
       <v-row>
+        <v-col cols="12">
+          Control buttons here
+        </v-col>
         <!--- VUetify grid system uses 12-column layout. 
         Setting the attribute cols="12" means the v-col below
         takes 100% of the available width. Therefore programmatically we can only control the height using Vue style binding -->
         <v-col cols="12" id="contentWrapper" ref="contentWrapper">
-          <zoom-viewport :view-height="viewCurrentHeight" :min-zoom="0.3"
-            :max-zoom="4" @max-zoom-out="zoomWarning = true"
-            @max-zoom-in="zoomWarning=true">
+          <!--zoom-viewport :view-width="viewCurrentWidth"
+            :view-height="viewCurrentHeight" :min-zoom="0.3" :max-zoom="4"
+            @max-zoom-out="zoomWarning = true"
+            @max-zoom-in="zoomWarning = true">
             <div id="content" ref="content">
-              <!--- HTML canvas will go here --->
-
-            </div>
-          </zoom-viewport>
+              < HTML canvas will go here
+          </div>
+          </zoom-viewport-->
+          <v-responsive :aspect-ratio="1" :max-height="viewCurrentHeight"
+            :max-width="viewCurrentWidth" id="content" ref="content"
+            class="green">
+            <!-- <div id="content" ref="content" class="blue">Hi</div> -->
+          </v-responsive>
         </v-col>
       </v-row>
     </v-container>
-
     <!--  
       This is the left drawer component that contains that the
       tools and a list of the objects that have been created in two tabs
@@ -110,7 +117,42 @@
     </v-snackbar>
   </div>
 </template>
+<style lang="scss">
+#contentWrapper {
+  overflow: hidden;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  border: 2px dashed red; // Just for debugging so we can see the box boundary
+}
 
+svg.se-geo {
+  overflow: hidden;
+  border: 3px solid brown;
+  margin: 0;
+  padding: 0;
+}
+
+#leftnav {
+  display: flex;
+  flex-direction: column;
+
+  div:first-child {
+    /* To force the "expand" arrow to justify right */
+    align-self: flex-end;
+  }
+}
+#leftnavicons {
+  height: 80vh; // 80% of viewport height
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+/* Override the default behavior of Vuetify <v-btn-toggle> element */
+.v-btn-toggle {
+  flex-wrap: wrap;
+}
+</style>
 <script lang="ts">
 import VueComponent from "vue";
 import { Vue, Watch } from "vue-property-decorator";
@@ -133,16 +175,18 @@ import { State } from "vuex-class";
 /* Import the components for the contents of the navigation drawer */
 import ObjectTree from "@/components/ObjectTree.vue";
 import ToolButtons from "@/components/ToolButtons.vue";
-import ZoomViewport from "@/components/ZoomViewport.vue"
+import ZoomViewport from "@/components/ZoomViewport.vue";
 import { setupScene } from "@/initApp";
 import Two from "two.js";
 // import Point from '../plotables/Point';
 import { PositionVisitor } from "@/visitors/PositionVisitor";
 import { SEPoint } from "@/models/SEPoint";
 import { SELine } from "@/models/SELine";
-import { Visitor } from '@/visitors/Visitor';
+import { Visitor } from "@/visitors/Visitor";
 // import Circle from '../3d-objs/Circle';
-@Component({ components: { ObjectTree, ToolButtons, ZoomViewport } })
+@Component({
+  components: { ObjectTree, ToolButtons, ZoomViewport }
+})
 export default class Easel extends Vue {
   // @Prop(WebGLRenderer)
   // readonly renderer!: WebGLRenderer;
@@ -178,7 +222,7 @@ export default class Easel extends Vue {
   private viewNaturalWidth = 600; // width at mounted time
   private viewNaturalHeight = 450; // height at mounted time
   private scaleFactor = new Two.Vector(1, -1);
-  private zoomWarning = false
+  private zoomWarning = false;
   private leftDrawerProperties = {
     width: 300, //initial width and stores the current width (including the minified)
     borderWidth: 3, //the width for the border of the left drawer set to zero when minimfied
@@ -201,39 +245,31 @@ export default class Easel extends Vue {
   }
   /**
    * Using the current browser viewport info and current box of the
-   * SVG parent, determine available area (widthxheight) for our SVG drawing.
-   * This function is used on initial mount and also during window resize
-   * @return {width,height}
+   * SVG parent, determine available area (widthxheight) for our SVG drawing
+   * while maintaining the aspect ratio in the global settings.
+   * This function is invoked on initial mount and also during window resize
+   *
+   * @return {width,height} the actual dimension of the viewport
    */
-  computerAvailableArea(): { width: number, height: number } {
-    const desiredAspectRatio = SETTINGS.viewportAspectRatio.width / SETTINGS.viewportAspectRatio.height;
-    const svgParent = this.$refs.content as HTMLElement;
-    const parentBox = svgParent.getBoundingClientRect();
+  computerAvailableArea(): { width: number; height: number } {
+    const svgParent = this.$refs.content as VueComponent;
+    const parentBox = svgParent.$el.getBoundingClientRect();
 
     // Available height is the browser viewport height minus
     // the top position of the view relative to the browser top edge
-    const availHeight = window.innerHeight - parentBox.top;
+    // eslint-disable-next-line no-debugger
+    // debugger;
+    const availHeight = window.innerHeight - parentBox.top - 32; // Leave 16px gap?
 
-    // Available with is the browser viewport width minus
+    // Available width is the browser viewport width minus
     // the left position of the view relative to the browser left edge
     const availWidth = window.innerWidth - parentBox.left;
-
+    const size = Math.min(availWidth, availHeight);
     // Compute the ideal dimension while maintaining aspect ratio
-    const idealHeight = availWidth / desiredAspectRatio;
-    const idealWidth = availHeight * desiredAspectRatio;
-    let actualWidth, actualHeight;
-    if (idealHeight > availHeight) {
-      /* view is too tall, set its height to available height */
-      actualWidth = idealWidth;
-      actualHeight = availHeight;
-    } else {
-      /* view is too wide, set its width to available width */
-      actualWidth = availWidth;
-      actualHeight = idealHeight;
-    }
-    console.debug(`Avail ${availWidth}x${availHeight} Ideal: ${idealWidth}x${idealHeight} Actual ${actualWidth}x${actualHeight}`);
-    return { width: actualWidth, height: actualHeight }
+    return { width: size, height: size };
   }
+  private toolTarget!: HTMLElement;
+
   mounted(): void {
     const { width, height } = this.computerAvailableArea();
     this.viewNaturalHeight = height;
@@ -245,19 +281,18 @@ export default class Easel extends Vue {
     // this.background = background;
 
     /* We have to move setupScene() call to "mounted" so we can check the actual screen space */
-    const { two, canvas } = setupScene(width, height);
-    this.scene = two;
-    this.canvas = canvas;
+    // const { two, canvas } = setupScene(width, height);
+    // this.scene = two;
+    // this.canvas = canvas;
 
-    // Hack to add our own CSS class
-    ((two.renderer as any).domElement as HTMLElement).classList.add("se-geo");
-    // this.sphere = sphere;
+    // Hack to add our own CSS class. Refer to the <style> section below
+    // ((two.renderer as any).domElement as HTMLElement).classList.add("se-geo");
     this.currentTool = null;
-    this.pointTool = new NormalPointHandler(canvas);
-    this.lineTool = new LineHandler(canvas);
-    this.segmentTool = new SegmentHandler(canvas);
-    this.circleTool = new CircleHandler(canvas);
-    this.rotateTool = new RotateHandler(canvas);
+    // this.pointTool = new NormalPointHandler(canvas);
+    // this.lineTool = new LineHandler(canvas);
+    // this.segmentTool = new SegmentHandler(canvas);
+    // this.circleTool = new CircleHandler(canvas);
+    // this.rotateTool = new RotateHandler(canvas);
     this.visitor = new PositionVisitor();
     // this.moveTool = new MoveHandler({
     //   camera: this.camera,
@@ -289,7 +324,7 @@ export default class Easel extends Vue {
     // TODO: handle resize?
     window.addEventListener("resize", this.onWindowResized);
 
-    // this.onWindowResized();
+    this.onWindowResized();
     this.setLeftDrawerBorderEvents();
   }
 
@@ -322,10 +357,10 @@ export default class Easel extends Vue {
     if (this.visitor) {
       this.visitor.setTransform(e.detail.transform);
       this.$store.state.points.forEach((p: SEPoint) => {
-        p.accept(this.visitor as Visitor)
+        p.accept(this.visitor as Visitor);
       });
       this.$store.state.lines.forEach((l: SELine) => {
-        l.accept(this.visitor as Visitor)
+        l.accept(this.visitor as Visitor);
       });
     }
   }
@@ -344,7 +379,6 @@ export default class Easel extends Vue {
     // WHen currentTool is NULL, the following line does nothing
     this.currentTool?.mouseReleased(e);
   }
-
 
   keyPressed = (event: KeyboardEvent): void => {
     // const sphere = this.scene.getObjectByName("MainSphere");
@@ -365,18 +399,13 @@ export default class Easel extends Vue {
     const heightChange = height / this.viewNaturalHeight;
     this.viewCurrentWidth = width;
     this.viewCurrentHeight = height;
-    // console.debug(`Width ${(widthChange*100}% Height ${heightChange}%`);
-    // this.viewWidth = width;
-    // this.viewHeight = height;
-    (this.scene.renderer as any).setSize(width, height);
-    this.canvas.translation.set(width / 2, height / 2); // Place origin at the center
+    // (this.scene.renderer as any).setSize(width, height);
+    // this.canvas.translation.set(width / 2, height / 2); // Place origin at the center
     const newScale = Math.max(widthChange, heightChange);
-    (this.scene.renderer as any).domElement.style = `transform: scale(${newScale})`;
-    // this.scaleFactor.set(newScale, -newScale);
-    // (this.canvas as any).scale = this.scaleFactor;
-    // this.scene.update();
+    // const svgElem = (this.scene.renderer as any).domElement as HTMLElement;
+    // svgElem.setAttribute("style", `transform: scale(${newScale})`);
 
-
+    // TODO: apply translation and scale to other layers!
   }
 
   // VueJS data watcher function
@@ -510,39 +539,3 @@ export default class Easel extends Vue {
   }
 }
 </script>
-
-<style lang="scss">
-#content {
-  display: flex;
-  flex-direction: row;
-  justify-content: center;
-}
-#contentWrapper {
-  overflow: hidden;
-  border: 2px dashed red;
-}
-
-svg.se-geo {
-  overflow: hidden;
-  // border: 3px solid navy;
-}
-
-#leftnav {
-  display: flex;
-  flex-direction: column;
-
-  div:first-child {
-    align-self: flex-end;
-  }
-}
-#leftnavicons {
-  height: 80vh;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
-/* Override the default behavior of Vuetify <v-btn-toggle> elementv-btn-toggle> */
-.v-btn-toggle {
-  flex-wrap: wrap;
-}
-</style>

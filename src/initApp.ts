@@ -1,6 +1,7 @@
 /** @format */
 
 import { AddPointCommand } from "@/commands/AddPointCommand";
+import GlobalStore from "@/store";
 import Two from "two.js";
 import SETTINGS from "@/global-settings";
 export function setupScene(width: number, height: number) {
@@ -16,10 +17,12 @@ export function setupScene(width: number, height: number) {
   // Flip Y-coordinate so positive Y-axis is up (north)
   (sphereCanvas as any).scale = new Two.Vector(1, -1);
   const circleRadius = Math.min(
-    (0.8 * width) / 2, // 80% of the viewport
-    (0.8 * height) / 2, // 80% of the viewport
-    SETTINGS.sphere.radius
+    width / 2, // 80% of the viewport
+    height / 2 // 80% of the viewport
+    // SETTINGS.sphere.radius
   );
+
+  GlobalStore.commit("setSphereRadius", circleRadius);
   const mainCircle = new Two.Circle(0, 0, circleRadius);
   mainCircle.noFill();
   mainCircle.linewidth = SETTINGS.line.thickness;

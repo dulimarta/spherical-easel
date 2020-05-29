@@ -8,6 +8,7 @@ import Point from "@/plotables/Point";
 import Circle from "@/3d-objs/Circle";
 import { SEPoint } from "@/models/SEPoint";
 import { SELine } from "@/models/SELine";
+import { Vector3 } from "three";
 Vue.use(Vuex);
 
 const findPoint = (arr: SEPoint[], id: number): SEPoint | null => {
@@ -15,24 +16,27 @@ const findPoint = (arr: SEPoint[], id: number): SEPoint | null => {
   return out.length > 0 ? out[0] : null;
 };
 
+const SMALL_ENOUGH = 1e-3;
+const initialState = {
+  sphere: null,
+  sphereRadius: 0,
+  editMode: "rotate",
+  // nodes: [], // Possible future addition (array of SENode)
+  points: [],
+  lines: [],
+  circles: []
+};
 export default new Vuex.Store({
-  state: {
-    sphere: null,
-    editMode: "rotate",
-    points: [],
-    lines: [],
-    circles: []
-  } as AppState,
+  state: initialState,
   mutations: {
     init(state: AppState): void {
-      state.sphere = null;
-      state.editMode = "";
-      state.points = [];
-      state.lines = [];
-      state.circles = [];
+      state = { ...initialState };
     },
     setSphere(state: AppState, sph: Two.Group): void {
       state.sphere = sph;
+    },
+    setSphereRadius(state: AppState, radius: number): void {
+      state.sphereRadius = radius;
     },
     setEditMode(state: AppState, mode: string): void {
       state.editMode = mode;
@@ -153,6 +157,16 @@ export default new Vuex.Store({
       }
     }
   },
-  actions: {},
+  actions: {
+    /* Define async work in this block */
+  },
+  getters: {
+    /* The following is just a starter code.  More work needed */
+    findNearByPoints: (state: AppState) => (idealPosition: Vector3) => {
+      state.points.filter(
+        p => p.positionOnSphere.distanceTo(idealPosition) < SMALL_ENOUGH
+      );
+    }
+  },
   modules: {}
 });

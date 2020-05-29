@@ -4,7 +4,6 @@ import { Vector3 } from "three";
 import AppStore from "@/store";
 import Point from "@/plotables/Point";
 import Line from "@/plotables/Line";
-import SETTINGS from "@/global-settings";
 import { ToolStrategy } from "./ToolStrategy";
 import Two, { BoundingClientRect, Vector } from "two.js";
 import { SEPoint } from "@/models/SEPoint";
@@ -83,6 +82,8 @@ export default abstract class CursorHandler implements ToolStrategy {
     // console.debug(
     //   `Screen point (${this.currentScreenPoint.x}. ${this.currentScreenPoint.y})`
     // );
+
+    // FIXME: boundingBox is no longer accurate after Window Resize!
     const x =
       (2 * (event.offsetX - this.boundingBox.left)) / this.boundingBox.width -
       1;
@@ -99,9 +100,9 @@ export default abstract class CursorHandler implements ToolStrategy {
    */
   mouseMoved(event: MouseEvent): void {
     const { x, y } = this.toNormalizeScreenCoord(event);
-
-    const sx = x * SETTINGS.sphere.radius + this.boundingBox.width / 2;
-    const sy = y * SETTINGS.sphere.radius + this.boundingBox.height / 2;
+    const sphereCurrentRadius = AppStore.state.sphereRadius;
+    const sx = x * sphereCurrentRadius + this.boundingBox.width / 2;
+    const sy = y * sphereCurrentRadius + this.boundingBox.height / 2;
     // console.debug(
     //   `Offset (${event.offsetX},${event.offsetY}) => (${x.toFixed(
     //     2
