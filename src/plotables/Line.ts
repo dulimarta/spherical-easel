@@ -35,7 +35,7 @@ export default class Line extends Two.Group implements Stylable {
 
   constructor(start?: Vector3, end?: Vector3, segment?: boolean) {
     super();
-    const radius = SETTINGS.sphere.radius;
+    const radius = SETTINGS.sphere.boundaryCircleRadius;
     const vertices: Two.Vector[] = [];
     // Generate 2D coordinates of a half circle
     for (let k = 0; k < SUBDIVS; k++) {
@@ -81,18 +81,22 @@ export default class Line extends Two.Group implements Stylable {
     }
     this.noFill();
   }
-  glowStyle(): void {
+  frontGlowStyle(): void {
     this.oldFrontStroke = this.frontHalf.stroke;
     this.oldBackStroke = this.backHalf.stroke;
     this.frontHalf.stroke = "red";
     this.backHalf.stroke = "red";
   }
 
-  backgroundStyle(): void {
-    /* TODO: complete this */
+  backGlowStyle(): void {
+    return void 0;
   }
 
-  normalStyle(): void {
+  backNormalStyle(): void {
+    return void 0;
+  }
+
+  frontNormalStyle(): void {
     this.frontHalf.stroke = this.oldFrontStroke;
     this.backHalf.stroke = this.oldBackStroke;
   }
@@ -126,7 +130,7 @@ export default class Line extends Two.Group implements Stylable {
     // Use ellipse equation to compute minorAxis given than majorAxis is 1
     const minorAxis = Math.sqrt((py * py) / (1 - px * px));
     let numSubdivs = this.frontHalf.vertices.length;
-    const radius = SETTINGS.sphere.radius;
+    const radius = SETTINGS.sphere.boundaryCircleRadius;
     // When the Z-value is negative, the front semicircle
     // is projected above the back semicircle
     const flipSign = Math.sign(this.normalDirection.z);
@@ -188,8 +192,8 @@ export default class Line extends Two.Group implements Stylable {
       this.frontHalf.vertices.forEach((v, pos) => {
         const angle = (pos * totalArcLength) / SUBDIVS;
         this.tmpVector.set(
-          Math.cos(angle) * SETTINGS.sphere.radius,
-          Math.sin(angle) * SETTINGS.sphere.radius,
+          Math.cos(angle) * SETTINGS.sphere.boundaryCircleRadius,
+          Math.sin(angle) * SETTINGS.sphere.boundaryCircleRadius,
           0
         );
         this.tmpVector.applyMatrix4(transformMatrix);

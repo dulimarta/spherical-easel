@@ -9,7 +9,7 @@
       (1) the editHint text will occupy 75% of the panel width
       (2) the toggle switch will occupy 25% of the panel width
       (3) the canvas will will in the entire width
-      --->
+        --->
         <v-col cols="12" ref="content" id="content" class="pa-2">
           <!--- HTML canvas will go here --->
         </v-col>
@@ -33,7 +33,7 @@
     -->
 
     <!--  Use the "clipped" attribute to keep the navigation drawer 
-    below the app toolbar, width should be specified as number only (without unit) -->
+    below the app toolbar, width should be specified as number only (without unit)-->
     <v-navigation-drawer
       id="leftDrawer"
       app
@@ -48,11 +48,7 @@
         <!-- These the navigation arrows TODO: I would like these to be in the same row as the
         tabs-->
         <div>
-          <v-btn
-            v-if="leftDrawerMinified"
-            icon
-            @click="setMinificationOfLeftDrawer(false)"
-          >
+          <v-btn v-if="leftDrawerMinified" icon @click="setMinificationOfLeftDrawer(false)">
             <v-icon>mdi-arrow-right</v-icon>
           </v-btn>
           <v-btn v-else icon @click="setMinificationOfLeftDrawer(true)">
@@ -63,11 +59,7 @@
         <div v-if="!leftDrawerMinified">
           <!-- Two tabs set up TODO: fix the behavior of the tabs-->
           <v-tabs v-model="activeLeftDrawerTab" centered grow>
-            <v-tooltip
-              bottom
-              :open-delay="toolTipOpenDelay"
-              :close-delay="toolTipCloseDelay"
-            >
+            <v-tooltip bottom :open-delay="toolTipOpenDelay" :close-delay="toolTipCloseDelay">
               <template v-slot:activator="{ on }">
                 <v-tab class="mt-3" href="#toolListTab" v-on="on">
                   <v-icon left>mdi-calculator</v-icon>
@@ -76,11 +68,7 @@
               <span>{{ $t("main.ToolsTabToolTip") }}</span>
             </v-tooltip>
 
-            <v-tooltip
-              bottom
-              :open-delay="toolTipOpenDelay"
-              :close-delay="toolTipCloseDelay"
-            >
+            <v-tooltip bottom :open-delay="toolTipOpenDelay" :close-delay="toolTipCloseDelay">
               <template v-slot:activator="{ on }">
                 <v-tab class="mt-3" href="#objectListTab" v-on="on">
                   <v-icon left>mdi-format-list-bulleted</v-icon>
@@ -99,11 +87,7 @@
         </div>
       </v-container>
       <!-- This is the minified version of the left drawer with icon buttons for maximizing it -->
-      <div
-        id="leftnavicons"
-        v-if="leftDrawerMinified"
-        @click="setMinificationOfLeftDrawer(false)"
-      >
+      <div id="leftnavicons" v-if="leftDrawerMinified" @click="setMinificationOfLeftDrawer(false)">
         <v-btn
           icon
           @click="
@@ -125,7 +109,7 @@
       </div>
     </v-navigation-drawer>
     <!-- <event-handler :element="$refs.canvasContainer"
-      @mousedown="handleMousePressed" /> -->
+    @mousedown="handleMousePressed" />-->
   </div>
 </template>
 
@@ -236,7 +220,7 @@ export default class Easel extends Vue {
     this.$store.commit("init");
     this.$store.commit("setSphere", this.canvas);
 
-    // const axesHelper = new THREE.AxesHelper(SETTINGS.sphere.radius * 1.25);
+    // const axesHelper = new THREE.AxesHelper(SETTINGS.sphere.boundaryCircleRadius * 1.25);
     // axesHelper.layers.disableAll(); // exclude axeshelper from being searched by Raycaster
     // this.scene.add(axesHelper);
     // this.controls = new TransformControls(

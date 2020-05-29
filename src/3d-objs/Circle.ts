@@ -31,14 +31,14 @@ export default class Circle extends Two.Group {
       const angle = (k * Math.PI) / SUBDIVISIONS; // [0, pi)
       frontVertices.push(
         new Two.Vector(
-          SETTINGS.sphere.radius * Math.cos(angle),
-          SETTINGS.sphere.radius * Math.sin(angle)
+          SETTINGS.sphere.boundaryCircleRadius * Math.cos(angle),
+          SETTINGS.sphere.boundaryCircleRadius * Math.sin(angle)
         )
       );
       backVertices.push(
         new Two.Vector(
-          SETTINGS.sphere.radius * Math.cos(angle + Math.PI), // [pi, 2*pi)
-          SETTINGS.sphere.radius * Math.sin(angle + Math.PI)
+          SETTINGS.sphere.boundaryCircleRadius * Math.cos(angle + Math.PI), // [pi, 2*pi)
+          SETTINGS.sphere.boundaryCircleRadius * Math.sin(angle + Math.PI)
         )
       );
     }
@@ -67,8 +67,9 @@ export default class Circle extends Two.Group {
 
   // TODO: split the circle into front and back semicircles
   private readjust() {
-    const sphereRadius = SETTINGS.sphere.radius; // in pixels
+    const sphereRadius = SETTINGS.sphere.boundaryCircleRadius; // in pixels
     // The vector to the circle center is ALSO the normal direction of the circle
+    // These three vectors will be stored in SECircle -- just copy them from there
     desiredZAxis.copy(this.center_).normalize();
     desiredYAxis.crossVectors(this.outer, this.center_).normalize();
     desiredXAxis.crossVectors(desiredYAxis, desiredZAxis);

@@ -2,7 +2,12 @@
   <!-- Displays a button only if the user has permission to see it. -->
   <div class="pa-0" id="button.id" v-if="(buttonDisplayList.indexOf(button.editModeValue) !== -1)">
     <!-- The button is wrapped in to tooltip vue component -->
-    <v-tooltip bottom :open-delay="toolTipOpenDelay" :close-delay="toolTipCloseDelay">
+    <v-tooltip
+      bottom
+      :open-delay="toolTipOpenDelay"
+      :close-delay="toolTipCloseDelay"
+      :disabled="displayToolTips"
+    >
       <template v-slot:activator="{ on }">
         <v-btn
           icon
@@ -22,6 +27,7 @@
       bottom
       left
       :timeout="toolUseMessageDelay"
+      :value="displayToolUseMessages"
       multi-line
     >
       <span>
@@ -48,7 +54,9 @@ export default class ToolButton extends Vue {
   /* Use the global settings to set the variables bound to the toolTipOpen/CloseDelay & toolUse */
   private toolTipOpenDelay = SETTINGS.toolTip.openDelay;
   private toolTipCloseDelay = SETTINGS.toolTip.closeDelay;
+  private displayToolTips = SETTINGS.toolTip.disableDisplay;
   private toolUseMessageDelay = SETTINGS.toolUse.delay;
+  private displayToolUseMessages = SETTINGS.toolUse.display;
 
   /* This controls the display of the snackbar Tool Use Message. This is set to false by the 
   $emit('displayOnlyThisToolUseMessage',button.id) <-- this turns off all other snackbar messages

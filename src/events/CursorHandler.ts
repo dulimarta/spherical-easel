@@ -8,6 +8,7 @@ import SETTINGS from "@/global-settings";
 import { ToolStrategy } from "./ToolStrategy";
 import Two, { BoundingClientRect, Vector } from "two.js";
 import { SEPoint } from "@/models/SEPoint";
+import { SENode } from "@/models/SENode";
 
 /* FIXME: The 3D position and the projected 2D positions are off by a few pixels???*/
 export default abstract class CursorHandler implements ToolStrategy {
@@ -15,24 +16,22 @@ export default abstract class CursorHandler implements ToolStrategy {
   protected readonly Y_AXIS = new Vector3(0, 1, 0);
   protected readonly Z_AXIS = new Vector3(0, 0, 1);
 
-  // protected readonly camera: Camera;
-  protected readonly canvas: Two.Group;
-  // protected rayCaster: Raycaster;
-  protected mouse: Two.Vector;
+  protected readonly canvas: Two.Group; // The canvas that all Two objects will be rendered to
+  protected mouse: Two.Vector; //The location (in pixels?) of the mouse as Two vector (why?)
   protected store = AppStore; // Vuex global state
-  protected currentSpherePoint: Vector3;
-  protected currentScreenPoint: Vector;
-  protected hitObject: Point | Line | null = null;
-  protected startMarker: SEPoint;
-  protected isOnSphere: boolean;
-  private boundingBox: BoundingClientRect;
+  protected currentSpherePoint: Vector3; //the location of the mouse in the fixed unit sphere or on the top half of the current view?
+  protected currentScreenPoint: Vector; //The location (in pixels?) for the mouse??? (Why isn't Vector Two.Vector?)
+  protected hitObject: SENode | null = null; //On a get objects at location this is a list? of objects that are near the location
+  protected startMarker: SEPoint; // The start of the ....???
+  protected isOnSphere: boolean; //True if the mouse is inside the boundary circle
+  private boundingBox: BoundingClientRect; //The rectangle containing the boundary circle and 1.5 pixels of padding on all sides pa-1.5
+
   constructor(scene: Two.Group) {
     this.canvas = scene;
     // the bounding rectangle is used for
     // conversion between screen and world coordinates
     this.boundingBox = scene.getBoundingClientRect();
     console.debug("Bounding box", this.boundingBox);
-    // this.rayCaster = RAYCASTER;
     this.mouse = new Two.Vector(0, 0);
     this.currentSpherePoint = new Vector3();
     this.currentScreenPoint = new Two.Vector(0, 0);
@@ -48,18 +47,19 @@ export default abstract class CursorHandler implements ToolStrategy {
   //eslint-disable-next-line
   abstract mouseReleased(event: MouseEvent): void;
 
+  /* TOFIX?: I feel like this should search the abstract unit sphere and not the Two Objects */
   findNearByObjects(
     mousePos: Vector,
     spherePoint: Vector3,
-    root: Two.Group
+    root: Two.Group // the layer to search
   ): Two.Object[] {
     // Apply canvas transformation to the mouse position
-    mousePos.subSelf(root.translation);
+    mousePos.subSelf(root.translation); //mousePos minus root.translation
     if ((root.scale as any) instanceof Two.Vector) {
       const sv = (root.scale as any) as Two.Vector;
-      mousePos.multiplySelf(sv);
+      mousePos.multiplySelf(sv); //scale the x and y coordinates of mouse by the xscale and y scale held in root.scale *vector*
     } else {
-      mousePos.multiplyScalar(root.scale);
+      mousePos.multiplyScalar(root.scale); // scale the mousePos by number root.scale
     }
     return root.children.filter((obj, pos) => {
       // console.debug((obj as Two.Path).id);
@@ -100,8 +100,10 @@ export default abstract class CursorHandler implements ToolStrategy {
   mouseMoved(event: MouseEvent) {
     const { x, y } = this.toNormalizeScreenCoord(event);
 
-    const sx = x * SETTINGS.sphere.radius + this.boundingBox.width / 2;
-    const sy = y * SETTINGS.sphere.radius + this.boundingBox.height / 2;
+    const sx =
+      x * SETTINGS.sphere.boundaryCircleRadius + this.boundingBox.width / 2;
+    const sy =
+      y * SETTINGS.sphere.boundaryCircleRadius + this.boundingBox.height / 2;
     // console.debug(
     //   `Offset (${event.offsetX},${event.offsetY}) => (${x.toFixed(
     //     2
@@ -120,9 +122,10 @@ export default abstract class CursorHandler implements ToolStrategy {
       //   `Mouse location (${event.offsetX},${event.offsetY}) ` +
       //     `Sphere position ${this.currentSpherePoint.toFixed(2)}`
       // );
-      if (this.hitObject) {
-        this.hitObject.normalStyle();
-      }
+      /* if (this.hitObject) {
+        console.log("here1");
+        this.hitObject.ref.normalFrontStyle();
+      } */
       this.hitObject = null;
       this.findNearByObjects(
         this.currentScreenPoint,
@@ -132,7 +135,7 @@ export default abstract class CursorHandler implements ToolStrategy {
         // console.debug("Intersected", (obj as Two.Path).id);
         if (obj instanceof Point || obj instanceof Line) {
           this.hitObject = obj;
-          obj.glowStyle();
+          obj.frontNormalStyle();
         }
       });
     } else {

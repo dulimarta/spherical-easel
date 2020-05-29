@@ -14,14 +14,14 @@ export function setupScene() {
 
   // Flip Y-coordinate positive Y-axis is up (north)
   (sphereCanvas as any).scale = new Two.Vector(1, -1);
-  const mainCircle = new Two.Circle(0, 0, SETTINGS.sphere.radius);
+  const mainCircle = new Two.Circle(0, 0, SETTINGS.sphere.boundaryCircleRadius);
   mainCircle.noFill();
-  mainCircle.linewidth = SETTINGS.line.thickness;
+  mainCircle.linewidth = SETTINGS.sphere.boundaryCircleLineWidth;
   sphereCanvas.add(mainCircle);
   const welcome = new Two.Text(
     "Just a text",
-    -SETTINGS.sphere.radius,
-    -SETTINGS.sphere.radius,
+    -SETTINGS.sphere.boundaryCircleRadius,
+    -SETTINGS.sphere.boundaryCircleRadius,
     {
       stroke: "green",
       size: 24
@@ -43,7 +43,7 @@ export function setupScene() {
       // const v = new Point(SETTINGS.point.size);
       // v.position.set(Math.random(), Math.random(), Math.random());
       // v.position.normalize();
-      // v.position.multiplyScalar(SETTINGS.sphere.radius);
+      // v.position.multiplyScalar(SETTINGS.sphere.boundaryCircleRadius);
       // new AddPointCommand(v).execute();
     }
   }

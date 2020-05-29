@@ -12,8 +12,8 @@ export default class Arrow extends Two.Group {
   constructor(length: number, color?: number) {
     super();
     color = color || 0x000000;
-    const tipLength = 0.1 * length * SETTINGS.sphere.radius;
-    this.bodyLength = length * SETTINGS.sphere.radius;
+    const tipLength = 0.1 * length * SETTINGS.sphere.boundaryCircleRadius;
+    this.bodyLength = length * SETTINGS.sphere.boundaryCircleRadius;
     this.head = new Two.Polygon(0, 0, tipLength, 3);
     let hexColor = color.toString(16);
     while (hexColor.length < 6) hexColor = "0" + hexColor;
@@ -51,8 +51,8 @@ export default class Arrow extends Two.Group {
     // Y-axis ih the world coordinate is positive going up
     this.rotation = Math.atan2(v.y, v.x);
     this.translation.set(
-      v.x * SETTINGS.sphere.radius,
-      v.y * SETTINGS.sphere.radius
+      v.x * SETTINGS.sphere.boundaryCircleRadius,
+      v.y * SETTINGS.sphere.boundaryCircleRadius
     );
   }
 }
