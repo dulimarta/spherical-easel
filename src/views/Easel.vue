@@ -7,8 +7,9 @@
         Setting the attribute cols="12" means the v-col below
         takes 100% of the available width. Therefore programmatically we can only control the height using Vue style binding -->
         <v-col cols="12" id="contentWrapper" ref="contentWrapper">
-          <zoom-viewport :view-height="viewHeight" :min-zoom="0.3"
-            :max-zoom="10">
+          <zoom-viewport :view-height="viewCurrentHeight" :min-zoom="0.3"
+            :max-zoom="4" @max-zoom-out="zoomWarning = true"
+            @max-zoom-in="zoomWarning=true">
             <div id="content" ref="content">
               <!--- HTML canvas will go here --->
 
@@ -79,8 +80,8 @@
               <ToolButtons></ToolButtons>
             </v-tab-item>
             <v-tab-item value="objectListTab">
-              <ObjectTree :scene="canvas">
-              </ObjectTree>
+              <!--ObjectTree :scene="canvas">
+              </ObjectTree-->
             </v-tab-item>
           </v-tabs>
         </div>
@@ -104,6 +105,9 @@
     </v-navigation-drawer>
     <!-- <event-handler :element="$refs.canvasContainer"
       @mousedown="handleMousePressed" /> -->
+    <v-snackbar v-model="zoomWarning" color="warning" :timeout="2500">
+      Can't zoom further
+    </v-snackbar>
   </div>
 </template>
 
@@ -147,7 +151,7 @@ export default class Easel extends Vue {
   // readonly canvas!: HTMLCanvasElement;
 
   private scene!: Two;
-  private canvas?: Two.Group | null = null;
+  private canvas!: Two.Group;
 
   private leftDrawerMinified = false;
   private activeLeftDrawerTab = "toolListTab";
@@ -169,7 +173,12 @@ export default class Easel extends Vue {
   // private controls: TransformControls;
   // private sphere: THREE.Mesh;
   private showSphereControl = false;
-  private viewHeight = 600;
+  private viewCurrentHeight = 600;
+  private viewCurrentWidth = 450;
+  private viewNaturalWidth = 600; // width at mounted time
+  private viewNaturalHeight = 450; // height at mounted time
+  private scaleFactor = new Two.Vector(1, -1);
+  private zoomWarning = false
   private leftDrawerProperties = {
     width: 300, //initial width and stores the current width (including the minified)
     borderWidth: 3, //the width for the border of the left drawer set to zero when minimfied
@@ -183,7 +192,6 @@ export default class Easel extends Vue {
   constructor() {
     super();
     this.$store.commit("init");
-    // window.addEventListener("resize", this.onWindowResized);
     window.addEventListener("keypress", this.keyPressed);
     // RotateHandler emits a custom event "sphere-rotate"
     window.addEventListener(
@@ -191,7 +199,13 @@ export default class Easel extends Vue {
       this.handleSphereRotation as EventListener
     );
   }
-  mounted(): void {
+  /**
+   * Using the current browser viewport info and current box of the
+   * SVG parent, determine available area (widthxheight) for our SVG drawing.
+   * This function is used on initial mount and also during window resize
+   * @return {width,height}
+   */
+  computerAvailableArea(): { width: number, height: number } {
     const desiredAspectRatio = SETTINGS.viewportAspectRatio.width / SETTINGS.viewportAspectRatio.height;
     const svgParent = this.$refs.content as HTMLElement;
     const parentBox = svgParent.getBoundingClientRect();
@@ -212,14 +226,18 @@ export default class Easel extends Vue {
       /* view is too tall, set its height to available height */
       actualWidth = idealWidth;
       actualHeight = availHeight;
-      this.viewHeight = availHeight;
     } else {
       /* view is too wide, set its width to available width */
       actualWidth = availWidth;
       actualHeight = idealHeight;
-      this.viewHeight = idealHeight;
     }
-
+    console.debug(`Avail ${availWidth}x${availHeight} Ideal: ${idealWidth}x${idealHeight} Actual ${actualWidth}x${actualHeight}`);
+    return { width: actualWidth, height: actualHeight }
+  }
+  mounted(): void {
+    const { width, height } = this.computerAvailableArea();
+    this.viewNaturalHeight = height;
+    this.viewNaturalWidth = width;
     // const { foreground, midground, background, sphereCanvas } = setupScene();
     // this.sphereCanvas = sphereCanvas;
     // this.foreground = foreground;
@@ -227,7 +245,7 @@ export default class Easel extends Vue {
     // this.background = background;
 
     /* We have to move setupScene() call to "mounted" so we can check the actual screen space */
-    const { two, canvas } = setupScene(actualWidth, actualHeight);
+    const { two, canvas } = setupScene(width, height);
     this.scene = two;
     this.canvas = canvas;
 
@@ -250,6 +268,8 @@ export default class Easel extends Vue {
 
     // During testting scene is set to null and appendTo() will fail
     if (this.scene instanceof Two) {
+      const svgParent = this.$refs.content as HTMLElement;
+
       this.scene.appendTo(svgParent);
       this.scene.play();
       // debugger; //eslint-disable-line
@@ -267,9 +287,35 @@ export default class Easel extends Vue {
       );
     }
     // TODO: handle resize?
+    window.addEventListener("resize", this.onWindowResized);
+
     // this.onWindowResized();
-    // requestAnimationFrame(this.renderIt); // Not needed when using TwoJS?
     this.setLeftDrawerBorderEvents();
+  }
+
+  // beforeUpdate(): void {
+  //   const svgParent = this.$refs.content as HTMLElement;
+  //   const parentBox = svgParent.getBoundingClientRect();
+  //   console.debug("Parent box beforeUpdate: ", parentBox);
+  //   // eslint-disable-next-line no-debugger
+  //   debugger;
+  // }
+
+  beforeDestroy(): void {
+    // VieJS lifecycle function
+    const parent = this.$refs.content as HTMLElement;
+    parent.firstChild?.removeEventListener(
+      "mousemove",
+      this.handleMouseMoved as EventListener
+    );
+    parent.firstChild?.removeEventListener(
+      "mousedown",
+      this.handleMousePressed as EventListener
+    );
+    parent.firstChild?.removeEventListener(
+      "mouseup",
+      this.handleMouseReleased as EventListener
+    );
   }
 
   handleSphereRotation(e: CustomEvent): void {
@@ -299,22 +345,6 @@ export default class Easel extends Vue {
     this.currentTool?.mouseReleased(e);
   }
 
-  beforeDestroy(): void {
-    // VieJS lifecycle function
-    const parent = this.$refs.content as HTMLElement;
-    parent.firstChild?.removeEventListener(
-      "mousemove",
-      this.handleMouseMoved as EventListener
-    );
-    parent.firstChild?.removeEventListener(
-      "mousedown",
-      this.handleMousePressed as EventListener
-    );
-    parent.firstChild?.removeEventListener(
-      "mouseup",
-      this.handleMouseReleased as EventListener
-    );
-  }
 
   keyPressed = (event: KeyboardEvent): void => {
     // const sphere = this.scene.getObjectByName("MainSphere");
@@ -328,17 +358,25 @@ export default class Easel extends Vue {
 
   onWindowResized(): void {
     // TODO: finish this method
-    const el = this.$refs.content as HTMLBaseElement;
-    if (el) {
-      const box = el.getBoundingClientRect();
-      /* Compute the available height and width of the window */
-      const availHeight = window.innerHeight - box.top;
-      console.debug(box.width, box.height, box.top, window.innerHeight);
-      const size = Math.min(box.width, box.height, availHeight);
-      (this.scene.renderer as any).setSize(size, size);
-      // this.scene.scene.scale = size / SETTINGS.viewport.width;
+    const { width, height } = this.computerAvailableArea();
 
-    }
+    // Determine the dimension changes with respect to its dimension at creation time
+    const widthChange = width / this.viewNaturalWidth;
+    const heightChange = height / this.viewNaturalHeight;
+    this.viewCurrentWidth = width;
+    this.viewCurrentHeight = height;
+    // console.debug(`Width ${(widthChange*100}% Height ${heightChange}%`);
+    // this.viewWidth = width;
+    // this.viewHeight = height;
+    (this.scene.renderer as any).setSize(width, height);
+    this.canvas.translation.set(width / 2, height / 2); // Place origin at the center
+    const newScale = Math.max(widthChange, heightChange);
+    (this.scene.renderer as any).domElement.style = `transform: scale(${newScale})`;
+    // this.scaleFactor.set(newScale, -newScale);
+    // (this.canvas as any).scale = this.scaleFactor;
+    // this.scene.update();
+
+
   }
 
   // VueJS data watcher function

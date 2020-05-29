@@ -15,17 +15,23 @@ export function setupScene(width: number, height: number) {
 
   // Flip Y-coordinate so positive Y-axis is up (north)
   (sphereCanvas as any).scale = new Two.Vector(1, -1);
-  const mainCircle = new Two.Circle(0, 0, SETTINGS.sphere.radius);
+  const circleRadius = Math.min(
+    (0.8 * width) / 2, // 80% of the viewport
+    (0.8 * height) / 2, // 80% of the viewport
+    SETTINGS.sphere.radius
+  );
+  const mainCircle = new Two.Circle(0, 0, circleRadius);
   mainCircle.noFill();
   mainCircle.linewidth = SETTINGS.line.thickness;
   sphereCanvas.add(mainCircle);
   const welcome = new Two.Text(
     `Device Pixel Ratio = ${window.devicePixelRatio}`,
-    -SETTINGS.sphere.radius + 10,
-    -SETTINGS.sphere.radius,
+    -circleRadius + 10,
+    -circleRadius,
     {
       stroke: "green",
-      size: 24
+      size: 24,
+      alignment: "left"
     }
   );
 

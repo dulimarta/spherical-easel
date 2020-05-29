@@ -58,7 +58,9 @@ export default class ZoomViewport extends Vue {
     const el = (this.$refs.viewport as HTMLElement);
 
     // Use the mouse wheel to zoom in / out
-    el.addEventListener('wheel', this.zoomer);
+    // Use the "passive" option for better performance
+    // https://stackoverflow.com/questions/37721782/what-are-passive-event-listeners
+    el.addEventListener('wheel', this.zoomer, { passive: true });
     this.parentBox = el.getBoundingClientRect();
   }
 
