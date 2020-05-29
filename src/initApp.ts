@@ -18,7 +18,7 @@ export function setupScene(width: number, height: number) {
   const circleRadius = Math.min(
     (0.8 * width) / 2, // 80% of the viewport
     (0.8 * height) / 2, // 80% of the viewport
-    SETTINGS.sphere.radius
+    SETTINGS.sphere.boundaryCircleRadius
   );
   const mainCircle = new Two.Circle(0, 0, circleRadius);
   mainCircle.noFill();
