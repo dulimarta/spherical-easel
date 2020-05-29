@@ -19,8 +19,8 @@ export default class LineHandler extends CursorHandler {
   protected circleOrientation: Arrow; // for debugging only
   protected isMouseDown: boolean;
   protected isCircleAdded: boolean;
-  private startPoint: Point | null = null;
-  private endPoint: Point | null = null;
+  private startPoint: SEPoint | null = null;
+  private endPoint: SEPoint | null = null;
   protected line: Line;
 
   constructor(scene: Two.Group, isSegment?: boolean) {
@@ -34,7 +34,7 @@ export default class LineHandler extends CursorHandler {
     this.isCircleAdded = false;
   }
 
-  activate = () => {
+  activate = (): void => {
     // this.rayCaster.layers.disableAll();
     // this.rayCaster.layers.enable(SETTINGS.layers.sphere);
     // this.rayCaster.layers.enable(SETTINGS.layers.point);
@@ -42,7 +42,7 @@ export default class LineHandler extends CursorHandler {
     this.line.isSegment = false;
   };
 
-  mouseMoved(event: MouseEvent) {
+  mouseMoved(event: MouseEvent): void {
     super.mouseMoved(event);
     if (this.isOnSphere) {
       if (this.isMouseDown) {
@@ -69,7 +69,7 @@ export default class LineHandler extends CursorHandler {
   }
 
   //eslint-disable-next-line
-  mousePressed(event: MouseEvent) {
+  mousePressed(event: MouseEvent): void {
     this.isMouseDown = true;
     this.startPoint = null;
     if (this.isOnSphere) {
@@ -80,7 +80,7 @@ export default class LineHandler extends CursorHandler {
         console.debug("Pressed on an existing point");
         /* the point coordinate is local on the sphere */
         this.startV3Point.copy(selected.owner.positionOnSphere);
-        this.startPoint = this.hitObject as Point;
+        this.startPoint = selected.owner;
       } else {
         console.debug("Pressed on open area");
         /* this.currentPoint is already converted to local sphere coordinate frame */
@@ -95,7 +95,7 @@ export default class LineHandler extends CursorHandler {
   }
 
   //eslint-disable-next-line
-  mouseReleased(event: MouseEvent) {
+  mouseReleased(event: MouseEvent): void {
     this.isMouseDown = false;
     if (this.isOnSphere) {
       // Record the second point of the geodesic circle
@@ -111,26 +111,31 @@ export default class LineHandler extends CursorHandler {
         // we have to create a new point
         const vtx = new SEPoint(new Point());
         vtx.positionOnSphere = this.startV3Point;
-        this.startPoint = vtx.ref;
+        this.startPoint = vtx;
         lineGroup.addCommand(new AddPointCommand(vtx));
       }
       if (this.hitObject instanceof Point) {
-        this.endPoint = this.hitObject;
+        this.endPoint = this.hitObject.owner;
       } else {
         // endV3Point landed on an open space
         // we have to create a new point
         const vtx = new SEPoint(new Point());
         vtx.positionOnSphere = this.currentSpherePoint;
-        this.endPoint = vtx.ref;
+        this.endPoint = vtx;
         lineGroup.addCommand(new AddPointCommand(vtx));
       }
 
       lineGroup
         .addCommand(
           new AddLineCommand({
-            line: new SELine(newLine, newLine.normalDirection),
-            startPoint: new SEPoint(this.startPoint),
-            endPoint: new SEPoint(this.endPoint)
+            line: new SELine(
+              newLine,
+              newLine.normalDirection,
+              this.startPoint,
+              this.endPoint
+            ),
+            startPoint: this.startPoint,
+            endPoint: this.endPoint
           })
         )
         .execute();

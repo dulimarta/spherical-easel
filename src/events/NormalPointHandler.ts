@@ -19,7 +19,7 @@ export default class NormalPointHandler extends CursorHandler {
     this.isNormalAdded = false;
   }
 
-  mouseMoved(event: MouseEvent) {
+  mouseMoved(event: MouseEvent): void {
     super.mouseMoved(event);
     if (this.isOnSphere) {
       if (!this.isNormalAdded) {
@@ -33,7 +33,7 @@ export default class NormalPointHandler extends CursorHandler {
     }
   }
 
-  mousePressed = () => {
+  mousePressed = (): void => {
     if (this.isOnSphere) {
       // The intersection point is returned as a point in the WORLD coordinate
       // But when a new point is added to the sphere, we have to convert
@@ -45,10 +45,10 @@ export default class NormalPointHandler extends CursorHandler {
     }
   };
 
-  mouseReleased() {
+  mouseReleased(): void {
     /* None */
   }
-  activate = () => {
+  activate = (): void => {
     // this.rayCaster.layers.disableAll();
     // this.rayCaster.layers.enable(SETTINGS.layers.sphere);
   };

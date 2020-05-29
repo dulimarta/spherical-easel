@@ -1,7 +1,11 @@
 export default {
-  viewport: {
-    width: 700,
-    height: 700
+  viewportAspectRatio: {
+    /* Use aspect ratio, and allow the canvas to fit available space.
+     * This is only the aspect ration of the containing viewport, aspect ratio
+     * of the sphere canvas is always 1:1
+     */
+    width: 4,
+    height: 3
   },
   /* A variable that determines the front/back contrast of the objects. */
   contrast: 0.5,

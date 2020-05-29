@@ -3,28 +3,35 @@
 import { AddPointCommand } from "@/commands/AddPointCommand";
 import Two from "two.js";
 import SETTINGS from "@/global-settings";
-export function setupScene() {
+export function setupScene(width: number, height: number) {
   const two = new Two({
-    width: SETTINGS.viewport.width,
-    height: SETTINGS.viewport.height,
-    autostart: true
+    width,
+    height,
+    autostart: true,
+    ratio: window.devicePixelRatio
   });
   const sphereCanvas = two.makeGroup();
   sphereCanvas.translation.set(two.width / 2, two.height / 2);
 
-  // Flip Y-coordinate positive Y-axis is up (north)
+  // Flip Y-coordinate so positive Y-axis is up (north)
   (sphereCanvas as any).scale = new Two.Vector(1, -1);
-  const mainCircle = new Two.Circle(0, 0, SETTINGS.sphere.boundaryCircleRadius);
+  const circleRadius = Math.min(
+    (0.8 * width) / 2, // 80% of the viewport
+    (0.8 * height) / 2, // 80% of the viewport
+    SETTINGS.sphere.radius
+  );
+  const mainCircle = new Two.Circle(0, 0, circleRadius);
   mainCircle.noFill();
   mainCircle.linewidth = SETTINGS.sphere.boundaryCircleLineWidth;
   sphereCanvas.add(mainCircle);
   const welcome = new Two.Text(
-    "Just a text",
-    -SETTINGS.sphere.boundaryCircleRadius,
-    -SETTINGS.sphere.boundaryCircleRadius,
+    `Device Pixel Ratio = ${window.devicePixelRatio}`,
+    -circleRadius + 10,
+    -circleRadius,
     {
       stroke: "green",
-      size: 24
+      size: 24,
+      alignment: "left"
     }
   );
 

@@ -2,23 +2,31 @@ import { SENode } from "./SENode";
 import Line from "@/plotables/Line";
 import { SEPoint } from "./SEPoint";
 import { Vector3 } from "three";
+import { Visitable } from "@/visitors/Visitable";
+import { Visitor } from "@/visitors/Visitor";
 
-export class SELine extends SENode {
+export class SELine extends SENode implements Visitable {
   public ref: Line;
   private normalDir: Vector3;
 
   // FIXME: We probably don't have to store the following
   // Keep them here for now to make the rest of the code compiles
-  public start: SEPoint | null = null;
-  public end: SEPoint | null = null;
+  public start: SEPoint;
+  public end: SEPoint;
   //   public isSegment: boolean;
 
-  constructor(l: Line, normalDir: Vector3) {
+  constructor(l: Line, normalDir: Vector3, start: SEPoint, end: SEPoint) {
     super();
     this.ref = l;
     l.owner = this;
     this.normalDir = new Vector3();
     this.normalDir.copy(normalDir);
+    this.start = start;
+    this.end = end;
+  }
+
+  accept(v: Visitor): void {
+    v.actionOnLine(this);
   }
 
   get normalDirection(): Vector3 {

@@ -21,20 +21,15 @@ export default class RotateHandler extends CursorHandler {
 
   mouseMoved(event: MouseEvent) {
     super.mouseMoved(event);
-    const pixelDistance = this.prevScreenPoint.distanceTo(
-      this.currentScreenPoint
-    );
-    // Rotate
-    if (this.isDragging && this.isOnSphere && pixelDistance > 5) {
+    const rotationAngle = this.prevSpherePoint.angleTo(this.currentSpherePoint);
+    if (
+      this.isDragging &&
+      this.isOnSphere &&
+      rotationAngle > Math.PI / 90 /* 2 degrees */
+    ) {
       desiredZAxis
         .crossVectors(this.prevSpherePoint, this.currentSpherePoint)
         .normalize();
-      const rotationAngle = this.prevSpherePoint.angleTo(
-        this.currentSpherePoint
-      );
-      console.debug(
-        `Rotate by ${(rotationAngle / Math.PI).toFixed(3)} degrees`
-      );
       this.rotationMatrix.makeRotationAxis(desiredZAxis, rotationAngle);
       this.prevSpherePoint.copy(this.currentSpherePoint);
       this.prevScreenPoint.copy(this.currentScreenPoint);
@@ -47,7 +42,7 @@ export default class RotateHandler extends CursorHandler {
   }
 
   mousePressed(event: MouseEvent) {
-    // super.mousePressed(event);
+    // super.mousePressed(event);a
     super.mouseMoved(event);
     this.isDragging = true;
     this.prevSpherePoint.copy(this.currentSpherePoint);

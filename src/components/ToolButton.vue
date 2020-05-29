@@ -80,10 +80,10 @@ export default class ToolButton extends Vue {
 
   /* @Watch if button.displayToolUseMessage changes then set displayToolUseMessage to false so
       that multiple snackbars tool use messages are not displayed at the same time*/
-  @Watch("button.displayToolUseMessage")
-  protected onButtonChanged() {
-    this.displayToolUseMessage = false;
-  }
+  // @Watch("button.displayToolUseMessage")
+  // protected onButtonChanged() {
+  //   this.displayToolUseMessage = false;
+  // }
 }
 </script>
 
