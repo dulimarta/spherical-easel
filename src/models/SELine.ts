@@ -2,8 +2,10 @@ import { SENode } from "./SENode";
 import Line from "@/plotables/Line";
 import { SEPoint } from "./SEPoint";
 import { Vector3 } from "three";
+import { Visitable } from "@/visitors/Visitable";
+import { Visitor } from "@/visitors/Visitor";
 
-export class SELine extends SENode {
+export class SELine extends SENode implements Visitable {
   public ref: Line;
   private normalDir: Vector3;
 
@@ -21,6 +23,10 @@ export class SELine extends SENode {
     this.normalDir.copy(normalDir);
     this.start = start;
     this.end = end;
+  }
+
+  accept(v: Visitor): void {
+    v.actionOnLine(this);
   }
 
   get normalDirection(): Vector3 {

@@ -136,6 +136,7 @@ import Two from "two.js";
 import { PositionVisitor } from "@/visitors/PositionVisitor";
 import { SEPoint } from "@/models/SEPoint";
 import { SELine } from "@/models/SELine";
+import { Visitor } from '@/visitors/Visitor';
 // import Circle from '../3d-objs/Circle';
 @Component({ components: { ObjectTree, ToolButtons, ZoomViewport } })
 export default class Easel extends Vue {
@@ -272,13 +273,15 @@ export default class Easel extends Vue {
   }
 
   handleSphereRotation(e: CustomEvent): void {
-    this.visitor?.setTransform(e.detail.transform);
-    this.$store.state.points.forEach((p: SEPoint) => {
-      this.visitor?.actionOnPoint(p);
-    });
-    this.$store.state.lines.forEach((l: SELine) => {
-      this.visitor?.actionOnLine(l);
-    });
+    if (this.visitor) {
+      this.visitor.setTransform(e.detail.transform);
+      this.$store.state.points.forEach((p: SEPoint) => {
+        p.accept(this.visitor as Visitor)
+      });
+      this.$store.state.lines.forEach((l: SELine) => {
+        l.accept(this.visitor as Visitor)
+      });
+    }
   }
   handleMouseMoved(e: MouseEvent): void {
     // WHen currentTool is NULL, the following line does nothing
