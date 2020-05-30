@@ -10,18 +10,17 @@
         Setting the attribute cols="12" means the v-col below
         takes 100% of the available width. Therefore programmatically we can only control the height using Vue style binding -->
         <v-col cols="12" id="contentWrapper" ref="contentWrapper">
-          <!--zoom-viewport :view-width="viewCurrentWidth"
-            :view-height="viewCurrentHeight" :min-zoom="0.3" :max-zoom="4"
-            @max-zoom-out="zoomWarning = true"
-            @max-zoom-in="zoomWarning = true">
-            <div id="content" ref="content">
-              < HTML canvas will go here
-          </div>
-          </zoom-viewport-->
-          <v-responsive :aspect-ratio="1" :max-height="viewCurrentHeight"
-            :max-width="viewCurrentWidth" id="content" ref="content"
-            class="green">
-            <!-- <div id="content" ref="content" class="blue">Hi</div> -->
+          <!-- When the available area is too wide, we have to limit its width
+          so the responsive area will not be taller than the viewport -->
+          <v-responsive :aspect-ratio="1" :max-width="responsiveSize"
+            :max-height="responsiveSize" id="responsive" ref="responsive"
+            class="ma-2 yellow">
+            <zoom-viewport :view-width="viewNaturalWidth"
+              :view-height="viewNaturalHeight" :min-zoom="0.3"
+              :max-zoom="4" @max-zoom-out="zoomWarning = true"
+              @max-zoom-in="zoomWarning = true" class="orange">
+              <div id="svgParent" ref="svgParent" class="ma-1 red"></div>
+            </zoom-viewport>
           </v-responsive>
         </v-col>
       </v-row>
@@ -124,10 +123,11 @@
   flex-direction: row;
   justify-content: center;
   border: 2px dashed red; // Just for debugging so we can see the box boundary
+  padding: 0;
+  margin: 4px;
 }
 
 svg.se-geo {
-  overflow: hidden;
   border: 3px solid brown;
   margin: 0;
   padding: 0;
@@ -251,15 +251,23 @@ export default class Easel extends Vue {
    *
    * @return {width,height} the actual dimension of the viewport
    */
-  computerAvailableArea(): { width: number; height: number } {
-    const svgParent = this.$refs.content as VueComponent;
-    const parentBox = svgParent.$el.getBoundingClientRect();
+
+  get responsiveSize(): number {
+    return Math.min(this.viewCurrentHeight, this.viewCurrentWidth);
+  }
+
+  computeAvailableArea(): { width: number; height: number } {
+    let parent: HTMLElement;
+    const el = this.$refs.responsive;
+    if (el instanceof VueComponent)
+      parent = (el as VueComponent).$el as HTMLElement;
+    else
+      parent = el as HTMLElement
+    const parentBox = parent.getBoundingClientRect();
 
     // Available height is the browser viewport height minus
     // the top position of the view relative to the browser top edge
-    // eslint-disable-next-line no-debugger
-    // debugger;
-    const availHeight = window.innerHeight - parentBox.top - 32; // Leave 16px gap?
+    const availHeight = window.innerHeight - parentBox.top - 16; // Leave 16px gap?
 
     // Available width is the browser viewport width minus
     // the left position of the view relative to the browser left edge
@@ -271,9 +279,11 @@ export default class Easel extends Vue {
   private toolTarget!: HTMLElement;
 
   mounted(): void {
-    const { width, height } = this.computerAvailableArea();
+    const { width, height } = this.computeAvailableArea();
     this.viewNaturalHeight = height;
     this.viewNaturalWidth = width;
+    this.viewCurrentHeight = height;
+    this.viewCurrentWidth = width;
     // const { foreground, midground, background, sphereCanvas } = setupScene();
     // this.sphereCanvas = sphereCanvas;
     // this.foreground = foreground;
@@ -281,9 +291,9 @@ export default class Easel extends Vue {
     // this.background = background;
 
     /* We have to move setupScene() call to "mounted" so we can check the actual screen space */
-    // const { two, canvas } = setupScene(width, height);
-    // this.scene = two;
-    // this.canvas = canvas;
+    const { two, canvas } = setupScene(width, height);
+    this.scene = two;
+    this.canvas = canvas;
 
     // Hack to add our own CSS class. Refer to the <style> section below
     // ((two.renderer as any).domElement as HTMLElement).classList.add("se-geo");
@@ -303,23 +313,31 @@ export default class Easel extends Vue {
 
     // During testting scene is set to null and appendTo() will fail
     if (this.scene instanceof Two) {
-      const svgParent = this.$refs.content as HTMLElement;
+      let svgParent: HTMLElement;
+      const el = this.$refs.svgParent;
+      if (typeof el !== "undefined") {
+        // Anticipate the possibility that the tag is
+        // either a VueComponent or native HTML
+        if (el instanceof VueComponent)
+          svgParent = (el as VueComponent).$el as HTMLElement;
+        else svgParent = el as HTMLElement;
 
-      this.scene.appendTo(svgParent);
-      this.scene.play();
-      // debugger; //eslint-disable-line
-      svgParent.firstChild?.addEventListener(
-        "mousemove",
-        this.handleMouseMoved as EventListener
-      );
-      svgParent.firstChild?.addEventListener(
-        "mousedown",
-        this.handleMousePressed as EventListener
-      );
-      svgParent.firstChild?.addEventListener(
-        "mouseup",
-        this.handleMouseReleased as EventListener
-      );
+        this.scene.appendTo(svgParent);
+        this.scene.play();
+        // debugger; //eslint-disable-line
+        svgParent.firstChild?.addEventListener(
+          "mousemove",
+          this.handleMouseMoved as EventListener
+        );
+        svgParent.firstChild?.addEventListener(
+          "mousedown",
+          this.handleMousePressed as EventListener
+        );
+        svgParent.firstChild?.addEventListener(
+          "mouseup",
+          this.handleMouseReleased as EventListener
+        );
+      }
     }
     // TODO: handle resize?
     window.addEventListener("resize", this.onWindowResized);
@@ -328,8 +346,11 @@ export default class Easel extends Vue {
     this.setLeftDrawerBorderEvents();
   }
 
+  updated(): void {
+    console.debug("Easel component updated")
+  }
   // beforeUpdate(): void {
-  //   const svgParent = this.$refs.content as HTMLElement;
+  //   const svgParent = this.$refs.responsive as HTMLElement;
   //   const parentBox = svgParent.getBoundingClientRect();
   //   console.debug("Parent box beforeUpdate: ", parentBox);
   //   // eslint-disable-next-line no-debugger
@@ -338,7 +359,7 @@ export default class Easel extends Vue {
 
   beforeDestroy(): void {
     // VieJS lifecycle function
-    const parent = this.$refs.content as HTMLElement;
+    const parent = this.$refs.responsive as HTMLElement;
     parent.firstChild?.removeEventListener(
       "mousemove",
       this.handleMouseMoved as EventListener
@@ -392,7 +413,7 @@ export default class Easel extends Vue {
 
   onWindowResized(): void {
     // TODO: finish this method
-    const { width, height } = this.computerAvailableArea();
+    const { width, height } = this.computeAvailableArea();
 
     // Determine the dimension changes with respect to its dimension at creation time
     const widthChange = width / this.viewNaturalWidth;
@@ -402,7 +423,10 @@ export default class Easel extends Vue {
     // (this.scene.renderer as any).setSize(width, height);
     // this.canvas.translation.set(width / 2, height / 2); // Place origin at the center
     const newScale = Math.max(widthChange, heightChange);
+    console.debug("Resize factor", newScale)
     // const svgElem = (this.scene.renderer as any).domElement as HTMLElement;
+    this.canvas.scale = newScale;
+    this.canvas.translation.set(width / 2, height / 2);
     // svgElem.setAttribute("style", `transform: scale(${newScale})`);
 
     // TODO: apply translation and scale to other layers!

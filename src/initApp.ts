@@ -18,8 +18,8 @@ export function setupScene(width: number, height: number) {
   (sphereCanvas as any).scale = new Two.Vector(1, -1);
   const circleRadius = Math.min(
     width / 2, // 80% of the viewport
-    height / 2 // 80% of the viewport
-    // SETTINGS.sphere.radius
+    height / 2, // 80% of the viewport
+    SETTINGS.sphere.radius
   );
 
   GlobalStore.commit("setSphereRadius", circleRadius);
@@ -40,8 +40,8 @@ export function setupScene(width: number, height: number) {
 
   // DO NOT flip the Y-coordinate on the text layer
   const foreground = two.makeGroup();
-  foreground.translation.set(two.width / 2, two.height / 2);
-  foreground.add(welcome);
+  // foreground.translation.set(two.width / 2, two.height / 2);
+  // foreground.add(welcome);
   // Translate the origin from the upper-left corner to the center
   // of the viewport
   if (process.env.NODE_ENV === "development") {

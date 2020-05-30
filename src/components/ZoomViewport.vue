@@ -1,6 +1,6 @@
 <template>
-  <div id="viewport" ref="viewport" :style="{ height: heightInPixel }">
-    <div :style="{ transform: transformStyle }">
+  <div id="viewport" ref="viewport" :sssstyle="{ height: heightInPixel }">
+    <div :ssssstyle="{ transform: transformStyle }">
       <slot></slot>
       <!-- child contents go here -->
     </div>
@@ -71,18 +71,18 @@ export default class ZoomViewport extends Vue {
       debugger;
       console.debug("Resized!!!")
     })
-    el.addEventListener("wheel", this.zoomer, { passive: true });
+    // el.addEventListener("wheel", this.zoomer, { passive: true });
     this.parentBox = el.getBoundingClientRect();
     console.debug(`Parent at mounted: ${this.viewWidth}x${this.viewHeight}`)
-    this.viewMatrix.makeOrthographic(
-      -this.viewWidth / 2,
-      this.viewWidth / 2,
-      -this.viewHeight / 2,
-      this.viewHeight / 2,
-      -1,
-      +1
-    );
-    el.addEventListener("mousemove", this.mover);
+    // this.viewMatrix.makeOrthographic(
+    //   -this.viewWidth / 2,
+    //   this.viewWidth / 2,
+    //   -this.viewHeight / 2,
+    //   this.viewHeight / 2,
+    //   -1,
+    //   +1
+    // );
+    // el.addEventListener("mousemove", this.mover);
   }
 
   updated(): void {
@@ -167,7 +167,7 @@ export default class ZoomViewport extends Vue {
   padding: 0;
 
   div {
-    border: 2px solid navy;
+    // background-color: yellow;
   }
 }
 </style>

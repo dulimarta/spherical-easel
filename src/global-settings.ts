@@ -2,7 +2,7 @@ export default {
   sphere: {
     // TODO: Rename this to boundaryCircle
     /* We always assume a UNIT sphere */
-    radius: 250 /* in pixels */,
+    radius: 240 /* in pixels */,
     color: "black",
     opacity: 1,
     linewidth: 2,
