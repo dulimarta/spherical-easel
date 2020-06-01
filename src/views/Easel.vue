@@ -14,13 +14,14 @@
           so the responsive area will not be taller than the viewport -->
           <v-responsive :aspect-ratio="1" :max-width="responsiveSize"
             :max-height="responsiveSize" id="responsive" ref="responsive"
-            class="ma-2 yellow">
-            <zoom-viewport :view-width="viewNaturalWidth"
-              :view-height="viewNaturalHeight" :min-zoom="0.3"
+            class="pa-1 yellow">
+            <!-- keep the YELLOW class for debugging  -->
+            <!--zoom-viewport :view-width="naturalViewSize"
+              :view-height="naturalViewSize" :min-zoom="0.3"
               :max-zoom="4" @max-zoom-out="zoomWarning = true"
-              @max-zoom-in="zoomWarning = true" class="orange">
-              <div id="svgParent" ref="svgParent" class="ma-1 red"></div>
-            </zoom-viewport>
+              @max-zoom-in="zoomWarning = true" class="orange"-->
+            <div id="svgParent" ref="svgParent" class="ma-0"></div>
+            <!--/zoom-viewport-->
           </v-responsive>
         </v-col>
       </v-row>
@@ -111,9 +112,9 @@
     </v-navigation-drawer>
     <!-- <event-handler :element="$refs.canvasContainer"
       @mousedown="handleMousePressed" /> -->
-    <v-snackbar v-model="zoomWarning" color="warning" :timeout="2500">
+    <!--v-snackbar v-model="zoomWarning" color="warning" :timeout="2500">
       Can't zoom further
-    </v-snackbar>
+    </v-snackbar-->
   </div>
 </template>
 <style lang="scss">
@@ -127,6 +128,9 @@
   margin: 4px;
 }
 
+#svgParent {
+  margin: auto;
+}
 svg.se-geo {
   border: 3px solid brown;
   margin: 0;
@@ -183,6 +187,7 @@ import { PositionVisitor } from "@/visitors/PositionVisitor";
 import { SEPoint } from "@/models/SEPoint";
 import { SELine } from "@/models/SELine";
 import { Visitor } from "@/visitors/Visitor";
+import { Matrix3, Matrix4, Vector3 } from 'three';
 // import Circle from '../3d-objs/Circle';
 @Component({
   components: { ObjectTree, ToolButtons, ZoomViewport }
@@ -217,12 +222,14 @@ export default class Easel extends Vue {
   // private controls: TransformControls;
   // private sphere: THREE.Mesh;
   private showSphereControl = false;
-  private viewCurrentHeight = 600;
-  private viewCurrentWidth = 450;
-  private viewNaturalWidth = 600; // width at mounted time
-  private viewNaturalHeight = 450; // height at mounted time
+  private currentViewSize = 600;
+  private naturalViewSize = 600; // width at mounted time
+  private naturalSphereSize = SETTINGS.sphere.radius;
   private scaleFactor = new Two.Vector(1, -1);
-  private zoomWarning = false;
+  // private zoomWarning = false;
+  private transformMatrix = new Matrix4();
+  private tmpMatrix = new Matrix4();
+  private tmpVector = new Vector3();
   private leftDrawerProperties = {
     width: 300, //initial width and stores the current width (including the minified)
     borderWidth: 3, //the width for the border of the left drawer set to zero when minimfied
@@ -232,6 +239,9 @@ export default class Easel extends Vue {
 
   @State("editMode")
   private editMode!: string;
+
+  @State
+  readonly sphereRadius!: number; // current actual radius
 
   constructor() {
     super();
@@ -253,10 +263,10 @@ export default class Easel extends Vue {
    */
 
   get responsiveSize(): number {
-    return Math.min(this.viewCurrentHeight, this.viewCurrentWidth);
+    return Math.min(this.currentViewSize, this.currentViewSize);
   }
 
-  computeAvailableArea(): { width: number; height: number } {
+  computeAvailableArea(): number {
     let parent: HTMLElement;
     const el = this.$refs.responsive;
     if (el instanceof VueComponent)
@@ -274,16 +284,12 @@ export default class Easel extends Vue {
     const availWidth = window.innerWidth - parentBox.left;
     const size = Math.min(availWidth, availHeight);
     // Compute the ideal dimension while maintaining aspect ratio
-    return { width: size, height: size };
+    return size;
   }
-  private toolTarget!: HTMLElement;
+  // private toolTarget!: HTMLElement;
 
   mounted(): void {
-    const { width, height } = this.computeAvailableArea();
-    this.viewNaturalHeight = height;
-    this.viewNaturalWidth = width;
-    this.viewCurrentHeight = height;
-    this.viewCurrentWidth = width;
+    const size = this.computeAvailableArea();
     // const { foreground, midground, background, sphereCanvas } = setupScene();
     // this.sphereCanvas = sphereCanvas;
     // this.foreground = foreground;
@@ -291,9 +297,12 @@ export default class Easel extends Vue {
     // this.background = background;
 
     /* We have to move setupScene() call to "mounted" so we can check the actual screen space */
-    const { two, canvas } = setupScene(width, height);
+    const { two, canvas } = setupScene(size, size);
     this.scene = two;
     this.canvas = canvas;
+    this.naturalViewSize = size;
+    this.currentViewSize = size;
+    this.naturalSphereSize = this.sphereRadius;
 
     // Hack to add our own CSS class. Refer to the <style> section below
     // ((two.renderer as any).domElement as HTMLElement).classList.add("se-geo");
@@ -313,6 +322,8 @@ export default class Easel extends Vue {
 
     // During testting scene is set to null and appendTo() will fail
     if (this.scene instanceof Two) {
+      const domEl = (this.scene.renderer as any).domElement;
+      domEl.addEventListener("mousemove", this.moveMonitor);
       let svgParent: HTMLElement;
       const el = this.$refs.svgParent;
       if (typeof el !== "undefined") {
@@ -346,8 +357,29 @@ export default class Easel extends Vue {
     this.setLeftDrawerBorderEvents();
   }
 
+  moveMonitor(e: MouseEvent): void {
+    this.tmpVector.set(e.offsetX, e.offsetY, 0);
+    this.tmpVector.applyMatrix4(this.transformMatrix);
+    console.debug(e.offsetX, e.offsetY, this.tmpVector.toFixed(2));
+  }
+
   updated(): void {
-    console.debug("Easel component updated")
+    const el = this.$refs.svgParent;
+    let parent: HTMLElement;
+    if (el instanceof VueComponent)
+      parent = (el as VueComponent).$el as HTMLElement
+    else
+      parent = el as HTMLElement;
+
+    if (parent) {
+      const box = parent.getBoundingClientRect();
+      console.debug("Easel component updated, sphere radius", this.sphereRadius, box);
+      const R = this.sphereRadius;
+      this.transformMatrix.makeOrthographic(-R, R, -R, R, R, -R);
+      this.tmpMatrix.makeTranslation(-box.width / 2, -box.height / 2, 0);
+      this.transformMatrix.multiply(this.tmpMatrix);
+    }
+
   }
   // beforeUpdate(): void {
   //   const svgParent = this.$refs.responsive as HTMLElement;
@@ -359,16 +391,20 @@ export default class Easel extends Vue {
 
   beforeDestroy(): void {
     // VieJS lifecycle function
-    const parent = this.$refs.responsive as HTMLElement;
-    parent.firstChild?.removeEventListener(
+    let svgParent: HTMLElement;
+    const el = this.$refs.svgParent;
+    if (el instanceof VueComponent)
+      svgParent = (el as VueComponent).$el as HTMLElement;
+    else svgParent = el as HTMLElement;
+    svgParent.firstChild?.removeEventListener(
       "mousemove",
       this.handleMouseMoved as EventListener
     );
-    parent.firstChild?.removeEventListener(
+    svgParent.firstChild?.removeEventListener(
       "mousedown",
       this.handleMousePressed as EventListener
     );
-    parent.firstChild?.removeEventListener(
+    svgParent.firstChild?.removeEventListener(
       "mouseup",
       this.handleMouseReleased as EventListener
     );
@@ -413,20 +449,21 @@ export default class Easel extends Vue {
 
   onWindowResized(): void {
     // TODO: finish this method
-    const { width, height } = this.computeAvailableArea();
+    const size = this.computeAvailableArea();
 
     // Determine the dimension changes with respect to its dimension at creation time
-    const widthChange = width / this.viewNaturalWidth;
-    const heightChange = height / this.viewNaturalHeight;
-    this.viewCurrentWidth = width;
-    this.viewCurrentHeight = height;
-    // (this.scene.renderer as any).setSize(width, height);
-    // this.canvas.translation.set(width / 2, height / 2); // Place origin at the center
+    const widthChange = size / this.naturalViewSize;
+    const heightChange = size / this.naturalViewSize;
+    this.currentViewSize = size;
+    this.currentViewSize = size;
+    (this.scene.renderer as any).setSize(size, size);
+    this.canvas.translation.set(size / 2, size / 2); // Place origin at the center
     const newScale = Math.max(widthChange, heightChange);
     console.debug("Resize factor", newScale)
     // const svgElem = (this.scene.renderer as any).domElement as HTMLElement;
     this.canvas.scale = newScale;
-    this.canvas.translation.set(width / 2, height / 2);
+    // this.canvas.translation.set(width / 2, height / 2);
+    this.$store.commit("setSphereRadius", this.naturalSphereSize * newScale);
     // svgElem.setAttribute("style", `transform: scale(${newScale})`);
 
     // TODO: apply translation and scale to other layers!

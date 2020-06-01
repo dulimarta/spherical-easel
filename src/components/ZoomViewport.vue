@@ -1,8 +1,9 @@
 <template>
   <div id="viewport" ref="viewport" :sssstyle="{ height: heightInPixel }">
     <div :ssssstyle="{ transform: transformStyle }">
-      <slot></slot>
-      <!-- child contents go here -->
+      <slot>
+        <!-- child contents go here -->
+      </slot>
     </div>
   </div>
 </template>
@@ -12,6 +13,7 @@ import Vue from "vue";
 import Component from "vue-class-component";
 import { Prop } from "vue-property-decorator";
 import { Vector3, Matrix4 } from "three";
+import { State } from 'vuex-class';
 
 /**
  * This component is a wrapper that adds zoom in/out feature to its
@@ -45,6 +47,9 @@ export default class ZoomViewport extends Vue {
   @Prop(Number)
   readonly maxZoom?: number; // Optional prop
 
+  @State
+  readonly sphereRadius!: number;
+
   private minZoomFactor = this.minZoom || 0.3; // Default minimum zoom factor
   private maxZoomFactor = this.maxZoom || 3.0; // Default maximum zoom factor
   private transformStyle = "";
@@ -73,15 +78,10 @@ export default class ZoomViewport extends Vue {
     })
     // el.addEventListener("wheel", this.zoomer, { passive: true });
     this.parentBox = el.getBoundingClientRect();
-    console.debug(`Parent at mounted: ${this.viewWidth}x${this.viewHeight}`)
-    // this.viewMatrix.makeOrthographic(
-    //   -this.viewWidth / 2,
-    //   this.viewWidth / 2,
-    //   -this.viewHeight / 2,
-    //   this.viewHeight / 2,
-    //   -1,
-    //   +1
-    // );
+    // eslint-disable-next-line no-debugger
+    debugger;
+    console.debug(`Parent at mounted: ${this.viewWidth}x${this.viewHeight} Sphere radius ${this.sphereRadius}`, this.$store.state)
+
     // el.addEventListener("mousemove", this.mover);
   }
 
@@ -92,7 +92,17 @@ export default class ZoomViewport extends Vue {
     // changes dimension
     const boxNow = el.getBoundingClientRect();
     this.parentBox = el.getBoundingClientRect();
-    console.debug(`Parent at update: ${this.parentBox.width}x${this.parentBox.height}`)
+    console.debug(`Parent at update: ${this.parentBox.width}x${this.parentBox.height} ${this.sphereRadius}`)
+    this.viewMatrix.makeOrthographic(
+      -this.sphereRadius,
+      this.sphereRadius,
+      this.sphereRadius,
+      -this.sphereRadius,
+      -1,
+      +1
+    );
+    this.tmpMatrix.makeTranslation(-this.parentBox.width / 2, -this.parentBox.height / 2, 0)
+    this.viewMatrix.multiply(this.tmpMatrix);
   }
 
   mover(e: MouseEvent): void {
