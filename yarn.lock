@@ -1339,6 +1339,13 @@
   dependencies:
     source-map "^0.6.1"
 
+"@types/vue-splitpane@^1.0.0":
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/@types/vue-splitpane/-/vue-splitpane-1.0.0.tgz#1fd84c9cf6a208e3105cbdcbad25e29327888f81"
+  integrity sha512-3UFUId9ozBWd041jKwCjyjX8Y3G3u3AWQYqE4SJK+3PYZUos6zu++8vO/g8D2JMP5vkK0i3mgvfM5zzGGvu+6A==
+  dependencies:
+    vue ">=2.0.0"
+
 "@types/webpack-env@^1.15.2":
   version "1.15.2"
   resolved "https://registry.yarnpkg.com/@types/webpack-env/-/webpack-env-1.15.2.tgz#927997342bb9f4a5185a86e6579a0a18afc33b0a"
@@ -11436,6 +11443,11 @@ vue-server-renderer@^2.6.10:
     serialize-javascript "^2.1.2"
     source-map "0.5.6"
 
+vue-splitpane@^1.0.6:
+  version "1.0.6"
+  resolved "https://registry.yarnpkg.com/vue-splitpane/-/vue-splitpane-1.0.6.tgz#c4667bfdd8e10ced5d23d09fe8a129585c2c04c0"
+  integrity sha512-6sneVSEeF1VsCD025HP93nRxwzYhv3rotCeYi2Ah1FmGxwtfqbCZEIzaHGberdGNCpMlEzGD/1OIE1kK5QukLA==
+
 vue-style-loader@^4.1.0, vue-style-loader@^4.1.2:
   version "4.1.2"
   resolved "https://registry.yarnpkg.com/vue-style-loader/-/vue-style-loader-4.1.2.tgz#dedf349806f25ceb4e64f3ad7c0a44fba735fcf8"
@@ -11457,7 +11469,7 @@ vue-template-es2015-compiler@^1.6.0, vue-template-es2015-compiler@^1.9.0:
   resolved "https://registry.yarnpkg.com/vue-template-es2015-compiler/-/vue-template-es2015-compiler-1.9.1.tgz#1ee3bc9a16ecbf5118be334bb15f9c46f82f5825"
   integrity sha512-4gDntzrifFnCEvyoO8PqyJDmguXgVPxKiIxrBKjIowvL9l+N66196+72XVYR8BBf1Uv1Fgt3bGevJ+sEmxfZzw==
 
-vue@^2.6.10, vue@^2.6.11:
+vue@>=2.0.0, vue@^2.6.10, vue@^2.6.11:
   version "2.6.11"
   resolved "https://registry.yarnpkg.com/vue/-/vue-2.6.11.tgz#76594d877d4b12234406e84e35275c6d514125c5"
   integrity sha512-VfPwgcGABbGAue9+sfrD4PuwFar7gPb1yl1UK1MwXoQPAw0BKSqWfoYCT/ThFrdEVWoI51dBuyCoiNU9bZDZxQ==

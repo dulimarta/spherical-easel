@@ -61,6 +61,9 @@
         <!-- this is the spot where the views controlled by Vue Router will be rendred -->
       </router-view>
     </v-content>
+    <v-footer app color="accent" padless>
+      <v-col class="text-center">Footer text here</v-col>
+    </v-footer>
   </v-app>
 </template>
 

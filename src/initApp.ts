@@ -17,9 +17,9 @@ export function setupScene(width: number, height: number) {
   // Flip Y-coordinate so positive Y-axis is up (north)
   (sphereCanvas as any).scale = new Two.Vector(1, -1);
   const circleRadius = Math.min(
-    width / 2, // 80% of the viewport
-    height / 2, // 80% of the viewport
-    SETTINGS.sphere.radius
+    0.9 * (width / 2), // 80% of the viewport
+    0.9 * (height / 2) // 80% of the viewport
+    // SETTINGS.sphere.radius
   );
 
   GlobalStore.commit("setSphereRadius", circleRadius);
