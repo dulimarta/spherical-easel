@@ -4,8 +4,8 @@
       <!--- ml-2: margin left 8 px -->
       <v-row>
         <v-col cols="12">
-          Control buttons, Natural {{naturalSphereSize}} Current
-          {{sphereRadius}}
+          Control buttons, Natural {{ naturalSphereSize }} Current
+          {{ sphereRadius }}
         </v-col>
         <!--- VUetify grid system uses 12-column layout. 
         Setting the attribute cols="12" means the v-col below
@@ -13,9 +13,14 @@
         <v-col cols="12" id="contentWrapper" ref="contentWrapper">
           <!-- When the available area is too wide, we have to limit its width
           so the responsive area will not be taller than the viewport -->
-          <v-responsive :aspect-ratio="1" :max-width="responsiveSize"
-            :max-height="responsiveSize" id="responsive" ref="responsive"
-            class="pa-1 yellow">
+          <v-responsive
+            :aspect-ratio="1"
+            :max-width="responsiveSize"
+            :max-height="responsiveSize"
+            id="responsive"
+            ref="responsive"
+            class="pa-1 yellow"
+          >
             <!-- keep the YELLOW class for debugging  -->
             <!--zoom-viewport :view-width="naturalViewSize"
               :view-height="naturalViewSize" :min-zoom="0.3"
@@ -45,68 +50,39 @@
 
     <!--  Use the "clipped" attribute to keep the navigation drawer 
     below the app toolbar, width should be specified as number only (without unit) -->
-    <v-navigation-drawer id="leftDrawer" ref="leftDrawer" app clipped
-      color="accent" permanent :mini-variant="leftDrawerMinified" bottom
-      :width="leftDrawerProperties.width">
-      <v-container id="leftnav" fluid>
-        <!-- These the navigation arrows TODO: I would like these to be in the same row as the
-        tabs-->
-        <div>
-          <v-btn v-if="leftDrawerMinified" icon
-            @click="setMinificationOfLeftDrawer(false)">
-            <v-icon>mdi-arrow-right</v-icon>
-          </v-btn>
-          <v-btn v-else icon @click="setMinificationOfLeftDrawer(true)">
-            <v-icon>mdi-arrow-left</v-icon>
-          </v-btn>
-        </div>
-        <!-- This the not minimized left drawer containing two tabs -->
-        <div v-if="!leftDrawerMinified">
-          <!-- Two tabs set up TODO: fix the behavior of the tabs-->
-          <v-tabs v-model="activeLeftDrawerTab" centered grow>
-            <v-tooltip bottom :open-delay="toolTipOpenDelay"
-              :close-delay="toolTipCloseDelay">
-              <template v-slot:activator="{ on }">
-                <v-tab class="mt-3" href="#toolListTab" v-on="on">
-                  <v-icon left>mdi-calculator</v-icon>
-                </v-tab>
-              </template>
-              <span>{{ $t("main.ToolsTabToolTip") }}</span>
-            </v-tooltip>
-
-            <v-tooltip bottom :open-delay="toolTipOpenDelay"
-              :close-delay="toolTipCloseDelay">
-              <template v-slot:activator="{ on }">
-                <v-tab class="mt-3" href="#objectListTab" v-on="on">
-                  <v-icon left>mdi-format-list-bulleted</v-icon>
-                </v-tab>
-              </template>
-              <span>{{ $t("main.ObjectsTabToolTip") }}</span>
-            </v-tooltip>
-
-            <v-tab-item value="toolListTab">
-              <ToolButtons></ToolButtons>
-            </v-tab-item>
-            <v-tab-item value="objectListTab">
-              <!--ObjectTree :scene="canvas">
-              </ObjectTree-->
-            </v-tab-item>
-          </v-tabs>
-        </div>
-      </v-container>
+    <v-navigation-drawer
+      id="leftDrawer"
+      ref="leftDrawer"
+      app
+      clipped
+      color="accent"
+      permanent
+      :mini-variant="leftDrawerMinified"
+      bottom
+      :width="leftDrawerProperties.width"
+    >
       <!-- This is the minified version of the left drawer with icon buttons for maximizing it -->
-      <div id="leftnavicons" v-if="leftDrawerMinified"
-        @click="setMinificationOfLeftDrawer(false)">
-        <v-btn icon @click="
+      <div
+        id="leftnavicons"
+        v-if="leftDrawerMinified"
+        @click="setMinificationOfLeftDrawer(false)"
+      >
+        <v-btn
+          icon
+          @click="
             setMinificationOfLeftDrawer(false);
             activeLeftDrawerTab = 'toolListTab';
-          ">
+          "
+        >
           <v-icon class="ml-3 my-2">mdi-calculator</v-icon>
         </v-btn>
-        <v-btn icon @click="
+        <v-btn
+          icon
+          @click="
             leftDrawerMinified = !leftDrawerMinified;
             activeLeftDrawerTab = 'objectListTab';
-          ">
+          "
+        >
           <v-icon class="ml-3 my-2">mdi-format-list-bulleted</v-icon>
         </v-btn>
       </div>
@@ -189,7 +165,7 @@ import { PositionVisitor } from "@/visitors/PositionVisitor";
 import { SEPoint } from "@/models/SEPoint";
 import { SELine } from "@/models/SELine";
 import { Visitor } from "@/visitors/Visitor";
-import { Matrix3, Matrix4, Vector3 } from 'three';
+import { Matrix3, Matrix4, Vector3 } from "three";
 // import Circle from '../3d-objs/Circle';
 @Component({
   components: { ObjectTree, ToolButtons, ZoomViewport }
@@ -277,8 +253,7 @@ export default class Easel extends Vue {
     const el = this.$refs.responsive;
     if (el instanceof VueComponent)
       parent = (el as VueComponent).$el as HTMLElement;
-    else
-      parent = el as HTMLElement
+    else parent = el as HTMLElement;
     const parentBox = parent.getBoundingClientRect();
 
     // Available height is the browser viewport height minus
@@ -377,19 +352,21 @@ export default class Easel extends Vue {
     const el = this.$refs.svgParent;
     let parent: HTMLElement;
     if (el instanceof VueComponent)
-      parent = (el as VueComponent).$el as HTMLElement
-    else
-      parent = el as HTMLElement;
+      parent = (el as VueComponent).$el as HTMLElement;
+    else parent = el as HTMLElement;
 
     if (parent) {
       const box = parent.getBoundingClientRect();
-      console.debug("Easel component updated, sphere radius", this.sphereRadius, box);
+      console.debug(
+        "Easel component updated, sphere radius",
+        this.sphereRadius,
+        box
+      );
       const R = this.sphereRadius;
       this.transformMatrix.makeOrthographic(-R, R, -R, R, R, -R);
       this.tmpMatrix.makeTranslation(-box.width / 2, -box.height / 2, 0);
       this.transformMatrix.multiply(this.tmpMatrix);
     }
-
   }
   // beforeUpdate(): void {
   //   const svgParent = this.$refs.responsive as HTMLElement;
@@ -466,7 +443,6 @@ export default class Easel extends Vue {
     const heightChange = size / this.naturalViewSize;
     this.currentViewSize = size;
     this.currentViewSize = size;
-
 
     // (this.scene.renderer as any).setSize(size, size);
     // this.canvas.translation.set(size / 2, size / 2); // Place origin at the center

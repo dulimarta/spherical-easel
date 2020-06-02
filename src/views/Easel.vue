@@ -3,11 +3,18 @@
     split="vertical"
     :min-percent="5"
     :max-percent="25"
-    :default-percent="20"
+    :default-percent="toolboxMinified ? 5 : 30"
     @resize="dividerMoved"
   >
     <template slot="paneL">
-      <toolbox></toolbox>
+      <div>
+        <v-btn icon @click="toolboxMinified = !toolboxMinified">
+          <v-icon v-if="toolboxMinified">mdi-arrow-right</v-icon>
+          <v-icon v-else>mdi-arrow-left</v-icon>
+        </v-btn>
+      </div>
+
+      <toolbox :minified="toolboxMinified"></toolbox>
     </template>
     <template slot="paneR">
       <v-container fluid ref="rightPanel">
@@ -22,7 +29,7 @@
                 ref="resp"
                 class="yellow"
               >
-                <div :style="{ height: '100%' }" ref="box"></div>
+                <div :style="{ height: '100%' }" ref="canvasContent"></div>
               </v-responsive>
             </v-row>
           </v-col>
@@ -43,6 +50,8 @@ import Toolbox from "@/components/ToolBox.vue";
 export default class Easel extends Vue {
   private availHeight = 0;
   private maxCanvasSize = 0;
+  private leftPanePercentage = 30;
+  private toolboxMinified = false;
   mounted(): void {
     this.adjustSize();
     window.addEventListener("resize", this.onWindowResized);
@@ -53,6 +62,10 @@ export default class Easel extends Vue {
       window.innerHeight -
       this.$vuetify.application.footer -
       this.$vuetify.application.top;
+    console.debug(
+      `App top ${this.$vuetify.application.top},` +
+        `Footer ${this.$vuetify.application.footer}`
+    );
     const tmp = this.$refs.resp;
     let canvasPanel: HTMLElement;
     if (tmp instanceof VueComponent)
@@ -60,10 +73,18 @@ export default class Easel extends Vue {
     else canvasPanel = tmp as HTMLElement;
     const rightBox = canvasPanel.getBoundingClientRect();
     this.maxCanvasSize = this.availHeight - rightBox.top;
+    console.debug(
+      `Available height ${this.availHeight.toFixed(
+        2
+      )} Canvas ${this.maxCanvasSize.toFixed(2)}`
+    );
   }
 
   dividerMoved(leftPercentage: number): void {
-    this.adjustSize();
+    // this.adjustSize();
+    const canvasContent = this.$refs.canvasContent as HTMLElement;
+    const box = canvasContent.getBoundingClientRect();
+    console.debug("Canvas size", box.height, box.width);
   }
 
   onWindowResized(): void {
