@@ -19,13 +19,14 @@
         <v-row>
           <v-col cols="12"> Rad:
             {{currentSphereRadius}} Canvas:
-            {{naturalCanvasSize}}/{{currentCanvasSize}}
+            {{currentCanvasSize}}/{{naturalCanvasSize}}
           </v-col>
           <v-col cols="12">
             <v-row justify="center" class="pb-1">
-              <v-responsive :aspect-ratio="1" :max-height="maxCanvasSize"
-                :max-width="maxCanvasSize" ref="responsiveBox"
-                id="responsiveBox" class="pa-0">
+              <v-responsive :aspect-ratio="1"
+                :max-height="currentCanvasSize"
+                :max-width="currentCanvasSize" ref="responsiveBox"
+                id="responsiveBox" class="pa-0 yellow">
                 <div ref="canvasContent" id="canvasContent"></div>
               </v-responsive>
             </v-row>
@@ -52,9 +53,9 @@ import NormalPointHandler from '../events/NormalPointHandler';
 export default class Easel extends Vue {
   readonly RIGHT_PANE_PERCENTAGE = 80;
   private availHeight = 0; // Both split panes are sandwiched between the app bar and footer. This variable hold the number of pixels available for canvas height
-  private maxCanvasSize = 0; // Result of height calculation will be passed to <v-responsive> via this variable
+  private currentCanvasSize = 0; // Result of height calculation will be passed to <v-responsive> via this variable
   private naturalCanvasSize = 0; // The canvas size at creation time
-  private currentCanvasSize = 0; // The current canvas size after the window or pane is resized
+
   private leftPanePercentage = 30;
   private toolboxMinified = false;
 
@@ -63,7 +64,9 @@ export default class Easel extends Vue {
   private twoInstance: Two;
   private sphereCanvas!: Two.Group;
   private mainCircle!: Two.Circle;
+  // private viewMatrix = "matrix(1,0,0,1,0,0)";
   private transformMatrix = new Matrix4();
+  private cursorMatrix = new Matrix4();
   private tmpMatrix = new Matrix4();
   private tmpVector = new Vector3();
 
@@ -75,6 +78,8 @@ export default class Easel extends Vue {
 
   constructor() {
     super();
+    // eslint-disable-next-line no-debugger
+    debugger;
     this.twoInstance = new Two({
       width: SETTINGS.sphere.radius,
       height: SETTINGS.sphere.radius,
@@ -82,55 +87,80 @@ export default class Easel extends Vue {
       ratio: window.devicePixelRatio
     });
     this.sphereCanvas = this.twoInstance.makeGroup();
+    const hi = new Two.Text("Hello", SETTINGS.sphere.radius / 2, SETTINGS.sphere.radius / 2);
     this.$store.commit("setSphere", this.sphereCanvas);
     this.mainCircle = new Two.Circle(0, 0, SETTINGS.sphere.radius);
     this.mainCircle.noFill();
     this.mainCircle.linewidth = SETTINGS.line.thickness;
     this.sphereCanvas.add(this.mainCircle);
+    const textGroup = this.twoInstance.makeGroup();
+    textGroup.add(hi);
+  }
+
+  private set viewTransform(m: Matrix4) {
+    const arr = m.elements;
+    const el = ((this.twoInstance.renderer as any).domElement as HTMLElement);
+    el.style.transform = `matrix(${arr[0]},0,0,${arr[5]},${arr[12]},${arr[13]})`;
+    const orig = this.currentCanvasSize / 2;
+    el.style.transformOrigin = `${orig}px ${orig}px`;
+    el.style.overflow = "visible";
+  }
+
+  private get viewTransform() {
+    return this.transformMatrix;
   }
 
   mounted(): void {
     window.addEventListener("resize", this.onWindowResized);
     this.adjustSize();
-    this.naturalCanvasSize = this.maxCanvasSize;
-    this.currentCanvasSize = this.maxCanvasSize;
+    this.naturalCanvasSize = this.currentCanvasSize;
 
     // Tell the renderer the new viewport
-    (this.twoInstance.renderer as any).setSize(this.maxCanvasSize, this.maxCanvasSize);
+    (this.twoInstance.renderer as any).setSize(this.currentCanvasSize, this.currentCanvasSize);
     this.sphereCanvas.translation.set(
       this.twoInstance.width / 2,
       this.twoInstance.height / 2
     );
-
     const radius = Math.min(
-      (this.maxCanvasSize / 2), // 80% of the viewport
-      (this.maxCanvasSize / 2) // 80% of the viewport
+      (this.currentCanvasSize / 2), // 80% of the viewport
+      (this.currentCanvasSize / 2) // 80% of the viewport
     );
     this.currentSphereRadius = radius;
     this.$store.commit("setSphereRadius", radius);
     // Draw the boundary circle in the ideal radius
     // and scale it later to fit the canvas
-    const scaleFactor = radius / SETTINGS.sphere.radius;
+    // const scaleFactor = radius / SETTINGS.sphere.radius;
     // Flip Y-coordinate so positive Y-axis is up (north)
-    (this.sphereCanvas as any).scale = new Two.Vector(scaleFactor, -scaleFactor);
+    // this.viewTransform = ;
+    // ((this.twoInstance.renderer as any).domElement as HTMLElement).style.transform = `matrix(${scaleFactor},0,0,${scaleFactor},0,0)`;
+    // (this.sphereCanvas as any).scale = new Two.Vector(scaleFactor, -scaleFactor);
 
     const el = this.$refs.canvasContent as HTMLElement;
     this.twoInstance.appendTo(el);
     this.twoInstance.play();
-    this.pointTool = new NormalPointHandler(this.sphereCanvas, this.transformMatrix);
+    this.pointTool = new NormalPointHandler(this.sphereCanvas, this.cursorMatrix);
 
     el.addEventListener("mousemove", this.handleMouseMoved);
   }
 
   updated(): void {
-    // console.debug("Updated");
-    this.adjustSize();
+    console.debug("Updated");
+    // this.adjustSize();
     const el = this.$refs.canvasContent as HTMLElement;
     const elBox = el.getBoundingClientRect();
-    this.transformMatrix.makeTranslation(-elBox.width / 2, -elBox.height / 2, 0);
-    /* Flip the Y-coordinate */
-    this.tmpMatrix.makeScale(2 / this.maxCanvasSize, -2 / this.maxCanvasSize, 1);
-    this.transformMatrix.premultiply(this.tmpMatrix);
+    // this.cursorMatrix.makeTranslation(-elBox.width / 2, -elBox.height / 2, 0);
+    // /* Flip the Y-coordinate */
+    // this.tmpMatrix.makeScale(2 / this.currentCanvasSize, -2 / this.currentCanvasSize, 1);
+    // this.cursorMatrix.multiply(this.tmpMatrix);
+    const ratio = this.currentSphereRadius / SETTINGS.sphere.radius;
+
+    const ds = this.currentCanvasSize - this.naturalCanvasSize;
+    this.transformMatrix.identity();
+    this.tmpMatrix.makeTranslation(ds / 2, ds / 2, 0);
+    this.transformMatrix.multiply(this.tmpMatrix);
+    this.tmpMatrix.makeScale(ratio, ratio, ratio);
+    this.transformMatrix.multiply(this.tmpMatrix);
+    this.viewTransform = this.transformMatrix;
   }
 
   private adjustSize(): void {
@@ -139,57 +169,67 @@ export default class Easel extends Vue {
       this.$vuetify.application.footer -
       this.$vuetify.application.top;
     const tmp = this.$refs.responsiveBox;
-    let canvasPanel: HTMLElement;
-    if (tmp instanceof VueComponent)
-      canvasPanel = (tmp as VueComponent).$el as HTMLElement;
-    else canvasPanel = tmp as HTMLElement;
-    const rightBox = canvasPanel.getBoundingClientRect();
-    this.maxCanvasSize = this.availHeight - rightBox.top;
-    console.debug(
-      `Available height ${this.availHeight.toFixed(
-        2
-      )} Canvas ${this.maxCanvasSize.toFixed(2)}`
-    );
+    if (tmp) {
+      let canvasPanel: HTMLElement;
+      if (tmp instanceof VueComponent)
+        canvasPanel = (tmp as VueComponent).$el as HTMLElement;
+      else canvasPanel = tmp as HTMLElement;
+      const rightBox = canvasPanel.getBoundingClientRect();
+      this.currentCanvasSize = this.availHeight - rightBox.top;
+      this.currentSphereRadius = this.currentCanvasSize / 2;
+    }
+    // console.debug(
+    //   `Available height ${this.availHeight.toFixed(
+    //     2
+    //   )} Canvas ${this.currentCanvasSize.toFixed(2)}`
+    // );
   }
 
   /** Spoit Pane resize handler
    * @param leftPercentage the percentage of the left pane width relative to the entire pane
    */
   dividerMoved(leftPercentage: number): void {
-    // this.adjustSize();
+
+    this.adjustSize();
     // Calculate the width of the right panel
     const rightPanelWidth = (1 - leftPercentage / 100) * window.innerWidth;
     const canvasContent = this.$refs.canvasContent as HTMLElement;
     const box = canvasContent.getBoundingClientRect();
-    console.debug("Canvas size", box.height, box.width, rightPanelWidth);
+    console.debug("Pane resized: ", box.height, box.width, rightPanelWidth);
     // The canvas can't be bigger than its container height or the width
     // of the right panel
-    this.maxCanvasSize = Math.min(box.height, rightPanelWidth);
+    if (box.height > rightPanelWidth) {
+      this.currentCanvasSize = rightPanelWidth;
+      this.currentSphereRadius = this.currentCanvasSize / 2;
+    }
 
     // Determine how much smaller/bigger the canvas compared to its "birth" size
-    const scaleFactor = this.maxCanvasSize / this.naturalCanvasSize;
+    // const scaleFactor = this.currentCanvasSize / this.naturalCanvasSize;
     // Adjust the boundary circle accordingly
-    this.currentSphereRadius = scaleFactor * SETTINGS.sphere.radius;
     (this.twoInstance.renderer as any).setSize(
-      this.maxCanvasSize,
-      this.maxCanvasSize
+      this.currentCanvasSize,
+      this.currentCanvasSize
     );
     this.sphereCanvas.translation.set(
-      this.maxCanvasSize / 2,
-      this.maxCanvasSize / 2
+      this.currentCanvasSize / 2,
+      this.currentCanvasSize / 2
     );
-    (this.sphereCanvas as any).scale = new Two.Vector(scaleFactor, -scaleFactor);
+    // (this.sphereCanvas as any).scale = new Two.Vector(scaleFactor, -scaleFactor);
   }
 
   onWindowResized(): void {
+    console.debug("Resized");
     this.adjustSize();
-    const scaleFactor = this.maxCanvasSize / this.naturalCanvasSize;
-    this.currentSphereRadius = scaleFactor * SETTINGS.sphere.radius;
+    this.currentSphereRadius = this.currentCanvasSize / 2;
     (this.twoInstance.renderer as any).setSize(
-      this.maxCanvasSize,
-      this.maxCanvasSize
+      this.currentCanvasSize,
+      this.currentCanvasSize
     );
-    this.twoInstance.scene.scale = scaleFactor;
+    // this.transformMatrix.makeTranslation(-this.currentCanvasSize / 2, -this.currentCanvasSize / 2, 0);
+    // this.tmpMatrix.makeScale(scaleFactor, scaleFactor, scaleFactor);
+    // this.transformMatrix.multiply(this.tmpMatrix);
+    // this.viewTransform = this.transformMatrix;
+
   }
 
   handleMouseMoved(e: MouseEvent): void {
@@ -220,5 +260,6 @@ export default class Easel extends Vue {
   border: 2px dashed darkcyan;
   margin: 0;
   padding: 0;
+  overflow: visible;
 }
 </style>

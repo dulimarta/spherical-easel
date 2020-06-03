@@ -171,18 +171,20 @@ export default new Vuex.Store({
   },
   getters: {
     /* The following is just a starter code.  More work needed */
+
+    // TODO: add screen position as another argument
     findNearByPoints: (state: AppState) => (idealPosition: Vector3) => {
       state.points.filter(
         p => p.positionOnSphere.distanceTo(idealPosition) < SMALL_ENOUGH
       );
+    },
+    forwardTransform: (state: AppState): Matrix4 => {
+      tmpMatrix.fromArray(state.transformMatElements);
+      return tmpMatrix;
+    },
+    inverseTransform: (state: AppState): Matrix4 => {
+      tmpMatrix.fromArray(state.transformMatElements);
+      return tmpMatrix.getInverse(tmpMatrix);
     }
-    // forwardTransform: (state: AppState): Matrix4 => {
-    //   tmpMatrix.fromArray(state.transformMatElements);
-    //   return tmpMatrix;
-    // },
-    // inverseTransform: (state: AppState): Matrix4 => {
-    //   tmpMatrix.fromArray(state.transformMatElements);
-    //   return tmpMatrix.getInverse(tmpMatrix);
-    // }
   }
 });
