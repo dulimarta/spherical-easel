@@ -64,22 +64,21 @@ export default class Easel extends Vue {
   private twoInstance: Two;
   private sphereCanvas!: Two.Group;
   private mainCircle!: Two.Circle;
-  // private viewMatrix = "matrix(1,0,0,1,0,0)";
-  private transformMatrix = new Matrix4();
+  private transformMatrix = new Matrix4(); // Transformation between the ideal sphere and the rendered sphere/circle
   private cursorMatrix = new Matrix4();
+  private zoomMatrix = new Matrix4(); // zoom in/out transformation
   private tmpMatrix = new Matrix4();
   private tmpVector = new Vector3();
 
   private currentTool: ToolStrategy | null = null;
   private pointTool!: NormalPointHandler;
+  private magnificationFactor = 1;
 
   @State
   readonly editMode!: string;
 
   constructor() {
     super();
-    // eslint-disable-next-line no-debugger
-    debugger;
     this.twoInstance = new Two({
       width: SETTINGS.sphere.radius,
       height: SETTINGS.sphere.radius,
@@ -100,7 +99,8 @@ export default class Easel extends Vue {
   private set viewTransform(m: Matrix4) {
     const arr = m.elements;
     const el = ((this.twoInstance.renderer as any).domElement as HTMLElement);
-    el.style.transform = `matrix(${arr[0]},0,0,${arr[5]},${arr[12]},${arr[13]})`;
+    // CSS transformation matrix is only 2x3
+    el.style.transform = `matrix(${arr[0]},${arr[1]},${arr[4]},${arr[5]},${arr[12]},${arr[13]})`;
     const orig = this.currentCanvasSize / 2;
     el.style.transformOrigin = `${orig}px ${orig}px`;
     el.style.overflow = "visible";
@@ -110,6 +110,30 @@ export default class Easel extends Vue {
     return this.transformMatrix;
   }
 
+  private adjustSize(): void {
+    this.availHeight =
+      window.innerHeight -
+      this.$vuetify.application.footer -
+      this.$vuetify.application.top;
+    const tmp = this.$refs.responsiveBox;
+    if (tmp) {
+      let canvasPanel: HTMLElement;
+      if (tmp instanceof VueComponent)
+        canvasPanel = (tmp as VueComponent).$el as HTMLElement;
+      else canvasPanel = tmp as HTMLElement;
+      const rightBox = canvasPanel.getBoundingClientRect();
+      this.currentCanvasSize = this.availHeight - rightBox.top;
+      this.currentSphereRadius = this.currentCanvasSize / 2;
+    }
+    // console.debug(
+    //   `Available height ${this.availHeight.toFixed(
+    //     2
+    //   )} Canvas ${this.currentCanvasSize.toFixed(2)}`
+    // );
+  }
+
+
+  /** mounted() is part of VueJS lifecycle hooks */
   mounted(): void {
     window.addEventListener("resize", this.onWindowResized);
     this.adjustSize();
@@ -141,14 +165,20 @@ export default class Easel extends Vue {
     this.pointTool = new NormalPointHandler(this.sphereCanvas, this.cursorMatrix);
 
     el.addEventListener("mousemove", this.handleMouseMoved);
+    el.addEventListener("wheel", this.zoomer, { passive: true })
   }
+
+  /** updated() is part of VueJS lifecycle hooks */
 
   updated(): void {
     console.debug("Updated");
     // this.adjustSize();
-    const el = this.$refs.canvasContent as HTMLElement;
-    const elBox = el.getBoundingClientRect();
-    // this.cursorMatrix.makeTranslation(-elBox.width / 2, -elBox.height / 2, 0);
+    // const el = this.$refs.canvasContent as HTMLElement;
+    // const elBox = el.getBoundingClientRect();
+    this.cursorMatrix.identity();
+    this.tmpMatrix.makeTranslation(-this.currentCanvasSize / 2, -this.currentCanvasSize / 2, 0);
+    this.cursorMatrix.multiply(this.tmpMatrix);
+
     // /* Flip the Y-coordinate */
     // this.tmpMatrix.makeScale(2 / this.currentCanvasSize, -2 / this.currentCanvasSize, 1);
     // this.cursorMatrix.multiply(this.tmpMatrix);
@@ -160,29 +190,8 @@ export default class Easel extends Vue {
     this.transformMatrix.multiply(this.tmpMatrix);
     this.tmpMatrix.makeScale(ratio, ratio, ratio);
     this.transformMatrix.multiply(this.tmpMatrix);
-    this.viewTransform = this.transformMatrix;
-  }
-
-  private adjustSize(): void {
-    this.availHeight =
-      window.innerHeight -
-      this.$vuetify.application.footer -
-      this.$vuetify.application.top;
-    const tmp = this.$refs.responsiveBox;
-    if (tmp) {
-      let canvasPanel: HTMLElement;
-      if (tmp instanceof VueComponent)
-        canvasPanel = (tmp as VueComponent).$el as HTMLElement;
-      else canvasPanel = tmp as HTMLElement;
-      const rightBox = canvasPanel.getBoundingClientRect();
-      this.currentCanvasSize = this.availHeight - rightBox.top;
-      this.currentSphereRadius = this.currentCanvasSize / 2;
-    }
-    // console.debug(
-    //   `Available height ${this.availHeight.toFixed(
-    //     2
-    //   )} Canvas ${this.currentCanvasSize.toFixed(2)}`
-    // );
+    this.tmpMatrix.multiplyMatrices(this.transformMatrix, this.zoomMatrix);
+    this.viewTransform = this.tmpMatrix;
   }
 
   /** Spoit Pane resize handler
@@ -238,6 +247,36 @@ export default class Easel extends Vue {
     e.preventDefault();
   }
 
+  zoomer(e: MouseWheelEvent): void {
+    if (e.metaKey) {
+      e.preventDefault();
+      console.debug(e);
+      const scrollFraction = e.deltaY / this.currentCanvasSize;
+
+      const scaleFactor = 1 + scrollFraction;
+      if (scaleFactor < 1 && this.magnificationFactor < 0.4) return;
+      if (scaleFactor > 1 && this.magnificationFactor > 10) return;
+      this.magnificationFactor *= scaleFactor;
+      const tx = e.offsetX - this.currentCanvasSize / 2;
+      const ty = e.offsetY - this.currentCanvasSize / 2;
+      console.debug("Zoom info", scrollFraction.toFixed(2), scaleFactor.toFixed(2), this.magnificationFactor.toFixed(2));
+      const mag = this.magnificationFactor;
+      if (mag > 1) {
+        // Scale up/down from the current mouse position
+        this.zoomMatrix.identity();
+        this.tmpMatrix.makeTranslation(tx, ty, 0);
+        this.zoomMatrix.multiply(this.tmpMatrix);
+        this.tmpMatrix.makeScale(mag, mag, mag);
+        this.zoomMatrix.multiply(this.tmpMatrix);
+        this.tmpMatrix.makeTranslation(-tx, -ty, 0);
+        this.zoomMatrix.multiply(this.tmpMatrix);
+      } else {
+        this.zoomMatrix.makeScale(mag, mag, mag);
+      }
+      this.tmpMatrix.multiplyMatrices(this.transformMatrix, this.zoomMatrix);
+      this.viewTransform = this.tmpMatrix;
+    }
+  }
   @Watch("editMode")
   switchEditMode(mode: string): void {
     this.currentTool = null;
