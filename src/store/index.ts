@@ -8,7 +8,9 @@ import Point from "@/plotables/Point";
 import Circle from "@/3d-objs/Circle";
 import { SEPoint } from "@/models/SEPoint";
 import { SELine } from "@/models/SELine";
-import { Vector3 } from "three";
+import { Vector3, Matrix4 } from "three";
+
+// import twoGraphics from "./two-graphics";
 Vue.use(Vuex);
 
 const findPoint = (arr: SEPoint[], id: number): SEPoint | null => {
@@ -17,10 +19,13 @@ const findPoint = (arr: SEPoint[], id: number): SEPoint | null => {
 };
 
 const SMALL_ENOUGH = 1e-3;
+const tmpMatrix = new Matrix4();
 const initialState = {
   sphere: null,
   sphereRadius: 0,
   editMode: "rotate",
+  // slice(): create a copy of the array
+  transformMatElements: tmpMatrix.elements.slice(),
   // nodes: [], // Possible future addition (array of SENode)
   points: [],
   lines: [],
@@ -43,7 +48,7 @@ export default new Vuex.Store({
     },
     addPoint(state: AppState, point: SEPoint): void {
       state.points.push(point);
-      state.sphere?.add(point.ref);
+      // state.sphere?.add(point.ref);
     },
     removePoint(state: AppState, pointId: number): void {
       const pos = state.points.findIndex(x => x.id === pointId);
@@ -68,7 +73,7 @@ export default new Vuex.Store({
       // start.startOf.push(newLine);
       // end.endOf.push(newLine);
       state.lines.push(line);
-      state.sphere?.add(line.ref);
+      // state.sphere?.add(line.ref);
       // }
     },
     removeLine(state: AppState, lineId: number): void {
@@ -119,7 +124,7 @@ export default new Vuex.Store({
         start.centerOf.push(newCircle);
         end.circumOf.push(newCircle);
         state.circles.push(newCircle);
-        state.sphere?.add(circle);
+        // state.sphere?.add(circle);
       }
     },
     removeCircle(state: AppState, circleId: string): void {
@@ -155,6 +160,10 @@ export default new Vuex.Store({
 
         state.circles.splice(circlePos, 1); // Remove the line from the list
       }
+    },
+    setTransformation(state: AppState, m: Matrix4) {
+      debugger; //eslint-disable-line
+      m.toArray(state.transformMatElements);
     }
   },
   actions: {
@@ -167,6 +176,13 @@ export default new Vuex.Store({
         p => p.positionOnSphere.distanceTo(idealPosition) < SMALL_ENOUGH
       );
     }
-  },
-  modules: {}
+    // forwardTransform: (state: AppState): Matrix4 => {
+    //   tmpMatrix.fromArray(state.transformMatElements);
+    //   return tmpMatrix;
+    // },
+    // inverseTransform: (state: AppState): Matrix4 => {
+    //   tmpMatrix.fromArray(state.transformMatElements);
+    //   return tmpMatrix.getInverse(tmpMatrix);
+    // }
+  }
 });

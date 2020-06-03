@@ -6,12 +6,13 @@ import Point from "@/plotables/Point";
 import { AddPointCommand } from "@/commands/AddPointCommand";
 import Two from "two.js";
 import { SEPoint } from "@/models/SEPoint";
+import { Matrix4 } from "three";
 export default class NormalPointHandler extends CursorHandler {
   private normalArrow: Arrow;
   private isNormalAdded: boolean;
 
-  constructor(scene: Two.Group) {
-    super(scene);
+  constructor(scene: Two.Group, transformMatrix: Matrix4) {
+    super(scene, transformMatrix);
     this.normalArrow = new Arrow(
       0.5 /* relative length with respect to the unit circle */,
       0xff8000

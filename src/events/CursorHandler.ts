@@ -1,6 +1,6 @@
 /** @format */
 
-import { Vector3 } from "three";
+import { Vector3, Matrix4 } from "three";
 import AppStore from "@/store";
 import Point from "@/plotables/Point";
 import Line from "@/plotables/Line";
@@ -16,23 +16,25 @@ export default abstract class CursorHandler implements ToolStrategy {
 
   // protected readonly camera: Camera;
   protected readonly canvas: Two.Group;
-  // protected rayCaster: Raycaster;
-  protected mouse: Two.Vector;
   protected store = AppStore; // Vuex global state
   protected currentSpherePoint: Vector3;
   protected currentScreenPoint: Vector;
   protected hitObject: Point | Line | null = null;
   protected startMarker: SEPoint;
   protected isOnSphere: boolean;
+  protected transformMatrix: Matrix4 | null;
+  protected inverseMatrix: Matrix4;
   private boundingBox: BoundingClientRect;
-  constructor(scene: Two.Group) {
+  private mouseVector = new Vector3();
+  constructor(scene: Two.Group, transformMatrix?: Matrix4) {
     this.canvas = scene;
+    this.transformMatrix = transformMatrix || null;
+    this.inverseMatrix = new Matrix4();
+    if (transformMatrix) this.inverseMatrix.getInverse(transformMatrix);
     // the bounding rectangle is used for
     // conversion between screen and world coordinates
     this.boundingBox = scene.getBoundingClientRect();
     console.debug("Bounding box", this.boundingBox);
-    // this.rayCaster = RAYCASTER;
-    this.mouse = new Two.Vector(0, 0);
     this.currentSpherePoint = new Vector3();
     this.currentScreenPoint = new Two.Vector(0, 0);
     this.startMarker = new SEPoint(new Point(5, 0xff8800));
@@ -71,6 +73,8 @@ export default abstract class CursorHandler implements ToolStrategy {
    * @param event the mouse event
    * @memberof CursorHandler
    */
+
+  // TODO: remove this function???
   toNormalizeScreenCoord = (event: MouseEvent) => {
     // DOM Inheritance hierarchy:
     // SVGElement is childOf Element
@@ -99,28 +103,37 @@ export default abstract class CursorHandler implements ToolStrategy {
    * @memberof CursorHandler
    */
   mouseMoved(event: MouseEvent): void {
-    const { x, y } = this.toNormalizeScreenCoord(event);
-    const sphereCurrentRadius = AppStore.state.sphereRadius;
-    const sx = x * sphereCurrentRadius + this.boundingBox.width / 2;
-    const sy = y * sphereCurrentRadius + this.boundingBox.height / 2;
+    this.mouseVector.set(event.offsetX, event.offsetY, 0);
+    console.debug(`Mouse location (${event.offsetX},${event.offsetY})`);
+    this.currentScreenPoint.set(event.offsetX, event.offsetY);
+    if (this.transformMatrix)
+      this.mouseVector.applyMatrix4(this.transformMatrix);
+    // const { x, y } = this.toNormalizeScreenCoord(event);
+    // const sphereCurrentRadius = AppStore.state.sphereRadius;
+    // const sx = x * sphereCurrentRadius + this.boundingBox.width / 2;
+    // const sy = y * sphereCurrentRadius + this.boundingBox.height / 2;
     // console.debug(
     //   `Offset (${event.offsetX},${event.offsetY}) => (${x.toFixed(
     //     2
     //   )},${y.toFixed(2)}) => (${sx.toFixed(1)},${sy.toFixed(1)})`
     // );
-    this.mouse.x = x;
-    this.mouse.y = y;
-    const len = this.mouse.length();
+    // this.mouse.x = x;
+    // this.mouse.y = y;
+    const len = this.mouseVector.length();
     if (len < 1) {
       // The cursor is inside the unit circle
       const zCoordinate = Math.sqrt(1 - len);
-      this.currentSpherePoint.set(x, y, zCoordinate);
+      this.currentSpherePoint.set(
+        this.mouseVector.x,
+        this.mouseVector.y,
+        zCoordinate
+      );
       this.isOnSphere = true;
       // this.currentPoint.copy(this.mouse);
-      // console.debug(
-      //   `Mouse location (${event.offsetX},${event.offsetY}) ` +
-      //     `Sphere position ${this.currentSpherePoint.toFixed(2)}`
-      // );
+      console.debug(
+        `Mouse location (${event.offsetX},${event.offsetY}) ` +
+          `Sphere position ${this.currentSpherePoint.toFixed(2)}`
+      );
       if (this.hitObject) {
         this.hitObject.normalStyle();
       }
@@ -140,48 +153,5 @@ export default abstract class CursorHandler implements ToolStrategy {
       this.isOnSphere = false;
       this.currentSpherePoint.set(NaN, NaN, NaN);
     }
-    // this.rayCaster.setFromCamera(this.mouse, this.camera);
-
-    // The result of intersection is sorted by distance (closer objects first)
-    // const intersections = this.rayCaster.intersectObjects(
-    //   this.scene.children,
-    //   true // recursive search
-    // );
-    // if (this.hitObject instanceof Point) {
-    //   // Turn off emissive color on the currently selected object
-    //   (this.hitObject.material as MeshPhongMaterial).emissive.set(0);
-    //   this.hitObject = null;
-    // }
-    // this.isOnSphere = false;
-    // const canvas = event.target as HTMLCanvasElement;
-
-    // canvas.style.cursor = "default";
-    // this.currentPoint.set(Number.NaN, Number.NaN);
-    // if (intersections.length == 0) {
-    //   return;
-    // }
-    // console.log("Intersection count: ", intersections.length);
-    // this.isOnSphere = true;
-    // change cursor shape when it is on the sphere
-    // canvas.style.cursor = "pointer";
-    // const hitTarget =
-    //   intersections[0]; /* select the intersection closes to the viewer */
-    // if (hitTarget.object instanceof Point) {
-    //   /* the point coordinate is local to the sphere */
-    //   this.currentPoint.copy(hitTarget.object.position);
-    //   this.hitObject = hitTarget.object;
-    //   (this.hitObject?.material as MeshPhongMaterial).emissive.set(
-    //     SETTINGS.point.glowColor
-    //   );
-    // } else if (hitTarget.object instanceof Mesh) {
-    //   this.theSphere = hitTarget.object;
-    //   this.currentPoint.copy(hitTarget.point);
-    //   /* The coordinate of the hitpoint is in the world coordinate frame, we must convert it to local frame on the sphere */
-    //   this.theSphere?.worldToLocal(this.currentPoint);
-    //   this.hitObject = hitTarget.object;
-    // } else {
-    //   /* What to do here? */
-    //   this.isOnSphere = false;
-    // }
   }
 }

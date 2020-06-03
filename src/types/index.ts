@@ -13,6 +13,7 @@ export interface SECircle {
 export interface AppState {
   sphere: Two.Group | null;
   sphereRadius: /* in pixel */ number; // When the window is resized, the actual size of the sphere (in pixel may change)
+  transformMatElements: number[]; // current transformation matrix
   editMode: string;
   // nodes: SENode[], Do we need this?
   points: SEPoint[];
