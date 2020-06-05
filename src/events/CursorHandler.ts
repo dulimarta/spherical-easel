@@ -14,7 +14,6 @@ export default abstract class CursorHandler implements ToolStrategy {
   protected readonly Y_AXIS = new Vector3(0, 1, 0);
   protected readonly Z_AXIS = new Vector3(0, 0, 1);
 
-  // protected readonly camera: Camera;
   protected readonly canvas: Two.Group;
   protected store = AppStore; // Vuex global state
   protected currentSpherePoint: Vector3;
@@ -23,14 +22,12 @@ export default abstract class CursorHandler implements ToolStrategy {
   protected startMarker: SEPoint;
   protected isOnSphere: boolean;
   protected transformMatrix: Matrix4 | null;
-  protected inverseMatrix: Matrix4;
+  // protected inverseMatrix = new Matrix4();
   private boundingBox: BoundingClientRect;
   private mouseVector = new Vector3();
   constructor(scene: Two.Group, transformMatrix?: Matrix4) {
     this.canvas = scene;
     this.transformMatrix = transformMatrix || null;
-    this.inverseMatrix = new Matrix4();
-    if (transformMatrix) this.inverseMatrix.getInverse(transformMatrix);
     // the bounding rectangle is used for
     // conversion between screen and world coordinates
     this.boundingBox = scene.getBoundingClientRect();
@@ -104,10 +101,14 @@ export default abstract class CursorHandler implements ToolStrategy {
    */
   mouseMoved(event: MouseEvent): void {
     this.mouseVector.set(event.offsetX, event.offsetY, 0);
-    console.debug(`Mouse location (${event.offsetX},${event.offsetY})`);
+    console.debug("Mouse event", event);
     this.currentScreenPoint.set(event.offsetX, event.offsetY);
     if (this.transformMatrix)
       this.mouseVector.applyMatrix4(this.transformMatrix);
+    console.debug(
+      `Mouse location (${event.offsetX},${event.offsetY})`,
+      this.mouseVector.toFixed(2)
+    );
     // const { x, y } = this.toNormalizeScreenCoord(event);
     // const sphereCurrentRadius = AppStore.state.sphereRadius;
     // const sx = x * sphereCurrentRadius + this.boundingBox.width / 2;

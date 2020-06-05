@@ -20,6 +20,7 @@
           <v-col cols="12"> Rad:
             {{currentSphereRadius}} Canvas:
             {{currentCanvasSize}}/{{naturalCanvasSize}}
+            {{tmpVector.toFixed(1)}}
           </v-col>
           <v-col cols="12">
             <v-row justify="center" class="pb-1">
@@ -64,11 +65,14 @@ export default class Easel extends Vue {
   private twoInstance: Two;
   private sphereCanvas!: Two.Group;
   private mainCircle!: Two.Circle;
-  private transformMatrix = new Matrix4(); // Transformation between the ideal sphere and the rendered sphere/circle
-  private cursorMatrix = new Matrix4();
+  private sphereTransformMat = new Matrix4(); // Transformation from the ideal sphere to the rendered sphere/circle
   private zoomMatrix = new Matrix4(); // zoom in/out transformation
+  private CSSTransformMat = new Matrix4(); // CSSMat = sphereTransform * zoomMat
+  private inverseViewMat = new Matrix4();
   private tmpMatrix = new Matrix4();
   private tmpVector = new Vector3();
+  private zoomCorrection = new Vector3();
+
 
   private currentTool: ToolStrategy | null = null;
   private pointTool!: NormalPointHandler;
@@ -86,18 +90,40 @@ export default class Easel extends Vue {
       ratio: window.devicePixelRatio
     });
     this.sphereCanvas = this.twoInstance.makeGroup();
-    const hi = new Two.Text("Hello", SETTINGS.sphere.radius / 2, SETTINGS.sphere.radius / 2);
+    (this.sphereCanvas as any).scale = new Two.Vector(1, -1);
+    console.info("Sphere cnavas ID", this.sphereCanvas.id);
     this.$store.commit("setSphere", this.sphereCanvas);
     this.mainCircle = new Two.Circle(0, 0, SETTINGS.sphere.radius);
     this.mainCircle.noFill();
     this.mainCircle.linewidth = SETTINGS.line.thickness;
     this.sphereCanvas.add(this.mainCircle);
     const textGroup = this.twoInstance.makeGroup();
-    textGroup.add(hi);
+    const R = SETTINGS.sphere.radius;
+    const t1 = new Two.Text("(-0.66,0.66)", R / 2, R / 2);
+    const t2 = new Two.Text(`(${R * 1.5},${R / 2})`, 1.5 * R, R / 2);
+    const t3 = new Two.Text(`(${R / 2},${1.5 * R})`, R / 2, 1.5 * R);
+    const t4 = new Two.Text(`(${1.5 * R},${1.5 * R})`, 1.5 * R, 1.5 * R);
+    const t5 = new Two.Text(`(${R},${R})`, R, R);
+    textGroup.add(t1, t2, t3, t4, t5);
+
+    const hLine = new Two.Line(-R, 0, R, 0);
+    const vLine = new Two.Line(0, -R, 0, R);
+    hLine.stroke = "red";
+    vLine.stroke = "green";
+    this.sphereCanvas.add(
+      hLine, vLine,
+      new Two.Line(100, -R, 100, R),
+      new Two.Line(-R, 100, R, 100),
+    );
   }
 
+  /** Apply the affine transform (m) to the entire TwoJS SVG tree! */
+  // The translation element of the CSS transform matrix
+  // is actually the pivot/origin of the zoom
   private set viewTransform(m: Matrix4) {
+    this.CSSTransformMat.copy(m);
     const arr = m.elements;
+
     const el = ((this.twoInstance.renderer as any).domElement as HTMLElement);
     // CSS transformation matrix is only 2x3
     el.style.transform = `matrix(${arr[0]},${arr[1]},${arr[4]},${arr[5]},${arr[12]},${arr[13]})`;
@@ -107,10 +133,11 @@ export default class Easel extends Vue {
   }
 
   private get viewTransform() {
-    return this.transformMatrix;
+    return this.CSSTransformMat;
   }
 
   private adjustSize(): void {
+    console.info("AdjustSize()")
     this.availHeight =
       window.innerHeight -
       this.$vuetify.application.footer -
@@ -123,7 +150,7 @@ export default class Easel extends Vue {
       else canvasPanel = tmp as HTMLElement;
       const rightBox = canvasPanel.getBoundingClientRect();
       this.currentCanvasSize = this.availHeight - rightBox.top;
-      this.currentSphereRadius = this.currentCanvasSize / 2;
+      this.currentSphereRadius = (this.currentCanvasSize / 2) - 16;
     }
     // console.debug(
     //   `Available height ${this.availHeight.toFixed(
@@ -136,6 +163,8 @@ export default class Easel extends Vue {
   /** mounted() is part of VueJS lifecycle hooks */
   mounted(): void {
     window.addEventListener("resize", this.onWindowResized);
+
+    console.info("Mounted");
     this.adjustSize();
     this.naturalCanvasSize = this.currentCanvasSize;
 
@@ -145,10 +174,8 @@ export default class Easel extends Vue {
       this.twoInstance.width / 2,
       this.twoInstance.height / 2
     );
-    const radius = Math.min(
-      (this.currentCanvasSize / 2), // 80% of the viewport
-      (this.currentCanvasSize / 2) // 80% of the viewport
-    );
+    const radius = (this.currentCanvasSize / 2) - 16;
+
     this.currentSphereRadius = radius;
     this.$store.commit("setSphereRadius", radius);
     // Draw the boundary circle in the ideal radius
@@ -162,7 +189,7 @@ export default class Easel extends Vue {
     const el = this.$refs.canvasContent as HTMLElement;
     this.twoInstance.appendTo(el);
     this.twoInstance.play();
-    this.pointTool = new NormalPointHandler(this.sphereCanvas, this.cursorMatrix);
+    this.pointTool = new NormalPointHandler(this.sphereCanvas, this.tmpMatrix);
 
     el.addEventListener("mousemove", this.handleMouseMoved);
     el.addEventListener("wheel", this.zoomer, { passive: true })
@@ -171,26 +198,14 @@ export default class Easel extends Vue {
   /** updated() is part of VueJS lifecycle hooks */
 
   updated(): void {
-    console.debug("Updated");
-    // this.adjustSize();
-    // const el = this.$refs.canvasContent as HTMLElement;
-    // const elBox = el.getBoundingClientRect();
-    this.cursorMatrix.identity();
-    this.tmpMatrix.makeTranslation(-this.currentCanvasSize / 2, -this.currentCanvasSize / 2, 0);
-    this.cursorMatrix.multiply(this.tmpMatrix);
-
-    // /* Flip the Y-coordinate */
-    // this.tmpMatrix.makeScale(2 / this.currentCanvasSize, -2 / this.currentCanvasSize, 1);
-    // this.cursorMatrix.multiply(this.tmpMatrix);
+    console.info("Updated", "Circle", this.currentSphereRadius, "Canvas", this.currentCanvasSize, this.naturalCanvasSize);
     const ratio = this.currentSphereRadius / SETTINGS.sphere.radius;
-
-    const ds = this.currentCanvasSize - this.naturalCanvasSize;
-    this.transformMatrix.identity();
-    this.tmpMatrix.makeTranslation(ds / 2, ds / 2, 0);
-    this.transformMatrix.multiply(this.tmpMatrix);
-    this.tmpMatrix.makeScale(ratio, ratio, ratio);
-    this.transformMatrix.multiply(this.tmpMatrix);
-    this.tmpMatrix.multiplyMatrices(this.transformMatrix, this.zoomMatrix);
+    const ds = this.currentCanvasSize / 2;
+    console.info("Circle ratio", ratio, "Circle translation", ds)
+    this.sphereTransformMat.identity();
+    this.tmpMatrix.makeScale(ratio, ratio, 1);
+    this.sphereTransformMat.multiply(this.tmpMatrix);
+    this.tmpMatrix.multiplyMatrices(this.sphereTransformMat, this.zoomMatrix);
     this.viewTransform = this.tmpMatrix;
   }
 
@@ -209,7 +224,7 @@ export default class Easel extends Vue {
     // of the right panel
     if (box.height > rightPanelWidth) {
       this.currentCanvasSize = rightPanelWidth;
-      this.currentSphereRadius = this.currentCanvasSize / 2;
+      this.currentSphereRadius = (this.currentCanvasSize / 2) - 16;
     }
 
     // Determine how much smaller/bigger the canvas compared to its "birth" size
@@ -227,42 +242,90 @@ export default class Easel extends Vue {
   }
 
   onWindowResized(): void {
-    console.debug("Resized");
+    console.info("Resized");
     this.adjustSize();
-    this.currentSphereRadius = this.currentCanvasSize / 2;
+    this.currentSphereRadius = (this.currentCanvasSize / 2) - 16;
     (this.twoInstance.renderer as any).setSize(
       this.currentCanvasSize,
       this.currentCanvasSize
     );
-    // this.transformMatrix.makeTranslation(-this.currentCanvasSize / 2, -this.currentCanvasSize / 2, 0);
-    // this.tmpMatrix.makeScale(scaleFactor, scaleFactor, scaleFactor);
-    // this.transformMatrix.multiply(this.tmpMatrix);
-    // this.viewTransform = this.transformMatrix;
-
+    this.sphereCanvas.translation.set(
+      this.currentCanvasSize / 2,
+      this.currentCanvasSize / 2
+    );
   }
 
   handleMouseMoved(e: MouseEvent): void {
-    // WHen currentTool is NULL, the following line does nothing
-    this.currentTool?.mouseMoved(e);
-    e.preventDefault();
+    // Using currentTarget is necessary. Otherwise, all the calculations
+    // will be based on SVG elements whose bounding rectangle may splii
+    // outsize of the responsive viewport and messing up our position calculations
+    const target = (e.currentTarget || e.target) as HTMLDivElement;
+    const boundingRect = target.getBoundingClientRect();
+    // Don't rely on e.offsetX or e.offsetY, they may not be accurate
+    const offsetX = e.clientX - boundingRect.left;
+    const offsetY = e.clientY - boundingRect.top;
+    const delta = this.currentCanvasSize / 2;
+    const mx = offsetX - delta;
+    const my = -(offsetY - delta);
+
+    // The translation element of the CSS transform matrix
+    // is actually the origin/pivot/center of the zoom.
+    // However we have to flip the Y-coord sign
+
+
+    // ZoomCorrection = inv(CSS) * ZoomOrigin
+    // The last column in the matrix is the origin of the zoom coordinate frame
+    // since Matrix4 stores its elements in column-major order, 
+    // elems[12..14] are the 4th column
+    this.zoomCorrection.set(this.CSSTransformMat.elements[12], -this.CSSTransformMat.elements[13], this.CSSTransformMat.elements[14]);
+    this.zoomCorrection.applyMatrix4(this.tmpMatrix.getInverse(this.CSSTransformMat));
+
+    // V = inv(CSS) * X
+    this.tmpVector.set(mx, my, 0);
+    this.tmpVector.applyMatrix4(this.tmpMatrix.getInverse(this.CSSTransformMat));
+    // V = V - ZoomCorrection
+    this.tmpVector.sub(this.zoomCorrection);
+
+    // My attempt to simplify algebraically
+
+    // V = inv(CSS) * X - inv(CSS) * Zo
+    // V = inv(CSS)(X - Zo)
+    console.debug(`Offset:(${offsetX},${offsetY}) => (${mx},${my}) => after correction`, this.tmpVector.toFixed(2));
+
+    /*
+    Why the following shorter computation does not work???
+    */
+    // const arr = this.CSSTransformMat.elements;
+    // this.tmpVector.set(mx - arr[12], my + arr[13], -arr[14]);
+    // this.tmpVector.applyMatrix4(this.tmpMatrix.getInverse(this.CSSTransformMat));
   }
 
   zoomer(e: MouseWheelEvent): void {
     if (e.metaKey) {
-      e.preventDefault();
-      console.debug(e);
+      e.preventDefault(); // do not propagate this event to the browser
       const scrollFraction = e.deltaY / this.currentCanvasSize;
 
       const scaleFactor = 1 + scrollFraction;
+      // Limit zoom-out to 0.4x magnification factor
       if (scaleFactor < 1 && this.magnificationFactor < 0.4) return;
+
+      // Limit zoom-in to 10x magnification factor
       if (scaleFactor > 1 && this.magnificationFactor > 10) return;
       this.magnificationFactor *= scaleFactor;
-      const tx = e.offsetX - this.currentCanvasSize / 2;
-      const ty = e.offsetY - this.currentCanvasSize / 2;
+      const target = (e.currentTarget || e.target) as HTMLDivElement;
+      const boundingRect = target.getBoundingClientRect();
+      const offsetX = e.clientX - boundingRect.left;
+      const offsetY = e.clientY - boundingRect.top;
+
+      // The origin of translation is the center of the canvas
+      const tx = offsetX - this.currentCanvasSize / 2;
+      const ty = offsetY - this.currentCanvasSize / 2;
       console.debug("Zoom info", scrollFraction.toFixed(2), scaleFactor.toFixed(2), this.magnificationFactor.toFixed(2));
       const mag = this.magnificationFactor;
+
+      // Update the zoom matrix
       if (mag > 1) {
-        // Scale up/down from the current mouse position
+        // Zoom from the current mouse position requires a composite transform
         this.zoomMatrix.identity();
         this.tmpMatrix.makeTranslation(tx, ty, 0);
         this.zoomMatrix.multiply(this.tmpMatrix);
@@ -271,10 +334,12 @@ export default class Easel extends Vue {
         this.tmpMatrix.makeTranslation(-tx, -ty, 0);
         this.zoomMatrix.multiply(this.tmpMatrix);
       } else {
+        // Zoom from the origin when magnification factor is less than 1
         this.zoomMatrix.makeScale(mag, mag, mag);
       }
-      this.tmpMatrix.multiplyMatrices(this.transformMatrix, this.zoomMatrix);
-      this.viewTransform = this.tmpMatrix;
+      // Construct the view matrix
+      this.tmpMatrix.multiplyMatrices(this.sphereTransformMat, this.zoomMatrix);
+      this.viewTransform = this.tmpMatrix; // Use the setter
     }
   }
   @Watch("editMode")
@@ -293,12 +358,19 @@ export default class Easel extends Vue {
 }
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 #canvasContent {
   height: 100%;
   border: 2px dashed darkcyan;
   margin: 0;
   padding: 0;
-  overflow: visible;
+  /* WARNING: when the CSS transform matrix implies scaling factor > 1, the content may spill outside the bounding box of #canvasContent,
+    overflow contents must be CLIPPED (hidden)
+  */
+  overflow: hidden;
+}
+
+svg {
+  pointer-events: none;
 }
 </style>
