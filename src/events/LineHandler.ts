@@ -1,6 +1,6 @@
 /** @format */
 
-import { Vector3 } from "three";
+import { Vector3, Matrix4 } from "three";
 import CursorHandler from "./CursorHandler";
 import Arrow from "@/3d-objs/Arrow"; // for debugging
 import Point from "@/plotables/Point";
@@ -23,8 +23,8 @@ export default class LineHandler extends CursorHandler {
   private endPoint: SEPoint | null = null;
   protected line: Line;
 
-  constructor(scene: Two.Group, isSegment?: boolean) {
-    super(scene);
+  constructor(scene: Two.Group, transformMatrix: Matrix4, isSegment?: boolean) {
+    super(scene, transformMatrix);
     this.startV3Point = new Vector3();
     this.tmpVector = new Vector3();
     this.line = new Line(undefined, undefined, isSegment);

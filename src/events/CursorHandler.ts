@@ -7,6 +7,7 @@ import Line from "@/plotables/Line";
 import { ToolStrategy } from "./ToolStrategy";
 import Two, { BoundingClientRect, Vector } from "two.js";
 import { SEPoint } from "@/models/SEPoint";
+import globalSettings from "@/global-settings";
 
 /* FIXME: The 3D position and the projected 2D positions are off by a few pixels???*/
 export default abstract class CursorHandler implements ToolStrategy {
@@ -21,11 +22,20 @@ export default abstract class CursorHandler implements ToolStrategy {
   protected hitObject: Point | Line | null = null;
   protected startMarker: SEPoint;
   protected isOnSphere: boolean;
-  protected transformMatrix: Matrix4 | null;
+  protected transformMatrix: Matrix4;
   // protected inverseMatrix = new Matrix4();
   private boundingBox: BoundingClientRect;
   private mouseVector = new Vector3();
-  constructor(scene: Two.Group, transformMatrix?: Matrix4) {
+  private zoomCenter = new Vector3();
+  private tmpMatrix = new Matrix4();
+
+  /**
+   * @param scene is the sphere canvas where all drawings will render
+   * @param transformMatrix is the forward transform that maps the ideal unit
+   * sphere to the boundary circle on the canvas. Essentially this matrix maps
+   * the (ideal) world to the screen
+   */
+  constructor(scene: Two.Group, transformMatrix: Matrix4) {
     this.canvas = scene;
     this.transformMatrix = transformMatrix || null;
     // the bounding rectangle is used for
@@ -39,11 +49,7 @@ export default abstract class CursorHandler implements ToolStrategy {
   }
 
   abstract activate(): void;
-
-  //eslint-disable-next-line
   abstract mousePressed(event: MouseEvent): void;
-
-  //eslint-disable-next-line
   abstract mouseReleased(event: MouseEvent): void;
 
   findNearByObjects(
@@ -71,56 +77,76 @@ export default abstract class CursorHandler implements ToolStrategy {
    * @memberof CursorHandler
    */
 
-  // TODO: remove this function???
-  toNormalizeScreenCoord = (event: MouseEvent) => {
-    // DOM Inheritance hierarchy:
-    // SVGElement is childOf Element
-    // HTMLCanvasElement is childOf HTMLElement is childOf Element
-    // So Element is the nearest common ancestor of both
-    // const target = event.target as Element;
-    this.currentScreenPoint.x = event.offsetX;
-    this.currentScreenPoint.y = event.offsetY;
-    // console.debug(
-    //   `Screen point (${this.currentScreenPoint.x}. ${this.currentScreenPoint.y})`
-    // );
-
-    // FIXME: boundingBox is no longer accurate after Window Resize!
-    const x =
-      (2 * (event.offsetX - this.boundingBox.left)) / this.boundingBox.width -
-      1;
-    const y =
-      1 -
-      (2 * (event.offsetY - this.boundingBox.top)) / this.boundingBox.height;
-    return { x, y };
-  };
-
   /**
-   * Map mouse 2D viewport position to 3D local coordinate on the sphere
+   * Map mouse 2D viewport/screen position to 3D local coordinate on the sphere.
+   * Multiplication with the inverse of the CSS transform matrix convert the
+   * screen coordinate to the world of unit sphere
    *
    * @memberof CursorHandler
    */
   mouseMoved(event: MouseEvent): void {
-    this.mouseVector.set(event.offsetX, event.offsetY, 0);
-    console.debug("Mouse event", event);
-    this.currentScreenPoint.set(event.offsetX, event.offsetY);
-    if (this.transformMatrix)
-      this.mouseVector.applyMatrix4(this.transformMatrix);
+    // Using currentTarget is necessary. Otherwise, all the calculations
+    // will be based on SVG elements whose bounding rectangle may splii
+    // outsize of the responsive viewport and messing up our position calculations
+    const target = (event.currentTarget || event.target) as HTMLElement;
+    const boundingRect = target.getBoundingClientRect();
+    // Don't rely on e.offsetX or e.offsetY, they may not be accurate
+    const offsetX = event.clientX - boundingRect.left;
+    const offsetY = event.clientY - boundingRect.top;
+    const mouseX = offsetX - this.canvas.translation.x;
+    const mouseY = -(offsetY - this.canvas.translation.y);
+
+    // The last column of the affine transformation matrix
+    // is the origin of the zoomed circle
+    // ZoomCtr_in_world_ideal_sphere = inverseCSSMat * ZoomCtr_in_screen_space
+    this.zoomCenter.set(
+      this.transformMatrix.elements[12],
+      -this.transformMatrix.elements[13], // must flip the Y-coord
+      this.transformMatrix.elements[14]
+    );
+    // ZoomCtr = inv(CSS) * ZoomOrig
+    this.zoomCenter.applyMatrix4(
+      this.tmpMatrix.getInverse(this.transformMatrix)
+    );
+
+    // Map the mouse screen coordinate to its position within the ideal sphere
+    // IdealPos = inv(CSS) * MousePos
+    this.mouseVector.set(mouseX, mouseY, 0);
+    this.mouseVector.applyMatrix4(
+      this.tmpMatrix.getInverse(this.transformMatrix)
+    );
+    // Reposition the mouse position (in ideal sphere) relative
+    // to the zoom center
+    // IdealPos = IdealPos - ZoomCtr
+    this.mouseVector.sub(this.zoomCenter);
+
+    // Attempted algebraic simplification
+    // IdealPos = IdealPos - ZoomCtr
+    //          = inv(CSS) * MousePos - inv(CSS) * ZoomOrig
+    //          = inv(CSS) * (MousePos - ZoomOrig)
+
+    /*
+    Using the algebraic simplification above, the following lines
+    of code should work, but they DON'T???
+
+    this.mouseVector.set(
+      mouseX - this.transformMatrix.elements[12],
+      mouseY + this.transformMatrix.elements[13],
+      -this.transformMatrix.elements[14]
+    );
+    this.mouseVector.applyMatrix4(
+      this.tmpMatrix.getInverse(this.transformMatrix)
+    );
+     */
+
     console.debug(
       `Mouse location (${event.offsetX},${event.offsetY})`,
       this.mouseVector.toFixed(2)
     );
-    // const { x, y } = this.toNormalizeScreenCoord(event);
-    // const sphereCurrentRadius = AppStore.state.sphereRadius;
-    // const sx = x * sphereCurrentRadius + this.boundingBox.width / 2;
-    // const sy = y * sphereCurrentRadius + this.boundingBox.height / 2;
-    // console.debug(
-    //   `Offset (${event.offsetX},${event.offsetY}) => (${x.toFixed(
-    //     2
-    //   )},${y.toFixed(2)}) => (${sx.toFixed(1)},${sy.toFixed(1)})`
-    // );
-    // this.mouse.x = x;
-    // this.mouse.y = y;
-    const len = this.mouseVector.length();
+    /* Rescale to unit circle */
+    const len = this.mouseVector
+      .multiplyScalar(1 / globalSettings.sphere.radius)
+      .length();
     if (len < 1) {
       // The cursor is inside the unit circle
       const zCoordinate = Math.sqrt(1 - len);

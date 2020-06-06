@@ -4,12 +4,13 @@ import CursorHandler from "./CursorHandler";
 import SETTINGS from "@/global-settings";
 import Point from "@/plotables/Point";
 import Two from "two.js";
+import { Matrix4 } from "three";
 
 export default class MoveHandler extends CursorHandler {
   private isDragging = false;
   private moveTarget: Point | null = null;
-  constructor(scene: Two.Group) {
-    super(scene);
+  constructor(scene: Two.Group, transformMatrix: Matrix4) {
+    super(scene, transformMatrix);
   }
 
   mouseMoved(event: MouseEvent) {

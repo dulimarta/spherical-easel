@@ -9,8 +9,8 @@ export default class RotateHandler extends CursorHandler {
   private prevSpherePoint: Vector3 = new Vector3();
   private prevScreenPoint: Two.Vector = new Two.Vector(0, 0);
   private isDragging = false;
-  constructor(scene: Two.Group) {
-    super(scene);
+  constructor(scene: Two.Group, transformMatrix: Matrix4) {
+    super(scene, transformMatrix);
     // this.rotationMatrix = new Matrix4();
     // this.prevSpherePoint = new Vector3();
   }

@@ -1,6 +1,6 @@
 /** @format */
 
-import { Vector3 } from "three";
+import { Vector3, Matrix4 } from "three";
 import CursorHandler from "./CursorHandler";
 import Point from "@/plotables/Point";
 // import SETTINGS from "@/global-settings";
@@ -18,8 +18,8 @@ export default class CircleHandler extends CursorHandler {
   private circle: Circle;
   private startPoint: Point | null = null;
   private endPoint: Point | null = null;
-  constructor(scene: Two.Group) {
-    super(scene);
+  constructor(scene: Two.Group, transformMatrix: Matrix4) {
+    super(scene, transformMatrix);
     this.startV3Point = new Vector3();
     this.isMouseDown = false;
     this.isCircleAdded = false;
