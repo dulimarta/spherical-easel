@@ -65,7 +65,7 @@ export default abstract class CursorHandler implements ToolStrategy {
     } else {
       mousePos.multiplyScalar(root.scale);
     }
-    return root.children.filter((obj, pos) => {
+    return root.children.filter(obj => {
       // console.debug((obj as Two.Path).id);
       // Consider a "hit" when the object is within 5 pixels of the mouse
       return obj.translation.distanceTo(mousePos) < 5;
