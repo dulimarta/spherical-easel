@@ -2,11 +2,9 @@
 
 import Arrow from "@/3d-objs/Arrow";
 import CursorHandler from "./CursorHandler";
-import Point from "@/plotables/Point";
-import { AddPointCommand } from "@/commands/AddPointCommand";
 import Two from "two.js";
-import { SEPoint } from "@/models/SEPoint";
 import { Matrix4 } from "three";
+import EventBus from "@/events/EventBus";
 export default class NormalPointHandler extends CursorHandler {
   private normalArrow: Arrow;
   private isNormalAdded: boolean;
@@ -39,16 +37,16 @@ export default class NormalPointHandler extends CursorHandler {
       // The intersection point is returned as a point in the WORLD coordinate
       // But when a new point is added to the sphere, we have to convert
       // for the world coordinate frame to the sphere coordinate frame
-
-      const vtx = new SEPoint(new Point());
-      vtx.positionOnSphere = this.currentSpherePoint;
-      new AddPointCommand(vtx).execute();
+      EventBus.fire("insert-point", {
+        position: this.currentSpherePoint
+      });
     }
   };
 
   mouseReleased(): void {
     /* None */
   }
+
   activate = (): void => {
     // this.rayCaster.layers.disableAll();
     // this.rayCaster.layers.enable(SETTINGS.layers.sphere);

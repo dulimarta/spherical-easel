@@ -21,14 +21,9 @@
 
       <div class="d-flex align-center">
         <router-link to="/">
-          <v-img
-            alt="Spherical Easel Logo"
-            class="shrink mr-2"
-            contain
+          <v-img alt="Spherical Easel Logo" class="shrink mr-2" contain
             src="./assets/SphericalEaselLogo.gif"
-            transition="scale-transition"
-            width="40"
-          />
+            transition="scale-transition" width="40" />
         </router-link>
         <v-toolbar-title>
           {{ $t("main.SphericalEaselMainTitle") }}
@@ -79,9 +74,12 @@ import { Inject } from "vue-property-decorator";
 
 /* This allows for the State of the app to be initialized with in vuex store */
 /* TODO: What does this do? */
-import { WebGLRenderer, Mesh } from "three";
+// import { WebGLRenderer, Mesh } from "three";
 import { State } from "vuex-class";
-
+import EventBus from "@/events/EventBus";
+import { SEPoint } from './models/SEPoint';
+import Point from './plotables/Point';
+import { AddPointCommand } from './commands/AddPointCommand';
 /* This view has no (sub)components (but the Easel view does) so this is empty*/
 @Component
 export default class App extends Vue {
@@ -96,9 +94,17 @@ export default class App extends Vue {
     super();
     // this.canvas = this.renderer.domElement;
   }
-  mounted() {
-    // this.$store.commit('init');
-    // Command.setStore(this.$store);
+
+  mounted(): void {
+    this.$store.commit('init');
+
+    // TODO: is this the best place to listen to these events?
+    EventBus.listen('insert-point', (e: any) => {
+      console.debug("Adding point", e);
+      const vtx = new SEPoint(new Point());
+      vtx.positionOnSphere = e.position;
+      new AddPointCommand(vtx).execute();
+    })
   }
 }
 </script>

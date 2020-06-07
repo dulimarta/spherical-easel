@@ -1,6 +1,5 @@
 import { Command } from "./Command";
 import { SEPoint } from "@/models/SEPoint";
-import Point from "@/plotables/Point";
 
 export class AddPointCommand extends Command {
   private arg: SEPoint;

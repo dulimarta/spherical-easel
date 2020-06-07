@@ -8,11 +8,17 @@ import { Prop, Component, Watch } from 'vue-property-decorator'
 import Two from 'two.js';
 import SETTINGS from "@/global-settings"
 import { Matrix4 } from 'three';
+import { State } from 'vuex-class';
+import { ToolStrategy } from '../events/ToolStrategy';
+import NormalPointHandler from '../events/NormalPointHandler';
 
 @Component({})
 export default class SphereFrame extends VueComponent {
   @Prop()
   readonly canvasSize!: number
+
+  @State
+  readonly editMode!: string;
 
   $refs!: {
     canvas: HTMLDivElement
@@ -25,6 +31,9 @@ export default class SphereFrame extends VueComponent {
   private tmpMatrix = new Matrix4();
   private CSSTransformMat = new Matrix4(); // CSSMat = sphereTransform * zoomMat
   private magnificationFactor = 1;
+  private currentTool: ToolStrategy | null = null;
+  private pointTool!: NormalPointHandler;
+
 
   constructor() {
     super();
@@ -88,7 +97,11 @@ export default class SphereFrame extends VueComponent {
     this.twoInstance.appendTo(this.$refs.canvas);
     this.twoInstance.play();
     this.sphereCanvas.translation.set(this.canvasSize / 2, this.canvasSize / 2);
-    this.$refs.canvas.addEventListener('wheel', this.zoomer, { passive: true })
+    this.$refs.canvas.addEventListener('wheel', this.zoomer)
+    this.$refs.canvas.addEventListener("mousemove", this.handleMouseMoved);
+    this.$refs.canvas.addEventListener("mousedown", this.handleMousePressed);
+    this.$refs.canvas.addEventListener("mouseup", this.handleMouseReleased);
+    this.pointTool = new NormalPointHandler(this.sphereCanvas, this.CSSTransformMat);
   }
 
   @Watch("canvasSize")
@@ -107,7 +120,12 @@ export default class SphereFrame extends VueComponent {
 
   zoomer(e: MouseWheelEvent): void {
     if (e.metaKey) {
+      e.preventDefault();
       let scrollFraction = e.deltaY / this.canvasSize;
+      if (e.ctrlKey) {
+        // Flip the sign for pinch/zoom gestures on Mac trackpad
+        scrollFraction *= -1;
+      }
 
       // Limit to 10% change in magnification
       if (Math.abs(scrollFraction) > 0.1)
@@ -129,7 +147,7 @@ export default class SphereFrame extends VueComponent {
       // The origin of translation is the center of the canvas
       const tx = offsetX - this.canvasSize / 2;
       const ty = offsetY - this.canvasSize / 2;
-      console.debug("Zoom info", scrollFraction.toFixed(2), scaleFactor.toFixed(2), this.magnificationFactor.toFixed(2));
+      // console.debug("Zoom info", scrollFraction.toFixed(2), scaleFactor.toFixed(2), this.magnificationFactor.toFixed(2));
       const mag = this.magnificationFactor;
 
       // Update the zoom matrix
@@ -150,6 +168,33 @@ export default class SphereFrame extends VueComponent {
       this.tmpMatrix.multiplyMatrices(this.sphereTransformMat, this.zoomMatrix);
       this.viewTransform = this.tmpMatrix; // Use the setter
     }
+  }
+
+  handleMouseMoved(e: MouseEvent): void {
+    // WHen currentTool is NULL, currentTool? resolves to no action    
+    this.currentTool?.mouseMoved(e);
+  }
+  handleMousePressed(e: MouseEvent): void {
+    this.currentTool?.mousePressed(e);
+  }
+
+  handleMouseReleased(e: MouseEvent): void {
+    // WHen currentTool is NULL, the following line does nothing
+    this.currentTool?.mouseReleased(e);
+  }
+
+  @Watch("editMode")
+  switchEditMode(mode: string): void {
+    this.currentTool = null;
+
+    switch (mode) {
+      case "point":
+        this.currentTool = this.pointTool;
+        break;
+      default:
+        this.currentTool = null;
+    }
+    this.currentTool?.activate();
   }
 }
 </script>

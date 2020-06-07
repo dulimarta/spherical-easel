@@ -48,7 +48,7 @@ export default new Vuex.Store({
     },
     addPoint(state: AppState, point: SEPoint): void {
       state.points.push(point);
-      // state.sphere?.add(point.ref);
+      state.sphere?.add(point.ref);
     },
     removePoint(state: AppState, pointId: number): void {
       const pos = state.points.findIndex(x => x.id === pointId);

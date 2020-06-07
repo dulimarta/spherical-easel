@@ -6,11 +6,8 @@
     <div v-if="!minified">
       <!-- Two tabs set up TODO: fix the behavior of the tabs-->
       <v-tabs v-model="activeLeftDrawerTab" centered grow>
-        <v-tooltip
-          bottom
-          :open-delay="toolTipOpenDelay"
-          :close-delay="toolTipCloseDelay"
-        >
+        <v-tooltip bottom :open-delay="toolTipOpenDelay"
+          :close-delay="toolTipCloseDelay">
           <template v-slot:activator="{ on }">
             <v-tab class="mt-3" href="#toolListTab" v-on="on">
               <v-icon left>mdi-calculator</v-icon>
@@ -19,11 +16,8 @@
           <span>{{ $t("main.ToolsTabToolTip") }}</span>
         </v-tooltip>
 
-        <v-tooltip
-          bottom
-          :open-delay="toolTipOpenDelay"
-          :close-delay="toolTipCloseDelay"
-        >
+        <v-tooltip bottom :open-delay="toolTipOpenDelay"
+          :close-delay="toolTipCloseDelay">
           <template v-slot:activator="{ on }">
             <v-tab class="mt-3" href="#objectListTab" v-on="on">
               <v-icon left>mdi-format-list-bulleted</v-icon>
@@ -36,8 +30,8 @@
           <ToolButtons></ToolButtons>
         </v-tab-item>
         <v-tab-item value="objectListTab">
-          <!--ObjectTree :scene="canvas">
-              </ObjectTree-->
+          <ObjectTree>
+          </ObjectTree>
         </v-tab-item>
       </v-tabs>
     </div>
@@ -52,9 +46,10 @@
 import Vue from "vue";
 import { Component, Prop } from "vue-property-decorator";
 import ToolButtons from "@/components/ToolButtons.vue";
+import ObjectTree from "@/components/ObjectTree.vue"
 import SETTINGS from "@/global-settings";
 
-@Component({ components: { ToolButtons } })
+@Component({ components: { ToolButtons, ObjectTree } })
 export default class Toolbox extends Vue {
   @Prop()
   readonly minified!: boolean;

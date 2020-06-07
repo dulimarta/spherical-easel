@@ -140,8 +140,8 @@ export default abstract class CursorHandler implements ToolStrategy {
      */
 
     console.debug(
-      `Mouse location (${event.offsetX},${event.offsetY})`,
-      this.mouseVector.toFixed(2)
+      `Mouse location (${event.offsetX},${event.offsetY})` +
+        `BndCircle pos: ${this.mouseVector.toFixed(2)} `
     );
     /* Rescale to unit circle */
     const len = this.mouseVector
@@ -157,10 +157,7 @@ export default abstract class CursorHandler implements ToolStrategy {
       );
       this.isOnSphere = true;
       // this.currentPoint.copy(this.mouse);
-      console.debug(
-        `Mouse location (${event.offsetX},${event.offsetY}) ` +
-          `Sphere position ${this.currentSpherePoint.toFixed(2)}`
-      );
+      console.debug(`Sphere pos: ${this.currentSpherePoint.toFixed(2)}`);
       if (this.hitObject) {
         this.hitObject.normalStyle();
       }

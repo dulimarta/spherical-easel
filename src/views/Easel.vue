@@ -17,9 +17,29 @@
     <template slot="paneR">
       <v-container fluid ref="rightPanel">
         <v-row>
-          <v-col cols="12"> Canvas:
-            {{currentCanvasSize}}
-
+          <v-col cols="12">
+            <v-btn-toggle class="accent">
+              <v-tooltip bottom :open-delay="toolTipOpenDelay"
+                :close-delay="toolTipCloseDelay">
+                <!-- TODO: Move these edit controls to the the panel containing the sphere. 
+        When not available they should be greyed out (i.e. disabled).-->
+                <template v-slot:activator="{ on }">
+                  <v-btn icon @click="undoEdit" v-on="on">
+                    <v-icon>mdi-undo</v-icon>
+                  </v-btn>
+                </template>
+                <span>{{ $t('main.UndoLastAction') }}</span>
+              </v-tooltip>
+              <v-tooltip bottom :open-delay="toolTipOpenDelay"
+                :close-delay="toolTipCloseDelay">
+                <template v-slot:activator="{ on }">
+                  <v-btn icon @click="redoAction" v-on="on">
+                    <v-icon>mdi-redo</v-icon>
+                  </v-btn>
+                </template>
+                <span>{{ $t('main.RedoLastAction') }}</span>
+              </v-tooltip>
+            </v-btn-toggle>
           </v-col>
           <v-col cols="12">
             <v-row justify="center" class="pb-1">
@@ -29,7 +49,6 @@
                 id="responsiveBox" class="pa-0 yellow">
                 <sphere-frame :canvas-size="currentCanvasSize">
                 </sphere-frame>
-                <div ref="canvasContent" id="canvasContent"></div>
               </v-responsive>
             </v-row>
           </v-col>
@@ -41,14 +60,14 @@
 
 <script lang="ts">
 import VueComponent from "vue";
-import { Vue, Watch } from "vue-property-decorator";
+import { Vue } from "vue-property-decorator";
 import SplitPane from "vue-splitpane";
 import Component from "vue-class-component";
 import Toolbox from "@/components/ToolBox.vue";
 import SphereFrame from "@/components/SphereFrame.vue"
-import { State } from 'vuex-class';
-import { ToolStrategy } from '../events/ToolStrategy';
-import NormalPointHandler from '../events/NormalPointHandler';
+/* Import Command so we can use the command paradigm */
+import { Command } from "@/commands/Command";
+import SETTINGS from "@/global-settings";
 
 @Component({ components: { SplitPane, Toolbox, SphereFrame } })
 export default class Easel extends Vue {
@@ -58,16 +77,12 @@ export default class Easel extends Vue {
 
   private leftPanePercentage = 30;
   private toolboxMinified = false;
+  private toolTipOpenDelay = SETTINGS.toolTip.openDelay;
+  private toolTipCloseDelay = SETTINGS.toolTip.closeDelay;
 
-  private currentTool: ToolStrategy | null = null;
-  private pointTool!: NormalPointHandler;
-
-  @State
-  readonly editMode!: string;
 
   $refs!: {
-    responsiveBox: VueComponent,
-    canvasContent: HTMLDivElement
+    responsiveBox: VueComponent
   }
 
   private adjustSize(): void {
@@ -89,18 +104,10 @@ export default class Easel extends Vue {
     // );
   }
 
-
   /** mounted() is part of VueJS lifecycle hooks */
   mounted(): void {
     window.addEventListener("resize", this.onWindowResized);
-
-    console.info("Mounted");
     this.adjustSize();
-
-    const el = this.$refs.canvasContent as HTMLElement;
-    // this.pointTool = new NormalPointHandler(this.sphereCanvas, this.CSSTransformMat);
-
-    el.addEventListener("mousemove", this.handleMouseMoved);
   }
 
   /** Spoit Pane resize handler
@@ -111,37 +118,25 @@ export default class Easel extends Vue {
     this.adjustSize();
     // Calculate the width of the right panel
     const rightPanelWidth = (1 - leftPercentage / 100) * window.innerWidth;
-    const box = this.$refs.canvasContent.getBoundingClientRect();
-    console.debug("Pane resized: ", box.height, box.width, rightPanelWidth);
+    const box = this.$refs.responsiveBox.$el.getBoundingClientRect();
     // The canvas can't be bigger than its container height or the width
     // of the right panel
     if (box.height > rightPanelWidth) {
+      // FIXME: the screen flickers 
       this.currentCanvasSize = rightPanelWidth;
     }
   }
 
   onWindowResized(): void {
-    console.info("Resized");
     this.adjustSize();
   }
-
-  handleMouseMoved(e: MouseEvent): void {
-    this.currentTool?.mouseMoved(e);
+  /* Undoes the last user action that changed the state of the sphere. */
+  undoEdit(): void {
+    Command.undo();
   }
-
-
-  @Watch("editMode")
-  switchEditMode(mode: string): void {
-    this.currentTool = null;
-
-    switch (mode) {
-      case "point":
-        this.currentTool = this.pointTool;
-        break;
-      default:
-        this.currentTool = null;
-    }
-    this.currentTool?.activate();
+  /* Redoes the last user action that changed the state of the sphere. */
+  redoAction(): void {
+    Command.redo();
   }
 }
 </script>

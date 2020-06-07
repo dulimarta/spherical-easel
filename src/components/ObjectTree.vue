@@ -1,32 +1,14 @@
 <template>
   <div class="pa-1" id="objectTreeContainer">
     <h4>{{ $t("objects.points") }}</h4>
-    <v-treeview
-      dense
-      hoverable
-      activatable
-      active-class="warning"
-      :items="iPoints"
-      @update:active="updateActive"
-    ></v-treeview>
+    <v-treeview dense hoverable activatable active-class="warning"
+      :items="iPoints" @update:active="updateActive"></v-treeview>
     <h4>{{ $t("objects.lines") }}</h4>
-    <v-treeview
-      dense
-      hoverable
-      activatable
-      active-class="warning"
-      :items="iLines"
-      @update:active="updateActive"
-    ></v-treeview>
+    <v-treeview dense hoverable activatable active-class="warning"
+      :items="iLines" @update:active="updateActive"></v-treeview>
     <h4>{{ $t("objects.circles") }}</h4>
-    <v-treeview
-      dense
-      hoverable
-      activatable
-      active-class="warning"
-      :items="iCircles"
-      @update:active="updateActive"
-    ></v-treeview>
+    <v-treeview dense hoverable activatable active-class="warning"
+      :items="iCircles" @update:active="updateActive"></v-treeview>
   </div>
 </template>
 
@@ -147,7 +129,8 @@ export default class ObjectTree extends Vue {
 </script>
 
 <style lang="scss">
-#topContainer {
+#objectTreeContainer {
   padding: 0.5em;
+  overflow: scroll;
 }
 </style>
