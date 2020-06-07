@@ -11,7 +11,8 @@ export default {
   contrast: 0.5,
   sphere: {
     /* We always assume a UNIT sphere */
-    boundaryCircleRadius: 250, /* in pixels. Why store this in global constants? It should change depending on the availble space in the window */,
+    /* in pixels. Why store this in global constants? It should change depending on the available space in the window */
+    boundaryCircleRadius: 250,
     boundaryCircleLineWidth: 3,
     color: 0xffff00,
     opacity: 0.5

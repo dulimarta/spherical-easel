@@ -15,8 +15,7 @@
     title where $t('key') means that the key should be looked up in the current language file named
     ##.lang.json.-->
     <v-app-bar app color="primary" dark dense clipped-left>
-      <!-- This is where the file and export (to EPS, TIKZ, animated GIF?) operations will go 
-      Also request a feature and report a bug-->
+      <!-- This is where the file and export (to EPS, TIKZ, animated GIF?) operations will go -->
       <v-app-bar-nav-icon></v-app-bar-nav-icon>
 
       <div class="d-flex align-center">
@@ -30,9 +29,7 @@
             width="40"
           />
         </router-link>
-        <v-toolbar-title>
-          {{ $t("main.SphericalEaselMainTitle") }}
-        </v-toolbar-title>
+        <v-toolbar-title>{{ $t("main.SphericalEaselMainTitle") }}</v-toolbar-title>
         <v-tooltip left>
           <template v-slot:activator="{ on }">
             <a href="/docs">
