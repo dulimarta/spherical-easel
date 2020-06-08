@@ -6,7 +6,7 @@ prev: /
 next: /quickstart/construct.md
 ---
 
-# Quick Start: Explore Equilateral Triangles
+# Quick Start Guide<br/>Explore Equilateral Triangles
 
 In the spirit of Euclid, we will guide the user through the steps to
 
