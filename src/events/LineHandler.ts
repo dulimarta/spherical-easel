@@ -13,6 +13,7 @@ import { AddLineCommand } from "@/commands/AddLineCommand";
 import Two from "two.js";
 import { SEPoint } from "@/models/SEPoint";
 import { SELine } from "@/models/SELine";
+import EventBus from "./EventBus";
 export default class LineHandler extends CursorHandler {
   protected startV3Point: Vector3; // The starting point of the line
   protected tmpVector: Vector3;
@@ -73,14 +74,14 @@ export default class LineHandler extends CursorHandler {
     this.isMouseDown = true;
     this.startPoint = null;
     if (this.isOnSphere) {
-      const selected = this.hitObject;
+      const selected = this.hitPoint;
 
       // Record the first point of the geodesic circle
-      if (selected instanceof Point) {
+      if (selected instanceof SEPoint) {
         console.debug("Pressed on an existing point");
         /* the point coordinate is local on the sphere */
-        this.startV3Point.copy(selected.owner.positionOnSphere);
-        this.startPoint = selected.owner;
+        this.startV3Point.copy(selected.positionOnSphere);
+        this.startPoint = selected;
       } else {
         console.debug("Pressed on open area");
         /* this.currentPoint is already converted to local sphere coordinate frame */
@@ -114,8 +115,8 @@ export default class LineHandler extends CursorHandler {
         this.startPoint = vtx;
         lineGroup.addCommand(new AddPointCommand(vtx));
       }
-      if (this.hitObject instanceof Point) {
-        this.endPoint = this.hitObject.owner;
+      if (this.hitPoint instanceof SEPoint) {
+        this.endPoint = this.hitPoint;
       } else {
         // endV3Point landed on an open space
         // we have to create a new point

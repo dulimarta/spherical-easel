@@ -6,8 +6,9 @@ import Point from "@/plotables/Point";
 import Line from "@/plotables/Line";
 import { ToolStrategy } from "./ToolStrategy";
 import Two, { BoundingClientRect } from "two.js";
-import { SEPoint } from "@/models/SEPoint";
 import globalSettings from "@/global-settings";
+import { SEPoint } from "@/models/SEPoint";
+import { SELine } from "@/models/SELine";
 
 /* FIXME: The 3D position and the projected 2D positions are off by a few pixels???*/
 export default abstract class CursorHandler implements ToolStrategy {
@@ -19,7 +20,8 @@ export default abstract class CursorHandler implements ToolStrategy {
   protected store = AppStore; // Vuex global state
   protected currentSpherePoint: Vector3;
   protected currentScreenPoint: Two.Vector;
-  protected hitObject: Point | Line | null = null;
+  protected hitPoint: SEPoint | null = null;
+  protected hitLine: SELine | null = null;
   protected startMarker: SEPoint;
   protected isOnSphere: boolean;
   protected transformMatrix: Matrix4;
@@ -135,10 +137,10 @@ export default abstract class CursorHandler implements ToolStrategy {
     );
      */
 
-    console.debug(
-      `Mouse location (${event.offsetX},${event.offsetY})` +
-        `BndCircle pos: ${this.mouseVector.toFixed(2)} `
-    );
+    // console.debug(
+    //   `Mouse location (${event.offsetX},${event.offsetY})` +
+    //     `BndCircle pos: ${this.mouseVector.toFixed(2)} `
+    // );
     this.currentScreenPoint.set(this.mouseVector.x, this.mouseVector.y);
     /* Rescale to unit circle */
     const len = this.mouseVector
@@ -155,15 +157,23 @@ export default abstract class CursorHandler implements ToolStrategy {
       this.isOnSphere = true;
       // this.currentPoint.copy(this.mouse);
       console.debug(`Sphere pos: ${this.currentSpherePoint.toFixed(2)}`);
-      if (this.hitObject) {
-        this.hitObject.normalStyle();
-      }
-      this.hitObject = null;
+      // FIXME: what if we hit multiple lines or points
+      this.hitPoint?.ref.normalStyle();
+      this.hitLine?.ref.normalStyle();
+      this.hitPoint = null;
+      this.hitLine = null;
       AppStore.getters
         .findNearbyPoints(this.currentSpherePoint, this.currentScreenPoint)
         .forEach((obj: SEPoint) => {
-          this.hitObject = obj.ref;
-          console.debug("Intersected with", obj.id);
+          this.hitPoint = obj;
+          console.debug("Intersected with point", obj.id);
+          obj.ref.glowStyle();
+        });
+      AppStore.getters
+        .findNearbyLines(this.currentSpherePoint, this.currentScreenPoint)
+        .forEach((obj: SELine) => {
+          this.hitLine = obj;
+          console.debug("Intersected with line", obj.id);
           obj.ref.glowStyle();
         });
     } else {

@@ -11,6 +11,7 @@ import { Matrix4 } from 'three';
 import { State } from 'vuex-class';
 import { ToolStrategy } from '../events/ToolStrategy';
 import NormalPointHandler from '../events/NormalPointHandler';
+import LineHandler from '../events/LineHandler';
 
 @Component({})
 export default class SphereFrame extends VueComponent {
@@ -33,6 +34,7 @@ export default class SphereFrame extends VueComponent {
   private magnificationFactor = 1;
   private currentTool: ToolStrategy | null = null;
   private pointTool!: NormalPointHandler;
+  private lineTool!: LineHandler;
 
 
   constructor() {
@@ -102,6 +104,7 @@ export default class SphereFrame extends VueComponent {
     this.$refs.canvas.addEventListener("mousedown", this.handleMousePressed);
     this.$refs.canvas.addEventListener("mouseup", this.handleMouseReleased);
     this.pointTool = new NormalPointHandler(this.sphereCanvas, this.CSSTransformMat);
+    this.lineTool = new LineHandler(this.sphereCanvas, this.CSSTransformMat);
   }
 
   @Watch("canvasSize")
@@ -190,6 +193,9 @@ export default class SphereFrame extends VueComponent {
     switch (mode) {
       case "point":
         this.currentTool = this.pointTool;
+        break;
+      case "line":
+        this.currentTool = this.lineTool;
         break;
       default:
         this.currentTool = null;

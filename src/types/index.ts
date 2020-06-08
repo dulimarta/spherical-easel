@@ -1,15 +1,15 @@
 // Declaration of all internal data types
 
 import Two from "two.js";
-import Circle from "@/3d-objs/Circle";
 import { SEPoint } from "@/models/SEPoint";
 import { SELine } from "@/models/SELine";
+import { SECircle } from "@/models/SECircle";
 
-export interface SECircle {
-  ref: Circle;
-  center: SEPoint;
-  point: SEPoint;
-}
+// export interface SECircle {
+//   ref: Circle;
+//   center: SEPoint;
+//   point: SEPoint;
+// }
 export interface AppState {
   sphere: Two.Group | null;
   sphereRadius: /* in pixel */ number; // When the window is resized, the actual size of the sphere (in pixel may change)

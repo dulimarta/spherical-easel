@@ -1,4 +1,5 @@
 // <reference path="@/extensions/three-ext.d.ts" />
+// <reference path="@/extensions/number-ext.d.ts" />
 import Vue from "vue";
 import App from "./App.vue";
 import router from "./router";
@@ -7,6 +8,7 @@ import vuetify from "./plugins/vuetify";
 import VueI18n from "vue-i18n";
 import i18n from "./i18n";
 import "@/extensions/three.extensions";
+import "@/extensions/number.extensions";
 
 Vue.use(VueI18n);
 

@@ -1,21 +1,21 @@
 /** @format */
 
 import CursorHandler from "./CursorHandler";
-import SETTINGS from "@/global-settings";
-import Point from "@/plotables/Point";
+// import SETTINGS from "@/global-settings";
 import Two from "two.js";
 import { Matrix4 } from "three";
+import { SEPoint } from "@/models/SEPoint";
 
 export default class MoveHandler extends CursorHandler {
   private isDragging = false;
-  private moveTarget: Point | null = null;
+  private moveTarget: SEPoint | null = null;
   constructor(scene: Two.Group, transformMatrix: Matrix4) {
     super(scene, transformMatrix);
   }
 
   mouseMoved(event: MouseEvent) {
     super.mouseMoved(event);
-    if (this.isDragging && this.moveTarget instanceof Point) {
+    if (this.isDragging && this.moveTarget instanceof SEPoint) {
       // this.moveTarget.position.copy(this.currentPoint);
       const vtx = this.store.state.points.find(
         v => v.ref.id === this.moveTarget?.id
@@ -44,7 +44,7 @@ export default class MoveHandler extends CursorHandler {
   //eslint-disable-next-line
   mousePressed(event: MouseEvent) {
     this.isDragging = true;
-    if (this.hitObject instanceof Point) this.moveTarget = this.hitObject;
+    if (this.hitPoint instanceof SEPoint) this.moveTarget = this.hitPoint;
   }
 
   //eslint-disable-next-line

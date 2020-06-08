@@ -16,13 +16,13 @@
 import Vue from "vue";
 import Component from "vue-class-component";
 import { State } from "vuex-class";
-import { SECircle } from "@/types";
 
 import { Prop } from "vue-property-decorator";
 // import { Mesh, MeshPhongMaterial } from "three";
 import Two from "two.js";
 import { SEPoint } from "@/models/SEPoint";
 import { SELine } from "@/models/SELine";
+import { SECircle } from "@/models/SECircle";
 // import Point from "@/plotables/Point";
 
 @Component

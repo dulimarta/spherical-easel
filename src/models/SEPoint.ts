@@ -1,5 +1,5 @@
 import Point from "../plotables/Point";
-import { SECircle } from "@/types";
+import { SECircle } from "./SECircle";
 import { Visitable } from "@/visitors/Visitable";
 import { Visitor } from "@/visitors/Visitor";
 import { SENode } from "./SENode";
