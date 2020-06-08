@@ -18,7 +18,8 @@ const findPoint = (arr: SEPoint[], id: number): SEPoint | null => {
   return out.length > 0 ? out[0] : null;
 };
 
-const SMALL_ENOUGH = 1e-3;
+const SMALL_ENOUGH = 1e-2;
+const PIXEL_CLOSE_ENOUGH = 8;
 const tmpMatrix = new Matrix4();
 const initialState = {
   sphere: null,
@@ -172,11 +173,24 @@ export default new Vuex.Store({
   getters: {
     /* The following is just a starter code.  More work needed */
 
-    // TODO: add screen position as another argument
-    findNearByPoints: (state: AppState) => (idealPosition: Vector3) => {
-      state.points.filter(
-        p => p.positionOnSphere.distanceTo(idealPosition) < SMALL_ENOUGH
-      );
+    findNearbyPoints: (state: AppState) => (
+      idealPosition: Vector3,
+      screenPosition: Two.Vector
+    ) => {
+      console.debug("Inside getter: findNearByPoint");
+      return state.points.filter(p => {
+        const distanceInUnitSphere = p.positionOnSphere.distanceTo(
+          idealPosition
+        );
+        const distanceOnScreen = p.ref.translation.distanceTo(screenPosition);
+        // console.debug(
+        //   `Distance to SEPoint ${p.id}: ideal ${distanceInUnitSphere} screen ${distanceOnScreen}`
+        // );
+        return (
+          distanceInUnitSphere < SMALL_ENOUGH ||
+          distanceOnScreen < PIXEL_CLOSE_ENOUGH
+        );
+      });
     },
     forwardTransform: (state: AppState): Matrix4 => {
       tmpMatrix.fromArray(state.transformMatElements);

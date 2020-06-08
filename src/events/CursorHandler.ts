@@ -1,11 +1,11 @@
 /** @format */
 
-import { Vector3, Matrix4 } from "three";
+import { Vector2, Vector3, Matrix4 } from "three";
 import AppStore from "@/store";
 import Point from "@/plotables/Point";
 import Line from "@/plotables/Line";
 import { ToolStrategy } from "./ToolStrategy";
-import Two, { BoundingClientRect, Vector } from "two.js";
+import Two, { BoundingClientRect } from "two.js";
 import { SEPoint } from "@/models/SEPoint";
 import globalSettings from "@/global-settings";
 
@@ -18,7 +18,7 @@ export default abstract class CursorHandler implements ToolStrategy {
   protected readonly canvas: Two.Group;
   protected store = AppStore; // Vuex global state
   protected currentSpherePoint: Vector3;
-  protected currentScreenPoint: Vector;
+  protected currentScreenPoint: Two.Vector;
   protected hitObject: Point | Line | null = null;
   protected startMarker: SEPoint;
   protected isOnSphere: boolean;
@@ -52,30 +52,25 @@ export default abstract class CursorHandler implements ToolStrategy {
   abstract mousePressed(event: MouseEvent): void;
   abstract mouseReleased(event: MouseEvent): void;
 
-  findNearByObjects(
-    mousePos: Vector,
-    spherePoint: Vector3,
-    root: Two.Group
-  ): Two.Object[] {
-    // Apply canvas transformation to the mouse position
-    mousePos.subSelf(root.translation);
-    if ((root.scale as any) instanceof Two.Vector) {
-      const sv = (root.scale as any) as Two.Vector;
-      mousePos.multiplySelf(sv);
-    } else {
-      mousePos.multiplyScalar(root.scale);
-    }
-    return root.children.filter(obj => {
-      // console.debug((obj as Two.Path).id);
-      // Consider a "hit" when the object is within 5 pixels of the mouse
-      return obj.translation.distanceTo(mousePos) < 5;
-    });
-  }
-  /**
-   * Convert mouse event location to X,Y coordinate within a unit square
-   * @param event the mouse event
-   * @memberof CursorHandler
-   */
+  // findNearByObjects(
+  //   mousePos: Two.Vector,
+  //   spherePoint: Vector3,
+  //   root: Two.Group
+  // ): Two.Object[] {
+  //   // Apply canvas transformation to the mouse position
+  //   mousePos.subSelf(root.translation);
+  //   if ((root.scale as any) instanceof Two.Vector) {
+  //     const sv = (root.scale as any) as Two.Vector;
+  //     mousePos.multiplySelf(sv);
+  //   } else {
+  //     mousePos.multiplyScalar(root.scale);
+  //   }
+  //   return root.children.filter(obj => {
+  //     // console.debug((obj as Two.Path).id);
+  //     // Consider a "hit" when the object is within 5 pixels of the mouse
+  //     return obj.translation.distanceTo(mousePos) < 5;
+  //   });
+  // }
 
   /**
    * Map mouse 2D viewport/screen position to 3D local coordinate on the sphere.
@@ -86,8 +81,9 @@ export default abstract class CursorHandler implements ToolStrategy {
    */
   mouseMoved(event: MouseEvent): void {
     // Using currentTarget is necessary. Otherwise, all the calculations
-    // will be based on SVG elements whose bounding rectangle may splii
-    // outsize of the responsive viewport and messing up our position calculations
+    // will be based on SVG elements whose bounding rectangle may spill
+    // outside of the responsive viewport and produces inaccurate
+    // position calculations
     const target = (event.currentTarget || event.target) as HTMLElement;
     const boundingRect = target.getBoundingClientRect();
     // Don't rely on e.offsetX or e.offsetY, they may not be accurate
@@ -143,6 +139,7 @@ export default abstract class CursorHandler implements ToolStrategy {
       `Mouse location (${event.offsetX},${event.offsetY})` +
         `BndCircle pos: ${this.mouseVector.toFixed(2)} `
     );
+    this.currentScreenPoint.set(this.mouseVector.x, this.mouseVector.y);
     /* Rescale to unit circle */
     const len = this.mouseVector
       .multiplyScalar(1 / globalSettings.sphere.radius)
@@ -162,17 +159,13 @@ export default abstract class CursorHandler implements ToolStrategy {
         this.hitObject.normalStyle();
       }
       this.hitObject = null;
-      this.findNearByObjects(
-        this.currentScreenPoint,
-        this.currentSpherePoint,
-        this.canvas
-      ).forEach(obj => {
-        // console.debug("Intersected", (obj as Two.Path).id);
-        if (obj instanceof Point || obj instanceof Line) {
-          this.hitObject = obj;
-          obj.glowStyle();
-        }
-      });
+      AppStore.getters
+        .findNearbyPoints(this.currentSpherePoint, this.currentScreenPoint)
+        .forEach((obj: SEPoint) => {
+          this.hitObject = obj.ref;
+          console.debug("Intersected with", obj.id);
+          obj.ref.glowStyle();
+        });
     } else {
       this.isOnSphere = false;
       this.currentSpherePoint.set(NaN, NaN, NaN);

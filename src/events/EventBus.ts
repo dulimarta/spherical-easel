@@ -10,11 +10,18 @@ class EventBus {
   }
 
   fire(eventName: string, data: any): void {
+    this.verifyKebabCase(eventName);
     this.vueInstance.$emit(eventName, data);
   }
 
   listen(eventName: string, callback: any) {
+    this.verifyKebabCase(eventName);
     this.vueInstance.$on(eventName, callback);
+  }
+
+  private verifyKebabCase(name: string): void {
+    if (name.match(/[a-z]+(-[a-z]+)+/)) return;
+    throw `${name} is not in kebab-case`;
   }
 }
 

@@ -111,6 +111,7 @@ export default class ZoomViewport extends Vue {
     this.tmpVector.applyMatrix4(this.viewMatrix);
     console.debug("View", this.tmpVector.toFixed(2));
   }
+
   zoomer(e: MouseWheelEvent): void {
     // e.preventDefault(); // Don't propagate this event to the rest of the world
     // Calculate percentage w.r.t viewport height
