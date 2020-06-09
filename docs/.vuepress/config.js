@@ -91,6 +91,8 @@ module.exports = {
         //Settings for the navigation bar at the top of each page
         nav: [
           { text: "Home", link: "/" },
+          { text: "About", link: "/about.md" },
+          { text: "Contact", link: "/contact.md" },
           {
             text: "Documentation",
             ariaLabel: "Documentation Menu",
