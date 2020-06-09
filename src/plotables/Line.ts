@@ -105,11 +105,13 @@ export default class Line extends Two.Group implements Stylable {
   }
 
   // Recalculate the ellipse in 2D
+  // FIXME: the circle does not accurately pass thro its end point?
   private deformIn2D(): void {
     // console.debug(this.normalDirection.toFixed(2));
     // The ellipse major axis on the XY plane is perpendicular
     // to the circle normal [Nx,Ny,Nz]. We can fix the direction of
-    // the major axis to [-Ny,Nx, 0] (pointing "left") and use these numbers to compute the angle
+    // the major axis to [-Ny,Nx, 0] (pointing "left") and use these numbers
+    // to compute the angle between the major axis and the viewport X-axis
     this.majorAxisDirection
       .set(-this.normalDirection.y, this.normalDirection.x, 0)
       .normalize();
@@ -139,7 +141,7 @@ export default class Line extends Two.Group implements Stylable {
     // is projected above the back semicircle
     const flipSign = Math.sign(this.normalDirection.z);
     if (this.segment) {
-      // FIXME: the position or arc end points are not accurate
+      // FIXME: the position of arc end points are not accurate
       // Readjust arc length
 
       const startAngle = this.majorAxisDirection.angleTo(this.start);
@@ -266,6 +268,7 @@ export default class Line extends Two.Group implements Stylable {
   set orientation(dir: Vector3) {
     this.normalDirection.copy(dir);
     this.deformIn2D();
+    // this.deformIntoEllipse();
   }
 
   get orientation(): Vector3 {

@@ -15,6 +15,13 @@ export class SELine extends SENode implements Visitable {
   public end: SEPoint;
   //   public isSegment: boolean;
 
+  /**
+   *
+   * @param l plottable (TwoJS) line associated with this line
+   * @param normalDir the normal vector of the geodesic circle
+   * @param start
+   * @param end
+   */
   constructor(l: Line, normalDir: Vector3, start: SEPoint, end: SEPoint) {
     super();
     this.ref = l;

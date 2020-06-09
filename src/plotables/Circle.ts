@@ -3,28 +3,44 @@
 import { Vector3, Vector2, Matrix4 } from "three";
 import Two from "two.js";
 import SETTINGS from "@/global-settings";
-// import Arrow from "./Arrow";
 
 const desiredXAxis = new Vector3();
 const desiredYAxis = new Vector3();
 const desiredZAxis = new Vector3();
+const Z_AXIS = new Vector3(0, 0, 1);
 const transformMatrix = new Matrix4();
 const SUBDIVISIONS = 50;
 
 /**
- * For drawning surface circle
+ * For drawing surface circle. A circle consists of two paths (front and back)
+ * for a total of 2N subdivisions.
+ * We initially assign the same number of segments/subdivisions to each path,
+ * but as the circle is being deformed the number of subdivisions on each path
+ * may change: longer path will hold more subdivision points (while keeping the
+ * total points 2N so we don't create/remove new points)
  */
 export default class Circle extends Two.Group {
   private center_: Vector3; // Can't use "center", name conflict with TwoJS
   private outer: Vector3;
+  // arcRadius: the radius (in radiuans) as the user drag the mouse the
+  // surface of the sphere
+  private arcRadius = 1;
+  // projectedRadius: the above radius projected to the circle plane
+  private projectedRadius = 1;
   public name = "";
   private frontHalf: Two.Path;
   private backHalf: Two.Path;
+  private majorAxisDirection = new Vector3();
   private tmpVector: Vector3; // for temporary calculation
   private tmpMatrix: Matrix4; // for temporary calculation
   private originalVertices: Vector2[];
+  private majorLine: Two.Line; // for debugging only
+
   constructor(center?: Vector3, outer?: Vector3) {
     super();
+    // Line on the positive X-axis of the circle/ellipse
+    this.majorLine = new Two.Line(0, 0, SETTINGS.sphere.radius, 0);
+    this.add(this.majorLine);
     const frontVertices: Two.Vector[] = [];
     const backVertices: Two.Vector[] = [];
     for (let k = 0; k < SUBDIVISIONS; k++) {
@@ -65,8 +81,7 @@ export default class Circle extends Two.Group {
     this.name = "Circle-" + this.id;
   }
 
-  // TODO: split the circle into front and back semicircles
-  private readjust() {
+  private readjustOriginal() {
     const sphereRadius = SETTINGS.sphere.radius; // in pixels
     // The vector to the circle center is ALSO the normal direction of the circle
     desiredZAxis.copy(this.center_).normalize();
@@ -177,13 +192,169 @@ export default class Circle extends Two.Group {
     }
   }
 
+  /* Determine the elliptical shape of the (tilted) circle.
+   * The algorithm below determines the rotation between
+   * a circle parallel to the XY plane and the tilted circle
+   * centered around the user selected point on the sphere.
+   * We use XY-plane because it is parallel to the "image plane"
+   * where we can measure true length of any distances.
+   *
+   * The axis of rotation that transforms the two circles is actually
+   * the major axis of the ellipse on the XY-plane and its length
+   * can be determined from the arc length radius between the center point
+   * and the outer point of the circle on the sphere.
+   *
+   * The minor length of the ellipse is the cosine of the rotation angle.
+   */
+  private readjust() {
+    // Major axis line for debugging only
+    this.majorLine.vertices[1].x =
+      this.projectedRadius * SETTINGS.sphere.radius;
+
+    // how far is the circle from the origin (translated along the
+    // circle normal)
+    const distanceFromOrigin = Math.cos(this.arcRadius);
+    this.tmpVector
+      .copy(this.center_)
+      .multiplyScalar(distanceFromOrigin * SETTINGS.sphere.radius);
+
+    // Orthographic projection of the distance on the XY plane
+    this.translation.set(this.tmpVector.x, this.tmpVector.y);
+
+    // The ellipse major axis is actually the axis of rotation
+    // to orient the circle and make it parallel with the XY-plane
+    // Then the major length is the same as the projected radius
+    this.tmpVector.copy(this.center_).normalize();
+    this.majorAxisDirection.crossVectors(this.tmpVector, Z_AXIS).normalize();
+    // The angle between the tilted circle and the XY-plane can be used
+    // to calculate the minor length
+    const tiltAngle = this.tmpVector.angleTo(Z_AXIS);
+    const minorRadius = this.projectedRadius * Math.cos(tiltAngle);
+
+    // Rotate the ellipse on the XY-plane
+    const angleToMajorAxis = Math.atan2(
+      this.majorAxisDirection.y,
+      this.majorAxisDirection.x
+    );
+    // console.debug("Angle of major axis", angleToMajorAxis);
+    if (Math.abs(angleToMajorAxis) < Math.PI / 2)
+      this.rotation = angleToMajorAxis;
+    else this.rotation = angleToMajorAxis + Math.PI;
+
+    // Once we know the major length, minor length, and angleToMajorAxis
+    // we can determine the 2D shape of the ellipse. But we have to split
+    // the ellipse into its front half and its back half
+
+    console.debug("Group rotation", angleToMajorAxis.toDegrees().toFixed(2));
+    // Calculate the rotation matrix to may the circle on the XY plane
+    // to the tilted circle
+    transformMatrix.makeRotationAxis(this.majorAxisDirection, -tiltAngle);
+    let posCount = 0;
+    let negCount = 0;
+    let frontLen = this.frontHalf.vertices.length;
+    let backLen = this.backHalf.vertices.length;
+    let firstNeg = -1;
+    let firstPos = -1;
+    let prevSign: number | null = null;
+
+    // Adjust the number of points in the both semi circles
+    // The angles generated  begins CCW at the negative X-axis
+    // So it fills the lower-half (that will become the frontHalf) first
+    // the upper half later becomes the backHalf
+    for (let k = 0; k < 2 * SUBDIVISIONS; k++) {
+      // start at Math.PI (negative X-axis)
+      const angle = Math.PI + (k * Math.PI) / SUBDIVISIONS;
+      this.tmpVector
+        .set(
+          Math.cos(angle) * this.projectedRadius,
+          Math.sin(angle) * this.projectedRadius,
+          distanceFromOrigin
+        )
+        .multiplyScalar(SETTINGS.sphere.radius);
+
+      this.tmpVector.applyMatrix4(transformMatrix);
+      if (this.tmpVector.z >= 0) {
+        posCount++;
+        if (posCount > frontLen) {
+          // Transfer one point from backHalf to frontHalf
+          this.frontHalf.vertices.push(this.backHalf.vertices.pop()!);
+          frontLen++;
+          backLen--;
+        }
+        if (prevSign && prevSign < 0) {
+          firstPos = k;
+        }
+      } else {
+        negCount++;
+        if (negCount > backLen) {
+          // Transfer one point from the frontHalf to backHalf
+          this.backHalf.vertices.push(this.frontHalf.vertices.pop()!);
+          backLen++;
+          frontLen--;
+        }
+        if (prevSign && prevSign >= 0) {
+          firstNeg = k;
+        }
+      }
+      prevSign = Math.sign(this.tmpVector.z);
+    }
+    // console.debug(`First pos at ${firstPos} for ${frontLen} points`);
+    // console.debug(`First neg at ${firstNeg} for ${backLen} points`);
+    if (firstPos === -1) {
+      // No negative points (all points are in the frontHalf)
+      if (backLen == 0) firstPos = 0;
+      else firstPos = (firstNeg + backLen) % (2 * SUBDIVISIONS);
+      // console.debug(`First pos corrected to ${firstPos}`);
+    }
+    if (firstNeg === -1) {
+      // No positive points (all points are in the backHalf)
+      if (frontLen == 0) firstNeg = 0;
+      else firstNeg = (firstPos + frontLen) % (2 * SUBDIVISIONS);
+      // console.debug(`First neg corrected to ${firstNeg}`);
+    }
+
+    // FIXME: the following algorithm is imperfect yet!
+    this.frontHalf.vertices.forEach((v, pos) => {
+      const angle = Math.PI + ((pos + firstPos) * Math.PI) / SUBDIVISIONS;
+      v.x = this.projectedRadius * Math.cos(angle) * SETTINGS.sphere.radius;
+      v.y = minorRadius * Math.sin(angle) * SETTINGS.sphere.radius;
+    });
+    // The front half is a closed curve when the backHalf vanishes
+    this.frontHalf.closed = backLen === 0;
+
+    this.backHalf.vertices.forEach((v, pos) => {
+      const angle = Math.PI + ((pos + firstNeg) * Math.PI) / SUBDIVISIONS;
+      v.x = this.projectedRadius * Math.cos(angle) * SETTINGS.sphere.radius;
+      v.y = minorRadius * Math.sin(angle) * SETTINGS.sphere.radius;
+    });
+    // The back half is a closed curve when the frontHalf vanishes
+    this.backHalf.closed = frontLen === 0;
+  }
+
   set centerPoint(position: Vector3) {
     this.center_.copy(position);
+    this.arcRadius = this.center_.angleTo(this.outer);
+    // project the arc length on the sphere to the circle
+    this.projectedRadius = Math.sin(this.arcRadius);
+    this.readjust();
+  }
+
+  get centerPoint(): Vector3 {
+    return this.center_;
+  }
+
+  set radius(arcLengthRadius: number) {
+    this.arcRadius = arcLengthRadius;
+    this.projectedRadius = Math.sin(arcLengthRadius);
     this.readjust();
   }
 
   set circlePoint(position: Vector3) {
     this.outer.copy(position);
+    this.arcRadius = this.center_.angleTo(this.outer);
+    // project the arc length on the sphere to the circle
+
+    this.projectedRadius = Math.sin(this.arcRadius);
     this.readjust();
   }
 

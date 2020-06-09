@@ -104,9 +104,18 @@ export default class LineHandler extends CursorHandler {
       this.startMarker.ref.remove();
       // this.canvas.remove(this.circleOrientation); // for debugging
       this.isCircleAdded = false;
+      this.tmpVector
+        .crossVectors(this.startV3Point, this.currentSpherePoint)
+        .normalize();
+      this.line.endPoint = this.currentSpherePoint;
       // this.endV3Point.copy(this.currentPoint);
       const newLine = this.line.clone(); // true:recursive clone
       const lineGroup = new CommandGroup();
+      EventBus.fire("insert-line", {
+        normalDirection: this.tmpVector,
+        start: this.startPoint || this.startV3Point,
+        end: this.hitPoint || this.currentScreenPoint
+      });
       if (this.startPoint === null) {
         // Starting point landed on an open space
         // we have to create a new point

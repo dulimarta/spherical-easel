@@ -156,7 +156,7 @@ export default abstract class CursorHandler implements ToolStrategy {
       );
       this.isOnSphere = true;
       // this.currentPoint.copy(this.mouse);
-      console.debug(`Sphere pos: ${this.currentSpherePoint.toFixed(2)}`);
+      // console.debug(`Sphere pos: ${this.currentSpherePoint.toFixed(2)}`);
       // FIXME: what if we hit multiple lines or points
       this.hitPoint?.ref.normalStyle();
       this.hitLine?.ref.normalStyle();

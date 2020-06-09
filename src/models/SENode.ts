@@ -1,3 +1,5 @@
+import { Stylable } from "@/plotables/Styleable";
+
 let NODE_COUNT = 0;
 export abstract class SENode {
   public parents: SENode[] = [];

@@ -13,14 +13,9 @@
         <v-col cols="12" id="contentWrapper" ref="contentWrapper">
           <!-- When the available area is too wide, we have to limit its width
           so the responsive area will not be taller than the viewport -->
-          <v-responsive
-            :aspect-ratio="1"
-            :max-width="responsiveSize"
-            :max-height="responsiveSize"
-            id="responsive"
-            ref="responsive"
-            class="pa-1 yellow"
-          >
+          <v-responsive :aspect-ratio="1" :max-width="responsiveSize"
+            :max-height="responsiveSize" id="responsive" ref="responsive"
+            class="pa-1 yellow">
             <!-- keep the YELLOW class for debugging  -->
             <!--zoom-viewport :view-width="naturalViewSize"
               :view-height="naturalViewSize" :min-zoom="0.3"
@@ -50,39 +45,22 @@
 
     <!--  Use the "clipped" attribute to keep the navigation drawer 
     below the app toolbar, width should be specified as number only (without unit) -->
-    <v-navigation-drawer
-      id="leftDrawer"
-      ref="leftDrawer"
-      app
-      clipped
-      color="accent"
-      permanent
-      :mini-variant="leftDrawerMinified"
-      bottom
-      :width="leftDrawerProperties.width"
-    >
+    <v-navigation-drawer id="leftDrawer" ref="leftDrawer" app clipped
+      color="accent" permanent :mini-variant="leftDrawerMinified" bottom
+      :width="leftDrawerProperties.width">
       <!-- This is the minified version of the left drawer with icon buttons for maximizing it -->
-      <div
-        id="leftnavicons"
-        v-if="leftDrawerMinified"
-        @click="setMinificationOfLeftDrawer(false)"
-      >
-        <v-btn
-          icon
-          @click="
+      <div id="leftnavicons" v-if="leftDrawerMinified"
+        @click="setMinificationOfLeftDrawer(false)">
+        <v-btn icon @click="
             setMinificationOfLeftDrawer(false);
             activeLeftDrawerTab = 'toolListTab';
-          "
-        >
+          ">
           <v-icon class="ml-3 my-2">mdi-calculator</v-icon>
         </v-btn>
-        <v-btn
-          icon
-          @click="
+        <v-btn icon @click="
             leftDrawerMinified = !leftDrawerMinified;
             activeLeftDrawerTab = 'objectListTab';
-          "
-        >
+          ">
           <v-icon class="ml-3 my-2">mdi-format-list-bulleted</v-icon>
         </v-btn>
       </div>
@@ -190,8 +168,6 @@ export default class Easel extends Vue {
   /*  Use the Strategy design pattern to enable switching of
   different tool algorithms at runtime, See the comment where these classes (modules?) are imported */
   private currentTool: ToolStrategy | null = null;
-  private pointTool: NormalPointHandler | null = null;
-  private lineTool: LineHandler | null = null;
   private segmentTool: SegmentHandler | null = null;
   private rotateTool: RotateHandler | null = null;
   private visitor: PositionVisitor | null = null;
@@ -483,16 +459,6 @@ export default class Easel extends Vue {
         break;
       case "move":
         // this.currentTool = this.moveTool;
-        break;
-      case "point":
-        //     this.controls.detach();
-        this.currentTool = this.pointTool;
-        break;
-      case "line":
-        this.currentTool = this.lineTool;
-        break;
-      case "segment":
-        this.currentTool = this.segmentTool;
         break;
       case "circle":
         this.currentTool = this.circleTool;

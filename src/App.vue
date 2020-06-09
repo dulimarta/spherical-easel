@@ -104,6 +104,17 @@ export default class App extends Vue {
       const vtx = new SEPoint(new Point());
       vtx.positionOnSphere = e.position;
       new AddPointCommand(vtx).execute();
+    });
+
+    // TODO:  complete this function
+    EventBus.listen('insert-line', (e: any) => {
+      console.debug("Insert line with normal", e.normalDirection.toFixed(2));
+      if (e.start instanceof SEPoint) {
+        console.debug("Line starts at an existing point")
+      } else console.debug("Line starts at an new point")
+      if (e.end instanceof SEPoint) {
+        console.debug("Line endss at an existing point")
+      } else console.debug("Line ends at an new point")
     })
   }
 }

@@ -12,6 +12,8 @@ import { State } from 'vuex-class';
 import { ToolStrategy } from '../events/ToolStrategy';
 import NormalPointHandler from '../events/NormalPointHandler';
 import LineHandler from '../events/LineHandler';
+import SegmentHandler from '../events/SegmentHandler';
+import CircleHandler from '../events/CircleHandler';
 
 @Component({})
 export default class SphereFrame extends VueComponent {
@@ -35,6 +37,8 @@ export default class SphereFrame extends VueComponent {
   private currentTool: ToolStrategy | null = null;
   private pointTool!: NormalPointHandler;
   private lineTool!: LineHandler;
+  private segmentTool!: SegmentHandler;
+  private circleTool!: CircleHandler;
 
 
   constructor() {
@@ -105,6 +109,8 @@ export default class SphereFrame extends VueComponent {
     this.$refs.canvas.addEventListener("mouseup", this.handleMouseReleased);
     this.pointTool = new NormalPointHandler(this.sphereCanvas, this.CSSTransformMat);
     this.lineTool = new LineHandler(this.sphereCanvas, this.CSSTransformMat);
+    this.segmentTool = new SegmentHandler(this.sphereCanvas, this.CSSTransformMat);
+    this.circleTool = new CircleHandler(this.sphereCanvas, this.CSSTransformMat);
   }
 
   @Watch("canvasSize")
@@ -191,11 +197,21 @@ export default class SphereFrame extends VueComponent {
     this.currentTool = null;
 
     switch (mode) {
+      case "rotate":
+        break;
+      case "move":
+        break;
       case "point":
         this.currentTool = this.pointTool;
         break;
       case "line":
         this.currentTool = this.lineTool;
+        break;
+      case "segment":
+        this.currentTool = this.segmentTool;
+        break;
+      case "circle":
+        this.currentTool = this.circleTool;
         break;
       default:
         this.currentTool = null;

@@ -4,14 +4,13 @@ import { Vector3, Matrix4 } from "three";
 import CursorHandler from "./CursorHandler";
 import Point from "@/plotables/Point";
 // import SETTINGS from "@/global-settings";
-import Circle from "@/3d-objs/Circle";
+import Circle from "@/plotables/Circle";
 import { CommandGroup } from "@/commands/CommandGroup";
 import { AddPointCommand } from "@/commands/AddPointCommand";
 import { AddCircleCommand } from "@/commands/AddCircleCommand";
 import Two from "two.js";
 import { SEPoint } from "@/models/SEPoint";
 import { SECircle } from "@/models/SECircle";
-// import { SECircle } from '@/models/SECircle';
 
 export default class CircleHandler extends CursorHandler {
   private startV3Point: Vector3;
@@ -42,7 +41,7 @@ export default class CircleHandler extends CursorHandler {
           this.canvas.add(this.circle);
           this.canvas.add(this.startMarker.ref);
         }
-        // this.circle.circlePoint = this.currentSpherePoint;
+        this.circle.circlePoint = this.currentSpherePoint;
       }
     } else if (this.isCircleAdded) {
       // this.circle.remove(); // remove from its parent
@@ -79,6 +78,8 @@ export default class CircleHandler extends CursorHandler {
       this.isCircleAdded = false;
       // this.endV3Point.copy(this.currentPoint);
       const newCircle = this.circle.clone();
+
+      // TODO: Use EventBus.fire()???
       const circleGroup = new CommandGroup();
       if (this.startPoint === null) {
         // Starting point landed on an open space
@@ -102,7 +103,7 @@ export default class CircleHandler extends CursorHandler {
       circleGroup
         .addCommand(
           new AddCircleCommand({
-            circle: new SECircle(newCircle),
+            circle: new SECircle(newCircle, 1),
             centerPoint: this.startPoint,
             circlePoint: this.endPoint
           })

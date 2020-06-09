@@ -5,7 +5,7 @@ import Vuex from "vuex";
 import Two from "two.js";
 import { AppState } from "@/types";
 import Point from "@/plotables/Point";
-import Circle from "@/3d-objs/Circle";
+import Circle from "@/plotables/Circle";
 import { SEPoint } from "@/models/SEPoint";
 import { SELine } from "@/models/SELine";
 import { SECircle } from "@/models/SECircle";
@@ -181,7 +181,6 @@ export default new Vuex.Store({
       idealPosition: Vector3,
       screenPosition: Two.Vector
     ): SEPoint[] => {
-      console.debug("Inside getter: findNearByPoint");
       return state.points.filter(p => {
         const distanceInUnitSphere = p.positionOnSphere.distanceTo(
           idealPosition
@@ -203,7 +202,6 @@ export default new Vuex.Store({
       idealPosition: Vector3,
       screenPosition: Two.Vector
     ): SELine[] => {
-      // console.debug("Inside getter: findNearByLines");
       return state.lines.filter((z: SELine) => {
         const angleToNormal = z.normalDirection.angleTo(idealPosition);
         // console.debug(
