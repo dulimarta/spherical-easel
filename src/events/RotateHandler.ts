@@ -1,6 +1,7 @@
 import CursorHandler from "./CursorHandler";
 import Two from "two.js";
 import { Matrix4, Vector3 } from "three";
+import EventBus from "./EventBus";
 
 const desiredZAxis = new Vector3();
 
@@ -9,6 +10,7 @@ export default class RotateHandler extends CursorHandler {
   private prevSpherePoint: Vector3 = new Vector3();
   private prevScreenPoint: Two.Vector = new Two.Vector(0, 0);
   private isDragging = false;
+
   constructor(scene: Two.Group, transformMatrix: Matrix4) {
     super(scene, transformMatrix);
     // this.rotationMatrix = new Matrix4();
@@ -33,11 +35,9 @@ export default class RotateHandler extends CursorHandler {
       this.rotationMatrix.makeRotationAxis(desiredZAxis, rotationAngle);
       this.prevSpherePoint.copy(this.currentSpherePoint);
       this.prevScreenPoint.copy(this.currentScreenPoint);
-      window.dispatchEvent(
-        new CustomEvent("sphere-rotate", {
-          detail: { transform: this.rotationMatrix }
-        })
-      );
+      EventBus.fire("sphere-rotate", {
+        transform: this.rotationMatrix
+      });
     }
   }
 

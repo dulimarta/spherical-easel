@@ -9,11 +9,17 @@ import Two from 'two.js';
 import SETTINGS from "@/global-settings"
 import { Matrix4 } from 'three';
 import { State } from 'vuex-class';
-import { ToolStrategy } from '../events/ToolStrategy';
-import NormalPointHandler from '../events/NormalPointHandler';
-import LineHandler from '../events/LineHandler';
-import SegmentHandler from '../events/SegmentHandler';
-import CircleHandler from '../events/CircleHandler';
+import { ToolStrategy } from '@/events/ToolStrategy';
+import NormalPointHandler from '@/events/NormalPointHandler';
+import LineHandler from '@/events/LineHandler';
+import SegmentHandler from '@/events/SegmentHandler';
+import CircleHandler from '@/events/CircleHandler';
+import RotateHandler from "@/events/RotateHandler"
+import { PositionVisitor } from '@/visitors/PositionVisitor';
+import { SEPoint } from '@/models/SEPoint';
+import { SELine } from '@/models/SELine';
+import { Visitor } from '@/visitors/Visitor';
+import EventBus from '../events/EventBus';
 
 @Component({})
 export default class SphereFrame extends VueComponent {
@@ -39,7 +45,8 @@ export default class SphereFrame extends VueComponent {
   private lineTool!: LineHandler;
   private segmentTool!: SegmentHandler;
   private circleTool!: CircleHandler;
-
+  private rotateTool!: RotateHandler;
+  private visitor!: PositionVisitor;
 
   constructor() {
     super();
@@ -78,8 +85,10 @@ export default class SphereFrame extends VueComponent {
       new Two.Line(100, -R, 100, R),
       new Two.Line(-R, 100, R, 100),
     );
-
+    this.visitor = new PositionVisitor();
+    EventBus.listen("sphere-rotate", this.handleSphereRotation);
   }
+
   /** Apply the affine transform (m) to the entire TwoJS SVG tree! */
   // The translation element of the CSS transform matrix
   // is actually the pivot/origin of the zoom
@@ -111,6 +120,14 @@ export default class SphereFrame extends VueComponent {
     this.lineTool = new LineHandler(this.sphereCanvas, this.CSSTransformMat);
     this.segmentTool = new SegmentHandler(this.sphereCanvas, this.CSSTransformMat);
     this.circleTool = new CircleHandler(this.sphereCanvas, this.CSSTransformMat);
+    this.rotateTool = new RotateHandler(this.sphereCanvas, this.CSSTransformMat);
+  }
+
+  destroyed(): void {
+    this.$refs.canvas.removeEventListener('wheel', this.zoomer)
+    this.$refs.canvas.removeEventListener("mousemove", this.handleMouseMoved);
+    this.$refs.canvas.removeEventListener("mousedown", this.handleMousePressed);
+    this.$refs.canvas.removeEventListener("mouseup", this.handleMouseReleased);
   }
 
   @Watch("canvasSize")
@@ -192,12 +209,25 @@ export default class SphereFrame extends VueComponent {
     this.currentTool?.mouseReleased(e);
   }
 
+  handleSphereRotation(e: unknown): void {
+    if (this.visitor) {
+      this.visitor.setTransform((e as any).transform);
+      this.$store.state.points.forEach((p: SEPoint) => {
+        p.accept(this.visitor as Visitor);
+      });
+      this.$store.state.lines.forEach((l: SELine) => {
+        l.accept(this.visitor as Visitor);
+      });
+    }
+  }
+
   @Watch("editMode")
   switchEditMode(mode: string): void {
     this.currentTool = null;
 
     switch (mode) {
       case "rotate":
+        this.currentTool = this.rotateTool;
         break;
       case "move":
         break;

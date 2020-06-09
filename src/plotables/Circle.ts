@@ -81,7 +81,9 @@ export default class Circle extends Two.Group {
     this.name = "Circle-" + this.id;
   }
 
-  private readjustOriginal() {
+  // Using this algorithm, the frontHalf and backHalf are rendered correctly
+  // but the center of the circle is off by several pixels
+  private readjust() {
     const sphereRadius = SETTINGS.sphere.radius; // in pixels
     // The vector to the circle center is ALSO the normal direction of the circle
     desiredZAxis.copy(this.center_).normalize();
@@ -206,7 +208,7 @@ export default class Circle extends Two.Group {
    *
    * The minor length of the ellipse is the cosine of the rotation angle.
    */
-  private readjust() {
+  private readjustNew() {
     // Major axis line for debugging only
     this.majorLine.vertices[1].x =
       this.projectedRadius * SETTINGS.sphere.radius;
@@ -271,7 +273,6 @@ export default class Circle extends Two.Group {
           distanceFromOrigin
         )
         .multiplyScalar(SETTINGS.sphere.radius);
-
       this.tmpVector.applyMatrix4(transformMatrix);
       if (this.tmpVector.z >= 0) {
         posCount++;
@@ -313,7 +314,7 @@ export default class Circle extends Two.Group {
       // console.debug(`First neg corrected to ${firstNeg}`);
     }
 
-    // FIXME: the following algorithm is imperfect yet!
+    // FIXME: the following algorithm is not correct yet!
     this.frontHalf.vertices.forEach((v, pos) => {
       const angle = Math.PI + ((pos + firstPos) * Math.PI) / SUBDIVISIONS;
       v.x = this.projectedRadius * Math.cos(angle) * SETTINGS.sphere.radius;
