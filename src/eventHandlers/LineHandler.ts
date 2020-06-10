@@ -1,10 +1,10 @@
 /** @format */
 
 import { Vector3, Matrix4 } from "three";
-import CursorHandler from "./CursorHandler";
+import CursorHandler from "./SelectionHandler";
 import Arrow from "@/3d-objs/Arrow"; // for debugging
-import Point from "@/plotables/Point";
-import Line from "@/plotables/Line";
+import Point from "@/plottables/Point";
+import Line from "@/plottables/Line";
 
 import SETTINGS from "@/global-settings";
 import { CommandGroup } from "@/commands/CommandGroup";

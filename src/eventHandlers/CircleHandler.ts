@@ -1,10 +1,10 @@
 /** @format */
 
 import { Vector3, Matrix4 } from "three";
-import CursorHandler from "./CursorHandler";
-import Point from "@/plotables/Point";
+import CursorHandler from "./SelectionHandler";
+import Point from "@/plottables/Point";
 // import SETTINGS from "@/global-settings";
-import Circle from "@/plotables/Circle";
+import Circle from "@/plottables/Circle";
 import { CommandGroup } from "@/commands/CommandGroup";
 import { AddPointCommand } from "@/commands/AddPointCommand";
 import { AddCircleCommand } from "@/commands/AddCircleCommand";

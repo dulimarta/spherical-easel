@@ -2,7 +2,7 @@
 
 // import SETTINGS from "@/global-settings";
 import Two, { Color } from "two.js";
-import { Stylable } from "@/plotables/Styleable";
+import { Stylable } from "@/plottables/Styleable";
 import { SEPoint } from "@/models/SEPoint";
 
 /**

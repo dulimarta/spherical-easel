@@ -1,6 +1,6 @@
 import { Command } from "./Command";
-import Point from "@/plotables/Point";
-import Circle from "@/plotables/Circle";
+import Point from "@/plottables/Point";
+import Circle from "@/plottables/Circle";
 import { SEPoint } from "@/models/SEPoint";
 import { SECircle } from "@/models/SECircle";
 

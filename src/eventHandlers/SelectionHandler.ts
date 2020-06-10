@@ -2,7 +2,7 @@
 
 import { Vector3, Matrix4 } from "three";
 import AppStore from "@/store";
-import Point from "@/plotables/Point";
+import Point from "@/plottables/Point";
 import { ToolStrategy } from "./ToolStrategy";
 import Two, { BoundingClientRect } from "two.js";
 import SETTINGS from "@/global-settings";

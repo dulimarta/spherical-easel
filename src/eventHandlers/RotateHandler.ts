@@ -1,4 +1,4 @@
-import CursorHandler from "./CursorHandler";
+import CursorHandler from "./SelectionHandler";
 import Two from "two.js";
 import { Matrix4, Vector3 } from "three";
 import EventBus from "./EventBus";

@@ -1,6 +1,6 @@
 /** @format */
 
-import CursorHandler from "./CursorHandler";
+import CursorHandler from "./SelectionHandler";
 // import SETTINGS from "@/global-settings";
 import Two from "two.js";
 import { Matrix4 } from "three";

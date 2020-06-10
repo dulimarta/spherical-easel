@@ -1,10 +1,10 @@
 /** @format */
 
 import Arrow from "@/3d-objs/Arrow";
-import CursorHandler from "./CursorHandler";
+import CursorHandler from "./SelectionHandler";
 import Two from "two.js";
 import { Matrix4 } from "three";
-import EventBus from "@/events/EventBus";
+import EventBus from "@/eventHandlers/EventBus";
 export default class NormalPointHandler extends CursorHandler {
   private normalArrow: Arrow;
   private isNormalAdded: boolean;

@@ -1,18 +1,40 @@
 <template>
   <div class="pa-1 accent" id="toolButtonContainer">
+    <!-- The Edit Tool Group only shown if the user has permission to use a tool in this group.
+    Note the use of the translation $t(key_value).-->
+    <div id="EditToolGroup" v-show="nonEmptyGroup('edit')">
+      <h3 class="body-1 font-weight-bold">{{ $t("toolGroups.EditTools") }}</h3>
+      <v-btn-toggle
+        v-model="editMode"
+        @change="switchEditMode"
+        class="mr-2 d-flex flex-wrap accent"
+      >
+        <!--- Use Array.filter to select only edit tools -->
+        <ToolButton
+          v-for="button in buttonList.filter(b => b.toolGroup === 'edit')"
+          :key="button.id"
+          :button="button"
+          v-on:displayOnlyThisToolUseMessage="displayOnlyThisToolUseMessageFunc"
+        ></ToolButton>
+      </v-btn-toggle>
+    </div>
+
     <!-- The Basic Tool Group only shown if the user has permission to use a tool in this group.
     Note the use of the translation $t(key_value).-->
     <div id="BasicToolGroup" v-show="nonEmptyGroup('basic')">
-      <h3 class="body-1 font-weight-bold">{{ $t('toolGroups.BasicTools') }}
-      </h3>
-      <v-btn-toggle v-model="editMode" @change="switchEditMode"
-        class="mr-2 d-flex flex-wrap accent">
+      <h3 class="body-1 font-weight-bold">{{ $t("toolGroups.BasicTools") }}</h3>
+      <v-btn-toggle
+        v-model="editMode"
+        @change="switchEditMode"
+        class="mr-2 d-flex flex-wrap accent"
+      >
         <!--- Use Array.filter to select only basic tools -->
         <ToolButton
           v-for="button in buttonList.filter(b => b.toolGroup === 'basic')"
-          :key="button.id" :button="button"
-          v-on:displayOnlyThisToolUseMessage="displayOnlyThisToolUseMessageFunc">
-        </ToolButton>
+          :key="button.id"
+          :button="button"
+          v-on:displayOnlyThisToolUseMessage="displayOnlyThisToolUseMessageFunc"
+        ></ToolButton>
       </v-btn-toggle>
     </div>
 
@@ -22,15 +44,20 @@
     -->
     <div id="AdvanceToolGroup" v-show="nonEmptyGroup('advanced')">
       <h3 class="body-1 font-weight-bold">
-        {{ $t('toolGroups.AdvancedTools') }}</h3>
-      <v-btn-toggle v-model="editMode" @change="switchEditMode"
-        class="mr-2 d-flex flex-wrap accent">
+        {{ $t("toolGroups.AdvancedTools") }}
+      </h3>
+      <v-btn-toggle
+        v-model="editMode"
+        @change="switchEditMode"
+        class="mr-2 d-flex flex-wrap accent"
+      >
         <!--- Use Array.filter to select only advanced tools -->
         <ToolButton
           v-for="button in buttonList.filter(b => b.toolGroup === 'advanced')"
-          :key="button.id" :button="button"
-          v-on:displayOnlyThisToolUseMessage="displayOnlyThisToolUseMessageFunc">
-        </ToolButton>
+          :key="button.id"
+          :button="button"
+          v-on:displayOnlyThisToolUseMessage="displayOnlyThisToolUseMessageFunc"
+        ></ToolButton>
       </v-btn-toggle>
     </div>
 
@@ -38,16 +65,25 @@
       The Transformational Tool Group only shown if the user has permission to use a tool in this 
       group. Note the use of the translation $t(key_value).
     -->
-    <div id="TransformationalToolGroup"
-      v-show="nonEmptyGroup('transformational')">
+    <div
+      id="TransformationalToolGroup"
+      v-show="nonEmptyGroup('transformational')"
+    >
       <h3 class="body-1 font-weight-bold">
-        {{ $t('toolGroups.TransformationalTools') }}</h3>
-      <v-btn-toggle v-model="editMode" @change="switchEditMode"
-        class="mr-2 d-flex flex-wrap accent">
-        <ToolButton v-for="button in buttonList" :key="button.id"
-          :button="button" toolGroup="transformational"
-          v-on:displayOnlyThisToolUseMessage="displayOnlyThisToolUseMessageFunc">
-        </ToolButton>
+        {{ $t("toolGroups.TransformationalTools") }}
+      </h3>
+      <v-btn-toggle
+        v-model="editMode"
+        @change="switchEditMode"
+        class="mr-2 d-flex flex-wrap accent"
+      >
+        <ToolButton
+          v-for="button in buttonList"
+          :key="button.id"
+          :button="button"
+          toolGroup="transformational"
+          v-on:displayOnlyThisToolUseMessage="displayOnlyThisToolUseMessageFunc"
+        ></ToolButton>
       </v-btn-toggle>
     </div>
 
@@ -55,9 +91,10 @@
     <div class="ml-2" style="height:100%;">
       <div>
         <h3 class="body-1 font-weight-bold">
-          {{ $t('toolGroups.KeyShortCut') }}</h3>
+          {{ $t("toolGroups.KeyShortCut") }}
+        </h3>
         <ul>
-          <li>{{ $t('toolGroups.ResetSphereOrientation') }}</li>
+          <li>{{ $t("toolGroups.ResetSphereOrientation") }}</li>
         </ul>
       </div>
     </div>
@@ -74,7 +111,6 @@ import { ToolButtonType } from "@/types";
 
 /* Import the global settings. */
 import SETTINGS from "@/global-settings";
-
 
 /* Declare the components used in this component. */
 @Component({
@@ -96,7 +132,6 @@ export default class ToolButtons extends Vue {
     this.$store.commit("setEditMode", this.editMode);
   }
 
-
   /* This returns true only if there is at least one tool that needs to be displayed in the group. */
   nonEmptyGroup(groupName: string): boolean {
     return this.buttonList.filter(b => b.toolGroup === groupName).length > 0;
@@ -116,27 +151,37 @@ export default class ToolButtons extends Vue {
   permission to use will be available. */
   private buttonList: ToolButtonType[] = [
     {
-      id: 0,
+      id: 40,
+      editModeValue: "select",
+      displayedName: "CreateSelectDisplayedName",
+      icon: "mdi-cursor-pointer",
+      toolTipMessage: "CreateSelectToolTipMessage",
+      toolUseMessage: "CreateSelectTooUseMessage",
+      displayToolUseMessage: false,
+      toolGroup: "edit"
+    },
+    {
+      id: 50,
       editModeValue: "rotate",
       displayedName: "RotateDisplayedName",
-      icon: "mdi-cursor-pointer",
+      icon: "mdi-rotate-3d-variant",
       toolTipMessage: "RotateSphereToolTipMessage",
       toolUseMessage: "RotateSphereToolUseMessage",
       displayToolUseMessage: false,
-      toolGroup: "basic"
+      toolGroup: "edit"
     },
     {
-      id: 1,
+      id: 60,
       editModeValue: "move",
       displayedName: "MoveDisplayedName",
       icon: "mdi-cursor-move",
       toolTipMessage: "MoveObjectToolTipMessage",
       toolUseMessage: "MoveObjectToolUseMessage",
       displayToolUseMessage: false,
-      toolGroup: "basic"
+      toolGroup: "edit"
     },
     {
-      id: 2,
+      id: 0,
       editModeValue: "point",
       displayedName: "CreatePointDisplayedName",
       icon: "mdi-vector-point",
@@ -146,7 +191,7 @@ export default class ToolButtons extends Vue {
       toolGroup: "basic"
     },
     {
-      id: 3,
+      id: 20,
       editModeValue: "line",
       displayedName: "CreateLineDisplayedName",
       icon: "mdi-vector-line",
@@ -156,7 +201,7 @@ export default class ToolButtons extends Vue {
       toolGroup: "basic"
     },
     {
-      id: 4,
+      id: 10,
       editModeValue: "segment",
       displayedName: "CreateLineSegmentDisplayedName",
       icon: "mdi-vector-radius",
@@ -166,7 +211,7 @@ export default class ToolButtons extends Vue {
       toolGroup: "basic"
     },
     {
-      id: 5,
+      id: 30,
       editModeValue: "circle",
       displayedName: "CreateCircleDisplayedName",
       icon: "mdi-vector-circle-variant",
@@ -175,9 +220,9 @@ export default class ToolButtons extends Vue {
       displayToolUseMessage: false,
       toolGroup: "advanced"
     }
-  ];
+    //sort the button list by id so that we don't have to reorder the list each item we add a new button
+  ].sort((a: ToolButtonType, b: ToolButtonType) => a.id - b.id);
 }
-</script> 
+</script>
 
-<style lang="scss">
-</style>  
+<style lang="scss"></style>

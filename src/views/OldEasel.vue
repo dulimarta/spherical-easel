@@ -13,9 +13,14 @@
         <v-col cols="12" id="contentWrapper" ref="contentWrapper">
           <!-- When the available area is too wide, we have to limit its width
           so the responsive area will not be taller than the viewport -->
-          <v-responsive :aspect-ratio="1" :max-width="responsiveSize"
-            :max-height="responsiveSize" id="responsive" ref="responsive"
-            class="pa-1 yellow">
+          <v-responsive
+            :aspect-ratio="1"
+            :max-width="responsiveSize"
+            :max-height="responsiveSize"
+            id="responsive"
+            ref="responsive"
+            class="pa-1 yellow"
+          >
             <!-- keep the YELLOW class for debugging  -->
             <!--zoom-viewport :view-width="naturalViewSize"
               :view-height="naturalViewSize" :min-zoom="0.3"
@@ -45,22 +50,39 @@
 
     <!--  Use the "clipped" attribute to keep the navigation drawer 
     below the app toolbar, width should be specified as number only (without unit) -->
-    <v-navigation-drawer id="leftDrawer" ref="leftDrawer" app clipped
-      color="accent" permanent :mini-variant="leftDrawerMinified" bottom
-      :width="leftDrawerProperties.width">
+    <v-navigation-drawer
+      id="leftDrawer"
+      ref="leftDrawer"
+      app
+      clipped
+      color="accent"
+      permanent
+      :mini-variant="leftDrawerMinified"
+      bottom
+      :width="leftDrawerProperties.width"
+    >
       <!-- This is the minified version of the left drawer with icon buttons for maximizing it -->
-      <div id="leftnavicons" v-if="leftDrawerMinified"
-        @click="setMinificationOfLeftDrawer(false)">
-        <v-btn icon @click="
+      <div
+        id="leftnavicons"
+        v-if="leftDrawerMinified"
+        @click="setMinificationOfLeftDrawer(false)"
+      >
+        <v-btn
+          icon
+          @click="
             setMinificationOfLeftDrawer(false);
             activeLeftDrawerTab = 'toolListTab';
-          ">
+          "
+        >
           <v-icon class="ml-3 my-2">mdi-calculator</v-icon>
         </v-btn>
-        <v-btn icon @click="
+        <v-btn
+          icon
+          @click="
             leftDrawerMinified = !leftDrawerMinified;
             activeLeftDrawerTab = 'objectListTab';
-          ">
+          "
+        >
           <v-icon class="ml-3 my-2">mdi-format-list-bulleted</v-icon>
         </v-btn>
       </div>
@@ -119,14 +141,12 @@ import { Vue, Watch } from "vue-property-decorator";
 import Component from "vue-class-component";
 // import Axes from "@/3d-objs/Axes";
 // import Point from "@/3d-objs/Point";
-import { ToolStrategy } from "@/events/ToolStrategy";
-import NormalPointHandler from "@/events/NormalPointHandler";
-import LineHandler from "@/events/LineHandler";
-import SegmentHandler from "@/events/SegmentHandler";
-import CircleHandler from "@/events/CircleHandler";
+import { ToolStrategy } from "@/eventHandlers/ToolStrategy";
+import SegmentHandler from "@/eventHandlers/SegmentHandler";
+import CircleHandler from "@/eventHandlers/CircleHandler";
 
-import RotateHandler from "@/events/RotateHandler";
-// import MoveHandler from "@/events/MoveHandler";
+import RotateHandler from "@/eventHandlers/RotateHandler";
+// import MoveHandler from "@/eventHandlers/MoveHandler";
 import SETTINGS from "@/global-settings";
 
 /* Import the State so we can follow the command paradigm */

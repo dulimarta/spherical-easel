@@ -4,8 +4,8 @@ import Vue from "vue";
 import Vuex from "vuex";
 import Two from "two.js";
 import { AppState } from "@/types";
-import Point from "@/plotables/Point";
-import Circle from "@/plotables/Circle";
+import Point from "@/plottables/Point";
+import Circle from "@/plottables/Circle";
 import { SEPoint } from "@/models/SEPoint";
 import { SELine } from "@/models/SELine";
 import { SECircle } from "@/models/SECircle";
@@ -211,7 +211,7 @@ export default new Vuex.Store({
         //     2
         //   )} is ${angleToNormal.toDegrees().toFixed(2)}`
         // );
-        return Math.abs(angleToNormal.toDegrees() - 90) < ANGLE_SMALL_ENOUGH;
+        return Math.abs(angleToNormal - Math.PI / 2) < ANGLE_SMALL_ENOUGH;
       });
     },
     forwardTransform: (state: AppState): Matrix4 => {

@@ -3,35 +3,35 @@
 </template>
 
 <script lang="ts">
-import VueComponent from 'vue'
-import { Prop, Component, Watch } from 'vue-property-decorator'
-import Two from 'two.js';
-import SETTINGS from "@/global-settings"
-import { Matrix4 } from 'three';
-import { State } from 'vuex-class';
-import { ToolStrategy } from '@/events/ToolStrategy';
-import NormalPointHandler from '@/events/NormalPointHandler';
-import LineHandler from '@/events/LineHandler';
-import SegmentHandler from '@/events/SegmentHandler';
-import CircleHandler from '@/events/CircleHandler';
-import RotateHandler from "@/events/RotateHandler"
-import { PositionVisitor } from '@/visitors/PositionVisitor';
-import { SEPoint } from '@/models/SEPoint';
-import { SELine } from '@/models/SELine';
-import { Visitor } from '@/visitors/Visitor';
-import EventBus from '../events/EventBus';
+import VueComponent from "vue";
+import { Prop, Component, Watch } from "vue-property-decorator";
+import Two from "two.js";
+import SETTINGS from "@/global-settings";
+import { Matrix4 } from "three";
+import { State } from "vuex-class";
+import { ToolStrategy } from "@/eventHandlers/ToolStrategy";
+import NormalPointHandler from "@/eventHandlers/NormalPointHandler";
+import LineHandler from "@/eventHandlers/LineHandler";
+import SegmentHandler from "@/eventHandlers/SegmentHandler";
+import CircleHandler from "@/eventHandlers/CircleHandler";
+import RotateHandler from "@/eventHandlers/RotateHandler";
+import { PositionVisitor } from "@/visitors/PositionVisitor";
+import { SEPoint } from "@/models/SEPoint";
+import { SELine } from "@/models/SELine";
+import { Visitor } from "@/visitors/Visitor";
+import EventBus from "@/eventHandlers/EventBus";
 
 @Component({})
 export default class SphereFrame extends VueComponent {
   @Prop()
-  readonly canvasSize!: number
+  readonly canvasSize!: number;
 
   @State
   readonly editMode!: string;
 
   $refs!: {
-    canvas: HTMLDivElement
-  }
+    canvas: HTMLDivElement;
+  };
   private twoInstance: Two;
   private sphereCanvas!: Two.Group;
   private boundaryCircle!: Two.Circle;
@@ -71,16 +71,20 @@ export default class SphereFrame extends VueComponent {
     this.boundaryCircle.noFill();
     this.boundaryCircle.linewidth = SETTINGS.line.thickness;
     this.layers[SETTINGS.layers.midground].add(this.boundaryCircle);
-    (this.layers[SETTINGS.layers.midground] as any).scale = new Two.Vector(1, -1);
+    (this.layers[SETTINGS.layers.midground] as any).scale = new Two.Vector(
+      1,
+      -1
+    );
     // this.sphereCanvas.add(this.boundaryCircle);
 
     const R = SETTINGS.boundaryCircle.radius;
 
-    const t1 = new Two.Text("Text must be upright",
-      50, 80,
-      { size: 12, alignment: "left", style: "italic" });
+    const t1 = new Two.Text("Text must be upright", 50, 80, {
+      size: 12,
+      alignment: "left",
+      style: "italic"
+    });
     this.layers[SETTINGS.layers.foregroundText].add(t1);
-
 
     // Draw horizontal and vertical lines (just for debugging)
     const hLine = new Two.Line(-R, 0, R, 0);
@@ -88,9 +92,10 @@ export default class SphereFrame extends VueComponent {
     hLine.stroke = "red";
     vLine.stroke = "green";
     this.sphereCanvas.add(
-      hLine, vLine,
+      hLine,
+      vLine,
       new Two.Line(100, -R, 100, R),
-      new Two.Line(-R, 100, R, 100),
+      new Two.Line(-R, 100, R, 100)
     );
     this.visitor = new PositionVisitor();
     EventBus.listen("sphere-rotate", this.handleSphereRotation);
@@ -103,7 +108,7 @@ export default class SphereFrame extends VueComponent {
     this.CSSTransformMat.copy(m);
     const arr = m.elements;
 
-    const el = ((this.twoInstance.renderer as any).domElement as HTMLElement);
+    const el = (this.twoInstance.renderer as any).domElement as HTMLElement;
     // CSS transformation matrix is only 2x3
     el.style.transform = `matrix(${arr[0]},${arr[1]},${arr[4]},${arr[5]},${arr[12]},${arr[13]})`;
     const orig = this.canvasSize / 2;
@@ -119,19 +124,31 @@ export default class SphereFrame extends VueComponent {
     this.twoInstance.appendTo(this.$refs.canvas);
     this.twoInstance.play();
     this.sphereCanvas.translation.set(this.canvasSize / 2, this.canvasSize / 2);
-    this.$refs.canvas.addEventListener('wheel', this.zoomer)
+    this.$refs.canvas.addEventListener("wheel", this.zoomer);
     this.$refs.canvas.addEventListener("mousemove", this.handleMouseMoved);
     this.$refs.canvas.addEventListener("mousedown", this.handleMousePressed);
     this.$refs.canvas.addEventListener("mouseup", this.handleMouseReleased);
-    this.pointTool = new NormalPointHandler(this.sphereCanvas, this.CSSTransformMat);
+    this.pointTool = new NormalPointHandler(
+      this.sphereCanvas,
+      this.CSSTransformMat
+    );
     this.lineTool = new LineHandler(this.sphereCanvas, this.CSSTransformMat);
-    this.segmentTool = new SegmentHandler(this.sphereCanvas, this.CSSTransformMat);
-    this.circleTool = new CircleHandler(this.sphereCanvas, this.CSSTransformMat);
-    this.rotateTool = new RotateHandler(this.sphereCanvas, this.CSSTransformMat);
+    this.segmentTool = new SegmentHandler(
+      this.sphereCanvas,
+      this.CSSTransformMat
+    );
+    this.circleTool = new CircleHandler(
+      this.sphereCanvas,
+      this.CSSTransformMat
+    );
+    this.rotateTool = new RotateHandler(
+      this.sphereCanvas,
+      this.CSSTransformMat
+    );
   }
 
   beforeDestroy(): void {
-    this.$refs.canvas.removeEventListener('wheel', this.zoomer)
+    this.$refs.canvas.removeEventListener("wheel", this.zoomer);
     this.$refs.canvas.removeEventListener("mousemove", this.handleMouseMoved);
     this.$refs.canvas.removeEventListener("mousedown", this.handleMousePressed);
     this.$refs.canvas.removeEventListener("mouseup", this.handleMouseReleased);
@@ -139,10 +156,9 @@ export default class SphereFrame extends VueComponent {
 
   @Watch("canvasSize")
   onCanvasResize(size: number): void {
-
     (this.twoInstance.renderer as any).setSize(size, size);
     this.sphereCanvas.translation.set(size / 2, size / 2);
-    const radius = (size / 2) - 16; // 16-pixel gap
+    const radius = size / 2 - 16; // 16-pixel gap
     this.$store.commit("setSphereRadius", radius);
 
     const ratio = radius / SETTINGS.boundaryCircle.radius;
@@ -163,7 +179,6 @@ export default class SphereFrame extends VueComponent {
       // Limit to 10% change in magnification
       if (Math.abs(scrollFraction) > 0.1)
         scrollFraction = 0.1 * Math.sign(scrollFraction);
-
 
       const scaleFactor = 1 + scrollFraction;
       // Limit zoom-out to 0.4x magnification factor
@@ -204,7 +219,7 @@ export default class SphereFrame extends VueComponent {
   }
 
   handleMouseMoved(e: MouseEvent): void {
-    // WHen currentTool is NULL, currentTool? resolves to no action    
+    // WHen currentTool is NULL, currentTool? resolves to no action
     this.currentTool?.mouseMoved(e);
   }
   handleMousePressed(e: MouseEvent): void {
@@ -258,5 +273,4 @@ export default class SphereFrame extends VueComponent {
 }
 </script>
 
-<style scoped>
-</style>
+<style scoped></style>

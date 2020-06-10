@@ -1,7 +1,7 @@
 import { Vector3, Matrix4 } from "three";
 import Two, { Color, Ellipse } from "two.js";
 import SETTINGS from "@/global-settings";
-import { Stylable } from "@/plotables/Styleable";
+import { Stylable } from "@/plottables/Styleable";
 import { SELine } from "@/models/SELine";
 
 const SUBDIVS = 100;

@@ -1,5 +1,5 @@
 import { SENode } from "./SENode";
-import Line from "@/plotables/Line";
+import Line from "@/plottables/Line";
 import { SEPoint } from "./SEPoint";
 import { Vector3 } from "three";
 import { Visitable } from "@/visitors/Visitable";

@@ -1,4 +1,4 @@
-import { Stylable } from "@/plotables/Styleable";
+import { Stylable } from "@/plottables/Styleable";
 import SETTINGS from "@/global-settings";
 
 let NODE_COUNT = 0;

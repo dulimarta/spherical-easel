@@ -2,7 +2,7 @@
 
 import Two, { Vector } from "two.js";
 //import Two from "two.js";
-import Coordinates from "@/plotables/Coordinates";
+import Coordinates from "@/plottables/Coordinates";
 import SETTINGS from "@/global-settings";
 import { SENode } from "@/models/SENode";
 import Color from "color";

@@ -20,11 +20,18 @@
 
       <div class="d-flex align-center">
         <router-link to="/">
-          <v-img alt="Spherical Easel Logo" class="shrink mr-2" contain
+          <v-img
+            alt="Spherical Easel Logo"
+            class="shrink mr-2"
+            contain
             src="./assets/SphericalEaselLogo.gif"
-            transition="scale-transition" width="40" />
+            transition="scale-transition"
+            width="40"
+          />
         </router-link>
-        <v-toolbar-title>{{ $t("main.SphericalEaselMainTitle") }}</v-toolbar-title>
+        <v-toolbar-title>
+          {{ $t("main.SphericalEaselMainTitle") }}
+        </v-toolbar-title>
         <v-tooltip left>
           <template v-slot:activator="{ on }">
             <a href="/docs">
@@ -73,10 +80,10 @@ import { Inject } from "vue-property-decorator";
 /* TODO: What does this do? */
 // import { WebGLRenderer, Mesh } from "three";
 import { State } from "vuex-class";
-import EventBus from "@/events/EventBus";
-import { SEPoint } from './models/SEPoint';
-import Point from './plotables/Point';
-import { AddPointCommand } from './commands/AddPointCommand';
+import EventBus from "@/eventHandlers/EventBus";
+import { SEPoint } from "./models/SEPoint";
+import Point from "./plottables/Point";
+import { AddPointCommand } from "./commands/AddPointCommand";
 /* This view has no (sub)components (but the Easel view does) so this is empty*/
 @Component
 export default class App extends Vue {
@@ -93,10 +100,10 @@ export default class App extends Vue {
   }
 
   mounted(): void {
-    this.$store.commit('init');
+    this.$store.commit("init");
 
     // TODO: is this the best place to listen to these events?
-    EventBus.listen('insert-point', (e: any) => {
+    EventBus.listen("insert-point", (e: any) => {
       console.debug("Adding point", e);
       const vtx = new SEPoint(new Point());
       vtx.positionOnSphere = e.position;
@@ -104,15 +111,15 @@ export default class App extends Vue {
     });
 
     // TODO:  complete this function
-    EventBus.listen('insert-line', (e: any) => {
+    EventBus.listen("insert-line", (e: any) => {
       console.debug("Insert line with normal", e.normalDirection.toFixed(2));
       if (e.start instanceof SEPoint) {
-        console.debug("Line starts at an existing point")
-      } else console.debug("Line starts at an new point")
+        console.debug("Line starts at an existing point");
+      } else console.debug("Line starts at an new point");
       if (e.end instanceof SEPoint) {
-        console.debug("Line endss at an existing point")
-      } else console.debug("Line ends at an new point")
-    })
+        console.debug("Line endss at an existing point");
+      } else console.debug("Line ends at an new point");
+    });
   }
 }
 </script>

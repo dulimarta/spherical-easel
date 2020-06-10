@@ -1,4 +1,4 @@
-import Point from "../plotables/Point";
+import Point from "../plottables/Point";
 import { Visitable } from "@/visitors/Visitable";
 import { Visitor } from "@/visitors/Visitor";
 import { SENode } from "./SENode";
