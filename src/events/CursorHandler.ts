@@ -137,7 +137,7 @@ export default abstract class CursorHandler implements ToolStrategy {
       // this.currentPoint.copy(this.mouse);
       // console.debug(`Sphere pos: ${this.currentSpherePoint.toFixed(2)}`);
       // FIXME: what if we hit multiple lines or points
-      this.hitPoint?.ref.normalStyle();
+      this.hitPoint?.ref.frontNormalStyle();
       this.hitLine?.ref.frontNormalStyle();
       this.hitPoint = null;
       this.hitLine = null;
@@ -146,7 +146,7 @@ export default abstract class CursorHandler implements ToolStrategy {
         .forEach((obj: SEPoint) => {
           this.hitPoint = obj;
           console.debug("Intersected with point", obj.id);
-          obj.ref.glowStyle();
+          obj.ref.frontGlowStyle();
         });
       AppStore.getters
         .findNearbyLines(this.currentSpherePoint, this.currentScreenPoint)

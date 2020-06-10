@@ -34,7 +34,7 @@ export default class SphereFrame extends VueComponent {
   }
   private twoInstance: Two;
   private sphereCanvas!: Two.Group;
-  private mainCircle!: Two.Circle;
+  private boundaryCircle!: Two.Circle;
   private sphereTransformMat = new Matrix4(); // Transformation from the ideal sphere to the rendered sphere/circle
   private zoomMatrix = new Matrix4();
   private tmpMatrix = new Matrix4();
@@ -47,6 +47,7 @@ export default class SphereFrame extends VueComponent {
   private circleTool!: CircleHandler;
   private rotateTool!: RotateHandler;
   private visitor!: PositionVisitor;
+  private layers: Two.Group[] = [];
 
   constructor() {
     super();
@@ -56,26 +57,32 @@ export default class SphereFrame extends VueComponent {
       autostart: true,
       ratio: window.devicePixelRatio
     });
-    this.sphereCanvas = this.twoInstance.makeGroup();
-    (this.sphereCanvas as any).scale = new Two.Vector(1, -1);
+    for (const layer in SETTINGS.layers) {
+      this.layers.push(this.twoInstance.makeGroup());
+      console.debug(layer);
+    }
+    this.sphereCanvas = this.layers[SETTINGS.layers.midground];
     console.info("Sphere canvas ID", this.sphereCanvas.id);
     this.$store.commit("setSphere", this.sphereCanvas);
 
     // Draw the boundary circle in the ideal radius
     // and scale it later to fit the canvas
-    this.mainCircle = new Two.Circle(0, 0, SETTINGS.boundaryCircle.radius);
-    this.mainCircle.noFill();
-    this.mainCircle.linewidth = SETTINGS.line.thickness;
-    this.sphereCanvas.add(this.mainCircle);
+    this.boundaryCircle = new Two.Circle(0, 0, SETTINGS.boundaryCircle.radius);
+    this.boundaryCircle.noFill();
+    this.boundaryCircle.linewidth = SETTINGS.line.thickness;
+    this.layers[SETTINGS.layers.midground].add(this.boundaryCircle);
+    (this.layers[SETTINGS.layers.midground] as any).scale = new Two.Vector(1, -1);
+    // this.sphereCanvas.add(this.boundaryCircle);
 
-    const textGroup = this.twoInstance.makeGroup();
     const R = SETTINGS.boundaryCircle.radius;
 
     const t1 = new Two.Text("Text must be upright",
       50, 80,
       { size: 12, alignment: "left", style: "italic" });
-    textGroup.add(t1);
+    this.layers[SETTINGS.layers.foregroundText].add(t1);
 
+
+    // Draw horizontal and vertical lines (just for debugging)
     const hLine = new Two.Line(-R, 0, R, 0);
     const vLine = new Two.Line(0, -R, 0, R);
     hLine.stroke = "red";
