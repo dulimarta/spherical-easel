@@ -39,8 +39,8 @@ export class SEPoint extends SENode implements Visitable {
     // in the Point class
     const twojsLine = this.ref;
     twojsLine.translation.set(
-      pos.x * SETTINGS.sphere.boundaryCircleRadius,
-      pos.y * SETTINGS.sphere.boundaryCircleRadius
+      pos.x * SETTINGS.boundaryCircle.radius,
+      pos.y * SETTINGS.boundaryCircle.radius
     );
     if (pos.z < 0) twojsLine.backNormalStyle();
     else twojsLine.frontNormalStyle();

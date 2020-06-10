@@ -39,7 +39,7 @@ export default class Circle extends Two.Group {
   constructor(center?: Vector3, outer?: Vector3) {
     super();
     // Line on the positive X-axis of the circle/ellipse
-    this.majorLine = new Two.Line(0, 0, SETTINGS.sphere.radius, 0);
+    this.majorLine = new Two.Line(0, 0, SETTINGS.boundaryCircle.radius, 0);
     this.add(this.majorLine);
     const frontVertices: Two.Vector[] = [];
     const backVertices: Two.Vector[] = [];
@@ -47,14 +47,14 @@ export default class Circle extends Two.Group {
       const angle = (k * Math.PI) / SUBDIVISIONS; // [0, pi)
       frontVertices.push(
         new Two.Vector(
-          SETTINGS.sphere.boundaryCircleRadius * Math.cos(angle),
-          SETTINGS.sphere.boundaryCircleRadius * Math.sin(angle)
+          SETTINGS.boundaryCircle.radius * Math.cos(angle),
+          SETTINGS.boundaryCircle.radius * Math.sin(angle)
         )
       );
       backVertices.push(
         new Two.Vector(
-          SETTINGS.sphere.boundaryCircleRadius * Math.cos(angle + Math.PI), // [pi, 2*pi)
-          SETTINGS.sphere.boundaryCircleRadius * Math.sin(angle + Math.PI)
+          SETTINGS.boundaryCircle.radius * Math.cos(angle + Math.PI), // [pi, 2*pi)
+          SETTINGS.boundaryCircle.radius * Math.sin(angle + Math.PI)
         )
       );
     }
@@ -84,7 +84,7 @@ export default class Circle extends Two.Group {
   // Using this algorithm, the frontHalf and backHalf are rendered correctly
   // but the center of the circle is off by several pixels
   private readjust() {
-    const sphereRadius = SETTINGS.sphere.boundaryCircleRadius; // in pixels
+    const sphereRadius = SETTINGS.boundaryCircle.radius; // in pixels
     // The vector to the circle center is ALSO the normal direction of the circle
     // These three vectors will be stored in SECircle -- just copy them from there
     desiredZAxis.copy(this.center_).normalize();
@@ -212,14 +212,14 @@ export default class Circle extends Two.Group {
   private readjustNew() {
     // Major axis line for debugging only
     this.majorLine.vertices[1].x =
-      this.projectedRadius * SETTINGS.sphere.radius;
+      this.projectedRadius * SETTINGS.boundaryCircle.radius;
 
     // how far is the circle from the origin (translated along the
     // circle normal)
     const distanceFromOrigin = Math.cos(this.arcRadius);
     this.tmpVector
       .copy(this.center_)
-      .multiplyScalar(distanceFromOrigin * SETTINGS.sphere.radius);
+      .multiplyScalar(distanceFromOrigin * SETTINGS.boundaryCircle.radius);
 
     // Orthographic projection of the distance on the XY plane
     this.translation.set(this.tmpVector.x, this.tmpVector.y);
@@ -273,7 +273,7 @@ export default class Circle extends Two.Group {
           Math.sin(angle) * this.projectedRadius,
           distanceFromOrigin
         )
-        .multiplyScalar(SETTINGS.sphere.radius);
+        .multiplyScalar(SETTINGS.boundaryCircle.radius);
       this.tmpVector.applyMatrix4(transformMatrix);
       if (this.tmpVector.z >= 0) {
         posCount++;
@@ -318,16 +318,18 @@ export default class Circle extends Two.Group {
     // FIXME: the following algorithm is not correct yet!
     this.frontHalf.vertices.forEach((v, pos) => {
       const angle = Math.PI + ((pos + firstPos) * Math.PI) / SUBDIVISIONS;
-      v.x = this.projectedRadius * Math.cos(angle) * SETTINGS.sphere.radius;
-      v.y = minorRadius * Math.sin(angle) * SETTINGS.sphere.radius;
+      v.x =
+        this.projectedRadius * Math.cos(angle) * SETTINGS.boundaryCircle.radius;
+      v.y = minorRadius * Math.sin(angle) * SETTINGS.boundaryCircle.radius;
     });
     // The front half is a closed curve when the backHalf vanishes
     this.frontHalf.closed = backLen === 0;
 
     this.backHalf.vertices.forEach((v, pos) => {
       const angle = Math.PI + ((pos + firstNeg) * Math.PI) / SUBDIVISIONS;
-      v.x = this.projectedRadius * Math.cos(angle) * SETTINGS.sphere.radius;
-      v.y = minorRadius * Math.sin(angle) * SETTINGS.sphere.radius;
+      v.x =
+        this.projectedRadius * Math.cos(angle) * SETTINGS.boundaryCircle.radius;
+      v.y = minorRadius * Math.sin(angle) * SETTINGS.boundaryCircle.radius;
     });
     // The back half is a closed curve when the frontHalf vanishes
     this.backHalf.closed = frontLen === 0;

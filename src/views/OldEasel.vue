@@ -178,7 +178,7 @@ export default class Easel extends Vue {
   private showSphereControl = false;
   private currentViewSize = 600;
   private naturalViewSize = 600; // width at mounted time
-  private naturalSphereSize = SETTINGS.sphere.radius;
+  private naturalSphereSize = SETTINGS.boundaryCircle.radius;
   private cssTransform = "scale(1.2345)";
   private scaleFactor = new Two.Vector(1, -1);
   // private zoomWarning = false;

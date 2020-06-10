@@ -1,15 +1,6 @@
 export default {
-  sphere: {
-    /* We always assume a UNIT sphere */
-    /* in pixels. Why store this in global constants? It should change depending on the available space in the window */
-    // TODO merge the following two lines
-    radius: 250,
-    boundaryCircleRadius: 250,
-    boundaryCircleLineWidth: 3,
-    color: 0xffff00,
-    opacity: 0.5
-  },
   boundaryCircle: {
+    radius: 250 /* in pixels */,
     numPoints: 50,
     opacity: 0.5,
     color: "black",

@@ -5,7 +5,7 @@ import AppStore from "@/store";
 import Point from "@/plotables/Point";
 import { ToolStrategy } from "./ToolStrategy";
 import Two, { BoundingClientRect } from "two.js";
-import globalSettings from "@/global-settings";
+import SETTINGS from "@/global-settings";
 import { SEPoint } from "@/models/SEPoint";
 import { SELine } from "@/models/SELine";
 
@@ -123,7 +123,7 @@ export default abstract class CursorHandler implements ToolStrategy {
     this.currentScreenPoint.set(this.mouseVector.x, this.mouseVector.y);
     /* Rescale to unit circle */
     const len = this.mouseVector
-      .multiplyScalar(1 / globalSettings.sphere.radius)
+      .multiplyScalar(1 / SETTINGS.boundaryCircle.radius)
       .length();
     if (len < 1) {
       // The cursor is inside the unit circle

@@ -63,13 +63,13 @@ export default class SphereFrame extends VueComponent {
 
     // Draw the boundary circle in the ideal radius
     // and scale it later to fit the canvas
-    this.mainCircle = new Two.Circle(0, 0, SETTINGS.sphere.radius);
+    this.mainCircle = new Two.Circle(0, 0, SETTINGS.boundaryCircle.radius);
     this.mainCircle.noFill();
     this.mainCircle.linewidth = SETTINGS.line.thickness;
     this.sphereCanvas.add(this.mainCircle);
 
     const textGroup = this.twoInstance.makeGroup();
-    const R = SETTINGS.sphere.radius;
+    const R = SETTINGS.boundaryCircle.radius;
 
     const t1 = new Two.Text("Text must be upright",
       50, 80,
@@ -123,7 +123,7 @@ export default class SphereFrame extends VueComponent {
     this.rotateTool = new RotateHandler(this.sphereCanvas, this.CSSTransformMat);
   }
 
-  destroyed(): void {
+  beforeDestroy(): void {
     this.$refs.canvas.removeEventListener('wheel', this.zoomer)
     this.$refs.canvas.removeEventListener("mousemove", this.handleMouseMoved);
     this.$refs.canvas.removeEventListener("mousedown", this.handleMousePressed);
@@ -138,7 +138,7 @@ export default class SphereFrame extends VueComponent {
     const radius = (size / 2) - 16; // 16-pixel gap
     this.$store.commit("setSphereRadius", radius);
 
-    const ratio = radius / SETTINGS.sphere.radius;
+    const ratio = radius / SETTINGS.boundaryCircle.radius;
     this.sphereTransformMat.makeScale(ratio, ratio, 1);
     this.tmpMatrix.multiplyMatrices(this.sphereTransformMat, this.zoomMatrix);
     this.viewTransform = this.tmpMatrix;
