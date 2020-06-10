@@ -6,6 +6,9 @@ import { Visitable } from "@/visitors/Visitable";
 import { Visitor } from "@/visitors/Visitor";
 
 export class SELine extends SENode implements Visitable {
+  public update(): void {
+    throw new Error("Method not implemented.");
+  }
   public ref: Line;
   private normalDir: Vector3;
 

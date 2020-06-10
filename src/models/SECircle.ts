@@ -4,6 +4,9 @@ import Circle from "@/plotables/Circle";
 import { Vector3 } from "three";
 
 export class SECircle extends SENode {
+  public update(): void {
+    throw new Error("Method not implemented.");
+  }
   public ref!: Circle;
   private normalDir: Vector3;
   private radius: number; // Arc length (in radians) not straight line distance

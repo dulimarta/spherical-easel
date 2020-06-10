@@ -1,38 +1,49 @@
 import Point from "../plotables/Point";
-import { SECircle } from "./SECircle";
 import { Visitable } from "@/visitors/Visitable";
 import { Visitor } from "@/visitors/Visitor";
 import { SENode } from "./SENode";
 import { Vector3 } from "three";
 import SETTINGS from "@/global-settings";
-import { SELine } from "./SELine";
 
 export class SEPoint extends SENode implements Visitable {
-  private _posOnSphere: Vector3;
+  /* The location of the SEPoint on the Sphere*/
+  private _posOnSphere: Vector3; //_ starts names of variable that are priivate
+
+  /* This should be the only reference to the plotted version of this SEPoint */
   public ref: Point;
-  public startOf: SELine[] = [];
-  public endOf: SELine[] = [];
-  public centerOf: SECircle[] = [];
-  public circumOf: SECircle[] = [];
 
   constructor(p: Point) {
     super();
+    /* Establish the link between this abstract object on the fixed unit sphere
+    and the object that helps create the coorresponding renderable object  */
     p.owner = this; // Make the SEPoint object the owner of the Point
     this.ref = p;
     this._posOnSphere = new Vector3();
+  }
+
+  public update() {
+    // make sure that all parents of this Point are up to date.
+    if (!this.updateNow()) {
+      return;
+    }
+    //in more complex objects we will have to update other information in the Class
+    this.setOutOfDate(false);
+    this.updateKids();
   }
 
   set positionOnSphere(pos: Vector3) {
     this._posOnSphere.copy(pos);
 
     // Must update the corresponding TwoJS visual properties
+    // TOFIX? Does this belong here? I thought all graphical routines for displayng a point would be
+    // in the Point class
     const twojsLine = this.ref;
     twojsLine.translation.set(
-      pos.x * SETTINGS.sphere.radius,
-      pos.y * SETTINGS.sphere.radius
+      pos.x * SETTINGS.sphere.boundaryCircleRadius,
+      pos.y * SETTINGS.sphere.boundaryCircleRadius
     );
-    if (pos.z < 0) twojsLine.backgroundStyle();
-    else twojsLine.normalStyle();
+    if (pos.z < 0) twojsLine.backNormalStyle();
+    else twojsLine.frontNormalStyle();
 
     // console.debug(
     //   "3D position",

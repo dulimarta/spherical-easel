@@ -4,16 +4,16 @@
 
 1. Download and install [NodeJS](https://nodejs.org/en/download/). Verify that `node` and `npm` are installed correctly by typing
 
-    ```bash
-    node -v        # Version 10.16.3 (or newer)
-    npm -v          # version 6.13.2 (or newer)
-    ```
+   ```bash
+   node -v        # Version 10.16.3 (or newer)
+   npm -v          # version 6.13.2 (or newer)
+   ```
 
 2. Download and install [Yarn](https://classic.yarnpkg.com/en/docs/install#mac-stable). Verify `yarn` installation by typing
 
-    ```bash
-    yarn -v         # version 1.22.4 (or newer)
-    ```
+   ```bash
+   yarn -v         # version 1.22.4 (or newer)
+   ```
 
 ## Setting Up for Development
 

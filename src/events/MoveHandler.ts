@@ -22,21 +22,21 @@ export default class MoveHandler extends CursorHandler {
       );
       if (vtx) {
         // Update all lines having this point as start point
-        vtx.startOf.forEach(z => {
-          // z.ref.startV3Point = this.currentPoint;
-        });
-        // Update all lines having this point as end point
-        vtx.endOf.forEach(z => {
-          // z.ref.endV3Point = this.currentPoint;
-        });
-        // Update all circles having this point as center point
-        vtx.centerOf.forEach(z => {
-          // z.ref.centerPoint = this.currentPoint;
-        });
-        // Update all circles having this point as circum point
-        vtx.circumOf.forEach(z => {
-          // z.ref.circlePoint = this.currentPoint;
-        });
+        // vtx.startOf.forEach(z => {
+        //   z.ref.startV3Point = this.currentPoint;
+        // });
+        // // Update all lines having this point as end point
+        // vtx.endOf.forEach(z => {
+        //   // z.ref.endV3Point = this.currentPoint;
+        // });
+        // // Update all circles having this point as center point
+        // vtx.centerOf.forEach(z => {
+        //   // z.ref.centerPoint = this.currentPoint;
+        // });
+        // // Update all circles having this point as circum point
+        // vtx.circumOf.forEach(z => {
+        //   // z.ref.circlePoint = this.currentPoint;
+        // });
       }
     }
   }

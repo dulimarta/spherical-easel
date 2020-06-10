@@ -38,6 +38,18 @@ export default class Point extends Two.Circle implements Stylable {
 
     this.name = "Point-" + this.id;
   }
+  frontGlowStyle(): void {
+    throw new Error("Method not implemented.");
+  }
+  backGlowStyle(): void {
+    throw new Error("Method not implemented.");
+  }
+  frontNormalStyle(): void {
+    throw new Error("Method not implemented.");
+  }
+  backNormalStyle(): void {
+    throw new Error("Method not implemented.");
+  }
 
   glowStyle(): void {
     this.fill = "red";

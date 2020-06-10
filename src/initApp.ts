@@ -25,7 +25,7 @@ export function setupScene(width: number, height: number) {
   GlobalStore.commit("setSphereRadius", circleRadius);
   const mainCircle = new Two.Circle(0, 0, circleRadius);
   mainCircle.noFill();
-  mainCircle.linewidth = SETTINGS.line.thickness;
+  mainCircle.linewidth = SETTINGS.sphere.boundaryCircleLineWidth;
   sphereCanvas.add(mainCircle);
   const welcome = new Two.Text(
     `Device Pixel Ratio = ${window.devicePixelRatio}`,
@@ -53,7 +53,7 @@ export function setupScene(width: number, height: number) {
       // const v = new Point(SETTINGS.point.size);
       // v.position.set(Math.random(), Math.random(), Math.random());
       // v.position.normalize();
-      // v.position.multiplyScalar(SETTINGS.sphere.radius);
+      // v.position.multiplyScalar(SETTINGS.sphere.boundaryCircleRadius);
       // new AddPointCommand(v).execute();
     }
   }

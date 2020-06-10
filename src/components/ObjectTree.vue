@@ -51,34 +51,37 @@ export default class ObjectTree extends Vue {
         {
           id: 0,
           name: "Start of",
-          children: z.startOf.map((x: SELine) => ({
-            id: x.ref.id,
-            name: x.ref.name
-          }))
+          children: [] //z.startOf.map((x: SELine) => ({
+          //   id: x.ref.id,
+          //   name: x.ref.name
+          // }))
         },
         {
           id: 1,
           name: "End of",
-          children: z.endOf.map((x: SELine) => ({
-            id: x.ref.id,
-            name: x.ref.name
-          }))
+          children: []
+          // children: z.endOf.map((x: SELine) => ({
+          //   id: x.ref.id,
+          //   name: x.ref.name
+          // }))
         },
         {
           id: 2,
           name: "Center of",
-          children: z.centerOf.map((x: SECircle) => ({
-            id: x.ref.id
-            // name: x.ref.name
-          }))
+          children: []
+          // children: z.centerOf.map((x: SECircle) => ({
+          //   id: x.ref.id
+          //   // name: x.ref.name
+          // }))
         },
         {
           id: 3,
           name: "Circumpoint of",
-          children: z.circumOf.map((x: SECircle) => ({
-            id: x.ref.id
-            // name: x.ref.name
-          }))
+          children: []
+          // children: z.circumOf.map((x: SECircle) => ({
+          //   id: x.ref.id
+          //   // name: x.ref.name
+          // }))
         }
       ] /* remove node with empty children*/
         .filter(c => c.children.length > 0)

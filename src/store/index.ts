@@ -141,10 +141,10 @@ export default new Vuex.Store({
           v => v.ref.id == victimCircle.center.ref.id
         );
         if (sPointPos >= 0) {
-          const spos = state.points[sPointPos].centerOf.findIndex(
-            (r: SECircle) => r.ref.id === victimCircle.ref.id
-          );
-          if (spos >= 0) state.points[sPointPos].circumOf.splice(spos, 1);
+          // const spos = state.points[sPointPos].centerOf.findIndex(
+          //   (r: SECircle) => r.ref.id === victimCircle.ref.id
+          // );
+          // if (spos >= 0) state.points[sPointPos].circumOf.splice(spos, 1);
         }
 
         // Locate the end point of this victim line
@@ -152,10 +152,10 @@ export default new Vuex.Store({
           v => v.ref.id == victimCircle.point.ref.id
         );
         if (ePointPos >= 0) {
-          const epos = state.points[ePointPos].circumOf.findIndex(
-            (r: SECircle) => r.ref.id === victimCircle.ref.id
-          );
-          if (epos >= 0) state.points[ePointPos].circumOf.splice(epos, 1);
+          // const epos = state.points[ePointPos].circumOf.findIndex(
+          //   (r: SECircle) => r.ref.id === victimCircle.ref.id
+          // );
+          // if (epos >= 0) state.points[ePointPos].circumOf.splice(epos, 1);
         }
         // Remove it from the sphere
         victimCircle.ref.remove();

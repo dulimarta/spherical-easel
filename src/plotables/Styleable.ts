@@ -2,17 +2,14 @@ export interface Stylable {
   /**
    * Update visual properties to render object as glowing
    */
-  glowStyle(): void;
-
-  /**
-   * Update visual properties to render as background object
-   */
-  backgroundStyle(): void;
+  frontGlowStyle(): void;
+  backGlowStyle(): void;
 
   /**
    * Restore to normal style
    */
-  normalStyle(): void;
+  frontNormalStyle(): void;
+  backNormalStyle(): void;
 
   // TODO: Add more styles
 }

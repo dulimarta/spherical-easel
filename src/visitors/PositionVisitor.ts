@@ -17,9 +17,9 @@ export class PositionVisitor implements Visitor {
     // console.debug("Updating position of ", p.ref.name);
     this.tmpVector.copy(p.positionOnSphere);
     this.tmpVector.applyMatrix4(this.transformMatrix);
-    p.positionOnSphere = this.tmpVector;
+    p.positionOnSphere = this.tmpVector; // this doesn't make sense. the SEPoint location doesn't change under a rotation only where it is displayed changes
   }
-
+  /* This should never be called because lines are always children of points */
   actionOnLine(m: SELine): void {
     // console.debug(`Updating SELine ${m.id}, Line ${m.ref.id}`);
     // Transform the normal of this line

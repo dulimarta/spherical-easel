@@ -19,6 +19,7 @@ export abstract class Command {
   static redoHistory: Command[] = []; // stack of undone commands
   //eslint-disable-next-line
   protected lastState: any; // The state can be of ANY type
+
   static undo() {
     if (Command.commandHistory.length === 0) return;
 

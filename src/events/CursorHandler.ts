@@ -1,9 +1,8 @@
 /** @format */
 
-import { Vector2, Vector3, Matrix4 } from "three";
+import { Vector3, Matrix4 } from "three";
 import AppStore from "@/store";
 import Point from "@/plotables/Point";
-import Line from "@/plotables/Line";
 import { ToolStrategy } from "./ToolStrategy";
 import Two, { BoundingClientRect } from "two.js";
 import globalSettings from "@/global-settings";
@@ -53,26 +52,6 @@ export default abstract class CursorHandler implements ToolStrategy {
   abstract activate(): void;
   abstract mousePressed(event: MouseEvent): void;
   abstract mouseReleased(event: MouseEvent): void;
-
-  // findNearByObjects(
-  //   mousePos: Two.Vector,
-  //   spherePoint: Vector3,
-  //   root: Two.Group
-  // ): Two.Object[] {
-  //   // Apply canvas transformation to the mouse position
-  //   mousePos.subSelf(root.translation);
-  //   if ((root.scale as any) instanceof Two.Vector) {
-  //     const sv = (root.scale as any) as Two.Vector;
-  //     mousePos.multiplySelf(sv);
-  //   } else {
-  //     mousePos.multiplyScalar(root.scale);
-  //   }
-  //   return root.children.filter(obj => {
-  //     // console.debug((obj as Two.Path).id);
-  //     // Consider a "hit" when the object is within 5 pixels of the mouse
-  //     return obj.translation.distanceTo(mousePos) < 5;
-  //   });
-  // }
 
   /**
    * Map mouse 2D viewport/screen position to 3D local coordinate on the sphere.
@@ -159,7 +138,7 @@ export default abstract class CursorHandler implements ToolStrategy {
       // console.debug(`Sphere pos: ${this.currentSpherePoint.toFixed(2)}`);
       // FIXME: what if we hit multiple lines or points
       this.hitPoint?.ref.normalStyle();
-      this.hitLine?.ref.normalStyle();
+      this.hitLine?.ref.frontNormalStyle();
       this.hitPoint = null;
       this.hitLine = null;
       AppStore.getters
@@ -174,7 +153,7 @@ export default abstract class CursorHandler implements ToolStrategy {
         .forEach((obj: SELine) => {
           this.hitLine = obj;
           console.debug("Intersected with line", obj.id);
-          obj.ref.glowStyle();
+          obj.ref.frontGlowStyle();
         });
     } else {
       this.isOnSphere = false;
