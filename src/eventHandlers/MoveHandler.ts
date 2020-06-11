@@ -18,7 +18,8 @@ export default class MoveHandler extends CursorHandler {
     if (this.isDragging && this.moveTarget instanceof SEPoint) {
       // this.moveTarget.position.copy(this.currentPoint);
       const vtx = this.store.state.points.find(
-        v => v.ref.id === this.moveTarget?.id
+        // v => v.ref.id === this.moveTarget?.id
+        v => false
       );
       if (vtx) {
         // Update all lines having this point as start point

@@ -45,7 +45,7 @@ export default abstract class CursorHandler implements ToolStrategy {
     console.debug("Bounding box", this.boundingBox);
     this.currentSpherePoint = new Vector3();
     this.currentScreenPoint = new Two.Vector(0, 0);
-    this.startMarker = new SEPoint(new Point(5, 0xff8800));
+    this.startMarker = new SEPoint(new Point());
     this.isOnSphere = false;
   }
 
@@ -141,14 +141,14 @@ export default abstract class CursorHandler implements ToolStrategy {
       this.hitLine?.ref.frontNormalStyle();
       this.hitPoint = null;
       this.hitLine = null;
-      AppStore.getters
+      this.store.getters
         .findNearbyPoints(this.currentSpherePoint, this.currentScreenPoint)
         .forEach((obj: SEPoint) => {
           this.hitPoint = obj;
           console.debug("Intersected with point", obj.id);
           obj.ref.frontGlowStyle();
         });
-      AppStore.getters
+      this.store.getters
         .findNearbyLines(this.currentSpherePoint, this.currentScreenPoint)
         .forEach((obj: SELine) => {
           this.hitLine = obj;

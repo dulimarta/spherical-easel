@@ -10,7 +10,7 @@ import SETTINGS from "@/global-settings";
 import { Matrix4 } from "three";
 import { State } from "vuex-class";
 import { ToolStrategy } from "@/eventHandlers/ToolStrategy";
-import NormalPointHandler from "@/eventHandlers/NormalPointHandler";
+import PointHandler from "@/eventHandlers/PointHandler";
 import LineHandler from "@/eventHandlers/LineHandler";
 import SegmentHandler from "@/eventHandlers/SegmentHandler";
 import CircleHandler from "@/eventHandlers/CircleHandler";
@@ -41,7 +41,7 @@ export default class SphereFrame extends VueComponent {
   private CSSTransformMat = new Matrix4(); // CSSMat = sphereTransform * zoomMat
   private magnificationFactor = 1;
   private currentTool: ToolStrategy | null = null;
-  private pointTool!: NormalPointHandler;
+  private pointTool!: PointHandler;
   private lineTool!: LineHandler;
   private segmentTool!: SegmentHandler;
   private circleTool!: CircleHandler;
@@ -128,10 +128,7 @@ export default class SphereFrame extends VueComponent {
     this.$refs.canvas.addEventListener("mousemove", this.handleMouseMoved);
     this.$refs.canvas.addEventListener("mousedown", this.handleMousePressed);
     this.$refs.canvas.addEventListener("mouseup", this.handleMouseReleased);
-    this.pointTool = new NormalPointHandler(
-      this.sphereCanvas,
-      this.CSSTransformMat
-    );
+    this.pointTool = new PointHandler(this.sphereCanvas, this.CSSTransformMat);
     this.lineTool = new LineHandler(this.sphereCanvas, this.CSSTransformMat);
     this.segmentTool = new SegmentHandler(
       this.sphereCanvas,

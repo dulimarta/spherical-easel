@@ -32,7 +32,7 @@ export default {
     },
     //The properties of the annular region around a point when it is glowing
     glowing: {
-      width: 2, // width is the width of the annular region around the point that shows the glow it is always bigger than the drawn radius
+      annularWidth: 2, // width is the width of the annular region around the point that shows the glow it is always bigger than the drawn radius
       fillColor: {
         front: "#ff0000", //"#404040", //{ r: 64, g: 64, b: 64 }, //gray
         back: "#FF7F7F" // the back fill color is calulated using the contrast of 0.5

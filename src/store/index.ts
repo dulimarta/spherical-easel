@@ -14,8 +14,9 @@ import { Vector3, Matrix4 } from "three";
 Vue.use(Vuex);
 
 const findPoint = (arr: SEPoint[], id: number): SEPoint | null => {
-  const out = arr.filter(v => v.ref.id === id);
-  return out.length > 0 ? out[0] : null;
+  // const out = arr.filter(v => v.ref.id === id);
+  // return out.length > 0 ? out[0] : null;
+  return null;
 };
 
 const SMALL_ENOUGH = 1e-2;
@@ -119,15 +120,15 @@ export default new Vuex.Store({
         circlePoint
       }: { circle: Circle; centerPoint: Point; circlePoint: Point }
     ): void {
-      const start = findPoint(state.points, centerPoint.id);
-      const end = findPoint(state.points, circlePoint.id);
-      if (start !== null && end !== null) {
-        const newCircle = { ref: circle, center: start, point: end };
-        // start.centerOf.push(newCircle);
-        // end.circumOf.push(newCircle);
-        // state.circles.push(newCircle);
-        // state.sphere?.add(circle);
-      }
+      // const start = findPoint(state.points, centerPoint.id);
+      // const end = findPoint(state.points, circlePoint.id);
+      // if (start !== null && end !== null) {
+      // const newCircle = { ref: circle, center: start, point: end };
+      // start.centerOf.push(newCircle);
+      // end.circumOf.push(newCircle);
+      // state.circles.push(newCircle);
+      // state.sphere?.add(circle);
+      // }
     },
     removeCircle(state: AppState, circleId: string): void {
       // FIXME
