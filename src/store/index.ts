@@ -29,7 +29,7 @@ const initialState = {
   editMode: "rotate",
   // slice(): create a copy of the array
   transformMatElements: tmpMatrix.elements.slice(),
-  // nodes: [], // Possible future addition (array of SENode)
+  // nodes: [], // Possible future addition (array of SENodule)
   points: [],
   lines: [],
   circles: []

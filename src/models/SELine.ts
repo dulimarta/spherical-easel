@@ -1,11 +1,11 @@
-import { SENode } from "./SENode";
+import { SENodule } from "./SENodule";
 import Line from "@/plottables/Line";
 import { SEPoint } from "./SEPoint";
 import { Vector3 } from "three";
 import { Visitable } from "@/visitors/Visitable";
 import { Visitor } from "@/visitors/Visitor";
 
-export class SELine extends SENode implements Visitable {
+export class SELine extends SENodule implements Visitable {
   public update(): void {
     throw new Error("Method not implemented.");
   }

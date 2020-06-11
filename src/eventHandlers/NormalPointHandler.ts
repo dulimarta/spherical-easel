@@ -1,11 +1,17 @@
 /** @format */
 
 import Arrow from "@/3d-objs/Arrow";
-import CursorHandler from "./SelectionHandler";
+import SelectionHandler from "./SelectionHandler";
 import Two from "two.js";
 import { Matrix4 } from "three";
 import EventBus from "@/eventHandlers/EventBus";
-export default class NormalPointHandler extends CursorHandler {
+export default class NormalPointHandler extends SelectionHandler {
+  mouseLeave(event: MouseEvent): void {
+    throw new Error("Method not implemented.");
+  }
+  deactivate(): void {
+    throw new Error("Method not implemented.");
+  }
   private normalArrow: Arrow;
   private isNormalAdded: boolean;
 

@@ -1,12 +1,12 @@
 /** @format */
 
 import { Vector3, Matrix4 } from "three";
-import CursorHandler from "./SelectionHandler";
+import SelectionHandler from "./SelectionHandler";
 import Arrow from "@/3d-objs/Arrow"; // for debugging
 import Point from "@/plottables/Point";
 import Line from "@/plottables/Line";
 
-import SETTINGS from "@/global-settings";
+// import SETTINGS from "@/global-settings";
 import { CommandGroup } from "@/commands/CommandGroup";
 import { AddPointCommand } from "@/commands/AddPointCommand";
 import { AddLineCommand } from "@/commands/AddLineCommand";
@@ -14,7 +14,7 @@ import Two from "two.js";
 import { SEPoint } from "@/models/SEPoint";
 import { SELine } from "@/models/SELine";
 import EventBus from "./EventBus";
-export default class LineHandler extends CursorHandler {
+export default class LineHandler extends SelectionHandler {
   protected startV3Point: Vector3; // The starting point of the line
   protected tmpVector: Vector3;
   protected circleOrientation: Arrow; // for debugging only
@@ -43,6 +43,9 @@ export default class LineHandler extends CursorHandler {
     this.line.isSegment = false;
   };
 
+  deactivate(): void {
+    /* empty function */
+  }
   mouseMoved(event: MouseEvent): void {
     super.mouseMoved(event);
     if (this.isOnSphere) {
@@ -152,5 +155,10 @@ export default class LineHandler extends CursorHandler {
       this.startPoint = null;
       this.endPoint = null;
     }
+  }
+
+  // eslint-disable-next-line
+  mouseLeave(event: MouseEvent): void {
+    /* empty function */
   }
 }

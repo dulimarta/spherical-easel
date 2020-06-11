@@ -184,6 +184,9 @@ export default class SphereFrame extends VueComponent {
       // Limit zoom-in to 10x magnification factor
       if (scaleFactor > 1 && this.magnificationFactor > 10) return;
       this.magnificationFactor *= scaleFactor;
+      EventBus.fire("magnification-updated", {
+        factor: this.magnificationFactor
+      });
       const target = (e.currentTarget || e.target) as HTMLDivElement;
       const boundingRect = target.getBoundingClientRect();
       const offsetX = e.clientX - boundingRect.left;
@@ -242,8 +245,8 @@ export default class SphereFrame extends VueComponent {
 
   @Watch("editMode")
   switchEditMode(mode: string): void {
+    this.currentTool?.deactivate();
     this.currentTool = null;
-
     switch (mode) {
       case "rotate":
         this.currentTool = this.rotateTool;

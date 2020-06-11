@@ -1,11 +1,11 @@
-import CursorHandler from "./SelectionHandler";
+import SelectionHandler from "./SelectionHandler";
 import Two from "two.js";
 import { Matrix4, Vector3 } from "three";
 import EventBus from "./EventBus";
 
 const desiredZAxis = new Vector3();
 
-export default class RotateHandler extends CursorHandler {
+export default class RotateHandler extends SelectionHandler {
   private rotationMatrix: Matrix4 = new Matrix4();
   private prevSpherePoint: Vector3 = new Vector3();
   private prevScreenPoint: Two.Vector = new Two.Vector(0, 0);
@@ -20,8 +20,11 @@ export default class RotateHandler extends CursorHandler {
   activate(): void {
     /* none */
   }
+  deactivate(): void {
+    /* none */
+  }
 
-  mouseMoved(event: MouseEvent) {
+  mouseMoved(event: MouseEvent): void {
     super.mouseMoved(event);
     const rotationAngle = this.prevSpherePoint.angleTo(this.currentSpherePoint);
     if (
@@ -41,7 +44,7 @@ export default class RotateHandler extends CursorHandler {
     }
   }
 
-  mousePressed(event: MouseEvent) {
+  mousePressed(event: MouseEvent): void {
     // super.mousePressed(event);a
     super.mouseMoved(event);
     this.isDragging = true;
@@ -50,9 +53,15 @@ export default class RotateHandler extends CursorHandler {
     console.debug("Begin rotation from ", this.currentSpherePoint.toFixed(2));
   }
 
-  mouseReleased(event: MouseEvent) {
+  // eslint-disable-next-line
+  mouseReleased(event: MouseEvent): void {
     // super.mouseReleased(event);
     this.isDragging = false;
     console.debug("End rotation at ", this.currentSpherePoint.toFixed(2));
+  }
+
+  // eslint-disable-next-line
+  mouseLeave(event: MouseEvent): void {
+    throw new Error("Method not implemented.");
   }
 }

@@ -1,9 +1,9 @@
-import { SENode } from "./SENode";
+import { SENodule } from "./SENodule";
 import { SEPoint } from "./SEPoint";
 import Circle from "@/plottables/Circle";
 import { Vector3 } from "three";
 
-export class SECircle extends SENode {
+export class SECircle extends SENodule {
   public update(): void {
     throw new Error("Method not implemented.");
   }

@@ -10,7 +10,7 @@ import { SEPoint } from "@/models/SEPoint";
 import { SELine } from "@/models/SELine";
 
 /* FIXME: The 3D position and the projected 2D positions are off by a few pixels???*/
-export default abstract class CursorHandler implements ToolStrategy {
+export default abstract class SelectionHandler implements ToolStrategy {
   protected readonly X_AXIS = new Vector3(1, 0, 0);
   protected readonly Y_AXIS = new Vector3(0, 1, 0);
   protected readonly Z_AXIS = new Vector3(0, 0, 1);
@@ -49,6 +49,8 @@ export default abstract class CursorHandler implements ToolStrategy {
     this.isOnSphere = false;
   }
 
+  abstract mouseLeave(event: MouseEvent): void;
+  abstract deactivate(): void;
   abstract activate(): void;
   abstract mousePressed(event: MouseEvent): void;
   abstract mouseReleased(event: MouseEvent): void;
@@ -58,7 +60,7 @@ export default abstract class CursorHandler implements ToolStrategy {
    * Multiplication with the inverse of the CSS transform matrix convert the
    * screen coordinate to the world of unit sphere
    *
-   * @memberof CursorHandler
+   * @memberof SelectionHandler
    */
   mouseMoved(event: MouseEvent): void {
     // Using currentTarget is necessary. Otherwise, all the calculations

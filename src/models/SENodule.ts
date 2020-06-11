@@ -2,12 +2,12 @@ import { Stylable } from "@/plottables/Styleable";
 import SETTINGS from "@/global-settings";
 
 let NODE_COUNT = 0;
-export abstract class SENode {
+export abstract class SENodule {
   /* An array to store the parents of the node (i.e. the objects that this node depends on)*/
 
-  public parents: SENode[] = [];
+  public parents: SENodule[] = [];
   /* An array to store the kids of the node (i.e. the objects that depend on this node)*/
-  public kids: SENode[] = [];
+  public kids: SENodule[] = [];
 
   /* A unique identification number for each node */
   public id: number;
@@ -28,56 +28,56 @@ export abstract class SENode {
   /* If the object is not visible then showing = true (The user can hide objects)*/
   public showing = true;
 
-  /* A method to update the current SENode on the unit sphere (used recursively)*/
+  /* A method to update the current SENodule on the unit sphere (used recursively)*/
   public abstract update(): void;
 
-  /* Adds a given SENode, n, to the parent array of the current SENode */
-  public addParent(n: SENode) {
+  /* Adds a given SENodule, n, to the parent array of the current SENodule */
+  public addParent(n: SENodule) {
     this.parents.push(n);
   }
-  /* Removes a given SENode, n, from the parent array of the current SENode */
-  public removeParent(n: SENode) {
+  /* Removes a given SENodule, n, from the parent array of the current SENodule */
+  public removeParent(n: SENodule) {
     this.parents.forEach((node, index) => {
       if (node === n) {
         this.parents.splice(index, 1);
       }
     });
   }
-  /* Adds a given SENode, n, to the kids array of the current SENode */
-  public addKid(n: SENode) {
+  /* Adds a given SENodule, n, to the kids array of the current SENodule */
+  public addKid(n: SENodule) {
     this.kids.push(n);
   }
-  /* Removes a given SENode, n, from the kid arry of the current SENode */
-  public removeKid(n: SENode) {
+  /* Removes a given SENodule, n, from the kid arry of the current SENodule */
+  public removeKid(n: SENodule) {
     this.kids.forEach((item, index) => {
       if (item === n) this.kids.splice(index, 1);
     });
   }
-  /* This registers a given SENode as a child of the current SENode by 
-    1) putting the given SENode,n ,as an element in the kids array
-    2) declaring that the parent of the given SENode is the current node  
+  /* This registers a given SENodule as a child of the current SENodule by 
+    1) putting the given SENodule,n ,as an element in the kids array
+    2) declaring that the parent of the given SENodule is the current node  
     For example, if we are creating the intersetion point P of two circles (C1 and C2) 
     that already exist. Then we would create a point P and call 
     C1.registerChild(P)  
     C2.registerChild(P)
     this would make the kids array of C1 (and C2) contain P and the parent array of P
     contain both C1 and C2.*/
-  public registerChild(n: SENode) {
+  public registerChild(n: SENodule) {
     this.addKid(n);
     n.addParent(this);
   }
 
-  /* Unregister 1) removes the given SENode,n, from the kids array and 2) removes the 
-    current SENode from the parents array of the given SENode. If P was a registeredChild of circles
+  /* Unregister 1) removes the given SENodule,n, from the kids array and 2) removes the 
+    current SENodule from the parents array of the given SENodule. If P was a registeredChild of circles
     C1 and C2, then to unregister it we would call
     C1.unregisterChild(P)
     C2.unregisterChild(P)
-    this is never used on its own - it is called as part of a routine for removing an SENode 
-    from the object tree entirly, so all SENodes that are descendents (kids, grand kids, etc.)of 
+    this is never used on its own - it is called as part of a routine for removing an SENodule 
+    from the object tree entirly, so all SENodules that are descendents (kids, grand kids, etc.)of 
     P must be recursively removed from object tree and this is accomplished with the remove 
     function. 
     */
-  public unregisterChild(n: SENode) {
+  public unregisterChild(n: SENodule) {
     this.removeKid(n);
     n.removeParent(this);
   }
@@ -85,7 +85,7 @@ export abstract class SENode {
   /* This removes the current node and all descendents (kids, grand kids, etc.) from the 
     object tree by using the unregister function and remove recursively */
   public removeThisNode() {
-    //remove the current node from all of its parent SENodes
+    //remove the current node from all of its parent SENodules
     this.parents.forEach(item => {
       item.unregisterChild(this);
     });
@@ -94,10 +94,10 @@ export abstract class SENode {
     }
   }
 
-  /* This is called to check and see if any of the parents of the current SENode are outOfDate
+  /* This is called to check and see if any of the parents of the current SENodule are outOfDate
     if any of the parents are outOfDate then this function returns false. 
     <SENDode>.updateNow()
-    is asking does <SENode> need to be updated? If there is a parent outOfDate, then <SENode> should 
+    is asking does <SENodule> need to be updated? If there is a parent outOfDate, then <SENodule> should 
     *not* be updated now. It should wait until *all* parents are not outOfDate.  */
   public updateNow() {
     this.parents.forEach(item => {
@@ -108,7 +108,7 @@ export abstract class SENode {
     return true;
   }
 
-  /* Marks all descendents (kids, grand kids, etc.) of the current SENode out of date */
+  /* Marks all descendents (kids, grand kids, etc.) of the current SENodule out of date */
   public markKidsOutOfDate() {
     this.kids.forEach(item => {
       item.setOutOfDate(true);
@@ -116,7 +116,7 @@ export abstract class SENode {
     });
   }
 
-  /* Kids of the current SENode are updated  */
+  /* Kids of the current SENodule are updated  */
   public updateKids() {
     this.kids.forEach(item => {
       item.update();

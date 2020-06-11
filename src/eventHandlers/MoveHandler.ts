@@ -1,12 +1,12 @@
 /** @format */
 
-import CursorHandler from "./SelectionHandler";
+import SelectionHandler from "./SelectionHandler";
 // import SETTINGS from "@/global-settings";
 import Two from "two.js";
 import { Matrix4 } from "three";
 import { SEPoint } from "@/models/SEPoint";
 
-export default class MoveHandler extends CursorHandler {
+export default class MoveHandler extends SelectionHandler {
   private isDragging = false;
   private moveTarget: SEPoint | null = null;
   constructor(scene: Two.Group, transformMatrix: Matrix4) {
@@ -54,9 +54,15 @@ export default class MoveHandler extends CursorHandler {
     this.moveTarget = null;
   }
 
+  mouseLeave(event: MouseEvent): void {
+    /* empty function */
+  }
   activate() {
     // this.rayCaster.layers.disableAll();
     // this.rayCaster.layers.enable(SETTINGS.layers.sphere);
     // this.rayCaster.layers.enable(SETTINGS.layers.point);
+  }
+  deactivate() {
+    /* empty function */
   }
 }

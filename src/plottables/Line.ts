@@ -3,6 +3,7 @@ import Two, { Color, Ellipse } from "two.js";
 import SETTINGS from "@/global-settings";
 import { Stylable } from "@/plottables/Styleable";
 import { SELine } from "@/models/SELine";
+import Nodule from "./Nodule";
 
 const SUBDIVS = 100;
 /**
@@ -12,12 +13,12 @@ const SUBDIVS = 100;
  * @class Line
  * @extends {Two.Group}
  */
-export default class Line extends Two.Group implements Stylable {
+export default class Line extends Nodule {
   // Declare owner as non-null, this field will be initialized by the associated owner
-  public owner?: SELine | null = null;
+  // public owner?: SELine | null = null;
   private start: Vector3;
   private end: Vector3;
-  public name = "";
+  // public name = "";
   private oldFrontStroke: Two.Color = "";
   private oldBackStroke: Two.Color = "";
   public normalDirection: Vector3;

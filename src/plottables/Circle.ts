@@ -3,6 +3,7 @@
 import { Vector3, Vector2, Matrix4 } from "three";
 import Two from "two.js";
 import SETTINGS from "@/global-settings";
+import Nodule from "./Nodule";
 
 const desiredXAxis = new Vector3();
 const desiredYAxis = new Vector3();
@@ -19,7 +20,7 @@ const SUBDIVISIONS = 50;
  * may change: longer path will hold more subdivision points (while keeping the
  * total points 2N so we don't create/remove new points)
  */
-export default class Circle extends Two.Group {
+export default class Circle extends Nodule {
   private center_: Vector3; // Can't use "center", name conflict with TwoJS
   private outer: Vector3;
   // arcRadius: the radius (in radiuans) as the user drag the mouse the
@@ -27,7 +28,6 @@ export default class Circle extends Two.Group {
   private arcRadius = 1;
   // projectedRadius: the above radius projected to the circle plane
   private projectedRadius = 1;
-  public name = "";
   private frontHalf: Two.Path;
   private backHalf: Two.Path;
   private majorAxisDirection = new Vector3();
@@ -360,6 +360,19 @@ export default class Circle extends Two.Group {
 
     this.projectedRadius = Math.sin(this.arcRadius);
     this.readjust();
+  }
+
+  frontGlowStyle(): void {
+    throw new Error("Method not implemented.");
+  }
+  backGlowStyle(): void {
+    throw new Error("Method not implemented.");
+  }
+  frontNormalStyle(): void {
+    throw new Error("Method not implemented.");
+  }
+  backNormalStyle(): void {
+    throw new Error("Method not implemented.");
   }
 
   clone(): this {

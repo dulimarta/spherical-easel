@@ -1,10 +1,11 @@
 /** @format */
 
 // import SETTINGS from "@/global-settings";
-import Two, { Color } from "two.js";
+import Two from "two.js";
 import { Stylable } from "@/plottables/Styleable";
 import { SEPoint } from "@/models/SEPoint";
 import SETTINGS from "@/global-settings";
+import Nodule from "./Nodule";
 
 /**
  * Each Point object is uniquely associated with a SEPoint object.
@@ -39,12 +40,12 @@ const backGlowFillColor =
   ? Nodule.contrastColorString(this.frontGlowFillColor)
   : */ SETTINGS
     .point.glowing.fillColor.back;
-export default class Point extends Two.Group implements Stylable {
+export default class Point extends Nodule {
   // The owner link is needed because all the mouse tools interact
   // with the TwoJS object but we have to link it with the corresponding
   // model object.
   public owner!: SEPoint; // this field will be initialized by the SEPoint owner
-  public name: string;
+  // public name: string;
   private frontPoint: Two.Circle;
   private backPoint: Two.Circle;
 

@@ -1,7 +1,7 @@
 /** @format */
 
 import { Vector3, Matrix4 } from "three";
-import CursorHandler from "./SelectionHandler";
+import SelectionHandler from "./SelectionHandler";
 import Point from "@/plottables/Point";
 // import SETTINGS from "@/global-settings";
 import Circle from "@/plottables/Circle";
@@ -12,7 +12,7 @@ import Two from "two.js";
 import { SEPoint } from "@/models/SEPoint";
 import { SECircle } from "@/models/SECircle";
 
-export default class CircleHandler extends CursorHandler {
+export default class CircleHandler extends SelectionHandler {
   private startV3Point: Vector3;
   private isMouseDown: boolean;
   private isCircleAdded: boolean;
@@ -31,6 +31,9 @@ export default class CircleHandler extends CursorHandler {
     // this.rayCaster.layers.enable(SETTINGS.layers.sphere);
     // this.rayCaster.layers.enable(SETTINGS.layers.point);
   };
+  deactivate() {
+    /* None yet */
+  }
 
   mouseMoved(event: MouseEvent) {
     super.mouseMoved(event);
@@ -112,5 +115,8 @@ export default class CircleHandler extends CursorHandler {
       this.startPoint = null;
       this.endPoint = null;
     }
+  }
+  mouseLeave(event: MouseEvent): void {
+    throw new Error("Method not implemented.");
   }
 }
