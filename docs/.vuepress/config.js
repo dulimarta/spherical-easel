@@ -1,13 +1,6 @@
 //const moment = require("moment");
 
 module.exports = {
-  // Settings to enable the user to edit this pages in GitLab
-  // full GitLab url.
-  repo: "/gitlab.com/hans.dulimarta/sphericalgeometryvue",
-  // Customizing the header label
-  // Defaults to "GitHub"/"GitLab"/"Bitbucket" depending on `themeConfig.repo`
-  //repoLabel: "Contribute!",
-
   //Plugins to enable specialized behavior (for example, LaTeX/MathJax )
   plugins: [
     [
@@ -18,22 +11,63 @@ module.exports = {
           "*": "\\times"
         }
       }
+    ],
+    //Adds the arrow that returns the user to the top of long pages
+    ["@vuepress/back-to-top"],
+    // display the title and icons of the tools
+    [
+      "vuepress-plugin-container",
+      {
+        type: "tool-title",
+        defaultTitle: ""
+      }
+    ],
+    //display the short description of the tool
+    [
+      "vuepress-plugin-container",
+      {
+        type: "tool-description",
+        before: info =>
+          `<div class="tool-description"><p class="tool-description-title">${info}</p>`,
+        after: "</div>",
+        defaultTitle: {
+          "/": "Description:",
+          "/id/": "IDDescription:"
+        }
+      }
+    ],
+    // Display the details of the tool
+    [
+      "vuepress-plugin-container",
+      {
+        type: "tool-details",
+        before: info =>
+          `<div class="tool-details"><p class="tool-details-title">${info}</p>`,
+        after: "</div>",
+        defaultTitle: {
+          "/": "Details:",
+          "/id/": "IDDetails:"
+        }
+      }
     ]
+
     // [
-    //   "@vuepress/last-updated",
-    //   {
-    //     dateOptions: {
-    //       hours12: false
-    //     }
-    //   }
+    //   // This plug in is not used unless we use a custom theme
+    //   //  see https://vuepress.vuejs.org/plugin/official/plugin-last-updated.html
+    //   //   then access it with {{$page.lastUpdated}}
+    //   ("@vuepress/last-updated",
     //   {
     //     transformer: (timestamp, lang) => {
     //       // Don't forget to install moment yourself
+    //       // See https://momentjs.com/docs/#/use-it/typescript/
     //       const moment = require("moment");
     //       moment.locale(lang);
-    //       return moment(timestamp).fromNow();
+    //       //moment().format("dddd, MMMM Do YYYY, h:mm a");
+    //       return moment(timestamp)
+    //         .fromNow()
+    //         .format("dddd, MMMM Do YYYY, h:mm a");
     //     }
-    //   }
+    //   })
     // ]
   ],
   //Settings to enable languages/locales
@@ -47,7 +81,7 @@ module.exports = {
         "Explore Spherical Geometry: A user guide and design guide for Spherical Easel"
     },
     "/languages/id/": {
-      lang: "id-ID",
+      lang: "id",
       title: "ID:Spherical Easel",
       description:
         "ID:Explore Spherical Geometry: A user guide and design guide for Spherical Easel"
@@ -55,30 +89,35 @@ module.exports = {
   },
   //Settting for the theme -- each locale gets it own theme
   themeConfig: {
+    //enable smooth scrolling so keyboard scrolling won't jump
+    smoothScroll: true,
     //All locales use this logo, appears in the upper left on each page
     logo: "/SphericalEaselLogo.png",
     locales: {
       //The US-English theme
       "/": {
-        //Added to pages so user will know when last updates, uses the timestamp of git, master branch
-        lastUpdated: "Last Update",
+        //Added to each page so user will know when last updates, uses the timestamp of
+        // git, master branch does not use the plug in
+        lastUpdated: "Last Updated",
         // text for the language dropdown
         selectText: "Languages",
         // label for this locale in the language dropdown
         label: "English",
         // Aria Label for locale in the dropdown (this is an assistive technology item)
         ariaLabel: "Languages",
+
+        // Settings to enable the user to edit this pages in GitLab
+        // full GitLab url. TODO: This doesn't work the link in the nav doesn't show
+        repo: "https://gitlab.com/hans.dulimarta/sphericalgeometryvue/",
+        // Customizing the header label
+        // Defaults to "GitHub"/"GitLab"/"Bitbucket" depending on `themeConfig.repo`
+        //repoLabel: "Contribute!",
         // Invite user to edit these pages via GitLab(?), defaults to false, set to true to enable
+        // TODO: This doesn't enable the "edit me" links on each page
         editLinks: true,
         // text for the edit-on-gitlab link
         editLinkText: "Help us by editing this page on GitLab",
-        // config for Service Worker, I don't know what these do? TODO: answer
-        serviceWorker: {
-          updatePopup: {
-            message: "New content is available.",
-            buttonText: "Refresh"
-          }
-        },
+
         //Enable searching on the the documentation using the third party aloglia https://www.algolia.com/
         //algolia docsearch options for current locale
         algolia: {
@@ -90,15 +129,22 @@ module.exports = {
         searchMaxSuggestions: 10,
         //Settings for the navigation bar at the top of each page
         nav: [
+          //{
+          // text: "Navingation",
+          // ariaLabel: "Navigation Menu",
+          // items: [
           { text: "Home", link: "/" },
           { text: "About", link: "/about.md" },
           { text: "Contact", link: "/contact.md" },
+          //   ]
+          // },
           {
             text: "Documentation",
             ariaLabel: "Documentation Menu",
             items: [
               { text: "Quick Start Guide", link: "/quickstart/" },
               { text: "User Manual", link: "/userguide/" },
+              { text: "Tools Documents", link: "/tools/" },
               { text: "Design Documents", link: "/design/" }
             ]
           }
@@ -117,16 +163,30 @@ module.exports = {
             "script.md"
           ],
           //The User Guide sidebar file list
-          "/userguide/": ["index.md", "tools.md"],
+          "/userguide/": [""],
           //The Design Documentation sidebar file list
-          "/design": ["index.md"],
-          // The "fallback" side bar file list -- I think this is a default so you never get a blank side bar
+          "/design": [""],
+          //The  Tools Documentation sidebar file list
+          "/tools/": [
+            ["", "Tools List"],
+            "edit",
+            "display",
+            "basic",
+            "construction",
+            "measurement",
+            "conic",
+            "advanced",
+            "transformation",
+            "measuredobject"
+          ],
+          // The "fallback" side bar file list -- This is the root sidebar
           "/": [
             "" /* / */,
-            "contact" /* /contact.html */,
-            "about" /* /about.html */
+            "about" /* /about.html */,
+            "contact" /* /contact.html */
           ]
         },
+        //display the header in the sidebar from *all* pages not just the active one
         displayAllHeaders: true
       },
       //The Bahasa Indonesian theme (Not complete yet)

@@ -1,9 +1,8 @@
 ---
 title: About
-sidebarDepth: 2
+sidebarDepth: 1
 lang: en-US
 prev: /
-next: /contact
 ---
 
 This is an about page.

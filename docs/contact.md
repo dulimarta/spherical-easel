@@ -1,9 +1,8 @@
 ---
 title: Contact
-sidebarDepth: 2
+sidebarDepth: 1
 lang: en-US
-prev: /about.md
-next: /quickstart/construct.md
+next: /quickstart/
 ---
 
 David Austin, William Dickinson, and Hans Dulimarta (HANS -- We should talk about author order conventions in CS and Math - and license agreements ?MIT Licensed? | Copyright © 2002 - present. Do we even need a copyright?

@@ -1,9 +1,8 @@
 ---
 title: Scripting
 sidebarDepth: 2
-next: /userguide/
-prev: /quickstart/measure.md
 lang: en-US
+next: /userguide/
 ---
 
 # Scripting Objects

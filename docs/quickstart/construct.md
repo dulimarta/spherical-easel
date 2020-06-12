@@ -2,8 +2,6 @@
 title: Constructing
 sidebarDepth: 2
 lang: en-US
-prev: /quickstart/index.md
-next: /quickstart/explorestyle.md
 ---
 
 # Construct An Equilateral Triangle
@@ -34,8 +32,9 @@ Activate the Circle Tool (TOOD:AddIconImage) and then click (mouse press) on one
 
 TODO: add image showing this intermediate step
 
-::: details Check: Are you constructing or merely plotting an arrangement?
-You should check your construction by activating the Move Tool (TOOD:AddIconImage) and using the mouse to move various elements of your construction. For example, if you mouse press and drag on the center point of the circle, **both** the circle and the line segment should update and the center of the circle should remain the one endpoint of the line segment. Similarly, if you move the other endpoint of the line segment, **both** the circles and the line segment should update and that endpoint should remain on the circle. If your construction doesn't behave this way you are merely plotting and you should use the Undo button or select the new option on the (TODO:update) blah menu to try again. Try to press and release the mouse closer to the endpoints of the line segment to make sure that the endpoints of the line segment and the point on the circle are the same. Spherical Easel always assumes that if you create a point near an existing point you would like to use the nearby point and not create a new one.
+::: tool-details Construction Check: Are you constructing or merely plotting an arrangement?
+
+You should check your construction by activating the Move Tool (TOOD:AddIconImage) and using the mouse to move various elements of your construction. For example, if you mouse press and drag on the center point of the circle, **both** the circle and the line segment should update and the center of the circle should remain the one endpoint of the line segment. Similarly, if you move the other endpoint of the line segment, **both** the circles and the line segment should update and that endpoint should remain on the circle. If your construction doesn't behave this way you are merely plotting and you should use the Undo button or select the New menu option on the (TODO:update) blah menu to try again. Always try to click close to the endpoints of the line segment to make sure that the endpoints of the line segment and the point on the circle are the same. Spherical Easel always assumes that if you attempt to create a point near an existing point, you would like to use the nearby point and not create a new one.
 :::
 
 ## 4. Use the Circle Tool Again
@@ -51,7 +50,7 @@ By mouse pressing _near_ the location of one of the intersection points of the t
 TODO: Add image showing this intermediate step
 
 ::: tip
-Spherical Easel always assumes that if you attempt to create a point _near_ an intersection of two objects you would like the point exactly at the intersection. Similarly, if you attempt to create a point near a one-dimensional object it is assumed that you want the point created _on_ the object. (A point is on an object, or "glued" to it, if you can move the point but it never leaves the object it is glued to.)
+Spherical Easel always assumes that if the user attempts to create a point _**near**_ an intersection of two one-dimensional objects, the user would like the point to be constrained to always be placed at precisely intersection of the objects.
 :::
 
 ## 6. Hide the circles and explore
