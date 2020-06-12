@@ -6,7 +6,7 @@ lang: en-US
 
 # Construction Tools
 
-Each of the following tools constructs a geometric object.
+Each of the following tools constructs a geometric object by selecting existing objects or creating a collection of points.
 
 ::: tool-title
 
@@ -16,16 +16,17 @@ Each of the following tools constructs a geometric object.
 
 ::: tool-description
 
-Creates the midpoint of a line segment or two points.
+Creates the midpoint of a line segment or the shortest length between two points or the center of a conic.
 
 ::: tool-details
 
 - If a line segment is selected the unique midpoint is created.
-- If two points are selected then there are two cases:
-  - If the points are antipodal then the midpoint doesn't exist and nothing is created. However, if the midpoint of two points is created and initially doesn't exist because the points are antipodal and later the points are moved to a non-antipodal locations the midpoint will appear.
-  - If the points are not antipodal it is assumed that the line segment connecting the two points has length less than $\pi$ and the midpoint of that line segment is created.
+- If two points are selected (or created by clicking at two locations) then there are two cases:
+  - If the points are antipodal then the midpoint doesn't exist and nothing is created. However, the midpoint is still created and if later the points are moved to a non-antipodal locations the midpoint will appear.
+  - If the points are not antipodal it is assumed that the line segment connecting the two points (not displayed or created) has length less than $\pi$ and the midpoint of that line segment is created.
+- Selecting a conic (a circle created with the [Three Point Circle Tool](/tools/advanced.html#three-point-circle) or a [conic](/tools/conic.html)) creates the center of the conic.
 - When a midpoint is created, a row describing some of its properties will appear in the Points Section of the [Objects Tab](/userguide/#objects-tab).
-- If this tool is activated with a line segment or two points selected the above action is performed automatically.
+- If this tool is activated with a line segment, two points, or a conic selected, the above action is performed automatically.
 
 :::
 
@@ -40,10 +41,10 @@ Creates the angle bisector of a pair of line segments with an endpoint in common
 
 ::: tool-details
 
-- There are three ways that an angle bisector is created:
+- There are three different ways to select or create an angle to bisect:
   - If a pair of lines is selected, then an angle is bisector is created depending on the order in which the lines were selected and the right-hand rule. If you place your right hand at one of the intersection points of the lines with your thumb pointing away from the center of the sphere and your fingers in the direction of the first line then as you curl your fingers toward the second line, the region swept out is the angle that is bisected.
   - If a pair of line segments with a common endpoint is selected, then the angle bisector is created at the common endpoint.
-  - If a triple of points is selected then the order in which the points were selected matters. The angle bisector is created at the second selected point. It is created using the right-hand rule as above assuming that there is a line segment (not necessarily shown or created) from the first to the second point and a line segment (not necessarily shown or created) from the second to the third point each of which has length less than $\pi$.
+  - If a triple of points is selected (or created by clicking at three location) then the order in which the points were selected matters. The angle bisector is created at the second selected point. It is created using the right-hand rule as above assuming that there is a line segment (not necessarily shown or created) from the first to the second point and a line segment (not necessarily shown or created) from the second to the third point each of which has length less than $\pi$.
 - When an angle bisector is created, a row describing some of its properties will appear in the Lines Section of the [Objects Tab](/userguide/#objects-tab).
 - If this tool is activated with a pair of line segments (with an endpoint in common) or three points selected the above action is performed automatically.
 
@@ -98,9 +99,13 @@ Creates the poles of a line or line segment.
 
 ::: tool-details
 
-- Selecting a line or line segment will create the two points that are $\frac{\pi}{2}$ away from all points on the line or line segment.
-- When two polar points are created, two rows, each describing the properties of one of the points, will appear in the Points Section of the [Objects Tab](/userguide/#objects-tab).
-- If this tool is activated with a line segment or line selected the above action is performed automatically.
+- There are two ways to create polar points:
+
+  - Selecting a line or line segment will create the two points that are $\frac{\pi}{2}$ away from all points on the line or line segment.
+  - If two points are selected (or created by clicking at two locations) then only one polar point is created. Which polar point created depends on the order of the the points and the right-hand rule. If you put your right hand in the center of the sphere and your fingers in the direction of the first point and curl them toward the second point, your thumb points at the polar point that is created. If the points are antipodal (or near antipodal) then the polar point doesn't exist and nothing is created. However, the polar point is still created and if later the points are moved to a non-antipodal locations the polar point will appear.
+
+* When two polar points are created, two rows, each describing the properties of one of the points, will appear in the Points Section of the [Objects Tab](/userguide/#objects-tab).
+* If this tool is activated with a line segment or line selected the above action is performed automatically.
 
 :::
 
@@ -115,7 +120,7 @@ Creates a tangent line to a one-dimensional object (excluding lines and line seg
 
 ::: tool-details
 
-- Select a non-line one-dimensional object (include circles, ellipses, and user-defined curves) and a point (either on the one-dimensional object or not) and the line that is tangent to the selected one-dimensional object and through the selected point is created.
+- Select a non-line one-dimensional object (including conics and user-defined curves) and a point (either on the one-dimensional object or not) and the line that is tangent to the selected one-dimensional object and through the selected point is created.
 - When an tangent line is created, a row describing some of its properties will appear in the Lines Section of the [Objects Tab](/userguide/#objects-tab).
 - If this tool is activated with a non-line one-dimensional object and a point selected the above action is performed automatically.
 
@@ -139,6 +144,23 @@ Creates the perpendicular(s) to a one-dimensional object through a point.
 - If this tool is activated with a one-dimensional object and a point selected the above action is performed automatically.
 
 :::
+
+::: tool-title
+
+## Attach/Detach Point
+
+:::
+
+::: tool-description
+
+Attach or detach a point from an object.
+
+::: tool-details
+
+- Select an existing point that is attached (ie. "on" or "glued to") a one-dimensional object and it becomes detached from that object.
+- Select an existing point that is free (i.e. at the top layer of the dependency structure - for more information see the [Move Tool](/tools/display.html#move) -- and then a one-dimensional object and it becomes attached to that object.
+- If this tool is activated with any objects selected, they are all unselected and ignored.
+  :::
 
 ::: tool-title
 

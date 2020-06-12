@@ -17,7 +17,7 @@ Each of the following tools measures some aspect of an arrangement or creates a 
 Measure the length of a line segment.
 ::: tool-details
 
-- Mouse release on a line segment to measure its length.
+- Select a line segment to measure its length.
 - The measured length can be larger than $\pi$, but is always less than $2\pi$.
 - When a length measurement is created, a row describing some of its properties (including its value) will appear in the Measurement Section of the [Objects Tab](/userguide/#objects-tab).
 - When this tool is activated all previously selected objects are unselected and ignored.
@@ -36,7 +36,7 @@ To adjust the number of decimal places displayed in the Measurement Section of t
 Measure the distance between two points.
 ::: tool-details
 
-- Click on the first point and then click on a second point to measure the distance between them.
+- Select two points to measure the distance between them.
 - The measured distance can never be larger than $\pi$.
 - When a distance measurement is created, a row describing some of its properties (including its value) will appear in the Measurement Section of the [Objects Tab](/userguide/#objects-tab).
 - When this tool is activated all previously selected objects are unselected and ignored.
@@ -48,12 +48,12 @@ Measure the distance between two points.
 
 :::
 ::: tool-description
-Measure the angle between two lines, two line segments with a common endpoint, or three points.
+Measure the angle created by two lines, two line segments with a common endpoint, or three points.
 ::: tool-details
 
-- There are three ways to measure an angle:
-  - If a pair of lines (line segments with a common endpoint) is selected, then which angle is measured depends on the order in which the lines (line segments) were selected and the right-hand rule. If you place your right hand at one of the intersection points of the lines (or the common endpoint of the line segments) with your thumb pointing away from the center of the sphere and your fingers in the direction of the first line (line segment) then as you curl your fingers toward the second line (line segment), the region swept out is the angle that is measured.
-  - If a triple of points is selected then the order in which the points were selected matters. The angle measure is determined using the right hand rule as above assuming that there is a line segment (not necessarily shown or created) from the first to the second point and a line segment (not necessarily shown or created) from the second to the third point each of which has length less than $\pi$.
+- There are three different ways to select or create an angle to measure:
+  - If a pair of lines (or line segments with a common endpoint) is selected, then which angle is measured depends on the order in which the lines (or line segments) were selected and the right-hand rule. If you place your right hand at one of the intersection points of the lines (or the common endpoint of the line segments) with your thumb pointing away from the center of the sphere and your fingers in the direction of the first line (or line segment) then as you curl your fingers toward the second line (or line segment), the region swept out is the angle that is measured.
+  - If a triple of points is selected (or created) then the order in which the points were selected matters. The angle measure is determined using the right hand rule as above assuming that there is a line segment (not necessarily shown or created) from the first to the second point and a line segment (not necessarily shown or created) from the second to the third point each of which has length less than $\pi$.
 - An angle marker is displayed indicating the angle that was measured.
 - When an angle measurement is created, a row describing some of its properties (including its value) will appear in the Measurement Section of the [Objects Tab](/userguide/#objects-tab).
 - If this tool is activated with two lines or two line segments with a common endpoint or a triple of points selected, the above action is performed automatically.
@@ -71,14 +71,14 @@ When two lines intersect, in a neighborhood of one of the intersection points, f
 
 :::
 ::: tool-description
-Creates a slider
+Creates a slider or adjust the value of an existing non-animated slider.
 
 ::: tool-details
 
 - Mouse release at a location to create a slider there.
-- After creating a dialog box opens prompting the user to enter the lower and upper bounds of the slide and a step size.
-- The sliders value can be adjusted by clicking and dragging the control dot when this tool is active.
-- The lower bound, upper bound and step size can be adjusted in the Style Panel.
+- After selecting a location a dialog box opens prompting the user to enter values for the lower and upper bounds of the slider, a step size, and if the slider should be animated.
+- If the slider is animated, it automatically steps through the values from lower to upper by the step size. If it is not animated, the sliders value can be adjusted by clicking and dragging the control dot when this tool is active.
+- The lower bound, upper bound, step size, animation options (on, loop or reflect) can be adjusted in the Style Panel.
 - When a slider is created, a row describing some of its properties (including its value) will appear in the Measurement Section of the [Objects Tab](/userguide/#objects-tab).
 - When this tool is activated all previously selected objects are unselected and ignored.
   :::

@@ -54,10 +54,11 @@ Move the location of a single object.
 
 - Mouse press and dragging on a single free object will move the location of the object on the sphere. Mouse release will terminate the movement of that object and place it at a new location.
 - There are two kinds of free objects:
-  - Those which reside at the top layer or second to top layer of the dependency structure. For example, suppose three points are created on the sphere using the [Point Tool](/tools/basic.html#point) then they are in the top or first layer of the dependency structure. If those points are used to create an ellipse using the [Ellipse Tool](/tools/basic.html#ellipse) then the ellipse is in the second layer of the dependency structure.
+  - Those which reside at the top layer or second to top layer of the dependency structure. For example, suppose three points are created on the sphere using the [Point Tool](/tools/basic.html#point) (and are not snapped - [see this tip](/tools/basic.html#point)- to any object) then they are in the top or first layer of the dependency structure. If those points are used to create an ellipse using the [Ellipse Tool](/tools/basic.html#ellipse) then the ellipse is in the second layer of the dependency structure.
   - Those points that are either created with the [Point On Object Tool](/tools/construction.html#point-on-object) or are automatically created in this way when creating another object.
 - **Not** all objects are movable. Only free objects are movable. For example, an intersection point (which is on the third layer) of two circles (on the second layer) depends on the two circles and **cannot** be independently moved. However, each circle can be moved because the points on which the circle itself depends are at the top (i.e. first layer) of the dependency structure.
 - Moving a free circle or ellipse is the same thing as simultaneously moving the points or objects on which it depends.
+- Non-ellipse conics and parametric curves (user defined) are never moveable. Parametric curves can be moved using a Measurement object in the parametric definition.
 - Moving a line or line segment rotates that line about the axis connecting the first point on the line to the antipode of that first point.
 - If this tool is activated with any single free object selected, clicking and dragging the mouse will change the location of that object.
   :::

@@ -18,10 +18,10 @@ Create a point.
 ::: tool-details
 
 - Mouse release at a location to create a point.
-- When a point is created, a row describing some of its properties will appear in the [Objects Tab](/userguide/#objects-tab).
+- When a point is created, a row describing some of its properties will appear in the Points section of [Objects Tab](/userguide/#objects-tab).
 - If this tool is activated with any objects selected, they are all unselected and ignored.
 
-::: tip
+::: tip Snap To Point
 
 When creating points with this tool, or any other tool that creates an object depending on points, Spherical Easel always assumes that if the user attempts to create
 
@@ -43,9 +43,9 @@ Create a line.
 
 ::: tool-details
 
-- Mouse press to create a new point or snap to an existing point, object or intersection, then drag to a second location, and mouse release to create a new point or snap to an existing point, object or intersection.
+- Mouse press to declare one point on the line (this might be new free point or one that snaps to an existing point, object or intersection), then drag to a second location, and mouse release to declare a second point on the line (this might be new free point or one that snaps to an existing point, object or intersection).
 - The two points and their midpoint (not displayed, but dynamically created as the user drags, for use in the case that the two points are antipodal or almost antipodal) determine a unique line.
-- When a line is created, a row describing some of its properties will appear in the [Objects Tab](/userguide/#objects-tab).
+- When a line is created, a row describing some of its properties will appear in the Lines section of the [Objects Tab](/userguide/#objects-tab).
 - If this tool is activated with two points selected the above action is performed automatically and the midpoint is either the equidistant point that is less than $\frac{\pi}{2}$ from both points or a random point (in the case that the two points are antipodal or nearly antipodal).  
   :::
 
@@ -59,9 +59,10 @@ Create a line segment.
 
 ::: tool-details
 
-- Mouse press to create a new point or snap to an existing point, object or intersection, then drag to a second location, and mouse release to create a new point or snap to an existing point, object or intersection.
+- Mouse press to declare a start point on the line segment (this might be new free point or one that snaps to an existing point, object or intersection), then drag to a second location, and mouse release to declare an endpoint of the line segment (this might be new free point or one that snaps to an existing point, object or intersection).
 - The two points and their midpoint (not displayed, but dynamically created as the user drags) determine a unique line segment.
-- When a line segment is created, a row describing some of its properties will appear in the [Objects Tab](/userguide/#objects-tab).
+- Line Segments are extendable. When editing them in the Style Panel, under the Basic Tab there is a Extend Parameter that is initially set to the length of the line segment. This can be set to any value between 0 and $2\pi$. When the value is different than the length of the line segment, a point is created at the endpoint. This parameter can also be set to a Measurement Object (via a Measurement Token) with value computed modulo $2\pi$.
+- When a line segment is created, a row describing some of its properties will appear in the Line Section of the [Objects Tab](/userguide/#objects-tab).
 - If this tool is activated with two points selected the above action is performed automatically and the midpoint is either the equidistant point that is less than $\frac{\pi}{2}$ from both points or a random point (in the case that the two points are antipodal or nearly antipodal).
 
 ::: tip
@@ -97,8 +98,8 @@ Toggle a line segment.
 Create a circle.
 ::: tool-details
 
-- Mouse press to create a new point or snap to an existing point, object or intersection, then drag to a second location, and mouse release to create a new point or snap to an existing point, object or intersection.
-- When a circle is created, a row describing some of its properties will appear in the [Objects Tab](/userguide/#objects-tab).
+- Mouse press to declare the center point of the circle (this might be new free point or one that snaps to an existing point, object or intersection), then drag to a second location, and mouse release to declare a point on the circle (this might be new free point or one that snaps to an existing point, object or intersection).
+- When a circle is created, a row describing some of its properties will appear in the Conics Section of the [Objects Tab](/userguide/#objects-tab).
 - The first point is the center of the circle and the second point is a point on the circle. These two points determine a unique circle.
 - If this tool is activated with two points selected the above action is performed automatically where the first point is the center and the second is the point on the circle.
 
@@ -118,9 +119,9 @@ Create a polygon. [This is a challenging tool to create because the shading will
 
 - There are two ways to create a polygon:
   - Select a cycle of line segments. A cycle of line segments is a ordered list of line segments $[s_1, s_2, s_3, \ldots , s_n]$ ($n \geq 3$), where for all indices $i$, the ending point of segment $s_i$ is the starting point of segment $s_{i+1}$ and the indices are counted modulo $n$.
-  - Create the vertices of the polygon, by clicking at a series of $n \leq 3$ locations. Temporary points (which might be existing points, intersection points, or points on objects) are created at each click location and temporary line segments are created in order between the points as they are created (also assuming the line segment has length less than $\pi$). To complete the polygon you must click on the first point that was created. Upon completion the temporary points and line segments are added to the arrangement.
+  - Create the vertices of the polygon, by clicking at a series of $n \leq 3$ locations. Temporary points (which might be new free points, existing points, intersection points, or points on objects) are created at each click location and temporary line segments are created in order between the points as they are created (also assuming the line segment has length less than $\pi$). To complete the polygon you must click on the first point that was created. Upon completion the temporary points and line segments are added to the arrangement.
 - The inside of the polygon is alway the region that is to the left of a person walking along the edges on the outside of the sphere.
-- When a polygon is created, a row describing some of its properties will appear in the [Objects Tab](/userguide/#objects-tab).
+- When a polygon is created, a row describing some of its properties will appear in the Polygon Section of the [Objects Tab](/userguide/#objects-tab).
 - If this tool is activated with a cycle of line segments, or a collection of points, selected the above action is performed automatically.
 
 :::
@@ -136,9 +137,9 @@ Create text.
 
 ::: tool-details
 
-- Mouse release at a location to mark the place (inside or outside of the boundary circle) to place text. A popup asks for the actual text.
+- Mouse release at a location to mark the location (inside or outside of the boundary circle) to place text. A popup asks for the actual text.
 - To edit a text object [select](/tools/edit.html#selection) it and use the Style Panel.
 - Text objects can be moved with the [Move Tool](/tools/display.html#move)/
-- When a text object is created, a row describing some of its properties will appear in the [Objects Tab](/userguide/#objects-tab).
+- When a text object is created, a row describing some of its properties will appear in the Text Section of the [Objects Tab](/userguide/#objects-tab).
 - If this tool is activated with any objects selected, they are all unselected and ignored.
   :::

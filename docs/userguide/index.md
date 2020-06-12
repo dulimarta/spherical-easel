@@ -10,6 +10,8 @@ next: /tools/
 
 ## Overview
 
+UNIT SPHERE!!!!
+
 The Spherical Easel window is divide into several regions: Title Bar, Tools & Objects Panel, Sphere Canvas, and Style Panel. The Style Panel is hidden initially and can be made visible by clicking on the Style Settings (TODO:AddIconImage) icon in the upper right corner of the Sphere Canvas. The functionality of each region is described below.
 
 TODO: Add picture with all regions labeled
@@ -123,7 +125,7 @@ Sliders!!!
   - size
   - color (front and back)
   - font?
-- Trace (Applies to points, lines and circles only)
+- Trace/Locus (Applies to points, lines and circles only)
   - size (only for points)
   - color
   - stroke color
