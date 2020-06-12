@@ -1,11 +1,11 @@
-import Point from "../plotables/Point";
+import Point from "../plottables/Point";
 import { Visitable } from "@/visitors/Visitable";
 import { Visitor } from "@/visitors/Visitor";
-import { SENode } from "./SENode";
+import { SENodule } from "./SENodule";
 import { Vector3 } from "three";
 import SETTINGS from "@/global-settings";
 
-export class SEPoint extends SENode implements Visitable {
+export class SEPoint extends SENodule implements Visitable {
   /* The location of the SEPoint on the Sphere*/
   private _posOnSphere: Vector3; //_ starts names of variable that are priivate
 
@@ -39,8 +39,8 @@ export class SEPoint extends SENode implements Visitable {
     // in the Point class
     const twojsLine = this.ref;
     twojsLine.translation.set(
-      pos.x * SETTINGS.sphere.boundaryCircleRadius,
-      pos.y * SETTINGS.sphere.boundaryCircleRadius
+      pos.x * SETTINGS.boundaryCircle.radius,
+      pos.y * SETTINGS.boundaryCircle.radius
     );
     if (pos.z < 0) twojsLine.backNormalStyle();
     else twojsLine.frontNormalStyle();

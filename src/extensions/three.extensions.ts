@@ -12,7 +12,7 @@ Vector3.prototype.toFixed = function(precision: number): string {
     "," +
     this.y.toFixed(precision) +
     "," +
-    this.x.toFixed(precision) +
+    this.z.toFixed(precision) +
     ")"
   );
 };

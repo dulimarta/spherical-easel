@@ -1,25 +1,26 @@
 /** @format */
 
-import { Vector3 } from "three";
-import CursorHandler from "./CursorHandler";
-import Point from "@/plotables/Point";
+import { Vector3, Matrix4 } from "three";
+import SelectionHandler from "./SelectionHandler";
+import Point from "@/plottables/Point";
 // import SETTINGS from "@/global-settings";
-import Circle from "@/3d-objs/Circle";
+import Circle from "@/plottables/Circle";
 import { CommandGroup } from "@/commands/CommandGroup";
 import { AddPointCommand } from "@/commands/AddPointCommand";
 import { AddCircleCommand } from "@/commands/AddCircleCommand";
 import Two from "two.js";
 import { SEPoint } from "@/models/SEPoint";
+import { SECircle } from "@/models/SECircle";
 
-export default class CircleHandler extends CursorHandler {
+export default class CircleHandler extends SelectionHandler {
   private startV3Point: Vector3;
   private isMouseDown: boolean;
   private isCircleAdded: boolean;
   private circle: Circle;
-  private startPoint: Point | null = null;
-  private endPoint: Point | null = null;
-  constructor(scene: Two.Group) {
-    super(scene);
+  private startPoint: SEPoint | null = null;
+  private endPoint: SEPoint | null = null;
+  constructor(scene: Two.Group, transformMatrix: Matrix4) {
+    super(scene, transformMatrix);
     this.startV3Point = new Vector3();
     this.isMouseDown = false;
     this.isCircleAdded = false;
@@ -30,6 +31,9 @@ export default class CircleHandler extends CursorHandler {
     // this.rayCaster.layers.enable(SETTINGS.layers.sphere);
     // this.rayCaster.layers.enable(SETTINGS.layers.point);
   };
+  deactivate() {
+    /* None yet */
+  }
 
   mouseMoved(event: MouseEvent) {
     super.mouseMoved(event);
@@ -43,7 +47,7 @@ export default class CircleHandler extends CursorHandler {
         this.circle.circlePoint = this.currentSpherePoint;
       }
     } else if (this.isCircleAdded) {
-      this.circle.remove(); // remove from its parent
+      // this.circle.remove(); // remove from its parent
       this.startMarker.ref.remove();
       this.isCircleAdded = false;
     }
@@ -53,10 +57,10 @@ export default class CircleHandler extends CursorHandler {
   mousePressed(event: MouseEvent) {
     this.isMouseDown = true;
     if (this.isOnSphere) {
-      const selected = this.hitObject;
-      if (selected instanceof Point) {
-        this.startV3Point.copy(selected.owner.positionOnSphere);
-        this.startPoint = this.hitObject as Point;
+      const selected = this.hitPoint;
+      if (selected instanceof SEPoint) {
+        this.startV3Point.copy(selected.positionOnSphere);
+        this.startPoint = this.hitPoint;
       } else {
         this.canvas.add(this.startMarker.ref);
         this.startV3Point.copy(this.currentSpherePoint);
@@ -77,30 +81,32 @@ export default class CircleHandler extends CursorHandler {
       this.isCircleAdded = false;
       // this.endV3Point.copy(this.currentPoint);
       const newCircle = this.circle.clone();
+
+      // TODO: Use EventBus.fire()???
       const circleGroup = new CommandGroup();
       if (this.startPoint === null) {
         // Starting point landed on an open space
         // we have to create a new point
         const vtx = new SEPoint(new Point());
         vtx.positionOnSphere = this.startV3Point;
-        this.startPoint = vtx.ref;
+        this.startPoint = vtx;
         circleGroup.addCommand(new AddPointCommand(vtx));
       }
-      if (this.hitObject instanceof Point) {
-        this.endPoint = this.hitObject;
+      if (this.hitPoint instanceof SEPoint) {
+        this.endPoint = this.hitPoint;
       } else {
         // endV3Point landed on an open space
         // we have to create a new point
         const vtx = new SEPoint(new Point());
         vtx.positionOnSphere = this.currentSpherePoint;
-        this.endPoint = vtx.ref;
+        this.endPoint = vtx;
         circleGroup.addCommand(new AddPointCommand(vtx));
       }
 
       circleGroup
         .addCommand(
           new AddCircleCommand({
-            circle: newCircle,
+            circle: new SECircle(newCircle, 1),
             centerPoint: this.startPoint,
             circlePoint: this.endPoint
           })
@@ -109,5 +115,8 @@ export default class CircleHandler extends CursorHandler {
       this.startPoint = null;
       this.endPoint = null;
     }
+  }
+  mouseLeave(event: MouseEvent): void {
+    throw new Error("Method not implemented.");
   }
 }

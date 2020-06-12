@@ -1,32 +1,14 @@
 <template>
   <div class="pa-1" id="objectTreeContainer">
     <h4>{{ $t("objects.points") }}</h4>
-    <v-treeview
-      dense
-      hoverable
-      activatable
-      active-class="warning"
-      :items="iPoints"
-      @update:active="updateActive"
-    ></v-treeview>
+    <v-treeview dense hoverable activatable active-class="warning"
+      :items="iPoints" @update:active="updateActive"></v-treeview>
     <h4>{{ $t("objects.lines") }}</h4>
-    <v-treeview
-      dense
-      hoverable
-      activatable
-      active-class="warning"
-      :items="iLines"
-      @update:active="updateActive"
-    ></v-treeview>
+    <v-treeview dense hoverable activatable active-class="warning"
+      :items="iLines" @update:active="updateActive"></v-treeview>
     <h4>{{ $t("objects.circles") }}</h4>
-    <v-treeview
-      dense
-      hoverable
-      activatable
-      active-class="warning"
-      :items="iCircles"
-      @update:active="updateActive"
-    ></v-treeview>
+    <v-treeview dense hoverable activatable active-class="warning"
+      :items="iCircles" @update:active="updateActive"></v-treeview>
   </div>
 </template>
 
@@ -34,13 +16,13 @@
 import Vue from "vue";
 import Component from "vue-class-component";
 import { State } from "vuex-class";
-import { SECircle } from "@/types";
 
 import { Prop } from "vue-property-decorator";
 // import { Mesh, MeshPhongMaterial } from "three";
 import Two from "two.js";
 import { SEPoint } from "@/models/SEPoint";
 import { SELine } from "@/models/SELine";
+import { SECircle } from "@/models/SECircle";
 // import Point from "@/plotables/Point";
 
 @Component
@@ -69,34 +51,37 @@ export default class ObjectTree extends Vue {
         {
           id: 0,
           name: "Start of",
-          children: z.startOf.map((x: SELine) => ({
-            id: x.ref.id,
-            name: x.ref.name
-          }))
+          children: [] //z.startOf.map((x: SELine) => ({
+          //   id: x.ref.id,
+          //   name: x.ref.name
+          // }))
         },
         {
           id: 1,
           name: "End of",
-          children: z.endOf.map((x: SELine) => ({
-            id: x.ref.id,
-            name: x.ref.name
-          }))
+          children: []
+          // children: z.endOf.map((x: SELine) => ({
+          //   id: x.ref.id,
+          //   name: x.ref.name
+          // }))
         },
         {
           id: 2,
           name: "Center of",
-          children: z.centerOf.map((x: SECircle) => ({
-            id: x.ref.id
-            // name: x.ref.name
-          }))
+          children: []
+          // children: z.centerOf.map((x: SECircle) => ({
+          //   id: x.ref.id
+          //   // name: x.ref.name
+          // }))
         },
         {
           id: 3,
           name: "Circumpoint of",
-          children: z.circumOf.map((x: SECircle) => ({
-            id: x.ref.id
-            // name: x.ref.name
-          }))
+          children: []
+          // children: z.circumOf.map((x: SECircle) => ({
+          //   id: x.ref.id
+          //   // name: x.ref.name
+          // }))
         }
       ] /* remove node with empty children*/
         .filter(c => c.children.length > 0)
@@ -147,7 +132,8 @@ export default class ObjectTree extends Vue {
 </script>
 
 <style lang="scss">
-#topContainer {
+#objectTreeContainer {
   padding: 0.5em;
+  overflow: scroll;
 }
 </style>

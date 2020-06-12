@@ -1,8 +1,9 @@
 import { Vector3, Matrix4 } from "three";
 import Two, { Color, Ellipse } from "two.js";
 import SETTINGS from "@/global-settings";
-import { Stylable } from "@/plotables/Styleable";
+import { Stylable } from "@/plottables/Styleable";
 import { SELine } from "@/models/SELine";
+import Nodule from "./Nodule";
 
 const SUBDIVS = 100;
 /**
@@ -12,12 +13,12 @@ const SUBDIVS = 100;
  * @class Line
  * @extends {Two.Group}
  */
-export default class Line extends Two.Group implements Stylable {
+export default class Line extends Nodule {
   // Declare owner as non-null, this field will be initialized by the associated owner
-  public owner?: SELine | null = null;
+  // public owner?: SELine | null = null;
   private start: Vector3;
   private end: Vector3;
-  public name = "";
+  // public name = "";
   private oldFrontStroke: Two.Color = "";
   private oldBackStroke: Two.Color = "";
   public normalDirection: Vector3;
@@ -35,7 +36,7 @@ export default class Line extends Two.Group implements Stylable {
 
   constructor(start?: Vector3, end?: Vector3, segment?: boolean) {
     super();
-    const radius = SETTINGS.sphere.boundaryCircleRadius;
+    const radius = SETTINGS.boundaryCircle.radius;
     const vertices: Two.Vector[] = [];
     // Generate 2D coordinates of a half circle
     for (let k = 0; k < SUBDIVS; k++) {
@@ -108,11 +109,13 @@ export default class Line extends Two.Group implements Stylable {
   }
 
   // Recalculate the ellipse in 2D
+  // FIXME: the circle does not accurately pass thro its end point?
   private deformIn2D(): void {
     // console.debug(this.normalDirection.toFixed(2));
     // The ellipse major axis on the XY plane is perpendicular
     // to the circle normal [Nx,Ny,Nz]. We can fix the direction of
-    // the major axis to [-Ny,Nx, 0] (pointing "left") and use these numbers to compute the angle
+    // the major axis to [-Ny,Nx, 0] (pointing "left") and use these numbers
+    // to compute the angle between the major axis and the viewport X-axis
     this.majorAxisDirection
       .set(-this.normalDirection.y, this.normalDirection.x, 0)
       .normalize();
@@ -137,12 +140,12 @@ export default class Line extends Two.Group implements Stylable {
     // Use ellipse equation to compute minorAxis given than majorAxis is 1
     const minorAxis = Math.sqrt((py * py) / (1 - px * px));
     let numSubdivs = this.frontHalf.vertices.length;
-    const radius = SETTINGS.sphere.boundaryCircleRadius;
+    const radius = SETTINGS.boundaryCircle.radius;
     // When the Z-value is negative, the front semicircle
     // is projected above the back semicircle
     const flipSign = Math.sign(this.normalDirection.z);
     if (this.segment) {
-      // FIXME: the position or arc end points are not accurate
+      // FIXME: the position of arc end points are not accurate
       // Readjust arc length
 
       const startAngle = this.majorAxisDirection.angleTo(this.start);
@@ -205,8 +208,8 @@ export default class Line extends Two.Group implements Stylable {
       this.frontHalf.vertices.forEach((v, pos) => {
         const angle = (pos * totalArcLength) / SUBDIVS;
         this.tmpVector.set(
-          Math.cos(angle) * SETTINGS.sphere.boundaryCircleRadius,
-          Math.sin(angle) * SETTINGS.sphere.boundaryCircleRadius,
+          Math.cos(angle) * SETTINGS.boundaryCircle.radius,
+          Math.sin(angle) * SETTINGS.boundaryCircle.radius,
           0
         );
         this.tmpVector.applyMatrix4(this.transformMatrix);
@@ -269,6 +272,7 @@ export default class Line extends Two.Group implements Stylable {
   set orientation(dir: Vector3) {
     this.normalDirection.copy(dir);
     this.deformIn2D();
+    // this.deformIntoEllipse();
   }
 
   get orientation(): Vector3 {

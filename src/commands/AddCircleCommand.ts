@@ -1,19 +1,21 @@
 import { Command } from "./Command";
-import Point from "@/plotables/Point";
-import Circle from "@/3d-objs/Circle";
+import Point from "@/plottables/Point";
+import Circle from "@/plottables/Circle";
+import { SEPoint } from "@/models/SEPoint";
+import { SECircle } from "@/models/SECircle";
 
 export class AddCircleCommand extends Command {
-  private circle: Circle;
-  private center: Point;
-  private circlePoint: Point;
+  private circle: SECircle;
+  private center: SEPoint;
+  private circlePoint: SEPoint;
   constructor({
     circle,
     centerPoint,
     circlePoint
   }: {
-    circle: Circle;
-    centerPoint: Point;
-    circlePoint: Point;
+    circle: SECircle;
+    centerPoint: SEPoint;
+    circlePoint: SEPoint;
   }) {
     super();
     this.circle = circle;

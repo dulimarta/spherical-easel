@@ -1,6 +1,6 @@
 import { Command } from "./Command";
-import Point from "@/plotables/Point";
-import Line from "@/plotables/Line";
+import Point from "@/plottables/Point";
+import Line from "@/plottables/Line";
 import { SELine } from "@/models/SELine";
 import { SEPoint } from "@/models/SEPoint";
 

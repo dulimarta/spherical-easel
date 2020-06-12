@@ -3,12 +3,13 @@
 import LineHandler from "./LineHandler";
 import SETTINGS from "@/global-settings";
 import Two from "two.js";
+import { Matrix4 } from "three";
 
 export default class SegmentHandler extends LineHandler {
   // private marker = new Point(5, 0xff0000);
   // private majorAxisDir = new Vector3();
-  constructor(scene: Two.Group) {
-    super(scene, true /* segment of ine */);
+  constructor(scene: Two.Group, transformMatrix: Matrix4) {
+    super(scene, transformMatrix, true /* segment of ine */);
     // this.marker.positionOnSphere = new Vector3(1.0, 0, 0);
     // this.canvas.add(this.marker);
     // const greenDot = new Point(0.05, 0x00ff44);

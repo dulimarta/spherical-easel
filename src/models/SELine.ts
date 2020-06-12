@@ -1,11 +1,14 @@
-import { SENode } from "./SENode";
-import Line from "@/plotables/Line";
+import { SENodule } from "./SENodule";
+import Line from "@/plottables/Line";
 import { SEPoint } from "./SEPoint";
 import { Vector3 } from "three";
 import { Visitable } from "@/visitors/Visitable";
 import { Visitor } from "@/visitors/Visitor";
 
-export class SELine extends SENode implements Visitable {
+export class SELine extends SENodule implements Visitable {
+  public update(): void {
+    throw new Error("Method not implemented.");
+  }
   public ref: Line;
   private normalDir: Vector3;
 
@@ -15,6 +18,13 @@ export class SELine extends SENode implements Visitable {
   public end: SEPoint;
   //   public isSegment: boolean;
 
+  /**
+   *
+   * @param l plottable (TwoJS) line associated with this line
+   * @param normalDir the normal vector of the geodesic circle
+   * @param start
+   * @param end
+   */
   constructor(l: Line, normalDir: Vector3, start: SEPoint, end: SEPoint) {
     super();
     this.ref = l;

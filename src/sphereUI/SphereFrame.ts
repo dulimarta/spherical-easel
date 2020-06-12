@@ -2,9 +2,9 @@
 
 import Two, { Vector } from "two.js";
 //import Two from "two.js";
-import Coordinates from "@/plotables/Coordinates";
+import Coordinates from "@/plottables/Coordinates";
 import SETTINGS from "@/global-settings";
-import SENode from "@/plotables/SENode";
+import { SENodule } from "@/models/SENodule";
 import Color from "color";
 import { Moveable, Selectable } from "@/types";
 
@@ -23,9 +23,9 @@ export default class SphereFrame {
   private radius = 150; //the radius of the boundary sphere in pixels
 
   //Arrays containing the various types of elements that are on the sphereCanvas
-  private plotables: SENode[] = [];
-  /* private moveables:SENode[];
-  private selectables:SENode[]; */
+  private plotables: SENodule[] = [];
+  /* private moveables:SENodule[];
+  private selectables:SENodule[]; */
 
   constructor() {
     this.sphereCanvas = new Two({ width: 300, height: 300 });
@@ -156,7 +156,7 @@ export default class SphereFrame {
     });
   }
 
-  public addPlotable(p: SENode) {
+  public addPlotable(p: SENodule) {
     this.plotables.push(p);
   }
   getCoords() {
@@ -167,10 +167,10 @@ export default class SphereFrame {
     return this.sphereCanvas;
   }
 
-  //For a given pixel coordinate and mouse event, determine which SENodes were near it
+  //For a given pixel coordinate and mouse event, determine which SENodules were near it
   hitNodes(px: number, py: number, me: MouseEvent) {
-    const hitObjects: SENode[] = [];
-    this.plotables.forEach((item: SENode) => {
+    const hitObjects: SENodule[] = [];
+    this.plotables.forEach((item: SENodule) => {
       if ("hit" in item === true) {
         // I want to make sure the item implements the Selectable interface, but can't do that directly
         if (((item as unknown) as Selectable).hit(px, py, this.coords, me)) {
@@ -185,8 +185,8 @@ export default class SphereFrame {
   and then should update the canvas*/
   update() {
     //update all of the plotables in scene
-    this.plotables.forEach((item: SENode) => {
-      item.updateScene(this);
+    this.plotables.forEach((item: SENodule) => {
+      // item.updateScene(this);
     });
     //console.log("Sphere Frame Update Exceuted the number of plotables times");
     //console.log("Radius", this.radius);

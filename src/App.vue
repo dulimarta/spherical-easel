@@ -29,7 +29,9 @@
             width="40"
           />
         </router-link>
-        <v-toolbar-title>{{ $t("main.SphericalEaselMainTitle") }}</v-toolbar-title>
+        <v-toolbar-title>
+          {{ $t("main.SphericalEaselMainTitle") }}
+        </v-toolbar-title>
         <v-tooltip left>
           <template v-slot:activator="{ on }">
             <a href="/docs">
@@ -58,6 +60,9 @@
         <!-- this is the spot where the views controlled by Vue Router will be rendred -->
       </router-view>
     </v-content>
+    <v-footer app color="accent" padless>
+      <v-col class="text-center">Footer text here</v-col>
+    </v-footer>
   </v-app>
 </template>
 
@@ -73,9 +78,12 @@ import { Inject } from "vue-property-decorator";
 
 /* This allows for the State of the app to be initialized with in vuex store */
 /* TODO: What does this do? */
-import { WebGLRenderer, Mesh } from "three";
+// import { WebGLRenderer, Mesh } from "three";
 import { State } from "vuex-class";
-
+import EventBus from "@/eventHandlers/EventBus";
+import { SEPoint } from "./models/SEPoint";
+import Point from "./plottables/Point";
+import { AddPointCommand } from "./commands/AddPointCommand";
 /* This view has no (sub)components (but the Easel view does) so this is empty*/
 @Component
 export default class App extends Vue {
@@ -90,9 +98,28 @@ export default class App extends Vue {
     super();
     // this.canvas = this.renderer.domElement;
   }
-  mounted() {
-    // this.$store.commit('init');
-    // Command.setStore(this.$store);
+
+  mounted(): void {
+    this.$store.commit("init");
+
+    // TODO: is this the best place to listen to these events?
+    EventBus.listen("insert-point", (e: any) => {
+      console.debug("Adding point", e);
+      const vtx = new SEPoint(new Point());
+      vtx.positionOnSphere = e.position;
+      new AddPointCommand(vtx).execute();
+    });
+
+    // TODO:  complete this function
+    EventBus.listen("insert-line", (e: any) => {
+      console.debug("Insert line with normal", e.normalDirection.toFixed(2));
+      if (e.start instanceof SEPoint) {
+        console.debug("Line starts at an existing point");
+      } else console.debug("Line starts at an new point");
+      if (e.end instanceof SEPoint) {
+        console.debug("Line endss at an existing point");
+      } else console.debug("Line ends at an new point");
+    });
   }
 }
 </script>

@@ -1,17 +1,22 @@
 /** @format */
 
 import Arrow from "@/3d-objs/Arrow";
-import CursorHandler from "./CursorHandler";
-import Point from "@/plotables/Point";
-import { AddPointCommand } from "@/commands/AddPointCommand";
+import SelectionHandler from "./SelectionHandler";
 import Two from "two.js";
-import { SEPoint } from "@/models/SEPoint";
-export default class NormalPointHandler extends CursorHandler {
+import { Matrix4 } from "three";
+import EventBus from "@/eventHandlers/EventBus";
+export default class NormalPointHandler extends SelectionHandler {
+  mouseLeave(event: MouseEvent): void {
+    throw new Error("Method not implemented.");
+  }
+  deactivate(): void {
+    throw new Error("Method not implemented.");
+  }
   private normalArrow: Arrow;
   private isNormalAdded: boolean;
 
-  constructor(scene: Two.Group) {
-    super(scene);
+  constructor(scene: Two.Group, transformMatrix: Matrix4) {
+    super(scene, transformMatrix);
     this.normalArrow = new Arrow(
       0.5 /* relative length with respect to the unit circle */,
       0xff8000
@@ -38,16 +43,16 @@ export default class NormalPointHandler extends CursorHandler {
       // The intersection point is returned as a point in the WORLD coordinate
       // But when a new point is added to the sphere, we have to convert
       // for the world coordinate frame to the sphere coordinate frame
-
-      const vtx = new SEPoint(new Point());
-      vtx.positionOnSphere = this.currentSpherePoint;
-      new AddPointCommand(vtx).execute();
+      EventBus.fire("insert-point", {
+        position: this.currentSpherePoint
+      });
     }
   };
 
   mouseReleased(): void {
     /* None */
   }
+
   activate = (): void => {
     // this.rayCaster.layers.disableAll();
     // this.rayCaster.layers.enable(SETTINGS.layers.sphere);

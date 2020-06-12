@@ -3,36 +3,48 @@
 import Vue from "vue";
 import Vuex from "vuex";
 import Two from "two.js";
-import { AppState, SECircle } from "@/types";
-import Point from "@/plotables/Point";
-import Circle from "@/3d-objs/Circle";
+import { AppState } from "@/types";
+import Point from "@/plottables/Point";
+import Circle from "@/plottables/Circle";
 import { SEPoint } from "@/models/SEPoint";
 import { SELine } from "@/models/SELine";
+import { SECircle } from "@/models/SECircle";
+import { Vector3, Matrix4 } from "three";
+
 Vue.use(Vuex);
 
 const findPoint = (arr: SEPoint[], id: number): SEPoint | null => {
-  const out = arr.filter(v => v.ref.id === id);
-  return out.length > 0 ? out[0] : null;
+  // const out = arr.filter(v => v.ref.id === id);
+  // return out.length > 0 ? out[0] : null;
+  return null;
 };
 
+const SMALL_ENOUGH = 1e-2;
+const PIXEL_CLOSE_ENOUGH = 8;
+const ANGLE_SMALL_ENOUGH = 1; // within 1 degree?
+const tmpMatrix = new Matrix4();
+const initialState = {
+  sphere: null,
+  sphereRadius: 0,
+  editMode: "rotate",
+  // slice(): create a copy of the array
+  transformMatElements: tmpMatrix.elements.slice(),
+  // nodes: [], // Possible future addition (array of SENodule)
+  points: [],
+  lines: [],
+  circles: []
+};
 export default new Vuex.Store({
-  state: {
-    sphere: null,
-    editMode: "rotate",
-    points: [],
-    lines: [],
-    circles: []
-  } as AppState,
+  state: initialState,
   mutations: {
     init(state: AppState): void {
-      state.sphere = null;
-      state.editMode = "";
-      state.points = [];
-      state.lines = [];
-      state.circles = [];
+      state = { ...initialState };
     },
     setSphere(state: AppState, sph: Two.Group): void {
       state.sphere = sph;
+    },
+    setSphereRadius(state: AppState, radius: number): void {
+      state.sphereRadius = radius;
     },
     setEditMode(state: AppState, mode: string): void {
       state.editMode = mode;
@@ -51,10 +63,10 @@ export default new Vuex.Store({
     addLine(
       state: AppState,
       {
-        line,
-        startPoint,
-        endPoint
-      }: { line: SELine; startPoint: Point; endPoint: Point }
+        line
+      }: /*startPoint,
+        endPoint*/
+      { line: SELine /*; startPoint: Point; endPoint: Point */ }
     ): void {
       // Find both end points in the current list of points
       // const start = findPoint(state.points, startPoint.id);
@@ -108,19 +120,19 @@ export default new Vuex.Store({
         circlePoint
       }: { circle: Circle; centerPoint: Point; circlePoint: Point }
     ): void {
-      const start = findPoint(state.points, centerPoint.id);
-      const end = findPoint(state.points, circlePoint.id);
-      if (start !== null && end !== null) {
-        const newCircle = { ref: circle, center: start, point: end };
-        start.centerOf.push(newCircle);
-        end.circumOf.push(newCircle);
-        state.circles.push(newCircle);
-        state.sphere?.add(circle);
-      }
+      // const start = findPoint(state.points, centerPoint.id);
+      // const end = findPoint(state.points, circlePoint.id);
+      // if (start !== null && end !== null) {
+      // const newCircle = { ref: circle, center: start, point: end };
+      // start.centerOf.push(newCircle);
+      // end.circumOf.push(newCircle);
+      // state.circles.push(newCircle);
+      // state.sphere?.add(circle);
+      // }
     },
     removeCircle(state: AppState, circleId: string): void {
       // FIXME
-      const circlePos = state.circles.findIndex(x => x.ref.id === circleId);
+      const circlePos = -1; //state.circles.findIndex(x => x.ref.id === circleId);
       if (circlePos >= 0) {
         /* victim line is found */
         const victimCircle: SECircle = state.circles[circlePos];
@@ -130,10 +142,10 @@ export default new Vuex.Store({
           v => v.ref.id == victimCircle.center.ref.id
         );
         if (sPointPos >= 0) {
-          const spos = state.points[sPointPos].centerOf.findIndex(
-            (r: SECircle) => r.ref.id === victimCircle.ref.id
-          );
-          if (spos >= 0) state.points[sPointPos].circumOf.splice(spos, 1);
+          // const spos = state.points[sPointPos].centerOf.findIndex(
+          //   (r: SECircle) => r.ref.id === victimCircle.ref.id
+          // );
+          // if (spos >= 0) state.points[sPointPos].circumOf.splice(spos, 1);
         }
 
         // Locate the end point of this victim line
@@ -141,18 +153,75 @@ export default new Vuex.Store({
           v => v.ref.id == victimCircle.point.ref.id
         );
         if (ePointPos >= 0) {
-          const epos = state.points[ePointPos].circumOf.findIndex(
-            (r: SECircle) => r.ref.id === victimCircle.ref.id
-          );
-          if (epos >= 0) state.points[ePointPos].circumOf.splice(epos, 1);
+          // const epos = state.points[ePointPos].circumOf.findIndex(
+          //   (r: SECircle) => r.ref.id === victimCircle.ref.id
+          // );
+          // if (epos >= 0) state.points[ePointPos].circumOf.splice(epos, 1);
         }
         // Remove it from the sphere
         victimCircle.ref.remove();
 
         state.circles.splice(circlePos, 1); // Remove the line from the list
       }
+    },
+    setTransformation(state: AppState, m: Matrix4): void {
+      debugger; //eslint-disable-line
+      m.toArray(state.transformMatElements);
     }
   },
-  actions: {},
-  modules: {}
+  actions: {
+    /* Define async work in this block */
+  },
+  getters: {
+    /* The following is just a starter code.  More work needed */
+
+    /** Find nearby points by checking the distance in the ideal sphere
+     * or screen distance (in pixels)
+     */
+    findNearbyPoints: (state: AppState) => (
+      idealPosition: Vector3,
+      screenPosition: Two.Vector
+    ): SEPoint[] => {
+      return state.points.filter(p => {
+        const distanceInUnitSphere = p.positionOnSphere.distanceTo(
+          idealPosition
+        );
+        const distanceOnScreen = p.ref.translation.distanceTo(screenPosition);
+        // console.debug(
+        //   `Distance to SEPoint ${p.id}: ideal ${distanceInUnitSphere} screen ${distanceOnScreen}`
+        // );
+        return (
+          distanceInUnitSphere < SMALL_ENOUGH ||
+          distanceOnScreen < PIXEL_CLOSE_ENOUGH
+        );
+      });
+    },
+
+    /** When a point is on a geodesic circle, it has to be perpendicular to
+     * the normal direction of that circle */
+    findNearbyLines: (state: AppState) => (
+      idealPosition: Vector3,
+      screenPosition: Two.Vector
+    ): SELine[] => {
+      return state.lines.filter((z: SELine) => {
+        const angleToNormal = z.normalDirection.angleTo(idealPosition);
+        // console.debug(
+        //   `Line ${z.id} angle between ${idealPosition.toFixed(
+        //     2
+        //   )} and ${z.normalDirection.toFixed(
+        //     2
+        //   )} is ${angleToNormal.toDegrees().toFixed(2)}`
+        // );
+        return Math.abs(angleToNormal - Math.PI / 2) < ANGLE_SMALL_ENOUGH;
+      });
+    },
+    forwardTransform: (state: AppState): Matrix4 => {
+      tmpMatrix.fromArray(state.transformMatElements);
+      return tmpMatrix;
+    },
+    inverseTransform: (state: AppState): Matrix4 => {
+      tmpMatrix.fromArray(state.transformMatElements);
+      return tmpMatrix.getInverse(tmpMatrix);
+    }
+  }
 });

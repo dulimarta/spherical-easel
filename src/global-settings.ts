@@ -1,21 +1,10 @@
 export default {
-  viewportAspectRatio: {
-    /* Use aspect ratio, and allow the canvas to fit available space.
-     * This is only the aspect ration of the containing viewport, aspect ratio
-     * of the sphere canvas is always 1:1
-     */
-    width: 4,
-    height: 3
-  },
-  /* A variable that determines the front/back contrast of the objects. */
-  contrast: 0.5,
-  sphere: {
-    /* We always assume a UNIT sphere */
-    /* in pixels. Why store this in global constants? It should change depending on the available space in the window */
-    boundaryCircleRadius: 250,
-    boundaryCircleLineWidth: 3,
-    color: 0xffff00,
-    opacity: 0.5
+  boundaryCircle: {
+    radius: 250 /* in pixels */,
+    numPoints: 50,
+    opacity: 0.5,
+    color: "black",
+    linewidth: 3
   },
   line: {
     thickness: 3
@@ -43,7 +32,7 @@ export default {
     },
     //The properties of the annular region around a point when it is glowing
     glowing: {
-      width: 2, // width is the width of the annular region around the point that shows the glow it is always bigger than the drawn radius
+      annularWidth: 2, // width is the width of the annular region around the point that shows the glow it is always bigger than the drawn radius
       fillColor: {
         front: "#ff0000", //"#404040", //{ r: 64, g: 64, b: 64 }, //gray
         back: "#FF7F7F" // the back fill color is calulated using the contrast of 0.5

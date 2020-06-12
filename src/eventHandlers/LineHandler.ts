@@ -1,19 +1,20 @@
 /** @format */
 
-import { Vector3 } from "three";
-import CursorHandler from "./CursorHandler";
+import { Vector3, Matrix4 } from "three";
+import SelectionHandler from "./SelectionHandler";
 import Arrow from "@/3d-objs/Arrow"; // for debugging
-import Point from "@/plotables/Point";
-import Line from "@/plotables/Line";
+import Point from "@/plottables/Point";
+import Line from "@/plottables/Line";
 
-import SETTINGS from "@/global-settings";
+// import SETTINGS from "@/global-settings";
 import { CommandGroup } from "@/commands/CommandGroup";
 import { AddPointCommand } from "@/commands/AddPointCommand";
 import { AddLineCommand } from "@/commands/AddLineCommand";
 import Two from "two.js";
 import { SEPoint } from "@/models/SEPoint";
 import { SELine } from "@/models/SELine";
-export default class LineHandler extends CursorHandler {
+import EventBus from "./EventBus";
+export default class LineHandler extends SelectionHandler {
   protected startV3Point: Vector3; // The starting point of the line
   protected tmpVector: Vector3;
   protected circleOrientation: Arrow; // for debugging only
@@ -23,8 +24,8 @@ export default class LineHandler extends CursorHandler {
   private endPoint: SEPoint | null = null;
   protected line: Line;
 
-  constructor(scene: Two.Group, isSegment?: boolean) {
-    super(scene);
+  constructor(scene: Two.Group, transformMatrix: Matrix4, isSegment?: boolean) {
+    super(scene, transformMatrix);
     this.startV3Point = new Vector3();
     this.tmpVector = new Vector3();
     this.line = new Line(undefined, undefined, isSegment);
@@ -42,6 +43,9 @@ export default class LineHandler extends CursorHandler {
     this.line.isSegment = false;
   };
 
+  deactivate(): void {
+    /* empty function */
+  }
   mouseMoved(event: MouseEvent): void {
     super.mouseMoved(event);
     if (this.isOnSphere) {
@@ -73,14 +77,14 @@ export default class LineHandler extends CursorHandler {
     this.isMouseDown = true;
     this.startPoint = null;
     if (this.isOnSphere) {
-      const selected = this.hitObject;
+      const selected = this.hitPoint;
 
       // Record the first point of the geodesic circle
-      if (selected instanceof Point) {
+      if (selected instanceof SEPoint) {
         console.debug("Pressed on an existing point");
         /* the point coordinate is local on the sphere */
-        this.startV3Point.copy(selected.owner.positionOnSphere);
-        this.startPoint = selected.owner;
+        this.startV3Point.copy(selected.positionOnSphere);
+        this.startPoint = selected;
       } else {
         console.debug("Pressed on open area");
         /* this.currentPoint is already converted to local sphere coordinate frame */
@@ -103,9 +107,18 @@ export default class LineHandler extends CursorHandler {
       this.startMarker.ref.remove();
       // this.canvas.remove(this.circleOrientation); // for debugging
       this.isCircleAdded = false;
+      this.tmpVector
+        .crossVectors(this.startV3Point, this.currentSpherePoint)
+        .normalize();
+      this.line.endPoint = this.currentSpherePoint;
       // this.endV3Point.copy(this.currentPoint);
       const newLine = this.line.clone(); // true:recursive clone
       const lineGroup = new CommandGroup();
+      EventBus.fire("insert-line", {
+        normalDirection: this.tmpVector,
+        start: this.startPoint || this.startV3Point,
+        end: this.hitPoint || this.currentScreenPoint
+      });
       if (this.startPoint === null) {
         // Starting point landed on an open space
         // we have to create a new point
@@ -114,8 +127,8 @@ export default class LineHandler extends CursorHandler {
         this.startPoint = vtx;
         lineGroup.addCommand(new AddPointCommand(vtx));
       }
-      if (this.hitObject instanceof Point) {
-        this.endPoint = this.hitObject.owner;
+      if (this.hitPoint instanceof SEPoint) {
+        this.endPoint = this.hitPoint;
       } else {
         // endV3Point landed on an open space
         // we have to create a new point
@@ -142,5 +155,10 @@ export default class LineHandler extends CursorHandler {
       this.startPoint = null;
       this.endPoint = null;
     }
+  }
+
+  // eslint-disable-next-line
+  mouseLeave(event: MouseEvent): void {
+    /* empty function */
   }
 }

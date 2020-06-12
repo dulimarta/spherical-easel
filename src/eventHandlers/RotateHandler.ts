@@ -1,16 +1,18 @@
-import CursorHandler from "./CursorHandler";
+import SelectionHandler from "./SelectionHandler";
 import Two from "two.js";
 import { Matrix4, Vector3 } from "three";
+import EventBus from "./EventBus";
 
 const desiredZAxis = new Vector3();
 
-export default class RotateHandler extends CursorHandler {
+export default class RotateHandler extends SelectionHandler {
   private rotationMatrix: Matrix4 = new Matrix4();
   private prevSpherePoint: Vector3 = new Vector3();
   private prevScreenPoint: Two.Vector = new Two.Vector(0, 0);
   private isDragging = false;
-  constructor(scene: Two.Group) {
-    super(scene);
+
+  constructor(scene: Two.Group, transformMatrix: Matrix4) {
+    super(scene, transformMatrix);
     // this.rotationMatrix = new Matrix4();
     // this.prevSpherePoint = new Vector3();
   }
@@ -18,8 +20,11 @@ export default class RotateHandler extends CursorHandler {
   activate(): void {
     /* none */
   }
+  deactivate(): void {
+    /* none */
+  }
 
-  mouseMoved(event: MouseEvent) {
+  mouseMoved(event: MouseEvent): void {
     super.mouseMoved(event);
     const rotationAngle = this.prevSpherePoint.angleTo(this.currentSpherePoint);
     if (
@@ -33,15 +38,13 @@ export default class RotateHandler extends CursorHandler {
       this.rotationMatrix.makeRotationAxis(desiredZAxis, rotationAngle);
       this.prevSpherePoint.copy(this.currentSpherePoint);
       this.prevScreenPoint.copy(this.currentScreenPoint);
-      window.dispatchEvent(
-        new CustomEvent("sphere-rotate", {
-          detail: { transform: this.rotationMatrix }
-        })
-      );
+      EventBus.fire("sphere-rotate", {
+        transform: this.rotationMatrix
+      });
     }
   }
 
-  mousePressed(event: MouseEvent) {
+  mousePressed(event: MouseEvent): void {
     // super.mousePressed(event);a
     super.mouseMoved(event);
     this.isDragging = true;
@@ -50,9 +53,15 @@ export default class RotateHandler extends CursorHandler {
     console.debug("Begin rotation from ", this.currentSpherePoint.toFixed(2));
   }
 
-  mouseReleased(event: MouseEvent) {
+  // eslint-disable-next-line
+  mouseReleased(event: MouseEvent): void {
     // super.mouseReleased(event);
     this.isDragging = false;
     console.debug("End rotation at ", this.currentSpherePoint.toFixed(2));
+  }
+
+  // eslint-disable-next-line
+  mouseLeave(event: MouseEvent): void {
+    throw new Error("Method not implemented.");
   }
 }
