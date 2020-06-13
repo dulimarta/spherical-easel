@@ -18,6 +18,7 @@ export default class CircleHandler extends SelectionHandler {
   private circle: Circle;
   private startPoint: SEPoint | null = null;
   private endPoint: SEPoint | null = null;
+  private arcRadius = 0;
   constructor(scene: Two.Group, transformMatrix: Matrix4) {
     super(scene, transformMatrix);
     this.startV3Point = new Vector3();
@@ -42,6 +43,9 @@ export default class CircleHandler extends SelectionHandler {
           this.canvas.add(this.startMarker);
         }
         this.circle.circlePoint = this.currentSpherePoint;
+        this.arcRadius = this.circle.centerPoint.angleTo(
+          this.currentSpherePoint
+        );
       }
     } else if (this.isCircleAdded) {
       // this.circle.remove(); // remove from its parent
@@ -102,11 +106,14 @@ export default class CircleHandler extends SelectionHandler {
 
       circleGroup
         .addCommand(
-          new AddCircleCommand({
-            circle: new SECircle(newCircle, 1),
+          new AddCircleCommand(
+            new SECircle(
+              newCircle,
+              this.arcRadius
+            ) /*,
             centerPoint: this.startPoint,
-            circlePoint: this.endPoint
-          })
+            circlePoint: this.endPoint*/
+          )
         )
         .execute();
       this.startPoint = null;

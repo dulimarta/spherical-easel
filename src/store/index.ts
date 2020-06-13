@@ -82,11 +82,10 @@ export default new Vuex.Store({
     },
     addCircle(
       state: AppState,
-      {
-        circle,
+      circle /*,
         centerPoint,
-        circlePoint
-      }: { circle: Circle; centerPoint: Point; circlePoint: Point }
+        circlePoint*/
+      //}: { circle: SECircle /*; centerPoint: Point; circlePoint: Point*/ }
     ): void {
       // const start = findPoint(state.points, centerPoint.id);
       // const end = findPoint(state.points, circlePoint.id);
@@ -94,41 +93,18 @@ export default new Vuex.Store({
       // const newCircle = { ref: circle, center: start, point: end };
       // start.centerOf.push(newCircle);
       // end.circumOf.push(newCircle);
-      // state.circles.push(newCircle);
+      state.circles.push(circle);
+      circle.ref.addToLayers(state.layers);
       // state.sphere?.add(circle);
       // }
     },
-    removeCircle(state: AppState, circleId: string): void {
+    removeCircle(state: AppState, circleId: number): void {
       // FIXME
-      const circlePos = -1; //state.circles.findIndex(x => x.ref.id === circleId);
+      const circlePos = state.circles.findIndex(x => x.id === circleId);
       if (circlePos >= 0) {
         /* victim line is found */
         const victimCircle: SECircle = state.circles[circlePos];
-
-        // Locate the start point of this victim line
-        const sPointPos = state.points.findIndex(
-          v => v.ref.id == victimCircle.center.ref.id
-        );
-        if (sPointPos >= 0) {
-          // const spos = state.points[sPointPos].centerOf.findIndex(
-          //   (r: SECircle) => r.ref.id === victimCircle.ref.id
-          // );
-          // if (spos >= 0) state.points[sPointPos].circumOf.splice(spos, 1);
-        }
-
-        // Locate the end point of this victim line
-        const ePointPos = state.points.findIndex(
-          v => v.ref.id == victimCircle.point.ref.id
-        );
-        if (ePointPos >= 0) {
-          // const epos = state.points[ePointPos].circumOf.findIndex(
-          //   (r: SECircle) => r.ref.id === victimCircle.ref.id
-          // );
-          // if (epos >= 0) state.points[ePointPos].circumOf.splice(epos, 1);
-        }
-        // Remove it from the sphere
-        victimCircle.ref.remove();
-
+        victimCircle.ref.removeFromLayers();
         state.circles.splice(circlePos, 1); // Remove the line from the list
       }
     },
