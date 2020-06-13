@@ -6,7 +6,7 @@ import Arrow from "@/3d-objs/Arrow"; // for debugging
 import Point from "@/plottables/Point";
 import Line from "@/plottables/Line";
 
-import SETTINGS from "@/global-settings";
+// import SETTINGS from "@/global-settings";
 import { CommandGroup } from "@/commands/CommandGroup";
 import { AddPointCommand } from "@/commands/AddPointCommand";
 import { AddLineCommand } from "@/commands/AddLineCommand";
@@ -14,7 +14,7 @@ import Two from "two.js";
 import { SEPoint } from "@/models/SEPoint";
 import { SELine } from "@/models/SELine";
 import EventBus from "./EventBus";
-const frontPointRadius = SETTINGS.point.temp.radius.front;
+// const frontPointRadius = SETTINGS.point.temp.radius.front;
 
 export default class LineHandler extends SelectionHandler {
   protected startV3Point: Vector3; // The starting point of the line

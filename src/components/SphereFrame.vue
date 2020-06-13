@@ -20,8 +20,8 @@ import { SEPoint } from "@/models/SEPoint";
 import { SELine } from "@/models/SELine";
 import { Visitor } from "@/visitors/Visitor";
 import EventBus from "@/eventHandlers/EventBus";
-import { AddPointCommand } from '@/commands/AddPointCommand';
-import Point from '@/plottables/Point';
+import { AddPointCommand } from "@/commands/AddPointCommand";
+import Point from "@/plottables/Point";
 
 @Component({})
 export default class SphereFrame extends VueComponent {
@@ -61,8 +61,12 @@ export default class SphereFrame extends VueComponent {
     });
     this.layers.splice(0, this.layers.length); // Clear layer array
 
-    const textLayers = [LAYER.foregroundText, LAYER.backgroundText, LAYER.foregroundTextGlowing, LAYER.backgroundTextGlowing]
-      .map(Number); // shortcut for .map(x => Number(x))
+    const textLayers = [
+      LAYER.foregroundText,
+      LAYER.backgroundText,
+      LAYER.foregroundTextGlowing,
+      LAYER.backgroundTextGlowing
+    ].map(Number); // shortcut for .map(x => Number(x))
     for (const layer in LAYER) {
       const layerIdx = Number(layer);
       if (!isNaN(layerIdx)) {
@@ -70,11 +74,9 @@ export default class SphereFrame extends VueComponent {
         this.layers.push(newLayer);
 
         // Don't flip the Y-coord of text layers
-        if (textLayers.indexOf(layerIdx) < 0) { // Not in textLayers
-          (newLayer as any).scale = new Two.Vector(
-            1,
-            -1
-          );
+        if (textLayers.indexOf(layerIdx) < 0) {
+          // Not in textLayers
+          (newLayer as any).scale = new Two.Vector(1, -1);
         }
       }
     }
@@ -97,7 +99,6 @@ export default class SphereFrame extends VueComponent {
       style: "italic"
     });
     this.layers[LAYER.foregroundText].add(t1);
-
 
     // Draw horizontal and vertical lines (just for debugging)
     const hLine = new Two.Line(-R, 0, R, 0);
@@ -124,7 +125,6 @@ export default class SphereFrame extends VueComponent {
         console.debug("Line endss at an existing point");
       } else console.debug("Line ends at an new point");
     });
-
   }
 
   /** Apply the affine transform (m) to the entire TwoJS SVG tree! */
@@ -147,7 +147,6 @@ export default class SphereFrame extends VueComponent {
   }
 
   mounted(): void {
-
     this.twoInstance.appendTo(this.$refs.canvas);
     this.twoInstance.play();
     // this.sphereCanvas.translation.set(this.canvasSize / 2, this.canvasSize / 2);
@@ -182,9 +181,9 @@ export default class SphereFrame extends VueComponent {
   onCanvasResize(size: number): void {
     (this.twoInstance.renderer as any).setSize(size, size);
     // Move the origin of all layers to the center of the viewport
-    this.layers.forEach((z, pos) => {
+    this.layers.forEach(z => {
       z.translation.set(this.canvasSize / 2, this.canvasSize / 2);
-    })
+    });
 
     const radius = size / 2 - 16; // 16-pixel gap
     this.$store.commit("setSphereRadius", radius);
@@ -283,7 +282,6 @@ export default class SphereFrame extends VueComponent {
     // this.layers[LAYER.foregroundPoints].add(p);
     new AddPointCommand(vtx).execute();
   }
-
 
   @Watch("editMode")
   switchEditMode(mode: string): void {

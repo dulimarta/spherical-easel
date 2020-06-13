@@ -11,9 +11,7 @@ export default class SegmentHandler extends LineHandler {
     super(scene, transformMatrix, true /* segment of line */);
   }
 
-  activate = () => {
-    // this.rayCaster.layers.enable(SETTINGS.layers.sphere);
-    // this.rayCaster.layers.enable(SETTINGS.layers.point);
+  activate = (): void => {
     // The following line automatically calls Line setter function
     this.line.isSegment = true;
   };

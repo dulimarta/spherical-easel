@@ -1,8 +1,6 @@
 import { Vector3, Matrix4 } from "three";
-import Two, { Color, Ellipse } from "two.js";
+import Two from "two.js";
 import SETTINGS, { LAYER } from "@/global-settings";
-import { Stylable } from "@/plottables/Styleable";
-import { SELine } from "@/models/SELine";
 import Nodule from "./Nodule";
 
 const SUBDIVS = 100;
@@ -256,7 +254,7 @@ export default class Line extends Nodule {
     this.deformIn2D();
   }
 
-  get startPoint() {
+  get startPoint(): Vector3 {
     return this.start;
   }
 
@@ -268,7 +266,7 @@ export default class Line extends Nodule {
     this.deformIn2D();
   }
 
-  get endPoint() {
+  get endPoint(): Vector3 {
     return this.end;
   }
 

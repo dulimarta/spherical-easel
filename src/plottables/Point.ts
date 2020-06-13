@@ -2,7 +2,6 @@
 
 // import SETTINGS from "@/global-settings";
 import Two from "two.js";
-import { Stylable } from "@/plottables/Styleable";
 import { SEPoint } from "@/models/SEPoint";
 import SETTINGS, { LAYER } from "@/global-settings";
 import Nodule from "./Nodule";

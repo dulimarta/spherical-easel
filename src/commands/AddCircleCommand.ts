@@ -1,5 +1,5 @@
 import { Command } from "./Command";
-import { SEPoint } from "@/models/SEPoint";
+// import { SEPoint } from "@/models/SEPoint";
 import { SECircle } from "@/models/SECircle";
 
 export class AddCircleCommand extends Command {
@@ -23,15 +23,15 @@ export class AddCircleCommand extends Command {
     // this.circlePoint = circlePoint;
   }
 
-  do() {
+  do(): void {
     Command.store.commit("addCircle", this.circle);
   }
 
-  saveState() {
+  saveState(): void {
     this.lastState = this.circle.id;
   }
 
-  restoreState() {
+  restoreState(): void {
     Command.store.commit("removeCircle", this.lastState);
   }
 }
