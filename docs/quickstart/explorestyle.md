@@ -1,8 +1,6 @@
 ---
 title: Styling
 sidebarDepth: 2
-next: /quickstart/measure.md
-prev: /quickstart/construct.md
 lang: en-US
 ---
 

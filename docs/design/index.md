@@ -3,10 +3,6 @@ sidebar: auto
 title: Design Document
 ---
 
-![Spherical Easel Logo](../SphericalEaselLogo.gif)
-
-Temp image: A cool centered illustration goes here -- perhaps an animated gif. TODO: Update image
-
 # Spherical Easel Design Document
 
 ## Overview
