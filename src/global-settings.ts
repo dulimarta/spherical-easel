@@ -67,23 +67,10 @@ export default {
       //Then get the midground
       const midground = scene.children[SETTINGS.layers.foreground] as Two.Group;
   */
-  layers: {
-    backgroundAngleMarkersGlowing: 0,
-    backgroundAngleMarkers: 1,
-    backgroundGlowing: 2,
-    background: 3,
-    backgroundPoints: 4,
-    backgroundTextGlowing: 5,
-    backgroundText: 6,
-    midground: 7,
-    foregroundAngleMarkersGlowing: 8,
-    foregroundAngleMarkers: 9,
-    foregroundGlowing: 10,
-    foreground: 11,
-    foregroundPointsGlowing: 12,
-    foregroundPoints: 13,
-    foregroundText: 14
-  },
+  // layers: {
+  // Change this to enum (below) so we don't have to renumber when
+  // adding new layer
+  // },
 
   /* Controls the length of time (in ms) the tool tip are displayed */
   toolTip: {
@@ -112,3 +99,23 @@ export default {
     { locale: "id", name: "Bahasa Indonesia" }
   ]
 };
+
+export enum LAYER {
+  backgroundAngleMarkersGlowing,
+  backgroundAngleMarkers,
+  backgroundGlowing,
+  background,
+  backgroundPointsGlowing,
+  backgroundPoints,
+  backgroundTextGlowing,
+  backgroundText,
+  midground,
+  foregroundAngleMarkersGlowing,
+  foregroundAngleMarkers,
+  foregroundGlowing,
+  foreground,
+  foregroundPointsGlowing,
+  foregroundPoints,
+  foregroundTextGlowing,
+  foregroundText
+}

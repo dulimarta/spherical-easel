@@ -301,4 +301,11 @@ export default class Line extends Nodule {
     });
     return dup as this;
   }
+
+  addToLayers(layers: Two.Group[]): void {
+    throw new Error("Method not implemented.");
+  }
+  removeFromLayers(/*layers: Two.Group[]*/): void {
+    throw new Error("Method not implemented.");
+  }
 }

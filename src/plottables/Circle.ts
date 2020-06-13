@@ -399,4 +399,11 @@ export default class Circle extends Nodule {
     //   dup.scale.copy(this.scale);
     return dup as this;
   }
+
+  addToLayers(layers: Two.Group[]): void {
+    throw new Error("Method not implemented.");
+  }
+  removeFromLayers(/*layers: Two.Group[]*/): void {
+    throw new Error("Method not implemented.");
+  }
 }

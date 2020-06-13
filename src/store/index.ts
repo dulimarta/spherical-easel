@@ -24,12 +24,12 @@ const PIXEL_CLOSE_ENOUGH = 8;
 const ANGLE_SMALL_ENOUGH = 1; // within 1 degree?
 const tmpMatrix = new Matrix4();
 const initialState = {
-  sphere: null,
   sphereRadius: 0,
   editMode: "rotate",
   // slice(): create a copy of the array
   transformMatElements: tmpMatrix.elements.slice(),
   // nodes: [], // Possible future addition (array of SENodule)
+  layers: [],
   points: [],
   lines: [],
   circles: []
@@ -40,8 +40,8 @@ export default new Vuex.Store({
     init(state: AppState): void {
       state = { ...initialState };
     },
-    setSphere(state: AppState, sph: Two.Group): void {
-      state.sphere = sph;
+    setLayers(state: AppState, layers: Two.Group[]) {
+      state.layers = layers;
     },
     setSphereRadius(state: AppState, radius: number): void {
       state.sphereRadius = radius;
@@ -51,12 +51,12 @@ export default new Vuex.Store({
     },
     addPoint(state: AppState, point: SEPoint): void {
       state.points.push(point);
-      state.sphere?.add(point.ref);
+      point.ref.addToLayers(state.layers);
     },
     removePoint(state: AppState, pointId: number): void {
       const pos = state.points.findIndex(x => x.id === pointId);
       if (pos >= 0) {
-        state.points[pos].ref.remove();
+        state.points[pos].ref.removeFromLayers();
         state.points.splice(pos, 1);
       }
     },
@@ -76,7 +76,8 @@ export default new Vuex.Store({
       // start.startOf.push(newLine);
       // end.endOf.push(newLine);
       state.lines.push(line);
-      state.sphere?.add(line.ref);
+      line.ref.addToLayers(state.layers);
+      // state.sphere?.add(line.ref);
       // }
     },
     removeLine(state: AppState, lineId: number): void {

@@ -1,14 +1,12 @@
 /** @format */
 
-import Two, { Vector } from "two.js";
-//import Two from "two.js";
+import Two from "two.js";
 import Coordinates from "@/plottables/Coordinates";
 import SETTINGS from "@/global-settings";
 import { SENodule } from "@/models/SENodule";
-import Color from "color";
-import { Moveable, Selectable } from "@/types";
+import { Selectable } from "@/types";
 
-export default class SphereFrame {
+class SphereFrame {
   /* sphereCanvas holds the Two object that contains groups (which contain plotable objects) */
   public sphereCanvas: Two;
   /* coords is the object that holds the current view (i.e. the element of SO(3) that transforms
