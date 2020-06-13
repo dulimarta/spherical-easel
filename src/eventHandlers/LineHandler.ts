@@ -6,7 +6,7 @@ import Arrow from "@/3d-objs/Arrow"; // for debugging
 import Point from "@/plottables/Point";
 import Line from "@/plottables/Line";
 
-// import SETTINGS from "@/global-settings";
+import SETTINGS from "@/global-settings";
 import { CommandGroup } from "@/commands/CommandGroup";
 import { AddPointCommand } from "@/commands/AddPointCommand";
 import { AddLineCommand } from "@/commands/AddLineCommand";
@@ -14,6 +14,8 @@ import Two from "two.js";
 import { SEPoint } from "@/models/SEPoint";
 import { SELine } from "@/models/SELine";
 import EventBus from "./EventBus";
+const frontPointRadius = SETTINGS.point.temp.radius.front;
+
 export default class LineHandler extends SelectionHandler {
   protected startV3Point: Vector3; // The starting point of the line
   protected tmpVector: Vector3;
@@ -36,9 +38,6 @@ export default class LineHandler extends SelectionHandler {
   }
 
   activate = (): void => {
-    // this.rayCaster.layers.disableAll();
-    // this.rayCaster.layers.enable(SETTINGS.layers.sphere);
-    // this.rayCaster.layers.enable(SETTINGS.layers.point);
     // The following line automatically calls Line setter function by default
     this.line.isSegment = false;
   };
@@ -46,6 +45,7 @@ export default class LineHandler extends SelectionHandler {
   deactivate(): void {
     /* empty function */
   }
+
   mouseMoved(event: MouseEvent): void {
     super.mouseMoved(event);
     if (this.isOnSphere) {
@@ -54,19 +54,19 @@ export default class LineHandler extends SelectionHandler {
           // Do we need to show the preview circle?
           this.isCircleAdded = true;
           this.canvas.add(this.line);
-          // this.canvas.add(this.circleOrientation); // for debugging
+          // this.circleOrientation.addTo(this.canvas); // for debugging only
         }
         // The following line automatically calls Line setter function
         this.tmpVector
           .crossVectors(this.startV3Point, this.currentSpherePoint)
           .normalize();
+        console.debug(`LH: circle orientation: ${this.tmpVector.toFixed(2)}`);
         this.circleOrientation.sphereLocation = this.tmpVector; // for debugging
         this.line.endPoint = this.currentSpherePoint;
       }
     } else if (this.isCircleAdded) {
-      console.debug("LineHandler: OFF sphere");
       this.line.remove();
-      this.startMarker.ref.remove();
+      this.startMarker.remove();
       this.circleOrientation.remove(); // for debugging
       this.isCircleAdded = false;
     }
@@ -88,8 +88,8 @@ export default class LineHandler extends SelectionHandler {
       } else {
         console.debug("Pressed on open area");
         /* this.currentPoint is already converted to local sphere coordinate frame */
-        this.canvas.add(this.startMarker.ref);
-        this.startMarker.positionOnSphere = this.currentSpherePoint;
+        this.canvas.add(this.startMarker);
+        this.startMarker.translation.copy(this.currentScreenPoint);
         this.startV3Point.copy(this.currentSpherePoint);
         this.startPoint = null;
       }
@@ -104,8 +104,8 @@ export default class LineHandler extends SelectionHandler {
     if (this.isOnSphere) {
       // Record the second point of the geodesic circle
       this.line.remove();
-      this.startMarker.ref.remove();
-      // this.canvas.remove(this.circleOrientation); // for debugging
+      this.startMarker.remove();
+      this.circleOrientation.remove(); // for debugging
       this.isCircleAdded = false;
       this.tmpVector
         .crossVectors(this.startV3Point, this.currentSpherePoint)

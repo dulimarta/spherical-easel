@@ -13,11 +13,11 @@ import { Vector3, Matrix4 } from "three";
 
 Vue.use(Vuex);
 
-const findPoint = (arr: SEPoint[], id: number): SEPoint | null => {
-  // const out = arr.filter(v => v.ref.id === id);
-  // return out.length > 0 ? out[0] : null;
-  return null;
-};
+// const findPoint = (arr: SEPoint[], id: number): SEPoint | null => {
+// const out = arr.filter(v => v.ref.id === id);
+// return out.length > 0 ? out[0] : null;
+// return null;
+// };
 
 const SMALL_ENOUGH = 1e-2;
 const PIXEL_CLOSE_ENOUGH = 8;
@@ -40,7 +40,7 @@ export default new Vuex.Store({
     init(state: AppState): void {
       state = { ...initialState };
     },
-    setLayers(state: AppState, layers: Two.Group[]) {
+    setLayers(state: AppState, layers: Two.Group[]): void {
       state.layers = layers;
     },
     setSphereRadius(state: AppState, radius: number): void {
@@ -68,48 +68,15 @@ export default new Vuex.Store({
         endPoint*/
       { line: SELine /*; startPoint: Point; endPoint: Point */ }
     ): void {
-      // Find both end points in the current list of points
-      // const start = findPoint(state.points, startPoint.id);
-      // const end = findPoint(state.points, endPoint.id);
-      // if (start !== null && end !== null) {
-      //   const newLine = { ref: line, start, end, isSegment: line.isSegment };
-      // start.startOf.push(newLine);
-      // end.endOf.push(newLine);
       state.lines.push(line);
       line.ref.addToLayers(state.layers);
-      // state.sphere?.add(line.ref);
-      // }
     },
     removeLine(state: AppState, lineId: number): void {
       const pos = state.lines.findIndex(x => x.id === lineId);
       if (pos >= 0) {
         /* victim line is found */
-        const victimLine: SELine = state.lines[pos];
-
-        // Locate the start point of this victim line
-        // const sPointPos = state.points.findIndex(
-        //   v => v.ref.id == victimLine.start.ref.id
-        // );
-        // if (sPointPos >= 0) {
-        //   const pos = state.points[sPointPos].startOf.findIndex(
-        //     (z: SELine) => z.ref.id === victimLine.ref.id
-        //   );
-        //   if (pos >= 0) state.points[sPointPos].startOf.splice(pos, 1);
-        // }
-
-        // Locate the end point of this victim line
-        // const ePointPos = state.points.findIndex(
-        //   v => v.ref.id == victimLine.end.ref.id
-        // );
-        // if (ePointPos >= 0) {
-        //   const pos = state.points[ePointPos].endOf.findIndex(
-        //     (z: SELine) => z.ref.id === victimLine.ref.id
-        //   );
-        //   if (pos >= 0) state.points[ePointPos].endOf.splice(pos, 1);
-        // }
-        // Remove it from the sphere
-        victimLine.ref.remove();
-
+        const victimLine = state.lines[pos];
+        victimLine.ref.removeFromLayers();
         state.lines.splice(pos, 1); // Remove the line from the list
       }
     },
