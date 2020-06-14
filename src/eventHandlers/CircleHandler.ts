@@ -3,7 +3,6 @@
 import { Vector3, Matrix4 } from "three";
 import SelectionHandler from "./SelectionHandler";
 import Point from "@/plottables/Point";
-// import SETTINGS from "@/global-settings";
 import Circle from "@/plottables/Circle";
 import { CommandGroup } from "@/commands/CommandGroup";
 import { AddPointCommand } from "@/commands/AddPointCommand";
@@ -19,6 +18,7 @@ export default class CircleHandler extends SelectionHandler {
   private circle: Circle;
   private startPoint: SEPoint | null = null;
   private endPoint: SEPoint | null = null;
+  private arcRadius = 0;
   constructor(scene: Two.Group, transformMatrix: Matrix4) {
     super(scene, transformMatrix);
     this.startV3Point = new Vector3();
@@ -27,9 +27,7 @@ export default class CircleHandler extends SelectionHandler {
     this.circle = new Circle();
   }
   activate = () => {
-    // this.rayCaster.layers.disableAll();
-    // this.rayCaster.layers.enable(SETTINGS.layers.sphere);
-    // this.rayCaster.layers.enable(SETTINGS.layers.point);
+    /* Nothing */
   };
   deactivate() {
     /* None yet */
@@ -42,13 +40,16 @@ export default class CircleHandler extends SelectionHandler {
         if (!this.isCircleAdded) {
           this.isCircleAdded = true;
           this.canvas.add(this.circle);
-          this.canvas.add(this.startMarker.ref);
+          this.canvas.add(this.startMarker);
         }
         this.circle.circlePoint = this.currentSpherePoint;
+        this.arcRadius = this.circle.centerPoint.angleTo(
+          this.currentSpherePoint
+        );
       }
     } else if (this.isCircleAdded) {
       // this.circle.remove(); // remove from its parent
-      this.startMarker.ref.remove();
+      this.startMarker.remove();
       this.isCircleAdded = false;
     }
   }
@@ -62,11 +63,11 @@ export default class CircleHandler extends SelectionHandler {
         this.startV3Point.copy(selected.positionOnSphere);
         this.startPoint = this.hitPoint;
       } else {
-        this.canvas.add(this.startMarker.ref);
+        this.canvas.add(this.startMarker);
         this.startV3Point.copy(this.currentSpherePoint);
         this.startPoint = null;
       }
-      this.startMarker.positionOnSphere = this.currentSpherePoint;
+      this.startMarker.translation.copy(this.currentScreenPoint);
       this.circle.centerPoint = this.currentSpherePoint;
     }
   }
@@ -77,7 +78,7 @@ export default class CircleHandler extends SelectionHandler {
     if (this.isOnSphere) {
       // Record the second point of the geodesic circle
       this.circle.remove();
-      this.canvas.remove(this.startMarker.ref);
+      this.canvas.remove(this.startMarker);
       this.isCircleAdded = false;
       // this.endV3Point.copy(this.currentPoint);
       const newCircle = this.circle.clone();
@@ -105,11 +106,14 @@ export default class CircleHandler extends SelectionHandler {
 
       circleGroup
         .addCommand(
-          new AddCircleCommand({
-            circle: new SECircle(newCircle, 1),
+          new AddCircleCommand(
+            new SECircle(
+              newCircle,
+              this.arcRadius
+            ) /*,
             centerPoint: this.startPoint,
-            circlePoint: this.endPoint
-          })
+            circlePoint: this.endPoint*/
+          )
         )
         .execute();
       this.startPoint = null;

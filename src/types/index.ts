@@ -11,7 +11,7 @@ export interface Selectable {
 export interface Moveable {}
 
 export interface AppState {
-  sphere: Two.Group | null;
+  layers: Two.Group[];
   sphereRadius: /* in pixel */ number; // When the window is resized, the actual size of the sphere (in pixel may change)
   transformMatElements: number[]; // current transformation matrix
   editMode: string;

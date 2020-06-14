@@ -1,8 +1,6 @@
 import { Vector3, Matrix4 } from "three";
-import Two, { Color, Ellipse } from "two.js";
-import SETTINGS from "@/global-settings";
-import { Stylable } from "@/plottables/Styleable";
-import { SELine } from "@/models/SELine";
+import Two from "two.js";
+import SETTINGS, { LAYER } from "@/global-settings";
 import Nodule from "./Nodule";
 
 const SUBDIVS = 100;
@@ -127,6 +125,8 @@ export default class Line extends Nodule {
       this.majorAxisDirection.x
     );
     // console.debug("Angle of major axis", angleToMajorAxis);
+    // This rotation applies to the ENTIRE group
+    // but in addtoLayers() we must copy the rotation to each group member
     this.rotation = angleToMajorAxis;
 
     // Calculate the length of its minor axes from the non-rotated ellipse
@@ -254,23 +254,24 @@ export default class Line extends Nodule {
     this.deformIn2D();
   }
 
-  get startPoint() {
+  get startPoint(): Vector3 {
     return this.start;
   }
 
   set endPoint(position: Vector3) {
     this.end.copy(position);
     this.normalDirection.crossVectors(this.start, this.end).normalize();
+    console.debug(`Line: circle orienation ${this.normalDirection.toFixed(2)}`);
     // this.deformIntoEllipse();
     this.deformIn2D();
   }
 
-  get endPoint() {
+  get endPoint(): Vector3 {
     return this.end;
   }
 
   set orientation(dir: Vector3) {
-    this.normalDirection.copy(dir);
+    this.normalDirection.copy(dir).normalize();
     this.deformIn2D();
     // this.deformIntoEllipse();
   }
@@ -292,6 +293,8 @@ export default class Line extends Nodule {
     dup.normalDirection.copy(this.normalDirection);
     dup.segment = this.segment;
     dup.rotation = this.rotation;
+    dup.frontHalf.rotation = this.frontHalf.rotation;
+    dup.backHalf.rotation = this.backHalf.rotation;
 
     dup.frontHalf.vertices.forEach((v, pos) => {
       v.copy(this.frontHalf.vertices[pos]);
@@ -300,5 +303,20 @@ export default class Line extends Nodule {
       v.copy(this.backHalf.vertices[pos]);
     });
     return dup as this;
+  }
+
+  addToLayers(layers: Two.Group[]): void {
+    this.frontHalf.addTo(layers[LAYER.foreground]);
+    // Copy the group rotation to individual group member
+    this.frontHalf.rotation = this.rotation;
+    if (!this.isSegment) {
+      this.backHalf.addTo(layers[LAYER.background]);
+
+      this.backHalf.rotation = this.rotation;
+    }
+  }
+  removeFromLayers(/*layers: Two.Group[]*/): void {
+    this.frontHalf.remove();
+    if (!this.isSegment) this.backHalf.remove();
   }
 }

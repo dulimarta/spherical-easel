@@ -6,15 +6,6 @@ import EventBus from "./EventBus";
 const frontPointRadius = SETTINGS.point.temp.radius.front;
 const backPointRadius = SETTINGS.point.temp.radius.back;
 export default class PointHandler extends SelectionHandler {
-  activate(): void {
-    this.canvas.add(this.pointGroup);
-    (this.frontPortion as any).visible = false;
-    (this.backPortion as any).visible = false;
-  }
-  deactivate(): void {
-    this.pointGroup.remove();
-  }
-
   private frontPortion: Two.Circle;
   private backPortion: Two.Circle;
   private pointGroup: Two.Group;
@@ -70,5 +61,13 @@ export default class PointHandler extends SelectionHandler {
   // eslint-disable-next-line
   mouseLeave(event: MouseEvent): void {
     throw new Error("Method not implemented.");
+  }
+  activate(): void {
+    this.canvas.add(this.pointGroup);
+    (this.frontPortion as any).visible = false;
+    (this.backPortion as any).visible = false;
+  }
+  deactivate(): void {
+    this.pointGroup.remove();
   }
 }

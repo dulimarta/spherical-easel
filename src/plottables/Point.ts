@@ -2,9 +2,8 @@
 
 // import SETTINGS from "@/global-settings";
 import Two from "two.js";
-import { Stylable } from "@/plottables/Styleable";
 import { SEPoint } from "@/models/SEPoint";
-import SETTINGS from "@/global-settings";
+import SETTINGS, { LAYER } from "@/global-settings";
 import Nodule from "./Nodule";
 
 /**
@@ -12,6 +11,9 @@ import Nodule from "./Nodule";
  * As part of plottables, Point concerns mainly with the visual appearance, but
  * SEPoint concerns mainly with geometry computations.
  */
+
+// TODO: complete the code for dynamicBackColor
+
 const frontDefaultRadius = SETTINGS.point.drawn.radius.front;
 const backDefaultRadius = SETTINGS.point.drawn.radius.back;
 const annularWidth = SETTINGS.point.glowing.annularWidth;
@@ -72,6 +74,10 @@ export default class Point extends Nodule {
       this.glowingFrontPoint,
       this.frontPoint
     );
+    this.glowingBackPoint.translation = this.translation;
+    this.backPoint.translation = this.translation;
+    this.glowingFrontPoint.translation = this.translation;
+    this.frontPoint.translation = this.translation;
     // 3D position of the point on the sphere surface
     // Use "black" as default color, convert to CSS Hex string
     this.name = "Point-" + this.id;
@@ -104,6 +110,7 @@ export default class Point extends Nodule {
     (this.backPoint as any).visible = true;
     (this.glowingBackPoint as any).visible = false;
   }
+
   private setAllPointsStyle() {
     //Set up the fill colors, opacity, stroke width, and stroke colors of the front/back/glow/noglow
     this.frontPoint.fill = frontFillColor;
@@ -123,5 +130,24 @@ export default class Point extends Nodule {
     this.glowingBackPoint.fill = backGlowFillColor;
     this.glowingBackPoint.noStroke(); // no linewidth
     this.glowingBackPoint.opacity = glowingBackOpacity;
+  }
+
+  addToLayers(layers: Two.Group[]): void {
+    layers[LAYER.foregroundPoints].add(this.frontPoint);
+    layers[LAYER.foregroundPointsGlowing].add(this.glowingFrontPoint);
+    layers[LAYER.foregroundPoints].add(this.backPoint);
+    layers[LAYER.backgroundPoints].add(this.glowingBackPoint);
+    if (this.owner.positionOnSphere.z < 0) {
+      this.backNormalStyle();
+    } else {
+      this.frontNormalStyle();
+    }
+  }
+
+  removeFromLayers(/*layers: Two.Group[]*/): void {
+    this.frontPoint.remove();
+    this.glowingFrontPoint.remove();
+    this.backPoint.remove();
+    this.glowingBackPoint.remove();
   }
 }

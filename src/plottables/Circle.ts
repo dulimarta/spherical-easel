@@ -2,7 +2,7 @@
 
 import { Vector3, Vector2, Matrix4 } from "three";
 import Two from "two.js";
-import SETTINGS from "@/global-settings";
+import SETTINGS, { LAYER } from "@/global-settings";
 import Nodule from "./Nodule";
 
 const desiredXAxis = new Vector3();
@@ -398,5 +398,16 @@ export default class Circle extends Nodule {
     });
     //   dup.scale.copy(this.scale);
     return dup as this;
+  }
+
+  addToLayers(layers: Two.Group[]): void {
+    if (this.frontHalf.vertices.length > 0)
+      this.frontHalf.addTo(layers[LAYER.foreground]);
+    if (this.backHalf.vertices.length > 0)
+      this.backHalf.addTo(layers[LAYER.background]);
+  }
+  removeFromLayers(/*layers: Two.Group[]*/): void {
+    this.frontHalf.remove();
+    this.backHalf.remove();
   }
 }

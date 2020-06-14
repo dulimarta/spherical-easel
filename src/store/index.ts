@@ -13,23 +13,23 @@ import { Vector3, Matrix4 } from "three";
 
 Vue.use(Vuex);
 
-const findPoint = (arr: SEPoint[], id: number): SEPoint | null => {
-  // const out = arr.filter(v => v.ref.id === id);
-  // return out.length > 0 ? out[0] : null;
-  return null;
-};
+// const findPoint = (arr: SEPoint[], id: number): SEPoint | null => {
+// const out = arr.filter(v => v.ref.id === id);
+// return out.length > 0 ? out[0] : null;
+// return null;
+// };
 
 const SMALL_ENOUGH = 1e-2;
 const PIXEL_CLOSE_ENOUGH = 8;
 const ANGLE_SMALL_ENOUGH = 1; // within 1 degree?
 const tmpMatrix = new Matrix4();
 const initialState = {
-  sphere: null,
   sphereRadius: 0,
   editMode: "rotate",
   // slice(): create a copy of the array
   transformMatElements: tmpMatrix.elements.slice(),
   // nodes: [], // Possible future addition (array of SENodule)
+  layers: [],
   points: [],
   lines: [],
   circles: []
@@ -40,8 +40,8 @@ export default new Vuex.Store({
     init(state: AppState): void {
       state = { ...initialState };
     },
-    setSphere(state: AppState, sph: Two.Group): void {
-      state.sphere = sph;
+    setLayers(state: AppState, layers: Two.Group[]): void {
+      state.layers = layers;
     },
     setSphereRadius(state: AppState, radius: number): void {
       state.sphereRadius = radius;
@@ -51,12 +51,12 @@ export default new Vuex.Store({
     },
     addPoint(state: AppState, point: SEPoint): void {
       state.points.push(point);
-      state.sphere?.add(point.ref);
+      point.ref.addToLayers(state.layers);
     },
     removePoint(state: AppState, pointId: number): void {
       const pos = state.points.findIndex(x => x.id === pointId);
       if (pos >= 0) {
-        state.points[pos].ref.remove();
+        state.points[pos].ref.removeFromLayers();
         state.points.splice(pos, 1);
       }
     },
@@ -68,57 +68,24 @@ export default new Vuex.Store({
         endPoint*/
       { line: SELine /*; startPoint: Point; endPoint: Point */ }
     ): void {
-      // Find both end points in the current list of points
-      // const start = findPoint(state.points, startPoint.id);
-      // const end = findPoint(state.points, endPoint.id);
-      // if (start !== null && end !== null) {
-      //   const newLine = { ref: line, start, end, isSegment: line.isSegment };
-      // start.startOf.push(newLine);
-      // end.endOf.push(newLine);
       state.lines.push(line);
-      state.sphere?.add(line.ref);
-      // }
+      line.ref.addToLayers(state.layers);
     },
     removeLine(state: AppState, lineId: number): void {
       const pos = state.lines.findIndex(x => x.id === lineId);
       if (pos >= 0) {
         /* victim line is found */
-        const victimLine: SELine = state.lines[pos];
-
-        // Locate the start point of this victim line
-        // const sPointPos = state.points.findIndex(
-        //   v => v.ref.id == victimLine.start.ref.id
-        // );
-        // if (sPointPos >= 0) {
-        //   const pos = state.points[sPointPos].startOf.findIndex(
-        //     (z: SELine) => z.ref.id === victimLine.ref.id
-        //   );
-        //   if (pos >= 0) state.points[sPointPos].startOf.splice(pos, 1);
-        // }
-
-        // Locate the end point of this victim line
-        // const ePointPos = state.points.findIndex(
-        //   v => v.ref.id == victimLine.end.ref.id
-        // );
-        // if (ePointPos >= 0) {
-        //   const pos = state.points[ePointPos].endOf.findIndex(
-        //     (z: SELine) => z.ref.id === victimLine.ref.id
-        //   );
-        //   if (pos >= 0) state.points[ePointPos].endOf.splice(pos, 1);
-        // }
-        // Remove it from the sphere
-        victimLine.ref.remove();
-
+        const victimLine = state.lines[pos];
+        victimLine.ref.removeFromLayers();
         state.lines.splice(pos, 1); // Remove the line from the list
       }
     },
     addCircle(
       state: AppState,
-      {
-        circle,
+      circle /*,
         centerPoint,
-        circlePoint
-      }: { circle: Circle; centerPoint: Point; circlePoint: Point }
+        circlePoint*/
+      //}: { circle: SECircle /*; centerPoint: Point; circlePoint: Point*/ }
     ): void {
       // const start = findPoint(state.points, centerPoint.id);
       // const end = findPoint(state.points, circlePoint.id);
@@ -126,41 +93,18 @@ export default new Vuex.Store({
       // const newCircle = { ref: circle, center: start, point: end };
       // start.centerOf.push(newCircle);
       // end.circumOf.push(newCircle);
-      // state.circles.push(newCircle);
+      state.circles.push(circle);
+      circle.ref.addToLayers(state.layers);
       // state.sphere?.add(circle);
       // }
     },
-    removeCircle(state: AppState, circleId: string): void {
+    removeCircle(state: AppState, circleId: number): void {
       // FIXME
-      const circlePos = -1; //state.circles.findIndex(x => x.ref.id === circleId);
+      const circlePos = state.circles.findIndex(x => x.id === circleId);
       if (circlePos >= 0) {
         /* victim line is found */
         const victimCircle: SECircle = state.circles[circlePos];
-
-        // Locate the start point of this victim line
-        const sPointPos = state.points.findIndex(
-          v => v.ref.id == victimCircle.center.ref.id
-        );
-        if (sPointPos >= 0) {
-          // const spos = state.points[sPointPos].centerOf.findIndex(
-          //   (r: SECircle) => r.ref.id === victimCircle.ref.id
-          // );
-          // if (spos >= 0) state.points[sPointPos].circumOf.splice(spos, 1);
-        }
-
-        // Locate the end point of this victim line
-        const ePointPos = state.points.findIndex(
-          v => v.ref.id == victimCircle.point.ref.id
-        );
-        if (ePointPos >= 0) {
-          // const epos = state.points[ePointPos].circumOf.findIndex(
-          //   (r: SECircle) => r.ref.id === victimCircle.ref.id
-          // );
-          // if (epos >= 0) state.points[ePointPos].circumOf.splice(epos, 1);
-        }
-        // Remove it from the sphere
-        victimCircle.ref.remove();
-
+        victimCircle.ref.removeFromLayers();
         state.circles.splice(circlePos, 1); // Remove the line from the list
       }
     },

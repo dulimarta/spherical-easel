@@ -19,6 +19,8 @@ class EventBus {
     this.vueInstance.$on(eventName, callback);
   }
 
+  // TODO: do we need a function to "unregister" the event listener?
+
   private verifyKebabCase(name: string): void {
     if (name.match(/[a-z]+(-[a-z]+)+/)) return;
     throw `${name} is not in kebab-case`;

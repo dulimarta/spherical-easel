@@ -2,12 +2,12 @@
 
 import { Vector3, Matrix4 } from "three";
 import AppStore from "@/store";
-import Point from "@/plottables/Point";
 import { ToolStrategy } from "./ToolStrategy";
 import Two, { BoundingClientRect } from "two.js";
 import SETTINGS from "@/global-settings";
 import { SEPoint } from "@/models/SEPoint";
 import { SELine } from "@/models/SELine";
+const frontPointRadius = SETTINGS.point.temp.radius.front;
 
 /* FIXME: The 3D position and the projected 2D positions are off by a few pixels???*/
 export default abstract class SelectionHandler implements ToolStrategy {
@@ -21,7 +21,7 @@ export default abstract class SelectionHandler implements ToolStrategy {
   protected currentScreenPoint: Two.Vector;
   protected hitPoint: SEPoint | null = null;
   protected hitLine: SELine | null = null;
-  protected startMarker: SEPoint;
+  protected startMarker: Two.Circle;
   protected isOnSphere: boolean;
   protected transformMatrix: Matrix4;
   // protected inverseMatrix = new Matrix4();
@@ -42,10 +42,9 @@ export default abstract class SelectionHandler implements ToolStrategy {
     // the bounding rectangle is used for
     // conversion between screen and world coordinates
     this.boundingBox = scene.getBoundingClientRect();
-    console.debug("Bounding box", this.boundingBox);
     this.currentSpherePoint = new Vector3();
     this.currentScreenPoint = new Two.Vector(0, 0);
-    this.startMarker = new SEPoint(new Point());
+    this.startMarker = new Two.Circle(0, 0, frontPointRadius);
     this.isOnSphere = false;
   }
 

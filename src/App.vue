@@ -20,14 +20,9 @@
 
       <div class="d-flex align-center">
         <router-link to="/">
-          <v-img
-            alt="Spherical Easel Logo"
-            class="shrink mr-2"
-            contain
+          <v-img alt="Spherical Easel Logo" class="shrink mr-2" contain
             src="./assets/SphericalEaselLogo.gif"
-            transition="scale-transition"
-            width="40"
-          />
+            transition="scale-transition" width="40" />
         </router-link>
         <v-toolbar-title>
           {{ $t("main.SphericalEaselMainTitle") }}
@@ -101,25 +96,6 @@ export default class App extends Vue {
 
   mounted(): void {
     this.$store.commit("init");
-
-    // TODO: is this the best place to listen to these events?
-    EventBus.listen("insert-point", (e: any) => {
-      console.debug("Adding point", e);
-      const vtx = new SEPoint(new Point());
-      vtx.positionOnSphere = e.position;
-      new AddPointCommand(vtx).execute();
-    });
-
-    // TODO:  complete this function
-    EventBus.listen("insert-line", (e: any) => {
-      console.debug("Insert line with normal", e.normalDirection.toFixed(2));
-      if (e.start instanceof SEPoint) {
-        console.debug("Line starts at an existing point");
-      } else console.debug("Line starts at an new point");
-      if (e.end instanceof SEPoint) {
-        console.debug("Line endss at an existing point");
-      } else console.debug("Line ends at an new point");
-    });
   }
 }
 </script>

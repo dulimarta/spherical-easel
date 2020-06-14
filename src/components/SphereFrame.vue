@@ -6,7 +6,7 @@
 import VueComponent from "vue";
 import { Prop, Component, Watch } from "vue-property-decorator";
 import Two from "two.js";
-import SETTINGS from "@/global-settings";
+import SETTINGS, { LAYER } from "@/global-settings";
 import { Matrix4 } from "three";
 import { State } from "vuex-class";
 import { ToolStrategy } from "@/eventHandlers/ToolStrategy";
@@ -20,6 +20,8 @@ import { SEPoint } from "@/models/SEPoint";
 import { SELine } from "@/models/SELine";
 import { Visitor } from "@/visitors/Visitor";
 import EventBus from "@/eventHandlers/EventBus";
+import { AddPointCommand } from "@/commands/AddPointCommand";
+import Point from "@/plottables/Point";
 
 @Component({})
 export default class SphereFrame extends VueComponent {
@@ -57,25 +59,37 @@ export default class SphereFrame extends VueComponent {
       autostart: true,
       ratio: window.devicePixelRatio
     });
-    for (const layer in SETTINGS.layers) {
-      this.layers.push(this.twoInstance.makeGroup());
-      console.debug(layer);
+    this.layers.splice(0, this.layers.length); // Clear layer array
+
+    const textLayers = [
+      LAYER.foregroundText,
+      LAYER.backgroundText,
+      LAYER.foregroundTextGlowing,
+      LAYER.backgroundTextGlowing
+    ].map(Number); // shortcut for .map(x => Number(x))
+    for (const layer in LAYER) {
+      const layerIdx = Number(layer);
+      if (!isNaN(layerIdx)) {
+        const newLayer = this.twoInstance.makeGroup();
+        this.layers.push(newLayer);
+
+        // Don't flip the Y-coord of text layers
+        if (textLayers.indexOf(layerIdx) < 0) {
+          // Not in textLayers
+          (newLayer as any).scale = new Two.Vector(1, -1);
+        }
+      }
     }
-    this.sphereCanvas = this.layers[SETTINGS.layers.midground];
+    this.sphereCanvas = this.layers[LAYER.midground];
     console.info("Sphere canvas ID", this.sphereCanvas.id);
-    this.$store.commit("setSphere", this.sphereCanvas);
+    this.$store.commit("setLayers", this.layers);
 
     // Draw the boundary circle in the ideal radius
     // and scale it later to fit the canvas
     this.boundaryCircle = new Two.Circle(0, 0, SETTINGS.boundaryCircle.radius);
     this.boundaryCircle.noFill();
     this.boundaryCircle.linewidth = SETTINGS.line.thickness;
-    this.layers[SETTINGS.layers.midground].add(this.boundaryCircle);
-    (this.layers[SETTINGS.layers.midground] as any).scale = new Two.Vector(
-      1,
-      -1
-    );
-    // this.sphereCanvas.add(this.boundaryCircle);
+    this.layers[LAYER.midground].add(this.boundaryCircle);
 
     const R = SETTINGS.boundaryCircle.radius;
 
@@ -84,7 +98,7 @@ export default class SphereFrame extends VueComponent {
       alignment: "left",
       style: "italic"
     });
-    this.layers[SETTINGS.layers.foregroundText].add(t1);
+    this.layers[LAYER.foregroundText].add(t1);
 
     // Draw horizontal and vertical lines (just for debugging)
     const hLine = new Two.Line(-R, 0, R, 0);
@@ -99,6 +113,18 @@ export default class SphereFrame extends VueComponent {
     );
     this.visitor = new PositionVisitor();
     EventBus.listen("sphere-rotate", this.handleSphereRotation);
+    EventBus.listen("insert-point", this.handleInsertPoint);
+
+    EventBus.listen("insert-line", (e: any) => {
+      // TODO: complete this function
+      console.debug("Insert line with normal", e.normalDirection.toFixed(2));
+      if (e.start instanceof SEPoint) {
+        console.debug("Line starts at an existing point");
+      } else console.debug("Line starts at an new point");
+      if (e.end instanceof SEPoint) {
+        console.debug("Line endss at an existing point");
+      } else console.debug("Line ends at an new point");
+    });
   }
 
   /** Apply the affine transform (m) to the entire TwoJS SVG tree! */
@@ -123,7 +149,7 @@ export default class SphereFrame extends VueComponent {
   mounted(): void {
     this.twoInstance.appendTo(this.$refs.canvas);
     this.twoInstance.play();
-    this.sphereCanvas.translation.set(this.canvasSize / 2, this.canvasSize / 2);
+    // this.sphereCanvas.translation.set(this.canvasSize / 2, this.canvasSize / 2);
     this.$refs.canvas.addEventListener("wheel", this.zoomer);
     this.$refs.canvas.addEventListener("mousemove", this.handleMouseMoved);
     this.$refs.canvas.addEventListener("mousedown", this.handleMousePressed);
@@ -154,7 +180,11 @@ export default class SphereFrame extends VueComponent {
   @Watch("canvasSize")
   onCanvasResize(size: number): void {
     (this.twoInstance.renderer as any).setSize(size, size);
-    this.sphereCanvas.translation.set(size / 2, size / 2);
+    // Move the origin of all layers to the center of the viewport
+    this.layers.forEach(z => {
+      z.translation.set(this.canvasSize / 2, this.canvasSize / 2);
+    });
+
     const radius = size / 2 - 16; // 16-pixel gap
     this.$store.commit("setSphereRadius", radius);
 
@@ -241,6 +271,16 @@ export default class SphereFrame extends VueComponent {
         l.accept(this.visitor as Visitor);
       });
     }
+  }
+
+  handleInsertPoint(e: unknown): void {
+    console.debug("Adding point", e);
+    const p = new Point();
+    const vtx = new SEPoint(p);
+    vtx.positionOnSphere = (e as any).position;
+    // p.addToLayers(this.layers);
+    // this.layers[LAYER.foregroundPoints].add(p);
+    new AddPointCommand(vtx).execute();
   }
 
   @Watch("editMode")
