@@ -1,6 +1,5 @@
 ---
 title: About
-sidebarDepth: 1
 lang: en-US
 prev: /
 ---

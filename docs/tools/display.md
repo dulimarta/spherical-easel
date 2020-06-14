@@ -1,6 +1,5 @@
 ---
 title: Display Tools
-sidebarDepth: 2
 lang: en-US
 ---
 
@@ -59,7 +58,7 @@ Move the location of a single object.
 - **Not** all objects are movable. Only free objects are movable. For example, an intersection point (which is on the third layer) of two circles (on the second layer) depends on the two circles and **cannot** be independently moved. However, each circle can be moved because the points on which the circle itself depends are at the top (i.e. first layer) of the dependency structure.
 - Moving a free circle or ellipse is the same thing as simultaneously moving the points or objects on which it depends.
 - Non-ellipse conics and parametric curves (user defined) are never moveable. Parametric curves can be moved using a Measurement object in the parametric definition.
-- Moving a line or line segment rotates that line about the axis connecting the first point on the line to the antipode of that first point.
+- Moving a line or line segment rotates that line about the axis connecting the first point on the line or line segment to the antipode of that first point.
 - If this tool is activated with any single free object selected, clicking and dragging the mouse will change the location of that object.
   :::
 
@@ -74,5 +73,5 @@ Rotate the current view.
 
 - Clicking and dragging will change the current view of the sphere. The mouse press location is moved to the current location of the mouse while dragging. The mouse release location sets the final view of the sphere.
 - If the [Momentum](/userguide/#top-region-title-bar) feature is activated, then after the mouse is released, the view will continue to change. If the Decay value is set to 1 the view will continue to rotate indefinitely. To stop all rotation either click at a location or deactivate this tool.
-- If this tool is activated with a point or line selected, clicking and dragging will either rotate around that point or along that line (i.e. around the poles of the line). Mouse release will stop the rotation (except for the [Momentum](/userguide/#top-region-title-bar) rotation). To stop the rotation click at a location. To rotate in a different way, deactivate the tool (by selecting another one) to clear the selected objects and then select the Rotation Tool again.  
+- If this tool is activated with a single point or line segment or line selected, clicking and dragging will either rotate around that point or along that line segment or line (i.e. around the poles of the line or the line containing the line segment). Mouse release will stop the rotation (except for the [Momentum](/userguide/#top-region-title-bar) rotation). To stop the rotation click at a location. To rotate in a different way, deactivate the tool (by selecting another one) to clear the selected objects and then select the Rotation Tool again.  
   :::

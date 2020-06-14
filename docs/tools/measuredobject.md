@@ -1,6 +1,5 @@
 ---
 title: Measured Object Tools
-sidebarDepth: 2
 lang: en-US
 ---
 

@@ -1,6 +1,5 @@
 ---
 title: Construction Tools
-sidebarDepth: 2
 lang: en-US
 ---
 
@@ -158,7 +157,7 @@ Attach or detach a point from an object.
 ::: tool-details
 
 - Select an existing point that is attached (ie. "on" or "glued to") a one-dimensional object and it becomes detached from that object.
-- Select an existing point that is free (i.e. at the top layer of the dependency structure - for more information see the [Move Tool](/tools/display.html#move) -- and then a one-dimensional object and it becomes attached to that object.
+- Select an existing point that is free (i.e. at the top layer of the dependency structure - for more information see the [Move Tool](/tools/display.html#move)) and then a one-dimensional object and it becomes attached to that object.
 - If this tool is activated with any objects selected, they are all unselected and ignored.
   :::
 

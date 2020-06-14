@@ -1,6 +1,5 @@
 ---
 title: Measurement Tools
-sidebarDepth: 2
 lang: en-US
 ---
 
@@ -20,7 +19,6 @@ Measure the length of a line segment.
 - Select a line segment to measure its length.
 - The measured length can be larger than $\pi$, but is always less than $2\pi$.
 - When a length measurement is created, a row describing some of its properties (including its value) will appear in the Measurement Section of the [Objects Tab](/userguide/#objects-tab).
-- When this tool is activated all previously selected objects are unselected and ignored.
 - If this tool is activated with a line segment selected the above action is performed automatically.
 
 ::: tip
@@ -39,7 +37,6 @@ Measure the distance between two points.
 - Select two points to measure the distance between them.
 - The measured distance can never be larger than $\pi$.
 - When a distance measurement is created, a row describing some of its properties (including its value) will appear in the Measurement Section of the [Objects Tab](/userguide/#objects-tab).
-- When this tool is activated all previously selected objects are unselected and ignored.
 - If this tool is activated with points selected, the above action is performed automatically.
   :::
   ::: tool-title
@@ -64,6 +61,22 @@ When two line segments with a common endpoint form an angle (a geometric object)
 When two lines intersect, in a neighborhood of one of the intersection points, four angles are forms. There are two pair of vertical angles, each with a common measurement.
 
 :::
+
+::: tool-title
+
+## Coordinates
+
+:::
+::: tool-description
+Record the $x$, $y$, or $z$ coordinates of a point as a Measurement object.
+::: tool-details
+
+- Select (or create) a point to measure the distance between them.
+- After a point is selected, a dialog box is prompts to check which coordinates should be recorded.
+- For each coordinate selected a measurement is created and a row for each describing some of its properties (including its value) will appear in the Measurement Section of the [Objects Tab](/userguide/#objects-tab).
+- When this tool is activated all previously selected objects are unselected and ignored.
+- If this tool is activated with a point selected, the above action is performed automatically.
+  :::
 
 ::: tool-title
 

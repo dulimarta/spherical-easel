@@ -19,6 +19,8 @@ module.exports = {
       "vuepress-plugin-container",
       {
         type: "tool-title",
+        before: info => "",
+        after: "",
         defaultTitle: ""
       }
     ],
@@ -134,8 +136,8 @@ module.exports = {
           // ariaLabel: "Navigation Menu",
           // items: [
           { text: "Home", link: "/" },
-          { text: "About", link: "/about.md" },
-          { text: "Contact", link: "/contact.md" },
+          //{ text: "About", link: "/about.md" },
+          //{ text: "Contact", link: "/contact.md" },
           //   ]
           // },
           {
@@ -144,7 +146,7 @@ module.exports = {
             items: [
               { text: "Quick Start Guide", link: "/quickstart/" },
               { text: "User Manual", link: "/userguide/" },
-              { text: "Tools Documents", link: "/tools/" },
+              { text: "Tools Documents", link: "/tools/edit" },
               { text: "Design Documents", link: "/design/" }
             ]
           }
@@ -153,37 +155,94 @@ module.exports = {
         //Settings for the sidebar, this is done in groups so that
         // quick start, user guide, and design documents each have their own sidebar
         sidebar: {
-          //The Quick Start Side Bar options, list the files it should put into the sidebar (grabs h2 and h3 headers)
-          //TODO: The <br/> character should be a newline! I think this is a bug in the VuePress -- I can't get &nbsp; or any emoji to work in that slot either -- related to https://github.com/vuejs/vuepress/pull/206
-          "/quickstart/": [
-            ["", "Quick Start Guide<br/>Equilateral Triangles"], //Note the explicit text as the second entry in the array
-            "construct.md",
-            "explorestyle.md",
-            "measure.md",
-            "script.md"
-          ],
-          //The User Guide sidebar file list
-          "/userguide/": [""],
-          //The Design Documentation sidebar file list
-          "/design": [""],
           //The  Tools Documentation sidebar file list
           "/tools/": [
-            ["", "Tools List"],
-            "edit",
-            "display",
-            "basic",
-            "construction",
-            "measurement",
-            "conic",
-            "advanced",
-            "transformation",
-            "measuredobject"
+            "/tools/edit",
+            "/tools/display",
+            "/tools/basic",
+            "/tools/construction",
+            "/tools/measurement",
+            "/tools/conic",
+            "/tools/advanced",
+            "/tools/transformation",
+            "/tools/measuredobject",
+            "/tools/"
           ],
-          // The "fallback" side bar file list -- This is the root sidebar
+
+          //The root Or default sidebar (matches all directories so must be listed last)
           "/": [
-            "" /* / */,
-            "about" /* /about.html */,
-            "contact" /* /contact.html */
+            {
+              title: "Quick Start Guide", // required
+              //path: "/quickstart/", // optional, link of the title, which should be an absolute path and must exist
+              //collapsable: false, // optional, defaults to true
+              sidebarDepth: 0, // optional, defaults to 1
+              children: [
+                {
+                  title: "Explore Equilateral Triangles",
+                  path: "/quickstart/"
+                },
+                { title: "Construct", path: "/quickstart/construct" },
+                { title: "Style", path: "/quickstart/explorestyle" },
+                { title: "Measure", path: "/quickstart/measure" },
+                { title: "Script", path: "/quickstart/script" }
+              ]
+            },
+            {
+              //The User Guide sidebar file list
+              title: "User Manual", // required
+              //path: "/userguide/", // optional, link of the title, which should be an absolute path and must exist
+              //collapsable: false, // optional, defaults to true
+              sidebarDepth: 1, // optional, defaults to 1
+              children: [
+                { title: "Manual Overview", path: "/userguide/" },
+                { title: "Title Bar", path: "/userguide/titlebar" },
+                { title: "Sphere Canvas", path: "/userguide/spherecanvas" },
+                {
+                  title: "Tools And Objects Panel",
+                  path: "/userguide/toolsobjectspanel"
+                },
+                { title: "Style Panel", path: "/userguide/stylepanel" }
+              ]
+            },
+            {
+              //The  Tools Documentation sidebar file list
+              title: "Tool Documents", // required
+              //path: "/tools/", // optional, link of the title, which should be an absolute path and must exist
+              //collapsable: false, // optional, defaults to true
+              sidebarDepth: 0, // optional, defaults to 1
+              children: [
+                "/tools/edit",
+                "/tools/display",
+                "/tools/basic",
+                "/tools/construction",
+                "/tools/measurement",
+                "/tools/conic",
+                "/tools/advanced",
+                "/tools/transformation",
+                "/tools/measuredobject",
+                "/tools/"
+              ]
+            },
+            {
+              //The Design Documentation sidebar file list
+              title: "Design Documents", // required
+              //path: "/design/", // optional, link of the title, which should be an absolute path and must exist
+              //collapsable: false, // optional, defaults to true
+              sidebarDepth: 1, // optional, defaults to 1
+              children: ["/design/"]
+            },
+            {
+              // The "fallback" side bar file list -- This is the root sidebar
+              title: "More Information", // required
+              //path: "/about", // optional, link of the title, which should be an absolute path and must exist
+              collapsable: false, // optional, defaults to true
+              //sidebarDepth: 1, // optional, defaults to 1
+              children: [
+                "" /* / */,
+                "about" /* /about.html */,
+                "contact" /* /contact.html */
+              ]
+            }
           ]
         },
         //display the header in the sidebar from *all* pages not just the active one

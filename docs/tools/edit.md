@@ -1,6 +1,7 @@
 ---
 title: Edit Tools
 lang: en-US
+prev: /userguide/
 ---
 
 # Edit Tools
@@ -17,9 +18,7 @@ Each of these tools allows the user to edit an arrangement.
 
 Select object(s) to change their visual style or to perform actions on them with other tools.
 
-::: tool-details
-
-**Selecting Objects:**
+::: tool-details Selecting Objects:
 
 - All selected objects will glow (i.e. have a highlight color displayed in the background of the object).
 - To selecting multiple objects, mouse drag and create a rectangle. Anything (TODO: entirely? partially?) with in that region will be selected when the mouse is released.

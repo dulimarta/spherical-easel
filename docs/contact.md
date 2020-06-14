@@ -1,6 +1,5 @@
 ---
 title: Contact
-sidebarDepth: 1
 lang: en-US
 next: /quickstart/
 ---
