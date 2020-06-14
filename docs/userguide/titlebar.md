@@ -11,11 +11,13 @@ The Title Bar is across the top and includes a File System icon (TODO:AddIconIma
 
 This menu allows you to select among the following options:
 
-- New (prompts user to save and then clear the sphereCanvas)
+- New (prompts user to save and then resets the app)
 - Save (prompts user to select save location - saves text file? - Save to server?)
+- Save As
 - Open (Prompts use to find a previously saved easel session)
 - Export (prompts user to select among SVG, EPS, TikZ)
 - Import (To import a file, it must be a plain text file (containing JavaScript?) in the format of a list of points and a list of faces like [this](./importfileexample.md). All points will be normalized to have length one automatically. ??? TODO: Not sure how this might work just guessing right now.)
+- Close (Clear all and close browser tab)
 
 ## Global Settings
 

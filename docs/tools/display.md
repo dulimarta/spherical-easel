@@ -18,9 +18,10 @@ Hide selected objects.
 ::: tool-details
 
 - Clicking at a location hides all nearby objects.
-- When an object is hidden its label is also hidden.
+- When an object is hidden its label is also hidden. However, after using this tool, you can select the object in the Objects Tab and then use the Style Panel to show the label. This allows the user to hide an angle marker and but then use the angle marker's label to display text to label the angle.
 - When hiding a line segment or point that is part of a [Measured Angle](/tools/measurement.html#angle) and an angle marker is display, hiding that object will also hide the angle marker.
-- If this tool is activated with any objects selected, the select objects are hidden automatically.
+- If the user would like to show all hidden objects, hold the <kbd>S</kbd> key and click on the Sphere Canvas and all hidden objects will be shown.
+- If this tool is activated with any objects selected, the selected objects are hidden automatically.
   ::: tip
   If when clicking at a location more than one object becomes hidden and this is not the desired behavior, then Undo you first action, change to the [Selection Tool](edit.html#selection), and then select the object or objects to be hidden. Then activating this tool will hide the selected objects.
   :::
@@ -35,11 +36,18 @@ Hide or show the label of selected objects.
 ::: tool-details
 
 - Clicking at a location toggles the display of all nearby objects' label.
+- If the user would like to
+
+  - only show labels when clicking, hold the <kbd>S</kbd> keys and click on the Sphere Canvas. All nearby objects will have their labels shown.
+  - only hide labels when clicking, hold the <kbd>H</kbd> keys and click on the Sphere Canvas. All nearby objects will have their labels hidden.
+  - show all object's labels, hold the <kbd>Shift</kbd> + <kbd>S</kbd> key and click once on the Sphere Canvas. All labels will be shown.
+  - hide all object's labels, hold the <kbd>Shift</kbd> + <kbd>H</kbd> key and click once on the Sphere Canvas. All labels will be hidden.
+
 - To toggle the display of a label, the user can click directly on (or near) the label or can click on (or near) the object to which it is attached.
 - If this tool is activated with any objects selected, the display of the selected objects' label is toggled automatically.
 
   ::: tip
-  If when clicking at a location more than one object's label becomes hidden or shows and this is not the desired behavior, then Undo you first action, change to the [Selection Tool](edit.html#selection), and then select the object or objects whose label's you want to toggle. Then activating this tool will toggle the appropriate labels.
+  If when clicking at a location more than one object's label becomes hidden or shown and this is not the desired behavior, then Undo you first action, change to the [Selection Tool](edit.html#selection), and then select the object or objects whose label's you want to toggle. Then activating this tool will toggle the appropriate labels.
   :::
 
 ::: tool-title
@@ -57,7 +65,7 @@ Move the location of a single object.
   - Those points that are either created with the [Point On Object Tool](/tools/construction.html#point-on-object) or are automatically created in this way when creating another object.
 - **Not** all objects are movable. Only free objects are movable. For example, an intersection point (which is on the third layer) of two circles (on the second layer) depends on the two circles and **cannot** be independently moved. However, each circle can be moved because the points on which the circle itself depends are at the top (i.e. first layer) of the dependency structure.
 - Moving a free circle or ellipse is the same thing as simultaneously moving the points or objects on which it depends.
-- Non-ellipse conics and parametric curves (user defined) are never moveable. Parametric curves can be moved using a Measurement object in the parametric definition.
+- Non-ellipse conics and parametric curves (user defined) are never moveable. Parametric curves can be "moved" using a Measurement object in the parametric definition.
 - Moving a line or line segment rotates that line about the axis connecting the first point on the line or line segment to the antipode of that first point.
 - If this tool is activated with any single free object selected, clicking and dragging the mouse will change the location of that object.
   :::

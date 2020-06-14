@@ -122,8 +122,8 @@ Create a polygon. [This is a challenging tool to create because the shading will
 - The inside of the polygon is alway the region that is to the left of a person walking along the edges on the outside of the sphere.
 - When a polygon is created, a row describing some of its properties will appear in the Polygon Section of the [Objects Tab](/userguide/#objects-tab).
 - If this tool is activated with a cycle of line segments, or a collection of points, selected the above action is performed automatically.
-
-:::
+- This is hard because the polygon is not necessarily convex and may be crossed! Perhaps restrict to convex polygons or only promise the user that the tool will work as described for convex polygons
+  :::
 
 ::: tool-title
 

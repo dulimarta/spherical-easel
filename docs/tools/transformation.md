@@ -102,6 +102,8 @@ Apply a previously created transformation to objects
 ::: tool-details
 
 - Select a transformation from the Transformation Section of the [Objects Tab](/userguide/#objects-tab) to determine which transformation to apply. After this all mouse release events will transform a selected object according to the transformation selected.
+- Notice that after you have selected a transformation to apply a snackbar message across the bottom of the screen indicates which transformation you are applying.
+- Transformations cannot be applied to Parametric Curves, Text, Angle Markers, Labels, and Sliders.
 - When this tool is activated all previously selected objects are unselected and ignored.
 
 :::
