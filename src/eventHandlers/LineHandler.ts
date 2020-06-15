@@ -60,7 +60,6 @@ export default class LineHandler extends SelectionHandler {
         this.tmpVector
           .crossVectors(this.startV3Point, this.currentSpherePoint)
           .normalize();
-        console.debug(`LH: circle orientation: ${this.tmpVector.toFixed(2)}`);
         this.circleOrientation.sphereLocation = this.tmpVector; // for debugging
         this.line.endPoint = this.currentSpherePoint;
       }

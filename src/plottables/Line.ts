@@ -1,9 +1,10 @@
 import { Vector3, Matrix4 } from "three";
-import Two from "two.js";
+import Two, { Vector } from "two.js";
 import SETTINGS, { LAYER } from "@/global-settings";
 import Nodule from "./Nodule";
 
 const SUBDIVS = 100;
+// const XAxis = new Vector3(1, 0, 0);
 /**
  * Geodesic line on a circle
  *
@@ -31,6 +32,10 @@ export default class Line extends Nodule {
   private frontHalf: Two.Path;
   private backHalf: Two.Path;
   private points: Vector3[];
+
+  // The following lines are for debugging only
+  private majorAxis: Two.Line;
+  private minorAxis: Two.Line;
 
   constructor(start?: Vector3, end?: Vector3, segment?: boolean) {
     super();
@@ -85,6 +90,17 @@ export default class Line extends Nodule {
       this.name = "Segment-" + this.id;
     }
     this.noFill();
+
+    // For debugging only
+    this.majorAxis = new Two.Line(0, 0, SETTINGS.boundaryCircle.radius, 0); // Along the X-axis
+    this.majorAxis.stroke = "red";
+    this.majorAxis.linewidth = 5;
+    this.minorAxis = new Two.Line(0, 0, 0, SETTINGS.boundaryCircle.radius / 2); // Along the y-axis
+    this.minorAxis.stroke = "green";
+    this.minorAxis.linewidth = 3;
+
+    // Enable the following for debugging
+    // this.add(this.majorAxis, this.minorAxis);
   }
   frontGlowStyle(): void {
     this.oldFrontStroke = this.frontHalf.stroke;
@@ -109,22 +125,18 @@ export default class Line extends Nodule {
   // Recalculate the ellipse in 2D
   // FIXME: the circle does not accurately pass thro its end point?
   private deformIn2D(): void {
-    // console.debug(this.normalDirection.toFixed(2));
     // The ellipse major axis on the XY plane is perpendicular
     // to the circle normal [Nx,Ny,Nz]. We can fix the direction of
     // the major axis to [-Ny,Nx, 0] (pointing "left") and use these numbers
     // to compute the angle between the major axis and the viewport X-axis
+
     this.majorAxisDirection
       .set(-this.normalDirection.y, this.normalDirection.x, 0)
       .normalize();
-
-    // console.debug(this.majorAxisDirection.toFixed(3));
-    // this.leftMarker.positionOnSphere = this.majorAxisDirection;
-    const angleToMajorAxis = Math.atan2(
-      this.majorAxisDirection.y,
-      this.majorAxisDirection.x
-    );
-    // console.debug("Angle of major axis", angleToMajorAxis);
+    const angleToMajorAxis =
+      Math.atan2(this.majorAxisDirection.y, this.majorAxisDirection.x) *
+      Math.sign(this.normalDirection.z);
+    // this.majorAxis.vertices[1].x = SETTINGS.boundaryCircle.radius;
     // This rotation applies to the ENTIRE group
     // but in addtoLayers() we must copy the rotation to each group member
     this.rotation = angleToMajorAxis;
@@ -132,47 +144,66 @@ export default class Line extends Nodule {
     // Calculate the length of its minor axes from the non-rotated ellipse
     const cosAngle = Math.cos(angleToMajorAxis); // cos(-x) = cos(x)
     const sinAngle = Math.sin(-angleToMajorAxis);
-    // (Px,Py) is the projected start point of the non-rotated ellipse
+    // (Px,Py) is the projected start point of the unrotated ellipse
+
     // apply the reverse rotation to the start point
     const px = cosAngle * this.start.x - sinAngle * this.start.y;
-    const py = sinAngle * this.start.x + cosAngle * this.start.y;
+    let py = sinAngle * this.start.x + cosAngle * this.start.y;
 
     // Use ellipse equation to compute minorAxis given than majorAxis is 1
-    const minorAxis = Math.sqrt((py * py) / (1 - px * px));
+    const minorLength = Math.sqrt((py * py) / (1 - px * px));
     let numSubdivs = this.frontHalf.vertices.length;
-    const radius = SETTINGS.boundaryCircle.radius;
+    const RADIUS = SETTINGS.boundaryCircle.radius;
+    this.minorAxis.vertices[1].y = minorLength * RADIUS;
     // When the Z-value is negative, the front semicircle
     // is projected above the back semicircle
     const flipSign = Math.sign(this.normalDirection.z);
     if (this.segment) {
-      // FIXME: the position of arc end points are not accurate
-      // Readjust arc length
+      // apply the reverse rotation to the start point
+      const qx = cosAngle * this.end.x - sinAngle * this.end.y;
+      let qy = sinAngle * this.end.x + cosAngle * this.end.y;
+      let startAngle = Math.atan2(py, px);
+      let endAngle = Math.atan2(qy, qx);
 
-      const startAngle = this.majorAxisDirection.angleTo(this.start);
-      const totalArcLength = this.start.angleTo(this.end);
+      // Retain the Y-coord sign of the unscaled points
+      py = Math.sqrt(1 - px * px) * Math.sign(py);
+      qy = Math.sqrt(1 - qx * qx) * Math.sign(qy);
+      // console.debug(
+      //   `Unrotate and unscaled points (${px.toFixed(3)},${py.toFixed(3)})` +
+      //     " and " +
+      //     `(${qx.toFixed(3)},${qy.toFixed(3)})`
+      // );
+      // Angles of the unscaled points
+      startAngle = Math.atan2(py, px);
+      endAngle = Math.atan2(qy, qx);
+      if (startAngle > endAngle) {
+        // Be sure to start from the smaller angle
+        const tmp = startAngle;
+        startAngle = endAngle;
+        endAngle = tmp;
+      }
+
+      const totalArcLength = Math.abs(startAngle - endAngle);
       // TODO: how to handle length > 180 degrees
       this.frontHalf.vertices.forEach((v, pos) => {
         const angle = startAngle + (pos * totalArcLength) / numSubdivs;
         // Don't need flipSign here because cos(-alpha) = cos(alpha)
-        v.x = radius * Math.cos(angle);
-
-        // When flipSign (Z-coord of the circle normal) is negative
-        // the semicircle must be reflected onto the Y-axis
-        v.y = minorAxis * radius * Math.sin(flipSign * angle);
+        v.x = RADIUS * Math.cos(angle);
+        v.y = minorLength * RADIUS * Math.sin(angle);
       });
     } else {
       // reposition all vertices of the front semicircle
       this.frontHalf.vertices.forEach((v, pos) => {
         const angle = (flipSign * (pos * Math.PI)) / numSubdivs;
-        v.x = radius * Math.cos(angle);
-        v.y = minorAxis * radius * Math.sin(angle);
+        v.x = RADIUS * Math.cos(angle);
+        v.y = minorLength * RADIUS * Math.sin(angle);
       });
       // reposition all vertices of the back semicircle
       numSubdivs = this.backHalf.vertices.length;
       this.backHalf.vertices.forEach((v, pos) => {
         const angle = (flipSign * (pos * Math.PI)) / numSubdivs;
-        v.x = radius * Math.cos(angle);
-        v.y = -minorAxis * radius * Math.sin(angle);
+        v.x = RADIUS * Math.cos(angle);
+        v.y = -minorLength * RADIUS * Math.sin(angle);
       });
     }
   }
@@ -250,6 +281,8 @@ export default class Line extends Nodule {
     // and the two points (start (S) and end (E)).
     // The normal of this plane is the cross product of SxE
     this.normalDirection.crossVectors(this.start, this.end).normalize();
+    // Be sure the normal direction is pointing towards the viewer
+    if (this.normalDirection.z < 0) this.normalDirection.multiplyScalar(-1);
     // this.deformIntoEllipse();
     this.deformIn2D();
   }
@@ -261,7 +294,9 @@ export default class Line extends Nodule {
   set endPoint(position: Vector3) {
     this.end.copy(position);
     this.normalDirection.crossVectors(this.start, this.end).normalize();
-    console.debug(`Line: circle orienation ${this.normalDirection.toFixed(2)}`);
+
+    // Be sure the normal direction is pointing towards the viewer
+    if (this.normalDirection.z < 0) this.normalDirection.multiplyScalar(-1);
     // this.deformIntoEllipse();
     this.deformIn2D();
   }
