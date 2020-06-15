@@ -50,8 +50,8 @@ Delete selected objects.
 ::: tool-details
 
 - Clicking at a location deletes all nearby objects.
-- When an object is deleted its label is also deleted.
-- If this tool is activated with any objects selected, the select objects are deleted automatically.
+- When an object is deleted all objects that depend on this object (including its label) are also deleted.
+- If this tool is activated with any objects selected, the selected objects are deleted automatically.
 
   ::: tip
   If when clicking at a location more than one object is deleted and this is not the desired behavior, then Undo you first action, change to the [Selection Tool](edit.html#selection), and then select the object or objects to be hidden. Then activating this tool will hide the selected objects.

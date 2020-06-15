@@ -26,20 +26,20 @@ Every time an object is created it is displayed in the sphere canvas and then li
 - [Parametric Curves](/tools/advanced.html#parametric-curve-user-defined)
 - [Transformations](/tools/transformation.html)
 - [Text](/tools/basic.html#text)
-- [Measurements](/tools/measurement.html) (Including [Sliders](/tools/measurement.html#slider))
+- [Measurements](/tools/measurement.html) (Including (?) [Sliders](/tools/measurement.html#slider))
 - [Calculations](/tools/measurement.html#calculation)
 
 Each row created includes
 
 - A button/icon to control if the object is hidden or not
 - Short [Name](/userguide/stylepanel.html#name)
-- A clickable information zone that toggles between the following two pieces of information
-  - Measurement Token followed by the measurement's value (Default display for all Measurement, Calculation, and Slider objects). Notice that by default, all displayed values are multiples of $\pi$ and so are always postpended with a $\pi$ unless the row is set not to display this way using the menu of .
-  - the [Definition Text](/userguide/stylepanel.html#definition-text) (Default display for all other objects)
+- A clickable information zone that toggles between the following two pieces of information for rows with Measurement Tokens (For the other rows only the [Definition Text](/userguide/stylepanel.html#definition-text) is shown.)
+  - A Measurement Token followed by the measurement's value (Default display for all Measurement, Calculation, and Slider objects).
+  - The [Definition Text](/userguide/stylepanel.html#definition-text) (The only information displayed for all other objects.)
 - A button/icon to pull up a menu that asks the user to select between:
   - Delete - Removes the object and all dependent objects from the arrangement.
   - Style - This option selects the object and opens the Style Panel so it can easily be edited.
-  - Display $pi$ Multiples - This is only an option for Measurement, Slider, and Calculation objects and controls if the value is displayed should be in multiples of $\pi$.
+  - Display $\pi$ Multiples - This is only an option for Measurement, Slider, and Calculation objects and controls if the value is displayed should be in multiples of $\pi$. By default, all displayed values are multiples of $\pi$ and so are always postpended with a $\pi$ unless this option is changed.
 
 Row:
 
