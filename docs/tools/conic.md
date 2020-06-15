@@ -1,6 +1,5 @@
 ---
 title: Conic Tools
-sidebarDepth: 2
 lang: en-US
 ---
 

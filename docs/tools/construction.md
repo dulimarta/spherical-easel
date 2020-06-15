@@ -1,6 +1,5 @@
 ---
 title: Construction Tools
-sidebarDepth: 2
 lang: en-US
 ---
 
@@ -83,7 +82,7 @@ Creates the antipodal point of a point.
 
 ::: tool-details
 
-- Select a point and the point that is $\pi$ way from the point is created.
+- Select a point and the point that is $\pi$ away from the point is created.
 - When an antipodal point is created, a row describing some of its properties will appear in the Points Section of the [Objects Tab](/userguide/#objects-tab).
 - If this tool is activated with a point selected the above action is performed automatically.
   :::
@@ -116,11 +115,11 @@ Creates the poles of a line or line segment.
 :::
 
 ::: tool-description
-Creates a tangent line to a one-dimensional object (excluding lines and line segments) through a point.
+Creates the tangent lines to a one-dimensional object (excluding lines and line segments) through a point.
 
 ::: tool-details
 
-- Select a non-line one-dimensional object (including conics and user-defined curves) and a point (either on the one-dimensional object or not) and the line that is tangent to the selected one-dimensional object and through the selected point is created.
+- Select a non-line one-dimensional object (including conics and user-defined curves) and a point (either on the one-dimensional object or not) and all the lines that are tangent to the selected one-dimensional object and through the selected point are created.
 - When an tangent line is created, a row describing some of its properties will appear in the Lines Section of the [Objects Tab](/userguide/#objects-tab).
 - If this tool is activated with a non-line one-dimensional object and a point selected the above action is performed automatically.
 
@@ -158,7 +157,7 @@ Attach or detach a point from an object.
 ::: tool-details
 
 - Select an existing point that is attached (ie. "on" or "glued to") a one-dimensional object and it becomes detached from that object.
-- Select an existing point that is free (i.e. at the top layer of the dependency structure - for more information see the [Move Tool](/tools/display.html#move) -- and then a one-dimensional object and it becomes attached to that object.
+- Select an existing point that is free (i.e. at the top layer of the dependency structure - for more information see the [Move Tool](/tools/display.html#move)) and then a one-dimensional object and it becomes attached to that object.
 - If this tool is activated with any objects selected, they are all unselected and ignored.
   :::
 
@@ -195,6 +194,8 @@ Create a point that is constrained to be on a one-dimensional object.
 - Click at a location near a one-dimensional object and a point is created that is constrained to be on that object.
 - This tool should not be needed because Spherical Easel always assumes that if the user attempts to create a point _**near**_ a one-dimensional object, it is assumed that the user wanted the point created _**on**_ the object (i.e. in such a way the that point is constrained to be on the object).
 - A point is constrained to be on a one-dimensional object, or "glued" to it, if you can move the point but it never leaves the object onto which it was glued.
+- You can Attach/Dettach a point from an object using the [Attach/Detach Point Tool](/tools/construction.html#attach-detach-point)
+- ?A point that is constrained to be on a polygon is merely constrained to be in the convex hull of the vertices of the polygon?
 - When a point on object is created, a row describing some of its properties will appear in the Points Section of the [Objects Tab](/userguide/#objects-tab).
 - When this tool is activated all previously selected objects are unselected and ignored.
 

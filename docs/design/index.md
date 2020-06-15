@@ -1,5 +1,4 @@
 ---
-sidebar: auto
 title: Design Document
 ---
 
@@ -40,7 +39,7 @@ Tool & Objects Panel Tabs
   [User Tools](./tools.md)
 - Object List
   - Points
-  - Segments
+  - Line Segments
   - Lines
   - Circles
   - Conics
@@ -74,7 +73,7 @@ Style Panel Tabs
 
 - Advanced
   - Script a user written script that controls some aspect (color, showing, location?) of the object
-  - Percent showing (Segments, Circles, Ellipses, Parametric -- creates a new kind of point at the endpoint)
+  - Percent showing (Line Segments, Circles, Ellipses, Parametric -- creates a new kind of point at the endpoint)
 
 Tools
 

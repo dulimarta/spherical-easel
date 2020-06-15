@@ -1,6 +1,5 @@
 ---
 title: Basic Tools
-sidebarDepth: 2
 lang: en-US
 ---
 
@@ -99,7 +98,7 @@ Create a circle.
 ::: tool-details
 
 - Mouse press to declare the center point of the circle (this might be new free point or one that snaps to an existing point, object or intersection), then drag to a second location, and mouse release to declare a point on the circle (this might be new free point or one that snaps to an existing point, object or intersection).
-- When a circle is created, a row describing some of its properties will appear in the Conics Section of the [Objects Tab](/userguide/#objects-tab).
+- When a circle is created, a row describing some of its properties will appear in the Circle Section of the [Objects Tab](/userguide/#objects-tab).
 - The first point is the center of the circle and the second point is a point on the circle. These two points determine a unique circle.
 - If this tool is activated with two points selected the above action is performed automatically where the first point is the center and the second is the point on the circle.
 
@@ -123,8 +122,8 @@ Create a polygon. [This is a challenging tool to create because the shading will
 - The inside of the polygon is alway the region that is to the left of a person walking along the edges on the outside of the sphere.
 - When a polygon is created, a row describing some of its properties will appear in the Polygon Section of the [Objects Tab](/userguide/#objects-tab).
 - If this tool is activated with a cycle of line segments, or a collection of points, selected the above action is performed automatically.
-
-:::
+- This is hard because the polygon is not necessarily convex and may be crossed! Perhaps restrict to convex polygons or only promise the user that the tool will work as described for convex polygons
+  :::
 
 ::: tool-title
 
@@ -138,6 +137,7 @@ Create text.
 ::: tool-details
 
 - Mouse release at a location to mark the location (inside or outside of the boundary circle) to place text. A popup asks for the actual text.
+- Text can include Measurement Token (which will be replaced with actual value when rendered) and [$\LaTeX$](https://en.wikipedia.org/wiki/LaTeX).
 - To edit a text object [select](/tools/edit.html#selection) it and use the Style Panel.
 - Text objects can be moved with the [Move Tool](/tools/display.html#move)/
 - When a text object is created, a row describing some of its properties will appear in the Text Section of the [Objects Tab](/userguide/#objects-tab).

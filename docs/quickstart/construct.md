@@ -1,6 +1,5 @@
 ---
 title: Constructing
-sidebarDepth: 2
 lang: en-US
 ---
 

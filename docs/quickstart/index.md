@@ -1,11 +1,10 @@
 ---
-title: Quick Start Guide
-sidebarDepth: 2
+title: Explore Equilateral Triangles
 lang: en-US
 prev: /
 ---
 
-# Quick Start Guide: Explore Equilateral Triangles
+# Explore Equilateral Triangles
 
 In the spirit of Euclid, we will guide the user through the steps to
 

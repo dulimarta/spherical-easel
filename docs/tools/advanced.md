@@ -1,6 +1,5 @@
 ---
 title: Advanced Tools
-sidebarDepth: 2
 lang: en-US
 ---
 
@@ -19,7 +18,7 @@ Create an arc of a circle.
 
 - Click to declare three points (these might be new free points or ones that snap to an existing point, object or intersection) to define the circular arc. The first point is the center of the circular arc, the second is the start point of the circular arc (and determines the radius), and the third is used to define the direction and length of the circular arc. The third point determines the angle of the arc (formed by the line segments of length les than $\pi$ from the first to second points and from the first to third points) and the side of the line containing the first two points on which the arc is drawn. (The points must be pairwise non-antipodal.)
 - Circular Arcs are extendable. When editing them in the Style Panel, under the Basic Tab there is a Extend Parameter that is initially set to the length of the circular arc. This can be set to any value between 0 and the length of the circle $2\pi\sin(r)$ where $r$ is the radius of the circle. When the value is different than the length of the original circular arc, a point is created at the endpoint. This parameter can also be set to a Measurement Object (via a Measurement Token) with value computed modulo $2\pi\sin(r)$.
-- When an ellipse is created, a row describing some of its properties will appear in the Conics Section of the [Objects Tab](/userguide/#objects-tab).
+- When an ellipse is created, a row describing some of its properties will appear in the Circle Section of the [Objects Tab](/userguide/#objects-tab).
 - If this tool is activated with three points selected, the above action is performed automatically where the first two points are the foci of the ellipse and the third is the point on the ellipse.
   :::
 
@@ -85,7 +84,7 @@ Create a circle defined by three points.
 ::: tool-details
 
 - Click to declare three points (these might be new free points or ones that snap to an existing point, object or intersection) on the circle.
-- When an circle is created, a row describing some of its properties will appear in the Conics Section of the [Objects Tab](/userguide/#objects-tab).
+- When an circle is created, a row describing some of its properties will appear in the Circle Section of the [Objects Tab](/userguide/#objects-tab).
 - If this tool is activated with three points selected, the above action is performed automatically.
   :::
 
@@ -101,10 +100,11 @@ Create a curve based on user supplied parametric description.
 
 - Activating this tool creates a dialog box where the user can enter the parametric description of a spherical curve.
 - The curve can be entered in $P(t) = \langle x(t), y(t), z(t)\rangle$ format where the curve is traced out for $t$ values between lower ($t_l$) and upper ($t_u$) bounds, both user supplied.
-- The parametric description can depend on a Measurement Object Token.
+- The parametric description can depend on a Measurement Token.
 - If the $z(t)$ argument is missing it is assumed that $z(t) = \sqrt{1- (x(t)^2 + y(t)^2)}$.
 - The curve can be open or closed. Closed means the curve drawn so as to connect $P(t_l)$ and $P(t_u)$.
 - When drawn the curve is scaled so $||P(t)|| =1$ for all $t$.
+- A parametric curve can be edited in the Advanced Tab of the Style Panel.
 - When a parametric curve is created, a row describing some of its properties will appear in the Parametric Section of the [Objects Tab](/userguide/#objects-tab).
 - If this tool is activated with any objects selected, they are all unselected and ignored.
   :::
@@ -129,6 +129,8 @@ Create the conic defined by 5 points.
 ::: tool-title
 
 ## Holonomy
+
+## Parallel Transport
 
 ## Center of Similitude
 
