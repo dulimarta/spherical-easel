@@ -30,7 +30,10 @@ export default class Line extends Nodule {
   private transformMatrix = new Matrix4();
   private segment: boolean;
   private frontHalf: Two.Path;
+  private frontArcLen = 0;
   private backHalf: Two.Path;
+  private backArcLen = 0;
+
   private points: Vector3[];
 
   // The following lines are for debugging only
@@ -79,28 +82,23 @@ export default class Line extends Nodule {
     this.normalDirection = new Vector3();
     this.normalDirection.crossVectors(this.start, this.end);
     this.segment = segment || false;
-    // this.scaleVector = new Two.Vector(1, 1);
-    this.add(this.frontHalf);
-    if (!segment) {
-      // FIXME: how to handle segments longer than 180 degrees?
-      this.add(this.backHalf);
-      this.name = "Line-" + this.id;
-    } else {
-      // Line segment does not a back semicircle
-      this.name = "Segment-" + this.id;
-    }
-    this.noFill();
+    this.frontHalf.noFill();
+    this.backHalf.noFill();
+    // The back half will be dynamically added to the group
+    this.name = (this.segment ? "Segment-" : "Line-") + this.id;
 
     // For debugging only
-    this.majorAxis = new Two.Line(0, 0, SETTINGS.boundaryCircle.radius, 0); // Along the X-axis
+    // Major axis is along the X-axis
+    this.majorAxis = new Two.Line(0, 0, SETTINGS.boundaryCircle.radius, 0);
     this.majorAxis.stroke = "red";
     this.majorAxis.linewidth = 5;
-    this.minorAxis = new Two.Line(0, 0, 0, SETTINGS.boundaryCircle.radius / 2); // Along the y-axis
+    // Minor axis is along the Y-axis
+    this.minorAxis = new Two.Line(0, 0, 0, SETTINGS.boundaryCircle.radius / 2);
     this.minorAxis.stroke = "green";
     this.minorAxis.linewidth = 3;
 
     // Enable the following for debugging
-    // this.add(this.majorAxis, this.minorAxis);
+    this.add(this.majorAxis, this.minorAxis);
   }
   frontGlowStyle(): void {
     this.oldFrontStroke = this.frontHalf.stroke;
@@ -125,6 +123,7 @@ export default class Line extends Nodule {
   normalStyle(): void {
     console.debug("Not implemented");
   }
+
   glowStyle(): void {
     // console.debug("Not implemented");
   }
@@ -190,15 +189,44 @@ export default class Line extends Nodule {
         endAngle = tmp;
       }
 
-      const totalArcLength = Math.abs(startAngle - endAngle);
-      // TODO: how to handle length > 180 degrees
-      this.frontHalf.vertices.forEach((v, pos) => {
-        const angle = startAngle + (pos * totalArcLength) / numSubdivs;
-        // Don't need flipSign here because cos(-alpha) = cos(alpha)
-        v.x = RADIUS * Math.cos(angle);
-        v.y = minorLength * RADIUS * Math.sin(angle);
-      });
+      // console.debug(
+      //   `Arc from ${startAngle
+      //     .toDegrees()
+      //     .toFixed(2)} to ${endAngle.toDegrees().toFixed(2)}`
+      // );
+      this.backHalf.remove();
+      this.frontHalf.remove();
+
+      // The front half can't be negative
+      // if startAngle is negative we start at zero
+      const frontStart = Math.max(0, startAngle);
+      this.frontArcLen = endAngle - frontStart;
+      if (this.frontArcLen > 0) {
+        this.frontHalf.vertices.forEach((v, pos) => {
+          const angle = frontStart + (pos * this.frontArcLen) / numSubdivs;
+          // Don't need flipSign here because cos(-alpha) = cos(alpha)
+          v.x = RADIUS * Math.cos(angle);
+          v.y = minorLength * RADIUS * Math.sin(angle);
+        });
+        this.add(this.frontHalf);
+      }
+      // The back half can't be positive
+      // if endAngle is positive, we end at zero
+      const backEnd = Math.min(0, endAngle);
+      this.backArcLen = backEnd - startAngle;
+      if (this.backArcLen > 0) {
+        this.backHalf.vertices.forEach((v, pos) => {
+          const angle = startAngle + (pos * this.backArcLen) / numSubdivs;
+          // Don't need flipSign here because cos(-alpha) = cos(alpha)
+          v.x = RADIUS * Math.cos(angle);
+          v.y = minorLength * RADIUS * Math.sin(angle);
+        });
+        this.add(this.backHalf);
+      }
     } else {
+      // We are rendering both semicircles
+      this.add(this.frontHalf, this.backHalf);
+
       // reposition all vertices of the front semicircle
       this.frontHalf.vertices.forEach((v, pos) => {
         const angle = (flipSign * (pos * Math.PI)) / numSubdivs;
@@ -325,10 +353,6 @@ export default class Line extends Nodule {
   // The builtin clone() does not seem to work correctly
   clone(): this {
     const dup = new Line(this.start, this.end, this.segment);
-    //   (dup.geometry as BufferGeometry).copy(
-    //     (this.geometry as BufferGeometry).clone()
-    //   );
-    //   dup.rotation.copy(this.rotation);
     dup.name = this.name;
     dup.start.copy(this.start);
     dup.end.copy(this.end);
@@ -337,7 +361,8 @@ export default class Line extends Nodule {
     dup.rotation = this.rotation;
     dup.frontHalf.rotation = this.frontHalf.rotation;
     dup.backHalf.rotation = this.backHalf.rotation;
-
+    dup.frontArcLen = this.frontArcLen;
+    dup.backArcLen = this.backArcLen;
     dup.frontHalf.vertices.forEach((v, pos) => {
       v.copy(this.frontHalf.vertices[pos]);
     });
@@ -348,17 +373,19 @@ export default class Line extends Nodule {
   }
 
   addToLayers(layers: Two.Group[]): void {
-    this.frontHalf.addTo(layers[LAYER.foreground]);
-    // Copy the group rotation to individual group member
-    this.frontHalf.rotation = this.rotation;
-    if (!this.isSegment) {
+    if (this.frontArcLen > 0) {
+      this.frontHalf.addTo(layers[LAYER.foreground]);
+      // Copy the group rotation to individual group member
+      this.frontHalf.rotation = this.rotation;
+    }
+    if (this.backArcLen > 0) {
       this.backHalf.addTo(layers[LAYER.background]);
-
+      // Copy the group rotation to individual group member
       this.backHalf.rotation = this.rotation;
     }
   }
   removeFromLayers(/*layers: Two.Group[]*/): void {
     this.frontHalf.remove();
-    if (!this.isSegment) this.backHalf.remove();
+    this.backHalf.remove();
   }
 }
