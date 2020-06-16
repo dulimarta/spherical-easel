@@ -13,7 +13,7 @@ import Vue from "vue";
 import Component from "vue-class-component";
 import { Prop } from "vue-property-decorator";
 import { Vector3, Matrix4 } from "three";
-import { State } from 'vuex-class';
+import { State } from "vuex-class";
 
 /**
  * This component is a wrapper that adds zoom in/out feature to its
@@ -23,7 +23,7 @@ import { State } from 'vuex-class';
  * Properties:
  * view-height the content height
  * min-zoom: the minimum zoom factor when further zoom out is ignored
- * max-zoem: the maximum zoom factor when further zoom in is ignored
+ * max-zoom: the maximum zoom factor when further zoom in is ignored
  *
  * Events:
  *   max-zoom-out: emitted when reaching max-zoom limit
@@ -74,13 +74,16 @@ export default class ZoomViewport extends Vue {
     el.addEventListener("resize", () => {
       // eslint-disable-next-line no-debugger
       debugger;
-      console.debug("Resized!!!")
-    })
+      console.debug("Resized!!!");
+    });
     // el.addEventListener("wheel", this.zoomer, { passive: true });
     this.parentBox = el.getBoundingClientRect();
     // eslint-disable-next-line no-debugger
     debugger;
-    console.debug(`Parent at mounted: ${this.viewWidth}x${this.viewHeight} Sphere radius ${this.sphereRadius}`, this.$store.state)
+    console.debug(
+      `Parent at mounted: ${this.viewWidth}x${this.viewHeight} Sphere radius ${this.sphereRadius}`,
+      this.$store.state
+    );
 
     // el.addEventListener("mousemove", this.mover);
   }
@@ -92,7 +95,9 @@ export default class ZoomViewport extends Vue {
     // changes dimension
     const boxNow = el.getBoundingClientRect();
     this.parentBox = el.getBoundingClientRect();
-    console.debug(`Parent at update: ${this.parentBox.width}x${this.parentBox.height} ${this.sphereRadius}`)
+    console.debug(
+      `Parent at update: ${this.parentBox.width}x${this.parentBox.height} ${this.sphereRadius}`
+    );
     this.viewMatrix.makeOrthographic(
       -this.sphereRadius,
       this.sphereRadius,
@@ -101,7 +106,11 @@ export default class ZoomViewport extends Vue {
       -1,
       +1
     );
-    this.tmpMatrix.makeTranslation(-this.parentBox.width / 2, -this.parentBox.height / 2, 0)
+    this.tmpMatrix.makeTranslation(
+      -this.parentBox.width / 2,
+      -this.parentBox.height / 2,
+      0
+    );
     this.viewMatrix.multiply(this.tmpMatrix);
   }
 
