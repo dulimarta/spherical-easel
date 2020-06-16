@@ -46,7 +46,7 @@ export default class PointHandler extends SelectionHandler {
     if (hitPoints.length > 0) return;
     if (event.shiftKey) {
       // Ignore the current sign, force it to be always negative
-      this.currentSpherePoint.z *= -1 * Math.abs(this.currentSpherePoint.z);
+      this.currentSpherePoint.z = -1 * Math.abs(this.currentSpherePoint.z);
     }
     (this.frontPortion as any).visible = false;
     (this.backPortion as any).visible = false;

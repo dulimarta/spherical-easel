@@ -146,8 +146,8 @@ export default class Point extends Nodule {
   addToLayers(layers: Two.Group[]): void {
     layers[LAYER.foregroundPoints].add(this.frontPoint);
     layers[LAYER.foregroundPointsGlowing].add(this.glowingFrontPoint);
-    layers[LAYER.foregroundPoints].add(this.backPoint);
-    layers[LAYER.backgroundPoints].add(this.glowingBackPoint);
+    layers[LAYER.backgroundPoints].add(this.backPoint);
+    layers[LAYER.backgroundPointsGlowing].add(this.glowingBackPoint);
     this.normalStyle();
   }
 
