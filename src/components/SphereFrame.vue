@@ -90,7 +90,12 @@ export default class SphereFrame extends VueComponent {
     this.boundaryCircle.noFill();
     this.boundaryCircle.linewidth = SETTINGS.line.thickness;
     this.layers[LAYER.midground].add(this.boundaryCircle);
-
+    // const box1 = new Two.Rectangle(-100, 150, 100, 150);
+    // box1.fill = "hsl(200,80%,50%)";
+    // const box2 = new Two.Rectangle(100, 150, 100, 150);
+    // box2.fill = "red";
+    // box1.addTo(this.layers[LAYER.background]);
+    // box2.addTo(this.layers[LAYER.foregroundText]);
     const R = SETTINGS.boundaryCircle.radius;
 
     const t1 = new Two.Text("Text must be upright", 50, 80, {
