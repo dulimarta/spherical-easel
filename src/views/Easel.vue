@@ -24,13 +24,9 @@
         <v-row>
           <v-col cols="12">
             <v-btn-toggle class="accent">
-              <v-tooltip
-                bottom
-                :open-delay="toolTipOpenDelay"
-                :close-delay="toolTipCloseDelay"
-              >
+              <v-tooltip bottom :open-delay="toolTipOpenDelay" :close-delay="toolTipCloseDelay">
                 <!-- TODO: Move these edit controls to the the panel containing the sphere. 
-        When not available they should be greyed out (i.e. disabled).-->
+                When not available they should be greyed out (i.e. disabled).-->
                 <template v-slot:activator="{ on }">
                   <v-btn icon @click="undoEdit" v-on="on">
                     <v-icon>mdi-undo</v-icon>
@@ -38,11 +34,7 @@
                 </template>
                 <span>{{ $t("main.UndoLastAction") }}</span>
               </v-tooltip>
-              <v-tooltip
-                bottom
-                :open-delay="toolTipOpenDelay"
-                :close-delay="toolTipCloseDelay"
-              >
+              <v-tooltip bottom :open-delay="toolTipOpenDelay" :close-delay="toolTipCloseDelay">
                 <template v-slot:activator="{ on }">
                   <v-btn icon @click="redoAction" v-on="on">
                     <v-icon>mdi-redo</v-icon>
@@ -123,7 +115,7 @@ export default class Easel extends Vue {
     this.adjustSize();
   }
 
-  /** Spoit Pane resize handler
+  /** Split Pane resize handler
    * @param leftPercentage the percentage of the left pane width relative to the entire pane
    */
   dividerMoved(leftPercentage: number): void {

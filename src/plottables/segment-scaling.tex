@@ -3,6 +3,7 @@
 \usetikzlibrary{calc,intersections}
 \begin{document}
 
+\begin{figure}
 \begin{tikzpicture}[rotate=19]
     \draw[dashed] (0,0) circle (3cm);
     \coordinate (Bc) at (70:3cm);
@@ -41,18 +42,49 @@
     \node at (Ax) [below,right] {$R (r_x,r_y)$};
     \node at (Bx) [below,right] {$S (s_x,s_y)$};
 \end{tikzpicture}
-
-The red arc $AB$ is a $y$-scaled copy of the blue arc $UV$.
-
-Given the two mouse click positions $A$ and $B$,
-the steps to draw line segment (arc) $AB$:
+\caption{The red arc $AB$ is a $y$-scaled copy of the blue arc $UV$.}
+\end{figure}
+\noindent
+Given the positions $A$, $B$, and $M$ on the ideal unit 
+sphere, computed as outlined below, here are the steps to draw line segment $AB$:
 \begin{enumerate}
-    \item Compute the cross product $\mathbf N = [N_x, N_y, N_z]$ of the normal vector at $A$ and $B$ to determine the normal vector of the red circle.
-    \item Since the ellipse major is on the $XY$ plane and is $\perp$ to $\mathbf N$, we can fix the major axis direction $\vec \mathbf {PQ} = [-N_y, N_x, 0]$
+    \item If $A$ and $M$ are not nearly antipodal (i.e. the angle between $A$ and $-M$ is bigger than $SETTINGS.nearlyAntipodalAngle$) then compute the cross product $\mathbf N = [N_x, N_y, N_z]$ of the vectors $A$ and $M$ to determine the normal vector to the plane containing the red circle (i.e. the plane containing $A$, $M$, $B$, and $O$). If $A$ and $M$ are nearly antipodal let $N = A \times B$. 
+    \item The major axis of the ellipse is the intersection of the plane containing the red circle and the 
+    $XY$ plane.  This means that in an orthogonal projection of the red circle plane onto the $XY$ plane the major axis of ellipse is in the direction $\vec \mathbf {PQ} = [-N_y, N_x, 0]$
     \item Determine the angle $\alpha$ between $PQ$ and the $X$-axis
     \item Rotate $A$ and $B$ by $-\alpha$, this will let us determine the $(x,y)$-coordinates of the ``unrotated'' copy of $A$ and $B$ and \textbf{after} rotation by $-\alpha$ the following must be true: $a_x = r_x = u_x$  and $b_x = s_x = v_x$ (because $PQ$ now aligns with the $X$-axis)
 
     \item Since both $U$ and $V$ are on the unit circle, we can calculate the following quantities $u_y = \sqrt{(1 - u_x^2)}$ and $v_y = \sqrt{(1 - v_x^2)}$
 
 \end{enumerate}
+
+This is going to be unstable if $A$ and $B$ are nearly antipodal and doesn't work if $A$ and $B$ 
+are exactly antipodal.  This means that we need introduce a ``midpoint" of $A$ and $B$, called $M$,
+that is dynamically updated as the user mouse downs (at $A$) and drags. The location of  $M$ \textbf{must be} constrained as the user mouse downs and drags. The location of the mouse moved (and potential mouse release location - i.e. $B$) event is \textbf{not} the location of $B$.
+
+Let $A$ be the location in the unit sphere of the mouse down event. Initially, $M = A$. Now suppose that the user drags so that a mouse move event happens at location $C$ on the unit sphere. Let:
+\begin{itemize} 
+    \item $B$ be the displayed endpoint of the drawn line segment (could be temporary or final if $C$ is also a mouse release point), 
+    \item $M_{old} = M$, 
+    \item $U = \frac{1}{2}(A+C))$ and $T= \frac{U}{|U|}$ ($T$ is the unit normalization of the midpoint of the line segment $AC$ that goes through the sphere), and
+    \item  $\alpha = SETTINGS.maxMidpointMovementAngle$. 
+\end{itemize}
+To compute $B$ and the new $M$ use the following:
+\begin{itemize}
+    \item If the angle between $T$ and $M_{old}$ is less than $\alpha$ then $B = C$ and $M = T$.
+    \item If not then $M$ is the point on the circle of radius $\alpha$ about $M_{old}$ that is closest to $T$ and $B$ is the point so that if you normalize $\frac{1}{2} (A+B)$ you get the point $M$.\\ To compute $M$:
+    \begin{enumerate}
+        \item Let $F = M_{old} \times T$ and $G= F \times M_{old}$. (Notice that $F$, $G$, and $M_{old}$ form a unit orthogonal frame. To avoid numerical instability $F$ and $G$ might need to be normalized.)
+        \item Then $M = \cos(\alpha)M_{old} + \sin(\alpha)G$
+      \end{enumerate}
+      To compute $B$:
+      \begin{enumerate}
+          \item Let $H= A \times M$ and $J = H \times A$. (Again notice that $H$, $J$, and $A$ form a unit orthogonal frame. To avoid numerical instability $H$ and $J$ might need to be normalized.)
+          \item Let $\theta$ be the angle between $A$ and $M$, then $B = \cos(2\theta)A + \sin(2\theta)J$. (Again $B$ should be normalized.)
+      \end{enumerate}
+  \end{itemize}
+
+  
+
+
 \end{document}

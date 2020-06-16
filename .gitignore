@@ -31,3 +31,4 @@ screenshots/*
 *.fls
 *.fdb_latexmk
 *.log
+src/plottables/*.pdf
