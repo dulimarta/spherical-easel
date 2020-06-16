@@ -81,6 +81,7 @@ export default class Point extends Nodule {
     // 3D position of the point on the sphere surface
     // Use "black" as default color, convert to CSS Hex string
     this.name = "Point-" + this.id;
+    this.setAllPointsStyle();
   }
 
   frontGlowStyle(): void {
@@ -97,6 +98,11 @@ export default class Point extends Nodule {
     (this.glowingBackPoint as any).visible = true;
   }
 
+  glowStyle(): void {
+    if (this.owner.positionOnSphere.z > 0) this.frontGlowStyle();
+    else this.backGlowStyle();
+  }
+
   frontNormalStyle(): void {
     (this.frontPoint as any).visible = true;
     (this.glowingFrontPoint as any).visible = false;
@@ -109,6 +115,11 @@ export default class Point extends Nodule {
     (this.glowingFrontPoint as any).visible = false;
     (this.backPoint as any).visible = true;
     (this.glowingBackPoint as any).visible = false;
+  }
+
+  normalStyle(): void {
+    if (this.owner.positionOnSphere.z > 0) this.frontNormalStyle();
+    else this.backNormalStyle();
   }
 
   private setAllPointsStyle() {
@@ -137,11 +148,7 @@ export default class Point extends Nodule {
     layers[LAYER.foregroundPointsGlowing].add(this.glowingFrontPoint);
     layers[LAYER.foregroundPoints].add(this.backPoint);
     layers[LAYER.backgroundPoints].add(this.glowingBackPoint);
-    if (this.owner.positionOnSphere.z < 0) {
-      this.backNormalStyle();
-    } else {
-      this.frontNormalStyle();
-    }
+    this.normalStyle();
   }
 
   removeFromLayers(/*layers: Two.Group[]*/): void {

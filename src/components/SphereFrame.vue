@@ -105,12 +105,12 @@ export default class SphereFrame extends VueComponent {
     const vLine = new Two.Line(0, -R, 0, R);
     hLine.stroke = "red";
     vLine.stroke = "green";
-    this.sphereCanvas.add(
-      hLine,
-      vLine,
-      new Two.Line(100, -R, 100, R),
-      new Two.Line(-R, 100, R, 100)
-    );
+    // this.sphereCanvas.add(
+    //   hLine,
+    //   vLine,
+    //   new Two.Line(100, -R, 100, R),
+    //   new Two.Line(-R, 100, R, 100)
+    // );
     this.visitor = new PositionVisitor();
     EventBus.listen("sphere-rotate", this.handleSphereRotation);
     EventBus.listen("insert-point", this.handleInsertPoint);

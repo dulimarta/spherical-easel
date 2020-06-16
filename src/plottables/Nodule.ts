@@ -30,4 +30,6 @@ export default abstract class Nodule extends Two.Group implements Stylable {
   abstract backGlowStyle(): void;
   abstract frontNormalStyle(): void;
   abstract backNormalStyle(): void;
+  abstract normalStyle(): void;
+  abstract glowStyle(): void;
 }

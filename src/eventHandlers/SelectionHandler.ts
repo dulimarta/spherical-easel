@@ -128,7 +128,7 @@ export default abstract class SelectionHandler implements ToolStrategy {
       .length();
     if (len < 1) {
       // The cursor is inside the unit circle
-      const zCoordinate = Math.sqrt(1 - len);
+      const zCoordinate = Math.sqrt(1 - len) * (event.shiftKey ? -1 : +1);
       this.currentSpherePoint.set(
         this.mouseVector.x,
         this.mouseVector.y,
@@ -138,8 +138,8 @@ export default abstract class SelectionHandler implements ToolStrategy {
       // this.currentPoint.copy(this.mouse);
       // console.debug(`Sphere pos: ${this.currentSpherePoint.toFixed(2)}`);
       // FIXME: what if we hit multiple lines or points
-      this.hitPoint?.ref.frontNormalStyle();
-      this.hitLine?.ref.frontNormalStyle();
+      this.hitPoint?.ref.normalStyle();
+      this.hitLine?.ref.normalStyle();
       this.hitPoint = null;
       this.hitLine = null;
       this.store.getters
@@ -147,14 +147,14 @@ export default abstract class SelectionHandler implements ToolStrategy {
         .forEach((obj: SEPoint) => {
           this.hitPoint = obj;
           console.debug("Intersected with point", obj.id);
-          obj.ref.frontGlowStyle();
+          obj.ref.glowStyle();
         });
       this.store.getters
         .findNearbyLines(this.currentSpherePoint, this.currentScreenPoint)
         .forEach((obj: SELine) => {
           this.hitLine = obj;
           console.debug("Intersected with line", obj.id);
-          obj.ref.frontGlowStyle();
+          obj.ref.glowStyle();
         });
     } else {
       this.isOnSphere = false;

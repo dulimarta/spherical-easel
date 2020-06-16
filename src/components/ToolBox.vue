@@ -30,7 +30,7 @@
           <ToolButtons></ToolButtons>
         </v-tab-item>
         <v-tab-item value="objectListTab">
-          <ObjectTree>
+          <ObjectTree scene="scene">
           </ObjectTree>
         </v-tab-item>
       </v-tabs>
@@ -47,18 +47,28 @@ import Vue from "vue";
 import { Component, Prop } from "vue-property-decorator";
 import ToolButtons from "@/components/ToolButtons.vue";
 import ObjectTree from "@/components/ObjectTree.vue"
-import SETTINGS from "@/global-settings";
+import SETTINGS, { LAYER } from "@/global-settings";
+import { State } from 'vuex-class';
+import Two from 'two.js';
 
 @Component({ components: { ToolButtons, ObjectTree } })
 export default class Toolbox extends Vue {
   @Prop()
   readonly minified!: boolean;
 
+  @State
+  private layers!: Two.Group[];
+
   private leftDrawerMinified = false;
   /* Copy global setting to local variable */
   private toolTipOpenDelay = SETTINGS.toolTip.openDelay;
   private toolTipCloseDelay = SETTINGS.toolTip.closeDelay;
   private activeLeftDrawerTab = "toolListTab";
+  private scene!: Two.Group;
+
+  mounted(): void {
+    this.scene = this.layers[LAYER.midground];
+  }
 }
 </script>
 

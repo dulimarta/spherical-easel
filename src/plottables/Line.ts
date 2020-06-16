@@ -83,10 +83,10 @@ export default class Line extends Nodule {
     this.add(this.frontHalf);
     if (!segment) {
       // FIXME: how to handle segments longer than 180 degrees?
-      // Line segment does not a back semicircle
       this.add(this.backHalf);
       this.name = "Line-" + this.id;
     } else {
+      // Line segment does not a back semicircle
       this.name = "Segment-" + this.id;
     }
     this.noFill();
@@ -120,6 +120,13 @@ export default class Line extends Nodule {
   frontNormalStyle(): void {
     this.frontHalf.stroke = this.oldFrontStroke;
     this.backHalf.stroke = this.oldBackStroke;
+  }
+
+  normalStyle(): void {
+    console.debug("Not implemented");
+  }
+  glowStyle(): void {
+    // console.debug("Not implemented");
   }
 
   // Recalculate the ellipse in 2D

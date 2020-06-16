@@ -4,12 +4,13 @@ export interface Stylable {
    */
   frontGlowStyle(): void;
   backGlowStyle(): void;
-
+  glowStyle(): void;
   /**
    * Restore to normal style
    */
   frontNormalStyle(): void;
   backNormalStyle(): void;
+  normalStyle(): void;
 
   // TODO: Add more styles
 }
