@@ -128,7 +128,7 @@ export default new Vuex.Store({
     ): SEPoint[] => {
       return state.points.filter(
         p =>
-          p.isHitAt(idealPosition) ||
+          p.isHitAt(idealPosition) &&
           p.ref.translation.distanceTo(screenPosition) < PIXEL_CLOSE_ENOUGH
       );
     },
