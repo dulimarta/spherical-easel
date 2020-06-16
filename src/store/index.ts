@@ -126,19 +126,11 @@ export default new Vuex.Store({
       idealPosition: Vector3,
       screenPosition: Two.Vector
     ): SEPoint[] => {
-      return state.points.filter(p => {
-        const distanceInUnitSphere = p.positionOnSphere.distanceTo(
-          idealPosition
-        );
-        const distanceOnScreen = p.ref.translation.distanceTo(screenPosition);
-        // console.debug(
-        //   `Distance to SEPoint ${p.id}: ideal ${distanceInUnitSphere} screen ${distanceOnScreen}`
-        // );
-        return (
-          distanceInUnitSphere < SMALL_ENOUGH ||
-          distanceOnScreen < PIXEL_CLOSE_ENOUGH
-        );
-      });
+      return state.points.filter(
+        p =>
+          p.isHitAt(idealPosition) ||
+          p.ref.translation.distanceTo(screenPosition) < PIXEL_CLOSE_ENOUGH
+      );
     },
 
     /** When a point is on a geodesic circle, it has to be perpendicular to
@@ -147,17 +139,14 @@ export default new Vuex.Store({
       idealPosition: Vector3,
       screenPosition: Two.Vector
     ): SELine[] => {
-      return state.lines.filter((z: SELine) => {
-        const angleToNormal = z.normalDirection.angleTo(idealPosition);
-        // console.debug(
-        //   `Line ${z.id} angle between ${idealPosition.toFixed(
-        //     2
-        //   )} and ${z.normalDirection.toFixed(
-        //     2
-        //   )} is ${angleToNormal.toDegrees().toFixed(2)}`
-        // );
-        return Math.abs(angleToNormal - Math.PI / 2) < ANGLE_SMALL_ENOUGH;
-      });
+      return state.lines.filter((z: SELine) => z.isHitAt(idealPosition));
+    },
+    findNearbyCircles: (state: AppState) => (
+      idealPosition: Vector3,
+      screenPosition: Two.Vector
+    ): SECircle[] => {
+      console.debug("locating circles");
+      return state.circles.filter((z: SECircle) => z.isHitAt(idealPosition));
     },
     forwardTransform: (state: AppState): Matrix4 => {
       tmpMatrix.fromArray(state.transformMatElements);

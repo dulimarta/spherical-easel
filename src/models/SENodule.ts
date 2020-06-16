@@ -1,5 +1,6 @@
 import { Stylable } from "@/plottables/Styleable";
 import SETTINGS from "@/global-settings";
+import { Vector3 } from "three";
 
 let NODE_COUNT = 0;
 export abstract class SENodule {
@@ -30,6 +31,12 @@ export abstract class SENodule {
 
   /* A method to update the current SENodule on the unit sphere (used recursively)*/
   public abstract update(): void;
+
+  /**
+   * Is the object hit a point at a particular sphere location?
+   * @param spherePos
+   */
+  public abstract isHitAt(spherePos: Vector3): boolean;
 
   /* Adds a given SENodule, n, to the parent array of the current SENodule */
   public addParent(n: SENodule) {

@@ -7,6 +7,7 @@ import Two, { BoundingClientRect } from "two.js";
 import SETTINGS from "@/global-settings";
 import { SEPoint } from "@/models/SEPoint";
 import { SELine } from "@/models/SELine";
+import { SECircle } from "@/models/SECircle";
 const frontPointRadius = SETTINGS.point.temp.radius.front;
 
 /* FIXME: The 3D position and the projected 2D positions are off by a few pixels???*/
@@ -21,6 +22,7 @@ export default abstract class SelectionHandler implements ToolStrategy {
   protected currentScreenPoint: Two.Vector;
   protected hitPoint: SEPoint | null = null;
   protected hitLine: SELine | null = null;
+  protected hitCircle: SECircle | null = null;
   protected startMarker: Two.Circle;
   protected isOnSphere: boolean;
   protected transformMatrix: Matrix4;
@@ -140,8 +142,10 @@ export default abstract class SelectionHandler implements ToolStrategy {
       // FIXME: what if we hit multiple lines or points
       this.hitPoint?.ref.normalStyle();
       this.hitLine?.ref.normalStyle();
+      this.hitCircle?.ref.normalStyle();
       this.hitPoint = null;
       this.hitLine = null;
+      this.hitCircle = null;
       this.store.getters
         .findNearbyPoints(this.currentSpherePoint, this.currentScreenPoint)
         .forEach((obj: SEPoint) => {
@@ -155,6 +159,12 @@ export default abstract class SelectionHandler implements ToolStrategy {
           this.hitLine = obj;
           console.debug("Intersected with line", obj.id);
           obj.ref.glowStyle();
+        });
+      this.store.getters
+        .findNearbyCircles(this.currentSpherePoint, this.currentScreenPoint)
+        .forEach((c: SECircle) => {
+          this.hitCircle = c;
+          c.ref.glowStyle();
         });
     } else {
       this.isOnSphere = false;

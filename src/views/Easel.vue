@@ -1,6 +1,11 @@
 <template>
-  <split-pane split="vertical" :min-percent="15" :max-percent="35"
-    :default-percent="toolboxMinified ? 5 : 20" @resize="dividerMoved">
+  <split-pane
+    split="vertical"
+    :min-percent="15"
+    :max-percent="35"
+    :default-percent="toolboxMinified ? 5 : 20"
+    @resize="dividerMoved"
+  >
     <!-- Use the left page for the toolbox -->
     <template slot="paneL">
       <div>
@@ -19,8 +24,11 @@
         <v-row>
           <v-col cols="12">
             <v-btn-toggle class="accent">
-              <v-tooltip bottom :open-delay="toolTipOpenDelay"
-                :close-delay="toolTipCloseDelay">
+              <v-tooltip
+                bottom
+                :open-delay="toolTipOpenDelay"
+                :close-delay="toolTipCloseDelay"
+              >
                 <!-- TODO: Move these edit controls to the the panel containing the sphere. 
         When not available they should be greyed out (i.e. disabled).-->
                 <template v-slot:activator="{ on }">
@@ -28,27 +36,33 @@
                     <v-icon>mdi-undo</v-icon>
                   </v-btn>
                 </template>
-                <span>{{ $t('main.UndoLastAction') }}</span>
+                <span>{{ $t("main.UndoLastAction") }}</span>
               </v-tooltip>
-              <v-tooltip bottom :open-delay="toolTipOpenDelay"
-                :close-delay="toolTipCloseDelay">
+              <v-tooltip
+                bottom
+                :open-delay="toolTipOpenDelay"
+                :close-delay="toolTipCloseDelay"
+              >
                 <template v-slot:activator="{ on }">
                   <v-btn icon @click="redoAction" v-on="on">
                     <v-icon>mdi-redo</v-icon>
                   </v-btn>
                 </template>
-                <span>{{ $t('main.RedoLastAction') }}</span>
+                <span>{{ $t("main.RedoLastAction") }}</span>
               </v-tooltip>
             </v-btn-toggle>
           </v-col>
           <v-col cols="12">
             <v-row justify="center" class="pb-1">
-              <v-responsive :aspect-ratio="1"
+              <v-responsive
+                :aspect-ratio="1"
                 :max-height="currentCanvasSize"
-                :max-width="currentCanvasSize" ref="responsiveBox"
-                id="responsiveBox" class="pa-0 yellow">
-                <sphere-frame :canvas-size="currentCanvasSize">
-                </sphere-frame>
+                :max-width="currentCanvasSize"
+                ref="responsiveBox"
+                id="responsiveBox"
+                class="pa-0"
+              >
+                <sphere-frame :canvas-size="currentCanvasSize"></sphere-frame>
               </v-responsive>
             </v-row>
           </v-col>
@@ -64,7 +78,7 @@ import { Vue } from "vue-property-decorator";
 import SplitPane from "vue-splitpane";
 import Component from "vue-class-component";
 import Toolbox from "@/components/ToolBox.vue";
-import SphereFrame from "@/components/SphereFrame.vue"
+import SphereFrame from "@/components/SphereFrame.vue";
 /* Import Command so we can use the command paradigm */
 import { Command } from "@/commands/Command";
 import SETTINGS from "@/global-settings";
@@ -80,13 +94,12 @@ export default class Easel extends Vue {
   private toolTipOpenDelay = SETTINGS.toolTip.openDelay;
   private toolTipCloseDelay = SETTINGS.toolTip.closeDelay;
 
-
   $refs!: {
-    responsiveBox: VueComponent
-  }
+    responsiveBox: VueComponent;
+  };
 
   private adjustSize(): void {
-    console.info("AdjustSize()")
+    console.info("AdjustSize()");
     this.availHeight =
       window.innerHeight -
       this.$vuetify.application.footer -
@@ -114,7 +127,6 @@ export default class Easel extends Vue {
    * @param leftPercentage the percentage of the left pane width relative to the entire pane
    */
   dividerMoved(leftPercentage: number): void {
-
     this.adjustSize();
     // Calculate the width of the right panel
     const rightPanelWidth = (1 - leftPercentage / 100) * window.innerWidth;
@@ -122,7 +134,7 @@ export default class Easel extends Vue {
     // The canvas can't be bigger than its container height or the width
     // of the right panel
     if (box.height > rightPanelWidth) {
-      // FIXME: the screen flickers 
+      // FIXME: the screen flickers
       this.currentCanvasSize = rightPanelWidth;
     }
   }
@@ -142,18 +154,7 @@ export default class Easel extends Vue {
 </script>
 
 <style scoped lang="scss">
-#canvasContent {
-  height: 100%;
-  border: 2px dashed darkcyan;
-  margin: 0;
-  padding: 0;
-  /* WARNING: when the CSS transform matrix implies scaling factor > 1, the content may spill outside the bounding box of #canvasContent,
-    overflow contents must be CLIPPED (hidden)
-  */
-  overflow: hidden;
-}
-
-svg {
-  pointer-events: none;
+#responsiveBox {
+  border: 2px double darkcyan;
 }
 </style>

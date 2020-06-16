@@ -363,22 +363,28 @@ export default class Circle extends Nodule {
   }
 
   frontGlowStyle(): void {
-    throw new Error("Method not implemented.");
+    this.frontHalf.stroke = "red";
   }
   backGlowStyle(): void {
-    throw new Error("Method not implemented.");
+    this.backHalf.stroke = "red";
   }
+
   glowStyle(): void {
-    throw new Error("Method not implemented.");
+    this.frontGlowStyle();
+    this.backGlowStyle();
   }
+
   frontNormalStyle(): void {
-    throw new Error("Method not implemented.");
+    this.frontHalf.stroke = "black";
   }
+
   backNormalStyle(): void {
-    throw new Error("Method not implemented.");
+    this.backHalf.stroke = "black";
   }
+
   normalStyle(): void {
-    throw new Error("Method not implemented.");
+    this.frontNormalStyle();
+    this.backNormalStyle();
   }
 
   clone(): this {

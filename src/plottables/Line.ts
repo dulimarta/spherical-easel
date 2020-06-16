@@ -98,34 +98,35 @@ export default class Line extends Nodule {
     this.minorAxis.linewidth = 3;
 
     // Enable the following for debugging
-    this.add(this.majorAxis, this.minorAxis);
+    // this.add(this.majorAxis, this.minorAxis);
   }
+
   frontGlowStyle(): void {
     this.oldFrontStroke = this.frontHalf.stroke;
-    this.oldBackStroke = this.backHalf.stroke;
     this.frontHalf.stroke = "red";
-    this.backHalf.stroke = "red";
   }
 
   backGlowStyle(): void {
-    return void 0;
+    this.oldBackStroke = this.backHalf.stroke;
+    this.backHalf.stroke = "red";
   }
 
   backNormalStyle(): void {
-    return void 0;
+    this.backHalf.stroke = this.oldBackStroke;
   }
 
   frontNormalStyle(): void {
     this.frontHalf.stroke = this.oldFrontStroke;
-    this.backHalf.stroke = this.oldBackStroke;
   }
 
   normalStyle(): void {
-    console.debug("Not implemented");
+    this.frontNormalStyle();
+    this.backNormalStyle();
   }
 
   glowStyle(): void {
-    // console.debug("Not implemented");
+    this.frontGlowStyle();
+    this.backGlowStyle();
   }
 
   // Recalculate the ellipse in 2D
@@ -373,12 +374,12 @@ export default class Line extends Nodule {
   }
 
   addToLayers(layers: Two.Group[]): void {
-    if (this.frontArcLen > 0) {
+    if (this.frontArcLen > 0 || !this.isSegment) {
       this.frontHalf.addTo(layers[LAYER.foreground]);
       // Copy the group rotation to individual group member
       this.frontHalf.rotation = this.rotation;
     }
-    if (this.backArcLen > 0) {
+    if (this.backArcLen > 0 || !this.isSegment) {
       this.backHalf.addTo(layers[LAYER.background]);
       // Copy the group rotation to individual group member
       this.backHalf.rotation = this.rotation;

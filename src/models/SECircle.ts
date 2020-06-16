@@ -4,9 +4,6 @@ import Circle from "@/plottables/Circle";
 import { Vector3 } from "three";
 
 export class SECircle extends SENodule {
-  public update(): void {
-    throw new Error("Method not implemented.");
-  }
   public ref!: Circle;
   private normalDir: Vector3;
   private radius: number; // Arc length (in radians) not straight line distance
@@ -28,5 +25,17 @@ export class SECircle extends SENodule {
 
   get normalDirection() {
     return this.normalDir;
+  }
+
+  public isHitAt(spherePos: Vector3): boolean {
+    const angleToCenter = spherePos.angleTo(this.normalDir);
+    console.debug(
+      `Radius of point ${angleToCenter} cirle radius ${this.radius}`
+    );
+    return Math.abs(angleToCenter - this.radius) < 0.01;
+  }
+
+  public update(): void {
+    // No implementation yet
   }
 }
