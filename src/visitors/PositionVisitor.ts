@@ -14,7 +14,6 @@ export class PositionVisitor implements Visitor {
   }
 
   actionOnPoint(p: SEPoint): void {
-    // console.debug("Updating position of ", p.ref.name);
     this.tmpVector.copy(p.positionOnSphere);
     this.tmpVector.applyMatrix4(this.transformMatrix);
     p.positionOnSphere = this.tmpVector; // this doesn't make sense. the SEPoint location doesn't change under a rotation only where it is displayed changes

@@ -34,25 +34,8 @@ export class SEPoint extends SENodule implements Visitable {
 
   set positionOnSphere(pos: Vector3) {
     this._posOnSphere.copy(pos);
-
-    // Must update the corresponding TwoJS visual properties
-    // TOFIX? Does this belong here? I thought all graphical routines for displaying a point would be
-    // in the Point class
-    const twojsLine = this.ref;
-    twojsLine.translation.set(
-      pos.x * SETTINGS.boundaryCircle.radius,
-      pos.y * SETTINGS.boundaryCircle.radius
-    );
-    if (pos.z < 0) twojsLine.backNormalStyle();
-    else twojsLine.frontNormalStyle();
-
-    // console.debug(
-    //   "3D position",
-    //   pos.toFixed(2),
-    //   "translation amount ",
-    //   this.translation.x.toFixed(2),
-    //   this.translation.y.toFixed(2)
-    // );
+    this._posOnSphere.normalize();
+    this.ref.update();
   }
 
   get positionOnSphere() {

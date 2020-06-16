@@ -119,23 +119,19 @@ export default abstract class SelectionHandler implements ToolStrategy {
     );
      */
 
-    // console.debug(
-    //   `Mouse location (${event.offsetX},${event.offsetY})` +
-    //     `BndCircle pos: ${this.mouseVector.toFixed(2)} `
-    // );
     this.currentScreenPoint.set(this.mouseVector.x, this.mouseVector.y);
     /* Rescale to unit circle */
     const len = this.mouseVector
-      .multiplyScalar(1 / SETTINGS.boundaryCircle.radius)
+      // .multiplyScalar(1 / SETTINGS.boundaryCircle.radius)
       .length();
-    if (len < 1) {
+    const R = SETTINGS.boundaryCircle.radius;
+    if (len < R) {
+      const mx = this.mouseVector.x;
+      const my = this.mouseVector.y;
       // The cursor is inside the unit circle
-      const zCoordinate = Math.sqrt(1 - len) * (event.shiftKey ? -1 : +1);
-      this.currentSpherePoint.set(
-        this.mouseVector.x,
-        this.mouseVector.y,
-        zCoordinate
-      );
+      const zCoordinate =
+        Math.sqrt(R * R - (mx * mx + my * my)) * (event.shiftKey ? -1 : +1);
+      this.currentSpherePoint.set(mx, my, zCoordinate).normalize();
       this.isOnSphere = true;
       // this.currentPoint.copy(this.mouse);
       // console.debug(`Sphere pos: ${this.currentSpherePoint.toFixed(2)}`);

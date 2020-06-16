@@ -3,6 +3,9 @@ import Two from "two.js";
 import { Matrix4 } from "three";
 import SETTINGS from "@/global-settings";
 import EventBus from "./EventBus";
+import { SEPoint } from "@/models/SEPoint";
+import Point from "@/plottables/Point";
+import { AddPointCommand } from "@/commands/AddPointCommand";
 const frontPointRadius = SETTINGS.point.temp.radius.front;
 const backPointRadius = SETTINGS.point.temp.radius.back;
 export default class PointHandler extends SelectionHandler {
@@ -50,9 +53,10 @@ export default class PointHandler extends SelectionHandler {
     }
     (this.frontPortion as any).visible = false;
     (this.backPortion as any).visible = false;
-    EventBus.fire("insert-point", {
-      position: this.currentSpherePoint
-    });
+    const p = new Point();
+    const vtx = new SEPoint(p);
+    vtx.positionOnSphere = this.currentSpherePoint;
+    new AddPointCommand(vtx).execute();
   }
   // eslint-disable-next-line
   mouseReleased(event: MouseEvent): void {

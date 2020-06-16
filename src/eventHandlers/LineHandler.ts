@@ -113,11 +113,6 @@ export default class LineHandler extends SelectionHandler {
       // this.endV3Point.copy(this.currentPoint);
       const newLine = this.line.clone(); // true:recursive clone
       const lineGroup = new CommandGroup();
-      EventBus.fire("insert-line", {
-        normalDirection: this.tmpVector,
-        start: this.startPoint || this.startV3Point,
-        end: this.hitPoint || this.currentScreenPoint
-      });
       if (this.startPoint === null) {
         // Starting point landed on an open space
         // we have to create a new point
