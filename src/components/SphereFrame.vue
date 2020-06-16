@@ -119,18 +119,6 @@ export default class SphereFrame extends VueComponent {
     // );
     this.visitor = new PositionVisitor();
     EventBus.listen("sphere-rotate", this.handleSphereRotation);
-    EventBus.listen("insert-point", this.handleInsertPoint);
-
-    EventBus.listen("insert-line", (e: any) => {
-      // TODO: complete this function
-      console.debug("Insert line with normal", e.normalDirection.toFixed(2));
-      if (e.start instanceof SEPoint) {
-        console.debug("Line starts at an existing point");
-      } else console.debug("Line starts at an new point");
-      if (e.end instanceof SEPoint) {
-        console.debug("Line endss at an existing point");
-      } else console.debug("Line ends at an new point");
-    });
   }
 
   /** Apply the affine transform (m) to the entire TwoJS SVG tree! */
@@ -271,22 +259,12 @@ export default class SphereFrame extends VueComponent {
     if (this.visitor) {
       this.visitor.setTransform((e as any).transform);
       this.$store.state.points.forEach((p: SEPoint) => {
-        p.accept(this.visitor as Visitor);
+        p.accept(this.visitor);
       });
       this.$store.state.lines.forEach((l: SELine) => {
-        l.accept(this.visitor as Visitor);
+        l.accept(this.visitor);
       });
     }
-  }
-
-  handleInsertPoint(e: unknown): void {
-    console.debug("Adding point", e);
-    const p = new Point();
-    const vtx = new SEPoint(p);
-    vtx.positionOnSphere = (e as any).position;
-    // p.addToLayers(this.layers);
-    // this.layers[LAYER.foregroundPoints].add(p);
-    new AddPointCommand(vtx).execute();
   }
 
   @Watch("editMode")

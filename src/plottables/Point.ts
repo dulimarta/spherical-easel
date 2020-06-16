@@ -157,4 +157,12 @@ export default class Point extends Nodule {
     this.backPoint.remove();
     this.glowingBackPoint.remove();
   }
+
+  public update(): void {
+    this.translation.set(
+      this.owner.positionOnSphere.x * SETTINGS.boundaryCircle.radius,
+      this.owner.positionOnSphere.y * SETTINGS.boundaryCircle.radius
+    );
+    this.normalStyle();
+  }
 }
