@@ -7,7 +7,7 @@ import SETTINGS from "@/global-settings";
 
 export class SEPoint extends SENodule implements Visitable {
   /* The location of the SEPoint on the Sphere*/
-  private _posOnSphere: Vector3; //_ starts names of variable that are priivate
+  private _posOnSphere: Vector3; //_ starts names of variable that are private
 
   /* This should be the only reference to the plotted version of this SEPoint */
   public ref: Point;
@@ -15,7 +15,7 @@ export class SEPoint extends SENodule implements Visitable {
   constructor(p: Point) {
     super();
     /* Establish the link between this abstract object on the fixed unit sphere
-    and the object that helps create the coorresponding renderable object  */
+    and the object that helps create the corresponding renderable object  */
     p.owner = this; // Make the SEPoint object the owner of the Point
     this.ref = p;
     this._posOnSphere = new Vector3();
@@ -35,7 +35,7 @@ export class SEPoint extends SENodule implements Visitable {
     this._posOnSphere.copy(pos);
 
     // Must update the corresponding TwoJS visual properties
-    // TOFIX? Does this belong here? I thought all graphical routines for displayng a point would be
+    // TOFIX? Does this belong here? I thought all graphical routines for displaying a point would be
     // in the Point class
     const twojsLine = this.ref;
     twojsLine.translation.set(

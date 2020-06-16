@@ -35,7 +35,7 @@ export default {
       annularWidth: 2, // width is the width of the annular region around the point that shows the glow it is always bigger than the drawn radius
       fillColor: {
         front: "#ff0000", //"#404040", //{ r: 64, g: 64, b: 64 }, //gray
-        back: "#FF7F7F" // the back fill color is calulated using the contrast of 0.5
+        back: "#FF7F7F" // the back fill color is calculated using the contrast of 0.5
       },
       opacity: { front: 1, back: 1 }
       //no stroke or linewidth - this is highlighting the object
@@ -45,11 +45,11 @@ export default {
       radius: { front: 3, back: 3, difference: 2 }, //The front/back radius of the temp point, difference is only used if dynamic is true and difference is how much smaller the temp radius is than the drawn one.
       fillColor: {
         front: "#808080", // { r: 128, g: 128, b: 128 },
-        back: "#BFBFBF" // the back fill color is calulated using the contrast of 0.5
+        back: "#BFBFBF" // the back fill color is calculated using the contrast of 0.5
       },
       strokeColor: {
         front: "#000000", // black { r: 0, g: 0, b: 0 },
-        back: "#808080" // the back stroke color is calulated using the contrast of 0.5
+        back: "#808080" // the back stroke color is calculated using the contrast of 0.5
       },
       lineWidth: { front: 1, back: 1 }, // The thickness of the edge of the point when drawn
       opacity: { front: 1, back: 1 }
@@ -57,10 +57,10 @@ export default {
     hitPixelDistance: 8 //When a pixel distance between a mouse event and the pixel coords of a point is less than this number, it is hit
   },
   rotate: {
-    minPixelDistance: 5 // the minimumpixel distance before a new rotation is computed as we click and drag in rotate mode
+    minPixelDistance: 5 // the minimum pixel distance before a new rotation is computed as we click and drag in rotate mode
   },
-  /* Seperate the sphereCanvas into layers so that the background(one dimensional), 
-  background points, background text, midground, foreground (one dimensinal), foreground points, 
+  /* Separate the sphereCanvas into layers so that the background(one dimensional), 
+  background points, background text, midground, foreground (one dimensional), foreground points, 
   and foreground text are rendered in the right order. You can access these layers with
       //First get the scene
       const scene = this.sphereCanvas.scene;

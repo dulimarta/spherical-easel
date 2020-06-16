@@ -19,7 +19,7 @@ export abstract class SENodule {
         can exist only if the two circles are close enough to each other, but even when they are 
         far apart and the intersections don't exist, the user might drag the circles back to where
         the intersections exist). If an object doesn't exist then all of the objects that are 
-        descendents of the object don't exist. */
+        descendants of the object don't exist. */
   public exists = true;
 
   /* This boolean is set to indicate that the object is out of date and needs to be updated. */
@@ -56,7 +56,7 @@ export abstract class SENodule {
   /* This registers a given SENodule as a child of the current SENodule by 
     1) putting the given SENodule,n ,as an element in the kids array
     2) declaring that the parent of the given SENodule is the current node  
-    For example, if we are creating the intersetion point P of two circles (C1 and C2) 
+    For example, if we are creating the intersection point P of two circles (C1 and C2) 
     that already exist. Then we would create a point P and call 
     C1.registerChild(P)  
     C2.registerChild(P)
@@ -73,7 +73,7 @@ export abstract class SENodule {
     C1.unregisterChild(P)
     C2.unregisterChild(P)
     this is never used on its own - it is called as part of a routine for removing an SENodule 
-    from the object tree entirly, so all SENodules that are descendents (kids, grand kids, etc.)of 
+    from the object tree entirely, so all SENodules that are descendants (kids, grand kids, etc.)of 
     P must be recursively removed from object tree and this is accomplished with the remove 
     function. 
     */
@@ -82,7 +82,7 @@ export abstract class SENodule {
     n.removeParent(this);
   }
 
-  /* This removes the current node and all descendents (kids, grand kids, etc.) from the 
+  /* This removes the current node and all descendants (kids, grand kids, etc.) from the 
     object tree by using the unregister function and remove recursively */
   public removeThisNode() {
     //remove the current node from all of its parent SENodules
@@ -96,7 +96,7 @@ export abstract class SENodule {
 
   /* This is called to check and see if any of the parents of the current SENodule are outOfDate
     if any of the parents are outOfDate then this function returns false. 
-    <SENDode>.updateNow()
+    <SENodule>.updateNow()
     is asking does <SENodule> need to be updated? If there is a parent outOfDate, then <SENodule> should 
     *not* be updated now. It should wait until *all* parents are not outOfDate.  */
   public updateNow() {
@@ -108,7 +108,7 @@ export abstract class SENodule {
     return true;
   }
 
-  /* Marks all descendents (kids, grand kids, etc.) of the current SENodule out of date */
+  /* Marks all descendants (kids, grand kids, etc.) of the current SENodule out of date */
   public markKidsOutOfDate() {
     this.kids.forEach(item => {
       item.setOutOfDate(true);

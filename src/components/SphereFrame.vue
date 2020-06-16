@@ -96,7 +96,8 @@ export default class SphereFrame extends VueComponent {
     const t1 = new Two.Text("Text must be upright", 50, 80, {
       size: 12,
       alignment: "left",
-      style: "italic"
+      family: "Arial",
+      style: "bold"
     });
     this.layers[LAYER.foregroundText].add(t1);
 
