@@ -28,6 +28,7 @@ screenshots/*
 # LaTeX extra files
 *.synctex.gz
 *.aux
+*.dvi
 *.fls
 *.fdb_latexmk
 *.log

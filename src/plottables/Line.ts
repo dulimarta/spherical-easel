@@ -74,12 +74,7 @@ export default class Line extends Nodule {
     (this.backHalf as any).dashes.push(10, 5); // render as dashed lines
     this.backHalf.linewidth = 3;
     this.backHalf.noFill();
-    if (!segment) {
-      // Lines will always be using both semi circles
-      this.add(this.backHalf, this.frontHalf);
-    } else {
-      // Line segments may dynamically add/remove the two semicircles
-    }
+    this.add(this.backHalf, this.frontHalf);
     // Be sure to clone() the incoming start and end points
     // Otherwise update by other Line will affect this one!
     if (start) this.start = start.clone();
@@ -204,8 +199,8 @@ export default class Line extends Nodule {
       //     .toDegrees()
       //     .toFixed(2)} to ${endAngle.toDegrees().toFixed(2)}`
       // );
-      this.backHalf.remove();
-      this.frontHalf.remove();
+      // this.backHalf.remove();
+      // this.frontHalf.remove();
 
       // The front half can't be negative
       // if startAngle is negative we start at zero
@@ -218,7 +213,7 @@ export default class Line extends Nodule {
           v.x = RADIUS * Math.cos(angle);
           v.y = minorLength * RADIUS * Math.sin(angle);
         });
-        this.add(this.frontHalf);
+        // this.add(this.frontHalf);
       }
       // The back half can't be positive
       // if endAngle is positive, we end at zero
@@ -231,7 +226,7 @@ export default class Line extends Nodule {
           v.x = RADIUS * Math.cos(angle);
           v.y = minorLength * RADIUS * Math.sin(angle);
         });
-        this.add(this.backHalf);
+        // this.add(this.backHalf);
       }
     } else {
       // reposition all vertices of the front semicircle
@@ -387,16 +382,16 @@ export default class Line extends Nodule {
   }
 
   addToLayers(layers: Two.Group[]): void {
-    if (this.frontArcLen > 0 || !this.isSegment) {
-      this.frontHalf.addTo(layers[LAYER.foreground]);
-      // Copy the group rotation to individual group member
-      // this.frontHalf.rotation = this.rotation;
-    }
-    if (this.backArcLen > 0 || !this.isSegment) {
-      this.backHalf.addTo(layers[LAYER.background]);
-      // Copy the group rotation to individual group member
-      // this.backHalf.rotation = this.rotation;
-    }
+    this.frontHalf.addTo(layers[LAYER.foreground]);
+    // if (this.frontArcLen > 0 || !this.isSegment) {
+    // Copy the group rotation to individual group member
+    // this.frontHalf.rotation = this.rotation;
+    // }
+    this.backHalf.addTo(layers[LAYER.background]);
+    // if (this.backArcLen > 0 || !this.isSegment) {
+    // Copy the group rotation to individual group member
+    // this.backHalf.rotation = this.rotation;
+    // }
   }
 
   removeFromLayers(/*layers: Two.Group[]*/): void {
