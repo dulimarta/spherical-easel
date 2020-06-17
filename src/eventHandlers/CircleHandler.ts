@@ -26,12 +26,6 @@ export default class CircleHandler extends SelectionHandler {
     this.isCircleAdded = false;
     this.circle = new Circle();
   }
-  activate = () => {
-    /* Nothing */
-  };
-  deactivate() {
-    /* None yet */
-  }
 
   mouseMoved(event: MouseEvent) {
     super.mouseMoved(event);

@@ -18,11 +18,8 @@ import RotateHandler from "@/eventHandlers/RotateHandler";
 import { PositionVisitor } from "@/visitors/PositionVisitor";
 import { SEPoint } from "@/models/SEPoint";
 import { SELine } from "@/models/SELine";
-import { Visitor } from "@/visitors/Visitor";
+import { SECircle } from "@/models/SECircle";
 import EventBus from "@/eventHandlers/EventBus";
-import { AddPointCommand } from "@/commands/AddPointCommand";
-import Point from "@/plottables/Point";
-import { SECircle } from '@/models/SECircle';
 
 @Component({})
 export default class SphereFrame extends VueComponent {
@@ -212,7 +209,8 @@ export default class SphereFrame extends VueComponent {
       // Limit zoom-in to 10x magnification factor
       if (scaleFactor > 1 && this.magnificationFactor > 10) return;
       this.magnificationFactor *= scaleFactor;
-      const sphereRatio = (this.canvasSize / 2 - 16) / SETTINGS.boundaryCircle.radius;
+      const sphereRatio =
+        (this.canvasSize / 2 - 16) / SETTINGS.boundaryCircle.radius;
       EventBus.fire("magnification-updated", {
         factor: this.magnificationFactor * sphereRatio
       });

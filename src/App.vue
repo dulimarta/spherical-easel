@@ -20,9 +20,14 @@
 
       <div class="d-flex align-center">
         <router-link to="/">
-          <v-img alt="Spherical Easel Logo" class="shrink mr-2" contain
-            src="./assets/SphericalEaselLogo.gif"
-            transition="scale-transition" width="40" />
+          <v-img
+            alt="Spherical Easel Logo"
+            class="shrink mr-2"
+            contain
+            src="../docs/.vuepress/public/SphericalEaselLogo.png"
+            transition="scale-transition"
+            width="40"
+          />
         </router-link>
         <v-toolbar-title>
           {{ $t("main.SphericalEaselMainTitle") }}
@@ -69,31 +74,12 @@
 import Vue from "vue";
 /* Import the custom components */
 import Component from "vue-class-component";
-import { Inject } from "vue-property-decorator";
 
 /* This allows for the State of the app to be initialized with in vuex store */
 /* TODO: What does this do? */
-// import { WebGLRenderer, Mesh } from "three";
-import { State } from "vuex-class";
-import EventBus from "@/eventHandlers/EventBus";
-import { SEPoint } from "./models/SEPoint";
-import Point from "./plottables/Point";
-import { AddPointCommand } from "./commands/AddPointCommand";
 /* This view has no (sub)components (but the Easel view does) so this is empty*/
 @Component
 export default class App extends Vue {
-  /* The canvasElement containing each of the views */
-  // private canvas: HTMLCanvasElement;
-
-  /* I think that this initializes the State variable. To start the command based paradigm of
-  mostifing the State??? */
-  // @State
-  // private sphere!: Mesh;
-  constructor() {
-    super();
-    // this.canvas = this.renderer.domElement;
-  }
-
   mounted(): void {
     this.$store.commit("init");
   }

@@ -1,5 +1,3 @@
-import { Stylable } from "@/plottables/Styleable";
-import SETTINGS from "@/global-settings";
 import { Vector3 } from "three";
 
 let NODE_COUNT = 0;

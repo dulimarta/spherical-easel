@@ -68,11 +68,13 @@ export default class PointHandler extends SelectionHandler {
     throw new Error("Method not implemented.");
   }
   activate(): void {
+    super.activate();
     this.canvas.add(this.pointGroup);
     (this.frontPortion as any).visible = false;
     (this.backPortion as any).visible = false;
   }
   deactivate(): void {
+    super.deactivate();
     this.pointGroup.remove();
   }
 }

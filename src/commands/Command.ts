@@ -20,7 +20,7 @@ export abstract class Command {
   //eslint-disable-next-line
   protected lastState: any; // The state can be of ANY type
 
-  static undo() {
+  static undo(): void {
     if (Command.commandHistory.length === 0) return;
 
     // Pop the last command from the history stack
@@ -35,7 +35,7 @@ export abstract class Command {
   static undoEnabled = (): boolean => Command.commandHistory.length > 0;
   static redoEnabled = (): boolean => Command.redoHistory.length > 0;
 
-  static redo() {
+  static redo(): void {
     if (Command.redoHistory.length === 0) return;
     const nextAction = Command.redoHistory.pop();
 
@@ -44,7 +44,7 @@ export abstract class Command {
     }
   }
 
-  execute() {
+  execute(): void {
     // Keep this command in the history stack
     Command.commandHistory.push(this);
     this.saveState(); /* Allow the command to save necessary data to restore later */

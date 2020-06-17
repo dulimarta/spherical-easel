@@ -17,13 +17,6 @@ export default class RotateHandler extends SelectionHandler {
     // this.prevSpherePoint = new Vector3();
   }
 
-  activate(): void {
-    /* none */
-  }
-  deactivate(): void {
-    /* none */
-  }
-
   mouseMoved(event: MouseEvent): void {
     super.mouseMoved(event);
     const rotationAngle = this.prevSpherePoint.angleTo(this.currentSpherePoint);

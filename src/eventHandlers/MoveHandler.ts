@@ -57,12 +57,4 @@ export default class MoveHandler extends SelectionHandler {
   mouseLeave(event: MouseEvent): void {
     /* empty function */
   }
-  activate() {
-    // this.rayCaster.layers.disableAll();
-    // this.rayCaster.layers.enable(SETTINGS.layers.sphere);
-    // this.rayCaster.layers.enable(SETTINGS.layers.point);
-  }
-  deactivate() {
-    /* empty function */
-  }
 }

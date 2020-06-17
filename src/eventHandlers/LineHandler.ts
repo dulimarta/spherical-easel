@@ -13,7 +13,6 @@ import { AddLineCommand } from "@/commands/AddLineCommand";
 import Two from "two.js";
 import { SEPoint } from "@/models/SEPoint";
 import { SELine } from "@/models/SELine";
-import EventBus from "./EventBus";
 // const frontPointRadius = SETTINGS.point.temp.radius.front;
 
 export default class LineHandler extends SelectionHandler {
@@ -38,13 +37,10 @@ export default class LineHandler extends SelectionHandler {
   }
 
   activate = (): void => {
+    super.activate();
     // The following line automatically calls Line setter function by default
     this.line.isSegment = false;
   };
-
-  deactivate(): void {
-    /* empty function */
-  }
 
   mouseMoved(event: MouseEvent): void {
     super.mouseMoved(event);

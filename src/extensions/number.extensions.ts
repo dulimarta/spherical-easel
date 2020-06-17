@@ -17,3 +17,7 @@ Array.prototype.rotate = function(count: number) {
   );
   return this;
 };
+
+Array.prototype.clear = function(): void {
+  Array.prototype.splice.call(this, 0, this.length);
+};

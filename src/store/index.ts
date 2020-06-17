@@ -4,8 +4,6 @@ import Vue from "vue";
 import Vuex from "vuex";
 import Two from "two.js";
 import { AppState } from "@/types";
-import Point from "@/plottables/Point";
-import Circle from "@/plottables/Circle";
 import { SEPoint } from "@/models/SEPoint";
 import { SELine } from "@/models/SELine";
 import { SECircle } from "@/models/SECircle";
@@ -19,7 +17,7 @@ Vue.use(Vuex);
 // return null;
 // };
 
-const SMALL_ENOUGH = 1e-2;
+// const SMALL_ENOUGH = 1e-2;
 const PIXEL_CLOSE_ENOUGH = 8;
 const ANGLE_SMALL_ENOUGH = 1; // within 1 degree?
 const tmpMatrix = new Matrix4();

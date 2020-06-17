@@ -214,8 +214,6 @@ export default class Line extends Nodule {
       //     .toDegrees()
       //     .toFixed(2)} to ${endAngle.toDegrees().toFixed(2)}`
       // );
-      this.backHalf.remove();
-      this.frontHalf.remove();
 
       // The front half can't be negative
       // if startAngle is negative we start at zero
@@ -228,8 +226,8 @@ export default class Line extends Nodule {
           v.x = RADIUS * Math.cos(angle);
           v.y = minorLength * RADIUS * Math.sin(angle);
         });
-        this.add(this.frontHalf);
       }
+      (this.frontHalf as any).visible = this.frontArcLen > 0;
       // The back half can't be positive
       // if endAngle is positive, we end at zero
       const backEnd = Math.min(0, endAngle);
@@ -241,8 +239,8 @@ export default class Line extends Nodule {
           v.x = RADIUS * Math.cos(angle);
           v.y = minorLength * RADIUS * Math.sin(angle);
         });
-        this.add(this.backHalf);
       }
+      (this.backHalf as any).visible = this.backArcLen > 0;
     } else {
       // reposition all vertices of the front semicircle
       this.frontHalf.vertices.forEach((v, pos) => {

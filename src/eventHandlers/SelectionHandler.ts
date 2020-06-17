@@ -20,30 +20,30 @@ export default abstract class SelectionHandler implements ToolStrategy {
   protected store = AppStore; // Vuex global state
   protected currentSpherePoint: Vector3;
   protected currentScreenPoint: Two.Vector;
-  protected hitPoint: SEPoint | null = null;
+  protected hitPoints: SEPoint[] = [];
   protected hitLine: SELine | null = null;
   protected hitCircle: SECircle | null = null;
   protected startMarker: Two.Circle;
   protected isOnSphere: boolean;
   protected transformMatrix: Matrix4;
   // protected inverseMatrix = new Matrix4();
-  private boundingBox: BoundingClientRect;
+  // private boundingBox: BoundingClientRect;
   private mouseVector = new Vector3();
   private zoomCenter = new Vector3();
   private tmpMatrix = new Matrix4();
 
-  /**
-   * @param scene is the sphere canvas where all drawings will render
-   * @param transformMatrix is the forward transform that maps the ideal unit
-   * sphere to the boundary circle on the canvas. Essentially this matrix maps
-   * the (ideal) world to the screen
-   */
   constructor(scene: Two.Group, transformMatrix: Matrix4) {
+    /**
+     * @param scene is the sphere canvas where all drawings will render
+     * @param transformMatrix is the forward transform that maps the ideal unit
+     * sphere to the boundary circle on the canvas. Essentially this matrix maps
+     * the (ideal) world to the screen
+     */
     this.canvas = scene;
     this.transformMatrix = transformMatrix || null;
     // the bounding rectangle is used for
     // conversion between screen and world coordinates
-    this.boundingBox = scene.getBoundingClientRect();
+    // this.boundingBox = scene.getBoundingClientRect();
     this.currentSpherePoint = new Vector3();
     this.currentScreenPoint = new Two.Vector(0, 0);
     this.startMarker = new Two.Circle(0, 0, frontPointRadius);
@@ -51,10 +51,18 @@ export default abstract class SelectionHandler implements ToolStrategy {
   }
 
   abstract mouseLeave(event: MouseEvent): void;
-  abstract deactivate(): void;
-  abstract activate(): void;
   abstract mousePressed(event: MouseEvent): void;
   abstract mouseReleased(event: MouseEvent): void;
+
+  activate(): void {
+    window.addEventListener("keypress", this.keyPressed);
+  }
+  deactivate(): void {
+    window.removeEventListener("keypress", this.keyPressed);
+  }
+  keyPressed(event: KeyboardEvent) {
+    console.debug("Keyevent", event);
+  }
 
   /**
    * Map mouse 2D viewport/screen position to 3D local coordinate on the sphere.
@@ -136,19 +144,22 @@ export default abstract class SelectionHandler implements ToolStrategy {
       // this.currentPoint.copy(this.mouse);
       // console.debug(`Sphere pos: ${this.currentSpherePoint.toFixed(2)}`);
       // FIXME: what if we hit multiple lines or points
-      this.hitPoint?.ref.normalStyle();
+      this.hitPoints.forEach((p: SEPoint) => {
+        p.ref.normalStyle();
+      });
       this.hitLine?.ref.normalStyle();
       this.hitCircle?.ref.normalStyle();
-      this.hitPoint = null;
+      this.hitPoints.clear();
       this.hitLine = null;
       this.hitCircle = null;
-      this.store.getters
-        .findNearbyPoints(this.currentSpherePoint, this.currentScreenPoint)
-        .forEach((obj: SEPoint) => {
-          this.hitPoint = obj;
-          console.debug("Intersected with point", obj.id);
-          obj.ref.glowStyle();
-        });
+      this.hitPoints = this.store.getters.findNearbyPoints(
+        this.currentSpherePoint,
+        this.currentScreenPoint
+      );
+      this.hitPoints.forEach((obj: SEPoint) => {
+        console.debug("Intersected with point", obj.id);
+        obj.ref.glowStyle();
+      });
       this.store.getters
         .findNearbyLines(this.currentSpherePoint, this.currentScreenPoint)
         .forEach((obj: SELine) => {

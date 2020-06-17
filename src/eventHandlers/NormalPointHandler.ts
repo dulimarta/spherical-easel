@@ -9,9 +9,6 @@ export default class NormalPointHandler extends SelectionHandler {
   mouseLeave(event: MouseEvent): void {
     throw new Error("Method not implemented.");
   }
-  deactivate(): void {
-    throw new Error("Method not implemented.");
-  }
   private normalArrow: Arrow;
   private isNormalAdded: boolean;
 
@@ -52,9 +49,4 @@ export default class NormalPointHandler extends SelectionHandler {
   mouseReleased(): void {
     /* None */
   }
-
-  activate = (): void => {
-    // this.rayCaster.layers.disableAll();
-    // this.rayCaster.layers.enable(SETTINGS.layers.sphere);
-  };
 }
