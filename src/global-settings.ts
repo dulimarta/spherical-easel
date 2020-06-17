@@ -25,7 +25,7 @@ export default {
       },
       strokeColor: {
         front: "#4C4CCD", // { r: 76, g: 76, b: 205 },
-        back: "#A5A5E6" // the back stroke color is calulated using the contrast of 0.5
+        back: "#A5A5E6" // the back stroke color is calculated using the contrast of 0.5
       },
       lineWidth: { front: 2.5, back: 2 }, // The thickness of the edge of the point when drawn
       opacity: { front: 1, back: 1 }

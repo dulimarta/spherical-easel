@@ -99,11 +99,12 @@ Create a curve based on user supplied parametric description.
 ::: tool-details
 
 - Activating this tool creates a dialog box where the user can enter the parametric description of a spherical curve.
-- The curve can be entered in $P(t) = \langle x(t), y(t), z(t)\rangle$ format where the curve is traced out for $t$ values between lower ($t_l$) and upper ($t_u$) bounds, both user supplied.
+- The curve can be entered in $P(t) = \langle x(t), y(t), z(t)\rangle$ format where the curve is traced out for $t$ values between lower ($t_l$) and upper ($t_u$) bounds, both user supplied. Here is an [example](/tools/exampleparametric).
 - The parametric description can depend on a Measurement Token.
 - If the $z(t)$ argument is missing it is assumed that $z(t) = \sqrt{1- (x(t)^2 + y(t)^2)}$.
-- The curve can be open or closed. Closed means the curve drawn so as to connect $P(t_l)$ and $P(t_u)$.
+- The curve can be open or closed. Closed means the curve drawn so as to connect $P(t_l)$ and $P(t_u)$. Although if $P(t_l) = P(t_u)$ and this is a cusp point, it may be better to have this drawn as open curve.
 - When drawn the curve is scaled so $||P(t)|| =1$ for all $t$.
+- An optional parameter sets the number of points used to sample the curve. A larger number will be drawn in more detail, but may slow the app. The default is ????.
 - A parametric curve can be edited in the Advanced Tab of the Style Panel.
 - When a parametric curve is created, a row describing some of its properties will appear in the Parametric Section of the [Objects Tab](/userguide/#objects-tab).
 - If this tool is activated with any objects selected, they are all unselected and ignored.
