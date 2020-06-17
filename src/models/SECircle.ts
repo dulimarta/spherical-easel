@@ -2,8 +2,10 @@ import { SENodule } from "./SENodule";
 import { SEPoint } from "./SEPoint";
 import Circle from "@/plottables/Circle";
 import { Vector3 } from "three";
+import { Visitable } from "@/visitors/Visitable";
+import { Visitor } from "@/visitors/Visitor";
 
-export class SECircle extends SENodule {
+export class SECircle extends SENodule implements Visitable {
   public ref!: Circle;
   private normalDir: Vector3;
   private radius: number; // Arc length (in radians) not straight line distance
@@ -23,19 +25,20 @@ export class SECircle extends SENodule {
     this.ref.centerPoint = v;
   }
 
-  get normalDirection() {
+  get normalDirection(): Vector3 {
     return this.normalDir;
   }
 
   public isHitAt(spherePos: Vector3): boolean {
     const angleToCenter = spherePos.angleTo(this.normalDir);
-    console.debug(
-      `Radius of point ${angleToCenter} cirle radius ${this.radius}`
-    );
     return Math.abs(angleToCenter - this.radius) < 0.01;
   }
 
   public update(): void {
     // No implementation yet
+  }
+
+  accept(v: Visitor): void {
+    v.actionOnCircle(this);
   }
 }

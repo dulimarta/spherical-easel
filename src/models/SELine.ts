@@ -9,7 +9,7 @@ const tmpVec1 = new Vector3();
 const tmpVec2 = new Vector3();
 export class SELine extends SENodule implements Visitable {
   public ref: Line;
-  private normalDir: Vector3;
+  // private normalDir: Vector3;
 
   // FIXME: We probably don't have to store the following
   // Keep them here for now to make the rest of the code compiles
@@ -28,8 +28,8 @@ export class SELine extends SENodule implements Visitable {
     super();
     this.ref = l;
     l.owner = this;
-    this.normalDir = new Vector3();
-    this.normalDir.copy(normalDir);
+    // this.normalDir = new Vector3();
+    // this.normalDir.copy(normalDir);
     this.start = start;
     this.end = end;
   }
@@ -39,17 +39,16 @@ export class SELine extends SENodule implements Visitable {
   }
 
   get normalDirection(): Vector3 {
-    return this.normalDir;
+    return this.ref.orientation;
   }
 
   set normalDirection(dir: Vector3) {
-    this.normalDir.copy(dir);
     this.ref.orientation = dir;
   }
 
   public isHitAt(spherePos: Vector3): boolean {
     // Is the unit vector to the point is perpendicular to the circle normal?
-    if (Math.abs(spherePos.dot(this.normalDir)) > 1e-2) return false;
+    if (Math.abs(spherePos.dot(this.ref.orientation)) > 1e-2) return false;
     if (!this.ref.isSegment) return true;
     tmpVec1.crossVectors(spherePos, this.start.positionOnSphere);
     tmpVec2.crossVectors(this.end.positionOnSphere, spherePos);

@@ -20,7 +20,7 @@ export default class Line extends Nodule {
   // public name = "";
   private oldFrontStroke: Two.Color = "";
   private oldBackStroke: Two.Color = "";
-  public normalDirection: Vector3;
+  private normalDirection: Vector3;
 
   private majorAxisDirection: Vector3 = new Vector3();
   private tmpVector: Vector3;
@@ -214,8 +214,8 @@ export default class Line extends Nodule {
       //     .toDegrees()
       //     .toFixed(2)} to ${endAngle.toDegrees().toFixed(2)}`
       // );
-      // this.backHalf.remove();
-      // this.frontHalf.remove();
+      this.backHalf.remove();
+      this.frontHalf.remove();
 
       // The front half can't be negative
       // if startAngle is negative we start at zero
@@ -228,7 +228,7 @@ export default class Line extends Nodule {
           v.x = RADIUS * Math.cos(angle);
           v.y = minorLength * RADIUS * Math.sin(angle);
         });
-        // this.add(this.frontHalf);
+        this.add(this.frontHalf);
       }
       // The back half can't be positive
       // if endAngle is positive, we end at zero
@@ -241,7 +241,7 @@ export default class Line extends Nodule {
           v.x = RADIUS * Math.cos(angle);
           v.y = minorLength * RADIUS * Math.sin(angle);
         });
-        // this.add(this.backHalf);
+        this.add(this.backHalf);
       }
     } else {
       // reposition all vertices of the front semicircle

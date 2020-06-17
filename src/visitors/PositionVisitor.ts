@@ -2,6 +2,7 @@ import { Visitor } from "./Visitor";
 import { SEPoint } from "@/models/SEPoint";
 import { SELine } from "@/models/SELine";
 import { Matrix4, Vector3, Matrix3 } from "three";
+import { SECircle } from "@/models/SECircle";
 
 export class PositionVisitor implements Visitor {
   private transformMatrix: Matrix4 = new Matrix4();
@@ -28,5 +29,11 @@ export class PositionVisitor implements Visitor {
     this.tmpVector.copy(m.ref.endPoint);
     this.tmpVector.applyMatrix4(this.transformMatrix);
     m.ref.endPoint = this.tmpVector; // use the setter function
+  }
+
+  actionOnCircle(c: SECircle): void {
+    this.tmpVector.copy(c.normalDirection);
+    this.tmpVector.applyMatrix4(this.transformMatrix);
+    c.normalDirection = this.tmpVector;
   }
 }

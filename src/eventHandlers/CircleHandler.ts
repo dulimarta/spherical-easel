@@ -42,10 +42,10 @@ export default class CircleHandler extends SelectionHandler {
           this.canvas.add(this.circle);
           this.canvas.add(this.startMarker);
         }
-        this.circle.circlePoint = this.currentSpherePoint;
         this.arcRadius = this.circle.centerPoint.angleTo(
           this.currentSpherePoint
         );
+        this.circle.radius = this.arcRadius;
       }
     } else if (this.isCircleAdded) {
       // this.circle.remove(); // remove from its parent

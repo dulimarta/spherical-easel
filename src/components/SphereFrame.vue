@@ -22,6 +22,7 @@ import { Visitor } from "@/visitors/Visitor";
 import EventBus from "@/eventHandlers/EventBus";
 import { AddPointCommand } from "@/commands/AddPointCommand";
 import Point from "@/plottables/Point";
+import { SECircle } from '@/models/SECircle';
 
 @Component({})
 export default class SphereFrame extends VueComponent {
@@ -266,6 +267,9 @@ export default class SphereFrame extends VueComponent {
         p.accept(this.visitor);
       });
       this.$store.state.lines.forEach((l: SELine) => {
+        l.accept(this.visitor);
+      });
+      this.$store.state.circles.forEach((l: SECircle) => {
         l.accept(this.visitor);
       });
     }
