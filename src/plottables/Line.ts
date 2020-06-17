@@ -65,14 +65,21 @@ export default class Line extends Nodule {
       /* closed */ false,
       /* curve */ false
     );
-    this.backHalf = this.frontHalf.clone();
     this.frontHalf.linewidth = 5;
     this.frontHalf.stroke = "green";
+    this.frontHalf.noFill();
     // Create the back half circle by cloning the front half
     this.backHalf = this.frontHalf.clone();
     this.backHalf.stroke = "gray";
     (this.backHalf as any).dashes.push(10, 5); // render as dashed lines
     this.backHalf.linewidth = 3;
+    this.backHalf.noFill();
+    if (!segment) {
+      // Lines will always be using both semi circles
+      this.add(this.backHalf, this.frontHalf);
+    } else {
+      // Line segments may dynamically add/remove the two semicircles
+    }
     // Be sure to clone() the incoming start and end points
     // Otherwise update by other Line will affect this one!
     if (start) this.start = start.clone();
@@ -82,8 +89,6 @@ export default class Line extends Nodule {
     this.normalDirection = new Vector3();
     this.normalDirection.crossVectors(this.start, this.end);
     this.segment = segment || false;
-    this.frontHalf.noFill();
-    this.backHalf.noFill();
     // The back half will be dynamically added to the group
     this.name = (this.segment ? "Segment-" : "Line-") + this.id;
 
@@ -146,7 +151,11 @@ export default class Line extends Nodule {
     // this.majorAxis.vertices[1].x = SETTINGS.boundaryCircle.radius;
     // This rotation applies to the ENTIRE group
     // but in addtoLayers() we must copy the rotation to each group member
-    this.rotation = angleToMajorAxis;
+    // this.rotation = angleToMajorAxis;
+    this.frontHalf.rotation = angleToMajorAxis;
+    this.backHalf.rotation = angleToMajorAxis;
+    this.majorAxis.rotation = angleToMajorAxis;
+    this.minorAxis.rotation = angleToMajorAxis;
 
     // Calculate the length of its minor axes from the non-rotated ellipse
     const cosAngle = Math.cos(angleToMajorAxis); // cos(-x) = cos(x)
@@ -225,9 +234,6 @@ export default class Line extends Nodule {
         this.add(this.backHalf);
       }
     } else {
-      // We are rendering both semicircles
-      this.add(this.frontHalf, this.backHalf);
-
       // reposition all vertices of the front semicircle
       this.frontHalf.vertices.forEach((v, pos) => {
         const angle = (flipSign * (pos * Math.PI)) / numSubdivs;
@@ -342,6 +348,11 @@ export default class Line extends Nodule {
   }
 
   set orientation(dir: Vector3) {
+    console.debug(
+      `Changing normal orientation of ${
+        this.id
+      } from ${this.normalDirection.toFixed(2)} to ${dir.toFixed(2)}`
+    );
     this.normalDirection.copy(dir).normalize();
     this.deformIn2D();
     // this.deformIntoEllipse();
@@ -360,6 +371,8 @@ export default class Line extends Nodule {
     dup.normalDirection.copy(this.normalDirection);
     dup.segment = this.segment;
     dup.rotation = this.rotation;
+    dup.majorAxis.rotation = this.majorAxis.rotation;
+    dup.minorAxis.rotation = this.minorAxis.rotation;
     dup.frontHalf.rotation = this.frontHalf.rotation;
     dup.backHalf.rotation = this.backHalf.rotation;
     dup.frontArcLen = this.frontArcLen;
@@ -377,14 +390,15 @@ export default class Line extends Nodule {
     if (this.frontArcLen > 0 || !this.isSegment) {
       this.frontHalf.addTo(layers[LAYER.foreground]);
       // Copy the group rotation to individual group member
-      this.frontHalf.rotation = this.rotation;
+      // this.frontHalf.rotation = this.rotation;
     }
     if (this.backArcLen > 0 || !this.isSegment) {
       this.backHalf.addTo(layers[LAYER.background]);
       // Copy the group rotation to individual group member
-      this.backHalf.rotation = this.rotation;
+      // this.backHalf.rotation = this.rotation;
     }
   }
+
   removeFromLayers(/*layers: Two.Group[]*/): void {
     this.frontHalf.remove();
     this.backHalf.remove();

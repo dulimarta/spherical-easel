@@ -46,6 +46,7 @@ export class SELine extends SENodule implements Visitable {
     this.normalDir.copy(dir);
     this.ref.orientation = dir;
   }
+
   public isHitAt(spherePos: Vector3): boolean {
     // Is the unit vector to the point is perpendicular to the circle normal?
     if (Math.abs(spherePos.dot(this.normalDir)) > 1e-2) return false;

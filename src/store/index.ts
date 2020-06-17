@@ -145,7 +145,6 @@ export default new Vuex.Store({
       idealPosition: Vector3,
       screenPosition: Two.Vector
     ): SECircle[] => {
-      console.debug("locating circles");
       return state.circles.filter((z: SECircle) => z.isHitAt(idealPosition));
     },
     forwardTransform: (state: AppState): Matrix4 => {
