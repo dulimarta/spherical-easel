@@ -19,7 +19,7 @@ export default class MoveHandler extends SelectionHandler {
       // this.moveTarget.position.copy(this.currentPoint);
       const vtx = this.store.state.points.find(
         // v => v.ref.id === this.moveTarget?.id
-        v => false
+        () => false
       );
       if (vtx) {
         // Update all lines having this point as start point
