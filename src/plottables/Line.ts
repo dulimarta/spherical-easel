@@ -1,5 +1,5 @@
 import { Vector3, Matrix4 } from "three";
-import Two, { Vector } from "two.js";
+import Two from "two.js";
 import SETTINGS, { LAYER } from "@/global-settings";
 import Nodule from "./Nodule";
 
@@ -65,14 +65,14 @@ export default class Line extends Nodule {
       /* closed */ false,
       /* curve */ false
     );
-    this.frontHalf.linewidth = 5;
+    this.frontHalf.linewidth = SETTINGS.line.thickness.front;
     this.frontHalf.stroke = "green";
     this.frontHalf.noFill();
     // Create the back half circle by cloning the front half
     this.backHalf = this.frontHalf.clone();
     this.backHalf.stroke = "gray";
     (this.backHalf as any).dashes.push(10, 5); // render as dashed lines
-    this.backHalf.linewidth = 3;
+    this.backHalf.linewidth = SETTINGS.line.thickness.back;
     this.backHalf.noFill();
     this.add(this.backHalf, this.frontHalf);
     // Be sure to clone() the incoming start and end points
@@ -99,6 +99,21 @@ export default class Line extends Nodule {
 
     // Enable the following for debugging
     // this.add(this.majorAxis, this.minorAxis);
+  }
+
+  adjustSizeForZoom(factor: number): void {
+    const newThickness = SETTINGS.line.thickness.front * factor;
+    console.debug("Attempt to change line thickness to", newThickness);
+    if (factor > 1)
+      this.frontHalf.linewidth = Math.min(
+        newThickness,
+        SETTINGS.line.thickness.max
+      );
+    else
+      this.frontHalf.linewidth = Math.max(
+        newThickness,
+        SETTINGS.line.thickness.min
+      );
   }
 
   frontGlowStyle(): void {

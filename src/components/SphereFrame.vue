@@ -88,7 +88,7 @@ export default class SphereFrame extends VueComponent {
     // and scale it later to fit the canvas
     this.boundaryCircle = new Two.Circle(0, 0, SETTINGS.boundaryCircle.radius);
     this.boundaryCircle.noFill();
-    this.boundaryCircle.linewidth = SETTINGS.line.thickness;
+    this.boundaryCircle.linewidth = SETTINGS.boundaryCircle.linewidth;
     this.layers[LAYER.midground].add(this.boundaryCircle);
     // const box1 = new Two.Rectangle(-100, 150, 100, 150);
     // box1.fill = "hsl(200,80%,50%)";
@@ -183,6 +183,9 @@ export default class SphereFrame extends VueComponent {
     this.$store.commit("setSphereRadius", radius);
 
     const ratio = radius / SETTINGS.boundaryCircle.radius;
+    EventBus.fire("magnification-updated", {
+      factor: ratio
+    });
     this.sphereTransformMat.makeScale(ratio, ratio, 1);
     this.tmpMatrix.multiplyMatrices(this.sphereTransformMat, this.zoomMatrix);
     this.viewTransform = this.tmpMatrix;
@@ -208,8 +211,9 @@ export default class SphereFrame extends VueComponent {
       // Limit zoom-in to 10x magnification factor
       if (scaleFactor > 1 && this.magnificationFactor > 10) return;
       this.magnificationFactor *= scaleFactor;
+      const sphereRatio = (this.canvasSize / 2 - 16) / SETTINGS.boundaryCircle.radius;
       EventBus.fire("magnification-updated", {
-        factor: this.magnificationFactor
+        factor: this.magnificationFactor * sphereRatio
       });
       const target = (e.currentTarget || e.target) as HTMLDivElement;
       const boundingRect = target.getBoundingClientRect();

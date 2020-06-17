@@ -422,4 +422,7 @@ export default class Circle extends Nodule {
     this.frontHalf.remove();
     this.backHalf.remove();
   }
+  adjustSizeForZoom(factor: number): void {
+    throw new Error("Method not implemented.");
+  }
 }

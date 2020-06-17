@@ -1,11 +1,6 @@
 <template>
-  <split-pane
-    split="vertical"
-    :min-percent="15"
-    :max-percent="35"
-    :default-percent="toolboxMinified ? 5 : 20"
-    @resize="dividerMoved"
-  >
+  <split-pane split="vertical" :min-percent="15" :max-percent="35"
+    :default-percent="toolboxMinified ? 5 : 20" @resize="dividerMoved">
     <!-- Use the left page for the toolbox -->
     <template slot="paneL">
       <div>
@@ -24,7 +19,8 @@
         <v-row>
           <v-col cols="12">
             <v-btn-toggle class="accent">
-              <v-tooltip bottom :open-delay="toolTipOpenDelay" :close-delay="toolTipCloseDelay">
+              <v-tooltip bottom :open-delay="toolTipOpenDelay"
+                :close-delay="toolTipCloseDelay">
                 <!-- TODO: Move these edit controls to the the panel containing the sphere. 
                 When not available they should be greyed out (i.e. disabled).-->
                 <template v-slot:activator="{ on }">
@@ -34,7 +30,8 @@
                 </template>
                 <span>{{ $t("main.UndoLastAction") }}</span>
               </v-tooltip>
-              <v-tooltip bottom :open-delay="toolTipOpenDelay" :close-delay="toolTipCloseDelay">
+              <v-tooltip bottom :open-delay="toolTipOpenDelay"
+                :close-delay="toolTipCloseDelay">
                 <template v-slot:activator="{ on }">
                   <v-btn icon @click="redoAction" v-on="on">
                     <v-icon>mdi-redo</v-icon>
@@ -46,15 +43,12 @@
           </v-col>
           <v-col cols="12">
             <v-row justify="center" class="pb-1">
-              <v-responsive
-                :aspect-ratio="1"
+              <v-responsive :aspect-ratio="1"
                 :max-height="currentCanvasSize"
-                :max-width="currentCanvasSize"
-                ref="responsiveBox"
-                id="responsiveBox"
-                class="pa-0"
-              >
-                <sphere-frame :canvas-size="currentCanvasSize"></sphere-frame>
+                :max-width="currentCanvasSize" ref="responsiveBox"
+                id="responsiveBox" class="pa-0">
+                <sphere-frame :canvas-size="currentCanvasSize">
+                </sphere-frame>
               </v-responsive>
             </v-row>
           </v-col>
@@ -74,6 +68,10 @@ import SphereFrame from "@/components/SphereFrame.vue";
 /* Import Command so we can use the command paradigm */
 import { Command } from "@/commands/Command";
 import SETTINGS from "@/global-settings";
+import EventBus from '../eventHandlers/EventBus';
+import { SEPoint } from '@/models/SEPoint';
+import { Visitor } from '@/visitors/Visitor';
+import { SELine } from '@/models/SELine';
 
 @Component({ components: { SplitPane, Toolbox, SphereFrame } })
 export default class Easel extends Vue {
@@ -89,6 +87,11 @@ export default class Easel extends Vue {
   $refs!: {
     responsiveBox: VueComponent;
   };
+
+  constructor() {
+    super();
+    EventBus.listen("magnification-updated", this.resizePlottables);
+  }
 
   private adjustSize(): void {
     console.info("AdjustSize()");
@@ -141,6 +144,15 @@ export default class Easel extends Vue {
   /* Redoes the last user action that changed the state of the sphere. */
   redoAction(): void {
     Command.redo();
+  }
+
+  resizePlottables(e: any): void {
+    this.$store.state.points.forEach((p: SEPoint) => {
+      p.ref.adjustSizeForZoom(e.factor);
+    });
+    this.$store.state.lines.forEach((p: SELine) => {
+      p.ref.adjustSizeForZoom(e.factor);
+    });
   }
 }
 </script>

@@ -7,7 +7,12 @@ export default {
     linewidth: 3
   },
   line: {
-    thickness: 3
+    thickness: {
+      front: 4,
+      back: 2,
+      max: 6,
+      min: 3
+    }
   },
   point: {
     // The number of vertices that are used to render the point circles front/back/glowing/temp on the sphereCanvas

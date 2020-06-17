@@ -84,6 +84,21 @@ export default class Point extends Nodule {
     this.setAllPointsStyle();
   }
 
+  adjustSizeForZoom(factor: number): void {
+    const newRadius = frontDefaultRadius * factor;
+    let newScale = 1;
+    if (newRadius > SETTINGS.point.drawn.radius.rmax) {
+      // debugger; // eslint-disable-line
+      newScale = SETTINGS.point.drawn.radius.rmax / newRadius;
+    }
+    if (newRadius < SETTINGS.point.drawn.radius.rmin) {
+      // debugger; // eslint-disable-line
+      newScale = SETTINGS.point.drawn.radius.rmin / newRadius;
+    }
+
+    this.frontPoint.scale = newScale;
+  }
+
   frontGlowStyle(): void {
     (this.frontPoint as any).visible = true;
     (this.glowingFrontPoint as any).visible = true;
