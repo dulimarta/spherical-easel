@@ -45,7 +45,7 @@ export default class MoveHandler extends SelectionHandler {
   //eslint-disable-next-line
   mousePressed(event: MouseEvent) {
     this.isDragging = true;
-    if (this.hitPoint instanceof SEPoint) this.moveTarget = this.hitPoint;
+    if (this.hitPoints.length > 0) this.moveTarget = this.hitPoints[0];
   }
 
   //eslint-disable-next-line

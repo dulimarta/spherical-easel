@@ -52,10 +52,10 @@ export default class CircleHandler extends SelectionHandler {
   mousePressed(event: MouseEvent) {
     this.isMouseDown = true;
     if (this.isOnSphere) {
-      const selected = this.hitPoint;
-      if (selected instanceof SEPoint) {
+      if (this.hitPoints.length > 0) {
+        const selected = this.hitPoints[0];
         this.startV3Point.copy(selected.positionOnSphere);
-        this.startPoint = this.hitPoint;
+        this.startPoint = selected;
       } else {
         this.canvas.add(this.startMarker);
         this.startV3Point.copy(this.currentSpherePoint);
@@ -87,8 +87,8 @@ export default class CircleHandler extends SelectionHandler {
         this.startPoint = vtx;
         circleGroup.addCommand(new AddPointCommand(vtx));
       }
-      if (this.hitPoint instanceof SEPoint) {
-        this.endPoint = this.hitPoint;
+      if (this.hitPoints.length > 0) {
+        this.endPoint = this.hitPoints[0];
       } else {
         // endV3Point landed on an open space
         // we have to create a new point

@@ -144,120 +144,6 @@ export default class Line extends Nodule {
     this.backGlowStyle();
   }
 
-  // Recalculate the ellipse in 2D
-  // FIXME: the circle does not accurately pass thro its end point?
-  private deformIn2D(): void {
-    // The ellipse major axis on the XY plane is perpendicular
-    // to the circle normal [Nx,Ny,Nz]. We can fix the direction of
-    // the major axis to [-Ny,Nx, 0] (pointing "left") and use these numbers
-    // to compute the angle between the major axis and the viewport X-axis
-
-    this.majorAxisDirection
-      .set(-this.normalDirection.y, this.normalDirection.x, 0)
-      .normalize();
-    const angleToMajorAxis =
-      Math.atan2(this.majorAxisDirection.y, this.majorAxisDirection.x) *
-      Math.sign(this.normalDirection.z);
-    // this.majorAxis.vertices[1].x = SETTINGS.boundaryCircle.radius;
-    // This rotation applies to the ENTIRE group
-    // but in addtoLayers() we must copy the rotation to each group member
-    // this.rotation = angleToMajorAxis;
-    this.frontHalf.rotation = angleToMajorAxis;
-    this.backHalf.rotation = angleToMajorAxis;
-    this.majorAxis.rotation = angleToMajorAxis;
-    this.minorAxis.rotation = angleToMajorAxis;
-
-    // Calculate the length of its minor axes from the non-rotated ellipse
-    const cosAngle = Math.cos(angleToMajorAxis); // cos(-x) = cos(x)
-    const sinAngle = Math.sin(-angleToMajorAxis);
-    // (Px,Py) is the projected start point of the unrotated ellipse
-
-    // apply the reverse rotation to the start point
-    const px = cosAngle * this.start.x - sinAngle * this.start.y;
-    let py = sinAngle * this.start.x + cosAngle * this.start.y;
-
-    // Use ellipse equation to compute minorAxis given than majorAxis is 1
-    const minorLength = Math.sqrt((py * py) / (1 - px * px));
-    let numSubdivs = this.frontHalf.vertices.length;
-    const RADIUS = SETTINGS.boundaryCircle.radius;
-    this.minorAxis.vertices[1].y = minorLength * RADIUS;
-    // When the Z-value is negative, the front semicircle
-    // is projected above the back semicircle
-    const flipSign = Math.sign(this.normalDirection.z);
-    if (this.segment) {
-      // apply the reverse rotation to the start point
-      const qx = cosAngle * this.end.x - sinAngle * this.end.y;
-      let qy = sinAngle * this.end.x + cosAngle * this.end.y;
-      let startAngle = Math.atan2(py, px);
-      let endAngle = Math.atan2(qy, qx);
-
-      // Retain the Y-coord sign of the unscaled points
-      py = Math.sqrt(1 - px * px) * Math.sign(py);
-      qy = Math.sqrt(1 - qx * qx) * Math.sign(qy);
-      // console.debug(
-      //   `Unrotate and unscaled points (${px.toFixed(3)},${py.toFixed(3)})` +
-      //     " and " +
-      //     `(${qx.toFixed(3)},${qy.toFixed(3)})`
-      // );
-      // Angles of the unscaled points
-      startAngle = Math.atan2(py, px);
-      endAngle = Math.atan2(qy, qx);
-      if (startAngle > endAngle) {
-        // Be sure to start from the smaller angle
-        const tmp = startAngle;
-        startAngle = endAngle;
-        endAngle = tmp;
-      }
-
-      // console.debug(
-      //   `Arc from ${startAngle
-      //     .toDegrees()
-      //     .toFixed(2)} to ${endAngle.toDegrees().toFixed(2)}`
-      // );
-
-      // The front half can't be negative
-      // if startAngle is negative we start at zero
-      const frontStart = Math.max(0, startAngle);
-      this.frontArcLen = endAngle - frontStart;
-      if (this.frontArcLen > 0) {
-        this.frontHalf.vertices.forEach((v, pos) => {
-          const angle = frontStart + (pos * this.frontArcLen) / numSubdivs;
-          // Don't need flipSign here because cos(-alpha) = cos(alpha)
-          v.x = RADIUS * Math.cos(angle);
-          v.y = minorLength * RADIUS * Math.sin(angle);
-        });
-      }
-      (this.frontHalf as any).visible = this.frontArcLen > 0;
-      // The back half can't be positive
-      // if endAngle is positive, we end at zero
-      const backEnd = Math.min(0, endAngle);
-      this.backArcLen = backEnd - startAngle;
-      if (this.backArcLen > 0) {
-        this.backHalf.vertices.forEach((v, pos) => {
-          const angle = startAngle + (pos * this.backArcLen) / numSubdivs;
-          // Don't need flipSign here because cos(-alpha) = cos(alpha)
-          v.x = RADIUS * Math.cos(angle);
-          v.y = minorLength * RADIUS * Math.sin(angle);
-        });
-      }
-      (this.backHalf as any).visible = this.backArcLen > 0;
-    } else {
-      // reposition all vertices of the front semicircle
-      this.frontHalf.vertices.forEach((v, pos) => {
-        const angle = (flipSign * (pos * Math.PI)) / numSubdivs;
-        v.x = RADIUS * Math.cos(angle);
-        v.y = minorLength * RADIUS * Math.sin(angle);
-      });
-      // reposition all vertices of the back semicircle
-      numSubdivs = this.backHalf.vertices.length;
-      this.backHalf.vertices.forEach((v, pos) => {
-        const angle = (flipSign * (pos * Math.PI)) / numSubdivs;
-        v.x = RADIUS * Math.cos(angle);
-        v.y = -minorLength * RADIUS * Math.sin(angle);
-      });
-    }
-  }
-
   /** Reorient the unit circle in 3D and then project the points to 2D
    */
   private deformIntoEllipse(): void {
@@ -270,48 +156,40 @@ export default class Line extends Nodule {
       this.normalDirection
     );
     let firstPos = -1;
+    let posIndex = 0;
     let firstNeg = -1;
+    let negIndex = 0;
     let lastSign = 0;
 
     this.points.forEach((v, pos) => {
       this.tmpVector.copy(v);
+
       this.tmpVector.applyMatrix4(this.transformMatrix);
-      if (lastSign * this.tmpVector.z < 0) {
-        if (this.tmpVector.z > 0) firstPos = pos;
-        if (this.tmpVector.z < 0) firstNeg = pos;
+      const thisSign = Math.sign(this.tmpVector.z);
+      if (lastSign * thisSign < 0) {
+        // We have a zero crossing
+        if (thisSign > 0) firstPos = pos;
+        if (thisSign < 0) firstNeg = pos;
       }
-      lastSign = Math.sign(this.tmpVector.z);
+      lastSign = thisSign;
+      if (this.tmpVector.z > 0) {
+        this.frontHalf.vertices[posIndex].x = this.tmpVector.x;
+        this.frontHalf.vertices[posIndex].y = this.tmpVector.y;
+        posIndex++;
+      } else {
+        this.backHalf.vertices[negIndex].x = this.tmpVector.x;
+        this.backHalf.vertices[negIndex].y = this.tmpVector.y;
+        negIndex++;
+      }
     });
     // console.debug(`First pos ${firstPos}, first neg ${firstNeg}`);
-    if (this.segment) {
-      const totalArcLength = this.start.angleTo(this.end);
-
-      this.frontHalf.vertices.forEach((v, pos) => {
-        const angle = (pos * totalArcLength) / SUBDIVS;
-        this.tmpVector.set(
-          Math.cos(angle) * SETTINGS.boundaryCircle.radius,
-          Math.sin(angle) * SETTINGS.boundaryCircle.radius,
-          0
-        );
-        this.tmpVector.applyMatrix4(this.transformMatrix);
-        v.x = this.tmpVector.x;
-        v.y = this.tmpVector.y;
-      });
-    } else {
-      for (let k = 0; k < SUBDIVS; k++) {
-        const idx = (firstPos + k) % (2 * SUBDIVS);
-        this.tmpVector.copy(this.points[idx]);
-        this.tmpVector.applyMatrix4(this.transformMatrix);
-        this.frontHalf.vertices[k].x = this.tmpVector.x;
-        this.frontHalf.vertices[k].y = this.tmpVector.y;
-      }
-      for (let k = 0; k < SUBDIVS; k++) {
-        const idx = (firstNeg + k) % (2 * SUBDIVS);
-        this.tmpVector.copy(this.points[idx]);
-        this.tmpVector.applyMatrix4(this.transformMatrix);
-        this.backHalf.vertices[k].x = this.tmpVector.x;
-        this.backHalf.vertices[k].y = this.tmpVector.y;
-      }
+    if (0 < firstPos && firstPos < SUBDIVS) {
+      // Gap in backhalf
+      this.backHalf.vertices.rotate(firstPos);
+    }
+    if (0 < firstNeg && firstNeg < SUBDIVS) {
+      // Gap in fronthalf
+      this.frontHalf.vertices.rotate(firstNeg);
     }
   }
   // Use JavaScript setter functions to auto compute
@@ -333,8 +211,7 @@ export default class Line extends Nodule {
     this.normalDirection.crossVectors(this.start, this.end).normalize();
     // Be sure the normal direction is pointing towards the viewer
     if (this.normalDirection.z < 0) this.normalDirection.multiplyScalar(-1);
-    // this.deformIntoEllipse();
-    this.deformIn2D();
+    this.deformIntoEllipse();
   }
 
   get startPoint(): Vector3 {
@@ -347,8 +224,7 @@ export default class Line extends Nodule {
 
     // Be sure the normal direction is pointing towards the viewer
     if (this.normalDirection.z < 0) this.normalDirection.multiplyScalar(-1);
-    // this.deformIntoEllipse();
-    this.deformIn2D();
+    this.deformIntoEllipse();
   }
 
   get endPoint(): Vector3 {
@@ -362,8 +238,7 @@ export default class Line extends Nodule {
       } from ${this.normalDirection.toFixed(2)} to ${dir.toFixed(2)}`
     );
     this.normalDirection.copy(dir).normalize();
-    this.deformIn2D();
-    // this.deformIntoEllipse();
+    this.deformIntoEllipse();
   }
 
   get orientation(): Vector3 {

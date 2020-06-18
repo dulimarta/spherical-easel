@@ -16,8 +16,10 @@ import { SELine } from "@/models/SELine";
 // const frontPointRadius = SETTINGS.point.temp.radius.front;
 
 export default class LineHandler extends SelectionHandler {
-  protected startV3Point: Vector3; // The starting point of the line
-  protected tmpVector: Vector3;
+  protected startPosition = new Vector3(); // The starting point of the line
+  protected currentMidPosition = new Vector3();
+  protected nextMidPosition = new Vector3();
+  protected tmpVector = new Vector3();
   protected circleOrientation: Arrow; // for debugging only
   protected isMouseDown: boolean;
   protected isCircleAdded: boolean;
@@ -27,8 +29,6 @@ export default class LineHandler extends SelectionHandler {
 
   constructor(scene: Two.Group, transformMatrix: Matrix4, isSegment?: boolean) {
     super(scene, transformMatrix);
-    this.startV3Point = new Vector3();
-    this.tmpVector = new Vector3();
     this.line = new Line(undefined, undefined, isSegment);
 
     this.circleOrientation = new Arrow(0.5, 0x006600); // debug only
@@ -50,11 +50,13 @@ export default class LineHandler extends SelectionHandler {
           // Do we need to show the preview circle?
           this.isCircleAdded = true;
           this.canvas.add(this.line);
+          this.line.startPoint = this.startPosition;
+
           // this.circleOrientation.addTo(this.canvas); // for debugging only
         }
         // The following line automatically calls Line setter function
         this.tmpVector
-          .crossVectors(this.startV3Point, this.currentSpherePoint)
+          .crossVectors(this.startPosition, this.currentSpherePoint)
           .normalize();
         this.circleOrientation.sphereLocation = this.tmpVector; // for debugging
         this.line.endPoint = this.currentSpherePoint;
@@ -72,24 +74,24 @@ export default class LineHandler extends SelectionHandler {
     this.isMouseDown = true;
     this.startPoint = null;
     if (this.isOnSphere) {
-      const selected = this.hitPoint;
-
       // Record the first point of the geodesic circle
-      if (selected instanceof SEPoint) {
+      if (this.hitPoints.length > 0) {
+        // FIXME: use keyboard input to select an item
+        const selected = this.hitPoints[0];
         console.debug("Pressed on an existing point");
         /* the point coordinate is local on the sphere */
-        this.startV3Point.copy(selected.positionOnSphere);
+        this.startPosition.copy(selected.positionOnSphere);
         this.startPoint = selected;
       } else {
         console.debug("Pressed on open area");
         /* this.currentPoint is already converted to local sphere coordinate frame */
         this.canvas.add(this.startMarker);
         this.startMarker.translation.copy(this.currentScreenPoint);
-        this.startV3Point.copy(this.currentSpherePoint);
+        this.startPosition.copy(this.currentSpherePoint);
         this.startPoint = null;
       }
       // The following line automatically calls Line setter function
-      this.line.startPoint = this.currentSpherePoint;
+      // this.line.startPoint = this.currentSpherePoint;
     }
   }
 
@@ -103,7 +105,7 @@ export default class LineHandler extends SelectionHandler {
       this.circleOrientation.remove(); // for debugging
       this.isCircleAdded = false;
       this.tmpVector
-        .crossVectors(this.startV3Point, this.currentSpherePoint)
+        .crossVectors(this.startPosition, this.currentSpherePoint)
         .normalize();
       this.line.endPoint = this.currentSpherePoint;
       // this.endV3Point.copy(this.currentPoint);
@@ -113,12 +115,12 @@ export default class LineHandler extends SelectionHandler {
         // Starting point landed on an open space
         // we have to create a new point
         const vtx = new SEPoint(new Point());
-        vtx.positionOnSphere = this.startV3Point;
+        vtx.positionOnSphere = this.startPosition;
         this.startPoint = vtx;
         lineGroup.addCommand(new AddPointCommand(vtx));
       }
-      if (this.hitPoint instanceof SEPoint) {
-        this.endPoint = this.hitPoint;
+      if (this.hitPoints.length > 0) {
+        this.endPoint = this.hitPoints[0];
       } else {
         // endV3Point landed on an open space
         // we have to create a new point
@@ -131,7 +133,7 @@ export default class LineHandler extends SelectionHandler {
       lineGroup
         .addCommand(
           new AddLineCommand({
-            line: new SELine(newLine, this.startPoint, this.endPoint),
+            line: new SELine(newLine),
             startPoint: this.startPoint,
             endPoint: this.endPoint
           })

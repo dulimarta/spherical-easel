@@ -1,14 +1,32 @@
 <template>
   <div class="pa-1" id="objectTreeContainer">
     <h4>{{ $t("objects.points") }}</h4>
-    <v-treeview dense hoverable activatable active-class="warning"
-      :items="iPoints" @update:active="updateActive"></v-treeview>
+    <v-treeview
+      dense
+      hoverable
+      activatable
+      active-class="warning"
+      :items="iPoints"
+      @update:active="updateActive"
+    ></v-treeview>
     <h4>{{ $t("objects.lines") }}</h4>
-    <v-treeview dense hoverable activatable active-class="warning"
-      :items="iLines" @update:active="updateActive"></v-treeview>
+    <v-treeview
+      dense
+      hoverable
+      activatable
+      active-class="warning"
+      :items="iLines"
+      @update:active="updateActive"
+    ></v-treeview>
     <h4>{{ $t("objects.circles") }}</h4>
-    <v-treeview dense hoverable activatable active-class="warning"
-      :items="iCircles" @update:active="updateActive"></v-treeview>
+    <v-treeview
+      dense
+      hoverable
+      activatable
+      active-class="warning"
+      :items="iCircles"
+      @update:active="updateActive"
+    ></v-treeview>
   </div>
 </template>
 
@@ -93,8 +111,8 @@ export default class ObjectTree extends Vue {
       id: z.ref.id,
       name: z.ref.name,
       children: [
-        { id: z.start?.ref.id, name: "Start:" + z.start?.ref.name },
-        { id: z.end?.ref.id, name: "End:" + z.end?.ref.name }
+        // { id: z.start?.ref.id, name: "Start:" + z.start?.ref.name },
+        // { id: z.end?.ref.id, name: "End:" + z.end?.ref.name }
       ]
     }));
   }
