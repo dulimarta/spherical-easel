@@ -1,5 +1,6 @@
 import { SEPoint } from "@/models/SEPoint";
 import { SELine } from "@/models/SELine";
+import { SESegment } from "@/models/SESegment";
 import { SECircle } from "@/models/SECircle";
 /**
  * Use the Visitor design pattern to apply operation on different types
@@ -9,6 +10,7 @@ import { SECircle } from "@/models/SECircle";
 export interface Visitor {
   actionOnPoint(p: SEPoint): void;
   actionOnLine(x: SELine): void;
+  actionOnSegment(s: SESegment): void;
   actionOnCircle(c: SECircle): void;
 
   // TODO: add the following abstract methods later

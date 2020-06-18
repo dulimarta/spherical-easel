@@ -4,6 +4,7 @@ import Two from "two.js";
 import { SEPoint } from "@/models/SEPoint";
 import { SELine } from "@/models/SELine";
 import { SECircle } from "@/models/SECircle";
+import { SESegment } from "@/models/SESegment";
 
 export interface Selectable {
   hit(x: number, y: number, coord: unknown, who: unknown): boolean;
@@ -18,6 +19,7 @@ export interface AppState {
   // nodes: SENodule[], Do we need this?
   points: SEPoint[];
   lines: SELine[];
+  segments: SESegment[];
   circles: SECircle[];
 }
 /* This interface lists all the properties that each tool/button must have. */

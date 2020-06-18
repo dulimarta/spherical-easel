@@ -3,6 +3,7 @@ import { SEPoint } from "@/models/SEPoint";
 import { SELine } from "@/models/SELine";
 import { Matrix4, Vector3, Matrix3 } from "three";
 import { SECircle } from "@/models/SECircle";
+import { SESegment } from "@/models/SESegment";
 
 export class PositionVisitor implements Visitor {
   private transformMatrix: Matrix4 = new Matrix4();
@@ -23,9 +24,21 @@ export class PositionVisitor implements Visitor {
   /* This should never be called because lines are always children of points */
   actionOnLine(m: SELine): void {
     // Apply normal matrix to transform the circle orientation
-    this.tmpVector.copy(m.ref.orientation);
-    this.tmpVector.applyMatrix3(this.normalMatrix);
-    m.ref.orientation = this.tmpVector;
+    this.tmpVector.copy(m.normalDirection);
+    this.tmpVector.applyNormalMatrix(this.normalMatrix);
+    m.normalDirection = this.tmpVector;
+  }
+
+  actionOnSegment(s: SESegment): void {
+    // this.tmpVector.copy(s.normalDirection);
+    // this.tmpVector.applyNormalMatrix(this.normalMatrix);
+    // s.normalDirection = this.tmpVector;
+    this.tmpVector.copy(s.ref.startPoint);
+    this.tmpVector.applyMatrix4(this.transformMatrix);
+    s.ref.startPoint = this.tmpVector;
+    this.tmpVector.copy(s.ref.endPoint);
+    this.tmpVector.applyMatrix4(this.transformMatrix);
+    s.ref.endPoint = this.tmpVector;
   }
 
   actionOnCircle(c: SECircle): void {

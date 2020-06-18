@@ -8,6 +8,7 @@ import { SEPoint } from "@/models/SEPoint";
 import { SELine } from "@/models/SELine";
 import { SECircle } from "@/models/SECircle";
 import { Vector3, Matrix4 } from "three";
+import { SESegment } from "@/models/SESegment";
 
 Vue.use(Vuex);
 
@@ -30,6 +31,7 @@ const initialState = {
   layers: [],
   points: [],
   lines: [],
+  segments: [],
   circles: []
 };
 export default new Vuex.Store({
@@ -76,6 +78,26 @@ export default new Vuex.Store({
         const victimLine = state.lines[pos];
         victimLine.ref.removeFromLayers();
         state.lines.splice(pos, 1); // Remove the line from the list
+      }
+    },
+    addSegment(
+      state: AppState,
+      {
+        segment
+      }: /*startPoint,
+        endPoint*/
+      { segment: SESegment /*; startPoint: Point; endPoint: Point */ }
+    ): void {
+      state.segments.push(segment);
+      segment.ref.addToLayers(state.layers);
+    },
+    removeSegment(state: AppState, segId: number): void {
+      const pos = state.segments.findIndex(x => x.id === segId);
+      debugger; // eslint-disable-line
+      if (pos >= 0) {
+        const victim = state.segments[pos];
+        victim.ref.removeFromLayers();
+        state.segments.splice(pos, 1);
       }
     },
     addCircle(
@@ -138,6 +160,12 @@ export default new Vuex.Store({
       screenPosition: Two.Vector
     ): SELine[] => {
       return state.lines.filter((z: SELine) => z.isHitAt(idealPosition));
+    },
+    findNearbySegments: (state: AppState) => (
+      idealPosition: Vector3,
+      screenPosition: Two.Vector
+    ): SESegment[] => {
+      return state.segments.filter((z: SESegment) => z.isHitAt(idealPosition));
     },
     findNearbyCircles: (state: AppState) => (
       idealPosition: Vector3,

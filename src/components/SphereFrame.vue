@@ -12,7 +12,7 @@ import { State } from "vuex-class";
 import { ToolStrategy } from "@/eventHandlers/ToolStrategy";
 import PointHandler from "@/eventHandlers/PointHandler";
 import LineHandler from "@/eventHandlers/LineHandler";
-import SegmentHandler from "@/eventHandlers/SegmentHandler";
+// import SegmentHandler from "@/eventHandlers/SegmentHandler";
 import CircleHandler from "@/eventHandlers/CircleHandler";
 import RotateHandler from "@/eventHandlers/RotateHandler";
 import { PositionVisitor } from "@/visitors/PositionVisitor";
@@ -20,6 +20,7 @@ import { SEPoint } from "@/models/SEPoint";
 import { SELine } from "@/models/SELine";
 import { SECircle } from "@/models/SECircle";
 import EventBus from "@/eventHandlers/EventBus";
+import { SESegment } from "@/models/SESegment";
 
 @Component({})
 export default class SphereFrame extends VueComponent {
@@ -43,7 +44,7 @@ export default class SphereFrame extends VueComponent {
   private currentTool: ToolStrategy | null = null;
   private pointTool!: PointHandler;
   private lineTool!: LineHandler;
-  private segmentTool!: SegmentHandler;
+  private segmentTool!: LineHandler;
   private circleTool!: CircleHandler;
   private rotateTool!: RotateHandler;
   private visitor!: PositionVisitor;
@@ -148,9 +149,10 @@ export default class SphereFrame extends VueComponent {
     this.$refs.canvas.addEventListener("mouseup", this.handleMouseReleased);
     this.pointTool = new PointHandler(this.sphereCanvas, this.CSSTransformMat);
     this.lineTool = new LineHandler(this.sphereCanvas, this.CSSTransformMat);
-    this.segmentTool = new SegmentHandler(
+    this.segmentTool = new LineHandler(
       this.sphereCanvas,
-      this.CSSTransformMat
+      this.CSSTransformMat,
+      true /* we are handling a segment */
     );
     this.circleTool = new CircleHandler(
       this.sphereCanvas,
@@ -269,6 +271,9 @@ export default class SphereFrame extends VueComponent {
       });
       this.$store.state.circles.forEach((l: SECircle) => {
         l.accept(this.visitor);
+      });
+      this.$store.state.segments.forEach((s: SESegment) => {
+        s.accept(this.visitor);
       });
     }
   }

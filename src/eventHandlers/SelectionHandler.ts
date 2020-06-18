@@ -8,6 +8,7 @@ import SETTINGS from "@/global-settings";
 import { SEPoint } from "@/models/SEPoint";
 import { SELine } from "@/models/SELine";
 import { SECircle } from "@/models/SECircle";
+import { SESegment } from "@/models/SESegment";
 const frontPointRadius = SETTINGS.point.temp.radius.front;
 
 /* FIXME: The 3D position and the projected 2D positions are off by a few pixels???*/
@@ -22,6 +23,7 @@ export default abstract class SelectionHandler implements ToolStrategy {
   protected currentScreenPoint: Two.Vector;
   protected hitPoints: SEPoint[] = [];
   protected hitLine: SELine | null = null;
+  protected hitSegment: SESegment | null = null;
   protected hitCircle: SECircle | null = null;
   protected startMarker: Two.Circle;
   protected isOnSphere: boolean;
@@ -149,6 +151,7 @@ export default abstract class SelectionHandler implements ToolStrategy {
       });
       this.hitLine?.ref.normalStyle();
       this.hitCircle?.ref.normalStyle();
+      this.hitSegment?.ref.normalStyle();
       this.hitPoints.clear();
       this.hitLine = null;
       this.hitCircle = null;
@@ -164,6 +167,13 @@ export default abstract class SelectionHandler implements ToolStrategy {
         .findNearbyLines(this.currentSpherePoint, this.currentScreenPoint)
         .forEach((obj: SELine) => {
           this.hitLine = obj;
+          console.debug("Intersected with line", obj.id);
+          obj.ref.glowStyle();
+        });
+      this.store.getters
+        .findNearbySegments(this.currentSpherePoint, this.currentScreenPoint)
+        .forEach((obj: SESegment) => {
+          this.hitSegment = obj;
           console.debug("Intersected with line", obj.id);
           obj.ref.glowStyle();
         });
