@@ -25,11 +25,11 @@ export default class LineHandler extends SelectionHandler {
   protected isCircleAdded: boolean;
   private startPoint: SEPoint | null = null;
   private endPoint: SEPoint | null = null;
-  protected line: Line;
+  private line: Line;
 
   constructor(scene: Two.Group, transformMatrix: Matrix4, isSegment?: boolean) {
     super(scene, transformMatrix);
-    this.line = new Line(undefined, undefined, isSegment);
+    this.line = new Line();
 
     this.circleOrientation = new Arrow(0.5, 0x006600); // debug only
     this.isMouseDown = false;
@@ -39,7 +39,7 @@ export default class LineHandler extends SelectionHandler {
   activate = (): void => {
     super.activate();
     // The following line automatically calls Line setter function by default
-    this.line.isSegment = false;
+    // this.line.isSegment = false;
   };
 
   mouseMoved(event: MouseEvent): void {
@@ -50,7 +50,7 @@ export default class LineHandler extends SelectionHandler {
           // Do we need to show the preview circle?
           this.isCircleAdded = true;
           this.canvas.add(this.line);
-          this.line.startPoint = this.startPosition;
+          // this.line.startPoint = this.startPosition;
 
           // this.circleOrientation.addTo(this.canvas); // for debugging only
         }
@@ -59,7 +59,7 @@ export default class LineHandler extends SelectionHandler {
           .crossVectors(this.startPosition, this.currentSpherePoint)
           .normalize();
         this.circleOrientation.sphereLocation = this.tmpVector; // for debugging
-        this.line.endPoint = this.currentSpherePoint;
+        this.line.orientation = this.tmpVector;
       }
     } else if (this.isCircleAdded) {
       this.line.remove();
@@ -107,7 +107,7 @@ export default class LineHandler extends SelectionHandler {
       this.tmpVector
         .crossVectors(this.startPosition, this.currentSpherePoint)
         .normalize();
-      this.line.endPoint = this.currentSpherePoint;
+      // this.line.endPoint = this.currentSpherePoint;
       // this.endV3Point.copy(this.currentPoint);
       const newLine = this.line.clone(); // true:recursive clone
       const lineGroup = new CommandGroup();

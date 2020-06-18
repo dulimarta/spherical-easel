@@ -13,6 +13,6 @@ export default class SegmentHandler extends LineHandler {
 
   activate = (): void => {
     // The following line automatically calls Line setter function
-    this.line.isSegment = true;
+    // this.line.isSegment = true;
   };
 }

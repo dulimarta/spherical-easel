@@ -22,13 +22,10 @@ export class PositionVisitor implements Visitor {
 
   /* This should never be called because lines are always children of points */
   actionOnLine(m: SELine): void {
-    // Transform both end points of the plotable line
-    this.tmpVector.copy(m.ref.startPoint);
-    this.tmpVector.applyMatrix4(this.transformMatrix);
-    m.ref.startPoint = this.tmpVector; // use the setter function
-    this.tmpVector.copy(m.ref.endPoint);
-    this.tmpVector.applyMatrix4(this.transformMatrix);
-    m.ref.endPoint = this.tmpVector; // use the setter function
+    // Apply normal matrix to transform the circle orientation
+    this.tmpVector.copy(m.ref.orientation);
+    this.tmpVector.applyMatrix3(this.normalMatrix);
+    m.ref.orientation = this.tmpVector;
   }
 
   actionOnCircle(c: SECircle): void {
