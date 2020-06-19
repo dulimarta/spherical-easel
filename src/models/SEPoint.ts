@@ -5,7 +5,6 @@ import { SENodule } from "./SENodule";
 import { Vector3 } from "three";
 import SETTINGS from "@/global-settings";
 
-const POINT_PROXIMITY_THRESHOLD = 1e-2;
 export class SEPoint extends SENodule implements Visitable {
   /* The location of the SEPoint on the Sphere*/
   private _posOnSphere: Vector3; //_ starts names of variable that are private
@@ -47,6 +46,8 @@ export class SEPoint extends SENodule implements Visitable {
   }
 
   public isHitAt(spherePos: Vector3): boolean {
-    return this._posOnSphere.distanceTo(spherePos) < POINT_PROXIMITY_THRESHOLD;
+    return (
+      this._posOnSphere.distanceTo(spherePos) < SETTINGS.point.hitIdealDistance
+    );
   }
 }

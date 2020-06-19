@@ -4,6 +4,7 @@ import Circle from "@/plottables/Circle";
 import { Vector3 } from "three";
 import { Visitable } from "@/visitors/Visitable";
 import { Visitor } from "@/visitors/Visitor";
+import SETTINGS from "@/global-settings";
 
 export class SECircle extends SENodule implements Visitable {
   public ref!: Circle;
@@ -31,7 +32,9 @@ export class SECircle extends SENodule implements Visitable {
 
   public isHitAt(spherePos: Vector3): boolean {
     const angleToCenter = spherePos.angleTo(this.normalDir);
-    return Math.abs(angleToCenter - this.radius) < 0.01;
+    return (
+      Math.abs(angleToCenter - this.radius) < SETTINGS.circle.hitIdealDistance
+    );
   }
 
   public update(): void {

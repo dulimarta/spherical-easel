@@ -10,7 +10,7 @@ const desiredYAxis = new Vector3();
 const desiredZAxis = new Vector3();
 const Z_AXIS = new Vector3(0, 0, 1);
 const transformMatrix = new Matrix4();
-const SUBDIVISIONS = 50;
+const SUBDIVISIONS = SETTINGS.circle.numPoints;
 
 /**
  * For drawing surface circle. A circle consists of two paths (front and back)
@@ -21,30 +21,88 @@ const SUBDIVISIONS = 50;
  * total points 2N so we don't create/remove new points)
  */
 export default class Circle extends Nodule {
+  /**
+   * The center of the circle in ideal unit sphere
+   */
   private center_: Vector3; // Can't use "center", name conflict with TwoJS
-  // private outer: Vector3;
-  // arcRadius: the radius (in radiuans) as the user drag the mouse the
-  // surface of the sphere
+
+  /**
+   * The radius (in radians) as the user drags the mouse on the surface of the sphere
+   */
   private arcRadius = 1;
-  // projectedRadius: the above radius projected to the circle plane
+  /**
+   *  This the arcRadius projected to the plane of the circle
+   */
   private projectedRadius = 1;
-  private frontHalf: Two.Path;
-  private backHalf: Two.Path;
-  private majorAxisDirection = new Vector3();
-  private tmpVector: Vector3; // for temporary calculation
-  private tmpMatrix: Matrix4; // for temporary calculation
+
+  /**
+   * The TwoJS objects to display the front/back parts and their glowing counterparts.
+   */
+  private frontPart: Two.Path;
+  private backPart: Two.Path;
+  private glowingFrontPart: Two.Path;
+  private glowingBackPart: Two.Path;
+
+  /**
+   * The styling of the front/back/glowing/temp/not parts of the circle
+   * The user can modify these
+   */
+  private fillColorFront = SETTINGS.circle.drawn.fillColor.front;
+  private fillColorBack = SETTINGS.circle.drawn.fillColor.back;
+  private strokeColorFront = SETTINGS.circle.drawn.strokeColor.front;
+  private strokeColorBack =
+    /*SETTINGS.circle.dynamicBackStyle
+      ? Nodule.contrastColorString(this.frontStokeColor)
+      : */ SETTINGS
+      .circle.drawn.strokeColor.back;
+  private strokeWidthFront = SETTINGS.circle.drawn.strokeWidth.front;
+  private strokeWidthBack =
+    /*SETTINGS.circle.dynamicBackStyle
+  ? Nodule.contrastStrokeWidth(this.frontStokeWidth)
+  : */ SETTINGS
+      .circle.drawn.strokeWidth.back;
+  private opacityFront = SETTINGS.circle.drawn.opacity.front;
+  private opacityBack =
+    /*SETTINGS.circle.dynamicBackStyle
+  ? Nodule.contrastOpacity(this.frontOpacity)
+  : */ SETTINGS
+      .circle.drawn.opacity.back;
+  private dashingArrayFront = SETTINGS.circle.drawn.dashArray.front;
+  private dashingArrayBack =
+    /*SETTINGS.circle.dynamicBackStyle
+  ? Nodule.contrastDashArray(this.dashingArrayFront)
+  : */ SETTINGS
+      .circle.drawn.dashArray.back;
+  private dashingOffsetFront = SETTINGS.circle.drawn.dashArray.offset.front;
+  private dashingOffsetBack = SETTINGS.circle.drawn.dashArray.offset.back;
+  /**
+   * For temporary calculation with ThreeJS objects
+   */
+  private tmpVector: Vector3;
+  private tmpMatrix: Matrix4;
+
+  /**
+   * This is the list of original vertices of a circle in the XY plane of radius
+   * SETTINGS.boundaryCircle.radius. There are SETTINGS.circle.subdivisions of these vertices
+   */
   private originalVertices: Vector2[];
-  private majorLine: Two.Line; // for debugging only
+
+  // for debugging only
+  private majorLine: Two.Line;
 
   constructor(center?: Vector3, arcRadius?: number) {
     super();
-    // Line on the positive X-axis of the circle/ellipse
+
+    // For debugging
+    // Draw the segment on the positive X-axis of the circle/ellipse
     this.majorLine = new Two.Line(0, 0, SETTINGS.boundaryCircle.radius, 0);
     this.add(this.majorLine);
+
+    // Create the initial front and back vertices (glowing and not)
     const frontVertices: Two.Vector[] = [];
     const backVertices: Two.Vector[] = [];
-    for (let k = 0; k < SUBDIVISIONS; k++) {
-      const angle = (k * Math.PI) / SUBDIVISIONS; // [0, pi)
+    for (let k = 0; k < SUBDIVISIONS / 2; k++) {
+      const angle = (k * Math.PI) / (SUBDIVISIONS / 2); // [0, pi)
       frontVertices.push(
         new Two.Vector(
           SETTINGS.boundaryCircle.radius * Math.cos(angle),
@@ -58,10 +116,31 @@ export default class Circle extends Nodule {
         )
       );
     }
-    this.frontHalf = new Two.Path(frontVertices, false, false);
-    this.backHalf = new Two.Path(backVertices, false, false);
-    this.add(this.backHalf);
-    this.add(this.frontHalf);
+    this.frontPart = new Two.Path(
+      frontVertices,
+      /*closed*/ false,
+      /*curve*/ true
+    );
+    this.glowingFrontPart = new Two.Path(
+      frontVertices, // This is not a new array of vertices, I'm trying to get glowing and not to share an array
+      /*closed*/ false,
+      /*curve*/ true
+    );
+    this.backPart = new Two.Path(
+      backVertices,
+      /*closed*/ false,
+      /*curve*/ true
+    );
+    this.glowingBackPart = new Two.Path(
+      backVertices, // This is not a new array of vertices, I'm trying to get glowing and not to share an array
+      /*closed*/ false,
+      /*curve*/ true
+    );
+    this.add(this.backPart);
+    this.add(this.frontPart);
+    this.add(this.glowingBackPart);
+    this.add(this.glowingFrontPart);
+
     this.originalVertices = [];
     frontVertices.forEach(v => {
       this.originalVertices.push(new Vector2(v.x, v.y));
@@ -69,21 +148,65 @@ export default class Circle extends Nodule {
     backVertices.forEach(v => {
       this.originalVertices.push(new Vector2(v.x, v.y));
     });
-    this.noFill();
-    this.frontHalf.linewidth = 4;
-    this.backHalf.linewidth = 2;
-    // draw the backhalf using dashed line
-    (this.backHalf as any).dashes.push(10, 5);
+
+    // Set the center, radii, and temporary variables
     this.center_ = new Vector3(0, 0, 0);
     if (center) this.center_.copy(center);
     this.arcRadius = arcRadius || Math.PI / 4;
     this.projectedRadius = Math.sin(this.arcRadius);
     this.tmpVector = new Vector3();
     this.tmpMatrix = new Matrix4();
+
+    //Set the styles of the front/back/glowing/drawn parts
+    // Fill Color
+    if (this.fillColorFront === "noFill") {
+      this.frontPart.noFill();
+    } else {
+      this.frontPart.fill = this.fillColorFront;
+    }
+    if (this.fillColorBack === "noFill") {
+      this.backPart.noFill();
+    } else {
+      this.backPart.fill = this.fillColorBack;
+    }
+    this.glowingBackPart.noFill(); // the glowing circle is never filled
+    this.glowingFrontPart.noFill(); // the glowing circle is never filled
+
+    // Stroke Width
+    this.frontPart.linewidth = this.strokeWidthFront;
+    this.backPart.linewidth = this.strokeWidthBack;
+    this.glowingFrontPart.linewidth =
+      SETTINGS.circle.glowing.edgeWidth + this.strokeWidthFront;
+    this.glowingBackPart.linewidth =
+      SETTINGS.circle.glowing.edgeWidth + this.strokeWidthBack;
+
+    // Stroke color
+    this.frontPart.stroke = this.strokeColorFront;
+    this.backPart.stroke = this.strokeColorBack;
+    this.glowingFrontPart.stroke = SETTINGS.circle.glowing.strokeColor.front;
+    this.glowingBackPart.stroke = SETTINGS.circle.glowing.strokeColor.back;
+
+    // Opacity
+    this.frontPart.opacity = this.opacityFront;
+    this.backPart.opacity = this.opacityBack;
+    this.glowingFrontPart.opacity = SETTINGS.circle.glowing.opacity.front;
+    this.glowingBackPart.opacity = SETTINGS.circle.glowing.opacity.back;
+
+    // Dashing
+    if (this.dashingArrayFront.length > 0) {
+      (this.frontPart as any).dashes = this.dashingArrayFront;
+      (this.frontPart as any).offset = this.dashingOffsetFront;
+    }
+    if (this.dashingArrayBack.length > 0) {
+      (this.backPart as any).dashes = this.dashingArrayBack;
+      (this.backPart as any).offset = this.dashingOffsetBack;
+    }
+    // There is no dashing on the glowing objects. For now.
+
     this.name = "Circle-" + this.id;
   }
 
-  // Using this algorithm, the frontHalf and backHalf are rendered correctly
+  // Using this algorithm, the frontPart and backPart are rendered correctly
   // but the center of the circle is off by several pixels
   private readjust() {
     const sphereRadius = SETTINGS.boundaryCircle.radius; // in pixels
@@ -105,7 +228,7 @@ export default class Circle extends Nodule {
     this.tmpMatrix.makeScale(this.projectedRadius, this.projectedRadius, 1);
     transformMatrix.multiply(this.tmpMatrix);
 
-    // Recalculate the 2D coordinate of the TwoJS path
+    // Recalculate the 2D coordinate of the TwoJS path (From the originalVertices array)
     // As we drag the mouse, the number of vertices in the front half
     // and back half are dynamically changing and to avoid
     // allocating and de-allocating arrays, we dynamically transfers
@@ -113,8 +236,8 @@ export default class Circle extends Nodule {
 
     let posIndex = 0;
     let negIndex = 0;
-    let frontLen = this.frontHalf.vertices.length;
-    let backLen = this.backHalf.vertices.length;
+    let frontLen = this.frontPart.vertices.length;
+    let backLen = this.backPart.vertices.length;
     let firstNeg = -1;
     let firstPos = -1;
     this.originalVertices.forEach((v, pos) => {
@@ -126,41 +249,41 @@ export default class Circle extends Nodule {
       if (this.tmpVector.z > 0) {
         if (firstPos === -1) firstPos = pos;
         if (posIndex >= frontLen) {
-          // Steal one element from the backHalf
-          const extra = this.backHalf.vertices.pop();
-          this.frontHalf.vertices.push(extra!);
+          // Steal one element from the backPart
+          const extra = this.backPart.vertices.pop();
+          this.frontPart.vertices.push(extra!);
           backLen--;
           frontLen++;
         }
-        this.frontHalf.vertices[posIndex].x = this.tmpVector.x;
-        this.frontHalf.vertices[posIndex].y = this.tmpVector.y;
+        this.frontPart.vertices[posIndex].x = this.tmpVector.x;
+        this.frontPart.vertices[posIndex].y = this.tmpVector.y;
         posIndex++;
       } else {
         if (firstNeg === -1) firstNeg = pos;
         if (negIndex >= backLen) {
-          // Steal one element from the frontHalf
-          const extra = this.frontHalf.vertices.pop();
-          this.backHalf.vertices.push(extra!);
+          // Steal one element from the frontPart
+          const extra = this.frontPart.vertices.pop();
+          this.backPart.vertices.push(extra!);
           frontLen--;
           backLen++;
         }
-        this.backHalf.vertices[negIndex].x = this.tmpVector.x;
-        this.backHalf.vertices[negIndex].y = this.tmpVector.y;
+        this.backPart.vertices[negIndex].x = this.tmpVector.x;
+        this.backPart.vertices[negIndex].y = this.tmpVector.y;
         negIndex++;
       }
     });
     // Rotate the array elements to remove gap
     if (firstNeg < firstPos && firstPos <= firstNeg + backLen) {
       // There is a gap in the back path
-      this.backHalf.vertices.rotate(firstPos);
+      this.backPart.vertices.rotate(firstPos);
     } else if (firstPos < firstNeg && firstNeg <= firstPos + frontLen) {
       // There is a gap in the front path
-      this.frontHalf.vertices.rotate(firstNeg);
+      this.frontPart.vertices.rotate(firstNeg);
     }
 
     // A halfpath becomes a closed path when the other half vanishes
-    this.frontHalf.closed = backLen === 0;
-    this.backHalf.closed = frontLen === 0;
+    this.frontPart.closed = backLen === 0;
+    this.backPart.closed = frontLen === 0;
   }
 
   set centerPoint(position: Vector3) {
@@ -191,10 +314,12 @@ export default class Circle extends Nodule {
   // }
 
   frontGlowStyle(): void {
-    this.frontHalf.stroke = "red";
+    (this.frontPart as any).visible = true;
+    (this.glowingFrontPart as any).visible = true;
   }
   backGlowStyle(): void {
-    this.backHalf.stroke = "red";
+    (this.backPart as any).visible = true;
+    (this.glowingBackPart as any).visible = true;
   }
 
   glowStyle(): void {
@@ -203,57 +328,101 @@ export default class Circle extends Nodule {
   }
 
   frontNormalStyle(): void {
-    this.frontHalf.stroke = "black";
+    (this.frontPart as any).visible = true;
+    (this.glowingFrontPart as any).visible = false;
   }
 
   backNormalStyle(): void {
-    this.backHalf.stroke = "black";
+    (this.backPart as any).visible = true;
+    (this.glowingBackPart as any).visible = false;
   }
 
   normalStyle(): void {
     this.frontNormalStyle();
     this.backNormalStyle();
   }
+  /**
+ *   frontGlowStyle(): void {
+    (this.frontPoint as any).visible = true;
+    (this.glowingFrontPoint as any).visible = true;
+    (this.backPoint as any).visible = false;
+    (this.glowingBackPoint as any).visible = false;
+  }
 
+  backGlowStyle(): void {
+    (this.frontPoint as any).visible = false;
+    (this.glowingFrontPoint as any).visible = false;
+    (this.backPoint as any).visible = true;
+    (this.glowingBackPoint as any).visible = true;
+  }
+
+  glowStyle(): void {
+    if (this.owner.positionOnSphere.z > 0) this.frontGlowStyle();
+    else this.backGlowStyle();
+  }
+
+  frontNormalStyle(): void {
+    (this.frontPoint as any).visible = true;
+    (this.glowingFrontPoint as any).visible = false;
+    (this.backPoint as any).visible = false;
+    (this.glowingBackPoint as any).visible = false;
+  }
+
+  backNormalStyle(): void {
+    (this.frontPoint as any).visible = false;
+    (this.glowingFrontPoint as any).visible = false;
+    (this.backPoint as any).visible = true;
+    (this.glowingBackPoint as any).visible = false;
+  }
+
+  normalStyle(): void {
+    if (this.owner.positionOnSphere.z > 0) this.frontNormalStyle();
+    else this.backNormalStyle();
+  }
+ */
   clone(): this {
     const dup = new Circle(this.center_, this.arcRadius);
     dup.rotation = this.rotation;
     dup.translation.copy(this.translation);
-    dup.frontHalf.closed = this.frontHalf.closed;
-    dup.frontHalf.rotation = this.frontHalf.rotation;
-    dup.frontHalf.translation.copy(this.frontHalf.translation);
-    dup.backHalf.closed = this.backHalf.closed;
-    dup.backHalf.rotation = this.backHalf.rotation;
-    dup.backHalf.translation.copy(this.backHalf.translation);
+    dup.frontPart.closed = this.frontPart.closed;
+    dup.frontPart.rotation = this.frontPart.rotation;
+    dup.frontPart.translation.copy(this.frontPart.translation);
+    dup.backPart.closed = this.backPart.closed;
+    dup.backPart.rotation = this.backPart.rotation;
+    dup.backPart.translation.copy(this.backPart.translation);
     // The clone has equal nunber of vertices for the front and back halves
-    while (dup.frontHalf.vertices.length > this.frontHalf.vertices.length) {
+    while (dup.frontPart.vertices.length > this.frontPart.vertices.length) {
       // Transfer from fronthalf to backhalf
-      dup.backHalf.vertices.push(dup.frontHalf.vertices.pop()!);
+      dup.backPart.vertices.push(dup.frontPart.vertices.pop()!);
     }
-    while (dup.backHalf.vertices.length > this.backHalf.vertices.length) {
-      // Transfer from backHalf to fronthalf
-      dup.frontHalf.vertices.push(dup.backHalf.vertices.pop()!);
+    while (dup.backPart.vertices.length > this.backPart.vertices.length) {
+      // Transfer from backPart to fronthalf
+      dup.frontPart.vertices.push(dup.backPart.vertices.pop()!);
     }
-    dup.frontHalf.vertices.forEach((v, pos) => {
-      v.copy(this.frontHalf.vertices[pos]);
+    dup.frontPart.vertices.forEach((v, pos) => {
+      v.copy(this.frontPart.vertices[pos]);
     });
-    dup.backHalf.vertices.forEach((v, pos) => {
-      v.copy(this.backHalf.vertices[pos]);
+    dup.backPart.vertices.forEach((v, pos) => {
+      v.copy(this.backPart.vertices[pos]);
     });
     //   dup.scale.copy(this.scale);
     return dup as this;
   }
 
   addToLayers(layers: Two.Group[]): void {
-    if (this.frontHalf.vertices.length > 0) {
-      this.frontHalf.addTo(layers[LAYER.foreground]);
+    if (this.frontPart.vertices.length > 0) {
+      this.frontPart.addTo(layers[LAYER.foreground]);
+      this.glowingFrontPart.addTo(layers[LAYER.foregroundGlowing]);
     }
-    if (this.backHalf.vertices.length > 0)
-      this.backHalf.addTo(layers[LAYER.background]);
+    if (this.backPart.vertices.length > 0)
+      this.backPart.addTo(layers[LAYER.background]);
+    this.glowingBackPart.addTo(layers[LAYER.backgroundGlowing]);
   }
   removeFromLayers(/*layers: Two.Group[]*/): void {
-    this.frontHalf.remove();
-    this.backHalf.remove();
+    this.frontPart.remove();
+    this.glowingFrontPart.remove();
+    this.backPart.remove();
+    this.glowingBackPart.remove();
   }
   adjustSizeForZoom(factor: number): void {
     throw new Error("Method not implemented.");

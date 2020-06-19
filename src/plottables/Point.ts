@@ -12,34 +12,34 @@ import Nodule from "./Nodule";
  * SEPoint concerns mainly with geometry computations.
  */
 
-// TODO: complete the code for dynamicBackColor
+// TODO: complete the code for dynamicBackStyle
 
-const frontDefaultRadius = SETTINGS.point.drawn.radius.front;
-const backDefaultRadius = SETTINGS.point.drawn.radius.back;
+const defaultRadiusFront = SETTINGS.point.drawn.radius.front;
+const defaultRadiusBack = SETTINGS.point.drawn.radius.back;
 const annularWidth = SETTINGS.point.glowing.annularWidth;
 //The style options at the defaults
 const frontFillColor = SETTINGS.point.drawn.fillColor.front;
 const backFillColor =
-  /*SETTINGS.point.dynamicBackColor
+  /*SETTINGS.point.dynamicBackStyle
     ? Nodule.contrastColorString(this.frontFillColor)
     : */ SETTINGS
     .point.drawn.fillColor.back;
-const frontStokeColor = SETTINGS.point.drawn.strokeColor.front;
-const backStrokeColor =
-  /*SETTINGS.point.dynamicBackColor
-    ? Nodule.contrastColorString(this.frontStokeColor)
+const stokeColorFront = SETTINGS.point.drawn.strokeColor.front;
+const strokeColorBack =
+  /*SETTINGS.point.dynamicBackStyle
+    ? Nodule.contrastColorString(this.stokeColorFront)
     : */ SETTINGS
     .point.drawn.strokeColor.back;
-const frontStrokeWidth = SETTINGS.point.drawn.lineWidth.front;
-const backStrokeWidth = SETTINGS.point.drawn.lineWidth.back;
+const strokeWidthFront = SETTINGS.point.drawn.strokeWidth.front;
+const strokeWidthBack = SETTINGS.point.drawn.strokeWidth.back;
 const frontOpacity = SETTINGS.point.drawn.opacity.front;
 const backOpacity = SETTINGS.point.drawn.opacity.back;
-const glowingFrontOpacity = SETTINGS.point.glowing.opacity.front;
-const glowingBackOpacity = SETTINGS.point.glowing.opacity.back;
-const frontGlowFillColor = SETTINGS.point.glowing.fillColor.front;
-const backGlowFillColor =
-  /*SETTINGS.point.dynamicBackColor
-  ? Nodule.contrastColorString(this.frontGlowFillColor)
+const glowingOpacityFront = SETTINGS.point.glowing.opacity.front;
+const glowingOpacityBack = SETTINGS.point.glowing.opacity.back;
+const glowingFillColorFront = SETTINGS.point.glowing.fillColor.front;
+const glowingFillColorBack =
+  /*SETTINGS.point.dynamicBackStyle
+  ? Nodule.contrastColorString(this.glowingFillColorFront)
   : */ SETTINGS
     .point.glowing.fillColor.back;
 export default class Point extends Nodule {
@@ -56,17 +56,17 @@ export default class Point extends Nodule {
   private glowingBackPoint: Two.Circle;
   constructor() {
     super();
-    this.frontPoint = new Two.Circle(0, 0, frontDefaultRadius);
-    this.backPoint = new Two.Circle(0, 0, backDefaultRadius);
+    this.frontPoint = new Two.Circle(0, 0, defaultRadiusFront);
+    this.backPoint = new Two.Circle(0, 0, defaultRadiusBack);
     this.glowingFrontPoint = new Two.Circle(
       0,
       0,
-      frontDefaultRadius + annularWidth
+      defaultRadiusFront + annularWidth
     );
     this.glowingBackPoint = new Two.Circle(
       0,
       0,
-      backDefaultRadius + annularWidth
+      defaultRadiusBack + annularWidth
     );
     this.add(
       this.glowingBackPoint,
@@ -85,7 +85,7 @@ export default class Point extends Nodule {
   }
 
   adjustSizeForZoom(factor: number): void {
-    const newRadius = frontDefaultRadius * factor;
+    const newRadius = defaultRadiusFront * factor;
     let newScale = 1;
     if (newRadius > SETTINGS.point.drawn.radius.rmax) {
       // debugger; // eslint-disable-line
@@ -140,22 +140,22 @@ export default class Point extends Nodule {
   private setAllPointsStyle() {
     //Set up the fill colors, opacity, stroke width, and stroke colors of the front/back/glow/noglow
     this.frontPoint.fill = frontFillColor;
-    this.frontPoint.stroke = frontStokeColor;
-    this.frontPoint.linewidth = frontStrokeWidth /* (this.localScale * Coordinates.getGlobalScale()) */;
+    this.frontPoint.stroke = stokeColorFront;
+    this.frontPoint.linewidth = strokeWidthFront /* (this.localScale * Coordinates.getGlobalScale()) */;
     this.frontPoint.opacity = frontOpacity;
 
     this.backPoint.fill = backFillColor;
-    this.backPoint.stroke = backStrokeColor;
-    this.backPoint.linewidth = backStrokeWidth /* (this.localScale * Coordinates.getGlobalScale()) */;
+    this.backPoint.stroke = strokeColorBack;
+    this.backPoint.linewidth = strokeWidthBack /* (this.localScale * Coordinates.getGlobalScale()) */;
     this.backPoint.opacity = backOpacity;
 
-    this.glowingFrontPoint.fill = frontGlowFillColor;
+    this.glowingFrontPoint.fill = glowingFillColorFront;
     this.glowingFrontPoint.noStroke(); // no linewidth
-    this.glowingFrontPoint.opacity = glowingFrontOpacity;
+    this.glowingFrontPoint.opacity = glowingOpacityFront;
 
-    this.glowingBackPoint.fill = backGlowFillColor;
+    this.glowingBackPoint.fill = glowingFillColorBack;
     this.glowingBackPoint.noStroke(); // no linewidth
-    this.glowingBackPoint.opacity = glowingBackOpacity;
+    this.glowingBackPoint.opacity = glowingOpacityBack;
   }
 
   addToLayers(layers: Two.Group[]): void {

@@ -10,6 +10,15 @@ import { AddCircleCommand } from "@/commands/AddCircleCommand";
 import Two from "two.js";
 import { SEPoint } from "@/models/SEPoint";
 import { SECircle } from "@/models/SECircle";
+import SETTINGS from "@/global-settings";
+
+// The style for the temporary circle displayed.  These options are not user modifiable.
+const tempOpacityFront = SETTINGS.circle.temp.opacity.front;
+const tempOpacityBack = SETTINGS.circle.temp.opacity.back;
+const tempStrokeWidthFront = SETTINGS.circle.temp.strokeWidth.front;
+const tempStrokeWidthBack = SETTINGS.circle.temp.strokeWidth.back;
+const tempStrokeColorFront = SETTINGS.circle.temp.strokeColor.front;
+const tempStrokeColorBack = SETTINGS.circle.temp.strokeColor.back;
 
 export default class CircleHandler extends SelectionHandler {
   private startV3Point: Vector3;
