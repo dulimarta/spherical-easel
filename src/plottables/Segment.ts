@@ -27,6 +27,10 @@ minorAxis.stroke = "green";
 minorAxis.linewidth = 3;
 
 const tmpMatrix = new Matrix4();
+const tmpVector1 = new Vector3();
+const tmpVector2 = new Vector3();
+const desiredXAxis = new Vector3();
+const desiredYAxis = new Vector3();
 // const XAxis = new Vector3(1, 0, 0);
 /**
  * Geodesic line on a circle
@@ -39,26 +43,23 @@ export default class Segment extends Nodule {
   // Declare owner as non-null, this field will be initialized by the associated owner
   // public owner?: SELine | null = null;
   private start: Vector3;
+  private mid: Vector3;
   private end: Vector3;
   // public name = "";
   private oldFrontStroke: Two.Color = "";
   private oldBackStroke: Two.Color = "";
   private normalDirection: Vector3;
 
-  private tmpVector: Vector3;
-  private desiredXAxis = new Vector3();
-  private desiredYAxis = new Vector3();
   // const desiredZAxis = new Vector3();
   private transformMatrix = new Matrix4();
   private frontHalf: Two.Path;
-  private frontArcLen = 0;
+  private frontExtra: Two.Path;
   private backHalf: Two.Path;
-  private backArcLen = 0;
+  private backExtra: Two.Path;
   private arcLen = 0;
 
-  constructor(start?: Vector3, end?: Vector3) {
+  constructor(start?: Vector3, mid?: Vector3, end?: Vector3) {
     super();
-    this.tmpVector = new Vector3();
     const vertices: Two.Vector[] = [];
     for (let k = 0; k < SUBDIVS; k++) {
       vertices.push(new Two.Vector(0, 0));
@@ -71,19 +72,30 @@ export default class Segment extends Nodule {
     this.frontHalf.linewidth = SETTINGS.line.thickness.front;
     this.frontHalf.stroke = "green";
     this.frontHalf.noFill();
+
+    this.frontExtra = this.frontHalf.clone();
+    this.frontExtra.vertices.clear();
+
     // Create the back half circle by cloning the front half
     this.backHalf = this.frontHalf.clone();
     this.backHalf.stroke = "gray";
     (this.backHalf as any).dashes.push(10, 5); // render as dashed lines
     this.backHalf.linewidth = SETTINGS.line.thickness.back;
     this.backHalf.noFill();
-    this.add(this.backHalf, this.frontHalf);
+    this.backExtra = this.backHalf.clone();
+    this.backExtra.vertices.clear();
+    (this.backExtra as any).dashes.push(10, 5); // render as dashed lines
+    this.backExtra.linewidth = SETTINGS.line.thickness.back;
+
+    this.add(this.backHalf, this.backExtra, this.frontHalf, this.frontExtra);
     // Be sure to clone() the incoming start and end points
     // Otherwise update by other Line will affect this one!
     if (start) this.start = start.clone();
     else this.start = new Vector3(1, 0, 0);
     if (end) this.end = end.clone();
     else this.end = new Vector3(0, 1, 0);
+    if (mid) this.mid = mid.clone();
+    else this.mid = new Vector3(0.5, 0.5, 0);
     this.normalDirection = new Vector3(0, 0, 1);
     // The back half will be dynamically added to the group
     this.name = "Segment-" + this.id;
@@ -138,84 +150,115 @@ export default class Segment extends Nodule {
   /** Reorient the unit circle in 3D and then project the points to 2D
    */
   private deformIntoEllipse(): void {
+    // Avoid the degenerate case when the normalDirection is "zero"
     if (this.normalDirection.length() < 0.01) return;
-    this.tmpVector.set(-this.normalDirection.y, this.normalDirection.x, 0);
-    const startAngle = this.tmpVector.angleTo(this.start);
-    const endAngle = this.tmpVector.angleTo(this.end);
-    console.debug(
-      `Arc start at ${startAngle.toDegrees().toFixed(0)}` +
-        ` end at ${endAngle.toDegrees().toFixed(0)}`
-    );
-    this.desiredXAxis
+
+    // angleTo() seems to return the smaller angle between two vectors
+    // To get arc length > 180 we measure it with a break at midpoint
+    // and sum the SIGNED length of each.
+    tmpVector1.crossVectors(this.start, this.mid);
+    const angle1 = this.start.angleTo(this.mid) * Math.sign(tmpVector1.z);
+    tmpVector1.crossVectors(this.mid, this.end);
+    const angle2 = this.mid.angleTo(this.end) * Math.sign(tmpVector1.z);
+    const arcLen = angle1 + angle2;
+
+    // Use the start of segment as the X-axis so the start point
+    // is at zero degrees
+    desiredXAxis
       .copy(this.start)
       // .set(-this.normalDirection.y, this.normalDirection.x, 0)
       .normalize();
-    this.desiredYAxis.crossVectors(this.normalDirection, this.desiredXAxis);
+    desiredYAxis.crossVectors(this.normalDirection, desiredXAxis);
+
+    // Create the rotation matrix that maps the tilted circle to the unit
+    // circle on the XY-plane
     this.transformMatrix.makeBasis(
-      this.desiredXAxis,
-      this.desiredYAxis,
-      this.normalDirection
+      desiredXAxis,
+      desiredYAxis,
+      this.normalDirection // The normal direction of the circle plane
     );
-    let firstPos = -1;
+    const toPos = []; // Remember the indices of neg-to-pos crossing
+    const toNeg = []; // Remember the indices of pos-to-neg crossing
     let posIndex = 0;
-    let firstNeg = -1;
     let negIndex = 0;
     let lastSign = 0;
 
+    // Bring all the anchor points to a common pool
+    // Each half (and extra) path will pull anchor points from
+    // this pool as needed
+    const pool: Two.Anchor[] = [];
+    pool.push(...this.frontHalf.vertices.splice(0));
+    pool.push(...this.frontExtra.vertices.splice(0));
+    pool.push(...this.backHalf.vertices.splice(0));
+    pool.push(...this.backExtra.vertices.splice(0));
+
+    // We begin with the "main" paths as the current active paths
+    // As we find additional zero-crossing, we then switch to the
+    // "extra" paths
+    let activeFront = this.frontHalf.vertices;
+    let activeBack = this.backHalf.vertices;
     for (let pos = 0; pos < 2 * SUBDIVS; pos++) {
-      const angle =
-        ((pos * this.arcLen) / (2 * SUBDIVS - 1)) *
-        Math.sign(endAngle - startAngle);
-      this.tmpVector
+      const angle = (pos / (2 * SUBDIVS - 1)) * Math.abs(arcLen);
+      tmpVector1
         .set(Math.cos(angle), Math.sin(angle), 0)
         .multiplyScalar(SETTINGS.boundaryCircle.radius);
-      this.tmpVector.applyMatrix4(this.transformMatrix);
-      const thisSign = Math.sign(this.tmpVector.z);
+      tmpVector1.applyMatrix4(this.transformMatrix);
+      const thisSign = Math.sign(tmpVector1.z);
+
+      // CHeck for zero-crossing
       if (lastSign !== thisSign) {
         // We have a zero crossing
-        if (thisSign > 0) firstPos = pos;
-        if (thisSign < 0) firstNeg = pos;
+        if (thisSign > 0) {
+          // If we already had a positive crossing
+          // The next chunk is a split front half
+          if (toPos.length > 0) {
+            activeFront = this.frontExtra.vertices;
+            posIndex = 0;
+          }
+          toPos.push(pos);
+        }
+        // If we already had a negative crossing
+        // The next chunk is a split back half
+        if (thisSign < 0) {
+          if (toNeg.length > 0) {
+            activeBack = this.backExtra.vertices;
+            negIndex = 0;
+          }
+          toNeg.push(pos);
+        }
       }
       lastSign = thisSign;
-      if (this.tmpVector.z > 0) {
-        if (posIndex == this.frontHalf.vertices.length) {
-          // transfer one cell from backhalf to fronthalf
-          console.debug("Transfer from back to front");
-          this.frontHalf.vertices.push(this.backHalf.vertices.pop()!);
+      if (tmpVector1.z > 0) {
+        if (posIndex === activeFront.length) {
+          // transfer one cell from the common pool
+          activeFront.push(pool.pop()!);
         }
-        this.frontHalf.vertices[posIndex].x = this.tmpVector.x;
-        this.frontHalf.vertices[posIndex].y = this.tmpVector.y;
+        activeFront[posIndex].x = tmpVector1.x;
+        activeFront[posIndex].y = tmpVector1.y;
         posIndex++;
       } else {
-        if (negIndex === this.backHalf.vertices.length) {
-          // transfer one cell from fronthalf to backhalf
-          console.debug("Transfer from front to back");
-          this.backHalf.vertices.push(this.frontHalf.vertices.pop()!);
+        if (negIndex === activeBack.length) {
+          // transfer one cell from the common pool
+          activeBack.push(pool.pop()!);
         }
-        this.backHalf.vertices[negIndex].x = this.tmpVector.x;
-        this.backHalf.vertices[negIndex].y = this.tmpVector.y;
+        activeBack[negIndex].x = tmpVector1.x;
+        activeBack[negIndex].y = tmpVector1.y;
         negIndex++;
       }
-    }
-    if (0 < firstPos && firstPos < SUBDIVS) {
-      // Gap in backhalf
-      this.backHalf.vertices.rotate(firstPos);
-    }
-    if (0 < firstNeg && firstNeg < SUBDIVS) {
-      // Gap in fronthalf
-      this.frontHalf.vertices.rotate(firstNeg);
     }
   }
 
   set startPoint(position: Vector3) {
     this.start.copy(position).normalize();
-    this.arcLen = this.start.angleTo(this.end);
     // The circle plane passes through three points the origin (0,0,0)
     // and the two points (start (S) and end (E)).
     // The normal of this plane is the cross product of SxE
-    this.normalDirection.crossVectors(this.start, this.end).normalize();
+    tmpVector1.crossVectors(this.start, this.mid).normalize();
+    tmpVector2.crossVectors(this.mid, this.end).normalize();
+    this.normalDirection.addVectors(tmpVector1, tmpVector2).normalize();
+    // this.normalDirection.crossVectors(this.start, this.end).normalize();
     // Be sure the normal direction is pointing towards the viewer
-    if (this.normalDirection.z < 0) this.normalDirection.multiplyScalar(-1);
+    // if (this.normalDirection.z < 0) this.normalDirection.multiplyScalar(-1);
     this.deformIntoEllipse();
     // this.deformIn2D();
   }
@@ -224,14 +267,26 @@ export default class Segment extends Nodule {
     return this.start;
   }
 
+  set midPoint(position: Vector3) {
+    this.mid.copy(position).normalize();
+    tmpVector1.crossVectors(this.start, this.mid).normalize();
+    tmpVector2.crossVectors(this.mid, this.end).normalize();
+    this.normalDirection.addVectors(tmpVector1, tmpVector2).normalize();
+  }
+
+  get midPoint(): Vector3 {
+    return this.mid;
+  }
+
   set endPoint(position: Vector3) {
     this.end.copy(position).normalize();
-    this.arcLen = this.start.angleTo(this.end);
-    this.normalDirection.crossVectors(this.start, this.end).normalize();
+    tmpVector1.crossVectors(this.start, this.mid).normalize();
+    tmpVector2.crossVectors(this.mid, this.end).normalize();
+    this.normalDirection.addVectors(tmpVector1, tmpVector2).normalize();
+    // this.normalDirection.crossVectors(this.start, this.end).normalize();
     // Be sure the normal direction is pointing towards the viewer
-    if (this.normalDirection.z < 0) this.normalDirection.multiplyScalar(-1);
+    // if (this.normalDirection.z < 0) this.normalDirection.multiplyScalar(-1);
     this.deformIntoEllipse();
-    // this.deformIn2D();
   }
 
   get endPoint(): Vector3 {
@@ -240,10 +295,10 @@ export default class Segment extends Nodule {
 
   set orientation(dir: Vector3) {
     this.normalDirection.copy(dir).normalize();
-    this.tmpVector.crossVectors(this.normalDirection, dir);
+    tmpVector1.crossVectors(this.normalDirection, dir);
     const rotAngle = this.normalDirection.angleTo(dir);
     // this.deformIn2D();
-    tmpMatrix.makeRotationAxis(this.tmpVector, rotAngle);
+    tmpMatrix.makeRotationAxis(tmpVector1, rotAngle);
     this.deformIntoEllipse();
     this.start.applyMatrix4(tmpMatrix);
     this.end.applyMatrix4(tmpMatrix);
@@ -258,32 +313,43 @@ export default class Segment extends Nodule {
     const dup = new Segment(this.start, this.end);
     dup.name = this.name;
     dup.start.copy(this.start);
+    dup.mid.copy(this.mid);
     dup.end.copy(this.end);
     dup.normalDirection.copy(this.normalDirection);
-    dup.frontArcLen = this.frontArcLen;
-    dup.backArcLen = this.backArcLen;
-    while (dup.frontHalf.vertices.length < this.frontHalf.vertices.length) {
-      dup.frontHalf.vertices.push(dup.backHalf.vertices.pop()!);
-    }
-    dup.frontHalf.vertices.forEach((v, pos: number) => {
-      v.copy(this.frontHalf.vertices[pos]);
+    const pool: Two.Anchor[] = [];
+    pool.push(...dup.frontHalf.vertices.splice(0));
+    pool.push(...dup.backHalf.vertices.splice(0));
+
+    this.frontHalf.vertices.forEach((v, pos: number) => {
+      dup.frontHalf.vertices.push(pool.pop()!);
+      dup.frontHalf.vertices[pos].copy(v);
     });
-    while (dup.backHalf.vertices.length < this.backHalf.vertices.length) {
-      dup.backHalf.vertices.push(dup.frontHalf.vertices.pop()!);
-    }
-    dup.backHalf.vertices.forEach((v, pos: number) => {
-      v.copy(this.backHalf.vertices[pos]);
+    this.frontExtra.vertices.forEach((v, pos: number) => {
+      dup.frontExtra.vertices.push(pool.pop()!);
+      dup.frontExtra.vertices[pos].copy(v);
+    });
+    this.backHalf.vertices.forEach((v, pos: number) => {
+      dup.backHalf.vertices.push(pool.pop()!);
+      dup.backHalf.vertices[pos].copy(v);
+    });
+    this.backExtra.vertices.forEach((v, pos: number) => {
+      dup.backExtra.vertices.push(pool.pop()!);
+      dup.backExtra.vertices[pos].copy(v);
     });
     return dup as this;
   }
 
   addToLayers(layers: Two.Group[]): void {
     this.frontHalf.addTo(layers[LAYER.foreground]);
+    this.frontExtra.addTo(layers[LAYER.foreground]);
     this.backHalf.addTo(layers[LAYER.background]);
+    this.backExtra.addTo(layers[LAYER.background]);
   }
 
   removeFromLayers(/*layers: Two.Group[]*/): void {
     this.frontHalf.remove();
+    this.frontExtra.remove();
     this.backHalf.remove();
+    this.backExtra.remove();
   }
 }

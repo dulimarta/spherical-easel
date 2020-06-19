@@ -20,11 +20,9 @@ export default class Line extends Nodule {
   private oldBackStroke: Two.Color = "";
   private normalDirection: Vector3;
 
-  private majorAxisDirection: Vector3 = new Vector3();
   private tmpVector: Vector3;
   private desiredXAxis = new Vector3();
   private desiredYAxis = new Vector3();
-  // const desiredZAxis = new Vector3();
   private transformMatrix = new Matrix4();
   private frontHalf: Two.Path;
   private frontArcLen = 0;

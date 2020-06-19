@@ -12,7 +12,7 @@ import { State } from "vuex-class";
 import { ToolStrategy } from "@/eventHandlers/ToolStrategy";
 import PointHandler from "@/eventHandlers/PointHandler";
 import LineHandler from "@/eventHandlers/LineHandler";
-// import SegmentHandler from "@/eventHandlers/SegmentHandler";
+import SegmentHandler from "@/eventHandlers/SegmentHandler";
 import CircleHandler from "@/eventHandlers/CircleHandler";
 import RotateHandler from "@/eventHandlers/RotateHandler";
 import { PositionVisitor } from "@/visitors/PositionVisitor";
@@ -44,7 +44,7 @@ export default class SphereFrame extends VueComponent {
   private currentTool: ToolStrategy | null = null;
   private pointTool!: PointHandler;
   private lineTool!: LineHandler;
-  private segmentTool!: LineHandler;
+  private segmentTool!: SegmentHandler;
   private circleTool!: CircleHandler;
   private rotateTool!: RotateHandler;
   private visitor!: PositionVisitor;
@@ -149,10 +149,9 @@ export default class SphereFrame extends VueComponent {
     this.$refs.canvas.addEventListener("mouseup", this.handleMouseReleased);
     this.pointTool = new PointHandler(this.sphereCanvas, this.CSSTransformMat);
     this.lineTool = new LineHandler(this.sphereCanvas, this.CSSTransformMat);
-    this.segmentTool = new LineHandler(
+    this.segmentTool = new SegmentHandler(
       this.sphereCanvas,
-      this.CSSTransformMat,
-      true /* we are handling a segment */
+      this.CSSTransformMat
     );
     this.circleTool = new CircleHandler(
       this.sphereCanvas,
