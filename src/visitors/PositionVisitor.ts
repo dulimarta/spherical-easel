@@ -36,6 +36,11 @@ export class PositionVisitor implements Visitor {
     this.tmpVector.copy(s.ref.startPoint);
     this.tmpVector.applyMatrix4(this.transformMatrix);
     s.ref.startPoint = this.tmpVector;
+
+    this.tmpVector.copy(s.ref.midPoint);
+    this.tmpVector.applyMatrix4(this.transformMatrix);
+    s.ref.midPoint = this.tmpVector;
+
     this.tmpVector.copy(s.ref.endPoint);
     this.tmpVector.applyMatrix4(this.transformMatrix);
     s.ref.endPoint = this.tmpVector;

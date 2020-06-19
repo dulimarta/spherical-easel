@@ -128,7 +128,7 @@ export default class SegmentHandler extends SelectionHandler {
       segmentGroup
         .addCommand(
           new AddSegmentCommand({
-            line: new SESegment(newSegment, this.startPoint, this.endPoint),
+            line: new SESegment(newSegment),
             startPoint: this.startPoint,
             endPoint: this.endPoint
           })

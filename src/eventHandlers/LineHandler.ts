@@ -5,7 +5,6 @@ import SelectionHandler from "./SelectionHandler";
 import Arrow from "@/3d-objs/Arrow"; // for debugging
 import Point from "@/plottables/Point";
 import Line from "@/plottables/Line";
-import Segment from "@/plottables/Segment";
 
 // import SETTINGS from "@/global-settings";
 import { CommandGroup } from "@/commands/CommandGroup";
@@ -14,8 +13,6 @@ import { AddLineCommand } from "@/commands/AddLineCommand";
 import Two from "two.js";
 import { SEPoint } from "@/models/SEPoint";
 import { SELine } from "@/models/SELine";
-import { SESegment } from "@/models/SESegment";
-import { AddSegmentCommand } from "@/commands/AddSegmentCommand";
 // const frontPointRadius = SETTINGS.point.temp.radius.front;
 
 export default class LineHandler extends SelectionHandler {
@@ -28,16 +25,14 @@ export default class LineHandler extends SelectionHandler {
   protected isCircleAdded: boolean;
   private startPoint: SEPoint | null = null;
   private endPoint: SEPoint | null = null;
-  private line: Line | Segment;
-  private isSegment = false;
-  constructor(scene: Two.Group, transformMatrix: Matrix4, isSegment?: boolean) {
+  private line: Line;
+  constructor(scene: Two.Group, transformMatrix: Matrix4) {
     super(scene, transformMatrix);
-    this.line = isSegment ? new Segment() : new Line();
+    this.line = new Line();
 
     this.circleOrientation = new Arrow(0.5, 0x006600); // debug only
     this.isMouseDown = false;
     this.isCircleAdded = false;
-    this.isSegment = isSegment || false;
   }
 
   mouseMoved(event: MouseEvent): void {
@@ -54,14 +49,11 @@ export default class LineHandler extends SelectionHandler {
         }
         // The following line automatically calls Line setter function
         this.circleOrientation.sphereLocation = this.tmpVector; // for debugging
-        if (this.line instanceof Segment)
-          this.line.endPoint = this.currentSpherePoint;
-        else {
-          this.tmpVector
-            .crossVectors(this.startPosition, this.currentSpherePoint)
-            .normalize();
-          this.line.orientation = this.tmpVector;
-        }
+
+        this.tmpVector
+          .crossVectors(this.startPosition, this.currentSpherePoint)
+          .normalize();
+        this.line.orientation = this.tmpVector;
       }
     } else if (this.isCircleAdded) {
       this.line.remove();
@@ -93,8 +85,6 @@ export default class LineHandler extends SelectionHandler {
         this.startPoint = null;
       }
       // The following line automatically calls Line setter function
-      if (this.line instanceof Segment)
-        this.line.startPoint = this.currentSpherePoint;
     }
   }
 
@@ -132,31 +122,15 @@ export default class LineHandler extends SelectionHandler {
         this.endPoint = vtx;
         lineGroup.addCommand(new AddPointCommand(vtx));
       }
-      if (newLine instanceof Line) {
-        lineGroup
-          .addCommand(
-            new AddLineCommand({
-              line: new SELine(newLine),
-              startPoint: this.startPoint,
-              endPoint: this.endPoint
-            })
-          )
-          .execute();
-      } else {
-        lineGroup
-          .addCommand(
-            new AddSegmentCommand({
-              line: new SESegment(
-                newLine as Segment,
-                this.startPoint,
-                this.endPoint
-              ),
-              startPoint: this.startPoint,
-              endPoint: this.endPoint
-            })
-          )
-          .execute();
-      }
+      lineGroup
+        .addCommand(
+          new AddLineCommand({
+            line: new SELine(newLine),
+            startPoint: this.startPoint,
+            endPoint: this.endPoint
+          })
+        )
+        .execute();
       this.startPoint = null;
       this.endPoint = null;
     }

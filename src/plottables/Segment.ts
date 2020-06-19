@@ -269,6 +269,8 @@ export default class Segment extends Nodule {
 
   set midPoint(position: Vector3) {
     this.mid.copy(position).normalize();
+
+    // Recalculate the normal vector as the average of two normals
     tmpVector1.crossVectors(this.start, this.mid).normalize();
     tmpVector2.crossVectors(this.mid, this.end).normalize();
     this.normalDirection.addVectors(tmpVector1, tmpVector2).normalize();
@@ -280,12 +282,11 @@ export default class Segment extends Nodule {
 
   set endPoint(position: Vector3) {
     this.end.copy(position).normalize();
+    // Recalculate the normal vector as the average of two normals
     tmpVector1.crossVectors(this.start, this.mid).normalize();
     tmpVector2.crossVectors(this.mid, this.end).normalize();
     this.normalDirection.addVectors(tmpVector1, tmpVector2).normalize();
-    // this.normalDirection.crossVectors(this.start, this.end).normalize();
-    // Be sure the normal direction is pointing towards the viewer
-    // if (this.normalDirection.z < 0) this.normalDirection.multiplyScalar(-1);
+
     this.deformIntoEllipse();
   }
 
@@ -302,6 +303,7 @@ export default class Segment extends Nodule {
     this.deformIntoEllipse();
     this.start.applyMatrix4(tmpMatrix);
     this.end.applyMatrix4(tmpMatrix);
+    this.mid.applyMatrix4(tmpMatrix);
   }
 
   get orientation(): Vector3 {
