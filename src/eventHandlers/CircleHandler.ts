@@ -10,59 +10,86 @@ import { AddCircleCommand } from "@/commands/AddCircleCommand";
 import Two from "two.js";
 import { SEPoint } from "@/models/SEPoint";
 import { SECircle } from "@/models/SECircle";
+import SETTINGS from "@/global-settings";
 
 export default class CircleHandler extends SelectionHandler {
-  private startV3Point: Vector3;
+  // Center vector of the created circle
+  private centerV3Vector: Vector3;
+  // Is the user dragging
   private isMouseDown: boolean;
+  // Has the temporary circle been added to the scene?
   private isCircleAdded: boolean;
-  private circle: Circle;
-  private startPoint: SEPoint | null = null;
+  // The temporary circle displayed as the user drags
+  private temporaryCircle: Circle;
+  // The model object point that is the center of the circle (if any)
+  private centerPoint: SEPoint | null = null;
+  // The model object point that is a point on the circle (if any)
   private endPoint: SEPoint | null = null;
+  // The radius of the temporary circle (along the surface of the sphere)
   private arcRadius = 0;
+
   constructor(scene: Two.Group, transformMatrix: Matrix4) {
     super(scene, transformMatrix);
-    this.startV3Point = new Vector3();
+    this.centerV3Vector = new Vector3();
     this.isMouseDown = false;
     this.isCircleAdded = false;
-    this.circle = new Circle();
+    this.temporaryCircle = new Circle();
+    // Set the style using the temporary defaults
+    this.temporaryCircle.stylize("temporary");
   }
-
-  mouseMoved(event: MouseEvent) {
-    super.mouseMoved(event);
+  // eslint-disable-next-line
+  mousePressed(event: MouseEvent) {
+    this.isMouseDown = true;
+    // First decide if the location of the event is on the sphere
     if (this.isOnSphere) {
-      if (this.isMouseDown) {
-        if (!this.isCircleAdded) {
-          this.isCircleAdded = true;
-          this.canvas.add(this.circle);
-          this.canvas.add(this.startMarker);
-        }
-        this.arcRadius = this.circle.centerPoint.angleTo(
-          this.currentSpherePoint
-        );
-        this.circle.radius = this.arcRadius;
+      // Check to see if the current location is near any points
+      if (this.hitPoints.length > 0) {
+        // Pick the top most selected point
+        const selected = this.hitPoints[0];
+        // Record the center vector of the circle so it can be past to the non-temporary circle
+        this.centerV3Vector.copy(selected.positionOnSphere);
+        // Record the model object as the center of the circle
+        this.centerPoint = selected;
+      } else {
+        // Add a temporary marker for the location of the center
+        this.canvas.add(this.startMarker);
+        // Record the center vector of the circle so it can be past to the non-temporary circle
+        this.centerV3Vector.copy(this.currentSpherePoint);
+        // Set the center of the circle to null so it can be created later
+        this.centerPoint = null;
       }
-    } else if (this.isCircleAdded) {
-      // this.circle.remove(); // remove from its parent
-      this.startMarker.remove();
-      this.isCircleAdded = false;
+      // Move the startmarker to the correct location
+      this.startMarker.translation.copy(this.currentScreenPoint);
+      // Set the center of the circle in the plottable object - also calls temporaryCircle.readjust()
+      this.temporaryCircle.centerPoint = this.currentSpherePoint;
     }
   }
 
   // eslint-disable-next-line
-  mousePressed(event: MouseEvent) {
-    this.isMouseDown = true;
+  mouseMoved(event: MouseEvent) {
+    // Highlight all nearby objects
+    super.mouseMoved(event);
+    // Make sure that the event is on the sphere
     if (this.isOnSphere) {
-      if (this.hitPoints.length > 0) {
-        const selected = this.hitPoints[0];
-        this.startV3Point.copy(selected.positionOnSphere);
-        this.startPoint = selected;
-      } else {
-        this.canvas.add(this.startMarker);
-        this.startV3Point.copy(this.currentSpherePoint);
-        this.startPoint = null;
+      // Make sure the user is still dragging
+      if (this.isMouseDown) {
+        // If the temporary circle (and startMarker) has *not* been added to the scene do so now (only once)
+        if (!this.isCircleAdded) {
+          this.isCircleAdded = true;
+          this.canvas.add(this.temporaryCircle);
+          this.canvas.add(this.startMarker);
+        }
+        //compute the radius of the temporary circle
+        this.arcRadius = this.temporaryCircle.centerPoint.angleTo(
+          this.currentSpherePoint
+        );
+        // Set the radius of the temporary circle - also calls temporaryCircle.readjust()
+        this.temporaryCircle.radius = this.arcRadius;
       }
-      this.startMarker.translation.copy(this.currentScreenPoint);
-      this.circle.centerPoint = this.currentSpherePoint;
+    } else if (this.isCircleAdded) {
+      // this.temporaryCircle.remove(); // remove from its parent
+      this.startMarker.remove();
+      this.isCircleAdded = false;
     }
   }
 
@@ -71,20 +98,21 @@ export default class CircleHandler extends SelectionHandler {
     this.isMouseDown = false;
     if (this.isOnSphere) {
       // Record the second point of the geodesic circle
-      this.circle.remove();
+      this.temporaryCircle.remove();
       this.canvas.remove(this.startMarker);
       this.isCircleAdded = false;
       // this.endV3Point.copy(this.currentPoint);
-      const newCircle = this.circle.clone();
+      const newCircle = this.temporaryCircle.clone();
+      newCircle.stylize("default");
 
       // TODO: Use EventBus.fire()???
       const circleGroup = new CommandGroup();
-      if (this.startPoint === null) {
+      if (this.centerPoint === null) {
         // Starting point landed on an open space
         // we have to create a new point
         const vtx = new SEPoint(new Point());
-        vtx.positionOnSphere = this.startV3Point;
-        this.startPoint = vtx;
+        vtx.positionOnSphere = this.centerV3Vector;
+        this.centerPoint = vtx;
         circleGroup.addCommand(new AddPointCommand(vtx));
       }
       if (this.hitPoints.length > 0) {
@@ -102,12 +130,12 @@ export default class CircleHandler extends SelectionHandler {
         .addCommand(
           new AddCircleCommand({
             circle: new SECircle(newCircle, this.arcRadius),
-            centerPoint: this.startPoint,
+            centerPoint: this.centerPoint,
             circlePoint: this.endPoint
           })
         )
         .execute();
-      this.startPoint = null;
+      this.centerPoint = null;
       this.endPoint = null;
     }
   }
