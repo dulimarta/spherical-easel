@@ -67,7 +67,7 @@ export default {
     minPixelDistance: 5 // the minimum pixel distance before a new rotation is computed as we click and drag in rotate mode
   },
   circle: {
-    numPoints: 100, // The number of vertices used to render the circle. These are spread over the front and back parts. MUST BE EVEN
+    numPoints: 100, // The number of vertices used to render the circle. These are spread over the front and back parts.
     hitIdealDistance: 0.01, // The user has to be within this distance on the ideal unit sphere to select the circle.
     //dynamicBackStyle is a flag that means the linewidth, strokeColor, and opacity of the circles drawn on the back are automatically calculated based on the value of SETTINGS.contrast
     dynamicBackStyle: true,
@@ -83,7 +83,11 @@ export default {
       },
       strokeWidth: { front: 2.5, back: 2 }, // The thickness of the edge of the point when drawn
       opacity: { front: 1, back: 1 },
-      dashArray: { offset: { front: 0, back: 0 }, front: [], back: [10, 5] } // An empty array means no dashing.
+      dashArray: {
+        offset: { front: 0, back: 0 },
+        front: [],
+        back: [10, 5]
+      } // An empty array means no dashing.
     },
     //The properties of the region around a circle when it is glowing
     glowing: {
@@ -102,8 +106,8 @@ export default {
         back: "noFill"
       },
       strokeColor: {
-        front: "#808080", // { r: 128, g: 128, b: 128 },
-        back: "#BFBFBF" // the back fill color is calculated using the contrast of 0.5
+        front: "#6A6A6A",
+        back: "#B4B4B4" // the back fill color is calculated using the contrast of 0.5
       },
       strokeWidth: { front: 1, back: 1 }, // The thickness of the edge of the point when drawn
       opacity: { front: 1, back: 1 }

@@ -101,8 +101,11 @@ export default class Circle extends Nodule {
     // Create the initial front and back vertices (glowing and not)
     const frontVertices: Two.Vector[] = [];
     const backVertices: Two.Vector[] = [];
-    for (let k = 0; k < SUBDIVISIONS / 2; k++) {
-      const angle = (k * Math.PI) / (SUBDIVISIONS / 2); // [0, pi)
+    const glowingFrontVertices: Two.Vector[] = [];
+    const glowingBackVertices: Two.Vector[] = [];
+    // TODO: Is there a way for the glowing and not vertices to be the same?  I tried and it didn't seem to work.
+    for (let k = 0; k < Math.ceil(SUBDIVISIONS / 2); k++) {
+      const angle = (k * Math.PI) / Math.ceil(SUBDIVISIONS / 2); // [0, pi)
       frontVertices.push(
         new Two.Vector(
           SETTINGS.boundaryCircle.radius * Math.cos(angle),
@@ -115,26 +118,38 @@ export default class Circle extends Nodule {
           SETTINGS.boundaryCircle.radius * Math.sin(angle + Math.PI)
         )
       );
+      glowingFrontVertices.push(
+        new Two.Vector(
+          SETTINGS.boundaryCircle.radius * Math.cos(angle),
+          SETTINGS.boundaryCircle.radius * Math.sin(angle)
+        )
+      );
+      glowingBackVertices.push(
+        new Two.Vector(
+          SETTINGS.boundaryCircle.radius * Math.cos(angle + Math.PI), // [pi, 2*pi)
+          SETTINGS.boundaryCircle.radius * Math.sin(angle + Math.PI)
+        )
+      );
     }
     this.frontPart = new Two.Path(
       frontVertices,
       /*closed*/ false,
-      /*curve*/ true
+      /*curve*/ false
     );
     this.glowingFrontPart = new Two.Path(
-      frontVertices, // This is not a new array of vertices, I'm trying to get glowing and not to share an array
+      glowingFrontVertices, // This is not a new array of vertices, I'm trying to get glowing and not to share an array
       /*closed*/ false,
-      /*curve*/ true
+      /*curve*/ false
     );
     this.backPart = new Two.Path(
       backVertices,
       /*closed*/ false,
-      /*curve*/ true
+      /*curve*/ false
     );
     this.glowingBackPart = new Two.Path(
-      backVertices, // This is not a new array of vertices, I'm trying to get glowing and not to share an array
+      glowingBackVertices, // This is not a new array of vertices, I'm trying to get glowing and not to share an array
       /*closed*/ false,
-      /*curve*/ true
+      /*curve*/ false
     );
     this.add(this.backPart);
     this.add(this.frontPart);
@@ -156,52 +171,6 @@ export default class Circle extends Nodule {
     this.projectedRadius = Math.sin(this.arcRadius);
     this.tmpVector = new Vector3();
     this.tmpMatrix = new Matrix4();
-
-    //Set the styles of the front/back/glowing/drawn parts
-    // Fill Color
-    if (this.fillColorFront === "noFill") {
-      this.frontPart.noFill();
-    } else {
-      this.frontPart.fill = this.fillColorFront;
-    }
-    if (this.fillColorBack === "noFill") {
-      this.backPart.noFill();
-    } else {
-      this.backPart.fill = this.fillColorBack;
-    }
-    this.glowingBackPart.noFill(); // the glowing circle is never filled
-    this.glowingFrontPart.noFill(); // the glowing circle is never filled
-
-    // Stroke Width
-    this.frontPart.linewidth = this.strokeWidthFront;
-    this.backPart.linewidth = this.strokeWidthBack;
-    this.glowingFrontPart.linewidth =
-      SETTINGS.circle.glowing.edgeWidth + this.strokeWidthFront;
-    this.glowingBackPart.linewidth =
-      SETTINGS.circle.glowing.edgeWidth + this.strokeWidthBack;
-
-    // Stroke color
-    this.frontPart.stroke = this.strokeColorFront;
-    this.backPart.stroke = this.strokeColorBack;
-    this.glowingFrontPart.stroke = SETTINGS.circle.glowing.strokeColor.front;
-    this.glowingBackPart.stroke = SETTINGS.circle.glowing.strokeColor.back;
-
-    // Opacity
-    this.frontPart.opacity = this.opacityFront;
-    this.backPart.opacity = this.opacityBack;
-    this.glowingFrontPart.opacity = SETTINGS.circle.glowing.opacity.front;
-    this.glowingBackPart.opacity = SETTINGS.circle.glowing.opacity.back;
-
-    // Dashing
-    if (this.dashingArrayFront.length > 0) {
-      (this.frontPart as any).dashes = this.dashingArrayFront;
-      (this.frontPart as any).offset = this.dashingOffsetFront;
-    }
-    if (this.dashingArrayBack.length > 0) {
-      (this.backPart as any).dashes = this.dashingArrayBack;
-      (this.backPart as any).offset = this.dashingOffsetBack;
-    }
-    // There is no dashing on the glowing objects. For now.
 
     this.name = "Circle-" + this.id;
   }
@@ -252,11 +221,15 @@ export default class Circle extends Nodule {
           // Steal one element from the backPart
           const extra = this.backPart.vertices.pop();
           this.frontPart.vertices.push(extra!);
+          const glowExtra = this.glowingBackPart.vertices.pop();
+          this.glowingFrontPart.vertices.push(glowExtra!);
           backLen--;
           frontLen++;
         }
         this.frontPart.vertices[posIndex].x = this.tmpVector.x;
         this.frontPart.vertices[posIndex].y = this.tmpVector.y;
+        this.glowingFrontPart.vertices[posIndex].x = this.tmpVector.x;
+        this.glowingFrontPart.vertices[posIndex].y = this.tmpVector.y;
         posIndex++;
       } else {
         if (firstNeg === -1) firstNeg = pos;
@@ -264,11 +237,15 @@ export default class Circle extends Nodule {
           // Steal one element from the frontPart
           const extra = this.frontPart.vertices.pop();
           this.backPart.vertices.push(extra!);
+          const glowingExtra = this.glowingFrontPart.vertices.pop();
+          this.glowingBackPart.vertices.push(glowingExtra!);
           frontLen--;
           backLen++;
         }
         this.backPart.vertices[negIndex].x = this.tmpVector.x;
         this.backPart.vertices[negIndex].y = this.tmpVector.y;
+        this.glowingBackPart.vertices[negIndex].x = this.tmpVector.x;
+        this.glowingBackPart.vertices[negIndex].y = this.tmpVector.y;
         negIndex++;
       }
     });
@@ -276,14 +253,18 @@ export default class Circle extends Nodule {
     if (firstNeg < firstPos && firstPos <= firstNeg + backLen) {
       // There is a gap in the back path
       this.backPart.vertices.rotate(firstPos);
+      this.glowingBackPart.vertices.rotate(firstPos);
     } else if (firstPos < firstNeg && firstNeg <= firstPos + frontLen) {
       // There is a gap in the front path
       this.frontPart.vertices.rotate(firstNeg);
+      this.glowingFrontPart.vertices.rotate(firstNeg);
     }
 
-    // A halfpath becomes a closed path when the other half vanishes
+    // A parts becomes closed when the other part vanishes
     this.frontPart.closed = backLen === 0;
     this.backPart.closed = frontLen === 0;
+    this.glowingFrontPart.closed = backLen === 0;
+    this.glowingBackPart.closed = frontLen === 0;
   }
 
   set centerPoint(position: Vector3) {
@@ -341,81 +322,86 @@ export default class Circle extends Nodule {
     this.frontNormalStyle();
     this.backNormalStyle();
   }
+
   /**
- *   frontGlowStyle(): void {
-    (this.frontPoint as any).visible = true;
-    (this.glowingFrontPoint as any).visible = true;
-    (this.backPoint as any).visible = false;
-    (this.glowingBackPoint as any).visible = false;
-  }
-
-  backGlowStyle(): void {
-    (this.frontPoint as any).visible = false;
-    (this.glowingFrontPoint as any).visible = false;
-    (this.backPoint as any).visible = true;
-    (this.glowingBackPoint as any).visible = true;
-  }
-
-  glowStyle(): void {
-    if (this.owner.positionOnSphere.z > 0) this.frontGlowStyle();
-    else this.backGlowStyle();
-  }
-
-  frontNormalStyle(): void {
-    (this.frontPoint as any).visible = true;
-    (this.glowingFrontPoint as any).visible = false;
-    (this.backPoint as any).visible = false;
-    (this.glowingBackPoint as any).visible = false;
-  }
-
-  backNormalStyle(): void {
-    (this.frontPoint as any).visible = false;
-    (this.glowingFrontPoint as any).visible = false;
-    (this.backPoint as any).visible = true;
-    (this.glowingBackPoint as any).visible = false;
-  }
-
-  normalStyle(): void {
-    if (this.owner.positionOnSphere.z > 0) this.frontNormalStyle();
-    else this.backNormalStyle();
-  }
- */
+   * This method is used to copy the temporary circle created with the Circle Tool into a
+   * permanent one in the scene.
+   */
   clone(): this {
+    // Use the constructor for this class to create a template to copy over the
+    // values from the current (the `this`) Circle object
     const dup = new Circle(this.center_, this.arcRadius);
     dup.rotation = this.rotation;
     dup.translation.copy(this.translation);
+    // Duplicate the non-glowing parts
     dup.frontPart.closed = this.frontPart.closed;
     dup.frontPart.rotation = this.frontPart.rotation;
     dup.frontPart.translation.copy(this.frontPart.translation);
     dup.backPart.closed = this.backPart.closed;
     dup.backPart.rotation = this.backPart.rotation;
     dup.backPart.translation.copy(this.backPart.translation);
-    // The clone has equal nunber of vertices for the front and back halves
+    // The clone (i.e. dup) initially has equal number of vertices for the front and back part
+    //  so adjust to match `this`. If one of the this.front or this.back has more vertices then
+    //  the corresponding dup part, then remove the excess vertices from the one with more and
+    //  move them to the other
     while (dup.frontPart.vertices.length > this.frontPart.vertices.length) {
-      // Transfer from fronthalf to backhalf
+      // Transfer from frontPart to backPart
       dup.backPart.vertices.push(dup.frontPart.vertices.pop()!);
     }
     while (dup.backPart.vertices.length > this.backPart.vertices.length) {
-      // Transfer from backPart to fronthalf
+      // Transfer from backPart to frontPart
       dup.frontPart.vertices.push(dup.backPart.vertices.pop()!);
     }
+    // After the above two while statement execute this.front/back and dup.front/back are the same length
+    // Now we can copy the vertices from the this.front/back to the dup.front/back
     dup.frontPart.vertices.forEach((v, pos) => {
       v.copy(this.frontPart.vertices[pos]);
     });
     dup.backPart.vertices.forEach((v, pos) => {
       v.copy(this.backPart.vertices[pos]);
     });
+
+    // Duplicate the glowing parts
+    dup.glowingFrontPart.closed = this.glowingFrontPart.closed;
+    dup.glowingFrontPart.rotation = this.glowingFrontPart.rotation;
+    dup.glowingFrontPart.translation.copy(this.glowingFrontPart.translation);
+    dup.glowingBackPart.closed = this.glowingBackPart.closed;
+    dup.glowingBackPart.rotation = this.glowingBackPart.rotation;
+    dup.glowingBackPart.translation.copy(this.glowingBackPart.translation);
+    // The clone has equal number of vertices for the front and back halves
+    while (
+      dup.glowingFrontPart.vertices.length >
+      this.glowingFrontPart.vertices.length
+    ) {
+      // Transfer from frontPart to backPart
+      dup.glowingBackPart.vertices.push(dup.glowingFrontPart.vertices.pop()!);
+    }
+    while (
+      dup.glowingBackPart.vertices.length > this.glowingBackPart.vertices.length
+    ) {
+      // Transfer from backpart to frontPart
+      dup.glowingFrontPart.vertices.push(dup.glowingBackPart.vertices.pop()!);
+    }
+    dup.glowingFrontPart.vertices.forEach((v, pos) => {
+      v.copy(this.glowingFrontPart.vertices[pos]);
+    });
+    dup.glowingBackPart.vertices.forEach((v, pos) => {
+      v.copy(this.glowingBackPart.vertices[pos]);
+    });
     //   dup.scale.copy(this.scale);
     return dup as this;
   }
 
+  /**
+   * Adds the front/back/glowing/not parts to the correct layers
+   * @param layers
+   */
   addToLayers(layers: Two.Group[]): void {
-    if (this.frontPart.vertices.length > 0) {
-      this.frontPart.addTo(layers[LAYER.foreground]);
-      this.glowingFrontPart.addTo(layers[LAYER.foregroundGlowing]);
-    }
-    if (this.backPart.vertices.length > 0)
-      this.backPart.addTo(layers[LAYER.background]);
+    // These must always be executed even if the front/back part is empty
+    // Otherwise when they become non-empty they are not displayed
+    this.frontPart.addTo(layers[LAYER.foreground]);
+    this.glowingFrontPart.addTo(layers[LAYER.foregroundGlowing]);
+    this.backPart.addTo(layers[LAYER.background]);
     this.glowingBackPart.addTo(layers[LAYER.backgroundGlowing]);
   }
   removeFromLayers(/*layers: Two.Group[]*/): void {
@@ -426,5 +412,91 @@ export default class Circle extends Nodule {
   }
   adjustSizeForZoom(factor: number): void {
     throw new Error("Method not implemented.");
+  }
+
+  //set the rendering style of the circle
+  stylize(flag: string): void {
+    switch (flag) {
+      case "temporary": {
+        // The style for the temporary circle displayed.  These options are not user modifiable.
+        this.frontPart.opacity = SETTINGS.circle.temp.opacity.front;
+        this.backPart.opacity = SETTINGS.circle.temp.opacity.back;
+        this.frontPart.linewidth = SETTINGS.circle.temp.strokeWidth.front;
+        this.backPart.linewidth = SETTINGS.circle.temp.strokeWidth.back;
+        this.frontPart.stroke = SETTINGS.circle.temp.strokeColor.front;
+        this.backPart.stroke = SETTINGS.circle.temp.strokeColor.back;
+        if (SETTINGS.circle.temp.fillColor.front === "noFill") {
+          this.frontPart.noFill();
+        } else {
+          this.frontPart.fill = SETTINGS.circle.temp.fillColor.front;
+        }
+        if (SETTINGS.circle.temp.fillColor.back === "noFill") {
+          this.backPart.noFill();
+        } else {
+          this.backPart.fill = SETTINGS.circle.temp.fillColor.back;
+        }
+        // The temporary display is never highlighted
+        (this.glowingFrontPart as any).visible = false;
+        (this.glowingBackPart as any).visible = false;
+        break;
+      }
+
+      default: {
+        // Turn on the glowing parts that were hidden during the creation of the object
+        (this.glowingFrontPart as any).visible = false;
+        (this.glowingBackPart as any).visible = false;
+        //Set the styles of the front/back/glowing/drawn parts
+        // Fill Color
+        if (this.fillColorFront === "noFill") {
+          this.frontPart.noFill();
+        } else {
+          this.frontPart.fill = this.fillColorFront;
+        }
+        if (this.fillColorBack === "noFill") {
+          this.backPart.noFill();
+        } else {
+          this.backPart.fill = this.fillColorBack;
+        }
+        this.glowingBackPart.noFill(); // the glowing circle is never filled
+        this.glowingFrontPart.noFill(); // the glowing circle is never filled
+
+        // Stroke Width
+        this.frontPart.linewidth = this.strokeWidthFront;
+        this.backPart.linewidth = this.strokeWidthBack;
+        this.glowingFrontPart.linewidth =
+          SETTINGS.circle.glowing.edgeWidth + this.strokeWidthFront;
+        this.glowingBackPart.linewidth =
+          SETTINGS.circle.glowing.edgeWidth + this.strokeWidthBack;
+
+        // Stroke color
+        this.frontPart.stroke = this.strokeColorFront;
+        this.backPart.stroke = this.strokeColorBack;
+        this.glowingFrontPart.stroke =
+          SETTINGS.circle.glowing.strokeColor.front;
+        this.glowingBackPart.stroke = SETTINGS.circle.glowing.strokeColor.back;
+
+        // Opacity
+        this.frontPart.opacity = this.opacityFront;
+        this.backPart.opacity = this.opacityBack;
+        this.glowingFrontPart.opacity = SETTINGS.circle.glowing.opacity.front;
+        this.glowingBackPart.opacity = SETTINGS.circle.glowing.opacity.back;
+
+        // Dashing
+        if (this.dashingArrayFront.length > 0) {
+          (this.frontPart as any).dashes.concat(this.dashingArrayFront);
+          (this.frontPart as any).offset = this.dashingOffsetFront;
+        }
+
+        if (this.dashingArrayBack.length > 0) {
+          this.dashingArrayBack.forEach(v => {
+            (this.backPart as any).dashes.push(v);
+          });
+          (this.backPart as any).offset = this.dashingOffsetBack;
+        }
+        // There is no dashing on the glowing objects. For now.
+        //statements;
+        break;
+      }
+    }
   }
 }
