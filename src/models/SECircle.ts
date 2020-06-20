@@ -4,13 +4,13 @@ import Circle from "@/plottables/Circle";
 import { Vector3 } from "three";
 import { Visitable } from "@/visitors/Visitable";
 import { Visitor } from "@/visitors/Visitor";
-
+let CIRCLE_COUNT = 0;
 export class SECircle extends SENodule implements Visitable {
   public ref!: Circle;
   private normalDir: Vector3;
   private radius: number; // Arc length (in radians) not straight line distance
-  center!: SEPoint;
-  point!: SEPoint;
+  // private center!: SEPoint;
+  // private point!: SEPoint;
 
   constructor(c: Circle, radius: number) {
     super();
@@ -18,6 +18,8 @@ export class SECircle extends SENodule implements Visitable {
     this.normalDir.copy(c.centerPoint);
     this.radius = radius;
     this.ref = c;
+    CIRCLE_COUNT++;
+    this.name = `C-${CIRCLE_COUNT}`;
   }
 
   set normalDirection(v: Vector3) {

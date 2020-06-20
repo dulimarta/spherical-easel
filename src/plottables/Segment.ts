@@ -122,19 +122,23 @@ export default class Segment extends Nodule {
   frontGlowStyle(): void {
     this.oldFrontStroke = this.frontHalf.stroke;
     this.frontHalf.stroke = "red";
+    this.frontExtra.stroke = "red";
   }
 
   backGlowStyle(): void {
     this.oldBackStroke = this.backHalf.stroke;
     this.backHalf.stroke = "red";
+    this.backExtra.stroke = "red";
   }
 
   backNormalStyle(): void {
     this.backHalf.stroke = this.oldBackStroke;
+    this.backExtra.stroke = this.oldBackStroke;
   }
 
   frontNormalStyle(): void {
     this.frontHalf.stroke = this.oldFrontStroke;
+    this.frontExtra.stroke = this.oldFrontStroke;
   }
 
   normalStyle(): void {

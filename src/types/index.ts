@@ -5,6 +5,7 @@ import { SEPoint } from "@/models/SEPoint";
 import { SELine } from "@/models/SELine";
 import { SECircle } from "@/models/SECircle";
 import { SESegment } from "@/models/SESegment";
+import { SENodule } from "@/models/SENodule";
 
 export interface Selectable {
   hit(x: number, y: number, coord: unknown, who: unknown): boolean;
@@ -21,6 +22,7 @@ export interface AppState {
   lines: SELine[];
   segments: SESegment[];
   circles: SECircle[];
+  plottables: SENodule[];
 }
 /* This interface lists all the properties that each tool/button must have. */
 export interface ToolButtonType {

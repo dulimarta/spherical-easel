@@ -1,32 +1,15 @@
 <template>
   <div class="pa-1" id="objectTreeContainer">
     <h4>{{ $t("objects.points") }}</h4>
-    <v-treeview
-      dense
-      hoverable
-      activatable
-      active-class="warning"
-      :items="iPoints"
-      @update:active="updateActive"
-    ></v-treeview>
+    <v-treeview dense hoverable activatable selectable
+      active-class="warning" :items="iPoints" v-model="selection"
+      @update:active="updateActive"></v-treeview>
     <h4>{{ $t("objects.lines") }}</h4>
-    <v-treeview
-      dense
-      hoverable
-      activatable
-      active-class="warning"
-      :items="iLines"
-      @update:active="updateActive"
-    ></v-treeview>
+    <v-treeview dense hoverable activatable active-class="warning"
+      :items="iLines" @update:active="updateActive"></v-treeview>
     <h4>{{ $t("objects.circles") }}</h4>
-    <v-treeview
-      dense
-      hoverable
-      activatable
-      active-class="warning"
-      :items="iCircles"
-      @update:active="updateActive"
-    ></v-treeview>
+    <v-treeview dense hoverable activatable active-class="warning"
+      :items="iCircles" @update:active="updateActive"></v-treeview>
   </div>
 </template>
 
@@ -41,14 +24,15 @@ import Two from "two.js";
 import { SEPoint } from "@/models/SEPoint";
 import { SELine } from "@/models/SELine";
 import { SECircle } from "@/models/SECircle";
+import { SENodule } from '@/models/SENodule';
+import { SESegment } from '../models/SESegment';
 // import Point from "@/plotables/Point";
 
 @Component
 export default class ObjectTree extends Vue {
-  private selectedObject: Two.Object | null = null;
-
-  @Prop(Two.Group)
-  readonly scene!: Two.Group;
+  private selectedPoint: SEPoint | null = null;
+  private selectedObject: SENodule | null = null;
+  private selection = [];
 
   @State
   private points!: SEPoint[];
@@ -58,49 +42,46 @@ export default class ObjectTree extends Vue {
 
   @State
   private circles!: SECircle[];
+
+  @State("plottables")
+  private allObjects!: SENodule[];
+
   private oldFillColor: Two.Color | undefined = undefined;
 
   // TODO: the getter function seems to be sluggish?
   get iPoints() {
-    return this.points.map(z => ({
-      id: z.ref.id,
-      name: z.ref.name,
+    return this.points.map((z: SEPoint) => ({
+      id: z.id,
+      name: z.name,
       children: [
         {
           id: 0,
-          name: "Start of",
-          children: [] //z.startOf.map((x: SELine) => ({
-          //   id: x.ref.id,
-          //   name: x.ref.name
-          // }))
+          name: "Connected Lines",
+          children: z.children
+            .filter((n: SENodule) => n instanceof SELine).map((x: SENodule) => ({
+              id: x.id,
+              name: x.name
+            }))
         },
         {
           id: 1,
-          name: "End of",
-          children: []
-          // children: z.endOf.map((x: SELine) => ({
-          //   id: x.ref.id,
-          //   name: x.ref.name
-          // }))
-        },
-        {
+          name: "Connected Segments",
+          children: z.children
+            .filter((n: SENodule) => n instanceof SESegment).map((x: SENodule) => ({
+              id: x.id,
+              name: x.name
+            }))
+        }, {
           id: 2,
-          name: "Center of",
-          children: []
-          // children: z.centerOf.map((x: SECircle) => ({
-          //   id: x.ref.id
-          //   // name: x.ref.name
-          // }))
-        },
-        {
-          id: 3,
-          name: "Circumpoint of",
-          children: []
-          // children: z.circumOf.map((x: SECircle) => ({
-          //   id: x.ref.id
-          //   // name: x.ref.name
-          // }))
+          name: "Connected Circles",
+          children: z.children
+            .filter((n: SENodule) => n instanceof SECircle).map((x: SENodule) => ({
+              id: x.id,
+              name: x.name
+            }))
         }
+
+
       ] /* remove node with empty children*/
         .filter(c => c.children.length > 0)
     }));
@@ -108,8 +89,8 @@ export default class ObjectTree extends Vue {
 
   get iLines() {
     return this.lines.map((z: SELine) => ({
-      id: z.ref.id,
-      name: z.ref.name,
+      id: z.id,
+      name: z.name,
       children: [
         // { id: z.start?.ref.id, name: "Start:" + z.start?.ref.name },
         // { id: z.end?.ref.id, name: "End:" + z.end?.ref.name }
@@ -117,35 +98,41 @@ export default class ObjectTree extends Vue {
     }));
   }
 
-  get iCircles() {
+  get iCircles(): any[] {
     return this.circles.map(r => ({
-      id: r.ref.id,
-      // name: r.ref.name,
-      children: [
-        { id: r.center.ref.id, name: "Center:" + r.center.ref.name },
-        { id: r.point.ref.id, name: "Point:" + r.point.ref.name }
-      ]
+      id: r.id,
+      name: r.name,
+      // children: [
+      //   { id: r.center.id, name: "Center:" + r.center.name },
+      //   { id: r.point.id, name: "Point:" + r.point.name }
+      // ]
     }));
   }
 
-  updateActive(args: number[]) {
-    // debugger; //eslint-disable-line
-
-    // Unfortunately, we can't test instanceof an interface in TypeScript
-    if (this.selectedObject && (this.selectedObject as any).noGlow) {
-      (this.selectedObject as any).noGlow();
+  updateActive(args: number[]): void {
+    console.debug("Updating point selection(s)", args);
+    if (this.selectedObject) {
+      (this.selectedObject as any).ref.normalStyle();
     }
+    this.selectedObject = null;
     if (args.length > 0) {
-      // Turn off highlight on the currently selected object
-
-      // Highlight the current selection in red (0xff0000)
-      this.selectedObject = (this.scene.children as any).ids[args[0]];
-      // this.selectedObject = this.sphere.getObjectById(args[0]) as Mesh;
-      if ((this.selectedObject as any).glow) {
-        (this.selectedObject as any).glow();
+      const pos = this.allObjects.findIndex(v => v.id === args[0]);
+      if (pos >= 0) {
+        this.selectedObject = this.allObjects[pos];
+        (this.selectedObject as any).ref.glowStyle();
+        // this.selectedPoint.children.forEach((n: SENodule) => {
+        //   if (n instanceof SELine) {
+        //     n.ref.glowStyle();
+        //   } else if (n instanceof SESegment) {
+        //     n.ref.glowStyle();
+        //   } else if (n instanceof SECircle) {
+        //     n.ref.glowStyle();
+        //   }
+        // })
       }
     }
   }
+
 }
 </script>
 

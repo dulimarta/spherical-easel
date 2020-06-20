@@ -2,9 +2,9 @@
 
 // import SETTINGS from "@/global-settings";
 import Two from "two.js";
-import { SEPoint } from "@/models/SEPoint";
 import SETTINGS, { LAYER } from "@/global-settings";
 import Nodule from "./Nodule";
+import { Vector3 } from "three";
 
 /**
  * Each Point object is uniquely associated with a SEPoint object.
@@ -46,7 +46,8 @@ export default class Point extends Nodule {
   // The owner link is needed because all the mouse tools interact
   // with the TwoJS object but we have to link it with the corresponding
   // model object.
-  public owner!: SEPoint; // this field will be initialized by the SEPoint owner
+  public _pos = new Vector3();
+  // public owner!: SEPoint; // this field will be initialized by the SEPoint owner
   // public name: string;
   private frontPoint: Two.Circle;
   private backPoint: Two.Circle;
@@ -84,6 +85,15 @@ export default class Point extends Nodule {
     this.setAllPointsStyle();
   }
 
+  get position(): Vector3 {
+    return this._pos;
+  }
+  set position(v: Vector3) {
+    this._pos.copy(v);
+    this.translation
+      .set(v.x, v.y)
+      .multiplyScalar(SETTINGS.boundaryCircle.radius);
+  }
   adjustSizeForZoom(factor: number): void {
     const newRadius = frontDefaultRadius * factor;
     let newScale = 1;
@@ -114,7 +124,7 @@ export default class Point extends Nodule {
   }
 
   glowStyle(): void {
-    if (this.owner.positionOnSphere.z > 0) this.frontGlowStyle();
+    if (this._pos.z > 0) this.frontGlowStyle();
     else this.backGlowStyle();
   }
 
@@ -133,7 +143,7 @@ export default class Point extends Nodule {
   }
 
   normalStyle(): void {
-    if (this.owner.positionOnSphere.z > 0) this.frontNormalStyle();
+    if (this._pos.z > 0) this.frontNormalStyle();
     else this.backNormalStyle();
   }
 
@@ -174,10 +184,6 @@ export default class Point extends Nodule {
   }
 
   public update(): void {
-    this.translation.set(
-      this.owner.positionOnSphere.x * SETTINGS.boundaryCircle.radius,
-      this.owner.positionOnSphere.y * SETTINGS.boundaryCircle.radius
-    );
     this.normalStyle();
   }
 }

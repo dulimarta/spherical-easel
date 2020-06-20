@@ -185,11 +185,11 @@ export default class Line extends Nodule {
   }
 
   set orientation(dir: Vector3) {
-    console.debug(
-      `Changing normal orientation of ${
-        this.id
-      } from ${this.normalDirection.toFixed(2)} to ${dir.toFixed(2)}`
-    );
+    // console.debug(
+    //   `Changing normal orientation of ${
+    //     this.id
+    //   } from ${this.normalDirection.toFixed(2)} to ${dir.toFixed(2)}`
+    // );
     this.normalDirection.copy(dir).normalize();
     this.deformIntoEllipse();
   }

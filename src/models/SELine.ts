@@ -6,6 +6,7 @@ import { Visitor } from "@/visitors/Visitor";
 
 const tmpVec1 = new Vector3();
 const tmpVec2 = new Vector3();
+let LINE_COUNT = 0;
 export class SELine extends SENodule implements Visitable {
   public ref: Line;
 
@@ -19,6 +20,8 @@ export class SELine extends SENodule implements Visitable {
     super();
     this.ref = l;
     l.owner = this;
+    LINE_COUNT++;
+    this.name = `Li-${LINE_COUNT}`;
   }
 
   accept(v: Visitor): void {

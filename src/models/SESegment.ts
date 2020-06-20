@@ -6,6 +6,7 @@ import { Visitor } from "@/visitors/Visitor";
 
 const tmpVec1 = new Vector3();
 const tmpVec2 = new Vector3();
+let SEGMENT_COUNT = 0;
 export class SESegment extends SENodule implements Visitable {
   public ref: Segment;
 
@@ -17,6 +18,8 @@ export class SESegment extends SENodule implements Visitable {
     super();
     this.ref = s;
     s.owner = this;
+    SEGMENT_COUNT++;
+    this.name = `Ls-${SEGMENT_COUNT}`;
   }
 
   accept(v: Visitor): void {

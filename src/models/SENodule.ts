@@ -10,9 +10,11 @@ export abstract class SENodule {
 
   /* A unique identification number for each node */
   public id: number;
+  public name: string;
 
   constructor() {
     this.id = NODE_COUNT++;
+    this.name = `SENodule ${this.id}`;
   }
   /* If the object doesn't exist then exists= false (For example the intersection of two circles
         can exist only if the two circles are close enough to each other, but even when they are 
@@ -152,7 +154,7 @@ export abstract class SENodule {
     return this.outOfDate;
   }
 
-  public getKids() {
+  get children() {
     return this.kids;
   }
 
