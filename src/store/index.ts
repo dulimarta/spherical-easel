@@ -57,19 +57,24 @@ export default new Vuex.Store({
       const pos = state.points.findIndex(x => x.id === pointId);
       if (pos >= 0) {
         state.points[pos].ref.removeFromLayers();
+        state.points[pos].removeSelfSafely();
         state.points.splice(pos, 1);
       }
     },
     addLine(
       state: AppState,
       {
-        line
-      }: /*startPoint,
-        endPoint*/
-      { line: SELine /*; startPoint: Point; endPoint: Point */ }
+        line,
+        startPoint,
+        endPoint
+      }: { line: SELine; startPoint: SEPoint; endPoint: SEPoint }
     ): void {
       state.lines.push(line);
       line.ref.addToLayers(state.layers);
+
+      // Add this line as a child of the two points
+      startPoint.registerChild(line);
+      endPoint.registerChild(line);
     },
     removeLine(state: AppState, lineId: number): void {
       const pos = state.lines.findIndex(x => x.id === lineId);
@@ -77,46 +82,44 @@ export default new Vuex.Store({
         /* victim line is found */
         const victimLine = state.lines[pos];
         victimLine.ref.removeFromLayers();
+        victimLine.removeSelfSafely();
         state.lines.splice(pos, 1); // Remove the line from the list
       }
     },
     addSegment(
       state: AppState,
       {
-        segment
-      }: /*startPoint,
-        endPoint*/
-      { segment: SESegment /*; startPoint: Point; endPoint: Point */ }
+        segment,
+        startPoint,
+        endPoint
+      }: { segment: SESegment; startPoint: SEPoint; endPoint: SEPoint }
     ): void {
       state.segments.push(segment);
+      startPoint.registerChild(segment);
+      endPoint.registerChild(segment);
       segment.ref.addToLayers(state.layers);
     },
     removeSegment(state: AppState, segId: number): void {
       const pos = state.segments.findIndex(x => x.id === segId);
-      debugger; // eslint-disable-line
       if (pos >= 0) {
         const victim = state.segments[pos];
         victim.ref.removeFromLayers();
+        victim.removeSelfSafely();
         state.segments.splice(pos, 1);
       }
     },
     addCircle(
       state: AppState,
-      circle /*,
+      {
+        circle,
         centerPoint,
-        circlePoint*/
-      //}: { circle: SECircle /*; centerPoint: Point; circlePoint: Point*/ }
+        circlePoint
+      }: { circle: SECircle; centerPoint: SEPoint; circlePoint: SEPoint }
     ): void {
-      // const start = findPoint(state.points, centerPoint.id);
-      // const end = findPoint(state.points, circlePoint.id);
-      // if (start !== null && end !== null) {
-      // const newCircle = { ref: circle, center: start, point: end };
-      // start.centerOf.push(newCircle);
-      // end.circumOf.push(newCircle);
       state.circles.push(circle);
       circle.ref.addToLayers(state.layers);
-      // state.sphere?.add(circle);
-      // }
+      centerPoint.registerChild(circle);
+      circlePoint.registerChild(circle);
     },
     removeCircle(state: AppState, circleId: number): void {
       // FIXME
@@ -125,6 +128,7 @@ export default new Vuex.Store({
         /* victim line is found */
         const victimCircle: SECircle = state.circles[circlePos];
         victimCircle.ref.removeFromLayers();
+        victimCircle.removeSelfSafely();
         state.circles.splice(circlePos, 1); // Remove the line from the list
       }
     },

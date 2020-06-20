@@ -87,6 +87,13 @@ export abstract class SENodule {
     n.removeParent(this);
   }
 
+  public removeSelfSafely() {
+    if (this.kids.length == 0) {
+      this.parents.forEach(item => {
+        item.unregisterChild(this);
+      });
+    }
+  }
   /* This removes the current node and all descendants (kids, grand kids, etc.) from the 
     object tree by using the unregister function and remove recursively */
   public removeThisNode() {

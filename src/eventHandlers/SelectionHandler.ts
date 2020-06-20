@@ -22,9 +22,9 @@ export default abstract class SelectionHandler implements ToolStrategy {
   protected currentSpherePoint: Vector3;
   protected currentScreenPoint: Two.Vector;
   protected hitPoints: SEPoint[] = [];
-  protected hitLine: SELine | null = null;
-  protected hitSegment: SESegment | null = null;
-  protected hitCircle: SECircle | null = null;
+  protected hitLines: SELine[] = [];
+  protected hitSegments: SESegment[] = [];
+  protected hitCircles: SECircle[] = [];
   protected startMarker: Two.Circle;
   protected isOnSphere: boolean;
   protected transformMatrix: Matrix4;
@@ -149,12 +149,20 @@ export default abstract class SelectionHandler implements ToolStrategy {
       this.hitPoints.forEach((p: SEPoint) => {
         p.ref.normalStyle();
       });
-      this.hitLine?.ref.normalStyle();
-      this.hitCircle?.ref.normalStyle();
-      this.hitSegment?.ref.normalStyle();
+      this.hitLines.forEach((p: SELine) => {
+        p.ref.normalStyle();
+      });
+      this.hitSegments.forEach((s: SESegment) => {
+        s.ref.normalStyle();
+      });
+
+      this.hitCircles.forEach((c: SECircle) => {
+        c.ref.normalStyle();
+      });
       this.hitPoints.clear();
-      this.hitLine = null;
-      this.hitCircle = null;
+      this.hitLines.clear();
+      this.hitSegments.clear();
+      this.hitCircles.clear();
       this.hitPoints = this.store.getters.findNearbyPoints(
         this.currentSpherePoint,
         this.currentScreenPoint
@@ -163,26 +171,27 @@ export default abstract class SelectionHandler implements ToolStrategy {
         console.debug("Intersected with point", obj.id);
         obj.ref.glowStyle();
       });
-      this.store.getters
-        .findNearbyLines(this.currentSpherePoint, this.currentScreenPoint)
-        .forEach((obj: SELine) => {
-          this.hitLine = obj;
-          console.debug("Intersected with line", obj.id);
-          obj.ref.glowStyle();
-        });
-      this.store.getters
-        .findNearbySegments(this.currentSpherePoint, this.currentScreenPoint)
-        .forEach((obj: SESegment) => {
-          this.hitSegment = obj;
-          console.debug("Intersected with line", obj.id);
-          obj.ref.glowStyle();
-        });
-      this.store.getters
-        .findNearbyCircles(this.currentSpherePoint, this.currentScreenPoint)
-        .forEach((c: SECircle) => {
-          this.hitCircle = c;
-          c.ref.glowStyle();
-        });
+      this.hitLines = this.store.getters.findNearbyLines(
+        this.currentSpherePoint,
+        this.currentScreenPoint
+      );
+      this.hitLines.forEach((obj: SELine) => {
+        obj.ref.glowStyle();
+      });
+      this.hitSegments = this.store.getters.findNearbySegments(
+        this.currentSpherePoint,
+        this.currentScreenPoint
+      );
+      this.hitSegments.forEach((obj: SESegment) => {
+        obj.ref.glowStyle();
+      });
+      this.hitCircles = this.store.getters.findNearbyCircles(
+        this.currentSpherePoint,
+        this.currentScreenPoint
+      );
+      this.hitCircles.forEach((c: SECircle) => {
+        c.ref.glowStyle();
+      });
     } else {
       this.isOnSphere = false;
       this.currentSpherePoint.set(NaN, NaN, NaN);

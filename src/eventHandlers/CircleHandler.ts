@@ -100,14 +100,11 @@ export default class CircleHandler extends SelectionHandler {
 
       circleGroup
         .addCommand(
-          new AddCircleCommand(
-            new SECircle(
-              newCircle,
-              this.arcRadius
-            ) /*,
+          new AddCircleCommand({
+            circle: new SECircle(newCircle, this.arcRadius),
             centerPoint: this.startPoint,
-            circlePoint: this.endPoint*/
-          )
+            circlePoint: this.endPoint
+          })
         )
         .execute();
       this.startPoint = null;

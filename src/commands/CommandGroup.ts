@@ -12,9 +12,10 @@ export class CommandGroup extends Command {
   }
 
   restoreState(): void {
-    this.subCommands.forEach(x => {
-      x.restoreState();
-    });
+    // Restore state should be done in REVERSE order
+    for (let kIdx = this.subCommands.length - 1; kIdx >= 0; kIdx--) {
+      this.subCommands[kIdx].restoreState();
+    }
   }
 
   saveState(): void {

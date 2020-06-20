@@ -1,6 +1,5 @@
 /** @format */
 
-import LineHandler from "./LineHandler";
 import Two from "two.js";
 import { Matrix4, Vector3 } from "three";
 import SelectionHandler from "./SelectionHandler";

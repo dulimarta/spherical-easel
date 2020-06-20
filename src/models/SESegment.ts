@@ -1,10 +1,8 @@
 import { SENodule } from "./SENodule";
 import Segment from "@/plottables/Segment";
-import { SEPoint } from "./SEPoint";
 import { Vector3 } from "three";
 import { Visitable } from "@/visitors/Visitable";
 import { Visitor } from "@/visitors/Visitor";
-import { SELine } from "./SELine";
 
 const tmpVec1 = new Vector3();
 const tmpVec2 = new Vector3();
