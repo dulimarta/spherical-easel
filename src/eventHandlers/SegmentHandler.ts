@@ -82,7 +82,14 @@ export default class SegmentHandler extends SelectionHandler {
   }
 
   mouseLeave(event: MouseEvent): void {
-    throw new Error("Method not implemented.");
+    super.mouseLeave(event);
+    this.dragging = false;
+    if (this.isSegmentAdded) {
+      this.tempSegment.remove();
+      this.startMarker.remove();
+      midMarker.remove();
+      this.isSegmentAdded = false;
+    }
   }
 
   mousePressed(event: MouseEvent): void {

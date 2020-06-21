@@ -168,6 +168,7 @@ export default class SphereFrame extends VueComponent {
     this.$refs.canvas.removeEventListener("mousemove", this.handleMouseMoved);
     this.$refs.canvas.removeEventListener("mousedown", this.handleMousePressed);
     this.$refs.canvas.removeEventListener("mouseup", this.handleMouseReleased);
+    this.$refs.canvas.removeEventListener("mouseleave", this.handleMouseLeave);
   }
 
   @Watch("canvasSize")
@@ -257,6 +258,10 @@ export default class SphereFrame extends VueComponent {
   handleMouseReleased(e: MouseEvent): void {
     // WHen currentTool is NULL, the following line does nothing
     this.currentTool?.mouseReleased(e);
+  }
+
+  handleMouseLeave(e: MouseEvent): void {
+    this.currentTool?.mouseLeave(e);
   }
 
   handleSphereRotation(e: unknown): void {

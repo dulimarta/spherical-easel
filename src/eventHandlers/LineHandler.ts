@@ -138,6 +138,13 @@ export default class LineHandler extends SelectionHandler {
 
   // eslint-disable-next-line
   mouseLeave(event: MouseEvent): void {
-    /* empty function */
+    super.mouseLeave(event);
+    this.isMouseDown = false;
+    if (this.isCircleAdded) {
+      this.line.remove();
+      this.startMarker.remove();
+      this.circleOrientation.remove(); // for debugging
+      this.isCircleAdded = false;
+    }
   }
 }

@@ -139,7 +139,13 @@ export default class CircleHandler extends SelectionHandler {
       this.endPoint = null;
     }
   }
+
   mouseLeave(event: MouseEvent): void {
-    throw new Error("Method not implemented.");
+    super.mouseLeave(event);
+    if (this.isCircleAdded) {
+      this.isCircleAdded = false;
+      this.temporaryCircle.remove();
+      this.startMarker.remove();
+    }
   }
 }

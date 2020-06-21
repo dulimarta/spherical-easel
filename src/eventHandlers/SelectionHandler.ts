@@ -52,7 +52,6 @@ export default abstract class SelectionHandler implements ToolStrategy {
     this.isOnSphere = false;
   }
 
-  abstract mouseLeave(event: MouseEvent): void;
   abstract mousePressed(event: MouseEvent): void;
   abstract mouseReleased(event: MouseEvent): void;
 
@@ -196,5 +195,8 @@ export default abstract class SelectionHandler implements ToolStrategy {
       this.isOnSphere = false;
       this.currentSpherePoint.set(NaN, NaN, NaN);
     }
+  }
+  mouseLeave(event: MouseEvent): void {
+    this.isOnSphere = false;
   }
 }
