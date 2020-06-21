@@ -3,6 +3,7 @@ import { Visitable } from "@/visitors/Visitable";
 import { Visitor } from "@/visitors/Visitor";
 import { SENodule } from "./SENodule";
 import { Vector3 } from "three";
+import SETTINGS from "@/global-settings";
 
 const POINT_PROXIMITY_THRESHOLD = 1e-2;
 let POINT_COUNT = 0;
@@ -46,6 +47,8 @@ export class SEPoint extends SENodule implements Visitable {
   }
 
   public isHitAt(spherePos: Vector3): boolean {
-    return this.ref.position.distanceTo(spherePos) < POINT_PROXIMITY_THRESHOLD;
+    return (
+      this.ref.position.distanceTo(spherePos) < SETTINGS.point.hitIdealDistance
+    );
   }
 }
