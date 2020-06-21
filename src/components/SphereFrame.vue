@@ -260,21 +260,7 @@ export default class SphereFrame extends VueComponent {
   }
 
   handleSphereRotation(e: unknown): void {
-    if (this.visitor) {
-      this.visitor.setTransform((e as any).transform);
-      this.$store.state.points.forEach((p: SEPoint) => {
-        p.accept(this.visitor);
-      });
-      this.$store.state.lines.forEach((l: SELine) => {
-        l.accept(this.visitor);
-      });
-      this.$store.state.circles.forEach((l: SECircle) => {
-        l.accept(this.visitor);
-      });
-      this.$store.state.segments.forEach((s: SESegment) => {
-        s.accept(this.visitor);
-      });
-    }
+    this.$store.commit('rotateSphere', (e as any).transform);
   }
 
   @Watch("editMode")

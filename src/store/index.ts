@@ -9,6 +9,7 @@ import { SELine } from "@/models/SELine";
 import { SECircle } from "@/models/SECircle";
 import { Vector3, Matrix4 } from "three";
 import { SESegment } from "@/models/SESegment";
+import { PositionVisitor } from "@/visitors/PositionVisitor";
 
 Vue.use(Vuex);
 
@@ -35,6 +36,8 @@ const initialState = {
   segments: [],
   circles: []
 };
+
+const positionVisitor = new PositionVisitor();
 export default new Vuex.Store({
   state: initialState,
   mutations: {
@@ -144,9 +147,20 @@ export default new Vuex.Store({
         state.plottables.splice(pos2, 1);
       }
     },
-    setTransformation(state: AppState, m: Matrix4): void {
-      debugger; //eslint-disable-line
-      m.toArray(state.transformMatElements);
+    rotateSphere(state: AppState, rotationMat: Matrix4) {
+      positionVisitor.setTransform(rotationMat);
+      state.points.forEach((p: SEPoint) => {
+        p.accept(positionVisitor);
+      });
+      state.lines.forEach((l: SELine) => {
+        l.accept(positionVisitor);
+      });
+      state.circles.forEach((l: SECircle) => {
+        l.accept(positionVisitor);
+      });
+      state.segments.forEach((s: SESegment) => {
+        s.accept(positionVisitor);
+      });
     }
   },
   actions: {

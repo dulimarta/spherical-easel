@@ -51,6 +51,12 @@ export abstract class Command {
     this.do(); /* perform the actual action of this command */
   }
 
+  /** Just memorize the command without actually executing it */
+  push(): void {
+    Command.commandHistory.push(this);
+    this.saveState();
+  }
+
   // Child classes of Command must implement the following abstract methods
 
   // restoreState: Perform necessary action to restore the app state.
