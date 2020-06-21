@@ -87,7 +87,7 @@ export default class CircleHandler extends SelectionHandler {
         this.temporaryCircle.radius = this.arcRadius;
       }
     } else if (this.isCircleAdded) {
-      // this.temporaryCircle.remove(); // remove from its parent
+      this.temporaryCircle.remove(); // remove from its parent
       this.startMarker.remove();
       this.isCircleAdded = false;
     }

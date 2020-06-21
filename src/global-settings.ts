@@ -102,7 +102,7 @@ export default {
     //The properties of the circle when it is temporarily shown by the circle tool while drawing
     temp: {
       fillColor: {
-        front: "noFill",
+        front: "hsla(120, 60%, 70%, 0.3)", //"#FF0000", //"noFill",
         back: "noFill"
       },
       strokeColor: {
