@@ -37,6 +37,7 @@ After typing `yarn serve`, use your browser to open `localhost:8080` (or whateve
 
 ```bash
 yarn build        # to build for production
+yarn docs:build   # to build the documentation
 yarn lint         # to run linter program
 ```
 
@@ -49,3 +50,11 @@ To view the documentation page:
 ```bash
 yarn docs:serve
 ```
+
+To build the documentation page:
+
+```bash
+yarn docs:build    # do this AFTER `yarn build`
+```
+
+After a successful document build, you will find a new directory `dist/docs`.

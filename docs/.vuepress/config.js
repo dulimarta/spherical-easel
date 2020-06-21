@@ -1,6 +1,7 @@
 //const moment = require("moment");
 
 module.exports = {
+  dest: "../dist/docs",
   //Plugins to enable specialized behavior (for example, LaTeX/MathJax )
   plugins: [
     [
