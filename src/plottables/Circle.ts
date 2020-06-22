@@ -50,7 +50,7 @@ export default class Circle extends Nodule {
   private backFill: Two.Path;
 
   /**
-   * The fill needs stops and a gradient For front/back both temporary and drawn
+   * The fill needs at least two stops and a gradient For front/back both temporary and drawn
    */
   private tempFrontStop1 = new Two.Stop(
     0,
@@ -760,20 +760,14 @@ export default class Circle extends Nodule {
         //Set the default styles of the front/back/glowing/drawn parts
         // Fill Color
         if (SETTINGS.circle.drawn.fillColor.front === "noFill") {
-          //TODO: Is it more efficient to turn off the display or set to noFill?
-          //(this.frontFill as any).visible = false;
           this.frontFill.noFill();
         } else {
           this.frontFill.fill = this.frontGradient;
-          //this.frontPart.fill = SETTINGS.circle.drawn.fillColor.front;
         }
         if (SETTINGS.circle.drawn.fillColor.back === "noFill") {
-          //TODO: Is it more efficient to turn off the display or set to noFill?
-          //(this.backFill as any).visible = false;
           this.backFill.noFill();
         } else {
           this.backFill.fill = this.backGradient;
-          //this.backFill.fill = SETTINGS.circle.drawn.fillColor.back;
         }
         this.glowingBackPart.noFill(); // the glowing circle is never filled
         this.glowingFrontPart.noFill(); // the glowing circle is never filled

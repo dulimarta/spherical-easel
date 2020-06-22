@@ -34,3 +34,9 @@ If you don't like the results of an action you can click the Undo button in the 
 All selected objects will glow (i.e. have a highlight color displayed in the background of the object).
 
 :::
+
+::: tip Line Segments
+
+It is possible to draw line segment of length longer than $\pi$. If the user creates a line segment by dragging to the antipode of the start point and then pushes and holds the <kbd>Ctrl</kbd> key, the segment will be extenesible through and past the anitppode of the start. In addition, if after releasing the mouse, the line segment connecting two points goes the wrong way around the sphere, you can use the [Toggle Line Segment Tool](/tools/basic.html#toggle-line-segment) to change it.
+
+:::

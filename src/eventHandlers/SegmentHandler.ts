@@ -21,21 +21,59 @@ const midMarker = new Two.Circle(0, 0, 5);
 midMarker.fill = "navy";
 
 export default class SegmentHandler extends SelectionHandler {
-  // private marker = new Point(5, 0xff0000);
-  // private majorAxisDir = new Vector3();
-  // The starting point of the segment
+  /**
+   * The starting vector location of the segment
+   */
   protected startVector = new Vector3();
+
+  /**
+   * This indicates if the temporary segment has been added to the scene and made permanent
+   */
   protected isSegmentAdded = false;
+  /**
+   * The (model) start and end points of the line segment
+   */
   private startPoint: SEPoint | null = null;
   private endPoint: SEPoint | null = null;
-  //A variable to see if the user is dragging.
+  /**
+   * Indicates if the user is dragging
+   */
   protected dragging = false;
+  /**
+   * A temporary segment to display while the user is creating a segment
+   */
   protected tempSegment: Segment;
+  /**
+   * I don't know that this variable does.... TODO
+   */
   protected arcDir = NaN;
 
   constructor(scene: Two.Group, transformMatrix: Matrix4) {
+    // The current scene and matrix that transforms the ideal unit sphere to the current (un-zoomed) view
     super(scene, transformMatrix);
+    // Create the temporary plottable segment
     this.tempSegment = new Segment();
+  }
+  mousePressed(event: MouseEvent): void {
+    // The user is dragging
+    this.dragging = true;
+    // The Selection Handler forms a list of all the nearby points
+    // If there are nearby points, select the first one to be the start of the segment otherwise
+    //  put a startmarker (found in SelectionHandler) in the scene
+    if (this.hitPoints.length > 0) {
+      const selected = this.hitPoints[0];
+      this.startVector.copy(selected.positionOnSphere);
+      this.startPoint = selected;
+    } else {
+      this.canvas.add(this.startMarker);
+      this.startMarker.translation.copy(this.currentScreenPoint);
+      this.startVector.copy(this.currentSpherePoint);
+      this.startPoint = null;
+    }
+    // Initially the midpoint is the start point
+    midVector.copy(this.currentSpherePoint);
+    // The start point (shouldn't this be start vector?) of the temporary segment is also the the current location on the sphere
+    this.tempSegment.startPoint = this.currentSpherePoint;
   }
 
   mouseMoved(event: MouseEvent): void {
@@ -83,22 +121,6 @@ export default class SegmentHandler extends SelectionHandler {
 
   mouseLeave(event: MouseEvent): void {
     throw new Error("Method not implemented.");
-  }
-
-  mousePressed(event: MouseEvent): void {
-    this.dragging = true;
-    if (this.hitPoints.length > 0) {
-      const selected = this.hitPoints[0];
-      this.startVector.copy(selected.positionOnSphere);
-      this.startPoint = selected;
-    } else {
-      this.canvas.add(this.startMarker);
-      this.startMarker.translation.copy(this.currentScreenPoint);
-      this.startVector.copy(this.currentSpherePoint);
-      this.startPoint = null;
-    }
-    midVector.copy(this.currentSpherePoint);
-    this.tempSegment.startPoint = this.currentSpherePoint;
   }
 
   mouseReleased(event: MouseEvent): void {

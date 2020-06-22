@@ -10,7 +10,7 @@ export default {
     backGray: "hsla(0, 0%, 85%, 0.2)" // The antipode of the light source on the back is this shade of gray
   },
   boundaryCircle: {
-    radius: 250 /* in pixels */,
+    radius: 250 /* default radius in pixels */,
     numPoints: 50,
     opacity: 0.5,
     color: "black",
@@ -22,14 +22,28 @@ export default {
       back: 2,
       max: 6,
       min: 3
-    }
+    },
+    //dynamicBackStyle is a flag that means the fill color,stroke, and opacity of the lines drawn on the back are automatically calculated based on the value of SETTINGS.contrast and their front counterparts
+    dynamicBackStyle: true,
+    drawn: {
+      thickness: {
+        front: 4,
+        back: 2,
+        max: 6,
+        min: 3
+      }
+    },
+    glowing: {},
+    temp: {},
+    hitPixelDistance: 8, //When a pixel distance between a mouse event and the pixel coords of a line is less than this number, it is hit
+    hitIdealDistance: 0.02 // The user has to be within this distance on the ideal unit sphere to select the line.
   },
   point: {
     // The number of vertices that are used to render the point circles front/back/glowing/temp on the sphereCanvas
     numPoints: { front: 4, back: 4 },
     //dynamicRadius is a flag that means the radius of the point will be linked to the size of the sphere
     dynamicRadii: true,
-    //dynamicBackaStyle is a flag that means the fill color,stroke, and opacity of the points drawn on the back are automatically calculated based on the value of SETTINGS.contrast
+    //dynamicBackStyle is a flag that means the fill color,stroke, and opacity of the points drawn on the back are automatically calculated based on the value of SETTINGS.contrast and their front counterparts
     dynamicBackStyle: true,
     //The properties of the point when it is drawn on the sphereCanvas and is not glowing
     drawn: {
@@ -78,7 +92,7 @@ export default {
   circle: {
     numPoints: 100, // The number of vertices used to render the circle. These are spread over the front and back parts. MAKE THIS EVEN!
     hitIdealDistance: 0.01, // The user has to be within this distance on the ideal unit sphere to select the circle.
-    //dynamicBackStyle is a flag that means the linewidth, strokeColor, and opacity of the circles drawn on the back are automatically calculated based on the value of SETTINGS.contrast
+    //dynamicBackStyle is a flag that means the fill, linewidth, strokeColor, and opacity of the circles drawn on the back are automatically calculated based on the value of SETTINGS.contrast and their front counterparts
     dynamicBackStyle: true,
     //The properties of the circle when it is drawn on the sphereCanvas and is not glowing
     drawn: {

@@ -66,7 +66,7 @@ Create a line segment.
 
 ::: tip
 
-If the line segment connecting two points goes the wrong way around the sphere, you can use the [Toggle Line Segment Tool](/tools/basic.html#toggle-line-segment) to change it.
+It is possible to draw line segment of length longer than $\pi$. If the user creates a line segment by dragging to the antipode of the start point and then pushes and holds the <kyb>Ctrl</kyb> key, the segment will be extenesible through and past the anitppode of the start. In addition, if after releasing the mouse, the line segment connecting two points goes the wrong way around the sphere, you can use the [Toggle Line Segment Tool](/tools/basic.html#toggle-line-segment) to change it.
 
 :::
 

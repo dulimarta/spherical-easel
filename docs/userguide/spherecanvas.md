@@ -27,6 +27,8 @@ This icon (TODO: AddIconImage) opens the Style Panel and enables the user to cus
 
 ## Zooming and Panning
 
+Use the <kbd>Alt</kbd> to pan when zoomed in
+
 Found in the lower right-hand corner of the Sphere Canvas?
 
 There are several buttons (or maybe one speed dial button?) in this corner:

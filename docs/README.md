@@ -29,6 +29,7 @@ You can help by...
 - Helping to translate this program into another language (TODO: add a link)
 - Reporting a bug (TODO: add a link)
 - Requesting a feature (TODO: add a link)
+- Adding a lesson plan to our [repository](lessonplans/) to help students learn about spherical geometry (TODO: add a link)
 - Updating these help pages with rewrites or more description
 - Contacting us with a question (TODO: create a sphericalEasel@gvsu.edu email and link here - put a forward on this account to the three of us?)
 
