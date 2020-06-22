@@ -9,8 +9,8 @@ import { SEPoint } from "@/models/SEPoint";
 export default class MoveHandler extends SelectionHandler {
   private isDragging = false;
   private moveTarget: SEPoint | null = null;
-  constructor(scene: Two.Group, transformMatrix: Matrix4) {
-    super(scene, transformMatrix);
+  constructor(layers: Two.Group[], transformMatrix: Matrix4) {
+    super(layers, transformMatrix);
   }
 
   mouseMoved(event: MouseEvent) {

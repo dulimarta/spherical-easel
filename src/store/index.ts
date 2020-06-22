@@ -10,6 +10,7 @@ import { SECircle } from "@/models/SECircle";
 import { Vector3, Matrix4 } from "three";
 import { SESegment } from "@/models/SESegment";
 import { PositionVisitor } from "@/visitors/PositionVisitor";
+import { SENodule } from "@/models/SENodule";
 
 Vue.use(Vuex);
 
@@ -167,8 +168,12 @@ export default new Vuex.Store({
     /* Define async work in this block */
   },
   getters: {
-    /* The following is just a starter code.  More work needed */
-
+    findNearbyObjects: (state: AppState) => (
+      idealPosition: Vector3,
+      screenPosition: Two.Vector
+    ): SENodule[] => {
+      return state.plottables.filter(obj => obj.isHitAt(idealPosition));
+    },
     /** Find nearby points by checking the distance in the ideal sphere
      * or screen distance (in pixels)
      */

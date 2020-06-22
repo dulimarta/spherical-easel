@@ -12,8 +12,8 @@ export default class RotateHandler extends SelectionHandler {
   private prevScreenPoint: Two.Vector = new Two.Vector(0, 0);
   private isDragging = false;
 
-  constructor(scene: Two.Group, transformMatrix: Matrix4) {
-    super(scene, transformMatrix);
+  constructor(layers: Two.Group[], transformMatrix: Matrix4) {
+    super(layers, transformMatrix);
     // this.rotationMatrix = new Matrix4();
     // this.prevSpherePoint = new Vector3();
   }

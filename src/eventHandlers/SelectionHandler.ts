@@ -3,15 +3,16 @@
 import { Vector3, Matrix4 } from "three";
 import AppStore from "@/store";
 import { ToolStrategy } from "./ToolStrategy";
-import Two, { BoundingClientRect } from "two.js";
-import SETTINGS from "@/global-settings";
+import Two from "two.js";
+import SETTINGS, { LAYER } from "@/global-settings";
 import { SEPoint } from "@/models/SEPoint";
 import { SELine } from "@/models/SELine";
 import { SECircle } from "@/models/SECircle";
 import { SESegment } from "@/models/SESegment";
+import { TextBox } from "@/plottables/TextBox";
+import { SENodule } from "@/models/SENodule";
 const frontPointRadius = SETTINGS.point.temp.radius.front;
 
-/* FIXME: The 3D position and the projected 2D positions are off by a few pixels???*/
 export default abstract class SelectionHandler implements ToolStrategy {
   protected readonly X_AXIS = new Vector3(1, 0, 0);
   protected readonly Y_AXIS = new Vector3(0, 1, 0);
@@ -33,15 +34,17 @@ export default abstract class SelectionHandler implements ToolStrategy {
   private mouseVector = new Vector3();
   private zoomCenter = new Vector3();
   private tmpMatrix = new Matrix4();
-
-  constructor(scene: Two.Group, transformMatrix: Matrix4) {
+  private infoText = new TextBox("Hello");
+  private layers: Two.Group[];
+  constructor(layers: Two.Group[], transformMatrix: Matrix4) {
     /**
      * @param scene is the sphere canvas where all drawings will render
      * @param transformMatrix is the forward transform that maps the ideal unit
      * sphere to the boundary circle on the canvas. Essentially this matrix maps
      * the (ideal) world to the screen
      */
-    this.canvas = scene;
+    this.layers = layers;
+    this.canvas = layers[LAYER.midground];
     this.transformMatrix = transformMatrix || null;
     // the bounding rectangle is used for
     // conversion between screen and world coordinates
@@ -162,32 +165,44 @@ export default abstract class SelectionHandler implements ToolStrategy {
       this.hitLines.clear();
       this.hitSegments.clear();
       this.hitCircles.clear();
-      this.hitPoints = this.store.getters.findNearbyPoints(
+      const hitList: SENodule[] = this.store.getters.findNearbyObjects(
         this.currentSpherePoint,
         this.currentScreenPoint
       );
+      this.infoText.hide();
+      if (hitList.length > 0) {
+        this.infoText.showWithDelay(this.layers[LAYER.foregroundText], 300);
+        this.infoText.text = hitList[0].name;
+        this.infoText.translation.set(
+          this.currentScreenPoint.x,
+          -this.currentScreenPoint.y + 16
+        );
+      }
+
+      this.hitPoints = hitList
+        .filter((obj: SENodule) => obj instanceof SEPoint)
+        .map(obj => obj as SEPoint);
       this.hitPoints.forEach((obj: SEPoint) => {
-        console.debug("Intersected with point", obj.id);
         obj.ref.glowStyle();
       });
-      this.hitLines = this.store.getters.findNearbyLines(
-        this.currentSpherePoint,
-        this.currentScreenPoint
-      );
+
+      this.hitLines = hitList
+        .filter(obj => obj instanceof SELine)
+        .map(obj => obj as SELine);
       this.hitLines.forEach((obj: SELine) => {
         obj.ref.glowStyle();
       });
-      this.hitSegments = this.store.getters.findNearbySegments(
-        this.currentSpherePoint,
-        this.currentScreenPoint
-      );
+
+      this.hitSegments = hitList
+        .filter(obj => obj instanceof SESegment)
+        .map(obj => obj as SESegment);
       this.hitSegments.forEach((obj: SESegment) => {
         obj.ref.glowStyle();
       });
-      this.hitCircles = this.store.getters.findNearbyCircles(
-        this.currentSpherePoint,
-        this.currentScreenPoint
-      );
+
+      this.hitCircles = hitList
+        .filter(obj => obj instanceof SECircle)
+        .map(obj => obj as SECircle);
       this.hitCircles.forEach((c: SECircle) => {
         c.ref.glowStyle();
       });

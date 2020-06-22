@@ -1,7 +1,7 @@
 import SelectionHandler from "./SelectionHandler";
 import Two from "two.js";
 import { Matrix4 } from "three";
-import SETTINGS from "@/global-settings";
+import SETTINGS, { LAYER } from "@/global-settings";
 import EventBus from "./EventBus";
 import { SEPoint } from "@/models/SEPoint";
 import Point from "@/plottables/Point";
@@ -12,8 +12,8 @@ export default class PointHandler extends SelectionHandler {
   private frontPortion: Two.Circle;
   private backPortion: Two.Circle;
   private pointGroup: Two.Group;
-  constructor(scene: Two.Group, transformMatrix: Matrix4) {
-    super(scene, transformMatrix);
+  constructor(layers: Two.Group[], transformMatrix: Matrix4) {
+    super(layers, transformMatrix);
     this.frontPortion = new Two.Circle(0, 0, frontPointRadius);
     this.backPortion = new Two.Circle(0, 0, backPointRadius);
     this.pointGroup = new Two.Group();
@@ -24,7 +24,7 @@ export default class PointHandler extends SelectionHandler {
     this.backPortion.fill = SETTINGS.point.temp.fillColor.back;
     this.backPortion.stroke = SETTINGS.point.temp.strokeColor.back;
     this.backPortion.opacity = SETTINGS.point.temp.opacity.back;
-    this.pointGroup.addTo(scene);
+    this.pointGroup.addTo(layers[LAYER.midground]);
     (this.frontPortion as any).visible = false;
     (this.backPortion as any).visible = false;
   }

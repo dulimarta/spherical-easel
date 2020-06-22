@@ -147,18 +147,18 @@ export default class SphereFrame extends VueComponent {
     this.$refs.canvas.addEventListener("mousemove", this.handleMouseMoved);
     this.$refs.canvas.addEventListener("mousedown", this.handleMousePressed);
     this.$refs.canvas.addEventListener("mouseup", this.handleMouseReleased);
-    this.pointTool = new PointHandler(this.sphereCanvas, this.CSSTransformMat);
-    this.lineTool = new LineHandler(this.sphereCanvas, this.CSSTransformMat);
+    this.pointTool = new PointHandler(this.layers, this.CSSTransformMat);
+    this.lineTool = new LineHandler(this.layers, this.CSSTransformMat);
     this.segmentTool = new SegmentHandler(
-      this.sphereCanvas,
+      this.layers,
       this.CSSTransformMat
     );
     this.circleTool = new CircleHandler(
-      this.sphereCanvas,
+      this.layers,
       this.CSSTransformMat
     );
     this.rotateTool = new RotateHandler(
-      this.sphereCanvas,
+      this.layers,
       this.CSSTransformMat
     );
   }

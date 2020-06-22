@@ -28,8 +28,8 @@ export default class CircleHandler extends SelectionHandler {
   // The radius of the temporary circle (along the surface of the sphere)
   private arcRadius = 0;
 
-  constructor(scene: Two.Group, transformMatrix: Matrix4) {
-    super(scene, transformMatrix);
+  constructor(layers: Two.Group[], transformMatrix: Matrix4) {
+    super(layers, transformMatrix);
     this.centerV3Vector = new Vector3();
     this.isMouseDown = false;
     this.isCircleAdded = false;

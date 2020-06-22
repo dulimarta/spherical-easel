@@ -7,6 +7,10 @@ import { Visitor } from "@/visitors/Visitor";
 const tmpVec1 = new Vector3();
 const tmpVec2 = new Vector3();
 let SEGMENT_COUNT = 0;
+
+/** A segment is defined by three points:
+ * startPoint, midPoint, and endPoint
+ */
 export class SESegment extends SENodule implements Visitable {
   public ref: Segment;
 
@@ -61,9 +65,28 @@ export class SESegment extends SENodule implements Visitable {
   public isHitAt(spherePos: Vector3): boolean {
     // Is the unit vector to the point is perpendicular to the circle normal?
     if (Math.abs(spherePos.dot(this.ref.orientation)) > 1e-2) return false;
-    tmpVec1.crossVectors(spherePos, this.startPoint);
-    tmpVec2.crossVectors(this.endPoint, spherePos);
-    return tmpVec1.angleTo(tmpVec2) < 1e-1;
+    // Is the point between start and mid?
+    let angle1;
+    let angle2;
+    tmpVec1.crossVectors(this.startPoint, spherePos).normalize();
+    angle1 = this.startPoint.angleTo(spherePos) * Math.sign(tmpVec1.z);
+    tmpVec2.crossVectors(spherePos, this.midPoint).normalize();
+    angle2 = spherePos.angleTo(this.midPoint) * Math.sign(tmpVec2.z);
+    if (
+      Math.sign(angle1) === Math.sign(angle2) &&
+      Math.abs(angle1 + angle2 - this.ref.arcLength / 2) < 0.1
+    )
+      return true;
+
+    // Is the point between mid and end?
+    tmpVec1.crossVectors(this.midPoint, spherePos).normalize();
+    angle1 = this.midPoint.angleTo(spherePos) * Math.sign(tmpVec1.z);
+    tmpVec2.crossVectors(spherePos, this.endPoint).normalize();
+    angle2 = spherePos.angleTo(this.endPoint) * Math.sign(tmpVec2.z);
+    return (
+      Math.sign(angle1) === Math.sign(angle2) &&
+      Math.abs(angle1 + angle2 - this.ref.arcLength / 2) < 0.1
+    );
   }
 
   public update(): void {

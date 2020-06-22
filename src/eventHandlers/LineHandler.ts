@@ -26,8 +26,8 @@ export default class LineHandler extends SelectionHandler {
   private startPoint: SEPoint | null = null;
   private endPoint: SEPoint | null = null;
   private line: Line;
-  constructor(scene: Two.Group, transformMatrix: Matrix4) {
-    super(scene, transformMatrix);
+  constructor(layers: Two.Group[], transformMatrix: Matrix4) {
+    super(layers, transformMatrix);
     this.line = new Line();
 
     this.circleOrientation = new Arrow(0.5, 0x006600); // debug only

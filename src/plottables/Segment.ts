@@ -57,7 +57,6 @@ export default class Segment extends Nodule {
   private backHalf: Two.Path;
   private backExtra: Two.Path;
   private arcLen = 0;
-
   constructor(start?: Vector3, mid?: Vector3, end?: Vector3) {
     super();
     const vertices: Two.Vector[] = [];
@@ -153,10 +152,7 @@ export default class Segment extends Nodule {
 
   /** Reorient the unit circle in 3D and then project the points to 2D
    */
-  private deformIntoEllipse(): void {
-    // Avoid the degenerate case when the normalDirection is "zero"
-    if (this.normalDirection.length() < 0.01) return;
-
+  private calculateArcLength() {
     // angleTo() seems to return the smaller angle between two vectors
     // To get arc length > 180 we measure it with a break at midpoint
     // and sum the SIGNED length of each.
@@ -164,8 +160,12 @@ export default class Segment extends Nodule {
     const angle1 = this.start.angleTo(this.mid) * Math.sign(tmpVector1.z);
     tmpVector1.crossVectors(this.mid, this.end);
     const angle2 = this.mid.angleTo(this.end) * Math.sign(tmpVector1.z);
-    const arcLen = angle1 + angle2;
-
+    this.arcLen = angle1 + angle2;
+  }
+  private deformIntoEllipse(): void {
+    // Avoid the degenerate case when the normalDirection is "zero"
+    if (this.normalDirection.length() < 0.01) return;
+    this.calculateArcLength();
     // Use the start of segment as the X-axis so the start point
     // is at zero degrees
     desiredXAxis
@@ -202,7 +202,7 @@ export default class Segment extends Nodule {
     let activeFront = this.frontHalf.vertices;
     let activeBack = this.backHalf.vertices;
     for (let pos = 0; pos < 2 * SUBDIVS; pos++) {
-      const angle = (pos / (2 * SUBDIVS - 1)) * Math.abs(arcLen);
+      const angle = (pos / (2 * SUBDIVS - 1)) * Math.abs(this.arcLen);
       tmpVector1
         .set(Math.cos(angle), Math.sin(angle), 0)
         .multiplyScalar(SETTINGS.boundaryCircle.radius);
@@ -278,6 +278,7 @@ export default class Segment extends Nodule {
     tmpVector1.crossVectors(this.start, this.mid).normalize();
     tmpVector2.crossVectors(this.mid, this.end).normalize();
     this.normalDirection.addVectors(tmpVector1, tmpVector2).normalize();
+    this.calculateArcLength();
   }
 
   get midPoint(): Vector3 {
@@ -313,11 +314,17 @@ export default class Segment extends Nodule {
   get orientation(): Vector3 {
     return this.normalDirection;
   }
+
+  get arcLength(): number {
+    return this.arcLen;
+  }
+
   // It looks like we have to define our own clone() function
   // The builtin clone() does not seem to work correctly
   clone(): this {
     const dup = new Segment(this.start, this.end);
     dup.name = this.name;
+    dup.arcLen = this.arcLen;
     dup.start.copy(this.start);
     dup.mid.copy(this.mid);
     dup.end.copy(this.end);

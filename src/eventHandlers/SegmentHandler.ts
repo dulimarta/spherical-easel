@@ -33,8 +33,8 @@ export default class SegmentHandler extends SelectionHandler {
   protected tempSegment: Segment;
   protected arcDir = NaN;
 
-  constructor(scene: Two.Group, transformMatrix: Matrix4) {
-    super(scene, transformMatrix);
+  constructor(layers: Two.Group[], transformMatrix: Matrix4) {
+    super(layers, transformMatrix);
     this.tempSegment = new Segment();
   }
 
