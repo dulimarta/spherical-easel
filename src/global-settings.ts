@@ -1,5 +1,13 @@
 export default {
   contrast: 0.5, //The number that controls the automatic setting of the back styling for objects that have dynamicBackStyle set to true.
+  fill: {
+    lightSource: {
+      x: -250 / 3,
+      y: 250 / 3
+    },
+    backGray: "#CFCFCF", // The antipode of the light source on the back is this shade of gray
+    frontWhite: "#FFFFFF" // The light source location on the front is this shade of gray (white)
+  },
   boundaryCircle: {
     radius: 250 /* in pixels */,
     numPoints: 50,
@@ -67,15 +75,15 @@ export default {
     minPixelDistance: 5 // the minimum pixel distance before a new rotation is computed as we click and drag in rotate mode
   },
   circle: {
-    numPoints: 100, // The number of vertices used to render the circle. These are spread over the front and back parts.
+    numPoints: 100, // The number of vertices used to render the circle. These are spread over the front and back parts. MAKE THIS EVEN!
     hitIdealDistance: 0.01, // The user has to be within this distance on the ideal unit sphere to select the circle.
     //dynamicBackStyle is a flag that means the linewidth, strokeColor, and opacity of the circles drawn on the back are automatically calculated based on the value of SETTINGS.contrast
     dynamicBackStyle: true,
     //The properties of the circle when it is drawn on the sphereCanvas and is not glowing
     drawn: {
       fillColor: {
-        front: "noFill",
-        back: "noFill"
+        front: "hsla(217, 94%, 84%, 0.3)", //"noFill",
+        back: "hsla(217, 94%, 84%, 0.3)" //"noFill"
       },
       strokeColor: {
         front: "#4287f5", // { r: 66, g: 135, b: 245 },
@@ -102,8 +110,8 @@ export default {
     //The properties of the circle when it is temporarily shown by the circle tool while drawing
     temp: {
       fillColor: {
-        front: "noFill",
-        back: "noFill"
+        front: "hsla(0, 0%, 64%, 0.3)", //"#FF0000", //"noFill",
+        back: "hsla(0, 0%, 100%, 0.3)" //"noFill"
       },
       strokeColor: {
         front: "#6A6A6A",
