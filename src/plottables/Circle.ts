@@ -44,6 +44,79 @@ export default class Circle extends Nodule {
   private glowingBackPart: Two.Path;
 
   /**
+   * The TwoJS objects to display the front/back fill
+   */
+  private frontFill: Two.Path;
+  private backFill: Two.Path;
+
+  /**
+   * The fill needs stops and a gradient For front/back both temporary and drawn
+   */
+  private tempFrontStop1 = new Two.Stop(
+    0,
+    SETTINGS.fill.frontWhite,
+    SETTINGS.circle.temp.opacity.front
+  );
+  private tempFrontStop2 = new Two.Stop(
+    2 * SETTINGS.boundaryCircle.radius,
+    SETTINGS.circle.temp.fillColor.front,
+    SETTINGS.circle.temp.opacity.front
+  );
+  private tempFrontGradient = new Two.RadialGradient(
+    SETTINGS.fill.lightSource.x,
+    SETTINGS.fill.lightSource.y,
+    1 * SETTINGS.boundaryCircle.radius,
+    [this.tempFrontStop1, this.tempFrontStop2]
+  );
+  private tempBackStop1 = new Two.Stop(
+    0,
+    SETTINGS.fill.backGray,
+    SETTINGS.circle.temp.opacity.back
+  );
+  private tempBackStop2 = new Two.Stop(
+    1 * SETTINGS.boundaryCircle.radius,
+    SETTINGS.circle.temp.fillColor.back,
+    SETTINGS.circle.temp.opacity.back
+  );
+  private tempBackGradient = new Two.RadialGradient(
+    -SETTINGS.fill.lightSource.x,
+    -SETTINGS.fill.lightSource.y,
+    1 * SETTINGS.boundaryCircle.radius,
+    [this.tempBackStop1, this.tempBackStop2]
+  );
+  private frontStop1 = new Two.Stop(
+    0,
+    SETTINGS.fill.frontWhite,
+    SETTINGS.circle.temp.opacity.front
+  );
+  private frontStop2 = new Two.Stop(
+    2 * SETTINGS.boundaryCircle.radius,
+    SETTINGS.circle.drawn.fillColor.front,
+    SETTINGS.circle.drawn.opacity.front
+  );
+  private frontGradient = new Two.RadialGradient(
+    SETTINGS.fill.lightSource.x,
+    SETTINGS.fill.lightSource.y,
+    1 * SETTINGS.boundaryCircle.radius,
+    [this.frontStop1, this.frontStop2]
+  );
+  private backStop1 = new Two.Stop(
+    0,
+    SETTINGS.fill.backGray,
+    SETTINGS.circle.temp.opacity.back
+  );
+  private backStop2 = new Two.Stop(
+    1 * SETTINGS.boundaryCircle.radius,
+    SETTINGS.circle.drawn.fillColor.back,
+    SETTINGS.circle.drawn.opacity.back
+  );
+  private backGradient = new Two.RadialGradient(
+    -SETTINGS.fill.lightSource.x,
+    -SETTINGS.fill.lightSource.y,
+    2 * SETTINGS.boundaryCircle.radius,
+    [this.backStop1, this.backStop2]
+  );
+  /**
    * The styling of the front/back/glowing/temp/not parts of the circle
    * The user can modify these
    */
@@ -99,38 +172,34 @@ export default class Circle extends Nodule {
     this.majorLine = new Two.Line(0, 0, SETTINGS.boundaryCircle.radius, 0);
     this.add(this.majorLine);
 
-    // Create the initial front and back vertices (glowing and not)
+    // Create the initial front and back vertices (glowing/not/fill)
     const frontVertices: Two.Vector[] = [];
     const backVertices: Two.Vector[] = [];
     const glowingFrontVertices: Two.Vector[] = [];
     const glowingBackVertices: Two.Vector[] = [];
+    const frontFillVertices: Two.Vector[] = [];
+    const backFillVertices: Two.Vector[] = [];
     // TODO: Is there a way for the glowing and not vertices to be the same?  I tried and it didn't seem to work.
+
+    // As the circle is moved around the vertices are passed between the front and back parts, but it
+    // is always true that frontVertices.length + backVertices.length = SUBDIVISIONS
+    // As the circle is moved around the some of the frontVertices are the same as the ones on the
+    // frontFillVertices, but it is always true that frontVertices.length + number of non-front Vertices in
+    // frontFillVertices = SUBDIVISIONS
+    // The non-frontVertices are ones on the boundary circle.
+    // Similar for the back vertices. Initially the length of back/front FillVertices must be SUBDIVISIONS.
     for (let k = 0; k < Math.ceil(SUBDIVISIONS / 2); k++) {
       const angle = (k * Math.PI) / Math.ceil(SUBDIVISIONS / 2); // [0, pi)
-      frontVertices.push(
-        new Two.Vector(
-          SETTINGS.boundaryCircle.radius * Math.cos(angle),
-          SETTINGS.boundaryCircle.radius * Math.sin(angle)
-        )
-      );
-      backVertices.push(
-        new Two.Vector(
-          SETTINGS.boundaryCircle.radius * Math.cos(angle + Math.PI), // [pi, 2*pi)
-          SETTINGS.boundaryCircle.radius * Math.sin(angle + Math.PI)
-        )
-      );
-      glowingFrontVertices.push(
-        new Two.Vector(
-          SETTINGS.boundaryCircle.radius * Math.cos(angle),
-          SETTINGS.boundaryCircle.radius * Math.sin(angle)
-        )
-      );
-      glowingBackVertices.push(
-        new Two.Vector(
-          SETTINGS.boundaryCircle.radius * Math.cos(angle + Math.PI), // [pi, 2*pi)
-          SETTINGS.boundaryCircle.radius * Math.sin(angle + Math.PI)
-        )
-      );
+      const x = SETTINGS.boundaryCircle.radius * Math.cos(angle);
+      const x1 = SETTINGS.boundaryCircle.radius * Math.cos(angle + Math.PI);
+      const y = SETTINGS.boundaryCircle.radius * Math.sin(angle);
+      const y1 = SETTINGS.boundaryCircle.radius * Math.sin(angle + Math.PI);
+      frontVertices.push(new Two.Vector(x, y));
+      frontFillVertices.push(new Two.Vector(x, y), new Two.Vector(x1, y1));
+      backVertices.push(new Two.Vector(x1, y1));
+      backFillVertices.push(new Two.Vector(x, y), new Two.Vector(x1, y1));
+      glowingFrontVertices.push(new Two.Vector(x, y));
+      glowingBackVertices.push(new Two.Vector(x1, y1));
     }
     this.frontPart = new Two.Path(
       frontVertices,
@@ -140,6 +209,11 @@ export default class Circle extends Nodule {
     this.glowingFrontPart = new Two.Path(
       glowingFrontVertices,
       /*closed*/ false,
+      /*curve*/ false
+    );
+    this.frontFill = new Two.Path(
+      frontFillVertices,
+      /*closed*/ true,
       /*curve*/ false
     );
     this.backPart = new Two.Path(
@@ -152,10 +226,27 @@ export default class Circle extends Nodule {
       /*closed*/ false,
       /*curve*/ false
     );
+    this.backFill = new Two.Path(
+      backFillVertices,
+      /*closed*/ true,
+      /*curve*/ false
+    );
+
+    //TODO: remove the Nodule extension of Two.Group??
     this.add(this.backPart);
+    this.add(this.backFill);
     this.add(this.frontPart);
+    this.add(this.frontFill);
     this.add(this.glowingBackPart);
     this.add(this.glowingFrontPart);
+
+    // Set the styles that are always true
+    // The front/back parts have no fill because that is handled by the front/back fill
+    // The front/back fill have no stroke because that is handled by the front/back part
+    this.frontPart.noFill();
+    this.backPart.noFill();
+    this.frontFill.noStroke();
+    this.backFill.noStroke();
 
     this.originalVertices = [];
     frontVertices.forEach(v => {
@@ -186,15 +277,15 @@ export default class Circle extends Nodule {
     desiredXAxis.set(-this.center_.y, this.center_.x, 0).normalize();
     desiredYAxis.crossVectors(desiredZAxis, desiredXAxis);
 
-    // Set up the local coordinate from for the circle
+    // Set up the local coordinates from for the circle
     transformMatrix.makeBasis(desiredXAxis, desiredYAxis, desiredZAxis);
     // The circle plane is below the tangent plane
     const distanceFromOrigin = Math.cos(this.arcRadius);
 
-    // translate along the Z of the local coord frame
+    // translate along the Z of the local coordinate frame
     this.tmpMatrix.makeTranslation(0, 0, distanceFromOrigin * sphereRadius);
     transformMatrix.multiply(this.tmpMatrix);
-    // scale the circle on the XY-plane of the local coord frame
+    // scale the circle on the XY-plane of the local coordinate frame
     this.tmpMatrix.makeScale(this.projectedRadius, this.projectedRadius, 1);
     transformMatrix.multiply(this.tmpMatrix);
 
@@ -261,11 +352,220 @@ export default class Circle extends Nodule {
       this.glowingFrontPart.vertices.rotate(firstNeg);
     }
 
-    // A parts becomes closed when the other part vanishes
+    // Parts becomes closed when the other parts vanishes
     this.frontPart.closed = backLen === 0;
     this.backPart.closed = frontLen === 0;
     this.glowingFrontPart.closed = backLen === 0;
     this.glowingBackPart.closed = frontLen === 0;
+
+    //Now build the front/back fill objects based on the front/back parts
+
+    // The circle interior is only on the front of the sphere
+    if (backLen === 0 && this.arcRadius < Math.PI / 2) {
+      // In this case the frontFillVertices are the same as the frontVertices
+      this.frontFill.vertices.forEach((v, index) => {
+        v.x = this.frontPart.vertices[index].x;
+        v.y = this.frontPart.vertices[index].y;
+      });
+      // Only the front fill is displayed
+      (this.frontFill as any).visible = true;
+      (this.backFill as any).visible = false;
+    }
+
+    // The circle interior is split between front and back
+    if (backLen !== 0 && frontLen !== 0) {
+      //} && this.arcRadius < Math.PI / 2) {
+      //find the angular width of the part of the boundary circle to be copied
+      // Compute the angle from the positive x axis to the last frontPartVertex
+      const startAngle = Math.atan2(
+        this.frontPart.vertices[frontLen - 1].y,
+        this.frontPart.vertices[frontLen - 1].x
+      );
+
+      // Compute the angle from the positive x axis to the first frontPartVertex
+      const endAngle = Math.atan2(
+        this.frontPart.vertices[0].y,
+        this.frontPart.vertices[0].x
+      );
+
+      // Compute the angular width of the section of the boundary circle to add to the front/back fill
+      // This can be positive if traced counterclockwise or negative if traced clockwise( add 2 Pi to make positive)
+      let angularWidth = endAngle - startAngle;
+      if (angularWidth < 0) {
+        angularWidth += 2 * Math.PI;
+      }
+      //console.log(angularWidth);
+      // When tracing the boundary circle we start from fromVector = this.frontPart.vertices[frontLen - 1]
+      const fromVector = new Two.Vector(
+        this.frontPart.vertices[frontLen - 1].x,
+        this.frontPart.vertices[frontLen - 1].y
+      );
+      // then
+      // trace in the direction of a toVector that is perpendicular to this.frontPart.vertices[frontLen - 1]
+      // and points in the same direction as this.frontPart.vertices[0]
+      const toVector = new Two.Vector(
+        -this.frontPart.vertices[frontLen - 1].y,
+        this.frontPart.vertices[frontLen - 1].x
+      );
+      if (toVector.dot(this.frontPart.vertices[0]) < 0) {
+        toVector.multiplyScalar(-1);
+      }
+
+      // If the arcRadius is bigger than Pi/2 then reverse the toVector
+      if (this.arcRadius > Math.PI / 2) {
+        toVector.multiplyScalar(-1);
+      }
+
+      // Build the frontFill
+      // First copy the frontPart into the first part of the frontFill
+      this.frontFill.vertices.forEach((v, index) => {
+        if (index < frontLen) {
+          v.x = this.frontPart.vertices[index].x;
+          v.y = this.frontPart.vertices[index].y;
+        } else {
+          const angle =
+            (angularWidth / (SUBDIVISIONS - 1 - frontLen)) * (index - frontLen);
+          v.x = Math.cos(angle) * fromVector.x + Math.sin(angle) * toVector.x;
+          v.y = Math.cos(angle) * fromVector.y + Math.sin(angle) * toVector.y;
+        }
+      });
+
+      // Build the backFill
+      // First copy the backPart into the first part of the backFill
+      this.backFill.vertices.forEach((v, index) => {
+        if (index < backLen) {
+          v.x = this.backPart.vertices[backLen - 1 - index].x;
+          v.y = this.backPart.vertices[backLen - 1 - index].y;
+        } else {
+          const angle =
+            (angularWidth / (SUBDIVISIONS - 1 - backLen)) * (index - backLen);
+          v.x = Math.cos(angle) * fromVector.x + Math.sin(angle) * toVector.x;
+          v.y = Math.cos(angle) * fromVector.y + Math.sin(angle) * toVector.y;
+        }
+      });
+      console.log("front", frontLen, "back", backLen);
+
+      // Display front and back
+      (this.frontFill as any).visible = true;
+      (this.backFill as any).visible = true;
+    }
+
+    // The circle interior is only on the back of the sphere
+    if (frontLen === 0 && this.arcRadius < Math.PI / 2) {
+      // The circle interior is only on the back of the sphere
+      // In this case the backFillVertices are the same as the backVertices
+      this.backFill.vertices.forEach((v, index) => {
+        v.x = this.backPart.vertices[index].x;
+        v.y = this.backPart.vertices[index].y;
+      });
+      // Only the back fill is displayed
+      (this.frontFill as any).visible = false;
+      (this.backFill as any).visible = true;
+    }
+
+    // The circle interior covers the entire front half of the sphere and is a 'hole' on the back
+    if (frontLen === 0 && this.arcRadius > Math.PI / 2) {
+      // In this case set the frontFillVertices to the entire front of the sphere
+      this.frontFill.vertices.forEach((v, index) => {
+        const angle = (index / SUBDIVISIONS) * 2 * Math.PI;
+        v.x = SETTINGS.boundaryCircle.radius * Math.cos(angle);
+        v.y = SETTINGS.boundaryCircle.radius * Math.sin(angle);
+      });
+
+      // In this case the backFillVertices must trace out first the boundary circle and then
+      //  the circle, to trace an annular region.  To help with the rendering, start tracing
+      //  the boundary circle directly across from the vertex on the circle at index zero
+      const backStartTrace = Math.atan2(
+        this.backPart.vertices[0].y,
+        this.backPart.vertices[0].x
+      );
+
+      this.backFill.vertices.forEach((v, index) => {
+        if (index <= Math.floor(SUBDIVISIONS / 2) - 2) {
+          const angle = -((2 * index) / SUBDIVISIONS) * 2 * Math.PI; //must trace in the opposite direction on the back to render the annular region
+          v.x =
+            SETTINGS.boundaryCircle.radius * Math.cos(angle + backStartTrace);
+          v.y =
+            SETTINGS.boundaryCircle.radius * Math.sin(angle + backStartTrace);
+          //console.log(index, angle);
+        } else if (index == Math.floor(SUBDIVISIONS / 2) - 1) {
+          //make sure the last point on the boundary is the same as the first
+          v.x = SETTINGS.boundaryCircle.radius * Math.cos(0 + backStartTrace);
+          v.y = SETTINGS.boundaryCircle.radius * Math.sin(0 + backStartTrace);
+          //console.log(index, 0);
+        } else if (
+          Math.floor(SUBDIVISIONS / 2) <= index &&
+          index <= SUBDIVISIONS - 2
+        ) {
+          v.x = this.backPart.vertices[
+            2 * (index - Math.floor(SUBDIVISIONS / 2))
+          ].x;
+          v.y = this.backPart.vertices[
+            2 * (index - Math.floor(SUBDIVISIONS / 2))
+          ].y;
+          //console.log(index, Math.atan2(v.y, v.x));
+        } else if (index == SUBDIVISIONS - 1) {
+          // make sure the last point on the (inner) circle is the same as the first
+          v.x = this.backPart.vertices[0].x;
+          v.y = this.backPart.vertices[0].y;
+          //console.log(index, Math.atan2(v.y, v.x));
+        }
+      });
+
+      // Both front/back fill are displayed
+      (this.frontFill as any).visible = true;
+      (this.backFill as any).visible = true;
+    }
+
+    // The circle interior covers the entire back half of the sphere and is a 'hole' on the front
+    if (backLen === 0 && this.arcRadius > Math.PI / 2) {
+      // In this case set the frontFillVertices to the entire front of the sphere
+      this.backFill.vertices.forEach((v, index) => {
+        const angle = (index / SUBDIVISIONS) * 2 * Math.PI;
+        v.x = SETTINGS.boundaryCircle.radius * Math.cos(angle);
+        v.y = SETTINGS.boundaryCircle.radius * Math.sin(angle);
+      });
+
+      // In this case the backFillVertices must trace out first the boundary circle and then
+      //  the circle, to trace an annular region.  To help with the rendering, start tracing
+      //  the boundary circle directly across from the vertex on the circle at index zero
+      const frontStartTrace = Math.atan2(
+        this.frontPart.vertices[0].y,
+        this.frontPart.vertices[0].x
+      );
+
+      this.frontFill.vertices.forEach((v, index) => {
+        if (index <= Math.floor(SUBDIVISIONS / 2) - 2) {
+          const angle = ((2 * index) / SUBDIVISIONS) * 2 * Math.PI;
+          v.x =
+            SETTINGS.boundaryCircle.radius * Math.cos(angle + frontStartTrace);
+          v.y =
+            SETTINGS.boundaryCircle.radius * Math.sin(angle + frontStartTrace);
+        } else if (index == Math.floor(SUBDIVISIONS / 2) - 1) {
+          //make sure the last point on the boundary is the same as the first
+          v.x = SETTINGS.boundaryCircle.radius * Math.cos(0 + frontStartTrace);
+          v.y = SETTINGS.boundaryCircle.radius * Math.sin(0 + frontStartTrace);
+        } else if (
+          Math.floor(SUBDIVISIONS / 2) <= index &&
+          index <= SUBDIVISIONS - 2
+        ) {
+          v.x = this.frontPart.vertices[
+            2 * (index - Math.floor(SUBDIVISIONS / 2))
+          ].x;
+          v.y = this.frontPart.vertices[
+            2 * (index - Math.floor(SUBDIVISIONS / 2))
+          ].y;
+        } else if (index == SUBDIVISIONS - 1) {
+          // make sure the last point on the (inner) circle is the same as the first
+          v.x = this.frontPart.vertices[0].x;
+          v.y = this.frontPart.vertices[0].y;
+        }
+      });
+
+      // Both front/back fill are displayed
+      (this.frontFill as any).visible = true;
+      (this.backFill as any).visible = true;
+    }
   }
 
   set centerPoint(position: Vector3) {
@@ -322,8 +622,8 @@ export default class Circle extends Nodule {
   }
 
   /**
-   * This method is used to copy the temporary circle created with the Circle Tool into a
-   * permanent one in the scene.
+   * This method is used to copy the temporary circle created with the Circle Tool (in the midground) into a
+   * permanent one in the scene (in the foreground).
    */
   clone(): this {
     // Use the constructor for this class to create a template to copy over the
@@ -358,6 +658,17 @@ export default class Circle extends Nodule {
     dup.backPart.vertices.forEach((v, pos) => {
       v.copy(this.backPart.vertices[pos]);
     });
+
+    //Clone the front/back fill
+    dup.frontFill.vertices.forEach((v, pos) => {
+      v.copy(this.frontFill.vertices[pos]);
+    });
+    dup.backFill.vertices.forEach((v, pos) => {
+      v.copy(this.backFill.vertices[pos]);
+    });
+    //Clone the visibility of the front/back fill
+    (dup.frontFill as any).visible = (this.frontFill as any).visible;
+    (dup.backFill as any).visible = (this.backFill as any).visible;
 
     // Duplicate the glowing parts
     dup.glowingFrontPart.closed = this.glowingFrontPart.closed;
@@ -397,17 +708,23 @@ export default class Circle extends Nodule {
   addToLayers(layers: Two.Group[]): void {
     // These must always be executed even if the front/back part is empty
     // Otherwise when they become non-empty they are not displayed
+    this.frontFill.addTo(layers[LAYER.foreground]);
     this.frontPart.addTo(layers[LAYER.foreground]);
     this.glowingFrontPart.addTo(layers[LAYER.foregroundGlowing]);
+    this.backFill.addTo(layers[LAYER.foreground]);
     this.backPart.addTo(layers[LAYER.background]);
     this.glowingBackPart.addTo(layers[LAYER.backgroundGlowing]);
   }
+
   removeFromLayers(/*layers: Two.Group[]*/): void {
     this.frontPart.remove();
+    this.frontFill.remove();
     this.glowingFrontPart.remove();
     this.backPart.remove();
+    this.backFill.remove();
     this.glowingBackPart.remove();
   }
+
   adjustSizeForZoom(factor: number): void {
     throw new Error("Method not implemented.");
   }
@@ -424,31 +741,14 @@ export default class Circle extends Nodule {
         this.frontPart.stroke = SETTINGS.circle.temp.strokeColor.front;
         this.backPart.stroke = SETTINGS.circle.temp.strokeColor.back;
         if (SETTINGS.circle.temp.fillColor.front === "noFill") {
-          this.frontPart.noFill();
+          this.frontFill.noFill();
         } else {
-          const stop1 = new Two.Stop(
-            0,
-            "#FFFFFF",
-            SETTINGS.circle.temp.opacity.front
-          );
-          const stop2 = new Two.Stop(
-            2 * SETTINGS.boundaryCircle.radius,
-            SETTINGS.circle.temp.fillColor.front,
-            SETTINGS.circle.temp.opacity.front
-          );
-          const gradient = new Two.RadialGradient(
-            -SETTINGS.boundaryCircle.radius / 3,
-            SETTINGS.boundaryCircle.radius / 3,
-            2 * SETTINGS.boundaryCircle.radius,
-            [stop1, stop2]
-          );
-
-          this.frontPart.fill = gradient;
+          this.frontFill.fill = this.tempFrontGradient;
         }
         if (SETTINGS.circle.temp.fillColor.back === "noFill") {
-          this.backPart.noFill();
+          this.backFill.noFill();
         } else {
-          this.backPart.fill = SETTINGS.circle.temp.fillColor.back;
+          this.backFill.fill = this.tempBackGradient;
         }
         // The temporary display is never highlighted
         (this.glowingFrontPart as any).visible = false;
@@ -459,33 +759,21 @@ export default class Circle extends Nodule {
       default: {
         //Set the default styles of the front/back/glowing/drawn parts
         // Fill Color
-        if (SETTINGS.circle.drawn.fillColor.front === "snoFill") {
-          this.frontPart.noFill();
+        if (SETTINGS.circle.drawn.fillColor.front === "noFill") {
+          //TODO: Is it more efficient to turn off the display or set to noFill?
+          (this.frontFill as any).visible = false;
+          //this.frontFill.noFill();
         } else {
-          const stop1 = new Two.Stop(
-            0,
-            "#FFFFFF",
-            SETTINGS.circle.temp.opacity.front
-          );
-          const stop2 = new Two.Stop(
-            2 * SETTINGS.boundaryCircle.radius,
-            SETTINGS.circle.temp.fillColor.front,
-            SETTINGS.circle.temp.opacity.front
-          );
-          const gradient = new Two.RadialGradient(
-            -SETTINGS.boundaryCircle.radius / 3,
-            SETTINGS.boundaryCircle.radius / 3,
-            2 * SETTINGS.boundaryCircle.radius,
-            [stop1, stop2]
-          );
-
-          this.frontPart.fill = gradient;
+          this.frontFill.fill = this.frontGradient;
           //this.frontPart.fill = SETTINGS.circle.drawn.fillColor.front;
         }
         if (SETTINGS.circle.drawn.fillColor.back === "noFill") {
-          this.backPart.noFill();
+          //TODO: Is it more efficient to turn off the display or set to noFill?
+          (this.backFill as any).visible = false;
+          //this.backFill.noFill();
         } else {
-          this.backPart.fill = SETTINGS.circle.drawn.fillColor.back;
+          this.backFill.fill = this.backGradient;
+          //this.backFill.fill = SETTINGS.circle.drawn.fillColor.back;
         }
         this.glowingBackPart.noFill(); // the glowing circle is never filled
         this.glowingFrontPart.noFill(); // the glowing circle is never filled
