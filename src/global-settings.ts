@@ -5,8 +5,8 @@ export default {
       x: -250 / 3,
       y: 250 / 3
     },
-    backGray: "#CFCFCF", // The antipode of the light source on the back is this shade of gray
-    frontWhite: "#FFFFFF" // The light source location on the front is this shade of gray (white)
+    frontWhite: "hsla(0, 0%, 90%, 0.2)", // The light source location on the front is this shade of gray (white)
+    backGray: "hsla(0, 0%, 85%, 0.2)" // The antipode of the light source on the back is this shade of gray
   },
   boundaryCircle: {
     radius: 250 /* in pixels */,
@@ -82,8 +82,8 @@ export default {
     //The properties of the circle when it is drawn on the sphereCanvas and is not glowing
     drawn: {
       fillColor: {
-        front: "hsla(217, 94%, 84%, 0.3)", //"noFill",
-        back: "hsla(217, 94%, 84%, 0.3)" //"noFill"
+        front: "hsla(0, 0%, 90%, 0.3)", //"#FF0000", //"noFill",
+        back: "hsla(0, 0%, 80%, 0.3)" //"noFill"
       },
       strokeColor: {
         front: "#4287f5", // { r: 66, g: 135, b: 245 },
