@@ -7,7 +7,7 @@ import VueComponent from "vue";
 import { Prop, Component, Watch } from "vue-property-decorator";
 import Two from "two.js";
 import SETTINGS, { LAYER } from "@/global-settings";
-import { Matrix4, Vector2 } from "three";
+import { Matrix4 } from "three";
 import { State } from "vuex-class";
 import { ToolStrategy } from "@/eventHandlers/ToolStrategy";
 import PointHandler from "@/eventHandlers/PointHandler";
@@ -15,14 +15,10 @@ import LineHandler from "@/eventHandlers/LineHandler";
 import SegmentHandler from "@/eventHandlers/SegmentHandler";
 import CircleHandler from "@/eventHandlers/CircleHandler";
 import RotateHandler from "@/eventHandlers/RotateHandler";
+import PanZoomHandler, { ZoomMode } from "@/eventHandlers/PanZoomHandler"
 import { PositionVisitor } from "@/visitors/PositionVisitor";
-import { SEPoint } from "@/models/SEPoint";
-import { SELine } from "@/models/SELine";
-import { SECircle } from "@/models/SECircle";
 import EventBus from "@/eventHandlers/EventBus";
-import { SESegment } from "@/models/SESegment";
 const tmpMatrix1 = new Matrix4();
-const tmpMatrix2 = new Matrix4();
 @Component({})
 export default class SphereFrame extends VueComponent {
   @Prop()
@@ -47,11 +43,9 @@ export default class SphereFrame extends VueComponent {
   private segmentTool!: SegmentHandler;
   private circleTool!: CircleHandler;
   private rotateTool!: RotateHandler;
+  private zoomTool!: PanZoomHandler;
   private visitor!: PositionVisitor;
   private layers: Two.Group[] = [];
-
-  private startDragPosition = new Vector2();
-  private isDragging = false;
 
   constructor() {
     super();
@@ -121,6 +115,7 @@ export default class SphereFrame extends VueComponent {
     // );
     this.visitor = new PositionVisitor();
     EventBus.listen("sphere-rotate", this.handleSphereRotation);
+    EventBus.listen("zoom-updated", this.zoomer);
   }
 
   /** Apply the affine transform (m) to the entire TwoJS SVG tree! */
@@ -146,7 +141,6 @@ export default class SphereFrame extends VueComponent {
     this.twoInstance.appendTo(this.$refs.canvas);
     this.twoInstance.play();
     // this.sphereCanvas.translation.set(this.canvasSize / 2, this.canvasSize / 2);
-    this.$refs.canvas.addEventListener("wheel", this.zoomer);
     this.$refs.canvas.addEventListener("mousemove", this.handleMouseMoved);
     this.$refs.canvas.addEventListener("mousedown", this.handleMousePressed);
     this.$refs.canvas.addEventListener("mouseup", this.handleMouseReleased);
@@ -164,10 +158,10 @@ export default class SphereFrame extends VueComponent {
       this.layers,
       this.CSSTransformMat
     );
+    this.zoomTool = new PanZoomHandler(this.$refs.canvas);
   }
 
   beforeDestroy(): void {
-    this.$refs.canvas.removeEventListener("wheel", this.zoomer);
     this.$refs.canvas.removeEventListener("mousemove", this.handleMouseMoved);
     this.$refs.canvas.removeEventListener("mousedown", this.handleMousePressed);
     this.$refs.canvas.removeEventListener("mouseup", this.handleMouseReleased);
@@ -176,6 +170,7 @@ export default class SphereFrame extends VueComponent {
 
   @Watch("canvasSize")
   onCanvasResize(size: number): void {
+    console.debug("onCanvasResize");
     (this.twoInstance.renderer as any).setSize(size, size);
     // Move the origin of all layers to the center of the viewport
     this.layers.forEach(z => {
@@ -194,122 +189,27 @@ export default class SphereFrame extends VueComponent {
     this.viewTransform = tmpMatrix1;
   }
 
-  zoomer(e: MouseWheelEvent): void {
-    if (e.metaKey) {
-      e.preventDefault();
-      let scrollFraction = e.deltaY / this.canvasSize;
-      if (e.ctrlKey) {
-        // Flip the sign for pinch/zoom gestures on Mac trackpad
-        scrollFraction *= -1;
-      }
-
-      // Limit to 10% change in magnification
-      if (Math.abs(scrollFraction) > 0.1)
-        scrollFraction = 0.1 * Math.sign(scrollFraction);
-
-      const scaleFactor = 1 + scrollFraction;
-      // Limit zoom-out to 0.4x magnification factor
-      if (scaleFactor < 1 && this.magnificationFactor < 0.4) return;
-
-      // Limit zoom-in to 10x magnification factor
-      if (scaleFactor > 1 && this.magnificationFactor > 10) return;
-      this.magnificationFactor *= scaleFactor;
-      const sphereRatio =
-        (this.canvasSize / 2 - 16) / SETTINGS.boundaryCircle.radius;
-      EventBus.fire("magnification-updated", {
-        factor: this.magnificationFactor * sphereRatio
-      });
-      const target = (e.currentTarget || e.target) as HTMLDivElement;
-      const boundingRect = target.getBoundingClientRect();
-      const offsetX = e.clientX - boundingRect.left;
-      const offsetY = e.clientY - boundingRect.top;
-
-      // The origin of translation is the center of the canvas
-      const tx = offsetX - this.canvasSize / 2;
-      const ty = offsetY - this.canvasSize / 2;
-      // console.debug("Zoom info", scrollFraction.toFixed(2), scaleFactor.toFixed(2), this.magnificationFactor.toFixed(2));
-      const mag = this.magnificationFactor;
-
-      // Update the zoom matrix
-      if (mag > 1) {
-        // Zoom from the current mouse position requires a composite transform
-        this.zoomMatrix.identity();
-        tmpMatrix1.makeTranslation(tx, ty, 0);
-        this.zoomMatrix.multiply(tmpMatrix1);
-        tmpMatrix1.makeScale(mag, mag, mag);
-        this.zoomMatrix.multiply(tmpMatrix1);
-        tmpMatrix1.makeTranslation(-tx, -ty, 0);
-        this.zoomMatrix.multiply(tmpMatrix1);
-      } else {
-        // Zoom from the origin when magnification factor is less than 1
-        this.sphereTransformMat.elements[12] = 0;
-        this.sphereTransformMat.elements[13] = 0;
-        this.sphereTransformMat.elements[14] = 0;
-        this.zoomMatrix.makeScale(mag, mag, mag);
-      }
-      // Construct the view matrix
-      tmpMatrix1.multiplyMatrices(this.sphereTransformMat, this.zoomMatrix);
-      this.viewTransform = tmpMatrix1; // Use the setter
-    }
+  private zoomer(mat: Matrix4): void {
+    console.debug("New zoom matrix", mat.elements);
+    tmpMatrix1.multiplyMatrices(this.sphereTransformMat, mat);
+    this.viewTransform = tmpMatrix1; // Use the setter
   }
 
   handleMouseMoved(e: MouseEvent): void {
     // WHen currentTool is NULL, currentTool? resolves to no action
-    if (e.altKey) {
-      // Handle view panning
-      if (this.isDragging && this.magnificationFactor > 1) {
-        const target = (e.currentTarget || e.target) as HTMLDivElement;
-        const boundingRect = target.getBoundingClientRect();
-        const offsetX = e.clientX - boundingRect.left;
-        const offsetY = e.clientY - boundingRect.top;
-        const dx = offsetX - this.startDragPosition.x;
-        const dy = offsetY - this.startDragPosition.y;
-        tmpMatrix1.makeTranslation(dx, dy, 0);
-        tmpMatrix2.copy(this.sphereTransformMat);
-        tmpMatrix2.multiply(tmpMatrix1);
-        tmpMatrix2.multiply(this.zoomMatrix);
-        this.viewTransform = tmpMatrix2;
-
-      }
-
-    } else
-      this.currentTool?.mouseMoved(e);
+    this.currentTool?.mouseMoved(e);
   }
 
   handleMousePressed(e: MouseEvent): void {
-    if (e.altKey) {
-      this.isDragging = true;
-      const target = (e.currentTarget || e.target) as HTMLDivElement;
-      const boundingRect = target.getBoundingClientRect();
-      const offsetX = e.clientX - boundingRect.left;
-      const offsetY = e.clientY - boundingRect.top;
-      this.startDragPosition.set(offsetX, offsetY);
-    }
-    else
-      this.currentTool?.mousePressed(e);
+    this.currentTool?.mousePressed(e);
   }
 
   handleMouseReleased(e: MouseEvent): void {
     // WHen currentTool is NULL, the following line does nothing
-
-    this.isDragging = false;
-    if (e.altKey && this.magnificationFactor > 1) {
-      const target = (e.currentTarget || e.target) as HTMLDivElement;
-      const boundingRect = target.getBoundingClientRect();
-      const offsetX = e.clientX - boundingRect.left;
-      const offsetY = e.clientY - boundingRect.top;
-      const dx = offsetX - this.startDragPosition.x;
-      const dy = offsetY - this.startDragPosition.y;
-      tmpMatrix1.makeTranslation(dx, dy, 0);
-      this.sphereTransformMat.multiply(tmpMatrix1);
-      tmpMatrix2.multiplyMatrices(this.sphereTransformMat, this.zoomMatrix);
-      this.viewTransform = tmpMatrix2;
-    } else
-      this.currentTool?.mouseReleased(e);
+    this.currentTool?.mouseReleased(e);
   }
 
   handleMouseLeave(e: MouseEvent): void {
-    this.isDragging = false;
     this.currentTool?.mouseLeave(e);
   }
 
@@ -338,6 +238,14 @@ export default class SphereFrame extends VueComponent {
         break;
       case "circle":
         this.currentTool = this.circleTool;
+        break;
+      case "zoomIn":
+        this.currentTool = this.zoomTool;
+        this.zoomTool.zoomMode = ZoomMode.MAGNIFY;
+        break;
+      case "zoomOut":
+        this.currentTool = this.zoomTool;
+        this.zoomTool.zoomMode = ZoomMode.MINIFY;
         break;
       default:
         this.currentTool = null;

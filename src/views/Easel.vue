@@ -1,11 +1,6 @@
 <template>
-  <split-pane
-    split="vertical"
-    :min-percent="15"
-    :max-percent="35"
-    :default-percent="toolboxMinified ? 5 : 20"
-    @resize="dividerMoved"
-  >
+  <split-pane split="vertical" :min-percent="15" :max-percent="35"
+    :default-percent="toolboxMinified ? 5 : 20" @resize="dividerMoved">
     <!-- Use the left page for the toolbox -->
     <template slot="paneL">
       <div>
@@ -23,12 +18,9 @@
       <v-container fluid ref="rightPanel">
         <v-row>
           <v-col cols="12">
-            <v-btn-toggle class="accent">
-              <v-tooltip
-                bottom
-                :open-delay="toolTipOpenDelay"
-                :close-delay="toolTipCloseDelay"
-              >
+            <v-btn-toggle ref="cmdControl" class="accent">
+              <v-tooltip bottom :open-delay="toolTipOpenDelay"
+                :close-delay="toolTipCloseDelay">
                 <!-- TODO: Move these edit controls to the the panel containing the sphere. 
                 When not available they should be greyed out (i.e. disabled).-->
                 <template v-slot:activator="{ on }">
@@ -38,11 +30,8 @@
                 </template>
                 <span>{{ $t("main.UndoLastAction") }}</span>
               </v-tooltip>
-              <v-tooltip
-                bottom
-                :open-delay="toolTipOpenDelay"
-                :close-delay="toolTipCloseDelay"
-              >
+              <v-tooltip bottom :open-delay="toolTipOpenDelay"
+                :close-delay="toolTipCloseDelay">
                 <template v-slot:activator="{ on }">
                   <v-btn icon @click="redoAction" v-on="on">
                     <v-icon>mdi-redo</v-icon>
@@ -54,16 +43,29 @@
           </v-col>
           <v-col cols="12">
             <v-row justify="center" class="pb-1">
-              <v-responsive
-                :aspect-ratio="1"
+              <v-responsive :aspect-ratio="1"
                 :max-height="currentCanvasSize"
-                :max-width="currentCanvasSize"
-                ref="responsiveBox"
-                id="responsiveBox"
-                class="pa-0"
-              >
-                <sphere-frame :canvas-size="currentCanvasSize"></sphere-frame>
+                :max-width="currentCanvasSize" ref="responsiveBox"
+                id="responsiveBox" class="pa-0">
+                <sphere-frame :canvas-size="currentCanvasSize">
+                </sphere-frame>
               </v-responsive>
+            </v-row>
+          </v-col>
+          <v-col cols="12">
+            <v-row justify="end" class="mx-2">
+              <v-btn-toggle class="accent">
+                <v-btn icon @click="enableZoomIn">
+                  <v-icon>mdi-magnify-plus-outline</v-icon>
+                </v-btn>
+                <v-btn icon @click="enableZoomOut">
+                  <v-icon>mdi-magnify-minus-outline</v-icon>
+                </v-btn>
+                <v-btn icon>
+                  <v-icon>mdi-fit-to-page-outline</v-icon>
+                </v-btn>
+              </v-btn-toggle>
+
             </v-row>
           </v-col>
         </v-row>
@@ -99,6 +101,7 @@ export default class Easel extends Vue {
 
   $refs!: {
     responsiveBox: VueComponent;
+    cmdControl: VueComponent;
   };
 
   constructor() {
@@ -106,6 +109,12 @@ export default class Easel extends Vue {
     EventBus.listen("magnification-updated", this.resizePlottables);
   }
 
+  private enableZoomIn(): void {
+    this.$store.commit("setEditMode", "zoomIn");
+  }
+  private enableZoomOut(): void {
+    this.$store.commit("setEditMode", "zoomOut");
+  }
   private adjustSize(): void {
     console.info("AdjustSize()");
     this.availHeight =
@@ -116,7 +125,9 @@ export default class Easel extends Vue {
     if (tmp) {
       let canvasPanel = tmp.$el as HTMLElement;
       const rightBox = canvasPanel.getBoundingClientRect();
-      this.currentCanvasSize = this.availHeight - rightBox.top;
+      const cmdElement = this.$refs.cmdControl.$el;
+      const cmdBox = cmdElement.getBoundingClientRect();
+      this.currentCanvasSize = this.availHeight - rightBox.top - cmdBox.height;
     }
     // console.debug(
     //   `Available height ${this.availHeight.toFixed(
