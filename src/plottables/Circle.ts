@@ -162,15 +162,15 @@ export default class Circle extends Nodule {
   private originalVertices: Vector2[];
 
   // for debugging only
-  private majorLine: Two.Line;
+  //private majorLine: Two.Line;
 
   constructor(center?: Vector3, arcRadius?: number) {
     super();
 
     // For debugging
     // Draw the segment on the positive X-axis of the circle/ellipse
-    this.majorLine = new Two.Line(0, 0, SETTINGS.boundaryCircle.radius, 0);
-    this.add(this.majorLine);
+    //this.majorLine = new Two.Line(0, 0, SETTINGS.boundaryCircle.radius, 0);
+    //this.add(this.majorLine);
 
     // Create the initial front and back vertices (glowing/not/fill)
     const frontVertices: Two.Vector[] = [];
@@ -443,7 +443,7 @@ export default class Circle extends Nodule {
           v.y = Math.cos(angle) * fromVector.y + Math.sin(angle) * toVector.y;
         }
       });
-      console.log("front", frontLen, "back", backLen);
+      //console.log("front", frontLen, "back", backLen);
 
       // Display front and back
       (this.frontFill as any).visible = true;
@@ -761,16 +761,16 @@ export default class Circle extends Nodule {
         // Fill Color
         if (SETTINGS.circle.drawn.fillColor.front === "noFill") {
           //TODO: Is it more efficient to turn off the display or set to noFill?
-          (this.frontFill as any).visible = false;
-          //this.frontFill.noFill();
+          //(this.frontFill as any).visible = false;
+          this.frontFill.noFill();
         } else {
           this.frontFill.fill = this.frontGradient;
           //this.frontPart.fill = SETTINGS.circle.drawn.fillColor.front;
         }
         if (SETTINGS.circle.drawn.fillColor.back === "noFill") {
           //TODO: Is it more efficient to turn off the display or set to noFill?
-          (this.backFill as any).visible = false;
-          //this.backFill.noFill();
+          //(this.backFill as any).visible = false;
+          this.backFill.noFill();
         } else {
           this.backFill.fill = this.backGradient;
           //this.backFill.fill = SETTINGS.circle.drawn.fillColor.back;
