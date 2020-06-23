@@ -22,20 +22,28 @@ export default class MoveHandler extends SelectionHandler {
   mouseMoved(event: MouseEvent) {
     super.mouseMoved(event);
     if (this.isDragging) {
+      tmpVector.crossVectors(this.prevSpherePoint, this.currentSpherePoint);
+      const rotAngle =
+        this.prevSpherePoint.angleTo(this.currentSpherePoint) *
+        Math.sign(tmpVector.z);
+      this.prevSpherePoint.copy(this.currentSpherePoint);
       if (this.moveTarget instanceof SEPoint) {
         this.moveTarget.positionOnSphere = this.currentSpherePoint;
       } else if (this.moveTarget instanceof SELine) {
-        tmpVector.crossVectors(this.prevSpherePoint, this.currentSpherePoint);
-        const rotAngle =
-          this.prevSpherePoint.angleTo(this.currentSpherePoint) *
-          Math.sign(tmpVector.z);
-        this.prevSpherePoint.copy(this.currentSpherePoint);
         tmpMatrix.makeRotationAxis(this.moveTarget.startPoint, rotAngle);
         tmpNormal.getNormalMatrix(tmpMatrix);
         tmpVector.copy(this.moveTarget.normalDirection);
         tmpVector.applyMatrix4(tmpMatrix);
         this.moveTarget.normalDirection = tmpVector;
+
+        tmpVector.copy(this.moveTarget.startPoint);
+        tmpVector.applyMatrix4(tmpMatrix);
+        this.moveTarget.startPoint = tmpVector;
+        tmpVector.copy(this.moveTarget.endPoint);
+        tmpVector.applyMatrix4(tmpMatrix);
+        this.moveTarget.endPoint = tmpVector;
       }
+      this.moveTarget?.update();
     }
   }
 

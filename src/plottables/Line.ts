@@ -20,6 +20,7 @@ export default class Line extends Nodule {
   private oldBackStroke: Two.Color = "";
   private normalDirection: Vector3;
   private start_ = new Vector3();
+  private end_ = new Vector3();
   private tmpVector: Vector3;
   private desiredXAxis = new Vector3();
   private desiredYAxis = new Vector3();
@@ -208,16 +209,31 @@ export default class Line extends Nodule {
 
   set startPoint(pos: Vector3) {
     this.start_.copy(pos);
+    this.normalDirection.crossVectors(this.start_, this.end_).normalize();
+    this.deformIntoEllipse();
   }
 
   get startPoint(): Vector3 {
     return this.start_;
   }
+
+  set endPoint(pos: Vector3) {
+    this.end_.copy(pos);
+    this.normalDirection.crossVectors(this.start_, this.end_).normalize();
+    this.deformIntoEllipse();
+  }
+
+  get endPoint(): Vector3 {
+    return this.end_;
+  }
+
   // It looks like we have to define our own clone() function
   // The builtin clone() does not seem to work correctly
   clone(): this {
     const dup = new Line();
     dup.name = this.name;
+    dup.start_.copy(this.start_);
+    dup.end_.copy(this.end_);
     // dup.start.copy(this.start);
     dup.normalDirection.copy(this.normalDirection);
     dup.rotation = this.rotation;

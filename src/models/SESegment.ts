@@ -3,6 +3,7 @@ import Segment from "@/plottables/Segment";
 import { Vector3 } from "three";
 import { Visitable } from "@/visitors/Visitable";
 import { Visitor } from "@/visitors/Visitor";
+import { SEPoint } from "./SEPoint";
 
 const tmpVec1 = new Vector3();
 const tmpVec2 = new Vector3();
@@ -13,15 +14,19 @@ let SEGMENT_COUNT = 0;
  */
 export class SESegment extends SENodule implements Visitable {
   public ref: Segment;
+  private startAt: SEPoint;
+  private endAt: SEPoint;
 
   /**
    *
    * @param s plottable (TwoJS) segment associated with this segment
    */
-  constructor(s: Segment) {
+  constructor(s: Segment, start: SEPoint, end: SEPoint) {
     super();
     this.ref = s;
     s.owner = this;
+    this.startAt = start;
+    this.endAt = end;
     SEGMENT_COUNT++;
     this.name = `Ls-${SEGMENT_COUNT}`;
   }
@@ -90,6 +95,10 @@ export class SESegment extends SENodule implements Visitable {
   }
 
   public update(): void {
-    throw new Error("Method not implemented.");
+    console.debug("Updating segment", this.name);
+    this.ref.startPoint = this.startAt.positionOnSphere;
+    this.ref.endPoint = this.endAt.positionOnSphere;
+    this.setOutOfDate(false);
+    this.updateKids();
   }
 }

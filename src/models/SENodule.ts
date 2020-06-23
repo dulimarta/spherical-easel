@@ -121,7 +121,7 @@ export abstract class SENodule {
     <SENodule>.updateNow()
     is asking does <SENodule> need to be updated? If there is a parent outOfDate, then <SENodule> should 
     *not* be updated now. It should wait until *all* parents are not outOfDate.  */
-  public updateNow() {
+  public updateNow(): boolean {
     this.parents.forEach(item => {
       if (item.getOutOfDate()) {
         return false;
@@ -139,14 +139,14 @@ export abstract class SENodule {
   }
 
   /* Kids of the current SENodule are updated  */
-  public updateKids() {
+  public updateKids(): void {
     this.kids.forEach(item => {
       item.update();
     });
   }
 
   //Getters and Setters
-  public getExists() {
+  public getExists(): boolean {
     return this.exists;
   }
 

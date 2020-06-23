@@ -126,7 +126,7 @@ export default class LineHandler extends SelectionHandler {
       lineGroup
         .addCommand(
           new AddLineCommand({
-            line: new SELine(newLine),
+            line: new SELine(newLine, this.startPoint, this.endPoint),
             startPoint: this.startPoint,
             endPoint: this.endPoint
           })

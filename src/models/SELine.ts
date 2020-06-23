@@ -3,12 +3,15 @@ import Line from "@/plottables/Line";
 import { Vector3 } from "three";
 import { Visitable } from "@/visitors/Visitable";
 import { Visitor } from "@/visitors/Visitor";
+import { SEPoint } from "./SEPoint";
 
 const tmpVec1 = new Vector3();
 const tmpVec2 = new Vector3();
 let LINE_COUNT = 0;
 export class SELine extends SENodule implements Visitable {
   public ref: Line;
+  private start: SEPoint;
+  private end: SEPoint;
 
   /**
    *
@@ -16,9 +19,11 @@ export class SELine extends SENodule implements Visitable {
    * @param start
    * @param end
    */
-  constructor(l: Line) {
+  constructor(l: Line, start: SEPoint, end: SEPoint) {
     super();
     this.ref = l;
+    this.start = start;
+    this.end = end;
     l.owner = this;
     LINE_COUNT++;
     this.name = `Li-${LINE_COUNT}`;
@@ -40,6 +45,18 @@ export class SELine extends SENodule implements Visitable {
     return this.ref.startPoint;
   }
 
+  set startPoint(pos: Vector3) {
+    this.ref.startPoint = pos;
+  }
+
+  get endPoint(): Vector3 {
+    return this.ref.endPoint;
+  }
+
+  set endPoint(pos: Vector3) {
+    this.ref.endPoint = pos;
+  }
+
   public isHitAt(spherePos: Vector3): boolean {
     // Is the unit vector to the point is perpendicular to the circle normal?
     return Math.abs(spherePos.dot(this.ref.orientation)) < 1e-2;
@@ -50,6 +67,16 @@ export class SELine extends SENodule implements Visitable {
   }
 
   public update(): void {
-    throw new Error("Method not implemented.");
+    // console.debug(
+    //   "Updating SELine",
+    //   this.name,
+    //   "start SEPoint at",
+    //   this.start.positionOnSphere.toFixed(1),
+    //   "end SEPoint at",
+    //   this.end.positionOnSphere.toFixed(1)
+    // );
+    this.ref.startPoint = this.start.positionOnSphere;
+    this.ref.endPoint = this.end.positionOnSphere;
+    this.setOutOfDate(false);
   }
 }
