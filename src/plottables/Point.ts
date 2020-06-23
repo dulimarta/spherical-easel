@@ -90,6 +90,8 @@ export default class Point extends Nodule {
   }
   set position(v: Vector3) {
     this._pos.copy(v);
+    if (v.z < 0) this.backNormalStyle();
+    else this.frontNormalStyle();
     this.translation
       .set(v.x, v.y)
       .multiplyScalar(SETTINGS.boundaryCircle.radius);
