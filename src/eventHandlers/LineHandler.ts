@@ -103,6 +103,7 @@ export default class LineHandler extends SelectionHandler {
       // this.line.endPoint = this.currentSpherePoint;
       // this.endV3Point.copy(this.currentPoint);
       const newLine = this.line.clone(); // true:recursive clone
+      newLine.startPoint = this.startPosition;
       const lineGroup = new CommandGroup();
       if (this.startPoint === null) {
         // Starting point landed on an open space

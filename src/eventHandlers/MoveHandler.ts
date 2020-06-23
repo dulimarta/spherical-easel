@@ -3,14 +3,18 @@
 import SelectionHandler from "./SelectionHandler";
 // import SETTINGS from "@/global-settings";
 import Two from "two.js";
-import { Matrix4 } from "three";
+import { Matrix4, Vector3, Matrix3 } from "three";
 import { SEPoint } from "@/models/SEPoint";
 import { SENodule } from "@/models/SENodule";
-
+import { SELine } from "@/models/SELine";
+const tmpMatrix = new Matrix4();
+const tmpNormal = new Matrix3();
+const tmpVector = new Vector3();
 export default class MoveHandler extends SelectionHandler {
   private isDragging = false;
   private moveTarget: SENodule | null = null;
-
+  private moveFrom = new Vector3();
+  private prevSpherePoint = new Vector3();
   constructor(layers: Two.Group[], transformMatrix: Matrix4) {
     super(layers, transformMatrix);
   }
@@ -20,23 +24,17 @@ export default class MoveHandler extends SelectionHandler {
     if (this.isDragging) {
       if (this.moveTarget instanceof SEPoint) {
         this.moveTarget.positionOnSphere = this.currentSpherePoint;
-        // this.moveTarget.position.copy(this.currentPoint);
-        // Update all lines having this point as start point
-        // vtx.startOf.forEach(z => {
-        //   z.ref.startV3Point = this.currentPoint;
-        // });
-        // // Update all lines having this point as end point
-        // vtx.endOf.forEach(z => {
-        //   // z.ref.endV3Point = this.currentPoint;
-        // });
-        // // Update all circles having this point as center point
-        // vtx.centerOf.forEach(z => {
-        //   // z.ref.centerPoint = this.currentPoint;
-        // });
-        // // Update all circles having this point as circum point
-        // vtx.circumOf.forEach(z => {
-        //   // z.ref.circlePoint = this.currentPoint;
-        // });
+      } else if (this.moveTarget instanceof SELine) {
+        tmpVector.crossVectors(this.prevSpherePoint, this.currentSpherePoint);
+        const rotAngle =
+          this.prevSpherePoint.angleTo(this.currentSpherePoint) *
+          Math.sign(tmpVector.z);
+        this.prevSpherePoint.copy(this.currentSpherePoint);
+        tmpMatrix.makeRotationAxis(this.moveTarget.startPoint, rotAngle);
+        tmpNormal.getNormalMatrix(tmpMatrix);
+        tmpVector.copy(this.moveTarget.normalDirection);
+        tmpVector.applyMatrix4(tmpMatrix);
+        this.moveTarget.normalDirection = tmpVector;
       }
     }
   }
@@ -46,8 +44,18 @@ export default class MoveHandler extends SelectionHandler {
     this.isDragging = true;
     this.moveTarget = null;
     if (this.hitNodes.length > 0) {
-      const freePoints = this.hitNodes.filter(n => n.isFree());
-      if (freePoints.length > 0) this.moveTarget = freePoints[0];
+      this.moveFrom.copy(this.currentSpherePoint);
+      this.prevSpherePoint.copy(this.currentSpherePoint);
+      const freePoints = this.hitPoints.filter(n => n.isFree());
+      if (freePoints.length > 0) {
+        this.moveTarget = freePoints[0];
+        return;
+      }
+      const freeLines = this.hitLines.filter(n => n.isFree());
+      if (freeLines.length > 0) {
+        this.moveTarget = freeLines[0];
+        return;
+      }
     }
   }
 

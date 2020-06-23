@@ -27,6 +27,10 @@ export class PositionVisitor implements Visitor {
     this.tmpVector.copy(m.normalDirection);
     this.tmpVector.applyNormalMatrix(this.normalMatrix);
     m.normalDirection = this.tmpVector;
+
+    this.tmpVector.copy(m.startPoint);
+    this.tmpVector.applyMatrix4(this.transformMatrix);
+    m.ref.startPoint = this.tmpVector;
   }
 
   actionOnSegment(s: SESegment): void {

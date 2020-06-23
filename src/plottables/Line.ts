@@ -19,7 +19,7 @@ export default class Line extends Nodule {
   private oldFrontStroke: Two.Color = "";
   private oldBackStroke: Two.Color = "";
   private normalDirection: Vector3;
-
+  private start_ = new Vector3();
   private tmpVector: Vector3;
   private desiredXAxis = new Vector3();
   private desiredYAxis = new Vector3();
@@ -165,10 +165,18 @@ export default class Line extends Nodule {
       }
       lastSign = thisSign;
       if (this.tmpVector.z > 0) {
+        if (posIndex === this.frontHalf.vertices.length) {
+          const extra = this.backHalf.vertices.pop();
+          this.frontHalf.vertices.push(extra!);
+        }
         this.frontHalf.vertices[posIndex].x = this.tmpVector.x;
         this.frontHalf.vertices[posIndex].y = this.tmpVector.y;
         posIndex++;
       } else {
+        if (negIndex === this.backHalf.vertices.length) {
+          const extra = this.frontHalf.vertices.pop();
+          this.backHalf.vertices.push(extra!);
+        }
         this.backHalf.vertices[negIndex].x = this.tmpVector.x;
         this.backHalf.vertices[negIndex].y = this.tmpVector.y;
         negIndex++;
@@ -196,6 +204,14 @@ export default class Line extends Nodule {
 
   get orientation(): Vector3 {
     return this.normalDirection;
+  }
+
+  set startPoint(pos: Vector3) {
+    this.start_.copy(pos);
+  }
+
+  get startPoint(): Vector3 {
+    return this.start_;
   }
   // It looks like we have to define our own clone() function
   // The builtin clone() does not seem to work correctly
