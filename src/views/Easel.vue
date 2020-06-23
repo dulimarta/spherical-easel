@@ -18,30 +18,6 @@
       <v-container fluid ref="rightPanel">
         <v-row>
           <v-col cols="12">
-            <v-btn-toggle ref="cmdControl" class="accent">
-              <v-tooltip bottom :open-delay="toolTipOpenDelay"
-                :close-delay="toolTipCloseDelay">
-                <!-- TODO: Move these edit controls to the the panel containing the sphere. 
-                When not available they should be greyed out (i.e. disabled).-->
-                <template v-slot:activator="{ on }">
-                  <v-btn icon @click="undoEdit" v-on="on">
-                    <v-icon>mdi-undo</v-icon>
-                  </v-btn>
-                </template>
-                <span>{{ $t("main.UndoLastAction") }}</span>
-              </v-tooltip>
-              <v-tooltip bottom :open-delay="toolTipOpenDelay"
-                :close-delay="toolTipCloseDelay">
-                <template v-slot:activator="{ on }">
-                  <v-btn icon @click="redoAction" v-on="on">
-                    <v-icon>mdi-redo</v-icon>
-                  </v-btn>
-                </template>
-                <span>{{ $t("main.RedoLastAction") }}</span>
-              </v-tooltip>
-            </v-btn-toggle>
-          </v-col>
-          <v-col cols="12">
             <v-row justify="center" class="pb-1">
               <v-responsive :aspect-ratio="1"
                 :max-height="currentCanvasSize"
@@ -49,23 +25,37 @@
                 id="responsiveBox" class="pa-0">
                 <sphere-frame :canvas-size="currentCanvasSize">
                 </sphere-frame>
+                <div class="anchored top left">
+                  <v-tooltip bottom :open-delay="toolTipOpenDelay"
+                    :close-delay="toolTipCloseDelay">
+                    <!-- TODO:   
+                When not available they should be greyed out (i.e. disabled).-->
+                    <template v-slot:activator="{ on }">
+                      <v-btn icon @click="undoEdit" v-on="on">
+                        <v-icon>mdi-undo</v-icon>
+                      </v-btn>
+                    </template>
+                    <span>{{ $t("main.UndoLastAction") }}</span>
+                  </v-tooltip>
+                  <v-tooltip bottom :open-delay="toolTipOpenDelay"
+                    :close-delay="toolTipCloseDelay">
+                    <template v-slot:activator="{ on }">
+                      <v-btn icon @click="redoAction" v-on="on">
+                        <v-icon>mdi-redo</v-icon>
+                      </v-btn>
+                    </template>
+                    <span>{{ $t("main.RedoLastAction") }}</span>
+                  </v-tooltip>
+                </div>
+                <div class="anchored bottom right">
+                  <v-btn color="primary" icon tile @click="enableZoomIn">
+                    <v-icon>mdi-magnify-plus-outline</v-icon>
+                  </v-btn>
+                  <v-btn color="primary" icon tile @click="enableZoomOut">
+                    <v-icon>mdi-magnify-minus-outline</v-icon>
+                  </v-btn>
+                </div>
               </v-responsive>
-            </v-row>
-          </v-col>
-          <v-col cols="12">
-            <v-row justify="end" class="mx-2">
-              <v-btn-toggle class="accent">
-                <v-btn icon @click="enableZoomIn">
-                  <v-icon>mdi-magnify-plus-outline</v-icon>
-                </v-btn>
-                <v-btn icon @click="enableZoomOut">
-                  <v-icon>mdi-magnify-minus-outline</v-icon>
-                </v-btn>
-                <v-btn icon>
-                  <v-icon>mdi-fit-to-page-outline</v-icon>
-                </v-btn>
-              </v-btn-toggle>
-
             </v-row>
           </v-col>
         </v-row>
@@ -100,8 +90,7 @@ export default class Easel extends Vue {
   private toolTipCloseDelay = SETTINGS.toolTip.closeDelay;
 
   $refs!: {
-    responsiveBox: VueComponent;
-    cmdControl: VueComponent;
+    responsiveBox: VueComponent
   };
 
   constructor() {
@@ -125,9 +114,7 @@ export default class Easel extends Vue {
     if (tmp) {
       let canvasPanel = tmp.$el as HTMLElement;
       const rightBox = canvasPanel.getBoundingClientRect();
-      const cmdElement = this.$refs.cmdControl.$el;
-      const cmdBox = cmdElement.getBoundingClientRect();
-      this.currentCanvasSize = this.availHeight - rightBox.top - cmdBox.height;
+      this.currentCanvasSize = this.availHeight - rightBox.top;
     }
     // console.debug(
     //   `Available height ${this.availHeight.toFixed(
@@ -184,5 +171,22 @@ export default class Easel extends Vue {
 <style scoped lang="scss">
 #responsiveBox {
   border: 2px double darkcyan;
+  position: relative;
+  & .anchored {
+    position: absolute;
+  }
+}
+
+.left {
+  left: 0;
+}
+.right {
+  right: 0;
+}
+.top {
+  top: 0;
+}
+.bottom {
+  bottom: 0;
 }
 </style>

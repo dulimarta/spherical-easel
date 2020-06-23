@@ -2,6 +2,8 @@
   <div id="canvas" ref="canvas"></div>
 </template>
 
+<style lang="scss" scoped>
+</style>
 <script lang="ts">
 import VueComponent from "vue";
 import { Prop, Component, Watch } from "vue-property-decorator";
@@ -254,5 +256,3 @@ export default class SphereFrame extends VueComponent {
   }
 }
 </script>
-
-<style scoped></style>
