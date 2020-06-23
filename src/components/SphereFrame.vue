@@ -20,6 +20,7 @@ import RotateHandler from "@/eventHandlers/RotateHandler";
 import PanZoomHandler, { ZoomMode } from "@/eventHandlers/PanZoomHandler"
 import { PositionVisitor } from "@/visitors/PositionVisitor";
 import EventBus from "@/eventHandlers/EventBus";
+import MoveHandler from '../eventHandlers/MoveHandler';
 const tmpMatrix1 = new Matrix4();
 @Component({})
 export default class SphereFrame extends VueComponent {
@@ -46,6 +47,7 @@ export default class SphereFrame extends VueComponent {
   private circleTool!: CircleHandler;
   private rotateTool!: RotateHandler;
   private zoomTool!: PanZoomHandler;
+  private moveTool!: MoveHandler;
   private visitor!: PositionVisitor;
   private layers: Two.Group[] = [];
 
@@ -161,6 +163,7 @@ export default class SphereFrame extends VueComponent {
       this.CSSTransformMat
     );
     this.zoomTool = new PanZoomHandler(this.$refs.canvas);
+    this.moveTool = new MoveHandler(this.layers, this.CSSTransformMat);
   }
 
   beforeDestroy(): void {
@@ -228,6 +231,7 @@ export default class SphereFrame extends VueComponent {
         this.currentTool = this.rotateTool;
         break;
       case "move":
+        this.currentTool = this.moveTool;
         break;
       case "point":
         this.currentTool = this.pointTool;

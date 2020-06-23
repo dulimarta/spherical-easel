@@ -5,23 +5,22 @@ import SelectionHandler from "./SelectionHandler";
 import Two from "two.js";
 import { Matrix4 } from "three";
 import { SEPoint } from "@/models/SEPoint";
+import { SENodule } from "@/models/SENodule";
 
 export default class MoveHandler extends SelectionHandler {
   private isDragging = false;
-  private moveTarget: SEPoint | null = null;
+  private moveTarget: SENodule | null = null;
+
   constructor(layers: Two.Group[], transformMatrix: Matrix4) {
     super(layers, transformMatrix);
   }
 
   mouseMoved(event: MouseEvent) {
     super.mouseMoved(event);
-    if (this.isDragging && this.moveTarget instanceof SEPoint) {
-      // this.moveTarget.position.copy(this.currentPoint);
-      const vtx = this.store.state.points.find(
-        // v => v.ref.id === this.moveTarget?.id
-        () => false
-      );
-      if (vtx) {
+    if (this.isDragging) {
+      if (this.moveTarget instanceof SEPoint) {
+        this.moveTarget.positionOnSphere = this.currentSpherePoint;
+        // this.moveTarget.position.copy(this.currentPoint);
         // Update all lines having this point as start point
         // vtx.startOf.forEach(z => {
         //   z.ref.startV3Point = this.currentPoint;
@@ -45,7 +44,11 @@ export default class MoveHandler extends SelectionHandler {
   //eslint-disable-next-line
   mousePressed(event: MouseEvent) {
     this.isDragging = true;
-    if (this.hitPoints.length > 0) this.moveTarget = this.hitPoints[0];
+    this.moveTarget = null;
+    if (this.hitNodes.length > 0) {
+      const freePoints = this.hitNodes.filter(n => n.isFree());
+      if (freePoints.length > 0) this.moveTarget = freePoints[0];
+    }
   }
 
   //eslint-disable-next-line

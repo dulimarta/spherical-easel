@@ -22,6 +22,7 @@ export default abstract class SelectionHandler implements ToolStrategy {
   protected store = AppStore; // Vuex global state
   protected currentSpherePoint: Vector3;
   protected currentScreenPoint: Two.Vector;
+  protected hitNodes: SENodule[] = [];
   protected hitPoints: SEPoint[] = [];
   protected hitLines: SELine[] = [];
   protected hitSegments: SESegment[] = [];
@@ -165,42 +166,42 @@ export default abstract class SelectionHandler implements ToolStrategy {
       this.hitLines.clear();
       this.hitSegments.clear();
       this.hitCircles.clear();
-      const hitList: SENodule[] = this.store.getters.findNearbyObjects(
+      this.hitNodes = this.store.getters.findNearbyObjects(
         this.currentSpherePoint,
         this.currentScreenPoint
       );
       this.infoText.hide();
-      if (hitList.length > 0) {
+      if (this.hitNodes.length > 0) {
         this.infoText.showWithDelay(this.layers[LAYER.foregroundText], 300);
-        this.infoText.text = hitList[0].name;
+        this.infoText.text = this.hitNodes[0].name;
         this.infoText.translation.set(
           this.currentScreenPoint.x,
           -this.currentScreenPoint.y + 16
         );
       }
 
-      this.hitPoints = hitList
+      this.hitPoints = this.hitNodes
         .filter((obj: SENodule) => obj instanceof SEPoint)
         .map(obj => obj as SEPoint);
       this.hitPoints.forEach((obj: SEPoint) => {
         obj.ref.glowStyle();
       });
 
-      this.hitLines = hitList
+      this.hitLines = this.hitNodes
         .filter(obj => obj instanceof SELine)
         .map(obj => obj as SELine);
       this.hitLines.forEach((obj: SELine) => {
         obj.ref.glowStyle();
       });
 
-      this.hitSegments = hitList
+      this.hitSegments = this.hitNodes
         .filter(obj => obj instanceof SESegment)
         .map(obj => obj as SESegment);
       this.hitSegments.forEach((obj: SESegment) => {
         obj.ref.glowStyle();
       });
 
-      this.hitCircles = hitList
+      this.hitCircles = this.hitNodes
         .filter(obj => obj instanceof SECircle)
         .map(obj => obj as SECircle);
       this.hitCircles.forEach((c: SECircle) => {

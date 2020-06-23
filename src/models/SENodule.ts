@@ -50,6 +50,9 @@ export abstract class SENodule {
       }
     });
   }
+  public isFree(): boolean {
+    return this.parents.length == 0;
+  }
   /* Adds a given SENodule, n, to the kids array of the current SENodule */
   public addKid(n: SENodule) {
     this.kids.push(n);
