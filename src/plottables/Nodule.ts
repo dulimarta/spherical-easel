@@ -8,12 +8,13 @@ import { Resizeable } from "./Resizeable";
  */
 export default abstract class Nodule extends Two.Group
   implements Stylable, Resizeable {
+  // Declare owner, this field will be initialized by the associated owner of the plottable Nodule
   public owner!: SENodule;
-  public name: string;
+  public name!: string;
 
   constructor() {
     super();
-    this.name = "Nodule" + this.id;
+    //this.name = "Nodule" + this.id;
   }
 
   /**

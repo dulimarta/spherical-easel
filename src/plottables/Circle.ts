@@ -750,6 +750,24 @@ export default class Circle extends Nodule {
         } else {
           this.backFill.fill = this.tempBackGradient;
         }
+
+        // Dashing
+        if (SETTINGS.circle.temp.dashArray.front.length > 0) {
+          SETTINGS.circle.temp.dashArray.front.forEach(v => {
+            (this.backPart as any).dashes.push(v);
+          });
+          (this.frontPart as any).offset =
+            SETTINGS.circle.temp.dashArray.offset.front;
+        }
+        /*SETTINGS.circle.dynamicBackStyle ? Nodule.contrastDashArray(this.dashingArrayFront)*/
+
+        if (SETTINGS.circle.temp.dashArray.back.length > 0) {
+          SETTINGS.circle.temp.dashArray.back.forEach(v => {
+            (this.backPart as any).dashes.push(v);
+          });
+          (this.backPart as any).offset =
+            SETTINGS.circle.temp.dashArray.offset.back;
+        }
         // The temporary display is never highlighted
         (this.glowingFrontPart as any).visible = false;
         (this.glowingBackPart as any).visible = false;
@@ -821,7 +839,22 @@ export default class Circle extends Nodule {
           (this.backPart as any).offset =
             SETTINGS.circle.drawn.dashArray.offset.back;
         }
-        // There is no dashing on the glowing objects. For now.
+        if (SETTINGS.circle.glowing.dashArray.front.length > 0) {
+          SETTINGS.circle.glowing.dashArray.front.forEach(v => {
+            (this.glowingFrontPart as any).dashes.push(v);
+          });
+          (this.glowingFrontPart as any).offset =
+            SETTINGS.circle.glowing.dashArray.offset.front;
+        }
+        /*SETTINGS.circle.dynamicBackStyle ? Nodule.contrastDashArray(this.dashingArrayFront)*/
+
+        if (SETTINGS.circle.glowing.dashArray.back.length > 0) {
+          SETTINGS.circle.glowing.dashArray.back.forEach(v => {
+            (this.glowingBackPart as any).dashes.push(v);
+          });
+          (this.glowingBackPart as any).offset =
+            SETTINGS.circle.glowing.dashArray.offset.back;
+        }
         break;
       }
     }

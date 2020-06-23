@@ -27,7 +27,13 @@ This icon (TODO: AddIconImage) opens the Style Panel and enables the user to cus
 
 ## Zooming and Panning
 
-Use the <kbd>Alt</kbd> to pan when zoomed in
+On a Mac with a track pad:
+
+- Hold the <kdb>Command</kbd> key and use a two finger pinch to zoom in or out
+- If the zoom factor is bigger than one (i.e. you are zoom in) the user can pan the view. If the user simultaneously holds the <kdb>Option</kbd> key and mouse downs (without release) in the lower left corner of the track pad, then a one finger scroll will pan the view.
+
+On a PC with a trackpad:
+-Use the <kbd>Alt</kbd> key (?) to pan when zoomed i
 
 Found in the lower right-hand corner of the Sphere Canvas?
 

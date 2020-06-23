@@ -16,6 +16,58 @@ export default {
     color: "black",
     linewidth: 3
   },
+  segment: {
+    minimumArcLength: 0.02, // Don't create segments with a length less than this
+    numPoints: 20, // The number of vertices used to render the segment. These are spread over the front and back parts. MAKE THIS EVEN!
+    //dynamicBackStyle is a flag that means the fill color,stroke, and opacity of the segments drawn on the back are automatically calculated based on the value of SETTINGS.contrast and their front counterparts
+    dynamicBackStyle: true,
+    drawn: {
+      // no fill for line segments
+      strokeColor: {
+        front: "#4287f5", // { r: 66, g: 135, b: 245 },
+        back: "#a0c3fa" // The fill color on the back defaults to a contrast value of 0.5
+      },
+      strokeWidth: { front: 2.5, back: 2 }, // The thickness of the segment when drawn
+      opacity: { front: 1, back: 1 },
+      dashArray: {
+        offset: { front: 0, back: 0 },
+        front: [],
+        back: [10, 5]
+      } // An empty array means no dashing.
+    },
+    //The properties of the region around a circle when it is glowing
+    glowing: {
+      edgeWidth: 2, // edgeWidth is the width of the region around the segment that shows the glow
+      strokeColor: {
+        front: "#ff0000", //"#404040",
+        back: "#FF7F7F" // the back fill color is calculated using the contrast of 0.5
+      },
+      opacity: { front: 1, back: 1 },
+      //no fill color - this is a highlighting the object
+      dashArray: {
+        offset: { front: 0, back: 0 },
+        front: [],
+        back: [10, 5]
+      }
+    },
+    //The properties of the circle when it is temporarily shown by the circle tool while drawing
+    temp: {
+      // segments are never filled
+      strokeColor: {
+        front: "#6A6A6A",
+        back: "#B4B4B4" // the back fill color is calculated using the contrast of 0.5
+      },
+      strokeWidth: { front: 1, back: 1 }, // The thickness of the edge of the point when drawn
+      opacity: { front: 1, back: 1 },
+      dashArray: {
+        offset: { front: 0, back: 0 },
+        front: [],
+        back: [10, 5]
+      }
+    },
+    hitPixelDistance: 8, //When a pixel distance between a mouse event and the pixel coords of a line is less than this number, it is hit
+    hitIdealDistance: 0.02 // The user has to be within this distance on the ideal unit sphere to select the line.
+  },
   line: {
     thickness: {
       front: 4,
@@ -90,6 +142,7 @@ export default {
     minPixelDistance: 5 // the minimum pixel distance before a new rotation is computed as we click and drag in rotate mode
   },
   circle: {
+    minimumRadius: 0.02, // Don't create circles with a radius smaller than this
     numPoints: 100, // The number of vertices used to render the circle. These are spread over the front and back parts. MAKE THIS EVEN!
     hitIdealDistance: 0.01, // The user has to be within this distance on the ideal unit sphere to select the circle.
     //dynamicBackStyle is a flag that means the fill, linewidth, strokeColor, and opacity of the circles drawn on the back are automatically calculated based on the value of SETTINGS.contrast and their front counterparts
@@ -104,7 +157,7 @@ export default {
         front: "#4287f5", // { r: 66, g: 135, b: 245 },
         back: "#a0c3fa" // The fill color on the back defaults to a contrast value of 0.5
       },
-      strokeWidth: { front: 2.5, back: 2 }, // The thickness of the edge of the point when drawn
+      strokeWidth: { front: 2.5, back: 2 }, // The thickness of the circle when drawn
       opacity: { front: 1, back: 1 },
       dashArray: {
         offset: { front: 0, back: 0 },
@@ -114,13 +167,17 @@ export default {
     },
     //The properties of the region around a circle when it is glowing
     glowing: {
-      edgeWidth: 2, // edgeWidth is the width of the region around the circle that shows the glow it is always bigger than the drawn stroke width
+      edgeWidth: 2, // edgeWidth is the width of the region around the circle that shows the glow
       strokeColor: {
         front: "#ff0000", //"#404040",
         back: "#FF7F7F" // the back fill color is calculated using the contrast of 0.5
       },
-      opacity: { front: 1, back: 1 }
-      //no fill color - this is a highlighting the object
+      opacity: { front: 1, back: 1 },
+      dashArray: {
+        offset: { front: 0, back: 0 },
+        front: [],
+        back: [10, 5]
+      } // An empty array means no dashing.
     },
     //The properties of the circle when it is temporarily shown by the circle tool while drawing
     temp: {
@@ -133,7 +190,12 @@ export default {
         back: "#B4B4B4" // the back fill color is calculated using the contrast of 0.5
       },
       strokeWidth: { front: 1, back: 1 }, // The thickness of the edge of the point when drawn
-      opacity: { front: 1, back: 1 }
+      opacity: { front: 1, back: 1 },
+      dashArray: {
+        offset: { front: 0, back: 0 },
+        front: [],
+        back: []
+      } // An empty array means no dashing.
     }
   },
   /* Controls the length of time (in ms) the tool tip are displayed */
