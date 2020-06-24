@@ -56,9 +56,15 @@ export class SECircle extends SENodule implements Visitable {
     const newRadius = this.centerPoint.positionOnSphere.angleTo(
       this.circlePoint.positionOnSphere
     );
-    console.debug("Must update SECircle radius to", newRadius);
+    console.debug(
+      "Must update SECircle radius to",
+      newRadius.toDegrees().toFixed(2),
+      "center to",
+      this.centerPoint.positionOnSphere.toFixed(2)
+    );
     this.radius = newRadius;
     this.ref.radius = newRadius;
+    this.ref.centerVector = this.centerAt.positionOnSphere;
     this.setOutOfDate(false);
   }
 

@@ -169,7 +169,7 @@ export default class Circle extends Nodule {
     // For debugging
     // Draw the segment on the positive X-axis of the circle/ellipse
     this.majorLine = new Two.Line(0, 0, SETTINGS.boundaryCircle.radius, 0);
-    this.add(this.majorLine);
+    // this.add(this.majorLine); /* only for debugging */
 
     // Create the initial front and back vertices (glowing/not/fill)
     const frontVertices: Two.Vector[] = [];

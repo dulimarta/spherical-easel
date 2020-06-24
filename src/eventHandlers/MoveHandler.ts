@@ -8,6 +8,7 @@ import { SEPoint } from "@/models/SEPoint";
 import { SENodule } from "@/models/SENodule";
 import { SELine } from "@/models/SELine";
 import { SESegment } from "@/models/SESegment";
+import { SECircle } from "@/models/SECircle";
 const tmpMatrix = new Matrix4();
 const tmpNormal = new Matrix3();
 const tmpVector1 = new Vector3();
@@ -21,6 +22,92 @@ export default class MoveHandler extends SelectionHandler {
     super(layers, transformMatrix);
   }
 
+  private doMoveLine(
+    targetLine: SELine | SESegment,
+    altKeyPressed: boolean
+  ): void {
+    let pivot = targetLine.startPoint;
+    let freeEnd = targetLine.endPoint;
+    if (altKeyPressed) {
+      pivot = targetLine.endPoint;
+      freeEnd = targetLine.startPoint;
+    }
+
+    // We want to measure the rotation angle with respect to the rotationAxis
+    // Essentially we rotate a plane "hinged" at the rotationAxis so
+    // the angle of rotation must be measure as the amount of changes of the
+    // plane normal vectoe
+
+    // determine the plane normal vector at the previous position
+    tmpVector1
+      .crossVectors(pivot.positionOnSphere, this.prevSpherePoint)
+      .normalize();
+    // determine the plane normal vector at the current position
+    tmpVector2
+      .crossVectors(pivot.positionOnSphere, this.currentSpherePoint)
+      .normalize();
+    let rotAngle = tmpVector1.angleTo(tmpVector2);
+    const axisOfRotation = pivot.positionOnSphere;
+    tmpVector1.cross(tmpVector2);
+    rotAngle *= Math.sign(tmpVector1.z);
+    tmpNormal.getNormalMatrix(tmpMatrix);
+    tmpVector1.copy(targetLine.normalDirection);
+    tmpVector1.applyAxisAngle(axisOfRotation, rotAngle);
+
+    // console.debug(
+    //   "Old dir",
+    //   targetLine.normalDirection.toFixed(2),
+    //   "new dir",
+    //   tmpVector.toFixed(2)
+    // );
+    targetLine.normalDirection = tmpVector1;
+    // tmpVector.copy(this.moveTarget.startPoint);
+    // tmpVector.applyMatrix4(tmpMatrix);
+    // this.moveTarget.startPoint = tmpVector;
+    tmpVector1.copy(freeEnd.positionOnSphere);
+    tmpVector1.applyAxisAngle(axisOfRotation, rotAngle);
+    freeEnd.positionOnSphere = tmpVector1;
+    if (targetLine instanceof SESegment) {
+      tmpVector1.copy(targetLine.midVector);
+      tmpVector1.applyAxisAngle(axisOfRotation, rotAngle);
+      targetLine.midVector.copy(tmpVector1);
+    }
+    targetLine.update();
+  }
+
+  private doMoveCircle(targetCircle: SECircle) {
+    tmpVector1
+      .crossVectors(this.prevSpherePoint, this.currentSpherePoint)
+      .normalize();
+    const moveArcDistance = this.prevSpherePoint.angleTo(
+      this.currentSpherePoint
+    );
+    console.debug(
+      "Moving the entire circle",
+      targetCircle.name,
+      "by",
+      moveArcDistance.toDegrees().toFixed(2)
+    );
+    console.debug(
+      "Current center",
+      targetCircle.centerPoint.name,
+      "at",
+      targetCircle.centerPoint.positionOnSphere.toFixed(2)
+    );
+
+    // Move the center point
+    tmpVector2.copy(targetCircle.centerPoint.positionOnSphere);
+    tmpVector2.applyAxisAngle(tmpVector1, moveArcDistance);
+    console.debug("New center", tmpVector2.toFixed(2));
+    targetCircle.centerPoint.positionOnSphere = tmpVector2;
+
+    // Move the other point
+    tmpVector2.copy(targetCircle.circlePoint.positionOnSphere);
+    tmpVector2.applyAxisAngle(tmpVector1, moveArcDistance);
+    targetCircle.circlePoint.positionOnSphere = tmpVector2;
+    targetCircle.update();
+  }
+
   mouseMoved(event: MouseEvent): void {
     super.mouseMoved(event);
     if (!this.isOnSphere) return;
@@ -32,45 +119,9 @@ export default class MoveHandler extends SelectionHandler {
         this.moveTarget instanceof SELine ||
         this.moveTarget instanceof SESegment
       ) {
-        let pivot = this.moveTarget.startPoint;
-        let freeEnd = this.moveTarget.endPoint;
-        if (event.altKey) {
-          pivot = this.moveTarget.endPoint;
-          freeEnd = this.moveTarget.startPoint;
-        }
-        tmpVector1
-          .crossVectors(pivot.positionOnSphere, this.prevSpherePoint)
-          .normalize();
-        tmpVector2
-          .crossVectors(pivot.positionOnSphere, this.currentSpherePoint)
-          .normalize();
-        let rotAngle = tmpVector1.angleTo(tmpVector2);
-        const axisOfRotation = pivot.positionOnSphere;
-        tmpVector1.cross(tmpVector2);
-        rotAngle *= Math.sign(tmpVector1.z);
-        tmpNormal.getNormalMatrix(tmpMatrix);
-        tmpVector1.copy(this.moveTarget.normalDirection);
-        tmpVector1.applyAxisAngle(axisOfRotation, rotAngle);
-
-        // console.debug(
-        //   "Old dir",
-        //   this.moveTarget.normalDirection.toFixed(2),
-        //   "new dir",
-        //   tmpVector.toFixed(2)
-        // );
-        this.moveTarget.normalDirection = tmpVector1;
-        // tmpVector.copy(this.moveTarget.startPoint);
-        // tmpVector.applyMatrix4(tmpMatrix);
-        // this.moveTarget.startPoint = tmpVector;
-        tmpVector1.copy(freeEnd.positionOnSphere);
-        tmpVector1.applyAxisAngle(axisOfRotation, rotAngle);
-        freeEnd.positionOnSphere = tmpVector1;
-        if (this.moveTarget instanceof SESegment) {
-          tmpVector1.copy(this.moveTarget.midVector);
-          tmpVector1.applyAxisAngle(axisOfRotation, rotAngle);
-          this.moveTarget.midVector.copy(tmpVector1);
-        }
-        this.moveTarget.update();
+        this.doMoveLine(this.moveTarget, event.altKey);
+      } else if (this.moveTarget instanceof SECircle) {
+        this.doMoveCircle(this.moveTarget);
       }
       this.prevSpherePoint.copy(this.currentSpherePoint);
     }
@@ -96,6 +147,12 @@ export default class MoveHandler extends SelectionHandler {
       const freeSegments = this.hitSegments.filter(n => n.isFreeToMove());
       if (freeSegments.length > 0) {
         this.moveTarget = freeSegments[0];
+        return;
+      }
+
+      const freeCirles = this.hitCircles.filter(n => n.isFreeToMove());
+      if (freeCirles.length > 0) {
+        this.moveTarget = freeCirles[0];
         return;
       }
     }
