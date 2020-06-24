@@ -156,13 +156,15 @@ export default class SegmentHandler extends SelectionHandler {
       midMarker.remove();
       // Before making a new segment make sure that the user has dragged a non-trivial distance
       // If the user hasn't dragged far enough merely insert a point at the start location
-      console.log("arc", this.tempSegment.arcLength());
+
       if (this.tempSegment.arcLength() > SETTINGS.segment.minimumArcLength) {
         // Clone the temporary segment and mark it added to the scene
         this.isSegmentAdded = false;
         const newSegment = this.tempSegment.clone();
         // Stylize the new segment
         newSegment.stylize("default");
+        // Stylize the glowing segment
+        newSegment.stylize("glowing");
 
         // Create a new command group to store potentially three commands. Those to add the endpoints (which might be  new) and the segment itself.
         const segmentGroup = new CommandGroup();

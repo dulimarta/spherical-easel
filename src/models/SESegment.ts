@@ -66,22 +66,31 @@ export class SESegment extends SENodule implements Visitable {
   }
 
   public isHitAt(spherePos: Vector3): boolean {
-    // Is the spherePos close to the plane containing the segment?
-    //  Is the angle between the normal vector to the segment and the spherePos close to Pi/2?
-    //  That is, is the cos(angle) close to zero?
-    if (
-      Math.abs(spherePos.dot(this.ref.normalVector)) >
-      SETTINGS.segment.hitIdealDistance
-    )
-      return false;
-    // If the code is here spherePos is close to the plane containing the segment
-    //  Is it close the line segment which may be longer or shorter than Pi?
-    //  Is the angle from the midPoint vector to the spherePos less than 1/2(arcLength + wiggle room)
-    return (
-      2 * spherePos.angleTo(this.ref.midVector) - this.ref.arcLength() <
-      SETTINGS.segment.hitIdealDistance
-    );
+    //TODO: This causes a hit if you pass by the antipode of the line segment!!
+    // Is the unit vector to the point is perpendicular to the circle normal?
+    if (Math.abs(spherePos.dot(this.ref.normalVector)) > 1e-2) return false;
+    tmpVec1.crossVectors(spherePos, this.startPoint);
+    tmpVec2.crossVectors(this.endPoint, spherePos);
+    return tmpVec1.angleTo(tmpVec2) < 1e-1;
   }
+
+  // public isHitAt(spherePos: Vector3): boolean {
+  //   // Is the spherePos close to the plane containing the segment?
+  //   //  Is the angle between the normal vector to the segment and the spherePos close to Pi/2?
+  //   //  That is, is the cos(angle) close to zero?
+  //   if (
+  //     Math.abs(spherePos.dot(this.ref.normalVector)) >
+  //     SETTINGS.segment.hitIdealDistance
+  //   )
+  //     return false;
+  //   // If the code is here spherePos is close to the plane containing the segment
+  //   //  Is it close the line segment which may be longer or shorter than Pi?
+  //   //  Is the angle from the midPoint vector to the spherePos less than 1/2(arcLength + wiggle room)
+  //   return (
+  //     2 * spherePos.angleTo(this.ref.midVector) - this.ref.arcLength() <
+  //     SETTINGS.segment.hitIdealDistance
+  //   );
+  // }
 
   public update(): void {
     throw new Error("Method not implemented.");

@@ -22,7 +22,7 @@ export default {
     //dynamicBackStyle is a flag that means the fill color,stroke, and opacity of the segments drawn on the back are automatically calculated based on the value of SETTINGS.contrast and their front counterparts
     dynamicBackStyle: true,
     drawn: {
-      // no fill for line segments
+      // No fill for line segments
       strokeColor: {
         front: "#4287f5", // { r: 66, g: 135, b: 245 },
         back: "#a0c3fa" // The fill color on the back defaults to a contrast value of 0.5
@@ -31,38 +31,38 @@ export default {
       opacity: { front: 1, back: 1 },
       dashArray: {
         offset: { front: 0, back: 0 },
-        front: [],
-        back: [10, 5]
+        front: [], // An empty array means no dashing.
+        back: [10, 5] // An empty array means no dashing.
       } // An empty array means no dashing.
     },
     //The properties of the region around a circle when it is glowing
     glowing: {
-      edgeWidth: 2, // edgeWidth is the width of the region around the segment that shows the glow
+      // No fill for line segments
       strokeColor: {
         front: "#ff0000", //"#404040",
         back: "#FF7F7F" // the back fill color is calculated using the contrast of 0.5
       },
+      edgeWidth: 2, // edgeWidth is the width of the region around the segment that shows the glow
       opacity: { front: 1, back: 1 },
-      //no fill color - this is a highlighting the object
       dashArray: {
         offset: { front: 0, back: 0 },
-        front: [],
-        back: [10, 5]
+        front: [], // An empty array means no dashing.
+        back: [10, 5] // An empty array means no dashing.
       }
     },
     //The properties of the circle when it is temporarily shown by the circle tool while drawing
     temp: {
-      // segments are never filled
+      // No fill for line segments
       strokeColor: {
         front: "#6A6A6A",
         back: "#B4B4B4" // the back fill color is calculated using the contrast of 0.5
       },
-      strokeWidth: { front: 1, back: 1 }, // The thickness of the edge of the point when drawn
+      strokeWidth: { front: 2.5, back: 2 }, // The thickness of the edge of the point when drawn
       opacity: { front: 1, back: 1 },
       dashArray: {
         offset: { front: 0, back: 0 },
-        front: [],
-        back: [10, 5]
+        front: [], // An empty array means no dashing.
+        back: [10, 5] // An empty array means no dashing.
       }
     },
     hitPixelDistance: 8, //When a pixel distance between a mouse event and the pixel coords of a line is less than this number, it is hit
@@ -110,16 +110,19 @@ export default {
       },
       strokeWidth: { front: 2.5, back: 2 }, // The thickness of the edge of the point when drawn
       opacity: { front: 1, back: 1 }
+      // No dashing for points
     },
-    //The properties of the annular region around a point when it is glowing
+    // The properties of the annular region around a point when it is glowing
     glowing: {
       annularWidth: 2, // width is the width of the annular region around the point that shows the glow it is always bigger than the drawn radius
       fillColor: {
         front: "#ff0000", //"#404040", //{ r: 64, g: 64, b: 64 }, //gray
         back: "#FF7F7F" // the back fill color is calculated using the contrast of 0.5
       },
+      // No stroke color for points, the fill extends to the edge of the glowing point
+      // No stroke width for points, the fill extends to the edge of the glowing point
       opacity: { front: 1, back: 1 }
-      //no stroke or linewidth - this is highlighting the object
+      // No dashing - this is highlighting the object
     },
     //The properties of the point when it is temporarily shown by the point tool while drawing
     temp: {
@@ -134,6 +137,7 @@ export default {
       },
       strokeWidth: { front: 1, back: 1 }, // The thickness of the edge of the point when drawn
       opacity: { front: 1, back: 1 }
+      // No dashing for points
     },
     hitPixelDistance: 8, //When a pixel distance between a mouse event and the pixel coords of a point is less than this number, it is hit
     hitIdealDistance: 0.02 // The user has to be within this distance on the ideal unit sphere to select the point.
@@ -161,41 +165,42 @@ export default {
       opacity: { front: 1, back: 1 },
       dashArray: {
         offset: { front: 0, back: 0 },
-        front: [],
-        back: [10, 5]
+        front: [], // An empty array means no dashing.
+        back: [10, 5] // An empty array means no dashing.
       } // An empty array means no dashing.
     },
     //The properties of the region around a circle when it is glowing
     glowing: {
-      edgeWidth: 2, // edgeWidth is the width of the region around the circle that shows the glow
+      // There is no fill for highlighting objects
       strokeColor: {
         front: "#ff0000", //"#404040",
         back: "#FF7F7F" // the back fill color is calculated using the contrast of 0.5
       },
+      edgeWidth: 2, // edgeWidth/2 is the width of the region around the circle (on each side) that shows the glow
       opacity: { front: 1, back: 1 },
       dashArray: {
         offset: { front: 0, back: 0 },
-        front: [],
-        back: [10, 5]
-      } // An empty array means no dashing.
+        front: [], // An empty array means no dashing.
+        back: [10, 5] // An empty array means no dashing.
+      }
     },
     //The properties of the circle when it is temporarily shown by the circle tool while drawing
     temp: {
       fillColor: {
-        front: "hsla(0, 0%, 90%, 0.3)", //"#FF0000", //"noFill",
-        back: "hsla(0, 0%, 80%, 0.3)" //"noFill"
+        front: "hsla(0, 0%, 90%, 0.3)", //"noFill",
+        back: "hsla(0, 0%, 50%, 0.3)" //"noFill"
       },
       strokeColor: {
-        front: "#6A6A6A",
-        back: "#B4B4B4" // the back fill color is calculated using the contrast of 0.5
+        front: "hsla(0, 0%, 0%, 1.0)",
+        back: "hsla(0, 0%, 0%, 0.1)" // "#B4B4B4"
       },
       strokeWidth: { front: 1, back: 1 }, // The thickness of the edge of the point when drawn
       opacity: { front: 1, back: 1 },
       dashArray: {
         offset: { front: 0, back: 0 },
-        front: [],
-        back: []
-      } // An empty array means no dashing.
+        front: [], // An empty array means no dashing.
+        back: [10, 5] // An empty array means no dashing.
+      }
     }
   },
   /* Controls the length of time (in ms) the tool tip are displayed */

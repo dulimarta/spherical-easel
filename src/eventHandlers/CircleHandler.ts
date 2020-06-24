@@ -108,10 +108,12 @@ export default class CircleHandler extends SelectionHandler {
         SETTINGS.circle.minimumRadius
       ) {
         // Add a new circle the user has moved far enough
-        // Clone the current circle and stylize it
+        // Clone the current circle
         const newCircle = this.temporaryCircle.clone();
+        // Set the display to the default values
         newCircle.stylize("default");
-        console.log("new circle", newCircle.id);
+        // Set the glowing display
+        newCircle.stylize("glowing");
 
         // TODO: Use EventBus.fire()???
 

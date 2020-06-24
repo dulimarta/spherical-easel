@@ -68,6 +68,34 @@ export default class Segment extends Nodule {
   private glowingBackPart: Two.Path;
   private glowingBackExtra: Two.Path;
 
+  /**
+   * The styling variables for the drawn circle. The user can modify these.
+   * Created with the Google Sheet "Circle Styling Code" in the "Set Drawn Variables" tab
+   */
+  // FRONT
+  private strokeColorFront = SETTINGS.segment.drawn.strokeColor.front;
+  private strokeWidthFront = SETTINGS.segment.drawn.strokeWidth.front;
+  private opacityFront = SETTINGS.segment.drawn.opacity.front;
+  private dashArrayFront = SETTINGS.segment.drawn.dashArray.front;
+  private dashArrayOffsetFront = SETTINGS.segment.drawn.dashArray.offset.front;
+  // BACK
+  private strokeColorBack = SETTINGS.segment.dynamicBackStyle
+    ? Nodule.contrastStrokeColor(SETTINGS.segment.drawn.strokeColor.front)
+    : SETTINGS.segment.drawn.strokeColor.back;
+  private strokeWidthBack = SETTINGS.segment.dynamicBackStyle
+    ? Nodule.contractStrokeWidth(SETTINGS.segment.drawn.strokeWidth.front)
+    : SETTINGS.segment.drawn.strokeWidth.back;
+  private opacityBack = SETTINGS.segment.dynamicBackStyle
+    ? Nodule.contrastOpacity(SETTINGS.segment.drawn.opacity.front)
+    : SETTINGS.segment.drawn.opacity.back;
+  private dashArrayBack = SETTINGS.segment.dynamicBackStyle
+    ? Nodule.contrastDashArray(SETTINGS.segment.drawn.dashArray.front)
+    : SETTINGS.segment.drawn.dashArray.back;
+  private dashArrayOffsetBack = SETTINGS.segment.dynamicBackStyle
+    ? Nodule.contrastDashArrayOffset(
+        SETTINGS.segment.drawn.dashArray.offset.front
+      )
+    : SETTINGS.segment.drawn.dashArray.offset.back;
   /** The arc length of the segment*/
   private arcLen = 0;
 
@@ -193,10 +221,9 @@ export default class Segment extends Nodule {
   /** Reorient the unit circle in 3D and then project the points to 2D
    */
   private deformIntoEllipse(): void {
-    console.log("her1");
     // Avoid the degenerate case when the normalDirection is "zero" this happens when a segment is being created
     if (this.normalDirection.length() < 0.01) return;
-    console.log("her2");
+
     // angleTo() seems to return the smaller angle between two vectors
     // To get arc length > 180 we measure it with a break at midpoint
     // and sum the SIGNED length of each.
@@ -507,36 +534,51 @@ export default class Segment extends Nodule {
   stylize(flag: string): void {
     switch (flag) {
       case "temporary": {
-        // The style for the temporary circle displayed.  These options are not user modifiable.
-        // Opacity
-        this.frontPart.opacity = SETTINGS.segment.temp.opacity.front;
-        this.backPart.opacity = SETTINGS.segment.temp.opacity.back;
-        this.frontExtra.opacity = SETTINGS.segment.temp.opacity.front;
-        this.backExtra.opacity = SETTINGS.segment.temp.opacity.back;
-        // Stroke Width
-        this.frontPart.linewidth = SETTINGS.segment.temp.strokeWidth.front;
-        this.backPart.linewidth = SETTINGS.segment.temp.strokeWidth.back;
-        this.frontExtra.linewidth = SETTINGS.segment.temp.strokeWidth.front;
-        this.backExtra.linewidth = SETTINGS.segment.temp.strokeWidth.back;
-        // Stroke Color
+        // The style for the temporary segment display.  These options are not user modifiable.
+        // Created with the Google Sheet "Segment Styling Code" in the "Temporary" tab
+
+        // FRONT PART
         this.frontPart.stroke = SETTINGS.segment.temp.strokeColor.front;
-        this.backPart.stroke = SETTINGS.segment.temp.strokeColor.back;
-        this.frontExtra.stroke = SETTINGS.segment.temp.strokeColor.front;
-        this.backExtra.stroke = SETTINGS.segment.temp.strokeColor.back;
-        // Dashing
+        this.frontPart.linewidth = SETTINGS.segment.temp.strokeWidth.front;
+        this.frontPart.opacity = SETTINGS.segment.temp.opacity.front;
         if (SETTINGS.segment.temp.dashArray.front.length > 0) {
           SETTINGS.segment.temp.dashArray.front.forEach(v => {
-            (this.backPart as any).dashes.push(v);
+            (this.frontPart as any).dashes.push(v);
           });
           (this.frontPart as any).offset =
             SETTINGS.segment.temp.dashArray.offset.front;
         }
-        /*SETTINGS.circle.dynamicBackStyle ? Nodule.contrastDashArray(this.dashingArrayFront)*/
+        // FRONT EXTRA
+        this.frontExtra.stroke = SETTINGS.segment.temp.strokeColor.front;
+        this.frontExtra.linewidth = SETTINGS.segment.temp.strokeWidth.front;
+        this.frontExtra.opacity = SETTINGS.segment.temp.opacity.front;
+        if (SETTINGS.segment.temp.dashArray.front.length > 0) {
+          SETTINGS.segment.temp.dashArray.front.forEach(v => {
+            (this.frontExtra as any).dashes.push(v);
+          });
+          (this.frontExtra as any).offset =
+            SETTINGS.segment.temp.dashArray.offset.front;
+        }
+        // BACK PART
+        this.backPart.stroke = SETTINGS.segment.temp.strokeColor.back;
+        this.backPart.linewidth = SETTINGS.segment.temp.strokeWidth.back;
+        this.backPart.opacity = SETTINGS.segment.temp.opacity.back;
         if (SETTINGS.segment.temp.dashArray.back.length > 0) {
           SETTINGS.segment.temp.dashArray.back.forEach(v => {
             (this.backPart as any).dashes.push(v);
           });
           (this.backPart as any).offset =
+            SETTINGS.segment.temp.dashArray.offset.back;
+        }
+        // BACK EXTRA
+        this.backExtra.stroke = SETTINGS.segment.temp.strokeColor.back;
+        this.backExtra.linewidth = SETTINGS.segment.temp.strokeWidth.back;
+        this.backExtra.opacity = SETTINGS.segment.temp.opacity.back;
+        if (SETTINGS.segment.temp.dashArray.back.length > 0) {
+          SETTINGS.segment.temp.dashArray.back.forEach(v => {
+            (this.backExtra as any).dashes.push(v);
+          });
+          (this.backExtra as any).offset =
             SETTINGS.segment.temp.dashArray.offset.back;
         }
         // The temporary display is never highlighted
@@ -546,112 +588,191 @@ export default class Segment extends Nodule {
         (this.glowingBackExtra as any).visible = false;
         break;
       }
+      case "glowing": {
+        // The style for the glowing circle display.  These options are not user modifiable.
+        // Created with the Google Sheet "Segment Styling Code" in the "Glowing" tab
+
+        // FRONT PART
+        this.glowingFrontPart.stroke =
+          SETTINGS.segment.glowing.strokeColor.front;
+        this.glowingFrontPart.linewidth =
+          SETTINGS.segment.glowing.edgeWidth +
+          SETTINGS.segment.drawn.strokeWidth.front;
+        this.glowingFrontPart.opacity = SETTINGS.segment.glowing.opacity.front;
+        if (SETTINGS.segment.glowing.dashArray.front.length > 0) {
+          SETTINGS.segment.glowing.dashArray.front.forEach(v => {
+            (this.glowingFrontPart as any).dashes.push(v);
+          });
+          (this.glowingFrontPart as any).offset =
+            SETTINGS.segment.glowing.dashArray.offset.front;
+        }
+        // FRONT EXTRA
+        this.glowingFrontExtra.stroke =
+          SETTINGS.segment.glowing.strokeColor.front;
+        this.glowingFrontExtra.linewidth =
+          SETTINGS.segment.glowing.edgeWidth +
+          SETTINGS.segment.drawn.strokeWidth.front;
+        this.glowingFrontExtra.opacity = SETTINGS.segment.glowing.opacity.front;
+        if (SETTINGS.segment.glowing.dashArray.front.length > 0) {
+          SETTINGS.segment.glowing.dashArray.front.forEach(v => {
+            (this.glowingFrontExtra as any).dashes.push(v);
+          });
+          (this.glowingFrontExtra as any).offset =
+            SETTINGS.segment.glowing.dashArray.offset.front;
+        }
+
+        // BACK PART
+        this.glowingBackPart.stroke = SETTINGS.segment.glowing.strokeColor.back;
+        this.glowingBackPart.linewidth =
+          SETTINGS.segment.glowing.edgeWidth +
+          SETTINGS.segment.drawn.strokeWidth.back;
+        this.glowingBackPart.opacity = SETTINGS.segment.glowing.opacity.back;
+        if (SETTINGS.segment.glowing.dashArray.back.length > 0) {
+          SETTINGS.segment.glowing.dashArray.back.forEach(v => {
+            (this.glowingBackPart as any).dashes.push(v);
+          });
+          (this.glowingBackPart as any).offset =
+            SETTINGS.segment.glowing.dashArray.offset.back;
+        }
+        // BACK EXTRA
+        this.glowingBackExtra.stroke =
+          SETTINGS.segment.glowing.strokeColor.back;
+        this.glowingBackExtra.linewidth =
+          SETTINGS.segment.glowing.edgeWidth +
+          SETTINGS.segment.drawn.strokeWidth.back;
+        this.glowingBackExtra.opacity = SETTINGS.segment.glowing.opacity.back;
+        if (SETTINGS.segment.glowing.dashArray.back.length > 0) {
+          SETTINGS.segment.glowing.dashArray.back.forEach(v => {
+            (this.glowingBackExtra as any).dashes.push(v);
+          });
+          (this.glowingBackExtra as any).offset =
+            SETTINGS.segment.glowing.dashArray.offset.back;
+        }
+        break;
+      }
+      case "update": {
+        // Use the current variables to update the display style
+        // Created with the Google Sheet "Segment Styling Code" in the "Drawn Update" tab
+        // FRONT PART
+        this.frontPart.stroke = this.strokeColorFront;
+        this.frontPart.linewidth = this.strokeWidthFront;
+        this.frontPart.opacity = this.opacityFront;
+        if (this.dashArrayFront.length > 0) {
+          (this.frontPart as any).dashes.length = 0;
+          this.dashArrayFront.forEach(v => {
+            (this.frontPart as any).dashes.push(v);
+          });
+          (this.frontPart as any).offset = this.dashArrayOffsetFront;
+        }
+        // FRONT EXTRA
+        this.frontExtra.stroke = this.strokeColorFront;
+        this.frontExtra.linewidth = this.strokeWidthFront;
+        this.frontExtra.opacity = this.opacityFront;
+        if (this.dashArrayFront.length > 0) {
+          (this.frontExtra as any).dashes.length = 0;
+          this.dashArrayFront.forEach(v => {
+            (this.frontExtra as any).dashes.push(v);
+          });
+          (this.frontExtra as any).offset = this.dashArrayOffsetFront;
+        }
+        // BACK PART
+        this.backPart.stroke = this.strokeColorBack;
+        this.backPart.linewidth = this.strokeWidthBack;
+        this.backPart.opacity = this.opacityBack;
+        if (this.dashArrayBack.length > 0) {
+          (this.backPart as any).dashes.length = 0;
+          this.dashArrayBack.forEach(v => {
+            (this.backPart as any).dashes.push(v);
+          });
+          (this.backPart as any).offset = this.dashArrayOffsetBack;
+        }
+        // BACK EXTRA
+        this.backExtra.stroke = this.strokeColorBack;
+        this.backExtra.linewidth = this.strokeWidthBack;
+        this.backExtra.opacity = this.opacityBack;
+        if (this.dashArrayBack.length > 0) {
+          (this.backExtra as any).dashes.length = 0;
+          this.dashArrayBack.forEach(v => {
+            (this.backExtra as any).dashes.push(v);
+          });
+          (this.backExtra as any).offset = this.dashArrayOffsetBack;
+        }
+        // UPDATE the glowing width so it is always bigger than the drawn width
+        this.glowingFrontPart.linewidth =
+          this.strokeWidthFront + SETTINGS.segment.glowing.edgeWidth;
+        this.glowingFrontExtra.linewidth =
+          this.strokeWidthFront + SETTINGS.segment.glowing.edgeWidth;
+        this.glowingBackPart.linewidth =
+          this.strokeWidthBack + SETTINGS.segment.glowing.edgeWidth;
+        this.glowingBackExtra.linewidth =
+          this.strokeWidthBack + SETTINGS.segment.glowing.edgeWidth;
+        break;
+      }
       case "default":
       default: {
-        //Set the default styles of the front/back/glowing/drawn parts
-        // Stroke Width
+        // Reset the style to the defaults i.e. Use the global defaults to update the display style
+        // Created with the Google Sheet "Segment Styling Code" in the "Drawn Set To Defaults" tab
+        // FRONT PART
+        this.frontPart.stroke = SETTINGS.segment.drawn.strokeColor.front;
         this.frontPart.linewidth = SETTINGS.segment.drawn.strokeWidth.front;
-        this.backPart.linewidth =
-          /*SETTINGS.circle.dynamicBackStyle
-        ? Nodule.contrastStrokeWidth(this.frontStokeWidth)
-        : */ SETTINGS.segment.drawn.strokeWidth.back;
+        this.frontPart.opacity = SETTINGS.segment.drawn.opacity.front;
+        if (SETTINGS.segment.drawn.dashArray.front.length > 0) {
+          (this.frontPart as any).dashes.length = 0;
+          SETTINGS.segment.drawn.dashArray.front.forEach(v => {
+            (this.frontPart as any).dashes.push(v);
+          });
+          (this.frontPart as any).offset =
+            SETTINGS.segment.drawn.dashArray.offset.front;
+        }
+        // FRONT EXTRA
+        this.frontExtra.stroke = SETTINGS.segment.drawn.strokeColor.front;
+        this.frontExtra.linewidth = SETTINGS.segment.drawn.strokeWidth.front;
+        this.frontExtra.opacity = SETTINGS.segment.drawn.opacity.front;
+        if (SETTINGS.segment.drawn.dashArray.front.length > 0) {
+          (this.frontExtra as any).dashes.length = 0;
+          SETTINGS.segment.drawn.dashArray.front.forEach(v => {
+            (this.frontExtra as any).dashes.push(v);
+          });
+          (this.frontExtra as any).offset =
+            SETTINGS.segment.drawn.dashArray.offset.front;
+        }
+        // BACK PART
+        this.backPart.stroke = SETTINGS.segment.drawn.strokeColor.back;
+        this.backPart.linewidth = SETTINGS.segment.drawn.strokeWidth.back;
+        this.backPart.opacity = SETTINGS.segment.drawn.opacity.back;
+        if (SETTINGS.segment.drawn.dashArray.back.length > 0) {
+          (this.backPart as any).dashes.length = 0;
+          SETTINGS.segment.drawn.dashArray.back.forEach(v => {
+            (this.backPart as any).dashes.push(v);
+          });
+          (this.backPart as any).offset =
+            SETTINGS.segment.drawn.dashArray.offset.back;
+        }
+        // BACK EXTRA
+        this.backExtra.stroke = SETTINGS.segment.drawn.strokeColor.back;
+        this.backExtra.linewidth = SETTINGS.segment.drawn.strokeWidth.back;
+        this.backExtra.opacity = SETTINGS.segment.drawn.opacity.back;
+        if (SETTINGS.segment.drawn.dashArray.back.length > 0) {
+          (this.backExtra as any).dashes.length = 0;
+          SETTINGS.segment.drawn.dashArray.back.forEach(v => {
+            (this.backExtra as any).dashes.push(v);
+          });
+          (this.backExtra as any).offset =
+            SETTINGS.segment.drawn.dashArray.offset.back;
+        }
+        // UPDATE the glowing width so it is always bigger than the drawn width
         this.glowingFrontPart.linewidth =
+          SETTINGS.segment.glowing.edgeWidth +
+          SETTINGS.segment.drawn.strokeWidth.front;
+        this.glowingFrontExtra.linewidth =
           SETTINGS.segment.glowing.edgeWidth +
           SETTINGS.segment.drawn.strokeWidth.front;
         this.glowingBackPart.linewidth =
           SETTINGS.segment.glowing.edgeWidth +
           SETTINGS.segment.drawn.strokeWidth.back;
-        this.frontExtra.linewidth = SETTINGS.segment.drawn.strokeWidth.front;
-        this.backExtra.linewidth =
-          /*SETTINGS.circle.dynamicBackStyle
-          ? Nodule.contrastStrokeWidth(this.frontStokeWidth)
-          : */ SETTINGS.segment.drawn.strokeWidth.back;
-        this.glowingFrontExtra.linewidth =
-          SETTINGS.segment.glowing.edgeWidth +
-          SETTINGS.segment.drawn.strokeWidth.front;
         this.glowingBackExtra.linewidth =
           SETTINGS.segment.glowing.edgeWidth +
           SETTINGS.segment.drawn.strokeWidth.back;
-
-        // Stroke color
-        this.frontPart.stroke = SETTINGS.segment.drawn.strokeColor.front;
-        this.backPart.stroke =
-          /*SETTINGS.circle.dynamicBackStyle
-        ? Nodule.contrastColorString(this.frontStokeColor)
-        : */ SETTINGS.segment.drawn.strokeColor.back;
-        this.glowingFrontPart.stroke =
-          SETTINGS.segment.glowing.strokeColor.front;
-        this.glowingBackPart.stroke = SETTINGS.segment.glowing.strokeColor.back;
-        this.frontExtra.stroke = SETTINGS.segment.drawn.strokeColor.front;
-        this.backExtra.stroke =
-          /*SETTINGS.circle.dynamicBackStyle
-        ? Nodule.contrastColorString(this.frontStokeColor)
-        : */ SETTINGS.segment.drawn.strokeColor.back;
-        this.glowingFrontExtra.stroke =
-          SETTINGS.segment.glowing.strokeColor.front;
-        this.glowingBackExtra.stroke =
-          SETTINGS.segment.glowing.strokeColor.back;
-
-        // Opacity
-        this.frontPart.opacity = SETTINGS.segment.drawn.opacity.front;
-        this.backPart.opacity =
-          /*SETTINGS.circle.dynamicBackStyle
-        ? Nodule.contrastOpacity(this.frontOpacity)
-        : */ SETTINGS.segment.drawn.opacity.back;
-        this.glowingFrontPart.opacity = SETTINGS.segment.glowing.opacity.front;
-        this.glowingBackPart.opacity = SETTINGS.segment.glowing.opacity.back;
-        this.frontExtra.opacity = SETTINGS.segment.drawn.opacity.front;
-        this.backExtra.opacity =
-          /*SETTINGS.circle.dynamicBackStyle
-        ? Nodule.contrastOpacity(this.frontOpacity)
-        : */ SETTINGS.segment.drawn.opacity.back;
-        this.glowingFrontExtra.opacity = SETTINGS.segment.glowing.opacity.front;
-        this.glowingBackExtra.opacity = SETTINGS.segment.glowing.opacity.back;
-
-        // Dashing
-        if (SETTINGS.segment.drawn.dashArray.front.length > 0) {
-          SETTINGS.segment.drawn.dashArray.front.forEach(v => {
-            (this.frontPart as any).dashes.push(v);
-            (this.frontExtra as any).dashes.push(v);
-          });
-          (this.frontPart as any).offset =
-            SETTINGS.segment.drawn.dashArray.offset.front;
-          (this.frontExtra as any).offset =
-            SETTINGS.segment.drawn.dashArray.offset.front;
-        }
-        if (SETTINGS.segment.glowing.dashArray.front.length > 0) {
-          SETTINGS.segment.glowing.dashArray.front.forEach(v => {
-            (this.glowingFrontPart as any).dashes.push(v);
-            (this.glowingFrontExtra as any).dashes.push(v);
-          });
-          (this.glowingFrontPart as any).offset =
-            SETTINGS.segment.glowing.dashArray.offset.front;
-          (this.glowingFrontExtra as any).offset =
-            SETTINGS.segment.glowing.dashArray.offset.front;
-        }
-        /*SETTINGS.circle.dynamicBackStyle ? Nodule.contrastDashArray(this.dashingArrayFront)*/
-        if (SETTINGS.segment.drawn.dashArray.back.length > 0) {
-          SETTINGS.segment.drawn.dashArray.back.forEach(v => {
-            (this.backPart as any).dashes.push(v);
-            (this.backExtra as any).dashes.push(v);
-          });
-          (this.backPart as any).offset =
-            SETTINGS.segment.drawn.dashArray.offset.back;
-          (this.backExtra as any).offset =
-            SETTINGS.segment.drawn.dashArray.offset.back;
-        }
-
-        if (SETTINGS.segment.glowing.dashArray.back.length > 0) {
-          SETTINGS.segment.glowing.dashArray.back.forEach(v => {
-            (this.glowingBackPart as any).dashes.push(v);
-            (this.glowingBackExtra as any).dashes.push(v);
-          });
-          (this.glowingBackPart as any).offset =
-            SETTINGS.segment.glowing.dashArray.offset.back;
-          (this.glowingBackExtra as any).offset =
-            SETTINGS.segment.glowing.dashArray.offset.back;
-        }
-
         break;
       }
     }

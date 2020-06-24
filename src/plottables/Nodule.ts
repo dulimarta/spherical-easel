@@ -2,6 +2,7 @@ import Two from "two.js";
 import { SENodule } from "@/models/SENodule";
 import { Stylable } from "./Styleable";
 import { Resizeable } from "./Resizeable";
+import SETTINGS from "@/global-settings";
 
 /**
  * A Nodule consists of one or more SVG elements
@@ -38,4 +39,27 @@ export default abstract class Nodule extends Two.Group
   abstract backNormalStyle(): void;
   abstract normalStyle(): void;
   abstract glowStyle(): void;
+
+  /** Set the temporary/glowing style and update the current display*/
+  abstract stylize(flag: string): void;
+
+  //** Get the back contrasting style using the value of contrast */
+  static contrastFillColor(frontColor: string) {
+    return frontColor;
+  }
+  static contrastStrokeColor(frontColor: string) {
+    return frontColor;
+  }
+  static contractStrokeWidth(frontStrokeWidth: number) {
+    return frontStrokeWidth;
+  }
+  static contrastOpacity(frontOpacity: number) {
+    return SETTINGS.contrast * frontOpacity;
+  }
+  static contrastDashArray(frontDashArray: number[]) {
+    return frontDashArray;
+  }
+  static contrastDashArrayOffset(frontOffset: number) {
+    return frontOffset;
+  }
 }
