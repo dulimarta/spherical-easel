@@ -567,7 +567,7 @@ export default class Circle extends Nodule {
     }
   }
 
-  set centerPoint(position: Vector3) {
+  set centerVector(position: Vector3) {
     this.center_.copy(position);
     // this.arcRadius = this.center_.angleTo(this.outer);
     // project the arc length on the sphere to the circle
@@ -575,11 +575,15 @@ export default class Circle extends Nodule {
     this.readjust();
   }
 
-  get centerPoint(): Vector3 {
+  get centerVector(): Vector3 {
     return this.center_;
   }
 
   set radius(arcLengthRadius: number) {
+    console.debug(
+      "Resize circle due to radius change",
+      arcLengthRadius.toDegrees()
+    );
     this.arcRadius = arcLengthRadius;
     this.projectedRadius = Math.sin(arcLengthRadius);
     this.readjust();

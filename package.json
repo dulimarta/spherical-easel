@@ -3,8 +3,10 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "serve": "vue-cli-service serve",
-    "build": "vue-cli-service build",
+    "serve": "npm run app:serve && npm run docs:serve",
+    "build": "npm run app:build && npm run docs:build",
+    "app:serve": "vue-cli-service serve",
+    "app:build": "vue-cli-service build",
     "docs:build": "vuepress build docs",
     "docs:serve": "vuepress dev docs --debug --open",
     "test:unit": "MODE=test vue-cli-service test:unit",

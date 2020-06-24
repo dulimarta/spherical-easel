@@ -61,7 +61,7 @@ export default class CircleHandler extends SelectionHandler {
       // Move the startmarker to the correct location
       this.startMarker.translation.copy(this.currentScreenPoint);
       // Set the center of the circle in the plottable object - also calls temporaryCircle.readjust()
-      this.temporaryCircle.centerPoint = this.currentSpherePoint;
+      this.temporaryCircle.centerVector = this.currentSpherePoint;
     }
   }
 
@@ -80,7 +80,7 @@ export default class CircleHandler extends SelectionHandler {
           this.canvas.add(this.startMarker);
         }
         //compute the radius of the temporary circle
-        this.arcRadius = this.temporaryCircle.centerPoint.angleTo(
+        this.arcRadius = this.temporaryCircle.centerVector.angleTo(
           this.currentSpherePoint
         );
         // Set the radius of the temporary circle - also calls temporaryCircle.readjust()
@@ -129,7 +129,7 @@ export default class CircleHandler extends SelectionHandler {
       circleGroup
         .addCommand(
           new AddCircleCommand({
-            circle: new SECircle(newCircle, this.centerPoint, this.arcRadius),
+            circle: new SECircle(newCircle, this.centerPoint, this.endPoint),
             centerPoint: this.centerPoint,
             circlePoint: this.endPoint
           })
