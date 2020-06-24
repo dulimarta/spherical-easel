@@ -43,28 +43,16 @@ export class SESegment extends SENodule implements Visitable {
     this.ref.orientation = dir;
   }
 
-  get startPoint(): Vector3 {
-    return this.ref.startPoint;
+  get startPoint(): SEPoint {
+    return this.startAt;
   }
 
-  set startPoint(pos: Vector3) {
-    this.ref.startPoint = pos;
+  get endPoint(): SEPoint {
+    return this.endAt;
   }
 
-  get midPoint(): Vector3 {
+  get midVector(): Vector3 {
     return this.ref.midPoint;
-  }
-
-  set midPoint(pos: Vector3) {
-    this.ref.midPoint = pos;
-  }
-
-  get endPoint(): Vector3 {
-    return this.ref.endPoint;
-  }
-
-  set endPoint(pos: Vector3) {
-    this.ref.endPoint = pos;
   }
 
   public isHitAt(spherePos: Vector3): boolean {
@@ -73,10 +61,11 @@ export class SESegment extends SENodule implements Visitable {
     // Is the point between start and mid?
     let angle1;
     let angle2;
-    tmpVec1.crossVectors(this.startPoint, spherePos).normalize();
-    angle1 = this.startPoint.angleTo(spherePos) * Math.sign(tmpVec1.z);
-    tmpVec2.crossVectors(spherePos, this.midPoint).normalize();
-    angle2 = spherePos.angleTo(this.midPoint) * Math.sign(tmpVec2.z);
+    tmpVec1.crossVectors(this.startAt.positionOnSphere, spherePos).normalize();
+    angle1 =
+      this.startAt.positionOnSphere.angleTo(spherePos) * Math.sign(tmpVec1.z);
+    tmpVec2.crossVectors(spherePos, this.midVector).normalize();
+    angle2 = spherePos.angleTo(this.midVector) * Math.sign(tmpVec2.z);
     if (
       Math.sign(angle1) === Math.sign(angle2) &&
       Math.abs(angle1 + angle2 - this.ref.arcLength / 2) < 0.1
@@ -84,10 +73,11 @@ export class SESegment extends SENodule implements Visitable {
       return true;
 
     // Is the point between mid and end?
-    tmpVec1.crossVectors(this.midPoint, spherePos).normalize();
-    angle1 = this.midPoint.angleTo(spherePos) * Math.sign(tmpVec1.z);
-    tmpVec2.crossVectors(spherePos, this.endPoint).normalize();
-    angle2 = spherePos.angleTo(this.endPoint) * Math.sign(tmpVec2.z);
+    tmpVec1.crossVectors(this.midVector, spherePos).normalize();
+    angle1 = this.midVector.angleTo(spherePos) * Math.sign(tmpVec1.z);
+    tmpVec2.crossVectors(spherePos, this.endPoint.positionOnSphere).normalize();
+    angle2 =
+      spherePos.angleTo(this.endPoint.positionOnSphere) * Math.sign(tmpVec2.z);
     return (
       Math.sign(angle1) === Math.sign(angle2) &&
       Math.abs(angle1 + angle2 - this.ref.arcLength / 2) < 0.1
@@ -97,6 +87,7 @@ export class SESegment extends SENodule implements Visitable {
   public update(): void {
     console.debug("Updating segment", this.name);
     this.ref.startPoint = this.startAt.positionOnSphere;
+    this.ref.midPoint = this.midVector;
     this.ref.endPoint = this.endAt.positionOnSphere;
     this.setOutOfDate(false);
     this.updateKids();

@@ -7,6 +7,7 @@ import { Matrix4, Vector3, Matrix3 } from "three";
 import { SEPoint } from "@/models/SEPoint";
 import { SENodule } from "@/models/SENodule";
 import { SELine } from "@/models/SELine";
+import { SESegment } from "@/models/SESegment";
 const tmpMatrix = new Matrix4();
 const tmpNormal = new Matrix3();
 const tmpVector1 = new Vector3();
@@ -27,7 +28,10 @@ export default class MoveHandler extends SelectionHandler {
       if (this.moveTarget instanceof SEPoint) {
         this.moveTarget.positionOnSphere = this.currentSpherePoint;
         this.moveTarget.update();
-      } else if (this.moveTarget instanceof SELine) {
+      } else if (
+        this.moveTarget instanceof SELine ||
+        this.moveTarget instanceof SESegment
+      ) {
         tmpVector1
           .crossVectors(
             this.moveTarget.startPoint.positionOnSphere,
@@ -41,22 +45,12 @@ export default class MoveHandler extends SelectionHandler {
           )
           .normalize();
         let rotAngle = tmpVector1.angleTo(tmpVector2);
-
+        const axisOfRotation = this.moveTarget.startPoint.positionOnSphere;
         tmpVector1.cross(tmpVector2);
         rotAngle *= Math.sign(tmpVector1.z);
-        // console.debug(
-        //   "Move line: rotate around",
-        //   this.moveTarget.startPoint.toFixed(1),
-        //   " angle ",
-        //   rotAngle.toDegrees()
-        // );
-        tmpMatrix.makeRotationAxis(
-          this.moveTarget.startPoint.positionOnSphere,
-          rotAngle
-        );
         tmpNormal.getNormalMatrix(tmpMatrix);
         tmpVector1.copy(this.moveTarget.normalDirection);
-        tmpVector1.applyMatrix4(tmpMatrix);
+        tmpVector1.applyAxisAngle(axisOfRotation, rotAngle);
 
         // console.debug(
         //   "Old dir",
@@ -69,8 +63,14 @@ export default class MoveHandler extends SelectionHandler {
         // tmpVector.applyMatrix4(tmpMatrix);
         // this.moveTarget.startPoint = tmpVector;
         tmpVector1.copy(this.moveTarget.endPoint.positionOnSphere);
-        tmpVector1.applyMatrix4(tmpMatrix);
+        tmpVector1.applyAxisAngle(axisOfRotation, rotAngle);
         this.moveTarget.endPoint.positionOnSphere = tmpVector1;
+        if (this.moveTarget instanceof SESegment) {
+          tmpVector1.copy(this.moveTarget.midVector);
+          tmpVector1.applyAxisAngle(axisOfRotation, rotAngle);
+          this.moveTarget.midVector.copy(tmpVector1);
+        }
+        this.moveTarget.update();
       }
       this.prevSpherePoint.copy(this.currentSpherePoint);
     }
@@ -91,6 +91,11 @@ export default class MoveHandler extends SelectionHandler {
       const freeLines = this.hitLines.filter(n => n.isFreeToMove());
       if (freeLines.length > 0) {
         this.moveTarget = freeLines[0];
+        return;
+      }
+      const freeSegments = this.hitSegments.filter(n => n.isFreeToMove());
+      if (freeSegments.length > 0) {
+        this.moveTarget = freeSegments[0];
         return;
       }
     }

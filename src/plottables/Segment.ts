@@ -56,6 +56,7 @@ export default class Segment extends Nodule {
   private frontExtra: Two.Path;
   private backHalf: Two.Path;
   private backExtra: Two.Path;
+  private midMarker = new Two.Circle(0, 0, 5);
   private arcLen = 0;
   constructor(start?: Vector3, mid?: Vector3, end?: Vector3) {
     super();
@@ -99,8 +100,10 @@ export default class Segment extends Nodule {
     // The back half will be dynamically added to the group
     this.name = "Segment-" + this.id;
 
+    this.midMarker.fill = "orange";
+
     // Enable the following for debugging
-    // this.add(this.majorAxis, this.minorAxis);
+    // this.add(this.majorAxis, this.minorAxis, this.midMarker);
   }
 
   adjustSizeForZoom(factor: number): void {
@@ -162,6 +165,11 @@ export default class Segment extends Nodule {
     const angle2 = this.mid.angleTo(this.end) * Math.sign(tmpVector1.z);
     this.arcLen = angle1 + angle2;
   }
+  private isLongSegment(): boolean {
+    this.calculateArcLength();
+    return this.arcLen >= Math.PI;
+  }
+
   private deformIntoEllipse(): void {
     // Avoid the degenerate case when the normalDirection is "zero"
     if (this.normalDirection.length() < 0.01) return;
@@ -287,6 +295,15 @@ export default class Segment extends Nodule {
 
   set endPoint(position: Vector3) {
     this.end.copy(position).normalize();
+    if (!this.isLongSegment()) {
+      this.mid
+        .copy(this.start)
+        .add(this.end)
+        .normalize();
+    }
+    this.midMarker.translation
+      .set(this.mid.x, this.mid.y)
+      .multiplyScalar(SETTINGS.boundaryCircle.radius);
     // Recalculate the normal vector as the average of two normals
     tmpVector1.crossVectors(this.start, this.mid).normalize();
     tmpVector2.crossVectors(this.mid, this.end).normalize();
@@ -328,6 +345,7 @@ export default class Segment extends Nodule {
     dup.start.copy(this.start);
     dup.mid.copy(this.mid);
     dup.end.copy(this.end);
+    dup.midMarker.translation.copy(this.midMarker.translation);
     dup.normalDirection.copy(this.normalDirection);
     const pool: Two.Anchor[] = [];
     pool.push(...dup.frontHalf.vertices.splice(0));
@@ -355,6 +373,7 @@ export default class Segment extends Nodule {
   addToLayers(layers: Two.Group[]): void {
     this.frontHalf.addTo(layers[LAYER.foreground]);
     this.frontExtra.addTo(layers[LAYER.foreground]);
+    // this.midMarker.addTo(layers[LAYER.foreground]);
     this.backHalf.addTo(layers[LAYER.background]);
     this.backExtra.addTo(layers[LAYER.background]);
   }
@@ -362,6 +381,7 @@ export default class Segment extends Nodule {
   removeFromLayers(/*layers: Two.Group[]*/): void {
     this.frontHalf.remove();
     this.frontExtra.remove();
+    // this.midMarker.remove();
     this.backHalf.remove();
     this.backExtra.remove();
   }
