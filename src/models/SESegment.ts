@@ -63,9 +63,9 @@ export class SESegment extends SENodule implements Visitable {
   }
 
   public isHitAt(spherePos: Vector3): boolean {
-    //TODO: This causes a hit if you pass by the antipode of the line segment!!
     // Is the unit vector to the point is perpendicular to the circle normal?
     if (Math.abs(spherePos.dot(this.ref.normalVector)) > 1e-2) return false;
+    console.log("isHitAt Segment 2");
     // Is the point between start and mid?
     let angle1;
     let angle2;
@@ -76,9 +76,10 @@ export class SESegment extends SENodule implements Visitable {
     angle2 = spherePos.angleTo(this.midVector) * Math.sign(tmpVec2.z);
     if (
       Math.sign(angle1) === Math.sign(angle2) &&
-      Math.abs(angle1 + angle2 - this.ref.arcLength / 2) < 0.1
-    )
+      Math.abs(angle1 + angle2) - this.ref.arcLength / 2 < 0.1
+    ) {
       return true;
+    }
 
     // Is the point between mid and end?
     tmpVec1.crossVectors(this.midVector, spherePos).normalize();
@@ -88,7 +89,7 @@ export class SESegment extends SENodule implements Visitable {
       spherePos.angleTo(this.endPoint.positionOnSphere) * Math.sign(tmpVec2.z);
     return (
       Math.sign(angle1) === Math.sign(angle2) &&
-      Math.abs(angle1 + angle2 - this.ref.arcLength / 2) < 0.1
+      Math.abs(angle1 + angle2) - this.ref.arcLength / 2 < 0.1
     );
   }
 

@@ -221,15 +221,13 @@ export default class Segment extends Nodule {
     this.backGlowStyle();
   }
 
-private isLongSegment(): boolean {
-  this.calculateArcLength();
-  return this.arcLen >= Math.PI;
-}
+  private isLongSegment(): boolean {
+    this.calculateArcLength();
+    return this.arcLen >= Math.PI;
+  }
   /** Reorient the unit circle in 3D and then project the points to 2D
    */
   private calculateArcLength() {
-
-
     // angleTo() seems to return the smaller angle between two vectors
     // To get arc length > 180 we measure it with a break at midpoint
     // and sum the SIGNED length of each.
@@ -237,10 +235,9 @@ private isLongSegment(): boolean {
     const angle1 = this.start.angleTo(this.mid) * Math.sign(tmpVector1.z);
     tmpVector1.crossVectors(this.mid, this.end);
     const angle2 = this.mid.angleTo(this.end) * Math.sign(tmpVector1.z);
-    this.arcLen = angle1 + angle2;
-
-    const arcLen = angle1 + angle2;
-    this.arcLen = Math.abs(arcLen);
+    // this.arcLen = angle1 + angle2;
+    //const arcLen = angle1 + angle2;
+    this.arcLen = Math.abs(angle1 + angle2);
   }
 
   private deformIntoEllipse(): void {
