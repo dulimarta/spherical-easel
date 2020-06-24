@@ -25,10 +25,11 @@ export default class LineHandler extends SelectionHandler {
   protected isCircleAdded: boolean;
   private startPoint: SEPoint | null = null;
   private endPoint: SEPoint | null = null;
-  private line: Line;
+  private tempLine: Line;
   constructor(scene: Two.Group, transformMatrix: Matrix4) {
     super(scene, transformMatrix);
-    this.line = new Line();
+    this.tempLine = new Line();
+    this.tempLine.stylize("temporary");
 
     this.circleOrientation = new Arrow(0.5, 0x006600); // debug only
     this.isMouseDown = false;
@@ -42,7 +43,7 @@ export default class LineHandler extends SelectionHandler {
         if (!this.isCircleAdded) {
           // Do we need to show the preview circle?
           this.isCircleAdded = true;
-          this.canvas.add(this.line);
+          this.canvas.add(this.tempLine);
           // this.line.startPoint = this.startPosition;
 
           // this.circleOrientation.addTo(this.canvas); // for debugging only
@@ -53,10 +54,10 @@ export default class LineHandler extends SelectionHandler {
         this.tmpVector
           .crossVectors(this.startPosition, this.currentSpherePoint)
           .normalize();
-        this.line.orientation = this.tmpVector;
+        this.tempLine.normalVector = this.tmpVector;
       }
     } else if (this.isCircleAdded) {
-      this.line.remove();
+      this.tempLine.remove();
       this.startMarker.remove();
       this.circleOrientation.remove(); // for debugging
       this.isCircleAdded = false;
@@ -93,7 +94,7 @@ export default class LineHandler extends SelectionHandler {
     this.isMouseDown = false;
     if (this.isOnSphere) {
       // Record the second point of the geodesic circle
-      this.line.remove();
+      this.tempLine.remove();
       this.startMarker.remove();
       this.circleOrientation.remove(); // for debugging
       this.isCircleAdded = false;
@@ -102,7 +103,12 @@ export default class LineHandler extends SelectionHandler {
         .normalize();
       // this.line.endPoint = this.currentSpherePoint;
       // this.endV3Point.copy(this.currentPoint);
-      const newLine = this.line.clone(); // true:recursive clone
+      const newLine = this.tempLine.clone(); // true:recursive clone
+      // Stylize the new Line
+      newLine.stylize("default");
+      // Stylize the glowing Line
+      newLine.stylize("glowing");
+
       const lineGroup = new CommandGroup();
       if (this.startPoint === null) {
         // Starting point landed on an open space

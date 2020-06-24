@@ -59,6 +59,7 @@ export default class SegmentHandler extends SelectionHandler {
     this.tempSegment.stylize("temporary");
   }
   mousePressed(event: MouseEvent): void {
+    console.log("mouse press in segment handler");
     // The user is dragging
     this.dragging = true;
     // The Selection Handler forms a list of all the nearby points
@@ -84,6 +85,7 @@ export default class SegmentHandler extends SelectionHandler {
   mouseMoved(event: MouseEvent): void {
     // Highlights the objects near the mouse event
     super.mouseMoved(event);
+
     // If the mouse event is on the sphere and the user is dragging.
     if (this.isOnSphere) {
       if (this.dragging) {

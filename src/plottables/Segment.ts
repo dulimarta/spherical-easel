@@ -69,8 +69,8 @@ export default class Segment extends Nodule {
   private glowingBackExtra: Two.Path;
 
   /**
-   * The styling variables for the drawn circle. The user can modify these.
-   * Created with the Google Sheet "Circle Styling Code" in the "Set Drawn Variables" tab
+   * The styling variables for the drawn segment. The user can modify these.
+   * Created with the Google Sheet "Segment Styling Code" in the "Set Drawn Variables" tab
    */
   // FRONT
   private strokeColorFront = SETTINGS.segment.drawn.strokeColor.front;
@@ -165,18 +165,19 @@ export default class Segment extends Nodule {
     // this.add(this.majorAxis, this.minorAxis);
   }
 
+  // TODO: adjust size of frontextra, backextra and glowing parts use stylize("update")
   adjustSizeForZoom(factor: number): void {
-    const newThickness = SETTINGS.line.thickness.front * factor;
+    const newThickness = this.strokeWidthFront * factor;
     console.debug("Attempt to change line thickness to", newThickness);
     if (factor > 1)
       this.frontPart.linewidth = Math.min(
         newThickness,
-        SETTINGS.line.thickness.max
+        SETTINGS.segment.drawn.strokeWidth.max
       );
     else
       this.frontPart.linewidth = Math.max(
         newThickness,
-        SETTINGS.line.thickness.min
+        SETTINGS.segment.drawn.strokeWidth.min
       );
   }
 

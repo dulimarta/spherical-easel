@@ -29,16 +29,16 @@ export class SELine extends SENodule implements Visitable {
   }
 
   get normalDirection(): Vector3 {
-    return this.ref.orientation;
+    return this.ref.normalVector;
   }
 
   set normalDirection(dir: Vector3) {
-    this.ref.orientation = dir;
+    this.ref.normalVector = dir;
   }
 
   public isHitAt(spherePos: Vector3): boolean {
     // Is the unit vector to the point is perpendicular to the circle normal?
-    return Math.abs(spherePos.dot(this.ref.orientation)) < 1e-2;
+    return Math.abs(spherePos.dot(this.ref.normalVector)) < 1e-2;
     // if (!this.ref.isSegment) return true;
     // tmpVec1.crossVectors(spherePos, this.start.positionOnSphere);
     // tmpVec2.crossVectors(this.end.positionOnSphere, spherePos);
