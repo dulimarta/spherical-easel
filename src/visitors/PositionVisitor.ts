@@ -24,7 +24,6 @@ export class PositionVisitor implements Visitor {
   /* This should never be called because lines are always children of points */
   actionOnLine(m: SELine): void {
     // Apply normal matrix to transform the circle orientation
-    console.debug("Apply action onLine");
     m.update();
     // this.tmpVector.copy(m.normalDirection);
     // this.tmpVector.applyNormalMatrix(this.normalMatrix);

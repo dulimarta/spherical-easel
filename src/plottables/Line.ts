@@ -209,6 +209,11 @@ export default class Line extends Nodule {
 
   set startPoint(pos: Vector3) {
     this.start_.copy(pos);
+    // Show major axis (for debugging only)
+    // this.majorAxis.vertices[0].x = -pos.x * SETTINGS.boundaryCircle.radius;
+    // this.majorAxis.vertices[0].y = -pos.y * SETTINGS.boundaryCircle.radius;
+    // this.majorAxis.vertices[1].x = pos.x * SETTINGS.boundaryCircle.radius;
+    // this.majorAxis.vertices[1].y = pos.y * SETTINGS.boundaryCircle.radius;
     this.normalDirection.crossVectors(this.start_, this.end_).normalize();
     this.deformIntoEllipse();
   }
@@ -219,6 +224,11 @@ export default class Line extends Nodule {
 
   set endPoint(pos: Vector3) {
     this.end_.copy(pos);
+    // Show minor axis (for debugging only)
+    // this.minorAxis.vertices[0].x = -pos.x * SETTINGS.boundaryCircle.radius;
+    // this.minorAxis.vertices[0].y = -pos.y * SETTINGS.boundaryCircle.radius;
+    // this.minorAxis.vertices[1].x = pos.x * SETTINGS.boundaryCircle.radius;
+    // this.minorAxis.vertices[1].y = pos.y * SETTINGS.boundaryCircle.radius;
     this.normalDirection.crossVectors(this.start_, this.end_).normalize();
     this.deformIntoEllipse();
   }
@@ -254,11 +264,13 @@ export default class Line extends Nodule {
 
   addToLayers(layers: Two.Group[]): void {
     this.frontHalf.addTo(layers[LAYER.foreground]);
+    // this.majorAxis.addTo(layers[LAYER.foreground]);
     // if (this.frontArcLen > 0 || !this.isSegment) {
     // Copy the group rotation to individual group member
     // this.frontHalf.rotation = this.rotation;
     // }
     this.backHalf.addTo(layers[LAYER.background]);
+
     // if (this.backArcLen > 0 || !this.isSegment) {
     // Copy the group rotation to individual group member
     // this.backHalf.rotation = this.rotation;

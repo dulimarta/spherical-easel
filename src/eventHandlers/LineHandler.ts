@@ -67,6 +67,7 @@ export default class LineHandler extends SelectionHandler {
   mousePressed(event: MouseEvent): void {
     this.isMouseDown = true;
     this.startPoint = null;
+    this.endPoint = null;
     if (this.isOnSphere) {
       // Record the first point of the geodesic circle
       if (this.hitPoints.length > 0) {
@@ -77,13 +78,13 @@ export default class LineHandler extends SelectionHandler {
         this.startPosition.copy(selected.positionOnSphere);
         this.startPoint = selected;
       } else {
-        console.debug("Pressed on open area");
         /* this.currentPoint is already converted to local sphere coordinate frame */
         this.canvas.add(this.startMarker);
         this.startMarker.translation.copy(this.currentScreenPoint);
         this.startPosition.copy(this.currentSpherePoint);
         this.startPoint = null;
       }
+      this.line.startPoint = this.currentSpherePoint;
       // The following line automatically calls Line setter function
     }
   }
@@ -104,6 +105,7 @@ export default class LineHandler extends SelectionHandler {
       // this.endV3Point.copy(this.currentPoint);
       const newLine = this.line.clone(); // true:recursive clone
       newLine.startPoint = this.startPosition;
+      newLine.endPoint = this.currentSpherePoint;
       const lineGroup = new CommandGroup();
       if (this.startPoint === null) {
         // Starting point landed on an open space
@@ -132,20 +134,18 @@ export default class LineHandler extends SelectionHandler {
           })
         )
         .execute();
-      this.startPoint = null;
-      this.endPoint = null;
     }
   }
 
   // eslint-disable-next-line
   mouseLeave(event: MouseEvent): void {
     super.mouseLeave(event);
-    this.isMouseDown = false;
-    if (this.isCircleAdded) {
-      this.line.remove();
-      this.startMarker.remove();
-      this.circleOrientation.remove(); // for debugging
-      this.isCircleAdded = false;
-    }
+    // this.isMouseDown = false;
+    // if (this.isCircleAdded) {
+    //   this.line.remove();
+    //   this.startMarker.remove();
+    //   this.circleOrientation.remove(); // for debugging
+    //   this.isCircleAdded = false;
+    // }
   }
 }

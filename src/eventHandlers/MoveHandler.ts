@@ -9,7 +9,8 @@ import { SENodule } from "@/models/SENodule";
 import { SELine } from "@/models/SELine";
 const tmpMatrix = new Matrix4();
 const tmpNormal = new Matrix3();
-const tmpVector = new Vector3();
+const tmpVector1 = new Vector3();
+const tmpVector2 = new Vector3();
 export default class MoveHandler extends SelectionHandler {
   private isDragging = false;
   private moveTarget: SENodule | null = null;
@@ -19,31 +20,59 @@ export default class MoveHandler extends SelectionHandler {
     super(layers, transformMatrix);
   }
 
-  mouseMoved(event: MouseEvent) {
+  mouseMoved(event: MouseEvent): void {
     super.mouseMoved(event);
+    if (!this.isOnSphere) return;
     if (this.isDragging) {
-      tmpVector.crossVectors(this.prevSpherePoint, this.currentSpherePoint);
-      const rotAngle =
-        this.prevSpherePoint.angleTo(this.currentSpherePoint) *
-        Math.sign(tmpVector.z);
-      this.prevSpherePoint.copy(this.currentSpherePoint);
       if (this.moveTarget instanceof SEPoint) {
         this.moveTarget.positionOnSphere = this.currentSpherePoint;
+        this.moveTarget.update();
       } else if (this.moveTarget instanceof SELine) {
-        tmpMatrix.makeRotationAxis(this.moveTarget.startPoint, rotAngle);
-        tmpNormal.getNormalMatrix(tmpMatrix);
-        tmpVector.copy(this.moveTarget.normalDirection);
-        tmpVector.applyMatrix4(tmpMatrix);
-        this.moveTarget.normalDirection = tmpVector;
+        tmpVector1
+          .crossVectors(
+            this.moveTarget.startPoint.positionOnSphere,
+            this.prevSpherePoint
+          )
+          .normalize();
+        tmpVector2
+          .crossVectors(
+            this.moveTarget.startPoint.positionOnSphere,
+            this.currentSpherePoint
+          )
+          .normalize();
+        let rotAngle = tmpVector1.angleTo(tmpVector2);
 
-        tmpVector.copy(this.moveTarget.startPoint);
-        tmpVector.applyMatrix4(tmpMatrix);
-        this.moveTarget.startPoint = tmpVector;
-        tmpVector.copy(this.moveTarget.endPoint);
-        tmpVector.applyMatrix4(tmpMatrix);
-        this.moveTarget.endPoint = tmpVector;
+        tmpVector1.cross(tmpVector2);
+        rotAngle *= Math.sign(tmpVector1.z);
+        // console.debug(
+        //   "Move line: rotate around",
+        //   this.moveTarget.startPoint.toFixed(1),
+        //   " angle ",
+        //   rotAngle.toDegrees()
+        // );
+        tmpMatrix.makeRotationAxis(
+          this.moveTarget.startPoint.positionOnSphere,
+          rotAngle
+        );
+        tmpNormal.getNormalMatrix(tmpMatrix);
+        tmpVector1.copy(this.moveTarget.normalDirection);
+        tmpVector1.applyMatrix4(tmpMatrix);
+
+        // console.debug(
+        //   "Old dir",
+        //   this.moveTarget.normalDirection.toFixed(2),
+        //   "new dir",
+        //   tmpVector.toFixed(2)
+        // );
+        this.moveTarget.normalDirection = tmpVector1;
+        // tmpVector.copy(this.moveTarget.startPoint);
+        // tmpVector.applyMatrix4(tmpMatrix);
+        // this.moveTarget.startPoint = tmpVector;
+        tmpVector1.copy(this.moveTarget.endPoint.positionOnSphere);
+        tmpVector1.applyMatrix4(tmpMatrix);
+        this.moveTarget.endPoint.positionOnSphere = tmpVector1;
       }
-      this.moveTarget?.update();
+      this.prevSpherePoint.copy(this.currentSpherePoint);
     }
   }
 
@@ -54,12 +83,12 @@ export default class MoveHandler extends SelectionHandler {
     if (this.hitNodes.length > 0) {
       this.moveFrom.copy(this.currentSpherePoint);
       this.prevSpherePoint.copy(this.currentSpherePoint);
-      const freePoints = this.hitPoints.filter(n => n.isFree());
+      const freePoints = this.hitPoints.filter(n => n.isFreeToMove());
       if (freePoints.length > 0) {
         this.moveTarget = freePoints[0];
         return;
       }
-      const freeLines = this.hitLines.filter(n => n.isFree());
+      const freeLines = this.hitLines.filter(n => n.isFreeToMove());
       if (freeLines.length > 0) {
         this.moveTarget = freeLines[0];
         return;

@@ -41,29 +41,17 @@ export class SELine extends SENodule implements Visitable {
     this.ref.orientation = dir;
   }
 
-  get startPoint(): Vector3 {
-    return this.ref.startPoint;
+  get startPoint(): SEPoint {
+    return this.start;
   }
 
-  set startPoint(pos: Vector3) {
-    this.ref.startPoint = pos;
-  }
-
-  get endPoint(): Vector3 {
-    return this.ref.endPoint;
-  }
-
-  set endPoint(pos: Vector3) {
-    this.ref.endPoint = pos;
+  get endPoint(): SEPoint {
+    return this.end;
   }
 
   public isHitAt(spherePos: Vector3): boolean {
     // Is the unit vector to the point is perpendicular to the circle normal?
     return Math.abs(spherePos.dot(this.ref.orientation)) < 1e-2;
-    // if (!this.ref.isSegment) return true;
-    // tmpVec1.crossVectors(spherePos, this.start.positionOnSphere);
-    // tmpVec2.crossVectors(this.end.positionOnSphere, spherePos);
-    // return tmpVec1.angleTo(tmpVec2) < 1e-1;
   }
 
   public update(): void {

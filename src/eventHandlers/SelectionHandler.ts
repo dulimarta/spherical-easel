@@ -191,6 +191,7 @@ export default abstract class SelectionHandler implements ToolStrategy {
         .filter(obj => obj instanceof SELine)
         .map(obj => obj as SELine);
       this.hitLines.forEach((obj: SELine) => {
+        console.debug("Hit line", obj.name);
         obj.ref.glowStyle();
       });
 

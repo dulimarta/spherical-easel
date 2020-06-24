@@ -54,9 +54,9 @@ export abstract class SENodule {
   /** A node is free if it has no parents OR
    * all its parents are a free node
    */
-  public isFree(): boolean {
+  public isFreeToMove(): boolean {
     if (this.parents.length == 0) return true;
-    return this.parents.every(n => n.isFree());
+    return this.parents.every(n => n.isFreeToMove());
   }
   /* Adds a given SENodule, n, to the kids array of the current SENodule */
   public addKid(n: SENodule) {
