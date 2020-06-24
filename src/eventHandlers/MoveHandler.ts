@@ -32,20 +32,20 @@ export default class MoveHandler extends SelectionHandler {
         this.moveTarget instanceof SELine ||
         this.moveTarget instanceof SESegment
       ) {
+        let pivot = this.moveTarget.startPoint;
+        let freeEnd = this.moveTarget.endPoint;
+        if (event.altKey) {
+          pivot = this.moveTarget.endPoint;
+          freeEnd = this.moveTarget.startPoint;
+        }
         tmpVector1
-          .crossVectors(
-            this.moveTarget.startPoint.positionOnSphere,
-            this.prevSpherePoint
-          )
+          .crossVectors(pivot.positionOnSphere, this.prevSpherePoint)
           .normalize();
         tmpVector2
-          .crossVectors(
-            this.moveTarget.startPoint.positionOnSphere,
-            this.currentSpherePoint
-          )
+          .crossVectors(pivot.positionOnSphere, this.currentSpherePoint)
           .normalize();
         let rotAngle = tmpVector1.angleTo(tmpVector2);
-        const axisOfRotation = this.moveTarget.startPoint.positionOnSphere;
+        const axisOfRotation = pivot.positionOnSphere;
         tmpVector1.cross(tmpVector2);
         rotAngle *= Math.sign(tmpVector1.z);
         tmpNormal.getNormalMatrix(tmpMatrix);
@@ -62,9 +62,9 @@ export default class MoveHandler extends SelectionHandler {
         // tmpVector.copy(this.moveTarget.startPoint);
         // tmpVector.applyMatrix4(tmpMatrix);
         // this.moveTarget.startPoint = tmpVector;
-        tmpVector1.copy(this.moveTarget.endPoint.positionOnSphere);
+        tmpVector1.copy(freeEnd.positionOnSphere);
         tmpVector1.applyAxisAngle(axisOfRotation, rotAngle);
-        this.moveTarget.endPoint.positionOnSphere = tmpVector1;
+        freeEnd.positionOnSphere = tmpVector1;
         if (this.moveTarget instanceof SESegment) {
           tmpVector1.copy(this.moveTarget.midVector);
           tmpVector1.applyAxisAngle(axisOfRotation, rotAngle);
