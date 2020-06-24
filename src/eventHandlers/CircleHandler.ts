@@ -87,7 +87,7 @@ export default class CircleHandler extends SelectionHandler {
         this.temporaryCircle.radius = this.arcRadius;
       }
     } else if (this.isCircleAdded) {
-      // this.temporaryCircle.remove(); // remove from its parent
+      this.temporaryCircle.remove(); // remove from its parent
       this.startMarker.remove();
       this.isCircleAdded = false;
     }
@@ -97,44 +97,72 @@ export default class CircleHandler extends SelectionHandler {
   mouseReleased(event: MouseEvent) {
     this.isMouseDown = false;
     if (this.isOnSphere) {
-      // Record the second point of the geodesic circle
+      // Remove the temporary objects from the scene and mark the temporary object added to the scene
       this.temporaryCircle.remove();
       this.canvas.remove(this.startMarker);
       this.isCircleAdded = false;
-      // this.endV3Point.copy(this.currentPoint);
-      const newCircle = this.temporaryCircle.clone();
-      newCircle.stylize("default");
+      // Before making a new circle make sure that the user has dragged a non-trivial distance
+      // If the user hasn't dragged far enough merely insert a point at the start location
+      if (
+        this.currentSpherePoint.angleTo(this.centerV3Vector) >
+        SETTINGS.circle.minimumRadius
+      ) {
+        // Add a new circle the user has moved far enough
+        // Clone the current circle
+        const newCircle = this.temporaryCircle.clone();
+        // Set the display to the default values
+        newCircle.stylize("default");
+        // Set the glowing display
+        newCircle.stylize("glowing");
 
-      // TODO: Use EventBus.fire()???
-      const circleGroup = new CommandGroup();
-      if (this.centerPoint === null) {
-        // Starting point landed on an open space
-        // we have to create a new point
-        const vtx = new SEPoint(new Point());
-        vtx.positionOnSphere = this.centerV3Vector;
-        this.centerPoint = vtx;
-        circleGroup.addCommand(new AddPointCommand(vtx));
-      }
-      if (this.hitPoints.length > 0) {
-        this.endPoint = this.hitPoints[0];
+        // TODO: Use EventBus.fire()???
+
+        // Create a command group to add the points defining the circle and the circle to the store
+        // This way a single undo click will undo all (potentially three) operations.
+        const circleGroup = new CommandGroup();
+        if (this.centerPoint === null) {
+          // Starting point landed on an open space
+          // we have to create a new point and it to the group/store
+          const vtx = new SEPoint(new Point());
+          vtx.positionOnSphere = this.centerV3Vector;
+          this.centerPoint = vtx;
+          circleGroup.addCommand(new AddPointCommand(vtx));
+        }
+        if (this.hitPoints.length > 0) {
+          this.endPoint = this.hitPoints[0];
+        } else {
+          // endPoint landed on an open space
+          // we have to create a new point and add it to the group/store
+          const vtx = new SEPoint(new Point());
+          vtx.positionOnSphere = this.currentSpherePoint;
+          this.endPoint = vtx;
+          circleGroup.addCommand(new AddPointCommand(vtx));
+        }
+
+        // Add the last command to the group and then execute it (i.e. add the potentially two points and the circle to the store.)
+        circleGroup
+          .addCommand(
+            new AddCircleCommand({
+              circle: new SECircle(newCircle, this.centerPoint, this.endPoint),
+              centerPoint: this.centerPoint,
+              circlePoint: this.endPoint
+            })
+          )
+          .execute();
       } else {
-        // endV3Point landed on an open space
-        // we have to create a new point
-        const vtx = new SEPoint(new Point());
-        vtx.positionOnSphere = this.currentSpherePoint;
-        this.endPoint = vtx;
-        circleGroup.addCommand(new AddPointCommand(vtx));
+        // The user is attempting to make a circle smaller than the minimum radius so
+        // create  a point at the location of the start vector
+        if (this.centerPoint === null) {
+          // Starting point landed on an open space
+          // we have to create a new point and it to the group/store
+          const vtx = new SEPoint(new Point());
+          vtx.positionOnSphere = this.centerV3Vector;
+          this.centerPoint = vtx;
+          const addPoint = new AddPointCommand(vtx);
+          addPoint.execute();
+        }
       }
-
-      circleGroup
-        .addCommand(
-          new AddCircleCommand({
-            circle: new SECircle(newCircle, this.centerPoint, this.endPoint),
-            centerPoint: this.centerPoint,
-            circlePoint: this.endPoint
-          })
-        )
-        .execute();
+      // Clear old points to get ready for creating the next circle.
       this.centerPoint = null;
       this.endPoint = null;
     }

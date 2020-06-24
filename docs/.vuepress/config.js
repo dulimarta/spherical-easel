@@ -148,7 +148,8 @@ module.exports = {
               { text: "Quick Start Guide", link: "/quickstart/" },
               { text: "User Manual", link: "/userguide/" },
               { text: "Tools Documents", link: "/tools/edit" },
-              { text: "Design Documents", link: "/design/" }
+              { text: "Design Documents", link: "/design/" },
+              { text: "Lesson Plans", link: "/lessonplans/" }
             ]
           }
           //{ text: "External", link: "https://google.com" },
@@ -231,6 +232,14 @@ module.exports = {
               //collapsable: false, // optional, defaults to true
               sidebarDepth: 1, // optional, defaults to 1
               children: ["/design/"]
+            },
+            {
+              //The lesson plans idebar file list
+              title: "Lesson Plans", // required
+              //path: "/design/", // optional, link of the title, which should be an absolute path and must exist
+              //collapsable: false, // optional, defaults to true
+              sidebarDepth: 1, // optional, defaults to 1
+              children: [{ title: "Introduction", path: "/lessonplans/" }]
             },
             {
               // The "fallback" side bar file list -- This is the root sidebar

@@ -3,91 +3,151 @@ import Two from "two.js";
 import SETTINGS, { LAYER } from "@/global-settings";
 import Nodule from "./Nodule";
 
-const SUBDIVS = 20;
-// The following lines are for debugging only
-const majorAxis: Two.Line = new Two.Line(
-  0,
-  0,
-  SETTINGS.boundaryCircle.radius,
-  0
-);
-const minorAxis: Two.Line = new Two.Line(
-  0,
-  0,
-  0,
-  SETTINGS.boundaryCircle.radius / 2
-);
-// For debugging only
-// Major axis is along the X-axis
+const SUBDIVS = SETTINGS.segment.numPoints;
+// // The following lines are for debugging only
+// const majorAxis: Two.Line = new Two.Line(
+//   0,
+//   0,
+//   SETTINGS.boundaryCircle.radius,
+//   0
+// );
+// const minorAxis: Two.Line = new Two.Line(
+//   0,
+//   0,
+//   0,
+//   SETTINGS.boundaryCircle.radius / 2
+// );
+// // For debugging only
+// // Major axis is along the X-axis
 
-majorAxis.stroke = "red";
-majorAxis.linewidth = 5;
-// Minor axis is along the Y-axis
-minorAxis.stroke = "green";
-minorAxis.linewidth = 3;
+// majorAxis.stroke = "red";
+// majorAxis.linewidth = 5;
+// // Minor axis is along the Y-axis
+// minorAxis.stroke = "green";
+// minorAxis.linewidth = 3;
 
+// Temporary ThreeJS objects for computing
 const tmpMatrix = new Matrix4();
 const tmpVector1 = new Vector3();
 const tmpVector2 = new Vector3();
 const desiredXAxis = new Vector3();
 const desiredYAxis = new Vector3();
-// const XAxis = new Vector3(1, 0, 0);
+
 /**
- * Geodesic line on a circle
+ * A line segment
  *
  * @export
  * @class Segment
  * @extends {Two.Group}
  */
 export default class Segment extends Nodule {
-  // Declare owner as non-null, this field will be initialized by the associated owner
-  // public owner?: SELine | null = null;
+  /** The start vector of the segment */
   private start: Vector3;
+  /** The midpoint vector of the segment */
   private mid: Vector3;
+  /** The end vector of the segment*/
   private end: Vector3;
-  // public name = "";
-  private oldFrontStroke: Two.Color = "";
-  private oldBackStroke: Two.Color = "";
+  /** A vector perpendicular to the plane containing the segment*/
   private normalDirection: Vector3;
 
-  // const desiredZAxis = new Vector3();
+  /** The matrix that transforms the unit ideal sphere to the current view*/
   private transformMatrix = new Matrix4();
-  private frontHalf: Two.Path;
+
+  /**
+   * A line segment of length longer than \pi has two pieces on one face of the sphere (say the front)
+   * and on piece on the other face of the sphere (say the back). This means that any line segment
+   * can have two front parts or two back parts. The frontExtra and backExtra are variables to represent those
+   * extra parts. There are glowing counterparts for each part.
+   */
+  private frontPart: Two.Path;
   private frontExtra: Two.Path;
-  private backHalf: Two.Path;
+  private backPart: Two.Path;
   private backExtra: Two.Path;
   private midMarker = new Two.Circle(0, 0, 5);
+  private glowingFrontPart: Two.Path;
+  private glowingFrontExtra: Two.Path;
+  private glowingBackPart: Two.Path;
+  private glowingBackExtra: Two.Path;
+
+  /**
+   * The styling variables for the drawn segment. The user can modify these.
+   * Created with the Google Sheet "Segment Styling Code" in the "Set Drawn Variables" tab
+   */
+  // FRONT
+  private strokeColorFront = SETTINGS.segment.drawn.strokeColor.front;
+  private strokeWidthFront = SETTINGS.segment.drawn.strokeWidth.front;
+  private opacityFront = SETTINGS.segment.drawn.opacity.front;
+  private dashArrayFront = SETTINGS.segment.drawn.dashArray.front;
+  private dashArrayOffsetFront = SETTINGS.segment.drawn.dashArray.offset.front;
+  // BACK
+  private strokeColorBack = SETTINGS.segment.dynamicBackStyle
+    ? Nodule.contrastStrokeColor(SETTINGS.segment.drawn.strokeColor.front)
+    : SETTINGS.segment.drawn.strokeColor.back;
+  private strokeWidthBack = SETTINGS.segment.dynamicBackStyle
+    ? Nodule.contractStrokeWidth(SETTINGS.segment.drawn.strokeWidth.front)
+    : SETTINGS.segment.drawn.strokeWidth.back;
+  private opacityBack = SETTINGS.segment.dynamicBackStyle
+    ? Nodule.contrastOpacity(SETTINGS.segment.drawn.opacity.front)
+    : SETTINGS.segment.drawn.opacity.back;
+  private dashArrayBack = SETTINGS.segment.dynamicBackStyle
+    ? Nodule.contrastDashArray(SETTINGS.segment.drawn.dashArray.front)
+    : SETTINGS.segment.drawn.dashArray.back;
+  private dashArrayOffsetBack = SETTINGS.segment.dynamicBackStyle
+    ? Nodule.contrastDashArrayOffset(
+        SETTINGS.segment.drawn.dashArray.offset.front
+      )
+    : SETTINGS.segment.drawn.dashArray.offset.back;
+  /** The arc length of the segment*/
   private arcLen = 0;
   constructor(start?: Vector3, mid?: Vector3, end?: Vector3) {
+    // Name the segment and initialize the Two.Group
     super();
+    this.name = "Segment-" + this.id;
+
+    // Create the vertices for the segment
     const vertices: Two.Vector[] = [];
     for (let k = 0; k < SUBDIVS; k++) {
       vertices.push(new Two.Vector(0, 0));
     }
-    this.frontHalf = new Two.Path(
+    this.frontPart = new Two.Path(
       vertices,
       /* closed */ false,
       /* curve */ false
     );
-    this.frontHalf.linewidth = SETTINGS.line.thickness.front;
-    this.frontHalf.stroke = "green";
-    this.frontHalf.noFill();
-
-    this.frontExtra = this.frontHalf.clone();
+    // Create the other parts cloning the front part
+    this.glowingFrontPart = this.frontPart.clone();
+    this.frontExtra = this.frontPart.clone();
+    this.glowingFrontExtra = this.frontPart.clone();
+    this.backPart = this.frontPart.clone();
+    this.glowingBackPart = this.frontPart.clone();
+    this.backExtra = this.backPart.clone();
+    this.glowingBackExtra = this.backPart.clone();
+    // Clear the vertices from the extra parts because they will be added later as they are exchanged from other parts
     this.frontExtra.vertices.clear();
-
-    // Create the back half circle by cloning the front half
-    this.backHalf = this.frontHalf.clone();
-    this.backHalf.stroke = "gray";
-    (this.backHalf as any).dashes.push(10, 5); // render as dashed lines
-    this.backHalf.linewidth = SETTINGS.line.thickness.back;
-    this.backHalf.noFill();
-    this.backExtra = this.backHalf.clone();
+    this.glowingFrontExtra.vertices.clear();
     this.backExtra.vertices.clear();
-    (this.backExtra as any).dashes.push(10, 5); // render as dashed lines
-    this.backExtra.linewidth = SETTINGS.line.thickness.back;
+    this.glowingBackExtra.vertices.clear();
 
-    this.add(this.backHalf, this.backExtra, this.frontHalf, this.frontExtra);
+    // Set the style that never changes -- Fill
+    this.frontPart.noFill();
+    this.glowingFrontPart.noFill();
+    this.backPart.noFill();
+    this.glowingBackPart.noFill();
+    this.frontExtra.noFill();
+    this.glowingFrontExtra.noFill();
+    this.backExtra.noFill();
+    this.glowingBackExtra.noFill();
+
+    this.add(
+      this.backPart,
+      this.backExtra,
+      this.frontPart,
+      this.frontExtra,
+      this.glowingBackPart,
+      this.glowingBackExtra,
+      this.glowingFrontPart,
+      this.glowingFrontExtra
+    );
     // Be sure to clone() the incoming start and end points
     // Otherwise update by other Line will affect this one!
     if (start) this.start = start.clone();
@@ -96,9 +156,10 @@ export default class Segment extends Nodule {
     else this.end = new Vector3(0, 1, 0);
     if (mid) this.mid = mid.clone();
     else this.mid = new Vector3(0.5, 0.5, 0);
+
+    // Initialize the normal vector
     this.normalDirection = new Vector3(0, 0, 1);
     // The back half will be dynamically added to the group
-    this.name = "Segment-" + this.id;
 
     this.midMarker.fill = "orange";
 
@@ -106,41 +167,48 @@ export default class Segment extends Nodule {
     // this.add(this.majorAxis, this.minorAxis, this.midMarker);
   }
 
+  // TODO: adjust size of frontextra, backextra and glowing parts use stylize("update")
   adjustSizeForZoom(factor: number): void {
-    const newThickness = SETTINGS.line.thickness.front * factor;
+    const newThickness = this.strokeWidthFront * factor;
     console.debug("Attempt to change line thickness to", newThickness);
     if (factor > 1)
-      this.frontHalf.linewidth = Math.min(
+      this.frontPart.linewidth = Math.min(
         newThickness,
-        SETTINGS.line.thickness.max
+        SETTINGS.segment.drawn.strokeWidth.max
       );
     else
-      this.frontHalf.linewidth = Math.max(
+      this.frontPart.linewidth = Math.max(
         newThickness,
-        SETTINGS.line.thickness.min
+        SETTINGS.segment.drawn.strokeWidth.min
       );
   }
 
   frontGlowStyle(): void {
-    this.oldFrontStroke = this.frontHalf.stroke;
-    this.frontHalf.stroke = "red";
-    this.frontExtra.stroke = "red";
+    (this.frontPart as any).visible = true;
+    (this.glowingFrontPart as any).visible = true;
+    (this.frontExtra as any).visible = true;
+    (this.glowingFrontExtra as any).visible = true;
   }
 
   backGlowStyle(): void {
-    this.oldBackStroke = this.backHalf.stroke;
-    this.backHalf.stroke = "red";
-    this.backExtra.stroke = "red";
+    (this.backPart as any).visible = true;
+    (this.glowingBackPart as any).visible = true;
+    (this.backExtra as any).visible = true;
+    (this.glowingBackExtra as any).visible = true;
   }
 
   backNormalStyle(): void {
-    this.backHalf.stroke = this.oldBackStroke;
-    this.backExtra.stroke = this.oldBackStroke;
+    (this.backPart as any).visible = true;
+    (this.glowingBackPart as any).visible = false;
+    (this.backExtra as any).visible = true;
+    (this.glowingBackExtra as any).visible = false;
   }
 
   frontNormalStyle(): void {
-    this.frontHalf.stroke = this.oldFrontStroke;
-    this.frontExtra.stroke = this.oldFrontStroke;
+    (this.frontPart as any).visible = true;
+    (this.glowingFrontPart as any).visible = false;
+    (this.frontExtra as any).visible = true;
+    (this.glowingFrontExtra as any).visible = false;
   }
 
   normalStyle(): void {
@@ -153,9 +221,15 @@ export default class Segment extends Nodule {
     this.backGlowStyle();
   }
 
+private isLongSegment(): boolean {
+  this.calculateArcLength();
+  return this.arcLen >= Math.PI;
+}
   /** Reorient the unit circle in 3D and then project the points to 2D
    */
   private calculateArcLength() {
+
+
     // angleTo() seems to return the smaller angle between two vectors
     // To get arc length > 180 we measure it with a break at midpoint
     // and sum the SIGNED length of each.
@@ -164,10 +238,9 @@ export default class Segment extends Nodule {
     tmpVector1.crossVectors(this.mid, this.end);
     const angle2 = this.mid.angleTo(this.end) * Math.sign(tmpVector1.z);
     this.arcLen = angle1 + angle2;
-  }
-  private isLongSegment(): boolean {
-    this.calculateArcLength();
-    return this.arcLen >= Math.PI;
+
+    const arcLen = angle1 + angle2;
+    this.arcLen = Math.abs(arcLen);
   }
 
   private deformIntoEllipse(): void {
@@ -187,7 +260,7 @@ export default class Segment extends Nodule {
     this.transformMatrix.makeBasis(
       desiredXAxis,
       desiredYAxis,
-      this.normalDirection // The normal direction of the circle plane
+      this.normalDirection // The normal direction of the plane containing the segment
     );
     const toPos = []; // Remember the indices of neg-to-pos crossing
     const toNeg = []; // Remember the indices of pos-to-neg crossing
@@ -199,16 +272,23 @@ export default class Segment extends Nodule {
     // Each half (and extra) path will pull anchor points from
     // this pool as needed
     const pool: Two.Anchor[] = [];
-    pool.push(...this.frontHalf.vertices.splice(0));
+    pool.push(...this.frontPart.vertices.splice(0));
     pool.push(...this.frontExtra.vertices.splice(0));
-    pool.push(...this.backHalf.vertices.splice(0));
+    pool.push(...this.backPart.vertices.splice(0));
     pool.push(...this.backExtra.vertices.splice(0));
+    const glowingPool: Two.Anchor[] = [];
+    glowingPool.push(...this.glowingFrontPart.vertices.splice(0));
+    glowingPool.push(...this.glowingFrontExtra.vertices.splice(0));
+    glowingPool.push(...this.glowingBackPart.vertices.splice(0));
+    glowingPool.push(...this.glowingBackExtra.vertices.splice(0));
 
     // We begin with the "main" paths as the current active paths
     // As we find additional zero-crossing, we then switch to the
     // "extra" paths
-    let activeFront = this.frontHalf.vertices;
-    let activeBack = this.backHalf.vertices;
+    let activeFront = this.frontPart.vertices;
+    let activeBack = this.backPart.vertices;
+    let glowingActiveFront = this.glowingFrontPart.vertices;
+    let glowingActiveBack = this.glowingBackPart.vertices;
     for (let pos = 0; pos < 2 * SUBDIVS; pos++) {
       const angle = (pos / (2 * SUBDIVS - 1)) * Math.abs(this.arcLen);
       tmpVector1
@@ -222,18 +302,20 @@ export default class Segment extends Nodule {
         // We have a zero crossing
         if (thisSign > 0) {
           // If we already had a positive crossing
-          // The next chunk is a split front half
+          // The next chunk is a split front part
           if (toPos.length > 0) {
             activeFront = this.frontExtra.vertices;
+            glowingActiveFront = this.glowingFrontExtra.vertices;
             posIndex = 0;
           }
           toPos.push(pos);
         }
         // If we already had a negative crossing
-        // The next chunk is a split back half
+        // The next chunk is a split back part
         if (thisSign < 0) {
           if (toNeg.length > 0) {
             activeBack = this.backExtra.vertices;
+            glowingActiveBack = this.glowingBackExtra.vertices;
             negIndex = 0;
           }
           toNeg.push(pos);
@@ -244,55 +326,89 @@ export default class Segment extends Nodule {
         if (posIndex === activeFront.length) {
           // transfer one cell from the common pool
           activeFront.push(pool.pop()!);
+          glowingActiveFront.push(glowingPool.pop()!);
         }
         activeFront[posIndex].x = tmpVector1.x;
         activeFront[posIndex].y = tmpVector1.y;
+        glowingActiveFront[posIndex].x = tmpVector1.x;
+        glowingActiveFront[posIndex].y = tmpVector1.y;
         posIndex++;
       } else {
         if (negIndex === activeBack.length) {
           // transfer one cell from the common pool
           activeBack.push(pool.pop()!);
+          glowingActiveBack.push(glowingPool.pop()!);
         }
         activeBack[negIndex].x = tmpVector1.x;
         activeBack[negIndex].y = tmpVector1.y;
+        glowingActiveBack[negIndex].x = tmpVector1.x;
+        glowingActiveBack[negIndex].y = tmpVector1.y;
         negIndex++;
       }
     }
   }
 
-  set startPoint(position: Vector3) {
-    this.start.copy(position).normalize();
-    // The circle plane passes through three points the origin (0,0,0)
-    // and the two points (start (S) and end (E)).
-    // The normal of this plane is the cross product of SxE
+  /**
+   * Set the start point vector of the segment
+   * Update the normal vector by averaging the normal to the plane containing
+   *   1) The origin, the start point, and the midpoint
+   *   2) The origin, the midpoint, and the (new) endpoint
+   * Finish by updating the display of the segment
+   */
+  set startVector(newStartVector: Vector3) {
+    this.start.copy(newStartVector).normalize();
+    // Recalculate the normal vector as the average of two (potentially correct) normals
     tmpVector1.crossVectors(this.start, this.mid).normalize();
     tmpVector2.crossVectors(this.mid, this.end).normalize();
     this.normalDirection.addVectors(tmpVector1, tmpVector2).normalize();
-    // this.normalDirection.crossVectors(this.start, this.end).normalize();
-    // Be sure the normal direction is pointing towards the viewer
-    // if (this.normalDirection.z < 0) this.normalDirection.multiplyScalar(-1);
+
     this.deformIntoEllipse();
-    // this.deformIn2D();
   }
 
-  get startPoint(): Vector3 {
+  /**
+   * Return the start point vector of the segment
+   */
+  get startVector(): Vector3 {
     return this.start;
   }
 
-  set midPoint(position: Vector3) {
-    this.mid.copy(position).normalize();
+  // /**
+  //  * Return the arc length of the segment
+  //  */
+  // arcLength(): number {
+  //   return this.arcLen;
+  // }
 
-    // Recalculate the normal vector as the average of two normals
+  /**
+   * Set the midpoint vector of the segment
+   * Update the normal vector by averaging the normal to the plane containing
+   *   1) The origin, the (new) start point, and the midpoint
+   *   2) The origin, the midpoint, and the endpoint
+   * Does *not* update the display of the segment
+   */
+  set midVector(newMidVector: Vector3) {
+    // Copy and normalize the newEndPointVector into this.end
+    this.mid.copy(newMidVector).normalize();
+    // Recalculate the normal vector as the average of two (potentially correct) normals
     tmpVector1.crossVectors(this.start, this.mid).normalize();
     tmpVector2.crossVectors(this.mid, this.end).normalize();
     this.normalDirection.addVectors(tmpVector1, tmpVector2).normalize();
     this.calculateArcLength();
   }
 
-  get midPoint(): Vector3 {
+  /**
+   * Return the midpoint vector of the segment
+   */
+  get midVector(): Vector3 {
     return this.mid;
   }
-
+  /**
+   * Set the endpoint vector of the segment
+   * Update the normal vector by averaging the normal to the plane containing
+   *   1) The origin, the start point, and the midpoint
+   *   2) The origin, the midpoint, and the (new) endpoint
+   * Finish by updating the display of the segment
+   */
   set endPoint(position: Vector3) {
     this.end.copy(position).normalize();
     if (!this.isLongSegment()) {
@@ -304,31 +420,52 @@ export default class Segment extends Nodule {
     this.midMarker.translation
       .set(this.mid.x, this.mid.y)
       .multiplyScalar(SETTINGS.boundaryCircle.radius);
+
     // Recalculate the normal vector as the average of two normals
     tmpVector1.crossVectors(this.start, this.mid).normalize();
     tmpVector2.crossVectors(this.mid, this.end).normalize();
     this.normalDirection.addVectors(tmpVector1, tmpVector2).normalize();
-
+    // Update the display of the segment
     this.deformIntoEllipse();
   }
 
-  get endPoint(): Vector3 {
+  /**
+   * Return the endpoint vector of the segment
+   */
+  get endVector(): Vector3 {
     return this.end;
   }
-
-  set orientation(dir: Vector3) {
-    this.normalDirection.copy(dir).normalize();
-    tmpVector1.crossVectors(this.normalDirection, dir);
-    const rotAngle = this.normalDirection.angleTo(dir);
-    // this.deformIn2D();
+  /**
+   * Set the normal vector to the plane containing the segment
+   * Doesn't change the length of the segment
+   * Updates the start, end, and mid vectors by rotating them
+   * by the angle between the (old) normal vector and newNormal
+   *
+   * This doesn't update the display of the segment
+   *
+   * I'm not convinced this works TODO: Fix? Understand?
+   */
+  set normalVector(newNormalVector: Vector3) {
+    // Update normal directions to be newNormal and normalize
+    this.normalDirection.copy(newNormalVector).normalize();
+    // tmpVector1 should be zero because this.normalDirection was just set to point in the same direction as newNormal?!?!?!?!?!
+    tmpVector1.crossVectors(this.normalDirection, newNormalVector);
+    // Calculate the angle between the old normal and the newNormal
+    const rotAngle = this.normalDirection.angleTo(newNormalVector);
+    // Create a matrix4 that is rotation about tempVector1
     tmpMatrix.makeRotationAxis(tmpVector1, rotAngle);
+    // Update the display of the segment
     this.deformIntoEllipse();
+    // Apply the rotation matrix
     this.start.applyMatrix4(tmpMatrix);
     this.end.applyMatrix4(tmpMatrix);
     this.mid.applyMatrix4(tmpMatrix);
   }
 
-  get orientation(): Vector3 {
+  /**
+   * Return the normal direction to the plane of the segment
+   */
+  get normalVector(): Vector3 {
     return this.normalDirection;
   }
 
@@ -338,8 +475,13 @@ export default class Segment extends Nodule {
 
   // It looks like we have to define our own clone() function
   // The builtin clone() does not seem to work correctly
+  /**
+   * Clone the segment
+   */
   clone(): this {
+    // Create a new segment and copy all this's properties into it
     const dup = new Segment(this.start, this.end);
+    //Copy name and start/end/mid/normal vectors
     dup.name = this.name;
     dup.arcLen = this.arcLen;
     dup.start.copy(this.start);
@@ -347,42 +489,322 @@ export default class Segment extends Nodule {
     dup.end.copy(this.end);
     dup.midMarker.translation.copy(this.midMarker.translation);
     dup.normalDirection.copy(this.normalDirection);
+    //Copy the vertices of front/back/part
     const pool: Two.Anchor[] = [];
-    pool.push(...dup.frontHalf.vertices.splice(0));
-    pool.push(...dup.backHalf.vertices.splice(0));
+    pool.push(...dup.frontPart.vertices.splice(0)); //concatenates the pool array and the front vertices array and empties the frontPart array
+    pool.push(...dup.backPart.vertices.splice(0)); //concatenates the pool array and the back vertices array and empties the backPart array
 
-    this.frontHalf.vertices.forEach((v, pos: number) => {
-      dup.frontHalf.vertices.push(pool.pop()!);
-      dup.frontHalf.vertices[pos].copy(v);
+    // The length of the Pool array is 2*SUBDIVISIONS = this.frontPart.length + this.frontExtra.length + this.backPart.length + this.backExtra.length because dup.frontPart and dup.backPart initially contains all the vertices and frontExtra and backExtra are empty.
+    this.frontPart.vertices.forEach((v, pos: number) => {
+      // Add a vertex in the frontPart (while taking one away from the pool)
+      dup.frontPart.vertices.push(pool.pop()!); // Exclamation point means that the linter assumes that the popped object is non-null
+      // Copy the this.frontPart vertex v into the newly added vertex in frontPart
+      dup.frontPart.vertices[pos].copy(v); //
     });
+    // Repeat for the frontExtra/backPart/backExtra
     this.frontExtra.vertices.forEach((v, pos: number) => {
       dup.frontExtra.vertices.push(pool.pop()!);
       dup.frontExtra.vertices[pos].copy(v);
     });
-    this.backHalf.vertices.forEach((v, pos: number) => {
-      dup.backHalf.vertices.push(pool.pop()!);
-      dup.backHalf.vertices[pos].copy(v);
+    this.backPart.vertices.forEach((v, pos: number) => {
+      dup.backPart.vertices.push(pool.pop()!);
+      dup.backPart.vertices[pos].copy(v);
     });
     this.backExtra.vertices.forEach((v, pos: number) => {
       dup.backExtra.vertices.push(pool.pop()!);
       dup.backExtra.vertices[pos].copy(v);
     });
+
+    // Repeat for all glowing parts/extras
+    const glowingPool: Two.Anchor[] = [];
+    glowingPool.push(...dup.glowingFrontPart.vertices.splice(0));
+    glowingPool.push(...dup.glowingBackPart.vertices.splice(0));
+    this.glowingFrontPart.vertices.forEach((v, pos: number) => {
+      dup.glowingFrontPart.vertices.push(glowingPool.pop()!);
+      dup.glowingFrontPart.vertices[pos].copy(v);
+    });
+    this.glowingFrontExtra.vertices.forEach((v, pos: number) => {
+      dup.glowingFrontExtra.vertices.push(glowingPool.pop()!);
+      dup.glowingFrontExtra.vertices[pos].copy(v);
+    });
+    this.glowingBackPart.vertices.forEach((v, pos: number) => {
+      dup.glowingBackPart.vertices.push(glowingPool.pop()!);
+      dup.glowingBackPart.vertices[pos].copy(v);
+    });
+    this.backExtra.vertices.forEach((v, pos: number) => {
+      dup.glowingBackExtra.vertices.push(glowingPool.pop()!);
+      dup.glowingBackExtra.vertices[pos].copy(v);
+    });
     return dup as this;
   }
 
   addToLayers(layers: Two.Group[]): void {
-    this.frontHalf.addTo(layers[LAYER.foreground]);
+    this.frontPart.addTo(layers[LAYER.foreground]);
     this.frontExtra.addTo(layers[LAYER.foreground]);
-    // this.midMarker.addTo(layers[LAYER.foreground]);
-    this.backHalf.addTo(layers[LAYER.background]);
+    this.backPart.addTo(layers[LAYER.background]);
     this.backExtra.addTo(layers[LAYER.background]);
+    this.glowingFrontPart.addTo(layers[LAYER.foregroundGlowing]);
+    this.glowingFrontExtra.addTo(layers[LAYER.foregroundGlowing]);
+    this.glowingBackPart.addTo(layers[LAYER.backgroundGlowing]);
+    this.glowingBackExtra.addTo(layers[LAYER.backgroundGlowing]);
   }
 
   removeFromLayers(/*layers: Two.Group[]*/): void {
-    this.frontHalf.remove();
+    this.frontPart.remove();
     this.frontExtra.remove();
-    // this.midMarker.remove();
-    this.backHalf.remove();
+    this.backPart.remove();
     this.backExtra.remove();
+    this.glowingFrontPart.remove();
+    this.glowingFrontExtra.remove();
+    this.glowingBackPart.remove();
+    this.glowingBackExtra.remove();
+  }
+
+  //set the rendering style of the segment
+  stylize(flag: string): void {
+    switch (flag) {
+      case "temporary": {
+        // The style for the temporary segment display.  These options are not user modifiable.
+        // Created with the Google Sheet "Segment Styling Code" in the "Temporary" tab
+
+        // FRONT PART
+        this.frontPart.stroke = SETTINGS.segment.temp.strokeColor.front;
+        this.frontPart.linewidth = SETTINGS.segment.temp.strokeWidth.front;
+        this.frontPart.opacity = SETTINGS.segment.temp.opacity.front;
+        if (SETTINGS.segment.temp.dashArray.front.length > 0) {
+          SETTINGS.segment.temp.dashArray.front.forEach(v => {
+            (this.frontPart as any).dashes.push(v);
+          });
+          (this.frontPart as any).offset =
+            SETTINGS.segment.temp.dashArray.offset.front;
+        }
+        // FRONT EXTRA
+        this.frontExtra.stroke = SETTINGS.segment.temp.strokeColor.front;
+        this.frontExtra.linewidth = SETTINGS.segment.temp.strokeWidth.front;
+        this.frontExtra.opacity = SETTINGS.segment.temp.opacity.front;
+        if (SETTINGS.segment.temp.dashArray.front.length > 0) {
+          SETTINGS.segment.temp.dashArray.front.forEach(v => {
+            (this.frontExtra as any).dashes.push(v);
+          });
+          (this.frontExtra as any).offset =
+            SETTINGS.segment.temp.dashArray.offset.front;
+        }
+        // BACK PART
+        this.backPart.stroke = SETTINGS.segment.temp.strokeColor.back;
+        this.backPart.linewidth = SETTINGS.segment.temp.strokeWidth.back;
+        this.backPart.opacity = SETTINGS.segment.temp.opacity.back;
+        if (SETTINGS.segment.temp.dashArray.back.length > 0) {
+          SETTINGS.segment.temp.dashArray.back.forEach(v => {
+            (this.backPart as any).dashes.push(v);
+          });
+          (this.backPart as any).offset =
+            SETTINGS.segment.temp.dashArray.offset.back;
+        }
+        // BACK EXTRA
+        this.backExtra.stroke = SETTINGS.segment.temp.strokeColor.back;
+        this.backExtra.linewidth = SETTINGS.segment.temp.strokeWidth.back;
+        this.backExtra.opacity = SETTINGS.segment.temp.opacity.back;
+        if (SETTINGS.segment.temp.dashArray.back.length > 0) {
+          SETTINGS.segment.temp.dashArray.back.forEach(v => {
+            (this.backExtra as any).dashes.push(v);
+          });
+          (this.backExtra as any).offset =
+            SETTINGS.segment.temp.dashArray.offset.back;
+        }
+        // The temporary display is never highlighted
+        (this.glowingFrontPart as any).visible = false;
+        (this.glowingBackPart as any).visible = false;
+        (this.glowingFrontExtra as any).visible = false;
+        (this.glowingBackExtra as any).visible = false;
+        break;
+      }
+      case "glowing": {
+        // The style for the glowing circle display.  These options are not user modifiable.
+        // Created with the Google Sheet "Segment Styling Code" in the "Glowing" tab
+
+        // FRONT PART
+        this.glowingFrontPart.stroke =
+          SETTINGS.segment.glowing.strokeColor.front;
+        this.glowingFrontPart.linewidth =
+          SETTINGS.segment.glowing.edgeWidth +
+          SETTINGS.segment.drawn.strokeWidth.front;
+        this.glowingFrontPart.opacity = SETTINGS.segment.glowing.opacity.front;
+        if (SETTINGS.segment.glowing.dashArray.front.length > 0) {
+          SETTINGS.segment.glowing.dashArray.front.forEach(v => {
+            (this.glowingFrontPart as any).dashes.push(v);
+          });
+          (this.glowingFrontPart as any).offset =
+            SETTINGS.segment.glowing.dashArray.offset.front;
+        }
+        // FRONT EXTRA
+        this.glowingFrontExtra.stroke =
+          SETTINGS.segment.glowing.strokeColor.front;
+        this.glowingFrontExtra.linewidth =
+          SETTINGS.segment.glowing.edgeWidth +
+          SETTINGS.segment.drawn.strokeWidth.front;
+        this.glowingFrontExtra.opacity = SETTINGS.segment.glowing.opacity.front;
+        if (SETTINGS.segment.glowing.dashArray.front.length > 0) {
+          SETTINGS.segment.glowing.dashArray.front.forEach(v => {
+            (this.glowingFrontExtra as any).dashes.push(v);
+          });
+          (this.glowingFrontExtra as any).offset =
+            SETTINGS.segment.glowing.dashArray.offset.front;
+        }
+
+        // BACK PART
+        this.glowingBackPart.stroke = SETTINGS.segment.glowing.strokeColor.back;
+        this.glowingBackPart.linewidth =
+          SETTINGS.segment.glowing.edgeWidth +
+          SETTINGS.segment.drawn.strokeWidth.back;
+        this.glowingBackPart.opacity = SETTINGS.segment.glowing.opacity.back;
+        if (SETTINGS.segment.glowing.dashArray.back.length > 0) {
+          SETTINGS.segment.glowing.dashArray.back.forEach(v => {
+            (this.glowingBackPart as any).dashes.push(v);
+          });
+          (this.glowingBackPart as any).offset =
+            SETTINGS.segment.glowing.dashArray.offset.back;
+        }
+        // BACK EXTRA
+        this.glowingBackExtra.stroke =
+          SETTINGS.segment.glowing.strokeColor.back;
+        this.glowingBackExtra.linewidth =
+          SETTINGS.segment.glowing.edgeWidth +
+          SETTINGS.segment.drawn.strokeWidth.back;
+        this.glowingBackExtra.opacity = SETTINGS.segment.glowing.opacity.back;
+        if (SETTINGS.segment.glowing.dashArray.back.length > 0) {
+          SETTINGS.segment.glowing.dashArray.back.forEach(v => {
+            (this.glowingBackExtra as any).dashes.push(v);
+          });
+          (this.glowingBackExtra as any).offset =
+            SETTINGS.segment.glowing.dashArray.offset.back;
+        }
+        break;
+      }
+      case "update": {
+        // Use the current variables to update the display style
+        // Created with the Google Sheet "Segment Styling Code" in the "Drawn Update" tab
+        // FRONT PART
+        this.frontPart.stroke = this.strokeColorFront;
+        this.frontPart.linewidth = this.strokeWidthFront;
+        this.frontPart.opacity = this.opacityFront;
+        if (this.dashArrayFront.length > 0) {
+          (this.frontPart as any).dashes.length = 0;
+          this.dashArrayFront.forEach(v => {
+            (this.frontPart as any).dashes.push(v);
+          });
+          (this.frontPart as any).offset = this.dashArrayOffsetFront;
+        }
+        // FRONT EXTRA
+        this.frontExtra.stroke = this.strokeColorFront;
+        this.frontExtra.linewidth = this.strokeWidthFront;
+        this.frontExtra.opacity = this.opacityFront;
+        if (this.dashArrayFront.length > 0) {
+          (this.frontExtra as any).dashes.length = 0;
+          this.dashArrayFront.forEach(v => {
+            (this.frontExtra as any).dashes.push(v);
+          });
+          (this.frontExtra as any).offset = this.dashArrayOffsetFront;
+        }
+        // BACK PART
+        this.backPart.stroke = this.strokeColorBack;
+        this.backPart.linewidth = this.strokeWidthBack;
+        this.backPart.opacity = this.opacityBack;
+        if (this.dashArrayBack.length > 0) {
+          (this.backPart as any).dashes.length = 0;
+          this.dashArrayBack.forEach(v => {
+            (this.backPart as any).dashes.push(v);
+          });
+          (this.backPart as any).offset = this.dashArrayOffsetBack;
+        }
+        // BACK EXTRA
+        this.backExtra.stroke = this.strokeColorBack;
+        this.backExtra.linewidth = this.strokeWidthBack;
+        this.backExtra.opacity = this.opacityBack;
+        if (this.dashArrayBack.length > 0) {
+          (this.backExtra as any).dashes.length = 0;
+          this.dashArrayBack.forEach(v => {
+            (this.backExtra as any).dashes.push(v);
+          });
+          (this.backExtra as any).offset = this.dashArrayOffsetBack;
+        }
+        // UPDATE the glowing width so it is always bigger than the drawn width
+        this.glowingFrontPart.linewidth =
+          this.strokeWidthFront + SETTINGS.segment.glowing.edgeWidth;
+        this.glowingFrontExtra.linewidth =
+          this.strokeWidthFront + SETTINGS.segment.glowing.edgeWidth;
+        this.glowingBackPart.linewidth =
+          this.strokeWidthBack + SETTINGS.segment.glowing.edgeWidth;
+        this.glowingBackExtra.linewidth =
+          this.strokeWidthBack + SETTINGS.segment.glowing.edgeWidth;
+        break;
+      }
+      case "default":
+      default: {
+        // Reset the style to the defaults i.e. Use the global defaults to update the display style
+        // Created with the Google Sheet "Segment Styling Code" in the "Drawn Set To Defaults" tab
+        // FRONT PART
+        this.frontPart.stroke = SETTINGS.segment.drawn.strokeColor.front;
+        this.frontPart.linewidth = SETTINGS.segment.drawn.strokeWidth.front;
+        this.frontPart.opacity = SETTINGS.segment.drawn.opacity.front;
+        if (SETTINGS.segment.drawn.dashArray.front.length > 0) {
+          (this.frontPart as any).dashes.length = 0;
+          SETTINGS.segment.drawn.dashArray.front.forEach(v => {
+            (this.frontPart as any).dashes.push(v);
+          });
+          (this.frontPart as any).offset =
+            SETTINGS.segment.drawn.dashArray.offset.front;
+        }
+        // FRONT EXTRA
+        this.frontExtra.stroke = SETTINGS.segment.drawn.strokeColor.front;
+        this.frontExtra.linewidth = SETTINGS.segment.drawn.strokeWidth.front;
+        this.frontExtra.opacity = SETTINGS.segment.drawn.opacity.front;
+        if (SETTINGS.segment.drawn.dashArray.front.length > 0) {
+          (this.frontExtra as any).dashes.length = 0;
+          SETTINGS.segment.drawn.dashArray.front.forEach(v => {
+            (this.frontExtra as any).dashes.push(v);
+          });
+          (this.frontExtra as any).offset =
+            SETTINGS.segment.drawn.dashArray.offset.front;
+        }
+        // BACK PART
+        this.backPart.stroke = SETTINGS.segment.drawn.strokeColor.back;
+        this.backPart.linewidth = SETTINGS.segment.drawn.strokeWidth.back;
+        this.backPart.opacity = SETTINGS.segment.drawn.opacity.back;
+        if (SETTINGS.segment.drawn.dashArray.back.length > 0) {
+          (this.backPart as any).dashes.length = 0;
+          SETTINGS.segment.drawn.dashArray.back.forEach(v => {
+            (this.backPart as any).dashes.push(v);
+          });
+          (this.backPart as any).offset =
+            SETTINGS.segment.drawn.dashArray.offset.back;
+        }
+        // BACK EXTRA
+        this.backExtra.stroke = SETTINGS.segment.drawn.strokeColor.back;
+        this.backExtra.linewidth = SETTINGS.segment.drawn.strokeWidth.back;
+        this.backExtra.opacity = SETTINGS.segment.drawn.opacity.back;
+        if (SETTINGS.segment.drawn.dashArray.back.length > 0) {
+          (this.backExtra as any).dashes.length = 0;
+          SETTINGS.segment.drawn.dashArray.back.forEach(v => {
+            (this.backExtra as any).dashes.push(v);
+          });
+          (this.backExtra as any).offset =
+            SETTINGS.segment.drawn.dashArray.offset.back;
+        }
+        // UPDATE the glowing width so it is always bigger than the drawn width
+        this.glowingFrontPart.linewidth =
+          SETTINGS.segment.glowing.edgeWidth +
+          SETTINGS.segment.drawn.strokeWidth.front;
+        this.glowingFrontExtra.linewidth =
+          SETTINGS.segment.glowing.edgeWidth +
+          SETTINGS.segment.drawn.strokeWidth.front;
+        this.glowingBackPart.linewidth =
+          SETTINGS.segment.glowing.edgeWidth +
+          SETTINGS.segment.drawn.strokeWidth.back;
+        this.glowingBackExtra.linewidth =
+          SETTINGS.segment.glowing.edgeWidth +
+          SETTINGS.segment.drawn.strokeWidth.back;
+        break;
+      }
+    }
   }
 }

@@ -4,6 +4,7 @@ import { Vector3 } from "three";
 import { Visitable } from "@/visitors/Visitable";
 import { Visitor } from "@/visitors/Visitor";
 import { SEPoint } from "./SEPoint";
+import SETTINGS from "@/global-settings";
 
 const tmpVec1 = new Vector3();
 const tmpVec2 = new Vector3();
@@ -13,13 +14,16 @@ let SEGMENT_COUNT = 0;
  * startPoint, midPoint, and endPoint
  */
 export class SESegment extends SENodule implements Visitable {
+  /**
+   * The plottable (TwoJS) segment associated with this model segment
+   */
   public ref: Segment;
   private startAt: SEPoint;
   private endAt: SEPoint;
 
   /**
    *
-   * @param s plottable (TwoJS) segment associated with this segment
+   * @param seg plottable (TwoJS) segment associated with this model segment
    */
   constructor(s: Segment, start: SEPoint, end: SEPoint) {
     super();
@@ -36,11 +40,14 @@ export class SESegment extends SENodule implements Visitable {
   }
 
   get normalDirection(): Vector3 {
-    return this.ref.orientation;
+    return this.ref.normalVector;
   }
 
+  /**
+   * TODO: I'm not sure that set normalVector works -- be careful here
+   */
   set normalDirection(dir: Vector3) {
-    this.ref.orientation = dir;
+    this.ref.normalVector = dir;
   }
 
   get startPoint(): SEPoint {
@@ -52,12 +59,13 @@ export class SESegment extends SENodule implements Visitable {
   }
 
   get midVector(): Vector3 {
-    return this.ref.midPoint;
+    return this.ref.midVector;
   }
 
   public isHitAt(spherePos: Vector3): boolean {
+    //TODO: This causes a hit if you pass by the antipode of the line segment!!
     // Is the unit vector to the point is perpendicular to the circle normal?
-    if (Math.abs(spherePos.dot(this.ref.orientation)) > 1e-2) return false;
+    if (Math.abs(spherePos.dot(this.ref.normalVector)) > 1e-2) return false;
     // Is the point between start and mid?
     let angle1;
     let angle2;
@@ -84,10 +92,28 @@ export class SESegment extends SENodule implements Visitable {
     );
   }
 
+  // public isHitAt(spherePos: Vector3): boolean {
+  //   // Is the spherePos close to the plane containing the segment?
+  //   //  Is the angle between the normal vector to the segment and the spherePos close to Pi/2?
+  //   //  That is, is the cos(angle) close to zero?
+  //   if (
+  //     Math.abs(spherePos.dot(this.ref.normalVector)) >
+  //     SETTINGS.segment.hitIdealDistance
+  //   )
+  //     return false;
+  //   // If the code is here spherePos is close to the plane containing the segment
+  //   //  Is it close the line segment which may be longer or shorter than Pi?
+  //   //  Is the angle from the midPoint vector to the spherePos less than 1/2(arcLength + wiggle room)
+  //   return (
+  //     2 * spherePos.angleTo(this.ref.midVector) - this.ref.arcLength() <
+  //     SETTINGS.segment.hitIdealDistance
+  //   );
+  // }
+
   public update(): void {
     console.debug("Updating segment", this.name);
-    this.ref.startPoint = this.startAt.positionOnSphere;
-    this.ref.midPoint = this.midVector;
+    this.ref.startVector = this.startAt.positionOnSphere;
+    this.ref.midVector = this.midVector;
     this.ref.endPoint = this.endAt.positionOnSphere;
     this.setOutOfDate(false);
     this.updateKids();
