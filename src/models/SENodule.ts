@@ -1,4 +1,5 @@
 import { Vector3 } from "three";
+import Point from "@/plottables/Point";
 
 let NODE_COUNT = 0;
 export abstract class SENodule {
@@ -51,13 +52,27 @@ export abstract class SENodule {
     });
   }
 
-  /** A node is free if it has no parents OR
-   * all its parents are a free node
+  /**
+   * A node is free if it is a point with no parents (i.e. a free point) OR
+   * all its parents are free points
+   *
+   * TODO: I would like not to have to import a plottable but I can't figure out how to
+   * get the obvious isFreePoint:
+   *
+   * public isFreePoint(): boolean {
+   *   return (this instanceof SEPoint) && this.parents.length == 0;
+   * }
+   * to work! :-(
+   *
    */
-  public isFreeToMove(): boolean {
-    if (this.parents.length == 0) return true;
-    return this.parents.every(n => n.isFreeToMove());
+  public isFreePoint(): boolean {
+    return (this as any).ref instanceof Point && this.parents.length == 0;
   }
+  public isFreeToMove(): boolean {
+    if (this.isFreePoint()) return true;
+    return this.parents.every(n => n.isFreePoint());
+  }
+
   /* Adds a given SENodule, n, to the kids array of the current SENodule */
   public addKid(n: SENodule) {
     this.kids.push(n);
