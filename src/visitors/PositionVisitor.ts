@@ -41,17 +41,18 @@ export class PositionVisitor implements Visitor {
     // this.tmpVector.copy(s.normalDirection);
     // this.tmpVector.applyNormalMatrix(this.normalMatrix);
     // s.normalDirection = this.tmpVector;
-    this.tmpVector.copy(s.ref.startVector);
-    this.tmpVector.applyMatrix4(this.transformMatrix);
-    s.ref.startVector = this.tmpVector;
+    // this.tmpVector.copy(s.ref.startVector);
+    // this.tmpVector.applyMatrix4(this.transformMatrix);
+    // s.ref.startVector = this.tmpVector;
 
-    this.tmpVector.copy(s.ref.midVector);
-    this.tmpVector.applyMatrix4(this.transformMatrix);
-    s.ref.midVector = this.tmpVector;
+    // this.tmpVector.copy(s.ref.midVector);
+    // this.tmpVector.applyMatrix4(this.transformMatrix);
+    // s.ref.midVector = this.tmpVector;
 
-    this.tmpVector.copy(s.ref.endPoint);
-    this.tmpVector.applyMatrix4(this.transformMatrix);
-    s.ref.endPoint = this.tmpVector;
+    // this.tmpVector.copy(s.ref.endPoint);
+    // this.tmpVector.applyMatrix4(this.transformMatrix);
+    // s.ref.endPoint = this.tmpVector;
+    s.update();
   }
 
   actionOnCircle(c: SECircle): void {
