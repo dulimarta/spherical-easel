@@ -36,7 +36,7 @@ export default class MoveHandler extends SelectionHandler {
     // We want to measure the rotation angle with respect to the rotationAxis
     // Essentially we rotate a plane "hinged" at the rotationAxis so
     // the angle of rotation must be measure as the amount of changes of the
-    // plane normal vectoe
+    // plane normal vector
 
     // determine the plane normal vector at the previous position
     tmpVector1
@@ -50,6 +50,10 @@ export default class MoveHandler extends SelectionHandler {
     const axisOfRotation = pivot.positionOnSphere;
     tmpVector1.cross(tmpVector2);
     rotAngle *= Math.sign(tmpVector1.z);
+    // Reverse the direction of the rotation on the back of the sphere
+    if (this.currentSpherePoint.z < 0) {
+      rotAngle *= -1;
+    }
     tmpNormal.getNormalMatrix(tmpMatrix);
     tmpVector1.copy(targetLine.normalDirection);
     tmpVector1.applyAxisAngle(axisOfRotation, rotAngle);
@@ -150,9 +154,9 @@ export default class MoveHandler extends SelectionHandler {
         return;
       }
 
-      const freeCirles = this.hitCircles.filter(n => n.isFreeToMove());
-      if (freeCirles.length > 0) {
-        this.moveTarget = freeCirles[0];
+      const freeCircles = this.hitCircles.filter(n => n.isFreeToMove());
+      if (freeCircles.length > 0) {
+        this.moveTarget = freeCircles[0];
         return;
       }
     }

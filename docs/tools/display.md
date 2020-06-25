@@ -66,11 +66,14 @@ Move the location of a single object.
 - **Not** all objects are movable. Only free objects are movable. For example, an intersection point (which is on the third layer) of two circles (on the second layer) depends on the two circles and **cannot** be independently moved. However, each circle can be moved because the points on which the circle itself depends are at the top (i.e. first layer) of the dependency structure.
 - Moving a free circle or ellipse is the same thing as simultaneously moving the points or objects on which it depends.
 - Non-ellipse conics and parametric curves (user defined) are never moveable. Parametric curves can be "moved" using a Measurement object in the parametric definition.
-- Moving a line or line segment rotates that line about the axis connecting the first point on the line or line segment to the antipode of that first point.
+- Moving a free line or line segment rotates that line about the axis connecting one of the points on the line or line segment to its antipode. Pressing the <kbd>Alt</kbd> key toggles the point that the line or line segment rotates about.
 - If this tool is activated with any single free object selected, clicking and dragging the mouse will change the location of that object.
-  :::
 
-  ::: tool-title
+::: tip
+When moving a free line or line segment pressing the <kbd>Alt</kbd> key toggles the point that the line or line segment rotates about.
+:::
+
+::: tool-title
 
 ## Rotation
 

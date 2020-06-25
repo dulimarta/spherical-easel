@@ -37,6 +37,10 @@ All selected objects will glow (i.e. have a highlight color displayed in the bac
 
 ::: tip Line Segments
 
-It is possible to draw line segment of length longer than $\pi$. If the user creates a line segment by dragging to the antipode of the start point and then pushes and holds the <kyb>Ctrl</kyb> key (and the <kyb>Shift</kyb> key if the antipode is on the back of the sphere), the segment will be extensible through and past the antipode of the start. In addition, if after releasing the mouse, the line segment connecting two points goes the wrong way around the sphere, you can use the [Toggle Line Segment Tool](/tools/basic.html#toggle-line-segment) to change it.
+It is possible to a draw line segment of length longer than $\pi$. If the user creates a line segment by dragging to the antipode of the start point and then pushes and holds the <kbd>Ctrl</kbd> key (and the <kbd>Shift</kbd> key if the antipode is on the back of the sphere), the segment will be extensible through and past the antipode of the start. In addition, if after releasing the mouse, the line segment connecting two points goes the wrong way around the sphere, you can use the [Toggle Line Segment Tool](/tools/basic.html#toggle-line-segment) to change it.
 
+:::
+
+::: tip Moving Lines or Line Segments
+When moving a free line or line segment pressing the <kbd>Alt</kbd> key toggles the point that the line or line segment rotates about.
 :::
