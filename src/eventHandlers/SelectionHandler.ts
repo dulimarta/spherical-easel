@@ -171,14 +171,7 @@ export default abstract class SelectionHandler implements ToolStrategy {
         this.currentScreenPoint
       );
       this.infoText.hide();
-      if (this.hitNodes.length > 0) {
-        this.infoText.showWithDelay(this.layers[LAYER.foregroundText], 300);
-        this.infoText.text = this.hitNodes[0].name;
-        this.infoText.translation.set(
-          this.currentScreenPoint.x,
-          -this.currentScreenPoint.y + 16
-        );
-      }
+      // Prioritize to highligh points
 
       this.hitPoints = this.hitNodes
         .filter((obj: SENodule) => obj instanceof SEPoint)
@@ -191,7 +184,6 @@ export default abstract class SelectionHandler implements ToolStrategy {
         .filter(obj => obj instanceof SELine)
         .map(obj => obj as SELine);
       this.hitLines.forEach((obj: SELine) => {
-        console.debug("Hit line", obj.name);
         obj.ref.glowStyle();
       });
 
@@ -208,6 +200,24 @@ export default abstract class SelectionHandler implements ToolStrategy {
       this.hitCircles.forEach((c: SECircle) => {
         c.ref.glowStyle();
       });
+      if (this.hitPoints.length > 0) {
+        this.infoText.showWithDelay(this.layers[LAYER.foregroundText], 300);
+        this.infoText.text = this.hitPoints[0].name;
+        this.infoText.translation.set(
+          this.currentScreenPoint.x,
+          -this.currentScreenPoint.y + 16
+        );
+      } else {
+        const hitOthers = this.hitNodes.filter(n => !(n instanceof SEPoint));
+        if (hitOthers.length > 0) {
+          this.infoText.showWithDelay(this.layers[LAYER.foregroundText], 300);
+          this.infoText.text = hitOthers[0].name;
+          this.infoText.translation.set(
+            this.currentScreenPoint.x,
+            -this.currentScreenPoint.y + 16
+          );
+        }
+      }
     } else {
       this.isOnSphere = false;
       this.currentSpherePoint.set(NaN, NaN, NaN);

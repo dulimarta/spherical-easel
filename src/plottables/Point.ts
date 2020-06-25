@@ -88,6 +88,7 @@ export default class Point extends Nodule {
   get position(): Vector3 {
     return this._pos;
   }
+
   set position(v: Vector3) {
     this._pos.copy(v);
     if (v.z < 0) this.backNormalStyle();
@@ -96,6 +97,7 @@ export default class Point extends Nodule {
       .set(v.x, v.y)
       .multiplyScalar(SETTINGS.boundaryCircle.radius);
   }
+
   adjustSizeForZoom(factor: number): void {
     const newRadius = defaultRadiusFront * factor;
     let newScale = 1;

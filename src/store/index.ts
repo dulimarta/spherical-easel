@@ -11,6 +11,9 @@ import { Vector3, Matrix4 } from "three";
 import { SESegment } from "@/models/SESegment";
 import { PositionVisitor } from "@/visitors/PositionVisitor";
 import { SENodule } from "@/models/SENodule";
+import { SEIntersection } from "@/models/SEIntersection";
+import Point from "@/plottables/Point";
+import { LAYER } from "@/global-settings";
 
 Vue.use(Vuex);
 
@@ -24,21 +27,51 @@ Vue.use(Vuex);
 const PIXEL_CLOSE_ENOUGH = 8;
 const ANGLE_SMALL_ENOUGH = 1; // within 1 degree?
 const tmpMatrix = new Matrix4();
-const initialState = {
+const initialState: AppState = {
   sphereRadius: 0,
   editMode: "rotate",
   // slice(): create a copy of the array
   transformMatElements: tmpMatrix.elements.slice(),
   // nodes: [], // Possible future addition (array of SENodule)
-  plottables: [],
+  nodules: [],
   layers: [],
   points: [],
   lines: [],
   segments: [],
-  circles: []
+  circles: [],
+  intersections: []
 };
 
 const positionVisitor = new PositionVisitor();
+
+function determineIntersectionsWithLine(state: AppState, line: SELine): void {
+  const tmp = new Vector3();
+  state.lines
+    .filter(z => z.id !== line.id)
+    .forEach((z: SELine) => {
+      tmp.crossVectors(line.normalDirection, z.normalDirection).normalize();
+      console.debug(
+        `intersection(s) between ${line.name} (${line.normalDirection.toFixed(
+          2
+        )}) and ${z.name} (${z.normalDirection.toFixed(2)}) is ${tmp.toFixed(
+          3
+        )}`
+      );
+      const v = new Point();
+      const x = new SEIntersection(v, line, z);
+      x.positionOnSphere = tmp;
+      state.intersections.push(x);
+      state.nodules.push(x);
+      v.addToLayers(state.layers);
+
+      const v2 = new Point();
+      const x2 = new SEIntersection(v2, line, z);
+      x2.positionOnSphere = tmp.multiplyScalar(-1);
+      state.intersections.push(x2);
+      state.nodules.push(x2);
+      v2.addToLayers(state.layers);
+    });
+}
 export default new Vuex.Store({
   state: initialState,
   mutations: {
@@ -56,17 +89,17 @@ export default new Vuex.Store({
     },
     addPoint(state: AppState, point: SEPoint): void {
       state.points.push(point);
-      state.plottables.push(point);
+      state.nodules.push(point);
       point.ref.addToLayers(state.layers);
     },
     removePoint(state: AppState, pointId: number): void {
       const pos = state.points.findIndex(x => x.id === pointId);
-      const pos2 = state.plottables.findIndex(x => x.id === pointId);
+      const pos2 = state.nodules.findIndex(x => x.id === pointId);
       if (pos >= 0) {
         state.points[pos].ref.removeFromLayers();
         state.points[pos].removeSelfSafely();
         state.points.splice(pos, 1);
-        state.plottables.splice(pos2, 1);
+        state.nodules.splice(pos2, 1);
       }
     },
     addLine(
@@ -78,23 +111,24 @@ export default new Vuex.Store({
       }: { line: SELine; startPoint: SEPoint; endPoint: SEPoint }
     ): void {
       state.lines.push(line);
-      state.plottables.push(line);
+      state.nodules.push(line);
       line.ref.addToLayers(state.layers);
 
       // Add this line as a child of the two points
       startPoint.registerChild(line);
       endPoint.registerChild(line);
+      determineIntersectionsWithLine(state, line);
     },
     removeLine(state: AppState, lineId: number): void {
       const pos = state.lines.findIndex(x => x.id === lineId);
-      const pos2 = state.plottables.findIndex(x => x.id === lineId);
+      const pos2 = state.nodules.findIndex(x => x.id === lineId);
       if (pos >= 0) {
         /* victim line is found */
         const victimLine = state.lines[pos];
         victimLine.ref.removeFromLayers();
         victimLine.removeSelfSafely();
         state.lines.splice(pos, 1); // Remove the line from the list
-        state.plottables.splice(pos2, 1);
+        state.nodules.splice(pos2, 1);
       }
     },
     addSegment(
@@ -106,20 +140,20 @@ export default new Vuex.Store({
       }: { segment: SESegment; startPoint: SEPoint; endPoint: SEPoint }
     ): void {
       state.segments.push(segment);
-      state.plottables.push(segment);
+      state.nodules.push(segment);
       startPoint.registerChild(segment);
       endPoint.registerChild(segment);
       segment.ref.addToLayers(state.layers);
     },
     removeSegment(state: AppState, segId: number): void {
       const pos = state.segments.findIndex(x => x.id === segId);
-      const pos2 = state.plottables.findIndex(x => x.id === segId);
+      const pos2 = state.nodules.findIndex(x => x.id === segId);
       if (pos >= 0) {
         const victim = state.segments[pos];
         victim.ref.removeFromLayers();
         victim.removeSelfSafely();
         state.segments.splice(pos, 1);
-        state.plottables.splice(pos2, 1);
+        state.nodules.splice(pos2, 1);
       }
     },
     addCircle(
@@ -131,21 +165,21 @@ export default new Vuex.Store({
       }: { circle: SECircle; centerPoint: SEPoint; circlePoint: SEPoint }
     ): void {
       state.circles.push(circle);
-      state.plottables.push(circle);
+      state.nodules.push(circle);
       circle.ref.addToLayers(state.layers);
       centerPoint.registerChild(circle);
       circlePoint.registerChild(circle);
     },
     removeCircle(state: AppState, circleId: number): void {
       const circlePos = state.circles.findIndex(x => x.id === circleId);
-      const pos2 = state.plottables.findIndex(x => x.id === circleId);
+      const pos2 = state.nodules.findIndex(x => x.id === circleId);
       if (circlePos >= 0) {
         /* victim line is found */
         const victimCircle: SECircle = state.circles[circlePos];
         victimCircle.ref.removeFromLayers();
         victimCircle.removeSelfSafely();
         state.circles.splice(circlePos, 1); // Remove the line from the list
-        state.plottables.splice(pos2, 1);
+        state.nodules.splice(pos2, 1);
       }
     },
     rotateSphere(state: AppState, rotationMat: Matrix4) {
@@ -172,7 +206,7 @@ export default new Vuex.Store({
       idealPosition: Vector3,
       screenPosition: Two.Vector
     ): SENodule[] => {
-      return state.plottables.filter(obj => obj.isHitAt(idealPosition));
+      return state.nodules.filter(obj => obj.isHitAt(idealPosition));
     },
     /** Find nearby points by checking the distance in the ideal sphere
      * or screen distance (in pixels)

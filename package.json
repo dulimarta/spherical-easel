@@ -3,8 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "serve": "npm run app:serve && npm run docs:serve",
-    "build": "npm run app:build && npm run docs:build",
+    "serve": "npm run app:serve & npm run docs:serve # Concurrent",
+    "build": "npm run app:build && npm run docs:build # Serial run",
     "app:serve": "vue-cli-service serve",
     "app:build": "vue-cli-service build",
     "docs:build": "vuepress build docs",
