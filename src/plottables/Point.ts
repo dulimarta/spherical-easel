@@ -185,6 +185,10 @@ export default class Point extends Nodule {
     this.glowingBackPoint.remove();
   }
 
+  stylize(flag: string): void {
+    throw new Error("Method not implemented.");
+  }
+
   public update(): void {
     this.normalStyle();
   }

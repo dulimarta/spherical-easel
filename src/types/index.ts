@@ -10,7 +10,7 @@ import { SENodule } from "@/models/SENodule";
 export interface Selectable {
   hit(x: number, y: number, coord: unknown, who: unknown): boolean;
 }
-export interface Moveable {}
+// export interface Moveable {}
 
 export interface AppState {
   layers: Two.Group[];

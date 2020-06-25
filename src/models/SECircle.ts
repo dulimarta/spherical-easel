@@ -9,15 +9,15 @@ import SETTINGS from "@/global-settings";
 
 export class SECircle extends SENodule implements Visitable {
   public ref!: Circle;
-  private normalDir: Vector3;
+  // private normalDir: Vector3;
   private radius: number; // Arc length (in radians) not straight line distance
   private centerAt: SEPoint;
   private pointAt: SEPoint;
 
   constructor(c: Circle, ctr: SEPoint, out: SEPoint) {
     super();
-    this.normalDir = new Vector3();
-    this.normalDir.copy(c.centerVector);
+    // this.normalDir = new Vector3();
+    // this.normalDir.copy(c.centerVector);
     this.centerAt = ctr;
     this.pointAt = out;
     this.radius = ctr.positionOnSphere.angleTo(out.positionOnSphere);
@@ -27,12 +27,13 @@ export class SECircle extends SENodule implements Visitable {
   }
 
   set normalDirection(v: Vector3) {
-    this.normalDir.copy(v);
     this.ref.centerVector = v;
   }
 
+  /* On a unit sphere the coordinates of a point is also the normal vector
+   *of the sphere at that point */
   get normalDirection(): Vector3 {
-    return this.normalDir;
+    return this.ref.centerVector;
   }
 
   get centerPoint(): SEPoint {
@@ -44,7 +45,7 @@ export class SECircle extends SENodule implements Visitable {
   }
 
   public isHitAt(spherePos: Vector3): boolean {
-    const angleToCenter = spherePos.angleTo(this.normalDir);
+    const angleToCenter = spherePos.angleTo(this.normalDirection);
     return (
       Math.abs(angleToCenter - this.radius) < SETTINGS.circle.hitIdealDistance
     );
@@ -56,12 +57,12 @@ export class SECircle extends SENodule implements Visitable {
     const newRadius = this.centerPoint.positionOnSphere.angleTo(
       this.circlePoint.positionOnSphere
     );
-    console.debug(
-      "Must update SECircle radius to",
-      newRadius.toDegrees().toFixed(2),
-      "center to",
-      this.centerPoint.positionOnSphere.toFixed(2)
-    );
+    // console.debug(
+    //   "Must update SECircle radius to",
+    //   newRadius.toDegrees().toFixed(2),
+    //   "center to",
+    //   this.centerPoint.positionOnSphere.toFixed(2)
+    // );
     this.radius = newRadius;
     this.ref.radius = newRadius;
     this.ref.centerVector = this.centerAt.positionOnSphere;

@@ -35,7 +35,7 @@ export class SEPoint extends SENodule implements Visitable {
   }
 
   set positionOnSphere(pos: Vector3) {
-    console.log("Updating Point", this.name, "position to", pos.toFixed(1));
+    // console.log("Updating Point", this.name, "position to", pos.toFixed(1));
     this.ref.position = pos.normalize();
   }
 

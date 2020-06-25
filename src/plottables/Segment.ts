@@ -708,7 +708,7 @@ export default class Segment extends Nodule {
         this.backPart.opacity = this.opacityBack;
         if (this.dashArrayBack.length > 0) {
           (this.backPart as any).dashes.length = 0;
-          this.dashArrayBack.forEach(v => {
+          this.dashArrayBack.forEach((v: number) => {
             (this.backPart as any).dashes.push(v);
           });
           (this.backPart as any).offset = this.dashArrayOffsetBack;
@@ -719,7 +719,7 @@ export default class Segment extends Nodule {
         this.backExtra.opacity = this.opacityBack;
         if (this.dashArrayBack.length > 0) {
           (this.backExtra as any).dashes.length = 0;
-          this.dashArrayBack.forEach(v => {
+          this.dashArrayBack.forEach((v: number) => {
             (this.backExtra as any).dashes.push(v);
           });
           (this.backExtra as any).offset = this.dashArrayOffsetBack;

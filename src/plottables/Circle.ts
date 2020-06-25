@@ -408,7 +408,7 @@ export default class Circle extends Nodule {
           v.y = Math.cos(angle) * fromVector.y + Math.sin(angle) * toVector.y;
         }
       });
-      //console.log("front", frontLen, "back", backLen);
+      // console.log("front", frontLen, "back", backLen);
 
       // Display front and back
       (this.frontFill as any).visible = true;
@@ -543,13 +543,12 @@ export default class Circle extends Nodule {
   }
 
   set radius(arcLengthRadius: number) {
-    console.debug(
-      "Resize circle due to radius change",
-      arcLengthRadius.toDegrees()
-    );
     this.arcRadius = arcLengthRadius;
     this.projectedRadius = Math.sin(arcLengthRadius);
     this.readjust();
+  }
+  get radius(): number {
+    return this.arcRadius;
   }
 
   // set circlePoint(position: Vector3) {

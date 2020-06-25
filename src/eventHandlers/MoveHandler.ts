@@ -13,6 +13,11 @@ const tmpMatrix = new Matrix4();
 const tmpNormal = new Matrix3();
 const tmpVector1 = new Vector3();
 const tmpVector2 = new Vector3();
+const arcNormal1 = new Vector3();
+const arcNormal2 = new Vector3();
+const currCircleCenter = new Vector3();
+const prevCircleOuter = new Vector3();
+
 export default class MoveHandler extends SelectionHandler {
   private isDragging = false;
   private moveTarget: SENodule | null = null;
@@ -79,36 +84,58 @@ export default class MoveHandler extends SelectionHandler {
     targetLine.update();
   }
 
+  /**
+   * Move the the center point of the circle while keeping its outer
+   * point as close as possible to the old outer point position.
+   *
+   * The algorithm below implements the move in two steps
+   * (1) Translate both the center (C) and outer (U) points by the same
+   * amount as dictated by the mouse move distance.
+   * Let C1 and U1 be the new location of the center and outer points.
+   * (2) Rotate the circle around its own center (C1) such that C1, U1, and
+   * are on the same line (arc)
+   * @param targetCircle
+   */
   private doMoveCircle(targetCircle: SECircle) {
+    // tmpVector1> the normal of the plane containing the arc between
+    // the previous sphere position and the current sphere position
+    currCircleCenter.copy(targetCircle.centerPoint.positionOnSphere);
     tmpVector1
       .crossVectors(this.prevSpherePoint, this.currentSpherePoint)
       .normalize();
     const moveArcDistance = this.prevSpherePoint.angleTo(
       this.currentSpherePoint
     );
-    console.debug(
-      "Moving the entire circle",
-      targetCircle.name,
-      "by",
-      moveArcDistance.toDegrees().toFixed(2)
-    );
-    console.debug(
-      "Current center",
-      targetCircle.centerPoint.name,
-      "at",
-      targetCircle.centerPoint.positionOnSphere.toFixed(2)
-    );
-
-    // Move the center point
+    // (1) Translate both the center and outer points by the same amount
     tmpVector2.copy(targetCircle.centerPoint.positionOnSphere);
     tmpVector2.applyAxisAngle(tmpVector1, moveArcDistance);
-    console.debug("New center", tmpVector2.toFixed(2));
     targetCircle.centerPoint.positionOnSphere = tmpVector2;
-
-    // Move the other point
     tmpVector2.copy(targetCircle.circlePoint.positionOnSphere);
     tmpVector2.applyAxisAngle(tmpVector1, moveArcDistance);
     targetCircle.circlePoint.positionOnSphere = tmpVector2;
+
+    // (2) Rotate the circle so the new center, the new outer, and the
+    // old outer points are collinear
+    arcNormal1
+      .crossVectors(
+        targetCircle.centerPoint.positionOnSphere,
+        targetCircle.circlePoint.positionOnSphere
+      )
+      .normalize();
+    // Compute the plane normal vector of the arc between
+    // the new center and the old outer
+    arcNormal2
+      .crossVectors(targetCircle.centerPoint.positionOnSphere, prevCircleOuter)
+      .normalize();
+    tmpVector1.crossVectors(arcNormal1, arcNormal2).normalize();
+    const circleRotation =
+      arcNormal1.angleTo(arcNormal2) * Math.sign(tmpVector1.z);
+    tmpVector1.copy(targetCircle.circlePoint.positionOnSphere);
+    tmpVector1.applyAxisAngle(
+      targetCircle.centerPoint.positionOnSphere,
+      circleRotation
+    );
+    targetCircle.circlePoint.positionOnSphere = tmpVector1;
     targetCircle.update();
   }
 
@@ -154,9 +181,10 @@ export default class MoveHandler extends SelectionHandler {
         return;
       }
 
-      const freeCircles = this.hitCircles.filter(n => n.isFreeToMove());
-      if (freeCircles.length > 0) {
-        this.moveTarget = freeCircles[0];
+      const freeCirles = this.hitCircles.filter(n => n.isFreeToMove());
+      if (freeCirles.length > 0) {
+        this.moveTarget = freeCirles[0];
+        prevCircleOuter.copy(freeCirles[0].circlePoint.positionOnSphere);
         return;
       }
     }

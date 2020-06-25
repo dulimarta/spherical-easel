@@ -41,13 +41,13 @@ export class PositionVisitor implements Visitor {
     // this.tmpVector.copy(s.normalDirection);
     // this.tmpVector.applyNormalMatrix(this.normalMatrix);
     // s.normalDirection = this.tmpVector;
-    this.tmpVector.copy(s.ref.startPoint);
+    this.tmpVector.copy(s.ref.startVector);
     this.tmpVector.applyMatrix4(this.transformMatrix);
-    s.ref.startPoint = this.tmpVector;
+    s.ref.startVector = this.tmpVector;
 
-    this.tmpVector.copy(s.ref.midPoint);
+    this.tmpVector.copy(s.ref.midVector);
     this.tmpVector.applyMatrix4(this.transformMatrix);
-    s.ref.midPoint = this.tmpVector;
+    s.ref.midVector = this.tmpVector;
 
     this.tmpVector.copy(s.ref.endPoint);
     this.tmpVector.applyMatrix4(this.transformMatrix);

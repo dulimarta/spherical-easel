@@ -141,7 +141,7 @@ class SphereFrame {
     The vertices of the path are the image under the affineMatrx using homogenous coordinates
     TODO: In the future implement options like fillcolor, stroke, linewidth, opacity
   */
-  updateTwoObject(affineMatrix: number[][], path: Two.Path, options?: object) {
+  updateTwoObject(affineMatrix: number[][], path: Two.Path) {
     path.vertices.forEach((v, index) => {
       const newVector = Coordinates.matrixTimesVector(affineMatrix, [
         v.x,
