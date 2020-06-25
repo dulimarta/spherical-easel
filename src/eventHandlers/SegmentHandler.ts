@@ -128,7 +128,7 @@ export default class SegmentHandler extends SelectionHandler {
         if (event.ctrlKey) midVector.multiplyScalar(-1);
         // Update the midpoint and endpoint of the temporary segment
         this.tempSegment.midVector = midVector;
-        this.tempSegment.endPoint = this.currentSpherePoint;
+        this.tempSegment.endVector = this.currentSpherePoint;
         // Debugging midpoint only
         midMarker.translation
           .set(midVector.x, midVector.y)

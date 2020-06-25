@@ -115,7 +115,7 @@ export class SESegment extends SENodule implements Visitable {
     console.debug("Updating segment", this.name);
     this.ref.startVector = this.startAt.positionOnSphere;
     this.ref.midVector = this.midVector;
-    this.ref.endPoint = this.endAt.positionOnSphere;
+    this.ref.endVector = this.endAt.positionOnSphere;
     this.setOutOfDate(false);
     this.updateKids();
   }

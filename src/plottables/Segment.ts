@@ -123,10 +123,13 @@ export default class Segment extends Nodule {
     this.backExtra = this.backPart.clone();
     this.glowingBackExtra = this.backPart.clone();
     // Clear the vertices from the extra parts because they will be added later as they are exchanged from other parts
-    this.frontExtra.vertices.clear();
-    this.glowingFrontExtra.vertices.clear();
-    this.backExtra.vertices.clear();
-    this.glowingBackExtra.vertices.clear();
+
+    // The clear() extension functio works only of JS Array, but
+    // not on Two.JS Collection class. Use splice() instead.
+    this.frontExtra.vertices.splice(0);
+    this.glowingFrontExtra.vertices.splice(0);
+    this.backExtra.vertices.splice(0);
+    this.glowingBackExtra.vertices.splice(0);
 
     // Set the style that never changes -- Fill
     this.frontPart.noFill();
@@ -224,6 +227,17 @@ export default class Segment extends Nodule {
   private isLongSegment(): boolean {
     this.calculateArcLength();
     return this.arcLen >= Math.PI;
+  }
+
+  private repositionMidPoint(start: Vector3, end: Vector3): void {
+    if (!this.isLongSegment()) {
+      this.mid
+        .copy(start)
+        .add(end)
+        .normalize();
+    } else {
+      // FIXME: recalculate the midpoint
+    }
   }
   /** Reorient the unit circle in 3D and then project the points to 2D
    */
@@ -353,6 +367,7 @@ export default class Segment extends Nodule {
    * Finish by updating the display of the segment
    */
   set startVector(newStartVector: Vector3) {
+    this.repositionMidPoint(newStartVector, this.end);
     this.start.copy(newStartVector).normalize();
     // Recalculate the normal vector as the average of two (potentially correct) normals
     tmpVector1.crossVectors(this.start, this.mid).normalize();
@@ -406,14 +421,9 @@ export default class Segment extends Nodule {
    *   2) The origin, the midpoint, and the (new) endpoint
    * Finish by updating the display of the segment
    */
-  set endPoint(position: Vector3) {
+  set endVector(position: Vector3) {
+    this.repositionMidPoint(this.start, position);
     this.end.copy(position).normalize();
-    if (!this.isLongSegment()) {
-      this.mid
-        .copy(this.start)
-        .add(this.end)
-        .normalize();
-    }
     this.midMarker.translation
       .set(this.mid.x, this.mid.y)
       .multiplyScalar(SETTINGS.boundaryCircle.radius);

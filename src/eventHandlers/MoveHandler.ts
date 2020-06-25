@@ -9,6 +9,9 @@ import { SENodule } from "@/models/SENodule";
 import { SELine } from "@/models/SELine";
 import { SESegment } from "@/models/SESegment";
 import { SECircle } from "@/models/SECircle";
+import Segment from "@/plottables/Segment";
+import globalSettings, { LAYER } from "@/global-settings";
+import Point from "@/plottables/Point";
 const tmpMatrix = new Matrix4();
 const tmpNormal = new Matrix3();
 const tmpVector1 = new Vector3();
@@ -17,9 +20,12 @@ const arcNormal1 = new Vector3();
 const arcNormal2 = new Vector3();
 const currCircleCenter = new Vector3();
 const prevCircleOuter = new Vector3();
+const tempSegment = new Segment(); // For debugging
+const outerMarker = new Two.Circle(0, 0, 5);
 
 export default class MoveHandler extends SelectionHandler {
   private isDragging = false;
+  private isSegmentAdded = false;
   private moveTarget: SENodule | null = null;
   private moveFrom = new Vector3();
   private prevSpherePoint = new Vector3();
@@ -110,6 +116,7 @@ export default class MoveHandler extends SelectionHandler {
     tmpVector2.copy(targetCircle.centerPoint.positionOnSphere);
     tmpVector2.applyAxisAngle(tmpVector1, moveArcDistance);
     targetCircle.centerPoint.positionOnSphere = tmpVector2;
+    tempSegment.endVector = tmpVector2;
     tmpVector2.copy(targetCircle.circlePoint.positionOnSphere);
     tmpVector2.applyAxisAngle(tmpVector1, moveArcDistance);
     targetCircle.circlePoint.positionOnSphere = tmpVector2;
@@ -184,6 +191,19 @@ export default class MoveHandler extends SelectionHandler {
       const freeCirles = this.hitCircles.filter(n => n.isFreeToMove());
       if (freeCirles.length > 0) {
         this.moveTarget = freeCirles[0];
+        if (!this.isSegmentAdded) {
+          console.debug("Adding preview segment");
+          tempSegment.addTo(this.layers[LAYER.foreground]);
+          outerMarker.addTo(this.layers[LAYER.foreground]);
+          this.isSegmentAdded = true;
+        }
+        // tempSegment.endVector = freeCirles[0].centerPoint.positionOnSphere;
+        tempSegment.startVector = freeCirles[0].circlePoint.positionOnSphere;
+        tempSegment.endVector = freeCirles[0].centerPoint.positionOnSphere;
+        const outerPos = freeCirles[0].circlePoint.positionOnSphere;
+        outerMarker.translation
+          .set(outerPos.x, outerPos.y)
+          .multiplyScalar(globalSettings.boundaryCircle.radius);
         prevCircleOuter.copy(freeCirles[0].circlePoint.positionOnSphere);
         return;
       }
@@ -194,6 +214,11 @@ export default class MoveHandler extends SelectionHandler {
   mouseReleased(event: MouseEvent) {
     this.isDragging = false;
     this.moveTarget = null;
+    if ((this, this.isSegmentAdded)) {
+      tempSegment.remove();
+      outerMarker.remove();
+      this.isSegmentAdded = false;
+    }
   }
 
   mouseLeave(event: MouseEvent): void {

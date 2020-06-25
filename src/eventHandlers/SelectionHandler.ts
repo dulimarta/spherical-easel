@@ -30,13 +30,13 @@ export default abstract class SelectionHandler implements ToolStrategy {
   protected startMarker: Two.Circle;
   protected isOnSphere: boolean;
   protected transformMatrix: Matrix4;
+  protected layers: Two.Group[];
   // protected inverseMatrix = new Matrix4();
   // private boundingBox: BoundingClientRect;
   private mouseVector = new Vector3();
   private zoomCenter = new Vector3();
   private tmpMatrix = new Matrix4();
   private infoText = new TextBox("Hello");
-  private layers: Two.Group[];
   constructor(layers: Two.Group[], transformMatrix: Matrix4) {
     /**
      * @param scene is the sphere canvas where all drawings will render
