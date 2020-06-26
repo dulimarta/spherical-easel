@@ -187,6 +187,11 @@ export default class Point extends Nodule {
     this.glowingBackPoint.remove();
   }
 
+  /**
+   * Set the rendering style (flags: temporary, default, glowing, update) of the point
+   * Update flag means at least one of the private variables storing style information has
+   * changed and should be applied to the displayed point.
+   */
   stylize(flag: string): void {
     throw new Error("Method not implemented.");
   }

@@ -212,6 +212,8 @@ export default class Circle extends Nodule {
     this.backPart.noFill();
     this.frontFill.noStroke();
     this.backFill.noStroke();
+    this.glowingFrontPart.noFill();
+    this.glowingBackPart.noFill();
 
     this.originalVertices = [];
     frontVertices.forEach(v => {
@@ -533,6 +535,9 @@ export default class Circle extends Nodule {
     }
   }
 
+  /**
+   * Set or Get the center of the circle vector. Setting it updates the display.
+   */
   set centerVector(position: Vector3) {
     this.center_.copy(position);
     this.readjust();
@@ -542,6 +547,9 @@ export default class Circle extends Nodule {
     return this.center_;
   }
 
+  /**
+   * Set or Get the radius of the circle. Setting it updates the display.
+   */
   set radius(arcLengthRadius: number) {
     this.arcRadius = arcLengthRadius;
     this.projectedRadius = Math.sin(arcLengthRadius);
@@ -550,15 +558,6 @@ export default class Circle extends Nodule {
   get radius(): number {
     return this.arcRadius;
   }
-
-  // set circlePoint(position: Vector3) {
-  //   this.outer.copy(position);
-  //   this.arcRadius = this.center_.angleTo(this.outer);
-  //   // project the arc length on the sphere to the circle
-
-  //   this.projectedRadius = Math.sin(this.arcRadius);
-  //   this.readjust();
-  // }
 
   frontGlowStyle(): void {
     (this.frontPart as any).visible = true;
@@ -679,7 +678,7 @@ export default class Circle extends Nodule {
     this.frontFill.addTo(layers[LAYER.foreground]);
     this.frontPart.addTo(layers[LAYER.foreground]);
     this.glowingFrontPart.addTo(layers[LAYER.foregroundGlowing]);
-    this.backFill.addTo(layers[LAYER.foreground]);
+    this.backFill.addTo(layers[LAYER.background]);
     this.backPart.addTo(layers[LAYER.background]);
     this.glowingBackPart.addTo(layers[LAYER.backgroundGlowing]);
   }
@@ -697,7 +696,11 @@ export default class Circle extends Nodule {
     throw new Error("Method not implemented.");
   }
 
-  //set the rendering style of the circle
+  /**
+   * Set the rendering style (flags: temporary, default, glowing, update) of the circle
+   * Update flag means at least one of the private variables storing style information has
+   * changed and should be applied to the displayed circle.
+   */
   stylize(flag: string): void {
     switch (flag) {
       case "temporary": {

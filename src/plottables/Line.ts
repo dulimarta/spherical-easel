@@ -336,7 +336,11 @@ export default class Line extends Nodule {
     this.glowingBackHalf.remove();
   }
 
-  //set the rendering style of the segment
+  /**
+   * Set the rendering style (flags: temporary, default, glowing, update) of the line
+   * Update flag means at least one of the private variables storing style information has
+   * changed and should be applied to the displayed line.
+   */
   stylize(flag: string): void {
     switch (flag) {
       case "temporary": {

@@ -567,7 +567,11 @@ export default class Segment extends Nodule {
     this.glowingBackExtra.remove();
   }
 
-  //set the rendering style of the segment
+  /**
+   * Set the rendering style (flags: temporary, default, glowing, update) of the segment
+   * Update flag means at least one of the private variables storing style information has
+   * changed and should be applied to the displayed segment.
+   */
   stylize(flag: string): void {
     switch (flag) {
       case "temporary": {
