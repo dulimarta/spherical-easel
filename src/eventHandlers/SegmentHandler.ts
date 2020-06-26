@@ -32,7 +32,7 @@ export default class SegmentHandler extends SelectionHandler {
   /**
    * This indicates if the temporary segment has been added to the scene and made permanent
    */
-  protected isSegmentAdded = false;
+  protected isTemporarySegmentAdded = false;
   /**
    * The (model) start and end points of the line segment
    */
@@ -88,8 +88,8 @@ export default class SegmentHandler extends SelectionHandler {
     if (this.isOnSphere) {
       if (this.dragging) {
         // This is executed once per segment to be added
-        if (!this.isSegmentAdded) {
-          this.isSegmentAdded = true;
+        if (!this.isTemporarySegmentAdded) {
+          this.isTemporarySegmentAdded = true;
           // Add the temporary segment to the midground
           this.canvas.add(this.tempSegment);
           // Debugging only -- add the mid marker
@@ -134,23 +134,23 @@ export default class SegmentHandler extends SelectionHandler {
           .set(midVector.x, midVector.y)
           .multiplyScalar(globalSettings.boundaryCircle.radius);
       }
-    } else if (this.isSegmentAdded) {
+    } else if (this.isTemporarySegmentAdded) {
       //if not on the sphere and the temporary segment has been added remove the temporary objects
       this.tempSegment.remove();
       this.startMarker.remove();
       midMarker.remove();
-      this.isSegmentAdded = false;
+      this.isTemporarySegmentAdded = false;
     }
   }
 
   mouseLeave(event: MouseEvent): void {
     super.mouseLeave(event);
     this.dragging = false;
-    if (this.isSegmentAdded) {
+    if (this.isTemporarySegmentAdded) {
       this.tempSegment.remove();
       this.startMarker.remove();
       midMarker.remove();
-      this.isSegmentAdded = false;
+      this.isTemporarySegmentAdded = false;
     }
   }
 
@@ -166,7 +166,7 @@ export default class SegmentHandler extends SelectionHandler {
 
       if (this.tempSegment.arcLength > SETTINGS.segment.minimumArcLength) {
         // Clone the temporary segment and mark it added to the scene
-        this.isSegmentAdded = false;
+        this.isTemporarySegmentAdded = false;
         const newSegment = this.tempSegment.clone();
         // Stylize the new segment
         newSegment.stylize("default");

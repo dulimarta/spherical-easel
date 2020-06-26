@@ -27,7 +27,7 @@ export default {
   },
   point: {
     hitPixelDistance: 8, //When a pixel distance between a mouse event and the pixel coords of a point is less than this number, it is hit
-    hitIdealDistance: 0.02, // The user has to be within this distance on the ideal unit sphere to select the point.
+    hitIdealDistance: 0.01, // The user has to be within this distance on the ideal unit sphere to select the point.
     //dynamicRadius is a flag that means the radius of the point will be linked to zoom level
     dynamicRadii: true,
     //dynamicBackStyle is a flag that means the fill color,stroke, and opacity of the points drawn on the back are automatically calculated based on the value of SETTINGS.contrast and their front counterparts

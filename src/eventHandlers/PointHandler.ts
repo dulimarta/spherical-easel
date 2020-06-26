@@ -16,6 +16,7 @@ export default class PointHandler extends SelectionHandler {
 
   // The temporary circle displayed as the user drags
   private temporaryPoint: Point;
+  private isTemporaryPointAdded = false;
 
   constructor(layers: Two.Group[], transformMatrix: Matrix4) {
     super(layers, transformMatrix);
@@ -27,29 +28,42 @@ export default class PointHandler extends SelectionHandler {
   }
 
   mousePressed(event: MouseEvent): void {
-    // If this is near any other points do not create a new point
-    if (this.hitPoints.length > 0) {
-      return;
+    if (this.isOnSphere) {
+      // If this is near any other points do not create a new point
+      if (this.hitPoints.length > 0) {
+        return;
+      }
+      const newPoint = new Point();
+      // Set the display to the default values
+      newPoint.stylize("default");
+      // Set the glowing display
+      newPoint.stylize("glowing");
+      // Create the model object for the new point and link them
+      const vtx = new SEPoint(newPoint);
+      vtx.positionOnSphere = this.currentSpherePoint;
+      // Create and execute the command to create a new point
+      new AddPointCommand(vtx).execute();
     }
-    const newPoint = new Point();
-    // Set the display to the default values
-    newPoint.stylize("default");
-    // Set the glowing display
-    newPoint.stylize("glowing");
-    // Create the model object for the new point and link them
-    const vtx = new SEPoint(newPoint);
-    vtx.positionOnSphere = this.currentSpherePoint;
-    // Create and execute the command to create a new point
-    new AddPointCommand(vtx).execute();
   }
 
   mouseMoved(event: MouseEvent): void {
-    // Highlight all nearby objects
+    // Highlight all nearby objects and update location points
     super.mouseMoved(event);
-    // Move the temporary point to the location of the mouse event
-    this.temporaryPoint.translation = this.currentScreenPoint;
-    // Set the display of the temporary point so the correct front/back TwoJS object is shown
-    this.temporaryPoint.normalDisplay();
+    if (this.isOnSphere) {
+      if (!this.isTemporaryPointAdded) {
+        this.isTemporaryPointAdded = true;
+        // Add the temporary point to the midground
+        this.canvas.add(this.temporaryPoint);
+      }
+      // Move the temporary point to the location of the mouse event
+      this.temporaryPoint.translation = this.currentScreenPoint;
+      // Set the display of the temporary point so the correct front/back TwoJS object is shown
+      //this.temporaryPoint.normalDisplay();
+    } else if (this.isTemporaryPointAdded) {
+      //if not on the sphere and the temporary segment has been added remove the temporary objects
+      this.temporaryPoint.remove();
+      this.isTemporaryPointAdded = false;
+    }
   }
 
   // eslint-disable-next-line
