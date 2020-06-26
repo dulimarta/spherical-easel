@@ -559,33 +559,33 @@ export default class Circle extends Nodule {
     return this.arcRadius;
   }
 
-  frontGlowStyle(): void {
+  frontGlowingDisplay(): void {
     (this.frontPart as any).visible = true;
     (this.glowingFrontPart as any).visible = true;
   }
-  backGlowStyle(): void {
+  backGlowingDisplay(): void {
     (this.backPart as any).visible = true;
     (this.glowingBackPart as any).visible = true;
   }
 
-  glowStyle(): void {
-    this.frontGlowStyle();
-    this.backGlowStyle();
+  glowingDisplay(): void {
+    this.frontGlowingDisplay();
+    this.backGlowingDisplay();
   }
 
-  frontNormalStyle(): void {
+  frontNormalDisplay(): void {
     (this.frontPart as any).visible = true;
     (this.glowingFrontPart as any).visible = false;
   }
 
-  backNormalStyle(): void {
+  backNormalDisplay(): void {
     (this.backPart as any).visible = true;
     (this.glowingBackPart as any).visible = false;
   }
 
-  normalStyle(): void {
-    this.frontNormalStyle();
-    this.backNormalStyle();
+  normalDisplay(): void {
+    this.frontNormalDisplay();
+    this.backNormalDisplay();
   }
 
   /**

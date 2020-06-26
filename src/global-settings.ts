@@ -1,4 +1,5 @@
 export default {
+  contrast: 0.5, //The number that controls the automatic setting of the back styling for objects that have dynamicBackStyle set to true.
   rotate: {
     minAngle: Math.PI / 1000, // the minimum angular distance before a new rotation is computed as we click and drag in rotate mode
     momentum: {
@@ -8,7 +9,6 @@ export default {
       pauseTimeToTemporarilyDisableMomentum: 0.25 // if you hold the mousepress this long (in seconds) while dragging the momentum doesn't activate
     }
   },
-  contrast: 0.5, //The number that controls the automatic setting of the back styling for objects that have dynamicBackStyle set to true.
   fill: {
     //The location of the light source when shading
     lightSource: {
@@ -25,9 +25,64 @@ export default {
     color: "black",
     linewidth: 3
   },
+  point: {
+    hitPixelDistance: 8, //When a pixel distance between a mouse event and the pixel coords of a point is less than this number, it is hit
+    hitIdealDistance: 0.02, // The user has to be within this distance on the ideal unit sphere to select the point.
+    //dynamicRadius is a flag that means the radius of the point will be linked to zoom level
+    dynamicRadii: true,
+    //dynamicBackStyle is a flag that means the fill color,stroke, and opacity of the points drawn on the back are automatically calculated based on the value of SETTINGS.contrast and their front counterparts
+    dynamicBackStyle: true,
+    //The properties of the point when it is drawn on the sphereCanvas and is not glowing
+    drawn: {
+      radius: { front: 2, back: 1.5, rmin: 1, rmax: 3, fbDifference: 1 }, // The radius of the point drawn on the front/back, rmin, rmax, and fbDifferencer are used only if the dynamic is true, then the drawn radius is between rmin and rmax (depending on the size of the sphere) and fbDifference (front-back difference) is the value of the front radius minus back radius.
+      fillColor: {
+        front: "hsla(0, 100%, 75%, 1)", //"#FF8080", // { r: 255, g: 128, b: 128 },#f55742
+        back: "hsla(0, 100%, 75%, 1)" //"#FFBFBF" // The fill color on the back defaults to a contrast value of 0.5
+      },
+      strokeColor: {
+        front: "#4C4CCD", // { r: 76, g: 76, b: 205 },
+        back: "#A5A5E6" // the back stroke color is calculated using the contrast of 0.5
+      },
+      strokeWidth: { front: 1, back: 0.5 }, // The thickness of the edge of the point when drawn
+      opacity: { front: 1, back: 1 }
+      // No dashing for points
+    },
+    // The properties of the annular region around a point when it is glowing
+    glowing: {
+      annularWidth: 1, // width is the width of the annular region around the point that shows the glow it is always bigger than the drawn radius
+      fillColor: {
+        front: "hsla(0, 100%, 50%, 1)",
+        back: "hsla(0, 100%, 75%, 0.7)" // the back fill color is calculated using the contrast of 0.5
+      },
+      strokeColor: {
+        front: "noStroke",
+        back: "noStroke"
+      },
+      strokeWidth: { front: 1, back: 1 }, // The thickness of the edge of the point when drawn
+      opacity: { front: 1, back: 1 }
+      // No dashing - this is highlighting the object
+    },
+    //The properties of the point when it is temporarily shown by the point tool while drawing
+    temp: {
+      radius: { front: 3, back: 3, difference: 2 }, //The front/back radius of the temp point, difference is only used if dynamic is true and difference is how much smaller the temp radius is than the drawn one.
+      fillColor: {
+        front: "#808080", // { r: 128, g: 128, b: 128 },
+        back: "#BFBFBF" // the back fill color is calculated using the contrast of 0.5
+      },
+      strokeColor: {
+        front: "#000000", // black { r: 0, g: 0, b: 0 },
+        back: "#808080" // the back stroke color is calculated using the contrast of 0.5
+      },
+      strokeWidth: { front: 1, back: 1 }, // The thickness of the edge of the point when drawn
+      opacity: { front: 1, back: 1 }
+      // No dashing for points
+    }
+  },
   segment: {
     minimumArcLength: 0.02, // Don't create segments with a length less than this
     numPoints: 20, // The number of vertices used to render the segment. These are spread over the front and back parts. MAKE THIS EVEN!
+    hitPixelDistance: 8, //When a pixel distance between a mouse event and the pixel coords of a line is less than this number, it is hit
+    hitIdealDistance: 0.02, // The user has to be within this distance on the ideal unit sphere to select the line.
     //dynamicWidth is a flag that means the width of the segment will be linked to zoom level
     dynamicWidth: true,
     //dynamicBackStyle is a flag that means the fill color,stroke, and opacity of the segments drawn on the back are automatically calculated based on the value of SETTINGS.contrast and their front counterparts
@@ -55,8 +110,8 @@ export default {
     glowing: {
       // No fill for line segments
       strokeColor: {
-        front: "#ff0000", //"#404040",
-        back: "#FF7F7F" // the back fill color is calculated using the contrast of 0.5
+        front: "hsla(0, 100%, 50%, 1)",
+        back: "hsla(0, 100%, 75%, 0.7)" // the back fill color is calculated using the contrast of 0.5
       },
       edgeWidth: 2, // edgeWidth/2 is the width of the region around the segment that shows the glow
       opacity: { front: 1, back: 1 },
@@ -84,12 +139,12 @@ export default {
         front: [], // An empty array means no dashing.
         back: [10, 5] // An empty array means no dashing.
       }
-    },
-    hitPixelDistance: 8, //When a pixel distance between a mouse event and the pixel coords of a line is less than this number, it is hit
-    hitIdealDistance: 0.02 // The user has to be within this distance on the ideal unit sphere to select the line.
+    }
   },
   line: {
     numPoints: 50, // The number of vertices used to render the line. These are spread over the front and back parts. MAKE THIS EVEN!
+    hitPixelDistance: 8, //When a pixel distance between a mouse event and the pixel coords of a line is less than this number, it is hit
+    hitIdealDistance: 0.02, // The user has to be within this distance on the ideal unit sphere to select the line.
     //dynamicWidth is a flag that means the width of the line will be linked to zoom level
     dynamicWidth: true,
     //dynamicBackStyle is a flag that means the fill color,stroke, and opacity of the lines drawn on the back are automatically calculated based on the value of SETTINGS.contrast and their front counterparts
@@ -117,8 +172,8 @@ export default {
     glowing: {
       // No fill for lines
       strokeColor: {
-        front: "#ff0000", //"#404040",
-        back: "#FF7F7F" // the back fill color is calculated using the contrast of 0.5
+        front: "hsla(0, 100%, 50%, 1)",
+        back: "hsla(0, 100%, 75%, 0.7)" // the back fill color is calculated using the contrast of 0.5
       },
       edgeWidth: 2, // edgeWidth/2 is the width of the region around the line that shows the glow
       opacity: { front: 1, back: 1 },
@@ -148,63 +203,8 @@ export default {
         front: [], // An empty array means no dashing.
         back: [10, 5] // An empty array means no dashing.
       }
-    },
-    hitPixelDistance: 8, //When a pixel distance between a mouse event and the pixel coords of a line is less than this number, it is hit
-    hitIdealDistance: 0.02 // The user has to be within this distance on the ideal unit sphere to select the line.
+    }
   },
-  point: {
-    // The number of vertices that are used to render the point circles front/back/glowing/temp on the sphereCanvas
-    numPoints: { front: 4, back: 4 },
-    //dynamicRadius is a flag that means the radius of the point will be linked to zoom level
-    dynamicRadii: true,
-    //dynamicBackStyle is a flag that means the fill color,stroke, and opacity of the points drawn on the back are automatically calculated based on the value of SETTINGS.contrast and their front counterparts
-    dynamicBackStyle: true,
-    //The properties of the point when it is drawn on the sphereCanvas and is not glowing
-    drawn: {
-      radius: { front: 3, back: 2, rmin: 4, rmax: 7, fbDifference: 1 }, // The radius of the point drawn on the front/back, rmin, rmax, and fbDifferencer are used only if the dynamic is true, then the drawn radius is between rmin and rmax (depending on the size of the sphere) and fbDifference (front-back difference) is the value of the front radius minus back radius.
-      fillColor: {
-        front: "#FF8080", // { r: 255, g: 128, b: 128 },
-        back: "#FFBFBF" // The fill color on the back defaults to a contrast value of 0.5
-      },
-      strokeColor: {
-        front: "#4C4CCD", // { r: 76, g: 76, b: 205 },
-        back: "#A5A5E6" // the back stroke color is calculated using the contrast of 0.5
-      },
-      strokeWidth: { front: 2.5, back: 2 }, // The thickness of the edge of the point when drawn
-      opacity: { front: 1, back: 1 }
-      // No dashing for points
-    },
-    // The properties of the annular region around a point when it is glowing
-    glowing: {
-      annularWidth: 2, // width is the width of the annular region around the point that shows the glow it is always bigger than the drawn radius
-      fillColor: {
-        front: "#ff0000", //"#404040", //{ r: 64, g: 64, b: 64 }, //gray
-        back: "#FF7F7F" // the back fill color is calculated using the contrast of 0.5
-      },
-      // No stroke color for points, the fill extends to the edge of the glowing point
-      // No stroke width for points, the fill extends to the edge of the glowing point
-      opacity: { front: 1, back: 1 }
-      // No dashing - this is highlighting the object
-    },
-    //The properties of the point when it is temporarily shown by the point tool while drawing
-    temp: {
-      radius: { front: 3, back: 3, difference: 2 }, //The front/back radius of the temp point, difference is only used if dynamic is true and difference is how much smaller the temp radius is than the drawn one.
-      fillColor: {
-        front: "#808080", // { r: 128, g: 128, b: 128 },
-        back: "#BFBFBF" // the back fill color is calculated using the contrast of 0.5
-      },
-      strokeColor: {
-        front: "#000000", // black { r: 0, g: 0, b: 0 },
-        back: "#808080" // the back stroke color is calculated using the contrast of 0.5
-      },
-      strokeWidth: { front: 1, back: 1 }, // The thickness of the edge of the point when drawn
-      opacity: { front: 1, back: 1 }
-      // No dashing for points
-    },
-    hitPixelDistance: 8, //When a pixel distance between a mouse event and the pixel coords of a point is less than this number, it is hit
-    hitIdealDistance: 0.02 // The user has to be within this distance on the ideal unit sphere to select the point.
-  },
-
   circle: {
     minimumRadius: 0.02, // Don't create circles with a radius smaller than this
     numPoints: 100, // The number of vertices used to render the circle. These are spread over the front and back parts. MAKE THIS EVEN!
@@ -241,8 +241,8 @@ export default {
     glowing: {
       // There is no fill for highlighting objects
       strokeColor: {
-        front: "#ff0000", //"#404040",
-        back: "#FF7F7F" // the back fill color is calculated using the contrast of 0.5
+        front: "hsla(0, 100%, 50%, 1)",
+        back: "hsla(0, 100%, 75%, 0.7)" // the back fill color is calculated using the contrast of 0.5
       },
       edgeWidth: 2, // edgeWidth/2 is the width of the region around the circle (on each side) that shows the glow
       opacity: { front: 1, back: 1 },

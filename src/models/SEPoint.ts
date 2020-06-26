@@ -36,11 +36,11 @@ export class SEPoint extends SENodule implements Visitable {
 
   set positionOnSphere(pos: Vector3) {
     // console.log("Updating Point", this.name, "position to", pos.toFixed(1));
-    this.ref.position = pos.normalize();
+    this.ref.positionVector = pos.normalize();
   }
 
   get positionOnSphere(): Vector3 {
-    return this.ref.position;
+    return this.ref.positionVector;
   }
 
   accept(v: Visitor): void {
@@ -49,7 +49,8 @@ export class SEPoint extends SENodule implements Visitable {
 
   public isHitAt(spherePos: Vector3): boolean {
     return (
-      this.ref.position.distanceTo(spherePos) < SETTINGS.point.hitIdealDistance
+      this.ref.positionVector.distanceTo(spherePos) <
+      SETTINGS.point.hitIdealDistance
     );
   }
 }

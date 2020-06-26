@@ -146,33 +146,33 @@ export default class Line extends Nodule {
       );
   }
 
-  frontGlowStyle(): void {
+  frontGlowingDisplay(): void {
     (this.frontHalf as any).visible = true;
     (this.glowingFrontHalf as any).visible = true;
   }
-  backGlowStyle(): void {
+  backGlowingDisplay(): void {
     (this.backHalf as any).visible = true;
     (this.glowingBackHalf as any).visible = true;
   }
 
-  glowStyle(): void {
-    this.frontGlowStyle();
-    this.backGlowStyle();
+  glowingDisplay(): void {
+    this.frontGlowingDisplay();
+    this.backGlowingDisplay();
   }
 
-  frontNormalStyle(): void {
+  frontNormalDisplay(): void {
     (this.frontHalf as any).visible = true;
     (this.glowingFrontHalf as any).visible = false;
   }
 
-  backNormalStyle(): void {
+  backNormalDisplay(): void {
     (this.backHalf as any).visible = true;
     (this.glowingBackHalf as any).visible = false;
   }
 
-  normalStyle(): void {
-    this.frontNormalStyle();
-    this.backNormalStyle();
+  normalDisplay(): void {
+    this.frontNormalDisplay();
+    this.backNormalDisplay();
   }
 
   /** Reorient the unit circle in 3D and then project the points to 2D

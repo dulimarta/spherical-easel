@@ -177,7 +177,12 @@ export default class SegmentHandler extends SelectionHandler {
         const segmentGroup = new CommandGroup();
         if (this.startPoint === null) {
           // The start point is a new point and must be created and added to the command/store
-          const vtx = new SEPoint(new Point());
+          const newStartPoint = new Point();
+          // Set the display to the default values
+          newStartPoint.stylize("default");
+          // Set the glowing display
+          newStartPoint.stylize("glowing");
+          const vtx = new SEPoint(newStartPoint);
           vtx.positionOnSphere = this.startVector;
           this.startPoint = vtx;
           segmentGroup.addCommand(new AddPointCommand(vtx));
@@ -187,7 +192,12 @@ export default class SegmentHandler extends SelectionHandler {
           this.endPoint = this.hitPoints[0];
         } else {
           // The endpoint is a new point and must be created and added to the command/store
-          const vtx = new SEPoint(new Point());
+          const newEndPoint = new Point();
+          // Set the display to the default values
+          newEndPoint.stylize("default");
+          // Set the glowing display
+          newEndPoint.stylize("glowing");
+          const vtx = new SEPoint(newEndPoint);
           vtx.positionOnSphere = this.currentSpherePoint;
           this.endPoint = vtx;
           segmentGroup.addCommand(new AddPointCommand(vtx));
@@ -207,7 +217,12 @@ export default class SegmentHandler extends SelectionHandler {
         if (this.startPoint === null) {
           // Starting point landed on an open space
           // we have to create a new point and it to the group/store
-          const vtx = new SEPoint(new Point());
+          const newPoint = new Point();
+          // Set the display to the default values
+          newPoint.stylize("default");
+          // Set the glowing display
+          newPoint.stylize("glowing");
+          const vtx = new SEPoint(newPoint);
           vtx.positionOnSphere = this.startVector;
           this.startPoint = vtx;
           const addPoint = new AddPointCommand(vtx);

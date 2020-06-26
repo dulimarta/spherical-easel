@@ -1,63 +1,57 @@
 import SelectionHandler from "./SelectionHandler";
 import Two from "two.js";
-import { Matrix4 } from "three";
+import { Vector3, Matrix4 } from "three";
 import SETTINGS, { LAYER } from "@/global-settings";
 import EventBus from "./EventBus";
 import { SEPoint } from "@/models/SEPoint";
 import Point from "@/plottables/Point";
 import { AddPointCommand } from "@/commands/AddPointCommand";
+
 const frontPointRadius = SETTINGS.point.temp.radius.front;
 const backPointRadius = SETTINGS.point.temp.radius.back;
+
 export default class PointHandler extends SelectionHandler {
-  private frontPortion: Two.Circle;
-  private backPortion: Two.Circle;
-  private pointGroup: Two.Group;
+  // Center vector of the created point
+  private vectorLocation: Vector3;
+
+  // The temporary circle displayed as the user drags
+  private temporaryPoint: Point;
+
   constructor(layers: Two.Group[], transformMatrix: Matrix4) {
     super(layers, transformMatrix);
-    this.frontPortion = new Two.Circle(0, 0, frontPointRadius);
-    this.backPortion = new Two.Circle(0, 0, backPointRadius);
-    this.pointGroup = new Two.Group();
-    this.pointGroup.add(this.backPortion, this.frontPortion);
-    this.frontPortion.fill = SETTINGS.point.temp.fillColor.front;
-    this.frontPortion.stroke = SETTINGS.point.temp.strokeColor.front;
-    this.frontPortion.opacity = SETTINGS.point.temp.opacity.front;
-    this.backPortion.fill = SETTINGS.point.temp.fillColor.back;
-    this.backPortion.stroke = SETTINGS.point.temp.strokeColor.back;
-    this.backPortion.opacity = SETTINGS.point.temp.opacity.back;
-    this.pointGroup.addTo(layers[LAYER.midground]);
-    (this.frontPortion as any).visible = false;
-    (this.backPortion as any).visible = false;
-  }
-
-  mouseMoved(event: MouseEvent): void {
-    super.mouseMoved(event);
-    this.pointGroup.translation.copy(this.currentScreenPoint);
-    if (this.isOnSphere) {
-      (this.frontPortion as any).visible = !event.shiftKey;
-      (this.backPortion as any).visible = event.shiftKey;
-    } else {
-      (this.frontPortion as any).visible = false;
-      (this.backPortion as any).visible = false;
-    }
+    this.vectorLocation = new Vector3(0, 0, 1);
+    this.temporaryPoint = new Point();
+    this.temporaryPoint.positionVector = this.vectorLocation;
+    // Set the style using the temporary defaults
+    this.temporaryPoint.stylize("temporary");
   }
 
   mousePressed(event: MouseEvent): void {
-    const hitPoints = this.store.getters.findNearbyPoints(
-      this.currentSpherePoint,
-      this.currentScreenPoint
-    );
-    if (hitPoints.length > 0) return;
-    if (event.shiftKey) {
-      // Ignore the current sign, force it to be always negative
-      this.currentSpherePoint.z = -1 * Math.abs(this.currentSpherePoint.z);
+    // If this is near any other points do not create a new point
+    if (this.hitPoints.length > 0) {
+      return;
     }
-    (this.frontPortion as any).visible = false;
-    (this.backPortion as any).visible = false;
-    const p = new Point();
-    const vtx = new SEPoint(p);
+    const newPoint = new Point();
+    // Set the display to the default values
+    newPoint.stylize("default");
+    // Set the glowing display
+    newPoint.stylize("glowing");
+    // Create the model object for the new point and link them
+    const vtx = new SEPoint(newPoint);
     vtx.positionOnSphere = this.currentSpherePoint;
+    // Create and execute the command to create a new point
     new AddPointCommand(vtx).execute();
   }
+
+  mouseMoved(event: MouseEvent): void {
+    // Highlight all nearby objects
+    super.mouseMoved(event);
+    // Move the temporary point to the location of the mouse event
+    this.temporaryPoint.translation = this.currentScreenPoint;
+    // Set the display of the temporary point so the correct front/back TwoJS object is shown
+    this.temporaryPoint.normalDisplay();
+  }
+
   // eslint-disable-next-line
   mouseReleased(event: MouseEvent): void {
     /* None */
@@ -69,12 +63,13 @@ export default class PointHandler extends SelectionHandler {
   }
   activate(): void {
     super.activate();
-    this.canvas.add(this.pointGroup);
-    (this.frontPortion as any).visible = false;
-    (this.backPortion as any).visible = false;
+    // Add the the temporary point to the canvas
+    this.canvas.add(this.temporaryPoint);
+    // Set the display of the temporary point so the correct front/back TwoJS object is shown
+    this.temporaryPoint.normalDisplay();
   }
   deactivate(): void {
     super.deactivate();
-    this.pointGroup.remove();
+    this.temporaryPoint.remove();
   }
 }

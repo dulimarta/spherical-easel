@@ -114,7 +114,12 @@ export default class LineHandler extends SelectionHandler {
       if (this.startPoint === null) {
         // Starting point landed on an open space
         // we have to create a new point
-        const vtx = new SEPoint(new Point());
+        const newStartPoint = new Point();
+        // Set the display to the default values
+        newStartPoint.stylize("default");
+        // Set the glowing display
+        newStartPoint.stylize("glowing");
+        const vtx = new SEPoint(newStartPoint);
         vtx.positionOnSphere = this.startPosition;
         this.startPoint = vtx;
         lineGroup.addCommand(new AddPointCommand(vtx));
@@ -124,7 +129,12 @@ export default class LineHandler extends SelectionHandler {
       } else {
         // endV3Point landed on an open space
         // we have to create a new point
-        const vtx = new SEPoint(new Point());
+        const newEndPoint = new Point();
+        // Set the display to the default values
+        newEndPoint.stylize("default");
+        // Set the glowing display
+        newEndPoint.stylize("glowing");
+        const vtx = new SEPoint(newEndPoint);
         vtx.positionOnSphere = this.currentSpherePoint;
         this.endPoint = vtx;
         lineGroup.addCommand(new AddPointCommand(vtx));
