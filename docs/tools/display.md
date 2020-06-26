@@ -83,6 +83,12 @@ Rotate the current view.
 ::: tool-details
 
 - Clicking and dragging will change the current view of the sphere. The mouse press location is moved to the current location of the mouse while dragging. The mouse release location sets the final view of the sphere.
-- If the [Momentum](/userguide/#top-region-title-bar) feature is activated, then after the mouse is released, the view will continue to change. If the Decay value is set to 1 the view will continue to rotate indefinitely. To stop all rotation either click at a location or deactivate this tool.
-- If this tool is activated with a single point or line segment or line selected, clicking and dragging will either rotate around that point or along that line segment or line (i.e. around the poles of the line or the line containing the line segment). Mouse release will stop the rotation (except for the [Momentum](/userguide/#top-region-title-bar) rotation). To stop the rotation click at a location. To rotate in a different way, deactivate the tool (by selecting another one) to clear the selected objects and then select the Rotation Tool again.  
-  :::
+- If the [Momentum](/userguide/#top-region-title-bar) feature is activated, then after the mouse is released, the view will continue to change. The time it will continue to rotate is determined by the Decay Time which has a maximum of 5 minutes. To stop all rotation either click at a location or deactivate this tool.
+- If the user has Momentum enabled, but while dragging the sphere, pauses for a period of time before mouse releasing, the momentum feature will not be activated.
+- If this tool is activated with a single point or line segment or line selected, clicking and dragging will either rotate around that point or along that line segment or line (i.e. around the poles of the line or the line containing the line segment). Mouse release will stop the rotation (except for the [Momentum](/userguide/#top-region-title-bar) rotation). To stop the rotation click at a location. To rotate in a different way, deactivate the tool (by selecting another one) to clear the selected objects and then select the Rotation Tool again.
+
+::: tip
+
+If the momentum mode is enabled and the user doesn't want the current arrangement to rotate after a mouse release, pausing with the mouse pressed for a period of time before mouse releasing will temporarily disable the momentum feature.
+
+:::

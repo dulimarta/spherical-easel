@@ -1,4 +1,13 @@
 export default {
+  rotate: {
+    minAngle: Math.PI / 1000, // the minimum angular distance before a new rotation is computed as we click and drag in rotate mode
+    momentum: {
+      enabled: true, // If momentum is enabled then the sphere keeps rotating depending after the user has stopped intentionally rotating it.
+      decayTime: 0.5, // Time in seconds for the rotation to stop, max value of 300 seconds (5 minutes).
+      framesPerSecond: 30, // The momentum rotation will be updated this many times per second
+      pauseTimeToTemporarilyDisableMomentum: 0.25 // if you hold the mousepress this long (in seconds) while dragging the momentum doesn't activate
+    }
+  },
   contrast: 0.5, //The number that controls the automatic setting of the back styling for objects that have dynamicBackStyle set to true.
   fill: {
     //The location of the light source when shading
@@ -195,9 +204,7 @@ export default {
     hitPixelDistance: 8, //When a pixel distance between a mouse event and the pixel coords of a point is less than this number, it is hit
     hitIdealDistance: 0.02 // The user has to be within this distance on the ideal unit sphere to select the point.
   },
-  rotate: {
-    minPixelDistance: 5 // the minimum pixel distance before a new rotation is computed as we click and drag in rotate mode
-  },
+
   circle: {
     minimumRadius: 0.02, // Don't create circles with a radius smaller than this
     numPoints: 100, // The number of vertices used to render the circle. These are spread over the front and back parts. MAKE THIS EVEN!
