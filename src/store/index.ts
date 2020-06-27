@@ -12,6 +12,7 @@ import { SESegment } from "@/models/SESegment";
 import { PositionVisitor } from "@/visitors/PositionVisitor";
 import { SENodule } from "@/models/SENodule";
 import { SEIntersection } from "@/models/SEIntersection";
+import EventBus from "@/eventHandlers/EventBus";
 import Point from "@/plottables/Point";
 import { LAYER } from "@/global-settings";
 
@@ -196,6 +197,10 @@ export default new Vuex.Store({
       state.segments.forEach((s: SESegment) => {
         s.accept(positionVisitor);
       });
+    },
+    zoomSphere(state: AppState, zoomMat: Matrix4) {
+      //I need to redo and undo via the EventBus in the store
+      EventBus.fire("zoom-updated", zoomMat);
     }
   },
   actions: {

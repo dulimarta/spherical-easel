@@ -1,6 +1,8 @@
 import { ToolStrategy } from "./ToolStrategy";
 import { Matrix4, Vector2 } from "three";
+import { AddZoomSphereCommand } from "@/commands/AddZoomSphereCommand";
 import EventBus from "./EventBus";
+import SETTINGS from "@/global-settings";
 
 export enum ZoomMode {
   MAGNIFY,
@@ -18,6 +20,8 @@ export default class PanZoomHandler implements ToolStrategy {
   private magnificationFactor = 1.0;
   private translateX = 0;
   private translateY = 0;
+
+  private percentChange = SETTINGS.zoom.percentChange / 100;
 
   private isDragging = false;
   private isMousePressed = false;
@@ -55,12 +59,12 @@ export default class PanZoomHandler implements ToolStrategy {
 
   doZoom(event: MouseEvent): void {
     if (this._mode === ZoomMode.MINIFY) {
-      if (this.magnificationFactor < 0.4) return;
-      this.magnificationFactor *= 0.9;
+      if (this.magnificationFactor < SETTINGS.zoom.minMagnification) return;
+      this.magnificationFactor *= 1 - this.percentChange;
     }
     if (this._mode === ZoomMode.MAGNIFY) {
-      if (this.magnificationFactor > 10) return;
-      this.magnificationFactor *= 1.1;
+      if (this.magnificationFactor > SETTINGS.zoom.maxMagnification) return;
+      this.magnificationFactor *= 1 + this.percentChange;
     }
     const target = (event.currentTarget || event.target) as HTMLDivElement;
     const boundingRect = target.getBoundingClientRect();
@@ -81,6 +85,8 @@ export default class PanZoomHandler implements ToolStrategy {
     }
     // console.debug("Updated zoom matrix", this.zoomMatrix.elements);
     EventBus.fire("zoom-updated", this.zoomMatrix);
+    const zoomCommand = new AddZoomSphereCommand(this.zoomMatrix);
+    zoomCommand.push();
   }
 
   doPan(event: MouseEvent): void {
@@ -90,6 +96,8 @@ export default class PanZoomHandler implements ToolStrategy {
     tmpMatrix.makeTranslation(this.translateX, this.translateY, 0);
     tmpMatrix.multiply(this.zoomMatrix);
     EventBus.fire("zoom-updated", tmpMatrix);
+    const zoomCommand = new AddZoomSphereCommand(tmpMatrix);
+    zoomCommand.push();
   }
 
   mouseReleased(event: MouseEvent): void {
@@ -99,6 +107,8 @@ export default class PanZoomHandler implements ToolStrategy {
         tmpMatrix.makeTranslation(this.translateX, this.translateY, 0);
         this.zoomMatrix.premultiply(tmpMatrix);
         EventBus.fire("zoom-updated", this.zoomMatrix);
+        const zoomCommand = new AddZoomSphereCommand(this.zoomMatrix);
+        zoomCommand.push();
       }
       /* Pan */
     } else {
