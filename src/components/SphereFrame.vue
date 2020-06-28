@@ -17,10 +17,10 @@ import LineHandler from "@/eventHandlers/LineHandler";
 import SegmentHandler from "@/eventHandlers/SegmentHandler";
 import CircleHandler from "@/eventHandlers/CircleHandler";
 import RotateHandler from "@/eventHandlers/RotateHandler";
-import PanZoomHandler, { ZoomMode } from "@/eventHandlers/PanZoomHandler"
+import PanZoomHandler, { ZoomMode } from "@/eventHandlers/PanZoomHandler";
 import { PositionVisitor } from "@/visitors/PositionVisitor";
 import EventBus from "@/eventHandlers/EventBus";
-import MoveHandler from '../eventHandlers/MoveHandler';
+import MoveHandler from "../eventHandlers/MoveHandler";
 const tmpMatrix1 = new Matrix4();
 @Component({})
 export default class SphereFrame extends VueComponent {
@@ -36,10 +36,24 @@ export default class SphereFrame extends VueComponent {
   private twoInstance: Two;
   private sphereCanvas!: Two.Group;
   private boundaryCircle!: Two.Circle;
-  private sphereTransformMat = new Matrix4(); // Transformation from the ideal sphere to the rendered sphere/circle
+  /**
+   * Transformation from the ideal unit sphere to the rendered sphere.  The rendered sphere has radius
+   * SETTINGS.boundaryCircle.radius. (The screen only shows a portion of the rendered sphere called the
+   * ??ZoomViewPort??.)
+   */
+  private sphereTransformMat = new Matrix4();
+  /**
+   * Transformation that controls what the ??ZoomViewPort?? shows
+   */
   private zoomMatrix = new Matrix4();
-  private CSSTransformMat = new Matrix4(); // CSSMat = sphereTransform * zoomMat
   private magnificationFactor = 1;
+
+  /**
+   * Transformation that is passed to the CSS
+   */
+  private CSSTransformMat = new Matrix4(); // CSSMat = sphereTransform * zoomMat
+
+  /** Tools for handling user input */
   private currentTool: ToolStrategy | null = null;
   private pointTool!: PointHandler;
   private lineTool!: LineHandler;
@@ -48,7 +62,14 @@ export default class SphereFrame extends VueComponent {
   private rotateTool!: RotateHandler;
   private zoomTool!: PanZoomHandler;
   private moveTool!: MoveHandler;
+
+  /** A tool for ???? TODO: What does this do?*/
   private visitor!: PositionVisitor;
+
+  /**
+   * The layers for displaying the various objects in the right way. So a point in the
+   * background is not displayed over a line in the foreground
+   */
   private layers: Two.Group[] = [];
 
   constructor() {
@@ -59,8 +80,10 @@ export default class SphereFrame extends VueComponent {
       autostart: true,
       ratio: window.devicePixelRatio
     });
-    this.layers.splice(0, this.layers.length); // Clear layer array
+    // Clear layer array
+    this.layers.splice(0, this.layers.length);
 
+    // Record the text layer number so that the Y axis is not flipped for them
     const textLayers = [
       LAYER.foregroundText,
       LAYER.backgroundText,
@@ -70,6 +93,7 @@ export default class SphereFrame extends VueComponent {
     for (const layer in LAYER) {
       const layerIdx = Number(layer);
       if (!isNaN(layerIdx)) {
+        // Create the layers
         const newLayer = this.twoInstance.makeGroup();
         this.layers.push(newLayer);
 
@@ -80,11 +104,13 @@ export default class SphereFrame extends VueComponent {
         }
       }
     }
+    // The midground is where the temporary objects and the boundary circle are drawn
     this.sphereCanvas = this.layers[LAYER.midground];
     console.info("Sphere canvas ID", this.sphereCanvas.id);
+    // Add the layers to the store
     this.$store.commit("setLayers", this.layers);
 
-    // Draw the boundary circle in the ideal radius
+    // Draw the boundary circle in the default radius
     // and scale it later to fit the canvas
     this.boundaryCircle = new Two.Circle(0, 0, SETTINGS.boundaryCircle.radius);
     this.boundaryCircle.noFill();
@@ -96,7 +122,7 @@ export default class SphereFrame extends VueComponent {
     // box2.fill = "red";
     // box1.addTo(this.layers[LAYER.background]);
     // box2.addTo(this.layers[LAYER.foregroundText]);
-    const R = SETTINGS.boundaryCircle.radius;
+    //const R = SETTINGS.boundaryCircle.radius;
 
     const t1 = new Two.Text("Text must be upright", 50, 80, {
       size: 12,
@@ -107,10 +133,10 @@ export default class SphereFrame extends VueComponent {
     this.layers[LAYER.foregroundText].add(t1);
 
     // Draw horizontal and vertical lines (just for debugging)
-    const hLine = new Two.Line(-R, 0, R, 0);
-    const vLine = new Two.Line(0, -R, 0, R);
-    hLine.stroke = "red";
-    vLine.stroke = "green";
+    // const hLine = new Two.Line(-R, 0, R, 0);
+    // const vLine = new Two.Line(0, -R, 0, R);
+    // hLine.stroke = "red";
+    // vLine.stroke = "green";
     // this.sphereCanvas.add(
     //   hLine,
     //   vLine,
@@ -118,6 +144,8 @@ export default class SphereFrame extends VueComponent {
     //   new Two.Line(-R, 100, R, 100)
     // );
     this.visitor = new PositionVisitor();
+
+    // Add Event Bus (a Vue component) listeners to change the display of the sphere - rotate and Zoom/Pan
     EventBus.listen("sphere-rotate", this.handleSphereRotation);
     EventBus.listen("zoom-updated", this.zoomer);
   }
@@ -150,18 +178,9 @@ export default class SphereFrame extends VueComponent {
     this.$refs.canvas.addEventListener("mouseup", this.handleMouseReleased);
     this.pointTool = new PointHandler(this.layers, this.CSSTransformMat);
     this.lineTool = new LineHandler(this.layers, this.CSSTransformMat);
-    this.segmentTool = new SegmentHandler(
-      this.layers,
-      this.CSSTransformMat
-    );
-    this.circleTool = new CircleHandler(
-      this.layers,
-      this.CSSTransformMat
-    );
-    this.rotateTool = new RotateHandler(
-      this.layers,
-      this.CSSTransformMat
-    );
+    this.segmentTool = new SegmentHandler(this.layers, this.CSSTransformMat);
+    this.circleTool = new CircleHandler(this.layers, this.CSSTransformMat);
+    this.rotateTool = new RotateHandler(this.layers, this.CSSTransformMat);
     this.zoomTool = new PanZoomHandler(this.$refs.canvas);
     this.moveTool = new MoveHandler(this.layers, this.CSSTransformMat);
   }
@@ -219,7 +238,7 @@ export default class SphereFrame extends VueComponent {
   }
 
   handleSphereRotation(e: unknown): void {
-    this.$store.commit('rotateSphere', (e as any).transform);
+    this.$store.commit("rotateSphere", (e as any).transform);
   }
 
   @Watch("editMode")

@@ -1,6 +1,11 @@
 <template>
-  <split-pane split="vertical" :min-percent="15" :max-percent="35"
-    :default-percent="toolboxMinified ? 5 : 20" @resize="dividerMoved">
+  <split-pane
+    split="vertical"
+    :min-percent="15"
+    :max-percent="35"
+    :default-percent="toolboxMinified ? 5 : 20"
+    @resize="dividerMoved"
+  >
     <!-- Use the left page for the toolbox -->
     <template slot="paneL">
       <div>
@@ -19,17 +24,26 @@
         <v-row>
           <v-col cols="12">
             <v-row justify="center" class="pb-1">
-              <v-responsive :aspect-ratio="1"
+              <v-responsive
+                :aspect-ratio="1"
                 :max-height="currentCanvasSize"
-                :max-width="currentCanvasSize" ref="responsiveBox"
-                id="responsiveBox" class="pa-0">
-                <sphere-frame :canvas-size="currentCanvasSize">
-                </sphere-frame>
+                :max-width="currentCanvasSize"
+                ref="responsiveBox"
+                id="responsiveBox"
+                class="pa-0"
+              >
+                <sphere-frame :canvas-size="currentCanvasSize"></sphere-frame>
                 <div class="anchored top left">
-                  <v-tooltip bottom :open-delay="toolTipOpenDelay"
-                    :close-delay="toolTipCloseDelay">
+                  <!-- <v-btn-toggle
+                    v-model="editMode"
+                    @change="switchEditMode"
+                    class="mr-2 d-flex flex-wrap accent"
+                  >
+                    <ToolButton :key="80" :button="buttonList[8]"></ToolButton>
+                  </v-btn-toggle>-->
+                  <v-tooltip bottom :open-delay="toolTipOpenDelay" :close-delay="toolTipCloseDelay">
                     <!-- TODO:   
-                When not available they should be greyed out (i.e. disabled).-->
+                    When not available they should be greyed out (i.e. disabled).-->
                     <template v-slot:activator="{ on }">
                       <v-btn icon @click="undoEdit" v-on="on">
                         <v-icon>mdi-undo</v-icon>
@@ -37,8 +51,7 @@
                     </template>
                     <span>{{ $t("main.UndoLastAction") }}</span>
                   </v-tooltip>
-                  <v-tooltip bottom :open-delay="toolTipOpenDelay"
-                    :close-delay="toolTipCloseDelay">
+                  <v-tooltip bottom :open-delay="toolTipOpenDelay" :close-delay="toolTipCloseDelay">
                     <template v-slot:activator="{ on }">
                       <v-btn icon @click="redoAction" v-on="on">
                         <v-icon>mdi-redo</v-icon>
@@ -48,17 +61,71 @@
                   </v-tooltip>
                 </div>
                 <div class="anchored bottom right">
-                  <v-btn color="primary" icon tile @click="enableZoomIn">
-                    <v-icon>mdi-magnify-plus-outline</v-icon>
-                  </v-btn>
-                  <v-btn color="primary" icon tile @click="enableZoomOut">
-                    <v-icon>mdi-magnify-minus-outline</v-icon>
-                  </v-btn>
+                  <v-tooltip bottom :open-delay="toolTipOpenDelay" :close-delay="toolTipCloseDelay">
+                    <template v-slot:activator="{ on }">
+                      <v-btn
+                        color="primary"
+                        icon
+                        tile
+                        @click="enableZoomIn; $emit('displayOnlyThisToolUseMessage',70); displayZoomInToolUseMessage = true;"
+                        v-on="on"
+                      >
+                        <v-icon>mdi-magnify-plus-outline</v-icon>
+                      </v-btn>
+                    </template>
+                    <span>{{ $t("buttons.PanZoomInToolTipMessage") }}</span>
+                  </v-tooltip>
+                  <v-tooltip bottom :open-delay="toolTipOpenDelay" :close-delay="toolTipCloseDelay">
+                    <template v-slot:activator="{ on }">
+                      <v-btn
+                        color="primary"
+                        icon
+                        tile
+                        @click="enableZoomOut; $emit('displayOnlyThisToolUseMessage',80); displayZoomOutToolUseMessage = true;"
+                        v-on="on"
+                      >
+                        <v-icon>mdi-magnify-minus-outline</v-icon>
+                      </v-btn>
+                    </template>
+                    <span>{{ $t("buttons.PanZoomOutToolTipMessage") }}</span>
+                  </v-tooltip>
                 </div>
               </v-responsive>
             </v-row>
           </v-col>
         </v-row>
+        <v-snackbar
+          v-model="displayZoomInToolUseMessage"
+          bottom
+          left
+          :timeout="toolUseMessageDelay"
+          :value="displayToolUseMessages"
+          multi-line
+        >
+          <span>
+            <strong class="warning--text">{{$t('buttons.PanZoomInDisplayedName') +': '}}</strong>
+            {{ $t('buttons.PanZoomInToolUseMessage') }}
+          </span>
+          <v-btn @click="displayToolUseMessage = false" icon>
+            <v-icon color="success">mdi-close</v-icon>
+          </v-btn>
+        </v-snackbar>
+        <v-snackbar
+          v-model="displayZoomOutToolUseMessage"
+          bottom
+          left
+          :timeout="toolUseMessageDelay"
+          :value="displayToolUseMessages"
+          multi-line
+        >
+          <span>
+            <strong class="warning--text">{{$t('buttons.PanZoomOutDisplayedName') +': '}}</strong>
+            {{ $t('buttons.PanZoomOutToolUseMessage') }}
+          </span>
+          <v-btn @click="displayToolUseMessage = false" icon>
+            <v-icon color="success">mdi-close</v-icon>
+          </v-btn>
+        </v-snackbar>
       </v-container>
     </template>
   </split-pane>
@@ -77,20 +144,30 @@ import SETTINGS from "@/global-settings";
 import EventBus from "../eventHandlers/EventBus";
 import { SEPoint } from "@/models/SEPoint";
 import { SELine } from "@/models/SELine";
+import buttonList from "@/components/ToolButtons.vue";
+import ToolButton from "@/components/ToolButton.vue";
 
-@Component({ components: { SplitPane, Toolbox, SphereFrame } })
+@Component({ components: { SplitPane, Toolbox, SphereFrame, ToolButton } })
 export default class Easel extends Vue {
   readonly RIGHT_PANE_PERCENTAGE = 80;
   private availHeight = 0; // Both split panes are sandwiched between the app bar and footer. This variable hold the number of pixels available for canvas height
   private currentCanvasSize = 0; // Result of height calculation will be passed to <v-responsive> via this variable
 
+  private buttonList = buttonList;
   private leftPanePercentage = 30;
   private toolboxMinified = false;
+  /* Use the global settings to set the variables bound to the toolTipOpen/CloseDelay & toolUse */
   private toolTipOpenDelay = SETTINGS.toolTip.openDelay;
   private toolTipCloseDelay = SETTINGS.toolTip.closeDelay;
+  private displayToolTips = SETTINGS.toolTip.disableDisplay;
+  private toolUseMessageDelay = SETTINGS.toolUse.delay;
+  private displayToolUseMessages = SETTINGS.toolUse.display;
+
+  private displayZoomInToolUseMessage = false;
+  private displayZoomOutToolUseMessage = false;
 
   $refs!: {
-    responsiveBox: VueComponent
+    responsiveBox: VueComponent;
   };
 
   constructor() {

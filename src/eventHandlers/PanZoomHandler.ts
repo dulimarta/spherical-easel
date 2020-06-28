@@ -12,31 +12,81 @@ export enum ZoomMode {
 const tmpMatrix = new Matrix4();
 
 export default class PanZoomHandler implements ToolStrategy {
+  /**
+   * The HTML element that is the target of the zoom?
+   */
   private targetElement: HTMLElement;
+  /**
+   * The mode of the zoom tool, either Magnify or Minify
+   */
   private _mode = ZoomMode.MAGNIFY;
+
+  /**
+   * The matrix the describes takes the ?previous? ?standard view? view to the current view
+   */
   private zoomMatrix = new Matrix4();
+
+  /**
+   * Variables for the pan (translate) operations.
+   */
   private startDragPosition = new Vector2();
   private currentPosition = new Vector2();
-  private magnificationFactor = 1.0;
   private translateX = 0;
   private translateY = 0;
 
+  /**
+   * Indicates that the user mouse pressed at one location, moved the mouse with the mouse
+   * pressed, and mouse released at a final location - does a pan to the current location of the
+   * the mouse.
+   */
+  private isDragging = false;
+  /**
+   * Indicates that the user mouse pressed and released at the same location - does a zoom at
+   * the location of the mouse event
+   */
+  private isMousePressed = false;
+
+  /**
+   * The magnification factor for the CSS transform?
+   */
+  private magnificationFactor = 1.0;
+
+  /**
+   * The percentage the magnification factor changes by on user click.
+   */
   private percentChange = SETTINGS.zoom.percentChange / 100;
 
-  private isDragging = false;
-  private isMousePressed = false;
   constructor(element: HTMLElement) {
     this.targetElement = element;
   }
 
+  /**
+   * Sets the zoom mode. Controlled by the button (zoom in/out) the user selects.
+   */
   set zoomMode(val: ZoomMode) {
     this._mode = val;
   }
 
+  mousePressed(event: MouseEvent): void {
+    console.log("mag", this.magnificationFactor);
+    this.isMousePressed = true;
+
+    // Read the target DOM element to determine the current (mouse press) location
+    const target = (event.currentTarget || event.target) as HTMLDivElement;
+    const boundingRect = target.getBoundingClientRect();
+    const offsetX = event.clientX - boundingRect.left;
+    const offsetY = event.clientY - boundingRect.top;
+
+    this.currentPosition.set(offsetX, offsetY);
+    this.startDragPosition.copy(this.currentPosition);
+  }
   mouseMoved(event: MouseEvent): void {
+    // If the mouse was pressed and then moved, the user is dragging (to pan the view)
     if (this.isMousePressed) {
       this.isDragging = true;
     }
+
+    // Read the target DOM element to determine the current (mouse mouse) location
     const target = (event.currentTarget || event.target) as HTMLDivElement;
     const boundingRect = target.getBoundingClientRect();
     const offsetX = event.clientX - boundingRect.left;
@@ -46,15 +96,23 @@ export default class PanZoomHandler implements ToolStrategy {
     if (this.isDragging) this.doPan(event);
   }
 
-  mousePressed(event: MouseEvent): void {
-    this.isMousePressed = true;
-    const target = (event.currentTarget || event.target) as HTMLDivElement;
-    const boundingRect = target.getBoundingClientRect();
-    const offsetX = event.clientX - boundingRect.left;
-    const offsetY = event.clientY - boundingRect.top;
+  mouseReleased(event: MouseEvent): void {
+    if (this.isDragging) {
+      /* End the Pan operation */
+      this.isDragging = false;
 
-    this.currentPosition.set(offsetX, offsetY);
-    this.startDragPosition.copy(this.currentPosition);
+      if (this.magnificationFactor > 1) {
+        tmpMatrix.makeTranslation(this.translateX, this.translateY, 0);
+        this.zoomMatrix.premultiply(tmpMatrix);
+        EventBus.fire("zoom-updated", this.zoomMatrix);
+        const zoomCommand = new AddZoomSphereCommand(this.zoomMatrix);
+        zoomCommand.push();
+      }
+    } else {
+      /* Do the zoom operation */
+      this.doZoom(event);
+    }
+    this.isMousePressed = false;
   }
 
   doZoom(event: MouseEvent): void {
@@ -68,13 +126,17 @@ export default class PanZoomHandler implements ToolStrategy {
     }
     const target = (event.currentTarget || event.target) as HTMLDivElement;
     const boundingRect = target.getBoundingClientRect();
+    console.log("Bounding Rect", boundingRect);
+    console.log("clientX", event.clientX);
+    console.log("clientY", event.clientY);
     const tx = event.clientX - boundingRect.left - boundingRect.width / 2;
     const ty = event.clientY - boundingRect.top - boundingRect.height / 2;
     const mag = this.magnificationFactor;
     if (mag < 1) {
+      // If zooming out  the center of the viewport doesn't change
       this.zoomMatrix.makeScale(mag, mag, mag);
     } else {
-      this.zoomMatrix.makeTranslation(this.translateX, this.translateY, 0);
+      // this.zoomMatrix.makeTranslation(this.translateX, this.translateY, 0);
       //   this.zoomMatrix.identity();
       tmpMatrix.makeTranslation(tx, ty, 0);
       this.zoomMatrix.multiply(tmpMatrix);
@@ -90,32 +152,13 @@ export default class PanZoomHandler implements ToolStrategy {
   }
 
   doPan(event: MouseEvent): void {
+    // Only allow panning if we are zoomed in
     if (this.magnificationFactor < 1) return;
     this.translateX = this.currentPosition.x - this.startDragPosition.x;
     this.translateY = this.currentPosition.y - this.startDragPosition.y;
     tmpMatrix.makeTranslation(this.translateX, this.translateY, 0);
     tmpMatrix.multiply(this.zoomMatrix);
     EventBus.fire("zoom-updated", tmpMatrix);
-    const zoomCommand = new AddZoomSphereCommand(tmpMatrix);
-    zoomCommand.push();
-  }
-
-  mouseReleased(event: MouseEvent): void {
-    if (this.isDragging) {
-      this.isDragging = false;
-      if (this.magnificationFactor > 1) {
-        tmpMatrix.makeTranslation(this.translateX, this.translateY, 0);
-        this.zoomMatrix.premultiply(tmpMatrix);
-        EventBus.fire("zoom-updated", this.zoomMatrix);
-        const zoomCommand = new AddZoomSphereCommand(this.zoomMatrix);
-        zoomCommand.push();
-      }
-      /* Pan */
-    } else {
-      this.doZoom(event);
-      /* Zoom */
-    }
-    this.isMousePressed = false;
   }
 
   mouseLeave(event: MouseEvent): void {

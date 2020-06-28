@@ -295,7 +295,9 @@ export default {
     "circle",
     "move",
     "line",
-    "segment"
+    "segment",
+    "zoomIn",
+    "zoomOut"
     //"select"
   ],
   supportedLanguages: [

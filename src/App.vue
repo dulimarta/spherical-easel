@@ -29,9 +29,7 @@
             width="40"
           />
         </router-link>
-        <v-toolbar-title>
-          {{ $t("main.SphericalEaselMainTitle") }}
-        </v-toolbar-title>
+        <v-toolbar-title>{{ $t("main.SphericalEaselMainTitle") }}</v-toolbar-title>
         <v-tooltip left>
           <template v-slot:activator="{ on }">
             <a href="/docs">
@@ -61,7 +59,7 @@
       </router-view>
     </v-content>
     <v-footer app color="accent" padless>
-      <v-col class="text-center">Footer text here</v-col>
+      <v-col class="text-center">Perhaps the active tool mode should be displayed down here.</v-col>
     </v-footer>
   </v-app>
 </template>

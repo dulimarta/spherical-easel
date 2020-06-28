@@ -43,9 +43,7 @@
       group. Note the use of the translation $t(key_value).
     -->
     <div id="AdvanceToolGroup" v-show="nonEmptyGroup('advanced')">
-      <h3 class="body-1 font-weight-bold">
-        {{ $t("toolGroups.AdvancedTools") }}
-      </h3>
+      <h3 class="body-1 font-weight-bold">{{ $t("toolGroups.AdvancedTools") }}</h3>
       <v-btn-toggle
         v-model="editMode"
         @change="switchEditMode"
@@ -65,13 +63,8 @@
       The Transformational Tool Group only shown if the user has permission to use a tool in this 
       group. Note the use of the translation $t(key_value).
     -->
-    <div
-      id="TransformationalToolGroup"
-      v-show="nonEmptyGroup('transformational')"
-    >
-      <h3 class="body-1 font-weight-bold">
-        {{ $t("toolGroups.TransformationalTools") }}
-      </h3>
+    <div id="TransformationalToolGroup" v-show="nonEmptyGroup('transformational')">
+      <h3 class="body-1 font-weight-bold">{{ $t("toolGroups.TransformationalTools") }}</h3>
       <v-btn-toggle
         v-model="editMode"
         @change="switchEditMode"
@@ -90,9 +83,7 @@
     <!-- TODO: Move this into a tool tip somewhere. -->
     <div class="ml-2" style="height:100%;">
       <div>
-        <h3 class="body-1 font-weight-bold">
-          {{ $t("toolGroups.KeyShortCut") }}
-        </h3>
+        <h3 class="body-1 font-weight-bold">{{ $t("toolGroups.KeyShortCut") }}</h3>
         <ul>
           <li>{{ $t("toolGroups.ResetSphereOrientation") }}</li>
         </ul>
@@ -117,8 +108,8 @@ import SETTINGS from "@/global-settings";
   components: { ToolButton }
 })
 export default class ToolButtons extends Vue {
-  /* Controls the selection of the editMode using the buttons. The default is rotate. */
-  private editMode = "rotate";
+  /* Controls the selection of the editMode using the buttons. The default is segment. */
+  private editMode = "segment";
 
   /* Use the global settings to set the variables bound to the toolTipOpen/CloseDelay */
   private toolTipOpenDelay = SETTINGS.toolTip.openDelay;
@@ -219,6 +210,26 @@ export default class ToolButtons extends Vue {
       toolUseMessage: "CreateCircleToolUseMessage",
       displayToolUseMessage: false,
       toolGroup: "advanced"
+    },
+    {
+      id: 70,
+      editModeValue: "zoomIn",
+      displayedName: "PanZoomInDisplayedName",
+      icon: "mdi-magnify-plus-outline",
+      toolTipMessage: "PanZoomInToolTipMessage",
+      toolUseMessage: "PanZoomInToolUseMessage",
+      displayToolUseMessage: false,
+      toolGroup: "edit"
+    },
+    {
+      id: 80,
+      editModeValue: "zoomOut",
+      displayedName: "PanZoomOutDisplayedName",
+      icon: "mdi-magnify-minus-outline",
+      toolTipMessage: "PanZoomOutToolTipMessage",
+      toolUseMessage: "PanZoomOutToolUseMessage",
+      displayToolUseMessage: false,
+      toolGroup: "edit"
     }
     //sort the button list by id so that we don't have to reorder the list each item we add a new button
   ].sort((a: ToolButtonType, b: ToolButtonType) => a.id - b.id);
