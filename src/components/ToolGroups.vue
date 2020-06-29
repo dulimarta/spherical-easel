@@ -107,7 +107,7 @@ import SETTINGS from "@/global-settings";
 @Component({
   components: { ToolButton }
 })
-export default class ToolButtons extends Vue {
+export default class ToolGroups extends Vue {
   /* Controls the selection of the editMode using the buttons. The default is segment. */
   private editMode = "segment";
 

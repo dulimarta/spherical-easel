@@ -9,18 +9,23 @@
         </v-col>
         <!--- VUetify grid system uses 12-column layout. 
         Setting the attribute cols="12" means the v-col below
-        takes 100% of the available width. Therefore programmatically we can only control the height using Vue style binding -->
+        takes 100% of the available width. Therefore programmatically we can only control the height using Vue style binding-->
         <v-col cols="12" id="contentWrapper" ref="contentWrapper">
           <!-- When the available area is too wide, we have to limit its width
-          so the responsive area will not be taller than the viewport -->
-          <v-responsive :aspect-ratio="1" :max-width="responsiveSize"
-            :max-height="responsiveSize" id="responsive" ref="responsive"
-            class="pa-1 yellow">
+          so the responsive area will not be taller than the viewport-->
+          <v-responsive
+            :aspect-ratio="1"
+            :max-width="responsiveSize"
+            :max-height="responsiveSize"
+            id="responsive"
+            ref="responsive"
+            class="pa-1 yellow"
+          >
             <!-- keep the YELLOW class for debugging  -->
             <!--zoom-viewport :view-width="naturalViewSize"
               :view-height="naturalViewSize" :min-zoom="0.3"
               :max-zoom="4" @max-zoom-out="zoomWarning = true"
-              @max-zoom-in="zoomWarning = true" class="orange"-->
+            @max-zoom-in="zoomWarning = true" class="orange"-->
             <div id="svgParent" ref="svgParent" class="ma-0"></div>
             <!--/zoom-viewport-->
           </v-responsive>
@@ -44,29 +49,42 @@
     -->
 
     <!--  Use the "clipped" attribute to keep the navigation drawer 
-    below the app toolbar, width should be specified as number only (without unit) -->
-    <v-navigation-drawer id="leftDrawer" ref="leftDrawer" app clipped
-      color="accent" permanent :mini-variant="leftDrawerMinified" bottom
-      :width="leftDrawerProperties.width">
+    below the app toolbar, width should be specified as number only (without unit)-->
+    <v-navigation-drawer
+      id="leftDrawer"
+      ref="leftDrawer"
+      app
+      clipped
+      color="accent"
+      permanent
+      :mini-variant="leftDrawerMinified"
+      bottom
+      :width="leftDrawerProperties.width"
+    >
       <!-- This is the minified version of the left drawer with icon buttons for maximizing it -->
-      <div id="leftnavicons" v-if="leftDrawerMinified"
-        @click="setMinificationOfLeftDrawer(false)">
-        <v-btn icon @click="
+      <div id="leftnavicons" v-if="leftDrawerMinified" @click="setMinificationOfLeftDrawer(false)">
+        <v-btn
+          icon
+          @click="
             setMinificationOfLeftDrawer(false);
             activeLeftDrawerTab = 'toolListTab';
-          ">
+          "
+        >
           <v-icon class="ml-3 my-2">mdi-calculator</v-icon>
         </v-btn>
-        <v-btn icon @click="
+        <v-btn
+          icon
+          @click="
             leftDrawerMinified = !leftDrawerMinified;
             activeLeftDrawerTab = 'objectListTab';
-          ">
+          "
+        >
           <v-icon class="ml-3 my-2">mdi-format-list-bulleted</v-icon>
         </v-btn>
       </div>
     </v-navigation-drawer>
     <!-- <event-handler :element="$refs.canvasContainer"
-      @mousedown="handleMousePressed" /> -->
+    @mousedown="handleMousePressed" />-->
     <!--v-snackbar v-model="zoomWarning" color="warning" :timeout="2500">
       Can't zoom further
     </v-snackbar-->
@@ -132,7 +150,7 @@ import { State } from "vuex-class";
 
 /* Import the components for the contents of the navigation drawer */
 import ObjectTree from "@/components/ObjectTree.vue";
-import ToolButtons from "@/components/ToolButtons.vue";
+import ToolGroups from "@/components/ToolGroups.vue";
 import ZoomViewport from "@/components/ZoomViewport.vue";
 // import { setupScene } from "@/initApp";
 import Two from "two.js";
@@ -144,7 +162,7 @@ import { Visitor } from "@/visitors/Visitor";
 import { Matrix4, Vector3 } from "three";
 // import Circle from '../3d-objs/Circle';
 @Component({
-  components: { ObjectTree, ToolButtons, ZoomViewport }
+  components: { ObjectTree, ToolGroups, ZoomViewport }
 })
 export default class Easel extends Vue {
   // @Prop(WebGLRenderer)

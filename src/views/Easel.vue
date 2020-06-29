@@ -144,7 +144,7 @@ import SETTINGS from "@/global-settings";
 import EventBus from "../eventHandlers/EventBus";
 import { SEPoint } from "@/models/SEPoint";
 import { SELine } from "@/models/SELine";
-import buttonList from "@/components/ToolButtons.vue";
+import buttonList from "@/components/ToolGroups.vue";
 import ToolButton from "@/components/ToolButton.vue";
 
 @Component({ components: { SplitPane, Toolbox, SphereFrame, ToolButton } })
@@ -165,6 +165,8 @@ export default class Easel extends Vue {
 
   private displayZoomInToolUseMessage = false;
   private displayZoomOutToolUseMessage = false;
+
+  private editMode = "segment";
 
   $refs!: {
     responsiveBox: VueComponent;
@@ -222,6 +224,9 @@ export default class Easel extends Vue {
     }
   }
 
+  switchEditMode() {
+    this.$store.commit("setEditMode", this.editMode);
+  }
   onWindowResized(): void {
     this.adjustSize();
   }

@@ -60,7 +60,7 @@ export default class ToolButton extends Vue {
 
   /* This controls the display of the snackbar Tool Use Message. This is set to false by the 
   $emit('displayOnlyThisToolUseMessage',button.id) <-- this turns off all other snackbar messages
-  that sends a message to the parent (ToolButtons.vue) that triggers the method 
+  that sends a message to the parent (ToolGroups.vue) that triggers the method 
   displayOnlyThisToolUseMessageFunc 
   in the parent which changes the value of button.displayToolUseMessage (except in the button with
   id button.id), this is variable is being watched in this child and turns off the display of the
@@ -71,7 +71,7 @@ export default class ToolButton extends Vue {
   put it. This is the list of tools that should be displayed*/
   private buttonDisplayList = SETTINGS.userButtonDisplayList;
 
-  /* Allow us to bind the button object in the parent (=ToolButtons) with the button object in the
+  /* Allow us to bind the button object in the parent (=ToolGroups) with the button object in the
   child */
   @Prop({ default: null })
   button!: ToolButtonType; /* What does !: mean? It tells typescript not to worry about button not
