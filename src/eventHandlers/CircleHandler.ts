@@ -1,7 +1,7 @@
 /** @format */
 
 import { Vector3, Matrix4 } from "three";
-import SelectionHandler from "./SelectionHandler";
+import MouseHandler from "./MouseHandler";
 import Point from "@/plottables/Point";
 import Circle from "@/plottables/Circle";
 import { CommandGroup } from "@/commands/CommandGroup";
@@ -12,8 +12,9 @@ import { SEPoint } from "@/models/SEPoint";
 import { SECircle } from "@/models/SECircle";
 import SETTINGS from "@/global-settings";
 import { SEIntersection } from "@/models/SEIntersection";
+import { DisplayStyle } from "@/plottables/Nodule";
 
-export default class CircleHandler extends SelectionHandler {
+export default class CircleHandler extends MouseHandler {
   // Center vector of the created circle
   private centerVector: Vector3;
   // Is the user dragging?
@@ -36,7 +37,7 @@ export default class CircleHandler extends SelectionHandler {
     this.isTemporaryCircleAdded = false;
     this.temporaryCircle = new Circle();
     // Set the style using the temporary defaults
-    this.temporaryCircle.stylize("temporary");
+    this.temporaryCircle.stylize(DisplayStyle.TEMPORARY);
   }
   // eslint-disable-next-line
   mousePressed(event: MouseEvent) {
@@ -112,9 +113,9 @@ export default class CircleHandler extends SelectionHandler {
         // Clone the current circle
         const newCircle = this.temporaryCircle.clone();
         // Set the display to the default values
-        newCircle.stylize("default");
+        newCircle.stylize(DisplayStyle.DEFAULT);
         // Set the glowing display
-        newCircle.stylize("glowing");
+        newCircle.stylize(DisplayStyle.GLOWING);
 
         // TODO: Use EventBus.fire()???
 
@@ -126,9 +127,9 @@ export default class CircleHandler extends SelectionHandler {
           // we have to create a new point and it to the group/store
           const newCenterPoint = new Point();
           // Set the display to the default values
-          newCenterPoint.stylize("default");
+          newCenterPoint.stylize(DisplayStyle.DEFAULT);
           // Set the glowing display
-          newCenterPoint.stylize("glowing");
+          newCenterPoint.stylize(DisplayStyle.GLOWING);
           const vtx = new SEPoint(newCenterPoint);
           vtx.positionOnSphere = this.centerVector;
           this.centerPoint = vtx;
@@ -141,9 +142,9 @@ export default class CircleHandler extends SelectionHandler {
           // we have to create a new point and add it to the group/store
           const newEndPoint = new Point();
           // Set the display to the default values
-          newEndPoint.stylize("default");
+          newEndPoint.stylize(DisplayStyle.DEFAULT);
           // Set the glowing display
-          newEndPoint.stylize("glowing");
+          newEndPoint.stylize(DisplayStyle.GLOWING);
           const vtx = new SEPoint(newEndPoint);
           vtx.positionOnSphere = this.currentSpherePoint;
           this.endPoint = vtx;
@@ -167,6 +168,7 @@ export default class CircleHandler extends SelectionHandler {
           newSECircle
         );
         tmp.forEach((p: SEIntersection) => {
+          p.setShowing(false);
           circleGroup.addCommand(new AddPointCommand(p));
         });
         circleGroup.execute();

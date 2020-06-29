@@ -53,4 +53,9 @@ export class SEPoint extends SENodule implements Visitable {
       SETTINGS.point.hitIdealDistance
     );
   }
+
+  setShowing(b: boolean): void {
+    super.setShowing(b);
+    this.ref.setVisible(b);
+  }
 }

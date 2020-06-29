@@ -61,20 +61,17 @@ function intersectLineWithSegment(l: SELine, s: SESegment): SEIntersection[] {
     } (${s.normalDirection.toFixed(2)}) is ${tmpVector.toFixed(3)}`
   );
 
-  // FIXME: this test may incorrectly return true for the antipodal point!
-  if (s.isPositionInsideArc(tmpVector)) {
-    const x = new SEIntersection(new Point(), l, s);
-    out.push(x);
+  const dist1 = tmpVector.distanceTo(s.midVector);
+  const dist2 = tmpVector.multiplyScalar(-1).distanceTo(s.midVector);
+  const x = new SEIntersection(new Point(), l, s);
+  out.push(x);
+  // Choose the closest between the point and its antipodal
+  if (dist2 < dist1) {
     x.positionOnSphere = tmpVector;
+  } else {
+    x.positionOnSphere = tmpVector.multiplyScalar(-1);
   }
 
-  // Check its antipodal point
-  tmpVector.multiplyScalar(-1);
-  if (s.isPositionInsideArc(tmpVector)) {
-    const x2 = new SEIntersection(new Point(), l, s);
-    out.push(x2);
-    x2.positionOnSphere = tmpVector.multiplyScalar(-1);
-  }
   return out;
 }
 // const lMarker = new Two.Circle(0, 0, 6);
@@ -126,11 +123,11 @@ const tempVec = new Vector3();
  * @param n2 center vector of the second circle
  * @param arc2 arc length radius of the second circle
  */
-function intersectCircleWithCircle(
-  n1: Vector3, // center of first circle
-  arc1: number, // arc radius (could be bigger than Pi/2)
-  n2: Vector3, // center of second circle
-  arc2: number // arc radius (could be bigger than Pi/2)
+function intersectCircles(
+  n1: Vector3, // center
+  arc1: number, // arc radius
+  n2: Vector3,
+  arc2: number
 ): Vector3[] {
   //Convert to the case where all arc lengths are less than Pi/2
   radius1 = arc1;
@@ -306,7 +303,7 @@ function intersectLineWithCircle(
   // const x1 = new SEIntersection(new Point(), n, c);
   // x1.positionOnSphere = tmpVector;
   // out.push(x1);
-  const tmp = intersectCircleWithCircle(
+  const tmp = intersectCircles(
     n.normalDirection,
     Math.PI / 2, // arc radius of geodesic circles
     c.normalDirection,
@@ -321,6 +318,31 @@ function intersectLineWithCircle(
   return out;
 }
 
+// FIXME: does not work for two circles
+function intersectCircleWithCircle(
+  c1: SECircle,
+  c2: SECircle
+): SEIntersection[] {
+  return (c1.radius < c2.radius
+    ? intersectCircles(
+        c1.normalDirection,
+        c1.radius,
+        c2.normalDirection,
+        c2.radius
+      )
+    : intersectCircles(
+        c2.normalDirection,
+        c2.radius,
+        c1.normalDirection,
+        c1.radius
+      )
+  ).map((p: Vector3) => {
+    const x = new SEIntersection(new Point(), c1, c2);
+    x.setShowing(true);
+    x.positionOnSphere = p;
+    return x;
+  });
+}
 function intersectSegmentWithSegment(
   s1: SESegment,
   s2: SESegment
@@ -346,12 +368,7 @@ function intersectSegmentWithCircle(
   c: SECircle
 ): SEIntersection[] {
   const out: SEIntersection[] = [];
-  intersectCircleWithCircle(
-    s.normalDirection,
-    Math.PI / 2,
-    c.normalDirection,
-    c.radius
-  )
+  intersectCircles(s.normalDirection, Math.PI / 2, c.normalDirection, c.radius)
     .filter((p: Vector3) => s.isPositionInsideArc(p))
     .forEach((p: Vector3) => {
       const x = new SEIntersection(new Point(), s, c);
@@ -460,18 +477,7 @@ export default new Vuex.Store({
         ),
         ...state.circles
           .filter((c: SECircle) => c.id !== circle.id) // ignore self
-          .flatMap((c: SECircle) =>
-            intersectCircleWithCircle(
-              c.normalDirection,
-              c.radius,
-              circle.normalDirection,
-              circle.radius
-            ).map((p: Vector3) => {
-              const x = new SEIntersection(new Point(), c, circle);
-              x.positionOnSphere = p;
-              return x;
-            })
-          )
+          .flatMap((c: SECircle) => intersectCircleWithCircle(c, circle))
       ];
     }
   }

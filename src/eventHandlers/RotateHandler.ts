@@ -1,4 +1,4 @@
-import SelectionHandler from "./SelectionHandler";
+import MouseHandler from "./MouseHandler";
 import Two from "two.js";
 import { Matrix4, Vector3 } from "three";
 import EventBus from "./EventBus";
@@ -12,7 +12,7 @@ const endTime = Math.max(
   Math.min(SETTINGS.rotate.momentum.decayTime * 1000, 300000)
 ); // The momentum rotation will end after this many milliseconds. 300000 milliseconds is 5 minutes
 
-export default class RotateHandler extends SelectionHandler {
+export default class RotateHandler extends MouseHandler {
   /**
    * Records the location of the first mouse press, so that when undoing
    * we can just record the rotation from the first mouse press to the mouse release

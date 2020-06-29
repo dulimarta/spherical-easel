@@ -1,6 +1,6 @@
 /** @format */
 
-import SelectionHandler from "./SelectionHandler";
+import MouseHandler from "./MouseHandler";
 // import SETTINGS from "@/global-settings";
 import Two from "two.js";
 import { Matrix4, Vector3, Matrix3 } from "three";
@@ -23,7 +23,7 @@ const prevCircleOuter = new Vector3();
 const tempSegment = new Segment(); // For debugging
 const outerMarker = new Two.Circle(0, 0, 5);
 
-export default class MoveHandler extends SelectionHandler {
+export default class MoveHandler extends MouseHandler {
   private isDragging = false;
   private isSegmentAdded = false;
   private moveTarget: SENodule | null = null;
