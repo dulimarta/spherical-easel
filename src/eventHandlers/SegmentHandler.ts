@@ -12,6 +12,7 @@ import { AddPointCommand } from "@/commands/AddPointCommand";
 import { AddSegmentCommand } from "@/commands/AddSegmentCommand";
 import { SESegment } from "@/models/SESegment";
 import SETTINGS from "@/global-settings";
+import { SEIntersection } from "@/models/SEIntersection";
 
 const MIDPOINT_MOVEMENT_THRESHOLD = 2.0; /* in degrees */
 /** The temporary ending and midpoint vectors */
@@ -202,15 +203,25 @@ export default class SegmentHandler extends SelectionHandler {
           this.endPoint = vtx;
           segmentGroup.addCommand(new AddPointCommand(vtx));
         }
-        segmentGroup
-          .addCommand(
-            new AddSegmentCommand({
-              line: new SESegment(newSegment, this.startPoint, this.endPoint),
-              startPoint: this.startPoint,
-              endPoint: this.endPoint
-            })
-          )
-          .execute();
+        const newSESegment = new SESegment(
+          newSegment,
+          this.startPoint,
+          this.endPoint
+        );
+        segmentGroup.addCommand(
+          new AddSegmentCommand({
+            line: newSESegment,
+            startPoint: this.startPoint,
+            endPoint: this.endPoint
+          })
+        );
+        const points = this.store.getters.determineIntersectionsWithSegment(
+          newSESegment
+        );
+        points.forEach((p: SEIntersection) => {
+          segmentGroup.addCommand(new AddPointCommand(p));
+        });
+        segmentGroup.execute();
       } else {
         // The user is attempting to make a segment smaller than the minimum arc length so
         // create  a point at the location of the start vector

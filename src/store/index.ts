@@ -58,6 +58,8 @@ function intersectLineWithSegment(l: SELine, s: SESegment): SEIntersection[] {
       s.name
     } (${s.normalDirection.toFixed(2)}) is ${tmpVector.toFixed(3)}`
   );
+
+  // FIXME: this test may incorrectly return true for the antipodal point!
   if (s.isPositionInsideArc(tmpVector)) {
     const x = new SEIntersection(new Point(), l, s);
     out.push(x);
@@ -73,10 +75,10 @@ function intersectLineWithSegment(l: SELine, s: SESegment): SEIntersection[] {
   }
   return out;
 }
-const lMarker = new Two.Circle(0, 0, 6);
-lMarker.fill = "red";
-const rMarker = new Two.Circle(0, 0, 6);
-rMarker.fill = "green";
+// const lMarker = new Two.Circle(0, 0, 6);
+// lMarker.fill = "red";
+// const rMarker = new Two.Circle(0, 0, 6);
+// rMarker.fill = "green";
 
 const ctr1 = new Vector3();
 const ctr2 = new Vector3();
@@ -92,7 +94,7 @@ const commonChordDir = new Vector3();
  * @param n2 normal direction of the second circle
  * @param arc2 arc length radius of the second circle
  */
-function intersectCircles(
+function intersectCircleWithCircle(
   n1: Vector3, // center
   arc1: number, // arc radius
   n2: Vector3,
@@ -200,7 +202,7 @@ function intersectLineWithCircle(
   // const x1 = new SEIntersection(new Point(), n, c);
   // x1.positionOnSphere = tmpVector;
   // out.push(x1);
-  const tmp = intersectCircles(
+  const tmp = intersectCircleWithCircle(
     n.normalDirection,
     Math.PI / 2, // arc radius of geodesic circles
     c.normalDirection,
@@ -215,6 +217,45 @@ function intersectLineWithCircle(
   return out;
 }
 
+function intersectSegmentWithSegment(
+  s1: SESegment,
+  s2: SESegment
+): SEIntersection[] {
+  const out: SEIntersection[] = [];
+  tmpVector.crossVectors(s1.normalDirection, s2.normalDirection).normalize();
+  if (s1.isPositionInsideArc(tmpVector) && s2.isPositionInsideArc(tmpVector)) {
+    const x = new SEIntersection(new Point(), s1, s2);
+    out.push(x);
+    x.positionOnSphere = tmpVector;
+  }
+  tmpVector.multiplyScalar(-1); // Antipodal point
+  if (s1.isPositionInsideArc(tmpVector) && s2.isPositionInsideArc(tmpVector)) {
+    const x = new SEIntersection(new Point(), s1, s2);
+    out.push(x);
+    x.positionOnSphere = tmpVector;
+  }
+  return out;
+}
+
+function intersectSegmentWithCircle(
+  s: SESegment,
+  c: SECircle
+): SEIntersection[] {
+  const out: SEIntersection[] = [];
+  intersectCircleWithCircle(
+    s.normalDirection,
+    Math.PI / 2,
+    c.normalDirection,
+    c.radius
+  )
+    .filter((p: Vector3) => s.isPositionInsideArc(p))
+    .forEach((p: Vector3) => {
+      const x = new SEIntersection(new Point(), s, c);
+      x.positionOnSphere = p;
+      out.push(x);
+    });
+  return out;
+}
 export default new Vuex.Store({
   state: initialState,
   mutations,
@@ -285,6 +326,21 @@ export default new Vuex.Store({
         // intersection with all circles
         ...state.circles.flatMap((c: SECircle) =>
           intersectLineWithCircle(line, c)
+        )
+      ];
+    },
+    determineIntersectionsWithSegment: (state: AppState) => (
+      segment: SESegment
+    ): SEIntersection[] => {
+      return [
+        ...state.lines.flatMap((l: SELine) =>
+          intersectLineWithSegment(l, segment)
+        ),
+        ...state.segments
+          .filter((s: SESegment) => s.id !== segment.id)
+          .flatMap((s: SESegment) => intersectSegmentWithSegment(s, segment)),
+        ...state.circles.flatMap((c: SECircle) =>
+          intersectSegmentWithCircle(segment, c)
         )
       ];
     }

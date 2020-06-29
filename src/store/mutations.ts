@@ -68,7 +68,6 @@ export default {
     // Add this line as a child of the two points
     startPoint.registerChild(line);
     endPoint.registerChild(line);
-    // determineIntersectionsWithLine(state, line);
   },
   removeLine(state: AppState, lineId: number): void {
     const pos = state.lines.findIndex(x => x.id === lineId);
