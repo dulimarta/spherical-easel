@@ -1,16 +1,16 @@
-import SelectionHandler from "./SelectionHandler";
+import MouseHandler from "./MouseHandler";
 import Two from "two.js";
 import { Vector3, Matrix4 } from "three";
 import SETTINGS, { LAYER } from "@/global-settings";
-import EventBus from "./EventBus";
 import { SEPoint } from "@/models/SEPoint";
 import Point from "@/plottables/Point";
 import { AddPointCommand } from "@/commands/AddPointCommand";
+import { DisplayStyle } from "@/plottables/Nodule";
 
 const frontPointRadius = SETTINGS.point.temp.radius.front;
 const backPointRadius = SETTINGS.point.temp.radius.back;
 
-export default class PointHandler extends SelectionHandler {
+export default class PointHandler extends MouseHandler {
   // Center vector of the created point
   private vectorLocation: Vector3;
 
@@ -24,7 +24,7 @@ export default class PointHandler extends SelectionHandler {
     this.temporaryPoint = new Point();
     this.temporaryPoint.positionVector = this.vectorLocation;
     // Set the style using the temporary defaults
-    this.temporaryPoint.stylize("temporary");
+    this.temporaryPoint.stylize(DisplayStyle.TEMPORARY);
   }
 
   mousePressed(event: MouseEvent): void {
@@ -35,9 +35,9 @@ export default class PointHandler extends SelectionHandler {
       }
       const newPoint = new Point();
       // Set the display to the default values
-      newPoint.stylize("default");
+      newPoint.stylize(DisplayStyle.DEFAULT);
       // Set the glowing display
-      newPoint.stylize("glowing");
+      newPoint.stylize(DisplayStyle.GLOWING);
       // Create the model object for the new point and link them
       const vtx = new SEPoint(newPoint);
       vtx.positionOnSphere = this.currentSpherePoint;

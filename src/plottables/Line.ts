@@ -1,7 +1,7 @@
 import { Vector3, Matrix4 } from "three";
 import Two from "two.js";
 import SETTINGS, { LAYER } from "@/global-settings";
-import Nodule from "./Nodule";
+import Nodule, { DisplayStyle } from "./Nodule";
 
 const SUBDIVS = SETTINGS.line.numPoints;
 // const XAxis = new Vector3(1, 0, 0);
@@ -283,6 +283,9 @@ export default class Line extends Nodule {
     return this.end_;
   }
 
+  setVisible(flag: boolean): void {
+    // None yet
+  }
   // It looks like we have to define our own clone() function
   // The builtin clone() does not seem to work correctly
   clone(): this {
@@ -341,9 +344,9 @@ export default class Line extends Nodule {
    * Update flag means at least one of the private variables storing style information has
    * changed and should be applied to the displayed line.
    */
-  stylize(flag: string): void {
+  stylize(flag: DisplayStyle): void {
     switch (flag) {
-      case "temporary": {
+      case DisplayStyle.TEMPORARY: {
         // The style for the temporary segment display.  These options are not user modifiable.
         // Created with the Google Sheet "Segment Styling Code" in the "Temporary" tab
 
@@ -374,7 +377,7 @@ export default class Line extends Nodule {
         (this.glowingBackHalf as any).visible = false;
         break;
       }
-      case "glowing": {
+      case DisplayStyle.GLOWING: {
         // The style for the glowing circle display.  These options are not user modifiable.
         // Created with the Google Sheet "Segment Styling Code" in the "Glowing" tab
 
@@ -406,7 +409,7 @@ export default class Line extends Nodule {
         }
         break;
       }
-      case "update": {
+      case DisplayStyle.UPDATE: {
         // Use the current variables to update the display style
         // Created with the Google Sheet "Segment Styling Code" in the "Drawn Update" tab
         // FRONT PART
@@ -438,7 +441,7 @@ export default class Line extends Nodule {
           this.strokeWidthBack + SETTINGS.line.glowing.edgeWidth;
         break;
       }
-      case "default":
+      case DisplayStyle.DEFAULT:
       default: {
         // Reset the style to the defaults i.e. Use the global defaults to update the display style
         // Created with the Google Sheet "Segment Styling Code" in the "Drawn Set To Defaults" tab

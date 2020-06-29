@@ -4,6 +4,13 @@ import { Stylable } from "./Styleable";
 import { Resizeable } from "./Resizeable";
 import SETTINGS from "@/global-settings";
 
+export enum DisplayStyle {
+  DEFAULT,
+  TEMPORARY,
+  UPDATE,
+  GLOWING
+}
+
 /**
  * A Nodule consists of one or more SVG elements
  */
@@ -41,7 +48,8 @@ export default abstract class Nodule extends Two.Group
   abstract glowingDisplay(): void;
 
   /** Set the temporary/glowing style and update the current display*/
-  abstract stylize(flag: string): void;
+  abstract stylize(flag: DisplayStyle): void;
+  abstract setVisible(flag: boolean): void;
 
   //** Get the back contrasting style using the value of contrast */
   static contrastFillColor(frontColor: string) {

@@ -132,7 +132,7 @@ export default {
       state.nodules.splice(pos2, 1);
     }
   },
-  rotateSphere(state: AppState, rotationMat: Matrix4) {
+  rotateSphere(state: AppState, rotationMat: Matrix4): void {
     positionVisitor.setTransform(rotationMat);
     state.points.forEach((p: SEPoint) => {
       p.accept(positionVisitor);

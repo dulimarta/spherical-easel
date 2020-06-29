@@ -2,7 +2,7 @@
 
 import Two from "two.js";
 import { Matrix4, Vector3 } from "three";
-import SelectionHandler from "./SelectionHandler";
+import MouseHandler from "./MouseHandler";
 import { SEPoint } from "@/models/SEPoint";
 import Segment from "@/plottables/Segment";
 import Point from "@/plottables/Point";
@@ -13,6 +13,7 @@ import { AddSegmentCommand } from "@/commands/AddSegmentCommand";
 import { SESegment } from "@/models/SESegment";
 import SETTINGS from "@/global-settings";
 import { SEIntersection } from "@/models/SEIntersection";
+import { DisplayStyle } from "@/plottables/Nodule";
 
 const MIDPOINT_MOVEMENT_THRESHOLD = 2.0; /* in degrees */
 /** The temporary ending and midpoint vectors */
@@ -24,7 +25,7 @@ const tmpVector = new Vector3();
 const midMarker = new Two.Circle(0, 0, 5);
 midMarker.fill = "navy";
 
-export default class SegmentHandler extends SelectionHandler {
+export default class SegmentHandler extends MouseHandler {
   /**
    * The starting vector location of the segment
    */
@@ -55,7 +56,7 @@ export default class SegmentHandler extends SelectionHandler {
   constructor(layers: Two.Group[], transformMatrix: Matrix4) {
     super(layers, transformMatrix);
     this.tempSegment = new Segment();
-    this.tempSegment.stylize("temporary");
+    this.tempSegment.stylize(DisplayStyle.TEMPORARY);
   }
   mousePressed(event: MouseEvent): void {
     console.log("mouse press in segment handler");
@@ -63,7 +64,7 @@ export default class SegmentHandler extends SelectionHandler {
     this.dragging = true;
     // The Selection Handler forms a list of all the nearby points
     // If there are nearby points, select the first one to be the start of the segment otherwise
-    //  put a startmarker (found in SelectionHandler) in the scene
+    //  put a startmarker (found in MouseHandler) in the scene
     if (this.hitPoints.length > 0) {
       const selected = this.hitPoints[0];
       this.startVector.copy(selected.positionOnSphere);
@@ -170,9 +171,9 @@ export default class SegmentHandler extends SelectionHandler {
         this.isTemporarySegmentAdded = false;
         const newSegment = this.tempSegment.clone();
         // Stylize the new segment
-        newSegment.stylize("default");
+        newSegment.stylize(DisplayStyle.DEFAULT);
         // Stylize the glowing segment
-        newSegment.stylize("glowing");
+        newSegment.stylize(DisplayStyle.GLOWING);
 
         // Create a new command group to store potentially three commands. Those to add the endpoints (which might be  new) and the segment itself.
         const segmentGroup = new CommandGroup();
@@ -180,9 +181,9 @@ export default class SegmentHandler extends SelectionHandler {
           // The start point is a new point and must be created and added to the command/store
           const newStartPoint = new Point();
           // Set the display to the default values
-          newStartPoint.stylize("default");
+          newStartPoint.stylize(DisplayStyle.DEFAULT);
           // Set the glowing display
-          newStartPoint.stylize("glowing");
+          newStartPoint.stylize(DisplayStyle.GLOWING);
           const vtx = new SEPoint(newStartPoint);
           vtx.positionOnSphere = this.startVector;
           this.startPoint = vtx;
@@ -195,9 +196,9 @@ export default class SegmentHandler extends SelectionHandler {
           // The endpoint is a new point and must be created and added to the command/store
           const newEndPoint = new Point();
           // Set the display to the default values
-          newEndPoint.stylize("default");
+          newEndPoint.stylize(DisplayStyle.DEFAULT);
           // Set the glowing display
-          newEndPoint.stylize("glowing");
+          newEndPoint.stylize(DisplayStyle.GLOWING);
           const vtx = new SEPoint(newEndPoint);
           vtx.positionOnSphere = this.currentSpherePoint;
           this.endPoint = vtx;
@@ -219,6 +220,7 @@ export default class SegmentHandler extends SelectionHandler {
           newSESegment
         );
         points.forEach((p: SEIntersection) => {
+          p.setShowing(false);
           segmentGroup.addCommand(new AddPointCommand(p));
         });
         segmentGroup.execute();
@@ -230,9 +232,9 @@ export default class SegmentHandler extends SelectionHandler {
           // we have to create a new point and it to the group/store
           const newPoint = new Point();
           // Set the display to the default values
-          newPoint.stylize("default");
+          newPoint.stylize(DisplayStyle.DEFAULT);
           // Set the glowing display
-          newPoint.stylize("glowing");
+          newPoint.stylize(DisplayStyle.GLOWING);
           const vtx = new SEPoint(newPoint);
           vtx.positionOnSphere = this.startVector;
           this.startPoint = vtx;

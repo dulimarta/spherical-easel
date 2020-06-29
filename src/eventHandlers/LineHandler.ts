@@ -1,7 +1,7 @@
 /** @format */
 
 import { Vector3, Matrix4 } from "three";
-import SelectionHandler from "./SelectionHandler";
+import MouseHandler from "./MouseHandler";
 import Arrow from "@/3d-objs/Arrow"; // for debugging
 import Point from "@/plottables/Point";
 import Line from "@/plottables/Line";
@@ -13,9 +13,10 @@ import Two from "two.js";
 import { SEPoint } from "@/models/SEPoint";
 import { SELine } from "@/models/SELine";
 import { SEIntersection } from "@/models/SEIntersection";
+import { DisplayStyle } from "@/plottables/Nodule";
 // const frontPointRadius = SETTINGS.point.temp.radius.front;
 
-export default class LineHandler extends SelectionHandler {
+export default class LineHandler extends MouseHandler {
   protected startPosition = new Vector3(); // The starting point of the line
   protected currentMidPosition = new Vector3();
   protected nextMidPosition = new Vector3();
@@ -29,7 +30,7 @@ export default class LineHandler extends SelectionHandler {
   constructor(layers: Two.Group[], transformMatrix: Matrix4) {
     super(layers, transformMatrix);
     this.tempLine = new Line();
-    this.tempLine.stylize("temporary");
+    this.tempLine.stylize(DisplayStyle.TEMPORARY);
 
     this.circleOrientation = new Arrow(0.5, 0x006600); // debug only
     this.isMouseDown = false;
@@ -106,9 +107,9 @@ export default class LineHandler extends SelectionHandler {
       // this.endV3Point.copy(this.currentPoint);
       const newLine = this.tempLine.clone(); // true:recursive clone
       // Stylize the new Line
-      newLine.stylize("default");
+      newLine.stylize(DisplayStyle.DEFAULT);
       // Stylize the glowing Line
-      newLine.stylize("glowing");
+      newLine.stylize(DisplayStyle.GLOWING);
 
       const lineGroup = new CommandGroup();
       if (this.startPoint === null) {
@@ -116,9 +117,9 @@ export default class LineHandler extends SelectionHandler {
         // we have to create a new point
         const newStartPoint = new Point();
         // Set the display to the default values
-        newStartPoint.stylize("default");
+        newStartPoint.stylize(DisplayStyle.DEFAULT);
         // Set the glowing display
-        newStartPoint.stylize("glowing");
+        newStartPoint.stylize(DisplayStyle.GLOWING);
         const vtx = new SEPoint(newStartPoint);
         vtx.positionOnSphere = this.startPosition;
         this.startPoint = vtx;
@@ -131,9 +132,9 @@ export default class LineHandler extends SelectionHandler {
         // we have to create a new point
         const newEndPoint = new Point();
         // Set the display to the default values
-        newEndPoint.stylize("default");
+        newEndPoint.stylize(DisplayStyle.DEFAULT);
         // Set the glowing display
-        newEndPoint.stylize("glowing");
+        newEndPoint.stylize(DisplayStyle.GLOWING);
         const vtx = new SEPoint(newEndPoint);
         vtx.positionOnSphere = this.currentSpherePoint;
         this.endPoint = vtx;
@@ -151,6 +152,7 @@ export default class LineHandler extends SelectionHandler {
         })
       );
       points.forEach((p: SEIntersection) => {
+        p.setShowing(false);
         lineGroup.addCommand(new AddPointCommand(p));
       });
       lineGroup.execute();

@@ -3,7 +3,7 @@
 import { Vector3, Vector2, Matrix4 } from "three";
 import Two from "two.js";
 import SETTINGS, { LAYER } from "@/global-settings";
-import Nodule from "./Nodule";
+import Nodule, { DisplayStyle } from "./Nodule";
 
 const desiredXAxis = new Vector3();
 const desiredYAxis = new Vector3();
@@ -588,6 +588,15 @@ export default class Circle extends Nodule {
     this.backNormalDisplay();
   }
 
+  setVisible(flag: boolean): void {
+    (this.frontPart as any).visible = flag;
+    (this.backPart as any).visible = flag;
+    (this.frontFill as any).visible = flag;
+    (this.backFill as any).visible = flag;
+    (this.glowingBackPart as any).visible = flag;
+    (this.glowingFrontPart as any).visible = flag;
+  }
+
   /**
    * This method is used to copy the temporary circle created with the Circle Tool (in the midground) into a
    * permanent one in the scene (in the foreground).
@@ -701,9 +710,9 @@ export default class Circle extends Nodule {
    * Update flag means at least one of the private variables storing style information has
    * changed and should be applied to the displayed circle.
    */
-  stylize(flag: string): void {
+  stylize(flag: DisplayStyle): void {
     switch (flag) {
-      case "temporary": {
+      case DisplayStyle.TEMPORARY: {
         // The style for the temporary circle display.  These options are not user modifiable.
         // Created with the Google Sheet "Circle Styling Code" in the "Temporary" tab
 
@@ -747,7 +756,7 @@ export default class Circle extends Nodule {
         break;
       }
 
-      case "glowing": {
+      case DisplayStyle.GLOWING: {
         // The style for the glowing circle display.  These options are not user modifiable.
         // Created with the Google Sheet "Circle Styling Code" in the "Glowing" tab
 
@@ -780,7 +789,7 @@ export default class Circle extends Nodule {
         }
         break;
       }
-      case "update": {
+      case DisplayStyle.UPDATE: {
         // Use the current variables to update the display style
         // Created with the Google Sheet "Circle Styling Code" in the "Drawn Update" tab
 
@@ -825,7 +834,7 @@ export default class Circle extends Nodule {
           SETTINGS.circle.glowing.edgeWidth + this.strokeWidthBack;
         break;
       }
-      case "default":
+      case DisplayStyle.DEFAULT:
       default: {
         // Reset the style to the defaults i.e. Use the global defaults to update the display style
         // Created with the Google Sheet "Circle Styling Code" in the "Drawn Set To Defaults" tab

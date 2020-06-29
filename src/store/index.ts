@@ -13,7 +13,6 @@ import { SENodule } from "@/models/SENodule";
 import { SEIntersection } from "@/models/SEIntersection";
 import Point from "@/plottables/Point";
 import mutations, { initialState } from "./mutations";
-import Circle from "@/plottables/Circle";
 Vue.use(Vuex);
 
 // const findPoint = (arr: SEPoint[], id: number): SEPoint | null => {
@@ -239,6 +238,8 @@ function intersectCircleWithCircle(
       )
   ).map((p: Vector3) => {
     const x = new SEIntersection(new Point(), c1, c2);
+    x.setShowing(true);
+    x.positionOnSphere = p;
     return x;
   });
 }
