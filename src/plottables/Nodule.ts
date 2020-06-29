@@ -52,28 +52,22 @@ export default abstract class Nodule extends Two.Group
   abstract setVisible(flag: boolean): void;
 
   //** Get the back contrasting style using the value of contrast */
-  static contrastFillColor(frontColor: string) {
-    //Not implemented
+  static contrastFillColor(frontColor: string): string {
     return frontColor;
   }
-  static contrastStrokeColor(frontColor: string) {
-    //Not implemented
+  static contrastStrokeColor(frontColor: string): string {
     return frontColor;
   }
-  static contractStrokeWidth(frontStrokeWidth: number) {
-    //Not implemented
+  static contractStrokeWidth(frontStrokeWidth: number): number {
     return frontStrokeWidth;
   }
-  static contrastOpacity(frontOpacity: number) {
-    //Not implemented
+  static contrastOpacity(frontOpacity: number): number {
     return SETTINGS.contrast * frontOpacity;
   }
-  static contrastDashArray(frontDashArray: number[]) {
-    //Not implemented
+  static contrastDashArray(frontDashArray: number[]): number[] {
     return frontDashArray;
   }
-  static contrastDashArrayOffset(frontOffset: number) {
-    //Not implemented
+  static contrastDashArrayOffset(frontOffset: number): number {
     return frontOffset;
   }
 }
