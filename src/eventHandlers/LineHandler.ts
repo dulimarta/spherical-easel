@@ -6,13 +6,13 @@ import Arrow from "@/3d-objs/Arrow"; // for debugging
 import Point from "@/plottables/Point";
 import Line from "@/plottables/Line";
 
-// import SETTINGS from "@/global-settings";
 import { CommandGroup } from "@/commands/CommandGroup";
 import { AddPointCommand } from "@/commands/AddPointCommand";
 import { AddLineCommand } from "@/commands/AddLineCommand";
 import Two from "two.js";
 import { SEPoint } from "@/models/SEPoint";
 import { SELine } from "@/models/SELine";
+import { SEIntersection } from "@/models/SEIntersection";
 // const frontPointRadius = SETTINGS.point.temp.radius.front;
 
 export default class LineHandler extends SelectionHandler {
@@ -129,15 +129,21 @@ export default class LineHandler extends SelectionHandler {
         this.endPoint = vtx;
         lineGroup.addCommand(new AddPointCommand(vtx));
       }
-      lineGroup
-        .addCommand(
-          new AddLineCommand({
-            line: new SELine(newLine, this.startPoint, this.endPoint),
-            startPoint: this.startPoint,
-            endPoint: this.endPoint
-          })
-        )
-        .execute();
+      const newSELine = new SELine(newLine, this.startPoint, this.endPoint);
+      const points = this.store.getters.determineIntersectionsWithLine(
+        newSELine
+      );
+      lineGroup.addCommand(
+        new AddLineCommand({
+          line: newSELine,
+          startPoint: this.startPoint,
+          endPoint: this.endPoint
+        })
+      );
+      points.forEach((p: SEIntersection) => {
+        lineGroup.addCommand(new AddPointCommand(p));
+      });
+      lineGroup.execute();
     }
   }
 

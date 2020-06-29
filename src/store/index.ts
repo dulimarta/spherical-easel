@@ -7,14 +7,12 @@ import { AppState } from "@/types";
 import { SEPoint } from "@/models/SEPoint";
 import { SELine } from "@/models/SELine";
 import { SECircle } from "@/models/SECircle";
-import { Vector3, Matrix4 } from "three";
+import { Vector3 } from "three";
 import { SESegment } from "@/models/SESegment";
-import { PositionVisitor } from "@/visitors/PositionVisitor";
 import { SENodule } from "@/models/SENodule";
 import { SEIntersection } from "@/models/SEIntersection";
 import Point from "@/plottables/Point";
-import { LAYER } from "@/global-settings";
-
+import mutations, { initialState } from "./mutations";
 Vue.use(Vuex);
 
 // const findPoint = (arr: SEPoint[], id: number): SEPoint | null => {
@@ -25,179 +23,201 @@ Vue.use(Vuex);
 
 // const SMALL_ENOUGH = 1e-2;
 const PIXEL_CLOSE_ENOUGH = 8;
-const ANGLE_SMALL_ENOUGH = 1; // within 1 degree?
-const tmpMatrix = new Matrix4();
-const initialState: AppState = {
-  sphereRadius: 0,
-  editMode: "rotate",
-  // slice(): create a copy of the array
-  transformMatElements: tmpMatrix.elements.slice(),
-  // nodes: [], // Possible future addition (array of SENodule)
-  nodules: [],
-  layers: [],
-  points: [],
-  lines: [],
-  segments: [],
-  circles: [],
-  intersections: []
-};
+const tmpVector = new Vector3();
 
-const positionVisitor = new PositionVisitor();
+function intersectLineWithLine(
+  lineOne: SELine,
+  lineTwo: SELine
+): SEIntersection[] {
+  const out = [];
+  tmpVector
+    .crossVectors(lineOne.normalDirection, lineTwo.normalDirection)
+    .normalize();
+  // console.debug(
+  //   `intersection(s) between ${lineOne.name} (${lineOne.normalDirection.toFixed(
+  //     2
+  //   )}) and ${lineTwo.name} (${lineTwo.normalDirection.toFixed(
+  //     2
+  //   )}) is ${tmpVector.toFixed(3)}`
+  // );
+  const x = new SEIntersection(new Point(), lineOne, lineTwo);
+  out.push(x);
+  x.positionOnSphere = tmpVector;
 
-function determineIntersectionsWithLine(state: AppState, line: SELine): void {
-  const tmp = new Vector3();
-  state.lines
-    .filter(z => z.id !== line.id)
-    .forEach((z: SELine) => {
-      tmp.crossVectors(line.normalDirection, z.normalDirection).normalize();
-      console.debug(
-        `intersection(s) between ${line.name} (${line.normalDirection.toFixed(
-          2
-        )}) and ${z.name} (${z.normalDirection.toFixed(2)}) is ${tmp.toFixed(
-          3
-        )}`
-      );
-      const v = new Point();
-      const x = new SEIntersection(v, line, z);
-      x.positionOnSphere = tmp;
-      state.intersections.push(x);
-      state.nodules.push(x);
-      v.addToLayers(state.layers);
-
-      const v2 = new Point();
-      const x2 = new SEIntersection(v2, line, z);
-      x2.positionOnSphere = tmp.multiplyScalar(-1);
-      state.intersections.push(x2);
-      state.nodules.push(x2);
-      v2.addToLayers(state.layers);
-    });
+  const x2 = new SEIntersection(new Point(), lineOne, lineTwo);
+  out.push(x2);
+  x2.positionOnSphere = tmpVector.multiplyScalar(-1);
+  return out;
 }
+
+function intersectLineWithSegment(l: SELine, s: SESegment): SEIntersection[] {
+  const out = [];
+  tmpVector.crossVectors(l.normalDirection, s.normalDirection).normalize();
+  console.debug(
+    `intersection(s) between ${l.name} (${l.normalDirection.toFixed(2)}) and ${
+      s.name
+    } (${s.normalDirection.toFixed(2)}) is ${tmpVector.toFixed(3)}`
+  );
+  if (s.isPositionInsideArc(tmpVector)) {
+    const x = new SEIntersection(new Point(), l, s);
+    out.push(x);
+    x.positionOnSphere = tmpVector;
+  }
+
+  // Check its antipodal point
+  tmpVector.multiplyScalar(-1);
+  if (s.isPositionInsideArc(tmpVector)) {
+    const x2 = new SEIntersection(new Point(), l, s);
+    out.push(x2);
+    x2.positionOnSphere = tmpVector.multiplyScalar(-1);
+  }
+  return out;
+}
+const lMarker = new Two.Circle(0, 0, 6);
+lMarker.fill = "red";
+const rMarker = new Two.Circle(0, 0, 6);
+rMarker.fill = "green";
+
+const ctr1 = new Vector3();
+const ctr2 = new Vector3();
+const start = new Vector3();
+// const mid = new Vector3();
+const end = new Vector3();
+const commonChordDir = new Vector3();
+
+/**
+ * Find intersection points between two circles
+ * @param n1 normal direction of the first circle
+ * @param arc1 arc length radius of the first circle
+ * @param n2 normal direction of the second circle
+ * @param arc2 arc length radius of the second circle
+ */
+function intersectCircles(
+  n1: Vector3, // center
+  arc1: number, // arc radius
+  n2: Vector3,
+  arc2: number
+): Vector3[] {
+  const centerDistance = n1.angleTo(n2); // Arc length between the two centers
+  // Are they too far apart?
+  if (centerDistance > arc1 + arc2) {
+    // Too far apart
+    return [];
+  }
+  // Is the smaller circle completely contained inside the bigger one?
+  if (centerDistance < Math.abs(arc1 - arc2)) {
+    // One is contained in the other
+    return [];
+  }
+  // Calculate the center of the sphere on the circle plane
+  ctr1.copy(n1).multiplyScalar(Math.cos(arc1));
+  ctr2.copy(n2).multiplyScalar(Math.cos(arc2));
+
+  // WHen the two circles intersect, the common intersection is the
+  // "center leaf" with two arcs (one of each circle)
+  // Two two intersection points make a common chord whose direction
+  // is the cross product of the two circle normal
+  // n1xn2 is tangent vector at the center leaf midpoint
+  commonChordDir.crossVectors(n1, n2);
+
+  // tmpVector is along the radial direction from c1 to the midpoint
+  tmpVector.crossVectors(n1, commonChordDir);
+  // Find the midpoint (and its antipodal) of the arc on the center leaf
+  start.copy(ctr1).addScaledVector(tmpVector, Math.sin(arc1));
+  end.copy(start).multiplyScalar(-1);
+  const dist1 = n2.distanceTo(start);
+  const dist2 = n2.distanceTo(end);
+
+  // Pick the closest point as our starting point of binary search
+  if (dist2 > dist1) start.copy(end);
+
+  // Objective function to find zero crossing
+  const objFunc = (a: Vector3) => a.angleTo(ctr2) - arc2;
+  // Search for the actual intersection starting from the arc midpoint
+  const x1 = binarySearch(start, n1, 0, Math.PI, objFunc);
+  const x2 = binarySearch(start, n1, 0, -Math.PI, objFunc);
+  return [x1, x2];
+}
+
+/**
+ * Use the binary search algorithm to find the zero crossing of the
+ * given objective function within a range of angles
+ *
+ * @param fromPoint start point on the circle
+ * @param rotAxis normal vector of the circle
+ * @param startAngle start of the range
+ * @param endAngle end of the range
+ * @param objFunction objective function to use to check for zeros
+ */
+function binarySearch(
+  fromPoint: Vector3,
+  rotAxis: Vector3,
+  startAngle: number,
+  endAngle: number,
+  objFunction: (arg: Vector3) => number
+): Vector3 {
+  const s = new Vector3();
+  const e = new Vector3();
+  const m = new Vector3();
+  s.copy(fromPoint);
+  let Fs = objFunction(s);
+  e.copy(fromPoint).applyAxisAngle(rotAxis, endAngle);
+  while (Math.abs(startAngle - endAngle).toDegrees() > 0.01) {
+    const midAngle = (startAngle + endAngle) / 2;
+    m.copy(s).applyAxisAngle(rotAxis, midAngle - startAngle);
+    const Fm = objFunction(m);
+    // console.debug(
+    //   `Potential solution between ${startAngle
+    //     .toDegrees()
+    //     .toFixed(1)} and ${endAngle.toDegrees().toFixed(1)}`
+    // );
+    // console.log(`F(s)=${Fs} F(m)=${Fm} F(e)=${Fe}`);
+    if (Math.sign(Fs) !== Math.sign(Fm)) {
+      // Continue searching between start and mid
+      e.copy(m);
+      endAngle = midAngle;
+    } else {
+      // Continue searching between mid and end
+      Fs = Fm;
+      s.copy(m);
+      startAngle = midAngle;
+    }
+  }
+  return m;
+}
+/**
+ * Find intersection between a line and a circle
+ * @param n is a geodesic circle of radius ONE
+ * @param c is a surface circle of radius r
+ */
+function intersectLineWithCircle(
+  n: SELine,
+  c: SECircle
+  // layer: Two.Group
+): SEIntersection[] {
+  const out: SEIntersection[] = [];
+
+  // const x1 = new SEIntersection(new Point(), n, c);
+  // x1.positionOnSphere = tmpVector;
+  // out.push(x1);
+  const tmp = intersectCircles(
+    n.normalDirection,
+    Math.PI / 2, // arc radius of geodesic circles
+    c.normalDirection,
+    c.radius
+  );
+
+  tmp.forEach((v: Vector3) => {
+    const x = new SEIntersection(new Point(), n, c);
+    x.positionOnSphere = v;
+    out.push(x);
+  });
+  return out;
+}
+
 export default new Vuex.Store({
   state: initialState,
-  mutations: {
-    init(state: AppState): void {
-      state = { ...initialState };
-    },
-    setLayers(state: AppState, layers: Two.Group[]): void {
-      state.layers = layers;
-    },
-    setSphereRadius(state: AppState, radius: number): void {
-      state.sphereRadius = radius;
-    },
-    setEditMode(state: AppState, mode: string): void {
-      state.editMode = mode;
-    },
-    addPoint(state: AppState, point: SEPoint): void {
-      state.points.push(point);
-      state.nodules.push(point);
-      point.ref.addToLayers(state.layers);
-    },
-    removePoint(state: AppState, pointId: number): void {
-      const pos = state.points.findIndex(x => x.id === pointId);
-      const pos2 = state.nodules.findIndex(x => x.id === pointId);
-      if (pos >= 0) {
-        state.points[pos].ref.removeFromLayers();
-        state.points[pos].removeSelfSafely();
-        state.points.splice(pos, 1);
-        state.nodules.splice(pos2, 1);
-      }
-    },
-    addLine(
-      state: AppState,
-      {
-        line,
-        startPoint,
-        endPoint
-      }: { line: SELine; startPoint: SEPoint; endPoint: SEPoint }
-    ): void {
-      state.lines.push(line);
-      state.nodules.push(line);
-      line.ref.addToLayers(state.layers);
-
-      // Add this line as a child of the two points
-      startPoint.registerChild(line);
-      endPoint.registerChild(line);
-      determineIntersectionsWithLine(state, line);
-    },
-    removeLine(state: AppState, lineId: number): void {
-      const pos = state.lines.findIndex(x => x.id === lineId);
-      const pos2 = state.nodules.findIndex(x => x.id === lineId);
-      if (pos >= 0) {
-        /* victim line is found */
-        const victimLine = state.lines[pos];
-        victimLine.ref.removeFromLayers();
-        victimLine.removeSelfSafely();
-        state.lines.splice(pos, 1); // Remove the line from the list
-        state.nodules.splice(pos2, 1);
-      }
-    },
-    addSegment(
-      state: AppState,
-      {
-        segment,
-        startPoint,
-        endPoint
-      }: { segment: SESegment; startPoint: SEPoint; endPoint: SEPoint }
-    ): void {
-      state.segments.push(segment);
-      state.nodules.push(segment);
-      startPoint.registerChild(segment);
-      endPoint.registerChild(segment);
-      segment.ref.addToLayers(state.layers);
-    },
-    removeSegment(state: AppState, segId: number): void {
-      const pos = state.segments.findIndex(x => x.id === segId);
-      const pos2 = state.nodules.findIndex(x => x.id === segId);
-      if (pos >= 0) {
-        const victim = state.segments[pos];
-        victim.ref.removeFromLayers();
-        victim.removeSelfSafely();
-        state.segments.splice(pos, 1);
-        state.nodules.splice(pos2, 1);
-      }
-    },
-    addCircle(
-      state: AppState,
-      {
-        circle,
-        centerPoint,
-        circlePoint
-      }: { circle: SECircle; centerPoint: SEPoint; circlePoint: SEPoint }
-    ): void {
-      state.circles.push(circle);
-      state.nodules.push(circle);
-      circle.ref.addToLayers(state.layers);
-      centerPoint.registerChild(circle);
-      circlePoint.registerChild(circle);
-    },
-    removeCircle(state: AppState, circleId: number): void {
-      const circlePos = state.circles.findIndex(x => x.id === circleId);
-      const pos2 = state.nodules.findIndex(x => x.id === circleId);
-      if (circlePos >= 0) {
-        /* victim line is found */
-        const victimCircle: SECircle = state.circles[circlePos];
-        victimCircle.ref.removeFromLayers();
-        victimCircle.removeSelfSafely();
-        state.circles.splice(circlePos, 1); // Remove the line from the list
-        state.nodules.splice(pos2, 1);
-      }
-    },
-    rotateSphere(state: AppState, rotationMat: Matrix4) {
-      positionVisitor.setTransform(rotationMat);
-      state.points.forEach((p: SEPoint) => {
-        p.accept(positionVisitor);
-      });
-      state.lines.forEach((l: SELine) => {
-        l.accept(positionVisitor);
-      });
-      state.circles.forEach((l: SECircle) => {
-        l.accept(positionVisitor);
-      });
-      state.segments.forEach((s: SESegment) => {
-        s.accept(positionVisitor);
-      });
-    }
-  },
+  mutations,
   actions: {
     /* Define async work in this block */
   },
@@ -242,13 +262,31 @@ export default new Vuex.Store({
     ): SECircle[] => {
       return state.circles.filter((z: SECircle) => z.isHitAt(idealPosition));
     },
-    forwardTransform: (state: AppState): Matrix4 => {
-      tmpMatrix.fromArray(state.transformMatElements);
-      return tmpMatrix;
-    },
-    inverseTransform: (state: AppState): Matrix4 => {
-      tmpMatrix.fromArray(state.transformMatElements);
-      return tmpMatrix.getInverse(tmpMatrix);
+    // forwardTransform: (state: AppState): Matrix4 => {
+    //   tmpMatrix.fromArray(state.transformMatElements);
+    //   return tmpMatrix;
+    // },
+    // inverseTransform: (state: AppState): Matrix4 => {
+    //   tmpMatrix.fromArray(state.transformMatElements);
+    //   return tmpMatrix.getInverse(tmpMatrix);
+    // },
+    determineIntersectionsWithLine: (state: AppState) => (
+      line: SELine
+    ): SEIntersection[] => {
+      return [
+        // intersection with other lines
+        ...state.lines
+          .filter((n: SELine) => n.id !== line.id) // ignore self
+          .flatMap((n: SELine) => intersectLineWithLine(line, n)),
+        // intersection with all segments
+        ...state.segments.flatMap((s: SESegment) =>
+          intersectLineWithSegment(line, s)
+        ),
+        // intersection with all circles
+        ...state.circles.flatMap((c: SECircle) =>
+          intersectLineWithCircle(line, c)
+        )
+      ];
     }
   }
 });

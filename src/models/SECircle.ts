@@ -10,7 +10,7 @@ import SETTINGS from "@/global-settings";
 export class SECircle extends SENodule implements Visitable {
   public ref!: Circle;
   // private normalDir: Vector3;
-  private radius: number; // Arc length (in radians) not straight line distance
+  // private _radius: number; // Arc length (in radians) not straight line distance
   private centerAt: SEPoint;
   private pointAt: SEPoint;
 
@@ -20,7 +20,7 @@ export class SECircle extends SENodule implements Visitable {
     // this.normalDir.copy(c.centerVector);
     this.centerAt = ctr;
     this.pointAt = out;
-    this.radius = ctr.positionOnSphere.angleTo(out.positionOnSphere);
+    // this._radius = ctr.positionOnSphere.angleTo(out.positionOnSphere);
     this.ref = c;
     CIRCLE_COUNT++;
     this.name = `C-${CIRCLE_COUNT}`;
@@ -44,6 +44,9 @@ export class SECircle extends SENodule implements Visitable {
     return this.pointAt;
   }
 
+  get radius(): number {
+    return this.ref.radius;
+  }
   public isHitAt(spherePos: Vector3): boolean {
     const angleToCenter = spherePos.angleTo(this.normalDirection);
     return (
@@ -63,7 +66,7 @@ export class SECircle extends SENodule implements Visitable {
     //   "center to",
     //   this.centerPoint.positionOnSphere.toFixed(2)
     // );
-    this.radius = newRadius;
+
     this.ref.radius = newRadius;
     this.ref.centerVector = this.centerAt.positionOnSphere;
     this.setOutOfDate(false);

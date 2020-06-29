@@ -65,15 +65,18 @@ export class SESegment extends SENodule implements Visitable {
   public isHitAt(spherePos: Vector3): boolean {
     // Is the unit vector to the point is perpendicular to the circle normal?
     if (Math.abs(spherePos.dot(this.ref.normalVector)) > 1e-2) return false;
-    console.log("isHitAt Segment 2");
+
+    return this.isPositionInsideArc(spherePos);
+  }
+
+  public isPositionInsideArc(pos: Vector3): boolean {
     // Is the point between start and mid?
     let angle1;
     let angle2;
-    tmpVec1.crossVectors(this.startAt.positionOnSphere, spherePos).normalize();
-    angle1 =
-      this.startAt.positionOnSphere.angleTo(spherePos) * Math.sign(tmpVec1.z);
-    tmpVec2.crossVectors(spherePos, this.midVector).normalize();
-    angle2 = spherePos.angleTo(this.midVector) * Math.sign(tmpVec2.z);
+    tmpVec1.crossVectors(this.startAt.positionOnSphere, pos).normalize();
+    angle1 = this.startAt.positionOnSphere.angleTo(pos) * Math.sign(tmpVec1.z);
+    tmpVec2.crossVectors(pos, this.midVector).normalize();
+    angle2 = pos.angleTo(this.midVector) * Math.sign(tmpVec2.z);
     if (
       Math.sign(angle1) === Math.sign(angle2) &&
       Math.abs(angle1 + angle2) - this.ref.arcLength / 2 < 0.1
@@ -82,11 +85,10 @@ export class SESegment extends SENodule implements Visitable {
     }
 
     // Is the point between mid and end?
-    tmpVec1.crossVectors(this.midVector, spherePos).normalize();
-    angle1 = this.midVector.angleTo(spherePos) * Math.sign(tmpVec1.z);
-    tmpVec2.crossVectors(spherePos, this.endPoint.positionOnSphere).normalize();
-    angle2 =
-      spherePos.angleTo(this.endPoint.positionOnSphere) * Math.sign(tmpVec2.z);
+    tmpVec1.crossVectors(this.midVector, pos).normalize();
+    angle1 = this.midVector.angleTo(pos) * Math.sign(tmpVec1.z);
+    tmpVec2.crossVectors(pos, this.endPoint.positionOnSphere).normalize();
+    angle2 = pos.angleTo(this.endPoint.positionOnSphere) * Math.sign(tmpVec2.z);
     return (
       Math.sign(angle1) === Math.sign(angle2) &&
       Math.abs(angle1 + angle2) - this.ref.arcLength / 2 < 0.1
