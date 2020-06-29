@@ -8,13 +8,10 @@ import { Vector3 } from "three";
 
 type SEOneDimension = SELine | SESegment | SECircle;
 export class SEIntersection extends SEPoint {
-  public parent1!: SEOneDimension;
-  public parent2!: SEOneDimension;
-
   constructor(p: Point, p1: SEOneDimension, p2: SEOneDimension) {
     super(p);
-    this.parent1 = p1;
-    this.parent2 = p2;
+    p1.registerChild(this);
+    p2.registerChild(this);
     this.name =
       "Intersection" +
       (p.positionVector.z >= 0 ? "+" : "-") +
@@ -26,6 +23,6 @@ export class SEIntersection extends SEPoint {
     this.name =
       "Intersection" +
       (pos.z >= 0 ? "+" : "-") +
-      ` (${this.parent1.name},${this.parent2.name})`;
+      ` (${this.parents[0].name},${this.parents[1].name})`;
   }
 }
