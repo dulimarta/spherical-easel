@@ -32,7 +32,7 @@ export default class SegmentHandler extends SelectionHandler {
   /**
    * This indicates if the temporary segment has been added to the scene and made permanent
    */
-  protected isSegmentAdded = false;
+  protected isTemporarySegmentAdded = false;
   /**
    * The (model) start and end points of the line segment
    */
@@ -88,8 +88,8 @@ export default class SegmentHandler extends SelectionHandler {
     if (this.isOnSphere) {
       if (this.dragging) {
         // This is executed once per segment to be added
-        if (!this.isSegmentAdded) {
-          this.isSegmentAdded = true;
+        if (!this.isTemporarySegmentAdded) {
+          this.isTemporarySegmentAdded = true;
           // Add the temporary segment to the midground
           this.canvas.add(this.tempSegment);
           // Debugging only -- add the mid marker
@@ -134,23 +134,23 @@ export default class SegmentHandler extends SelectionHandler {
           .set(midVector.x, midVector.y)
           .multiplyScalar(globalSettings.boundaryCircle.radius);
       }
-    } else if (this.isSegmentAdded) {
+    } else if (this.isTemporarySegmentAdded) {
       //if not on the sphere and the temporary segment has been added remove the temporary objects
       this.tempSegment.remove();
       this.startMarker.remove();
       midMarker.remove();
-      this.isSegmentAdded = false;
+      this.isTemporarySegmentAdded = false;
     }
   }
 
   mouseLeave(event: MouseEvent): void {
     super.mouseLeave(event);
     this.dragging = false;
-    if (this.isSegmentAdded) {
+    if (this.isTemporarySegmentAdded) {
       this.tempSegment.remove();
       this.startMarker.remove();
       midMarker.remove();
-      this.isSegmentAdded = false;
+      this.isTemporarySegmentAdded = false;
     }
   }
 
@@ -166,7 +166,7 @@ export default class SegmentHandler extends SelectionHandler {
 
       if (this.tempSegment.arcLength > SETTINGS.segment.minimumArcLength) {
         // Clone the temporary segment and mark it added to the scene
-        this.isSegmentAdded = false;
+        this.isTemporarySegmentAdded = false;
         const newSegment = this.tempSegment.clone();
         // Stylize the new segment
         newSegment.stylize("default");
@@ -177,7 +177,12 @@ export default class SegmentHandler extends SelectionHandler {
         const segmentGroup = new CommandGroup();
         if (this.startPoint === null) {
           // The start point is a new point and must be created and added to the command/store
-          const vtx = new SEPoint(new Point());
+          const newStartPoint = new Point();
+          // Set the display to the default values
+          newStartPoint.stylize("default");
+          // Set the glowing display
+          newStartPoint.stylize("glowing");
+          const vtx = new SEPoint(newStartPoint);
           vtx.positionOnSphere = this.startVector;
           this.startPoint = vtx;
           segmentGroup.addCommand(new AddPointCommand(vtx));
@@ -187,7 +192,12 @@ export default class SegmentHandler extends SelectionHandler {
           this.endPoint = this.hitPoints[0];
         } else {
           // The endpoint is a new point and must be created and added to the command/store
-          const vtx = new SEPoint(new Point());
+          const newEndPoint = new Point();
+          // Set the display to the default values
+          newEndPoint.stylize("default");
+          // Set the glowing display
+          newEndPoint.stylize("glowing");
+          const vtx = new SEPoint(newEndPoint);
           vtx.positionOnSphere = this.currentSpherePoint;
           this.endPoint = vtx;
           segmentGroup.addCommand(new AddPointCommand(vtx));
@@ -207,7 +217,12 @@ export default class SegmentHandler extends SelectionHandler {
         if (this.startPoint === null) {
           // Starting point landed on an open space
           // we have to create a new point and it to the group/store
-          const vtx = new SEPoint(new Point());
+          const newPoint = new Point();
+          // Set the display to the default values
+          newPoint.stylize("default");
+          // Set the glowing display
+          newPoint.stylize("glowing");
+          const vtx = new SEPoint(newPoint);
           vtx.positionOnSphere = this.startVector;
           this.startPoint = vtx;
           const addPoint = new AddPointCommand(vtx);

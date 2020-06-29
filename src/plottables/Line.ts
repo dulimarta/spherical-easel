@@ -146,33 +146,33 @@ export default class Line extends Nodule {
       );
   }
 
-  frontGlowStyle(): void {
+  frontGlowingDisplay(): void {
     (this.frontHalf as any).visible = true;
     (this.glowingFrontHalf as any).visible = true;
   }
-  backGlowStyle(): void {
+  backGlowingDisplay(): void {
     (this.backHalf as any).visible = true;
     (this.glowingBackHalf as any).visible = true;
   }
 
-  glowStyle(): void {
-    this.frontGlowStyle();
-    this.backGlowStyle();
+  glowingDisplay(): void {
+    this.frontGlowingDisplay();
+    this.backGlowingDisplay();
   }
 
-  frontNormalStyle(): void {
+  frontNormalDisplay(): void {
     (this.frontHalf as any).visible = true;
     (this.glowingFrontHalf as any).visible = false;
   }
 
-  backNormalStyle(): void {
+  backNormalDisplay(): void {
     (this.backHalf as any).visible = true;
     (this.glowingBackHalf as any).visible = false;
   }
 
-  normalStyle(): void {
-    this.frontNormalStyle();
-    this.backNormalStyle();
+  normalDisplay(): void {
+    this.frontNormalDisplay();
+    this.backNormalDisplay();
   }
 
   /** Reorient the unit circle in 3D and then project the points to 2D
@@ -336,7 +336,11 @@ export default class Line extends Nodule {
     this.glowingBackHalf.remove();
   }
 
-  //set the rendering style of the segment
+  /**
+   * Set the rendering style (flags: temporary, default, glowing, update) of the line
+   * Update flag means at least one of the private variables storing style information has
+   * changed and should be applied to the displayed line.
+   */
   stylize(flag: string): void {
     switch (flag) {
       case "temporary": {

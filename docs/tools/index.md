@@ -44,3 +44,9 @@ It is possible to a draw line segment of length longer than $\pi$. If the user c
 ::: tip Moving Lines or Line Segments
 When moving a free line or line segment pressing the <kbd>Alt</kbd> key toggles the point that the line or line segment rotates about.
 :::
+
+::: tip Temporarily Disable Momentum
+
+If the momentum mode is enabled and the user doesn't want the current arrangement to rotate after a mouse release, pausing with the mouse pressed for a period of time before mouse releasing will temporarily disable the momentum feature.
+
+:::

@@ -150,17 +150,17 @@ export default abstract class SelectionHandler implements ToolStrategy {
       // console.debug(`Sphere pos: ${this.currentSpherePoint.toFixed(2)}`);
       // FIXME: what if we hit multiple lines or points
       this.hitPoints.forEach((p: SEPoint) => {
-        p.ref.normalStyle();
+        p.ref.normalDisplay();
       });
       this.hitLines.forEach((p: SELine) => {
-        p.ref.normalStyle();
+        p.ref.normalDisplay();
       });
       this.hitSegments.forEach((s: SESegment) => {
-        s.ref.normalStyle();
+        s.ref.normalDisplay();
       });
 
       this.hitCircles.forEach((c: SECircle) => {
-        c.ref.normalStyle();
+        c.ref.normalDisplay();
       });
       this.hitPoints.clear();
       this.hitLines.clear();
@@ -177,28 +177,28 @@ export default abstract class SelectionHandler implements ToolStrategy {
         .filter((obj: SENodule) => obj instanceof SEPoint)
         .map(obj => obj as SEPoint);
       this.hitPoints.forEach((obj: SEPoint) => {
-        obj.ref.glowStyle();
+        obj.ref.glowingDisplay();
       });
 
       this.hitLines = this.hitNodes
         .filter(obj => obj instanceof SELine)
         .map(obj => obj as SELine);
       this.hitLines.forEach((obj: SELine) => {
-        obj.ref.glowStyle();
+        obj.ref.glowingDisplay();
       });
 
       this.hitSegments = this.hitNodes
         .filter(obj => obj instanceof SESegment)
         .map(obj => obj as SESegment);
       this.hitSegments.forEach((obj: SESegment) => {
-        obj.ref.glowStyle();
+        obj.ref.glowingDisplay();
       });
 
       this.hitCircles = this.hitNodes
         .filter(obj => obj instanceof SECircle)
         .map(obj => obj as SECircle);
       this.hitCircles.forEach((c: SECircle) => {
-        c.ref.glowStyle();
+        c.ref.glowingDisplay();
       });
       if (this.hitPoints.length > 0) {
         this.infoText.showWithDelay(this.layers[LAYER.foregroundText], 300);

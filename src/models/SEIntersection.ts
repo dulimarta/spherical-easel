@@ -17,7 +17,7 @@ export class SEIntersection extends SEPoint {
     this.parent2 = p2;
     this.name =
       "Intersection" +
-      (p.position.z >= 0 ? "+" : "-") +
+      (p.positionVector.z >= 0 ? "+" : "-") +
       ` (${p1.name},${p2.name})`;
   }
 

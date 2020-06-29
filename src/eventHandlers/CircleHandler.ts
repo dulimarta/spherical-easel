@@ -14,11 +14,9 @@ import SETTINGS from "@/global-settings";
 
 export default class CircleHandler extends SelectionHandler {
   // Center vector of the created circle
-  private centerV3Vector: Vector3;
-  // Is the user dragging
+  private centerVector: Vector3;
+  // Is the user dragging?
   private isMouseDown: boolean;
-  // Has the temporary circle been added to the scene?
-  private isCircleAdded: boolean;
   // The temporary circle displayed as the user drags
   private temporaryCircle: Circle;
   // The model object point that is the center of the circle (if any)
@@ -27,12 +25,14 @@ export default class CircleHandler extends SelectionHandler {
   private endPoint: SEPoint | null = null;
   // The radius of the temporary circle (along the surface of the sphere)
   private arcRadius = 0;
+  // Has the temporary circle been added to the scene?
+  private isTemporaryCircleAdded: boolean;
 
   constructor(layers: Two.Group[], transformMatrix: Matrix4) {
     super(layers, transformMatrix);
-    this.centerV3Vector = new Vector3();
+    this.centerVector = new Vector3();
     this.isMouseDown = false;
-    this.isCircleAdded = false;
+    this.isTemporaryCircleAdded = false;
     this.temporaryCircle = new Circle();
     // Set the style using the temporary defaults
     this.temporaryCircle.stylize("temporary");
@@ -47,14 +47,14 @@ export default class CircleHandler extends SelectionHandler {
         // Pick the top most selected point
         const selected = this.hitPoints[0];
         // Record the center vector of the circle so it can be past to the non-temporary circle
-        this.centerV3Vector.copy(selected.positionOnSphere);
+        this.centerVector.copy(selected.positionOnSphere);
         // Record the model object as the center of the circle
         this.centerPoint = selected;
       } else {
         // Add a temporary marker for the location of the center
         this.canvas.add(this.startMarker);
         // Record the center vector of the circle so it can be past to the non-temporary circle
-        this.centerV3Vector.copy(this.currentSpherePoint);
+        this.centerVector.copy(this.currentSpherePoint);
         // Set the center of the circle to null so it can be created later
         this.centerPoint = null;
       }
@@ -74,8 +74,8 @@ export default class CircleHandler extends SelectionHandler {
       // Make sure the user is still dragging
       if (this.isMouseDown) {
         // If the temporary circle (and startMarker) has *not* been added to the scene do so now (only once)
-        if (!this.isCircleAdded) {
-          this.isCircleAdded = true;
+        if (!this.isTemporaryCircleAdded) {
+          this.isTemporaryCircleAdded = true;
           this.canvas.add(this.temporaryCircle);
           this.canvas.add(this.startMarker);
         }
@@ -86,10 +86,10 @@ export default class CircleHandler extends SelectionHandler {
         // Set the radius of the temporary circle - also calls temporaryCircle.readjust()
         this.temporaryCircle.radius = this.arcRadius;
       }
-    } else if (this.isCircleAdded) {
+    } else if (this.isTemporaryCircleAdded) {
       this.temporaryCircle.remove(); // remove from its parent
       this.startMarker.remove();
-      this.isCircleAdded = false;
+      this.isTemporaryCircleAdded = false;
     }
   }
 
@@ -100,11 +100,11 @@ export default class CircleHandler extends SelectionHandler {
       // Remove the temporary objects from the scene and mark the temporary object added to the scene
       this.temporaryCircle.remove();
       this.canvas.remove(this.startMarker);
-      this.isCircleAdded = false;
+      this.isTemporaryCircleAdded = false;
       // Before making a new circle make sure that the user has dragged a non-trivial distance
       // If the user hasn't dragged far enough merely insert a point at the start location
       if (
-        this.currentSpherePoint.angleTo(this.centerV3Vector) >
+        this.currentSpherePoint.angleTo(this.centerVector) >
         SETTINGS.circle.minimumRadius
       ) {
         // Add a new circle the user has moved far enough
@@ -123,8 +123,13 @@ export default class CircleHandler extends SelectionHandler {
         if (this.centerPoint === null) {
           // Starting point landed on an open space
           // we have to create a new point and it to the group/store
-          const vtx = new SEPoint(new Point());
-          vtx.positionOnSphere = this.centerV3Vector;
+          const newCenterPoint = new Point();
+          // Set the display to the default values
+          newCenterPoint.stylize("default");
+          // Set the glowing display
+          newCenterPoint.stylize("glowing");
+          const vtx = new SEPoint(newCenterPoint);
+          vtx.positionOnSphere = this.centerVector;
           this.centerPoint = vtx;
           circleGroup.addCommand(new AddPointCommand(vtx));
         }
@@ -133,7 +138,12 @@ export default class CircleHandler extends SelectionHandler {
         } else {
           // endPoint landed on an open space
           // we have to create a new point and add it to the group/store
-          const vtx = new SEPoint(new Point());
+          const newEndPoint = new Point();
+          // Set the display to the default values
+          newEndPoint.stylize("default");
+          // Set the glowing display
+          newEndPoint.stylize("glowing");
+          const vtx = new SEPoint(newEndPoint);
           vtx.positionOnSphere = this.currentSpherePoint;
           this.endPoint = vtx;
           circleGroup.addCommand(new AddPointCommand(vtx));
@@ -156,7 +166,7 @@ export default class CircleHandler extends SelectionHandler {
           // Starting point landed on an open space
           // we have to create a new point and it to the group/store
           const vtx = new SEPoint(new Point());
-          vtx.positionOnSphere = this.centerV3Vector;
+          vtx.positionOnSphere = this.centerVector;
           this.centerPoint = vtx;
           const addPoint = new AddPointCommand(vtx);
           addPoint.execute();
@@ -170,8 +180,8 @@ export default class CircleHandler extends SelectionHandler {
 
   mouseLeave(event: MouseEvent): void {
     super.mouseLeave(event);
-    if (this.isCircleAdded) {
-      this.isCircleAdded = false;
+    if (this.isTemporaryCircleAdded) {
+      this.isTemporaryCircleAdded = false;
       this.temporaryCircle.remove();
       this.startMarker.remove();
     }

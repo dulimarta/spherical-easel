@@ -186,42 +186,42 @@ export default class Segment extends Nodule {
       );
   }
 
-  frontGlowStyle(): void {
+  frontGlowingDisplay(): void {
     (this.frontPart as any).visible = true;
     (this.glowingFrontPart as any).visible = true;
     (this.frontExtra as any).visible = true;
     (this.glowingFrontExtra as any).visible = true;
   }
 
-  backGlowStyle(): void {
+  backGlowingDisplay(): void {
     (this.backPart as any).visible = true;
     (this.glowingBackPart as any).visible = true;
     (this.backExtra as any).visible = true;
     (this.glowingBackExtra as any).visible = true;
   }
 
-  backNormalStyle(): void {
+  backNormalDisplay(): void {
     (this.backPart as any).visible = true;
     (this.glowingBackPart as any).visible = false;
     (this.backExtra as any).visible = true;
     (this.glowingBackExtra as any).visible = false;
   }
 
-  frontNormalStyle(): void {
+  frontNormalDisplay(): void {
     (this.frontPart as any).visible = true;
     (this.glowingFrontPart as any).visible = false;
     (this.frontExtra as any).visible = true;
     (this.glowingFrontExtra as any).visible = false;
   }
 
-  normalStyle(): void {
-    this.frontNormalStyle();
-    this.backNormalStyle();
+  normalDisplay(): void {
+    this.frontNormalDisplay();
+    this.backNormalDisplay();
   }
 
-  glowStyle(): void {
-    this.frontGlowStyle();
-    this.backGlowStyle();
+  glowingDisplay(): void {
+    this.frontGlowingDisplay();
+    this.backGlowingDisplay();
   }
 
   private isLongSegment(): boolean {
@@ -567,7 +567,11 @@ export default class Segment extends Nodule {
     this.glowingBackExtra.remove();
   }
 
-  //set the rendering style of the segment
+  /**
+   * Set the rendering style (flags: temporary, default, glowing, update) of the segment
+   * Update flag means at least one of the private variables storing style information has
+   * changed and should be applied to the displayed segment.
+   */
   stylize(flag: string): void {
     switch (flag) {
       case "temporary": {
