@@ -7,13 +7,14 @@ import { AppState } from "@/types";
 import { SEPoint } from "@/models/SEPoint";
 import { SELine } from "@/models/SELine";
 import { SECircle } from "@/models/SECircle";
-import { Vector3 } from "three";
+import { Vector3, MeshToonMaterial } from "three";
 import { SESegment } from "@/models/SESegment";
 import { SENodule } from "@/models/SENodule";
 import { SEIntersection } from "@/models/SEIntersection";
 import Point from "@/plottables/Point";
 import mutations, { initialState } from "./mutations";
 import Circle from "@/plottables/Circle";
+import SETTINGS from "@/global-settings";
 Vue.use(Vuex);
 
 // const findPoint = (arr: SEPoint[], id: number): SEPoint | null => {
@@ -81,65 +82,163 @@ function intersectLineWithSegment(l: SELine, s: SESegment): SEIntersection[] {
 // const rMarker = new Two.Circle(0, 0, 6);
 // rMarker.fill = "green";
 
-const ctr1 = new Vector3();
-const ctr2 = new Vector3();
-const start = new Vector3();
-// const mid = new Vector3();
-const end = new Vector3();
-const commonChordDir = new Vector3();
+/**
+ * The radius of the first circle
+ */
+let radius1: number;
+/**
+ * The radius of the second circle
+ */
+let radius2: number;
+/**
+ * The vectors to the centers of the circles
+ */
+const center1 = new Vector3();
+const center2 = new Vector3();
+/**
+ * The vector perpendicular to both center vectors
+ */
+const normal = new Vector3();
+/**
+ * The vector so that normal, center1| center2, toVector form an orthonormal frame
+ */
+const toVector = new Vector3();
+/**
+ * The positive intersection vector (if it exists)
+ */
+const positiveIntersection = new Vector3();
+/**
+ * The negative intersection vector (if it exists)
+ */
+const negativeIntersection = new Vector3();
+/**
+ * A temporary vector used to help with the calculation of the intersection points
+ * It is the projection of the intersection point (along the sphere) to the plane containing the centers of circles
+ */
+const tempVec = new Vector3();
 
 /**
- * Find intersection points between two circles
- * @param n1 normal direction of the first circle
+ * Find intersection points between two circles.
+ * The order *matter* intersectCircleWithCircle(C1,r1,C2,r2) is not intersectCircleWithCircle(C2,r2,C1,r1)
+ * The array is a list of the intersections positive then negative.
+ * @param n1 center vector of the first circle
  * @param arc1 arc length radius of the first circle
- * @param n2 normal direction of the second circle
+ * @param n2 center vector of the second circle
  * @param arc2 arc length radius of the second circle
  */
 function intersectCircleWithCircle(
-  n1: Vector3, // center
-  arc1: number, // arc radius
-  n2: Vector3,
-  arc2: number
+  n1: Vector3, // center of first circle
+  arc1: number, // arc radius (could be bigger than Pi/2)
+  n2: Vector3, // center of second circle
+  arc2: number // arc radius (could be bigger than Pi/2)
 ): Vector3[] {
-  const centerDistance = n1.angleTo(n2); // Arc length between the two centers
-  // Are they too far apart?
-  if (centerDistance > arc1 + arc2) {
-    // Too far apart
+  //Convert to the case where all arc lengths are less than Pi/2
+  radius1 = arc1;
+  center1.copy(n1).normalize();
+  if (arc1 > Math.PI / 2) {
+    radius1 = Math.PI - radius1;
+    center1.multiplyScalar(-1);
+  }
+  radius2 = arc2;
+  center2.copy(n2).normalize();
+  if (arc2 > Math.PI / 2) {
+    radius2 = Math.PI - radius2;
+    center2.multiplyScalar(-1);
+  }
+
+  // distance between the two centers
+  const centerDistance = center1.angleTo(center2); // distance between the two centers
+
+  // The circles intersect if and only if the three lengths have the property that each is less than the sum of the other two (by the converse to the spherical triangle inequality)
+  if (
+    centerDistance < radius1 + radius2 &&
+    radius1 < centerDistance + radius2 &&
+    radius2 < centerDistance + radius1
+  ) {
+    // The circles intersect
+    // Form the normal that points on the positive side of the intersections
+    normal.crossVectors(center1, center2).normalize();
+    // semi-perimeter = sum of the length of the triangle/2
+    const s = (radius1 + radius2 + centerDistance) / 2;
+    // Compute the angle opposite the radius1 side. See M'Clelland & Preston. A treatise on
+    // spherical trigonometry with applications to spherical geometry and numerous
+    // examples - Part 1. 1907 page 114 Article 60 Case 1
+    //
+    //   . = positive intersection point
+    //   \ \
+    //    \   \
+    //     \     \
+    //      \       \radius2
+    //       \radius1  \
+    //        \_________A__\
+    //          <- cenDist->
+
+    const A =
+      2 *
+      Math.atan(
+        Math.sqrt(
+          (Math.sin(s - centerDistance) * Math.sin(s - radius2)) /
+            (Math.sin(s) * Math.sin(s - radius1))
+        )
+      );
+    // There are two cases:
+    // 0 < A < Pi/2
+    //  .  (positive intersection point)
+    //  |\ \
+    //  | \   \
+    //  |  \     \
+    // a|   \       \radius2
+    //  |    \radius1  \
+    //  |_____\_________A__\
+    //   <-------  b ------>
+    //          <- cenDist->
+
+    //  Pi/2 < A < Pi
+    //
+    //  .  (negative intersection point)
+    //  |\ \
+    //  | \   \
+    //  |  \     \
+    // a|   \       \radius1
+    //  |    \radius2  \
+    //  |___A'_\A_________\
+    //   <- b -><- cenDist->
+
+    let a: number;
+    let b: number;
+    if (A > 0) {
+      // Analyze the right triangle with hypotenuse radius2 and adjacent angle A'=A > 0
+      // By page 85 Eq (3)
+      a = Math.asin(Math.sin(radius2) * Math.sin(A));
+      // By page 85 Eq (2)
+      b = Math.atan(Math.tan(radius2) * Math.cos(A));
+
+      // Create the toVector so that center2, normal, and toVector are an orthonormal frame
+      toVector.crossVectors(center2, normal).normalize();
+    } else {
+      // Analyze the right triangle with hypotenuse radius2 and adjacent angle A'= Pi-A > 0
+      // By page 85 Eq (3)
+      a = Math.asin(Math.sin(radius2) * Math.sin(Math.PI - A));
+      // By page 85 Eq (2)
+      b = Math.atan(Math.tan(radius2) * Math.cos(Math.PI - A));
+      // Create the toVector so that center2, normal, and toVector are an orthonormal frame
+      toVector.crossVectors(normal, center2).normalize();
+    }
+    // tempVec= cos(b)*center2 + sin(b)*toVector is the projection of the intersections to the plane containing the centers of the circles
+    tempVec.copy(center2).multiplyScalar(Math.cos(b));
+    tempVec.addScaledVector(toVector, Math.sin(b));
+
+    // The positive intersection is cos(a)*tempVec + sin(a)*normal
+    positiveIntersection.copy(tempVec).multiplyScalar(Math.cos(a));
+    positiveIntersection.addScaledVector(normal, Math.sin(a));
+    // The negative intersection is cos(-a)*tempVec + sin(-a)*normal
+    negativeIntersection.copy(tempVec).multiplyScalar(Math.cos(-a));
+    negativeIntersection.addScaledVector(normal, Math.sin(-a));
+    return [positiveIntersection, negativeIntersection];
+  } else {
+    // The circles do not intersect
     return [];
   }
-  // Is the smaller circle completely contained inside the bigger one?
-  if (centerDistance < Math.abs(arc1 - arc2)) {
-    // One is contained in the other
-    return [];
-  }
-  // Calculate the center of the sphere on the circle plane
-  ctr1.copy(n1).multiplyScalar(Math.cos(arc1));
-  ctr2.copy(n2).multiplyScalar(Math.cos(arc2));
-
-  // WHen the two circles intersect, the common intersection is the
-  // "center leaf" with two arcs (one of each circle)
-  // Two two intersection points make a common chord whose direction
-  // is the cross product of the two circle normal
-  // n1xn2 is tangent vector at the center leaf midpoint
-  commonChordDir.crossVectors(n1, n2);
-
-  // tmpVector is along the radial direction from c1 to the midpoint
-  tmpVector.crossVectors(n1, commonChordDir);
-  // Find the midpoint (and its antipodal) of the arc on the center leaf
-  start.copy(ctr1).addScaledVector(tmpVector, Math.sin(arc1));
-  end.copy(start).multiplyScalar(-1);
-  const dist1 = n2.distanceTo(start);
-  const dist2 = n2.distanceTo(end);
-
-  // Pick the closest point as our starting point of binary search
-  if (dist2 > dist1) start.copy(end);
-
-  // Objective function to find zero crossing
-  const objFunc = (a: Vector3) => a.angleTo(ctr2) - arc2;
-  // Search for the actual intersection starting from the arc midpoint
-  const x1 = binarySearch(start, n1, 0, Math.PI, objFunc);
-  const x2 = binarySearch(start, n1, 0, -Math.PI, objFunc);
-  return [x1, x2];
 }
 
 /**

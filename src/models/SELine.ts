@@ -9,6 +9,9 @@ const tmpVec1 = new Vector3();
 const tmpVec2 = new Vector3();
 let LINE_COUNT = 0;
 export class SELine extends SENodule implements Visitable {
+  /**
+   * The corresponding plottable TwoJS object
+   */
   public ref: Line;
   private start: SEPoint;
   private end: SEPoint;

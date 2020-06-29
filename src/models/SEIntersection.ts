@@ -7,6 +7,7 @@ import Point from "@/plottables/Point";
 import { Vector3 } from "three";
 
 type SEOneDimension = SELine | SESegment | SECircle;
+
 export class SEIntersection extends SEPoint {
   public parent1!: SEOneDimension;
   public parent2!: SEOneDimension;

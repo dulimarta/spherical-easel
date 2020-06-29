@@ -45,21 +45,27 @@ export default abstract class Nodule extends Two.Group
 
   //** Get the back contrasting style using the value of contrast */
   static contrastFillColor(frontColor: string) {
+    //Not implemented
     return frontColor;
   }
   static contrastStrokeColor(frontColor: string) {
+    //Not implemented
     return frontColor;
   }
   static contractStrokeWidth(frontStrokeWidth: number) {
+    //Not implemented
     return frontStrokeWidth;
   }
   static contrastOpacity(frontOpacity: number) {
+    //Not implemented
     return SETTINGS.contrast * frontOpacity;
   }
   static contrastDashArray(frontDashArray: number[]) {
+    //Not implemented
     return frontDashArray;
   }
   static contrastDashArrayOffset(frontOffset: number) {
+    //Not implemented
     return frontOffset;
   }
 }

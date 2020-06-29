@@ -1,4 +1,5 @@
 export default {
+  nearlyAntipodal: 0.01, // Two unit vectors, U and V, are nearly antipodal if |U+V| < nearlyAntipodal
   contrast: 0.5, //The number that controls the automatic setting of the back styling for objects that have dynamicBackStyle set to true.
   rotate: {
     minAngle: Math.PI / 1000, // the minimum angular distance before a new rotation is computed as we click and drag in rotate mode
