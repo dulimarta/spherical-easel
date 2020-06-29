@@ -13,6 +13,7 @@ import { SENodule } from "@/models/SENodule";
 import { SEIntersection } from "@/models/SEIntersection";
 import Point from "@/plottables/Point";
 import mutations, { initialState } from "./mutations";
+import Circle from "@/plottables/Circle";
 Vue.use(Vuex);
 
 // const findPoint = (arr: SEPoint[], id: number): SEPoint | null => {
@@ -164,18 +165,22 @@ function binarySearch(
   s.copy(fromPoint);
   let Fs = objFunction(s);
   e.copy(fromPoint).applyAxisAngle(rotAxis, endAngle);
+  let Fe = objFunction(e);
   while (Math.abs(startAngle - endAngle).toDegrees() > 0.01) {
     const midAngle = (startAngle + endAngle) / 2;
     m.copy(s).applyAxisAngle(rotAxis, midAngle - startAngle);
     const Fm = objFunction(m);
-    // console.debug(
-    //   `Potential solution between ${startAngle
-    //     .toDegrees()
-    //     .toFixed(1)} and ${endAngle.toDegrees().toFixed(1)}`
-    // );
-    // console.log(`F(s)=${Fs} F(m)=${Fm} F(e)=${Fe}`);
+    console.debug(
+      `Potential solution between ${startAngle
+        .toDegrees()
+        .toFixed(1)} and ${endAngle.toDegrees().toFixed(1)}`
+    );
+    console.debug(`F(s)=${Fs} F(m)=${Fm} F(e)=${Fe}`);
+
+    // FIXME: what if there is no zero crossing?
     if (Math.sign(Fs) !== Math.sign(Fm)) {
       // Continue searching between start and mid
+      Fe = Fm;
       e.copy(m);
       endAngle = midAngle;
     } else {
@@ -342,6 +347,32 @@ export default new Vuex.Store({
         ...state.circles.flatMap((c: SECircle) =>
           intersectSegmentWithCircle(segment, c)
         )
+      ];
+    },
+    determineIntersectionsWithCircle: (state: AppState) => (
+      circle: SECircle
+    ): SEIntersection[] => {
+      return [
+        ...state.lines.flatMap((l: SELine) =>
+          intersectLineWithCircle(l, circle)
+        ),
+        ...state.segments.flatMap((s: SESegment) =>
+          intersectSegmentWithCircle(s, circle)
+        ),
+        ...state.circles
+          .filter((c: SECircle) => c.id !== circle.id) // ignore self
+          .flatMap((c: SECircle) =>
+            intersectCircleWithCircle(
+              c.normalDirection,
+              c.radius,
+              circle.normalDirection,
+              circle.radius
+            ).map((p: Vector3) => {
+              const x = new SEIntersection(new Point(), c, circle);
+              x.positionOnSphere = p;
+              return x;
+            })
+          )
       ];
     }
   }

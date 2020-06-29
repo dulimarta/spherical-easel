@@ -11,6 +11,7 @@ import Two from "two.js";
 import { SEPoint } from "@/models/SEPoint";
 import { SECircle } from "@/models/SECircle";
 import SETTINGS from "@/global-settings";
+import { SEIntersection } from "@/models/SEIntersection";
 
 export default class CircleHandler extends SelectionHandler {
   // Center vector of the created circle
@@ -150,15 +151,25 @@ export default class CircleHandler extends SelectionHandler {
         }
 
         // Add the last command to the group and then execute it (i.e. add the potentially two points and the circle to the store.)
-        circleGroup
-          .addCommand(
-            new AddCircleCommand({
-              circle: new SECircle(newCircle, this.centerPoint, this.endPoint),
-              centerPoint: this.centerPoint,
-              circlePoint: this.endPoint
-            })
-          )
-          .execute();
+        const newSECircle = new SECircle(
+          newCircle,
+          this.centerPoint,
+          this.endPoint
+        );
+        circleGroup.addCommand(
+          new AddCircleCommand({
+            circle: newSECircle,
+            centerPoint: this.centerPoint,
+            circlePoint: this.endPoint
+          })
+        );
+        const tmp = this.store.getters.determineIntersectionsWithCircle(
+          newSECircle
+        );
+        tmp.forEach((p: SEIntersection) => {
+          circleGroup.addCommand(new AddPointCommand(p));
+        });
+        circleGroup.execute();
       } else {
         // The user is attempting to make a circle smaller than the minimum radius so
         // create  a point at the location of the start vector
