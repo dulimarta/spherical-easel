@@ -32,7 +32,9 @@ const initialState: AppState = {
   sphereRadius: 0,
   editMode: "rotate",
   // slice(): create a copy of the array
-  transformMatElements: tmpMatrix.elements.slice(),
+  //transformMatElements: tmpMatrix.elements.slice(), //TODO: Is this used? I don't think so
+  zoomMagnificationFactor: 1,
+  zoomTranslation: [0, 0],
   // nodes: [], // Possible future addition (array of SENodule)
   nodules: [],
   layers: [],
@@ -88,6 +90,18 @@ export default new Vuex.Store({
     setEditMode(state: AppState, mode: string): void {
       state.editMode = mode;
     },
+    setZoomMagnificationFactor(state: AppState, mag: number): void {
+      //console.log("setZoomMag", mag);
+      state.zoomMagnificationFactor = mag;
+    },
+    setZoomTranslation(state: AppState, vec: number[]): void {
+      //console.log("setZoomTranslation", vec);
+      for (let i = 0; i < 2; i++) {
+        state.zoomTranslation[i] = vec[i];
+      }
+      //console.log("setZoomTranslation", state.zoomTranslation);
+    },
+
     addPoint(state: AppState, point: SEPoint): void {
       state.points.push(point);
       state.nodules.push(point);
@@ -247,13 +261,23 @@ export default new Vuex.Store({
     ): SECircle[] => {
       return state.circles.filter((z: SECircle) => z.isHitAt(idealPosition));
     },
-    forwardTransform: (state: AppState): Matrix4 => {
-      tmpMatrix.fromArray(state.transformMatElements);
-      return tmpMatrix;
+    // forwardTransform: (state: AppState): Matrix4 => {
+    //   tmpMatrix.fromArray(state.transformMatElements);
+    //   return tmpMatrix;
+    // },
+    // inverseTransform: (state: AppState): Matrix4 => {
+    //   tmpMatrix.fromArray(state.transformMatElements);
+    //   return tmpMatrix.getInverse(tmpMatrix);
+    // }
+    // zoomMatrix: (state: AppState): Matrix4 => {
+    //   tmpMatrix.fromArray(state.zoomMatElements);
+    //   return tmpMatrix;
+    // },
+    zoomMagnificationFactor: (state: AppState): number => {
+      return state.zoomMagnificationFactor;
     },
-    inverseTransform: (state: AppState): Matrix4 => {
-      tmpMatrix.fromArray(state.transformMatElements);
-      return tmpMatrix.getInverse(tmpMatrix);
+    zoomTranslation: (state: AppState): number[] => {
+      return state.zoomTranslation;
     }
   }
 });

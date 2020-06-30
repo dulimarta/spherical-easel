@@ -1,6 +1,8 @@
 import { ToolStrategy } from "./ToolStrategy";
 import { Matrix4, Vector2 } from "three";
 import { AddZoomSphereCommand } from "@/commands/AddZoomSphereCommand";
+import AppStore from "@/store";
+import { State } from "vuex-class";
 import EventBus from "./EventBus";
 import SETTINGS from "@/global-settings";
 
@@ -12,6 +14,7 @@ export enum ZoomMode {
 const tmpMatrix = new Matrix4();
 
 export default class PanZoomHandler implements ToolStrategy {
+  protected store = AppStore; // Vuex global state
   /**
    * The HTML element that is the target of the zoom?
    */
@@ -22,17 +25,10 @@ export default class PanZoomHandler implements ToolStrategy {
   private _mode = ZoomMode.MAGNIFY;
 
   /**
-   * The matrix the describes takes the ?previous? ?standard view? view to the current view
-   */
-  private zoomMatrix = new Matrix4();
-
-  /**
    * Variables for the pan (translate) operations.
    */
-  private startDragPosition = new Vector2();
-  private currentPosition = new Vector2();
-  private translateX = 0;
-  private translateY = 0;
+  private utStartDragPosition = new Vector2();
+  private currentPixelPosition = new Vector2();
 
   /**
    * Indicates that the user mouse pressed at one location, moved the mouse with the mouse
@@ -45,11 +41,6 @@ export default class PanZoomHandler implements ToolStrategy {
    * the location of the mouse event
    */
   private isMousePressed = false;
-
-  /**
-   * The magnification factor for the CSS transform?
-   */
-  private magnificationFactor = 1.0;
 
   /**
    * The percentage the magnification factor changes by on user click.
@@ -68,7 +59,6 @@ export default class PanZoomHandler implements ToolStrategy {
   }
 
   mousePressed(event: MouseEvent): void {
-    console.log("mag", this.magnificationFactor);
     this.isMousePressed = true;
 
     // Read the target DOM element to determine the current (mouse press) location
@@ -77,8 +67,17 @@ export default class PanZoomHandler implements ToolStrategy {
     const offsetX = event.clientX - boundingRect.left;
     const offsetY = event.clientY - boundingRect.top;
 
-    this.currentPosition.set(offsetX, offsetY);
-    this.startDragPosition.copy(this.currentPosition);
+    // Compute the pixel location of the mouse press event
+    this.currentPixelPosition.set(offsetX, offsetY);
+    // Get the current magnification factor and translation vector so we can untransform the pixel location
+    const mag = this.store.getters.zoomMagnificationFactor;
+    const translationVector = this.store.getters.zoomTranslation;
+    // Compute untransformed location of the pixel location, this is the start dragging
+    // location *pre* affine transformation
+    this.utStartDragPosition.set(
+      (offsetX - translationVector[0]) / mag,
+      (offsetY - translationVector[1]) / mag
+    );
   }
   mouseMoved(event: MouseEvent): void {
     // If the mouse was pressed and then moved, the user is dragging (to pan the view)
@@ -86,14 +85,17 @@ export default class PanZoomHandler implements ToolStrategy {
       this.isDragging = true;
     }
 
-    // Read the target DOM element to determine the current (mouse mouse) location
+    // Read the target DOM element to determine the current (mouse mouse) location in pixels
     const target = (event.currentTarget || event.target) as HTMLDivElement;
     const boundingRect = target.getBoundingClientRect();
     const offsetX = event.clientX - boundingRect.left;
     const offsetY = event.clientY - boundingRect.top;
+    this.currentPixelPosition.set(offsetX, offsetY);
 
-    this.currentPosition.set(offsetX, offsetY);
-    if (this.isDragging) this.doPan(event);
+    // Do the pan in the event the user is dragging.
+    if (this.isDragging) {
+      this.doPan(event);
+    }
   }
 
   mouseReleased(event: MouseEvent): void {
@@ -101,13 +103,9 @@ export default class PanZoomHandler implements ToolStrategy {
       /* End the Pan operation */
       this.isDragging = false;
 
-      if (this.magnificationFactor > 1) {
-        tmpMatrix.makeTranslation(this.translateX, this.translateY, 0);
-        this.zoomMatrix.premultiply(tmpMatrix);
-        EventBus.fire("zoom-updated", this.zoomMatrix);
-        const zoomCommand = new AddZoomSphereCommand(this.zoomMatrix);
-        zoomCommand.push();
-      }
+      // TODO: Store the last pan as a command that can be undone or redone
+      //const zoomCommand = new AddZoomSphereCommand(this.newZoomMatrix);
+      //zoomCommand.push();
     } else {
       /* Do the zoom operation */
       this.doZoom(event);
@@ -116,49 +114,70 @@ export default class PanZoomHandler implements ToolStrategy {
   }
 
   doZoom(event: MouseEvent): void {
+    // Get the current magnification factor and set a variable for the next one
+    const currentMagFactor = this.store.getters.zoomMagnificationFactor;
+    let newMagFactor = currentMagFactor;
+    // Get the current translation vector to allow us to untransform the CSS transformation
+    const currentTranslationVector = this.store.getters.zoomTranslation;
+
+    // Set the next magnification factor depending on the mode.
     if (this._mode === ZoomMode.MINIFY) {
-      if (this.magnificationFactor < SETTINGS.zoom.minMagnification) return;
-      this.magnificationFactor *= 1 - this.percentChange;
+      if (currentMagFactor < SETTINGS.zoom.minMagnification) return;
+      newMagFactor = (1 - this.percentChange) * currentMagFactor;
     }
     if (this._mode === ZoomMode.MAGNIFY) {
-      if (this.magnificationFactor > SETTINGS.zoom.maxMagnification) return;
-      this.magnificationFactor *= 1 + this.percentChange;
+      if (currentMagFactor > SETTINGS.zoom.maxMagnification) return;
+      newMagFactor = (1 + this.percentChange) * currentMagFactor;
     }
+
+    // Compute (pixelX,pixelY) = the location of the mouse release in pixel coordinates relative to
+    //  the top left of the sphere frame. This is a location *post* affine transformation
     const target = (event.currentTarget || event.target) as HTMLDivElement;
     const boundingRect = target.getBoundingClientRect();
-    console.log("Bounding Rect", boundingRect);
-    console.log("clientX", event.clientX);
-    console.log("clientY", event.clientY);
-    const tx = event.clientX - boundingRect.left - boundingRect.width / 2;
-    const ty = event.clientY - boundingRect.top - boundingRect.height / 2;
-    const mag = this.magnificationFactor;
-    if (mag < 1) {
-      // If zooming out  the center of the viewport doesn't change
-      this.zoomMatrix.makeScale(mag, mag, mag);
-    } else {
-      // this.zoomMatrix.makeTranslation(this.translateX, this.translateY, 0);
-      //   this.zoomMatrix.identity();
-      tmpMatrix.makeTranslation(tx, ty, 0);
-      this.zoomMatrix.multiply(tmpMatrix);
-      tmpMatrix.makeScale(mag, mag, mag);
-      this.zoomMatrix.multiply(tmpMatrix);
-      tmpMatrix.makeTranslation(-tx, -ty, 0);
-      this.zoomMatrix.multiply(tmpMatrix);
-    }
-    // console.debug("Updated zoom matrix", this.zoomMatrix.elements);
-    EventBus.fire("zoom-updated", this.zoomMatrix);
-    const zoomCommand = new AddZoomSphereCommand(this.zoomMatrix);
-    zoomCommand.push();
+    const pixelX = event.clientX - boundingRect.left - boundingRect.width / 2;
+    const pixelY = event.clientY - boundingRect.top - boundingRect.height / 2;
+
+    // Compute (untransformedPixelX,untransformedPixelY) which is the location of the mouse
+    // release event *pre* affine transformation
+    const untransformedPixelX =
+      (pixelX - currentTranslationVector[0]) / currentMagFactor;
+    const untransformedPixelY =
+      (pixelY - currentTranslationVector[1]) / currentMagFactor;
+
+    // Compute the new translation Vector. We want the untransformedPixel vector to be mapped
+    // to the pixel vector under the new magnification factor. That is, if
+    //  Z(x,y)= newMagFactor*(x,y) + newTranslationVector
+    // then we must have
+    //  Z(untransformedPixel) = pixel Vector
+    // Solve for newTranslationVector yields
+    const newTranslationVector = [
+      untransformedPixelX * -newMagFactor + pixelX,
+      untransformedPixelY * -newMagFactor + pixelY
+    ];
+
+    // Set the new magnification factor and the next translation vector in the store
+    this.store.commit("setZoomMagnificationFactor", newMagFactor);
+    this.store.commit("setZoomTranslation", newTranslationVector);
+
+    // Update the display
+    EventBus.fire("zoom-updated", {});
+    // TODO: Store the last pan as a command that can be undone or redone
+    //const zoomCommand = new AddZoomSphereCommand(this.newZoomMatrix);
+    //zoomCommand.push();
   }
 
-  doPan(event: MouseEvent): void {
-    // Only allow panning if we are zoomed in
-    if (this.magnificationFactor < 1) return;
-    this.translateX = this.currentPosition.x - this.startDragPosition.x;
-    this.translateY = this.currentPosition.y - this.startDragPosition.y;
-    tmpMatrix.makeTranslation(this.translateX, this.translateY, 0);
-    tmpMatrix.multiply(this.zoomMatrix);
-    EventBus.fire("zoom-updated", tmpMatrix);
+  doPan(event: MouseEvent) {
+    const mag = this.store.getters.zoomMagnificationFactor;
+    // // Only allow panning if we are zoomed in
+    // if (mag < 1) return;
+    const newTranslationVector = [
+      this.currentPixelPosition.x - mag * this.utStartDragPosition.x,
+      this.currentPixelPosition.y - mag * this.utStartDragPosition.y
+    ];
+
+    this.store.commit("setZoomTranslation", newTranslationVector);
+
+    EventBus.fire("zoom-updated", {});
   }
 
   mouseLeave(event: MouseEvent): void {

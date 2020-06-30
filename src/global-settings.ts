@@ -2,8 +2,8 @@ export default {
   contrast: 0.5, //The number that controls the automatic setting of the back styling for objects that have dynamicBackStyle set to true.
   zoom: {
     maxMagnification: 10, // The greatest zoom in magnification factor
-    minMagnification: 0.4, // The least zoom out magnification factor
-    percentChange: 20 // The percent that a zoom in or out out click will change the view
+    minMagnification: 0.8, // The least zoom out magnification factor
+    percentChange: 10 // The percent that a zoom in or out out click will change the view
   },
   rotate: {
     minAngle: Math.PI / 1000, // the minimum angular distance before a new rotation is computed as we click and drag in rotate mode

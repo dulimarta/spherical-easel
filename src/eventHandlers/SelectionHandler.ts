@@ -92,26 +92,26 @@ export default abstract class SelectionHandler implements ToolStrategy {
     // The last column of the affine transformation matrix
     // is the origin of the zoomed circle
     // ZoomCtr_in_world_ideal_sphere = inverseCSSMat * ZoomCtr_in_screen_space
-    this.zoomCenter.set(
-      this.transformMatrix.elements[12],
-      -this.transformMatrix.elements[13], // must flip the Y-coord
-      this.transformMatrix.elements[14]
-    );
+    // this.zoomCenter.set(
+    //   this.transformMatrix.elements[12],
+    //   -this.transformMatrix.elements[13], // must flip the Y-coord
+    //   this.transformMatrix.elements[14]
+    // );
     // ZoomCtr = inv(CSS) * ZoomOrig
-    this.zoomCenter.applyMatrix4(
-      this.tmpMatrix.getInverse(this.transformMatrix)
-    );
+    // this.zoomCenter.applyMatrix4(
+    //   this.tmpMatrix.getInverse(this.transformMatrix)
+    // );
 
     // Map the mouse screen coordinate to its position within the ideal sphere
     // IdealPos = inv(CSS) * MousePos
-    this.mouseVector.set(mouseX, mouseY, 0);
-    this.mouseVector.applyMatrix4(
-      this.tmpMatrix.getInverse(this.transformMatrix)
-    );
+    // this.mouseVector.set(mouseX, mouseY, 0);
+    // this.mouseVector.applyMatrix4(
+    //   this.tmpMatrix.getInverse(this.transformMatrix)
+    // );
     // Reposition the mouse position (in ideal sphere) relative
     // to the zoom center
     // IdealPos = IdealPos - ZoomCtr
-    this.mouseVector.sub(this.zoomCenter);
+    //this.mouseVector.sub(this.zoomCenter);
 
     // Attempted algebraic simplification
     // IdealPos = IdealPos - ZoomCtr
@@ -120,17 +120,20 @@ export default abstract class SelectionHandler implements ToolStrategy {
 
     /*
     Using the algebraic simplification above, the following lines
-    of code should work, but they DON'T???
-
+    of code should work, but they DON'T??? They do now!!
+*/
+    const mag = this.store.getters.zoomMagnificationFactor;
+    const zoomTransVec = this.store.getters.zoomTranslation;
+    // Transform the pixel coordinates of the mouse event to *pre* affineTransformation coordinates
     this.mouseVector.set(
-      mouseX - this.transformMatrix.elements[12],
-      mouseY + this.transformMatrix.elements[13],
-      -this.transformMatrix.elements[14]
+      (mouseX - zoomTransVec[0]) / mag,
+      (mouseY + zoomTransVec[1]) / mag,
+      0
     );
+    // Transform the pre affine coordinates to coordinates on the sphere before the current view transformation
     this.mouseVector.applyMatrix4(
       this.tmpMatrix.getInverse(this.transformMatrix)
     );
-     */
 
     this.currentScreenPoint.set(this.mouseVector.x, this.mouseVector.y);
     /* Rescale to unit circle */

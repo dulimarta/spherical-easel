@@ -27,7 +27,9 @@ export default class RotateHandler extends SelectionHandler {
   private prevSpherePoint: Vector3 = new Vector3();
   private prevScreenPoint: Two.Vector = new Two.Vector(0, 0);
   /**
-   * A matrix that is used to indicate which rotation to apply to the sphere
+   * A matrix that is used to indicate which rotation to apply to the sphere. This handler stores the
+   * latest such matrix in this variable. This is the only place this is stored. If we need access to this
+   * matrix, we will have to put this variable in the store.
    */
   private rotationMatrix: Matrix4 = new Matrix4();
   /**
@@ -93,7 +95,6 @@ export default class RotateHandler extends SelectionHandler {
         this.rotationMatrix.makeRotationAxis(desiredZAxis, rotationAngle);
         // Update the previous locations/times /derivative
         this.derivative = rotationAngle / (event.timeStamp - this.previousTime);
-        console.log("derivative", this.derivative);
         this.momentumAngle = rotationAngle; // The initial momentum rotation angle is the last rotation angle
         this.previousTime = event.timeStamp;
         this.prevSpherePoint.copy(this.currentSpherePoint);
