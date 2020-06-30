@@ -66,11 +66,11 @@ function intersectLineWithLine(
 function intersectLineWithSegment(l: SELine, s: SESegment): SEIntersection[] {
   const out = [];
   tempVec.crossVectors(l.normalDirection, s.normalDirection).normalize();
-  console.debug(
-    `intersection(s) between ${l.name} (${l.normalDirection.toFixed(2)}) and ${
-      s.name
-    } (${s.normalDirection.toFixed(2)}) is ${tempVec.toFixed(3)}`
-  );
+  // console.debug(
+  //   `intersection(s) between ${l.name} (${l.normalDirection.toFixed(2)}) and ${
+  //     s.name
+  //   } (${s.normalDirection.toFixed(2)}) is ${tempVec.toFixed(3)}`
+  // );
 
   const dist1 = tempVec.distanceTo(s.midVector);
   const dist2 = tempVec.multiplyScalar(-1).distanceTo(s.midVector);
@@ -114,11 +114,11 @@ function binarySearch(
     const midAngle = (startAngle + endAngle) / 2;
     m.copy(s).applyAxisAngle(rotAxis, midAngle - startAngle);
     const Fm = objFunction(m);
-    console.debug(
-      `Potential solution between ${startAngle
-        .toDegrees()
-        .toFixed(1)} and ${endAngle.toDegrees().toFixed(1)}`
-    );
+    // console.debug(
+    //   `Potential solution between ${startAngle
+    //     .toDegrees()
+    //     .toFixed(1)} and ${endAngle.toDegrees().toFixed(1)}`
+    // );
     console.debug(`F(s)=${Fs} F(m)=${Fm} F(e)=${Fe}`);
 
     // FIXME: what if there is no zero crossing?

@@ -3,38 +3,32 @@
     <!-- The Edit Tool Group only shown if the user has permission to use a tool in this group.
     Note the use of the translation $t(key_value).-->
     <div id="EditToolGroup" v-show="nonEmptyGroup('edit')">
-      <h3 class="body-1 font-weight-bold">{{ $t("toolGroups.EditTools") }}</h3>
-      <v-btn-toggle
-        v-model="editMode"
-        @change="switchEditMode"
-        class="mr-2 d-flex flex-wrap accent"
-      >
+      <h3 class="body-1 font-weight-bold">{{ $t("toolGroups.EditTools") }}
+      </h3>
+      <v-btn-toggle v-model="editMode" @change="switchEditMode"
+        class="mr-2 d-flex flex-wrap accent">
         <!--- Use Array.filter to select only edit tools -->
         <ToolButton
           v-for="button in buttonList.filter(b => b.toolGroup === 'edit')"
-          :key="button.id"
-          :button="button"
-          v-on:displayOnlyThisToolUseMessage="displayOnlyThisToolUseMessageFunc"
-        ></ToolButton>
+          :key="button.id" :button="button"
+          v-on:displayOnlyThisToolUseMessage="displayOnlyThisToolUseMessageFunc">
+        </ToolButton>
       </v-btn-toggle>
     </div>
 
     <!-- The Basic Tool Group only shown if the user has permission to use a tool in this group.
     Note the use of the translation $t(key_value).-->
     <div id="BasicToolGroup" v-show="nonEmptyGroup('basic')">
-      <h3 class="body-1 font-weight-bold">{{ $t("toolGroups.BasicTools") }}</h3>
-      <v-btn-toggle
-        v-model="editMode"
-        @change="switchEditMode"
-        class="mr-2 d-flex flex-wrap accent"
-      >
+      <h3 class="body-1 font-weight-bold">{{ $t("toolGroups.BasicTools") }}
+      </h3>
+      <v-btn-toggle v-model="editMode" @change="switchEditMode"
+        class="mr-2 d-flex flex-wrap accent">
         <!--- Use Array.filter to select only basic tools -->
         <ToolButton
           v-for="button in buttonList.filter(b => b.toolGroup === 'basic')"
-          :key="button.id"
-          :button="button"
-          v-on:displayOnlyThisToolUseMessage="displayOnlyThisToolUseMessageFunc"
-        ></ToolButton>
+          :key="button.id" :button="button"
+          v-on:displayOnlyThisToolUseMessage="displayOnlyThisToolUseMessageFunc">
+        </ToolButton>
       </v-btn-toggle>
     </div>
 
@@ -46,18 +40,14 @@
       <h3 class="body-1 font-weight-bold">
         {{ $t("toolGroups.AdvancedTools") }}
       </h3>
-      <v-btn-toggle
-        v-model="editMode"
-        @change="switchEditMode"
-        class="mr-2 d-flex flex-wrap accent"
-      >
+      <v-btn-toggle v-model="editMode" @change="switchEditMode"
+        class="mr-2 d-flex flex-wrap accent">
         <!--- Use Array.filter to select only advanced tools -->
         <ToolButton
           v-for="button in buttonList.filter(b => b.toolGroup === 'advanced')"
-          :key="button.id"
-          :button="button"
-          v-on:displayOnlyThisToolUseMessage="displayOnlyThisToolUseMessageFunc"
-        ></ToolButton>
+          :key="button.id" :button="button"
+          v-on:displayOnlyThisToolUseMessage="displayOnlyThisToolUseMessageFunc">
+        </ToolButton>
       </v-btn-toggle>
     </div>
 
@@ -65,25 +55,17 @@
       The Transformational Tool Group only shown if the user has permission to use a tool in this 
       group. Note the use of the translation $t(key_value).
     -->
-    <div
-      id="TransformationalToolGroup"
-      v-show="nonEmptyGroup('transformational')"
-    >
+    <div id="TransformationalToolGroup"
+      v-show="nonEmptyGroup('transformational')">
       <h3 class="body-1 font-weight-bold">
         {{ $t("toolGroups.TransformationalTools") }}
       </h3>
-      <v-btn-toggle
-        v-model="editMode"
-        @change="switchEditMode"
-        class="mr-2 d-flex flex-wrap accent"
-      >
-        <ToolButton
-          v-for="button in buttonList"
-          :key="button.id"
-          :button="button"
-          toolGroup="transformational"
-          v-on:displayOnlyThisToolUseMessage="displayOnlyThisToolUseMessageFunc"
-        ></ToolButton>
+      <v-btn-toggle v-model="editMode" @change="switchEditMode"
+        class="mr-2 d-flex flex-wrap accent">
+        <ToolButton v-for="button in buttonList" :key="button.id"
+          :button="button" toolGroup="transformational"
+          v-on:displayOnlyThisToolUseMessage="displayOnlyThisToolUseMessageFunc">
+        </ToolButton>
       </v-btn-toggle>
     </div>
 
@@ -128,7 +110,7 @@ export default class ToolButtons extends Vue {
   put it. This is the list of tools that should be displayed*/
   private buttonDisplayList = SETTINGS.userButtonDisplayList;
   /* Writes the current state/edit mode to the store, where the Easel view can read it. */
-  switchEditMode() {
+  switchEditMode(): void {
     this.$store.commit("setEditMode", this.editMode);
   }
 
@@ -139,7 +121,7 @@ export default class ToolButtons extends Vue {
 
   /* This turns off all other snackbar/toolUseMessage displays so that multiple 
   snackbar/toolUseMessages are not displayed at the same time.  */
-  displayOnlyThisToolUseMessageFunc(id: number) {
+  displayOnlyThisToolUseMessageFunc(id: number): void {
     // Alternative solution: use Array high-order functions
     this.buttonList
       .filter(btn => btn.id !== id)

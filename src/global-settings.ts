@@ -291,8 +291,8 @@ export default {
     "circle",
     "move",
     "line",
-    "segment"
-    //"select"
+    "segment",
+    "select"
   ],
   supportedLanguages: [
     { locale: "en", name: "English" },

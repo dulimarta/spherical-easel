@@ -40,10 +40,10 @@ export default abstract class Nodule extends Two.Group
   abstract adjustSizeForZoom(factor: number): void;
 
   /** Update visual style(s) */
-  abstract frontGlowingDisplay(): void;
-  abstract backGlowingDisplay(): void;
-  abstract frontNormalDisplay(): void;
-  abstract backNormalDisplay(): void;
+  // abstract frontGlowingDisplay(): void;
+  // abstract backGlowingDisplay(): void;
+  // abstract frontNormalDisplay(): void;
+  // abstract backNormalDisplay(): void;
   abstract normalDisplay(): void;
   abstract glowingDisplay(): void;
 
