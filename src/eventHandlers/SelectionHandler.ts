@@ -130,7 +130,7 @@ export default abstract class SelectionHandler implements ToolStrategy {
       (mouseY + zoomTransVec[1]) / mag,
       0
     );
-    // Transform the pre affine coordinates to coordinates on the sphere before the current view transformation
+    // Transform the pre affine coordinates to coordinates on the sphere to before the current view transformation
     this.mouseVector.applyMatrix4(
       this.tmpMatrix.getInverse(this.transformMatrix)
     );

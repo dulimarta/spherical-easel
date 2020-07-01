@@ -1,6 +1,6 @@
 import { ToolStrategy } from "./ToolStrategy";
 import { Matrix4, Vector2 } from "three";
-import { AddZoomSphereCommand } from "@/commands/AddZoomSphereCommand";
+import { ZoomSphereCommand } from "@/commands/ZoomSphereCommand";
 import AppStore from "@/store";
 import { State } from "vuex-class";
 import EventBus from "./EventBus";
@@ -46,6 +46,13 @@ export default class PanZoomHandler implements ToolStrategy {
    * The percentage the magnification factor changes by on user click.
    */
   private percentChange = SETTINGS.zoom.percentChange / 100;
+  /**
+   * Record the CSS magnification factor and translation vector at the time of
+   * mouse press  so we can undo the zoom.
+   */
+  private mousePressMagnificationFactor = 1;
+  private mousePressTranslationVector = [0, 0];
+  private lastPanTranslationVector = [0, 0];
 
   constructor(element: HTMLElement) {
     this.targetElement = element;
@@ -70,13 +77,15 @@ export default class PanZoomHandler implements ToolStrategy {
     // Compute the pixel location of the mouse press event
     this.currentPixelPosition.set(offsetX, offsetY);
     // Get the current magnification factor and translation vector so we can untransform the pixel location
-    const mag = this.store.getters.zoomMagnificationFactor;
-    const translationVector = this.store.getters.zoomTranslation;
+    this.mousePressMagnificationFactor = this.store.getters.zoomMagnificationFactor;
+    this.mousePressTranslationVector = this.store.getters.zoomTranslation;
     // Compute untransformed location of the pixel location, this is the start dragging
     // location *pre* affine transformation
     this.utStartDragPosition.set(
-      (offsetX - translationVector[0]) / mag,
-      (offsetY - translationVector[1]) / mag
+      (offsetX - this.mousePressTranslationVector[0]) /
+        this.mousePressMagnificationFactor,
+      (offsetY - this.mousePressTranslationVector[1]) /
+        this.mousePressMagnificationFactor
     );
   }
   mouseMoved(event: MouseEvent): void {
@@ -103,9 +112,15 @@ export default class PanZoomHandler implements ToolStrategy {
       /* End the Pan operation */
       this.isDragging = false;
 
-      // TODO: Store the last pan as a command that can be undone or redone
-      //const zoomCommand = new AddZoomSphereCommand(this.newZoomMatrix);
-      //zoomCommand.push();
+      // Store the zoom as a command that can be undone or redone
+      const zoomCommand = new ZoomSphereCommand(
+        this.mousePressMagnificationFactor, // For a pan the magnification factor doesn't change between mouse press and mouse release
+        this.lastPanTranslationVector,
+        this.mousePressMagnificationFactor,
+        this.mousePressTranslationVector
+      );
+      // Push the command on to the command stack, but do not execute it because it has already been enacted
+      zoomCommand.push();
     } else {
       /* Do the zoom operation */
       this.doZoom(event);
@@ -151,19 +166,26 @@ export default class PanZoomHandler implements ToolStrategy {
     //  Z(untransformedPixel) = pixel Vector
     // Solve for newTranslationVector yields
     const newTranslationVector = [
-      untransformedPixelX * -newMagFactor + pixelX,
-      untransformedPixelY * -newMagFactor + pixelY
+      pixelX - untransformedPixelX * newMagFactor,
+      pixelY - untransformedPixelY * newMagFactor
     ];
 
-    // Set the new magnification factor and the next translation vector in the store
+    // Set the new magnification factor and the new translation vector in the store
     this.store.commit("setZoomMagnificationFactor", newMagFactor);
     this.store.commit("setZoomTranslation", newTranslationVector);
 
     // Update the display
     EventBus.fire("zoom-updated", {});
-    // TODO: Store the last pan as a command that can be undone or redone
-    //const zoomCommand = new AddZoomSphereCommand(this.newZoomMatrix);
-    //zoomCommand.push();
+
+    // Store the zoom as a command that can be undone or redone
+    const zoomCommand = new ZoomSphereCommand(
+      newMagFactor,
+      newTranslationVector,
+      this.mousePressMagnificationFactor,
+      this.mousePressTranslationVector
+    );
+    // Push the command on to the command stack, but do not execute it because it has already been enacted
+    zoomCommand.push();
   }
 
   doPan(event: MouseEvent) {
@@ -174,9 +196,10 @@ export default class PanZoomHandler implements ToolStrategy {
       this.currentPixelPosition.x - mag * this.utStartDragPosition.x,
       this.currentPixelPosition.y - mag * this.utStartDragPosition.y
     ];
-
+    // Set the new translation vector in the store
     this.store.commit("setZoomTranslation", newTranslationVector);
 
+    // Update the display
     EventBus.fire("zoom-updated", {});
   }
 

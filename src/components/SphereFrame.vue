@@ -12,6 +12,7 @@ import SETTINGS, { LAYER } from "@/global-settings";
 import { Matrix4 } from "three";
 import { State } from "vuex-class";
 import AppStore from "@/store";
+import { ZoomSphereCommand } from "@/commands/ZoomSphereCommand";
 
 import { ToolStrategy } from "@/eventHandlers/ToolStrategy";
 import PointHandler from "@/eventHandlers/PointHandler";
@@ -303,9 +304,17 @@ export default class SphereFrame extends VueComponent {
 
     // Update the display
     this.updateView();
-
-    // TODO: Make a command to push onto the command array for undoing/redoing this change
     //EventBus.fire("zoom-updated", {});
+
+    // Store the zoom as a command that can be undone or redone
+    const zoomCommand = new ZoomSphereCommand(
+      newMagFactor,
+      newTranslationVector,
+      currentMagFactor,
+      currentTranslationVector
+    );
+    // Push the command on to the command stack, but do not execute it because it has already been enacted
+    zoomCommand.push();
   }
   @Watch("editMode")
   switchEditMode(mode: string): void {
