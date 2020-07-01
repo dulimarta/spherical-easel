@@ -1,34 +1,15 @@
 import { Command } from "./Command";
-import Point from "@/plottables/Point";
-import Line from "@/plottables/Line";
 import { SELine } from "@/models/SELine";
-import { SEPoint } from "@/models/SEPoint";
 
 export class AddLineCommand extends Command {
   private line: SELine;
-  private startPoint: SEPoint;
-  private endPoint: SEPoint;
-  constructor({
-    line,
-    startPoint,
-    endPoint
-  }: {
-    line: SELine;
-    startPoint: SEPoint;
-    endPoint: SEPoint;
-  }) {
+  constructor(line: SELine) {
     super();
     this.line = line;
-    this.startPoint = startPoint;
-    this.endPoint = endPoint;
   }
 
   do() {
-    Command.store.commit("addLine", {
-      line: this.line,
-      startPoint: this.startPoint,
-      endPoint: this.endPoint
-    });
+    Command.store.commit("addLine", this.line);
   }
 
   saveState() {

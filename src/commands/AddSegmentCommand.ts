@@ -4,29 +4,13 @@ import { SEPoint } from "@/models/SEPoint";
 
 export class AddSegmentCommand extends Command {
   private line: SESegment;
-  private startPoint: SEPoint;
-  private endPoint: SEPoint;
-  constructor({
-    line,
-    startPoint,
-    endPoint
-  }: {
-    line: SESegment;
-    startPoint: SEPoint;
-    endPoint: SEPoint;
-  }) {
+  constructor(line: SESegment) {
     super();
     this.line = line;
-    this.startPoint = startPoint;
-    this.endPoint = endPoint;
   }
 
   do() {
-    Command.store.commit("addSegment", {
-      segment: this.line,
-      startPoint: this.startPoint,
-      endPoint: this.endPoint
-    });
+    Command.store.commit("addSegment", this.line);
   }
 
   saveState() {

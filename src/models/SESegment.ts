@@ -4,7 +4,6 @@ import { Vector3 } from "three";
 import { Visitable } from "@/visitors/Visitable";
 import { Visitor } from "@/visitors/Visitor";
 import { SEPoint } from "./SEPoint";
-import SETTINGS from "@/global-settings";
 
 const tmpVec1 = new Vector3();
 const tmpVec2 = new Vector3();
@@ -31,8 +30,14 @@ export class SESegment extends SENodule implements Visitable {
     s.owner = this;
     this.startAt = start;
     this.endAt = end;
+
     SEGMENT_COUNT++;
     this.name = `Ls-${SEGMENT_COUNT}`;
+
+    // Place registerChild calls AFTER the name is set
+    // so debugging output shows name correctly
+    start.registerChild(this);
+    end.registerChild(this);
   }
 
   accept(v: Visitor): void {

@@ -26,7 +26,7 @@ export class SEPoint extends SENodule implements Visitable {
 
   public update() {
     // make sure that all parents of this Point are up to date.
-    if (!this.updateNow()) {
+    if (!this.canUpdateNow()) {
       return;
     }
     //in more complex objects we will have to update other information in the Class

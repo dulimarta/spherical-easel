@@ -5,9 +5,9 @@ let NODE_COUNT = 0;
 export abstract class SENodule {
   /* An array to store the parents of the node (i.e. the objects that this node depends on)*/
 
-  public parents: SENodule[] = [];
+  protected parents: SENodule[] = [];
   /* An array to store the kids of the node (i.e. the objects that depend on this node)*/
-  public kids: SENodule[] = [];
+  protected kids: SENodule[] = [];
 
   /* A unique identification number for each node */
   public id: number;
@@ -22,13 +22,13 @@ export abstract class SENodule {
         far apart and the intersections don't exist, the user might drag the circles back to where
         the intersections exist). If an object doesn't exist then all of the objects that are 
         descendants of the object don't exist. */
-  public exists = true;
+  private exists = true;
 
   /* This boolean is set to indicate that the object is out of date and needs to be updated. */
-  public outOfDate = false;
+  private outOfDate = false;
 
   /* If the object is not visible then showing = true (The user can hide objects)*/
-  public showing = true;
+  private showingFlag = true;
 
   /* A method to update the current SENodule on the unit sphere (used recursively)*/
   public abstract update(): void;
@@ -39,17 +39,21 @@ export abstract class SENodule {
    */
   public abstract isHitAt(spherePos: Vector3): boolean;
 
-  /* Adds a given SENodule, n, to the parent array of the current SENodule */
+  /**
+   * Adds a given SENodule, n, to the parent array of the current SENodule
+   * @param n the new SENodule to add
+   */
   public addParent(n: SENodule) {
     this.parents.push(n);
   }
-  /* Removes a given SENodule, n, from the parent array of the current SENodule */
+  /** Removes a given SENodule, n, from the parent array of the current SENodule
+   * @param n node to remove
+   */
   public removeParent(n: SENodule) {
-    this.parents.forEach((node, index) => {
-      if (node === n) {
-        this.parents.splice(index, 1);
-      }
-    });
+    const idx = this.parents.findIndex((node: SENodule) => node.id === n.id);
+    if (idx >= 0) {
+      this.parents.splice(idx, 1);
+    }
   }
 
   /**
@@ -79,9 +83,8 @@ export abstract class SENodule {
   }
   /* Removes a given SENodule, n, from the kid arry of the current SENodule */
   public removeKid(n: SENodule) {
-    this.kids.forEach((item, index) => {
-      if (item === n) this.kids.splice(index, 1);
-    });
+    const idx = this.kids.findIndex((item: SENodule) => item.id === n.id);
+    if (idx >= 0) this.kids.splice(idx, 1);
   }
   /* This registers a given SENodule as a child of the current SENodule by 
     1) putting the given SENodule,n ,as an element in the kids array
@@ -93,6 +96,7 @@ export abstract class SENodule {
     this would make the kids array of C1 (and C2) contain P and the parent array of P
     contain both C1 and C2.*/
   public registerChild(n: SENodule) {
+    // console.debug(`Register ${n.name} as child of ${this.name}`);
     this.addKid(n);
     n.addParent(this);
   }
@@ -114,9 +118,19 @@ export abstract class SENodule {
 
   public removeSelfSafely() {
     if (this.kids.length == 0) {
+      const pars = this.parents.map(p => p.name).join(", ");
+      // console.debug(`Unregistering ${this.name} from ${pars}`);
       this.parents.forEach(item => {
-        item.unregisterChild(this);
+        // Warning: we can't call unregisterChild() here
+        // because that will eventually call this.removeParent()
+        // which alters the parents array while we are still
+        // iterating tghrough its elements here
+        item.removeKid(this);
       });
+      this.parents.clear();
+    } else {
+      const dep = this.kids.map(z => z.name).join(", ");
+      console.error(`Can't remove ${this.name} safely because of ${dep}`);
     }
   }
   /* This removes the current node and all descendants (kids, grand kids, etc.) from the 
@@ -136,17 +150,12 @@ export abstract class SENodule {
     <SENodule>.updateNow()
     is asking does <SENodule> need to be updated? If there is a parent outOfDate, then <SENodule> should 
     *not* be updated now. It should wait until *all* parents are not outOfDate.  */
-  public updateNow(): boolean {
-    this.parents.forEach(item => {
-      if (item.getOutOfDate()) {
-        return false;
-      }
-    });
-    return true;
+  public canUpdateNow(): boolean {
+    return !this.parents.some(item => item.isOutOfDate());
   }
 
   /* Marks all descendants (kids, grand kids, etc.) of the current SENodule out of date */
-  public markKidsOutOfDate() {
+  public markKidsOutOfDate(): void {
     this.kids.forEach(item => {
       item.setOutOfDate(true);
       item.markKidsOutOfDate();
@@ -165,27 +174,27 @@ export abstract class SENodule {
     return this.exists;
   }
 
-  public setExist(b: boolean) {
+  public setExist(b: boolean): void {
     this.exists = b;
   }
 
-  public setOutOfDate(b: boolean) {
+  public setOutOfDate(b: boolean): void {
     this.outOfDate = b;
   }
 
-  public getOutOfDate() {
+  public isOutOfDate(): boolean {
     return this.outOfDate;
   }
 
-  get children() {
+  get children(): SENodule[] {
     return this.kids;
   }
 
-  public setShowing(b: boolean) {
-    this.showing = b;
+  public setShowing(b: boolean): void {
+    this.showingFlag = b;
   }
 
-  public getShowing() {
-    return this.showing;
+  public getShowing(): boolean {
+    return this.showingFlag;
   }
 }

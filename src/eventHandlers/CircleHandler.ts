@@ -13,6 +13,7 @@ import { SECircle } from "@/models/SECircle";
 import SETTINGS from "@/global-settings";
 import { SEIntersection } from "@/models/SEIntersection";
 import { DisplayStyle } from "@/plottables/Nodule";
+import { ShowPointCommand } from "@/commands/ShowPointCommand";
 
 export default class CircleHandler extends MouseHandler {
   // Center vector of the created circle
@@ -60,7 +61,7 @@ export default class CircleHandler extends MouseHandler {
         // Set the center of the circle to null so it can be created later
         this.centerPoint = null;
       }
-      // Move the startmarker to the correct location
+      // Move the startmarker to the current mouse location
       this.startMarker.translation.copy(this.currentScreenPoint);
       // Set the center of the circle in the plottable object - also calls temporaryCircle.readjust()
       this.temporaryCircle.centerVector = this.currentSpherePoint;
@@ -134,9 +135,14 @@ export default class CircleHandler extends MouseHandler {
           vtx.positionOnSphere = this.centerVector;
           this.centerPoint = vtx;
           circleGroup.addCommand(new AddPointCommand(vtx));
+        } else if (this.centerPoint instanceof SEIntersection) {
+          circleGroup.addCommand(new ShowPointCommand(this.centerPoint));
         }
         if (this.hitPoints.length > 0) {
           this.endPoint = this.hitPoints[0];
+          if (this.endPoint instanceof SEIntersection) {
+            circleGroup.addCommand(new ShowPointCommand(this.endPoint));
+          }
         } else {
           // endPoint landed on an open space
           // we have to create a new point and add it to the group/store
@@ -157,20 +163,16 @@ export default class CircleHandler extends MouseHandler {
           this.centerPoint,
           this.endPoint
         );
-        circleGroup.addCommand(
-          new AddCircleCommand({
-            circle: newSECircle,
-            centerPoint: this.centerPoint,
-            circlePoint: this.endPoint
-          })
-        );
-        const tmp = this.store.getters.determineIntersectionsWithCircle(
-          newSECircle
-        );
-        tmp.forEach((p: SEIntersection) => {
-          p.setShowing(false);
-          circleGroup.addCommand(new AddPointCommand(p));
-        });
+        // Generate new intersection points
+        circleGroup.addCommand(new AddCircleCommand(newSECircle));
+        // these points must be
+        this.store.getters
+          .determineIntersectionsWithCircle(newSECircle)
+          .forEach((p: SEIntersection) => {
+            p.setShowing(false);
+            circleGroup.addCommand(new AddPointCommand(p));
+          });
+
         circleGroup.execute();
       } else {
         // The user is attempting to make a circle smaller than the minimum radius so

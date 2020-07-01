@@ -14,6 +14,7 @@ import { SEPoint } from "@/models/SEPoint";
 import { SELine } from "@/models/SELine";
 import { SEIntersection } from "@/models/SEIntersection";
 import { DisplayStyle } from "@/plottables/Nodule";
+import { ShowPointCommand } from "@/commands/ShowPointCommand";
 // const frontPointRadius = SETTINGS.point.temp.radius.front;
 
 export default class LineHandler extends MouseHandler {
@@ -124,9 +125,14 @@ export default class LineHandler extends MouseHandler {
         vtx.positionOnSphere = this.startPosition;
         this.startPoint = vtx;
         lineGroup.addCommand(new AddPointCommand(vtx));
+      } else if (this.startPoint instanceof SEIntersection) {
+        lineGroup.addCommand(new ShowPointCommand(this.startPoint));
       }
       if (this.hitPoints.length > 0) {
         this.endPoint = this.hitPoints[0];
+        if (this.endPoint instanceof SEIntersection) {
+          lineGroup.addCommand(new ShowPointCommand(this.endPoint));
+        }
       } else {
         // endV3Point landed on an open space
         // we have to create a new point
@@ -141,20 +147,15 @@ export default class LineHandler extends MouseHandler {
         lineGroup.addCommand(new AddPointCommand(vtx));
       }
       const newSELine = new SELine(newLine, this.startPoint, this.endPoint);
-      const points = this.store.getters.determineIntersectionsWithLine(
-        newSELine
-      );
-      lineGroup.addCommand(
-        new AddLineCommand({
-          line: newSELine,
-          startPoint: this.startPoint,
-          endPoint: this.endPoint
-        })
-      );
-      points.forEach((p: SEIntersection) => {
-        p.setShowing(false);
-        lineGroup.addCommand(new AddPointCommand(p));
-      });
+      lineGroup.addCommand(new AddLineCommand(newSELine));
+
+      // Determine all new intersection points
+      this.store.getters
+        .determineIntersectionsWithLine(newSELine)
+        .forEach((p: SEIntersection) => {
+          p.setShowing(false);
+          lineGroup.addCommand(new AddPointCommand(p));
+        });
       lineGroup.execute();
     }
   }

@@ -53,21 +53,10 @@ export default {
       state.nodules.splice(pos2, 1);
     }
   },
-  addLine(
-    state: AppState,
-    {
-      line,
-      startPoint,
-      endPoint
-    }: { line: SELine; startPoint: SEPoint; endPoint: SEPoint }
-  ): void {
+  addLine(state: AppState, line: SELine): void {
     state.lines.push(line);
     state.nodules.push(line);
     line.ref.addToLayers(state.layers);
-
-    // Add this line as a child of the two points
-    startPoint.registerChild(line);
-    endPoint.registerChild(line);
   },
   removeLine(state: AppState, lineId: number): void {
     const pos = state.lines.findIndex(x => x.id === lineId);
@@ -81,18 +70,9 @@ export default {
       state.nodules.splice(pos2, 1);
     }
   },
-  addSegment(
-    state: AppState,
-    {
-      segment,
-      startPoint,
-      endPoint
-    }: { segment: SESegment; startPoint: SEPoint; endPoint: SEPoint }
-  ): void {
+  addSegment(state: AppState, segment: SESegment): void {
     state.segments.push(segment);
     state.nodules.push(segment);
-    startPoint.registerChild(segment);
-    endPoint.registerChild(segment);
     segment.ref.addToLayers(state.layers);
   },
   removeSegment(state: AppState, segId: number): void {
@@ -106,19 +86,10 @@ export default {
       state.nodules.splice(pos2, 1);
     }
   },
-  addCircle(
-    state: AppState,
-    {
-      circle,
-      centerPoint,
-      circlePoint
-    }: { circle: SECircle; centerPoint: SEPoint; circlePoint: SEPoint }
-  ): void {
+  addCircle(state: AppState, circle: SECircle): void {
     state.circles.push(circle);
     state.nodules.push(circle);
     circle.ref.addToLayers(state.layers);
-    centerPoint.registerChild(circle);
-    circlePoint.registerChild(circle);
   },
   removeCircle(state: AppState, circleId: number): void {
     const circlePos = state.circles.findIndex(x => x.id === circleId);

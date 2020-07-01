@@ -344,7 +344,7 @@ function intersectCircleWithCircle(
       )
   ).map((p: Vector3) => {
     const x = new SEIntersection(new Point(), c1, c2);
-    x.setShowing(true);
+    // x.setShowing(true);
     x.positionOnSphere = p;
     return x;
   });

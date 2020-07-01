@@ -183,40 +183,46 @@ export default abstract class MouseHandler implements ToolStrategy {
       this.hitLines = this.hitNodes
         .filter(obj => obj instanceof SELine)
         .map(obj => obj as SELine);
-      this.hitLines.forEach((obj: SELine) => {
-        obj.ref.glowingDisplay();
-      });
 
       this.hitSegments = this.hitNodes
         .filter(obj => obj instanceof SESegment)
         .map(obj => obj as SESegment);
-      this.hitSegments.forEach((obj: SESegment) => {
-        obj.ref.glowingDisplay();
-      });
 
       this.hitCircles = this.hitNodes
         .filter(obj => obj instanceof SECircle)
         .map(obj => obj as SECircle);
-      this.hitCircles.forEach((c: SECircle) => {
-        c.ref.glowingDisplay();
-      });
-      if (this.hitPoints.length > 0) {
-        this.infoText.showWithDelay(this.layers[LAYER.foregroundText], 300);
-        this.infoText.text = this.hitPoints[0].name;
-        this.infoText.translation.set(
-          this.currentScreenPoint.x,
-          -this.currentScreenPoint.y + 16
-        );
-      } else {
-        const hitOthers = this.hitNodes.filter(n => !(n instanceof SEPoint));
-        if (hitOthers.length > 0) {
+      if (this.hitPoints.length == 0) {
+        this.hitLines.forEach((obj: SELine) => {
+          obj.ref.glowingDisplay();
+        });
+        this.hitSegments.forEach((obj: SESegment) => {
+          obj.ref.glowingDisplay();
+        });
+        this.hitCircles.forEach((c: SECircle) => {
+          c.ref.glowingDisplay();
+        });
+        // Pull the name field from all these objects
+        const text = [...this.hitLines, ...this.hitSegments, ...this.hitCircles]
+          .map(n => n.name)
+          .join(", ");
+
+        if (text.length > 0) {
           this.infoText.showWithDelay(this.layers[LAYER.foregroundText], 300);
-          this.infoText.text = hitOthers[0].name;
+          this.infoText.text = text;
           this.infoText.translation.set(
             this.currentScreenPoint.x,
             -this.currentScreenPoint.y + 16
           );
         }
+      } else {
+        this.infoText.showWithDelay(this.layers[LAYER.foregroundText], 300);
+        this.infoText.text =
+          this.hitPoints[0].name +
+          (this.hitPoints[0] as SEPoint).positionOnSphere.toFixed(2);
+        this.infoText.translation.set(
+          this.currentScreenPoint.x,
+          -this.currentScreenPoint.y + 16
+        );
       }
     } else {
       this.isOnSphere = false;

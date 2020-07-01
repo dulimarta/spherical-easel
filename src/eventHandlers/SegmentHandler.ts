@@ -14,6 +14,7 @@ import { SESegment } from "@/models/SESegment";
 import SETTINGS from "@/global-settings";
 import { SEIntersection } from "@/models/SEIntersection";
 import { DisplayStyle } from "@/plottables/Nodule";
+import { ShowPointCommand } from "@/commands/ShowPointCommand";
 
 const MIDPOINT_MOVEMENT_THRESHOLD = 2.0; /* in degrees */
 /** The temporary ending and midpoint vectors */
@@ -58,8 +59,8 @@ export default class SegmentHandler extends MouseHandler {
     this.tempSegment = new Segment();
     this.tempSegment.stylize(DisplayStyle.TEMPORARY);
   }
+
   mousePressed(event: MouseEvent): void {
-    console.log("mouse press in segment handler");
     // The user is dragging
     this.dragging = true;
     // The Selection Handler forms a list of all the nearby points
@@ -75,6 +76,7 @@ export default class SegmentHandler extends MouseHandler {
       this.startVector.copy(this.currentSpherePoint);
       this.startPoint = null;
     }
+    this.startPoint = null;
     // Initially the midpoint is the start point
     midVector.copy(this.currentSpherePoint);
 
@@ -188,10 +190,15 @@ export default class SegmentHandler extends MouseHandler {
           vtx.positionOnSphere = this.startVector;
           this.startPoint = vtx;
           segmentGroup.addCommand(new AddPointCommand(vtx));
+        } else if (this.startPoint instanceof SEIntersection) {
+          segmentGroup.addCommand(new ShowPointCommand(this.startPoint));
         }
         if (this.hitPoints.length > 0) {
           // The end point is an existing point
           this.endPoint = this.hitPoints[0];
+          if (this.endPoint instanceof SEIntersection) {
+            segmentGroup.addCommand(new ShowPointCommand(this.endPoint));
+          }
         } else {
           // The endpoint is a new point and must be created and added to the command/store
           const newEndPoint = new Point();
@@ -209,20 +216,13 @@ export default class SegmentHandler extends MouseHandler {
           this.startPoint,
           this.endPoint
         );
-        segmentGroup.addCommand(
-          new AddSegmentCommand({
-            line: newSESegment,
-            startPoint: this.startPoint,
-            endPoint: this.endPoint
-          })
-        );
-        const points = this.store.getters.determineIntersectionsWithSegment(
-          newSESegment
-        );
-        points.forEach((p: SEIntersection) => {
-          p.setShowing(false);
-          segmentGroup.addCommand(new AddPointCommand(p));
-        });
+        segmentGroup.addCommand(new AddSegmentCommand(newSESegment));
+        this.store.getters
+          .determineIntersectionsWithSegment(newSESegment)
+          .forEach((p: SEIntersection) => {
+            p.setShowing(false);
+            segmentGroup.addCommand(new AddPointCommand(p));
+          });
         segmentGroup.execute();
       } else {
         // The user is attempting to make a segment smaller than the minimum arc length so

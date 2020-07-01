@@ -16,14 +16,16 @@ export class SECircle extends SENodule implements Visitable {
 
   constructor(c: Circle, ctr: SEPoint, out: SEPoint) {
     super();
-    // this.normalDir = new Vector3();
-    // this.normalDir.copy(c.centerVector);
     this.centerAt = ctr;
     this.pointAt = out;
-    // this._radius = ctr.positionOnSphere.angleTo(out.positionOnSphere);
+
     this.ref = c;
     CIRCLE_COUNT++;
     this.name = `C-${CIRCLE_COUNT}`;
+    // Place registerChild calls AFTER the name is set
+    // so debugging output shows name correctly
+    ctr.registerChild(this);
+    out.registerChild(this);
   }
 
   set normalDirection(v: Vector3) {
