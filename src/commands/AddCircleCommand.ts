@@ -1,5 +1,4 @@
 import { Command } from "./Command";
-import { SEPoint } from "@/models/SEPoint";
 import { SECircle } from "@/models/SECircle";
 
 export class AddCircleCommand extends Command {

@@ -5,7 +5,7 @@ import { SENodule } from "./SENodule";
 import { Vector3 } from "three";
 import SETTINGS from "@/global-settings";
 
-const POINT_PROXIMITY_THRESHOLD = SETTINGS.point.hitIdealDistance;
+// const POINT_PROXIMITY_THRESHOLD = SETTINGS.point.hitIdealDistance;
 let POINT_COUNT = 0;
 
 export class SEPoint extends SENodule implements Visitable {
@@ -24,7 +24,7 @@ export class SEPoint extends SENodule implements Visitable {
     this.name = `P-${POINT_COUNT}`;
   }
 
-  public update() {
+  public update(): void {
     // make sure that all parents of this Point are up to date.
     if (!this.canUpdateNow()) {
       return;

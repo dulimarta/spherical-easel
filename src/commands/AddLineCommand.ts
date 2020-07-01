@@ -8,15 +8,15 @@ export class AddLineCommand extends Command {
     this.line = line;
   }
 
-  do() {
+  do(): void {
     Command.store.commit("addLine", this.line);
   }
 
-  saveState() {
+  saveState(): void {
     this.lastState = this.line.id;
   }
 
-  restoreState() {
+  restoreState(): void {
     Command.store.commit("removeLine", this.lastState);
   }
 }

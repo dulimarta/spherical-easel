@@ -11,15 +11,15 @@ export class RotateSphereCommand extends Command {
     this.inverseRotation.getInverse(this.rotationMat);
   }
 
-  do() {
+  do(): void {
     Command.store.commit("rotateSphere", this.rotationMat);
   }
 
-  saveState() {
+  saveState(): void {
     // No work required here
   }
 
-  restoreState() {
+  restoreState(): void {
     Command.store.commit("rotateSphere", this.inverseRotation);
   }
 }

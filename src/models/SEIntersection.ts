@@ -2,9 +2,7 @@ import { SEPoint } from "./SEPoint";
 import { SECircle } from "./SECircle";
 import { SELine } from "./SELine";
 import { SESegment } from "./SESegment";
-import { SENodule } from "./SENodule";
 import Point from "@/plottables/Point";
-import { Vector3 } from "three";
 
 type SEOneDimension = SELine | SESegment | SECircle;
 
