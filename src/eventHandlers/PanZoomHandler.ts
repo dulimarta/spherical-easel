@@ -38,6 +38,11 @@ export default class PanZoomHandler implements ToolStrategy {
    */
   private isDragging = false;
   /**
+   * In indicates that an actual pan view changed happened and a command should be stored in the command stack
+   * That is the mouse move event, moved far enough to trigger a pan view change.
+   */
+  private didPan = false;
+  /**
    * Indicates that the user mouse pressed and released at the same location - does a zoom at
    * the location of the mouse event
    */
@@ -67,6 +72,7 @@ export default class PanZoomHandler implements ToolStrategy {
   }
 
   mousePressed(event: MouseEvent): void {
+    console.log("Mouse Press Pan/Zoom");
     this.isMousePressed = true;
 
     // Read the target DOM element to determine the current (mouse press) location
@@ -107,21 +113,22 @@ export default class PanZoomHandler implements ToolStrategy {
     this.currentPixelPosition.set(offsetX, offsetY);
 
     // Do the pan in the event the user is dragging (at least 10 pixels?)
-    // Add the extra check for minimum drag distance to prevent a bug
-    // where the translation components become NaN
     if (
       this.isDragging &&
       this.previousPixelPosition.distanceTo(this.currentPixelPosition) > 10
     ) {
       this.doPan(event);
+      this.didPan = true;
+      this.previousPixelPosition.copy(this.currentPixelPosition);
     }
-    this.previousPixelPosition.copy(this.currentPixelPosition);
   }
 
   mouseReleased(event: MouseEvent): void {
-    if (this.isDragging) {
+    /* The this.didPan condition prevents a zoomCommand from being stored when we were dragging but didn't drag far enough to trigger an actual pan view change*/
+    if (this.isDragging && this.didPan) {
       /* End the Pan operation */
       this.isDragging = false;
+      //this.didPan = false;
 
       // Store the zoom as a command that can be undone or redone
       const zoomCommand = new ZoomSphereCommand(
@@ -219,13 +226,15 @@ export default class PanZoomHandler implements ToolStrategy {
 
   doPan(event: MouseEvent): void {
     console.log("Do Pan!");
-    const mag = this.store.getters.zoomMagnificationFactor;
+    //const mag = this.store.getters.zoomMagnificationFactor;
+    const mag = this.store.state.zoomMagnificationFactor;
     // // Only allow panning if we are zoomed in
     // if (mag < 1) return;
     this.lastPanTranslationVector = [
       this.currentPixelPosition.x - mag * this.utStartDragPosition.x,
       this.currentPixelPosition.y - mag * this.utStartDragPosition.y
     ];
+    console.log("mag", mag);
     // Set the new translation vector in the store
     this.store.commit("setZoomTranslation", this.lastPanTranslationVector);
 
