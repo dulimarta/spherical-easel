@@ -5,51 +5,33 @@ lang: en-US
 
 # Sphere Canvas
 
-This is found in the middle of the screen. Initially the Sphere Canvas is empty and only a black two-dimensional outline of the sphere is visible. The user can activate certain [tools](/tools/) by clicking on them in the [Tools Tabs](). Once a tool is active, [mouse](/userguide/#mouse-events) and [keyboard](/userguide/#keyboard-shortcuts) events are interpreted by the active tool to create geometric objects (like [lines](/tools/basic.html#line), [line segments](/tools/basic.html#line-segment), [circles](/tools/basic.html#circle), [conics](/tools/conic.html), [polygons](/tools/basic.html#polygon-too-hard), and custom user defined [parametric curves](/tools/advanced.html#parametric-curve-user-defined) on the unit sphere. These objects together create complex geometric arrangements that are displayed on this canvas.
+This is found in the middle of the screen. Initially the Sphere Canvas is empty and only a black two-dimensional outline of the sphere is visible. The user can activate certain [tools](/tools/) by clicking on them in the [Tools Tabs](). Once a tool is active, [mouse](/userguide/#mouse-events) and [keyboard](/userguide/#keyboard-shortcuts) events are interpreted by the active tool to create geometric objects (like [lines](/tools/basic.html#line), [line segments](/tools/basic.html#line-segment), [circles](/tools/basic.html#circle), [conics](/tools/conic.html), [polygons](/tools/basic.html#polygon-too-hard), and custom user defined [parametric curves](/tools/advanced.html#parametric-curve-user-defined) on the unit sphere. These objects together can be used to create complex geometric arrangements that are displayed on this canvas.
 
-The sphere can be [rotated](/tools/display.html#rotation) and the view can be [zoomed and paned](/userguide/#zooming-and-panning) to explore the arrangement. Rotating the sphere and zooming and panning the view doesn't change the relationship between the geometric objects only the view of those objects. The relationships between the objects can be changed by activating the [Move Tool](/tools/display.html#move) and clicking and dragging the movable objects. Not all objects are movable.
+The sphere can be [rotated](/tools/display.html#rotation) and the view can be [zoomed and paned](/tools/display.html#zoom-pan-and-standard-view) to explore the arrangement. Rotating the sphere and zooming and panning the view doesn't change the relationship between the geometric objects only the view of those objects. The relationships between the objects can be changed by activating the [Move Tool](/tools/display.html#move) and clicking and dragging the movable objects. Not all objects are movable - see details in the move tool description.
 
-The style of the display of the objects can be
+The style of the displayed of the objects can be adjusted using the [Style Panel](/userguide/stylepanel.html).
 
-Each of the Displayed each of the four corners are a collection of icons to do various commonly needed tasks as you adjust your arrangement.
+## Default Tools in the Corners
 
-## Undo/Redo Operations
+There are three slots for tools in each of the four corners of the Sphere Canvas. By default only some of them are filled with commonly used tools. For example, if you have scrolled to the bottom of the Tools Tab to activate and use a tool, then typically the next operation you want to perform is to move the objects you just created to explore them a bit. Rather than scrolling back to the top of the Tools Tab to select the Move Tool, you can simply click on the Move button in the lower left-hand corner of the Sphere Canvas
 
-Found in the upper right-hand corner of the Sphere Canvas?
+By registering, the user can [select the tools that appear in each of the corner slots.](/userguide/titlebar.html#benefits-of-registering). The default tools are described here.
 
-Operations on the sphere can be undone and redone by clicking the undo and redo buttons found in the top right-hand corner of the Sphere Canvas.
+### Undo/Redo Operations
 
-## Activate the Style Panel
+In the upper left-hand corner of the Sphere Canvas are the tools for [undoing and redoing](/tools/edit.html#undo-redo) actions performed during a construction.
 
-Found in the upper left-hand corner of the Sphere Canvas?
+### Activate the Style Panel
 
-This icon (TODO: AddIconImage) opens the Style Panel and enables the user to customize the look and feel of the arrangement. (TODO: Link to StylePanel Description)
+In the upper right-hand corner of the Sphere Canvas, is a gear icon for displaying the [Style Panel](/userguide/stylepanel.html). This allows the user to update the visual style of the geometric objects and to control other aspects of the display.
 
-## Zooming and Panning
+### Panning, Zooming and Standard View
 
-On a Mac with a track pad:
+In the lower right-hand corner of the Sphere Canvas are the [pan/zoom in, pan/zoom out, and zoom standard tools.](/tools/display.html#zoom-pan-and-standard-view) The zoom tools magnify the view of the sphere and the zoom standard tool restores the view to the largest possible view of the sphere given the current size of the window.
 
-- Hold the <kdb>Command</kbd> key and use a two finger pinch to zoom in or out
-- If the zoom factor is bigger than one (i.e. you are zoom in) the user can pan the view. If the user simultaneously holds the <kdb>Option</kbd> key and mouse downs (without release) in the lower left corner of the track pad, then a one finger scroll will pan the view.
+### Move Objects
 
-On a PC with a trackpad:
--Use the <kbd>Alt</kbd> key (?) to pan when zoomed i
-
-Found in the lower right-hand corner of the Sphere Canvas?
-
-There are several buttons (or maybe one speed dial button?) in this corner:
-
-- In (Turns on a pan/zoom tool so that a mouse release zooms in at the location of the mouse by 10 or 15% and a mouse press & dragging event zooms initially at 10/15% at the start location (i.e. mouse press) of the mouse, but then the portview/view window is dragged around until the mouse release event)
-- Out (Same as the zoom in, but zooming out instead)
-- Pan (only drags the current view port around)
-- Full Screen (Toggle between full screen and not. Toggle between Google icon:fullscreen and Google icon: fullscreen-exit)
-- Home (restore to the largest possible view of the sphere given the current size of the window)
-
-## Move Objects
-
-Found in the lower left-hand corner of the Sphere Canvas?
-
-Clicking this button activates the [Move Tool](/tools/display.html#move) so a user can easily return to this mode when the Tools & Objects Panel is long. For example, if you have scrolled to the bottom of the Tools Tab to activate and use a tool, then typically the next operation you want to perform is to move the objects you just created to explore them a bit. Rather than scrolling back to the top of the Tools Tab to select the Move Tool, you can simply click on the Move button in the lower right-hand corner of the Sphere Canvas.
+In the lower left-hand corner of the Sphere Canvas is the [Move Tool](/tools/display.html#move).
 
 ## Keyboard Shortcuts
 
@@ -64,7 +46,7 @@ As you play with Spherical Easel these keyboard shortcuts can help accelerate yo
 
 ## Mouse Events
 
-Through out this documentation, **mouse down** or **mouse press** is the action of pressing the mouse button down at a location, **mouse release** is the action of releasing the button at a location, **clicking** is the action of mouse down and mouse release at the same location, and **mouse dragging** or **dragging** or **clicking and dragging** is the action of mouse down at a location and mouse release at a different location.
+Through out this documentation, **mouse down** or **mouse press** is the action of pressing the mouse button down at a location, **mouse release** is the action of releasing the button at a location, **clicking** is the action of mouse down and mouse release at the same location, and **mouse dragging** or **dragging** or **click and dragging** is the action of mouse down at a location and mouse release at a different location.
 
 ## Creating Points
 

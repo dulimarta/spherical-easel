@@ -54,7 +54,25 @@ Delete selected objects.
 - If this tool is activated with any objects selected, the selected objects are deleted automatically.
 
   ::: tip
-  If when clicking at a location more than one object is deleted and this is not the desired behavior, then Undo you first action, change to the [Selection Tool](edit.html#selection), and then select the object or objects to be hidden. Then activating this tool will hide the selected objects.
+  If when clicking at a location more than one object is deleted and this is not the desired behavior, then Undo you first action, change to the [Selection Tool](edit.html#selection), and then select the object or objects to be hidden. Then activating this tool will delete the selected objects.
+
+:::
+
+::: tool-title
+
+## Undo/Redo
+
+:::
+
+::: tool-description
+
+Undo or redo the last action.
+
+::: tool-details
+
+- These tools undo or redo the last action.
+- Zooming and rotating are undoable, except in the case when rotating (including [momentum rotations](/userguide/titlebar.html#global-settings)), panning, or mouse wheel zooming. In those cases only the view before and after are recorded and the intermediate views are not.
+- If either of these tools is activated with any objects selected, the selected objects are unselected and ignored.
 
 :::
 

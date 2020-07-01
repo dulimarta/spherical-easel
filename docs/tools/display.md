@@ -35,7 +35,7 @@ Hide selected objects.
 Hide or show the label of selected objects.
 ::: tool-details
 
-- Clicking at a location toggles the display of all nearby objects' label.
+- Clicking at a location toggles the display of all nearby objects' labels.
 - If the user would like to
 
   - only show labels when clicking, hold the <kbd>S</kbd> keys and click on the Sphere Canvas. All nearby objects will have their labels shown.
@@ -44,7 +44,7 @@ Hide or show the label of selected objects.
   - hide all object's labels, hold the <kbd>Shift</kbd> + <kbd>H</kbd> key and click once on the Sphere Canvas. All labels will be hidden.
 
 - To toggle the display of a label, the user can click directly on (or near) the label or can click on (or near) the object to which it is attached.
-- If this tool is activated with any objects selected, the display of the selected objects' label is toggled automatically.
+- If this tool is activated with any object(s) selected, the display of the selected objects' label(s) is toggled automatically.
 
   ::: tip
   If when clicking at a location more than one object's label becomes hidden or shown and this is not the desired behavior, then Undo you first action, change to the [Selection Tool](edit.html#selection), and then select the object or objects whose label's you want to toggle. Then activating this tool will toggle the appropriate labels.
@@ -61,9 +61,9 @@ Move the location of a single object.
 
 - Mouse press and dragging on a single free object will move the location of the object on the sphere. Mouse release will terminate the movement of that object and place it at a new location.
 - There are two kinds of free objects:
-  - Those which reside at the top layer or second to top layer of the dependency structure. For example, suppose three points are created on the sphere using the [Point Tool](/tools/basic.html#point) (and are not snapped - [see this tip](/tools/basic.html#point)- to any object) then they are in the top or first layer of the dependency structure. If those points are used to create an ellipse using the [Ellipse Tool](/tools/basic.html#ellipse) then the ellipse is in the second layer of the dependency structure.
+  - Those which reside at the top layer or second to top layer of the dependency structure. For example, suppose three points are created on the sphere using the [Point Tool](/tools/basic.html#point) (and are not snapped - [see this tip in the Point Tool](/tools/basic.html#point) - to any object) then they are in the top or first layer of the dependency structure. If those points are used to create an ellipse using the [Ellipse Tool](/tools/basic.html#ellipse) then the ellipse is in the second layer of the dependency structure.
   - Those points that are either created with the [Point On Object Tool](/tools/construction.html#point-on-object) or are automatically created in this way when creating another object.
-- **Not** all objects are movable. Only free objects are movable. For example, an intersection point (which is on the third layer) of two circles (on the second layer) depends on the two circles and **cannot** be independently moved. However, each circle can be moved because the points on which the circle itself depends are at the top (i.e. first layer) of the dependency structure.
+- **Not** all objects are movable. Only free objects are movable. For example, an intersection point (which is on the third layer) of two circles (on the second layer) depends on the two circles and **cannot** be independently moved. However, each circle can be moved so long as the points on which the circle itself depends are at the top (i.e. first layer) of the dependency structure.
 - Moving a free circle or ellipse is the same thing as simultaneously moving the points or objects on which it depends.
 - Non-ellipse conics and parametric curves (user defined) are never moveable. Parametric curves can be "moved" using a Measurement object in the parametric definition.
 - Moving a free line or line segment rotates that line about the axis connecting one of the points on the line or line segment to its antipode. Pressing the <kbd>Alt</kbd> key toggles the point that the line or line segment rotates about.
@@ -90,5 +90,38 @@ Rotate the current view.
 ::: tip
 
 If the momentum mode is enabled and the user doesn't want the current arrangement to rotate after a mouse release, pausing with the mouse pressed for a period of time before mouse releasing will temporarily disable the momentum feature.
+
+:::
+
+::: tool-title
+
+## Zoom, Pan, and Standard View
+
+:::
+
+::: tool-description
+
+Pan, Zoom In or Out on the current view or return to the standard view.
+
+::: tool-details
+
+- Select the Zoom In or Zoom Out to perform the corresponding action on a mouse press and release at the same location.
+  - The zoom is centered on the mouse click location.
+  - [The percent zoom can be set by the user.](/userguide/titlebar.html#global-settings)
+- With either tool, if the user mouse presses at one location, move the mouse, and then mouse releases, the view is panned from the mouse press to the mouse release location (and updated in between).
+- Pinching on a track pad or using a mouse wheel will zoom in or out centered at the current location of the mouse. The percent of zoom in or out is determined by the change in the mouse wheel or pinch change value.
+
+  - On a Mac:
+
+    - Hold the <kbd>Command</kbd> and use a two finger pinch or expansion to zoom in or out
+    - TODO: Can the user pan with a track pad?
+
+  - On a PC with a track pad: (TODO: confirm these directions)
+
+    - Hold the <kbd>Alt</kbd> key and use a two finger pinch or expansion to zoom in or out.
+    - TODO: Can the user pan with a track pad?
+
+- The zoom standard tool restores the view to the largest possible one of the sphere given the current size of the window.
+- If either of these tools is activated with any objects selected, the selected objects are unselected and ignored.
 
 :::

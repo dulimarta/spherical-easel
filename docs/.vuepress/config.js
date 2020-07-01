@@ -52,6 +52,43 @@ module.exports = {
           "/id/": "IDDetails:"
         }
       }
+    ], // display the title and icons of the tools
+    [
+      "vuepress-plugin-container",
+      {
+        type: "handler-title",
+        before: info => "",
+        after: "",
+        defaultTitle: ""
+      }
+    ],
+    //display the short description of the handler
+    [
+      "vuepress-plugin-container",
+      {
+        type: "handler-description",
+        before: info =>
+          `<div class="handler-description"><p class="handler-description-title">${info}</p>`,
+        after: "</div>",
+        defaultTitle: {
+          "/": "Tool Description:",
+          "/id/": "IDDescription:"
+        }
+      }
+    ],
+    // Display the details of the tool handlers
+    [
+      "vuepress-plugin-container",
+      {
+        type: "handler-details",
+        before: info =>
+          `<div class="handler-details"><p class="handler-details-title">${info}</p>`,
+        after: "</div>",
+        defaultTitle: {
+          "/": "Some Implementation Details:",
+          "/id/": "IDDetails:"
+        }
+      }
     ]
 
     // [
@@ -169,6 +206,19 @@ module.exports = {
             "/tools/transformation",
             "/tools/measuredobject",
             "/tools/"
+          ],
+          //The  Handler Documentation sidebar file list
+          "/design/handlers/": [
+            "/design/handlers/",
+            "/design/handlers/edit",
+            "/design/handlers/display",
+            "/design/handlers/basic",
+            "/design/handlers/construction",
+            "/design/handlers/measurement",
+            "/design/handlers/conic",
+            "/design/handlers/advanced",
+            "/design/handlers/transformation",
+            "/design/handlers/measuredobject"
           ],
 
           //The root Or default sidebar (matches all directories so must be listed last)

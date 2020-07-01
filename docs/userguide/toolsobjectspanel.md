@@ -9,8 +9,7 @@ In the Tools & Objects Panel there are two tabs.
 
 ## Tools Tab
 
-There are many tools and they are explained in their own section of this document
-[Tools](/tools/).
+There are many tools and they are explained [in their own section of this document.](/tools/edit.html).
 
 ## Objects Tab
 
@@ -60,7 +59,7 @@ Here is a second example verifies that for a right triangle $ABC$ with right ang
 - Create a circle using the [Circle Tool](/tools/basic.html#circle).
 - Measure the distance between the center point of the circle and the point on the circle using the [Distance Tool](/tools/measurement.html#distance). Notice that a new row in the Measurement Section of the Objects Tab is created and that the Measurement Token M1 is displayed. -->
 
-You can enter a constant in a calculation expression (i.e. an entry with no Measurement Tokens) and then use the created Measurement Token to create a [Line Segment](/tools/basic.html#line-segment) or [Circular Arc](/tools/advanced.html#circular-arc) with a constant length or an line at [fixed angle to another line through a point](/tools/measuredobject.html#measured-angle-line).
+You can enter a constant in a calculation expression (i.e. an entry with no Measurement Tokens) and then use the created Measurement Token to create a [Line Segment](/tools/basic.html#line-segment) or [Circular Arc](/tools/advanced.html#circular-arc) with a constant length or a line at [fixed angle to another line through a point](/tools/measuredobject.html#measured-angle-line).
 
 ### Transformations
 

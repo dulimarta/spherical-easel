@@ -83,7 +83,7 @@ Record the $x$, $y$, or $z$ coordinates of a point as a Measurement object.
 
 :::
 ::: tool-description
-Creates a calculation involving Measurement Tokens
+Creates a calculation involving Measurement Tokens.
 
 ::: tool-details
 
@@ -103,7 +103,7 @@ Creates a calculation involving Measurement Tokens
 
 :::
 ::: tool-description
-Creates a slider or adjust the value of an existing non-animated slider.
+Creates a slider or adjust the value of an existing slider.
 
 ::: tool-details
 
@@ -121,7 +121,7 @@ Creates a slider or adjust the value of an existing non-animated slider.
 
 :::
 ::: tool-description
-Measure all aspects of a triangle
+Measure all aspects of a triangle.
 ::: tool-details
 
 - There are two ways to measure a triangle:
@@ -140,7 +140,7 @@ Measure all aspects of a triangle
 
 ::: tool-title
 
-## Polygon (too hard?)
+## Polygon
 
 :::
 
