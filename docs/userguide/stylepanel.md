@@ -109,12 +109,12 @@ Checking this box will make any free objects fixed. That is, the move tool will 
 
 This tab allows the user to adjust the style features of the selected object(s) that pertain to their rendering on the front of the sphere. They include pickers for the following attributes:
 
-- Fill Color And No Fill Option
-- Stroke Color
+- Fill Color And No Fill Options
+- Stroke Color And No Stroke Options
 - Stroke Width
 - Radius
 - Dashing Pattern
-- Opacity
+- Overall Opacity
 
 Which options are displayed depends on the objects selected. For example, the Fill Color is only available for points, circles, conic, and polygons. Radius is only available for points and angle markers and Dashing pattern is only available for one-dimensional objects.
 
@@ -126,11 +126,11 @@ If the box is unchecked the selected styles are used to render the object on the
 They include pickers for the following attributes:
 
 - Fill Color And No Fill Option
-- Stroke Color
+- Stroke Color And No Stroke Options
 - Stroke Width
 - Radius
 - Dashing Pattern
-- Opacity
+- Overall Opacity
 
 Which options are displayed depends on the objects selected. For example, the Fill Color is only available for points, circles, conic, and polygons. Radius is only available for points and angle markers and Dashing pattern is only available for one-dimensional objects.
 
@@ -141,7 +141,6 @@ This tab allows the user to adjust some of the style features of the selected ob
 - The user can write a boolean valued expression the controls if the object is shown or not (overriding the [Show Object](/userguide/stylepanel.html#show-object) check box).
 - The user can write a real valued expression that controls the Red, Blue, or Green component of the color of either the fill (in the case of points) or the stroke color (in the case of one-dimensional objects).
 - For [Line Segments](/tools/basic.html#line-segment) and [Circular Arc](/tools/advanced.html#circular-arc) the extension value is set here. The user can enter a fix number or a Measurement Token to control the length of the Line Segment or Circular Arc. Details can be found in the tool descriptions.
-  reates a new kind of point at the endpoint)
 - For [Parametric Curves](/tools/advanced.html#parametric-curve-user-defined) this is the tab where the parametric description $P(t)$, lower bound ($t_l$), upper bound ($t_u$), and open/closed options are entered. Details can be found in the tool description.
 - The user can edit a [Calculation](/userguide/toolsobjectspanel.html#calculations) in this tab.
 - The user edit a [Slider](/tools/measurement.html#slider) in this tab. The user can adjust the lower and upper bounds of the slider, the step size, and if the slider should be animated.

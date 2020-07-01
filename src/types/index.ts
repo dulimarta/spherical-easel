@@ -16,7 +16,8 @@ export interface Selectable {
 export interface AppState {
   layers: Two.Group[];
   sphereRadius: /* in pixel */ number; // When the window is resized, the actual size of the sphere (in pixel may change)
-  transformMatElements: number[]; // current transformation matrix
+  zoomTranslation: number[]; // current zoom translation vector
+  zoomMagnificationFactor: number; // current zoom magnification factor
   editMode: string;
   // nodes: SENodule[], Do we need this?
   points: SEPoint[];

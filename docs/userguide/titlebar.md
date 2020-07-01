@@ -28,7 +28,7 @@ Clicking on this icon (TODO: AddIconImage) allows user to
 - Set the number of displayed decimal places,
 - Set the Momentum and Decay feature of the [Rotate Tool](/tools/display.html#rotateion). Checking the Momentum box will allow the rotate tool to continue rotating the current view after the user has stopped actively rotating the sphere. The sphere will continue to rotate and slow depending on a Decay parameter. A Decay value of zero is the same as not allowing Momentum and a Decay value of 1 means the sphere never stops rotating (if left undisturbed).
 - Upload a custom background image for the sphere?
-- Register so they can save and load from server, create custom URL that restrict the tools available to the user, create a custom URL to send that displayed a particular arrangement?
+- Register so they can save and load from server, create custom URL that restrict the tools available to the user, create a custom URL to send that displayed a particular arrangement and customize the tools that are displayed in the sphere frame.
 
 ## Benefits of Registering
 

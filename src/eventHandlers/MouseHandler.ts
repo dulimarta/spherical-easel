@@ -90,26 +90,13 @@ export default abstract class MouseHandler implements ToolStrategy {
     // The last column of the affine transformation matrix
     // is the origin of the zoomed circle
     // ZoomCtr_in_world_ideal_sphere = inverseCSSMat * ZoomCtr_in_screen_space
-    this.zoomCenter.set(
-      this.transformMatrix.elements[12],
-      -this.transformMatrix.elements[13], // must flip the Y-coord
-      this.transformMatrix.elements[14]
-    );
     // ZoomCtr = inv(CSS) * ZoomOrig
-    this.zoomCenter.applyMatrix4(
-      this.tmpMatrix.getInverse(this.transformMatrix)
-    );
 
     // Map the mouse screen coordinate to its position within the ideal sphere
     // IdealPos = inv(CSS) * MousePos
-    this.mouseVector.set(mouseX, mouseY, 0);
-    this.mouseVector.applyMatrix4(
-      this.tmpMatrix.getInverse(this.transformMatrix)
-    );
     // Reposition the mouse position (in ideal sphere) relative
     // to the zoom center
     // IdealPos = IdealPos - ZoomCtr
-    this.mouseVector.sub(this.zoomCenter);
 
     // Attempted algebraic simplification
     // IdealPos = IdealPos - ZoomCtr
@@ -118,23 +105,23 @@ export default abstract class MouseHandler implements ToolStrategy {
 
     /*
     Using the algebraic simplification above, the following lines
-    of code should work, but they DON'T???
+    of code should work, but they DON'T??? They do now!! */
+    const mag = this.store.state.zoomMagnificationFactor;
+    const zoomTransVec = this.store.state.zoomTranslation;
 
     this.mouseVector.set(
-      mouseX - this.transformMatrix.elements[12],
-      mouseY + this.transformMatrix.elements[13],
-      -this.transformMatrix.elements[14]
+      (mouseX - zoomTransVec[0]) / mag,
+      (mouseY + zoomTransVec[1]) / mag,
+      0
     );
+    // Transform the pre affine coordinates to coordinates on the sphere to before the current view transformation
     this.mouseVector.applyMatrix4(
       this.tmpMatrix.getInverse(this.transformMatrix)
     );
-     */
 
     this.currentScreenPoint.set(this.mouseVector.x, this.mouseVector.y);
     /* Rescale to unit circle */
-    const len = this.mouseVector
-      // .multiplyScalar(1 / SETTINGS.boundaryCircle.radius)
-      .length();
+    const len = this.mouseVector.length();
     const R = SETTINGS.boundaryCircle.radius;
     if (len < R) {
       const mx = this.mouseVector.x;

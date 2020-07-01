@@ -14,7 +14,7 @@ title: Design Document
 
   - Separate Document
 
-- Zooming
+- [Zooming](./Zooming.md)
 
   - In
   - Out

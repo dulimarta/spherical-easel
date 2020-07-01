@@ -6,13 +6,15 @@ import { SESegment } from "@/models/SESegment";
 import { SECircle } from "@/models/SECircle";
 import { PositionVisitor } from "@/visitors/PositionVisitor";
 import { SELine } from "@/models/SELine";
-const tmpMatrix = new Matrix4();
+// const tmpMatrix = new Matrix4();
 
 export const initialState: AppState = {
   sphereRadius: 0,
   editMode: "rotate",
+  zoomMagnificationFactor: 1,
+  zoomTranslation: [0, 0],
   // slice(): create a copy of the array
-  transformMatElements: tmpMatrix.elements.slice(),
+  // transformMatElements: tmpMatrix.elements.slice(),
   // nodes: [], // Possible future addition (array of SENodule)
   nodules: [],
   layers: [],
@@ -37,6 +39,19 @@ export default {
   },
   setEditMode(state: AppState, mode: string): void {
     state.editMode = mode;
+  },
+  setZoomMagnificationFactor(state: AppState, mag: number): void {
+    state.zoomMagnificationFactor = mag;
+    //console.log("Mag", state.zoomMagnificationFactor);
+  },
+  setZoomTranslation(state: AppState, vec: number[]): void {
+    for (let i = 0; i < 2; i++) {
+      state.zoomTranslation[i] = vec[i];
+    }
+    // console.log("Trans", [
+    //   state.zoomTranslation[0],
+    //   state.zoomTranslation[1]
+    // ]);
   },
   addPoint(state: AppState, point: SEPoint): void {
     state.points.push(point);

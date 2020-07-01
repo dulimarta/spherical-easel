@@ -32,4 +32,4 @@ screenshots/*
 *.fls
 *.fdb_latexmk
 *.log
-src/plottables/*.pdf
+latex-notes/*.pdf

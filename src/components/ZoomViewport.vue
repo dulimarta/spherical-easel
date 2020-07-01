@@ -187,7 +187,7 @@ export default class ZoomViewport extends Vue {
   padding: 0;
 
   div {
-    // background-color: yellow;
+    background-color: yellow;
   }
 }
 </style>

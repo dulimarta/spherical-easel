@@ -1,5 +1,4 @@
 import MouseHandler from "./MouseHandler";
-import { SEPoint } from "@/models/SEPoint";
 
 export default class SelectionHandler extends MouseHandler {
   activate(): void {
@@ -23,6 +22,7 @@ export default class SelectionHandler extends MouseHandler {
       });
     }
   };
+
   mouseMoved(event: MouseEvent): void {
     super.mouseMoved(event);
   }

@@ -1,13 +1,12 @@
 <template>
   <v-container id="leftnav" fluid>
     <!-- These the navigation arrows TODO: I would like these to be in the same row as the
-        tabs-->
+    tabs-->
     <!-- This the not minimized left drawer containing two tabs -->
     <div v-if="!minified">
       <!-- Two tabs set up TODO: fix the behavior of the tabs-->
       <v-tabs v-model="activeLeftDrawerTab" centered grow>
-        <v-tooltip bottom :open-delay="toolTipOpenDelay"
-          :close-delay="toolTipCloseDelay">
+        <v-tooltip bottom :open-delay="toolTipOpenDelay" :close-delay="toolTipCloseDelay">
           <template v-slot:activator="{ on }">
             <v-tab class="mt-3" href="#toolListTab" v-on="on">
               <v-icon left>mdi-calculator</v-icon>
@@ -16,8 +15,7 @@
           <span>{{ $t("main.ToolsTabToolTip") }}</span>
         </v-tooltip>
 
-        <v-tooltip bottom :open-delay="toolTipOpenDelay"
-          :close-delay="toolTipCloseDelay">
+        <v-tooltip bottom :open-delay="toolTipOpenDelay" :close-delay="toolTipCloseDelay">
           <template v-slot:activator="{ on }">
             <v-tab class="mt-3" href="#objectListTab" v-on="on">
               <v-icon left>mdi-format-list-bulleted</v-icon>
@@ -27,11 +25,10 @@
         </v-tooltip>
 
         <v-tab-item value="toolListTab">
-          <ToolButtons></ToolButtons>
+          <ToolGroups></ToolGroups>
         </v-tab-item>
         <v-tab-item value="objectListTab">
-          <ObjectTree scene="scene">
-          </ObjectTree>
+          <ObjectTree scene="scene"></ObjectTree>
         </v-tab-item>
       </v-tabs>
     </div>
@@ -45,13 +42,13 @@
 <script lang="ts">
 import Vue from "vue";
 import { Component, Prop } from "vue-property-decorator";
-import ToolButtons from "@/components/ToolButtons.vue";
-import ObjectTree from "@/components/ObjectTree.vue"
+import ToolGroups from "@/components/ToolGroups.vue";
+import ObjectTree from "@/components/ObjectTree.vue";
 import SETTINGS, { LAYER } from "@/global-settings";
-import { State } from 'vuex-class';
-import Two from 'two.js';
+import { State } from "vuex-class";
+import Two from "two.js";
 
-@Component({ components: { ToolButtons, ObjectTree } })
+@Component({ components: { ToolGroups, ObjectTree } })
 export default class Toolbox extends Vue {
   @Prop()
   readonly minified!: boolean;
