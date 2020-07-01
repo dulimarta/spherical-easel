@@ -1,6 +1,5 @@
 import { Command } from "./Command";
 import { SESegment } from "@/models/SESegment";
-import { SEPoint } from "@/models/SEPoint";
 
 export class AddSegmentCommand extends Command {
   private line: SESegment;
@@ -9,15 +8,15 @@ export class AddSegmentCommand extends Command {
     this.line = line;
   }
 
-  do() {
+  do(): void {
     Command.store.commit("addSegment", this.line);
   }
 
-  saveState() {
+  saveState(): void {
     this.lastState = this.line.id;
   }
 
-  restoreState() {
+  restoreState(): void {
     Command.store.commit("removeSegment", this.lastState);
   }
 }

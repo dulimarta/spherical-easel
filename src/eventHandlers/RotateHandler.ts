@@ -27,7 +27,9 @@ export default class RotateHandler extends MouseHandler {
   private prevSpherePoint: Vector3 = new Vector3();
   private prevScreenPoint: Two.Vector = new Two.Vector(0, 0);
   /**
-   * A matrix that is used to indicate which rotation to apply to the sphere
+   * A matrix that is used to indicate which rotation to apply to the sphere. This handler stores the
+   * latest such matrix in this variable. This is the only place this is stored. If we need access to this
+   * matrix, we will have to put this variable in the store.
    */
   private rotationMatrix: Matrix4 = new Matrix4();
   /**
@@ -93,7 +95,6 @@ export default class RotateHandler extends MouseHandler {
         this.rotationMatrix.makeRotationAxis(desiredZAxis, rotationAngle);
         // Update the previous locations/times /derivative
         this.derivative = rotationAngle / (event.timeStamp - this.previousTime);
-        console.log("derivative", this.derivative);
         this.momentumAngle = rotationAngle; // The initial momentum rotation angle is the last rotation angle
         this.previousTime = event.timeStamp;
         this.prevSpherePoint.copy(this.currentSpherePoint);
@@ -150,11 +151,11 @@ export default class RotateHandler extends MouseHandler {
   mouseLeave(event: MouseEvent): void {
     console.log("MOUSE LEAVE EVENT");
     this.momentumMode = false;
-    throw new Error("Method not implemented.");
   }
 
   // Delay the execution of a set of commands (but allow other threads to continue)
-  sleep(ms: number) {
+  // TODO: Promise<void> or Promise<number>?
+  sleep(ms: number): Promise<number> {
     return new Promise(resolve => setTimeout(resolve, ms));
   }
 
@@ -162,7 +163,7 @@ export default class RotateHandler extends MouseHandler {
    * Continues to rotate the sphere after the user has stopped actively rotating
    * @param callNumber The number of times this method has been called, used to stop recursion
    */
-  async momentum(callNumber: number) {
+  async momentum(callNumber: number): Promise<void> {
     // Check to see if momentum mode is still enable and the time elapsed since the first momentum call is less than the endTime
     if (this.momentumMode && callNumber * deltaT < endTime) {
       // momentumAngle is the area under the curve y(t) = -this.derivative/endTime*t + this.derivative

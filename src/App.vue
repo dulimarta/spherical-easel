@@ -29,9 +29,7 @@
             width="40"
           />
         </router-link>
-        <v-toolbar-title>
-          {{ $t("main.SphericalEaselMainTitle") }}
-        </v-toolbar-title>
+        <v-toolbar-title>{{ $t("main.SphericalEaselMainTitle") }}</v-toolbar-title>
         <v-tooltip left>
           <template v-slot:activator="{ on }">
             <a href="/docs">
@@ -55,13 +53,13 @@
       This is the main window of the app. All other components are display on top of this element
       The router controls this background and it can be Easel or settings or...
     -->
-    <v-content>
+    <v-main>
       <router-view>
         <!-- this is the spot where the views controlled by Vue Router will be rendred -->
       </router-view>
-    </v-content>
+    </v-main>
     <v-footer app color="accent" padless>
-      <v-col class="text-center">Footer text here</v-col>
+      <v-col class="text-center">Perhaps the active tool mode should be displayed down here.</v-col>
     </v-footer>
   </v-app>
 </template>

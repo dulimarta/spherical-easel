@@ -8,7 +8,7 @@ prev: /quickstart/
 
 Spherical easel allows users to TODO:Copy and paste the text from the [home](/) page here once it is finalized.
 
-All objects created on the surface of the sphere. The basic objects are defined as follows:
+All objects are created on the surface of the sphere. The basic objects are defined as follows:
 
 - A sphere is the set of **points** a unit distance from the origin in Euclidean three space.
 - A **line** is the intersection of a plane containing the center of the sphere and the surface of the sphere.

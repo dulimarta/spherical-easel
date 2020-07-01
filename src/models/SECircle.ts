@@ -8,9 +8,10 @@ let CIRCLE_COUNT = 0;
 import SETTINGS from "@/global-settings";
 
 export class SECircle extends SENodule implements Visitable {
+  /**
+   * The corresponding plottable TwoJS object
+   */
   public ref!: Circle;
-  // private normalDir: Vector3;
-  // private _radius: number; // Arc length (in radians) not straight line distance
   private centerAt: SEPoint;
   private pointAt: SEPoint;
 

@@ -18,7 +18,7 @@ export class PositionVisitor implements Visitor {
   actionOnPoint(p: SEPoint): void {
     this.tmpVector.copy(p.positionOnSphere);
     this.tmpVector.applyMatrix4(this.transformMatrix);
-    p.positionOnSphere = this.tmpVector; // this doesn't make sense. the SEPoint location doesn't change under a rotation only where it is displayed changes
+    p.positionOnSphere = this.tmpVector;
   }
 
   /* This should never be called because lines are always children of points */

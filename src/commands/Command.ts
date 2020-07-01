@@ -66,7 +66,7 @@ export abstract class Command {
 
   // TODO: consider merging saveState() and do(). They are always invoked one after the other
 
-  // saveSTate: Save require information to restore the app state
+  // saveState: Save require information to restore the app state
   abstract saveState(): void;
 
   // do: Perform necessary action to alter the app state

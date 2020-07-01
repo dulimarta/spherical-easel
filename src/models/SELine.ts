@@ -27,14 +27,13 @@ export class SELine extends SENodule implements Visitable {
     this.ref = l;
     this.start = start;
     this.end = end;
-    // Add this line as a child of the two points
 
     l.owner = this;
     LINE_COUNT++;
     this.name = `Li-${LINE_COUNT}`;
     // Place registerChild calls AFTER the name is set
     // so debugging output shows name correctly
-
+    // Add this line as a child of the two points
     start.registerChild(this);
     end.registerChild(this);
   }

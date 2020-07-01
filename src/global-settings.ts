@@ -1,6 +1,11 @@
 export default {
   nearlyAntipodal: 0.01, // Two unit vectors, U and V, are nearly antipodal if |U+V| < nearlyAntipodal
   contrast: 0.5, //The number that controls the automatic setting of the back styling for objects that have dynamicBackStyle set to true.
+  zoom: {
+    maxMagnification: 10, // The greatest zoom in magnification factor
+    minMagnification: 0.8, // The least zoom out magnification factor
+    percentChange: 10 // The percent that a zoom in or out out click will change the view
+  },
   rotate: {
     minAngle: Math.PI / 1000, // the minimum angular distance before a new rotation is computed as we click and drag in rotate mode
     momentum: {
@@ -95,10 +100,10 @@ export default {
         back: "#a0c3fa" // The fill color on the back defaults to a contrast value of 0.5
       },
       strokeWidth: {
-        front: 2.5,
-        back: 2,
-        min: 2, //On zoom this is the minimum thickness displayed
-        max: 6 //On zoom this is the maximum thickness displayed
+        front: 1.5,
+        back: 1,
+        min: 1, //On zoom this is the minimum thickness displayed
+        max: 3 //On zoom this is the maximum thickness displayed
       }, // The thickness of the segment when drawn
       opacity: { front: 1, back: 1 },
       dashArray: {
@@ -157,10 +162,10 @@ export default {
         back: "#a0c3fa" // The fill color on the back defaults to a contrast value of 0.5
       },
       strokeWidth: {
-        front: 2.5,
-        back: 2,
-        min: 2, //On zoom this is the minimum thickness displayed
-        max: 6 //On zoom this is the maximum thickness displayed
+        front: 1.5,
+        back: 1,
+        min: 1, //On zoom this is the minimum thickness displayed
+        max: 3 //On zoom this is the maximum thickness displayed
       }, // The thickness of the line when drawn
       opacity: { front: 1, back: 1 },
       dashArray: {
@@ -226,10 +231,10 @@ export default {
       },
       strokeWidth: {
         // The thickness of the circle when drawn front/back
-        front: 2.5,
-        back: 2,
-        min: 2, //On zoom this is the minimum thickness displayed
-        max: 6 //On zoom this is the maximum thickness displayed
+        front: 1.5,
+        back: 1,
+        min: 1, //On zoom this is the minimum thickness displayed
+        max: 3 //On zoom this is the maximum thickness displayed
       }, // The thickness of the circle when drawn front/back
       opacity: { front: 1, back: 1 },
       dashArray: {
@@ -292,7 +297,9 @@ export default {
     "move",
     "line",
     "segment",
-    "select"
+    "select",
+    "zoomIn",
+    "zoomOut"
   ],
   supportedLanguages: [
     { locale: "en", name: "English" },

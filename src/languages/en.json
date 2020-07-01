@@ -18,6 +18,12 @@
     "RotateDisplayedName": "Rotate",
     "RotateSphereToolTipMessage": "Rotate Sphere",
     "RotateSphereToolUseMessage": "Click and drag to rotate the sphere.",
+    "PanZoomInDisplayedName": "Pan/Zoom In",
+    "PanZoomInToolTipMessage": "Pan or Zoom In",
+    "PanZoomInToolUseMessage": "Click to zoom in at the location of the mouse. Click and drag to pan the current view.",
+    "PanZoomOutDisplayedName": "Pan/Zoom Out",
+    "PanZoomOutToolTipMessage": "Pan or Zoom Out",
+    "PanZoomOutToolUseMessage": "Click to zoom out at the location of the mouse. Click and drag to pan the current view.",
     "MoveDisplayedName": "Move",
     "MoveObjectToolTipMessage": "Move object",
     "MoveObjectToolUseMessage": "Click and drag an object to move it. Movable objects include labels, free points, and line segments with antipodal endpoings. Hold the SHIFT key to select from the back of the sphere.",
@@ -32,7 +38,10 @@
     "CreateLineSegmentToolUseMessage": "Click and drag to insert line segment defined by two points.",
     "CreateCircleDisplayedName": "Circle",
     "CreateCircleToolTipMessage": "Insert circle",
-    "CreateCircleToolUseMessage": "Click and drag to insert a circle with a given center point and through a second point."
+    "CreateCircleToolUseMessage": "Click and drag to insert a circle with a given center point and through a second point.",
+    "CreateSelectToolTipMessage": "FIXME",
+    "CreateSelectToolUseMessage": "FIXME",
+    "CreateSelectDisplayedName": "FIXME"
   },
   "settings": {
     "title": "Preferences"

@@ -13,7 +13,7 @@ There are many tools and they are explained [in their own section of this docume
 
 ## Objects Tab
 
-Every time an object is created it is displayed in the sphere canvas and then listed in the this tab. In addition, every measurement creates a row in this tab. This list is sorted by the type of object or measurement displayed:
+Every time an object is created it is displayed in the sphere canvas and then listed in the this tab. In addition, every measurement creates a row in this tab. This list is sorted into groups by the type of object or measurement displayed. Each group starts with a header and an icon to toggle between collapsing the group and displaying all members of the group. Empty groups are hidden. The following are the groups:
 
 - [Points](/tools/basic.html#point)
 - [Line Segments](/tools/basic.html#line-segment)
@@ -28,7 +28,7 @@ Every time an object is created it is displayed in the sphere canvas and then li
 - [Measurements](/tools/measurement.html) (Including (?) [Sliders](/tools/measurement.html#slider))
 - [Calculations](/tools/measurement.html#calculation)
 
-Each row created includes
+Within each group information about each object is displayed in a row that includes
 
 - A button/icon to control if the object is hidden or not
 - Short [Name](/userguide/stylepanel.html#name)

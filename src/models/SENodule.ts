@@ -43,13 +43,13 @@ export abstract class SENodule {
    * Adds a given SENodule, n, to the parent array of the current SENodule
    * @param n the new SENodule to add
    */
-  public addParent(n: SENodule) {
+  public addParent(n: SENodule): void {
     this.parents.push(n);
   }
   /** Removes a given SENodule, n, from the parent array of the current SENodule
    * @param n node to remove
    */
-  public removeParent(n: SENodule) {
+  public removeParent(n: SENodule): void {
     const idx = this.parents.findIndex((node: SENodule) => node.id === n.id);
     if (idx >= 0) {
       this.parents.splice(idx, 1);
@@ -78,11 +78,11 @@ export abstract class SENodule {
   }
 
   /* Adds a given SENodule, n, to the kids array of the current SENodule */
-  public addKid(n: SENodule) {
+  public addKid(n: SENodule): void {
     this.kids.push(n);
   }
   /* Removes a given SENodule, n, from the kid arry of the current SENodule */
-  public removeKid(n: SENodule) {
+  public removeKid(n: SENodule): void {
     const idx = this.kids.findIndex((item: SENodule) => item.id === n.id);
     if (idx >= 0) this.kids.splice(idx, 1);
   }
@@ -95,7 +95,7 @@ export abstract class SENodule {
     C2.registerChild(P)
     this would make the kids array of C1 (and C2) contain P and the parent array of P
     contain both C1 and C2.*/
-  public registerChild(n: SENodule) {
+  public registerChild(n: SENodule): void {
     // console.debug(`Register ${n.name} as child of ${this.name}`);
     this.addKid(n);
     n.addParent(this);
@@ -111,14 +111,14 @@ export abstract class SENodule {
     P must be recursively removed from object tree and this is accomplished with the remove 
     function. 
     */
-  public unregisterChild(n: SENodule) {
+  public unregisterChild(n: SENodule): void {
     this.removeKid(n);
     n.removeParent(this);
   }
 
-  public removeSelfSafely() {
+  public removeSelfSafely(): void {
     if (this.kids.length == 0) {
-      const pars = this.parents.map(p => p.name).join(", ");
+      // const pars = this.parents.map(p => p.name).join(", ");
       // console.debug(`Unregistering ${this.name} from ${pars}`);
       this.parents.forEach(item => {
         // Warning: we can't call unregisterChild() here
@@ -135,7 +135,7 @@ export abstract class SENodule {
   }
   /* This removes the current node and all descendants (kids, grand kids, etc.) from the 
     object tree by using the unregister function and remove recursively */
-  public removeThisNode() {
+  public removeThisNode(): void {
     //remove the current node from all of its parent SENodules
     this.parents.forEach(item => {
       item.unregisterChild(this);
