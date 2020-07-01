@@ -67,7 +67,7 @@
                         color="primary"
                         icon
                         tile
-                        @click="enableZoomIn; $emit('displayOnlyThisToolUseMessage',70); displayZoomInToolUseMessage = true;"
+                        @click="enableZoomIn(); displayZoomInToolUseMessage = true;"
                         v-on="on"
                       >
                         <v-icon>mdi-magnify-plus-outline</v-icon>
@@ -81,7 +81,7 @@
                         color="primary"
                         icon
                         tile
-                        @click="enableZoomOut; $emit('displayOnlyThisToolUseMessage',80); displayZoomOutToolUseMessage = true;"
+                        @click="enableZoomOut(); displayZoomOutToolUseMessage = true;"
                         v-on="on"
                       >
                         <v-icon>mdi-magnify-minus-outline</v-icon>
@@ -178,6 +178,7 @@ export default class Easel extends Vue {
   }
 
   private enableZoomIn(): void {
+    console.log("enableZoomIn");
     this.$store.commit("setEditMode", "zoomIn");
   }
   private enableZoomOut(): void {

@@ -35,8 +35,6 @@ const initialState: AppState = {
   //transformMatElements: tmpMatrix.elements.slice(), //TODO: Is this used? I don't think so
   zoomMagnificationFactor: 1,
   zoomTranslation: [0, 0],
-  previousZoomMagnificationFactor: 1,
-  previousZoomTranslation: [0, 0],
   // nodes: [], // Possible future addition (array of SENodule)
   nodules: [],
   layers: [],
@@ -93,19 +91,17 @@ export default new Vuex.Store({
       state.editMode = mode;
     },
     setZoomMagnificationFactor(state: AppState, mag: number): void {
-      state.previousZoomMagnificationFactor = state.zoomMagnificationFactor;
       state.zoomMagnificationFactor = mag;
-      console.log("Mag", state.zoomMagnificationFactor);
-      console.log("Prev Mag", state.previousZoomMagnificationFactor);
+      //console.log("Mag", state.zoomMagnificationFactor);
     },
     setZoomTranslation(state: AppState, vec: number[]): void {
-      //console.log("setZoomTranslation", vec);
       for (let i = 0; i < 2; i++) {
-        state.previousZoomTranslation[i] = state.zoomTranslation[i];
         state.zoomTranslation[i] = vec[i];
       }
-      console.log("Trans", state.zoomTranslation);
-      console.log("Prev trans", state.zoomTranslation);
+      // console.log("Trans", [
+      //   state.zoomTranslation[0],
+      //   state.zoomTranslation[1]
+      // ]);
     },
 
     addPoint(state: AppState, point: SEPoint): void {
@@ -221,9 +217,6 @@ export default new Vuex.Store({
     // zoomSphere(state: AppState) {
     //   EventBus.fire("zoom-updated", {});
     // },
-    // previousZoomSphere(state: AppState) {
-    //   EventBus.fire("zoom-updated", {});
-    // }
   },
   actions: {
     /* Define async work in this block */

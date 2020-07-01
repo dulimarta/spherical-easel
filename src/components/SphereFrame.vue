@@ -251,24 +251,22 @@ export default class SphereFrame extends VueComponent {
   }
 
   handleMouseWheel(event: MouseWheelEvent): void {
+    console.log("Mouse Wheel Zoom!");
     // Compute (pixelX,pixelY) = the location of the mouse release in pixel coordinates relative to
     //  the top left of the sphere frame. This is a location *post* affine transformation
     const target = (event.currentTarget || event.target) as HTMLDivElement;
     const boundingRect = target.getBoundingClientRect();
     const pixelX = event.clientX - boundingRect.left - boundingRect.width / 2;
     const pixelY = event.clientY - boundingRect.top - boundingRect.height / 2;
-
     // Compute the fraction to zoom in or out by
     let scrollFraction = event.deltaY / boundingRect.height;
     if (event.ctrlKey) {
       // Flip the sign for pinch/zoom gestures on Mac trackpad
       scrollFraction *= -1;
     }
-
     // Get the current magnification factor and set a variable for the next one
     const currentMagFactor = this.store.getters.zoomMagnificationFactor;
     let newMagFactor = currentMagFactor;
-
     // Set the next magnification factor. Positive scroll fraction means zoom out, negative zoom in.
     if (scrollFraction < 0) {
       if (currentMagFactor < SETTINGS.zoom.minMagnification) return;
@@ -279,14 +277,17 @@ export default class SphereFrame extends VueComponent {
       newMagFactor = (1 + scrollFraction) * currentMagFactor;
     }
     // Get the current translation vector to allow us to untransform the CSS transformation
-    const currentTranslationVector = this.store.getters.zoomTranslation;
+    const currentTranslationVector = [
+      this.store.getters.zoomTranslation[0],
+      this.store.getters.zoomTranslation[1]
+    ];
+
     // Compute (untransformedPixelX,untransformedPixelY) which is the location of the mouse
     // wheel event *pre* affine transformation
     const untransformedPixelX =
       (pixelX - currentTranslationVector[0]) / currentMagFactor;
     const untransformedPixelY =
       (pixelY - currentTranslationVector[1]) / currentMagFactor;
-
     // Compute the new translation Vector. We want the untransformedPixel vector to be mapped
     // to the pixel vector under the new maginification factor. That is, if
     //  Z(x,y)= newMagFactor*(x,y) + newTranslationVector
@@ -297,15 +298,12 @@ export default class SphereFrame extends VueComponent {
       pixelX - untransformedPixelX * newMagFactor,
       pixelY - untransformedPixelY * newMagFactor
     ];
-
     // Set the new magnifiction factor and the next translation vector in the store
     this.store.commit("setZoomMagnificationFactor", newMagFactor);
     this.store.commit("setZoomTranslation", newTranslationVector);
-
     // Update the display
     this.updateView();
     //EventBus.fire("zoom-updated", {});
-
     // Store the zoom as a command that can be undone or redone
     const zoomCommand = new ZoomSphereCommand(
       newMagFactor,

@@ -78,8 +78,11 @@ export default class PanZoomHandler implements ToolStrategy {
     this.currentPixelPosition.set(offsetX, offsetY);
     // Get the current magnification factor and translation vector so we can untransform the pixel location
     this.mousePressMagnificationFactor = this.store.getters.zoomMagnificationFactor;
-    this.mousePressTranslationVector = this.store.getters.zoomTranslation;
-    // Compute untransformed location of the pixel location, this is the start dragging
+    const temp = this.store.getters.zoomTranslation;
+    for (let i = 0; i < 2; i++) {
+      this.mousePressTranslationVector[i] = temp[i];
+    }
+    // Compute untransformed (ut) location of the pixel location, this is the start dragging
     // location *pre* affine transformation
     this.utStartDragPosition.set(
       (offsetX - this.mousePressTranslationVector[0]) /
@@ -121,6 +124,15 @@ export default class PanZoomHandler implements ToolStrategy {
       );
       // Push the command on to the command stack, but do not execute it because it has already been enacted
       zoomCommand.push();
+      console.log("Push Pan Command!");
+      // console.log("Do Pan Command push: last TV", [
+      //   this.lastPanTranslationVector[0],
+      //   this.lastPanTranslationVector[1]
+      // ]);
+      // console.log("mousepress TV", [
+      //   this.mousePressTranslationVector[0],
+      //   this.mousePressTranslationVector[1]
+      // ]);
     } else {
       /* Do the zoom operation */
       this.doZoom(event);
@@ -129,6 +141,7 @@ export default class PanZoomHandler implements ToolStrategy {
   }
 
   doZoom(event: MouseEvent): void {
+    console.log("Do Zoom Command!");
     // Get the current magnification factor and set a variable for the next one
     const currentMagFactor = this.store.getters.zoomMagnificationFactor;
     let newMagFactor = currentMagFactor;
@@ -189,15 +202,16 @@ export default class PanZoomHandler implements ToolStrategy {
   }
 
   doPan(event: MouseEvent) {
+    console.log("Do Pan!");
     const mag = this.store.getters.zoomMagnificationFactor;
     // // Only allow panning if we are zoomed in
     // if (mag < 1) return;
-    const newTranslationVector = [
+    this.lastPanTranslationVector = [
       this.currentPixelPosition.x - mag * this.utStartDragPosition.x,
       this.currentPixelPosition.y - mag * this.utStartDragPosition.y
     ];
     // Set the new translation vector in the store
-    this.store.commit("setZoomTranslation", newTranslationVector);
+    this.store.commit("setZoomTranslation", this.lastPanTranslationVector);
 
     // Update the display
     EventBus.fire("zoom-updated", {});

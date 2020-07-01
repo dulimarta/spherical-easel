@@ -24,9 +24,9 @@ export class ZoomSphereCommand extends Command {
   do() {
     Command.store.commit(
       "setZoomMagnificationFactor",
-      this.previousMagnificationFactor
+      this.magnificationFactor
     );
-    Command.store.commit("setZoomTranslation", this.previousTranslationVector);
+    Command.store.commit("setZoomTranslation", this.translationVector);
     EventBus.fire("zoom-updated", {});
     //Command.store.commit("zoomSphere");
   }
@@ -38,10 +38,10 @@ export class ZoomSphereCommand extends Command {
   restoreState() {
     Command.store.commit(
       "setZoomMagnificationFactor",
-      this.magnificationFactor
+      this.previousMagnificationFactor
     );
-    Command.store.commit("setZoomTranslation", this.translationVector);
+    Command.store.commit("setZoomTranslation", this.previousTranslationVector);
     EventBus.fire("zoom-updated", {});
-    //Command.store.commit("previousZoomSphere");
+    //Command.store.commit("zoomSphere");
   }
 }

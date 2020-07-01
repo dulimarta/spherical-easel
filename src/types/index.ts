@@ -18,8 +18,6 @@ export interface AppState {
   sphereRadius: /* in pixel */ number; // When the window is resized, the actual size of the sphere (in pixel may change)
   zoomTranslation: number[]; // current zoom translation vector
   zoomMagnificationFactor: number; // current zoom magnification factor
-  previousZoomTranslation: number[]; // previous zoom translation vector
-  previousZoomMagnificationFactor: number; // previous zoom magnification factor
   editMode: string;
   // nodes: SENodule[], Do we need this?
   points: SEPoint[];
