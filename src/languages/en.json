@@ -32,7 +32,10 @@
     "CreateLineSegmentToolUseMessage": "Click and drag to insert line segment defined by two points.",
     "CreateCircleDisplayedName": "Circle",
     "CreateCircleToolTipMessage": "Insert circle",
-    "CreateCircleToolUseMessage": "Click and drag to insert a circle with a given center point and through a second point."
+    "CreateCircleToolUseMessage": "Click and drag to insert a circle with a given center point and through a second point.",
+    "CreateSelectToolTipMessage": "FIXME",
+    "CreateSelectToolUseMessage": "FIXME",
+    "CreateSelectDisplayedName": "FIXME"
   },
   "settings": {
     "title": "Preferences"

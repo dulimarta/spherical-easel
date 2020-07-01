@@ -32,7 +32,10 @@
     "CreateLineSegmentToolUseMessage": "Tekan dan geser mouse umtuk tambahkan segmen garis melewati dua titik.",
     "CreateCircleDisplayedName": "Lingkaran",
     "CreateCircleToolTipMessage": "Tambahkan lingkaran",
-    "CreateCircleToolUseMessage": "Tekan dan geser untuk tambahkan lingkaran dengan titik pusan dan titik luar."
+    "CreateCircleToolUseMessage": "Tekan dan geser untuk tambahkan lingkaran dengan titik pusat dan titik luar.",
+    "CreateSelectToolTipMessage": "FIXME",
+    "CreateSelectToolUseMessage": "FIXME",
+    "CreateSelectDisplayedName": "FIXME"
   },
   "settings": {
     "title": "Setelan"
