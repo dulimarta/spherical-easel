@@ -158,6 +158,83 @@ export default class SegmentHandler extends MouseHandler {
     }
   }
 
+  private makeSegment(): void {
+    // Clone the temporary segment and mark it added to the scene
+    this.isTemporarySegmentAdded = false;
+    const newSegment = this.tempSegment.clone();
+    // Stylize the new segment
+    newSegment.stylize(DisplayStyle.DEFAULT);
+    // Stylize the glowing segment
+    newSegment.stylize(DisplayStyle.GLOWING);
+
+    // Create a new command group to store potentially three commands. Those to add the endpoints (which might be  new) and the segment itself.
+    const segmentGroup = new CommandGroup();
+    if (this.startPoint === null) {
+      // The start point is a new point and must be created and added to the command/store
+      const newStartPoint = new Point();
+      // Set the display to the default values
+      newStartPoint.stylize(DisplayStyle.DEFAULT);
+      // Set the glowing display
+      newStartPoint.stylize(DisplayStyle.GLOWING);
+      const vtx = new SEPoint(newStartPoint);
+      vtx.positionOnSphere = this.startVector;
+      this.startPoint = vtx;
+      segmentGroup.addCommand(new AddPointCommand(vtx));
+    } else if (this.startPoint instanceof SEIntersection) {
+      segmentGroup.addCommand(new ShowPointCommand(this.startPoint));
+    }
+    if (this.hitPoints.length > 0) {
+      // The end point is an existing point
+      this.endPoint = this.hitPoints[0];
+      if (this.endPoint instanceof SEIntersection) {
+        segmentGroup.addCommand(new ShowPointCommand(this.endPoint));
+      }
+    } else {
+      // The endpoint is a new point and must be created and added to the command/store
+      const newEndPoint = new Point();
+      // Set the display to the default values
+      newEndPoint.stylize(DisplayStyle.DEFAULT);
+      // Set the glowing display
+      newEndPoint.stylize(DisplayStyle.GLOWING);
+      const vtx = new SEPoint(newEndPoint);
+      vtx.positionOnSphere = this.currentSpherePoint;
+      this.endPoint = vtx;
+      segmentGroup.addCommand(new AddPointCommand(vtx));
+    }
+    const newSESegment = new SESegment(
+      newSegment,
+      this.startPoint,
+      this.endPoint
+    );
+    segmentGroup.addCommand(new AddSegmentCommand(newSESegment));
+    this.store.getters
+      .determineIntersectionsWithSegment(newSESegment)
+      .forEach((p: SEIntersection) => {
+        p.setShowing(false);
+        segmentGroup.addCommand(new AddPointCommand(p));
+      });
+    segmentGroup.execute();
+  }
+
+  private makePoint(): void {
+    // The user is attempting to make a segment smaller than the minimum arc length so
+    // create  a point at the location of the start vector
+    if (this.startPoint === null) {
+      // Starting point landed on an open space
+      // we have to create a new point and it to the group/store
+      const newPoint = new Point();
+      // Set the display to the default values
+      newPoint.stylize(DisplayStyle.DEFAULT);
+      // Set the glowing display
+      newPoint.stylize(DisplayStyle.GLOWING);
+      const vtx = new SEPoint(newPoint);
+      vtx.positionOnSphere = this.startVector;
+      this.startPoint = vtx;
+      const addPoint = new AddPointCommand(vtx);
+      addPoint.execute();
+    }
+  }
+
   mouseReleased(event: MouseEvent): void {
     this.dragging = false;
     if (this.isOnSphere) {
@@ -168,79 +245,13 @@ export default class SegmentHandler extends MouseHandler {
       // Before making a new segment make sure that the user has dragged a non-trivial distance
       // If the user hasn't dragged far enough merely insert a point at the start location
 
-      if (this.tempSegment.arcLength > SETTINGS.segment.minimumArcLength) {
-        // Clone the temporary segment and mark it added to the scene
-        this.isTemporarySegmentAdded = false;
-        const newSegment = this.tempSegment.clone();
-        // Stylize the new segment
-        newSegment.stylize(DisplayStyle.DEFAULT);
-        // Stylize the glowing segment
-        newSegment.stylize(DisplayStyle.GLOWING);
-
-        // Create a new command group to store potentially three commands. Those to add the endpoints (which might be  new) and the segment itself.
-        const segmentGroup = new CommandGroup();
-        if (this.startPoint === null) {
-          // The start point is a new point and must be created and added to the command/store
-          const newStartPoint = new Point();
-          // Set the display to the default values
-          newStartPoint.stylize(DisplayStyle.DEFAULT);
-          // Set the glowing display
-          newStartPoint.stylize(DisplayStyle.GLOWING);
-          const vtx = new SEPoint(newStartPoint);
-          vtx.positionOnSphere = this.startVector;
-          this.startPoint = vtx;
-          segmentGroup.addCommand(new AddPointCommand(vtx));
-        } else if (this.startPoint instanceof SEIntersection) {
-          segmentGroup.addCommand(new ShowPointCommand(this.startPoint));
-        }
-        if (this.hitPoints.length > 0) {
-          // The end point is an existing point
-          this.endPoint = this.hitPoints[0];
-          if (this.endPoint instanceof SEIntersection) {
-            segmentGroup.addCommand(new ShowPointCommand(this.endPoint));
-          }
-        } else {
-          // The endpoint is a new point and must be created and added to the command/store
-          const newEndPoint = new Point();
-          // Set the display to the default values
-          newEndPoint.stylize(DisplayStyle.DEFAULT);
-          // Set the glowing display
-          newEndPoint.stylize(DisplayStyle.GLOWING);
-          const vtx = new SEPoint(newEndPoint);
-          vtx.positionOnSphere = this.currentSpherePoint;
-          this.endPoint = vtx;
-          segmentGroup.addCommand(new AddPointCommand(vtx));
-        }
-        const newSESegment = new SESegment(
-          newSegment,
-          this.startPoint,
-          this.endPoint
-        );
-        segmentGroup.addCommand(new AddSegmentCommand(newSESegment));
-        this.store.getters
-          .determineIntersectionsWithSegment(newSESegment)
-          .forEach((p: SEIntersection) => {
-            p.setShowing(false);
-            segmentGroup.addCommand(new AddPointCommand(p));
-          });
-        segmentGroup.execute();
+      if (
+        this.startVector.angleTo(this.currentSpherePoint) >
+        SETTINGS.segment.minimumArcLength
+      ) {
+        this.makeSegment();
       } else {
-        // The user is attempting to make a segment smaller than the minimum arc length so
-        // create  a point at the location of the start vector
-        if (this.startPoint === null) {
-          // Starting point landed on an open space
-          // we have to create a new point and it to the group/store
-          const newPoint = new Point();
-          // Set the display to the default values
-          newPoint.stylize(DisplayStyle.DEFAULT);
-          // Set the glowing display
-          newPoint.stylize(DisplayStyle.GLOWING);
-          const vtx = new SEPoint(newPoint);
-          vtx.positionOnSphere = this.startVector;
-          this.startPoint = vtx;
-          const addPoint = new AddPointCommand(vtx);
-          addPoint.execute();
-        }
+        this.makePoint();
       }
       // Clear old points to get ready for creating the next segment.
       this.startPoint = null;

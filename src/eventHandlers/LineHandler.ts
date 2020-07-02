@@ -15,6 +15,7 @@ import { SELine } from "@/models/SELine";
 import { SEIntersection } from "@/models/SEIntersection";
 import { DisplayStyle } from "@/plottables/Nodule";
 import { ShowPointCommand } from "@/commands/ShowPointCommand";
+import globalSettings from "@/global-settings";
 // const frontPointRadius = SETTINGS.point.temp.radius.front;
 
 export default class LineHandler extends MouseHandler {
@@ -92,6 +93,78 @@ export default class LineHandler extends MouseHandler {
     }
   }
 
+  private makeCircle(): void {
+    this.tmpVector
+      .crossVectors(this.startPosition, this.currentSpherePoint)
+      .normalize();
+    // this.line.endPoint = this.currentSpherePoint;
+    // this.endV3Point.copy(this.currentPoint);
+    const newLine = this.tempLine.clone(); // true:recursive clone
+    // Stylize the new Line
+    newLine.stylize(DisplayStyle.DEFAULT);
+    // Stylize the glowing Line
+    newLine.stylize(DisplayStyle.GLOWING);
+
+    const lineGroup = new CommandGroup();
+    if (this.startPoint === null) {
+      // Starting point landed on an open space
+      // we have to create a new point
+      const newStartPoint = new Point();
+      // Set the display to the default values
+      newStartPoint.stylize(DisplayStyle.DEFAULT);
+      // Set the glowing display
+      newStartPoint.stylize(DisplayStyle.GLOWING);
+      const vtx = new SEPoint(newStartPoint);
+      vtx.positionOnSphere = this.startPosition;
+      this.startPoint = vtx;
+      lineGroup.addCommand(new AddPointCommand(vtx));
+    } else if (this.startPoint instanceof SEIntersection) {
+      lineGroup.addCommand(new ShowPointCommand(this.startPoint));
+    }
+    if (this.hitPoints.length > 0) {
+      this.endPoint = this.hitPoints[0];
+      if (this.endPoint instanceof SEIntersection) {
+        lineGroup.addCommand(new ShowPointCommand(this.endPoint));
+      }
+    } else {
+      // endV3Point landed on an open space
+      // we have to create a new point
+      const newEndPoint = new Point();
+      // Set the display to the default values
+      newEndPoint.stylize(DisplayStyle.DEFAULT);
+      // Set the glowing display
+      newEndPoint.stylize(DisplayStyle.GLOWING);
+      const vtx = new SEPoint(newEndPoint);
+      vtx.positionOnSphere = this.currentSpherePoint;
+      this.endPoint = vtx;
+      lineGroup.addCommand(new AddPointCommand(vtx));
+    }
+    const newSELine = new SELine(newLine, this.startPoint, this.endPoint);
+    lineGroup.addCommand(new AddLineCommand(newSELine));
+
+    // Determine all new intersection points
+    this.store.getters
+      .determineIntersectionsWithLine(newSELine)
+      .forEach((p: SEIntersection) => {
+        p.setShowing(false);
+        lineGroup.addCommand(new AddPointCommand(p));
+      });
+    lineGroup.execute();
+  }
+
+  private makePoint(): void {
+    // The user is attempting to make a line shorter than the minimum arc length
+    // so create  a point at the location of the start vector
+    if (this.startPoint === null) {
+      // Starting point landed on an open space
+      // we have to create a new point and it to the group/store
+      const vtx = new SEPoint(new Point());
+      vtx.positionOnSphere = this.startPosition;
+      const addPoint = new AddPointCommand(vtx);
+      addPoint.execute();
+    }
+  }
+
   //eslint-disable-next-line
   mouseReleased(event: MouseEvent): void {
     this.isMouseDown = false;
@@ -101,62 +174,12 @@ export default class LineHandler extends MouseHandler {
       this.startMarker.remove();
       this.circleOrientation.remove(); // for debugging
       this.isCircleAdded = false;
-      this.tmpVector
-        .crossVectors(this.startPosition, this.currentSpherePoint)
-        .normalize();
-      // this.line.endPoint = this.currentSpherePoint;
-      // this.endV3Point.copy(this.currentPoint);
-      const newLine = this.tempLine.clone(); // true:recursive clone
-      // Stylize the new Line
-      newLine.stylize(DisplayStyle.DEFAULT);
-      // Stylize the glowing Line
-      newLine.stylize(DisplayStyle.GLOWING);
-
-      const lineGroup = new CommandGroup();
-      if (this.startPoint === null) {
-        // Starting point landed on an open space
-        // we have to create a new point
-        const newStartPoint = new Point();
-        // Set the display to the default values
-        newStartPoint.stylize(DisplayStyle.DEFAULT);
-        // Set the glowing display
-        newStartPoint.stylize(DisplayStyle.GLOWING);
-        const vtx = new SEPoint(newStartPoint);
-        vtx.positionOnSphere = this.startPosition;
-        this.startPoint = vtx;
-        lineGroup.addCommand(new AddPointCommand(vtx));
-      } else if (this.startPoint instanceof SEIntersection) {
-        lineGroup.addCommand(new ShowPointCommand(this.startPoint));
-      }
-      if (this.hitPoints.length > 0) {
-        this.endPoint = this.hitPoints[0];
-        if (this.endPoint instanceof SEIntersection) {
-          lineGroup.addCommand(new ShowPointCommand(this.endPoint));
-        }
-      } else {
-        // endV3Point landed on an open space
-        // we have to create a new point
-        const newEndPoint = new Point();
-        // Set the display to the default values
-        newEndPoint.stylize(DisplayStyle.DEFAULT);
-        // Set the glowing display
-        newEndPoint.stylize(DisplayStyle.GLOWING);
-        const vtx = new SEPoint(newEndPoint);
-        vtx.positionOnSphere = this.currentSpherePoint;
-        this.endPoint = vtx;
-        lineGroup.addCommand(new AddPointCommand(vtx));
-      }
-      const newSELine = new SELine(newLine, this.startPoint, this.endPoint);
-      lineGroup.addCommand(new AddLineCommand(newSELine));
-
-      // Determine all new intersection points
-      this.store.getters
-        .determineIntersectionsWithLine(newSELine)
-        .forEach((p: SEIntersection) => {
-          p.setShowing(false);
-          lineGroup.addCommand(new AddPointCommand(p));
-        });
-      lineGroup.execute();
+      if (
+        this.startPosition.angleTo(this.currentSpherePoint) >
+        globalSettings.line.minimumLength
+      ) {
+        this.makeCircle();
+      } else this.makePoint();
     }
   }
 
