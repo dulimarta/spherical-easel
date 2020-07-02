@@ -34,6 +34,12 @@ export default class SphereFrame extends VueComponent {
   @State
   readonly editMode!: string;
 
+  @State
+  readonly zoomMagnificationFactor!: number;
+
+  @State
+  readonly zoomTranslation!: number[];
+
   $refs!: {
     canvas: HTMLDivElement;
   };
@@ -217,7 +223,9 @@ export default class SphereFrame extends VueComponent {
   /** Apply the affine transform (m) to the entire TwoJS SVG tree! */
   // The translation element of the CSS transform matrix
   // is actually the pivot/origin of the zoom
+
   private updateView() {
+    // console.debug("updateView() is called with zoom factor", this.zoomMagnificationFactor, this.zoomTranslation);
     // Get the current maginiication factor and translation vector
     const mag = this.store.state.zoomMagnificationFactor;
     const transVector = this.store.state.zoomTranslation;
@@ -226,7 +234,7 @@ export default class SphereFrame extends VueComponent {
     const el = (this.twoInstance.renderer as any).domElement as HTMLElement;
     // Set the transform
     const mat = `matrix(${mag},0,0,${mag},${transVector[0]},${transVector[1]})`
-    console.debug("CSS transform matrix: ", mat);
+    // console.debug("CSS transform matrix: ", mat);
     el.style.transform = mat;
     // Set the origin of the transform
     const origin = this.canvasSize / 2;
@@ -330,10 +338,26 @@ export default class SphereFrame extends VueComponent {
     // then we must have
     //  Z(untransformedPixel) = pixel Vector
     // Solve for newTranlationVector yields
+
     const newTranslationVector = [
       pixelX - untransformedPixelX * newMagFactor,
       pixelY - untransformedPixelY * newMagFactor
     ];
+    // When zooming out, add extra translation so the pivot of
+    // zoom is eventually (0,0) when the magnification factor reaches 1
+    if (newMagFactor < currentMagFactor) {
+      if (newMagFactor > 1) {
+        const fraction = (newMagFactor - 1) / (currentMagFactor - 1);
+        newTranslationVector[0] *= fraction;
+        newTranslationVector[1] *= fraction;
+      }
+      else {
+        newTranslationVector[0] = 0;
+        newTranslationVector[1] = 0;
+      }
+
+    }
+
     // Set the new magnifiction factor and the next translation vector in the store
     this.store.commit("setZoomMagnificationFactor", newMagFactor);
     this.store.commit("setZoomTranslation", newTranslationVector);
