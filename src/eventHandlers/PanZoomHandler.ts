@@ -29,7 +29,6 @@ export default class PanZoomHandler implements ToolStrategy {
    */
   private utStartDragPosition = new Vector2();
   private currentPixelPosition = new Vector2();
-  private previousPixelPosition = new Vector2();
 
   /**
    * Indicates that the user mouse pressed at one location, moved the mouse with the mouse
@@ -80,7 +79,6 @@ export default class PanZoomHandler implements ToolStrategy {
     const boundingRect = target.getBoundingClientRect();
     const offsetX = event.clientX - boundingRect.left;
     const offsetY = event.clientY - boundingRect.top;
-    this.previousPixelPosition.copy(this.currentPixelPosition);
     // Compute the pixel location of the mouse press event
     this.currentPixelPosition.set(offsetX, offsetY);
     // Get the current magnification factor and translation vector so we can untransform the pixel location
@@ -113,13 +111,11 @@ export default class PanZoomHandler implements ToolStrategy {
     this.currentPixelPosition.set(offsetX, offsetY);
 
     // Do the pan in the event the user is dragging (at least 10 pixels?)
-    if (
-      this.isDragging &&
-      this.previousPixelPosition.distanceTo(this.currentPixelPosition) > 10
-    ) {
+    // Add the extra check for minimum drag distance to prevent a bug
+    // where the translation components become NaN
+    if (this.isDragging) {
       this.doPan(event);
       this.didPan = true;
-      this.previousPixelPosition.copy(this.currentPixelPosition);
     }
   }
 
@@ -201,10 +197,24 @@ export default class PanZoomHandler implements ToolStrategy {
     // then we must have
     //  Z(untransformedPixel) = pixel Vector
     // Solve for newTranslationVector yields
+
     const newTranslationVector = [
       pixelX - untransformedPixelX * newMagFactor,
       pixelY - untransformedPixelY * newMagFactor
     ];
+    // When zooming out, add extra translation so the pivot of
+    // zoom is eventually (0,0) when the magnification factor reaches 1
+    if (newMagFactor < currentMagFactor) {
+      if (newMagFactor > 1) {
+        const fraction = (newMagFactor - 1) / (currentMagFactor - 1);
+        newTranslationVector[0] *= fraction;
+        newTranslationVector[1] *= fraction;
+        // console.debug("Modified zoom translation", newTranslationVector);
+      } else {
+        newTranslationVector[0] = 0;
+        newTranslationVector[1] = 0;
+      }
+    }
 
     // Set the new magnification factor and the new translation vector in the store
     this.store.commit("setZoomMagnificationFactor", newMagFactor);
@@ -226,7 +236,6 @@ export default class PanZoomHandler implements ToolStrategy {
 
   doPan(event: MouseEvent): void {
     console.log("Do Pan!");
-    //const mag = this.store.getters.zoomMagnificationFactor;
     const mag = this.store.state.zoomMagnificationFactor;
     // // Only allow panning if we are zoomed in
     // if (mag < 1) return;

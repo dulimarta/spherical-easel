@@ -11,6 +11,7 @@ import { SELine } from "@/models/SELine";
 export const initialState: AppState = {
   sphereRadius: 0,
   editMode: "rotate",
+  activeToolName: "",
   zoomMagnificationFactor: 1,
   zoomTranslation: [0, 0],
   // slice(): create a copy of the array
@@ -37,8 +38,9 @@ export default {
   setSphereRadius(state: AppState, radius: number): void {
     state.sphereRadius = radius;
   },
-  setEditMode(state: AppState, mode: string): void {
-    state.editMode = mode;
+  setEditMode(state: AppState, mode: { id: string; name: string }): void {
+    state.editMode = mode.id;
+    state.activeToolName = mode.name;
   },
   setZoomMagnificationFactor(state: AppState, mag: number): void {
     state.zoomMagnificationFactor = mag;

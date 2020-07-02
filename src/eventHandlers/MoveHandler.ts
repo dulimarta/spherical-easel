@@ -144,6 +144,8 @@ export default class MoveHandler extends MouseHandler {
     );
     targetCircle.circlePoint.positionOnSphere = tmpVector1;
     targetCircle.update();
+    targetCircle.centerPoint.updateKids();
+    targetCircle.circlePoint.updateKids();
   }
 
   mouseMoved(event: MouseEvent): void {

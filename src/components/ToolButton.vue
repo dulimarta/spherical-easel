@@ -6,7 +6,9 @@
     <v-tooltip bottom :open-delay="toolTipOpenDelay"
       :close-delay="toolTipCloseDelay" :disabled="displayToolTips">
       <template v-slot:activator="{ on }">
-        <v-btn icon :value="button.editModeValue" v-on="on"
+        <v-btn icon
+          :value="{id: button.editModeValue, name: button.displayedName}"
+          v-on="on"
           @click="$emit('displayOnlyThisToolUseMessage',button.id); displayToolUseMessage = true;">
           <v-icon>{{ button.icon }}</v-icon>
         </v-btn>

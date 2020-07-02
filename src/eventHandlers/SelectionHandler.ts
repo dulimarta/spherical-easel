@@ -16,9 +16,12 @@ export default class SelectionHandler extends MouseHandler {
       // console.debug("Digit pressed");
       const val = Number(e.key) - 1;
       this.hitNodes.forEach((n, pos) => {
-        pos === val
-          ? (n as any).ref.glowingDisplay()
-          : (n as any).ref.normalDisplay();
+        if (pos === val) {
+          (n as any).ref.glowingDisplay();
+          // Show the name of the selected item
+          this.infoText.text = n.name;
+        } else (n as any).ref.normalDisplay();
+        pos === val;
       });
     }
   };

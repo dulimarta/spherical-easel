@@ -150,6 +150,8 @@ export default {
     }
   },
   line: {
+    minimumLength: 0.02, // Don't create lines with arc length  smaller than this
+
     numPoints: 50, // The number of vertices used to render the line. These are spread over the front and back parts. MAKE THIS EVEN!
     hitPixelDistance: 8, //When a pixel distance between a mouse event and the pixel coords of a line is less than this number, it is hit
     hitIdealDistance: 0.02, // The user has to be within this distance on the ideal unit sphere to select the line.
