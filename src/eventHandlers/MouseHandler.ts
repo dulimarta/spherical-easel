@@ -32,12 +32,9 @@ export default abstract class MouseHandler implements ToolStrategy {
   protected isOnSphere: boolean;
   protected transformMatrix: Matrix4;
   protected layers: Two.Group[];
-  // protected inverseMatrix = new Matrix4();
-  // private boundingBox: BoundingClientRect;
   private mouseVector = new Vector3();
-  private zoomCenter = new Vector3();
   private tmpMatrix = new Matrix4();
-  private infoText = new TextBox("Hello");
+  protected infoText = new TextBox("Hello");
   constructor(layers: Two.Group[], transformMatrix: Matrix4) {
     /**
      * @param scene is the sphere canvas where all drawings will render
@@ -48,9 +45,6 @@ export default abstract class MouseHandler implements ToolStrategy {
     this.layers = layers;
     this.canvas = layers[LAYER.midground];
     this.transformMatrix = transformMatrix || null;
-    // the bounding rectangle is used for
-    // conversion between screen and world coordinates
-    // this.boundingBox = scene.getBoundingClientRect();
     this.currentSpherePoint = new Vector3();
     this.currentScreenPoint = new Two.Vector(0, 0);
     this.startMarker = new Two.Circle(0, 0, frontPointRadius);
