@@ -122,7 +122,7 @@ export default class SphereFrame extends VueComponent {
     }
     // The midground is where the temporary objects and the boundary circle are drawn
     this.sphereCanvas = this.layers[LAYER.midground];
-    console.info("Sphere canvas ID", this.sphereCanvas.id);
+    // console.info("Sphere canvas ID", this.sphereCanvas.id);
     // Add the layers to the store
     this.$store.commit("setLayers", this.layers);
 
@@ -197,7 +197,7 @@ export default class SphereFrame extends VueComponent {
 
   @Watch("canvasSize")
   onCanvasResize(size: number): void {
-    console.debug("onCanvasResize");
+    // console.debug("onCanvasResize");
     (this.twoInstance.renderer as any).setSize(size, size);
     // Move the origin of all layers to the center of the viewport
     this.layers.forEach(z => {

@@ -78,10 +78,28 @@ describe("Easel.vue", () => {
       const tab = panels.at(0).find(".v-tabs");
       // console.debug(tab.html());
     });
-    it("shows buttons with icon in the left panel", async () => {
+    it("shows buttons with icon in the left panel", () => {
       // console.debug(wrapper.html());
       const btns = wrapper.findAll("button[value]");
       expect(btns.length).toBeGreaterThan(8);
+    });
+
+    it("shows button groups in corners", () => {
+      // console.debug("Where ", wrapper.html());
+      const z = wrapper.find("#responsiveBox");
+      // console.debug(z.html());
+      const bGroup = wrapper.findAll("#responsiveBox div.anchored");
+      // console.debug("Button group", bGroup.length);
+      expect(bGroup.length).toBeGreaterThan(1);
+      for (let k = 0; k < bGroup.length; k++) {
+        const z = bGroup.at(k);
+        // console.debug("Button group", k);
+        const quickButtons = z.findAll(".v-btn");
+        expect(quickButtons.length).toBeGreaterThan(0);
+        // for (let m = 0; m < quickButtons.length; m++) {
+        //   console.debug("What", quickButtons.at(m).html());
+        // }
+      }
     });
 
     it("links button click() to the Vuex store", async () => {
@@ -91,7 +109,7 @@ describe("Easel.vue", () => {
         const b = btns.at(k);
         // const txt = b.html().replace(/&quot;/g, "'");
         // console.debug(`Button-${k}:`, txt);
-        console.debug(b.attributes().value);
+        // console.debug(b.attributes().value);
         const obj = JSON.parse(b.attributes().value);
         b.trigger("click");
         await Vue.nextTick();
