@@ -1,4 +1,5 @@
 // Use Strategy design pattern to enable switching tool behavior at runtime
+// #region toolStrategy
 export interface ToolStrategy {
   mouseMoved(event: MouseEvent): void;
   mousePressed(event: MouseEvent): void;
@@ -7,3 +8,4 @@ export interface ToolStrategy {
   activate(): void;
   deactivate(): void;
 }
+// #endregion toolStrategy

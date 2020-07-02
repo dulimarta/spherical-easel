@@ -209,7 +209,7 @@ export default class SphereFrame extends VueComponent {
     this.$store.commit("setZoomMagnificationFactor", ratio);
     // Each window size gets its own zoom matrix
     // When you resize a window the zoom resets
-    this.store.commit("setZoomTranslation", [0, 0]);
+    this.$store.commit("setZoomTranslation", [0, 0]);
 
     this.updateView();
   }
@@ -225,7 +225,7 @@ export default class SphereFrame extends VueComponent {
     // Get the DOM element to apply the transform to
     const el = (this.twoInstance.renderer as any).domElement as HTMLElement;
     // Set the transform
-    const mat = `matrix(${mag},0,0,${mag},${transVector[0]},${transVector[1]})`
+    const mat = `matrix(${mag},0,0,${mag},${transVector[0]},${transVector[1]})`;
     console.debug("CSS transform matrix: ", mat);
     el.style.transform = mat;
     // Set the origin of the transform
@@ -371,7 +371,6 @@ export default class SphereFrame extends VueComponent {
   handleSphereRotation(e: unknown): void {
     this.$store.commit("rotateSphere", (e as any).transform);
   }
-
 
   @Watch("editMode")
   switchEditMode(mode: string): void {

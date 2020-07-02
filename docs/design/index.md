@@ -1,5 +1,7 @@
 ---
 title: Design Document
+next: /design/handlers/
+prev: /tools/edit.md
 ---
 
 # Spherical Easel Design Document
@@ -10,6 +12,12 @@ title: Design Document
 - Components
 - Zoom Port
 - Global Settings
+
+## Zooming and CSS Transform Trick
+
+The sphere is rendered at
+
+<<< @/global-settings.ts#boundarycircle
 
 ## User Interface (Vue Components)
 

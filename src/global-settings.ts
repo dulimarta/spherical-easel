@@ -24,6 +24,7 @@ export default {
     frontWhite: "hsla(0, 0%, 90%, 0.2)", // The light source location on the front is this shade of gray (white)
     backGray: "hsla(0, 0%, 85%, 0.2)" // The antipode of the light source on the back is this shade of gray
   },
+  // #region boundarycircle
   boundaryCircle: {
     radius: 250 /* default radius in pixels */,
     numPoints: 50,
@@ -31,6 +32,7 @@ export default {
     color: "black",
     linewidth: 3
   },
+  // #endregion
   point: {
     hitPixelDistance: 8, //When a pixel distance between a mouse event and the pixel coords of a point is less than this number, it is hit
     hitIdealDistance: 0.01, // The user has to be within this distance on the ideal unit sphere to select the point.

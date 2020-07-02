@@ -1,7 +1,7 @@
 ---
 title: Edit Tool Handlers
 lang: en-US
-prev: /userguide/
+prev: /design/
 ---
 
 # Edit Tool Handlers
