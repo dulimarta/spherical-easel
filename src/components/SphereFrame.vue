@@ -2,8 +2,7 @@
   <div id="canvas" ref="canvas"></div>
 </template>
 
-<style lang="scss" scoped>
-</style>
+<style lang="scss" scoped></style>
 <script lang="ts">
 import VueComponent from "vue";
 import { Prop, Component, Watch } from "vue-property-decorator";
@@ -238,7 +237,7 @@ export default class SphereFrame extends VueComponent {
     el.style.transform = mat;
     // Set the origin of the transform
     const origin = this.canvasSize / 2;
-    el.style.transformOrigin = `${origin}pixelX ${origin}pixelX`;
+    el.style.transformOrigin = `${origin}px ${origin}px`;
     // What does this do?
     el.style.overflow = "visible";
   }

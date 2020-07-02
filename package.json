@@ -9,7 +9,7 @@
     "app:build": "vue-cli-service build",
     "docs:build": "vuepress build docs",
     "docs:serve": "vuepress dev docs --debug --open",
-    "test:unit": "MODE=test vue-cli-service test:unit",
+    "test:unit": "MODE=test vue-cli-service test:unit --watch",
     "lint": "vue-cli-service lint",
     "i18n:report": "vue-cli-service i18n:report --src './src/**/*.?(js|vue)' --locales './src/languages/**/*.json'"
   },

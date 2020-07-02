@@ -9,8 +9,8 @@
         class="mr-2 d-flex flex-wrap accent">
         <!--- Use Array.filter to select only edit tools -->
         <ToolButton
-          v-for="button in buttonList.filter(b => b.toolGroup === 'edit')"
-          :key="button.id" :button="button"
+          v-for="(button,pos) in buttonList.filter(b => b.toolGroup === 'edit')"
+          :key="pos" :button="button"
           v-on:displayOnlyThisToolUseMessage="displayOnlyThisToolUseMessageFunc">
         </ToolButton>
       </v-btn-toggle>
@@ -25,8 +25,8 @@
         class="mr-2 d-flex flex-wrap accent">
         <!--- Use Array.filter to select only basic tools -->
         <ToolButton
-          v-for="button in buttonList.filter(b => b.toolGroup === 'basic')"
-          :key="button.id" :button="button"
+          v-for="(button,pos) in buttonList.filter(b => b.toolGroup === 'basic')"
+          :key="pos" :button="button"
           v-on:displayOnlyThisToolUseMessage="displayOnlyThisToolUseMessageFunc">
         </ToolButton>
       </v-btn-toggle>
@@ -43,8 +43,8 @@
         class="mr-2 d-flex flex-wrap accent">
         <!--- Use Array.filter to select only advanced tools -->
         <ToolButton
-          v-for="button in buttonList.filter(b => b.toolGroup === 'advanced')"
-          :key="button.id" :button="button"
+          v-for="(button,pos) in buttonList.filter(b => b.toolGroup === 'advanced')"
+          :key="pos" :button="button"
           v-on:displayOnlyThisToolUseMessage="displayOnlyThisToolUseMessageFunc">
         </ToolButton>
       </v-btn-toggle>
@@ -60,7 +60,7 @@
         {{ $t("toolGroups.TransformationalTools") }}</h3>
       <v-btn-toggle v-model="editMode" @change="switchEditMode"
         class="mr-2 d-flex flex-wrap accent">
-        <ToolButton v-for="button in buttonList" :key="button.id"
+        <ToolButton v-for="(button,pos) in buttonList" :key="pos"
           :button="button" toolGroup="transformational"
           v-on:displayOnlyThisToolUseMessage="displayOnlyThisToolUseMessageFunc">
         </ToolButton>
