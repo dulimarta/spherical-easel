@@ -3,32 +3,38 @@
     <!-- The Edit Tool Group only shown if the user has permission to use a tool in this group.
     Note the use of the translation $t(key_value).-->
     <div id="EditToolGroup" v-show="nonEmptyGroup('edit')">
-      <h3 class="body-1 font-weight-bold">{{ $t("toolGroups.EditTools") }}
-      </h3>
-      <v-btn-toggle v-model="editMode" @change="switchEditMode"
-        class="mr-2 d-flex flex-wrap accent">
+      <h3 class="body-1 font-weight-bold">{{ $t("toolGroups.EditTools") }}</h3>
+      <v-btn-toggle
+        v-model="actionMode"
+        @change="switchActionMode"
+        class="mr-2 d-flex flex-wrap accent"
+      >
         <!--- Use Array.filter to select only edit tools -->
         <ToolButton
           v-for="(button,pos) in buttonList.filter(b => b.toolGroup === 'edit')"
-          :key="pos" :button="button"
-          v-on:displayOnlyThisToolUseMessage="displayOnlyThisToolUseMessageFunc">
-        </ToolButton>
+          :key="pos"
+          :button="button"
+          v-on:displayOnlyThisToolUseMessage="displayOnlyThisToolUseMessageFunc"
+        ></ToolButton>
       </v-btn-toggle>
     </div>
 
     <!-- The Basic Tool Group only shown if the user has permission to use a tool in this group.
     Note the use of the translation $t(key_value).-->
     <div id="BasicToolGroup" v-show="nonEmptyGroup('basic')">
-      <h3 class="body-1 font-weight-bold">{{ $t("toolGroups.BasicTools") }}
-      </h3>
-      <v-btn-toggle v-model="editMode" @change="switchEditMode"
-        class="mr-2 d-flex flex-wrap accent">
+      <h3 class="body-1 font-weight-bold">{{ $t("toolGroups.BasicTools") }}</h3>
+      <v-btn-toggle
+        v-model="actionMode"
+        @change="switchActionMode"
+        class="mr-2 d-flex flex-wrap accent"
+      >
         <!--- Use Array.filter to select only basic tools -->
         <ToolButton
           v-for="(button,pos) in buttonList.filter(b => b.toolGroup === 'basic')"
-          :key="pos" :button="button"
-          v-on:displayOnlyThisToolUseMessage="displayOnlyThisToolUseMessageFunc">
-        </ToolButton>
+          :key="pos"
+          :button="button"
+          v-on:displayOnlyThisToolUseMessage="displayOnlyThisToolUseMessageFunc"
+        ></ToolButton>
       </v-btn-toggle>
     </div>
 
@@ -37,16 +43,19 @@
       group. Note the use of the translation $t(key_value).
     -->
     <div id="AdvanceToolGroup" v-show="nonEmptyGroup('advanced')">
-      <h3 class="body-1 font-weight-bold">
-        {{ $t("toolGroups.AdvancedTools") }}</h3>
-      <v-btn-toggle v-model="editMode" @change="switchEditMode"
-        class="mr-2 d-flex flex-wrap accent">
+      <h3 class="body-1 font-weight-bold">{{ $t("toolGroups.AdvancedTools") }}</h3>
+      <v-btn-toggle
+        v-model="actionMode"
+        @change="switchActionMode"
+        class="mr-2 d-flex flex-wrap accent"
+      >
         <!--- Use Array.filter to select only advanced tools -->
         <ToolButton
           v-for="(button,pos) in buttonList.filter(b => b.toolGroup === 'advanced')"
-          :key="pos" :button="button"
-          v-on:displayOnlyThisToolUseMessage="displayOnlyThisToolUseMessageFunc">
-        </ToolButton>
+          :key="pos"
+          :button="button"
+          v-on:displayOnlyThisToolUseMessage="displayOnlyThisToolUseMessageFunc"
+        ></ToolButton>
       </v-btn-toggle>
     </div>
 
@@ -54,24 +63,27 @@
       The Transformational Tool Group only shown if the user has permission to use a tool in this 
       group. Note the use of the translation $t(key_value).
     -->
-    <div id="TransformationalToolGroup"
-      v-show="nonEmptyGroup('transformational')">
-      <h3 class="body-1 font-weight-bold">
-        {{ $t("toolGroups.TransformationalTools") }}</h3>
-      <v-btn-toggle v-model="editMode" @change="switchEditMode"
-        class="mr-2 d-flex flex-wrap accent">
-        <ToolButton v-for="(button,pos) in buttonList" :key="pos"
-          :button="button" toolGroup="transformational"
-          v-on:displayOnlyThisToolUseMessage="displayOnlyThisToolUseMessageFunc">
-        </ToolButton>
+    <div id="TransformationalToolGroup" v-show="nonEmptyGroup('transformational')">
+      <h3 class="body-1 font-weight-bold">{{ $t("toolGroups.TransformationalTools") }}</h3>
+      <v-btn-toggle
+        v-model="actionMode"
+        @change="switchActionMode"
+        class="mr-2 d-flex flex-wrap accent"
+      >
+        <ToolButton
+          v-for="(button,pos) in buttonList"
+          :key="pos"
+          :button="button"
+          toolGroup="transformational"
+          v-on:displayOnlyThisToolUseMessage="displayOnlyThisToolUseMessageFunc"
+        ></ToolButton>
       </v-btn-toggle>
     </div>
 
     <!-- TODO: Move this into a tool tip somewhere. -->
     <div class="ml-2" style="height:100%;">
       <div>
-        <h3 class="body-1 font-weight-bold">
-          {{ $t("toolGroups.KeyShortCut") }}</h3>
+        <h3 class="body-1 font-weight-bold">{{ $t("toolGroups.KeyShortCut") }}</h3>
         <ul>
           <li>{{ $t("toolGroups.ResetSphereOrientation") }}</li>
         </ul>
@@ -96,8 +108,8 @@ import SETTINGS from "@/global-settings";
   components: { ToolButton }
 })
 export default class ToolGroups extends Vue {
-  /* Controls the selection of the editMode using the buttons. The default is segment. */
-  private editMode = "segment";
+  /* Controls the selection of the actionMode using the buttons. The default is segment. */
+  private actionMode = "segment";
 
   /* Use the global settings to set the variables bound to the toolTipOpen/CloseDelay */
   private toolTipOpenDelay = SETTINGS.toolTip.openDelay;
@@ -107,8 +119,8 @@ export default class ToolGroups extends Vue {
   put it. This is the list of tools that should be displayed*/
   private buttonDisplayList = SETTINGS.userButtonDisplayList;
   /* Writes the current state/edit mode to the store, where the Easel view can read it. */
-  switchEditMode(): void {
-    this.$store.commit("setEditMode", this.editMode);
+  switchActionMode(): void {
+    this.$store.commit("setActionMode", this.actionMode);
   }
 
   /* This returns true only if there is at least one tool that needs to be displayed in the group. */
@@ -131,7 +143,7 @@ export default class ToolGroups extends Vue {
   private buttonList: ToolButtonType[] = [
     {
       id: 40,
-      editModeValue: "select",
+      actionModeValue: "select",
       displayedName: "CreateSelectDisplayedName",
       icon: "mdi-cursor-pointer",
       toolTipMessage: "CreateSelectToolTipMessage",
@@ -141,7 +153,7 @@ export default class ToolGroups extends Vue {
     },
     {
       id: 50,
-      editModeValue: "rotate",
+      actionModeValue: "rotate",
       displayedName: "RotateDisplayedName",
       icon: "mdi-rotate-3d-variant",
       toolTipMessage: "RotateSphereToolTipMessage",
@@ -151,7 +163,7 @@ export default class ToolGroups extends Vue {
     },
     {
       id: 60,
-      editModeValue: "move",
+      actionModeValue: "move",
       displayedName: "MoveDisplayedName",
       icon: "mdi-cursor-move",
       toolTipMessage: "MoveObjectToolTipMessage",
@@ -161,7 +173,7 @@ export default class ToolGroups extends Vue {
     },
     {
       id: 0,
-      editModeValue: "point",
+      actionModeValue: "point",
       displayedName: "CreatePointDisplayedName",
       icon: "mdi-vector-point",
       toolTipMessage: "CreatePointToolTipMessage",
@@ -171,7 +183,7 @@ export default class ToolGroups extends Vue {
     },
     {
       id: 20,
-      editModeValue: "line",
+      actionModeValue: "line",
       displayedName: "CreateLineDisplayedName",
       icon: "mdi-vector-line",
       toolTipMessage: "CreateLineToolTipMessage",
@@ -181,7 +193,7 @@ export default class ToolGroups extends Vue {
     },
     {
       id: 10,
-      editModeValue: "segment",
+      actionModeValue: "segment",
       displayedName: "CreateLineSegmentDisplayedName",
       icon: "mdi-vector-radius",
       toolTipMessage: "CreateLineSegmentToolTipMessage",
@@ -191,7 +203,7 @@ export default class ToolGroups extends Vue {
     },
     {
       id: 30,
-      editModeValue: "circle",
+      actionModeValue: "circle",
       displayedName: "CreateCircleDisplayedName",
       icon: "mdi-vector-circle-variant",
       toolTipMessage: "CreateCircleToolTipMessage",
@@ -201,7 +213,7 @@ export default class ToolGroups extends Vue {
     },
     {
       id: 70,
-      editModeValue: "zoomIn",
+      actionModeValue: "zoomIn",
       displayedName: "PanZoomInDisplayedName",
       icon: "mdi-magnify-plus-outline",
       toolTipMessage: "PanZoomInToolTipMessage",
@@ -211,7 +223,7 @@ export default class ToolGroups extends Vue {
     },
     {
       id: 80,
-      editModeValue: "zoomOut",
+      actionModeValue: "zoomOut",
       displayedName: "PanZoomOutDisplayedName",
       icon: "mdi-magnify-minus-outline",
       toolTipMessage: "PanZoomOutToolTipMessage",

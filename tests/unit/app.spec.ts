@@ -62,7 +62,7 @@ describe("App.vue", () => {
     let vuetify;
     let wrapper: Wrapper<Vue>;
     const storeMutations = {
-      setEditMode: jest.fn(),
+      setActionMode: jest.fn(),
       init: jest.fn()
     };
     beforeEach(() => {
@@ -125,7 +125,7 @@ describe("App.vue", () => {
       const basicTools = wrapper.findAll("#basicTools .v-btn");
       basicTools.at(1).trigger("click");
       await Vue.nextTick();
-      expect(storeMutations.setEditMode).toHaveBeenCalledWith(
+      expect(storeMutations.setActionMode).toHaveBeenCalledWith(
         expect.anything(),
         "move"
       );
@@ -135,7 +135,7 @@ describe("App.vue", () => {
       const basicTools = wrapper.findAll("#basicTools .v-btn");
       basicTools.at(2).trigger("click");
       await Vue.nextTick();
-      expect(storeMutations.setEditMode).toHaveBeenCalledWith(
+      expect(storeMutations.setActionMode).toHaveBeenCalledWith(
         expect.anything(),
         "point"
       );
@@ -145,7 +145,7 @@ describe("App.vue", () => {
       const basicTools = wrapper.findAll("#basicTools .v-btn");
       basicTools.at(3).trigger("click");
       await Vue.nextTick();
-      expect(storeMutations.setEditMode).toHaveBeenCalledWith(
+      expect(storeMutations.setActionMode).toHaveBeenCalledWith(
         expect.anything(),
         "line"
       );
@@ -155,7 +155,7 @@ describe("App.vue", () => {
       const basicTools = wrapper.findAll("#basicTools .v-btn");
       basicTools.at(4).trigger("click");
       await Vue.nextTick();
-      expect(storeMutations.setEditMode).toHaveBeenCalledWith(
+      expect(storeMutations.setActionMode).toHaveBeenCalledWith(
         expect.anything(),
         "segment"
       );
@@ -165,7 +165,7 @@ describe("App.vue", () => {
       const basicTools = wrapper.findAll("#basicTools .v-btn");
       basicTools.at(5).trigger("click");
       await Vue.nextTick();
-      expect(storeMutations.setEditMode).toHaveBeenCalledWith(
+      expect(storeMutations.setActionMode).toHaveBeenCalledWith(
         expect.anything(),
         "circle"
       );

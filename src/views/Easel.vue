@@ -35,17 +35,13 @@
                 <sphere-frame :canvas-size="currentCanvasSize"></sphere-frame>
                 <div class="anchored top left">
                   <!-- <v-btn-toggle
-                    v-model="editMode"
-                    @change="switchEditMode"
+                    v-model="actionMode"
+                    @change="switchActionMode"
                     class="mr-2 d-flex flex-wrap accent"
                   >
                     <ToolButton :key="80" :button="buttonList[8]"></ToolButton>
                   </v-btn-toggle>-->
-                  <v-tooltip
-                    bottom
-                    :open-delay="toolTipOpenDelay"
-                    :close-delay="toolTipCloseDelay"
-                  >
+                  <v-tooltip bottom :open-delay="toolTipOpenDelay" :close-delay="toolTipCloseDelay">
                     <!-- TODO:   
                     When not available they should be greyed out (i.e. disabled).-->
                     <template v-slot:activator="{ on }">
@@ -55,11 +51,7 @@
                     </template>
                     <span>{{ $t("main.UndoLastAction") }}</span>
                   </v-tooltip>
-                  <v-tooltip
-                    bottom
-                    :open-delay="toolTipOpenDelay"
-                    :close-delay="toolTipCloseDelay"
-                  >
+                  <v-tooltip bottom :open-delay="toolTipOpenDelay" :close-delay="toolTipCloseDelay">
                     <template v-slot:activator="{ on }">
                       <v-btn icon @click="redoAction" v-on="on">
                         <v-icon>mdi-redo</v-icon>
@@ -69,11 +61,7 @@
                   </v-tooltip>
                 </div>
                 <div class="anchored bottom right">
-                  <v-tooltip
-                    bottom
-                    :open-delay="toolTipOpenDelay"
-                    :close-delay="toolTipCloseDelay"
-                  >
+                  <v-tooltip bottom :open-delay="toolTipOpenDelay" :close-delay="toolTipCloseDelay">
                     <template v-slot:activator="{ on }">
                       <v-btn
                         color="primary"
@@ -90,11 +78,7 @@
                     </template>
                     <span>{{ $t("buttons.PanZoomInToolTipMessage") }}</span>
                   </v-tooltip>
-                  <v-tooltip
-                    bottom
-                    :open-delay="toolTipOpenDelay"
-                    :close-delay="toolTipCloseDelay"
-                  >
+                  <v-tooltip bottom :open-delay="toolTipOpenDelay" :close-delay="toolTipCloseDelay">
                     <template v-slot:activator="{ on }">
                       <v-btn
                         color="primary"
@@ -125,9 +109,7 @@
           multi-line
         >
           <span>
-            <strong class="warning--text">
-              {{ $t("buttons.PanZoomInDisplayedName") + ": " }}
-            </strong>
+            <strong class="warning--text">{{ $t("buttons.PanZoomInDisplayedName") + ": " }}</strong>
             {{ $t("buttons.PanZoomInToolUseMessage") }}
           </span>
           <v-btn @click="displayToolUseMessage = false" icon>
@@ -143,9 +125,7 @@
           multi-line
         >
           <span>
-            <strong class="warning--text">
-              {{ $t("buttons.PanZoomOutDisplayedName") + ": " }}
-            </strong>
+            <strong class="warning--text">{{ $t("buttons.PanZoomOutDisplayedName") + ": " }}</strong>
             {{ $t("buttons.PanZoomOutToolUseMessage") }}
           </span>
           <v-btn @click="displayToolUseMessage = false" icon>
@@ -192,7 +172,7 @@ export default class Easel extends Vue {
   private displayZoomInToolUseMessage = false;
   private displayZoomOutToolUseMessage = false;
 
-  private editMode = "segment";
+  private actionMode = "segment";
 
   $refs!: {
     responsiveBox: VueComponent;
@@ -205,10 +185,10 @@ export default class Easel extends Vue {
 
   private enableZoomIn(): void {
     console.log("enableZoomIn");
-    this.$store.commit("setEditMode", "zoomIn");
+    this.$store.commit("setActionMode", "zoomIn");
   }
   private enableZoomOut(): void {
-    this.$store.commit("setEditMode", "zoomOut");
+    this.$store.commit("setActionMode", "zoomOut");
   }
   private adjustSize(): void {
     // console.info("AdjustSize()");
@@ -251,8 +231,8 @@ export default class Easel extends Vue {
     }
   }
 
-  switchEditMode(): void {
-    this.$store.commit("setEditMode", this.editMode);
+  switchActionMode(): void {
+    this.$store.commit("setActionMode", this.actionMode);
   }
   onWindowResized(): void {
     this.adjustSize();

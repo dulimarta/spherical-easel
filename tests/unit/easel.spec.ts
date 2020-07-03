@@ -11,7 +11,7 @@ Vue.use(Vuetify);
 // const fakeRenderer = new MockRenderer();
 const mockStore = {
   state: {
-    editMode: "none",
+    actionMode: "none",
     layers: [],
     points: [],
     lines: []
@@ -21,7 +21,7 @@ const mockStore = {
     setSphereRadius: jest.fn(),
     setZoomMagnificationFactor: jest.fn(),
     setLayers: jest.fn(),
-    setEditMode: jest.fn()
+    setActionMode: jest.fn()
   }
 };
 describe("Easel.vue", () => {
@@ -53,7 +53,7 @@ describe("Easel.vue", () => {
   });
 
   it("switched to tool strategy", async () => {
-    wrapper.vm.$store.state.editMode = "point";
+    wrapper.vm.$store.state.actionMode = "point";
     await Vue.nextTick();
     expect(wrapper.vm.$data.currentTool).not.toBeNull();
   });
@@ -113,8 +113,8 @@ describe("Easel.vue", () => {
         const obj = JSON.parse(b.attributes().value);
         b.trigger("click");
         await Vue.nextTick();
-        expect(mockStore.mutations.setEditMode).toHaveBeenCalled();
-        expect(mockStore.mutations.setEditMode).toHaveBeenCalledWith(
+        expect(mockStore.mutations.setActionMode).toHaveBeenCalled();
+        expect(mockStore.mutations.setActionMode).toHaveBeenCalledWith(
           expect.objectContaining({}),
           expect.objectContaining(obj)
         );

@@ -18,7 +18,7 @@ describe("ToolButton.vue", () => {
       propsData: {
         button: {
           id: TEST_ID,
-          editModeValue: "test",
+          actionModeValue: "test",
           displayedName: "Just a Test",
           icon: TEST_ICON,
           toolTipMessage: "Tooltip text",

@@ -31,7 +31,7 @@ export default class SphereFrame extends VueComponent {
   readonly canvasSize!: number;
 
   @State
-  readonly editMode!: string;
+  readonly actionMode!: string;
 
   @State
   readonly zoomMagnificationFactor!: number;
@@ -327,8 +327,8 @@ export default class SphereFrame extends VueComponent {
     this.$store.commit("rotateSphere", (e as any).transform);
   }
 
-  @Watch("editMode")
-  switchEditMode(mode: string): void {
+  @Watch("actionMode")
+  switchActionMode(mode: string): void {
     this.currentTool?.deactivate();
     this.currentTool = null;
     switch (mode) {

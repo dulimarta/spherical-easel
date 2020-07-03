@@ -1154,6 +1154,14 @@
     "@types/yargs" "^15.0.0"
     chalk "^3.0.0"
 
+"@maginapp/vuepress-plugin-katex@^1.0.7":
+  version "1.0.7"
+  resolved "https://registry.yarnpkg.com/@maginapp/vuepress-plugin-katex/-/vuepress-plugin-katex-1.0.7.tgz#72a284bdda61fc70b832de6e3934f57ad127d411"
+  integrity sha512-AJfPVRt5g+YYs1c8qwoSE47NKiTQURnbY7vqtKZIcEMdT+vFGlP/NbjyqHcmys1HzZvELVE1LHtX1vw/cZGK1w==
+  dependencies:
+    katex "^0.11.1"
+    markdown-it-texmath "^0.6.7"
+
 "@mdi/js@^5.3.45":
   version "5.3.45"
   resolved "https://registry.yarnpkg.com/@mdi/js/-/js-5.3.45.tgz#c6f523311bf77e339051e24aaa3eddabf565a027"
@@ -7138,6 +7146,13 @@ jsprim@^1.2.2:
     json-schema "0.2.3"
     verror "1.10.0"
 
+katex@^0.11.1:
+  version "0.11.1"
+  resolved "https://registry.yarnpkg.com/katex/-/katex-0.11.1.tgz#df30ca40c565c9df01a466a00d53e079e84ffaa2"
+  integrity sha512-5oANDICCTX0NqYIyAiFCCwjQ7ERu3DQG2JFHLbYOf+fXaMoH8eg/zOq5WSYJsKMi/QebW+Eh3gSM+oss1H/bww==
+  dependencies:
+    commander "^2.19.0"
+
 keyv@^3.0.0:
   version "3.1.0"
   resolved "https://registry.yarnpkg.com/keyv/-/keyv-3.1.0.tgz#ecc228486f69991e49e9476485a5be1e8fc5c4d9"
@@ -7500,6 +7515,16 @@ markdown-it-table-of-contents@^0.4.0:
   version "0.4.4"
   resolved "https://registry.yarnpkg.com/markdown-it-table-of-contents/-/markdown-it-table-of-contents-0.4.4.tgz#3dc7ce8b8fc17e5981c77cc398d1782319f37fbc"
   integrity sha512-TAIHTHPwa9+ltKvKPWulm/beozQU41Ab+FIefRaQV1NRnpzwcV9QOe6wXQS5WLivm5Q/nlo0rl6laGkMDZE7Gw==
+
+markdown-it-texmath@^0.6.7:
+  version "0.6.9"
+  resolved "https://registry.yarnpkg.com/markdown-it-texmath/-/markdown-it-texmath-0.6.9.tgz#709f45b3c7f76a5f0157baf819ae80b9499a9ab4"
+  integrity sha512-0Nz9yycwji3r776RCG2lmCsc2bk+lovsaPQklNR3VZMobQ9x45TRMWo2E/J5bejG3qN58MuBKDQWhIA0r1AWVw==
+
+markdown-it-texmath@^0.7.2:
+  version "0.7.2"
+  resolved "https://registry.yarnpkg.com/markdown-it-texmath/-/markdown-it-texmath-0.7.2.tgz#2f51f154483c522d2bfef47da31d0135e0771d21"
+  integrity sha512-DAxM3D73BlRfpO6cnR2x27uOwGeTqQ/Yz6pUHE2iL/AzctEYSk3UmGxZYZGdU5B43AZD7kpdcU4wPNMF5Zhuqw==
 
 markdown-it@^8.4.1:
   version "8.4.2"

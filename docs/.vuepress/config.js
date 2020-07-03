@@ -20,17 +20,30 @@ module.exports = {
     // references to the local directory.
     ["script", { src: "/tikzjax.js" }]
   ],
+
+  // markdown: {
+  //   extendMarkdown: md => {
+  //     // use more markdown-it plugins!
+  //     md.use(require("markdown-it-texmath"));
+  //   }
+  // },
   //Plugins to enable specialized behavior (for example, LaTeX/MathJax )
   plugins: [
     [
-      "vuepress-plugin-mathjax",
+      "@maginapp/vuepress-plugin-katex",
       {
-        target: "svg",
-        macros: {
-          "*": "\\times"
-        }
+        delimiters: "dollars"
       }
     ],
+    // [
+    //   "vuepress-plugin-mathjax",
+    //   {
+    //     target: "svg",
+    //     macros: {
+    //       "*": "\\times"
+    //     }
+    //   }
+    // ],
     //Adds the arrow that returns the user to the top of long pages
     ["@vuepress/back-to-top"],
 

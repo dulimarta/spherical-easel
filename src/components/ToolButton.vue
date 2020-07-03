@@ -1,7 +1,7 @@
 <template>
   <!-- Displays a button only if the user has permission to see it. -->
   <div class="pa-0" :id="button.id">
-    <!--v-if="(buttonDisplayList.indexOf(button.editModeValue) !== -1)"-->
+    <!--v-if="(buttonDisplayList.indexOf(button.actionModeValue) !== -1)"-->
     <!-- The button is wrapped in to tooltip vue component -->
     <v-tooltip
       bottom
@@ -12,7 +12,7 @@
       <template v-slot:activator="{ on }">
         <v-btn
           icon
-          :value="{ id: button.editModeValue, name: button.displayedName }"
+          :value="{ id: button.actionModeValue, name: button.displayedName }"
           v-on="on"
           @click="
             $emit('displayOnlyThisToolUseMessage', button.id);
@@ -35,9 +35,7 @@
       multi-line
     >
       <span>
-        <strong class="warning--text">
-          {{ $t("buttons." + button.displayedName) + ": " }}
-        </strong>
+        <strong class="warning--text">{{ $t("buttons." + button.displayedName) + ": " }}</strong>
         {{ $t("buttons." + button.toolUseMessage) }}
       </span>
       <v-btn @click="displayToolUseMessage = false" icon>

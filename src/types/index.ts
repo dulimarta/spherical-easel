@@ -18,7 +18,7 @@ export interface AppState {
   sphereRadius: /* in pixel */ number; // When the window is resized, the actual size of the sphere (in pixel may change)
   zoomTranslation: number[]; // current zoom translation vector
   zoomMagnificationFactor: number; // current zoom magnification factor
-  editMode: string;
+  actionMode: string;
   activeToolName: string;
   // nodes: SENodule[], Do we need this?
   points: SEPoint[];
@@ -31,7 +31,7 @@ export interface AppState {
 /* This interface lists all the properties that each tool/button must have. */
 export interface ToolButtonType {
   id: number;
-  editModeValue: string;
+  actionModeValue: string;
   displayToolUseMessage: boolean;
   displayedName: string;
   icon: string;
