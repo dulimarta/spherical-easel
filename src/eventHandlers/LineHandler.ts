@@ -2,7 +2,6 @@
 
 import { Vector3, Matrix4 } from "three";
 import MouseHandler from "./MouseHandler";
-import Arrow from "@/3d-objs/Arrow"; // for debugging
 import Point from "@/plottables/Point";
 import Line from "@/plottables/Line";
 
@@ -23,7 +22,7 @@ export default class LineHandler extends MouseHandler {
   protected currentMidPosition = new Vector3();
   protected nextMidPosition = new Vector3();
   protected tmpVector = new Vector3();
-  protected circleOrientation: Arrow; // for debugging only
+
   protected isMouseDown: boolean;
   protected isCircleAdded: boolean;
   private startPoint: SEPoint | null = null;
@@ -34,7 +33,6 @@ export default class LineHandler extends MouseHandler {
     this.tempLine = new Line();
     this.tempLine.stylize(DisplayStyle.TEMPORARY);
 
-    this.circleOrientation = new Arrow(0.5, 0x006600); // debug only
     this.isMouseDown = false;
     this.isCircleAdded = false;
   }
@@ -52,7 +50,6 @@ export default class LineHandler extends MouseHandler {
           // this.circleOrientation.addTo(this.canvas); // for debugging only
         }
         // The following line automatically calls Line setter function
-        this.circleOrientation.sphereLocation = this.tmpVector; // for debugging
 
         this.tmpVector
           .crossVectors(this.startPosition, this.currentSpherePoint)
@@ -62,7 +59,7 @@ export default class LineHandler extends MouseHandler {
     } else if (this.isCircleAdded) {
       this.tempLine.remove();
       this.startMarker.remove();
-      this.circleOrientation.remove(); // for debugging
+
       this.isCircleAdded = false;
     }
   }
@@ -172,7 +169,7 @@ export default class LineHandler extends MouseHandler {
       // Record the second point of the geodesic circle
       this.tempLine.remove();
       this.startMarker.remove();
-      this.circleOrientation.remove(); // for debugging
+
       this.isCircleAdded = false;
       if (
         this.startPosition.angleTo(this.currentSpherePoint) >
