@@ -35,6 +35,8 @@ module.exports = {
         delimiters: "dollars"
       }
     ],
+    // Checks for dead links in md files usage: vuepress check-md [docsDir]
+    [`check-md`],
     // [
     //   "vuepress-plugin-mathjax",
     //   {

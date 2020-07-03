@@ -15,7 +15,7 @@ prev: /tools/edit.md
 
 ## Coordinates
 
-<TikZPicture latex="circle.tex"></TikZPicture>
+<TikZPicture latex="coordinates.tex"></TikZPicture>
 
 $$\begin{matrix} a & b \\ c & d \end{matrix}$$
 

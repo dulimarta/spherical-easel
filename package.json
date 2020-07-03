@@ -10,6 +10,7 @@
     "docs:build": "vuepress build docs",
     "docs:serve": "vuepress dev docs --debug --open",
     "test:unit": "MODE=test vue-cli-service test:unit --watch",
+    "check:links": "vuepress check-md ./docs",
     "lint": "vue-cli-service lint",
     "i18n:report": "vue-cli-service i18n:report --src './src/**/*.?(js|vue)' --locales './src/languages/**/*.json'"
   },
@@ -62,6 +63,7 @@
     "vue-cli-plugin-vuetify": "~2.0.6",
     "vue-template-compiler": "^2.6.11",
     "vuepress": "^1.5.2",
+    "vuepress-plugin-check-md": "^0.0.2",
     "vuepress-plugin-mathjax": "^1.2.8",
     "vuetify-loader": "^1.5.0"
   },
