@@ -1,6 +1,6 @@
 export default {
   state: {
-    editMode: "none",
+    actionMode: "none",
     layers: [],
     points: [],
     lines: []
@@ -12,7 +12,7 @@ export default {
     setZoomMagnificationFactor: jest.fn(),
     setZoomTranslation: jest.fn(),
     setLayers: jest.fn(),
-    setEditMode: jest.fn()
+    setActionMode: jest.fn()
   },
   getters: {}
 };

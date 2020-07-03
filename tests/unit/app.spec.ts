@@ -79,7 +79,7 @@ describe("App.vue", () => {
           "router-view": true
         }
       });
-      wrapper.vm.$store.commit("setEditMode", {
+      wrapper.vm.$store.commit("setActionMode", {
         id: "point",
         name: TEST_TOOL_NAME
       });
@@ -92,7 +92,7 @@ describe("App.vue", () => {
       const basicTools = wrapper.findAll("#basicTools .v-btn");
       basicTools.at(1).trigger("click");
       await Vue.nextTick();
-      expect(fakeStore.mutations.setEditMode).toHaveBeenCalledWith(
+      expect(fakeStore.mutations.setActionMode).toHaveBeenCalledWith(
         expect.anything(),
         "move"
       );
@@ -102,7 +102,7 @@ describe("App.vue", () => {
       const basicTools = wrapper.findAll("#basicTools .v-btn");
       basicTools.at(2).trigger("click");
       await Vue.nextTick();
-      expect(fakeStore.mutations.setEditMode).toHaveBeenCalledWith(
+      expect(fakeStore.mutations.setActionMode).toHaveBeenCalledWith(
         expect.anything(),
         "point"
       );
@@ -112,7 +112,7 @@ describe("App.vue", () => {
       const basicTools = wrapper.findAll("#basicTools .v-btn");
       basicTools.at(3).trigger("click");
       await Vue.nextTick();
-      expect(fakeStore.mutations.setEditMode).toHaveBeenCalledWith(
+      expect(fakeStore.mutations.setActionMode).toHaveBeenCalledWith(
         expect.anything(),
         "line"
       );
@@ -122,7 +122,7 @@ describe("App.vue", () => {
       const basicTools = wrapper.findAll("#basicTools .v-btn");
       basicTools.at(4).trigger("click");
       await Vue.nextTick();
-      expect(fakeStore.mutations.setEditMode).toHaveBeenCalledWith(
+      expect(fakeStore.mutations.setActionMode).toHaveBeenCalledWith(
         expect.anything(),
         "segment"
       );
@@ -132,7 +132,7 @@ describe("App.vue", () => {
       const basicTools = wrapper.findAll("#basicTools .v-btn");
       basicTools.at(5).trigger("click");
       await Vue.nextTick();
-      expect(fakeStore.mutations.setEditMode).toHaveBeenCalledWith(
+      expect(fakeStore.mutations.setActionMode).toHaveBeenCalledWith(
         expect.anything(),
         "circle"
       );

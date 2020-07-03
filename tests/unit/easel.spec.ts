@@ -89,8 +89,8 @@ describe("Easel.vue", () => {
         const obj = JSON.parse(b.attributes().value);
         b.trigger("click");
         await Vue.nextTick();
-        expect(fakeStore.mutations.setEditMode).toHaveBeenCalled();
-        expect(fakeStore.mutations.setEditMode).toHaveBeenCalledWith(
+        expect(fakeStore.mutations.setActionMode).toHaveBeenCalled();
+        expect(fakeStore.mutations.setActionMode).toHaveBeenCalledWith(
           expect.objectContaining({}),
           expect.objectContaining(obj)
         );

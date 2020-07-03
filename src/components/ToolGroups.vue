@@ -11,7 +11,9 @@
       >
         <!--- Use Array.filter to select only edit tools -->
         <ToolButton
-          v-for="(button,pos) in buttonList.filter(b => b.toolGroup === 'edit')"
+          v-for="(button, pos) in buttonList.filter(
+            b => b.toolGroup === 'edit'
+          )"
           :key="pos"
           :button="button"
           v-on:displayOnlyThisToolUseMessage="displayOnlyThisToolUseMessageFunc"
@@ -30,7 +32,9 @@
       >
         <!--- Use Array.filter to select only basic tools -->
         <ToolButton
-          v-for="(button,pos) in buttonList.filter(b => b.toolGroup === 'basic')"
+          v-for="(button, pos) in buttonList.filter(
+            b => b.toolGroup === 'basic'
+          )"
           :key="pos"
           :button="button"
           v-on:displayOnlyThisToolUseMessage="displayOnlyThisToolUseMessageFunc"
@@ -43,7 +47,9 @@
       group. Note the use of the translation $t(key_value).
     -->
     <div id="AdvanceToolGroup" v-show="nonEmptyGroup('advanced')">
-      <h3 class="body-1 font-weight-bold">{{ $t("toolGroups.AdvancedTools") }}</h3>
+      <h3 class="body-1 font-weight-bold">
+        {{ $t("toolGroups.AdvancedTools") }}
+      </h3>
       <v-btn-toggle
         v-model="actionMode"
         @change="switchActionMode"
@@ -51,7 +57,9 @@
       >
         <!--- Use Array.filter to select only advanced tools -->
         <ToolButton
-          v-for="(button,pos) in buttonList.filter(b => b.toolGroup === 'advanced')"
+          v-for="(button, pos) in buttonList.filter(
+            b => b.toolGroup === 'advanced'
+          )"
           :key="pos"
           :button="button"
           v-on:displayOnlyThisToolUseMessage="displayOnlyThisToolUseMessageFunc"
@@ -63,15 +71,20 @@
       The Transformational Tool Group only shown if the user has permission to use a tool in this 
       group. Note the use of the translation $t(key_value).
     -->
-    <div id="TransformationalToolGroup" v-show="nonEmptyGroup('transformational')">
-      <h3 class="body-1 font-weight-bold">{{ $t("toolGroups.TransformationalTools") }}</h3>
+    <div
+      id="TransformationalToolGroup"
+      v-show="nonEmptyGroup('transformational')"
+    >
+      <h3 class="body-1 font-weight-bold">
+        {{ $t("toolGroups.TransformationalTools") }}
+      </h3>
       <v-btn-toggle
         v-model="actionMode"
         @change="switchActionMode"
         class="mr-2 d-flex flex-wrap accent"
       >
         <ToolButton
-          v-for="(button,pos) in buttonList"
+          v-for="(button, pos) in buttonList"
           :key="pos"
           :button="button"
           toolGroup="transformational"
@@ -83,7 +96,9 @@
     <!-- TODO: Move this into a tool tip somewhere. -->
     <div class="ml-2" style="height:100%;">
       <div>
-        <h3 class="body-1 font-weight-bold">{{ $t("toolGroups.KeyShortCut") }}</h3>
+        <h3 class="body-1 font-weight-bold">
+          {{ $t("toolGroups.KeyShortCut") }}
+        </h3>
         <ul>
           <li>{{ $t("toolGroups.ResetSphereOrientation") }}</li>
         </ul>

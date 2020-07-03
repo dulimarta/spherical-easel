@@ -16,9 +16,9 @@ describe("SphereFrame.vue", () => {
     localVue.use(Vuex);
     wrapper = shallowMount(SphereFrame, { store: realStore, localVue });
 
-    // It is important to reset the editMode back to subsequent
-    // mutation to editMode will trigger a Vue Watch update
-    wrapper.vm.$store.commit("setEditMode", { id: "", name: "" });
+    // It is important to reset the actionMode back to subsequent
+    // mutation to actionMode will trigger a Vue Watch update
+    wrapper.vm.$store.commit("setActionMode", { id: "", name: "" });
   });
 
   afterEach(() => {
@@ -51,8 +51,11 @@ describe("SphereFrame.vue", () => {
   });
 
   it("switches to point tool", async () => {
-    wrapper.vm.$store.commit("setEditMode", { id: "point", name: "PointTool" });
-    // wrapper.vm.$data.editMode = "point";
+    wrapper.vm.$store.commit("setActionMode", {
+      id: "point",
+      name: "PointTool"
+    });
+    // wrapper.vm.$data.actionMode = "point";
     await Vue.nextTick();
     // console.debug(wrapper.vm.$data.currentTool);
     expect(wrapper.vm.$data.currentTool).toBeInstanceOf(PointHandler);
@@ -62,7 +65,7 @@ describe("SphereFrame.vue", () => {
     // const commitSpy = jest.spyOn(realStore, "commit");
 
     // wrapper = shallowMount(SphereFrame, { store: realStore, localVue });
-    wrapper.vm.$store.commit("setEditMode", {
+    wrapper.vm.$store.commit("setActionMode", {
       id: "point",
       name: "Tool Name does not matter"
     });
