@@ -3,6 +3,7 @@
 </template>
 
 <script>
+import axios from "axios";
 export default {
   name: "tikz-picture",
   props: {
@@ -14,14 +15,19 @@ export default {
     };
   },
   mounted() {
-    // console.debug("Load LaTeX content from", this.latex);
-    fetch(`/${this.latex}`)
-      .then(r => r.text())
-      .then(d => {
-        // console.debug("LaTeX snippet is", d);
-        this.latexSnippet =
-          String.raw`<script type="text/tikz">` + d + "<\\/script>";
-      });
+    let filePath;
+
+    // Failed attempt to load from current directory
+    if (this.latex.startsWith(".") || this.latex.startsWith("/")) {
+      filePath = this.latex;
+    } else {
+      filePath = "/" + this.latex;
+    }
+    axios.get(filePath).then(r => {
+      // console.debug("LaTeX snippet is", r);
+      this.latexSnippet =
+        String.raw`<script type="text/tikz">` + r.data + "<\\/script>";
+    });
   }
 };
 </script>

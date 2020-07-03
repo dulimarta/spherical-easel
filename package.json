@@ -16,6 +16,7 @@
   "dependencies": {
     "@types/color": "^3.0.1",
     "@types/two.js": "^0.7.2",
+    "axios": "^0.19.2",
     "core-js": "^3.6.4",
     "moment": "^2.26.0",
     "three": "^0.118.3",
