@@ -1,7 +1,22 @@
 //const moment = require("moment");
 
 module.exports = {
+  //Specify the output directory for vuepress build. If a relative path is specified, it will be resolved based on process.cwd().
   dest: "../dist/docs",
+  head: [
+    [
+      "link",
+      {
+        rel: "stylesheet",
+        type: "text/css",
+        href: "http://tikzjax.com/v1/fonts.css"
+      }
+    ],
+    // Notice that this JS file and two others are in the /public directory This couldn't be the
+    // link to the file at http://tikzjax.com/ because of a CORS (cross origin request sharing) issue
+    // so we moved this file and the two it references to the local directory.
+    ["script", { src: "/tikzjax.js" }]
+  ],
   //Plugins to enable specialized behavior (for example, LaTeX/MathJax )
   plugins: [
     [
@@ -15,6 +30,27 @@ module.exports = {
     ],
     //Adds the arrow that returns the user to the top of long pages
     ["@vuepress/back-to-top"],
+
+    // Uncomment this script container and use
+    //
+    // ::: script
+    // :::
+    //
+    // in a markdown-ot file to get the <script> tag and TikZ drawing into the markdown.
+    // Be sure to refresh/reload the page twice!
+    // [
+    //   "vuepress-plugin-container",
+    //   {
+    //     type: "script",
+    //     before: info => `<script type="text/tikz">
+    //     \\begin{tikzpicture}
+    //       \\draw (0,0) circle (1in);
+    //     \\end{tikzpicture}`,
+    //     after: "</script>",
+    //     defaultTitle: ""
+    //   }
+    // ],
+
     // display the title and icons of the tools
     [
       "vuepress-plugin-container",
@@ -52,7 +88,8 @@ module.exports = {
           "/id/": "IDDetails:"
         }
       }
-    ], // display the title and icons of the tools
+    ],
+    // display the title and icons of the handlers
     [
       "vuepress-plugin-container",
       {
@@ -71,7 +108,7 @@ module.exports = {
           `<div class="handler-description"><p class="handler-description-title">${info}</p>`,
         after: "</div>",
         defaultTitle: {
-          "/": "Tool Description:",
+          "/": "Tool Description and Link:",
           "/id/": "IDDescription:"
         }
       }

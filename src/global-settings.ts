@@ -32,7 +32,7 @@ export default {
     color: "black",
     linewidth: 3
   },
-  // #endregion
+  // #endregion boundarycircle
   point: {
     hitPixelDistance: 8, //When a pixel distance between a mouse event and the pixel coords of a point is less than this number, it is hit
     hitIdealDistance: 0.01, // The user has to be within this distance on the ideal unit sphere to select the point.

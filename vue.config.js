@@ -8,4 +8,14 @@ module.exports = {
       enableInSFC: false
     }
   }
+  // crossorigin: "no-cors",
+  // devServer: {
+  //   proxy: {
+  //     "^/api": {
+  //       target: "https://tikzjax.com",
+  //       ws: true,
+  //       changeOrigin: true
+  //     }
+  //   }
+  // }
 };
