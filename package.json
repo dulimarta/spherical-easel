@@ -9,13 +9,14 @@
     "app:build": "vue-cli-service build",
     "docs:build": "vuepress build docs",
     "docs:serve": "vuepress dev docs --debug --open",
-    "test:unit": "MODE=test vue-cli-service test:unit",
+    "test:unit": "MODE=test vue-cli-service test:unit --watch",
     "lint": "vue-cli-service lint",
     "i18n:report": "vue-cli-service i18n:report --src './src/**/*.?(js|vue)' --locales './src/languages/**/*.json'"
   },
   "dependencies": {
     "@types/color": "^3.0.1",
     "@types/two.js": "^0.7.2",
+    "axios": "^0.19.2",
     "core-js": "^3.6.4",
     "moment": "^2.26.0",
     "three": "^0.118.3",

@@ -10,7 +10,7 @@ module.exports = {
       {
         rel: "stylesheet",
         type: "text/css",
-        href: "http://tikzjax.com/v1/fonts.css"
+        href: "https://tikzjax.com/v1/fonts.css"
       }
     ],
     // Notice that this JS file and two others are in the /public directory.
