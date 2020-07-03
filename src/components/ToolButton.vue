@@ -35,7 +35,9 @@
       multi-line
     >
       <span>
-        <strong class="warning--text">{{ $t("buttons." + button.displayedName) + ": " }}</strong>
+        <strong class="warning--text">
+          {{ $t("buttons." + button.displayedName) + ": " }}
+        </strong>
         {{ $t("buttons." + button.toolUseMessage) }}
       </span>
       <v-btn @click="displayToolUseMessage = false" icon>

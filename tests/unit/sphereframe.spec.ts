@@ -1,22 +1,28 @@
 import SphereFrame from "@/components/SphereFrame.vue";
-import { Wrapper, shallowMount } from "@vue/test-utils";
-import { Store } from "vuex";
+import { Wrapper, shallowMount, createLocalVue } from "@vue/test-utils";
+// import { Store } from "vuex";
+import Vuex from "vuex";
 import Two from "two.js";
 import SETTINGS, { LAYER } from "@/global-settings";
+import PointHandler from "@/eventHandlers/PointHandler";
+import Vue from "vue";
+import realStore from "@/store";
 
-const mockStore = {
-  state: {},
-  mutations: {
-    setLayers: jest.fn(),
-    setZoomTranslation: jest.fn()
-  }
-};
 describe("SphereFrame.vue", () => {
   let wrapper: Wrapper<SphereFrame>;
-  let store: Store<unknown>;
+  let localVue;
   beforeEach(() => {
-    store = new Store(mockStore);
-    wrapper = shallowMount(SphereFrame, { store });
+    localVue = createLocalVue();
+    localVue.use(Vuex);
+    wrapper = shallowMount(SphereFrame, { store: realStore, localVue });
+
+    // It is important to reset the actionMode back to subsequent
+    // mutation to actionMode will trigger a Vue Watch update
+    wrapper.vm.$store.commit("setActionMode", { id: "", name: "" });
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
   });
   it("is an instance", () => {
     expect(wrapper.exists).toBeTruthy();
@@ -42,5 +48,50 @@ describe("SphereFrame.vue", () => {
     expect(midLayer.children[0]._radius).toEqual(
       SETTINGS.boundaryCircle.radius
     );
+  });
+
+  it("switches to point tool", async () => {
+    wrapper.vm.$store.commit("setActionMode", {
+      id: "point",
+      name: "PointTool"
+    });
+    // wrapper.vm.$data.actionMode = "point";
+    await Vue.nextTick();
+    // console.debug(wrapper.vm.$data.currentTool);
+    expect(wrapper.vm.$data.currentTool).toBeInstanceOf(PointHandler);
+  });
+
+  it("generates a new (foreground) point when clicking on sphere while using PointTool", async () => {
+    // const commitSpy = jest.spyOn(realStore, "commit");
+
+    // wrapper = shallowMount(SphereFrame, { store: realStore, localVue });
+    wrapper.vm.$store.commit("setActionMode", {
+      id: "point",
+      name: "Tool Name does not matter"
+    });
+
+    await Vue.nextTick();
+    expect(wrapper.vm.$data.currentTool.isOnSphere).toBeFalsy();
+    const target = wrapper.find("#canvas");
+    expect(target.exists).toBeTruthy();
+    await target.trigger("mousemove", {
+      clientX: 111,
+      clientY: 137
+    });
+    expect(wrapper.vm.$data.currentTool.isOnSphere).toBeTruthy();
+    const prevPointCount = wrapper.vm.$store.state.points.length;
+    await target.trigger("mousedown", {
+      clientX: 111,
+      clientY: 137
+    });
+    await target.trigger("mouseup", {
+      clientX: 111,
+      clientY: 137
+    });
+    // expect(wrapper.vm.$data.currentTool.isOnSphere).toBeTruthy();
+    // expect(commitSpy).toHaveBeenCalledWith("addPoint", expect.anything());
+    await Vue.nextTick();
+    const newPointCount = wrapper.vm.$store.state.points.length;
+    expect(newPointCount).toBe(prevPointCount + 1);
   });
 });
