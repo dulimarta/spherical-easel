@@ -8,43 +8,15 @@ import {
 import App from "@/App.vue";
 import Vue from "vue";
 import Vuex from "vuex";
-import VueI18n from "vue-i18n";
-// import VueRouter from "vue-router";
 import Vuetify from "vuetify";
-
-Vue.use(Vuetify);
-Vue.use(Vuex);
-Vue.use(VueI18n);
-Vue.directive("t", () => {
-  /*none*/
-});
-// const i18n = new VueI18n({});
-// import TooltipMock from "./TooltipMock.vue"
-// import { MockRenderer } from "../stub-modules/MockRenderer";
-// const Tooltip = Vue.component('v-tooltip',
-//   {
-//     template: "<hans><slot name='activator'></slot></hans>"
-//   });
-
-// const fakeRenderer = new MockRenderer();
-// fakeRenderer.extensions = {
-//   get: jest.fn().mockReturnValue(true)
-// }
+import fakeStore from "./mockStore";
+import realStore from "@/store";
+import { VueConstructor } from "vue/types/umd";
 describe("App.vue", () => {
   let wrapper: Wrapper<App>;
   beforeEach(() => {
     wrapper = shallowMount(App, {
-      mocks: {
-        $t: (key: string) => key
-      },
-      store: new Vuex.Store({
-        mutations: {
-          init: jest.fn()
-        }
-      }),
-      // provide: {
-      //   renderer: fakeRenderer
-      // },
+      store: new Vuex.Store(fakeStore),
       stubs: {
         "RouterLink": RouterLinkStub,
         "router-view": true
@@ -57,37 +29,23 @@ describe("App.vue", () => {
   });
 
   describe("App.vue basic tools with (deep) mount", () => {
-    let localVue;
+    let localVue: VueConstructor;
     let store;
-    let vuetify;
-    let wrapper: Wrapper<Vue>;
-    const storeMutations = {
-      setActionMode: jest.fn(),
-      init: jest.fn()
-    };
+    let vuetify: typeof Vuetify;
+    let wrapper: Wrapper<App>;
     beforeEach(() => {
       vuetify = new Vuetify();
       localVue = createLocalVue();
       localVue.use(Vuex);
       localVue.use(Vuetify);
-      store = new Vuex.Store({
-        mutations: storeMutations
-      });
+      store = new Vuex.Store(fakeStore);
 
       // Use "deep" mount so <v-btn>s are accessible to the test environment
       wrapper = mount(App, {
-        mocks: {
-          $t: (key: string) => key
-        },
         localVue,
         vuetify,
         store,
-        // provide: {
-        //   renderer: fakeRenderer
-        // },
-        data: () => ({
-          // leftDrawerMinified: false
-        }),
+        data: () => ({}),
         stubs: {
           "router-link": true,
           "router-view": true
@@ -112,20 +70,29 @@ describe("App.vue", () => {
       expect(footer.text()).toContain("No tools");
     });
 
-    xit("it shows 6 basic tool buttons", () => {
-      const basicTools = wrapper.findAll("#basicTools .v-btn");
-      expect(basicTools).toHaveLength(6);
-      // for (let k = 0; k < basicTools.length; k++) {
-      //   const b = basicTools.at(k);
-      //   console.debug(b.html());
-      // }
+    it("shows the name of selected tool", async () => {
+      const TEST_TOOL_NAME = "Tool Name Here";
+      wrapper = shallowMount(App, {
+        store: realStore,
+        stubs: {
+          "router-link": true,
+          "router-view": true
+        }
+      });
+      wrapper.vm.$store.commit("setEditMode", {
+        id: "point",
+        name: TEST_TOOL_NAME
+      });
+      await Vue.nextTick();
+      const footer = wrapper.find("v-footer-stub");
+      expect(footer.text()).toContain(TEST_TOOL_NAME);
     });
 
     xit("switches to move tool ", async () => {
       const basicTools = wrapper.findAll("#basicTools .v-btn");
       basicTools.at(1).trigger("click");
       await Vue.nextTick();
-      expect(storeMutations.setActionMode).toHaveBeenCalledWith(
+      expect(fakeStore.mutations.setEditMode).toHaveBeenCalledWith(
         expect.anything(),
         "move"
       );
@@ -135,7 +102,7 @@ describe("App.vue", () => {
       const basicTools = wrapper.findAll("#basicTools .v-btn");
       basicTools.at(2).trigger("click");
       await Vue.nextTick();
-      expect(storeMutations.setActionMode).toHaveBeenCalledWith(
+      expect(fakeStore.mutations.setEditMode).toHaveBeenCalledWith(
         expect.anything(),
         "point"
       );
@@ -145,7 +112,7 @@ describe("App.vue", () => {
       const basicTools = wrapper.findAll("#basicTools .v-btn");
       basicTools.at(3).trigger("click");
       await Vue.nextTick();
-      expect(storeMutations.setActionMode).toHaveBeenCalledWith(
+      expect(fakeStore.mutations.setEditMode).toHaveBeenCalledWith(
         expect.anything(),
         "line"
       );
@@ -155,7 +122,7 @@ describe("App.vue", () => {
       const basicTools = wrapper.findAll("#basicTools .v-btn");
       basicTools.at(4).trigger("click");
       await Vue.nextTick();
-      expect(storeMutations.setActionMode).toHaveBeenCalledWith(
+      expect(fakeStore.mutations.setEditMode).toHaveBeenCalledWith(
         expect.anything(),
         "segment"
       );
@@ -165,7 +132,7 @@ describe("App.vue", () => {
       const basicTools = wrapper.findAll("#basicTools .v-btn");
       basicTools.at(5).trigger("click");
       await Vue.nextTick();
-      expect(storeMutations.setActionMode).toHaveBeenCalledWith(
+      expect(fakeStore.mutations.setEditMode).toHaveBeenCalledWith(
         expect.anything(),
         "circle"
       );

@@ -4,26 +4,8 @@ import Vue from "vue";
 import Vuex, { Store } from "vuex";
 import Vuetify from "vuetify";
 import { VueConstructor } from "vue/types/umd";
-import { AppState } from "@/types";
-// import { MockRenderer } from "../stub-modules/MockRenderer"
-Vue.use(Vuetify);
+import fakeStore from "./mockStore";
 
-// const fakeRenderer = new MockRenderer();
-const mockStore = {
-  state: {
-    actionMode: "none",
-    layers: [],
-    points: [],
-    lines: []
-  },
-  mutations: {
-    setSphere: jest.fn(),
-    setSphereRadius: jest.fn(),
-    setZoomMagnificationFactor: jest.fn(),
-    setLayers: jest.fn(),
-    setActionMode: jest.fn()
-  }
-};
 describe("Easel.vue", () => {
   let localVue: VueConstructor;
   let store: Store<unknown>;
@@ -33,14 +15,8 @@ describe("Easel.vue", () => {
     vuetify = new Vuetify();
     localVue = createLocalVue();
     localVue.use(Vuex);
-    store = new Vuex.Store(mockStore);
+    store = new Vuex.Store(fakeStore);
     wrapper = shallowMount(Easel, {
-      mocks: {
-        $t: (key: string) => key
-      },
-      // propsData: {
-      //   canvas: null
-      // },
       localVue,
       vuetify,
       store
@@ -113,8 +89,8 @@ describe("Easel.vue", () => {
         const obj = JSON.parse(b.attributes().value);
         b.trigger("click");
         await Vue.nextTick();
-        expect(mockStore.mutations.setActionMode).toHaveBeenCalled();
-        expect(mockStore.mutations.setActionMode).toHaveBeenCalledWith(
+        expect(fakeStore.mutations.setEditMode).toHaveBeenCalled();
+        expect(fakeStore.mutations.setEditMode).toHaveBeenCalledWith(
           expect.objectContaining({}),
           expect.objectContaining(obj)
         );

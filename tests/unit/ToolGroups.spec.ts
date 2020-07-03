@@ -20,10 +20,4 @@ describe("ToolGroups", () => {
     // Each group should have a header
     expect(headers.length).toBeGreaterThanOrEqual(groups.length);
   });
-
-  it("shows buttons in group", () => {
-    console.debug(wrapper.html());
-    // sdfsdf;
-    //   const groups =
-  });
 });
