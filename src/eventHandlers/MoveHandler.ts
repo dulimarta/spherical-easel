@@ -29,8 +29,8 @@ export default class MoveHandler extends MouseHandler {
   private moveTarget: SENodule | null = null;
   private moveFrom = new Vector3();
   private prevSpherePoint = new Vector3();
-  constructor(layers: Two.Group[], transformMatrix: Matrix4) {
-    super(layers, transformMatrix);
+  constructor(layers: Two.Group[]) {
+    super(layers);
   }
 
   private doMoveLine(

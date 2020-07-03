@@ -47,23 +47,6 @@ export default class SphereFrame extends VueComponent {
   private sphereCanvas!: Two.Group;
   private boundaryCircle!: Two.Circle;
   protected store = AppStore; // Vuex global state
-  /**
-   * Transformation from the ideal unit sphere to the rendered sphere.  The rendered sphere has radius
-   * SETTINGS.boundaryCircle.radius. (The screen only shows a portion of the rendered sphere called the
-   * ??ZoomViewPort??.)
-   */
-  //private sphereTransformMat = new Matrix4();
-  /**
-   * Transformation that is a translation and a scaling that maps the current view of the sphere
-   * of radius SETTINGS.boundaryCircle.radius to the sphereFrame window
-   */
-  //private zoomMatrix = new Matrix4();
-  //private magnificationFactor = 1;
-
-  /**
-   * Transformation that is passed to the CSS
-   */
-  private CSSTransformMat = new Matrix4(); // CSSMat = sphereTransform * zoomMat
 
   /** Tools for handling user input */
   private currentTool: ToolStrategy | null = null;
@@ -177,15 +160,15 @@ export default class SphereFrame extends VueComponent {
     this.$refs.canvas.addEventListener("mouseup", this.handleMouseReleased);
     this.$refs.canvas.addEventListener("mouseleave", this.handleMouseLeave);
     this.$refs.canvas.addEventListener("wheel", this.handleMouseWheel); // by Will
-    this.selectTool = new SelectionHandler(this.layers, this.CSSTransformMat);
+    this.selectTool = new SelectionHandler(this.layers);
     this.currentTool = this.selectTool;
-    this.pointTool = new PointHandler(this.layers, this.CSSTransformMat);
-    this.lineTool = new LineHandler(this.layers, this.CSSTransformMat);
-    this.segmentTool = new SegmentHandler(this.layers, this.CSSTransformMat);
-    this.circleTool = new CircleHandler(this.layers, this.CSSTransformMat);
-    this.rotateTool = new RotateHandler(this.layers, this.CSSTransformMat);
+    this.pointTool = new PointHandler(this.layers);
+    this.lineTool = new LineHandler(this.layers);
+    this.segmentTool = new SegmentHandler(this.layers);
+    this.circleTool = new CircleHandler(this.layers);
+    this.rotateTool = new RotateHandler(this.layers);
     this.zoomTool = new PanZoomHandler(this.$refs.canvas);
-    this.moveTool = new MoveHandler(this.layers, this.CSSTransformMat);
+    this.moveTool = new MoveHandler(this.layers);
   }
 
   beforeDestroy(): void {
@@ -242,55 +225,6 @@ export default class SphereFrame extends VueComponent {
     // What does this do?
     el.style.overflow = "visible";
   }
-
-  // handleMouseScroll(e: MouseWheelEvent): void {
-  //   if (e.metaKey) {
-  //     e.preventDefault();
-  //     let scrollFraction = e.deltaY / this.canvasSize;
-  //     if (e.ctrlKey) {
-  //       // Flip the sign for pinch/zoom gestures on Mac trackpad
-  //       scrollFraction *= -1;
-  //     }
-  //     if (Math.abs(scrollFraction) > 0.1) // Limit 10% change in magnification
-  //       scrollFraction = 0.1 * Math.sign(scrollFraction);
-  //     const scaleFactor = 1 + scrollFraction;
-  //     // Limit zoom-out to 0.4x
-  //     if (scaleFactor < 1 && this.magnificationFactor < 0.4) return;
-  //     // Limit zoom-in to 5x
-  //     if (scaleFactor > 1 && this.magnificationFactor > 5) return;
-  //     this.magnificationFactor *= scaleFactor;
-  //     const sphereRatio = (this.canvasSize / 2) / SETTINGS.boundaryCircle.radius;
-  //     EventBus.fire("magnification-updated", { factor: this.magnificationFactor * sphereRatio });
-  //     const target = (e.currentTarget || e.target) as HTMLDivElement;
-  //     const boundingRect = target.getBoundingClientRect();
-  //     const offsetX = e.clientX - boundingRect.left;
-  //     const offsetY = e.clientY - boundingRect.top;
-
-  //     // The origin of translation is the center of the canvas
-  //     const tx = offsetX - this.canvasSize / 2;
-  //     const ty = offsetY - this.canvasSize / 2;
-  //     // console.debug("Zoom info", scrollFraction.toFixed(2), scaleFactor.toFixed(2), this.magnificationFactor.toFixed(2));
-  //     const mag = this.magnificationFactor;
-
-  //     // Update the zoom matrix
-  //     if (mag > 1) {
-  //       this.zoomMatrix.identity();
-  //       tmpMatrix1.makeTranslation(tx, ty, 0);
-  //       this.zoomMatrix.multiply(tmpMatrix1);
-  //       tmpMatrix1.makeScale(mag, mag, mag);
-  //       this.zoomMatrix.multiply(tmpMatrix1);
-  //       tmpMatrix1.makeTranslation(-tx, -ty, 0);
-  //       this.zoomMatrix.multiply(tmpMatrix1);
-  //     } else {
-  //       this.sphereTransformMat.elements[12] = 0;
-  //       this.sphereTransformMat.elements[13] = 0;
-  //       this.sphereTransformMat.elements[14] = 0;
-  //       this.zoomMatrix.makeScale(mag, mag, mag);
-  //     }
-  //     tmpMatrix1.multiplyMatrices(this.sphereTransformMat, this.zoomMatrix);
-  //     this.viewTransform = tmpMatrix1;
-  //   }
-  // }
 
   handleMouseWheel(event: MouseWheelEvent): void {
     console.log("Mouse Wheel Zoom!");

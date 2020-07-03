@@ -54,8 +54,8 @@ export default class SegmentHandler extends MouseHandler {
    */
   protected arcDir = NaN;
 
-  constructor(layers: Two.Group[], transformMatrix: Matrix4) {
-    super(layers, transformMatrix);
+  constructor(layers: Two.Group[]) {
+    super(layers);
     this.tempSegment = new Segment();
     this.tempSegment.stylize(DisplayStyle.TEMPORARY);
   }

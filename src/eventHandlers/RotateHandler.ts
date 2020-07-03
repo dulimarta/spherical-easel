@@ -27,11 +27,11 @@ export default class RotateHandler extends MouseHandler {
   private prevSpherePoint: Vector3 = new Vector3();
   private prevScreenPoint: Two.Vector = new Two.Vector(0, 0);
   /**
-   * A matrix that is used to indicate which rotation to apply to the sphere. This handler stores the
-   * latest such matrix in this variable. This is the only place this is stored. If we need access to this
-   * matrix, we will have to put this variable in the store.
+   * A matrix that is used to indicate the *change* in position of the objects on the sphere. The
+   * total change in position is not stored. This matrix is applied (via a position visitor) to
+   * all objects on the sphere.
    */
-  private rotationMatrix: Matrix4 = new Matrix4();
+  private changeInPositionRotationMatrix: Matrix4 = new Matrix4();
   /**
    * If the user is dragging flag this variable is true.
    */
@@ -57,8 +57,8 @@ export default class RotateHandler extends MouseHandler {
    */
   private postMomentumCurrentSpherePoint: Vector3 = new Vector3();
 
-  constructor(layers: Two.Group[], transformMatrix: Matrix4) {
-    super(layers, transformMatrix);
+  constructor(layers: Two.Group[]) {
+    super(layers);
   }
 
   mousePressed(event: MouseEvent): void {
@@ -92,7 +92,10 @@ export default class RotateHandler extends MouseHandler {
           .crossVectors(this.prevSpherePoint, this.currentSpherePoint)
           .normalize();
         // Form the matrix that performs the rotation
-        this.rotationMatrix.makeRotationAxis(desiredZAxis, rotationAngle);
+        this.changeInPositionRotationMatrix.makeRotationAxis(
+          desiredZAxis,
+          rotationAngle
+        );
         // Update the previous locations/times /derivative
         this.derivative = rotationAngle / (event.timeStamp - this.previousTime);
         this.momentumAngle = rotationAngle; // The initial momentum rotation angle is the last rotation angle
@@ -102,7 +105,7 @@ export default class RotateHandler extends MouseHandler {
 
         // Apply the rotation to the sphere and update the display
         EventBus.fire("sphere-rotate", {
-          transform: this.rotationMatrix
+          transform: this.changeInPositionRotationMatrix
         });
       }
     }
@@ -135,12 +138,15 @@ export default class RotateHandler extends MouseHandler {
         desiredZAxis
           .crossVectors(this.startPosition, this.currentSpherePoint)
           .normalize();
-        this.rotationMatrix.makeRotationAxis(desiredZAxis, rotationAngle);
+        this.changeInPositionRotationMatrix.makeRotationAxis(
+          desiredZAxis,
+          rotationAngle
+        );
 
         // Store the rotation command that takes the mouse press location to the mouse release location, but don't execute it
         // because the rotation has already happened. This way the first to last position rotation is in the command
         // structure and can be undone or redone
-        new RotateSphereCommand(this.rotationMatrix).push();
+        new RotateSphereCommand(this.changeInPositionRotationMatrix).push();
       }
     } else {
       this.momentumMode = false;
@@ -175,10 +181,15 @@ export default class RotateHandler extends MouseHandler {
       this.momentumAngle =
         deltaT *
         ((-this.derivative / endTime) * (2 * callNumber + 1) + this.derivative);
-      this.rotationMatrix.makeRotationAxis(desiredZAxis, this.momentumAngle);
-      this.postMomentumCurrentSpherePoint.applyMatrix4(this.rotationMatrix);
+      this.changeInPositionRotationMatrix.makeRotationAxis(
+        desiredZAxis,
+        this.momentumAngle
+      );
+      this.postMomentumCurrentSpherePoint.applyMatrix4(
+        this.changeInPositionRotationMatrix
+      );
       EventBus.fire("sphere-rotate", {
-        transform: this.rotationMatrix
+        transform: this.changeInPositionRotationMatrix
       });
       await this.sleep(deltaT);
       this.momentum(callNumber + 1);
@@ -194,10 +205,13 @@ export default class RotateHandler extends MouseHandler {
       desiredZAxis
         .crossVectors(this.startPosition, this.postMomentumCurrentSpherePoint)
         .normalize();
-      this.rotationMatrix.makeRotationAxis(desiredZAxis, rotationAngle);
+      this.changeInPositionRotationMatrix.makeRotationAxis(
+        desiredZAxis,
+        rotationAngle
+      );
 
       // Store the rotation command that takes the mouse press location to the mouse release location
-      new RotateSphereCommand(this.rotationMatrix).push();
+      new RotateSphereCommand(this.changeInPositionRotationMatrix).push();
     }
   }
 }

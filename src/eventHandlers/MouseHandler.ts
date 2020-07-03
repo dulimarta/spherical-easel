@@ -30,12 +30,12 @@ export default abstract class MouseHandler implements ToolStrategy {
   protected hitCircles: SECircle[] = [];
   protected startMarker: Two.Circle;
   protected isOnSphere: boolean;
-  protected transformMatrix: Matrix4;
+
   protected layers: Two.Group[];
   private mouseVector = new Vector3();
   private tmpMatrix = new Matrix4();
   protected infoText = new TextBox("Hello");
-  constructor(layers: Two.Group[], transformMatrix: Matrix4) {
+  constructor(layers: Two.Group[]) {
     /**
      * @param scene is the sphere canvas where all drawings will render
      * @param transformMatrix is the forward transform that maps the ideal unit
@@ -44,7 +44,6 @@ export default abstract class MouseHandler implements ToolStrategy {
      */
     this.layers = layers;
     this.canvas = layers[LAYER.midground];
-    this.transformMatrix = transformMatrix || null;
     this.currentSpherePoint = new Vector3();
     this.currentScreenPoint = new Two.Vector(0, 0);
     this.startMarker = new Two.Circle(0, 0, frontPointRadius);
@@ -81,40 +80,21 @@ export default abstract class MouseHandler implements ToolStrategy {
     const mouseX = offsetX - this.canvas.translation.x;
     const mouseY = -(offsetY - this.canvas.translation.y);
 
-    // The last column of the affine transformation matrix
-    // is the origin of the zoomed circle
-    // ZoomCtr_in_world_ideal_sphere = inverseCSSMat * ZoomCtr_in_screen_space
-    // ZoomCtr = inv(CSS) * ZoomOrig
-
-    // Map the mouse screen coordinate to its position within the ideal sphere
-    // IdealPos = inv(CSS) * MousePos
-    // Reposition the mouse position (in ideal sphere) relative
-    // to the zoom center
-    // IdealPos = IdealPos - ZoomCtr
-
-    // Attempted algebraic simplification
-    // IdealPos = IdealPos - ZoomCtr
-    //          = inv(CSS) * MousePos - inv(CSS) * ZoomOrig
-    //          = inv(CSS) * (MousePos - ZoomOrig)
-
     /*
     Using the algebraic simplification above, the following lines
     of code should work, but they DON'T??? They do now!! */
     const mag = this.store.state.zoomMagnificationFactor;
     const zoomTransVec = this.store.state.zoomTranslation;
 
+    // Transform the mouseX, mouseY) pixel location to screen coordinates (i.e. to pre affine/css transformation)
     this.mouseVector.set(
       (mouseX - zoomTransVec[0]) / mag,
       (mouseY + zoomTransVec[1]) / mag,
       0
     );
-    // Transform the pre affine coordinates to coordinates on the sphere to before the current view transformation
-    this.mouseVector.applyMatrix4(
-      this.tmpMatrix.getInverse(this.transformMatrix)
-    );
 
     this.currentScreenPoint.set(this.mouseVector.x, this.mouseVector.y);
-    /* Rescale to unit circle */
+
     const len = this.mouseVector.length();
     const R = SETTINGS.boundaryCircle.radius;
     if (len < R) {

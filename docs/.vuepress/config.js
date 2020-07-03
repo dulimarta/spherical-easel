@@ -3,6 +3,7 @@
 module.exports = {
   //Specify the output directory for vuepress build. If a relative path is specified, it will be resolved based on process.cwd().
   dest: "../dist/docs",
+  // To use the http://tikzjax.com/ these must be included in the header.
   head: [
     [
       "link",
@@ -12,9 +13,11 @@ module.exports = {
         href: "http://tikzjax.com/v1/fonts.css"
       }
     ],
-    // Notice that this JS file and two others are in the /public directory This couldn't be the
-    // link to the file at http://tikzjax.com/ because of a CORS (cross origin request sharing) issue
-    // so we moved this file and the two it references to the local directory.
+    // Notice that this JS file and two others are in the /public directory.
+    // ef253ef29e2f057334f77ead7f06ed8f22607d38.wasm and 7620f557a41f2bf40820e76ba1fd4d89a484859d.gz
+    // The link below couldn't be the link to the file at http://tikzjax.com/ because of a
+    // CORS (cross origin request sharing) issue, so we moved this file and the two it
+    // references to the local directory.
     ["script", { src: "/tikzjax.js" }]
   ],
   //Plugins to enable specialized behavior (for example, LaTeX/MathJax )
@@ -36,7 +39,7 @@ module.exports = {
     // ::: script
     // :::
     //
-    // in a markdown-ot file to get the <script> tag and TikZ drawing into the markdown.
+    // in a markdown-it file to get the <script> tag and TikZ drawing into the markdown.
     // Be sure to refresh/reload the page twice!
     // [
     //   "vuepress-plugin-container",

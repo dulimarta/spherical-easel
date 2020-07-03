@@ -29,8 +29,8 @@ export default class LineHandler extends MouseHandler {
   private startPoint: SEPoint | null = null;
   private endPoint: SEPoint | null = null;
   private tempLine: Line;
-  constructor(layers: Two.Group[], transformMatrix: Matrix4) {
-    super(layers, transformMatrix);
+  constructor(layers: Two.Group[]) {
+    super(layers);
     this.tempLine = new Line();
     this.tempLine.stylize(DisplayStyle.TEMPORARY);
 

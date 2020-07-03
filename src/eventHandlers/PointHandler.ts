@@ -18,8 +18,8 @@ export default class PointHandler extends MouseHandler {
   private temporaryPoint: Point;
   private isTemporaryPointAdded = false;
 
-  constructor(layers: Two.Group[], transformMatrix: Matrix4) {
-    super(layers, transformMatrix);
+  constructor(layers: Two.Group[]) {
+    super(layers);
     this.vectorLocation = new Vector3(0, 0, 1);
     this.temporaryPoint = new Point();
     this.temporaryPoint.positionVector = this.vectorLocation;

@@ -31,8 +31,8 @@ export default class CircleHandler extends MouseHandler {
   // Has the temporary circle been added to the scene?
   private isTemporaryCircleAdded: boolean;
 
-  constructor(layers: Two.Group[], transformMatrix: Matrix4) {
-    super(layers, transformMatrix);
+  constructor(layers: Two.Group[]) {
+    super(layers);
     this.centerVector = new Vector3();
     this.isMouseDown = false;
     this.isTemporaryCircleAdded = false;

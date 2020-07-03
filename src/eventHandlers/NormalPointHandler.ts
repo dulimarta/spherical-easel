@@ -12,8 +12,8 @@ export default class NormalPointHandler extends MouseHandler {
   private normalArrow: Arrow;
   private isNormalAdded: boolean;
 
-  constructor(layers: Two.Group[], transformMatrix: Matrix4) {
-    super(layers, transformMatrix);
+  constructor(layers: Two.Group[]) {
+    super(layers);
     this.normalArrow = new Arrow(
       0.5 /* relative length with respect to the unit circle */,
       0xff8000
