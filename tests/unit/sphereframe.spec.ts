@@ -7,14 +7,15 @@ import SETTINGS, { LAYER } from "@/global-settings";
 const mockStore = {
   state: {},
   mutations: {
-    setLayers: jest.fn()
+    setLayers: jest.fn(),
+    setZoomTranslation: jest.fn()
   }
 };
 describe("SphereFrame.vue", () => {
   let wrapper: Wrapper<SphereFrame>;
-  // let store: Store<unknown>;
+  let store: Store<unknown>;
   beforeEach(() => {
-    const store = new Store(mockStore);
+    store = new Store(mockStore);
     wrapper = shallowMount(SphereFrame, { store });
   });
   it("is an instance", () => {

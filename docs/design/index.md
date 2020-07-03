@@ -19,6 +19,8 @@ mathjax:
 
 The sphere is rendered at
 
+<TikzPicture latex="myfile.tex"></TikzPicture>
+
 <<< @/src/global-settings.ts#boundarycircle
 
 <div v-html="circle"></div>
@@ -34,7 +36,7 @@ export default {
             \usetikzlibrary{shapes,through,intersections,calc}
             \usetikzlibrary{through}
             \begin{tikzpicture}  
-            \draw (0,0) circle (1in);
+            \draw[fill,red] (0,0) circle (1in);
             \end{tikzpicture}`,
 
             "test1": String.raw`
