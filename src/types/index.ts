@@ -11,7 +11,6 @@ import { SEIntersection } from "@/models/SEIntersection";
 export interface Selectable {
   hit(x: number, y: number, coord: unknown, who: unknown): boolean;
 }
-// export interface Moveable {}
 
 export interface AppState {
   layers: Two.Group[];
@@ -39,5 +38,3 @@ export interface ToolButtonType {
   toolUseMessage: string;
   toolTipMessage: string;
 }
-
-// }

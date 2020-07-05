@@ -1,5 +1,5 @@
 import ToolButton from "@/components/ToolButton.vue";
-import { Wrapper, shallowMount, createLocalVue, mount } from "@vue/test-utils";
+import { Wrapper, createLocalVue, mount } from "@vue/test-utils";
 import { VueConstructor } from "vue";
 import Vuetify from "vuetify";
 import Vue from "vue";

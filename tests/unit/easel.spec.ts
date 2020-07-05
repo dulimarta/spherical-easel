@@ -52,6 +52,7 @@ describe("Easel.vue", () => {
     it("shows left panel with a v-tab", () => {
       const panels = wrapper.findAll(".splitter-pane");
       const tab = panels.at(0).find(".v-tabs");
+      expect(tab.exists).toBeTruthy();
       // console.debug(tab.html());
     });
     it("shows buttons with icon in the left panel", () => {
@@ -62,7 +63,6 @@ describe("Easel.vue", () => {
 
     it("shows button groups in corners", () => {
       // console.debug("Where ", wrapper.html());
-      const z = wrapper.find("#responsiveBox");
       // console.debug(z.html());
       const bGroup = wrapper.findAll("#responsiveBox div.anchored");
       // console.debug("Button group", bGroup.length);

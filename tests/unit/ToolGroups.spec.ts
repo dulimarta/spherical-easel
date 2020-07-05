@@ -1,10 +1,10 @@
 import ToolGroups from "@/components/ToolGroups.vue";
-import { Wrapper, mount, shallowMount, createLocalVue } from "@vue/test-utils";
+import { Wrapper, shallowMount, createLocalVue } from "@vue/test-utils";
 import Vuetify from "vuetify";
 describe("ToolGroups", () => {
   let wrapper: Wrapper<ToolGroups>;
   let vuetify: typeof Vuetify;
-  let localVue = createLocalVue();
+  const localVue = createLocalVue();
   beforeEach(() => {
     vuetify = new Vuetify();
     wrapper = shallowMount(ToolGroups, { vuetify, localVue });

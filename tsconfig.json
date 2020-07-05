@@ -3,6 +3,7 @@
     "target": "esnext",
     "module": "esnext",
     "strict": true,
+    "declaration": true,
     "jsx": "preserve",
     "importHelpers": true,
     "moduleResolution": "node",
@@ -12,7 +13,11 @@
     "sourceMap": true,
     "baseUrl": ".",
     "types": ["webpack-env", "vuetify", "jest", "webpack", "webpack-env"],
-    "typeRoots": ["./node_modules/@types", "./node_modules/vuetify/types"],
+    "typeRoots": [
+      "./node_modules/@types",
+      "./node_modules/vuetify/types",
+      "@/types"
+    ],
     "paths": {
       "@/*": ["src/*"]
     },
@@ -25,7 +30,13 @@
     "tests/**/*.ts",
     "tests/**/*.tsx",
     "tests/stub-modules/MockRenderer.js",
-    "tests/stub-modules/MockRenderer.js"
+    "tests/setup.ts"
   ],
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules"],
+  "verbose": true
+  // "globals": {
+  //   "ts-jest": {
+  //     "diagnostics": false
+  //   }
+  // }
 }
