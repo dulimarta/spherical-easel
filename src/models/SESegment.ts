@@ -4,32 +4,51 @@ import { Vector3 } from "three";
 import { Visitable } from "@/visitors/Visitable";
 import { Visitor } from "@/visitors/Visitor";
 import { SEPoint } from "./SEPoint";
+import { SESegmentMidPoint } from "./SESegmentMidPoint";
+import SETTINGS from "@/global-settings";
 
 const tmpVec1 = new Vector3();
 const tmpVec2 = new Vector3();
 let SEGMENT_COUNT = 0;
 
-/** A segment is defined by three points:
- * startPoint, midPoint, and endPoint
- */
 export class SESegment extends SENodule implements Visitable {
   /**
    * The plottable (TwoJS) segment associated with this model segment
    */
   public ref: Segment;
-  private startAt: SEPoint;
-  private endAt: SEPoint;
+  /**
+   * The model SE object that is the start of the segment
+   */
+  private startPoint: SEPoint;
+  /**
+   * The model SE object that is the mid point of the segment on the unit ideal sphere
+   * IT IS NEVER DISPLAYED, but is need to smoothly update the segment
+   */
+  public midPoint: SESegmentMidPoint;
+  /**
+   * The model SE object that is the end of the segment
+   */
+  private endPoint: SEPoint;
 
   /**
    *
-   * @param seg plottable (TwoJS) segment associated with this model segment
+   * @param seg The plottable TwoJS Object associated to this object
+   * @param start The plottable TwoJS object that is the start of the segment
+   * @param midVec The vector that points to midpoint of the segment
+   * @param end The plottable TwoJS object that is the end of the segment
    */
-  constructor(s: Segment, start: SEPoint, end: SEPoint) {
+  constructor(
+    seg: Segment,
+    start: SEPoint,
+    mid: SESegmentMidPoint,
+    end: SEPoint
+  ) {
     super();
-    this.ref = s;
-    s.owner = this;
-    this.startAt = start;
-    this.endAt = end;
+    this.ref = seg;
+    seg.owner = this;
+    this.startPoint = start;
+    this.midPoint = mid;
+    this.endPoint = end;
 
     SEGMENT_COUNT++;
     this.name = `Ls-${SEGMENT_COUNT}`;
@@ -44,44 +63,93 @@ export class SESegment extends SENodule implements Visitable {
     v.actionOnSegment(this);
   }
 
+  // set normalDirection(dir: Vector3) {
+  //   this.ref.normalVector = dir;
+  // }
+  // get normalDirection(): Vector3 {
+  //   return this.ref.normalVector;
+  // }
+
+  // set start(updatedStartPoint: SEPoint) {}
+
+  // set endVector(newStartVector: Vector3) {}
+
+  get segStartPoint(): SEPoint {
+    return this.startPoint;
+  }
+
+  get segEndPoint(): SEPoint {
+    return this.endPoint;
+  }
+  get segMidPoint(): SESegmentMidPoint {
+    return this.midPoint;
+  }
+
   get normalDirection(): Vector3 {
-    return this.ref.normalVector;
+    return tmpVec1
+      .crossVectors(
+        this.startPoint.vectorPosition,
+        this.midPoint.vectorPosition
+      )
+      .normalize();
   }
 
-  /**
-   * TODO: I'm not sure that set normalVector works -- be careful here
-   */
-  set normalDirection(dir: Vector3) {
-    this.ref.normalVector = dir;
+  public isHitAt(unitIdealVector: Vector3): boolean {
+    // Is the unitIdealVector is perpendicular to the normal to the plane containing the segment?
+    tmpVec1
+      .crossVectors(
+        this.startPoint.vectorPosition,
+        this.midPoint.vectorPosition
+      )
+      .normalize();
+    if (Math.abs(unitIdealVector.dot(tmpVec1)) > 1e-2) return false;
+
+    // Is the unitIdealVector inside the radius arcLength/2 circle about the midVector?
+    return (
+      this.midPoint.vectorPosition.angleTo(unitIdealVector) <
+      (this.startPoint.vectorPosition.angleTo(this.midPoint.vectorPosition) +
+        this.midPoint.vectorPosition.angleTo(this.endPoint.vectorPosition)) /
+        2 +
+        SETTINGS.segment.hitIdealDistance
+    );
   }
 
-  get startPoint(): SEPoint {
-    return this.startAt;
-  }
-
-  get endPoint(): SEPoint {
-    return this.endAt;
-  }
-
-  get midVector(): Vector3 {
-    return this.ref.midVector;
-  }
-
-  public isHitAt(spherePos: Vector3): boolean {
-    // Is the unit vector to the point is perpendicular to the circle normal?
-    if (Math.abs(spherePos.dot(this.ref.normalVector)) > 1e-2) return false;
-
-    return this.isPositionInsideArc(spherePos);
-  }
-
-  public isPositionInsideArc(pos: Vector3): boolean {
+  public isPositionInsideArc(unitIdealVector: Vector3): boolean {
     // Is the point between start and mid?
     let angle1;
     let angle2;
-    tmpVec1.crossVectors(this.startAt.positionOnSphere, pos).normalize();
-    angle1 = this.startAt.positionOnSphere.angleTo(pos) * Math.sign(tmpVec1.z);
-    tmpVec2.crossVectors(pos, this.midVector).normalize();
-    angle2 = pos.angleTo(this.midVector) * Math.sign(tmpVec2.z);
+    tmpVec1
+      .crossVectors(this.startPoint.vectorPosition, unitIdealVector)
+      .normalize();
+    angle1 =
+      this.startPoint.vectorPosition.angleTo(unitIdealVector) *
+      Math.sign(tmpVec1.z);
+    tmpVec2
+      .crossVectors(unitIdealVector, this.midPoint.vectorPosition)
+      .normalize();
+    angle2 =
+      unitIdealVector.angleTo(this.midPoint.vectorPosition) *
+      Math.sign(tmpVec2.z);
+    console.log("Start", this.startPoint.vectorPosition.toFixed(2));
+    console.log("Mid", this.midPoint.vectorPosition.toFixed(2));
+    console.log(
+      tmpVec2
+        .copy(this.startPoint.vectorPosition)
+        .add(this.endPoint.vectorPosition)
+        .normalize()
+        .toFixed(2)
+    );
+    console.log("End", this.endPoint.vectorPosition.toFixed(2));
+    console.log(
+      "a1",
+      angle1,
+      "a2",
+      angle2,
+      "sum",
+      angle1 + angle2,
+      this.ref.arcLength / 2
+    );
+
     if (
       Math.sign(angle1) === Math.sign(angle2) &&
       Math.abs(angle1 + angle2) - this.ref.arcLength / 2 < 0.1
@@ -90,10 +158,18 @@ export class SESegment extends SENodule implements Visitable {
     }
 
     // Is the point between mid and end?
-    tmpVec1.crossVectors(this.midVector, pos).normalize();
-    angle1 = this.midVector.angleTo(pos) * Math.sign(tmpVec1.z);
-    tmpVec2.crossVectors(pos, this.endPoint.positionOnSphere).normalize();
-    angle2 = pos.angleTo(this.endPoint.positionOnSphere) * Math.sign(tmpVec2.z);
+    tmpVec1
+      .crossVectors(this.midPoint.vectorPosition, unitIdealVector)
+      .normalize();
+    angle1 =
+      this.midPoint.vectorPosition.angleTo(unitIdealVector) *
+      Math.sign(tmpVec1.z);
+    tmpVec2
+      .crossVectors(unitIdealVector, this.endPoint.vectorPosition)
+      .normalize();
+    angle2 =
+      unitIdealVector.angleTo(this.endPoint.vectorPosition) *
+      Math.sign(tmpVec2.z);
     return (
       Math.sign(angle1) === Math.sign(angle2) &&
       Math.abs(angle1 + angle2) - this.ref.arcLength / 2 < 0.1
@@ -119,10 +195,23 @@ export class SESegment extends SENodule implements Visitable {
   // }
 
   public update(): void {
+    if (!this.canUpdateNow()) {
+      return;
+    }
     console.debug("Updating segment", this.name);
-    this.ref.startVector = this.startAt.positionOnSphere;
-    this.ref.midVector = this.midVector;
-    this.ref.endVector = this.endAt.positionOnSphere;
+
+    // set the start, end, mid and normal vectors in the plottable object
+    this.ref.startVector = this.startPoint.vectorPosition;
+    this.ref.midVector = this.midPoint.vectorPosition;
+    this.ref.normalDirection = tmpVec1
+      .crossVectors(
+        this.startPoint.vectorPosition,
+        this.midPoint.vectorPosition
+      )
+      .normalize();
+    this.ref.endVector = this.endPoint.vectorPosition;
+    // update the display of the segment now that the four vectors are set
+    this.ref.update();
     this.setOutOfDate(false);
     this.updateKids();
   }

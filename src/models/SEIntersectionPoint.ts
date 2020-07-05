@@ -6,7 +6,7 @@ import Point from "@/plottables/Point";
 
 type SEOneDimension = SELine | SESegment | SECircle;
 
-export class SEIntersection extends SEPoint {
+export class SEIntersectionPoint extends SEPoint {
   constructor(p: Point, p1: SEOneDimension, p2: SEOneDimension) {
     super(p);
     this.name = `Intersection (${p1.name},${p2.name})`;

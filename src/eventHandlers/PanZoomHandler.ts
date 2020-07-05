@@ -25,7 +25,7 @@ export default class PanZoomHandler implements ToolStrategy {
   private _mode = ZoomMode.MAGNIFY;
 
   /**
-   * Variables for the pan (translate) operations.
+   * Variables for the pan (translate) operations. (ut = untransformed)
    */
   private utStartDragPosition = new Vector2();
   private currentPixelPosition = new Vector2();

@@ -14,16 +14,12 @@ export enum DisplayStyle {
 /**
  * A Nodule consists of one or more SVG elements
  */
-export default abstract class Nodule extends Two.Group
-  implements Stylable, Resizeable {
+export default abstract class Nodule implements Stylable, Resizeable {
   // Declare owner, this field will be initialized by the associated owner of the plottable Nodule
   public owner!: SENodule;
   public name!: string;
 
-  constructor() {
-    super();
-    //this.name = "Nodule" + this.id;
-  }
+  constructor() {}
 
   /**
    * Add various SVG elements of this nodule to appropriate layers

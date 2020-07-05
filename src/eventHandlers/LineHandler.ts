@@ -11,184 +11,207 @@ import { AddLineCommand } from "@/commands/AddLineCommand";
 import Two from "two.js";
 import { SEPoint } from "@/models/SEPoint";
 import { SELine } from "@/models/SELine";
-import { SEIntersection } from "@/models/SEIntersection";
+import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import { DisplayStyle } from "@/plottables/Nodule";
 import { ShowPointCommand } from "@/commands/ShowPointCommand";
 import globalSettings from "@/global-settings";
 // const frontPointRadius = SETTINGS.point.temp.radius.front;
 
 export default class LineHandler extends MouseHandler {
-  protected startPosition = new Vector3(); // The starting point of the line
-  protected currentMidPosition = new Vector3();
-  protected nextMidPosition = new Vector3();
+  /**
+   * The starting vector location of the lines
+   */
+  protected startVector = new Vector3();
+  /**
+   * The midpoint is between the start and current mouse location, we keep track of this
+   * because if the start and end vectors are antipodal then the line is determined by the start and
+   * the midVector
+   */
+  protected currentMidVector = new Vector3();
+  protected nextMidVector = new Vector3();
+
+  /**
+   * The user is dragging to create a line
+   */
+  protected isMouseDown: boolean;
+
+  /**
+   * The starting and ending SEPoints of the line
+   */
+  private startSEPoint: SEPoint | null = null;
+  private endSEPoint: SEPoint | null = null;
+
+  /**
+   * A temporary line to display while the user is creating a new line
+   */
+  private tempLine: Line;
+  protected isTemporaryLineAdded: boolean;
+
+  /**
+   * A temporary vector to help with normal vector computations
+   */
   protected tmpVector = new Vector3();
 
-  protected isMouseDown: boolean;
-  protected isCircleAdded: boolean;
-  private startPoint: SEPoint | null = null;
-  private endPoint: SEPoint | null = null;
-  private tempLine: Line;
   constructor(layers: Two.Group[]) {
     super(layers);
+    // Create and style the temporary line
     this.tempLine = new Line();
     this.tempLine.stylize(DisplayStyle.TEMPORARY);
+    this.isTemporaryLineAdded = false;
 
     this.isMouseDown = false;
-    this.isCircleAdded = false;
   }
+  //eslint-disable-next-line
+  mousePressed(event: MouseEvent): void {
+    // The user is starting to add a line
+    this.isMouseDown = true;
+    // Set the start and end plottable Points to null until they are overridden with actual Points
+    this.startSEPoint = null;
+    this.endSEPoint = null;
 
+    if (this.isOnSphere) {
+      // Decide if the starting location is near an already existing SEPoint
+      if (this.hitPoints.length > 0) {
+        // Use an existing SEPoint to start the line
+        // FIXME: use keyboard input to select an item
+        const selected = this.hitPoints[0];
+        this.startVector.copy(selected.vectorPosition);
+        this.startSEPoint = selected;
+      } else {
+        // The mouse press is not near an existing point.  Record the location in a temporary point (startMarker). Eventually, we will create a new SEPoint and Point
+        this.startMarker.addToLayers(this.layers);
+        this.startMarker.positionVector = this.currentSphereVector;
+        this.startVector.copy(this.currentSphereVector);
+        this.startSEPoint = null;
+      }
+      // Set the start plottable Point of the line. Calls a setter in plottable Line.
+      this.tempLine.startPoint = this.currentSphereVector;
+    }
+  }
   mouseMoved(event: MouseEvent): void {
     super.mouseMoved(event);
     if (this.isOnSphere) {
       if (this.isMouseDown) {
-        if (!this.isCircleAdded) {
-          // Do we need to show the preview circle?
-          this.isCircleAdded = true;
-          this.canvas.add(this.tempLine);
-          // this.line.startPoint = this.startPosition;
-
-          // this.circleOrientation.addTo(this.canvas); // for debugging only
+        // Do we need to show the temporary line?
+        if (!this.isTemporaryLineAdded) {
+          this.isTemporaryLineAdded = true;
+          this.tempLine.addToLayers(this.layers);
         }
         // The following line automatically calls Line setter function
-
         this.tmpVector
-          .crossVectors(this.startPosition, this.currentSpherePoint)
+          .crossVectors(this.startVector, this.currentSphereVector)
           .normalize();
         this.tempLine.normalVector = this.tmpVector;
       }
-    } else if (this.isCircleAdded) {
-      this.tempLine.remove();
-      this.startMarker.remove();
-
-      this.isCircleAdded = false;
+    } else if (this.isTemporaryLineAdded) {
+      // Remove the temporary objects
+      this.tempLine.removeFromLayers();
+      this.startMarker.removeFromLayers();
+      this.isTemporaryLineAdded = false;
     }
   }
-
-  //eslint-disable-next-line
-  mousePressed(event: MouseEvent): void {
-    this.isMouseDown = true;
-    this.startPoint = null;
-    this.endPoint = null;
-    if (this.isOnSphere) {
-      // Record the first point of the geodesic circle
-      if (this.hitPoints.length > 0) {
-        // FIXME: use keyboard input to select an item
-        const selected = this.hitPoints[0];
-        console.debug("Pressed on an existing point");
-        /* the point coordinate is local on the sphere */
-        this.startPosition.copy(selected.positionOnSphere);
-        this.startPoint = selected;
-      } else {
-        /* this.currentPoint is already converted to local sphere coordinate frame */
-        this.canvas.add(this.startMarker);
-        this.startMarker.translation.copy(this.currentScreenPoint);
-        this.startPosition.copy(this.currentSpherePoint);
-        this.startPoint = null;
-      }
-      this.tempLine.startPoint = this.currentSpherePoint;
-      // The following line automatically calls Line setter function
-    }
-  }
-
-  private makeCircle(): void {
-    this.tmpVector
-      .crossVectors(this.startPosition, this.currentSpherePoint)
-      .normalize();
-    // this.line.endPoint = this.currentSpherePoint;
-    // this.endV3Point.copy(this.currentPoint);
-    const newLine = this.tempLine.clone(); // true:recursive clone
-    // Stylize the new Line
-    newLine.stylize(DisplayStyle.DEFAULT);
-    // Stylize the glowing Line
-    newLine.stylize(DisplayStyle.GLOWING);
-
-    const lineGroup = new CommandGroup();
-    if (this.startPoint === null) {
-      // Starting point landed on an open space
-      // we have to create a new point
-      const newStartPoint = new Point();
-      // Set the display to the default values
-      newStartPoint.stylize(DisplayStyle.DEFAULT);
-      // Set the glowing display
-      newStartPoint.stylize(DisplayStyle.GLOWING);
-      const vtx = new SEPoint(newStartPoint);
-      vtx.positionOnSphere = this.startPosition;
-      this.startPoint = vtx;
-      lineGroup.addCommand(new AddPointCommand(vtx));
-    } else if (this.startPoint instanceof SEIntersection) {
-      lineGroup.addCommand(new ShowPointCommand(this.startPoint));
-    }
-    if (this.hitPoints.length > 0) {
-      this.endPoint = this.hitPoints[0];
-      if (this.endPoint instanceof SEIntersection) {
-        lineGroup.addCommand(new ShowPointCommand(this.endPoint));
-      }
-    } else {
-      // endV3Point landed on an open space
-      // we have to create a new point
-      const newEndPoint = new Point();
-      // Set the display to the default values
-      newEndPoint.stylize(DisplayStyle.DEFAULT);
-      // Set the glowing display
-      newEndPoint.stylize(DisplayStyle.GLOWING);
-      const vtx = new SEPoint(newEndPoint);
-      vtx.positionOnSphere = this.currentSpherePoint;
-      this.endPoint = vtx;
-      lineGroup.addCommand(new AddPointCommand(vtx));
-    }
-    const newSELine = new SELine(newLine, this.startPoint, this.endPoint);
-    lineGroup.addCommand(new AddLineCommand(newSELine));
-
-    // Determine all new intersection points
-    this.store.getters
-      .determineIntersectionsWithLine(newSELine)
-      .forEach((p: SEIntersection) => {
-        p.setShowing(false);
-        lineGroup.addCommand(new AddPointCommand(p));
-      });
-    lineGroup.execute();
-  }
-
-  private makePoint(): void {
-    // The user is attempting to make a line shorter than the minimum arc length
-    // so create  a point at the location of the start vector
-    if (this.startPoint === null) {
-      // Starting point landed on an open space
-      // we have to create a new point and it to the group/store
-      const vtx = new SEPoint(new Point());
-      vtx.positionOnSphere = this.startPosition;
-      const addPoint = new AddPointCommand(vtx);
-      addPoint.execute();
-    }
-  }
-
-  //eslint-disable-next-line
   mouseReleased(event: MouseEvent): void {
     this.isMouseDown = false;
     if (this.isOnSphere) {
       // Record the second point of the geodesic circle
-      this.tempLine.remove();
-      this.startMarker.remove();
-
-      this.isCircleAdded = false;
+      this.tempLine.removeFromLayers();
+      this.startMarker.removeFromLayers();
+      this.isTemporaryLineAdded = false;
+      // If the mouse has moved enough create a line otherwise create a point
       if (
-        this.startPosition.angleTo(this.currentSpherePoint) >
+        this.startVector.angleTo(this.currentSphereVector) >
         globalSettings.line.minimumLength
       ) {
-        this.makeCircle();
-      } else this.makePoint();
+        this.makeLine();
+      } else {
+        this.makePoint();
+      }
     }
   }
 
   // eslint-disable-next-line
   mouseLeave(event: MouseEvent): void {
     super.mouseLeave(event);
-    // this.isMouseDown = false;
-    // if (this.isCircleAdded) {
-    //   this.line.remove();
-    //   this.startMarker.remove();
-    //   this.circleOrientation.remove(); // for debugging
-    //   this.isCircleAdded = false;
-    // }
   }
+
+  // Create a new line from the mouse event information
+  private makeLine(): void {
+    // Create the normal vector
+    this.tmpVector
+      .crossVectors(this.startVector, this.currentSphereVector)
+      .normalize();
+
+    // Create the new line
+    const newLine = this.tempLine.clone();
+    // Stylize the new Line
+    newLine.stylize(DisplayStyle.DEFAULT);
+    // Set up the glowing Line
+    newLine.stylize(DisplayStyle.GLOWING);
+
+    //Create a command group so this can be undone
+    const lineGroup = new CommandGroup();
+    if (this.startSEPoint === null) {
+      // Starting mouse press landed on an open space
+      // we have to create a new point
+      const newStartPoint = new Point();
+      // Set the display to the default values
+      newStartPoint.stylize(DisplayStyle.DEFAULT);
+      // Set up the glowing display
+      newStartPoint.stylize(DisplayStyle.GLOWING);
+      const vtx = new SEPoint(newStartPoint);
+      vtx.vectorPosition = this.startVector;
+      this.startSEPoint = vtx;
+      lineGroup.addCommand(new AddPointCommand(vtx));
+    } else if (this.startSEPoint instanceof SEIntersectionPoint) {
+      // Show the point that the user started with
+      lineGroup.addCommand(new ShowPointCommand(this.startSEPoint));
+    }
+    // Check to see if the release location is near any points
+    if (this.hitPoints.length > 0) {
+      this.endSEPoint = this.hitPoints[0];
+      if (this.endSEPoint instanceof SEIntersectionPoint) {
+        lineGroup.addCommand(new ShowPointCommand(this.endSEPoint));
+      }
+    } else {
+      // The ending mouse release landed on an open space
+      // we have to create a new point
+      const newEndPoint = new Point();
+      // Set the display to the default values
+      newEndPoint.stylize(DisplayStyle.DEFAULT);
+      // Set up the glowing display
+      newEndPoint.stylize(DisplayStyle.GLOWING);
+      const vtx = new SEPoint(newEndPoint);
+      vtx.vectorPosition = this.currentSphereVector;
+      this.endSEPoint = vtx;
+      lineGroup.addCommand(new AddPointCommand(vtx));
+    }
+
+    const newSELine = new SELine(newLine, this.startSEPoint, this.endSEPoint);
+    lineGroup.addCommand(new AddLineCommand(newSELine));
+
+    // Determine all new intersection points and add their creation to the command so it can be undone
+    this.store.getters
+      .determineIntersectionsWithLine(newSELine)
+      .forEach((p: SEIntersectionPoint) => {
+        p.setShowing(false);
+        lineGroup.addCommand(new AddPointCommand(p));
+      });
+    lineGroup.execute();
+  }
+  /**
+   * The user is attempting to make a line shorter than the minimum arc length
+   * so create  a point at the location of the start vector
+   */
+  private makePoint(): void {
+    if (this.startSEPoint === null) {
+      // Starting mouse press landed on an open space
+      // we have to create a new point and it to the group/store
+      const vtx = new SEPoint(new Point());
+      vtx.vectorPosition = this.startVector;
+      const addPoint = new AddPointCommand(vtx);
+      addPoint.execute();
+    }
+  }
+
+  //eslint-disable-next-line
 }

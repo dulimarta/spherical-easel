@@ -17,9 +17,13 @@ const defaultRadiusBack = SETTINGS.point.drawn.radius.back;
 
 export default class Point extends Nodule {
   /**
-   * The vector location of the Point on the ideal unit sphere
+   * The vector location of the Point on the default sphere
+   * The location vector in the Default Screen Plane
+   * It will always be the case the x and y coordinates of these two vectors are the same.
+   * The z coordinate indicates if the Point is on the back of the sphere
    */
-  public vectorLocation = new Vector3();
+  public vectorLocation = new Vector3(1, 0, 0);
+  public defaultScreenVectorLocation = new Two.Vector(1, 0);
 
   /**
    * The TwoJS objects that are used to display the point.
@@ -71,47 +75,41 @@ export default class Point extends Nodule {
       0,
       defaultRadiusBack + SETTINGS.point.glowing.annularWidth
     );
-    // Add them to this object. TODO: Why do we do this?
-    this.add(
-      this.glowingBackPoint,
-      this.backPoint,
-      this.glowingFrontPoint,
-      this.frontPoint
-    );
 
     // Set the location of the points front/back/glowing/drawn
     // The location of all points front/back/glowing/drawn is controlled by the
     //  Two.Group that they are all members of. To translate the group is to translate all points
-    this.glowingFrontPoint.translation = this.translation;
-    this.frontPoint.translation = this.translation;
-    this.glowingBackPoint.translation = this.translation;
-    this.backPoint.translation = this.translation;
 
-    // Name the point
-    this.name = "Point-" + this.id;
+    this.glowingFrontPoint.translation = this.defaultScreenVectorLocation;
+    this.frontPoint.translation = this.defaultScreenVectorLocation;
+    this.glowingBackPoint.translation = this.defaultScreenVectorLocation;
+    this.backPoint.translation = this.defaultScreenVectorLocation;
 
     // The points are not initially glowing
-    (this.frontPoint as any).visible = true;
+    (this.frontPoint as any).visible = false;
     (this.glowingFrontPoint as any).visible = false;
-    (this.backPoint as any).visible = true;
+    (this.backPoint as any).visible = false;
     (this.glowingBackPoint as any).visible = false;
   }
 
   /**
-   * Get and Set the location of the point
+   * Get and Set the location of the point in the Default Sphere
    */
-  set positionVector(newPositionVector: Vector3) {
-    this.vectorLocation.copy(newPositionVector).normalize;
+  set positionVector(idealUnitSphereVectorLocation: Vector3) {
+    this.vectorLocation
+      .copy(idealUnitSphereVectorLocation)
+      .multiplyScalar(SETTINGS.boundaryCircle.radius);
     // Set the style based on the z-coordinate of the position
-    if (newPositionVector.z < 0) {
+    if (idealUnitSphereVectorLocation.z < 0) {
       this.backNormalDisplay();
     } else {
       this.frontNormalDisplay();
     }
     // Translate the whole group (i.e. all points front/back/glowing/drawn) to the new center vector
-    this.frontPoint.translation
-      .set(newPositionVector.x, newPositionVector.y)
-      .multiplyScalar(SETTINGS.boundaryCircle.radius);
+    this.defaultScreenVectorLocation.set(
+      this.vectorLocation.x,
+      this.vectorLocation.y
+    );
   }
   get positionVector(): Vector3 {
     return this.vectorLocation;

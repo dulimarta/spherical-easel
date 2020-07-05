@@ -56,27 +56,6 @@ export abstract class SENodule {
     }
   }
 
-  /**
-   * A node is free if it is a point with no parents (i.e. a free point) OR
-   * all its parents are free points
-   *
-   * TODO: I would like not to have to import a plottable but I can't figure out how to
-   * get the obvious isFreePoint:
-   *
-   * public isFreePoint(): boolean {
-   *   return (this instanceof SEPoint) && this.parents.length == 0;
-   * }
-   * to work! :-(
-   *
-   */
-  public isFreePoint(): this is SEPoint {
-    return this.parents.length == 0;
-  }
-  public isFreeToMove(): boolean {
-    if (this.isFreePoint()) return true;
-    return this.parents.every(n => n.isFreePoint());
-  }
-
   /* Adds a given SENodule, n, to the kids array of the current SENodule */
   public addKid(n: SENodule): void {
     this.kids.push(n);
@@ -133,6 +112,7 @@ export abstract class SENodule {
       console.error(`Can't remove ${this.name} safely because of ${dep}`);
     }
   }
+
   /* This removes the current node and all descendants (kids, grand kids, etc.) from the 
     object tree by using the unregister function and remove recursively */
   public removeThisNode(): void {
@@ -143,6 +123,34 @@ export abstract class SENodule {
     while (this.kids.length > 0) {
       this.kids[0].removeThisNode();
     }
+  }
+
+  /**
+   * A node is free if it is a point with no parents (i.e. a free point) OR
+   * all its parents are free points
+   *
+   * TODO: I would like not to have to import a plottable but I can't figure out how to
+   * get the obvious isFreePoint:
+   *
+   * public isFreePoint(): boolean {
+   *   return (this instanceof SEPoint) && this.parents.length == 0;
+   * }
+   * to work! :-(
+   *
+   */
+
+  //Should return true only if this is an instance of SEPointOnObject
+  // public isPointOnObject(): this is SEPointOnObject {
+  //   return false;
+  // }
+
+  public isFreePoint(): this is SEPoint {
+    return this.parents.length == 0;
+  }
+  public isFreeToMove(): boolean {
+    //if (this.isFreePoint() || this.isPointOnObject()) return true; // SEE ABOVE!
+    if (this.isFreePoint()) return true;
+    return this.parents.every(n => n.isFreePoint());
   }
 
   /* This is called to check and see if any of the parents of the current SENodule are outOfDate

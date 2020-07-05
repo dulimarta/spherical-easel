@@ -1,6 +1,7 @@
 import { AppState } from "@/types";
 import Two from "two.js";
 import { SEPoint } from "@/models/SEPoint";
+import { SESegmentMidPoint } from "@/models/SESegmentMidPoint";
 import { Matrix4 } from "three";
 import { SESegment } from "@/models/SESegment";
 import { SECircle } from "@/models/SECircle";
@@ -61,6 +62,21 @@ export default {
     point.ref.addToLayers(state.layers);
   },
   removePoint(state: AppState, pointId: number): void {
+    const pos = state.points.findIndex(x => x.id === pointId);
+    const pos2 = state.nodules.findIndex(x => x.id === pointId);
+    if (pos >= 0) {
+      state.points[pos].ref.removeFromLayers();
+      state.points[pos].removeSelfSafely();
+      state.points.splice(pos, 1);
+      state.nodules.splice(pos2, 1);
+    }
+  },
+  addSegmentMidPoint(state: AppState, point: SESegmentMidPoint): void {
+    state.points.push(point);
+    state.nodules.push(point);
+    point.ref.addToLayers(state.layers);
+  },
+  removeSegmentMidPoint(state: AppState, pointId: number): void {
     const pos = state.points.findIndex(x => x.id === pointId);
     const pos2 = state.nodules.findIndex(x => x.id === pointId);
     if (pos >= 0) {
