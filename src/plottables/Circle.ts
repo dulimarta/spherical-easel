@@ -119,8 +119,8 @@ export default class Circle extends Nodule {
   /**
    * For temporary calculation with ThreeJS objects
    */
-  private tmpVector: Vector3;
-  private tmpMatrix: Matrix4;
+  private tmpVector = new Vector3();
+  private tmpMatrix = new Matrix4();
 
   /**
    * This is the list of original vertices of a circle in the XY plane of radius
@@ -222,15 +222,13 @@ export default class Circle extends Nodule {
     if (center) this.center_.copy(center);
     this.arcRadius = arcRadius || Math.PI / 4;
     this.projectedRadius = Math.sin(this.arcRadius);
-    this.tmpVector = new Vector3();
-    this.tmpMatrix = new Matrix4();
 
     //this.name = "Circle-" + this.id;
   }
 
   // Using this algorithm, the frontPart and backPart are rendered correctly
   // but the center of the circle is off by several pixels
-  private readjust() {
+  private updateDisplay() {
     const sphereRadius = SETTINGS.boundaryCircle.radius; // in pixels
     // The vector to the circle center is ALSO the normal direction of the circle
     // These three vectors will be stored in SECircle -- just copy them from there
@@ -534,7 +532,7 @@ export default class Circle extends Nodule {
    */
   set centerVector(position: Vector3) {
     this.center_.copy(position);
-    this.readjust();
+    this.updateDisplay();
   }
 
   get centerVector(): Vector3 {
@@ -547,7 +545,7 @@ export default class Circle extends Nodule {
   set radius(arcLengthRadius: number) {
     this.arcRadius = arcLengthRadius;
     this.projectedRadius = Math.sin(arcLengthRadius);
-    this.readjust();
+    this.updateDisplay();
   }
   get radius(): number {
     return this.arcRadius;
