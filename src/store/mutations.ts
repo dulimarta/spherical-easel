@@ -30,7 +30,15 @@ const positionVisitor = new PositionVisitor();
 
 export default {
   init(state: AppState): void {
-    state = { ...initialState };
+    state.actionMode = "";
+    state.activeToolName = "";
+    // Do not clear the layers array!
+    state.nodules.clear();
+    state.points.clear();
+    state.lines.clear();
+    state.segments.clear();
+    state.circles.clear();
+    state.intersections.clear();
   },
   setLayers(state: AppState, layers: Two.Group[]): void {
     state.layers = layers;

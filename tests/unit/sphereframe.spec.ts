@@ -17,14 +17,17 @@ import { SECircle } from "@/models/SECircle";
 describe("SphereFrame.vue", () => {
   let wrapper: Wrapper<SphereFrame>;
   let localVue;
-  beforeEach(() => {
+  beforeEach(async () => {
     localVue = createLocalVue();
     localVue.use(Vuex);
     wrapper = shallowMount(SphereFrame, { store: realStore, localVue });
 
     // It is important to reset the actionMode back to subsequent
     // mutation to actionMode will trigger a Vue Watch update
+    wrapper.vm.$store.commit("init");
+    await Vue.nextTick();
     wrapper.vm.$store.commit("setActionMode", { id: "", name: "" });
+    await Vue.nextTick();
   });
 
   afterEach(() => {
@@ -321,6 +324,36 @@ describe("SphereFrame.vue", () => {
       );
       expect(newLine.normalDirection).toBeVector3CloseTo(dir, 3);
     });
+
+    it("creates a point (and not a line) when the mouse is not dragged far enough", async () => {
+      wrapper.vm.$store.commit("setActionMode", {
+        id: "line",
+        name: "Tool Name does not matter"
+      });
+      await Vue.nextTick();
+      const endX = TEST_MOUSE_X;
+      const endY = TEST_MOUSE_Y;
+
+      const prevLineCount: number = wrapper.vm.$store.state.lines.length;
+      const prevPointCount: number = wrapper.vm.$store.state.points.length;
+      await dragMouse(TEST_MOUSE_X, TEST_MOUSE_Y, false, endX, endY, false);
+      Vue.nextTick();
+      const newLineCount: number = wrapper.vm.$store.state.lines.length;
+      const newPointCount: number = wrapper.vm.$store.state.points.length;
+      expect(newLineCount).toEqual(prevLineCount);
+      expect(newPointCount).toBe(prevPointCount + 1);
+      const R = SETTINGS.boundaryCircle.radius;
+      const startZCoord = Math.sqrt(
+        R * R - TEST_MOUSE_X * TEST_MOUSE_X - TEST_MOUSE_Y * TEST_MOUSE_Y
+      );
+      const positionVector = new Vector3(
+        TEST_MOUSE_X,
+        -TEST_MOUSE_Y,
+        startZCoord
+      ).normalize();
+      const newPoint: SEPoint = wrapper.vm.$store.state.points[prevPointCount];
+      expect(newPoint.positionOnSphere).toBeVector3CloseTo(positionVector, 3);
+    });
   });
 
   describe("with SegmentTool", () => {
@@ -503,6 +536,36 @@ describe("SphereFrame.vue", () => {
       );
       expect(newSegment.normalDirection).toBeVector3CloseTo(dir, 3);
     });
+
+    it("creates a point (and not a segment) when the mouse is not dragged far enough", async () => {
+      wrapper.vm.$store.commit("setActionMode", {
+        id: "line",
+        name: "Tool Name does not matter"
+      });
+      await Vue.nextTick();
+      const endX = TEST_MOUSE_X;
+      const endY = TEST_MOUSE_Y;
+
+      const prevSegmentCount: number = wrapper.vm.$store.state.segments.length;
+      const prevPointCount: number = wrapper.vm.$store.state.points.length;
+      await dragMouse(TEST_MOUSE_X, TEST_MOUSE_Y, false, endX, endY, false);
+      Vue.nextTick();
+      const newSegmentCount: number = wrapper.vm.$store.state.segments.length;
+      const newPointCount: number = wrapper.vm.$store.state.points.length;
+      expect(newSegmentCount).toEqual(prevSegmentCount);
+      expect(newPointCount).toBe(prevPointCount + 1);
+      const R = SETTINGS.boundaryCircle.radius;
+      const startZCoord = Math.sqrt(
+        R * R - TEST_MOUSE_X * TEST_MOUSE_X - TEST_MOUSE_Y * TEST_MOUSE_Y
+      );
+      const positionVector = new Vector3(
+        TEST_MOUSE_X,
+        -TEST_MOUSE_Y,
+        startZCoord
+      ).normalize();
+      const newPoint: SEPoint = wrapper.vm.$store.state.points[prevPointCount];
+      expect(newPoint.positionOnSphere).toBeVector3CloseTo(positionVector, 3);
+    });
   });
 
   describe("with CircleTool", () => {
@@ -673,8 +736,45 @@ describe("SphereFrame.vue", () => {
       );
       expect(newCircle.normalDirection).toBeVector3CloseTo(centerVector, 3);
     });
+
+    it("creates a point (and not a circle) when the mouse is not dragged far enough", async () => {
+      wrapper.vm.$store.commit("setActionMode", {
+        id: "circle",
+        name: "Tool Name does not matter"
+      });
+      await Vue.nextTick();
+      const endX = TEST_MOUSE_X;
+      const endY = TEST_MOUSE_Y;
+
+      const prevCircleCount: number = wrapper.vm.$store.state.circles.length;
+      const prevPointCount: number = wrapper.vm.$store.state.points.length;
+      wrapper.vm.$store.state.points.forEach((p: SEPoint) => {
+        console.log("Before", p.name);
+      });
+      await dragMouse(TEST_MOUSE_X, TEST_MOUSE_Y, false, endX, endY, false);
+      Vue.nextTick();
+      const newCircleCount: number = wrapper.vm.$store.state.circles.length;
+      const newPointCount: number = wrapper.vm.$store.state.points.length;
+      wrapper.vm.$store.state.points.forEach((p: SEPoint) => {
+        console.log("After", p.name);
+      });
+      expect(newCircleCount).toEqual(prevCircleCount);
+      expect(newPointCount).toBe(prevPointCount + 1);
+      const R = SETTINGS.boundaryCircle.radius;
+      const startZCoord = Math.sqrt(
+        R * R - TEST_MOUSE_X * TEST_MOUSE_X - TEST_MOUSE_Y * TEST_MOUSE_Y
+      );
+      const positionVector = new Vector3(
+        TEST_MOUSE_X,
+        -TEST_MOUSE_Y,
+        startZCoord
+      ).normalize();
+      const newPoint: SEPoint = wrapper.vm.$store.state.points[prevPointCount];
+      expect(newPoint.positionOnSphere).toBeVector3CloseTo(positionVector, 3);
+    });
   });
-  it("adds a new intersection points ", () => {
+
+  describe("Intersection points ", () => {
     // fail("Incomplete test");
   });
 });
