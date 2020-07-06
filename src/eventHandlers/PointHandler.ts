@@ -1,14 +1,14 @@
 import MouseHandler from "./MouseHandler";
 import Two from "two.js";
-import { Vector3, Matrix4 } from "three";
-import SETTINGS, { LAYER } from "@/global-settings";
+import { Vector3 } from "three";
+// import SETTINGS from "@/global-settings";
 import { SEPoint } from "@/models/SEPoint";
 import Point from "@/plottables/Point";
 import { AddPointCommand } from "@/commands/AddPointCommand";
 import { DisplayStyle } from "@/plottables/Nodule";
 
-const frontPointRadius = SETTINGS.point.temp.radius.front;
-const backPointRadius = SETTINGS.point.temp.radius.back;
+// const frontPointRadius = SETTINGS.point.temp.radius.front;
+// const backPointRadius = SETTINGS.point.temp.radius.back;
 
 export default class PointHandler extends MouseHandler {
   // Center vector of the created point

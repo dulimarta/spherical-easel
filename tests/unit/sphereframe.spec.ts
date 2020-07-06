@@ -111,12 +111,12 @@ describe("SphereFrame.vue", () => {
 
     it("adds a new (foreground) point when clicking on sphere while using PointTool", async () => {
       const p = await makePoint(false /* foreground point */);
-      expect(p.positionOnSphere.z).toBeGreaterThan(0);
+      expect(p.vectorPosition.z).toBeGreaterThan(0);
     });
 
     it("adds a new (background) point when clicking on sphere while using PointTool", async () => {
       const p = await makePoint(true /* back ground point */);
-      expect(p.positionOnSphere.z).toBeLessThan(0);
+      expect(p.vectorPosition.z).toBeLessThan(0);
     });
   });
 
@@ -187,14 +187,11 @@ describe("SphereFrame.vue", () => {
       const dir = new Vector3()
         .crossVectors(startVector, endVector)
         .normalize();
-      expect(newLine.startPoint.positionOnSphere).toBeVector3CloseTo(
+      expect(newLine.startPoint.vectorPosition).toBeVector3CloseTo(
         startVector,
         3
       );
-      expect(newLine.endPoint.positionOnSphere).toBeVector3CloseTo(
-        endVector,
-        3
-      );
+      expect(newLine.endPoint.vectorPosition).toBeVector3CloseTo(endVector, 3);
       expect(newLine.normalDirection).toBeVector3CloseTo(dir, 3);
     });
 
@@ -229,14 +226,11 @@ describe("SphereFrame.vue", () => {
       const dir = new Vector3()
         .crossVectors(startVector, endVector)
         .normalize();
-      expect(newLine.startPoint.positionOnSphere).toBeVector3CloseTo(
+      expect(newLine.startPoint.vectorPosition).toBeVector3CloseTo(
         startVector,
         3
       );
-      expect(newLine.endPoint.positionOnSphere).toBeVector3CloseTo(
-        endVector,
-        3
-      );
+      expect(newLine.endPoint.vectorPosition).toBeVector3CloseTo(endVector, 3);
       expect(newLine.normalDirection).toBeVector3CloseTo(dir, 3);
     });
 
@@ -271,14 +265,11 @@ describe("SphereFrame.vue", () => {
       const dir = new Vector3()
         .crossVectors(startVector, endVector)
         .normalize();
-      expect(newLine.startPoint.positionOnSphere).toBeVector3CloseTo(
+      expect(newLine.startPoint.vectorPosition).toBeVector3CloseTo(
         startVector,
         3
       );
-      expect(newLine.endPoint.positionOnSphere).toBeVector3CloseTo(
-        endVector,
-        3
-      );
+      expect(newLine.endPoint.vectorPosition).toBeVector3CloseTo(endVector, 3);
       expect(newLine.normalDirection).toBeVector3CloseTo(dir, 3);
     });
 
@@ -314,14 +305,11 @@ describe("SphereFrame.vue", () => {
       const dir = new Vector3()
         .crossVectors(startVector, endVector)
         .normalize();
-      expect(newLine.startPoint.positionOnSphere).toBeVector3CloseTo(
+      expect(newLine.startPoint.vectorPosition).toBeVector3CloseTo(
         startVector,
         3
       );
-      expect(newLine.endPoint.positionOnSphere).toBeVector3CloseTo(
-        endVector,
-        3
-      );
+      expect(newLine.endPoint.vectorPosition).toBeVector3CloseTo(endVector, 3);
       expect(newLine.normalDirection).toBeVector3CloseTo(dir, 3);
     });
 
@@ -352,7 +340,7 @@ describe("SphereFrame.vue", () => {
         startZCoord
       ).normalize();
       const newPoint: SEPoint = wrapper.vm.$store.state.points[prevPointCount];
-      expect(newPoint.positionOnSphere).toBeVector3CloseTo(positionVector, 3);
+      expect(newPoint.vectorPosition).toBeVector3CloseTo(positionVector, 3);
     });
   });
 
@@ -391,11 +379,11 @@ describe("SphereFrame.vue", () => {
       const dir = new Vector3()
         .crossVectors(startVector, endVector)
         .normalize();
-      expect(newSegment.startPoint.positionOnSphere).toBeVector3CloseTo(
+      expect(newSegment.startPoint.vectorPosition).toBeVector3CloseTo(
         startVector,
         3
       );
-      expect(newSegment.endPoint.positionOnSphere).toBeVector3CloseTo(
+      expect(newSegment.endPoint.vectorPosition).toBeVector3CloseTo(
         endVector,
         3
       );
@@ -436,11 +424,11 @@ describe("SphereFrame.vue", () => {
       const dir = new Vector3()
         .crossVectors(startVector, endVector)
         .normalize();
-      expect(newSegment.startPoint.positionOnSphere).toBeVector3CloseTo(
+      expect(newSegment.startPoint.vectorPosition).toBeVector3CloseTo(
         startVector,
         3
       );
-      expect(newSegment.endPoint.positionOnSphere).toBeVector3CloseTo(
+      expect(newSegment.endPoint.vectorPosition).toBeVector3CloseTo(
         endVector,
         3
       );
@@ -481,11 +469,11 @@ describe("SphereFrame.vue", () => {
       const dir = new Vector3()
         .crossVectors(startVector, endVector)
         .normalize();
-      expect(newSegment.startPoint.positionOnSphere).toBeVector3CloseTo(
+      expect(newSegment.startPoint.vectorPosition).toBeVector3CloseTo(
         startVector,
         3
       );
-      expect(newSegment.endPoint.positionOnSphere).toBeVector3CloseTo(
+      expect(newSegment.endPoint.vectorPosition).toBeVector3CloseTo(
         endVector,
         3
       );
@@ -526,11 +514,11 @@ describe("SphereFrame.vue", () => {
       const dir = new Vector3()
         .crossVectors(startVector, endVector)
         .normalize();
-      expect(newSegment.startPoint.positionOnSphere).toBeVector3CloseTo(
+      expect(newSegment.startPoint.vectorPosition).toBeVector3CloseTo(
         startVector,
         3
       );
-      expect(newSegment.endPoint.positionOnSphere).toBeVector3CloseTo(
+      expect(newSegment.endPoint.vectorPosition).toBeVector3CloseTo(
         endVector,
         3
       );
@@ -564,7 +552,7 @@ describe("SphereFrame.vue", () => {
         startZCoord
       ).normalize();
       const newPoint: SEPoint = wrapper.vm.$store.state.points[prevPointCount];
-      expect(newPoint.positionOnSphere).toBeVector3CloseTo(positionVector, 3);
+      expect(newPoint.vectorPosition).toBeVector3CloseTo(positionVector, 3);
     });
   });
 
@@ -600,11 +588,11 @@ describe("SphereFrame.vue", () => {
 
       // Radius vector is foreground
       const radiusVector = new Vector3(endX, -endY, endZCoord).normalize();
-      expect(newCircle.centerPoint.positionOnSphere).toBeVector3CloseTo(
+      expect(newCircle.centerPoint.vectorPosition).toBeVector3CloseTo(
         centerVector,
         3
       );
-      expect(newCircle.circlePoint.positionOnSphere).toBeVector3CloseTo(
+      expect(newCircle.circlePoint.vectorPosition).toBeVector3CloseTo(
         radiusVector,
         3
       );
@@ -642,11 +630,11 @@ describe("SphereFrame.vue", () => {
 
       // Radius vector is background
       const radiusVector = new Vector3(endX, -endY, -endZCoord).normalize();
-      expect(newCircle.centerPoint.positionOnSphere).toBeVector3CloseTo(
+      expect(newCircle.centerPoint.vectorPosition).toBeVector3CloseTo(
         centerVector,
         3
       );
-      expect(newCircle.circlePoint.positionOnSphere).toBeVector3CloseTo(
+      expect(newCircle.circlePoint.vectorPosition).toBeVector3CloseTo(
         radiusVector,
         3
       );
@@ -684,11 +672,11 @@ describe("SphereFrame.vue", () => {
 
       // Radius vector is foreground
       const radiusVector = new Vector3(endX, -endY, endZCoord).normalize();
-      expect(newCircle.centerPoint.positionOnSphere).toBeVector3CloseTo(
+      expect(newCircle.centerPoint.vectorPosition).toBeVector3CloseTo(
         centerVector,
         3
       );
-      expect(newCircle.circlePoint.positionOnSphere).toBeVector3CloseTo(
+      expect(newCircle.circlePoint.vectorPosition).toBeVector3CloseTo(
         radiusVector,
         3
       );
@@ -726,11 +714,11 @@ describe("SphereFrame.vue", () => {
 
       // Radius vector is background
       const radiusVector = new Vector3(endX, -endY, -endZCoord).normalize();
-      expect(newCircle.centerPoint.positionOnSphere).toBeVector3CloseTo(
+      expect(newCircle.centerPoint.vectorPosition).toBeVector3CloseTo(
         centerVector,
         3
       );
-      expect(newCircle.circlePoint.positionOnSphere).toBeVector3CloseTo(
+      expect(newCircle.circlePoint.vectorPosition).toBeVector3CloseTo(
         radiusVector,
         3
       );
@@ -770,7 +758,7 @@ describe("SphereFrame.vue", () => {
         startZCoord
       ).normalize();
       const newPoint: SEPoint = wrapper.vm.$store.state.points[prevPointCount];
-      expect(newPoint.positionOnSphere).toBeVector3CloseTo(positionVector, 3);
+      expect(newPoint.vectorPosition).toBeVector3CloseTo(positionVector, 3);
     });
   });
 

@@ -19,16 +19,16 @@ export class SESegment extends SENodule implements Visitable {
   /**
    * The model SE object that is the start of the segment
    */
-  private startPoint: SEPoint;
+  private _startPoint: SEPoint;
   /**
    * The model SE object that is the mid point of the segment on the unit ideal sphere
    * IT IS NEVER DISPLAYED, but is need to smoothly update the segment
    */
-  public midPoint: SESegmentMidPoint;
+  public _midPoint: SESegmentMidPoint;
   /**
    * The model SE object that is the end of the segment
    */
-  private endPoint: SEPoint;
+  private _endPoint: SEPoint;
 
   /**
    *
@@ -46,9 +46,9 @@ export class SESegment extends SENodule implements Visitable {
     super();
     this.ref = seg;
     seg.owner = this;
-    this.startPoint = start;
-    this.midPoint = mid;
-    this.endPoint = end;
+    this._startPoint = start;
+    this._midPoint = mid;
+    this._endPoint = end;
 
     SEGMENT_COUNT++;
     this.name = `Ls-${SEGMENT_COUNT}`;
@@ -63,15 +63,15 @@ export class SESegment extends SENodule implements Visitable {
     v.actionOnSegment(this);
   }
 
-  get segStartPoint(): SEPoint {
-    return this.startPoint;
+  get startPoint(): SEPoint {
+    return this._startPoint;
   }
 
-  get segEndPoint(): SEPoint {
-    return this.endPoint;
+  get endPoint(): SEPoint {
+    return this._endPoint;
   }
-  get segMidPoint(): SESegmentMidPoint {
-    return this.midPoint;
+  get midPoint(): SESegmentMidPoint {
+    return this._midPoint;
   }
 
   get normalDirection(): Vector3 {

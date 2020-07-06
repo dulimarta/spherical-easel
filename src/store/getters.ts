@@ -75,8 +75,10 @@ function intersectLineWithSegment(
   //   } (${s.normalDirection.toFixed(2)}) is ${tempVec.toFixed(3)}`
   // );
 
-  const dist1 = tempVec.distanceTo(s.midPoint);
-  const dist2 = tempVec.multiplyScalar(-1).distanceTo(s.midPoint);
+  const dist1 = tempVec.distanceTo(s.midPoint.vectorPosition);
+  const dist2 = tempVec
+    .multiplyScalar(-1)
+    .distanceTo(s.midPoint.vectorPosition);
   const x = new SEIntersectionPoint(new Point(), l, s);
   out.push(x);
   // Choose the closest between the point and its antipodal
@@ -87,57 +89,6 @@ function intersectLineWithSegment(
   }
 
   return out;
-}
-
-/**
- * Use the binary search algorithm to find the zero crossing of the
- * given objective function within a range of angles
- *
- * @param fromPoint start point on the circle
- * @param rotAxis normal vector of the circle
- * @param startAngle start of the range
- * @param endAngle end of the range
- * @param objFunction objective function to use to check for zeros
- */
-function binarySearch(
-  fromPoint: Vector3,
-  rotAxis: Vector3,
-  startAngle: number,
-  endAngle: number,
-  objFunction: (arg: Vector3) => number
-): Vector3 {
-  const s = new Vector3();
-  const e = new Vector3();
-  const m = new Vector3();
-  s.copy(fromPoint);
-  let Fs = objFunction(s);
-  e.copy(fromPoint).applyAxisAngle(rotAxis, endAngle);
-  let Fe = objFunction(e);
-  while (Math.abs(startAngle - endAngle).toDegrees() > 0.01) {
-    const midAngle = (startAngle + endAngle) / 2;
-    m.copy(s).applyAxisAngle(rotAxis, midAngle - startAngle);
-    const Fm = objFunction(m);
-    // console.debug(
-    //   `Potential solution between ${startAngle
-    //     .toDegrees()
-    //     .toFixed(1)} and ${endAngle.toDegrees().toFixed(1)}`
-    // );
-    console.debug(`F(s)=${Fs} F(m)=${Fm} F(e)=${Fe}`);
-
-    // FIXME: what if there is no zero crossing?
-    if (Math.sign(Fs) !== Math.sign(Fm)) {
-      // Continue searching between start and mid
-      Fe = Fm;
-      e.copy(m);
-      endAngle = midAngle;
-    } else {
-      // Continue searching between mid and end
-      Fs = Fm;
-      s.copy(m);
-      startAngle = midAngle;
-    }
-  }
-  return m;
 }
 
 /**

@@ -1,6 +1,6 @@
 /** @format */
 
-import { Vector3, Matrix4 } from "three";
+import { Vector3 } from "three";
 import MouseHandler from "./MouseHandler";
 import Point from "@/plottables/Point";
 import Line from "@/plottables/Line";

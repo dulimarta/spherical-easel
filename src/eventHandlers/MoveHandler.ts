@@ -1,27 +1,18 @@
 /** @format */
 
 import MouseHandler from "./MouseHandler";
-// import SETTINGS from "@/global-settings";
 import Two from "two.js";
-import { Matrix4, Vector3, Matrix3 } from "three";
+import { Matrix4, Vector3 } from "three";
 import { SEPoint } from "@/models/SEPoint";
 import { SENodule } from "@/models/SENodule";
 import { SELine } from "@/models/SELine";
 import { SESegment } from "@/models/SESegment";
 import { SECircle } from "@/models/SECircle";
-import Segment from "@/plottables/Segment";
-import SETTINGS, { LAYER } from "@/global-settings";
+import SETTINGS from "@/global-settings";
 import EventBus from "./EventBus";
 import { RotateSphereCommand } from "@/commands/RotateSphereCommand";
-import Point from "@/plottables/Point";
-const tmpMatrix = new Matrix4();
-const tmpNormal = new Matrix3();
 const tmpVector1 = new Vector3();
 const tmpVector2 = new Vector3();
-const arcNormal1 = new Vector3();
-const arcNormal2 = new Vector3();
-const currCircleCenter = new Vector3();
-const prevCircleOuter = new Vector3();
 /** Use in the rotation of sphere move event */
 const desiredZAxis = new Vector3();
 

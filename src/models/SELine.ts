@@ -5,8 +5,6 @@ import { Visitable } from "@/visitors/Visitable";
 import { Visitor } from "@/visitors/Visitor";
 import { SEPoint } from "./SEPoint";
 
-const tmpVec1 = new Vector3();
-const tmpVec2 = new Vector3();
 let LINE_COUNT = 0;
 export class SELine extends SENodule implements Visitable {
   /**

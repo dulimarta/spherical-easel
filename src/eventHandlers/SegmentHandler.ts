@@ -1,12 +1,11 @@
 /** @format */
 
 import Two from "two.js";
-import { Matrix4, Vector3, LessStencilFunc, BooleanKeyframeTrack } from "three";
+import { Vector3 } from "three";
 import MouseHandler from "./MouseHandler";
 import { SEPoint } from "@/models/SEPoint";
 import Segment from "@/plottables/Segment";
 import Point from "@/plottables/Point";
-import globalSettings from "@/global-settings";
 import { CommandGroup } from "@/commands/CommandGroup";
 import { AddPointCommand } from "@/commands/AddPointCommand";
 import { AddSegmentCommand } from "@/commands/AddSegmentCommand";

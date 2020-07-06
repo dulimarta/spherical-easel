@@ -1,8 +1,7 @@
 import { ToolStrategy } from "./ToolStrategy";
-import { Vector2, Vector3 } from "three";
+import { Vector2 } from "three";
 import { ZoomSphereCommand } from "@/commands/ZoomSphereCommand";
 import AppStore from "@/store";
-// import { State } from "vuex-class";
 import EventBus from "./EventBus";
 import SETTINGS from "@/global-settings";
 
