@@ -58,10 +58,10 @@ export class SECircle extends SENodule implements Visitable {
   }
 
   public update(): void {
-    this.ref.centerVector = this.centerPoint.positionOnSphere;
+    this.ref.centerVector = this.centerPoint.vectorPosition;
 
-    const newRadius = this.centerPoint.positionOnSphere.angleTo(
-      this.circlePoint.positionOnSphere
+    const newRadius = this.centerPoint.vectorPosition.angleTo(
+      this.circlePoint.vectorPosition
     );
     // console.debug(
     //   "Must update SECircle radius to",
@@ -71,7 +71,7 @@ export class SECircle extends SENodule implements Visitable {
     // );
 
     this.ref.radius = newRadius;
-    this.ref.centerVector = this.centerAt.positionOnSphere;
+    this.ref.centerVector = this.centerAt.vectorPosition;
     this.setOutOfDate(false);
   }
 

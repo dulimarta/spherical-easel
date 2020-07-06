@@ -36,12 +36,12 @@ export default class PointHandler extends MouseHandler {
       const newPoint = new Point();
       // Set the display to the default values
       newPoint.stylize(DisplayStyle.DEFAULT);
-      // Set the glowing display
+      // Set up the glowing display
       newPoint.stylize(DisplayStyle.GLOWING);
       // Create the model object for the new point and link them
       const vtx = new SEPoint(newPoint);
-      vtx.positionOnSphere = this.currentSpherePoint;
-      // Create and execute the command to create a new point
+      vtx.vectorPosition = this.currentSphereVector;
+      // Create and execute the command to create a new point for undo/redo
       new AddPointCommand(vtx).execute();
     }
   }
@@ -52,16 +52,16 @@ export default class PointHandler extends MouseHandler {
     if (this.isOnSphere) {
       if (!this.isTemporaryPointAdded) {
         this.isTemporaryPointAdded = true;
-        // Add the temporary point to the midground
-        this.canvas.add(this.temporaryPoint);
+        // Add the temporary point to the appropriate layers
+        this.temporaryPoint.addToLayers(this.layers);
       }
       // Move the temporary point to the location of the mouse event
-      this.temporaryPoint.translation = this.currentScreenPoint;
+      this.temporaryPoint.positionVector = this.currentSphereVector;
       // Set the display of the temporary point so the correct front/back TwoJS object is shown
       //this.temporaryPoint.normalDisplay();
     } else if (this.isTemporaryPointAdded) {
       //if not on the sphere and the temporary segment has been added remove the temporary objects
-      this.temporaryPoint.remove();
+      this.temporaryPoint.removeFromLayers();
       this.isTemporaryPointAdded = false;
     }
   }
@@ -78,12 +78,12 @@ export default class PointHandler extends MouseHandler {
   activate(): void {
     super.activate();
     // Add the the temporary point to the canvas
-    this.canvas.add(this.temporaryPoint);
+    this.temporaryPoint.addToLayers(this.layers);
     // Set the display of the temporary point so the correct front/back TwoJS object is shown
     this.temporaryPoint.normalDisplay();
   }
   deactivate(): void {
     super.deactivate();
-    this.temporaryPoint.remove();
+    this.temporaryPoint.removeFromLayers();
   }
 }

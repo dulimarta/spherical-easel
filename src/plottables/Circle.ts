@@ -44,7 +44,9 @@ export default class Circle extends Nodule {
   private glowingBackPart: Two.Path;
 
   /**
-   * The TwoJS objects to display the front/back fill
+   * The TwoJS objects to display the front/back fill. These are different than the front/back parts
+   *  because when the circle is dragged between the front and back, the fill region includes some
+   *  of the boundary circle and is therefore different from the front/back parts.
    */
   private frontFill: Two.Path;
   private backFill: Two.Path;
@@ -197,14 +199,6 @@ export default class Circle extends Nodule {
       /*curve*/ false
     );
 
-    //TODO: remove the Nodule extension of Two.Group??
-    this.add(this.backPart);
-    this.add(this.backFill);
-    this.add(this.frontPart);
-    this.add(this.frontFill);
-    this.add(this.glowingBackPart);
-    this.add(this.glowingFrontPart);
-
     // Set the styles that are always true
     // The front/back parts have no fill because that is handled by the front/back fill
     // The front/back fill have no stroke because that is handled by the front/back part
@@ -231,7 +225,7 @@ export default class Circle extends Nodule {
     this.tmpVector = new Vector3();
     this.tmpMatrix = new Matrix4();
 
-    this.name = "Circle-" + this.id;
+    //this.name = "Circle-" + this.id;
   }
 
   // Using this algorithm, the frontPart and backPart are rendered correctly
@@ -605,8 +599,8 @@ export default class Circle extends Nodule {
     // Use the constructor for this class to create a template to copy over the
     // values from the current (the `this`) Circle object
     const dup = new Circle(this.center_, this.arcRadius);
-    dup.rotation = this.rotation;
-    dup.translation.copy(this.translation);
+    //dup.rotation = this.rotation;
+    //dup.translation.copy(this.translation);
     // Duplicate the non-glowing parts
     dup.frontPart.closed = this.frontPart.closed;
     dup.frontPart.rotation = this.frontPart.rotation;

@@ -104,18 +104,12 @@ export default class Line extends Nodule {
     this.backHalf.noFill();
     this.glowingBackHalf.noFill();
 
-    this.add(
-      this.backHalf,
-      this.frontHalf,
-      this.glowingBackHalf,
-      this.glowingFrontHalf
-    );
     // Be sure to clone() the incoming start and end points
     // Otherwise update by other Line will affect this one!
     this.normalDirection = new Vector3();
     // this.normalDirection.crossVectors(this.start, this.end);
     // The back half will be dynamically added to the group
-    this.name = "Line-" + this.id;
+    //this.name = "Line-" + this.id;
 
     // For debugging only
     // Major axis is along the X-axis
@@ -295,7 +289,7 @@ export default class Line extends Nodule {
     dup.end_.copy(this.end_);
     // dup.start.copy(this.start);
     dup.normalDirection.copy(this.normalDirection);
-    dup.rotation = this.rotation;
+    //dup.rotation = this.rotation;
     dup.majorAxis.rotation = this.majorAxis.rotation;
     dup.minorAxis.rotation = this.minorAxis.rotation;
     dup.frontHalf.rotation = this.frontHalf.rotation;

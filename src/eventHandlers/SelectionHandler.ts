@@ -11,11 +11,11 @@ export default class SelectionHandler extends MouseHandler {
 
   keyPressHandler = (e: KeyboardEvent): void => {
     // None
-    if (this.hitNodes?.length <= 1) return;
+    if (this.hitNodules?.length <= 1) return;
     if (e.key.match(/[0-9]/)) {
       // console.debug("Digit pressed");
       const val = Number(e.key) - 1;
-      this.hitNodes.forEach((n, pos) => {
+      this.hitNodules.forEach((n, pos) => {
         if (pos === val) {
           (n as any).ref.glowingDisplay();
           // Show the name of the selected item
@@ -31,11 +31,11 @@ export default class SelectionHandler extends MouseHandler {
   }
 
   mousePressed(event: MouseEvent): void {
-    if (this.hitNodes.length == 1) {
-      console.debug("Single selection", this.hitNodes[0].name);
-    } else if (this.hitNodes.length > 1) {
+    if (this.hitNodules.length == 1) {
+      console.debug("Single selection", this.hitNodules[0].name);
+    } else if (this.hitNodules.length > 1) {
       console.debug("Multiple selections");
-      this.hitNodes.forEach(n => {
+      this.hitNodules.forEach(n => {
         console.debug(n.name);
       });
     }

@@ -1,4 +1,4 @@
-% Stereographic and cylindrical map projections
+% Based on Stereographic and cylindrical map projections
 % Author: Tomasz M. Trzeciak
 % Source: LaTeX-Community.org 
 %         <http://www.latex-community.org/viewtopic.php?f=4&t=2111>
@@ -96,8 +96,10 @@
 \draw (-8,-0.7*\R) node[below] {Ideal Unit Sphere};
 
 \draw[ultra thick,->] (-6.3,0.0) -- (-2.7,0.0); 
-\draw (-4.5,0.3) node[above]{Transformation Matrix};
+\draw (-4.5,0.3) node[above]{Scaling Factor};
 
+\draw (-9.5,2.5) node[above]{Rotation};
+\draw[->, ultra thick] (-8,0)+(-0.5*\R,0.5*\R) .. controls (-10,2) and (-9,3) .. (-8.5,0.6*\R) ;
 
 \draw[Viewport, color=blue] (-2*\R,-1.4*\R) rectangle (2.*\R,1.4*\R);
 \draw[DefaultScreenPlane] (-2*\R,-1.4*\R) rectangle (2*\R,1.4*\R);

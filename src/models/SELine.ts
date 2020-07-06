@@ -76,8 +76,8 @@ export class SELine extends SENodule implements Visitable {
     //   "end SEPoint at",
     //   this.end.positionOnSphere.toFixed(1)
     // );
-    this.ref.startPoint = this.start.positionOnSphere;
-    this.ref.endPoint = this.end.positionOnSphere;
+    this.ref.startPoint = this.start.vectorPosition;
+    this.ref.endPoint = this.end.vectorPosition;
     this.setOutOfDate(false);
   }
 }

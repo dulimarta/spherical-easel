@@ -1,7 +1,7 @@
 import { SECircle } from "@/models/SECircle";
 import { SESegment } from "@/models/SESegment";
 import { SELine } from "@/models/SELine";
-import { SEIntersection } from "@/models/SEIntersection";
+import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import { AppState } from "@/types";
 import { Vector3 } from "three";
 import Two from "two.js";
@@ -41,7 +41,7 @@ const tempVec = new Vector3();
 function intersectLineWithLine(
   lineOne: SELine,
   lineTwo: SELine
-): SEIntersection[] {
+): SEIntersectionPoint[] {
   const out = [];
   tempVec
     .crossVectors(lineOne.normalDirection, lineTwo.normalDirection)
@@ -53,17 +53,20 @@ function intersectLineWithLine(
   //     2
   //   )}) is ${tempVec.toFixed(3)}`
   // );
-  const x = new SEIntersection(new Point(), lineOne, lineTwo);
+  const x = new SEIntersectionPoint(new Point(), lineOne, lineTwo);
   out.push(x);
-  x.positionOnSphere = tempVec;
+  x.vectorPosition = tempVec;
 
-  const x2 = new SEIntersection(new Point(), lineOne, lineTwo);
+  const x2 = new SEIntersectionPoint(new Point(), lineOne, lineTwo);
   out.push(x2);
-  x2.positionOnSphere = tempVec.multiplyScalar(-1);
+  x2.vectorPosition = tempVec.multiplyScalar(-1);
   return out;
 }
 
-function intersectLineWithSegment(l: SELine, s: SESegment): SEIntersection[] {
+function intersectLineWithSegment(
+  l: SELine,
+  s: SESegment
+): SEIntersectionPoint[] {
   const out = [];
   tempVec.crossVectors(l.normalDirection, s.normalDirection).normalize();
   // console.debug(
@@ -72,15 +75,15 @@ function intersectLineWithSegment(l: SELine, s: SESegment): SEIntersection[] {
   //   } (${s.normalDirection.toFixed(2)}) is ${tempVec.toFixed(3)}`
   // );
 
-  const dist1 = tempVec.distanceTo(s.midVector);
-  const dist2 = tempVec.multiplyScalar(-1).distanceTo(s.midVector);
-  const x = new SEIntersection(new Point(), l, s);
+  const dist1 = tempVec.distanceTo(s.midPoint);
+  const dist2 = tempVec.multiplyScalar(-1).distanceTo(s.midPoint);
+  const x = new SEIntersectionPoint(new Point(), l, s);
   out.push(x);
   // Choose the closest between the point and its antipodal
   if (dist2 < dist1) {
-    x.positionOnSphere = tempVec;
+    x.vectorPosition = tempVec;
   } else {
-    x.positionOnSphere = tempVec.multiplyScalar(-1);
+    x.vectorPosition = tempVec.multiplyScalar(-1);
   }
 
   return out;
@@ -270,8 +273,8 @@ function intersectLineWithCircle(
   n: SELine,
   c: SECircle
   // layer: Two.Group
-): SEIntersection[] {
-  const out: SEIntersection[] = [];
+): SEIntersectionPoint[] {
+  const out: SEIntersectionPoint[] = [];
 
   // const x1 = new SEIntersection(new Point(), n, c);
   // x1.positionOnSphere = tempVec;
@@ -284,8 +287,8 @@ function intersectLineWithCircle(
   );
 
   tmp.forEach((v: Vector3) => {
-    const x = new SEIntersection(new Point(), n, c);
-    x.positionOnSphere = v;
+    const x = new SEIntersectionPoint(new Point(), n, c);
+    x.vectorPosition = v;
     out.push(x);
   });
   return out;
@@ -294,19 +297,19 @@ function intersectLineWithCircle(
 function intersectSegmentWithSegment(
   s1: SESegment,
   s2: SESegment
-): SEIntersection[] {
-  const out: SEIntersection[] = [];
+): SEIntersectionPoint[] {
+  const out: SEIntersectionPoint[] = [];
   tempVec.crossVectors(s1.normalDirection, s2.normalDirection).normalize();
   if (s1.isPositionInsideArc(tempVec) && s2.isPositionInsideArc(tempVec)) {
-    const x = new SEIntersection(new Point(), s1, s2);
+    const x = new SEIntersectionPoint(new Point(), s1, s2);
     out.push(x);
-    x.positionOnSphere = tempVec;
+    x.vectorPosition = tempVec;
   }
   tempVec.multiplyScalar(-1); // Antipodal point
   if (s1.isPositionInsideArc(tempVec) && s2.isPositionInsideArc(tempVec)) {
-    const x = new SEIntersection(new Point(), s1, s2);
+    const x = new SEIntersectionPoint(new Point(), s1, s2);
     out.push(x);
-    x.positionOnSphere = tempVec;
+    x.vectorPosition = tempVec;
   }
   return out;
 }
@@ -314,13 +317,13 @@ function intersectSegmentWithSegment(
 function intersectSegmentWithCircle(
   s: SESegment,
   c: SECircle
-): SEIntersection[] {
-  const out: SEIntersection[] = [];
+): SEIntersectionPoint[] {
+  const out: SEIntersectionPoint[] = [];
   intersectCircles(s.normalDirection, Math.PI / 2, c.normalDirection, c.radius)
     .filter((p: Vector3) => s.isPositionInsideArc(p))
     .forEach((p: Vector3) => {
-      const x = new SEIntersection(new Point(), s, c);
-      x.positionOnSphere = p;
+      const x = new SEIntersectionPoint(new Point(), s, c);
+      x.vectorPosition = p;
       out.push(x);
     });
   return out;
@@ -328,7 +331,7 @@ function intersectSegmentWithCircle(
 function intersectCircleWithCircle(
   c1: SECircle,
   c2: SECircle
-): SEIntersection[] {
+): SEIntersectionPoint[] {
   return (c1.radius < c2.radius
     ? intersectCircles(
         c1.normalDirection,
@@ -343,53 +346,54 @@ function intersectCircleWithCircle(
         c1.radius
       )
   ).map((p: Vector3) => {
-    const x = new SEIntersection(new Point(), c1, c2);
+    const x = new SEIntersectionPoint(new Point(), c1, c2);
     // x.setShowing(true);
-    x.positionOnSphere = p;
+    x.vectorPosition = p;
     return x;
   });
 }
 
 export default {
   findNearbyObjects: (state: AppState) => (
-    idealPosition: Vector3,
+    unitIdealVector: Vector3,
     screenPosition: Two.Vector
   ): SENodule[] => {
-    return state.nodules.filter(obj => obj.isHitAt(idealPosition));
+    return state.nodules.filter(obj => obj.isHitAt(unitIdealVector));
   },
   /** Find nearby points by checking the distance in the ideal sphere
    * or screen distance (in pixels)
    */
   findNearbyPoints: (state: AppState) => (
-    idealPosition: Vector3,
+    unitIdealVector: Vector3,
     screenPosition: Two.Vector
   ): SEPoint[] => {
     return state.points.filter(
       p =>
-        p.isHitAt(idealPosition) &&
-        p.ref.translation.distanceTo(screenPosition) < PIXEL_CLOSE_ENOUGH
+        p.isHitAt(unitIdealVector) &&
+        p.ref.defaultScreenVectorLocation.distanceTo(screenPosition) <
+          PIXEL_CLOSE_ENOUGH
     );
   },
 
   /** When a point is on a geodesic circle, it has to be perpendicular to
    * the normal direction of that circle */
   findNearbyLines: (state: AppState) => (
-    idealPosition: Vector3,
+    unitIdealVector: Vector3,
     screenPosition: Two.Vector
   ): SELine[] => {
-    return state.lines.filter((z: SELine) => z.isHitAt(idealPosition));
+    return state.lines.filter((z: SELine) => z.isHitAt(unitIdealVector));
   },
   findNearbySegments: (state: AppState) => (
-    idealPosition: Vector3,
+    unitIdealVector: Vector3,
     screenPosition: Two.Vector
   ): SESegment[] => {
-    return state.segments.filter((z: SESegment) => z.isHitAt(idealPosition));
+    return state.segments.filter((z: SESegment) => z.isHitAt(unitIdealVector));
   },
   findNearbyCircles: (state: AppState) => (
-    idealPosition: Vector3,
+    unitIdealVector: Vector3,
     screenPosition: Two.Vector
   ): SECircle[] => {
-    return state.circles.filter((z: SECircle) => z.isHitAt(idealPosition));
+    return state.circles.filter((z: SECircle) => z.isHitAt(unitIdealVector));
   },
   // forwardTransform: (state: AppState): Matrix4 => {
   //   tmpMatrix.fromArray(state.transformMatElements);
@@ -401,7 +405,7 @@ export default {
   // },
   determineIntersectionsWithLine: (state: AppState) => (
     line: SELine
-  ): SEIntersection[] => {
+  ): SEIntersectionPoint[] => {
     return [
       // intersection with other lines
       ...state.lines
@@ -419,7 +423,7 @@ export default {
   },
   determineIntersectionsWithSegment: (state: AppState) => (
     segment: SESegment
-  ): SEIntersection[] => {
+  ): SEIntersectionPoint[] => {
     return [
       ...state.lines.flatMap((l: SELine) =>
         intersectLineWithSegment(l, segment)
@@ -434,7 +438,7 @@ export default {
   },
   determineIntersectionsWithCircle: (state: AppState) => (
     circle: SECircle
-  ): SEIntersection[] => {
+  ): SEIntersectionPoint[] => {
     return [
       ...state.lines.flatMap((l: SELine) => intersectLineWithCircle(l, circle)),
       ...state.segments.flatMap((s: SESegment) =>

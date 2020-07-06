@@ -6,7 +6,7 @@ import { SELine } from "@/models/SELine";
 import { SECircle } from "@/models/SECircle";
 import { SESegment } from "@/models/SESegment";
 import { SENodule } from "@/models/SENodule";
-import { SEIntersection } from "@/models/SEIntersection";
+import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 
 export interface Selectable {
   hit(x: number, y: number, coord: unknown, who: unknown): boolean;
@@ -25,7 +25,7 @@ export interface AppState {
   segments: SESegment[];
   circles: SECircle[];
   nodules: SENodule[];
-  intersections: SEIntersection[];
+  intersections: SEIntersectionPoint[];
 }
 /* This interface lists all the properties that each tool/button must have. */
 export interface ToolButtonType {

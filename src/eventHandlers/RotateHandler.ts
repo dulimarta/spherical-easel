@@ -19,13 +19,8 @@ export default class RotateHandler extends MouseHandler {
    * rather than all the in between small rotations.
    */
   private startPosition = new Vector3();
-  /**
-   * These record the previous location of the mouse so that we can form a rotation matrix
-   * that rotates the previous location to the current location (provided the change in position
-   * is big enough)
-   */
-  private prevSpherePoint: Vector3 = new Vector3();
-  private prevScreenPoint: Two.Vector = new Two.Vector(0, 0);
+
+  //private prevScreenPoint: Two.Vector = new Two.Vector(0, 0);
   /**
    * A matrix that is used to indicate the *change* in position of the objects on the sphere. The
    * total change in position is not stored. This matrix is applied (via a position visitor) to
@@ -65,9 +60,8 @@ export default class RotateHandler extends MouseHandler {
     // Mouse pressing in the sphere while it is rotating in momentum mode does nothing to the sphere
     if (!this.momentumMode) {
       this.isDragging = true;
-      this.startPosition.copy(this.currentSpherePoint);
-      this.prevSpherePoint.copy(this.currentSpherePoint);
-      this.prevScreenPoint.copy(this.currentScreenPoint);
+      this.startPosition.copy(this.currentSphereVector);
+      //this.prevScreenPoint.copy(this.currentScreenPoint);
       this.previousTime = event.timeStamp;
     }
   }
@@ -78,8 +72,8 @@ export default class RotateHandler extends MouseHandler {
       // Determine the current location on the sphere (on on screen) and highlight objects
       super.mouseMoved(event);
       // Compute the angular change in position
-      const rotationAngle = this.prevSpherePoint.angleTo(
-        this.currentSpherePoint
+      const rotationAngle = this.previousSphereVector.angleTo(
+        this.currentSphereVector
       );
       // If the rotation is big enough preform the rotation
       if (
@@ -89,7 +83,7 @@ export default class RotateHandler extends MouseHandler {
       ) {
         // The axis of rotation
         desiredZAxis
-          .crossVectors(this.prevSpherePoint, this.currentSpherePoint)
+          .crossVectors(this.previousSphereVector, this.currentSphereVector)
           .normalize();
         // Form the matrix that performs the rotation
         this.changeInPositionRotationMatrix.makeRotationAxis(
@@ -100,8 +94,8 @@ export default class RotateHandler extends MouseHandler {
         this.derivative = rotationAngle / (event.timeStamp - this.previousTime);
         this.momentumAngle = rotationAngle; // The initial momentum rotation angle is the last rotation angle
         this.previousTime = event.timeStamp;
-        this.prevSpherePoint.copy(this.currentSpherePoint);
-        this.prevScreenPoint.copy(this.currentScreenPoint);
+
+        // this.prevScreenPoint.copy(this.currentScreenPoint);
 
         // Apply the rotation to the sphere and update the display
         EventBus.fire("sphere-rotate", {
@@ -127,16 +121,16 @@ export default class RotateHandler extends MouseHandler {
         // the endTime is bigger than zero, and the user has not paused the dragging
         // then continue rotating according to the decay time
         // The ending of the momentum function will store a first to last rotation command for undoing purposes
-        this.postMomentumCurrentSpherePoint = this.currentSpherePoint;
+        this.postMomentumCurrentSpherePoint = this.currentSphereVector;
         this.momentumMode = true;
         this.momentum(0);
       } else {
         // Create the rotation matrix that takes mouse press location to the mouse release location
         const rotationAngle = this.startPosition.angleTo(
-          this.currentSpherePoint
+          this.currentSphereVector
         );
         desiredZAxis
-          .crossVectors(this.startPosition, this.currentSpherePoint)
+          .crossVectors(this.startPosition, this.currentSphereVector)
           .normalize();
         this.changeInPositionRotationMatrix.makeRotationAxis(
           desiredZAxis,
