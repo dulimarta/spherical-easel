@@ -25,10 +25,6 @@ const prevCircleOuter = new Vector3();
 /** Use in the rotation of sphere move event */
 const desiredZAxis = new Vector3();
 
-// Two TwoJS objects for debugging the circle move code
-const tempSegment = new Segment();
-const outerMarker = new Two.Circle(0, 0, 5);
-
 export default class MoveHandler extends MouseHandler {
   /**
    * Set when the user is trying to move an element
@@ -91,20 +87,6 @@ export default class MoveHandler extends MouseHandler {
       const freeCircles = this.hitCircles.filter(n => n.isFreeToMove());
       if (freeCircles.length > 0) {
         this.moveTarget = freeCircles[0];
-        if (!this.isSegmentAdded) {
-          console.debug("Adding preview segment");
-          tempSegment.addToLayers(this.layers);
-          outerMarker.addTo(this.layers[LAYER.foreground]);
-          this.isSegmentAdded = true;
-        }
-        // tempSegment.endVector = freeCircles[0].centerPoint.positionOnSphere;
-        tempSegment.startVector = freeCircles[0].circlePoint.vectorPosition;
-        tempSegment.endVector = freeCircles[0].centerPoint.vectorPosition;
-        const outerPos = freeCircles[0].circlePoint.vectorPosition;
-        outerMarker.translation
-          .set(outerPos.x, outerPos.y)
-          .multiplyScalar(SETTINGS.boundaryCircle.radius);
-        prevCircleOuter.copy(freeCircles[0].circlePoint.vectorPosition);
         return;
       }
     }
@@ -154,11 +136,6 @@ export default class MoveHandler extends MouseHandler {
       new RotateSphereCommand(this.changeInPositionRotationMatrix).push();
     }
     this.moveTarget = null;
-    if ((this, this.isSegmentAdded)) {
-      tempSegment.removeFromLayers();
-      outerMarker.remove();
-      this.isSegmentAdded = false;
-    }
   }
 
   mouseLeave(event: MouseEvent): void {
@@ -170,7 +147,8 @@ export default class MoveHandler extends MouseHandler {
     altKeyPressed: boolean,
     ctrlKeyPressed: boolean
   ): void {
-    // If the ctrlKey Is press translate the segment in the direction of previousSphereVector to currentSphereVector
+    // If the ctrlKey Is press translate the segment in the direction of previousSphereVector
+    //  to currentSphereVector (i.e. just rotate the segment)
     if (ctrlKeyPressed) {
       const rotationAngle = this.previousSphereVector.angleTo(
         this.currentSphereVector
@@ -255,9 +233,13 @@ export default class MoveHandler extends MouseHandler {
    * @param targetCircle
    */
   private doMoveCircle(targetCircle: SECircle) {
-    const rotationAngle = this.previousSphereVector.angleTo(
+    let rotationAngle = this.previousSphereVector.angleTo(
       this.currentSphereVector
     );
+    // reverse the rotation angle if on the back of the sphere
+    if (this.currentSphereVector.z < 0) {
+      rotationAngle *= -1;
+    }
     // If the rotation is big enough preform the rotation
     if (rotationAngle > SETTINGS.rotate.minAngle) {
       // The axis of rotation

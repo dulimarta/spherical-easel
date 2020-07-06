@@ -184,11 +184,9 @@ export default class Point extends Nodule {
     this.glowingFrontPoint.addTo(layers[LAYER.foregroundPointsGlowing]);
     this.backPoint.addTo(layers[LAYER.backgroundPoints]);
     this.glowingBackPoint.addTo(layers[LAYER.backgroundPointsGlowing]);
-    // if ()
-    // this.normalDisplay();
   }
 
-  removeFromLayers(/*layers: Two.Group[]*/): void {
+  removeFromLayers(): void {
     this.frontPoint.remove();
     this.glowingFrontPoint.remove();
     this.backPoint.remove();

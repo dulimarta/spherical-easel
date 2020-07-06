@@ -200,7 +200,7 @@ export class SESegment extends SENodule implements Visitable {
       .normalize();
     this.ref.endVector = this.endPoint.vectorPosition;
     // update the display of the segment now that the four vectors are set
-    this.ref.update();
+    this.ref.updateDisplay();
 
     this.setOutOfDate(false);
     this.updateKids();

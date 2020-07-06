@@ -214,11 +214,13 @@ export default class Segment extends Nodule {
   /**
    * Reorient the unit circle in 3D and then project the points to 2D
    * This method updates the TwoJS objects (frontPart, frontExtra, ...) for display
+   * This is only accurate if the normal, start, end, and mid vectors are correct so only
+   * call this method once those vectors are updated.
    */
-  private deformIntoEllipse(): void {
+  public updateDisplay(): void {
     // Avoid the degenerate case when the normalDirection is "zero"
     if (this.normalDirection.length() < 0.01) return;
-    this.upDateArcLength();
+    this.updateArcLength();
     // Use the start of segment as the X-axis so the start point
     // is at zero degrees
     desiredXAxis
@@ -320,12 +322,10 @@ export default class Segment extends Nodule {
     }
   }
 
-  // private isLongSegment(): boolean {
-  //   this.upDateArcLength();
-  //   return this.arcLen >= Math.PI;
-  // }
-
-  private upDateArcLength() {
+  /**
+   * Determine the arc length of the segment using the midpoint vector
+   */
+  private updateArcLength() {
     // angleTo() seems to return the smaller angle between two vectors
     // To get arc length > 180 we measure it with a break at midpoint
     // and sum the SIGNED length of each.
@@ -336,140 +336,34 @@ export default class Segment extends Nodule {
     this.arcLen = angle1 + angle2;
   }
 
+  /**
+   * Set the unit vector that is the start of the segment. The start, mid, end, and normal
+   * vector must be correctly set before calling the updateDisplay() method on this segment.
+   */
   set startVector(idealUnitStartVector: Vector3) {
     this.start.copy(idealUnitStartVector).normalize();
   }
+  /**
+   * Set the unit vector that is the mid of the segment. The start, mid, end, and normal
+   * vector must be correctly set before calling the updateDisplay() method on this segment.
+   */
   set midVector(idealUnitMidVector: Vector3) {
     this.mid.copy(idealUnitMidVector).normalize();
   }
+  /**
+   * Set the unit vector that is the end of the segment. The start, mid, end, and normal
+   * vector must be correctly set before calling the updateDisplay() method on this segment.
+   */
   set endVector(idealUnitEndVector: Vector3) {
     this.end.copy(idealUnitEndVector).normalize();
   }
+  /**
+   * Set the unit vector that is the normal of the segment. The start, mid, end, and normal
+   * vector must be correctly set before calling the updateDisplay() method on this segment.
+   */
   set normalVector(idealUnitNormalVector: Vector3) {
     this.normalDirection.copy(idealUnitNormalVector).normalize();
   }
-
-  public update(): void {
-    this.deformIntoEllipse();
-  }
-  // /**
-  //  * Set the start point vector of the segment
-  //  * Update the normal vector by averaging the normal to the plane containing
-  //  *   1) The origin, the start point, and the midpoint
-  //  *   2) The origin, the midpoint, and the (new) endpoint
-  //  * Finish by updating the display of the segment
-  //  */
-  // set startVector(newStartVector: Vector3) {
-  //   this.repositionMidPoint(newStartVector, this.end);
-  //   this.start.copy(newStartVector).normalize();
-  //   // Recalculate the normal vector as the average of two (potentially correct) normals
-  //   tmpVector1.crossVectors(this.start, this.mid).normalize();
-  //   tmpVector2.crossVectors(this.mid, this.end).normalize();
-  //   this.normalDirection.addVectors(tmpVector1, tmpVector2).normalize();
-
-  //   this.deformIntoEllipse();
-  // }
-  // /**
-  //  * Return the start point vector of the segment
-  //  */
-  // get startVector(): Vector3 {
-  //   return this.start;
-  // }
-
-  // private repositionMidPoint(start: Vector3, end: Vector3): void {
-  //   console.log("reposition mid point of segment");
-  //   if (!this.isLongSegment()) {
-  //     this.mid
-  //       .copy(start)
-  //       .add(end)
-  //       .normalize();
-  //   } else {
-  //     // FIXME: recalculate the midpoint
-  //     throw new Error("Method not implemented.");
-  //   }
-  // }
-
-  // /**
-  //  * Set the midpoint vector of the segment
-  //  * Update the normal vector by averaging the normal to the plane containing
-  //  *   1) The origin, the (new) start point, and the midpoint
-  //  *   2) The origin, the midpoint, and the endpoint
-  //  * Does *not* update the display of the segment
-  //  */
-  // set midVector(newMidVector: Vector3) {
-  //   console.log("set Mid Vector");
-  //   // Copy and normalize the newEndPointVector into this.end
-  //   this.mid.copy(newMidVector).normalize();
-  //   // Recalculate the normal vector as the average of two (potentially correct) normals
-  //   tmpVector1.crossVectors(this.start, this.mid).normalize();
-  //   tmpVector2.crossVectors(this.mid, this.end).normalize();
-  //   this.normalDirection.addVectors(tmpVector1, tmpVector2).normalize();
-  //   this.calculateArcLength();
-  // }
-
-  // /**
-  //  * Return the midpoint vector of the segment
-  //  */
-  // get midVector(): Vector3 {
-  //   return this.mid;
-  // }
-  // /**
-  //  * Set the endpoint vector of the segment
-  //  * Update the normal vector by averaging the normal to the plane containing
-  //  *   1) The origin, the start point, and the midpoint
-  //  *   2) The origin, the midpoint, and the (new) endpoint
-  //  * Finish by updating the display of the segment
-  //  */
-  // set endVector(position: Vector3) {
-  //   this.repositionMidPoint(this.start, position);
-  //   this.end.copy(position).normalize();
-  //   this.midMarker.translation
-  //     .set(this.mid.x, this.mid.y)
-  //     .multiplyScalar(SETTINGS.boundaryCircle.radius);
-
-  //   // Recalculate the normal vector as the average of two normals
-  //   tmpVector1.crossVectors(this.start, this.mid).normalize();
-  //   tmpVector2.crossVectors(this.mid, this.end).normalize();
-  //   this.normalDirection.addVectors(tmpVector1, tmpVector2).normalize();
-  //   // Update the display of the segment
-  //   this.deformIntoEllipse();
-  // }
-
-  // /**
-  //  * Return the endpoint vector of the segment
-  //  */
-  // get endVector(): Vector3 {
-  //   return this.end;
-  // }
-  // /**
-  //  * Set:the normal vector to the plane containing the segment
-  //  * Doesn't change the length of the segment
-  //  * Updates the start, end, and mid vectors by rotating them
-  //  * by the angle between the (old) normal vector and newNormal
-  //  */
-  // set normalVector(newNormalVector: Vector3) {
-  //   // Update normal directions to be newNormal and normalize
-  //   this.normalDirection.copy(newNormalVector).normalize();
-  //   // tmpVector1 should be zero because this.normalDirection was just set to point in the same direction as newNormal?!?!?!?!?!
-  //   tmpVector1.crossVectors(this.normalDirection, newNormalVector);
-  //   // Calculate the angle between the old normal and the newNormal
-  //   const rotAngle = this.normalDirection.angleTo(newNormalVector);
-  //   // Create a matrix4 that is rotation about tempVector1
-  //   tmpMatrix.makeRotationAxis(tmpVector1, rotAngle);
-  //   // Update the display of the segment
-  //   this.deformIntoEllipse();
-  //   // Apply the rotation matrix
-  //   this.start.applyMatrix4(tmpMatrix);
-  //   this.end.applyMatrix4(tmpMatrix);
-  //   this.mid.applyMatrix4(tmpMatrix);
-  // }
-
-  // /**
-  //  * Get: Return the normal direction to the plane of the segment
-  //  */
-  // get normalVector(): Vector3 {
-  //   return this.normalDirection;
-  // }
 
   get arcLength(): number {
     return this.arcLen;

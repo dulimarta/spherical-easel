@@ -44,7 +44,9 @@ export default class Circle extends Nodule {
   private glowingBackPart: Two.Path;
 
   /**
-   * The TwoJS objects to display the front/back fill
+   * The TwoJS objects to display the front/back fill. These are different than the front/back parts
+   *  because when the circle is dragged between the front and back, the fill region includes some
+   *  of the boundary circle and is therefore different from the front/back parts.
    */
   private frontFill: Two.Path;
   private backFill: Two.Path;

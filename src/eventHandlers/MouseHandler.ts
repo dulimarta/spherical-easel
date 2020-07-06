@@ -45,9 +45,13 @@ export default abstract class MouseHandler implements ToolStrategy {
   protected hitSegments: SESegment[] = [];
   protected hitCircles: SECircle[] = [];
   /**
-   * A temporary point created while the user is making the circle
+   * A temporary plottable (TwoJS) point created while the user is making the circles or segments
    */
   protected startMarker: Point;
+  /**
+   * A temporary plottable (TwoJS) point created while the user is making the circles or segments
+   */
+  protected endMarker: Point;
 
   /**
    * Holds the layers for each type of object, background, glowing background, etc..
@@ -74,9 +78,11 @@ export default abstract class MouseHandler implements ToolStrategy {
     this.previousSphereVector = new Vector3();
     this.previousScreenVector = new Two.Vector(0, 0);
     this.isOnSphere = false;
-    // Create and style the temporary point marking the start of an object being created
+    // Create and style the temporary points marking the start/end of an object being created
     this.startMarker = new Point();
     this.startMarker.stylize(DisplayStyle.TEMPORARY);
+    this.endMarker = new Point();
+    this.endMarker.stylize(DisplayStyle.TEMPORARY);
   }
 
   abstract mousePressed(event: MouseEvent): void;

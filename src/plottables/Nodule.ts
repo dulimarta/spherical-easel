@@ -12,17 +12,18 @@ export enum DisplayStyle {
 }
 
 /**
- * A Nodule consists of one or more SVG elements
+ * A Nodule consists of one or more TwoJS(SVG) elements
  */
 export default abstract class Nodule implements Stylable, Resizeable {
   // Declare owner, this field will be initialized by the associated owner of the plottable Nodule
   public owner!: SENodule;
   public name!: string;
 
+  //eslint-disable-next-line
   constructor() {}
 
   /**
-   * Add various SVG elements of this nodule to appropriate layers
+   * Add various TwoJS (SVG) elements of this nodule to appropriate layers
    * @param {Two.Group[]} layers
    */
   abstract addToLayers(layers: Two.Group[]): void;
@@ -30,16 +31,12 @@ export default abstract class Nodule implements Stylable, Resizeable {
   /**
    * This operation reverses the action performed by addToLayers()
    */
-  abstract removeFromLayers(/*layers: Two.Group[]*/): void;
+  abstract removeFromLayers(): void;
 
   /**This operation constraint the visual properties (linewidth, circle size, etc) when the view is zoomed in/out */
   abstract adjustSizeForZoom(factor: number): void;
 
   /** Update visual style(s) */
-  // abstract frontGlowingDisplay(): void;
-  // abstract backGlowingDisplay(): void;
-  // abstract frontNormalDisplay(): void;
-  // abstract backNormalDisplay(): void;
   abstract normalDisplay(): void;
   abstract glowingDisplay(): void;
 

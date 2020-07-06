@@ -25,18 +25,14 @@ const tmpVector1 = new Vector3();
 const tmpVector2 = new Vector3();
 const tmpTwoVector = new Two.Vector(0, 0);
 
-//For debugging the tool
-const midMarker = new Two.Circle(0, 0, 5);
-midMarker.fill = "navy";
-
 export default class SegmentHandler extends MouseHandler {
   /**
-   * The starting vector location of the segment
+   * The starting unit vector location of the segment
    */
   private startVector = new Vector3();
 
   /**
-   * The ending vector location of the segment (only used when the start and end are nearly Antipodal)
+   * The ending unit vector location of the segment (only used when the start and end are nearly Antipodal)
    */
   private endVector = new Vector3();
   /**
@@ -54,7 +50,7 @@ export default class SegmentHandler extends MouseHandler {
    */
   private dragging = false;
   /**
-   * A temporary segment to display while the user is creating a segment
+   * A temporary plottable (TwoJS) segment to display while the user is creating a segment
    */
   private tempSegment: Segment;
 
@@ -65,7 +61,8 @@ export default class SegmentHandler extends MouseHandler {
    */
   private makingASegment = false;
   /**
-   *  The location on the ideal unit sphere of the previous location of the mouse event
+   * The location on the ideal unit sphere of the previous location of the mouse event
+   * This is used to tell if the currentScreenVector and the startScreenVector are antipodal
    */
   private startScreenVector = new Two.Vector(0, 0);
   /**
@@ -77,9 +74,10 @@ export default class SegmentHandler extends MouseHandler {
    */
   private nearlyAntipodal = false;
 
-  /** The midVector and temporary midVector */
+  /** The unit midVector and temporary unit midVector */
   private midVector = new Vector3();
   private tempMidVector = new Vector3(); // This holds a candidate midpoint vector to see so that if updating the segment moves the midpoint too much
+
   /**
    * When the start and end vectors are nearly antipodal record an anchor midpoint, so that when the user
    * moves the mouse near the antipode of the startVector, the relative movement of the mouse is used to
@@ -102,14 +100,20 @@ export default class SegmentHandler extends MouseHandler {
     this.dragging = true;
     // The Selection Handler forms a list of all the nearby points
     // If there are nearby points, select the first one to be the start of the segment otherwise
-    //  put a startmarker (a Point found in MouseHandler) in the scene
+    //  put a end/start marker (a Point found in MouseHandler) in the scene
     if (this.hitPoints.length > 0) {
       const selected = this.hitPoints[0];
       this.startVector.copy(selected.vectorPosition);
       this.startSEPoint = selected;
+      // Set the start of the temp segment and the startMarker at the location of the selected point
+      this.startMarker.positionVector = selected.vectorPosition;
+      this.tempSegment.startVector = selected.vectorPosition;
     } else {
-      this.startMarker.addToLayers(this.layers);
+      // The start vector of the temporary segment and the start marker are
+      //  also the the current location on the sphere
+      this.tempSegment.startVector = this.currentSphereVector;
       this.startMarker.positionVector = this.currentSphereVector;
+      this.endMarker.positionVector = this.currentSphereVector;
       this.startVector.copy(this.currentSphereVector);
       this.startSEPoint = null;
     }
@@ -118,14 +122,12 @@ export default class SegmentHandler extends MouseHandler {
     this.midVector.copy(this.currentSphereVector);
     this.anchorMidVector.copy(this.currentSphereVector);
 
+    // Initialize the booleans for describing the segment
     this.nearlyAntipodal = false;
     this.longerThanPi = false;
 
-    // The previous sphere point is the current one initially TODO: NEEDED?
+    // The previous sphere point is the current one initially
     this.startScreenVector.copy(this.currentScreenVector);
-
-    // The start vector of the temporary segment is also the the current location on the sphere
-    this.tempSegment.startVector = this.currentSphereVector;
   }
 
   mouseMoved(event: MouseEvent): void {
@@ -138,157 +140,15 @@ export default class SegmentHandler extends MouseHandler {
         // This is executed once per segment to be added
         if (!this.isTemporarySegmentAdded) {
           this.isTemporarySegmentAdded = true;
-          // Add the temporary segment to the midground
+          // Add the temporary objects to the correct layers
+          this.endMarker.addToLayers(this.layers);
+          this.startMarker.addToLayers(this.layers);
           this.tempSegment.addToLayers(this.layers);
-
-          // Debugging only -- add the mid marker
-          this.canvas.add(midMarker);
         }
-        // //New Test case Start ///////////////////////
-        // // do different things if the the startVector and the currentSpherePoint are almost antipodal
-        // // proceed with caution
+        this.setMidAndEndVectors(event.ctrlKey, this.currentSphereVector);
 
-        // if (
-        //   this.currentScreenVector.distanceTo(
-        //     tmpTwoVector.copy(this.startScreenVector).multiplyScalar(-1)
-        //   ) <
-        //   2 * SETTINGS.point.hitPixelDistance
-        // ) {
-        //   this.nearlyAntipodal = true;
-        //   this.anchorMidVector.copy(this.midVector);
-        // } else {
-        //   if (
-        //     this.nearlyAntipodal &&
-        //     this.anchorMidVector.angleTo(this.currentSphereVector) > Math.PI / 2
-        //   ) {
-        //     this.longerThanPi = true;
-        //   }
-        //   if (
-        //     this.nearlyAntipodal &&
-        //     this.anchorMidVector.angleTo(this.currentSphereVector) < Math.PI / 2
-        //   ) {
-        //     this.longerThanPi = false;
-        //   }
-        //   this.nearlyAntipodal = false;
-        // }
-        // console.log("NAP", this.nearlyAntipodal);
-        // // The value of longerThanPi is correctly set so use that to create a candidate midVector
-        // this.tempMidVector
-        //   .addVectors(this.startVector, this.currentSphereVector)
-        //   .multiplyScalar(0.5)
-        //   .normalize()
-        //   .multiplyScalar(this.longerThanPi ? -1 : 1);
-
-        // if (!this.nearlyAntipodal) {
-        //   this.midVector.copy(this.tempMidVector);
-        //   this.endVector.copy(this.currentSphereVector);
-        // } else {
-        //   // moveAngle is angular change in the midpoint (from midVector to tempMidVector)
-        //   //const moveAngle = this.tempMidVector.angleTo(this.midVector);
-
-        //   // Move the midpoint within a circle about the anchorMidVector so the user believes she is
-        //   // moving the endpoint, but is really moving the midpoint
-
-        //   tmpVector1.subVectors(
-        //     this.currentSphereVector,
-        //     tmpVector2.copy(this.startVector).multiplyScalar(-1)
-        //   );
-        //   this.midVector
-        //     .addVectors(this.anchorMidVector, tmpVector1)
-        //     .normalize();
-
-        //   const arcLength = 2 * this.startVector.angleTo(this.midVector);
-
-        //   tmpVector1.crossVectors(this.startVector, this.midVector).normalize();
-        //   // tempVector =  normalize(N x oldMid) (notice that tempVector, N, oldMid are a unit orthonormal frame)
-        //   tmpVector1.cross(this.midVector).normalize();
-        //   // Now rotate in the oldMid, tempVector plane by the moveAngle (strangely this
-        //   // works better than angle = MIDPOINT_MOVEMENT_THRESHOLD )
-        //   // That is newMid = cos(angle)oldMid + sin(angle) tempVector
-        //   tmpVector2.copy(this.startVector);
-        //   tmpVector2.multiplyScalar(Math.cos(arcLength));
-        //   tmpVector2
-        //     .addScaledVector(tmpVector1, Math.sin(arcLength))
-        //     .normalize();
-        //   this.endVector.copy(tmpVector2);
-        // }
-        // OLD -- works but can we do better?
-        if (this.startVector.angleTo(this.currentSphereVector) > 2) {
-          // The startVector and the currentSpherePoint might be antipodal proceed with caution, possibly update longerThanPi
-          if (
-            this.currentScreenVector.distanceTo(
-              tmpTwoVector.copy(this.startScreenVector).multiplyScalar(-1)
-            ) < SETTINGS.point.hitPixelDistance
-          ) {
-            this.nearlyAntipodal = true;
-            // record an anchor for controlling the endVector, see the description for anchorMidVector
-            this.anchorMidVector.copy(this.midVector);
-          } else {
-            if (this.nearlyAntipodal) {
-              this.longerThanPi = !this.longerThanPi;
-            }
-            this.nearlyAntipodal = false;
-          }
-        }
-        // The value of longerThanPi is correctly set so use that to create a candidate midVector
-        this.tempMidVector
-          .addVectors(this.startVector, this.currentSphereVector)
-          .multiplyScalar(0.5)
-          .normalize()
-          .multiplyScalar(this.longerThanPi ? -1 : 1);
-
-        // moveAngle is angular change in the midpoint (from midVector to tempMidVector)
-        let moveAngle = this.tempMidVector.angleTo(this.midVector);
-        if (moveAngle < MIDPOINT_MOVEMENT_THRESHOLD) {
-          // For small movement, update the midpoint directly
-          this.midVector.copy(this.tempMidVector);
-          this.endVector.copy(this.currentSphereVector);
-        } else {
-          // For larger movement rotate in the plane containing tmpMidVector and the (old) midVector
-          // Make an orthonormal basis for the plane (old) midVector and tmpMidVector, tmpVector1
-          // will be orthogonal to midVector in the direction of tempMidVector
-          tmpVector1
-            .crossVectors(this.midVector, this.tempMidVector)
-            .normalize();
-          tmpVector1.cross(this.midVector).normalize();
-          // Now rotate in the (old) midVector by at most the MIDPOINT_MOVEMENT_THRESHOLD
-          // That is newMid = cos(moveAngle)oldMid + sin(moveAngle) tmpVector1
-          moveAngle = Math.min(
-            moveAngle,
-            Math.PI - moveAngle //,
-            // MIDPOINT_MOVEMENT_THRESHOLD
-          );
-          this.midVector.multiplyScalar(Math.cos(moveAngle));
-          this.midVector
-            .addScaledVector(tmpVector1, Math.sin(moveAngle))
-            .normalize();
-          // Now that the midVector is set, determine the end vector
-          // The arcLength along the tempSegment is twice the distance from startVector to midVector
-          const arcLength = 2 * this.startVector.angleTo(this.midVector);
-
-          // For an orthonormal basis for the plane containing startVector and midVector
-          // tmpVector1 is perpendicular to startVector in the direction of midVector
-          tmpVector1.crossVectors(this.startVector, this.midVector).normalize();
-          tmpVector1.cross(this.startVector).normalize();
-
-          // Now compute the vector that is arcLength ways from startVector towards midVector
-          // That is endVector = cos(arcLength)startVector + sin(arcLength)tmpVector1
-          tmpVector2.copy(this.startVector);
-          tmpVector2.multiplyScalar(Math.cos(arcLength));
-          tmpVector2
-            .addScaledVector(tmpVector1, Math.sin(arcLength))
-            .normalize();
-          this.endVector.copy(tmpVector2);
-        }
-        // Debugging midpoint only
-        midMarker.translation
-          .set(this.midVector.x, this.midVector.y)
-          .multiplyScalar(globalSettings.boundaryCircle.radius);
-
-        // The user can override this algorithm and make the midVector it antipode
-        // if (event.ctrlKey) {
-        //   this.midVector.multiplyScalar(-1);
-        // }
+        // update the location of the endMarker
+        this.endMarker.positionVector = this.endVector;
 
         // Finally set the values for the unit vectors defining the segment and update the display
         this.tempSegment.midVector = this.midVector;
@@ -296,13 +156,13 @@ export default class SegmentHandler extends MouseHandler {
         this.tempSegment.normalVector = tmpVector1
           .crossVectors(this.startVector, this.midVector)
           .normalize();
-        this.tempSegment.update();
+        this.tempSegment.updateDisplay();
       }
     } else if (this.isTemporarySegmentAdded) {
       //if not on the sphere and the temporary segment has been added remove the temporary objects
       this.tempSegment.removeFromLayers();
       this.startMarker.removeFromLayers();
-      midMarker.remove();
+      this.endMarker.removeFromLayers();
       this.isTemporarySegmentAdded = false;
     }
   }
@@ -313,7 +173,7 @@ export default class SegmentHandler extends MouseHandler {
       //If the release event was on the sphere remove the temporary objects
       this.tempSegment.removeFromLayers();
       this.startMarker.removeFromLayers();
-      midMarker.remove();
+      this.endMarker.removeFromLayers();
       // Make sure the user didn't trigger the mouse leave event and is actually making a segment
       if (this.makingASegment) {
         // Before making a new segment make sure that the user has dragged a non-trivial distance
@@ -322,7 +182,7 @@ export default class SegmentHandler extends MouseHandler {
           this.startVector.angleTo(this.currentSphereVector) >
           SETTINGS.segment.minimumArcLength
         ) {
-          this.makeSegment();
+          this.makeSegment(event);
         } else {
           this.makePoint();
         }
@@ -342,7 +202,7 @@ export default class SegmentHandler extends MouseHandler {
     if (this.isTemporarySegmentAdded) {
       this.tempSegment.removeFromLayers();
       this.startMarker.removeFromLayers();
-      midMarker.remove();
+      this.endMarker.removeFromLayers();
       this.isTemporarySegmentAdded = false;
     }
     // Clear old points and values to get ready for creating the next segment.
@@ -353,15 +213,7 @@ export default class SegmentHandler extends MouseHandler {
     this.makingASegment = false;
   }
 
-  private makeSegment(): void {
-    // Clone the temporary segment and mark it added to the scene
-    this.isTemporarySegmentAdded = false;
-    const newSegment = this.tempSegment.clone();
-    // Stylize the new segment
-    newSegment.stylize(DisplayStyle.DEFAULT);
-    // Set Up the glowing segment
-    newSegment.stylize(DisplayStyle.GLOWING);
-
+  private makeSegment(event: MouseEvent): void {
     // Create a new command group to store potentially three commands. Those to add the endpoints (which might be  new) and the segment itself.
     const segmentGroup = new CommandGroup();
     if (this.startSEPoint === null) {
@@ -378,9 +230,19 @@ export default class SegmentHandler extends MouseHandler {
     } else if (this.startSEPoint instanceof SEIntersectionPoint) {
       segmentGroup.addCommand(new ShowPointCommand(this.startSEPoint));
     }
+    // Look for an endpoint at the mouse release location
     if (this.hitPoints.length > 0) {
       // The end point is an existing point
       this.endSEPoint = this.hitPoints[0];
+      // move the endpoint of the segment to the location of the endpoint
+      // This ensures that the initial display of the segment is nice and the endpoint
+      // looks like the endpoint and is not off to the side
+      this.setMidAndEndVectors(event.ctrlKey, this.endSEPoint.vectorPosition);
+      this.tempSegment.normalVector = tmpVector1
+        .crossVectors(this.startVector, this.midVector)
+        .normalize();
+      this.tempSegment.updateDisplay();
+
       if (this.endSEPoint instanceof SEIntersectionPoint) {
         segmentGroup.addCommand(new ShowPointCommand(this.endSEPoint));
       }
@@ -403,6 +265,8 @@ export default class SegmentHandler extends MouseHandler {
     newMidPoint.stylize(DisplayStyle.DEFAULT);
     // Set the glowing display
     newMidPoint.stylize(DisplayStyle.GLOWING);
+    // Set the display of the newMidPoint to false TODO: HANS - WHAT IS THE BEST WAY TO DO THIS?
+
     const newSEMidPoint = new SESegmentMidPoint(
       newMidPoint,
       this.startSEPoint,
@@ -410,6 +274,15 @@ export default class SegmentHandler extends MouseHandler {
     );
     newSEMidPoint.vectorPosition = this.midVector;
     segmentGroup.addCommand(new AddSegmentMidPointCommand(newSEMidPoint));
+    (newSEMidPoint.ref as any).visible = false;
+
+    // Clone the temporary segment and mark it added to the scene
+    this.isTemporarySegmentAdded = false;
+    const newSegment = this.tempSegment.clone();
+    // Stylize the new segment
+    newSegment.stylize(DisplayStyle.DEFAULT);
+    // Set Up the glowing segment
+    newSegment.stylize(DisplayStyle.GLOWING);
 
     const newSESegment = new SESegment(
       newSegment,
@@ -443,6 +316,86 @@ export default class SegmentHandler extends MouseHandler {
       this.startSEPoint = vtx;
       const addPoint = new AddPointCommand(vtx);
       addPoint.execute();
+    }
+  }
+  /**
+   * Set the midpoint vector and the the endpoint vector given a fixed starting vector for a segment
+   * @param event
+   * @param candidateEndPoint A proposed unit vector location for the end point of the displayed segment
+   */
+  private setMidAndEndVectors(
+    ctrlPressed: boolean,
+    candidateEndPoint: Vector3
+  ) {
+    if (this.startVector.angleTo(candidateEndPoint) > 2) {
+      // The startVector and the currentSpherePoint might be antipodal proceed with caution, possibly update longerThanPi
+      // The antipodal of the candidateEndPoint
+      tmpTwoVector
+        .set(candidateEndPoint.x, candidateEndPoint.y)
+        .multiplyScalar(-1 * SETTINGS.boundaryCircle.radius);
+      if (
+        this.startScreenVector.distanceTo(tmpTwoVector) <
+        SETTINGS.point.hitPixelDistance
+      ) {
+        this.nearlyAntipodal = true;
+        // record an anchor for controlling the endVector, see the description for anchorMidVector
+        this.anchorMidVector.copy(this.midVector);
+      } else {
+        if (this.nearlyAntipodal) {
+          this.longerThanPi = !this.longerThanPi;
+        }
+        this.nearlyAntipodal = false;
+      }
+    }
+    // The user can override this algorithm and make the segment longer than PI
+    if (ctrlPressed) {
+      this.longerThanPi = true;
+    }
+    // The value of longerThanPi is correctly set so use that to create a candidate midVector
+    this.tempMidVector
+      .addVectors(this.startVector, candidateEndPoint)
+      .multiplyScalar(0.5)
+      .normalize()
+      .multiplyScalar(this.longerThanPi ? -1 : 1);
+
+    // moveAngle is angular change in the midpoint (from midVector to tempMidVector)
+    let moveAngle = this.tempMidVector.angleTo(this.midVector);
+    if (moveAngle < MIDPOINT_MOVEMENT_THRESHOLD) {
+      // For small movement, update the midpoint directly
+      this.midVector.copy(this.tempMidVector);
+      this.endVector.copy(candidateEndPoint);
+    } else {
+      // For larger movement rotate in the plane containing tmpMidVector and the (old) midVector
+      // Make an orthonormal basis for the plane (old) midVector and tmpMidVector, tmpVector1
+      // will be orthogonal to midVector in the direction of tempMidVector
+      tmpVector1.crossVectors(this.midVector, this.tempMidVector).normalize();
+      tmpVector1.cross(this.midVector).normalize();
+      // Now rotate in the (old) midVector by at most the MIDPOINT_MOVEMENT_THRESHOLD
+      // That is newMid = cos(moveAngle)oldMid + sin(moveAngle) tmpVector1
+      moveAngle = Math.min(
+        moveAngle,
+        Math.PI - moveAngle //,
+        //MIDPOINT_MOVEMENT_THRESHOLD // With this the movement is sometimes slow and you can get an endpoint disconnected from the rest of the segment
+      );
+      this.midVector.multiplyScalar(Math.cos(moveAngle));
+      this.midVector
+        .addScaledVector(tmpVector1, Math.sin(moveAngle))
+        .normalize();
+      // Now that the midVector is set, determine the end vector
+      // The arcLength along the tempSegment is twice the distance from startVector to midVector
+      const arcLength = 2 * this.startVector.angleTo(this.midVector);
+
+      // For an orthonormal basis for the plane containing startVector and midVector
+      // tmpVector1 is perpendicular to startVector in the direction of midVector
+      tmpVector1.crossVectors(this.startVector, this.midVector).normalize();
+      tmpVector1.cross(this.startVector).normalize();
+
+      // Now compute the vector that is arcLength ways from startVector towards midVector
+      // That is endVector = cos(arcLength)startVector + sin(arcLength)tmpVector1
+      tmpVector2.copy(this.startVector);
+      tmpVector2.multiplyScalar(Math.cos(arcLength));
+      tmpVector2.addScaledVector(tmpVector1, Math.sin(arcLength)).normalize();
+      this.endVector.copy(tmpVector2);
     }
   }
 }
