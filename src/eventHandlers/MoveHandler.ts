@@ -194,7 +194,8 @@ export default class MoveHandler extends MouseHandler {
           .copy(targetLine.endPoint.vectorPosition)
           .applyMatrix4(this.changeInPositionRotationMatrix);
         targetLine.endPoint.vectorPosition = tmpVector2;
-        //targetLine.endPoint.update();
+        // Update both points, because we might need to update their kids!
+        targetLine.endPoint.update();
         targetLine.startPoint.update();
       }
 
@@ -269,57 +270,58 @@ export default class MoveHandler extends MouseHandler {
         rotationAngle
       );
       tmpVector1
-        .copy(targetLine.startPoint.vectorPosition)
+        .copy(targetCircle.centerPoint.vectorPosition)
         .applyMatrix4(this.changeInPositionRotationMatrix);
-      targetLine.startPoint.vectorPosition = tmpVector1;
+      targetCircle.centerPoint.vectorPosition = tmpVector1;
       tmpVector2
-        .copy(targetLine.endPoint.vectorPosition)
+        .copy(targetCircle.circlePoint.vectorPosition)
         .applyMatrix4(this.changeInPositionRotationMatrix);
-      targetLine.endPoint.vectorPosition = tmpVector2;
-      //targetLine.endPoint.update();
-      targetLine.startPoint.update();
+      targetCircle.circlePoint.vectorPosition = tmpVector2;
+      // Update both points, because we might need to update their kids!
+      targetCircle.circlePoint.update();
+      targetCircle.centerPoint.update();
     }
-    // tmpVector1> the normal of the plane containing the arc between
-    // the previous sphere position and the current sphere position
-    currCircleCenter.copy(targetCircle.centerPoint.vectorPosition);
-    tmpVector1
-      .crossVectors(this.moveFrom, this.currentSphereVector)
-      .normalize();
-    const moveArcDistance = this.moveFrom.angleTo(this.currentSphereVector);
-    // (1) Translate both the center and outer points by the same amount
-    tmpVector2.copy(targetCircle.centerPoint.vectorPosition);
-    tmpVector2.applyAxisAngle(tmpVector1, moveArcDistance);
-    targetCircle.centerPoint.vectorPosition = tmpVector2;
-    tempSegment.endVector = tmpVector2;
-    tmpVector2.copy(targetCircle.circlePoint.vectorPosition);
-    tmpVector2.applyAxisAngle(tmpVector1, moveArcDistance);
-    targetCircle.circlePoint.vectorPosition = tmpVector2;
+    // // tmpVector1> the normal of the plane containing the arc between
+    // // the previous sphere position and the current sphere position
+    // currCircleCenter.copy(targetCircle.centerPoint.vectorPosition);
+    // tmpVector1
+    //   .crossVectors(this.moveFrom, this.currentSphereVector)
+    //   .normalize();
+    // const moveArcDistance = this.moveFrom.angleTo(this.currentSphereVector);
+    // // (1) Translate both the center and outer points by the same amount
+    // tmpVector2.copy(targetCircle.centerPoint.vectorPosition);
+    // tmpVector2.applyAxisAngle(tmpVector1, moveArcDistance);
+    // targetCircle.centerPoint.vectorPosition = tmpVector2;
+    // tempSegment.endVector = tmpVector2;
+    // tmpVector2.copy(targetCircle.circlePoint.vectorPosition);
+    // tmpVector2.applyAxisAngle(tmpVector1, moveArcDistance);
+    // targetCircle.circlePoint.vectorPosition = tmpVector2;
 
-    // (2) Rotate the circle so the new center, the new outer, and the
-    // old outer points are collinear
-    arcNormal1
-      .crossVectors(
-        targetCircle.centerPoint.vectorPosition,
-        targetCircle.circlePoint.vectorPosition
-      )
-      .normalize();
-    // Compute the plane normal vector of the arc between
-    // the new center and the old outer
-    arcNormal2
-      .crossVectors(targetCircle.centerPoint.vectorPosition, prevCircleOuter)
-      .normalize();
-    tmpVector1.crossVectors(arcNormal1, arcNormal2).normalize();
-    const circleRotation =
-      arcNormal1.angleTo(arcNormal2) * Math.sign(tmpVector1.z);
-    tmpVector1.copy(targetCircle.circlePoint.vectorPosition);
-    tmpVector1.applyAxisAngle(
-      targetCircle.centerPoint.vectorPosition,
-      circleRotation
-    );
-    targetCircle.circlePoint.vectorPosition = tmpVector1;
-    targetCircle.update();
-    targetCircle.centerPoint.updateKids();
-    targetCircle.circlePoint.updateKids();
+    // // (2) Rotate the circle so the new center, the new outer, and the
+    // // old outer points are collinear
+    // arcNormal1
+    //   .crossVectors(
+    //     targetCircle.centerPoint.vectorPosition,
+    //     targetCircle.circlePoint.vectorPosition
+    //   )
+    //   .normalize();
+    // // Compute the plane normal vector of the arc between
+    // // the new center and the old outer
+    // arcNormal2
+    //   .crossVectors(targetCircle.centerPoint.vectorPosition, prevCircleOuter)
+    //   .normalize();
+    // tmpVector1.crossVectors(arcNormal1, arcNormal2).normalize();
+    // const circleRotation =
+    //   arcNormal1.angleTo(arcNormal2) * Math.sign(tmpVector1.z);
+    // tmpVector1.copy(targetCircle.circlePoint.vectorPosition);
+    // tmpVector1.applyAxisAngle(
+    //   targetCircle.centerPoint.vectorPosition,
+    //   circleRotation
+    // );
+    // targetCircle.circlePoint.vectorPosition = tmpVector1;
+    // targetCircle.update();
+    // targetCircle.centerPoint.updateKids();
+    // targetCircle.circlePoint.updateKids();
   }
 
   private doRotateSphere(): void {
