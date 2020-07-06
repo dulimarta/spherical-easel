@@ -10,34 +10,9 @@ import realStore from "@/store";
 import { SEPoint } from "@/models/SEPoint";
 import { SELine } from "@/models/SELine";
 import { Vector3 } from "three";
-
-expect.extend({
-  /**
-   * Verify that two vectors are close enough within some precision
-   * @param received the first vector
-   * @param expected the second vector
-   * @param precision the desired precision (number of decimal places)
-   */
-  toBeVector3CloseTo(received: Vector3, expected: Vector3, precision: number) {
-    // const precision = 3;
-    const pass = received.distanceTo(expected) < Math.pow(10, -precision);
-    return {
-      pass,
-      message: () =>
-        received.toFixed(precision) +
-        (pass ? "matches" : "does not match") +
-        expected.toFixed(precision)
-    };
-  },
-
-  toBeNonZero(received: Vector3) {
-    const out = received.x > 0;
-    return {
-      pass: out,
-      message: () => "Non Zero Expectation"
-    };
-  }
-});
+import "./jest-custom-matchers";
+import { SESegment } from "@/models/SESegment";
+import { SECircle } from "@/models/SECircle";
 
 describe("SphereFrame.vue", () => {
   let wrapper: Wrapper<SphereFrame>;
@@ -81,62 +56,65 @@ describe("SphereFrame.vue", () => {
     );
   });
 
-  it("switches to point tool", async () => {
-    wrapper.vm.$store.commit("setActionMode", {
-      id: "point",
-      name: "PointTool"
-    });
-    // wrapper.vm.$data.actionMode = "point";
-    await Vue.nextTick();
-    // console.debug(wrapper.vm.$data.currentTool);
-    expect(wrapper.vm.$data.currentTool).toBeInstanceOf(PointHandler);
-  });
-
   const TEST_MOUSE_X = 111;
   const TEST_MOUSE_Y = 137;
 
-  async function makePoint(isBackground: boolean): Promise<SEPoint> {
-    wrapper.vm.$store.commit("setActionMode", {
-      id: "point",
-      name: "Tool Name does not matter"
+  describe("with PointTool", () => {
+    async function makePoint(isBackground: boolean): Promise<SEPoint> {
+      wrapper.vm.$store.commit("setActionMode", {
+        id: "point",
+        name: "Tool Name does not matter"
+      });
+
+      await Vue.nextTick();
+      expect(wrapper.vm.$data.currentTool.isOnSphere).toBeFalsy();
+      const target = wrapper.find("#canvas");
+      expect(target.exists).toBeTruthy();
+      await target.trigger("mousemove", {
+        clientX: TEST_MOUSE_X,
+        clientY: TEST_MOUSE_Y,
+        shiftKey: isBackground
+      });
+      expect(wrapper.vm.$data.currentTool.isOnSphere).toBeTruthy();
+      const prevPointCount = wrapper.vm.$store.state.points.length;
+      await target.trigger("mousedown", {
+        clientX: TEST_MOUSE_X,
+        clientY: TEST_MOUSE_Y,
+        shiftKey: isBackground
+      });
+      await target.trigger("mouseup", {
+        clientX: 111,
+        clientY: 137,
+        shiftKey: isBackground
+      });
+      // expect(wrapper.vm.$data.currentTool.isOnSphere).toBeTruthy();
+      // expect(commitSpy).toHaveBeenCalledWith("addPoint", expect.anything());
+      await Vue.nextTick();
+      const newPointCount = wrapper.vm.$store.state.points.length;
+      expect(newPointCount).toBe(prevPointCount + 1);
+      return wrapper.vm.$store.state.points[prevPointCount] as SEPoint;
+    }
+
+    it("switches to point tool", async () => {
+      wrapper.vm.$store.commit("setActionMode", {
+        id: "point",
+        name: "PointTool"
+      });
+      // wrapper.vm.$data.actionMode = "point";
+      await Vue.nextTick();
+      // console.debug(wrapper.vm.$data.currentTool);
+      expect(wrapper.vm.$data.currentTool).toBeInstanceOf(PointHandler);
     });
 
-    await Vue.nextTick();
-    expect(wrapper.vm.$data.currentTool.isOnSphere).toBeFalsy();
-    const target = wrapper.find("#canvas");
-    expect(target.exists).toBeTruthy();
-    await target.trigger("mousemove", {
-      clientX: TEST_MOUSE_X,
-      clientY: TEST_MOUSE_Y,
-      shiftKey: isBackground
+    it("adds a new (foreground) point when clicking on sphere while using PointTool", async () => {
+      const p = await makePoint(false /* foreground point */);
+      expect(p.positionOnSphere.z).toBeGreaterThan(0);
     });
-    expect(wrapper.vm.$data.currentTool.isOnSphere).toBeTruthy();
-    const prevPointCount = wrapper.vm.$store.state.points.length;
-    await target.trigger("mousedown", {
-      clientX: TEST_MOUSE_X,
-      clientY: TEST_MOUSE_Y,
-      shiftKey: isBackground
-    });
-    await target.trigger("mouseup", {
-      clientX: 111,
-      clientY: 137,
-      shiftKey: isBackground
-    });
-    // expect(wrapper.vm.$data.currentTool.isOnSphere).toBeTruthy();
-    // expect(commitSpy).toHaveBeenCalledWith("addPoint", expect.anything());
-    await Vue.nextTick();
-    const newPointCount = wrapper.vm.$store.state.points.length;
-    expect(newPointCount).toBe(prevPointCount + 1);
-    return wrapper.vm.$store.state.points[prevPointCount] as SEPoint;
-  }
-  it("adds a new (foreground) point when clicking on sphere while using PointTool", async () => {
-    const p = await makePoint(false /* foreground point */);
-    expect(p.positionOnSphere.z).toBeGreaterThan(0);
-  });
 
-  it("adds a new (background) point when clicking on sphere while using PointTool", async () => {
-    const p = await makePoint(true /* back ground point */);
-    expect(p.positionOnSphere.z).toBeLessThan(0);
+    it("adds a new (background) point when clicking on sphere while using PointTool", async () => {
+      const p = await makePoint(true /* back ground point */);
+      expect(p.positionOnSphere.z).toBeLessThan(0);
+    });
   });
 
   async function dragMouse(
@@ -172,154 +150,531 @@ describe("SphereFrame.vue", () => {
     return await Vue.nextTick();
   }
 
-  it("add a new line (fg/fg) while in LineTool", async () => {
-    wrapper.vm.$store.commit("setActionMode", {
-      id: "line",
-      name: "Tool Name does not matter"
+  describe("with LineTool", () => {
+    it("add a new line (fg/fg) while in LineTool", async () => {
+      wrapper.vm.$store.commit("setActionMode", {
+        id: "line",
+        name: "Tool Name does not matter"
+      });
+      await Vue.nextTick();
+      const endX = TEST_MOUSE_X + 10;
+      const endY = TEST_MOUSE_Y - 10;
+
+      const prevLineCount = wrapper.vm.$store.state.lines.length;
+      await dragMouse(TEST_MOUSE_X, TEST_MOUSE_Y, false, endX, endY, false);
+      // await Vue.nextTick();
+      const newLineCount = wrapper.vm.$store.state.lines.length;
+      expect(newLineCount).toBe(prevLineCount + 1);
+      const R = SETTINGS.boundaryCircle.radius;
+      const startZCoord = Math.sqrt(
+        R * R - TEST_MOUSE_X * TEST_MOUSE_X - TEST_MOUSE_Y * TEST_MOUSE_Y
+      );
+      const endZCoord = Math.sqrt(R * R - endX * endX - endY * endY);
+      const newLine: SELine = wrapper.vm.$store.state.lines[prevLineCount];
+
+      // Start vector is foreground
+      const startVector = new Vector3(
+        TEST_MOUSE_X,
+        -TEST_MOUSE_Y,
+        startZCoord
+      ).normalize();
+
+      // End vector is foreground
+      const endVector = new Vector3(endX, -endY, endZCoord).normalize();
+      const dir = new Vector3()
+        .crossVectors(startVector, endVector)
+        .normalize();
+      expect(newLine.startPoint.positionOnSphere).toBeVector3CloseTo(
+        startVector,
+        3
+      );
+      expect(newLine.endPoint.positionOnSphere).toBeVector3CloseTo(
+        endVector,
+        3
+      );
+      expect(newLine.normalDirection).toBeVector3CloseTo(dir, 3);
     });
-    await Vue.nextTick();
-    const endX = TEST_MOUSE_X + 10;
-    const endY = TEST_MOUSE_Y - 10;
 
-    const prevLineCount = wrapper.vm.$store.state.lines.length;
-    await dragMouse(TEST_MOUSE_X, TEST_MOUSE_Y, false, endX, endY, false);
-    // await Vue.nextTick();
-    const newLineCount = wrapper.vm.$store.state.lines.length;
-    expect(newLineCount).toBe(prevLineCount + 1);
-    const R = SETTINGS.boundaryCircle.radius;
-    const startZCoord = Math.sqrt(
-      R * R - TEST_MOUSE_X * TEST_MOUSE_X - TEST_MOUSE_Y * TEST_MOUSE_Y
-    );
-    const endZCoord = Math.sqrt(R * R - endX * endX - endY * endY);
-    const newLine: SELine = wrapper.vm.$store.state.lines[prevLineCount];
+    it("add a new line (fg/bg) while in LineTool", async () => {
+      wrapper.vm.$store.commit("setActionMode", {
+        id: "line",
+        name: "Tool Name does not matter"
+      });
+      await Vue.nextTick();
+      const prevLineCount = wrapper.vm.$store.state.lines.length;
+      const endX = TEST_MOUSE_X + 10;
+      const endY = TEST_MOUSE_Y - 10;
+      await dragMouse(TEST_MOUSE_X, TEST_MOUSE_Y, false, endX, endY, true);
+      const newLineCount = wrapper.vm.$store.state.lines.length;
+      expect(newLineCount).toBe(prevLineCount + 1);
+      const R = SETTINGS.boundaryCircle.radius;
+      const startZCoord = Math.sqrt(
+        R * R - TEST_MOUSE_X * TEST_MOUSE_X - TEST_MOUSE_Y * TEST_MOUSE_Y
+      );
+      const endZCoord = Math.sqrt(R * R - endX * endX - endY * endY);
+      const newLine: SELine = wrapper.vm.$store.state.lines[prevLineCount];
 
-    // Start vector is foreground
-    const startVector = new Vector3(
-      TEST_MOUSE_X,
-      -TEST_MOUSE_Y,
-      startZCoord
-    ).normalize();
+      // Start vector is foreground
+      const startVector = new Vector3(
+        TEST_MOUSE_X,
+        -TEST_MOUSE_Y,
+        startZCoord
+      ).normalize();
 
-    // End vector is foreground
-    const endVector = new Vector3(endX, -endY, endZCoord).normalize();
-    const dir = new Vector3().crossVectors(startVector, endVector).normalize();
-    expect(newLine.startPoint.positionOnSphere).toBeVector3CloseTo(
-      startVector,
-      3
-    );
-    expect(newLine.endPoint.positionOnSphere).toBeVector3CloseTo(endVector, 3);
-    expect(newLine.normalDirection).toBeVector3CloseTo(dir, 3);
+      // End vector is background
+      const endVector = new Vector3(endX, -endY, -endZCoord).normalize();
+      const dir = new Vector3()
+        .crossVectors(startVector, endVector)
+        .normalize();
+      expect(newLine.startPoint.positionOnSphere).toBeVector3CloseTo(
+        startVector,
+        3
+      );
+      expect(newLine.endPoint.positionOnSphere).toBeVector3CloseTo(
+        endVector,
+        3
+      );
+      expect(newLine.normalDirection).toBeVector3CloseTo(dir, 3);
+    });
+
+    it("add a new line (bg/bg) while in LineTool", async () => {
+      wrapper.vm.$store.commit("setActionMode", {
+        id: "line",
+        name: "Tool Name does not matter"
+      });
+      await Vue.nextTick();
+      const prevLineCount = wrapper.vm.$store.state.lines.length;
+      const endX = TEST_MOUSE_X + 10;
+      const endY = TEST_MOUSE_Y - 10;
+      await dragMouse(TEST_MOUSE_X, TEST_MOUSE_Y, true, endX, endY, true);
+      // await Vue.nextTick();
+      const newLineCount = wrapper.vm.$store.state.lines.length;
+      expect(newLineCount).toBe(prevLineCount + 1);
+      const newLine: SELine = wrapper.vm.$store.state.lines[prevLineCount];
+      const R = SETTINGS.boundaryCircle.radius;
+      const startZCoord = Math.sqrt(
+        R * R - TEST_MOUSE_X * TEST_MOUSE_X - TEST_MOUSE_Y * TEST_MOUSE_Y
+      );
+      const endZCoord = Math.sqrt(R * R - endX * endX - endY * endY);
+      // Start vector is background
+      const startVector = new Vector3(
+        TEST_MOUSE_X,
+        -TEST_MOUSE_Y,
+        -startZCoord
+      ).normalize();
+
+      // End vector is background
+      const endVector = new Vector3(endX, -endY, -endZCoord).normalize();
+      const dir = new Vector3()
+        .crossVectors(startVector, endVector)
+        .normalize();
+      expect(newLine.startPoint.positionOnSphere).toBeVector3CloseTo(
+        startVector,
+        3
+      );
+      expect(newLine.endPoint.positionOnSphere).toBeVector3CloseTo(
+        endVector,
+        3
+      );
+      expect(newLine.normalDirection).toBeVector3CloseTo(dir, 3);
+    });
+
+    it("add a new line (bg/fg) while in LineTool", async () => {
+      wrapper.vm.$store.commit("setActionMode", {
+        id: "line",
+        name: "Tool Name does not matter"
+      });
+      await Vue.nextTick();
+      const prevLineCount = wrapper.vm.$store.state.lines.length;
+      const endX = TEST_MOUSE_X + 10;
+      const endY = TEST_MOUSE_Y - 10;
+      await dragMouse(TEST_MOUSE_X, TEST_MOUSE_Y, true, endX, endY, false);
+      // await Vue.nextTick();
+      const newLineCount = wrapper.vm.$store.state.lines.length;
+      expect(newLineCount).toBe(prevLineCount + 1);
+      const newLine: SELine = wrapper.vm.$store.state.lines[prevLineCount];
+      const R = SETTINGS.boundaryCircle.radius;
+      const startZCoord = Math.sqrt(
+        R * R - TEST_MOUSE_X * TEST_MOUSE_X - TEST_MOUSE_Y * TEST_MOUSE_Y
+      );
+      const endZCoord = Math.sqrt(R * R - endX * endX - endY * endY);
+      // Start vector is background
+
+      const startVector = new Vector3(
+        TEST_MOUSE_X,
+        -TEST_MOUSE_Y,
+        -startZCoord
+      ).normalize();
+
+      // End vector is foreground
+      const endVector = new Vector3(endX, -endY, endZCoord).normalize();
+      const dir = new Vector3()
+        .crossVectors(startVector, endVector)
+        .normalize();
+      expect(newLine.startPoint.positionOnSphere).toBeVector3CloseTo(
+        startVector,
+        3
+      );
+      expect(newLine.endPoint.positionOnSphere).toBeVector3CloseTo(
+        endVector,
+        3
+      );
+      expect(newLine.normalDirection).toBeVector3CloseTo(dir, 3);
+    });
   });
 
-  it("add a new line (fg/bg) while in LineTool", async () => {
-    wrapper.vm.$store.commit("setActionMode", {
-      id: "line",
-      name: "Tool Name does not matter"
+  describe("with SegmentTool", () => {
+    it("add a new segment (fg/fg) while in SegmentTool", async () => {
+      wrapper.vm.$store.commit("setActionMode", {
+        id: "segment",
+        name: "Tool Name does not matter"
+      });
+      await Vue.nextTick();
+      const endX = TEST_MOUSE_X + 10;
+      const endY = TEST_MOUSE_Y - 10;
+
+      const prevSegmentCount = wrapper.vm.$store.state.segments.length;
+      await dragMouse(TEST_MOUSE_X, TEST_MOUSE_Y, false, endX, endY, false);
+      // await Vue.nextTick();
+      const newSegmentCount = wrapper.vm.$store.state.segments.length;
+      expect(newSegmentCount).toBe(prevSegmentCount + 1);
+      const R = SETTINGS.boundaryCircle.radius;
+      const startZCoord = Math.sqrt(
+        R * R - TEST_MOUSE_X * TEST_MOUSE_X - TEST_MOUSE_Y * TEST_MOUSE_Y
+      );
+      const endZCoord = Math.sqrt(R * R - endX * endX - endY * endY);
+      const newSegment: SESegment =
+        wrapper.vm.$store.state.segments[prevSegmentCount];
+
+      // Start vector is foreground
+      const startVector = new Vector3(
+        TEST_MOUSE_X,
+        -TEST_MOUSE_Y,
+        startZCoord
+      ).normalize();
+
+      // End vector is foreground
+      const endVector = new Vector3(endX, -endY, endZCoord).normalize();
+      const dir = new Vector3()
+        .crossVectors(startVector, endVector)
+        .normalize();
+      expect(newSegment.startPoint.positionOnSphere).toBeVector3CloseTo(
+        startVector,
+        3
+      );
+      expect(newSegment.endPoint.positionOnSphere).toBeVector3CloseTo(
+        endVector,
+        3
+      );
+      expect(newSegment.normalDirection).toBeVector3CloseTo(dir, 3);
     });
-    await Vue.nextTick();
-    const prevLineCount = wrapper.vm.$store.state.lines.length;
-    const endX = TEST_MOUSE_X + 10;
-    const endY = TEST_MOUSE_Y - 10;
-    await dragMouse(TEST_MOUSE_X, TEST_MOUSE_Y, false, endX, endY, true);
-    const newLineCount = wrapper.vm.$store.state.lines.length;
-    expect(newLineCount).toBe(prevLineCount + 1);
-    const R = SETTINGS.boundaryCircle.radius;
-    const startZCoord = Math.sqrt(
-      R * R - TEST_MOUSE_X * TEST_MOUSE_X - TEST_MOUSE_Y * TEST_MOUSE_Y
-    );
-    const endZCoord = Math.sqrt(R * R - endX * endX - endY * endY);
-    const newLine: SELine = wrapper.vm.$store.state.lines[prevLineCount];
 
-    // Start vector is foreground
-    const startVector = new Vector3(
-      TEST_MOUSE_X,
-      -TEST_MOUSE_Y,
-      startZCoord
-    ).normalize();
+    it("add a new segment (fg/bg) while in SegmentTool", async () => {
+      wrapper.vm.$store.commit("setActionMode", {
+        id: "segment",
+        name: "Tool Name does not matter"
+      });
+      await Vue.nextTick();
+      const endX = TEST_MOUSE_X + 10;
+      const endY = TEST_MOUSE_Y - 10;
 
-    // End vector is background
-    const endVector = new Vector3(endX, -endY, -endZCoord).normalize();
-    const dir = new Vector3().crossVectors(startVector, endVector).normalize();
-    expect(newLine.startPoint.positionOnSphere).toBeVector3CloseTo(
-      startVector,
-      3
-    );
-    expect(newLine.endPoint.positionOnSphere).toBeVector3CloseTo(endVector, 3);
-    expect(newLine.normalDirection).toBeVector3CloseTo(dir, 3);
+      const prevSegmentCount = wrapper.vm.$store.state.segments.length;
+      await dragMouse(TEST_MOUSE_X, TEST_MOUSE_Y, false, endX, endY, true);
+      // await Vue.nextTick();
+      const newSegmentCount = wrapper.vm.$store.state.segments.length;
+      expect(newSegmentCount).toBe(prevSegmentCount + 1);
+      const R = SETTINGS.boundaryCircle.radius;
+      const startZCoord = Math.sqrt(
+        R * R - TEST_MOUSE_X * TEST_MOUSE_X - TEST_MOUSE_Y * TEST_MOUSE_Y
+      );
+      const endZCoord = Math.sqrt(R * R - endX * endX - endY * endY);
+      const newSegment: SESegment =
+        wrapper.vm.$store.state.segments[prevSegmentCount];
+
+      // Start vector is foreground
+      const startVector = new Vector3(
+        TEST_MOUSE_X,
+        -TEST_MOUSE_Y,
+        startZCoord
+      ).normalize();
+
+      // End vector is background
+      const endVector = new Vector3(endX, -endY, -endZCoord).normalize();
+      const dir = new Vector3()
+        .crossVectors(startVector, endVector)
+        .normalize();
+      expect(newSegment.startPoint.positionOnSphere).toBeVector3CloseTo(
+        startVector,
+        3
+      );
+      expect(newSegment.endPoint.positionOnSphere).toBeVector3CloseTo(
+        endVector,
+        3
+      );
+      expect(newSegment.normalDirection).toBeVector3CloseTo(dir, 3);
+    });
+
+    it("add a new segment (bg/fg) while in SegmentTool", async () => {
+      wrapper.vm.$store.commit("setActionMode", {
+        id: "segment",
+        name: "Tool Name does not matter"
+      });
+      await Vue.nextTick();
+      const endX = TEST_MOUSE_X + 10;
+      const endY = TEST_MOUSE_Y - 10;
+
+      const prevSegmentCount = wrapper.vm.$store.state.segments.length;
+      await dragMouse(TEST_MOUSE_X, TEST_MOUSE_Y, true, endX, endY, false);
+      // await Vue.nextTick();
+      const newSegmentCount = wrapper.vm.$store.state.segments.length;
+      expect(newSegmentCount).toBe(prevSegmentCount + 1);
+      const R = SETTINGS.boundaryCircle.radius;
+      const startZCoord = Math.sqrt(
+        R * R - TEST_MOUSE_X * TEST_MOUSE_X - TEST_MOUSE_Y * TEST_MOUSE_Y
+      );
+      const endZCoord = Math.sqrt(R * R - endX * endX - endY * endY);
+      const newSegment: SESegment =
+        wrapper.vm.$store.state.segments[prevSegmentCount];
+
+      // Start vector is background
+      const startVector = new Vector3(
+        TEST_MOUSE_X,
+        -TEST_MOUSE_Y,
+        -startZCoord
+      ).normalize();
+
+      // End vector is foreground
+      const endVector = new Vector3(endX, -endY, endZCoord).normalize();
+      const dir = new Vector3()
+        .crossVectors(startVector, endVector)
+        .normalize();
+      expect(newSegment.startPoint.positionOnSphere).toBeVector3CloseTo(
+        startVector,
+        3
+      );
+      expect(newSegment.endPoint.positionOnSphere).toBeVector3CloseTo(
+        endVector,
+        3
+      );
+      expect(newSegment.normalDirection).toBeVector3CloseTo(dir, 3);
+    });
+
+    it("add a new segment (bg/bg) while in SegmentTool", async () => {
+      wrapper.vm.$store.commit("setActionMode", {
+        id: "segment",
+        name: "Tool Name does not matter"
+      });
+      await Vue.nextTick();
+      const endX = TEST_MOUSE_X + 10;
+      const endY = TEST_MOUSE_Y - 10;
+
+      const prevSegmentCount = wrapper.vm.$store.state.segments.length;
+      await dragMouse(TEST_MOUSE_X, TEST_MOUSE_Y, true, endX, endY, true);
+      // await Vue.nextTick();
+      const newSegmentCount = wrapper.vm.$store.state.segments.length;
+      expect(newSegmentCount).toBe(prevSegmentCount + 1);
+      const R = SETTINGS.boundaryCircle.radius;
+      const startZCoord = Math.sqrt(
+        R * R - TEST_MOUSE_X * TEST_MOUSE_X - TEST_MOUSE_Y * TEST_MOUSE_Y
+      );
+      const endZCoord = Math.sqrt(R * R - endX * endX - endY * endY);
+      const newSegment: SESegment =
+        wrapper.vm.$store.state.segments[prevSegmentCount];
+
+      // Start vector is background
+      const startVector = new Vector3(
+        TEST_MOUSE_X,
+        -TEST_MOUSE_Y,
+        -startZCoord
+      ).normalize();
+
+      // End vector is background
+      const endVector = new Vector3(endX, -endY, -endZCoord).normalize();
+      const dir = new Vector3()
+        .crossVectors(startVector, endVector)
+        .normalize();
+      expect(newSegment.startPoint.positionOnSphere).toBeVector3CloseTo(
+        startVector,
+        3
+      );
+      expect(newSegment.endPoint.positionOnSphere).toBeVector3CloseTo(
+        endVector,
+        3
+      );
+      expect(newSegment.normalDirection).toBeVector3CloseTo(dir, 3);
+    });
   });
 
-  it("add a new line (bg/bg) while in LineTool", async () => {
-    wrapper.vm.$store.commit("setActionMode", {
-      id: "line",
-      name: "Tool Name does not matter"
-    });
-    await Vue.nextTick();
-    const prevLineCount = wrapper.vm.$store.state.lines.length;
-    const endX = TEST_MOUSE_X + 10;
-    const endY = TEST_MOUSE_Y - 10;
-    await dragMouse(TEST_MOUSE_X, TEST_MOUSE_Y, true, endX, endY, true);
-    // await Vue.nextTick();
-    const newLineCount = wrapper.vm.$store.state.lines.length;
-    expect(newLineCount).toBe(prevLineCount + 1);
-    const newLine: SELine = wrapper.vm.$store.state.lines[prevLineCount];
-    const R = SETTINGS.boundaryCircle.radius;
-    const startZCoord = Math.sqrt(
-      R * R - TEST_MOUSE_X * TEST_MOUSE_X - TEST_MOUSE_Y * TEST_MOUSE_Y
-    );
-    const endZCoord = Math.sqrt(R * R - endX * endX - endY * endY);
-    // Start vector is background
-    const startVector = new Vector3(
-      TEST_MOUSE_X,
-      -TEST_MOUSE_Y,
-      -startZCoord
-    ).normalize();
+  describe("with CircleTool", () => {
+    it("adds a new circle (fg/fg) while in CircleTool", async () => {
+      wrapper.vm.$store.commit("setActionMode", {
+        id: "circle",
+        name: "Tool Name does not matter"
+      });
+      await Vue.nextTick();
+      const endX = TEST_MOUSE_X + 10;
+      const endY = TEST_MOUSE_Y - 10;
 
-    // End vector is background
-    const endVector = new Vector3(endX, -endY, -endZCoord).normalize();
-    const dir = new Vector3().crossVectors(startVector, endVector).normalize();
-    expect(newLine.startPoint.positionOnSphere).toBeVector3CloseTo(
-      startVector,
-      3
-    );
-    expect(newLine.endPoint.positionOnSphere).toBeVector3CloseTo(endVector, 3);
-    expect(newLine.normalDirection).toBeVector3CloseTo(dir, 3);
+      const prevCircleCount = wrapper.vm.$store.state.circles.length;
+      await dragMouse(TEST_MOUSE_X, TEST_MOUSE_Y, false, endX, endY, false);
+      // await Vue.nextTick();
+      const newCircleCount = wrapper.vm.$store.state.circles.length;
+      expect(newCircleCount).toBe(prevCircleCount + 1);
+      const R = SETTINGS.boundaryCircle.radius;
+      const startZCoord = Math.sqrt(
+        R * R - TEST_MOUSE_X * TEST_MOUSE_X - TEST_MOUSE_Y * TEST_MOUSE_Y
+      );
+      const endZCoord = Math.sqrt(R * R - endX * endX - endY * endY);
+      const newCircle: SECircle =
+        wrapper.vm.$store.state.circles[prevCircleCount];
+
+      // Center vector is foreground
+      const centerVector = new Vector3(
+        TEST_MOUSE_X,
+        -TEST_MOUSE_Y,
+        startZCoord
+      ).normalize();
+
+      // Radius vector is foreground
+      const radiusVector = new Vector3(endX, -endY, endZCoord).normalize();
+      expect(newCircle.centerPoint.positionOnSphere).toBeVector3CloseTo(
+        centerVector,
+        3
+      );
+      expect(newCircle.circlePoint.positionOnSphere).toBeVector3CloseTo(
+        radiusVector,
+        3
+      );
+      expect(newCircle.normalDirection).toBeVector3CloseTo(centerVector, 3);
+    });
+
+    it("adds a new circle (fg/bg) while in CircleTool", async () => {
+      wrapper.vm.$store.commit("setActionMode", {
+        id: "circle",
+        name: "Tool Name does not matter"
+      });
+      await Vue.nextTick();
+      const endX = TEST_MOUSE_X + 10;
+      const endY = TEST_MOUSE_Y - 10;
+
+      const prevCircleCount = wrapper.vm.$store.state.circles.length;
+      await dragMouse(TEST_MOUSE_X, TEST_MOUSE_Y, false, endX, endY, true);
+      // await Vue.nextTick();
+      const newCircleCount = wrapper.vm.$store.state.circles.length;
+      expect(newCircleCount).toBe(prevCircleCount + 1);
+      const R = SETTINGS.boundaryCircle.radius;
+      const startZCoord = Math.sqrt(
+        R * R - TEST_MOUSE_X * TEST_MOUSE_X - TEST_MOUSE_Y * TEST_MOUSE_Y
+      );
+      const endZCoord = Math.sqrt(R * R - endX * endX - endY * endY);
+      const newCircle: SECircle =
+        wrapper.vm.$store.state.circles[prevCircleCount];
+
+      // Center vector is foreground
+      const centerVector = new Vector3(
+        TEST_MOUSE_X,
+        -TEST_MOUSE_Y,
+        startZCoord
+      ).normalize();
+
+      // Radius vector is background
+      const radiusVector = new Vector3(endX, -endY, -endZCoord).normalize();
+      expect(newCircle.centerPoint.positionOnSphere).toBeVector3CloseTo(
+        centerVector,
+        3
+      );
+      expect(newCircle.circlePoint.positionOnSphere).toBeVector3CloseTo(
+        radiusVector,
+        3
+      );
+      expect(newCircle.normalDirection).toBeVector3CloseTo(centerVector, 3);
+    });
+
+    it("adds a new circle (bg/fg) while in CircleTool", async () => {
+      wrapper.vm.$store.commit("setActionMode", {
+        id: "circle",
+        name: "Tool Name does not matter"
+      });
+      await Vue.nextTick();
+      const endX = TEST_MOUSE_X + 10;
+      const endY = TEST_MOUSE_Y - 10;
+
+      const prevCircleCount = wrapper.vm.$store.state.circles.length;
+      await dragMouse(TEST_MOUSE_X, TEST_MOUSE_Y, true, endX, endY, false);
+      // await Vue.nextTick();
+      const newCircleCount = wrapper.vm.$store.state.circles.length;
+      expect(newCircleCount).toBe(prevCircleCount + 1);
+      const R = SETTINGS.boundaryCircle.radius;
+      const startZCoord = Math.sqrt(
+        R * R - TEST_MOUSE_X * TEST_MOUSE_X - TEST_MOUSE_Y * TEST_MOUSE_Y
+      );
+      const endZCoord = Math.sqrt(R * R - endX * endX - endY * endY);
+      const newCircle: SECircle =
+        wrapper.vm.$store.state.circles[prevCircleCount];
+
+      // Center vector is background
+      const centerVector = new Vector3(
+        TEST_MOUSE_X,
+        -TEST_MOUSE_Y,
+        -startZCoord
+      ).normalize();
+
+      // Radius vector is foreground
+      const radiusVector = new Vector3(endX, -endY, endZCoord).normalize();
+      expect(newCircle.centerPoint.positionOnSphere).toBeVector3CloseTo(
+        centerVector,
+        3
+      );
+      expect(newCircle.circlePoint.positionOnSphere).toBeVector3CloseTo(
+        radiusVector,
+        3
+      );
+      expect(newCircle.normalDirection).toBeVector3CloseTo(centerVector, 3);
+    });
+
+    it("adds a new circle (bg/bg) while in CircleTool", async () => {
+      wrapper.vm.$store.commit("setActionMode", {
+        id: "circle",
+        name: "Tool Name does not matter"
+      });
+      await Vue.nextTick();
+      const endX = TEST_MOUSE_X + 10;
+      const endY = TEST_MOUSE_Y - 10;
+
+      const prevCircleCount = wrapper.vm.$store.state.circles.length;
+      await dragMouse(TEST_MOUSE_X, TEST_MOUSE_Y, true, endX, endY, true);
+      // await Vue.nextTick();
+      const newCircleCount = wrapper.vm.$store.state.circles.length;
+      expect(newCircleCount).toBe(prevCircleCount + 1);
+      const R = SETTINGS.boundaryCircle.radius;
+      const startZCoord = Math.sqrt(
+        R * R - TEST_MOUSE_X * TEST_MOUSE_X - TEST_MOUSE_Y * TEST_MOUSE_Y
+      );
+      const endZCoord = Math.sqrt(R * R - endX * endX - endY * endY);
+      const newCircle: SECircle =
+        wrapper.vm.$store.state.circles[prevCircleCount];
+
+      // Center vector is background
+      const centerVector = new Vector3(
+        TEST_MOUSE_X,
+        -TEST_MOUSE_Y,
+        -startZCoord
+      ).normalize();
+
+      // Radius vector is background
+      const radiusVector = new Vector3(endX, -endY, -endZCoord).normalize();
+      expect(newCircle.centerPoint.positionOnSphere).toBeVector3CloseTo(
+        centerVector,
+        3
+      );
+      expect(newCircle.circlePoint.positionOnSphere).toBeVector3CloseTo(
+        radiusVector,
+        3
+      );
+      expect(newCircle.normalDirection).toBeVector3CloseTo(centerVector, 3);
+    });
   });
-
-  it("add a new line (bg/fg) while in LineTool", async () => {
-    wrapper.vm.$store.commit("setActionMode", {
-      id: "line",
-      name: "Tool Name does not matter"
-    });
-    await Vue.nextTick();
-    const prevLineCount = wrapper.vm.$store.state.lines.length;
-    const endX = TEST_MOUSE_X + 10;
-    const endY = TEST_MOUSE_Y - 10;
-    await dragMouse(TEST_MOUSE_X, TEST_MOUSE_Y, true, endX, endY, false);
-    // await Vue.nextTick();
-    const newLineCount = wrapper.vm.$store.state.lines.length;
-    expect(newLineCount).toBe(prevLineCount + 1);
-    const newLine: SELine = wrapper.vm.$store.state.lines[prevLineCount];
-    const R = SETTINGS.boundaryCircle.radius;
-    const startZCoord = Math.sqrt(
-      R * R - TEST_MOUSE_X * TEST_MOUSE_X - TEST_MOUSE_Y * TEST_MOUSE_Y
-    );
-    const endZCoord = Math.sqrt(R * R - endX * endX - endY * endY);
-    // Start vector is background
-
-    const startVector = new Vector3(
-      TEST_MOUSE_X,
-      -TEST_MOUSE_Y,
-      -startZCoord
-    ).normalize();
-
-    // End vector is foreground
-    const endVector = new Vector3(endX, -endY, endZCoord).normalize();
-    const dir = new Vector3().crossVectors(startVector, endVector).normalize();
-    expect(newLine.startPoint.positionOnSphere).toBeVector3CloseTo(
-      startVector,
-      3
-    );
-    expect(newLine.endPoint.positionOnSphere).toBeVector3CloseTo(endVector, 3);
-    expect(newLine.normalDirection).toBeVector3CloseTo(dir, 3);
+  it("adds a new intersection points ", () => {
+    // fail("Incomplete test");
   });
 });
