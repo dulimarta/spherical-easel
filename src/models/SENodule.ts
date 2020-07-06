@@ -1,5 +1,6 @@
 import { Vector3 } from "three";
 import { SEPoint } from "./SEPoint";
+import { SESegmentMidPoint } from "./SESegmentMidPoint";
 
 let NODE_COUNT = 0;
 export abstract class SENodule {
@@ -147,6 +148,7 @@ export abstract class SENodule {
   public isFreePoint(): this is SEPoint {
     return this.parents.length == 0;
   }
+
   public isFreeToMove(): boolean {
     //if (this.isFreePoint() || this.isPointOnObject()) return true; // SEE ABOVE!
     if (this.isFreePoint()) return true;

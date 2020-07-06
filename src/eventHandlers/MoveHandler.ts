@@ -74,6 +74,7 @@ export default class MoveHandler extends MouseHandler {
       const freePoints = this.hitPoints.filter(n => n.isFreeToMove());
       if (freePoints.length > 0) {
         this.moveTarget = freePoints[0];
+        console.log("name", (this.moveTarget as SEPoint).name);
         return;
       }
       const freeLines = this.hitLines.filter(n => n.isFreeToMove());
@@ -114,7 +115,7 @@ export default class MoveHandler extends MouseHandler {
     if (!this.isOnSphere) return;
     if (this.isDragging) {
       if (this.moveTarget instanceof SEPoint) {
-        // Move the selected SEPOint
+        // Move the selected SEPoint
         this.moveTarget.vectorPosition = this.currentSphereVector;
         this.moveTarget.update();
       } else if (
@@ -122,7 +123,7 @@ export default class MoveHandler extends MouseHandler {
         this.moveTarget instanceof SESegment
       ) {
         // Move the selected SELine or SESegment
-        this.doMoveLine(this.moveTarget, event.altKey);
+        this.doMoveLine(this.moveTarget, event.altKey, event.ctrlKey);
       } else if (this.moveTarget instanceof SECircle) {
         // Move the selected SECircle
         this.doMoveCircle(this.moveTarget);
@@ -166,8 +167,40 @@ export default class MoveHandler extends MouseHandler {
 
   private doMoveLine(
     targetLine: SELine | SESegment,
-    altKeyPressed: boolean
+    altKeyPressed: boolean,
+    ctrlKeyPressed: boolean
   ): void {
+    // If the ctrlKey Is press translate the segment in the direction of previousSphereVector to currentSphereVector
+    if (ctrlKeyPressed) {
+      const rotationAngle = this.previousSphereVector.angleTo(
+        this.currentSphereVector
+      );
+      // If the rotation is big enough preform the rotation
+      if (rotationAngle > SETTINGS.rotate.minAngle) {
+        // The axis of rotation
+        desiredZAxis
+          .crossVectors(this.previousSphereVector, this.currentSphereVector)
+          .normalize();
+        // Form the matrix that performs the rotation
+        this.changeInPositionRotationMatrix.makeRotationAxis(
+          desiredZAxis,
+          rotationAngle
+        );
+        tmpVector1
+          .copy(targetLine.startPoint.vectorPosition)
+          .applyMatrix4(this.changeInPositionRotationMatrix);
+        targetLine.startPoint.vectorPosition = tmpVector1;
+        tmpVector2
+          .copy(targetLine.endPoint.vectorPosition)
+          .applyMatrix4(this.changeInPositionRotationMatrix);
+        targetLine.endPoint.vectorPosition = tmpVector2;
+        //targetLine.endPoint.update();
+        targetLine.startPoint.update();
+      }
+
+      return;
+    }
+
     let pivot = targetLine.startPoint;
     let freeEnd = targetLine.endPoint;
     if (altKeyPressed) {
@@ -180,52 +213,32 @@ export default class MoveHandler extends MouseHandler {
     // the angle of rotation must be measure as the amount of changes of the
     // plane normal vector
 
-    // determine the plane normal vector at the previous position
+    // Determine the normal vector to the plane containing the pivot and the previous position
     tmpVector1
       .crossVectors(pivot.vectorPosition, this.previousSphereVector)
       .normalize();
-    // determine the plane normal vector at the current position
+    // Determine the normal vector to the plane containing the pivot and the current position
     tmpVector2
       .crossVectors(pivot.vectorPosition, this.currentSphereVector)
       .normalize();
-    // The angle between tmpVector1 and tmpVector2 is the distance on the Ideal Unit Sphere, however
-    //  on the Default Sphere, the same angle of rotation causes a *much* bigger movement of the
-    //  line or segment. As the mouse events are on the Default Sphere, in order to have the rotation
-    //  of the line track the mouse event location, we have to divide the angle by the radius of
-    //  the default sphere
-    let rotAngle =
-      tmpVector1.angleTo(tmpVector2) / SETTINGS.boundaryCircle.radius;
+    // The angle between tmpVector1 and tmpVector2 is the distance to move on the Ideal Unit Sphere
+    let rotAngle = tmpVector1.angleTo(tmpVector2);
 
-    const axisOfRotation = pivot.vectorPosition;
+    // Determine which direction to rotate.
     tmpVector1.cross(tmpVector2);
     rotAngle *= Math.sign(tmpVector1.z);
-    // Reverse the direction of the rotation on the back of the sphere
+
+    // Reverse the direction of the rotation if the current points is on the back of the sphere
     if (this.currentSphereVector.z < 0) {
       rotAngle *= -1;
     }
-    tmpNormal.getNormalMatrix(tmpMatrix);
-    tmpVector1.copy(targetLine.normalDirection);
-    tmpVector1.applyAxisAngle(axisOfRotation, rotAngle);
 
-    // console.debug(
-    //   "Old dir",
-    //   targetLine.normalDirection.toFixed(2),
-    //   "new dir",
-    //   tmpVector.toFixed(2)
-    // );
-    targetLine.normalDirection = tmpVector1;
-    // tmpVector.copy(this.moveTarget.startPoint);
-    // tmpVector.applyMatrix4(tmpMatrix);
-    // this.moveTarget.startPoint = tmpVector;
+    // Rotate the freeEnd by the rotation angle around the axisOfRotation
+    const axisOfRotation = pivot.vectorPosition;
     tmpVector1.copy(freeEnd.vectorPosition);
     tmpVector1.applyAxisAngle(axisOfRotation, rotAngle);
     freeEnd.vectorPosition = tmpVector1;
-    if (targetLine instanceof SESegment) {
-      tmpVector1.copy(targetLine.midPoint);
-      tmpVector1.applyAxisAngle(axisOfRotation, rotAngle);
-      targetLine.midPoint.copy(tmpVector1);
-    }
-    targetLine.update();
+    freeEnd.update();
   }
 
   /**
@@ -241,15 +254,38 @@ export default class MoveHandler extends MouseHandler {
    * @param targetCircle
    */
   private doMoveCircle(targetCircle: SECircle) {
+    const rotationAngle = this.previousSphereVector.angleTo(
+      this.currentSphereVector
+    );
+    // If the rotation is big enough preform the rotation
+    if (rotationAngle > SETTINGS.rotate.minAngle) {
+      // The axis of rotation
+      desiredZAxis
+        .crossVectors(this.previousSphereVector, this.currentSphereVector)
+        .normalize();
+      // Form the matrix that performs the rotation
+      this.changeInPositionRotationMatrix.makeRotationAxis(
+        desiredZAxis,
+        rotationAngle
+      );
+      tmpVector1
+        .copy(targetLine.startPoint.vectorPosition)
+        .applyMatrix4(this.changeInPositionRotationMatrix);
+      targetLine.startPoint.vectorPosition = tmpVector1;
+      tmpVector2
+        .copy(targetLine.endPoint.vectorPosition)
+        .applyMatrix4(this.changeInPositionRotationMatrix);
+      targetLine.endPoint.vectorPosition = tmpVector2;
+      //targetLine.endPoint.update();
+      targetLine.startPoint.update();
+    }
     // tmpVector1> the normal of the plane containing the arc between
     // the previous sphere position and the current sphere position
     currCircleCenter.copy(targetCircle.centerPoint.vectorPosition);
     tmpVector1
-      .crossVectors(this.initialMousePressVector, this.currentSphereVector)
+      .crossVectors(this.moveFrom, this.currentSphereVector)
       .normalize();
-    const moveArcDistance = this.initialMousePressVector.angleTo(
-      this.currentSphereVector
-    );
+    const moveArcDistance = this.moveFrom.angleTo(this.currentSphereVector);
     // (1) Translate both the center and outer points by the same amount
     tmpVector2.copy(targetCircle.centerPoint.vectorPosition);
     tmpVector2.applyAxisAngle(tmpVector1, moveArcDistance);

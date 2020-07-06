@@ -6,10 +6,11 @@ import Segment from "@/plottables/Segment";
 import globalSettings from "@/global-settings";
 import SETTINGS from "@/global-settings";
 
-const MIDPOINT_MOVEMENT_THRESHOLD = 2.0; /* in degrees */
+const MIDPOINT_MOVEMENT_THRESHOLD = SETTINGS.segment.midPointMovementThreshold;
 
-/** A temporary vector to help with calculations */
-const tmpVector = new Vector3();
+/** Temporary vector2 to help with calculations */
+const tmpVector1 = new Vector3();
+const tmpVector2 = new Vector3();
 
 export class SESegmentMidPoint extends SEPoint {
   /**
@@ -27,7 +28,7 @@ export class SESegmentMidPoint extends SEPoint {
    */
   private nearlyAntipodal = false;
 
-  /** Temporary midvector */
+  /** Temporary midVector */
   private tempMidVector = new Vector3(); // This holds a candidate midpoint vector to see so that if updating the segment moves the midpoint too much
 
   constructor(p: Point, segmentStartPoint: SEPoint, segmentEndPoint: SEPoint) {
@@ -45,6 +46,11 @@ export class SESegmentMidPoint extends SEPoint {
     this.setShowing(false);
   }
 
+  // This kind of point is *never* free, so override the isFreeToMove method
+  public isFreeToMove(): this is SEPoint {
+    return false;
+  }
+
   public update() {
     if (!this.canUpdateNow()) {
       return;
@@ -55,11 +61,15 @@ export class SESegmentMidPoint extends SEPoint {
       this.startSEPoint.vectorPosition.angleTo(this.endSEPoint.vectorPosition) >
       2
     ) {
-      // The startSEPoint and the endSEPoint might be antipodal proceed with caution, possibly update longerThanPi
+      // Test to see if startSEPoint and the endSEPoint might be antipodal, possibly update longerThanPi
+      // Use pixel distance because the will more closely mirror the experience of the user.
       if (
-        this.startSEPoint.vectorPosition.distanceTo(
-          this.endSEPoint.vectorPosition.multiplyScalar(-1)
-        ) < SETTINGS.point.hitIdealDistance
+        SETTINGS.boundaryCircle.radius *
+          (Math.PI -
+            this.startSEPoint.vectorPosition.angleTo(
+              this.endSEPoint.vectorPosition
+            )) <
+        SETTINGS.point.hitPixelDistance
       ) {
         this.nearlyAntipodal = true;
       } else {
@@ -70,7 +80,7 @@ export class SESegmentMidPoint extends SEPoint {
       }
     }
     // The value of longerThanPi is correctly set so use that to create a candidate midVector
-    this.tempMidVector
+    this.vectorLocation = this.tempMidVector
       .addVectors(
         this.startSEPoint.vectorPosition,
         this.endSEPoint.vectorPosition
@@ -79,27 +89,8 @@ export class SESegmentMidPoint extends SEPoint {
       .normalize()
       .multiplyScalar(this.longerThanPi ? -1 : 1);
 
-    // moveAngle is angular change in the midpoint (from the (soon-to-be- former) vector location to tempMidVector)
-    const moveAngle = this.tempMidVector.angleTo(this.vectorPosition);
-    if (moveAngle.toDegrees() < MIDPOINT_MOVEMENT_THRESHOLD) {
-      // For small movement, update the midpoint directly
-      this.vectorPosition.copy(this.tempMidVector);
-    } else {
-      // For target movement, update the midpoint along the tangent curve
-      // N = normalize(midVector X tempMidVector)
-      tmpVector
-        .crossVectors(this.vectorPosition, this.tempMidVector)
-        .normalize();
-      // tempVector =  normalize(N x oldMid) (notice that tempVector, N, oldMid are a unit orthonormal frame)
-      tmpVector.cross(this.vectorPosition).normalize();
-      // Now rotate in the oldMid, tempVector plane by the moveAngle (strangely this
-      // works better than angle = MIDPOINT_MOVEMENT_THRESHOLD )
-      // That is newMid = cos(angle)oldMid + sin(angle) tempVector
-      this.vectorPosition.multiplyScalar(Math.cos(moveAngle));
-      this.vectorPosition
-        .addScaledVector(tmpVector, Math.sin(moveAngle))
-        .normalize();
-    }
+    // Set the position of the associated displayed plottable Point
+    this.ref.positionVector = this.vectorLocation;
 
     this.setOutOfDate(false);
     this.updateKids();

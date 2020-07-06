@@ -28,11 +28,13 @@ export class SEPoint extends SENodule implements Visitable {
   }
 
   public update(): void {
-    // make sure that all parents of this Point are up to date.
+    // make sure that all parents of this SEPoint are up to date.
     if (!this.canUpdateNow()) {
       return;
     }
-    //in more complex objects we will have to update other information in the Class
+    //Update the location of the associate plottable Point
+    this.ref.positionVector = this.vectorLocation;
+
     this.setOutOfDate(false);
     this.updateKids();
   }

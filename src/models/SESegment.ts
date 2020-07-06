@@ -63,17 +63,6 @@ export class SESegment extends SENodule implements Visitable {
     v.actionOnSegment(this);
   }
 
-  // set normalDirection(dir: Vector3) {
-  //   this.ref.normalVector = dir;
-  // }
-  // get normalDirection(): Vector3 {
-  //   return this.ref.normalVector;
-  // }
-
-  // set start(updatedStartPoint: SEPoint) {}
-
-  // set endVector(newStartVector: Vector3) {}
-
   get segStartPoint(): SEPoint {
     return this.startPoint;
   }
@@ -212,6 +201,7 @@ export class SESegment extends SENodule implements Visitable {
     this.ref.endVector = this.endPoint.vectorPosition;
     // update the display of the segment now that the four vectors are set
     this.ref.update();
+
     this.setOutOfDate(false);
     this.updateKids();
   }
