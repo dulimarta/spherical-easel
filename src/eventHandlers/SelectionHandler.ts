@@ -13,7 +13,7 @@ export default class SelectionHandler extends MouseHandler {
     // None
     if (this.hitNodules?.length <= 1) return;
     if (e.key.match(/[0-9]/)) {
-      // console.debug("Digit pressed");
+      // is it a digit?
       const val = Number(e.key) - 1;
       this.hitNodules.forEach((n, pos) => {
         if (pos === val) {
@@ -28,6 +28,14 @@ export default class SelectionHandler extends MouseHandler {
 
   mouseMoved(event: MouseEvent): void {
     super.mouseMoved(event);
+    const what = this.store.getters.findNearbyObjects(
+      this.currentSphereVector,
+      this.currentScreenVector
+    );
+    console.debug(what);
+    // console.debug(this.hitLines);
+    // console.debug(this.hitSegments);
+    // console.debug(this.hi)
   }
 
   mousePressed(event: MouseEvent): void {

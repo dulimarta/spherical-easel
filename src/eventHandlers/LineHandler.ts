@@ -1,7 +1,6 @@
 /** @format */
 
 import { Vector3 } from "three";
-import MouseHandler from "./MouseHandler";
 import Point from "@/plottables/Point";
 import Line from "@/plottables/Line";
 
@@ -15,9 +14,10 @@ import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import { DisplayStyle } from "@/plottables/Nodule";
 import { ShowPointCommand } from "@/commands/ShowPointCommand";
 import globalSettings from "@/global-settings";
+import Highlighter from "./Highlighter";
 // const frontPointRadius = SETTINGS.point.temp.radius.front;
 
-export default class LineHandler extends MouseHandler {
+export default class LineHandler extends Highlighter {
   /**
    * The starting vector location of the lines
    */

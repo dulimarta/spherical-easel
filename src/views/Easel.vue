@@ -154,7 +154,7 @@
         </template>
         <template slot="paneR">
           <div ref="rightPanel">
-            <h3>New panel here</h3>
+            <style-panel></style-panel>
           </div>
         </template>
       </split-pane>
@@ -177,8 +177,8 @@ import { SEPoint } from "@/models/SEPoint";
 import { SELine } from "@/models/SELine";
 import buttonList from "@/components/ToolGroups.vue";
 import ToolButton from "@/components/ToolButton.vue";
-
-@Component({ components: { SplitPane, Toolbox, SphereFrame, ToolButton } })
+import StylePanel from "@/components/Style.vue"
+@Component({ components: { SplitPane, Toolbox, SphereFrame, ToolButton, StylePanel } })
 export default class Easel extends Vue {
   readonly RIGHT_PANE_PERCENTAGE = 80;
   private LEFT_PANE_PERCENTAGE = 30;

@@ -16,6 +16,7 @@ import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import { DisplayStyle } from "@/plottables/Nodule";
 import { ShowPointCommand } from "@/commands/ShowPointCommand";
 import { SESegmentMidPoint } from "@/models/SESegmentMidPoint";
+import Highlighter from "./Highlighter";
 
 const MIDPOINT_MOVEMENT_THRESHOLD = SETTINGS.segment.midPointMovementThreshold;
 
@@ -24,7 +25,7 @@ const tmpVector1 = new Vector3();
 const tmpVector2 = new Vector3();
 const tmpTwoVector = new Two.Vector(0, 0);
 
-export default class SegmentHandler extends MouseHandler {
+export default class SegmentHandler extends Highlighter {
   /**
    * The starting unit vector location of the segment
    */

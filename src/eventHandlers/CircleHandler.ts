@@ -1,7 +1,6 @@
 /** @format */
 
 import { Vector3 } from "three";
-import MouseHandler from "./MouseHandler";
 import Point from "@/plottables/Point";
 import Circle from "@/plottables/Circle";
 import { CommandGroup } from "@/commands/CommandGroup";
@@ -14,8 +13,9 @@ import SETTINGS from "@/global-settings";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import { DisplayStyle } from "@/plottables/Nodule";
 import { ShowPointCommand } from "@/commands/ShowPointCommand";
+import Highlighter from "./Highlighter";
 
-export default class CircleHandler extends MouseHandler {
+export default class CircleHandler extends Highlighter {
   /**
    * Center vector of the created circle
    */

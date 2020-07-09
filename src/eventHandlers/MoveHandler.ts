@@ -1,6 +1,5 @@
 /** @format */
 
-import MouseHandler from "./MouseHandler";
 import Two from "two.js";
 import { Matrix4, Vector3 } from "three";
 import { SEPoint } from "@/models/SEPoint";
@@ -11,12 +10,14 @@ import { SECircle } from "@/models/SECircle";
 import SETTINGS from "@/global-settings";
 import EventBus from "./EventBus";
 import { RotateSphereCommand } from "@/commands/RotateSphereCommand";
+import Highlighter from "./Highlighter";
+import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 const tmpVector1 = new Vector3();
 const tmpVector2 = new Vector3();
 /** Use in the rotation of sphere move event */
 const desiredZAxis = new Vector3();
 
-export default class MoveHandler extends MouseHandler {
+export default class MoveHandler extends Highlighter {
   /**
    * Set when the user is trying to move an element
    */
@@ -138,10 +139,11 @@ export default class MoveHandler extends MouseHandler {
     altKeyPressed: boolean,
     ctrlKeyPressed: boolean
   ): void {
+    let rotationAngle;
     // If the ctrlKey Is press translate the segment in the direction of previousSphereVector
     //  to currentSphereVector (i.e. just rotate the segment)
     if (ctrlKeyPressed) {
-      const rotationAngle = this.previousSphereVector.angleTo(
+      rotationAngle = this.previousSphereVector.angleTo(
         this.currentSphereVector
       );
       // If the rotation is big enough preform the rotation
@@ -151,64 +153,64 @@ export default class MoveHandler extends MouseHandler {
           .crossVectors(this.previousSphereVector, this.currentSphereVector)
           .normalize();
         // Form the matrix that performs the rotation
-        this.changeInPositionRotationMatrix.makeRotationAxis(
-          desiredZAxis,
-          rotationAngle
-        );
+        // this.changeInPositionRotationMatrix.makeRotationAxis(
+        //   desiredZAxis,
+        //   rotationAngle
+        // );
         tmpVector1
           .copy(targetLine.startPoint.vectorPosition)
-          .applyMatrix4(this.changeInPositionRotationMatrix);
+          .applyAxisAngle(desiredZAxis, rotationAngle);
         targetLine.startPoint.vectorPosition = tmpVector1;
         tmpVector2
           .copy(targetLine.endPoint.vectorPosition)
-          .applyMatrix4(this.changeInPositionRotationMatrix);
+          .applyAxisAngle(desiredZAxis, rotationAngle);
         targetLine.endPoint.vectorPosition = tmpVector2;
         // Update both points, because we might need to update their kids!
         targetLine.endPoint.update();
         targetLine.startPoint.update();
       }
+    } else {
+      let pivot = targetLine.startPoint;
+      let freeEnd = targetLine.endPoint;
+      if (altKeyPressed) {
+        pivot = targetLine.endPoint;
+        freeEnd = targetLine.startPoint;
+      }
 
-      return;
+      // We want to measure the rotation angle with respect to the rotationAxis
+      // Essentially we rotate a plane "hinged" at the rotationAxis so
+      // the angle of rotation must be measure as the amount of changes of the
+      // plane normal vector
+
+      // Determine the normal vector to the plane containing the pivot and the previous position
+      tmpVector1
+        .crossVectors(pivot.vectorPosition, this.previousSphereVector)
+        .normalize();
+      // Determine the normal vector to the plane containing the pivot and the current position
+      tmpVector2
+        .crossVectors(pivot.vectorPosition, this.currentSphereVector)
+        .normalize();
+      // The angle between tmpVector1 and tmpVector2 is the distance to move on the Ideal Unit Sphere
+      rotationAngle = tmpVector1.angleTo(tmpVector2);
+
+      // Determine which direction to rotate.
+      tmpVector1.cross(tmpVector2);
+      rotationAngle *= Math.sign(tmpVector1.z);
+
+      // Reverse the direction of the rotation if the current points is on the back of the sphere
+      if (this.currentSphereVector.z < 0) {
+        rotationAngle *= -1;
+      }
+
+      // Rotate the freeEnd by the rotation angle around the axisOfRotation
+      const axisOfRotation = pivot.vectorPosition;
+      tmpVector1.copy(freeEnd.vectorPosition);
+      tmpVector1.applyAxisAngle(axisOfRotation, rotationAngle);
+      freeEnd.vectorPosition = tmpVector1;
+      freeEnd.update();
     }
 
-    let pivot = targetLine.startPoint;
-    let freeEnd = targetLine.endPoint;
-    if (altKeyPressed) {
-      pivot = targetLine.endPoint;
-      freeEnd = targetLine.startPoint;
-    }
-
-    // We want to measure the rotation angle with respect to the rotationAxis
-    // Essentially we rotate a plane "hinged" at the rotationAxis so
-    // the angle of rotation must be measure as the amount of changes of the
-    // plane normal vector
-
-    // Determine the normal vector to the plane containing the pivot and the previous position
-    tmpVector1
-      .crossVectors(pivot.vectorPosition, this.previousSphereVector)
-      .normalize();
-    // Determine the normal vector to the plane containing the pivot and the current position
-    tmpVector2
-      .crossVectors(pivot.vectorPosition, this.currentSphereVector)
-      .normalize();
-    // The angle between tmpVector1 and tmpVector2 is the distance to move on the Ideal Unit Sphere
-    let rotAngle = tmpVector1.angleTo(tmpVector2);
-
-    // Determine which direction to rotate.
-    tmpVector1.cross(tmpVector2);
-    rotAngle *= Math.sign(tmpVector1.z);
-
-    // Reverse the direction of the rotation if the current points is on the back of the sphere
-    if (this.currentSphereVector.z < 0) {
-      rotAngle *= -1;
-    }
-
-    // Rotate the freeEnd by the rotation angle around the axisOfRotation
-    const axisOfRotation = pivot.vectorPosition;
-    tmpVector1.copy(freeEnd.vectorPosition);
-    tmpVector1.applyAxisAngle(axisOfRotation, rotAngle);
-    freeEnd.vectorPosition = tmpVector1;
-    freeEnd.update();
+    this.recalculateIntersections(targetLine);
   }
 
   /**
@@ -254,47 +256,6 @@ export default class MoveHandler extends MouseHandler {
       targetCircle.circlePoint.update();
       targetCircle.centerPoint.update();
     }
-    // // tmpVector1> the normal of the plane containing the arc between
-    // // the previous sphere position and the current sphere position
-    // currCircleCenter.copy(targetCircle.centerPoint.vectorPosition);
-    // tmpVector1
-    //   .crossVectors(this.moveFrom, this.currentSphereVector)
-    //   .normalize();
-    // const moveArcDistance = this.moveFrom.angleTo(this.currentSphereVector);
-    // // (1) Translate both the center and outer points by the same amount
-    // tmpVector2.copy(targetCircle.centerPoint.vectorPosition);
-    // tmpVector2.applyAxisAngle(tmpVector1, moveArcDistance);
-    // targetCircle.centerPoint.vectorPosition = tmpVector2;
-    // tempSegment.endVector = tmpVector2;
-    // tmpVector2.copy(targetCircle.circlePoint.vectorPosition);
-    // tmpVector2.applyAxisAngle(tmpVector1, moveArcDistance);
-    // targetCircle.circlePoint.vectorPosition = tmpVector2;
-
-    // // (2) Rotate the circle so the new center, the new outer, and the
-    // // old outer points are collinear
-    // arcNormal1
-    //   .crossVectors(
-    //     targetCircle.centerPoint.vectorPosition,
-    //     targetCircle.circlePoint.vectorPosition
-    //   )
-    //   .normalize();
-    // // Compute the plane normal vector of the arc between
-    // // the new center and the old outer
-    // arcNormal2
-    //   .crossVectors(targetCircle.centerPoint.vectorPosition, prevCircleOuter)
-    //   .normalize();
-    // tmpVector1.crossVectors(arcNormal1, arcNormal2).normalize();
-    // const circleRotation =
-    //   arcNormal1.angleTo(arcNormal2) * Math.sign(tmpVector1.z);
-    // tmpVector1.copy(targetCircle.circlePoint.vectorPosition);
-    // tmpVector1.applyAxisAngle(
-    //   targetCircle.centerPoint.vectorPosition,
-    //   circleRotation
-    // );
-    // targetCircle.circlePoint.vectorPosition = tmpVector1;
-    // targetCircle.update();
-    // targetCircle.centerPoint.updateKids();
-    // targetCircle.circlePoint.updateKids();
   }
 
   private doRotateSphere(): void {
@@ -319,5 +280,48 @@ export default class MoveHandler extends MouseHandler {
         transform: this.changeInPositionRotationMatrix
       });
     }
+  }
+
+  private recalculateIntersections(target: SELine | SESegment): void {
+    const out =
+      target instanceof SELine
+        ? this.store.getters.determineIntersectionsWithLine(target)
+        : this.store.getters.determineIntersectionsWithSegment(target);
+
+    // Build a HashMap for quick match via the parents name
+    const intersectionMap: any = {};
+    out
+      // FIXME: Is it possible for an intersection point to have more than 2 parent nodes?
+      .filter((x: SEIntersectionPoint) => x.parents.length == 2)
+      .forEach((x: SEIntersectionPoint) => {
+        let parent1 = x.parents[0].name;
+        let parent2 = x.parents[1].name;
+        if (parent1 > parent2) {
+          // Swap names so they are in alphabetical order
+          const tmp = parent1;
+          parent1 = parent2;
+          parent2 = tmp;
+        }
+        intersectionMap[`${parent1}/${parent2}`] = x;
+      });
+    target.children
+      .filter(n => n instanceof SEIntersectionPoint)
+      .map(n => n as SEIntersectionPoint)
+      .filter((x: SEIntersectionPoint) => x.parents.length == 2)
+      .forEach((x: SEIntersectionPoint) => {
+        let p1 = x.parents[0].name;
+        let p2 = x.parents[1].name;
+        if (p1 > p2) {
+          // Swap names so they are in alphabetical order
+          const tmp = p1;
+          p1 = p2;
+          p2 = tmp;
+        }
+
+        // Locate the source SEIntersectionPoint for this object
+        const source: SEIntersectionPoint = intersectionMap[`${p1}/${p2}`];
+        x.vectorPosition.copy(source.vectorPosition);
+        x.update();
+      });
   }
 }

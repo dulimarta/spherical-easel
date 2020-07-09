@@ -1,11 +1,12 @@
 import { Vector3 } from "three";
 import { SEPoint } from "./SEPoint";
-import { SESegmentMidPoint } from "./SESegmentMidPoint";
+// import { SESegmentMidPoint } from "./SESegmentMidPoint";
 
 let NODE_COUNT = 0;
 export abstract class SENodule {
   /* An array to store the parents of the node (i.e. the objects that this node depends on)*/
-  protected parents: SENodule[] = [];
+
+  protected _parents: SENodule[] = [];
   /* An array to store the kids of the node (i.e. the objects that depend on this node)*/
   protected kids: SENodule[] = [];
 
@@ -37,6 +38,7 @@ export abstract class SENodule {
       item.markKidsOutOfDate();
     });
   }
+
   /**
    * A method to update the current SENodule on the unit sphere when its parents have changed
    * The first method called is canUpdateNow, that checks to see if all the parents of this object are
@@ -51,7 +53,7 @@ export abstract class SENodule {
     is asking does <SENodule> need to be updated? If there is a parent outOfDate, then <SENodule> should 
     *not* be updated now. It should wait until *all* parents are not outOfDate.  */
   public canUpdateNow(): boolean {
-    return !this.parents.some(item => item.isOutOfDate());
+    return !this._parents.some(item => item.isOutOfDate());
   }
 
   /* Kids of the current SENodule are updated  */
@@ -60,6 +62,7 @@ export abstract class SENodule {
       item.update();
     });
   }
+
   /**
    * Is the object hit a point at a particular sphere location?
    * @param sphereVector a location on the ideal unit sphere
@@ -71,15 +74,15 @@ export abstract class SENodule {
    * @param n the new SENodule to add
    */
   public addParent(n: SENodule): void {
-    this.parents.push(n);
+    this._parents.push(n);
   }
   /** Removes a given SENodule, n, from the parent array of the current SENodule
    * @param n node to remove
    */
   public removeParent(n: SENodule): void {
-    const idx = this.parents.findIndex((node: SENodule) => node.id === n.id);
+    const idx = this._parents.findIndex((node: SENodule) => node.id === n.id);
     if (idx >= 0) {
-      this.parents.splice(idx, 1);
+      this._parents.splice(idx, 1);
     }
   }
 
@@ -124,16 +127,16 @@ export abstract class SENodule {
 
   public removeSelfSafely(): void {
     if (this.kids.length == 0) {
-      // const pars = this.parents.map(p => p.name).join(", ");
+      // const pars = this._parents.map(p => p.name).join(", ");
       // console.debug(`Unregistering ${this.name} from ${pars}`);
-      this.parents.forEach(item => {
+      this._parents.forEach(item => {
         // Warning: we can't call unregisterChild() here
         // because that will eventually call this.removeParent()
         // which alters the parents array while we are still
         // iterating through its elements here
         item.removeKid(this);
       });
-      this.parents.clear();
+      this._parents.clear();
     } else {
       const dep = this.kids.map(z => z.name).join(", ");
       console.error(`Can't remove ${this.name} safely because of ${dep}`);
@@ -144,7 +147,7 @@ export abstract class SENodule {
     object tree by using the unregister function and remove recursively */
   public removeThisNode(): void {
     //remove the current node from all of its parent SENodules
-    this.parents.forEach(item => {
+    this._parents.forEach(item => {
       item.unregisterChild(this);
     });
     while (this.kids.length > 0) {
@@ -160,7 +163,7 @@ export abstract class SENodule {
    * get the obvious isFreePoint:
    *
    * public isFreePoint(): boolean {
-   *   return (this instanceof SEPoint) && this.parents.length == 0;
+   *   return (this instanceof SEPoint) && this._parents.length == 0;
    * }
    * to work! :-(
    *
@@ -172,13 +175,13 @@ export abstract class SENodule {
   // }
 
   public isFreePoint(): this is SEPoint {
-    return this.parents.length == 0;
+    return this._parents.length == 0;
   }
 
   public isFreeToMove(): boolean {
     //if (this.isFreePoint() || this.isPointOnObject()) return true; // SEE ABOVE!
     if (this.isFreePoint()) return true;
-    return this.parents.every(n => n.isFreePoint());
+    return this._parents.every(n => n.isFreePoint());
   }
 
   //Getters and Setters
@@ -200,6 +203,10 @@ export abstract class SENodule {
 
   get children(): SENodule[] {
     return this.kids;
+  }
+
+  get parents(): SENodule[] {
+    return this._parents;
   }
 
   public setShowing(b: boolean): void {
