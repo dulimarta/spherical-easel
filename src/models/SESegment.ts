@@ -33,9 +33,9 @@ export class SESegment extends SENodule implements Visitable {
   /**
    *
    * @param seg The plottable TwoJS Object associated to this object
-   * @param start The plottable TwoJS object that is the start of the segment
-   * @param midVec The vector that points to midpoint of the segment
-   * @param end The plottable TwoJS object that is the end of the segment
+   * @param start The model object that is the start of the segment
+   * @param mid The model object this is the midpoint of the segment
+   * @param end The model object that is the end of the segment
    */
   constructor(
     seg: Segment,

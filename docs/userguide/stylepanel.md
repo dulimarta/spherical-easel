@@ -54,7 +54,7 @@ This is automatically generated when the object was created, but the user can ch
 - Ro - [Rotation](/tools/transformation.html#create-measured-rotation)
 - Tr - [Translation](/tools/transformation.html#create-translation)
 - In - [Inversion](/tools/transformation.html#create-inversion)
-- Calc1 - [Calculation](/userguide/toolsobjectspanel.html#calculations)
+- Calc - [Calculation](/userguide/toolsobjectspanel.html#calculations)
 - Sl - [Slider](/tools/measurement.html#slider)
 - Tx - [Text](/tools/basic.html#text)
 - Am - Angle Marker
@@ -63,9 +63,9 @@ Maximum length is ?5? characters. TODO: Update? Is a limit even needed?
 
 ### Caption
 
-This is a user generated string that helps the user describe the object more fully. For example, a point might have name P10 but the user might also want to display more information about the point and set the caption to the more informative string “The centroid”. This string can contains [$\LaTeX$](https://en.wikipedia.org/wiki/LaTeX).
+This is a user generated string that helps the user describe the object more fully. For example, a point might have name P10 but the user might also want to display more information about the point and set the caption to the more informative string “The centroid”. This string can contain [$\LaTeX$](https://en.wikipedia.org/wiki/LaTeX) strings and carriage returns.
 
-Maximum length is ?30? characters. TODO: Update? Is a limit even needed? This can include carriage returns to control the display.
+Maximum length is ?30? characters. TODO: Update? Is a limit even needed?
 
 ### Label Styling Options
 

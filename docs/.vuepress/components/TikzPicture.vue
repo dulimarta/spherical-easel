@@ -1,5 +1,5 @@
 <template>
-  <div v-html="latexSnippet"></div>
+  <div class="tikz" v-html="latexSnippet"></div>
 </template>
 
 <script>

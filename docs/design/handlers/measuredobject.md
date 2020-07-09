@@ -7,6 +7,21 @@ lang: en-US
 
 ::: handler-title
 
+## Parametric Point
+
+:::
+::: handler-description
+
+[Create a point whose $x$, $y$, and $z$ coordinates are controlled by Measurement Objects.](/tools/measuredobject.html#parametric-point)
+
+::: handler-details
+
+-
+
+:::
+
+::: handler-title
+
 ## Measured Angle Line
 
 :::

@@ -99,19 +99,20 @@ Creates a calculation involving Measurement Tokens.
 
 ::: tool-title
 
-## Slider
+## Create Slider
 
 :::
 ::: tool-description
-Creates a slider or adjust the value of an existing slider.
+Creates a slider.
 
 ::: tool-details
 
 - Mouse release at a location to create a slider there.
-- After selecting a location a dialog box opens prompting the user to enter values for the lower and upper bounds of the slider, a step size, and animation options (on, loop, or reflect).
-- If the slider is animated, it automatically steps through the values from lower to upper by the step size. If it is not animated, the slider's value can be adjusted by clicking and dragging the control dot when this tool is active.
+- After selecting a location, a dialog box opens prompting the user to enter values for the lower and upper bounds of the slider, a step size, and animation options (loop only increasing, loop only decreasing, increase once, decrease once, reflecting loop, speed).
+- If the slider is animated, it automatically steps through the values between lower to upper bounds using the selected options. If it is not animated, the slider's value can be adjusted by clicking and dragging the control dot (in any action mode).
+- The location of the slider in the Sphere Canvas can be adjusted using the [Move Tool](/tools/display.html#move).
 - The lower bound, upper bound, step size, animation options (on, loop or reflect) can be edited in the [Advanced Tab](/userguide/stylepanel.html#advanced-tab) of the [Style Panel](/userguide/stylepanel.html).
-- When a slider is created, a row describing some of its properties (including its value and Measurement Token) will appear in the Measurement Section of the [Objects Tab](/userguide/#objects-tab).
+- When a slider is created, a row describing some of its properties (including its value and Measurement Token) and a fully functional copy of the slider itself will appear in the Measurement Section of the [Objects Tab](/userguide/#objects-tab). This includes a play/pause button.
 - When this tool is activated all previously selected objects are unselected and ignored.
   :::
 

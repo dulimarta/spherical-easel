@@ -26,7 +26,7 @@ export default {
   },
   // #region boundarycircle
   boundaryCircle: {
-    radius: 250 /* default radius in pixels */,
+    radius: 250 /* default radius */,
     numPoints: 50,
     opacity: 0.5,
     color: "black",
@@ -312,6 +312,7 @@ export default {
   ]
 };
 
+//#region layers
 export enum LAYER {
   backgroundAngleMarkersGlowing,
   backgroundAngleMarkers,
@@ -331,3 +332,4 @@ export enum LAYER {
   foregroundTextGlowing,
   foregroundText
 }
+//#endregion layers

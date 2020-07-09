@@ -62,7 +62,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \begin{tikzpicture} % CENT
-
+  \begin{scope}[shift={(-50,0)}]
 %% some definitions
 
 \def\R{2.5} % sphere radius
@@ -137,7 +137,7 @@
 \draw (FL)+(6mm,20mm) node[left] {CSS Affine Transformation};
 
 \draw[<-] (origin)+(1mm,2mm) .. controls (0.5*\R,4.25*\R) .. (0.75*\R,4.25*\R) node[right]{Center of Sphere Canvas};
-\draw[<-] (originDSP)+(2mm,2mm) .. controls (0.75*\R,2.2*\R) .. (1.75*\R,2.5*\R) node[right]{Zoom Translation Vector};
+\draw[<-] (originDSP)+(2mm,2mm) .. controls (0.75*\R,2.2*\R) .. (1.5*\R,2.5*\R) node[right]{Zoom Translation Vector};
 
 \path[Viewport] (2*\R,0.57*\R) coordinate (breakPoint);
 
@@ -163,6 +163,8 @@
 \draw[->] (center) -- (origin);
 \draw[Viewport] (0.8*\R,-1.4*\R) node[above, rotate=28] {Viewport (pixels)};
 \draw[thick] (0.75*\R,2.5*\R) node[right, rotate=36 ] {Zoom Magnification Factor};
+  
+\end{scope}
 
 \end{tikzpicture}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -7,6 +7,24 @@ lang: en-US
 
 ::: tool-title
 
+## Parametric Point
+
+:::
+::: tool-description
+
+Create a point whose $x$, $y$, and $z$ coordinates are controlled by Measurement Objects.
+
+::: tool-details
+
+- Select the Parametric Point Tool and the [Advanced Tab](/userguide/stylepanel.html#advanced-tab) of the Style Panel will open. The user can then enter the $x$, $y$, and $z$ coordinates of a point. These three expressions can include Measurement Tokens. If there are no Measurement Token, the point will be at fixed set of coordinates.
+- If the $z$ coordinate is blank, it is assumed that $z = \sqrt{1-x^2 - y^2}$.
+- For any instances where $x^2 + y^2 >1 $ then the $x$ and $y$ coordinates are rescaled to $\frac{x}{\sqrt{x^2 + y^2}}$ and $\frac{y}{\sqrt{x^2 + y^2}}$ (and $z=0$).
+- When a Parametric Point is created, a row describing some of its properties will appear in the Line Section of the [Objects Tab](/userguide/#objects-tab).
+- When this tool is activated all previously selected objects are unselected and ignored.
+  :::
+
+::: tool-title
+
 ## Measured Angle Line
 
 :::

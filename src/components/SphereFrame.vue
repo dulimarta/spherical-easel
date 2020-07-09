@@ -42,10 +42,23 @@ export default class SphereFrame extends VueComponent {
   $refs!: {
     canvas: HTMLDivElement;
   };
+  /**
+   * The main (the only one) TwoJS object that contains the layers (each a Two.Group) making up the screen graph
+   * First layers  (Two.Groups) are added to the twoInstance (index by the enum LAYER from
+   * global-settings.ts), then TwoJs objects (Two.Path, Two.Ellipse, etc..) are added to the
+   * appropriate layer. This object is refreahed at 60 fps (in constructir -- autostart: true).
+   */
   private twoInstance: Two;
+
   private sphereCanvas!: Two.Group;
+  /**
+   * The circle that is the
+   */
   private boundaryCircle!: Two.Circle;
-  protected store = AppStore; // Vuex global state
+  /**
+   * The Global Vuex Store
+   */
+  protected store = AppStore;
 
   /** Tools for handling user input */
   private currentTool: ToolStrategy | null = null;
@@ -82,7 +95,8 @@ export default class SphereFrame extends VueComponent {
     // Clear layer array
     this.layers.splice(0, this.layers.length);
 
-    // Record the text layer number so that the Y axis is not flipped for them
+    //# :::
+    // Record the text layer number so that the y axis is not flipped for them
     const textLayers = [
       LAYER.foregroundText,
       LAYER.backgroundText,
@@ -96,14 +110,15 @@ export default class SphereFrame extends VueComponent {
         const newLayer = this.twoInstance.makeGroup();
         this.layers.push(newLayer);
 
-        // Don't flip the Y-coord of text layers
+        // Don't flip the y-coord of text layers
         if (textLayers.indexOf(layerIdx) < 0) {
           // Not in textLayers
           (newLayer as any).scale = new Two.Vector(1, -1);
         }
       }
     }
-    // The midground is where the temporary objects and the boundary circle are drawn
+    //# :::
+    // The midground is where the temporary objects and the boundary circle were drawn TODO: Needed?
     this.sphereCanvas = this.layers[LAYER.midground];
     // console.info("Sphere canvas ID", this.sphereCanvas.id);
     // Add the layers to the store
@@ -205,9 +220,8 @@ export default class SphereFrame extends VueComponent {
   /** Apply the affine transform (m) to the entire TwoJS SVG tree! */
   // The translation element of the CSS transform matrix
   // is actually the pivot/origin of the zoom
-
+  //# :::::
   private updateView() {
-    // console.debug("updateView() is called with zoom factor", this.zoomMagnificationFactor, this.zoomTranslation);
     // Get the current maginiication factor and translation vector
     const mag = this.store.state.zoomMagnificationFactor;
     const transVector = this.store.state.zoomTranslation;
@@ -224,6 +238,7 @@ export default class SphereFrame extends VueComponent {
     // What does this do?
     el.style.overflow = "visible";
   }
+  //# :::::
 
   handleMouseWheel(event: MouseWheelEvent): void {
     console.log("Mouse Wheel Zoom!");

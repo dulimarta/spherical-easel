@@ -68,10 +68,11 @@ Move the location of a single object.
 - Non-ellipse conics and parametric curves (user defined) are never moveable. Parametric curves can be "moved" using a Measurement object in the parametric definition.
 - Moving a free line or line segment rotates that line about the axis connecting one of the points on the line or line segment to its antipode. Pressing the <kbd>Alt</kbd> key toggles the point that the line or line segment rotates about.
 - Moving a free line segment with the <kbd>Crtl</kbd> key pressed, moves both endpoints simultaneously. They both rotate about the perpendicular to the plane containing the last mouse location and the current mouse location as the user drags.
+- You can move the location of a slider displayed in the Sphere Frame.
 - If this tool is activated with any single free object selected, clicking and dragging the mouse will change the location of that object.
 
 ::: tip
-When moving a free line or line segment pressing the <kbd>Alt</kbd> key toggles the point that the line or line segment rotates about. To move both endpoint of a line segment, press the <kbd>Crtl</kbd> key.
+When moving a free line or line segment pressing the <kbd>Alt</kbd> key toggles the point that the line or line segment rotates about. To move both endpoints of a line segment, press the <kbd>Crtl</kbd> key when moving.
 :::
 
 ::: tool-title

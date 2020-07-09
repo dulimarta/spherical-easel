@@ -197,6 +197,15 @@ export default class Point extends Nodule {
     this.normalDisplay();
   }
 
+  setVisible(flag: boolean): void {
+    if (!flag) {
+      (this.frontPoint as any).visible = flag;
+      (this.glowingFrontPoint as any).visible = flag;
+      (this.backPoint as any).visible = flag;
+      (this.glowingBackPoint as any).visible = flag;
+    } else this.normalDisplay();
+  }
+
   /**
    * Set the rendering style (flags: temporary, default, glowing, update) of the point
    * Update flag means at least one of the private variables storing style information has
@@ -329,14 +338,5 @@ export default class Point extends Nodule {
         break;
       }
     }
-  }
-
-  setVisible(flag: boolean): void {
-    if (!flag) {
-      (this.frontPoint as any).visible = flag;
-      (this.glowingFrontPoint as any).visible = flag;
-      (this.backPoint as any).visible = flag;
-      (this.glowingBackPoint as any).visible = flag;
-    } else this.normalDisplay();
   }
 }

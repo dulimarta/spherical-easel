@@ -7550,6 +7550,11 @@ markdown-it-texmath@^0.7.2:
   resolved "https://registry.yarnpkg.com/markdown-it-texmath/-/markdown-it-texmath-0.7.2.tgz#2f51f154483c522d2bfef47da31d0135e0771d21"
   integrity sha512-DAxM3D73BlRfpO6cnR2x27uOwGeTqQ/Yz6pUHE2iL/AzctEYSk3UmGxZYZGdU5B43AZD7kpdcU4wPNMF5Zhuqw==
 
+markdown-it-vuepress-code-snippet-enhanced@^1.0.1:
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/markdown-it-vuepress-code-snippet-enhanced/-/markdown-it-vuepress-code-snippet-enhanced-1.0.1.tgz#516fda41378ab537453a0f64fc8ec8d80add0518"
+  integrity sha512-CfDWHyRWuNwvBIAQTXnlZVKRGxnOo82tnFrzxn2XLoI4jAK2mn1iNNQSyXB9ouxJKDn1YChHevnIG1woUi/g/g==
+
 markdown-it@^8.4.1:
   version "8.4.2"
   resolved "https://registry.yarnpkg.com/markdown-it/-/markdown-it-8.4.2.tgz#386f98998dc15a37722aa7722084f4020bdd9b54"

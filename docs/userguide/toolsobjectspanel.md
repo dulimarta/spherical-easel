@@ -13,7 +13,7 @@ There are many tools and they are explained [in their own section of this docume
 
 ## Objects Tab
 
-Every time an object is created it is displayed in the sphere canvas and then listed in the this tab. In addition, every measurement creates a row in this tab. This list is sorted into groups by the type of object or measurement displayed. Each group starts with a header and an icon to toggle between collapsing the group and displaying all members of the group. Empty groups are hidden. The following are the groups:
+Every time an object is created it is displayed in the Sphere Canvas and then listed in the this tab. In addition, every measurement creates a row in this tab. This list is sorted into groups by the type of object or measurement displayed. Each group starts with a header and an icon to toggle between collapsing the group and displaying all members of the group. Empty groups are hidden. The following are the groups:
 
 - [Points](/tools/basic.html#point)
 - [Line Segments](/tools/basic.html#line-segment)
@@ -25,22 +25,28 @@ Every time an object is created it is displayed in the sphere canvas and then li
 - [Parametric Curves](/tools/advanced.html#parametric-curve-user-defined)
 - [Transformations](/tools/transformation.html)
 - [Text](/tools/basic.html#text)
-- [Measurements](/tools/measurement.html) (Including (?) [Sliders](/tools/measurement.html#slider))
+- [Measurements](/tools/measurement.html)
+- [Sliders](/tools/measurement.html#slider)
 - [Calculations](/tools/measurement.html#calculation)
 
 Within each group information about each object is displayed in a row that includes
 
-- A button/icon to control if the object is hidden or not
+- A small button/icon to control if the object is hidden or not. This is a circle that is filled if the object is displayed and empty if the object is hidden.
 - Short [Name](/userguide/stylepanel.html#name)
-- A clickable information zone that toggles between the following two pieces of information for rows with Measurement Tokens (For the other rows only the [Definition Text](/userguide/stylepanel.html#definition-text) is shown.)
-  - A Measurement Token followed by the measurement's value (Default display for all Measurement, Calculation, and Slider objects).
-  - The [Definition Text](/userguide/stylepanel.html#definition-text) (The only information displayed for all other objects.)
+- An information zone that display different pieces of information depending on the class of the object:
+  - [Measurements](/tools/measurement.html) and [Calculations](/tools/measurement.html#calculation): Toggle between
+    1. Measurement Token followed by the measurement's current value (default)
+    2. [Definition Text](/userguide/stylepanel.html#definition-text)
+  - [Sliders](/tools/measurement.html#slider): Toggle between:
+    1. A actual adjustable copy of the the slider is displayed, with a play/pause button, increase/decrease speed options, the Measurement Token and current value. (Default)
+    2. A display allowing the user to adjust the lower and upper bounds, and step size.
+  - All other classes only the [Definition Text](/userguide/stylepanel.html#definition-text) is displayed.
 - A button/icon to pull up a menu that asks the user to select between:
   - Delete - Removes the object and all dependent objects from the arrangement.
   - Style - This option selects the object and opens the Style Panel so it can easily be edited.
   - Display $\pi$ Multiples - This is only an option for Measurement, Slider, and Calculation objects and controls if the value is displayed should be in multiples of $\pi$. By default, all displayed values are multiples of $\pi$ and so are always postpended with a $\pi$ unless this option is changed.
 
-Row:
+Row organization (The Information zone is the longest):
 
 | Show/Hide icon | Short name | Information | Three vertical dots icon |
 | -------------- | ---------- | ----------- | ------------------------ |

@@ -5,7 +5,6 @@ import { SESegmentMidPoint } from "./SESegmentMidPoint";
 let NODE_COUNT = 0;
 export abstract class SENodule {
   /* An array to store the parents of the node (i.e. the objects that this node depends on)*/
-
   protected parents: SENodule[] = [];
   /* An array to store the kids of the node (i.e. the objects that depend on this node)*/
   protected kids: SENodule[] = [];
@@ -25,20 +24,47 @@ export abstract class SENodule {
         descendants of the object don't exist. */
   private exists = true;
 
+  /* If the object is not visible then showing = true (The user can hide objects)*/
+  private showing = true;
+
   /* This boolean is set to indicate that the object is out of date and needs to be updated. */
   private outOfDate = false;
 
-  /* If the object is not visible then showing = true (The user can hide objects)*/
-  private showingFlag = true;
-
-  /* A method to update the current SENodule on the unit sphere (used recursively)*/
+  /* Marks all descendants (kids, grand kids, etc.) of the current SENodule out of date */
+  public markKidsOutOfDate(): void {
+    this.kids.forEach(item => {
+      item.setOutOfDate(true);
+      item.markKidsOutOfDate();
+    });
+  }
+  /**
+   * A method to update the current SENodule on the unit sphere when its parents have changed
+   * The first method called is canUpdateNow, that checks to see if all the parents of this object are
+   * not outOfDate. If any are the method returns with out updating, know that the updating method will
+   * eventually try again because the last method called is updateKids()
+   */
   public abstract update(): void;
 
+  /* This is called to check and see if any of the parents of the current SENodule are outOfDate
+    if any of the parents are outOfDate then this function returns false. 
+    <SENodule>.updateNow()
+    is asking does <SENodule> need to be updated? If there is a parent outOfDate, then <SENodule> should 
+    *not* be updated now. It should wait until *all* parents are not outOfDate.  */
+  public canUpdateNow(): boolean {
+    return !this.parents.some(item => item.isOutOfDate());
+  }
+
+  /* Kids of the current SENodule are updated  */
+  public updateKids(): void {
+    this.kids.forEach(item => {
+      item.update();
+    });
+  }
   /**
    * Is the object hit a point at a particular sphere location?
-   * @param spherePos
+   * @param sphereVector a location on the ideal unit sphere
    */
-  public abstract isHitAt(spherePos: Vector3): boolean;
+  public abstract isHitAt(sphereVector: Vector3): boolean;
 
   /**
    * Adds a given SENodule, n, to the parent array of the current SENodule
@@ -104,7 +130,7 @@ export abstract class SENodule {
         // Warning: we can't call unregisterChild() here
         // because that will eventually call this.removeParent()
         // which alters the parents array while we are still
-        // iterating tghrough its elements here
+        // iterating through its elements here
         item.removeKid(this);
       });
       this.parents.clear();
@@ -155,30 +181,6 @@ export abstract class SENodule {
     return this.parents.every(n => n.isFreePoint());
   }
 
-  /* This is called to check and see if any of the parents of the current SENodule are outOfDate
-    if any of the parents are outOfDate then this function returns false. 
-    <SENodule>.updateNow()
-    is asking does <SENodule> need to be updated? If there is a parent outOfDate, then <SENodule> should 
-    *not* be updated now. It should wait until *all* parents are not outOfDate.  */
-  public canUpdateNow(): boolean {
-    return !this.parents.some(item => item.isOutOfDate());
-  }
-
-  /* Marks all descendants (kids, grand kids, etc.) of the current SENodule out of date */
-  public markKidsOutOfDate(): void {
-    this.kids.forEach(item => {
-      item.setOutOfDate(true);
-      item.markKidsOutOfDate();
-    });
-  }
-
-  /* Kids of the current SENodule are updated  */
-  public updateKids(): void {
-    this.kids.forEach(item => {
-      item.update();
-    });
-  }
-
   //Getters and Setters
   public getExists(): boolean {
     return this.exists;
@@ -201,10 +203,10 @@ export abstract class SENodule {
   }
 
   public setShowing(b: boolean): void {
-    this.showingFlag = b;
+    this.showing = b;
   }
 
   public getShowing(): boolean {
-    return this.showingFlag;
+    return this.showing;
   }
 }

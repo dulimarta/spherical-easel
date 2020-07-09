@@ -21,12 +21,15 @@ module.exports = {
     ["script", { src: "/tikzjax.js" }]
   ],
 
-  // markdown: {
-  //   extendMarkdown: md => {
-  //     // use more markdown-it plugins!
-  //     md.use(require("markdown-it-texmath"));
-  //   }
-  // },
+  markdown: {
+    // extendMarkdown: md => {
+    //   // use more markdown-it plugins!
+    //   md.use(require("markdown-it-texmath"));
+    // },
+    extendMarkdown: md => {
+      md.use(require("markdown-it-vuepress-code-snippet-enhanced"));
+    }
+  },
   //Plugins to enable specialized behavior (for example, LaTeX/MathJax )
   plugins: [
     [

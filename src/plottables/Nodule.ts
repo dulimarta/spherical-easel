@@ -19,9 +19,6 @@ export default abstract class Nodule implements Stylable, Resizeable {
   public owner!: SENodule;
   public name!: string;
 
-  //eslint-disable-next-line
-  constructor() {}
-
   /**
    * Add various TwoJS (SVG) elements of this nodule to appropriate layers
    * @param {Two.Group[]} layers
