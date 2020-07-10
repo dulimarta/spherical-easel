@@ -1,11 +1,16 @@
 <template>
-  <div class="tikz" v-html="latexSnippet"></div>
+  <div class="tikz" v-html="latexSnippet">
+    <span v-show="!latexSnippe">Please refresh your browser</span>
+  </div>
 </template>
 
 <script>
 import axios from "axios";
 export default {
-  name: "tikz-picture",
+  // kebab-case translates to CamelCase
+  // So tikz-picture translates to TikzPicture
+  // And tik-z-picture translates to TikZPicture
+  name: "tik-z-picture",
   props: {
     latex: ""
   },

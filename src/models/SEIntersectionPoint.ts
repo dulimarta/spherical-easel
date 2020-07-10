@@ -13,6 +13,10 @@ export class SEIntersectionPoint extends SEPoint {
    * @param p1 the first parent
    * @param p2 the second parent
    * @param order the order of this intersection point (in case there are multiple intersections)
+   *
+   * We need to add the "order" parameter so multiple intersection points of
+   * the same two objects have unique names. For instance a line potentially
+   * intersects a circle at two locations
    */
   constructor(p: Point, p1: SEOneDimension, p2: SEOneDimension, order: number) {
     super(p);

@@ -313,8 +313,8 @@ export default class MoveHandler extends Highlighter {
     // newIntersections.forEach((x: SEIntersectionPoint, pos: number) => {
     //   console.debug(`New intersection ${pos}: ${x.name}`);
     // });
-    currentIntersections.forEach((current: SEIntersectionPoint, k: number) => {
-      // console.debug(`Current intersection ${k}: ${current.name}`);
+    currentIntersections.forEach((current: SEIntersectionPoint) => {
+      // Locate matching intersections by comparing their names
       const pos = newIntersections.findIndex(
         (incoming: SEIntersectionPoint) => current.name === incoming.name
       );
