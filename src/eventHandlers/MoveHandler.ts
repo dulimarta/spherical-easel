@@ -62,7 +62,6 @@ export default class MoveHandler extends Highlighter {
       const freePoints = this.hitPoints.filter(n => n.isFreeToMove());
       if (freePoints.length > 0) {
         this.moveTarget = freePoints[0];
-        console.log("name", (this.moveTarget as SEPoint).name);
         return;
       }
       const freeLines = this.hitLines.filter(n => n.isFreeToMove());
@@ -98,9 +97,11 @@ export default class MoveHandler extends Highlighter {
         this.moveTarget instanceof SESegment
       ) {
         // Move the selected SELine or SESegment
+        this.moveTarget.ref.normalDisplay();
         this.doMoveLine(this.moveTarget, event.altKey, event.ctrlKey);
       } else if (this.moveTarget instanceof SECircle) {
         // Move the selected SECircle
+        this.moveTarget.ref.normalDisplay();
         this.doMoveCircle(this.moveTarget);
       } else if (this.moveTarget == null) {
         // Rotate the sphere
