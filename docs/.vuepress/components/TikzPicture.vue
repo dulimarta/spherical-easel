@@ -1,7 +1,9 @@
 <template>
-  <div class="tikz" v-html="latexSnippet">
-    <span v-show="!latexSnippe">Please refresh your browser</span>
-  </div>
+  <v-card :elevation="20">
+    <div class="tikz" v-html="latexSnippet">
+      Please refresh your browser
+    </div>
+  </v-card>
 </template>
 
 <script>
@@ -16,7 +18,8 @@ export default {
   },
   data() {
     return {
-      latexSnippet: "N/A"
+      latexSnippet: "",
+      doneFetching: false
     };
   },
   mounted() {
@@ -28,13 +31,20 @@ export default {
     } else {
       filePath = "/" + this.latex;
     }
+    this.doneFetching = false;
     axios.get(filePath).then(r => {
       // console.debug("LaTeX snippet is", r);
       this.latexSnippet =
         String.raw`<script type="text/tikz">` + r.data + "<\\/script>";
+      this.doneFetching = true;
     });
   }
 };
 </script>
 
-<style scoped></style>
+<style scoped>
+.tikz {
+  border: 1px solid gray;
+  min-height: 2em;
+}
+</style>
