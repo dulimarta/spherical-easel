@@ -67,14 +67,19 @@ Each of these classes extends the <span class="class">Nodule</span> class and th
 
 - <span class="method">addToLayers(layers:Two.Group[])</span>: This method places all of the graphical objects of this object into the appropriate layers so that the display is rendered appropriately. For example, a point on the back of the sphere is not drawn on top of a circle that is on the front of the sphere.
 - <span class="method">removeFromLayers()</span>: This reverses the operation of <span class="method">addToLayers()</span>.
-- <span class="method">adjustSizeForZoom(factor: number)</span>: This method is called every time the Zoom Magnification Factor is changed ([See Zooming And Panning for details.](/design/#zooming-and-panning)) and allows us to set the display size of points and linewidth of one-dimensional objects so that more detailed views are possible. That is, zooming the view doesn't result in a very large point that obscures other details.
-- <span class="method">normalDisplay()</span>: This is the display style that is shown when an object is not selected or highlighted.
-- <span class="method">glowingDisplay()</span>: This is the display style that is shown when an object is selected or highlighted. To make an object glow, a second identically-located object is displayed under the original object, but with a slightly larger size or width colored differently.
-- <span class="method">stylize(flag: DisplayStyle)</span>: The <span class="class">Nodule</span> objects are used in multiple ways indicate by the <span class="variable">DisplayStyle</span> flag. This flag is an [enum](https://www.typescriptlang.org/docs/handbook/enums.html) that can have the following values:
+- <span class="method">adjustSizeForZoom(factor: number)</span>: This method is called every time the Zoom Magnification Factor is changed ([see Zooming And Panning for details](/design/#zooming-and-panning)) and allows us to set the display size of points and linewidth of one-dimensional objects so that more detailed views are possible. That is, zooming the view doesn't result in a very large point that obscures other details.
+- <span class="method">normalDisplay()</span>: Running this method sets the rendering (i.e. actual view) style of the actually displayed object to the style where the object is not selected or highlighted. It doesn't change the style of the object (that is the method <span class="method">stylize(UPDATE)</span>), but is merely a unidirectional switch to set the display to normal.
+- <span class="method">glowingDisplay()</span>: This method is like <span class="method">normalDisplay()</span> except it sets the actual display to a glowing style to indicate that the user has moused over or selected an object. Note: To make an object glow, a second identically-located object is displayed under the original object ([see Layers](/design/#layers)), but with a slightly larger size or line width but colored differently. This is why all the graphical variables in each <span class="class">Nodule</span> class have two versions: a glowing version and a regular one. For example, in the <span class="class">Circle</span> the variable <span class="variable">backVertices</span> has an identically located <span class="variable">glowingBackVertices</span> version. The prefix glowing indicates this.
+- <span class="method">stylize(flag: DisplayStyle)</span>: This method allows the application to two things:
 
-  - TEMPORARY - this styling used when the object is being created by a [handler](/design/#event-handlers) or has not yet been created by the user. For example, when the user mouses over an intersection point that has not yet been used in an arrangement but was automatically calculated. This style is not modifiable by the user.
-  - GLOWING - This sets the style of the glowing objects. This style is not modifiable by the user.
-  - DEFAULT - This sets the style of the object back to the defaults. This style is not modifiable by the user.
+  - Set up a style. That is, indicate that the object being created is temporary one or to set up the glowing style. So that when it is actually displayed the correct look and feel is displayed.
+  - Change the display style. That is, allow the user to change the an aspect of the display (i.e change a color).
+
+  The <span class="class">Nodule</span> objects are used in multiple ways indicate by the <span class="variable">DisplayStyle</span> flag. This flag is an [enum](https://www.typescriptlang.org/docs/handbook/enums.html) that can have the following values:
+
+  - TEMPORARY - This styling used when the object is being created by a [handler](/design/#event-handlers) or has not yet been created by the user. For example, when the user mouses over an intersection point that has not yet been used in an arrangement but was automatically calculated. This style is not modifiable by the user.
+  - GLOWING - This sets up the style of the glowing objects, so that when an object is set to <span class="method">glowingDisplay()</span> the glowing objects are rendered correctly. This style is not modifiable by the user.
+  - DEFAULT - This sets the style of the object back to the defaults. That is, if the user has made some style changes (say a new color) to objects but changes their mind, the application uses this option to revert the objects back to the defaults that were initially used. This style is not modifiable by the user.
   - UPDATE - This sets the style of the object to the variables in object. This allows styles to be applied to an object after the user has made a change. For example, if the user selects a line color of blue in the [Style Panel](/userguide/stylepanel.html) the variable <span class="variable">strokeColorFront</span> of that particular line is set to this choice and <span class="method">stylize(UPDATE)</span> is used to apply that choice to the graphical object.
 
 - <span class="method">setVisible(flag: boolean)</span>: This turns on or off the visibility of the <span class="class">Nodule</span> object.
@@ -107,7 +112,7 @@ Each enum value correspond to a <span class="class">Two.Group</span> (i.e. layer
 ## Rendering Objects
 
 The unit sphere is a 3-dimensional object that we must project into 2-dimensions to render on the screen. Rather than use a package like <span class="package">[three.js](https://threejs.org/)</span> in which we could specify an object in 3-dimensions and have the package render it (by choosing a camera location, a light source, near and far planes, etc.), we chose to use a simpler orthographic projection that we could implement ourselves. We chose the $XY$-plane to be the _image plane_ and the $Z$-axis to be the camera axis (with positive $Z$ pointing towards the viewer).
- As one of the main goals of this project was to draw simple, clean, and labeled geometric diagrams on both the screen and paper, we chose the package that best supported that goal. The 3-dimensionality and shading of objects produced using <span class="package">[three.js](https://threejs.org/)</span> made it difficult to render clearly the one-dimensional objects that make up the bulk of our geometric arrangements.
+As one of the main goals of this project was to draw simple, clean, and labeled geometric diagrams on both the screen and paper, we chose the package that best supported that goal. The 3-dimensionality and shading of objects produced using <span class="package">[three.js](https://threejs.org/)</span> made it difficult to render clearly the one-dimensional objects that make up the bulk of our geometric arrangements.
 
 As explained above, the classes in the [Models Directory](/design/#models-directory) store information about geometric objects on the ideal unit sphere and the classes in the [Plottables Directory](/design/#plottables-directory) are responsible for methods to
 render the geometric objects to the screen. This process of going from the ideal unit sphere to the screen is handled in stages. The following diagrams helps to organize this process.
@@ -325,7 +330,7 @@ The <span class="class">PositionVisitor</span> merely updates all other <span cl
 
 ## Languages
 
-Spherical Easel uses the [Vue I18n is internationalization plugin for Vue.js](https://kazupon.github.io/vue-i18n/api/#extension-of-vue).
+Spherical Easel uses the [Vue I18n internationalization plugin for Vue.js](https://kazupon.github.io/vue-i18n/api/#extension-of-vue).
 
 <!-- Uncomment out the two lines below and the script container in config.js to draw a circle.
 Reload/Refresh the page twice! -->
