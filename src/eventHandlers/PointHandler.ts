@@ -33,6 +33,7 @@ export default class PointHandler extends MouseHandler {
       if (this.hitPoints.length > 0) {
         return;
       }
+      //#region linkNoduleSENodule
       const newPoint = new Point();
       // Set the display to the default values
       newPoint.stylize(DisplayStyle.DEFAULT);
@@ -41,6 +42,7 @@ export default class PointHandler extends MouseHandler {
       // Create the model object for the new point and link them
       const vtx = new SEPoint(newPoint);
       vtx.vectorPosition = this.currentSphereVector;
+      //#endregion linkNoduleSENodule
       // Create and execute the command to create a new point for undo/redo
       new AddPointCommand(vtx).execute();
     }

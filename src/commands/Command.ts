@@ -15,14 +15,17 @@ import AppStore from "@/store";
 export abstract class Command {
   protected static store: Store<AppState> = AppStore;
 
+  //#region commmandArrays
   static commandHistory: Command[] = []; // stack of executed commands
   static redoHistory: Command[] = []; // stack of undone commands
+  //#endregion commmandArrays
+
   //eslint-disable-next-line
   protected lastState: any; // The state can be of ANY type
 
+  //#region undo
   static undo(): void {
     if (Command.commandHistory.length === 0) return;
-
     // Pop the last command from the history stack
     const lastAction: Command | undefined = Command.commandHistory.pop();
     // Run is restore state logic
@@ -31,10 +34,12 @@ export abstract class Command {
       lastAction.restoreState();
     }
   }
+  //#endregion undo
 
   static undoEnabled = (): boolean => Command.commandHistory.length > 0;
   static redoEnabled = (): boolean => Command.redoHistory.length > 0;
 
+  //#region redo
   static redo(): void {
     if (Command.redoHistory.length === 0) return;
     const nextAction = Command.redoHistory.pop();
@@ -43,6 +48,7 @@ export abstract class Command {
       nextAction.execute();
     }
   }
+  //#endregion redo
 
   execute(): void {
     // Keep this command in the history stack
@@ -58,17 +64,17 @@ export abstract class Command {
   }
 
   // Child classes of Command must implement the following abstract methods
-
-  // restoreState: Perform necessary action to restore the app state.
-  // The operation(s) implemented in restoreState() are usually opposite of the
-  // operation(s) implemented in do()
+  /**
+   * restoreState: Perform necessary action to restore the app state.
+   * The operation(s) implemented in restoreState() are usually opposite of the
+   * operation(s) implemented in do()*/
   abstract restoreState(): void;
 
   // TODO: consider merging saveState() and do(). They are always invoked one after the other
 
-  // saveState: Save require information to restore the app state
+  /** saveState: Save require information to restore the app state*/
   abstract saveState(): void;
 
-  // do: Perform necessary action to alter the app state
+  /**  do: Perform necessary action to alter the app state*/
   abstract do(): void;
 }

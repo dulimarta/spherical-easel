@@ -215,14 +215,14 @@ export default class PanZoomHandler implements ToolStrategy {
       }
     }
 
-    // #region eventBus
+    // #region writeFactorVectorToStore
     // Set the new magnification factor and the new translation vector in the store
-    this.store.commit("setZoomMagnificationFactor", newMagFactor);
+    this.store.dispatch("changeZoomFactor", newMagFactor);
     this.store.commit("setZoomTranslation", newTranslationVector);
+    // #endregion writeFactorVectorToStore
 
     // Update the display
     EventBus.fire("zoom-updated", {});
-    // #endregion eventBus
 
     // Store the zoom as a command that can be undone or redone
     const zoomCommand = new ZoomSphereCommand(

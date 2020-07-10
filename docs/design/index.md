@@ -8,9 +8,11 @@ prev: /tools/edit.md
 
 ## Overview
 
-To display and organize information for a graphical object (like an ellipse) on the Sphere Canvas requires two different types of methods: those for rendering it to the screen (including the size, color, fill, portion on the front or back, etc.) and those for keeping track of where this object is located on the sphere and how this objects interacts with other objects (location, parents or kids of an object, etc.). This distinction is reflected in the organization of the classes and the directory structure. The classes in the <span class="directory">plottables</span> directory (like <span class="class">Ellipse</span>) directory) all pertain to graphical rendering of objects and classes in the <span class="directory">models</span> directory (like <span class="class">SEEllipse</span>) directory) pertain to the location and how the object should respond to changes in location of its parents. We are using something like the [façade design pattern](https://en.wikipedia.org/wiki/Facade_pattern) where the front facing graphics are handled by classes in the <span class="directory">plottables</span> directory which mask the more complex (abstract) behaviors handled by classes in the <span class="directory">models</span> directory. We do this so that if a better graphical renderer comes to the attention of the authors we will be able to change to that new renderer (fairly) easily.
+We have chosen to brake apart the code so that we can implement different code design patterns. Many of the different parts are schematically indicated in this image and some of the interactions are described in it. The information flow and code execution starts from the top where the application collects user input and then decides how to processes it.
 
-Handle user input....
+![An image](/InformationFlowAndCodeExectutionInSphericalEasel.png)
+
+To display and organize information for a graphical object (like an ellipse) on the Sphere Canvas requires two different types of methods: those for rendering it to the screen (including the size, color, fill, portion on the front or back, etc.) and those for keeping track of where this object is located on the sphere and how this objects interacts with other objects (location, parents or kids of an object, etc.). This distinction is reflected in the organization of the classes and the directory structure. The classes in the <span class="directory">plottables</span> directory (like <span class="class">Ellipse</span>) directory) all pertain to graphical rendering of objects and classes in the <span class="directory">models</span> directory (like <span class="class">SEEllipse</span>) directory) pertain to the location and how the object should respond to changes in location of its parents. We are using something like the [façade design pattern](https://en.wikipedia.org/wiki/Facade_pattern) where the front facing graphics are handled by classes in the <span class="directory">plottables</span> directory which mask the more complex (abstract) behaviors handled by classes in the <span class="directory">models</span> directory. We do this so that if a better graphical renderer comes to the attention of the authors we will be able to change to that new renderer (fairly) easily.
 
 ## Models Directory
 
@@ -38,7 +40,7 @@ There are some abstract methods in <span class="class">SENodules</span> that mus
   - Check to see if all the parents of this <span class="class">SENodule</span> are not <span class="variable">outOfDate</span>. If any are, then return without doing anything, knowing that this method will be called again on this object because the last line of this method would have to be called on all outOfDate parents.
   - Update the location or other information for this <span class="class">SENodule</span>. For example, if this is an <span class="class">SEIntersectionPoint</span> of two circles, this is where we would recalulate the location of this intersection point.
   - End with the method <span class="method">updateKids()</span> that updates all kids of this <span class="class">SENodule</span>.
-- <span class="method">isHitAt(sphereVector:</span> <span class="class">Vector3</span><span class="method">)</span>: Takes an input of a location on the unit ideal sphere and decides if that location is close enough to this object that the user would like to select or highlight it.
+- <span class="method">isHitAt(Vector)</span>: Takes an input of a location on the unit ideal sphere and decides if that location is close enough to this object that the user would like to select or highlight it.
 
 ## Plottables Directory
 
@@ -63,9 +65,9 @@ Each of these classes is responsible for
 
 Each of these classes extends the <span class="class">Nodule</span> class and this gives them access to the following abstract methods:
 
-- <span class="method">addToLayers(layers)</span>: This method places all of the appropriate graphical objects into the appropriate layers so that the display is rendered appropriately. For example, a point on the back of the sphere is not drawn on top of a circle that is on the front of the sphere.
-- <span class="method">removeFromLayers()</span>: This reverses the operation of <span class="method">addToLayers</span>.
-- <span class="method">adjustSizeForZoom(factor: number)</span>: This method is called every time the Zoom Magnification Factor is changed ([See Coordinates for details.](/design/#coordinates)) and allows us to set the display size of points and linewidth of one-dimensional objects so that more detailed views are possible. That is, zooming the view doesn't result in a very large point that obscures other details.
+- <span class="method">addToLayers(layers:Two.Group[])</span>: This method places all of the graphical objects of this object into the appropriate layers so that the display is rendered appropriately. For example, a point on the back of the sphere is not drawn on top of a circle that is on the front of the sphere.
+- <span class="method">removeFromLayers()</span>: This reverses the operation of <span class="method">addToLayers()</span>.
+- <span class="method">adjustSizeForZoom(factor: number)</span>: This method is called every time the Zoom Magnification Factor is changed ([See Zooming And Panning for details.](/design/#zooming-and-panning)) and allows us to set the display size of points and linewidth of one-dimensional objects so that more detailed views are possible. That is, zooming the view doesn't result in a very large point that obscures other details.
 - <span class="method">normalDisplay()</span>: This is the display style that is shown when an object is not selected or highlighted.
 - <span class="method">glowingDisplay()</span>: This is the display style that is shown when an object is selected or highlighted. To make an object glow, a second identically-located object is displayed under the original object, but with a slightly larger size or width colored differently.
 - <span class="method">stylize(flag: DisplayStyle)</span>: The <span class="class">Nodule</span> objects are used in multiple ways indicate by the <span class="variable">DisplayStyle</span> flag. This flag is an [enum](https://www.typescriptlang.org/docs/handbook/enums.html) that can have the following values:
@@ -77,7 +79,16 @@ Each of these classes extends the <span class="class">Nodule</span> class and th
 
 - <span class="method">setVisible(flag: boolean)</span>: This turns on or off the display of the <span class="class">Nodule</span> object.
 
-A typical constructor call to a Nodule is like....
+Linking a <span class="class">Nodule</span> object and its corresponding <span class="class">SENodule</span> object is typically done as follows:
+
+1. Create the <span class="class">Nodule</span> object (s) with the empty constructor
+2. Stylize the newly created plottable object(s).
+3. Create the <span class="class">SENodule</span> object using the newly created plottable(s) in the constructor.
+4. Set the unit sphere properties (if any) of the <span class="class">SENodule</span> object
+
+This is illustrated in this code snippet from <span class="file">PointHandler.ts</span>:
+
+<<< @/src/eventHandlers/PointHandler.ts#linkNoduleSENodule
 
 ## Layers
 
@@ -89,9 +100,9 @@ The complete list of values for enum <span class="variable">LAYER</span> each de
 
 Each enum value correspond to a <span class="class">Two.Group</span> (i.e. layer) inside the main <span class="variable">twoInstance</span> which is created in <span class="file">SphereFrame.vue</span>. Pointers to these layers are stored in the private <span class="variable">layers</span> variable in <span class="file">SphereFrame.vue</span>. In turn the <span class="variable">layers</span> variable is passed to all [Event Handlers](/design/#event-handlers) so that the objects they create can be placed in the appropriate layers. In the following code we can see that after creating the group in the <span class="variable">twoInstance</span>, the pointer is stored in the <span class="variable">layers</span> variable, and the $y$ axis is flipped on all layers except the text layers.
 
-@[code lang=ts linenumbers highlight={12-13} transcludeWith=:::](@/src/components/SphereFrame.vue)
+<!-- @[code lang=ts linenumbers highlight={12-13} transcludeWith=:::](@/src/components/SphereFrame.vue) -->
 
-<!-- <<< @/src/components/SphereFrame.vue#addlayers -->
+<<< @/src/components/SphereFrame.vue#addlayers
 
 ## Rendering Objects
 
@@ -118,33 +129,36 @@ In general the rendering process is more complex than this. For example, conside
 
 ## Zooming and Panning
 
-Zooming and panning are accomplished using a CSS (affine) transform applied to the SVG object that the renderer produces. Once an object has been [rendered on the Default Screen Plane](/design/#rendering-objects), the CSS transform displays it in the Viewport (see the illustration in the [Rendering Objects](/design/#rendering-objects) section) using a Zoom Magnification Factor and a Zoom Translation Vector. (Note: in the case that Zoom Magnification Factor is 1 and the Zoom Translation Vector is $\langle 0, 0 \rangle$, the Viewport is the same as the Default Screen Plane.) There are two ways that the user can zoom and pan. One is by using a track pad or mouse wheel (these trigger the <span class="method">handleMouseWheelEvent</span> method in the <span class="file">SphereFrame.vue</span> file) or with the [Zooming and Panning Tools](/tools/display.html#zoom-pan-and-standard-view) (these events trigger an <span class="class">EventBus</span> event, which allows non-Vue components to communicate with vue components).
+Zooming and panning are accomplished using a CSS (affine) transform applied to the SVG object that the renderer produces. Once an object has been [rendered on the Default Screen Plane](/design/#rendering-objects), the CSS transform displays it in the Viewport (see the illustration in the [Rendering Objects](/design/#rendering-objects) section) using a Zoom Magnification Factor and a Zoom Translation Vector. (Note: in the case that Zoom Magnification Factor is 1 and the Zoom Translation Vector is $\langle 0, 0 \rangle$, the Viewport is the same as the Default Screen Plane.) There are two ways that the user can zoom and pan.
 
-<<< @/src/eventHandlers/PanZoomHandler.ts#eventBus
+1. Using a track pad or mouse wheel. These trigger the <span class="method">handleMouseWheelEvent(MouseEvent)</span> method in the <span class="file">SphereFrame.vue</span> file.
+2. Using the [Zooming and Panning Tools](/tools/display.html#zoom-pan-and-standard-view). This fires a <span class="string">"zoom-update"</span> [EventBus](/design/#event-bus) action.
 
-In both cases the new Zoom Magnification Factor and Translation Vector are written to the [Store](/design/#store) and the <span class="method">updateView()</span> method in the <span class="file">SphereFrame.vue</span> file is executed.
+In both cases the new Zoom Magnification Factor and Translation Vector are written to the [Store](/design/#store) (triggering a resize of the plottables - outlined below) and the <span class="method">updateView()</span> method in the <span class="file">SphereFrame.vue</span> file (see below) is eventually executed which sets the new CSS Affine Transformation -- which is alway a uniform scaling and translation and never a shear.
 
-@[code lang=ts highlight={9} transcludeWith=:::::](@/src/components/SphereFrame.vue)
+<!-- @[code lang=ts highlight={9} transcludeWith="::::"](@/src/components/SphereFrame.vue) -->
 
-<!-- <<< @/src/components/SphereFrame.vue#updateView -->
+<<< @/src/components/SphereFrame.vue#updateView{9}
 
-This change in the CSS affine transformation (which is alway just a scaling and a translation -- never a shear) is communicate from Vue Components to non-Vue components via this chain
+When we zoom we control the size of the displayed geometric objects so that the text size, stroke width, point size, etc. do not become so large as to obscure other details in the arrangement. To account for the magnification factor in the display, every class in the [Plottables Directory](/design/#plottables-directory) (i.e. all <span class="class">Nodule</span> classes) has a method called <span class="method">adjustSizeForZoom()</span>. This method is called on all plottables through a chain of events that are outlined here.
 
-resizePlottables(e: any) in Easel.vue calls adjustSizeForZoom on all plottable (gotten from Store)
+Whenever a new magnification factor is computed the value is written to the [Store](/design/#store) with a dispatch command like the one highlighted in this code snippet from <span class="file">PanZoomHandler.ts</span>:
 
-<span class="method">resizePlottables(e: any)</span> method in the <span class="file">Easel.vue</span> file
+<<< @/src/eventHandlers/PanZoomHandler.ts#writeFactorVectorToStore{2}
 
-@[code lang=ts highlight={9} transcludeWith=:::](@/src/views/Easel.vue)
+The <span class="string">"changeZoomFactor"</span> <span class="method">dispatch(...)</span> method results in a <span class="method">commit(...)</span> of the magnification factor to the store and fires an <span class="string">"magnification-updated"</span> [Event Bus](/design/#event-bus) action.
 
-constructor in Easel.vue contains
+<<< @/src/store/index.ts#magnificationUpdate
 
-EventBus.listen("magnification-updated", this.resizePlottables);
+As the constructor for <span class="file">Easel.vue</span> contains a listener for the <span class="string">"magnification-updated"</span> [EventBus](/design/#event-bus) action.
 
-SphereFrame.vue in the onCanvasResize(size: number) method contains
+<<< @/src/views/Easel.vue#magnificationUpdate
 
-EventBus.fire("magnification-updated", {
-factor: ratio
-});
+this action calls
+
+<<< @/src/views/Easel.vue#resizePlottables{3,6}
+
+which calls <span class="method">adjustSizeForZoom()</span> on all plottable retrieved from the from the [Store](/design/#store).
 
 ## Data Structure
 
@@ -170,19 +184,147 @@ The arrows in the the DAG are programmatically declared and organized using the 
 
 <!-- [Note that all directed acyclic graph can be layered.](https://link.springer.com/content/pdf/10.1007/3-540-45848-4_2.pdf) -->
 
-## User Interface (Vue Components)
+## User Interface (Vue Components and Views)
 
-## [Event Handlers](./handlers/)
+Still in development so write up later.
+
+## Event Handlers
+
+The handlers decide how to handle user mouse and keyboard input to implement a particular tool. All handlers implement the interface <span class="interface">ToolStrategy</span>:
+
+<<< @/src/eventHandlers/ToolStrategy.ts#toolStrategy{2-7}
+
+The <span class="method">activate()</span> and <span class="method">deactivate()</span> methods are run at the eponymous times during the life cycle of the tool. The <span class="method">activate()</span> method processes all the [selected objects](/tools/edit.html#selection) and decides whether or not to execute the appropriate tool routines. The <span class="method">deactivate()</span> method clears the appropriate variable in the tool so that they don't interfere with the execution of other tools.
+
+Almost all handlers extend <span class="class">MouseHandler</span> (the exception is <span class="class">PanZoomHandler</span>). This means that almost all handlers have access to the following variables that are computed in the <span class="method">mouseMoved()</span> method.
+
+- <span class="variable">currentSphereVector</span>: This the <span class="class">Vector3</span> location on the ideal unit sphere corresponding to the current mouse location.
+- <span class="variable">previousSphereVector</span>: This the <span class="class">Vector3</span> location on the ideal unit sphere of corresponding to the previous mouse location.
+- <span class="variable">currentScreenVector</span>: This the <span class="class">Two.Vector</span> location in the Default Screen Plane of the current mouse location.
+- <span class="variable">previousScreenVector</span>: This the <span class="class">Two.Vector</span> location in the Default Screen Plane of the previous mouse location.
+- <span class="variable">isOnSphere</span>: This boolean variable indicates if the current mouse location is inside the boundary circle in the Default Screen Plane
+
+In addition, the <span class="method">mouseMoved()</span> method queries (via the getters) the [Store](/design/#store) to find and highlight all the nearby objects. The variable <span class="variable">hitNodules</span> is an array of nearby SEObjects that is sorted into the different class like <span class="variable">hitPoints</span>, <span class="variable">hitSegments</span>, <span class="variable">hitLines</span>, etc. all of which are available to the children of <span class="class">MouseHandler</span>.
+
+<!-- <<< @/src/eventHandlers/MouseHandler.ts -->
+
+[Here are details about the implementation of some of the Handlers](./handlers/edit.md)
 
 ## Commands
 
-## Languages
+We record each change in the application using a <span class="class">Command</span> object. This allows use to implement a [Command Design Pattern](https://en.wikipedia.org/wiki/Command_pattern). This pattern allows us to easily implement the [Undo and Redo Tool](/tools/edit.html#undo-redo) and ultimately the Load and Save features of the application. Every user action that changes the state of the application is implemented by a <span class="class">Command</span> object.
+
+The <span class="class">Command</span> class contains several static variables including
+
+<<< @/src/commands/Command.ts#commmandArrays
+
+The <span class="variable">commandHistory</span> array stores a stack of commands that are used to get from the initial application state to the current state of the application. The <span class="variable">redoHistory</span> stores a stack of the latest commands that have been redone. These arrays are managed by two static methods:
+
+<<< @/src/commands/Command.ts#undo
+
+and
+
+<<< @/src/commands/Command.ts#redo
+
+Each instance of the <span class="class">Command</span> class has access to the following methods:
+
+- <span class="method">execute()</span>:
+  - Puts the command instance in the <span class="variable">commandHistory</span> stack
+  - Forces the command instance to save necessary data to restore later (via <span class="method">saveState()</span>)
+  - Forces the command instance to perform the actual action of instance command (via <span class="method">do()</span>)
+- <span class="method">push()</span>:
+  - Does the same thing as <span class="method">execute()</span> except for actually preforming the command.
+  - This is used for [Zooming and Panning](/design/handlers/display.html#zoom-pan-and-standard-view) which are events that are executed directly based on immediate user input and only when undone or redone are executed by a command instance.
+
+All Child classes of Command must implement the following abstract methods
+
+- <span class="method">restoreState()</span>: Perform necessary action to restore the app state. The operation(s) implemented in here are usually opposite of the operation(s) implemented in <span class="method">do()</span>.
+- <span class="method">saveState()</span>: Save require information to restore the app state
+- <span class="method">do()</span>: Perform necessary action to alter the app state
+
+For example, to add a point to the state of the application, the [PointHandler](/design/handlers/basic.html#point) gathers mouse input and creates the [linked <span class="class">Point</span> and <span class="class">SEPoint</span> objects](/design/#plottables-directory). Then it creates a <span class="class">AddPointCommand</span> object using the <span class="class">SEPoint</span> object in the constructor. This code snippet from <span class="file">AddPointCommand.ts</span> shows this
+
+<<< @/src/commands/AddPointCommand.ts#addPointCommand
+
+The <span class="method">do()</span> and <span class="method">restoreState()</span> methods uses the <span class="string">"addPoint"</span> and <span class="string">"removePoint"</span> mutations of the application state found in the [Store](/design/#store). The <span class="string">"addPoint"</span> mutation is implemented in the [Store](/design/#store) as follows.
+
+<<< @/src/store/mutations.ts#addPoint
+
+This simply pushes the <span class="class">SEPoint</span> into the appropriate arrays in the store and then adds the corresponding plottables objects to the layers in the store. (TODO: Why does it do this?)
+
+When the user performs a sequence of changes to the app, sometimes we do not want each individual change to be undone. For example, if the Mouse Wheel or [Zooming and Panning Tool](/tools/display.html#zoom-pan-and-standard-view) is used to [zoom or pan](/design/#zooming-and-panning), they may execute thirty or forty small zooms and undoing a large number of small zooms is very tedious. In this case we only push only one Command onto the stack: one that takes the starting view and transforms it to final view. In this case the entire zooming or panning operation is undone with one <span class="method">undo()</span> command. However, this is not always possible and sometimes we use a <span class="class">CommandGroup</span> object to group a sequence of <span class="class">Command</span> objects together, each of which needs to be undone separately, but can be executed as batch.
+
+For example, when creating a circle the user may create a new center point, new circle point, and finally a new circle depending on both of these objects. In the <span class="file">CircleHandler.ts</span> file the <span class="method">makeCircle()</span> method starts creating a <span class="class">CommandGroup</span> object
+
+```ts
+const circleGroup = new CommandGroup();
+```
+
+and then creates (and styles) a new circle <span class="class">Point</span> object which is linked to a new <span class="class">SEPoint</span> object and is finally added to the circleGroup command.
+
+```ts
+const newCenterPoint = new Point();
+// Set the display to the default values
+newCenterPoint.stylize(DisplayStyle.DEFAULT);
+// Set up the glowing display
+newCenterPoint.stylize(DisplayStyle.GLOWING);
+const newSECenterPoint = new SEPoint(newCenterPoint);
+newSECenterPoint.vectorPosition = this.centerVector;
+this.centerSEPoint = newSECenterPoint;
+circleGroup.addCommand(new AddPointCommand(newSECenterPoint));
+```
+
+Finally, after a similar operation for the circle <span class="class">Point</span>, a new <span class="class">SECircle</span> is added to the command group
+
+```ts
+const newSECircle = new SECircle(
+  newCircle,
+  this.centerSEPoint,
+  this.circleSEPoint
+);
+
+circleGroup.addCommand(new AddCircleCommand(newSECircle));
+```
+
+and finally the <span class="class">CommandGroup</span> object is executed
+
+```ts
+circleGroup.execute();
+```
 
 ## Store
 
-## Views
+This application uses a [Vuex Store](https://vuex.vuejs.org/) to implement a [State Management Pattern](https://en.wikipedia.org/wiki/State_management). This serves as single place to record the state of the app and to change (mutate) that state in predictable ways. It is a repository for all the important variables in the application that can be accessed (<span class="file">getters.ts</span>) and mutated (<span class="file">mutations.ts</span>) by all components of the app. The Store keeps a list of those variables and the initial state is
 
-## Visitors
+<<< @/src/store/mutations.ts#appState
+
+In the [Zooming and Panning](/design/#zooming-and-panning) section, the reader might have noticed that the Zoom Translation Vector is written to the [Store](/design/#store) with a <span class="method">commit(...)</span> method and the Zoom Magnification Factor is written with a <span class="method">dispatch(...)</span> method. This is because the the <span class="method">commit(...)</span> operation is a synchronous one and the <span class="method">dispatch</span> operation is an asynchronous one. The setting of the translation vector is immediately completed as a mutation of the store, but updating the magnification factor triggers an [update of all the plottable objects](/design/#zooming-and-panning) which shouldn't interrupt the programmatic control flow and can happen asynchronously.
+
+## Visitor and Event Bus Actions
+
+The <span class="class">Visitor</span> class allows one class access to another class's private variables in a controlled way. <span class="class">EventBus</span> actions allow non-Vue components to communicate with Vue components in an asynchronous way. For example, the [Rotation Tool](/tools/display.html#rotation) uses both of these classes in crucial way.
+
+The [Rotation Handler](/design/handlers/display.html#rotation) uses the user mouse input to compute a Change In Position Rotation Matrix that maps the Unit Ideal Sphere to itself (see the illustration in the [Rendering Objects](/design/#rendering-objects) section). This fires a <span class="string">"sphere-rotate"</span> [EventBus](/design/#event-bus) action as shown in this snippet from <span class="file">RotateHandler.ts</span>:
+
+<<< @/src/eventHandlers/RotateHandler.ts#sphereRotate
+
+The <span class="string">"sphere-rotate"</span> [EventBus](/design/#event-bus) listener is in <span class="file">SphereFrame.vue</span>. Notice how an events outside of the Vue Component (in the handler) is no triggering event in a Vue Component. This listener calls
+
+<<< @/src/components/SphereFrame.vue#handleSphereRotation
+
+The <span class="string">"rotateSphere"</span> mutation of the application state is as follows
+
+<<< @/src/store/mutations.ts#rotateSphere
+
+Notice that this creates a <span class="class">PositionVisitor</span> based on the Change In Position Rotation Matrix and that is applied to all SEPoint via this snippet from <span class="file">PositionVisitor.ts</span>:
+
+<<< @/src/visitors/PositionVisitor.ts#actionOnPoint
+
+The <span class="class">PositionVisitor</span> merely updates all other <span class="class">SENodule</span> objects. Notice how the sequence of triggered event is now outside of the Vue Components again, but has been recorded in the Store along the way.
+
+## Languages
+
+Spherical Easel uses the [Vue I18n is internationalization plugin for Vue.js](https://kazupon.github.io/vue-i18n/api/#extension-of-vue).
 
 <!-- Uncomment out the two lines below and the script container in config.js to draw a circle.
 Reload/Refresh the page twice! -->

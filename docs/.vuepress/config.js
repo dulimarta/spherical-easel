@@ -21,15 +21,15 @@ module.exports = {
     ["script", { src: "/tikzjax.js" }]
   ],
 
-  markdown: {
-    // extendMarkdown: md => {
-    //   // use more markdown-it plugins!
-    //   md.use(require("markdown-it-texmath"));
-    // },
-    extendMarkdown: md => {
-      md.use(require("markdown-it-vuepress-code-snippet-enhanced"));
-    }
-  },
+  // markdown: {
+  //   extendMarkdown: md => {
+  //     // use more markdown-it plugins!
+  //     md.use(require("markdown-it-texmath"));
+  //   },
+  //   extendMarkdown: md => {
+  //     md.use(require("markdown-it-vuepress-code-snippet-enhanced"));
+  //   }
+  // },
   //Plugins to enable specialized behavior (for example, LaTeX/MathJax )
   plugins: [
     [
@@ -267,7 +267,6 @@ module.exports = {
           ],
           //The  Handler Documentation sidebar file list
           "/design/handlers/": [
-            "/design/handlers/",
             "/design/handlers/edit",
             "/design/handlers/display",
             "/design/handlers/basic",

@@ -127,7 +127,7 @@ export default class Line extends Nodule {
 
   adjustSizeForZoom(factor: number): void {
     const newThickness = this.strokeWidthFront * factor;
-    console.debug("Attempt to change line thickness to", newThickness);
+    console.log("Attempt to change line thickness to", newThickness);
     if (factor > 1)
       this.frontHalf.linewidth = Math.min(
         newThickness,

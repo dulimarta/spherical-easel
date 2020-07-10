@@ -76,14 +76,20 @@
   font-weight bold
   color #7ec699
 
+.string
+  background-color transparent
+  font-weight bold
+  color #7ec699
+
 .tikz>div
-  width:100% !important
+  width:100% !important //Allows this component to overide others that have greater priority
 
 //This is a custom block that VuePress created, I'm just overriding some features
 .custom-block
   &.tool-title
     color #3eaf7c
     text-align left
+
 // Indent the unordered list by 40 px
 ul {
   padding-left: 40px 

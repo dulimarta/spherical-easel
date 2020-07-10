@@ -27,7 +27,7 @@ export default class CircleHandler extends MouseHandler {
   /**  The model object point that is the center of the circle (if any) */
   private centerSEPoint: SEPoint | null = null;
   /** The model object point that is a point on the circle (if any) */
-  private endSEPoint: SEPoint | null = null;
+  private circleSEPoint: SEPoint | null = null;
   /** The radius of the temporary circle (along the surface of the sphere) */
   private arcRadius = 0;
   /** Has the temporary circle been added to the scene?*/
@@ -136,7 +136,7 @@ export default class CircleHandler extends MouseHandler {
 
       // Clear old points to get ready for creating the next circle.
       this.centerSEPoint = null;
-      this.endSEPoint = null;
+      this.circleSEPoint = null;
       this.makingACircle = false;
     }
   }
@@ -171,37 +171,37 @@ export default class CircleHandler extends MouseHandler {
       newCenterPoint.stylize(DisplayStyle.DEFAULT);
       // Set up the glowing display
       newCenterPoint.stylize(DisplayStyle.GLOWING);
-      const vtx = new SEPoint(newCenterPoint);
-      vtx.vectorPosition = this.centerVector;
-      this.centerSEPoint = vtx;
-      circleGroup.addCommand(new AddPointCommand(vtx));
+      const newSECenterPoint = new SEPoint(newCenterPoint);
+      newSECenterPoint.vectorPosition = this.centerVector;
+      this.centerSEPoint = newSECenterPoint;
+      circleGroup.addCommand(new AddPointCommand(newSECenterPoint));
     } else if (this.centerSEPoint instanceof SEIntersectionPoint) {
       circleGroup.addCommand(new ShowPointCommand(this.centerSEPoint));
     }
     if (this.hitPoints.length > 0) {
-      this.endSEPoint = this.hitPoints[0];
-      if (this.endSEPoint instanceof SEIntersectionPoint) {
-        circleGroup.addCommand(new ShowPointCommand(this.endSEPoint));
+      this.circleSEPoint = this.hitPoints[0];
+      if (this.circleSEPoint instanceof SEIntersectionPoint) {
+        circleGroup.addCommand(new ShowPointCommand(this.circleSEPoint));
       }
     } else {
       // endPoint landed on an open space
       // we have to create a new point and add it to the group/store
-      const newEndPoint = new Point();
+      const newCirclePoint = new Point();
       // Set the display to the default values
-      newEndPoint.stylize(DisplayStyle.DEFAULT);
+      newCirclePoint.stylize(DisplayStyle.DEFAULT);
       // Set up the glowing display
-      newEndPoint.stylize(DisplayStyle.GLOWING);
-      const vtx = new SEPoint(newEndPoint);
-      vtx.vectorPosition = this.currentSphereVector;
-      this.endSEPoint = vtx;
-      circleGroup.addCommand(new AddPointCommand(vtx));
+      newCirclePoint.stylize(DisplayStyle.GLOWING);
+      const newSECirclePoint = new SEPoint(newCirclePoint);
+      newSECirclePoint.vectorPosition = this.currentSphereVector;
+      this.circleSEPoint = newSECirclePoint;
+      circleGroup.addCommand(new AddPointCommand(newSECirclePoint));
     }
 
     // Add the last command to the group and then execute it (i.e. add the potentially two points and the circle to the store.)
     const newSECircle = new SECircle(
       newCircle,
       this.centerSEPoint,
-      this.endSEPoint
+      this.circleSEPoint
     );
 
     circleGroup.addCommand(new AddCircleCommand(newSECircle));

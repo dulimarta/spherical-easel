@@ -7,25 +7,25 @@ import { SESegment } from "@/models/SESegment";
 import { SECircle } from "@/models/SECircle";
 import { PositionVisitor } from "@/visitors/PositionVisitor";
 import { SELine } from "@/models/SELine";
+
 // const tmpMatrix = new Matrix4();
 
+//#region appState
 export const initialState: AppState = {
-  sphereRadius: 0,
-  actionMode: "rotate",
-  activeToolName: "",
-  zoomMagnificationFactor: 1,
-  zoomTranslation: [0, 0],
-  // slice(): create a copy of the array
-  // transformMatElements: tmpMatrix.elements.slice(),
-  // nodes: [], // Possible future addition (array of SENodule)
-  nodules: [],
-  layers: [],
-  points: [],
-  lines: [],
-  segments: [],
-  circles: [],
-  intersections: []
+  sphereRadius: 0, // Is this needed? TODO: remove?
+  actionMode: "rotate", // The action mode of the Sphere Canvas
+  activeToolName: "", // The active tool for handling user mouse input
+  zoomMagnificationFactor: 1, // The CSSTransform magnification factor
+  zoomTranslation: [0, 0], // The CSSTransform translation vector
+  nodules: [], // An array of all SENodules
+  layers: [], // An array of Two.Group pointer to the layers in the twoInstance
+  points: [], // An array of all SEPoints
+  lines: [], // An array of all SELines
+  segments: [], // An array of all SESegments
+  circles: [], // An array of all SECircles
+  intersections: [] // An array of all SEPoints that are intersections of the one-dimensional objects in the arrangement
 };
+//#endregion appState
 
 const positionVisitor = new PositionVisitor();
 
@@ -53,7 +53,6 @@ export default {
   },
   setZoomMagnificationFactor(state: AppState, mag: number): void {
     state.zoomMagnificationFactor = mag;
-    //console.log("Mag", state.zoomMagnificationFactor);
   },
   setZoomTranslation(state: AppState, vec: number[]): void {
     for (let i = 0; i < 2; i++) {
@@ -64,11 +63,15 @@ export default {
     //   state.zoomTranslation[1]
     // ]);
   },
+
+  //#region addPoint
   addPoint(state: AppState, point: SEPoint): void {
     state.points.push(point);
     state.nodules.push(point);
     point.ref.addToLayers(state.layers);
   },
+  //#endregion addPoint
+
   removePoint(state: AppState, pointId: number): void {
     const pos = state.points.findIndex(x => x.id === pointId);
     const pos2 = state.nodules.findIndex(x => x.id === pointId);
@@ -144,6 +147,7 @@ export default {
       state.nodules.splice(pos2, 1);
     }
   },
+  //#region rotateSphere
   rotateSphere(state: AppState, rotationMat: Matrix4): void {
     positionVisitor.setTransform(rotationMat);
     state.points.forEach((p: SEPoint) => {
@@ -159,4 +163,5 @@ export default {
       s.accept(positionVisitor);
     });
   }
+  //#endregion rotateSphere
 };

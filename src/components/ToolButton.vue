@@ -35,9 +35,7 @@
       multi-line
     >
       <span>
-        <strong class="warning--text">
-          {{ $t("buttons." + button.displayedName) + ": " }}
-        </strong>
+        <strong class="warning--text">{{ $t("buttons." + button.displayedName) + ": " }}</strong>
         {{ $t("buttons." + button.toolUseMessage) }}
       </span>
       <v-btn @click="displayToolUseMessage = false" icon>
@@ -80,9 +78,7 @@ export default class ToolButton extends Vue {
   /* Allow us to bind the button object in the parent (=ToolGroups) with the button object in the
   child */
   @Prop({ default: null })
-  button!: ToolButtonType; /* What does !: mean? It tells typescript not to worry about button not
-  being assigned. It excludes the possibility that button won't be assigned. 
-  https://stackoverflow.com/questions/50983838/what-does-mean-in-typescript    */
+  button!: ToolButtonType;
 
   /* @Watch if button.displayToolUseMessage changes then set displayToolUseMessage to false so
       that multiple snackbars tool use messages are not displayed at the same time*/

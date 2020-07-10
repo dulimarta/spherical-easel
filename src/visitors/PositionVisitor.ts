@@ -15,43 +15,20 @@ export class PositionVisitor implements Visitor {
     this.normalMatrix.getNormalMatrix(this.transformMatrix);
   }
 
+  //#region actionOnPoint
   actionOnPoint(p: SEPoint): void {
-    this.tmpVector.copy(p.vectorPosition);
-    this.tmpVector.applyMatrix4(this.transformMatrix);
-    p.vectorPosition = this.tmpVector;
+    this.tmpVector.copy(p.vectorPosition); // Copy the old vector location of the SEPoint
+    this.tmpVector.applyMatrix4(this.transformMatrix); // Apply the matrix
+    p.vectorPosition = this.tmpVector; // Set the new position vector
   }
+  //#endregion actionOnPoint
 
-  /* This should never be called because lines are always children of points */
+  /* These are calledshould never be called because lines are always children of points */
   actionOnLine(m: SELine): void {
-    // Apply normal matrix to transform the circle orientation
     m.update();
-    // this.tmpVector.copy(m.normalDirection);
-    // this.tmpVector.applyNormalMatrix(this.normalMatrix);
-    // m.normalDirection = this.tmpVector;
-
-    // this.tmpVector.copy(m.startPoint);
-    // this.tmpVector.applyMatrix4(this.transformMatrix);
-    // m.ref.startPoint = this.tmpVector;
-    // this.tmpVector.copy(m.endPoint);
-    // this.tmpVector.applyMatrix4(this.transformMatrix);
-    // m.ref.endPoint = this.tmpVector;
   }
 
   actionOnSegment(s: SESegment): void {
-    // this.tmpVector.copy(s.normalDirection);
-    // this.tmpVector.applyNormalMatrix(this.normalMatrix);
-    // s.normalDirection = this.tmpVector;
-    // this.tmpVector.copy(s.ref.startVector);
-    // this.tmpVector.applyMatrix4(this.transformMatrix);
-    // s.ref.startVector = this.tmpVector;
-
-    // this.tmpVector.copy(s.ref.midVector);
-    // this.tmpVector.applyMatrix4(this.transformMatrix);
-    // s.ref.midVector = this.tmpVector;
-
-    // this.tmpVector.copy(s.ref.endPoint);
-    // this.tmpVector.applyMatrix4(this.transformMatrix);
-    // s.ref.endPoint = this.tmpVector;
     s.update();
   }
 

@@ -1,6 +1,7 @@
 import { Command } from "./Command";
 import { SEPoint } from "@/models/SEPoint";
 
+//#region addPointCommand
 export class AddPointCommand extends Command {
   private arg: SEPoint;
   constructor(arg: SEPoint) {
@@ -20,3 +21,4 @@ export class AddPointCommand extends Command {
     Command.store.commit("removePoint", this.lastState);
   }
 }
+//#endregion addPointCommand

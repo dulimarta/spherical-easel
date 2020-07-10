@@ -98,9 +98,11 @@ export default class RotateHandler extends MouseHandler {
         // this.prevScreenPoint.copy(this.currentScreenPoint);
 
         // Apply the rotation to the sphere and update the display
+        //#region sphereRotate
         EventBus.fire("sphere-rotate", {
           transform: this.changeInPositionRotationMatrix
         });
+        //#endregion sphereRotate
       }
     }
   }

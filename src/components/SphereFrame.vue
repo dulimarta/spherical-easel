@@ -52,7 +52,7 @@ export default class SphereFrame extends VueComponent {
 
   private sphereCanvas!: Two.Group;
   /**
-   * The circle that is the
+   * The circle that is the end of the projection of the Default Sphere in the Default Screen Plane
    */
   private boundaryCircle!: Two.Circle;
   /**
@@ -95,7 +95,7 @@ export default class SphereFrame extends VueComponent {
     // Clear layer array
     this.layers.splice(0, this.layers.length);
 
-    //# :::
+    //#region addlayers
     // Record the text layer number so that the y axis is not flipped for them
     const textLayers = [
       LAYER.foregroundText,
@@ -117,7 +117,8 @@ export default class SphereFrame extends VueComponent {
         }
       }
     }
-    //# :::
+    //#endregion addlayers
+
     // The midground is where the temporary objects and the boundary circle were drawn TODO: Needed?
     this.sphereCanvas = this.layers[LAYER.midground];
     // console.info("Sphere canvas ID", this.sphereCanvas.id);
@@ -206,10 +207,7 @@ export default class SphereFrame extends VueComponent {
     this.$store.commit("setSphereRadius", radius);
 
     const ratio = radius / SETTINGS.boundaryCircle.radius;
-    EventBus.fire("magnification-updated", {
-      factor: ratio
-    });
-    this.$store.commit("setZoomMagnificationFactor", ratio);
+    this.$store.dispatch("changeZoomFactor", ratio);
     // Each window size gets its own zoom matrix
     // When you resize a window the zoom resets
     this.$store.commit("setZoomTranslation", [0, 0]);
@@ -220,7 +218,7 @@ export default class SphereFrame extends VueComponent {
   /** Apply the affine transform (m) to the entire TwoJS SVG tree! */
   // The translation element of the CSS transform matrix
   // is actually the pivot/origin of the zoom
-  //# :::::
+  // #region updateView
   private updateView() {
     // Get the current maginiication factor and translation vector
     const mag = this.store.state.zoomMagnificationFactor;
@@ -238,7 +236,7 @@ export default class SphereFrame extends VueComponent {
     // What does this do?
     el.style.overflow = "visible";
   }
-  //# :::::
+  // #endregion updateView
 
   handleMouseWheel(event: MouseWheelEvent): void {
     console.log("Mouse Wheel Zoom!");
@@ -305,7 +303,7 @@ export default class SphereFrame extends VueComponent {
     }
 
     // Set the new magnifiction factor and the next translation vector in the store
-    this.store.commit("setZoomMagnificationFactor", newMagFactor);
+    this.store.dispatch("changeZoomFactor", newMagFactor);
     this.store.commit("setZoomTranslation", newTranslationVector);
     // Update the display
     this.updateView();
@@ -338,9 +336,11 @@ export default class SphereFrame extends VueComponent {
     this.currentTool?.mouseLeave(e);
   }
 
+  //#region handleSphereRotation
   handleSphereRotation(e: unknown): void {
     this.$store.commit("rotateSphere", (e as any).transform);
   }
+  //#endregion handleSphereRotation
 
   @Watch("actionMode")
   switchActionMode(mode: string): void {

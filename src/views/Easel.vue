@@ -206,10 +206,12 @@ export default class Easel extends Vue {
     rightPanel: HTMLDivElement;
   };
 
+  //#region magnificationUpdate
   constructor() {
     super();
     EventBus.listen("magnification-updated", this.resizePlottables);
   }
+  //#endregion magnificationUpdate
 
   private enableZoomIn(): void {
     console.log("enableZoomIn");
@@ -280,7 +282,7 @@ export default class Easel extends Vue {
     Command.redo();
   }
 
-  //# :::
+  //#region resizePlottables
   resizePlottables(e: any): void {
     this.$store.state.points.forEach((p: SEPoint) => {
       p.ref.adjustSizeForZoom(e.factor);
@@ -289,7 +291,7 @@ export default class Easel extends Vue {
       p.ref.adjustSizeForZoom(e.factor);
     });
   }
-  //# :::
+  //#endregion resizePlottables
 }
 </script>
 
