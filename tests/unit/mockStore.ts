@@ -14,5 +14,8 @@ export default {
     setLayers: jest.fn(),
     setActionMode: jest.fn()
   },
+  actions: {
+    changeZoomFactor: jest.fn()
+  },
   getters: {}
 };
