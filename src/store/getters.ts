@@ -53,11 +53,11 @@ function intersectLineWithLine(
   //     2
   //   )}) is ${tempVec.toFixed(3)}`
   // );
-  const x = new SEIntersectionPoint(new Point(), lineOne, lineTwo);
+  const x = new SEIntersectionPoint(new Point(), lineOne, lineTwo, 0);
   out.push(x);
   x.vectorPosition = tempVec;
 
-  const x2 = new SEIntersectionPoint(new Point(), lineOne, lineTwo);
+  const x2 = new SEIntersectionPoint(new Point(), lineOne, lineTwo, 1);
   out.push(x2);
   x2.vectorPosition = tempVec.multiplyScalar(-1);
   return out;
@@ -67,6 +67,7 @@ function intersectLineWithSegment(
   l: SELine,
   s: SESegment
 ): SEIntersectionPoint[] {
+  // FIXME: two possible intersection points?
   const out = [];
   tempVec.crossVectors(l.normalDirection, s.normalDirection).normalize();
   // console.debug(
@@ -76,16 +77,21 @@ function intersectLineWithSegment(
   // );
 
   const dist1 = tempVec.distanceTo(s.midPoint.vectorPosition);
+  const inside1 = s.isPositionInsideArc(tempVec);
+
   const dist2 = tempVec
     .multiplyScalar(-1)
     .distanceTo(s.midPoint.vectorPosition);
-  const x = new SEIntersectionPoint(new Point(), l, s);
-  out.push(x);
-  // Choose the closest between the point and its antipodal
-  if (dist2 < dist1) {
-    x.vectorPosition = tempVec;
-  } else {
-    x.vectorPosition = tempVec.multiplyScalar(-1);
+  const inside2 = s.isPositionInsideArc(tempVec);
+  if (inside1 || inside2) {
+    const x = new SEIntersectionPoint(new Point(), l, s, 0);
+    out.push(x);
+    // Choose the closest between the point and its antipodal
+    if (dist2 < dist1) {
+      x.vectorPosition = tempVec;
+    } else {
+      x.vectorPosition = tempVec.multiplyScalar(-1);
+    }
   }
 
   return out;
@@ -107,6 +113,7 @@ function intersectCircles(
   arc2: number
 ): Vector3[] {
   //Convert to the case where all arc lengths are less than Pi/2
+
   let radius1 = arc1;
   center1.copy(n1).normalize();
   if (arc1 > Math.PI / 2) {
@@ -237,8 +244,8 @@ function intersectLineWithCircle(
     c.radius
   );
 
-  tmp.forEach((v: Vector3) => {
-    const x = new SEIntersectionPoint(new Point(), n, c);
+  tmp.forEach((v: Vector3, idx: number) => {
+    const x = new SEIntersectionPoint(new Point(), n, c, idx);
     x.vectorPosition = v;
     out.push(x);
   });
@@ -252,15 +259,19 @@ function intersectSegmentWithSegment(
   const out: SEIntersectionPoint[] = [];
   tempVec.crossVectors(s1.normalDirection, s2.normalDirection).normalize();
   if (s1.isPositionInsideArc(tempVec) && s2.isPositionInsideArc(tempVec)) {
-    const x = new SEIntersectionPoint(new Point(), s1, s2);
-    out.push(x);
-    x.vectorPosition = tempVec;
+    const x1 = new SEIntersectionPoint(new Point(), s1, s2, 0);
+    out.push(x1);
+    x1.vectorPosition = tempVec;
   }
   tempVec.multiplyScalar(-1); // Antipodal point
   if (s1.isPositionInsideArc(tempVec) && s2.isPositionInsideArc(tempVec)) {
-    const x = new SEIntersectionPoint(new Point(), s1, s2);
-    out.push(x);
-    x.vectorPosition = tempVec;
+    // Use out.length as the order number so it will automatically
+    // assign the correct order (0 or 1).
+    // When x1 (above) is not yet pushed to "out", out.length will be 0
+    // When x1 (above) is already pushed to "out", out.length will be 1
+    const x2 = new SEIntersectionPoint(new Point(), s1, s2, out.length);
+    out.push(x2);
+    x2.vectorPosition = tempVec;
   }
   return out;
 }
@@ -272,8 +283,8 @@ function intersectSegmentWithCircle(
   const out: SEIntersectionPoint[] = [];
   intersectCircles(s.normalDirection, Math.PI / 2, c.normalDirection, c.radius)
     .filter((p: Vector3) => s.isPositionInsideArc(p))
-    .forEach((p: Vector3) => {
-      const x = new SEIntersectionPoint(new Point(), s, c);
+    .forEach((p: Vector3, idx: number) => {
+      const x = new SEIntersectionPoint(new Point(), s, c, idx);
       x.vectorPosition = p;
       out.push(x);
     });
@@ -296,8 +307,8 @@ function intersectCircleWithCircle(
         c1.normalDirection,
         c1.radius
       )
-  ).map((p: Vector3) => {
-    const x = new SEIntersectionPoint(new Point(), c1, c2);
+  ).map((p: Vector3, idx: number) => {
+    const x = new SEIntersectionPoint(new Point(), c1, c2, idx);
     // x.setShowing(true);
     x.vectorPosition = p;
     return x;

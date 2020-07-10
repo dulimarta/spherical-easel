@@ -87,6 +87,7 @@ export default class MoveHandler extends Highlighter {
   mouseMoved(event: MouseEvent): void {
     super.mouseMoved(event);
     if (!this.isOnSphere) return;
+    event.preventDefault();
     if (this.isDragging) {
       if (this.moveTarget instanceof SEPoint) {
         // Move the selected SEPoint
@@ -255,6 +256,7 @@ export default class MoveHandler extends Highlighter {
       // Update both points, because we might need to update their kids!
       targetCircle.circlePoint.update();
       targetCircle.centerPoint.update();
+      this.recalculateIntersections(targetCircle);
     }
   }
 
@@ -282,46 +284,59 @@ export default class MoveHandler extends Highlighter {
     }
   }
 
-  private recalculateIntersections(target: SELine | SESegment): void {
-    const out =
-      target instanceof SELine
-        ? this.store.getters.determineIntersectionsWithLine(target)
-        : this.store.getters.determineIntersectionsWithSegment(target);
+  private recalculateIntersections(
+    target: SELine | SESegment | SECircle
+  ): void {
+    // Determine the current set of intersection points on this target object
+    const currentIntersections = target.children
+      .filter((n: SENodule) => {
+        return n instanceof SEIntersectionPoint;
+      })
+      .flatMap((n: SENodule) => n as SEIntersectionPoint);
 
-    // Build a HashMap for quick match via the parents name
-    const intersectionMap: any = {};
-    out
-      // FIXME: Is it possible for an intersection point to have more than 2 parent nodes?
-      .filter((x: SEIntersectionPoint) => x.parents.length == 2)
-      .forEach((x: SEIntersectionPoint) => {
-        let parent1 = x.parents[0].name;
-        let parent2 = x.parents[1].name;
-        if (parent1 > parent2) {
-          // Swap names so they are in alphabetical order
-          const tmp = parent1;
-          parent1 = parent2;
-          parent2 = tmp;
-        }
-        intersectionMap[`${parent1}/${parent2}`] = x;
-      });
-    target.children
-      .filter(n => n instanceof SEIntersectionPoint)
-      .map(n => n as SEIntersectionPoint)
-      .filter((x: SEIntersectionPoint) => x.parents.length == 2)
-      .forEach((x: SEIntersectionPoint) => {
-        let p1 = x.parents[0].name;
-        let p2 = x.parents[1].name;
-        if (p1 > p2) {
-          // Swap names so they are in alphabetical order
-          const tmp = p1;
-          p1 = p2;
-          p2 = tmp;
-        }
+    // Determine the new set intersection points
+    let newIntersections: SEIntersectionPoint[];
+    if (target instanceof SELine)
+      newIntersections = this.store.getters.determineIntersectionsWithLine(
+        target
+      );
+    else if (target instanceof SESegment)
+      newIntersections = this.store.getters.determineIntersectionsWithSegment(
+        target
+      );
+    else
+      newIntersections = this.store.getters.determineIntersectionsWithCircle(
+        target
+      );
 
-        // Locate the source SEIntersectionPoint for this object
-        const source: SEIntersectionPoint = intersectionMap[`${p1}/${p2}`];
-        x.vectorPosition.copy(source.vectorPosition);
-        x.update();
-      });
+    // newIntersections.forEach((x: SEIntersectionPoint, pos: number) => {
+    //   console.debug(`New intersection ${pos}: ${x.name}`);
+    // });
+    currentIntersections.forEach((current: SEIntersectionPoint, k: number) => {
+      // console.debug(`Current intersection ${k}: ${current.name}`);
+      const pos = newIntersections.findIndex(
+        (incoming: SEIntersectionPoint) => current.name === incoming.name
+      );
+      if (pos >= 0) {
+        // Use the new coordinates of the incoming intersection point
+        // to update the current one
+        current.vectorPosition.copy(newIntersections[pos].vectorPosition);
+        current.update();
+
+        // Remove matching incoming points so after this forEach loop
+        // is over non-matching incoming points are new intersections to add
+        newIntersections[pos].removeSelfSafely();
+        newIntersections.splice(pos, 1);
+      } else {
+        // The current point is disappearing
+        this.store.commit("removePoint", current.id);
+      }
+    });
+
+    // After matching intersection points are removed the remaining points
+    // should be new appearing intersections
+    newIntersections.forEach((x: SEIntersectionPoint) => {
+      this.store.commit("addPoint", x);
+    });
   }
 }
