@@ -11,7 +11,13 @@ export class SELine extends SENodule implements Visitable {
    * The corresponding plottable TwoJS object
    */
   public ref: Line;
+  /**
+   * The model SE object that is one point on the line
+   */
   private start: SEPoint;
+  /**
+   * The model SE object that is a second point on the line
+   */
   private end: SEPoint;
 
   /**
@@ -26,7 +32,7 @@ export class SELine extends SENodule implements Visitable {
     this.start = start;
     this.end = end;
 
-    l.owner = this;
+    //l.owner = this;
     LINE_COUNT++;
     this.name = `Li-${LINE_COUNT}`;
     // Place registerChild calls AFTER the name is set
@@ -56,13 +62,9 @@ export class SELine extends SENodule implements Visitable {
     return this.end;
   }
 
-  public isHitAt(spherePos: Vector3): boolean {
-    // Is the unit vector to the point is perpendicular to the circle normal?
-    return Math.abs(spherePos.dot(this.ref.normalVector)) < 1e-2;
-    // if (!this.ref.isSegment) return true;
-    // tmpVec1.crossVectors(spherePos, this.start.positionOnSphere);
-    // tmpVec2.crossVectors(this.end.positionOnSphere, spherePos);
-    // return tmpVec1.angleTo(tmpVec2) < 1e-1;
+  public isHitAt(sphereVector: Vector3): boolean {
+    // Is the sphereVector is perpendicular to the line normal?
+    return Math.abs(sphereVector.dot(this.ref.normalVector)) < 1e-2;
   }
 
   public update(): void {

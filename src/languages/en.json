@@ -15,6 +15,7 @@
     "ResetSphereOrientation": "Press \"R\" to reset sphere orientation"
   },
   "buttons": {
+    "NoToolSelected": "No tool selected",
     "RotateDisplayedName": "Rotate",
     "RotateSphereToolTipMessage": "Rotate Sphere",
     "RotateSphereToolUseMessage": "Click and drag to rotate the sphere.",
@@ -26,7 +27,7 @@
     "PanZoomOutToolUseMessage": "Click to zoom out at the location of the mouse. Click and drag to pan the current view.",
     "MoveDisplayedName": "Move",
     "MoveObjectToolTipMessage": "Move object",
-    "MoveObjectToolUseMessage": "Click and drag an object to move it. Movable objects include labels, free points, and line segments with antipodal endpoings. Hold the SHIFT key to select from the back of the sphere.",
+    "MoveObjectToolUseMessage": "Click and drag an object to move it. Movable objects include labels, free points, and line segments with antipodal endpoints. Hold the SHIFT key to select from the back of the sphere.",
     "CreatePointDisplayedName": "Point",
     "CreatePointToolTipMessage": "Insert point",
     "CreatePointToolUseMessage": "Click to insert a free point.",

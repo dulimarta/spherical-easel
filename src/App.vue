@@ -20,12 +20,16 @@
 
       <div class="d-flex align-center">
         <router-link to="/">
-          <v-img alt="Spherical Easel Logo" class="shrink mr-2" contain
+          <v-img
+            alt="Spherical Easel Logo"
+            class="shrink mr-2"
+            contain
             src="../docs/.vuepress/public/SphericalEaselLogo.png"
-            transition="scale-transition" width="40" />
+            transition="scale-transition"
+            width="40"
+          />
         </router-link>
-        <v-toolbar-title>{{ $t("main.SphericalEaselMainTitle") }}
-        </v-toolbar-title>
+        <v-toolbar-title>{{ $t("main.SphericalEaselMainTitle") }}</v-toolbar-title>
         <v-tooltip left>
           <template v-slot:activator="{ on }">
             <a href="/docs">
@@ -56,9 +60,11 @@
     </v-main>
     <v-footer app color="accent" padless>
       <v-col class="text-center">
-        <span v-if="activeToolName">Current Tool:
-          {{$t(`buttons.${activeToolName}`)}}</span>
-        <span v-else>No tools selected</span>
+        <span v-if="activeToolName">
+          Current Tool:
+          {{$t(`buttons.${activeToolName}`)}}
+        </span>
+        <span v-else>{{$t(`buttons.NoToolSelected`)}}</span>
       </v-col>
     </v-footer>
   </v-app>
@@ -72,8 +78,7 @@
 import Vue from "vue";
 /* Import the custom components */
 import Component from "vue-class-component";
-import { State } from 'vuex-class';
-
+import { State } from "vuex-class";
 
 /* This allows for the State of the app to be initialized with in vuex store */
 /* TODO: What does this do? */
@@ -81,7 +86,7 @@ import { State } from 'vuex-class';
 @Component
 export default class App extends Vue {
   @State
-  activeToolName!: string
+  activeToolName!: string;
 
   mounted(): void {
     this.$store.commit("init");

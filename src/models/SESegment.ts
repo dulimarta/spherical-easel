@@ -22,7 +22,8 @@ export class SESegment extends SENodule implements Visitable {
   private _startPoint: SEPoint;
   /**
    * The model SE object that is the mid point of the segment on the unit ideal sphere
-   * IT IS NEVER DISPLAYED, but is need to smoothly update the segment
+   * It is only displayed if the user creates the midpoint of this segement with the MidPointTool
+   * This is need to smoothly update the segment
    */
   public _midPoint: SESegmentMidPoint;
   /**
@@ -31,32 +32,31 @@ export class SESegment extends SENodule implements Visitable {
   private _endPoint: SEPoint;
 
   /**
-   *
+   * Create a model SESegment using:
    * @param seg The plottable TwoJS Object associated to this object
-   * @param start The model object that is the start of the segment
-   * @param mid The model object this is the midpoint of the segment
-   * @param end The model object that is the end of the segment
+   * @param segmentStartPoint The model SEPoint object that is the start of the segment
+   * @param segmentMidPoint The model SESegmentMidPoint object this is the midpoint of the segment
+   * @param segmentEndPoint The model SEPoint object that is the end of the segment
    */
   constructor(
     seg: Segment,
-    start: SEPoint,
-    mid: SESegmentMidPoint,
-    end: SEPoint
+    segmentStartPoint: SEPoint,
+    segmentMidPoint: SESegmentMidPoint,
+    segmentEndPoint: SEPoint
   ) {
     super();
     this.ref = seg;
-    seg.owner = this;
-    this._startPoint = start;
-    this._midPoint = mid;
-    this._endPoint = end;
+    this._startPoint = segmentStartPoint;
+    this._midPoint = segmentMidPoint;
+    this._endPoint = segmentEndPoint;
 
     SEGMENT_COUNT++;
     this.name = `Ls-${SEGMENT_COUNT}`;
 
     // Place registerChild calls AFTER the name is set
     // so debugging output shows name correctly
-    start.registerChild(this);
-    end.registerChild(this);
+    segmentStartPoint.registerChild(this);
+    segmentEndPoint.registerChild(this);
   }
 
   accept(v: Visitor): void {

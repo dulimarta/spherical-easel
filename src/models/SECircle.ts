@@ -9,21 +9,34 @@ import SETTINGS from "@/global-settings";
 
 export class SECircle extends SENodule implements Visitable {
   /**
-   * The corresponding plottable TwoJS object
+   * The plottable (TwoJS) segment associated with this model segment
    */
   public ref!: Circle;
-  private centerAt: SEPoint;
-  private pointAt: SEPoint;
+  /**
+   * The model SE object that is the center of the circle
+   */
+  private centerSEPoint: SEPoint;
+  /**
+   * The model SE object that is on the circle
+   */
+  private circleSEPoint: SEPoint;
   // #region circleConstructor
-  constructor(c: Circle, centerPoint: SEPoint, edgePoint: SEPoint) {
+  /**
+   * Create a model SECircle using:
+   * @param circ The plottable TwoJS Object associated to this object
+   * @param centerPoint The model SEPoint object that is the center of the circle
+   * @param circlePoint The model SEPoint object that is on the circle
+   */
+  constructor(circ: Circle, centerPoint: SEPoint, circlePoint: SEPoint) {
     super();
-    this.centerAt = centerPoint;
-    this.pointAt = edgePoint;
-    this.ref = c;
+    this.ref = circ;
+    this.centerSEPoint = centerPoint;
+    this.circleSEPoint = circlePoint;
+
     CIRCLE_COUNT++;
     this.name = `C-${CIRCLE_COUNT}`;
     centerPoint.registerChild(this);
-    edgePoint.registerChild(this);
+    circlePoint.registerChild(this);
   }
   // #endregion circleConstructor
 
@@ -38,11 +51,11 @@ export class SECircle extends SENodule implements Visitable {
   }
 
   get centerPoint(): SEPoint {
-    return this.centerAt;
+    return this.centerSEPoint;
   }
 
   get circlePoint(): SEPoint {
-    return this.pointAt;
+    return this.circleSEPoint;
   }
 
   get radius(): number {
@@ -69,7 +82,7 @@ export class SECircle extends SENodule implements Visitable {
     // );
 
     this.ref.radius = newRadius;
-    this.ref.centerVector = this.centerAt.vectorPosition;
+    this.ref.centerVector = this.centerSEPoint.vectorPosition;
     this.setOutOfDate(false);
   }
 

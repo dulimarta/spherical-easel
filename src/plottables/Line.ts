@@ -13,9 +13,6 @@ const SUBDIVS = SETTINGS.line.numPoints;
  * @extends {Two.Group}
  */
 export default class Line extends Nodule {
-  // Declare owner as non-null, this field will be initialized by the associated owner
-  // public owner?: SELine | null = null;
-  // public name = "";
   private oldFrontStroke: Two.Color = "";
   private oldBackStroke: Two.Color = "";
   private normalDirection: Vector3;

@@ -14,9 +14,12 @@ const tmpVector2 = new Vector3();
 
 export class SESegmentMidPoint extends SEPoint {
   /**
-   * The (model) start and end SEPoints of the line segment
+   * The (model) start SEPoint of the line segment
    */
   private startSEPoint: SEPoint;
+  /**
+   * The (model) end SEPoint of the line segment
+   */
   private endSEPoint: SEPoint;
 
   /**
@@ -24,23 +27,36 @@ export class SESegmentMidPoint extends SEPoint {
    */
   private longerThanPi = false;
   /**
-   * Flag set if the startSEPoint and the ednSEPoint are nearly antipodal
+   * Flag set if the startSEPoint and the endSEPoint are nearly antipodal
    */
   private nearlyAntipodal = false;
 
-  /** Temporary midVector */
-  private tempMidVector = new Vector3(); // This holds a candidate midpoint vector to see so that if updating the segment moves the midpoint too much
+  /**
+   * Temporary midVector
+   * This holds a candidate midpoint vector to see so that if updating the segment moves the midpoint too much
+   */
+  private tempMidVector = new Vector3(); //
 
-  constructor(p: Point, segmentStartPoint: SEPoint, segmentEndPoint: SEPoint) {
-    super(p);
-    this.name = `MidPointSegment (${segmentStartPoint.name},${segmentEndPoint.name})`;
+  /**
+   * Create a model SESegmentMidPoint using:
+   * @param pt The plottable TwoJS Object associated to this object
+   * @param segmentStartSEPoint The model SEPoint object that is the start of the segment
+   * @param segmentEndSEPoint The model SEPoint object that is the end of the segment
+   */
+  constructor(
+    pt: Point,
+    segmentStartSEPoint: SEPoint,
+    segmentEndSEPoint: SEPoint
+  ) {
+    super(pt);
+    this.name = `MidPointSegment (${segmentStartSEPoint.name},${segmentEndSEPoint.name})`;
     // Place registerChild calls AFTER the name is set
     // so debugging output shows name correctly
-    this.startSEPoint = segmentStartPoint;
-    this.endSEPoint = segmentEndPoint;
+    this.startSEPoint = segmentStartSEPoint;
+    this.endSEPoint = segmentEndSEPoint;
 
-    segmentStartPoint.registerChild(this);
-    segmentEndPoint.registerChild(this);
+    segmentStartSEPoint.registerChild(this);
+    segmentEndSEPoint.registerChild(this);
 
     // Segment midpoints set invisible, unless constructed by the midPoint tool
     this.setShowing(false);
@@ -57,6 +73,7 @@ export class SESegmentMidPoint extends SEPoint {
     }
     console.debug("Updating midpoint of segment", this.name);
 
+    // check to see if the start and end point are even close to antipodal. To see if longerThanPi or nearlyAntipodal should change.
     if (
       this.startSEPoint.vectorPosition.angleTo(this.endSEPoint.vectorPosition) >
       2

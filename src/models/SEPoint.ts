@@ -17,11 +17,14 @@ export class SEPoint extends SENodule implements Visitable {
    */
   protected vectorLocation = new Vector3();
 
+  /**
+   * Create a model SEPoint using:
+   * @param p The plottable TwoJS Object associated to this object
+   */
   constructor(p: Point) {
     super();
     /* Establish the link between this abstract object on the fixed unit sphere
     and the object that helps create the corresponding renderable object  */
-    // p.owner = this; // Make the SEPoint object the owner of the Point
     this.ref = p;
     POINT_COUNT++;
     this.name = `P-${POINT_COUNT}`;

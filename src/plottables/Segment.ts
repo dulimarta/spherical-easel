@@ -28,6 +28,13 @@ export default class Segment extends Nodule {
   public end: Vector3;
   /** A vector perpendicular to the plane containing the segment (unit vector)*/
   public normalDirection: Vector3;
+
+  /**
+   * NOTE: Once the above four variables are set, the updateDisplay() will correctly render the segment.
+   * These are the only four pieces of information that are need to do the rendering. All other
+   * calculations in this class are only for the purpose of rendering the segment.
+   */
+
   /** The arc length of the segment*/
   private arcLen = 0;
 

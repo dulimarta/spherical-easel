@@ -16,7 +16,7 @@ export enum DisplayStyle {
  */
 export default abstract class Nodule implements Stylable, Resizeable {
   // Declare owner, this field will be initialized by the associated owner of the plottable Nodule
-  public owner!: SENodule;
+  // public owner!: SENodule;
   public name!: string;
 
   /**

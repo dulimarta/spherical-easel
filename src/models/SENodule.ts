@@ -4,10 +4,14 @@ import { SEPoint } from "./SEPoint";
 
 let NODE_COUNT = 0;
 export abstract class SENodule {
-  /* An array to store the parents of the node (i.e. the objects that this node depends on)*/
-
+  /**
+   * An array to store the parents of the node (i.e. the objects that this node depends on)
+   */
   protected _parents: SENodule[] = [];
-  /* An array to store the kids of the node (i.e. the objects that depend on this node)*/
+
+  /**
+   * An array to store the kids of the node (i.e. the objects that depend on this node)
+   */
   protected kids: SENodule[] = [];
 
   /* A unique identification number for each node */
