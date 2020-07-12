@@ -72,7 +72,7 @@ export default class CircleHandler extends Highlighter {
       // Move the startmarker to the current mouse location
       this.startMarker.positionVector = this.currentSphereVector;
       // Set the center of the circle in the plottable object - also calls temporaryCircle.readjust()
-      this.temporaryCircle.centerVector = this.currentSphereVector;
+      this.temporaryCircle.centerPosition = this.currentSphereVector;
     }
   }
 
@@ -92,11 +92,11 @@ export default class CircleHandler extends Highlighter {
           this.endMarker.addToLayers(this.layers);
         }
         //compute the radius of the temporary circle
-        this.arcRadius = this.temporaryCircle.centerVector.angleTo(
+        this.arcRadius = this.temporaryCircle.centerPosition.angleTo(
           this.currentSphereVector
         );
         // Set the radius of the temporary circle - also calls temporaryCircle.readjust()
-        this.temporaryCircle.radius = this.arcRadius;
+        this.temporaryCircle.circleRadius = this.arcRadius;
         // Move the endmarker to the current mouse location
         this.endMarker.positionVector = this.currentSphereVector;
       }
@@ -176,12 +176,18 @@ export default class CircleHandler extends Highlighter {
       this.centerSEPoint = newSECenterPoint;
       circleGroup.addCommand(new AddPointCommand(newSECenterPoint));
     } else if (this.centerSEPoint instanceof SEIntersectionPoint) {
+      // Show the point that the user started with
       circleGroup.addCommand(new ShowPointCommand(this.centerSEPoint));
+      // Mark the intersection point as created
+      this.centerSEPoint.userCreated = true;
     }
     if (this.hitPoints.length > 0) {
       this.circleSEPoint = this.hitPoints[0];
       if (this.circleSEPoint instanceof SEIntersectionPoint) {
+        // Show the point that the user started with
         circleGroup.addCommand(new ShowPointCommand(this.circleSEPoint));
+        // Mark the intersection point as created
+        this.circleSEPoint.userCreated = true;
       }
     } else {
       // endPoint landed on an open space
@@ -208,7 +214,7 @@ export default class CircleHandler extends Highlighter {
     // Generate new intersection points. These points must be computed and created
     // in the store. Add the new created points to the circle command so they can be undone.
     this.store.getters
-      .determineIntersectionsWithCircle(newSECircle)
+      .createAllIntersectionsWithCircle(newSECircle)
       .forEach((p: SEIntersectionPoint) => {
         p.setShowing(false);
         circleGroup.addCommand(new AddPointCommand(p));

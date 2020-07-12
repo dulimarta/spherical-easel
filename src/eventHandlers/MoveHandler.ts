@@ -145,6 +145,7 @@ export default class MoveHandler extends Highlighter {
     // If the ctrlKey Is press translate the segment in the direction of previousSphereVector
     //  to currentSphereVector (i.e. just rotate the segment)
     if (ctrlKeyPressed) {
+      console.log("rotate");
       rotationAngle = this.previousSphereVector.angleTo(
         this.currentSphereVector
       );
@@ -172,6 +173,7 @@ export default class MoveHandler extends Highlighter {
         targetLine.startPoint.update();
       }
     } else {
+      console.log("pivot");
       let pivot = targetLine.startPoint;
       let freeEnd = targetLine.endPoint;
       if (altKeyPressed) {
@@ -211,8 +213,6 @@ export default class MoveHandler extends Highlighter {
       freeEnd.vectorPosition = tmpVector1;
       freeEnd.update();
     }
-
-    this.recalculateIntersections(targetLine);
   }
 
   /**
@@ -257,7 +257,6 @@ export default class MoveHandler extends Highlighter {
       // Update both points, because we might need to update their kids!
       targetCircle.circlePoint.update();
       targetCircle.centerPoint.update();
-      this.recalculateIntersections(targetCircle);
     }
   }
 
@@ -285,59 +284,59 @@ export default class MoveHandler extends Highlighter {
     }
   }
 
-  private recalculateIntersections(
-    target: SELine | SESegment | SECircle
-  ): void {
-    // Determine the current set of intersection points on this target object
-    const currentIntersections = target.children
-      .filter((n: SENodule) => {
-        return n instanceof SEIntersectionPoint;
-      })
-      .flatMap((n: SENodule) => n as SEIntersectionPoint);
+  // private recalculateIntersections(
+  //   target: SELine | SESegment | SECircle
+  // ): void {
+  //   // Determine the current set of intersection points on this target object
+  //   const currentIntersections = target.children
+  //     .filter((n: SENodule) => {
+  //       return n instanceof SEIntersectionPoint;
+  //     })
+  //     .flatMap((n: SENodule) => n as SEIntersectionPoint);
 
-    // Determine the new set intersection points
-    let newIntersections: SEIntersectionPoint[];
-    if (target instanceof SELine)
-      newIntersections = this.store.getters.determineIntersectionsWithLine(
-        target
-      );
-    else if (target instanceof SESegment)
-      newIntersections = this.store.getters.determineIntersectionsWithSegment(
-        target
-      );
-    else
-      newIntersections = this.store.getters.determineIntersectionsWithCircle(
-        target
-      );
+  //   // Determine the new set intersection points
+  //   let newIntersections: SEIntersectionPoint[];
+  //   if (target instanceof SELine)
+  //     newIntersections = this.store.getters.determineIntersectionsWithLine(
+  //       target
+  //     );
+  //   else if (target instanceof SESegment)
+  //     newIntersections = this.store.getters.determineIntersectionsWithSegment(
+  //       target
+  //     );
+  //   else
+  //     newIntersections = this.store.getters.determineIntersectionsWithCircle(
+  //       target
+  //     );
 
-    // newIntersections.forEach((x: SEIntersectionPoint, pos: number) => {
-    //   console.debug(`New intersection ${pos}: ${x.name}`);
-    // });
-    currentIntersections.forEach((current: SEIntersectionPoint) => {
-      // Locate matching intersections by comparing their names
-      const pos = newIntersections.findIndex(
-        (incoming: SEIntersectionPoint) => current.name === incoming.name
-      );
-      if (pos >= 0) {
-        // Use the new coordinates of the incoming intersection point
-        // to update the current one
-        current.vectorPosition.copy(newIntersections[pos].vectorPosition);
-        current.update();
+  //   // newIntersections.forEach((x: SEIntersectionPoint, pos: number) => {
+  //   //   console.debug(`New intersection ${pos}: ${x.name}`);
+  //   // });
+  //   currentIntersections.forEach((current: SEIntersectionPoint) => {
+  //     // Locate matching intersections by comparing their names
+  //     const pos = newIntersections.findIndex(
+  //       (incoming: SEIntersectionPoint) => current.name === incoming.name
+  //     );
+  //     if (pos >= 0) {
+  //       // Use the new coordinates of the incoming intersection point
+  //       // to update the current one
+  //       current.vectorPosition.copy(newIntersections[pos].vectorPosition);
+  //       current.update();
 
-        // Remove matching incoming points so after this forEach loop
-        // is over non-matching incoming points are new intersections to add
-        newIntersections[pos].removeSelfSafely();
-        newIntersections.splice(pos, 1);
-      } else {
-        // The current point is disappearing
-        this.store.commit("removePoint", current.id);
-      }
-    });
+  //       // Remove matching incoming points so after this forEach loop
+  //       // is over non-matching incoming points are new intersections to add
+  //       newIntersections[pos].removeSelfSafely();
+  //       newIntersections.splice(pos, 1);
+  //     } else {
+  //       // The current point is disappearing
+  //       this.store.commit("removePoint", current.id);
+  //     }
+  //   });
 
-    // After matching intersection points are removed the remaining points
-    // should be new appearing intersections
-    newIntersections.forEach((x: SEIntersectionPoint) => {
-      this.store.commit("addPoint", x);
-    });
-  }
+  //   // After matching intersection points are removed the remaining points
+  //   // should be new appearing intersections
+  //   newIntersections.forEach((x: SEIntersectionPoint) => {
+  //     this.store.commit("addPoint", x);
+  //   });
+  // }
 }

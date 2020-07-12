@@ -20,7 +20,7 @@ export default class Point extends Nodule {
    * The vector location of the Point on the default sphere
    * The location vector in the Default Screen Plane
    * It will always be the case the x and y coordinates of these two vectors are the same.
-   * The z coordinate indicates if the Point is on the back of the sphere
+   * The sign of the z coordinate indicates if the Point is on the back of the sphere
    */
   public vectorLocation = new Vector3(1, 0, 0);
   public defaultScreenVectorLocation = new Two.Vector(1, 0);
@@ -99,12 +99,6 @@ export default class Point extends Nodule {
     this.vectorLocation
       .copy(idealUnitSphereVectorLocation)
       .multiplyScalar(SETTINGS.boundaryCircle.radius);
-    // Set the style based on the z-coordinate of the position
-    if (idealUnitSphereVectorLocation.z < 0) {
-      this.backNormalDisplay();
-    } else {
-      this.frontNormalDisplay();
-    }
     // Translate the whole group (i.e. all points front/back/glowing/drawn) to the new center vector
     this.defaultScreenVectorLocation.set(
       this.vectorLocation.x,
@@ -193,7 +187,7 @@ export default class Point extends Nodule {
     this.glowingBackPoint.remove();
   }
 
-  public update(): void {
+  public updateDisplay(): void {
     this.normalDisplay();
   }
 

@@ -35,20 +35,11 @@ export class SECircle extends SENodule implements Visitable {
 
     CIRCLE_COUNT++;
     this.name = `C-${CIRCLE_COUNT}`;
+    // Always register the children after the name is initialized
     centerPoint.registerChild(this);
     circlePoint.registerChild(this);
   }
   // #endregion circleConstructor
-
-  set normalDirection(v: Vector3) {
-    this.ref.centerVector = v;
-  }
-
-  /* On a unit sphere the coordinates of a point is also the normal vector
-   *of the sphere at that point */
-  get normalDirection(): Vector3 {
-    return this.ref.centerVector;
-  }
 
   get centerPoint(): SEPoint {
     return this.centerSEPoint;
@@ -59,30 +50,35 @@ export class SECircle extends SENodule implements Visitable {
   }
 
   get radius(): number {
-    return this.ref.radius;
+    return this.circleSEPoint.vectorPosition.angleTo(
+      this.centerSEPoint.vectorPosition
+    );
   }
+
   public isHitAt(spherePos: Vector3): boolean {
-    const angleToCenter = spherePos.angleTo(this.normalDirection);
+    const angleToCenter = spherePos.angleTo(this.centerSEPoint.vectorPosition);
     return (
       Math.abs(angleToCenter - this.radius) < SETTINGS.circle.hitIdealDistance
     );
   }
 
   public update(): void {
-    this.ref.centerVector = this.centerPoint.vectorPosition;
-
-    const newRadius = this.centerPoint.vectorPosition.angleTo(
-      this.circlePoint.vectorPosition
-    );
-    // console.debug(
-    //   "Must update SECircle radius to",
-    //   newRadius.toDegrees().toFixed(2),
-    //   "center to",
-    //   this.centerPoint.positionOnSphere.toFixed(2)
-    // );
-
-    this.ref.radius = newRadius;
-    this.ref.centerVector = this.centerSEPoint.vectorPosition;
+    if (!this.canUpdateNow()) {
+      return;
+    }
+    this.setOutOfDate(false);
+    this.exists =
+      this.centerSEPoint.getExists() && this.circleSEPoint.getExists();
+    if (this.exists) {
+      //update the centerVector and the radius
+      const newRadius = this.centerSEPoint.vectorPosition.angleTo(
+        this.circleSEPoint.vectorPosition
+      );
+      this.ref.circleRadius = newRadius;
+      this.ref.centerPosition = this.centerSEPoint.vectorPosition;
+      // display the new circle with the updated values
+      this.ref.updateDisplay();
+    }
     this.setOutOfDate(false);
   }
 

@@ -4,11 +4,8 @@ import { Vector3 } from "three";
 import { Visitable } from "@/visitors/Visitable";
 import { Visitor } from "@/visitors/Visitor";
 import { SEPoint } from "./SEPoint";
-import { SESegmentMidPoint } from "./SESegmentMidPoint";
 import SETTINGS from "@/global-settings";
 
-const tmpVec1 = new Vector3();
-const tmpVec2 = new Vector3();
 let SEGMENT_COUNT = 0;
 
 export class SESegment extends SENodule implements Visitable {
@@ -19,190 +16,204 @@ export class SESegment extends SENodule implements Visitable {
   /**
    * The model SE object that is the start of the segment
    */
-  private _startPoint: SEPoint;
-  /**
-   * The model SE object that is the mid point of the segment on the unit ideal sphere
-   * It is only displayed if the user creates the midpoint of this segement with the MidPointTool
-   * This is need to smoothly update the segment
-   */
-  public _midPoint: SESegmentMidPoint;
+  private startSEPoint: SEPoint;
+
   /**
    * The model SE object that is the end of the segment
    */
-  private _endPoint: SEPoint;
+  private endSEPoint: SEPoint;
+
+  /**
+   * The Vector3 normal to the plane containing the segment.
+   * NOTE: normalVector x startVector give the direction in which the segment is drawn
+   */
+  private normalVector = new Vector3();
+  /**
+   * The arcLength of the segment
+   */
+  private arcLength = 0;
+
+  /**
+   * To update from one position to another (i.e. from one update() to the next), we need to remember if the
+   * SEEndPoint were nearlyAntipodal or not. See "Right here is why we need this from one update to the next!" in the
+   * comments below.
+   */
+  private nearlyAntipodal = false;
+  /**
+   * Temporary vector to help with calculations
+   */
+  private tmpVector = new Vector3();
 
   /**
    * Create a model SESegment using:
-   * @param seg The plottable TwoJS Object associated to this object
-   * @param segmentStartPoint The model SEPoint object that is the start of the segment
-   * @param segmentMidPoint The model SESegmentMidPoint object this is the midpoint of the segment
-   * @param segmentEndPoint The model SEPoint object that is the end of the segment
+   * @param seg  The plottable TwoJS Object associated to this object
+   * @param segmentStartSEPoint The model SEPoint object that is the start of the segment
+   * @param segmentNormalVector The vector3 that is perpendicular to the plane containing the segment
+   * @param segmentArcLength The arcLength number of the segment
+   * @param segmentEndSEPoint The model SEPoint object that is the end of the segment
    */
   constructor(
     seg: Segment,
-    segmentStartPoint: SEPoint,
-    segmentMidPoint: SESegmentMidPoint,
-    segmentEndPoint: SEPoint
+    segmentStartSEPoint: SEPoint,
+    segmentNormalVector: Vector3,
+    segmentArcLength: number,
+    segmentEndSEPoint: SEPoint
   ) {
     super();
     this.ref = seg;
-    this._startPoint = segmentStartPoint;
-    this._midPoint = segmentMidPoint;
-    this._endPoint = segmentEndPoint;
+    this.startSEPoint = segmentStartSEPoint;
+    this.normalVector.copy(segmentNormalVector);
+    this.arcLength = segmentArcLength;
+    this.endSEPoint = segmentEndSEPoint;
 
     SEGMENT_COUNT++;
     this.name = `Ls-${SEGMENT_COUNT}`;
 
     // Place registerChild calls AFTER the name is set
     // so debugging output shows name correctly
-    segmentStartPoint.registerChild(this);
-    segmentEndPoint.registerChild(this);
+    segmentStartSEPoint.registerChild(this);
+    segmentEndSEPoint.registerChild(this);
   }
 
   accept(v: Visitor): void {
     v.actionOnSegment(this);
   }
 
-  get startPoint(): SEPoint {
-    return this._startPoint;
-  }
+  // get startPoint(): SEPoint {
+  //   return this.startSEPoint;
+  // }
 
-  get endPoint(): SEPoint {
-    return this._endPoint;
-  }
-  get midPoint(): SESegmentMidPoint {
-    return this._midPoint;
-  }
+  // get endPoint(): SEPoint {
+  //   return this.endSEPoint;
+  // }
 
   get normalDirection(): Vector3 {
-    return tmpVec1
-      .crossVectors(
-        this.startPoint.vectorPosition,
-        this.midPoint.vectorPosition
-      )
-      .normalize();
+    return this.normalVector;
   }
+
+  // get length(): number {
+  //   return this.arcLength;
+  // }
 
   public isHitAt(unitIdealVector: Vector3): boolean {
     // Is the unitIdealVector is perpendicular to the normal to the plane containing the segment?
-    tmpVec1
-      .crossVectors(
-        this.startPoint.vectorPosition,
-        this.midPoint.vectorPosition
-      )
-      .normalize();
-    if (Math.abs(unitIdealVector.dot(tmpVec1)) > 1e-2) return false;
+    if (Math.abs(unitIdealVector.dot(this.normalVector)) > 1e-2) return false;
 
     // Is the unitIdealVector inside the radius arcLength/2 circle about the midVector?
+    // NOTE: normalVector x startVector give the direction in which the segment is drawn
+    const to = new Vector3();
+    to.crossVectors(this.normalVector, this.startSEPoint.vectorPosition);
+    // midVector = tmpVector = cos(arcLength/2)*start + sin(arcLength/2)*to
+    this.tmpVector
+      .copy(this.startSEPoint.vectorPosition)
+      .multiplyScalar(Math.cos(this.arcLength / 2));
+    this.tmpVector.addScaledVector(to, Math.sin(this.arcLength / 2));
     return (
-      this.midPoint.vectorPosition.angleTo(unitIdealVector) <
-      (this.startPoint.vectorPosition.angleTo(this.midPoint.vectorPosition) +
-        this.midPoint.vectorPosition.angleTo(this.endPoint.vectorPosition)) /
-        2 +
-        SETTINGS.segment.hitIdealDistance
+      this.tmpVector.angleTo(unitIdealVector) <
+      this.arcLength / 2 + SETTINGS.segment.hitIdealDistance
     );
   }
-
-  public isPositionInsideArc(unitIdealVector: Vector3): boolean {
-    // Is the point between start and mid?
-    let angle1;
-    let angle2;
-    tmpVec1
-      .crossVectors(this.startPoint.vectorPosition, unitIdealVector)
-      .normalize();
-    angle1 =
-      this.startPoint.vectorPosition.angleTo(unitIdealVector) *
-      Math.sign(tmpVec1.z);
-    tmpVec2
-      .crossVectors(unitIdealVector, this.midPoint.vectorPosition)
-      .normalize();
-    angle2 =
-      unitIdealVector.angleTo(this.midPoint.vectorPosition) *
-      Math.sign(tmpVec2.z);
-    console.log("Start", this.startPoint.vectorPosition.toFixed(2));
-    console.log("Mid", this.midPoint.vectorPosition.toFixed(2));
-    console.log(
-      tmpVec2
-        .copy(this.startPoint.vectorPosition)
-        .add(this.endPoint.vectorPosition)
-        .normalize()
-        .toFixed(2)
-    );
-    console.log("End", this.endPoint.vectorPosition.toFixed(2));
-    console.log(
-      "a1",
-      angle1,
-      "a2",
-      angle2,
-      "sum",
-      angle1 + angle2,
-      this.ref.arcLength / 2
-    );
-
-    if (
-      Math.sign(angle1) === Math.sign(angle2) &&
-      Math.abs(angle1 + angle2) - this.ref.arcLength / 2 < 0.1
-    ) {
-      return true;
-    }
-
-    // Is the point between mid and end?
-    tmpVec1
-      .crossVectors(this.midPoint.vectorPosition, unitIdealVector)
-      .normalize();
-    angle1 =
-      this.midPoint.vectorPosition.angleTo(unitIdealVector) *
-      Math.sign(tmpVec1.z);
-    tmpVec2
-      .crossVectors(unitIdealVector, this.endPoint.vectorPosition)
-      .normalize();
-    angle2 =
-      unitIdealVector.angleTo(this.endPoint.vectorPosition) *
-      Math.sign(tmpVec2.z);
-    return (
-      Math.sign(angle1) === Math.sign(angle2) &&
-      Math.abs(angle1 + angle2) - this.ref.arcLength / 2 < 0.1
-    );
-  }
-
-  // public isHitAt(spherePos: Vector3): boolean {
-  //   // Is the spherePos close to the plane containing the segment?
-  //   //  Is the angle between the normal vector to the segment and the spherePos close to Pi/2?
-  //   //  That is, is the cos(angle) close to zero?
-  //   if (
-  //     Math.abs(spherePos.dot(this.ref.normalVector)) >
-  //     SETTINGS.segment.hitIdealDistance
-  //   )
-  //     return false;
-  //   // If the code is here spherePos is close to the plane containing the segment
-  //   //  Is it close the line segment which may be longer or shorter than Pi?
-  //   //  Is the angle from the midPoint vector to the spherePos less than 1/2(arcLength + wiggle room)
-  //   return (
-  //     2 * spherePos.angleTo(this.ref.midVector) - this.ref.arcLength() <
-  //     SETTINGS.segment.hitIdealDistance
-  //   );
-  // }
 
   public update(): void {
     if (!this.canUpdateNow()) {
       return;
     }
-    console.debug("Updating segment", this.name);
-
-    // set the start, end, mid and normal vectors in the plottable object
-    this.ref.startVector = this.startPoint.vectorPosition;
-    this.ref.midVector = this.midPoint.vectorPosition;
-    this.ref.normalDirection = tmpVec1
-      .crossVectors(
-        this.startPoint.vectorPosition,
-        this.midPoint.vectorPosition
-      )
-      .normalize();
-    this.ref.endVector = this.endPoint.vectorPosition;
-    // update the display of the segment now that the four vectors are set
-    this.ref.updateDisplay();
-
     this.setOutOfDate(false);
+    this.exists = this.startSEPoint.getExists() && this.endSEPoint.getExists();
+    if (this.exists) {
+      console.debug("Updating segment", this.name);
+
+      //////////////// This is  essentially setArcLengthAndNormalVector from segmentHandler/////////////////
+      // Compute the normal vector from the this.startVector, the (old) normal vector and this.endVector
+      // Compute a temporary normal from the two points' vectors
+      this.tmpVector
+        .crossVectors(
+          this.startSEPoint.vectorPosition,
+          this.endSEPoint.vectorPosition
+        )
+        .normalize();
+      // Check to see if the temporary normal is zero (i.e the start and end vectors are parallel -- ether
+      // nearly antipodal or in the same direction)
+      if (SENodule.isZero(this.tmpVector)) {
+        if (this.normalVector.length() == 0) {
+          // The normal vector is still at its initial value so can't be used to compute the next normal, so set the
+          // the normal vector to an arbitrarily chosen vector perpendicular to the start vector
+          this.tmpVector.set(1, 0, 0);
+          this.tmpVector.crossVectors(
+            this.startSEPoint.vectorPosition,
+            this.tmpVector
+          );
+          if (SENodule.isZero(this.tmpVector)) {
+            this.tmpVector.set(0, 1, 0);
+            // The cross or startVector and (1,0,0) and (0,1,0) can't *both* be zero
+            this.tmpVector.crossVectors(
+              this.startSEPoint.vectorPosition,
+              this.tmpVector
+            );
+          }
+        } else {
+          // The start and end vectors align, compute  the next normal vector from the old normal and the start vector
+          this.tmpVector.crossVectors(
+            this.startSEPoint.vectorPosition,
+            this.normalVector
+          );
+          this.tmpVector.crossVectors(
+            this.tmpVector,
+            this.startSEPoint.vectorPosition
+          );
+        }
+      }
+      // The normal vector is now set
+      this.normalVector.copy(this.tmpVector).normalize();
+
+      // Record if the previous segment was longThanPi
+      let longerThanPi = this.arcLength > Math.PI;
+
+      // Set the arc length of the segment temporarily to the angle between start and end vectors (always less than Pi)
+      this.arcLength = this.startSEPoint.vectorPosition.angleTo(
+        this.endSEPoint.vectorPosition
+      );
+
+      // Check to see if the longThanPi variable needs updating.
+      // First see if start and end vectors are even close to antipodal (which is when longerThanPi and nearly antipodal might need updating)
+      if (
+        this.startSEPoint.vectorPosition.angleTo(
+          this.endSEPoint.vectorPosition
+        ) > 2
+      ) {
+        // The startVector and endVector might be antipodal proceed with caution,
+        // Set tmpVector to the antipode of the start Vector
+        this.tmpVector
+          .copy(this.startSEPoint.vectorPosition)
+          .multiplyScalar(-1);
+        // Check to see if the pixel distance (in the default screen plane)
+        if (
+          this.tmpVector.angleTo(this.endSEPoint.vectorPosition) *
+            SETTINGS.boundaryCircle.radius <
+          SETTINGS.nearlyAntipodalPixel
+        ) {
+          // The points are antipodal on the screen
+          this.nearlyAntipodal = true;
+        } else {
+          // Right here is why we need this from one update to the next!
+          if (this.nearlyAntipodal) {
+            longerThanPi = !longerThanPi;
+          }
+          this.nearlyAntipodal = false;
+        }
+      }
+      // Now longerThanPi is correctly set, update the arcLength based on it
+      if (longerThanPi) {
+        this.arcLength = 2 * Math.PI - this.arcLength;
+      }
+
+      ////////////////////////////////////////////////////////////////////////////////////////
+      this.ref.startVector = this.startSEPoint.vectorPosition;
+      this.ref.length = this.arcLength;
+      this.ref.normalVector = this.normalVector;
+      // update the display of the segment now that the start, normal vectors and arcLength are set
+      this.ref.updateDisplay();
+    }
     this.updateKids();
   }
 }

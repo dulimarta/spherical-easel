@@ -37,6 +37,8 @@ export class SEPoint extends SENodule implements Visitable {
     }
     //Update the location of the associate plottable Point
     this.ref.positionVector = this.vectorLocation;
+    //Redraw the point
+    this.ref.updateDisplay();
 
     this.setOutOfDate(false);
     this.updateKids();

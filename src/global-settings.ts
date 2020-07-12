@@ -1,5 +1,7 @@
 export default {
-  nearlyAntipodal: 0.01, // Two unit vectors, U and V, are nearly antipodal if |U+V| < nearlyAntipodal
+  nearlyAntipodalIdeal: 0.01, // Two unit vectors, U and V, are nearly antipodal if |U+V| < nearlyAntipodalIdeal
+  nearlyAntipodalPixel: 3, // Two vectors on the default sphere, U and V, are nearly antipodal if |U+V| < nearlyAntipodalPixel
+  tolerance: 0.0000001, // Any number less that this tolerance is considered zero
   contrast: 0.5, //The number that controls the automatic setting of the back styling for objects that have dynamicBackStyle set to true.
   zoom: {
     maxMagnification: 10, // The greatest zoom in magnification factor
@@ -88,7 +90,7 @@ export default {
   },
   segment: {
     minimumArcLength: 0.02, // Don't create segments with a length less than this
-    midPointMovementThreshold: (2.0 * Math.PI) / 180, // If the midpoint of a segment being moved or created, changes by more than this amount, handle that case separately.
+    midPointMovementThreshold: (2.0 * Math.PI) / 180, // If the midpoint of a segment being created (not moved), changes by more than this amount, handle that case separately.
     numPoints: 20, // The number of vertices used to render the segment. These are spread over the front and back parts. MAKE THIS EVEN!
     hitPixelDistance: 8, //When a pixel distance between a mouse event and the pixel coords of a line is less than this number, it is hit
     hitIdealDistance: 0.02, // The user has to be within this distance on the ideal unit sphere to select the line.
@@ -152,7 +154,7 @@ export default {
   },
   line: {
     minimumLength: 0.02, // Don't create lines with arc length  smaller than this
-
+    normalVectorMovementThreshold: (2.0 * Math.PI) / 180, // If the normal vector of a line being created (not moved), changes by more than this amount, handle that case separately.
     numPoints: 50, // The number of vertices used to render the line. These are spread over the front and back parts. MAKE THIS EVEN!
     hitPixelDistance: 8, //When a pixel distance between a mouse event and the pixel coords of a line is less than this number, it is hit
     hitIdealDistance: 0.02, // The user has to be within this distance on the ideal unit sphere to select the line.

@@ -7,6 +7,7 @@ import { SECircle } from "@/models/SECircle";
 import { SESegment } from "@/models/SESegment";
 import { SENodule } from "@/models/SENodule";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
+import { Vector3 } from "three";
 
 export interface Selectable {
   hit(x: number, y: number, coord: unknown, who: unknown): boolean;
@@ -37,4 +38,9 @@ export interface ToolButtonType {
   toolGroup: string;
   toolUseMessage: string;
   toolTipMessage: string;
+}
+
+export interface IntersectionReturnType {
+  vector: Vector3;
+  exists: boolean;
 }

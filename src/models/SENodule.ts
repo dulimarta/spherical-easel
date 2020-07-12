@@ -1,5 +1,6 @@
 import { Vector3 } from "three";
 import { SEPoint } from "./SEPoint";
+import SETTINGS from "@/global-settings";
 // import { SESegmentMidPoint } from "./SESegmentMidPoint";
 
 let NODE_COUNT = 0;
@@ -27,13 +28,13 @@ export abstract class SENodule {
         far apart and the intersections don't exist, the user might drag the circles back to where
         the intersections exist). If an object doesn't exist then all of the objects that are 
         descendants of the object don't exist. */
-  private exists = true;
+  protected exists = true;
 
   /* If the object is not visible then showing = true (The user can hide objects)*/
-  private showing = true;
+  protected showing = true;
 
   /* This boolean is set to indicate that the object is out of date and needs to be updated. */
-  private outOfDate = false;
+  protected outOfDate = false;
 
   /* Marks all descendants (kids, grand kids, etc.) of the current SENodule out of date */
   public markKidsOutOfDate(): void {
@@ -191,6 +192,21 @@ export abstract class SENodule {
   //Getters and Setters
   public getExists(): boolean {
     return this.exists;
+  }
+
+  /**
+   * Returns false if any one of the three components of vec are bigger than SETTINGS.tolerance
+   * @param vec Vector3
+   */
+  static isZero(vec: Vector3): boolean {
+    if (
+      Math.abs(vec.x) > SETTINGS.tolerance ||
+      Math.abs(vec.y) > SETTINGS.tolerance ||
+      Math.abs(vec.z) > SETTINGS.tolerance
+    ) {
+      return false;
+    }
+    return true;
   }
 
   public setExist(b: boolean): void {

@@ -3,40 +3,30 @@ import Two from "two.js";
 import SETTINGS, { LAYER } from "@/global-settings";
 import Nodule, { DisplayStyle } from "./Nodule";
 
+// The number of vectors used to render the one part of the segment (like the frontPart, frontExtra, etc.)
 const SUBDIVS = SETTINGS.segment.numPoints;
-
-// Temporary ThreeJS objects for computing
-const tmpMatrix = new Matrix4();
-const tmpVector1 = new Vector3();
-const tmpVector2 = new Vector3();
-const desiredXAxis = new Vector3();
-const desiredYAxis = new Vector3();
 
 /**
  * A line segment
  *
  * @export
  * @class Segment
- * @extends {Two.Group}
+ * @extends Nodule
  */
 export default class Segment extends Nodule {
   /** The start vector of the segment on the unit Sphere*/
-  public start: Vector3;
-  /** The midpoint vector of the segment on the unit Sphere */
-  public mid: Vector3;
-  /** The end vector of the segment on the unit Sphere*/
-  public end: Vector3;
-  /** A vector perpendicular to the plane containing the segment (unit vector)*/
-  public normalDirection: Vector3;
-
+  public start = new Vector3();
+  /** A vector perpendicular to the plane containing the segment (unit vector)
+   * NOTE: normal x start gives the direction in which the segment is drawn
+   */
+  public normal = new Vector3();
+  /** The arc length of the segment*/
+  private arcLength = 0;
   /**
-   * NOTE: Once the above four variables are set, the updateDisplay() will correctly render the segment.
-   * These are the only four pieces of information that are need to do the rendering. All other
+   * NOTE: Once the above three variables are set, the updateDisplay() will correctly render the segment.
+   * These are the only pieces of information that are need to do the rendering. All other
    * calculations in this class are only for the purpose of rendering the segment.
    */
-
-  /** The arc length of the segment*/
-  private arcLen = 0;
 
   /** A temporary matrix maps a segment in standard position to the current position so we can determine which points are on the back and which are on the front*/
   private transformMatrix = new Matrix4();
@@ -86,10 +76,20 @@ export default class Segment extends Nodule {
       )
     : SETTINGS.segment.drawn.dashArray.offset.back;
 
-  constructor(start?: Vector3, mid?: Vector3, end?: Vector3) {
-    // Name the segment and initialize the Two.Group
+  // Temporary ThreeJS objects for computing
+  private tmpMatrix = new Matrix4();
+  private tmpVector1 = new Vector3();
+  private tmpVector2 = new Vector3();
+  private desiredXAxis = new Vector3();
+  private desiredYAxis = new Vector3();
+
+  /**
+   * Create a plottable segment from three pieces of information: startVector, normalVector, arcLength
+   * NOTE: normal x start gives the direction in which the segment is drawn
+   */
+  constructor() {
+    // Initialize the Two.Group
     super();
-    //this.name = "Segment-" + this.id;
 
     // Create the vertices for the segment
     const vertices: Two.Vector[] = [];
@@ -127,31 +127,6 @@ export default class Segment extends Nodule {
     this.glowingFrontExtra.noFill();
     this.backExtra.noFill();
     this.glowingBackExtra.noFill();
-
-    // Be sure to clone() the incoming start and end points
-    // Otherwise update by other Line will affect this one!
-    if (start) {
-      this.start = start.clone();
-    } else {
-      this.start = new Vector3(1, 0, 0);
-    }
-    if (end) {
-      this.end = end.clone();
-    } else {
-      this.end = new Vector3(0, 1, 0);
-    }
-    if (mid) {
-      this.mid = mid.clone();
-    } else {
-      this.mid = new Vector3(0.5, 0.5, 0);
-    }
-
-    // Initialize the normal vector
-    this.normalDirection = new Vector3(0, 0, 1);
-    // The back half will be dynamically added to the group
-
-    // For debugging
-    this.midMarker.fill = "orange";
 
     // The segment is not initially glowing
     (this.frontPart as any).visible = true;
@@ -221,28 +196,25 @@ export default class Segment extends Nodule {
   /**
    * Reorient the unit circle in 3D and then project the points to 2D
    * This method updates the TwoJS objects (frontPart, frontExtra, ...) for display
-   * This is only accurate if the normal, start, end, and mid vectors are correct so only
+   * This is only accurate if the normal, start, arcLength are correct so only
    * call this method once those vectors are updated.
    */
   public updateDisplay(): void {
-    // Avoid the degenerate case when the normalDirection is "zero"
-    if (this.normalDirection.length() < 0.01) return;
-    this.updateArcLength();
-    // Use the start of segment as the X-axis so the start point
+    // Use the start of segment as the X-axis so the start vector
     // is at zero degrees
-    desiredXAxis
-      .copy(this.start)
-      // .set(-this.normalDirection.y, this.normalDirection.x, 0)
-      .normalize();
-    desiredYAxis.crossVectors(this.normalDirection, desiredXAxis);
+    this.desiredXAxis.copy(this.start).normalize();
+    // Form the Y axis perpendicular to the normal vector and the XAxis
+    this.desiredYAxis.crossVectors(this.normal, this.desiredXAxis).normalize;
 
     // Create the rotation matrix that maps the tilted circle to the unit
     // circle on the XY-plane
     this.transformMatrix.makeBasis(
-      desiredXAxis,
-      desiredYAxis,
-      this.normalDirection // The normal direction of the plane containing the segment
+      this.desiredXAxis,
+      this.desiredYAxis,
+      this.normal
     );
+
+    // Variables to keep track of when the z coordinate of the transformed vector changes sign
     const toPos = []; // Remember the indices of neg-to-pos crossing
     const toNeg = []; // Remember the indices of pos-to-neg crossing
     let posIndex = 0;
@@ -271,12 +243,14 @@ export default class Segment extends Nodule {
     let glowingActiveFront = this.glowingFrontPart.vertices;
     let glowingActiveBack = this.glowingBackPart.vertices;
     for (let pos = 0; pos < 2 * SUBDIVS; pos++) {
-      const angle = (pos / (2 * SUBDIVS - 1)) * Math.abs(this.arcLen);
-      tmpVector1
+      // Generate a vector point on the equator of the Default Sphere
+      const angle = (pos / (2 * SUBDIVS - 1)) * Math.abs(this.arcLength);
+      this.tmpVector1
         .set(Math.cos(angle), Math.sin(angle), 0)
         .multiplyScalar(SETTINGS.boundaryCircle.radius);
-      tmpVector1.applyMatrix4(this.transformMatrix);
-      const thisSign = Math.sign(tmpVector1.z);
+      // Transform that vector/point to one on the current segment
+      this.tmpVector1.applyMatrix4(this.transformMatrix);
+      const thisSign = Math.sign(this.tmpVector1.z);
 
       // CHeck for zero-crossing
       if (lastSign !== thisSign) {
@@ -303,16 +277,16 @@ export default class Segment extends Nodule {
         }
       }
       lastSign = thisSign;
-      if (tmpVector1.z > 0) {
+      if (this.tmpVector1.z > 0) {
         if (posIndex === activeFront.length) {
           // transfer one cell from the common pool
           activeFront.push(pool.pop()!);
           glowingActiveFront.push(glowingPool.pop()!);
         }
-        activeFront[posIndex].x = tmpVector1.x;
-        activeFront[posIndex].y = tmpVector1.y;
-        glowingActiveFront[posIndex].x = tmpVector1.x;
-        glowingActiveFront[posIndex].y = tmpVector1.y;
+        activeFront[posIndex].x = this.tmpVector1.x;
+        activeFront[posIndex].y = this.tmpVector1.y;
+        glowingActiveFront[posIndex].x = this.tmpVector1.x;
+        glowingActiveFront[posIndex].y = this.tmpVector1.y;
         posIndex++;
       } else {
         if (negIndex === activeBack.length) {
@@ -320,60 +294,38 @@ export default class Segment extends Nodule {
           activeBack.push(pool.pop()!);
           glowingActiveBack.push(glowingPool.pop()!);
         }
-        activeBack[negIndex].x = tmpVector1.x;
-        activeBack[negIndex].y = tmpVector1.y;
-        glowingActiveBack[negIndex].x = tmpVector1.x;
-        glowingActiveBack[negIndex].y = tmpVector1.y;
+        activeBack[negIndex].x = this.tmpVector1.x;
+        activeBack[negIndex].y = this.tmpVector1.y;
+        glowingActiveBack[negIndex].x = this.tmpVector1.x;
+        glowingActiveBack[negIndex].y = this.tmpVector1.y;
         negIndex++;
       }
     }
   }
 
   /**
-   * Determine the arc length of the segment using the midpoint vector
+   * Set the arcLength of the segment. The start and normal
+   * vector and arcLength must be correctly set before calling the updateDisplay() method on this segment.
    */
-  private updateArcLength() {
-    // angleTo() seems to return the smaller angle between two vectors
-    // To get arc length > 180 we measure it with a break at midpoint
-    // and sum the SIGNED length of each.
-    //tmpVector1.crossVectors(this.start, this.mid);
-    const angle1 = this.start.angleTo(this.mid);
-    //tmpVector1.crossVectors(this.mid, this.end);
-    const angle2 = this.mid.angleTo(this.end);
-    this.arcLen = angle1 + angle2;
+  set length(len: number) {
+    this.arcLength = len;
   }
-
   /**
-   * Set the unit vector that is the start of the segment. The start, mid, end, and normal
-   * vector must be correctly set before calling the updateDisplay() method on this segment.
+   * Set the unit vector that is the start of the segment. The start and normal
+   * vector and arcLength must be correctly set before calling the updateDisplay() method on this segment.
+   * NOTE: normalVector x startVector give the direction in which the segment is drawn
    */
   set startVector(idealUnitStartVector: Vector3) {
     this.start.copy(idealUnitStartVector).normalize();
   }
+
   /**
-   * Set the unit vector that is the mid of the segment. The start, mid, end, and normal
-   * vector must be correctly set before calling the updateDisplay() method on this segment.
-   */
-  set midVector(idealUnitMidVector: Vector3) {
-    this.mid.copy(idealUnitMidVector).normalize();
-  }
-  /**
-   * Set the unit vector that is the end of the segment. The start, mid, end, and normal
-   * vector must be correctly set before calling the updateDisplay() method on this segment.
-   */
-  set endVector(idealUnitEndVector: Vector3) {
-    this.end.copy(idealUnitEndVector).normalize();
-  }
-  /**
-   * Set the unit vector that is the normal of the segment. The start, mid, end, and normal
-   * vector must be correctly set before calling the updateDisplay() method on this segment.
+   * Set the unit vector that is the normal of the segment. The start and normal
+   * vector and arcLength must be correctly set before calling the updateDisplay() method on this segment.
+   * NOTE: normalVector x startVector give the direction in which the segment is drawn
    */
   set normalVector(idealUnitNormalVector: Vector3) {
-    this.normalDirection.copy(idealUnitNormalVector).normalize();
-  }
-
-  get arcLength(): number {
-    return this.arcLen;
+    this.normal.copy(idealUnitNormalVector).normalize();
   }
 
   setVisible(flag: boolean): void {
@@ -386,15 +338,12 @@ export default class Segment extends Nodule {
    */
   clone(): this {
     // Create a new segment and copy all this's properties into it
-    const dup = new Segment(this.start, this.end);
+    const dup = new Segment();
     //Copy name and start/end/mid/normal vectors
     dup.name = this.name;
-    dup.arcLen = this.arcLen;
+    dup.arcLength = this.arcLength;
     dup.start.copy(this.start);
-    dup.mid.copy(this.mid);
-    dup.end.copy(this.end);
-    dup.midMarker.translation.copy(this.midMarker.translation);
-    dup.normalDirection.copy(this.normalDirection);
+    dup.normal.copy(this.normal);
     //Copy the vertices of front/back/part
     const pool: Two.Anchor[] = [];
     pool.push(...dup.frontPart.vertices.splice(0)); //concatenates the pool array and the front vertices array and empties the frontPart array
