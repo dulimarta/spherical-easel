@@ -68,16 +68,20 @@ export default class CircleHandler extends Highlighter {
         this.centerVector.copy(selected.locationVector);
         // Record the model object as the center of the circle
         this.centerSEPoint = selected;
+        // Move the startmarker to the current selected point
+        this.startMarker.positionVector = selected.locationVector;
+        // Set the center of the circle in the plottable object - also calls temporaryCircle.readjust()
+        this.temporaryCircle.centerVector = selected.locationVector;
       } else {
         // Record the center vector of the circle so it can be past to the non-temporary circle
         this.centerVector.copy(this.currentSphereVector);
         // Set the center of the circle to null so it can be created later
         this.centerSEPoint = null;
+        // Move the startmarker to the current mouse location
+        this.startMarker.positionVector = this.currentSphereVector;
+        // Set the center of the circle in the plottable object - also calls temporaryCircle.readjust()
+        this.temporaryCircle.centerVector = this.currentSphereVector;
       }
-      // Move the startmarker to the current mouse location
-      this.startMarker.positionVector = this.currentSphereVector;
-      // Set the center of the circle in the plottable object - also calls temporaryCircle.readjust()
-      this.temporaryCircle.centerVector = this.currentSphereVector;
     }
   }
 
@@ -149,12 +153,18 @@ export default class CircleHandler extends Highlighter {
 
   mouseLeave(event: MouseEvent): void {
     super.mouseLeave(event);
+    this.isDragging = false;
     if (this.isTemporaryCircleAdded) {
       this.isTemporaryCircleAdded = false;
       this.temporaryCircle.removeFromLayers();
       this.startMarker.removeFromLayers();
       this.endMarker.removeFromLayers();
     }
+    console.debug("mouse leave clear");
+    // Clear old points and values to get ready for creating the next segment.
+    this.circleSEPoint = null;
+    this.centerSEPoint = null;
+    this.makingACircle = false;
   }
   /**
    * Add a new circle the user has moved far enough

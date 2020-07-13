@@ -29,7 +29,7 @@ export default class LineHandler extends Highlighter {
   /**
    * The user is dragging to create a line
    */
-  private dragging: boolean;
+  private isDragging: boolean;
 
   /**
    * The starting and ending SEPoints of the line
@@ -67,7 +67,7 @@ export default class LineHandler extends Highlighter {
     this.tempLine.stylize(DisplayStyle.TEMPORARY);
     this.isTemporaryLineAdded = false;
 
-    this.dragging = false;
+    this.isDragging = false;
   }
   //eslint-disable-next-line
   mousePressed(event: MouseEvent): void {
@@ -80,10 +80,10 @@ export default class LineHandler extends Highlighter {
     this.makingALine = true;
 
     // The user is dragging to add a line
-    this.dragging = true;
+    this.isDragging = true;
     // Set the start and end plottable Points to null until they are overridden with actual Points
-    this.startSEPoint = null;
-    this.endSEPoint = null;
+    // this.startSEPoint = null;
+    // this.endSEPoint = null;
 
     if (this.isOnSphere) {
       // Decide if the starting location is near an already existing SEPoint
@@ -92,6 +92,7 @@ export default class LineHandler extends Highlighter {
         const selected = this.hitSEPoints[0];
         this.startVector.copy(selected.locationVector);
         this.startSEPoint = this.hitSEPoints[0];
+        this.startMarker.positionVector = selected.locationVector;
       } else {
         // The mouse press is not near an existing point.  Record the location in a temporary point (startMarker found in MouseHandler). Eventually, we will create a new SEPoint and Point
         this.startMarker.addToLayers(this.layers);
@@ -106,7 +107,7 @@ export default class LineHandler extends Highlighter {
   mouseMoved(event: MouseEvent): void {
     super.mouseMoved(event);
     if (this.isOnSphere) {
-      if (this.dragging) {
+      if (this.isDragging) {
         // Do we need to show the temporary line?
         if (!this.isTemporaryLineAdded) {
           this.isTemporaryLineAdded = true;
@@ -153,7 +154,7 @@ export default class LineHandler extends Highlighter {
     }
   }
   mouseReleased(event: MouseEvent): void {
-    this.dragging = false;
+    this.isDragging = false;
     if (this.isOnSphere) {
       // Make sure the user didn't trigger the mouse leave event and is actually making a segment
       if (this.makingALine) {
@@ -178,7 +179,7 @@ export default class LineHandler extends Highlighter {
 
   mouseLeave(event: MouseEvent): void {
     super.mouseLeave(event);
-    this.dragging = false;
+    this.isDragging = false;
     if (this.isTemporaryLineAdded) {
       this.tempLine.removeFromLayers();
       this.startMarker.removeFromLayers();

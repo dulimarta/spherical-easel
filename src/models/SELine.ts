@@ -119,6 +119,14 @@ export class SELine extends SENodule implements Visitable {
 
       // Set the normal vector in the plottable object (the setter also calls the updateDisplay() method)
       this.ref.normalVector = this._normalVector;
+      if (this.showing) {
+        this.ref.updateDisplay();
+        this.ref.setVisible(true);
+      } else {
+        this.ref.setVisible(false);
+      }
+    } else {
+      this.ref.setVisible(false);
     }
 
     this.updateKids();

@@ -37,7 +37,7 @@ export default class SegmentHandler extends Highlighter {
   /**
    * Indicates if the user is dragging
    */
-  private dragging = false;
+  private isDragging = false;
   /**
    * A temporary plottable (TwoJS) segment to display while the user is creating a segment
    */
@@ -86,7 +86,7 @@ export default class SegmentHandler extends Highlighter {
     this.tempSegment = new Segment();
     this.tempSegment.stylize(DisplayStyle.TEMPORARY);
     this.isTemporarySegmentAdded = false;
-    this.dragging = false;
+    this.isDragging = false;
   }
 
   mousePressed(event: MouseEvent): void {
@@ -98,7 +98,7 @@ export default class SegmentHandler extends Highlighter {
     // The user is making a segment
     this.makingASegment = true;
     // The user is dragging
-    this.dragging = true;
+    this.isDragging = true;
     // The Highlighter forms a list of all the nearby points
     // If there are nearby points, select the first one to be the start of the segment otherwise
     //  put a end/start marker (a Point found in MouseHandler) in the scene
@@ -135,7 +135,7 @@ export default class SegmentHandler extends Highlighter {
 
     // If the mouse event is on the sphere and the user is dragging.
     if (this.isOnSphere) {
-      if (this.dragging) {
+      if (this.isDragging) {
         // This is executed once per segment to be added
         if (!this.isTemporarySegmentAdded) {
           this.isTemporarySegmentAdded = true;
@@ -167,7 +167,7 @@ export default class SegmentHandler extends Highlighter {
   }
 
   mouseReleased(event: MouseEvent): void {
-    this.dragging = false;
+    this.isDragging = false;
     if (this.isOnSphere) {
       //If the release event was on the sphere remove the temporary objects
       this.tempSegment.removeFromLayers();
@@ -198,7 +198,7 @@ export default class SegmentHandler extends Highlighter {
 
   mouseLeave(event: MouseEvent): void {
     super.mouseLeave(event);
-    this.dragging = false;
+    this.isDragging = false;
     if (this.isTemporarySegmentAdded) {
       this.tempSegment.removeFromLayers();
       this.startMarker.removeFromLayers();

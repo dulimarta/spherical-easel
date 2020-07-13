@@ -227,8 +227,15 @@ export class SESegment extends SENodule implements Visitable {
       this.ref.startVector = this._startSEPoint.locationVector;
       this.ref.arcLength = this.arcLength;
       this.ref.normalVector = this._normalVector;
-      // update the display of the segment now that the start, normal vectors and arcLength are set
-      this.ref.updateDisplay();
+      // update the display of the segment now that the start, normal vectors and arcLength are set, but only if showing
+      if (this.showing) {
+        this.ref.updateDisplay();
+        this.ref.setVisible(true);
+      } else {
+        this.ref.setVisible(false);
+      }
+    } else {
+      this.ref.setVisible(false);
     }
     this.updateKids();
   }

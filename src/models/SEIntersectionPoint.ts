@@ -110,6 +110,8 @@ export class SEIntersectionPoint extends SEPoint {
       } else {
         this.ref.setVisible(false);
       }
+    } else {
+      this.ref.setVisible(false);
     }
     this.updateKids();
   }

@@ -79,9 +79,15 @@ export class SECircle extends SENodule implements Visitable {
       this.ref.circleRadius = newRadius;
       this.ref.centerVector = this._centerSEPoint.locationVector;
       // display the new circle with the updated values
-      this.ref.updateDisplay();
+      if (this.showing) {
+        this.ref.updateDisplay();
+        this.ref.setVisible(true);
+      } else {
+        this.ref.setVisible(false);
+      }
+    } else {
+      this.ref.setVisible(false);
     }
-    this.setOutOfDate(false);
     this.updateKids();
   }
 

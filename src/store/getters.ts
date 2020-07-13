@@ -621,7 +621,7 @@ export default {
         return intersectSegmentWithCircle(one, two);
     } else if (one instanceof SECircle && two instanceof SECircle)
       return intersectCircles(
-        one.circleSEPoint.locationVector,
+        one.centerSEPoint.locationVector,
         one.circleRadius,
         two.centerSEPoint.locationVector,
         two.circleRadius
