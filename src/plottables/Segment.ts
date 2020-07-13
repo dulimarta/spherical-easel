@@ -26,6 +26,8 @@ export default class Segment extends Nodule {
    * NOTE: Once the above three variables are set, the updateDisplay() will correctly render the segment.
    * These are the only pieces of information that are need to do the rendering. All other
    * calculations in this class are only for the purpose of rendering the segment.
+   * NOTE: (normalVector x startVector)*(this._arcLength > Math.PI ? -1 : 1)
+   *  gives the direction in which the segment is drawn
    */
 
   /** A temporary matrix maps a segment in standard position to the current position so we can determine which points are on the back and which are on the front*/
@@ -308,6 +310,8 @@ export default class Segment extends Nodule {
   /**
    * Set the arcLength of the segment. The start and normal
    * vector and arcLength must be correctly set before calling the updateDisplay() method on this segment.
+   *  NOTE: (normalVector x startVector)*(this._arcLength > Math.PI ? -1 : 1)
+   *  gives the direction in which the segment is drawn
    */
   set arcLength(len: number) {
     this._arcLength = len;
@@ -315,7 +319,8 @@ export default class Segment extends Nodule {
   /**
    * Set the unit vector that is the start of the segment. The start and normal
    * vector and arcLength must be correctly set before calling the updateDisplay() method on this segment.
-   * NOTE: normalVector x startVector give the direction in which the segment is drawn
+   * NOTE: (normalVector x startVector)*(this._arcLength > Math.PI ? -1 : 1)
+   *  gives the direction in which the segment is drawn
    */
   set startVector(idealUnitStartVector: Vector3) {
     this._startVector.copy(idealUnitStartVector).normalize();
@@ -324,7 +329,8 @@ export default class Segment extends Nodule {
   /**
    * Set the unit vector that is the normal of the segment. The start and normal
    * vector and arcLength must be correctly set before calling the updateDisplay() method on this segment.
-   * NOTE: normalVector x startVector give the direction in which the segment is drawn
+   * NOTE: (normalVector x startVector)*(this._arcLength > Math.PI ? -1 : 1)
+   *  gives the direction in which the segment is drawn
    */
   set normalVector(idealUnitNormalVector: Vector3) {
     this._normalVector.copy(idealUnitNormalVector).normalize();
