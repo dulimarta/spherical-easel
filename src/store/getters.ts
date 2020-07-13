@@ -9,7 +9,6 @@ import { SENodule } from "@/models/SENodule";
 import { SEPoint } from "@/models/SEPoint";
 import Point from "@/plottables/Point";
 import { DisplayStyle } from "@/plottables/Nodule";
-import { VListItemAction } from "vuetify/lib";
 
 const PIXEL_CLOSE_ENOUGH = 8;
 
@@ -54,6 +53,7 @@ function intersectLineWithLine(
   lineTwo: SELine
 ): IntersectionReturnType[] {
   const returnItems = [];
+  console.debug("Create 2 new Vector3()");
   const item1: IntersectionReturnType = { vector: new Vector3(), exists: true };
   const item2: IntersectionReturnType = { vector: new Vector3(), exists: true };
 
@@ -89,6 +89,7 @@ function intersectLineWithSegment(
   segment: SESegment
 ): IntersectionReturnType[] {
   const returnItems = [];
+  console.debug("Create 2 new Vector3()");
   const item1: IntersectionReturnType = { vector: new Vector3(), exists: true };
   const item2: IntersectionReturnType = { vector: new Vector3(), exists: true };
   // Plus and minus the cross product of the normal vectors are the possible intersection vectors
@@ -151,6 +152,7 @@ function intersectSegmentWithSegment(
   segment2: SESegment
 ): IntersectionReturnType[] {
   const returnItems = [];
+  console.debug("Create 2 new Vector3()");
   const item1: IntersectionReturnType = { vector: new Vector3(), exists: true };
   const item2: IntersectionReturnType = { vector: new Vector3(), exists: true };
   // Plus and minus the cross product of the normal vectors are the possible intersection vectors
@@ -224,6 +226,7 @@ function intersectCircles(
 ): IntersectionReturnType[] {
   //Initialize the items and the return items
   const returnItems = [];
+  console.debug("Create 2 new Vector3()");
   const item1: IntersectionReturnType = { vector: new Vector3(), exists: true };
   const item2: IntersectionReturnType = { vector: new Vector3(), exists: true };
 
@@ -601,45 +604,28 @@ export default {
       });
     return intersectionPointList;
   },
-  getIntersectLineWithLine: (state: AppState) => (
-    lineOne: SELine,
-    lineTwo: SELine
+  intersectTwoObjects: (state: AppState) => (
+    one: SENodule,
+    two: SENodule
   ): IntersectionReturnType[] => {
-    return intersectLineWithLine(lineOne, lineTwo);
-  },
-  getIntersectLineWithSegment: (state: AppState) => (
-    lineOne: SELine,
-    segment: SESegment
-  ): IntersectionReturnType[] => {
-    return intersectLineWithSegment(lineOne, segment);
-  },
-  getIntersectLineWithCircle: (state: AppState) => (
-    lineOne: SELine,
-    circle: SECircle
-  ): IntersectionReturnType[] => {
-    return intersectLineWithCircle(lineOne, circle);
-  },
-  getIntersectSegmentWithSegment: (state: AppState) => (
-    segOne: SESegment,
-    segTwo: SESegment
-  ): IntersectionReturnType[] => {
-    return intersectSegmentWithSegment(segOne, segTwo);
-  },
-  getIntersectSegmentWithCircle: (state: AppState) => (
-    seg: SESegment,
-    circle: SECircle
-  ): IntersectionReturnType[] => {
-    return intersectSegmentWithCircle(seg, circle);
-  },
-  getIntersectCircleWithCircle: (state: AppState) => (
-    circleOne: SECircle,
-    circleTwo: SECircle
-  ): IntersectionReturnType[] => {
-    return intersectCircles(
-      circleOne.centerSEPoint.locationVector,
-      circleOne.circleRadius,
-      circleTwo.centerSEPoint.locationVector,
-      circleTwo.circleRadius
-    );
+    if (one instanceof SELine) {
+      if (two instanceof SELine) return intersectLineWithLine(one, two);
+      else if (two instanceof SESegment)
+        return intersectLineWithSegment(one, two);
+      else if (two instanceof SECircle)
+        return intersectLineWithCircle(one, two);
+    } else if (one instanceof SESegment) {
+      if (two instanceof SESegment)
+        return intersectSegmentWithSegment(one, two);
+      else if (two instanceof SECircle)
+        return intersectSegmentWithCircle(one, two);
+    } else if (one instanceof SECircle && two instanceof SECircle)
+      return intersectCircles(
+        one.circleSEPoint.locationVector,
+        one.circleRadius,
+        two.centerSEPoint.locationVector,
+        two.circleRadius
+      );
+    throw "This line should NOT be called at all";
   }
 };

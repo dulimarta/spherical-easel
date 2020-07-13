@@ -84,7 +84,7 @@ export class SEIntersectionPoint extends SEPoint {
     return this._isUserCreated;
   }
 
-  public update() {
+  public update(): void {
     if (!this.canUpdateNow()) {
       return;
     }
@@ -92,58 +92,10 @@ export class SEIntersectionPoint extends SEPoint {
     this._exists = this.seParent1.exists && this.seParent2.exists;
     if (this._exists) {
       //console.debug("Updating SEIntersectionPoint", this.name);
-      const updatedIntersectionInfo: IntersectionReturnType[] = [];
-      //Depending on the parent update the location of this intersection point
-      if (this.seParent1 instanceof SELine) {
-        if (this.seParent2 instanceof SELine) {
-          store.getters
-            .getIntersectLineWithLine(this.seParent1, this.seParent2)
-            .forEach((element: IntersectionReturnType) => {
-              updatedIntersectionInfo.push(element);
-            });
-        }
-        if (this.seParent2 instanceof SESegment) {
-          store.getters
-            .getIntersectLineWithSegment(this.seParent1, this.seParent2)
-            .forEach((element: IntersectionReturnType) => {
-              updatedIntersectionInfo.push(element);
-            });
-        }
-        if (this.seParent2 instanceof SECircle) {
-          store.getters
-            .getIntersectLineWithCircle(this.seParent1, this.seParent2)
-            .forEach((element: IntersectionReturnType) => {
-              updatedIntersectionInfo.push(element);
-            });
-        }
-      }
-
-      if (this.seParent1 instanceof SESegment) {
-        if (this.seParent2 instanceof SESegment) {
-          store.getters
-            .getIntersectSegmentWithSegment(this.seParent1, this.seParent2)
-            .forEach((element: IntersectionReturnType) => {
-              updatedIntersectionInfo.push(element);
-            });
-        }
-        if (this.seParent2 instanceof SECircle) {
-          store.getters
-            .getIntersectSegmentWithCircle(this.seParent1, this.seParent2)
-            .forEach((element: IntersectionReturnType) => {
-              updatedIntersectionInfo.push(element);
-            });
-        }
-      }
-
-      if (this.seParent1 instanceof SECircle) {
-        if (this.seParent2 instanceof SECircle) {
-          store.getters
-            .getIntersectCircleWithCircle(this.seParent1, this.seParent2)
-            .forEach((element: IntersectionReturnType) => {
-              updatedIntersectionInfo.push(element);
-            });
-        }
-      }
+      const updatedIntersectionInfo: IntersectionReturnType[] = store.getters.intersectTwoObjects(
+        this.seParent1,
+        this.seParent2
+      );
 
       this._exists = updatedIntersectionInfo[this.order].exists;
       this.locationVector = updatedIntersectionInfo[this.order].vector; // Calls the setter of SEPoint which calls the setter of Point which updates the display

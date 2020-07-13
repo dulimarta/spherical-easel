@@ -49,7 +49,7 @@ export default class ObjectTree extends Vue {
   private oldFillColor: Two.Color | undefined = undefined;
 
   // TODO: the getter function seems to be sluggish?
-  get iPoints() {
+  get iPoints(): any[] {
     return this.points.map((z: SEPoint) => ({
       id: z.id,
       name: z.name,
@@ -57,7 +57,7 @@ export default class ObjectTree extends Vue {
         {
           id: 0,
           name: "Connected Lines",
-          children: z.children
+          children: z.kids
             .filter((n: SENodule) => n instanceof SELine).map((x: SENodule) => ({
               id: x.id,
               name: x.name
@@ -66,7 +66,7 @@ export default class ObjectTree extends Vue {
         {
           id: 1,
           name: "Connected Segments",
-          children: z.children
+          children: z.kids
             .filter((n: SENodule) => n instanceof SESegment).map((x: SENodule) => ({
               id: x.id,
               name: x.name
@@ -74,7 +74,7 @@ export default class ObjectTree extends Vue {
         }, {
           id: 2,
           name: "Connected Circles",
-          children: z.children
+          children: z.kids
             .filter((n: SENodule) => n instanceof SECircle).map((x: SENodule) => ({
               id: x.id,
               name: x.name
@@ -87,7 +87,7 @@ export default class ObjectTree extends Vue {
     }));
   }
 
-  get iLines() {
+  get iLines(): any[] {
     return this.lines.map((z: SELine) => ({
       id: z.id,
       name: z.name,
@@ -132,7 +132,6 @@ export default class ObjectTree extends Vue {
       }
     }
   }
-
 }
 </script>
 
