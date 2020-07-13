@@ -10,13 +10,12 @@ import Point from "@/plottables/Point";
 import { CommandGroup } from "@/commands/CommandGroup";
 import { AddPointCommand } from "@/commands/AddPointCommand";
 import { AddSegmentCommand } from "@/commands/AddSegmentCommand";
-import { AddSegmentMidPointCommand } from "@/commands/AddSegmentMidPointCommand";
 import { SESegment } from "@/models/SESegment";
 import SETTINGS from "@/global-settings";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import { DisplayStyle } from "@/plottables/Nodule";
-import { ShowPointCommand } from "@/commands/ShowPointCommand";
 import Highlighter from "./Highlighter";
+import { ConvertInterPtToUserCreatedCommand } from "@/commands/ConvertInterPtToUserCreatedCommand";
 
 const MIDPOINT_MOVEMENT_THRESHOLD = SETTINGS.segment.midPointMovementThreshold;
 
@@ -25,11 +24,6 @@ export default class SegmentHandler extends Highlighter {
    * The starting unit vector location of the segment
    */
   private startVector = new Vector3();
-
-  /**
-   * The ending unit vector location of the segment (only used when the start and end are nearly Antipodal)
-   */
-  private endVector = new Vector3();
 
   /**
    * The (model) start and end SEPoints of the line segment
@@ -96,21 +90,26 @@ export default class SegmentHandler extends Highlighter {
   }
 
   mousePressed(event: MouseEvent): void {
+    // Do the mouse moved event of the Highlighter so that a new hitSEPoints array will be generated
+    // otherwise if the user has finished making an new point, then *without* triggering a mouse move
+    // event, mouse press will *not* select the newly created point. This is not what we want so we call super.mouseMove
+    super.mouseMoved(event);
+
     // The user is making a segment
     this.makingASegment = true;
-
     // The user is dragging
     this.dragging = true;
-    // The Selection Handler forms a list of all the nearby points
+    // The Highlighter forms a list of all the nearby points
     // If there are nearby points, select the first one to be the start of the segment otherwise
     //  put a end/start marker (a Point found in MouseHandler) in the scene
-    if (this.hitPoints.length > 0) {
-      const selected = this.hitPoints[0];
-      this.startVector.copy(selected.vectorPosition);
-      this.startSEPoint = selected;
+    if (this.hitSEPoints.length > 0) {
+      const selected = this.hitSEPoints[0];
+      this.startVector.copy(selected.locationVector);
+      this.startSEPoint = this.hitSEPoints[0];
+
       // Set the start of the temp segment and the startMarker at the location of the selected point
-      this.startMarker.positionVector = selected.vectorPosition;
-      this.tempSegment.startVector = selected.vectorPosition;
+      this.startMarker.positionVector = selected.locationVector;
+      this.tempSegment.startVector = selected.locationVector;
     } else {
       // The start vector of the temporary segment and the start marker are
       //  also the the current location on the sphere
@@ -120,7 +119,6 @@ export default class SegmentHandler extends Highlighter {
       this.startVector.copy(this.currentSphereVector);
       this.startSEPoint = null;
     }
-    this.startSEPoint = null;
 
     // Set the booleans for describing the segment
     this.nearlyAntipodal = false;
@@ -155,7 +153,7 @@ export default class SegmentHandler extends Highlighter {
         this.endMarker.positionVector = this.currentSphereVector;
 
         // Finally set the values for the unit vectors defining the segment and update the display
-        this.tempSegment.length = this.arcLength;
+        this.tempSegment.arcLength = this.arcLength;
         this.tempSegment.normalVector = this.normalVector;
         this.tempSegment.updateDisplay();
       }
@@ -227,36 +225,37 @@ export default class SegmentHandler extends Highlighter {
       // Set the glowing display
       newStartPoint.stylize(DisplayStyle.GLOWING);
       const vtx = new SEPoint(newStartPoint);
-      vtx.vectorPosition = this.startVector;
+      vtx.locationVector = this.startVector;
       this.startSEPoint = vtx;
       segmentGroup.addCommand(new AddPointCommand(vtx));
     } else if (this.startSEPoint instanceof SEIntersectionPoint) {
-      // Show the point that the user started with
-      segmentGroup.addCommand(new ShowPointCommand(this.startSEPoint));
-      // Mark the intersection point as created
-      this.startSEPoint.userCreated = true;
+      // Mark the intersection point as created, the display style is changed and the glowing style is set up
+      segmentGroup.addCommand(
+        new ConvertInterPtToUserCreatedCommand(this.startSEPoint)
+      );
     }
     // Look for an endpoint at the mouse release location
-    if (this.hitPoints.length > 0) {
+    if (this.hitSEPoints.length > 0) {
       // The end point is an existing point
-      this.endSEPoint = this.hitPoints[0];
+      this.endSEPoint = this.hitSEPoints[0];
+      console.log("end name", this.endSEPoint.name);
       // move the endpoint of the segment to the location of the endpoint
       // This ensures that the initial display of the segment is nice and the endpoint
       // looks like the endpoint and is not off to the side
       this.setArcLengthAndNormalVector(
         event.ctrlKey,
-        this.endSEPoint.vectorPosition
+        this.endSEPoint.locationVector
       );
       // Start vector is already set in mouse press
-      this.tempSegment.length = this.arcLength;
+      this.tempSegment.arcLength = this.arcLength;
       this.tempSegment.normalVector = this.normalVector;
       this.tempSegment.updateDisplay();
 
       if (this.endSEPoint instanceof SEIntersectionPoint) {
-        // Show the point that the user started with
-        segmentGroup.addCommand(new ShowPointCommand(this.endSEPoint));
-        // Mark the intersection point as created
-        this.endSEPoint.userCreated = true;
+        // Mark the intersection point as created, the display style is changed and the glowing style is set up
+        segmentGroup.addCommand(
+          new ConvertInterPtToUserCreatedCommand(this.endSEPoint)
+        );
       }
     } else {
       // The endpoint is a new point and must be created and added to the command/store
@@ -266,7 +265,7 @@ export default class SegmentHandler extends Highlighter {
       // Set up the glowing display
       newEndPoint.stylize(DisplayStyle.GLOWING);
       const vtx = new SEPoint(newEndPoint);
-      vtx.vectorPosition = this.currentSphereVector;
+      vtx.locationVector = this.currentSphereVector;
       this.endSEPoint = vtx;
       segmentGroup.addCommand(new AddPointCommand(vtx));
     }
@@ -290,8 +289,8 @@ export default class SegmentHandler extends Highlighter {
     this.store.getters
       .createAllIntersectionsWithSegment(newSESegment)
       .forEach((p: SEIntersectionPoint) => {
-        p.setShowing(false);
         segmentGroup.addCommand(new AddPointCommand(p));
+        p.showing = false; // don not display the automatically created intersection points
       });
     segmentGroup.execute();
   }
@@ -308,7 +307,7 @@ export default class SegmentHandler extends Highlighter {
       // Set the glowing display
       newPoint.stylize(DisplayStyle.GLOWING);
       const vtx = new SEPoint(newPoint);
-      vtx.vectorPosition = this.startVector;
+      vtx.locationVector = this.startVector;
       this.startSEPoint = vtx;
       const addPoint = new AddPointCommand(vtx);
       addPoint.execute();

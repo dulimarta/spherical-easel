@@ -8,6 +8,7 @@ import Two from "two.js";
 import { SENodule } from "@/models/SENodule";
 import { SEPoint } from "@/models/SEPoint";
 import Point from "@/plottables/Point";
+import { DisplayStyle } from "@/plottables/Nodule";
 import { VListItemAction } from "vuetify/lib";
 
 const PIXEL_CLOSE_ENOUGH = 8;
@@ -55,20 +56,19 @@ function intersectLineWithLine(
   const returnItems = [];
   const item1: IntersectionReturnType = { vector: new Vector3(), exists: true };
   const item2: IntersectionReturnType = { vector: new Vector3(), exists: true };
+
   // Plus and minus the cross product of the normal vectors are the intersection vectors
-  tempVec
-    .crossVectors(lineOne.normalDirection, lineTwo.normalDirection)
-    .normalize();
+  tempVec.crossVectors(lineOne.normalVector, lineTwo.normalVector).normalize();
   item1.vector.copy(tempVec);
   item2.vector.copy(tempVec.multiplyScalar(-1));
 
   // If the normal vectors are on top of each other or antipodal, exists is false
   if (
     SENodule.isZero(
-      tempVec.addVectors(lineOne.normalDirection, lineTwo.normalDirection)
+      tempVec.addVectors(lineOne.normalVector, lineTwo.normalVector)
     ) ||
     SENodule.isZero(
-      tempVec.subVectors(lineOne.normalDirection, lineTwo.normalDirection)
+      tempVec.subVectors(lineOne.normalVector, lineTwo.normalVector)
     )
   ) {
     item1.exists = false;
@@ -92,33 +92,31 @@ function intersectLineWithSegment(
   const item1: IntersectionReturnType = { vector: new Vector3(), exists: true };
   const item2: IntersectionReturnType = { vector: new Vector3(), exists: true };
   // Plus and minus the cross product of the normal vectors are the possible intersection vectors
-  tempVec1
-    .crossVectors(line.normalDirection, segment.normalDirection)
-    .normalize();
-  tempVec2.copy(tempVec).multiplyScalar(-1);
+
+  tempVec1.crossVectors(line.normalVector, segment.normalVector).normalize();
+  tempVec2.copy(tempVec1).multiplyScalar(-1);
   item1.vector.copy(tempVec1);
   item2.vector.copy(tempVec2);
 
   // determine if the first intersection point is on the segment
-  if (!segment.isHitAt(tempVec1)) {
+  if (!segment.onSegment(tempVec1)) {
     item1.exists = false;
   }
   // Determine if the second intersection point is on the segment
-  if (!segment.isHitAt(tempVec2)) {
+  if (!segment.onSegment(tempVec2)) {
     item2.exists = false;
   }
   // If the normal vectors are on top of each other or antipodal, exists is false
   if (
     SENodule.isZero(
-      tempVec.addVectors(line.normalDirection, segment.normalDirection)
+      tempVec.addVectors(line.normalVector, segment.normalVector)
     ) ||
-    SENodule.isZero(
-      tempVec.subVectors(line.normalDirection, segment.normalDirection)
-    )
+    SENodule.isZero(tempVec.subVectors(line.normalVector, segment.normalVector))
   ) {
     item1.exists = false;
     item2.exists = false;
   }
+
   returnItems.push(item1);
   returnItems.push(item2);
   return returnItems;
@@ -136,10 +134,10 @@ function intersectLineWithCircle(
 ): IntersectionReturnType[] {
   // Use the circle circle intersection
   return intersectCircles(
-    line.normalDirection,
+    line.normalVector,
     Math.PI / 2, // arc radius of lines
-    circle.centerPoint.vectorPosition,
-    circle.radius
+    circle.centerSEPoint.locationVector,
+    circle.circleRadius
   );
 }
 /**
@@ -157,27 +155,27 @@ function intersectSegmentWithSegment(
   const item2: IntersectionReturnType = { vector: new Vector3(), exists: true };
   // Plus and minus the cross product of the normal vectors are the possible intersection vectors
   tempVec1
-    .crossVectors(segment1.normalDirection, segment2.normalDirection)
+    .crossVectors(segment1.normalVector, segment2.normalVector)
     .normalize();
-  tempVec2.copy(tempVec).multiplyScalar(-1);
+  tempVec2.copy(tempVec1).multiplyScalar(-1);
   item1.vector.copy(tempVec1);
   item2.vector.copy(tempVec2);
 
   // determine if the first intersection point is on the segment
-  if (!segment1.isHitAt(tempVec1) || !segment2.isHitAt(tempVec1)) {
+  if (!segment1.onSegment(tempVec1) || !segment2.onSegment(tempVec1)) {
     item1.exists = false;
   }
   // Determine if the second intersection point is on the segment
-  if (!segment1.isHitAt(tempVec2) || !segment2.isHitAt(tempVec2)) {
+  if (!segment1.onSegment(tempVec2) || !segment2.onSegment(tempVec2)) {
     item2.exists = false;
   }
   // If the normal vectors are on top of each other or antipodal, exists is false
   if (
     SENodule.isZero(
-      tempVec.addVectors(segment1.normalDirection, segment2.normalDirection)
+      tempVec.addVectors(segment1.normalVector, segment2.normalVector)
     ) ||
     SENodule.isZero(
-      tempVec.subVectors(segment1.normalDirection, segment2.normalDirection)
+      tempVec.subVectors(segment1.normalVector, segment2.normalVector)
     )
   ) {
     item1.exists = false;
@@ -199,12 +197,12 @@ function intersectSegmentWithCircle(
 ): IntersectionReturnType[] {
   // Use the circle circle intersection
   const temp = intersectCircles(
-    segment.normalDirection,
+    segment.normalVector,
     Math.PI / 2, // arc radius of lines
-    circle.centerPoint.vectorPosition,
-    circle.radius
+    circle.centerSEPoint.locationVector,
+    circle.circleRadius
   );
-  temp.forEach(item => (item.exists = segment.isHitAt(item.vector)));
+  temp.forEach(item => (item.exists = segment.onSegment(item.vector)));
   return temp;
 }
 
@@ -399,20 +397,31 @@ export default {
   ): SEIntersectionPoint[] => {
     const intersectionPointList: SEIntersectionPoint[] = [];
     // Intersection this new line with all old lines
+    console.log(
+      "state lines",
+      state.lines.length,
+      "state lines filter",
+      state.lines.filter((line: SELine) => line.id !== newLine.id).length
+    );
     state.lines
       .filter((line: SELine) => line.id !== newLine.id) // ignore self
       .forEach((oldLine: SELine) => {
+        console.log("oldLine", oldLine.normalVector);
+        console.log("newLine", newLine.normalVector);
         const intersectionInfo = intersectLineWithLine(oldLine, newLine);
+        console.log("IntersectionInfo", intersectionInfo);
         intersectionInfo.forEach((info, index) => {
           const newPt = new Point();
+          newPt.stylize(DisplayStyle.TEMPORARY);
           const newSEIntersectionPt = new SEIntersectionPoint(
             newPt,
             oldLine,
             newLine,
-            index
+            index,
+            false
           );
-          newSEIntersectionPt.vectorPosition = info.vector;
-          newSEIntersectionPt.setExist(info.exists);
+          newSEIntersectionPt.locationVector = info.vector;
+          newSEIntersectionPt.exists = info.exists;
           intersectionPointList.push(newSEIntersectionPt);
         });
       });
@@ -421,14 +430,16 @@ export default {
       const intersectionInfo = intersectLineWithSegment(newLine, oldSegment);
       intersectionInfo.forEach((info, index) => {
         const newPt = new Point();
+        newPt.stylize(DisplayStyle.TEMPORARY);
         const newSEIntersectionPt = new SEIntersectionPoint(
           newPt,
           newLine,
           oldSegment,
-          index
+          index,
+          false
         );
-        newSEIntersectionPt.vectorPosition = info.vector;
-        newSEIntersectionPt.setExist(info.exists);
+        newSEIntersectionPt.locationVector = info.vector;
+        newSEIntersectionPt.exists = info.exists;
         intersectionPointList.push(newSEIntersectionPt);
       });
     });
@@ -437,14 +448,16 @@ export default {
       const intersectionInfo = intersectLineWithCircle(newLine, oldCircle);
       intersectionInfo.forEach((info, index) => {
         const newPt = new Point();
+        newPt.stylize(DisplayStyle.TEMPORARY);
         const newSEIntersectionPt = new SEIntersectionPoint(
           newPt,
           newLine,
           oldCircle,
-          index
+          index,
+          false
         );
-        newSEIntersectionPt.vectorPosition = info.vector;
-        newSEIntersectionPt.setExist(info.exists);
+        newSEIntersectionPt.locationVector = info.vector;
+        newSEIntersectionPt.exists = info.exists;
         intersectionPointList.push(newSEIntersectionPt);
       });
     });
@@ -459,14 +472,16 @@ export default {
       const intersectionInfo = intersectLineWithSegment(oldLine, newSegment);
       intersectionInfo.forEach((info, index) => {
         const newPt = new Point();
+        newPt.stylize(DisplayStyle.TEMPORARY);
         const newSEIntersectionPt = new SEIntersectionPoint(
           newPt,
           oldLine,
           newSegment,
-          index
+          index,
+          false
         );
-        newSEIntersectionPt.vectorPosition = info.vector;
-        newSEIntersectionPt.setExist(info.exists);
+        newSEIntersectionPt.locationVector = info.vector;
+        newSEIntersectionPt.exists = info.exists;
         intersectionPointList.push(newSEIntersectionPt);
       });
     });
@@ -480,14 +495,16 @@ export default {
         );
         intersectionInfo.forEach((info, index) => {
           const newPt = new Point();
+          newPt.stylize(DisplayStyle.TEMPORARY);
           const newSEIntersectionPt = new SEIntersectionPoint(
             newPt,
             oldSegment,
             newSegment,
-            index
+            index,
+            false
           );
-          newSEIntersectionPt.vectorPosition = info.vector;
-          newSEIntersectionPt.setExist(info.exists);
+          newSEIntersectionPt.locationVector = info.vector;
+          newSEIntersectionPt.exists = info.exists;
           intersectionPointList.push(newSEIntersectionPt);
         });
       });
@@ -499,30 +516,20 @@ export default {
       );
       intersectionInfo.forEach((info, index) => {
         const newPt = new Point();
+        newPt.stylize(DisplayStyle.TEMPORARY);
         const newSEIntersectionPt = new SEIntersectionPoint(
           newPt,
           newSegment,
           oldCircle,
-          index
+          index,
+          false
         );
-        newSEIntersectionPt.vectorPosition = info.vector;
-        newSEIntersectionPt.setExist(info.exists);
+        newSEIntersectionPt.locationVector = info.vector;
+        newSEIntersectionPt.exists = info.exists;
         intersectionPointList.push(newSEIntersectionPt);
       });
     });
     return intersectionPointList;
-
-    // return [
-    //   ...state.lines.flatMap((l: SELine) =>
-    //     intersectLineWithSegment(l, segment)
-    //   ),
-    //   ...state.segments
-    //     .filter((s: SESegment) => s.id !== segment.id)
-    //     .flatMap((s: SESegment) => intersectSegmentWithSegment(s, segment)),
-    //   ...state.circles.flatMap((c: SECircle) =>
-    //     intersectSegmentWithCircle(segment, c)
-    //   )
-    // ];
   },
   createAllIntersectionsWithCircle: (state: AppState) => (
     newCircle: SECircle
@@ -533,14 +540,16 @@ export default {
       const intersectionInfo = intersectLineWithCircle(oldLine, newCircle);
       intersectionInfo.forEach((info, index) => {
         const newPt = new Point();
+        newPt.stylize(DisplayStyle.TEMPORARY);
         const newSEIntersectionPt = new SEIntersectionPoint(
           newPt,
           oldLine,
           newCircle,
-          index
+          index,
+          false
         );
-        newSEIntersectionPt.vectorPosition = info.vector;
-        newSEIntersectionPt.setExist(info.exists);
+        newSEIntersectionPt.locationVector = info.vector;
+        newSEIntersectionPt.exists = info.exists;
         intersectionPointList.push(newSEIntersectionPt);
       });
     });
@@ -552,14 +561,16 @@ export default {
       );
       intersectionInfo.forEach((info, index) => {
         const newPt = new Point();
+        newPt.stylize(DisplayStyle.TEMPORARY);
         const newSEIntersectionPt = new SEIntersectionPoint(
           newPt,
           oldSegment,
           newCircle,
-          index
+          index,
+          false
         );
-        newSEIntersectionPt.vectorPosition = info.vector;
-        newSEIntersectionPt.setExist(info.exists);
+        newSEIntersectionPt.locationVector = info.vector;
+        newSEIntersectionPt.exists = info.exists;
         intersectionPointList.push(newSEIntersectionPt);
       });
     });
@@ -568,34 +579,67 @@ export default {
       .filter((circle: SECircle) => circle.id !== newCircle.id) // ignore self
       .forEach((oldCircle: SECircle) => {
         const intersectionInfo = intersectCircles(
-          oldCircle.centerPoint.vectorPosition,
-          oldCircle.radius,
-          newCircle.centerPoint.vectorPosition,
-          newCircle.radius
+          oldCircle.centerSEPoint.locationVector,
+          oldCircle.circleRadius,
+          newCircle.centerSEPoint.locationVector,
+          newCircle.circleRadius
         );
         intersectionInfo.forEach((info, index) => {
           const newPt = new Point();
+          newPt.stylize(DisplayStyle.TEMPORARY);
           const newSEIntersectionPt = new SEIntersectionPoint(
             newPt,
             oldCircle,
             newCircle,
-            index
+            index,
+            false
           );
-          newSEIntersectionPt.vectorPosition = info.vector;
-          newSEIntersectionPt.setExist(info.exists);
+          newSEIntersectionPt.locationVector = info.vector;
+          newSEIntersectionPt.exists = info.exists;
           intersectionPointList.push(newSEIntersectionPt);
         });
       });
     return intersectionPointList;
-
-    // return [
-    //   ...state.lines.flatMap((l: SELine) => intersectLineWithCircle(l, circle)),
-    //   ...state.segments.flatMap((s: SESegment) =>
-    //     intersectSegmentWithCircle(s, circle)
-    //   ),
-    //   ...state.circles
-    //     .filter((c: SECircle) => c.id !== circle.id) // ignore self
-    //     .flatMap((c: SECircle) => intersectCircleWithCircle(c, circle))
-    // ];
+  },
+  getIntersectLineWithLine: (state: AppState) => (
+    lineOne: SELine,
+    lineTwo: SELine
+  ): IntersectionReturnType[] => {
+    return intersectLineWithLine(lineOne, lineTwo);
+  },
+  getIntersectLineWithSegment: (state: AppState) => (
+    lineOne: SELine,
+    segment: SESegment
+  ): IntersectionReturnType[] => {
+    return intersectLineWithSegment(lineOne, segment);
+  },
+  getIntersectLineWithCircle: (state: AppState) => (
+    lineOne: SELine,
+    circle: SECircle
+  ): IntersectionReturnType[] => {
+    return intersectLineWithCircle(lineOne, circle);
+  },
+  getIntersectSegmentWithSegment: (state: AppState) => (
+    segOne: SESegment,
+    segTwo: SESegment
+  ): IntersectionReturnType[] => {
+    return intersectSegmentWithSegment(segOne, segTwo);
+  },
+  getIntersectSegmentWithCircle: (state: AppState) => (
+    seg: SESegment,
+    circle: SECircle
+  ): IntersectionReturnType[] => {
+    return intersectSegmentWithCircle(seg, circle);
+  },
+  getIntersectCircleWithCircle: (state: AppState) => (
+    circleOne: SECircle,
+    circleTwo: SECircle
+  ): IntersectionReturnType[] => {
+    return intersectCircles(
+      circleOne.centerSEPoint.locationVector,
+      circleOne.circleRadius,
+      circleTwo.centerSEPoint.locationVector,
+      circleTwo.circleRadius
+    );
   }
 };

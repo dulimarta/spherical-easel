@@ -9,7 +9,7 @@ export class ShowPointCommand extends Command {
   }
 
   do(): void {
-    this.arg.setShowing(true);
+    this.arg.showing = true;
   }
 
   saveState(): void {
@@ -17,6 +17,6 @@ export class ShowPointCommand extends Command {
   }
 
   restoreState(): void {
-    this.arg.setShowing(false);
+    this.arg.showing = false;
   }
 }

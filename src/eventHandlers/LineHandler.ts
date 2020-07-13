@@ -12,9 +12,9 @@ import { SEPoint } from "@/models/SEPoint";
 import { SELine } from "@/models/SELine";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import { DisplayStyle } from "@/plottables/Nodule";
-import { ShowPointCommand } from "@/commands/ShowPointCommand";
 import SETTINGS from "@/global-settings";
 import Highlighter from "./Highlighter";
+import { ConvertInterPtToUserCreatedCommand } from "@/commands/ConvertInterPtToUserCreatedCommand";
 
 export default class LineHandler extends Highlighter {
   /**
@@ -71,6 +71,11 @@ export default class LineHandler extends Highlighter {
   }
   //eslint-disable-next-line
   mousePressed(event: MouseEvent): void {
+    // Do the mouse moved event of the Highlighter so that a new hitSEPoints array will be generated
+    // otherwise if the user has finished making an new point, then *without* triggering a mouse move
+    // event, mouse press will *not* select the newly created point. This is not what we want so we call super.mouseMove
+    super.mouseMoved(event);
+
     // The user is making a line
     this.makingALine = true;
 
@@ -82,11 +87,11 @@ export default class LineHandler extends Highlighter {
 
     if (this.isOnSphere) {
       // Decide if the starting location is near an already existing SEPoint
-      if (this.hitPoints.length > 0) {
+      if (this.hitSEPoints.length > 0) {
         // Use an existing SEPoint to start the line
-        const selected = this.hitPoints[0];
-        this.startVector.copy(selected.vectorPosition);
-        this.startSEPoint = selected;
+        const selected = this.hitSEPoints[0];
+        this.startVector.copy(selected.locationVector);
+        this.startSEPoint = this.hitSEPoints[0];
       } else {
         // The mouse press is not near an existing point.  Record the location in a temporary point (startMarker found in MouseHandler). Eventually, we will create a new SEPoint and Point
         this.startMarker.addToLayers(this.layers);
@@ -189,13 +194,6 @@ export default class LineHandler extends Highlighter {
 
   // Create a new line from the mouse event information
   private makeLine(): void {
-    // Create the new line
-    const newLine = this.tempLine.clone();
-    // Stylize the new Line
-    newLine.stylize(DisplayStyle.DEFAULT);
-    // Set up the glowing Line
-    newLine.stylize(DisplayStyle.GLOWING);
-
     //Create a command group so this can be undone
     const lineGroup = new CommandGroup();
     if (this.startSEPoint === null) {
@@ -207,23 +205,26 @@ export default class LineHandler extends Highlighter {
       // Set up the glowing display
       newStartPoint.stylize(DisplayStyle.GLOWING);
       const vtx = new SEPoint(newStartPoint);
-      vtx.vectorPosition = this.startVector;
+      vtx.locationVector = this.startVector;
       this.startSEPoint = vtx;
       lineGroup.addCommand(new AddPointCommand(vtx));
     } else if (this.startSEPoint instanceof SEIntersectionPoint) {
-      // Show the point that the user started with
-      lineGroup.addCommand(new ShowPointCommand(this.startSEPoint));
-      // Mark the intersection point as created
-      this.startSEPoint.userCreated = true;
+      // Mark the intersection point as created, the display style is changed and the glowing style is set up
+      lineGroup.addCommand(
+        new ConvertInterPtToUserCreatedCommand(this.startSEPoint)
+      );
     }
     // Check to see if the release location is near any points
-    if (this.hitPoints.length > 0) {
-      this.endSEPoint = this.hitPoints[0];
-      if (this.endSEPoint instanceof SEIntersectionPoint) {
-        // Show the point that the user started with
-        lineGroup.addCommand(new ShowPointCommand(this.endSEPoint));
-        // Mark the intersection point as created
-        this.endSEPoint.userCreated = true;
+    if (this.hitSEPoints.length > 0) {
+      this.endSEPoint = this.hitSEPoints[0];
+      if (
+        this.endSEPoint instanceof SEIntersectionPoint &&
+        !this.endSEPoint.isUserCreated
+      ) {
+        // Mark the intersection point as created, the display style is changed and the glowing style is set up
+        lineGroup.addCommand(
+          new ConvertInterPtToUserCreatedCommand(this.endSEPoint)
+        );
       }
     } else {
       // The ending mouse release landed on an open space
@@ -234,7 +235,7 @@ export default class LineHandler extends Highlighter {
       // Set up the glowing display
       newEndPoint.stylize(DisplayStyle.GLOWING);
       const vtx = new SEPoint(newEndPoint);
-      vtx.vectorPosition = this.currentSphereVector;
+      vtx.locationVector = this.currentSphereVector;
       this.endSEPoint = vtx;
       lineGroup.addCommand(new AddPointCommand(vtx));
     }
@@ -242,8 +243,8 @@ export default class LineHandler extends Highlighter {
     // Compute a temporary normal from the two points' vectors
     this.tmpVector
       .crossVectors(
-        this.startSEPoint.vectorPosition,
-        this.endSEPoint.vectorPosition
+        this.startSEPoint.locationVector,
+        this.endSEPoint.locationVector
       )
       .normalize();
     // Check to see if the temporary normal is zero (i.e the start and end vectors are parallel -- ether
@@ -251,15 +252,25 @@ export default class LineHandler extends Highlighter {
     if (SENodule.isZero(this.tmpVector)) {
       // The start and end vectors align, compute the next normal vector from the old normal and the start vector
       this.tmpVector.crossVectors(
-        this.startSEPoint.vectorPosition,
+        this.startSEPoint.locationVector,
         this.normalVector
       );
       this.tmpVector.crossVectors(
         this.tmpVector,
-        this.startSEPoint.vectorPosition
+        this.startSEPoint.locationVector
       );
     }
     this.normalVector.copy(this.tmpVector).normalize();
+
+    // Set the normal vector to the line in the plottable object, this setter calls updateDisplay()
+    this.tempLine.normalVector = this.normalVector;
+
+    // Create the new line after the normalVector is set
+    const newLine = this.tempLine.clone();
+    // Stylize the new Line
+    newLine.stylize(DisplayStyle.DEFAULT);
+    // Set up the glowing Line
+    newLine.stylize(DisplayStyle.GLOWING);
 
     const newSELine = new SELine(
       newLine,
@@ -273,13 +284,12 @@ export default class LineHandler extends Highlighter {
     this.store.getters
       .createAllIntersectionsWithLine(newSELine)
       .forEach((p: SEIntersectionPoint) => {
-        p.setShowing(false);
         lineGroup.addCommand(new AddPointCommand(p));
+        p.showing = false; // don not display the automatically created intersection points
       });
     lineGroup.execute();
   }
-  /**
-   * The user is attempting to make a line shorter than the minimum arc length
+  /**   * The user is attempting to make a line shorter than the minimum arc length
    * so create  a point at the location of the start vector
    */
   private makePoint(): void {
@@ -287,7 +297,7 @@ export default class LineHandler extends Highlighter {
       // Starting mouse press landed on an open space
       // we have to create a new point and it to the group/store
       const vtx = new SEPoint(new Point());
-      vtx.vectorPosition = this.startVector;
+      vtx.locationVector = this.startVector;
       const addPoint = new AddPointCommand(vtx);
       addPoint.execute();
     }

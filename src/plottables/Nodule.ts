@@ -41,10 +41,13 @@ export default abstract class Nodule implements Stylable, Resizeable {
   /** Set the temporary/glowing/default/updated style*/
   abstract stylize(flag: DisplayStyle): void;
 
-  /** Show the object  */
+  /** Hide the object if flag = false, set normalDisplay() if flag = true  */
   abstract setVisible(flag: boolean): void;
 
-  /** Update the display of the object called after all the necessary variables have been set so an updated object will be rendered*/
+  /**
+   * Update the display of the object called after all the necessary variables have been set so
+   * an updated object will be rendered correctly
+   */
   abstract updateDisplay(): void;
 
   //** Get the back contrasting style using the value of contrast */

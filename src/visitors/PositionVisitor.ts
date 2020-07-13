@@ -17,24 +17,24 @@ export class PositionVisitor implements Visitor {
 
   //#region actionOnPoint
   actionOnPoint(p: SEPoint): void {
-    this.tmpVector.copy(p.vectorPosition); // Copy the old vector location of the SEPoint
+    this.tmpVector.copy(p.locationVector); // Copy the old vector location of the SEPoint
     this.tmpVector.applyMatrix4(this.transformMatrix); // Apply the matrix
-    p.vectorPosition = this.tmpVector; // Set the new position vector
+    p.locationVector = this.tmpVector; // Set the new position vector
+    p.markKidsOutOfDate();
+    p.update();
   }
   //#endregion actionOnPoint
 
-  /* These are calledshould never be called because lines are always children of points */
+  /* Are these necessary? All other objects are children of points */
   actionOnLine(m: SELine): void {
-    m.update();
+    // m.update();
   }
 
   actionOnSegment(s: SESegment): void {
-    s.update();
+    // s.update();
   }
 
   actionOnCircle(c: SECircle): void {
-    this.tmpVector.copy(c.normalDirection);
-    this.tmpVector.applyMatrix4(this.transformMatrix);
-    c.normalDirection = this.tmpVector;
+    //c.update();
   }
 }

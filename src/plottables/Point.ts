@@ -22,7 +22,7 @@ export default class Point extends Nodule {
    * It will always be the case the x and y coordinates of these two vectors are the same.
    * The sign of the z coordinate indicates if the Point is on the back of the sphere
    */
-  public vectorLocation = new Vector3(1, 0, 0);
+  public _locationVector = new Vector3(1, 0, 0);
   public defaultScreenVectorLocation = new Two.Vector(1, 0);
 
   /**
@@ -93,20 +93,21 @@ export default class Point extends Nodule {
   }
 
   /**
-   * Get and Set the location of the point in the Default Sphere
+   * Get and Set the location of the point in the Default Sphere, this also updates the display
    */
   set positionVector(idealUnitSphereVectorLocation: Vector3) {
-    this.vectorLocation
+    this._locationVector
       .copy(idealUnitSphereVectorLocation)
       .multiplyScalar(SETTINGS.boundaryCircle.radius);
     // Translate the whole group (i.e. all points front/back/glowing/drawn) to the new center vector
     this.defaultScreenVectorLocation.set(
-      this.vectorLocation.x,
-      this.vectorLocation.y
+      this._locationVector.x,
+      this._locationVector.y
     );
+    this.updateDisplay();
   }
   get positionVector(): Vector3 {
-    return this.vectorLocation;
+    return this._locationVector;
   }
 
   /**
@@ -144,7 +145,7 @@ export default class Point extends Nodule {
   }
 
   glowingDisplay(): void {
-    if (this.vectorLocation.z > 0) {
+    if (this._locationVector.z > 0) {
       this.frontGlowingDisplay();
     } else {
       this.backGlowingDisplay();
@@ -166,7 +167,7 @@ export default class Point extends Nodule {
   }
 
   normalDisplay(): void {
-    if (this.vectorLocation.z > 0) {
+    if (this._locationVector.z > 0) {
       this.frontNormalDisplay();
     } else {
       this.backNormalDisplay();
@@ -193,11 +194,13 @@ export default class Point extends Nodule {
 
   setVisible(flag: boolean): void {
     if (!flag) {
-      (this.frontPoint as any).visible = flag;
-      (this.glowingFrontPoint as any).visible = flag;
-      (this.backPoint as any).visible = flag;
-      (this.glowingBackPoint as any).visible = flag;
-    } else this.normalDisplay();
+      (this.frontPoint as any).visible = false;
+      (this.glowingFrontPoint as any).visible = false;
+      (this.backPoint as any).visible = false;
+      (this.glowingBackPoint as any).visible = false;
+    } else {
+      this.normalDisplay();
+    }
   }
 
   /**

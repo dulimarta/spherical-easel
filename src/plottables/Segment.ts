@@ -15,13 +15,13 @@ const SUBDIVS = SETTINGS.segment.numPoints;
  */
 export default class Segment extends Nodule {
   /** The start vector of the segment on the unit Sphere*/
-  public start = new Vector3();
+  public _startVector = new Vector3();
   /** A vector perpendicular to the plane containing the segment (unit vector)
    * NOTE: normal x start gives the direction in which the segment is drawn
    */
-  public normal = new Vector3();
+  public _normalVector = new Vector3();
   /** The arc length of the segment*/
-  private arcLength = 0;
+  private _arcLength = 0;
   /**
    * NOTE: Once the above three variables are set, the updateDisplay() will correctly render the segment.
    * These are the only pieces of information that are need to do the rendering. All other
@@ -202,16 +202,18 @@ export default class Segment extends Nodule {
   public updateDisplay(): void {
     // Use the start of segment as the X-axis so the start vector
     // is at zero degrees
-    this.desiredXAxis.copy(this.start).normalize();
+    this.desiredXAxis.copy(this._startVector).normalize();
     // Form the Y axis perpendicular to the normal vector and the XAxis
-    this.desiredYAxis.crossVectors(this.normal, this.desiredXAxis).normalize;
+    this.desiredYAxis
+      .crossVectors(this._normalVector, this.desiredXAxis)
+      .multiplyScalar(this._arcLength > Math.PI ? -1 : 1).normalize;
 
     // Create the rotation matrix that maps the tilted circle to the unit
     // circle on the XY-plane
     this.transformMatrix.makeBasis(
       this.desiredXAxis,
       this.desiredYAxis,
-      this.normal
+      this._normalVector
     );
 
     // Variables to keep track of when the z coordinate of the transformed vector changes sign
@@ -244,7 +246,7 @@ export default class Segment extends Nodule {
     let glowingActiveBack = this.glowingBackPart.vertices;
     for (let pos = 0; pos < 2 * SUBDIVS; pos++) {
       // Generate a vector point on the equator of the Default Sphere
-      const angle = (pos / (2 * SUBDIVS - 1)) * Math.abs(this.arcLength);
+      const angle = (pos / (2 * SUBDIVS - 1)) * Math.abs(this._arcLength);
       this.tmpVector1
         .set(Math.cos(angle), Math.sin(angle), 0)
         .multiplyScalar(SETTINGS.boundaryCircle.radius);
@@ -307,8 +309,8 @@ export default class Segment extends Nodule {
    * Set the arcLength of the segment. The start and normal
    * vector and arcLength must be correctly set before calling the updateDisplay() method on this segment.
    */
-  set length(len: number) {
-    this.arcLength = len;
+  set arcLength(len: number) {
+    this._arcLength = len;
   }
   /**
    * Set the unit vector that is the start of the segment. The start and normal
@@ -316,7 +318,7 @@ export default class Segment extends Nodule {
    * NOTE: normalVector x startVector give the direction in which the segment is drawn
    */
   set startVector(idealUnitStartVector: Vector3) {
-    this.start.copy(idealUnitStartVector).normalize();
+    this._startVector.copy(idealUnitStartVector).normalize();
   }
 
   /**
@@ -325,11 +327,22 @@ export default class Segment extends Nodule {
    * NOTE: normalVector x startVector give the direction in which the segment is drawn
    */
   set normalVector(idealUnitNormalVector: Vector3) {
-    this.normal.copy(idealUnitNormalVector).normalize();
+    this._normalVector.copy(idealUnitNormalVector).normalize();
   }
 
   setVisible(flag: boolean): void {
-    throw new Error("Method not implemented.");
+    if (!flag) {
+      (this.frontPart as any).visible = false;
+      (this.glowingFrontPart as any).visible = false;
+      (this.frontExtra as any).visible = false;
+      (this.glowingFrontExtra as any).visible = false;
+      (this.backPart as any).visible = false;
+      (this.glowingBackPart as any).visible = false;
+      (this.backExtra as any).visible = false;
+      (this.glowingBackExtra as any).visible = false;
+    } else {
+      this.normalDisplay();
+    }
   }
 
   /**
@@ -341,9 +354,9 @@ export default class Segment extends Nodule {
     const dup = new Segment();
     //Copy name and start/end/mid/normal vectors
     dup.name = this.name;
-    dup.arcLength = this.arcLength;
-    dup.start.copy(this.start);
-    dup.normal.copy(this.normal);
+    dup._arcLength = this._arcLength;
+    dup._startVector.copy(this._startVector);
+    dup._normalVector.copy(this._normalVector);
     //Copy the vertices of front/back/part
     const pool: Two.Anchor[] = [];
     pool.push(...dup.frontPart.vertices.splice(0)); //concatenates the pool array and the front vertices array and empties the frontPart array

@@ -15,11 +15,11 @@ export class SECircle extends SENodule implements Visitable {
   /**
    * The model SE object that is the center of the circle
    */
-  private centerSEPoint: SEPoint;
+  private _centerSEPoint: SEPoint;
   /**
    * The model SE object that is on the circle
    */
-  private circleSEPoint: SEPoint;
+  private _circleSEPoint: SEPoint;
   // #region circleConstructor
   /**
    * Create a model SECircle using:
@@ -30,8 +30,8 @@ export class SECircle extends SENodule implements Visitable {
   constructor(circ: Circle, centerPoint: SEPoint, circlePoint: SEPoint) {
     super();
     this.ref = circ;
-    this.centerSEPoint = centerPoint;
-    this.circleSEPoint = circlePoint;
+    this._centerSEPoint = centerPoint;
+    this._circleSEPoint = circlePoint;
 
     CIRCLE_COUNT++;
     this.name = `C-${CIRCLE_COUNT}`;
@@ -41,24 +41,27 @@ export class SECircle extends SENodule implements Visitable {
   }
   // #endregion circleConstructor
 
-  get centerPoint(): SEPoint {
-    return this.centerSEPoint;
+  get centerSEPoint(): SEPoint {
+    return this._centerSEPoint;
   }
 
-  get circlePoint(): SEPoint {
-    return this.circleSEPoint;
+  get circleSEPoint(): SEPoint {
+    return this._circleSEPoint;
   }
 
-  get radius(): number {
-    return this.circleSEPoint.vectorPosition.angleTo(
-      this.centerSEPoint.vectorPosition
+  get circleRadius(): number {
+    return this._circleSEPoint.locationVector.angleTo(
+      this._centerSEPoint.locationVector
     );
   }
 
-  public isHitAt(spherePos: Vector3): boolean {
-    const angleToCenter = spherePos.angleTo(this.centerSEPoint.vectorPosition);
+  public isHitAt(unitIdealVector: Vector3): boolean {
+    const angleToCenter = unitIdealVector.angleTo(
+      this._centerSEPoint.locationVector
+    );
     return (
-      Math.abs(angleToCenter - this.radius) < SETTINGS.circle.hitIdealDistance
+      Math.abs(angleToCenter - this.circleRadius) <
+      SETTINGS.circle.hitIdealDistance
     );
   }
 
@@ -67,19 +70,19 @@ export class SECircle extends SENodule implements Visitable {
       return;
     }
     this.setOutOfDate(false);
-    this.exists =
-      this.centerSEPoint.getExists() && this.circleSEPoint.getExists();
-    if (this.exists) {
+    this._exists = this._centerSEPoint.exists && this._circleSEPoint.exists;
+    if (this._exists) {
       //update the centerVector and the radius
-      const newRadius = this.centerSEPoint.vectorPosition.angleTo(
-        this.circleSEPoint.vectorPosition
+      const newRadius = this._centerSEPoint.locationVector.angleTo(
+        this._circleSEPoint.locationVector
       );
       this.ref.circleRadius = newRadius;
-      this.ref.centerPosition = this.centerSEPoint.vectorPosition;
+      this.ref.centerVector = this._centerSEPoint.locationVector;
       // display the new circle with the updated values
       this.ref.updateDisplay();
     }
     this.setOutOfDate(false);
+    this.updateKids();
   }
 
   accept(v: Visitor): void {

@@ -42,6 +42,8 @@ There are some abstract methods in <span class="class">SENodules</span> that mus
   - End with the method <span class="method">updateKids()</span> that updates all kids of this <span class="class">SENodule</span>.
 - <span class="method">isHitAt(Vector)</span>: Takes an input of a location on the unit ideal sphere and decides if that location is close enough to this object that the user would like to select or highlight it.
 
+Naming Convention: For any variable in a model class, that has an associated setter or getter, the private version starts with an underscore and the setter or getter version doesn't have an underscore. If the variable is an SE object of some type the two letter sequence SE is in the name.
+
 ## Plottables Directory
 
 Plottable classes are the front-end collection of classes that organize and display graphical representations of objects on the [ideal unit sphere](/design/#coordinates). Classes in this directory should only receive updates and information from the <span class="class">SENodule</span> classes to which they are associated. While there are over 40 <span class="class">SENodule</span> classes (one for each [geometric tool](/userguide/toolsobjectspanel.html#tools-tab)), there are only about 10 graphically rendered objects and each has its own class in the <span class="directory">plottables</span> directory. This [spreadsheet](https://docs.google.com/spreadsheets/d/1o0s0l-offb5uPaimqiIyfVzv22wsuXrKBfjXbZHzxl8/edit?usp=sharing) contains a list of the <span class="class">SENodule</span> classes and their corresponding <span class="class">Nodule</span> classes. The plottable classes are
@@ -94,6 +96,8 @@ Linking a <span class="class">Nodule</span> object and its corresponding <span c
 This is illustrated in this code snippet from <span class="file">PointHandler.ts</span>:
 
 <<< @/src/eventHandlers/PointHandler.ts#linkNoduleSENodule
+
+Naming Convention: For any variable in a plottables class the must be set before the plottable can be properly rendered, the private version of it starts with an underscore and the setter/getter version has the same name with out the underscore. If the variable is a vector of some type the last word of the name is Vector.
 
 ## Layers
 

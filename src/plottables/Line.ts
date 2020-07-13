@@ -15,11 +15,12 @@ const SUBDIVS = SETTINGS.line.numPoints;
  */
 export default class Line extends Nodule {
   /** The normal vector to the plane containing the line*/
-  private normalDirection: Vector3;
+  private _normalVector: Vector3;
 
   /**
-   * NOTE: Once the above three variables are set, the updateDisplay() will correctly render the line.
-   * These are the only pieces of information that are need to do the rendering. All other
+   * NOTE: Once the above variable is set, the updateDisplay() will correctly render the line.
+   * This are the only piece of information that is need to do the rendering, so the updateDisplay() is automatically
+   * class when the setter is used to update the normal Vector All other
    * calculations in this class are only for the purpose of rendering the line.
    */
 
@@ -110,7 +111,7 @@ export default class Line extends Nodule {
 
     // Be sure to clone() the incoming start and end points
     // Otherwise update by other Line will affect this one!
-    this.normalDirection = new Vector3();
+    this._normalVector = new Vector3();
     // this.normalDirection.crossVectors(this.start, this.end);
     // The back half will be dynamically added to the group
     //this.name = "Line-" + this.id;
@@ -180,18 +181,18 @@ export default class Line extends Nodule {
   public updateDisplay(): void {
     //Form the X Axis perpendicular to the normalDirection, this is where the plotting will start.
     this.desiredXAxis
-      .set(-this.normalDirection.y, this.normalDirection.x, 0)
+      .set(-this._normalVector.y, this._normalVector.x, 0)
       .normalize();
 
     // Form the Y axis perpendicular to the normal vector and the XAxis
-    this.desiredYAxis.crossVectors(this.normalDirection, this.desiredXAxis)
+    this.desiredYAxis.crossVectors(this._normalVector, this.desiredXAxis)
       .normalize;
     // Form the transformation matrix that will map the vectors along the equation of the Default Sphere to
     // to the current position of the line.
     this.transformMatrix.makeBasis(
       this.desiredXAxis,
       this.desiredYAxis,
-      this.normalDirection
+      this._normalVector
     );
 
     // Variables to keep track of when the z coordinate of the transformed object changes sign
@@ -251,20 +252,26 @@ export default class Line extends Nodule {
    * This is the only vector that needs to be set in order to render the line.  This also updates the display
    */
   set normalVector(dir: Vector3) {
-    this.normalDirection.copy(dir).normalize();
+    this._normalVector.copy(dir).normalize();
     this.updateDisplay();
   }
 
   setVisible(flag: boolean): void {
-    // None yet
+    if (!flag) {
+      (this.frontHalf as any).visible = false;
+      (this.glowingFrontHalf as any).visible = false;
+      (this.backHalf as any).visible = false;
+      (this.glowingBackHalf as any).visible = false;
+    } else {
+      this.normalDisplay();
+    }
   }
   // It looks like we have to define our own clone() function
   // The builtin clone() does not seem to work correctly
   clone(): this {
     const dup = new Line();
     dup.name = this.name;
-
-    dup.normalDirection.copy(this.normalDirection);
+    dup._normalVector.copy(this._normalVector);
     dup.frontHalf.rotation = this.frontHalf.rotation;
     dup.backHalf.rotation = this.backHalf.rotation;
     dup.frontArcLen = this.frontArcLen;

@@ -34,10 +34,9 @@ export default class MoveHandler extends Highlighter {
   private moveFrom = new Vector3();
 
   /**
-   * For debugging the circle move code
+   * A flag to set that indicates nothing should be moved
    */
-  private isSegmentAdded = false;
-
+  private moveNothing = false;
   /**
    * A matrix that is used to indicate the *change* in position of the objects on the sphere. The
    * total change in position is not stored. This matrix is applied (via a position visitor) to
@@ -54,31 +53,37 @@ export default class MoveHandler extends Highlighter {
     // Reset the variables for another move event
     this.isDragging = true;
     this.moveTarget = null;
+    this.moveNothing = false;
     this.moveFrom.copy(this.currentSphereVector);
 
     // Query the nearby SENodules to select the one the user wishes to move (if none the sphere rotates)
-    if (this.hitNodules.length > 0) {
+    if (this.hitSENodules.length > 0) {
       // Prioritize moving points then lines then segments, then circles
-      const freePoints = this.hitPoints.filter(n => n.isFreeToMove());
+      const freePoints = this.hitSEPoints.filter(n => n.isFreeToMove());
       if (freePoints.length > 0) {
         this.moveTarget = freePoints[0];
         return;
       }
-      const freeLines = this.hitLines.filter(n => n.isFreeToMove());
-      if (freeLines.length > 0) {
-        this.moveTarget = freeLines[0];
-        return;
-      }
-      const freeSegments = this.hitSegments.filter(n => n.isFreeToMove());
-      if (freeSegments.length > 0) {
-        this.moveTarget = freeSegments[0];
-        return;
-      }
+      //If the user tries to move a nonFree point, nothing should happen
+      if (this.hitSEPoints.length == 0) {
+        const freeLines = this.hitSELines.filter(n => n.isFreeToMove());
+        if (freeLines.length > 0) {
+          this.moveTarget = freeLines[0];
+          return;
+        }
+        const freeSegments = this.hitSESegments.filter(n => n.isFreeToMove());
+        if (freeSegments.length > 0) {
+          this.moveTarget = freeSegments[0];
+          return;
+        }
 
-      const freeCircles = this.hitCircles.filter(n => n.isFreeToMove());
-      if (freeCircles.length > 0) {
-        this.moveTarget = freeCircles[0];
-        return;
+        const freeCircles = this.hitSECircles.filter(n => n.isFreeToMove());
+        if (freeCircles.length > 0) {
+          this.moveTarget = freeCircles[0];
+          return;
+        }
+      } else {
+        this.moveNothing = true;
       }
     }
   }
@@ -90,7 +95,7 @@ export default class MoveHandler extends Highlighter {
     if (this.isDragging) {
       if (this.moveTarget instanceof SEPoint) {
         // Move the selected SEPoint
-        this.moveTarget.vectorPosition = this.currentSphereVector;
+        this.moveTarget.locationVector = this.currentSphereVector;
         this.moveTarget.update();
       } else if (
         this.moveTarget instanceof SELine ||
@@ -103,7 +108,7 @@ export default class MoveHandler extends Highlighter {
         // Move the selected SECircle
         this.moveTarget.ref.normalDisplay();
         this.doMoveCircle(this.moveTarget);
-      } else if (this.moveTarget == null) {
+      } else if (this.moveTarget == null && !this.moveNothing) {
         // Rotate the sphere
         this.doRotateSphere();
       }
@@ -161,24 +166,24 @@ export default class MoveHandler extends Highlighter {
         //   rotationAngle
         // );
         tmpVector1
-          .copy(targetLine.startPoint.vectorPosition)
+          .copy(targetLine.startSEPoint.locationVector)
           .applyAxisAngle(desiredZAxis, rotationAngle);
-        targetLine.startPoint.vectorPosition = tmpVector1;
+        targetLine.startSEPoint.locationVector = tmpVector1;
         tmpVector2
-          .copy(targetLine.endPoint.vectorPosition)
+          .copy(targetLine.endSEPoint.locationVector)
           .applyAxisAngle(desiredZAxis, rotationAngle);
-        targetLine.endPoint.vectorPosition = tmpVector2;
+        targetLine.endSEPoint.locationVector = tmpVector2;
         // Update both points, because we might need to update their kids!
-        targetLine.endPoint.update();
-        targetLine.startPoint.update();
+        targetLine.endSEPoint.update();
+        targetLine.startSEPoint.update();
       }
     } else {
       console.log("pivot");
-      let pivot = targetLine.startPoint;
-      let freeEnd = targetLine.endPoint;
+      let pivot = targetLine.startSEPoint;
+      let freeEnd = targetLine.endSEPoint;
       if (altKeyPressed) {
-        pivot = targetLine.endPoint;
-        freeEnd = targetLine.startPoint;
+        pivot = targetLine.endSEPoint;
+        freeEnd = targetLine.startSEPoint;
       }
 
       // We want to measure the rotation angle with respect to the rotationAxis
@@ -188,11 +193,11 @@ export default class MoveHandler extends Highlighter {
 
       // Determine the normal vector to the plane containing the pivot and the previous position
       tmpVector1
-        .crossVectors(pivot.vectorPosition, this.previousSphereVector)
+        .crossVectors(pivot.locationVector, this.previousSphereVector)
         .normalize();
       // Determine the normal vector to the plane containing the pivot and the current position
       tmpVector2
-        .crossVectors(pivot.vectorPosition, this.currentSphereVector)
+        .crossVectors(pivot.locationVector, this.currentSphereVector)
         .normalize();
       // The angle between tmpVector1 and tmpVector2 is the distance to move on the Ideal Unit Sphere
       rotationAngle = tmpVector1.angleTo(tmpVector2);
@@ -207,10 +212,10 @@ export default class MoveHandler extends Highlighter {
       }
 
       // Rotate the freeEnd by the rotation angle around the axisOfRotation
-      const axisOfRotation = pivot.vectorPosition;
-      tmpVector1.copy(freeEnd.vectorPosition);
+      const axisOfRotation = pivot.locationVector;
+      tmpVector1.copy(freeEnd.locationVector);
       tmpVector1.applyAxisAngle(axisOfRotation, rotationAngle);
-      freeEnd.vectorPosition = tmpVector1;
+      freeEnd.locationVector = tmpVector1;
       freeEnd.update();
     }
   }
@@ -247,16 +252,16 @@ export default class MoveHandler extends Highlighter {
         rotationAngle
       );
       tmpVector1
-        .copy(targetCircle.centerPoint.vectorPosition)
+        .copy(targetCircle.centerSEPoint.locationVector)
         .applyMatrix4(this.changeInPositionRotationMatrix);
-      targetCircle.centerPoint.vectorPosition = tmpVector1;
+      targetCircle.centerSEPoint.locationVector = tmpVector1;
       tmpVector2
-        .copy(targetCircle.circlePoint.vectorPosition)
+        .copy(targetCircle.circleSEPoint.locationVector)
         .applyMatrix4(this.changeInPositionRotationMatrix);
-      targetCircle.circlePoint.vectorPosition = tmpVector2;
+      targetCircle.circleSEPoint.locationVector = tmpVector2;
       // Update both points, because we might need to update their kids!
-      targetCircle.circlePoint.update();
-      targetCircle.centerPoint.update();
+      targetCircle.circleSEPoint.update();
+      targetCircle.centerSEPoint.update();
     }
   }
 
@@ -320,7 +325,7 @@ export default class MoveHandler extends Highlighter {
   //     if (pos >= 0) {
   //       // Use the new coordinates of the incoming intersection point
   //       // to update the current one
-  //       current.vectorPosition.copy(newIntersections[pos].vectorPosition);
+  //       current.vectorVector.copy(newIntersections[pos].vectorVector);
   //       current.update();
 
   //       // Remove matching incoming points so after this forEach loop
