@@ -3,6 +3,7 @@ import { SENodule } from "@/models/SENodule";
 import { Stylable } from "./Styleable";
 import { Resizeable } from "./Resizeable";
 import SETTINGS from "@/global-settings";
+import { VNodeChildren } from "vue";
 
 export enum DisplayStyle {
   DEFAULT,
@@ -37,9 +38,17 @@ export default abstract class Nodule implements Stylable, Resizeable {
   abstract normalDisplay(): void;
   abstract glowingDisplay(): void;
 
-  /** Set the temporary/glowing style and update the current display*/
+  /** Set the temporary/glowing/default/updated style*/
   abstract stylize(flag: DisplayStyle): void;
+
+  /** Hide the object if flag = false, set normalDisplay() if flag = true  */
   abstract setVisible(flag: boolean): void;
+
+  /**
+   * Update the display of the object called after all the necessary variables have been set so
+   * an updated object will be rendered correctly
+   */
+  abstract updateDisplay(): void;
 
   //** Get the back contrasting style using the value of contrast */
   static contrastFillColor(frontColor: string): string {

@@ -20,8 +20,15 @@ export default abstract class MouseHandler implements ToolStrategy {
   protected readonly Y_AXIS = new Vector3(0, 1, 0);
   protected readonly Z_AXIS = new Vector3(0, 0, 1);
 
+  /**
+   * This is canvas is the midGround layer in the twoInstance (the main Two object).
+   * Used to determine the Default Screen Coordinates of the mouse event
+   */
   protected readonly canvas: Two.Group;
-  protected store = AppStore; // Vuex global state
+  /**
+   * Vuex global state
+   */
+  protected store = AppStore; //
   /**
    * The vector location of the current and previous mouse event on the ideal unit sphere
    */
@@ -39,11 +46,11 @@ export default abstract class MouseHandler implements ToolStrategy {
   /**
    * Arrays of nodules near the mouse event location
    */
-  protected hitNodules: SENodule[] = [];
-  protected hitPoints: SEPoint[] = [];
-  protected hitLines: SELine[] = [];
-  protected hitSegments: SESegment[] = [];
-  protected hitCircles: SECircle[] = [];
+  protected hitSENodules: SENodule[] = [];
+  protected hitSEPoints: SEPoint[] = [];
+  protected hitSELines: SELine[] = [];
+  protected hitSESegments: SESegment[] = [];
+  protected hitSECircles: SECircle[] = [];
   /**
    * A temporary plottable (TwoJS) point created while the user is making the circles or segments
    */
@@ -70,6 +77,10 @@ export default abstract class MouseHandler implements ToolStrategy {
    */
   protected infoText = new TextBox("Hello");
 
+  /**
+   * Abstract class, whose MouseMoved event sets the current/previous sphere/screen points
+   * @param layers The TwoGroup array of layer so plottable objects can be put into the correct layers for correct rendering
+   */
   constructor(layers: Two.Group[]) {
     this.layers = layers;
     this.canvas = layers[LAYER.midground];

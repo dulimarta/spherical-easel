@@ -15,7 +15,7 @@ export class SEPoint extends SENodule implements Visitable {
   /**
    * The vector location of the SEPoint on the ideal unit sphere
    */
-  protected vectorLocation = new Vector3();
+  protected _locationVector = new Vector3();
 
   /**
    * Create a model SEPoint using:
@@ -35,8 +35,8 @@ export class SEPoint extends SENodule implements Visitable {
     if (!this.canUpdateNow()) {
       return;
     }
-    //Update the location of the associate plottable Point
-    this.ref.positionVector = this.vectorLocation;
+    //Update the location of the associate plottable Point (setter also updates the display)
+    this.ref.positionVector = this._locationVector;
 
     this.setOutOfDate(false);
     this.updateKids();
@@ -45,29 +45,24 @@ export class SEPoint extends SENodule implements Visitable {
   /**
    * Set or get the location vector of the SEPoint on the unit ideal sphere
    */
-  set vectorPosition(pos: Vector3) {
+  set locationVector(pos: Vector3) {
     // Record the location on the unit ideal sphere of this SEPoint
-    this.vectorLocation.copy(pos).normalize();
+    this._locationVector.copy(pos).normalize();
     // Set the position of the associated displayed plottable Point
-    this.ref.positionVector = this.vectorLocation;
+    this.ref.positionVector = this._locationVector;
   }
-  get vectorPosition(): Vector3 {
-    return this.vectorLocation;
+  get locationVector(): Vector3 {
+    return this._locationVector;
   }
 
   accept(v: Visitor): void {
     v.actionOnPoint(this);
   }
 
-  public isHitAt(spherePos: Vector3): boolean {
+  public isHitAt(unitIdealVector: Vector3): boolean {
     return (
-      this.vectorLocation.distanceTo(spherePos) <
+      this._locationVector.distanceTo(unitIdealVector) <
       SETTINGS.point.hitIdealDistance
     );
-  }
-
-  setShowing(b: boolean): void {
-    super.setShowing(b);
-    this.ref.setVisible(b);
   }
 }

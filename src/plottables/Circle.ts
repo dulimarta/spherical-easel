@@ -22,18 +22,26 @@ const SUBDIVISIONS = SETTINGS.circle.numPoints;
  */
 export default class Circle extends Nodule {
   /**
-   * The center of the circle in ideal unit sphere
+   * The center vector of the circle in ideal unit sphere
    */
-  private center_: Vector3; // Can't use "center", name conflict with TwoJS
+  private _centerVector = new Vector3();
 
   /**
-   * The radius (in radians) as the user drags the mouse on the surface of the sphere
+   * The radius (in radians) of the circle on the ideal unit sphere
    */
-  private arcRadius = 1;
+  private _circleRadius = 0;
+
   /**
-   *  This the arcRadius projected to the plane of the circle
+   *
+   * NOTE: Once the above two variables are set, the updateDisplay() will correctly render the circle.
+   * These are the only pieces of information that are need to do the rendering. All other
+   * calculations in this class are only for the purpose of rendering the segment.
    */
-  private projectedRadius = 1;
+
+  /**
+   *  This the radius projected to the plane of the circle. It is always Math.sin(this.radius).
+   */
+  private projectedRadius = 0;
 
   /**
    * The TwoJS objects to display the front/back parts and their glowing counterparts.
@@ -117,27 +125,19 @@ export default class Circle extends Nodule {
   );
 
   /**
-   * For temporary calculation with ThreeJS objects
-   */
-  private tmpVector = new Vector3();
-  private tmpMatrix = new Matrix4();
-
-  /**
    * This is the list of original vertices of a circle in the XY plane of radius
    * SETTINGS.boundaryCircle.radius. There are SETTINGS.circle.subdivisions of these vertices
    */
   private originalVertices: Vector2[];
 
-  // for debugging only
-  //private majorLine: Two.Line;
+  /**
+   * For temporary calculation with ThreeJS objects
+   */
+  private tmpVector = new Vector3();
+  private tmpMatrix = new Matrix4();
 
-  constructor(center?: Vector3, arcRadius?: number) {
+  constructor() {
     super();
-
-    // For debugging
-    // Draw the segment on the positive X-axis of the circle/ellipse
-    //this.majorLine = new Two.Line(0, 0, SETTINGS.boundaryCircle.radius, 0);
-    //this.add(this.majorLine);
 
     // Create the initial front and back vertices (glowing/not/fill)
     const frontVertices: Two.Vector[] = [];
@@ -216,30 +216,27 @@ export default class Circle extends Nodule {
     backVertices.forEach(v => {
       this.originalVertices.push(new Vector2(v.x, v.y));
     });
-
-    // Set the center, radii, and temporary variables
-    this.center_ = new Vector3(0, 0, 0);
-    if (center) this.center_.copy(center);
-    this.arcRadius = arcRadius || Math.PI / 4;
-    this.projectedRadius = Math.sin(this.arcRadius);
-
-    //this.name = "Circle-" + this.id;
   }
-
-  // Using this algorithm, the frontPart and backPart are rendered correctly
-  // but the center of the circle is off by several pixels
-  private updateDisplay() {
+  /**
+   * Reorient the unit circle in 3D and then project the points to 2D
+   * This method updates the TwoJS objects (frontPart, frontExtra, ...) for display
+   * This is only accurate if the centerVector and radius are correct so only
+   * call this method once those variables are updated.
+   */
+  public updateDisplay() {
     const sphereRadius = SETTINGS.boundaryCircle.radius; // in pixels
     // The vector to the circle center is ALSO the normal direction of the circle
     // These three vectors will be stored in SECircle -- just copy them from there
-    desiredZAxis.copy(this.center_).normalize();
-    desiredXAxis.set(-this.center_.y, this.center_.x, 0).normalize();
+    desiredZAxis.copy(this._centerVector).normalize();
+    desiredXAxis
+      .set(-this._centerVector.y, this._centerVector.x, 0)
+      .normalize();
     desiredYAxis.crossVectors(desiredZAxis, desiredXAxis);
 
     // Set up the local coordinates from for the circle
     transformMatrix.makeBasis(desiredXAxis, desiredYAxis, desiredZAxis);
     // The circle plane is below the tangent plane
-    const distanceFromOrigin = Math.cos(this.arcRadius);
+    const distanceFromOrigin = Math.cos(this._circleRadius);
 
     // translate along the Z of the local coordinate frame
     this.tmpMatrix.makeTranslation(0, 0, distanceFromOrigin * sphereRadius);
@@ -320,7 +317,7 @@ export default class Circle extends Nodule {
     //Now build the front/back fill objects based on the front/back parts
 
     // The circle interior is only on the front of the sphere
-    if (backLen === 0 && this.arcRadius < Math.PI / 2) {
+    if (backLen === 0 && this._circleRadius < Math.PI / 2) {
       // In this case the frontFillVertices are the same as the frontVertices
       this.frontFill.vertices.forEach((v, index) => {
         v.x = this.frontPart.vertices[index].x;
@@ -371,7 +368,7 @@ export default class Circle extends Nodule {
       }
 
       // If the arcRadius is bigger than Pi/2 then reverse the toVector
-      if (this.arcRadius > Math.PI / 2) {
+      if (this._circleRadius > Math.PI / 2) {
         toVector.multiplyScalar(-1);
       }
 
@@ -410,7 +407,7 @@ export default class Circle extends Nodule {
     }
 
     // The circle interior is only on the back of the sphere
-    if (frontLen === 0 && this.arcRadius < Math.PI / 2) {
+    if (frontLen === 0 && this._circleRadius < Math.PI / 2) {
       // The circle interior is only on the back of the sphere
       // In this case the backFillVertices are the same as the backVertices
       this.backFill.vertices.forEach((v, index) => {
@@ -423,7 +420,7 @@ export default class Circle extends Nodule {
     }
 
     // The circle interior covers the entire front half of the sphere and is a 'hole' on the back
-    if (frontLen === 0 && this.arcRadius > Math.PI / 2) {
+    if (frontLen === 0 && this._circleRadius > Math.PI / 2) {
       // In this case set the frontFillVertices to the entire front of the sphere
       this.frontFill.vertices.forEach((v, index) => {
         const angle = (index / SUBDIVISIONS) * 2 * Math.PI;
@@ -477,7 +474,7 @@ export default class Circle extends Nodule {
     }
 
     // The circle interior covers the entire back half of the sphere and is a 'hole' on the front
-    if (backLen === 0 && this.arcRadius > Math.PI / 2) {
+    if (backLen === 0 && this._circleRadius > Math.PI / 2) {
       // In this case set the frontFillVertices to the entire front of the sphere
       this.backFill.vertices.forEach((v, index) => {
         const angle = (index / SUBDIVISIONS) * 2 * Math.PI;
@@ -531,24 +528,22 @@ export default class Circle extends Nodule {
    * Set or Get the center of the circle vector. Setting it updates the display.
    */
   set centerVector(position: Vector3) {
-    this.center_.copy(position);
-    this.updateDisplay();
+    this._centerVector.copy(position);
   }
 
   get centerVector(): Vector3 {
-    return this.center_;
+    return this._centerVector;
   }
 
   /**
    * Set or Get the radius of the circle. Setting it updates the display.
    */
-  set radius(arcLengthRadius: number) {
-    this.arcRadius = arcLengthRadius;
+  set circleRadius(arcLengthRadius: number) {
+    this._circleRadius = arcLengthRadius;
     this.projectedRadius = Math.sin(arcLengthRadius);
-    this.updateDisplay();
   }
-  get radius(): number {
-    return this.arcRadius;
+  get circleRadius(): number {
+    return this._circleRadius;
   }
 
   frontGlowingDisplay(): void {
@@ -581,12 +576,16 @@ export default class Circle extends Nodule {
   }
 
   setVisible(flag: boolean): void {
-    (this.frontPart as any).visible = flag;
-    (this.backPart as any).visible = flag;
-    (this.frontFill as any).visible = flag;
-    (this.backFill as any).visible = flag;
-    (this.glowingBackPart as any).visible = flag;
-    (this.glowingFrontPart as any).visible = flag;
+    if (!flag) {
+      (this.frontPart as any).visible = false;
+      (this.backPart as any).visible = false;
+      (this.frontFill as any).visible = false;
+      (this.backFill as any).visible = false;
+      (this.glowingBackPart as any).visible = false;
+      (this.glowingFrontPart as any).visible = false;
+    } else {
+      this.normalDisplay();
+    }
   }
 
   /**
@@ -596,7 +595,9 @@ export default class Circle extends Nodule {
   clone(): this {
     // Use the constructor for this class to create a template to copy over the
     // values from the current (the `this`) Circle object
-    const dup = new Circle(this.center_, this.arcRadius);
+    const dup = new Circle();
+    dup._centerVector.copy(this._centerVector);
+    dup._circleRadius = this._circleRadius;
     //dup.rotation = this.rotation;
     //dup.translation.copy(this.translation);
     // Duplicate the non-glowing parts

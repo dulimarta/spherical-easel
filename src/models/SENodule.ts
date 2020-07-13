@@ -1,5 +1,7 @@
 import { Vector3 } from "three";
 import { SEPoint } from "./SEPoint";
+import SETTINGS from "@/global-settings";
+import Nodule from "@/plottables/Nodule";
 // import { SESegmentMidPoint } from "./SESegmentMidPoint";
 
 let NODE_COUNT = 0;
@@ -12,7 +14,12 @@ export abstract class SENodule {
   /**
    * An array to store the kids of the node (i.e. the objects that depend on this node)
    */
-  protected kids: SENodule[] = [];
+  protected _kids: SENodule[] = [];
+
+  /**
+   * A point to the corresponding plottable object
+   */
+  protected ref!: Nodule;
 
   /* A unique identification number for each node */
   public id: number;
@@ -27,17 +34,20 @@ export abstract class SENodule {
         far apart and the intersections don't exist, the user might drag the circles back to where
         the intersections exist). If an object doesn't exist then all of the objects that are 
         descendants of the object don't exist. */
-  private exists = true;
+  protected _exists = true;
 
   /* If the object is not visible then showing = true (The user can hide objects)*/
-  private showing = true;
+  protected _showing = true;
+
+  /* If the object is selected, it is glowing*/
+  protected _glowing = false;
 
   /* This boolean is set to indicate that the object is out of date and needs to be updated. */
-  private outOfDate = false;
+  protected _outOfDate = false;
 
   /* Marks all descendants (kids, grand kids, etc.) of the current SENodule out of date */
   public markKidsOutOfDate(): void {
-    this.kids.forEach(item => {
+    this._kids.forEach(item => {
       item.setOutOfDate(true);
       item.markKidsOutOfDate();
     });
@@ -62,7 +72,7 @@ export abstract class SENodule {
 
   /* Kids of the current SENodule are updated  */
   public updateKids(): void {
-    this.kids.forEach(item => {
+    this._kids.forEach(item => {
       item.update();
     });
   }
@@ -71,7 +81,7 @@ export abstract class SENodule {
    * Is the object hit a point at a particular sphere location?
    * @param sphereVector a location on the ideal unit sphere
    */
-  public abstract isHitAt(sphereVector: Vector3): boolean;
+  public abstract isHitAt(unitIdealVector: Vector3): boolean;
 
   /**
    * Adds a given SENodule, n, to the parent array of the current SENodule
@@ -92,12 +102,12 @@ export abstract class SENodule {
 
   /* Adds a given SENodule, n, to the kids array of the current SENodule */
   public addKid(n: SENodule): void {
-    this.kids.push(n);
+    this._kids.push(n);
   }
   /* Removes a given SENodule, n, from the kid arry of the current SENodule */
   public removeKid(n: SENodule): void {
-    const idx = this.kids.findIndex((item: SENodule) => item.id === n.id);
-    if (idx >= 0) this.kids.splice(idx, 1);
+    const idx = this._kids.findIndex((item: SENodule) => item.id === n.id);
+    if (idx >= 0) this._kids.splice(idx, 1);
   }
   /* This registers a given SENodule as a child of the current SENodule by 
     1) putting the given SENodule,n ,as an element in the kids array
@@ -130,7 +140,7 @@ export abstract class SENodule {
   }
 
   public removeSelfSafely(): void {
-    if (this.kids.length == 0) {
+    if (this._kids.length == 0) {
       // const pars = this._parents.map(p => p.name).join(", ");
       // console.debug(`Unregistering ${this.name} from ${pars}`);
       this._parents.forEach(item => {
@@ -142,7 +152,7 @@ export abstract class SENodule {
       });
       this._parents.clear();
     } else {
-      const dep = this.kids.map(z => z.name).join(", ");
+      const dep = this._kids.map(z => z.name).join(", ");
       console.error(`Can't remove ${this.name} safely because of ${dep}`);
     }
   }
@@ -154,8 +164,8 @@ export abstract class SENodule {
     this._parents.forEach(item => {
       item.unregisterChild(this);
     });
-    while (this.kids.length > 0) {
-      this.kids[0].removeThisNode();
+    while (this._kids.length > 0) {
+      this._kids[0].removeThisNode();
     }
   }
 
@@ -189,35 +199,67 @@ export abstract class SENodule {
   }
 
   //Getters and Setters
-  public getExists(): boolean {
-    return this.exists;
+  set exists(b: boolean) {
+    this._exists = b;
   }
 
-  public setExist(b: boolean): void {
-    this.exists = b;
+  get exists(): boolean {
+    return this._exists;
+  }
+
+  /**
+   * Returns false if any one of the three components of vec are bigger than SETTINGS.tolerance
+   * @param vec Vector3
+   */
+  static isZero(vec: Vector3): boolean {
+    if (
+      Math.abs(vec.x) > SETTINGS.tolerance ||
+      Math.abs(vec.y) > SETTINGS.tolerance ||
+      Math.abs(vec.z) > SETTINGS.tolerance
+    ) {
+      return false;
+    }
+    return true;
   }
 
   public setOutOfDate(b: boolean): void {
-    this.outOfDate = b;
+    this._outOfDate = b;
   }
 
   public isOutOfDate(): boolean {
-    return this.outOfDate;
+    return this._outOfDate;
   }
 
-  get children(): SENodule[] {
-    return this.kids;
+  get kids(): SENodule[] {
+    return this._kids;
   }
 
   get parents(): SENodule[] {
     return this._parents;
   }
 
-  public setShowing(b: boolean): void {
-    this.showing = b;
+  set showing(b: boolean) {
+    // Set the showing variable
+    this._showing = b;
+    // Set the display for the corresponding plottable object
+    this.ref.setVisible(b);
   }
 
-  public getShowing(): boolean {
-    return this.showing;
+  get showing(): boolean {
+    return this._showing;
+  }
+
+  set glowing(b: boolean) {
+    // Set the showing variable
+    this._glowing = b;
+    if (b) {
+      // Set the display for the corresponding plottable object
+      this.ref.glowingDisplay();
+    } else {
+      this.ref.normalDisplay();
+    }
+  }
+  get glowing(): boolean {
+    return this._glowing;
   }
 }

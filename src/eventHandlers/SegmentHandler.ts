@@ -3,27 +3,21 @@
 import Two from "two.js";
 import { Vector3 } from "three";
 import MouseHandler from "./MouseHandler";
+import { SENodule } from "@/models/SENodule";
 import { SEPoint } from "@/models/SEPoint";
 import Segment from "@/plottables/Segment";
 import Point from "@/plottables/Point";
 import { CommandGroup } from "@/commands/CommandGroup";
 import { AddPointCommand } from "@/commands/AddPointCommand";
 import { AddSegmentCommand } from "@/commands/AddSegmentCommand";
-import { AddSegmentMidPointCommand } from "@/commands/AddSegmentMidPointCommand";
 import { SESegment } from "@/models/SESegment";
 import SETTINGS from "@/global-settings";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import { DisplayStyle } from "@/plottables/Nodule";
-import { ShowPointCommand } from "@/commands/ShowPointCommand";
-import { SESegmentMidPoint } from "@/models/SESegmentMidPoint";
 import Highlighter from "./Highlighter";
+import { ConvertInterPtToUserCreatedCommand } from "@/commands/ConvertInterPtToUserCreatedCommand";
 
 const MIDPOINT_MOVEMENT_THRESHOLD = SETTINGS.segment.midPointMovementThreshold;
-
-/** Temporary vectors to help with calculations */
-const tmpVector1 = new Vector3();
-const tmpVector2 = new Vector3();
-const tmpTwoVector = new Two.Vector(0, 0);
 
 export default class SegmentHandler extends Highlighter {
   /**
@@ -32,19 +26,14 @@ export default class SegmentHandler extends Highlighter {
   private startVector = new Vector3();
 
   /**
-   * The ending unit vector location of the segment (only used when the start and end are nearly Antipodal)
-   */
-  private endVector = new Vector3();
-  /**
-   * This indicates if the temporary segment has been added to the scene and made permanent
-   */
-  private isTemporarySegmentAdded = false;
-  /**
    * The (model) start and end SEPoints of the line segment
    */
   private startSEPoint: SEPoint | null = null;
   private endSEPoint: SEPoint | null = null;
-
+  /**
+   * The arcLength of the segment
+   */
+  private arcLength = 0;
   /**
    * Indicates if the user is dragging
    */
@@ -53,11 +42,16 @@ export default class SegmentHandler extends Highlighter {
    * A temporary plottable (TwoJS) segment to display while the user is creating a segment
    */
   private tempSegment: Segment;
+  /**
+   * This indicates if the temporary segment has been added to the scene and made permanent
+   */
+  private isTemporarySegmentAdded = false;
 
   /**
    * If the user starts to make a segment and mouse press at a location on the sphere, then moves
    * off the canvas, then back inside the sphere and mouse releases, we should get nothing. This
-   * variable is to help with that.
+   * variable is to help with that. Or if the user mouse press outside the canvas and mouse releases
+   * on the canvas, nothing should happen.
    */
   private makingASegment = false;
   /**
@@ -74,40 +68,48 @@ export default class SegmentHandler extends Highlighter {
    */
   private nearlyAntipodal = false;
 
-  /** The unit midVector and temporary unit midVector */
-  private midVector = new Vector3();
-  private tempMidVector = new Vector3(); // This holds a candidate midpoint vector to see so that if updating the segment moves the midpoint too much
+  /**
+   * The unit normal vector to the plane of containing the segment
+   */
+  private normalVector = new Vector3(0, 0, 0);
+  /**
+   * A temporary vector to help with normal vector computations
+   */
+  private tmpVector = new Vector3();
 
   /**
-   * When the start and end vectors are nearly antipodal record an anchor midpoint, so that when the user
-   * moves the mouse near the antipode of the startVector, the relative movement of the mouse is used to
-   * move the midVector and then using the line connecting the startVector to the midVector and twice the
-   * distance from the startVector to the midVector, the endVector is created.
+   * Make a segment handler
+   * @param layers The TwoGroup array of layer so plottable objects can be put into the correct layers for correct rendering
    */
-  private anchorMidVector = new Vector3();
-
   constructor(layers: Two.Group[]) {
     super(layers);
     this.tempSegment = new Segment();
     this.tempSegment.stylize(DisplayStyle.TEMPORARY);
+    this.isTemporarySegmentAdded = false;
+    this.dragging = false;
   }
 
   mousePressed(event: MouseEvent): void {
+    // Do the mouse moved event of the Highlighter so that a new hitSEPoints array will be generated
+    // otherwise if the user has finished making an new point, then *without* triggering a mouse move
+    // event, mouse press will *not* select the newly created point. This is not what we want so we call super.mouseMove
+    super.mouseMoved(event);
+
     // The user is making a segment
     this.makingASegment = true;
-
     // The user is dragging
     this.dragging = true;
-    // The Selection Handler forms a list of all the nearby points
+    // The Highlighter forms a list of all the nearby points
     // If there are nearby points, select the first one to be the start of the segment otherwise
     //  put a end/start marker (a Point found in MouseHandler) in the scene
-    if (this.hitPoints.length > 0) {
-      const selected = this.hitPoints[0];
-      this.startVector.copy(selected.vectorPosition);
-      this.startSEPoint = selected;
+    if (this.hitSEPoints.length > 0) {
+      const selected = this.hitSEPoints[0];
+      this.startVector.copy(selected.locationVector);
+      this.startSEPoint = this.hitSEPoints[0];
+
       // Set the start of the temp segment and the startMarker at the location of the selected point
-      this.startMarker.positionVector = selected.vectorPosition;
-      this.tempSegment.startVector = selected.vectorPosition;
+      this.startMarker.positionVector = selected.locationVector;
+      this.tempSegment.startVector = selected.locationVector;
     } else {
       // The start vector of the temporary segment and the start marker are
       //  also the the current location on the sphere
@@ -117,16 +119,13 @@ export default class SegmentHandler extends Highlighter {
       this.startVector.copy(this.currentSphereVector);
       this.startSEPoint = null;
     }
-    this.startSEPoint = null;
-    // Initially the midpoint is the start point
-    this.midVector.copy(this.currentSphereVector);
-    this.anchorMidVector.copy(this.currentSphereVector);
 
-    // Initialize the booleans for describing the segment
+    // Set the booleans for describing the segment
     this.nearlyAntipodal = false;
     this.longerThanPi = false;
+    this.arcLength = 0;
 
-    // The previous sphere point is the current one initially
+    // The previous screen point is the current one initially
     this.startScreenVector.copy(this.currentScreenVector);
   }
 
@@ -145,17 +144,17 @@ export default class SegmentHandler extends Highlighter {
           this.startMarker.addToLayers(this.layers);
           this.tempSegment.addToLayers(this.layers);
         }
-        this.setMidAndEndVectors(event.ctrlKey, this.currentSphereVector);
+        this.setArcLengthAndNormalVector(
+          event.ctrlKey,
+          this.currentSphereVector
+        );
 
         // update the location of the endMarker
-        this.endMarker.positionVector = this.endVector;
+        this.endMarker.positionVector = this.currentSphereVector;
 
         // Finally set the values for the unit vectors defining the segment and update the display
-        this.tempSegment.midVector = this.midVector;
-        this.tempSegment.endVector = this.endVector;
-        this.tempSegment.normalVector = tmpVector1
-          .crossVectors(this.startVector, this.midVector)
-          .normalize();
+        this.tempSegment.arcLength = this.arcLength;
+        this.tempSegment.normalVector = this.normalVector;
         this.tempSegment.updateDisplay();
       }
     } else if (this.isTemporarySegmentAdded) {
@@ -193,6 +192,7 @@ export default class SegmentHandler extends Highlighter {
       this.nearlyAntipodal = false;
       this.longerThanPi = false;
       this.makingASegment = false;
+      this.arcLength = 0;
     }
   }
 
@@ -211,6 +211,7 @@ export default class SegmentHandler extends Highlighter {
     this.nearlyAntipodal = false;
     this.longerThanPi = false;
     this.makingASegment = false;
+    this.arcLength = 0;
   }
 
   private makeSegment(event: MouseEvent): void {
@@ -224,27 +225,37 @@ export default class SegmentHandler extends Highlighter {
       // Set the glowing display
       newStartPoint.stylize(DisplayStyle.GLOWING);
       const vtx = new SEPoint(newStartPoint);
-      vtx.vectorPosition = this.startVector;
+      vtx.locationVector = this.startVector;
       this.startSEPoint = vtx;
       segmentGroup.addCommand(new AddPointCommand(vtx));
     } else if (this.startSEPoint instanceof SEIntersectionPoint) {
-      segmentGroup.addCommand(new ShowPointCommand(this.startSEPoint));
+      // Mark the intersection point as created, the display style is changed and the glowing style is set up
+      segmentGroup.addCommand(
+        new ConvertInterPtToUserCreatedCommand(this.startSEPoint)
+      );
     }
     // Look for an endpoint at the mouse release location
-    if (this.hitPoints.length > 0) {
+    if (this.hitSEPoints.length > 0) {
       // The end point is an existing point
-      this.endSEPoint = this.hitPoints[0];
+      this.endSEPoint = this.hitSEPoints[0];
+      console.log("end name", this.endSEPoint.name);
       // move the endpoint of the segment to the location of the endpoint
       // This ensures that the initial display of the segment is nice and the endpoint
       // looks like the endpoint and is not off to the side
-      this.setMidAndEndVectors(event.ctrlKey, this.endSEPoint.vectorPosition);
-      this.tempSegment.normalVector = tmpVector1
-        .crossVectors(this.startVector, this.midVector)
-        .normalize();
+      this.setArcLengthAndNormalVector(
+        event.ctrlKey,
+        this.endSEPoint.locationVector
+      );
+      // Start vector is already set in mouse press
+      this.tempSegment.arcLength = this.arcLength;
+      this.tempSegment.normalVector = this.normalVector;
       this.tempSegment.updateDisplay();
 
       if (this.endSEPoint instanceof SEIntersectionPoint) {
-        segmentGroup.addCommand(new ShowPointCommand(this.endSEPoint));
+        // Mark the intersection point as created, the display style is changed and the glowing style is set up
+        segmentGroup.addCommand(
+          new ConvertInterPtToUserCreatedCommand(this.endSEPoint)
+        );
       }
     } else {
       // The endpoint is a new point and must be created and added to the command/store
@@ -254,27 +265,10 @@ export default class SegmentHandler extends Highlighter {
       // Set up the glowing display
       newEndPoint.stylize(DisplayStyle.GLOWING);
       const vtx = new SEPoint(newEndPoint);
-      vtx.vectorPosition = this.currentSphereVector;
+      vtx.locationVector = this.currentSphereVector;
       this.endSEPoint = vtx;
       segmentGroup.addCommand(new AddPointCommand(vtx));
     }
-
-    // The midpoint is a new point and must be created and added to the command/store
-    const newMidPoint = new Point();
-    // Set the display to the default values
-    newMidPoint.stylize(DisplayStyle.DEFAULT);
-    // Set the glowing display
-    newMidPoint.stylize(DisplayStyle.GLOWING);
-    // Set the display of the newMidPoint to false TODO: HANS - WHAT IS THE BEST WAY TO DO THIS?
-
-    const newSEMidPoint = new SESegmentMidPoint(
-      newMidPoint,
-      this.startSEPoint,
-      this.endSEPoint
-    );
-    newSEMidPoint.vectorPosition = this.midVector;
-    segmentGroup.addCommand(new AddSegmentMidPointCommand(newSEMidPoint));
-    (newSEMidPoint.ref as any).visible = false;
 
     // Clone the temporary segment and mark it added to the scene
     this.isTemporarySegmentAdded = false;
@@ -287,15 +281,16 @@ export default class SegmentHandler extends Highlighter {
     const newSESegment = new SESegment(
       newSegment,
       this.startSEPoint,
-      newSEMidPoint,
+      this.normalVector,
+      this.arcLength,
       this.endSEPoint
     );
     segmentGroup.addCommand(new AddSegmentCommand(newSESegment));
     this.store.getters
-      .determineIntersectionsWithSegment(newSESegment)
+      .createAllIntersectionsWithSegment(newSESegment)
       .forEach((p: SEIntersectionPoint) => {
-        p.setShowing(false);
         segmentGroup.addCommand(new AddPointCommand(p));
+        p.showing = false; // don not display the automatically created intersection points
       });
     segmentGroup.execute();
   }
@@ -312,34 +307,59 @@ export default class SegmentHandler extends Highlighter {
       // Set the glowing display
       newPoint.stylize(DisplayStyle.GLOWING);
       const vtx = new SEPoint(newPoint);
-      vtx.vectorPosition = this.startVector;
+      vtx.locationVector = this.startVector;
       this.startSEPoint = vtx;
       const addPoint = new AddPointCommand(vtx);
       addPoint.execute();
     }
   }
   /**
-   * Set the midpoint vector and the the endpoint vector given a fixed starting vector for a segment
-   * @param event
-   * @param candidateEndPoint A proposed unit vector location for the end point of the displayed segment
+   * Set the normal vector and arcLength given a fixed starting vector for a segment
+   * @param ctrlPressed If the mouse event includes the ctrl key being pressed which forces the segment to be longThanPi
+   * @param endVector The unit vector location for the end point of the displayed segment
    */
-  private setMidAndEndVectors(
+  private setArcLengthAndNormalVector(
     ctrlPressed: boolean,
-    candidateEndPoint: Vector3
+    endVector: Vector3
   ) {
-    if (this.startVector.angleTo(candidateEndPoint) > 2) {
-      // The startVector and the currentSpherePoint might be antipodal proceed with caution, possibly update longerThanPi
-      // The antipodal of the candidateEndPoint
-      tmpTwoVector
-        .set(candidateEndPoint.x, candidateEndPoint.y)
-        .multiplyScalar(-1 * SETTINGS.boundaryCircle.radius);
+    // Compute the normal vector from the this.startVector, the (old) normal vector and this.endVector
+    // Compute a temporary normal from the two points' vectors
+    this.tmpVector.crossVectors(this.startVector, endVector).normalize();
+    // Check to see if the temporary normal is zero (i.e the start and end vectors are parallel -- ether
+    // nearly antipodal or in the same direction)
+    if (SENodule.isZero(this.tmpVector)) {
+      if (this.normalVector.length() == 0) {
+        // The normal vector is still at its initial value so can't be used to compute the next normal, so set the
+        // the normal vector to an arbitrarily chosen vector perpendicular to the start vector
+        this.tmpVector.set(1, 0, 0);
+        this.tmpVector.crossVectors(this.startVector, this.tmpVector);
+        if (SENodule.isZero(this.tmpVector)) {
+          this.tmpVector.set(0, 1, 0);
+          // The cross or startVector and (1,0,0) and (0,1,0) can't *both* be zero
+          this.tmpVector.crossVectors(this.startVector, this.tmpVector);
+        }
+      } else {
+        // The start and end vectors align, compute  the next normal vector from the old normal and the start vector
+        this.tmpVector.crossVectors(this.startVector, this.normalVector);
+        this.tmpVector.crossVectors(this.tmpVector, this.startVector);
+      }
+    }
+    this.normalVector.copy(this.tmpVector).normalize();
+
+    // Set the arc length of the segment temporarily to the angle between start and end vectors (always less than Pi)
+    this.arcLength = this.startVector.angleTo(endVector);
+
+    // Check to see if the longThanPi variable needs updating.
+    if (this.startVector.angleTo(endVector) > 2) {
+      // The startVector and endVector might be antipodal proceed with caution,
+      // Set tmpVector to the antipode of the start Vector
+      this.tmpVector.copy(this.startVector).multiplyScalar(-1);
       if (
-        this.startScreenVector.distanceTo(tmpTwoVector) <
-        SETTINGS.point.hitPixelDistance
+        this.tmpVector.angleTo(endVector) * SETTINGS.boundaryCircle.radius <
+        SETTINGS.nearlyAntipodalPixel
       ) {
+        // The points are antipodal on the screen
         this.nearlyAntipodal = true;
-        // record an anchor for controlling the endVector, see the description for anchorMidVector
-        this.anchorMidVector.copy(this.midVector);
       } else {
         if (this.nearlyAntipodal) {
           this.longerThanPi = !this.longerThanPi;
@@ -351,51 +371,9 @@ export default class SegmentHandler extends Highlighter {
     if (ctrlPressed) {
       this.longerThanPi = true;
     }
-    // The value of longerThanPi is correctly set so use that to create a candidate midVector
-    this.tempMidVector
-      .addVectors(this.startVector, candidateEndPoint)
-      .multiplyScalar(0.5)
-      .normalize()
-      .multiplyScalar(this.longerThanPi ? -1 : 1);
-
-    // moveAngle is angular change in the midpoint (from midVector to tempMidVector)
-    let moveAngle = this.tempMidVector.angleTo(this.midVector);
-    if (moveAngle < MIDPOINT_MOVEMENT_THRESHOLD) {
-      // For small movement, update the midpoint directly
-      this.midVector.copy(this.tempMidVector);
-      this.endVector.copy(candidateEndPoint);
-    } else {
-      // For larger movement rotate in the plane containing tmpMidVector and the (old) midVector
-      // Make an orthonormal basis for the plane (old) midVector and tmpMidVector, tmpVector1
-      // will be orthogonal to midVector in the direction of tempMidVector
-      tmpVector1.crossVectors(this.midVector, this.tempMidVector).normalize();
-      tmpVector1.cross(this.midVector).normalize();
-      // Now rotate in the (old) midVector by at most the MIDPOINT_MOVEMENT_THRESHOLD
-      // That is newMid = cos(moveAngle)oldMid + sin(moveAngle) tmpVector1
-      moveAngle = Math.min(
-        moveAngle,
-        Math.PI - moveAngle //,
-        //MIDPOINT_MOVEMENT_THRESHOLD // With this the movement is sometimes slow and you can get an endpoint disconnected from the rest of the segment
-      );
-      this.midVector.multiplyScalar(Math.cos(moveAngle));
-      this.midVector
-        .addScaledVector(tmpVector1, Math.sin(moveAngle))
-        .normalize();
-      // Now that the midVector is set, determine the end vector
-      // The arcLength along the tempSegment is twice the distance from startVector to midVector
-      const arcLength = 2 * this.startVector.angleTo(this.midVector);
-
-      // For an orthonormal basis for the plane containing startVector and midVector
-      // tmpVector1 is perpendicular to startVector in the direction of midVector
-      tmpVector1.crossVectors(this.startVector, this.midVector).normalize();
-      tmpVector1.cross(this.startVector).normalize();
-
-      // Now compute the vector that is arcLength ways from startVector towards midVector
-      // That is endVector = cos(arcLength)startVector + sin(arcLength)tmpVector1
-      tmpVector2.copy(this.startVector);
-      tmpVector2.multiplyScalar(Math.cos(arcLength));
-      tmpVector2.addScaledVector(tmpVector1, Math.sin(arcLength)).normalize();
-      this.endVector.copy(tmpVector2);
+    // Update the arcLength based on longThanPi
+    if (this.longerThanPi) {
+      this.arcLength = 2 * Math.PI - this.arcLength;
     }
   }
 }

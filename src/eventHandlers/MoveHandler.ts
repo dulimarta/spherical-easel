@@ -34,10 +34,9 @@ export default class MoveHandler extends Highlighter {
   private moveFrom = new Vector3();
 
   /**
-   * For debugging the circle move code
+   * A flag to set that indicates nothing should be moved
    */
-  private isSegmentAdded = false;
-
+  private moveNothing = false;
   /**
    * A matrix that is used to indicate the *change* in position of the objects on the sphere. The
    * total change in position is not stored. This matrix is applied (via a position visitor) to
@@ -54,31 +53,37 @@ export default class MoveHandler extends Highlighter {
     // Reset the variables for another move event
     this.isDragging = true;
     this.moveTarget = null;
+    this.moveNothing = false;
     this.moveFrom.copy(this.currentSphereVector);
 
     // Query the nearby SENodules to select the one the user wishes to move (if none the sphere rotates)
-    if (this.hitNodules.length > 0) {
+    if (this.hitSENodules.length > 0) {
       // Prioritize moving points then lines then segments, then circles
-      const freePoints = this.hitPoints.filter(n => n.isFreeToMove());
+      const freePoints = this.hitSEPoints.filter(n => n.isFreeToMove());
       if (freePoints.length > 0) {
         this.moveTarget = freePoints[0];
         return;
       }
-      const freeLines = this.hitLines.filter(n => n.isFreeToMove());
-      if (freeLines.length > 0) {
-        this.moveTarget = freeLines[0];
-        return;
-      }
-      const freeSegments = this.hitSegments.filter(n => n.isFreeToMove());
-      if (freeSegments.length > 0) {
-        this.moveTarget = freeSegments[0];
-        return;
-      }
+      //If the user tries to move a nonFree point, nothing should happen
+      if (this.hitSEPoints.length == 0) {
+        const freeLines = this.hitSELines.filter(n => n.isFreeToMove());
+        if (freeLines.length > 0) {
+          this.moveTarget = freeLines[0];
+          return;
+        }
+        const freeSegments = this.hitSESegments.filter(n => n.isFreeToMove());
+        if (freeSegments.length > 0) {
+          this.moveTarget = freeSegments[0];
+          return;
+        }
 
-      const freeCircles = this.hitCircles.filter(n => n.isFreeToMove());
-      if (freeCircles.length > 0) {
-        this.moveTarget = freeCircles[0];
-        return;
+        const freeCircles = this.hitSECircles.filter(n => n.isFreeToMove());
+        if (freeCircles.length > 0) {
+          this.moveTarget = freeCircles[0];
+          return;
+        }
+      } else {
+        this.moveNothing = true;
       }
     }
   }
@@ -90,7 +95,7 @@ export default class MoveHandler extends Highlighter {
     if (this.isDragging) {
       if (this.moveTarget instanceof SEPoint) {
         // Move the selected SEPoint
-        this.moveTarget.vectorPosition = this.currentSphereVector;
+        this.moveTarget.locationVector = this.currentSphereVector;
         this.moveTarget.update();
       } else if (
         this.moveTarget instanceof SELine ||
@@ -103,7 +108,7 @@ export default class MoveHandler extends Highlighter {
         // Move the selected SECircle
         this.moveTarget.ref.normalDisplay();
         this.doMoveCircle(this.moveTarget);
-      } else if (this.moveTarget == null) {
+      } else if (this.moveTarget == null && !this.moveNothing) {
         // Rotate the sphere
         this.doRotateSphere();
       }
@@ -145,6 +150,7 @@ export default class MoveHandler extends Highlighter {
     // If the ctrlKey Is press translate the segment in the direction of previousSphereVector
     //  to currentSphereVector (i.e. just rotate the segment)
     if (ctrlKeyPressed) {
+      console.log("rotate");
       rotationAngle = this.previousSphereVector.angleTo(
         this.currentSphereVector
       );
@@ -160,23 +166,24 @@ export default class MoveHandler extends Highlighter {
         //   rotationAngle
         // );
         tmpVector1
-          .copy(targetLine.startPoint.vectorPosition)
+          .copy(targetLine.startSEPoint.locationVector)
           .applyAxisAngle(desiredZAxis, rotationAngle);
-        targetLine.startPoint.vectorPosition = tmpVector1;
+        targetLine.startSEPoint.locationVector = tmpVector1;
         tmpVector2
-          .copy(targetLine.endPoint.vectorPosition)
+          .copy(targetLine.endSEPoint.locationVector)
           .applyAxisAngle(desiredZAxis, rotationAngle);
-        targetLine.endPoint.vectorPosition = tmpVector2;
+        targetLine.endSEPoint.locationVector = tmpVector2;
         // Update both points, because we might need to update their kids!
-        targetLine.endPoint.update();
-        targetLine.startPoint.update();
+        targetLine.endSEPoint.update();
+        targetLine.startSEPoint.update();
       }
     } else {
-      let pivot = targetLine.startPoint;
-      let freeEnd = targetLine.endPoint;
+      console.log("pivot");
+      let pivot = targetLine.startSEPoint;
+      let freeEnd = targetLine.endSEPoint;
       if (altKeyPressed) {
-        pivot = targetLine.endPoint;
-        freeEnd = targetLine.startPoint;
+        pivot = targetLine.endSEPoint;
+        freeEnd = targetLine.startSEPoint;
       }
 
       // We want to measure the rotation angle with respect to the rotationAxis
@@ -186,11 +193,11 @@ export default class MoveHandler extends Highlighter {
 
       // Determine the normal vector to the plane containing the pivot and the previous position
       tmpVector1
-        .crossVectors(pivot.vectorPosition, this.previousSphereVector)
+        .crossVectors(pivot.locationVector, this.previousSphereVector)
         .normalize();
       // Determine the normal vector to the plane containing the pivot and the current position
       tmpVector2
-        .crossVectors(pivot.vectorPosition, this.currentSphereVector)
+        .crossVectors(pivot.locationVector, this.currentSphereVector)
         .normalize();
       // The angle between tmpVector1 and tmpVector2 is the distance to move on the Ideal Unit Sphere
       rotationAngle = tmpVector1.angleTo(tmpVector2);
@@ -205,14 +212,12 @@ export default class MoveHandler extends Highlighter {
       }
 
       // Rotate the freeEnd by the rotation angle around the axisOfRotation
-      const axisOfRotation = pivot.vectorPosition;
-      tmpVector1.copy(freeEnd.vectorPosition);
+      const axisOfRotation = pivot.locationVector;
+      tmpVector1.copy(freeEnd.locationVector);
       tmpVector1.applyAxisAngle(axisOfRotation, rotationAngle);
-      freeEnd.vectorPosition = tmpVector1;
+      freeEnd.locationVector = tmpVector1;
       freeEnd.update();
     }
-
-    this.recalculateIntersections(targetLine);
   }
 
   /**
@@ -247,17 +252,16 @@ export default class MoveHandler extends Highlighter {
         rotationAngle
       );
       tmpVector1
-        .copy(targetCircle.centerPoint.vectorPosition)
+        .copy(targetCircle.centerSEPoint.locationVector)
         .applyMatrix4(this.changeInPositionRotationMatrix);
-      targetCircle.centerPoint.vectorPosition = tmpVector1;
+      targetCircle.centerSEPoint.locationVector = tmpVector1;
       tmpVector2
-        .copy(targetCircle.circlePoint.vectorPosition)
+        .copy(targetCircle.circleSEPoint.locationVector)
         .applyMatrix4(this.changeInPositionRotationMatrix);
-      targetCircle.circlePoint.vectorPosition = tmpVector2;
+      targetCircle.circleSEPoint.locationVector = tmpVector2;
       // Update both points, because we might need to update their kids!
-      targetCircle.circlePoint.update();
-      targetCircle.centerPoint.update();
-      this.recalculateIntersections(targetCircle);
+      targetCircle.circleSEPoint.update();
+      targetCircle.centerSEPoint.update();
     }
   }
 
@@ -285,59 +289,59 @@ export default class MoveHandler extends Highlighter {
     }
   }
 
-  private recalculateIntersections(
-    target: SELine | SESegment | SECircle
-  ): void {
-    // Determine the current set of intersection points on this target object
-    const currentIntersections = target.children
-      .filter((n: SENodule) => {
-        return n instanceof SEIntersectionPoint;
-      })
-      .flatMap((n: SENodule) => n as SEIntersectionPoint);
+  // private recalculateIntersections(
+  //   target: SELine | SESegment | SECircle
+  // ): void {
+  //   // Determine the current set of intersection points on this target object
+  //   const currentIntersections = target.children
+  //     .filter((n: SENodule) => {
+  //       return n instanceof SEIntersectionPoint;
+  //     })
+  //     .flatMap((n: SENodule) => n as SEIntersectionPoint);
 
-    // Determine the new set intersection points
-    let newIntersections: SEIntersectionPoint[];
-    if (target instanceof SELine)
-      newIntersections = this.store.getters.determineIntersectionsWithLine(
-        target
-      );
-    else if (target instanceof SESegment)
-      newIntersections = this.store.getters.determineIntersectionsWithSegment(
-        target
-      );
-    else
-      newIntersections = this.store.getters.determineIntersectionsWithCircle(
-        target
-      );
+  //   // Determine the new set intersection points
+  //   let newIntersections: SEIntersectionPoint[];
+  //   if (target instanceof SELine)
+  //     newIntersections = this.store.getters.determineIntersectionsWithLine(
+  //       target
+  //     );
+  //   else if (target instanceof SESegment)
+  //     newIntersections = this.store.getters.determineIntersectionsWithSegment(
+  //       target
+  //     );
+  //   else
+  //     newIntersections = this.store.getters.determineIntersectionsWithCircle(
+  //       target
+  //     );
 
-    // newIntersections.forEach((x: SEIntersectionPoint, pos: number) => {
-    //   console.debug(`New intersection ${pos}: ${x.name}`);
-    // });
-    currentIntersections.forEach((current: SEIntersectionPoint) => {
-      // Locate matching intersections by comparing their names
-      const pos = newIntersections.findIndex(
-        (incoming: SEIntersectionPoint) => current.name === incoming.name
-      );
-      if (pos >= 0) {
-        // Use the new coordinates of the incoming intersection point
-        // to update the current one
-        current.vectorPosition.copy(newIntersections[pos].vectorPosition);
-        current.update();
+  //   // newIntersections.forEach((x: SEIntersectionPoint, pos: number) => {
+  //   //   console.debug(`New intersection ${pos}: ${x.name}`);
+  //   // });
+  //   currentIntersections.forEach((current: SEIntersectionPoint) => {
+  //     // Locate matching intersections by comparing their names
+  //     const pos = newIntersections.findIndex(
+  //       (incoming: SEIntersectionPoint) => current.name === incoming.name
+  //     );
+  //     if (pos >= 0) {
+  //       // Use the new coordinates of the incoming intersection point
+  //       // to update the current one
+  //       current.vectorVector.copy(newIntersections[pos].vectorVector);
+  //       current.update();
 
-        // Remove matching incoming points so after this forEach loop
-        // is over non-matching incoming points are new intersections to add
-        newIntersections[pos].removeSelfSafely();
-        newIntersections.splice(pos, 1);
-      } else {
-        // The current point is disappearing
-        this.store.commit("removePoint", current.id);
-      }
-    });
+  //       // Remove matching incoming points so after this forEach loop
+  //       // is over non-matching incoming points are new intersections to add
+  //       newIntersections[pos].removeSelfSafely();
+  //       newIntersections.splice(pos, 1);
+  //     } else {
+  //       // The current point is disappearing
+  //       this.store.commit("removePoint", current.id);
+  //     }
+  //   });
 
-    // After matching intersection points are removed the remaining points
-    // should be new appearing intersections
-    newIntersections.forEach((x: SEIntersectionPoint) => {
-      this.store.commit("addPoint", x);
-    });
-  }
+  //   // After matching intersection points are removed the remaining points
+  //   // should be new appearing intersections
+  //   newIntersections.forEach((x: SEIntersectionPoint) => {
+  //     this.store.commit("addPoint", x);
+  //   });
+  // }
 }

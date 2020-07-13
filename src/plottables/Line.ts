@@ -3,32 +3,44 @@ import Two from "two.js";
 import SETTINGS, { LAYER } from "@/global-settings";
 import Nodule, { DisplayStyle } from "./Nodule";
 
+// The number of vectors used to render the front half (and the same number in the back half)
 const SUBDIVS = SETTINGS.line.numPoints;
-// const XAxis = new Vector3(1, 0, 0);
+
 /**
- * Geodesic line on a circle
+ * A line segment
  *
  * @export
- * @class Line
- * @extends {Two.Group}
+ * @class Segment
+ * @extends Nodule
  */
 export default class Line extends Nodule {
-  private oldFrontStroke: Two.Color = "";
-  private oldBackStroke: Two.Color = "";
-  private normalDirection: Vector3;
-  private start_ = new Vector3();
-  private end_ = new Vector3();
-  private tmpVector: Vector3;
-  private desiredXAxis = new Vector3();
-  private desiredYAxis = new Vector3();
-  private transformMatrix = new Matrix4();
-  private frontHalf: Two.Path;
-  private frontArcLen = 0;
-  private backHalf: Two.Path;
-  private backArcLen = 0;
+  /** The normal vector to the plane containing the line*/
+  private _normalVector: Vector3;
 
+  /**
+   * NOTE: Once the above variable is set, the updateDisplay() will correctly render the line.
+   * This are the only piece of information that is need to do the rendering, so the updateDisplay() is automatically
+   * class when the setter is used to update the normal Vector All other
+   * calculations in this class are only for the purpose of rendering the line.
+   */
+
+  /**
+   * A line has half on the front and half on the back.There are glowing counterparts for each part.
+   */
+  private frontHalf: Two.Path;
+  private backHalf: Two.Path;
   private glowingFrontHalf: Two.Path;
   private glowingBackHalf: Two.Path;
+
+  /**
+   * What are these for?
+   */
+  private backArcLen = 0;
+  private frontArcLen = 0;
+
+  /**
+   * A list of Vector3s that trace the the equator of the sphere
+   */
 
   private points: Vector3[];
 
@@ -58,15 +70,19 @@ export default class Line extends Nodule {
   private dashArrayOffsetBack = SETTINGS.segment.dynamicBackStyle
     ? Nodule.contrastDashArrayOffset(SETTINGS.line.drawn.dashArray.offset.front)
     : SETTINGS.line.drawn.dashArray.offset.back;
-  // The following lines are for debugging only
-  private majorAxis: Two.Line;
-  private minorAxis: Two.Line;
+
+  /** Temporary ThreeJS objects for computing */
+  private tmpVector = new Vector3();
+  private desiredXAxis = new Vector3();
+  private desiredYAxis = new Vector3();
+  private transformMatrix = new Matrix4();
 
   constructor() {
     super();
     const radius = SETTINGS.boundaryCircle.radius;
     const vertices: Two.Vector[] = [];
     const glowingVertices: Two.Vector[] = [];
+
     // Generate 2D coordinates of a half circle
     for (let k = 0; k < SUBDIVS; k++) {
       const angle = (k * Math.PI) / SUBDIVS;
@@ -75,15 +91,7 @@ export default class Line extends Nodule {
       vertices.push(new Two.Vector(px, py));
       glowingVertices.push(new Two.Vector(px, py));
     }
-    // Generate 3D coordinates of the entire circle
-    this.points = [];
-    for (let k = 0; k < 2 * SUBDIVS; k++) {
-      const angle = (2 * k * Math.PI) / (2 * SUBDIVS);
-      const px = radius * Math.cos(angle);
-      const py = radius * Math.sin(angle);
-      this.points.push(new Vector3(px, py, 0));
-    }
-    this.tmpVector = new Vector3();
+
     this.frontHalf = new Two.Path(
       vertices,
       /* closed */ false,
@@ -103,23 +111,19 @@ export default class Line extends Nodule {
 
     // Be sure to clone() the incoming start and end points
     // Otherwise update by other Line will affect this one!
-    this.normalDirection = new Vector3();
+    this._normalVector = new Vector3();
     // this.normalDirection.crossVectors(this.start, this.end);
     // The back half will be dynamically added to the group
     //this.name = "Line-" + this.id;
 
-    // For debugging only
-    // Major axis is along the X-axis
-    this.majorAxis = new Two.Line(0, 0, SETTINGS.boundaryCircle.radius, 0);
-    this.majorAxis.stroke = "red";
-    this.majorAxis.linewidth = 5;
-    // Minor axis is along the Y-axis
-    this.minorAxis = new Two.Line(0, 0, 0, SETTINGS.boundaryCircle.radius / 2);
-    this.minorAxis.stroke = "green";
-    this.minorAxis.linewidth = 3;
-
-    // Enable the following for debugging
-    // this.add(this.majorAxis, this.minorAxis);
+    // Generate 3D coordinates of the entire line in a standard position -- the equator of the Default Sphere
+    this.points = [];
+    for (let k = 0; k < 2 * SUBDIVS; k++) {
+      const angle = (2 * k * Math.PI) / (2 * SUBDIVS);
+      const px = radius * Math.cos(angle);
+      const py = radius * Math.sin(angle);
+      this.points.push(new Vector3(px, py, 0));
+    }
   }
 
   adjustSizeForZoom(factor: number): void {
@@ -141,6 +145,7 @@ export default class Line extends Nodule {
     (this.frontHalf as any).visible = true;
     (this.glowingFrontHalf as any).visible = true;
   }
+
   backGlowingDisplay(): void {
     (this.backHalf as any).visible = true;
     (this.glowingBackHalf as any).visible = true;
@@ -166,19 +171,31 @@ export default class Line extends Nodule {
     this.backNormalDisplay();
   }
 
-  /** Reorient the unit circle in 3D and then project the points to 2D
+  /**
+   * Update the display of line by Reorient the unit circle in 3D and then project the points to 2D
+   * Reorient the unit circle in 3D and then project the points to 2D
+   * This method updates the TwoJS objects (frontHalf, backHalf, ...) for display
+   * This is only accurate if the normal vector are correct so only
+   * call this method once that vector is updated.
    */
-  private deformIntoEllipse(): void {
-    if (this.normalDirection.length() < 0.01) return;
+  public updateDisplay(): void {
+    //Form the X Axis perpendicular to the normalDirection, this is where the plotting will start.
     this.desiredXAxis
-      .set(-this.normalDirection.y, this.normalDirection.x, 0)
+      .set(-this._normalVector.y, this._normalVector.x, 0)
       .normalize();
-    this.desiredYAxis.crossVectors(this.normalDirection, this.desiredXAxis);
+
+    // Form the Y axis perpendicular to the normal vector and the XAxis
+    this.desiredYAxis.crossVectors(this._normalVector, this.desiredXAxis)
+      .normalize;
+    // Form the transformation matrix that will map the vectors along the equation of the Default Sphere to
+    // to the current position of the line.
     this.transformMatrix.makeBasis(
       this.desiredXAxis,
       this.desiredYAxis,
-      this.normalDirection
+      this._normalVector
     );
+
+    // Variables to keep track of when the z coordinate of the transformed object changes sign
     let firstPos = -1;
     let posIndex = 0;
     let firstNeg = -1;
@@ -186,8 +203,9 @@ export default class Line extends Nodule {
     let lastSign = 0;
 
     this.points.forEach((v, pos) => {
+      // v is a vector location on the equator of the Default Sphere
       this.tmpVector.copy(v);
-
+      // Transform that vector to one on the current segment
       this.tmpVector.applyMatrix4(this.transformMatrix);
       const thisSign = Math.sign(this.tmpVector.z);
       if (lastSign !== thisSign) {
@@ -230,65 +248,30 @@ export default class Line extends Nodule {
     }
   }
 
+  /**
+   * This is the only vector that needs to be set in order to render the line.  This also updates the display
+   */
   set normalVector(dir: Vector3) {
-    // console.debug(
-    //   `Changing normal orientation of ${
-    //     this.id
-    //   } from ${this.normalDirection.toFixed(2)} to ${dir.toFixed(2)}`
-    // );
-    this.normalDirection.copy(dir).normalize();
-    this.deformIntoEllipse();
-  }
-
-  get normalVector(): Vector3 {
-    return this.normalDirection;
-  }
-
-  set startPoint(pos: Vector3) {
-    this.start_.copy(pos);
-    // Show major axis (for debugging only)
-    // this.majorAxis.vertices[0].x = -pos.x * SETTINGS.boundaryCircle.radius;
-    // this.majorAxis.vertices[0].y = -pos.y * SETTINGS.boundaryCircle.radius;
-    // this.majorAxis.vertices[1].x = pos.x * SETTINGS.boundaryCircle.radius;
-    // this.majorAxis.vertices[1].y = pos.y * SETTINGS.boundaryCircle.radius;
-    this.normalDirection.crossVectors(this.start_, this.end_).normalize();
-    this.deformIntoEllipse();
-  }
-
-  get startPoint(): Vector3 {
-    return this.start_;
-  }
-
-  set endPoint(pos: Vector3) {
-    this.end_.copy(pos);
-    // Show minor axis (for debugging only)
-    // this.minorAxis.vertices[0].x = -pos.x * SETTINGS.boundaryCircle.radius;
-    // this.minorAxis.vertices[0].y = -pos.y * SETTINGS.boundaryCircle.radius;
-    // this.minorAxis.vertices[1].x = pos.x * SETTINGS.boundaryCircle.radius;
-    // this.minorAxis.vertices[1].y = pos.y * SETTINGS.boundaryCircle.radius;
-    this.normalDirection.crossVectors(this.start_, this.end_).normalize();
-    this.deformIntoEllipse();
-  }
-
-  get endPoint(): Vector3 {
-    return this.end_;
+    this._normalVector.copy(dir).normalize();
+    this.updateDisplay();
   }
 
   setVisible(flag: boolean): void {
-    // None yet
+    if (!flag) {
+      (this.frontHalf as any).visible = false;
+      (this.glowingFrontHalf as any).visible = false;
+      (this.backHalf as any).visible = false;
+      (this.glowingBackHalf as any).visible = false;
+    } else {
+      this.normalDisplay();
+    }
   }
   // It looks like we have to define our own clone() function
   // The builtin clone() does not seem to work correctly
   clone(): this {
     const dup = new Line();
     dup.name = this.name;
-    dup.start_.copy(this.start_);
-    dup.end_.copy(this.end_);
-    // dup.start.copy(this.start);
-    dup.normalDirection.copy(this.normalDirection);
-    //dup.rotation = this.rotation;
-    dup.majorAxis.rotation = this.majorAxis.rotation;
-    dup.minorAxis.rotation = this.minorAxis.rotation;
+    dup._normalVector.copy(this._normalVector);
     dup.frontHalf.rotation = this.frontHalf.rotation;
     dup.backHalf.rotation = this.backHalf.rotation;
     dup.frontArcLen = this.frontArcLen;

@@ -15,11 +15,11 @@ export class SECircle extends SENodule implements Visitable {
   /**
    * The model SE object that is the center of the circle
    */
-  private centerSEPoint: SEPoint;
+  private _centerSEPoint: SEPoint;
   /**
    * The model SE object that is on the circle
    */
-  private circleSEPoint: SEPoint;
+  private _circleSEPoint: SEPoint;
   // #region circleConstructor
   /**
    * Create a model SECircle using:
@@ -30,60 +30,59 @@ export class SECircle extends SENodule implements Visitable {
   constructor(circ: Circle, centerPoint: SEPoint, circlePoint: SEPoint) {
     super();
     this.ref = circ;
-    this.centerSEPoint = centerPoint;
-    this.circleSEPoint = circlePoint;
+    this._centerSEPoint = centerPoint;
+    this._circleSEPoint = circlePoint;
 
     CIRCLE_COUNT++;
     this.name = `C-${CIRCLE_COUNT}`;
+    // Always register the children after the name is initialized
     centerPoint.registerChild(this);
     circlePoint.registerChild(this);
   }
   // #endregion circleConstructor
 
-  set normalDirection(v: Vector3) {
-    this.ref.centerVector = v;
+  get centerSEPoint(): SEPoint {
+    return this._centerSEPoint;
   }
 
-  /* On a unit sphere the coordinates of a point is also the normal vector
-   *of the sphere at that point */
-  get normalDirection(): Vector3 {
-    return this.ref.centerVector;
+  get circleSEPoint(): SEPoint {
+    return this._circleSEPoint;
   }
 
-  get centerPoint(): SEPoint {
-    return this.centerSEPoint;
+  get circleRadius(): number {
+    return this._circleSEPoint.locationVector.angleTo(
+      this._centerSEPoint.locationVector
+    );
   }
 
-  get circlePoint(): SEPoint {
-    return this.circleSEPoint;
-  }
-
-  get radius(): number {
-    return this.ref.radius;
-  }
-  public isHitAt(spherePos: Vector3): boolean {
-    const angleToCenter = spherePos.angleTo(this.normalDirection);
+  public isHitAt(unitIdealVector: Vector3): boolean {
+    const angleToCenter = unitIdealVector.angleTo(
+      this._centerSEPoint.locationVector
+    );
     return (
-      Math.abs(angleToCenter - this.radius) < SETTINGS.circle.hitIdealDistance
+      Math.abs(angleToCenter - this.circleRadius) <
+      SETTINGS.circle.hitIdealDistance
     );
   }
 
   public update(): void {
-    this.ref.centerVector = this.centerPoint.vectorPosition;
-
-    const newRadius = this.centerPoint.vectorPosition.angleTo(
-      this.circlePoint.vectorPosition
-    );
-    // console.debug(
-    //   "Must update SECircle radius to",
-    //   newRadius.toDegrees().toFixed(2),
-    //   "center to",
-    //   this.centerPoint.positionOnSphere.toFixed(2)
-    // );
-
-    this.ref.radius = newRadius;
-    this.ref.centerVector = this.centerSEPoint.vectorPosition;
+    if (!this.canUpdateNow()) {
+      return;
+    }
     this.setOutOfDate(false);
+    this._exists = this._centerSEPoint.exists && this._circleSEPoint.exists;
+    if (this._exists) {
+      //update the centerVector and the radius
+      const newRadius = this._centerSEPoint.locationVector.angleTo(
+        this._circleSEPoint.locationVector
+      );
+      this.ref.circleRadius = newRadius;
+      this.ref.centerVector = this._centerSEPoint.locationVector;
+      // display the new circle with the updated values
+      this.ref.updateDisplay();
+    }
+    this.setOutOfDate(false);
+    this.updateKids();
   }
 
   accept(v: Visitor): void {

@@ -12,8 +12,8 @@ import { SECircle } from "@/models/SECircle";
 import SETTINGS from "@/global-settings";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import { DisplayStyle } from "@/plottables/Nodule";
-import { ShowPointCommand } from "@/commands/ShowPointCommand";
 import Highlighter from "./Highlighter";
+import { ConvertInterPtToUserCreatedCommand } from "@/commands/ConvertInterPtToUserCreatedCommand";
 
 export default class CircleHandler extends Highlighter {
   /**
@@ -21,7 +21,7 @@ export default class CircleHandler extends Highlighter {
    */
   private centerVector: Vector3;
   /** Is the user dragging?*/
-  private isMouseDown: boolean;
+  private isDragging: boolean;
   /**  The temporary plottable TwoJS circle displayed as the user drags */
   private temporaryCircle: Circle;
   /**  The model object point that is the center of the circle (if any) */
@@ -42,7 +42,7 @@ export default class CircleHandler extends Highlighter {
   constructor(layers: Two.Group[]) {
     super(layers);
     this.centerVector = new Vector3();
-    this.isMouseDown = false;
+    this.isDragging = false;
     this.isTemporaryCircleAdded = false;
     this.temporaryCircle = new Circle();
     // Set the style using the temporary defaults
@@ -50,17 +50,22 @@ export default class CircleHandler extends Highlighter {
   }
   // eslint-disable-next-line
   mousePressed(event: MouseEvent) {
-    this.isMouseDown = true;
+    // Do the mouse moved event of the Highlighter so that a new hitSEPoints array will be generated
+    // otherwise if the user has finished making an new point, then *without* triggering a mouse move
+    // event, mouse press will *not* select the newly created point. This is not what we want so we call super.mouseMove
+    super.mouseMoved(event);
+
+    this.isDragging = true;
     // The user is making a circle
     this.makingACircle = true;
     // First decide if the location of the event is on the sphere
     if (this.isOnSphere) {
       // Check to see if the current location is near any points
-      if (this.hitPoints.length > 0) {
+      if (this.hitSEPoints.length > 0) {
         // Pick the top most selected point
-        const selected = this.hitPoints[0];
+        const selected = this.hitSEPoints[0];
         // Record the center vector of the circle so it can be past to the non-temporary circle
-        this.centerVector.copy(selected.vectorPosition);
+        this.centerVector.copy(selected.locationVector);
         // Record the model object as the center of the circle
         this.centerSEPoint = selected;
       } else {
@@ -76,14 +81,13 @@ export default class CircleHandler extends Highlighter {
     }
   }
 
-  // eslint-disable-next-line
   mouseMoved(event: MouseEvent) {
     // Highlight all nearby objects
     super.mouseMoved(event);
     // Make sure that the event is on the sphere
     if (this.isOnSphere) {
       // Make sure the user is still dragging
-      if (this.isMouseDown) {
+      if (this.isDragging) {
         // If the temporary circle (and end/startMarker) has *not* been added to the scene do so now (only once)
         if (!this.isTemporaryCircleAdded) {
           this.isTemporaryCircleAdded = true;
@@ -95,9 +99,12 @@ export default class CircleHandler extends Highlighter {
         this.arcRadius = this.temporaryCircle.centerVector.angleTo(
           this.currentSphereVector
         );
-        // Set the radius of the temporary circle - also calls temporaryCircle.readjust()
-        this.temporaryCircle.radius = this.arcRadius;
-        // Move the endmarker to the current mouse location
+        // Set the radius of the temporary circle, the center was set in Mouse Press
+        this.temporaryCircle.circleRadius = this.arcRadius;
+        //update the display
+        this.temporaryCircle.updateDisplay();
+
+        // Move the endMarker to the current mouse location
         this.endMarker.positionVector = this.currentSphereVector;
       }
     } else if (this.isTemporaryCircleAdded) {
@@ -109,9 +116,8 @@ export default class CircleHandler extends Highlighter {
     }
   }
 
-  // eslint-disable-next-line
   mouseReleased(event: MouseEvent) {
-    this.isMouseDown = false;
+    this.isDragging = false;
     if (this.isOnSphere) {
       // Remove the temporary objects from the scene and mark the temporary object
       //  not added to the scene
@@ -150,16 +156,10 @@ export default class CircleHandler extends Highlighter {
       this.endMarker.removeFromLayers();
     }
   }
-
+  /**
+   * Add a new circle the user has moved far enough
+   */
   makeCircle(): void {
-    // Add a new circle the user has moved far enough
-    // Clone the current circle
-    const newCircle = this.temporaryCircle.clone();
-    // Set the display to the default values
-    newCircle.stylize(DisplayStyle.DEFAULT);
-    // Set up the glowing display
-    newCircle.stylize(DisplayStyle.GLOWING);
-
     // Create a command group to add the points defining the circle and the circle to the store
     // This way a single undo click will undo all (potentially three) operations.
     const circleGroup = new CommandGroup();
@@ -172,16 +172,30 @@ export default class CircleHandler extends Highlighter {
       // Set up the glowing display
       newCenterPoint.stylize(DisplayStyle.GLOWING);
       const newSECenterPoint = new SEPoint(newCenterPoint);
-      newSECenterPoint.vectorPosition = this.centerVector;
+      newSECenterPoint.locationVector = this.centerVector;
       this.centerSEPoint = newSECenterPoint;
       circleGroup.addCommand(new AddPointCommand(newSECenterPoint));
     } else if (this.centerSEPoint instanceof SEIntersectionPoint) {
-      circleGroup.addCommand(new ShowPointCommand(this.centerSEPoint));
+      // Mark the intersection point as created, the display style is changed and the glowing style is set up
+      circleGroup.addCommand(
+        new ConvertInterPtToUserCreatedCommand(this.centerSEPoint)
+      );
     }
-    if (this.hitPoints.length > 0) {
-      this.circleSEPoint = this.hitPoints[0];
+    if (this.hitSEPoints.length > 0) {
+      this.circleSEPoint = this.hitSEPoints[0];
+      //compute the radius of the temporary circle using the hit point
+      this.arcRadius = this.temporaryCircle.centerVector.angleTo(
+        this.circleSEPoint.locationVector
+      );
+      // Set the radius of the temporary circle, the center was set in Mouse Press
+      this.temporaryCircle.circleRadius = this.arcRadius;
+      //update the display
+      this.temporaryCircle.updateDisplay();
       if (this.circleSEPoint instanceof SEIntersectionPoint) {
-        circleGroup.addCommand(new ShowPointCommand(this.circleSEPoint));
+        // Mark the intersection point as created, the display style is changed and the glowing style is set up
+        circleGroup.addCommand(
+          new ConvertInterPtToUserCreatedCommand(this.circleSEPoint)
+        );
       }
     } else {
       // endPoint landed on an open space
@@ -192,10 +206,17 @@ export default class CircleHandler extends Highlighter {
       // Set up the glowing display
       newCirclePoint.stylize(DisplayStyle.GLOWING);
       const newSECirclePoint = new SEPoint(newCirclePoint);
-      newSECirclePoint.vectorPosition = this.currentSphereVector;
+      newSECirclePoint.locationVector = this.currentSphereVector;
       this.circleSEPoint = newSECirclePoint;
       circleGroup.addCommand(new AddPointCommand(newSECirclePoint));
     }
+
+    // Clone the current circle after the circlePoint is set
+    const newCircle = this.temporaryCircle.clone();
+    // Set the display to the default values
+    newCircle.stylize(DisplayStyle.DEFAULT);
+    // Set up the glowing display
+    newCircle.stylize(DisplayStyle.GLOWING);
 
     // Add the last command to the group and then execute it (i.e. add the potentially two points and the circle to the store.)
     const newSECircle = new SECircle(
@@ -208,10 +229,10 @@ export default class CircleHandler extends Highlighter {
     // Generate new intersection points. These points must be computed and created
     // in the store. Add the new created points to the circle command so they can be undone.
     this.store.getters
-      .determineIntersectionsWithCircle(newSECircle)
+      .createAllIntersectionsWithCircle(newSECircle)
       .forEach((p: SEIntersectionPoint) => {
-        p.setShowing(false);
         circleGroup.addCommand(new AddPointCommand(p));
+        p.showing = false; // don not display the automatically created intersection points
       });
 
     circleGroup.execute();
@@ -230,7 +251,7 @@ export default class CircleHandler extends Highlighter {
       newPoint.stylize(DisplayStyle.GLOWING);
 
       const vtx = new SEPoint(newPoint);
-      vtx.vectorPosition = this.centerVector;
+      vtx.locationVector = this.centerVector;
       this.centerSEPoint = vtx;
       const addPoint = new AddPointCommand(vtx);
       addPoint.execute();

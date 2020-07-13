@@ -111,12 +111,12 @@ describe("SphereFrame.vue", () => {
 
     it("adds a new (foreground) point when clicking on sphere while using PointTool", async () => {
       const p = await makePoint(false /* foreground point */);
-      expect(p.vectorPosition.z).toBeGreaterThan(0);
+      expect(p.locationVector.z).toBeGreaterThan(0);
     });
 
     it("adds a new (background) point when clicking on sphere while using PointTool", async () => {
       const p = await makePoint(true /* back ground point */);
-      expect(p.vectorPosition.z).toBeLessThan(0);
+      expect(p.locationVector.z).toBeLessThan(0);
     });
   });
 
@@ -187,12 +187,15 @@ describe("SphereFrame.vue", () => {
       const dir = new Vector3()
         .crossVectors(startVector, endVector)
         .normalize();
-      expect(newLine.startPoint.vectorPosition).toBeVector3CloseTo(
+      expect(newLine.startSEPoint.locationVector).toBeVector3CloseTo(
         startVector,
         3
       );
-      expect(newLine.endPoint.vectorPosition).toBeVector3CloseTo(endVector, 3);
-      expect(newLine.normalDirection).toBeVector3CloseTo(dir, 3);
+      expect(newLine.endSEPoint.locationVector).toBeVector3CloseTo(
+        endVector,
+        3
+      );
+      expect(newLine.normalVector).toBeVector3CloseTo(dir, 3);
     });
 
     it("add a new line (fg/bg) while in LineTool", async () => {
@@ -226,12 +229,15 @@ describe("SphereFrame.vue", () => {
       const dir = new Vector3()
         .crossVectors(startVector, endVector)
         .normalize();
-      expect(newLine.startPoint.vectorPosition).toBeVector3CloseTo(
+      expect(newLine.startSEPoint.locationVector).toBeVector3CloseTo(
         startVector,
         3
       );
-      expect(newLine.endPoint.vectorPosition).toBeVector3CloseTo(endVector, 3);
-      expect(newLine.normalDirection).toBeVector3CloseTo(dir, 3);
+      expect(newLine.endSEPoint.locationVector).toBeVector3CloseTo(
+        endVector,
+        3
+      );
+      expect(newLine.normalVector).toBeVector3CloseTo(dir, 3);
     });
 
     it("add a new line (bg/bg) while in LineTool", async () => {
@@ -265,12 +271,15 @@ describe("SphereFrame.vue", () => {
       const dir = new Vector3()
         .crossVectors(startVector, endVector)
         .normalize();
-      expect(newLine.startPoint.vectorPosition).toBeVector3CloseTo(
+      expect(newLine.startSEPoint.locationVector).toBeVector3CloseTo(
         startVector,
         3
       );
-      expect(newLine.endPoint.vectorPosition).toBeVector3CloseTo(endVector, 3);
-      expect(newLine.normalDirection).toBeVector3CloseTo(dir, 3);
+      expect(newLine.endSEPoint.locationVector).toBeVector3CloseTo(
+        endVector,
+        3
+      );
+      expect(newLine.normalVector).toBeVector3CloseTo(dir, 3);
     });
 
     it("add a new line (bg/fg) while in LineTool", async () => {
@@ -305,12 +314,15 @@ describe("SphereFrame.vue", () => {
       const dir = new Vector3()
         .crossVectors(startVector, endVector)
         .normalize();
-      expect(newLine.startPoint.vectorPosition).toBeVector3CloseTo(
+      expect(newLine.startSEPoint.locationVector).toBeVector3CloseTo(
         startVector,
         3
       );
-      expect(newLine.endPoint.vectorPosition).toBeVector3CloseTo(endVector, 3);
-      expect(newLine.normalDirection).toBeVector3CloseTo(dir, 3);
+      expect(newLine.endSEPoint.locationVector).toBeVector3CloseTo(
+        endVector,
+        3
+      );
+      expect(newLine.normalVector).toBeVector3CloseTo(dir, 3);
     });
 
     it("creates a point (and not a line) when the mouse is not dragged far enough", async () => {
@@ -340,7 +352,7 @@ describe("SphereFrame.vue", () => {
         startZCoord
       ).normalize();
       const newPoint: SEPoint = wrapper.vm.$store.state.points[prevPointCount];
-      expect(newPoint.vectorPosition).toBeVector3CloseTo(positionVector, 3);
+      expect(newPoint.locationVector).toBeVector3CloseTo(positionVector, 3);
     });
   });
 
@@ -387,7 +399,7 @@ describe("SphereFrame.vue", () => {
         endVector,
         3
       );
-      expect(newSegment.normalDirection).toBeVector3CloseTo(dir, 3);
+      expect(newSegment.normalVector).toBeVector3CloseTo(dir, 3);
     });
 
     it("add a new segment (fg/bg) while in SegmentTool", async () => {
@@ -432,7 +444,7 @@ describe("SphereFrame.vue", () => {
         endVector,
         3
       );
-      expect(newSegment.normalDirection).toBeVector3CloseTo(dir, 3);
+      expect(newSegment.normalVector).toBeVector3CloseTo(dir, 3);
     });
 
     it("add a new segment (bg/fg) while in SegmentTool", async () => {
@@ -477,7 +489,7 @@ describe("SphereFrame.vue", () => {
         endVector,
         3
       );
-      expect(newSegment.normalDirection).toBeVector3CloseTo(dir, 3);
+      expect(newSegment.normalVector).toBeVector3CloseTo(dir, 3);
     });
 
     it("add a new segment (bg/bg) while in SegmentTool", async () => {
@@ -522,7 +534,7 @@ describe("SphereFrame.vue", () => {
         endVector,
         3
       );
-      expect(newSegment.normalDirection).toBeVector3CloseTo(dir, 3);
+      expect(newSegment.normalVector).toBeVector3CloseTo(dir, 3);
     });
 
     it("creates a point (and not a segment) when the mouse is not dragged far enough", async () => {
@@ -552,7 +564,7 @@ describe("SphereFrame.vue", () => {
         startZCoord
       ).normalize();
       const newPoint: SEPoint = wrapper.vm.$store.state.points[prevPointCount];
-      expect(newPoint.vectorPosition).toBeVector3CloseTo(positionVector, 3);
+      expect(newPoint.locationVector).toBeVector3CloseTo(positionVector, 3);
     });
   });
 
@@ -588,11 +600,11 @@ describe("SphereFrame.vue", () => {
 
       // Radius vector is foreground
       const radiusVector = new Vector3(endX, -endY, endZCoord).normalize();
-      expect(newCircle.centerPoint.vectorPosition).toBeVector3CloseTo(
+      expect(newCircle.centerSEPoint.locationVector).toBeVector3CloseTo(
         centerVector,
         3
       );
-      expect(newCircle.circlePoint.vectorPosition).toBeVector3CloseTo(
+      expect(newCircle.circleSEPoint.locationVector).toBeVector3CloseTo(
         radiusVector,
         3
       );
@@ -630,11 +642,11 @@ describe("SphereFrame.vue", () => {
 
       // Radius vector is background
       const radiusVector = new Vector3(endX, -endY, -endZCoord).normalize();
-      expect(newCircle.centerPoint.vectorPosition).toBeVector3CloseTo(
+      expect(newCircle.centerSEPoint.locationVector).toBeVector3CloseTo(
         centerVector,
         3
       );
-      expect(newCircle.circlePoint.vectorPosition).toBeVector3CloseTo(
+      expect(newCircle.circleSEPoint.locationVector).toBeVector3CloseTo(
         radiusVector,
         3
       );
@@ -672,11 +684,11 @@ describe("SphereFrame.vue", () => {
 
       // Radius vector is foreground
       const radiusVector = new Vector3(endX, -endY, endZCoord).normalize();
-      expect(newCircle.centerPoint.vectorPosition).toBeVector3CloseTo(
+      expect(newCircle.centerSEPoint.locationVector).toBeVector3CloseTo(
         centerVector,
         3
       );
-      expect(newCircle.circlePoint.vectorPosition).toBeVector3CloseTo(
+      expect(newCircle.circleSEPoint.locationVector).toBeVector3CloseTo(
         radiusVector,
         3
       );
@@ -714,11 +726,11 @@ describe("SphereFrame.vue", () => {
 
       // Radius vector is background
       const radiusVector = new Vector3(endX, -endY, -endZCoord).normalize();
-      expect(newCircle.centerPoint.vectorPosition).toBeVector3CloseTo(
+      expect(newCircle.centerSEPoint.locationVector).toBeVector3CloseTo(
         centerVector,
         3
       );
-      expect(newCircle.circlePoint.vectorPosition).toBeVector3CloseTo(
+      expect(newCircle.circleSEPoint.locationVector).toBeVector3CloseTo(
         radiusVector,
         3
       );
@@ -758,7 +770,7 @@ describe("SphereFrame.vue", () => {
         startZCoord
       ).normalize();
       const newPoint: SEPoint = wrapper.vm.$store.state.points[prevPointCount];
-      expect(newPoint.vectorPosition).toBeVector3CloseTo(positionVector, 3);
+      expect(newPoint.locationVector).toBeVector3CloseTo(positionVector, 3);
     });
   });
 
