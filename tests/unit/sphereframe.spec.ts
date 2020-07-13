@@ -391,11 +391,11 @@ describe("SphereFrame.vue", () => {
       const dir = new Vector3()
         .crossVectors(startVector, endVector)
         .normalize();
-      expect(newSegment.startPoint.vectorPosition).toBeVector3CloseTo(
+      expect(newSegment.startSEPoint.locationVector).toBeVector3CloseTo(
         startVector,
         3
       );
-      expect(newSegment.endPoint.vectorPosition).toBeVector3CloseTo(
+      expect(newSegment.endSEPoint.locationVector).toBeVector3CloseTo(
         endVector,
         3
       );
@@ -436,11 +436,11 @@ describe("SphereFrame.vue", () => {
       const dir = new Vector3()
         .crossVectors(startVector, endVector)
         .normalize();
-      expect(newSegment.startPoint.vectorPosition).toBeVector3CloseTo(
+      expect(newSegment.startSEPoint.locationVector).toBeVector3CloseTo(
         startVector,
         3
       );
-      expect(newSegment.endPoint.vectorPosition).toBeVector3CloseTo(
+      expect(newSegment.endSEPoint.locationVector).toBeVector3CloseTo(
         endVector,
         3
       );
@@ -481,11 +481,11 @@ describe("SphereFrame.vue", () => {
       const dir = new Vector3()
         .crossVectors(startVector, endVector)
         .normalize();
-      expect(newSegment.startPoint.vectorPosition).toBeVector3CloseTo(
+      expect(newSegment.startSEPoint.locationVector).toBeVector3CloseTo(
         startVector,
         3
       );
-      expect(newSegment.endPoint.vectorPosition).toBeVector3CloseTo(
+      expect(newSegment.endSEPoint.locationVector).toBeVector3CloseTo(
         endVector,
         3
       );
@@ -526,11 +526,11 @@ describe("SphereFrame.vue", () => {
       const dir = new Vector3()
         .crossVectors(startVector, endVector)
         .normalize();
-      expect(newSegment.startPoint.vectorPosition).toBeVector3CloseTo(
+      expect(newSegment.startSEPoint.locationVector).toBeVector3CloseTo(
         startVector,
         3
       );
-      expect(newSegment.endPoint.vectorPosition).toBeVector3CloseTo(
+      expect(newSegment.endSEPoint.locationVector).toBeVector3CloseTo(
         endVector,
         3
       );
@@ -608,7 +608,6 @@ describe("SphereFrame.vue", () => {
         radiusVector,
         3
       );
-      expect(newCircle.normalDirection).toBeVector3CloseTo(centerVector, 3);
     });
 
     it("adds a new circle (fg/bg) while in CircleTool", async () => {
@@ -650,7 +649,6 @@ describe("SphereFrame.vue", () => {
         radiusVector,
         3
       );
-      expect(newCircle.normalDirection).toBeVector3CloseTo(centerVector, 3);
     });
 
     it("adds a new circle (bg/fg) while in CircleTool", async () => {
@@ -692,7 +690,6 @@ describe("SphereFrame.vue", () => {
         radiusVector,
         3
       );
-      expect(newCircle.normalDirection).toBeVector3CloseTo(centerVector, 3);
     });
 
     it("adds a new circle (bg/bg) while in CircleTool", async () => {
@@ -734,7 +731,6 @@ describe("SphereFrame.vue", () => {
         radiusVector,
         3
       );
-      expect(newCircle.normalDirection).toBeVector3CloseTo(centerVector, 3);
     });
 
     it("creates a point (and not a circle) when the mouse is not dragged far enough", async () => {

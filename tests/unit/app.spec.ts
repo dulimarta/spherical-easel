@@ -67,7 +67,7 @@ describe("App.vue", () => {
 
     it("shows footer with text", () => {
       const footer = wrapper.find(".v-footer");
-      expect(footer.text()).toContain("No tools");
+      expect(footer.text()).toContain("buttons.NoToolSelected");
     });
 
     it("shows the name of selected tool", async () => {
