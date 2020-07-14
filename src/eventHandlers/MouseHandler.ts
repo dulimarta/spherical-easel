@@ -12,7 +12,6 @@ import { SECircle } from "@/models/SECircle";
 import { SESegment } from "@/models/SESegment";
 import { TextBox } from "@/plottables/TextBox";
 import { SENodule } from "@/models/SENodule";
-import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import { DisplayStyle } from "@/plottables/Nodule";
 
 export default abstract class MouseHandler implements ToolStrategy {

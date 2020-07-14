@@ -1,9 +1,4 @@
 import Two from "two.js";
-import { Vector3 } from "three";
-import { SEPoint } from "@/models/SEPoint";
-import Point from "@/plottables/Point";
-import { AddPointCommand } from "@/commands/AddPointCommand";
-import { DisplayStyle } from "@/plottables/Nodule";
 import Highlighter from "./Highlighter";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import { ConvertInterPtToUserCreatedCommand } from "@/commands/ConvertInterPtToUserCreatedCommand";
@@ -37,8 +32,6 @@ export default class IntersectionPointHandler extends Highlighter {
   }
 
   mousePressed(event: MouseEvent): void {
-    // Only process events from the left (inner) mouse button to avoid adverse interactions with any pop-up menu
-    if (event.button != 0) return;
     //Select the objects to intersect
     if (this.isOnSphere) {
       // Fill the first oneDimensional object
@@ -222,10 +215,7 @@ export default class IntersectionPointHandler extends Highlighter {
   }
 
   // eslint-disable-next-line
-  mouseReleased(event: MouseEvent): void {
-    // Only process events from the left (inner) mouse button to avoid adverse interactions with any pop-up menu
-    if (event.button != 0) return;
-  }
+  mouseReleased(event: MouseEvent): void {}
 
   // eslint-disable-next-line
   mouseLeave(event: MouseEvent): void {

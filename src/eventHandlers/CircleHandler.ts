@@ -48,11 +48,8 @@ export default class CircleHandler extends Highlighter {
     // Set the style using the temporary defaults
     this.temporaryCircle.stylize(DisplayStyle.TEMPORARY);
   }
-  // eslint-disable-next-line
-  mousePressed(event: MouseEvent) {
-    // Only process events from the left (inner) mouse button to avoid adverse interactions with any pop-up menu
-    if (event.button != 0) return;
 
+  mousePressed(event: MouseEvent): void {
     // Do the mouse moved event of the Highlighter so that a new hitSEPoints array will be generated
     // otherwise if the user has finished making an new point, then *without* triggering a mouse move
     // event, mouse press will *not* select the newly created point. This is not what we want so we call super.mouseMove
@@ -88,7 +85,7 @@ export default class CircleHandler extends Highlighter {
     }
   }
 
-  mouseMoved(event: MouseEvent) {
+  mouseMoved(event: MouseEvent): void {
     // Highlight all nearby objects
     super.mouseMoved(event);
     // Make sure that the event is on the sphere
@@ -130,9 +127,7 @@ export default class CircleHandler extends Highlighter {
     }
   }
 
-  mouseReleased(event: MouseEvent) {
-    // Only process events from the left (inner) mouse button to avoid adverse interactions with any pop-up menu
-    if (event.button != 0) return;
+  mouseReleased(event: MouseEvent): void {
     this.isDragging = false;
     if (this.isOnSphere) {
       // Remove the temporary objects from the scene and mark the temporary object

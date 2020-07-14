@@ -37,8 +37,6 @@ export default class SelectionHandler extends MouseHandler {
   }
 
   mousePressed(event: MouseEvent): void {
-    // Only process events from the left (inner) mouse button to avoid adverse interactions with any pop-up menu
-    if (event.button != 0) return;
     event.preventDefault();
     if (event.altKey) {
       // Add current hit to the current selection
@@ -66,7 +64,6 @@ export default class SelectionHandler extends MouseHandler {
   }
 
   mouseReleased(event: MouseEvent): void {
-    // Only process events from the left (inner) mouse button to avoid adverse interactions with any pop-up menu
-    if (event.button != 0) return;
+    // No code required
   }
 }

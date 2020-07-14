@@ -8,7 +8,6 @@ import VueComponent from "vue";
 import { Prop, Component, Watch } from "vue-property-decorator";
 import Two from "two.js";
 import SETTINGS, { LAYER } from "@/global-settings";
-import { Matrix4 } from "three";
 import { State } from "vuex-class";
 import AppStore from "@/store";
 import { ZoomSphereCommand } from "@/commands/ZoomSphereCommand";
@@ -322,21 +321,30 @@ export default class SphereFrame extends VueComponent {
     zoomCommand.push();
   }
   handleMouseMoved(e: MouseEvent): void {
-    // WHen currentTool is NULL, currentTool? resolves to no action
-    this.currentTool?.mouseMoved(e);
+    // Only process events from the left (inner) mouse button to avoid adverse interactions with any pop-up menu
+    if (e.button === 0)
+      // When currentTool is NULL, currentTool? resolves to no action
+      this.currentTool?.mouseMoved(e);
   }
 
   handleMousePressed(e: MouseEvent): void {
-    this.currentTool?.mousePressed(e);
+    // Only process events from the left (inner) mouse button to avoid adverse interactions with any pop-up menu
+    if (e.button === 0)
+      this.currentTool?.mousePressed(e);
   }
 
   handleMouseReleased(e: MouseEvent): void {
-    // WHen currentTool is NULL, the following line does nothing
-    this.currentTool?.mouseReleased(e);
+    // Only process events from the left (inner) mouse button to avoid adverse interactions with any pop-up menu
+    if (e.button === 0)
+      // When currentTool is NULL, the following line does nothing
+      this.currentTool?.mouseReleased(e);
   }
 
   handleMouseLeave(e: MouseEvent): void {
-    this.currentTool?.mouseLeave(e);
+    // Only process events from the left (inner) mouse button to avoid adverse interactions with any pop-up menu
+    if (e.button === 0)
+      // When currentTool is NULL, the following line does nothing
+      this.currentTool?.mouseLeave(e);
   }
 
   //#region handleSphereRotation

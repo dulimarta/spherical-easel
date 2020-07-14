@@ -1,6 +1,4 @@
 import Two from "two.js";
-import { Vector3 } from "three";
-// import SETTINGS from "@/global-settings";
 import { SEPoint } from "@/models/SEPoint";
 import Point from "@/plottables/Point";
 import { AddPointCommand } from "@/commands/AddPointCommand";
@@ -18,9 +16,6 @@ export default class PointHandler extends Highlighter {
   }
 
   mousePressed(event: MouseEvent): void {
-    // Only process events from the left (inner) mouse button to avoid adverse interactions with any pop-up menu
-    if (event.button != 0) return;
-
     // Do the mouse moved event of the Highlighter so that a new hitSEPoints array will be generated
     // otherwise if the user has finished making an new point, then *without* triggering a mouse move
     // event, mouse press will create a new point at the same location. This is not what we want so we call super.mouseMove
