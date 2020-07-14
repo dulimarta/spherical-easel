@@ -10,7 +10,7 @@ import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import { ConvertInterPtToUserCreatedCommand } from "@/commands/ConvertInterPtToUserCreatedCommand";
 
 export default class PointHandler extends Highlighter {
-  // The temporary circle displayed as the user drags
+  // The temporary point displayed as the user drags
   private isTemporaryPointAdded = false;
 
   constructor(layers: Two.Group[]) {
@@ -18,6 +18,9 @@ export default class PointHandler extends Highlighter {
   }
 
   mousePressed(event: MouseEvent): void {
+    // Only process events from the left (inner) mouse button to avoid adverse interactions with any pop-up menu
+    if (event.button != 0) return;
+
     // Do the mouse moved event of the Highlighter so that a new hitSEPoints array will be generated
     // otherwise if the user has finished making an new point, then *without* triggering a mouse move
     // event, mouse press will create a new point at the same location. This is not what we want so we call super.mouseMove

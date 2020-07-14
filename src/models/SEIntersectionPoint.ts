@@ -7,8 +7,8 @@ import { SENodule } from "./SENodule";
 import { IntersectionReturnType } from "@/types";
 import { DisplayStyle } from "@/plottables/Nodule";
 import store from "@/store";
-
-type SEOneDimension = SELine | SESegment | SECircle;
+//import { SEOneDimensional } from "@/types/index";
+type SEOneDimensional = SELine | SESegment | SECircle;
 
 export class SEIntersectionPoint extends SEPoint {
   /**
@@ -41,8 +41,8 @@ export class SEIntersectionPoint extends SEPoint {
    */
   constructor(
     pt: Point,
-    seParent1: SEOneDimension,
-    seParent2: SEOneDimension,
+    seParent1: SEOneDimensional,
+    seParent2: SEOneDimensional,
     order: number,
     isUserCreated: boolean
   ) {
@@ -92,6 +92,7 @@ export class SEIntersectionPoint extends SEPoint {
     this._exists = this.seParent1.exists && this.seParent2.exists;
     if (this._exists) {
       //console.debug("Updating SEIntersectionPoint", this.name);
+      // The objects are in the correct order because the SEIntersectionPoint parents are assigned that way
       const updatedIntersectionInfo: IntersectionReturnType[] = store.getters.intersectTwoObjects(
         this.seParent1,
         this.seParent2
@@ -105,7 +106,7 @@ export class SEIntersectionPoint extends SEPoint {
       // console.log("user created", this._isUserCreated);
       // console.log("showing", this._showing);
       if (this._exists && this._isUserCreated && this._showing) {
-        // Update the location and display (called in setter)
+        // Update visibility
         this.ref.setVisible(true);
       } else {
         this.ref.setVisible(false);

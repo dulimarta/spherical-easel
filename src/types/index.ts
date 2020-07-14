@@ -30,7 +30,7 @@ export interface AppState {
 }
 /* This interface lists all the properties that each tool/button must have. */
 export interface ToolButtonType {
-  id: number;
+  id: string;
   actionModeValue: string;
   displayToolUseMessage: boolean;
   displayedName: string;
@@ -43,4 +43,12 @@ export interface ToolButtonType {
 export interface IntersectionReturnType {
   vector: Vector3;
   exists: boolean;
+}
+
+export interface SEOneDimensional {
+  /**
+   * Returns the closest vector on the one dimensional object to the idealUnitSphereVector
+   * @param idealUnitSphereVector A vector location on the sphere
+   */
+  closestVector(idealUnitSphereVector: Vector3): Vector3;
 }

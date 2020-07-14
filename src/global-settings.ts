@@ -306,7 +306,8 @@ export default {
     "segment",
     "select",
     "zoomIn",
-    "zoomOut"
+    "zoomOut",
+    "intersect"
   ],
   supportedLanguages: [
     { locale: "en", name: "English" },

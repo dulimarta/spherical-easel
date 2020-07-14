@@ -47,9 +47,7 @@
       group. Note the use of the translation $t(key_value).
     -->
     <div id="AdvanceToolGroup" v-show="nonEmptyGroup('advanced')">
-      <h3 class="body-1 font-weight-bold">
-        {{ $t("toolGroups.AdvancedTools") }}
-      </h3>
+      <h3 class="body-1 font-weight-bold">{{ $t("toolGroups.AdvancedTools") }}</h3>
       <v-btn-toggle
         v-model="actionMode"
         @change="switchActionMode"
@@ -71,13 +69,8 @@
       The Transformational Tool Group only shown if the user has permission to use a tool in this 
       group. Note the use of the translation $t(key_value).
     -->
-    <div
-      id="TransformationalToolGroup"
-      v-show="nonEmptyGroup('transformational')"
-    >
-      <h3 class="body-1 font-weight-bold">
-        {{ $t("toolGroups.TransformationalTools") }}
-      </h3>
+    <div id="TransformationalToolGroup" v-show="nonEmptyGroup('transformational')">
+      <h3 class="body-1 font-weight-bold">{{ $t("toolGroups.TransformationalTools") }}</h3>
       <v-btn-toggle
         v-model="actionMode"
         @change="switchActionMode"
@@ -96,9 +89,7 @@
     <!-- TODO: Move this into a tool tip somewhere. -->
     <div class="ml-2" style="height:100%;">
       <div>
-        <h3 class="body-1 font-weight-bold">
-          {{ $t("toolGroups.KeyShortCut") }}
-        </h3>
+        <h3 class="body-1 font-weight-bold">{{ $t("toolGroups.KeyShortCut") }}</h3>
         <ul>
           <li>{{ $t("toolGroups.ResetSphereOrientation") }}</li>
         </ul>
@@ -145,7 +136,7 @@ export default class ToolGroups extends Vue {
 
   /* This turns off all other snackbar/toolUseMessage displays so that multiple 
   snackbar/toolUseMessages are not displayed at the same time.  */
-  displayOnlyThisToolUseMessageFunc(id: number): void {
+  displayOnlyThisToolUseMessageFunc(id: string): void {
     // Alternative solution: use Array high-order functions
     this.buttonList
       .filter(btn => btn.id !== id)
@@ -157,37 +148,7 @@ export default class ToolGroups extends Vue {
   permission to use will be available. */
   private buttonList: ToolButtonType[] = [
     {
-      id: 40,
-      actionModeValue: "select",
-      displayedName: "CreateSelectDisplayedName",
-      icon: "mdi-cursor-pointer",
-      toolTipMessage: "CreateSelectToolTipMessage",
-      toolUseMessage: "CreateSelectToolUseMessage",
-      displayToolUseMessage: false,
-      toolGroup: "edit"
-    },
-    {
-      id: 50,
-      actionModeValue: "rotate",
-      displayedName: "RotateDisplayedName",
-      icon: "mdi-rotate-3d-variant",
-      toolTipMessage: "RotateSphereToolTipMessage",
-      toolUseMessage: "RotateSphereToolUseMessage",
-      displayToolUseMessage: false,
-      toolGroup: "edit"
-    },
-    {
-      id: 60,
-      actionModeValue: "move",
-      displayedName: "MoveDisplayedName",
-      icon: "mdi-cursor-move",
-      toolTipMessage: "MoveObjectToolTipMessage",
-      toolUseMessage: "MoveObjectToolUseMessage",
-      displayToolUseMessage: false,
-      toolGroup: "edit"
-    },
-    {
-      id: 0,
+      id: "basic-0",
       actionModeValue: "point",
       displayedName: "CreatePointDisplayedName",
       icon: "mdi-vector-point",
@@ -197,7 +158,7 @@ export default class ToolGroups extends Vue {
       toolGroup: "basic"
     },
     {
-      id: 20,
+      id: "basic-5",
       actionModeValue: "line",
       displayedName: "CreateLineDisplayedName",
       icon: "mdi-vector-line",
@@ -207,7 +168,7 @@ export default class ToolGroups extends Vue {
       toolGroup: "basic"
     },
     {
-      id: 10,
+      id: "basic-10",
       actionModeValue: "segment",
       displayedName: "CreateLineSegmentDisplayedName",
       icon: "mdi-vector-radius",
@@ -217,7 +178,7 @@ export default class ToolGroups extends Vue {
       toolGroup: "basic"
     },
     {
-      id: 30,
+      id: "advanced-0",
       actionModeValue: "circle",
       displayedName: "CreateCircleDisplayedName",
       icon: "mdi-vector-circle-variant",
@@ -227,7 +188,47 @@ export default class ToolGroups extends Vue {
       toolGroup: "advanced"
     },
     {
-      id: 70,
+      id: "edit-0",
+      actionModeValue: "select",
+      displayedName: "CreateSelectDisplayedName",
+      icon: "mdi-cursor-pointer",
+      toolTipMessage: "CreateSelectToolTipMessage",
+      toolUseMessage: "CreateSelectToolUseMessage",
+      displayToolUseMessage: false,
+      toolGroup: "edit"
+    },
+    {
+      id: "edit-5",
+      actionModeValue: "intersect",
+      displayedName: "CreateIntersectionDisplayedName",
+      icon: "mdi-vector-intersection",
+      toolTipMessage: "CreateIntersectionToolTipMessage",
+      toolUseMessage: "CreateIntersectionToolUseMessage",
+      displayToolUseMessage: false,
+      toolGroup: "edit"
+    },
+    {
+      id: "edit-10",
+      actionModeValue: "rotate",
+      displayedName: "RotateDisplayedName",
+      icon: "mdi-rotate-3d-variant",
+      toolTipMessage: "RotateSphereToolTipMessage",
+      toolUseMessage: "RotateSphereToolUseMessage",
+      displayToolUseMessage: false,
+      toolGroup: "edit"
+    },
+    {
+      id: "edit-15",
+      actionModeValue: "move",
+      displayedName: "MoveDisplayedName",
+      icon: "mdi-cursor-move",
+      toolTipMessage: "MoveObjectToolTipMessage",
+      toolUseMessage: "MoveObjectToolUseMessage",
+      displayToolUseMessage: false,
+      toolGroup: "edit"
+    },
+    {
+      id: "edit-20",
       actionModeValue: "zoomIn",
       displayedName: "PanZoomInDisplayedName",
       icon: "mdi-magnify-plus-outline",
@@ -237,7 +238,7 @@ export default class ToolGroups extends Vue {
       toolGroup: "edit"
     },
     {
-      id: 80,
+      id: "edit-25",
       actionModeValue: "zoomOut",
       displayedName: "PanZoomOutDisplayedName",
       icon: "mdi-magnify-minus-outline",
@@ -247,7 +248,15 @@ export default class ToolGroups extends Vue {
       toolGroup: "edit"
     }
     //sort the button list by id so that we don't have to reorder the list each item we add a new button
-  ].sort((a: ToolButtonType, b: ToolButtonType) => a.id - b.id);
+  ].sort((a: ToolButtonType, b: ToolButtonType) => {
+    if (a.id > b.id) {
+      return 1;
+    }
+    if (a.id < b.id) {
+      return -1;
+    }
+    return 0;
+  });
 }
 </script>
 

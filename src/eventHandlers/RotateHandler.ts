@@ -57,6 +57,8 @@ export default class RotateHandler extends MouseHandler {
   }
 
   mousePressed(event: MouseEvent): void {
+    // Only process events from the left (inner) mouse button to avoid adverse interactions with any pop-up menu
+    if (event.button != 0) return;
     // Mouse pressing in the sphere while it is rotating in momentum mode does nothing to the sphere
     if (!this.momentumMode) {
       this.isDragging = true;
@@ -109,6 +111,9 @@ export default class RotateHandler extends MouseHandler {
 
   // eslint-disable-next-line
   mouseReleased(event: MouseEvent): void {
+    // Only process events from the left (inner) mouse button to avoid adverse interactions with any pop-up menu
+    if (event.button != 0) return;
+
     this.isDragging = false;
     // Mouse releasing in the sphere during momentum rotation turns off the rotation
     if (!this.momentumMode) {

@@ -39,8 +39,8 @@ export abstract class SENodule {
   /* If the object is not visible then showing = true (The user can hide objects)*/
   protected _showing = true;
 
-  /* If the object is selected, it is glowing*/
-  protected _glowing = false;
+  /* If the object is selected, it is glowing until it is unselected*/
+  protected _selected = false;
 
   /* This boolean is set to indicate that the object is out of date and needs to be updated. */
   protected _outOfDate = false;
@@ -169,6 +169,13 @@ export abstract class SENodule {
     }
   }
 
+  public setOutOfDate(b: boolean): void {
+    this._outOfDate = b;
+  }
+
+  public isOutOfDate(): boolean {
+    return this._outOfDate;
+  }
   /**
    * A node is free if it is a point with no parents (i.e. a free point) OR
    * all its parents are free points
@@ -198,15 +205,6 @@ export abstract class SENodule {
     return this._parents.every(n => n.isFreePoint());
   }
 
-  //Getters and Setters
-  set exists(b: boolean) {
-    this._exists = b;
-  }
-
-  get exists(): boolean {
-    return this._exists;
-  }
-
   /**
    * Returns false if any one of the three components of vec are bigger than SETTINGS.tolerance
    * @param vec Vector3
@@ -222,12 +220,13 @@ export abstract class SENodule {
     return true;
   }
 
-  public setOutOfDate(b: boolean): void {
-    this._outOfDate = b;
+  //Getters and Setters
+  set exists(b: boolean) {
+    this._exists = b;
   }
 
-  public isOutOfDate(): boolean {
-    return this._outOfDate;
+  get exists(): boolean {
+    return this._exists;
   }
 
   get kids(): SENodule[] {
@@ -250,8 +249,8 @@ export abstract class SENodule {
   }
 
   set glowing(b: boolean) {
-    // Set the showing variable
-    this._glowing = b;
+    //glowing has no effect on selected or hidden objects
+    if (this._selected || !this._showing) return;
     if (b) {
       // Set the display for the corresponding plottable object
       this.ref.glowingDisplay();
@@ -259,7 +258,20 @@ export abstract class SENodule {
       this.ref.normalDisplay();
     }
   }
-  get glowing(): boolean {
-    return this._glowing;
+
+  set selected(b: boolean) {
+    // selecting has no effect on hidden objects
+    if (!this._showing) return;
+    this._selected = b;
+    if (b) {
+      // Set the display for the corresponding plottable object
+      this.ref.glowingDisplay();
+    } else {
+      this.ref.normalDisplay();
+    }
+  }
+
+  get selected(): boolean {
+    return this._selected;
   }
 }

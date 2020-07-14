@@ -71,6 +71,9 @@ export default class LineHandler extends Highlighter {
   }
   //eslint-disable-next-line
   mousePressed(event: MouseEvent): void {
+    // Only process events from the left (inner) mouse button to avoid adverse interactions with any pop-up menu
+    if (event.button != 0) return;
+
     // Do the mouse moved event of the Highlighter so that a new hitSEPoints array will be generated
     // otherwise if the user has finished making an new point, then *without* triggering a mouse move
     // event, mouse press will *not* select the newly created point. This is not what we want so we call super.mouseMove
@@ -154,6 +157,8 @@ export default class LineHandler extends Highlighter {
     }
   }
   mouseReleased(event: MouseEvent): void {
+    // Only process events from the left (inner) mouse button to avoid adverse interactions with any pop-up menu
+    if (event.button != 0) return;
     this.isDragging = false;
     if (this.isOnSphere) {
       // Make sure the user didn't trigger the mouse leave event and is actually making a segment

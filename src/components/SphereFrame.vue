@@ -20,6 +20,7 @@ import LineHandler from "@/eventHandlers/LineHandler";
 import SegmentHandler from "@/eventHandlers/SegmentHandler";
 import CircleHandler from "@/eventHandlers/CircleHandler";
 import RotateHandler from "@/eventHandlers/RotateHandler";
+import IntersectionPointHandler from "@/eventHandlers/IntersectionPointHandler";
 import PanZoomHandler, { ZoomMode } from "@/eventHandlers/PanZoomHandler";
 import { PositionVisitor } from "@/visitors/PositionVisitor";
 import EventBus from "@/eventHandlers/EventBus";
@@ -70,6 +71,7 @@ export default class SphereFrame extends VueComponent {
   private rotateTool!: RotateHandler;
   private zoomTool!: PanZoomHandler;
   private moveTool!: MoveHandler;
+  private intersectTool!: IntersectionPointHandler;
 
   /**
    * A way to change the location of the points in the store to enact a rotation, this visits
@@ -184,6 +186,7 @@ export default class SphereFrame extends VueComponent {
     this.rotateTool = new RotateHandler(this.layers);
     this.zoomTool = new PanZoomHandler(this.$refs.canvas);
     this.moveTool = new MoveHandler(this.layers);
+    this.intersectTool = new IntersectionPointHandler(this.layers);
   }
 
   beforeDestroy(): void {
@@ -375,6 +378,9 @@ export default class SphereFrame extends VueComponent {
       case "zoomOut":
         this.currentTool = this.zoomTool;
         this.zoomTool.zoomMode = ZoomMode.MINIFY;
+        break;
+      case "intersect":
+        this.currentTool = this.intersectTool;
         break;
       default:
         this.currentTool = null;

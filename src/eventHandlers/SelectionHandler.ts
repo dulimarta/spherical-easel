@@ -39,6 +39,9 @@ export default class SelectionHandler extends MouseHandler {
   }
 
   mousePressed(event: MouseEvent): void {
+    // Only process events from the left (inner) mouse button to avoid adverse interactions with any pop-up menu
+    if (event.button != 0) return;
+
     if (this.hitSENodules.length == 1) {
       console.debug("Single selection", this.hitSENodules[0].name);
     } else if (this.hitSENodules.length > 1) {
@@ -49,6 +52,7 @@ export default class SelectionHandler extends MouseHandler {
     }
   }
   mouseReleased(event: MouseEvent): void {
-    // No code yet
+    // Only process events from the left (inner) mouse button to avoid adverse interactions with any pop-up menu
+    if (event.button != 0) return;
   }
 }

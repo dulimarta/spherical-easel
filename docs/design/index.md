@@ -14,6 +14,10 @@ We have chosen to break apart the code so that we can implement different code d
 
 To display and organize information for a graphical object (like an ellipse) on the Sphere Canvas requires two different types of methods: those for rendering it to the screen (including the size, color, fill, portion on the front or back, etc.) and those for keeping track of where this object is located on the sphere and how this object interacts with other objects (location, parents or kids of an object, etc.). This distinction is reflected in the organization of the classes and the directory structure. The classes in the <span class="directory">plottables</span> directory (like <span class="class">Ellipse</span>) all pertain to graphical rendering of objects and classes in the <span class="directory">models</span> directory (like <span class="class">SEEllipse</span>) pertain to the location and how the object should respond to changes in location of its parents. We are using something like the [façade design pattern](https://en.wikipedia.org/wiki/Facade_pattern) where the front facing graphics are handled by classes in the <span class="directory">plottables</span> directory which mask the more complex (abstract) behaviors handled by classes in the <span class="directory">models</span> directory. We do this so that if a better graphical renderer comes to the attention of the authors we will be able to change to that new renderer (fairly) easily.
 
+## Adding a tool
+
+Here is an outline of how you can expand Spherical Easel and [add a tool](/design/addingatooloutline.md).
+
 ## Models Directory
 
 Models are the back-end collection of classes that organize and store information about each graphical object on the [ideal unit sphere](/design/#coordinates). Classes in this directory should be independent of the graphical library chosen for rendering the visual appearance of the geometric objects. All classes in this directory starts with the prefix SE. This is to distinguish them from their plottable counterparts. For instance, <span class="class">SECircle</span> in this subdirectory is associated with the class <span class="class">Circle</span> that resides in the <span class="directory">plottables</span> directory. Notice that multiple <span class="class">SENodule</span> classes (the super class of all the classes in this directory) can be associated with the same class in the <span class="directory">plottables</span> directory. For example, the <span class="class">SEThreePointCircle</span> is also associated with the class <span class="class">Circle</span> in the <span class="directory">plottables</span> directory.
@@ -42,7 +46,23 @@ There are some abstract methods in <span class="class">SENodules</span> that mus
   - End with the method <span class="method">updateKids()</span> that updates all kids of this <span class="class">SENodule</span>.
 - <span class="method">isHitAt(Vector)</span>: Takes an input of a location on the unit ideal sphere and decides if that location is close enough to this object that the user would like to select or highlight it.
 
-Naming Convention: For any variable in a model class, that has an associated setter or getter, the private version starts with an underscore and the setter or getter version doesn't have an underscore. If the variable is an SE object of some type the two letter sequence SE is in the name.
+### Naming Convention
+
+For any variable in a model class, that has an associated setter or getter, the private version starts with an underscore and the setter or getter version doesn't have an underscore. If the variable is an SE object of some type the two letter sequence SE is in the name.
+
+### State
+
+Every <span class="class">SENodule</span> object has the following boolean properties:
+
+- <span class="variable">\_exists</span>: A object doesn't exist if any one of its parents don't exist or its geometric definition indicates that it doesn't exist. For example, an intersection point of two circles exists if the two circles cross, but if the user moves the circle far enough apart, the intersection won't exist. In this case the <span class="variable">\_exists</span> variable would go from true to false. If the user moves the circle back into position where the two circles intersect, then the <span class="variable">\_exists</span> is back to true (and the point is redisplayed). Note that any objects that depend on this intersection are not lost during this process, they merely don't exist and are not displayed while in this state.
+
+- <span class="variable">\_showing</span>: A user can hide or show objects and this variable reflects that state.
+
+- <span class="variable">\_outOfDate</span>: If an object needs to be updated because its parents may have changed, then this flag is set to true.
+
+- <span class="variable">\_selected</span>: If an object is selected it remains glowing until it is unselected. This property is used to indicate to the user which objects have already been selected when multiple objects need to be selected for an operation.
+
+- <span class="variable">\_isUserCreated</span>: (This property applies to only <span class="class">SEIntersectionPoint</span> objects.) Every time you add a one dimensional object all intersections with all other one dimensional objects are created as <span class="class">SEIntersectionPoint</span> objects. See <span class="class">intersectTwoObjects()</span> method in the span class="class">getters.ts</span> in the [Store](/design/#store). When they are created in this way, the value of <span class="variable">\_isUserCreated</span> is false. When this value is false, mousing over an intersection will make it display in the temporary style instead of glowing. If the user actually uses the point in a construction, <span class="variable">\_isUserCreated</span> is true and mousing over it will make it glow as usual. See <span class="command">ConvertInterPtToUserCreatedCommand</span>.
 
 ## Plottables Directory
 
@@ -97,7 +117,9 @@ This is illustrated in this code snippet from <span class="file">PointHandler.ts
 
 <<< @/src/eventHandlers/PointHandler.ts#linkNoduleSENodule
 
-Naming Convention: For any variable in a plottables class the must be set before the plottable can be properly rendered, the private version of it starts with an underscore and the setter/getter version has the same name with out the underscore. If the variable is a vector of some type the last word of the name is Vector.
+### Naming Convention
+
+For any variable in a plottables class the must be set before the plottable can be properly rendered, the private version of it starts with an underscore and the setter/getter version has the same name with out the underscore. If the variable is a vector of some type the last word of the name is Vector.
 
 ## Layers
 

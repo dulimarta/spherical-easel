@@ -291,7 +291,7 @@ function intersectCircles(
     //   <-------  b ------>
     //          <- cenDist->
 
-    //  Pi/2 < A < Pi
+    //  Pi/2 < A < Pi (which is marked by A = arctan(...) < 0 so A is really arctan(...) + Pi  )
     //
     //  .  (negative intersection point)
     //  |\ \
@@ -400,19 +400,10 @@ export default {
   ): SEIntersectionPoint[] => {
     const intersectionPointList: SEIntersectionPoint[] = [];
     // Intersection this new line with all old lines
-    console.log(
-      "state lines",
-      state.lines.length,
-      "state lines filter",
-      state.lines.filter((line: SELine) => line.id !== newLine.id).length
-    );
     state.lines
       .filter((line: SELine) => line.id !== newLine.id) // ignore self
       .forEach((oldLine: SELine) => {
-        console.log("oldLine", oldLine.normalVector);
-        console.log("newLine", newLine.normalVector);
         const intersectionInfo = intersectLineWithLine(oldLine, newLine);
-        console.log("IntersectionInfo", intersectionInfo);
         intersectionInfo.forEach((info, index) => {
           const newPt = new Point();
           newPt.stylize(DisplayStyle.TEMPORARY);
@@ -604,6 +595,15 @@ export default {
       });
     return intersectionPointList;
   },
+  /**
+   * Create the intersection of two one-dimensional objects
+   * Make sure the SENodules are in the correct order: SELines, SESegments, then SECircles.
+   * That the (one,two) pair is one of:
+   *  (SELine,SELine), (SELine,SESegment), (SELine,SECircle), (SESegment, SESegment),
+   *      (SESegment, SECircle), (SECircle, SECircle)
+   * If they have the same type put them in alphabetical order.
+   * The creation of the intersection objects automatically follows this convention in assigning parents.
+   */
   intersectTwoObjects: (state: AppState) => (
     one: SENodule,
     two: SENodule
@@ -627,5 +627,12 @@ export default {
         two.circleRadius
       );
     throw "This line should NOT be called at all";
+  },
+  findIntersectionPointsStartingWith: (state: AppState) => (
+    prefix: string
+  ): SEIntersectionPoint[] => {
+    return state.points
+      .filter(p => p instanceof SEIntersectionPoint && p.name.includes(prefix))
+      .map(obj => obj as SEIntersectionPoint);
   }
 };
