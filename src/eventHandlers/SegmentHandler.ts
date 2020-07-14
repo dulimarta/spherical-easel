@@ -144,7 +144,14 @@ export default class SegmentHandler extends Highlighter {
           this.isTemporarySegmentAdded = true;
           // Add the temporary objects to the correct layers
           this.endMarker.addToLayers(this.layers);
-          this.startMarker.addToLayers(this.layers);
+          // Only add the start marker if the start point is going to be new or is non-user created intersection point
+          if (
+            this.startSEPoint == null ||
+            (this.startSEPoint instanceof SEIntersectionPoint &&
+              !this.startSEPoint.isUserCreated)
+          ) {
+            this.startMarker.addToLayers(this.layers);
+          }
           this.tempSegment.addToLayers(this.layers);
         }
         this.setArcLengthAndNormalVector(

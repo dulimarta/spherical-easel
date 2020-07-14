@@ -150,8 +150,11 @@ export default class PanZoomHandler implements ToolStrategy {
       //   this.mousePressTranslationVector[1]
       // ]);
     } else {
-      /* Do the zoom operation */
-      this.doZoom(event);
+      /* Do the zoom operation unless the isMousePressed is false (which might happen if the mouse leave event was triggered
+       */
+      if (this.isMousePressed) {
+        this.doZoom(event);
+      }
     }
     this.isMousePressed = false;
   }
@@ -259,7 +262,9 @@ export default class PanZoomHandler implements ToolStrategy {
   }
 
   mouseLeave(event: MouseEvent): void {
-    // no code yet
+    console.debug("mouse leave event pan/zoom");
+    this.isDragging = false;
+    this.isMousePressed = false;
   }
 
   activate(): void {

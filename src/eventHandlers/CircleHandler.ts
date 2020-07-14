@@ -99,7 +99,14 @@ export default class CircleHandler extends Highlighter {
         if (!this.isTemporaryCircleAdded) {
           this.isTemporaryCircleAdded = true;
           this.temporaryCircle.addToLayers(this.layers);
-          this.startMarker.addToLayers(this.layers);
+          // Only add the start marker if the start point is going to be new or is non-user created intersection point
+          if (
+            this.centerSEPoint == null ||
+            (this.centerSEPoint instanceof SEIntersectionPoint &&
+              !this.centerSEPoint.isUserCreated)
+          ) {
+            this.startMarker.addToLayers(this.layers);
+          }
           this.endMarker.addToLayers(this.layers);
         }
         //compute the radius of the temporary circle

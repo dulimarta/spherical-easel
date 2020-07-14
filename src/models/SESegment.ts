@@ -40,9 +40,10 @@ export class SESegment extends SENodule implements Visitable {
    */
   private nearlyAntipodal = false;
   /**
-   * Temporary vector to help with calculations
+   * Temporary vectors to help with calculations
    */
   private tmpVector = new Vector3();
+  private toVector = new Vector3();
 
   /**
    * Create a model SESegment using:
@@ -96,14 +97,21 @@ export class SESegment extends SENodule implements Visitable {
     if (Math.abs(unitIdealVector.dot(this._normalVector)) > 1e-2) return false;
 
     // Is the unitIdealVector inside the radius arcLength/2 circle about the midVector?
-    // NOTE: normalVector x startVector give the direction in which the segment is drawn
-    const to = new Vector3();
-    to.crossVectors(this._normalVector, this._startSEPoint.locationVector);
-    // midVector = tmpVector = cos(arcLength/2)*start + sin(arcLength/2)*to
+    // NOTE: normalVector x startVector *(this.arcLength > Math.PI ? -1 : 1)
+    // gives the direction in which the segment is drawn
+    this.toVector
+      .crossVectors(this._normalVector, this._startSEPoint.locationVector)
+      .multiplyScalar(this.arcLength > Math.PI ? -1 : 1);
+    // midVector = tmpVector = cos(arcLength/2)*start + sin(arcLength/2)*toVector
     this.tmpVector
       .copy(this._startSEPoint.locationVector)
       .multiplyScalar(Math.cos(this.arcLength / 2));
-    this.tmpVector.addScaledVector(to, Math.sin(this.arcLength / 2));
+    this.tmpVector.addScaledVector(this.toVector, Math.sin(this.arcLength / 2));
+
+    // console.debug("start vec", this._startSEPoint.locationVector.toFixed(2));
+    // console.debug("toVector", this.toVector.toFixed(2));
+    // console.debug("arclengh", this.arcLength);
+    // console.debug("midPoint", this.tmpVector.toFixed(2));
     return (
       this.tmpVector.angleTo(unitIdealVector) <
       this.arcLength / 2 + SETTINGS.segment.hitIdealDistance
@@ -116,17 +124,23 @@ export class SESegment extends SENodule implements Visitable {
    */
   public onSegment(unitIdealVector: Vector3): boolean {
     // Is the unitIdealVector inside the radius arcLength/2 circle about the midVector?
-    // NOTE: normalVector x startVector give the direction in which the segment is drawn
-    const to = new Vector3();
-    to.crossVectors(
-      this._normalVector,
-      this._startSEPoint.locationVector
-    ).multiplyScalar(this.arcLength > Math.PI ? -1 : 1);
-    // midVector = tmpVector = cos(arcLength/2)*start + sin(arcLength/2)*to
+    // NOTE: normalVector x startVector * (this.arcLength > Math.PI ? -1 : 1)
+    // gives the direction in which the segment is drawn
+
+    this.toVector
+      .crossVectors(this._normalVector, this._startSEPoint.locationVector)
+      .multiplyScalar(this.arcLength > Math.PI ? -1 : 1);
+    // midVector = tmpVector = cos(arcLength/2)*start + sin(arcLength/2)*this.toVector
     this.tmpVector
       .copy(this._startSEPoint.locationVector)
       .multiplyScalar(Math.cos(this.arcLength / 2));
-    this.tmpVector.addScaledVector(to, Math.sin(this.arcLength / 2));
+    this.tmpVector.addScaledVector(this.toVector, Math.sin(this.arcLength / 2));
+
+    // console.debug("start vec", this._startSEPoint.locationVector.toFixed(2));
+    // console.debug("toVector", this.toVector.toFixed(2));
+    // console.debug("arclengh", this.arcLength);
+    // console.debug("midPoint", this.tmpVector.toFixed(2));
+
     return this.tmpVector.angleTo(unitIdealVector) <= this.arcLength / 2;
   }
 

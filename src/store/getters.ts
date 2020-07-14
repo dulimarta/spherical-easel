@@ -8,7 +8,8 @@ import Two from "two.js";
 import { SENodule } from "@/models/SENodule";
 import { SEPoint } from "@/models/SEPoint";
 import Point from "@/plottables/Point";
-import { DisplayStyle } from "@/plottables/Nodule";
+import Nodule, { DisplayStyle } from "@/plottables/Nodule";
+import { NormalModuleReplacementPlugin } from "webpack";
 
 const PIXEL_CLOSE_ENOUGH = 8;
 
@@ -54,13 +55,19 @@ function intersectLineWithLine(
 ): IntersectionReturnType[] {
   const returnItems = [];
   console.debug("Create 2 new Vector3()");
-  const item1: IntersectionReturnType = { vector: new Vector3(), exists: true };
-  const item2: IntersectionReturnType = { vector: new Vector3(), exists: true };
+  const intersection1: IntersectionReturnType = {
+    vector: new Vector3(),
+    exists: true
+  };
+  const intersection2: IntersectionReturnType = {
+    vector: new Vector3(),
+    exists: true
+  };
 
   // Plus and minus the cross product of the normal vectors are the intersection vectors
   tempVec.crossVectors(lineOne.normalVector, lineTwo.normalVector).normalize();
-  item1.vector.copy(tempVec);
-  item2.vector.copy(tempVec.multiplyScalar(-1));
+  intersection1.vector.copy(tempVec);
+  intersection2.vector.copy(tempVec.multiplyScalar(-1));
 
   // If the normal vectors are on top of each other or antipodal, exists is false
   if (
@@ -71,11 +78,11 @@ function intersectLineWithLine(
       tempVec.subVectors(lineOne.normalVector, lineTwo.normalVector)
     )
   ) {
-    item1.exists = false;
-    item2.exists = false;
+    intersection1.exists = false;
+    intersection2.exists = false;
   }
-  returnItems.push(item1);
-  returnItems.push(item2);
+  returnItems.push(intersection1);
+  returnItems.push(intersection2);
   return returnItems;
 }
 
@@ -90,22 +97,28 @@ function intersectLineWithSegment(
 ): IntersectionReturnType[] {
   const returnItems = [];
   console.debug("Create 2 new Vector3()");
-  const item1: IntersectionReturnType = { vector: new Vector3(), exists: true };
-  const item2: IntersectionReturnType = { vector: new Vector3(), exists: true };
+  const intersection1: IntersectionReturnType = {
+    vector: new Vector3(),
+    exists: true
+  };
+  const intersection2: IntersectionReturnType = {
+    vector: new Vector3(),
+    exists: true
+  };
   // Plus and minus the cross product of the normal vectors are the possible intersection vectors
 
   tempVec1.crossVectors(line.normalVector, segment.normalVector).normalize();
   tempVec2.copy(tempVec1).multiplyScalar(-1);
-  item1.vector.copy(tempVec1);
-  item2.vector.copy(tempVec2);
+  intersection1.vector.copy(tempVec1);
+  intersection2.vector.copy(tempVec2);
 
   // determine if the first intersection point is on the segment
   if (!segment.onSegment(tempVec1)) {
-    item1.exists = false;
+    intersection1.exists = false;
   }
   // Determine if the second intersection point is on the segment
   if (!segment.onSegment(tempVec2)) {
-    item2.exists = false;
+    intersection2.exists = false;
   }
   // If the normal vectors are on top of each other or antipodal, exists is false
   if (
@@ -114,12 +127,12 @@ function intersectLineWithSegment(
     ) ||
     SENodule.isZero(tempVec.subVectors(line.normalVector, segment.normalVector))
   ) {
-    item1.exists = false;
-    item2.exists = false;
+    intersection1.exists = false;
+    intersection2.exists = false;
   }
 
-  returnItems.push(item1);
-  returnItems.push(item2);
+  returnItems.push(intersection1);
+  returnItems.push(intersection2);
   return returnItems;
 }
 
@@ -153,23 +166,29 @@ function intersectSegmentWithSegment(
 ): IntersectionReturnType[] {
   const returnItems = [];
   console.debug("Create 2 new Vector3()");
-  const item1: IntersectionReturnType = { vector: new Vector3(), exists: true };
-  const item2: IntersectionReturnType = { vector: new Vector3(), exists: true };
+  const intersection1: IntersectionReturnType = {
+    vector: new Vector3(),
+    exists: true
+  };
+  const intersection2: IntersectionReturnType = {
+    vector: new Vector3(),
+    exists: true
+  };
   // Plus and minus the cross product of the normal vectors are the possible intersection vectors
   tempVec1
     .crossVectors(segment1.normalVector, segment2.normalVector)
     .normalize();
   tempVec2.copy(tempVec1).multiplyScalar(-1);
-  item1.vector.copy(tempVec1);
-  item2.vector.copy(tempVec2);
+  intersection1.vector.copy(tempVec1);
+  intersection2.vector.copy(tempVec2);
 
   // determine if the first intersection point is on the segment
   if (!segment1.onSegment(tempVec1) || !segment2.onSegment(tempVec1)) {
-    item1.exists = false;
+    intersection1.exists = false;
   }
   // Determine if the second intersection point is on the segment
   if (!segment1.onSegment(tempVec2) || !segment2.onSegment(tempVec2)) {
-    item2.exists = false;
+    intersection2.exists = false;
   }
   // If the normal vectors are on top of each other or antipodal, exists is false
   if (
@@ -180,11 +199,11 @@ function intersectSegmentWithSegment(
       tempVec.subVectors(segment1.normalVector, segment2.normalVector)
     )
   ) {
-    item1.exists = false;
-    item2.exists = false;
+    intersection1.exists = false;
+    intersection2.exists = false;
   }
-  returnItems.push(item1);
-  returnItems.push(item2);
+  returnItems.push(intersection1);
+  returnItems.push(intersection2);
   return returnItems;
 }
 
@@ -204,7 +223,15 @@ function intersectSegmentWithCircle(
     circle.centerSEPoint.locationVector,
     circle.circleRadius
   );
-  temp.forEach(item => (item.exists = segment.onSegment(item.vector)));
+
+  // If the segment and the circle don't intersect, the return vector is the zero vector and this shouldn't be passed to the onSegment because that method expects a unit vector
+  temp.forEach(item => {
+    if (SENodule.isZero(item.vector)) {
+      item.exists = false;
+    } else {
+      item.exists = segment.onSegment(item.vector);
+    }
+  });
   return temp;
 }
 
@@ -227,8 +254,14 @@ function intersectCircles(
   //Initialize the items and the return items
   const returnItems = [];
   console.debug("Create 2 new Vector3()");
-  const item1: IntersectionReturnType = { vector: new Vector3(), exists: true };
-  const item2: IntersectionReturnType = { vector: new Vector3(), exists: true };
+  const intersection1: IntersectionReturnType = {
+    vector: new Vector3(),
+    exists: true
+  };
+  const intersection2: IntersectionReturnType = {
+    vector: new Vector3(),
+    exists: true
+  };
 
   //Convert to the case where all arc lengths are less than Pi/2
   let radius1 = arc1;
@@ -327,20 +360,20 @@ function intersectCircles(
     tempVec.addScaledVector(toVector, Math.sin(b));
 
     // The positive intersection is cos(a)*tempVec + sin(a)*normal
-    item1.vector.copy(tempVec).multiplyScalar(Math.cos(a));
-    item1.vector.addScaledVector(normal, Math.sin(a));
+    intersection1.vector.copy(tempVec).multiplyScalar(Math.cos(a));
+    intersection1.vector.addScaledVector(normal, Math.sin(a));
     // The negative intersection is cos(-a)*tempVec + sin(-a)*normal
-    item2.vector.copy(tempVec).multiplyScalar(Math.cos(-a));
-    item2.vector.addScaledVector(normal, Math.sin(-a));
-    returnItems.push(item1);
-    returnItems.push(item2);
+    intersection2.vector.copy(tempVec).multiplyScalar(Math.cos(-a));
+    intersection2.vector.addScaledVector(normal, Math.sin(-a));
+    returnItems.push(intersection1);
+    returnItems.push(intersection2);
     return returnItems;
   } else {
     // The circles do not intersect
-    item1.exists = false;
-    item2.exists = false;
-    returnItems.push(item1);
-    returnItems.push(item2);
+    intersection1.exists = false;
+    intersection2.exists = false;
+    returnItems.push(intersection1);
+    returnItems.push(intersection2);
     return returnItems;
   }
 }

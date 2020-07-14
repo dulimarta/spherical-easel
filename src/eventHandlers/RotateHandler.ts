@@ -156,8 +156,8 @@ export default class RotateHandler extends MouseHandler {
 
   // eslint-disable-next-line
   mouseLeave(event: MouseEvent): void {
-    console.log("MOUSE LEAVE EVENT");
     this.momentumMode = false;
+    this.isDragging = false;
   }
 
   // Delay the execution of a set of commands (but allow other threads to continue)

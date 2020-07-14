@@ -34,15 +34,23 @@ export default class MoveHandler extends Highlighter {
   private moveFrom = new Vector3();
 
   /**
-   * A flag to set that indicates nothing should be moved
+   * A flag to set that indicates the sphere should rotate
    */
-  private moveNothing = false;
+  private rotateSphere = false;
   /**
    * A matrix that is used to indicate the *change* in position of the objects on the sphere. The
    * total change in position is not stored. This matrix is applied (via a position visitor) to
    * all objects on the sphere. Used when no object is selected and the user mouse presses and drags
    */
   private changeInPositionRotationMatrix: Matrix4 = new Matrix4();
+
+  /**
+   * If the user starts to move an object and mouse press at a location on the sphere, then moves
+   * off the canvas, then back inside the sphere and mouse releases, we not be moving anything. This
+   * variable is to help with that. Or if the user mouse press outside the canvas and mouse releases
+   * on the canvas, nothing should happen.
+   */
+  private movingSomething = false;
 
   constructor(layers: Two.Group[]) {
     super(layers);
@@ -56,7 +64,7 @@ export default class MoveHandler extends Highlighter {
     // Reset the variables for another move event
     this.isDragging = true;
     this.moveTarget = null;
-    this.moveNothing = false;
+    this.rotateSphere = false;
     this.moveFrom.copy(this.currentSphereVector);
 
     // Query the nearby SENodules to select the one the user wishes to move (if none the sphere rotates)
@@ -65,6 +73,7 @@ export default class MoveHandler extends Highlighter {
       const freePoints = this.hitSEPoints.filter(n => n.isFreeToMove());
       if (freePoints.length > 0) {
         this.moveTarget = freePoints[0];
+        this.movingSomething = true;
         return;
       }
       //If the user tries to move a nonFree point, nothing should happen
@@ -72,30 +81,38 @@ export default class MoveHandler extends Highlighter {
         const freeLines = this.hitSELines.filter(n => n.isFreeToMove());
         if (freeLines.length > 0) {
           this.moveTarget = freeLines[0];
+          this.movingSomething = true;
           return;
         }
         const freeSegments = this.hitSESegments.filter(n => n.isFreeToMove());
         if (freeSegments.length > 0) {
           this.moveTarget = freeSegments[0];
+          this.movingSomething = true;
           return;
         }
 
         const freeCircles = this.hitSECircles.filter(n => n.isFreeToMove());
         if (freeCircles.length > 0) {
           this.moveTarget = freeCircles[0];
+          this.movingSomething = true;
           return;
         }
-      } else {
-        this.moveNothing = true;
       }
+    } else {
+      // In this case the user mouse pressed in a location with *no* nodules (nothing was highlighted when she mouse pressed)
+      this.rotateSphere = true;
+      this.movingSomething = true;
     }
   }
 
   mouseMoved(event: MouseEvent): void {
     super.mouseMoved(event);
-    if (!this.isOnSphere) return;
+    if (!this.isOnSphere) {
+      return;
+    }
     event.preventDefault();
-    if (this.isDragging) {
+
+    if (this.isDragging && this.movingSomething) {
       if (this.moveTarget instanceof SEPoint) {
         // Move the selected SEPoint
         this.moveTarget.locationVector = this.currentSphereVector;
@@ -110,8 +127,9 @@ export default class MoveHandler extends Highlighter {
       } else if (this.moveTarget instanceof SECircle) {
         // Move the selected SECircle
         this.moveTarget.ref.normalDisplay();
+        console.debug("move circle");
         this.doMoveCircle(this.moveTarget);
-      } else if (this.moveTarget == null && !this.moveNothing) {
+      } else if (this.moveTarget == null && this.rotateSphere) {
         // Rotate the sphere
         this.doRotateSphere();
       }
@@ -121,8 +139,10 @@ export default class MoveHandler extends Highlighter {
   mouseReleased(event: MouseEvent) {
     // Only process events from the left (inner) mouse button to avoid adverse interactions with any pop-up menu
     if (event.button != 0) return;
+    this.movingSomething = false;
+
     this.isDragging = false;
-    if (this.moveTarget == null) {
+    if (this.rotateSphere) {
       // End the rotation of the sphere nicely so that it is undoable.
       // Create the rotation matrix that takes mouse press location to the mouse release location
       const rotationAngle = this.moveFrom.angleTo(this.currentSphereVector);
@@ -140,10 +160,12 @@ export default class MoveHandler extends Highlighter {
       new RotateSphereCommand(this.changeInPositionRotationMatrix).push();
     }
     this.moveTarget = null;
+    this.rotateSphere = false;
   }
 
   mouseLeave(event: MouseEvent): void {
-    /* empty function */
+    this.moveTarget = null;
+    this.movingSomething = false;
   }
 
   private doMoveLine(
@@ -155,7 +177,6 @@ export default class MoveHandler extends Highlighter {
     // If the ctrlKey Is press translate the segment in the direction of previousSphereVector
     //  to currentSphereVector (i.e. just rotate the segment)
     if (ctrlKeyPressed) {
-      console.log("rotate");
       rotationAngle = this.previousSphereVector.angleTo(
         this.currentSphereVector
       );
@@ -226,15 +247,9 @@ export default class MoveHandler extends Highlighter {
   }
 
   /**
-   * Move the the center point of the circle while keeping its outer
-   * point as close as possible to the old outer point position.
-   *
-   * The algorithm below implements the move in two steps
-   * (1) Translate both the center (C) and outer (U) points by the same
-   * amount as dictated by the mouse move distance.
-   * Let C1 and U1 be the new location of the center and outer points.
-   * (2) Rotate the circle around its own center (C1) such that C1, U1, and
-   * are on the same line (arc)
+   * Move the the circle by moving the free points it depends on
+   * Simply forming a rotation matrix mapping the previous to current sphere and applying
+   * that rotation to the center and circle points of defining the circle.
    * @param targetCircle
    */
   private doMoveCircle(targetCircle: SECircle) {
@@ -293,60 +308,4 @@ export default class MoveHandler extends Highlighter {
       });
     }
   }
-
-  // private recalculateIntersections(
-  //   target: SELine | SESegment | SECircle
-  // ): void {
-  //   // Determine the current set of intersection points on this target object
-  //   const currentIntersections = target.children
-  //     .filter((n: SENodule) => {
-  //       return n instanceof SEIntersectionPoint;
-  //     })
-  //     .flatMap((n: SENodule) => n as SEIntersectionPoint);
-
-  //   // Determine the new set intersection points
-  //   let newIntersections: SEIntersectionPoint[];
-  //   if (target instanceof SELine)
-  //     newIntersections = this.store.getters.determineIntersectionsWithLine(
-  //       target
-  //     );
-  //   else if (target instanceof SESegment)
-  //     newIntersections = this.store.getters.determineIntersectionsWithSegment(
-  //       target
-  //     );
-  //   else
-  //     newIntersections = this.store.getters.determineIntersectionsWithCircle(
-  //       target
-  //     );
-
-  //   // newIntersections.forEach((x: SEIntersectionPoint, pos: number) => {
-  //   //   console.debug(`New intersection ${pos}: ${x.name}`);
-  //   // });
-  //   currentIntersections.forEach((current: SEIntersectionPoint) => {
-  //     // Locate matching intersections by comparing their names
-  //     const pos = newIntersections.findIndex(
-  //       (incoming: SEIntersectionPoint) => current.name === incoming.name
-  //     );
-  //     if (pos >= 0) {
-  //       // Use the new coordinates of the incoming intersection point
-  //       // to update the current one
-  //       current.vectorVector.copy(newIntersections[pos].vectorVector);
-  //       current.update();
-
-  //       // Remove matching incoming points so after this forEach loop
-  //       // is over non-matching incoming points are new intersections to add
-  //       newIntersections[pos].removeSelfSafely();
-  //       newIntersections.splice(pos, 1);
-  //     } else {
-  //       // The current point is disappearing
-  //       this.store.commit("removePoint", current.id);
-  //     }
-  //   });
-
-  //   // After matching intersection points are removed the remaining points
-  //   // should be new appearing intersections
-  //   newIntersections.forEach((x: SEIntersectionPoint) => {
-  //     this.store.commit("addPoint", x);
-  //   });
-  // }
 }
