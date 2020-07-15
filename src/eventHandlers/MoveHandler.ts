@@ -56,7 +56,6 @@ export default class MoveHandler extends Highlighter {
     super(layers);
   }
 
-  //eslint-disable-next-line
   mousePressed(event: MouseEvent) {
     // Only process events from the left (inner) mouse button to avoid adverse interactions with any pop-up menu
     if (event.button != 0) return;
@@ -127,7 +126,6 @@ export default class MoveHandler extends Highlighter {
       } else if (this.moveTarget instanceof SECircle) {
         // Move the selected SECircle
         this.moveTarget.ref.normalDisplay();
-        console.debug("move circle");
         this.doMoveCircle(this.moveTarget);
       } else if (this.moveTarget == null && this.rotateSphere) {
         // Rotate the sphere
@@ -135,7 +133,7 @@ export default class MoveHandler extends Highlighter {
       }
     }
   }
-  //eslint-disable-next-line
+
   mouseReleased(event: MouseEvent) {
     // Only process events from the left (inner) mouse button to avoid adverse interactions with any pop-up menu
     if (event.button != 0) return;
@@ -253,15 +251,12 @@ export default class MoveHandler extends Highlighter {
    * @param targetCircle
    */
   private doMoveCircle(targetCircle: SECircle) {
-    let rotationAngle = this.previousSphereVector.angleTo(
+    const rotationAngle = this.previousSphereVector.angleTo(
       this.currentSphereVector
     );
-    // reverse the rotation angle if on the back of the sphere
-    if (this.currentSphereVector.z < 0) {
-      rotationAngle *= -1;
-    }
+
     // If the rotation is big enough preform the rotation
-    if (rotationAngle > SETTINGS.rotate.minAngle) {
+    if (Math.abs(rotationAngle) > SETTINGS.rotate.minAngle) {
       // The axis of rotation
       desiredZAxis
         .crossVectors(this.previousSphereVector, this.currentSphereVector)

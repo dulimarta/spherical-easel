@@ -20,6 +20,7 @@ import LineHandler from "@/eventHandlers/LineHandler";
 import SegmentHandler from "@/eventHandlers/SegmentHandler";
 import CircleHandler from "@/eventHandlers/CircleHandler";
 import RotateHandler from "@/eventHandlers/RotateHandler";
+import PointOnOneDimensionalHandler from "@/eventHandlers/PointOnOneDimensionalHandler";
 import IntersectionPointHandler from "@/eventHandlers/IntersectionPointHandler";
 import PanZoomHandler, { ZoomMode } from "@/eventHandlers/PanZoomHandler";
 import { PositionVisitor } from "@/visitors/PositionVisitor";
@@ -71,6 +72,7 @@ export default class SphereFrame extends VueComponent {
   private rotateTool!: RotateHandler;
   private zoomTool!: PanZoomHandler;
   private moveTool!: MoveHandler;
+  private pointOnOneDimensionalTool!: PointOnOneDimensionalHandler;
   private intersectTool!: IntersectionPointHandler;
 
   /**
@@ -187,6 +189,9 @@ export default class SphereFrame extends VueComponent {
     this.zoomTool = new PanZoomHandler(this.$refs.canvas);
     this.moveTool = new MoveHandler(this.layers);
     this.intersectTool = new IntersectionPointHandler(this.layers);
+    this.pointOnOneDimensionalTool = new PointOnOneDimensionalHandler(
+      this.layers
+    );
   }
 
   beforeDestroy(): void {
@@ -381,6 +386,9 @@ export default class SphereFrame extends VueComponent {
         break;
       case "intersect":
         this.currentTool = this.intersectTool;
+        break;
+      case "pointOnOneDim":
+        this.currentTool = this.pointOnOneDimensionalTool;
         break;
       default:
         this.currentTool = null;

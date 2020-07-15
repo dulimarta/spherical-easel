@@ -5,13 +5,14 @@ import { Visitable } from "@/visitors/Visitable";
 import { Visitor } from "@/visitors/Visitor";
 import { SEPoint } from "./SEPoint";
 import SETTINGS from "@/global-settings";
+import { OneDimensional } from "@/types";
 
 /** Temporary vector3 to help with calculations */
 const tmpVector1 = new Vector3();
 const tmpVector2 = new Vector3();
 
 let LINE_COUNT = 0;
-export class SELine extends SENodule implements Visitable {
+export class SELine extends SENodule implements Visitable, OneDimensional {
   /**
    * The corresponding plottable TwoJS object
    */
@@ -30,10 +31,10 @@ export class SELine extends SENodule implements Visitable {
   private _normalVector = new Vector3();
 
   /**
-   * Temporary normalVector
+   * Temporary vector for calculations
    * This holds a candidate normal vector to see so that if updating the line moves the normal too much
    */
-  private tempNormalVector = new Vector3(); //
+  private tmpVector = new Vector3(); //
 
   /**
    *
@@ -87,6 +88,25 @@ export class SELine extends SENodule implements Visitable {
     return Math.abs(unitIdealVector.dot(this._normalVector)) < 1e-2;
   }
 
+  /**
+   * Return the vector on the SELine that is closest to the idealUnitSphereVector
+   * @param idealUnitSphereVector A vector on the unit sphere
+   */
+  public closestVector(idealUnitSphereVector: Vector3): Vector3 {
+    // The normal to the plane of the normal vector and the idealUnitVector
+    this.tmpVector.crossVectors(this._normalVector, idealUnitSphereVector);
+
+    // Check to see if the tmpVector is zero (i.e the normal and  idealUnit vectors are parallel -- ether
+    // nearly antipodal or in the same direction)
+    if (SENodule.isZero(this.tmpVector)) {
+      return this._endSEPoint.locationVector; // An arbitrary point will do as all points are equally far away
+    } else {
+      // Make the tmpVector unit
+      this.tmpVector.normalize();
+      return this.tmpVector.cross(this._normalVector).normalize();
+    }
+  }
+
   public update(): void {
     if (!this.canUpdateNow()) {
       return;
@@ -97,25 +117,25 @@ export class SELine extends SENodule implements Visitable {
       console.debug("Updating line", this.name);
       // Given an set of this.startPoint, this.endPoint and (old) this.normalVector, and compute the next normal vector
       // Compute a temporary normal from the two points
-      this.tempNormalVector.crossVectors(
+      this.tmpVector.crossVectors(
         this._startSEPoint.locationVector,
         this._endSEPoint.locationVector
       );
       // Check to see if the tempNormal is zero (i.e the start and end vectors are parallel -- ether
       // nearly antipodal or in the same direction)
-      if (SENodule.isZero(this.tempNormalVector)) {
+      if (SENodule.isZero(this.tmpVector)) {
         // The start and end vectors align, compute  the next normal vector from the old normal and the start vector
-        this.tempNormalVector.crossVectors(
+        this.tmpVector.crossVectors(
           this._startSEPoint.locationVector,
           this._normalVector
         );
-        this.tempNormalVector.crossVectors(
-          this.tempNormalVector,
+        this.tmpVector.crossVectors(
+          this.tmpVector,
           this._startSEPoint.locationVector
         );
       }
 
-      this._normalVector.copy(this.tempNormalVector).normalize();
+      this._normalVector.copy(this.tmpVector).normalize();
 
       // Set the normal vector in the plottable object (the setter also calls the updateDisplay() method)
       this.ref.normalVector = this._normalVector;

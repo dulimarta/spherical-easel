@@ -64,8 +64,9 @@ export class SEIntersectionPoint extends SEPoint {
     // Make sure parent names are in alpha order so we can consistently
     // identify the intersection by its parents
     if (seParent1.name < seParent2.name)
-      this.name = `(${seParent1.name},${seParent2.name},${order})`;
-    else this.name = `(${seParent2.name},${seParent1.name},${order})`;
+      this.name = `Intersection(${seParent1.name},${seParent2.name},${order})`;
+    else
+      this.name = `Intersection(${seParent2.name},${seParent1.name},${order})`;
     // Place registerChild calls AFTER the name is set
     // so debugging output shows name correctly
 

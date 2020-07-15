@@ -45,10 +45,12 @@ export interface IntersectionReturnType {
   exists: boolean;
 }
 
-export interface SEOneDimensional {
+export interface OneDimensional {
   /**
    * Returns the closest vector on the one dimensional object to the idealUnitSphereVector
    * @param idealUnitSphereVector A vector location on the sphere
    */
   closestVector(idealUnitSphereVector: Vector3): Vector3;
 }
+
+export type SEOneDimensional = SELine | SESegment | SECircle;

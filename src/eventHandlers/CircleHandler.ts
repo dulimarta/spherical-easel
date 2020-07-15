@@ -14,6 +14,8 @@ import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import { DisplayStyle } from "@/plottables/Nodule";
 import Highlighter from "./Highlighter";
 import { ConvertInterPtToUserCreatedCommand } from "@/commands/ConvertInterPtToUserCreatedCommand";
+import { SEOneDimensional } from "@/types";
+import { SEPointOnOneDimensional } from "@/models/SEPointOnOneDimensional";
 
 export default class CircleHandler extends Highlighter {
   /**
@@ -28,6 +30,9 @@ export default class CircleHandler extends Highlighter {
   private centerSEPoint: SEPoint | null = null;
   /** The model object point that is a point on the circle (if any) */
   private circleSEPoint: SEPoint | null = null;
+  /** The possible partent of the centerSEPoint*/
+  private centerSEPointOneDimensionalParent: SEOneDimensional | null = null;
+
   /** The radius of the temporary circle (along the surface of the sphere) */
   private arcRadius = 0;
   /** Has the temporary circle been added to the scene?*/
@@ -57,12 +62,11 @@ export default class CircleHandler extends Highlighter {
     // otherwise if the user has finished making an new point, then *without* triggering a mouse move
     // event, mouse press will *not* select the newly created point. This is not what we want so we call super.mouseMove
     super.mouseMoved(event);
-
-    this.isDragging = true;
-    // The user is making a circle
-    this.makingACircle = true;
     // First decide if the location of the event is on the sphere
     if (this.isOnSphere) {
+      this.isDragging = true;
+      // The user is making a circle
+      this.makingACircle = true;
       // Check to see if the current location is near any points
       if (this.hitSEPoints.length > 0) {
         // Pick the top most selected point
@@ -71,20 +75,59 @@ export default class CircleHandler extends Highlighter {
         this.centerVector.copy(selected.locationVector);
         // Record the model object as the center of the circle
         this.centerSEPoint = selected;
-        // Move the startmarker to the current selected point
+        // Move the startMarker to the current selected point
         this.startMarker.positionVector = selected.locationVector;
         // Set the center of the circle in the plottable object - also calls temporaryCircle.readjust()
         this.temporaryCircle.centerVector = selected.locationVector;
+      } else if (this.hitSESegments.length > 0) {
+        // The center of the circle will be a point on a segment
+        //  Eventually, we will create a new SEPointOneDimensional and Point
+        this.centerSEPointOneDimensionalParent = this.hitSESegments[0];
+        this.centerVector.copy(
+          this.centerSEPointOneDimensionalParent.closestVector(
+            this.currentSphereVector
+          )
+        );
+        this.temporaryCircle.centerVector = this.centerVector;
+        this.startMarker.positionVector = this.centerVector;
+        this.centerSEPoint = null;
+      } else if (this.hitSELines.length > 0) {
+        // The center of the circle will be a point on a line
+        //  Eventually, we will create a new SEPointOneDimensional and Point
+        this.centerSEPointOneDimensionalParent = this.hitSELines[0];
+        this.centerVector.copy(
+          this.centerSEPointOneDimensionalParent.closestVector(
+            this.currentSphereVector
+          )
+        );
+        this.temporaryCircle.centerVector = this.centerVector;
+        this.startMarker.positionVector = this.centerVector;
+        this.centerSEPoint = null;
+      } else if (this.hitSECircles.length > 0) {
+        // The center of the circle will be a point on a circle
+        //  Eventually, we will create a new SEPointOneDimensional and Point
+        this.centerSEPointOneDimensionalParent = this.hitSECircles[0];
+        this.centerVector.copy(
+          this.centerSEPointOneDimensionalParent.closestVector(
+            this.currentSphereVector
+          )
+        );
+        this.temporaryCircle.centerVector = this.centerVector;
+        this.startMarker.positionVector = this.centerVector;
+        this.centerSEPoint = null;
       } else {
+        // The mouse press is not near an existing point or one dimensional object.
+        //  Eventually, we will create a new SEPoint and Point
+        // Set the center of the circle in the plottable object - also calls temporaryCircle.readjust()
+        this.temporaryCircle.centerVector = this.currentSphereVector;
+        // Move the startMarker to the current mouse location
+        this.startMarker.positionVector = this.currentSphereVector;
         // Record the center vector of the circle so it can be past to the non-temporary circle
         this.centerVector.copy(this.currentSphereVector);
         // Set the center of the circle to null so it can be created later
         this.centerSEPoint = null;
-        // Move the startmarker to the current mouse location
-        this.startMarker.positionVector = this.currentSphereVector;
-        // Set the center of the circle in the plottable object - also calls temporaryCircle.readjust()
-        this.temporaryCircle.centerVector = this.currentSphereVector;
       }
+      this.endMarker.positionVector = this.currentSphereVector;
     }
   }
 
@@ -159,6 +202,7 @@ export default class CircleHandler extends Highlighter {
       // Clear old points to get ready for creating the next circle.
       this.centerSEPoint = null;
       this.circleSEPoint = null;
+      this.centerSEPointOneDimensionalParent = null;
       this.makingACircle = false;
     }
   }
@@ -172,10 +216,11 @@ export default class CircleHandler extends Highlighter {
       this.startMarker.removeFromLayers();
       this.endMarker.removeFromLayers();
     }
-    console.debug("mouse leave clear");
+
     // Clear old points and values to get ready for creating the next segment.
     this.circleSEPoint = null;
     this.centerSEPoint = null;
+    this.centerSEPointOneDimensionalParent = null;
     this.makingACircle = false;
   }
   /**
@@ -193,10 +238,22 @@ export default class CircleHandler extends Highlighter {
       newCenterPoint.stylize(DisplayStyle.DEFAULT);
       // Set up the glowing display
       newCenterPoint.stylize(DisplayStyle.GLOWING);
-      const newSECenterPoint = new SEPoint(newCenterPoint);
-      newSECenterPoint.locationVector = this.centerVector;
-      this.centerSEPoint = newSECenterPoint;
-      circleGroup.addCommand(new AddPointCommand(newSECenterPoint));
+      let vtx: SEPoint | SEPointOnOneDimensional | null = null;
+      if (this.centerSEPointOneDimensionalParent) {
+        // Starting mouse press landed near a oneDimensional
+        // Create the model object for the new point and link them
+        vtx = new SEPointOnOneDimensional(
+          newCenterPoint,
+          this.centerSEPointOneDimensionalParent
+        );
+      } else {
+        // Starting mouse press landed on an open space
+        // Create the model object for the new point and link them
+        vtx = new SEPoint(newCenterPoint);
+      }
+      vtx.locationVector = this.centerVector;
+      this.centerSEPoint = vtx;
+      circleGroup.addCommand(new AddPointCommand(vtx));
     } else if (this.centerSEPoint instanceof SEIntersectionPoint) {
       // Mark the intersection point as created, the display style is changed and the glowing style is set up
       circleGroup.addCommand(
@@ -220,17 +277,47 @@ export default class CircleHandler extends Highlighter {
         );
       }
     } else {
-      // endPoint landed on an open space
-      // we have to create a new point and add it to the group/store
+      // We have to create a new Point for the end
       const newCirclePoint = new Point();
       // Set the display to the default values
       newCirclePoint.stylize(DisplayStyle.DEFAULT);
       // Set up the glowing display
       newCirclePoint.stylize(DisplayStyle.GLOWING);
-      const newSECirclePoint = new SEPoint(newCirclePoint);
-      newSECirclePoint.locationVector = this.currentSphereVector;
-      this.circleSEPoint = newSECirclePoint;
-      circleGroup.addCommand(new AddPointCommand(newSECirclePoint));
+      let vtx: SEPoint | SEPointOnOneDimensional | null = null;
+      if (this.hitSESegments.length > 0) {
+        // The end of the line will be a point on a segment
+        // Create the model object for the new point and link them
+        vtx = new SEPointOnOneDimensional(
+          newCirclePoint,
+          this.hitSESegments[0]
+        );
+        // Set the Location
+        vtx.locationVector = this.hitSESegments[0].closestVector(
+          this.currentSphereVector
+        );
+      } else if (this.hitSELines.length > 0) {
+        // The end of the line will be a point on a line
+        // Create the model object for the new point and link them
+        vtx = new SEPointOnOneDimensional(newCirclePoint, this.hitSELines[0]);
+        // Set the Location
+        vtx.locationVector = this.hitSELines[0].closestVector(
+          this.currentSphereVector
+        );
+      } else if (this.hitSECircles.length > 0) {
+        // The end of the line will be a point on a circle
+        vtx = new SEPointOnOneDimensional(newCirclePoint, this.hitSECircles[0]);
+        // Set the Location
+        vtx.locationVector = this.hitSECircles[0].closestVector(
+          this.currentSphereVector
+        );
+      } else {
+        // The ending mouse release landed on an open space
+        vtx = new SEPoint(newCirclePoint);
+        // Set the Location
+        vtx.locationVector = this.currentSphereVector;
+      }
+      this.circleSEPoint = vtx;
+      circleGroup.addCommand(new AddPointCommand(vtx));
     }
 
     // Clone the current circle after the circlePoint is set

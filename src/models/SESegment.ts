@@ -5,10 +5,11 @@ import { Visitable } from "@/visitors/Visitable";
 import { Visitor } from "@/visitors/Visitor";
 import { SEPoint } from "./SEPoint";
 import SETTINGS from "@/global-settings";
+import { OneDimensional } from "@/types";
 
 let SEGMENT_COUNT = 0;
 
-export class SESegment extends SENodule implements Visitable {
+export class SESegment extends SENodule implements Visitable, OneDimensional {
   /**
    * The plottable (TwoJS) segment associated with this model segment
    */
@@ -25,7 +26,7 @@ export class SESegment extends SENodule implements Visitable {
 
   /**
    * The Vector3 normal to the plane containing the segment.
-   * NOTE: normalVector x startVector give the direction in which the segment is drawn
+   * NOTE: normalVector x startVector*(arcLength > pi ? -1 :1) give the direction in which the segment is drawn
    */
   private _normalVector = new Vector3();
   /**
@@ -44,6 +45,7 @@ export class SESegment extends SENodule implements Visitable {
    */
   private tmpVector = new Vector3();
   private toVector = new Vector3();
+  private tmpVector1 = new Vector3(); // closest point calls onSegment so that must have different tmpVectors
 
   /**
    * Create a model SESegment using:
@@ -108,10 +110,6 @@ export class SESegment extends SENodule implements Visitable {
       .multiplyScalar(Math.cos(this.arcLength / 2));
     this.tmpVector.addScaledVector(this.toVector, Math.sin(this.arcLength / 2));
 
-    // console.debug("start vec", this._startSEPoint.locationVector.toFixed(2));
-    // console.debug("toVector", this.toVector.toFixed(2));
-    // console.debug("arclengh", this.arcLength);
-    // console.debug("midPoint", this.tmpVector.toFixed(2));
     return (
       this.tmpVector.angleTo(unitIdealVector) <
       this.arcLength / 2 + SETTINGS.segment.hitIdealDistance
@@ -144,6 +142,36 @@ export class SESegment extends SENodule implements Visitable {
     return this.tmpVector.angleTo(unitIdealVector) <= this.arcLength / 2;
   }
 
+  /**
+   * Return the vector on the SESegment that is closest to the idealUnitSphereVector
+   * @param idealUnitSphereVector A vector on the unit sphere
+   */
+  public closestVector(idealUnitSphereVector: Vector3): Vector3 {
+    // The normal to the plane of the normal vector to the plane containing the segment and the idealUnitVector
+    this.tmpVector1.crossVectors(this._normalVector, idealUnitSphereVector);
+    // Check to see if the tmpVector is zero (i.e the normal and  idealUnit vectors are parallel -- ether
+    // nearly antipodal or in the same direction)
+    if (SENodule.isZero(this.tmpVector1)) {
+      return this._endSEPoint.locationVector; // An arbitrary point will do as all points are equally far away
+    } else {
+      // Make the tmpVector (soon to be the to vector) unit
+      this.tmpVector1.normalize();
+      // The vector that is closest to the idealUnitSphereVector in the plane of the segment
+      this.tmpVector1.cross(this._normalVector).normalize();
+      // If this tmpVector is onSegment then return it, otherwise the closest endpoint is the correct return
+      if (this.onSegment(this.tmpVector1)) {
+        return this.tmpVector1;
+      } else if (
+        this.tmpVector1.angleTo(this._startSEPoint.locationVector) <
+        this.tmpVector1.angleTo(this._endSEPoint.locationVector)
+      ) {
+        return this._startSEPoint.locationVector;
+      } else {
+        return this._endSEPoint.locationVector;
+      }
+    }
+  }
+
   public update(): void {
     if (!this.canUpdateNow()) {
       return;
@@ -156,15 +184,15 @@ export class SESegment extends SENodule implements Visitable {
       //////////////// This is  essentially setArcLengthAndNormalVector from segmentHandler/////////////////
       // Compute the normal vector from the this.startVector, the (old) normal vector and this.endVector
       // Compute a temporary normal from the two points' vectors
-      this.tmpVector
-        .crossVectors(
-          this._startSEPoint.locationVector,
-          this._endSEPoint.locationVector
-        )
-        .normalize();
+      this.tmpVector.crossVectors(
+        this._startSEPoint.locationVector,
+        this._endSEPoint.locationVector
+      );
       // Check to see if the temporary normal is zero (i.e the start and end vectors are parallel -- ether
       // nearly antipodal or in the same direction)
       if (SENodule.isZero(this.tmpVector)) {
+        // Make the tmpVector (soon to be the to vector) unit
+        this.tmpVector.normalize();
         if (this._normalVector.length() == 0) {
           // The normal vector is still at its initial value so can't be used to compute the next normal, so set the
           // the normal vector to an arbitrarily chosen vector perpendicular to the start vector
@@ -251,6 +279,7 @@ export class SESegment extends SENodule implements Visitable {
     } else {
       this.ref.setVisible(false);
     }
+
     this.updateKids();
   }
 }

@@ -5,16 +5,20 @@ import Point from "@/plottables/Point";
 import Line from "@/plottables/Line";
 import { SENodule } from "@/models/SENodule";
 import { CommandGroup } from "@/commands/CommandGroup";
-import { AddPointCommand } from "@/commands/AddPointCommand";
 import { AddLineCommand } from "@/commands/AddLineCommand";
 import Two from "two.js";
 import { SEPoint } from "@/models/SEPoint";
 import { SELine } from "@/models/SELine";
+import { SESegment } from "@/models/SESegment";
+import { SECircle } from "@/models/SECircle";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import { DisplayStyle } from "@/plottables/Nodule";
 import SETTINGS from "@/global-settings";
 import Highlighter from "./Highlighter";
 import { ConvertInterPtToUserCreatedCommand } from "@/commands/ConvertInterPtToUserCreatedCommand";
+import { SEPointOnOneDimensional } from "@/models/SEPointOnOneDimensional";
+import { AddPointCommand } from "@/commands/AddPointCommand";
+import { SEOneDimensional } from "@/types";
 
 export default class LineHandler extends Highlighter {
   /**
@@ -32,10 +36,11 @@ export default class LineHandler extends Highlighter {
   private isDragging: boolean;
 
   /**
-   * The starting and ending SEPoints of the line
+   * The starting and ending SEPoints of the line. The possible parent of the startSEPoint
    */
   private startSEPoint: SEPoint | null = null;
   private endSEPoint: SEPoint | null = null;
+  private startSEPointOneDimensionalParent: SEOneDimensional | null = null;
 
   /**
    * A temporary line to display while the user is creating a new line
@@ -66,7 +71,6 @@ export default class LineHandler extends Highlighter {
     this.tempLine = new Line();
     this.tempLine.stylize(DisplayStyle.TEMPORARY);
     this.isTemporaryLineAdded = false;
-
     this.isDragging = false;
   }
   //eslint-disable-next-line
@@ -78,36 +82,66 @@ export default class LineHandler extends Highlighter {
     // otherwise if the user has finished making an new point, then *without* triggering a mouse move
     // event, mouse press will *not* select the newly created point. This is not what we want so we call super.mouseMove
     super.mouseMoved(event);
-
-    // The user is making a line
-    this.makingALine = true;
-
-    // The user is dragging to add a line
-    this.isDragging = true;
-    // Set the start and end plottable Points to null until they are overridden with actual Points
-    // this.startSEPoint = null;
-    // this.endSEPoint = null;
-
     if (this.isOnSphere) {
-      // Decide if the starting location is near an already existing SEPoint
+      // The user is making a line
+      this.makingALine = true;
+
+      // The user is dragging to add a line
+      this.isDragging = true;
+
+      // Decide if the starting location is near an already existing SEPoint or near a oneDimensional SENodule
       if (this.hitSEPoints.length > 0) {
         // Use an existing SEPoint to start the line
         const selected = this.hitSEPoints[0];
         this.startVector.copy(selected.locationVector);
         this.startSEPoint = this.hitSEPoints[0];
         this.startMarker.positionVector = selected.locationVector;
+      } else if (this.hitSESegments.length > 0) {
+        // The start of the line will be a point on a segment
+        //  Eventually, we will create a new SEPointOneDimensional and Point
+        this.startSEPointOneDimensionalParent = this.hitSESegments[0];
+        this.startVector.copy(
+          this.startSEPointOneDimensionalParent.closestVector(
+            this.currentSphereVector
+          )
+        );
+        this.startMarker.positionVector = this.startVector;
+        this.startSEPoint = null;
+      } else if (this.hitSELines.length > 0) {
+        // The start of the line will be a point on a line
+        //  Eventually, we will create a new SEPointOneDimensional and Point
+        this.startSEPointOneDimensionalParent = this.hitSELines[0];
+        this.startVector.copy(
+          this.startSEPointOneDimensionalParent.closestVector(
+            this.currentSphereVector
+          )
+        );
+        this.startMarker.positionVector = this.startVector;
+        this.startSEPoint = null;
+      } else if (this.hitSECircles.length > 0) {
+        // The start of the line will be a point on a circle
+        //  Eventually, we will create a new SEPointOneDimensional and Point
+        this.startSEPointOneDimensionalParent = this.hitSECircles[0];
+        this.startVector.copy(
+          this.startSEPointOneDimensionalParent.closestVector(
+            this.currentSphereVector
+          )
+        );
+        this.startMarker.positionVector = this.startVector;
+        this.startSEPoint = null;
       } else {
-        // The mouse press is not near an existing point.  Record the location in a temporary point (startMarker found in MouseHandler). Eventually, we will create a new SEPoint and Point
-        this.startMarker.addToLayers(this.layers);
+        // The mouse press is not near an existing point or one dimensional object.
+        //  Record the location in a temporary point (startMarker found in MouseHandler).
+        //  Eventually, we will create a new SEPoint and Point
         this.startMarker.positionVector = this.currentSphereVector;
-        this.endMarker.addToLayers(this.layers);
-        this.endMarker.positionVector = this.currentSphereVector;
         this.startVector.copy(this.currentSphereVector);
         this.startSEPoint = null;
       }
+      this.endMarker.positionVector = this.currentSphereVector;
     }
   }
   mouseMoved(event: MouseEvent): void {
+    // Highlights the objects near the mouse event
     super.mouseMoved(event);
     if (this.isOnSphere) {
       if (this.isDragging) {
@@ -127,15 +161,17 @@ export default class LineHandler extends Highlighter {
         }
         // Compute the normal vector from the this.startVector, the (old) normal vector and this.endVector
         // Compute a temporary normal from the two points' vectors
-        this.tmpVector
-          .crossVectors(this.startVector, this.currentSphereVector)
-          .normalize();
+        this.tmpVector.crossVectors(this.startVector, this.currentSphereVector);
+
         // Check to see if the temporary normal is zero (i.e the start and end vectors are parallel -- ether
         // nearly antipodal or in the same direction)
         if (SENodule.isZero(this.tmpVector)) {
+          this.tmpVector
+            .crossVectors(this.startVector, this.currentSphereVector)
+            .normalize();
           if (this.normalVector.length() == 0) {
             // The normal vector is still at its initial value so can't be used to compute the next normal, so set the
-            // the normal vector to an arbitrarily choosen vector perpendicular to the start vector
+            // the normal vector to an arbitrarily chosen vector perpendicular to the start vector
             this.tmpVector.set(1, 0, 0);
             this.tmpVector.crossVectors(this.startVector, this.tmpVector);
             if (SENodule.isZero(this.tmpVector)) {
@@ -185,6 +221,9 @@ export default class LineHandler extends Highlighter {
         this.endMarker.removeFromLayers();
         this.isTemporaryLineAdded = false;
         this.makingALine = false;
+        this.startSEPoint = null;
+        this.endSEPoint = null;
+        this.startSEPointOneDimensionalParent = null;
       }
     }
   }
@@ -201,6 +240,7 @@ export default class LineHandler extends Highlighter {
     // Clear old points and values to get ready for creating the next segment.
     this.startSEPoint = null;
     this.endSEPoint = null;
+    this.startSEPointOneDimensionalParent = null;
     this.normalVector.set(0, 0, 0);
     this.makingALine = false;
   }
@@ -209,17 +249,29 @@ export default class LineHandler extends Highlighter {
   private makeLine(): void {
     //Create a command group so this can be undone
     const lineGroup = new CommandGroup();
+
     if (this.startSEPoint === null) {
-      // Starting mouse press landed on an open space
-      // we have to create a new point
+      // We have to create a new SEPointOnOneDimensional or SEPoint and Point
       const newStartPoint = new Point();
       // Set the display to the default values
       newStartPoint.stylize(DisplayStyle.DEFAULT);
       // Set up the glowing display
       newStartPoint.stylize(DisplayStyle.GLOWING);
-      const vtx = new SEPoint(newStartPoint);
+      let vtx: SEPoint | SEPointOnOneDimensional | null = null;
+      if (this.startSEPointOneDimensionalParent) {
+        // Starting mouse press landed near a oneDimensional
+        // Create the model object for the new point and link them
+        vtx = new SEPointOnOneDimensional(
+          newStartPoint,
+          this.startSEPointOneDimensionalParent
+        );
+      } else {
+        // Starting mouse press landed on an open space
+        vtx = new SEPoint(newStartPoint);
+      }
       vtx.locationVector = this.startVector;
       this.startSEPoint = vtx;
+      // Create and execute the command to create a new point for undo/redo
       lineGroup.addCommand(new AddPointCommand(vtx));
     } else if (this.startSEPoint instanceof SEIntersectionPoint) {
       // Mark the intersection point as created, the display style is changed and the glowing style is set up
@@ -227,6 +279,7 @@ export default class LineHandler extends Highlighter {
         new ConvertInterPtToUserCreatedCommand(this.startSEPoint)
       );
     }
+
     // Check to see if the release location is near any points
     if (this.hitSEPoints.length > 0) {
       this.endSEPoint = this.hitSEPoints[0];
@@ -240,26 +293,51 @@ export default class LineHandler extends Highlighter {
         );
       }
     } else {
-      // The ending mouse release landed on an open space
-      // we have to create a new point
+      // We have to create a new Point for the end
       const newEndPoint = new Point();
       // Set the display to the default values
       newEndPoint.stylize(DisplayStyle.DEFAULT);
       // Set up the glowing display
       newEndPoint.stylize(DisplayStyle.GLOWING);
-      const vtx = new SEPoint(newEndPoint);
-      vtx.locationVector = this.currentSphereVector;
+      let vtx: SEPoint | SEPointOnOneDimensional | null = null;
+      if (this.hitSESegments.length > 0) {
+        // The end of the line will be a point on a segment
+        // Create the model object for the new point and link them
+        vtx = new SEPointOnOneDimensional(newEndPoint, this.hitSESegments[0]);
+        // Set the Location
+        vtx.locationVector = this.hitSESegments[0].closestVector(
+          this.currentSphereVector
+        );
+      } else if (this.hitSELines.length > 0) {
+        // The end of the line will be a point on a line
+        // Create the model object for the new point and link them
+        vtx = new SEPointOnOneDimensional(newEndPoint, this.hitSELines[0]);
+        // Set the Location
+        vtx.locationVector = this.hitSELines[0].closestVector(
+          this.currentSphereVector
+        );
+      } else if (this.hitSECircles.length > 0) {
+        // The end of the line will be a point on a circle
+        vtx = new SEPointOnOneDimensional(newEndPoint, this.hitSECircles[0]);
+        // Set the Location
+        vtx.locationVector = this.hitSECircles[0].closestVector(
+          this.currentSphereVector
+        );
+      } else {
+        // The ending mouse release landed on an open space
+        vtx = new SEPoint(newEndPoint);
+        // Set the Location
+        vtx.locationVector = this.currentSphereVector;
+      }
       this.endSEPoint = vtx;
       lineGroup.addCommand(new AddPointCommand(vtx));
     }
 
     // Compute a temporary normal from the two points' vectors
-    this.tmpVector
-      .crossVectors(
-        this.startSEPoint.locationVector,
-        this.endSEPoint.locationVector
-      )
-      .normalize();
+    this.tmpVector.crossVectors(
+      this.startSEPoint.locationVector,
+      this.endSEPoint.locationVector
+    );
     // Check to see if the temporary normal is zero (i.e the start and end vectors are parallel -- ether
     // nearly antipodal or in the same direction)
     if (SENodule.isZero(this.tmpVector)) {
@@ -302,17 +380,35 @@ export default class LineHandler extends Highlighter {
       });
     lineGroup.execute();
   }
-  /**   * The user is attempting to make a line shorter than the minimum arc length
-   * so create  a point at the location of the start vector
+  /**
+   * The user is attempting to make a line shorter than the minimum arc length
+   * so create a point at the location of the start vector
    */
   private makePoint(): void {
     if (this.startSEPoint === null) {
-      // Starting mouse press landed on an open space
-      // we have to create a new point and it to the group/store
-      const vtx = new SEPoint(new Point());
-      vtx.locationVector = this.startVector;
-      const addPoint = new AddPointCommand(vtx);
-      addPoint.execute();
+      if (this.startSEPointOneDimensionalParent) {
+        // Starting mouse press landed near a oneDimensional
+        // we have to create a new SEPointOnOneDimensional and Point
+        const newPoint = new Point();
+        // Set the display to the default values
+        newPoint.stylize(DisplayStyle.DEFAULT);
+        // Set up the glowing display
+        newPoint.stylize(DisplayStyle.GLOWING);
+        // Create the model object for the new point and link them
+        const vtx = new SEPointOnOneDimensional(
+          newPoint,
+          this.startSEPointOneDimensionalParent
+        );
+        vtx.locationVector = this.startVector;
+        // Create and execute the command to create a new point for undo/redo
+        new AddPointCommand(vtx).execute();
+      } else {
+        // Starting mouse press landed on an open space
+        // we have to create a new point and it to the group/store
+        const vtx = new SEPoint(new Point());
+        vtx.locationVector = this.startVector;
+        new AddPointCommand(vtx).execute();
+      }
     }
   }
 }

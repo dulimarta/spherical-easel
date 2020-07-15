@@ -10,7 +10,7 @@ export class AddPointCommand extends Command {
   }
 
   do(): void {
-    AddPointCommand.store.commit("addPoint", this.arg);
+    Command.store.commit("addPoint", this.arg);
   }
 
   saveState(): void {

@@ -21,6 +21,27 @@
       </v-btn-toggle>
     </div>
 
+    <!-- The Display Tool Group only shown if the user has permission to use a tool in this group.
+    Note the use of the translation $t(key_value).-->
+    <div id="BasicToolGroup" v-show="nonEmptyGroup('display')">
+      <h3 class="body-1 font-weight-bold">{{ $t("toolGroups.DisplayTools") }}</h3>
+      <v-btn-toggle
+        v-model="actionMode"
+        @change="switchActionMode"
+        class="mr-2 d-flex flex-wrap accent"
+      >
+        <!--- Use Array.filter to select only basic tools -->
+        <ToolButton
+          v-for="(button, pos) in buttonList.filter(
+            b => b.toolGroup === 'display'
+          )"
+          :key="pos"
+          :button="button"
+          v-on:displayOnlyThisToolUseMessage="displayOnlyThisToolUseMessageFunc"
+        ></ToolButton>
+      </v-btn-toggle>
+    </div>
+
     <!-- The Basic Tool Group only shown if the user has permission to use a tool in this group.
     Note the use of the translation $t(key_value).-->
     <div id="BasicToolGroup" v-show="nonEmptyGroup('basic')">
@@ -34,6 +55,26 @@
         <ToolButton
           v-for="(button, pos) in buttonList.filter(
             b => b.toolGroup === 'basic'
+          )"
+          :key="pos"
+          :button="button"
+          v-on:displayOnlyThisToolUseMessage="displayOnlyThisToolUseMessageFunc"
+        ></ToolButton>
+      </v-btn-toggle>
+    </div>
+    <!-- The Construction Tool Group only shown if the user has permission to use a tool in this group.
+    Note the use of the translation $t(key_value).-->
+    <div id="BasicToolGroup" v-show="nonEmptyGroup('construction')">
+      <h3 class="body-1 font-weight-bold">{{ $t("toolGroups.ConstructionTools") }}</h3>
+      <v-btn-toggle
+        v-model="actionMode"
+        @change="switchActionMode"
+        class="mr-2 d-flex flex-wrap accent"
+      >
+        <!--- Use Array.filter to select only basic tools -->
+        <ToolButton
+          v-for="(button, pos) in buttonList.filter(
+            b => b.toolGroup === 'construction'
           )"
           :key="pos"
           :button="button"
@@ -198,37 +239,28 @@ export default class ToolGroups extends Vue {
       toolGroup: "edit"
     },
     {
-      id: "edit-5",
-      actionModeValue: "intersect",
-      displayedName: "CreateIntersectionDisplayedName",
-      icon: "mdi-vector-intersection",
-      toolTipMessage: "CreateIntersectionToolTipMessage",
-      toolUseMessage: "CreateIntersectionToolUseMessage",
-      displayToolUseMessage: false,
-      toolGroup: "edit"
-    },
-    {
-      id: "edit-10",
-      actionModeValue: "rotate",
-      displayedName: "RotateDisplayedName",
-      icon: "mdi-rotate-3d-variant",
-      toolTipMessage: "RotateSphereToolTipMessage",
-      toolUseMessage: "RotateSphereToolUseMessage",
-      displayToolUseMessage: false,
-      toolGroup: "edit"
-    },
-    {
-      id: "edit-15",
+      id: "diplay-15",
       actionModeValue: "move",
       displayedName: "MoveDisplayedName",
       icon: "mdi-cursor-move",
       toolTipMessage: "MoveObjectToolTipMessage",
       toolUseMessage: "MoveObjectToolUseMessage",
       displayToolUseMessage: false,
-      toolGroup: "edit"
+      toolGroup: "display"
     },
     {
-      id: "edit-20",
+      id: "display-20",
+      actionModeValue: "rotate",
+      displayedName: "RotateDisplayedName",
+      icon: "mdi-rotate-3d-variant",
+      toolTipMessage: "RotateSphereToolTipMessage",
+      toolUseMessage: "RotateSphereToolUseMessage",
+      displayToolUseMessage: false,
+      toolGroup: "display"
+    },
+
+    {
+      id: "display-25",
       actionModeValue: "zoomIn",
       displayedName: "PanZoomInDisplayedName",
       icon: "mdi-magnify-plus-outline",
@@ -238,7 +270,7 @@ export default class ToolGroups extends Vue {
       toolGroup: "edit"
     },
     {
-      id: "edit-25",
+      id: "display-30",
       actionModeValue: "zoomOut",
       displayedName: "PanZoomOutDisplayedName",
       icon: "mdi-magnify-minus-outline",
@@ -246,6 +278,26 @@ export default class ToolGroups extends Vue {
       toolUseMessage: "PanZoomOutToolUseMessage",
       displayToolUseMessage: false,
       toolGroup: "edit"
+    },
+    {
+      id: "construction-45",
+      actionModeValue: "intersect",
+      displayedName: "CreateIntersectionDisplayedName",
+      icon: "mdi-vector-intersection",
+      toolTipMessage: "CreateIntersectionToolTipMessage",
+      toolUseMessage: "CreateIntersectionToolUseMessage",
+      displayToolUseMessage: false,
+      toolGroup: "construction"
+    },
+    {
+      id: "construction-50",
+      actionModeValue: "pointOnOneDim",
+      displayedName: "CreatePointOnOneDimDisplayedName",
+      icon: "mdi-vector-point",
+      toolTipMessage: "CreatePointOnOneDimToolTipMessage",
+      toolUseMessage: "CreatePointOnOneDimToolUseMessage",
+      displayToolUseMessage: false,
+      toolGroup: "construction"
     }
     //sort the button list by id so that we don't have to reorder the list each item we add a new button
   ].sort((a: ToolButtonType, b: ToolButtonType) => {

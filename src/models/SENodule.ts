@@ -2,7 +2,7 @@ import { Vector3 } from "three";
 import { SEPoint } from "./SEPoint";
 import SETTINGS from "@/global-settings";
 import Nodule from "@/plottables/Nodule";
-// import { SESegmentMidPoint } from "./SESegmentMidPoint";
+import { SEPointOnOneDimensional } from "./SEPointOnOneDimensional";
 
 let NODE_COUNT = 0;
 export abstract class SENodule {
@@ -176,32 +176,19 @@ export abstract class SENodule {
   public isOutOfDate(): boolean {
     return this._outOfDate;
   }
-  /**
-   * A node is free if it is a point with no parents (i.e. a free point) OR
-   * all its parents are free points
-   *
-   * TODO: I would like not to have to import a plottable but I can't figure out how to
-   * get the obvious isFreePoint:
-   *
-   * public isFreePoint(): boolean {
-   *   return (this instanceof SEPoint) && this._parents.length == 0;
-   * }
-   * to work! :-(
-   *
-   */
 
-  //Should return true only if this is an instance of SEPointOnObject
-  // public isPointOnObject(): this is SEPointOnObject {
-  //   return false;
-  // }
+  //Should return true only if this is an instance of SEPointOnObject??
+  public isPointOnOneDimensional(): this is SEPointOnOneDimensional {
+    return true;
+  }
 
+  // Only returns true if this is an SEPoint and this has no parents
   public isFreePoint(): this is SEPoint {
     return this._parents.length == 0;
   }
 
   public isFreeToMove(): boolean {
-    //if (this.isFreePoint() || this.isPointOnObject()) return true; // SEE ABOVE!
-    if (this.isFreePoint()) return true;
+    if (this.isFreePoint() || this.isPointOnOneDimensional()) return true;
     return this._parents.every(n => n.isFreePoint());
   }
 

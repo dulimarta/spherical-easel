@@ -77,6 +77,7 @@ export default {
       state.nodules.splice(pos2, 1);
     }
   },
+
   addLine(state: AppState, line: SELine): void {
     state.lines.push(line);
     state.nodules.push(line);

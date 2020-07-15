@@ -16,8 +16,8 @@ import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import { DisplayStyle } from "@/plottables/Nodule";
 import Highlighter from "./Highlighter";
 import { ConvertInterPtToUserCreatedCommand } from "@/commands/ConvertInterPtToUserCreatedCommand";
-
-const MIDPOINT_MOVEMENT_THRESHOLD = SETTINGS.segment.midPointMovementThreshold;
+import { SEOneDimensional } from "@/types";
+import { SEPointOnOneDimensional } from "@/models/SEPointOnOneDimensional";
 
 export default class SegmentHandler extends Highlighter {
   /**
@@ -26,10 +26,11 @@ export default class SegmentHandler extends Highlighter {
   private startVector = new Vector3();
 
   /**
-   * The (model) start and end SEPoints of the line segment
+   * The starting and ending SEPoints of the line. The possible parent of the startSEPoint
    */
   private startSEPoint: SEPoint | null = null;
   private endSEPoint: SEPoint | null = null;
+  private startSEPointOneDimensionalParent: SEOneDimensional | null = null;
   /**
    * The arcLength of the segment
    */
@@ -54,11 +55,7 @@ export default class SegmentHandler extends Highlighter {
    * on the canvas, nothing should happen.
    */
   private makingASegment = false;
-  /**
-   * The location on the ideal unit sphere of the previous location of the mouse event
-   * This is used to tell if the currentScreenVector and the startScreenVector are antipodal
-   */
-  private startScreenVector = new Two.Vector(0, 0);
+
   /**
    * If the segment being made is long than pi
    */
@@ -98,38 +95,77 @@ export default class SegmentHandler extends Highlighter {
     // event, mouse press will *not* select the newly created point. This is not what we want so we call super.mouseMove
     super.mouseMoved(event);
 
-    // The user is making a segment
-    this.makingASegment = true;
-    // The user is dragging
-    this.isDragging = true;
-    // The Highlighter forms a list of all the nearby points
-    // If there are nearby points, select the first one to be the start of the segment otherwise
-    //  put a end/start marker (a Point found in MouseHandler) in the scene
-    if (this.hitSEPoints.length > 0) {
-      const selected = this.hitSEPoints[0];
-      this.startVector.copy(selected.locationVector);
-      this.startSEPoint = this.hitSEPoints[0];
+    if (this.isOnSphere) {
+      // The user is making a segment
+      this.makingASegment = true;
 
-      // Set the start of the temp segment and the startMarker at the location of the selected point
-      this.startMarker.positionVector = selected.locationVector;
-      this.tempSegment.startVector = selected.locationVector;
-    } else {
-      // The start vector of the temporary segment and the start marker are
-      //  also the the current location on the sphere
-      this.tempSegment.startVector = this.currentSphereVector;
-      this.startMarker.positionVector = this.currentSphereVector;
+      // The user is dragging to add a line
+      this.isDragging = true;
+
+      // Decide if the starting location is near an already existing SEPoint or near a oneDimensional SENodule
+      if (this.hitSEPoints.length > 0) {
+        // Use an existing SEPoint to start the line
+        const selected = this.hitSEPoints[0];
+        this.startVector.copy(selected.locationVector);
+        this.startSEPoint = this.hitSEPoints[0];
+        // Set the start of the temp segment and the startMarker at the location of the selected point
+        this.startMarker.positionVector = selected.locationVector;
+        this.tempSegment.startVector = selected.locationVector;
+      } else if (this.hitSESegments.length > 0) {
+        // The start of the line will be a point on a segment
+        //  Eventually, we will create a new SEPointOneDimensional and Point
+        this.startSEPointOneDimensionalParent = this.hitSESegments[0];
+        this.startVector.copy(
+          this.startSEPointOneDimensionalParent.closestVector(
+            this.currentSphereVector
+          )
+        );
+        this.tempSegment.startVector = this.startVector;
+        this.startMarker.positionVector = this.startVector;
+        this.startSEPoint = null;
+      } else if (this.hitSELines.length > 0) {
+        // The start of the line will be a point on a line
+        //  Eventually, we will create a new SEPointOneDimensional and Point
+        this.startSEPointOneDimensionalParent = this.hitSELines[0];
+        this.startVector.copy(
+          this.startSEPointOneDimensionalParent.closestVector(
+            this.currentSphereVector
+          )
+        );
+        this.tempSegment.startVector = this.startVector;
+        this.startMarker.positionVector = this.startVector;
+        this.startSEPoint = null;
+      } else if (this.hitSECircles.length > 0) {
+        // The start of the line will be a point on a circle
+        //  Eventually, we will create a new SEPointOneDimensional and Point
+        this.startSEPointOneDimensionalParent = this.hitSECircles[0];
+        this.startVector.copy(
+          this.startSEPointOneDimensionalParent.closestVector(
+            this.currentSphereVector
+          )
+        );
+        this.tempSegment.startVector = this.startVector;
+        this.startMarker.positionVector = this.startVector;
+        this.startSEPoint = null;
+      } else {
+        // The mouse press is not near an existing point or one dimensional object.
+        //  Record the location in a temporary point (startMarker found in MouseHandler).
+        //  Eventually, we will create a new SEPoint and Point
+
+        // The start vector of the temporary segment and the start marker are
+        //  also the the current location on the sphere
+        this.tempSegment.startVector = this.currentSphereVector;
+        this.startMarker.positionVector = this.currentSphereVector;
+        this.startVector.copy(this.currentSphereVector);
+        this.startSEPoint = null;
+      }
       this.endMarker.positionVector = this.currentSphereVector;
-      this.startVector.copy(this.currentSphereVector);
-      this.startSEPoint = null;
+
+      // Set the booleans for describing the segment
+      this.nearlyAntipodal = false;
+      this.longerThanPi = false;
+      this.arcLength = 0;
     }
-
-    // Set the booleans for describing the segment
-    this.nearlyAntipodal = false;
-    this.longerThanPi = false;
-    this.arcLength = 0;
-
-    // The previous screen point is the current one initially
-    this.startScreenVector.copy(this.currentScreenVector);
   }
 
   mouseMoved(event: MouseEvent): void {
@@ -179,13 +215,8 @@ export default class SegmentHandler extends Highlighter {
   mouseReleased(event: MouseEvent): void {
     // Only process events from the left (inner) mouse button to avoid adverse interactions with any pop-up menu
     if (event.button != 0) return;
-
     this.isDragging = false;
     if (this.isOnSphere) {
-      //If the release event was on the sphere remove the temporary objects
-      this.tempSegment.removeFromLayers();
-      this.startMarker.removeFromLayers();
-      this.endMarker.removeFromLayers();
       // Make sure the user didn't trigger the mouse leave event and is actually making a segment
       if (this.makingASegment) {
         // Before making a new segment make sure that the user has dragged a non-trivial distance
@@ -199,6 +230,10 @@ export default class SegmentHandler extends Highlighter {
           this.makePoint();
         }
       }
+      // Remove the temporary objects
+      this.tempSegment.removeFromLayers();
+      this.startMarker.removeFromLayers();
+      this.endMarker.removeFromLayers();
       // Clear old points and values to get ready for creating the next segment.
       this.startSEPoint = null;
       this.endSEPoint = null;
@@ -206,6 +241,7 @@ export default class SegmentHandler extends Highlighter {
       this.longerThanPi = false;
       this.makingASegment = false;
       this.arcLength = 0;
+      this.startSEPointOneDimensionalParent = null;
     }
   }
 
@@ -221,6 +257,7 @@ export default class SegmentHandler extends Highlighter {
     // Clear old points and values to get ready for creating the next segment.
     this.startSEPoint = null;
     this.endSEPoint = null;
+    this.startSEPointOneDimensionalParent = null;
     this.nearlyAntipodal = false;
     this.longerThanPi = false;
     this.makingASegment = false;
@@ -228,16 +265,28 @@ export default class SegmentHandler extends Highlighter {
   }
 
   private makeSegment(event: MouseEvent): void {
-    // Create a new command group to store potentially three commands. Those to add the endpoints (which might be  new) and the segment itself.
+    // Create a new command group to store potentially three commands. Those to add the endpoints (which might be new) and the segment itself.
     const segmentGroup = new CommandGroup();
     if (this.startSEPoint === null) {
-      // The start point is a new point and must be created and added to the command/store
+      // We have to create a new SEPointOnOneDimensional or SEPoint and Point
       const newStartPoint = new Point();
       // Set the display to the default values
       newStartPoint.stylize(DisplayStyle.DEFAULT);
-      // Set the glowing display
+      // Set up the glowing display
       newStartPoint.stylize(DisplayStyle.GLOWING);
-      const vtx = new SEPoint(newStartPoint);
+      let vtx: SEPoint | SEPointOnOneDimensional | null = null;
+      if (this.startSEPointOneDimensionalParent) {
+        // Starting mouse press landed near a oneDimensional
+        // Create the model object for the new point and link them
+        vtx = new SEPointOnOneDimensional(
+          newStartPoint,
+          this.startSEPointOneDimensionalParent
+        );
+      } else {
+        // Starting mouse press landed on an open space
+        // Create the model object for the new point and link them
+        vtx = new SEPoint(newStartPoint);
+      }
       vtx.locationVector = this.startVector;
       this.startSEPoint = vtx;
       segmentGroup.addCommand(new AddPointCommand(vtx));
@@ -251,7 +300,7 @@ export default class SegmentHandler extends Highlighter {
     if (this.hitSEPoints.length > 0) {
       // The end point is an existing point
       this.endSEPoint = this.hitSEPoints[0];
-      console.log("end name", this.endSEPoint.name);
+
       // move the endpoint of the segment to the location of the endpoint
       // This ensures that the initial display of the segment is nice and the endpoint
       // looks like the endpoint and is not off to the side
@@ -271,14 +320,42 @@ export default class SegmentHandler extends Highlighter {
         );
       }
     } else {
-      // The endpoint is a new point and must be created and added to the command/store
+      // We have to create a new Point for the end
       const newEndPoint = new Point();
       // Set the display to the default values
       newEndPoint.stylize(DisplayStyle.DEFAULT);
       // Set up the glowing display
       newEndPoint.stylize(DisplayStyle.GLOWING);
-      const vtx = new SEPoint(newEndPoint);
-      vtx.locationVector = this.currentSphereVector;
+      let vtx: SEPoint | SEPointOnOneDimensional | null = null;
+      if (this.hitSESegments.length > 0) {
+        // The end of the line will be a point on a segment
+        // Create the model object for the new point and link them
+        vtx = new SEPointOnOneDimensional(newEndPoint, this.hitSESegments[0]);
+        // Set the Location
+        vtx.locationVector = this.hitSESegments[0].closestVector(
+          this.currentSphereVector
+        );
+      } else if (this.hitSELines.length > 0) {
+        // The end of the line will be a point on a line
+        // Create the model object for the new point and link them
+        vtx = new SEPointOnOneDimensional(newEndPoint, this.hitSELines[0]);
+        // Set the Location
+        vtx.locationVector = this.hitSELines[0].closestVector(
+          this.currentSphereVector
+        );
+      } else if (this.hitSECircles.length > 0) {
+        // The end of the line will be a point on a circle
+        vtx = new SEPointOnOneDimensional(newEndPoint, this.hitSECircles[0]);
+        // Set the Location
+        vtx.locationVector = this.hitSECircles[0].closestVector(
+          this.currentSphereVector
+        );
+      } else {
+        // The ending mouse release landed on an open space
+        vtx = new SEPoint(newEndPoint);
+        // Set the Location
+        vtx.locationVector = this.currentSphereVector;
+      }
       this.endSEPoint = vtx;
       segmentGroup.addCommand(new AddPointCommand(vtx));
     }
@@ -337,10 +414,11 @@ export default class SegmentHandler extends Highlighter {
   ) {
     // Compute the normal vector from the this.startVector, the (old) normal vector and this.endVector
     // Compute a temporary normal from the two points' vectors
-    this.tmpVector.crossVectors(this.startVector, endVector).normalize();
+    this.tmpVector.crossVectors(this.startVector, endVector);
     // Check to see if the temporary normal is zero (i.e the start and end vectors are parallel -- ether
     // nearly antipodal or in the same direction)
     if (SENodule.isZero(this.tmpVector)) {
+      this.tmpVector.crossVectors(this.startVector, endVector).normalize();
       if (this.normalVector.length() == 0) {
         // The normal vector is still at its initial value so can't be used to compute the next normal, so set the
         // the normal vector to an arbitrarily chosen vector perpendicular to the start vector

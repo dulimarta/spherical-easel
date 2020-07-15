@@ -4,10 +4,11 @@ import Circle from "@/plottables/Circle";
 import { Vector3 } from "three";
 import { Visitable } from "@/visitors/Visitable";
 import { Visitor } from "@/visitors/Visitor";
+import { OneDimensional } from "@/types";
 let CIRCLE_COUNT = 0;
 import SETTINGS from "@/global-settings";
 
-export class SECircle extends SENodule implements Visitable {
+export class SECircle extends SENodule implements Visitable, OneDimensional {
   /**
    * The plottable (TwoJS) segment associated with this model segment
    */
@@ -40,6 +41,12 @@ export class SECircle extends SENodule implements Visitable {
     circlePoint.registerChild(this);
   }
   // #endregion circleConstructor
+
+  /**
+   * A temporary vector for making calculations.
+   */
+  private tmpVector = new Vector3();
+  private tmpVector1 = new Vector3();
 
   get centerSEPoint(): SEPoint {
     return this._centerSEPoint;
@@ -89,6 +96,37 @@ export class SECircle extends SENodule implements Visitable {
       this.ref.setVisible(false);
     }
     this.updateKids();
+  }
+
+  /**
+   * Return the vector on the SECircle that is closest to the idealUnitSphereVector
+   * @param idealUnitSphereVector A vector on the unit sphere
+   */
+  public closestVector(idealUnitSphereVector: Vector3): Vector3 {
+    // The normal to the plane of the center and the idealUnitVector
+    this.tmpVector.crossVectors(
+      this._centerSEPoint.locationVector,
+      idealUnitSphereVector
+    );
+    // Check to see if the tmpVector is zero (i.e the center and  idealUnit vectors are parallel -- ether
+    // nearly antipodal or in the same direction)
+    if (SENodule.isZero(this.tmpVector)) {
+      return this._circleSEPoint.locationVector; // An arbitrary point will do as all points are equally far away
+    } else {
+      // Make the tmpVector (soon to be the to vector) unit
+      this.tmpVector.normalize();
+      // A vector perpendicular to the center vector in the direction of the idealUnitSphereVector
+      this.tmpVector.cross(this._centerSEPoint.locationVector).normalize();
+      // The closest point is cos(arcLength)*this._centerSEPoint.locationVector+ sin(arcLength)*this.tmpVector
+      this.tmpVector.multiplyScalar(Math.sin(this.circleRadius));
+      this.tmpVector
+        .addScaledVector(
+          this._centerSEPoint.locationVector,
+          Math.cos(this.circleRadius)
+        )
+        .normalize();
+      return this.tmpVector;
+    }
   }
 
   accept(v: Visitor): void {

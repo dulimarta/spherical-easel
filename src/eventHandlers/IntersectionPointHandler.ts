@@ -190,9 +190,9 @@ export default class IntersectionPointHandler extends Highlighter {
         // part of the name, so this is the name prefix
 
         if (this.oneDimensional1.name < this.oneDimensional2.name) {
-          this.intersectionPointNamePrefix = `(${this.oneDimensional1.name},${this.oneDimensional2.name}`;
+          this.intersectionPointNamePrefix = `Intersection(${this.oneDimensional1.name},${this.oneDimensional2.name}`;
         } else {
-          this.intersectionPointNamePrefix = `(${this.oneDimensional2.name},${this.oneDimensional1.name}`;
+          this.intersectionPointNamePrefix = `Intersection(${this.oneDimensional2.name},${this.oneDimensional1.name}`;
         }
 
         // Get all the SEIntersectionPoints that start with this prefix and convert them to user created points, but only if the point exists on the screen as an actual intersection point.

@@ -7,10 +7,13 @@
     "RedoLastAction": "Redo last action"
   },
   "toolGroups": {
+    "EditTools": "Edit Tools",
+    "DisplayTools": "Display Tools",
     "BasicTools": "Basic Tools",
+    "ConstructionTools": "Construction Tools",
     "AdvancedTools": "Advanced Tools",
     "TransformationalTools": "Transformational Tools",
-    "EditTools": "Edit Tools",
+
     "KeyShortCut": "Key Short Cut",
     "ResetSphereOrientation": "Press \"R\" to reset sphere orientation"
   },
@@ -55,7 +58,11 @@
 
     "CreateSelectToolTipMessage": "FIXME",
     "CreateSelectToolUseMessage": "FIXME",
-    "CreateSelectDisplayedName": "FIXME"
+    "CreateSelectDisplayedName": "FIXME",
+
+    "CreatePointOnOneDimDisplayedName": "Point On One Dimensional Object",
+    "CreatePointOnOneDimToolTipMessage": "Select a one-dimensional object",
+    "CreatePointOnOneDimToolUseMessage": "Select a one-dimensional object add a point to."
   },
   "settings": {
     "title": "Preferences"
