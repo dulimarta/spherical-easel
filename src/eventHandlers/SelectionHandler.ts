@@ -39,7 +39,7 @@ export default class SelectionHandler extends MouseHandler {
   mousePressed(event: MouseEvent): void {
     event.preventDefault();
     if (event.altKey) {
-      // Add current hit to the current selection
+      // Add current hit list to the current selection
       this.hitSENodules.forEach(h => {
         h.selected = !h.selected;
         if (h.selected) this.currentSelection.push(h);
@@ -50,7 +50,7 @@ export default class SelectionHandler extends MouseHandler {
         }
       });
     } else {
-      // Current hits replace current selection
+      // Replace the current selection with the hit list
       this.currentSelection.forEach(s => {
         // Toggle the current selection if it is not in the hit list
         if (this.hitSENodules.findIndex(h => h.id === s.id) < 0)
@@ -59,8 +59,11 @@ export default class SelectionHandler extends MouseHandler {
       this.hitSENodules.forEach(h => {
         h.selected = !h.selected;
       });
+
+      // Filter only selected items
       this.currentSelection = this.hitSENodules.filter(n => n.selected);
     }
+    this.store.commit("setSelectedObjects", this.currentSelection);
   }
 
   mouseReleased(event: MouseEvent): void {

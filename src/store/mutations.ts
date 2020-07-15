@@ -6,6 +6,7 @@ import { SESegment } from "@/models/SESegment";
 import { SECircle } from "@/models/SECircle";
 import { PositionVisitor } from "@/visitors/PositionVisitor";
 import { SELine } from "@/models/SELine";
+import { SENodule } from "@/models/SENodule";
 
 // const tmpMatrix = new Matrix4();
 
@@ -17,6 +18,7 @@ export const initialState: AppState = {
   zoomMagnificationFactor: 1, // The CSSTransform magnification factor
   zoomTranslation: [0, 0], // The CSSTransform translation vector
   nodules: [], // An array of all SENodules
+  selections: [], // An array of selected SENodules
   layers: [], // An array of Two.Group pointer to the layers in the twoInstance
   points: [], // An array of all SEPoints
   lines: [], // An array of all SELines
@@ -162,5 +164,9 @@ export default {
     state.segments.forEach((s: SESegment) => {
       s.accept(positionVisitor);
     });
+  },
+  setSelectedObjects(state: AppState, selection: SENodule[]): void {
+    state.selections.clear();
+    state.selections.push(...selection);
   }
 };

@@ -6,12 +6,14 @@ import { Visitor } from "@/visitors/Visitor";
 import { SEPoint } from "./SEPoint";
 import SETTINGS from "@/global-settings";
 import { OneDimensional } from "@/types";
+import { Styles } from "@/types/Styles";
 
 /** Temporary vector3 to help with calculations */
 const tmpVector1 = new Vector3();
 const tmpVector2 = new Vector3();
 
 let LINE_COUNT = 0;
+const styleSet = new Set([Styles.StrokeWidth, Styles.StrokeColor]);
 export class SELine extends SENodule implements Visitable, OneDimensional {
   /**
    * The corresponding plottable TwoJS object
@@ -61,6 +63,10 @@ export class SELine extends SENodule implements Visitable, OneDimensional {
     // Add this line as a child of the two points
     lineStartSEPoint.registerChild(this);
     lineEndSEPoint.registerChild(this);
+  }
+
+  customStyles(): Set<Styles> {
+    return styleSet;
   }
 
   accept(v: Visitor): void {

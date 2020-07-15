@@ -1,3 +1,10 @@
 export enum Styles {
-    LineWidth, FillColor, Radius
+  StrokeWidth,
+  StrokeColor,
+  FillWhiteTint,
+  FillGrayTint,
+  DashPattern,
+  Opacity,
+  PointFrontRadius,
+  PointBackRadius
 }

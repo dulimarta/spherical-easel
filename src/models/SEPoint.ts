@@ -4,10 +4,15 @@ import { Visitor } from "@/visitors/Visitor";
 import { SENodule } from "./SENodule";
 import { Vector3 } from "three";
 import SETTINGS from "@/global-settings";
+import { Styles } from "@/types/Styles";
 
 // const POINT_PROXIMITY_THRESHOLD = SETTINGS.point.hitIdealDistance;
 let POINT_COUNT = 0;
-
+const styleSet = new Set([
+  Styles.PointFrontRadius,
+  Styles.PointBackRadius,
+  Styles.StrokeColor
+]);
 export class SEPoint extends SENodule implements Visitable {
   /* This should be the only reference to the plotted version of this SEPoint */
   public ref: Point;
@@ -28,6 +33,9 @@ export class SEPoint extends SENodule implements Visitable {
     this.ref = p;
     POINT_COUNT++;
     this.name = `P-${POINT_COUNT}`;
+  }
+  customStyles(): Set<Styles> {
+    return styleSet;
   }
 
   public update(): void {

@@ -3,6 +3,8 @@ import { SEPoint } from "./SEPoint";
 import SETTINGS from "@/global-settings";
 import Nodule from "@/plottables/Nodule";
 import { SEPointOnOneDimensional } from "./SEPointOnOneDimensional";
+import { Styles } from "@/types/Styles";
+// import { SESegmentMidPoint } from "./SESegmentMidPoint";
 
 let NODE_COUNT = 0;
 export abstract class SENodule {
@@ -45,14 +47,6 @@ export abstract class SENodule {
   /* This boolean is set to indicate that the object is out of date and needs to be updated. */
   protected _outOfDate = false;
 
-  /* Marks all descendants (kids, grand kids, etc.) of the current SENodule out of date */
-  public markKidsOutOfDate(): void {
-    this._kids.forEach(item => {
-      item.setOutOfDate(true);
-      item.markKidsOutOfDate();
-    });
-  }
-
   /**
    * A method to update the current SENodule on the unit sphere when its parents have changed
    * The first method called is canUpdateNow, that checks to see if all the parents of this object are
@@ -60,6 +54,28 @@ export abstract class SENodule {
    * eventually try again because the last method called is updateKids()
    */
   public abstract update(): void;
+
+  /**
+   * Is the object hit a point at a particular sphere location?
+   * @param sphereVector a location on the ideal unit sphere
+   */
+  public abstract isHitAt(unitIdealVector: Vector3): boolean;
+
+  /**
+   * Which style options are customizable for a particular subclass
+   *
+   * NOTE: Ideally we want to use an abstract static method.
+   * But Typescript does not support it (yet?)
+   */
+  public abstract customStyles(): Set<Styles>;
+
+  /* Marks all descendants (kids, grand kids, etc.) of the current SENodule out of date */
+  public markKidsOutOfDate(): void {
+    this._kids.forEach(item => {
+      item.setOutOfDate(true);
+      item.markKidsOutOfDate();
+    });
+  }
 
   /* This is called to check and see if any of the parents of the current SENodule are outOfDate
     if any of the parents are outOfDate then this function returns false. 
@@ -76,12 +92,6 @@ export abstract class SENodule {
       item.update();
     });
   }
-
-  /**
-   * Is the object hit a point at a particular sphere location?
-   * @param sphereVector a location on the ideal unit sphere
-   */
-  public abstract isHitAt(unitIdealVector: Vector3): boolean;
 
   /**
    * Adds a given SENodule, n, to the parent array of the current SENodule

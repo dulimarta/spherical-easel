@@ -9,7 +9,14 @@ let CIRCLE_COUNT = 0;
 import SETTINGS from "@/global-settings";
 /** Use in the rotation of sphere move event */
 const desiredZAxis = new Vector3();
+import { Styles } from "@/types/Styles";
 
+const styleSet = new Set([
+  Styles.StrokeColor,
+  Styles.StrokeWidth,
+  Styles.FillGrayTint,
+  Styles.FillWhiteTint
+]);
 export class SECircle extends SENodule implements Visitable, OneDimensional {
   /**
    * The plottable (TwoJS) segment associated with this model segment
@@ -55,6 +62,10 @@ export class SECircle extends SENodule implements Visitable, OneDimensional {
    * all objects on the sphere. Used when no object is selected and the user mouse presses and drags
    */
   private changeInPositionRotationMatrix: Matrix4 = new Matrix4();
+
+  customStyles(): Set<Styles> {
+    return styleSet;
+  }
 
   get centerSEPoint(): SEPoint {
     return this._centerSEPoint;

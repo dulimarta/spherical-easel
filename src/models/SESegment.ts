@@ -7,8 +7,10 @@ import { SEPoint } from "./SEPoint";
 import SETTINGS from "@/global-settings";
 import { OneDimensional } from "@/types";
 
-let SEGMENT_COUNT = 0;
+import { Styles } from "@/types/Styles";
 
+let SEGMENT_COUNT = 0;
+const styleSet = new Set([Styles.StrokeWidth, Styles.StrokeColor]);
 export class SESegment extends SENodule implements Visitable, OneDimensional {
   /**
    * The plottable (TwoJS) segment associated with this model segment
@@ -76,6 +78,10 @@ export class SESegment extends SENodule implements Visitable, OneDimensional {
     // so debugging output shows name correctly
     segmentStartSEPoint.registerChild(this);
     segmentEndSEPoint.registerChild(this);
+  }
+
+  customStyles(): Set<Styles> {
+    return styleSet;
   }
 
   accept(v: Visitor): void {

@@ -7,6 +7,7 @@ import { SENodule } from "./SENodule";
 import { IntersectionReturnType } from "@/types";
 import { DisplayStyle } from "@/plottables/Nodule";
 import store from "@/store";
+import { Styles } from "@/types/Styles";
 //import { SEOneDimensional } from "@/types/index";
 type SEOneDimensional = SELine | SESegment | SECircle;
 

@@ -26,6 +26,7 @@ export interface AppState {
   segments: SESegment[];
   circles: SECircle[];
   nodules: SENodule[];
+  selections: SENodule[];
   intersections: SEIntersectionPoint[];
 }
 /* This interface lists all the properties that each tool/button must have. */
