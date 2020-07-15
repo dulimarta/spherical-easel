@@ -383,18 +383,28 @@ export default class SegmentHandler extends Highlighter {
     // The user is attempting to make a segment smaller than the minimum arc length so
     // create  a point at the location of the start vector
     if (this.startSEPoint === null) {
-      // Starting point landed on an open space
-      // we have to create a new point and it to the group/store
+      // we have to create a new SEPointOnOneDimensional or SEPoint and Point
       const newPoint = new Point();
       // Set the display to the default values
       newPoint.stylize(DisplayStyle.DEFAULT);
-      // Set the glowing display
+      // Set up the glowing display
       newPoint.stylize(DisplayStyle.GLOWING);
-      const vtx = new SEPoint(newPoint);
+      let vtx: SEPoint | SEPointOnOneDimensional | null = null;
+      if (this.startSEPointOneDimensionalParent) {
+        // Starting mouse press landed near a oneDimensional
+        // Create the model object for the new point and link them
+        vtx = new SEPointOnOneDimensional(
+          newPoint,
+          this.startSEPointOneDimensionalParent
+        );
+      } else {
+        // Starting mouse press landed on an open space
+        // we have to create a new point and it to the group/store
+        vtx = new SEPoint(newPoint);
+      }
       vtx.locationVector = this.startVector;
-      this.startSEPoint = vtx;
-      const addPoint = new AddPointCommand(vtx);
-      addPoint.execute();
+      // Create and execute the command to create a new point for undo/redo
+      new AddPointCommand(vtx).execute();
     }
   }
   /**

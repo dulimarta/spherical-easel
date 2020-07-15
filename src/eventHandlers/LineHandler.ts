@@ -381,29 +381,28 @@ export default class LineHandler extends Highlighter {
    */
   private makePoint(): void {
     if (this.startSEPoint === null) {
+      // we have to create a new SEPointOnOneDimensional or SEPoint and Point
+      const newPoint = new Point();
+      // Set the display to the default values
+      newPoint.stylize(DisplayStyle.DEFAULT);
+      // Set up the glowing display
+      newPoint.stylize(DisplayStyle.GLOWING);
+      let vtx: SEPoint | SEPointOnOneDimensional | null = null;
       if (this.startSEPointOneDimensionalParent) {
         // Starting mouse press landed near a oneDimensional
-        // we have to create a new SEPointOnOneDimensional and Point
-        const newPoint = new Point();
-        // Set the display to the default values
-        newPoint.stylize(DisplayStyle.DEFAULT);
-        // Set up the glowing display
-        newPoint.stylize(DisplayStyle.GLOWING);
         // Create the model object for the new point and link them
-        const vtx = new SEPointOnOneDimensional(
+        vtx = new SEPointOnOneDimensional(
           newPoint,
           this.startSEPointOneDimensionalParent
         );
-        vtx.locationVector = this.startVector;
-        // Create and execute the command to create a new point for undo/redo
-        new AddPointCommand(vtx).execute();
       } else {
         // Starting mouse press landed on an open space
         // we have to create a new point and it to the group/store
-        const vtx = new SEPoint(new Point());
-        vtx.locationVector = this.startVector;
-        new AddPointCommand(vtx).execute();
+        vtx = new SEPoint(newPoint);
       }
+      vtx.locationVector = this.startVector;
+      // Create and execute the command to create a new point for undo/redo
+      new AddPointCommand(vtx).execute();
     }
   }
 }
