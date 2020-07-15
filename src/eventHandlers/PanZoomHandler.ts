@@ -70,9 +70,6 @@ export default class PanZoomHandler implements ToolStrategy {
   }
 
   mousePressed(event: MouseEvent): void {
-    // Only process events from the left (inner) mouse button to avoid adverse interactions with any pop-up menu
-    if (event.button != 0) return;
-
     console.log("Mouse Press Pan/Zoom");
     this.isMousePressed = true;
 
@@ -122,9 +119,6 @@ export default class PanZoomHandler implements ToolStrategy {
   }
 
   mouseReleased(event: MouseEvent): void {
-    // Only process events from the left (inner) mouse button to avoid adverse interactions with any pop-up menu
-    if (event.button != 0) return;
-
     /* The this.didPan condition prevents a zoomCommand from being stored when we were dragging but didn't drag far enough to trigger an actual pan view change*/
     if (this.isDragging && this.didPan) {
       /* End the Pan operation */

@@ -12,6 +12,11 @@
   </div>
 </template>
 
+<script>
+export default {
+  // name: "test"
+};
+</script>
 <!-- This goes with a markdown file with this frontmatter and body
 See: https://v1.vuepress.vuejs.org/guide/markdown-slot.html
 See: https://vuepress.vuejs.org/theme/default-theme-config.html#custom-layout-for-specific-pages

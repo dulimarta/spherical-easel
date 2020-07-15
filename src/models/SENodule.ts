@@ -243,6 +243,8 @@ export abstract class SENodule {
       this.ref.glowingDisplay();
     } else {
       this.ref.normalDisplay();
+      // TODO: not glowing implies not selected?
+      // this.selected = false;
     }
   }
 
@@ -253,6 +255,8 @@ export abstract class SENodule {
     if (b) {
       // Set the display for the corresponding plottable object
       this.ref.glowingDisplay();
+      // TODO: do we need to set glowing?
+      // this.glowing = true;
     } else {
       this.ref.normalDisplay();
     }

@@ -8,8 +8,7 @@ import Two from "two.js";
 import { SENodule } from "@/models/SENodule";
 import { SEPoint } from "@/models/SEPoint";
 import Point from "@/plottables/Point";
-import Nodule, { DisplayStyle } from "@/plottables/Nodule";
-import { NormalModuleReplacementPlugin } from "webpack";
+import { DisplayStyle } from "@/plottables/Nodule";
 
 const PIXEL_CLOSE_ENOUGH = 8;
 

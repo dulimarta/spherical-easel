@@ -1,6 +1,8 @@
 import MouseHandler from "./MouseHandler";
+import { SENodule } from "@/models/SENodule";
 
 export default class SelectionHandler extends MouseHandler {
+  private currentSelection: SENodule[] = [];
   activate(): void {
     window.addEventListener("keypress", this.keyPressHandler);
   }
@@ -28,31 +30,40 @@ export default class SelectionHandler extends MouseHandler {
 
   mouseMoved(event: MouseEvent): void {
     super.mouseMoved(event);
-    const what = this.store.getters.findNearbyObjects(
+    this.hitSENodules = this.store.getters.findNearbyObjects(
       this.currentSphereVector,
       this.currentScreenVector
     );
-    // console.debug(what);
-    // console.debug(this.hitLines);
-    // console.debug(this.hitSegments);
-    // console.debug(this.hi)
   }
 
   mousePressed(event: MouseEvent): void {
-    // Only process events from the left (inner) mouse button to avoid adverse interactions with any pop-up menu
-    if (event.button != 0) return;
-
-    if (this.hitSENodules.length == 1) {
-      console.debug("Single selection", this.hitSENodules[0].name);
-    } else if (this.hitSENodules.length > 1) {
-      console.debug("Multiple selections");
-      this.hitSENodules.forEach(n => {
-        console.debug(n.name);
+    event.preventDefault();
+    if (event.altKey) {
+      // Add current hit to the current selection
+      this.hitSENodules.forEach(h => {
+        h.selected = !h.selected;
+        if (h.selected) this.currentSelection.push(h);
+        else {
+          // Remove hit object from current selection
+          const idx = this.currentSelection.findIndex(c => c.id === h.id);
+          if (idx >= 0) this.currentSelection.splice(idx, 1);
+        }
       });
+    } else {
+      // Current hits replace current selection
+      this.currentSelection.forEach(s => {
+        // Toggle the current selection if it is not in the hit list
+        if (this.hitSENodules.findIndex(h => h.id === s.id) < 0)
+          s.selected = !s.selected;
+      });
+      this.hitSENodules.forEach(h => {
+        h.selected = !h.selected;
+      });
+      this.currentSelection = this.hitSENodules.filter(n => n.selected);
     }
   }
+
   mouseReleased(event: MouseEvent): void {
-    // Only process events from the left (inner) mouse button to avoid adverse interactions with any pop-up menu
-    if (event.button != 0) return;
+    // No code required
   }
 }

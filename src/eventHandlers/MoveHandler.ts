@@ -11,7 +11,6 @@ import SETTINGS from "@/global-settings";
 import EventBus from "./EventBus";
 import { RotateSphereCommand } from "@/commands/RotateSphereCommand";
 import Highlighter from "./Highlighter";
-import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 const tmpVector1 = new Vector3();
 const tmpVector2 = new Vector3();
 /** Use in the rotation of sphere move event */
@@ -57,9 +56,6 @@ export default class MoveHandler extends Highlighter {
   }
 
   mousePressed(event: MouseEvent) {
-    // Only process events from the left (inner) mouse button to avoid adverse interactions with any pop-up menu
-    if (event.button != 0) return;
-
     // Reset the variables for another move event
     this.isDragging = true;
     this.moveTarget = null;
@@ -135,8 +131,6 @@ export default class MoveHandler extends Highlighter {
   }
 
   mouseReleased(event: MouseEvent) {
-    // Only process events from the left (inner) mouse button to avoid adverse interactions with any pop-up menu
-    if (event.button != 0) return;
     this.movingSomething = false;
 
     this.isDragging = false;
