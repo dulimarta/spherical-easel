@@ -143,6 +143,24 @@ export default {
     state.segments.forEach((s: SESegment) => {
       s.accept(positionVisitor);
     });
-  }
+  },
   //#endregion rotateSphere
+  movePoint(
+    state: AppState,
+    move: { pointId: number; rotationMat: Matrix4 }
+  ): void {
+    positionVisitor.setTransform(move.rotationMat);
+    const pos = state.points.findIndex(x => x.id === move.pointId);
+    state.points[pos].accept(positionVisitor);
+    //update all the other objects in the arrangement.
+    state.lines.forEach((l: SELine) => {
+      l.accept(positionVisitor);
+    });
+    state.circles.forEach((l: SECircle) => {
+      l.accept(positionVisitor);
+    });
+    state.segments.forEach((s: SESegment) => {
+      s.accept(positionVisitor);
+    });
+  }
 };

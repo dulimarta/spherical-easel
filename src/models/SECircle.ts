@@ -1,12 +1,14 @@
 import { SENodule } from "./SENodule";
 import { SEPoint } from "./SEPoint";
 import Circle from "@/plottables/Circle";
-import { Vector3 } from "three";
+import { Vector3, Matrix4 } from "three";
 import { Visitable } from "@/visitors/Visitable";
 import { Visitor } from "@/visitors/Visitor";
 import { OneDimensional } from "@/types";
 let CIRCLE_COUNT = 0;
 import SETTINGS from "@/global-settings";
+/** Use in the rotation of sphere move event */
+const desiredZAxis = new Vector3();
 
 export class SECircle extends SENodule implements Visitable, OneDimensional {
   /**
@@ -47,6 +49,12 @@ export class SECircle extends SENodule implements Visitable, OneDimensional {
    */
   private tmpVector = new Vector3();
   private tmpVector1 = new Vector3();
+  /**
+   * A matrix that is used to indicate the *change* in position of the objects on the sphere. The
+   * total change in position is not stored. This matrix is applied (via a position visitor) to
+   * all objects on the sphere. Used when no object is selected and the user mouse presses and drags
+   */
+  private changeInPositionRotationMatrix: Matrix4 = new Matrix4();
 
   get centerSEPoint(): SEPoint {
     return this._centerSEPoint;
@@ -131,5 +139,40 @@ export class SECircle extends SENodule implements Visitable, OneDimensional {
 
   accept(v: Visitor): void {
     v.actionOnCircle(this);
+  }
+
+  /**
+   * Move the the circle by moving the free points it depends on
+   * Simply forming a rotation matrix mapping the previous to current sphere and applying
+   * that rotation to the center and circle points of defining the circle.
+   * @param previousSphereVector Vector3 previous location on the unit ideal sphere of the mouse
+   * @param currentSphereVector Vector3 current location on the unit ideal sphere of the mouse
+   */
+  public move(previousSphereVector: Vector3, currentSphereVector: Vector3) {
+    const rotationAngle = previousSphereVector.angleTo(currentSphereVector);
+
+    // If the rotation is big enough preform the rotation
+    if (Math.abs(rotationAngle) > SETTINGS.rotate.minAngle) {
+      // The axis of rotation
+      desiredZAxis
+        .crossVectors(previousSphereVector, currentSphereVector)
+        .normalize();
+      // Form the matrix that performs the rotation
+      this.changeInPositionRotationMatrix.makeRotationAxis(
+        desiredZAxis,
+        rotationAngle
+      );
+      this.tmpVector1
+        .copy(this.centerSEPoint.locationVector)
+        .applyMatrix4(this.changeInPositionRotationMatrix);
+      this.centerSEPoint.locationVector = this.tmpVector1;
+      this.tmpVector
+        .copy(this.circleSEPoint.locationVector)
+        .applyMatrix4(this.changeInPositionRotationMatrix);
+      this.circleSEPoint.locationVector = this.tmpVector;
+      // Update both points, because we might need to update their kids!
+      this.circleSEPoint.update();
+      this.centerSEPoint.update();
+    }
   }
 }

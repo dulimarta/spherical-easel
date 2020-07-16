@@ -11,10 +11,12 @@ import SETTINGS from "@/global-settings";
 import EventBus from "./EventBus";
 import { RotateSphereCommand } from "@/commands/RotateSphereCommand";
 import Highlighter from "./Highlighter";
+import { MovePointCommand } from "@/commands/MovePointCommand";
+import { CommandGroup } from "@/commands/CommandGroup";
 const tmpVector1 = new Vector3();
 const tmpVector2 = new Vector3();
-/** Use in the rotation of sphere move event */
 const desiredZAxis = new Vector3();
+const tmpMatrix = new Matrix4();
 
 export default class MoveHandler extends Highlighter {
   /**
@@ -28,24 +30,31 @@ export default class MoveHandler extends Highlighter {
   private moveTarget: SENodule | null = null;
 
   /**
-   * The Ideal Unit Sphere Vector of the mouse press event
-   */
-  private moveFrom = new Vector3();
-
-  /**
    * A flag to set that indicates the sphere should rotate
    */
   private rotateSphere = false;
+
   /**
-   * A matrix that is used to indicate the *change* in position of the objects on the sphere. The
-   * total change in position is not stored. This matrix is applied (via a position visitor) to
-   * all objects on the sphere. Used when no object is selected and the user mouse presses and drags
+   * Two vectors that define the movable object before and after moving
+   */
+  private beforeMoveVector1 = new Vector3(); // The start/center SEPoint
+  private beforeMoveVector2 = new Vector3(); // The end/circle SEPoint
+  private afterMoveVector1 = new Vector3(); // The start/center SEPoint
+  private afterMoveVector2 = new Vector3(); // The end/circle SEPoint
+  /**
+   * A matrix that is used to indicate the *change* in position of the moving object on the sphere.
+   * This matrix is applied to the free points defining the movable object, when those points are updated, the
+   * object moves.
+   * Rotation: Used when no object is selected and the user mouse presses and drags
+   * Used in the MoveCommand to indicate the matrix that maps the two before vectors defining the
+   * locations of the points defining the line/segment/circle to the two after vectors that defined
+   * the points that define the line/segment/circle
    */
   private changeInPositionRotationMatrix: Matrix4 = new Matrix4();
 
   /**
    * If the user starts to move an object and mouse press at a location on the sphere, then moves
-   * off the canvas, then back inside the sphere and mouse releases, we not be moving anything. This
+   * off the canvas, then back inside the sphere and mouse releases, we should not be moving anything. This
    * variable is to help with that. Or if the user mouse press outside the canvas and mouse releases
    * on the canvas, nothing should happen.
    */
@@ -60,7 +69,7 @@ export default class MoveHandler extends Highlighter {
     this.isDragging = true;
     this.moveTarget = null;
     this.rotateSphere = false;
-    this.moveFrom.copy(this.currentSphereVector);
+    this.movingSomething = true;
 
     // Query the nearby SENodules to select the one the user wishes to move (if none the sphere rotates)
     if (this.hitSENodules.length > 0) {
@@ -68,7 +77,8 @@ export default class MoveHandler extends Highlighter {
       const freePoints = this.hitSEPoints.filter(n => n.isFreeToMove());
       if (freePoints.length > 0) {
         this.moveTarget = freePoints[0];
-        this.movingSomething = true;
+        this.beforeMoveVector1.copy(freePoints[0].locationVector);
+
         return;
       }
       //If the user tries to move a nonFree point, nothing should happen
@@ -76,27 +86,38 @@ export default class MoveHandler extends Highlighter {
         const freeLines = this.hitSELines.filter(n => n.isFreeToMove());
         if (freeLines.length > 0) {
           this.moveTarget = freeLines[0];
-          this.movingSomething = true;
+          this.beforeMoveVector1.copy(freeLines[0].startSEPoint.locationVector);
+          this.beforeMoveVector2.copy(freeLines[0].endSEPoint.locationVector);
           return;
         }
         const freeSegments = this.hitSESegments.filter(n => n.isFreeToMove());
         if (freeSegments.length > 0) {
           this.moveTarget = freeSegments[0];
-          this.movingSomething = true;
+          this.beforeMoveVector1.copy(
+            freeSegments[0].startSEPoint.locationVector
+          );
+          this.beforeMoveVector2.copy(
+            freeSegments[0].endSEPoint.locationVector
+          );
           return;
         }
 
         const freeCircles = this.hitSECircles.filter(n => n.isFreeToMove());
         if (freeCircles.length > 0) {
           this.moveTarget = freeCircles[0];
-          this.movingSomething = true;
+          this.beforeMoveVector1.copy(
+            freeCircles[0].centerSEPoint.locationVector
+          );
+          this.beforeMoveVector2.copy(
+            freeCircles[0].circleSEPoint.locationVector
+          );
           return;
         }
       }
     } else {
       // In this case the user mouse pressed in a location with *no* nodules (nothing was highlighted when she mouse pressed)
       this.rotateSphere = true;
-      this.movingSomething = true;
+      this.beforeMoveVector1.copy(this.currentSphereVector);
     }
   }
 
@@ -111,6 +132,7 @@ export default class MoveHandler extends Highlighter {
       if (this.moveTarget instanceof SEPoint) {
         // Move the selected SEPoint
         this.moveTarget.locationVector = this.currentSphereVector;
+        this.afterMoveVector1.copy(this.currentSphereVector);
         this.moveTarget.update();
       } else if (
         this.moveTarget instanceof SELine ||
@@ -119,37 +141,107 @@ export default class MoveHandler extends Highlighter {
         // Move the selected SELine or SESegment
         this.moveTarget.ref.normalDisplay();
         this.doMoveLine(this.moveTarget, event.altKey, event.ctrlKey);
+        this.afterMoveVector1.copy(this.moveTarget.startSEPoint.locationVector);
+        this.afterMoveVector2.copy(this.moveTarget.endSEPoint.locationVector);
       } else if (this.moveTarget instanceof SECircle) {
         // Move the selected SECircle
         this.moveTarget.ref.normalDisplay();
-        this.doMoveCircle(this.moveTarget);
+        //SECircle and SEThreePointCircle are potentially movable
+        // The move method in SEThreePointCircle overrides the move method in SECircle
+        this.moveTarget.move(
+          this.previousSphereVector,
+          this.currentSphereVector
+        );
+        this.afterMoveVector1.copy(
+          this.moveTarget.centerSEPoint.locationVector
+        );
+        this.afterMoveVector2.copy(
+          this.moveTarget.circleSEPoint.locationVector
+        );
       } else if (this.moveTarget == null && this.rotateSphere) {
         // Rotate the sphere
         this.doRotateSphere();
+        this.afterMoveVector1.copy(this.currentSphereVector);
       }
     }
   }
 
   mouseReleased(event: MouseEvent) {
     this.movingSomething = false;
-
     this.isDragging = false;
-    if (this.rotateSphere) {
-      // End the rotation of the sphere nicely so that it is undoable.
-      // Create the rotation matrix that takes mouse press location to the mouse release location
-      const rotationAngle = this.moveFrom.angleTo(this.currentSphereVector);
-      desiredZAxis
-        .crossVectors(this.moveFrom, this.currentSphereVector)
-        .normalize();
-      this.changeInPositionRotationMatrix.makeRotationAxis(
-        desiredZAxis,
-        rotationAngle
-      );
+    // Create the rotation matrix that takes before location to the after location
+    const rotationAngle = this.beforeMoveVector1.angleTo(this.afterMoveVector1);
+    desiredZAxis
+      .crossVectors(this.beforeMoveVector1, this.afterMoveVector1)
+      .normalize();
+    this.changeInPositionRotationMatrix.makeRotationAxis(
+      desiredZAxis,
+      rotationAngle
+    );
 
-      // Store the rotation command that takes the mouse press location to the mouse release location, but don't execute it
-      // because the rotation has already happened. This way the first to last position rotation is in the command
-      // structure and can be undone or redone
+    if (this.moveTarget instanceof SEPoint) {
+      // Store the move point for undo/redo command
+      // Store the move command that takes the beforeMoveVector1 location to the afterMoveVector2 location,
+      // but don't execute it because the rotation has already happened. This way the first to
+      // last position rotation is in the command structure and can be undone or redone
+      new MovePointCommand(
+        this.moveTarget,
+        this.changeInPositionRotationMatrix
+      ).push();
+    } else if (this.moveTarget == null && this.rotateSphere) {
+      // Store the rotation of the sphere for undo/redo command.
+      // Store the rotation command that takes the beforeMoveVector1 location to the afterMoveVector2 location,
+      // but don't execute it because the rotation has already happened. This way the first to
+      // last position rotation is in the command structure and can be undone or redone
       new RotateSphereCommand(this.changeInPositionRotationMatrix).push();
+    } else {
+      // Store the move line/segment for undo/redo command
+      const moveCommandGroup = new CommandGroup();
+      // Make the rotation matrix that takes beforeMoveVector1/2 to afterMoveVector1/2
+      // First apply the current changeInPositionMatrix (that takes beforeMoveVector1 to afterMoveVector1)
+      // to beforeMoveVector2
+      tmpVector1
+        .copy(this.beforeMoveVector2)
+        .applyMatrix4(this.changeInPositionRotationMatrix);
+
+      const newAngle = tmpVector1.angleTo(this.afterMoveVector2);
+      // rotate by the newAngle about afterMoveVector2
+      tmpMatrix.makeRotationAxis(this.afterMoveVector1, newAngle);
+      // First changeInPosition maps beforeMoveVector1 to afterMoveVector1
+      // then tmpMatrix fixes afterMoveVector1 and takes changeInPosition(beforeMoveVector2) to afterMoveVector2
+      this.changeInPositionRotationMatrix.premultiply(tmpMatrix);
+      if (
+        this.moveTarget instanceof SELine ||
+        this.moveTarget instanceof SESegment
+      ) {
+        moveCommandGroup.addCommand(
+          new MovePointCommand(
+            this.moveTarget.startSEPoint,
+            this.changeInPositionRotationMatrix
+          )
+        );
+        moveCommandGroup.addCommand(
+          new MovePointCommand(
+            this.moveTarget.endSEPoint,
+            this.changeInPositionRotationMatrix
+          )
+        );
+      } else if (this.moveTarget instanceof SECircle) {
+        moveCommandGroup.addCommand(
+          new MovePointCommand(
+            this.moveTarget.centerSEPoint,
+            this.changeInPositionRotationMatrix
+          )
+        );
+        moveCommandGroup.addCommand(
+          new MovePointCommand(
+            this.moveTarget.circleSEPoint,
+            this.changeInPositionRotationMatrix
+          )
+        );
+      }
+      // store the command but don't execute it as the move has already been done.
+      moveCommandGroup.push();
     }
     this.moveTarget = null;
     this.rotateSphere = false;
@@ -160,6 +252,13 @@ export default class MoveHandler extends Highlighter {
     this.movingSomething = false;
   }
 
+  /**
+   * Move a line, this is not a method in the SELine or SESegment class (unlike move circle) because there
+   * are no classes that extend SELine or SESegment that are movable.
+   * @param targetLine The SELine/SESegment being moved
+   * @param altKeyPressed Controls which point defining the line or segment the line or segment rotates about
+   * @param ctrlKeyPressed If pressed overrides the altKey method and just rotates the entire line/segment based on the change in mouse position.
+   */
   private doMoveLine(
     targetLine: SELine | SESegment,
     altKeyPressed: boolean,
@@ -196,7 +295,6 @@ export default class MoveHandler extends Highlighter {
         targetLine.startSEPoint.update();
       }
     } else {
-      console.log("pivot");
       let pivot = targetLine.startSEPoint;
       let freeEnd = targetLine.endSEPoint;
       if (altKeyPressed) {
@@ -235,42 +333,7 @@ export default class MoveHandler extends Highlighter {
       tmpVector1.applyAxisAngle(axisOfRotation, rotationAngle);
       freeEnd.locationVector = tmpVector1;
       freeEnd.update();
-    }
-  }
-
-  /**
-   * Move the the circle by moving the free points it depends on
-   * Simply forming a rotation matrix mapping the previous to current sphere and applying
-   * that rotation to the center and circle points of defining the circle.
-   * @param targetCircle
-   */
-  private doMoveCircle(targetCircle: SECircle) {
-    const rotationAngle = this.previousSphereVector.angleTo(
-      this.currentSphereVector
-    );
-
-    // If the rotation is big enough preform the rotation
-    if (Math.abs(rotationAngle) > SETTINGS.rotate.minAngle) {
-      // The axis of rotation
-      desiredZAxis
-        .crossVectors(this.previousSphereVector, this.currentSphereVector)
-        .normalize();
-      // Form the matrix that performs the rotation
-      this.changeInPositionRotationMatrix.makeRotationAxis(
-        desiredZAxis,
-        rotationAngle
-      );
-      tmpVector1
-        .copy(targetCircle.centerSEPoint.locationVector)
-        .applyMatrix4(this.changeInPositionRotationMatrix);
-      targetCircle.centerSEPoint.locationVector = tmpVector1;
-      tmpVector2
-        .copy(targetCircle.circleSEPoint.locationVector)
-        .applyMatrix4(this.changeInPositionRotationMatrix);
-      targetCircle.circleSEPoint.locationVector = tmpVector2;
-      // Update both points, because we might need to update their kids!
-      targetCircle.circleSEPoint.update();
-      targetCircle.centerSEPoint.update();
+      pivot.update();
     }
   }
 
