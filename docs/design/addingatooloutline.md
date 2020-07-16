@@ -4,7 +4,7 @@ title: Adding A Tool
 
 # Adding A Tool
 
-There are two different type of tools in Sphere Easel: those that create new objects based on user mouse input and those that use existing objects (geometric and measurement) to control the location of an existing object. The former tools to add a new and the later are called Control Tools
+There are two different type of tools in Sphere Easel: those that create new objects based on user mouse input and those that use existing geometric and measurement objects to control the location of an existing object. The former tools are called New Object Tools and the later are called Control Tools
 
 ## Adding a Control Tool
 

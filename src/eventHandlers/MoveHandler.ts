@@ -30,17 +30,20 @@ export default class MoveHandler extends Highlighter {
   private moveTarget: SENodule | null = null;
 
   /**
-   * A flag to set that indicates the sphere should rotate
+   * A flag to set that indicates the sphere should rotate. This is different than this.moveTarget == null
+   * because if the user highlights over an non-movable object and then tries to move it, nothing happens (and
+   * this.moveTarget = null && rotateSphere=false), but if nothing is highlighted and the user mouse presses,
+   * then the whole sphere should rotate (and this.moveTarget = null && rotateSphere =true)
    */
   private rotateSphere = false;
 
   /**
-   * Two vectors that define the movable object before and after moving
+   * Vectors that define the movable object before and after moving
    */
   private beforeMoveVector1 = new Vector3(); // The start/center SEPoint
-  private beforeMoveVector2 = new Vector3(); // The end/circle SEPoint
+  private beforeMoveVector2 = new Vector3(); // The end/circle SEPoint (not used for rotate or point move undo)
   private afterMoveVector1 = new Vector3(); // The start/center SEPoint
-  private afterMoveVector2 = new Vector3(); // The end/circle SEPoint
+  private afterMoveVector2 = new Vector3(); // The end/circle SEPoint  (not used for rotate or point move undo)
   /**
    * A matrix that is used to indicate the *change* in position of the moving object on the sphere.
    * This matrix is applied to the free points defining the movable object, when those points are updated, the
@@ -65,6 +68,7 @@ export default class MoveHandler extends Highlighter {
   }
 
   mousePressed(event: MouseEvent) {
+    //super.mouseMoved(event);
     // Reset the variables for another move event
     this.isDragging = true;
     this.moveTarget = null;
@@ -99,6 +103,10 @@ export default class MoveHandler extends Highlighter {
           this.beforeMoveVector2.copy(
             freeSegments[0].endSEPoint.locationVector
           );
+          // console.log(
+          //   "dist before",
+          //   this.beforeMoveVector1.angleTo(this.beforeMoveVector2)
+          // );
           return;
         }
 
@@ -169,16 +177,37 @@ export default class MoveHandler extends Highlighter {
   mouseReleased(event: MouseEvent) {
     this.movingSomething = false;
     this.isDragging = false;
-    // Create the rotation matrix that takes before location to the after location
+    // Create the rotation matrix that takes beforeMoveVector1 to the afterMoveVector1 location
     const rotationAngle = this.beforeMoveVector1.angleTo(this.afterMoveVector1);
-    desiredZAxis
-      .crossVectors(this.beforeMoveVector1, this.afterMoveVector1)
-      .normalize();
-    this.changeInPositionRotationMatrix.makeRotationAxis(
-      desiredZAxis,
-      rotationAngle
-    );
+    desiredZAxis.crossVectors(this.beforeMoveVector1, this.afterMoveVector1);
+    if (desiredZAxis.isZero()) {
+      if (rotationAngle == 0) {
+        // The vectors are identical
+        this.changeInPositionRotationMatrix.identity();
+      } else {
+        // The vectors are opposites (antipodal)
+        this.changeInPositionRotationMatrix.makeRotationAxis(
+          tmpVector1.set(1, 0, 0),
+          rotationAngle
+        );
+      }
+    } else {
+      desiredZAxis.normalize();
+      this.changeInPositionRotationMatrix.makeRotationAxis(
+        desiredZAxis,
+        rotationAngle
+      );
+    }
 
+    // console.debug("beforeMoveVec1", this.beforeMoveVector1.toFixed(2));
+    // console.debug("afterMoveVec1", this.afterMoveVector1.toFixed(2));
+    // console.debug(
+    //   "apply mat to beforeVec1",
+    //   tmpVector1
+    //     .copy(this.beforeMoveVector1)
+    //     .applyMatrix4(this.changeInPositionRotationMatrix)
+    //     .toFixed(2)
+    // );
     if (this.moveTarget instanceof SEPoint) {
       // Store the move point for undo/redo command
       // Store the move command that takes the beforeMoveVector1 location to the afterMoveVector2 location,
@@ -198,18 +227,52 @@ export default class MoveHandler extends Highlighter {
       // Store the move line/segment for undo/redo command
       const moveCommandGroup = new CommandGroup();
       // Make the rotation matrix that takes beforeMoveVector1/2 to afterMoveVector1/2
+      // There is a rotation matrix that does this because the length of the segment or the distance between
+      // startSEPoint and endSEPoint shouldn't change.
       // First apply the current changeInPositionMatrix (that takes beforeMoveVector1 to afterMoveVector1)
       // to beforeMoveVector2
       tmpVector1
         .copy(this.beforeMoveVector2)
         .applyMatrix4(this.changeInPositionRotationMatrix);
 
-      const newAngle = tmpVector1.angleTo(this.afterMoveVector2);
-      // rotate by the newAngle about afterMoveVector2
+      // To compute the angle of rotation you have project tmpVector1 and afterMoveVector2 into the
+      // plane perpendicular to this.afterMoveVector1 and measure the angle in that plane.
+      // Accomplish this by the angle between cross(afterMoveVec1,afterMoveVec2) and cross(tmpVector1,afterMoveVec1)
+      tmpVector2.crossVectors(this.afterMoveVector2, this.afterMoveVector1);
+      tmpVector1.cross(this.afterMoveVector1);
+
+      let newAngle = tmpVector1.angleTo(tmpVector2);
+      // Determine which direction to rotate.
+      tmpVector1.cross(tmpVector2);
+      newAngle *= Math.sign(tmpVector1.z);
+
+      // rotate by the newAngle about afterMoveVector1
       tmpMatrix.makeRotationAxis(this.afterMoveVector1, newAngle);
       // First changeInPosition maps beforeMoveVector1 to afterMoveVector1
       // then tmpMatrix fixes afterMoveVector1 and takes changeInPosition(beforeMoveVector2) to afterMoveVector2
       this.changeInPositionRotationMatrix.premultiply(tmpMatrix);
+      // console.log(
+      //   "dist after",
+      //   this.afterMoveVector1.angleTo(this.afterMoveVector2)
+      // );
+      // console.debug("beforeMoveVec1", this.beforeMoveVector1.toFixed(2));
+      // console.debug("afterMoveVec1", this.afterMoveVector1.toFixed(2));
+      // console.debug(
+      //   "apply mat to beforeVec1",
+      //   tmpVector1
+      //     .copy(this.beforeMoveVector1)
+      //     .applyMatrix4(this.changeInPositionRotationMatrix)
+      //     .toFixed(2)
+      // );
+      // console.debug("beforeMoveVec2", this.beforeMoveVector2.toFixed(2));
+      // console.debug("afterMoveVec2", this.afterMoveVector2.toFixed(2));
+      // console.debug(
+      //   "apply mat to beforeVec2",
+      //   tmpVector1
+      //     .copy(this.beforeMoveVector2)
+      //     .applyMatrix4(this.changeInPositionRotationMatrix)
+      //     .toFixed(2)
+      // );
       if (
         this.moveTarget instanceof SELine ||
         this.moveTarget instanceof SESegment
@@ -332,6 +395,8 @@ export default class MoveHandler extends Highlighter {
       tmpVector1.copy(freeEnd.locationVector);
       tmpVector1.applyAxisAngle(axisOfRotation, rotationAngle);
       freeEnd.locationVector = tmpVector1;
+      console.debug("free End kid", freeEnd.kids[0].name);
+      console.debug("pivot kid", pivot.kids[0].name);
       freeEnd.update();
       pivot.update();
     }
