@@ -1,15 +1,11 @@
 import { SEPoint } from "./SEPoint";
-import { SECircle } from "./SECircle";
-import { SELine } from "./SELine";
-import { SESegment } from "./SESegment";
 import Point from "@/plottables/Point";
 import { SENodule } from "./SENodule";
 import { IntersectionReturnType } from "@/types";
-import { DisplayStyle } from "@/plottables/Nodule";
 import store from "@/store";
 import { Styles } from "@/types/Styles";
-//import { SEOneDimensional } from "@/types/index";
-type SEOneDimensional = SELine | SESegment | SECircle;
+import { SEOneDimensional } from "@/types";
+// type SEOneDimensional = SELine | SESegment | SECircle;
 
 export class SEIntersectionPoint extends SEPoint {
   /**

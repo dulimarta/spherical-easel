@@ -129,7 +129,7 @@ export class SECircle extends SENodule implements Visitable, OneDimensional {
     );
     // Check to see if the tmpVector is zero (i.e the center and  idealUnit vectors are parallel -- ether
     // nearly antipodal or in the same direction)
-    if (SENodule.isZero(this.tmpVector)) {
+    if (this.tmpVector.isZero()) {
       return this._circleSEPoint.locationVector; // An arbitrary point will do as all points are equally far away
     } else {
       // Make the tmpVector (soon to be the to vector) unit

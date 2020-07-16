@@ -202,21 +202,6 @@ export abstract class SENodule {
     return this._parents.every(n => n.isFreePoint());
   }
 
-  /**
-   * Returns false if any one of the three components of vec are bigger than SETTINGS.tolerance
-   * @param vec Vector3
-   */
-  static isZero(vec: Vector3): boolean {
-    if (
-      Math.abs(vec.x) > SETTINGS.tolerance ||
-      Math.abs(vec.y) > SETTINGS.tolerance ||
-      Math.abs(vec.z) > SETTINGS.tolerance
-    ) {
-      return false;
-    }
-    return true;
-  }
-
   //Getters and Setters
   set exists(b: boolean) {
     this._exists = b;

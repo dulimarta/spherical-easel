@@ -1,12 +1,5 @@
 import { SEPoint } from "./SEPoint";
-import { SECircle } from "./SECircle";
-import { SELine } from "./SELine";
-import { SESegment } from "./SESegment";
 import Point from "@/plottables/Point";
-import { SENodule } from "./SENodule";
-import { IntersectionReturnType } from "@/types";
-import { DisplayStyle } from "@/plottables/Nodule";
-import store from "@/store";
 import { Vector3 } from "three";
 import { SEOneDimensional } from "@/types";
 

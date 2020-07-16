@@ -157,7 +157,7 @@ export class SESegment extends SENodule implements Visitable, OneDimensional {
     this.tmpVector1.crossVectors(this._normalVector, idealUnitSphereVector);
     // Check to see if the tmpVector is zero (i.e the normal and  idealUnit vectors are parallel -- ether
     // nearly antipodal or in the same direction)
-    if (SENodule.isZero(this.tmpVector1)) {
+    if (this.tmpVector1.isZero()) {
       return this._endSEPoint.locationVector; // An arbitrary point will do as all points are equally far away
     } else {
       // Make the tmpVector (soon to be the to vector) unit
@@ -196,7 +196,7 @@ export class SESegment extends SENodule implements Visitable, OneDimensional {
       );
       // Check to see if the temporary normal is zero (i.e the start and end vectors are parallel -- ether
       // nearly antipodal or in the same direction)
-      if (SENodule.isZero(this.tmpVector)) {
+      if (this.tmpVector.isZero()) {
         // Make the tmpVector (soon to be the to vector) unit
         this.tmpVector.normalize();
         if (this._normalVector.length() == 0) {
@@ -207,7 +207,7 @@ export class SESegment extends SENodule implements Visitable, OneDimensional {
             this._startSEPoint.locationVector,
             this.tmpVector
           );
-          if (SENodule.isZero(this.tmpVector)) {
+          if (this.tmpVector.isZero()) {
             this.tmpVector.set(0, 1, 0);
             // The cross or startVector and (1,0,0) and (0,1,0) can't *both* be zero
             this.tmpVector.crossVectors(

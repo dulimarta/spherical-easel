@@ -70,12 +70,8 @@ function intersectLineWithLine(
 
   // If the normal vectors are on top of each other or antipodal, exists is false
   if (
-    SENodule.isZero(
-      tempVec.addVectors(lineOne.normalVector, lineTwo.normalVector)
-    ) ||
-    SENodule.isZero(
-      tempVec.subVectors(lineOne.normalVector, lineTwo.normalVector)
-    )
+    tempVec.addVectors(lineOne.normalVector, lineTwo.normalVector).isZero() ||
+    tempVec.subVectors(lineOne.normalVector, lineTwo.normalVector).isZero()
   ) {
     intersection1.exists = false;
     intersection2.exists = false;
@@ -121,10 +117,8 @@ function intersectLineWithSegment(
   }
   // If the normal vectors are on top of each other or antipodal, exists is false
   if (
-    SENodule.isZero(
-      tempVec.addVectors(line.normalVector, segment.normalVector)
-    ) ||
-    SENodule.isZero(tempVec.subVectors(line.normalVector, segment.normalVector))
+    tempVec.addVectors(line.normalVector, segment.normalVector).isZero() ||
+    tempVec.subVectors(line.normalVector, segment.normalVector).isZero()
   ) {
     intersection1.exists = false;
     intersection2.exists = false;
@@ -191,12 +185,8 @@ function intersectSegmentWithSegment(
   }
   // If the normal vectors are on top of each other or antipodal, exists is false
   if (
-    SENodule.isZero(
-      tempVec.addVectors(segment1.normalVector, segment2.normalVector)
-    ) ||
-    SENodule.isZero(
-      tempVec.subVectors(segment1.normalVector, segment2.normalVector)
-    )
+    tempVec.addVectors(segment1.normalVector, segment2.normalVector).isZero() ||
+    tempVec.subVectors(segment1.normalVector, segment2.normalVector).isZero()
   ) {
     intersection1.exists = false;
     intersection2.exists = false;
@@ -225,7 +215,7 @@ function intersectSegmentWithCircle(
 
   // If the segment and the circle don't intersect, the return vector is the zero vector and this shouldn't be passed to the onSegment because that method expects a unit vector
   temp.forEach(item => {
-    if (SENodule.isZero(item.vector)) {
+    if (item.vector.isZero()) {
       item.exists = false;
     } else {
       item.exists = segment.onSegment(item.vector);

@@ -104,7 +104,7 @@ export class SELine extends SENodule implements Visitable, OneDimensional {
 
     // Check to see if the tmpVector is zero (i.e the normal and  idealUnit vectors are parallel -- ether
     // nearly antipodal or in the same direction)
-    if (SENodule.isZero(this.tmpVector)) {
+    if (this.tmpVector.isZero()) {
       return this._endSEPoint.locationVector; // An arbitrary point will do as all points are equally far away
     } else {
       // Make the tmpVector unit
@@ -129,7 +129,7 @@ export class SELine extends SENodule implements Visitable, OneDimensional {
       );
       // Check to see if the tempNormal is zero (i.e the start and end vectors are parallel -- ether
       // nearly antipodal or in the same direction)
-      if (SENodule.isZero(this.tmpVector)) {
+      if (this.tmpVector.isZero()) {
         // The start and end vectors align, compute  the next normal vector from the old normal and the start vector
         this.tmpVector.crossVectors(
           this._startSEPoint.locationVector,

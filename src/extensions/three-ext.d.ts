@@ -22,5 +22,10 @@ declare module "three/src/math/Vector3" {
      * @param precision the number of decimal places for each coordinate
      */
     toFixed(precision: number): string;
+
+    /** Check if the vector is pretty close to zero within some tolerance
+     * @param tolerance
+     */
+    isZero(tolerance?: number): boolean;
   }
 }
