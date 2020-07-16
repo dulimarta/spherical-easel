@@ -21,7 +21,7 @@ export class PositionVisitor implements Visitor {
     this.tmpVector.applyMatrix4(this.transformMatrix); // Apply the matrix
     p.locationVector = this.tmpVector; // Set the new position vector
     p.markKidsOutOfDate();
-    console.log("pv point", p.name);
+    console.log("position visitor point", p.name);
     p.update();
   }
   //#endregion actionOnPoint

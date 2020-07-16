@@ -46,6 +46,10 @@ export class SEPointOnOneDimensional extends SEPoint {
     return this._locationVector;
   }
 
+  get parentOneDimensional(): SEOneDimensional {
+    return this.oneDimensionalParent;
+  }
+
   public update(): void {
     if (!this.canUpdateNow()) {
       return;

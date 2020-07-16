@@ -73,8 +73,11 @@ export default {
     const pos = state.points.findIndex(x => x.id === pointId);
     const pos2 = state.nodules.findIndex(x => x.id === pointId);
     if (pos >= 0) {
-      state.points[pos].ref.removeFromLayers();
-      state.points[pos].removeSelfSafely();
+      const victimPoint = state.points[pos];
+      // Remove the associated plottable (Nodule) object from being rendered
+      victimPoint.ref.removeFromLayers();
+      // Remove the victim point from the parent/kid data structure
+      victimPoint.removeSelfSafely();
       state.points.splice(pos, 1);
       state.nodules.splice(pos2, 1);
     }
@@ -101,16 +104,16 @@ export default {
     state.segments.push(segment);
     state.nodules.push(segment);
     segment.ref.addToLayers(state.layers);
-    // console.log("parent 0", segment.parents[0].name);
-    // console.log("parent 1", segment.parents[1].name);
+    console.log("parent 0", segment.parents[0].name);
+    console.log("parent 1", segment.parents[1].name);
   },
   removeSegment(state: AppState, segId: number): void {
     const pos = state.segments.findIndex(x => x.id === segId);
     const pos2 = state.nodules.findIndex(x => x.id === segId);
     if (pos >= 0) {
-      const victim = state.segments[pos];
-      victim.ref.removeFromLayers();
-      victim.removeSelfSafely();
+      const victimSegment = state.segments[pos];
+      victimSegment.ref.removeFromLayers();
+      victimSegment.removeSelfSafely();
       state.segments.splice(pos, 1);
       state.nodules.splice(pos2, 1);
     }
@@ -138,6 +141,8 @@ export default {
     state.points.forEach((p: SEPoint) => {
       p.accept(positionVisitor);
     });
+    //Update all the other objects in the arrangement.
+    // We shouldn't have to do this. Everything should depend on points.
     state.lines.forEach((l: SELine) => {
       l.accept(positionVisitor);
     });
@@ -156,7 +161,8 @@ export default {
     positionVisitor.setTransform(move.rotationMat);
     const pos = state.points.findIndex(x => x.id === move.pointId);
     state.points[pos].accept(positionVisitor);
-    //update all the other objects in the arrangement.
+    //Update all the other objects in the arrangement.
+    // We shouldn't have to do this. Everything should depend on points.
     state.lines.forEach((l: SELine) => {
       l.accept(positionVisitor);
     });
