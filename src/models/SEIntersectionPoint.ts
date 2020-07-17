@@ -66,9 +66,8 @@ export class SEIntersectionPoint extends SEPoint {
       this.name = `Intersection(${seParent2.name},${seParent1.name},${order})`;
     // Place registerChild calls AFTER the name is set
     // so debugging output shows name correctly
-
-    seParent1.registerChild(this);
-    seParent2.registerChild(this);
+    // seParent1.registerChild(this);
+    // seParent2.registerChild(this);
   }
 
   /**

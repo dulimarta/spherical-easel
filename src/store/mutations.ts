@@ -5,8 +5,10 @@ import { Matrix4 } from "three";
 import { SESegment } from "@/models/SESegment";
 import { SECircle } from "@/models/SECircle";
 import { PositionVisitor } from "@/visitors/PositionVisitor";
+import { PointMoverVisitor } from "@/visitors/PointMoverVisitor";
 import { SELine } from "@/models/SELine";
 import { SENodule } from "@/models/SENodule";
+import { Vector3 } from "three";
 
 // const tmpMatrix = new Matrix4();
 
@@ -29,6 +31,7 @@ export const initialState: AppState = {
 //#endregion appState
 
 const positionVisitor = new PositionVisitor();
+const pointMoverVisitor = new PointMoverVisitor();
 
 export default {
   init(state: AppState): void {
@@ -143,35 +146,35 @@ export default {
     });
     //Update all the other objects in the arrangement.
     // We shouldn't have to do this. Everything should depend on points.
-    state.lines.forEach((l: SELine) => {
-      l.accept(positionVisitor);
-    });
-    state.circles.forEach((l: SECircle) => {
-      l.accept(positionVisitor);
-    });
-    state.segments.forEach((s: SESegment) => {
-      s.accept(positionVisitor);
-    });
+    // state.lines.forEach((l: SELine) => {
+    //   l.accept(positionVisitor);
+    // });
+    // state.circles.forEach((l: SECircle) => {
+    //   l.accept(positionVisitor);
+    // });
+    // state.segments.forEach((s: SESegment) => {
+    //   s.accept(positionVisitor);
+    // });
   },
   //#endregion rotateSphere
   movePoint(
     state: AppState,
-    move: { pointId: number; rotationMat: Matrix4 }
+    move: { pointId: number; location: Vector3 }
   ): void {
-    positionVisitor.setTransform(move.rotationMat);
+    pointMoverVisitor.setNewLocation(move.location);
     const pos = state.points.findIndex(x => x.id === move.pointId);
-    state.points[pos].accept(positionVisitor);
+    state.points[pos].accept(pointMoverVisitor);
     //Update all the other objects in the arrangement.
     // We shouldn't have to do this. Everything should depend on points.
-    state.lines.forEach((l: SELine) => {
-      l.accept(positionVisitor);
-    });
-    state.circles.forEach((l: SECircle) => {
-      l.accept(positionVisitor);
-    });
-    state.segments.forEach((s: SESegment) => {
-      s.accept(positionVisitor);
-    });
+    // state.lines.forEach((l: SELine) => {
+    //   l.accept(positionVisitor);
+    // });
+    // state.circles.forEach((l: SECircle) => {
+    //   l.accept(positionVisitor);
+    // });
+    // state.segments.forEach((s: SESegment) => {
+    //   s.accept(positionVisitor);
+    // });
   },
   setSelectedObjects(state: AppState, selection: SENodule[]): void {
     state.selections.clear();

@@ -41,9 +41,21 @@ export interface ToolButtonType {
   toolTipMessage: string;
 }
 
+/**
+ * Intersection Vector3 and if that intersection exists
+ */
 export interface IntersectionReturnType {
   vector: Vector3;
   exists: boolean;
+}
+
+/**
+ * Intersection Vector3 and if that intersection exists
+ */
+export interface SEIntersectionReturnType {
+  SEIntersectionPoint: SEIntersectionPoint;
+  parent1: SEOneDimensional;
+  parent2: SEOneDimensional;
 }
 
 export interface OneDimensional {
@@ -54,4 +66,7 @@ export interface OneDimensional {
   closestVector(idealUnitSphereVector: Vector3): Vector3;
 }
 
+/**
+ * All the one dimensional SE Classes
+ */
 export type SEOneDimensional = SELine | SESegment | SECircle;

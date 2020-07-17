@@ -2,7 +2,11 @@ import { SECircle } from "@/models/SECircle";
 import { SESegment } from "@/models/SESegment";
 import { SELine } from "@/models/SELine";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
-import { AppState, IntersectionReturnType } from "@/types";
+import {
+  AppState,
+  IntersectionReturnType,
+  SEIntersectionReturnType
+} from "@/types";
 import { Vector3 } from "three";
 import Two, { Vector } from "two.js";
 import { SENodule } from "@/models/SENodule";
@@ -50,7 +54,7 @@ function vectorOnList(vec: Vector3, vectorList: Vector3[]) {
   if (vectorList.length == 0) return false;
   let flag = false;
   vectorList.forEach(v => {
-    if (tempVec.subVectors(vec, v).isZero()) {
+    if (tempVec.subVectors(vec, v).isZero(0.01)) {
       flag = true;
     }
   });
@@ -435,7 +439,7 @@ export default {
   // },
   createAllIntersectionsWithLine: (state: AppState) => (
     newLine: SELine
-  ): SEIntersectionPoint[] => {
+  ): SEIntersectionReturnType[] => {
     // Avoid creating an intersection where a PointOnOneDimensional already exists
     // Collect the location of any PointOnOneDimensional that are parents of the newLine
     const avoidVectors: Vector3[] = [];
@@ -446,7 +450,7 @@ export default {
       avoidVectors.push(newLine.endSEPoint.locationVector);
     }
     // The intersectionPointList to return
-    const intersectionPointList: SEIntersectionPoint[] = [];
+    const intersectionPointList: SEIntersectionReturnType[] = [];
 
     // Intersect this new line with all old lines
     state.lines
@@ -467,7 +471,11 @@ export default {
             );
             newSEIntersectionPt.locationVector = info.vector;
             newSEIntersectionPt.exists = info.exists;
-            intersectionPointList.push(newSEIntersectionPt);
+            intersectionPointList.push({
+              SEIntersectionPoint: newSEIntersectionPt,
+              parent1: oldLine,
+              parent2: newLine
+            });
           }
         });
       });
@@ -487,7 +495,11 @@ export default {
           );
           newSEIntersectionPt.locationVector = info.vector;
           newSEIntersectionPt.exists = info.exists;
-          intersectionPointList.push(newSEIntersectionPt);
+          intersectionPointList.push({
+            SEIntersectionPoint: newSEIntersectionPt,
+            parent1: newLine,
+            parent2: oldSegment
+          });
         }
       });
     });
@@ -507,7 +519,11 @@ export default {
           );
           newSEIntersectionPt.locationVector = info.vector;
           newSEIntersectionPt.exists = info.exists;
-          intersectionPointList.push(newSEIntersectionPt);
+          intersectionPointList.push({
+            SEIntersectionPoint: newSEIntersectionPt,
+            parent1: newLine,
+            parent2: oldCircle
+          });
         }
       });
     });
@@ -515,18 +531,26 @@ export default {
   },
   createAllIntersectionsWithSegment: (state: AppState) => (
     newSegment: SESegment
-  ): SEIntersectionPoint[] => {
+  ): SEIntersectionReturnType[] => {
     // Avoid creating an intersection where a PointOnOneDimensional already exists
     // Collect the location of any PointOnOneDimensional that are parents of the newSegment
     const avoidVectors: Vector3[] = [];
     if (newSegment.startSEPoint instanceof SEPointOnOneDimensional) {
       avoidVectors.push(newSegment.startSEPoint.locationVector);
+      // console.debug(
+      //   "start point of newSegment is point on one dim",
+      //   newSegment.startSEPoint.locationVector.toFixed(2)
+      // );
     }
     if (newSegment.endSEPoint instanceof SEPointOnOneDimensional) {
       avoidVectors.push(newSegment.endSEPoint.locationVector);
+      // console.debug(
+      //   "end point of newSegment is point on one dim",
+      //   newSegment.endSEPoint.locationVector.toFixed(2)
+      // );
     }
     // The intersectionPointList to return
-    const intersectionPointList: SEIntersectionPoint[] = [];
+    const intersectionPointList: SEIntersectionReturnType[] = [];
     // Intersect this new segment with all old lines
     state.lines.forEach((oldLine: SELine) => {
       const intersectionInfo = intersectLineWithSegment(oldLine, newSegment);
@@ -543,7 +567,12 @@ export default {
           );
           newSEIntersectionPt.locationVector = info.vector;
           newSEIntersectionPt.exists = info.exists;
-          intersectionPointList.push(newSEIntersectionPt);
+
+          intersectionPointList.push({
+            SEIntersectionPoint: newSEIntersectionPt,
+            parent1: oldLine,
+            parent2: newSegment
+          });
         }
       });
     });
@@ -557,6 +586,18 @@ export default {
         );
         intersectionInfo.forEach((info, index) => {
           if (!vectorOnList(info.vector, avoidVectors)) {
+            console.debug(
+              "not on list",
+              info.vector.toFixed(4),
+              "intersect with seg",
+              oldSegment.name
+            );
+            if (avoidVectors[0]) {
+              console.debug("av0", avoidVectors[0].toFixed(5));
+            }
+            if (avoidVectors[1]) {
+              console.debug("av1", avoidVectors[1].toFixed(5));
+            }
             const newPt = new Point();
             newPt.stylize(DisplayStyle.TEMPORARY);
             const newSEIntersectionPt = new SEIntersectionPoint(
@@ -568,7 +609,18 @@ export default {
             );
             newSEIntersectionPt.locationVector = info.vector;
             newSEIntersectionPt.exists = info.exists;
-            intersectionPointList.push(newSEIntersectionPt);
+            intersectionPointList.push({
+              SEIntersectionPoint: newSEIntersectionPt,
+              parent1: oldSegment,
+              parent2: newSegment
+            });
+          } else {
+            console.debug(
+              "point on list!",
+              info.vector.toFixed(5),
+              "intersect with seg",
+              oldSegment.name
+            );
           }
         });
       });
@@ -591,7 +643,11 @@ export default {
           );
           newSEIntersectionPt.locationVector = info.vector;
           newSEIntersectionPt.exists = info.exists;
-          intersectionPointList.push(newSEIntersectionPt);
+          intersectionPointList.push({
+            SEIntersectionPoint: newSEIntersectionPt,
+            parent1: newSegment,
+            parent2: oldCircle
+          });
         }
       });
     });
@@ -600,7 +656,7 @@ export default {
 
   createAllIntersectionsWithCircle: (state: AppState) => (
     newCircle: SECircle
-  ): SEIntersectionPoint[] => {
+  ): SEIntersectionReturnType[] => {
     // Avoid creating an intersection where a PointOnOneDimensional already exists
     // Collect the location of any PointOnOneDimensional that are parents of the newCircle
     const avoidVectors: Vector3[] = [];
@@ -611,7 +667,7 @@ export default {
       avoidVectors.push(newCircle.circleSEPoint.locationVector);
     }
     // The intersectionPointList to return
-    const intersectionPointList: SEIntersectionPoint[] = [];
+    const intersectionPointList: SEIntersectionReturnType[] = [];
     // Intersect this new circle with all old lines
     state.lines.forEach((oldLine: SELine) => {
       const intersectionInfo = intersectLineWithCircle(oldLine, newCircle);
@@ -628,7 +684,11 @@ export default {
           );
           newSEIntersectionPt.locationVector = info.vector;
           newSEIntersectionPt.exists = info.exists;
-          intersectionPointList.push(newSEIntersectionPt);
+          intersectionPointList.push({
+            SEIntersectionPoint: newSEIntersectionPt,
+            parent1: oldLine,
+            parent2: newCircle
+          });
         }
       });
     });
@@ -651,7 +711,11 @@ export default {
           );
           newSEIntersectionPt.locationVector = info.vector;
           newSEIntersectionPt.exists = info.exists;
-          intersectionPointList.push(newSEIntersectionPt);
+          intersectionPointList.push({
+            SEIntersectionPoint: newSEIntersectionPt,
+            parent1: oldSegment,
+            parent2: newCircle
+          });
         }
       });
     });
@@ -678,7 +742,11 @@ export default {
             );
             newSEIntersectionPt.locationVector = info.vector;
             newSEIntersectionPt.exists = info.exists;
-            intersectionPointList.push(newSEIntersectionPt);
+            intersectionPointList.push({
+              SEIntersectionPoint: newSEIntersectionPt,
+              parent1: oldCircle,
+              parent2: newCircle
+            });
           }
         });
       });

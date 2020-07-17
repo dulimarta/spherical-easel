@@ -20,17 +20,11 @@ export class PositionVisitor implements Visitor {
     this.tmpVector.copy(p.locationVector); // Copy the old vector location of the SEPoint
     this.tmpVector.applyMatrix4(this.transformMatrix); // Apply the matrix
     p.locationVector = this.tmpVector; // Set the new position vector
-    p.markKidsOutOfDate();
-    console.log("position visitor point", p.name);
+    console.log("position visitor on point", p.name);
     p.update();
   }
   //#endregion actionOnPoint
 
-  /**
-   * Are these necessary? All other objects are children of points  but somehow if these are not update methods
-   * then if you create a circle, rotate it to a new location, then undo twice so the canvas is blank.
-   * The first redo, correctly makes the circles, but the second redo only rotates the points and not the circle....
-   */
   actionOnLine(m: SELine): void {
     //m.update();
   }

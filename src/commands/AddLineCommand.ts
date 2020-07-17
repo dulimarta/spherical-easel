@@ -1,22 +1,31 @@
 import { Command } from "./Command";
 import { SELine } from "@/models/SELine";
+import { SEPoint } from "@/models/SEPoint";
 
 export class AddLineCommand extends Command {
-  private line: SELine;
-  constructor(line: SELine) {
+  private seLine: SELine;
+  private startSEPoint: SEPoint;
+  private endSEPoint: SEPoint;
+  constructor(seLine: SELine, startSEPoint: SEPoint, endSEPoint: SEPoint) {
     super();
-    this.line = line;
+    this.seLine = seLine;
+    this.startSEPoint = startSEPoint;
+    this.endSEPoint = endSEPoint;
   }
 
   do(): void {
-    Command.store.commit("addLine", this.line);
+    Command.store.commit("addLine", this.seLine);
+    this.startSEPoint.registerChild(this.seLine);
+    this.endSEPoint.registerChild(this.seLine);
   }
 
   saveState(): void {
-    this.lastState = this.line.id;
+    this.lastState = this.seLine.id;
   }
 
   restoreState(): void {
     Command.store.commit("removeLine", this.lastState);
+    this.startSEPoint.unregisterChild(this.seLine);
+    this.endSEPoint.unregisterChild(this.seLine);
   }
 }

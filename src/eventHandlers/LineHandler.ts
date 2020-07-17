@@ -18,7 +18,9 @@ import Highlighter from "./Highlighter";
 import { ConvertInterPtToUserCreatedCommand } from "@/commands/ConvertInterPtToUserCreatedCommand";
 import { SEPointOnOneDimensional } from "@/models/SEPointOnOneDimensional";
 import { AddPointCommand } from "@/commands/AddPointCommand";
-import { SEOneDimensional } from "@/types";
+import { AddIntersectionPointCommand } from "@/commands/AddIntersectionPointCommand";
+import { AddPointOnOneDimensionalCommand } from "@/commands/AddPointOnOneDimensionalCommand";
+import { SEOneDimensional, SEIntersectionReturnType } from "@/types";
 
 export default class LineHandler extends Highlighter {
   /**
@@ -260,15 +262,25 @@ export default class LineHandler extends Highlighter {
           newStartPoint,
           this.startSEPointOneDimensionalParent
         );
+        // Create and execute the command to create a new point for undo/redo
+        lineGroup.addCommand(
+          new AddPointOnOneDimensionalCommand(
+            vtx,
+            this.startSEPointOneDimensionalParent
+          )
+        );
       } else {
         // Starting mouse press landed on an open space
         vtx = new SEPoint(newStartPoint);
+        // Create and execute the command to create a new point for undo/redo
+        lineGroup.addCommand(new AddPointCommand(vtx));
       }
       vtx.locationVector = this.startVector;
       this.startSEPoint = vtx;
-      // Create and execute the command to create a new point for undo/redo
-      lineGroup.addCommand(new AddPointCommand(vtx));
-    } else if (this.startSEPoint instanceof SEIntersectionPoint) {
+    } else if (
+      this.startSEPoint instanceof SEIntersectionPoint &&
+      !this.startSEPoint.isUserCreated
+    ) {
       // Mark the intersection point as created, the display style is changed and the glowing style is set up
       lineGroup.addCommand(
         new ConvertInterPtToUserCreatedCommand(this.startSEPoint)
@@ -303,6 +315,9 @@ export default class LineHandler extends Highlighter {
         vtx.locationVector = this.hitSESegments[0].closestVector(
           this.currentSphereVector
         );
+        lineGroup.addCommand(
+          new AddPointOnOneDimensionalCommand(vtx, this.hitSESegments[0])
+        );
       } else if (this.hitSELines.length > 0) {
         // The end of the line will be a point on a line
         // Create the model object for the new point and link them
@@ -311,6 +326,9 @@ export default class LineHandler extends Highlighter {
         vtx.locationVector = this.hitSELines[0].closestVector(
           this.currentSphereVector
         );
+        lineGroup.addCommand(
+          new AddPointOnOneDimensionalCommand(vtx, this.hitSELines[0])
+        );
       } else if (this.hitSECircles.length > 0) {
         // The end of the line will be a point on a circle
         vtx = new SEPointOnOneDimensional(newEndPoint, this.hitSECircles[0]);
@@ -318,14 +336,17 @@ export default class LineHandler extends Highlighter {
         vtx.locationVector = this.hitSECircles[0].closestVector(
           this.currentSphereVector
         );
+        lineGroup.addCommand(
+          new AddPointOnOneDimensionalCommand(vtx, this.hitSECircles[0])
+        );
       } else {
         // The ending mouse release landed on an open space
         vtx = new SEPoint(newEndPoint);
         // Set the Location
         vtx.locationVector = this.currentSphereVector;
+        lineGroup.addCommand(new AddPointCommand(vtx));
       }
       this.endSEPoint = vtx;
-      lineGroup.addCommand(new AddPointCommand(vtx));
     }
 
     // Compute a temporary normal from the two points' vectors
@@ -364,14 +385,22 @@ export default class LineHandler extends Highlighter {
       this.normalVector,
       this.endSEPoint
     );
-    lineGroup.addCommand(new AddLineCommand(newSELine));
+    lineGroup.addCommand(
+      new AddLineCommand(newSELine, this.startSEPoint, this.endSEPoint)
+    );
 
     // Determine all new intersection points and add their creation to the command so it can be undone
     this.store.getters
       .createAllIntersectionsWithLine(newSELine)
-      .forEach((p: SEIntersectionPoint) => {
-        lineGroup.addCommand(new AddPointCommand(p));
-        p.showing = false; // don not display the automatically created intersection points
+      .forEach((item: SEIntersectionReturnType) => {
+        lineGroup.addCommand(
+          new AddIntersectionPointCommand(
+            item.SEIntersectionPoint,
+            item.parent1,
+            item.parent2
+          )
+        );
+        item.SEIntersectionPoint.showing = false; // don not display the automatically created intersection points
       });
     lineGroup.execute();
   }
@@ -395,14 +424,26 @@ export default class LineHandler extends Highlighter {
           newPoint,
           this.startSEPointOneDimensionalParent
         );
+        // Create and execute the command to create a new point for undo/redo
+        new AddPointOnOneDimensionalCommand(
+          vtx,
+          this.startSEPointOneDimensionalParent
+        ).execute();
       } else {
         // Starting mouse press landed on an open space
         // we have to create a new point and it to the group/store
         vtx = new SEPoint(newPoint);
+        // Create and execute the command to create a new point for undo/redo
+        new AddPointCommand(vtx).execute();
       }
       vtx.locationVector = this.startVector;
-      // Create and execute the command to create a new point for undo/redo
-      new AddPointCommand(vtx).execute();
+    }
+    if (
+      this.startSEPoint instanceof SEIntersectionPoint &&
+      !this.startSEPoint.isUserCreated
+    ) {
+      // Mark the intersection point as created, the display style is changed and the glowing style is set up
+      new ConvertInterPtToUserCreatedCommand(this.startSEPoint).execute();
     }
   }
 }

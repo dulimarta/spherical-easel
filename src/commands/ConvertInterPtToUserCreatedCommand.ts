@@ -8,17 +8,17 @@ import { DisplayStyle } from "@/plottables/Nodule";
  * isUserCreated, display the point and set up the glowing style
  */
 export class ConvertInterPtToUserCreatedCommand extends Command {
-  private arg: SEIntersectionPoint;
-  constructor(arg: SEIntersectionPoint) {
+  private seIntersectionPoint: SEIntersectionPoint;
+  constructor(seIntersectionPoint: SEIntersectionPoint) {
     super();
-    this.arg = arg;
+    this.seIntersectionPoint = seIntersectionPoint;
   }
 
   do(): void {
-    this.arg.isUserCreated = true;
-    this.arg.ref.stylize(DisplayStyle.DEFAULT);
-    this.arg.ref.stylize(DisplayStyle.GLOWING);
-    this.arg.showing = true;
+    this.seIntersectionPoint.isUserCreated = true;
+    this.seIntersectionPoint.ref.stylize(DisplayStyle.DEFAULT);
+    this.seIntersectionPoint.ref.stylize(DisplayStyle.GLOWING);
+    this.seIntersectionPoint.showing = true;
   }
 
   saveState(): void {
@@ -26,8 +26,8 @@ export class ConvertInterPtToUserCreatedCommand extends Command {
   }
 
   restoreState(): void {
-    this.arg.isUserCreated = false;
-    this.arg.showing = false;
-    this.arg.ref.stylize(DisplayStyle.TEMPORARY);
+    this.seIntersectionPoint.isUserCreated = false;
+    this.seIntersectionPoint.showing = false;
+    this.seIntersectionPoint.ref.stylize(DisplayStyle.TEMPORARY);
   }
 }

@@ -1,34 +1,38 @@
 import { Command } from "./Command";
 import { SEPoint } from "@/models/SEPoint";
-import { Matrix4 } from "three";
+import { Matrix4, Vector3 } from "three";
 
 export class MovePointCommand extends Command {
-  private point: SEPoint;
-  private rotationMat: Matrix4;
-  private inverseRotation: Matrix4;
-  constructor(pt: SEPoint, rotationMatrix: Matrix4) {
+  private sePoint: SEPoint;
+  private oldLocationVector = new Vector3();
+  private newLocationVector = new Vector3();
+
+  constructor(
+    sePoint: SEPoint,
+    oldLocationVector: Vector3,
+    newLocationVector: Vector3
+  ) {
     super();
-    this.point = pt;
-    this.rotationMat = rotationMatrix.clone();
-    this.inverseRotation = new Matrix4();
-    this.inverseRotation.getInverse(this.rotationMat);
+    this.sePoint = sePoint;
+    this.oldLocationVector.copy(oldLocationVector);
+    this.newLocationVector.copy(newLocationVector);
   }
 
   do(): void {
     Command.store.commit("movePoint", {
-      pointId: this.point.id,
-      rotationMat: this.rotationMat
+      pointId: this.sePoint.id,
+      location: this.newLocationVector
     });
   }
 
   saveState(): void {
-    this.lastState = this.point.id;
+    this.lastState = this.sePoint.id;
   }
 
   restoreState(): void {
     Command.store.commit("movePoint", {
       pointId: this.lastState,
-      rotationMat: this.inverseRotation
+      location: this.oldLocationVector
     });
   }
 }

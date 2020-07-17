@@ -14,8 +14,10 @@ import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import { DisplayStyle } from "@/plottables/Nodule";
 import Highlighter from "./Highlighter";
 import { ConvertInterPtToUserCreatedCommand } from "@/commands/ConvertInterPtToUserCreatedCommand";
-import { SEOneDimensional } from "@/types";
 import { SEPointOnOneDimensional } from "@/models/SEPointOnOneDimensional";
+import { AddIntersectionPointCommand } from "@/commands/AddIntersectionPointCommand";
+import { AddPointOnOneDimensionalCommand } from "@/commands/AddPointOnOneDimensionalCommand";
+import { SEOneDimensional, SEIntersectionReturnType } from "@/types";
 
 export default class CircleHandler extends Highlighter {
   /**
@@ -241,20 +243,31 @@ export default class CircleHandler extends Highlighter {
           newCenterPoint,
           this.centerSEPointOneDimensionalParent
         );
+        circleGroup.addCommand(
+          new AddPointOnOneDimensionalCommand(
+            vtx,
+            this.centerSEPointOneDimensionalParent
+          )
+        );
       } else {
         // Starting mouse press landed on an open space
         // Create the model object for the new point and link them
         vtx = new SEPoint(newCenterPoint);
+        circleGroup.addCommand(new AddPointCommand(vtx));
       }
       vtx.locationVector = this.centerVector;
       this.centerSEPoint = vtx;
-      circleGroup.addCommand(new AddPointCommand(vtx));
-    } else if (this.centerSEPoint instanceof SEIntersectionPoint) {
+    } else if (
+      this.centerSEPoint instanceof SEIntersectionPoint &&
+      !this.centerSEPoint.isUserCreated
+    ) {
       // Mark the intersection point as created, the display style is changed and the glowing style is set up
       circleGroup.addCommand(
         new ConvertInterPtToUserCreatedCommand(this.centerSEPoint)
       );
     }
+
+    // Check to see if the release location is near any points
     if (this.hitSEPoints.length > 0) {
       this.circleSEPoint = this.hitSEPoints[0];
       //compute the radius of the temporary circle using the hit point
@@ -265,7 +278,10 @@ export default class CircleHandler extends Highlighter {
       this.temporaryCircle.circleRadius = this.arcRadius;
       //update the display
       this.temporaryCircle.updateDisplay();
-      if (this.circleSEPoint instanceof SEIntersectionPoint) {
+      if (
+        this.circleSEPoint instanceof SEIntersectionPoint &&
+        !this.circleSEPoint.isUserCreated
+      ) {
         // Mark the intersection point as created, the display style is changed and the glowing style is set up
         circleGroup.addCommand(
           new ConvertInterPtToUserCreatedCommand(this.circleSEPoint)
@@ -290,6 +306,9 @@ export default class CircleHandler extends Highlighter {
         vtx.locationVector = this.hitSESegments[0].closestVector(
           this.currentSphereVector
         );
+        circleGroup.addCommand(
+          new AddPointOnOneDimensionalCommand(vtx, this.hitSESegments[0])
+        );
       } else if (this.hitSELines.length > 0) {
         // The end of the line will be a point on a line
         // Create the model object for the new point and link them
@@ -298,6 +317,9 @@ export default class CircleHandler extends Highlighter {
         vtx.locationVector = this.hitSELines[0].closestVector(
           this.currentSphereVector
         );
+        circleGroup.addCommand(
+          new AddPointOnOneDimensionalCommand(vtx, this.hitSELines[0])
+        );
       } else if (this.hitSECircles.length > 0) {
         // The end of the line will be a point on a circle
         vtx = new SEPointOnOneDimensional(newCirclePoint, this.hitSECircles[0]);
@@ -305,14 +327,17 @@ export default class CircleHandler extends Highlighter {
         vtx.locationVector = this.hitSECircles[0].closestVector(
           this.currentSphereVector
         );
+        circleGroup.addCommand(
+          new AddPointOnOneDimensionalCommand(vtx, this.hitSECircles[0])
+        );
       } else {
         // The ending mouse release landed on an open space
         vtx = new SEPoint(newCirclePoint);
         // Set the Location
         vtx.locationVector = this.currentSphereVector;
+        circleGroup.addCommand(new AddPointCommand(vtx));
       }
       this.circleSEPoint = vtx;
-      circleGroup.addCommand(new AddPointCommand(vtx));
     }
 
     // Clone the current circle after the circlePoint is set
@@ -329,14 +354,22 @@ export default class CircleHandler extends Highlighter {
       this.circleSEPoint
     );
 
-    circleGroup.addCommand(new AddCircleCommand(newSECircle));
+    circleGroup.addCommand(
+      new AddCircleCommand(newSECircle, this.centerSEPoint, this.circleSEPoint)
+    );
     // Generate new intersection points. These points must be computed and created
     // in the store. Add the new created points to the circle command so they can be undone.
     this.store.getters
       .createAllIntersectionsWithCircle(newSECircle)
-      .forEach((p: SEIntersectionPoint) => {
-        circleGroup.addCommand(new AddPointCommand(p));
-        p.showing = false; // don not display the automatically created intersection points
+      .forEach((item: SEIntersectionReturnType) => {
+        circleGroup.addCommand(
+          new AddIntersectionPointCommand(
+            item.SEIntersectionPoint,
+            item.parent1,
+            item.parent2
+          )
+        );
+        item.SEIntersectionPoint.showing = false; // don not display the automatically created intersection points
       });
 
     circleGroup.execute();
@@ -362,14 +395,24 @@ export default class CircleHandler extends Highlighter {
           newPoint,
           this.centerSEPointOneDimensionalParent
         );
+        new AddPointOnOneDimensionalCommand(
+          vtx,
+          this.centerSEPointOneDimensionalParent
+        ).execute();
       } else {
         // Starting mouse press landed on an open space
         // we have to create a new point and it to the group/store
+        // Create and execute the command to create a new point for undo/redo
         vtx = new SEPoint(newPoint);
+        new AddPointCommand(vtx).execute();
       }
       vtx.locationVector = this.centerVector;
-      // Create and execute the command to create a new point for undo/redo
-      new AddPointCommand(vtx).execute();
+    } else if (
+      this.centerSEPoint instanceof SEIntersectionPoint &&
+      !this.centerSEPoint.isUserCreated
+    ) {
+      // Mark the intersection point as created, the display style is changed and the glowing style is set up
+      new ConvertInterPtToUserCreatedCommand(this.centerSEPoint).execute();
     }
   }
 }

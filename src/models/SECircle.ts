@@ -46,8 +46,8 @@ export class SECircle extends SENodule implements Visitable, OneDimensional {
     CIRCLE_COUNT++;
     this.name = `C-${CIRCLE_COUNT}`;
     // Always register the children after the name is initialized
-    centerPoint.registerChild(this);
-    circlePoint.registerChild(this);
+    // centerPoint.registerChild(this);
+    // circlePoint.registerChild(this);
   }
   // #endregion circleConstructor
 

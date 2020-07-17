@@ -61,8 +61,8 @@ export class SELine extends SENodule implements Visitable, OneDimensional {
     // Place registerChild calls AFTER the name is set
     // so debugging output shows name correctly
     // Add this line as a child of the two points
-    lineStartSEPoint.registerChild(this);
-    lineEndSEPoint.registerChild(this);
+    //lineStartSEPoint.registerChild(this);
+    //lineEndSEPoint.registerChild(this);
   }
 
   customStyles(): Set<Styles> {

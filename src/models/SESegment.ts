@@ -76,8 +76,8 @@ export class SESegment extends SENodule implements Visitable, OneDimensional {
 
     // Place registerChild calls AFTER the name is set
     // so debugging output shows name correctly
-    segmentStartSEPoint.registerChild(this);
-    segmentEndSEPoint.registerChild(this);
+    // segmentStartSEPoint.registerChild(this);
+    // segmentEndSEPoint.registerChild(this);
   }
 
   customStyles(): Set<Styles> {

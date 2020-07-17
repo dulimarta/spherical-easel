@@ -27,7 +27,7 @@ export class SEPointOnOneDimensional extends SEPoint {
 
     // Place registerChild calls AFTER the name is set
     // so debugging output shows name correctly
-    oneDimensionalParent.registerChild(this);
+    //oneDimensionalParent.registerChild(this);
   }
 
   /**

@@ -9,13 +9,15 @@ import Point from "@/plottables/Point";
 import { CommandGroup } from "@/commands/CommandGroup";
 import { AddPointCommand } from "@/commands/AddPointCommand";
 import { AddSegmentCommand } from "@/commands/AddSegmentCommand";
+import { AddIntersectionPointCommand } from "@/commands/AddIntersectionPointCommand";
+import { AddPointOnOneDimensionalCommand } from "@/commands/AddPointOnOneDimensionalCommand";
 import { SESegment } from "@/models/SESegment";
 import SETTINGS from "@/global-settings";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import { DisplayStyle } from "@/plottables/Nodule";
 import Highlighter from "./Highlighter";
 import { ConvertInterPtToUserCreatedCommand } from "@/commands/ConvertInterPtToUserCreatedCommand";
-import { SEOneDimensional } from "@/types";
+import { SEOneDimensional, SEIntersectionReturnType } from "@/types";
 import { SEPointOnOneDimensional } from "@/models/SEPointOnOneDimensional";
 
 export default class SegmentHandler extends Highlighter {
@@ -276,15 +278,24 @@ export default class SegmentHandler extends Highlighter {
           newStartPoint,
           this.startSEPointOneDimensionalParent
         );
+        segmentGroup.addCommand(
+          new AddPointOnOneDimensionalCommand(
+            vtx,
+            this.startSEPointOneDimensionalParent
+          )
+        );
       } else {
         // Starting mouse press landed on an open space
         // Create the model object for the new point and link them
         vtx = new SEPoint(newStartPoint);
+        segmentGroup.addCommand(new AddPointCommand(vtx));
       }
       vtx.locationVector = this.startVector;
       this.startSEPoint = vtx;
-      segmentGroup.addCommand(new AddPointCommand(vtx));
-    } else if (this.startSEPoint instanceof SEIntersectionPoint) {
+    } else if (
+      this.startSEPoint instanceof SEIntersectionPoint &&
+      !this.startSEPoint.isUserCreated
+    ) {
       // Mark the intersection point as created, the display style is changed and the glowing style is set up
       segmentGroup.addCommand(
         new ConvertInterPtToUserCreatedCommand(this.startSEPoint)
@@ -307,7 +318,10 @@ export default class SegmentHandler extends Highlighter {
       this.tempSegment.normalVector = this.normalVector;
       this.tempSegment.updateDisplay();
 
-      if (this.endSEPoint instanceof SEIntersectionPoint) {
+      if (
+        this.endSEPoint instanceof SEIntersectionPoint &&
+        !this.endSEPoint.isUserCreated
+      ) {
         // Mark the intersection point as created, the display style is changed and the glowing style is set up
         segmentGroup.addCommand(
           new ConvertInterPtToUserCreatedCommand(this.endSEPoint)
@@ -329,6 +343,9 @@ export default class SegmentHandler extends Highlighter {
         vtx.locationVector = this.hitSESegments[0].closestVector(
           this.currentSphereVector
         );
+        segmentGroup.addCommand(
+          new AddPointOnOneDimensionalCommand(vtx, this.hitSESegments[0])
+        );
       } else if (this.hitSELines.length > 0) {
         // The end of the line will be a point on a line
         // Create the model object for the new point and link them
@@ -337,6 +354,9 @@ export default class SegmentHandler extends Highlighter {
         vtx.locationVector = this.hitSELines[0].closestVector(
           this.currentSphereVector
         );
+        segmentGroup.addCommand(
+          new AddPointOnOneDimensionalCommand(vtx, this.hitSELines[0])
+        );
       } else if (this.hitSECircles.length > 0) {
         // The end of the line will be a point on a circle
         vtx = new SEPointOnOneDimensional(newEndPoint, this.hitSECircles[0]);
@@ -344,14 +364,17 @@ export default class SegmentHandler extends Highlighter {
         vtx.locationVector = this.hitSECircles[0].closestVector(
           this.currentSphereVector
         );
+        segmentGroup.addCommand(
+          new AddPointOnOneDimensionalCommand(vtx, this.hitSECircles[0])
+        );
       } else {
         // The ending mouse release landed on an open space
         vtx = new SEPoint(newEndPoint);
         // Set the Location
         vtx.locationVector = this.currentSphereVector;
+        segmentGroup.addCommand(new AddPointCommand(vtx));
       }
       this.endSEPoint = vtx;
-      segmentGroup.addCommand(new AddPointCommand(vtx));
     }
 
     // Clone the temporary segment and mark it added to the scene
@@ -369,12 +392,20 @@ export default class SegmentHandler extends Highlighter {
       this.arcLength,
       this.endSEPoint
     );
-    segmentGroup.addCommand(new AddSegmentCommand(newSESegment));
+    segmentGroup.addCommand(
+      new AddSegmentCommand(newSESegment, this.startSEPoint, this.endSEPoint)
+    );
     this.store.getters
       .createAllIntersectionsWithSegment(newSESegment)
-      .forEach((p: SEIntersectionPoint) => {
-        segmentGroup.addCommand(new AddPointCommand(p));
-        p.showing = false; // don not display the automatically created intersection points
+      .forEach((item: SEIntersectionReturnType) => {
+        segmentGroup.addCommand(
+          new AddIntersectionPointCommand(
+            item.SEIntersectionPoint,
+            item.parent1,
+            item.parent2
+          )
+        );
+        item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points
       });
     segmentGroup.execute();
   }
@@ -397,14 +428,25 @@ export default class SegmentHandler extends Highlighter {
           newPoint,
           this.startSEPointOneDimensionalParent
         );
+        // Create and execute the command to create a new point for undo/redo
+        new AddPointOnOneDimensionalCommand(
+          vtx,
+          this.startSEPointOneDimensionalParent
+        ).execute();
       } else {
         // Starting mouse press landed on an open space
         // we have to create a new point and it to the group/store
         vtx = new SEPoint(newPoint);
+        // Create and execute the command to create a new point for undo/redo
+        new AddPointCommand(vtx).execute();
       }
       vtx.locationVector = this.startVector;
-      // Create and execute the command to create a new point for undo/redo
-      new AddPointCommand(vtx).execute();
+    } else if (
+      this.startSEPoint instanceof SEIntersectionPoint &&
+      !this.startSEPoint.isUserCreated
+    ) {
+      // Mark the intersection point as created, the display style is changed and the glowing style is set up
+      new ConvertInterPtToUserCreatedCommand(this.startSEPoint).execute();
     }
   }
   /**
