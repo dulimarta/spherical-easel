@@ -18,9 +18,9 @@ export class AddCircleCommand extends Command {
   }
 
   do(): void {
-    Command.store.commit("addCircle", this.seCircle);
     this.centerSEPoint.registerChild(this.seCircle);
     this.circleSEPoint.registerChild(this.seCircle);
+    Command.store.commit("addCircle", this.seCircle);
   }
 
   saveState(): void {

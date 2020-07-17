@@ -34,7 +34,7 @@ export class SESegment extends SENodule implements Visitable, OneDimensional {
   /**
    * The arcLength of the segment
    */
-  private arcLength = 0;
+  private _arcLength = 0;
 
   /**
    * To update from one position to another (i.e. from one update() to the next), we need to remember if the
@@ -68,7 +68,7 @@ export class SESegment extends SENodule implements Visitable, OneDimensional {
     this.ref = seg;
     this._startSEPoint = segmentStartSEPoint;
     this._normalVector.copy(segmentNormalVector);
-    this.arcLength = segmentArcLength;
+    this._arcLength = segmentArcLength;
     this._endSEPoint = segmentEndSEPoint;
 
     SEGMENT_COUNT++;
@@ -100,6 +100,10 @@ export class SESegment extends SENodule implements Visitable, OneDimensional {
     return this._normalVector;
   }
 
+  set arcLength(len: number) {
+    this._arcLength = len;
+  }
+
   public isHitAt(unitIdealVector: Vector3): boolean {
     // Is the unitIdealVector is perpendicular to the normal to the plane containing the segment?
     if (Math.abs(unitIdealVector.dot(this._normalVector)) > 1e-2) return false;
@@ -109,16 +113,19 @@ export class SESegment extends SENodule implements Visitable, OneDimensional {
     // gives the direction in which the segment is drawn
     this.toVector
       .crossVectors(this._normalVector, this._startSEPoint.locationVector)
-      .multiplyScalar(this.arcLength > Math.PI ? -1 : 1);
+      .multiplyScalar(this._arcLength > Math.PI ? -1 : 1);
     // midVector = tmpVector = cos(arcLength/2)*start + sin(arcLength/2)*toVector
     this.tmpVector
       .copy(this._startSEPoint.locationVector)
-      .multiplyScalar(Math.cos(this.arcLength / 2));
-    this.tmpVector.addScaledVector(this.toVector, Math.sin(this.arcLength / 2));
+      .multiplyScalar(Math.cos(this._arcLength / 2));
+    this.tmpVector.addScaledVector(
+      this.toVector,
+      Math.sin(this._arcLength / 2)
+    );
 
     return (
       this.tmpVector.angleTo(unitIdealVector) <
-      this.arcLength / 2 + SETTINGS.segment.hitIdealDistance
+      this._arcLength / 2 + SETTINGS.segment.hitIdealDistance
     );
   }
 
@@ -133,19 +140,22 @@ export class SESegment extends SENodule implements Visitable, OneDimensional {
 
     this.toVector
       .crossVectors(this._normalVector, this._startSEPoint.locationVector)
-      .multiplyScalar(this.arcLength > Math.PI ? -1 : 1);
+      .multiplyScalar(this._arcLength > Math.PI ? -1 : 1);
     // midVector = tmpVector = cos(arcLength/2)*start + sin(arcLength/2)*this.toVector
     this.tmpVector
       .copy(this._startSEPoint.locationVector)
-      .multiplyScalar(Math.cos(this.arcLength / 2));
-    this.tmpVector.addScaledVector(this.toVector, Math.sin(this.arcLength / 2));
+      .multiplyScalar(Math.cos(this._arcLength / 2));
+    this.tmpVector.addScaledVector(
+      this.toVector,
+      Math.sin(this._arcLength / 2)
+    );
 
     // console.debug("start vec", this._startSEPoint.locationVector.toFixed(2));
     // console.debug("toVector", this.toVector.toFixed(2));
     // console.debug("arclengh", this.arcLength);
     // console.debug("midPoint", this.tmpVector.toFixed(2));
 
-    return this.tmpVector.angleTo(unitIdealVector) <= this.arcLength / 2;
+    return this.tmpVector.angleTo(unitIdealVector) <= this._arcLength / 2;
   }
 
   /**
@@ -231,10 +241,10 @@ export class SESegment extends SENodule implements Visitable, OneDimensional {
       this._normalVector.copy(this.tmpVector).normalize();
 
       // Record if the previous segment was longThanPi
-      let longerThanPi = this.arcLength > Math.PI;
+      let longerThanPi = this._arcLength > Math.PI;
 
       // Set the arc length of the segment temporarily to the angle between start and end vectors (always less than Pi)
-      this.arcLength = this._startSEPoint.locationVector.angleTo(
+      this._arcLength = this._startSEPoint.locationVector.angleTo(
         this._endSEPoint.locationVector
       );
 
@@ -268,12 +278,12 @@ export class SESegment extends SENodule implements Visitable, OneDimensional {
       }
       // Now longerThanPi is correctly set, update the arcLength based on it
       if (longerThanPi) {
-        this.arcLength = 2 * Math.PI - this.arcLength;
+        this._arcLength = 2 * Math.PI - this._arcLength;
       }
 
       ////////////////////////////////////////////////////////////////////////////////////////
       this.ref.startVector = this._startSEPoint.locationVector;
-      this.ref.arcLength = this.arcLength;
+      this.ref.arcLength = this._arcLength;
       this.ref.normalVector = this._normalVector;
       // update the display of the segment now that the start, normal vectors and arcLength are set, but only if showing
       if (this.showing) {

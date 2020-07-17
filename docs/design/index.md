@@ -222,7 +222,13 @@ Still in development so write up later.
 
 ## Event Handlers
 
-The handlers decide how to handle user mouse and keyboard input to implement a particular tool. All handlers implement the interface <span class="interface">ToolStrategy</span>:
+The handlers decide how to handle user mouse and keyboard input to implement a particular tool. A handler class is instantiated as a tool.
+
+```js
+this.selectTool = new SelectionHandler(this.layers);
+```
+
+All handlers implement the interface <span class="interface">ToolStrategy</span>:
 
 <<< @/src/eventHandlers/ToolStrategy.ts#toolStrategy{2-7}
 
@@ -348,11 +354,11 @@ The <span class="string">"rotateSphere"</span> mutation of the application state
 
 <<< @/src/store/mutations.ts#rotateSphere
 
-Notice that this creates a <span class="class">PositionVisitor</span> based on the Change In Position Rotation Matrix and that is applied to all SEPoint via this snippet from <span class="file">PositionVisitor.ts</span>:
+Notice that this creates a <span class="class">RotationVisitor</span> based on the Change In Position Rotation Matrix and that is applied to all SEPoint via this snippet from <span class="file">RotationVisitor.ts</span>:
 
-<<< @/src/visitors/PositionVisitor.ts#actionOnPoint
+<<< @/src/visitors/RotationVisitor.ts#actionOnPoint
 
-The <span class="class">PositionVisitor</span> merely updates all other <span class="class">SENodule</span> objects. Notice how the sequence of triggered event is now outside of the Vue Components again, but has been recorded in the Store along the way.
+The <span class="class">RotationVisitor</span> merely updates all other <span class="class">SENodule</span> objects. Notice how the sequence of triggered event is now outside of the Vue Components again, but has been recorded in the Store along the way.
 
 ## Languages
 

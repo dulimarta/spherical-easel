@@ -62,6 +62,7 @@ export default abstract class Highlighter extends MouseHandler {
     // Of the nearby SEPoints make the intersection points display, and the others glow
     this.hitSEPoints.forEach((obj: SEPoint) => {
       obj.glowing = true;
+      console.debug("hitSEPoint", obj.name);
     });
 
     // Sort the nearby SENodules list into their more specific SE classes

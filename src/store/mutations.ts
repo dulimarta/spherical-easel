@@ -4,7 +4,7 @@ import { SEPoint } from "@/models/SEPoint";
 import { Matrix4 } from "three";
 import { SESegment } from "@/models/SESegment";
 import { SECircle } from "@/models/SECircle";
-import { PositionVisitor } from "@/visitors/PositionVisitor";
+import { RotationVisitor } from "@/visitors/RotationVisitor";
 import { PointMoverVisitor } from "@/visitors/PointMoverVisitor";
 import { SELine } from "@/models/SELine";
 import { SENodule } from "@/models/SENodule";
@@ -30,7 +30,7 @@ export const initialState: AppState = {
 };
 //#endregion appState
 
-const positionVisitor = new PositionVisitor();
+const rotationVisitor = new RotationVisitor();
 const pointMoverVisitor = new PointMoverVisitor();
 
 export default {
@@ -79,8 +79,8 @@ export default {
       const victimPoint = state.points[pos];
       // Remove the associated plottable (Nodule) object from being rendered
       victimPoint.ref.removeFromLayers();
-      // Remove the victim point from the parent/kid data structure
-      victimPoint.removeSelfSafely();
+      // Remove the victim point from the parent/kid data structure -- needed?
+      //victimPoint.removeSelfSafely();
       state.points.splice(pos, 1);
       state.nodules.splice(pos2, 1);
     }
@@ -98,7 +98,7 @@ export default {
       /* victim line is found */
       const victimLine = state.lines[pos];
       victimLine.ref.removeFromLayers();
-      victimLine.removeSelfSafely();
+      //victimLine.removeSelfSafely(); // needed?
       state.lines.splice(pos, 1); // Remove the line from the list
       state.nodules.splice(pos2, 1);
     }
@@ -116,7 +116,7 @@ export default {
     if (pos >= 0) {
       const victimSegment = state.segments[pos];
       victimSegment.ref.removeFromLayers();
-      victimSegment.removeSelfSafely();
+      // victimSegment.removeSelfSafely();
       state.segments.splice(pos, 1);
       state.nodules.splice(pos2, 1);
     }
@@ -133,16 +133,16 @@ export default {
       /* victim line is found */
       const victimCircle: SECircle = state.circles[circlePos];
       victimCircle.ref.removeFromLayers();
-      victimCircle.removeSelfSafely();
+      // victimCircle.removeSelfSafely();
       state.circles.splice(circlePos, 1); // Remove the line from the list
       state.nodules.splice(pos2, 1);
     }
   },
   //#region rotateSphere
   rotateSphere(state: AppState, rotationMat: Matrix4): void {
-    positionVisitor.setTransform(rotationMat);
+    rotationVisitor.setTransform(rotationMat);
     state.points.forEach((p: SEPoint) => {
-      p.accept(positionVisitor);
+      p.accept(rotationVisitor);
     });
     //Update all the other objects in the arrangement.
     // We shouldn't have to do this. Everything should depend on points.

@@ -18,6 +18,7 @@ export class ConvertInterPtToUserCreatedCommand extends Command {
     this.seIntersectionPoint.isUserCreated = true;
     this.seIntersectionPoint.ref.stylize(DisplayStyle.DEFAULT);
     this.seIntersectionPoint.ref.stylize(DisplayStyle.GLOWING);
+    console.debug("Converted SEIntersction", this.seIntersectionPoint.name);
     this.seIntersectionPoint.showing = true;
   }
 

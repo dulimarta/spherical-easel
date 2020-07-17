@@ -12,8 +12,8 @@ export class AddPointOnOneDimensionalCommand extends Command {
   }
 
   do(): void {
-    Command.store.commit("addPoint", this.sePoint);
     this.parent.registerChild(this.sePoint);
+    Command.store.commit("addPoint", this.sePoint);
   }
 
   saveState(): void {

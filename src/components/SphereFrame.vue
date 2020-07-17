@@ -22,7 +22,7 @@ import RotateHandler from "@/eventHandlers/RotateHandler";
 import PointOnOneDimensionalHandler from "@/eventHandlers/PointOnOneDimensionalHandler";
 import IntersectionPointHandler from "@/eventHandlers/IntersectionPointHandler";
 import PanZoomHandler, { ZoomMode } from "@/eventHandlers/PanZoomHandler";
-import { PositionVisitor } from "@/visitors/PositionVisitor";
+import { RotationVisitor } from "@/visitors/RotationVisitor";
 import EventBus from "@/eventHandlers/EventBus";
 import MoveHandler from "../eventHandlers/MoveHandler";
 
@@ -79,7 +79,7 @@ export default class SphereFrame extends VueComponent {
    * all points and updates their position according to a matrix4 passed as an argument. It visits
    * all lines and circles and tells them to update.
    */
-  private visitor!: PositionVisitor;
+  //private visitor!: RotationVisitor;
 
   /**
    * The layers for displaying the various objects in the right way. So a point in the
@@ -161,7 +161,7 @@ export default class SphereFrame extends VueComponent {
     //   new Two.Line(100, -R, 100, R),
     //   new Two.Line(-R, 100, R, 100)
     // );
-    this.visitor = new PositionVisitor();
+    //this.visitor = new RotationVisitor();
 
     // Add Event Bus (a Vue component) listeners to change the display of the sphere - rotate and Zoom/Pan
     EventBus.listen("sphere-rotate", this.handleSphereRotation);
@@ -169,15 +169,19 @@ export default class SphereFrame extends VueComponent {
   }
 
   mounted(): void {
+    // Put the main Two.js instance into the canvas
     this.twoInstance.appendTo(this.$refs.canvas);
+    // Set the main Two.js instance to refresh at 60 fps
     this.twoInstance.play();
-    // this.sphereCanvas.translation.set(this.canvasSize / 2, this.canvasSize / 2);
-    // this.$refs.canvas.addEventListener("wheel", this.handleMouseScroll); // by Hans
+
+    // Set up the listeners
     this.$refs.canvas.addEventListener("mousemove", this.handleMouseMoved);
     this.$refs.canvas.addEventListener("mousedown", this.handleMousePressed);
     this.$refs.canvas.addEventListener("mouseup", this.handleMouseReleased);
     this.$refs.canvas.addEventListener("mouseleave", this.handleMouseLeave);
-    this.$refs.canvas.addEventListener("wheel", this.handleMouseWheel); // by Will
+    this.$refs.canvas.addEventListener("wheel", this.handleMouseWheel);
+
+    // Create the tools/handlers
     this.selectTool = new SelectionHandler(this.layers);
     this.currentTool = this.selectTool;
     this.pointTool = new PointHandler(this.layers);
@@ -334,8 +338,7 @@ export default class SphereFrame extends VueComponent {
 
   handleMousePressed(e: MouseEvent): void {
     // Only process events from the left (inner) mouse button to avoid adverse interactions with any pop-up menu
-    if (e.button === 0)
-      this.currentTool?.mousePressed(e);
+    if (e.button === 0) this.currentTool?.mousePressed(e);
   }
 
   handleMouseReleased(e: MouseEvent): void {

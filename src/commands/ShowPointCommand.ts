@@ -2,14 +2,14 @@ import { Command } from "./Command";
 import { SEPoint } from "@/models/SEPoint";
 
 export class ShowPointCommand extends Command {
-  private arg: SEPoint;
-  constructor(arg: SEPoint) {
+  private sePoint: SEPoint;
+  constructor(sePoint: SEPoint) {
     super();
-    this.arg = arg;
+    this.sePoint = sePoint;
   }
 
   do(): void {
-    this.arg.showing = true;
+    this.sePoint.showing = true;
   }
 
   saveState(): void {
@@ -17,6 +17,6 @@ export class ShowPointCommand extends Command {
   }
 
   restoreState(): void {
-    this.arg.showing = false;
+    this.sePoint.showing = false;
   }
 }

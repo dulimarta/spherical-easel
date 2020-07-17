@@ -43,6 +43,8 @@ Each of these tools allows a user to adjust the display of an arrangement.
 [Move the location of a single object.](/tools/display.html#move)
 ::: handler-details
 
+- This tool moves points, lines, segments, and ellipses that depend on free points.
+- For the purposes of undoing, this tool does _not_ keep track of dependency from the point on one dimensional movements that result from moving one of the above objects. So if you create a line segment with a <span class= "class">SEPointOnOneDimensional</span> on it, if you move the line segment and then undo it, the <span class= "class">SEPointOnOneDimensional </span> will not necessarily be in the same location as it was ooriginally
 -
 
 :::

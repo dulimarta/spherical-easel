@@ -47,18 +47,13 @@ const tempVec1 = new Vector3();
 const tempVec2 = new Vector3();
 /**
  * Returns true if vec is on vectorList, false otherwise
+ * This is used to tell if an SEIntersectionPoint is going to be created on top of an existing SEPointOnOneDimensional,
+ * If this returns true, then the SEIntersectionPoint is not created.
  * @param vec The search vector
  * @param vectorList The list of vectors
  */
 function vectorOnList(vec: Vector3, vectorList: Vector3[]) {
-  if (vectorList.length == 0) return false;
-  let flag = false;
-  vectorList.forEach(v => {
-    if (tempVec.subVectors(vec, v).isZero(0.01)) {
-      flag = true;
-    }
-  });
-  return flag;
+  return vectorList.some(v => tempVec.subVectors(vec, v).isZero());
 }
 
 /**
@@ -440,15 +435,14 @@ export default {
   createAllIntersectionsWithLine: (state: AppState) => (
     newLine: SELine
   ): SEIntersectionReturnType[] => {
-    // Avoid creating an intersection where a PointOnOneDimensional already exists
-    // Collect the location of any PointOnOneDimensional that are parents of the newLine
+    // Avoid creating an intersection where any SEPoint already exists
     const avoidVectors: Vector3[] = [];
-    if (newLine.startSEPoint instanceof SEPointOnOneDimensional) {
-      avoidVectors.push(newLine.startSEPoint.locationVector);
-    }
-    if (newLine.endSEPoint instanceof SEPointOnOneDimensional) {
-      avoidVectors.push(newLine.endSEPoint.locationVector);
-    }
+    // First add the two parent points of the newLine, if they are new, then
+    //  they won't have been added to the state.points array yet so add them first
+    avoidVectors.push(newLine.startSEPoint.locationVector);
+    avoidVectors.push(newLine.endSEPoint.locationVector);
+    state.points.forEach(pt => avoidVectors.push(pt.locationVector));
+
     // The intersectionPointList to return
     const intersectionPointList: SEIntersectionReturnType[] = [];
 
@@ -458,7 +452,10 @@ export default {
       .forEach((oldLine: SELine) => {
         const intersectionInfo = intersectLineWithLine(oldLine, newLine);
         intersectionInfo.forEach((info, index) => {
-          if (!vectorOnList(info.vector, avoidVectors)) {
+          if (
+            !avoidVectors.some(v => tempVec.subVectors(info.vector, v).isZero())
+          ) {
+            // info.vector is not on the avoidVectors array, so create an intersection
             console.debug("made intersection");
             const newPt = new Point();
             newPt.stylize(DisplayStyle.TEMPORARY);
@@ -483,7 +480,10 @@ export default {
     state.segments.forEach((oldSegment: SESegment) => {
       const intersectionInfo = intersectLineWithSegment(newLine, oldSegment);
       intersectionInfo.forEach((info, index) => {
-        if (!vectorOnList(info.vector, avoidVectors)) {
+        if (
+          !avoidVectors.some(v => tempVec.subVectors(info.vector, v).isZero())
+        ) {
+          // info.vector is not on the avoidVectors array, so create an intersection
           const newPt = new Point();
           newPt.stylize(DisplayStyle.TEMPORARY);
           const newSEIntersectionPt = new SEIntersectionPoint(
@@ -507,7 +507,10 @@ export default {
     state.circles.forEach((oldCircle: SECircle) => {
       const intersectionInfo = intersectLineWithCircle(newLine, oldCircle);
       intersectionInfo.forEach((info, index) => {
-        if (!vectorOnList(info.vector, avoidVectors)) {
+        if (
+          !avoidVectors.some(v => tempVec.subVectors(info.vector, v).isZero())
+        ) {
+          // info.vector is not on the avoidVectors array, so create an intersection
           const newPt = new Point();
           newPt.stylize(DisplayStyle.TEMPORARY);
           const newSEIntersectionPt = new SEIntersectionPoint(
@@ -532,30 +535,24 @@ export default {
   createAllIntersectionsWithSegment: (state: AppState) => (
     newSegment: SESegment
   ): SEIntersectionReturnType[] => {
-    // Avoid creating an intersection where a PointOnOneDimensional already exists
-    // Collect the location of any PointOnOneDimensional that are parents of the newSegment
+    // Avoid creating an intersection where any SEPoint already exists
     const avoidVectors: Vector3[] = [];
-    if (newSegment.startSEPoint instanceof SEPointOnOneDimensional) {
-      avoidVectors.push(newSegment.startSEPoint.locationVector);
-      // console.debug(
-      //   "start point of newSegment is point on one dim",
-      //   newSegment.startSEPoint.locationVector.toFixed(2)
-      // );
-    }
-    if (newSegment.endSEPoint instanceof SEPointOnOneDimensional) {
-      avoidVectors.push(newSegment.endSEPoint.locationVector);
-      // console.debug(
-      //   "end point of newSegment is point on one dim",
-      //   newSegment.endSEPoint.locationVector.toFixed(2)
-      // );
-    }
+    // First add the two parent points of the newLine, if they are new, then
+    //  they won't have been added to the state.points array yet so add them first
+    avoidVectors.push(newSegment.startSEPoint.locationVector);
+    avoidVectors.push(newSegment.endSEPoint.locationVector);
+    state.points.forEach(pt => avoidVectors.push(pt.locationVector));
+
     // The intersectionPointList to return
     const intersectionPointList: SEIntersectionReturnType[] = [];
     // Intersect this new segment with all old lines
     state.lines.forEach((oldLine: SELine) => {
       const intersectionInfo = intersectLineWithSegment(oldLine, newSegment);
       intersectionInfo.forEach((info, index) => {
-        if (!vectorOnList(info.vector, avoidVectors)) {
+        if (
+          !avoidVectors.some(v => tempVec.subVectors(info.vector, v).isZero())
+        ) {
+          // info.vector is not on the avoidVectors array, so create an intersection
           const newPt = new Point();
           newPt.stylize(DisplayStyle.TEMPORARY);
           const newSEIntersectionPt = new SEIntersectionPoint(
@@ -585,7 +582,10 @@ export default {
           newSegment
         );
         intersectionInfo.forEach((info, index) => {
-          if (!vectorOnList(info.vector, avoidVectors)) {
+          if (
+            !avoidVectors.some(v => tempVec.subVectors(info.vector, v).isZero())
+          ) {
+            // info.vector is not on the avoidVectors array, so create an intersection
             console.debug(
               "not on list",
               info.vector.toFixed(4),
@@ -631,7 +631,10 @@ export default {
         oldCircle
       );
       intersectionInfo.forEach((info, index) => {
-        if (!vectorOnList(info.vector, avoidVectors)) {
+        if (
+          !avoidVectors.some(v => tempVec.subVectors(info.vector, v).isZero())
+        ) {
+          // info.vector is not on the avoidVectors array, so create an intersection
           const newPt = new Point();
           newPt.stylize(DisplayStyle.TEMPORARY);
           const newSEIntersectionPt = new SEIntersectionPoint(
@@ -657,22 +660,23 @@ export default {
   createAllIntersectionsWithCircle: (state: AppState) => (
     newCircle: SECircle
   ): SEIntersectionReturnType[] => {
-    // Avoid creating an intersection where a PointOnOneDimensional already exists
-    // Collect the location of any PointOnOneDimensional that are parents of the newCircle
+    // Avoid creating an intersection where any SEPoint already exists
     const avoidVectors: Vector3[] = [];
-    if (newCircle.centerSEPoint instanceof SEPointOnOneDimensional) {
-      avoidVectors.push(newCircle.centerSEPoint.locationVector);
-    }
-    if (newCircle.circleSEPoint instanceof SEPointOnOneDimensional) {
-      avoidVectors.push(newCircle.circleSEPoint.locationVector);
-    }
+    // First add the two parent points of the newLine, if they are new, then
+    //  they won't have been added to the state.points array yet so add them first
+    avoidVectors.push(newCircle.centerSEPoint.locationVector);
+    avoidVectors.push(newCircle.circleSEPoint.locationVector);
+    state.points.forEach(pt => avoidVectors.push(pt.locationVector));
     // The intersectionPointList to return
     const intersectionPointList: SEIntersectionReturnType[] = [];
     // Intersect this new circle with all old lines
     state.lines.forEach((oldLine: SELine) => {
       const intersectionInfo = intersectLineWithCircle(oldLine, newCircle);
       intersectionInfo.forEach((info, index) => {
-        if (!vectorOnList(info.vector, avoidVectors)) {
+        if (
+          !avoidVectors.some(v => tempVec.subVectors(info.vector, v).isZero())
+        ) {
+          // info.vector is not on the avoidVectors array, so create an intersection
           const newPt = new Point();
           newPt.stylize(DisplayStyle.TEMPORARY);
           const newSEIntersectionPt = new SEIntersectionPoint(
@@ -699,7 +703,10 @@ export default {
         newCircle
       );
       intersectionInfo.forEach((info, index) => {
-        if (!vectorOnList(info.vector, avoidVectors)) {
+        if (
+          !avoidVectors.some(v => tempVec.subVectors(info.vector, v).isZero())
+        ) {
+          // info.vector is not on the avoidVectors array, so create an intersection
           const newPt = new Point();
           newPt.stylize(DisplayStyle.TEMPORARY);
           const newSEIntersectionPt = new SEIntersectionPoint(
@@ -730,7 +737,10 @@ export default {
           newCircle.circleRadius
         );
         intersectionInfo.forEach((info, index) => {
-          if (!vectorOnList(info.vector, avoidVectors)) {
+          if (
+            !avoidVectors.some(v => tempVec.subVectors(info.vector, v).isZero())
+          ) {
+            // info.vector is not on the avoidVectors array, so create an intersection
             const newPt = new Point();
             newPt.stylize(DisplayStyle.TEMPORARY);
             const newSEIntersectionPt = new SEIntersectionPoint(

@@ -73,6 +73,9 @@ export abstract class Command {
   // TODO: consider merging saveState() and do(). They are always invoked one after the other
 
   /** saveState: Save require information to restore the app state*/
+  /**
+   * The saveState() method allows a particular command to save necessary information needed for undoing when restoreState()  is invoked (later on). And saveState() is invoked before do() in case the command requires to use/retrieve information before the action itself takes place. One example that I can think of now: let’s say we will implement ChangeLineWidthCommand and its saveState() method would be able to query the current line width before it changes the line width to a new value.
+   */
   abstract saveState(): void;
 
   /**  do: Perform necessary action to alter the app state*/

@@ -245,11 +245,23 @@ export default class MoveHandler extends Highlighter {
       // First changeInPosition maps beforeMoveVector1 to afterMoveVector1
       // then tmpMatrix fixes afterMoveVector1 and takes changeInPosition(beforeMoveVector2) to afterMoveVector2
       this.changeInPositionRotationMatrix.premultiply(tmpMatrix);
-      
-      if (
-        this.moveTarget instanceof SELine ||
-        this.moveTarget instanceof SESegment
-      ) {
+
+      if (this.moveTarget instanceof SESegment) {
+        moveCommandGroup.addCommand(
+          new MovePointCommand(
+            this.moveTarget.startSEPoint,
+            this.beforeMoveVector1,
+            this.afterMoveVector1
+          )
+        );
+        moveCommandGroup.addCommand(
+          new MovePointCommand(
+            this.moveTarget.endSEPoint,
+            this.beforeMoveVector2,
+            this.afterMoveVector2
+          )
+        );
+      } else if (this.moveTarget instanceof SELine) {
         moveCommandGroup.addCommand(
           new MovePointCommand(
             this.moveTarget.startSEPoint,

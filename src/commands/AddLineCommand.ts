@@ -14,9 +14,9 @@ export class AddLineCommand extends Command {
   }
 
   do(): void {
-    Command.store.commit("addLine", this.seLine);
     this.startSEPoint.registerChild(this.seLine);
     this.endSEPoint.registerChild(this.seLine);
+    Command.store.commit("addLine", this.seLine);
   }
 
   saveState(): void {
