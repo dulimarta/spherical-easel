@@ -8,3 +8,10 @@ export enum Styles {
   PointFrontRadius,
   PointBackRadius
 }
+
+export type StyleOptions = {
+  strokeWidth?: number;
+  strokeColor?: string;
+
+  /* TODO: Add more options later */
+};

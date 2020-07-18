@@ -5,6 +5,7 @@ import Two from "two.js";
 import SETTINGS, { LAYER } from "@/global-settings";
 import Nodule, { DisplayStyle } from "./Nodule";
 import { Vector3 } from "three";
+import { StyleOptions } from "@/types/Styles";
 
 /**
  * Each Point object is uniquely associated with a SEPoint object.
@@ -172,6 +173,10 @@ export default class Point extends Nodule {
     } else {
       this.backNormalDisplay();
     }
+  }
+
+  updateStyle(options: StyleOptions): void {
+    console.debug("Update style of", this.name);
   }
 
   addToLayers(layers: Two.Group[]): void {

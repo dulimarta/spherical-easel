@@ -1,39 +1,106 @@
 <template>
   <div>
-    <div class="section" v-show="hasStrokeColor">
-      <span class="text-subtitle-2">Stroke Color</span>
-      <v-color-picker></v-color-picker>
-    </div>
-    <div class="section" v-show="hasStrokeWidth">
-      <span>Stroke Width</span>
-      <v-slider type="range"></v-slider>
-    </div>
-    <div class="section" v-show="hasFillColor">
-      <span class="text-subtitle-2">Fill Color</span>
-      <v-color-picker></v-color-picker>
-    </div>
+    <transition name="fade" appear>
+      <span v-show="commonStyleProperties.length === 0" class="text-body-2">
+        Please select object(s) to style
+      </span>
+    </transition>
+    <transition name="fade">
+      <v-card class="section" v-show="hasStrokeColor" elevation="8">
+        <span class="text-subtitle-2">Stroke Color</span>
+        <v-color-picker
+          v-model="strokeColor"
+          @update:color="onLineColorChanged"
+        ></v-color-picker>
+      </v-card>
+    </transition>
+
+    <transition name="fade">
+      <v-card
+        class="section"
+        v-show="hasStrokeWidth"
+        elevation="8"
+        transition="scale-transition"
+      >
+        <span>Stroke Width ({{ minStrokeWidth }}/{{ maxStrokeWidth }})</span>
+        <v-slider
+          v-model.number="strokeWidth"
+          :min="minStrokeWidth"
+          @change="onLineWidthChanged"
+          :max="maxStrokeWidth"
+          type="range"
+        ></v-slider>
+      </v-card>
+    </transition>
+    <transition name="fade">
+      <v-card
+        class="section"
+        v-show="hasFillColor"
+        elevation="8"
+        transition="scale-transition"
+      >
+        <span class="text-subtitle-2">Fill Color</span>
+        <v-color-picker></v-color-picker>
+      </v-card>
+    </transition>
   </div>
 </template>
+<style lang="scss" scoped>
+.section {
+  border: 1px solid black;
+  border-radius: 4px;
+  padding: 0.25em;
+  margin: 0.5em;
+}
 
+.fade-enter-active,
+.fade-leave-active {
+  transition-property: opacity, height, width;
+  transition-duration: 500ms;
+  transition-timing-function: ease;
+}
+
+.fade-enter,
+.fade-leave-to {
+  opacity: 0;
+  height: 100%;
+  width: 100%;
+}
+</style>
 <script lang="ts">
-import Vue from 'vue'
-import Component from 'vue-class-component';
-import { Watch } from 'vue-property-decorator';
-import { SENodule } from '../models/SENodule';
-import { State } from 'vuex-class';
-import { Styles } from '../types/Styles';
+import Vue from "vue";
+import Component from "vue-class-component";
+import { Watch } from "vue-property-decorator";
+import { SENodule } from "../models/SENodule";
+import { State } from "vuex-class";
+import { Styles } from "../types/Styles";
+import SETTINGS from "@/global-settings";
+import { getModule } from "vuex-module-decorators";
+import UI from "@/store/ui-styles";
 
-const values = Object
-  .entries(Styles)
-  .filter(e => { const [a, b] = e; return typeof b === "number" });
+const values = Object.entries(Styles).filter(e => {
+  const [_, b] = e;
+  return typeof b === "number";
+});
 
-const keys = values.map(e => { const [a, _] = e; return a })
+const keys = values.map(e => {
+  const [a, _] = e;
+  return a;
+});
+
 @Component({})
 export default class FrontStyle extends Vue {
+  readonly UIModule = getModule(UI, this.$store);
 
   @State
   readonly selections!: SENodule[];
 
+  readonly minStrokeWidth = SETTINGS.line.drawn.strokeWidth.min;
+  readonly maxStrokeWidth = SETTINGS.line.drawn.strokeWidth.max;
+
+  // TODO: handlle background as well
+  private strokeWidth = SETTINGS.line.drawn.strokeWidth.front;
+  private strokeColor = SETTINGS.line.drawn.strokeColor.front;
   commonStyleProperties: number[] = [];
 
   // private commonProperties: Set<Styles>;
@@ -43,46 +110,56 @@ export default class FrontStyle extends Vue {
     // this.commonProperties = new Set();
   }
 
+  onLineWidthChanged(): void {
+    console.debug("New line width", this.strokeWidth);
+    this.$store.commit("changeStrokeWidth", this.strokeWidth);
+    // this.UIModule.changeStrokeColor("red");
+  }
+  onLineColorChanged(): void {
+    this.$store.commit("changeStrokeColor", this.strokeColor);
+  }
+
   hasStyles(s: Styles): boolean {
     const sNum = Number(s);
     // const styleOrdinal = keys.findIndex(x => x === s);
     // if (!styleOrdinal || styleOrdinal < 0) return false;
-    return this.commonStyleProperties.findIndex(x => x === sNum) >= 0;
+
+    return (
+      this.commonStyleProperties.length > 0 &&
+      this.commonStyleProperties.findIndex(x => x === sNum) >= 0
+    );
   }
 
-  get hasStrokeColor() {
+  get hasStrokeColor(): boolean {
     return this.hasStyles(Styles.StrokeColor);
   }
-  get hasStrokeWidth() {
+
+  get hasStrokeWidth(): boolean {
     return this.hasStyles(Styles.StrokeWidth);
   }
 
-  get hasFillColor() {
-    return this.hasStyles(Styles.FillWhiteTint) || this.hasStyles(Styles.FillGrayTint);
+  get hasFillColor(): boolean {
+    return (
+      this.hasStyles(Styles.FillWhiteTint) ||
+      this.hasStyles(Styles.FillGrayTint)
+    );
   }
   @Watch("selections", { deep: true })
   onSelectionChanged(newSelection: SENodule[]): void {
     // newSelection.forEach(s => {
     // console.debug("Set ", s.customStyles());
     // })
-    if (newSelection.length === 0) return;
-    console.debug(keys)
-    this.commonStyleProperties.clear();
+    this.commonStyleProperties.splice(0);
+    if (newSelection.length === 0) {
+      // console.debug("No Common props: ");
+      return;
+    }
     for (let k = 0; k < values.length; k++) {
-
       if (newSelection.every(s => s.customStyles().has(k)))
         this.commonStyleProperties.push(k);
     }
     const propNames = this.commonStyleProperties.map(n => keys[n]).join(", ");
-    console.debug("Common props: ", propNames);
+    // console.debug("Common props: ", propNames);
   }
 }
 </script>
-
-<style lang="scss" scoped>
-.section {
-  border: 1px solid black;
-  border-radius: 4px;
-  padding: 0.25em;
-}
-</style>

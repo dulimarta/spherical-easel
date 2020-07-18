@@ -1,4 +1,4 @@
-import { AppState } from "@/types";
+import { AppState, SEOneDimensional } from "@/types";
 import Two from "two.js";
 import { SEPoint } from "@/models/SEPoint";
 import { Matrix4 } from "three";
@@ -9,6 +9,7 @@ import { PointMoverVisitor } from "@/visitors/PointMoverVisitor";
 import { SELine } from "@/models/SELine";
 import { SENodule } from "@/models/SENodule";
 import { Vector3 } from "three";
+import { StyleOptions } from "@/types/Styles";
 
 // const tmpMatrix = new Matrix4();
 
@@ -178,5 +179,29 @@ export default {
   setSelectedObjects(state: AppState, selection: SENodule[]): void {
     state.selections.clear();
     state.selections.push(...selection);
+  },
+  changeStrokeWidth(state: AppState, width: number): void {
+    const opt: StyleOptions = {
+      strokeWidth: width
+    };
+    state.selections
+      .filter(n => !(n instanceof SEPoint))
+      .map(n => n as SEOneDimensional) // TODO: handle other object types
+      .forEach((n: SEOneDimensional) => {
+        console.debug(`Changing stroke width of ${n.name} to ${width}`);
+        n.ref.updateStyle(opt);
+      });
+  },
+  changeStrokeColor(state: AppState, color: string): void {
+    const opt: StyleOptions = {
+      strokeColor: color
+    };
+    state.selections
+      .filter(n => !(n instanceof SEPoint))
+      .map(n => n as SEOneDimensional) // TODO: handle other object types
+      .forEach((n: SEOneDimensional) => {
+        console.debug(`Changing stroke color of ${n.name} to ${color}`);
+        n.ref.updateStyle(opt);
+      });
   }
 };

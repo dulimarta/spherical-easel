@@ -31,7 +31,8 @@
     "vue-splitpane": "^1.0.6",
     "vuetify": "^2.3.2",
     "vuex": "^3.5.1",
-    "vuex-class": "^0.3.2"
+    "vuex-class": "^0.3.2",
+    "vuex-module-decorators": "^0.17.0"
   },
   "devDependencies": {
     "@maginapp/vuepress-plugin-katex": "^1.0.7",
@@ -52,6 +53,7 @@
     "@vue/eslint-config-typescript": "^5.0.2",
     "@vue/test-utils": "1.0.3",
     "@vuepress/plugin-back-to-top": "^1.5.2",
+    "babel-plugin-transform-decorators": "^6.24.1",
     "canvas": "^2.6.1",
     "eslint": "^6.8.0",
     "eslint-plugin-vue": "^6.2.2",
