@@ -4,6 +4,7 @@ import { Vector3, Vector2, Matrix4 } from "three";
 import Two from "two.js";
 import SETTINGS, { LAYER } from "@/global-settings";
 import Nodule, { DisplayStyle } from "./Nodule";
+import { StyleOptions } from "@/types/Styles";
 
 const desiredXAxis = new Vector3();
 const desiredYAxis = new Vector3();
@@ -11,7 +12,7 @@ const desiredZAxis = new Vector3();
 const Z_AXIS = new Vector3(0, 0, 1);
 const transformMatrix = new Matrix4();
 const SUBDIVISIONS = SETTINGS.circle.numPoints;
-
+let CIRCLE_COUNT = 0;
 /**
  * For drawing surface circle. A circle consists of two paths (front and back)
  * for a total of 2N subdivisions.
@@ -138,7 +139,7 @@ export default class Circle extends Nodule {
 
   constructor() {
     super();
-
+    this.name = "Circle-" + CIRCLE_COUNT++;
     // Create the initial front and back vertices (glowing/not/fill)
     const frontVertices: Two.Vector[] = [];
     const backVertices: Two.Vector[] = [];
@@ -573,6 +574,18 @@ export default class Circle extends Nodule {
   normalDisplay(): void {
     this.frontNormalDisplay();
     this.backNormalDisplay();
+  }
+
+  updateStyle(options: StyleOptions): void {
+    // console.debug("Update style of", this.name);
+    if (options.strokeColor) {
+      this.frontPart.stroke = options.strokeColor;
+      this.glowingFrontPart.stroke = options.strokeColor;
+    }
+    if (options.strokeWidth) {
+      this.frontPart.linewidth = options.strokeWidth;
+      this.glowingFrontPart.linewidth = options.strokeWidth;
+    }
   }
 
   setVisible(flag: boolean): void {

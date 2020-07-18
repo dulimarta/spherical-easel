@@ -2,10 +2,11 @@ import { Vector3, Matrix4 } from "three";
 import Two from "two.js";
 import SETTINGS, { LAYER } from "@/global-settings";
 import Nodule, { DisplayStyle } from "./Nodule";
+import { StyleOptions } from "@/types/Styles";
 
 // The number of vectors used to render the one part of the segment (like the frontPart, frontExtra, etc.)
 const SUBDIVS = SETTINGS.segment.numPoints;
-
+let SEGMENT_COUNT = 0;
 /**
  * A line segment
  *
@@ -92,7 +93,7 @@ export default class Segment extends Nodule {
   constructor() {
     // Initialize the Two.Group
     super();
-
+    this.name = "Segment-" + SEGMENT_COUNT++;
     // Create the vertices for the segment
     const vertices: Two.Vector[] = [];
     for (let k = 0; k < SUBDIVS; k++) {
@@ -193,6 +194,22 @@ export default class Segment extends Nodule {
   glowingDisplay(): void {
     this.frontGlowingDisplay();
     this.backGlowingDisplay();
+  }
+
+  updateStyle(options: StyleOptions): void {
+    console.debug("Update style of", this.name);
+    if (options.strokeColor) {
+      this.frontPart.stroke = options.strokeColor;
+      this.frontExtra.stroke = options.strokeColor;
+      this.glowingFrontPart.stroke = options.strokeColor;
+      this.glowingFrontExtra.stroke = options.strokeColor;
+    }
+    if (options.strokeWidth) {
+      this.frontPart.linewidth = options.strokeWidth;
+      this.frontExtra.linewidth = options.strokeWidth;
+      this.glowingFrontPart.linewidth = options.strokeWidth;
+      this.glowingFrontExtra.linewidth = options.strokeWidth;
+    }
   }
 
   /**

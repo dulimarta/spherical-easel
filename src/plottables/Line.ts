@@ -2,9 +2,11 @@ import { Vector3, Matrix4 } from "three";
 import Two from "two.js";
 import SETTINGS, { LAYER } from "@/global-settings";
 import Nodule, { DisplayStyle } from "./Nodule";
+import { StyleOptions } from "@/types/Styles";
 
 // The number of vectors used to render the front half (and the same number in the back half)
 const SUBDIVS = SETTINGS.line.numPoints;
+let LINE_COUNT = 0;
 
 /**
  * A line segment
@@ -76,9 +78,9 @@ export default class Line extends Nodule {
   private desiredXAxis = new Vector3();
   private desiredYAxis = new Vector3();
   private transformMatrix = new Matrix4();
-
   constructor() {
     super();
+    this.name = "Line-" + LINE_COUNT++;
     const radius = SETTINGS.boundaryCircle.radius;
     const vertices: Two.Vector[] = [];
     const glowingVertices: Two.Vector[] = [];
@@ -169,6 +171,24 @@ export default class Line extends Nodule {
   normalDisplay(): void {
     this.frontNormalDisplay();
     this.backNormalDisplay();
+  }
+
+  updateStyle(options: StyleOptions): void {
+    console.debug("Update style of", this.name, "using", options);
+    if (options.strokeWidth) {
+      // TODO: separate front and back options
+      this.frontHalf.linewidth = options.strokeWidth;
+      this.backHalf.linewidth = options.strokeWidth;
+      this.glowingFrontHalf.linewidth = options.strokeWidth;
+      this.glowingBackHalf.linewidth = options.strokeWidth;
+    }
+    if (options.strokeColor) {
+      // TODO: separate front and back options
+      this.frontHalf.stroke = options.strokeColor;
+      this.backHalf.stroke = options.strokeColor;
+      this.glowingFrontHalf.stroke = options.strokeColor;
+      this.glowingBackHalf.stroke = options.strokeColor;
+    }
   }
 
   /**

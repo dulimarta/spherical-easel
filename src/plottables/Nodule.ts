@@ -4,6 +4,7 @@ import { Stylable } from "./Styleable";
 import { Resizeable } from "./Resizeable";
 import SETTINGS from "@/global-settings";
 import { VNodeChildren } from "vue";
+import { StyleOptions } from "@/types/Styles";
 
 export enum DisplayStyle {
   DEFAULT,
@@ -37,6 +38,7 @@ export default abstract class Nodule implements Stylable, Resizeable {
   /** Update visual style(s) */
   abstract normalDisplay(): void;
   abstract glowingDisplay(): void;
+  abstract updateStyle(options: StyleOptions): void;
 
   /** Set the temporary/glowing/default/updated style*/
   abstract stylize(flag: DisplayStyle): void;

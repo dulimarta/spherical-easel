@@ -5,6 +5,7 @@ export default class SelectionHandler extends MouseHandler {
   private currentSelection: SENodule[] = [];
   activate(): void {
     window.addEventListener("keypress", this.keyPressHandler);
+    this.hitSENodules.clear();
   }
 
   deactivate(): void {

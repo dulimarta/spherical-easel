@@ -5,6 +5,8 @@ import Vuex from "vuex";
 import mutations, { initialState } from "./mutations";
 import getters from "./getters";
 import EventBus from "@/eventHandlers/EventBus";
+// import StylesModule from "./ui-styles";
+// import AuthModule from "./auth";
 
 Vue.use(Vuex);
 
@@ -20,5 +22,9 @@ export default new Vuex.Store({
     }
     //#endregion magnificationUpdate
   },
-  getters
+  getters,
+  modules: {
+    // auth: AuthModule
+    // ui: StylesModule
+  }
 });

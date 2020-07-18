@@ -1,3 +1,5 @@
+import { StyleOptions } from "@/types/Styles";
+
 export interface Stylable {
   /**
    * Update visual properties to render object as glowing
@@ -12,5 +14,5 @@ export interface Stylable {
   // backNormalDisplay(): void;
   normalDisplay(): void;
 
-  // TODO: Add more styles
+  updateStyle(options: StyleOptions): void;
 }
