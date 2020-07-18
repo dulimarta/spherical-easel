@@ -4,6 +4,7 @@ import { ZoomSphereCommand } from "@/commands/ZoomSphereCommand";
 import AppStore from "@/store";
 import EventBus from "./EventBus";
 import SETTINGS from "@/global-settings";
+import { SENodule } from "@/models/SENodule";
 
 export enum ZoomMode {
   MAGNIFY,
@@ -262,8 +263,11 @@ export default class PanZoomHandler implements ToolStrategy {
   }
 
   activate(): void {
-    // console.debug("Activate PZtool");
+    this.store.getters.selectedObjects().forEach((obj: SENodule) => {
+      obj.selected = false;
+    });
   }
+
   deactivate(): void {
     // console.debug("Deactivate PZtool");
   }

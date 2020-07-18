@@ -98,13 +98,6 @@ export default abstract class MouseHandler implements ToolStrategy {
   abstract mousePressed(event: MouseEvent): void;
   abstract mouseReleased(event: MouseEvent): void;
 
-  activate(): void {
-    // No code yet
-  }
-  deactivate(): void {
-    // No code yet
-  }
-
   /**
    * Map mouse 2D viewport/screen position to 3D coordinate on the default sphere.
    * @memberof MouseHandler
@@ -164,5 +157,15 @@ export default abstract class MouseHandler implements ToolStrategy {
 
   mouseLeave(event: MouseEvent): void {
     this.isOnSphere = false;
+  }
+
+  activate(): void {
+    this.store.getters.selectedObjects().forEach((obj: SENodule) => {
+      obj.selected = false;
+    });
+  }
+
+  deactivate(): void {
+    // No code yet
   }
 }

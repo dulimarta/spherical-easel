@@ -43,6 +43,7 @@ export default {
     state.lines.clear();
     state.segments.clear();
     state.circles.clear();
+    state.selections.clear();
     state.intersections.clear();
   },
   setLayers(state: AppState, layers: Two.Group[]): void {
@@ -107,8 +108,6 @@ export default {
     state.segments.push(segment);
     state.nodules.push(segment);
     segment.ref.addToLayers(state.layers);
-    console.log("parent 0", segment.parents[0].name);
-    console.log("parent 1", segment.parents[1].name);
   },
   removeSegment(state: AppState, segId: number): void {
     const pos = state.segments.findIndex(x => x.id === segId);

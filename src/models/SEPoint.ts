@@ -6,7 +6,6 @@ import { Vector3 } from "three";
 import SETTINGS from "@/global-settings";
 import { Styles } from "@/types/Styles";
 
-// const POINT_PROXIMITY_THRESHOLD = SETTINGS.point.hitIdealDistance;
 let POINT_COUNT = 0;
 const styleSet = new Set([
   Styles.PointFrontRadius,
@@ -24,13 +23,13 @@ export class SEPoint extends SENodule implements Visitable {
 
   /**
    * Create a model SEPoint using:
-   * @param p The plottable TwoJS Object associated to this object
+   * @param point The plottable TwoJS Object associated to this object
    */
-  constructor(p: Point) {
+  constructor(point: Point) {
     super();
     /* Establish the link between this abstract object on the fixed unit sphere
     and the object that helps create the corresponding renderable object  */
-    this.ref = p;
+    this.ref = point;
     POINT_COUNT++;
     this.name = `P-${POINT_COUNT}`;
   }

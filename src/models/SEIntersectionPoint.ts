@@ -5,7 +5,6 @@ import { IntersectionReturnType } from "@/types";
 import store from "@/store";
 import { Styles } from "@/types/Styles";
 import { SEOneDimensional } from "@/types";
-// type SEOneDimensional = SELine | SESegment | SECircle;
 
 export class SEIntersectionPoint extends SEPoint {
   /**
@@ -17,8 +16,8 @@ export class SEIntersectionPoint extends SEPoint {
   /**
    * The One-Dimensional parents of this SEInstructionPoint
    */
-  private seParent1: SENodule;
-  private seParent2: SENodule;
+  private seParent1: SEOneDimensional;
+  private seParent2: SEOneDimensional;
 
   /**
    * The numbering of the intersection in the case of
@@ -64,10 +63,6 @@ export class SEIntersectionPoint extends SEPoint {
       this.name = `Intersection(${seParent1.name},${seParent2.name},${order})`;
     else
       this.name = `Intersection(${seParent2.name},${seParent1.name},${order})`;
-    // Place registerChild calls AFTER the name is set
-    // so debugging output shows name correctly
-    // seParent1.registerChild(this);
-    // seParent2.registerChild(this);
   }
 
   /**

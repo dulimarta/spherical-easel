@@ -12,6 +12,9 @@ import EventBus from "./EventBus";
 import { RotateSphereCommand } from "@/commands/RotateSphereCommand";
 import Highlighter from "./Highlighter";
 import { MovePointCommand } from "@/commands/MovePointCommand";
+// import { MoveLineCommand } from "@/commands/MoveLineCommand";
+// import { MoveSegmentCommand } from "@/commands/MoveSegmentCommand";
+// import { MoveCircleCommand } from "@/commands/MoveCircleCommand";
 import { CommandGroup } from "@/commands/CommandGroup";
 const tmpVector1 = new Vector3();
 const tmpVector2 = new Vector3();
@@ -45,13 +48,8 @@ export default class MoveHandler extends Highlighter {
   private afterMoveVector1 = new Vector3(); // The start/center SEPoint
   private afterMoveVector2 = new Vector3(); // The end/circle SEPoint  (not used for rotate or point move undo)
   /**
-   * A matrix that is used to indicate the *change* in position of the moving object on the sphere.
-   * This matrix is applied to the free points defining the movable object, when those points are updated, the
-   * object moves.
-   * Rotation: Used when no object is selected and the user mouse presses and drags
-   * Used in the MoveCommand to indicate the matrix that maps the two before vectors defining the
-   * locations of the points defining the line/segment/circle to the two after vectors that defined
-   * the points that define the line/segment/circle
+   * A matrix that is used to indicate the *change* in position of sphere used only in Rotation.
+   * Rotations is used when no object is selected and the user mouse presses and drags on an empty location.
    */
   private changeInPositionRotationMatrix: Matrix4 = new Matrix4();
 
@@ -148,7 +146,12 @@ export default class MoveHandler extends Highlighter {
       ) {
         // Move the selected SELine or SESegment
         this.moveTarget.ref.normalDisplay();
-        this.doMoveLine(this.moveTarget, event.altKey, event.ctrlKey);
+        this.moveTarget.move(
+          this.previousSphereVector,
+          this.currentSphereVector,
+          event.altKey,
+          event.ctrlKey
+        );
         this.afterMoveVector1.copy(this.moveTarget.startSEPoint.locationVector);
         this.afterMoveVector2.copy(this.moveTarget.endSEPoint.locationVector);
       } else if (this.moveTarget instanceof SECircle) {
@@ -304,93 +307,6 @@ export default class MoveHandler extends Highlighter {
     this.movingSomething = false;
   }
 
-  /**
-   * Move a line, this is not a method in the SELine or SESegment class (unlike move circle) because there
-   * are no classes that extend SELine or SESegment that are movable.
-   * @param targetLine The SELine/SESegment being moved
-   * @param altKeyPressed Controls which point defining the line or segment the line or segment rotates about
-   * @param ctrlKeyPressed If pressed overrides the altKey method and just rotates the entire line/segment based on the change in mouse position.
-   */
-  private doMoveLine(
-    targetLine: SELine | SESegment,
-    altKeyPressed: boolean,
-    ctrlKeyPressed: boolean
-  ): void {
-    let rotationAngle;
-    // If the ctrlKey Is press translate the segment in the direction of previousSphereVector
-    //  to currentSphereVector (i.e. just rotate the segment)
-    if (ctrlKeyPressed) {
-      rotationAngle = this.previousSphereVector.angleTo(
-        this.currentSphereVector
-      );
-      // If the rotation is big enough preform the rotation
-      if (rotationAngle > SETTINGS.rotate.minAngle) {
-        // The axis of rotation
-        desiredZAxis
-          .crossVectors(this.previousSphereVector, this.currentSphereVector)
-          .normalize();
-        // Form the matrix that performs the rotation
-        // this.changeInPositionRotationMatrix.makeRotationAxis(
-        //   desiredZAxis,
-        //   rotationAngle
-        // );
-        tmpVector1
-          .copy(targetLine.startSEPoint.locationVector)
-          .applyAxisAngle(desiredZAxis, rotationAngle);
-        targetLine.startSEPoint.locationVector = tmpVector1;
-        tmpVector2
-          .copy(targetLine.endSEPoint.locationVector)
-          .applyAxisAngle(desiredZAxis, rotationAngle);
-        targetLine.endSEPoint.locationVector = tmpVector2;
-        // Update both points, because we might need to update their kids!
-        targetLine.endSEPoint.update();
-        targetLine.startSEPoint.update();
-      }
-    } else {
-      let pivot = targetLine.startSEPoint;
-      let freeEnd = targetLine.endSEPoint;
-      if (altKeyPressed) {
-        pivot = targetLine.endSEPoint;
-        freeEnd = targetLine.startSEPoint;
-      }
-
-      // We want to measure the rotation angle with respect to the rotationAxis
-      // Essentially we rotate a plane "hinged" at the rotationAxis so
-      // the angle of rotation must be measure as the amount of changes of the
-      // plane normal vector
-
-      // Determine the normal vector to the plane containing the pivot and the previous position
-      tmpVector1
-        .crossVectors(pivot.locationVector, this.previousSphereVector)
-        .normalize();
-      // Determine the normal vector to the plane containing the pivot and the current position
-      tmpVector2
-        .crossVectors(pivot.locationVector, this.currentSphereVector)
-        .normalize();
-      // The angle between tmpVector1 and tmpVector2 is the distance to move on the Ideal Unit Sphere
-      rotationAngle = tmpVector1.angleTo(tmpVector2);
-
-      // Determine which direction to rotate.
-      tmpVector1.cross(tmpVector2);
-      rotationAngle *= Math.sign(tmpVector1.z);
-
-      // Reverse the direction of the rotation if the current points is on the back of the sphere
-      if (this.currentSphereVector.z < 0) {
-        rotationAngle *= -1;
-      }
-
-      // Rotate the freeEnd by the rotation angle around the axisOfRotation
-      const axisOfRotation = pivot.locationVector;
-      tmpVector1.copy(freeEnd.locationVector);
-      tmpVector1.applyAxisAngle(axisOfRotation, rotationAngle);
-      freeEnd.locationVector = tmpVector1;
-      console.debug("free End kid", freeEnd.kids[0].name);
-      console.debug("pivot kid", pivot.kids[0].name);
-      freeEnd.update();
-      pivot.update();
-    }
-  }
-
   private doRotateSphere(): void {
     // Compute the angular change in position
     const rotationAngle = this.previousSphereVector.angleTo(
@@ -414,4 +330,19 @@ export default class MoveHandler extends Highlighter {
       });
     }
   }
+
+  activate(): void {
+    super.activate();
+  }
+  /**
+   * Record the current location information of the descendants of the points
+   */
+  // private descendantInformation(rootSEPoint: SEPoint): any {
+  //   //DataStructure {
+  //   dataStructure: any;
+  //   rootSEPoint.kids.forEach(obj => {
+  //     if (obj instanceof SEPoint) {
+  //     }
+  //   });
+  // }
 }

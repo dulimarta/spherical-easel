@@ -122,4 +122,10 @@ export default abstract class Highlighter extends MouseHandler {
       );
     }
   }
+
+  activate() {
+    this.store.getters.selectedObjects().forEach((obj: SENodule) => {
+      obj.selected = false;
+    });
+  }
 }

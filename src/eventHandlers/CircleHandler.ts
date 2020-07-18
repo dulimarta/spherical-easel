@@ -415,4 +415,7 @@ export default class CircleHandler extends Highlighter {
       new ConvertInterPtToUserCreatedCommand(this.centerSEPoint).execute();
     }
   }
+  activate(): void {
+    super.activate();
+  }
 }

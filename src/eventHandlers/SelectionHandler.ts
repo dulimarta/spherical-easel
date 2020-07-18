@@ -2,15 +2,18 @@ import MouseHandler from "./MouseHandler";
 import { SENodule } from "@/models/SENodule";
 
 export default class SelectionHandler extends MouseHandler {
+  /**
+   * An array of the selected objects.  These objects should stay highlighted/selected until either this
+   * tool unselects them or the next tools activate() method clears (and possibly processes) them.
+   *
+   */
   private currentSelection: SENodule[] = [];
-  activate(): void {
-    window.addEventListener("keypress", this.keyPressHandler);
-  }
 
-  deactivate(): void {
-    window.removeEventListener("keypress", this.keyPressHandler);
-  }
-
+  /**
+   * This handles the keyboard events and when multiple objects are under
+   * the mouse, the user can specify which one to select.
+   * @param e A keyboard event -- only the digits are interpreted
+   */
   keyPressHandler = (e: KeyboardEvent): void => {
     // None
     if (this.hitSENodules?.length <= 1) return;
@@ -27,14 +30,6 @@ export default class SelectionHandler extends MouseHandler {
       });
     }
   };
-
-  mouseMoved(event: MouseEvent): void {
-    super.mouseMoved(event);
-    this.hitSENodules = this.store.getters.findNearbyObjects(
-      this.currentSphereVector,
-      this.currentScreenVector
-    );
-  }
 
   mousePressed(event: MouseEvent): void {
     event.preventDefault();
@@ -66,7 +61,42 @@ export default class SelectionHandler extends MouseHandler {
     this.store.commit("setSelectedObjects", this.currentSelection);
   }
 
+  mouseMoved(event: MouseEvent): void {
+    super.mouseMoved(event);
+    this.hitSENodules = this.store.getters.findNearbyObjects(
+      this.currentSphereVector,
+      this.currentScreenVector
+    );
+    console.log("----------------------------");
+    this.hitSENodules.forEach(n => console.log("hit object", n.name));
+    // // Create an array of SENodules of all nearby objects by querying the store
+    // this.hitSENodules = this.store.getters
+    //   .findNearbyObjects(this.currentSphereVector, this.currentScreenVector)
+    //   .filter((n: SENodule) => {
+    //     if (n instanceof SEIntersectionPoint) {
+    //       if (!n.isUserCreated) {
+    //         return n.exists; //You always select automatically created intersection points if it exists
+    //       } else {
+    //         return n.showing && n.exists; //You can't select hidden objects or items that don't exist
+    //       }
+    //     } else {
+    //       return n.showing && n.exists; //You can't select hidden objects or items that don't exist
+    //     }
+    //   });
+  }
+
   mouseReleased(event: MouseEvent): void {
     // No code required
+  }
+
+  activate(): void {
+    window.addEventListener("keypress", this.keyPressHandler);
+    this.store.getters.selectedObjects().forEach((obj: SENodule) => {
+      obj.selected = false;
+    });
+  }
+
+  deactivate(): void {
+    window.removeEventListener("keypress", this.keyPressHandler);
   }
 }

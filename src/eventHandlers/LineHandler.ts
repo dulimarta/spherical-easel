@@ -446,4 +446,8 @@ export default class LineHandler extends Highlighter {
       new ConvertInterPtToUserCreatedCommand(this.startSEPoint).execute();
     }
   }
+
+  activate(): void {
+    super.activate();
+  }
 }

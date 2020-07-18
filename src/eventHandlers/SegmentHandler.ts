@@ -513,4 +513,8 @@ export default class SegmentHandler extends Highlighter {
       this.arcLength = 2 * Math.PI - this.arcLength;
     }
   }
+
+  activate(): void {
+    super.activate();
+  }
 }

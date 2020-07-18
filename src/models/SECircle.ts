@@ -5,11 +5,15 @@ import { Vector3, Matrix4 } from "three";
 import { Visitable } from "@/visitors/Visitable";
 import { Visitor } from "@/visitors/Visitor";
 import { OneDimensional } from "@/types";
-let CIRCLE_COUNT = 0;
 import SETTINGS from "@/global-settings";
-/** Use in the rotation of sphere move event */
-const desiredZAxis = new Vector3();
 import { Styles } from "@/types/Styles";
+
+/** Use in the rotation matrix during a move event */
+const desiredZAxis = new Vector3();
+const tmpVector = new Vector3();
+const tmpVector1 = new Vector3();
+
+let CIRCLE_COUNT = 0;
 
 const styleSet = new Set([
   Styles.StrokeColor,
@@ -30,6 +34,14 @@ export class SECircle extends SENodule implements Visitable, OneDimensional {
    * The model SE object that is on the circle
    */
   private _circleSEPoint: SEPoint;
+
+  /**
+   * A matrix that is used to indicate the *change* in position of the objects on the sphere. The
+   * total change in position is not stored. This matrix is applied (via a position visitor) to
+   * all objects on the sphere. Used when no object is selected and the user mouse presses and drags
+   */
+  private changeInPositionRotationMatrix: Matrix4 = new Matrix4();
+
   // #region circleConstructor
   /**
    * Create a model SECircle using:
@@ -45,23 +57,8 @@ export class SECircle extends SENodule implements Visitable, OneDimensional {
 
     CIRCLE_COUNT++;
     this.name = `C-${CIRCLE_COUNT}`;
-    // Always register the children after the name is initialized
-    // centerPoint.registerChild(this);
-    // circlePoint.registerChild(this);
   }
   // #endregion circleConstructor
-
-  /**
-   * A temporary vector for making calculations.
-   */
-  private tmpVector = new Vector3();
-  private tmpVector1 = new Vector3();
-  /**
-   * A matrix that is used to indicate the *change* in position of the objects on the sphere. The
-   * total change in position is not stored. This matrix is applied (via a position visitor) to
-   * all objects on the sphere. Used when no object is selected and the user mouse presses and drags
-   */
-  private changeInPositionRotationMatrix: Matrix4 = new Matrix4();
 
   customStyles(): Set<Styles> {
     return styleSet;
@@ -123,28 +120,28 @@ export class SECircle extends SENodule implements Visitable, OneDimensional {
    */
   public closestVector(idealUnitSphereVector: Vector3): Vector3 {
     // The normal to the plane of the center and the idealUnitVector
-    this.tmpVector.crossVectors(
+    tmpVector.crossVectors(
       this._centerSEPoint.locationVector,
       idealUnitSphereVector
     );
     // Check to see if the tmpVector is zero (i.e the center and  idealUnit vectors are parallel -- ether
     // nearly antipodal or in the same direction)
-    if (this.tmpVector.isZero()) {
+    if (tmpVector.isZero()) {
       return this._circleSEPoint.locationVector; // An arbitrary point will do as all points are equally far away
     } else {
       // Make the tmpVector (soon to be the to vector) unit
-      this.tmpVector.normalize();
+      tmpVector.normalize();
       // A vector perpendicular to the center vector in the direction of the idealUnitSphereVector
-      this.tmpVector.cross(this._centerSEPoint.locationVector).normalize();
+      tmpVector.cross(this._centerSEPoint.locationVector).normalize();
       // The closest point is cos(arcLength)*this._centerSEPoint.locationVector+ sin(arcLength)*this.tmpVector
-      this.tmpVector.multiplyScalar(Math.sin(this.circleRadius));
-      this.tmpVector
+      tmpVector.multiplyScalar(Math.sin(this.circleRadius));
+      tmpVector
         .addScaledVector(
           this._centerSEPoint.locationVector,
           Math.cos(this.circleRadius)
         )
         .normalize();
-      return this.tmpVector;
+      return tmpVector;
     }
   }
 
@@ -173,14 +170,14 @@ export class SECircle extends SENodule implements Visitable, OneDimensional {
         desiredZAxis,
         rotationAngle
       );
-      this.tmpVector1
+      tmpVector1
         .copy(this.centerSEPoint.locationVector)
         .applyMatrix4(this.changeInPositionRotationMatrix);
-      this.centerSEPoint.locationVector = this.tmpVector1;
-      this.tmpVector
+      this.centerSEPoint.locationVector = tmpVector1;
+      tmpVector
         .copy(this.circleSEPoint.locationVector)
         .applyMatrix4(this.changeInPositionRotationMatrix);
-      this.circleSEPoint.locationVector = this.tmpVector;
+      this.circleSEPoint.locationVector = tmpVector;
       // Update both points, because we might need to update their kids!
       this.circleSEPoint.update();
       this.centerSEPoint.update();

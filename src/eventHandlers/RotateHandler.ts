@@ -4,6 +4,7 @@ import { Matrix4, Vector3 } from "three";
 import EventBus from "./EventBus";
 import { RotateSphereCommand } from "@/commands/RotateSphereCommand";
 import SETTINGS from "@/global-settings";
+import { SENodule } from "@/models/SENodule";
 
 const desiredZAxis = new Vector3();
 const deltaT = 1000 / SETTINGS.rotate.momentum.framesPerSecond; // The momentum rotation is refreshed every deltaT milliseconds
@@ -107,7 +108,6 @@ export default class RotateHandler extends MouseHandler {
     }
   }
 
-  // eslint-disable-next-line
   mouseReleased(event: MouseEvent): void {
     this.isDragging = false;
     // Mouse releasing in the sphere during momentum rotation turns off the rotation
@@ -209,5 +209,11 @@ export default class RotateHandler extends MouseHandler {
       // Store the rotation command that takes the mouse press location to the mouse release location
       new RotateSphereCommand(this.changeInPositionRotationMatrix).push();
     }
+  }
+
+  activate(): void {
+    this.store.getters.selectedObjects().forEach((obj: SENodule) => {
+      obj.selected = false;
+    });
   }
 }

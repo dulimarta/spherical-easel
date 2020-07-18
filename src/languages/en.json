@@ -56,13 +56,13 @@
     "CreateCircleToolTipMessage": "Insert circle",
     "CreateCircleToolUseMessage": "Click and drag to insert a circle with a given center point and through a second point.",
 
-    "CreateSelectToolTipMessage": "FIXME",
-    "CreateSelectToolUseMessage": "FIXME",
-    "CreateSelectDisplayedName": "FIXME",
+    "CreateSelectToolTipMessage": "Selection",
+    "CreateSelectToolUseMessage": "Selection Objects",
+    "CreateSelectDisplayedName": "Click on objects to select them, hold the Alt key to add to your selection",
 
     "CreatePointOnOneDimDisplayedName": "Point On One Dimensional Object",
     "CreatePointOnOneDimToolTipMessage": "Select a one-dimensional object",
-    "CreatePointOnOneDimToolUseMessage": "Select a one-dimensional object add a point to."
+    "CreatePointOnOneDimToolUseMessage": "Select a one-dimensional object to add a point to."
   },
   "settings": {
     "title": "Preferences"

@@ -11,23 +11,19 @@ export class SEPointOnOneDimensional extends SEPoint {
 
   /**
    * Create an intersection point between two one-dimensional objects
-   * @param pt the TwoJS point associated with this intersection
+   * @param point the TwoJS point associated with this intersection
    * @param oneDimensionalParent The parent
    */
   constructor(
-    pt: Point,
+    point: Point,
     oneDimensionalParent: SEOneDimensional
     //    initialVector: Vector3
   ) {
-    super(pt);
-    this.ref = pt;
+    super(point);
+    this.ref = point;
     this.oneDimensionalParent = oneDimensionalParent;
     // this._locationVector.copy(initialVector);
     this.name = `PointOn(${oneDimensionalParent.name})`;
-
-    // Place registerChild calls AFTER the name is set
-    // so debugging output shows name correctly
-    //oneDimensionalParent.registerChild(this);
   }
 
   /**

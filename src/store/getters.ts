@@ -585,19 +585,6 @@ export default {
           if (
             !avoidVectors.some(v => tempVec.subVectors(info.vector, v).isZero())
           ) {
-            // info.vector is not on the avoidVectors array, so create an intersection
-            console.debug(
-              "not on list",
-              info.vector.toFixed(4),
-              "intersect with seg",
-              oldSegment.name
-            );
-            if (avoidVectors[0]) {
-              console.debug("av0", avoidVectors[0].toFixed(5));
-            }
-            if (avoidVectors[1]) {
-              console.debug("av1", avoidVectors[1].toFixed(5));
-            }
             const newPt = new Point();
             newPt.stylize(DisplayStyle.TEMPORARY);
             const newSEIntersectionPt = new SEIntersectionPoint(
@@ -614,13 +601,6 @@ export default {
               parent1: oldSegment,
               parent2: newSegment
             });
-          } else {
-            console.debug(
-              "point on list!",
-              info.vector.toFixed(5),
-              "intersect with seg",
-              oldSegment.name
-            );
           }
         });
       });
@@ -793,7 +773,7 @@ export default {
         two.centerSEPoint.locationVector,
         two.circleRadius
       );
-    throw "This line should NOT be called at all";
+    throw "Attempted to intersect a non-dimensional object";
   },
   findIntersectionPointsStartingWith: (state: AppState) => (
     prefix: string
@@ -801,5 +781,8 @@ export default {
     return state.points
       .filter(p => p instanceof SEIntersectionPoint && p.name.includes(prefix))
       .map(obj => obj as SEIntersectionPoint);
+  },
+  selectedObjects: (state: AppState) => (): SENodule[] => {
+    return state.selections;
   }
 };

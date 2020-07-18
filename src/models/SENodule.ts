@@ -31,6 +31,7 @@ export abstract class SENodule {
     this.id = NODE_COUNT++;
     this.name = `SENodule ${this.id}`;
   }
+
   /* If the object doesn't exist then exists= false (For example the intersection of two circles
         can exist only if the two circles are close enough to each other, but even when they are 
         far apart and the intersections don't exist, the user might drag the circles back to where
@@ -100,6 +101,7 @@ export abstract class SENodule {
   public addParent(n: SENodule): void {
     this._parents.push(n);
   }
+
   /** Removes a given SENodule, n, from the parent array of the current SENodule
    * @param n node to remove
    */
@@ -114,11 +116,13 @@ export abstract class SENodule {
   public addKid(n: SENodule): void {
     this._kids.push(n);
   }
+
   /* Removes a given SENodule, n, from the kid arry of the current SENodule */
   public removeKid(n: SENodule): void {
     const idx = this._kids.findIndex((item: SENodule) => item.id === n.id);
     if (idx >= 0) this._kids.splice(idx, 1);
   }
+
   /* This registers a given SENodule as a child of the current SENodule by 
     1) putting the given SENodule,n ,as an element in the kids array
     2) declaring that the parent of the given SENodule is the current node  
@@ -149,23 +153,23 @@ export abstract class SENodule {
     n.removeParent(this);
   }
 
-  public removeSelfSafely(): void {
-    if (this._kids.length == 0) {
-      // const pars = this._parents.map(p => p.name).join(", ");
-      // console.debug(`Unregistering ${this.name} from ${pars}`);
-      this._parents.forEach(item => {
-        // Warning: we can't call unregisterChild() here
-        // because that will eventually call this.removeParent()
-        // which alters the parents array while we are still
-        // iterating through its elements here
-        item.removeKid(this);
-      });
-      this._parents.clear();
-    } else {
-      const dep = this._kids.map(z => z.name).join(", ");
-      console.error(`Can't remove ${this.name} safely because of ${dep}`);
-    }
-  }
+  // public removeSelfSafely(): void {
+  //   if (this._kids.length == 0) {
+  //     // const pars = this._parents.map(p => p.name).join(", ");
+  //     // console.debug(`Unregistering ${this.name} from ${pars}`);
+  //     this._parents.forEach(item => {
+  //       // Warning: we can't call unregisterChild() here
+  //       // because that will eventually call this.removeParent()
+  //       // which alters the parents array while we are still
+  //       // iterating through its elements here
+  //       item.removeKid(this);
+  //     });
+  //     this._parents.clear();
+  //   } else {
+  //     const dep = this._kids.map(z => z.name).join(", ");
+  //     console.error(`Can't remove ${this.name} safely because of ${dep}`);
+  //   }
+  // }
 
   /* This removes the current node and all descendants (kids, grand kids, etc.) from the 
     object tree by using the unregister function and remove recursively */
