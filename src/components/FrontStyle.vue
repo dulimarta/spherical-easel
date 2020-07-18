@@ -10,7 +10,7 @@
         <span class="text-subtitle-2">Stroke Color</span>
         <v-color-picker
           v-model="strokeColor"
-          @change="onLineColorChanged"
+          @update:color="onLineColorChanged"
         ></v-color-picker>
       </v-card>
     </transition>
