@@ -586,6 +586,11 @@ export default class Circle extends Nodule {
       this.frontPart.linewidth = options.strokeWidth;
       this.glowingFrontPart.linewidth = options.strokeWidth;
     }
+    if (options.fillColor) {
+      // FIXME: it does not work?
+      this.frontGradientColor.color = options.fillColor;
+      this.frontFill.fill = this.frontGradient;
+    }
   }
 
   setVisible(flag: boolean): void {
