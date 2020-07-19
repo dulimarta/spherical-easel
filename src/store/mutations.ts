@@ -15,9 +15,12 @@ import { StyleOptions } from "@/types/Styles";
 
 //#region appState
 export const initialState: AppState = {
+  // AppState is a type defined in @/types/index.ts
   sphereRadius: 0, // Is this needed? TODO: remove?
   actionMode: "rotate", // The action mode of the Sphere Canvas
+  previousActionMode: "rotate", // The previous action mode
   activeToolName: "", // The active tool for handling user mouse input
+  previousActiveToolName: "", // The active tool for handling user mouse input
   zoomMagnificationFactor: 1, // The CSSTransform magnification factor
   zoomTranslation: [0, 0], // The CSSTransform translation vector
   nodules: [], // An array of all SENodules
@@ -54,9 +57,20 @@ export default {
     state.sphereRadius = radius;
   },
   setActionMode(state: AppState, mode: { id: string; name: string }): void {
+    // zoomFit is a one-off tool, so the previousActionMode should never be "zoomFit" (avoid infinite loops too!)
+    if (state.actionMode != "zoomFit") {
+      state.previousActionMode = state.actionMode;
+      state.previousActiveToolName = state.activeToolName;
+    }
     state.actionMode = mode.id;
     state.activeToolName = mode.name;
   },
+
+  revertActionMode(state: AppState, st: string): void {
+    state.actionMode = state.previousActionMode;
+    state.activeToolName = state.previousActiveToolName;
+  },
+
   setZoomMagnificationFactor(state: AppState, mag: number): void {
     state.zoomMagnificationFactor = mag;
   },

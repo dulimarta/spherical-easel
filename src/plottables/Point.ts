@@ -117,6 +117,7 @@ export default class Point extends Nodule {
    * @param factor The scale factor of the current zoom port
    */
   adjustSizeForZoom(factor: number): void {
+    console.log("point adjust for zoom");
     const newRadius = defaultRadiusFront * factor;
     let newScale = 1;
     if (newRadius > SETTINGS.point.drawn.radius.rmax) {

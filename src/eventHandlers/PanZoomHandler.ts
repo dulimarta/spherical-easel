@@ -8,7 +8,8 @@ import { SENodule } from "@/models/SENodule";
 
 export enum ZoomMode {
   MAGNIFY,
-  MINIFY
+  MINIFY,
+  FIT
 }
 
 // const tmpMatrix = new Matrix4();
@@ -42,7 +43,7 @@ export default class PanZoomHandler implements ToolStrategy {
    */
   private didPan = false;
   /**
-   * Indicates that the user mouse pressed and released at the same location - does a zoom at
+   * Helps indicate if the user mouse pressed and released at the same location - does a zoom at
    * the location of the mouse event
    */
   private isMousePressed = false;
@@ -71,22 +72,25 @@ export default class PanZoomHandler implements ToolStrategy {
   }
 
   mousePressed(event: MouseEvent): void {
-    console.log("Mouse Press Pan/Zoom");
+    // Do nothing if the mode is to Fit the sphere
+    if (this._mode == ZoomMode.FIT) return;
     this.isMousePressed = true;
 
-    // Read the target DOM element to determine the current (mouse press) location
-    const target = (event.currentTarget || event.target) as HTMLDivElement;
-    const boundingRect = target.getBoundingClientRect();
-    const offsetX = event.clientX - boundingRect.left;
-    const offsetY = event.clientY - boundingRect.top;
-    // Compute the pixel location of the mouse press event
-    this.currentPixelPosition.set(offsetX, offsetY);
-    // Get the current magnification factor and translation vector so we can untransform the pixel location
+    // Get the current magnification factor and translation vector so we can untransform the pixel location and issue command that can be undone.
     this.mousePressMagnificationFactor = this.store.state.zoomMagnificationFactor;
     const temp = this.store.state.zoomTranslation;
     for (let i = 0; i < 2; i++) {
       this.mousePressTranslationVector[i] = temp[i];
     }
+    // Read the target DOM element to determine the current (mouse press) location
+    const target = (event.currentTarget || event.target) as HTMLDivElement;
+    const boundingRect = target.getBoundingClientRect();
+    const offsetX = event.clientX - boundingRect.left;
+    const offsetY = event.clientY - boundingRect.top;
+
+    // Compute the pixel location of the mouse press event
+    this.currentPixelPosition.set(offsetX, offsetY);
+
     // Compute untransformed (ut) location of the pixel location, this is the start dragging
     // location *pre* affine transformation
     this.utStartDragPosition.set(
@@ -98,6 +102,8 @@ export default class PanZoomHandler implements ToolStrategy {
   }
 
   mouseMoved(event: MouseEvent): void {
+    // Do nothing if the mode is to Fit the sphere
+    if (this._mode == ZoomMode.FIT) return;
     // If the mouse was pressed and then moved, the user is dragging (to pan the view)
     if (this.isMousePressed) {
       this.isDragging = true;
@@ -120,6 +126,8 @@ export default class PanZoomHandler implements ToolStrategy {
   }
 
   mouseReleased(event: MouseEvent): void {
+    // Do nothing if the mode is to Fit the sphere
+    if (this._mode == ZoomMode.FIT) return;
     /* The this.didPan condition prevents a zoomCommand from being stored when we were dragging but didn't drag far enough to trigger an actual pan view change*/
     if (this.isDragging && this.didPan) {
       /* End the Pan operation */
@@ -135,15 +143,6 @@ export default class PanZoomHandler implements ToolStrategy {
       );
       // Push the command on to the command stack, but do not execute it because it has already been enacted
       zoomCommand.push();
-      console.log("Push Pan Command!");
-      // console.log("Do Pan Command push: last TV", [
-      //   this.lastPanTranslationVector[0],
-      //   this.lastPanTranslationVector[1]
-      // ]);
-      // console.log("mousepress TV", [
-      //   this.mousePressTranslationVector[0],
-      //   this.mousePressTranslationVector[1]
-      // ]);
     } else {
       /* Do the zoom operation unless the isMousePressed is false (which might happen if the mouse leave event was triggered
        */
@@ -155,7 +154,6 @@ export default class PanZoomHandler implements ToolStrategy {
   }
 
   doZoom(event: MouseEvent): void {
-    console.log("Do Zoom Command!");
     // Get the current magnification factor and set a variable for the next one
     const currentMagFactor = this.store.state.zoomMagnificationFactor;
     let newMagFactor = currentMagFactor;
@@ -257,18 +255,51 @@ export default class PanZoomHandler implements ToolStrategy {
   }
 
   mouseLeave(event: MouseEvent): void {
-    console.debug("mouse leave event pan/zoom");
+    // Do nothing if the mode is to Fit the sphere
+    if (this._mode == ZoomMode.FIT) return;
     this.isDragging = false;
     this.isMousePressed = false;
   }
 
   activate(): void {
+    // Unselect the selected objects (change the display to not glowing)
     this.store.getters.selectedObjects().forEach((obj: SENodule) => {
       obj.selected = false;
     });
+    // Clear the selected objects array
+    this.store.commit("setSelectedObjects", []);
   }
 
   deactivate(): void {
     // console.debug("Deactivate PZtool");
+  }
+  doZoomFit(size: number): void {
+    // Get the current magnification factor and set a variable for the next one
+    const currentMagFactor = this.store.state.zoomMagnificationFactor;
+    // Get the current translation vector to allow us to untransform the CSS transformation
+    const currentTranslationVector = this.store.state.zoomTranslation;
+
+    const radius = size / 2 - 16; // 16-pixel gap
+    this.store.commit("setSphereRadius", radius);
+
+    // The radius over the default radius is the magnification factor
+    const newMagFactor = radius / SETTINGS.boundaryCircle.radius;
+
+    // Set the new magnification factor and the new translation vector in the store
+    // The origin of the screen is the zoom translation vector
+    this.store.dispatch("changeZoomFactor", newMagFactor);
+    this.store.commit("setZoomTranslation", [0, 0]);
+
+    // Update the display
+    EventBus.fire("zoom-updated", {});
+    // Store the zoom as a command that can be undone or redone
+    const zoomCommand = new ZoomSphereCommand(
+      newMagFactor,
+      [0, 0],
+      currentMagFactor,
+      currentTranslationVector
+    );
+    // Push the command on to the command stack, but do not execute it because it has already been enacted
+    zoomCommand.push();
   }
 }

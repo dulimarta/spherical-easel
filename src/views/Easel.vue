@@ -20,11 +20,7 @@
 
     <!-- Use the right pane mainly for the canvas -->
     <template slot="paneR">
-      <split-pane
-        split="vertical"
-        @resize="rightDividerMoved"
-        :default-percent="80"
-      >
+      <split-pane split="vertical" @resize="rightDividerMoved" :default-percent="80">
         <template slot="paneL">
           <v-container fluid ref="mainPanel">
             <v-row>
@@ -38,9 +34,7 @@
                     id="responsiveBox"
                     class="pa-0"
                   >
-                    <sphere-frame
-                      :canvas-size="currentCanvasSize"
-                    ></sphere-frame>
+                    <sphere-frame :canvas-size="currentCanvasSize"></sphere-frame>
                     <div class="anchored top left">
                       <!-- <v-btn-toggle
                     v-model="actionMode"
@@ -83,13 +77,7 @@
                         :close-delay="toolTipCloseDelay"
                       >
                         <template v-slot:activator="{ on }">
-                          <v-btn
-                            color="primary"
-                            icon
-                            tile
-                            @click="enableZoomIn"
-                            v-on="on"
-                          >
+                          <v-btn color="primary" icon tile @click="enableZoomIn" v-on="on">
                             <v-icon>mdi-magnify-plus-outline</v-icon>
                           </v-btn>
                         </template>
@@ -101,19 +89,23 @@
                         :close-delay="toolTipCloseDelay"
                       >
                         <template v-slot:activator="{ on }">
-                          <v-btn
-                            color="primary"
-                            icon
-                            tile
-                            @click="enableZoomOut"
-                            v-on="on"
-                          >
+                          <v-btn color="primary" icon tile @click="enableZoomOut" v-on="on">
                             <v-icon>mdi-magnify-minus-outline</v-icon>
                           </v-btn>
                         </template>
-                        <span>
-                          {{ $t("buttons.PanZoomOutToolTipMessage") }}
-                        </span>
+                        <span>{{ $t("buttons.PanZoomOutToolTipMessage") }}</span>
+                      </v-tooltip>
+                      <v-tooltip
+                        bottom
+                        :open-delay="toolTipOpenDelay"
+                        :close-delay="toolTipCloseDelay"
+                      >
+                        <template v-slot:activator="{ on }">
+                          <v-btn color="primary" icon tile @click="enableZoomFit" v-on="on">
+                            <v-icon>mdi-magnify-scan</v-icon>
+                          </v-btn>
+                        </template>
+                        <span>{{ $t("buttons.PanZoomOutToolTipMessage") }}</span>
                       </v-tooltip>
                     </div>
                   </v-responsive>
@@ -129,15 +121,31 @@
               multi-line
             >
               <span>
-                <strong class="warning--text">
-                  {{ $t("buttons.PanZoomInDisplayedName") + ": " }}
-                </strong>
+                <strong class="warning--text">{{ $t("buttons.PanZoomInDisplayedName") + ": " }}</strong>
                 {{ $t("buttons.PanZoomInToolUseMessage") }}
               </span>
               <v-btn @click="displayToolUseMessage = false" icon>
                 <v-icon color="success">mdi-close</v-icon>
               </v-btn>
             </v-snackbar>
+
+            <v-snackbar
+              v-model="displayZoomFitToolUseMessage"
+              bottom
+              left
+              :timeout="toolUseMessageDelay"
+              :value="displayToolUseMessage"
+              multi-line
+            >
+              <span>
+                <strong class="warning--text">{{ $t("buttons.ZoomFitDisplayedName") + ": " }}</strong>
+                {{ $t("buttons.ZoomFitToolUseMessage") }}
+              </span>
+              <v-btn @click="displayToolUseMessage = false" icon>
+                <v-icon color="success">mdi-close</v-icon>
+              </v-btn>
+            </v-snackbar>
+
             <v-snackbar
               v-model="displayZoomOutToolUseMessage"
               bottom
@@ -147,9 +155,7 @@
               multi-line
             >
               <span>
-                <strong class="warning--text">
-                  {{ $t("buttons.PanZoomOutDisplayedName") + ": " }}
-                </strong>
+                <strong class="warning--text">{{ $t("buttons.PanZoomOutDisplayedName") + ": " }}</strong>
                 {{ $t("buttons.PanZoomOutToolUseMessage") }}
               </span>
               <v-btn @click="displayToolUseMessage = false" icon>
@@ -186,7 +192,7 @@ import ToolButton from "@/components/ToolButton.vue";
 import StylePanel from "@/components/Style.vue";
 
 import { getModule } from "vuex-module-decorators";
-import UI from "@/store/ui-styles";
+//import UI from "@/store/ui-styles";
 
 @Component({
   components: { SplitPane, Toolbox, SphereFrame, ToolButton, StylePanel }
@@ -209,7 +215,7 @@ export default class Easel extends Vue {
 
   private displayZoomInToolUseMessage = false;
   private displayZoomOutToolUseMessage = false;
-
+  private displayZoomFitToolUseMessage = false;
   private actionMode = "segment";
 
   $refs!: {
@@ -235,6 +241,10 @@ export default class Easel extends Vue {
     this.displayZoomOutToolUseMessage = true;
     this.$store.commit("setActionMode", { id: "zoomOut", name: "Zoom Out" });
   }
+  private enableZoomFit(): void {
+    this.displayZoomFitToolUseMessage = true;
+    this.$store.commit("setActionMode", { id: "zoomFit", name: "Zoom Fit" });
+  }
   private adjustSize(): void {
     this.availHeight =
       window.innerHeight -
@@ -247,11 +257,6 @@ export default class Easel extends Vue {
       const rightBox = canvasPanel.getBoundingClientRect();
       this.currentCanvasSize = this.availHeight - rightBox.top;
     }
-    // console.debug(
-    //   `Available height ${this.availHeight.toFixed(
-    //     2
-    //   )} Canvas ${this.currentCanvasSize.toFixed(2)}`
-    // );
   }
 
   /** mounted() is part of VueJS lifecycle hooks */
@@ -303,6 +308,12 @@ export default class Easel extends Vue {
       p.ref.adjustSizeForZoom(e.factor);
     });
     this.$store.state.lines.forEach((p: SELine) => {
+      p.ref.adjustSizeForZoom(e.factor);
+    });
+    this.$store.state.circles.forEach((p: SELine) => {
+      p.ref.adjustSizeForZoom(e.factor);
+    });
+    this.$store.state.segments.forEach((p: SELine) => {
       p.ref.adjustSizeForZoom(e.factor);
     });
   }

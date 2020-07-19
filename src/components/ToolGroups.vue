@@ -280,6 +280,16 @@ export default class ToolGroups extends Vue {
       toolGroup: "edit"
     },
     {
+      id: "display-35",
+      actionModeValue: "zoomFit",
+      displayedName: "ZoomFitDisplayedName",
+      icon: "mdi-magnify-scan",
+      toolTipMessage: "ZoomFitToolTipMessage",
+      toolUseMessage: "ZoomFitToolUseMessage",
+      displayToolUseMessage: false,
+      toolGroup: "edit"
+    },
+    {
       id: "construction-45",
       actionModeValue: "intersect",
       displayedName: "CreateIntersectionDisplayedName",

@@ -395,6 +395,11 @@ export default class SphereFrame extends VueComponent {
         this.currentTool = this.zoomTool;
         this.zoomTool.zoomMode = ZoomMode.MINIFY;
         break;
+      case "zoomFit":
+        // This is a tool that only needs to run once and then the actionMode should be the same as the is was before the zoom fit (and the tool should be the same)
+        this.zoomTool.doZoomFit(this.canvasSize);
+        this.$store.commit("revertActionMode", "");
+        break;
       case "intersect":
         this.currentTool = this.intersectTool;
         break;

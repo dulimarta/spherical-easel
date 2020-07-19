@@ -67,8 +67,8 @@ export default class SelectionHandler extends MouseHandler {
       this.currentSphereVector,
       this.currentScreenVector
     );
-    console.log("----------------------------");
-    this.hitSENodules.forEach(n => console.log("hit object", n.name));
+    //console.log("----------------------------");
+    //this.hitSENodules.forEach(n => console.log("hit object", n.name));
     // // Create an array of SENodules of all nearby objects by querying the store
     // this.hitSENodules = this.store.getters
     //   .findNearbyObjects(this.currentSphereVector, this.currentScreenVector)
@@ -91,9 +91,13 @@ export default class SelectionHandler extends MouseHandler {
 
   activate(): void {
     window.addEventListener("keypress", this.keyPressHandler);
+    // Unselect all selected objects
     this.store.getters.selectedObjects().forEach((obj: SENodule) => {
       obj.selected = false;
     });
+    // Clear the selected objects array
+    this.store.commit("setSelectedObjects", []);
+    this.currentSelection.clear();
   }
 
   deactivate(): void {

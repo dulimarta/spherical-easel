@@ -784,5 +784,8 @@ export default {
   },
   selectedObjects: (state: AppState) => (): SENodule[] => {
     return state.selections;
+  },
+  previousActionMode: (state: AppState) => (): { id: string; name: string } => {
+    return { id: state.actionMode, name: state.activeToolName };
   }
 };

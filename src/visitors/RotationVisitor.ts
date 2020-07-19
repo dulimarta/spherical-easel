@@ -20,7 +20,6 @@ export class RotationVisitor implements Visitor {
     this.tmpVector.copy(p.locationVector); // Copy the old vector location of the SEPoint
     this.tmpVector.applyMatrix4(this.transformMatrix); // Apply the matrix
     p.locationVector = this.tmpVector; // Set the new position vector
-    console.log("rotation visitor on point", p.name);
     p.update();
   }
   //#endregion actionOnPoint

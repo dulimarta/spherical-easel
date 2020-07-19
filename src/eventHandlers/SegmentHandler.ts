@@ -515,6 +515,7 @@ export default class SegmentHandler extends Highlighter {
   }
 
   activate(): void {
+    // Unselect the selected objects and clear the selectedObject array
     super.activate();
   }
 }

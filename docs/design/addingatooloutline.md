@@ -36,18 +36,24 @@ This section is an outline of the steps need to add a tool that takes a collecti
      Then it should update the existence and location of the object and should end with setting the display of the corresponding <span class="class">Nodule</span> object. (Make sure that you set the parameters to properly display the <span class="class">Nodule</span> object -- read the variables section of the object for directions.) The last line should be
 
      ```ts
-     this.updateKids();`
+     this.updateKids();
      ```
 
 4. Write an [event handler](/design/#event-handlers). Start by thinking about which tool is most similar to the one being created. Start by creating a copy of that file and renaming it appropriately. Copy the structure to properly link the <span class="class">Nodule</span> and <span class="class">SENodule</span> objects. See the [Plottables Directory](/design/#plottables-directory).
    - ??? A new <span class="command">Command</span> object may have to written. Look and see which existing commands are most similar to the one being created. Copy that command. See the [Command](/design/#commands) section. Think carefully about undoing. Adding a new kind of point requires that when you undo and then redo the add operation it remains a new kid of point.
    - ??? A new mutations of the store may be required. Look in the <span class="file">mutations.ts</span> in the [Store](/design/#store). Although the <span class="string">RemovePoint</span> mutation might work.
+   - Edge case questions to ask: What should the behavior be if...
+     - The user mouse presses outside of the canvas, and mouse releases in the canvas (inside of the sphere or not)?
+     - The user mouse presses inside the canvas, mouse moves outside of the sphere (with out a mouse leave event, so still in the canvas), and then mouse releases inside of the canvas (inside of the sphere or not)?
+     - The user mouse presses inside the canvas, mouse moves outside of the sphere (_with_ a mouse leave event), and then mouse releases... inside of the canvas or not... inside of the sphere or not?
+     - The user presses and release in the same location.
 5. Add the tool to the <span class="file">SphereFrame.vue</span> file.
    - Import the handler.
    - Add a private variable for the handler.
    - In the <span class="method">mounted()</span> method add the constructor call.
    - In the <span class="method">switchActionMode(mode: string)</span> add a new case using the <span class="variable">actionMode</span> string and tool reference
 6. Debug your tool. Play with it and make sure it behaves in many situations.
+   - What is the behavior under all the edge condition list in step 4? How does undo and redo work in each of those edge cases?
 7. Add at least three new tests in the <span class="file">???</span> file in the <span class="directory">test</span> directory.
 8. Update the documentation. Create a new description of the use of the tool in the
    - [Tools Documents](/tools/edit.html)

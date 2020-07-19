@@ -32,6 +32,10 @@
     "PanZoomOutToolTipMessage": "Pan or Zoom Out",
     "PanZoomOutToolUseMessage": "Click to zoom out at the location of the mouse. Click and drag to pan the current view.",
 
+    "ZoomFitDisplayedName": "Zoom Fit",
+    "ZoomFitToolTipMessage": "Zoom Fit",
+    "ZoomFitToolUseMessage": "Click to fit the sphere in the available space.",
+
     "MoveDisplayedName": "Move",
     "MoveObjectToolTipMessage": "Move object",
     "MoveObjectToolUseMessage": "Click and drag an object to move it. Movable objects include labels, free points, and line segments with antipodal endpoints. Hold the SHIFT key to select from the back of the sphere.",

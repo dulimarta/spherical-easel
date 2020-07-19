@@ -77,6 +77,7 @@ export default class PointOnOneDimensionalHandler extends Highlighter {
     this.oneDimensional = null;
   }
   activate(): void {
+    // Unselect the selected objects and clear the selectedObject array
     super.activate();
   }
   deactivate(): void {

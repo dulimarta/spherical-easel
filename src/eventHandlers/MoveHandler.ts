@@ -66,7 +66,8 @@ export default class MoveHandler extends Highlighter {
   }
 
   mousePressed(event: MouseEvent) {
-    //super.mouseMoved(event);
+    // if mouse press is not on the sphere do not
+    if (!this.isOnSphere) return;
     // Reset the variables for another move event
     this.isDragging = true;
     this.moveTarget = null;
@@ -178,8 +179,7 @@ export default class MoveHandler extends Highlighter {
   }
 
   mouseReleased(event: MouseEvent) {
-    this.movingSomething = false;
-    this.isDragging = false;
+    if (!this.movingSomething) return;
 
     if (this.moveTarget instanceof SEPoint) {
       // Store the move point for undo/redo command
@@ -298,11 +298,17 @@ export default class MoveHandler extends Highlighter {
       // store the command but don't execute it as the move has already been done.
       moveCommandGroup.push();
     }
+    // Set up for the next move event
     this.moveTarget = null;
     this.rotateSphere = false;
+    this.movingSomething = false;
+    this.isDragging = false;
   }
 
   mouseLeave(event: MouseEvent): void {
+    // Make sure that the last move gets recorded in the command structure so it can be undone/redone
+    this.mouseReleased(event);
+    // Set up to handle the next move
     this.moveTarget = null;
     this.movingSomething = false;
   }
@@ -332,6 +338,7 @@ export default class MoveHandler extends Highlighter {
   }
 
   activate(): void {
+    // Unselect the selected objects and clear the selectedObject array
     super.activate();
   }
   /**

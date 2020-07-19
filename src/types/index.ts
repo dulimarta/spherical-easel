@@ -19,7 +19,9 @@ export interface AppState {
   zoomTranslation: number[]; // current zoom translation vector
   zoomMagnificationFactor: number; // current zoom magnification factor
   actionMode: string;
+  previousActionMode: string;
   activeToolName: string;
+  previousActiveToolName: string;
   // nodes: SENodule[], Do we need this?
   points: SEPoint[];
   lines: SELine[];

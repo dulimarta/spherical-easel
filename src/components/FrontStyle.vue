@@ -1,27 +1,20 @@
 <template>
   <div>
     <transition name="fade" appear>
-      <span v-show="commonStyleProperties.length === 0" class="text-body-2">
-        Please select object(s) to style
-      </span>
+      <span
+        v-show="commonStyleProperties.length === 0"
+        class="text-body-2"
+      >Please select object(s) to style</span>
     </transition>
     <transition name="fade">
       <v-card class="section" v-show="hasStrokeColor" elevation="8">
         <span class="text-subtitle-2">Stroke Color</span>
-        <v-color-picker
-          v-model="strokeColor"
-          @update:color="onLineColorChanged"
-        ></v-color-picker>
+        <v-color-picker v-model="strokeColor" @update:color="onLineColorChanged"></v-color-picker>
       </v-card>
     </transition>
 
     <transition name="fade">
-      <v-card
-        class="section"
-        v-show="hasStrokeWidth"
-        elevation="8"
-        transition="scale-transition"
-      >
+      <v-card class="section" v-show="hasStrokeWidth" elevation="8" transition="scale-transition">
         <span>Stroke Width ({{ minStrokeWidth }}/{{ maxStrokeWidth }})</span>
         <v-slider
           v-model.number="strokeWidth"
@@ -33,12 +26,7 @@
       </v-card>
     </transition>
     <transition name="fade">
-      <v-card
-        class="section"
-        v-show="hasFillColor"
-        elevation="8"
-        transition="scale-transition"
-      >
+      <v-card class="section" v-show="hasFillColor" elevation="8" transition="scale-transition">
         <span class="text-subtitle-2">Fill Color</span>
         <v-color-picker></v-color-picker>
       </v-card>
@@ -76,7 +64,7 @@ import { State } from "vuex-class";
 import { Styles } from "../types/Styles";
 import SETTINGS from "@/global-settings";
 import { getModule } from "vuex-module-decorators";
-import UI from "@/store/ui-styles";
+//import UI from "@/store/ui-styles";
 
 const values = Object.entries(Styles).filter(e => {
   const [_, b] = e;
@@ -90,7 +78,7 @@ const keys = values.map(e => {
 
 @Component({})
 export default class FrontStyle extends Vue {
-  readonly UIModule = getModule(UI, this.$store);
+  //  readonly UIModule = getModule(UI, this.$store);
 
   @State
   readonly selections!: SENodule[];
