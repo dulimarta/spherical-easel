@@ -1,12 +1,14 @@
 <template>
-  <v-container id="leftnav" fluid>
-    <!-- These the navigation arrows TODO: I would like these to be in the same row as the
+
+  <!-- These the navigation arrows TODO: I would like these to be in the same row as the
     tabs-->
-    <!-- This the not minimized left drawer containing two tabs -->
-    <div v-if="!minified">
+  <!-- This the not minimized left drawer containing two tabs -->
+  <transition name="slide-out" mode="out-in">
+    <div v-if="!minified" key="full">
       <!-- Two tabs set up TODO: fix the behavior of the tabs-->
       <v-tabs v-model="activeLeftDrawerTab" centered grow>
-        <v-tooltip bottom :open-delay="toolTipOpenDelay" :close-delay="toolTipCloseDelay">
+        <v-tooltip bottom :open-delay="toolTipOpenDelay"
+          :close-delay="toolTipCloseDelay">
           <template v-slot:activator="{ on }">
             <v-tab class="mt-3" href="#toolListTab" v-on="on">
               <v-icon left>mdi-calculator</v-icon>
@@ -15,7 +17,8 @@
           <span>{{ $t("main.ToolsTabToolTip") }}</span>
         </v-tooltip>
 
-        <v-tooltip bottom :open-delay="toolTipOpenDelay" :close-delay="toolTipCloseDelay">
+        <v-tooltip bottom :open-delay="toolTipOpenDelay"
+          :close-delay="toolTipCloseDelay">
           <template v-slot:activator="{ on }">
             <v-tab class="mt-3" href="#objectListTab" v-on="on">
               <v-icon left>mdi-format-list-bulleted</v-icon>
@@ -32,11 +35,13 @@
         </v-tab-item>
       </v-tabs>
     </div>
-    <div v-else id="mini-icons">
+
+    <div v-else id="mini-icons" key="partial">
       <v-icon>mdi-calculator</v-icon>
       <v-icon>mdi-format-list-bulleted</v-icon>
     </div>
-  </v-container>
+  </transition>
+
 </template>
 
 <script lang="ts">
@@ -71,10 +76,24 @@ export default class Toolbox extends Vue {
 
 <style scoped>
 #mini-icons {
+  width: 100%;
   height: 80vh;
   display: flex;
   flex-direction: column;
   flex-grow: 1;
-  justify-content: center;
+  justify-content: center; /* Center it vertically */
+}
+
+.slide-out-enter-active,
+.slide-out-leave-active {
+  transition-property: all;
+  transition-duration: 250ms;
+  transition-timing-function: ease;
+}
+
+.slide-out-enter,
+.slide-out-leave-to {
+  opacity: 0;
+  transform: translateX(-100%);
 }
 </style>

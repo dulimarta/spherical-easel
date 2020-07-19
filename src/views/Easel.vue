@@ -3,20 +3,19 @@
     :default-percent="toolboxMinified ? 5 : 20" @resize="leftDividerMoved">
     <!-- Use the left page for the toolbox -->
     <template slot="paneL">
-      <div>
-        <v-btn icon @click="toolboxMinified = !toolboxMinified">
+      <div id="container">
+        <v-btn icon @click="minifyToolbox">
           <v-icon v-if="toolboxMinified">mdi-arrow-right</v-icon>
           <v-icon v-else>mdi-arrow-left</v-icon>
         </v-btn>
+        <toolbox ref="toolbox" :minified="toolboxMinified"></toolbox>
       </div>
-
-      <toolbox ref="toolbox" :minified="toolboxMinified"></toolbox>
     </template>
 
     <!-- Use the right pane mainly for the canvas -->
     <template slot="paneR">
       <split-pane split="vertical" @resize="rightDividerMoved"
-        :default-percent="80">
+        :default-percent="stylePanelMinified ? 95 : 80">
         <template slot="paneL">
           <v-container fluid ref="mainPanel">
             <v-row>
@@ -142,7 +141,13 @@
         </template>
         <template slot="paneR">
           <div ref="rightPanel">
-            <style-panel></style-panel>
+            <div>
+              <v-btn icon @click="minifyStylePanel">
+                <v-icon v-if="stylePanelMinified">mdi-arrow-left</v-icon>
+                <v-icon v-else>mdi-arrow-right</v-icon>
+              </v-btn>
+            </div>
+            <style-panel :minified="stylePanelMinified"></style-panel>
           </div>
         </template>
       </split-pane>
@@ -170,18 +175,23 @@ import StylePanel from "@/components/Style.vue";
 // import { getModule } from "vuex-module-decorators";
 // import UI from "@/store/ui-styles";
 
+/** 
+ * Split panel width distribution (percentages):
+ * When both side panels open: 20:60:20 (proportions 1:3:1)
+ * When left panel open, right panel minified: 20:75:5 (4:15:1)
+ * When left panel minifie, right panel open: 5:75:20 (1:15:4)
+ */
 @Component({
   components: { SplitPane, Toolbox, SphereFrame, ToolButton, StylePanel }
 })
 export default class Easel extends Vue {
   // readonly UIModule = getModule(UI, this.$store);
-  readonly RIGHT_PANE_PERCENTAGE = 80;
-  private LEFT_PANE_PERCENTAGE = 30;
   private availHeight = 0; // Both split panes are sandwiched between the app bar and footer. This variable hold the number of pixels available for canvas height
   private currentCanvasSize = 0; // Result of height calculation will be passed to <v-responsive> via this variable
 
   private buttonList = buttonList;
   private toolboxMinified = false;
+  private stylePanelMinified = true;
   /* Use the global settings to set the variables bound to the toolTipOpen/CloseDelay & toolUse */
   private toolTipOpenDelay = SETTINGS.toolTip.openDelay;
   private toolTipCloseDelay = SETTINGS.toolTip.closeDelay;
@@ -222,6 +232,7 @@ export default class Easel extends Vue {
     this.$store.commit("setActionMode", { id: "zoomFit", name: "Zoom Fit" });
   }
   private adjustSize(): void {
+    console.debug("adjustSize()");
     this.availHeight =
       window.innerHeight -
       this.$vuetify.application.footer -
@@ -263,6 +274,22 @@ export default class Easel extends Vue {
     this.currentCanvasSize = Math.min(availableWidth, this.availHeight);
   }
 
+  minifyToolbox(): void {
+    this.toolboxMinified = !this.toolboxMinified;
+    // Minify the other panel when this one is expanded
+    if (!this.toolboxMinified && !this.stylePanelMinified) {
+      this.stylePanelMinified = true;
+    }
+  }
+
+  minifyStylePanel(): void {
+    this.stylePanelMinified = !this.stylePanelMinified;
+    // Minify the other panel when this one is expanded
+    if (!this.toolboxMinified && !this.stylePanelMinified) {
+      this.toolboxMinified = true;
+    }
+  }
+
   switchActionMode(): void {
     this.$store.commit("setActionMode", this.actionMode);
   }
@@ -296,8 +323,12 @@ export default class Easel extends Vue {
   //#endregion resizePlottables
 }
 </script>
-
 <style scoped lang="scss">
+#container {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
 #responsiveBox {
   border: 2px double darkcyan;
   position: relative;
