@@ -180,6 +180,7 @@ export default {
     state.selections.clear();
     state.selections.push(...selection);
   },
+  // TODO: combine the following changeXXXX functions
   changeStrokeWidth(state: AppState, width: number): void {
     const opt: StyleOptions = {
       strokeWidth: width
@@ -188,7 +189,7 @@ export default {
       .filter(n => !(n instanceof SEPoint))
       .map(n => n as SEOneDimensional) // TODO: handle other object types
       .forEach((n: SEOneDimensional) => {
-        console.debug(`Changing stroke width of ${n.name} to ${width}`);
+        // console.debug(`Changing stroke width of ${n.name} to ${width}`);
         n.ref.updateStyle(opt);
       });
   },
@@ -200,7 +201,19 @@ export default {
       .filter(n => !(n instanceof SEPoint))
       .map(n => n as SEOneDimensional) // TODO: handle other object types
       .forEach((n: SEOneDimensional) => {
-        console.debug(`Changing stroke color of ${n.name} to ${color}`);
+        // console.debug(`Changing stroke color of ${n.name} to ${color}`);
+        n.ref.updateStyle(opt);
+      });
+  },
+  changeFillColor(state: AppState, color: string): void {
+    const opt: StyleOptions = {
+      fillColor: color
+    };
+    state.selections
+      .filter(n => !(n instanceof SEPoint))
+      .map(n => n as SEOneDimensional) // TODO: handle other object types
+      .forEach((n: SEOneDimensional) => {
+        // console.debug(`Changing Fill color of ${n.name} to ${color}`);
         n.ref.updateStyle(opt);
       });
   }

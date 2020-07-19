@@ -12,6 +12,7 @@ export enum Styles {
 export type StyleOptions = {
   strokeWidth?: number;
   strokeColor?: string;
+  fillColor?: string;
 
   /* TODO: Add more options later */
 };

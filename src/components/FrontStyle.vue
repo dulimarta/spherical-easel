@@ -1,72 +1,26 @@
 <template>
   <div>
-    <transition name="fade" appear>
-      <span v-show="commonStyleProperties.length === 0" class="text-body-2">
-        Please select object(s) to style
-      </span>
-    </transition>
-    <transition name="fade">
-      <v-card class="section" v-show="hasStrokeColor" elevation="8">
-        <span class="text-subtitle-2">Stroke Color</span>
-        <v-color-picker
-          v-model="strokeColor"
-          @update:color="onLineColorChanged"
-        ></v-color-picker>
-      </v-card>
-    </transition>
-
-    <transition name="fade">
-      <v-card
-        class="section"
-        v-show="hasStrokeWidth"
-        elevation="8"
-        transition="scale-transition"
-      >
-        <span>Stroke Width ({{ minStrokeWidth }}/{{ maxStrokeWidth }})</span>
-        <v-slider
-          v-model.number="strokeWidth"
-          :min="minStrokeWidth"
-          @change="onLineWidthChanged"
-          :max="maxStrokeWidth"
-          type="range"
-        ></v-slider>
-      </v-card>
-    </transition>
-    <transition name="fade">
-      <v-card
-        class="section"
-        v-show="hasFillColor"
-        elevation="8"
-        transition="scale-transition"
-      >
-        <span class="text-subtitle-2">Fill Color</span>
-        <v-color-picker></v-color-picker>
-      </v-card>
-    </transition>
+    <span v-show="commonStyleProperties.length === 0" class="text-body-2">
+      Please select object(s) to style
+    </span>
+    <fade-in-card :showWhen="hasStrokeColor">
+      <span class="text-subtitle-2">Stroke Color</span>
+      <v-color-picker v-model="strokeColor"
+        @update:color="onLineColorChanged"></v-color-picker>
+    </fade-in-card>
+    <fade-in-card :showWhen="hasStrokeWidth">
+      <span>Stroke Width</span>
+      <v-slider v-model.number="strokeWidth" :min="minStrokeWidth"
+        @change="onLineWidthChanged" :max="maxStrokeWidth" type="range">
+      </v-slider>
+    </fade-in-card>
+    <fade-in-card :showWhen="hasFillColor">
+      <span class="text-subtitle-2">Fill Color</span>
+      <v-color-picker v-modeel="fillColor"
+        @update:color="onFillColorChanged"></v-color-picker>
+    </fade-in-card>
   </div>
 </template>
-<style lang="scss" scoped>
-.section {
-  border: 1px solid black;
-  border-radius: 4px;
-  padding: 0.25em;
-  margin: 0.5em;
-}
-
-.fade-enter-active,
-.fade-leave-active {
-  transition-property: opacity, height, width;
-  transition-duration: 500ms;
-  transition-timing-function: ease;
-}
-
-.fade-enter,
-.fade-leave-to {
-  opacity: 0;
-  height: 100%;
-  width: 100%;
-}
-</style>
 <script lang="ts">
 import Vue from "vue";
 import Component from "vue-class-component";
@@ -75,8 +29,9 @@ import { SENodule } from "../models/SENodule";
 import { State } from "vuex-class";
 import { Styles } from "../types/Styles";
 import SETTINGS from "@/global-settings";
-import { getModule } from "vuex-module-decorators";
-import UI from "@/store/ui-styles";
+import FadeInCard from "@/components/FadeInCard.vue"
+// import { getModule } from "vuex-module-decorators";
+// import UI from "@/store/ui-styles";
 
 const values = Object.entries(Styles).filter(e => {
   const [_, b] = e;
@@ -88,9 +43,9 @@ const keys = values.map(e => {
   return a;
 });
 
-@Component({})
+@Component({ components: { FadeInCard } })
 export default class FrontStyle extends Vue {
-  readonly UIModule = getModule(UI, this.$store);
+  // readonly UIModule = getModule(UI, this.$store);
 
   @State
   readonly selections!: SENodule[];
@@ -101,6 +56,7 @@ export default class FrontStyle extends Vue {
   // TODO: handlle background as well
   private strokeWidth = SETTINGS.line.drawn.strokeWidth.front;
   private strokeColor = SETTINGS.line.drawn.strokeColor.front;
+  private fillColor = SETTINGS.circle.drawn.fillColor.front;
   commonStyleProperties: number[] = [];
 
   // private commonProperties: Set<Styles>;
@@ -111,7 +67,6 @@ export default class FrontStyle extends Vue {
   }
 
   onLineWidthChanged(): void {
-    console.debug("New line width", this.strokeWidth);
     this.$store.commit("changeStrokeWidth", this.strokeWidth);
     // this.UIModule.changeStrokeColor("red");
   }
@@ -119,11 +74,11 @@ export default class FrontStyle extends Vue {
     this.$store.commit("changeStrokeColor", this.strokeColor);
   }
 
+  onFillColorChanged(): void {
+    this.$store.commit("changeFillColor", this.fillColor);
+  }
   hasStyles(s: Styles): boolean {
     const sNum = Number(s);
-    // const styleOrdinal = keys.findIndex(x => x === s);
-    // if (!styleOrdinal || styleOrdinal < 0) return false;
-
     return (
       this.commonStyleProperties.length > 0 &&
       this.commonStyleProperties.findIndex(x => x === sNum) >= 0
