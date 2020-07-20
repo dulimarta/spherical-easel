@@ -39,6 +39,10 @@ export default class Style extends Vue {
       component: () => import("@/components/FrontStyle.vue")
     },
     {
+      name: "Background Style",
+      component: () => import("@/components/BackStyle.vue")
+    },
+    {
       name: "Advanced Style",
       component: () => import("@/components/AdvancedStyle.vue")
     }

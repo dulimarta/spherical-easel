@@ -222,5 +222,17 @@ export default {
         // console.debug(`Changing stroke color of ${n.name} to ${color}`);
         n.ref.updateStyle(opt);
       });
+  },
+  changeDashPattern(state: AppState, dashPattern: number[]): void {
+    const opt: StyleOptions = {
+      dashPattern
+    };
+    state.selections
+      .filter(n => !(n instanceof SEPoint))
+      .map(n => n as SEOneDimensional) // TODO: handle other object types
+      .forEach((n: SEOneDimensional) => {
+        // console.debug(`Changing stroke color of ${n.name} to ${color}`);
+        n.ref.updateStyle(opt);
+      });
   }
 };

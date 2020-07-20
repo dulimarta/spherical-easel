@@ -591,6 +591,10 @@ export default class Circle extends Nodule {
       this.frontGradientColor.color = options.fillColorWhite;
       this.frontFill.fill = this.frontGradientColor.color;
     }
+    if (options.dashPattern) {
+      (this.backPart as any).dashes = options.dashPattern;
+      (this.glowingBackPart as any).dashes = options.dashPattern;
+    }
   }
 
   setVisible(flag: boolean): void {

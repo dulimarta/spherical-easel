@@ -1,5 +1,5 @@
 <template>
-  <span class="text-subtitle-2">This panel is incomplete</span>
+  <span class="text-subtitle-2 red--text">This panel is incomplete</span>
 </template>
 <script lang="ts">
 import Vue from "vue";

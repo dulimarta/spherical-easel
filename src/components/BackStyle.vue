@@ -3,35 +3,7 @@
     <span v-show="commonStyleProperties.length === 0" class="text-body-2">
       Please select object(s) to style
     </span>
-    <fade-in-card :showWhen="hasColor">
-      <span class="text-subtitle-2">Color</span>
-      <v-color-picker
-        hide-inputs
-        v-model="selectedColor"
-        @update:color="onColorChanged"
-      ></v-color-picker>
-      <span>Apply to:</span>
-      <div>
-        <v-checkbox
-          v-model="colorApplyTo"
-          dense
-          v-for="(z, pos) in colorKeys"
-          :key="pos"
-          :label="z.label"
-          :value="z.value"
-        ></v-checkbox>
-      </div>
-    </fade-in-card>
-    <fade-in-card :showWhen="hasStrokeWidth">
-      <span>Stroke Width</span>
-      <v-slider
-        v-model.number="strokeWidth"
-        :min="minStrokeWidth"
-        @change="onLineWidthChanged"
-        :max="maxStrokeWidth"
-        type="range"
-      ></v-slider>
-    </fade-in-card>
+
     <fade-in-card :showWhen="hasDash">
       <span>Dash Pattern ({{ dashLength }}/{{ gapLength }})</span>
       <v-slider
@@ -82,13 +54,6 @@ export default class FrontStyle extends Vue {
   @State
   readonly selections!: SENodule[];
 
-  readonly minStrokeWidth: number = SETTINGS.line.drawn.strokeWidth.min;
-  readonly maxStrokeWidth: number = SETTINGS.line.drawn.strokeWidth.max;
-
-  // TODO: handlle background as well
-  private strokeWidth: number = SETTINGS.line.drawn.strokeWidth.front;
-  private selectedColor: string = SETTINGS.line.drawn.strokeColor.front;
-  private colorApplyTo: string[] = [];
   private dashLength = 3;
   private gapLength = 2;
   commonStyleProperties: number[] = [];
@@ -98,19 +63,6 @@ export default class FrontStyle extends Vue {
   constructor() {
     super();
     // this.commonProperties = new Set();
-  }
-
-  onLineWidthChanged(): void {
-    this.$store.commit("changeStrokeWidth", this.strokeWidth);
-    // this.UIModule.changeStrokeColor("red");
-  }
-  onColorChanged(): void {
-    this.$store.commit("changeColor", {
-      color: this.selectedColor,
-      props: this.colorApplyTo.map(
-        (s: string) => s.replace(/ /g, "") // Remove all blanks
-      )
-    });
   }
 
   onDashPatternChanged(): void {
@@ -175,16 +127,6 @@ export default class FrontStyle extends Vue {
       if (newSelection.every(s => s.customStyles().has(k)))
         this.commonStyleProperties.push(k);
     }
-    for (let k = this.colorApplyTo.length - 1; k >= 0; k--) {
-      const idx = this.commonStyleProperties.findIndex(
-        s => keys[s] === this.colorApplyTo[k]
-      );
-      if (idx < 0) {
-        this.colorApplyTo.splice(k, 1);
-      }
-    }
-    // const propNames = this.commonStyleProperties.map(n => keys[n]).join(", ");
-    // console.debug("Common props: ", propNames);
   }
 }
 </script>
