@@ -21,8 +21,8 @@ Select object(s) to change their visual style or to perform actions on them with
 ::: tool-details Selecting Objects:
 
 - All selected objects will glow (i.e. have a highlight color displayed in the background of the object).
-- To selecting multiple objects, mouse drag and create a rectangle. Anything (TODO: entirely? partially?) with in that region will be selected when the mouse is released.
-- To select a single object, mouse click at a location and all nearby objects will be selected. If the user clicks and multiple objects are selected, holding a number key <kbd>1-9</kbd> will select different objects. That is, if the user mouse clicks (without dragging) at a location and multiple objects are selected they will all glow. However if the user mouse presses (without dragging) at the same location and holds a number key only one object, depending on the key held, should glow. You can change which key is pressed while holding the mouse press and different objects will be glow. When you mouse release the glowing object remains glowing and is selected.
+- Not Implemented? To select multiple objects, mouse drag and create a rectangle. Anything (TODO: entirely? partially?) with in that region will be selected when the mouse is released.
+- To select a single object, mouse over at a location (where there are at lease two objects nearby) and press a number key <kbd>1-9</kbd>. Depending on the key, a single object will be highlighted. To add this objected to the selected list, mouse press and release without moving.
 
 **Changing Visual Style:**
 

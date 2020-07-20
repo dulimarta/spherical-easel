@@ -107,7 +107,6 @@ export default class RotateHandler extends MouseHandler {
     );
     // If the rotation is big enough and the user is rotating preform the rotation
     if (this.userIsRotating && rotationAngle > SETTINGS.rotate.minAngle) {
-      // Determine the axis of rotation and update the total angle
       if (this.rotateAboutPointMode) {
         // Determine which direction to rotate.
         tmpVector1.crossVectors(
@@ -115,8 +114,17 @@ export default class RotateHandler extends MouseHandler {
           this.previousSphereVector
         );
         rotationAngle *= Math.sign(tmpVector1.z);
+
+        // If the angle between the axisOfRotation is less than Pi/2 this is the correct sign, otherwise reverse it
+        if (this.axisOfRotation.dot(this.currentSphereVector) < 0) {
+          rotationAngle *= -1;
+        }
+        //Reverse the direction with the input is directed to the back of the sphere.
         if (event.shiftKey) rotationAngle *= -1;
+
         desiredZAxis.copy(this.axisOfRotation);
+
+        // Determine the axis of rotation and update the total angle
         this.totalAngleOfRotation += rotationAngle;
       } else {
         desiredZAxis
@@ -281,6 +289,9 @@ export default class RotateHandler extends MouseHandler {
     super.activate();
   }
 
+  deactivate(): void {
+    this.rotateAboutPointMode = false;
+  }
   /**
    * Sends a RotateSphereCommand to the Command stack that takes the beforeRotationVector to the after one
    * @param beforeRotationVector

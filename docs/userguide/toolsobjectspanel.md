@@ -44,7 +44,7 @@ Within each group information about each object is displayed in a row that inclu
 - A button/icon to pull up a menu that asks the user to select between:
   - Delete - Removes the object and all dependent objects from the arrangement.
   - Style - This option selects the object and opens the Style Panel so it can easily be edited.
-  - Display $\pi$ Multiples - This is only an option for Measurement, Slider, and Calculation objects and controls if the value is displayed should be in multiples of $\pi$. By default, all displayed values are multiples of $\pi$ and so are always postpended with a $\pi$ unless this option is changed.
+  - Display Multiples of $\pi$ - This is only an option for Measurement, Slider, and Calculation objects and controls if the value is displayed should be in multiples of $\pi$. By default, all displayed values are multiples of $\pi$ and so are always postpended with a $\pi$ unless this option is changed.
 
 Row organization (The Information zone is the longest):
 

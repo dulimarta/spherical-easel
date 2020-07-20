@@ -10,18 +10,27 @@ export default class SelectionHandler extends MouseHandler {
   private currentSelection: SENodule[] = [];
 
   /**
+   * An array to store the object selected by the key press handler
+   */
+  private keyPressSelection: SENodule[] = [];
+  /**
    * This handles the keyboard events and when multiple objects are under
    * the mouse, the user can specify which one to select.
-   * @param e A keyboard event -- only the digits are interpreted
+   * @param keyEvent A keyboard event -- only the digits are interpreted
    */
-  keyPressHandler = (e: KeyboardEvent): void => {
-    // None
+  keyPressHandler = (keyEvent: KeyboardEvent): void => {
+    // Clear the keyPressSelection
+    this.keyPressSelection.clear();
+    // If there is nothing or only one nearby ignore this key event
     if (this.hitSENodules?.length <= 1) return;
-    if (e.key.match(/[0-9]/)) {
+
+    if (keyEvent.key.match(/[0-9]/)) {
       // is it a digit?
-      const val = Number(e.key) - 1;
+      const val = Number(keyEvent.key) - 1;
       this.hitSENodules.forEach((n, pos) => {
         if (pos === val) {
+          // add the item to the list
+          this.keyPressSelection.push(n);
           (n as any).ref.glowingDisplay();
           // Show the name of the selected item
           this.infoText.text = n.name;
@@ -33,42 +42,62 @@ export default class SelectionHandler extends MouseHandler {
 
   mousePressed(event: MouseEvent): void {
     event.preventDefault();
-    if (event.altKey) {
-      // Add current hit list to the current selection
-      this.hitSENodules.forEach(h => {
-        h.selected = !h.selected;
-        if (h.selected) this.currentSelection.push(h);
-        else {
-          // Remove hit object from current selection
-          const idx = this.currentSelection.findIndex(c => c.id === h.id);
-          if (idx >= 0) this.currentSelection.splice(idx, 1);
-        }
-      });
+    if (this.keyPressSelection.length != 0) {
+      // Select all the objects in the keypress selection
+      this.keyPressSelection.forEach(n => (n.selected = true));
+      // Add the key press selection to the selected list.
+      this.currentSelection.push(...this.keyPressSelection);
+      this.keyPressSelection.clear();
     } else {
-      // Replace the current selection with the hit list
-      this.currentSelection.forEach(s => {
-        // Toggle the current selection if it is not in the hit list
-        if (this.hitSENodules.findIndex(h => h.id === s.id) < 0)
-          s.selected = !s.selected;
-      });
-      this.hitSENodules.forEach(h => {
-        h.selected = !h.selected;
-      });
+      if (event.altKey) {
+        // Add current hit list to the current selection
+        this.hitSENodules.forEach(h => {
+          h.selected = !h.selected;
+          if (h.selected) this.currentSelection.push(h);
+          else {
+            // Remove hit object from current selection
+            const idx = this.currentSelection.findIndex(c => c.id === h.id);
+            if (idx >= 0) this.currentSelection.splice(idx, 1);
+          }
+        });
+      } else {
+        // Replace the current selection with the hit list
+        this.currentSelection.forEach(s => {
+          // Toggle the current selection if it is not in the hit list
+          if (this.hitSENodules.findIndex(h => h.id === s.id) < 0)
+            s.selected = !s.selected;
+        });
+        this.hitSENodules.forEach(h => {
+          h.selected = !h.selected;
+          console.log("toggle select", h.name, h.selected);
+        });
 
-      // Filter only selected items
-      this.currentSelection = this.hitSENodules.filter(n => n.selected);
+        // Filter only selected items
+        this.currentSelection = this.hitSENodules.filter(n => n.selected);
+      }
     }
     this.store.commit("setSelectedObjects", this.currentSelection);
+    console.log("----selected---- objects------");
+    this.currentSelection.forEach(n =>
+      console.log("hit object", n.name, n.selected)
+    );
   }
 
   mouseMoved(event: MouseEvent): void {
+    console.log("mouse move event");
+    // Clear any objects in the keyPressSelection
+    if (this.keyPressSelection.length != 0) {
+      this.keyPressSelection.forEach(n => (n as any).ref.normalDisplay());
+    }
     super.mouseMoved(event);
     this.hitSENodules = this.store.getters.findNearbyObjects(
       this.currentSphereVector,
       this.currentScreenVector
     );
-    //console.log("----------------------------");
-    //this.hitSENodules.forEach(n => console.log("hit object", n.name));
+    // console.log("----------------------------");
+    // this.hitSENodules.forEach(n =>
+    //   console.log("hit object", n.name, n.selected)
+    // );
     // // Create an array of SENodules of all nearby objects by querying the store
     // this.hitSENodules = this.store.getters
     //   .findNearbyObjects(this.currentSphereVector, this.currentScreenVector)
@@ -86,6 +115,7 @@ export default class SelectionHandler extends MouseHandler {
   }
 
   mouseReleased(event: MouseEvent): void {
+    //console.log("num selected objects", this.currentSelection.length);
     // No code required
   }
 
