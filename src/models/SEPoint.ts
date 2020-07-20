@@ -8,9 +8,9 @@ import { Styles } from "@/types/Styles";
 
 let POINT_COUNT = 0;
 const styleSet = new Set([
-  Styles.pointFrontRadius,
-  Styles.pointBackRadius,
-  Styles.strokeColor
+  Styles.PointFrontRadius,
+  Styles.PointBackRadius,
+  Styles.StrokeColor
 ]);
 export class SEPoint extends SENodule implements Visitable {
   /* This should be the only reference to the plotted version of this SEPoint */

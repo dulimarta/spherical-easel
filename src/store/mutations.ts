@@ -22,6 +22,7 @@ export const initialState: AppState = {
   activeToolName: "", // The active tool for handling user mouse input
   previousActiveToolName: "", // The active tool for handling user mouse input
   zoomMagnificationFactor: 1, // The CSSTransform magnification factor
+  previousZoomMagnificationFactor: 1, // The previous CSSTransform magnification factor
   zoomTranslation: [0, 0], // The CSSTransform translation vector
   nodules: [], // An array of all SENodules
   selections: [], // An array of selected SENodules
@@ -72,6 +73,7 @@ export default {
   },
 
   setZoomMagnificationFactor(state: AppState, mag: number): void {
+    state.previousZoomMagnificationFactor = state.zoomMagnificationFactor;
     state.zoomMagnificationFactor = mag;
   },
   setZoomTranslation(state: AppState, vec: number[]): void {

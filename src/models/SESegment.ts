@@ -11,9 +11,9 @@ import { Styles } from "@/types/Styles";
 
 let SEGMENT_COUNT = 0;
 const styleSet = new Set([
-  Styles.strokeWidth,
-  Styles.strokeColor,
-  Styles.dashPattern
+  Styles.StrokeWidth,
+  Styles.StrokeColor,
+  Styles.DashPattern
 ]);
 const tmpVector = new Vector3();
 const tmpVector1 = new Vector3();

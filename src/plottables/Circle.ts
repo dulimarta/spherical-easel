@@ -5,6 +5,7 @@ import Two from "two.js";
 import SETTINGS, { LAYER } from "@/global-settings";
 import Nodule, { DisplayStyle } from "./Nodule";
 import { StyleOptions } from "@/types/Styles";
+import AppStore from "@/store";
 
 const desiredXAxis = new Vector3();
 const desiredYAxis = new Vector3();
@@ -43,6 +44,11 @@ export default class Circle extends Nodule {
    *  This the radius projected to the plane of the circle. It is always Math.sin(this.radius).
    */
   private projectedRadius = 0;
+
+  /**
+   * Vuex global state
+   */
+  protected store = AppStore; //
 
   /**
    * The TwoJS objects to display the front/back parts and their glowing counterparts.
@@ -688,7 +694,10 @@ export default class Circle extends Nodule {
     dup.glowingBackPart.vertices.forEach((v, pos) => {
       v.copy(this.glowingBackPart.vertices[pos]);
     });
-    //   dup.scale.copy(this.scale);
+    // Now clone the line width
+    dup.strokeWidthFront = this.strokeWidthFront;
+    dup.strokeWidthBack = this.strokeWidthBack;
+
     return dup as this;
   }
 
@@ -716,8 +725,14 @@ export default class Circle extends Nodule {
     this.glowingBackPart.remove();
   }
 
-  adjustSizeForZoom(factor: number): void {
-    throw new Error("Method not implemented.");
+  adjustSizeForZoom(newFactor: number): void {
+    // Adjust the current values of the variables that control the size
+    const oldFactor = this.store.getters.previousZoomMagnificationFactor();
+    console.log("const?", this.strokeWidthFront * oldFactor);
+    this.strokeWidthFront = (this.strokeWidthFront * oldFactor) / newFactor;
+    console.log("new stroke width", this.strokeWidthFront);
+    // Apply the variables to the Two.js objects
+    this.stylize(DisplayStyle.UPDATE);
   }
 
   /**
@@ -726,6 +741,8 @@ export default class Circle extends Nodule {
    * changed and should be applied to the displayed circle.
    */
   stylize(flag: DisplayStyle): void {
+    // Adjust the sizes for the current magnification level
+    // this.adjustSizeForZoom(this.store.getters.zoomMagnificationFactor());
     switch (flag) {
       case DisplayStyle.TEMPORARY: {
         // The style for the temporary circle display.  These options are not user modifiable.

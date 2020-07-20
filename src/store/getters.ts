@@ -787,5 +787,11 @@ export default {
   },
   previousActionMode: (state: AppState) => (): { id: string; name: string } => {
     return { id: state.actionMode, name: state.activeToolName };
+  },
+  previousZoomMagnificationFactor: (state: AppState) => (): number => {
+    return state.previousZoomMagnificationFactor;
+  },
+  zoomMagnificationFactor: (state: AppState) => (): number => {
+    return state.zoomMagnificationFactor;
   }
 };

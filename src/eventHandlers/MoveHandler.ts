@@ -341,15 +341,4 @@ export default class MoveHandler extends Highlighter {
     // Unselect the selected objects and clear the selectedObject array
     super.activate();
   }
-  /**
-   * Record the current location information of the descendants of the points
-   */
-  // private descendantInformation(rootSEPoint: SEPoint): any {
-  //   //DataStructure {
-  //   dataStructure: any;
-  //   rootSEPoint.kids.forEach(obj => {
-  //     if (obj instanceof SEPoint) {
-  //     }
-  //   });
-  // }
 }

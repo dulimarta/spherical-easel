@@ -16,12 +16,12 @@ const tmpVector1 = new Vector3();
 let CIRCLE_COUNT = 0;
 
 const styleSet = new Set([
-  Styles.strokeColor,
-  Styles.strokeWidth,
-  Styles.dashPattern,
-  Styles.fillColorGray,
-  Styles.fillColorWhite,
-  Styles.dashPattern
+  Styles.StrokeColor,
+  Styles.StrokeWidth,
+  Styles.DashPattern,
+  //Styles.fillColorGray,
+  //Styles.fillColorWhite,
+  Styles.DashPattern
 ]);
 export class SECircle extends SENodule implements Visitable, OneDimensional {
   /**
@@ -38,9 +38,8 @@ export class SECircle extends SENodule implements Visitable, OneDimensional {
   private _circleSEPoint: SEPoint;
 
   /**
-   * A matrix that is used to indicate the *change* in position of the objects on the sphere. The
-   * total change in position is not stored. This matrix is applied (via a position visitor) to
-   * all objects on the sphere. Used when no object is selected and the user mouse presses and drags
+   * Used during this.move(): A matrix that is used to indicate the *change* in position of the
+   * circle on the sphere.
    */
   private changeInPositionRotationMatrix: Matrix4 = new Matrix4();
 

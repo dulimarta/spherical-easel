@@ -127,6 +127,10 @@ export default class CircleHandler extends Highlighter {
         this.centerSEPoint = null;
       }
       this.endMarker.positionVector = this.currentSphereVector;
+      // Make sure the temporary circle is displayed with the right line width
+      // this.temporaryCircle.adjustSizeForZoom(
+      //   this.store.getters.zoomMagnificationFactor()
+      // );
     }
   }
 
@@ -226,7 +230,7 @@ export default class CircleHandler extends Highlighter {
   makeCircle(): void {
     // Create a command group to add the points defining the circle and the circle to the store
     // This way a single undo click will undo all (potentially three) operations.
-    const circleGroup = new CommandGroup();
+    const circleCommandGroup = new CommandGroup();
     if (this.centerSEPoint === null) {
       // Starting point landed on an open space
       // we have to create a new point and it to the group/store
@@ -243,7 +247,7 @@ export default class CircleHandler extends Highlighter {
           newCenterPoint,
           this.centerSEPointOneDimensionalParent
         );
-        circleGroup.addCommand(
+        circleCommandGroup.addCommand(
           new AddPointOnOneDimensionalCommand(
             vtx,
             this.centerSEPointOneDimensionalParent
@@ -253,7 +257,7 @@ export default class CircleHandler extends Highlighter {
         // Starting mouse press landed on an open space
         // Create the model object for the new point and link them
         vtx = new SEPoint(newCenterPoint);
-        circleGroup.addCommand(new AddPointCommand(vtx));
+        circleCommandGroup.addCommand(new AddPointCommand(vtx));
       }
       vtx.locationVector = this.centerVector;
       this.centerSEPoint = vtx;
@@ -262,7 +266,7 @@ export default class CircleHandler extends Highlighter {
       !this.centerSEPoint.isUserCreated
     ) {
       // Mark the intersection point as created, the display style is changed and the glowing style is set up
-      circleGroup.addCommand(
+      circleCommandGroup.addCommand(
         new ConvertInterPtToUserCreatedCommand(this.centerSEPoint)
       );
     }
@@ -283,7 +287,7 @@ export default class CircleHandler extends Highlighter {
         !this.circleSEPoint.isUserCreated
       ) {
         // Mark the intersection point as created, the display style is changed and the glowing style is set up
-        circleGroup.addCommand(
+        circleCommandGroup.addCommand(
           new ConvertInterPtToUserCreatedCommand(this.circleSEPoint)
         );
       }
@@ -306,7 +310,7 @@ export default class CircleHandler extends Highlighter {
         vtx.locationVector = this.hitSESegments[0].closestVector(
           this.currentSphereVector
         );
-        circleGroup.addCommand(
+        circleCommandGroup.addCommand(
           new AddPointOnOneDimensionalCommand(vtx, this.hitSESegments[0])
         );
       } else if (this.hitSELines.length > 0) {
@@ -317,7 +321,7 @@ export default class CircleHandler extends Highlighter {
         vtx.locationVector = this.hitSELines[0].closestVector(
           this.currentSphereVector
         );
-        circleGroup.addCommand(
+        circleCommandGroup.addCommand(
           new AddPointOnOneDimensionalCommand(vtx, this.hitSELines[0])
         );
       } else if (this.hitSECircles.length > 0) {
@@ -327,7 +331,7 @@ export default class CircleHandler extends Highlighter {
         vtx.locationVector = this.hitSECircles[0].closestVector(
           this.currentSphereVector
         );
-        circleGroup.addCommand(
+        circleCommandGroup.addCommand(
           new AddPointOnOneDimensionalCommand(vtx, this.hitSECircles[0])
         );
       } else {
@@ -335,7 +339,7 @@ export default class CircleHandler extends Highlighter {
         vtx = new SEPoint(newCirclePoint);
         // Set the Location
         vtx.locationVector = this.currentSphereVector;
-        circleGroup.addCommand(new AddPointCommand(vtx));
+        circleCommandGroup.addCommand(new AddPointCommand(vtx));
       }
       this.circleSEPoint = vtx;
     }
@@ -354,7 +358,7 @@ export default class CircleHandler extends Highlighter {
       this.circleSEPoint
     );
 
-    circleGroup.addCommand(
+    circleCommandGroup.addCommand(
       new AddCircleCommand(newSECircle, this.centerSEPoint, this.circleSEPoint)
     );
     // Generate new intersection points. These points must be computed and created
@@ -362,7 +366,7 @@ export default class CircleHandler extends Highlighter {
     this.store.getters
       .createAllIntersectionsWithCircle(newSECircle)
       .forEach((item: SEIntersectionReturnType) => {
-        circleGroup.addCommand(
+        circleCommandGroup.addCommand(
           new AddIntersectionPointCommand(
             item.SEIntersectionPoint,
             item.parent1,
@@ -372,7 +376,7 @@ export default class CircleHandler extends Highlighter {
         item.SEIntersectionPoint.showing = false; // don not display the automatically created intersection points
       });
 
-    circleGroup.execute();
+    circleCommandGroup.execute();
   }
 
   makePoint(): void {
@@ -416,6 +420,47 @@ export default class CircleHandler extends Highlighter {
     }
   }
   activate(): void {
+    // If there are exactly two SEPoints selected, create a circle with the first as the center
+    // and the second as the circle point
+    if (this.store.getters.selectedObjects().length == 2) {
+      const object1 = this.store.getters.selectedObjects()[0];
+      const object2 = this.store.getters.selectedObjects()[1];
+      if (object1 instanceof SEPoint && object2 instanceof SEPoint) {
+        // Create a new plottable Circle
+        const newCircle = new Circle();
+        // Set the display to the default values
+        newCircle.stylize(DisplayStyle.DEFAULT);
+        // Set up the glowing display
+        newCircle.stylize(DisplayStyle.GLOWING);
+
+        // Add the last command to the group and then execute it (i.e. add the potentially two points and the circle to the store.)
+        const newSECircle = new SECircle(newCircle, object1, object2);
+        // Update the newSECircle so the display is correct when the command group is executed
+        newSECircle.update();
+
+        const circleCommandGroup = new CommandGroup();
+        circleCommandGroup.addCommand(
+          new AddCircleCommand(newSECircle, object1, object2)
+        );
+
+        // Generate new intersection points. These points must be computed and created
+        // in the store. Add the new created points to the circle command so they can be undone.
+        this.store.getters
+          .createAllIntersectionsWithCircle(newSECircle)
+          .forEach((item: SEIntersectionReturnType) => {
+            circleCommandGroup.addCommand(
+              new AddIntersectionPointCommand(
+                item.SEIntersectionPoint,
+                item.parent1,
+                item.parent2
+              )
+            );
+            item.SEIntersectionPoint.showing = false; // don not display the automatically created intersection points
+          });
+
+        circleCommandGroup.execute();
+      }
+    }
     // Unselect the selected objects and clear the selectedObject array
     super.activate();
   }

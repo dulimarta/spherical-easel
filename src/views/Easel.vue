@@ -41,9 +41,7 @@
                     id="responsiveBox"
                     class="pa-0"
                   >
-                    <sphere-frame
-                      :canvas-size="currentCanvasSize"
-                    ></sphere-frame>
+                    <sphere-frame :canvas-size="currentCanvasSize"></sphere-frame>
                     <div class="anchored top left">
                       <!-- <v-btn-toggle
                     v-model="actionMode"
@@ -86,13 +84,7 @@
                         :close-delay="toolTipCloseDelay"
                       >
                         <template v-slot:activator="{ on }">
-                          <v-btn
-                            color="primary"
-                            icon
-                            tile
-                            @click="enableZoomIn"
-                            v-on="on"
-                          >
+                          <v-btn color="primary" icon tile @click="enableZoomIn" v-on="on">
                             <v-icon>mdi-magnify-plus-outline</v-icon>
                           </v-btn>
                         </template>
@@ -104,19 +96,11 @@
                         :close-delay="toolTipCloseDelay"
                       >
                         <template v-slot:activator="{ on }">
-                          <v-btn
-                            color="primary"
-                            icon
-                            tile
-                            @click="enableZoomOut"
-                            v-on="on"
-                          >
+                          <v-btn color="primary" icon tile @click="enableZoomOut" v-on="on">
                             <v-icon>mdi-magnify-minus-outline</v-icon>
                           </v-btn>
                         </template>
-                        <span>
-                          {{ $t("buttons.PanZoomOutToolTipMessage") }}
-                        </span>
+                        <span>{{ $t("buttons.PanZoomOutToolTipMessage") }}</span>
                       </v-tooltip>
                       <v-tooltip
                         bottom
@@ -124,19 +108,11 @@
                         :close-delay="toolTipCloseDelay"
                       >
                         <template v-slot:activator="{ on }">
-                          <v-btn
-                            color="primary"
-                            icon
-                            tile
-                            @click="enableZoomFit"
-                            v-on="on"
-                          >
+                          <v-btn color="primary" icon tile @click="enableZoomFit" v-on="on">
                             <v-icon>mdi-magnify-scan</v-icon>
                           </v-btn>
                         </template>
-                        <span>
-                          {{ $t("buttons.PanZoomOutToolTipMessage") }}
-                        </span>
+                        <span>{{ $t("buttons.PanZoomOutToolTipMessage") }}</span>
                       </v-tooltip>
                     </div>
                   </v-responsive>
@@ -152,9 +128,7 @@
               multi-line
             >
               <span>
-                <strong class="warning--text">
-                  {{ $t("buttons.PanZoomInDisplayedName") + ": " }}
-                </strong>
+                <strong class="warning--text">{{ $t("buttons.PanZoomInDisplayedName") + ": " }}</strong>
                 {{ $t("buttons.PanZoomInToolUseMessage") }}
               </span>
               <v-btn @click="displayToolUseMessage = false" icon>
@@ -171,9 +145,7 @@
               multi-line
             >
               <span>
-                <strong class="warning--text">
-                  {{ $t("buttons.ZoomFitDisplayedName") + ": " }}
-                </strong>
+                <strong class="warning--text">{{ $t("buttons.ZoomFitDisplayedName") + ": " }}</strong>
                 {{ $t("buttons.ZoomFitToolUseMessage") }}
               </span>
               <v-btn @click="displayToolUseMessage = false" icon>
@@ -190,9 +162,7 @@
               multi-line
             >
               <span>
-                <strong class="warning--text">
-                  {{ $t("buttons.PanZoomOutDisplayedName") + ": " }}
-                </strong>
+                <strong class="warning--text">{{ $t("buttons.PanZoomOutDisplayedName") + ": " }}</strong>
                 {{ $t("buttons.PanZoomOutToolUseMessage") }}
               </span>
               <v-btn @click="displayToolUseMessage = false" icon>
@@ -233,6 +203,8 @@ import { SELine } from "@/models/SELine";
 import buttonList from "@/components/ToolGroups.vue";
 import ToolButton from "@/components/ToolButton.vue";
 import StylePanel from "@/components/Style.vue";
+import { SECircle } from "../models/SECircle";
+import { SESegment } from "../models/SESegment";
 
 // import { getModule } from "vuex-module-decorators";
 // import UI from "@/store/ui-styles";
@@ -277,7 +249,6 @@ export default class Easel extends Vue {
   constructor() {
     super();
     EventBus.listen("magnification-updated", this.resizePlottables);
-    // this.UIModule.nothing();
   }
   //#endregion magnificationUpdate
 
@@ -369,18 +340,18 @@ export default class Easel extends Vue {
 
   //#region resizePlottables
   resizePlottables(e: any): void {
-    this.$store.state.points.forEach((p: SEPoint) => {
+    // this.$store.state.points.forEach((p: SEPoint) => {
+    //   p.ref.adjustSizeForZoom(e.factor);
+    // });
+    // this.$store.state.lines.forEach((p: SELine) => {
+    //   p.ref.adjustSizeForZoom(e.factor);
+    // });
+    this.$store.state.circles.forEach((p: SECircle) => {
       p.ref.adjustSizeForZoom(e.factor);
     });
-    this.$store.state.lines.forEach((p: SELine) => {
-      p.ref.adjustSizeForZoom(e.factor);
-    });
-    this.$store.state.circles.forEach((p: SELine) => {
-      p.ref.adjustSizeForZoom(e.factor);
-    });
-    this.$store.state.segments.forEach((p: SELine) => {
-      p.ref.adjustSizeForZoom(e.factor);
-    });
+    // this.$store.state.segments.forEach((p: SESegment) => {
+    //   p.ref.adjustSizeForZoom(e.factor);
+    // });
   }
   //#endregion resizePlottables
 }

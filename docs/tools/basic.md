@@ -43,9 +43,9 @@ Create a line.
 ::: tool-details
 
 - Mouse press to declare one point on the line (this might be new free point or one that snaps to an existing point, object or intersection), then drag to a second location, and mouse release to declare a second point on the line (this might be new free point or one that snaps to an existing point, object or intersection).
-- The two points and their midpoint (not displayed, but dynamically created as the user drags, for use in the case that the two points are antipodal or almost antipodal) determine a unique line.
+- The two points and a vector normal to the location of both of them (not displayed, but dynamically created as the user drags, for use in the case that the two points are antipodal or almost antipodal) determine a unique line.
 - When a line is created, a row describing some of its properties will appear in the Lines section of the [Objects Tab](/userguide/#objects-tab).
-- If this tool is activated with two points selected the above action is performed automatically and the midpoint is either the equidistant point that is less than $\frac{\pi}{2}$ from both points or a random point (in the case that the two points are antipodal or nearly antipodal).  
+- If this tool is activated with two points selected the above action is performed automatically creating a line and an arbitrary normal vector in the case that the points are antipodal.
   :::
 
 ::: tool-title
@@ -61,9 +61,8 @@ Create a line segment.
 - Mouse press to declare a start point on the line segment (this might be new free point or one that snaps to an existing point, object or intersection), then drag to a second location, and mouse release to declare an endpoint of the line segment (this might be new free point or one that snaps to an existing point, object or intersection).
 - The two points and their midpoint (not displayed, but dynamically created as the user drags) determine a unique line segment.
 - Pressing the <kyb>Ctrl</kyb> key while dragging will force the line segment created to be longer than $\pi$.
-- Line Segments are extendable. When editing them in the Style Panel, under the Basic Tab there is an Extend Parameter that is initially set to the length of the line segment. This can be set to any value between 0 and $2\pi$. When the value is different than the length of the line segment, a point is created at the endpoint. This parameter can also be set to a Measurement Object (via a Measurement Token) with value computed modulo $2\pi$.
 - When a line segment is created, a row describing some of its properties will appear in the Line Section of the [Objects Tab](/userguide/#objects-tab).
-- If this tool is activated with two points selected the above action is performed automatically and the midpoint is either the equidistant point that is less than $\frac{\pi}{2}$ from both points or a random point (in the case that the two points are antipodal or nearly antipodal).
+- If this tool is activated with two points selected the above action is performed automatically creating a line segment with length less than $\pi$ and an arbitrary normal vector in the case that the points are antipodal.
 
 ::: tip
 

@@ -448,6 +448,68 @@ export default class LineHandler extends Highlighter {
   }
 
   activate(): void {
+    // If there are exactly two (non-antipodal and not to near each other) SEPoints selected,
+    // create a line with the two points
+    if (this.store.getters.selectedObjects().length == 2) {
+      const object1 = this.store.getters.selectedObjects()[0];
+      const object2 = this.store.getters.selectedObjects()[1];
+
+      if (object1 instanceof SEPoint && object2 instanceof SEPoint) {
+        // Create a new plottable Line
+        const newLine = new Line();
+        // Set the display to the default values
+        newLine.stylize(DisplayStyle.DEFAULT);
+        // Set up the glowing display
+        newLine.stylize(DisplayStyle.GLOWING);
+        this.tmpVector.crossVectors(
+          object1.locationVector,
+          object2.locationVector
+        );
+        // Check to see if the points are antipodal
+        if (this.tmpVector.isZero()) {
+          // They are antipodal, create an arbitrary normal vector
+          this.tmpVector.set(1, 0, 0);
+          this.tmpVector.crossVectors(object1.locationVector, this.tmpVector);
+          if (this.tmpVector.isZero()) {
+            this.tmpVector.set(0, 1, 0);
+            // The cross of object1.locationVector, and (1,0,0) and (0,1,0) can't *both* be zero
+            this.tmpVector.crossVectors(object1.locationVector, this.tmpVector);
+          }
+        }
+
+        // Add the last command to the group and then execute it (i.e. add the potentially two points and the circle to the store.)
+        const newSELine = new SELine(
+          newLine,
+          object1,
+          this.tmpVector.normalize(),
+          object2
+        );
+        // Update the newSECircle so the display is correct when the command group is executed
+        newSELine.update();
+
+        const lineCommandGroup = new CommandGroup();
+        lineCommandGroup.addCommand(
+          new AddLineCommand(newSELine, object1, object2)
+        );
+
+        // Generate new intersection points. These points must be computed and created
+        // in the store. Add the new created points to the circle command so they can be undone.
+        this.store.getters
+          .createAllIntersectionsWithLine(newSELine)
+          .forEach((item: SEIntersectionReturnType) => {
+            lineCommandGroup.addCommand(
+              new AddIntersectionPointCommand(
+                item.SEIntersectionPoint,
+                item.parent1,
+                item.parent2
+              )
+            );
+            item.SEIntersectionPoint.showing = false; // don not display the automatically created intersection points
+          });
+
+        lineCommandGroup.execute();
+      }
+    }
     // Unselect the selected objects and clear the selectedObject array
     super.activate();
   }

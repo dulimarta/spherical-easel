@@ -515,6 +515,70 @@ export default class SegmentHandler extends Highlighter {
   }
 
   activate(): void {
+    // If there are exactly two SEPoints selected,
+    // create a segment with the two points as the endpoints of length less than Pi
+    if (this.store.getters.selectedObjects().length == 2) {
+      const object1 = this.store.getters.selectedObjects()[0];
+      const object2 = this.store.getters.selectedObjects()[1];
+
+      if (object1 instanceof SEPoint && object2 instanceof SEPoint) {
+        // Create a new plottable Line
+        const newSegment = new Segment();
+        // Set the display to the default values
+        newSegment.stylize(DisplayStyle.DEFAULT);
+        // Set up the glowing display
+        newSegment.stylize(DisplayStyle.GLOWING);
+
+        this.tmpVector.crossVectors(
+          object1.locationVector,
+          object2.locationVector
+        );
+        // Check to see if the points are antipodal
+        if (this.tmpVector.isZero()) {
+          // They are antipodal, create an arbitrary normal vector
+          this.tmpVector.set(1, 0, 0);
+          this.tmpVector.crossVectors(object1.locationVector, this.tmpVector);
+          if (this.tmpVector.isZero()) {
+            this.tmpVector.set(0, 1, 0);
+            // The cross of object1.locationVector, and (1,0,0) and (0,1,0) can't *both* be zero
+            this.tmpVector.crossVectors(object1.locationVector, this.tmpVector);
+          }
+        }
+
+        // Add the last command to the group and then execute it (i.e. add the potentially two points and the circle to the store.)
+        const newSESegment = new SESegment(
+          newSegment,
+          object1,
+          this.tmpVector.normalize(),
+          object1.locationVector.angleTo(object2.locationVector),
+          object2
+        );
+        // Update the newSECircle so the display is correct when the command group is executed
+        newSESegment.update();
+
+        const segmentCommandGroup = new CommandGroup();
+        segmentCommandGroup.addCommand(
+          new AddSegmentCommand(newSESegment, object1, object2)
+        );
+
+        // Generate new intersection points. These points must be computed and created
+        // in the store. Add the new created points to the circle command so they can be undone.
+        this.store.getters
+          .createAllIntersectionsWithSegment(newSESegment)
+          .forEach((item: SEIntersectionReturnType) => {
+            segmentCommandGroup.addCommand(
+              new AddIntersectionPointCommand(
+                item.SEIntersectionPoint,
+                item.parent1,
+                item.parent2
+              )
+            );
+            item.SEIntersectionPoint.showing = false; // don not display the automatically created intersection points
+          });
+
+        segmentCommandGroup.execute();
+      }
+    }
     // Unselect the selected objects and clear the selectedObject array
     super.activate();
   }

@@ -18,6 +18,7 @@ export interface AppState {
   sphereRadius: /* in pixel */ number; // When the window is resized, the actual size of the sphere (in pixel may change)
   zoomTranslation: number[]; // current zoom translation vector
   zoomMagnificationFactor: number; // current zoom magnification factor
+  previousZoomMagnificationFactor: number;
   actionMode: string;
   previousActionMode: string;
   activeToolName: string;

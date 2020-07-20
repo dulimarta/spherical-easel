@@ -4,6 +4,7 @@ import SETTINGS from "@/global-settings";
 import Nodule from "@/plottables/Nodule";
 import { SEPointOnOneDimensional } from "./SEPointOnOneDimensional";
 import { Styles } from "@/types/Styles";
+import { SEOneDimensional } from "@/types";
 // import { SESegmentMidPoint } from "./SESegmentMidPoint";
 
 let NODE_COUNT = 0;
@@ -204,6 +205,10 @@ export abstract class SENodule {
   public isFreeToMove(): boolean {
     if (this.isFreePoint() || this.isPointOnOneDimensional()) return true;
     return this._parents.every(n => n.isFreePoint());
+  }
+
+  public isOneDimensional(): this is SEOneDimensional {
+    return true;
   }
 
   //Getters and Setters
