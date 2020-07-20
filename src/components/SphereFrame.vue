@@ -132,7 +132,7 @@ export default class SphereFrame extends VueComponent {
     // and scale it later to fit the canvas
     this.boundaryCircle = new Two.Circle(0, 0, SETTINGS.boundaryCircle.radius);
     this.boundaryCircle.noFill();
-    this.boundaryCircle.linewidth = SETTINGS.boundaryCircle.linewidth;
+    this.boundaryCircle.linewidth = SETTINGS.boundaryCircle.lineWidth;
     this.layers[LAYER.midground].add(this.boundaryCircle);
     // const box1 = new Two.Rectangle(-100, 150, 100, 150);
     // box1.fill = "hsl(200,80%,50%)";

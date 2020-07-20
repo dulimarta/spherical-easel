@@ -320,7 +320,7 @@ export default class Circle extends Nodule {
     // The circle interior is only on the front of the sphere
     if (backLen === 0 && this._circleRadius < Math.PI / 2) {
       // In this case the frontFillVertices are the same as the frontVertices
-      this.frontFill.vertices.forEach((v, index) => {
+      this.frontFill.vertices.forEach((v: any, index: number) => {
         v.x = this.frontPart.vertices[index].x;
         v.y = this.frontPart.vertices[index].y;
       });
@@ -375,7 +375,7 @@ export default class Circle extends Nodule {
 
       // Build the frontFill
       // First copy the frontPart into the first part of the frontFill
-      this.frontFill.vertices.forEach((v, index) => {
+      this.frontFill.vertices.forEach((v: any, index: number) => {
         if (index < frontLen) {
           v.x = this.frontPart.vertices[index].x;
           v.y = this.frontPart.vertices[index].y;
@@ -389,7 +389,7 @@ export default class Circle extends Nodule {
 
       // Build the backFill
       // First copy the backPart into the first part of the backFill
-      this.backFill.vertices.forEach((v, index) => {
+      this.backFill.vertices.forEach((v: any, index: number) => {
         if (index < backLen) {
           v.x = this.backPart.vertices[backLen - 1 - index].x;
           v.y = this.backPart.vertices[backLen - 1 - index].y;
@@ -423,7 +423,7 @@ export default class Circle extends Nodule {
     // The circle interior covers the entire front half of the sphere and is a 'hole' on the back
     if (frontLen === 0 && this._circleRadius > Math.PI / 2) {
       // In this case set the frontFillVertices to the entire front of the sphere
-      this.frontFill.vertices.forEach((v, index) => {
+      this.frontFill.vertices.forEach((v: any, index: number) => {
         const angle = (index / SUBDIVISIONS) * 2 * Math.PI;
         v.x = SETTINGS.boundaryCircle.radius * Math.cos(angle);
         v.y = SETTINGS.boundaryCircle.radius * Math.sin(angle);
@@ -437,7 +437,7 @@ export default class Circle extends Nodule {
         this.backPart.vertices[0].x
       );
 
-      this.backFill.vertices.forEach((v, index) => {
+      this.backFill.vertices.forEach((v: any, index: number) => {
         if (index <= Math.floor(SUBDIVISIONS / 2) - 2) {
           const angle = -((2 * index) / SUBDIVISIONS) * 2 * Math.PI; //must trace in the opposite direction on the back to render the annular region
           v.x =
@@ -477,7 +477,7 @@ export default class Circle extends Nodule {
     // The circle interior covers the entire back half of the sphere and is a 'hole' on the front
     if (backLen === 0 && this._circleRadius > Math.PI / 2) {
       // In this case set the frontFillVertices to the entire front of the sphere
-      this.backFill.vertices.forEach((v, index) => {
+      this.backFill.vertices.forEach((v: any, index: number) => {
         const angle = (index / SUBDIVISIONS) * 2 * Math.PI;
         v.x = SETTINGS.boundaryCircle.radius * Math.cos(angle);
         v.y = SETTINGS.boundaryCircle.radius * Math.sin(angle);
@@ -584,7 +584,8 @@ export default class Circle extends Nodule {
     }
     if (options.strokeWidth) {
       this.frontPart.linewidth = options.strokeWidth;
-      this.glowingFrontPart.linewidth = options.strokeWidth;
+      this.glowingFrontPart.linewidth =
+        options.strokeWidth + SETTINGS.circle.glowing.edgeWidth;
     }
     if (options.fillColorWhite) {
       // FIXME: it does not work?

@@ -1,5 +1,8 @@
 import MouseHandler from "./MouseHandler";
 import { SENodule } from "@/models/SENodule";
+// import { SEPoint } from "@/models/SEPoint";
+// import { SELine } from "@/models/SELine";
+// import { SESegment } from "@/models/SESegment";
 
 export default class SelectionHandler extends MouseHandler {
   /**
@@ -9,6 +12,8 @@ export default class SelectionHandler extends MouseHandler {
    */
   private currentSelection: SENodule[] = [];
 
+  private highlightTimer: NodeJS.Timeout | null = null;
+  private highlightOn = false;
   /**
    * An array to store the object selected by the key press handler
    */
@@ -81,8 +86,25 @@ export default class SelectionHandler extends MouseHandler {
     this.currentSelection.forEach(n =>
       console.log("hit object", n.name, n.selected)
     );
+    if (this.currentSelection.length > 0 && this.highlightTimer === null) {
+      // We have selections and interval timer is not running
+      this.highlightTimer = setInterval(this.blinkSelections.bind(this), 2000);
+    } else if (
+      this.currentSelection.length === 0 &&
+      this.highlightTimer !== null
+    ) {
+      // interval timer is running and we have no selections
+      clearInterval(this.highlightTimer);
+      this.highlightTimer = null;
+    }
   }
 
+  private blinkSelections(): void {
+    this.highlightOn = !this.highlightOn;
+    this.currentSelection.forEach((n: SENodule) => {
+      n.glowing = this.highlightOn;
+    });
+  }
   mouseMoved(event: MouseEvent): void {
     console.log("mouse move event");
     // Clear any objects in the keyPressSelection
@@ -131,6 +153,10 @@ export default class SelectionHandler extends MouseHandler {
   }
 
   deactivate(): void {
+    if (this.highlightTimer !== null) {
+      clearInterval(this.highlightTimer);
+      this.highlightTimer = null;
+    }
     window.removeEventListener("keypress", this.keyPressHandler);
   }
 }

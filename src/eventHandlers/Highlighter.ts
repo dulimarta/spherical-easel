@@ -20,19 +20,22 @@ export default abstract class Highlighter extends MouseHandler {
     super.mouseMoved(event);
     if (!this.isOnSphere) return;
     // Set the display to normal for all previously nearby objects
-    this.hitSEPoints.forEach((p: SEPoint) => {
-      p.glowing = false;
+    this.hitSENodules.forEach((n: SENodule) => {
+      if (!n.selected) n.glowing = false;
     });
-    this.hitSELines.forEach((p: SELine) => {
-      p.glowing = false;
-    });
-    this.hitSESegments.forEach((s: SESegment) => {
-      s.glowing = false;
-    });
+    // this.hitSEPoints.forEach((p: SEPoint) => {
+    //   p.glowing = false;
+    // });
+    // this.hitSELines.forEach((p: SELine) => {
+    //   p.glowing = false;
+    // });
+    // this.hitSESegments.forEach((s: SESegment) => {
+    //   s.glowing = false;
+    // });
 
-    this.hitSECircles.forEach((c: SECircle) => {
-      c.glowing = false;
-    });
+    // this.hitSECircles.forEach((c: SECircle) => {
+    //   c.glowing = false;
+    // });
     // Clear the arrays of previously nearby nodules and hide any displayed info boxes
     this.hitSEPoints.clear();
     this.hitSELines.clear();
