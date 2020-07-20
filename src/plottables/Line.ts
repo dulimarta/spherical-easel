@@ -189,6 +189,10 @@ export default class Line extends Nodule {
       this.glowingFrontHalf.stroke = options.strokeColor;
       this.glowingBackHalf.stroke = options.strokeColor;
     }
+    if (options.dashPattern) {
+      (this.backHalf as any).dashes = options.dashPattern;
+      (this.glowingBackHalf as any).dashes = options.dashPattern;
+    }
   }
 
   /**

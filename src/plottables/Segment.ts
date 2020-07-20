@@ -210,6 +210,12 @@ export default class Segment extends Nodule {
       this.glowingFrontPart.linewidth = options.strokeWidth;
       this.glowingFrontExtra.linewidth = options.strokeWidth;
     }
+    if (options.dashPattern) {
+      (this.backPart as any).dashes = options.dashPattern;
+      (this.backExtra as any).dashes = options.dashPattern;
+      (this.glowingBackPart as any).dashes = options.dashPattern;
+      (this.glowingBackExtra as any).dashes = options.dashPattern;
+    }
   }
 
   /**

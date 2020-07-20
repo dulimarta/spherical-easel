@@ -4,8 +4,7 @@ import Vuex from "vuex";
 import VueI18n from "vue-i18n";
 import { Vector2, Vector3 } from "three";
 import { config } from "@vue/test-utils";
-import SETTINGS from "@/globalSettings";
-// import "jest-extended";
+
 Vue.use(Vuex);
 Vue.use(Vuetify);
 Vue.use(VueI18n);
