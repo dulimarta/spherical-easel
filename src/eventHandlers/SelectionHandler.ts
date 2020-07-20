@@ -86,14 +86,16 @@ export default class SelectionHandler extends MouseHandler {
     this.currentSelection.forEach(n =>
       console.log("hit object", n.name, n.selected)
     );
+
+    /* Enable/disable interval timer to flasher selected objects */
     if (this.currentSelection.length > 0 && this.highlightTimer === null) {
-      // We have selections and interval timer is not running
+      // We have selections and interval timer is not running, then start timer
       this.highlightTimer = setInterval(this.blinkSelections.bind(this), 2000);
     } else if (
       this.currentSelection.length === 0 &&
       this.highlightTimer !== null
     ) {
-      // interval timer is running and we have no selections
+      // interval timer is running and we have no selections, then stop timer
       clearInterval(this.highlightTimer);
       this.highlightTimer = null;
     }
@@ -105,6 +107,7 @@ export default class SelectionHandler extends MouseHandler {
       n.glowing = this.highlightOn;
     });
   }
+
   mouseMoved(event: MouseEvent): void {
     console.log("mouse move event");
     // Clear any objects in the keyPressSelection
