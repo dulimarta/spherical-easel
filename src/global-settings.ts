@@ -32,7 +32,7 @@ export default {
     numPoints: 50,
     opacity: 0.5,
     color: "black",
-    linewidth: 3
+    lineWidth: 3
   },
   // #endregion boundarycircle
   point: {

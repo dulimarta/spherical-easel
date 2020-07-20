@@ -321,6 +321,12 @@ export default class Easel extends Vue {
     if (!this.toolboxMinified && !this.stylePanelMinified) {
       this.toolboxMinified = true;
     }
+    if (!this.stylePanelMinified) {
+      this.$store.commit("setActionMode", {
+        id: "select",
+        name: "CreateSelectDisplayedName"
+      });
+    }
   }
 
   switchActionMode(): void {

@@ -177,7 +177,11 @@ export default class Point extends Nodule {
   }
 
   updateStyle(options: StyleOptions): void {
-    console.debug("Update style of", this.name);
+    if (options.strokeWidth) {
+      this.frontPoint.linewidth = options.strokeWidth;
+      this.glowingFrontPoint.linewidth =
+        options.strokeWidth + SETTINGS.point.glowing.annularWidth;
+    }
   }
 
   addToLayers(layers: Two.Group[]): void {

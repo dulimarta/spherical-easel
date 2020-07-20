@@ -5,51 +5,29 @@
     </span>
     <fade-in-card :showWhen="hasColor">
       <span class="text-subtitle-2">Color</span>
-      <v-color-picker
-        hide-inputs
-        v-model="selectedColor"
-        @update:color="onColorChanged"
-      ></v-color-picker>
+      <v-color-picker hide-inputs :disabled="colorApplyTo.length === 0"
+        v-model="selectedColor" @update:color="onColorChanged">
+      </v-color-picker>
       <span>Apply to:</span>
       <div>
-        <v-checkbox
-          v-model="colorApplyTo"
-          dense
-          v-for="(z, pos) in colorKeys"
-          :key="pos"
-          :label="z.label"
-          :value="z.value"
-        ></v-checkbox>
+        <v-checkbox v-model="colorApplyTo" dense
+          v-for="(z, pos) in colorKeys" :key="pos" :label="z.label"
+          :value="z.value"></v-checkbox>
       </div>
     </fade-in-card>
     <fade-in-card :showWhen="hasStrokeWidth">
       <span>Stroke Width</span>
-      <v-slider
-        v-model.number="strokeWidth"
-        :min="minStrokeWidth"
-        @change="onLineWidthChanged"
-        :max="maxStrokeWidth"
-        type="range"
-      ></v-slider>
+      <v-slider v-model.number="strokeWidth" :min="minStrokeWidth"
+        @change="onLineWidthChanged" :max="maxStrokeWidth" type="range">
+      </v-slider>
     </fade-in-card>
     <fade-in-card :showWhen="hasDash">
       <span>Dash Pattern ({{ dashLength }}/{{ gapLength }})</span>
-      <v-slider
-        min="1"
-        max="5"
-        v-model.number="dashLength"
-        persistent-hint
-        hint="Dash length"
-        @change="onDashPatternChanged"
-      ></v-slider>
-      <v-slider
-        min="1"
-        max="5"
-        v-model.number="gapLength"
-        persistent-hint
-        hint="Gap length"
-        @change="onDashPatternChanged"
-      ></v-slider>
+      <v-slider min="5" max="15" v-model.number="dashLength"
+        persistent-hint hint="Dash length" @change="onDashPatternChanged">
+      </v-slider>
+      <v-slider min="5" max="15" v-model.number="gapLength" persistent-hint
+        hint="Gap length" @change="onDashPatternChanged"></v-slider>
     </fade-in-card>
   </div>
 </template>

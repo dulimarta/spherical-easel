@@ -6,22 +6,11 @@
 
     <fade-in-card :showWhen="hasDash">
       <span>Dash Pattern ({{ dashLength }}/{{ gapLength }})</span>
-      <v-slider
-        min="1"
-        max="5"
-        v-model.number="dashLength"
-        persistent-hint
-        hint="Dash length"
-        @change="onDashPatternChanged"
-      ></v-slider>
-      <v-slider
-        min="1"
-        max="5"
-        v-model.number="gapLength"
-        persistent-hint
-        hint="Gap length"
-        @change="onDashPatternChanged"
-      ></v-slider>
+      <v-slider min="5" max="15" v-model.number="dashLength"
+        persistent-hint hint="Dash length" @change="onDashPatternChanged">
+      </v-slider>
+      <v-slider min="5" max="15" v-model.number="gapLength" persistent-hint
+        hint="Gap length" @change="onDashPatternChanged"></v-slider>
     </fade-in-card>
   </div>
 </template>

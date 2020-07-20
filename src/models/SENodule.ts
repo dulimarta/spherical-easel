@@ -240,8 +240,8 @@ export abstract class SENodule {
   }
 
   set glowing(b: boolean) {
-    //glowing has no effect on selected or hidden objects
-    if (this._selected || !this._showing) return;
+    //glowing has no effect on hidden objects
+    if (/*this._selected || */ !this._showing) return;
     if (b) {
       // Set the display for the corresponding plottable object
       this.ref.glowingDisplay();

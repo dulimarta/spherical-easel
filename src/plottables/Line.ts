@@ -179,8 +179,10 @@ export default class Line extends Nodule {
       // TODO: separate front and back options
       this.frontHalf.linewidth = options.strokeWidth;
       this.backHalf.linewidth = options.strokeWidth;
-      this.glowingFrontHalf.linewidth = options.strokeWidth;
-      this.glowingBackHalf.linewidth = options.strokeWidth;
+      this.glowingFrontHalf.linewidth =
+        options.strokeWidth + SETTINGS.line.glowing.edgeWidth;
+      this.glowingBackHalf.linewidth =
+        options.strokeWidth + SETTINGS.line.glowing.edgeWidth;
     }
     if (options.strokeColor) {
       // TODO: separate front and back options
