@@ -1,12 +1,26 @@
 <template>
   <div>
-    <span
-      v-show="commonStyleProperties.length === 0"
-      class="text-body-2"
-    >Please select object(s) to style</span>
-    <fade-in-card :showWhen="hasStrokeColor">
-      <span class="text-subtitle-2">Stroke Color</span>
-      <v-color-picker v-model="strokeColor" @update:color="onLineColorChanged"></v-color-picker>
+    <span v-show="commonStyleProperties.length === 0" class="text-body-2">
+      Please select object(s) to style
+    </span>
+    <fade-in-card :showWhen="hasColor">
+      <span class="text-subtitle-2">Color</span>
+      <v-color-picker
+        hide-inputs
+        v-model="selectedColor"
+        @update:color="onColorChanged"
+      ></v-color-picker>
+      <span>Apply to: {{ colorApplyTo }}</span>
+      <div>
+        <v-checkbox
+          v-model="colorApplyTo"
+          dense
+          v-for="(z, pos) in colorKeys"
+          :key="pos"
+          :label="z.label"
+          :value="z.value"
+        ></v-checkbox>
+      </div>
     </fade-in-card>
     <fade-in-card :showWhen="hasStrokeWidth">
       <span>Stroke Width</span>
@@ -17,10 +31,6 @@
         :max="maxStrokeWidth"
         type="range"
       ></v-slider>
-    </fade-in-card>
-    <fade-in-card :showWhen="hasFillColor">
-      <span class="text-subtitle-2">Fill Color</span>
-      <v-color-picker v-modeel="fillColor" @update:color="onFillColorChanged"></v-color-picker>
     </fade-in-card>
   </div>
 </template>
@@ -53,13 +63,13 @@ export default class FrontStyle extends Vue {
   @State
   readonly selections!: SENodule[];
 
-  readonly minStrokeWidth = SETTINGS.line.drawn.strokeWidth.min;
-  readonly maxStrokeWidth = SETTINGS.line.drawn.strokeWidth.max;
+  readonly minStrokeWidth: number = SETTINGS.line.drawn.strokeWidth.min;
+  readonly maxStrokeWidth: number = SETTINGS.line.drawn.strokeWidth.max;
 
   // TODO: handlle background as well
-  private strokeWidth = SETTINGS.line.drawn.strokeWidth.front;
-  private strokeColor = SETTINGS.line.drawn.strokeColor.front;
-  private fillColor = SETTINGS.circle.drawn.fillColor.front;
+  private strokeWidth: number = SETTINGS.line.drawn.strokeWidth.front;
+  private selectedColor: string = SETTINGS.line.drawn.strokeColor.front;
+  private colorApplyTo: string[] = [];
   commonStyleProperties: number[] = [];
 
   // private commonProperties: Set<Styles>;
@@ -73,13 +83,15 @@ export default class FrontStyle extends Vue {
     this.$store.commit("changeStrokeWidth", this.strokeWidth);
     // this.UIModule.changeStrokeColor("red");
   }
-  onLineColorChanged(): void {
-    this.$store.commit("changeStrokeColor", this.strokeColor);
+  onColorChanged(): void {
+    this.$store.commit("changeColor", {
+      color: this.selectedColor,
+      props: this.colorApplyTo.map(
+        (s: string) => s.replace(/ /g, "") // Remove all blanks
+      )
+    });
   }
 
-  onFillColorChanged(): void {
-    this.$store.commit("changeFillColor", this.fillColor);
-  }
   hasStyles(s: Styles): boolean {
     const sNum = Number(s);
     return (
@@ -88,20 +100,39 @@ export default class FrontStyle extends Vue {
     );
   }
 
-  get hasStrokeColor(): boolean {
-    return this.hasStyles(Styles.StrokeColor);
+  get hasColor(): boolean {
+    return (
+      this.hasStyles(Styles.strokeColor) ||
+      this.hasStyles(Styles.fillColorWhite) ||
+      this.hasStyles(Styles.fillColorGray)
+    );
+  }
+
+  get colorKeys(): any[] {
+    return this.commonStyleProperties
+      .map((id: number) => ({
+        // Convert camelCase to title format
+        // i.e. "justASimpleText" becomes "Just A Simple Text"
+        label: keys[id]
+          .replace(
+            /([a-z])([A-Z])/g, // global regex
+            (_, lowLetter, upLetter) => `${lowLetter} ${upLetter}`
+          )
+          .replace(/^([a-z])/, (_, firstLetter: string) =>
+            firstLetter.toUpperCase()
+          ),
+        value: keys[id]
+      }))
+      .filter((e: any) => {
+        const { label, _ } = e;
+        return label.toLowerCase().indexOf("color") >= 0; // Select entry with "Color" in its label
+      });
   }
 
   get hasStrokeWidth(): boolean {
-    return this.hasStyles(Styles.StrokeWidth);
+    return this.hasStyles(Styles.strokeWidth);
   }
 
-  get hasFillColor(): boolean {
-    return (
-      this.hasStyles(Styles.FillWhiteTint) ||
-      this.hasStyles(Styles.FillGrayTint)
-    );
-  }
   @Watch("selections", { deep: true })
   onSelectionChanged(newSelection: SENodule[]): void {
     // newSelection.forEach(s => {
@@ -116,7 +147,15 @@ export default class FrontStyle extends Vue {
       if (newSelection.every(s => s.customStyles().has(k)))
         this.commonStyleProperties.push(k);
     }
-    const propNames = this.commonStyleProperties.map(n => keys[n]).join(", ");
+    for (let k = this.colorApplyTo.length - 1; k >= 0; k--) {
+      const idx = this.commonStyleProperties.findIndex(
+        s => keys[s] === this.colorApplyTo[k]
+      );
+      if (idx < 0) {
+        this.colorApplyTo.splice(k, 1);
+      }
+    }
+    // const propNames = this.commonStyleProperties.map(n => keys[n]).join(", ");
     // console.debug("Common props: ", propNames);
   }
 }

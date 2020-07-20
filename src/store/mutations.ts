@@ -207,27 +207,19 @@ export default {
         n.ref.updateStyle(opt);
       });
   },
-  changeStrokeColor(state: AppState, color: string): void {
-    const opt: StyleOptions = {
-      strokeColor: color
-    };
+  changeColor(
+    state: AppState,
+    { color, props }: { color: string; props: string[] }
+  ): void {
+    const opt: any = {};
+    props.forEach(s => {
+      opt[s] = color;
+    });
     state.selections
       .filter(n => !(n instanceof SEPoint))
       .map(n => n as SEOneDimensional) // TODO: handle other object types
       .forEach((n: SEOneDimensional) => {
         // console.debug(`Changing stroke color of ${n.name} to ${color}`);
-        n.ref.updateStyle(opt);
-      });
-  },
-  changeFillColor(state: AppState, color: string): void {
-    const opt: StyleOptions = {
-      fillColor: color
-    };
-    state.selections
-      .filter(n => !(n instanceof SEPoint))
-      .map(n => n as SEOneDimensional) // TODO: handle other object types
-      .forEach((n: SEOneDimensional) => {
-        // console.debug(`Changing Fill color of ${n.name} to ${color}`);
         n.ref.updateStyle(opt);
       });
   }

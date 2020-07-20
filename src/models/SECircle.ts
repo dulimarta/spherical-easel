@@ -16,10 +16,10 @@ const tmpVector1 = new Vector3();
 let CIRCLE_COUNT = 0;
 
 const styleSet = new Set([
-  Styles.StrokeColor,
-  Styles.StrokeWidth,
-  Styles.FillGrayTint,
-  Styles.FillWhiteTint
+  Styles.strokeColor,
+  Styles.strokeWidth,
+  Styles.fillColorGray,
+  Styles.fillColorWhite
 ]);
 export class SECircle extends SENodule implements Visitable, OneDimensional {
   /**

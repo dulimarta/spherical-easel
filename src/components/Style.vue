@@ -1,9 +1,10 @@
 <template>
   <transition name="slide-out" mode="out-in">
     <div v-if="!minified" key="full">
-      <v-expansion-panels>
-        <v-expansion-panel v-for="(p,idx) in panels" :key="idx">
-          <v-expansion-panel-header :key="`header${idx}`">{{p.name}}
+      <v-expansion-panels :value="selectedPanel">
+        <v-expansion-panel v-for="(p, idx) in panels" :key="idx">
+          <v-expansion-panel-header :key="`header${idx}`">
+            {{ p.name }}
           </v-expansion-panel-header>
           <v-expansion-panel-content :key="`content${idx}`">
             <component :is="p.component"></component>
@@ -15,28 +16,25 @@
       <v-icon>mdi-palette</v-icon>
     </div>
   </transition>
-
 </template>
 
 <script lang="ts">
-import Vue from 'vue';
-import Component from "vue-class-component"
+import Vue from "vue";
+import Component from "vue-class-component";
 import FrontStyle from "@/components/FrontStyle.vue";
-import { Prop } from 'vue-property-decorator';
-
-
-
+import { Prop } from "vue-property-decorator";
 
 @Component({ components: { FrontStyle } })
 export default class Style extends Vue {
   @Prop()
   readonly minified!: boolean;
-
-  private readonly panels = [{
-    name: "FrontStyle",
-    component: () => import("@/components/FrontStyle.vue")
-  }]
-
+  private selectedPanel = 0;
+  private readonly panels = [
+    {
+      name: "FrontStyle",
+      component: () => import("@/components/FrontStyle.vue")
+    }
+  ];
 }
 </script>
 
