@@ -10,7 +10,7 @@
         v-model="selectedColor"
         @update:color="onColorChanged"
       ></v-color-picker>
-      <span>Apply to: {{ colorApplyTo }}</span>
+      <span>Apply to:</span>
       <div>
         <v-checkbox
           v-model="colorApplyTo"

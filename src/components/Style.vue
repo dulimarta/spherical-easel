@@ -31,8 +31,16 @@ export default class Style extends Vue {
   private selectedPanel = 0;
   private readonly panels = [
     {
-      name: "FrontStyle",
+      name: "Basic Style",
+      component: () => import("@/components/BasicStyle.vue")
+    },
+    {
+      name: "Foreground Style",
       component: () => import("@/components/FrontStyle.vue")
+    },
+    {
+      name: "Advanced Style",
+      component: () => import("@/components/AdvancedStyle.vue")
     }
   ];
 }
