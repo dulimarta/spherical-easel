@@ -116,20 +116,19 @@ export default class Point extends Nodule {
    * zooming out doesn't make the point too small
    * @param factor The scale factor of the current zoom port
    */
-  adjustSizeForZoom(factor: number): void {
-    console.log("point adjust for zoom");
-    const newRadius = defaultRadiusFront * factor;
-    let newScale = 1;
-    if (newRadius > SETTINGS.point.drawn.radius.rmax) {
-      // debugger; // eslint-disable-line
-      newScale = SETTINGS.point.drawn.radius.rmax / newRadius;
-    }
-    if (newRadius < SETTINGS.point.drawn.radius.rmin) {
-      // debugger; // eslint-disable-line
-      newScale = SETTINGS.point.drawn.radius.rmin / newRadius;
-    }
-
-    this.frontPoint.scale = newScale;
+  adjustSizeForZoom(): void {
+    // console.log("point adjust for zoom");
+    // const newRadius = defaultRadiusFront * factor;
+    // let newScale = 1;
+    // if (newRadius > SETTINGS.point.drawn.radius.rmax) {
+    //   // debugger; // eslint-disable-line
+    //   newScale = SETTINGS.point.drawn.radius.rmax / newRadius;
+    // }
+    // if (newRadius < SETTINGS.point.drawn.radius.rmin) {
+    //   // debugger; // eslint-disable-line
+    //   newScale = SETTINGS.point.drawn.radius.rmin / newRadius;
+    // }
+    // this.frontPoint.scale = newScale;
   }
 
   frontGlowingDisplay(): void {

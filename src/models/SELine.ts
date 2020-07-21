@@ -7,6 +7,7 @@ import { SEPoint } from "./SEPoint";
 import SETTINGS from "@/global-settings";
 import { OneDimensional } from "@/types";
 import { Styles } from "@/types/Styles";
+import { SaveStateMode, SaveStateType } from "@/types";
 
 /** Temporary vectors to help with calculations */
 const tmpVector = new Vector3(); //
@@ -16,9 +17,9 @@ const desiredZAxis = new Vector3();
 
 let LINE_COUNT = 0;
 const styleSet = new Set([
-  Styles.StrokeWidth,
-  Styles.StrokeColor,
-  Styles.DashPattern
+  Styles.strokeWidth,
+  Styles.strokeColor,
+  Styles.dashPattern
 ]);
 export class SELine extends SENodule implements Visitable, OneDimensional {
   /**
@@ -109,7 +110,8 @@ export class SELine extends SENodule implements Visitable, OneDimensional {
     }
   }
 
-  public update(): void {
+  public update(state: SaveStateType): void {
+    // If any one parent is not up to date, don't do anything
     if (!this.canUpdateNow()) {
       return;
     }
@@ -147,8 +149,31 @@ export class SELine extends SENodule implements Visitable, OneDimensional {
     } else {
       this.ref.setVisible(false);
     }
-
-    this.updateKids();
+    // Record the state of the object in state.stateArray
+    switch (state.mode) {
+      case SaveStateMode.UndoMove: {
+        // If the parent points of the line are antipodal, the normal vector determines the
+        // location of the line.  This could be the case during a move therefore store normal vector
+        // in stateArray for undo move. (No need to store the parent points, they will be updated on their own
+        // before this line is updated.) Store the coordinate values of the vector and not the point to the vector.
+        state.stateArray.push({
+          kind: "line",
+          object: this,
+          normalVectorX: this._normalVector.x,
+          normalVectorY: this._normalVector.y,
+          normalVectorZ: this._normalVector.z
+        });
+        break;
+      }
+      case SaveStateMode.UndoDelete: {
+        break;
+      }
+      // The DisplayOnly case fall through and does nothing
+      case SaveStateMode.DisplayOnly:
+      default:
+        break;
+    }
+    this.updateKids(state);
   }
 
   /**
@@ -189,8 +214,14 @@ export class SELine extends SENodule implements Visitable, OneDimensional {
           .applyAxisAngle(desiredZAxis, rotationAngle);
         this.endSEPoint.locationVector = tmpVector2;
         // Update both points, because we might need to update their kids!
-        this.endSEPoint.update();
-        this.startSEPoint.update();
+        this.endSEPoint.update({
+          mode: SaveStateMode.DisplayOnly,
+          stateArray: []
+        });
+        this.startSEPoint.update({
+          mode: SaveStateMode.DisplayOnly,
+          stateArray: []
+        });
       }
     } else {
       let pivot = this.startSEPoint;
@@ -232,8 +263,8 @@ export class SELine extends SENodule implements Visitable, OneDimensional {
       freeEnd.locationVector = tmpVector1;
       console.debug("free End kid", freeEnd.kids[0].name);
       console.debug("pivot kid", pivot.kids[0].name);
-      freeEnd.update();
-      pivot.update();
+      freeEnd.update({ mode: SaveStateMode.DisplayOnly, stateArray: [] });
+      pivot.update({ mode: SaveStateMode.DisplayOnly, stateArray: [] });
     }
   }
 }

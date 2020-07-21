@@ -143,19 +143,19 @@ export default class Segment extends Nodule {
   }
 
   // TODO: adjust size of frontextra, backextra and glowing parts use stylize("update")
-  adjustSizeForZoom(factor: number): void {
-    const newThickness = this.strokeWidthFront * factor;
-    console.debug("Attempt to change line thickness to", newThickness);
-    if (factor > 1)
-      this.frontPart.linewidth = Math.min(
-        newThickness,
-        SETTINGS.segment.drawn.strokeWidth.max
-      );
-    else
-      this.frontPart.linewidth = Math.max(
-        newThickness,
-        SETTINGS.segment.drawn.strokeWidth.min
-      );
+  adjustSizeForZoom(): void {
+    // const newThickness = this.strokeWidthFront * factor;
+    // console.debug("Attempt to change line thickness to", newThickness);
+    // if (factor > 1)
+    //   this.frontPart.linewidth = Math.min(
+    //     newThickness,
+    //     SETTINGS.segment.drawn.strokeWidth.max
+    //   );
+    // else
+    //   this.frontPart.linewidth = Math.max(
+    //     newThickness,
+    //     SETTINGS.segment.drawn.strokeWidth.min
+    //   );
   }
 
   frontGlowingDisplay(): void {

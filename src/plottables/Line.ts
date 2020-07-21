@@ -128,19 +128,19 @@ export default class Line extends Nodule {
     }
   }
 
-  adjustSizeForZoom(factor: number): void {
-    const newThickness = this.strokeWidthFront * factor;
-    console.log("Attempt to change line thickness to", newThickness);
-    if (factor > 1)
-      this.frontHalf.linewidth = Math.min(
-        newThickness,
-        SETTINGS.line.drawn.strokeWidth.max
-      );
-    else
-      this.frontHalf.linewidth = Math.max(
-        newThickness,
-        SETTINGS.line.drawn.strokeWidth.min
-      );
+  adjustSizeForZoom(): void {
+    // const newThickness = this.strokeWidthFront * factor;
+    // console.log("Attempt to change line thickness to", newThickness);
+    // if (factor > 1)
+    //   this.frontHalf.linewidth = Math.min(
+    //     newThickness,
+    //     SETTINGS.line.drawn.strokeWidth.max
+    //   );
+    // else
+    //   this.frontHalf.linewidth = Math.max(
+    //     newThickness,
+    //     SETTINGS.line.drawn.strokeWidth.min
+    //   );
   }
 
   frontGlowingDisplay(): void {

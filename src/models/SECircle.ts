@@ -7,6 +7,7 @@ import { Visitor } from "@/visitors/Visitor";
 import { OneDimensional } from "@/types";
 import SETTINGS from "@/global-settings";
 import { Styles } from "@/types/Styles";
+import { SaveStateMode, SaveStateType } from "@/types";
 
 /** Use in the rotation matrix during a move event */
 const desiredZAxis = new Vector3();
@@ -16,12 +17,12 @@ const tmpVector1 = new Vector3();
 let CIRCLE_COUNT = 0;
 
 const styleSet = new Set([
-  Styles.StrokeColor,
-  Styles.StrokeWidth,
-  Styles.DashPattern,
+  Styles.strokeColor,
+  Styles.strokeWidth,
+  Styles.dashPattern,
   //Styles.fillColorGray,
   //Styles.fillColorWhite,
-  Styles.DashPattern
+  Styles.dashPattern
 ]);
 export class SECircle extends SENodule implements Visitable, OneDimensional {
   /**
@@ -89,7 +90,8 @@ export class SECircle extends SENodule implements Visitable, OneDimensional {
     );
   }
 
-  public update(): void {
+  public update(state: SaveStateType): void {
+    // If any one parent is not up to date, don't do anything
     if (!this.canUpdateNow()) {
       return;
     }
@@ -112,7 +114,23 @@ export class SECircle extends SENodule implements Visitable, OneDimensional {
     } else {
       this.ref.setVisible(false);
     }
-    this.updateKids();
+    // Record the state of the object in state.stateArray
+    switch (state.mode) {
+      case SaveStateMode.UndoMove: {
+        // These circles are completely determined by their point parents and an update on the parents
+        // will cause this circle to be put into the correct location. Therefore there is no need to
+        // store it in the stateArray for undo move.
+        break;
+      }
+      case SaveStateMode.UndoDelete: {
+        break;
+      }
+      // The DisplayOnly case fall through and does nothing
+      case SaveStateMode.DisplayOnly:
+      default:
+        break;
+    }
+    this.updateKids(state);
   }
 
   /**
@@ -180,8 +198,14 @@ export class SECircle extends SENodule implements Visitable, OneDimensional {
         .applyMatrix4(this.changeInPositionRotationMatrix);
       this.circleSEPoint.locationVector = tmpVector;
       // Update both points, because we might need to update their kids!
-      this.circleSEPoint.update();
-      this.centerSEPoint.update();
+      this.circleSEPoint.update({
+        mode: SaveStateMode.DisplayOnly,
+        stateArray: []
+      });
+      this.centerSEPoint.update({
+        mode: SaveStateMode.DisplayOnly,
+        stateArray: []
+      });
     }
   }
 }

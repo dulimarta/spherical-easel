@@ -166,10 +166,10 @@ export default abstract class MouseHandler implements ToolStrategy {
     });
     // Clear the selected objects array
     this.store.commit("setSelectedObjects", []);
-    console.log(
-      "Num selected objects:",
-      this.store.getters.selectedObjects().length
-    );
+    // console.log(
+    //   "Num selected objects:",
+    //   this.store.getters.selectedObjects().length
+    // );
   }
 
   deactivate(): void {

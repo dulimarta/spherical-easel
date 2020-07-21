@@ -6,14 +6,15 @@ import { Visitor } from "@/visitors/Visitor";
 import { SEPoint } from "./SEPoint";
 import SETTINGS from "@/global-settings";
 import { OneDimensional } from "@/types";
+import { SaveStateMode, SaveStateType } from "@/types";
 
 import { Styles } from "@/types/Styles";
 
 let SEGMENT_COUNT = 0;
 const styleSet = new Set([
-  Styles.StrokeWidth,
-  Styles.StrokeColor,
-  Styles.DashPattern
+  Styles.strokeWidth,
+  Styles.strokeColor,
+  Styles.dashPattern
 ]);
 const tmpVector = new Vector3();
 const tmpVector1 = new Vector3();
@@ -95,6 +96,11 @@ export class SESegment extends SENodule implements Visitable, OneDimensional {
     return this._endSEPoint;
   }
 
+  // Used in the SegmentNormalArcLengthVisitor and MoveSegmentCommand
+  // Use with caution! The normal vector is normal computed from the startSEPoint and old normal vector
+  set normalVector(normal: Vector3) {
+    this._normalVector.copy(normal);
+  }
   get normalVector(): Vector3 {
     return this._normalVector;
   }
@@ -184,15 +190,14 @@ export class SESegment extends SENodule implements Visitable, OneDimensional {
     }
   }
 
-  public update(): void {
+  public update(state: SaveStateType): void {
+    // If any one parent is not up to date, don't do anything
     if (!this.canUpdateNow()) {
       return;
     }
     this.setOutOfDate(false);
     this._exists = this._startSEPoint.exists && this._endSEPoint.exists;
     if (this._exists) {
-      console.debug("Updating segment", this.name);
-
       //////////////// This is  essentially setArcLengthAndNormalVector from segmentHandler/////////////////
       // Compute the normal vector from the this.startVector, the (old) normal vector and this.endVector
       // Compute a temporary normal from the two points' vectors
@@ -283,8 +288,34 @@ export class SESegment extends SENodule implements Visitable, OneDimensional {
     } else {
       this.ref.setVisible(false);
     }
-
-    this.updateKids();
+    // Record the state of the object in state.stateArray
+    switch (state.mode) {
+      case SaveStateMode.UndoMove: {
+        // If the parent points of the segment are antipodal, the normal vector determines the
+        // plane of the segment.  The points also don't determine the arcLength of the segments.
+        // Both of these quantities could change during a move therefore store normal vector and arcLength
+        // in stateArray for undo move. (No need to store the parent points, they will be updated on their own
+        // before this line is updated.) Store the coordinate values of the vector and not the point to the vector.
+        state.stateArray.push({
+          kind: "segment",
+          object: this,
+          normalVectorX: this._normalVector.x,
+          normalVectorY: this._normalVector.y,
+          normalVectorZ: this._normalVector.z,
+          arcLength: this._arcLength
+        });
+        break;
+        break;
+      }
+      case SaveStateMode.UndoDelete: {
+        break;
+      }
+      // The DisplayOnly case fall through and does nothing
+      case SaveStateMode.DisplayOnly:
+      default:
+        break;
+    }
+    this.updateKids(state);
   }
 
   /**
@@ -325,8 +356,14 @@ export class SESegment extends SENodule implements Visitable, OneDimensional {
           .applyAxisAngle(desiredZAxis, rotationAngle);
         this.endSEPoint.locationVector = tmpVector2;
         // Update both points, because we might need to update their kids!
-        this.endSEPoint.update();
-        this.startSEPoint.update();
+        this.endSEPoint.update({
+          mode: SaveStateMode.DisplayOnly,
+          stateArray: []
+        });
+        this.startSEPoint.update({
+          mode: SaveStateMode.DisplayOnly,
+          stateArray: []
+        });
       }
     } else {
       let pivot = this.startSEPoint;
@@ -368,8 +405,8 @@ export class SESegment extends SENodule implements Visitable, OneDimensional {
       freeEnd.locationVector = tmpVector1;
       console.debug("free End kid", freeEnd.kids[0].name);
       console.debug("pivot kid", pivot.kids[0].name);
-      freeEnd.update();
-      pivot.update();
+      freeEnd.update({ mode: SaveStateMode.DisplayOnly, stateArray: [] });
+      pivot.update({ mode: SaveStateMode.DisplayOnly, stateArray: [] });
     }
   }
 }

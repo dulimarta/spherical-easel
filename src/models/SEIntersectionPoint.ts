@@ -5,6 +5,7 @@ import { IntersectionReturnType } from "@/types";
 import store from "@/store";
 import { Styles } from "@/types/Styles";
 import { SEOneDimensional } from "@/types";
+import { SaveStateMode, SaveStateType } from "@/types";
 
 export class SEIntersectionPoint extends SEPoint {
   /**
@@ -76,7 +77,8 @@ export class SEIntersectionPoint extends SEPoint {
     return this._isUserCreated;
   }
 
-  public update(): void {
+  public update(state: SaveStateType): void {
+    // If any one parent is not up to date, don't do anything
     if (!this.canUpdateNow()) {
       return;
     }
@@ -106,7 +108,23 @@ export class SEIntersectionPoint extends SEPoint {
     } else {
       this.ref.setVisible(false);
     }
-    this.updateKids();
+    // Record the state of the object in state.stateArray
+    switch (state.mode) {
+      case SaveStateMode.UndoMove: {
+        // Intersection Points are completely determined by their parents and an update on the parents
+        // will cause this point to be put into the correct location. Therefore there is no need to
+        // store it in the stateArray for undo move.
+        break;
+      }
+      case SaveStateMode.UndoDelete: {
+        break;
+      }
+      // The DisplayOnly case fall through and does nothing
+      case SaveStateMode.DisplayOnly:
+      default:
+        break;
+    }
+    this.updateKids(state);
   }
 
   // For !isUserCreated points glowing is the same as showing or not showing the point,

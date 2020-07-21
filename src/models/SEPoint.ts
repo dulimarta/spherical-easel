@@ -5,12 +5,13 @@ import { SENodule } from "./SENodule";
 import { Vector3 } from "three";
 import SETTINGS from "@/global-settings";
 import { Styles } from "@/types/Styles";
+import { SaveStateMode, SaveStateType } from "@/types";
 
 let POINT_COUNT = 0;
 const styleSet = new Set([
-  Styles.PointFrontRadius,
-  Styles.PointBackRadius,
-  Styles.StrokeColor
+  Styles.pointFrontRadius,
+  Styles.pointBackRadius,
+  Styles.strokeColor
 ]);
 export class SEPoint extends SENodule implements Visitable {
   /* This should be the only reference to the plotted version of this SEPoint */
@@ -37,8 +38,8 @@ export class SEPoint extends SENodule implements Visitable {
     return styleSet;
   }
 
-  public update(): void {
-    // make sure that all parents of this SEPoint are up to date.
+  public update(state: SaveStateType): void {
+    // If any one parent is not up to date, don't do anything
     if (!this.canUpdateNow()) {
       return;
     }
@@ -54,8 +55,31 @@ export class SEPoint extends SENodule implements Visitable {
     } else {
       this.ref.setVisible(false);
     }
-
-    this.updateKids();
+    // Record the state of the object in state.stateArray
+    //#region saveState
+    switch (state.mode) {
+      case SaveStateMode.UndoMove: {
+        // Free points are can be moved, therefore store their location in the stateArray for undo move.
+        // Store the coordinate values of the vector and not the point to the vector.
+        state.stateArray.push({
+          kind: "point",
+          object: this,
+          locationVectorX: this._locationVector.x,
+          locationVectorY: this._locationVector.y,
+          locationVectorZ: this._locationVector.z
+        });
+        break;
+      }
+      case SaveStateMode.UndoDelete: {
+        break;
+      }
+      // The DisplayOnly case fall through and does nothing
+      case SaveStateMode.DisplayOnly:
+      default:
+        break;
+    }
+    //#endregion saveState
+    this.updateKids(state);
   }
 
   /**

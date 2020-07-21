@@ -33,7 +33,7 @@ export default abstract class Nodule implements Stylable, Resizeable {
   abstract removeFromLayers(): void;
 
   /**This operation constraint the visual properties (linewidth, circle size, etc) when the view is zoomed in/out */
-  abstract adjustSizeForZoom(factor: number): void;
+  abstract adjustSizeForZoom(): void;
 
   /** Update visual style(s) */
   abstract normalDisplay(): void;

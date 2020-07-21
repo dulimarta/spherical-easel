@@ -205,6 +205,7 @@ import ToolButton from "@/components/ToolButton.vue";
 import StylePanel from "@/components/Style.vue";
 import { SECircle } from "../models/SECircle";
 import { SESegment } from "../models/SESegment";
+import Circle from "@/plottables/Circle";
 
 // import { getModule } from "vuex-module-decorators";
 // import UI from "@/store/ui-styles";
@@ -346,6 +347,8 @@ export default class Easel extends Vue {
 
   //#region resizePlottables
   resizePlottables(e: any): void {
+    const oldFactor = this.$store.getters.previousZoomMagnificationFactor();
+    Circle.currentCircleStrokeWidthFront *= oldFactor / e.factor;
     // this.$store.state.points.forEach((p: SEPoint) => {
     //   p.ref.adjustSizeForZoom(e.factor);
     // });
@@ -353,7 +356,7 @@ export default class Easel extends Vue {
     //   p.ref.adjustSizeForZoom(e.factor);
     // });
     this.$store.state.circles.forEach((p: SECircle) => {
-      p.ref.adjustSizeForZoom(e.factor);
+      p.ref.adjustSizeForZoom();
     });
     // this.$store.state.segments.forEach((p: SESegment) => {
     //   p.ref.adjustSizeForZoom(e.factor);

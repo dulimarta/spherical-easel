@@ -6,23 +6,21 @@ import { SECircle } from "@/models/SECircle";
 import { SESegment } from "@/models/SESegment";
 import { SaveStateMode, SaveStateType } from "@/types";
 
-export class PointMoverVisitor implements Visitor {
-  private locationVector: Vector3 = new Vector3();
+export class LineNormalVisitor implements Visitor {
+  private normalVector: Vector3 = new Vector3();
 
-  setNewLocation(vec: Vector3): void {
-    this.locationVector.copy(vec);
+  setNewNormal(vec: Vector3): void {
+    this.normalVector.copy(vec);
   }
 
-  //#region actionOnPoint
   actionOnPoint(p: SEPoint): void {
-    p.locationVector = this.locationVector; // Set the new position vector
-    console.log("position mover on point", p.name);
-    p.update({ mode: SaveStateMode.DisplayOnly, stateArray: [] });
+    // p.update();
   }
-  //#endregion actionOnPoint
 
   actionOnLine(m: SELine): void {
-    //m.update();
+    m.normalVector = this.normalVector; // Set the new position vector
+    console.log("position mover on point", m.name);
+    m.update({ mode: SaveStateMode.DisplayOnly, stateArray: [] });
   }
 
   actionOnSegment(s: SESegment): void {

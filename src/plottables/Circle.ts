@@ -14,6 +14,7 @@ const Z_AXIS = new Vector3(0, 0, 1);
 const transformMatrix = new Matrix4();
 const SUBDIVISIONS = SETTINGS.circle.numPoints;
 let CIRCLE_COUNT = 0;
+
 /**
  * For drawing surface circle. A circle consists of two paths (front and back)
  * for a total of 2N subdivisions.
@@ -23,6 +24,9 @@ let CIRCLE_COUNT = 0;
  * total points 2N so we don't create/remove new points)
  */
 export default class Circle extends Nodule {
+  static currentCircleStrokeWidthFront =
+    SETTINGS.circle.drawn.strokeWidth.front;
+
   /**
    * The center vector of the circle in ideal unit sphere
    */
@@ -726,13 +730,10 @@ export default class Circle extends Nodule {
     this.glowingBackPart.remove();
   }
 
-  adjustSizeForZoom(newFactor: number): void {
-    // Adjust the current values of the variables that control the size
-    const oldFactor = this.store.getters.previousZoomMagnificationFactor();
-    console.log("const?", this.strokeWidthFront * oldFactor);
-    this.strokeWidthFront = (this.strokeWidthFront * oldFactor) / newFactor;
-    console.log("new stroke width", this.strokeWidthFront);
-    // Apply the variables to the Two.js objects
+  adjustSizeForZoom(): void {
+    this.strokeWidthFront = Circle.currentCircleStrokeWidthFront;
+
+    // Apply the updated variables to the Two.js objects
     this.stylize(DisplayStyle.UPDATE);
   }
 

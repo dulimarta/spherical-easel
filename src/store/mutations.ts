@@ -10,6 +10,8 @@ import { SELine } from "@/models/SELine";
 import { SENodule } from "@/models/SENodule";
 import { Vector3 } from "three";
 import { StyleOptions } from "@/types/Styles";
+import { LineNormalVisitor } from "@/visitors/LineNormalVisitor";
+import { SegmentNormalArcLengthVisitor } from "@/visitors/SegmentNormalArcLengthVisitor";
 
 // const tmpMatrix = new Matrix4();
 
@@ -37,6 +39,8 @@ export const initialState: AppState = {
 
 const rotationVisitor = new RotationVisitor();
 const pointMoverVisitor = new PointMoverVisitor();
+const lineNormalVisitor = new LineNormalVisitor();
+const segmentNormalArcLengthVisitor = new SegmentNormalArcLengthVisitor();
 
 export default {
   init(state: AppState): void {
@@ -160,17 +164,6 @@ export default {
     state.points.forEach((p: SEPoint) => {
       p.accept(rotationVisitor);
     });
-    //Update all the other objects in the arrangement.
-    // We shouldn't have to do this. Everything should depend on points.
-    // state.lines.forEach((l: SELine) => {
-    //   l.accept(positionVisitor);
-    // });
-    // state.circles.forEach((l: SECircle) => {
-    //   l.accept(positionVisitor);
-    // });
-    // state.segments.forEach((s: SESegment) => {
-    //   s.accept(positionVisitor);
-    // });
   },
   //#endregion rotateSphere
   movePoint(
@@ -180,17 +173,24 @@ export default {
     pointMoverVisitor.setNewLocation(move.location);
     const pos = state.points.findIndex(x => x.id === move.pointId);
     state.points[pos].accept(pointMoverVisitor);
-    //Update all the other objects in the arrangement.
-    // We shouldn't have to do this. Everything should depend on points.
-    // state.lines.forEach((l: SELine) => {
-    //   l.accept(positionVisitor);
-    // });
-    // state.circles.forEach((l: SECircle) => {
-    //   l.accept(positionVisitor);
-    // });
-    // state.segments.forEach((s: SESegment) => {
-    //   s.accept(positionVisitor);
-    // });
+  },
+  changeLineNormalVector(
+    state: AppState,
+    change: { lineId: number; normal: Vector3 }
+  ): void {
+    lineNormalVisitor.setNewNormal(change.normal);
+    const pos = state.lines.findIndex(x => x.id === change.lineId);
+    state.lines[pos].accept(lineNormalVisitor);
+  },
+  changeSegmentNormalVectorArcLength(
+    state: AppState,
+    change: { segmentId: number; normal: Vector3; arcLength: number }
+  ): void {
+    console.log("segNorALVisit", segmentNormalArcLengthVisitor);
+    segmentNormalArcLengthVisitor.setNewNormal(change.normal);
+    segmentNormalArcLengthVisitor.setNewArcLength(change.arcLength);
+    const pos = state.segments.findIndex(x => x.id === change.segmentId);
+    state.segments[pos].accept(segmentNormalArcLengthVisitor);
   },
   setSelectedObjects(state: AppState, selection: SENodule[]): void {
     state.selections.clear();

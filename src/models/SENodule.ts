@@ -5,7 +5,7 @@ import Nodule from "@/plottables/Nodule";
 import { SEPointOnOneDimensional } from "./SEPointOnOneDimensional";
 import { Styles } from "@/types/Styles";
 import { SEOneDimensional } from "@/types";
-// import { SESegmentMidPoint } from "./SESegmentMidPoint";
+import { SaveStateMode, SaveStateType } from "@/types";
 
 let NODE_COUNT = 0;
 export abstract class SENodule {
@@ -55,7 +55,7 @@ export abstract class SENodule {
    * not outOfDate. If any are the method returns with out updating, know that the updating method will
    * eventually try again because the last method called is updateKids()
    */
-  public abstract update(): void;
+  public abstract update(state: SaveStateType): void;
 
   /**
    * Is the object hit a point at a particular sphere location?
@@ -89,10 +89,11 @@ export abstract class SENodule {
   }
 
   /* Kids of the current SENodule are updated  */
-  public updateKids(): void {
+  public updateKids(state: SaveStateType): SaveStateType {
     this._kids.forEach(item => {
-      item.update();
+      item.update(state);
     });
+    return state;
   }
 
   /**

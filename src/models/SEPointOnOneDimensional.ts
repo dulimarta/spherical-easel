@@ -2,6 +2,7 @@ import { SEPoint } from "./SEPoint";
 import Point from "@/plottables/Point";
 import { Vector3 } from "three";
 import { SEOneDimensional } from "@/types";
+import { SaveStateMode, SaveStateType } from "@/types";
 
 export class SEPointOnOneDimensional extends SEPoint {
   /**
@@ -46,7 +47,8 @@ export class SEPointOnOneDimensional extends SEPoint {
     return this.oneDimensionalParent;
   }
 
-  public update(): void {
+  public update(state: SaveStateType): void {
+    // If any one parent is not up to date, don't do anything
     if (!this.canUpdateNow()) {
       return;
     }
@@ -65,6 +67,27 @@ export class SEPointOnOneDimensional extends SEPoint {
     } else {
       this.ref.setVisible(false);
     }
-    this.updateKids();
+    // Record the state of the object in state.stateArray
+    switch (state.mode) {
+      case SaveStateMode.UndoMove: {
+        // Free points on object can be moved, therefore store their location in the stateArray for undo move.
+        state.stateArray.push({
+          kind: "point",
+          object: this,
+          locationVectorX: this._locationVector.x,
+          locationVectorY: this._locationVector.y,
+          locationVectorZ: this._locationVector.z
+        });
+        break;
+      }
+      case SaveStateMode.UndoDelete: {
+        break;
+      }
+      // The DisplayOnly case fall through and does nothing
+      case SaveStateMode.DisplayOnly:
+      default:
+        break;
+    }
+    this.updateKids(state);
   }
 }

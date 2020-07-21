@@ -74,7 +74,7 @@ export default class SelectionHandler extends MouseHandler {
         });
         this.hitSENodules.forEach(h => {
           h.selected = !h.selected;
-          console.log("toggle select", h.name, h.selected);
+          //console.log("toggle select", h.name, h.selected);
         });
 
         // Filter only selected items
@@ -82,10 +82,10 @@ export default class SelectionHandler extends MouseHandler {
       }
     }
     this.store.commit("setSelectedObjects", this.currentSelection);
-    console.log("----selected---- objects------");
-    this.currentSelection.forEach(n =>
-      console.log("hit object", n.name, n.selected)
-    );
+    // console.log("----selected---- objects------");
+    // this.currentSelection.forEach(n =>
+    //   console.log("hit object", n.name, n.selected)
+    // );
 
     /* Enable/disable interval timer to flasher selected objects */
     if (this.currentSelection.length > 0 && this.highlightTimer === null) {

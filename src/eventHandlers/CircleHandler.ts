@@ -18,6 +18,7 @@ import { SEPointOnOneDimensional } from "@/models/SEPointOnOneDimensional";
 import { AddIntersectionPointCommand } from "@/commands/AddIntersectionPointCommand";
 import { AddPointOnOneDimensionalCommand } from "@/commands/AddPointOnOneDimensionalCommand";
 import { SEOneDimensional, SEIntersectionReturnType } from "@/types";
+import { SaveStateMode, SaveStateType } from "@/types";
 
 export default class CircleHandler extends Highlighter {
   /**
@@ -128,9 +129,7 @@ export default class CircleHandler extends Highlighter {
       }
       this.endMarker.positionVector = this.currentSphereVector;
       // Make sure the temporary circle is displayed with the right line width
-      // this.temporaryCircle.adjustSizeForZoom(
-      //   this.store.getters.zoomMagnificationFactor()
-      // );
+      this.temporaryCircle.adjustSizeForZoom();
     }
   }
 
@@ -348,6 +347,8 @@ export default class CircleHandler extends Highlighter {
     const newCircle = this.temporaryCircle.clone();
     // Set the display to the default values
     newCircle.stylize(DisplayStyle.DEFAULT);
+    // Set the stroke width to the current width given the zoom level
+    newCircle.adjustSizeForZoom();
     // Set up the glowing display
     newCircle.stylize(DisplayStyle.GLOWING);
 
@@ -430,13 +431,15 @@ export default class CircleHandler extends Highlighter {
         const newCircle = new Circle();
         // Set the display to the default values
         newCircle.stylize(DisplayStyle.DEFAULT);
+        // Set the stroke width to the current width given the zoom level
+        newCircle.adjustSizeForZoom();
         // Set up the glowing display
         newCircle.stylize(DisplayStyle.GLOWING);
 
         // Add the last command to the group and then execute it (i.e. add the potentially two points and the circle to the store.)
         const newSECircle = new SECircle(newCircle, object1, object2);
         // Update the newSECircle so the display is correct when the command group is executed
-        newSECircle.update();
+        newSECircle.update({ mode: SaveStateMode.DisplayOnly, stateArray: [] });
 
         const circleCommandGroup = new CommandGroup();
         circleCommandGroup.addCommand(

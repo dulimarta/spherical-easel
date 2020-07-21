@@ -244,7 +244,32 @@ Almost all handlers extend <span class="class">MouseHandler</span> (the exceptio
 
 In addition, the <span class="method">mouseMoved()</span> method queries (via the getters) the [Store](/design/#store) to find and highlight all the nearby objects. The variable <span class="variable">hitNodules</span> is an array of nearby SEObjects that is sorted into the different class like <span class="variable">hitPoints</span>, <span class="variable">hitSegments</span>, <span class="variable">hitLines</span>, etc. all of which are available to the children of <span class="class">MouseHandler</span>.
 
-<!-- <<< @/src/eventHandlers/MouseHandler.ts -->
+### Move Handler
+
+Move handler allows the user to select free objects. (See the discussion in the [Date Structure](/design/#data-structure) section for the definition of a free object.) This means that the <span class="method">mousePress()</span> selects the object to move, <span class="method">mouseMoved()</span> does the actual moving, and <span class="method">mouseRelease()</span> records a command group that allows the user to undo the move. Undoing a move is not a straight forward operation and involves more than just returning points to their original positions.
+
+For example, if the user moves a line segment from being less than $\pi$ in length to being greater than $\pi$ in length, the endpoints of the segment themselves do not store this information so moving them back to their original positions doesn't undo this move. Another example is moving a circle, with a point on it (<span class="class">PointOnOneDimensional</span>). If the user moves the circle, the point on it moves, by finding the closest point on the circle to the old location. This process is not reversed by merely restoring the centerSEPoint and circleSEPoint to their original locations. Therefore to undo a move, we must store the before and after locations of any object that depends on the moved points including
+
+- Any free point (including <span class="class">PointOnOneDimensional</span>)
+- The normal vector to the plane containing the line. (If the points on the line are antipodal, moving the line changes only the normal vector)
+- The segment normal vector and arcLength. (If the points on the line segment are antipodal, moving the line segment changes only the normal vector and as discussed above, the arcLength is not captured by the points.)
+
+Note that in the process of undoing the locations of the parent points of circles, line segments and lines are restored first, so we don't need to store the locations of the points that help define lines or line segments. Also circles are completely determined by the center and circle points so we don't have to store any information about them.
+
+To help store the information necessary for undoing a move we use the <span class="method">update(beforeMoveState)</span> method where
+
+<<< @/src/eventHandlers/MoveHandler.ts#beforeSaveState
+
+This allows us use the <span class="method">update</span> method to update the <span class="variable">stateArray</span> to record any information that is necessary to restore the state of the object being updated. For example, on <span class="class">SEPoint</span> and <span class="class">SEPointOnOneDimensional</span> we have
+
+<<< @/src/models/SEPoint.ts#saveState
+
+This stores the location of the point and not a pointer to the location which would not change during the move! Note that the <span class="method">update</span> method does a topological sort on the directed acyclic graph [Data Structure](/design/#data-structure) so the point parents of an object are updated before a ond dimensional object is updated. Therefore it is not necessary to store any information about the object that is not captured by the parent points and will be restored with a <span class="method">update</span> display only method call like
+
+<<< @/src/eventHandlers/MoveHandler.ts#displayOnlyUpdate
+
+Hence nothing is stored in the <span class="variable">stateArray</span> for <span class="class">SECircle</span> or <span class="class">SEIntersectionPoint</span> classes. Once the before and after <span class="variable">stateArray</span> has been created, the <span class="class">MoveHandler</span> creates a command group to store all the move points, lines and segments commands. The <span class="command">MovePointCommand</span>, <span class="command">MoveLineCommand</span>, and <span class="command">MoveSegmentCommand</span>> classes issue mutations
+to the store and then uses [Visitors](/design/#visitor-and-event-bus-actions) to actually change the location of points, normal vectors of lines and line segments, and arc length of line segments.
 
 [Here are details about the implementation of some of the Handlers](./handlers/edit.md)
 
@@ -363,8 +388,3 @@ The <span class="class">RotationVisitor</span> merely updates all other <span cl
 ## Languages
 
 Spherical Easel uses the [Vue I18n internationalization plugin for Vue.js](https://kazupon.github.io/vue-i18n/api/#extension-of-vue).
-
-<!-- Uncomment out the two lines below and the script container in config.js to draw a circle.
-Reload/Refresh the page twice! -->
-<!-- ::: script
-::: -->

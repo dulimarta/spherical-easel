@@ -73,3 +73,43 @@ export interface OneDimensional {
  * All the one dimensional SE Classes
  */
 export type SEOneDimensional = SELine | SESegment | SECircle;
+
+/**
+ *
+ */
+
+export enum SaveStateMode {
+  DisplayOnly,
+  UndoDelete,
+  UndoMove
+}
+
+export interface SaveStateType {
+  mode: SaveStateMode;
+  stateArray: ObjectSaveState[];
+}
+
+export type ObjectSaveState = LineSaveState | SegmentSaveState | PointSaveState;
+
+export interface LineSaveState {
+  kind: "line";
+  object: SELine;
+  normalVectorX: number;
+  normalVectorY: number;
+  normalVectorZ: number;
+}
+export interface SegmentSaveState {
+  kind: "segment";
+  object: SESegment;
+  normalVectorX: number;
+  normalVectorY: number;
+  normalVectorZ: number;
+  arcLength: number;
+}
+export interface PointSaveState {
+  kind: "point";
+  object: SEPoint;
+  locationVectorX: number;
+  locationVectorY: number;
+  locationVectorZ: number;
+}
