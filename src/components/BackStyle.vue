@@ -95,7 +95,7 @@ export default class FrontStyle extends Vue {
   }
 
   get hasStrokeWidth(): boolean {
-    return this.hasStyles(Styles.strokeWidth);
+    return this.hasStyles(Styles.strokeWidthPercentage);
   }
 
   get hasDash(): boolean {

@@ -175,14 +175,25 @@ export default class Line extends Nodule {
 
   updateStyle(options: StyleOptions): void {
     console.debug("Update style of", this.name, "using", options);
-    if (options.strokeWidth) {
+    if (options.strokeWidthPercentage) {
       // TODO: separate front and back options
-      this.frontHalf.linewidth = options.strokeWidth;
-      this.backHalf.linewidth = options.strokeWidth;
+      this.frontHalf.linewidth =
+        (SETTINGS.line.drawn.strokeWidth.front *
+          options.strokeWidthPercentage) /
+        100;
+      this.backHalf.linewidth =
+        (SETTINGS.line.drawn.strokeWidth.back * options.strokeWidthPercentage) /
+        100;
       this.glowingFrontHalf.linewidth =
-        options.strokeWidth + SETTINGS.line.glowing.edgeWidth;
+        ((SETTINGS.line.drawn.strokeWidth.front +
+          SETTINGS.line.glowing.edgeWidth) *
+          options.strokeWidthPercentage) /
+        100;
       this.glowingBackHalf.linewidth =
-        options.strokeWidth + SETTINGS.line.glowing.edgeWidth;
+        ((SETTINGS.line.drawn.strokeWidth.back +
+          SETTINGS.line.glowing.edgeWidth) *
+          options.strokeWidthPercentage) /
+        100;
     }
     if (options.strokeColor) {
       // TODO: separate front and back options

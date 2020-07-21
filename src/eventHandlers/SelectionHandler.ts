@@ -46,10 +46,14 @@ export default class SelectionHandler extends MouseHandler {
   };
 
   mousePressed(event: MouseEvent): void {
-    event.preventDefault();
+    if (!this.isOnSphere) return;
+    console.debug("Mouse pressed");
+    // event.preventDefault();
     if (this.keyPressSelection.length != 0) {
       // Select all the objects in the keypress selection
-      this.keyPressSelection.forEach(n => (n.selected = true));
+      this.keyPressSelection.forEach(n => {
+        n.selected = true;
+      });
       // Add the key press selection to the selected list.
       this.currentSelection.push(...this.keyPressSelection);
       this.keyPressSelection.clear();
@@ -82,15 +86,18 @@ export default class SelectionHandler extends MouseHandler {
       }
     }
     this.store.commit("setSelectedObjects", this.currentSelection);
-    // console.log("----selected---- objects------");
-    // this.currentSelection.forEach(n =>
-    //   console.log("hit object", n.name, n.selected)
-    // );
+    /** 
+    console.log("----selected---- objects------");
+    this.currentSelection.forEach(n =>
+      console.log("hit object", n.name, n.selected)
+    );
+    **/
 
     /* Enable/disable interval timer to flasher selected objects */
+
     if (this.currentSelection.length > 0 && this.highlightTimer === null) {
       // We have selections and interval timer is not running, then start timer
-      this.highlightTimer = setInterval(this.blinkSelections.bind(this), 2000);
+      this.highlightTimer = setInterval(this.blinkSelections.bind(this), 500);
     } else if (
       this.currentSelection.length === 0 &&
       this.highlightTimer !== null
@@ -109,7 +116,7 @@ export default class SelectionHandler extends MouseHandler {
   }
 
   mouseMoved(event: MouseEvent): void {
-    console.log("mouse move event");
+    // console.log("mouse move event");
     // Clear any objects in the keyPressSelection
     if (this.keyPressSelection.length != 0) {
       this.keyPressSelection.forEach(n => (n as any).ref.normalDisplay());

@@ -192,14 +192,16 @@ export default {
     const pos = state.segments.findIndex(x => x.id === change.segmentId);
     state.segments[pos].accept(segmentNormalArcLengthVisitor);
   },
-  setSelectedObjects(state: AppState, selection: SENodule[]): void {
+  setSelectedObjects(state: AppState, payload: SENodule[]): void {
     state.selections.clear();
-    state.selections.push(...selection);
+    payload.forEach((n: SENodule) => {
+      state.selections.push(n);
+    });
   },
   // TODO: combine the following changeXXXX functions
-  changeStrokeWidth(state: AppState, width: number): void {
+  changeStrokeWidth(state: AppState, percent: number): void {
     const opt: StyleOptions = {
-      strokeWidth: width
+      strokeWidthPercentage: percent
     };
     state.selections
       .filter(n => !(n instanceof SEPoint))

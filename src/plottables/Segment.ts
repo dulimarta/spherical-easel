@@ -204,13 +204,25 @@ export default class Segment extends Nodule {
       this.glowingFrontPart.stroke = options.strokeColor;
       this.glowingFrontExtra.stroke = options.strokeColor;
     }
-    if (options.strokeWidth) {
-      this.frontPart.linewidth = options.strokeWidth;
-      this.frontExtra.linewidth = options.strokeWidth;
+    if (options.strokeWidthPercentage) {
+      this.frontPart.linewidth =
+        (SETTINGS.segment.drawn.strokeWidth.front *
+          options.strokeWidthPercentage) /
+        100;
+      this.frontExtra.linewidth =
+        (SETTINGS.segment.drawn.strokeWidth.front *
+          options.strokeWidthPercentage) /
+        100;
       this.glowingFrontPart.linewidth =
-        options.strokeWidth + SETTINGS.segment.glowing.edgeWidth;
+        ((SETTINGS.segment.drawn.strokeWidth.front +
+          SETTINGS.segment.glowing.edgeWidth) *
+          options.strokeWidthPercentage) /
+        100;
       this.glowingFrontExtra.linewidth =
-        options.strokeWidth + SETTINGS.segment.glowing.edgeWidth;
+        ((SETTINGS.segment.drawn.strokeWidth.front +
+          SETTINGS.segment.glowing.edgeWidth) *
+          options.strokeWidthPercentage) /
+        100;
     }
     if (options.dashPattern) {
       this.backPart.dashes = options.dashPattern;
