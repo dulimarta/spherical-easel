@@ -6,7 +6,6 @@ import { SENodule } from "@/models/SENodule";
 import { SELine } from "@/models/SELine";
 import { SESegment } from "@/models/SESegment";
 import { SECircle } from "@/models/SECircle";
-import Nodule from "@/plottables/Nodule";
 
 export default abstract class Highlighter extends MouseHandler {
   abstract mousePressed(event: MouseEvent): void;
@@ -126,8 +125,7 @@ export default abstract class Highlighter extends MouseHandler {
     }
   }
 
-  activate() {
-    // Unselect the selected objects (change the display to not glowing)
+  activate(): void {
     this.store.getters.selectedObjects().forEach((obj: SENodule) => {
       obj.selected = false;
     });

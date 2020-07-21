@@ -87,10 +87,10 @@ export default class Point extends Nodule {
     this.backPoint.translation = this.defaultScreenVectorLocation;
 
     // The points are not initially glowing
-    (this.frontPoint as any).visible = false;
-    (this.glowingFrontPoint as any).visible = false;
-    (this.backPoint as any).visible = false;
-    (this.glowingBackPoint as any).visible = false;
+    this.frontPoint.visible = false;
+    this.glowingFrontPoint.visible = false;
+    this.backPoint.visible = false;
+    this.glowingBackPoint.visible = false;
   }
 
   /**
@@ -133,17 +133,17 @@ export default class Point extends Nodule {
   }
 
   frontGlowingDisplay(): void {
-    (this.frontPoint as any).visible = true;
-    (this.glowingFrontPoint as any).visible = true;
-    (this.backPoint as any).visible = false;
-    (this.glowingBackPoint as any).visible = false;
+    this.frontPoint.visible = true;
+    this.glowingFrontPoint.visible = true;
+    this.backPoint.visible = false;
+    this.glowingBackPoint.visible = false;
   }
 
   backGlowingDisplay(): void {
-    (this.frontPoint as any).visible = false;
-    (this.glowingFrontPoint as any).visible = false;
-    (this.backPoint as any).visible = true;
-    (this.glowingBackPoint as any).visible = true;
+    this.frontPoint.visible = false;
+    this.glowingFrontPoint.visible = false;
+    this.backPoint.visible = true;
+    this.glowingBackPoint.visible = true;
   }
 
   glowingDisplay(): void {
@@ -155,17 +155,17 @@ export default class Point extends Nodule {
   }
 
   frontNormalDisplay(): void {
-    (this.frontPoint as any).visible = true;
-    (this.glowingFrontPoint as any).visible = false;
-    (this.backPoint as any).visible = false;
-    (this.glowingBackPoint as any).visible = false;
+    this.frontPoint.visible = true;
+    this.glowingFrontPoint.visible = false;
+    this.backPoint.visible = false;
+    this.glowingBackPoint.visible = false;
   }
 
   backNormalDisplay(): void {
-    (this.frontPoint as any).visible = false;
-    (this.glowingFrontPoint as any).visible = false;
-    (this.backPoint as any).visible = true;
-    (this.glowingBackPoint as any).visible = false;
+    this.frontPoint.visible = false;
+    this.glowingFrontPoint.visible = false;
+    this.backPoint.visible = true;
+    this.glowingBackPoint.visible = false;
   }
 
   normalDisplay(): void {
@@ -204,10 +204,10 @@ export default class Point extends Nodule {
 
   setVisible(flag: boolean): void {
     if (!flag) {
-      (this.frontPoint as any).visible = false;
-      (this.glowingFrontPoint as any).visible = false;
-      (this.backPoint as any).visible = false;
-      (this.glowingBackPoint as any).visible = false;
+      this.frontPoint.visible = false;
+      this.glowingFrontPoint.visible = false;
+      this.backPoint.visible = false;
+      this.glowingBackPoint.visible = false;
     } else {
       this.normalDisplay();
     }

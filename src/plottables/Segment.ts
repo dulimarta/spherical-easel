@@ -1,4 +1,4 @@
-import { Vector3, Matrix4 } from "three";
+import { Vector3, Matrix4, TrianglesDrawModes } from "three";
 import Two from "two.js";
 import SETTINGS, { LAYER } from "@/global-settings";
 import Nodule, { DisplayStyle } from "./Nodule";
@@ -132,14 +132,14 @@ export default class Segment extends Nodule {
     this.glowingBackExtra.noFill();
 
     // The segment is not initially glowing
-    (this.frontPart as any).visible = true;
-    (this.glowingFrontPart as any).visible = false;
-    (this.backPart as any).visible = true;
-    (this.glowingBackPart as any).visible = false;
-    (this.frontExtra as any).visible = true;
-    (this.glowingFrontExtra as any).visible = false;
-    (this.backExtra as any).visible = true;
-    (this.glowingBackExtra as any).visible = false;
+    this.frontPart.visible = true;
+    this.glowingFrontPart.visible = false;
+    this.backPart.visible = true;
+    this.glowingBackPart.visible = false;
+    this.frontExtra.visible = true;
+    this.glowingFrontExtra.visible = false;
+    this.backExtra.visible = true;
+    this.glowingBackExtra.visible = false;
   }
 
   // TODO: adjust size of frontextra, backextra and glowing parts use stylize("update")
@@ -159,31 +159,31 @@ export default class Segment extends Nodule {
   }
 
   frontGlowingDisplay(): void {
-    (this.frontPart as any).visible = true;
-    (this.glowingFrontPart as any).visible = true;
-    (this.frontExtra as any).visible = true;
-    (this.glowingFrontExtra as any).visible = true;
+    this.frontPart.visible = true;
+    this.glowingFrontPart.visible = true;
+    this.frontExtra.visible = true;
+    this.glowingFrontExtra.visible = true;
   }
 
   backGlowingDisplay(): void {
-    (this.backPart as any).visible = true;
-    (this.glowingBackPart as any).visible = true;
-    (this.backExtra as any).visible = true;
-    (this.glowingBackExtra as any).visible = true;
+    this.backPart.visible = true;
+    this.glowingBackPart.visible = true;
+    this.backExtra.visible = true;
+    this.glowingBackExtra.visible = true;
   }
 
   backNormalDisplay(): void {
-    (this.backPart as any).visible = true;
-    (this.glowingBackPart as any).visible = false;
-    (this.backExtra as any).visible = true;
-    (this.glowingBackExtra as any).visible = false;
+    this.backPart.visible = true;
+    this.glowingBackPart.visible = false;
+    this.backExtra.visible = true;
+    this.glowingBackExtra.visible = false;
   }
 
   frontNormalDisplay(): void {
-    (this.frontPart as any).visible = true;
-    (this.glowingFrontPart as any).visible = false;
-    (this.frontExtra as any).visible = true;
-    (this.glowingFrontExtra as any).visible = false;
+    this.frontPart.visible = true;
+    this.glowingFrontPart.visible = false;
+    this.frontExtra.visible = true;
+    this.glowingFrontExtra.visible = false;
   }
 
   normalDisplay(): void {
@@ -213,10 +213,10 @@ export default class Segment extends Nodule {
         options.strokeWidth + SETTINGS.segment.glowing.edgeWidth;
     }
     if (options.dashPattern) {
-      (this.backPart as any).dashes = options.dashPattern;
-      (this.backExtra as any).dashes = options.dashPattern;
-      (this.glowingBackPart as any).dashes = options.dashPattern;
-      (this.glowingBackExtra as any).dashes = options.dashPattern;
+      this.backPart.dashes = options.dashPattern;
+      this.backExtra.dashes = options.dashPattern;
+      this.glowingBackPart.dashes = options.dashPattern;
+      this.glowingBackExtra.dashes = options.dashPattern;
     }
   }
 
@@ -363,14 +363,14 @@ export default class Segment extends Nodule {
 
   setVisible(flag: boolean): void {
     if (!flag) {
-      (this.frontPart as any).visible = false;
-      (this.glowingFrontPart as any).visible = false;
-      (this.frontExtra as any).visible = false;
-      (this.glowingFrontExtra as any).visible = false;
-      (this.backPart as any).visible = false;
-      (this.glowingBackPart as any).visible = false;
-      (this.backExtra as any).visible = false;
-      (this.glowingBackExtra as any).visible = false;
+      this.frontPart.visible = false;
+      this.glowingFrontPart.visible = false;
+      this.frontExtra.visible = false;
+      this.glowingFrontExtra.visible = false;
+      this.backPart.visible = false;
+      this.glowingBackPart.visible = false;
+      this.backExtra.visible = false;
+      this.glowingBackExtra.visible = false;
     } else {
       this.normalDisplay();
     }
@@ -394,22 +394,22 @@ export default class Segment extends Nodule {
     pool.push(...dup.backPart.vertices.splice(0)); //concatenates the pool array and the back vertices array and empties the backPart array
 
     // The length of the Pool array is 2*SUBDIVISIONS = this.frontPart.length + this.frontExtra.length + this.backPart.length + this.backExtra.length because dup.frontPart and dup.backPart initially contains all the vertices and frontExtra and backExtra are empty.
-    this.frontPart.vertices.forEach((v, pos: number) => {
+    this.frontPart.vertices.forEach((v: Two.Anchor, pos: number) => {
       // Add a vertex in the frontPart (while taking one away from the pool)
       dup.frontPart.vertices.push(pool.pop()!); // Exclamation point means that the linter assumes that the popped object is non-null
       // Copy the this.frontPart vertex v into the newly added vertex in frontPart
       dup.frontPart.vertices[pos].copy(v); //
     });
     // Repeat for the frontExtra/backPart/backExtra
-    this.frontExtra.vertices.forEach((v, pos: number) => {
+    this.frontExtra.vertices.forEach((v: Two.Anchor, pos: number) => {
       dup.frontExtra.vertices.push(pool.pop()!);
       dup.frontExtra.vertices[pos].copy(v);
     });
-    this.backPart.vertices.forEach((v, pos: number) => {
+    this.backPart.vertices.forEach((v: Two.Anchor, pos: number) => {
       dup.backPart.vertices.push(pool.pop()!);
       dup.backPart.vertices[pos].copy(v);
     });
-    this.backExtra.vertices.forEach((v, pos: number) => {
+    this.backExtra.vertices.forEach((v: Two.Anchor, pos: number) => {
       dup.backExtra.vertices.push(pool.pop()!);
       dup.backExtra.vertices[pos].copy(v);
     });
@@ -418,19 +418,19 @@ export default class Segment extends Nodule {
     const glowingPool: Two.Anchor[] = [];
     glowingPool.push(...dup.glowingFrontPart.vertices.splice(0));
     glowingPool.push(...dup.glowingBackPart.vertices.splice(0));
-    this.glowingFrontPart.vertices.forEach((v, pos: number) => {
+    this.glowingFrontPart.vertices.forEach((v: Two.Anchor, pos: number) => {
       dup.glowingFrontPart.vertices.push(glowingPool.pop()!);
       dup.glowingFrontPart.vertices[pos].copy(v);
     });
-    this.glowingFrontExtra.vertices.forEach((v, pos: number) => {
+    this.glowingFrontExtra.vertices.forEach((v: Two.Anchor, pos: number) => {
       dup.glowingFrontExtra.vertices.push(glowingPool.pop()!);
       dup.glowingFrontExtra.vertices[pos].copy(v);
     });
-    this.glowingBackPart.vertices.forEach((v, pos: number) => {
+    this.glowingBackPart.vertices.forEach((v: Two.Anchor, pos: number) => {
       dup.glowingBackPart.vertices.push(glowingPool.pop()!);
       dup.glowingBackPart.vertices[pos].copy(v);
     });
-    this.backExtra.vertices.forEach((v, pos: number) => {
+    this.backExtra.vertices.forEach((v: Two.Anchor, pos: number) => {
       dup.glowingBackExtra.vertices.push(glowingPool.pop()!);
       dup.glowingBackExtra.vertices[pos].copy(v);
     });
@@ -476,10 +476,9 @@ export default class Segment extends Nodule {
         this.frontPart.opacity = SETTINGS.segment.temp.opacity.front;
         if (SETTINGS.segment.temp.dashArray.front.length > 0) {
           SETTINGS.segment.temp.dashArray.front.forEach(v => {
-            (this.frontPart as any).dashes.push(v);
+            this.frontPart.dashes.push(v);
           });
-          (this.frontPart as any).offset =
-            SETTINGS.segment.temp.dashArray.offset.front;
+          this.frontPart.offset = SETTINGS.segment.temp.dashArray.offset.front;
         }
         // FRONT EXTRA
         this.frontExtra.stroke = SETTINGS.segment.temp.strokeColor.front;
@@ -487,10 +486,9 @@ export default class Segment extends Nodule {
         this.frontExtra.opacity = SETTINGS.segment.temp.opacity.front;
         if (SETTINGS.segment.temp.dashArray.front.length > 0) {
           SETTINGS.segment.temp.dashArray.front.forEach(v => {
-            (this.frontExtra as any).dashes.push(v);
+            this.frontExtra.dashes.push(v);
           });
-          (this.frontExtra as any).offset =
-            SETTINGS.segment.temp.dashArray.offset.front;
+          this.frontExtra.offset = SETTINGS.segment.temp.dashArray.offset.front;
         }
         // BACK PART
         this.backPart.stroke = SETTINGS.segment.temp.strokeColor.back;
@@ -498,10 +496,9 @@ export default class Segment extends Nodule {
         this.backPart.opacity = SETTINGS.segment.temp.opacity.back;
         if (SETTINGS.segment.temp.dashArray.back.length > 0) {
           SETTINGS.segment.temp.dashArray.back.forEach(v => {
-            (this.backPart as any).dashes.push(v);
+            this.backPart.dashes.push(v);
           });
-          (this.backPart as any).offset =
-            SETTINGS.segment.temp.dashArray.offset.back;
+          this.backPart.offset = SETTINGS.segment.temp.dashArray.offset.back;
         }
         // BACK EXTRA
         this.backExtra.stroke = SETTINGS.segment.temp.strokeColor.back;
@@ -509,16 +506,15 @@ export default class Segment extends Nodule {
         this.backExtra.opacity = SETTINGS.segment.temp.opacity.back;
         if (SETTINGS.segment.temp.dashArray.back.length > 0) {
           SETTINGS.segment.temp.dashArray.back.forEach(v => {
-            (this.backExtra as any).dashes.push(v);
+            this.backExtra.dashes.push(v);
           });
-          (this.backExtra as any).offset =
-            SETTINGS.segment.temp.dashArray.offset.back;
+          this.backExtra.offset = SETTINGS.segment.temp.dashArray.offset.back;
         }
         // The temporary display is never highlighted
-        (this.glowingFrontPart as any).visible = false;
-        (this.glowingBackPart as any).visible = false;
-        (this.glowingFrontExtra as any).visible = false;
-        (this.glowingBackExtra as any).visible = false;
+        this.glowingFrontPart.visible = false;
+        this.glowingBackPart.visible = false;
+        this.glowingFrontExtra.visible = false;
+        this.glowingBackExtra.visible = false;
         break;
       }
       case DisplayStyle.GLOWING: {
@@ -534,9 +530,9 @@ export default class Segment extends Nodule {
         this.glowingFrontPart.opacity = SETTINGS.segment.glowing.opacity.front;
         if (SETTINGS.segment.glowing.dashArray.front.length > 0) {
           SETTINGS.segment.glowing.dashArray.front.forEach(v => {
-            (this.glowingFrontPart as any).dashes.push(v);
+            this.glowingFrontPart.dashes.push(v);
           });
-          (this.glowingFrontPart as any).offset =
+          this.glowingFrontPart.offset =
             SETTINGS.segment.glowing.dashArray.offset.front;
         }
         // FRONT EXTRA
@@ -548,9 +544,9 @@ export default class Segment extends Nodule {
         this.glowingFrontExtra.opacity = SETTINGS.segment.glowing.opacity.front;
         if (SETTINGS.segment.glowing.dashArray.front.length > 0) {
           SETTINGS.segment.glowing.dashArray.front.forEach(v => {
-            (this.glowingFrontExtra as any).dashes.push(v);
+            this.glowingFrontExtra.dashes.push(v);
           });
-          (this.glowingFrontExtra as any).offset =
+          this.glowingFrontExtra.offset =
             SETTINGS.segment.glowing.dashArray.offset.front;
         }
 
@@ -562,9 +558,9 @@ export default class Segment extends Nodule {
         this.glowingBackPart.opacity = SETTINGS.segment.glowing.opacity.back;
         if (SETTINGS.segment.glowing.dashArray.back.length > 0) {
           SETTINGS.segment.glowing.dashArray.back.forEach(v => {
-            (this.glowingBackPart as any).dashes.push(v);
+            this.glowingBackPart.dashes.push(v);
           });
-          (this.glowingBackPart as any).offset =
+          this.glowingBackPart.offset =
             SETTINGS.segment.glowing.dashArray.offset.back;
         }
         // BACK EXTRA
@@ -576,9 +572,9 @@ export default class Segment extends Nodule {
         this.glowingBackExtra.opacity = SETTINGS.segment.glowing.opacity.back;
         if (SETTINGS.segment.glowing.dashArray.back.length > 0) {
           SETTINGS.segment.glowing.dashArray.back.forEach(v => {
-            (this.glowingBackExtra as any).dashes.push(v);
+            this.glowingBackExtra.dashes.push(v);
           });
-          (this.glowingBackExtra as any).offset =
+          this.glowingBackExtra.offset =
             SETTINGS.segment.glowing.dashArray.offset.back;
         }
         break;
@@ -591,44 +587,44 @@ export default class Segment extends Nodule {
         this.frontPart.linewidth = this.strokeWidthFront;
         this.frontPart.opacity = this.opacityFront;
         if (this.dashArrayFront.length > 0) {
-          (this.frontPart as any).dashes.length = 0;
+          this.frontPart.dashes.length = 0;
           this.dashArrayFront.forEach(v => {
-            (this.frontPart as any).dashes.push(v);
+            this.frontPart.dashes.push(v);
           });
-          (this.frontPart as any).offset = this.dashArrayOffsetFront;
+          this.frontPart.offset = this.dashArrayOffsetFront;
         }
         // FRONT EXTRA
         this.frontExtra.stroke = this.strokeColorFront;
         this.frontExtra.linewidth = this.strokeWidthFront;
         this.frontExtra.opacity = this.opacityFront;
         if (this.dashArrayFront.length > 0) {
-          (this.frontExtra as any).dashes.length = 0;
+          this.frontExtra.dashes.length = 0;
           this.dashArrayFront.forEach(v => {
-            (this.frontExtra as any).dashes.push(v);
+            this.frontExtra.dashes.push(v);
           });
-          (this.frontExtra as any).offset = this.dashArrayOffsetFront;
+          this.frontExtra.offset = this.dashArrayOffsetFront;
         }
         // BACK PART
         this.backPart.stroke = this.strokeColorBack;
         this.backPart.linewidth = this.strokeWidthBack;
         this.backPart.opacity = this.opacityBack;
         if (this.dashArrayBack.length > 0) {
-          (this.backPart as any).dashes.length = 0;
+          this.backPart.dashes.length = 0;
           this.dashArrayBack.forEach((v: number) => {
-            (this.backPart as any).dashes.push(v);
+            this.backPart.dashes.push(v);
           });
-          (this.backPart as any).offset = this.dashArrayOffsetBack;
+          this.backPart.offset = this.dashArrayOffsetBack;
         }
         // BACK EXTRA
         this.backExtra.stroke = this.strokeColorBack;
         this.backExtra.linewidth = this.strokeWidthBack;
         this.backExtra.opacity = this.opacityBack;
         if (this.dashArrayBack.length > 0) {
-          (this.backExtra as any).dashes.length = 0;
+          this.backExtra.dashes.length = 0;
           this.dashArrayBack.forEach((v: number) => {
-            (this.backExtra as any).dashes.push(v);
+            this.backExtra.dashes.push(v);
           });
-          (this.backExtra as any).offset = this.dashArrayOffsetBack;
+          this.backExtra.offset = this.dashArrayOffsetBack;
         }
         // UPDATE the glowing width so it is always bigger than the drawn width
         this.glowingFrontPart.linewidth =
@@ -650,23 +646,22 @@ export default class Segment extends Nodule {
         this.frontPart.linewidth = SETTINGS.segment.drawn.strokeWidth.front;
         this.frontPart.opacity = SETTINGS.segment.drawn.opacity.front;
         if (SETTINGS.segment.drawn.dashArray.front.length > 0) {
-          (this.frontPart as any).dashes.length = 0;
+          this.frontPart.dashes.length = 0;
           SETTINGS.segment.drawn.dashArray.front.forEach(v => {
-            (this.frontPart as any).dashes.push(v);
+            this.frontPart.dashes.push(v);
           });
-          (this.frontPart as any).offset =
-            SETTINGS.segment.drawn.dashArray.offset.front;
+          this.frontPart.offset = SETTINGS.segment.drawn.dashArray.offset.front;
         }
         // FRONT EXTRA
         this.frontExtra.stroke = SETTINGS.segment.drawn.strokeColor.front;
         this.frontExtra.linewidth = SETTINGS.segment.drawn.strokeWidth.front;
         this.frontExtra.opacity = SETTINGS.segment.drawn.opacity.front;
         if (SETTINGS.segment.drawn.dashArray.front.length > 0) {
-          (this.frontExtra as any).dashes.length = 0;
+          this.frontExtra.dashes.length = 0;
           SETTINGS.segment.drawn.dashArray.front.forEach(v => {
-            (this.frontExtra as any).dashes.push(v);
+            this.frontExtra.dashes.push(v);
           });
-          (this.frontExtra as any).offset =
+          this.frontExtra.offset =
             SETTINGS.segment.drawn.dashArray.offset.front;
         }
         // BACK PART
@@ -674,24 +669,22 @@ export default class Segment extends Nodule {
         this.backPart.linewidth = SETTINGS.segment.drawn.strokeWidth.back;
         this.backPart.opacity = SETTINGS.segment.drawn.opacity.back;
         if (SETTINGS.segment.drawn.dashArray.back.length > 0) {
-          (this.backPart as any).dashes.length = 0;
+          this.backPart.dashes.length = 0;
           SETTINGS.segment.drawn.dashArray.back.forEach(v => {
-            (this.backPart as any).dashes.push(v);
+            this.backPart.dashes.push(v);
           });
-          (this.backPart as any).offset =
-            SETTINGS.segment.drawn.dashArray.offset.back;
+          this.backPart.offset = SETTINGS.segment.drawn.dashArray.offset.back;
         }
         // BACK EXTRA
         this.backExtra.stroke = SETTINGS.segment.drawn.strokeColor.back;
         this.backExtra.linewidth = SETTINGS.segment.drawn.strokeWidth.back;
         this.backExtra.opacity = SETTINGS.segment.drawn.opacity.back;
         if (SETTINGS.segment.drawn.dashArray.back.length > 0) {
-          (this.backExtra as any).dashes.length = 0;
+          this.backExtra.dashes.length = 0;
           SETTINGS.segment.drawn.dashArray.back.forEach(v => {
-            (this.backExtra as any).dashes.push(v);
+            this.backExtra.dashes.push(v);
           });
-          (this.backExtra as any).offset =
-            SETTINGS.segment.drawn.dashArray.offset.back;
+          this.backExtra.offset = SETTINGS.segment.drawn.dashArray.offset.back;
         }
         // UPDATE the glowing width so it is always bigger than the drawn width
         this.glowingFrontPart.linewidth =

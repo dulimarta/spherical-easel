@@ -16,9 +16,9 @@ const desiredZAxis = new Vector3();
 
 let LINE_COUNT = 0;
 const styleSet = new Set([
-  Styles.StrokeWidth,
-  Styles.StrokeColor,
-  Styles.DashPattern
+  Styles.strokeWidth,
+  Styles.strokeColor,
+  Styles.dashPattern
 ]);
 export class SELine extends SENodule implements Visitable, OneDimensional {
   /**

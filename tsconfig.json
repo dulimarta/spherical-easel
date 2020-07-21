@@ -6,6 +6,7 @@
     "declaration": true,
     "jsx": "preserve",
     "importHelpers": true,
+    "noImplicitAny": true,
     "moduleResolution": "node",
     "experimentalDecorators": true,
     "esModuleInterop": true,
@@ -29,8 +30,8 @@
     "src/**/*.vue",
     "tests/**/*.ts",
     "tests/**/*.tsx",
-    "tests/stub-modules/MockRenderer.js",
-    "tests/setup.ts"
+    "tests/setup.ts",
+    "src/types/two.js/index.d.ts"
   ],
   "exclude": ["node_modules"],
   "verbose": true

@@ -264,7 +264,7 @@ export default class Circle extends Nodule {
     let backLen = this.backPart.vertices.length;
     let firstNeg = -1;
     let firstPos = -1;
-    this.originalVertices.forEach((v, pos) => {
+    this.originalVertices.forEach((v: Vector2, pos: number) => {
       this.tmpVector.set(v.x, v.y, 0);
       this.tmpVector.applyMatrix4(transformMatrix);
 
@@ -326,13 +326,13 @@ export default class Circle extends Nodule {
     // The circle interior is only on the front of the sphere
     if (backLen === 0 && this._circleRadius < Math.PI / 2) {
       // In this case the frontFillVertices are the same as the frontVertices
-      this.frontFill.vertices.forEach((v: any, index: number) => {
+      this.frontFill.vertices.forEach((v: Two.Anchor, index: number) => {
         v.x = this.frontPart.vertices[index].x;
         v.y = this.frontPart.vertices[index].y;
       });
       // Only the front fill is displayed
-      (this.frontFill as any).visible = true;
-      (this.backFill as any).visible = false;
+      this.frontFill.visible = true;
+      this.backFill.visible = false;
     }
 
     // The circle interior is split between front and back
@@ -381,7 +381,7 @@ export default class Circle extends Nodule {
 
       // Build the frontFill
       // First copy the frontPart into the first part of the frontFill
-      this.frontFill.vertices.forEach((v: any, index: number) => {
+      this.frontFill.vertices.forEach((v: Two.Anchor, index: number) => {
         if (index < frontLen) {
           v.x = this.frontPart.vertices[index].x;
           v.y = this.frontPart.vertices[index].y;
@@ -395,7 +395,7 @@ export default class Circle extends Nodule {
 
       // Build the backFill
       // First copy the backPart into the first part of the backFill
-      this.backFill.vertices.forEach((v: any, index: number) => {
+      this.backFill.vertices.forEach((v: Two.Anchor, index: number) => {
         if (index < backLen) {
           v.x = this.backPart.vertices[backLen - 1 - index].x;
           v.y = this.backPart.vertices[backLen - 1 - index].y;
@@ -409,27 +409,27 @@ export default class Circle extends Nodule {
       // console.log("front", frontLen, "back", backLen);
 
       // Display front and back
-      (this.frontFill as any).visible = true;
-      (this.backFill as any).visible = true;
+      this.frontFill.visible = true;
+      this.backFill.visible = true;
     }
 
     // The circle interior is only on the back of the sphere
     if (frontLen === 0 && this._circleRadius < Math.PI / 2) {
       // The circle interior is only on the back of the sphere
       // In this case the backFillVertices are the same as the backVertices
-      this.backFill.vertices.forEach((v, index) => {
+      this.backFill.vertices.forEach((v: Two.Anchor, index: number) => {
         v.x = this.backPart.vertices[index].x;
         v.y = this.backPart.vertices[index].y;
       });
       // Only the back fill is displayed
-      (this.frontFill as any).visible = false;
-      (this.backFill as any).visible = true;
+      this.frontFill.visible = false;
+      this.backFill.visible = true;
     }
 
     // The circle interior covers the entire front half of the sphere and is a 'hole' on the back
     if (frontLen === 0 && this._circleRadius > Math.PI / 2) {
       // In this case set the frontFillVertices to the entire front of the sphere
-      this.frontFill.vertices.forEach((v: any, index: number) => {
+      this.frontFill.vertices.forEach((v: Two.Anchor, index: number) => {
         const angle = (index / SUBDIVISIONS) * 2 * Math.PI;
         v.x = SETTINGS.boundaryCircle.radius * Math.cos(angle);
         v.y = SETTINGS.boundaryCircle.radius * Math.sin(angle);
@@ -443,7 +443,7 @@ export default class Circle extends Nodule {
         this.backPart.vertices[0].x
       );
 
-      this.backFill.vertices.forEach((v: any, index: number) => {
+      this.backFill.vertices.forEach((v: Two.Anchor, index: number) => {
         if (index <= Math.floor(SUBDIVISIONS / 2) - 2) {
           const angle = -((2 * index) / SUBDIVISIONS) * 2 * Math.PI; //must trace in the opposite direction on the back to render the annular region
           v.x =
@@ -476,14 +476,14 @@ export default class Circle extends Nodule {
       });
 
       // Both front/back fill are displayed
-      (this.frontFill as any).visible = true;
-      (this.backFill as any).visible = true;
+      this.frontFill.visible = true;
+      this.backFill.visible = true;
     }
 
     // The circle interior covers the entire back half of the sphere and is a 'hole' on the front
     if (backLen === 0 && this._circleRadius > Math.PI / 2) {
       // In this case set the frontFillVertices to the entire front of the sphere
-      this.backFill.vertices.forEach((v: any, index: number) => {
+      this.backFill.vertices.forEach((v: Two.Anchor, index: number) => {
         const angle = (index / SUBDIVISIONS) * 2 * Math.PI;
         v.x = SETTINGS.boundaryCircle.radius * Math.cos(angle);
         v.y = SETTINGS.boundaryCircle.radius * Math.sin(angle);
@@ -497,7 +497,7 @@ export default class Circle extends Nodule {
         this.frontPart.vertices[0].x
       );
 
-      this.frontFill.vertices.forEach((v, index) => {
+      this.frontFill.vertices.forEach((v: Two.Anchor, index: number) => {
         if (index <= Math.floor(SUBDIVISIONS / 2) - 2) {
           const angle = ((2 * index) / SUBDIVISIONS) * 2 * Math.PI;
           v.x =
@@ -526,8 +526,8 @@ export default class Circle extends Nodule {
       });
 
       // Both front/back fill are displayed
-      (this.frontFill as any).visible = true;
-      (this.backFill as any).visible = true;
+      this.frontFill.visible = true;
+      this.backFill.visible = true;
     }
   }
 
@@ -554,12 +554,12 @@ export default class Circle extends Nodule {
   }
 
   frontGlowingDisplay(): void {
-    (this.frontPart as any).visible = true;
-    (this.glowingFrontPart as any).visible = true;
+    this.frontPart.visible = true;
+    this.glowingFrontPart.visible = true;
   }
   backGlowingDisplay(): void {
-    (this.backPart as any).visible = true;
-    (this.glowingBackPart as any).visible = true;
+    this.backPart.visible = true;
+    this.glowingBackPart.visible = true;
   }
 
   glowingDisplay(): void {
@@ -568,13 +568,13 @@ export default class Circle extends Nodule {
   }
 
   frontNormalDisplay(): void {
-    (this.frontPart as any).visible = true;
-    (this.glowingFrontPart as any).visible = false;
+    this.frontPart.visible = true;
+    this.glowingFrontPart.visible = false;
   }
 
   backNormalDisplay(): void {
-    (this.backPart as any).visible = true;
-    (this.glowingBackPart as any).visible = false;
+    this.backPart.visible = true;
+    this.glowingBackPart.visible = false;
   }
 
   normalDisplay(): void {
@@ -599,19 +599,19 @@ export default class Circle extends Nodule {
       this.frontFill.fill = this.frontGradientColor.color;
     }
     if (options.dashPattern) {
-      (this.backPart as any).dashes = options.dashPattern;
-      (this.glowingBackPart as any).dashes = options.dashPattern;
+      this.backPart.dashes = options.dashPattern;
+      this.glowingBackPart.dashes = options.dashPattern;
     }
   }
 
   setVisible(flag: boolean): void {
     if (!flag) {
-      (this.frontPart as any).visible = false;
-      (this.backPart as any).visible = false;
-      (this.frontFill as any).visible = false;
-      (this.backFill as any).visible = false;
-      (this.glowingBackPart as any).visible = false;
-      (this.glowingFrontPart as any).visible = false;
+      this.frontPart.visible = false;
+      this.backPart.visible = false;
+      this.frontFill.visible = false;
+      this.backFill.visible = false;
+      this.glowingBackPart.visible = false;
+      this.glowingFrontPart.visible = false;
     } else {
       this.normalDisplay();
     }
@@ -650,23 +650,23 @@ export default class Circle extends Nodule {
     }
     // After the above two while statement execute this.front/back and dup.front/back are the same length
     // Now we can copy the vertices from the this.front/back to the dup.front/back
-    dup.frontPart.vertices.forEach((v, pos) => {
+    dup.frontPart.vertices.forEach((v: Two.Anchor, pos: number) => {
       v.copy(this.frontPart.vertices[pos]);
     });
-    dup.backPart.vertices.forEach((v, pos) => {
+    dup.backPart.vertices.forEach((v: Two.Anchor, pos: number) => {
       v.copy(this.backPart.vertices[pos]);
     });
 
     //Clone the front/back fill
-    dup.frontFill.vertices.forEach((v, pos) => {
+    dup.frontFill.vertices.forEach((v: Two.Anchor, pos: number) => {
       v.copy(this.frontFill.vertices[pos]);
     });
-    dup.backFill.vertices.forEach((v, pos) => {
+    dup.backFill.vertices.forEach((v: Two.Anchor, pos: number) => {
       v.copy(this.backFill.vertices[pos]);
     });
     //Clone the visibility of the front/back fill
-    (dup.frontFill as any).visible = (this.frontFill as any).visible;
-    (dup.backFill as any).visible = (this.backFill as any).visible;
+    dup.frontFill.visible = this.frontFill.visible;
+    dup.backFill.visible = this.backFill.visible;
 
     // Duplicate the glowing parts
     dup.glowingFrontPart.closed = this.glowingFrontPart.closed;
@@ -689,10 +689,10 @@ export default class Circle extends Nodule {
       // Transfer from backpart to frontPart
       dup.glowingFrontPart.vertices.push(dup.glowingBackPart.vertices.pop()!);
     }
-    dup.glowingFrontPart.vertices.forEach((v, pos) => {
+    dup.glowingFrontPart.vertices.forEach((v: Two.Anchor, pos: number) => {
       v.copy(this.glowingFrontPart.vertices[pos]);
     });
-    dup.glowingBackPart.vertices.forEach((v, pos) => {
+    dup.glowingBackPart.vertices.forEach((v: Two.Anchor, pos: number) => {
       v.copy(this.glowingBackPart.vertices[pos]);
     });
     // Now clone the line width
@@ -761,10 +761,9 @@ export default class Circle extends Nodule {
         this.frontPart.opacity = SETTINGS.circle.temp.opacity.front;
         if (SETTINGS.circle.temp.dashArray.front.length > 0) {
           SETTINGS.circle.temp.dashArray.front.forEach(v => {
-            (this.frontPart as any).dashes.push(v);
+            this.frontPart.dashes.push(v);
           });
-          (this.frontPart as any).offset =
-            SETTINGS.circle.temp.dashArray.offset.front;
+          this.frontPart.offset = SETTINGS.circle.temp.dashArray.offset.front;
         }
         //BACK
         if (SETTINGS.circle.temp.fillColor.back === "noFill") {
@@ -778,14 +777,13 @@ export default class Circle extends Nodule {
         this.backPart.opacity = SETTINGS.circle.temp.opacity.back;
         if (SETTINGS.circle.temp.dashArray.back.length > 0) {
           SETTINGS.circle.temp.dashArray.back.forEach(v => {
-            (this.backPart as any).dashes.push(v);
+            this.backPart.dashes.push(v);
           });
-          (this.backPart as any).offset =
-            SETTINGS.circle.temp.dashArray.offset.back;
+          this.backPart.offset = SETTINGS.circle.temp.dashArray.offset.back;
         }
         // The temporary display is never highlighted
-        (this.glowingFrontPart as any).visible = false;
-        (this.glowingBackPart as any).visible = false;
+        this.glowingFrontPart.visible = false;
+        this.glowingBackPart.visible = false;
         break;
       }
 
@@ -802,9 +800,9 @@ export default class Circle extends Nodule {
         this.glowingFrontPart.opacity = SETTINGS.circle.glowing.opacity.front;
         if (SETTINGS.circle.glowing.dashArray.front.length > 0) {
           SETTINGS.circle.glowing.dashArray.front.forEach(v => {
-            (this.glowingFrontPart as any).dashes.push(v);
+            this.glowingFrontPart.dashes.push(v);
           });
-          (this.glowingFrontPart as any).offset =
+          this.glowingFrontPart.offset =
             SETTINGS.circle.glowing.dashArray.offset.front;
         }
         // BACK
@@ -815,9 +813,9 @@ export default class Circle extends Nodule {
         this.glowingBackPart.opacity = SETTINGS.circle.glowing.opacity.back;
         if (SETTINGS.circle.glowing.dashArray.back.length > 0) {
           SETTINGS.circle.glowing.dashArray.back.forEach(v => {
-            (this.glowingBackPart as any).dashes.push(v);
+            this.glowingBackPart.dashes.push(v);
           });
-          (this.glowingBackPart as any).offset =
+          this.glowingBackPart.offset =
             SETTINGS.circle.glowing.dashArray.offset.back;
         }
         break;
@@ -837,11 +835,11 @@ export default class Circle extends Nodule {
         this.frontPart.linewidth = this.strokeWidthFront;
         this.frontPart.opacity = this.opacityFront;
         if (this.dashArrayFront.length > 0) {
-          (this.frontPart as any).dashes.length = 0;
+          this.frontPart.dashes.length = 0;
           this.dashArrayFront.forEach(v => {
-            (this.frontPart as any).dashes.push(v);
+            this.frontPart.dashes.push(v);
           });
-          (this.frontPart as any).offset = this.dashArrayOffsetFront;
+          this.frontPart.offset = this.dashArrayOffsetFront;
         }
         // BACK
         if (this.fillColorBack === "noFill") {
@@ -854,11 +852,11 @@ export default class Circle extends Nodule {
         this.backPart.linewidth = this.strokeWidthBack;
         this.backPart.opacity = this.opacityBack;
         if (this.dashArrayBack.length > 0) {
-          (this.backPart as any).dashes.length = 0;
+          this.backPart.dashes.length = 0;
           this.dashArrayBack.forEach(v => {
-            (this.backPart as any).dashes.push(v);
+            this.backPart.dashes.push(v);
           });
-          (this.backPart as any).offset = this.dashArrayOffsetBack;
+          this.backPart.offset = this.dashArrayOffsetBack;
         }
         // UPDATE the glowing width so it is always bigger than the drawn width
         this.glowingFrontPart.linewidth =
@@ -882,12 +880,11 @@ export default class Circle extends Nodule {
         this.frontPart.linewidth = SETTINGS.circle.drawn.strokeWidth.front;
         this.frontPart.opacity = SETTINGS.circle.drawn.opacity.front;
         if (SETTINGS.circle.drawn.dashArray.front.length > 0) {
-          (this.frontPart as any).dashes.length = 0;
+          this.frontPart.dashes.length = 0;
           SETTINGS.circle.drawn.dashArray.front.forEach(v => {
-            (this.frontPart as any).dashes.push(v);
+            this.frontPart.dashes.push(v);
           });
-          (this.frontPart as any).offset =
-            SETTINGS.circle.drawn.dashArray.offset.front;
+          this.frontPart.offset = SETTINGS.circle.drawn.dashArray.offset.front;
         }
         // BACK
         if (SETTINGS.circle.drawn.fillColor.back === "noFill") {
@@ -900,12 +897,11 @@ export default class Circle extends Nodule {
         this.backPart.linewidth = SETTINGS.circle.drawn.strokeWidth.back;
         this.backPart.opacity = SETTINGS.circle.drawn.opacity.back;
         if (SETTINGS.circle.drawn.dashArray.back.length > 0) {
-          (this.backPart as any).dashes.length = 0;
+          this.backPart.dashes.length = 0;
           SETTINGS.circle.drawn.dashArray.back.forEach(v => {
-            (this.backPart as any).dashes.push(v);
+            this.backPart.dashes.push(v);
           });
-          (this.backPart as any).offset =
-            SETTINGS.circle.drawn.dashArray.offset.back;
+          this.backPart.offset = SETTINGS.circle.drawn.dashArray.offset.back;
         }
         // UPDATE the glowing width so it is always bigger than the drawn width
         this.glowingFrontPart.linewidth =
