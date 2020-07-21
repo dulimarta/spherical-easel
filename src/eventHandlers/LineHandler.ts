@@ -3,14 +3,11 @@
 import { Vector3 } from "three";
 import Point from "@/plottables/Point";
 import Line from "@/plottables/Line";
-import { SENodule } from "@/models/SENodule";
 import { CommandGroup } from "@/commands/CommandGroup";
 import { AddLineCommand } from "@/commands/AddLineCommand";
 import Two from "two.js";
 import { SEPoint } from "@/models/SEPoint";
 import { SELine } from "@/models/SELine";
-import { SESegment } from "@/models/SESegment";
-import { SECircle } from "@/models/SECircle";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import { DisplayStyle } from "@/plottables/Nodule";
 import SETTINGS from "@/global-settings";

@@ -5,7 +5,6 @@ import { ConvertInterPtToUserCreatedCommand } from "@/commands/ConvertInterPtToU
 import { SELine } from "@/models/SELine";
 import { SESegment } from "@/models/SESegment";
 import { SECircle } from "@/models/SECircle";
-import { SENodule } from "@/models/SENodule";
 import { IntersectionReturnType, SEOneDimensional } from "@/types";
 import store from "@/store";
 import { CommandGroup } from "@/commands/CommandGroup";

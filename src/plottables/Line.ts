@@ -144,13 +144,13 @@ export default class Line extends Nodule {
   }
 
   frontGlowingDisplay(): void {
-    (this.frontHalf as any).visible = true;
-    (this.glowingFrontHalf as any).visible = true;
+    this.frontHalf.visible = true;
+    this.glowingFrontHalf.visible = true;
   }
 
   backGlowingDisplay(): void {
-    (this.backHalf as any).visible = true;
-    (this.glowingBackHalf as any).visible = true;
+    this.backHalf.visible = true;
+    this.glowingBackHalf.visible = true;
   }
 
   glowingDisplay(): void {
@@ -159,13 +159,13 @@ export default class Line extends Nodule {
   }
 
   frontNormalDisplay(): void {
-    (this.frontHalf as any).visible = true;
-    (this.glowingFrontHalf as any).visible = false;
+    this.frontHalf.visible = true;
+    this.glowingFrontHalf.visible = false;
   }
 
   backNormalDisplay(): void {
-    (this.backHalf as any).visible = true;
-    (this.glowingBackHalf as any).visible = false;
+    this.backHalf.visible = true;
+    this.glowingBackHalf.visible = false;
   }
 
   normalDisplay(): void {
@@ -192,8 +192,8 @@ export default class Line extends Nodule {
       this.glowingBackHalf.stroke = options.strokeColor;
     }
     if (options.dashPattern) {
-      (this.backHalf as any).dashes = options.dashPattern;
-      (this.glowingBackHalf as any).dashes = options.dashPattern;
+      this.backHalf.dashes = options.dashPattern;
+      this.glowingBackHalf.dashes = options.dashPattern;
     }
   }
 
@@ -284,10 +284,10 @@ export default class Line extends Nodule {
 
   setVisible(flag: boolean): void {
     if (!flag) {
-      (this.frontHalf as any).visible = false;
-      (this.glowingFrontHalf as any).visible = false;
-      (this.backHalf as any).visible = false;
-      (this.glowingBackHalf as any).visible = false;
+      this.frontHalf.visible = false;
+      this.glowingFrontHalf.visible = false;
+      this.backHalf.visible = false;
+      this.glowingBackHalf.visible = false;
     } else {
       this.normalDisplay();
     }
@@ -356,10 +356,9 @@ export default class Line extends Nodule {
         this.frontHalf.opacity = SETTINGS.line.temp.opacity.front;
         if (SETTINGS.line.temp.dashArray.front.length > 0) {
           SETTINGS.line.temp.dashArray.front.forEach(v => {
-            (this.frontHalf as any).dashes.push(v);
+            this.frontHalf.dashes.push(v);
           });
-          (this.frontHalf as any).offset =
-            SETTINGS.line.temp.dashArray.offset.front;
+          this.frontHalf.offset = SETTINGS.line.temp.dashArray.offset.front;
         }
         // BACK PART
         this.backHalf.stroke = SETTINGS.line.temp.strokeColor.back;
@@ -367,14 +366,13 @@ export default class Line extends Nodule {
         this.backHalf.opacity = SETTINGS.line.temp.opacity.back;
         if (SETTINGS.line.temp.dashArray.back.length > 0) {
           SETTINGS.line.temp.dashArray.back.forEach(v => {
-            (this.backHalf as any).dashes.push(v);
+            this.backHalf.dashes.push(v);
           });
-          (this.backHalf as any).offset =
-            SETTINGS.line.temp.dashArray.offset.back;
+          this.backHalf.offset = SETTINGS.line.temp.dashArray.offset.back;
         }
         // The temporary display is never highlighted
-        (this.glowingFrontHalf as any).visible = false;
-        (this.glowingBackHalf as any).visible = false;
+        this.glowingFrontHalf.visible = false;
+        this.glowingBackHalf.visible = false;
         break;
       }
       case DisplayStyle.GLOWING: {
@@ -389,9 +387,9 @@ export default class Line extends Nodule {
         this.glowingFrontHalf.opacity = SETTINGS.line.glowing.opacity.front;
         if (SETTINGS.line.glowing.dashArray.front.length > 0) {
           SETTINGS.line.glowing.dashArray.front.forEach(v => {
-            (this.glowingFrontHalf as any).dashes.push(v);
+            this.glowingFrontHalf.dashes.push(v);
           });
-          (this.glowingFrontHalf as any).offset =
+          this.glowingFrontHalf.offset =
             SETTINGS.line.glowing.dashArray.offset.front;
         }
         // BACK PART
@@ -402,9 +400,9 @@ export default class Line extends Nodule {
         this.glowingBackHalf.opacity = SETTINGS.line.glowing.opacity.back;
         if (SETTINGS.line.glowing.dashArray.back.length > 0) {
           SETTINGS.line.glowing.dashArray.back.forEach(v => {
-            (this.glowingBackHalf as any).dashes.push(v);
+            this.glowingBackHalf.dashes.push(v);
           });
-          (this.glowingBackHalf as any).offset =
+          this.glowingBackHalf.offset =
             SETTINGS.line.glowing.dashArray.offset.back;
         }
         break;
@@ -417,22 +415,22 @@ export default class Line extends Nodule {
         this.frontHalf.linewidth = this.strokeWidthFront;
         this.frontHalf.opacity = this.opacityFront;
         if (this.dashArrayFront.length > 0) {
-          (this.frontHalf as any).dashes.length = 0;
+          this.frontHalf.dashes.length = 0;
           this.dashArrayFront.forEach(v => {
-            (this.frontHalf as any).dashes.push(v);
+            this.frontHalf.dashes.push(v);
           });
-          (this.frontHalf as any).offset = this.dashArrayOffsetFront;
+          this.frontHalf.offset = this.dashArrayOffsetFront;
         }
         // BACK PART
         this.backHalf.stroke = this.strokeColorBack;
         this.backHalf.linewidth = this.strokeWidthBack;
         this.backHalf.opacity = this.opacityBack;
         if (this.dashArrayBack.length > 0) {
-          (this.backHalf as any).dashes.length = 0;
+          this.backHalf.dashes.length = 0;
           this.dashArrayBack.forEach(v => {
-            (this.backHalf as any).dashes.push(v);
+            this.backHalf.dashes.push(v);
           });
-          (this.backHalf as any).offset = this.dashArrayOffsetBack;
+          this.backHalf.offset = this.dashArrayOffsetBack;
         }
         // UPDATE the glowing width so it is always bigger than the drawn width
         this.glowingFrontHalf.linewidth =
@@ -450,24 +448,22 @@ export default class Line extends Nodule {
         this.frontHalf.linewidth = SETTINGS.line.drawn.strokeWidth.front;
         this.frontHalf.opacity = SETTINGS.line.drawn.opacity.front;
         if (SETTINGS.line.drawn.dashArray.front.length > 0) {
-          (this.frontHalf as any).dashes.length = 0;
+          this.frontHalf.dashes.length = 0;
           SETTINGS.line.drawn.dashArray.front.forEach(v => {
-            (this.frontHalf as any).dashes.push(v);
+            this.frontHalf.dashes.push(v);
           });
-          (this.frontHalf as any).offset =
-            SETTINGS.line.drawn.dashArray.offset.front;
+          this.frontHalf.offset = SETTINGS.line.drawn.dashArray.offset.front;
         }
         // BACK PART
         this.backHalf.stroke = SETTINGS.line.drawn.strokeColor.back;
         this.backHalf.linewidth = SETTINGS.line.drawn.strokeWidth.back;
         this.backHalf.opacity = SETTINGS.line.drawn.opacity.back;
         if (SETTINGS.line.drawn.dashArray.back.length > 0) {
-          (this.backHalf as any).dashes.length = 0;
+          this.backHalf.dashes.length = 0;
           SETTINGS.line.drawn.dashArray.back.forEach(v => {
-            (this.backHalf as any).dashes.push(v);
+            this.backHalf.dashes.push(v);
           });
-          (this.backHalf as any).offset =
-            SETTINGS.line.drawn.dashArray.offset.back;
+          this.backHalf.offset = SETTINGS.line.drawn.dashArray.offset.back;
         }
         // UPDATE the glowing width so it is always bigger than the drawn width
         this.glowingFrontHalf.linewidth =

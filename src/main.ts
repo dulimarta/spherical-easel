@@ -1,5 +1,6 @@
 // <reference path="@/extensions/three-ext.d.ts" />
 // <reference path="@/extensions/number-ext.d.ts" />
+// <reference path="@/types/two.js/index.d.ts" />
 import Vue from "vue";
 import App from "./App.vue";
 import router from "./router";

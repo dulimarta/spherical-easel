@@ -1,6 +1,6 @@
 import { Command } from "./Command";
 import { SEPoint } from "@/models/SEPoint";
-import { Matrix4, Vector3 } from "three";
+import { Vector3 } from "three";
 
 export class MovePointCommand extends Command {
   private sePoint: SEPoint;

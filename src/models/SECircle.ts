@@ -19,10 +19,9 @@ let CIRCLE_COUNT = 0;
 const styleSet = new Set([
   Styles.strokeColor,
   Styles.strokeWidth,
-  Styles.dashPattern,
+  Styles.dashPattern
   //Styles.fillColorGray,
   //Styles.fillColorWhite,
-  Styles.dashPattern
 ]);
 export class SECircle extends SENodule implements Visitable, OneDimensional {
   /**

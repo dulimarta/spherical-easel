@@ -1,15 +1,34 @@
 <template>
   <div class="pa-1" id="objectTreeContainer">
     <h4>{{ $t("objects.points") }}</h4>
-    <v-treeview dense hoverable activatable selectable
-      active-class="warning" :items="iPoints" v-model="selection"
-      @update:active="updateActive"></v-treeview>
+    <v-treeview
+      dense
+      hoverable
+      activatable
+      selectable
+      active-class="warning"
+      :items="iPoints"
+      v-model="selection"
+      @update:active="updateActive"
+    ></v-treeview>
     <h4>{{ $t("objects.lines") }}</h4>
-    <v-treeview dense hoverable activatable active-class="warning"
-      :items="iLines" @update:active="updateActive"></v-treeview>
+    <v-treeview
+      dense
+      hoverable
+      activatable
+      active-class="warning"
+      :items="iLines"
+      @update:active="updateActive"
+    ></v-treeview>
     <h4>{{ $t("objects.circles") }}</h4>
-    <v-treeview dense hoverable activatable active-class="warning"
-      :items="iCircles" @update:active="updateActive"></v-treeview>
+    <v-treeview
+      dense
+      hoverable
+      activatable
+      active-class="warning"
+      :items="iCircles"
+      @update:active="updateActive"
+    ></v-treeview>
   </div>
 </template>
 
@@ -18,14 +37,13 @@ import Vue from "vue";
 import Component from "vue-class-component";
 import { State } from "vuex-class";
 
-import { Prop } from "vue-property-decorator";
 // import { Mesh, MeshPhongMaterial } from "three";
 import Two from "two.js";
 import { SEPoint } from "@/models/SEPoint";
 import { SELine } from "@/models/SELine";
 import { SECircle } from "@/models/SECircle";
-import { SENodule } from '@/models/SENodule';
-import { SESegment } from '../models/SESegment';
+import { SENodule } from "@/models/SENodule";
+import { SESegment } from "../models/SESegment";
 // import Point from "@/plotables/Point";
 
 @Component
@@ -58,7 +76,8 @@ export default class ObjectTree extends Vue {
           id: 0,
           name: "Connected Lines",
           children: z.kids
-            .filter((n: SENodule) => n instanceof SELine).map((x: SENodule) => ({
+            .filter((n: SENodule) => n instanceof SELine)
+            .map((x: SENodule) => ({
               id: x.id,
               name: x.name
             }))
@@ -67,21 +86,22 @@ export default class ObjectTree extends Vue {
           id: 1,
           name: "Connected Segments",
           children: z.kids
-            .filter((n: SENodule) => n instanceof SESegment).map((x: SENodule) => ({
+            .filter((n: SENodule) => n instanceof SESegment)
+            .map((x: SENodule) => ({
               id: x.id,
               name: x.name
             }))
-        }, {
+        },
+        {
           id: 2,
           name: "Connected Circles",
           children: z.kids
-            .filter((n: SENodule) => n instanceof SECircle).map((x: SENodule) => ({
+            .filter((n: SENodule) => n instanceof SECircle)
+            .map((x: SENodule) => ({
               id: x.id,
               name: x.name
             }))
         }
-
-
       ] /* remove node with empty children*/
         .filter(c => c.children.length > 0)
     }));
@@ -101,7 +121,7 @@ export default class ObjectTree extends Vue {
   get iCircles(): any[] {
     return this.circles.map(r => ({
       id: r.id,
-      name: r.name,
+      name: r.name
       // children: [
       //   { id: r.center.id, name: "Center:" + r.center.name },
       //   { id: r.point.id, name: "Point:" + r.point.name }

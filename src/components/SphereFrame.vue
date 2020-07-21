@@ -22,7 +22,7 @@ import RotateHandler from "@/eventHandlers/RotateHandler";
 import PointOnOneDimensionalHandler from "@/eventHandlers/PointOnOneDimensionalHandler";
 import IntersectionPointHandler from "@/eventHandlers/IntersectionPointHandler";
 import PanZoomHandler, { ZoomMode } from "@/eventHandlers/PanZoomHandler";
-import { RotationVisitor } from "@/visitors/RotationVisitor";
+// import { RotationVisitor } from "@/visitors/RotationVisitor";
 import EventBus from "@/eventHandlers/EventBus";
 import MoveHandler from "../eventHandlers/MoveHandler";
 
@@ -208,7 +208,7 @@ export default class SphereFrame extends VueComponent {
   @Watch("canvasSize")
   onCanvasResize(size: number): void {
     // console.debug("onCanvasResize");
-    (this.twoInstance.renderer as any).setSize(size, size);
+    this.twoInstance.renderer.setSize(size, size);
     // Move the origin of all layers to the center of the viewport
     this.layers.forEach(z => {
       z.translation.set(this.canvasSize / 2, this.canvasSize / 2);
