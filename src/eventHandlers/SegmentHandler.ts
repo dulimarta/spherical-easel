@@ -17,7 +17,11 @@ import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import { DisplayStyle } from "@/plottables/Nodule";
 import Highlighter from "./Highlighter";
 import { ConvertInterPtToUserCreatedCommand } from "@/commands/ConvertInterPtToUserCreatedCommand";
-import { SEOneDimensional, SEIntersectionReturnType } from "@/types";
+import {
+  SEOneDimensional,
+  SEIntersectionReturnType,
+  SaveStateType
+} from "@/types";
 import { SEPointOnOneDimensional } from "@/models/SEPointOnOneDimensional";
 
 export default class SegmentHandler extends Highlighter {
@@ -554,7 +558,9 @@ export default class SegmentHandler extends Highlighter {
           object2
         );
         // Update the newSECircle so the display is correct when the command group is executed
-        newSESegment.update();
+
+        // FIXME: provide the correct argument for calling update()
+        newSESegment.update({} as SaveStateType);
 
         const segmentCommandGroup = new CommandGroup();
         segmentCommandGroup.addCommand(
