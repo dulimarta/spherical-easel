@@ -21,6 +21,7 @@ import CircleHandler from "@/eventHandlers/CircleHandler";
 import RotateHandler from "@/eventHandlers/RotateHandler";
 import PointOnOneDimensionalHandler from "@/eventHandlers/PointOnOneDimensionalHandler";
 import IntersectionPointHandler from "@/eventHandlers/IntersectionPointHandler";
+import AntipodalPointHandler from "@/eventHandlers/AntipodalPointHandler";
 import PanZoomHandler, { ZoomMode } from "@/eventHandlers/PanZoomHandler";
 // import { RotationVisitor } from "@/visitors/RotationVisitor";
 import EventBus from "@/eventHandlers/EventBus";
@@ -72,14 +73,8 @@ export default class SphereFrame extends VueComponent {
   private zoomTool!: PanZoomHandler;
   private moveTool!: MoveHandler;
   private pointOnOneDimensionalTool!: PointOnOneDimensionalHandler;
+  private antipodalPointTool!: AntipodalPointHandler;
   private intersectTool!: IntersectionPointHandler;
-
-  /**
-   * A way to change the location of the points in the store to enact a rotation, this visits
-   * all points and updates their position according to a matrix4 passed as an argument. It visits
-   * all lines and circles and tells them to update.
-   */
-  //private visitor!: RotationVisitor;
 
   /**
    * The layers for displaying the various objects in the right way. So a point in the
@@ -195,6 +190,7 @@ export default class SphereFrame extends VueComponent {
     this.pointOnOneDimensionalTool = new PointOnOneDimensionalHandler(
       this.layers
     );
+    this.antipodalPointTool = new AntipodalPointHandler(this.layers);
   }
 
   beforeDestroy(): void {
@@ -208,7 +204,7 @@ export default class SphereFrame extends VueComponent {
   @Watch("canvasSize")
   onCanvasResize(size: number): void {
     // console.debug("onCanvasResize");
-    this.twoInstance.renderer.setSize(size, size);
+    (this.twoInstance.renderer as any).setSize(size, size);
     // Move the origin of all layers to the center of the viewport
     this.layers.forEach(z => {
       z.translation.set(this.canvasSize / 2, this.canvasSize / 2);
@@ -229,7 +225,7 @@ export default class SphereFrame extends VueComponent {
   /** Apply the affine transform (m) to the entire TwoJS SVG tree! */
   // The translation element of the CSS transform matrix
   // is actually the pivot/origin of the zoom
-  // #region updateView
+  // #region updateViewµ
   private updateView() {
     // Get the current maginiication factor and translation vector
     const mag = this.store.state.zoomMagnificationFactor;
@@ -405,6 +401,9 @@ export default class SphereFrame extends VueComponent {
         break;
       case "pointOnOneDim":
         this.currentTool = this.pointOnOneDimensionalTool;
+        break;
+      case "antipodalPoint":
+        this.currentTool = this.antipodalPointTool;
         break;
       default:
         this.currentTool = null;

@@ -40,8 +40,8 @@ This section is an outline of the steps need to add a tool that takes a collecti
      ```
 
 4. Write an [event handler](/design/#event-handlers). Start by thinking about which tool is most similar to the one being created. Start by creating a copy of that file and renaming it appropriately. Copy the structure to properly link the <span class="class">Nodule</span> and <span class="class">SENodule</span> objects. See the [Plottables Directory](/design/#plottables-directory).
-   - ??? A new <span class="command">Command</span> object may have to written. Look and see which existing commands are most similar to the one being created. Copy that command. See the [Command](/design/#commands) section. Think carefully about undoing. Adding a new kind of point requires that when you undo and then redo the add operation it remains a new kid of point.
-   - ??? A new mutations of the store may be required. Look in the <span class="file">mutations.ts</span> in the [Store](/design/#store). Although the <span class="string">RemovePoint</span> mutation might work.
+   - A new <span class="command">Command</span> object will have to written. Look and see which existing commands are most similar to the one being created. Copy that command. See the [Command](/design/#commands) section. Think carefully about undoing. Adding a new kind of point requires that when you undo and then redo the add operation it remains a new kid of point.
+   - A new mutations of the store may be required. Look in the <span class="file">mutations.ts</span> in the [Store](/design/#store). Although the <span class="string">RemovePoint</span> mutation might work.
    - Edge case questions to ask: What should the behavior be if...
      - The user mouse presses outside of the canvas, and mouse releases in the canvas (inside of the sphere or not)?
      - The user mouse presses inside the canvas, mouse moves outside of the sphere (with out a mouse leave event, so still in the canvas), and then mouse releases inside of the canvas (inside of the sphere or not)?

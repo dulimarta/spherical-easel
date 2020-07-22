@@ -126,16 +126,6 @@
         ></ToolButton>
       </v-btn-toggle>
     </div>
-
-    <!-- TODO: Move this into a tool tip somewhere. -->
-    <div class="ml-2" style="height:100%;">
-      <div>
-        <h3 class="body-1 font-weight-bold">{{ $t("toolGroups.KeyShortCut") }}</h3>
-        <ul>
-          <li>{{ $t("toolGroups.ResetSphereOrientation") }}</li>
-        </ul>
-      </div>
-    </div>
   </div>
 </template>
 
@@ -219,15 +209,16 @@ export default class ToolGroups extends Vue {
       toolGroup: "basic"
     },
     {
-      id: "advanced-0",
+      id: "basic-20",
       actionModeValue: "circle",
       displayedName: "CreateCircleDisplayedName",
       icon: "mdi-vector-circle-variant",
       toolTipMessage: "CreateCircleToolTipMessage",
       toolUseMessage: "CreateCircleToolUseMessage",
       displayToolUseMessage: false,
-      toolGroup: "advanced"
+      toolGroup: "basic"
     },
+
     {
       id: "edit-0",
       actionModeValue: "select",
@@ -288,6 +279,16 @@ export default class ToolGroups extends Vue {
       toolUseMessage: "ZoomFitToolUseMessage",
       displayToolUseMessage: false,
       toolGroup: "edit"
+    },
+    {
+      id: "construction-15",
+      actionModeValue: "antipodalPoint",
+      displayedName: "CreateAntipodalPointDisplayedName",
+      icon: "mdi-arrow-expand",
+      toolTipMessage: "CreateAntipodalPointToolTipMessage",
+      toolUseMessage: "CreateAntipodalPointToolUseMessage",
+      displayToolUseMessage: false,
+      toolGroup: "construction"
     },
     {
       id: "construction-45",

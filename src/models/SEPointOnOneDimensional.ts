@@ -15,11 +15,7 @@ export class SEPointOnOneDimensional extends SEPoint {
    * @param point the TwoJS point associated with this intersection
    * @param oneDimensionalParent The parent
    */
-  constructor(
-    point: Point,
-    oneDimensionalParent: SEOneDimensional
-    //    initialVector: Vector3
-  ) {
+  constructor(point: Point, oneDimensionalParent: SEOneDimensional) {
     super(point);
     this.ref = point;
     this.oneDimensionalParent = oneDimensionalParent;
