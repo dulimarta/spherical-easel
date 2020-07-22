@@ -70,11 +70,4 @@ export default class PointOnOneDimensionalHandler extends Highlighter {
     // Reset the oneDimensional in preparation for another intersection.
     this.oneDimensional = null;
   }
-  activate(): void {
-    // Unselect the selected objects and clear the selectedObject array
-    super.activate();
-  }
-  deactivate(): void {
-    super.deactivate();
-  }
 }

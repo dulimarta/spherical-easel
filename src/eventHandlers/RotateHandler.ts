@@ -286,7 +286,7 @@ export default class RotateHandler extends MouseHandler {
       }
     }
     // Unselect the selected objects and clear the selectedObject array
-    super.activate();
+    // super.activate();
   }
 
   deactivate(): void {

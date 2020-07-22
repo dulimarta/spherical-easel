@@ -87,11 +87,4 @@ export default class PointHandler extends Highlighter {
       this.isTemporaryPointAdded = false;
     }
   }
-  activate(): void {
-    // Unselect the selected objects and clear the selectedObject array
-    super.activate();
-  }
-  deactivate(): void {
-    super.deactivate();
-  }
 }

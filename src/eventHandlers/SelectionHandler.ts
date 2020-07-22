@@ -1,5 +1,7 @@
 import MouseHandler from "./MouseHandler";
 import { SENodule } from "@/models/SENodule";
+import { SECircle } from "@/models/SECircle";
+import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 // import { SEPoint } from "@/models/SEPoint";
 // import { SELine } from "@/models/SELine";
 // import { SESegment } from "@/models/SESegment";
@@ -47,7 +49,6 @@ export default class SelectionHandler extends MouseHandler {
 
   mousePressed(event: MouseEvent): void {
     if (!this.isOnSphere) return;
-    console.debug("Mouse pressed");
     // event.preventDefault();
     if (this.keyPressSelection.length != 0) {
       // Select all the objects in the keypress selection
@@ -130,20 +131,20 @@ export default class SelectionHandler extends MouseHandler {
     // this.hitSENodules.forEach(n =>
     //   console.log("hit object", n.name, n.selected)
     // );
-    // // Create an array of SENodules of all nearby objects by querying the store
-    // this.hitSENodules = this.store.getters
-    //   .findNearbyObjects(this.currentSphereVector, this.currentScreenVector)
-    //   .filter((n: SENodule) => {
-    //     if (n instanceof SEIntersectionPoint) {
-    //       if (!n.isUserCreated) {
-    //         return n.exists; //You always select automatically created intersection points if it exists
-    //       } else {
-    //         return n.showing && n.exists; //You can't select hidden objects or items that don't exist
-    //       }
-    //     } else {
-    //       return n.showing && n.exists; //You can't select hidden objects or items that don't exist
-    //     }
-    //   });
+    // Create an array of SENodules of all nearby objects by querying the store
+    this.hitSENodules = this.store.getters
+      .findNearbyObjects(this.currentSphereVector, this.currentScreenVector)
+      .filter((n: SENodule) => {
+        if (n instanceof SEIntersectionPoint) {
+          if (!n.isUserCreated) {
+            return n.exists; //You always select automatically created intersection points if it exists
+          } else {
+            return n.showing && n.exists; //You can't select hidden objects or items that don't exist
+          }
+        } else {
+          return n.showing && n.exists; //You can't select hidden objects or items that don't exist
+        }
+      });
   }
 
   mouseReleased(event: MouseEvent): void {
@@ -153,12 +154,6 @@ export default class SelectionHandler extends MouseHandler {
 
   activate(): void {
     window.addEventListener("keypress", this.keyPressHandler);
-    // Unselect all selected objects
-    this.store.getters.selectedObjects().forEach((obj: SENodule) => {
-      obj.selected = false;
-    });
-    // Clear the selected objects array
-    this.store.commit("setSelectedObjects", []);
     this.currentSelection.clear();
   }
 
@@ -167,6 +162,13 @@ export default class SelectionHandler extends MouseHandler {
       clearInterval(this.highlightTimer);
       this.highlightTimer = null;
     }
+    // Unselect all selected objects
+    this.store.getters.selectedObjects().forEach((obj: SENodule) => {
+      obj.selected = false;
+    });
+    // Clear the selected objects array
+    this.store.commit("setSelectedObjects", []);
+    this.currentSelection.clear();
     window.removeEventListener("keypress", this.keyPressHandler);
   }
 }

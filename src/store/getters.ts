@@ -68,7 +68,7 @@ function intersectLineWithLine(
   lineTwo: SELine
 ): IntersectionReturnType[] {
   const returnItems = [];
-  console.debug("Create 2 new Vector3()");
+  // console.debug("Create 2 new Vector3()");
   const intersection1: IntersectionReturnType = {
     vector: new Vector3(),
     exists: true
@@ -106,7 +106,7 @@ function intersectLineWithSegment(
   segment: SESegment
 ): IntersectionReturnType[] {
   const returnItems = [];
-  console.debug("Create 2 new Vector3()");
+  // console.debug("Create 2 new Vector3()");
   const intersection1: IntersectionReturnType = {
     vector: new Vector3(),
     exists: true
@@ -173,7 +173,7 @@ function intersectSegmentWithSegment(
   segment2: SESegment
 ): IntersectionReturnType[] {
   const returnItems = [];
-  console.debug("Create 2 new Vector3()");
+  // console.debug("Create 2 new Vector3()");
   const intersection1: IntersectionReturnType = {
     vector: new Vector3(),
     exists: true
@@ -257,7 +257,7 @@ function intersectCircles(
 ): IntersectionReturnType[] {
   //Initialize the items and the return items
   const returnItems = [];
-  console.debug("Create 2 new Vector3()");
+  // console.debug("Create 2 new Vector3()");
   const intersection1: IntersectionReturnType = {
     vector: new Vector3(),
     exists: true

@@ -1,36 +1,63 @@
 <template>
   <div>
+    Here we go!
     <span v-show="commonStyleProperties.length === 0" class="text-body-2">
       Please select object(s) to style
     </span>
     <fade-in-card :showWhen="hasColor">
       <span class="text-subtitle-2">Color</span>
-      <v-color-picker hide-inputs :disabled="colorApplyTo.length === 0"
-        v-model="selectedColor" @update:color="onColorChanged">
-      </v-color-picker>
+      <v-color-picker
+        hide-inputs
+        :disabled="colorApplyTo.length === 0"
+        v-model="selectedColor"
+        @update:color="onColorChanged"
+      ></v-color-picker>
       <span>Apply to:</span>
       <div>
-        <v-checkbox v-model="colorApplyTo" dense
-          v-for="(z, pos) in colorKeys" :key="pos" :label="z.label"
-          :value="z.value"></v-checkbox>
+        <v-checkbox
+          v-model="colorApplyTo"
+          dense
+          v-for="(z, pos) in colorKeys"
+          :key="pos"
+          :label="z.label"
+          :value="z.value"
+        ></v-checkbox>
       </div>
     </fade-in-card>
     <fade-in-card :showWhen="hasStrokeWidth">
       <span>Stroke Width</span>
-      <v-slider v-model.number="strokeWidth" :min="70" thumb-label="always"
-        @change="onLineWidthChanged" :max="130" type="range" class="mt-8">
+      <v-slider
+        v-model.number="strokeWidth"
+        :min="70"
+        thumb-label="always"
+        @change="onLineWidthChanged"
+        :max="130"
+        type="range"
+        class="mt-8"
+      >
         <template v-slot:thumb-label="{ value }">
-          {{  value + "%" }}
+          {{ value + "%" }}
         </template>
       </v-slider>
     </fade-in-card>
     <fade-in-card :showWhen="hasDash">
       <span>Dash Pattern ({{ dashLength }}/{{ gapLength }})</span>
-      <v-slider min="5" max="15" v-model.number="dashLength"
-        persistent-hint hint="Dash length" @change="onDashPatternChanged">
-      </v-slider>
-      <v-slider min="5" max="15" v-model.number="gapLength" persistent-hint
-        hint="Gap length" @change="onDashPatternChanged"></v-slider>
+      <v-slider
+        min="5"
+        max="15"
+        v-model.number="dashLength"
+        persistent-hint
+        hint="Dash length"
+        @change="onDashPatternChanged"
+      ></v-slider>
+      <v-slider
+        min="5"
+        max="15"
+        v-model.number="gapLength"
+        persistent-hint
+        hint="Gap length"
+        @change="onDashPatternChanged"
+      ></v-slider>
     </fade-in-card>
   </div>
 </template>
@@ -142,7 +169,7 @@ export default class FrontStyle extends Vue {
     return this.hasStyles(Styles.dashPattern);
   }
 
-  @Watch("selections", { deep: true })
+  @Watch("selections")
   onSelectionChanged(newSelection: SENodule[]): void {
     // newSelection.forEach(s => {
     // console.debug("Set ", s.customStyles());

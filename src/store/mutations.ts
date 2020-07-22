@@ -193,10 +193,8 @@ export default {
     state.segments[pos].accept(segmentNormalArcLengthVisitor);
   },
   setSelectedObjects(state: AppState, payload: SENodule[]): void {
-    state.selections.clear();
-    payload.forEach((n: SENodule) => {
-      state.selections.push(n);
-    });
+    state.selections.splice(0);
+    state.selections.push(...payload);
   },
   // TODO: combine the following changeXXXX functions
   changeStrokeWidth(state: AppState, percent: number): void {
