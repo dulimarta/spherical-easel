@@ -3,7 +3,7 @@
     :default-percent="toolboxMinified ? 5 : 20" @resize="leftDividerMoved">
     <!-- Use the left page for the toolbox -->
     <template slot="paneL">
-      <div id="container" class="green">
+      <div id="container">
         <v-btn icon @click="minifyToolbox">
           <v-icon v-if="toolboxMinified">mdi-arrow-right</v-icon>
           <v-icon v-else>mdi-arrow-left</v-icon>
