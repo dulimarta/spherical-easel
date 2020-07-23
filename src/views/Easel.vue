@@ -1,19 +1,15 @@
 <template>
-  <split-pane
-    split="vertical"
-    :min-percent="15"
-    :max-percent="35"
-    :default-percent="toolboxMinified ? 5 : 20"
-    @resize="leftDividerMoved"
-  >
+  <split-pane split="vertical" :min-percent="15" :max-percent="35"
+    :default-percent="toolboxMinified ? 5 : 20" @resize="leftDividerMoved">
     <!-- Use the left page for the toolbox -->
     <template slot="paneL">
-      <div id="container">
+      <div id="container" class="green">
         <v-btn icon @click="minifyToolbox">
           <v-icon v-if="toolboxMinified">mdi-arrow-right</v-icon>
           <v-icon v-else>mdi-arrow-left</v-icon>
         </v-btn>
-        <toolbox ref="toolbox" :minified="toolboxMinified"></toolbox>
+        <toolbox style="width:100%" ref="toolbox"
+          :minified="toolboxMinified"></toolbox>
       </div>
     </template>
 
@@ -23,25 +19,19 @@
         When minified, the style panel takes only 5% of the remaining width
         When expanded, it takes 30% of the remaining width
       -->
-      <split-pane
-        split="vertical"
-        @resize="rightDividerMoved"
-        :default-percent="stylePanelMinified ? 95 : 70"
-      >
+      <split-pane split="vertical" @resize="rightDividerMoved"
+        :default-percent="stylePanelMinified ? 95 : 70">
         <template slot="paneL">
           <v-container fluid ref="mainPanel">
             <v-row>
               <v-col cols="12">
                 <v-row justify="center" class="pb-1">
-                  <v-responsive
-                    :aspect-ratio="1"
+                  <v-responsive :aspect-ratio="1"
                     :max-height="currentCanvasSize"
-                    :max-width="currentCanvasSize"
-                    ref="responsiveBox"
-                    id="responsiveBox"
-                    class="pa-0"
-                  >
-                    <sphere-frame :canvas-size="currentCanvasSize"></sphere-frame>
+                    :max-width="currentCanvasSize" ref="responsiveBox"
+                    id="responsiveBox" class="pa-0">
+                    <sphere-frame :canvas-size="currentCanvasSize">
+                    </sphere-frame>
                     <div class="anchored top left">
                       <!-- <v-btn-toggle
                     v-model="actionMode"
@@ -50,11 +40,8 @@
                   >
                     <ToolButton :key="80" :button="buttonList[8]"></ToolButton>
                       </v-btn-toggle>-->
-                      <v-tooltip
-                        bottom
-                        :open-delay="toolTipOpenDelay"
-                        :close-delay="toolTipCloseDelay"
-                      >
+                      <v-tooltip bottom :open-delay="toolTipOpenDelay"
+                        :close-delay="toolTipCloseDelay">
                         <!-- TODO:   
                         When not available they should be greyed out (i.e. disabled).-->
                         <template v-slot:activator="{ on }">
@@ -64,11 +51,8 @@
                         </template>
                         <span>{{ $t("main.UndoLastAction") }}</span>
                       </v-tooltip>
-                      <v-tooltip
-                        bottom
-                        :open-delay="toolTipOpenDelay"
-                        :close-delay="toolTipCloseDelay"
-                      >
+                      <v-tooltip bottom :open-delay="toolTipOpenDelay"
+                        :close-delay="toolTipCloseDelay">
                         <template v-slot:activator="{ on }">
                           <v-btn icon @click="redoAction" v-on="on">
                             <v-icon>mdi-redo</v-icon>
@@ -78,37 +62,31 @@
                       </v-tooltip>
                     </div>
                     <div class="anchored bottom right">
-                      <v-tooltip
-                        bottom
-                        :open-delay="toolTipOpenDelay"
-                        :close-delay="toolTipCloseDelay"
-                      >
+                      <v-tooltip bottom :open-delay="toolTipOpenDelay"
+                        :close-delay="toolTipCloseDelay">
                         <template v-slot:activator="{ on }">
-                          <v-btn color="primary" icon tile @click="enableZoomIn" v-on="on">
+                          <v-btn color="primary" icon tile
+                            @click="enableZoomIn" v-on="on">
                             <v-icon>mdi-magnify-plus-outline</v-icon>
                           </v-btn>
                         </template>
                         <span>{{ $t("buttons.PanZoomInToolTipMessage") }}</span>
                       </v-tooltip>
-                      <v-tooltip
-                        bottom
-                        :open-delay="toolTipOpenDelay"
-                        :close-delay="toolTipCloseDelay"
-                      >
+                      <v-tooltip bottom :open-delay="toolTipOpenDelay"
+                        :close-delay="toolTipCloseDelay">
                         <template v-slot:activator="{ on }">
-                          <v-btn color="primary" icon tile @click="enableZoomOut" v-on="on">
+                          <v-btn color="primary" icon tile
+                            @click="enableZoomOut" v-on="on">
                             <v-icon>mdi-magnify-minus-outline</v-icon>
                           </v-btn>
                         </template>
                         <span>{{ $t("buttons.PanZoomOutToolTipMessage") }}</span>
                       </v-tooltip>
-                      <v-tooltip
-                        bottom
-                        :open-delay="toolTipOpenDelay"
-                        :close-delay="toolTipCloseDelay"
-                      >
+                      <v-tooltip bottom :open-delay="toolTipOpenDelay"
+                        :close-delay="toolTipCloseDelay">
                         <template v-slot:activator="{ on }">
-                          <v-btn color="primary" icon tile @click="enableZoomFit" v-on="on">
+                          <v-btn color="primary" icon tile
+                            @click="enableZoomFit" v-on="on">
                             <v-icon>mdi-magnify-scan</v-icon>
                           </v-btn>
                         </template>
@@ -119,16 +97,12 @@
                 </v-row>
               </v-col>
             </v-row>
-            <v-snackbar
-              v-model="displayZoomInToolUseMessage"
-              bottom
-              left
-              :timeout="toolUseMessageDelay"
-              :value="displayToolUseMessage"
-              multi-line
-            >
+            <v-snackbar v-model="displayZoomInToolUseMessage" bottom left
+              :timeout="toolUseMessageDelay" :value="displayToolUseMessage"
+              multi-line>
               <span>
-                <strong class="warning--text">{{ $t("buttons.PanZoomInDisplayedName") + ": " }}</strong>
+                <strong
+                  class="warning--text">{{ $t("buttons.PanZoomInDisplayedName") + ": " }}</strong>
                 {{ $t("buttons.PanZoomInToolUseMessage") }}
               </span>
               <v-btn @click="displayToolUseMessage = false" icon>
@@ -136,16 +110,12 @@
               </v-btn>
             </v-snackbar>
 
-            <v-snackbar
-              v-model="displayZoomFitToolUseMessage"
-              bottom
-              left
-              :timeout="toolUseMessageDelay"
-              :value="displayToolUseMessage"
-              multi-line
-            >
+            <v-snackbar v-model="displayZoomFitToolUseMessage" bottom left
+              :timeout="toolUseMessageDelay" :value="displayToolUseMessage"
+              multi-line>
               <span>
-                <strong class="warning--text">{{ $t("buttons.ZoomFitDisplayedName") + ": " }}</strong>
+                <strong
+                  class="warning--text">{{ $t("buttons.ZoomFitDisplayedName") + ": " }}</strong>
                 {{ $t("buttons.ZoomFitToolUseMessage") }}
               </span>
               <v-btn @click="displayToolUseMessage = false" icon>
@@ -153,16 +123,12 @@
               </v-btn>
             </v-snackbar>
 
-            <v-snackbar
-              v-model="displayZoomOutToolUseMessage"
-              bottom
-              left
-              :timeout="toolUseMessageDelay"
-              :value="displayToolUseMessage"
-              multi-line
-            >
+            <v-snackbar v-model="displayZoomOutToolUseMessage" bottom left
+              :timeout="toolUseMessageDelay" :value="displayToolUseMessage"
+              multi-line>
               <span>
-                <strong class="warning--text">{{ $t("buttons.PanZoomOutDisplayedName") + ": " }}</strong>
+                <strong
+                  class="warning--text">{{ $t("buttons.PanZoomOutDisplayedName") + ": " }}</strong>
                 {{ $t("buttons.PanZoomOutToolUseMessage") }}
               </span>
               <v-btn @click="displayToolUseMessage = false" icon>
@@ -180,6 +146,7 @@
               </v-btn>
             </div>
             <style-panel :minified="stylePanelMinified"></style-panel>
+
           </div>
         </template>
       </split-pane>
@@ -198,14 +165,16 @@ import SphereFrame from "@/components/SphereFrame.vue";
 import { Command } from "@/commands/Command";
 import SETTINGS from "@/global-settings";
 import EventBus from "../eventHandlers/EventBus";
-import { SEPoint } from "@/models/SEPoint";
-import { SELine } from "@/models/SELine";
+// import { SEPoint } from "@/models/SEPoint";
+// import { SELine } from "@/models/SELine";
 import buttonList from "@/components/ToolGroups.vue";
 import ToolButton from "@/components/ToolButton.vue";
 import StylePanel from "@/components/Style.vue";
 import { SECircle } from "../models/SECircle";
-import { SESegment } from "../models/SESegment";
+// import { SESegment } from "../models/SESegment";
 import Circle from "@/plottables/Circle";
+import { State } from 'vuex-class';
+import { SENodule } from '../models/SENodule';
 
 // import { getModule } from "vuex-module-decorators";
 // import UI from "@/store/ui-styles";
@@ -220,6 +189,19 @@ import Circle from "@/plottables/Circle";
   components: { SplitPane, Toolbox, SphereFrame, ToolButton, StylePanel }
 })
 export default class Easel extends Vue {
+
+  @State
+  readonly points!: SENodule[];
+
+  @State
+  readonly lines!: SENodule[];
+
+  @State
+  readonly segments!: SENodule[];
+
+  @State
+  readonly circles!: SENodule[];
+
   // readonly UIModule = getModule(UI, this.$store);
   private availHeight = 0; // Both split panes are sandwiched between the app bar and footer. This variable hold the number of pixels available for canvas height
   private currentCanvasSize = 0; // Result of height calculation will be passed to <v-responsive> via this variable

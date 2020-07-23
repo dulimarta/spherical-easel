@@ -1,34 +1,27 @@
 <template>
-  <div class="pa-1" id="objectTreeContainer">
-    <h4>{{ $t("objects.points") }}</h4>
-    <v-treeview
-      dense
-      hoverable
-      activatable
-      selectable
-      active-class="warning"
-      :items="iPoints"
-      v-model="selection"
-      @update:active="updateActive"
-    ></v-treeview>
-    <h4>{{ $t("objects.lines") }}</h4>
-    <v-treeview
-      dense
-      hoverable
-      activatable
-      active-class="warning"
-      :items="iLines"
-      @update:active="updateActive"
-    ></v-treeview>
-    <h4>{{ $t("objects.circles") }}</h4>
-    <v-treeview
-      dense
-      hoverable
-      activatable
-      active-class="warning"
-      :items="iCircles"
-      @update:active="updateActive"
-    ></v-treeview>
+  <div class="pa-0" id="objectTreeContainer">
+    <v-virtual-scroll :item-height="20" height="500">
+      <v-sheet rounded :elevation="4" class="my-2">
+        <SENoduleTree label="Points" :nodes="points" :depth="0"
+          show-children="true">
+        </SENoduleTree>
+      </v-sheet>
+      <v-sheet rounded :elevation="4" class="my-2">
+        <SENoduleTree label="Lines" :nodes="lines" :depth="0"
+          show-children>
+        </SENoduleTree>
+      </v-sheet>
+      <v-sheet rounded :elevation="4" class="my-2">
+        <SENoduleTree label="Segments" :nodes="segments" :depth="0"
+          show-children>
+        </SENoduleTree>
+      </v-sheet>
+      <v-sheet rounded :elevation="4" class="my-2">
+        <SENoduleTree label="Circles" :nodes="circles" :depth="0"
+          show-children>
+        </SENoduleTree>
+      </v-sheet>
+    </v-virtual-scroll>
   </div>
 </template>
 
@@ -39,95 +32,34 @@ import { State } from "vuex-class";
 
 // import { Mesh, MeshPhongMaterial } from "three";
 import Two from "two.js";
+import SENoduleTree from "@/components/SENoduleTree.vue"
 import { SEPoint } from "@/models/SEPoint";
-import { SELine } from "@/models/SELine";
-import { SECircle } from "@/models/SECircle";
 import { SENodule } from "@/models/SENodule";
-import { SESegment } from "../models/SESegment";
-// import Point from "@/plotables/Point";
 
-@Component
+@Component({ components: { SENoduleTree } })
 export default class ObjectTree extends Vue {
   private selectedPoint: SEPoint | null = null;
   private selectedObject: SENodule | null = null;
   private selection = [];
 
   @State
-  private points!: SEPoint[];
+  readonly points!: SENodule[];
 
   @State
-  private lines!: SELine[];
+  readonly lines!: SENodule[];
 
   @State
-  private circles!: SECircle[];
+  readonly segments!: SENodule[];
 
-  @State("plottables")
-  private allObjects!: SENodule[];
+  @State
+  readonly circles!: SENodule[];
+
 
   private oldFillColor: Two.Color | undefined = undefined;
 
   // TODO: the getter function seems to be sluggish?
-  get iPoints(): any[] {
-    return this.points.map((z: SEPoint) => ({
-      id: z.id,
-      name: z.name,
-      children: [
-        {
-          id: 0,
-          name: "Connected Lines",
-          children: z.kids
-            .filter((n: SENodule) => n instanceof SELine)
-            .map((x: SENodule) => ({
-              id: x.id,
-              name: x.name
-            }))
-        },
-        {
-          id: 1,
-          name: "Connected Segments",
-          children: z.kids
-            .filter((n: SENodule) => n instanceof SESegment)
-            .map((x: SENodule) => ({
-              id: x.id,
-              name: x.name
-            }))
-        },
-        {
-          id: 2,
-          name: "Connected Circles",
-          children: z.kids
-            .filter((n: SENodule) => n instanceof SECircle)
-            .map((x: SENodule) => ({
-              id: x.id,
-              name: x.name
-            }))
-        }
-      ] /* remove node with empty children*/
-        .filter(c => c.children.length > 0)
-    }));
-  }
 
-  get iLines(): any[] {
-    return this.lines.map((z: SELine) => ({
-      id: z.id,
-      name: z.name,
-      children: [
-        // { id: z.start?.ref.id, name: "Start:" + z.start?.ref.name },
-        // { id: z.end?.ref.id, name: "End:" + z.end?.ref.name }
-      ]
-    }));
-  }
 
-  get iCircles(): any[] {
-    return this.circles.map(r => ({
-      id: r.id,
-      name: r.name
-      // children: [
-      //   { id: r.center.id, name: "Center:" + r.center.name },
-      //   { id: r.point.id, name: "Point:" + r.point.name }
-      // ]
-    }));
-  }
 
   updateActive(args: number[]): void {
     console.debug("Updating point selection(s)", args);
@@ -136,28 +68,29 @@ export default class ObjectTree extends Vue {
     }
     this.selectedObject = null;
     if (args.length > 0) {
-      const pos = this.allObjects.findIndex(v => v.id === args[0]);
-      if (pos >= 0) {
-        this.selectedObject = this.allObjects[pos];
-        (this.selectedObject as any).ref.glowStyle();
-        // this.selectedPoint.children.forEach((n: SENodule) => {
-        //   if (n instanceof SELine) {
-        //     n.ref.glowStyle();
-        //   } else if (n instanceof SESegment) {
-        //     n.ref.glowStyle();
-        //   } else if (n instanceof SECircle) {
-        //     n.ref.glowStyle();
-        //   }
-        // })
-      }
+      // const pos = this.allObjects.findIndex(v => v.id === args[0]);
+      // if (pos >= 0) {
+      //   this.selectedObject = this.allObjects[pos];
+      //   (this.selectedObject as any).ref.glowStyle();
+      // this.selectedPoint.children.forEach((n: SENodule) => {
+      //   if (n instanceof SELine) {
+      //     n.ref.glowStyle();
+      //   } else if (n instanceof SESegment) {
+      //     n.ref.glowStyle();
+      //   } else if (n instanceof SECircle) {
+      //     n.ref.glowStyle();
+      //   }
+      // })
     }
   }
 }
+
 </script>
 
 <style lang="scss">
 #objectTreeContainer {
-  padding: 0.5em;
+  padding: 0;
+  width: 100%;
   overflow: scroll;
 }
 </style>
