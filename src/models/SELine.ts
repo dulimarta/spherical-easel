@@ -7,7 +7,7 @@ import { SEPoint } from "./SEPoint";
 import SETTINGS from "@/global-settings";
 import { OneDimensional } from "@/types";
 import { Styles } from "@/types/Styles";
-import { SaveStateMode, SaveStateType } from "@/types";
+import { UpdateMode, UpdateStateType, LineState } from "@/types";
 
 /** Temporary vectors to help with calculations */
 const tmpVector = new Vector3(); //
@@ -110,7 +110,7 @@ export class SELine extends SENodule implements Visitable, OneDimensional {
     }
   }
 
-  public update(state: SaveStateType): void {
+  public update(state: UpdateStateType): void {
     // If any one parent is not up to date, don't do anything
     if (!this.canUpdateNow()) {
       return;
@@ -118,7 +118,6 @@ export class SELine extends SENodule implements Visitable, OneDimensional {
     this.setOutOfDate(false);
     this._exists = this._startSEPoint.exists && this._endSEPoint.exists;
     if (this._exists) {
-      console.debug("Updating line", this.name);
       // Given an set of this.startPoint, this.endPoint and (old) this.normalVector, and compute the next normal vector
       // Compute a temporary normal from the two points
       tmpVector.crossVectors(
@@ -149,29 +148,21 @@ export class SELine extends SENodule implements Visitable, OneDimensional {
     } else {
       this.ref.setVisible(false);
     }
-    // Record the state of the object in state.stateArray
-    switch (state.mode) {
-      case SaveStateMode.UndoMove: {
-        // If the parent points of the line are antipodal, the normal vector determines the
-        // location of the line.  This could be the case during a move therefore store normal vector
-        // in stateArray for undo move. (No need to store the parent points, they will be updated on their own
-        // before this line is updated.) Store the coordinate values of the vector and not the point to the vector.
-        state.stateArray.push({
-          kind: "line",
-          object: this,
-          normalVectorX: this._normalVector.x,
-          normalVectorY: this._normalVector.y,
-          normalVectorZ: this._normalVector.z
-        });
-        break;
-      }
-      case SaveStateMode.UndoDelete: {
-        break;
-      }
-      // The DisplayOnly case fall through and does nothing
-      case SaveStateMode.DisplayOnly:
-      default:
-        break;
+    // Create a line state for a Move or delete if necessary
+    if (state.mode == UpdateMode.RecordState) {
+      // If the parent points of the segment are antipodal, the normal vector determines the
+      // plane of the segment.  The points also don't determine the arcLength of the segments.
+      // Both of these quantities could change during a move therefore store normal vector and arcLength
+      // in stateArray for undo move. (No need to store the parent points, they will be updated on their own
+      // before this line is updated.) Store the coordinate values of the vector and not the point to the vector.
+      const segState: LineState = {
+        kind: "line",
+        object: this,
+        normalVectorX: this._normalVector.x,
+        normalVectorY: this._normalVector.y,
+        normalVectorZ: this._normalVector.z
+      };
+      state.stateArray.push(segState);
     }
     this.updateKids(state);
   }
@@ -215,11 +206,11 @@ export class SELine extends SENodule implements Visitable, OneDimensional {
         this.endSEPoint.locationVector = tmpVector2;
         // Update both points, because we might need to update their kids!
         this.endSEPoint.update({
-          mode: SaveStateMode.DisplayOnly,
+          mode: UpdateMode.DisplayOnly,
           stateArray: []
         });
         this.startSEPoint.update({
-          mode: SaveStateMode.DisplayOnly,
+          mode: UpdateMode.DisplayOnly,
           stateArray: []
         });
       }
@@ -258,13 +249,27 @@ export class SELine extends SENodule implements Visitable, OneDimensional {
 
       // Rotate the freeEnd by the rotation angle around the axisOfRotation
       const axisOfRotation = pivot.locationVector;
-      tmpVector1.copy(freeEnd.locationVector);
-      tmpVector1.applyAxisAngle(axisOfRotation, rotationAngle);
-      freeEnd.locationVector = tmpVector1;
-      console.debug("free End kid", freeEnd.kids[0].name);
-      console.debug("pivot kid", pivot.kids[0].name);
-      freeEnd.update({ mode: SaveStateMode.DisplayOnly, stateArray: [] });
-      pivot.update({ mode: SaveStateMode.DisplayOnly, stateArray: [] });
+      // Test for antipodal endpoints
+      if (
+        tmpVector1
+          .addVectors(freeEnd.locationVector, pivot.locationVector)
+          .isZero()
+      ) {
+        // Set the direction of the rotation correctly for moving the normalVector
+        rotationAngle *= currentSphereVector.z < 0 ? -1 : 1;
+        // If the end points are antipodal move the normal vector
+        tmpVector1.copy(this.normalVector);
+        tmpVector1.applyAxisAngle(axisOfRotation, rotationAngle);
+        this.normalVector = tmpVector1;
+        this.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
+      } else {
+        // For non-antipodal points move the freeEnd
+        tmpVector1.copy(freeEnd.locationVector);
+        tmpVector1.applyAxisAngle(axisOfRotation, rotationAngle);
+        freeEnd.locationVector = tmpVector1;
+        freeEnd.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
+        pivot.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
+      }
     }
   }
 }

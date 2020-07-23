@@ -7,7 +7,7 @@ import { Visitor } from "@/visitors/Visitor";
 import { OneDimensional } from "@/types";
 import SETTINGS from "@/global-settings";
 import { Styles } from "@/types/Styles";
-import { SaveStateMode, SaveStateType } from "@/types";
+import { UpdateMode, UpdateStateType, CircleState } from "@/types";
 
 /** Use in the rotation matrix during a move event */
 const desiredZAxis = new Vector3();
@@ -89,7 +89,7 @@ export class SECircle extends SENodule implements Visitable, OneDimensional {
     );
   }
 
-  public update(state: SaveStateType): void {
+  public update(state: UpdateStateType): void {
     // If any one parent is not up to date, don't do anything
     if (!this.canUpdateNow()) {
       return;
@@ -113,22 +113,18 @@ export class SECircle extends SENodule implements Visitable, OneDimensional {
     } else {
       this.ref.setVisible(false);
     }
-    // Record the state of the object in state.stateArray
-    switch (state.mode) {
-      case SaveStateMode.UndoMove: {
-        // These circles are completely determined by their point parents and an update on the parents
-        // will cause this circle to be put into the correct location. Therefore there is no need to
-        // store it in the stateArray for undo move.
-        break;
-      }
-      case SaveStateMode.UndoDelete: {
-        break;
-      }
-      // The DisplayOnly case fall through and does nothing
-      case SaveStateMode.DisplayOnly:
-      default:
-        break;
+    // These circles are completely determined by their point parents and an update on the parents
+    // will cause this circle to be put into the correct location. Therefore there is no need to
+    // store it in the stateArray for undo move. Only store for delete
+
+    if (state.mode == UpdateMode.RecordState) {
+      const pointState: CircleState = {
+        kind: "circle",
+        object: this
+      };
+      state.stateArray.push(pointState);
     }
+
     this.updateKids(state);
   }
 
@@ -198,11 +194,11 @@ export class SECircle extends SENodule implements Visitable, OneDimensional {
       this.circleSEPoint.locationVector = tmpVector;
       // Update both points, because we might need to update their kids!
       this.circleSEPoint.update({
-        mode: SaveStateMode.DisplayOnly,
+        mode: UpdateMode.DisplayOnly,
         stateArray: []
       });
       this.centerSEPoint.update({
-        mode: SaveStateMode.DisplayOnly,
+        mode: UpdateMode.DisplayOnly,
         stateArray: []
       });
     }

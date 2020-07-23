@@ -5,7 +5,7 @@ import { SENodule } from "./SENodule";
 import { Vector3 } from "three";
 import SETTINGS from "@/global-settings";
 import { Styles } from "@/types/Styles";
-import { SaveStateMode, SaveStateType } from "@/types";
+import { UpdateMode, UpdateStateType, PointState } from "@/types";
 
 let POINT_COUNT = 0;
 const styleSet = new Set([
@@ -38,7 +38,7 @@ export class SEPoint extends SENodule implements Visitable {
     return styleSet;
   }
 
-  public update(state: SaveStateType): void {
+  public update(state: UpdateStateType): void {
     // If any one parent is not up to date, don't do anything
     if (!this.canUpdateNow()) {
       return;
@@ -55,28 +55,23 @@ export class SEPoint extends SENodule implements Visitable {
     } else {
       this.ref.setVisible(false);
     }
-    // Record the state of the object in state.stateArray
+    // Record the state of the object in state.stateArray if necessary
     //#region saveState
-    switch (state.mode) {
-      case SaveStateMode.UndoMove: {
-        // Free points are can be moved, therefore store their location in the stateArray for undo move.
-        // Store the coordinate values of the vector and not the point to the vector.
-        state.stateArray.push({
-          kind: "point",
-          object: this,
-          locationVectorX: this._locationVector.x,
-          locationVectorY: this._locationVector.y,
-          locationVectorZ: this._locationVector.z
-        });
-        break;
-      }
-      case SaveStateMode.UndoDelete: {
-        break;
-      }
-      // The DisplayOnly case fall through and does nothing
-      case SaveStateMode.DisplayOnly:
-      default:
-        break;
+    // Create a point state for a Move or delete if necessary
+    if (state.mode == UpdateMode.RecordState) {
+      // If the parent points of the segment are antipodal, the normal vector determines the
+      // plane of the segment.  The points also don't determine the arcLength of the segments.
+      // Both of these quantities could change during a move therefore store normal vector and arcLength
+      // in stateArray for undo move. (No need to store the parent points, they will be updated on their own
+      // before this line is updated.) Store the coordinate values of the vector and not the point to the vector.
+      const pointState: PointState = {
+        kind: "point",
+        locationVectorX: this._locationVector.x,
+        locationVectorY: this._locationVector.y,
+        locationVectorZ: this._locationVector.z,
+        object: this
+      };
+      state.stateArray.push(pointState);
     }
     //#endregion saveState
     this.updateKids(state);

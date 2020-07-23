@@ -19,6 +19,7 @@ import Highlighter from "./Highlighter";
 import { ConvertInterPtToUserCreatedCommand } from "@/commands/ConvertInterPtToUserCreatedCommand";
 import { SEOneDimensional, SEIntersectionReturnType } from "@/types";
 import { SEPointOnOneDimensional } from "@/models/SEPointOnOneDimensional";
+import { UpdateMode, UpdateStateType } from "@/types";
 
 export default class SegmentHandler extends Highlighter {
   /**
@@ -554,7 +555,10 @@ export default class SegmentHandler extends Highlighter {
           object2
         );
         // Update the newSECircle so the display is correct when the command group is executed
-        newSESegment.update();
+        newSESegment.update({
+          mode: UpdateMode.DisplayOnly,
+          stateArray: []
+        });
 
         const segmentCommandGroup = new CommandGroup();
         segmentCommandGroup.addCommand(

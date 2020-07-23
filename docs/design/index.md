@@ -266,12 +266,16 @@ This allows us use the <span class="method">update</span> method to update the <
 
 <<< @/src/models/SEPoint.ts#saveState
 
-This stores the location of the point and not a pointer to the location which would not change during the move! Note that the <span class="method">update</span> method does a topological sort on the directed acyclic graph [Data Structure](/design/#data-structure) so the point parents of an object are updated before a ond dimensional object is updated. Therefore it is not necessary to store any information about the object that is not captured by the parent points and will be restored with a <span class="method">update</span> display only method call like
+This stores the location of the point and not a pointer to the location which would not change during the move! Note that the <span class="method">update</span> method does a topological sort on the directed acyclic graph [Data Structure](/design/#data-structure) so the parents of an object are updated before the object itself. Thus the point parents of a one dimensional object are correctly updated before the one ddimensionalobject itself. Therefore it is not necessary to store any information about the object that is not captured by the parent points and will be restored with a <span class="method">update</span> display only method call like
 
 <<< @/src/eventHandlers/MoveHandler.ts#displayOnlyUpdate
 
-Hence nothing is stored in the <span class="variable">stateArray</span> for <span class="class">SECircle</span> or <span class="class">SEIntersectionPoint</span> classes. Once the before and after <span class="variable">stateArray</span> has been created, the <span class="class">MoveHandler</span> creates a command group to store all the move points, lines and segments commands. The <span class="command">MovePointCommand</span>, <span class="command">MoveLineCommand</span>, and <span class="command">MoveSegmentCommand</span>> classes issue mutations
-to the store and then uses [Visitors](/design/#visitor-and-event-bus-actions) to actually change the location of points, normal vectors of lines and line segments, and arc length of line segments.
+Hence nothing is stored in the <span class="variable">stateArray</span> for <span class="class">SECircle</span> or <span class="class">SEIntersectionPoint</span> classes. Once the before and after <span class="variable">stateArray</span> has been created, the <span class="class">MoveHandler</span> creates a command group to store all the move points, lines and segments commands. The <span class="command">MovePointCommand</span>, <span class="command">MoveLineCommand</span>, and <span class="command">MoveSegmentCommand</span> classes issue mutations
+to the store which then uses [Visitors](/design/#visitor-and-event-bus-actions) to actually change the location of points, normal vectors of lines and line segments, and arc length of line segments. The <span class="type">ObjectSaveState</span> type and the interfaces like <span class="interface">LineSaveState</span>, <span class="interface">SegmentSaveState</span>, <span class="interface">PointSaveState</span> in the <span class="directory">types</span> directory give an idea of the information that must be stored in order to undo a <span class="method">move</span>
+
+### Delete Handler
+
+### Other Handlers
 
 [Here are details about the implementation of some of the Handlers](./handlers/edit.md)
 

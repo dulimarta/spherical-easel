@@ -5,8 +5,8 @@ import { Visitable } from "@/visitors/Visitable";
 import { Visitor } from "@/visitors/Visitor";
 import { SEPoint } from "./SEPoint";
 import SETTINGS from "@/global-settings";
-import { OneDimensional } from "@/types";
-import { SaveStateMode, SaveStateType } from "@/types";
+import { OneDimensional, SegmentState } from "@/types";
+import { UpdateMode, UpdateStateType } from "@/types";
 
 import { Styles } from "@/types/Styles";
 
@@ -96,7 +96,7 @@ export class SESegment extends SENodule implements Visitable, OneDimensional {
     return this._endSEPoint;
   }
 
-  // Used in the SegmentNormalArcLengthVisitor and MoveSegmentCommand
+  // Used in the SegmentNormalArcLengthVisitor and MoveSegmentCommand (and move when the endpoints are antipodal)
   // Use with caution! The normal vector is normal computed from the startSEPoint and old normal vector
   set normalVector(normal: Vector3) {
     this._normalVector.copy(normal);
@@ -190,7 +190,7 @@ export class SESegment extends SENodule implements Visitable, OneDimensional {
     }
   }
 
-  public update(state: SaveStateType): void {
+  public update(state: UpdateStateType): void {
     // If any one parent is not up to date, don't do anything
     if (!this.canUpdateNow()) {
       return;
@@ -288,38 +288,29 @@ export class SESegment extends SENodule implements Visitable, OneDimensional {
     } else {
       this.ref.setVisible(false);
     }
-    // Record the state of the object in state.stateArray
-    switch (state.mode) {
-      case SaveStateMode.UndoMove: {
-        // If the parent points of the segment are antipodal, the normal vector determines the
-        // plane of the segment.  The points also don't determine the arcLength of the segments.
-        // Both of these quantities could change during a move therefore store normal vector and arcLength
-        // in stateArray for undo move. (No need to store the parent points, they will be updated on their own
-        // before this line is updated.) Store the coordinate values of the vector and not the point to the vector.
-        state.stateArray.push({
-          kind: "segment",
-          object: this,
-          normalVectorX: this._normalVector.x,
-          normalVectorY: this._normalVector.y,
-          normalVectorZ: this._normalVector.z,
-          arcLength: this._arcLength
-        });
-        break;
-        break;
-      }
-      case SaveStateMode.UndoDelete: {
-        break;
-      }
-      // The DisplayOnly case fall through and does nothing
-      case SaveStateMode.DisplayOnly:
-      default:
-        break;
+    // Record the segment state for a Move or delete if necessary
+    if (state.mode == UpdateMode.RecordState) {
+      // If the parent points of the segment are antipodal, the normal vector determines the
+      // plane of the segment.  The points also don't determine the arcLength of the segments.
+      // Both of these quantities could change during a move therefore store normal vector and arcLength
+      // in stateArray for undo move. (No need to store the parent points, they will be updated on their own
+      // before this line is updated.) Store the coordinate values of the vector and not the pointer to the vector.
+      const segState: SegmentState = {
+        kind: "segment",
+        object: this,
+        normalVectorX: this._normalVector.x,
+        normalVectorY: this._normalVector.y,
+        normalVectorZ: this._normalVector.z,
+        arcLength: this._arcLength
+      };
+      state.stateArray.push(segState);
     }
+
     this.updateKids(state);
   }
 
   /**
-   * Move the line
+   * Move the segment
    * @param currentSphereVector The current location of the mouse
    * @param previousSphereVector The previous location of the mouse
    * @param altKeyPressed Controls which point defining the line or segment the line or segment rotates about
@@ -357,11 +348,11 @@ export class SESegment extends SENodule implements Visitable, OneDimensional {
         this.endSEPoint.locationVector = tmpVector2;
         // Update both points, because we might need to update their kids!
         this.endSEPoint.update({
-          mode: SaveStateMode.DisplayOnly,
+          mode: UpdateMode.DisplayOnly,
           stateArray: []
         });
         this.startSEPoint.update({
-          mode: SaveStateMode.DisplayOnly,
+          mode: UpdateMode.DisplayOnly,
           stateArray: []
         });
       }
@@ -400,13 +391,27 @@ export class SESegment extends SENodule implements Visitable, OneDimensional {
 
       // Rotate the freeEnd by the rotation angle around the axisOfRotation
       const axisOfRotation = pivot.locationVector;
-      tmpVector1.copy(freeEnd.locationVector);
-      tmpVector1.applyAxisAngle(axisOfRotation, rotationAngle);
-      freeEnd.locationVector = tmpVector1;
-      console.debug("free End kid", freeEnd.kids[0].name);
-      console.debug("pivot kid", pivot.kids[0].name);
-      freeEnd.update({ mode: SaveStateMode.DisplayOnly, stateArray: [] });
-      pivot.update({ mode: SaveStateMode.DisplayOnly, stateArray: [] });
+      // Test for antipodal endpoints
+      if (
+        tmpVector1
+          .addVectors(freeEnd.locationVector, pivot.locationVector)
+          .isZero()
+      ) {
+        // Set the direction of the rotation correctly for moving the normalvector
+        rotationAngle *= currentSphereVector.z < 0 ? -1 : 1;
+        // If the end points are antipodal move the normal vector
+        tmpVector1.copy(this.normalVector);
+        tmpVector1.applyAxisAngle(axisOfRotation, rotationAngle);
+        this.normalVector = tmpVector1;
+        this.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
+      } else {
+        // For non-antipodal points move the freeEnd
+        tmpVector1.copy(freeEnd.locationVector);
+        tmpVector1.applyAxisAngle(axisOfRotation, rotationAngle);
+        freeEnd.locationVector = tmpVector1;
+        freeEnd.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
+        pivot.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
+      }
     }
   }
 }

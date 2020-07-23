@@ -60,9 +60,13 @@
     "CreateCircleToolTipMessage": "Insert circle",
     "CreateCircleToolUseMessage": "Click and drag to insert a circle with a given center point and through a second point.",
 
-    "CreateSelectToolTipMessage": "Selection",
-    "CreateSelectToolUseMessage": "Select Objects",
-    "CreateSelectDisplayedName": "Click on objects to select them, hold the Alt key to add to your selection",
+    "SelectToolTipMessage": "Selection",
+    "SelectToolUseMessage": "Select Objects",
+    "SelectDisplayedName": "Click on objects to select them, hold the Alt key to add to your selection",
+
+    "DeleteToolTipMessage": "Delete",
+    "DeleteToolUseMessage": "Delete Objects",
+    "DeleteDisplayedName": "Click on objects to delete them.",
 
     "CreateAntipodalPointToolTipMessage": "Antipodal Points",
     "CreateAntipodalPointToolUseMessage": "Select a point",

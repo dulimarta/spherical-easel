@@ -18,6 +18,7 @@ import { AddPointCommand } from "@/commands/AddPointCommand";
 import { AddIntersectionPointCommand } from "@/commands/AddIntersectionPointCommand";
 import { AddPointOnOneDimensionalCommand } from "@/commands/AddPointOnOneDimensionalCommand";
 import { SEOneDimensional, SEIntersectionReturnType } from "@/types";
+import { UpdateMode, UpdateStateType } from "@/types";
 
 export default class LineHandler extends Highlighter {
   /**
@@ -482,7 +483,7 @@ export default class LineHandler extends Highlighter {
           object2
         );
         // Update the newSECircle so the display is correct when the command group is executed
-        newSELine.update();
+        newSELine.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
 
         const lineCommandGroup = new CommandGroup();
         lineCommandGroup.addCommand(

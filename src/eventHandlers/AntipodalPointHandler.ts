@@ -15,7 +15,7 @@ import { SENodule } from "@/models/SENodule";
 import { IntersectionReturnType } from "@/types";
 import store from "@/store";
 import { SEOneDimensional } from "@/types";
-import { SaveStateMode, SaveStateType } from "@/types";
+import { UpdateMode, UpdateStateType } from "@/types";
 
 export default class AntipodalPointHandler extends Highlighter {
   /**
@@ -45,8 +45,8 @@ export default class AntipodalPointHandler extends Highlighter {
 
         // Create and execute the command to create a new point for undo/redo
         new AddAntipodalPointCommand(vtx, this.parentPoint).execute();
-
-        vtx.update({ mode: SaveStateMode.DisplayOnly, stateArray: [] });
+        // Update the display of the antipodal point
+        vtx.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
 
         this.parentPoint = null;
       }
@@ -54,21 +54,36 @@ export default class AntipodalPointHandler extends Highlighter {
   }
 
   mouseMoved(event: MouseEvent): void {
-    // Highlight all nearby objects and update location points
+    // Highlight all nearby objects and update location vectors
     super.mouseMoved(event);
   }
-
   // eslint-disable-next-line
   mouseReleased(event: MouseEvent): void {}
 
-  // eslint-disable-next-line
   mouseLeave(event: MouseEvent): void {
     super.mouseLeave(event);
-    // Reset the oneDimensional in preparation for another intersection.
+    // Reset the parent point in preparation for another intersection.
     this.parentPoint = null;
   }
   activate(): void {
-    // TODO:  ADD alternate way to create antipodal point
+    // If there is exactly one point selected, create its anitpode
+    if (this.store.getters.selectedObjects().length == 1) {
+      const object = this.store.getters.selectedObjects()[0];
+      if (object instanceof SEPoint) {
+        const newPoint = new Point();
+        // Set the display to the default values
+        newPoint.stylize(DisplayStyle.DEFAULT);
+        // Set up the glowing display
+        newPoint.stylize(DisplayStyle.GLOWING);
+        // Create the model object for the new point and link them
+        const vtx = new SEAntipodalPoint(newPoint, object);
+
+        // Create and execute the command to create a new point for undo/redo
+        new AddAntipodalPointCommand(vtx, object).execute();
+        // Update the display of the antipodal point
+        vtx.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
+      }
+    }
     // Unselect the selected objects and clear the selectedObject array
     super.activate();
   }

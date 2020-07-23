@@ -151,7 +151,6 @@ export default abstract class MouseHandler implements ToolStrategy {
     } else {
       // The mouse event was not on the orthographic project of the default sphere
       this.isOnSphere = false;
-      this.currentSphereVector.set(NaN, NaN, NaN);
     }
   }
 

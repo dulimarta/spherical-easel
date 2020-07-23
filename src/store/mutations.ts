@@ -99,12 +99,10 @@ export default {
     const pos2 = state.nodules.findIndex(x => x.id === pointId);
     if (pos >= 0) {
       const victimPoint = state.points[pos];
-      // Remove the associated plottable (Nodule) object from being rendered
-      victimPoint.ref.removeFromLayers();
-      // Remove the victim point from the parent/kid data structure -- needed?
-      //victimPoint.removeSelfSafely();
       state.points.splice(pos, 1);
       state.nodules.splice(pos2, 1);
+      // Remove the associated plottable (Nodule) object from being rendered
+      victimPoint.ref.removeFromLayers();
     }
   },
 
@@ -120,7 +118,6 @@ export default {
       /* victim line is found */
       const victimLine = state.lines[pos];
       victimLine.ref.removeFromLayers();
-      //victimLine.removeSelfSafely(); // needed?
       state.lines.splice(pos, 1); // Remove the line from the list
       state.nodules.splice(pos2, 1);
     }
@@ -136,7 +133,6 @@ export default {
     if (pos >= 0) {
       const victimSegment = state.segments[pos];
       victimSegment.ref.removeFromLayers();
-      // victimSegment.removeSelfSafely();
       state.segments.splice(pos, 1);
       state.nodules.splice(pos2, 1);
     }
@@ -180,17 +176,16 @@ export default {
   ): void {
     lineNormalVisitor.setNewNormal(change.normal);
     const pos = state.lines.findIndex(x => x.id === change.lineId);
-    state.lines[pos].accept(lineNormalVisitor);
+    if (pos >= 0) state.lines[pos].accept(lineNormalVisitor);
   },
   changeSegmentNormalVectorArcLength(
     state: AppState,
     change: { segmentId: number; normal: Vector3; arcLength: number }
   ): void {
-    console.log("segNorALVisit", segmentNormalArcLengthVisitor);
     segmentNormalArcLengthVisitor.setNewNormal(change.normal);
     segmentNormalArcLengthVisitor.setNewArcLength(change.arcLength);
     const pos = state.segments.findIndex(x => x.id === change.segmentId);
-    state.segments[pos].accept(segmentNormalArcLengthVisitor);
+    if (pos >= 0) state.segments[pos].accept(segmentNormalArcLengthVisitor);
   },
   setSelectedObjects(state: AppState, selection: SENodule[]): void {
     state.selections.clear();

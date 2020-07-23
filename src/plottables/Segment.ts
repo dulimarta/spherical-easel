@@ -44,7 +44,6 @@ export default class Segment extends Nodule {
   private frontExtra: Two.Path;
   private backPart: Two.Path;
   private backExtra: Two.Path;
-  private midMarker = new Two.Circle(0, 0, 5);
   private glowingFrontPart: Two.Path;
   private glowingFrontExtra: Two.Path;
   private glowingBackPart: Two.Path;
@@ -448,7 +447,7 @@ export default class Segment extends Nodule {
     this.glowingBackExtra.addTo(layers[LAYER.backgroundGlowing]);
   }
 
-  removeFromLayers(/*layers: Two.Group[]*/): void {
+  removeFromLayers(): void {
     this.frontPart.remove();
     this.frontExtra.remove();
     this.backPart.remove();

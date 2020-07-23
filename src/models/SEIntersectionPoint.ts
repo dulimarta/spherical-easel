@@ -5,7 +5,8 @@ import { IntersectionReturnType } from "@/types";
 import store from "@/store";
 import { Styles } from "@/types/Styles";
 import { SEOneDimensional } from "@/types";
-import { SaveStateMode, SaveStateType } from "@/types";
+import { UpdateMode, UpdateStateType, PointState } from "@/types";
+import { Vector3 } from "three";
 
 export class SEIntersectionPoint extends SEPoint {
   /**
@@ -77,7 +78,7 @@ export class SEIntersectionPoint extends SEPoint {
     return this._isUserCreated;
   }
 
-  public update(state: SaveStateType): void {
+  public update(state: UpdateStateType): void {
     // If any one parent is not up to date, don't do anything
     if (!this.canUpdateNow()) {
       return;
@@ -94,11 +95,7 @@ export class SEIntersectionPoint extends SEPoint {
 
       this._exists = updatedIntersectionInfo[this.order].exists;
       this.locationVector = updatedIntersectionInfo[this.order].vector; // Calls the setter of SEPoint which calls the setter of Point which updates the display
-      // console.log("order", this.order);
-      // console.log("exist", this._exists);
-      // console.log("location", this._locationVector.toFixed(2));
-      // console.log("user created", this._isUserCreated);
-      // console.log("showing", this._showing);
+
       if (this._exists && this._isUserCreated && this._showing) {
         // Update visibility
         this.ref.setVisible(true);
@@ -108,21 +105,19 @@ export class SEIntersectionPoint extends SEPoint {
     } else {
       this.ref.setVisible(false);
     }
-    // Record the state of the object in state.stateArray
-    switch (state.mode) {
-      case SaveStateMode.UndoMove: {
-        // Intersection Points are completely determined by their parents and an update on the parents
-        // will cause this point to be put into the correct location. Therefore there is no need to
-        // store it in the stateArray for undo move.
-        break;
-      }
-      case SaveStateMode.UndoDelete: {
-        break;
-      }
-      // The DisplayOnly case fall through and does nothing
-      case SaveStateMode.DisplayOnly:
-      default:
-        break;
+    // Intersection Points are completely determined by their parents and an update on the parents
+    // will cause this point to be put into the correct location. Therefore there is no need to
+    // store it in the stateArray for undo move. Only store for delete
+
+    if (state.mode == UpdateMode.RecordState) {
+      const pointState: PointState = {
+        kind: "point",
+        locationVectorX: this._locationVector.x,
+        locationVectorY: this._locationVector.y,
+        locationVectorZ: this._locationVector.z,
+        object: this
+      };
+      state.stateArray.push(pointState);
     }
     this.updateKids(state);
   }

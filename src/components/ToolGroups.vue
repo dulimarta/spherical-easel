@@ -167,7 +167,7 @@ export default class ToolGroups extends Vue {
 
   /* This turns off all other snackbar/toolUseMessage displays so that multiple 
   snackbar/toolUseMessages are not displayed at the same time.  */
-  displayOnlyThisToolUseMessageFunc(id: string): void {
+  displayOnlyThisToolUseMessageFunc(id: number): void {
     // Alternative solution: use Array high-order functions
     this.buttonList
       .filter(btn => btn.id !== id)
@@ -179,7 +179,7 @@ export default class ToolGroups extends Vue {
   permission to use will be available. */
   private buttonList: ToolButtonType[] = [
     {
-      id: "basic-0",
+      id: 0,
       actionModeValue: "point",
       displayedName: "CreatePointDisplayedName",
       icon: "mdi-vector-point",
@@ -189,7 +189,7 @@ export default class ToolGroups extends Vue {
       toolGroup: "basic"
     },
     {
-      id: "basic-5",
+      id: 5,
       actionModeValue: "line",
       displayedName: "CreateLineDisplayedName",
       icon: "mdi-vector-line",
@@ -199,7 +199,7 @@ export default class ToolGroups extends Vue {
       toolGroup: "basic"
     },
     {
-      id: "basic-10",
+      id: 10,
       actionModeValue: "segment",
       displayedName: "CreateLineSegmentDisplayedName",
       icon: "mdi-vector-radius",
@@ -209,7 +209,7 @@ export default class ToolGroups extends Vue {
       toolGroup: "basic"
     },
     {
-      id: "basic-20",
+      id: 20,
       actionModeValue: "circle",
       displayedName: "CreateCircleDisplayedName",
       icon: "mdi-vector-circle-variant",
@@ -220,17 +220,28 @@ export default class ToolGroups extends Vue {
     },
 
     {
-      id: "edit-0",
+      id: 0,
       actionModeValue: "select",
-      displayedName: "CreateSelectDisplayedName",
+      displayedName: "SelectDisplayedName",
       icon: "mdi-cursor-pointer",
-      toolTipMessage: "CreateSelectToolTipMessage",
-      toolUseMessage: "CreateSelectToolUseMessage",
+      toolTipMessage: "SelectToolTipMessage",
+      toolUseMessage: "SelectToolUseMessage",
       displayToolUseMessage: false,
       toolGroup: "edit"
     },
     {
-      id: "diplay-15",
+      id: 5,
+      actionModeValue: "delete",
+      displayedName: "DeleteDisplayedName",
+      icon: "mdi-delete",
+      toolTipMessage: "DeleteToolTipMessage",
+      toolUseMessage: "DeleteToolUseMessage",
+      displayToolUseMessage: false,
+      toolGroup: "edit"
+    },
+
+    {
+      id: 15,
       actionModeValue: "move",
       displayedName: "MoveDisplayedName",
       icon: "mdi-cursor-move",
@@ -240,7 +251,7 @@ export default class ToolGroups extends Vue {
       toolGroup: "display"
     },
     {
-      id: "display-20",
+      id: 20,
       actionModeValue: "rotate",
       displayedName: "RotateDisplayedName",
       icon: "mdi-rotate-3d-variant",
@@ -251,7 +262,7 @@ export default class ToolGroups extends Vue {
     },
 
     {
-      id: "display-25",
+      id: 25,
       actionModeValue: "zoomIn",
       displayedName: "PanZoomInDisplayedName",
       icon: "mdi-magnify-plus-outline",
@@ -261,7 +272,7 @@ export default class ToolGroups extends Vue {
       toolGroup: "edit"
     },
     {
-      id: "display-30",
+      id: 30,
       actionModeValue: "zoomOut",
       displayedName: "PanZoomOutDisplayedName",
       icon: "mdi-magnify-minus-outline",
@@ -271,7 +282,7 @@ export default class ToolGroups extends Vue {
       toolGroup: "edit"
     },
     {
-      id: "display-35",
+      id: 35,
       actionModeValue: "zoomFit",
       displayedName: "ZoomFitDisplayedName",
       icon: "mdi-magnify-scan",
@@ -281,7 +292,7 @@ export default class ToolGroups extends Vue {
       toolGroup: "edit"
     },
     {
-      id: "construction-15",
+      id: 15,
       actionModeValue: "antipodalPoint",
       displayedName: "CreateAntipodalPointDisplayedName",
       icon: "mdi-arrow-expand",
@@ -291,7 +302,7 @@ export default class ToolGroups extends Vue {
       toolGroup: "construction"
     },
     {
-      id: "construction-45",
+      id: 45,
       actionModeValue: "intersect",
       displayedName: "CreateIntersectionDisplayedName",
       icon: "mdi-vector-intersection",
@@ -301,7 +312,7 @@ export default class ToolGroups extends Vue {
       toolGroup: "construction"
     },
     {
-      id: "construction-50",
+      id: 50,
       actionModeValue: "pointOnOneDim",
       displayedName: "CreatePointOnOneDimDisplayedName",
       icon: "mdi-vector-point",
@@ -312,13 +323,18 @@ export default class ToolGroups extends Vue {
     }
     //sort the button list by id so that we don't have to reorder the list each item we add a new button
   ].sort((a: ToolButtonType, b: ToolButtonType) => {
-    if (a.id > b.id) {
-      return 1;
+    if (a.toolGroup === b.toolGroup) {
+      if (a.id > b.id) {
+        return 1;
+      } else {
+        return -1;
+      }
     }
-    if (a.id < b.id) {
+    if (a.toolGroup > b.toolGroup) {
+      return 1;
+    } else {
       return -1;
     }
-    return 0;
   });
 }
 </script>

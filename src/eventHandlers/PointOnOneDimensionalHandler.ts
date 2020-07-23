@@ -18,7 +18,7 @@ import { SEOneDimensional } from "@/types";
 
 export default class PointOnOneDimensionalHandler extends Highlighter {
   /**
-   * The part
+   * The parent of the point
    */
   private oneDimensional: SEOneDimensional | null = null;
 
@@ -57,14 +57,13 @@ export default class PointOnOneDimensionalHandler extends Highlighter {
   }
 
   mouseMoved(event: MouseEvent): void {
-    // Highlight all nearby objects and update location points
+    // Highlight all nearby objects and update location vectors
     super.mouseMoved(event);
   }
 
   // eslint-disable-next-line
   mouseReleased(event: MouseEvent): void {}
 
-  // eslint-disable-next-line
   mouseLeave(event: MouseEvent): void {
     super.mouseLeave(event);
     // Reset the oneDimensional in preparation for another intersection.

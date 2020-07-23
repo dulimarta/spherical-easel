@@ -18,7 +18,9 @@ import { SEPointOnOneDimensional } from "@/models/SEPointOnOneDimensional";
 import { AddIntersectionPointCommand } from "@/commands/AddIntersectionPointCommand";
 import { AddPointOnOneDimensionalCommand } from "@/commands/AddPointOnOneDimensionalCommand";
 import { SEOneDimensional, SEIntersectionReturnType } from "@/types";
-import { SaveStateMode, SaveStateType } from "@/types";
+import { UpdateMode, UpdateStateType } from "@/types";
+
+const tmpVector = new Vector3();
 
 export default class CircleHandler extends Highlighter {
   /**
@@ -187,11 +189,14 @@ export default class CircleHandler extends Highlighter {
 
       // Make sure the user didn't trigger the mouse leave event and is actually making a circle
       if (this.makingACircle) {
-        // Before making a new circle make sure that the user has dragged a non-trivial distance
-        // If the user hasn't dragged far enough merely insert a point at the start location
+        // Before making a new circle make sure that the user has dragged a non-trivial distance or is not trying to
+        // create a circle with radius pi
+        // If the user hasn't dragged far enough or is trying to make a circle of radius Pi,
+        //  merely insert a point at the start location (if needed)
+        const radius = this.currentSphereVector.angleTo(this.centerVector);
         if (
-          this.currentSphereVector.angleTo(this.centerVector) >
-          SETTINGS.circle.minimumRadius
+          radius > SETTINGS.circle.minimumRadius &&
+          radius < Math.PI - SETTINGS.circle.minimumRadius
         ) {
           this.makeCircle();
         } else {
@@ -224,7 +229,7 @@ export default class CircleHandler extends Highlighter {
     this.makingACircle = false;
   }
   /**
-   * Add a new circle the user has moved far enough
+   * Add a new circle the user has moved the mouse far enough (but not a radius of PI)
    */
   makeCircle(): void {
     // Create a command group to add the points defining the circle and the circle to the store
@@ -380,11 +385,11 @@ export default class CircleHandler extends Highlighter {
     circleCommandGroup.execute();
   }
 
+  /**
+   * The user is attempting to make a circle smaller than the minimum radius or close to radius PI so
+   * create  a point at the location of the start vector
+   */
   makePoint(): void {
-    // The user is attempting to make a circle smaller than the minimum radius so
-    // create  a point at the location of the start vector
-    // The user is attempting to make a segment smaller than the minimum arc length so
-    // create  a point at the location of the start vector
     if (this.centerSEPoint === null) {
       // we have to create a new SEPointOnOneDimensional or SEPoint and Point
       const newPoint = new Point();
@@ -420,13 +425,20 @@ export default class CircleHandler extends Highlighter {
       new ConvertInterPtToUserCreatedCommand(this.centerSEPoint).execute();
     }
   }
+
   activate(): void {
     // If there are exactly two SEPoints selected, create a circle with the first as the center
     // and the second as the circle point
     if (this.store.getters.selectedObjects().length == 2) {
       const object1 = this.store.getters.selectedObjects()[0];
       const object2 = this.store.getters.selectedObjects()[1];
-      if (object1 instanceof SEPoint && object2 instanceof SEPoint) {
+      if (
+        object1 instanceof SEPoint &&
+        object2 instanceof SEPoint &&
+        !tmpVector
+          .crossVectors(object1.locationVector, object2.locationVector)
+          .isZero() // if the points are antipodal do nothing
+      ) {
         // Create a new plottable Circle
         const newCircle = new Circle();
         // Set the display to the default values
@@ -439,7 +451,7 @@ export default class CircleHandler extends Highlighter {
         // Add the last command to the group and then execute it (i.e. add the potentially two points and the circle to the store.)
         const newSECircle = new SECircle(newCircle, object1, object2);
         // Update the newSECircle so the display is correct when the command group is executed
-        newSECircle.update({ mode: SaveStateMode.DisplayOnly, stateArray: [] });
+        newSECircle.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
 
         const circleCommandGroup = new CommandGroup();
         circleCommandGroup.addCommand(

@@ -4,7 +4,7 @@ import { SELine } from "@/models/SELine";
 import { Matrix4, Vector3, Matrix3 } from "three";
 import { SECircle } from "@/models/SECircle";
 import { SESegment } from "@/models/SESegment";
-import { SaveStateMode, SaveStateType } from "@/types";
+import { UpdateMode, UpdateStateType } from "@/types";
 
 export class SegmentNormalArcLengthVisitor implements Visitor {
   private normalVector: Vector3 = new Vector3();
@@ -29,7 +29,7 @@ export class SegmentNormalArcLengthVisitor implements Visitor {
     s.normalVector = this.normalVector; // Set the new normal vector
     s.arcLength = this.arcLength; // set the new arcLength
     console.log("position mover on segment", s.name, "set AL", s.arcLength);
-    s.update({ mode: SaveStateMode.DisplayOnly, stateArray: [] });
+    s.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
   }
 
   actionOnCircle(c: SECircle): void {

@@ -74,7 +74,7 @@ export default class IntersectionPointHandler extends Highlighter {
   }
 
   mouseMoved(event: MouseEvent): void {
-    // Highlight all nearby objects and update location points
+    // Highlight all nearby objects and update location vectors
     super.mouseMoved(event);
   }
 
@@ -247,7 +247,6 @@ export default class IntersectionPointHandler extends Highlighter {
       const object2 = this.store.getters.selectedObjects()[1];
 
       if (object1.isOneDimensional() && object2.isOneDimensional()) {
-        console.log("Did Intersection");
         this.doIntersection(object1, object2);
       }
     }

@@ -34,7 +34,7 @@ export interface AppState {
 }
 /* This interface lists all the properties that each tool/button must have. */
 export interface ToolButtonType {
-  id: string;
+  id: number;
   actionModeValue: string;
   displayToolUseMessage: boolean;
   displayedName: string;
@@ -75,30 +75,33 @@ export interface OneDimensional {
 export type SEOneDimensional = SELine | SESegment | SECircle;
 
 /**
- *
+ * The
  */
-
-export enum SaveStateMode {
+export enum UpdateMode {
   DisplayOnly,
-  UndoDelete,
-  UndoMove
+  RecordState
 }
 
-export interface SaveStateType {
-  mode: SaveStateMode;
-  stateArray: ObjectSaveState[];
+export interface UpdateStateType {
+  mode: UpdateMode;
+  stateArray: ObjectState[];
 }
+/**
+ * Record the information necessary to restore/undo a move or delete of the object
+ */
+export type ObjectState = CircleState | LineState | SegmentState | PointState;
 
-export type ObjectSaveState = LineSaveState | SegmentSaveState | PointSaveState;
-
-export interface LineSaveState {
+export interface LineState {
   kind: "line";
   object: SELine;
   normalVectorX: number;
   normalVectorY: number;
   normalVectorZ: number;
 }
-export interface SegmentSaveState {
+export function isLineState(entry: ObjectState): entry is LineState {
+  return entry.kind === "line";
+}
+export interface SegmentState {
   kind: "segment";
   object: SESegment;
   normalVectorX: number;
@@ -106,10 +109,25 @@ export interface SegmentSaveState {
   normalVectorZ: number;
   arcLength: number;
 }
-export interface PointSaveState {
+export function isSegmentState(entry: ObjectState): entry is SegmentState {
+  return entry.kind === "segment";
+}
+export interface PointState {
   kind: "point";
   object: SEPoint;
   locationVectorX: number;
   locationVectorY: number;
   locationVectorZ: number;
+}
+export function isPointState(entry: ObjectState): entry is PointState {
+  return entry.kind === "point";
+}
+export interface CircleState {
+  // No fields are needed for moving circles because they are completely determined by their point parents
+  kind: "circle";
+  // Fields needed for undoing delete
+  object: SECircle;
+}
+export function isCircleState(entry: ObjectState): entry is CircleState {
+  return entry.kind === "circle";
 }

@@ -18,7 +18,8 @@ export default class PointHandler extends Highlighter {
   mousePressed(event: MouseEvent): void {
     // Do the mouse moved event of the Highlighter so that a new hitSEPoints array will be generated
     // otherwise if the user has finished making an new point, then *without* triggering a mouse move
-    // event, mouse press will create a new point at the same location. This is not what we want so we call super.mouseMove
+    // event, mouse press will create a new point at the same location. This is not what we want so
+    // we call super.mouseMove
     super.mouseMoved(event);
 
     if (this.isOnSphere) {
@@ -56,7 +57,7 @@ export default class PointHandler extends Highlighter {
   }
 
   mouseMoved(event: MouseEvent): void {
-    // Highlight all nearby objects and update location points
+    // Highlight all nearby objects and update location vectors
     super.mouseMoved(event);
     if (this.isOnSphere) {
       if (!this.isTemporaryPointAdded) {

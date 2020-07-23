@@ -793,5 +793,11 @@ export default {
   },
   zoomMagnificationFactor: (state: AppState) => (): number => {
     return state.zoomMagnificationFactor;
+  },
+  getSENodule: (state: AppState) => (id: number): SENodule => {
+    const index = state.nodules.findIndex((z: SENodule) => {
+      z.id === id;
+    });
+    return state.nodules[index];
   }
 };

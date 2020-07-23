@@ -4,7 +4,7 @@ import { SELine } from "@/models/SELine";
 import { Matrix4, Vector3, Matrix3 } from "three";
 import { SECircle } from "@/models/SECircle";
 import { SESegment } from "@/models/SESegment";
-import { SaveStateMode, SaveStateType } from "@/types";
+import { UpdateMode, UpdateStateType } from "@/types";
 
 export class RotationVisitor implements Visitor {
   private transformMatrix: Matrix4 = new Matrix4();
@@ -21,7 +21,7 @@ export class RotationVisitor implements Visitor {
     this.tmpVector.copy(p.locationVector); // Copy the old vector location of the SEPoint
     this.tmpVector.applyMatrix4(this.transformMatrix); // Apply the matrix
     p.locationVector = this.tmpVector; // Set the new position vector
-    p.update({ mode: SaveStateMode.DisplayOnly, stateArray: [] });
+    p.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
   }
   //#endregion actionOnPoint
 

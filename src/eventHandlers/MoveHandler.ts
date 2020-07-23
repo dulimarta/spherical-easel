@@ -14,14 +14,14 @@ import Highlighter from "./Highlighter";
 import { MovePointCommand } from "@/commands/MovePointCommand";
 import { MoveLineCommand } from "@/commands/MoveLineCommand";
 import { MoveSegmentCommand } from "@/commands/MoveSegmentCommand";
-// import { MoveCircleCommand } from "@/commands/MoveCircleCommand";
+import { isLineState, isSegmentState, isPointState } from "@/types";
 import {
-  SaveStateMode,
-  SaveStateType,
-  ObjectSaveState,
-  LineSaveState,
-  SegmentSaveState,
-  PointSaveState
+  UpdateMode,
+  UpdateStateType,
+  ObjectState,
+  LineState,
+  SegmentState,
+  PointState
 } from "@/types";
 import { CommandGroup } from "@/commands/CommandGroup";
 
@@ -53,18 +53,22 @@ export default class MoveHandler extends Highlighter {
   private rotateSphere = false;
 
   /**
-   * Objects that define the moved objects before and after moving (for undoing moved points, circles, segments, lines)
+   * Objects that define the moved objects (and all descendants) states before and after moving (for undoing moving)
+   * Issuing a update(this.beforeMoveState) creates an array of SENodules that is a Topological Sort and
+   * records the state of certain key variables (*not* pointers to the variables) so that they can be
+   * compared to the after the move. If they are different we issue a MoveXXXCommand to change the value
    */
   //#region beforeSaveState
-  private beforeMoveState: SaveStateType = {
-    mode: SaveStateMode.UndoMove,
+  private beforeMoveState: UpdateStateType = {
+    mode: UpdateMode.RecordState,
+    stateArray: []
+  };
+
+  private afterMoveState: UpdateStateType = {
+    mode: UpdateMode.RecordState,
     stateArray: []
   };
   //#endregion beforeSaveState
-  private afterMoveState: SaveStateType = {
-    mode: SaveStateMode.UndoMove,
-    stateArray: []
-  };
   /**
    * Vectors that define the rotated sphere before and after moving (for undoing the rotate sphere)
    */
@@ -89,7 +93,7 @@ export default class MoveHandler extends Highlighter {
   }
 
   mousePressed(event: MouseEvent) {
-    // if mouse press is not on the sphere do not
+    // if mouse press is not on the sphere do not do anything
     if (!this.isOnSphere) return;
     // Reset the variables for another move event
     this.isDragging = true;
@@ -164,7 +168,7 @@ export default class MoveHandler extends Highlighter {
         // Update the display based on the new location of the point
         //#region displayOnlyUpdate
         this.moveTarget.update({
-          mode: SaveStateMode.DisplayOnly,
+          mode: UpdateMode.DisplayOnly,
           stateArray: []
         });
         //#endregion displayOnlyUpdate
@@ -172,8 +176,9 @@ export default class MoveHandler extends Highlighter {
         this.moveTarget instanceof SELine ||
         this.moveTarget instanceof SESegment
       ) {
+        // Turn off the glow of the moving object - it should not glow while moving
+        this.moveTarget.ref.normalDisplay();
         // Move the selected SELine or SESegment, move updates the display
-        //this.moveTarget.ref.normalDisplay();
         this.moveTarget.move(
           this.previousSphereVector,
           this.currentSphereVector,
@@ -181,8 +186,9 @@ export default class MoveHandler extends Highlighter {
           event.ctrlKey
         );
       } else if (this.moveTarget instanceof SECircle) {
+        // Turn off the glow of the moving object - it should not glow while moving
+        this.moveTarget.ref.normalDisplay();
         // Move the selected SECircle, move also updates the display
-        //this.moveTarget.ref.normalDisplay();
         this.moveTarget.move(
           this.previousSphereVector,
           this.currentSphereVector
@@ -194,15 +200,7 @@ export default class MoveHandler extends Highlighter {
       }
     }
   }
-  public isLineSaveState(entry: ObjectSaveState): entry is LineSaveState {
-    return entry.kind === "line";
-  }
-  public isSegmentSaveState(entry: ObjectSaveState): entry is SegmentSaveState {
-    return entry.kind === "segment";
-  }
-  public isPointSaveState(entry: ObjectSaveState): entry is PointSaveState {
-    return entry.kind === "point";
-  }
+
   mouseReleased(event: MouseEvent) {
     if (!this.movingSomething) return;
 
@@ -264,14 +262,7 @@ export default class MoveHandler extends Highlighter {
       this.beforeMoveState.stateArray.reverse();
       this.afterMoveState.stateArray.reverse();
       this.beforeMoveState.stateArray.forEach((entry, index) => {
-        // console.log(
-        //   "is point",
-        //   this.isPointSaveState(entry),
-        //   entry,
-        //   "index",
-        //   index
-        // );
-        if (this.isPointSaveState(entry)) {
+        if (isPointState(entry)) {
           const beforeLocationVector = new Vector3(
             entry.locationVectorX,
             entry.locationVectorY,
@@ -280,19 +271,14 @@ export default class MoveHandler extends Highlighter {
           const afterLocationVector = new Vector3(
             (this.afterMoveState.stateArray[
               index
-            ] as PointSaveState).locationVectorX,
+            ] as PointState).locationVectorX,
             (this.afterMoveState.stateArray[
               index
-            ] as PointSaveState).locationVectorY,
+            ] as PointState).locationVectorY,
             (this.afterMoveState.stateArray[
               index
-            ] as PointSaveState).locationVectorZ
+            ] as PointState).locationVectorZ
           );
-          // console.log(
-          //   "here point command",
-          //   beforeLocationVector,
-          //   afterLocationVector
-          // );
           if (
             !tmpVector1
               .subVectors(beforeLocationVector, afterLocationVector)
@@ -306,22 +292,16 @@ export default class MoveHandler extends Highlighter {
               )
             );
           }
-        } else if (this.isLineSaveState(entry)) {
+        } else if (isLineState(entry)) {
           const beforeNormalVector = new Vector3(
             entry.normalVectorX,
             entry.normalVectorY,
             entry.normalVectorZ
           );
           const afterNormalVector = new Vector3(
-            (this.afterMoveState.stateArray[
-              index
-            ] as LineSaveState).normalVectorX,
-            (this.afterMoveState.stateArray[
-              index
-            ] as LineSaveState).normalVectorY,
-            (this.afterMoveState.stateArray[
-              index
-            ] as LineSaveState).normalVectorZ
+            (this.afterMoveState.stateArray[index] as LineState).normalVectorX,
+            (this.afterMoveState.stateArray[index] as LineState).normalVectorY,
+            (this.afterMoveState.stateArray[index] as LineState).normalVectorZ
           );
           // Include a command if the normal vector have changed
           if (
@@ -337,8 +317,7 @@ export default class MoveHandler extends Highlighter {
               )
             );
           }
-        } else if (this.isSegmentSaveState(entry)) {
-          //console.log("here SESegment");
+        } else if (isSegmentState(entry)) {
           const beforeNormalVector = new Vector3(
             entry.normalVectorX,
             entry.normalVectorY,
@@ -347,13 +326,13 @@ export default class MoveHandler extends Highlighter {
           const afterNormalVector = new Vector3(
             (this.afterMoveState.stateArray[
               index
-            ] as SegmentSaveState).normalVectorX,
+            ] as SegmentState).normalVectorX,
             (this.afterMoveState.stateArray[
               index
-            ] as SegmentSaveState).normalVectorY,
+            ] as SegmentState).normalVectorY,
             (this.afterMoveState.stateArray[
               index
-            ] as SegmentSaveState).normalVectorZ
+            ] as SegmentState).normalVectorZ
           );
           // Include a command if the normal vectors have changed or the arcLength before/after changed from less to from bigger than Pi
           if (
@@ -361,13 +340,12 @@ export default class MoveHandler extends Highlighter {
               .subVectors(beforeNormalVector, afterNormalVector)
               .isZero() ||
             (entry.arcLength < Math.PI &&
-              (this.afterMoveState.stateArray[index] as SegmentSaveState)
+              (this.afterMoveState.stateArray[index] as SegmentState)
                 .arcLength > Math.PI) ||
             (entry.arcLength > Math.PI &&
-              (this.afterMoveState.stateArray[index] as SegmentSaveState)
+              (this.afterMoveState.stateArray[index] as SegmentState)
                 .arcLength < Math.PI)
           ) {
-            //console.log("here SESegment 2");
             moveCommandGroup.addCommand(
               new MoveSegmentCommand(
                 entry.object as SESegment,
@@ -376,7 +354,7 @@ export default class MoveHandler extends Highlighter {
                 entry.arcLength,
                 (this.afterMoveState.stateArray[
                   index
-                ] as SegmentSaveState).arcLength
+                ] as SegmentState).arcLength
               )
             );
           }
@@ -391,8 +369,14 @@ export default class MoveHandler extends Highlighter {
     this.rotateSphere = false;
     this.movingSomething = false;
     this.isDragging = false;
-    this.beforeMoveState = { mode: SaveStateMode.UndoMove, stateArray: [] };
-    this.afterMoveState = { mode: SaveStateMode.UndoMove, stateArray: [] };
+    this.beforeMoveState = {
+      mode: UpdateMode.RecordState,
+      stateArray: []
+    };
+    this.afterMoveState = {
+      mode: UpdateMode.RecordState,
+      stateArray: []
+    };
   }
 
   mouseLeave(event: MouseEvent): void {

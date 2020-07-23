@@ -2,7 +2,7 @@ import { SEPoint } from "./SEPoint";
 import Point from "@/plottables/Point";
 import { Vector3 } from "three";
 import { SEOneDimensional } from "@/types";
-import { SaveStateMode, SaveStateType } from "@/types";
+import { UpdateMode, UpdateStateType, PointState } from "@/types";
 
 export class SEAntipodalPoint extends SEPoint {
   /**
@@ -22,27 +22,7 @@ export class SEAntipodalPoint extends SEPoint {
     this.name = `Antipodal(${antipodalPointParent.name})`;
   }
 
-  /**
-   * Get the location vector of the SEAntipodalPoint on the unit ideal sphere
-   */
-  set locationVector(pos: Vector3) {
-    // Record the location on the unit ideal sphere of this SEAntipodalPoint
-    console.debug("Antipodal Point set location -- should NEVER be called");
-    this._locationVector
-      .copy(this._antipodalPointParent.locationVector)
-      .multiplyScalar(-1);
-    // Set the position of the associated displayed plottable Point
-    this.ref.positionVector = this._locationVector;
-  }
-  get locationVector(): Vector3 {
-    return this._locationVector;
-  }
-
-  get antipodalPointParent(): SEPoint {
-    return this._antipodalPointParent;
-  }
-
-  public update(state: SaveStateType): void {
+  public update(state: UpdateStateType): void {
     // If any one parent is not up to date, don't do anything
     if (!this.canUpdateNow()) {
       return;
@@ -68,21 +48,20 @@ export class SEAntipodalPoint extends SEPoint {
     } else {
       this.ref.setVisible(false);
     }
-    // Record the state of the object in state.stateArray
-    switch (state.mode) {
-      case SaveStateMode.UndoMove: {
-        // The location of this antipodal point is determined by the parent point so no need to
-        // store anything for moving undo
-        break;
-      }
-      case SaveStateMode.UndoDelete: {
-        break;
-      }
-      // The DisplayOnly case fall through and does nothing
-      case SaveStateMode.DisplayOnly:
-      default:
-        break;
+    // The location of this antipodal point is determined by the parent point so no need to
+    // store anything for moving undo Only store for delete
+
+    if (state.mode == UpdateMode.RecordState) {
+      const pointState: PointState = {
+        kind: "point",
+        locationVectorX: this._locationVector.x,
+        locationVectorY: this._locationVector.y,
+        locationVectorZ: this._locationVector.z,
+        object: this
+      };
+      state.stateArray.push(pointState);
     }
+
     this.updateKids(state);
   }
 }
