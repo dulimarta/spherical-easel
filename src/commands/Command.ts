@@ -33,6 +33,10 @@ export abstract class Command {
       Command.redoHistory.push(lastAction);
       lastAction.restoreState();
     }
+    // Update the free points to update the display so that individual command and visitors do
+    // not have to update the display in the middle of undoing or redoing a command (this causes
+    // problems with the move *redo*)
+    Command.store.commit("updateDisplay");
   }
   //#endregion undo
 
@@ -47,6 +51,10 @@ export abstract class Command {
     if (nextAction) {
       nextAction.execute();
     }
+    // Update the free points to update the display so that individual command and visitors do
+    // not have to update the display in the middle of undoing or redoing a command (this causes
+    // problems with the move *redo*)
+    Command.store.commit("updateDisplay");
   }
   //#endregion redo
 

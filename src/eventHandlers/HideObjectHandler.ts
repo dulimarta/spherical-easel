@@ -17,7 +17,7 @@ import store from "@/store";
 import { SEOneDimensional } from "@/types";
 import { UpdateMode, UpdateStateType } from "@/types";
 import { CommandGroup } from "@/commands/CommandGroup";
-import { DeleteNoduleCommand } from "@/commands/DeleteNoduleCommand";
+import { SetNoduleDisplayCommand } from "@/commands/SetNoduleDisplayCommand";
 import {
   isLineState,
   isSegmentState,
@@ -25,19 +25,11 @@ import {
   isCircleState
 } from "@/types";
 
-export default class DeleteHandler extends Highlighter {
+export default class HideObjectHandler extends Highlighter {
   /**
-   * Object to delete - the victim!
+   * Object to hide - the victim!
    */
   private victim: SENodule | null = null;
-
-  /**
-   * Objects that define the deleted objects (and all descendants) before deleting (for undoing delete)
-   */
-  private beforeDeleteState: UpdateStateType = {
-    mode: UpdateMode.RecordStateForDelete,
-    stateArray: []
-  };
 
   constructor(layers: Two.Group[]) {
     super(layers);
@@ -58,14 +50,9 @@ export default class DeleteHandler extends Highlighter {
       }
 
       if (this.victim != null) {
-        // Do the deletion
-        this.delete(this.victim);
+        // Do the hiding via command so it will be undoable
+        new SetNoduleDisplayCommand(this.victim, false).execute();
         this.victim = null;
-        // Reset the beforeDeleteState
-        this.beforeDeleteState = {
-          mode: UpdateMode.RecordStateForDelete,
-          stateArray: []
-        };
       }
     }
   }
@@ -82,46 +69,16 @@ export default class DeleteHandler extends Highlighter {
     super.mouseLeave(event);
     // Reset the victim in preparation for another deletion.
     this.victim = null;
-    // Reset the beforeDeleteState
-    this.beforeDeleteState = {
-      mode: UpdateMode.RecordStateForDelete,
-      stateArray: []
-    };
   }
   activate(): void {
-    // Delete all selected objects
-    this.hitSENodules.forEach(object => this.delete(object));
+    // Hide all selected objects
+    this.hitSENodules.forEach(object =>
+      new SetNoduleDisplayCommand(object, false).execute()
+    );
     // Unselect the selected objects and clear the selectedObject array
     super.activate();
   }
   deactivate(): void {
     super.deactivate();
-  }
-
-  delete(victim: SENodule): void {
-    // First mark all children of the victim out of date so that the update method does a topological sort
-    victim.markKidsOutOfDate();
-    //Record the state of the victim and all the SENodules that depend on it (i.e kids, grandKids, etc..).
-    victim.update(this.beforeDeleteState);
-
-    // console.log("order of states before reverse");
-    // this.beforeDeleteState.stateArray.forEach(obj =>
-    //   console.log(obj.object.name)
-    // );
-    // console.log("end order");
-
-    const deleteCommandGroup = new CommandGroup();
-    // The update method orders the objects from the victim to the leaf (i.e objects with only in arrows)
-    // To delete remove from the leaves to the victim (and to undo build from the victim to leaves -- accomplished
-    // by the command group reversing the order on restore()).  Therefore reverse the stateArray.
-    this.beforeDeleteState.stateArray.reverse();
-    this.beforeDeleteState.stateArray.forEach(element => {
-      deleteCommandGroup.addCommand(new DeleteNoduleCommand(element.object));
-    });
-    deleteCommandGroup.execute();
-    // console.log(
-    //   "End Delete Handler: parent victim parents:",
-    //   victim.parents.length
-    // );
   }
 }

@@ -29,15 +29,35 @@ export class SEPointOnOneDimensional extends SEPoint {
    */
   set locationVector(pos: Vector3) {
     // Record the location on the unit ideal sphere of this SEPointOnOneDim
-    this._locationVector
-      .copy((this.oneDimensionalParent as SEOneDimensional).closestVector(pos))
-      .normalize();
+    // If the parent is not out of date, use the closest vector, if not set the location directly
+    // and the program will update the parent later so that the set location is on the parent (even though it is
+    // at the time of execution)
+    if (!this.oneDimensionalParent.isOutOfDate()) {
+      this._locationVector
+        .copy(
+          (this.oneDimensionalParent as SEOneDimensional).closestVector(pos)
+        )
+        .normalize();
+    } else {
+      this._locationVector.copy(pos);
+    }
     // Set the position of the associated displayed plottable Point
     this.ref.positionVector = this._locationVector;
   }
 
   get locationVector(): Vector3 {
     return this._locationVector;
+  }
+  /**
+   * When undo or redoing a move, we do *not* want to use the "set locationVector" method because
+   * that will set the position on a potentially out of date object
+   * @param pos The new position of the point
+   */
+  public pointMoverLocationSetter(pos: Vector3) {
+    // Record the location on the unit ideal sphere of this SEPoint
+    this._locationVector.copy(pos).normalize();
+    // Set the position of the associated displayed plottable Point
+    this.ref.positionVector = this._locationVector;
   }
 
   get parentOneDimensional(): SEOneDimensional {
@@ -64,12 +84,11 @@ export class SEPointOnOneDimensional extends SEPoint {
     } else {
       this.ref.setVisible(false);
     }
-    if (state.mode == UpdateMode.RecordState) {
-      // If the parent points of the segment are antipodal, the normal vector determines the
-      // plane of the segment.  The points also don't determine the arcLength of the segments.
-      // Both of these quantities could change during a move therefore store normal vector and arcLength
-      // in stateArray for undo move. (No need to store the parent points, they will be updated on their own
-      // before this line is updated.) Store the coordinate values of the vector and not the point to the vector.
+    // SEPointOnOneDimensional are free points and should be recorded for move and delete always
+    if (
+      state.mode == UpdateMode.RecordStateForDelete ||
+      state.mode == UpdateMode.RecordStateForMove
+    ) {
       const pointState: PointState = {
         kind: "point",
         object: this,

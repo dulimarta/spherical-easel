@@ -131,9 +131,5 @@ export default abstract class Highlighter extends MouseHandler {
     });
     // Clear the selected objects array
     this.store.commit("setSelectedObjects", []);
-    console.log(
-      "Num selected objects:",
-      this.store.getters.selectedObjects().length
-    );
   }
 }

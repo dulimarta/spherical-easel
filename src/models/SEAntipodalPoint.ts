@@ -51,7 +51,7 @@ export class SEAntipodalPoint extends SEPoint {
     // The location of this antipodal point is determined by the parent point so no need to
     // store anything for moving undo Only store for delete
 
-    if (state.mode == UpdateMode.RecordState) {
+    if (state.mode == UpdateMode.RecordStateForDelete) {
       const pointState: PointState = {
         kind: "point",
         locationVectorX: this._locationVector.x,

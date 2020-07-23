@@ -28,8 +28,11 @@ export class SegmentNormalArcLengthVisitor implements Visitor {
   actionOnSegment(s: SESegment): void {
     s.normalVector = this.normalVector; // Set the new normal vector
     s.arcLength = this.arcLength; // set the new arcLength
-    console.log("position mover on segment", s.name, "set AL", s.arcLength);
-    s.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
+    //console.log("position mover on segment", s.name, s.normalVector.toFixed(2));
+    // Don't update here, because it may cause a point on one dimensional to update to the wrong location
+    // The undo and restore methods of command cause one update for display at the end of every command or
+    // command group
+    //s.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
   }
 
   actionOnCircle(c: SECircle): void {

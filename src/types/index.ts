@@ -79,7 +79,8 @@ export type SEOneDimensional = SELine | SESegment | SECircle;
  */
 export enum UpdateMode {
   DisplayOnly,
-  RecordState
+  RecordStateForDelete, // All visited objects must be put into the stateArray
+  RecordStateForMove // Only those objects which depend on more than their point parents need to record that information
 }
 
 export interface UpdateStateType {

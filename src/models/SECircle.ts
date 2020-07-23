@@ -117,7 +117,7 @@ export class SECircle extends SENodule implements Visitable, OneDimensional {
     // will cause this circle to be put into the correct location. Therefore there is no need to
     // store it in the stateArray for undo move. Only store for delete
 
-    if (state.mode == UpdateMode.RecordState) {
+    if (state.mode == UpdateMode.RecordStateForDelete) {
       const pointState: CircleState = {
         kind: "circle",
         object: this

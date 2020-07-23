@@ -19,6 +19,7 @@ export class AddIntersectionPointCommand extends Command {
   }
 
   do(): void {
+    //console.log("Add intersection point command do");
     this.parent1.registerChild(this.sePoint);
     this.parent2.registerChild(this.sePoint);
     Command.store.commit("addPoint", this.sePoint);

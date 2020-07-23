@@ -89,11 +89,21 @@ export abstract class SENodule {
   }
 
   /* Kids of the current SENodule are updated  */
-  public updateKids(state: UpdateStateType): UpdateStateType {
-    this._kids.forEach(item => {
-      item.update(state);
+  public updateKids(state: UpdateStateType): void {
+    // In order to do a topological sort of the Data Structure (Directed Acyclic Graph), we first
+    // query which of the kids of this object are updatable right now and then for those that are updatable
+    // we update them. This means that every descendant object is visited only once.
+    const updatableNowIndexList: number[] = [];
+    this._kids.forEach((item, index) => {
+      if (item.canUpdateNow()) {
+        updatableNowIndexList.push(index);
+      }
     });
-    return state;
+
+    for (let i = 0; i < updatableNowIndexList.length; i++) {
+      this._kids[updatableNowIndexList[i]].update(state);
+    }
+    return;
   }
 
   /**

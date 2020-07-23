@@ -12,6 +12,7 @@ import { Vector3 } from "three";
 import { StyleOptions } from "@/types/Styles";
 import { LineNormalVisitor } from "@/visitors/LineNormalVisitor";
 import { SegmentNormalArcLengthVisitor } from "@/visitors/SegmentNormalArcLengthVisitor";
+import { UpdateMode, UpdateStateType } from "@/types";
 
 // const tmpMatrix = new Matrix4();
 
@@ -190,6 +191,14 @@ export default {
   setSelectedObjects(state: AppState, selection: SENodule[]): void {
     state.selections.clear();
     state.selections.push(...selection);
+  },
+  // Update the display of all free SEPoints to update the entire display
+  updateDisplay(state: AppState): void {
+    state.nodules
+      .filter(obj => obj.isFreePoint())
+      .forEach(obj =>
+        obj.update({ mode: UpdateMode.DisplayOnly, stateArray: [] })
+      );
   },
   // TODO: combine the following changeXXXX functions
   changeStrokeWidth(state: AppState, width: number): void {

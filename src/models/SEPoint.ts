@@ -58,7 +58,10 @@ export class SEPoint extends SENodule implements Visitable {
     // Record the state of the object in state.stateArray if necessary
     //#region saveState
     // Create a point state for a Move or delete if necessary
-    if (state.mode == UpdateMode.RecordState) {
+    if (
+      state.mode == UpdateMode.RecordStateForDelete ||
+      state.mode == UpdateMode.RecordStateForMove
+    ) {
       // If the parent points of the segment are antipodal, the normal vector determines the
       // plane of the segment.  The points also don't determine the arcLength of the segments.
       // Both of these quantities could change during a move therefore store normal vector and arcLength

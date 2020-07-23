@@ -794,10 +794,8 @@ export default {
   zoomMagnificationFactor: (state: AppState) => (): number => {
     return state.zoomMagnificationFactor;
   },
-  getSENodule: (state: AppState) => (id: number): SENodule => {
-    const index = state.nodules.findIndex((z: SENodule) => {
-      z.id === id;
-    });
-    return state.nodules[index];
+  getSENoduleById: (state: AppState) => (id: number): SENodule | undefined => {
+    //console.log("All Nodule", state.nodules.length);
+    return state.nodules.find((z: SENodule) => z.id === id);
   }
 };

@@ -19,8 +19,11 @@ export class LineNormalVisitor implements Visitor {
 
   actionOnLine(m: SELine): void {
     m.normalVector = this.normalVector; // Set the new position vector
-    console.log("position mover on point", m.name);
-    m.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
+    //console.log("position mover on point", m.name);
+    // Don't update here, because it may cause a point on one dimensional to update to the wrong location
+    // The undo and restore methods of command cause one update for display at the end of every command or
+    // command group
+    // m.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
   }
 
   actionOnSegment(s: SESegment): void {

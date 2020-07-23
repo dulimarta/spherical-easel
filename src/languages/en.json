@@ -40,6 +40,10 @@
     "MoveObjectToolTipMessage": "Move object",
     "MoveObjectToolUseMessage": "Click and drag an object to move it. Movable objects include labels, free points, and line segments with antipodal endpoints. Hold the SHIFT key to select from the back of the sphere.",
 
+    "HideDisplayedName": "Hide",
+    "HideObjectToolTipMessage": "Hide object",
+    "HideObjectToolUseMessage": "Click at location to hide an object. Hold the SHIFT key to select from the back of the sphere.",
+
     "CreatePointDisplayedName": "Point",
     "CreatePointToolTipMessage": "Insert point",
     "CreatePointToolUseMessage": "Click to insert a free point.",

@@ -5,6 +5,7 @@ import { Matrix4, Vector3, Matrix3 } from "three";
 import { SECircle } from "@/models/SECircle";
 import { SESegment } from "@/models/SESegment";
 import { UpdateMode, UpdateStateType } from "@/types";
+import { SEPointOnOneDimensional } from "@/models/SEPointOnOneDimensional";
 
 export class PointMoverVisitor implements Visitor {
   private locationVector: Vector3 = new Vector3();
@@ -15,9 +16,17 @@ export class PointMoverVisitor implements Visitor {
 
   //#region actionOnPoint
   actionOnPoint(p: SEPoint): void {
-    p.locationVector = this.locationVector; // Set the new position vector
-    console.log("position mover on point", p.name);
-    p.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
+    if (!(p instanceof SEPointOnOneDimensional)) {
+      p.locationVector = this.locationVector; // Set the new position vector
+    } else {
+      p.pointMoverLocationSetter(this.locationVector);
+      console.log("here");
+    }
+    //console.log("position mover on point", p.name, p.locationVector.toFixed(2));
+    // Don't update here, because it may cause a point on one dimensional to update to the wrong location
+    // The undo and restore methods of command cause one update for display at the end of every command or
+    // command group
+    //p.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
   }
   //#endregion actionOnPoint
 

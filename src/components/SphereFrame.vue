@@ -24,6 +24,7 @@ import IntersectionPointHandler from "@/eventHandlers/IntersectionPointHandler";
 import AntipodalPointHandler from "@/eventHandlers/AntipodalPointHandler";
 import PanZoomHandler, { ZoomMode } from "@/eventHandlers/PanZoomHandler";
 import DeleteHandler from "@/eventHandlers/DeleteHandler";
+import HideObjectHandler from "@/eventHandlers/HideObjectHandler";
 
 // import { RotationVisitor } from "@/visitors/RotationVisitor";
 import EventBus from "@/eventHandlers/EventBus";
@@ -78,6 +79,7 @@ export default class SphereFrame extends VueComponent {
   private antipodalPointTool!: AntipodalPointHandler;
   private intersectTool!: IntersectionPointHandler;
   private deleteTool!: DeleteHandler;
+  private hideTool!: HideObjectHandler;
 
   /**
    * The layers for displaying the various objects in the right way. So a point in the
@@ -195,6 +197,7 @@ export default class SphereFrame extends VueComponent {
     );
     this.antipodalPointTool = new AntipodalPointHandler(this.layers);
     this.deleteTool = new DeleteHandler(this.layers);
+    this.hideTool = new HideObjectHandler(this.layers);
   }
 
   beforeDestroy(): void {
@@ -411,6 +414,9 @@ export default class SphereFrame extends VueComponent {
         break;
       case "delete":
         this.currentTool = this.deleteTool;
+        break;
+      case "hide":
+        this.currentTool = this.hideTool;
         break;
       default:
         this.currentTool = null;

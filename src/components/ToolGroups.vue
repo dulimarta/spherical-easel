@@ -192,7 +192,7 @@ export default class ToolGroups extends Vue {
       id: 5,
       actionModeValue: "line",
       displayedName: "CreateLineDisplayedName",
-      icon: "mdi-vector-line",
+      icon: "mdi-vector-radius",
       toolTipMessage: "CreateLineToolTipMessage",
       toolUseMessage: "CreateLineToolUseMessage",
       displayToolUseMessage: false,
@@ -202,7 +202,7 @@ export default class ToolGroups extends Vue {
       id: 10,
       actionModeValue: "segment",
       displayedName: "CreateLineSegmentDisplayedName",
-      icon: "mdi-vector-radius",
+      icon: "mdi-vector-line",
       toolTipMessage: "CreateLineSegmentToolTipMessage",
       toolUseMessage: "CreateLineSegmentToolUseMessage",
       displayToolUseMessage: false,
@@ -240,6 +240,16 @@ export default class ToolGroups extends Vue {
       toolGroup: "edit"
     },
 
+    {
+      id: 0,
+      actionModeValue: "hide",
+      displayedName: "HideDisplayedName",
+      icon: "mdi-file-hidden",
+      toolTipMessage: "HideObjectToolTipMessage",
+      toolUseMessage: "HideObjectToolUseMessage",
+      displayToolUseMessage: false,
+      toolGroup: "display"
+    },
     {
       id: 15,
       actionModeValue: "move",

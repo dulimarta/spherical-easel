@@ -109,7 +109,7 @@ export class SEIntersectionPoint extends SEPoint {
     // will cause this point to be put into the correct location. Therefore there is no need to
     // store it in the stateArray for undo move. Only store for delete
 
-    if (state.mode == UpdateMode.RecordState) {
+    if (state.mode == UpdateMode.RecordStateForDelete) {
       const pointState: PointState = {
         kind: "point",
         locationVectorX: this._locationVector.x,

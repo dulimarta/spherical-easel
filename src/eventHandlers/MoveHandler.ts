@@ -60,12 +60,12 @@ export default class MoveHandler extends Highlighter {
    */
   //#region beforeSaveState
   private beforeMoveState: UpdateStateType = {
-    mode: UpdateMode.RecordState,
+    mode: UpdateMode.RecordStateForDelete,
     stateArray: []
   };
 
   private afterMoveState: UpdateStateType = {
-    mode: UpdateMode.RecordState,
+    mode: UpdateMode.RecordStateForDelete,
     stateArray: []
   };
   //#endregion beforeSaveState
@@ -107,6 +107,8 @@ export default class MoveHandler extends Highlighter {
       const freePoints = this.hitSEPoints.filter(n => n.isFreeToMove());
       if (freePoints.length > 0) {
         this.moveTarget = freePoints[0];
+        // First mark all children of the target out of date so that the update method does a topological sort
+        this.moveTarget.markKidsOutOfDate();
         // Store the state of the freePoints, segments and lines before the move
         this.moveTarget.update(this.beforeMoveState);
         return;
@@ -116,6 +118,9 @@ export default class MoveHandler extends Highlighter {
         const freeLines = this.hitSELines.filter(n => n.isFreeToMove());
         if (freeLines.length > 0) {
           this.moveTarget = freeLines[0];
+          // First mark all children of the target's point parents out of date so that the update method does a topological sort
+          (this.moveTarget as SELine).startSEPoint.markKidsOutOfDate();
+          (this.moveTarget as SELine).endSEPoint.markKidsOutOfDate();
           // Store the state of the freePoints, segments and lines before the move
           (this.moveTarget as SELine).startSEPoint.update(this.beforeMoveState);
           (this.moveTarget as SELine).endSEPoint.update(this.beforeMoveState);
@@ -124,6 +129,9 @@ export default class MoveHandler extends Highlighter {
         const freeSegments = this.hitSESegments.filter(n => n.isFreeToMove());
         if (freeSegments.length > 0) {
           this.moveTarget = freeSegments[0];
+          // First mark all children of the target's point parents out of date so that the update method does a topological sort
+          (this.moveTarget as SESegment).startSEPoint.markKidsOutOfDate();
+          (this.moveTarget as SESegment).endSEPoint.markKidsOutOfDate();
           // Store the state of the freePoints, segments and lines before the move
           (this.moveTarget as SESegment).startSEPoint.update(
             this.beforeMoveState
@@ -137,6 +145,9 @@ export default class MoveHandler extends Highlighter {
         const freeCircles = this.hitSECircles.filter(n => n.isFreeToMove());
         if (freeCircles.length > 0) {
           this.moveTarget = freeCircles[0];
+          // First mark all children of the target's point parents out of date so that the update method does a topological sort
+          (this.moveTarget as SECircle).centerSEPoint.markKidsOutOfDate();
+          (this.moveTarget as SECircle).circleSEPoint.markKidsOutOfDate();
           // Store the state of the freePoints, segments and lines before the move
           (this.moveTarget as SECircle).centerSEPoint.update(
             this.beforeMoveState
@@ -236,14 +247,25 @@ export default class MoveHandler extends Highlighter {
     } else {
       // Gather the after state of the freePoints, segments, and lines after the move
       if (this.moveTarget instanceof SEPoint) {
+        // First mark all children of the target's point parents out of date so that the update method does a topological sort
+        this.moveTarget.markKidsOutOfDate();
         this.moveTarget.update(this.afterMoveState);
       } else if (this.moveTarget instanceof SESegment) {
+        // First mark all children of the target's point parents out of date so that the update method does a topological sort
+        this.moveTarget.startSEPoint.markKidsOutOfDate();
+        this.moveTarget.endSEPoint.markKidsOutOfDate();
         this.moveTarget.startSEPoint.update(this.afterMoveState);
         this.moveTarget.endSEPoint.update(this.afterMoveState);
       } else if (this.moveTarget instanceof SELine) {
+        // First mark all children of the target's point parents out of date so that the update method does a topological sort
+        this.moveTarget.startSEPoint.markKidsOutOfDate();
+        this.moveTarget.endSEPoint.markKidsOutOfDate();
         this.moveTarget.startSEPoint.update(this.afterMoveState);
         this.moveTarget.endSEPoint.update(this.afterMoveState);
       } else if (this.moveTarget instanceof SECircle) {
+        // First mark all children of the target's point parents out of date so that the update method does a topological sort
+        this.moveTarget.centerSEPoint.markKidsOutOfDate();
+        this.moveTarget.circleSEPoint.markKidsOutOfDate();
         this.moveTarget.centerSEPoint.update(this.afterMoveState);
         this.moveTarget.circleSEPoint.update(this.afterMoveState);
       }
@@ -284,6 +306,12 @@ export default class MoveHandler extends Highlighter {
               .subVectors(beforeLocationVector, afterLocationVector)
               .isZero()
           ) {
+            // console.log(
+            //   "Move Pt Com",
+            //   entry.object.name,
+            //   beforeLocationVector.toFixed(2),
+            //   afterLocationVector.toFixed(2)
+            // );
             moveCommandGroup.addCommand(
               new MovePointCommand(
                 entry.object,
@@ -346,6 +374,12 @@ export default class MoveHandler extends Highlighter {
               (this.afterMoveState.stateArray[index] as SegmentState)
                 .arcLength < Math.PI)
           ) {
+            // console.log(
+            //   "Move seg Com",
+            //   entry.object.name,
+            //   beforeNormalVector.toFixed(2),
+            //   afterNormalVector.toFixed(2)
+            // );
             moveCommandGroup.addCommand(
               new MoveSegmentCommand(
                 entry.object as SESegment,
@@ -370,11 +404,11 @@ export default class MoveHandler extends Highlighter {
     this.movingSomething = false;
     this.isDragging = false;
     this.beforeMoveState = {
-      mode: UpdateMode.RecordState,
+      mode: UpdateMode.RecordStateForDelete,
       stateArray: []
     };
     this.afterMoveState = {
-      mode: UpdateMode.RecordState,
+      mode: UpdateMode.RecordStateForDelete,
       stateArray: []
     };
   }
