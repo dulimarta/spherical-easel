@@ -3,7 +3,7 @@ export enum Styles {
   // that refers to Color property
   pointFrontRadius,
   pointBackRadius,
-  strokeWidth,
+  strokeWidthPercentage,
   strokeColor,
   fillColorWhite,
   fillColorGray,
@@ -14,7 +14,7 @@ export enum Styles {
 export type StyleOptions = {
   pointFrontRadius?: number;
   pointBackRadius?: number;
-  strokeWidth?: number;
+  strokeWidthPercentage?: number;
   strokeColor?: string;
   fillColorWhite?: string;
   fillColorGray?: string;

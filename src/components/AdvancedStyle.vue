@@ -44,7 +44,7 @@ export default class AdvancedStyle extends Vue {
   }
 
   get hasStrokeWidth(): boolean {
-    return this.hasStyles(Styles.strokeWidth);
+    return this.hasStyles(Styles.strokeWidthPercentage);
   }
 
   @Watch("selections", { deep: true })

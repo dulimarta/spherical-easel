@@ -176,10 +176,16 @@ export default class Point extends Nodule {
   }
 
   updateStyle(options: StyleOptions): void {
-    if (options.strokeWidth) {
-      this.frontPoint.linewidth = options.strokeWidth;
+    if (options.strokeWidthPercentage) {
+      this.frontPoint.linewidth =
+        (SETTINGS.point.drawn.strokeWidth.front *
+          options.strokeWidthPercentage) /
+        100;
       this.glowingFrontPoint.linewidth =
-        options.strokeWidth + SETTINGS.point.glowing.annularWidth;
+        ((SETTINGS.point.drawn.strokeWidth.front +
+          SETTINGS.point.glowing.annularWidth) *
+          options.strokeWidthPercentage) /
+        100;
     }
   }
 

@@ -188,9 +188,9 @@ export default {
     const pos = state.segments.findIndex(x => x.id === change.segmentId);
     if (pos >= 0) state.segments[pos].accept(segmentNormalArcLengthVisitor);
   },
-  setSelectedObjects(state: AppState, selection: SENodule[]): void {
-    state.selections.clear();
-    state.selections.push(...selection);
+  setSelectedObjects(state: AppState, payload: SENodule[]): void {
+    state.selections.splice(0);
+    state.selections.push(...payload);
   },
   // Update the display of all free SEPoints to update the entire display
   updateDisplay(state: AppState): void {
@@ -201,9 +201,9 @@ export default {
       );
   },
   // TODO: combine the following changeXXXX functions
-  changeStrokeWidth(state: AppState, width: number): void {
+  changeStrokeWidth(state: AppState, percent: number): void {
     const opt: StyleOptions = {
-      strokeWidth: width
+      strokeWidthPercentage: percent
     };
     state.selections
       .filter(n => !(n instanceof SEPoint))

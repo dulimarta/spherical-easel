@@ -12,7 +12,7 @@ import { Styles } from "@/types/Styles";
 
 let SEGMENT_COUNT = 0;
 const styleSet = new Set([
-  Styles.strokeWidth,
+  Styles.strokeWidthPercentage,
   Styles.strokeColor,
   Styles.dashPattern
 ]);

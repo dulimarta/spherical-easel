@@ -17,7 +17,7 @@ const desiredZAxis = new Vector3();
 
 let LINE_COUNT = 0;
 const styleSet = new Set([
-  Styles.strokeWidth,
+  Styles.strokeWidthPercentage,
   Styles.strokeColor,
   Styles.dashPattern
 ]);

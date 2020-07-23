@@ -262,16 +262,11 @@ export default class PanZoomHandler implements ToolStrategy {
   }
 
   activate(): void {
-    // Unselect the selected objects (change the display to not glowing)
-    this.store.getters.selectedObjects().forEach((obj: SENodule) => {
-      obj.selected = false;
-    });
-    // Clear the selected objects array
-    this.store.commit("setSelectedObjects", []);
+    // No code required yet
   }
 
   deactivate(): void {
-    // console.debug("Deactivate PZtool");
+    // No code required yet
   }
   doZoomFit(size: number): void {
     // Get the current magnification factor and set a variable for the next one

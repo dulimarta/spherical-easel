@@ -28,12 +28,8 @@ import { Prop } from "vue-property-decorator";
 export default class Style extends Vue {
   @Prop()
   readonly minified!: boolean;
-  private selectedPanel = 1; // Default selection is the Foreground panel
+  private selectedPanel = 0; // Default selection is the Foreground panel
   private readonly panels = [
-    {
-      name: "Basic Style",
-      component: () => import("@/components/BasicStyle.vue")
-    },
     {
       name: "Foreground Style",
       component: () => import("@/components/FrontStyle.vue")

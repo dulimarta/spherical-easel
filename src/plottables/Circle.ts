@@ -592,10 +592,16 @@ export default class Circle extends Nodule {
       this.frontPart.stroke = options.strokeColor;
       this.glowingFrontPart.stroke = options.strokeColor;
     }
-    if (options.strokeWidth) {
-      this.frontPart.linewidth = options.strokeWidth;
+    if (options.strokeWidthPercentage) {
+      this.frontPart.linewidth =
+        (SETTINGS.circle.drawn.strokeWidth.front *
+          options.strokeWidthPercentage) /
+        100;
       this.glowingFrontPart.linewidth =
-        options.strokeWidth + SETTINGS.circle.glowing.edgeWidth;
+        ((SETTINGS.circle.drawn.strokeWidth.front +
+          SETTINGS.circle.glowing.edgeWidth) *
+          options.strokeWidthPercentage) /
+        100;
     }
     if (options.fillColorWhite) {
       // FIXME: it does not work?

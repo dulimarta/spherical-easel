@@ -159,16 +159,7 @@ export default abstract class MouseHandler implements ToolStrategy {
   }
 
   activate(): void {
-    // Unselect the selected objects (change the display to not glowing)
-    this.store.getters.selectedObjects().forEach((obj: SENodule) => {
-      obj.selected = false;
-    });
-    // Clear the selected objects array
-    this.store.commit("setSelectedObjects", []);
-    // console.log(
-    //   "Num selected objects:",
-    //   this.store.getters.selectedObjects().length
-    // );
+    // No code required yet
   }
 
   deactivate(): void {

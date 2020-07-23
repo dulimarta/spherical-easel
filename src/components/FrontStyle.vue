@@ -1,5 +1,6 @@
 <template>
   <div>
+    Here we go!
     <span v-show="commonStyleProperties.length === 0" class="text-body-2">
       Please select object(s) to style
     </span>
@@ -27,12 +28,17 @@
       <span>Stroke Width</span>
       <v-slider
         v-model.number="strokeWidth"
-        :min="minStrokeWidth"
+        :min="70"
         thumb-label="always"
         @change="onLineWidthChanged"
-        :max="maxStrokeWidth"
+        :max="130"
         type="range"
-      ></v-slider>
+        class="mt-8"
+      >
+        <template v-slot:thumb-label="{ value }">
+          {{ value + "%" }}
+        </template>
+      </v-slider>
     </fade-in-card>
     <fade-in-card :showWhen="hasDash">
       <span>Dash Pattern ({{ dashLength }}/{{ gapLength }})</span>
@@ -88,7 +94,7 @@ export default class FrontStyle extends Vue {
   readonly maxStrokeWidth: number = SETTINGS.line.drawn.strokeWidth.max;
 
   // TODO: handlle background as well
-  private strokeWidth: number = SETTINGS.line.drawn.strokeWidth.front;
+  private strokeWidth = 100;
   private selectedColor: string = SETTINGS.line.drawn.strokeColor.front;
   private colorApplyTo: string[] = [];
   private dashLength = 3;
@@ -156,14 +162,14 @@ export default class FrontStyle extends Vue {
   }
 
   get hasStrokeWidth(): boolean {
-    return this.hasStyles(Styles.strokeWidth);
+    return this.hasStyles(Styles.strokeWidthPercentage);
   }
 
   get hasDash(): boolean {
     return this.hasStyles(Styles.dashPattern);
   }
 
-  @Watch("selections", { deep: true })
+  @Watch("selections")
   onSelectionChanged(newSelection: SENodule[]): void {
     // newSelection.forEach(s => {
     // console.debug("Set ", s.customStyles());

@@ -477,6 +477,6 @@ export default class CircleHandler extends Highlighter {
       }
     }
     // Unselect the selected objects and clear the selectedObject array
-    super.activate();
+    // super.activate();
   }
 }

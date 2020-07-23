@@ -2,7 +2,6 @@
 
 import Two from "two.js";
 import { Vector3 } from "three";
-import { SENodule } from "@/models/SENodule";
 import { SEPoint } from "@/models/SEPoint";
 import Segment from "@/plottables/Segment";
 import Point from "@/plottables/Point";
@@ -584,6 +583,6 @@ export default class SegmentHandler extends Highlighter {
       }
     }
     // Unselect the selected objects and clear the selectedObject array
-    super.activate();
+    // super.activate();
   }
 }
