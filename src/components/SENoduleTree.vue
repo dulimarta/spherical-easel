@@ -3,19 +3,20 @@
     <!-- <span v-for="c in points" :key="c.id">{{c.name}}</span> -->
     <div id="topContainer" :style="indent">
       <div id="content">
-        <v-icon v-if="label.startsWith('P-')">mdi-vector-point</v-icon>
-        <v-icon v-else-if="label.startsWith('Ls-')">mdi-vector-radius
+        <v-icon v-if="name.startsWith('P-')">mdi-vector-point
         </v-icon>
-        <v-icon v-else-if="label.startsWith('Li-')">mdi-vector-line
+        <v-icon v-else-if="name.startsWith('Ls-')">mdi-vector-radius
         </v-icon>
-        <v-icon v-else-if="label.startsWith('C-')">
+        <v-icon v-else-if="name.startsWith('Li-')">mdi-vector-line
+        </v-icon>
+        <v-icon v-else-if="name.startsWith('C-')">
           mdi-vector-circle-variant
         </v-icon>
-        <v-icon v-else-if="label.startsWith('Intersection')">
+        <v-icon v-else-if="name.startsWith('Intersection')">
           mdi-vector-intersection
         </v-icon>
-        <div class="ml-2">{{label}}</div>
-        <v-btn v-if="visibleNodes.length > 0"
+        <div class="ml-2" :class="showClass">{{prettyName}}</div>
+        <v-btn v-if="existingNodes.length > 0"
           @click="expanded = !expanded">
           <v-icon v-if="!expanded">mdi-chevron-right</v-icon>
           <v-icon v-else>mdi-chevron-down</v-icon>
@@ -24,8 +25,8 @@
       <v-divider></v-divider>
     </div>
     <div v-if="expanded">
-      <SENoduleTree v-for="(n,pos) in visibleNodes" :key="pos"
-        :nodes="n.kids" :depth="depth + 1" :label="`${n.name} (${n.id})`">
+      <SENoduleTree v-for="(n,pos) in existingNodes" :key="pos"
+        :childrren="n.kids" :depth="depth + 1" :node="n">
       </SENoduleTree>
     </div>
   </div>
@@ -41,10 +42,13 @@ import { SENodule } from '../models/SENodule';
 export default class SENoduleTree extends Vue {
 
   @Prop()
-  readonly nodes!: SENodule[]
+  readonly children?: SENodule[]
 
   @Prop()
-  readonly label!: string;
+  readonly node?: SENodule
+
+  @Prop()
+  readonly label?: string;
 
   @Prop()
   private showChildren!: boolean;
@@ -55,11 +59,29 @@ export default class SENoduleTree extends Vue {
   private expanded = false;
 
   mounted(): void {
-    this.expanded = this.showChildren && this.nodes.length > 0;
+    if (this.children)
+      this.expanded = this.showChildren && this.children.length > 0;
+    else this.expanded = false
   }
 
-  get visibleNodes(): SENodule[] {
-    return this.nodes.filter((n: SENodule) => n.showing)
+  get hasChildren(): boolean {
+    return (this.children?.length ?? 0) > 0
+  }
+  get prettyName(): string {
+    return this.label ?? this.name
+  }
+  get name(): string {
+    return this.node?.name ?? "none";
+  }
+
+  get showClass(): string {
+    return (this.label || this.node?.showing) ? "visibleNode" : "invisibleNode"
+  }
+
+  get existingNodes(): SENodule[] {
+    if (this.children)
+      return this.children.filter((n: SENodule) => n.exists)
+    else return [];
   }
 
   get indent(): any {
@@ -74,6 +96,15 @@ export default class SENoduleTree extends Vue {
 }
 .deep {
   background-color: red;
+}
+
+.visibleNode {
+}
+
+.invisibleNode {
+  background: lightgray;
+  color: gray;
+  font-style: italic;
 }
 #content {
   display: flex;

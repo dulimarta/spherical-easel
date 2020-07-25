@@ -1,21 +1,22 @@
 <template>
   <div class="pa-0" id="objectTreeContainer">
     <v-sheet rounded :elevation="4" class="my-2">
-      <SENoduleTree label="Points" :nodes="points" :depth="0"
+      <SENoduleTree label="Points" :children="points" :depth="0"
         show-children="true">
       </SENoduleTree>
     </v-sheet>
     <v-sheet rounded :elevation="4" class="my-2">
-      <SENoduleTree label="Lines" :nodes="lines" :depth="0" show-children>
-      </SENoduleTree>
-    </v-sheet>
-    <v-sheet rounded :elevation="4" class="my-2">
-      <SENoduleTree label="Segments" :nodes="segments" :depth="0"
+      <SENoduleTree label="Lines" :children="lines" :depth="0"
         show-children>
       </SENoduleTree>
     </v-sheet>
     <v-sheet rounded :elevation="4" class="my-2">
-      <SENoduleTree label="Circles" :nodes="circles" :depth="0"
+      <SENoduleTree label="Segments" :children="segments" :depth="0"
+        show-children>
+      </SENoduleTree>
+    </v-sheet>
+    <v-sheet rounded :elevation="4" class="my-2">
+      <SENoduleTree label="Circles" :children="circles" :depth="0"
         show-children>
       </SENoduleTree>
     </v-sheet>
