@@ -11,7 +11,10 @@
         <v-icon v-else-if="label.startsWith('C-')">
           mdi-vector-circle-variant
         </v-icon>
-        <div>{{label}}</div>
+        <v-icon v-else-if="label.startsWith('Intersection')">
+          mdi-vector-intersection
+        </v-icon>
+        <div class="ml-2">{{label}}</div>
         <v-btn v-if="visibleNodes.length > 0"
           @click="expanded = !expanded">
           <v-icon v-if="!expanded">mdi-chevron-right</v-icon>

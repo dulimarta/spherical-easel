@@ -4,7 +4,6 @@ import { ZoomSphereCommand } from "@/commands/ZoomSphereCommand";
 import AppStore from "@/store";
 import EventBus from "./EventBus";
 import SETTINGS from "@/global-settings";
-import { SENodule } from "@/models/SENodule";
 
 export enum ZoomMode {
   MAGNIFY,
@@ -219,8 +218,8 @@ export default class PanZoomHandler implements ToolStrategy {
 
     // #region writeFactorVectorToStore
     // Set the new magnification factor and the new translation vector in the store
-    this.store.dispatch("changeZoomFactor", newMagFactor);
-    this.store.commit("setZoomTranslation", newTranslationVector);
+    this.store.dispatch.changeZoomFactor(newMagFactor);
+    this.store.commit.setZoomTranslation(newTranslationVector);
     // #endregion writeFactorVectorToStore
 
     // Update the display
@@ -248,7 +247,7 @@ export default class PanZoomHandler implements ToolStrategy {
     ];
     console.log("mag", mag);
     // Set the new translation vector in the store
-    this.store.commit("setZoomTranslation", this.lastPanTranslationVector);
+    this.store.commit.setZoomTranslation(this.lastPanTranslationVector);
 
     // Update the display
     EventBus.fire("zoom-updated", {});
@@ -275,15 +274,15 @@ export default class PanZoomHandler implements ToolStrategy {
     const currentTranslationVector = this.store.state.zoomTranslation;
 
     const radius = size / 2 - 16; // 16-pixel gap
-    this.store.commit("setSphereRadius", radius);
+    this.store.commit.setSphereRadius(radius);
 
     // The radius over the default radius is the magnification factor
     const newMagFactor = radius / SETTINGS.boundaryCircle.radius;
 
     // Set the new magnification factor and the new translation vector in the store
     // The origin of the screen is the zoom translation vector
-    this.store.dispatch("changeZoomFactor", newMagFactor);
-    this.store.commit("setZoomTranslation", [0, 0]);
+    this.store.dispatch.changeZoomFactor(newMagFactor);
+    this.store.commit.setZoomTranslation([0, 0]);
 
     // Update the display
     EventBus.fire("zoom-updated", {});

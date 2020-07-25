@@ -130,6 +130,6 @@ export default abstract class Highlighter extends MouseHandler {
       obj.selected = false;
     });
     // Clear the selected objects array
-    this.store.commit("setSelectedObjects", []);
+    this.store.commit.setSelectedObjects([]);
   }
 }

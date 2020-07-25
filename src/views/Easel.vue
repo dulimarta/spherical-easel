@@ -329,7 +329,7 @@ export default class Easel extends Vue {
 
   //#region resizePlottables
   resizePlottables(e: any): void {
-    const oldFactor = this.$store.getters.previousZoomMagnificationFactor();
+    const oldFactor = this.$store.state.previousZoomMagnificationFactor;
     Circle.currentCircleStrokeWidthFront *= oldFactor / e.factor;
     // this.$store.state.points.forEach((p: SEPoint) => {
     //   p.ref.adjustSizeForZoom(e.factor);

@@ -13,7 +13,7 @@ import { Store } from "vuex";
 import { AppState } from "@/types";
 import AppStore from "@/store";
 export abstract class Command {
-  protected static store: Store<AppState> = AppStore;
+  protected static store: Store<AppState> = AppStore.original;
 
   //#region commmandArrays
   static commandHistory: Command[] = []; // stack of executed commands

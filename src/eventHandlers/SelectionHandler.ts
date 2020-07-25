@@ -1,10 +1,6 @@
 import MouseHandler from "./MouseHandler";
 import { SENodule } from "@/models/SENodule";
-import { SECircle } from "@/models/SECircle";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
-// import { SEPoint } from "@/models/SEPoint";
-// import { SELine } from "@/models/SELine";
-// import { SESegment } from "@/models/SESegment";
 
 export default class SelectionHandler extends MouseHandler {
   /**
@@ -86,7 +82,7 @@ export default class SelectionHandler extends MouseHandler {
         this.currentSelection = this.hitSENodules.filter(n => n.selected);
       }
     }
-    this.store.commit("setSelectedObjects", this.currentSelection);
+    this.store.commit.setSelectedObjects(this.currentSelection);
     /** 
     console.log("----selected---- objects------");
     this.currentSelection.forEach(n =>
@@ -167,7 +163,7 @@ export default class SelectionHandler extends MouseHandler {
       obj.selected = false;
     });
     // Clear the selected objects array
-    this.store.commit("setSelectedObjects", []);
+    this.store.commit.setSelectedObjects([]);
     this.currentSelection.clear();
     window.removeEventListener("keypress", this.keyPressHandler);
   }

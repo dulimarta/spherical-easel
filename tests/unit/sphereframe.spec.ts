@@ -20,7 +20,10 @@ describe("SphereFrame.vue", () => {
   beforeEach(async () => {
     localVue = createLocalVue();
     localVue.use(Vuex);
-    wrapper = shallowMount(SphereFrame, { store: realStore, localVue });
+    wrapper = shallowMount(SphereFrame, {
+      store: realStore.original,
+      localVue
+    });
 
     // It is important to reset the actionMode back to subsequent
     // mutation to actionMode will trigger a Vue Watch update

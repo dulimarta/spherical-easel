@@ -73,7 +73,7 @@ describe("App.vue", () => {
     it("shows the name of selected tool", async () => {
       const TEST_TOOL_NAME = "Tool Name Here";
       wrapper = shallowMount(App, {
-        store: realStore,
+        store: realStore.original,
         stubs: {
           "router-link": true,
           "router-view": true

@@ -7,10 +7,17 @@ import getters from "./getters";
 import EventBus from "@/eventHandlers/EventBus";
 // import StylesModule from "./ui-styles";
 // import AuthModule from "./auth";
+import { createDirectStore } from "direct-vuex";
 
 Vue.use(Vuex);
 
-export default new Vuex.Store({
+const {
+  store,
+  rootActionContext,
+  moduleActionContext,
+  rootGetterContext,
+  moduleGetterContext
+} = createDirectStore({
   state: initialState,
   mutations,
   actions: {
@@ -28,3 +35,18 @@ export default new Vuex.Store({
     // ui: StylesModule
   }
 });
+export default store;
+export {
+  rootActionContext,
+  moduleActionContext,
+  rootGetterContext,
+  moduleGetterContext
+};
+
+export type AppStore = typeof store;
+
+declare module "vuex" {
+  interface Store<S> {
+    direct: AppStore;
+  }
+}

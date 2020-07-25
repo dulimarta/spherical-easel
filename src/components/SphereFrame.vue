@@ -317,8 +317,8 @@ export default class SphereFrame extends VueComponent {
     }
 
     // Set the new magnifiction factor and the next translation vector in the store
-    this.store.dispatch("changeZoomFactor", newMagFactor);
-    this.store.commit("setZoomTranslation", newTranslationVector);
+    this.store.dispatch.changeZoomFactor(newMagFactor);
+    this.store.commit.setZoomTranslation(newTranslationVector);
     // Update the display
     this.updateView();
     //EventBus.fire("zoom-updated", {});

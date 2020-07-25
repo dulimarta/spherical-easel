@@ -788,12 +788,12 @@ export default {
   previousActionMode: (state: AppState) => (): { id: string; name: string } => {
     return { id: state.actionMode, name: state.activeToolName };
   },
-  previousZoomMagnificationFactor: (state: AppState) => (): number => {
-    return state.previousZoomMagnificationFactor;
-  },
-  zoomMagnificationFactor: (state: AppState) => (): number => {
-    return state.zoomMagnificationFactor;
-  },
+  // previousZoomMagnificationFactor: (state: AppState) => (): number => {
+  //   return state.previousZoomMagnificationFactor;
+  // },
+  // zoomMagnificationFactor: (state: AppState) => (): number => {
+  //   return state.zoomMagnificationFactor;
+  // },
   getSENoduleById: (state: AppState) => (id: number): SENodule | undefined => {
     //console.log("All Nodule", state.nodules.length);
     return state.nodules.find((z: SENodule) => z.id === id);
