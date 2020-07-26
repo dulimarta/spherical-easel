@@ -23,7 +23,6 @@ export interface AppState {
   previousActionMode: string;
   activeToolName: string;
   previousActiveToolName: string;
-  // nodes: SENodule[], Do we need this?
   points: SEPoint[];
   lines: SELine[];
   segments: SESegment[];
@@ -75,10 +74,11 @@ export interface OneDimensional {
 export type SEOneDimensional = SELine | SESegment | SECircle;
 
 /**
- * The
+ * There are three modes for updating. The DisplayOnly doesn't record information as the update(mode: , stateArray:[]) method is
+ * executed
  */
 export enum UpdateMode {
-  DisplayOnly,
+  DisplayOnly, // Record nothing in the state Array
   RecordStateForDelete, // All visited objects must be put into the stateArray
   RecordStateForMove // Only those objects which depend on more than their point parents need to record that information
 }

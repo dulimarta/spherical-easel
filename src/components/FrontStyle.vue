@@ -1,9 +1,9 @@
 <template>
   <div>
-    Here we go!
-    <span v-show="commonStyleProperties.length === 0" class="text-body-2">
-      Please select object(s) to style
-    </span>
+    <span
+      v-show="commonStyleProperties.length === 0"
+      class="text-body-2"
+    >Here we go! Please select object(s) to style</span>
     <fade-in-card :showWhen="hasColor">
       <span class="text-subtitle-2">Color</span>
       <v-color-picker
@@ -35,9 +35,7 @@
         type="range"
         class="mt-8"
       >
-        <template v-slot:thumb-label="{ value }">
-          {{ value + "%" }}
-        </template>
+        <template v-slot:thumb-label="{ value }">{{ value + "%" }}</template>
       </v-slider>
     </fade-in-card>
     <fade-in-card :showWhen="hasDash">
@@ -108,10 +106,14 @@ export default class FrontStyle extends Vue {
     // this.commonProperties = new Set();
   }
 
+  // Changes the stroke width of the elements in the *selection* array in the store
   onLineWidthChanged(): void {
     this.$store.commit("changeStrokeWidth", this.strokeWidth);
     // this.UIModule.changeStrokeColor("red");
   }
+
+  // Changes the stroke color of the elements in the *selection* array in the store
+  // This commit is sent to the store with options includeing the selected color and ????
   onColorChanged(): void {
     this.$store.commit("changeColor", {
       color: this.selectedColor,
@@ -124,6 +126,10 @@ export default class FrontStyle extends Vue {
   onDashPatternChanged(): void {
     this.$store.commit("changeDashPattern", [this.dashLength, this.gapLength]);
   }
+  /**
+   * Determines if the commonStyleProperties have the given input of type Styles
+   * The input is an enum of type Styles
+   */
   hasStyles(s: Styles): boolean {
     const sNum = Number(s);
     return (
@@ -169,6 +175,10 @@ export default class FrontStyle extends Vue {
     return this.hasStyles(Styles.dashPattern);
   }
 
+  /**
+   * This is an example of the two-way binding that is provided by the Vuex store. As this is a Vue component we can Watch variables, and
+   * when they change, this method wil execute in response to that change.
+   */
   @Watch("selections")
   onSelectionChanged(newSelection: SENodule[]): void {
     // newSelection.forEach(s => {
@@ -179,6 +189,8 @@ export default class FrontStyle extends Vue {
       // console.debug("No Common props: ");
       return;
     }
+    // Create a list of the common properties that the objects in the selection have.
+    // The customStyles method returns a list of the styles the are adjustable for that object
     for (let k = 0; k < values.length; k++) {
       if (newSelection.every(s => s.customStyles().has(k)))
         this.commonStyleProperties.push(k);

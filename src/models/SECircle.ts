@@ -193,6 +193,9 @@ export class SECircle extends SENodule implements Visitable, OneDimensional {
         .applyMatrix4(this.changeInPositionRotationMatrix);
       this.circleSEPoint.locationVector = tmpVector;
       // Update both points, because we might need to update their kids!
+      // First mark the kids out of date so that the update method does a topological sort
+      this.circleSEPoint.markKidsOutOfDate();
+      this.centerSEPoint.markKidsOutOfDate();
       this.circleSEPoint.update({
         mode: UpdateMode.DisplayOnly,
         stateArray: []

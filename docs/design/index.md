@@ -266,7 +266,7 @@ This allows us use the <span class="method">update</span> method to update the <
 
 <<< @/src/models/SEPoint.ts#saveState
 
-This stores the location of the point and not a pointer to the location which would not change during the move! Note that the <span class="method">update</span> method does a topological sort on the directed acyclic graph [Data Structure](/design/#data-structure) so the parents of an object are updated before the object itself. Thus the point parents of a one dimensional object are correctly updated before the one ddimensionalobject itself. Therefore it is not necessary to store any information about the object that is not captured by the parent points and will be restored with a <span class="method">update</span> display only method call like
+This stores the location of the point and not a pointer to the location which would not change during the move! Note that the <span class="method">update</span> method does a topological sort on the directed acyclic graph [Data Structure](/design/#data-structure) (but _only_ if the <span class="class">markKidsOutOfDate()</span> method is called first on the object) so the parents of an object are updated before the object itself. Thus the point parents of a one dimensional object are correctly updated before the one ddimensional object itself. Therefore it is not necessary to store any information about the object that is not captured by the parent points and will be restored with a <span class="method">update</span> display only method call like
 
 <<< @/src/eventHandlers/MoveHandler.ts#displayOnlyUpdate
 
@@ -389,7 +389,7 @@ Notice that this creates a <span class="class">RotationVisitor</span> based on t
 
 <<< @/src/visitors/RotationVisitor.ts#actionOnPoint
 
-The <span class="class">RotationVisitor</span> merely updates all other <span class="class">SENodule</span> objects. Notice how the sequence of triggered event is now outside of the Vue Components again, but has been recorded in the Store along the way.
+The <span class="class">RotationVisitor</span> merely updates all other <span class="class">SENodule</span> objects. Notice how the sequence of triggered event is now outside of the Vue Components again, but has been accessed in the Store along the way. Also notice how the <span class="class">RotationVisitor</span> marks the kids of each point out of date before called the <span class="method">update</span> method.
 
 ## Languages
 

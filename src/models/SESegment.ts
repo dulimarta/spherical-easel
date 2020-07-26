@@ -351,6 +351,9 @@ export class SESegment extends SENodule implements Visitable, OneDimensional {
           .applyAxisAngle(desiredZAxis, rotationAngle);
         this.endSEPoint.locationVector = tmpVector2;
         // Update both points, because we might need to update their kids!
+        // First mark the kids out of date so that the update method does a topological sort
+        this.endSEPoint.markKidsOutOfDate();
+        this.startSEPoint.markKidsOutOfDate();
         this.endSEPoint.update({
           mode: UpdateMode.DisplayOnly,
           stateArray: []
@@ -407,12 +410,17 @@ export class SESegment extends SENodule implements Visitable, OneDimensional {
         tmpVector1.copy(this.normalVector);
         tmpVector1.applyAxisAngle(axisOfRotation, rotationAngle);
         this.normalVector = tmpVector1;
+        //Mark kids out of date so that the update method does a topological sort
+        this.markKidsOutOfDate();
         this.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
       } else {
         // For non-antipodal points move the freeEnd
         tmpVector1.copy(freeEnd.locationVector);
         tmpVector1.applyAxisAngle(axisOfRotation, rotationAngle);
         freeEnd.locationVector = tmpVector1;
+        // First mark the kids out of date so that the update method does a topological sort
+        freeEnd.markKidsOutOfDate();
+        pivot.markKidsOutOfDate();
         freeEnd.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
         pivot.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
       }

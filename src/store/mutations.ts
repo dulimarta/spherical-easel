@@ -196,9 +196,11 @@ export default {
   updateDisplay(state: AppState): void {
     state.nodules
       .filter(obj => obj.isFreePoint())
-      .forEach(obj =>
-        obj.update({ mode: UpdateMode.DisplayOnly, stateArray: [] })
-      );
+      .forEach(obj => {
+        // First mark the kids out of date so that the update method does a topological sort
+        obj.markKidsOutOfDate();
+        obj.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
+      });
   },
   // TODO: combine the following changeXXXX functions
   changeStrokeWidth(state: AppState, percent: number): void {
@@ -213,6 +215,7 @@ export default {
         n.ref.updateStyle(opt);
       });
   },
+
   changeColor(
     state: AppState,
     { color, props }: { color: string; props: string[] }
