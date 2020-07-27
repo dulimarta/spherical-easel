@@ -90,9 +90,13 @@ export default abstract class MouseHandler implements ToolStrategy {
     this.isOnSphere = false;
     // Create and style the temporary points marking the start/end of an object being created
     this.startMarker = new Point();
-    this.startMarker.stylize(DisplayStyle.TEMPORARY);
+    this.startMarker.stylize(DisplayStyle.APPLYTEMPORARYVARIABLES);
+    this.startMarker.adjustSize();
     this.endMarker = new Point();
-    this.endMarker.stylize(DisplayStyle.TEMPORARY);
+    this.endMarker.stylize(DisplayStyle.APPLYTEMPORARYVARIABLES);
+    this.endMarker.adjustSize();
+    this.store.commit("addTemporaryNodule", this.startMarker);
+    this.store.commit("addTemporaryNodule", this.endMarker);
   }
 
   abstract mousePressed(event: MouseEvent): void;

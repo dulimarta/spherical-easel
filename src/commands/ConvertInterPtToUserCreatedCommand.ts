@@ -16,8 +16,10 @@ export class ConvertInterPtToUserCreatedCommand extends Command {
 
   do(): void {
     this.seIntersectionPoint.isUserCreated = true;
-    this.seIntersectionPoint.ref.stylize(DisplayStyle.DEFAULT);
-    this.seIntersectionPoint.ref.stylize(DisplayStyle.GLOWING);
+    // Set the display to the default values
+    this.seIntersectionPoint.ref.stylize(DisplayStyle.APPLYCURRENTVARIABLES);
+    // Set the size for the current zoom magnification factor
+    this.seIntersectionPoint.ref.adjustSize();
     console.debug("Converted SEIntersction", this.seIntersectionPoint.name);
     this.seIntersectionPoint.showing = true;
   }
@@ -29,6 +31,6 @@ export class ConvertInterPtToUserCreatedCommand extends Command {
   restoreState(): void {
     this.seIntersectionPoint.isUserCreated = false;
     this.seIntersectionPoint.showing = false;
-    this.seIntersectionPoint.ref.stylize(DisplayStyle.TEMPORARY);
+    this.seIntersectionPoint.ref.stylize(DisplayStyle.APPLYTEMPORARYVARIABLES);
   }
 }

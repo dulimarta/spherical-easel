@@ -40,9 +40,9 @@ export default class PointHandler extends Highlighter {
       //#region linkNoduleSENodule
       const newPoint = new Point();
       // Set the display to the default values
-      newPoint.stylize(DisplayStyle.DEFAULT);
-      // Set up the glowing display
-      newPoint.stylize(DisplayStyle.GLOWING);
+      newPoint.stylize(DisplayStyle.APPLYCURRENTVARIABLES);
+      newPoint.adjustSize();
+
       // Create the model object for the new point and link them
       const vtx = new SEPoint(newPoint);
       vtx.locationVector = this.currentSphereVector;
@@ -64,6 +64,8 @@ export default class PointHandler extends Highlighter {
         this.isTemporaryPointAdded = true;
         // Add the temporary point to the appropriate layers
         this.startMarker.addToLayers(this.layers);
+
+        this.startMarker.adjustSize();
       }
       // Move the temporary point to the location of the mouse event, and update the display
       this.startMarker.positionVector = this.currentSphereVector;
@@ -79,7 +81,6 @@ export default class PointHandler extends Highlighter {
     /* None */
   }
 
-  // eslint-disable-next-line
   mouseLeave(event: MouseEvent): void {
     super.mouseLeave(event);
 

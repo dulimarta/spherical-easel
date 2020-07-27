@@ -37,9 +37,9 @@ export default class AntipodalPointHandler extends Highlighter {
       if (this.parentPoint != null) {
         const newPoint = new Point();
         // Set the display to the default values
-        newPoint.stylize(DisplayStyle.DEFAULT);
-        // Set up the glowing display
-        newPoint.stylize(DisplayStyle.GLOWING);
+        newPoint.stylize(DisplayStyle.APPLYCURRENTVARIABLES);
+        newPoint.adjustSize();
+
         // Create the model object for the new point and link them
         const vtx = new SEAntipodalPoint(newPoint, this.parentPoint);
 
@@ -72,9 +72,9 @@ export default class AntipodalPointHandler extends Highlighter {
       if (object instanceof SEPoint) {
         const newPoint = new Point();
         // Set the display to the default values
-        newPoint.stylize(DisplayStyle.DEFAULT);
-        // Set up the glowing display
-        newPoint.stylize(DisplayStyle.GLOWING);
+        newPoint.stylize(DisplayStyle.APPLYCURRENTVARIABLES);
+        newPoint.adjustSize();
+
         // Create the model object for the new point and link them
         const vtx = new SEAntipodalPoint(newPoint, object);
 

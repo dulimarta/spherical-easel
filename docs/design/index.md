@@ -50,7 +50,7 @@ There are some abstract methods in <span class="class">SENodules</span> that mus
 
 For any variable in a model class, that has an associated setter or getter, the private version starts with an underscore and the setter or getter version doesn't have an underscore. If the variable is an SE object of some type the two letter sequence SE is in the name.
 
-### State
+### Object State
 
 Every <span class="class">SENodule</span> object has the following boolean properties:
 

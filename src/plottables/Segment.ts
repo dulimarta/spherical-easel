@@ -53,30 +53,48 @@ export default class Segment extends Nodule {
    * The styling variables for the drawn segment. The user can modify these.
    * Created with the Google Sheet "Segment Styling Code" in the "Set Drawn Variables" tab
    */
-  // FRONT
+  // Front
   private strokeColorFront = SETTINGS.segment.drawn.strokeColor.front;
-  private strokeWidthFront = SETTINGS.segment.drawn.strokeWidth.front;
+  private strokeWidthPercentFront = 100;
   private opacityFront = SETTINGS.segment.drawn.opacity.front;
-  private dashArrayFront = SETTINGS.segment.drawn.dashArray.front;
+  private dashArrayFront = [] as number[]; // Initialize in constructor
   private dashArrayOffsetFront = SETTINGS.segment.drawn.dashArray.offset.front;
-  // BACK
+  // Back
   private strokeColorBack = SETTINGS.segment.dynamicBackStyle
     ? Nodule.contrastStrokeColor(SETTINGS.segment.drawn.strokeColor.front)
     : SETTINGS.segment.drawn.strokeColor.back;
-  private strokeWidthBack = SETTINGS.segment.dynamicBackStyle
-    ? Nodule.contractStrokeWidth(SETTINGS.segment.drawn.strokeWidth.front)
-    : SETTINGS.segment.drawn.strokeWidth.back;
+  private strokeWidthPercentBack = SETTINGS.segment.dynamicBackStyle
+    ? Nodule.contrastStrokeWidthPercent(100)
+    : 100;
   private opacityBack = SETTINGS.segment.dynamicBackStyle
     ? Nodule.contrastOpacity(SETTINGS.segment.drawn.opacity.front)
     : SETTINGS.segment.drawn.opacity.back;
-  private dashArrayBack = SETTINGS.segment.dynamicBackStyle
-    ? Nodule.contrastDashArray(SETTINGS.segment.drawn.dashArray.front)
-    : SETTINGS.segment.drawn.dashArray.back;
-  private dashArrayOffsetBack = SETTINGS.segment.dynamicBackStyle
-    ? Nodule.contrastDashArrayOffset(
-        SETTINGS.segment.drawn.dashArray.offset.front
-      )
-    : SETTINGS.segment.drawn.dashArray.offset.back;
+  private dashArrayBack = [] as number[]; // Initialize in constructor
+  private dashArrayOffsetBack = SETTINGS.segment.drawn.dashArray.offset.back;
+  private dynamicBackStyle = SETTINGS.segment.dynamicBackStyle;
+
+  /** Initialize the current line width that is adjust by the zoom level and the user widthPercent */
+  static currentSegmentStrokeWidthFront =
+    SETTINGS.segment.drawn.strokeWidth.front;
+  static currentSegmentStrokeWidthBack =
+    SETTINGS.segment.drawn.strokeWidth.back;
+  static currentGlowingSegmentStrokeWidthFront =
+    SETTINGS.segment.drawn.strokeWidth.front +
+    SETTINGS.segment.glowing.edgeWidth;
+  static currentGlowingSegmentStrokeWidthBack =
+    SETTINGS.segment.drawn.strokeWidth.back +
+    SETTINGS.segment.glowing.edgeWidth;
+
+  /**
+   * Update all the current stroke widths
+   * @param factor The ratio of the current magnification factor over the old magnification factor
+   */
+  static updateCurrentStrokeWidthForZoom(factor: number): void {
+    Segment.currentSegmentStrokeWidthFront *= factor;
+    Segment.currentSegmentStrokeWidthBack *= factor;
+    Segment.currentGlowingSegmentStrokeWidthFront *= factor;
+    Segment.currentGlowingSegmentStrokeWidthBack *= factor;
+  }
 
   // Temporary ThreeJS objects for computing
   private tmpMatrix = new Matrix4();
@@ -139,22 +157,17 @@ export default class Segment extends Nodule {
     this.glowingFrontExtra.visible = false;
     this.backExtra.visible = true;
     this.glowingBackExtra.visible = false;
-  }
 
-  // TODO: adjust size of frontextra, backextra and glowing parts use stylize("update")
-  adjustSizeForZoom(): void {
-    // const newThickness = this.strokeWidthFront * factor;
-    // console.debug("Attempt to change line thickness to", newThickness);
-    // if (factor > 1)
-    //   this.frontPart.linewidth = Math.min(
-    //     newThickness,
-    //     SETTINGS.segment.drawn.strokeWidth.max
-    //   );
-    // else
-    //   this.frontPart.linewidth = Math.max(
-    //     newThickness,
-    //     SETTINGS.segment.drawn.strokeWidth.min
-    //   );
+    if (SETTINGS.segment.drawn.dashArray.front.length > 0) {
+      SETTINGS.segment.drawn.dashArray.front.forEach(v =>
+        this.dashArrayFront.push(v)
+      );
+    }
+    if (SETTINGS.segment.drawn.dashArray.back.length > 0) {
+      SETTINGS.segment.drawn.dashArray.back.forEach(v =>
+        this.dashArrayBack.push(v)
+      );
+    }
   }
 
   frontGlowingDisplay(): void {
@@ -193,42 +206,6 @@ export default class Segment extends Nodule {
   glowingDisplay(): void {
     this.frontGlowingDisplay();
     this.backGlowingDisplay();
-  }
-
-  updateStyle(options: StyleOptions): void {
-    console.debug("Update style of", this.name);
-    if (options.strokeColor) {
-      this.frontPart.stroke = options.strokeColor;
-      this.frontExtra.stroke = options.strokeColor;
-      this.glowingFrontPart.stroke = options.strokeColor;
-      this.glowingFrontExtra.stroke = options.strokeColor;
-    }
-    if (options.strokeWidthPercentage) {
-      this.frontPart.linewidth =
-        (SETTINGS.segment.drawn.strokeWidth.front *
-          options.strokeWidthPercentage) /
-        100;
-      this.frontExtra.linewidth =
-        (SETTINGS.segment.drawn.strokeWidth.front *
-          options.strokeWidthPercentage) /
-        100;
-      this.glowingFrontPart.linewidth =
-        ((SETTINGS.segment.drawn.strokeWidth.front +
-          SETTINGS.segment.glowing.edgeWidth) *
-          options.strokeWidthPercentage) /
-        100;
-      this.glowingFrontExtra.linewidth =
-        ((SETTINGS.segment.drawn.strokeWidth.front +
-          SETTINGS.segment.glowing.edgeWidth) *
-          options.strokeWidthPercentage) /
-        100;
-    }
-    if (options.dashPattern) {
-      this.backPart.dashes = options.dashPattern;
-      this.backExtra.dashes = options.dashPattern;
-      this.glowingBackPart.dashes = options.dashPattern;
-      this.glowingBackExtra.dashes = options.dashPattern;
-    }
   }
 
   /**
@@ -471,204 +448,147 @@ export default class Segment extends Nodule {
   }
 
   /**
-   * Set the rendering style (flags: temporary, default, glowing, update) of the segment
-   * Update flag means at least one of the private variables storing style information has
-   * changed and should be applied to the displayed segment.
+   * Copies the style options set by the Style Panel into the style variables and then updates the
+   * Two.js objects (with adjustSize and stylize(ApplyVariables))
+   * @param options The style options
+   */
+  updateStyle(options: StyleOptions): void {
+    console.debug("Update style of", this.name, "using", options);
+    if (options.front) {
+      // Set the front options
+      if (options.strokeWidthPercentage) {
+        this.strokeWidthPercentFront = options.strokeWidthPercentage;
+      }
+      if (options.strokeColor) {
+        this.strokeColorFront = options.strokeColor;
+      }
+      if (options.opacity) {
+        this.opacityFront = options.opacity;
+      }
+      if (options.dashArray) {
+        // clear the dashArray
+        this.dashArrayFront.clear();
+        for (let i = 0; i < options.dashArray.length; i++) {
+          this.dashArrayFront.push(options.dashArray[i]);
+        }
+        if (options.dashOffset) {
+          this.dashArrayOffsetFront = options.dashOffset;
+        }
+      }
+    } else {
+      // Set the back options
+      if (options.dynamicBackStyle) {
+        this.dynamicBackStyle = options.dynamicBackStyle;
+      }
+      if (options.strokeWidthPercentage) {
+        this.strokeWidthPercentBack = options.strokeWidthPercentage;
+      }
+      if (options.strokeColor) {
+        this.strokeColorBack = options.strokeColor;
+      }
+      if (options.opacity) {
+        this.opacityBack = options.opacity;
+      }
+      if (options.dashArray) {
+        // clear the dashArray
+        this.dashArrayBack.clear();
+        for (let i = 0; i < options.dashArray.length; i++) {
+          this.dashArrayBack.push(options.dashArray[i]);
+        }
+        if (options.dashOffset) this.dashArrayOffsetBack = options.dashOffset;
+      }
+    }
+    // Now update the style and size
+    this.stylize(DisplayStyle.APPLYCURRENTVARIABLES);
+    this.adjustSize();
+  }
+
+  /**
+   * Sets the variables for stroke width glowing/not front/back/extra
+   */
+  adjustSize(): void {
+    this.frontPart.linewidth =
+      (Segment.currentSegmentStrokeWidthFront * this.strokeWidthPercentFront) /
+      100;
+    this.backPart.linewidth =
+      (Segment.currentSegmentStrokeWidthBack *
+        (this.dynamicBackStyle
+          ? Nodule.contrastStrokeWidthPercent(this.strokeWidthPercentFront)
+          : this.strokeWidthPercentBack)) /
+      100;
+    this.glowingFrontPart.linewidth =
+      (Segment.currentGlowingSegmentStrokeWidthFront *
+        this.strokeWidthPercentFront) /
+      100;
+    this.glowingBackPart.linewidth =
+      (Segment.currentGlowingSegmentStrokeWidthBack *
+        (this.dynamicBackStyle
+          ? Nodule.contrastStrokeWidthPercent(this.strokeWidthPercentFront)
+          : this.strokeWidthPercentBack)) /
+      100;
+
+    this.frontExtra.linewidth =
+      (Segment.currentSegmentStrokeWidthFront * this.strokeWidthPercentFront) /
+      100;
+    this.backExtra.linewidth =
+      (Segment.currentSegmentStrokeWidthBack *
+        (this.dynamicBackStyle
+          ? Nodule.contrastStrokeWidthPercent(this.strokeWidthPercentFront)
+          : this.strokeWidthPercentBack)) /
+      100;
+    this.glowingFrontExtra.linewidth =
+      (Segment.currentGlowingSegmentStrokeWidthFront *
+        this.strokeWidthPercentFront) /
+      100;
+    this.glowingBackExtra.linewidth =
+      (Segment.currentGlowingSegmentStrokeWidthBack *
+        (this.dynamicBackStyle
+          ? Nodule.contrastStrokeWidthPercent(this.strokeWidthPercentFront)
+          : this.strokeWidthPercentBack)) /
+      100;
+  }
+
+  /**
+   * Set the rendering style (flags: ApplyTemporaryVariables, ApplyCurrentVariables, ResetVariablesToDefaults) of the line
+   *
+   * ApplyTemporaryVariables means that
+   *    1) The temporary variables from SETTINGS.segment.temp are copied into the actual Two.js objects
+   *    2) Dash pattern for temporary is copied  from the SETTINGS.segment.drawn into the actual Two.js objects
+   *    3) The line width is copied from the currentSegmentStrokeWidth (which accounts for the Zoom magnification) into the actual Two.js objects
+   *
+   * Apply CurrentVariables means that all current values of the private style variables are copied into the actual Two.js objects
+   *
+   * ResetVariablesToDefaults means that all the private style variables are set to their defaults from SETTINGS.
    */
   stylize(flag: DisplayStyle): void {
     switch (flag) {
-      case DisplayStyle.TEMPORARY: {
-        // The style for the temporary segment display.  These options are not user modifiable.
-        // Created with the Google Sheet "Segment Styling Code" in the "Temporary" tab
+      case DisplayStyle.APPLYTEMPORARYVARIABLES: {
+        // Use the SETTINGS temporary options to directly modify the Two.js objects.
 
         // FRONT PART
+        // no fillColor
         this.frontPart.stroke = SETTINGS.segment.temp.strokeColor.front;
-        this.frontPart.linewidth = SETTINGS.segment.temp.strokeWidth.front;
+        // strokeWidthPercent -- The line width is set to the current line width (which is updated for zoom magnification)
+        this.frontPart.linewidth = Segment.currentSegmentStrokeWidthFront;
         this.frontPart.opacity = SETTINGS.segment.temp.opacity.front;
-        if (SETTINGS.segment.temp.dashArray.front.length > 0) {
-          SETTINGS.segment.temp.dashArray.front.forEach(v => {
-            this.frontPart.dashes.push(v);
-          });
-          this.frontPart.offset = SETTINGS.segment.temp.dashArray.offset.front;
-        }
-        // FRONT EXTRA
-        this.frontExtra.stroke = SETTINGS.segment.temp.strokeColor.front;
-        this.frontExtra.linewidth = SETTINGS.segment.temp.strokeWidth.front;
-        this.frontExtra.opacity = SETTINGS.segment.temp.opacity.front;
-        if (SETTINGS.segment.temp.dashArray.front.length > 0) {
-          SETTINGS.segment.temp.dashArray.front.forEach(v => {
-            this.frontExtra.dashes.push(v);
-          });
-          this.frontExtra.offset = SETTINGS.segment.temp.dashArray.offset.front;
-        }
-        // BACK PART
-        this.backPart.stroke = SETTINGS.segment.temp.strokeColor.back;
-        this.backPart.linewidth = SETTINGS.segment.temp.strokeWidth.back;
-        this.backPart.opacity = SETTINGS.segment.temp.opacity.back;
-        if (SETTINGS.segment.temp.dashArray.back.length > 0) {
-          SETTINGS.segment.temp.dashArray.back.forEach(v => {
-            this.backPart.dashes.push(v);
-          });
-          this.backPart.offset = SETTINGS.segment.temp.dashArray.offset.back;
-        }
-        // BACK EXTRA
-        this.backExtra.stroke = SETTINGS.segment.temp.strokeColor.back;
-        this.backExtra.linewidth = SETTINGS.segment.temp.strokeWidth.back;
-        this.backExtra.opacity = SETTINGS.segment.temp.opacity.back;
-        if (SETTINGS.segment.temp.dashArray.back.length > 0) {
-          SETTINGS.segment.temp.dashArray.back.forEach(v => {
-            this.backExtra.dashes.push(v);
-          });
-          this.backExtra.offset = SETTINGS.segment.temp.dashArray.offset.back;
-        }
-        // The temporary display is never highlighted
-        this.glowingFrontPart.visible = false;
-        this.glowingBackPart.visible = false;
-        this.glowingFrontExtra.visible = false;
-        this.glowingBackExtra.visible = false;
-        break;
-      }
-      case DisplayStyle.GLOWING: {
-        // The style for the glowing circle display.  These options are not user modifiable.
-        // Created with the Google Sheet "Segment Styling Code" in the "Glowing" tab
-
-        // FRONT PART
-        this.glowingFrontPart.stroke =
-          SETTINGS.segment.glowing.strokeColor.front;
-        this.glowingFrontPart.linewidth =
-          SETTINGS.segment.glowing.edgeWidth +
-          SETTINGS.segment.drawn.strokeWidth.front;
-        this.glowingFrontPart.opacity = SETTINGS.segment.glowing.opacity.front;
-        if (SETTINGS.segment.glowing.dashArray.front.length > 0) {
-          SETTINGS.segment.glowing.dashArray.front.forEach(v => {
-            this.glowingFrontPart.dashes.push(v);
-          });
-          this.glowingFrontPart.offset =
-            SETTINGS.segment.glowing.dashArray.offset.front;
-        }
-        // FRONT EXTRA
-        this.glowingFrontExtra.stroke =
-          SETTINGS.segment.glowing.strokeColor.front;
-        this.glowingFrontExtra.linewidth =
-          SETTINGS.segment.glowing.edgeWidth +
-          SETTINGS.segment.drawn.strokeWidth.front;
-        this.glowingFrontExtra.opacity = SETTINGS.segment.glowing.opacity.front;
-        if (SETTINGS.segment.glowing.dashArray.front.length > 0) {
-          SETTINGS.segment.glowing.dashArray.front.forEach(v => {
-            this.glowingFrontExtra.dashes.push(v);
-          });
-          this.glowingFrontExtra.offset =
-            SETTINGS.segment.glowing.dashArray.offset.front;
-        }
-
-        // BACK PART
-        this.glowingBackPart.stroke = SETTINGS.segment.glowing.strokeColor.back;
-        this.glowingBackPart.linewidth =
-          SETTINGS.segment.glowing.edgeWidth +
-          SETTINGS.segment.drawn.strokeWidth.back;
-        this.glowingBackPart.opacity = SETTINGS.segment.glowing.opacity.back;
-        if (SETTINGS.segment.glowing.dashArray.back.length > 0) {
-          SETTINGS.segment.glowing.dashArray.back.forEach(v => {
-            this.glowingBackPart.dashes.push(v);
-          });
-          this.glowingBackPart.offset =
-            SETTINGS.segment.glowing.dashArray.offset.back;
-        }
-        // BACK EXTRA
-        this.glowingBackExtra.stroke =
-          SETTINGS.segment.glowing.strokeColor.back;
-        this.glowingBackExtra.linewidth =
-          SETTINGS.segment.glowing.edgeWidth +
-          SETTINGS.segment.drawn.strokeWidth.back;
-        this.glowingBackExtra.opacity = SETTINGS.segment.glowing.opacity.back;
-        if (SETTINGS.segment.glowing.dashArray.back.length > 0) {
-          SETTINGS.segment.glowing.dashArray.back.forEach(v => {
-            this.glowingBackExtra.dashes.push(v);
-          });
-          this.glowingBackExtra.offset =
-            SETTINGS.segment.glowing.dashArray.offset.back;
-        }
-        break;
-      }
-      case DisplayStyle.UPDATE: {
-        // Use the current variables to update the display style
-        // Created with the Google Sheet "Segment Styling Code" in the "Drawn Update" tab
-        // FRONT PART
-        this.frontPart.stroke = this.strokeColorFront;
-        this.frontPart.linewidth = this.strokeWidthFront;
-        this.frontPart.opacity = this.opacityFront;
-        if (this.dashArrayFront.length > 0) {
-          this.frontPart.dashes.length = 0;
-          this.dashArrayFront.forEach(v => {
-            this.frontPart.dashes.push(v);
-          });
-          this.frontPart.offset = this.dashArrayOffsetFront;
-        }
-        // FRONT EXTRA
-        this.frontExtra.stroke = this.strokeColorFront;
-        this.frontExtra.linewidth = this.strokeWidthFront;
-        this.frontExtra.opacity = this.opacityFront;
-        if (this.dashArrayFront.length > 0) {
-          this.frontExtra.dashes.length = 0;
-          this.dashArrayFront.forEach(v => {
-            this.frontExtra.dashes.push(v);
-          });
-          this.frontExtra.offset = this.dashArrayOffsetFront;
-        }
-        // BACK PART
-        this.backPart.stroke = this.strokeColorBack;
-        this.backPart.linewidth = this.strokeWidthBack;
-        this.backPart.opacity = this.opacityBack;
-        if (this.dashArrayBack.length > 0) {
-          this.backPart.dashes.length = 0;
-          this.dashArrayBack.forEach((v: number) => {
-            this.backPart.dashes.push(v);
-          });
-          this.backPart.offset = this.dashArrayOffsetBack;
-        }
-        // BACK EXTRA
-        this.backExtra.stroke = this.strokeColorBack;
-        this.backExtra.linewidth = this.strokeWidthBack;
-        this.backExtra.opacity = this.opacityBack;
-        if (this.dashArrayBack.length > 0) {
-          this.backExtra.dashes.length = 0;
-          this.dashArrayBack.forEach((v: number) => {
-            this.backExtra.dashes.push(v);
-          });
-          this.backExtra.offset = this.dashArrayOffsetBack;
-        }
-        // UPDATE the glowing width so it is always bigger than the drawn width
-        this.glowingFrontPart.linewidth =
-          this.strokeWidthFront + SETTINGS.segment.glowing.edgeWidth;
-        this.glowingFrontExtra.linewidth =
-          this.strokeWidthFront + SETTINGS.segment.glowing.edgeWidth;
-        this.glowingBackPart.linewidth =
-          this.strokeWidthBack + SETTINGS.segment.glowing.edgeWidth;
-        this.glowingBackExtra.linewidth =
-          this.strokeWidthBack + SETTINGS.segment.glowing.edgeWidth;
-        break;
-      }
-      case DisplayStyle.DEFAULT:
-      default: {
-        // Reset the style to the defaults i.e. Use the global defaults to update the display style
-        // Created with the Google Sheet "Segment Styling Code" in the "Drawn Set To Defaults" tab
-        // FRONT PART
-        this.frontPart.stroke = SETTINGS.segment.drawn.strokeColor.front;
-        this.frontPart.linewidth = SETTINGS.segment.drawn.strokeWidth.front;
-        this.frontPart.opacity = SETTINGS.segment.drawn.opacity.front;
+        // Copy the front dash properties from the front default drawn dash properties
         if (SETTINGS.segment.drawn.dashArray.front.length > 0) {
-          this.frontPart.dashes.length = 0;
+          this.frontPart.dashes.clear();
           SETTINGS.segment.drawn.dashArray.front.forEach(v => {
             this.frontPart.dashes.push(v);
           });
           this.frontPart.offset = SETTINGS.segment.drawn.dashArray.offset.front;
         }
+
         // FRONT EXTRA
-        this.frontExtra.stroke = SETTINGS.segment.drawn.strokeColor.front;
-        this.frontExtra.linewidth = SETTINGS.segment.drawn.strokeWidth.front;
-        this.frontExtra.opacity = SETTINGS.segment.drawn.opacity.front;
+        // no fillColor
+        this.frontExtra.stroke = SETTINGS.segment.temp.strokeColor.front;
+        // strokeWidthPercent -- The line width is set to the current line width (which is updated for zoom magnification)
+        this.frontExtra.linewidth = Segment.currentSegmentStrokeWidthFront;
+        this.frontExtra.opacity = SETTINGS.segment.temp.opacity.front;
+        // Copy the front dash properties from the front default drawn dash properties
         if (SETTINGS.segment.drawn.dashArray.front.length > 0) {
-          this.frontExtra.dashes.length = 0;
+          this.frontExtra.dashes.clear();
           SETTINGS.segment.drawn.dashArray.front.forEach(v => {
             this.frontExtra.dashes.push(v);
           });
@@ -676,40 +596,200 @@ export default class Segment extends Nodule {
             SETTINGS.segment.drawn.dashArray.offset.front;
         }
         // BACK PART
-        this.backPart.stroke = SETTINGS.segment.drawn.strokeColor.back;
-        this.backPart.linewidth = SETTINGS.segment.drawn.strokeWidth.back;
-        this.backPart.opacity = SETTINGS.segment.drawn.opacity.back;
+        // no fill color
+        this.backPart.stroke = SETTINGS.segment.temp.strokeColor.back;
+        // strokeWidthPercent -- The line width is set to the current line width (which is updated for zoom magnification)
+        this.backPart.linewidth = Segment.currentSegmentStrokeWidthBack;
+        this.backPart.opacity = SETTINGS.segment.temp.opacity.back;
+        // Copy the back dash properties from the back default drawn dash properties
         if (SETTINGS.segment.drawn.dashArray.back.length > 0) {
-          this.backPart.dashes.length = 0;
+          this.backPart.dashes.clear();
           SETTINGS.segment.drawn.dashArray.back.forEach(v => {
             this.backPart.dashes.push(v);
           });
           this.backPart.offset = SETTINGS.segment.drawn.dashArray.offset.back;
         }
         // BACK EXTRA
-        this.backExtra.stroke = SETTINGS.segment.drawn.strokeColor.back;
-        this.backExtra.linewidth = SETTINGS.segment.drawn.strokeWidth.back;
-        this.backExtra.opacity = SETTINGS.segment.drawn.opacity.back;
+        // no fill color
+        this.backExtra.stroke = SETTINGS.segment.temp.strokeColor.back;
+        // strokeWidthPercent -- The line width is set to the current line width (which is updated for zoom magnification)
+        this.backExtra.linewidth = Segment.currentSegmentStrokeWidthBack;
+        this.backExtra.opacity = SETTINGS.segment.temp.opacity.back;
+        // Copy the back dash properties from the back default drawn dash properties
         if (SETTINGS.segment.drawn.dashArray.back.length > 0) {
-          this.backExtra.dashes.length = 0;
+          this.backExtra.dashes.clear();
           SETTINGS.segment.drawn.dashArray.back.forEach(v => {
             this.backExtra.dashes.push(v);
           });
           this.backExtra.offset = SETTINGS.segment.drawn.dashArray.offset.back;
         }
+
+        // The temporary display is never highlighted
+        this.glowingFrontPart.visible = false;
+        this.glowingBackPart.visible = false;
+        this.glowingFrontExtra.visible = false;
+        this.glowingBackExtra.visible = false;
+        break;
+      }
+
+      case DisplayStyle.APPLYCURRENTVARIABLES: {
+        // Use the current variables to directly modify the Two.js objects.
+
+        // FRONT PART
+        // no fillColor
+        this.frontPart.stroke = this.strokeColorFront;
+        // strokeWidthPercent applied by adjustSize()
+        this.frontPart.opacity = this.opacityFront;
+        if (this.dashArrayFront.length > 0) {
+          this.frontPart.dashes.clear();
+          this.dashArrayFront.forEach(v => {
+            this.frontPart.dashes.push(v);
+          });
+          this.frontPart.offset = this.dashArrayOffsetFront;
+        }
+        // FRONT EXTRA
+        // no fillColor
+        this.frontExtra.stroke = this.strokeColorFront;
+        // strokeWidthPercent applied by adjustSize()
+        this.frontExtra.opacity = this.opacityFront;
+        if (this.dashArrayFront.length > 0) {
+          this.frontExtra.dashes.clear();
+          this.dashArrayFront.forEach(v => {
+            this.frontExtra.dashes.push(v);
+          });
+          this.frontExtra.offset = this.dashArrayOffsetFront;
+        }
+        // BACK PART
+        // no fillColor
+        this.backPart.stroke = this.dynamicBackStyle
+          ? Nodule.contrastStrokeColor(this.strokeColorFront)
+          : this.strokeColorBack;
+        // strokeWidthPercent applied by adjustSize()
+        this.backPart.opacity = this.dynamicBackStyle
+          ? Nodule.contrastOpacity(this.opacityFront)
+          : this.opacityBack;
+        if (this.dashArrayBack.length > 0) {
+          this.backPart.dashes.clear();
+          this.dashArrayBack.forEach(v => {
+            this.backPart.dashes.push(v);
+          });
+          this.backPart.offset = this.dashArrayOffsetBack;
+        }
+        // BACK EXTRA
+        // no fillColor
+        this.backExtra.stroke = this.dynamicBackStyle
+          ? Nodule.contrastStrokeColor(this.strokeColorFront)
+          : this.strokeColorBack;
+        // strokeWidthPercent applied by adjustSize()
+        this.backExtra.opacity = this.dynamicBackStyle
+          ? Nodule.contrastOpacity(this.opacityFront)
+          : this.opacityBack;
+        if (this.dashArrayBack.length > 0) {
+          this.backExtra.dashes.clear();
+          this.dashArrayBack.forEach(v => {
+            this.backExtra.dashes.push(v);
+          });
+          this.backExtra.offset = this.dashArrayOffsetBack;
+        }
         // UPDATE the glowing width so it is always bigger than the drawn width
-        this.glowingFrontPart.linewidth =
-          SETTINGS.segment.glowing.edgeWidth +
-          SETTINGS.segment.drawn.strokeWidth.front;
-        this.glowingFrontExtra.linewidth =
-          SETTINGS.segment.glowing.edgeWidth +
-          SETTINGS.segment.drawn.strokeWidth.front;
-        this.glowingBackPart.linewidth =
-          SETTINGS.segment.glowing.edgeWidth +
-          SETTINGS.segment.drawn.strokeWidth.back;
-        this.glowingBackExtra.linewidth =
-          SETTINGS.segment.glowing.edgeWidth +
-          SETTINGS.segment.drawn.strokeWidth.back;
+        // Glowing Front
+        // no fillColor
+        this.glowingFrontPart.stroke =
+          SETTINGS.segment.glowing.strokeColor.front;
+        // strokeWidthPercent applied by adjustSize()
+        this.glowingFrontPart.opacity = SETTINGS.segment.glowing.opacity.front;
+        // Copy the front dash properties to the glowing object
+        if (this.dashArrayFront.length > 0) {
+          this.glowingFrontPart.dashes.clear();
+          this.dashArrayFront.forEach(v => {
+            this.glowingFrontPart.dashes.push(v);
+          });
+          this.glowingFrontPart.offset = this.dashArrayOffsetFront;
+        }
+
+        // Glowing Front Extra
+        // no fillColor
+        this.glowingFrontExtra.stroke =
+          SETTINGS.segment.glowing.strokeColor.front;
+        // strokeWidthPercent applied by adjustSize()
+        this.glowingFrontExtra.opacity = SETTINGS.segment.glowing.opacity.front;
+        // Copy the front dash properties to the glowing object
+        if (this.dashArrayFront.length > 0) {
+          this.glowingFrontExtra.dashes.clear();
+          this.dashArrayFront.forEach(v => {
+            this.glowingFrontExtra.dashes.push(v);
+          });
+          this.glowingFrontExtra.offset = this.dashArrayOffsetFront;
+        }
+
+        // Glowing Back
+        // no fillColor
+        this.glowingBackPart.stroke = SETTINGS.segment.glowing.strokeColor.back;
+        // strokeWidthPercent applied by adjustSize()
+        this.glowingBackPart.opacity = SETTINGS.segment.glowing.opacity.back;
+        // Copy the back dash properties to the glowing object
+        if (this.dashArrayBack.length > 0) {
+          this.glowingBackPart.dashes.clear();
+          this.dashArrayBack.forEach(v => {
+            this.glowingBackPart.dashes.push(v);
+          });
+          this.glowingBackPart.offset = this.dashArrayOffsetBack;
+        }
+
+        // Glowing Back Extra
+        // no fillColor
+        this.glowingBackExtra.stroke =
+          SETTINGS.segment.glowing.strokeColor.back;
+        // strokeWidthPercent applied by adjustSize()
+        this.glowingBackExtra.opacity = SETTINGS.segment.glowing.opacity.back;
+        // Copy the back dash properties to the glowing object
+        if (this.dashArrayBack.length > 0) {
+          this.glowingBackExtra.dashes.clear();
+          this.dashArrayBack.forEach(v => {
+            this.glowingBackExtra.dashes.push(v);
+          });
+          this.glowingBackExtra.offset = this.dashArrayOffsetBack;
+        }
+
+        break;
+      }
+      case DisplayStyle.RESETVARIABLESTODEFAULTS:
+      default: {
+        // Set the current variables to the SETTINGS variables
+        // FRONT PART
+        // no fillColor
+        this.strokeColorFront = SETTINGS.segment.drawn.strokeColor.front;
+        this.strokeWidthPercentFront = 100;
+        this.opacityFront = SETTINGS.segment.drawn.opacity.front;
+        if (SETTINGS.segment.drawn.dashArray.front.length > 0) {
+          this.dashArrayFront.clear();
+          SETTINGS.segment.drawn.dashArray.front.forEach(v =>
+            this.dashArrayFront.push(v)
+          );
+        }
+        this.dashArrayOffsetFront =
+          SETTINGS.segment.drawn.dashArray.offset.front;
+
+        // BACK PART
+        this.dynamicBackStyle = SETTINGS.segment.dynamicBackStyle;
+        // no fillColor
+        this.strokeColorBack = SETTINGS.segment.dynamicBackStyle
+          ? Nodule.contrastStrokeColor(SETTINGS.segment.drawn.strokeColor.front)
+          : SETTINGS.segment.drawn.strokeColor.back;
+        this.strokeWidthPercentBack = SETTINGS.segment.dynamicBackStyle
+          ? Nodule.contrastStrokeWidthPercent(this.strokeWidthPercentFront)
+          : 100;
+        this.opacityBack = SETTINGS.segment.dynamicBackStyle
+          ? Nodule.contrastOpacity(SETTINGS.segment.drawn.opacity.front)
+          : SETTINGS.segment.drawn.opacity.back;
+        if (SETTINGS.segment.drawn.dashArray.back.length > 0) {
+          this.dashArrayBack.clear();
+          SETTINGS.segment.drawn.dashArray.back.forEach(v =>
+            this.dashArrayBack.push(v)
+          );
+        }
+        this.dashArrayOffsetBack = SETTINGS.segment.drawn.dashArray.offset.back;
+
         break;
       }
     }

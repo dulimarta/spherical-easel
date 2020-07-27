@@ -19,8 +19,12 @@ let LINE_COUNT = 0;
 const styleSet = new Set([
   Styles.strokeWidthPercentage,
   Styles.strokeColor,
-  Styles.dashPattern
+  Styles.dashArray,
+  Styles.dashOffset,
+  Styles.opacity,
+  Styles.dynamicBackStyle
 ]);
+
 export class SELine extends SENodule implements Visitable, OneDimensional {
   /**
    * The corresponding plottable TwoJS object

@@ -6,6 +6,7 @@ import { SELine } from "@/models/SELine";
 import { SECircle } from "@/models/SECircle";
 import { SESegment } from "@/models/SESegment";
 import { SENodule } from "@/models/SENodule";
+import Nodule from "@/plottables/Nodule";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import { Vector3 } from "three";
 
@@ -29,7 +30,7 @@ export interface AppState {
   circles: SECircle[];
   nodules: SENodule[];
   selections: SENodule[];
-  intersections: SEIntersectionPoint[];
+  temporaryNodules: Nodule[];
 }
 /* This interface lists all the properties that each tool/button must have. */
 export interface ToolButtonType {

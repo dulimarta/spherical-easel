@@ -458,7 +458,7 @@ export default {
             // info.vector is not on the avoidVectors array, so create an intersection
             console.debug("made intersection");
             const newPt = new Point();
-            newPt.stylize(DisplayStyle.TEMPORARY);
+            newPt.stylize(DisplayStyle.APPLYTEMPORARYVARIABLES);
             const newSEIntersectionPt = new SEIntersectionPoint(
               newPt,
               oldLine,
@@ -485,7 +485,7 @@ export default {
         ) {
           // info.vector is not on the avoidVectors array, so create an intersection
           const newPt = new Point();
-          newPt.stylize(DisplayStyle.TEMPORARY);
+          newPt.stylize(DisplayStyle.APPLYTEMPORARYVARIABLES);
           const newSEIntersectionPt = new SEIntersectionPoint(
             newPt,
             newLine,
@@ -512,7 +512,7 @@ export default {
         ) {
           // info.vector is not on the avoidVectors array, so create an intersection
           const newPt = new Point();
-          newPt.stylize(DisplayStyle.TEMPORARY);
+          newPt.stylize(DisplayStyle.APPLYTEMPORARYVARIABLES);
           const newSEIntersectionPt = new SEIntersectionPoint(
             newPt,
             newLine,
@@ -554,7 +554,7 @@ export default {
         ) {
           // info.vector is not on the avoidVectors array, so create an intersection
           const newPt = new Point();
-          newPt.stylize(DisplayStyle.TEMPORARY);
+          newPt.stylize(DisplayStyle.APPLYTEMPORARYVARIABLES);
           const newSEIntersectionPt = new SEIntersectionPoint(
             newPt,
             oldLine,
@@ -586,7 +586,7 @@ export default {
             !avoidVectors.some(v => tempVec.subVectors(info.vector, v).isZero())
           ) {
             const newPt = new Point();
-            newPt.stylize(DisplayStyle.TEMPORARY);
+            newPt.stylize(DisplayStyle.APPLYTEMPORARYVARIABLES);
             const newSEIntersectionPt = new SEIntersectionPoint(
               newPt,
               oldSegment,
@@ -616,7 +616,7 @@ export default {
         ) {
           // info.vector is not on the avoidVectors array, so create an intersection
           const newPt = new Point();
-          newPt.stylize(DisplayStyle.TEMPORARY);
+          newPt.stylize(DisplayStyle.APPLYTEMPORARYVARIABLES);
           const newSEIntersectionPt = new SEIntersectionPoint(
             newPt,
             newSegment,
@@ -658,7 +658,7 @@ export default {
         ) {
           // info.vector is not on the avoidVectors array, so create an intersection
           const newPt = new Point();
-          newPt.stylize(DisplayStyle.TEMPORARY);
+          newPt.stylize(DisplayStyle.APPLYTEMPORARYVARIABLES);
           const newSEIntersectionPt = new SEIntersectionPoint(
             newPt,
             oldLine,
@@ -688,7 +688,7 @@ export default {
         ) {
           // info.vector is not on the avoidVectors array, so create an intersection
           const newPt = new Point();
-          newPt.stylize(DisplayStyle.TEMPORARY);
+          newPt.stylize(DisplayStyle.APPLYTEMPORARYVARIABLES);
           const newSEIntersectionPt = new SEIntersectionPoint(
             newPt,
             oldSegment,
@@ -722,7 +722,7 @@ export default {
           ) {
             // info.vector is not on the avoidVectors array, so create an intersection
             const newPt = new Point();
-            newPt.stylize(DisplayStyle.TEMPORARY);
+            newPt.stylize(DisplayStyle.APPLYTEMPORARYVARIABLES);
             const newSEIntersectionPt = new SEIntersectionPoint(
               newPt,
               oldCircle,

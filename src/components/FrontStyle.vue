@@ -3,7 +3,8 @@
     <span
       v-show="commonStyleProperties.length === 0"
       class="text-body-2"
-    >Here we go! Please select object(s) to style</span>
+    >Here we go! Please select object(s) to style!</span>
+
     <fade-in-card :showWhen="hasColor">
       <span class="text-subtitle-2">Color</span>
       <v-color-picker
@@ -24,6 +25,7 @@
         ></v-checkbox>
       </div>
     </fade-in-card>
+
     <fade-in-card :showWhen="hasStrokeWidth">
       <span>Stroke Width</span>
       <v-slider
@@ -38,6 +40,7 @@
         <template v-slot:thumb-label="{ value }">{{ value + "%" }}</template>
       </v-slider>
     </fade-in-card>
+
     <fade-in-card :showWhen="hasDash">
       <span>Dash Pattern ({{ dashLength }}/{{ gapLength }})</span>
       <v-slider
@@ -71,11 +74,17 @@ import FadeInCard from "@/components/FadeInCard.vue";
 // import { getModule } from "vuex-module-decorators";
 // import UI from "@/store/ui-styles";
 
+/**
+ * values is a list of Styles (found in @/types/styles.ts) that are number valued
+ */
 const values = Object.entries(Styles).filter(e => {
   const [_, b] = e;
   return typeof b === "number";
 });
 
+/**
+ * keys is a list of the keys to the number valued Styles
+ */
 const keys = values.map(e => {
   const [a, _] = e;
   return a;
@@ -107,9 +116,9 @@ export default class FrontStyle extends Vue {
   }
 
   // Changes the stroke width of the elements in the *selection* array in the store
+  // This method is linked to the strokeWidth fade-in-card
   onLineWidthChanged(): void {
     this.$store.commit("changeStrokeWidth", this.strokeWidth);
-    // this.UIModule.changeStrokeColor("red");
   }
 
   // Changes the stroke color of the elements in the *selection* array in the store
@@ -127,10 +136,10 @@ export default class FrontStyle extends Vue {
     this.$store.commit("changeDashPattern", [this.dashLength, this.gapLength]);
   }
   /**
-   * Determines if the commonStyleProperties have the given input of type Styles
+   * Determines if the commonStyleProperties has the given input of type Styles
    * The input is an enum of type Styles
    */
-  hasStyles(s: Styles): boolean {
+  hasStyle(s: Styles): boolean {
     const sNum = Number(s);
     return (
       this.commonStyleProperties.length > 0 &&
@@ -138,14 +147,20 @@ export default class FrontStyle extends Vue {
     );
   }
 
+  /**
+   * Used to determine if the color picker Vue component (i.e. fade-in-card) should be displayed
+   */
   get hasColor(): boolean {
     return (
-      this.hasStyles(Styles.strokeColor) ||
-      this.hasStyles(Styles.fillColorWhite) ||
-      this.hasStyles(Styles.fillColorGray)
+      this.hasStyle(Styles.strokeColor) ||
+      this.hasStyle(Styles.fillColorWhite) ||
+      this.hasStyle(Styles.fillColorGray)
     );
   }
 
+  /**
+   * Used to determine which objects the color picker should control (i.e. the check boxes under the color picker)
+   */
   get colorKeys(): any[] {
     return this.commonStyleProperties
       .map((id: number) => ({
@@ -167,12 +182,18 @@ export default class FrontStyle extends Vue {
       });
   }
 
+  /**
+   * Used to determine if the stroke width slider (i.e. fade-in-card containing the slider) should be displayed
+   */
   get hasStrokeWidth(): boolean {
-    return this.hasStyles(Styles.strokeWidthPercentage);
+    return this.hasStyle(Styles.strokeWidthPercentage);
   }
 
+  /**
+   * Used to determine if the dash gap and dash offest sliders (i.e. fade-in-card containing the sliders) should be displayed
+   */
   get hasDash(): boolean {
-    return this.hasStyles(Styles.dashPattern);
+    return this.hasStyle(Styles.dashPattern);
   }
 
   /**
@@ -190,6 +211,7 @@ export default class FrontStyle extends Vue {
       return;
     }
     // Create a list of the common properties that the objects in the selection have.
+    // commonStyleProperties is a number (corresponding to an enum) array
     // The customStyles method returns a list of the styles the are adjustable for that object
     for (let k = 0; k < values.length; k++) {
       if (newSelection.every(s => s.customStyles().has(k)))
@@ -203,6 +225,8 @@ export default class FrontStyle extends Vue {
         this.colorApplyTo.splice(k, 1);
       }
     }
+    console.log("styles", Styles);
+    console.log("values", values);
     // const propNames = this.commonStyleProperties.map(n => keys[n]).join(", ");
     // console.debug("Common props: ", propNames);
   }

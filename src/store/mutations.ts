@@ -13,6 +13,7 @@ import { StyleOptions } from "@/types/Styles";
 import { LineNormalVisitor } from "@/visitors/LineNormalVisitor";
 import { SegmentNormalArcLengthVisitor } from "@/visitors/SegmentNormalArcLengthVisitor";
 import { UpdateMode, UpdateStateType } from "@/types";
+import Nodule from "@/plottables/Nodule";
 
 // const tmpMatrix = new Matrix4();
 
@@ -34,7 +35,7 @@ export const initialState: AppState = {
   lines: [], // An array of all SELines
   segments: [], // An array of all SESegments
   circles: [], // An array of all SECircles
-  intersections: [] // An array of all SEPoints that are intersections of the one-dimensional objects in the arrangement
+  temporaryNodules: [] // An array of all Nodules that are temporary - created by the handlers.
 };
 //#endregion appState
 
@@ -54,7 +55,7 @@ export default {
     state.segments.clear();
     state.circles.clear();
     state.selections.clear();
-    state.intersections.clear();
+    //state.temporaryNodules.clear();
   },
   setLayers(state: AppState, layers: Two.Group[]): void {
     state.layers = layers;
@@ -155,6 +156,13 @@ export default {
       state.nodules.splice(pos2, 1);
     }
   },
+  // These are added to the store so that I can update the size of the temporary objects when there is a resize event.
+  addTemporaryNodule(state: AppState, nodule: Nodule): void {
+    state.temporaryNodules.push(nodule);
+    console.log("added Nodule", nodule);
+    console.log("num temp nodules", state.temporaryNodules.length);
+  },
+  // The temporary nodules are added to the store when a handler is constructed, when are they removed? Do I need a removeTemporaryNodule?
   //#region rotateSphere
   rotateSphere(state: AppState, rotationMat: Matrix4): void {
     rotationVisitor.setTransform(rotationMat);
@@ -234,7 +242,7 @@ export default {
   },
   changeDashPattern(state: AppState, dashPattern: number[]): void {
     const opt: StyleOptions = {
-      dashPattern
+      dashArray
     };
     state.selections
       .filter(n => !(n instanceof SEPoint))

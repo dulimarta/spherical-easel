@@ -7,10 +7,9 @@ import { VNodeChildren } from "vue";
 import { StyleOptions } from "@/types/Styles";
 
 export enum DisplayStyle {
-  DEFAULT,
-  TEMPORARY,
-  UPDATE,
-  GLOWING
+  RESETVARIABLESTODEFAULTS,
+  APPLYTEMPORARYVARIABLES,
+  APPLYCURRENTVARIABLES
 }
 
 /**
@@ -33,7 +32,7 @@ export default abstract class Nodule implements Stylable, Resizeable {
   abstract removeFromLayers(): void;
 
   /**This operation constraint the visual properties (linewidth, circle size, etc) when the view is zoomed in/out */
-  abstract adjustSizeForZoom(): void;
+  abstract adjustSize(): void;
 
   /** Update visual style(s) */
   abstract normalDisplay(): void;
@@ -59,16 +58,15 @@ export default abstract class Nodule implements Stylable, Resizeable {
   static contrastStrokeColor(frontColor: string): string {
     return frontColor;
   }
-  static contractStrokeWidth(frontStrokeWidth: number): number {
-    return frontStrokeWidth;
-  }
+
   static contrastOpacity(frontOpacity: number): number {
     return SETTINGS.contrast * frontOpacity;
   }
-  static contrastDashArray(frontDashArray: number[]): number[] {
-    return frontDashArray;
+
+  static contrastStrokeWidthPercent(frontPercent: number): number {
+    return frontPercent;
   }
-  static contrastDashArrayOffset(frontOffset: number): number {
-    return frontOffset;
+  static contrastPointRadiusPercent(frontPercent: number): number {
+    return frontPercent;
   }
 }

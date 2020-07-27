@@ -1,25 +1,26 @@
 export enum Styles {
   // Important: Be sure to include "Color" for enum member
   // that refers to Color property
-  pointFrontRadius,
-  pointBackRadius,
   strokeWidthPercentage,
   strokeColor,
-  fillColorWhite,
-  fillColorGray,
-  dashPattern,
-  opacity
+  fillColor,
+  dashArray,
+  dashOffset,
+  opacity,
+  dynamicBackStyle,
+  pointRadiusPercent,
+  pointStrokeWidth
 }
 
 export type StyleOptions = {
-  pointFrontRadius?: number;
-  pointBackRadius?: number;
+  front: boolean;
   strokeWidthPercentage?: number;
   strokeColor?: string;
-  fillColorWhite?: string;
-  fillColorGray?: string;
-  dashPattern?: number[];
+  fillColor?: string;
+  dashArray?: number[];
+  dashOffset?: number;
   opacity?: number;
-
-  /* TODO: Add more options later */
+  dynamicBackStyle?: boolean;
+  pointRadiusPercent?: number;
+  pointStrokeWidth?: number;
 };

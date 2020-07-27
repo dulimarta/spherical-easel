@@ -20,11 +20,11 @@ export abstract class SENodule {
   protected _kids: SENodule[] = [];
 
   /**
-   * A point to the corresponding plottable object
+   * A pointer to the corresponding plottable object
    */
-  protected ref!: Nodule;
+  public ref!: Nodule;
 
-  /* A unique identification number for each node */
+  /* A unique identification number and name for each node */
   public id: number;
   public name: string;
 

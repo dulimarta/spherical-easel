@@ -9,10 +9,13 @@ import { UpdateMode, UpdateStateType, PointState } from "@/types";
 
 let POINT_COUNT = 0;
 const styleSet = new Set([
-  Styles.pointFrontRadius,
-  Styles.pointBackRadius,
-  Styles.strokeColor
+  Styles.fillColor,
+  Styles.strokeColor,
+  Styles.pointRadiusPercent,
+  Styles.opacity,
+  Styles.dynamicBackStyle
 ]);
+
 export class SEPoint extends SENodule implements Visitable {
   /* This should be the only reference to the plotted version of this SEPoint */
   public ref: Point;

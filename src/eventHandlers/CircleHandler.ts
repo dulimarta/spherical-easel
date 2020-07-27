@@ -56,7 +56,8 @@ export default class CircleHandler extends Highlighter {
     this.isTemporaryCircleAdded = false;
     this.temporaryCircle = new Circle();
     // Set the style using the temporary defaults
-    this.temporaryCircle.stylize(DisplayStyle.TEMPORARY);
+    this.temporaryCircle.stylize(DisplayStyle.APPLYTEMPORARYVARIABLES);
+    this.store.commit("addTemporaryNodule", this.temporaryCircle);
   }
 
   mousePressed(event: MouseEvent): void {
@@ -131,7 +132,7 @@ export default class CircleHandler extends Highlighter {
       }
       this.endMarker.positionVector = this.currentSphereVector;
       // Make sure the temporary circle is displayed with the right line width
-      this.temporaryCircle.adjustSizeForZoom();
+      this.temporaryCircle.adjustSize();
     }
   }
 
@@ -146,6 +147,8 @@ export default class CircleHandler extends Highlighter {
         if (!this.isTemporaryCircleAdded) {
           this.isTemporaryCircleAdded = true;
           this.temporaryCircle.addToLayers(this.layers);
+          // Adjust the size of the temporary circle to the current zoom level
+          this.temporaryCircle.adjustSize();
           // Only add the start marker if the start point is going to be new or is non-user created intersection point
           if (
             this.centerSEPoint == null ||
@@ -153,8 +156,12 @@ export default class CircleHandler extends Highlighter {
               !this.centerSEPoint.isUserCreated)
           ) {
             this.startMarker.addToLayers(this.layers);
+            // Adjust the size of the temporary point to the current zoom level
+            this.startMarker.adjustSize();
           }
           this.endMarker.addToLayers(this.layers);
+          // Adjust the size of the temporary point to the current zoom level
+          this.endMarker.adjustSize();
         }
         //compute the radius of the temporary circle
         this.arcRadius = this.temporaryCircle.centerVector.angleTo(
@@ -240,9 +247,10 @@ export default class CircleHandler extends Highlighter {
       // we have to create a new point and it to the group/store
       const newCenterPoint = new Point();
       // Set the display to the default values
-      newCenterPoint.stylize(DisplayStyle.DEFAULT);
-      // Set up the glowing display
-      newCenterPoint.stylize(DisplayStyle.GLOWING);
+      newCenterPoint.stylize(DisplayStyle.APPLYCURRENTVARIABLES);
+      // Adjust the size of the point to the current zoom magnification factor
+      newCenterPoint.adjustSize();
+
       let vtx: SEPoint | SEPointOnOneDimensional | null = null;
       if (this.centerSEPointOneDimensionalParent) {
         // Starting mouse press landed near a oneDimensional
@@ -299,9 +307,10 @@ export default class CircleHandler extends Highlighter {
       // We have to create a new Point for the end
       const newCirclePoint = new Point();
       // Set the display to the default values
-      newCirclePoint.stylize(DisplayStyle.DEFAULT);
-      // Set up the glowing display
-      newCirclePoint.stylize(DisplayStyle.GLOWING);
+      newCirclePoint.stylize(DisplayStyle.APPLYCURRENTVARIABLES);
+      // Adjust the size of the point to the current zoom magnification factor
+      newCirclePoint.adjustSize();
+
       let vtx: SEPoint | SEPointOnOneDimensional | null = null;
       if (this.hitSESegments.length > 0) {
         // The end of the line will be a point on a segment
@@ -351,11 +360,9 @@ export default class CircleHandler extends Highlighter {
     // Clone the current circle after the circlePoint is set
     const newCircle = this.temporaryCircle.clone();
     // Set the display to the default values
-    newCircle.stylize(DisplayStyle.DEFAULT);
-    // Set the stroke width to the current width given the zoom level
-    newCircle.adjustSizeForZoom();
-    // Set up the glowing display
-    newCircle.stylize(DisplayStyle.GLOWING);
+    newCircle.stylize(DisplayStyle.APPLYCURRENTVARIABLES);
+    // Adjust the stroke width to the current zoom magnification factor
+    newCircle.adjustSize();
 
     // Add the last command to the group and then execute it (i.e. add the potentially two points and the circle to the store.)
     const newSECircle = new SECircle(
@@ -379,7 +386,7 @@ export default class CircleHandler extends Highlighter {
             item.parent2
           )
         );
-        item.SEIntersectionPoint.showing = false; // don not display the automatically created intersection points
+        item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points
       });
 
     circleCommandGroup.execute();
@@ -394,9 +401,10 @@ export default class CircleHandler extends Highlighter {
       // we have to create a new SEPointOnOneDimensional or SEPoint and Point
       const newPoint = new Point();
       // Set the display to the default values
-      newPoint.stylize(DisplayStyle.DEFAULT);
-      // Set up the glowing display
-      newPoint.stylize(DisplayStyle.GLOWING);
+      newPoint.stylize(DisplayStyle.APPLYCURRENTVARIABLES);
+      // Adjust the size of the point to the current zoom magnification factor
+      newPoint.adjustSize();
+
       let vtx: SEPoint | SEPointOnOneDimensional | null = null;
       if (this.centerSEPointOneDimensionalParent) {
         // Starting mouse press landed near a oneDimensional
@@ -442,11 +450,9 @@ export default class CircleHandler extends Highlighter {
         // Create a new plottable Circle
         const newCircle = new Circle();
         // Set the display to the default values
-        newCircle.stylize(DisplayStyle.DEFAULT);
+        newCircle.stylize(DisplayStyle.APPLYCURRENTVARIABLES);
         // Set the stroke width to the current width given the zoom level
-        newCircle.adjustSizeForZoom();
-        // Set up the glowing display
-        newCircle.stylize(DisplayStyle.GLOWING);
+        newCircle.adjustSize();
 
         // Add the last command to the group and then execute it (i.e. add the potentially two points and the circle to the store.)
         const newSECircle = new SECircle(newCircle, object1, object2);
@@ -477,6 +483,6 @@ export default class CircleHandler extends Highlighter {
       }
     }
     // Unselect the selected objects and clear the selectedObject array
-    // super.activate();
+    super.activate();
   }
 }

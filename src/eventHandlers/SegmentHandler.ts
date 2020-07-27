@@ -82,7 +82,9 @@ export default class SegmentHandler extends Highlighter {
   constructor(layers: Two.Group[]) {
     super(layers);
     this.tempSegment = new Segment();
-    this.tempSegment.stylize(DisplayStyle.TEMPORARY);
+    this.tempSegment.stylize(DisplayStyle.APPLYTEMPORARYVARIABLES);
+    this.tempSegment.adjustSize();
+    this.store.commit("addTemporaryNodule", this.tempSegment);
     this.isTemporarySegmentAdded = false;
     this.isDragging = false;
   }
@@ -267,9 +269,9 @@ export default class SegmentHandler extends Highlighter {
       // We have to create a new SEPointOnOneDimensional or SEPoint and Point
       const newStartPoint = new Point();
       // Set the display to the default values
-      newStartPoint.stylize(DisplayStyle.DEFAULT);
-      // Set up the glowing display
-      newStartPoint.stylize(DisplayStyle.GLOWING);
+      newStartPoint.stylize(DisplayStyle.APPLYCURRENTVARIABLES);
+      newStartPoint.adjustSize();
+
       let vtx: SEPoint | SEPointOnOneDimensional | null = null;
       if (this.startSEPointOneDimensionalParent) {
         // Starting mouse press landed near a oneDimensional
@@ -331,9 +333,9 @@ export default class SegmentHandler extends Highlighter {
       // We have to create a new Point for the end
       const newEndPoint = new Point();
       // Set the display to the default values
-      newEndPoint.stylize(DisplayStyle.DEFAULT);
-      // Set up the glowing display
-      newEndPoint.stylize(DisplayStyle.GLOWING);
+      newEndPoint.stylize(DisplayStyle.APPLYCURRENTVARIABLES);
+      newEndPoint.adjustSize();
+
       let vtx: SEPoint | SEPointOnOneDimensional | null = null;
       if (this.hitSESegments.length > 0) {
         // The end of the line will be a point on a segment
@@ -381,9 +383,8 @@ export default class SegmentHandler extends Highlighter {
     this.isTemporarySegmentAdded = false;
     const newSegment = this.tempSegment.clone();
     // Stylize the new segment
-    newSegment.stylize(DisplayStyle.DEFAULT);
-    // Set Up the glowing segment
-    newSegment.stylize(DisplayStyle.GLOWING);
+    newSegment.stylize(DisplayStyle.APPLYCURRENTVARIABLES);
+    newSegment.adjustSize;
 
     const newSESegment = new SESegment(
       newSegment,
@@ -417,9 +418,8 @@ export default class SegmentHandler extends Highlighter {
       // we have to create a new SEPointOnOneDimensional or SEPoint and Point
       const newPoint = new Point();
       // Set the display to the default values
-      newPoint.stylize(DisplayStyle.DEFAULT);
-      // Set up the glowing display
-      newPoint.stylize(DisplayStyle.GLOWING);
+      newPoint.stylize(DisplayStyle.APPLYCURRENTVARIABLES);
+      newPoint.adjustSize();
       let vtx: SEPoint | SEPointOnOneDimensional | null = null;
       if (this.startSEPointOneDimensionalParent) {
         // Starting mouse press landed near a oneDimensional
@@ -525,9 +525,8 @@ export default class SegmentHandler extends Highlighter {
         // Create a new plottable Line
         const newSegment = new Segment();
         // Set the display to the default values
-        newSegment.stylize(DisplayStyle.DEFAULT);
-        // Set up the glowing display
-        newSegment.stylize(DisplayStyle.GLOWING);
+        newSegment.stylize(DisplayStyle.APPLYCURRENTVARIABLES);
+        newSegment.adjustSize();
 
         this.tmpVector.crossVectors(
           object1.locationVector,
