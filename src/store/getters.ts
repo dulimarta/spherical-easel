@@ -775,11 +775,13 @@ export default {
       );
     throw "Attempted to intersect a non-dimensional object";
   },
-  findIntersectionPointsStartingWith: (state: AppState) => (
-    prefix: string
+  findIntersectionPointsByParent: (state: AppState) => (
+    parentNames: string
   ): SEIntersectionPoint[] => {
     return state.points
-      .filter(p => p instanceof SEIntersectionPoint && p.name.includes(prefix))
+      .filter(
+        p => p instanceof SEIntersectionPoint && p.name.includes(parentNames)
+      )
       .map(obj => obj as SEIntersectionPoint);
   },
   selectedObjects: (state: AppState) => (): SENodule[] => {

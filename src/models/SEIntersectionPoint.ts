@@ -1,12 +1,9 @@
 import { SEPoint } from "./SEPoint";
 import Point from "@/plottables/Point";
-import { SENodule } from "./SENodule";
 import { IntersectionReturnType } from "@/types";
 import store from "@/store";
-import { Styles } from "@/types/Styles";
 import { SEOneDimensional } from "@/types";
 import { UpdateMode, UpdateStateType, PointState } from "@/types";
-import { Vector3 } from "three";
 
 export class SEIntersectionPoint extends SEPoint {
   /**
@@ -62,9 +59,9 @@ export class SEIntersectionPoint extends SEPoint {
     // Make sure parent names are in alpha order so we can consistently
     // identify the intersection by its parents
     if (seParent1.name < seParent2.name)
-      this.name = `Intersection(${seParent1.name},${seParent2.name},${order})`;
+      this.name = this.name + ` (${seParent1.name},${seParent2.name},${order})`;
     else
-      this.name = `Intersection(${seParent2.name},${seParent1.name},${order})`;
+      this.name = this.name + ` (${seParent2.name},${seParent1.name},${order})`;
   }
 
   /**

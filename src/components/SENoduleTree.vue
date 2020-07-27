@@ -3,16 +3,16 @@
     <!-- <span v-for="c in points" :key="c.id">{{c.name}}</span> -->
     <div id="topContainer" :style="indent">
       <div id="content">
-        <v-icon v-if="name.startsWith('P-')">mdi-vector-point
+        <v-icon v-if="isPoint">mdi-vector-point
         </v-icon>
-        <v-icon v-else-if="name.startsWith('Ls-')">mdi-vector-radius
+        <v-icon v-else-if="isLineSegment">mdi-vector-radius
         </v-icon>
-        <v-icon v-else-if="name.startsWith('Li-')">mdi-vector-line
+        <v-icon v-else-if="isLine">mdi-vector-line
         </v-icon>
-        <v-icon v-else-if="name.startsWith('C-')">
+        <v-icon v-else-if="isCircle">
           mdi-vector-circle-variant
         </v-icon>
-        <v-icon v-else-if="name.startsWith('Intersection')">
+        <v-icon v-else-if="isIntersectionPoint">
           mdi-vector-intersection
         </v-icon>
         <div class="ml-1" :class="showClass">{{prettyName}}</div>
@@ -32,11 +32,13 @@
       </div>
       <!-- Expanded: {{expanded}} {{children}} {{existingNodes}} -->
       <v-divider></v-divider>
-      <div v-show="expanded">
-        <SENoduleTree v-for="(n,pos) in existingChildren" :key="pos"
-          :children="n.kids" :depth="depth + 1" :node="n">
-        </SENoduleTree>
-      </div>
+      <transition name="slide-down">
+        <div v-show="expanded">
+          <SENoduleTree v-for="(n,pos) in existingChildren" :key="pos"
+            :children="n.kids" :depth="depth + 1" :node="n">
+          </SENoduleTree>
+        </div>
+      </transition>
     </div>
   </div>
 </template>
@@ -47,6 +49,10 @@ import Component from 'vue-class-component';
 import { Prop } from 'vue-property-decorator';
 import { SENodule } from '../models/SENodule';
 import { SEIntersectionPoint } from '../models/SEIntersectionPoint';
+import { SEPoint } from '../models/SEPoint';
+import { SELine } from '../models/SELine';
+import { SESegment } from '@/models/SESegment';
+import { SECircle } from '../models/SECircle';
 
 @Component({})
 export default class SENoduleTree extends Vue {
@@ -74,7 +80,7 @@ export default class SENoduleTree extends Vue {
     else this.expanded = false
   }
 
-  toggleVisibility() {
+  toggleVisibility(): void {
     if (this.node) {
       this.node.showing = !this.node.showing
     }
@@ -87,6 +93,25 @@ export default class SENoduleTree extends Vue {
     return this.node ? !this.node.showing : false;
 
   }
+
+  get isPoint(): boolean {
+    return this.node instanceof SEPoint
+  }
+
+  get isLine(): boolean {
+    return this.node instanceof SELine
+  }
+  get isLineSegment(): boolean {
+    return this.node instanceof SESegment
+  }
+  get isCircle(): boolean {
+    return this.node instanceof SECircle
+  }
+
+  get isIntersectionPoint(): boolean {
+    return this.node instanceof SEIntersectionPoint
+  }
+
   get prettyName(): string {
     return this.label ?? this.name
   }
@@ -125,7 +150,6 @@ export default class SENoduleTree extends Vue {
 }
 
 .invisibleNode {
-  // background: lightgray;
   color: gray;
   font-style: italic;
 }
@@ -140,5 +164,17 @@ export default class SENoduleTree extends Vue {
   v-icon {
     flex-grow: 0;
   }
+}
+
+.slide-down-enter-active,
+.slide-down-leave-active {
+  transition: all;
+  transition-duration: 500ms;
+  // transform-origin: 50% -100%;
+}
+
+.slide-down-enter,
+.slide-down-leave-to {
+  transform: translateX(-100%);
 }
 </style>
