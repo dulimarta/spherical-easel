@@ -16,18 +16,18 @@
           mdi-vector-intersection
         </v-icon>
         <div class="ml-2" :class="showClass">{{prettyName}}</div>
-        <v-btn v-if="existingNodes.length > 0"
-          @click="expanded = !expanded">
+        <v-btn v-if="hasExistingChildren" @click="expanded = !expanded">
           <v-icon v-if="!expanded">mdi-chevron-right</v-icon>
           <v-icon v-else>mdi-chevron-down</v-icon>
         </v-btn>
       </div>
+      <!-- Expanded: {{expanded}} {{children}} {{existingNodes}} -->
       <v-divider></v-divider>
-    </div>
-    <div v-if="expanded">
-      <SENoduleTree v-for="(n,pos) in existingNodes" :key="pos"
-        :childrren="n.kids" :depth="depth + 1" :node="n">
-      </SENoduleTree>
+      <div v-if="expanded">
+        <SENoduleTree v-for="(n,pos) in existingChildren" :key="pos"
+          :children="n.kids" :depth="depth + 1" :node="n">
+        </SENoduleTree>
+      </div>
     </div>
   </div>
 </template>
@@ -37,24 +37,25 @@ import Vue from 'vue'
 import Component from 'vue-class-component';
 import { Prop } from 'vue-property-decorator';
 import { SENodule } from '../models/SENodule';
+import { SEIntersectionPoint } from '../models/SEIntersectionPoint';
 
 @Component({})
 export default class SENoduleTree extends Vue {
 
   @Prop()
-  readonly children?: SENodule[]
+  readonly children!: SENodule[]
 
   @Prop()
   readonly node?: SENodule
 
   @Prop()
-  readonly label?: string;
+  readonly label?: string; /** Wheen defined, label takes over the node name */
 
   @Prop()
   private showChildren!: boolean;
 
   @Prop()
-  readonly depth!: number
+  readonly depth!: number /** The depth value controls the indentation level */
 
   private expanded = false;
 
@@ -64,28 +65,32 @@ export default class SENoduleTree extends Vue {
     else this.expanded = false
   }
 
-  get hasChildren(): boolean {
-    return (this.children?.length ?? 0) > 0
+  get hasExistingChildren(): boolean {
+    return this.existingChildren.length > 0
   }
+
   get prettyName(): string {
     return this.label ?? this.name
   }
+
   get name(): string {
-    return this.node?.name ?? "none";
+    return this.node?.name ?? "None";
   }
 
   get showClass(): string {
     return (this.label || this.node?.showing) ? "visibleNode" : "invisibleNode"
   }
 
-  get existingNodes(): SENodule[] {
-    if (this.children)
-      return this.children.filter((n: SENodule) => n.exists)
-    else return [];
+  get existingChildren(): SENodule[] {
+    return this.children.filter((n: SENodule) => {
+      if (n instanceof SEIntersectionPoint)
+        return n.isUserCreated;
+      else return n.exists
+    })
   }
 
   get indent(): any {
-    return { marginLeft: `${this.depth * 16}px` }
+    return { marginLeft: `${this.depth * 8}px` }
   }
 }
 </script>

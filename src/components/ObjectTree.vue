@@ -1,21 +1,21 @@
 <template>
   <div class="pa-0" id="objectTreeContainer">
-    <v-sheet rounded :elevation="4" class="my-2">
+    <v-sheet rounded color="accent" :elevation="4" class="my-3">
       <SENoduleTree label="Points" :children="points" :depth="0"
-        show-children="true">
+        show-children="trudark e">
       </SENoduleTree>
     </v-sheet>
-    <v-sheet rounded :elevation="4" class="my-2">
+    <v-sheet rounded color="accent" :elevation="4" class="my-3">
       <SENoduleTree label="Lines" :children="lines" :depth="0"
         show-children>
       </SENoduleTree>
     </v-sheet>
-    <v-sheet rounded :elevation="4" class="my-2">
+    <v-sheet rounded color="accent" :elevation="4" class="my-3">
       <SENoduleTree label="Segments" :children="segments" :depth="0"
         show-children>
       </SENoduleTree>
     </v-sheet>
-    <v-sheet rounded :elevation="4" class="my-2">
+    <v-sheet rounded color="accent" :elevation="4" class="my-3">
       <SENoduleTree label="Circles" :children="circles" :depth="0"
         show-children>
       </SENoduleTree>
@@ -90,5 +90,8 @@ export default class ObjectTree extends Vue {
   padding: 0;
   width: 100%;
   overflow: scroll;
+}
+.nodeGroup {
+  border: 2px solid red;
 }
 </style>
