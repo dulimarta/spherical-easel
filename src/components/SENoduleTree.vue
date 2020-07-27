@@ -15,15 +15,24 @@
         <v-icon v-else-if="name.startsWith('Intersection')">
           mdi-vector-intersection
         </v-icon>
-        <div class="ml-2" :class="showClass">{{prettyName}}</div>
-        <v-btn v-if="hasExistingChildren" @click="expanded = !expanded">
-          <v-icon v-if="!expanded">mdi-chevron-right</v-icon>
-          <v-icon v-else>mdi-chevron-down</v-icon>
+        <div class="ml-1" :class="showClass">{{prettyName}}</div>
+        <div v-show="node" @click="toggleVisibility" class="mr-2">
+          <v-icon small v-if="isHidden">
+            mdi-eye
+          </v-icon>
+          <v-icon small v-else style="color:gray">
+            mdi-eye-off
+          </v-icon>
+        </div>
+        <v-btn small v-show="hasExistingChildren"
+          @click="expanded = !expanded">
+          <v-icon small dense v-if="!expanded">mdi-chevron-right</v-icon>
+          <v-icon small v-else>mdi-chevron-down</v-icon>
         </v-btn>
       </div>
       <!-- Expanded: {{expanded}} {{children}} {{existingNodes}} -->
       <v-divider></v-divider>
-      <div v-if="expanded">
+      <div v-show="expanded">
         <SENoduleTree v-for="(n,pos) in existingChildren" :key="pos"
           :children="n.kids" :depth="depth + 1" :node="n">
         </SENoduleTree>
@@ -65,10 +74,19 @@ export default class SENoduleTree extends Vue {
     else this.expanded = false
   }
 
+  toggleVisibility() {
+    if (this.node) {
+      this.node.showing = !this.node.showing
+    }
+  }
   get hasExistingChildren(): boolean {
     return this.existingChildren.length > 0
   }
 
+  get isHidden(): boolean {
+    return this.node ? !this.node.showing : false;
+
+  }
   get prettyName(): string {
     return this.label ?? this.name
   }
@@ -107,16 +125,16 @@ export default class SENoduleTree extends Vue {
 }
 
 .invisibleNode {
-  background: lightgray;
+  // background: lightgray;
   color: gray;
   font-style: italic;
 }
 #content {
   display: flex;
   flex-direction: row;
-  justify-items: center;
+  align-items: center;
   margin: 0 0.25em;
-  div {
+  div:first-of-type {
     flex-grow: 1;
   }
   v-icon {

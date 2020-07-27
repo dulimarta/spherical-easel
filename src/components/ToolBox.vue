@@ -31,8 +31,7 @@
           <ToolGroups></ToolGroups>
         </v-tab-item>
         <v-tab-item value="objectListTab">
-          <ObjectTree style="width:100%">
-          </ObjectTree>
+          <ObjectTree></ObjectTree>
         </v-tab-item>
       </v-tabs>
     </div>

@@ -1,25 +1,31 @@
 <template>
   <div class="pa-0" id="objectTreeContainer">
-    <v-sheet rounded color="accent" :elevation="4" class="my-3">
+    <v-sheet rounded color="accent" :elevation="4" class="my-3"
+      v-show="points.length > 0">
       <SENoduleTree label="Points" :children="points" :depth="0"
-        show-children="trudark e">
+        show-children="true">
       </SENoduleTree>
     </v-sheet>
-    <v-sheet rounded color="accent" :elevation="4" class="my-3">
+    <v-sheet rounded color="accent" :elevation="4" class="my-3"
+      v-show="lines.length > 0">
       <SENoduleTree label="Lines" :children="lines" :depth="0"
-        show-children>
+        show-children="true">
       </SENoduleTree>
     </v-sheet>
-    <v-sheet rounded color="accent" :elevation="4" class="my-3">
-      <SENoduleTree label="Segments" :children="segments" :depth="0"
-        show-children>
+    <v-sheet rounded color="accent" :elevation="4" class="my-3"
+      v-show="segments.length > 0">
+      <SENoduleTree label="Line Segments" :children="segments" :depth="0"
+        show-children="true">
       </SENoduleTree>
     </v-sheet>
-    <v-sheet rounded color="accent" :elevation="4" class="my-3">
+    <v-sheet rounded color="accent" :elevation="4" class="my-3"
+      v-show="circles.length > 0">
       <SENoduleTree label="Circles" :children="circles" :depth="0"
-        show-children>
+        show-children="true">
       </SENoduleTree>
     </v-sheet>
+    <span class="text-body-2 ma-2" v-show="zeroObjects">No objects in
+      database</span>
   </div>
 </template>
 
@@ -52,12 +58,13 @@ export default class ObjectTree extends Vue {
   @State
   readonly circles!: SENodule[];
 
+  @State
+  readonly nodules!: SENodule[]
+
 
   private oldFillColor: Two.Color | undefined = undefined;
 
   // TODO: the getter function seems to be sluggish?
-
-
 
   updateActive(args: number[]): void {
     console.debug("Updating point selection(s)", args);
@@ -81,6 +88,10 @@ export default class ObjectTree extends Vue {
       // })
     }
   }
+
+  get zeroObjects(): boolean {
+    return this.nodules.filter(n => n.exists).length === 0;
+  }
 }
 
 </script>
@@ -89,6 +100,7 @@ export default class ObjectTree extends Vue {
 #objectTreeContainer {
   padding: 0;
   width: 100%;
+  max-height: 80vh;
   overflow: scroll;
 }
 .nodeGroup {
