@@ -130,4 +130,15 @@ export class SEIntersectionPoint extends SEPoint {
       super.glowing = b;
     }
   }
+  // I wish the SENodule methods would work but I couldn't figure out how
+  // See the attempts in SENodule
+  public isFreePoint() {
+    return false;
+  }
+  public isOneDimensional() {
+    return false;
+  }
+  public isPoint() {
+    return false;
+  }
 }

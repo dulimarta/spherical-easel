@@ -77,7 +77,7 @@
     "CreateAntipodalPointDisplayedName": "Click on a point to create its antipode",
 
     "CreatePointOnOneDimDisplayedName": "Point On One Dimensional Object",
-    "CreatePointOnOneDimToolTipMessage": "Select a one-dimensional object",
+    "CreatePointOnOneDimToolTipMessage": "Select a one-dimensional object to place a point on",
     "CreatePointOnOneDimToolUseMessage": "Select a one-dimensional object to add a point to."
   },
   "settings": {

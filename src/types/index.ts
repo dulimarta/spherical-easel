@@ -24,11 +24,11 @@ export interface AppState {
   previousActionMode: string;
   activeToolName: string;
   previousActiveToolName: string;
-  points: SEPoint[];
-  lines: SELine[];
-  segments: SESegment[];
-  circles: SECircle[];
-  nodules: SENodule[];
+  sePoints: SEPoint[];
+  seLines: SELine[];
+  seSegments: SESegment[];
+  seCircles: SECircle[];
+  seNodules: SENodule[];
   selections: SENodule[];
   temporaryNodules: Nodule[];
 }

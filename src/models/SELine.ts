@@ -90,9 +90,15 @@ export class SELine extends SENodule implements Visitable, OneDimensional {
     return this._endSEPoint;
   }
 
-  public isHitAt(unitIdealVector: Vector3): boolean {
+  public isHitAt(
+    unitIdealVector: Vector3,
+    currentMagnificationFactor: number
+  ): boolean {
     // Is the sphereVector is perpendicular to the line normal?
-    return Math.abs(unitIdealVector.dot(this._normalVector)) < 1e-2;
+    return (
+      Math.abs(unitIdealVector.dot(this._normalVector)) <
+      SETTINGS.line.hitIdealDistance / currentMagnificationFactor
+    );
   }
 
   /**
@@ -285,5 +291,20 @@ export class SELine extends SENodule implements Visitable, OneDimensional {
         pivot.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
       }
     }
+  }
+
+  // I wish the SENodule methods would work but I couldn't figure out how
+  // See the attempts in SENodule
+  public isFreePoint() {
+    return false;
+  }
+  public isOneDimensional() {
+    return true;
+  }
+  public isPoint() {
+    return false;
+  }
+  public isPointOnOneDimensional() {
+    return false;
   }
 }

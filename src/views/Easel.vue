@@ -302,7 +302,7 @@ export default class Easel extends Vue {
   /** mounted() is part of VueJS lifecycle hooks */
   mounted(): void {
     window.addEventListener("resize", this.onWindowResized);
-    this.adjustSize();
+    this.adjustSize(); // Why do we need this?  this.onWindowResized just calls this.adjustSize() but if you remove it the app doesn't work -- strange!
   }
 
   /** Split Pane resize handler
@@ -371,16 +371,14 @@ export default class Easel extends Vue {
     Line.updateCurrentStrokeWidthForZoom(oldFactor / e.factor);
     Segment.updateCurrentStrokeWidthForZoom(oldFactor / e.factor);
     Circle.updateCurrentStrokeWidthForZoom(oldFactor / e.factor);
-    Point.updateCurrentStrokeWidthForZoom(oldFactor / e.factor);
+    Point.updatePointScaleFactorForZoom(oldFactor / e.factor);
 
     // Update the size of each nodule in the store
-    this.$store.state.nodules.forEach((p: SENodule) => {
+    this.$store.state.seNodules.forEach((p: SENodule) => {
       p.ref.adjustSize();
     });
     // The temporary plottables need to be resized too
-    console.log("temp nodules", this.$store.state.temporaryNodules.length);
     this.$store.state.temporaryNodules.forEach((p: Nodule) => {
-      //console.log("resize plot", p);
       p.adjustSize();
     });
   }

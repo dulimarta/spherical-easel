@@ -222,6 +222,15 @@ export default class Circle extends Nodule {
       /*curve*/ false
     );
 
+    this.originalVertices = [];
+
+    frontVertices.forEach(v => {
+      this.originalVertices.push(new Vector2(v.x, v.y));
+    });
+    backVertices.forEach(v => {
+      this.originalVertices.push(new Vector2(v.x, v.y));
+    });
+
     // Set the styles that are always true
     // The front/back parts have no fill because that is handled by the front/back fill
     // The front/back fill have no stroke because that is handled by the front/back part
@@ -232,13 +241,16 @@ export default class Circle extends Nodule {
     this.glowingFrontPart.noFill();
     this.glowingBackPart.noFill();
 
-    this.originalVertices = [];
-    frontVertices.forEach(v => {
-      this.originalVertices.push(new Vector2(v.x, v.y));
-    });
-    backVertices.forEach(v => {
-      this.originalVertices.push(new Vector2(v.x, v.y));
-    });
+    if (SETTINGS.circle.drawn.dashArray.front.length > 0) {
+      SETTINGS.circle.drawn.dashArray.front.forEach(v =>
+        this.dashArrayFront.push(v)
+      );
+    }
+    if (SETTINGS.circle.drawn.dashArray.back.length > 0) {
+      SETTINGS.circle.drawn.dashArray.back.forEach(v =>
+        this.dashArrayBack.push(v)
+      );
+    }
   }
   /**
    * Reorient the unit circle in 3D and then project the points to 2D

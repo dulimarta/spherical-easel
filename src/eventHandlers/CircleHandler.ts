@@ -40,6 +40,15 @@ export default class CircleHandler extends Highlighter {
 
   /** The radius of the temporary circle (along the surface of the sphere) */
   private arcRadius = 0;
+  /**
+   * A temporary plottable (TwoJS) point created while the user is making the circles or segments
+   */
+  protected startMarker: Point;
+  /**
+   * A temporary plottable (TwoJS) point created while the user is making the circles or segments
+   */
+  protected endMarker: Point;
+
   /** Has the temporary circle been added to the scene?*/
   private isTemporaryCircleAdded: boolean;
   /**
@@ -58,6 +67,13 @@ export default class CircleHandler extends Highlighter {
     // Set the style using the temporary defaults
     this.temporaryCircle.stylize(DisplayStyle.APPLYTEMPORARYVARIABLES);
     this.store.commit("addTemporaryNodule", this.temporaryCircle);
+    // Create and style the temporary points marking the start/end of an object being created
+    this.startMarker = new Point();
+    this.startMarker.stylize(DisplayStyle.APPLYTEMPORARYVARIABLES);
+    this.store.commit("addTemporaryNodule", this.startMarker);
+    this.endMarker = new Point();
+    this.endMarker.stylize(DisplayStyle.APPLYTEMPORARYVARIABLES);
+    this.store.commit("addTemporaryNodule", this.endMarker);
   }
 
   mousePressed(event: MouseEvent): void {
@@ -131,8 +147,6 @@ export default class CircleHandler extends Highlighter {
         this.centerSEPoint = null;
       }
       this.endMarker.positionVector = this.currentSphereVector;
-      // Make sure the temporary circle is displayed with the right line width
-      this.temporaryCircle.adjustSize();
     }
   }
 
@@ -147,8 +161,6 @@ export default class CircleHandler extends Highlighter {
         if (!this.isTemporaryCircleAdded) {
           this.isTemporaryCircleAdded = true;
           this.temporaryCircle.addToLayers(this.layers);
-          // Adjust the size of the temporary circle to the current zoom level
-          this.temporaryCircle.adjustSize();
           // Only add the start marker if the start point is going to be new or is non-user created intersection point
           if (
             this.centerSEPoint == null ||
@@ -156,12 +168,8 @@ export default class CircleHandler extends Highlighter {
               !this.centerSEPoint.isUserCreated)
           ) {
             this.startMarker.addToLayers(this.layers);
-            // Adjust the size of the temporary point to the current zoom level
-            this.startMarker.adjustSize();
           }
           this.endMarker.addToLayers(this.layers);
-          // Adjust the size of the temporary point to the current zoom level
-          this.endMarker.adjustSize();
         }
         //compute the radius of the temporary circle
         this.arcRadius = this.temporaryCircle.centerVector.angleTo(
@@ -356,6 +364,17 @@ export default class CircleHandler extends Highlighter {
       }
       this.circleSEPoint = vtx;
     }
+    // Update the display of the circle based on a potentially new location of the circleSEPoint
+    // Move the endMarker to the current mouse location
+    this.endMarker.positionVector = this.circleSEPoint.locationVector;
+    //compute the radius of the temporary circle
+    this.arcRadius = this.temporaryCircle.centerVector.angleTo(
+      this.circleSEPoint.locationVector
+    );
+    // Set the radius of the temporary circle, the center was set in Mouse Press
+    this.temporaryCircle.circleRadius = this.arcRadius;
+    //update the display
+    this.temporaryCircle.updateDisplay();
 
     // Clone the current circle after the circlePoint is set
     const newCircle = this.temporaryCircle.clone();

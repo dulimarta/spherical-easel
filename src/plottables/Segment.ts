@@ -73,7 +73,7 @@ export default class Segment extends Nodule {
   private dashArrayOffsetBack = SETTINGS.segment.drawn.dashArray.offset.back;
   private dynamicBackStyle = SETTINGS.segment.dynamicBackStyle;
 
-  /** Initialize the current line width that is adjust by the zoom level and the user widthPercent */
+  /** Initialize the current line width that is adjusted by the zoom level and the user widthPercent */
   static currentSegmentStrokeWidthFront =
     SETTINGS.segment.drawn.strokeWidth.front;
   static currentSegmentStrokeWidthBack =
@@ -569,7 +569,7 @@ export default class Segment extends Nodule {
         // no fillColor
         this.frontPart.stroke = SETTINGS.segment.temp.strokeColor.front;
         // strokeWidthPercent -- The line width is set to the current line width (which is updated for zoom magnification)
-        this.frontPart.linewidth = Segment.currentSegmentStrokeWidthFront;
+        //this.frontPart.linewidth = Segment.currentSegmentStrokeWidthFront;
         this.frontPart.opacity = SETTINGS.segment.temp.opacity.front;
         // Copy the front dash properties from the front default drawn dash properties
         if (SETTINGS.segment.drawn.dashArray.front.length > 0) {
@@ -584,7 +584,7 @@ export default class Segment extends Nodule {
         // no fillColor
         this.frontExtra.stroke = SETTINGS.segment.temp.strokeColor.front;
         // strokeWidthPercent -- The line width is set to the current line width (which is updated for zoom magnification)
-        this.frontExtra.linewidth = Segment.currentSegmentStrokeWidthFront;
+        //this.frontExtra.linewidth = Segment.currentSegmentStrokeWidthFront;
         this.frontExtra.opacity = SETTINGS.segment.temp.opacity.front;
         // Copy the front dash properties from the front default drawn dash properties
         if (SETTINGS.segment.drawn.dashArray.front.length > 0) {
@@ -599,7 +599,7 @@ export default class Segment extends Nodule {
         // no fill color
         this.backPart.stroke = SETTINGS.segment.temp.strokeColor.back;
         // strokeWidthPercent -- The line width is set to the current line width (which is updated for zoom magnification)
-        this.backPart.linewidth = Segment.currentSegmentStrokeWidthBack;
+        //this.backPart.linewidth = Segment.currentSegmentStrokeWidthBack;
         this.backPart.opacity = SETTINGS.segment.temp.opacity.back;
         // Copy the back dash properties from the back default drawn dash properties
         if (SETTINGS.segment.drawn.dashArray.back.length > 0) {
@@ -613,7 +613,7 @@ export default class Segment extends Nodule {
         // no fill color
         this.backExtra.stroke = SETTINGS.segment.temp.strokeColor.back;
         // strokeWidthPercent -- The line width is set to the current line width (which is updated for zoom magnification)
-        this.backExtra.linewidth = Segment.currentSegmentStrokeWidthBack;
+        //this.backExtra.linewidth = Segment.currentSegmentStrokeWidthBack;
         this.backExtra.opacity = SETTINGS.segment.temp.opacity.back;
         // Copy the back dash properties from the back default drawn dash properties
         if (SETTINGS.segment.drawn.dashArray.back.length > 0) {

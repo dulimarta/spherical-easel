@@ -116,9 +116,16 @@ export class SESegment extends SENodule implements Visitable, OneDimensional {
     this._arcLength = len;
   }
 
-  public isHitAt(unitIdealVector: Vector3): boolean {
+  public isHitAt(
+    unitIdealVector: Vector3,
+    currentMagnificationFactor: number
+  ): boolean {
     // Is the unitIdealVector is perpendicular to the normal to the plane containing the segment?
-    if (Math.abs(unitIdealVector.dot(this._normalVector)) > 1e-2) return false;
+    if (
+      Math.abs(unitIdealVector.dot(this._normalVector)) >
+      SETTINGS.segment.hitIdealDistance / currentMagnificationFactor
+    )
+      return false;
 
     // Is the unitIdealVector inside the radius arcLength/2 circle about the midVector?
     // NOTE: normalVector x startVector *(this.arcLength > Math.PI ? -1 : 1)
@@ -134,7 +141,8 @@ export class SESegment extends SENodule implements Visitable, OneDimensional {
 
     return (
       tmpVector.angleTo(unitIdealVector) <
-      this._arcLength / 2 + SETTINGS.segment.hitIdealDistance
+      this._arcLength / 2 +
+        SETTINGS.segment.hitIdealDistance / currentMagnificationFactor
     );
   }
 
@@ -429,5 +437,20 @@ export class SESegment extends SENodule implements Visitable, OneDimensional {
         pivot.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
       }
     }
+  }
+
+  // I wish the SENodule methods would work but I couldn't figure out how
+  // See the attempts in SENodule
+  public isFreePoint() {
+    return false;
+  }
+  public isOneDimensional() {
+    return true;
+  }
+  public isPoint() {
+    return false;
+  }
+  public isPointOnOneDimensional() {
+    return false;
   }
 }

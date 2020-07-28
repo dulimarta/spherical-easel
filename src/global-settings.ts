@@ -43,10 +43,10 @@ export default {
     //The properties of the point when it is drawn on the sphereCanvas and is not glowing
     drawn: {
       radius: {
-        front: 2, // The default radius of the point drawn on the front,
-        back: 1.5, // The default radius of the point drawn on the back,
-        rmin: 1, // The smallest radius displayed
-        rmax: 3 // The largest radius displayed
+        front: 4, // The default radius of the point drawn on the front,
+        back: 3, // The default radius of the point drawn on the back,
+        rmin: 2, // The smallest radius displayed
+        rmax: 6 // The largest radius displayed
       },
       fillColor: {
         front: "hsla(0, 100%, 75%, 1)", //"#FF8080", // { r: 255, g: 128, b: 128 },#f55742
@@ -56,13 +56,13 @@ export default {
         front: "#4C4CCD", // { r: 76, g: 76, b: 205 },
         back: "#A5A5E6" // the back stroke color is calculated using the contrast of 0.5
       },
-      pointStrokeWidth: { front: 1, back: 0.5 }, // The thickness of the edge of the point when drawn
+      pointStrokeWidth: { front: 2, back: 2 }, // The thickness of the edge of the point when drawn
       opacity: { front: 1, back: 1 }
       // No dashing for points
     },
     // The properties of the annular region around a point when it is glowing
     glowing: {
-      annularWidth: 1, // width is the width of the annular region around the point that shows the glow it is always bigger than the drawn radius
+      annularWidth: 2.5, // width is the width of the annular region around the point that shows the glow it is always bigger than the drawn radius
       fillColor: {
         front: "hsla(0, 100%, 50%, 1)",
         back: "hsla(0, 100%, 75%, 0.7)" // the back fill color is calculated using the contrast of 0.5
@@ -102,8 +102,8 @@ export default {
         back: "#a0c3fa" // The fill color on the back defaults to a contrast value of 0.5
       },
       strokeWidth: {
-        front: 1.5,
-        back: 1,
+        front: 2.5,
+        back: 2,
         min: 1, //On zoom this is the minimum thickness displayed
         max: 3 //On zoom this is the maximum thickness displayed
       }, // The thickness of the segment when drawn
@@ -153,8 +153,8 @@ export default {
       },
       // The thickness of the line when drawn
       strokeWidth: {
-        front: 2,
-        back: 1.5,
+        front: 2.5,
+        back: 2,
         min: 1, //This is the minimum thickness displayed
         max: 3 //This is the maximum thickness displayed
       },
@@ -206,8 +206,8 @@ export default {
       },
       strokeWidth: {
         // The thickness of the circle when drawn front/back
-        front: 2,
-        back: 1.5,
+        front: 2.5,
+        back: 2,
         min: 1, //This is the minimum thickness displayed
         max: 3 //This is the maximum thickness displayed
       }, // The thickness of the circle when drawn front/back

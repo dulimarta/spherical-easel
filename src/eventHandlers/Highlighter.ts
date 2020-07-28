@@ -44,7 +44,7 @@ export default abstract class Highlighter extends MouseHandler {
 
     // Create an array of SENodules of all nearby objects by querying the store
     this.hitSENodules = this.store.getters
-      .findNearbyObjects(this.currentSphereVector, this.currentScreenVector)
+      .findNearbySENodules(this.currentSphereVector, this.currentScreenVector)
       .filter((n: SENodule) => {
         if (n instanceof SEIntersectionPoint) {
           if (!n.isUserCreated) {

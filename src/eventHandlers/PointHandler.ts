@@ -6,13 +6,23 @@ import { DisplayStyle } from "@/plottables/Nodule";
 import Highlighter from "./Highlighter";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import { ConvertInterPtToUserCreatedCommand } from "@/commands/ConvertInterPtToUserCreatedCommand";
+import { SEPointOnOneDimensional } from "@/models/SEPointOnOneDimensional";
+import { AddPointOnOneDimensionalCommand } from "@/commands/AddPointOnOneDimensionalCommand";
 
 export default class PointHandler extends Highlighter {
   // The temporary point displayed as the user drags
   private isTemporaryPointAdded = false;
+  /**
+   * A temporary plottable (TwoJS) point created while the user is making a point
+   */
+  protected startMarker: Point;
 
   constructor(layers: Two.Group[]) {
     super(layers);
+    // Create and style the temporary points marking the object being created
+    this.startMarker = new Point();
+    this.startMarker.stylize(DisplayStyle.APPLYTEMPORARYVARIABLES);
+    this.store.commit("addTemporaryNodule", this.startMarker);
   }
 
   mousePressed(event: MouseEvent): void {
@@ -36,21 +46,66 @@ export default class PointHandler extends Highlighter {
           return;
         }
         return;
-      }
-      //#region linkNoduleSENodule
-      const newPoint = new Point();
-      // Set the display to the default values
-      newPoint.stylize(DisplayStyle.APPLYCURRENTVARIABLES);
-      newPoint.adjustSize();
+      } else {
+        //#region linkNoduleSENodule
+        // create a new Point
+        const newPoint = new Point();
+        // Set the display to the default values
+        newPoint.stylize(DisplayStyle.APPLYCURRENTVARIABLES);
+        newPoint.adjustSize();
 
-      // Create the model object for the new point and link them
-      const vtx = new SEPoint(newPoint);
-      vtx.locationVector = this.currentSphereVector;
-      //#endregion linkNoduleSENodule
-      // Create and execute the command to create a new point for undo/redo
-      new AddPointCommand(vtx).execute();
+        if (this.hitSESegments.length > 0) {
+          // The new point will be a point on a segment
+          // Create the model object for the new point and link them
+          const vtx = new SEPointOnOneDimensional(
+            newPoint,
+            this.hitSESegments[0]
+          );
+          vtx.locationVector = this.currentSphereVector; // snaps location to the closest on the one Dimensional
+
+          // Create and execute the command to create a new point for undo/redo
+          new AddPointOnOneDimensionalCommand(
+            vtx,
+            this.hitSESegments[0]
+          ).execute();
+          //#endregion linkNoduleSENodule
+        } else if (this.hitSELines.length > 0) {
+          // The new point will be a point on a line
+          // Create the model object for the new point and link them
+          const vtx = new SEPointOnOneDimensional(newPoint, this.hitSELines[0]);
+          vtx.locationVector = this.currentSphereVector; // snaps location to the closest on the one Dimensional
+
+          // Create and execute the command to create a new point for undo/redo
+          new AddPointOnOneDimensionalCommand(
+            vtx,
+            this.hitSELines[0]
+          ).execute();
+        } else if (this.hitSECircles.length > 0) {
+          // The new point will be a point on a circle
+          // Create the model object for the new point and link them
+          const vtx = new SEPointOnOneDimensional(
+            newPoint,
+            this.hitSECircles[0]
+          );
+          vtx.locationVector = this.currentSphereVector; // snaps location to the closest on the one Dimensional
+
+          // Create and execute the command to create a new point for undo/redo
+          new AddPointOnOneDimensionalCommand(
+            vtx,
+            this.hitSECircles[0]
+          ).execute();
+        } else {
+          // mouse press on empty location so create a free point
+          // Create the model object for the new point and link them
+          const vtx = new SEPoint(newPoint);
+          vtx.locationVector = this.currentSphereVector;
+
+          // Create and execute the command to create a new point for undo/redo
+          new AddPointCommand(vtx).execute();
+        }
+      }
     } else if (this.isTemporaryPointAdded) {
-      // Remove the temporary objects
+      // Remove the temporary object
       this.startMarker.removeFromLayers();
       this.isTemporaryPointAdded = false;
     }
@@ -64,8 +119,6 @@ export default class PointHandler extends Highlighter {
         this.isTemporaryPointAdded = true;
         // Add the temporary point to the appropriate layers
         this.startMarker.addToLayers(this.layers);
-
-        this.startMarker.adjustSize();
       }
       // Move the temporary point to the location of the mouse event, and update the display
       this.startMarker.positionVector = this.currentSphereVector;
@@ -88,5 +141,12 @@ export default class PointHandler extends Highlighter {
       this.startMarker.removeFromLayers();
       this.isTemporaryPointAdded = false;
     }
+  }
+  activate(): void {
+    super.activate();
+  }
+
+  deactivate(): void {
+    super.deactivate();
   }
 }

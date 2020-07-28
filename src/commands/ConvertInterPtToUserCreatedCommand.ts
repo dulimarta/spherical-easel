@@ -20,7 +20,6 @@ export class ConvertInterPtToUserCreatedCommand extends Command {
     this.seIntersectionPoint.ref.stylize(DisplayStyle.APPLYCURRENTVARIABLES);
     // Set the size for the current zoom magnification factor
     this.seIntersectionPoint.ref.adjustSize();
-    console.debug("Converted SEIntersction", this.seIntersectionPoint.name);
     this.seIntersectionPoint.showing = true;
   }
 

@@ -100,10 +100,28 @@ export class SEPoint extends SENodule implements Visitable {
     v.actionOnPoint(this);
   }
 
-  public isHitAt(unitIdealVector: Vector3): boolean {
+  public isHitAt(
+    unitIdealVector: Vector3,
+    currentMagnificationFactor: number
+  ): boolean {
     return (
       this._locationVector.distanceTo(unitIdealVector) <
-      SETTINGS.point.hitIdealDistance
+      SETTINGS.point.hitIdealDistance / currentMagnificationFactor
     );
+  }
+
+  // I wish the SENodule methods would work but I couldn't figure out how
+  // See the attempts in SENodule
+  public isFreePoint() {
+    return this._parents.length === 0;
+  }
+  public isOneDimensional() {
+    return false;
+  }
+  public isPoint() {
+    return true;
+  }
+  public isPointOnOneDimensional() {
+    return false;
   }
 }

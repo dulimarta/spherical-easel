@@ -81,13 +81,16 @@ export class SECircle extends SENodule implements Visitable, OneDimensional {
     );
   }
 
-  public isHitAt(unitIdealVector: Vector3): boolean {
+  public isHitAt(
+    unitIdealVector: Vector3,
+    currentMagnificationFactor: number
+  ): boolean {
     const angleToCenter = unitIdealVector.angleTo(
       this._centerSEPoint.locationVector
     );
     return (
       Math.abs(angleToCenter - this.circleRadius) <
-      SETTINGS.circle.hitIdealDistance
+      SETTINGS.circle.hitIdealDistance / currentMagnificationFactor
     );
   }
 
@@ -207,5 +210,20 @@ export class SECircle extends SENodule implements Visitable, OneDimensional {
         stateArray: []
       });
     }
+  }
+
+  // I wish the SENodule methods would work but I couldn't figure out how
+  // See the attempts in SENodule
+  public isFreePoint() {
+    return false;
+  }
+  public isOneDimensional() {
+    return true;
+  }
+  public isPoint() {
+    return false;
+  }
+  public isPointOnOneDimensional() {
+    return false;
   }
 }
