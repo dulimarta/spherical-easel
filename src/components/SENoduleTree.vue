@@ -2,7 +2,8 @@
   <div>
     <!-- <span v-for="c in points" :key="c.id">{{c.name}}</span> -->
     <div id="topContainer" :style="indent">
-      <div id="content">
+      <div id="nodeContent" :class="nodeOrLabel" @mouseenter="glowMe(true)"
+        @mouseleave="glowMe(false)">
         <v-icon v-if="isPoint">mdi-vector-point
         </v-icon>
         <v-icon v-else-if="isLineSegment">mdi-vector-radius
@@ -30,10 +31,10 @@
           <v-icon small v-else>mdi-chevron-down</v-icon>
         </v-btn>
       </div>
-      <!-- Expanded: {{expanded}} {{children}} {{existingNodes}} -->
       <v-divider></v-divider>
-      <transition name="slide-down">
+      <transition name="slide-right">
         <div v-show="expanded">
+          <!-- Recursive component here -->
           <SENoduleTree v-for="(n,pos) in existingChildren" :key="pos"
             :children="n.kids" :depth="depth + 1" :node="n">
           </SENoduleTree>
@@ -84,6 +85,16 @@ export default class SENoduleTree extends Vue {
     if (this.node) {
       this.node.showing = !this.node.showing
     }
+  }
+
+  glowMe(flag: boolean): void {
+    if (this.node) {
+      this.node.glowing = flag
+    }
+  }
+
+  get nodeOrLabel(): string {
+    return this.node ? "node" : "label"
   }
   get hasExistingChildren(): boolean {
     return this.existingChildren.length > 0
@@ -153,7 +164,7 @@ export default class SENoduleTree extends Vue {
   color: gray;
   font-style: italic;
 }
-#content {
+#nodeContent {
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -164,17 +175,22 @@ export default class SENoduleTree extends Vue {
   v-icon {
     flex-grow: 0;
   }
+
+  &.node:hover {
+    /* Change background on mouse hver only for nodes
+       i.e. do not change bbackground on labels */
+    background-color: var(--v-accent-lighten1);
+  }
 }
 
-.slide-down-enter-active,
-.slide-down-leave-active {
+.slide-right-enter-active,
+.slide-right-leave-active {
   transition: all;
-  transition-duration: 500ms;
-  // transform-origin: 50% -100%;
+  transition-duration: 250ms;
 }
 
-.slide-down-enter,
-.slide-down-leave-to {
+.slide-right-enter,
+.slide-right-leave-to {
   transform: translateX(-100%);
 }
 </style>
