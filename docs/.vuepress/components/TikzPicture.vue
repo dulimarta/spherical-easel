@@ -9,7 +9,7 @@
 <script>
 import axios from "axios";
 export default {
-  // kebab-case translates to CamelCase
+  // kebab-case translates to KebabCase
   // So tikz-picture translates to TikzPicture
   // And tik-z-picture translates to TikZPicture
   name: "tik-z-picture",

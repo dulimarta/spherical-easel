@@ -16,7 +16,16 @@
         <v-icon v-else-if="isIntersectionPoint">
           mdi-vector-intersection
         </v-icon>
-        <div class="ml-1" :class="showClass">{{prettyName}}</div>
+        <span class="contentText"
+          v-if="label && label.length > 0">{{label}}</span>
+        <v-tooltip v-else right>
+          <template v-slot:activator="{on}">
+            <div class="contentText ml-1" v-on="on" :class="showClass">
+              {{prettyName}}
+            </div>
+          </template>
+          <span>{{definitionText}}</span>
+        </v-tooltip>
         <div v-show="node" @click="toggleVisibility" class="mr-2">
           <v-icon small v-if="isHidden">
             mdi-eye
@@ -146,6 +155,15 @@ export default class SENoduleTree extends Vue {
   get indent(): any {
     return { marginLeft: `${this.depth * 8}px` }
   }
+
+  get definitionText(): string {
+    if (this.node instanceof SEPoint)
+      return this.node?.name + this.node.locationVector.toFixed(2)
+    else if (this.node instanceof SELine || this.node instanceof SESegment || this.node instanceof SECircle)
+      return this.node?.name + "(" + this.node.parents.map(p => p.name).join(",") + ")";
+    else return "n/a"
+
+  }
 }
 </script>
 
@@ -169,7 +187,7 @@ export default class SENoduleTree extends Vue {
   flex-direction: row;
   align-items: center;
   margin: 0 0.25em;
-  div:first-of-type {
+  .contentText {
     flex-grow: 1;
   }
   v-icon {
