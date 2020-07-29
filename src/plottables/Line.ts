@@ -327,8 +327,8 @@ export default class Line extends Nodule {
     console.debug("Update style of", this.name, "using", options);
     if (options.front) {
       // Set the front options
-      if (options.strokeWidthPercentage) {
-        this.strokeWidthPercentFront = options.strokeWidthPercentage;
+      if (options.strokeWidthPercent) {
+        this.strokeWidthPercentFront = options.strokeWidthPercent;
       }
       if (options.strokeColor) {
         this.strokeColorFront = options.strokeColor;
@@ -351,8 +351,8 @@ export default class Line extends Nodule {
       if (options.dynamicBackStyle) {
         this.dynamicBackStyle = options.dynamicBackStyle;
       }
-      if (options.strokeWidthPercentage) {
-        this.strokeWidthPercentBack = options.strokeWidthPercentage;
+      if (options.strokeWidthPercent) {
+        this.strokeWidthPercentBack = options.strokeWidthPercent;
       }
       if (options.strokeColor) {
         this.strokeColorBack = options.strokeColor;

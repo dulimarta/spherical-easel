@@ -11,7 +11,7 @@
         hide-inputs
         :disabled="colorApplyTo.length === 0"
         v-model="selectedColor"
-        @update:color="onColorChanged"
+        @update:color="onColorChange"
       ></v-color-picker>
       <span>Apply to:</span>
       <div>
@@ -29,11 +29,43 @@
     <fade-in-card :showWhen="hasStrokeWidth">
       <span>Stroke Width</span>
       <v-slider
-        v-model.number="strokeWidth"
+        v-model.number="strokeWidthPercent"
         :min="70"
         thumb-label="always"
-        @change="onLineWidthChanged"
-        :max="130"
+        @change="onStrokeWidthPercentChange"
+        :max="500"
+        type="range"
+        class="mt-8"
+      >
+        <template v-slot:thumb-label="{ value }">{{ value + "%" }}</template>
+      </v-slider>
+    </fade-in-card>
+
+    <fade-in-card :showWhen="hasPointRadius">
+      <span>Point Size</span>
+      <v-slider
+        v-model.number="pointRadiusPercent"
+        :min="70"
+        thumb-label="always"
+        @change="onPointRadiusPercentChange"
+        :max="500"
+        type="range"
+        class="mt-8"
+      >
+        <template v-slot:thumb-label="{ value }">{{ value + "%" }}</template>
+      </v-slider>
+    </fade-in-card>
+
+    <fade-in-card :showWhen="hasOpacity">
+      <span>Opacity</span>
+      <v-slider
+        v-model.number="opacity"
+        prepend-icon="mdi-opacity"
+        :min="-0.1"
+        :step="0.01"
+        :max="1"
+        thumb-label="always"
+        @change="onOpacityChange"
         type="range"
         class="mt-8"
       >
@@ -42,14 +74,14 @@
     </fade-in-card>
 
     <fade-in-card :showWhen="hasDash">
-      <span>Dash Pattern ({{ dashLength }}/{{ gapLength }})</span>
+      <span>Dash Pattern ({{ dashLength }}/{{ gapLength }}) with Offset {{dashOffset}}</span>
       <v-slider
         min="5"
         max="15"
         v-model.number="dashLength"
         persistent-hint
         hint="Dash length"
-        @change="onDashPatternChanged"
+        @change="onDashPatternChange"
       ></v-slider>
       <v-slider
         min="5"
@@ -57,7 +89,15 @@
         v-model.number="gapLength"
         persistent-hint
         hint="Gap length"
-        @change="onDashPatternChanged"
+        @change="onDashPatternChange"
+      ></v-slider>
+      <v-slider
+        min="5"
+        max="15"
+        v-model.number="dashOffset"
+        persistent-hint
+        hint="Dash Offset"
+        @change="onDashPatternChange"
       ></v-slider>
     </fade-in-card>
   </div>
@@ -92,8 +132,6 @@ const keys = values.map(e => {
 
 @Component({ components: { FadeInCard } })
 export default class FrontStyle extends Vue {
-  // readonly UIModule = getModule(UI, this.$store);
-
   @State
   readonly selections!: SENodule[];
 
@@ -101,30 +139,46 @@ export default class FrontStyle extends Vue {
   readonly maxStrokeWidth: number = SETTINGS.line.drawn.strokeWidth.max;
 
   // TODO: handlle background as well
-  private strokeWidth = 100;
+
+  private strokeWidthPercent = 100;
+  private pointRadiusPercent = 100;
   private selectedColor: string = SETTINGS.line.drawn.strokeColor.front;
   private colorApplyTo: string[] = [];
   private dashLength = 3;
   private gapLength = 2;
+  private dashOffset = 1;
+  private opacity = 1;
+  private dynamicBackStyle = true;
   commonStyleProperties: number[] = [];
 
-  // private commonProperties: Set<Styles>;
+  //   xstrokeWidthPercentage,
+  //   xstrokeColor,
+  //   xfillColor,
+  //   xdashArray,
+  //   xdashOffset,
+  //   opacity,
+  //   dynamicBackStyle,
+  //   pointRadiusPercent
 
   constructor() {
     super();
-    // this.commonProperties = new Set();
   }
 
   // Changes the stroke width of the elements in the *selection* array in the store
-  // This method is linked to the strokeWidth fade-in-card
-  onLineWidthChanged(): void {
-    this.$store.commit("changeStrokeWidth", this.strokeWidth);
+  // This method is linked to the strokeWidthPercent fade-in-card
+  onStrokeWidthPercentChange(): void {
+    console.log("stroke cheng", this.strokeWidthPercent);
+    this.$store.commit("changeStyle", {
+      front: true,
+      strokeWidthPercent: this.strokeWidthPercent
+    });
   }
 
   // Changes the stroke color of the elements in the *selection* array in the store
   // This commit is sent to the store with options includeing the selected color and ????
-  onColorChanged(): void {
-    this.$store.commit("changeColor", {
+  onColorChange(): void {
+    this.$store.commit("changeStyle", {
+      front: true,
       color: this.selectedColor,
       props: this.colorApplyTo.map(
         (s: string) => s.replace(/ /g, "") // Remove all blanks
@@ -132,9 +186,26 @@ export default class FrontStyle extends Vue {
     });
   }
 
-  onDashPatternChanged(): void {
-    this.$store.commit("changeDashPattern", [this.dashLength, this.gapLength]);
+  onDashPatternChange(): void {
+    this.$store.commit("changeStyle", {
+      front: true,
+      dashArray: [this.dashLength, this.gapLength],
+      dashOffset: this.dashOffset
+    });
   }
+
+  onOpacityChange(): void {
+    console.log("colorApplyTo", this.colorApplyTo);
+    this.$store.commit("changeStyle", { front: true, opacity: this.opacity });
+  }
+
+  onPointRadiusPercentChange(): void {
+    this.$store.commit("changeStyle", {
+      front: true,
+      pointRadiusPercent: this.pointRadiusPercent
+    });
+  }
+
   /**
    * Determines if the commonStyleProperties has the given input of type Styles
    * The input is an enum of type Styles
@@ -144,17 +215,6 @@ export default class FrontStyle extends Vue {
     return (
       this.commonStyleProperties.length > 0 &&
       this.commonStyleProperties.findIndex(x => x === sNum) >= 0
-    );
-  }
-
-  /**
-   * Used to determine if the color picker Vue component (i.e. fade-in-card) should be displayed
-   */
-  get hasColor(): boolean {
-    return (
-      this.hasStyle(Styles.strokeColor) ||
-      this.hasStyle(Styles.fillColorWhite) ||
-      this.hasStyle(Styles.fillColorGray)
     );
   }
 
@@ -183,17 +243,31 @@ export default class FrontStyle extends Vue {
   }
 
   /**
+   * Used to determine if the color picker Vue component (i.e. fade-in-card) should be displayed
+   */
+  get hasColor(): boolean {
+    return this.hasStyle(Styles.strokeColor) || this.hasStyle(Styles.fillColor);
+  }
+
+  /**
    * Used to determine if the stroke width slider (i.e. fade-in-card containing the slider) should be displayed
    */
   get hasStrokeWidth(): boolean {
     return this.hasStyle(Styles.strokeWidthPercentage);
   }
 
+  get hasPointRadius(): boolean {
+    return this.hasStyle(Styles.pointRadiusPercent);
+  }
+
+  get hasOpacity(): boolean {
+    return this.hasStyle(Styles.opacity);
+  }
   /**
-   * Used to determine if the dash gap and dash offest sliders (i.e. fade-in-card containing the sliders) should be displayed
+   * Used to determine if the dash on, dash off and dash offest sliders (i.e. fade-in-card containing the sliders) should be displayed
    */
   get hasDash(): boolean {
-    return this.hasStyle(Styles.dashPattern);
+    return this.hasStyle(Styles.dashArray);
   }
 
   /**
@@ -217,14 +291,26 @@ export default class FrontStyle extends Vue {
       if (newSelection.every(s => s.customStyles().has(k)))
         this.commonStyleProperties.push(k);
     }
-    for (let k = this.colorApplyTo.length - 1; k >= 0; k--) {
-      const idx = this.commonStyleProperties.findIndex(
-        s => keys[s] === this.colorApplyTo[k]
-      );
-      if (idx < 0) {
-        this.colorApplyTo.splice(k, 1);
+    // console.log("colorApplyTo", this.colorApplyTo);
+    // for (let k = this.colorApplyTo.length - 1; k >= 0; k--) {
+    //   console.log("here");
+    //   const idx = this.commonStyleProperties.findIndex(
+    //     s => keys[s] === this.colorApplyTo[k]
+    //   );
+    //   if (idx < 0) {
+    //     this.colorApplyTo.splice(k, 1);
+    //   }
+    // }
+    for (let i = 0; i < this.commonStyleProperties.length; i++) {
+      console.log("attirbutre", Styles[this.commonStyleProperties[i]]);
+      if (Styles[this.commonStyleProperties[i]].includes("Color")) {
+        this.colorApplyTo.push(Styles[this.commonStyleProperties[i]]);
+        break;
       }
     }
+
+    console.log("commmonStyle", this.commonStyleProperties);
+    console.log("colorApplyTo", this.colorApplyTo);
     console.log("styles", Styles);
     console.log("values", values);
     // const propNames = this.commonStyleProperties.map(n => keys[n]).join(", ");

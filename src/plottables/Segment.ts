@@ -456,8 +456,8 @@ export default class Segment extends Nodule {
     console.debug("Update style of", this.name, "using", options);
     if (options.front) {
       // Set the front options
-      if (options.strokeWidthPercentage) {
-        this.strokeWidthPercentFront = options.strokeWidthPercentage;
+      if (options.strokeWidthPercent) {
+        this.strokeWidthPercentFront = options.strokeWidthPercent;
       }
       if (options.strokeColor) {
         this.strokeColorFront = options.strokeColor;
@@ -480,8 +480,8 @@ export default class Segment extends Nodule {
       if (options.dynamicBackStyle) {
         this.dynamicBackStyle = options.dynamicBackStyle;
       }
-      if (options.strokeWidthPercentage) {
-        this.strokeWidthPercentBack = options.strokeWidthPercentage;
+      if (options.strokeWidthPercent) {
+        this.strokeWidthPercentBack = options.strokeWidthPercent;
       }
       if (options.strokeColor) {
         this.strokeColorBack = options.strokeColor;
@@ -498,7 +498,7 @@ export default class Segment extends Nodule {
         if (options.dashOffset) this.dashArrayOffsetBack = options.dashOffset;
       }
     }
-    // Now update the style and size
+    // Now apply the style and size
     this.stylize(DisplayStyle.APPLYCURRENTVARIABLES);
     this.adjustSize();
   }

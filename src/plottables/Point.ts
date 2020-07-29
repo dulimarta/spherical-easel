@@ -269,7 +269,7 @@ export default class Point extends Nodule {
         this.opacityBack = options.opacity;
       }
     }
-    // Now update the style and size
+    // Now apply the style and size
     this.stylize(DisplayStyle.APPLYCURRENTVARIABLES);
     this.adjustSize();
   }

@@ -208,46 +208,105 @@ export default {
         obj.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
       });
   },
-  // TODO: combine the following changeXXXX functions
-  changeStrokeWidth(state: AppState, percent: number): void {
-    const opt: StyleOptions = {
-      strokeWidthPercentage: percent
-    };
-    state.selections
-      .filter(n => !(n instanceof SEPoint))
-      .map(n => n as SEOneDimensional) // TODO: handle other object types
-      .forEach((n: SEOneDimensional) => {
-        // console.debug(`Changing stroke width of ${n.name} to ${width}`);
-        n.ref.updateStyle(opt);
-      });
-  },
-
-  changeColor(
+  changeStyle(
     state: AppState,
-    { color, props }: { color: string; props: string[] }
+    {
+      front,
+      strokeWidthPercent: strokeWidthPercent,
+      color, // The color selected with the one color picker
+      props, // String array containing a subset of strokeColor, fillColor
+      dashArray,
+      dashOffset,
+      opacity,
+      dynamicBackStyle,
+      pointRadiusPercent
+    }: {
+      front: boolean;
+      strokeWidthPercent: number | undefined;
+      color: string | undefined;
+      props: string[] | undefined;
+      dashArray: number[] | undefined;
+      dashOffset: number | undefined;
+      opacity: number | undefined;
+      dynamicBackStyle: boolean | undefined;
+      pointRadiusPercent: number | undefined;
+    }
   ): void {
-    const opt: any = {};
-    props.forEach(s => {
-      opt[s] = color;
-    });
-    state.selections
-      .filter(n => !(n instanceof SEPoint))
-      .map(n => n as SEOneDimensional) // TODO: handle other object types
-      .forEach((n: SEOneDimensional) => {
-        // console.debug(`Changing stroke color of ${n.name} to ${color}`);
-        n.ref.updateStyle(opt);
-      });
-  },
-  changeDashPattern(state: AppState, dashPattern: number[]): void {
-    const opt: StyleOptions = {
-      dashArray
+    const opt: any = {
+      front: front,
+      strokeWidthPercent: strokeWidthPercent,
+      dashArray: dashArray,
+      dashOffset: dashOffset,
+      opacity: opacity,
+      dynamicBackStyle: dynamicBackStyle,
+      pointRadiusPercent: pointRadiusPercent
     };
-    state.selections
-      .filter(n => !(n instanceof SEPoint))
-      .map(n => n as SEOneDimensional) // TODO: handle other object types
-      .forEach((n: SEOneDimensional) => {
-        // console.debug(`Changing stroke color of ${n.name} to ${color}`);
-        n.ref.updateStyle(opt);
+    // The attributes that the color applies to are passed to this mutation as an array,
+    // unpack that array and add those properties to the opt object
+    if (props) {
+      props.forEach(s => {
+        opt[s] = color;
       });
+    }
+
+    state.selections.forEach((n: SENodule) => {
+      // console.debug(`Changing stroke width of ${n.name} to ${width}`);
+      n.ref.updateStyle(opt as StyleOptions);
+    });
   }
+
+  // // TODO: combine the following changeXXXX functions
+  // changeStrokeWidth(
+  //   state: AppState,
+  //   {
+  //     face,
+  //     strokeWidthPercent
+  //   }: { face: boolean; strokeWidthPercent: number }
+  // ): void {
+  //   const opt: StyleOptions = {
+  //     front: face,
+  //     strokeWidthPercent: strokeWidthPercent
+  //   };
+  //   state.selections
+  //     .filter(n => !(n instanceof SEPoint))
+  //     .map(n => n as SEOneDimensional) // TODO: handle other object types
+  //     .forEach((n: SEOneDimensional) => {
+  //       // console.debug(`Changing stroke width of ${n.name} to ${width}`);
+  //       n.ref.updateStyle(opt);
+  //     });
+  // },
+
+  // changeColor(
+  //   state: AppState,
+  //   { face, color, props }: { face: boolean; color: string; props: string[] }
+  // ): void {
+  //   const opt: any = {};
+  //   props.forEach(s => {
+  //     opt[s] = color;
+  //   });
+  //   state.selections
+  //     .filter(n => !(n instanceof SEPoint))
+  //     .map(n => n as SEOneDimensional) // TODO: handle other object types
+  //     .forEach((n: SEOneDimensional) => {
+  //       // console.debug(`Changing stroke color of ${n.name} to ${color}`);
+  //       n.ref.updateStyle(opt);
+  //     });
+  // },
+
+  // changeDashPattern(
+  //   state: AppState,
+  //   { face, dashPattern }: { face: boolean; dashPattern: number[] }
+  // ): void {
+  //   const opt: StyleOptions = {
+  //     front: face,
+  //     dashArray: dashPattern
+  //   };
+  //   state.selections
+  //     .filter(n => !(n instanceof SEPoint))
+  //     .map(n => n as SEOneDimensional) // TODO: handle other object types
+  //     .forEach((n: SEOneDimensional) => {
+  //       // console.debug(`Changing stroke color of ${n.name} to ${color}`);
+  //       n.ref.updateStyle(opt);
+  //     });
+  // }
 };

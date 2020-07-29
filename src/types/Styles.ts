@@ -8,13 +8,12 @@ export enum Styles {
   dashOffset,
   opacity,
   dynamicBackStyle,
-  pointRadiusPercent,
-  pointStrokeWidth
+  pointRadiusPercent
 }
 
 export type StyleOptions = {
   front: boolean;
-  strokeWidthPercentage?: number;
+  strokeWidthPercent?: number;
   strokeColor?: string;
   fillColor?: string;
   dashArray?: number[];
@@ -22,5 +21,4 @@ export type StyleOptions = {
   opacity?: number;
   dynamicBackStyle?: boolean;
   pointRadiusPercent?: number;
-  pointStrokeWidth?: number;
 };

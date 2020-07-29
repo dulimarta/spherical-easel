@@ -738,8 +738,8 @@ export default class Circle extends Nodule {
     console.debug("Update style of", this.name, "using", options);
     if (options.front) {
       // Set the front options
-      if (options.strokeWidthPercentage) {
-        this.strokeWidthPercentFront = options.strokeWidthPercentage;
+      if (options.strokeWidthPercent) {
+        this.strokeWidthPercentFront = options.strokeWidthPercent;
       }
       if (options.fillColor) {
         this.fillColorFront = options.fillColor;
@@ -765,8 +765,8 @@ export default class Circle extends Nodule {
       if (options.dynamicBackStyle) {
         this.dynamicBackStyle = options.dynamicBackStyle;
       }
-      if (options.strokeWidthPercentage) {
-        this.strokeWidthPercentBack = options.strokeWidthPercentage;
+      if (options.strokeWidthPercent) {
+        this.strokeWidthPercentBack = options.strokeWidthPercent;
       }
       if (options.fillColor) {
         this.fillColorBack = options.fillColor;
@@ -786,7 +786,7 @@ export default class Circle extends Nodule {
         if (options.dashOffset) this.dashArrayOffsetBack = options.dashOffset;
       }
     }
-    // Now update the style and size
+    // Now apply the style and size
     this.stylize(DisplayStyle.APPLYCURRENTVARIABLES);
     this.adjustSize();
   }
@@ -891,6 +891,7 @@ export default class Circle extends Nodule {
         this.frontPart.stroke = this.strokeColorFront;
         // strokeWidthPercent is applied by adjustSize()
         this.frontPart.opacity = this.opacityFront;
+        this.frontFill.opacity = this.opacityFront;
         if (this.dashArrayFront.length > 0) {
           this.frontPart.dashes.clear();
           this.dashArrayFront.forEach(v => {
