@@ -1,16 +1,17 @@
 //
 enum TokenType {
   PLUS,
-  UNARYPLUS,
   MINUS,
-  UNARYMINUS,
+  UNARY_MINUS,
   MULT,
   DIV,
-  EXPONENT,
+  POW,
   NUMBER,
   IDENTIFIER,
-  LEFTPAREN,
-  RIGHTPAREN,
+  LEFT_PAREN,
+  RIGHT_PAREN,
+  MATH_BUILTIN,
+  COMMA,
   UNKNOWN,
   EOF
 }
@@ -24,7 +25,7 @@ type SyntaxTree = {
   node: Lexicon;
   leftChild?: SyntaxTree;
   rightChild?: SyntaxTree;
-  // children: SyntaxTree[];
+  args?: SyntaxTree[];
 };
 
 class Lexer {
@@ -47,6 +48,24 @@ class Lexer {
    * on yield and resumes when the caller invokes its next()
    */
   *tokenize(): IterableIterator<Lexicon> {
+    const builtinMathFunctions = [
+      "abs",
+      "acos",
+      "asin",
+      "atan",
+      "atan2",
+      "ceil",
+      "cos",
+      "exp",
+      "floor",
+      "ln",
+      "max",
+      "min",
+      "sgn",
+      "sin",
+      "sqrt",
+      "tan"
+    ];
     while (!this.nextChar.done) {
       this.skipWhiteSpaces();
       if (this.nextChar.done) break;
@@ -71,16 +90,19 @@ class Lexer {
           yield { kind: TokenType.NUMBER, numericValue: Math.PI };
         else if (tok.toUpperCase() === "E")
           yield { kind: TokenType.NUMBER, numericValue: Math.E };
-        else yield { kind: TokenType.IDENTIFIER, name: tok };
+        else if (
+          builtinMathFunctions.findIndex(fn => fn === tok.toLowerCase())
+        ) {
+          console.debug("Builtin math", tok);
+          yield { kind: TokenType.MATH_BUILTIN, name: tok };
+        } else yield { kind: TokenType.IDENTIFIER, name: tok };
       } else if (this.nextChar.value === "+") {
         this.nextChar = this.iterator.next();
-        if (this.nextChar.value.match(/[0-9a-zA-Z.]/))
-          yield { kind: TokenType.UNARYPLUS };
-        else yield { kind: TokenType.PLUS };
+        yield { kind: TokenType.PLUS };
       } else if (this.nextChar.value === "-") {
         this.nextChar = this.iterator.next();
         if (this.nextChar.value.match(/[0-9a-zA-Z.]/))
-          yield { kind: TokenType.UNARYMINUS };
+          yield { kind: TokenType.UNARY_MINUS };
         else yield { kind: TokenType.MINUS };
       } else if (this.nextChar.value === "*") {
         this.nextChar = this.iterator.next();
@@ -90,13 +112,16 @@ class Lexer {
         yield { kind: TokenType.DIV };
       } else if (this.nextChar.value === "^") {
         this.nextChar = this.iterator.next();
-        yield { kind: TokenType.EXPONENT };
+        yield { kind: TokenType.POW };
       } else if (this.nextChar.value === "(") {
         this.nextChar = this.iterator.next();
-        yield { kind: TokenType.LEFTPAREN };
+        yield { kind: TokenType.LEFT_PAREN };
       } else if (this.nextChar.value === ")") {
         this.nextChar = this.iterator.next();
-        yield { kind: TokenType.RIGHTPAREN };
+        yield { kind: TokenType.RIGHT_PAREN };
+      } else if (this.nextChar.value === ",") {
+        this.nextChar = this.iterator.next();
+        yield { kind: TokenType.COMMA };
       } else {
         const unknownChar = this.nextChar.value;
         console.debug("Unknown char", unknownChar);
@@ -115,18 +140,18 @@ export class SEExpression {
     let token = tokenizer.next();
 
     function factor(): SyntaxTree {
-      if (token.value.kind === TokenType.LEFTPAREN) {
+      if (token.value.kind === TokenType.LEFT_PAREN) {
+        // Parenthesized expressions
         token = tokenizer.next();
-        console.debug("Begin group");
         const eTree = expr();
-        if (token.value.kind === TokenType.RIGHTPAREN) {
-          console.debug("End group");
+        if (token.value.kind === TokenType.RIGHT_PAREN) {
           token = tokenizer.next();
           return eTree;
         } else {
           throw "Syntax error: expected ')'";
         }
       } else if (token.value.kind === TokenType.IDENTIFIER) {
+        // TODO: look up the actual value of measurement
         console.debug("Var/Measurement", token.value.text);
         const out = token.value;
         token = tokenizer.next();
@@ -136,14 +161,7 @@ export class SEExpression {
         console.debug("Number", out.numericValue);
         token = tokenizer.next();
         return { node: out };
-      } else if (token.value.kind === TokenType.UNARYPLUS) {
-        token = tokenizer.next();
-        if (token.value.kind === TokenType.NUMBER) {
-          const out = token.value;
-          token = tokenizer.next();
-          return { node: out };
-        } else throw "Syntax error: expected NUMBER after a '+'";
-      } else if (token.value.kind === TokenType.UNARYMINUS) {
+      } else if (token.value.kind === TokenType.UNARY_MINUS) {
         token = tokenizer.next();
         if (token.value.kind === TokenType.NUMBER) {
           const out = token.value;
@@ -151,12 +169,29 @@ export class SEExpression {
           token = tokenizer.next();
           return { node: out };
         } else throw "Syntax error: expected NUMBER after a '-'";
+      } else if (token.value.kind === TokenType.MATH_BUILTIN) {
+        const out = token.value;
+        token = tokenizer.next();
+        if (token.value.kind === TokenType.LEFT_PAREN) {
+          token = tokenizer.next();
+          const exprTree = expr();
+          const args = [exprTree];
+          while (token.value.kind === TokenType.COMMA) {
+            token = tokenizer.next();
+            args.push(expr());
+          }
+          if (token.value.kind === TokenType.RIGHT_PAREN) {
+            token = tokenizer.next();
+            return { node: out, args };
+          } else
+            throw "Syntax error: expected ')' after arguments of builtin function";
+        } else throw "Syntax error: expected '(' after a builtin function";
       } else throw "Syntax error: expected IDENT, NUMBER, '+', '-', or '('";
     }
 
     function power(): SyntaxTree {
       let factorTree = factor();
-      while (token.value.kind == TokenType.EXPONENT) {
+      while (token.value.kind == TokenType.POW) {
         const oper = token.value;
         token = tokenizer.next();
         const f = factor();
@@ -216,14 +251,56 @@ export function evaluate(t: SyntaxTree): number {
       if (Math.abs(denom) > 1e-4)
         return evaluate(t.leftChild!) / evaluate(t.rightChild!);
       else throw "Attempt to divide by zero";
-    case TokenType.EXPONENT:
+    case TokenType.POW:
       return Math.pow(evaluate(t.leftChild!), evaluate(t.rightChild!));
+    case TokenType.MATH_BUILTIN:
+      let val: number;
+      switch (t.node.name) {
+        // Multi-arg functions
+        case "max":
+          // Apply "evaluate()" to each element
+          return Math.max(...t.args!.map(evaluate));
+        case "min":
+          // Apply "evaluate()" to each element
+          return Math.min(...t.args!.map(evaluate));
+
+        // Binary functions
+        case "atan2":
+          return Math.atan2(evaluate(t.args![0]), evaluate(t.args![1]));
+
+        // Unary functions
+        case "abs":
+          return Math.abs(evaluate(t.args![0]));
+        case "acos":
+          return Math.acosh(evaluate(t.args![0]));
+        case "asin":
+          return Math.asin(evaluate(t.args![0]));
+        case "atan":
+          return Math.atan(evaluate(t.args![0]));
+
+        case "ceil":
+          return Math.ceil(evaluate(t.args![0]));
+        case "cos":
+          return Math.cos(evaluate(t.args![0]));
+        case "exp":
+          return Math.exp(evaluate(t.args![0]));
+        case "floor":
+          return Math.floor(evaluate(t.args![0]));
+        case "ln":
+          return Math.log(evaluate(t.args![0]));
+        case "sgn":
+          return Math.sign(evaluate(t.args![0]));
+        case "sin":
+          return Math.sin(evaluate(t.args![0]));
+        case "sqrt":
+          return Math.sqrt(evaluate(t.args![0]));
+        case "tan":
+          return Math.tan(evaluate(t.args![0]));
+        default:
+          throw `Unknown math builtin ${t.node.name}`;
+      }
 
     default:
       return 0;
   }
 }
-// const ex = new SEExpression();
-const out = SEExpression.parse("0.15 + 0.345");
-const outVal = evaluate(out);
-console.debug("Arithmetic result", outVal);

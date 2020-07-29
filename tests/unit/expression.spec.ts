@@ -17,23 +17,25 @@ describe("SEExpression", () => {
       expect(evaluate(synTree)).toBeCloseTo(0.345, 3);
     });
 
-    it("evaluates integer constant with leading +", () => {
-      const synTree = SEExpression.parse("+5");
-      const val = evaluate(synTree);
-      expect(val).toBeCloseTo(5, 0);
-    });
     it("evaluates integer constant with leading -", () => {
       const synTree = SEExpression.parse("-25");
       const val = evaluate(synTree);
       expect(val).toBeCloseTo(-25, 0);
     });
-    it("evaluates floating point constant with no leading digits leading +", () => {
-      const synTree = SEExpression.parse("+.345");
-      expect(evaluate(synTree)).toBeCloseTo(0.345, 3);
-    });
     it("evaluates floating point constant with no leading digits leading -", () => {
       const synTree = SEExpression.parse("-.456");
       expect(evaluate(synTree)).toBeCloseTo(-0.456, 3);
+    });
+  });
+
+  describe("Whitespaces", () => {
+    it("ignores whitespaces before a token", () => {
+      const synTree = SEExpression.parse("  456");
+      expect(evaluate(synTree)).toBeCloseTo(456, 0);
+    });
+    it("parses expressions without whitespaces", () => {
+      const synTree = SEExpression.parse("2+456");
+      expect(evaluate(synTree)).toBeCloseTo(458, 0);
     });
   });
 
@@ -144,6 +146,37 @@ describe("SEExpression", () => {
     it("does not change order of division", () => {
       const synTree = SEExpression.parse("10 + (5 / 2)");
       expect(evaluate(synTree)).toBeCloseTo(12.5, 2);
+    });
+  });
+
+  describe("Math builtin functions", () => {
+    it("computes cos()", () => {
+      const synTree1 = SEExpression.parse("cos(0)");
+      expect(evaluate(synTree1)).toBeCloseTo(1.0, 1);
+      const synTree2 = SEExpression.parse("cos(pi/2)");
+      expect(evaluate(synTree2)).toBeCloseTo(0, 1);
+      const synTree3 = SEExpression.parse("cos(pi)");
+      expect(evaluate(synTree3)).toBeCloseTo(-1, 1);
+      const synTree4 = SEExpression.parse("cos(2*pi)");
+      expect(evaluate(synTree4)).toBeCloseTo(1, 1);
+    });
+
+    it("computes sin()", () => {
+      const synTree1 = SEExpression.parse("sin(0)");
+      expect(evaluate(synTree1)).toBeCloseTo(0, 1);
+      const synTree2 = SEExpression.parse("sin(pi/2)");
+      expect(evaluate(synTree2)).toBeCloseTo(1, 1);
+      const synTree3 = SEExpression.parse("sin(pi)");
+      expect(evaluate(synTree3)).toBeCloseTo(0, 1);
+      const synTree4 = SEExpression.parse("sin(2*pi)");
+      expect(evaluate(synTree4)).toBeCloseTo(0, 1);
+    });
+
+    it("computes multi arg min()", () => {
+      const synTree1 = SEExpression.parse("min(0, -3, 5, 8, 99)");
+      expect(evaluate(synTree1)).toBeCloseTo(-3, 1);
+      const synTree2 = SEExpression.parse("min(0, -3, 5 * -2, 8, 99)");
+      expect(evaluate(synTree2)).toBeCloseTo(-10, 1);
     });
   });
 });
