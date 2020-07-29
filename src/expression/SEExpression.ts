@@ -1,7 +1,9 @@
 //
 enum TokenType {
   PLUS,
+  UNARYPLUS,
   MINUS,
+  UNARYMINUS,
   MULT,
   DIV,
   EXPONENT,
@@ -14,7 +16,8 @@ enum TokenType {
 }
 type Lexicon = {
   kind: TokenType;
-  text?: string;
+  name?: string;
+  numericValue?: number;
 };
 
 type SyntaxTree = {
@@ -47,29 +50,38 @@ class Lexer {
     while (!this.nextChar.done) {
       this.skipWhiteSpaces();
       if (this.nextChar.done) break;
-      // console.debug("Lexer: next char is ", this.nextChar.value);
-      if (this.nextChar.value.match(/[0-9]/)) {
-        // console.debug("Got digit");
+      if (this.nextChar.value.match(/[0-9.]/)) {
+        // Numeric value
         let tok = "";
         do {
           tok += this.nextChar.value;
           this.nextChar = this.iterator.next();
-        } while (!this.nextChar.done && this.nextChar.value.match(/[0-9]/));
-        // TODO: handle decimal numbers
-        yield { kind: TokenType.NUMBER, text: tok };
+        } while (!this.nextChar.done && this.nextChar.value.match(/[0-9.]/));
+        let value = Number(tok);
+        if (!isNaN(value))
+          yield { kind: TokenType.NUMBER, numericValue: Number(tok) };
+        else throw `Invalid numeric value ${tok}`;
       } else if (this.nextChar.value.match(/[a-zA-Z]/)) {
         let tok = "";
         do {
           tok += this.nextChar.value;
           this.nextChar = this.iterator.next();
         } while (!this.nextChar.done && this.nextChar.value.match(/[a-zA-Z]/));
-        yield { kind: TokenType.IDENTIFIER, text: tok };
+        if (tok.toUpperCase() === "PI")
+          yield { kind: TokenType.NUMBER, numericValue: Math.PI };
+        else if (tok.toUpperCase() === "E")
+          yield { kind: TokenType.NUMBER, numericValue: Math.E };
+        else yield { kind: TokenType.IDENTIFIER, name: tok };
       } else if (this.nextChar.value === "+") {
         this.nextChar = this.iterator.next();
-        yield { kind: TokenType.PLUS };
+        if (this.nextChar.value.match(/[0-9a-zA-Z.]/))
+          yield { kind: TokenType.UNARYPLUS };
+        else yield { kind: TokenType.PLUS };
       } else if (this.nextChar.value === "-") {
         this.nextChar = this.iterator.next();
-        yield { kind: TokenType.MINUS };
+        if (this.nextChar.value.match(/[0-9a-zA-Z.]/))
+          yield { kind: TokenType.UNARYMINUS };
+        else yield { kind: TokenType.MINUS };
       } else if (this.nextChar.value === "*") {
         this.nextChar = this.iterator.next();
         yield { kind: TokenType.MULT };
@@ -89,14 +101,14 @@ class Lexer {
         const unknownChar = this.nextChar.value;
         console.debug("Unknown char", unknownChar);
         this.nextChar = this.iterator.next();
-        yield { kind: TokenType.UNKNOWN, text: unknownChar };
+        yield { kind: TokenType.UNKNOWN, name: unknownChar };
       }
     }
     yield { kind: TokenType.EOF };
   }
 }
 
-class SEExpression {
+export class SEExpression {
   static parse(input: string): SyntaxTree {
     const lexer = new Lexer(input);
     const tokenizer = lexer.tokenize();
@@ -121,10 +133,25 @@ class SEExpression {
         return { node: out };
       } else if (token.value.kind === TokenType.NUMBER) {
         const out = token.value;
-        console.debug("Number", token.value.text);
+        console.debug("Number", out.numericValue);
         token = tokenizer.next();
         return { node: out };
-      } else throw "Syntax error: expected IDENT, NUMBER, or '('";
+      } else if (token.value.kind === TokenType.UNARYPLUS) {
+        token = tokenizer.next();
+        if (token.value.kind === TokenType.NUMBER) {
+          const out = token.value;
+          token = tokenizer.next();
+          return { node: out };
+        } else throw "Syntax error: expected NUMBER after a '+'";
+      } else if (token.value.kind === TokenType.UNARYMINUS) {
+        token = tokenizer.next();
+        if (token.value.kind === TokenType.NUMBER) {
+          const out = token.value;
+          out.numericValue *= -1;
+          token = tokenizer.next();
+          return { node: out };
+        } else throw "Syntax error: expected NUMBER after a '-'";
+      } else throw "Syntax error: expected IDENT, NUMBER, '+', '-', or '('";
     }
 
     function power(): SyntaxTree {
@@ -174,10 +201,10 @@ class SEExpression {
   }
 }
 
-function evaluate(t: SyntaxTree): number {
+export function evaluate(t: SyntaxTree): number {
   switch (t.node.kind) {
     case TokenType.NUMBER:
-      return Number(t.node.text);
+      return t.node.numericValue!;
     case TokenType.PLUS:
       return evaluate(t.leftChild!) + evaluate(t.rightChild!);
     case TokenType.MINUS:
@@ -188,13 +215,15 @@ function evaluate(t: SyntaxTree): number {
       const denom = evaluate(t.rightChild!);
       if (Math.abs(denom) > 1e-4)
         return evaluate(t.leftChild!) / evaluate(t.rightChild!);
-      else throw "Attempt to divice by zero";
+      else throw "Attempt to divide by zero";
+    case TokenType.EXPONENT:
+      return Math.pow(evaluate(t.leftChild!), evaluate(t.rightChild!));
 
     default:
       return 0;
   }
 }
 // const ex = new SEExpression();
-const out = SEExpression.parse("8 + 10 * 67");
+const out = SEExpression.parse("0.15 + 0.345");
 const outVal = evaluate(out);
 console.debug("Arithmetic result", outVal);

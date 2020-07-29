@@ -20,6 +20,9 @@ yarn-error.log*
 *.sln
 *.sw?
 
+# TypeScript compiler output
+ts-out
+
 screenshots/*
 
 *.js.map

@@ -13,6 +13,7 @@
     "allowSyntheticDefaultImports": true,
     "sourceMap": true,
     "baseUrl": ".",
+    "outDir": "ts-out",
     "types": ["webpack-env", "vuetify", "jest", "webpack", "webpack-env"],
     "typeRoots": [
       "./node_modules/@types",
