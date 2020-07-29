@@ -36,8 +36,8 @@
         </div>
         <v-btn small v-show="hasExistingChildren"
           @click="expanded = !expanded">
-          <v-icon small dense v-if="!expanded">mdi-chevron-right</v-icon>
-          <v-icon small v-else>mdi-chevron-down</v-icon>
+          <v-icon v-if="!expanded">mdi-chevron-right</v-icon>
+          <v-icon v-else>mdi-chevron-down</v-icon>
         </v-btn>
       </div>
       <v-divider></v-divider>
@@ -188,9 +188,11 @@ export default class SENoduleTree extends Vue {
   align-items: center;
   margin: 0 0.25em;
   .contentText {
+    // Expand to fill in the remaining available space
     flex-grow: 1;
   }
   v-icon {
+    // Icons should not grow, just fit to content
     flex-grow: 0;
   }
 
@@ -209,6 +211,7 @@ export default class SENoduleTree extends Vue {
 
 .slide-right-enter,
 .slide-right-leave-to {
+  // Start position is far left
   transform: translateX(-100%);
 }
 </style>

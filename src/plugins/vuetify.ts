@@ -28,7 +28,7 @@ const vuetify = new Vuetify({
       }
     },
     options: {
-      /* Enbble var(--prop) om CSS */
+      /* Enable var(--prop) om CSS */
       customProperties: true
     }
   }
