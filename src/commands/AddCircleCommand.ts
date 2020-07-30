@@ -20,7 +20,7 @@ export class AddCircleCommand extends Command {
   do(): void {
     this.centerSEPoint.registerChild(this.seCircle);
     this.circleSEPoint.registerChild(this.seCircle);
-    Command.store.commit("addCircle", this.seCircle);
+    Command.store.commit.addCircle(this.seCircle);
   }
 
   saveState(): void {
@@ -28,7 +28,7 @@ export class AddCircleCommand extends Command {
   }
 
   restoreState(): void {
-    Command.store.commit("removeCircle", this.lastState);
+    Command.store.commit.removeCircle(this.lastState);
     this.centerSEPoint.unregisterChild(this.seCircle);
     this.circleSEPoint.unregisterChild(this.seCircle);
   }

@@ -12,7 +12,7 @@ export class RotateSphereCommand extends Command {
   }
 
   do(): void {
-    Command.store.commit("rotateSphere", this.rotationMat);
+    Command.store.commit.rotateSphere(this.rotationMat);
   }
 
   saveState(): void {
@@ -20,6 +20,6 @@ export class RotateSphereCommand extends Command {
   }
 
   restoreState(): void {
-    Command.store.commit("rotateSphere", this.inverseRotation);
+    Command.store.commit.rotateSphere(this.inverseRotation);
   }
 }

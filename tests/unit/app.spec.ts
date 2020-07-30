@@ -79,7 +79,7 @@ describe("App.vue", () => {
           "router-view": true
         }
       });
-      wrapper.vm.$store.commit("setActionMode", {
+      wrapper.vm.$store.direct.commit.setActionMode({
         id: "point",
         name: TEST_TOOL_NAME
       });

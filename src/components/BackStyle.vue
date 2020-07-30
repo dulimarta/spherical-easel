@@ -43,6 +43,8 @@ export default class FrontStyle extends Vue {
   @State
   readonly selections!: SENodule[];
 
+  readonly store = this.$store.direct;
+
   private dashLength = 3;
   private gapLength = 2;
   commonStyleProperties: number[] = [];
@@ -55,7 +57,7 @@ export default class FrontStyle extends Vue {
   }
 
   onDashPatternChanged(): void {
-    this.$store.commit("changeDashPattern", [this.dashLength, this.gapLength]);
+    this.store.commit.changeDashPattern([this.dashLength, this.gapLength]);
   }
   hasStyles(s: Styles): boolean {
     const sNum = Number(s);

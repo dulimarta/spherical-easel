@@ -12,7 +12,7 @@ export class AddAntipodalPointCommand extends Command {
 
   do(): void {
     this.parentSEPoint.registerChild(this.sePoint);
-    Command.store.commit("addPoint", this.sePoint);
+    Command.store.commit.addPoint(this.sePoint);
   }
 
   saveState(): void {
@@ -20,7 +20,7 @@ export class AddAntipodalPointCommand extends Command {
   }
 
   restoreState(): void {
-    Command.store.commit("removePoint", this.lastState);
+    Command.store.commit.removePoint(this.lastState);
     this.parentSEPoint.unregisterChild(this.sePoint);
   }
 }

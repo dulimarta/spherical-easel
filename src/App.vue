@@ -20,16 +20,13 @@
 
       <div class="d-flex align-center">
         <router-link to="/">
-          <v-img
-            alt="Spherical Easel Logo"
-            class="shrink mr-2"
-            contain
+          <v-img alt="Spherical Easel Logo" class="shrink mr-2" contain
             src="../docs/.vuepress/public/SphericalEaselLogo.png"
-            transition="scale-transition"
-            width="40"
-          />
+            transition="scale-transition" width="40" />
         </router-link>
-        <v-toolbar-title>{{ $t("main.SphericalEaselMainTitle") }}</v-toolbar-title>
+        <v-toolbar-title>
+          {{ $t("main.SphericalEaselMainTitle") }}
+        </v-toolbar-title>
         <v-tooltip left>
           <template v-slot:activator="{ on }">
             <a href="/docs">
@@ -54,17 +51,21 @@
       The router controls this background and it can be Easel or settings or...
     -->
     <v-main>
-      <router-view>
-        <!-- this is the spot where the views controlled by Vue Router will be rendred -->
-      </router-view>
+      <v-container fill-heights fluid>
+
+        <router-view>
+          <!-- this is the spot where the views controlled by Vue Router will be rendred -->
+        </router-view>
+        <MessageBox></MessageBox>
+      </v-container>
     </v-main>
     <v-footer app color="accent" padless>
       <v-col class="text-center">
         <span v-if="activeToolName">
           Current Tool:
-          {{$t(`buttons.${activeToolName}`)}}
+          {{ $t(`buttons.${activeToolName}`) }}
         </span>
-        <span v-else>{{$t(`buttons.NoToolSelected`)}}</span>
+        <span v-else>{{ $t(`buttons.NoToolSelected`) }}</span>
       </v-col>
     </v-footer>
   </v-app>
@@ -79,17 +80,18 @@ import Vue from "vue";
 /* Import the custom components */
 import Component from "vue-class-component";
 import { State } from "vuex-class";
+import MessageBox from "@/components/MessageBox.vue";
 
 /* This allows for the State of the app to be initialized with in vuex store */
 /* TODO: What does this do? */
 /* This view has no (sub)components (but the Easel view does) so this is empty*/
-@Component
+@Component({ components: { MessageBox } })
 export default class App extends Vue {
   @State
   activeToolName!: string;
 
   mounted(): void {
-    this.$store.commit("init");
+    this.$store.direct.commit.init();
   }
 }
 </script>

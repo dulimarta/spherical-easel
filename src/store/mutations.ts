@@ -13,6 +13,7 @@ import { StyleOptions } from "@/types/Styles";
 import { LineNormalVisitor } from "@/visitors/LineNormalVisitor";
 import { SegmentNormalArcLengthVisitor } from "@/visitors/SegmentNormalArcLengthVisitor";
 import { UpdateMode } from "@/types";
+import { SEMeasurement } from "@/models/SEMeasurement";
 
 // const tmpMatrix = new Matrix4();
 
@@ -34,7 +35,8 @@ export const initialState: AppState = {
   lines: [], // An array of all SELines
   segments: [], // An array of all SESegments
   circles: [], // An array of all SECircles
-  intersections: [] // An array of all SEPoints that are intersections of the one-dimensional objects in the arrangement
+  intersections: [], // An array of all SEPoints that are intersections of the one-dimensional objects in the arrangement
+  measurements: [] // An array of measurements on objects
 };
 //#endregion appState
 
@@ -240,5 +242,20 @@ export default {
         // console.debug(`Changing stroke color of ${n.name} to ${color}`);
         n.ref.updateStyle(opt);
       });
+  },
+
+  addMeasurement(state: AppState, measurement: SEMeasurement): void {
+    state.measurements.push(measurement);
+    state.nodules.push(measurement);
+  },
+
+  removeMeasurement(state: AppState, measId: number): void {
+    const pos = state.measurements.findIndex(x => x.id === measId);
+    const pos2 = state.nodules.findIndex(x => x.id === measId);
+    if (pos >= 0) {
+      const victimSegment = state.measurements[pos];
+      state.measurements.splice(pos, 1);
+      state.nodules.splice(pos2, 1);
+    }
   }
 };

@@ -13,7 +13,7 @@ export class AddPointOnOneDimensionalCommand extends Command {
 
   do(): void {
     this.parent.registerChild(this.sePoint);
-    Command.store.commit("addPoint", this.sePoint);
+    Command.store.commit.addPoint(this.sePoint);
   }
 
   saveState(): void {
@@ -21,7 +21,7 @@ export class AddPointOnOneDimensionalCommand extends Command {
   }
 
   restoreState(): void {
-    Command.store.commit("removePoint", this.lastState);
+    Command.store.commit.removePoint(this.lastState);
     this.parent.unregisterChild(this.sePoint);
   }
 }

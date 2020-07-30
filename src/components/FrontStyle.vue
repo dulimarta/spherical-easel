@@ -6,35 +6,20 @@
     </span>
     <fade-in-card :showWhen="hasColor">
       <span class="text-subtitle-2">Color</span>
-      <v-color-picker
-        hide-inputs
-        :disabled="colorApplyTo.length === 0"
-        v-model="selectedColor"
-        @update:color="onColorChanged"
-      ></v-color-picker>
+      <v-color-picker hide-inputs :disabled="colorApplyTo.length === 0"
+        v-model="selectedColor" @update:color="onColorChanged">
+      </v-color-picker>
       <span>Apply to:</span>
       <div>
-        <v-checkbox
-          v-model="colorApplyTo"
-          dense
-          v-for="(z, pos) in colorKeys"
-          :key="pos"
-          :label="z.label"
-          :value="z.value"
-        ></v-checkbox>
+        <v-checkbox v-model="colorApplyTo" dense
+          v-for="(z, pos) in colorKeys" :key="pos" :label="z.label"
+          :value="z.value"></v-checkbox>
       </div>
     </fade-in-card>
     <fade-in-card :showWhen="hasStrokeWidth">
       <span>Stroke Width</span>
-      <v-slider
-        v-model.number="strokeWidth"
-        :min="70"
-        thumb-label="always"
-        @change="onLineWidthChanged"
-        :max="130"
-        type="range"
-        class="mt-8"
-      >
+      <v-slider v-model.number="strokeWidth" :min="70" thumb-label="always"
+        @change="onLineWidthChanged" :max="130" type="range" class="mt-8">
         <template v-slot:thumb-label="{ value }">
           {{ value + "%" }}
         </template>
@@ -42,22 +27,11 @@
     </fade-in-card>
     <fade-in-card :showWhen="hasDash">
       <span>Dash Pattern ({{ dashLength }}/{{ gapLength }})</span>
-      <v-slider
-        min="5"
-        max="15"
-        v-model.number="dashLength"
-        persistent-hint
-        hint="Dash length"
-        @change="onDashPatternChanged"
-      ></v-slider>
-      <v-slider
-        min="5"
-        max="15"
-        v-model.number="gapLength"
-        persistent-hint
-        hint="Gap length"
-        @change="onDashPatternChanged"
-      ></v-slider>
+      <v-slider min="5" max="15" v-model.number="dashLength"
+        persistent-hint hint="Dash length" @change="onDashPatternChanged">
+      </v-slider>
+      <v-slider min="5" max="15" v-model.number="gapLength" persistent-hint
+        hint="Gap length" @change="onDashPatternChanged"></v-slider>
     </fade-in-card>
   </div>
 </template>
@@ -90,6 +64,8 @@ export default class FrontStyle extends Vue {
   @State
   readonly selections!: SENodule[];
 
+  readonly store = this.$store.direct;
+
   readonly minStrokeWidth: number = SETTINGS.line.drawn.strokeWidth.min;
   readonly maxStrokeWidth: number = SETTINGS.line.drawn.strokeWidth.max;
 
@@ -109,11 +85,11 @@ export default class FrontStyle extends Vue {
   }
 
   onLineWidthChanged(): void {
-    this.$store.commit("changeStrokeWidth", this.strokeWidth);
+    this.store.commit.changeStrokeWidth(this.strokeWidth);
     // this.UIModule.changeStrokeColor("red");
   }
   onColorChanged(): void {
-    this.$store.commit("changeColor", {
+    this.store.commit.changeColor({
       color: this.selectedColor,
       props: this.colorApplyTo.map(
         (s: string) => s.replace(/ /g, "") // Remove all blanks
@@ -122,7 +98,7 @@ export default class FrontStyle extends Vue {
   }
 
   onDashPatternChanged(): void {
-    this.$store.commit("changeDashPattern", [this.dashLength, this.gapLength]);
+    this.store.commit.changeDashPattern([this.dashLength, this.gapLength]);
   }
   hasStyles(s: Styles): boolean {
     const sNum = Number(s);

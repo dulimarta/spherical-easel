@@ -10,7 +10,7 @@ export class AddPointCommand extends Command {
   }
 
   do(): void {
-    Command.store.commit("addPoint", this.sePoint);
+    Command.store.commit.addPoint(this.sePoint);
   }
 
   saveState(): void {
@@ -18,7 +18,7 @@ export class AddPointCommand extends Command {
   }
 
   restoreState(): void {
-    Command.store.commit("removePoint", this.lastState);
+    Command.store.commit.removePoint(this.lastState);
   }
 }
 //#endregion addPointCommand

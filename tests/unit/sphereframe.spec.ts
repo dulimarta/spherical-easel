@@ -27,9 +27,9 @@ describe("SphereFrame.vue", () => {
 
     // It is important to reset the actionMode back to subsequent
     // mutation to actionMode will trigger a Vue Watch update
-    wrapper.vm.$store.commit("init");
+    wrapper.vm.$store.direct.commit.init();
     await Vue.nextTick();
-    wrapper.vm.$store.commit("setActionMode", { id: "", name: "" });
+    wrapper.vm.$store.direct.commit.setActionMode({ id: "", name: "" });
     await Vue.nextTick();
   });
 
@@ -67,7 +67,7 @@ describe("SphereFrame.vue", () => {
 
   describe("with PointTool", () => {
     async function makePoint(isBackground: boolean): Promise<SEPoint> {
-      wrapper.vm.$store.commit("setActionMode", {
+      wrapper.vm.$store.direct.commit.setActionMode({
         id: "point",
         name: "Tool Name does not matter"
       });
@@ -102,7 +102,7 @@ describe("SphereFrame.vue", () => {
     }
 
     it("switches to point tool", async () => {
-      wrapper.vm.$store.commit("setActionMode", {
+      wrapper.vm.$store.direct.commit.setActionMode({
         id: "point",
         name: "PointTool"
       });
@@ -158,7 +158,7 @@ describe("SphereFrame.vue", () => {
 
   describe("with LineTool", () => {
     it("add a new line (fg/fg) while in LineTool", async () => {
-      wrapper.vm.$store.commit("setActionMode", {
+      wrapper.vm.$store.direct.commit.setActionMode({
         id: "line",
         name: "Tool Name does not matter"
       });
@@ -202,7 +202,7 @@ describe("SphereFrame.vue", () => {
     });
 
     it("add a new line (fg/bg) while in LineTool", async () => {
-      wrapper.vm.$store.commit("setActionMode", {
+      wrapper.vm.$store.direct.commit.setActionMode({
         id: "line",
         name: "Tool Name does not matter"
       });
@@ -244,7 +244,7 @@ describe("SphereFrame.vue", () => {
     });
 
     it("add a new line (bg/bg) while in LineTool", async () => {
-      wrapper.vm.$store.commit("setActionMode", {
+      wrapper.vm.$store.direct.commit.setActionMode({
         id: "line",
         name: "Tool Name does not matter"
       });
@@ -286,7 +286,7 @@ describe("SphereFrame.vue", () => {
     });
 
     it("add a new line (bg/fg) while in LineTool", async () => {
-      wrapper.vm.$store.commit("setActionMode", {
+      wrapper.vm.$store.direct.commit.setActionMode({
         id: "line",
         name: "Tool Name does not matter"
       });
@@ -329,7 +329,7 @@ describe("SphereFrame.vue", () => {
     });
 
     it("creates a point (and not a line) when the mouse is not dragged far enough", async () => {
-      wrapper.vm.$store.commit("setActionMode", {
+      wrapper.vm.$store.direct.commit.setActionMode({
         id: "line",
         name: "Tool Name does not matter"
       });
@@ -361,7 +361,7 @@ describe("SphereFrame.vue", () => {
 
   describe("with SegmentTool", () => {
     it("add a new segment (fg/fg) while in SegmentTool", async () => {
-      wrapper.vm.$store.commit("setActionMode", {
+      wrapper.vm.$store.direct.commit.setActionMode({
         id: "segment",
         name: "Tool Name does not matter"
       });
@@ -406,7 +406,7 @@ describe("SphereFrame.vue", () => {
     });
 
     it("add a new segment (fg/bg) while in SegmentTool", async () => {
-      wrapper.vm.$store.commit("setActionMode", {
+      wrapper.vm.$store.direct.commit.setActionMode({
         id: "segment",
         name: "Tool Name does not matter"
       });
@@ -451,7 +451,7 @@ describe("SphereFrame.vue", () => {
     });
 
     it("add a new segment (bg/fg) while in SegmentTool", async () => {
-      wrapper.vm.$store.commit("setActionMode", {
+      wrapper.vm.$store.direct.commit.setActionMode({
         id: "segment",
         name: "Tool Name does not matter"
       });
@@ -496,7 +496,7 @@ describe("SphereFrame.vue", () => {
     });
 
     it("add a new segment (bg/bg) while in SegmentTool", async () => {
-      wrapper.vm.$store.commit("setActionMode", {
+      wrapper.vm.$store.direct.commit.setActionMode({
         id: "segment",
         name: "Tool Name does not matter"
       });
@@ -541,7 +541,7 @@ describe("SphereFrame.vue", () => {
     });
 
     it("creates a point (and not a segment) when the mouse is not dragged far enough", async () => {
-      wrapper.vm.$store.commit("setActionMode", {
+      wrapper.vm.$store.direct.commit.setActionMode({
         id: "line",
         name: "Tool Name does not matter"
       });
@@ -573,7 +573,7 @@ describe("SphereFrame.vue", () => {
 
   describe("with CircleTool", () => {
     it("adds a new circle (fg/fg) while in CircleTool", async () => {
-      wrapper.vm.$store.commit("setActionMode", {
+      wrapper.vm.$store.direct.commit.setActionMode({
         id: "circle",
         name: "Tool Name does not matter"
       });
@@ -614,7 +614,7 @@ describe("SphereFrame.vue", () => {
     });
 
     it("adds a new circle (fg/bg) while in CircleTool", async () => {
-      wrapper.vm.$store.commit("setActionMode", {
+      wrapper.vm.$store.direct.commit.setActionMode({
         id: "circle",
         name: "Tool Name does not matter"
       });
@@ -655,7 +655,7 @@ describe("SphereFrame.vue", () => {
     });
 
     it("adds a new circle (bg/fg) while in CircleTool", async () => {
-      wrapper.vm.$store.commit("setActionMode", {
+      wrapper.vm.$store.direct.commit.setActionMode({
         id: "circle",
         name: "Tool Name does not matter"
       });
@@ -696,7 +696,7 @@ describe("SphereFrame.vue", () => {
     });
 
     it("adds a new circle (bg/bg) while in CircleTool", async () => {
-      wrapper.vm.$store.commit("setActionMode", {
+      wrapper.vm.$store.direct.commit.setActionMode({
         id: "circle",
         name: "Tool Name does not matter"
       });
@@ -737,7 +737,7 @@ describe("SphereFrame.vue", () => {
     });
 
     it("creates a point (and not a circle) when the mouse is not dragged far enough", async () => {
-      wrapper.vm.$store.commit("setActionMode", {
+      wrapper.vm.$store.direct.commit.setActionMode({
         id: "circle",
         name: "Tool Name does not matter"
       });

@@ -24,7 +24,9 @@
     <!-- The Display Tool Group only shown if the user has permission to use a tool in this group.
     Note the use of the translation $t(key_value).-->
     <div id="BasicToolGroup" v-show="nonEmptyGroup('display')">
-      <h3 class="body-1 font-weight-bold">{{ $t("toolGroups.DisplayTools") }}</h3>
+      <h3 class="body-1 font-weight-bold">
+        {{ $t("toolGroups.DisplayTools") }}
+      </h3>
       <v-btn-toggle
         v-model="actionMode"
         @change="switchActionMode"
@@ -65,7 +67,9 @@
     <!-- The Construction Tool Group only shown if the user has permission to use a tool in this group.
     Note the use of the translation $t(key_value).-->
     <div id="BasicToolGroup" v-show="nonEmptyGroup('construction')">
-      <h3 class="body-1 font-weight-bold">{{ $t("toolGroups.ConstructionTools") }}</h3>
+      <h3 class="body-1 font-weight-bold">
+        {{ $t("toolGroups.ConstructionTools") }}
+      </h3>
       <v-btn-toggle
         v-model="actionMode"
         @change="switchActionMode"
@@ -88,7 +92,9 @@
       group. Note the use of the translation $t(key_value).
     -->
     <div id="AdvanceToolGroup" v-show="nonEmptyGroup('advanced')">
-      <h3 class="body-1 font-weight-bold">{{ $t("toolGroups.AdvancedTools") }}</h3>
+      <h3 class="body-1 font-weight-bold">
+        {{ $t("toolGroups.AdvancedTools") }}
+      </h3>
       <v-btn-toggle
         v-model="actionMode"
         @change="switchActionMode"
@@ -110,8 +116,13 @@
       The Transformational Tool Group only shown if the user has permission to use a tool in this 
       group. Note the use of the translation $t(key_value).
     -->
-    <div id="TransformationalToolGroup" v-show="nonEmptyGroup('transformational')">
-      <h3 class="body-1 font-weight-bold">{{ $t("toolGroups.TransformationalTools") }}</h3>
+    <div
+      id="TransformationalToolGroup"
+      v-show="nonEmptyGroup('transformational')"
+    >
+      <h3 class="body-1 font-weight-bold">
+        {{ $t("toolGroups.TransformationalTools") }}
+      </h3>
       <v-btn-toggle
         v-model="actionMode"
         @change="switchActionMode"
@@ -145,8 +156,9 @@ import SETTINGS from "@/global-settings";
   components: { ToolButton }
 })
 export default class ToolGroups extends Vue {
+  readonly store = this.$store.direct;
   /* Controls the selection of the actionMode using the buttons. The default is segment. */
-  private actionMode = "segment";
+  private actionMode = { id: "", name: "" };
 
   /* Use the global settings to set the variables bound to the toolTipOpen/CloseDelay */
   private toolTipOpenDelay = SETTINGS.toolTip.openDelay;
@@ -157,7 +169,7 @@ export default class ToolGroups extends Vue {
   private buttonDisplayList = SETTINGS.userButtonDisplayList;
   /* Writes the current state/edit mode to the store, where the Easel view can read it. */
   switchActionMode(): void {
-    this.$store.commit("setActionMode", this.actionMode);
+    this.store.commit.setActionMode(this.actionMode);
   }
 
   /* This returns true only if there is at least one tool that needs to be displayed in the group. */
@@ -330,7 +342,18 @@ export default class ToolGroups extends Vue {
       toolUseMessage: "CreatePointOnOneDimToolUseMessage",
       displayToolUseMessage: false,
       toolGroup: "construction"
+    },
+    {
+      id: 55,
+      actionModeValue: "segmentLength",
+      displayedName: "CreateSegmentLengthDisplayedName",
+      icon: "mdi-tape-measure",
+      toolTipMessage: "CreateSegmentLengthToolTipMessage",
+      toolUseMessage: "CreateSegmentLengthToolUseMessage",
+      displayToolUseMessage: false,
+      toolGroup: "construction"
     }
+
     //sort the button list by id so that we don't have to reorder the list each item we add a new button
   ].sort((a: ToolButtonType, b: ToolButtonType) => {
     if (a.toolGroup === b.toolGroup) {

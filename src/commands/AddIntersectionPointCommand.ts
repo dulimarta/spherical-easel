@@ -22,7 +22,7 @@ export class AddIntersectionPointCommand extends Command {
     //console.log("Add intersection point command do");
     this.parent1.registerChild(this.sePoint);
     this.parent2.registerChild(this.sePoint);
-    Command.store.commit("addPoint", this.sePoint);
+    Command.store.commit.addPoint(this.sePoint);
   }
 
   saveState(): void {
@@ -30,7 +30,7 @@ export class AddIntersectionPointCommand extends Command {
   }
 
   restoreState(): void {
-    Command.store.commit("removePoint", this.lastState);
+    Command.store.commit.removePoint(this.lastState);
     this.parent1.unregisterChild(this.sePoint);
     this.parent2.unregisterChild(this.sePoint);
   }

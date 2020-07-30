@@ -25,7 +25,7 @@ import AntipodalPointHandler from "@/eventHandlers/AntipodalPointHandler";
 import PanZoomHandler, { ZoomMode } from "@/eventHandlers/PanZoomHandler";
 import DeleteHandler from "@/eventHandlers/DeleteHandler";
 import HideObjectHandler from "@/eventHandlers/HideObjectHandler";
-
+import SegmentLengthHandler from "@/eventHandlers/SegmentLengthHandler"
 // import { RotationVisitor } from "@/visitors/RotationVisitor";
 import EventBus from "@/eventHandlers/EventBus";
 import MoveHandler from "../eventHandlers/MoveHandler";
@@ -80,6 +80,7 @@ export default class SphereFrame extends VueComponent {
   private intersectTool!: IntersectionPointHandler;
   private deleteTool!: DeleteHandler;
   private hideTool!: HideObjectHandler;
+  private segmentLengthTool!: SegmentLengthHandler;
 
   /**
    * The layers for displaying the various objects in the right way. So a point in the
@@ -126,7 +127,7 @@ export default class SphereFrame extends VueComponent {
     this.sphereCanvas = this.layers[LAYER.midground];
     // console.info("Sphere canvas ID", this.sphereCanvas.id);
     // Add the layers to the store
-    this.$store.commit("setLayers", this.layers);
+    this.store.commit.setLayers(this.layers);
 
     // Draw the boundary circle in the default radius
     // and scale it later to fit the canvas
@@ -141,7 +142,7 @@ export default class SphereFrame extends VueComponent {
     // box1.addTo(this.layers[LAYER.background]);
     // box2.addTo(this.layers[LAYER.foregroundText]);
 
-    const t1 = new Two.Text("Text must be upright", 50, 80, {
+    const t1 = new Two.Text("Text must be upright 2\u{1D7B9}", 50, 80, {
       size: 12,
       alignment: "left",
       family: "Arial",
@@ -198,6 +199,7 @@ export default class SphereFrame extends VueComponent {
     this.antipodalPointTool = new AntipodalPointHandler(this.layers);
     this.deleteTool = new DeleteHandler(this.layers);
     this.hideTool = new HideObjectHandler(this.layers);
+    this.segmentLengthTool = new SegmentLengthHandler(this.layers);
   }
 
   beforeDestroy(): void {
@@ -218,13 +220,13 @@ export default class SphereFrame extends VueComponent {
     });
 
     const radius = size / 2 - 16; // 16-pixel gap
-    this.$store.commit("setSphereRadius", radius);
+    this.store.commit.setSphereRadius(radius);
 
     const ratio = radius / SETTINGS.boundaryCircle.radius;
-    this.$store.dispatch("changeZoomFactor", ratio);
+    this.store.dispatch.changeZoomFactor(ratio);
     // Each window size gets its own zoom matrix
     // When you resize a window the zoom resets
-    this.$store.commit("setZoomTranslation", [0, 0]);
+    this.store.commit.setZoomTranslation([0, 0]);
 
     this.updateView();
   }
@@ -360,7 +362,7 @@ export default class SphereFrame extends VueComponent {
 
   //#region handleSphereRotation
   handleSphereRotation(e: unknown): void {
-    this.$store.commit("rotateSphere", (e as any).transform);
+    this.store.commit.rotateSphere((e as any).transform);
   }
   //#endregion handleSphereRotation
 
@@ -401,7 +403,7 @@ export default class SphereFrame extends VueComponent {
       case "zoomFit":
         // This is a tool that only needs to run once and then the actionMode should be the same as the is was before the zoom fit (and the tool should be the same)
         this.zoomTool.doZoomFit(this.canvasSize);
-        this.$store.commit("revertActionMode", "");
+        this.store.commit.revertActionMode();
         break;
       case "intersect":
         this.currentTool = this.intersectTool;
@@ -418,6 +420,9 @@ export default class SphereFrame extends VueComponent {
       case "hide":
         this.currentTool = this.hideTool;
         break;
+      case "segmentLength":
+        this.currentTool = this.segmentLengthTool;
+        break
       default:
         this.currentTool = null;
     }

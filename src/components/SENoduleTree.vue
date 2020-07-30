@@ -26,7 +26,7 @@
           </template>
           <span>{{definitionText}}</span>
         </v-tooltip>
-        <div v-show="node" @click="toggleVisibility" class="mr-2">
+        <div v-show="isPlottable" @click="toggleVisibility" class="mr-2">
           <v-icon small v-if="isHidden">
             mdi-eye
           </v-icon>
@@ -63,6 +63,7 @@ import { SEPoint } from '../models/SEPoint';
 import { SELine } from '../models/SELine';
 import { SESegment } from '@/models/SESegment';
 import { SECircle } from '../models/SECircle';
+import { SEMeasurement } from '@/models/SEMeasurement';
 
 @Component({})
 export default class SENoduleTree extends Vue {
@@ -132,6 +133,12 @@ export default class SENoduleTree extends Vue {
     return this.node instanceof SEIntersectionPoint
   }
 
+  get isPlottable(): boolean {
+    return this.node instanceof SEPoint ||
+      this.node instanceof SELine ||
+      this.node instanceof SESegment ||
+      this.node instanceof SECircle
+  }
   get prettyName(): string {
     return this.label ?? this.name
   }
@@ -161,7 +168,11 @@ export default class SENoduleTree extends Vue {
       return this.node?.name + this.node.locationVector.toFixed(2)
     else if (this.node instanceof SELine || this.node instanceof SESegment || this.node instanceof SECircle)
       return this.node?.name + "(" + this.node.parents.map(p => p.name).join(",") + ")";
-    else return "n/a"
+    else if (this.node instanceof SEMeasurement) {
+      const targetSegment = this.node?.parents[0] as SESegment
+      const len = `${(targetSegment.arcLength / Math.PI).toFixed(2)} \u{1D7B9}`
+      return this.node?.name + `Len(${targetSegment.name}) = ${len}`;
+    } else return "n/a"
 
   }
 }
