@@ -23,6 +23,9 @@ yarn-error.log*
 # TypeScript compiler output
 ts-out
 
+# Jest coverage output
+coverage/*
+
 screenshots/*
 
 *.js.map

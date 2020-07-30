@@ -6,5 +6,7 @@ module.exports = {
     "three/examples/jsm/controls/(.*)$": "<rootDir>/tests/stub-modules/$1"
   },
   verbose: true,
-  setupFiles: ["<rootDir>/tests/setup.js"]
+  setupFiles: ["<rootDir>/tests/setup.js"],
+  collectCoverage: true,
+  collectCoverageFrom: ["<rootDir>/src/expression/*.ts"]
 };
