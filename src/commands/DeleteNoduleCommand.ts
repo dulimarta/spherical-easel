@@ -1,6 +1,5 @@
 import { Command } from "./Command";
 import { SENodule } from "@/models/SENodule";
-import { PointState } from "@/types";
 import { SEPoint } from "@/models/SEPoint";
 import { SELine } from "@/models/SELine";
 import { SECircle } from "@/models/SECircle";

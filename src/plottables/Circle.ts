@@ -234,7 +234,7 @@ export default class Circle extends Nodule {
    * This is only accurate if the centerVector and radius are correct so only
    * call this method once those variables are updated.
    */
-  public updateDisplay() {
+  public updateDisplay(): void {
     const sphereRadius = SETTINGS.boundaryCircle.radius; // in pixels
     // The vector to the circle center is ALSO the normal direction of the circle
     // These three vectors will be stored in SECircle -- just copy them from there

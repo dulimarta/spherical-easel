@@ -1,7 +1,5 @@
 import { SEPoint } from "./SEPoint";
 import Point from "@/plottables/Point";
-import { Vector3 } from "three";
-import { SEOneDimensional } from "@/types";
 import { UpdateMode, UpdateStateType, PointState } from "@/types";
 
 export class SEAntipodalPoint extends SEPoint {

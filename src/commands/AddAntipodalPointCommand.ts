@@ -1,6 +1,5 @@
 import { Command } from "./Command";
 import { SEPoint } from "@/models/SEPoint";
-import { SEOneDimensional } from "@/types";
 
 export class AddAntipodalPointCommand extends Command {
   private sePoint: SEPoint;

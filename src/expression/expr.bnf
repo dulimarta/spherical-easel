@@ -1,5 +1,7 @@
 Expr ::= Expr '+' Term | Expr '-' Term | Term
 Term ::= Term '*' Power | Term '/' Power | Power
 Power ::= Factor '^' Power | Factor
-Factor ::= '(' Expr ')' | Expr | Number | Ident
+Factor ::= '(' Expr ')' | Expr | Number | Ident | Function
 Number ::= Digit Number | Digit
+Function ::= Ident '(' Args ')'
+Args ::= Expr | Args ',' Expr

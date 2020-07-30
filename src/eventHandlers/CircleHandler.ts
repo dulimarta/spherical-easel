@@ -18,7 +18,7 @@ import { SEPointOnOneDimensional } from "@/models/SEPointOnOneDimensional";
 import { AddIntersectionPointCommand } from "@/commands/AddIntersectionPointCommand";
 import { AddPointOnOneDimensionalCommand } from "@/commands/AddPointOnOneDimensionalCommand";
 import { SEOneDimensional, SEIntersectionReturnType } from "@/types";
-import { UpdateMode, UpdateStateType } from "@/types";
+import { UpdateMode } from "@/types";
 
 const tmpVector = new Vector3();
 

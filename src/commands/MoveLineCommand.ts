@@ -1,6 +1,6 @@
 import { Command } from "./Command";
 import { SELine } from "@/models/SELine";
-import { Matrix4, Vector3 } from "three";
+import { Vector3 } from "three";
 
 export class MoveLineCommand extends Command {
   private seLine: SELine;

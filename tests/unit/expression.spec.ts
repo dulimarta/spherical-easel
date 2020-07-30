@@ -172,11 +172,43 @@ describe("SEExpression", () => {
       expect(evaluate(synTree4)).toBeCloseTo(0, 1);
     });
 
+    it("computes tan()", () => {
+      const synTree1 = SEExpression.parse("tan(0)");
+      expect(evaluate(synTree1)).toBeCloseTo(0, 1);
+      const synTree2 = SEExpression.parse("tan(pi/4)");
+      expect(evaluate(synTree2)).toBeCloseTo(1, 1);
+      const synTree3 = SEExpression.parse("tan(pi)");
+      expect(evaluate(synTree3)).toBeCloseTo(0, 1);
+      const synTree4 = SEExpression.parse("tan(-pi/4)");
+      expect(evaluate(synTree4)).toBeCloseTo(-1, 1);
+    });
+
+    it("computes atan()", () => {
+      const synTree1 = SEExpression.parse("atan(0)");
+      expect(evaluate(synTree1)).toBeCloseTo(0, 1);
+      const synTree2 = SEExpression.parse("atan(1)");
+      expect(evaluate(synTree2)).toBeCloseTo(Math.PI / 4, 3);
+      const synTree3 = SEExpression.parse("tan(atan(-2.34))");
+      expect(evaluate(synTree3)).toBeCloseTo(-2.34, 2);
+    });
+
+    it("computes multi expressions the evaluate to identity", () => {
+      const synTree1 = SEExpression.parse("sin(pi/3)^2 + cos(pi/3)^2");
+      expect(evaluate(synTree1)).toBeCloseTo(1.0, 3);
+      const synTree2 = SEExpression.parse("sin(pi/3) / cos(pi/3) / tan(pi/3)");
+      expect(evaluate(synTree2)).toBeCloseTo(1.0, 3);
+    });
+
     it("computes multi arg min()", () => {
       const synTree1 = SEExpression.parse("min(0, -3, 5, 8, 99)");
       expect(evaluate(synTree1)).toBeCloseTo(-3, 1);
       const synTree2 = SEExpression.parse("min(0, -3, 5 * -2, 8, 99)");
       expect(evaluate(synTree2)).toBeCloseTo(-10, 1);
+    });
+
+    it("computes multi arg max()", () => {
+      const synTree1 = SEExpression.parse("max(0, 100*cos(2*pi) - 0.5, 9)");
+      expect(evaluate(synTree1)).toBeCloseTo(99.5, 1);
     });
   });
 });

@@ -15,6 +15,7 @@ enum TokenType {
   UNKNOWN,
   EOF
 }
+
 type Lexicon = {
   kind: TokenType;
   name?: string;
@@ -23,8 +24,12 @@ type Lexicon = {
 
 type SyntaxTree = {
   node: Lexicon;
+
+  // left and right for binary operators
   leftChild?: SyntaxTree;
   rightChild?: SyntaxTree;
+
+  // args for multi argument functions
   args?: SyntaxTree[];
 };
 
@@ -44,7 +49,8 @@ class Lexer {
     }
   }
 
-  /** The tokenize() function is a co-routine, it automatically pauses
+  /**
+   * The tokenize() function is a co-routine, it automatically pauses
    * on yield and resumes when the caller invokes its next()
    */
   *tokenize(): IterableIterator<Lexicon> {
@@ -66,6 +72,7 @@ class Lexer {
       "sqrt",
       "tan"
     ];
+
     while (!this.nextChar.done) {
       this.skipWhiteSpaces();
       if (this.nextChar.done) break;
@@ -78,14 +85,18 @@ class Lexer {
         } while (!this.nextChar.done && this.nextChar.value.match(/[0-9.]/));
         let value = Number(tok);
         if (!isNaN(value))
+          // Is this a valid numerical value?
           yield { kind: TokenType.NUMBER, numericValue: Number(tok) };
         else throw `Invalid numeric value ${tok}`;
       } else if (this.nextChar.value.match(/[a-zA-Z]/)) {
+        // Identifier
         let tok = "";
         do {
           tok += this.nextChar.value;
           this.nextChar = this.iterator.next();
         } while (!this.nextChar.done && this.nextChar.value.match(/[a-zA-Z]/));
+
+        // Check for special constants (pi, e)
         if (tok.toUpperCase() === "PI")
           yield { kind: TokenType.NUMBER, numericValue: Math.PI };
         else if (tok.toUpperCase() === "E")
@@ -93,24 +104,37 @@ class Lexer {
         else if (
           builtinMathFunctions.findIndex(fn => fn === tok.toLowerCase())
         ) {
-          console.debug("Builtin math", tok);
+          // One of the builtin Math functions
           yield { kind: TokenType.MATH_BUILTIN, name: tok };
-        } else yield { kind: TokenType.IDENTIFIER, name: tok };
+        } else {
+          // TODO: lookup for measurement object?
+          yield { kind: TokenType.IDENTIFIER, name: tok };
+        }
       } else if (this.nextChar.value === "+") {
+        // Binary plus
         this.nextChar = this.iterator.next();
         yield { kind: TokenType.PLUS };
       } else if (this.nextChar.value === "-") {
+        // Either a binary minus or a unary minus
         this.nextChar = this.iterator.next();
+
+        // Is the next character the beginning of a number or identifier?
         if (this.nextChar.value.match(/[0-9a-zA-Z.]/))
           yield { kind: TokenType.UNARY_MINUS };
         else yield { kind: TokenType.MINUS };
       } else if (this.nextChar.value === "*") {
+        // Multiplication or exponentiation
         this.nextChar = this.iterator.next();
-        yield { kind: TokenType.MULT };
+        if (this.nextChar.value === "*") {
+          this.nextChar = this.iterator.next();
+          yield { kind: TokenType.POW };
+        } else yield { kind: TokenType.MULT };
       } else if (this.nextChar.value === "/") {
+        // Division
         this.nextChar = this.iterator.next();
         yield { kind: TokenType.DIV };
       } else if (this.nextChar.value === "^") {
+        // Alternate operator of exponentiation
         this.nextChar = this.iterator.next();
         yield { kind: TokenType.POW };
       } else if (this.nextChar.value === "(") {
@@ -129,13 +153,19 @@ class Lexer {
         yield { kind: TokenType.UNKNOWN, name: unknownChar };
       }
     }
+
+    // We reach the end of iterator stream!
     yield { kind: TokenType.EOF };
   }
 }
 
 export class SEExpression {
+  /**
+   * Parse the arithmetic expression using a recursive descent parser
+   * @param input a string of arithmetic expression
+   */
   static parse(input: string): SyntaxTree {
-    const lexer = new Lexer(input);
+    const lexer = new Lexer(input); // Lexical analyzer
     const tokenizer = lexer.tokenize();
     let token = tokenizer.next();
 
@@ -158,7 +188,6 @@ export class SEExpression {
         return { node: out };
       } else if (token.value.kind === TokenType.NUMBER) {
         const out = token.value;
-        console.debug("Number", out.numericValue);
         token = tokenizer.next();
         return { node: out };
       } else if (token.value.kind === TokenType.UNARY_MINUS) {
@@ -168,24 +197,28 @@ export class SEExpression {
           out.numericValue *= -1;
           token = tokenizer.next();
           return { node: out };
+        } else if (token.value.kind === TokenType.IDENTIFIER) {
+          // TODO: lookup measurement
+          throw "Incomplete implementation";
         } else throw "Syntax error: expected NUMBER after a '-'";
       } else if (token.value.kind === TokenType.MATH_BUILTIN) {
         const out = token.value;
         token = tokenizer.next();
-        if (token.value.kind === TokenType.LEFT_PAREN) {
+        if (token.value.kind !== TokenType.LEFT_PAREN)
+          throw "Syntax error: expected '(' after a builtin function";
+        token = tokenizer.next();
+        const exprTree = expr();
+        const args = [exprTree];
+
+        // Parse comma separate expressions
+        while (token.value.kind === TokenType.COMMA) {
           token = tokenizer.next();
-          const exprTree = expr();
-          const args = [exprTree];
-          while (token.value.kind === TokenType.COMMA) {
-            token = tokenizer.next();
-            args.push(expr());
-          }
-          if (token.value.kind === TokenType.RIGHT_PAREN) {
-            token = tokenizer.next();
-            return { node: out, args };
-          } else
-            throw "Syntax error: expected ')' after arguments of builtin function";
-        } else throw "Syntax error: expected '(' after a builtin function";
+          args.push(expr());
+        }
+        if (token.value.kind === TokenType.RIGHT_PAREN) {
+          token = tokenizer.next();
+          return { node: out, args };
+        } else throw "Syntax error: expected ')' after function arguments";
       } else throw "Syntax error: expected IDENT, NUMBER, '+', '-', or '('";
     }
 
@@ -196,7 +229,7 @@ export class SEExpression {
         token = tokenizer.next();
         const f = factor();
         const parent = { node: oper, leftChild: factorTree, rightChild: f };
-        factorTree = parent;
+        factorTree = parent; // The new node becomes a new parent
       }
       return factorTree;
     }
@@ -211,7 +244,7 @@ export class SEExpression {
         token = tokenizer.next();
         const p = power();
         const parent = { node: oper, leftChild: powTree, rightChild: p };
-        powTree = parent;
+        powTree = parent; // The new node becomes a new parent
       }
       return powTree;
     }
@@ -226,13 +259,12 @@ export class SEExpression {
         token = tokenizer.next();
         const t = term();
         const parent = { node: oper, leftChild: termTree, rightChild: t };
-        termTree = parent;
+        termTree = parent; // The new node becomes a new parent
       }
       return termTree;
     }
 
     return expr();
-    // console.debug("Final output is", syntaxTree);
   }
 }
 
@@ -257,11 +289,10 @@ export function evaluate(t: SyntaxTree): number {
       let val: number;
       switch (t.node.name) {
         // Multi-arg functions
+        // Apply "evaluate()" to each element
         case "max":
-          // Apply "evaluate()" to each element
           return Math.max(...t.args!.map(evaluate));
         case "min":
-          // Apply "evaluate()" to each element
           return Math.min(...t.args!.map(evaluate));
 
         // Binary functions

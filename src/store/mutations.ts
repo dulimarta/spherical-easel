@@ -12,7 +12,7 @@ import { Vector3 } from "three";
 import { StyleOptions } from "@/types/Styles";
 import { LineNormalVisitor } from "@/visitors/LineNormalVisitor";
 import { SegmentNormalArcLengthVisitor } from "@/visitors/SegmentNormalArcLengthVisitor";
-import { UpdateMode, UpdateStateType } from "@/types";
+import { UpdateMode } from "@/types";
 
 // const tmpMatrix = new Matrix4();
 
@@ -72,7 +72,7 @@ export default {
     state.activeToolName = mode.name;
   },
 
-  revertActionMode(state: AppState, st: string): void {
+  revertActionMode(state: AppState): void {
     state.actionMode = state.previousActionMode;
     state.activeToolName = state.previousActiveToolName;
   },

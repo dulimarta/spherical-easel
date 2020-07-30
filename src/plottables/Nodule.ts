@@ -1,9 +1,7 @@
 import Two from "two.js";
-import { SENodule } from "@/models/SENodule";
 import { Stylable } from "./Styleable";
 import { Resizeable } from "./Resizeable";
 import SETTINGS from "@/global-settings";
-import { VNodeChildren } from "vue";
 import { StyleOptions } from "@/types/Styles";
 
 export enum DisplayStyle {

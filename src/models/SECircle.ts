@@ -170,7 +170,10 @@ export class SECircle extends SENodule implements Visitable, OneDimensional {
    * @param previousSphereVector Vector3 previous location on the unit ideal sphere of the mouse
    * @param currentSphereVector Vector3 current location on the unit ideal sphere of the mouse
    */
-  public move(previousSphereVector: Vector3, currentSphereVector: Vector3) {
+  public move(
+    previousSphereVector: Vector3,
+    currentSphereVector: Vector3
+  ): void {
     const rotationAngle = previousSphereVector.angleTo(currentSphereVector);
 
     // If the rotation is big enough preform the rotation

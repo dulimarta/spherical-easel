@@ -1,19 +1,9 @@
 import Two from "two.js";
-import { Vector3 } from "three";
-import { SEPoint } from "@/models/SEPoint";
 import Point from "@/plottables/Point";
 import { AddPointCommand } from "@/commands/AddPointCommand";
 import { DisplayStyle } from "@/plottables/Nodule";
 import Highlighter from "./Highlighter";
-import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
-import { ConvertInterPtToUserCreatedCommand } from "@/commands/ConvertInterPtToUserCreatedCommand";
-import { SELine } from "@/models/SELine";
-import { SESegment } from "@/models/SESegment";
-import { SECircle } from "@/models/SECircle";
 import { SEPointOnOneDimensional } from "@/models/SEPointOnOneDimensional";
-import { SENodule } from "@/models/SENodule";
-import { IntersectionReturnType } from "@/types";
-import store from "@/store";
 import { SEOneDimensional } from "@/types";
 
 export default class PointOnOneDimensionalHandler extends Highlighter {
