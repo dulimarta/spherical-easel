@@ -274,15 +274,24 @@ export default class Easel extends Vue {
 
   private enableZoomIn(): void {
     this.displayZoomInToolUseMessage = true;
-    this.$store.commit("setActionMode", { id: "zoomIn", name: "Zoom In" });
+    this.$store.commit("setActionMode", {
+      id: "zoomIn",
+      name: "PanZoomInDisplayedName"
+    });
   }
   private enableZoomOut(): void {
     this.displayZoomOutToolUseMessage = true;
-    this.$store.commit("setActionMode", { id: "zoomOut", name: "Zoom Out" });
+    this.$store.commit("setActionMode", {
+      id: "zoomOut",
+      name: "PanZoomOutDisplayedName"
+    });
   }
   private enableZoomFit(): void {
     this.displayZoomFitToolUseMessage = true;
-    this.$store.commit("setActionMode", { id: "zoomFit", name: "Zoom Fit" });
+    this.$store.commit("setActionMode", {
+      id: "zoomFit",
+      name: "ZoomFitDisplayedName"
+    });
   }
   private adjustSize(): void {
     console.debug("adjustSize()");
@@ -341,10 +350,11 @@ export default class Easel extends Vue {
     if (!this.toolboxMinified && !this.stylePanelMinified) {
       this.toolboxMinified = true;
     }
+    // Set the selection tool to be active when opening the style panel.
     if (!this.stylePanelMinified) {
       this.$store.commit("setActionMode", {
         id: "select",
-        name: "CreateSelectDisplayedName"
+        name: "SelectDisplayedName"
       });
     }
   }

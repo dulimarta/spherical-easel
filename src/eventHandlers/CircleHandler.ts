@@ -456,9 +456,9 @@ export default class CircleHandler extends Highlighter {
   activate(): void {
     // If there are exactly two SEPoints selected, create a circle with the first as the center
     // and the second as the circle point
-    if (this.store.getters.selectedObjects().length == 2) {
-      const object1 = this.store.getters.selectedObjects()[0];
-      const object2 = this.store.getters.selectedObjects()[1];
+    if (this.store.getters.selectedSENodules().length == 2) {
+      const object1 = this.store.getters.selectedSENodules()[0];
+      const object2 = this.store.getters.selectedSENodules()[1];
       if (
         object1 instanceof SEPoint &&
         object2 instanceof SEPoint &&

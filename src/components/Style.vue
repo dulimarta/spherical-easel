@@ -3,9 +3,7 @@
     <div v-if="!minified" key="full">
       <v-expansion-panels :value="selectedPanel">
         <v-expansion-panel v-for="(p, idx) in panels" :key="idx">
-          <v-expansion-panel-header :key="`header${idx}`">
-            {{ p.name }}
-          </v-expansion-panel-header>
+          <v-expansion-panel-header :key="`header${idx}`">{{ p.name }}</v-expansion-panel-header>
           <v-expansion-panel-content :key="`content${idx}`">
             <component :is="p.component"></component>
           </v-expansion-panel-content>
@@ -31,15 +29,15 @@ export default class Style extends Vue {
   private selectedPanel = 0; // Default selection is the Foreground panel
   private readonly panels = [
     {
-      name: "Foreground Style",
+      name: "{{$t(`style.foregroundStyle`)}}",
       component: () => import("@/components/FrontStyle.vue")
     },
     {
-      name: "Background Style",
+      name: "$t(`style.backgroundStyle`)",
       component: () => import("@/components/BackStyle.vue")
     },
     {
-      name: "Advanced Style",
+      name: "$t(`style.advancedStyle`)",
       component: () => import("@/components/AdvancedStyle.vue")
     }
   ];

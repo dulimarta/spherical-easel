@@ -89,7 +89,7 @@ export default class SelectionHandler extends MouseHandler {
         this.currentSelection = this.hitSENodules.filter(n => n.selected);
       }
     }
-    this.store.commit("setSelectedObjects", this.currentSelection);
+    this.store.commit("setSelectedSENodules", this.currentSelection);
     /** 
     console.log("----selected---- objects------");
     this.currentSelection.forEach(n =>
@@ -180,11 +180,11 @@ export default class SelectionHandler extends MouseHandler {
       this.delayedStart = null;
     }
     // Unselect all selected objects
-    this.store.getters.selectedObjects().forEach((obj: SENodule) => {
+    this.store.getters.selectedSENodules().forEach((obj: SENodule) => {
       obj.selected = false;
     });
     // Clear the selected objects array
-    this.store.commit("setSelectedObjects", []);
+    this.store.commit("setSelectedSENodules", []);
     this.currentSelection.clear();
     window.removeEventListener("keypress", this.keyPressHandler);
   }

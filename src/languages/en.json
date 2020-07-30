@@ -64,17 +64,17 @@
     "CreateCircleToolTipMessage": "Insert circle",
     "CreateCircleToolUseMessage": "Click and drag to insert a circle with a given center point and through a second point.",
 
-    "SelectToolTipMessage": "Selection",
-    "SelectToolUseMessage": "Select Objects",
-    "SelectDisplayedName": "Click on objects to select them, hold the Alt key to add to your selection",
+    "SelectDisplayedName": "Selection",
+    "SelectToolTipMessage": "Select Objects",
+    "SelectToolUseMessage": "Click on objects to select them, hold the Alt key to add to your selection",
 
-    "DeleteToolTipMessage": "Delete",
-    "DeleteToolUseMessage": "Delete Objects",
-    "DeleteDisplayedName": "Click on objects to delete them.",
+    "DeleteDisplayedName": "Delete",
+    "DeleteToolTipMessage": "Delete Objects",
+    "DeleteToolUseMessage": "Click on objects to delete them.",
 
-    "CreateAntipodalPointToolTipMessage": "Antipodal Points",
-    "CreateAntipodalPointToolUseMessage": "Select a point",
-    "CreateAntipodalPointDisplayedName": "Click on a point to create its antipode",
+    "CreateAntipodalPointDisplayedName": "Antipodal Point",
+    "CreateAntipodalPointToolTipMessage": "Select a point",
+    "CreateAntipodalPointToolUseMessage": "Click on a point to create its antipode",
 
     "CreatePointOnOneDimDisplayedName": "Point On One Dimensional Object",
     "CreatePointOnOneDimToolTipMessage": "Select a one-dimensional object to place a point on",
@@ -87,5 +87,29 @@
     "points": "Points",
     "lines": "Lines",
     "circles": "Circles"
+  },
+  "style": {
+    "selectAnObject": "Select An Object",
+    "clearChanges": "Clear",
+    "clearChangesToolTip": "Click this button to revert the selected objects back to the style they had when they were selected.",
+    "restoreDefaults": "Defaults",
+    "restoreDefaultsToolTip": "Click this button to revert the selected objects back to their default style.",
+    "differingStylesDetected": "Differing Styles Detected -- Override",
+    "differingStylesDetectedToolTip": "The selected objects have the different values for this style. Click this button and select a style to make all selected objects have this common style.",
+    "showColorPresets": "Color Presets",
+    "showColorPresetsToolTip": "Click this button to enter HSLA values directly or to select a color preset.",
+    "advancedStyle": "Advanced Style",
+    "backgroundStyle": "Background Style",
+    "foregroundStyle": "Foreground Style",
+    "emptySelectionMessage": "Here we go! Please select object(s) to style!",
+    "strokeColor": "Stroke Color",
+    "fillColor": "Fill Color",
+    "strokeWidth": "Stroke Width",
+    "pointSize": "Point Size",
+    "opacity": "Overall Opacity",
+    "dashPattern": "Dash Pattern",
+    "dashGap": "Dash Gap",
+    "dashLength": "Dash Length",
+    "opacityZeroMessage": "To achieve a zero opacity simply hide the object(s)"
   }
 }

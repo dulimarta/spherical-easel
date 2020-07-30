@@ -798,7 +798,7 @@ export default {
       .filter(p => p instanceof SEIntersectionPoint && p.name.includes(prefix))
       .map(obj => obj as SEIntersectionPoint);
   },
-  selectedObjects: (state: AppState) => (): SENodule[] => {
+  selectedSENodules: (state: AppState) => (): SENodule[] => {
     return state.selections;
   },
   previousActionMode: (state: AppState) => (): { id: string; name: string } => {

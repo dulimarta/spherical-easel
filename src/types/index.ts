@@ -74,6 +74,12 @@ export interface OneDimensional {
  */
 export type SEOneDimensional = SELine | SESegment | SECircle;
 
+export interface hslaColorType {
+  h: number;
+  s: number;
+  l: number;
+  a: number;
+}
 /**
  * There are three modes for updating. The DisplayOnly doesn't record information as the update(mode: , stateArray:[]) method is
  * executed

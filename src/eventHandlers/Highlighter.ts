@@ -126,10 +126,10 @@ export default abstract class Highlighter extends MouseHandler {
   }
 
   activate(): void {
-    this.store.getters.selectedObjects().forEach((obj: SENodule) => {
+    this.store.getters.selectedSENodules().forEach((obj: SENodule) => {
       obj.selected = false;
     });
     // Clear the selected objects array
-    this.store.commit("setSelectedObjects", []);
+    this.store.commit("setSelectedSENodules", []);
   }
 }

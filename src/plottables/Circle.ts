@@ -77,7 +77,6 @@ export default class Circle extends Nodule {
   private strokeWidthPercentFront = 100;
   private opacityFront = SETTINGS.circle.drawn.opacity.front;
   private dashArrayFront = [] as number[]; // Initialize in constructor
-  private dashArrayOffsetFront = SETTINGS.circle.drawn.dashArray.offset.front;
   // Back
   private fillColorBack = SETTINGS.circle.dynamicBackStyle
     ? Nodule.contrastFillColor(SETTINGS.circle.drawn.fillColor.front)
@@ -92,7 +91,6 @@ export default class Circle extends Nodule {
     ? Nodule.contrastOpacity(SETTINGS.circle.drawn.opacity.front)
     : SETTINGS.circle.drawn.opacity.back;
   private dashArrayBack = [] as number[]; // Initialize in constructor
-  private dashArrayOffsetBack = SETTINGS.circle.drawn.dashArray.offset.back;
   private dynamicBackStyle = SETTINGS.circle.dynamicBackStyle;
 
   /**
@@ -756,9 +754,6 @@ export default class Circle extends Nodule {
         for (let i = 0; i < options.dashArray.length; i++) {
           this.dashArrayFront.push(options.dashArray[i]);
         }
-        if (options.dashOffset) {
-          this.dashArrayOffsetFront = options.dashOffset;
-        }
       }
     } else {
       // Set the back options
@@ -783,12 +778,97 @@ export default class Circle extends Nodule {
         for (let i = 0; i < options.dashArray.length; i++) {
           this.dashArrayBack.push(options.dashArray[i]);
         }
-        if (options.dashOffset) this.dashArrayOffsetBack = options.dashOffset;
       }
     }
     // Now apply the style and size
     this.stylize(DisplayStyle.APPLYCURRENTVARIABLES);
     this.adjustSize();
+  }
+
+  /**
+   * Return the current style state
+   */
+  currentStyleState(front: boolean): StyleOptions {
+    if (front) {
+      const dashArrayFront = [] as number[];
+      if (this.dashArrayFront.length > 0) {
+        this.dashArrayFront.forEach(v => dashArrayFront.push(v));
+      }
+      return {
+        front: front,
+        strokeWidthPercent: this.strokeWidthPercentFront,
+        strokeColor: this.strokeColorFront,
+        fillColor: this.fillColorFront,
+        dashArray: dashArrayFront,
+        opacity: this.opacityFront
+      };
+    } else {
+      const dashArrayBack = [] as number[];
+      if (this.dashArrayBack.length > 0) {
+        this.dashArrayBack.forEach(v => dashArrayBack.push(v));
+      }
+      return {
+        front: front,
+        strokeWidthPercent: this.strokeWidthPercentBack,
+        strokeColor: this.strokeColorBack,
+        fillColor: this.fillColorBack,
+        dashArray: dashArrayBack,
+        opacity: this.opacityBack,
+        dynamicBackStyle: this.dynamicBackStyle
+      };
+    }
+  }
+  /**
+   * Return the default style state
+   */
+  defaultStyleState(front: boolean): StyleOptions {
+    if (front) {
+      const dashArrayFront = [] as number[];
+      if (SETTINGS.circle.drawn.dashArray.front.length > 0) {
+        SETTINGS.circle.drawn.dashArray.front.forEach(v =>
+          dashArrayFront.push(v)
+        );
+      }
+      return {
+        front: front,
+        strokeWidthPercent: 100,
+        fillColor: SETTINGS.circle.drawn.fillColor.front,
+        strokeColor: SETTINGS.circle.drawn.strokeColor.front,
+        opacity: SETTINGS.circle.drawn.opacity.front,
+        dashArray: dashArrayFront
+      };
+    } else {
+      const dashArrayBack = [] as number[];
+
+      if (SETTINGS.circle.drawn.dashArray.back.length > 0) {
+        SETTINGS.circle.drawn.dashArray.back.forEach(v =>
+          dashArrayBack.push(v)
+        );
+      }
+      return {
+        front: front,
+
+        strokeWidthPercent: SETTINGS.circle.dynamicBackStyle
+          ? Nodule.contrastStrokeWidthPercent(100)
+          : 100,
+
+        strokeColor: SETTINGS.circle.dynamicBackStyle
+          ? Nodule.contrastStrokeColor(SETTINGS.circle.drawn.strokeColor.front)
+          : SETTINGS.circle.drawn.strokeColor.back,
+
+        fillColor: SETTINGS.circle.dynamicBackStyle
+          ? Nodule.contrastFillColor(SETTINGS.circle.drawn.fillColor.front)
+          : SETTINGS.circle.drawn.fillColor.back,
+
+        dashArray: dashArrayBack,
+
+        opacity: SETTINGS.circle.dynamicBackStyle
+          ? Nodule.contrastOpacity(SETTINGS.circle.drawn.opacity.front)
+          : SETTINGS.circle.drawn.opacity.back,
+
+        dynamicBackStyle: SETTINGS.circle.dynamicBackStyle
+      };
+    }
   }
 
   /**
@@ -850,7 +930,6 @@ export default class Circle extends Nodule {
           SETTINGS.circle.drawn.dashArray.front.forEach(v => {
             this.frontPart.dashes.push(v);
           });
-          this.frontPart.offset = SETTINGS.circle.drawn.dashArray.offset.front;
         }
         //BACK
         if (SETTINGS.circle.temp.fillColor.back === "noFill") {
@@ -869,7 +948,6 @@ export default class Circle extends Nodule {
           SETTINGS.circle.drawn.dashArray.back.forEach(v => {
             this.backPart.dashes.push(v);
           });
-          this.backPart.offset = SETTINGS.circle.drawn.dashArray.offset.back;
         }
 
         // The temporary display is never highlighted
@@ -897,7 +975,6 @@ export default class Circle extends Nodule {
           this.dashArrayFront.forEach(v => {
             this.frontPart.dashes.push(v);
           });
-          this.frontPart.offset = this.dashArrayOffsetFront;
         }
         // BACK
         if (this.dynamicBackStyle) {
@@ -929,7 +1006,6 @@ export default class Circle extends Nodule {
           this.dashArrayBack.forEach(v => {
             this.backPart.dashes.push(v);
           });
-          this.backPart.offset = this.dashArrayOffsetBack;
         }
 
         // UPDATE the glowing object
@@ -946,7 +1022,6 @@ export default class Circle extends Nodule {
           this.dashArrayFront.forEach(v => {
             this.glowingFrontPart.dashes.push(v);
           });
-          this.glowingFrontPart.offset = this.dashArrayOffsetFront;
         }
 
         // Glowing Back
@@ -960,7 +1035,6 @@ export default class Circle extends Nodule {
           this.dashArrayBack.forEach(v => {
             this.glowingBackPart.dashes.push(v);
           });
-          this.glowingBackPart.offset = this.dashArrayOffsetBack;
         }
         break;
       }
@@ -978,8 +1052,6 @@ export default class Circle extends Nodule {
           SETTINGS.circle.drawn.dashArray.front.forEach(v => {
             this.dashArrayFront.push(v);
           });
-          this.dashArrayOffsetFront =
-            SETTINGS.circle.drawn.dashArray.offset.front;
         }
 
         // BACK
@@ -1002,7 +1074,6 @@ export default class Circle extends Nodule {
             this.dashArrayBack.push(v)
           );
         }
-        this.dashArrayOffsetBack = SETTINGS.circle.drawn.dashArray.offset.back;
         break;
       }
     }

@@ -273,7 +273,66 @@ export default class Point extends Nodule {
     this.stylize(DisplayStyle.APPLYCURRENTVARIABLES);
     this.adjustSize();
   }
+  /**
+   * Return the current style state
+   */
+  currentStyleState(front: boolean): StyleOptions {
+    if (front) {
+      return {
+        front: front,
+        pointRadiusPercent: this.pointRadiusPercentFront,
+        strokeColor: this.strokeColorFront,
+        fillColor: this.fillColorFront,
+        opacity: this.opacityFront
+      };
+    } else {
+      return {
+        front: front,
+        pointRadiusPercent: this.pointRadiusPercentBack,
+        strokeColor: this.strokeColorBack,
+        fillColor: this.fillColorBack,
+        opacity: this.opacityBack,
+        dynamicBackStyle: this.dynamicBackStyle
+      };
+    }
+  }
+  /**
+   * Return the default style state
+   */
+  defaultStyleState(front: boolean): StyleOptions {
+    if (front) {
+      return {
+        front: front,
+        pointRadiusPercent: 100,
+        strokeColor: SETTINGS.point.drawn.strokeColor.front,
+        fillColor: SETTINGS.point.drawn.fillColor.front,
+        opacity: SETTINGS.point.drawn.opacity.front
+      };
+      // Back
+    } else {
+      return {
+        front: front,
 
+        pointRadiusPercent: SETTINGS.point.dynamicBackStyle
+          ? Nodule.contrastPointRadiusPercent(100)
+          : 100,
+
+        strokeColor: SETTINGS.point.dynamicBackStyle
+          ? Nodule.contrastStrokeColor(SETTINGS.point.drawn.strokeColor.front)
+          : SETTINGS.circle.drawn.strokeColor.back,
+
+        fillColor: SETTINGS.point.dynamicBackStyle
+          ? Nodule.contrastFillColor(SETTINGS.point.drawn.fillColor.front)
+          : SETTINGS.circle.drawn.fillColor.back,
+
+        opacity: SETTINGS.point.dynamicBackStyle
+          ? Nodule.contrastOpacity(SETTINGS.point.drawn.opacity.front)
+          : SETTINGS.point.drawn.opacity.back,
+
+        dynamicBackStyle: SETTINGS.point.dynamicBackStyle
+      };
+    }
+  }
   /**
    * Sets the variables for point radius glowing/not
    */

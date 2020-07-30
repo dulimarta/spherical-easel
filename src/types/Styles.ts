@@ -5,7 +5,6 @@ export enum Styles {
   strokeColor,
   fillColor,
   dashArray,
-  dashOffset,
   opacity,
   dynamicBackStyle,
   pointRadiusPercent
@@ -17,7 +16,6 @@ export type StyleOptions = {
   strokeColor?: string;
   fillColor?: string;
   dashArray?: number[];
-  dashOffset?: number;
   opacity?: number;
   dynamicBackStyle?: boolean;
   pointRadiusPercent?: number;

@@ -20,7 +20,6 @@ const styleSet = new Set([
   Styles.strokeColor,
   Styles.strokeWidthPercentage,
   Styles.dashArray,
-  Styles.dashOffset,
   Styles.fillColor,
   Styles.opacity,
   Styles.dynamicBackStyle

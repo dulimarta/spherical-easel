@@ -194,7 +194,7 @@ export default {
     const pos = state.seSegments.findIndex(x => x.id === change.segmentId);
     if (pos >= 0) state.seSegments[pos].accept(segmentNormalArcLengthVisitor);
   },
-  setSelectedObjects(state: AppState, payload: SENodule[]): void {
+  setSelectedSENodules(state: AppState, payload: SENodule[]): void {
     state.selections.splice(0);
     state.selections.push(...payload);
   },
@@ -211,22 +211,22 @@ export default {
   changeStyle(
     state: AppState,
     {
+      selected, // The selected SENodules that this change applies to, passing this as a argument allows styling to be undone.
       front,
-      strokeWidthPercent: strokeWidthPercent,
-      color, // The color selected with the one color picker
-      props, // String array containing a subset of strokeColor, fillColor
+      strokeWidthPercent,
+      strokeColor,
+      fillColor,
       dashArray,
-      dashOffset,
       opacity,
       dynamicBackStyle,
       pointRadiusPercent
     }: {
+      selected: SENodule[];
       front: boolean;
       strokeWidthPercent: number | undefined;
-      color: string | undefined;
-      props: string[] | undefined;
+      strokeColor: string | undefined;
+      fillColor: string | undefined;
       dashArray: number[] | undefined;
-      dashOffset: number | undefined;
       opacity: number | undefined;
       dynamicBackStyle: boolean | undefined;
       pointRadiusPercent: number | undefined;
@@ -235,78 +235,16 @@ export default {
     const opt: any = {
       front: front,
       strokeWidthPercent: strokeWidthPercent,
+      strokeColor: strokeColor,
+      fillColor: fillColor,
       dashArray: dashArray,
-      dashOffset: dashOffset,
       opacity: opacity,
       dynamicBackStyle: dynamicBackStyle,
       pointRadiusPercent: pointRadiusPercent
     };
-    // The attributes that the color applies to are passed to this mutation as an array,
-    // unpack that array and add those properties to the opt object
-    if (props) {
-      props.forEach(s => {
-        opt[s] = color;
-      });
-    }
 
-    state.selections.forEach((n: SENodule) => {
-      // console.debug(`Changing stroke width of ${n.name} to ${width}`);
+    selected.forEach((n: SENodule) => {
       n.ref.updateStyle(opt as StyleOptions);
     });
   }
-
-  // // TODO: combine the following changeXXXX functions
-  // changeStrokeWidth(
-  //   state: AppState,
-  //   {
-  //     face,
-  //     strokeWidthPercent
-  //   }: { face: boolean; strokeWidthPercent: number }
-  // ): void {
-  //   const opt: StyleOptions = {
-  //     front: face,
-  //     strokeWidthPercent: strokeWidthPercent
-  //   };
-  //   state.selections
-  //     .filter(n => !(n instanceof SEPoint))
-  //     .map(n => n as SEOneDimensional) // TODO: handle other object types
-  //     .forEach((n: SEOneDimensional) => {
-  //       // console.debug(`Changing stroke width of ${n.name} to ${width}`);
-  //       n.ref.updateStyle(opt);
-  //     });
-  // },
-
-  // changeColor(
-  //   state: AppState,
-  //   { face, color, props }: { face: boolean; color: string; props: string[] }
-  // ): void {
-  //   const opt: any = {};
-  //   props.forEach(s => {
-  //     opt[s] = color;
-  //   });
-  //   state.selections
-  //     .filter(n => !(n instanceof SEPoint))
-  //     .map(n => n as SEOneDimensional) // TODO: handle other object types
-  //     .forEach((n: SEOneDimensional) => {
-  //       // console.debug(`Changing stroke color of ${n.name} to ${color}`);
-  //       n.ref.updateStyle(opt);
-  //     });
-  // },
-
-  // changeDashPattern(
-  //   state: AppState,
-  //   { face, dashPattern }: { face: boolean; dashPattern: number[] }
-  // ): void {
-  //   const opt: StyleOptions = {
-  //     front: face,
-  //     dashArray: dashPattern
-  //   };
-  //   state.selections
-  //     .filter(n => !(n instanceof SEPoint))
-  //     .map(n => n as SEOneDimensional) // TODO: handle other object types
-  //     .forEach((n: SEOneDimensional) => {
-  //       // console.debug(`Changing stroke color of ${n.name} to ${color}`);
-  //       n.ref.updateStyle(opt);
-  //     });
-  // }
 };

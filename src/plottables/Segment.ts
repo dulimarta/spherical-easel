@@ -58,7 +58,6 @@ export default class Segment extends Nodule {
   private strokeWidthPercentFront = 100;
   private opacityFront = SETTINGS.segment.drawn.opacity.front;
   private dashArrayFront = [] as number[]; // Initialize in constructor
-  private dashArrayOffsetFront = SETTINGS.segment.drawn.dashArray.offset.front;
   // Back
   private strokeColorBack = SETTINGS.segment.dynamicBackStyle
     ? Nodule.contrastStrokeColor(SETTINGS.segment.drawn.strokeColor.front)
@@ -70,7 +69,6 @@ export default class Segment extends Nodule {
     ? Nodule.contrastOpacity(SETTINGS.segment.drawn.opacity.front)
     : SETTINGS.segment.drawn.opacity.back;
   private dashArrayBack = [] as number[]; // Initialize in constructor
-  private dashArrayOffsetBack = SETTINGS.segment.drawn.dashArray.offset.back;
   private dynamicBackStyle = SETTINGS.segment.dynamicBackStyle;
 
   /** Initialize the current line width that is adjusted by the zoom level and the user widthPercent */
@@ -453,7 +451,7 @@ export default class Segment extends Nodule {
    * @param options The style options
    */
   updateStyle(options: StyleOptions): void {
-    console.debug("Update style of", this.name, "using", options);
+    console.debug("Update style of", this.name, "using", options.strokeColor);
     if (options.front) {
       // Set the front options
       if (options.strokeWidthPercent) {
@@ -470,9 +468,6 @@ export default class Segment extends Nodule {
         this.dashArrayFront.clear();
         for (let i = 0; i < options.dashArray.length; i++) {
           this.dashArrayFront.push(options.dashArray[i]);
-        }
-        if (options.dashOffset) {
-          this.dashArrayOffsetFront = options.dashOffset;
         }
       }
     } else {
@@ -495,14 +490,90 @@ export default class Segment extends Nodule {
         for (let i = 0; i < options.dashArray.length; i++) {
           this.dashArrayBack.push(options.dashArray[i]);
         }
-        if (options.dashOffset) this.dashArrayOffsetBack = options.dashOffset;
       }
     }
     // Now apply the style and size
     this.stylize(DisplayStyle.APPLYCURRENTVARIABLES);
     this.adjustSize();
   }
+  /**
+   * Return the current style state
+   */
+  currentStyleState(front: boolean): StyleOptions {
+    if (front) {
+      const dashArrayFront = [] as number[];
+      if (this.dashArrayFront.length > 0) {
+        this.dashArrayFront.forEach(v => dashArrayFront.push(v));
+      }
+      return {
+        front: front,
+        strokeWidthPercent: this.strokeWidthPercentFront,
+        strokeColor: this.strokeColorFront,
+        dashArray: dashArrayFront,
+        opacity: this.opacityFront
+      };
+    } else {
+      const dashArrayBack = [] as number[];
+      if (this.dashArrayBack.length > 0) {
+        this.dashArrayBack.forEach(v => dashArrayBack.push(v));
+      }
+      return {
+        front: front,
+        strokeWidthPercent: this.strokeWidthPercentBack,
+        strokeColor: this.strokeColorBack,
+        dashArray: dashArrayBack,
+        opacity: this.opacityBack,
+        dynamicBackStyle: this.dynamicBackStyle
+      };
+    }
+  }
+  /**
+   * Return the default style state
+   */
+  defaultStyleState(front: boolean): StyleOptions {
+    if (front) {
+      const dashArrayFront = [] as number[];
+      if (SETTINGS.segment.drawn.dashArray.front.length > 0) {
+        SETTINGS.segment.drawn.dashArray.front.forEach(v =>
+          dashArrayFront.push(v)
+        );
+      }
+      return {
+        front: front,
+        strokeWidthPercent: 100,
+        strokeColor: SETTINGS.segment.drawn.strokeColor.front,
+        dashArray: dashArrayFront,
+        opacity: SETTINGS.segment.drawn.opacity.front
+      };
+    } else {
+      const dashArrayBack = [] as number[];
 
+      if (SETTINGS.segment.drawn.dashArray.back.length > 0) {
+        SETTINGS.segment.drawn.dashArray.back.forEach(v =>
+          dashArrayBack.push(v)
+        );
+      }
+      return {
+        front: front,
+
+        strokeWidthPercent: SETTINGS.segment.dynamicBackStyle
+          ? Nodule.contrastStrokeWidthPercent(100)
+          : 100,
+
+        strokeColor: SETTINGS.segment.dynamicBackStyle
+          ? Nodule.contrastStrokeColor(SETTINGS.segment.drawn.strokeColor.front)
+          : SETTINGS.segment.drawn.strokeColor.back,
+
+        dashArray: dashArrayBack,
+
+        opacity: SETTINGS.segment.dynamicBackStyle
+          ? Nodule.contrastOpacity(SETTINGS.segment.drawn.opacity.front)
+          : SETTINGS.segment.drawn.opacity.back,
+
+        dynamicBackStyle: SETTINGS.segment.dynamicBackStyle
+      };
+    }
+  }
   /**
    * Sets the variables for stroke width glowing/not front/back/extra
    */
@@ -577,7 +648,6 @@ export default class Segment extends Nodule {
           SETTINGS.segment.drawn.dashArray.front.forEach(v => {
             this.frontPart.dashes.push(v);
           });
-          this.frontPart.offset = SETTINGS.segment.drawn.dashArray.offset.front;
         }
 
         // FRONT EXTRA
@@ -592,8 +662,6 @@ export default class Segment extends Nodule {
           SETTINGS.segment.drawn.dashArray.front.forEach(v => {
             this.frontExtra.dashes.push(v);
           });
-          this.frontExtra.offset =
-            SETTINGS.segment.drawn.dashArray.offset.front;
         }
         // BACK PART
         // no fill color
@@ -607,7 +675,6 @@ export default class Segment extends Nodule {
           SETTINGS.segment.drawn.dashArray.back.forEach(v => {
             this.backPart.dashes.push(v);
           });
-          this.backPart.offset = SETTINGS.segment.drawn.dashArray.offset.back;
         }
         // BACK EXTRA
         // no fill color
@@ -621,7 +688,6 @@ export default class Segment extends Nodule {
           SETTINGS.segment.drawn.dashArray.back.forEach(v => {
             this.backExtra.dashes.push(v);
           });
-          this.backExtra.offset = SETTINGS.segment.drawn.dashArray.offset.back;
         }
 
         // The temporary display is never highlighted
@@ -645,7 +711,6 @@ export default class Segment extends Nodule {
           this.dashArrayFront.forEach(v => {
             this.frontPart.dashes.push(v);
           });
-          this.frontPart.offset = this.dashArrayOffsetFront;
         }
         // FRONT EXTRA
         // no fillColor
@@ -657,7 +722,6 @@ export default class Segment extends Nodule {
           this.dashArrayFront.forEach(v => {
             this.frontExtra.dashes.push(v);
           });
-          this.frontExtra.offset = this.dashArrayOffsetFront;
         }
         // BACK PART
         // no fillColor
@@ -673,7 +737,6 @@ export default class Segment extends Nodule {
           this.dashArrayBack.forEach(v => {
             this.backPart.dashes.push(v);
           });
-          this.backPart.offset = this.dashArrayOffsetBack;
         }
         // BACK EXTRA
         // no fillColor
@@ -689,7 +752,6 @@ export default class Segment extends Nodule {
           this.dashArrayBack.forEach(v => {
             this.backExtra.dashes.push(v);
           });
-          this.backExtra.offset = this.dashArrayOffsetBack;
         }
         // UPDATE the glowing width so it is always bigger than the drawn width
         // Glowing Front
@@ -704,7 +766,6 @@ export default class Segment extends Nodule {
           this.dashArrayFront.forEach(v => {
             this.glowingFrontPart.dashes.push(v);
           });
-          this.glowingFrontPart.offset = this.dashArrayOffsetFront;
         }
 
         // Glowing Front Extra
@@ -719,7 +780,6 @@ export default class Segment extends Nodule {
           this.dashArrayFront.forEach(v => {
             this.glowingFrontExtra.dashes.push(v);
           });
-          this.glowingFrontExtra.offset = this.dashArrayOffsetFront;
         }
 
         // Glowing Back
@@ -733,7 +793,6 @@ export default class Segment extends Nodule {
           this.dashArrayBack.forEach(v => {
             this.glowingBackPart.dashes.push(v);
           });
-          this.glowingBackPart.offset = this.dashArrayOffsetBack;
         }
 
         // Glowing Back Extra
@@ -748,7 +807,6 @@ export default class Segment extends Nodule {
           this.dashArrayBack.forEach(v => {
             this.glowingBackExtra.dashes.push(v);
           });
-          this.glowingBackExtra.offset = this.dashArrayOffsetBack;
         }
 
         break;
@@ -767,8 +825,6 @@ export default class Segment extends Nodule {
             this.dashArrayFront.push(v)
           );
         }
-        this.dashArrayOffsetFront =
-          SETTINGS.segment.drawn.dashArray.offset.front;
 
         // BACK PART
         this.dynamicBackStyle = SETTINGS.segment.dynamicBackStyle;
@@ -788,7 +844,6 @@ export default class Segment extends Nodule {
             this.dashArrayBack.push(v)
           );
         }
-        this.dashArrayOffsetBack = SETTINGS.segment.drawn.dashArray.offset.back;
 
         break;
       }

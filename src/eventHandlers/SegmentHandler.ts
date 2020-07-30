@@ -543,9 +543,9 @@ export default class SegmentHandler extends Highlighter {
   activate(): void {
     // If there are exactly two SEPoints selected,
     // create a segment with the two points as the endpoints of length less than Pi
-    if (this.store.getters.selectedObjects().length == 2) {
-      const object1 = this.store.getters.selectedObjects()[0];
-      const object2 = this.store.getters.selectedObjects()[1];
+    if (this.store.getters.selectedSENodules().length == 2) {
+      const object1 = this.store.getters.selectedSENodules()[0];
+      const object2 = this.store.getters.selectedSENodules()[1];
 
       if (object1 instanceof SEPoint && object2 instanceof SEPoint) {
         // Create a new plottable Line

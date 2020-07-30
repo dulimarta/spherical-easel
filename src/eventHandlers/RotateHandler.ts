@@ -272,8 +272,8 @@ export default class RotateHandler extends MouseHandler {
 
   activate(): void {
     // If there is exactly one SEPoint/SELine/SESegment object enter the rotateAboutPointMode
-    if (this.store.getters.selectedObjects().length == 1) {
-      const object = this.store.getters.selectedObjects()[0];
+    if (this.store.getters.selectedSENodules().length == 1) {
+      const object = this.store.getters.selectedSENodules()[0];
       if (object instanceof SEPoint) {
         this.axisOfRotation.copy(object.locationVector);
         this.rotateAboutPointMode = true;

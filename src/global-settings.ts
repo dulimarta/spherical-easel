@@ -31,7 +31,7 @@ export default {
     radius: 250 /* default radius */,
     numPoints: 50,
     opacity: 0.5,
-    color: "black",
+    color: "hsla(0, 0%, 0%, 1)",
     lineWidth: 3
   },
   // #endregion boundarycircle
@@ -53,8 +53,8 @@ export default {
         back: "hsla(0, 100%, 75%, 1)" //"#FFBFBF" // The fill color on the back defaults to a contrast value of 0.5
       },
       strokeColor: {
-        front: "#4C4CCD", // { r: 76, g: 76, b: 205 },
-        back: "#A5A5E6" // the back stroke color is calculated using the contrast of 0.5
+        front: "hsla(240, 56%, 55%, 1)", // { r: 76, g: 76, b: 205 },
+        back: "hsla(240, 57%, 77%, 1)" // the back stroke color is calculated using the contrast of 0.5
       },
       pointStrokeWidth: { front: 2, back: 2 }, // The thickness of the edge of the point when drawn
       opacity: { front: 1, back: 1 }
@@ -75,12 +75,12 @@ export default {
     temp: {
       // The radius is the same as the default for drawn points
       fillColor: {
-        front: "#808080", // { r: 128, g: 128, b: 128 },
-        back: "#BFBFBF" // the back fill color is calculated using the contrast of 0.5
+        front: "hsla(0, 0%, 50%, 1)", // { r: 128, g: 128, b: 128 },
+        back: "hsla(0, 0%, 75%, 1)" // the back fill color is calculated using the contrast of 0.5
       },
       strokeColor: {
-        front: "#000000", // black { r: 0, g: 0, b: 0 },
-        back: "#808080" // the back stroke color is calculated using the contrast of 0.5
+        front: "hsla(0, 0%, 0%, 1)", // black { r: 0, g: 0, b: 0 },
+        back: "hsla(0, 0%, 50%, 1)" // the back stroke color is calculated using the contrast of 0.5
       },
       // The temp stroke width is the same as the default drawn stroke width
       opacity: { front: 1, back: 1 }
@@ -98,8 +98,8 @@ export default {
     drawn: {
       // No fill for line segments
       strokeColor: {
-        front: "#4287f5", // { r: 66, g: 135, b: 245 },
-        back: "#a0c3fa" // The fill color on the back defaults to a contrast value of 0.5
+        front: "hsla(217, 90%, 61%, 1)", // { r: 66, g: 135, b: 245 },
+        back: "hsla(217, 90%, 80%, 1)" // The fill color on the back defaults to a contrast value of 0.5
       },
       strokeWidth: {
         front: 2.5,
@@ -129,8 +129,8 @@ export default {
     temp: {
       // No fill for line segments
       strokeColor: {
-        front: "#6A6A6A",
-        back: "#B4B4B4" // the back fill color is calculated using the contrast of 0.5
+        front: "hsla(0, 0%, 42%, 1)",
+        back: "hsla(0, 0%, 71%, 1)" // the back fill color is calculated using the contrast of 0.5
       },
       // The width is the same as the default drawn version
       opacity: { front: 1, back: 1 }
@@ -148,8 +148,8 @@ export default {
     drawn: {
       // No fill for lines
       strokeColor: {
-        front: "#4287f5", // { r: 66, g: 135, b: 245 },
-        back: "#a0c3fa" // The fill color on the back defaults to a contrast value of 0.5
+        front: "hsla(217, 90%, 61%, 1)", // { r: 66, g: 135, b: 245 },
+        back: "hsla(217, 90%, 80%, 1)" // The fill color on the back defaults to a contrast value of 0.5
       },
       // The thickness of the line when drawn
       strokeWidth: {
@@ -180,8 +180,8 @@ export default {
     temp: {
       // No fill for lines
       strokeColor: {
-        front: "#6A6A6A",
-        back: "#B4B4B4" // the back fill color is calculated using the contrast of 0.5
+        front: "hsla(0, 0%, 42%, 1)",
+        back: "hsla(0, 0%, 71%, 1)" // the back fill color is calculated using the contrast of 0.5
       },
       // The width is the same as the default drawn version
       opacity: { front: 1, back: 1 }
@@ -201,8 +201,8 @@ export default {
         back: "hsla(217, 100%, 80%, 0)" //"noFill"
       },
       strokeColor: {
-        front: "#4287f5", // { r: 66, g: 135, b: 245 },
-        back: "#a0c3fa" // The fill color on the back defaults to a contrast value of 0.5
+        front: "hsla(217, 90%, 61%, 1)", // { r: 66, g: 135, b: 245 },
+        back: "hsla(217, 90%, 80%, 1)" // The fill color on the back defaults to a contrast value of 0.5
       },
       strokeWidth: {
         // The thickness of the circle when drawn front/back
