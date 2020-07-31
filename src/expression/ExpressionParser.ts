@@ -2,7 +2,7 @@
 enum TokenType {
   PLUS,
   MINUS,
-  UNARY_MINUS,
+  // UNARY_MINUS,
   MULT,
   DIV,
   POW,
@@ -34,16 +34,41 @@ type SyntaxTree = {
 };
 
 class Lexer {
+  readonly BUILT_IN_MATCH_FNs = [
+    "abs",
+    "acos",
+    "asin",
+    "atan",
+    "atan2",
+    "ceil",
+    "cos",
+    "exp",
+    "floor",
+    "ln",
+    "max",
+    "min",
+    "sgn",
+    "sin",
+    "sqrt",
+    "tan"
+  ];
+
   private input: string;
   private iterator: IterableIterator<string>;
   private nextChar: IteratorResult<string>;
   constructor(input: string) {
     this.input = input;
+
+    // JS strings are an iterable object
+    // The iterator provides two important properties:
+    // .done which is set to true when we reach the end of iteration
+    //    (.dose is opposite of hasNext() of Java iterators)
+    // .next() which returns the next character in the string
+
     this.iterator = input[Symbol.iterator]();
     this.nextChar = this.iterator.next();
   }
 
-  /* next() of an iterator returns an object {done: boolean; value: string} */
   skipWhiteSpaces(): void {
     while (!this.nextChar.done && this.nextChar.value === " ") {
       this.nextChar = this.iterator.next();
@@ -55,25 +80,6 @@ class Lexer {
    * on yield and resumes when the caller invokes its next()
    */
   *tokenize(): IterableIterator<Lexicon> {
-    const builtinMathFunctions = [
-      "abs",
-      "acos",
-      "asin",
-      "atan",
-      "atan2",
-      "ceil",
-      "cos",
-      "exp",
-      "floor",
-      "ln",
-      "max",
-      "min",
-      "sgn",
-      "sin",
-      "sqrt",
-      "tan"
-    ];
-
     while (!this.nextChar.done) {
       this.skipWhiteSpaces();
       if (this.nextChar.done) break;
@@ -94,7 +100,7 @@ class Lexer {
             name: `Invalid numeric value ${tok}`
           };
       } else if (this.nextChar.value.match(/[a-zA-Z]/)) {
-        // Identifier
+        // Measurement Identifier or math builtin functions
         let tok = "";
         do {
           tok += this.nextChar.value;
@@ -110,7 +116,7 @@ class Lexer {
         else if (tok.toUpperCase() === "E")
           yield { kind: TokenType.NUMBER, numericValue: Math.E };
         else if (
-          builtinMathFunctions.findIndex(fn => fn === tok.toLowerCase()) >= 0
+          this.BUILT_IN_MATCH_FNs.findIndex(fn => fn === tok.toLowerCase()) >= 0
         ) {
           // One of the builtin Math functions
           yield { kind: TokenType.MATH_BUILTIN, name: tok };
@@ -118,25 +124,29 @@ class Lexer {
           yield { kind: TokenType.MEASUREMENT, name: tok };
         }
       } else if (this.nextChar.value === "+") {
-        // Binary plus
+        // Binary plus (we don't support unary plus)
         this.nextChar = this.iterator.next();
         yield { kind: TokenType.PLUS };
       } else if (this.nextChar.value === "-") {
         // Either a binary minus or a unary minus
         this.nextChar = this.iterator.next();
 
+        // If we hit the end of input stream the token was
+        // intended as a binary minus
+        // if (this.nextChar.done) yield { kind: TokenType.MINUS };
         // Is the next character the beginning of a number or identifier?
-        if (this.nextChar.done) yield { kind: TokenType.MINUS };
-        else if (this.nextChar.value.match(/[0-9a-zA-Z.]/))
-          yield { kind: TokenType.UNARY_MINUS };
-        else yield { kind: TokenType.MINUS };
+        // else if (this.nextChar.value.match(/[0-9a-zA-Z.]/))
+        // yield { kind: TokenType.UNARY_MINUS };
+        yield { kind: TokenType.MINUS }; // binary minus
       } else if (this.nextChar.value === "*") {
         // Multiplication or exponentiation
         this.nextChar = this.iterator.next();
+        // if we hit the end of input stream the token was
+        // intended as a binary multiplication
         if (this.nextChar.done) yield { kind: TokenType.MULT };
         else if (this.nextChar.value === "*") {
           this.nextChar = this.iterator.next();
-          yield { kind: TokenType.POW };
+          yield { kind: TokenType.POW }; // Exponentiation
         } else yield { kind: TokenType.MULT };
       } else if (this.nextChar.value === "/") {
         // Division
@@ -169,8 +179,11 @@ class Lexer {
 }
 
 export class ExpressionParser {
+  readonly EMPTY_MAP = new Map();
   /**
-   * Parse the arithmetic expression using a recursive descent parser
+   * Parse the arithmetic expression using a recursive descent parser.
+   * Refer to the railroad diagrams and the expr.ebnf
+   *
    * @param input a string of arithmetic expression
    */
   static parse(input: string): SyntaxTree {
@@ -178,7 +191,8 @@ export class ExpressionParser {
     const tokenizer = lexer.tokenize();
     let token = tokenizer.next();
 
-    function factor(): SyntaxTree {
+    function atom(): SyntaxTree {
+      // factpr() is 3-level deep from EXPR (highest precedence)
       if (token.value.kind === TokenType.LEFT_PAREN) {
         // Parenthesized expressions
         token = tokenizer.next();
@@ -187,6 +201,18 @@ export class ExpressionParser {
           token = tokenizer.next();
           return eTree;
         } else throw new SyntaxError("expected ')'");
+      }
+      if (token.value.kind === TokenType.MINUS) {
+        // Unary minus
+        token = tokenizer.next();
+        const atomTree = atom();
+
+        // Convert Unary operator (-EXPR) to binary operator (0 - EXPR)
+        return {
+          node: { kind: TokenType.MINUS },
+          leftChild: { node: { kind: TokenType.NUMBER, numericValue: 0 } },
+          rightChild: atomTree
+        };
       } else if (token.value.kind === TokenType.MEASUREMENT) {
         // TODO: look up the actual value of measurement
         console.debug("Var/Measurement", token.value.text);
@@ -197,25 +223,6 @@ export class ExpressionParser {
         const out = token.value;
         token = tokenizer.next();
         return { node: out };
-      } else if (token.value.kind === TokenType.UNARY_MINUS) {
-        token = tokenizer.next();
-        if (token.value.kind === TokenType.NUMBER) {
-          const out = token.value;
-          out.numericValue *= -1;
-          token = tokenizer.next();
-          return { node: out };
-        } else if (token.value.kind === TokenType.MEASUREMENT) {
-          // Convert unary minus -Mx to binary minus (0 - Mx)
-          const varName = token.value.name;
-          token = tokenizer.next();
-          return {
-            node: { kind: TokenType.MINUS },
-            leftChild: { node: { kind: TokenType.NUMBER, numericValue: 0 } },
-            rightChild: {
-              node: { kind: TokenType.MEASUREMENT, name: varName }
-            }
-          };
-        } else throw new SyntaxError("expected NUMBER after a '-'");
       } else if (token.value.kind === TokenType.MATH_BUILTIN) {
         const out = token.value;
         token = tokenizer.next();
@@ -237,140 +244,153 @@ export class ExpressionParser {
       } else throw new SyntaxError("expected IDENT, NUMBER, '+', '-', or '('");
     }
 
-    function power(): SyntaxTree {
-      let factorTree = factor();
+    // Parses: base ^ power1 ^ power2 ^ ...
+    function factor(): SyntaxTree {
+      // factor() is 2-level deep from EXPR (medium precedence)
+
+      let atomTree = atom();
       while (token.value.kind == TokenType.POW) {
         const oper = token.value;
         token = tokenizer.next();
-        const f = factor();
-        const parent = { node: oper, leftChild: factorTree, rightChild: f };
-        factorTree = parent; // The new node becomes a new parent
+        const sibling = atom();
+
+        // Combine the LHS subtree with the RHS subtree
+        const parent = {
+          node: oper,
+          leftChild: atomTree,
+          rightChild: sibling
+        };
+        atomTree = parent; // The new node becomes a new parent
       }
-      return factorTree;
+      return atomTree;
     }
 
+    // Parses: P (*|/) P (*|/) P ...
     function term(): SyntaxTree {
-      let powTree = power();
+      // term() is 1-level deep from EXPR (lowest precedence)
+      let outTree = factor();
       while (
         token.value.kind == TokenType.MULT ||
         token.value.kind === TokenType.DIV
       ) {
         const oper = token.value;
         token = tokenizer.next();
-        const p = power();
-        const parent = { node: oper, leftChild: powTree, rightChild: p };
-        powTree = parent; // The new node becomes a new parent
+        const sibling = factor();
+
+        // Combine the LHS subtree with the RHS subtree
+        const parent = { node: oper, leftChild: outTree, rightChild: sibling };
+        outTree = parent; // The new node becomes a new parent
       }
-      return powTree;
+      return outTree;
     }
 
+    // Parses: term (*|/) term (*|/) term ...
     function expr(): SyntaxTree {
-      let termTree = term();
+      let outTree = term();
       while (
         token.value.kind == TokenType.PLUS ||
         token.value.kind === TokenType.MINUS
       ) {
         const oper = token.value;
         token = tokenizer.next();
-        const t = term();
-        const parent = { node: oper, leftChild: termTree, rightChild: t };
-        termTree = parent; // The new node becomes a new parent
+        const sibling = term();
+
+        // Combine the LHS subtree with the RHS subtree
+        const parent = { node: oper, leftChild: outTree, rightChild: sibling };
+        outTree = parent; // The new node becomes a new parent
       }
-      return termTree;
+      return outTree;
     }
 
     const out = expr();
+
+    // Be sure there is no leftover character after a valid expression
     if (token.value.kind === TokenType.EOF) return out;
     else throw new SyntaxError("Unexpected token");
   }
 
-  static evaluate(t: SyntaxTree, varMap: Map<string, number>): number {
-    const valueOf = ExpressionParser.evaluate;
-    let numValue;
-    switch (t.node.kind) {
-      case TokenType.NUMBER:
-        return t.node.numericValue!;
-      case TokenType.MEASUREMENT:
-        console.debug("Look up ", t.node.name);
-        console.debug("Variable map", varMap);
-        if (varMap.has(t.node.name!)) return varMap.get(t.node.name!)!;
-        else throw new Error(`Undefined variable ${t.node.name}`);
-      case TokenType.PLUS:
-        return valueOf(t.leftChild!, varMap) + valueOf(t.rightChild!, varMap);
-      case TokenType.MINUS:
-        return valueOf(t.leftChild!, varMap) - valueOf(t.rightChild!, varMap);
-      case TokenType.MULT:
-        return valueOf(t.leftChild!, varMap) * valueOf(t.rightChild!, varMap);
-      case TokenType.DIV:
-        numValue = valueOf(t.rightChild!, varMap);
-        if (Math.abs(numValue) > 1e-4)
-          return valueOf(t.leftChild!, varMap) / valueOf(t.rightChild!, varMap);
-        else throw new RangeError("Attempt to divide by zero");
-      case TokenType.POW:
-        return Math.pow(
-          valueOf(t.leftChild!, varMap),
-          valueOf(t.rightChild!, varMap)
-        );
-      case TokenType.MATH_BUILTIN:
-        switch (t.node.name) {
-          // Multi-arg functions
-          // Apply "evaluate()" to each element
-          case "max":
-            return Math.max(...t.args!.map(a => valueOf(a, varMap)));
-          case "min":
-            return Math.min(...t.args!.map(a => valueOf(a, varMap)));
+  /** Recursive evaluation of the syntax tree
+   * The post order traversal of the syntax tree makes the leaves
+   * the highest precedence expressions
+   */
+  static evaluate(tree: SyntaxTree, varMap: Map<string, number>): number {
+    function valueOf(t: SyntaxTree): number {
+      let numValue;
+      switch (t.node.kind) {
+        case TokenType.NUMBER:
+          return t.node.numericValue!;
+        case TokenType.MEASUREMENT:
+          if (varMap.has(t.node.name!)) return varMap.get(t.node.name!)!;
+          else throw new Error(`Undefined variable ${t.node.name}`);
+        case TokenType.PLUS:
+          return valueOf(t.leftChild!) + valueOf(t.rightChild!);
+        case TokenType.MINUS:
+          return valueOf(t.leftChild!) - valueOf(t.rightChild!);
+        case TokenType.MULT:
+          return valueOf(t.leftChild!) * valueOf(t.rightChild!);
+        case TokenType.DIV:
+          numValue = valueOf(t.rightChild!);
+          if (Math.abs(numValue) > 1e-4)
+            return valueOf(t.leftChild!) / valueOf(t.rightChild!);
+          else throw new RangeError("Attempt to divide by zero");
+        case TokenType.POW:
+          return Math.pow(valueOf(t.leftChild!), valueOf(t.rightChild!));
+        case TokenType.MATH_BUILTIN:
+          switch (t.node.name) {
+            // Multi-arg functions
+            // Apply "evaluate()" to each element
+            case "max":
+              return Math.max(...t.args!.map(a => valueOf(a)));
+            case "min":
+              return Math.min(...t.args!.map(a => valueOf(a)));
 
-          // Binary functions
-          case "atan2":
-            return Math.atan2(
-              valueOf(t.args![0], varMap),
-              valueOf(t.args![1], varMap)
-            );
+            // Binary functions
+            case "atan2":
+              return Math.atan2(valueOf(t.args![0]), valueOf(t.args![1]));
 
-          // Unary functions
-          case "abs":
-            return Math.abs(valueOf(t.args![0], varMap));
-          case "acos":
-            return Math.acosh(valueOf(t.args![0], varMap));
-          case "asin":
-            return Math.asin(valueOf(t.args![0], varMap));
-          case "atan":
-            return Math.atan(valueOf(t.args![0], varMap));
+            // Unary functions
+            case "abs":
+              return Math.abs(valueOf(t.args![0]));
+            case "acos":
+              return Math.acosh(valueOf(t.args![0]));
+            case "asin":
+              return Math.asin(valueOf(t.args![0]));
+            case "atan":
+              return Math.atan(valueOf(t.args![0]));
 
-          case "ceil":
-            return Math.ceil(valueOf(t.args![0], varMap));
-          case "cos":
-            return Math.cos(valueOf(t.args![0], varMap));
-          case "exp":
-            return Math.exp(valueOf(t.args![0], varMap));
-          case "floor":
-            return Math.floor(valueOf(t.args![0], varMap));
-          case "ln":
-            return Math.log(valueOf(t.args![0], varMap));
-          case "sgn":
-            return Math.sign(valueOf(t.args![0], varMap));
-          case "sin":
-            return Math.sin(valueOf(t.args![0], varMap));
-          case "sqrt":
-            return Math.sqrt(valueOf(t.args![0], varMap));
-          case "tan":
-            return Math.tan(valueOf(t.args![0], varMap));
-          default:
-            throw new SyntaxError(`Unknown math builtin ${t.node.name}`);
-        }
+            case "ceil":
+              return Math.ceil(valueOf(t.args![0]));
+            case "cos":
+              return Math.cos(valueOf(t.args![0]));
+            case "exp":
+              return Math.exp(valueOf(t.args![0]));
+            case "floor":
+              return Math.floor(valueOf(t.args![0]));
+            case "ln":
+              return Math.log(valueOf(t.args![0]));
+            case "sgn":
+              return Math.sign(valueOf(t.args![0]));
+            case "sin":
+              return Math.sin(valueOf(t.args![0]));
+            case "sqrt":
+              return Math.sqrt(valueOf(t.args![0]));
+            case "tan":
+              return Math.tan(valueOf(t.args![0]));
+            default:
+              throw new SyntaxError(`Unknown math builtin ${t.node.name}`);
+          }
 
-      default:
-        return 0;
+        default:
+          return 0;
+      }
     }
+
+    return valueOf(tree);
   }
-  evaluateWithVars(input: string, varMap: Map<string, number>): number {
-    return ExpressionParser.evaluate(ExpressionParser.parse(input), varMap);
-  }
-  readonly EMPTY_MAP = new Map();
-  evaluate(input: string): number {
-    return ExpressionParser.evaluate(
-      ExpressionParser.parse(input),
-      this.EMPTY_MAP
-    );
-  }
+
+  evaluateWithVars = (input: string, varMap: Map<string, number>): number =>
+    ExpressionParser.evaluate(ExpressionParser.parse(input), varMap);
+
+  evaluate = (input: string): number =>
+    ExpressionParser.evaluate(ExpressionParser.parse(input), this.EMPTY_MAP);
 }

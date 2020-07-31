@@ -170,11 +170,13 @@ describe("SEExpression", () => {
       );
     });
 
-    xit("computes atan2()", () => {
-      fail("Missing test case");
+    it("computes atan2()", () => {
+      expect(parser.evaluate("atan2(1,1)")).toBeCloseTo(Math.PI / 4, 3);
     });
-    xit("computes abs()", () => {
-      fail("Missing test case");
+    it("computes abs()", () => {
+      expect(parser.evaluate("abs(3+7)")).toBeCloseTo(10, 3);
+      expect(parser.evaluate("abs(-3-7)")).toBeCloseTo(10, 3);
+      expect(parser.evaluate("abs(-(3+7))")).toBeCloseTo(10, 3);
     });
     xit("computes acos()", () => {
       fail("Missing test case");

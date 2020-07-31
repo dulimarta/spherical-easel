@@ -1,0 +1,13 @@
+/* Upload the following EBNF to https://www.bottlecaps.de/rr/ui 
+ * to generate the railroad diagram of the syntax */
+
+Expr ::= Term | Expr '+' Term | Expr '-' Term
+Term ::= Factor | Term '*' Factor | Term '/' Factor
+Factor ::= Atom | Atom '^' Factor
+Atom ::= '(' Expr ')' | '-' Atom | SignedNumber | Ident | Function
+Function ::= Ident '(' Args ')'
+Number ::=  (Integer | FloatingPoint)
+Integer ::= Digits
+FloatingPoint ::= Digits '.' Digits | '.' Digits | Digits '.'
+Digits ::= [0-9]+
+Args ::= Expr | Args ',' Expr

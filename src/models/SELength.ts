@@ -4,8 +4,6 @@ import { Styles } from "@/types/Styles";
 import { SEMeasurement } from "./SEMeasurement";
 import { SESegment } from "./SESegment";
 
-const emptySet = new Set<Styles>();
-
 export class SELength extends SEMeasurement {
   readonly seSegment: SESegment;
 
@@ -21,16 +19,4 @@ export class SELength extends SEMeasurement {
   public get value(): number {
     return this.seSegment.arcLength;
   }
-
-  public customStyles = (): Set<Styles> => emptySet;
-
-  public update(state: UpdateStateType): void {
-    // Node code yet
-  }
-
-  /**
-   * Is the object hit a point at a particular sphere location?
-   * @param sphereVector a location on the ideal unit sphere
-   */
-  public isHitAt = (unitIdealVector: Vector3): boolean => false;
 }
