@@ -57,7 +57,8 @@ import { State } from "vuex-class";
 import SENoduleTree from "@/components/SENoduleTree.vue";
 import { SENodule } from "@/models/SENodule";
 import { ExpressionParser } from "@/expression/ExpressionParser";
-import { SEMeasurement } from "../models/SEMeasurement";
+import { SEMeasurement } from "@/models/SEMeasurement";
+import { SELength } from '@/models/SELength';
 
 @Component({ components: { SENoduleTree } })
 export default class ObjectTree extends Vue {
@@ -89,17 +90,25 @@ export default class ObjectTree extends Vue {
   private calcResult = 0;
   private parsingError = "";
   private timerInstance: NodeJS.Timeout | null = null;
-
+  readonly varMap = new Map<string, number>();
   get zeroObjects(): boolean {
     return this.nodules.filter(n => n.exists).length === 0;
   }
 
   calculateExpression(): void {
+    this.varMap.clear();
+    console.debug("Calc me!")
+    this.measurements.forEach((m: SEMeasurement) => {
+      console.debug("Measurement", m)
+      const measurementName = m.name.replace("-", "");
+      this.varMap.set(measurementName, m.value);
+    });
+    console.debug("Variable map", this.varMap)
     try {
       // no code
       this.calcResult =
         this.calcExpression.length > 0
-          ? this.parser.evaluate(this.calcExpression)
+          ? this.parser.evaluateWithVars(this.calcExpression, this.varMap)
           : 0;
     } catch (err) {
       // no code
@@ -110,13 +119,22 @@ export default class ObjectTree extends Vue {
 
   onKeyPressed(): void {
     console.debug("Key press");
+    this.parsingError = ""
     if (this.timerInstance) clearTimeout(this.timerInstance);
     this.timerInstance = setTimeout(() => {
       try {
+        this.varMap.clear();
+        console.debug("Calc me!")
+        this.measurements.forEach((m: SEMeasurement) => {
+          console.debug("Measurement", m)
+          const measurementName = m.name.replace("-", "");
+          this.varMap.set(measurementName, m.value);
+        });
+        console.debug("Variable map", this.varMap)
         // no code
         this.calcResult =
           this.calcExpression.length > 0
-            ? this.parser.evaluate(this.calcExpression)
+            ? this.parser.evaluateWithVars(this.calcExpression, this.varMap)
             : 0;
       } catch (err) {
         // no code

@@ -7,11 +7,18 @@ import { SESegment } from "./SESegment";
 const emptySet = new Set<Styles>();
 
 export class SELength extends SEMeasurement {
+  readonly seSegment: SESegment;
+
   constructor(parent: SESegment) {
     super();
+    this.seSegment = parent;
 
     // This length object is a child of the segment
     parent.registerChild(this);
+  }
+
+  public get value(): number {
+    return this.seSegment.arcLength;
   }
 
   public customStyles = (): Set<Styles> => emptySet;

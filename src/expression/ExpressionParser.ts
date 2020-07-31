@@ -291,7 +291,8 @@ export class ExpressionParser {
       case TokenType.NUMBER:
         return t.node.numericValue!;
       case TokenType.MEASUREMENT:
-        console.log("Look up ", t.node.name);
+        console.debug("Look up ", t.node.name);
+        console.debug("Variable map", varMap);
         if (varMap.has(t.node.name!)) return varMap.get(t.node.name!)!;
         else throw new Error(`Undefined variable ${t.node.name}`);
       case TokenType.PLUS:
