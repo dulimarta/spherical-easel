@@ -98,12 +98,12 @@ export default class ObjectTree extends Vue {
   calculateExpression(): void {
     this.varMap.clear();
     console.debug("Calc me!")
-    this.measurements.forEach((m: SEMeasurement) => {
-      console.debug("Measurement", m)
-      const measurementName = m.name.replace("-", "");
-      this.varMap.set(measurementName, m.value);
-    });
-    console.debug("Variable map", this.varMap)
+    // this.measurements.forEach((m: SEMeasurement) => {
+    //   console.debug("Measurement", m)
+    //   const measurementName = m.name.replace("-", "");
+    //   this.varMap.set(measurementName, m.value);
+    // });
+    // console.debug("Variable map", this.varMap)
     try {
       // no code
       this.calcResult =
@@ -126,9 +126,9 @@ export default class ObjectTree extends Vue {
         this.varMap.clear();
         console.debug("Calc me!")
         this.measurements.forEach((m: SEMeasurement) => {
-          console.debug("Measurement", m)
-          const measurementName = m.name.replace("-", "");
-          this.varMap.set(measurementName, m.value);
+          const measurementName = m.name;
+          console.debug("Measurement", m, measurementName)
+          this.varMap.set(measurementName.replace(/-.+/, ""), m.value);
         });
         console.debug("Variable map", this.varMap)
         // no code

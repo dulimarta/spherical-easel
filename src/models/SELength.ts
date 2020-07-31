@@ -11,6 +11,7 @@ export class SELength extends SEMeasurement {
 
   constructor(parent: SESegment) {
     super();
+    this.name = this.name + `-Length(${parent.name})`;
     this.seSegment = parent;
 
     // This length object is a child of the segment

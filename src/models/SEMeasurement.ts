@@ -6,6 +6,6 @@ export abstract class SEMeasurement extends SEExpression {
   constructor() {
     super();
     MEASUREMENT_COUNT++;
-    this.name = `M-${MEASUREMENT_COUNT}`;
+    this.name = `M${MEASUREMENT_COUNT}`;
   }
 }

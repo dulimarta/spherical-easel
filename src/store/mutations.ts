@@ -57,6 +57,7 @@ export default {
     state.circles.clear();
     state.selections.clear();
     state.intersections.clear();
+    state.measurements.clear();
   },
   setLayers(state: AppState, layers: Two.Group[]): void {
     state.layers = layers;
