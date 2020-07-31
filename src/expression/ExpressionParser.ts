@@ -7,7 +7,7 @@ enum TokenType {
   DIV,
   POW,
   NUMBER,
-  IDENTIFIER,
+  MEASUREMENT,
   LEFT_PAREN,
   RIGHT_PAREN,
   MATH_BUILTIN,
@@ -43,8 +43,9 @@ class Lexer {
     this.nextChar = this.iterator.next();
   }
 
+  /* next() of an iterator returns an object {done: boolean; value: string} */
   skipWhiteSpaces(): void {
-    while (!this.nextChar.done && this.nextChar.value.match(/ /)) {
+    while (!this.nextChar.done && this.nextChar.value === " ") {
       this.nextChar = this.iterator.next();
     }
   }
@@ -98,7 +99,10 @@ class Lexer {
         do {
           tok += this.nextChar.value;
           this.nextChar = this.iterator.next();
-        } while (!this.nextChar.done && this.nextChar.value.match(/[a-zA-Z]/));
+        } while (
+          !this.nextChar.done &&
+          this.nextChar.value.match(/[a-zA-Z0-9]/)
+        );
 
         // Check for special constants (pi, e)
         if (tok.toUpperCase() === "PI")
@@ -106,13 +110,12 @@ class Lexer {
         else if (tok.toUpperCase() === "E")
           yield { kind: TokenType.NUMBER, numericValue: Math.E };
         else if (
-          builtinMathFunctions.findIndex(fn => fn === tok.toLowerCase())
+          builtinMathFunctions.findIndex(fn => fn === tok.toLowerCase()) >= 0
         ) {
           // One of the builtin Math functions
           yield { kind: TokenType.MATH_BUILTIN, name: tok };
         } else {
-          // TODO: lookup for measurement object?
-          yield { kind: TokenType.IDENTIFIER, name: tok };
+          yield { kind: TokenType.MEASUREMENT, name: tok };
         }
       } else if (this.nextChar.value === "+") {
         // Binary plus
@@ -164,12 +167,6 @@ class Lexer {
     yield { kind: TokenType.EOF };
   }
 }
-// type Result<T, E> =
-//   | {
-//       error: E;
-//     }
-//   | { value: T };
-//   const Ok(value:T):Result<T,E> => new
 
 export class ExpressionParser {
   /**
@@ -190,7 +187,7 @@ export class ExpressionParser {
           token = tokenizer.next();
           return eTree;
         } else throw new SyntaxError("expected ')'");
-      } else if (token.value.kind === TokenType.IDENTIFIER) {
+      } else if (token.value.kind === TokenType.MEASUREMENT) {
         // TODO: look up the actual value of measurement
         console.debug("Var/Measurement", token.value.text);
         const out = token.value;
@@ -207,9 +204,17 @@ export class ExpressionParser {
           out.numericValue *= -1;
           token = tokenizer.next();
           return { node: out };
-        } else if (token.value.kind === TokenType.IDENTIFIER) {
-          // TODO: lookup measurement
-          throw new SyntaxError("Incomplete implementation");
+        } else if (token.value.kind === TokenType.MEASUREMENT) {
+          // Convert unary minus -Mx to binary minus (0 - Mx)
+          const varName = token.value.name;
+          token = tokenizer.next();
+          return {
+            node: { kind: TokenType.MINUS },
+            leftChild: { node: { kind: TokenType.NUMBER, numericValue: 0 } },
+            rightChild: {
+              node: { kind: TokenType.MEASUREMENT, name: varName }
+            }
+          };
         } else throw new SyntaxError("expected NUMBER after a '-'");
       } else if (token.value.kind === TokenType.MATH_BUILTIN) {
         const out = token.value;
@@ -279,66 +284,76 @@ export class ExpressionParser {
     else throw new SyntaxError("Unexpected token");
   }
 
-  static evaluate(t: SyntaxTree): number {
+  static evaluate(t: SyntaxTree, varMap: Map<string, number>): number {
     const valueOf = ExpressionParser.evaluate;
-    let denom;
+    let numValue;
     switch (t.node.kind) {
       case TokenType.NUMBER:
         return t.node.numericValue!;
+      case TokenType.MEASUREMENT:
+        console.log("Look up ", t.node.name);
+        if (varMap.has(t.node.name!)) return varMap.get(t.node.name!)!;
+        else throw new Error(`Undefined variable ${t.node.name}`);
       case TokenType.PLUS:
-        return valueOf(t.leftChild!) + valueOf(t.rightChild!);
+        return valueOf(t.leftChild!, varMap) + valueOf(t.rightChild!, varMap);
       case TokenType.MINUS:
-        return valueOf(t.leftChild!) - valueOf(t.rightChild!);
+        return valueOf(t.leftChild!, varMap) - valueOf(t.rightChild!, varMap);
       case TokenType.MULT:
-        return valueOf(t.leftChild!) * valueOf(t.rightChild!);
+        return valueOf(t.leftChild!, varMap) * valueOf(t.rightChild!, varMap);
       case TokenType.DIV:
-        denom = valueOf(t.rightChild!);
-        if (Math.abs(denom) > 1e-4)
-          return valueOf(t.leftChild!) / valueOf(t.rightChild!);
+        numValue = valueOf(t.rightChild!, varMap);
+        if (Math.abs(numValue) > 1e-4)
+          return valueOf(t.leftChild!, varMap) / valueOf(t.rightChild!, varMap);
         else throw new RangeError("Attempt to divide by zero");
       case TokenType.POW:
-        return Math.pow(valueOf(t.leftChild!), valueOf(t.rightChild!));
+        return Math.pow(
+          valueOf(t.leftChild!, varMap),
+          valueOf(t.rightChild!, varMap)
+        );
       case TokenType.MATH_BUILTIN:
         switch (t.node.name) {
           // Multi-arg functions
           // Apply "evaluate()" to each element
           case "max":
-            return Math.max(...t.args!.map(valueOf));
+            return Math.max(...t.args!.map(a => valueOf(a, varMap)));
           case "min":
-            return Math.min(...t.args!.map(valueOf));
+            return Math.min(...t.args!.map(a => valueOf(a, varMap)));
 
           // Binary functions
           case "atan2":
-            return Math.atan2(valueOf(t.args![0]), valueOf(t.args![1]));
+            return Math.atan2(
+              valueOf(t.args![0], varMap),
+              valueOf(t.args![1], varMap)
+            );
 
           // Unary functions
           case "abs":
-            return Math.abs(valueOf(t.args![0]));
+            return Math.abs(valueOf(t.args![0], varMap));
           case "acos":
-            return Math.acosh(valueOf(t.args![0]));
+            return Math.acosh(valueOf(t.args![0], varMap));
           case "asin":
-            return Math.asin(valueOf(t.args![0]));
+            return Math.asin(valueOf(t.args![0], varMap));
           case "atan":
-            return Math.atan(valueOf(t.args![0]));
+            return Math.atan(valueOf(t.args![0], varMap));
 
           case "ceil":
-            return Math.ceil(valueOf(t.args![0]));
+            return Math.ceil(valueOf(t.args![0], varMap));
           case "cos":
-            return Math.cos(valueOf(t.args![0]));
+            return Math.cos(valueOf(t.args![0], varMap));
           case "exp":
-            return Math.exp(valueOf(t.args![0]));
+            return Math.exp(valueOf(t.args![0], varMap));
           case "floor":
-            return Math.floor(valueOf(t.args![0]));
+            return Math.floor(valueOf(t.args![0], varMap));
           case "ln":
-            return Math.log(valueOf(t.args![0]));
+            return Math.log(valueOf(t.args![0], varMap));
           case "sgn":
-            return Math.sign(valueOf(t.args![0]));
+            return Math.sign(valueOf(t.args![0], varMap));
           case "sin":
-            return Math.sin(valueOf(t.args![0]));
+            return Math.sin(valueOf(t.args![0], varMap));
           case "sqrt":
-            return Math.sqrt(valueOf(t.args![0]));
+            return Math.sqrt(valueOf(t.args![0], varMap));
           case "tan":
-            return Math.tan(valueOf(t.args![0]));
+            return Math.tan(valueOf(t.args![0], varMap));
           default:
             throw new SyntaxError(`Unknown math builtin ${t.node.name}`);
         }
@@ -347,7 +362,14 @@ export class ExpressionParser {
         return 0;
     }
   }
+  evaluateWithVars(input: string, varMap: Map<string, number>): number {
+    return ExpressionParser.evaluate(ExpressionParser.parse(input), varMap);
+  }
+  readonly EMPTY_MAP = new Map();
   evaluate(input: string): number {
-    return ExpressionParser.evaluate(ExpressionParser.parse(input));
+    return ExpressionParser.evaluate(
+      ExpressionParser.parse(input),
+      this.EMPTY_MAP
+    );
   }
 }

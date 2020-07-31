@@ -170,34 +170,34 @@ describe("SEExpression", () => {
       );
     });
 
-    it("computes atan2()", () => {
+    xit("computes atan2()", () => {
       fail("Missing test case");
     });
-    it("computes abs()", () => {
+    xit("computes abs()", () => {
       fail("Missing test case");
     });
-    it("computes acos()", () => {
+    xit("computes acos()", () => {
       fail("Missing test case");
     });
-    it("computes asin()", () => {
+    xit("computes asin()", () => {
       fail("Missing test case");
     });
-    it("computes ceil()", () => {
+    xit("computes ceil()", () => {
       fail("Missing test case");
     });
-    it("computes exp()", () => {
+    xit("computes exp()", () => {
       fail("Missing test case");
     });
-    it("computes floor()", () => {
+    xit("computes floor()", () => {
       fail("Missing test case");
     });
-    it("computes ln()", () => {
+    xit("computes ln()", () => {
       fail("Missing test case");
     });
-    it("computes sgn()", () => {
+    xit("computes sgn()", () => {
       fail("Missing test case");
     });
-    it("computes sqrt()", () => {
+    xit("computes sqrt()", () => {
       fail("Missing test case");
     });
   });
@@ -253,6 +253,28 @@ describe("SEExpression", () => {
     it("detects missing right parenthesis after builtin func args", () => {
       expect(() => {
         parser.evaluate("20 * cos(pi/4");
+      }).toThrowError();
+    });
+  });
+
+  describe("With variables", () => {
+    const varMap = new Map<string, number>();
+    varMap.set("M1", 30);
+    varMap.set("M2", -23.5);
+    varMap.set("M3", Math.PI / 4);
+
+    it("looks a var name", () => {
+      expect(parser.evaluateWithVars("M1", varMap)).toBeCloseTo(30, 1);
+    });
+    it("looks a var name", () => {
+      expect(parser.evaluateWithVars("2*M1 - M2", varMap)).toBeCloseTo(83.5, 1);
+    });
+    it("looks a var name", () => {
+      expect(parser.evaluateWithVars("sin(2*M3)", varMap)).toBeCloseTo(1, 1);
+    });
+    it("looks a var name", () => {
+      expect(() => {
+        parser.evaluateWithVars("M22", varMap);
       }).toThrowError();
     });
   });
