@@ -314,68 +314,74 @@ export class ExpressionParser {
    * the highest precedence expressions
    */
   static evaluate(tree: SyntaxTree, varMap: Map<string, number>): number {
-    function valueOf(t: SyntaxTree): number {
-      let numValue;
-      switch (t.node.kind) {
+    function valueOf(t: SyntaxTree | null): number {
+      let numValue: number;
+      const measureName = t?.node.name ?? "n/a";
+      let args: SyntaxTree[];
+      switch (t?.node.kind) {
         case TokenType.NUMBER:
-          return t.node.numericValue!;
+          return t.node.numericValue ?? 0;
         case TokenType.MEASUREMENT:
-          if (varMap.has(t.node.name!)) return varMap.get(t.node.name!)!;
-          else throw new Error(`Undefined variable ${t.node.name}`);
+          if (varMap.has(measureName)) return varMap.get(measureName) ?? 0;
+          else throw new Error(`Undefined variable ${measureName}`);
         case TokenType.PLUS:
-          return valueOf(t.leftChild!) + valueOf(t.rightChild!);
+          return valueOf(t.leftChild ?? null) + valueOf(t.rightChild ?? null);
         case TokenType.MINUS:
-          return valueOf(t.leftChild!) - valueOf(t.rightChild!);
+          return valueOf(t.leftChild ?? null) - valueOf(t.rightChild ?? null);
         case TokenType.MULT:
-          return valueOf(t.leftChild!) * valueOf(t.rightChild!);
+          return valueOf(t.leftChild ?? null) * valueOf(t.rightChild ?? null);
         case TokenType.DIV:
-          numValue = valueOf(t.rightChild!);
+          numValue = valueOf(t.rightChild ?? null);
           if (Math.abs(numValue) > 1e-4)
-            return valueOf(t.leftChild!) / valueOf(t.rightChild!);
+            return valueOf(t.leftChild ?? null) / valueOf(t.rightChild ?? null);
           else throw new RangeError("Attempt to divide by zero");
         case TokenType.POW:
-          return Math.pow(valueOf(t.leftChild!), valueOf(t.rightChild!));
+          return Math.pow(
+            valueOf(t.leftChild ?? null),
+            valueOf(t.rightChild ?? null)
+          );
         case TokenType.MATH_BUILTIN:
+          args = t.args!;
           switch (t.node.name) {
             // Multi-arg functions
             // Apply "evaluate()" to each element
             case "max":
-              return Math.max(...t.args!.map(a => valueOf(a)));
+              return Math.max(...args.map(a => valueOf(a)));
             case "min":
-              return Math.min(...t.args!.map(a => valueOf(a)));
+              return Math.min(...args.map(a => valueOf(a)));
 
             // Binary functions
             case "atan2":
-              return Math.atan2(valueOf(t.args![0]), valueOf(t.args![1]));
+              return Math.atan2(valueOf(args[0]), valueOf(args[1]));
 
             // Unary functions
             case "abs":
-              return Math.abs(valueOf(t.args![0]));
+              return Math.abs(valueOf(args[0]));
             case "acos":
-              return Math.acosh(valueOf(t.args![0]));
+              return Math.acosh(valueOf(args[0]));
             case "asin":
-              return Math.asin(valueOf(t.args![0]));
+              return Math.asin(valueOf(args[0]));
             case "atan":
-              return Math.atan(valueOf(t.args![0]));
+              return Math.atan(valueOf(args[0]));
 
             case "ceil":
-              return Math.ceil(valueOf(t.args![0]));
+              return Math.ceil(valueOf(args[0]));
             case "cos":
-              return Math.cos(valueOf(t.args![0]));
+              return Math.cos(valueOf(args[0]));
             case "exp":
-              return Math.exp(valueOf(t.args![0]));
+              return Math.exp(valueOf(args[0]));
             case "floor":
-              return Math.floor(valueOf(t.args![0]));
+              return Math.floor(valueOf(args[0]));
             case "ln":
-              return Math.log(valueOf(t.args![0]));
+              return Math.log(valueOf(args[0]));
             case "sgn":
-              return Math.sign(valueOf(t.args![0]));
+              return Math.sign(valueOf(args[0]));
             case "sin":
-              return Math.sin(valueOf(t.args![0]));
+              return Math.sin(valueOf(args[0]));
             case "sqrt":
-              return Math.sqrt(valueOf(t.args![0]));
+              return Math.sqrt(valueOf(args[0]));
             case "tan":
-              return Math.tan(valueOf(t.args![0]));
+              return Math.tan(valueOf(args[0]));
             default:
               throw new SyntaxError(`Unknown math builtin ${t.node.name}`);
           }

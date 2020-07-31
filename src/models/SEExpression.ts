@@ -1,7 +1,7 @@
 import { SENodule } from "./SENodule";
 import { Styles } from "@/types/Styles";
 import { UpdateStateType } from "@/types";
-import { Vector3, NeverDepth } from "three";
+import { Vector3 } from "three";
 
 const emptySet = new Set<Styles>();
 export abstract class SEExpression extends SENodule {
@@ -10,7 +10,9 @@ export abstract class SEExpression extends SENodule {
 
   public customStyles = (): Set<Styles> => emptySet;
 
-  public update = (state: UpdateStateType): void => {};
+  public update = (state: UpdateStateType): void => {
+    // No code here
+  };
 
   /**
    * Is the object hit a point at a particular sphere location?

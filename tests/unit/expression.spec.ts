@@ -42,6 +42,24 @@ describe("SEExpression", () => {
     });
   });
 
+  describe("Unary minus", () => {
+    it("parses unary minus as the only operand", () => {
+      expect(parser.evaluate("-pi")).toBeCloseTo(-Math.PI, 5);
+      expect(parser.evaluate("-234")).toBeCloseTo(-234, 0);
+      expect(parser.evaluate("-cos(0)")).toBeCloseTo(-1, 0);
+    });
+
+    it("parses unary minus attached to the first operand", () => {
+      expect(parser.evaluate("-3 + 10")).toBeCloseTo(7, 0);
+      expect(parser.evaluate("-pi + pi")).toBeCloseTo(0, 0);
+    });
+    it("parses unary minus attached the subsequent operands", () => {
+      expect(parser.evaluate("10 + -3")).toBeCloseTo(7, 0);
+      expect(parser.evaluate("2 * -30")).toBeCloseTo(-60, 0);
+      expect(parser.evaluate("2 ^ -3")).toBeCloseTo(1 / 8, 5);
+      expect(parser.evaluate("2 * -(3+7)")).toBeCloseTo(-20, 2);
+    });
+  });
   describe("Binary operators", () => {
     it("adds two values", () => {
       expect(parser.evaluate("2.34 + 0.66")).toBeCloseTo(3, 2);
@@ -265,16 +283,16 @@ describe("SEExpression", () => {
     varMap.set("M2", -23.5);
     varMap.set("M3", Math.PI / 4);
 
-    it("looks a var name", () => {
+    it("looks for a single var name", () => {
       expect(parser.evaluateWithVars("M1", varMap)).toBeCloseTo(30, 1);
     });
-    it("looks a var name", () => {
+    it("looks for multiple var names", () => {
       expect(parser.evaluateWithVars("2*M1 - M2", varMap)).toBeCloseTo(83.5, 1);
     });
-    it("looks a var name", () => {
+    it("uses var in expression", () => {
       expect(parser.evaluateWithVars("sin(2*M3)", varMap)).toBeCloseTo(1, 1);
     });
-    it("looks a var name", () => {
+    it("looks for undefined var name", () => {
       expect(() => {
         parser.evaluateWithVars("M22", varMap);
       }).toThrowError();

@@ -1,6 +1,3 @@
-import { UpdateStateType } from "@/types";
-import { Vector3 } from "three";
-import { Styles } from "@/types/Styles";
 import { SEMeasurement } from "./SEMeasurement";
 import { SESegment } from "./SESegment";
 
