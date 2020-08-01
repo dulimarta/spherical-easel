@@ -343,7 +343,9 @@ export default class Line extends Nodule {
       }
     } else {
       // Set the back options
-      if (options.dynamicBackStyle) {
+      // options.dynamicBackStyle is true, so we need to explicitly check for undefined otherwise
+      // when it is false, this doesn't execute and this.dynamicBackStyle is not set
+      if (options.dynamicBackStyle != undefined) {
         this.dynamicBackStyle = options.dynamicBackStyle;
       }
       if (options.strokeWidthPercent) {
@@ -530,6 +532,10 @@ export default class Line extends Nodule {
           this.dashArrayFront.forEach(v => {
             this.frontHalf.dashes.push(v);
           });
+        } else {
+          // the array length is zero and no dash array should be set
+          this.frontHalf.dashes.clear();
+          this.frontHalf.dashes.push(0);
         }
 
         // Back
@@ -546,6 +552,10 @@ export default class Line extends Nodule {
           this.dashArrayBack.forEach(v => {
             this.backHalf.dashes.push(v);
           });
+        } else {
+          // the array length is zero and no dash array should be set
+          this.backHalf.dashes.clear();
+          this.backHalf.dashes.push(0);
         }
 
         // Glowing Front
@@ -559,6 +569,10 @@ export default class Line extends Nodule {
           this.dashArrayFront.forEach(v => {
             this.glowingFrontHalf.dashes.push(v);
           });
+        } else {
+          // the array length is zero and no dash array should be set
+          this.glowingFrontHalf.dashes.clear();
+          this.glowingFrontHalf.dashes.push(0);
         }
 
         // Glowing Back
@@ -572,6 +586,10 @@ export default class Line extends Nodule {
           this.dashArrayBack.forEach(v => {
             this.glowingBackHalf.dashes.push(v);
           });
+        } else {
+          // the array length is zero and no dash array should be set
+          this.glowingBackHalf.dashes.clear();
+          this.glowingBackHalf.dashes.push(0);
         }
         break;
       }

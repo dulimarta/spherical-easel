@@ -749,7 +749,6 @@ export default class Circle extends Nodule {
         this.opacityFront = options.opacity;
       }
       if (options.dashArray) {
-        // clear the dashArray
         this.dashArrayFront.clear();
         for (let i = 0; i < options.dashArray.length; i++) {
           this.dashArrayFront.push(options.dashArray[i]);
@@ -757,8 +756,12 @@ export default class Circle extends Nodule {
       }
     } else {
       // Set the back options
-      if (options.dynamicBackStyle) {
+      // options.dynamicBackStyle is true, so we need to explicitly check for undefined otherwise
+      // when it is false, this doesn't execute and this.dynamicBackStyle is not set
+      if (options.dynamicBackStyle != undefined) {
+        console.log("dynamic back style before", this.dynamicBackStyle);
         this.dynamicBackStyle = options.dynamicBackStyle;
+        console.log("dynamic back style after", this.dynamicBackStyle);
       }
       if (options.strokeWidthPercent) {
         this.strokeWidthPercentBack = options.strokeWidthPercent;
@@ -768,6 +771,7 @@ export default class Circle extends Nodule {
       }
       if (options.strokeColor) {
         this.strokeColorBack = options.strokeColor;
+        console.log("set the circle back stroke color", this.strokeColorBack);
       }
       if (options.opacity) {
         this.opacityBack = options.opacity;
@@ -803,6 +807,7 @@ export default class Circle extends Nodule {
         opacity: this.opacityFront
       };
     } else {
+      console.log("circle get current style state");
       const dashArrayBack = [] as number[];
       if (this.dashArrayBack.length > 0) {
         this.dashArrayBack.forEach(v => dashArrayBack.push(v));
@@ -975,6 +980,11 @@ export default class Circle extends Nodule {
           this.dashArrayFront.forEach(v => {
             this.frontPart.dashes.push(v);
           });
+          console.log("circle dashes front", this.frontPart.dashes);
+        } else {
+          // the array length is zero and no dash array should be set
+          this.frontPart.dashes.clear();
+          this.frontPart.dashes.push(0);
         }
         // BACK
         if (this.dynamicBackStyle) {
@@ -1006,6 +1016,10 @@ export default class Circle extends Nodule {
           this.dashArrayBack.forEach(v => {
             this.backPart.dashes.push(v);
           });
+        } else {
+          // the array length is zero and no dash array should be set
+          this.backPart.dashes.clear();
+          this.backPart.dashes.push(0);
         }
 
         // UPDATE the glowing object
@@ -1022,6 +1036,10 @@ export default class Circle extends Nodule {
           this.dashArrayFront.forEach(v => {
             this.glowingFrontPart.dashes.push(v);
           });
+        } else {
+          // the array length is zero and no dash array should be set
+          this.glowingFrontPart.dashes.clear();
+          this.glowingFrontPart.dashes.push(0);
         }
 
         // Glowing Back
@@ -1035,44 +1053,10 @@ export default class Circle extends Nodule {
           this.dashArrayBack.forEach(v => {
             this.glowingBackPart.dashes.push(v);
           });
-        }
-        break;
-      }
-      case DisplayStyle.RESETVARIABLESTODEFAULTS:
-      default: {
-        // Set the current variables to the SETTINGS variables
-
-        // FRONT
-        this.fillColorFront = SETTINGS.circle.drawn.fillColor.front;
-        this.strokeColorFront = SETTINGS.circle.drawn.strokeColor.front;
-        this.strokeWidthPercentFront = 100;
-        this.opacityFront = SETTINGS.circle.drawn.opacity.front;
-        if (SETTINGS.circle.drawn.dashArray.front.length > 0) {
-          this.dashArrayFront.clear();
-          SETTINGS.circle.drawn.dashArray.front.forEach(v => {
-            this.dashArrayFront.push(v);
-          });
-        }
-
-        // BACK
-        this.dynamicBackStyle = SETTINGS.circle.dynamicBackStyle;
-        this.fillColorBack = SETTINGS.circle.dynamicBackStyle
-          ? Nodule.contrastFillColor(SETTINGS.circle.drawn.fillColor.front)
-          : SETTINGS.circle.drawn.fillColor.back;
-        this.strokeColorBack = SETTINGS.circle.dynamicBackStyle
-          ? Nodule.contrastStrokeColor(SETTINGS.circle.drawn.strokeColor.front)
-          : SETTINGS.circle.drawn.strokeColor.back;
-        this.strokeWidthPercentBack = SETTINGS.circle.dynamicBackStyle
-          ? Nodule.contrastStrokeWidthPercent(this.strokeWidthPercentFront)
-          : 100;
-        this.opacityBack = SETTINGS.circle.dynamicBackStyle
-          ? Nodule.contrastOpacity(SETTINGS.circle.drawn.opacity.front)
-          : SETTINGS.circle.drawn.opacity.back;
-        if (SETTINGS.circle.drawn.dashArray.back.length > 0) {
-          this.dashArrayBack.clear();
-          SETTINGS.circle.drawn.dashArray.back.forEach(v =>
-            this.dashArrayBack.push(v)
-          );
+        } else {
+          // the array length is zero and no dash array should be set
+          this.glowingBackPart.dashes.clear();
+          this.glowingBackPart.dashes.push(0);
         }
         break;
       }

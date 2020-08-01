@@ -2,7 +2,16 @@ export default {
   nearlyAntipodalIdeal: 0.01, // Two unit vectors, U and V, are nearly antipodal if |U+V| < nearlyAntipodalIdeal
   nearlyAntipodalPixel: 3, // Two vectors on the default sphere, U and V, are nearly antipodal if |U+V| < nearlyAntipodalPixel
   tolerance: 0.0000001, // Any number less that this tolerance is considered zero
-  contrast: 0.5, //The number that controls the automatic setting of the back styling for objects that have dynamicBackStyle set to true.
+  style: {
+    frontFace: true,
+    backFace: false,
+    backStyleContrast: 0.5, //The number that controls the automatic setting of the back styling for objects that have dynamicBackStyle set to true.
+    maxStrokeWidthPercent: 500, // The maximum percent stroke width different from the scaled for zoom size
+    minStrokeWidthPercent: 20, // The minimum percent stroke width different from the scaled for zoom size
+    maxPointRadiusPercent: 500, // The maximum percent point radius different from the scaled for zoom size
+    minPointRadiusPercent: 20, // The minimum percent point radius different from the scaled for zoom size
+    maxGapLengthPlusDashLength: 20 // the maximum of the sum of the gap and dash and the endpoint (max value) of the dash range slider
+  },
   zoom: {
     maxMagnification: 10, // The greatest zoom in magnification factor
     minMagnification: 0.8, // The least zoom out magnification factor

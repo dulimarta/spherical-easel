@@ -18,7 +18,7 @@ let CIRCLE_COUNT = 0;
 
 const styleSet = new Set([
   Styles.strokeColor,
-  Styles.strokeWidthPercentage,
+  Styles.strokeWidthPercent,
   Styles.dashArray,
   Styles.fillColor,
   Styles.opacity,

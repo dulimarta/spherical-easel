@@ -1,7 +1,7 @@
 export enum Styles {
   // Important: Be sure to include "Color" for enum member
   // that refers to Color property
-  strokeWidthPercentage,
+  strokeWidthPercent,
   strokeColor,
   fillColor,
   dashArray,

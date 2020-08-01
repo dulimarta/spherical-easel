@@ -471,8 +471,9 @@ export default class Segment extends Nodule {
         }
       }
     } else {
-      // Set the back options
-      if (options.dynamicBackStyle) {
+      // options.dynamicBackStyle is true, so we need to explicitly check for undefined otherwise
+      // when it is false, this doesn't execute and this.dynamicBackStyle is not set
+      if (options.dynamicBackStyle != undefined) {
         this.dynamicBackStyle = options.dynamicBackStyle;
       }
       if (options.strokeWidthPercent) {
@@ -711,6 +712,10 @@ export default class Segment extends Nodule {
           this.dashArrayFront.forEach(v => {
             this.frontPart.dashes.push(v);
           });
+        } else {
+          // the array length is zero and no dash array should be set
+          this.frontPart.dashes.clear();
+          this.frontPart.dashes.push(0);
         }
         // FRONT EXTRA
         // no fillColor
@@ -722,7 +727,12 @@ export default class Segment extends Nodule {
           this.dashArrayFront.forEach(v => {
             this.frontExtra.dashes.push(v);
           });
+        } else {
+          // the array length is zero and no dash array should be set
+          this.frontExtra.dashes.clear();
+          this.frontExtra.dashes.push(0);
         }
+
         // BACK PART
         // no fillColor
         this.backPart.stroke = this.dynamicBackStyle
@@ -737,6 +747,10 @@ export default class Segment extends Nodule {
           this.dashArrayBack.forEach(v => {
             this.backPart.dashes.push(v);
           });
+        } else {
+          // the array length is zero and no dash array should be set
+          this.backPart.dashes.clear();
+          this.backPart.dashes.push(0);
         }
         // BACK EXTRA
         // no fillColor
@@ -752,6 +766,10 @@ export default class Segment extends Nodule {
           this.dashArrayBack.forEach(v => {
             this.backExtra.dashes.push(v);
           });
+        } else {
+          // the array length is zero and no dash array should be set
+          this.backExtra.dashes.clear();
+          this.backExtra.dashes.push(0);
         }
         // UPDATE the glowing width so it is always bigger than the drawn width
         // Glowing Front
@@ -766,6 +784,10 @@ export default class Segment extends Nodule {
           this.dashArrayFront.forEach(v => {
             this.glowingFrontPart.dashes.push(v);
           });
+        } else {
+          // the array length is zero and no dash array should be set
+          this.glowingFrontPart.dashes.clear();
+          this.glowingFrontPart.dashes.push(0);
         }
 
         // Glowing Front Extra
@@ -780,6 +802,10 @@ export default class Segment extends Nodule {
           this.dashArrayFront.forEach(v => {
             this.glowingFrontExtra.dashes.push(v);
           });
+        } else {
+          // the array length is zero and no dash array should be set
+          this.glowingFrontExtra.dashes.clear();
+          this.glowingFrontExtra.dashes.push(0);
         }
 
         // Glowing Back
@@ -793,6 +819,10 @@ export default class Segment extends Nodule {
           this.dashArrayBack.forEach(v => {
             this.glowingBackPart.dashes.push(v);
           });
+        } else {
+          // the array length is zero and no dash array should be set
+          this.glowingBackPart.dashes.clear();
+          this.glowingBackPart.dashes.push(0);
         }
 
         // Glowing Back Extra
@@ -807,6 +837,10 @@ export default class Segment extends Nodule {
           this.dashArrayBack.forEach(v => {
             this.glowingBackExtra.dashes.push(v);
           });
+        } else {
+          // the array length is zero and no dash array should be set
+          this.glowingBackExtra.dashes.clear();
+          this.glowingBackExtra.dashes.push(0);
         }
 
         break;

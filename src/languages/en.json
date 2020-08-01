@@ -90,26 +90,45 @@
   },
   "style": {
     "selectAnObject": "Select An Object",
+
     "clearChanges": "Clear",
     "clearChangesToolTip": "Click this button to revert the selected objects back to the style they had when they were selected.",
+
     "restoreDefaults": "Defaults",
     "restoreDefaultsToolTip": "Click this button to revert the selected objects back to their default style.",
+
     "differingStylesDetected": "Differing Styles Detected -- Override",
     "differingStylesDetectedToolTip": "The selected objects have the different values for this style. Click this button and select a style to make all selected objects have this common style.",
+
     "showColorPresets": "Color Presets",
-    "showColorPresetsToolTip": "Click this button to enter HSLA values directly or to select a color preset.",
+    "showColorPresetsToolTip": "Click this toggle button to enter HSLA values directly or to select a color preset.",
+
+    "enableDashPatternSlider": "Set A Dash Pattern",
+    "enableDashPatternSliderToolTip": "The selected object(s) have no dash pattern. Click this button to set a pattern.",
+    "disableDashPatternSlider": "Set No Dash Pattern",
+    "disableDashPatternSliderToolTip": "Click this button to set no dash pattern on all selected object(s).",
+
+    "enableBackStyleContrastSlider": "Enable Dynamic Back Style",
+    "enableBackStyleContrastSliderToolTip": "The selected objects do not have dynamic back style enabled. Click this button enable it and adjust the Back Contrast Slider.",
+    "disableBackStyleContrastSlider": "Disable Dynamic Back Style For Selected Object(s)",
+    "disableBackStyleContrastSliderToolTip": "The selected objects have dynamic back style enabled. Click this button disable it for only the selected object(s). Then you can change the back style of the selected object(s) using the style options in this panel.",
+
     "advancedStyle": "Advanced Style",
     "backgroundStyle": "Background Style",
     "foregroundStyle": "Foreground Style",
+
     "emptySelectionMessage": "Here we go! Please select object(s) to style!",
     "strokeColor": "Stroke Color",
     "fillColor": "Fill Color",
-    "strokeWidth": "Stroke Width",
-    "pointSize": "Point Size",
+    "strokeWidthPercent": "Stroke Width",
+
+    "pointRadiusPercent": "Point Radius",
+
     "opacity": "Overall Opacity",
     "dashPattern": "Dash Pattern",
     "dashGap": "Dash Gap",
     "dashLength": "Dash Length",
-    "opacityZeroMessage": "To achieve a zero opacity simply hide the object(s)"
+
+    "dynamicBackStyle": "Dynamic Back Style"
   }
 }

@@ -21,6 +21,7 @@ import Vue from "vue";
 import Component from "vue-class-component";
 import FrontStyle from "@/components/FrontStyle.vue";
 import { Prop } from "vue-property-decorator";
+//import SETTINGS from "@/global-settings";
 
 @Component({ components: { FrontStyle } })
 export default class Style extends Vue {

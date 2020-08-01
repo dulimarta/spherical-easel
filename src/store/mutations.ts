@@ -219,7 +219,8 @@ export default {
       dashArray,
       opacity,
       dynamicBackStyle,
-      pointRadiusPercent
+      pointRadiusPercent,
+      backStyleContrast
     }: {
       selected: SENodule[];
       front: boolean;
@@ -230,6 +231,7 @@ export default {
       opacity: number | undefined;
       dynamicBackStyle: boolean | undefined;
       pointRadiusPercent: number | undefined;
+      backStyleContrast: number | undefined;
     }
   ): void {
     const opt: any = {
@@ -242,7 +244,14 @@ export default {
       dynamicBackStyle: dynamicBackStyle,
       pointRadiusPercent: pointRadiusPercent
     };
-
+    if (backStyleContrast) {
+      // Update all Nodules because more than just the selected nodules depend on the backStyleContrast
+      console.log("update contrast", backStyleContrast);
+      Nodule.setBackStyleContrast(backStyleContrast);
+      state.seNodules.forEach((n: SENodule) => {
+        n.ref.updateStyle(opt as StyleOptions);
+      });
+    }
     selected.forEach((n: SENodule) => {
       n.ref.updateStyle(opt as StyleOptions);
     });

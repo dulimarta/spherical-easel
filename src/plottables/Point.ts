@@ -253,7 +253,9 @@ export default class Point extends Nodule {
       }
     } else {
       // Set the back options
-      if (options.dynamicBackStyle) {
+      // options.dynamicBackStyle is true, so we need to explicitly check for undefined otherwise
+      // when it is false, this doesn't execute and this.dynamicBackStyle is not set
+      if (options.dynamicBackStyle != undefined) {
         this.dynamicBackStyle = options.dynamicBackStyle;
       }
       if (options.pointRadiusPercent) {
