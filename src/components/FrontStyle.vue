@@ -1,6 +1,6 @@
 <template>
   <div>
-    <fade-in-card :showWhen="isBackFace && (hasDynamicBackStyle || noObjectsSelected)">
+    <fade-in-card :showWhen="isBackFace() && (hasDynamicBackStyle || noObjectsSelected)">
       <span class="text-subtitle-2">{{$t("style.dynamicBackStyle")}}</span>
       <span
         v-show="!totallyDisableDynamicBackStyleSelector && dynamicBackStyleAgreement"
@@ -115,7 +115,7 @@
     </fade-in-card>
 
     <fade-in-card
-      :showWhen="(!isBackFace && (hasStrokeColor || noObjectsSelected) )|| (isBackFace && !dynamicBackStyle && hasStrokeColor)"
+      :showWhen="(!isBackFace() && (hasStrokeColor || noObjectsSelected) )|| (isBackFace() && !dynamicBackStyle && hasStrokeColor)"
     >
       <span class="text-subtitle-2">{{$t("style.strokeColor")}}</span>
       <br />
@@ -201,7 +201,7 @@
     </fade-in-card>
 
     <fade-in-card
-      :showWhen="(!isBackFace &&(hasFillColor || noObjectsSelected))|| (isBackFace && !dynamicBackStyle && hasFillColor)"
+      :showWhen="(!isBackFace() &&(hasFillColor || noObjectsSelected))|| (isBackFace() && !dynamicBackStyle && hasFillColor)"
     >
       <span class="text-subtitle-2">{{$t("style.fillColor")}}</span>
       <br />
@@ -287,7 +287,7 @@
     </fade-in-card>
 
     <fade-in-card
-      :showWhen="(!isBackFace &&(hasStrokeWidthPercent || noObjectsSelected))|| (isBackFace && !dynamicBackStyle && hasStrokeWidthPercent)"
+      :showWhen="(!isBackFace() &&(hasStrokeWidthPercent || noObjectsSelected))|| (isBackFace() && !dynamicBackStyle && hasStrokeWidthPercent)"
     >
       <span class="text-subtitle-2">{{$t("style.strokeWidthPercent")}}</span>
       <span
@@ -368,7 +368,7 @@
     </fade-in-card>
 
     <fade-in-card
-      :showWhen="(!isBackFace &&(hasPointRadiusPercent || noObjectsSelected))|| (isBackFace && !dynamicBackStyle && hasPointRadiusPercent)"
+      :showWhen="(!isBackFace() &&(hasPointRadiusPercent || noObjectsSelected))|| (isBackFace() && !dynamicBackStyle && hasPointRadiusPercent)"
     >
       <span class="text-subtitle-2">{{$t("style.pointRadiusPercent")}}</span>
       <span
@@ -447,7 +447,7 @@
     </fade-in-card>
 
     <fade-in-card
-      :showWhen="(!isBackFace &&(hasOpacity || noObjectsSelected))|| (isBackFace && !dynamicBackStyle)"
+      :showWhen="(!isBackFace() &&(hasOpacity || noObjectsSelected))|| (isBackFace() && !dynamicBackStyle)"
     >
       <span class="text-subtitle-2">{{$t("style.opacity")}}</span>
       <span v-show="!totallyDisableOpacitySelector && opacityAgreement">(Value: {{this.opacity}})</span>
@@ -777,7 +777,8 @@ export default class FrontStyle extends Vue {
   }
 
   isBackFace(): boolean {
-    return (this.side = SETTINGS.style.backFace);
+    console.log("isBackFace", this.side === SETTINGS.style.backFace);
+    return this.side === SETTINGS.style.backFace;
   }
   // These methods are linked to the strokeWidthPercent fade-in-card
   onStrokeWidthPercentChange(): void {
@@ -1604,6 +1605,6 @@ export default class FrontStyle extends Vue {
   background: "red";
 }
 /* I wish I knew how to use the SASS options for the vuetify objects! But I don't and I can't find any examples on the web*/
-$color-picker-controls-padding: 1000px;
-$color-picker-edit-margin-top: 1000px;
+/* $color-picker-controls-padding: 1000px;
+$color-picker-edit-margin-top: 1000px; */
 </style>
