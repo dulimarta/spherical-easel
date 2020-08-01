@@ -2,12 +2,8 @@
   <div>
     <!-- <span v-for="c in points" :key="c.id">{{c.name}}</span> -->
     <div id="topContainer" :style="indent">
-      <div
-        id="nodeContent"
-        :class="nodeOrLabel"
-        @mouseenter="glowMe(true)"
-        @mouseleave="glowMe(false)"
-      >
+      <div id="nodeContent" :class="nodeOrLabel" @mouseenter="glowMe(true)"
+        @mouseleave="glowMe(false)">
         <v-icon v-if="isPoint">mdi-vector-point</v-icon>
         <v-icon v-else-if="isLineSegment">mdi-vector-radius</v-icon>
         <v-icon v-else-if="isLine">mdi-vector-line</v-icon>
@@ -37,7 +33,8 @@
             mdi-eye-off
           </v-icon>
         </div>
-        <v-btn small v-show="hasExistingChildren" @click="expanded = !expanded">
+        <v-btn small v-show="hasExistingChildren"
+          @click="expanded = !expanded">
           <v-icon v-if="!expanded">mdi-chevron-right</v-icon>
           <v-icon v-else>mdi-chevron-down</v-icon>
         </v-btn>
@@ -46,13 +43,8 @@
       <transition name="slide-right">
         <div v-show="expanded">
           <!-- Recursive component here -->
-          <SENoduleTree
-            v-for="(n, pos) in existingChildren"
-            :key="pos"
-            :children="n.kids"
-            :depth="depth + 1"
-            :node="n"
-          ></SENoduleTree>
+          <SENoduleTree v-for="(n, pos) in existingChildren" :key="pos"
+            :children="n.kids" :depth="depth + 1" :node="n"></SENoduleTree>
         </div>
       </transition>
     </div>
@@ -202,9 +194,6 @@ export default class SENoduleTree extends Vue {
 <style scoped lang="scss">
 #topContainer {
   margin: 0.25em 0;
-}
-.deep {
-  background-color: red;
 }
 
 .visibleNode {

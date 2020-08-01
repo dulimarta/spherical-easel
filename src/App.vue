@@ -51,13 +51,10 @@
       The router controls this background and it can be Easel or settings or...
     -->
     <v-main>
-      <v-container fill-heights fluid>
-
-        <router-view>
-          <!-- this is the spot where the views controlled by Vue Router will be rendred -->
-        </router-view>
-        <MessageBox></MessageBox>
-      </v-container>
+      <router-view>
+        <!-- this is the spot where the views controlled by Vue Router will be rendred -->
+      </router-view>
+      <MessageBox></MessageBox>
     </v-main>
     <v-footer app color="accent" padless>
       <v-col class="text-center">

@@ -1,54 +1,67 @@
 <template>
   <div>
-    <v-card raised>
-      <v-card-text>
-        <v-text-field dense outlined clearable
-          label="Calculation Expression" placeholder="cos(pi/2)"
-          class="ma-0" v-model="calcExpression"
-          :error-messages="parsingError" @keypress="onKeyPressed"
-          @click:clear="calcResult = 0"></v-text-field>
-        <v-text-field dense outlined readonly label="Result"
-          placeholder="0" class="ma-0" v-model.number="calcResult">
-        </v-text-field>
-      </v-card-text>
-      <v-card-actions>
-        <!-- <v-spacer></v-spacer> -->
-        <!-- <v-btn small fab right><v-icon>mdi-plus</v-icon></v-btn> -->
-      </v-card-actions>
-    </v-card>
-    <div class="pa-0" id="objectTreeContainer">
-      <v-sheet rounded color="accent" :elevation="4" class="my-3"
-        v-show="points.length > 0">
-        <SENoduleTree label="Points" :children="points" :depth="0"
-          show-children="true"></SENoduleTree>
-      </v-sheet>
-      <v-sheet rounded color="accent" :elevation="4" class="my-3"
-        v-show="lines.length > 0">
-        <SENoduleTree label="Lines" :children="lines" :depth="0"
-          show-children="true"></SENoduleTree>
-      </v-sheet>
-      <v-sheet rounded color="accent" :elevation="4" class="my-3"
-        v-show="segments.length > 0">
-        <SENoduleTree label="Line Segments" :children="segments" :depth="0"
-          show-children="true"></SENoduleTree>
-      </v-sheet>
-      <v-sheet rounded color="accent" :elevation="4" class="my-3"
-        v-show="circles.length > 0">
-        <SENoduleTree label="Circles" :children="circles" :depth="0"
-          show-children="true"></SENoduleTree>
-      </v-sheet>
-      <v-sheet rounded color="accent" :elevation="4" class="my-3"
-        v-show="measurements.length > 0">
-        <SENoduleTree label="Measurements" :children="measurements"
-          :depth="0" show-children="true"></SENoduleTree>
-      </v-sheet>
-      <span class="text-body-2 ma-2" v-show="zeroObjects">
-        No objects in database
-      </span>
+    <!-- this top level div is required, otherwise the style applied to id="topContainer" does not work -->
+    <div id="topContainer">
+
+      <v-card raised class="cyan">
+        <v-card-text>
+          <v-container>
+            <v-row>
+              <v-col cols="12">
+                <v-text-field dense outlined clearable
+                  label="Calculation Expression" placeholder="cos(pi/2)"
+                  class="ma-0" v-model="calcExpression"
+                  :error-messages="parsingError" @keypress="onKeyPressed"
+                  @click:clear="calcResult = 0"></v-text-field>
+
+              </v-col>
+            </v-row>
+            <v-text-field dense outlined readonly label="Result"
+              placeholder="0" v-model.number="calcResult">
+            </v-text-field>
+          </v-container>
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn small fab right color="accent">
+            <v-icon>mdi-plus</v-icon>
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+
+      <div class="ma-2 pa-1" id="objectTreeContainer">
+        <v-sheet rounded color="accent" :elevation="4" class="my-3"
+          v-show="points.length > 0">
+          <SENoduleTree label="Points" :children="points" :depth="0"
+            show-children="true"></SENoduleTree>
+        </v-sheet>
+        <v-sheet rounded color="accent" :elevation="4" class="my-3"
+          v-show="lines.length > 0">
+          <SENoduleTree label="Lines" :children="lines" :depth="0"
+            show-children="true"></SENoduleTree>
+        </v-sheet>
+        <v-sheet rounded color="accent" :elevation="4" class="my-3"
+          v-show="segments.length > 0">
+          <SENoduleTree label="Line Segments" :children="segments"
+            :depth="0" show-children="true"></SENoduleTree>
+        </v-sheet>
+        <v-sheet rounded color="accent" :elevation="4" class="my-3"
+          v-show="circles.length > 0">
+          <SENoduleTree label="Circles" :children="circles" :depth="0"
+            show-children="true"></SENoduleTree>
+        </v-sheet>
+        <v-sheet rounded color="accent" :elevation="4" class="my-3"
+          v-show="measurements.length > 0">
+          <SENoduleTree label="Measurements" :children="measurements"
+            :depth="0" show-children="true"></SENoduleTree>
+        </v-sheet>
+        <span class="text-body-2 ma-2" v-show="zeroObjects">
+          No objects in database
+        </span>
+      </div>
     </div>
   </div>
 </template>
-
 <script lang="ts">
 import Vue from "vue";
 import Component from "vue-class-component";
@@ -146,14 +159,16 @@ export default class ObjectTree extends Vue {
 }
 </script>
 
-<style lang="scss">
-#objectTreeContainer {
-  padding: 0;
-  width: 100%;
-  max-height: 60vh;
-  overflow: scroll;
+<style lang="scss" scoped>
+#topContainer {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  height: 100%;
 }
-.nodeGroup {
-  border: 2px solid red;
+
+#objectTreeContainer {
+  overflow: auto;
+  flex-grow: 1;
 }
 </style>
