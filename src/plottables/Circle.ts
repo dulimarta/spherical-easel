@@ -759,9 +759,7 @@ export default class Circle extends Nodule {
       // options.dynamicBackStyle is true, so we need to explicitly check for undefined otherwise
       // when it is false, this doesn't execute and this.dynamicBackStyle is not set
       if (options.dynamicBackStyle != undefined) {
-        console.log("dynamic back style before", this.dynamicBackStyle);
         this.dynamicBackStyle = options.dynamicBackStyle;
-        console.log("dynamic back style after", this.dynamicBackStyle);
       }
       if (options.strokeWidthPercent) {
         this.strokeWidthPercentBack = options.strokeWidthPercent;
@@ -771,7 +769,6 @@ export default class Circle extends Nodule {
       }
       if (options.strokeColor) {
         this.strokeColorBack = options.strokeColor;
-        console.log("set the circle back stroke color", this.strokeColorBack);
       }
       if (options.opacity) {
         this.opacityBack = options.opacity;
@@ -925,7 +922,11 @@ export default class Circle extends Nodule {
           this.frontGradientColor.color = SETTINGS.circle.temp.fillColor.front;
           this.frontFill.fill = this.frontGradient;
         }
-        this.frontPart.stroke = SETTINGS.circle.temp.strokeColor.front;
+        if (SETTINGS.circle.temp.strokeColor.front === "noStroke") {
+          this.frontPart.noStroke();
+        } else {
+          this.frontPart.stroke = SETTINGS.circle.temp.strokeColor.front;
+        }
         // The circle width is set to the current circle width (which is updated for zoom magnification)
         this.frontPart.linewidth = Circle.currentCircleStrokeWidthFront;
         this.frontPart.opacity = SETTINGS.circle.temp.opacity.front;
@@ -943,7 +944,11 @@ export default class Circle extends Nodule {
           this.backGradientColor.color = SETTINGS.circle.temp.fillColor.back;
           this.backFill.fill = this.backGradient;
         }
-        this.backPart.stroke = SETTINGS.circle.temp.strokeColor.back;
+        if (SETTINGS.circle.temp.strokeColor.back === "noStroke") {
+          this.backPart.noStroke();
+        } else {
+          this.backPart.stroke = SETTINGS.circle.temp.strokeColor.back;
+        }
         // The circle width is set to the current circle width (which is updated for zoom magnification)
         this.backPart.linewidth = Circle.currentCircleStrokeWidthBack;
         this.backPart.opacity = SETTINGS.circle.temp.opacity.back;
@@ -971,7 +976,11 @@ export default class Circle extends Nodule {
           this.frontGradientColor.color = this.fillColorFront;
           this.frontFill.fill = this.frontGradient;
         }
-        this.frontPart.stroke = this.strokeColorFront;
+        if (this.fillColorFront === "noStroke") {
+          this.frontFill.noStroke();
+        } else {
+          this.frontPart.stroke = this.strokeColorFront;
+        }
         // strokeWidthPercent is applied by adjustSize()
         this.frontPart.opacity = this.opacityFront;
         this.frontFill.opacity = this.opacityFront;
@@ -980,7 +989,6 @@ export default class Circle extends Nodule {
           this.dashArrayFront.forEach(v => {
             this.frontPart.dashes.push(v);
           });
-          console.log("circle dashes front", this.frontPart.dashes);
         } else {
           // the array length is zero and no dash array should be set
           this.frontPart.dashes.clear();
@@ -1004,9 +1012,25 @@ export default class Circle extends Nodule {
             this.backFill.fill = this.backGradient;
           }
         }
-        this.backPart.stroke = this.dynamicBackStyle
-          ? Nodule.contrastStrokeColor(this.strokeColorFront)
-          : this.strokeColorBack;
+
+        if (this.dynamicBackStyle) {
+          if (
+            Nodule.contrastStrokeColor(this.strokeColorFront) === "noStroke"
+          ) {
+            this.backPart.noStroke();
+          } else {
+            this.backPart.stroke = Nodule.contrastStrokeColor(
+              this.strokeColorFront
+            );
+          }
+        } else {
+          if (this.strokeColorBack === "noStroke") {
+            this.backPart.noStroke();
+          } else {
+            this.backPart.stroke = this.strokeColorBack;
+          }
+        }
+
         // strokeWidthPercent applied by adjustSizer()
         this.backPart.opacity = this.dynamicBackStyle
           ? Nodule.contrastOpacity(this.opacityFront)

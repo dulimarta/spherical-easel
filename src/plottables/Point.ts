@@ -412,7 +412,11 @@ export default class Point extends Nodule {
         } else {
           this.frontPoint.fill = this.fillColorFront;
         }
-        this.frontPoint.stroke = this.strokeColorFront;
+        if (this.strokeColorFront == "noStroke") {
+          this.frontPoint.noStroke();
+        } else {
+          this.frontPoint.stroke = this.strokeColorFront;
+        }
         //stroke width is not user modifiable - set in the constructor
         // pointRadiusPercent applied by adjustSize();
         this.frontPoint.opacity = this.opacityFront;
@@ -431,57 +435,29 @@ export default class Point extends Nodule {
             this.backPoint.fill = this.fillColorBack;
           }
         }
-        this.backPoint.stroke = this.dynamicBackStyle
-          ? Nodule.contrastStrokeColor(this.strokeColorFront)
-          : this.strokeColorBack;
+        if (this.dynamicBackStyle) {
+          if (
+            Nodule.contrastStrokeColor(this.strokeColorFront) === "noStroke"
+          ) {
+            this.backPoint.noStroke();
+          } else {
+            this.backPoint.stroke = Nodule.contrastStrokeColor(
+              this.strokeColorFront
+            );
+          }
+        } else {
+          if (this.strokeColorBack === "noStroke") {
+            this.backPoint.noStroke();
+          } else {
+            this.backPoint.stroke = this.strokeColorBack;
+          }
+        }
         //stroke width is not user modifiable - set in the constructor
         // pointRadiusPercent applied by adjustSize();
         this.backPoint.opacity = this.dynamicBackStyle
           ? Nodule.contrastOpacity(this.opacityFront)
           : this.opacityBack;
 
-        break;
-      }
-      case DisplayStyle.RESETVARIABLESTODEFAULTS:
-      default: {
-        // Set the current variables to the SETTINGS variables
-        // FRONT
-        this.fillColorFront = SETTINGS.point.drawn.fillColor.front;
-        this.strokeColorFront = SETTINGS.point.drawn.strokeColor.front;
-        // strokeWidth not user modifiable
-        this.pointRadiusPercentFront = 100;
-        this.opacityFront = SETTINGS.point.drawn.opacity.front;
-
-        // BACK
-        if (SETTINGS.point.dynamicBackStyle) {
-          this.fillColorBack = Nodule.contrastFillColor(
-            SETTINGS.point.drawn.fillColor.front
-          );
-        } else {
-          this.fillColorBack = SETTINGS.point.drawn.fillColor.back;
-        }
-        if (SETTINGS.point.dynamicBackStyle) {
-          this.strokeColorBack = Nodule.contrastStrokeColor(
-            SETTINGS.point.drawn.strokeColor.front
-          );
-        } else {
-          this.strokeColorBack = SETTINGS.point.drawn.strokeColor.back;
-        }
-        // strokeWidth not user modifiable
-        if (SETTINGS.point.dynamicBackStyle) {
-          this.pointRadiusPercentBack = Nodule.contrastPointRadiusPercent(
-            this.pointRadiusPercentFront
-          );
-        } else {
-          this.pointRadiusPercentBack = 100;
-        }
-        if (SETTINGS.point.dynamicBackStyle) {
-          this.opacityBack = Nodule.contrastOpacity(
-            SETTINGS.point.drawn.opacity.front
-          );
-        } else {
-          this.opacityBack = SETTINGS.point.drawn.opacity.back;
-        }
         break;
       }
     }

@@ -704,7 +704,11 @@ export default class Segment extends Nodule {
 
         // FRONT PART
         // no fillColor
-        this.frontPart.stroke = this.strokeColorFront;
+        if (this.strokeColorFront == "noStroke") {
+          this.frontPart.noStroke();
+        } else {
+          this.frontPart.stroke = this.strokeColorFront;
+        }
         // strokeWidthPercent applied by adjustSize()
         this.frontPart.opacity = this.opacityFront;
         if (this.dashArrayFront.length > 0) {
@@ -719,7 +723,11 @@ export default class Segment extends Nodule {
         }
         // FRONT EXTRA
         // no fillColor
-        this.frontExtra.stroke = this.strokeColorFront;
+        if (this.strokeColorFront == "noStroke") {
+          this.frontExtra.noStroke();
+        } else {
+          this.frontExtra.stroke = this.strokeColorFront;
+        }
         // strokeWidthPercent applied by adjustSize()
         this.frontExtra.opacity = this.opacityFront;
         if (this.dashArrayFront.length > 0) {
@@ -735,9 +743,22 @@ export default class Segment extends Nodule {
 
         // BACK PART
         // no fillColor
-        this.backPart.stroke = this.dynamicBackStyle
-          ? Nodule.contrastStrokeColor(this.strokeColorFront)
-          : this.strokeColorBack;
+
+        if (this.dynamicBackStyle) {
+          if (Nodule.contrastStrokeColor(this.strokeColorFront) == "noStroke") {
+            this.backPart.noStroke();
+          } else {
+            this.backPart.stroke = Nodule.contrastStrokeColor(
+              this.strokeColorFront
+            );
+          }
+        } else {
+          if (this.strokeColorBack == "noStroke") {
+            this.backPart.noStroke();
+          } else {
+            this.backPart.stroke = this.strokeColorBack;
+          }
+        }
         // strokeWidthPercent applied by adjustSize()
         this.backPart.opacity = this.dynamicBackStyle
           ? Nodule.contrastOpacity(this.opacityFront)
@@ -754,9 +775,21 @@ export default class Segment extends Nodule {
         }
         // BACK EXTRA
         // no fillColor
-        this.backExtra.stroke = this.dynamicBackStyle
-          ? Nodule.contrastStrokeColor(this.strokeColorFront)
-          : this.strokeColorBack;
+        if (this.dynamicBackStyle) {
+          if (Nodule.contrastStrokeColor(this.strokeColorFront) == "noStroke") {
+            this.backExtra.noStroke();
+          } else {
+            this.backExtra.stroke = Nodule.contrastStrokeColor(
+              this.strokeColorFront
+            );
+          }
+        } else {
+          if (this.strokeColorBack == "noStroke") {
+            this.backExtra.noStroke();
+          } else {
+            this.backExtra.stroke = this.strokeColorBack;
+          }
+        }
         // strokeWidthPercent applied by adjustSize()
         this.backExtra.opacity = this.dynamicBackStyle
           ? Nodule.contrastOpacity(this.opacityFront)
@@ -771,6 +804,7 @@ export default class Segment extends Nodule {
           this.backExtra.dashes.clear();
           this.backExtra.dashes.push(0);
         }
+
         // UPDATE the glowing width so it is always bigger than the drawn width
         // Glowing Front
         // no fillColor
@@ -841,42 +875,6 @@ export default class Segment extends Nodule {
           // the array length is zero and no dash array should be set
           this.glowingBackExtra.dashes.clear();
           this.glowingBackExtra.dashes.push(0);
-        }
-
-        break;
-      }
-      case DisplayStyle.RESETVARIABLESTODEFAULTS:
-      default: {
-        // Set the current variables to the SETTINGS variables
-        // FRONT PART
-        // no fillColor
-        this.strokeColorFront = SETTINGS.segment.drawn.strokeColor.front;
-        this.strokeWidthPercentFront = 100;
-        this.opacityFront = SETTINGS.segment.drawn.opacity.front;
-        if (SETTINGS.segment.drawn.dashArray.front.length > 0) {
-          this.dashArrayFront.clear();
-          SETTINGS.segment.drawn.dashArray.front.forEach(v =>
-            this.dashArrayFront.push(v)
-          );
-        }
-
-        // BACK PART
-        this.dynamicBackStyle = SETTINGS.segment.dynamicBackStyle;
-        // no fillColor
-        this.strokeColorBack = SETTINGS.segment.dynamicBackStyle
-          ? Nodule.contrastStrokeColor(SETTINGS.segment.drawn.strokeColor.front)
-          : SETTINGS.segment.drawn.strokeColor.back;
-        this.strokeWidthPercentBack = SETTINGS.segment.dynamicBackStyle
-          ? Nodule.contrastStrokeWidthPercent(this.strokeWidthPercentFront)
-          : 100;
-        this.opacityBack = SETTINGS.segment.dynamicBackStyle
-          ? Nodule.contrastOpacity(SETTINGS.segment.drawn.opacity.front)
-          : SETTINGS.segment.drawn.opacity.back;
-        if (SETTINGS.segment.drawn.dashArray.back.length > 0) {
-          this.dashArrayBack.clear();
-          SETTINGS.segment.drawn.dashArray.back.forEach(v =>
-            this.dashArrayBack.push(v)
-          );
         }
 
         break;

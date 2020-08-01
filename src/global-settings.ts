@@ -53,9 +53,7 @@ export default {
     drawn: {
       radius: {
         front: 4, // The default radius of the point drawn on the front,
-        back: 3, // The default radius of the point drawn on the back,
-        rmin: 2, // The smallest radius displayed
-        rmax: 6 // The largest radius displayed
+        back: 3 // The default radius of the point drawn on the back,
       },
       fillColor: {
         front: "hsla(0, 100%, 75%, 1)", //"#FF8080", // { r: 255, g: 128, b: 128 },#f55742
@@ -112,9 +110,7 @@ export default {
       },
       strokeWidth: {
         front: 2.5,
-        back: 2,
-        min: 1, //On zoom this is the minimum thickness displayed
-        max: 3 //On zoom this is the maximum thickness displayed
+        back: 2
       }, // The thickness of the segment when drawn
       opacity: { front: 1, back: 1 },
       dashArray: {
@@ -163,9 +159,7 @@ export default {
       // The thickness of the line when drawn
       strokeWidth: {
         front: 2.5,
-        back: 2,
-        min: 1, //This is the minimum thickness displayed
-        max: 3 //This is the maximum thickness displayed
+        back: 2
       },
       opacity: { front: 1, back: 1 },
       dashArray: {
@@ -206,7 +200,7 @@ export default {
     //The properties of the circle when it is drawn on the sphereCanvas and is not glowing
     drawn: {
       fillColor: {
-        front: "hsla(217, 100%, 80%, 0)", //"noFill",
+        front: "noFill", //"hsla(217, 100%, 80%, 0)", //"noFill",
         back: "hsla(217, 100%, 80%, 0)" //"noFill"
       },
       strokeColor: {
@@ -216,9 +210,7 @@ export default {
       strokeWidth: {
         // The thickness of the circle when drawn front/back
         front: 2.5,
-        back: 2,
-        min: 1, //This is the minimum thickness displayed
-        max: 3 //This is the maximum thickness displayed
+        back: 2
       }, // The thickness of the circle when drawn front/back
       opacity: { front: 1, back: 1 },
       dashArray: {

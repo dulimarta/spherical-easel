@@ -77,11 +77,17 @@ export default abstract class Nodule implements Stylable, Resizeable {
    * Contrast = 0 => Nothing appears on back of sphere for colors and size reduction is maximized
    */
   static contrastFillColor(frontColor: string): string {
+    if (frontColor == "noFill") {
+      return "noFill";
+    }
     const hslaColor = Nodule.convertStringToHSLAObject(frontColor);
     hslaColor.l = 1 - (1 - hslaColor.l) * Nodule.backStyleContrast;
     return Nodule.convertHSLAObjectToString(hslaColor);
   }
   static contrastStrokeColor(frontColor: string): string {
+    if (frontColor == "noStroke") {
+      return "noStroke";
+    }
     const hslaColor = Nodule.convertStringToHSLAObject(frontColor);
     hslaColor.l = 1 - (1 - hslaColor.l) * Nodule.backStyleContrast;
     return Nodule.convertHSLAObjectToString(hslaColor);

@@ -189,7 +189,7 @@
       <v-color-picker
         hide-canvas
         mode="hsla"
-        :disabled="!strokeColorAgreement || totallyDisableStrokeColorSelector"
+        :disabled="!strokeColorAgreement || totallyDisableStrokeColorSelector || noStroke"
         show-swatches
         :hide-inputs="!strokeColorAgreement || !showStrokeOptions"
         hide-mode-switch
@@ -198,6 +198,16 @@
         id="strokeColorPicker"
         @update:color="onStrokeColorChange"
       ></v-color-picker>
+      <v-checkbox
+        v-show="strokeColorAgreement"
+        v-model="noStroke"
+        label="No Stroke"
+        color="indigo darken-3"
+        @change="setNoStroke"
+        hide-details
+        x-small
+        dense
+      ></v-checkbox>
     </fade-in-card>
 
     <fade-in-card
@@ -284,6 +294,16 @@
         id="fillColorPicker"
         @update:color="onFillColorChange"
       ></v-color-picker>
+      <v-checkbox
+        v-show="fillColorAgreement"
+        v-model="noFill"
+        label="No Fill"
+        color="indigo darken-3"
+        @change="setNoFill"
+        hide-details
+        x-small
+        dense
+      ></v-checkbox>
     </fade-in-card>
 
     <fade-in-card
@@ -712,18 +732,22 @@ export default class FrontStyle extends Vue {
   private minPointRadiusPercent = SETTINGS.style.minPointRadiusPercent;
 
   private strokeColor: string | undefined = "hsl(0,0%,0%,0)"; //Color recognisable by TwoJs
-  private hslaStrokeColorObject: hslaColorType = { h: 0, s: 0, l: 0, a: 1 }; // Color for Vuetify Color picker
+  private hslaStrokeColorObject: hslaColorType = { h: 0, s: 0, l: 0, a: 0 }; // Color for Vuetify Color picker
   private strokeColorAgreement = true;
   private strokeSwatchHeight = 0;
   private showStrokeOptions = false;
   private totallyDisableStrokeColorSelector = false;
+  private noStroke = false;
+  private preNoStrokeColor: string | undefined = "";
 
   private fillColor: string | undefined = "hsl(0,0%,0%,0)"; //Color recognisable by TwoJs
-  private hslaFillColorObject: hslaColorType = { h: 0, s: 0, l: 0, a: 1 }; // Color for Vuetify Color picker
+  private hslaFillColorObject: hslaColorType = { h: 0, s: 0, l: 0, a: 0 }; // Color for Vuetify Color picker
   private fillColorAgreement = true;
   private fillSwatchHeight = 0;
   private showFillOptions = false;
   private totallyDisableFillColorSelector = false;
+  private noFill = false;
+  private preNoFillColor: string | undefined = "";
 
   /** gapLength = sliderArray[0] */
   private gapLength: number | undefined = 5;
@@ -751,7 +775,7 @@ export default class FrontStyle extends Vue {
   /**
    * The side of the sphere the style adjustments apply to
    */
-  private side = SETTINGS.style.frontFace;
+  private side = SETTINGS.style.backFace;
   /**
  * Common style properties are the enum with values of 
   //   strokeWidthPercentage,
@@ -777,7 +801,6 @@ export default class FrontStyle extends Vue {
   }
 
   isBackFace(): boolean {
-    console.log("isBackFace", this.side === SETTINGS.style.backFace);
     return this.side === SETTINGS.style.backFace;
   }
   // These methods are linked to the strokeWidthPercent fade-in-card
@@ -867,21 +890,29 @@ export default class FrontStyle extends Vue {
 
   // These methods are linked to the the stroke color of the elements in the selected objects
   onStrokeColorChange(): void {
+    this.strokeColor = Nodule.convertHSLAObjectToString(
+      this.hslaStrokeColorObject
+    );
     this.$store.commit("changeStyle", {
       selected: this.$store.getters.selectedSENodules(),
       front: this.side,
-      strokeColor: Nodule.convertHSLAObjectToString(this.hslaStrokeColorObject)
+      strokeColor: this.strokeColor
     });
   }
   setCommonStrokeColorArgreement(): void {
     this.strokeColorAgreement = true;
   }
   showStrokeColorOptions(): void {
-    this.showStrokeOptions = !this.showStrokeOptions;
-    if (this.showStrokeOptions) {
-      this.strokeSwatchHeight = 100;
+    if (!this.noStroke) {
+      this.showStrokeOptions = !this.showStrokeOptions;
+      if (this.showStrokeOptions) {
+        this.strokeSwatchHeight = 100;
+      } else {
+        this.strokeSwatchHeight = 0;
+      }
     } else {
       this.strokeSwatchHeight = 0;
+      this.showStrokeOptions = false;
     }
   }
   clearRecentStrokeColorChanges(): void {
@@ -893,6 +924,7 @@ export default class FrontStyle extends Vue {
         strokeColor: this.initialStyleStates[i].strokeColor
       });
     }
+    this.preNoStrokeColor = this.strokeColor;
     this.setStrokeColorSelectorState(this.initialStyleStates);
   }
   resetStrokeColorToDefaults(): void {
@@ -910,9 +942,20 @@ export default class FrontStyle extends Vue {
     this.strokeColorAgreement = true;
     this.totallyDisableStrokeColorSelector = false;
     this.strokeColor = styleState[0].strokeColor;
-    this.hslaStrokeColorObject = Nodule.convertStringToHSLAObject(
-      this.strokeColor
-    );
+    if (this.strokeColor == "noStroke") {
+      this.hslaStrokeColorObject = Nodule.convertStringToHSLAObject(
+        "hsla(0,0%,0%,0.001)"
+      );
+      this.strokeSwatchHeight = 0;
+      this.showStrokeOptions = false;
+      this.noStroke = true;
+    } else {
+      this.hslaStrokeColorObject = Nodule.convertStringToHSLAObject(
+        this.strokeColor
+      );
+      this.noStroke = false;
+    }
+
     // screen for undefined - if undefined then this is not a property that is going to be set by the style panel for this selection of objects
     if (this.strokeColor) {
       if (
@@ -938,24 +981,51 @@ export default class FrontStyle extends Vue {
     this.showStrokeOptions = false;
     this.totallyDisableStrokeColorSelector = totally;
   }
-
-  // These methods are linked to the fill color of the elements in the selected objects
-  onFillColorChange(): void {
+  setNoStroke(): void {
+    if (this.noStroke) {
+      this.preNoStrokeColor = this.strokeColor;
+      this.strokeColor = "noStroke";
+      this.hslaStrokeColorObject = Nodule.convertStringToHSLAObject(
+        "hsla(0,0%,0%,0)"
+      );
+      this.strokeSwatchHeight = 0;
+      this.showStrokeOptions = false;
+    } else {
+      this.strokeColor = this.preNoStrokeColor;
+      this.hslaStrokeColorObject = Nodule.convertStringToHSLAObject(
+        this.strokeColor
+      );
+    }
     this.$store.commit("changeStyle", {
       selected: this.$store.getters.selectedSENodules(),
       front: this.side,
-      fillColor: Nodule.convertHSLAObjectToString(this.hslaFillColorObject)
+      strokeColor: this.strokeColor
+    });
+  }
+
+  // These methods are linked to the fill color of the elements in the selected objects
+  onFillColorChange(): void {
+    this.fillColor = Nodule.convertHSLAObjectToString(this.hslaFillColorObject);
+    this.$store.commit("changeStyle", {
+      selected: this.$store.getters.selectedSENodules(),
+      front: this.side,
+      fillColor: this.fillColor
     });
   }
   setCommonFillColorAgreement(): void {
     this.fillColorAgreement = true;
   }
   showFillColorOptions(): void {
-    this.showFillOptions = !this.showFillOptions;
-    if (this.showFillOptions) {
-      this.fillSwatchHeight = 100;
+    if (!this.noFill) {
+      this.showFillOptions = !this.showFillOptions;
+      if (this.showFillOptions) {
+        this.fillSwatchHeight = 100;
+      } else {
+        this.fillSwatchHeight = 0;
+      }
     } else {
       this.fillSwatchHeight = 0;
+      this.showFillOptions = false;
     }
   }
   clearRecentFillColorChanges(): void {
@@ -967,6 +1037,7 @@ export default class FrontStyle extends Vue {
         fillColor: this.initialStyleStates[i].fillColor
       });
     }
+    this.preNoFillColor = this.fillColor;
     this.setFillColorSelectorState(this.initialStyleStates);
   }
   resetFillColorToDefaults(): void {
@@ -984,7 +1055,20 @@ export default class FrontStyle extends Vue {
     this.fillColorAgreement = true;
     this.totallyDisableFillColorSelector = false;
     this.fillColor = styleState[0].fillColor;
-    this.hslaFillColorObject = Nodule.convertStringToHSLAObject(this.fillColor);
+
+    if (this.fillColor == "noFill") {
+      this.hslaFillColorObject = Nodule.convertStringToHSLAObject(
+        "hsla(0,0%,0%,0.001)"
+      );
+      this.fillSwatchHeight = 0;
+      this.showFillOptions = false;
+      this.noFill = true;
+    } else {
+      this.hslaFillColorObject = Nodule.convertStringToHSLAObject(
+        this.fillColor
+      );
+      this.noFill = false;
+    }
     // screen for undefined - if undefined then this is not a property that is going to be set by the style panel for this selection of objects
     if (this.fillColor) {
       if (
@@ -1092,6 +1176,27 @@ export default class FrontStyle extends Vue {
     this.pointRadiusPercentAgreement = false;
     this.pointRadiusPercent = 100;
     this.totallyDisablePointRadiusPercentSelector = totally;
+  }
+  setNoFill(): void {
+    if (this.noFill) {
+      this.preNoFillColor = this.fillColor;
+      this.fillColor = "noFill";
+      this.hslaFillColorObject = Nodule.convertStringToHSLAObject(
+        "hsla(0,0%,0%,0)"
+      );
+      this.fillSwatchHeight = 0;
+      this.showFillOptions = false;
+    } else {
+      this.fillColor = this.preNoFillColor;
+      this.hslaFillColorObject = Nodule.convertStringToHSLAObject(
+        this.fillColor
+      );
+    }
+    this.$store.commit("changeStyle", {
+      selected: this.$store.getters.selectedSENodules(),
+      front: this.side,
+      fillColor: this.fillColor
+    });
   }
 
   // These methods are linked to the opacity fade-in-card
@@ -1583,12 +1688,6 @@ export default class FrontStyle extends Vue {
     });
     this.initialBackStyleContrast = this.backStyleContrast;
 
-    console.log(
-      "init style state 0 ",
-      this.initialStyleStates[0],
-      "side false=back",
-      this.side
-    );
     //Set the initial state of the fade-in-card/selectors (checking to see if the property is the same across all selected objects)
     this.setStrokeWidthPercentSelectorState(this.initialStyleStates);
     this.setStrokeColorSelectorState(this.initialStyleStates);

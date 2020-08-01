@@ -487,7 +487,11 @@ export default class Line extends Nodule {
 
         // Front
         // no fillColor
-        this.frontHalf.stroke = SETTINGS.line.temp.strokeColor.front;
+        if (SETTINGS.line.temp.strokeColor.front == "noStroke") {
+          this.frontHalf.noStroke();
+        } else {
+          this.frontHalf.stroke = SETTINGS.line.temp.strokeColor.front;
+        }
         // strokeWidthPercent -- The line width is set to the current line width (which is updated for zoom magnification)
         this.frontHalf.linewidth = Line.currentLineStrokeWidthFront;
         this.frontHalf.opacity = SETTINGS.line.temp.opacity.front;
@@ -501,7 +505,11 @@ export default class Line extends Nodule {
 
         // Back
         // no fill color
-        this.backHalf.stroke = SETTINGS.line.temp.strokeColor.back;
+        if (SETTINGS.line.temp.strokeColor.back == "noStroke") {
+          this.backHalf.noStroke();
+        } else {
+          this.backHalf.stroke = SETTINGS.line.temp.strokeColor.back;
+        }
         // strokeWidthPercent -- The line width is set to the current line width (which is updated for zoom magnification)
         this.backHalf.linewidth = Line.currentLineStrokeWidthBack;
         this.backHalf.opacity = SETTINGS.line.temp.opacity.back;
@@ -524,7 +532,11 @@ export default class Line extends Nodule {
 
         // Front
         // no fillColor
-        this.frontHalf.stroke = this.strokeColorFront;
+        if (this.strokeColorFront == "noStroke") {
+          this.frontHalf.noStroke();
+        } else {
+          this.frontHalf.stroke = this.strokeColorFront;
+        }
         // strokeWidthPercent applied by adjustSize()
         this.frontHalf.opacity = this.opacityFront;
         if (this.dashArrayFront.length > 0) {
@@ -540,9 +552,21 @@ export default class Line extends Nodule {
 
         // Back
         // no fillColor
-        this.backHalf.stroke = this.dynamicBackStyle
-          ? Nodule.contrastStrokeColor(this.strokeColorFront)
-          : this.strokeColorBack;
+        if (this.dynamicBackStyle) {
+          if (Nodule.contrastStrokeColor(this.strokeColorFront) == "noStroke") {
+            this.backHalf.noStroke();
+          } else {
+            this.backHalf.stroke = Nodule.contrastStrokeColor(
+              this.strokeColorFront
+            );
+          }
+        } else {
+          if (this.strokeColorBack == "noStroke") {
+            this.backHalf.noStroke();
+          } else {
+            this.backHalf.stroke = this.strokeColorBack;
+          }
+        }
         // strokeWidthPercent applied by adjustSize()
         this.backHalf.opacity = this.dynamicBackStyle
           ? Nodule.contrastOpacity(this.opacityFront)
@@ -590,42 +614,6 @@ export default class Line extends Nodule {
           // the array length is zero and no dash array should be set
           this.glowingBackHalf.dashes.clear();
           this.glowingBackHalf.dashes.push(0);
-        }
-        break;
-      }
-      case DisplayStyle.RESETVARIABLESTODEFAULTS:
-      default: {
-        // Set the current variables to the SETTINGS variables
-
-        // FRONT
-        // no fillColor
-        this.strokeColorFront = SETTINGS.line.drawn.strokeColor.front;
-        this.strokeWidthPercentFront = 100;
-        this.opacityFront = SETTINGS.line.drawn.opacity.front;
-        if (SETTINGS.line.drawn.dashArray.front.length > 0) {
-          this.dashArrayFront.clear();
-          SETTINGS.line.drawn.dashArray.front.forEach(v =>
-            this.dashArrayFront.push(v)
-          );
-        }
-
-        // Back
-        this.dynamicBackStyle = SETTINGS.line.dynamicBackStyle;
-        // no fillColor
-        this.strokeColorBack = SETTINGS.line.dynamicBackStyle
-          ? Nodule.contrastStrokeColor(SETTINGS.line.drawn.strokeColor.front)
-          : SETTINGS.line.drawn.strokeColor.back;
-        this.strokeWidthPercentBack = SETTINGS.line.dynamicBackStyle
-          ? Nodule.contrastStrokeWidthPercent(this.strokeWidthPercentFront)
-          : 100;
-        this.opacityBack = SETTINGS.line.dynamicBackStyle
-          ? Nodule.contrastOpacity(SETTINGS.line.drawn.opacity.front)
-          : SETTINGS.line.drawn.opacity.back;
-        if (SETTINGS.line.drawn.dashArray.back.length > 0) {
-          this.dashArrayBack.clear();
-          SETTINGS.line.drawn.dashArray.back.forEach(v =>
-            this.dashArrayBack.push(v)
-          );
         }
         break;
       }
