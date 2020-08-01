@@ -751,7 +751,7 @@ export default class FrontStyle extends Vue {
   /**
    * The side of the sphere the style adjustments apply to
    */
-  private side = SETTINGS.style.backFace;
+  private side = SETTINGS.style.frontFace;
   /**
  * Common style properties are the enum with values of 
   //   strokeWidthPercentage,
