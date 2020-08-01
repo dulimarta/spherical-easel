@@ -2,9 +2,15 @@ import { SENodule } from "./SENodule";
 import { Styles } from "@/types/Styles";
 import { UpdateStateType } from "@/types";
 import { Vector3 } from "three";
+let EXPR_COUNT = 0;
 
 const emptySet = new Set<Styles>();
 export abstract class SEExpression extends SENodule {
+  constructor() {
+    super();
+    EXPR_COUNT++;
+    this.name = `M${EXPR_COUNT}`;
+  }
   /* TODO: Evaluate or get the value of the expressions */
   abstract get value(): number;
 

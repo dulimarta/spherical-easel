@@ -14,6 +14,7 @@
           mdi-vector-intersection
         </v-icon>
         <v-icon v-else-if="isMeasurement">mdi-tape-measure</v-icon>
+        <v-icon v-else-if="isCalculation">mdi-calculator</v-icon>
         <span class="contentText" v-if="label && label.length > 0">
           {{ label }}
         </span>
@@ -63,6 +64,7 @@ import { SESegment } from "@/models/SESegment";
 import { SECircle } from "../models/SECircle";
 import { SEMeasurement } from "@/models/SEMeasurement";
 import { SELength } from "@/models/SELength";
+import { SECalculation } from '../models/SECalculation';
 
 @Component({})
 export default class SENoduleTree extends Vue {
@@ -137,6 +139,10 @@ export default class SENoduleTree extends Vue {
   get isMeasurement(): boolean {
     return this.node instanceof SEMeasurement;
   }
+  get isCalculation(): boolean {
+    return this.node instanceof SECalculation;
+  }
+
   get isPlottable(): boolean {
     return (
       this.node instanceof SEPoint ||

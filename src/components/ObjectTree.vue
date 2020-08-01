@@ -3,7 +3,7 @@
     <!-- this top level div is required, otherwise the style applied to id="topContainer" does not work -->
     <div id="topContainer">
 
-      <v-card raised class="cyan">
+      <v-card raised outlined>
         <v-card-text>
           <v-container>
             <v-row>
@@ -23,7 +23,7 @@
         </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn small fab right color="accent">
+          <v-btn small fab right color="accent" @click="addExpression">
             <v-icon>mdi-plus</v-icon>
           </v-btn>
         </v-card-actions>
@@ -55,6 +55,11 @@
           <SENoduleTree label="Measurements" :children="measurements"
             :depth="0" show-children="true"></SENoduleTree>
         </v-sheet>
+        <v-sheet rounded color="accent" :elevation="4" class="my-3"
+          v-show="calculations.length > 0">
+          <SENoduleTree label="Calculations" :children="calculations"
+            :depth="0" show-children="true"></SENoduleTree>
+        </v-sheet>
         <span class="text-body-2 ma-2" v-show="zeroObjects">
           No objects in database
         </span>
@@ -71,7 +76,9 @@ import SENoduleTree from "@/components/SENoduleTree.vue";
 import { SENodule } from "@/models/SENodule";
 import { ExpressionParser } from "@/expression/ExpressionParser";
 import { SEMeasurement } from "@/models/SEMeasurement";
-import { SELength } from '@/models/SELength';
+// import { SELength } from '@/models/SELength';
+import { SECalculation } from "@/models/SECalculation"
+import { AddCalculationCommand } from "@/commands/AddCalculationCommand"
 
 @Component({ components: { SENoduleTree } })
 export default class ObjectTree extends Vue {
@@ -98,6 +105,9 @@ export default class ObjectTree extends Vue {
   @State
   readonly measurements!: SEMeasurement[];
 
+  @State
+  readonly calculations!: SECalculation[];
+
   private calcExpression = "";
 
   private calcResult = 0;
@@ -105,7 +115,7 @@ export default class ObjectTree extends Vue {
   private timerInstance: NodeJS.Timeout | null = null;
   readonly varMap = new Map<string, number>();
   get zeroObjects(): boolean {
-    return this.nodules.filter(n => n.exists).length === 0;
+    return this.nodules.filter(n => n.exists).length === 0 || this.calculations.length === 0;
   }
 
   calculateExpression(): void {
@@ -155,6 +165,12 @@ export default class ObjectTree extends Vue {
         this.parsingError = err.message;
       }
     }, 1000);
+  }
+
+  addExpression(): void {
+    console.debug("Adding experssion", this.calcExpression);
+    const calc = new SECalculation(this.calcExpression);
+    new AddCalculationCommand(calc).execute();
   }
 }
 </script>

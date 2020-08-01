@@ -14,6 +14,7 @@ import { LineNormalVisitor } from "@/visitors/LineNormalVisitor";
 import { SegmentNormalArcLengthVisitor } from "@/visitors/SegmentNormalArcLengthVisitor";
 import { UpdateMode } from "@/types";
 import { SEMeasurement } from "@/models/SEMeasurement";
+import { SECalculation } from "@/models/SECalculation";
 
 // const tmpMatrix = new Matrix4();
 
@@ -36,7 +37,8 @@ export const initialState: AppState = {
   segments: [], // An array of all SESegments
   circles: [], // An array of all SECircles
   intersections: [], // An array of all SEPoints that are intersections of the one-dimensional objects in the arrangement
-  measurements: [] // An array of measurements on objects
+  measurements: [], // An array of measurements on objects
+  calculations: []
 };
 //#endregion appState
 
@@ -58,6 +60,7 @@ export default {
     state.selections.clear();
     state.intersections.clear();
     state.measurements.clear();
+    state.calculations.clear();
   },
   setLayers(state: AppState, layers: Two.Group[]): void {
     state.layers = layers;
@@ -254,9 +257,23 @@ export default {
     const pos = state.measurements.findIndex(x => x.id === measId);
     const pos2 = state.nodules.findIndex(x => x.id === measId);
     if (pos >= 0) {
-      const victimSegment = state.measurements[pos];
+      // const victimSegment = state.measurements[pos];
       state.measurements.splice(pos, 1);
       state.nodules.splice(pos2, 1);
+    }
+  },
+
+  addCalculation(state: AppState, calc: SECalculation): void {
+    // TODO: should we also push it to state.nodules?
+    // state.nodules.push(calc);
+    state.calculations.push(calc);
+  },
+  removeCalculation(state: AppState, calcId: number): void {
+    const pos = state.calculations.findIndex(c => c.id === calcId);
+    // const pos2 = state.nodules.findIndex(x => x.id === calcId);
+    if (pos >= 0) {
+      state.calculations.splice(pos, 1);
+      // state.nodules.splice(pos2, 1);
     }
   }
 };

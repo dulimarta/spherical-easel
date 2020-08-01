@@ -9,6 +9,7 @@ import { SENodule } from "@/models/SENodule";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import { Vector3 } from "three";
 import { SEMeasurement } from "@/models/SEMeasurement";
+import { SECalculation } from "@/models/SECalculation";
 
 export interface Selectable {
   hit(x: number, y: number, coord: unknown, who: unknown): boolean;
@@ -33,6 +34,7 @@ export interface AppState {
   selections: SENodule[];
   intersections: SEIntersectionPoint[];
   measurements: SEMeasurement[];
+  calculations: SECalculation[];
 }
 /* This interface lists all the properties that each tool/button must have. */
 export interface ToolButtonType {
