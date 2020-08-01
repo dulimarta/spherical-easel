@@ -1,10 +1,61 @@
 <template>
   <div>
+    <fade-in-card :showWhen="isBackFace()">
+      <v-tooltip
+        bottom
+        :open-delay="toolTipOpenDelay"
+        :close-delay="toolTipCloseDelay"
+        max-width="400px"
+      >
+        <template v-slot:activator="{ on }">
+          <span v-on="on" class="text-subtitle-2">{{$t("style.backStyleContrast")}}</span>
+        </template>
+        <span>{{ $t("style.backStyleContrastToolTip") }}</span>
+      </v-tooltip>
+      <span>(Contrast: {{this.backStyleContrast}})</span>
+      <br />
+
+      <v-tooltip
+        bottom
+        :open-delay="toolTipOpenDelay"
+        :close-delay="toolTipCloseDelay"
+        max-width="400px"
+      >
+        <template v-slot:activator="{ on }">
+          <v-btn
+            v-on="on"
+            @click="resetDynamicBackStyleToDefaults"
+            text
+            small
+            outlined
+            ripple
+          >{{$t("style.restoreDefaults")}}</v-btn>
+        </template>
+        <span>{{ $t("style.restoreDefaultsToolTip") }}</span>
+      </v-tooltip>
+
+      <v-slider
+        v-model.number="backStyleContrast"
+        :min="0"
+        step="0.1"
+        @change="onBackStyleContrastChange"
+        :max="1"
+        type="range"
+        class="mt-8"
+      >
+        <template v-slot:prepend>
+          <v-icon @click="decrementBackStyleContrast">mdi-minus</v-icon>
+        </template>
+
+        <template v-slot:append>
+          <v-icon @click="incrementBackStyleContrast">mdi-plus</v-icon>
+        </template>
+      </v-slider>
+    </fade-in-card>
+
     <fade-in-card :showWhen="isBackFace() && (hasDynamicBackStyle || noObjectsSelected)">
       <span class="text-subtitle-2">{{$t("style.dynamicBackStyle")}}</span>
-      <span
-        v-show="!totallyDisableDynamicBackStyleSelector && dynamicBackStyleAgreement"
-      >(Contrast: {{this.backStyleContrast}})</span>
+
       <br />
       <span v-show="totallyDisableDynamicBackStyleSelector">{{$t("style.selectAnObject")}}</span>
       <v-tooltip
@@ -12,6 +63,7 @@
         bottom
         :open-delay="toolTipOpenDelay"
         :close-delay="toolTipCloseDelay"
+        max-width="400px"
       >
         <template v-slot:activator="{ on }">
           <v-btn
@@ -33,6 +85,7 @@
         bottom
         :open-delay="toolTipOpenDelay"
         :close-delay="toolTipCloseDelay"
+        max-width="400px"
       >
         <template v-slot:activator="{ on }">
           <v-btn
@@ -49,7 +102,13 @@
         <span>{{ $t("style.enableBackStyleContrastSliderToolTip") }}</span>
       </v-tooltip>
 
-      <v-tooltip v-else bottom :open-delay="toolTipOpenDelay" :close-delay="toolTipCloseDelay">
+      <v-tooltip
+        v-else
+        bottom
+        :open-delay="toolTipOpenDelay"
+        :close-delay="toolTipCloseDelay"
+        max-width="400px"
+      >
         <template v-slot:activator="{ on }">
           <v-btn
             v-on="on"
@@ -64,7 +123,12 @@
         <span>{{ $t("style.disableBackStyleContrastSliderToolTip") }}</span>
       </v-tooltip>
 
-      <v-tooltip bottom :open-delay="toolTipOpenDelay" :close-delay="toolTipCloseDelay">
+      <v-tooltip
+        bottom
+        :open-delay="toolTipOpenDelay"
+        :close-delay="toolTipCloseDelay"
+        max-width="400px"
+      >
         <template v-slot:activator="{ on }">
           <v-btn
             v-on="on"
@@ -79,7 +143,12 @@
         <span>{{ $t("style.clearChangesToolTip") }}</span>
       </v-tooltip>
 
-      <v-tooltip bottom :open-delay="toolTipOpenDelay" :close-delay="toolTipCloseDelay">
+      <v-tooltip
+        bottom
+        :open-delay="toolTipOpenDelay"
+        :close-delay="toolTipCloseDelay"
+        max-width="400px"
+      >
         <template v-slot:activator="{ on }">
           <v-btn
             v-on="on"
@@ -93,25 +162,6 @@
         </template>
         <span>{{ $t("style.restoreDefaultsToolTip") }}</span>
       </v-tooltip>
-
-      <v-slider
-        v-model.number="backStyleContrast"
-        :min="0"
-        step="0.1"
-        :disabled="!dynamicBackStyleAgreement || totallyDisableDynamicBackStyleSelector"
-        @change="onBackStyleContrastChange"
-        :max="1"
-        type="range"
-        class="mt-8"
-      >
-        <template v-slot:prepend>
-          <v-icon @click="decrementBackStyleContrast">mdi-minus</v-icon>
-        </template>
-
-        <template v-slot:append>
-          <v-icon @click="incrementBackStyleContrast">mdi-plus</v-icon>
-        </template>
-      </v-slider>
     </fade-in-card>
 
     <fade-in-card
@@ -125,6 +175,7 @@
         bottom
         :open-delay="toolTipOpenDelay"
         :close-delay="toolTipCloseDelay"
+        max-width="400px"
       >
         <template v-slot:activator="{ on }">
           <v-btn
@@ -141,7 +192,13 @@
         <span>{{ $t("style.differingStylesDetectedToolTip") }}</span>
       </v-tooltip>
 
-      <v-tooltip bottom v-else :open-delay="toolTipOpenDelay" :close-delay="toolTipCloseDelay">
+      <v-tooltip
+        bottom
+        v-else
+        :open-delay="toolTipOpenDelay"
+        :close-delay="toolTipCloseDelay"
+        max-width="400px"
+      >
         <template v-slot:activator="{ on }">
           <v-btn
             v-on="on"
@@ -156,7 +213,12 @@
         <span>{{ $t("style.showColorPresetsToolTip") }}</span>
       </v-tooltip>
 
-      <v-tooltip bottom :open-delay="toolTipOpenDelay" :close-delay="toolTipCloseDelay">
+      <v-tooltip
+        bottom
+        :open-delay="toolTipOpenDelay"
+        :close-delay="toolTipCloseDelay"
+        max-width="400px"
+      >
         <template v-slot:activator="{ on }">
           <v-btn
             v-on="on"
@@ -171,7 +233,12 @@
         <span>{{ $t("style.clearChangesToolTip") }}</span>
       </v-tooltip>
 
-      <v-tooltip bottom :open-delay="toolTipOpenDelay" :close-delay="toolTipCloseDelay">
+      <v-tooltip
+        bottom
+        :open-delay="toolTipOpenDelay"
+        :close-delay="toolTipCloseDelay"
+        max-width="400px"
+      >
         <template v-slot:activator="{ on }">
           <v-btn
             v-on="on"
@@ -221,6 +288,7 @@
         bottom
         :open-delay="toolTipOpenDelay"
         :close-delay="toolTipCloseDelay"
+        max-width="400px"
       >
         <template v-slot:activator="{ on }">
           <v-btn
@@ -237,7 +305,13 @@
         <span>{{ $t("style.differingStylesDetectedToolTip") }}</span>
       </v-tooltip>
 
-      <v-tooltip bottom v-else :open-delay="toolTipOpenDelay" :close-delay="toolTipCloseDelay">
+      <v-tooltip
+        bottom
+        v-else
+        :open-delay="toolTipOpenDelay"
+        :close-delay="toolTipCloseDelay"
+        max-width="400px"
+      >
         <template v-slot:activator="{ on }">
           <v-btn
             v-on="on"
@@ -252,7 +326,12 @@
         <span>{{ $t("style.showColorPresetsToolTip") }}</span>
       </v-tooltip>
 
-      <v-tooltip bottom :open-delay="toolTipOpenDelay" :close-delay="toolTipCloseDelay">
+      <v-tooltip
+        bottom
+        :open-delay="toolTipOpenDelay"
+        :close-delay="toolTipCloseDelay"
+        max-width="400px"
+      >
         <template v-slot:activator="{ on }">
           <v-btn
             v-on="on"
@@ -267,7 +346,12 @@
         <span>{{ $t("style.clearChangesToolTip") }}</span>
       </v-tooltip>
 
-      <v-tooltip bottom :open-delay="toolTipOpenDelay" :close-delay="toolTipCloseDelay">
+      <v-tooltip
+        bottom
+        :open-delay="toolTipOpenDelay"
+        :close-delay="toolTipCloseDelay"
+        max-width="400px"
+      >
         <template v-slot:activator="{ on }">
           <v-btn
             v-on="on"
@@ -321,6 +405,7 @@
         bottom
         :open-delay="toolTipOpenDelay"
         :close-delay="toolTipCloseDelay"
+        max-width="400px"
       >
         k
         <template v-slot:activator="{ on }">
@@ -338,7 +423,12 @@
         <span>{{ $t("style.differingStylesDetectedToolTip") }}</span>
       </v-tooltip>
 
-      <v-tooltip bottom :open-delay="toolTipOpenDelay" :close-delay="toolTipCloseDelay">
+      <v-tooltip
+        bottom
+        :open-delay="toolTipOpenDelay"
+        :close-delay="toolTipCloseDelay"
+        max-width="400px"
+      >
         <template v-slot:activator="{ on }">
           <v-btn
             v-on="on"
@@ -353,7 +443,12 @@
         <span>{{ $t("style.clearChangesToolTip") }}</span>
       </v-tooltip>
 
-      <v-tooltip bottom :open-delay="toolTipOpenDelay" :close-delay="toolTipCloseDelay">
+      <v-tooltip
+        bottom
+        :open-delay="toolTipOpenDelay"
+        :close-delay="toolTipCloseDelay"
+        max-width="400px"
+      >
         <template v-slot:activator="{ on }">
           <v-btn
             v-on="on"
@@ -417,7 +512,12 @@
         <span>{{ $t("style.differingStylesDetectedToolTip") }}</span>
       </v-tooltip>
 
-      <v-tooltip bottom :open-delay="toolTipOpenDelay" :close-delay="toolTipCloseDelay">
+      <v-tooltip
+        bottom
+        :open-delay="toolTipOpenDelay"
+        :close-delay="toolTipCloseDelay"
+        max-width="400px"
+      >
         <template v-slot:activator="{ on }">
           <v-btn
             v-on="on"
@@ -432,7 +532,12 @@
         <span>{{ $t("style.clearChangesToolTip") }}</span>
       </v-tooltip>
 
-      <v-tooltip bottom :open-delay="toolTipOpenDelay" :close-delay="toolTipCloseDelay">
+      <v-tooltip
+        bottom
+        :open-delay="toolTipOpenDelay"
+        :close-delay="toolTipCloseDelay"
+        max-width="400px"
+      >
         <template v-slot:activator="{ on }">
           <v-btn
             v-on="on"
@@ -478,6 +583,7 @@
         bottom
         :open-delay="toolTipOpenDelay"
         :close-delay="toolTipCloseDelay"
+        max-width="400px"
       >
         <template v-slot:activator="{ on }">
           <v-btn
@@ -494,7 +600,12 @@
         <span>{{ $t("style.differingStylesDetectedToolTip") }}</span>
       </v-tooltip>
 
-      <v-tooltip bottom :open-delay="toolTipOpenDelay" :close-delay="toolTipCloseDelay">
+      <v-tooltip
+        bottom
+        :open-delay="toolTipOpenDelay"
+        :close-delay="toolTipCloseDelay"
+        max-width="400px"
+      >
         <template v-slot:activator="{ on }">
           <v-btn
             v-on="on"
@@ -509,7 +620,12 @@
         <span>{{ $t("style.clearChangesToolTip") }}</span>
       </v-tooltip>
 
-      <v-tooltip bottom :open-delay="toolTipOpenDelay" :close-delay="toolTipCloseDelay">
+      <v-tooltip
+        bottom
+        :open-delay="toolTipOpenDelay"
+        :close-delay="toolTipCloseDelay"
+        max-width="400px"
+      >
         <template v-slot:activator="{ on }">
           <v-btn
             v-on="on"
@@ -557,6 +673,7 @@
         bottom
         :open-delay="toolTipOpenDelay"
         :close-delay="toolTipCloseDelay"
+        max-width="400px"
       >
         <template v-slot:activator="{ on }">
           <v-btn
@@ -578,6 +695,7 @@
         bottom
         :open-delay="toolTipOpenDelay"
         :close-delay="toolTipCloseDelay"
+        max-width="400px"
       >
         <template v-slot:activator="{ on }">
           <v-btn
@@ -594,7 +712,13 @@
         <span>{{ $t("style.enableDashPatternSliderToolTip") }}</span>
       </v-tooltip>
 
-      <v-tooltip v-else bottom :open-delay="toolTipOpenDelay" :close-delay="toolTipCloseDelay">
+      <v-tooltip
+        v-else
+        bottom
+        :open-delay="toolTipOpenDelay"
+        :close-delay="toolTipCloseDelay"
+        max-width="400px"
+      >
         <template v-slot:activator="{ on }">
           <v-btn
             v-on="on"
@@ -609,7 +733,12 @@
         <span>{{ $t("style.disableDashPatternSliderToolTip") }}</span>
       </v-tooltip>
 
-      <v-tooltip bottom :open-delay="toolTipOpenDelay" :close-delay="toolTipCloseDelay">
+      <v-tooltip
+        bottom
+        :open-delay="toolTipOpenDelay"
+        :close-delay="toolTipCloseDelay"
+        max-width="400px"
+      >
         <template v-slot:activator="{ on }">
           <v-btn
             v-on="on"
@@ -624,7 +753,12 @@
         <span>{{ $t("style.clearChangesToolTip") }}</span>
       </v-tooltip>
 
-      <v-tooltip bottom :open-delay="toolTipOpenDelay" :close-delay="toolTipCloseDelay">
+      <v-tooltip
+        bottom
+        :open-delay="toolTipOpenDelay"
+        :close-delay="toolTipCloseDelay"
+        max-width="400px"
+      >
         <template v-slot:activator="{ on }">
           <v-btn
             v-on="on"

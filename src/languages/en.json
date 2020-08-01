@@ -129,6 +129,9 @@
     "dashGap": "Dash Gap",
     "dashLength": "Dash Length",
 
-    "dynamicBackStyle": "Dynamic Back Style"
+    "dynamicBackStyle": "Dynamic Back Style",
+
+    "backStyleContrast": "Back Style Contrast",
+    "backStyleContrastToolTip": "By default the back side display style of an object is determined by the front style of that object and the value of the Back Style Contrast. A Back Style Contrast of 1 means there is no color difference between front and back styling. A Back Style Contrast of 0 means that the object is barely visible and its size reduction is maximized."
   }
 }

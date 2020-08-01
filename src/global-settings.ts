@@ -200,8 +200,8 @@ export default {
     //The properties of the circle when it is drawn on the sphereCanvas and is not glowing
     drawn: {
       fillColor: {
-        front: "noFill", //"hsla(217, 100%, 80%, 0)", //"noFill",
-        back: "hsla(217, 100%, 80%, 0)" //"noFill"
+        front: "hsla(217, 100%, 80%, 0.0005)", //"noFill",
+        back: "hsla(217, 100%, 80%, 0.0002)" //"noFill"
       },
       strokeColor: {
         front: "hsla(217, 90%, 61%, 1)", // { r: 66, g: 135, b: 245 },
