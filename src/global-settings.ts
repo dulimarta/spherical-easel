@@ -56,12 +56,12 @@ export default {
         back: 3 // The default radius of the point drawn on the back,
       },
       fillColor: {
-        front: "hsla(0, 100%, 75%, 1)", //"#FF8080", // { r: 255, g: 128, b: 128 },#f55742
-        back: "hsla(0, 100%, 75%, 1)" //"#FFBFBF" // The fill color on the back defaults to a contrast value of 0.5
+        front: "hsla(0, 100%, 75%, 1)",
+        back: "hsla(0, 100%, 75%, 1)"
       },
       strokeColor: {
-        front: "hsla(240, 56%, 55%, 1)", // { r: 76, g: 76, b: 205 },
-        back: "hsla(240, 57%, 77%, 1)" // the back stroke color is calculated using the contrast of 0.5
+        front: "hsla(240, 55%, 55%, 1)",
+        back: "hsla(240, 55%, 75%, 1)"
       },
       pointStrokeWidth: { front: 2, back: 2 }, // The thickness of the edge of the point when drawn
       opacity: { front: 1, back: 1 }
@@ -72,9 +72,12 @@ export default {
       annularWidth: 2.5, // width is the width of the annular region around the point that shows the glow it is always bigger than the drawn radius
       fillColor: {
         front: "hsla(0, 100%, 50%, 1)",
-        back: "hsla(0, 100%, 75%, 0.7)" // the back fill color is calculated using the contrast of 0.5
+        back: "hsla(0, 100%, 75%, 0.7)"
       },
-      // No stroke for glowing points
+      strokeColor: {
+        front: "hsla(240, 56%, 55%, 1)",
+        back: "hsla(240, 57%, 77%, 1)"
+      },
       opacity: { front: 1, back: 1 }
       // No dashing - this is highlighting the object
     },
@@ -82,18 +85,33 @@ export default {
     temp: {
       // The radius is the same as the default for drawn points
       fillColor: {
-        front: "hsla(0, 0%, 50%, 1)", // { r: 128, g: 128, b: 128 },
-        back: "hsla(0, 0%, 75%, 1)" // the back fill color is calculated using the contrast of 0.5
+        front: "hsla(0, 0%, 50%, 1)",
+        back: "hsla(0, 0%, 75%, 1)"
       },
       strokeColor: {
-        front: "hsla(0, 0%, 0%, 1)", // black { r: 0, g: 0, b: 0 },
-        back: "hsla(0, 0%, 50%, 1)" // the back stroke color is calculated using the contrast of 0.5
+        front: "hsla(0, 0%, 0%, 1)",
+        back: "hsla(0, 0%, 50%, 1)"
       },
       // The temp stroke width is the same as the default drawn stroke width
       opacity: { front: 1, back: 1 }
       // No dashing for points
+    },
+    nonFree: {
+      scalePercent: 85, // The percent that the size of the (free) points are scaled by to get the size of the nonFreePoint
+      fillColor: {
+        front: "hsla(0, 50%, 75%, 1)",
+        back: "hsla(0, 25%, 75%, 1)"
+      },
+      strokeColor: {
+        front: "hsla(240, 30%, 55%, 1)",
+        back: "hsla(240, 35%, 75%, 1)"
+      },
+      pointStrokeWidth: { front: 2, back: 2 }, // The thickness of the edge of the point when drawn
+      opacity: { front: 1, back: 1 }
+      // No dashing for points
     }
   },
+
   segment: {
     minimumArcLength: 0.02, // Don't create segments with a length less than this
     midPointMovementThreshold: (2.0 * Math.PI) / 180, // If the midpoint of a segment being created (not moved), changes by more than this amount, handle that case separately.
@@ -105,8 +123,8 @@ export default {
     drawn: {
       // No fill for line segments
       strokeColor: {
-        front: "hsla(217, 90%, 61%, 1)", // { r: 66, g: 135, b: 245 },
-        back: "hsla(217, 90%, 80%, 1)" // The fill color on the back defaults to a contrast value of 0.5
+        front: "hsla(217, 90%, 61%, 1)",
+        back: "hsla(217, 90%, 80%, 1)"
       },
       strokeWidth: {
         front: 2.5,
@@ -124,7 +142,7 @@ export default {
       // No fill for line segments
       strokeColor: {
         front: "hsla(0, 100%, 50%, 1)",
-        back: "hsla(0, 100%, 75%, 0.7)" // the back fill color is calculated using the contrast of 0.5
+        back: "hsla(0, 100%, 75%, 0.7)"
       },
       edgeWidth: 2, // edgeWidth/2 is the width of the region around the segment that shows the glow
       opacity: { front: 1, back: 1 }
@@ -135,7 +153,7 @@ export default {
       // No fill for line segments
       strokeColor: {
         front: "hsla(0, 0%, 42%, 1)",
-        back: "hsla(0, 0%, 71%, 1)" // the back fill color is calculated using the contrast of 0.5
+        back: "hsla(0, 0%, 71%, 1)"
       },
       // The width is the same as the default drawn version
       opacity: { front: 1, back: 1 }
@@ -153,8 +171,8 @@ export default {
     drawn: {
       // No fill for lines
       strokeColor: {
-        front: "hsla(217, 90%, 61%, 1)", // { r: 66, g: 135, b: 245 },
-        back: "hsla(217, 90%, 80%, 1)" // The fill color on the back defaults to a contrast value of 0.5
+        front: "hsla(217, 90%, 61%, 1)",
+        back: "hsla(217, 90%, 80%, 1)"
       },
       // The thickness of the line when drawn
       strokeWidth: {
@@ -173,7 +191,7 @@ export default {
       // No fill for lines
       strokeColor: {
         front: "hsla(0, 100%, 50%, 1)",
-        back: "hsla(0, 100%, 75%, 0.7)" // the back fill color is calculated using the contrast of 0.5
+        back: "hsla(0, 100%, 75%, 0.7)"
       },
       edgeWidth: 2, // edgeWidth/2 is the width of the region around the line that shows the glow
       opacity: { front: 1, back: 1 }
@@ -184,7 +202,7 @@ export default {
       // No fill for lines
       strokeColor: {
         front: "hsla(0, 0%, 42%, 1)",
-        back: "hsla(0, 0%, 71%, 1)" // the back fill color is calculated using the contrast of 0.5
+        back: "hsla(0, 0%, 71%, 1)"
       },
       // The width is the same as the default drawn version
       opacity: { front: 1, back: 1 }
@@ -204,8 +222,8 @@ export default {
         back: "hsla(217, 100%, 80%, 0.0002)" //"noFill"
       },
       strokeColor: {
-        front: "hsla(217, 90%, 61%, 1)", // { r: 66, g: 135, b: 245 },
-        back: "hsla(217, 90%, 80%, 1)" // The fill color on the back defaults to a contrast value of 0.5
+        front: "hsla(217, 90%, 61%, 1)",
+        back: "hsla(217, 90%, 80%, 1)"
       },
       strokeWidth: {
         // The thickness of the circle when drawn front/back
@@ -224,7 +242,7 @@ export default {
       // There is no fill for highlighting objects
       strokeColor: {
         front: "hsla(0, 100%, 50%, 1)",
-        back: "hsla(0, 100%, 75%, 0.7)" // the back fill color is calculated using the contrast of 0.5
+        back: "hsla(0, 100%, 75%, 0.7)"
       },
       edgeWidth: 2, // edgeWidth/2 is the width of the region around the circle (on each side) that shows the glow
       opacity: { front: 1, back: 1 }
@@ -238,7 +256,7 @@ export default {
       },
       strokeColor: {
         front: "hsla(0, 0%, 0%, 1.0)",
-        back: "hsla(0, 0%, 0%, 0.1)" // "#B4B4B4"
+        back: "hsla(0, 0%, 0%, 0.1)"
       },
       // The width is the same as the default drawn version
       opacity: { front: 1, back: 1 }

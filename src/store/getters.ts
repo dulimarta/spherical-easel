@@ -11,7 +11,7 @@ import { Vector3 } from "three";
 import Two, { Vector } from "two.js";
 import { SENodule } from "@/models/SENodule";
 import { SEPoint } from "@/models/SEPoint";
-import Point from "@/plottables/Point";
+import NonFreePoint from "@/plottables/NonFreePoint";
 import { DisplayStyle } from "@/plottables/Nodule";
 import { SEPointOnOneDimensional } from "@/models/SEPointOnOneDimensional";
 
@@ -464,7 +464,7 @@ export default {
             !avoidVectors.some(v => tempVec.subVectors(info.vector, v).isZero())
           ) {
             // info.vector is not on the avoidVectors array, so create an intersection
-            const newPt = new Point();
+            const newPt = new NonFreePoint();
             newPt.stylize(DisplayStyle.APPLYTEMPORARYVARIABLES);
             newPt.adjustSize();
             const newSEIntersectionPt = new SEIntersectionPoint(
@@ -492,7 +492,7 @@ export default {
           !avoidVectors.some(v => tempVec.subVectors(info.vector, v).isZero())
         ) {
           // info.vector is not on the avoidVectors array, so create an intersection
-          const newPt = new Point();
+          const newPt = new NonFreePoint();
           newPt.stylize(DisplayStyle.APPLYTEMPORARYVARIABLES);
           newPt.adjustSize();
           const newSEIntersectionPt = new SEIntersectionPoint(
@@ -520,7 +520,7 @@ export default {
           !avoidVectors.some(v => tempVec.subVectors(info.vector, v).isZero())
         ) {
           // info.vector is not on the avoidVectors array, so create an intersection
-          const newPt = new Point();
+          const newPt = new NonFreePoint();
           newPt.stylize(DisplayStyle.APPLYTEMPORARYVARIABLES);
           newPt.adjustSize();
           const newSEIntersectionPt = new SEIntersectionPoint(
@@ -563,7 +563,7 @@ export default {
           !avoidVectors.some(v => tempVec.subVectors(info.vector, v).isZero())
         ) {
           // info.vector is not on the avoidVectors array, so create an intersection
-          const newPt = new Point();
+          const newPt = new NonFreePoint();
           newPt.stylize(DisplayStyle.APPLYTEMPORARYVARIABLES);
           newPt.adjustSize();
           const newSEIntersectionPt = new SEIntersectionPoint(
@@ -596,7 +596,7 @@ export default {
           if (
             !avoidVectors.some(v => tempVec.subVectors(info.vector, v).isZero())
           ) {
-            const newPt = new Point();
+            const newPt = new NonFreePoint();
             newPt.stylize(DisplayStyle.APPLYTEMPORARYVARIABLES);
             newPt.adjustSize();
             const newSEIntersectionPt = new SEIntersectionPoint(
@@ -627,7 +627,7 @@ export default {
           !avoidVectors.some(v => tempVec.subVectors(info.vector, v).isZero())
         ) {
           // info.vector is not on the avoidVectors array, so create an intersection
-          const newPt = new Point();
+          const newPt = new NonFreePoint();
           newPt.stylize(DisplayStyle.APPLYTEMPORARYVARIABLES);
           newPt.adjustSize();
           const newSEIntersectionPt = new SEIntersectionPoint(
@@ -670,7 +670,7 @@ export default {
           !avoidVectors.some(v => tempVec.subVectors(info.vector, v).isZero())
         ) {
           // info.vector is not on the avoidVectors array, so create an intersection
-          const newPt = new Point();
+          const newPt = new NonFreePoint();
           newPt.stylize(DisplayStyle.APPLYTEMPORARYVARIABLES);
           newPt.adjustSize();
           const newSEIntersectionPt = new SEIntersectionPoint(
@@ -701,7 +701,7 @@ export default {
           !avoidVectors.some(v => tempVec.subVectors(info.vector, v).isZero())
         ) {
           // info.vector is not on the avoidVectors array, so create an intersection
-          const newPt = new Point();
+          const newPt = new NonFreePoint();
           newPt.stylize(DisplayStyle.APPLYTEMPORARYVARIABLES);
           newPt.adjustSize();
           const newSEIntersectionPt = new SEIntersectionPoint(
@@ -736,7 +736,7 @@ export default {
             !avoidVectors.some(v => tempVec.subVectors(info.vector, v).isZero())
           ) {
             // info.vector is not on the avoidVectors array, so create an intersection
-            const newPt = new Point();
+            const newPt = new NonFreePoint();
             newPt.stylize(DisplayStyle.APPLYTEMPORARYVARIABLES);
             newPt.adjustSize();
             const newSEIntersectionPt = new SEIntersectionPoint(

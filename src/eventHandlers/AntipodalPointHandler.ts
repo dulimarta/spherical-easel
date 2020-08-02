@@ -1,7 +1,7 @@
 import Two from "two.js";
 import { Vector3 } from "three";
 import { SEPoint } from "@/models/SEPoint";
-import Point from "@/plottables/Point";
+import NonFreePoint from "@/plottables/NonFreePoint";
 import { AddAntipodalPointCommand } from "@/commands/AddAntipodalPointCommand";
 import { DisplayStyle } from "@/plottables/Nodule";
 import Highlighter from "./Highlighter";
@@ -35,7 +35,7 @@ export default class AntipodalPointHandler extends Highlighter {
       }
 
       if (this.parentPoint != null) {
-        const newPoint = new Point();
+        const newPoint = new NonFreePoint();
         // Set the display to the default values
         newPoint.stylize(DisplayStyle.APPLYCURRENTVARIABLES);
         newPoint.adjustSize();
@@ -70,7 +70,7 @@ export default class AntipodalPointHandler extends Highlighter {
     if (this.store.getters.selectedSENodules().length == 1) {
       const object = this.store.getters.selectedSENodules()[0];
       if (object instanceof SEPoint) {
-        const newPoint = new Point();
+        const newPoint = new NonFreePoint();
         // Set the display to the default values
         newPoint.stylize(DisplayStyle.APPLYCURRENTVARIABLES);
         newPoint.adjustSize();
