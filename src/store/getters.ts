@@ -13,7 +13,6 @@ import { SENodule } from "@/models/SENodule";
 import { SEPoint } from "@/models/SEPoint";
 import Point from "@/plottables/Point";
 import { DisplayStyle } from "@/plottables/Nodule";
-import { SEPointOnOneDimensional } from "@/models/SEPointOnOneDimensional";
 
 const PIXEL_CLOSE_ENOUGH = 8;
 
@@ -33,11 +32,11 @@ const toVector = new Vector3();
 /**
  * The positive intersection vector (if it exists)
  */
-const positiveIntersection = new Vector3();
+// const positiveIntersection = new Vector3();
 /**
  * The negative intersection vector (if it exists)
  */
-const negativeIntersection = new Vector3();
+// const negativeIntersection = new Vector3();
 /**
  * A temporary vector used to help with the calculation of the intersection points
  * It is the projection of the intersection point (along the sphere) to the plane containing the centers of circles
@@ -775,11 +774,13 @@ export default {
       );
     throw "Attempted to intersect a non-dimensional object";
   },
-  findIntersectionPointsStartingWith: (state: AppState) => (
-    prefix: string
+  findIntersectionPointsByParent: (state: AppState) => (
+    parentNames: string
   ): SEIntersectionPoint[] => {
     return state.points
-      .filter(p => p instanceof SEIntersectionPoint && p.name.includes(prefix))
+      .filter(
+        p => p instanceof SEIntersectionPoint && p.name.includes(parentNames)
+      )
       .map(obj => obj as SEIntersectionPoint);
   },
   selectedObjects: (state: AppState) => (): SENodule[] => {

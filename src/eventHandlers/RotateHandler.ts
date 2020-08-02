@@ -1,10 +1,9 @@
 import MouseHandler from "./MouseHandler";
-import Two, { Vector } from "two.js";
+import Two from "two.js";
 import { Matrix4, Vector3 } from "three";
 import EventBus from "./EventBus";
 import { RotateSphereCommand } from "@/commands/RotateSphereCommand";
 import SETTINGS from "@/global-settings";
-import { SENodule } from "@/models/SENodule";
 import { SEPoint } from "@/models/SEPoint";
 import { SELine } from "@/models/SELine";
 import { SESegment } from "@/models/SESegment";
@@ -16,8 +15,8 @@ const endTime = Math.max(
   Math.min(SETTINGS.rotate.momentum.decayTime * 1000, 300000)
 ); // The momentum rotation will end after this many milliseconds. 300000 milliseconds is 5 minutes
 const tmpVector1 = new Vector3();
-const tmpVector2 = new Vector3();
-const tmpMatrix = new Matrix4();
+// const tmpVector2 = new Vector3();
+// const tmpMatrix = new Matrix4();
 
 export default class RotateHandler extends MouseHandler {
   /**

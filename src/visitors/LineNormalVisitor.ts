@@ -1,10 +1,9 @@
 import { Visitor } from "./Visitor";
 import { SEPoint } from "@/models/SEPoint";
 import { SELine } from "@/models/SELine";
-import { Matrix4, Vector3, Matrix3 } from "three";
+import { Vector3 } from "three";
 import { SECircle } from "@/models/SECircle";
 import { SESegment } from "@/models/SESegment";
-import { UpdateMode, UpdateStateType } from "@/types";
 
 export class LineNormalVisitor implements Visitor {
   private normalVector: Vector3 = new Vector3();

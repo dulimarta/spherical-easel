@@ -18,7 +18,7 @@ import Highlighter from "./Highlighter";
 import { ConvertInterPtToUserCreatedCommand } from "@/commands/ConvertInterPtToUserCreatedCommand";
 import { SEOneDimensional, SEIntersectionReturnType } from "@/types";
 import { SEPointOnOneDimensional } from "@/models/SEPointOnOneDimensional";
-import { UpdateMode, UpdateStateType } from "@/types";
+import { UpdateMode } from "@/types";
 
 export default class SegmentHandler extends Highlighter {
   /**

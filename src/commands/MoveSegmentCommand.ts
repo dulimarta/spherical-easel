@@ -1,6 +1,5 @@
 import { Command } from "./Command";
-import { SELine } from "@/models/SELine";
-import { Matrix4, Vector3 } from "three";
+import { Vector3 } from "three";
 import { SESegment } from "@/models/SESegment";
 
 export class MoveSegmentCommand extends Command {
@@ -26,7 +25,7 @@ export class MoveSegmentCommand extends Command {
   }
 
   do(): void {
-    Command.store.commit("changeSegmentNormalVectorArcLength", {
+    Command.store.commit.changeSegmentNormalVectorArcLength({
       segmentId: this.seSegment.id,
       normal: this.newNormalVector,
       arcLength: this.newArcLength
@@ -38,7 +37,7 @@ export class MoveSegmentCommand extends Command {
   }
 
   restoreState(): void {
-    Command.store.commit("changeSegmentNormalVectorArcLength", {
+    Command.store.commit.changeSegmentNormalVectorArcLength({
       segmentId: this.lastState,
       normal: this.oldNormalVector,
       arcLength: this.oldArcLength

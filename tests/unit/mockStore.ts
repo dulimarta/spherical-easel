@@ -1,4 +1,6 @@
-export default {
+import { createDirectStore } from "direct-vuex";
+
+const shadowStore = {
   state: {
     actionMode: "none",
     layers: [],
@@ -19,3 +21,6 @@ export default {
   },
   getters: {}
 };
+
+const { store } = createDirectStore(shadowStore);
+export default store;

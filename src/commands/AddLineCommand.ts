@@ -16,7 +16,7 @@ export class AddLineCommand extends Command {
   do(): void {
     this.startSEPoint.registerChild(this.seLine);
     this.endSEPoint.registerChild(this.seLine);
-    Command.store.commit("addLine", this.seLine);
+    Command.store.commit.addLine(this.seLine);
   }
 
   saveState(): void {
@@ -24,7 +24,7 @@ export class AddLineCommand extends Command {
   }
 
   restoreState(): void {
-    Command.store.commit("removeLine", this.lastState);
+    Command.store.commit.removeLine(this.lastState);
     this.startSEPoint.unregisterChild(this.seLine);
     this.endSEPoint.unregisterChild(this.seLine);
   }

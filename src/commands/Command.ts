@@ -13,7 +13,7 @@ import { Store } from "vuex";
 import { AppState } from "@/types";
 import AppStore from "@/store";
 export abstract class Command {
-  protected static store: Store<AppState> = AppStore.original;
+  protected static store = AppStore;
 
   //#region commmandArrays
   static commandHistory: Command[] = []; // stack of executed commands
@@ -36,7 +36,7 @@ export abstract class Command {
     // Update the free points to update the display so that individual command and visitors do
     // not have to update the display in the middle of undoing or redoing a command (this causes
     // problems with the move *redo*)
-    Command.store.commit("updateDisplay");
+    Command.store.commit.updateDisplay();
   }
   //#endregion undo
 
@@ -54,7 +54,7 @@ export abstract class Command {
     // Update the free points to update the display so that individual command and visitors do
     // not have to update the display in the middle of undoing or redoing a command (this causes
     // problems with the move *redo*)
-    Command.store.commit("updateDisplay");
+    Command.store.commit.updateDisplay();
   }
   //#endregion redo
 

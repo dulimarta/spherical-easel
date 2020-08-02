@@ -7,4 +7,6 @@ module.exports = {
   },
   verbose: true,
   setupFiles: ["<rootDir>/tests/setup.js"]
+  // collectCoverage: true,
+  // collectCoverageFrom: ["<rootDir>/src/expression/*.ts"]
 };

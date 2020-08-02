@@ -25,7 +25,7 @@ export default class IntersectionPointHandler extends Highlighter {
    * The prefix of the name so we can search for all intersection points for this prefix and return all
    * of the intersection points of the two one-dimensional objects
    */
-  private intersectionPointNamePrefix = "";
+  private intersectionPointParentNames = "";
 
   constructor(layers: Two.Group[]) {
     super(layers);
@@ -220,15 +220,15 @@ export default class IntersectionPointHandler extends Highlighter {
     // part of the name, so this is the name prefix
 
     if (oneDimensional1.name < oneDimensional2.name) {
-      this.intersectionPointNamePrefix = `Intersection(${oneDimensional1.name},${oneDimensional2.name}`;
+      this.intersectionPointParentNames = `(${oneDimensional1.name},${oneDimensional2.name}`;
     } else {
-      this.intersectionPointNamePrefix = `Intersection(${oneDimensional2.name},${oneDimensional1.name}`;
+      this.intersectionPointParentNames = `(${oneDimensional2.name},${oneDimensional1.name}`;
     }
 
     // Get all the SEIntersectionPoints that start with this prefix and convert them to user created points, but only if the point exists on the screen as an actual intersection point.
     const intersectionConversionCommandGroup = new CommandGroup();
     this.store.getters
-      .findIntersectionPointsStartingWith(this.intersectionPointNamePrefix)
+      .findIntersectionPointsByParent(this.intersectionPointParentNames)
       .forEach((element: SEIntersectionPoint, index: number) => {
         if (
           !element.isUserCreated &&

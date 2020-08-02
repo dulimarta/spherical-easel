@@ -1,44 +1,91 @@
 <template>
-  <div class="pa-0" id="objectTreeContainer">
-    <v-sheet rounded :elevation="4" class="my-2">
-      <SENoduleTree label="Points" :children="points" :depth="0"
-        show-children="true">
-      </SENoduleTree>
-    </v-sheet>
-    <v-sheet rounded :elevation="4" class="my-2">
-      <SENoduleTree label="Lines" :children="lines" :depth="0"
-        show-children>
-      </SENoduleTree>
-    </v-sheet>
-    <v-sheet rounded :elevation="4" class="my-2">
-      <SENoduleTree label="Segments" :children="segments" :depth="0"
-        show-children>
-      </SENoduleTree>
-    </v-sheet>
-    <v-sheet rounded :elevation="4" class="my-2">
-      <SENoduleTree label="Circles" :children="circles" :depth="0"
-        show-children>
-      </SENoduleTree>
-    </v-sheet>
+  <div>
+    <!-- this top level div is required, otherwise the style applied to id="topContainer" does not work -->
+    <div id="topContainer">
+
+      <v-card raised outlined>
+        <v-card-text>
+          <v-container>
+            <v-row>
+              <v-col cols="12">
+                <v-text-field dense outlined clearable
+                  label="Calculation Expression" placeholder="cos(pi/2)"
+                  class="ma-0" v-model="calcExpression"
+                  :error-messages="parsingError" @keypress="onKeyPressed"
+                  @click:clear="calcResult = 0"></v-text-field>
+
+              </v-col>
+            </v-row>
+            <v-text-field dense outlined readonly label="Result"
+              placeholder="0" v-model.number="calcResult">
+            </v-text-field>
+          </v-container>
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn small fab right color="accent" @click="addExpression">
+            <v-icon>mdi-plus</v-icon>
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+
+      <div class="ma-2 pa-1" id="objectTreeContainer">
+        <v-sheet rounded color="accent" :elevation="4" class="my-3"
+          v-show="points.length > 0">
+          <SENoduleTree label="Points" :children="points" :depth="0"
+            show-children="true"></SENoduleTree>
+        </v-sheet>
+        <v-sheet rounded color="accent" :elevation="4" class="my-3"
+          v-show="lines.length > 0">
+          <SENoduleTree label="Lines" :children="lines" :depth="0"
+            show-children="true"></SENoduleTree>
+        </v-sheet>
+        <v-sheet rounded color="accent" :elevation="4" class="my-3"
+          v-show="segments.length > 0">
+          <SENoduleTree label="Line Segments" :children="segments"
+            :depth="0" show-children="true"></SENoduleTree>
+        </v-sheet>
+        <v-sheet rounded color="accent" :elevation="4" class="my-3"
+          v-show="circles.length > 0">
+          <SENoduleTree label="Circles" :children="circles" :depth="0"
+            show-children="true"></SENoduleTree>
+        </v-sheet>
+        <v-sheet rounded color="accent" :elevation="4" class="my-3"
+          v-show="measurements.length > 0">
+          <SENoduleTree label="Measurements" :children="measurements"
+            :depth="0" show-children="true"></SENoduleTree>
+        </v-sheet>
+        <v-sheet rounded color="accent" :elevation="4" class="my-3"
+          v-show="calculations.length > 0">
+          <SENoduleTree label="Calculations" :children="calculations"
+            :depth="0" show-children="true"></SENoduleTree>
+        </v-sheet>
+        <span class="text-body-2 ma-2" v-show="zeroObjects">
+          No objects in database
+        </span>
+      </div>
+    </div>
   </div>
 </template>
-
 <script lang="ts">
 import Vue from "vue";
 import Component from "vue-class-component";
 import { State } from "vuex-class";
 
-// import { Mesh, MeshPhongMaterial } from "three";
-import Two from "two.js";
-import SENoduleTree from "@/components/SENoduleTree.vue"
-import { SEPoint } from "@/models/SEPoint";
+import SENoduleTree from "@/components/SENoduleTree.vue";
 import { SENodule } from "@/models/SENodule";
+import { ExpressionParser } from "@/expression/ExpressionParser";
+import { SEMeasurement } from "@/models/SEMeasurement";
+// import { SELength } from '@/models/SELength';
+import { SECalculation } from "@/models/SECalculation"
+import { AddCalculationCommand } from "@/commands/AddCalculationCommand"
 
 @Component({ components: { SENoduleTree } })
 export default class ObjectTree extends Vue {
-  private selectedPoint: SEPoint | null = null;
-  private selectedObject: SENodule | null = null;
-  private selection = [];
+  // private selectedPoint: SEPoint | null = null;
+  // private selectedObject: SENodule | null = null;
+  // private selection = [];
+  private parser = new ExpressionParser();
 
   @State
   readonly points!: SENodule[];
@@ -52,43 +99,92 @@ export default class ObjectTree extends Vue {
   @State
   readonly circles!: SENodule[];
 
+  @State
+  readonly nodules!: SENodule[];
 
-  private oldFillColor: Two.Color | undefined = undefined;
+  @State
+  readonly measurements!: SEMeasurement[];
 
-  // TODO: the getter function seems to be sluggish?
+  @State
+  readonly calculations!: SECalculation[];
 
+  private calcExpression = "";
 
+  private calcResult = 0;
+  private parsingError = "";
+  private timerInstance: NodeJS.Timeout | null = null;
+  readonly varMap = new Map<string, number>();
+  get zeroObjects(): boolean {
+    return this.nodules.filter(n => n.exists).length === 0 || this.calculations.length === 0;
+  }
 
-  updateActive(args: number[]): void {
-    console.debug("Updating point selection(s)", args);
-    if (this.selectedObject) {
-      (this.selectedObject as any).ref.normalStyle();
-    }
-    this.selectedObject = null;
-    if (args.length > 0) {
-      // const pos = this.allObjects.findIndex(v => v.id === args[0]);
-      // if (pos >= 0) {
-      //   this.selectedObject = this.allObjects[pos];
-      //   (this.selectedObject as any).ref.glowStyle();
-      // this.selectedPoint.children.forEach((n: SENodule) => {
-      //   if (n instanceof SELine) {
-      //     n.ref.glowStyle();
-      //   } else if (n instanceof SESegment) {
-      //     n.ref.glowStyle();
-      //   } else if (n instanceof SECircle) {
-      //     n.ref.glowStyle();
-      //   }
-      // })
+  calculateExpression(): void {
+    this.varMap.clear();
+    console.debug("Calc me!")
+    // this.measurements.forEach((m: SEMeasurement) => {
+    //   console.debug("Measurement", m)
+    //   const measurementName = m.name.replace("-", "");
+    //   this.varMap.set(measurementName, m.value);
+    // });
+    // console.debug("Variable map", this.varMap)
+    try {
+      // no code
+      this.calcResult =
+        this.calcExpression.length > 0
+          ? this.parser.evaluateWithVars(this.calcExpression, this.varMap)
+          : 0;
+    } catch (err) {
+      // no code
+      console.debug("Got an error", err);
+      this.parsingError = err.message;
     }
   }
-}
 
+  onKeyPressed(): void {
+    console.debug("Key press");
+    this.parsingError = ""
+    if (this.timerInstance) clearTimeout(this.timerInstance);
+    this.timerInstance = setTimeout(() => {
+      try {
+        this.varMap.clear();
+        console.debug("Calc me!")
+        this.measurements.forEach((m: SEMeasurement) => {
+          const measurementName = m.name;
+          console.debug("Measurement", m, measurementName)
+          this.varMap.set(measurementName.replace(/-.+/, ""), m.value);
+        });
+        console.debug("Variable map", this.varMap)
+        // no code
+        this.calcResult =
+          this.calcExpression.length > 0
+            ? this.parser.evaluateWithVars(this.calcExpression, this.varMap)
+            : 0;
+      } catch (err) {
+        // no code
+        // console.debug("Got an error", err);
+        this.parsingError = err.message;
+      }
+    }, 1000);
+  }
+
+  addExpression(): void {
+    console.debug("Adding experssion", this.calcExpression);
+    const calc = new SECalculation(this.calcExpression);
+    new AddCalculationCommand(calc).execute();
+  }
+}
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
+#topContainer {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  height: 100%;
+}
+
 #objectTreeContainer {
-  padding: 0;
-  width: 100%;
-  overflow: scroll;
+  overflow: auto;
+  flex-grow: 1;
 }
 </style>

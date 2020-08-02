@@ -1,21 +1,11 @@
 import Two from "two.js";
-import { Vector3 } from "three";
 import { SEPoint } from "@/models/SEPoint";
 import Point from "@/plottables/Point";
 import { AddAntipodalPointCommand } from "@/commands/AddAntipodalPointCommand";
 import { DisplayStyle } from "@/plottables/Nodule";
 import Highlighter from "./Highlighter";
-import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
-import { ConvertInterPtToUserCreatedCommand } from "@/commands/ConvertInterPtToUserCreatedCommand";
-import { SELine } from "@/models/SELine";
-import { SESegment } from "@/models/SESegment";
-import { SECircle } from "@/models/SECircle";
 import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
-import { SENodule } from "@/models/SENodule";
-import { IntersectionReturnType } from "@/types";
-import store from "@/store";
-import { SEOneDimensional } from "@/types";
-import { UpdateMode, UpdateStateType } from "@/types";
+import { UpdateMode } from "@/types";
 
 export default class AntipodalPointHandler extends Highlighter {
   /**

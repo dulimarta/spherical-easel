@@ -18,7 +18,6 @@ import { isLineState, isSegmentState, isPointState } from "@/types";
 import {
   UpdateMode,
   UpdateStateType,
-  ObjectState,
   LineState,
   SegmentState,
   PointState
@@ -26,9 +25,9 @@ import {
 import { CommandGroup } from "@/commands/CommandGroup";
 
 const tmpVector1 = new Vector3();
-const tmpVector2 = new Vector3();
+// const tmpVector2 = new Vector3();
 const desiredZAxis = new Vector3();
-const tmpMatrix = new Matrix4();
+// const tmpMatrix = new Matrix4();
 
 // public isPointOnOneDimensional(): this is SEPointOnOneDimensional {
 //   return true;
@@ -92,7 +91,7 @@ export default class MoveHandler extends Highlighter {
     super(layers);
   }
 
-  mousePressed(event: MouseEvent) {
+  mousePressed(event: MouseEvent): void {
     // if mouse press is not on the sphere do not do anything
     if (!this.isOnSphere) return;
     // Reset the variables for another move event
@@ -212,7 +211,7 @@ export default class MoveHandler extends Highlighter {
     }
   }
 
-  mouseReleased(event: MouseEvent) {
+  mouseReleased(event: MouseEvent): void {
     if (!this.movingSomething) return;
 
     if (this.moveTarget == null && this.rotateSphere) {

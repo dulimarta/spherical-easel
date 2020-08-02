@@ -31,7 +31,7 @@
           <ToolGroups></ToolGroups>
         </v-tab-item>
         <v-tab-item value="objectListTab">
-          <ObjectTree style="width:100%">
+          <ObjectTree id="objtree">
           </ObjectTree>
         </v-tab-item>
       </v-tabs>
@@ -73,16 +73,21 @@ export default class Toolbox extends Vue {
 }
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
 #mini-icons {
   width: 100%;
-  height: 80vh;
+  height: 100%;
   display: flex;
   flex-direction: column;
-  flex-grow: 1;
+  // flex-grow: 1;
+  background: red;
   justify-content: center; /* Center it vertically */
 }
 
+#objtree {
+  /* It is important to set the height otherwise the "overflow' option in <ObjectTree> won't work correctly */
+  height: calc(100vh - 200px);
+}
 .slide-out-enter-active,
 .slide-out-leave-active {
   transition-property: all;

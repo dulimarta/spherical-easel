@@ -12,7 +12,9 @@ import { Vector3 } from "three";
 import { StyleOptions } from "@/types/Styles";
 import { LineNormalVisitor } from "@/visitors/LineNormalVisitor";
 import { SegmentNormalArcLengthVisitor } from "@/visitors/SegmentNormalArcLengthVisitor";
-import { UpdateMode, UpdateStateType } from "@/types";
+import { UpdateMode } from "@/types";
+import { SEMeasurement } from "@/models/SEMeasurement";
+import { SECalculation } from "@/models/SECalculation";
 
 // const tmpMatrix = new Matrix4();
 
@@ -34,7 +36,9 @@ export const initialState: AppState = {
   lines: [], // An array of all SELines
   segments: [], // An array of all SESegments
   circles: [], // An array of all SECircles
-  intersections: [] // An array of all SEPoints that are intersections of the one-dimensional objects in the arrangement
+  intersections: [], // An array of all SEPoints that are intersections of the one-dimensional objects in the arrangement
+  measurements: [], // An array of measurements on objects
+  calculations: []
 };
 //#endregion appState
 
@@ -55,6 +59,8 @@ export default {
     state.circles.clear();
     state.selections.clear();
     state.intersections.clear();
+    state.measurements.clear();
+    state.calculations.clear();
   },
   setLayers(state: AppState, layers: Two.Group[]): void {
     state.layers = layers;
@@ -72,7 +78,7 @@ export default {
     state.activeToolName = mode.name;
   },
 
-  revertActionMode(state: AppState, st: string): void {
+  revertActionMode(state: AppState): void {
     state.actionMode = state.previousActionMode;
     state.activeToolName = state.previousActiveToolName;
   },
@@ -240,5 +246,34 @@ export default {
         // console.debug(`Changing stroke color of ${n.name} to ${color}`);
         n.ref.updateStyle(opt);
       });
+  },
+
+  addMeasurement(state: AppState, measurement: SEMeasurement): void {
+    state.measurements.push(measurement);
+    state.nodules.push(measurement);
+  },
+
+  removeMeasurement(state: AppState, measId: number): void {
+    const pos = state.measurements.findIndex(x => x.id === measId);
+    const pos2 = state.nodules.findIndex(x => x.id === measId);
+    if (pos >= 0) {
+      // const victimSegment = state.measurements[pos];
+      state.measurements.splice(pos, 1);
+      state.nodules.splice(pos2, 1);
+    }
+  },
+
+  addCalculation(state: AppState, calc: SECalculation): void {
+    // TODO: should we also push it to state.nodules?
+    // state.nodules.push(calc);
+    state.calculations.push(calc);
+  },
+  removeCalculation(state: AppState, calcId: number): void {
+    const pos = state.calculations.findIndex(c => c.id === calcId);
+    // const pos2 = state.nodules.findIndex(x => x.id === calcId);
+    if (pos >= 0) {
+      state.calculations.splice(pos, 1);
+      // state.nodules.splice(pos2, 1);
+    }
   }
 };

@@ -53,7 +53,7 @@ export class SEPointOnOneDimensional extends SEPoint {
    * that will set the position on a potentially out of date object
    * @param pos The new position of the point
    */
-  public pointMoverLocationSetter(pos: Vector3) {
+  public pointMoverLocationSetter(pos: Vector3): void {
     // Record the location on the unit ideal sphere of this SEPoint
     this._locationVector.copy(pos).normalize();
     // Set the position of the associated displayed plottable Point

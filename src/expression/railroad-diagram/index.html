@@ -1,0 +1,461 @@
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html><script type="text/javascript">
+    var spector;
+    var captureOnLoad = false;
+    var captureOffScreen = false;
+    window.__SPECTOR_Canvases = [];
+
+    (function() {
+        var __SPECTOR_Origin_EXTENSION_GetContext = HTMLCanvasElement.prototype.getContext;
+        HTMLCanvasElement.prototype.__SPECTOR_Origin_EXTENSION_GetContext = __SPECTOR_Origin_EXTENSION_GetContext;
+
+        if (typeof OffscreenCanvas !== 'undefined') {
+            var __SPECTOR_Origin_EXTENSION_OffscreenGetContext = OffscreenCanvas.prototype.getContext;
+            OffscreenCanvas.prototype.__SPECTOR_Origin_EXTENSION_OffscreenGetContext = __SPECTOR_Origin_EXTENSION_OffscreenGetContext;
+
+            OffscreenCanvas.prototype.getContext = function () {
+                var context = null;
+                if (!arguments.length) {
+                    return context;
+                }
+    
+                if (arguments.length === 1) {
+                    context = this.__SPECTOR_Origin_EXTENSION_OffscreenGetContext(arguments[0]);
+                    if (context === null) {
+                        return context;
+                    }
+                }
+                else if (arguments.length === 2) {
+                    context = this.__SPECTOR_Origin_EXTENSION_OffscreenGetContext(arguments[0], arguments[1]);
+                    if (context === null) {
+                        return context;
+                    }
+                }
+    
+                var contextNames = ["webgl", "experimental-webgl", "webgl2", "experimental-webgl2"];
+                if (contextNames.indexOf(arguments[0]) !== -1) {
+                    // context.canvas.setAttribute("__spector_context_type", arguments[0]);
+                    // Notify the page a canvas is available.
+                    var myEvent = new CustomEvent("SpectorWebGLCanvasAvailableEvent");
+                    document.dispatchEvent(myEvent);
+                    this.id = "Offscreen";
+                    window.__SPECTOR_Canvases.push(this);
+    
+                    if (captureOnLoad) {
+                        // Ensures canvas is in the dom to capture the one we are currently tracking.
+                        if (false) {
+                            spector.captureContext(context, 500, false);
+                            captureOnLoad = false;
+                        }
+                    }
+                }
+    
+                return context;
+            }
+        }
+
+        HTMLCanvasElement.prototype.getContext = function () {
+            var context = null;
+            if (!arguments.length) {
+                return context;
+            }
+
+            if (arguments.length === 1) {
+                context = this.__SPECTOR_Origin_EXTENSION_GetContext(arguments[0]);
+                if (context === null) {
+                    return context;
+                }
+            }
+            else if (arguments.length === 2) {
+                context = this.__SPECTOR_Origin_EXTENSION_GetContext(arguments[0], arguments[1]);
+                if (context === null) {
+                    return context;
+                }
+            }
+
+            var contextNames = ["webgl", "experimental-webgl", "webgl2", "experimental-webgl2"];
+            if (contextNames.indexOf(arguments[0]) !== -1) {
+                context.canvas.setAttribute("__spector_context_type", arguments[0]);
+                // Notify the page a canvas is available.
+                var myEvent = new CustomEvent("SpectorWebGLCanvasAvailableEvent");
+                document.dispatchEvent(myEvent);
+
+                if (captureOffScreen) {
+                    var found = false;
+                    for (var i = 0; i < window.__SPECTOR_Canvases.length; i++) {
+                        if (window.__SPECTOR_Canvases[i] === this) {
+                            found = true;
+                            break;
+                        }
+                    }
+                    if (!found) {
+                        window.__SPECTOR_Canvases.push(this);
+                    }
+                }
+
+                if (captureOnLoad) {
+                    // Ensures canvas is in the dom to capture the one we are currently tracking.
+                    if (this.parentElement || false) {
+                        spector.captureContext(context, 500, false);
+                        captureOnLoad = false;
+                    }
+                }
+            }
+
+            return context;
+        }
+    })()</script>
+   
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+      
+      
+      <meta name="generator" content="Railroad Diagram Generator 1.62">
+      
+      <style type="text/css">
+    ::-moz-selection
+    {
+      color: #FFFCF0;
+      background: #0F0C00;
+    }
+    ::selection
+    {
+      color: #FFFCF0;
+      background: #0F0C00;
+    }
+    .ebnf a, .grammar a
+    {
+      text-decoration: none;
+    }
+    .ebnf a:hover, .grammar a:hover
+    {
+      color: #050400;
+      text-decoration: underline;
+    }
+    .signature
+    {
+      color: #806600;
+      font-size: 11px;
+      text-align: right;
+    }
+    body
+    {
+      font: normal 12px Verdana, sans-serif;
+      color: #0F0C00;
+      background: #FFFCF0;
+    }
+    a:link, a:visited
+    {
+      color: #0F0C00;
+    }
+    a:link.signature, a:visited.signature
+    {
+      color: #806600;
+    }
+    a.button, #tabs li a
+    {
+      padding: 0.25em 0.5em;
+      border: 1px solid #806600;
+      background: #F1E8C6;
+      color: #806600;
+      text-decoration: none;
+      font-weight: bold;
+    }
+    a.button:hover, #tabs li a:hover
+    {
+      color: #050400;
+      background: #FFF6D1;
+      border-color: #050400;
+    }
+    #tabs
+    {
+      padding: 3px 10px;
+      margin-left: 0;
+      margin-top: 58px;
+      border-bottom: 1px solid #0F0C00;
+    }
+    #tabs li
+    {
+      list-style: none;
+      margin-left: 5px;
+      display: inline;
+    }
+    #tabs li a
+    {
+      border-bottom: 1px solid #0F0C00;
+    }
+    #tabs li a.active
+    {
+      color: #0F0C00;
+      background: #FFFCF0;
+      border-color: #0F0C00;
+      border-bottom: 1px solid #FFFCF0;
+      outline: none;
+    }
+    #divs div
+    {
+      display: none;
+      overflow:auto;
+    }
+    #divs div.active
+    {
+      display: block;
+    }
+    #text
+    {
+      border-color: #806600;
+      background: #FFFEFA;
+      color: #050400;
+    }
+    .small
+    {
+      vertical-align: top;
+      text-align: right;
+      font-size: 9px;
+      font-weight: normal;
+      line-height: 120%;
+    }
+    td.small
+    {
+      padding-top: 0px;
+    }
+    .hidden
+    {
+      visibility: hidden;
+    }
+    td:hover .hidden
+    {
+      visibility: visible;
+    }
+    div.download
+    {
+      display: none;
+      background: #FFFCF0;
+      position: absolute;
+      right: 34px;
+      top: 94px;
+      padding: 10px;
+      border: 1px dotted #0F0C00;
+    }
+    #divs div.ebnf, .ebnf code
+    {
+      display: block;
+      padding: 10px;
+      background: #FFF6D1;
+      width: 992px;
+    }
+    #divs div.grammar
+    {
+      display: block;
+      padding-left: 16px;
+      padding-top: 2px;
+      padding-bottom: 2px;
+      background: #FFF6D1;
+    }
+    pre
+    {
+      margin: 0px;
+    }
+    .ebnf div
+    {
+      padding-left: 13ch;
+      text-indent: -13ch;
+    }
+    .ebnf code, .grammar code, textarea, pre
+    {
+      font:12px SFMono-Regular,Consolas,Liberation Mono,Menlo,Courier,monospace;
+    }
+    tr.option-line td:first-child
+    {
+      text-align: right
+    }
+    tr.option-text td
+    {
+      padding-bottom: 10px
+    }
+    table.palette
+    {
+      border-top: 1px solid #050400;
+      border-right: 1px solid #050400;
+      margin-bottom: 4px
+    }
+    td.palette
+    {
+      border-bottom: 1px solid #050400;
+      border-left: 1px solid #050400;
+    }
+    a.palette
+    {
+      padding: 2px 3px 2px 10px;
+      text-decoration: none;
+    }
+    .palette
+    {
+      -webkit-user-select: none;
+      -khtml-user-select: none;
+      -moz-user-select: none;
+      -o-user-select: none;
+      -ms-user-select: none;
+    }
+  </style>
+   </head>
+   
+   <body>
+      
+      <p style="font-size: 14px; font-weight:bold"><a name="Expr">Expr:</a></p><img border="0" src="diagram/Expr.png" height="125" width="151" usemap="#Expr.map"><map name="Expr.map"><area shape="rect" coords="49,89,101,121" href="#Term" title="Term"></map><p>
+         
+         <div class="ebnf"><code>
+               
+               <div><a href="#Expr" title="Expr">Expr</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;::= <a href="#Term" title="Term">Term</a> ( ( '+' | '-' ) <a href="#Term" title="Term">Term</a> )*</div></code></div>
+         </p>
+      
+      <p>referenced by:
+         
+         <ul>
+            
+            <li><a href="#Factor" title="Factor">Factor</a></li>
+            
+            <li><a href="#Function" title="Function">Function</a></li>
+            </ul>
+         </p><br><p style="font-size: 14px; font-weight:bold"><a name="Term">Term:</a></p><img border="0" src="diagram/Term.png" height="125" width="157" usemap="#Term.map"><map name="Term.map"><area shape="rect" coords="49,89,107,121" href="#Power" title="Power"></map><p>
+         
+         <div class="ebnf"><code>
+               
+               <div><a href="#Term" title="Term">Term</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;::= <a href="#Power" title="Power">Power</a> ( ( '*' | '/' ) <a href="#Power" title="Power">Power</a> )*</div></code></div>
+         </p>
+      
+      <p>referenced by:
+         
+         <ul>
+            
+            <li><a href="#Expr" title="Expr">Expr</a></li>
+            </ul>
+         </p><br><p style="font-size: 14px; font-weight:bold"><a name="Power">Power:</a></p><img border="0" src="diagram/Power.png" height="81" width="157" usemap="#Power.map"><map name="Power.map"><area shape="rect" coords="49,45,107,77" href="#Factor" title="Factor"></map><p>
+         
+         <div class="ebnf"><code>
+               
+               <div><a href="#Power" title="Power">Power</a>&nbsp;&nbsp;&nbsp;&nbsp;::= <a href="#Factor" title="Factor">Factor</a> ( '^' <a href="#Factor" title="Factor">Factor</a> )*</div></code></div>
+         </p>
+      
+      <p>referenced by:
+         
+         <ul>
+            
+            <li><a href="#Term" title="Term">Term</a></li>
+            </ul>
+         </p><br><p style="font-size: 14px; font-weight:bold"><a name="Factor">Factor:</a></p><img border="0" src="diagram/Factor.png" height="213" width="239" usemap="#Factor.map"><map name="Factor.map"><area shape="rect" coords="95,1,143,33" href="#Expr" title="Expr"><area shape="rect" coords="49,45,97,77" href="#Expr" title="Expr"><area shape="rect" coords="49,89,161,121" href="#SignedNumber" title="SignedNumber"><area shape="rect" coords="49,133,103,165" href="#Ident" title="Ident"><area shape="rect" coords="49,177,123,209" href="#Function" title="Function"></map><p>
+         
+         <div class="ebnf"><code>
+               
+               <div><a href="#Factor" title="Factor">Factor</a>&nbsp;&nbsp;&nbsp;::= '(' <a href="#Expr" title="Expr">Expr</a> ')'</div>
+               
+               <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <a href="#Expr" title="Expr">Expr</a></div>
+               
+               <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <a href="#SignedNumber" title="SignedNumber">SignedNumber</a></div>
+               
+               <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <a href="#Ident" title="Ident">Ident</a></div>
+               
+               <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <a href="#Function" title="Function">Function</a></div></code></div>
+         </p>
+      
+      <p>referenced by:
+         
+         <ul>
+            
+            <li><a href="#Power" title="Power">Power</a></li>
+            </ul>
+         </p><br><p style="font-size: 14px; font-weight:bold"><a name="SignedNumber">SignedNumber:</a></p><img border="0" src="diagram/SignedNumber.png" height="81" width="287" usemap="#SignedNumber.map"><map name="SignedNumber.map"><area shape="rect" coords="135,1,201,33" href="#Integer" title="Integer"><area shape="rect" coords="135,45,237,77" href="#FloatingPoint" title="FloatingPoint"></map><p>
+         
+         <div class="ebnf"><code>
+               
+               <div><a href="#SignedNumber" title="SignedNumber">SignedNumber</a></div>
+               
+               <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;::= '-'? ( <a href="#Integer" title="Integer">Integer</a> | <a href="#FloatingPoint" title="FloatingPoint">FloatingPoint</a> )</div></code></div>
+         </p>
+      
+      <p>referenced by:
+         
+         <ul>
+            
+            <li><a href="#Factor" title="Factor">Factor</a></li>
+            </ul>
+         </p><br><p style="font-size: 14px; font-weight:bold"><a name="Integer">Integer:</a></p><img border="0" src="diagram/Integer.png" height="37" width="115" usemap="#Integer.map"><map name="Integer.map"><area shape="rect" coords="29,1,85,33" href="#Digits" title="Digits"></map><p>
+         
+         <div class="ebnf"><code>
+               
+               <div><a href="#Integer" title="Integer">Integer</a>&nbsp;&nbsp;::= <a href="#Digits" title="Digits">Digits</a></div></code></div>
+         </p>
+      
+      <p>referenced by:
+         
+         <ul>
+            
+            <li><a href="#SignedNumber" title="SignedNumber">SignedNumber</a></li>
+            </ul>
+         </p><br><p style="font-size: 14px; font-weight:bold"><a name="FloatingPoint">FloatingPoint:</a></p><img border="0" src="diagram/FloatingPoint.png" height="113" width="315" usemap="#FloatingPoint.map"><map name="FloatingPoint.map"><area shape="rect" coords="49,1,105,33" href="#Digits" title="Digits"><area shape="rect" coords="189,33,245,65" href="#Digits" title="Digits"><area shape="rect" coords="93,77,149,109" href="#Digits" title="Digits"></map><p>
+         
+         <div class="ebnf"><code>
+               
+               <div><a href="#FloatingPoint" title="FloatingPoint">FloatingPoint</a></div>
+               
+               <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;::= <a href="#Digits" title="Digits">Digits</a> '.' <a href="#Digits" title="Digits">Digits</a>?</div>
+               
+               <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| '.' <a href="#Digits" title="Digits">Digits</a></div></code></div>
+         </p>
+      
+      <p>referenced by:
+         
+         <ul>
+            
+            <li><a href="#SignedNumber" title="SignedNumber">SignedNumber</a></li>
+            </ul>
+         </p><br><p style="font-size: 14px; font-weight:bold"><a name="Digits">Digits:</a></p><img border="0" src="diagram/Digits.png" height="53" width="161"><p>
+         
+         <div class="ebnf"><code>
+               
+               <div><a href="#Digits" title="Digits">Digits</a>&nbsp;&nbsp;&nbsp;::= [0-9]+</div></code></div>
+         </p>
+      
+      <p>referenced by:
+         
+         <ul>
+            
+            <li><a href="#FloatingPoint" title="FloatingPoint">FloatingPoint</a></li>
+            
+            <li><a href="#Integer" title="Integer">Integer</a></li>
+            </ul>
+         </p><br><p style="font-size: 14px; font-weight:bold"><a name="Function">Function:</a></p><img border="0" src="diagram/Function.png" height="81" width="313" usemap="#Function.map"><map name="Function.map"><area shape="rect" coords="29,45,83,77" href="#Ident" title="Ident"><area shape="rect" coords="169,45,217,77" href="#Expr" title="Expr"></map><p>
+         
+         <div class="ebnf"><code>
+               
+               <div><a href="#Function" title="Function">Function</a>&nbsp;::= <a href="#Ident" title="Ident">Ident</a> '(' <a href="#Expr" title="Expr">Expr</a> ( ',' <a href="#Expr" title="Expr">Expr</a> )* ')'</div></code></div>
+         </p>
+      
+      <p>referenced by:
+         
+         <ul>
+            
+            <li><a href="#Factor" title="Factor">Factor</a></li>
+            </ul>
+         </p><br><hr>
+      
+      <p>
+         
+         <table border="0" class="signature">
+            
+            <tr>
+               
+               <td style="width: 100%">&nbsp;</td>
+               
+               <td valign="top">
+                  
+                  <nobr class="signature">... generated by <a name="Railroad-Diagram-Generator" class="signature" title="https://www.bottlecaps.de/rr/ui" href="https://www.bottlecaps.de/rr/ui" target="_blank">RR - Railroad Diagram Generator</a></nobr>
+                  </td>
+               
+               <td><a name="Railroad-Diagram-Generator" title="https://www.bottlecaps.de/rr/ui" href="https://www.bottlecaps.de/rr/ui" target="_blank"><img border="0" src="diagram/rr-1.62.png" height="16" width="16"></a></td>
+               </tr>
+            </table>
+         </p>
+      </body>
+   </html>

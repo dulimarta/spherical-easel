@@ -37,13 +37,13 @@ export class TextBox extends Two.Group {
    * @param layer the target layer
    * @param delay niumber of milliseconds to wait
    */
-  public showWithDelay(layer: Two.Group, delay: number) {
+  public showWithDelay(layer: Two.Group, delay: number): void {
     this.timer = setTimeout(() => {
       this.addTo(layer);
     }, delay);
   }
 
-  public hide() {
+  public hide(): void {
     if (this.timer) clearTimeout(this.timer);
     this.remove();
   }

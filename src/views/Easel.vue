@@ -8,13 +8,15 @@
   >
     <!-- Use the left page for the toolbox -->
     <template slot="paneL">
-      <div id="container">
-        <v-btn icon @click="minifyToolbox">
-          <v-icon v-if="toolboxMinified">mdi-arrow-right</v-icon>
-          <v-icon v-else>mdi-arrow-left</v-icon>
-        </v-btn>
-        <toolbox style="width:100%" ref="toolbox" :minified="toolboxMinified"></toolbox>
-      </div>
+      <v-container fill-height>
+        <div id="container">
+          <v-btn icon @click="minifyToolbox">
+            <v-icon v-if="toolboxMinified">mdi-arrow-right</v-icon>
+            <v-icon v-else>mdi-arrow-left</v-icon>
+          </v-btn>
+          <toolbox id="toolbox" ref="toolbox" :minified="toolboxMinified"></toolbox>
+        </div>
+      </v-container>
     </template>
 
     <!-- Use the right pane mainly for the canvas and style panel -->
@@ -43,13 +45,6 @@
                   >
                     <sphere-frame :canvas-size="currentCanvasSize"></sphere-frame>
                     <div class="anchored top left">
-                      <!-- <v-btn-toggle
-                    v-model="actionMode"
-                    @change="switchActionMode"
-                    class="mr-2 d-flex flex-wrap accent"
-                  >
-                    <ToolButton :key="80" :button="buttonList[8]"></ToolButton>
-                      </v-btn-toggle>-->
                       <v-tooltip
                         bottom
                         :open-delay="toolTipOpenDelay"
@@ -222,6 +217,7 @@ import { SENodule } from "../models/SENodule";
   components: { SplitPane, Toolbox, SphereFrame, ToolButton, StylePanel }
 })
 export default class Easel extends Vue {
+  readonly store = this.$store.direct;
   @State
   readonly points!: SENodule[];
 
@@ -251,7 +247,7 @@ export default class Easel extends Vue {
   private displayZoomInToolUseMessage = false;
   private displayZoomOutToolUseMessage = false;
   private displayZoomFitToolUseMessage = false;
-  private actionMode = "segment";
+  private actionMode = { id: "", name: "" };
 
   $refs!: {
     responsiveBox: VueComponent;
@@ -269,15 +265,15 @@ export default class Easel extends Vue {
 
   private enableZoomIn(): void {
     this.displayZoomInToolUseMessage = true;
-    this.$store.commit("setActionMode", { id: "zoomIn", name: "Zoom In" });
+    this.store.commit.setActionMode({ id: "zoomIn", name: "Zoom In" });
   }
   private enableZoomOut(): void {
     this.displayZoomOutToolUseMessage = true;
-    this.$store.commit("setActionMode", { id: "zoomOut", name: "Zoom Out" });
+    this.store.commit.setActionMode({ id: "zoomOut", name: "Zoom Out" });
   }
   private enableZoomFit(): void {
     this.displayZoomFitToolUseMessage = true;
-    this.$store.commit("setActionMode", { id: "zoomFit", name: "Zoom Fit" });
+    this.store.commit.setActionMode({ id: "zoomFit", name: "Zoom Fit" });
   }
   private adjustSize(): void {
     console.debug("adjustSize()");
@@ -337,7 +333,7 @@ export default class Easel extends Vue {
       this.toolboxMinified = true;
     }
     if (!this.stylePanelMinified) {
-      this.$store.commit("setActionMode", {
+      this.store.commit.setActionMode({
         id: "select",
         name: "CreateSelectDisplayedName"
       });
@@ -345,7 +341,7 @@ export default class Easel extends Vue {
   }
 
   switchActionMode(): void {
-    this.$store.commit("setActionMode", this.actionMode);
+    this.store.commit.setActionMode(this.actionMode);
   }
   onWindowResized(): void {
     this.adjustSize();
@@ -383,8 +379,15 @@ export default class Easel extends Vue {
 #container {
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
+  justify-content: flex-start; /* Pull contents vertically to the top */
+  align-items: flex-end; /* Align contents horizontally to the right */
+  height: 100%;
 }
+
+#toolbox {
+  width: 100%;
+}
+
 #responsiveBox {
   border: 2px double darkcyan;
   position: relative;

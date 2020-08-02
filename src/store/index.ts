@@ -8,7 +8,6 @@ import EventBus from "@/eventHandlers/EventBus";
 // import StylesModule from "./ui-styles";
 // import AuthModule from "./auth";
 import { createDirectStore } from "direct-vuex";
-
 Vue.use(Vuex);
 
 const {

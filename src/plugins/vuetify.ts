@@ -26,6 +26,10 @@ const vuetify = new Vuetify({
       dark: {
         primary: colors.blue.lighten3
       }
+    },
+    options: {
+      /* Enable var(--prop) om CSS */
+      customProperties: true
     }
   }
 });

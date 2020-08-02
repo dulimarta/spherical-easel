@@ -1,6 +1,6 @@
 import { Command } from "./Command";
 import { SELine } from "@/models/SELine";
-import { Matrix4, Vector3 } from "three";
+import { Vector3 } from "three";
 
 export class MoveLineCommand extends Command {
   private seLine: SELine;
@@ -19,7 +19,7 @@ export class MoveLineCommand extends Command {
   }
 
   do(): void {
-    Command.store.commit("changeLineNormalVector", {
+    Command.store.commit.changeLineNormalVector({
       lineId: this.seLine.id,
       normal: this.newNormalVector
     });
@@ -30,7 +30,7 @@ export class MoveLineCommand extends Command {
   }
 
   restoreState(): void {
-    Command.store.commit("changeLineNormalVector", {
+    Command.store.commit.changeLineNormalVector({
       lineId: this.lastState,
       normal: this.oldNormalVector
     });

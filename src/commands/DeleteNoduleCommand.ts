@@ -1,6 +1,5 @@
 import { Command } from "./Command";
 import { SENodule } from "@/models/SENodule";
-import { PointState } from "@/types";
 import { SEPoint } from "@/models/SEPoint";
 import { SELine } from "@/models/SELine";
 import { SECircle } from "@/models/SECircle";
@@ -49,13 +48,13 @@ export class DeleteNoduleCommand extends Command {
     // console.log("after unreg parent len", this.seNodule.parents.length);
     // Remove from the store and turn off the display
     if (this.seNodule instanceof SEPoint) {
-      Command.store.commit("removePoint", this.seNodule.id);
+      Command.store.commit.removePoint(this.seNodule.id);
     } else if (this.seNodule instanceof SELine) {
-      Command.store.commit("removeLine", this.seNodule.id);
+      Command.store.commit.removeLine(this.seNodule.id);
     } else if (this.seNodule instanceof SECircle) {
-      Command.store.commit("removeCircle", this.seNodule.id);
+      Command.store.commit.removeCircle(this.seNodule.id);
     } else if (this.seNodule instanceof SESegment) {
-      Command.store.commit("removeSegment", this.seNodule.id);
+      Command.store.commit.removeSegment(this.seNodule.id);
     }
   }
 
@@ -75,13 +74,13 @@ export class DeleteNoduleCommand extends Command {
     }
     // Add the point to the store and turn on display
     if (this.seNodule instanceof SEPoint) {
-      Command.store.commit("addPoint", this.seNodule);
+      Command.store.commit.addPoint(this.seNodule);
     } else if (this.seNodule instanceof SELine) {
-      Command.store.commit("addLine", this.seNodule);
+      Command.store.commit.addLine(this.seNodule);
     } else if (this.seNodule instanceof SECircle) {
-      Command.store.commit("addCircle", this.seNodule);
+      Command.store.commit.addCircle(this.seNodule);
     } else if (this.seNodule instanceof SESegment) {
-      Command.store.commit("addSegment", this.seNodule);
+      Command.store.commit.addSegment(this.seNodule);
     }
     // The parent array of this.seNodule is empty prior to the execution of this loop
     for (let i = 0; i < this.parentIds.length; i++) {
