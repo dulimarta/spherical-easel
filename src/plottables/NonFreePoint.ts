@@ -13,29 +13,10 @@ import { StyleOptions } from "@/types/Styles";
  * SEPoint concerns mainly with geometry computations.
  */
 
-export default class Point extends Nodule {
-  /**
-   * The vector location of the Point on the default sphere
-   * The location vector in the Default Screen Plane
-   * It will always be the case the x and y coordinates of these two vectors are the same.
-   * The sign of the z coordinate indicates if the Point is on the back of the sphere
-   */
-  public _locationVector = new Vector3(1, 0, 0);
-  public defaultScreenVectorLocation = new Two.Vector(1, 0);
-
-  /**
-   * The TwoJS objects that are used to display the point.
-   * One is for the front, the other for the back. Only one is displayed at a time
-   * The companion glowing objects are also declared, they are always larger than there
-   * drawn counterparts so that a glowing edge shows.
-   */
-  private frontPoint: Two.Circle;
-  private backPoint: Two.Circle;
-  private glowingFrontPoint: Two.Circle;
-  private glowingBackPoint: Two.Circle;
-
+export default class NonFreePoint extends Point {
   /**
    * The styling variables for the drawn point. The user can modify these.
+
    */
   // Front
   private fillColorFront = SETTINGS.point.drawn.fillColor.front;
@@ -71,164 +52,10 @@ export default class Point extends Nodule {
     SETTINGS.point.drawn.radius.back + SETTINGS.point.glowing.annularWidth;
   static pointScaleFactor = 1;
 
-  /**
-   * Update the point scale factor -- the points are drawn of the default size in the constructor
-   * so to account for the zoom magnification we only need to keep track of the scale factor (which is
-   * really just one over the current magnification factor) and then scale the point on the zoom event.
-   * This is accomplished by the adjustSize() method
-   * @param factor The ratio of the old magnification factor over the new magnification factor
-   */
-  static updatePointScaleFactorForZoom(factor: number): void {
-    Point.pointScaleFactor *= factor;
-  }
-
   constructor() {
     super();
-
-    //Create the front/back/glowing/drawn TwoJS objects of the default size
-    this.frontPoint = new Two.Circle(0, 0, SETTINGS.point.drawn.radius.front);
-    this.backPoint = new Two.Circle(0, 0, SETTINGS.point.drawn.radius.back);
-    this.glowingFrontPoint = new Two.Circle(
-      0,
-      0,
-      SETTINGS.point.drawn.radius.front + SETTINGS.point.glowing.annularWidth
-    );
-    this.glowingBackPoint = new Two.Circle(
-      0,
-      0,
-      SETTINGS.point.drawn.radius.back + SETTINGS.point.glowing.annularWidth
-    );
-
-    // Set the location of the points front/back/glowing/drawn
-    // The location of all points front/back/glowing/drawn is controlled by the
-    //  Two.Group that they are all members of. To translate the group is to translate all points
-
-    this.glowingFrontPoint.translation = this.defaultScreenVectorLocation;
-    this.frontPoint.translation = this.defaultScreenVectorLocation;
-    this.glowingBackPoint.translation = this.defaultScreenVectorLocation;
-    this.backPoint.translation = this.defaultScreenVectorLocation;
-
-    // The points are not initially glowing
-    this.frontPoint.visible = false;
-    this.glowingFrontPoint.visible = false;
-    this.backPoint.visible = false;
-    this.glowingBackPoint.visible = false;
-
-    // Set the properties of the points that never change - stroke width and glowing options
-    this.frontPoint.linewidth = SETTINGS.point.drawn.pointStrokeWidth.front;
-    this.backPoint.linewidth = SETTINGS.point.drawn.pointStrokeWidth.back;
-
-    // FRONT Glowing
-    if (SETTINGS.point.glowing.fillColor.front === "noFill") {
-      this.glowingFrontPoint.noFill();
-    } else {
-      this.glowingFrontPoint.fill = SETTINGS.point.glowing.fillColor.front;
-    }
-    this.glowingFrontPoint.noStroke();
-    this.glowingFrontPoint.opacity = SETTINGS.point.glowing.opacity.front;
-    // points have no dashing
-
-    // Back Glowing
-    if (SETTINGS.point.glowing.fillColor.back === "noFill") {
-      this.glowingBackPoint.noFill();
-    } else {
-      this.glowingBackPoint.fill = SETTINGS.point.glowing.fillColor.back;
-    }
-    this.glowingBackPoint.noStroke();
-    this.glowingBackPoint.opacity = SETTINGS.point.glowing.opacity.back;
-    // points have no dashing
   }
 
-  /**
-   * Get and Set the location of the point in the Default Sphere, this also updates the display
-   */
-  set positionVector(idealUnitSphereVectorLocation: Vector3) {
-    this._locationVector
-      .copy(idealUnitSphereVectorLocation)
-      .multiplyScalar(SETTINGS.boundaryCircle.radius);
-    // Translate the whole group (i.e. all points front/back/glowing/drawn) to the new center vector
-    this.defaultScreenVectorLocation.set(
-      this._locationVector.x,
-      this._locationVector.y
-    );
-    this.updateDisplay();
-  }
-  get positionVector(): Vector3 {
-    return this._locationVector;
-  }
-
-  frontGlowingDisplay(): void {
-    this.frontPoint.visible = true;
-    this.glowingFrontPoint.visible = true;
-    this.backPoint.visible = false;
-    this.glowingBackPoint.visible = false;
-  }
-
-  backGlowingDisplay(): void {
-    this.frontPoint.visible = false;
-    this.glowingFrontPoint.visible = false;
-    this.backPoint.visible = true;
-    this.glowingBackPoint.visible = true;
-  }
-
-  glowingDisplay(): void {
-    if (this._locationVector.z > 0) {
-      this.frontGlowingDisplay();
-    } else {
-      this.backGlowingDisplay();
-    }
-  }
-
-  frontNormalDisplay(): void {
-    this.frontPoint.visible = true;
-    this.glowingFrontPoint.visible = false;
-    this.backPoint.visible = false;
-    this.glowingBackPoint.visible = false;
-  }
-
-  backNormalDisplay(): void {
-    this.frontPoint.visible = false;
-    this.glowingFrontPoint.visible = false;
-    this.backPoint.visible = true;
-    this.glowingBackPoint.visible = false;
-  }
-
-  normalDisplay(): void {
-    if (this._locationVector.z > 0) {
-      this.frontNormalDisplay();
-    } else {
-      this.backNormalDisplay();
-    }
-  }
-
-  addToLayers(layers: Two.Group[]): void {
-    this.frontPoint.addTo(layers[LAYER.foregroundPoints]);
-    this.glowingFrontPoint.addTo(layers[LAYER.foregroundPointsGlowing]);
-    this.backPoint.addTo(layers[LAYER.backgroundPoints]);
-    this.glowingBackPoint.addTo(layers[LAYER.backgroundPointsGlowing]);
-  }
-
-  removeFromLayers(): void {
-    this.frontPoint.remove();
-    this.glowingFrontPoint.remove();
-    this.backPoint.remove();
-    this.glowingBackPoint.remove();
-  }
-
-  updateDisplay(): void {
-    this.normalDisplay();
-  }
-
-  setVisible(flag: boolean): void {
-    if (!flag) {
-      this.frontPoint.visible = false;
-      this.glowingFrontPoint.visible = false;
-      this.backPoint.visible = false;
-      this.glowingBackPoint.visible = false;
-    } else {
-      this.normalDisplay();
-    }
-  }
   /**
    * Copies the style options set by the Style Panel into the style variables and then updates the
    * Two.js objects (with adjustSize and stylize(ApplyVariables))

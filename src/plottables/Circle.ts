@@ -69,7 +69,6 @@ export default class Circle extends Nodule {
 
   /**
    * The styling variables for the drawn circle. The user can modify these.
-   * Created with the Google Sheet "Circle Styling Code" in the "Set Drawn Variables" tab
    */
   // Front
   private fillColorFront = SETTINGS.circle.drawn.fillColor.front;

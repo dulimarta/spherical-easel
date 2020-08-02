@@ -51,7 +51,6 @@ export default class Segment extends Nodule {
 
   /**
    * The styling variables for the drawn segment. The user can modify these.
-   * Created with the Google Sheet "Segment Styling Code" in the "Set Drawn Variables" tab
    */
   // Front
   private strokeColorFront = SETTINGS.segment.drawn.strokeColor.front;
