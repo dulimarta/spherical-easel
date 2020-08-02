@@ -3,6 +3,8 @@ export enum Styles {
   // that refers to Color property
   strokeWidthPercent,
   strokeColor,
+  fillColorWhite,
+  fillColorGray,
   fillColor,
   dashArray,
   opacity,
