@@ -369,7 +369,7 @@
       <v-color-picker
         hide-canvas
         mode="hsla"
-        :disabled="!fillColorAgreement || totallyDisableFillColorSelector"
+        :disabled="!fillColorAgreement || totallyDisableFillColorSelector || noFill"
         show-swatches
         :hide-inputs="!fillColorAgreement || !showFillOptions"
         hide-mode-switch
@@ -807,6 +807,7 @@ import FadeInCard from "@/components/FadeInCard.vue";
 import { UnsignedShortType } from "three";
 import { hslaColorType } from "@/types";
 import { StyleNoduleCommand } from "@/commands/StyleNoduleCommand";
+import EventBus from "@/eventHandlers/EventBus";
 // import { getModule } from "vuex-module-decorators";
 // import UI from "@/store/ui-styles";
 
@@ -852,8 +853,6 @@ export default class FrontStyle extends Vue {
    */
   private noObjectsSelected = true;
 
-  private stateSaved = false;
-
   private toolTipOpenDelay = SETTINGS.toolTip.openDelay;
   private toolTipCloseDelay = SETTINGS.toolTip.closeDelay;
   /**
@@ -877,7 +876,9 @@ export default class FrontStyle extends Vue {
   private strokeColor: string | undefined = "hsl(0,0%,0%,0)"; //Color recognisable by TwoJs
   private hslaStrokeColorObject: hslaColorType = { h: 0, s: 1, l: 1, a: 0 }; // Color for Vuetify Color picker
   private strokeColorAgreement = true;
-  private strokeSwatchHeight = 0;
+  private strokeSwatchHeight = 100;
+  // strokeCanvasHeight is disabled it doesn't work right change hide-canvas to :canvas-height="strokeCanvasHeight" to enable
+  private strokeCanvasHeight = 40;
   private showStrokeOptions = false;
   private totallyDisableStrokeColorSelector = false;
   private noStroke = false;
@@ -887,6 +888,8 @@ export default class FrontStyle extends Vue {
   private hslaFillColorObject: hslaColorType = { h: 0, s: 1, l: 1, a: 0 }; // Color for Vuetify Color picker
   private fillColorAgreement = true;
   private fillSwatchHeight = 0;
+  // strokeCanvasHeight is disabled it doesn't work right change hide-canvas to :canvas-height="fillCanvasHeight" to enable
+  private fillCanvasHeight = 40;
   private showFillOptions = false;
   private totallyDisableFillColorSelector = false;
   private noFill = false;
@@ -939,8 +942,9 @@ export default class FrontStyle extends Vue {
 
   /** mounted() is part of VueJS lifecycle hooks */
   mounted(): void {
-    //If there are already objects selected set the style panel to edit them (OK to pass empty string becaue that will set the defaults)
+    //If there are already objects selected set the style panel to edit them (OK to pass empty string because that will set the defaults)
     this.onSelectionChanged(this.$store.getters.selectedSENodules());
+    EventBus.listen("save-style-state", this.saveStyleState);
   }
 
   isBackFace(): boolean {
@@ -1050,11 +1054,14 @@ export default class FrontStyle extends Vue {
       this.showStrokeOptions = !this.showStrokeOptions;
       if (this.showStrokeOptions) {
         this.strokeSwatchHeight = 100;
+        // this.strokeCanvasHeight = 30;
       } else {
         this.strokeSwatchHeight = 0;
+        // this.strokeCanvasHeight = 0;
       }
     } else {
       this.strokeSwatchHeight = 0;
+      // this.strokeCanvasHeight = 0;
       this.showStrokeOptions = false;
     }
   }
@@ -1090,12 +1097,14 @@ export default class FrontStyle extends Vue {
         "hsla(0,0%,0%,0.001)"
       );
       this.strokeSwatchHeight = 0;
+      this.strokeCanvasHeight = 0;
       this.showStrokeOptions = false;
       this.noStroke = true;
     } else {
       this.hslaStrokeColorObject = Nodule.convertStringToHSLAObject(
         this.strokeColor
       );
+      this.strokeCanvasHeight = 50;
       this.noStroke = false;
     }
 
@@ -1121,6 +1130,7 @@ export default class FrontStyle extends Vue {
       this.strokeColor
     );
     this.strokeSwatchHeight = 0;
+    this.strokeCanvasHeight = 0;
     this.showStrokeOptions = false;
     this.totallyDisableStrokeColorSelector = totally;
   }
@@ -1132,8 +1142,10 @@ export default class FrontStyle extends Vue {
         "hsla(0,100%,100%,0)"
       );
       this.strokeSwatchHeight = 0;
+      this.strokeCanvasHeight = 0;
       this.showStrokeOptions = false;
     } else {
+      this.strokeCanvasHeight = 50;
       this.strokeColor = this.preNoStrokeColor;
       this.hslaStrokeColorObject = Nodule.convertStringToHSLAObject(
         this.strokeColor
@@ -1204,9 +1216,11 @@ export default class FrontStyle extends Vue {
         "hsla(0,0%,0%,0.001)"
       );
       this.fillSwatchHeight = 0;
+      this.fillCanvasHeight = 0;
       this.showFillOptions = false;
       this.noFill = true;
     } else {
+      this.fillCanvasHeight = 50;
       this.hslaFillColorObject = Nodule.convertStringToHSLAObject(
         this.fillColor
       );
@@ -1232,10 +1246,33 @@ export default class FrontStyle extends Vue {
     this.fillColor = "hsla(0,100%,100%,0)";
     this.hslaFillColorObject = Nodule.convertStringToHSLAObject(this.fillColor);
     this.fillSwatchHeight = 0;
+    this.fillCanvasHeight = 0;
     this.showFillOptions = false;
     this.totallyDisableFillColorSelector = totally;
   }
-
+  setNoFill(): void {
+    if (this.noFill) {
+      this.preNoFillColor = this.fillColor;
+      this.fillColor = "noFill";
+      this.hslaFillColorObject = Nodule.convertStringToHSLAObject(
+        "hsla(0,100%,100%,0)"
+      );
+      this.fillSwatchHeight = 0;
+      this.fillCanvasHeight = 0;
+      this.showFillOptions = false;
+    } else {
+      this.fillCanvasHeight = 50;
+      this.fillColor = this.preNoFillColor;
+      this.hslaFillColorObject = Nodule.convertStringToHSLAObject(
+        this.fillColor
+      );
+    }
+    this.$store.commit("changeStyle", {
+      selected: this.$store.getters.selectedSENodules(),
+      front: this.side,
+      fillColor: this.fillColor
+    });
+  }
   // These methods are linked to the pointRadiusPercent fade-in-card
   onPointRadiusPercentChange(): void {
     this.$store.commit("changeStyle", {
@@ -1319,27 +1356,6 @@ export default class FrontStyle extends Vue {
     this.pointRadiusPercentAgreement = false;
     this.pointRadiusPercent = 100;
     this.totallyDisablePointRadiusPercentSelector = totally;
-  }
-  setNoFill(): void {
-    if (this.noFill) {
-      this.preNoFillColor = this.fillColor;
-      this.fillColor = "noFill";
-      this.hslaFillColorObject = Nodule.convertStringToHSLAObject(
-        "hsla(0,100%,100%,0)"
-      );
-      this.fillSwatchHeight = 0;
-      this.showFillOptions = false;
-    } else {
-      this.fillColor = this.preNoFillColor;
-      this.hslaFillColorObject = Nodule.convertStringToHSLAObject(
-        this.fillColor
-      );
-    }
-    this.$store.commit("changeStyle", {
-      selected: this.$store.getters.selectedSENodules(),
-      front: this.side,
-      fillColor: this.fillColor
-    });
   }
 
   // These methods are linked to the opacity fade-in-card
@@ -1556,7 +1572,6 @@ export default class FrontStyle extends Vue {
   }
 
   setDashPatternSelectorState(styleState: StyleOptions[]): void {
-    console.log("dash array of state", styleState[0].dashArray);
     // reset to the default which are overwritten as necessary
     this.emptyDashPattern = true;
     this.dashPatternAgreement = true;
@@ -1596,13 +1611,11 @@ export default class FrontStyle extends Vue {
             }
           })
         ) {
-          console.log("here4");
           // The strokeColor property exists on the selected objects but the dash array doesn't agree (so don't totally disable the selector)
           this.disableDashPatternSelector(false);
         }
       }
     } else {
-      console.log("here5");
       // The strokeColor property doesn't exists on the selected objects so totally disable the selector
       this.disableDashPatternSelector(true);
     }
@@ -1796,38 +1809,9 @@ export default class FrontStyle extends Vue {
    */
   @Watch("selections")
   onSelectionChanged(newSelection: SENodule[]): void {
-    // Before changing the selections save the state for an undo/redo command
+    // Before changing the selections save the state for an undo/redo command (if necessary)
+    this.saveStyleState();
 
-    if (this.oldSelection.length > 0) {
-      console.log(
-        "oldSelection",
-        this.oldSelection.length,
-        this.oldSelection[0].name
-      );
-      //Record the current state of each Nodule
-      this.currentStyleStates.clear();
-      this.oldSelection.forEach(seNodule => {
-        this.currentStyleStates.push(seNodule.ref.currentStyleState(this.side));
-      });
-      // Check to see if there have been any difference between the current and initial
-      if (
-        !this.areEquivalentStyles(
-          this.currentStyleStates,
-          this.initialStyleStates
-        ) ||
-        this.initialBackStyleContrast != Nodule.getBackStyleContrast()
-      ) {
-        console.log("issued new style command");
-        new StyleNoduleCommand(
-          this.oldSelection,
-          this.side,
-          this.currentStyleStates,
-          this.initialStyleStates,
-          this.initialBackStyleContrast,
-          Nodule.getBackStyleContrast()
-        ).push();
-      }
-    }
     this.commonStyleProperties.clear();
     if (newSelection.length === 0) {
       //totally disable the selectors
@@ -1880,7 +1864,6 @@ export default class FrontStyle extends Vue {
     styleStates2: StyleOptions[]
   ): boolean {
     if (styleStates1.length !== styleStates2.length) {
-      console.log("here0");
       return false;
     }
     for (let i = 0; i < styleStates1.length; i++) {
@@ -1894,33 +1877,73 @@ export default class FrontStyle extends Vue {
         a.dynamicBackStyle == b.dynamicBackStyle &&
         a.pointRadiusPercent == b.pointRadiusPercent
       ) {
-        console.log("here1");
+        //noe check the dash array which can be undefined, an empty array,length one array or a length two array.
         if (a.dashArray == undefined && b.dashArray == undefined) {
-          return true;
+          break; // stop checking this pair in the array because we can conclude they are equal.
         }
         if (a.dashArray != undefined && b.dashArray != undefined) {
           if (a.dashArray.length == b.dashArray.length) {
-            console.log("here2");
             if (a.dashArray.length == 0 && b.dashArray.length == 0) {
-              return true;
-            }
-            if (
+              break; // stop checking this pair in the array because we can conclude they are equal.
+            } else if (
+              a.dashArray.length == 1 &&
+              b.dashArray.length == 1 &&
+              a.dashArray[0] == b.dashArray[0]
+            ) {
+              break; // stop checking this pair in the array because we can conclude they are equal.
+            } else if (
+              a.dashArray.length == 2 &&
+              b.dashArray.length == 2 &&
               a.dashArray[0] == b.dashArray[0] &&
               a.dashArray[1] == b.dashArray[1]
             ) {
-              console.log("here3");
-              return true;
+              break; // stop checking this pair in the array because we can conclude they are equal.
+            } else {
+              return false;
             }
           } else {
             return false;
           }
         } else {
-          console.log("here6");
           return false;
         }
+      } else {
+        return false;
       }
     }
-    return false;
+    // If we reach here the arrays of style states are equal
+    return true;
+  }
+
+  saveStyleState(): void {
+    if (this.oldSelection.length > 0) {
+      console.log("save style state");
+      // Check to see if there have been any difference between the current and initial
+      //Record the current state of each Nodule
+      this.currentStyleStates.clear();
+      this.oldSelection.forEach(seNodule => {
+        this.currentStyleStates.push(seNodule.ref.currentStyleState(this.side));
+      });
+      if (
+        !this.areEquivalentStyles(
+          this.currentStyleStates,
+          this.initialStyleStates
+        ) ||
+        this.initialBackStyleContrast != Nodule.getBackStyleContrast()
+      ) {
+        console.log("Issued new style save command");
+        new StyleNoduleCommand(
+          this.oldSelection,
+          this.side,
+          this.currentStyleStates,
+          this.initialStyleStates,
+          this.initialBackStyleContrast,
+          Nodule.getBackStyleContrast()
+        ).push();
+      }
+      // clear the old selection so that this save style state will not be executed again until changes are made.
+      this.oldSelection.clear();
+    }
   }
 }
 </script>

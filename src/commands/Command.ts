@@ -12,6 +12,7 @@
 import { Store } from "vuex";
 import { AppState } from "@/types";
 import AppStore from "@/store";
+import EventBus from "@/eventHandlers/EventBus";
 export abstract class Command {
   protected static store: Store<AppState> = AppStore;
 
@@ -34,9 +35,11 @@ export abstract class Command {
       lastAction.restoreState();
     }
     // Update the free points to update the display so that individual command and visitors do
-    // not have to update the display in the middle of undoing or redoing a command (this causes
+    // not have to update the display in the middle of undoing or redoing a command (this middle stuff causes
     // problems with the move *redo*)
     Command.store.commit("updateDisplay");
+    EventBus.fire("undo-enabled", { value: Command.commandHistory.length > 0 });
+    EventBus.fire("redo-enabled", { value: Command.redoHistory.length > 0 });
   }
   //#endregion undo
 
@@ -52,9 +55,12 @@ export abstract class Command {
       nextAction.execute();
     }
     // Update the free points to update the display so that individual command and visitors do
-    // not have to update the display in the middle of undoing or redoing a command (this causes
+    // not have to update the display in the middle of undoing or redoing a command (this middle stuff causes
     // problems with the move *redo*)
     Command.store.commit("updateDisplay");
+
+    EventBus.fire("undo-enabled", { value: Command.commandHistory.length > 0 });
+    EventBus.fire("redo-enabled", { value: Command.redoHistory.length > 0 });
   }
   //#endregion redo
 
@@ -63,12 +69,18 @@ export abstract class Command {
     Command.commandHistory.push(this);
     this.saveState(); /* Allow the command to save necessary data to restore later */
     this.do(); /* perform the actual action of this command */
+
+    EventBus.fire("undo-enabled", { value: Command.commandHistory.length > 0 });
+    EventBus.fire("redo-enabled", { value: Command.redoHistory.length > 0 });
   }
 
   /** Just memorize the command without actually executing it */
   push(): void {
     Command.commandHistory.push(this);
     this.saveState();
+
+    EventBus.fire("undo-enabled", { value: Command.commandHistory.length > 0 });
+    EventBus.fire("redo-enabled", { value: Command.redoHistory.length > 0 });
   }
 
   // Child classes of Command must implement the following abstract methods

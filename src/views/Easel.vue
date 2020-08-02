@@ -58,8 +58,16 @@
                         <!-- TODO:   
                         When not available they should be greyed out (i.e. disabled).-->
                         <template v-slot:activator="{ on }">
-                          <v-btn icon @click="undoEdit" v-on="on">
-                            <v-icon>mdi-undo</v-icon>
+                          <v-btn
+                            :disabled="!stylePanelMinified || !undoEnabled"
+                            icon
+                            @click="undoEdit"
+                            v-on="on"
+                          >
+                            <v-icon
+                              color="blue"
+                              :disabled="!stylePanelMinified || !undoEnabled"
+                            >mdi-undo</v-icon>
                           </v-btn>
                         </template>
                         <span>{{ $t("main.UndoLastAction") }}</span>
@@ -70,8 +78,16 @@
                         :close-delay="toolTipCloseDelay"
                       >
                         <template v-slot:activator="{ on }">
-                          <v-btn icon @click="redoAction" v-on="on">
-                            <v-icon>mdi-redo</v-icon>
+                          <v-btn
+                            :disabled="!stylePanelMinified || !redoEnabled"
+                            icon
+                            @click="redoAction"
+                            v-on="on"
+                          >
+                            <v-icon
+                              color="blue"
+                              :disabled="!stylePanelMinified || !redoEnabled"
+                            >mdi-redo</v-icon>
                           </v-btn>
                         </template>
                         <span>{{ $t("main.RedoLastAction") }}</span>
@@ -253,6 +269,8 @@ export default class Easel extends Vue {
   private toolUseMessageDelay = SETTINGS.toolUse.delay;
   private displayToolUseMessage = SETTINGS.toolUse.display;
 
+  private undoEnabled = false;
+  private redoEnabled = false;
   private displayZoomInToolUseMessage = false;
   private displayZoomOutToolUseMessage = false;
   private displayZoomFitToolUseMessage = false;
@@ -269,8 +287,19 @@ export default class Easel extends Vue {
   constructor() {
     super();
     EventBus.listen("magnification-updated", this.resizePlottables);
+    EventBus.listen("undo-enabled", this.setUndoEnabled);
+    EventBus.listen("redo-enabled", this.setRedoEnabled);
   }
   //#endregion magnificationUpdate
+
+  private setUndoEnabled(e: unknown): void {
+    this.undoEnabled = (e as any).value;
+    console.log("undo enabled", this.undoEnabled);
+  }
+  private setRedoEnabled(e: unknown): void {
+    this.redoEnabled = (e as any).value;
+    console.log("redo enabled", this.redoEnabled);
+  }
 
   private enableZoomIn(): void {
     this.displayZoomInToolUseMessage = true;
