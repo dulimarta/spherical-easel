@@ -1,6 +1,6 @@
 <template>
   <div>
-    <fade-in-card :showWhen="isBackFace()">
+    <fade-in-card :showWhen="isBackFace()" color="red">
       <v-tooltip
         bottom
         :open-delay="toolTipOpenDelay"
@@ -806,6 +806,7 @@ import SETTINGS from "@/global-settings";
 import FadeInCard from "@/components/FadeInCard.vue";
 import { UnsignedShortType } from "three";
 import { hslaColorType } from "@/types";
+import { StyleNoduleCommand } from "@/commands/StyleNoduleCommand";
 // import { getModule } from "vuex-module-decorators";
 // import UI from "@/store/ui-styles";
 
@@ -829,6 +830,8 @@ const keys = values.map(e => {
 export default class FrontStyle extends Vue {
   @State
   readonly selections!: SENodule[];
+  // The old selection to help with undo/redo commands
+  private oldSelection: SENodule[] = [];
 
   /**
    * When the selected objects are first processed by the style panel their style state is recorded here
@@ -841,9 +844,15 @@ export default class FrontStyle extends Vue {
   private defaultStyleStates: StyleOptions[] = [];
 
   /**
+   * These help with redo/redo
+   */
+  private currentStyleStates: StyleOptions[] = [];
+  /**
    * Help to display all the availble styling choices when nothing is selected
    */
   private noObjectsSelected = true;
+
+  private stateSaved = false;
 
   private toolTipOpenDelay = SETTINGS.toolTip.openDelay;
   private toolTipCloseDelay = SETTINGS.toolTip.closeDelay;
@@ -866,7 +875,7 @@ export default class FrontStyle extends Vue {
   private minPointRadiusPercent = SETTINGS.style.minPointRadiusPercent;
 
   private strokeColor: string | undefined = "hsl(0,0%,0%,0)"; //Color recognisable by TwoJs
-  private hslaStrokeColorObject: hslaColorType = { h: 0, s: 0, l: 0, a: 0 }; // Color for Vuetify Color picker
+  private hslaStrokeColorObject: hslaColorType = { h: 0, s: 1, l: 1, a: 0 }; // Color for Vuetify Color picker
   private strokeColorAgreement = true;
   private strokeSwatchHeight = 0;
   private showStrokeOptions = false;
@@ -875,7 +884,7 @@ export default class FrontStyle extends Vue {
   private preNoStrokeColor: string | undefined = "";
 
   private fillColor: string | undefined = "hsl(0,0%,0%,0)"; //Color recognisable by TwoJs
-  private hslaFillColorObject: hslaColorType = { h: 0, s: 0, l: 0, a: 0 }; // Color for Vuetify Color picker
+  private hslaFillColorObject: hslaColorType = { h: 0, s: 1, l: 1, a: 0 }; // Color for Vuetify Color picker
   private fillColorAgreement = true;
   private fillSwatchHeight = 0;
   private showFillOptions = false;
@@ -903,13 +912,13 @@ export default class FrontStyle extends Vue {
   private dynamicBackStyle: boolean | undefined = true;
   private dynamicBackStyleAgreement = true;
   private totallyDisableDynamicBackStyleSelector = false;
-  private backStyleContrast = SETTINGS.style.backStyleContrast;
+  private backStyleContrast = Nodule.getBackStyleContrast();
   private initialBackStyleContrast = SETTINGS.style.backStyleContrast;
 
   /**
    * The side of the sphere the style adjustments apply to
    */
-  private side = SETTINGS.style.backFace;
+  private side = SETTINGS.style.frontFace;
   /**
  * Common style properties are the enum with values of 
   //   strokeWidthPercentage,
@@ -1107,7 +1116,7 @@ export default class FrontStyle extends Vue {
   }
   disableStrokeColorSelector(totally: boolean): void {
     this.strokeColorAgreement = false;
-    this.strokeColor = "hsla(0,0%,0%,0)";
+    this.strokeColor = "hsla(0,100%,100%,0)";
     this.hslaStrokeColorObject = Nodule.convertStringToHSLAObject(
       this.strokeColor
     );
@@ -1120,7 +1129,7 @@ export default class FrontStyle extends Vue {
       this.preNoStrokeColor = this.strokeColor;
       this.strokeColor = "noStroke";
       this.hslaStrokeColorObject = Nodule.convertStringToHSLAObject(
-        "hsla(0,0%,0%,0)"
+        "hsla(0,100%,100%,0)"
       );
       this.strokeSwatchHeight = 0;
       this.showStrokeOptions = false;
@@ -1220,7 +1229,7 @@ export default class FrontStyle extends Vue {
   }
   disableFillColorSelector(totally: boolean): void {
     this.fillColorAgreement = false;
-    this.fillColor = "hsla(0,0%,0%,0)";
+    this.fillColor = "hsla(0,100%,100%,0)";
     this.hslaFillColorObject = Nodule.convertStringToHSLAObject(this.fillColor);
     this.fillSwatchHeight = 0;
     this.showFillOptions = false;
@@ -1316,7 +1325,7 @@ export default class FrontStyle extends Vue {
       this.preNoFillColor = this.fillColor;
       this.fillColor = "noFill";
       this.hslaFillColorObject = Nodule.convertStringToHSLAObject(
-        "hsla(0,0%,0%,0)"
+        "hsla(0,100%,100%,0)"
       );
       this.fillSwatchHeight = 0;
       this.showFillOptions = false;
@@ -1686,21 +1695,17 @@ export default class FrontStyle extends Vue {
     this.dynamicBackStyleAgreement = true;
     this.totallyDisableDynamicBackStyleSelector = false;
     this.dynamicBackStyle = styleState[0].dynamicBackStyle;
-    console.log("here0");
     // screen for undefined - if undefined then this is not a property that is going to be set by the style panel for this selection of objects
     if (this.dynamicBackStyle != undefined) {
-      console.log("here1");
       if (
         !styleState.every(
           styleObject => styleObject.dynamicBackStyle == this.dynamicBackStyle
         )
       ) {
-        console.log("here2");
         // The strokeColor property exists on the selected objects but the dynamicBackStyle doesn't agree (so don't totally disable the selector)
         this.disableDynamicBackStyleSelector(false);
       }
     } else {
-      console.log("here3");
       // The dynamicBackStyle property doesn't exists on the selected objects so totally disable the selector
       this.disableDynamicBackStyleSelector(true);
     }
@@ -1791,6 +1796,38 @@ export default class FrontStyle extends Vue {
    */
   @Watch("selections")
   onSelectionChanged(newSelection: SENodule[]): void {
+    // Before changing the selections save the state for an undo/redo command
+
+    if (this.oldSelection.length > 0) {
+      console.log(
+        "oldSelection",
+        this.oldSelection.length,
+        this.oldSelection[0].name
+      );
+      //Record the current state of each Nodule
+      this.currentStyleStates.clear();
+      this.oldSelection.forEach(seNodule => {
+        this.currentStyleStates.push(seNodule.ref.currentStyleState(this.side));
+      });
+      // Check to see if there have been any difference between the current and initial
+      if (
+        !this.areEquivalentStyles(
+          this.currentStyleStates,
+          this.initialStyleStates
+        ) ||
+        this.initialBackStyleContrast != Nodule.getBackStyleContrast()
+      ) {
+        console.log("issued new style command");
+        new StyleNoduleCommand(
+          this.oldSelection,
+          this.side,
+          this.currentStyleStates,
+          this.initialStyleStates,
+          this.initialBackStyleContrast,
+          Nodule.getBackStyleContrast()
+        ).push();
+      }
+    }
     this.commonStyleProperties.clear();
     if (newSelection.length === 0) {
       //totally disable the selectors
@@ -1802,8 +1839,14 @@ export default class FrontStyle extends Vue {
       this.disableDashPatternSelector(true);
       this.disableDynamicBackStyleSelector(true);
       this.noObjectsSelected = true;
+      this.oldSelection.clear();
       return;
     }
+    console.log("newSelection", newSelection.length, newSelection[0].name);
+    // record the new selections in the old
+    this.oldSelection.clear();
+    newSelection.forEach(obj => this.oldSelection.push(obj));
+
     this.noObjectsSelected = false;
     // Create a list of the common properties that the objects in the selection have.
     // commonStyleProperties is a number (corresponding to an enum) array
@@ -1820,7 +1863,7 @@ export default class FrontStyle extends Vue {
       this.initialStyleStates.push(seNodule.ref.currentStyleState(this.side));
       this.defaultStyleStates.push(seNodule.ref.defaultStyleState(this.side));
     });
-    this.initialBackStyleContrast = this.backStyleContrast;
+    this.initialBackStyleContrast = Nodule.getBackStyleContrast();
 
     //Set the initial state of the fade-in-card/selectors (checking to see if the property is the same across all selected objects)
     this.setStrokeWidthPercentSelectorState(this.initialStyleStates);
@@ -1830,6 +1873,54 @@ export default class FrontStyle extends Vue {
     this.setOpacitySelectorState(this.initialStyleStates);
     this.setDashPatternSelectorState(this.initialStyleStates);
     this.setDynamicBackStyleSelectorState(this.initialStyleStates);
+  }
+
+  areEquivalentStyles(
+    styleStates1: StyleOptions[],
+    styleStates2: StyleOptions[]
+  ): boolean {
+    if (styleStates1.length !== styleStates2.length) {
+      console.log("here0");
+      return false;
+    }
+    for (let i = 0; i < styleStates1.length; i++) {
+      const a = styleStates1[i];
+      const b = styleStates2[i];
+      if (
+        a.strokeWidthPercent == b.strokeWidthPercent &&
+        a.strokeColor == b.strokeColor &&
+        a.fillColor == b.fillColor &&
+        a.opacity == b.opacity &&
+        a.dynamicBackStyle == b.dynamicBackStyle &&
+        a.pointRadiusPercent == b.pointRadiusPercent
+      ) {
+        console.log("here1");
+        if (a.dashArray == undefined && b.dashArray == undefined) {
+          return true;
+        }
+        if (a.dashArray != undefined && b.dashArray != undefined) {
+          if (a.dashArray.length == b.dashArray.length) {
+            console.log("here2");
+            if (a.dashArray.length == 0 && b.dashArray.length == 0) {
+              return true;
+            }
+            if (
+              a.dashArray[0] == b.dashArray[0] &&
+              a.dashArray[1] == b.dashArray[1]
+            ) {
+              console.log("here3");
+              return true;
+            }
+          } else {
+            return false;
+          }
+        } else {
+          console.log("here6");
+          return false;
+        }
+      }
+    }
+    return false;
   }
 }
 </script>

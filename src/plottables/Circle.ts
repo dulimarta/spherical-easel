@@ -733,7 +733,7 @@ export default class Circle extends Nodule {
    * @param options The style options
    */
   updateStyle(options: StyleOptions): void {
-    console.debug("Update style of", this.name, "using", options);
+    console.debug("Circle Update style of", this.name, "using", options);
     if (options.front) {
       // Set the front options
       if (options.strokeWidthPercent) {

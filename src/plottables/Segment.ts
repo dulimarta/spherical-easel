@@ -451,7 +451,12 @@ export default class Segment extends Nodule {
    * @param options The style options
    */
   updateStyle(options: StyleOptions): void {
-    console.debug("Update style of", this.name, "using", options.strokeColor);
+    console.debug(
+      "Segment: Update style of",
+      this.name,
+      "using",
+      options.strokeColor
+    );
     if (options.front) {
       // Set the front options
       if (options.strokeWidthPercent) {

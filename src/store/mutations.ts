@@ -13,7 +13,7 @@ import { StyleOptions } from "@/types/Styles";
 import { LineNormalVisitor } from "@/visitors/LineNormalVisitor";
 import { SegmentNormalArcLengthVisitor } from "@/visitors/SegmentNormalArcLengthVisitor";
 import { UpdateMode, UpdateStateType } from "@/types";
-import Nodule from "@/plottables/Nodule";
+import Nodule, { DisplayStyle } from "@/plottables/Nodule";
 
 // const tmpMatrix = new Matrix4();
 
@@ -244,12 +244,14 @@ export default {
       dynamicBackStyle: dynamicBackStyle,
       pointRadiusPercent: pointRadiusPercent
     };
-    if (backStyleContrast) {
+    if (
+      backStyleContrast &&
+      backStyleContrast != Nodule.getBackStyleContrast()
+    ) {
       // Update all Nodules because more than just the selected nodules depend on the backStyleContrast
-      console.log("update contrast", backStyleContrast);
       Nodule.setBackStyleContrast(backStyleContrast);
       state.seNodules.forEach((n: SENodule) => {
-        n.ref.updateStyle(opt as StyleOptions);
+        n.ref.stylize(DisplayStyle.APPLYCURRENTVARIABLES);
       });
     }
     selected.forEach((n: SENodule) => {

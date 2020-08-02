@@ -236,7 +236,7 @@ export default class Point extends Nodule {
    * @param options The style options
    */
   updateStyle(options: StyleOptions): void {
-    console.debug("Update style of", this.name, "using", options);
+    console.debug("Point: Update style of", this.name, "using", options);
     if (options.front) {
       // Set the front options
       if (options.pointRadiusPercent) {

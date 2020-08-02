@@ -108,7 +108,7 @@
     "disableDashPatternSlider": "Set No Dash Pattern",
     "disableDashPatternSliderToolTip": "Click this button to set no dash pattern on all selected object(s).",
 
-    "enableBackStyleContrastSlider": "Enable Dynamic Back Style",
+    "enableBackStyleContrastSlider": "Enable Dynamic Back Style For Selected Object(s)",
     "enableBackStyleContrastSliderToolTip": "The selected objects do not have dynamic back style enabled. Click this button enable it and adjust the Back Contrast Slider.",
     "disableBackStyleContrastSlider": "Disable Dynamic Back Style For Selected Object(s)",
     "disableBackStyleContrastSliderToolTip": "The selected objects have dynamic back style enabled. Click this button disable it for only the selected object(s). Then you can change the back style of the selected object(s) using the style options in this panel.",
