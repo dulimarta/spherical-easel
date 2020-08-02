@@ -2,8 +2,10 @@
   <transition name="slide-out" mode="out-in">
     <div v-if="!minified" key="full">
       <v-expansion-panels :value="selectedPanel">
-        <v-expansion-panel v-for="(p, idx) in panels" :key="idx" @click="saveStyleState">
-          <v-expansion-panel-header :key="`header${idx}`">{{ p.name }}</v-expansion-panel-header>
+        <v-expansion-panel v-for="(p, idx) in panels" :key="idx">
+          <v-expansion-panel-header :key="`header${idx}`">
+            {{ $t(p.i18n_key) }}
+          </v-expansion-panel-header>
           <v-expansion-panel-content :key="`content${idx}`">
             <component :is="p.component"></component>
           </v-expansion-panel-content>
@@ -31,15 +33,15 @@ export default class Style extends Vue {
   private selectedPanel = 0; // Default selection is the Foreground panel
   private readonly panels = [
     {
-      name: "{{$t(`style.foregroundStyle`)}}",
+      i18n_key: "style.foregroundStyle",
       component: () => import("@/components/FrontStyle.vue")
     },
     {
-      name: "$t(`style.backgroundStyle`)",
+      i18n_key: "style.backgroundStyle",
       component: () => import("@/components/BackStyle.vue")
     },
     {
-      name: "$t(`style.advancedStyle`)",
+      i18n_key: "style.advancedStyle",
       component: () => import("@/components/AdvancedStyle.vue")
     }
   ];

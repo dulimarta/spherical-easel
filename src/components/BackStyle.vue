@@ -6,11 +6,22 @@
 
     <fade-in-card :showWhen="hasDash">
       <span>Dash Pattern ({{ dashLength }}/{{ gapLength }})</span>
-      <v-slider min="5" max="15" v-model.number="dashLength"
-        persistent-hint hint="Dash length" @change="onDashPatternChanged">
-      </v-slider>
-      <v-slider min="5" max="15" v-model.number="gapLength" persistent-hint
-        hint="Gap length" @change="onDashPatternChanged"></v-slider>
+      <v-slider
+        min="5"
+        max="15"
+        v-model.number="dashLength"
+        persistent-hint
+        hint="Dash length"
+        @change="onDashPatternChanged"
+      ></v-slider>
+      <v-slider
+        min="5"
+        max="15"
+        v-model.number="gapLength"
+        persistent-hint
+        hint="Gap length"
+        @change="onDashPatternChanged"
+      ></v-slider>
     </fade-in-card>
   </div>
 </template>
@@ -95,11 +106,11 @@ export default class FrontStyle extends Vue {
   }
 
   get hasStrokeWidth(): boolean {
-    return this.hasStyles(Styles.strokeWidthPercentage);
+    return this.hasStyles(Styles.strokeWidthPercent);
   }
 
   get hasDash(): boolean {
-    return this.hasStyles(Styles.dashPattern);
+    return this.hasStyles(Styles.dashArray);
   }
 
   @Watch("selections", { deep: true })
