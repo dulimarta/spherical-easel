@@ -2048,17 +2048,10 @@ export default class FrontStyle extends Vue {
 }
 </script>
 <style lang="scss" scoped>
-#strokeColorPicker {
-  background: "red";
-}
+@import "@/scss/variables.scss";
+
 .select-an-object-text {
   color: rgb(255, 82, 82);
 }
-
-.text-subtitle-2 {
-  text-emphasis: bold;
-}
-/* I wish I knew how to use the SASS options for the vuetify objects! But I don't and I can't find any examples on the web*/
-/* $color-picker-controls-padding: 1000px; */
-// $color-picker-edit-margin-top: 10px;
 </style>
+
