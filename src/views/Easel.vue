@@ -8,7 +8,6 @@
   >
     <!-- Use the left page for the toolbox -->
     <template slot="paneL">
-<<<<<<< HEAD
       <v-container fill-height>
         <div id="container">
           <v-btn icon @click="minifyToolbox">
@@ -18,15 +17,6 @@
           <toolbox id="toolbox" ref="toolbox" :minified="toolboxMinified"></toolbox>
         </div>
       </v-container>
-=======
-      <div id="container">
-        <v-btn icon @click="minifyToolbox">
-          <v-icon v-if="toolboxMinified">mdi-arrow-right</v-icon>
-          <v-icon v-else>mdi-arrow-left</v-icon>
-        </v-btn>
-        <toolbox style="width:100%" ref="toolbox" :minified="toolboxMinified"></toolbox>
-      </div>
->>>>>>> Style-Attempt
     </template>
 
     <!-- Use the right pane mainly for the canvas and style panel -->
@@ -52,11 +42,6 @@
                     ref="responsiveBox"
                     id="responsiveBox"
                     class="pa-0"
-<<<<<<< HEAD
-                  >
-                    <sphere-frame :canvas-size="currentCanvasSize"></sphere-frame>
-                    <div class="anchored top left">
-=======
                   >
                     <sphere-frame :canvas-size="currentCanvasSize"></sphere-frame>
                     <div class="anchored top left">
@@ -67,7 +52,6 @@
                   >
                     <ToolButton :key="80" :button="buttonList[8]"></ToolButton>
                       </v-btn-toggle>-->
->>>>>>> Style-Attempt
                       <v-tooltip
                         bottom
                         :open-delay="toolTipOpenDelay"
@@ -241,17 +225,12 @@ import { SESegment } from "../models/SESegment";
 import { SEPoint } from "@/models/SEPoint";
 import { SELine } from "@/models/SELine";
 import Circle from "@/plottables/Circle";
-<<<<<<< HEAD
-import { State } from "vuex-class";
-import { SENodule } from "../models/SENodule";
-=======
 import Point from "@/plottables/Point";
 import Line from "@/plottables/Line";
 import Segment from "@/plottables/Segment";
 import { State } from "vuex-class";
 import { SENodule } from "../models/SENodule";
 import Nodule from "@/plottables/Nodule";
->>>>>>> Style-Attempt
 
 // import { getModule } from "vuex-module-decorators";
 // import UI from "@/store/ui-styles";
@@ -266,10 +245,7 @@ import Nodule from "@/plottables/Nodule";
   components: { SplitPane, Toolbox, SphereFrame, ToolButton, StylePanel }
 })
 export default class Easel extends Vue {
-<<<<<<< HEAD
   readonly store = this.$store.direct;
-=======
->>>>>>> Style-Attempt
   @State
   readonly points!: SENodule[];
 
@@ -328,7 +304,6 @@ export default class Easel extends Vue {
 
   private enableZoomIn(): void {
     this.displayZoomInToolUseMessage = true;
-<<<<<<< HEAD
     this.store.commit.setActionMode({ id: "zoomIn", name: "Zoom In" });
   }
   private enableZoomOut(): void {
@@ -338,26 +313,6 @@ export default class Easel extends Vue {
   private enableZoomFit(): void {
     this.displayZoomFitToolUseMessage = true;
     this.store.commit.setActionMode({ id: "zoomFit", name: "Zoom Fit" });
-=======
-    this.$store.commit("setActionMode", {
-      id: "zoomIn",
-      name: "PanZoomInDisplayedName"
-    });
-  }
-  private enableZoomOut(): void {
-    this.displayZoomOutToolUseMessage = true;
-    this.$store.commit("setActionMode", {
-      id: "zoomOut",
-      name: "PanZoomOutDisplayedName"
-    });
-  }
-  private enableZoomFit(): void {
-    this.displayZoomFitToolUseMessage = true;
-    this.$store.commit("setActionMode", {
-      id: "zoomFit",
-      name: "ZoomFitDisplayedName"
-    });
->>>>>>> Style-Attempt
   }
   private adjustSize(): void {
     this.availHeight =
@@ -441,18 +396,6 @@ export default class Easel extends Vue {
 
   //#region resizePlottables
   resizePlottables(e: any): void {
-<<<<<<< HEAD
-    const oldFactor = this.$store.state.previousZoomMagnificationFactor;
-    Circle.currentCircleStrokeWidthFront *= oldFactor / e.factor;
-    // this.$store.state.points.forEach((p: SEPoint) => {
-    //   p.ref.adjustSizeForZoom(e.factor);
-    // });
-    // this.$store.state.lines.forEach((p: SELine) => {
-    //   p.ref.adjustSizeForZoom(e.factor);
-    // });
-    this.$store.state.circles.forEach((p: SECircle) => {
-      p.ref.adjustSizeForZoom();
-=======
     const oldFactor = this.$store.getters.previousZoomMagnificationFactor();
     // Update the current stroke widths in each plottable class
     Line.updateCurrentStrokeWidthForZoom(oldFactor / e.factor);
@@ -467,7 +410,6 @@ export default class Easel extends Vue {
     // The temporary plottables need to be resized too
     this.$store.state.temporaryNodules.forEach((p: Nodule) => {
       p.adjustSize();
->>>>>>> Style-Attempt
     });
   }
   //#endregion resizePlottables
