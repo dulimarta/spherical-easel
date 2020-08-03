@@ -42,9 +42,8 @@
         class="text-subtitle-2">{{ $t("style.dynamicBackStyle") }}</span>
 
       <br />
-      <span v-show="totallyDisableDynamicBackStyleSelector">
-        {{ $t("style.selectAnObject") }}
-      </span>
+      <span v-show="totallyDisableDynamicBackStyleSelector"
+        class="select-an-object-text">{{ $t("style.selectAnObject") }}</span>
       <v-tooltip v-if="!dynamicBackStyleAgreement" bottom
         :open-delay="toolTipOpenDelay" :close-delay="toolTipCloseDelay"
         max-width="400px">
@@ -52,8 +51,7 @@
           <v-btn color="error" v-on="on"
             v-show="!totallyDisableDynamicBackStyleSelector" text small
             outlined ripple @click="setCommonDynamicBackStyleAgreement">
-            {{ $t("style.differingStylesDetected") }}
-          </v-btn>
+            {{ $t("style.differingStylesDetected") }}</v-btn>
         </template>
         <span>{{ $t("style.differingStylesDetectedToolTip") }}</span>
       </v-tooltip>
@@ -79,10 +77,9 @@
           <v-btn v-on="on" v-show="
               !totallyDisableDynamicBackStyleSelector &&
                 dynamicBackStyleAgreement
-            " text outlined ripple small
-            @click="toggleBackStyleContrastSliderAvailability">
-            {{ $t("style.disableBackStyleContrastSlider") }}
-          </v-btn>
+            " color="error" text outlined ripple small
+            @click="toggleBackStyleOptionsAvailability">
+            {{ $t("style.disableBackStyleContrastSlider") }}</v-btn>
         </template>
         <span>{{ $t("style.disableBackStyleContrastSliderToolTip") }}</span>
       </v-tooltip>
@@ -125,7 +122,6 @@
       <ColorSelector title-key="style.strokeColor" style-name="strokeColor"
         :data.sync="hslaStrokeColorObject" :front-side="true"
         :initial-style-states="initialStyleStates"></ColorSelector>
-      <br />
     </fade-in-card>
 
     <fade-in-card :showWhen="
@@ -662,9 +658,10 @@ export default class FrontStyle extends Vue {
   }
 
   toggleBackStyleContrastSliderAvailability(): void {
-    // mo code
+
+    // TODO: complete this function
   }
-  toggleBackStyleOptionsAvailibity(): void {
+  toggleBackStyleOptionsAvailability(): void {
     this.dynamicBackStyle = !this.dynamicBackStyle;
     this.$store.commit("changeStyle", {
       selected: this.$store.getters.selectedSENodules(),
@@ -679,8 +676,7 @@ export default class FrontStyle extends Vue {
         tempStyleState.push(seNodule.ref.currentStyleState(this.side));
       });
       console.log("tempStyleState", tempStyleState);
-
-      // TODO: enable the following four lines
+      // TODO: uncomment the following ?
       // this.setFillColorSelectorState(tempStyleState);
       // this.setStrokeColorSelectorState(tempStyleState);
       // this.setOpacitySelectorState(tempStyleState);
