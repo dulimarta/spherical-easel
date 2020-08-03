@@ -17,15 +17,15 @@ export class DeleteNoduleCommand extends Command {
   }
 
   do(): void {
-    if (this.seNodule instanceof SEPoint) {
-      console.log("Do Delete Point", this.seNodule.name);
-    } else if (this.seNodule instanceof SELine) {
-      console.log("Do Delete Line", this.seNodule.name);
-    } else if (this.seNodule instanceof SECircle) {
-      console.log("Do Delete Circle", this.seNodule.name);
-    } else if (this.seNodule instanceof SESegment) {
-      console.log("Do Delete Segment", this.seNodule.name);
-    }
+    // if (this.seNodule instanceof SEPoint) {
+    //   console.log("Do Delete Point", this.seNodule.name);
+    // } else if (this.seNodule instanceof SELine) {
+    //   console.log("Do Delete Line", this.seNodule.name);
+    // } else if (this.seNodule instanceof SECircle) {
+    //   console.log("Do Delete Circle", this.seNodule.name);
+    // } else if (this.seNodule instanceof SESegment) {
+    //   console.log("Do Delete Segment", this.seNodule.name);
+    // }
     // Remove from the Data Structure (DAG)
     // Notice that this make the parents array empty so that is why we stored the parents ids in a separate
     // array for restore state. Also notice that we can *not* do this with
@@ -33,11 +33,6 @@ export class DeleteNoduleCommand extends Command {
     // this.seNodule.parents.forEach (obj => obj.unregister(this.seNodule))
     // because unregister modifies the parent array and you never want to modify the parent array while in a forEach
     for (let i = 0; i < this.parentIds.length; i++) {
-      // console.log(
-      //   "parent nodule",
-      //   Command.store.getters.getSENoduleById(this.parentIds[i]).name,
-      //   Command.store.getters.getSENoduleById(this.parentIds[i]).id
-      // );
       const nodule = Command.store.getters.getSENoduleById(this.parentIds[i]);
       if (nodule) {
         nodule.unregisterChild(this.seNodule);
@@ -45,7 +40,6 @@ export class DeleteNoduleCommand extends Command {
         throw "Attempted to unregister a child from a non-existent nodule in the DeleteNoduleCommand";
       }
     }
-    // console.log("after unreg parent len", this.seNodule.parents.length);
     // Remove from the store and turn off the display
     if (this.seNodule instanceof SEPoint) {
       Command.store.commit.removePoint(this.seNodule.id);
@@ -63,15 +57,15 @@ export class DeleteNoduleCommand extends Command {
   }
 
   restoreState(): void {
-    if (this.seNodule instanceof SEPoint) {
-      console.log("Do unDelete Point");
-    } else if (this.seNodule instanceof SELine) {
-      console.log("Do unDelete Line");
-    } else if (this.seNodule instanceof SECircle) {
-      console.log("Do unDelete Circle");
-    } else if (this.seNodule instanceof SESegment) {
-      console.log("Do unDelete Segment");
-    }
+    // if (this.seNodule instanceof SEPoint) {
+    //   console.log("Do unDelete Point");
+    // } else if (this.seNodule instanceof SELine) {
+    //   console.log("Do unDelete Line");
+    // } else if (this.seNodule instanceof SECircle) {
+    //   console.log("Do unDelete Circle");
+    // } else if (this.seNodule instanceof SESegment) {
+    //   console.log("Do unDelete Segment");
+    // }
     // Add the point to the store and turn on display
     if (this.seNodule instanceof SEPoint) {
       Command.store.commit.addPoint(this.seNodule);

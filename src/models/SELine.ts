@@ -17,10 +17,13 @@ const desiredZAxis = new Vector3();
 
 let LINE_COUNT = 0;
 const styleSet = new Set([
-  Styles.strokeWidthPercentage,
+  Styles.strokeWidthPercent,
   Styles.strokeColor,
-  Styles.dashPattern
+  Styles.dashArray,
+  Styles.opacity,
+  Styles.dynamicBackStyle
 ]);
+
 export class SELine extends SENodule implements Visitable, OneDimensional {
   /**
    * The corresponding plottable TwoJS object
@@ -86,9 +89,15 @@ export class SELine extends SENodule implements Visitable, OneDimensional {
     return this._endSEPoint;
   }
 
-  public isHitAt(unitIdealVector: Vector3): boolean {
+  public isHitAt(
+    unitIdealVector: Vector3,
+    currentMagnificationFactor: number
+  ): boolean {
     // Is the sphereVector is perpendicular to the line normal?
-    return Math.abs(unitIdealVector.dot(this._normalVector)) < 1e-2;
+    return (
+      Math.abs(unitIdealVector.dot(this._normalVector)) <
+      SETTINGS.line.hitIdealDistance / currentMagnificationFactor
+    );
   }
 
   /**
@@ -208,6 +217,9 @@ export class SELine extends SENodule implements Visitable, OneDimensional {
           .applyAxisAngle(desiredZAxis, rotationAngle);
         this.endSEPoint.locationVector = tmpVector2;
         // Update both points, because we might need to update their kids!
+        // First mark the kids out of date so that the update method does a topological sort
+        this.startSEPoint.markKidsOutOfDate();
+        this.endSEPoint.markKidsOutOfDate();
         this.endSEPoint.update({
           mode: UpdateMode.DisplayOnly,
           stateArray: []
@@ -270,9 +282,28 @@ export class SELine extends SENodule implements Visitable, OneDimensional {
         tmpVector1.copy(freeEnd.locationVector);
         tmpVector1.applyAxisAngle(axisOfRotation, rotationAngle);
         freeEnd.locationVector = tmpVector1;
+        // First mark the kids out of date so that the update method does a topological sort
+        // First mark the kids out of date so that the update method does a topological sort
+        freeEnd.markKidsOutOfDate();
+        pivot.markKidsOutOfDate();
         freeEnd.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
         pivot.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
       }
     }
+  }
+
+  // I wish the SENodule methods would work but I couldn't figure out how
+  // See the attempts in SENodule
+  public isFreePoint() {
+    return false;
+  }
+  public isOneDimensional() {
+    return true;
+  }
+  public isPoint() {
+    return false;
+  }
+  public isPointOnOneDimensional() {
+    return false;
   }
 }

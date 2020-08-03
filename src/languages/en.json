@@ -64,20 +64,20 @@
     "CreateCircleToolTipMessage": "Insert circle",
     "CreateCircleToolUseMessage": "Click and drag to insert a circle with a given center point and through a second point.",
 
-    "SelectToolTipMessage": "Selection",
-    "SelectToolUseMessage": "Select Objects",
-    "SelectDisplayedName": "Click on objects to select them, hold the Alt key to add to your selection",
+    "SelectDisplayedName": "Selection",
+    "SelectToolTipMessage": "Select Objects",
+    "SelectToolUseMessage": "Click on objects to select them, hold the Alt key to add to your selection",
 
-    "DeleteToolTipMessage": "Delete",
-    "DeleteToolUseMessage": "Delete Objects",
-    "DeleteDisplayedName": "Click on objects to delete them.",
+    "DeleteDisplayedName": "Delete",
+    "DeleteToolTipMessage": "Delete Objects",
+    "DeleteToolUseMessage": "Click on objects to delete them.",
 
-    "CreateAntipodalPointToolTipMessage": "Antipodal Points",
-    "CreateAntipodalPointToolUseMessage": "Select a point",
-    "CreateAntipodalPointDisplayedName": "Click on a point to create its antipode",
+    "CreateAntipodalPointDisplayedName": "Antipodal Point",
+    "CreateAntipodalPointToolTipMessage": "Select a point",
+    "CreateAntipodalPointToolUseMessage": "Click on a point to create its antipode",
 
     "CreatePointOnOneDimDisplayedName": "Point On One Dimensional Object",
-    "CreatePointOnOneDimToolTipMessage": "Select a one-dimensional object",
+    "CreatePointOnOneDimToolTipMessage": "Select a one-dimensional object to place a point on",
     "CreatePointOnOneDimToolUseMessage": "Select a one-dimensional object to add a point to."
   },
   "settings": {
@@ -87,5 +87,51 @@
     "points": "Points",
     "lines": "Lines",
     "circles": "Circles"
+  },
+  "style": {
+    "selectAnObject": "Select An Object",
+
+    "clearChanges": "Undo Changes",
+    "clearChangesToolTip": "Click this button to revert the selected objects back to the style they had when they were selected.",
+
+    "restoreDefaults": "Set To Defaults",
+    "restoreDefaultsToolTip": "Click this button to revert the selected objects back to their default style.",
+
+    "differingStylesDetected": "Differing Styles Detected -- Override",
+    "differingStylesDetectedToolTip": "The selected objects have the different values for this style. Click this button and select a style to make all selected objects have this common style.",
+
+    "showColorPresets": "Color Presets",
+    "showColorPresetsToolTip": "Click this toggle button to enter HSLA values directly or to select a color preset.",
+
+    "enableDashPatternSlider": "Set A Dash Pattern",
+    "enableDashPatternSliderToolTip": "The selected object(s) have no dash pattern. Click this button to set a pattern.",
+    "disableDashPatternSlider": "Set No Dash Pattern",
+    "disableDashPatternSliderToolTip": "Click this button to set no dash pattern on all selected object(s).",
+
+    "enableBackStyleContrastSlider": "Enable Dynamic Back Style For Selected Object(s)",
+    "enableBackStyleContrastSliderToolTip": "The selected objects do not have dynamic back style enabled. Click this button enable it and adjust the Back Contrast Slider.",
+    "disableBackStyleContrastSlider": "Disable Dynamic Back Style For Selected Object(s)",
+    "disableBackStyleContrastSliderToolTip": "The selected objects have dynamic back style enabled. Click this button disable it for only the selected object(s). Then you can change the back style of the selected object(s) using the style options in this panel.",
+
+    "advancedStyle": "Advanced Style",
+    "backgroundStyle": "Background Style",
+    "foregroundStyle": "Foreground Style",
+
+    "emptySelectionMessage": "Here we go! Please select object(s) to style!",
+    "strokeColor": "Stroke Color",
+    "fillColor": "Fill Color",
+    "strokeWidthPercent": "Stroke Width",
+
+    "pointRadiusPercent": "Point Radius",
+
+    "opacity": "Overall Opacity",
+    "dashPattern": "Dash Pattern",
+    "dashGap": "Dash Gap",
+    "dashLength": "Dash Length",
+
+    "dynamicBackStyle": "Dynamic Back Style",
+
+    "backStyleContrast": "Back Style Contrast",
+    "backStyleContrastToolTip": "By default the back side display style of an object is determined by the front style of that object and the value of the Back Style Contrast. A Back Style Contrast of 1 means there is no color difference between front and back styling. A Back Style Contrast of 0 means that the object is barely visible and its size reduction is maximized."
   }
 }

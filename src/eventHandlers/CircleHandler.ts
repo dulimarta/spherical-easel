@@ -40,6 +40,15 @@ export default class CircleHandler extends Highlighter {
 
   /** The radius of the temporary circle (along the surface of the sphere) */
   private arcRadius = 0;
+  /**
+   * A temporary plottable (TwoJS) point created while the user is making the circles or segments
+   */
+  protected startMarker: Point;
+  /**
+   * A temporary plottable (TwoJS) point created while the user is making the circles or segments
+   */
+  protected endMarker: Point;
+
   /** Has the temporary circle been added to the scene?*/
   private isTemporaryCircleAdded: boolean;
   /**
@@ -56,7 +65,15 @@ export default class CircleHandler extends Highlighter {
     this.isTemporaryCircleAdded = false;
     this.temporaryCircle = new Circle();
     // Set the style using the temporary defaults
-    this.temporaryCircle.stylize(DisplayStyle.TEMPORARY);
+    this.temporaryCircle.stylize(DisplayStyle.APPLYTEMPORARYVARIABLES);
+    this.store.commit("addTemporaryNodule", this.temporaryCircle);
+    // Create and style the temporary points marking the start/end of an object being created
+    this.startMarker = new Point();
+    this.startMarker.stylize(DisplayStyle.APPLYTEMPORARYVARIABLES);
+    this.store.commit("addTemporaryNodule", this.startMarker);
+    this.endMarker = new Point();
+    this.endMarker.stylize(DisplayStyle.APPLYTEMPORARYVARIABLES);
+    this.store.commit("addTemporaryNodule", this.endMarker);
   }
 
   mousePressed(event: MouseEvent): void {
@@ -130,8 +147,6 @@ export default class CircleHandler extends Highlighter {
         this.centerSEPoint = null;
       }
       this.endMarker.positionVector = this.currentSphereVector;
-      // Make sure the temporary circle is displayed with the right line width
-      this.temporaryCircle.adjustSizeForZoom();
     }
   }
 
@@ -240,9 +255,10 @@ export default class CircleHandler extends Highlighter {
       // we have to create a new point and it to the group/store
       const newCenterPoint = new Point();
       // Set the display to the default values
-      newCenterPoint.stylize(DisplayStyle.DEFAULT);
-      // Set up the glowing display
-      newCenterPoint.stylize(DisplayStyle.GLOWING);
+      newCenterPoint.stylize(DisplayStyle.APPLYCURRENTVARIABLES);
+      // Adjust the size of the point to the current zoom magnification factor
+      newCenterPoint.adjustSize();
+
       let vtx: SEPoint | SEPointOnOneDimensional | null = null;
       if (this.centerSEPointOneDimensionalParent) {
         // Starting mouse press landed near a oneDimensional
@@ -299,9 +315,10 @@ export default class CircleHandler extends Highlighter {
       // We have to create a new Point for the end
       const newCirclePoint = new Point();
       // Set the display to the default values
-      newCirclePoint.stylize(DisplayStyle.DEFAULT);
-      // Set up the glowing display
-      newCirclePoint.stylize(DisplayStyle.GLOWING);
+      newCirclePoint.stylize(DisplayStyle.APPLYCURRENTVARIABLES);
+      // Adjust the size of the point to the current zoom magnification factor
+      newCirclePoint.adjustSize();
+
       let vtx: SEPoint | SEPointOnOneDimensional | null = null;
       if (this.hitSESegments.length > 0) {
         // The end of the line will be a point on a segment
@@ -347,15 +364,24 @@ export default class CircleHandler extends Highlighter {
       }
       this.circleSEPoint = vtx;
     }
+    // Update the display of the circle based on a potentially new location of the circleSEPoint
+    // Move the endMarker to the current mouse location
+    this.endMarker.positionVector = this.circleSEPoint.locationVector;
+    //compute the radius of the temporary circle
+    this.arcRadius = this.temporaryCircle.centerVector.angleTo(
+      this.circleSEPoint.locationVector
+    );
+    // Set the radius of the temporary circle, the center was set in Mouse Press
+    this.temporaryCircle.circleRadius = this.arcRadius;
+    //update the display
+    this.temporaryCircle.updateDisplay();
 
     // Clone the current circle after the circlePoint is set
     const newCircle = this.temporaryCircle.clone();
     // Set the display to the default values
-    newCircle.stylize(DisplayStyle.DEFAULT);
-    // Set the stroke width to the current width given the zoom level
-    newCircle.adjustSizeForZoom();
-    // Set up the glowing display
-    newCircle.stylize(DisplayStyle.GLOWING);
+    newCircle.stylize(DisplayStyle.APPLYCURRENTVARIABLES);
+    // Adjust the stroke width to the current zoom magnification factor
+    newCircle.adjustSize();
 
     // Add the last command to the group and then execute it (i.e. add the potentially two points and the circle to the store.)
     const newSECircle = new SECircle(
@@ -379,7 +405,7 @@ export default class CircleHandler extends Highlighter {
             item.parent2
           )
         );
-        item.SEIntersectionPoint.showing = false; // don not display the automatically created intersection points
+        item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points
       });
 
     circleCommandGroup.execute();
@@ -394,9 +420,10 @@ export default class CircleHandler extends Highlighter {
       // we have to create a new SEPointOnOneDimensional or SEPoint and Point
       const newPoint = new Point();
       // Set the display to the default values
-      newPoint.stylize(DisplayStyle.DEFAULT);
-      // Set up the glowing display
-      newPoint.stylize(DisplayStyle.GLOWING);
+      newPoint.stylize(DisplayStyle.APPLYCURRENTVARIABLES);
+      // Adjust the size of the point to the current zoom magnification factor
+      newPoint.adjustSize();
+
       let vtx: SEPoint | SEPointOnOneDimensional | null = null;
       if (this.centerSEPointOneDimensionalParent) {
         // Starting mouse press landed near a oneDimensional
@@ -429,9 +456,9 @@ export default class CircleHandler extends Highlighter {
   activate(): void {
     // If there are exactly two SEPoints selected, create a circle with the first as the center
     // and the second as the circle point
-    if (this.store.getters.selectedObjects().length == 2) {
-      const object1 = this.store.getters.selectedObjects()[0];
-      const object2 = this.store.getters.selectedObjects()[1];
+    if (this.store.getters.selectedSENodules().length == 2) {
+      const object1 = this.store.getters.selectedSENodules()[0];
+      const object2 = this.store.getters.selectedSENodules()[1];
       if (
         object1 instanceof SEPoint &&
         object2 instanceof SEPoint &&
@@ -442,11 +469,9 @@ export default class CircleHandler extends Highlighter {
         // Create a new plottable Circle
         const newCircle = new Circle();
         // Set the display to the default values
-        newCircle.stylize(DisplayStyle.DEFAULT);
+        newCircle.stylize(DisplayStyle.APPLYCURRENTVARIABLES);
         // Set the stroke width to the current width given the zoom level
-        newCircle.adjustSizeForZoom();
-        // Set up the glowing display
-        newCircle.stylize(DisplayStyle.GLOWING);
+        newCircle.adjustSize();
 
         // Add the last command to the group and then execute it (i.e. add the potentially two points and the circle to the store.)
         const newSECircle = new SECircle(newCircle, object1, object2);
@@ -477,6 +502,6 @@ export default class CircleHandler extends Highlighter {
       }
     }
     // Unselect the selected objects and clear the selectedObject array
-    // super.activate();
+    super.activate();
   }
 }

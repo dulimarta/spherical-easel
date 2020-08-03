@@ -47,7 +47,14 @@ export default class LineHandler extends Highlighter {
    */
   private tempLine: Line;
   private isTemporaryLineAdded: boolean;
-
+  /**
+   * A temporary plottable (TwoJS) point created while the user is making the circles or segments
+   */
+  protected startMarker: Point;
+  /**
+   * A temporary plottable (TwoJS) point created while the user is making the circles or segments
+   */
+  protected endMarker: Point;
   /**
    * If the user starts to make a line and mouse press at a location on the sphere, then moves
    * off the canvas, then back inside the sphere and mouse releases, we should get nothing. This
@@ -69,9 +76,17 @@ export default class LineHandler extends Highlighter {
     super(layers);
     // Create and style the temporary line
     this.tempLine = new Line();
-    this.tempLine.stylize(DisplayStyle.TEMPORARY);
+    this.tempLine.stylize(DisplayStyle.APPLYTEMPORARYVARIABLES);
+    this.store.commit("addTemporaryNodule", this.tempLine);
     this.isTemporaryLineAdded = false;
     this.isDragging = false;
+    // Create and style the temporary points marking the start/end of an object being created
+    this.startMarker = new Point();
+    this.startMarker.stylize(DisplayStyle.APPLYTEMPORARYVARIABLES);
+    this.store.commit("addTemporaryNodule", this.startMarker);
+    this.endMarker = new Point();
+    this.endMarker.stylize(DisplayStyle.APPLYTEMPORARYVARIABLES);
+    this.store.commit("addTemporaryNodule", this.endMarker);
   }
   //eslint-disable-next-line
   mousePressed(event: MouseEvent): void {
@@ -146,6 +161,7 @@ export default class LineHandler extends Highlighter {
         if (!this.isTemporaryLineAdded) {
           this.isTemporaryLineAdded = true;
           this.tempLine.addToLayers(this.layers);
+
           // Only add the start marker if the start point is going to be new or is non-user created intersection point
           if (
             this.startSEPoint == null ||
@@ -248,10 +264,10 @@ export default class LineHandler extends Highlighter {
     if (this.startSEPoint === null) {
       // We have to create a new SEPointOnOneDimensional or SEPoint and Point
       const newStartPoint = new Point();
-      // Set the display to the default values
-      newStartPoint.stylize(DisplayStyle.DEFAULT);
-      // Set up the glowing display
-      newStartPoint.stylize(DisplayStyle.GLOWING);
+      // Set the display and size to the default values
+      newStartPoint.stylize(DisplayStyle.APPLYCURRENTVARIABLES);
+      newStartPoint.adjustSize();
+
       let vtx: SEPoint | SEPointOnOneDimensional | null = null;
       if (this.startSEPointOneDimensionalParent) {
         // Starting mouse press landed near a oneDimensional
@@ -300,10 +316,10 @@ export default class LineHandler extends Highlighter {
     } else {
       // We have to create a new Point for the end
       const newEndPoint = new Point();
-      // Set the display to the default values
-      newEndPoint.stylize(DisplayStyle.DEFAULT);
-      // Set up the glowing display
-      newEndPoint.stylize(DisplayStyle.GLOWING);
+      // Set the display and size to the default values
+      newEndPoint.stylize(DisplayStyle.APPLYCURRENTVARIABLES);
+      newEndPoint.adjustSize();
+
       let vtx: SEPoint | SEPointOnOneDimensional | null = null;
       if (this.hitSESegments.length > 0) {
         // The end of the line will be a point on a segment
@@ -373,9 +389,8 @@ export default class LineHandler extends Highlighter {
     // Create the new line after the normalVector is set
     const newLine = this.tempLine.clone();
     // Stylize the new Line
-    newLine.stylize(DisplayStyle.DEFAULT);
-    // Set up the glowing Line
-    newLine.stylize(DisplayStyle.GLOWING);
+    newLine.stylize(DisplayStyle.APPLYCURRENTVARIABLES);
+    newLine.adjustSize();
 
     const newSELine = new SELine(
       newLine,
@@ -411,9 +426,9 @@ export default class LineHandler extends Highlighter {
       // we have to create a new SEPointOnOneDimensional or SEPoint and Point
       const newPoint = new Point();
       // Set the display to the default values
-      newPoint.stylize(DisplayStyle.DEFAULT);
-      // Set up the glowing display
-      newPoint.stylize(DisplayStyle.GLOWING);
+      newPoint.stylize(DisplayStyle.APPLYCURRENTVARIABLES);
+      newPoint.adjustSize();
+
       let vtx: SEPoint | SEPointOnOneDimensional | null = null;
       if (this.startSEPointOneDimensionalParent) {
         // Starting mouse press landed near a oneDimensional
@@ -448,17 +463,17 @@ export default class LineHandler extends Highlighter {
   activate(): void {
     // If there are exactly two (non-antipodal and not to near each other) SEPoints selected,
     // create a line with the two points
-    if (this.store.getters.selectedObjects().length == 2) {
-      const object1 = this.store.getters.selectedObjects()[0];
-      const object2 = this.store.getters.selectedObjects()[1];
+    if (this.store.getters.selectedSENodules().length == 2) {
+      const object1 = this.store.getters.selectedSENodules()[0];
+      const object2 = this.store.getters.selectedSENodules()[1];
 
       if (object1 instanceof SEPoint && object2 instanceof SEPoint) {
         // Create a new plottable Line
         const newLine = new Line();
         // Set the display to the default values
-        newLine.stylize(DisplayStyle.DEFAULT);
-        // Set up the glowing display
-        newLine.stylize(DisplayStyle.GLOWING);
+        newLine.stylize(DisplayStyle.APPLYCURRENTVARIABLES);
+        newLine.adjustSize();
+
         this.tmpVector.crossVectors(
           object1.locationVector,
           object2.locationVector

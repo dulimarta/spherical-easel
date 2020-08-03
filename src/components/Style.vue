@@ -3,11 +3,13 @@
     <div v-if="!minified" key="full">
       <v-expansion-panels :value="selectedPanel">
         <v-expansion-panel v-for="(p, idx) in panels" :key="idx">
-          <v-expansion-panel-header :key="`header${idx}`">
-            {{ p.name }}
-          </v-expansion-panel-header>
-          <v-expansion-panel-content :key="`content${idx}`">
-            <component :is="p.component"></component>
+          <v-expansion-panel-header
+            color="blue lighten-3"
+            :key="`header${idx}`"
+            @click="saveStyleState"
+          >{{ $t(p.i18n_key) }}</v-expansion-panel-header>
+          <v-expansion-panel-content :color="panelBackgroundColor(idx)" :key="`content${idx}`">
+            <component :is="p.component" :side="frontPanel(idx)"></component>
           </v-expansion-panel-content>
         </v-expansion-panel>
       </v-expansion-panels>
@@ -23,6 +25,8 @@ import Vue from "vue";
 import Component from "vue-class-component";
 import FrontStyle from "@/components/FrontStyle.vue";
 import { Prop } from "vue-property-decorator";
+import EventBus from "../eventHandlers/EventBus";
+import SETTINGS from "@/global-settings";
 
 @Component({ components: { FrontStyle } })
 export default class Style extends Vue {
@@ -31,18 +35,37 @@ export default class Style extends Vue {
   private selectedPanel = 0; // Default selection is the Foreground panel
   private readonly panels = [
     {
-      name: "Foreground Style",
+      i18n_key: "style.foregroundStyle",
       component: () => import("@/components/FrontStyle.vue")
     },
     {
-      name: "Background Style",
-      component: () => import("@/components/BackStyle.vue")
+      i18n_key: "style.backgroundStyle",
+      component: () => import("@/components/FrontStyle.vue") // Note: The frontPanel(idx) returns false for this panel - setting the panel to back side
     },
     {
-      name: "Advanced Style",
+      i18n_key: "style.advancedStyle",
       component: () => import("@/components/AdvancedStyle.vue")
     }
   ];
+
+  //When the user changes panels or click on a panel header, the style state should be saved
+  saveStyleState(): void {
+    EventBus.fire("save-style-state", {});
+  }
+  frontPanel(idx: number): boolean {
+    if (idx == 0) {
+      return SETTINGS.style.frontFace;
+    } else {
+      return SETTINGS.style.backFace;
+    }
+  }
+  panelBackgroundColor(idx: number): string {
+    if (idx == 1) {
+      return "grey darken-2";
+    } else {
+      return "grey";
+    }
+  }
 }
 </script>
 

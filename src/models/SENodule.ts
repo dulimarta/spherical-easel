@@ -4,7 +4,7 @@ import SETTINGS from "@/global-settings";
 import Nodule from "@/plottables/Nodule";
 import { SEPointOnOneDimensional } from "./SEPointOnOneDimensional";
 import { Styles } from "@/types/Styles";
-import { SEOneDimensional } from "@/types";
+import { SEOneDimensional, OneDimensional } from "@/types";
 import { UpdateMode, UpdateStateType } from "@/types";
 
 let NODE_COUNT = 0;
@@ -20,11 +20,11 @@ export abstract class SENodule {
   protected _kids: SENodule[] = [];
 
   /**
-   * A point to the corresponding plottable object
+   * A pointer to the corresponding plottable object
    */
-  protected ref!: Nodule;
+  public ref!: Nodule;
 
-  /* A unique identification number for each node */
+  /* A unique identification number and name for each node */
   public id: number;
   public name: string;
 
@@ -61,7 +61,10 @@ export abstract class SENodule {
    * Is the object hit a point at a particular sphere location?
    * @param sphereVector a location on the ideal unit sphere
    */
-  public abstract isHitAt(unitIdealVector: Vector3): boolean;
+  public abstract isHitAt(
+    unitIdealVector: Vector3,
+    currentMagnificationFactor: number
+  ): boolean;
 
   /**
    * Which style options are customizable for a particular subclass
@@ -203,24 +206,41 @@ export abstract class SENodule {
     return this._outOfDate;
   }
 
-  //Should return true only if this is an instance of SEPointOnObject??
-  public isPointOnOneDimensional(): this is SEPointOnOneDimensional {
-    return true;
-  }
+  //Should return true only if this is an instance of SEPointOnOneDimensional
+  public abstract isPointOnOneDimensional(): boolean;
+  // This doesn't work
+  // public isPointOnOneDimensional(): this is SEPointOnOneDimensional {
+  //   return true;
+  // }
 
   // Only returns true if this is an SEPoint and this has no parents
-  public isFreePoint(): this is SEPoint {
-    return this._parents.length == 0;
-  }
+  public abstract isFreePoint(): boolean;
+  // This doesn't work
+  // public isFreePoint(): this is SEPoint {
+  //   return this._parents.length == 0;
+  // }
+
+  // Only returns true if this is an SEPoint
+  public abstract isPoint(): boolean;
+  // I wish something like this worked but it doesn't
+  // public isPoint(): this is SEPoint {
+  //   return true;
+  // }
 
   public isFreeToMove(): boolean {
     if (this.isFreePoint() || this.isPointOnOneDimensional()) return true;
+    if (this.isPoint()) {
+      // don't let this fall through because if a point has an empty parents array the .every method returns true
+      return false;
+    }
     return this._parents.every(n => n.isFreePoint());
   }
 
-  public isOneDimensional(): this is SEOneDimensional {
-    return true;
-  }
+  public abstract isOneDimensional(): boolean;
+  // This doesn't work return true for SEPoint
+  // public isOneDimensional(): this is SEOneDimensional {
+  //   return true;
+  // }
 
   //Getters and Setters
   set exists(b: boolean) {

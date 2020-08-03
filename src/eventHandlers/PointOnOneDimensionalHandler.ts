@@ -30,9 +30,9 @@ export default class PointOnOneDimensionalHandler extends Highlighter {
       if (this.oneDimensional != null) {
         const newPoint = new Point();
         // Set the display to the default values
-        newPoint.stylize(DisplayStyle.DEFAULT);
-        // Set up the glowing display
-        newPoint.stylize(DisplayStyle.GLOWING);
+        newPoint.stylize(DisplayStyle.APPLYCURRENTVARIABLES);
+        newPoint.adjustSize();
+
         // Create the model object for the new point and link them
         const vtx = new SEPointOnOneDimensional(newPoint, this.oneDimensional);
         vtx.locationVector = this.oneDimensional.closestVector(

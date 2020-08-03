@@ -49,8 +49,9 @@ export class SEPointOnOneDimensional extends SEPoint {
     return this._locationVector;
   }
   /**
-   * When undo or redoing a move, we do *not* want to use the "set locationVector" method because
-   * that will set the position on a potentially out of date object
+   * When undoing or redoing a move, we do *not* want to use the "set locationVector" method because
+   * that will set the position on a potentially out of date object. We will trust that we do not need to
+   * use the closest point method and that the object that this point depends on will be move under this point (if necessary)
    * @param pos The new position of the point
    */
   public pointMoverLocationSetter(pos: Vector3): void {
@@ -99,5 +100,11 @@ export class SEPointOnOneDimensional extends SEPoint {
       state.stateArray.push(pointState);
     }
     this.updateKids(state);
+  }
+
+  // I wish the SENodule methods would work but I couldn't figure out how
+  // See the attempts in SENodule
+  public isPointOnOneDimensional() {
+    return true;
   }
 }

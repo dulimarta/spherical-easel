@@ -21,6 +21,8 @@ export class RotationVisitor implements Visitor {
     this.tmpVector.copy(p.locationVector); // Copy the old vector location of the SEPoint
     this.tmpVector.applyMatrix4(this.transformMatrix); // Apply the matrix
     p.locationVector = this.tmpVector; // Set the new position vector
+    // First mark the kids out of date so that the update method does a topological sort
+    p.markKidsOutOfDate();
     p.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
   }
   //#endregion actionOnPoint

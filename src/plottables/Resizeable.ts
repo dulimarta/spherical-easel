@@ -1,3 +1,3 @@
 export interface Resizeable {
-  adjustSizeForZoom(): void;
+  adjustSize(): void;
 }

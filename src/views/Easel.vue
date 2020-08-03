@@ -8,6 +8,7 @@
   >
     <!-- Use the left page for the toolbox -->
     <template slot="paneL">
+<<<<<<< HEAD
       <v-container fill-height>
         <div id="container">
           <v-btn icon @click="minifyToolbox">
@@ -17,6 +18,15 @@
           <toolbox id="toolbox" ref="toolbox" :minified="toolboxMinified"></toolbox>
         </div>
       </v-container>
+=======
+      <div id="container">
+        <v-btn icon @click="minifyToolbox">
+          <v-icon v-if="toolboxMinified">mdi-arrow-right</v-icon>
+          <v-icon v-else>mdi-arrow-left</v-icon>
+        </v-btn>
+        <toolbox style="width:100%" ref="toolbox" :minified="toolboxMinified"></toolbox>
+      </div>
+>>>>>>> Style-Attempt
     </template>
 
     <!-- Use the right pane mainly for the canvas and style panel -->
@@ -42,9 +52,22 @@
                     ref="responsiveBox"
                     id="responsiveBox"
                     class="pa-0"
+<<<<<<< HEAD
                   >
                     <sphere-frame :canvas-size="currentCanvasSize"></sphere-frame>
                     <div class="anchored top left">
+=======
+                  >
+                    <sphere-frame :canvas-size="currentCanvasSize"></sphere-frame>
+                    <div class="anchored top left">
+                      <!-- <v-btn-toggle
+                    v-model="actionMode"
+                    @change="switchActionMode"
+                    class="mr-2 d-flex flex-wrap accent"
+                  >
+                    <ToolButton :key="80" :button="buttonList[8]"></ToolButton>
+                      </v-btn-toggle>-->
+>>>>>>> Style-Attempt
                       <v-tooltip
                         bottom
                         :open-delay="toolTipOpenDelay"
@@ -53,8 +76,16 @@
                         <!-- TODO:   
                         When not available they should be greyed out (i.e. disabled).-->
                         <template v-slot:activator="{ on }">
-                          <v-btn icon @click="undoEdit" v-on="on">
-                            <v-icon>mdi-undo</v-icon>
+                          <v-btn
+                            :disabled="!stylePanelMinified || !undoEnabled"
+                            icon
+                            @click="undoEdit"
+                            v-on="on"
+                          >
+                            <v-icon
+                              color="blue"
+                              :disabled="!stylePanelMinified || !undoEnabled"
+                            >mdi-undo</v-icon>
                           </v-btn>
                         </template>
                         <span>{{ $t("main.UndoLastAction") }}</span>
@@ -65,8 +96,16 @@
                         :close-delay="toolTipCloseDelay"
                       >
                         <template v-slot:activator="{ on }">
-                          <v-btn icon @click="redoAction" v-on="on">
-                            <v-icon>mdi-redo</v-icon>
+                          <v-btn
+                            :disabled="!stylePanelMinified || !redoEnabled"
+                            icon
+                            @click="redoAction"
+                            v-on="on"
+                          >
+                            <v-icon
+                              color="blue"
+                              :disabled="!stylePanelMinified || !redoEnabled"
+                            >mdi-redo</v-icon>
                           </v-btn>
                         </template>
                         <span>{{ $t("main.RedoLastAction") }}</span>
@@ -193,16 +232,26 @@ import SphereFrame from "@/components/SphereFrame.vue";
 import { Command } from "@/commands/Command";
 import SETTINGS from "@/global-settings";
 import EventBus from "../eventHandlers/EventBus";
-// import { SEPoint } from "@/models/SEPoint";
-// import { SELine } from "@/models/SELine";
+
 import buttonList from "@/components/ToolGroups.vue";
 import ToolButton from "@/components/ToolButton.vue";
 import StylePanel from "@/components/Style.vue";
 import { SECircle } from "../models/SECircle";
-// import { SESegment } from "../models/SESegment";
+import { SESegment } from "../models/SESegment";
+import { SEPoint } from "@/models/SEPoint";
+import { SELine } from "@/models/SELine";
 import Circle from "@/plottables/Circle";
+<<<<<<< HEAD
 import { State } from "vuex-class";
 import { SENodule } from "../models/SENodule";
+=======
+import Point from "@/plottables/Point";
+import Line from "@/plottables/Line";
+import Segment from "@/plottables/Segment";
+import { State } from "vuex-class";
+import { SENodule } from "../models/SENodule";
+import Nodule from "@/plottables/Nodule";
+>>>>>>> Style-Attempt
 
 // import { getModule } from "vuex-module-decorators";
 // import UI from "@/store/ui-styles";
@@ -217,7 +266,10 @@ import { SENodule } from "../models/SENodule";
   components: { SplitPane, Toolbox, SphereFrame, ToolButton, StylePanel }
 })
 export default class Easel extends Vue {
+<<<<<<< HEAD
   readonly store = this.$store.direct;
+=======
+>>>>>>> Style-Attempt
   @State
   readonly points!: SENodule[];
 
@@ -244,6 +296,8 @@ export default class Easel extends Vue {
   private toolUseMessageDelay = SETTINGS.toolUse.delay;
   private displayToolUseMessage = SETTINGS.toolUse.display;
 
+  private undoEnabled = false;
+  private redoEnabled = false;
   private displayZoomInToolUseMessage = false;
   private displayZoomOutToolUseMessage = false;
   private displayZoomFitToolUseMessage = false;
@@ -260,11 +314,21 @@ export default class Easel extends Vue {
   constructor() {
     super();
     EventBus.listen("magnification-updated", this.resizePlottables);
+    EventBus.listen("undo-enabled", this.setUndoEnabled);
+    EventBus.listen("redo-enabled", this.setRedoEnabled);
   }
   //#endregion magnificationUpdate
 
+  private setUndoEnabled(e: unknown): void {
+    this.undoEnabled = (e as any).value;
+  }
+  private setRedoEnabled(e: unknown): void {
+    this.redoEnabled = (e as any).value;
+  }
+
   private enableZoomIn(): void {
     this.displayZoomInToolUseMessage = true;
+<<<<<<< HEAD
     this.store.commit.setActionMode({ id: "zoomIn", name: "Zoom In" });
   }
   private enableZoomOut(): void {
@@ -274,9 +338,28 @@ export default class Easel extends Vue {
   private enableZoomFit(): void {
     this.displayZoomFitToolUseMessage = true;
     this.store.commit.setActionMode({ id: "zoomFit", name: "Zoom Fit" });
+=======
+    this.$store.commit("setActionMode", {
+      id: "zoomIn",
+      name: "PanZoomInDisplayedName"
+    });
+  }
+  private enableZoomOut(): void {
+    this.displayZoomOutToolUseMessage = true;
+    this.$store.commit("setActionMode", {
+      id: "zoomOut",
+      name: "PanZoomOutDisplayedName"
+    });
+  }
+  private enableZoomFit(): void {
+    this.displayZoomFitToolUseMessage = true;
+    this.$store.commit("setActionMode", {
+      id: "zoomFit",
+      name: "ZoomFitDisplayedName"
+    });
+>>>>>>> Style-Attempt
   }
   private adjustSize(): void {
-    console.debug("adjustSize()");
     this.availHeight =
       window.innerHeight -
       this.$vuetify.application.footer -
@@ -293,7 +376,7 @@ export default class Easel extends Vue {
   /** mounted() is part of VueJS lifecycle hooks */
   mounted(): void {
     window.addEventListener("resize", this.onWindowResized);
-    this.adjustSize();
+    this.adjustSize(); // Why do we need this?  this.onWindowResized just calls this.adjustSize() but if you remove it the app doesn't work -- strange!
   }
 
   /** Split Pane resize handler
@@ -332,10 +415,11 @@ export default class Easel extends Vue {
     if (!this.toolboxMinified && !this.stylePanelMinified) {
       this.toolboxMinified = true;
     }
+    // Set the selection tool to be active when opening the style panel.
     if (!this.stylePanelMinified) {
       this.store.commit.setActionMode({
         id: "select",
-        name: "CreateSelectDisplayedName"
+        name: "SelectDisplayedName"
       });
     }
   }
@@ -357,6 +441,7 @@ export default class Easel extends Vue {
 
   //#region resizePlottables
   resizePlottables(e: any): void {
+<<<<<<< HEAD
     const oldFactor = this.$store.state.previousZoomMagnificationFactor;
     Circle.currentCircleStrokeWidthFront *= oldFactor / e.factor;
     // this.$store.state.points.forEach((p: SEPoint) => {
@@ -367,10 +452,23 @@ export default class Easel extends Vue {
     // });
     this.$store.state.circles.forEach((p: SECircle) => {
       p.ref.adjustSizeForZoom();
+=======
+    const oldFactor = this.$store.getters.previousZoomMagnificationFactor();
+    // Update the current stroke widths in each plottable class
+    Line.updateCurrentStrokeWidthForZoom(oldFactor / e.factor);
+    Segment.updateCurrentStrokeWidthForZoom(oldFactor / e.factor);
+    Circle.updateCurrentStrokeWidthForZoom(oldFactor / e.factor);
+    Point.updatePointScaleFactorForZoom(oldFactor / e.factor);
+
+    // Update the size of each nodule in the store
+    this.$store.state.seNodules.forEach((p: SENodule) => {
+      p.ref.adjustSize();
     });
-    // this.$store.state.segments.forEach((p: SESegment) => {
-    //   p.ref.adjustSizeForZoom(e.factor);
-    // });
+    // The temporary plottables need to be resized too
+    this.$store.state.temporaryNodules.forEach((p: Nodule) => {
+      p.adjustSize();
+>>>>>>> Style-Attempt
+    });
   }
   //#endregion resizePlottables
 }

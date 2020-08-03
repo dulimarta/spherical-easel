@@ -237,7 +237,6 @@ export default class PanZoomHandler implements ToolStrategy {
   }
 
   doPan(event: MouseEvent): void {
-    console.log("Do Pan!");
     const mag = this.store.state.zoomMagnificationFactor;
     // // Only allow panning if we are zoomed in
     // if (mag < 1) return;
@@ -245,7 +244,6 @@ export default class PanZoomHandler implements ToolStrategy {
       this.currentPixelPosition.x - mag * this.utStartDragPosition.x,
       this.currentPixelPosition.y - mag * this.utStartDragPosition.y
     ];
-    console.log("mag", mag);
     // Set the new translation vector in the store
     this.store.commit.setZoomTranslation(this.lastPanTranslationVector);
 
