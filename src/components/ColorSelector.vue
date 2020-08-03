@@ -58,8 +58,6 @@
     <v-checkbox v-show="colorAgreement" v-model="noData"
       :label="noDataUILabel" color="indigo darken-3" @change="setNoData"
       hide-details x-small dense></v-checkbox>
-
-    NEW WIDGET
   </div>
 </template>
 

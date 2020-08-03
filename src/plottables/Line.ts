@@ -48,7 +48,6 @@ export default class Line extends Nodule {
 
   /**
    * The styling variables for the drawn segment. The user can modify these.
-   * Created with the Google Sheet "Segment Styling Code" in the "Set Drawn Variables" tab
    */
   // Front
   private strokeColorFront = SETTINGS.line.drawn.strokeColor.front;
@@ -343,7 +342,7 @@ export default class Line extends Nodule {
       }
     } else {
       // Set the back options
-      // options.dynamicBackStyle is true, so we need to explicitly check for undefined otherwise
+      // options.dynamicBackStyle is boolean, so we need to explicitly check for undefined otherwise
       // when it is false, this doesn't execute and this.dynamicBackStyle is not set
       if (options.dynamicBackStyle != undefined) {
         this.dynamicBackStyle = options.dynamicBackStyle;

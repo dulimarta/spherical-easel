@@ -51,7 +51,6 @@ export default class Segment extends Nodule {
 
   /**
    * The styling variables for the drawn segment. The user can modify these.
-   * Created with the Google Sheet "Segment Styling Code" in the "Set Drawn Variables" tab
    */
   // Front
   private strokeColorFront = SETTINGS.segment.drawn.strokeColor.front;
@@ -451,12 +450,7 @@ export default class Segment extends Nodule {
    * @param options The style options
    */
   updateStyle(options: StyleOptions): void {
-    console.debug(
-      "Segment: Update style of",
-      this.name,
-      "using",
-      options.strokeColor
-    );
+    console.debug("Segment: Update style of", this.name, "using", options);
     if (options.front) {
       // Set the front options
       if (options.strokeWidthPercent) {
@@ -476,7 +470,7 @@ export default class Segment extends Nodule {
         }
       }
     } else {
-      // options.dynamicBackStyle is true, so we need to explicitly check for undefined otherwise
+      // options.dynamicBackStyle is boolean, so we need to explicitly check for undefined otherwise
       // when it is false, this doesn't execute and this.dynamicBackStyle is not set
       if (options.dynamicBackStyle != undefined) {
         this.dynamicBackStyle = options.dynamicBackStyle;

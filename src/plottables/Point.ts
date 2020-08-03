@@ -29,36 +29,35 @@ export default class Point extends Nodule {
    * The companion glowing objects are also declared, they are always larger than there
    * drawn counterparts so that a glowing edge shows.
    */
-  private frontPoint: Two.Circle;
-  private backPoint: Two.Circle;
-  private glowingFrontPoint: Two.Circle;
-  private glowingBackPoint: Two.Circle;
+  protected frontPoint: Two.Circle;
+  protected backPoint: Two.Circle;
+  protected glowingFrontPoint: Two.Circle;
+  protected glowingBackPoint: Two.Circle;
 
   /**
    * The styling variables for the drawn point. The user can modify these.
-   * Created with the Google Sheet "Point Styling Code" in the "Declare Private Variables" tab
    */
   // Front
-  private fillColorFront = SETTINGS.point.drawn.fillColor.front;
-  private strokeColorFront = SETTINGS.point.drawn.strokeColor.front;
-  private pointRadiusPercentFront = 100;
-  private opacityFront = SETTINGS.point.drawn.opacity.front;
+  protected fillColorFront = SETTINGS.point.drawn.fillColor.front;
+  protected strokeColorFront = SETTINGS.point.drawn.strokeColor.front;
+  protected pointRadiusPercentFront = 100;
+  protected opacityFront = SETTINGS.point.drawn.opacity.front;
   // Back
-  private fillColorBack = SETTINGS.point.dynamicBackStyle
+  protected fillColorBack = SETTINGS.point.dynamicBackStyle
     ? Nodule.contrastFillColor(SETTINGS.point.drawn.fillColor.front)
     : SETTINGS.point.drawn.fillColor.back;
-  private strokeColorBack = SETTINGS.point.dynamicBackStyle
+  protected strokeColorBack = SETTINGS.point.dynamicBackStyle
     ? Nodule.contrastStrokeColor(SETTINGS.point.drawn.strokeColor.front)
     : SETTINGS.point.drawn.strokeColor.back;
-  private pointRadiusPercentBack = SETTINGS.point.dynamicBackStyle
+  protected pointRadiusPercentBack = SETTINGS.point.dynamicBackStyle
     ? Nodule.contrastPointRadiusPercent(
         SETTINGS.point.drawn.pointStrokeWidth.front
       )
     : 100;
-  private opacityBack = SETTINGS.point.dynamicBackStyle
+  protected opacityBack = SETTINGS.point.dynamicBackStyle
     ? Nodule.contrastOpacity(SETTINGS.point.drawn.opacity.front)
     : SETTINGS.point.drawn.opacity.back;
-  private dynamicBackStyle = SETTINGS.point.dynamicBackStyle;
+  protected dynamicBackStyle = SETTINGS.point.dynamicBackStyle;
 
   /**
    * Initialize the current point scale factor that is adjusted by the zoom level and the user pointRadiusPercent
@@ -125,7 +124,11 @@ export default class Point extends Nodule {
     } else {
       this.glowingFrontPoint.fill = SETTINGS.point.glowing.fillColor.front;
     }
-    this.glowingFrontPoint.noStroke();
+    if (SETTINGS.point.glowing.fillColor.front === "noStroke") {
+      this.glowingFrontPoint.noStroke();
+    } else {
+      this.glowingFrontPoint.stroke = SETTINGS.point.glowing.strokeColor.front;
+    }
     this.glowingFrontPoint.opacity = SETTINGS.point.glowing.opacity.front;
     // points have no dashing
 
@@ -135,7 +138,11 @@ export default class Point extends Nodule {
     } else {
       this.glowingBackPoint.fill = SETTINGS.point.glowing.fillColor.back;
     }
-    this.glowingBackPoint.noStroke();
+    if (SETTINGS.point.glowing.fillColor.back === "noStroke") {
+      this.glowingBackPoint.noStroke();
+    } else {
+      this.glowingBackPoint.stroke = SETTINGS.point.glowing.strokeColor.back;
+    }
     this.glowingBackPoint.opacity = SETTINGS.point.glowing.opacity.back;
     // points have no dashing
   }
@@ -253,7 +260,7 @@ export default class Point extends Nodule {
       }
     } else {
       // Set the back options
-      // options.dynamicBackStyle is true, so we need to explicitly check for undefined otherwise
+      // options.dynamicBackStyle is boolean, so we need to explicitly check for undefined otherwise
       // when it is false, this doesn't execute and this.dynamicBackStyle is not set
       if (options.dynamicBackStyle != undefined) {
         this.dynamicBackStyle = options.dynamicBackStyle;
@@ -321,11 +328,11 @@ export default class Point extends Nodule {
 
         strokeColor: SETTINGS.point.dynamicBackStyle
           ? Nodule.contrastStrokeColor(SETTINGS.point.drawn.strokeColor.front)
-          : SETTINGS.circle.drawn.strokeColor.back,
+          : SETTINGS.point.drawn.strokeColor.back,
 
         fillColor: SETTINGS.point.dynamicBackStyle
           ? Nodule.contrastFillColor(SETTINGS.point.drawn.fillColor.front)
-          : SETTINGS.circle.drawn.fillColor.back,
+          : SETTINGS.point.drawn.fillColor.back,
 
         opacity: SETTINGS.point.dynamicBackStyle
           ? Nodule.contrastOpacity(SETTINGS.point.drawn.opacity.front)

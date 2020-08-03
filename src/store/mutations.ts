@@ -12,10 +12,10 @@ import { Vector3 } from "three";
 import { StyleOptions } from "@/types/Styles";
 import { LineNormalVisitor } from "@/visitors/LineNormalVisitor";
 import { SegmentNormalArcLengthVisitor } from "@/visitors/SegmentNormalArcLengthVisitor";
-import { SEMeasurement } from "@/models/SEMeasurement";
-import { SECalculation } from "@/models/SECalculation";
 import { UpdateMode, UpdateStateType } from "@/types";
 import Nodule, { DisplayStyle } from "@/plottables/Nodule";
+import { SEMeasurement } from "@/models/SEMeasurement";
+import { SECalculation } from "@/models/SECalculation";
 
 // const tmpMatrix = new Matrix4();
 
@@ -33,18 +33,14 @@ export const initialState: AppState = {
   seNodules: [], // An array of all SENodules
   selections: [], // An array of selected SENodules
   layers: [], // An array of Two.Group pointer to the layers in the twoInstance
-  // points: [], // An array of all SEPoints
-  // lines: [], // An array of all SELines
-  // segments: [], // An array of all SESegments
-  // circles: [], // An array of all SECircles
-  intersections: [], // An array of all SEPoints that are intersections of the one-dimensional objects in the arrangement
-  measurements: [], // An array of measurements on objects
-  calculations: [],
   sePoints: [], // An array of all SEPoints
   seLines: [], // An array of all SELines
   seSegments: [], // An array of all SESegments
   seCircles: [], // An array of all SECircles
-  temporaryNodules: [] // An array of all Nodules that are temporary - created by the handlers.
+  temporaryNodules: [], // An array of all Nodules that are temporary - created by the handlers.
+  intersections: [],
+  measurements: [],
+  calculations: []
 };
 //#endregion appState
 
@@ -89,7 +85,6 @@ export default {
     state.actionMode = state.previousActionMode;
     state.activeToolName = state.previousActiveToolName;
   },
-
   setZoomMagnificationFactor(state: AppState, mag: number): void {
     state.previousZoomMagnificationFactor = state.zoomMagnificationFactor;
     state.zoomMagnificationFactor = mag;
@@ -99,7 +94,6 @@ export default {
       state.zoomTranslation[i] = vec[i];
     }
   },
-
   //#region addPoint
   addPoint(state: AppState, point: SEPoint): void {
     state.sePoints.push(point);
@@ -107,7 +101,6 @@ export default {
     point.ref.addToLayers(state.layers);
   },
   //#endregion addPoint
-
   removePoint(state: AppState, pointId: number): void {
     const pos = state.sePoints.findIndex(x => x.id === pointId);
     const pos2 = state.seNodules.findIndex(x => x.id === pointId);
@@ -119,7 +112,6 @@ export default {
       victimPoint.ref.removeFromLayers();
     }
   },
-
   addLine(state: AppState, line: SELine): void {
     state.seLines.push(line);
     state.seNodules.push(line);
@@ -256,19 +248,15 @@ export default {
       dynamicBackStyle: dynamicBackStyle,
       pointRadiusPercent: pointRadiusPercent
     };
-    if (
-      backStyleContrast &&
-      backStyleContrast != Nodule.getBackStyleContrast()
-    ) {
+    if (backStyleContrast && backStyleContrast != Nodule.getBackStyleContrast())
       // Update all Nodules because more than just the selected nodules depend on the backStyleContrast
       Nodule.setBackStyleContrast(backStyleContrast);
-      state.seNodules.forEach((n: SENodule) => {
-        n.ref.stylize(DisplayStyle.APPLYCURRENTVARIABLES);
-      });
-      selected.forEach((n: SENodule) => {
-        n.ref.updateStyle(opt as StyleOptions);
-      });
-    }
+    state.seNodules.forEach((n: SENodule) => {
+      n.ref.stylize(DisplayStyle.APPLYCURRENTVARIABLES);
+    });
+    selected.forEach((n: SENodule) => {
+      n.ref.updateStyle(opt as StyleOptions);
+    });
   },
 
   addMeasurement(state: AppState, measurement: SEMeasurement): void {

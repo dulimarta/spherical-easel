@@ -60,7 +60,6 @@ export default abstract class Nodule implements Stylable, Resizeable {
   abstract updateDisplay(): void;
 
   static setBackStyleContrast(contrast: number): void {
-    console.log("new contrast", contrast);
     this.backStyleContrast = contrast;
   }
 

@@ -36,7 +36,11 @@
                     </sphere-frame>
                     <div class="anchored top left">
                       <v-tooltip bottom :open-delay="toolTipOpenDelay"
+                        :close-delay="toolTipCloseDelay"></v-tooltip>
+
+                      <v-tooltip bottom :open-delay="toolTipOpenDelay"
                         :close-delay="toolTipCloseDelay">
+
                         <!-- TODO:   
                         When not available they should be greyed out (i.e. disabled).-->
                         <template v-slot:activator="{ on }">
@@ -70,7 +74,8 @@
                         <template v-slot:activator="{ on }">
                           <v-btn color="primary" icon tile
                             @click="enableZoomIn" v-on="on">
-                            <v-icon>mdi-magnify-plus-outline</v-icon>
+                            <v-icon>mdi-magnify-plus-outline
+                            </v-icon>
                           </v-btn>
                         </template>
                         <span>{{ $t("buttons.PanZoomInToolTipMessage") }}</span>
@@ -80,12 +85,11 @@
                         <template v-slot:activator="{ on }">
                           <v-btn color="primary" icon tile
                             @click="enableZoomOut" v-on="on">
-                            <v-icon>mdi-magnify-minus-outline</v-icon>
+                            <v-icon>mdi-magnify-minus-outline
+                            </v-icon>
                           </v-btn>
                         </template>
-                        <span>
-                          {{ $t("buttons.PanZoomOutToolTipMessage") }}
-                        </span>
+                        <span>{{ $t("buttons.PanZoomOutToolTipMessage") }}</span>
                       </v-tooltip>
                       <v-tooltip bottom :open-delay="toolTipOpenDelay"
                         :close-delay="toolTipCloseDelay">
@@ -95,9 +99,7 @@
                             <v-icon>mdi-magnify-scan</v-icon>
                           </v-btn>
                         </template>
-                        <span>
-                          {{ $t("buttons.PanZoomOutToolTipMessage") }}
-                        </span>
+                        <span>{{ $t("buttons.PanZoomOutToolTipMessage") }}</span>
                       </v-tooltip>
                     </div>
                   </v-responsive>
@@ -108,9 +110,9 @@
               :timeout="toolUseMessageDelay" :value="displayToolUseMessage"
               multi-line>
               <span>
-                <strong class="warning--text">
-                  {{ $t("buttons.PanZoomInDisplayedName") + ": " }}
-                </strong>
+
+                <strong
+                  class="warning--text">{{ $t("buttons.PanZoomInDisplayedName") + ": " }}</strong>
                 {{ $t("buttons.PanZoomInToolUseMessage") }}
               </span>
               <v-btn @click="displayToolUseMessage = false" icon>
@@ -125,6 +127,7 @@
                 <strong class="warning--text">
                   {{ $t("buttons.ZoomFitDisplayedName") + ": " }}
                 </strong>
+
                 {{ $t("buttons.ZoomFitToolUseMessage") }}
               </span>
               <v-btn @click="displayToolUseMessage = false" icon>
@@ -183,11 +186,11 @@ import { SESegment } from "../models/SESegment";
 import { SEPoint } from "@/models/SEPoint";
 import { SELine } from "@/models/SELine";
 import Circle from "@/plottables/Circle";
+import { State } from "vuex-class";
+import { SENodule } from "../models/SENodule";
 import Point from "@/plottables/Point";
 import Line from "@/plottables/Line";
 import Segment from "@/plottables/Segment";
-import { State } from "vuex-class";
-import { SENodule } from "../models/SENodule";
 import Nodule from "@/plottables/Nodule";
 
 // import { getModule } from "vuex-module-decorators";
@@ -203,7 +206,9 @@ import Nodule from "@/plottables/Nodule";
   components: { SplitPane, Toolbox, SphereFrame, ToolButton, StylePanel }
 })
 export default class Easel extends Vue {
+
   readonly store = this.$store.direct;
+
   @State
   readonly points!: SENodule[];
 
@@ -255,11 +260,9 @@ export default class Easel extends Vue {
 
   private setUndoEnabled(e: unknown): void {
     this.undoEnabled = (e as any).value;
-    console.log("undo enabled", this.undoEnabled);
   }
   private setRedoEnabled(e: unknown): void {
     this.redoEnabled = (e as any).value;
-    console.log("redo enabled", this.redoEnabled);
   }
 
   private enableZoomIn(): void {
@@ -273,9 +276,9 @@ export default class Easel extends Vue {
   private enableZoomFit(): void {
     this.displayZoomFitToolUseMessage = true;
     this.store.commit.setActionMode({ id: "zoomFit", name: "Zoom Fit" });
+
   }
   private adjustSize(): void {
-    console.debug("adjustSize()");
     this.availHeight =
       window.innerHeight -
       this.$vuetify.application.footer -
@@ -357,7 +360,17 @@ export default class Easel extends Vue {
 
   //#region resizePlottables
   resizePlottables(e: any): void {
-    const oldFactor = this.$store.getters.previousZoomMagnificationFactor();
+
+    const oldFactor = this.$store.state.previousZoomMagnificationFactor;
+    Circle.currentCircleStrokeWidthFront *= oldFactor / e.factor;
+    // this.$store.state.points.forEach((p: SEPoint) => {
+    //   p.ref.adjustSizeForZoom(e.factor);
+    // });
+    // this.$store.state.lines.forEach((p: SELine) => {
+    //   p.ref.adjustSizeForZoom(e.factor);
+    // });
+    // this.$store.state.circles.forEach((p: SECircle) => {
+    // p.ref.adjustSizeForZoom();
     // Update the current stroke widths in each plottable class
     Line.updateCurrentStrokeWidthForZoom(oldFactor / e.factor);
     Segment.updateCurrentStrokeWidthForZoom(oldFactor / e.factor);

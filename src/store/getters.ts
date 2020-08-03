@@ -11,7 +11,7 @@ import { Vector3 } from "three";
 import Two, { Vector } from "two.js";
 import { SENodule } from "@/models/SENodule";
 import { SEPoint } from "@/models/SEPoint";
-import Point from "@/plottables/Point";
+import NonFreePoint from "@/plottables/NonFreePoint";
 import { DisplayStyle } from "@/plottables/Nodule";
 
 const PIXEL_CLOSE_ENOUGH = 8;
@@ -404,7 +404,6 @@ export default {
           PIXEL_CLOSE_ENOUGH
     );
   },
-
   /** When a point is on a geodesic circle, it has to be perpendicular to
    * the normal direction of that circle */
   findNearbySELines: (state: AppState) => (
@@ -463,7 +462,7 @@ export default {
             !avoidVectors.some(v => tempVec.subVectors(info.vector, v).isZero())
           ) {
             // info.vector is not on the avoidVectors array, so create an intersection
-            const newPt = new Point();
+            const newPt = new NonFreePoint();
             newPt.stylize(DisplayStyle.APPLYTEMPORARYVARIABLES);
             newPt.adjustSize();
             const newSEIntersectionPt = new SEIntersectionPoint(
@@ -491,7 +490,7 @@ export default {
           !avoidVectors.some(v => tempVec.subVectors(info.vector, v).isZero())
         ) {
           // info.vector is not on the avoidVectors array, so create an intersection
-          const newPt = new Point();
+          const newPt = new NonFreePoint();
           newPt.stylize(DisplayStyle.APPLYTEMPORARYVARIABLES);
           newPt.adjustSize();
           const newSEIntersectionPt = new SEIntersectionPoint(
@@ -519,7 +518,7 @@ export default {
           !avoidVectors.some(v => tempVec.subVectors(info.vector, v).isZero())
         ) {
           // info.vector is not on the avoidVectors array, so create an intersection
-          const newPt = new Point();
+          const newPt = new NonFreePoint();
           newPt.stylize(DisplayStyle.APPLYTEMPORARYVARIABLES);
           newPt.adjustSize();
           const newSEIntersectionPt = new SEIntersectionPoint(
@@ -562,7 +561,7 @@ export default {
           !avoidVectors.some(v => tempVec.subVectors(info.vector, v).isZero())
         ) {
           // info.vector is not on the avoidVectors array, so create an intersection
-          const newPt = new Point();
+          const newPt = new NonFreePoint();
           newPt.stylize(DisplayStyle.APPLYTEMPORARYVARIABLES);
           newPt.adjustSize();
           const newSEIntersectionPt = new SEIntersectionPoint(
@@ -595,7 +594,7 @@ export default {
           if (
             !avoidVectors.some(v => tempVec.subVectors(info.vector, v).isZero())
           ) {
-            const newPt = new Point();
+            const newPt = new NonFreePoint();
             newPt.stylize(DisplayStyle.APPLYTEMPORARYVARIABLES);
             newPt.adjustSize();
             const newSEIntersectionPt = new SEIntersectionPoint(
@@ -626,7 +625,7 @@ export default {
           !avoidVectors.some(v => tempVec.subVectors(info.vector, v).isZero())
         ) {
           // info.vector is not on the avoidVectors array, so create an intersection
-          const newPt = new Point();
+          const newPt = new NonFreePoint();
           newPt.stylize(DisplayStyle.APPLYTEMPORARYVARIABLES);
           newPt.adjustSize();
           const newSEIntersectionPt = new SEIntersectionPoint(
@@ -648,7 +647,6 @@ export default {
     });
     return intersectionPointList;
   },
-
   createAllIntersectionsWithCircle: (state: AppState) => (
     newCircle: SECircle
   ): SEIntersectionReturnType[] => {
@@ -669,7 +667,7 @@ export default {
           !avoidVectors.some(v => tempVec.subVectors(info.vector, v).isZero())
         ) {
           // info.vector is not on the avoidVectors array, so create an intersection
-          const newPt = new Point();
+          const newPt = new NonFreePoint();
           newPt.stylize(DisplayStyle.APPLYTEMPORARYVARIABLES);
           newPt.adjustSize();
           const newSEIntersectionPt = new SEIntersectionPoint(
@@ -700,7 +698,7 @@ export default {
           !avoidVectors.some(v => tempVec.subVectors(info.vector, v).isZero())
         ) {
           // info.vector is not on the avoidVectors array, so create an intersection
-          const newPt = new Point();
+          const newPt = new NonFreePoint();
           newPt.stylize(DisplayStyle.APPLYTEMPORARYVARIABLES);
           newPt.adjustSize();
           const newSEIntersectionPt = new SEIntersectionPoint(
@@ -735,7 +733,7 @@ export default {
             !avoidVectors.some(v => tempVec.subVectors(info.vector, v).isZero())
           ) {
             // info.vector is not on the avoidVectors array, so create an intersection
-            const newPt = new Point();
+            const newPt = new NonFreePoint();
             newPt.stylize(DisplayStyle.APPLYTEMPORARYVARIABLES);
             newPt.adjustSize();
             const newSEIntersectionPt = new SEIntersectionPoint(
@@ -801,6 +799,18 @@ export default {
   },
   selectedSENodules: (state: AppState) => (): SENodule[] => {
     return state.selections;
+  },
+  allSEPoints: (state: AppState) => (): SEPoint[] => {
+    return state.sePoints;
+  },
+  allSECircles: (state: AppState) => (): SECircle[] => {
+    return state.seCircles;
+  },
+  allSESegments: (state: AppState) => (): SESegment[] => {
+    return state.seSegments;
+  },
+  allSELines: (state: AppState) => (): SELine[] => {
+    return state.seLines;
   },
   previousActionMode: (state: AppState) => (): { id: string; name: string } => {
     return { id: state.actionMode, name: state.activeToolName };

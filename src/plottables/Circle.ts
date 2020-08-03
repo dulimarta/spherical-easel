@@ -69,7 +69,6 @@ export default class Circle extends Nodule {
 
   /**
    * The styling variables for the drawn circle. The user can modify these.
-   * Created with the Google Sheet "Circle Styling Code" in the "Set Drawn Variables" tab
    */
   // Front
   private fillColorFront = SETTINGS.circle.drawn.fillColor.front;
@@ -756,7 +755,7 @@ export default class Circle extends Nodule {
       }
     } else {
       // Set the back options
-      // options.dynamicBackStyle is true, so we need to explicitly check for undefined otherwise
+      // options.dynamicBackStyle is boolean, so we need to explicitly check for undefined otherwise
       // when it is false, this doesn't execute and this.dynamicBackStyle is not set
       if (options.dynamicBackStyle != undefined) {
         this.dynamicBackStyle = options.dynamicBackStyle;
@@ -804,7 +803,6 @@ export default class Circle extends Nodule {
         opacity: this.opacityFront
       };
     } else {
-      console.log("circle get current style state");
       const dashArrayBack = [] as number[];
       if (this.dashArrayBack.length > 0) {
         this.dashArrayBack.forEach(v => dashArrayBack.push(v));
