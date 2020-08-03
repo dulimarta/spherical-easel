@@ -1,7 +1,6 @@
 <template>
   <div>
-    SLIDER INPUT
-    <slot name="title"></slot>
+    <span class="text-subtitle-2">{{ $t(titleKey) }}</span>
     <div v-show="totalyDisableSelector">
       {{ $t("style.selectAnObject") }}
     </div>
@@ -74,6 +73,7 @@ export default class SliderInput extends Vue {
   @Prop()
   readonly frontSide!: boolean;
 
+  @Prop() readonly titleKey!: string
   @Prop()
   readonly initialStyleStates!: StyleOptions[]
 

@@ -64,7 +64,7 @@
               !totallyDisableDynamicBackStyleSelector &&
                 dynamicBackStyleAgreement
             " text color="error" outlined ripple small
-            @click="toggleBackStyleContrastSliderAvailibity">
+            @click="toggleBackStyleContrastSliderAvailaibility">
             {{ $t("style.enableBackStyleContrastSlider") }}
           </v-btn>
         </template>
@@ -78,7 +78,7 @@
               !totallyDisableDynamicBackStyleSelector &&
                 dynamicBackStyleAgreement
             " color="error" text outlined ripple small
-            @click="toggleBackStyleOptionsAvailibity">
+            @click="toggleBackStyleOptionsAvailability">
             {{ $t("style.disableBackStyleContrastSlider") }}</v-btn>
         </template>
         <span>{{ $t("style.disableBackStyleContrastSliderToolTip") }}</span>
@@ -259,13 +259,15 @@
         (!isBackFace() && (hasStrokeWidthPercent || noObjectsSelected)) ||
           (isBackFace() && !dynamicBackStyle && hasStrokeWidthPercent)
       ">
-      <SliderInput :data.sync="strokeWidthPercent"
-        :min-value="minStrokeWidthPercent"
-        :max-value="maxStrokeWidthPercent" style-name="strokeWidthPercent"
-        :initial-style-states="initialStyleStates" :front-side="true">
+      <SliderInput v-bind:data.sync="strokeWidthPercent"
+        style-name="strokeWidthPercent"
+        title-key="style.strokeWidthPercent"
+        v-bind:min-value="minStrokeWidthPercent"
+        v-bind:max-value="maxStrokeWidthPercent"
+        v-bind:initial-style-states="initialStyleStates"
+        :front-side="true">
         <template v-slot:title>
-          <span
-            class="text-subtitle-2">{{ $t("style.strokeWidthPercent") }}</span>
+
           <!--span v-show="
           !totallyDisableStrokeWidthPercentSelector &&
             strokeWidthPercentAgreement
@@ -280,72 +282,20 @@
         (!isBackFace() && (hasPointRadiusPercent || noObjectsSelected)) ||
           (isBackFace() && !dynamicBackStyle && hasPointRadiusPercent)
       ">
-      <span
-        class="text-subtitle-2">{{ $t("style.pointRadiusPercent") }}</span>
-      <span v-show="
+      <SliderInput :data.sync="pointRadiusPercent"
+        title-key="style.pointRadiusPercent"
+        style-name="pointRadiusPercent" :min-value="minPointRadiusPercent"
+        :max-value="maxPointRadiusPercent"
+        v-bind:initial-style-states="initialStyleStates"
+        :front-side="true"></SliderInput>
+      <!--span v-show="
           !totallyDisablePointRadiusPercentSelector &&
             pointRadiusPercentAgreement
         ">
         (Percent of Default: {{ pointRadiusPercent }}%)
-      </span>
+      </span-->
       <br />
-      <span v-show="totallyDisablePointRadiusPercentSelector">
-        {{ $t("style.selectAnObject") }}
-      </span>
-      <v-tooltip v-if="!pointRadiusPercentAgreement" bottom
-        :open-delay="toolTipOpenDelay" :close-delay="toolTipCloseDelay">
-        <template v-slot:activator="{ on }">
-          <v-btn color="error" v-on="on"
-            v-show="!totallyDisablePointRadiusPercentSelector" text small
-            outlined ripple @click="setCommonPointRadiusPercentAgreement">
-            {{ $t("style.differingStylesDetected") }}
-          </v-btn>
-        </template>
-        <span>{{ $t("style.differingStylesDetectedToolTip") }}</span>
-      </v-tooltip>
 
-      <v-tooltip bottom :open-delay="toolTipOpenDelay"
-        :close-delay="toolTipCloseDelay" max-width="400px">
-        <template v-slot:activator="{ on }">
-          <v-btn v-on="on" v-show="
-              pointRadiusPercentAgreement &&
-                !totallyDisablePointRadiusPercentSelector
-            " @click="clearRecentPointRadiusPercentChanges" text outlined
-            ripple small>
-            {{ $t("style.clearChanges") }}
-          </v-btn>
-        </template>
-        <span>{{ $t("style.clearChangesToolTip") }}</span>
-      </v-tooltip>
-
-      <v-tooltip bottom :open-delay="toolTipOpenDelay"
-        :close-delay="toolTipCloseDelay" max-width="400px">
-        <template v-slot:activator="{ on }">
-          <v-btn v-on="on" v-show="
-              pointRadiusPercentAgreement &&
-                !totallyDisablePointRadiusPercentSelector
-            " @click="resetPointRadiusPercentToDefaults" text small
-            outlined ripple>
-            {{ $t("style.restoreDefaults") }}
-          </v-btn>
-        </template>
-        <span>{{ $t("style.restoreDefaultsToolTip") }}</span>
-      </v-tooltip>
-
-      <v-slider v-model.number="pointRadiusPercent"
-        :min="minPointRadiusPercent" :disabled="
-          !pointRadiusPercentAgreement ||
-            totallyDisablePointRadiusPercentSelector
-        " @change="onPointRadiusPercentChange"
-        :max="maxPointRadiusPercent" type="range" class="mt-8">
-        <template v-slot:prepend>
-          <v-icon @click="decrementPointRadiusPercent">mdi-minus</v-icon>
-        </template>
-
-        <template v-slot:append>
-          <v-icon @click="incrementPointRadiusPercent">mdi-plus</v-icon>
-        </template>
-      </v-slider>
     </fade-in-card>
 
     <fade-in-card :showWhen="
@@ -590,8 +540,6 @@ export default class FrontStyle extends Vue {
   private minStrokeWidthPercent = SETTINGS.style.minStrokeWidthPercent;
 
   private pointRadiusPercent: number | undefined = 100;
-  private pointRadiusPercentAgreement = true;
-  private totallyDisablePointRadiusPercentSelector = false;
   private maxPointRadiusPercent = SETTINGS.style.maxPointRadiusPercent;
   private minPointRadiusPercent = SETTINGS.style.minPointRadiusPercent;
 
@@ -906,90 +854,6 @@ export default class FrontStyle extends Vue {
       fillColor: this.fillColor
     });
   }
-  // These methods are linked to the pointRadiusPercent fade-in-card
-  onPointRadiusPercentChange(): void {
-    this.$store.commit("changeStyle", {
-      selected: this.$store.getters.selectedSENodules(),
-      front: this.side,
-      pointRadiusPercent: this.pointRadiusPercent
-    });
-  }
-  setCommonPointRadiusPercentAgreement(): void {
-    this.pointRadiusPercentAgreement = true;
-  }
-  clearRecentPointRadiusPercentChanges(): void {
-    const selected = this.$store.getters.selectedSENodules();
-    for (let i = 0; i < selected.length; i++) {
-      this.$store.commit("changeStyle", {
-        selected: [selected[i]],
-        front: this.side,
-        pointRadiusPercent: this.initialStyleStates[i].pointRadiusPercent
-      });
-    }
-    this.setPointRadiusPercentSelectorState(this.initialStyleStates);
-  }
-  resetPointRadiusPercentToDefaults(): void {
-    const selected = this.$store.getters.selectedSENodules();
-    for (let i = 0; i < selected.length; i++) {
-      this.$store.commit("changeStyle", {
-        selected: [selected[i]],
-        front: this.side,
-        pointRadiusPercent: this.defaultStyleStates[i].pointRadiusPercent
-      });
-    }
-    this.setPointRadiusPercentSelectorState(this.defaultStyleStates);
-  }
-  incrementPointRadiusPercent(): void {
-    if (
-      this.pointRadiusPercent != undefined &&
-      this.pointRadiusPercent + 10 <= SETTINGS.style.maxPointRadiusPercent
-    ) {
-      this.pointRadiusPercent += 10;
-      this.$store.commit("changeStyle", {
-        selected: this.$store.getters.selectedSENodules(),
-        front: this.side,
-        pointRadiusPercent: this.pointRadiusPercent
-      });
-    }
-  }
-  decrementPointRadiusPercent(): void {
-    if (
-      this.pointRadiusPercent != undefined &&
-      this.pointRadiusPercent - 10 >= SETTINGS.style.minPointRadiusPercent
-    ) {
-      this.pointRadiusPercent -= 10;
-      this.$store.commit("changeStyle", {
-        selected: this.$store.getters.selectedSENodules(),
-        front: this.side,
-        pointRadiusPercent: this.pointRadiusPercent
-      });
-    }
-  }
-  setPointRadiusPercentSelectorState(styleState: StyleOptions[]): void {
-    this.pointRadiusPercentAgreement = true;
-    this.totallyDisablePointRadiusPercentSelector = false;
-    this.pointRadiusPercent = styleState[0].pointRadiusPercent;
-    // screen for undefined - if undefined then this is not a property that is going to be set by the style panel for this selection of objects
-    if (this.pointRadiusPercent) {
-      if (
-        !styleState.every(
-          styleObject =>
-            styleObject.pointRadiusPercent == this.pointRadiusPercent
-        )
-      ) {
-        // The strokeColor property exists on the selected objects but the point radius percent doesn't agree (so don't totally disable the selector)
-        this.disablePointRadiusPercentSelector(false);
-      }
-    } else {
-      // The point radius percent property doesn't exists on the selected objects so totally disable the selector
-      this.disablePointRadiusPercentSelector(true);
-    }
-  }
-  disablePointRadiusPercentSelector(totally: boolean): void {
-    this.pointRadiusPercentAgreement = false;
-    this.pointRadiusPercent = 100;
-    this.totallyDisablePointRadiusPercentSelector = totally;
-  }
 
   // These methods are linked to the opacity fade-in-card
   onOpacityChange(): void {
@@ -1297,7 +1161,12 @@ export default class FrontStyle extends Vue {
     this.setDynamicBackStyleSelectorState(this.defaultStyleStates);
   }
 
-  toggleBackStyleOptionsAvailibity(): void {
+
+  toggleBackStyleContrastSliderAvailaibility(): void {
+    // TODO fill in this code
+  }
+
+  toggleBackStyleOptionsAvailability(): void {
     this.dynamicBackStyle = !this.dynamicBackStyle;
     this.$store.commit("changeStyle", {
       selected: this.$store.getters.selectedSENodules(),
@@ -1461,7 +1330,7 @@ export default class FrontStyle extends Vue {
       // TODO this.disableStrokeWidthPercentSelector(true);
       this.disableStrokeColorSelector(true);
       this.disableFillColorSelector(true);
-      this.disablePointRadiusPercentSelector(true);
+      // this.disablePointRadiusPercentSelector(true);
       this.disableOpacitySelector(true);
       this.disableDashPatternSelector(true);
       this.disableDynamicBackStyleSelector(true);
@@ -1496,7 +1365,7 @@ export default class FrontStyle extends Vue {
     // TODO this.setStrokeWidthPercentSelectorState(this.initialStyleStates);
     this.setStrokeColorSelectorState(this.initialStyleStates);
     this.setFillColorSelectorState(this.initialStyleStates);
-    this.setPointRadiusPercentSelectorState(this.initialStyleStates);
+    // this.setPointRadiusPercentSelectorState(this.initialStyleStates);
     this.setOpacitySelectorState(this.initialStyleStates);
     this.setDashPatternSelectorState(this.initialStyleStates);
     this.setDynamicBackStyleSelectorState(this.initialStyleStates);
