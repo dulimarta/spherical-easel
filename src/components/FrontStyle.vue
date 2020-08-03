@@ -8,9 +8,7 @@
         max-width="400px"
       >
         <template v-slot:activator="{ on }">
-          <span v-on="on" class="text-subtitle-2">
-            {{ $t("style.backStyleContrast") }}
-          </span>
+          <span v-on="on" class="text-subtitle-2">{{ $t("style.backStyleContrast") }}</span>
         </template>
         <span>{{ $t("style.backStyleContrastToolTip") }}</span>
       </v-tooltip>
@@ -24,14 +22,7 @@
         max-width="400px"
       >
         <template v-slot:activator="{ on }">
-          <v-btn
-            v-on="on"
-            @click="resetDynamicBackStyleToDefaults"
-            text
-            small
-            outlined
-            ripple
-          >
+          <v-btn v-on="on" @click="resetDynamicBackStyleToDefaults" text small outlined ripple>
             <span>{{ $t("style.restoreDefaults") }}</span>
           </v-btn>
         </template>
@@ -57,15 +48,14 @@
       </v-slider>
     </fade-in-card>
 
-    <fade-in-card
-      :showWhen="isBackFace() && (hasDynamicBackStyle || noObjectsSelected)"
-    >
+    <fade-in-card :showWhen="isBackFace() && (hasDynamicBackStyle || noObjectsSelected)">
       <span class="text-subtitle-2">{{ $t("style.dynamicBackStyle") }}</span>
 
       <br />
-      <span v-show="totallyDisableDynamicBackStyleSelector">
-        {{ $t("style.selectAnObject") }}
-      </span>
+      <span
+        v-show="totallyDisableDynamicBackStyleSelector"
+        class="select-an-object-text"
+      >{{ $t("style.selectAnObject") }}</span>
       <v-tooltip
         v-if="!dynamicBackStyleAgreement"
         bottom
@@ -83,9 +73,7 @@
             outlined
             ripple
             @click="setCommonDynamicBackStyleAgreement"
-          >
-            {{ $t("style.differingStylesDetected") }}
-          </v-btn>
+          >{{ $t("style.differingStylesDetected") }}</v-btn>
         </template>
         <span>{{ $t("style.differingStylesDetectedToolTip") }}</span>
       </v-tooltip>
@@ -105,14 +93,12 @@
                 dynamicBackStyleAgreement
             "
             text
-            color="error"
+            color="green"
             outlined
             ripple
             small
-            @click="toggleBackStyleContrastSliderAvailibity"
-          >
-            {{ $t("style.enableBackStyleContrastSlider") }}
-          </v-btn>
+            @click="toggleBackStyleOptionsAvailibity"
+          >{{ $t("style.enableBackStyleContrastSlider") }}</v-btn>
         </template>
         <span>{{ $t("style.enableBackStyleContrastSliderToolTip") }}</span>
       </v-tooltip>
@@ -131,19 +117,18 @@
               !totallyDisableDynamicBackStyleSelector &&
                 dynamicBackStyleAgreement
             "
+            color="error"
             text
             outlined
             ripple
             small
-            @click="toggleBackStyleContrastSliderAvailibity"
-          >
-            {{ $t("style.disableBackStyleContrastSlider") }}
-          </v-btn>
+            @click="toggleBackStyleOptionsAvailibity"
+          >{{ $t("style.disableBackStyleContrastSlider") }}</v-btn>
         </template>
         <span>{{ $t("style.disableBackStyleContrastSliderToolTip") }}</span>
       </v-tooltip>
 
-      <v-tooltip
+      <!-- <v-tooltip
         bottom
         :open-delay="toolTipOpenDelay"
         :close-delay="toolTipCloseDelay"
@@ -162,9 +147,7 @@
             outlined
             ripple
             small
-          >
-            {{ $t("style.clearChanges") }}
-          </v-btn>
+          >{{ $t("style.clearChanges") }}</v-btn>
         </template>
         <span>{{ $t("style.clearChangesToolTip") }}</span>
       </v-tooltip>
@@ -188,12 +171,10 @@
             small
             outlined
             ripple
-          >
-            {{ $t("style.restoreDefaults") }}
-          </v-btn>
+          >{{ $t("style.restoreDefaults") }}</v-btn>
         </template>
         <span>{{ $t("style.restoreDefaultsToolTip") }}</span>
-      </v-tooltip>
+      </v-tooltip>-->
     </fade-in-card>
 
     <fade-in-card
@@ -204,9 +185,10 @@
     >
       <span class="text-subtitle-2">{{ $t("style.strokeColor") }}</span>
       <br />
-      <span v-show="totallyDisableStrokeColorSelector">
-        {{ $t("style.selectAnObject") }}
-      </span>
+      <span
+        v-show="totallyDisableStrokeColorSelector"
+        class="select-an-object-text"
+      >{{ $t("style.selectAnObject") }}</span>
       <v-tooltip
         v-if="!strokeColorAgreement"
         bottom
@@ -224,9 +206,7 @@
             outlined
             ripple
             @click="setCommonStrokeColorArgreement"
-          >
-            {{ $t("style.differingStylesDetected") }}
-          </v-btn>
+          >{{ $t("style.differingStylesDetected") }}</v-btn>
         </template>
         <span>{{ $t("style.differingStylesDetectedToolTip") }}</span>
       </v-tooltip>
@@ -247,9 +227,7 @@
             ripple
             small
             @click="showStrokeColorOptions"
-          >
-            {{ $t("style.showColorPresets") }}
-          </v-btn>
+          >{{ $t("style.showColorPresets") }}</v-btn>
         </template>
         <span>{{ $t("style.showColorPresetsToolTip") }}</span>
       </v-tooltip>
@@ -269,9 +247,7 @@
             outlined
             ripple
             small
-          >
-            {{ $t("style.clearChanges") }}
-          </v-btn>
+          >{{ $t("style.clearChanges") }}</v-btn>
         </template>
         <span>{{ $t("style.clearChangesToolTip") }}</span>
       </v-tooltip>
@@ -291,9 +267,7 @@
             small
             outlined
             ripple
-          >
-            {{ $t("style.restoreDefaults") }}
-          </v-btn>
+          >{{ $t("style.restoreDefaults") }}</v-btn>
         </template>
         <span>{{ $t("style.restoreDefaultsToolTip") }}</span>
       </v-tooltip>
@@ -332,9 +306,10 @@
     >
       <span class="text-subtitle-2">{{ $t("style.fillColor") }}</span>
       <br />
-      <span v-show="totallyDisableFillColorSelector">
-        {{ $t("style.selectAnObject") }}
-      </span>
+      <span
+        v-show="totallyDisableFillColorSelector"
+        class="select-an-object-text"
+      >{{ $t("style.selectAnObject") }}</span>
       <v-tooltip
         v-if="!fillColorAgreement"
         bottom
@@ -352,9 +327,7 @@
             outlined
             ripple
             @click="setCommonFillColorAgreement"
-          >
-            {{ $t("style.differingStylesDetected") }}
-          </v-btn>
+          >{{ $t("style.differingStylesDetected") }}</v-btn>
         </template>
         <span>{{ $t("style.differingStylesDetectedToolTip") }}</span>
       </v-tooltip>
@@ -375,9 +348,7 @@
             ripple
             small
             @click="showFillColorOptions"
-          >
-            {{ $t("style.showColorPresets") }}
-          </v-btn>
+          >{{ $t("style.showColorPresets") }}</v-btn>
         </template>
         <span>{{ $t("style.showColorPresetsToolTip") }}</span>
       </v-tooltip>
@@ -397,9 +368,7 @@
             outlined
             ripple
             small
-          >
-            {{ $t("style.clearChanges") }}
-          </v-btn>
+          >{{ $t("style.clearChanges") }}</v-btn>
         </template>
         <span>{{ $t("style.clearChangesToolTip") }}</span>
       </v-tooltip>
@@ -419,9 +388,7 @@
             small
             outlined
             ripple
-          >
-            {{ $t("style.restoreDefaults") }}
-          </v-btn>
+          >{{ $t("style.restoreDefaults") }}</v-btn>
         </template>
         <span>{{ $t("style.restoreDefaultsToolTip") }}</span>
       </v-tooltip>
@@ -464,13 +431,12 @@
           !totallyDisableStrokeWidthPercentSelector &&
             strokeWidthPercentAgreement
         "
-      >
-        (Percent of Default: {{ strokeWidthPercent }}%)
-      </span>
+      >(Percent of Default: {{ strokeWidthPercent }}%)</span>
       <br />
-      <span v-show="totallyDisableStrokeWidthPercentSelector">
-        {{ $t("style.selectAnObject") }}
-      </span>
+      <span
+        v-show="totallyDisableStrokeWidthPercentSelector"
+        class="select-an-object-text"
+      >{{ $t("style.selectAnObject") }}</span>
 
       <v-tooltip
         v-if="!strokeWidthPercentAgreement"
@@ -490,9 +456,7 @@
             outlined
             ripple
             @click="setStrokeWidthPercentAgreement"
-          >
-            {{ $t("style.differingStylesDetected") }}
-          </v-btn>
+          >{{ $t("style.differingStylesDetected") }}</v-btn>
         </template>
         <span>{{ $t("style.differingStylesDetectedToolTip") }}</span>
       </v-tooltip>
@@ -515,9 +479,7 @@
             outlined
             ripple
             small
-          >
-            {{ $t("style.clearChanges") }}
-          </v-btn>
+          >{{ $t("style.clearChanges") }}</v-btn>
         </template>
         <span>{{ $t("style.clearChangesToolTip") }}</span>
       </v-tooltip>
@@ -540,9 +502,7 @@
             small
             outlined
             ripple
-          >
-            {{ $t("style.restoreDefaults") }}
-          </v-btn>
+          >{{ $t("style.restoreDefaults") }}</v-btn>
         </template>
         <span>{{ $t("style.restoreDefaultsToolTip") }}</span>
       </v-tooltip>
@@ -581,13 +541,12 @@
           !totallyDisablePointRadiusPercentSelector &&
             pointRadiusPercentAgreement
         "
-      >
-        (Percent of Default: {{ pointRadiusPercent }}%)
-      </span>
+      >(Percent of Default: {{ pointRadiusPercent }}%)</span>
       <br />
-      <span v-show="totallyDisablePointRadiusPercentSelector">
-        {{ $t("style.selectAnObject") }}
-      </span>
+      <span
+        v-show="totallyDisablePointRadiusPercentSelector"
+        class="select-an-object-text"
+      >{{ $t("style.selectAnObject") }}</span>
       <v-tooltip
         v-if="!pointRadiusPercentAgreement"
         bottom
@@ -604,9 +563,7 @@
             outlined
             ripple
             @click="setCommonPointRadiusPercentAgreement"
-          >
-            {{ $t("style.differingStylesDetected") }}
-          </v-btn>
+          >{{ $t("style.differingStylesDetected") }}</v-btn>
         </template>
         <span>{{ $t("style.differingStylesDetectedToolTip") }}</span>
       </v-tooltip>
@@ -629,9 +586,7 @@
             outlined
             ripple
             small
-          >
-            {{ $t("style.clearChanges") }}
-          </v-btn>
+          >{{ $t("style.clearChanges") }}</v-btn>
         </template>
         <span>{{ $t("style.clearChangesToolTip") }}</span>
       </v-tooltip>
@@ -654,9 +609,7 @@
             small
             outlined
             ripple
-          >
-            {{ $t("style.restoreDefaults") }}
-          </v-btn>
+          >{{ $t("style.restoreDefaults") }}</v-btn>
         </template>
         <span>{{ $t("style.restoreDefaultsToolTip") }}</span>
       </v-tooltip>
@@ -690,13 +643,12 @@
       "
     >
       <span class="text-subtitle-2">{{ $t("style.opacity") }}</span>
-      <span v-show="!totallyDisableOpacitySelector && opacityAgreement">
-        (Value: {{ this.opacity }})
-      </span>
+      <span v-show="!totallyDisableOpacitySelector && opacityAgreement">(Value: {{ this.opacity }})</span>
       <br />
-      <span v-show="totallyDisableOpacitySelector">
-        {{ $t("style.selectAnObject") }}
-      </span>
+      <span
+        v-show="totallyDisableOpacitySelector"
+        class="select-an-object-text"
+      >{{ $t("style.selectAnObject") }}</span>
       <v-tooltip
         v-if="!opacityAgreement"
         bottom
@@ -714,9 +666,7 @@
             outlined
             ripple
             @click="setCommonOpacityAgreement"
-          >
-            {{ $t("style.differingStylesDetected") }}
-          </v-btn>
+          >{{ $t("style.differingStylesDetected") }}</v-btn>
         </template>
         <span>{{ $t("style.differingStylesDetectedToolTip") }}</span>
       </v-tooltip>
@@ -736,9 +686,7 @@
             outlined
             ripple
             small
-          >
-            {{ $t("style.clearChanges") }}
-          </v-btn>
+          >{{ $t("style.clearChanges") }}</v-btn>
         </template>
         <span>{{ $t("style.clearChangesToolTip") }}</span>
       </v-tooltip>
@@ -758,9 +706,7 @@
             small
             outlined
             ripple
-          >
-            {{ $t("style.restoreDefaults") }}
-          </v-btn>
+          >{{ $t("style.restoreDefaults") }}</v-btn>
         </template>
         <span>{{ $t("style.restoreDefaultsToolTip") }}</span>
       </v-tooltip>
@@ -795,14 +741,15 @@
             dashPatternAgreement
         "
       >
-        (Gap/Length Pattern: {{ gapLength.toFixed(1) }}/{{
-          dashLength.toFixed(1)
+        (Gap/Length Pattern: {{ gapLength.toFixed(0) }}/{{
+        (dashLength).toFixed(0)
         }})
       </span>
       <br />
-      <span v-show="totallyDisableDashPatternSelector">
-        {{ $t("style.selectAnObject") }}
-      </span>
+      <span
+        v-show="totallyDisableDashPatternSelector"
+        class="select-an-object-text"
+      >{{ $t("style.selectAnObject") }}</span>
       <v-tooltip
         v-if="!dashPatternAgreement"
         bottom
@@ -820,9 +767,7 @@
             outlined
             ripple
             @click="setCommonDashPatternAgreement"
-          >
-            {{ $t("style.differingStylesDetected") }}
-          </v-btn>
+          >{{ $t("style.differingStylesDetected") }}</v-btn>
         </template>
         <span>{{ $t("style.differingStylesDetectedToolTip") }}</span>
       </v-tooltip>
@@ -844,9 +789,7 @@
             ripple
             small
             @click="toggleDashPatternSliderAvailibity"
-          >
-            {{ $t("style.enableDashPatternSlider") }}
-          </v-btn>
+          >{{ $t("style.enableDashPatternSlider") }}</v-btn>
         </template>
         <span>{{ $t("style.enableDashPatternSliderToolTip") }}</span>
       </v-tooltip>
@@ -867,9 +810,7 @@
             ripple
             small
             @click="toggleDashPatternSliderAvailibity"
-          >
-            {{ $t("style.disableDashPatternSlider") }}
-          </v-btn>
+          >{{ $t("style.disableDashPatternSlider") }}</v-btn>
         </template>
         <span>{{ $t("style.disableDashPatternSliderToolTip") }}</span>
       </v-tooltip>
@@ -893,9 +834,7 @@
             outlined
             ripple
             small
-          >
-            {{ $t("style.clearChanges") }}
-          </v-btn>
+          >{{ $t("style.clearChanges") }}</v-btn>
         </template>
         <span>{{ $t("style.clearChangesToolTip") }}</span>
       </v-tooltip>
@@ -919,14 +858,10 @@
             small
             outlined
             ripple
-          >
-            {{ $t("style.restoreDefaults") }}
-          </v-btn>
+          >{{ $t("style.restoreDefaults") }}</v-btn>
         </template>
         <span>{{ $t("style.restoreDefaultsToolTip") }}</span>
       </v-tooltip>
-
-      {{ sliderDashArray }}
       <v-range-slider
         v-model="sliderDashArray"
         :min="0"
@@ -988,7 +923,7 @@ const keys = values.map(e => {
 @Component({ components: { FadeInCard } })
 export default class FrontStyle extends Vue {
   @Prop()
-  readonly frontSide!: boolean;
+  readonly side!: boolean;
 
   @State
   readonly selections!: SENodule[];
@@ -1103,14 +1038,14 @@ export default class FrontStyle extends Vue {
   }
 
   isBackFace(): boolean {
-    return this.frontSide === false;
+    return this.side === false;
   }
 
   // These methods are linked to the strokeWidthPercent fade-in-card
   onStrokeWidthPercentChange(): void {
     this.$store.commit("changeStyle", {
       selected: this.$store.getters.selectedSENodules(),
-      front: this.frontSide,
+      front: this.side,
       strokeWidthPercent: this.strokeWidthPercent
     });
   }
@@ -1122,7 +1057,7 @@ export default class FrontStyle extends Vue {
     for (let i = 0; i < selected.length; i++) {
       this.$store.commit("changeStyle", {
         selected: [selected[i]],
-        front: this.frontSide,
+        front: this.side,
         strokeWidthPercent: this.initialStyleStates[i].strokeWidthPercent
       });
     }
@@ -1133,7 +1068,7 @@ export default class FrontStyle extends Vue {
     for (let i = 0; i < selected.length; i++) {
       this.$store.commit("changeStyle", {
         selected: [selected[i]],
-        front: this.frontSide,
+        front: this.side,
         strokeWidthPercent: this.defaultStyleStates[i].strokeWidthPercent
       });
     }
@@ -1147,7 +1082,7 @@ export default class FrontStyle extends Vue {
       this.strokeWidthPercent += 10;
       this.$store.commit("changeStyle", {
         selected: this.$store.getters.selectedSENodules(),
-        front: this.frontSide,
+        front: this.side,
         strokeWidthPercent: this.strokeWidthPercent
       });
     }
@@ -1160,7 +1095,7 @@ export default class FrontStyle extends Vue {
       this.strokeWidthPercent -= 10;
       this.$store.commit("changeStyle", {
         selected: this.$store.getters.selectedSENodules(),
-        front: this.frontSide,
+        front: this.side,
         strokeWidthPercent: this.strokeWidthPercent
       });
     }
@@ -1198,7 +1133,7 @@ export default class FrontStyle extends Vue {
     );
     this.$store.commit("changeStyle", {
       selected: this.$store.getters.selectedSENodules(),
-      front: this.frontSide,
+      front: this.side,
       strokeColor: this.strokeColor
     });
   }
@@ -1226,7 +1161,7 @@ export default class FrontStyle extends Vue {
     for (let i = 0; i < selected.length; i++) {
       this.$store.commit("changeStyle", {
         selected: [selected[i]],
-        front: this.frontSide,
+        front: this.side,
         strokeColor: this.initialStyleStates[i].strokeColor
       });
     }
@@ -1238,7 +1173,7 @@ export default class FrontStyle extends Vue {
     for (let i = 0; i < selected.length; i++) {
       this.$store.commit("changeStyle", {
         selected: [selected[i]],
-        front: this.frontSide,
+        front: this.side,
         strokeColor: this.defaultStyleStates[i].strokeColor
       });
     }
@@ -1309,7 +1244,7 @@ export default class FrontStyle extends Vue {
     }
     this.$store.commit("changeStyle", {
       selected: this.$store.getters.selectedSENodules(),
-      front: this.frontSide,
+      front: this.side,
       strokeColor: this.strokeColor
     });
   }
@@ -1319,7 +1254,7 @@ export default class FrontStyle extends Vue {
     this.fillColor = Nodule.convertHSLAObjectToString(this.hslaFillColorObject);
     this.$store.commit("changeStyle", {
       selected: this.$store.getters.selectedSENodules(),
-      front: this.frontSide,
+      front: this.side,
       fillColor: this.fillColor
     });
   }
@@ -1344,7 +1279,7 @@ export default class FrontStyle extends Vue {
     for (let i = 0; i < selected.length; i++) {
       this.$store.commit("changeStyle", {
         selected: [selected[i]],
-        front: this.frontSide,
+        front: this.side,
         fillColor: this.initialStyleStates[i].fillColor
       });
     }
@@ -1356,7 +1291,7 @@ export default class FrontStyle extends Vue {
     for (let i = 0; i < selected.length; i++) {
       this.$store.commit("changeStyle", {
         selected: [selected[i]],
-        front: this.frontSide,
+        front: this.side,
         fillColor: this.defaultStyleStates[i].fillColor
       });
     }
@@ -1425,7 +1360,7 @@ export default class FrontStyle extends Vue {
     }
     this.$store.commit("changeStyle", {
       selected: this.$store.getters.selectedSENodules(),
-      front: this.frontSide,
+      front: this.side,
       fillColor: this.fillColor
     });
   }
@@ -1433,7 +1368,7 @@ export default class FrontStyle extends Vue {
   onPointRadiusPercentChange(): void {
     this.$store.commit("changeStyle", {
       selected: this.$store.getters.selectedSENodules(),
-      front: this.frontSide,
+      front: this.side,
       pointRadiusPercent: this.pointRadiusPercent
     });
   }
@@ -1445,7 +1380,7 @@ export default class FrontStyle extends Vue {
     for (let i = 0; i < selected.length; i++) {
       this.$store.commit("changeStyle", {
         selected: [selected[i]],
-        front: this.frontSide,
+        front: this.side,
         pointRadiusPercent: this.initialStyleStates[i].pointRadiusPercent
       });
     }
@@ -1456,7 +1391,7 @@ export default class FrontStyle extends Vue {
     for (let i = 0; i < selected.length; i++) {
       this.$store.commit("changeStyle", {
         selected: [selected[i]],
-        front: this.frontSide,
+        front: this.side,
         pointRadiusPercent: this.defaultStyleStates[i].pointRadiusPercent
       });
     }
@@ -1470,7 +1405,7 @@ export default class FrontStyle extends Vue {
       this.pointRadiusPercent += 10;
       this.$store.commit("changeStyle", {
         selected: this.$store.getters.selectedSENodules(),
-        front: this.frontSide,
+        front: this.side,
         pointRadiusPercent: this.pointRadiusPercent
       });
     }
@@ -1483,7 +1418,7 @@ export default class FrontStyle extends Vue {
       this.pointRadiusPercent -= 10;
       this.$store.commit("changeStyle", {
         selected: this.$store.getters.selectedSENodules(),
-        front: this.frontSide,
+        front: this.side,
         pointRadiusPercent: this.pointRadiusPercent
       });
     }
@@ -1518,7 +1453,7 @@ export default class FrontStyle extends Vue {
   onOpacityChange(): void {
     this.$store.commit("changeStyle", {
       selected: this.$store.getters.selectedSENodules(),
-      front: this.frontSide,
+      front: this.side,
       opacity: this.opacity
     });
   }
@@ -1530,7 +1465,7 @@ export default class FrontStyle extends Vue {
     for (let i = 0; i < selected.length; i++) {
       this.$store.commit("changeStyle", {
         selected: [selected[i]],
-        front: this.frontSide,
+        front: this.side,
         opacity: this.initialStyleStates[i].opacity
       });
     }
@@ -1541,7 +1476,7 @@ export default class FrontStyle extends Vue {
     for (let i = 0; i < selected.length; i++) {
       this.$store.commit("changeStyle", {
         selected: [selected[i]],
-        front: this.frontSide,
+        front: this.side,
         opacity: this.defaultStyleStates[i].opacity
       });
     }
@@ -1552,7 +1487,7 @@ export default class FrontStyle extends Vue {
       this.opacity += 0.1;
       this.$store.commit("changeStyle", {
         selected: this.$store.getters.selectedSENodules(),
-        front: this.frontSide,
+        front: this.side,
         opacity: this.opacity
       });
     }
@@ -1562,7 +1497,7 @@ export default class FrontStyle extends Vue {
       this.opacity -= 0.1;
       this.$store.commit("changeStyle", {
         selected: this.$store.getters.selectedSENodules(),
-        front: this.frontSide,
+        front: this.side,
         opacity: this.opacity
       });
     }
@@ -1596,7 +1531,7 @@ export default class FrontStyle extends Vue {
     this.dashLength = this.sliderDashArray[1] - this.sliderDashArray[0];
     this.$store.commit("changeStyle", {
       selected: this.$store.getters.selectedSENodules(),
-      front: this.frontSide,
+      front: this.side,
       dashArray: [this.dashLength, this.gapLength] //correct order!!!!
     });
   }
@@ -1613,7 +1548,7 @@ export default class FrontStyle extends Vue {
       ) {
         this.$store.commit("changeStyle", {
           selected: [selected[i]],
-          front: this.frontSide,
+          front: this.side,
           dashArray: [
             (this.initialStyleStates[i].dashArray as number[])[0],
             (this.initialStyleStates[i].dashArray as number[])[1]
@@ -1623,7 +1558,7 @@ export default class FrontStyle extends Vue {
         // The selected [i] exists and the array is empty
         this.$store.commit("changeStyle", {
           selected: [selected[i]],
-          front: this.frontSide,
+          front: this.side,
           dashArray: []
         });
       }
@@ -1640,7 +1575,7 @@ export default class FrontStyle extends Vue {
       ) {
         this.$store.commit("changeStyle", {
           selected: [selected[i]],
-          front: this.frontSide,
+          front: this.side,
           dashArray: [
             (this.defaultStyleStates[i].dashArray as number[])[0],
             (this.defaultStyleStates[i].dashArray as number[])[1]
@@ -1650,7 +1585,7 @@ export default class FrontStyle extends Vue {
         // The selected [i] exists and the array is empty
         this.$store.commit("changeStyle", {
           selected: [selected[i]],
-          front: this.frontSide,
+          front: this.side,
           dashArray: []
         });
       }
@@ -1667,13 +1602,13 @@ export default class FrontStyle extends Vue {
       );
       this.$store.commit("changeStyle", {
         selected: this.$store.getters.selectedSENodules(),
-        front: this.frontSide,
+        front: this.side,
         dashArray: [this.dashLength, this.gapLength]
       });
     } else {
       this.$store.commit("changeStyle", {
         selected: this.$store.getters.selectedSENodules(),
-        front: this.frontSide,
+        front: this.side,
         dashArray: []
       });
       this.sliderDashArray.clear();
@@ -1689,18 +1624,14 @@ export default class FrontStyle extends Vue {
       this.sliderDashArray[1] + 1 <=
       SETTINGS.style.maxGapLengthPlusDashLength
     ) {
-      Vue.set(this.sliderDashArray, 1, this.sliderDashArray[1] + 1);
+      Vue.set(this.sliderDashArray, 1, this.sliderDashArray[1] + 1); // trigger the update
       this.gapLength = this.sliderDashArray[0];
       this.dashLength = this.sliderDashArray[1] - this.sliderDashArray[0];
       this.$store.commit("changeStyle", {
         selected: this.$store.getters.selectedSENodules(),
-        front: this.frontSide,
+        front: this.side,
         dashArray: [this.dashLength, this.gapLength]
       });
-      /** TODO:
-       * The actual dots on the slider are not moveing when I click the plus (+) sign and trigger this incrementDashPattern method
-       * How do I trigger an event that will cause the actual dots on the slider to move?
-       */
     }
   }
 
@@ -1716,7 +1647,7 @@ export default class FrontStyle extends Vue {
 
       this.$store.commit("changeStyle", {
         selected: this.$store.getters.selectedSENodules(),
-        front: this.frontSide,
+        front: this.side,
         dashArray: [this.dashLength, this.gapLength]
       });
     }
@@ -1792,7 +1723,7 @@ export default class FrontStyle extends Vue {
   onBackStyleContrastChange(): void {
     this.$store.commit("changeStyle", {
       selected: this.$store.getters.selectedSENodules(),
-      front: this.frontSide,
+      front: this.side,
       backStyleContrast: this.backStyleContrast
     });
   }
@@ -1804,7 +1735,7 @@ export default class FrontStyle extends Vue {
     for (let i = 0; i < selected.length; i++) {
       this.$store.commit("changeStyle", {
         selected: [selected[i]],
-        front: this.frontSide,
+        front: this.side,
         backStyleContrast: this.initialBackStyleContrast
       });
     }
@@ -1816,7 +1747,7 @@ export default class FrontStyle extends Vue {
     for (let i = 0; i < selected.length; i++) {
       this.$store.commit("changeStyle", {
         selected: [selected[i]],
-        front: this.frontSide,
+        front: this.side,
         backStyleContrast: SETTINGS.style.backStyleContrast
       });
     }
@@ -1824,14 +1755,28 @@ export default class FrontStyle extends Vue {
     this.setDynamicBackStyleSelectorState(this.defaultStyleStates);
   }
 
-  toggleBackStyleContrastSliderAvailibity(): void {
+  toggleBackStyleOptionsAvailibity(): void {
     this.dynamicBackStyle = !this.dynamicBackStyle;
     this.$store.commit("changeStyle", {
       selected: this.$store.getters.selectedSENodules(),
-      front: this.frontSide,
+      front: this.side,
       dynamicBackStyle: this.dynamicBackStyle
     });
+    if (!this.dynamicBackStyle) {
+      console.log("attempt set");
+      const selectedSENodules = this.$store.getters.selectedSENodules() as SENodule[];
+      const tempStyleState: StyleOptions[] = [];
+      selectedSENodules.forEach(seNodule => {
+        tempStyleState.push(seNodule.ref.currentStyleState(this.side));
+      });
+      console.log("tempStyleState", tempStyleState);
+      this.setFillColorSelectorState(tempStyleState);
+      this.setStrokeColorSelectorState(tempStyleState);
+      this.setOpacitySelectorState(tempStyleState);
+      this.setStrokeWidthPercentSelectorState(tempStyleState);
+    }
   }
+
   incrementBackStyleContrast(): void {
     if (
       this.dynamicBackStyle != undefined &&
@@ -1840,7 +1785,7 @@ export default class FrontStyle extends Vue {
       this.backStyleContrast += 0.1;
       this.$store.commit("changeStyle", {
         selected: this.$store.getters.selectedSENodules(),
-        front: this.frontSide,
+        front: this.side,
         backStyleContrast: this.backStyleContrast
       });
     }
@@ -1853,7 +1798,7 @@ export default class FrontStyle extends Vue {
       this.backStyleContrast -= 0.1;
       this.$store.commit("changeStyle", {
         selected: this.$store.getters.selectedSENodules(),
-        front: this.frontSide,
+        front: this.side,
         backStyleContrast: this.backStyleContrast
       });
     }
@@ -1981,7 +1926,7 @@ export default class FrontStyle extends Vue {
       this.oldSelection.clear();
       return;
     }
-    console.log("newSelection", newSelection.length, newSelection[0].name);
+
     // record the new selections in the old
     this.oldSelection.clear();
     newSelection.forEach(obj => this.oldSelection.push(obj));
@@ -1999,12 +1944,8 @@ export default class FrontStyle extends Vue {
     this.initialStyleStates.clear();
     this.defaultStyleStates.clear();
     newSelection.forEach(seNodule => {
-      this.initialStyleStates.push(
-        seNodule.ref.currentStyleState(this.frontSide)
-      );
-      this.defaultStyleStates.push(
-        seNodule.ref.defaultStyleState(this.frontSide)
-      );
+      this.initialStyleStates.push(seNodule.ref.currentStyleState(this.side));
+      this.defaultStyleStates.push(seNodule.ref.defaultStyleState(this.side));
     });
     this.initialBackStyleContrast = Nodule.getBackStyleContrast();
 
@@ -2081,9 +2022,7 @@ export default class FrontStyle extends Vue {
       //Record the current state of each Nodule
       this.currentStyleStates.clear();
       this.oldSelection.forEach(seNodule => {
-        this.currentStyleStates.push(
-          seNodule.ref.currentStyleState(this.frontSide)
-        );
+        this.currentStyleStates.push(seNodule.ref.currentStyleState(this.side));
       });
       if (
         !this.areEquivalentStyles(
@@ -2095,7 +2034,7 @@ export default class FrontStyle extends Vue {
         console.log("Issued new style save command");
         new StyleNoduleCommand(
           this.oldSelection,
-          this.frontSide,
+          this.side,
           this.currentStyleStates,
           this.initialStyleStates,
           this.initialBackStyleContrast,
@@ -2111,6 +2050,13 @@ export default class FrontStyle extends Vue {
 <style lang="scss" scoped>
 #strokeColorPicker {
   background: "red";
+}
+.select-an-object-text {
+  color: rgb(255, 82, 82);
+}
+
+.text-subtitle-2 {
+  text-emphasis: bold;
 }
 /* I wish I knew how to use the SASS options for the vuetify objects! But I don't and I can't find any examples on the web*/
 /* $color-picker-controls-padding: 1000px; */

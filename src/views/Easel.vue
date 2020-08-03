@@ -294,11 +294,9 @@ export default class Easel extends Vue {
 
   private setUndoEnabled(e: unknown): void {
     this.undoEnabled = (e as any).value;
-    console.log("undo enabled", this.undoEnabled);
   }
   private setRedoEnabled(e: unknown): void {
     this.redoEnabled = (e as any).value;
-    console.log("redo enabled", this.redoEnabled);
   }
 
   private enableZoomIn(): void {
@@ -323,7 +321,6 @@ export default class Easel extends Vue {
     });
   }
   private adjustSize(): void {
-    console.debug("adjustSize()");
     this.availHeight =
       window.innerHeight -
       this.$vuetify.application.footer -

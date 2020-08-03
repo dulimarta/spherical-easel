@@ -342,7 +342,7 @@ export default class Line extends Nodule {
       }
     } else {
       // Set the back options
-      // options.dynamicBackStyle is true, so we need to explicitly check for undefined otherwise
+      // options.dynamicBackStyle is boolean, so we need to explicitly check for undefined otherwise
       // when it is false, this doesn't execute and this.dynamicBackStyle is not set
       if (options.dynamicBackStyle != undefined) {
         this.dynamicBackStyle = options.dynamicBackStyle;

@@ -20,7 +20,6 @@ export class PointMoverVisitor implements Visitor {
       p.locationVector = this.locationVector; // Set the new position vector
     } else {
       p.pointMoverLocationSetter(this.locationVector);
-      console.log("here");
     }
     //console.log("position mover on point", p.name, p.locationVector.toFixed(2));
     // Don't update here, because it may cause a point on one dimensional to update to the wrong location

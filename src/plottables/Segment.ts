@@ -450,12 +450,7 @@ export default class Segment extends Nodule {
    * @param options The style options
    */
   updateStyle(options: StyleOptions): void {
-    console.debug(
-      "Segment: Update style of",
-      this.name,
-      "using",
-      options.strokeColor
-    );
+    console.debug("Segment: Update style of", this.name, "using", options);
     if (options.front) {
       // Set the front options
       if (options.strokeWidthPercent) {
@@ -475,7 +470,7 @@ export default class Segment extends Nodule {
         }
       }
     } else {
-      // options.dynamicBackStyle is true, so we need to explicitly check for undefined otherwise
+      // options.dynamicBackStyle is boolean, so we need to explicitly check for undefined otherwise
       // when it is false, this doesn't execute and this.dynamicBackStyle is not set
       if (options.dynamicBackStyle != undefined) {
         this.dynamicBackStyle = options.dynamicBackStyle;
