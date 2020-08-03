@@ -405,7 +405,6 @@ export default {
           PIXEL_CLOSE_ENOUGH
     );
   },
-
   /** When a point is on a geodesic circle, it has to be perpendicular to
    * the normal direction of that circle */
   findNearbySELines: (state: AppState) => (
@@ -649,7 +648,6 @@ export default {
     });
     return intersectionPointList;
   },
-
   createAllIntersectionsWithCircle: (state: AppState) => (
     newCircle: SECircle
   ): SEIntersectionReturnType[] => {
@@ -800,6 +798,18 @@ export default {
   },
   selectedSENodules: (state: AppState) => (): SENodule[] => {
     return state.selections;
+  },
+  allSEPoints: (state: AppState) => (): SEPoint[] => {
+    return state.sePoints;
+  },
+  allSECircles: (state: AppState) => (): SECircle[] => {
+    return state.seCircles;
+  },
+  allSESegments: (state: AppState) => (): SESegment[] => {
+    return state.seSegments;
+  },
+  allSELines: (state: AppState) => (): SELine[] => {
+    return state.seLines;
   },
   previousActionMode: (state: AppState) => (): { id: string; name: string } => {
     return { id: state.actionMode, name: state.activeToolName };

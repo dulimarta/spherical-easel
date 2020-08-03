@@ -3,6 +3,7 @@ import { SENodule } from "@/models/SENodule";
 import { SECircle } from "@/models/SECircle";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import EventBus from "@/eventHandlers/EventBus";
+import { SEPoint } from "@/models/SEPoint";
 // import { SEPoint } from "@/models/SEPoint";
 // import { SELine } from "@/models/SELine";
 // import { SESegment } from "@/models/SESegment";
@@ -32,22 +33,57 @@ export default class SelectionHandler extends MouseHandler {
   keyPressHandler = (keyEvent: KeyboardEvent): void => {
     // Clear the keyPressSelection
     this.keyPressSelection.clear();
+    // Get all SEPoints
+    if (keyEvent.key.match("p")) {
+      this.store.getters
+        .allSEPoints()
+        .filter(
+          (n: any) => !(n instanceof SEIntersectionPoint && !n.isUserCreated)
+        ) // no uncreated intersection points allowed
+        .forEach((n: any) => {
+          this.keyPressSelection.push(n);
+          (n as any).ref.glowingDisplay();
+        });
+    }
+    // Get all SECircles
+    if (keyEvent.key.match("c")) {
+      this.store.getters.allSECircles().forEach((n: any) => {
+        this.keyPressSelection.push(n);
+        (n as any).ref.glowingDisplay();
+      });
+    }
+    // Get all SELines
+    if (keyEvent.key.match("l")) {
+      this.store.getters.allSELines().forEach((n: any) => {
+        this.keyPressSelection.push(n);
+        (n as any).ref.glowingDisplay();
+      });
+    }
+    // Get all SESegments
+    if (keyEvent.key.match("s")) {
+      this.store.getters.allSESegments().forEach((n: any) => {
+        this.keyPressSelection.push(n);
+        (n as any).ref.glowingDisplay();
+      });
+    }
     // If there is nothing or only one nearby ignore this key event
     if (this.hitSENodules?.length <= 1) return;
 
     if (keyEvent.key.match(/[0-9]/)) {
       // is it a digit?
       const val = Number(keyEvent.key) - 1;
-      this.hitSENodules.forEach((n, pos) => {
-        if (pos === val) {
-          // add the item to the list
-          this.keyPressSelection.push(n);
-          (n as any).ref.glowingDisplay();
-          // Show the name of the selected item
-          this.infoText.text = n.name;
-        } else (n as any).ref.normalDisplay();
-        pos === val;
-      });
+      this.hitSENodules
+        .filter(n => !(n instanceof SEIntersectionPoint && !n.isUserCreated)) // no uncreated intersection points allowed
+        .forEach((n, pos) => {
+          if (pos === val) {
+            // add the item to the list
+            this.keyPressSelection.push(n);
+            (n as any).ref.glowingDisplay();
+            // Show the name of the selected item
+            this.infoText.text = n.name;
+          } else (n as any).ref.normalDisplay();
+          pos === val;
+        });
     }
   };
 
@@ -98,7 +134,7 @@ export default class SelectionHandler extends MouseHandler {
     );
     **/
 
-    /* Enable/disable interval timer to flasher selected objects */
+    /* Enable/disable interval timer to flash selected objects */
 
     if (this.currentSelection.length > 0 && this.highlightTimer === null) {
       // We have selections and interval timer is not running, then start timer and offset timer

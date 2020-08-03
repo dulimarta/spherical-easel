@@ -23,13 +23,14 @@ Select object(s) to change their visual style or to perform actions on them with
 - All selected objects will glow (i.e. have a highlight color displayed in the background of the object).
 - Not Implemented? To select multiple objects, mouse drag and create a rectangle. Anything (TODO: entirely? partially?) with in that region will be selected when the mouse is released.
 - To clear your selection, mouse press and release at a location with no objects nearby.
-- To add to your current selection, press and hold the <kbd>Alt/Option</kbd> key when mouse pressing.
-- To single out one object when multiple objects are nearby, mouse over (with _no_ mouse press or release) that location (where there are at lease two objects nearby) and press a number key <kbd>1-9</kbd>. Depending on the key, a single object will be highlighted. To add this objected to the selected list, mouse press and release without moving.
+- To add or subtract to your current selection, press and hold the <kbd>Alt/Option</kbd> key when mouse pressing. A mouse press will add the objects to the current selection or, if the mouse press is on already selected objects, those objects will be removed from the current selectoion.
+- To single out one object when multiple objects are nearby, mouse over (with _no_ mouse press or release) that location (where there are at lease two objects nearby) and press and hold a number key <kbd>1-9</kbd>. Depending on the key, a single object will be highlighted. To add this objected to the selected list, mouse press and release without moving.
 - To select multiple objects with the key press action:
   1. Mouse over a location near the first object and key press a number to highlight the desired object
   2. Mouse press and release (without moving the mouse) - the first object should be selected
   3. Mouse over a location near the second object and key press a number to highlight the desired object
   4. Mouse press and release (without moving the mouse) - the first and second objects should be selected
+- To select all points, move the mouse into the sphere and press and hold the <kbd>p</kbd> key. All points should be highlighted. To move them into the current selection, mouse press and release once. Similarly to select all circles use the <kbd>c</kbd>, for lines the <kbd>l</kbd> key, and for segments the <kbd>s</kbd> key.
 
 **Changing Visual Style:**
 

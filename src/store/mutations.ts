@@ -72,12 +72,10 @@ export default {
     state.actionMode = mode.id;
     state.activeToolName = mode.name;
   },
-
   revertActionMode(state: AppState, st: string): void {
     state.actionMode = state.previousActionMode;
     state.activeToolName = state.previousActiveToolName;
   },
-
   setZoomMagnificationFactor(state: AppState, mag: number): void {
     state.previousZoomMagnificationFactor = state.zoomMagnificationFactor;
     state.zoomMagnificationFactor = mag;
@@ -87,7 +85,6 @@ export default {
       state.zoomTranslation[i] = vec[i];
     }
   },
-
   //#region addPoint
   addPoint(state: AppState, point: SEPoint): void {
     state.sePoints.push(point);
@@ -95,7 +92,6 @@ export default {
     point.ref.addToLayers(state.layers);
   },
   //#endregion addPoint
-
   removePoint(state: AppState, pointId: number): void {
     const pos = state.sePoints.findIndex(x => x.id === pointId);
     const pos2 = state.seNodules.findIndex(x => x.id === pointId);
@@ -107,7 +103,6 @@ export default {
       victimPoint.ref.removeFromLayers();
     }
   },
-
   addLine(state: AppState, line: SELine): void {
     state.seLines.push(line);
     state.seNodules.push(line);
