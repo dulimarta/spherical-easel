@@ -1,6 +1,6 @@
 <template>
   <div>
-    <span class="text-subtitle-2">{{ $t(titleKey) }}</span>
+    <div class="text-subtitle-2">{{ $t(titleKey) }}</div>
     <div v-show="totalyDisableSelector">
       {{ $t("style.selectAnObject") }}
     </div>
@@ -42,7 +42,8 @@
 
     <v-slider v-model.number="styleData" :min="minValue"
       :disabled="!styleDataAgreement ||totalyDisableSelector"
-      @change="onDataChanged" :max="maxValue" type="range" class="mt-8">
+      @change="onDataChanged" :max="maxValue" :step="step" type="range"
+      class="mt-8">
       <template v-slot:prepend>
         <v-icon @click="decrementDataValue">mdi-minus</v-icon>
       </template>
@@ -70,22 +71,14 @@ import { SENodule } from "@/models/SENodule"
 @Component({})
 export default class SliderInput extends Vue {
 
-  @Prop()
-  readonly frontSide!: boolean;
-
+  @Prop() readonly frontSide!: boolean;
   @Prop() readonly titleKey!: string
-  @Prop()
-  readonly initialStyleStates!: StyleOptions[]
-
-  @Prop()
-  readonly styleName!: string
-
-  @PropSync('data', { type: Number })
-  styleData?: number;
-  @Prop()
-  minValue!: number;
-  @Prop()
-  maxValue!: number;
+  @Prop() readonly initialStyleStates!: StyleOptions[]
+  @Prop() readonly styleName!: string
+  @PropSync('data', { type: Number }) styleData?: number;
+  @Prop() readonly minValue!: number;
+  @Prop() readonly maxValue!: number;
+  @Prop() readonly step?: number
 
   @State
   readonly selections!: SENodule[]
@@ -161,7 +154,8 @@ export default class SliderInput extends Vue {
   }
   disableSelector(totally: boolean): void {
     this.styleDataAgreement = false;
-    this.styleData = 100;
+    // TODO: which value to use below?
+    // this.styleData = 100;
     this.totalyDisableSelector = totally;
   }
   setStyleDataAgreement(): void {
@@ -182,9 +176,9 @@ export default class SliderInput extends Vue {
   incrementDataValue(): void {
     if (
       this.styleData != undefined &&
-      this.styleData + 10 <= this.maxValue
+      this.styleData + (this.step ?? 1) <= this.maxValue
     ) {
-      this.styleData += 10;
+      this.styleData += this.step ?? 1;
       this.$store.commit("changeStyle", {
         selected: this.$store.getters.selectedSENodules(),
         front: this.frontSide,
@@ -195,9 +189,9 @@ export default class SliderInput extends Vue {
   decrementDataValue(): void {
     if (
       this.styleData != undefined &&
-      this.styleData - 10 >= this.minValue
+      this.styleData - (this.step ?? 1) >= this.minValue
     ) {
-      this.styleData -= 10;
+      this.styleData -= this.step ?? 1;
       this.$store.commit("changeStyle", {
         selected: this.$store.getters.selectedSENodules(),
         front: this.frontSide,

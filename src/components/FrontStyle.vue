@@ -267,7 +267,7 @@
         style-name="strokeWidthPercent"
         title-key="style.strokeWidthPercent"
         v-bind:min-value="minStrokeWidthPercent"
-        v-bind:max-value="maxStrokeWidthPercent"
+        v-bind:max-value="maxStrokeWidthPercent" v-bind:step="10"
         v-bind:initial-style-states="initialStyleStates"
         :front-side="true">
         <template v-slot:title>
@@ -306,62 +306,10 @@
         (!isBackFace() && (hasOpacity || noObjectsSelected)) ||
           (isBackFace() && !dynamicBackStyle)
       ">
-      <span class="text-subtitle-2">{{ $t("style.opacity") }}</span>
-      <span v-show="!totallyDisableOpacitySelector && opacityAgreement">
-        (Value: {{ this.opacity }})
-      </span>
-      <br />
-      <span v-show="totallyDisableOpacitySelector">
-        {{ $t("style.selectAnObject") }}
-      </span>
-      <v-tooltip v-if="!opacityAgreement" bottom
-        :open-delay="toolTipOpenDelay" :close-delay="toolTipCloseDelay"
-        max-width="400px">
-        <template v-slot:activator="{ on }">
-          <v-btn color="error" v-on="on"
-            v-show="!totallyDisableOpacitySelector" text small outlined
-            ripple @click="setCommonOpacityAgreement">
-            {{ $t("style.differingStylesDetected") }}
-          </v-btn>
-        </template>
-        <span>{{ $t("style.differingStylesDetectedToolTip") }}</span>
-      </v-tooltip>
+      <SliderInput title-key="style.opacity" :data.sync="opacity"
+        :min-value="0" :max-value="1" :step="0.1">
+      </SliderInput>
 
-      <v-tooltip bottom :open-delay="toolTipOpenDelay"
-        :close-delay="toolTipCloseDelay" max-width="400px">
-        <template v-slot:activator="{ on }">
-          <v-btn v-on="on"
-            v-show="opacityAgreement && !totallyDisableOpacitySelector"
-            @click="clearRecentOpacityChanges" text outlined ripple small>
-            {{ $t("style.clearChanges") }}
-          </v-btn>
-        </template>
-        <span>{{ $t("style.clearChangesToolTip") }}</span>
-      </v-tooltip>
-
-      <v-tooltip bottom :open-delay="toolTipOpenDelay"
-        :close-delay="toolTipCloseDelay" max-width="400px">
-        <template v-slot:activator="{ on }">
-          <v-btn v-on="on"
-            v-show="opacityAgreement && !totallyDisableOpacitySelector"
-            @click="resetOpacityToDefaults" text small outlined ripple>
-            {{ $t("style.restoreDefaults") }}
-          </v-btn>
-        </template>
-        <span>{{ $t("style.restoreDefaultsToolTip") }}</span>
-      </v-tooltip>
-
-      <v-slider v-model.number="opacity" :min="0" step="0.1"
-        :disabled="!opacityAgreement || totallyDisableOpacitySelector"
-        @change="onOpacityChange" :max="1" type="range" class="mt-8">
-        <template v-slot:prepend>
-          <v-icon @click="decrementOpacity">mdi-minus</v-icon>
-        </template>
-
-        <template v-slot:append>
-          <v-icon @click="incrementOpacity">mdi-plus</v-icon>
-        </template>
-      </v-slider>
     </fade-in-card>
 
     <!-- Dash array card is displayed for front and back so long as there is a dash array property common to all selected objects-->
@@ -583,8 +531,6 @@ export default class FrontStyle extends Vue {
     SETTINGS.style.maxGapLengthPlusDashLength;
 
   private opacity: number | undefined = 1;
-  private opacityAgreement = true;
-  private totallyDisableOpacitySelector = false;
 
   private dynamicBackStyle: boolean | undefined = true;
   private dynamicBackStyleAgreement = true;
@@ -858,82 +804,6 @@ export default class FrontStyle extends Vue {
       front: this.frontSide,
       fillColor: this.fillColor
     });
-  }
-
-  // These methods are linked to the opacity fade-in-card
-  onOpacityChange(): void {
-    this.$store.commit("changeStyle", {
-      selected: this.$store.getters.selectedSENodules(),
-      front: this.frontSide,
-      opacity: this.opacity
-    });
-  }
-  setCommonOpacityAgreement(): void {
-    this.opacityAgreement = true;
-  }
-  clearRecentOpacityChanges(): void {
-    const selected = this.$store.getters.selectedSENodules();
-    for (let i = 0; i < selected.length; i++) {
-      this.$store.commit("changeStyle", {
-        selected: [selected[i]],
-        front: this.frontSide,
-        opacity: this.initialStyleStates[i].opacity
-      });
-    }
-    this.setOpacitySelectorState(this.initialStyleStates);
-  }
-  resetOpacityToDefaults(): void {
-    const selected = this.$store.getters.selectedSENodules();
-    for (let i = 0; i < selected.length; i++) {
-      this.$store.commit("changeStyle", {
-        selected: [selected[i]],
-        front: this.frontSide,
-        opacity: this.defaultStyleStates[i].opacity
-      });
-    }
-    this.setOpacitySelectorState(this.defaultStyleStates);
-  }
-  incrementOpacity(): void {
-    if (this.opacity != undefined && this.opacity + 0.1 <= 1) {
-      this.opacity += 0.1;
-      this.$store.commit("changeStyle", {
-        selected: this.$store.getters.selectedSENodules(),
-        front: this.frontSide,
-        opacity: this.opacity
-      });
-    }
-  }
-  decrementOpacity(): void {
-    if (this.opacity != undefined && this.opacity - 0.1 >= 0) {
-      this.opacity -= 0.1;
-      this.$store.commit("changeStyle", {
-        selected: this.$store.getters.selectedSENodules(),
-        front: this.frontSide,
-        opacity: this.opacity
-      });
-    }
-  }
-  setOpacitySelectorState(styleState: StyleOptions[]): void {
-    this.opacityAgreement = true;
-    this.totallyDisableOpacitySelector = false;
-    this.opacity = styleState[0].opacity;
-    // screen for undefined - if undefined then this is not a property that is going to be set by the style panel for this selection of objects
-    if (this.opacity) {
-      if (
-        !styleState.every(styleObject => styleObject.opacity == this.opacity)
-      ) {
-        // The strokeColor property exists on the selected objects but the opacity doesn't agree (so don't totally disable the selector)
-        this.disableOpacitySelector(false);
-      }
-    } else {
-      // The opacity property doesn't exists on the selected objects so totally disable the selector
-      this.disableOpacitySelector(true);
-    }
-  }
-  disableOpacitySelector(totally: boolean): void {
-    this.opacityAgreement = false;
-    this.opacity = 100;
-    this.totallyDisableOpacitySelector = totally;
   }
 
   // These methods are linked to the dashPattern fade-in-card
@@ -1316,11 +1186,8 @@ export default class FrontStyle extends Vue {
     this.commonStyleProperties.clear();
     if (newSelection.length === 0) {
       //totally disable the selectors
-      // TODO this.disableStrokeWidthPercentSelector(true);
       this.disableStrokeColorSelector(true);
       this.disableFillColorSelector(true);
-      // this.disablePointRadiusPercentSelector(true);
-      this.disableOpacitySelector(true);
       this.disableDashPatternSelector(true);
       this.disableDynamicBackStyleSelector(true);
       this.noObjectsSelected = true;
@@ -1358,8 +1225,6 @@ export default class FrontStyle extends Vue {
     // TODO this.setStrokeWidthPercentSelectorState(this.initialStyleStates);
     this.setStrokeColorSelectorState(this.initialStyleStates);
     this.setFillColorSelectorState(this.initialStyleStates);
-    // this.setPointRadiusPercentSelectorState(this.initialStyleStates);
-    this.setOpacitySelectorState(this.initialStyleStates);
     this.setDashPatternSelectorState(this.initialStyleStates);
     this.setDynamicBackStyleSelectorState(this.initialStyleStates);
   }
