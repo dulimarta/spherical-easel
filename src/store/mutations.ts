@@ -248,12 +248,16 @@ export default {
       dynamicBackStyle: dynamicBackStyle,
       pointRadiusPercent: pointRadiusPercent
     };
-    if (backStyleContrast && backStyleContrast != Nodule.getBackStyleContrast())
+    if (
+      backStyleContrast &&
+      backStyleContrast != Nodule.getBackStyleContrast()
+    ) {
       // Update all Nodules because more than just the selected nodules depend on the backStyleContrast
       Nodule.setBackStyleContrast(backStyleContrast);
-    state.seNodules.forEach((n: SENodule) => {
-      n.ref.stylize(DisplayStyle.APPLYCURRENTVARIABLES);
-    });
+      state.seNodules.forEach((n: SENodule) => {
+        n.ref.stylize(DisplayStyle.APPLYCURRENTVARIABLES);
+      });
+    }
     selected.forEach((n: SENodule) => {
       n.ref.updateStyle(opt as StyleOptions);
     });
