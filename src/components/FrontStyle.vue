@@ -123,147 +123,28 @@
         (!isBackFace() && (hasStrokeColor || noObjectsSelected)) ||
           (isBackFace() && !dynamicBackStyle && hasStrokeColor)
       ">
-      <span class="text-subtitle-2">{{ $t("style.strokeColor") }}</span>
+      <ColorSelector title-key="style.strokeColor" style-name="strokeColor"
+        :data.sync="hslaStrokeColorObject" :front-side="true"
+        :initial-style-states="initialStyleStates"></ColorSelector>
       <br />
-      <span v-show="totallyDisableStrokeColorSelector">
-        {{ $t("style.selectAnObject") }}
-      </span>
-      <v-tooltip v-if="!strokeColorAgreement" bottom
-        :open-delay="toolTipOpenDelay" :close-delay="toolTipCloseDelay"
-        max-width="400px">
-        <template v-slot:activator="{ on }">
-          <v-btn color="error" v-on="on"
-            v-show="!totallyDisableStrokeColorSelector" text small outlined
-            ripple @click="setCommonStrokeColorArgreement">
-            {{ $t("style.differingStylesDetected") }}
-          </v-btn>
-        </template>
-        <span>{{ $t("style.differingStylesDetectedToolTip") }}</span>
-      </v-tooltip>
 
-      <v-tooltip bottom v-else :open-delay="toolTipOpenDelay"
-        :close-delay="toolTipCloseDelay" max-width="400px">
-        <template v-slot:activator="{ on }">
-          <v-btn v-on="on" v-show="!totallyDisableStrokeColorSelector" text
-            outlined ripple small @click="showStrokeColorOptions">
-            {{ $t("style.showColorPresets") }}
-          </v-btn>
-        </template>
-        <span>{{ $t("style.showColorPresetsToolTip") }}</span>
-      </v-tooltip>
-
-      <v-tooltip bottom :open-delay="toolTipOpenDelay"
-        :close-delay="toolTipCloseDelay" max-width="400px">
-        <template v-slot:activator="{ on }">
-          <v-btn v-on="on"
-            v-show="strokeColorAgreement && !totallyDisableStrokeColorSelector"
-            @click="clearRecentStrokeColorChanges" text outlined ripple
-            small>
-            {{ $t("style.clearChanges") }}
-          </v-btn>
-        </template>
-        <span>{{ $t("style.clearChangesToolTip") }}</span>
-      </v-tooltip>
-
-      <v-tooltip bottom :open-delay="toolTipOpenDelay"
-        :close-delay="toolTipCloseDelay" max-width="400px">
-        <template v-slot:activator="{ on }">
-          <v-btn v-on="on"
-            v-show="strokeColorAgreement && !totallyDisableStrokeColorSelector"
-            @click="resetStrokeColorToDefaults" text small outlined ripple>
-            {{ $t("style.restoreDefaults") }}
-          </v-btn>
-        </template>
-        <span>{{ $t("style.restoreDefaultsToolTip") }}</span>
-      </v-tooltip>
-
-      <v-color-picker hide-canvas mode="hsla" :disabled="
-          !strokeColorAgreement || totallyDisableStrokeColorSelector || noStroke
-        " show-swatches
-        :hide-inputs="!strokeColorAgreement || !showStrokeOptions"
-        hide-mode-switch :swatches-max-height="strokeSwatchHeight"
-        v-model="hslaStrokeColorObject" id="strokeColorPicker"
-        @update:color="onStrokeColorChange"></v-color-picker>
-      <v-checkbox v-show="strokeColorAgreement" v-model="noStroke"
-        label="No Stroke" color="indigo darken-3" @change="setNoStroke"
-        hide-details x-small dense></v-checkbox>
     </fade-in-card>
 
     <fade-in-card :showWhen="
         (!isBackFace() && (hasFillColor || noObjectsSelected)) ||
           (isBackFace() && !dynamicBackStyle && hasFillColor)
       ">
-      <span class="text-subtitle-2">{{ $t("style.fillColor") }}</span>
-      <br />
-      <span v-show="totallyDisableFillColorSelector">
-        {{ $t("style.selectAnObject") }}
-      </span>
-      <v-tooltip v-if="!fillColorAgreement" bottom
-        :open-delay="toolTipOpenDelay" :close-delay="toolTipCloseDelay"
-        max-width="400px">
-        <template v-slot:activator="{ on }">
-          <v-btn v-on="on" color="error"
-            v-show="!totallyDisableFillColorSelector" text small outlined
-            ripple @click="setCommonFillColorAgreement">
-            {{ $t("style.differingStylesDetected") }}
-          </v-btn>
-        </template>
-        <span>{{ $t("style.differingStylesDetectedToolTip") }}</span>
-      </v-tooltip>
-
-      <v-tooltip bottom v-else :open-delay="toolTipOpenDelay"
-        :close-delay="toolTipCloseDelay" max-width="400px">
-        <template v-slot:activator="{ on }">
-          <v-btn v-on="on" v-show="!totallyDisableFillColorSelector" text
-            outlined ripple small @click="showFillColorOptions">
-            {{ $t("style.showColorPresets") }}
-          </v-btn>
-        </template>
-        <span>{{ $t("style.showColorPresetsToolTip") }}</span>
-      </v-tooltip>
-
-      <v-tooltip bottom :open-delay="toolTipOpenDelay"
-        :close-delay="toolTipCloseDelay" max-width="400px">
-        <template v-slot:activator="{ on }">
-          <v-btn v-on="on"
-            v-show="fillColorAgreement && !totallyDisableFillColorSelector"
-            @click="clearRecentFillColorChanges" text outlined ripple
-            small>
-            {{ $t("style.clearChanges") }}
-          </v-btn>
-        </template>
-        <span>{{ $t("style.clearChangesToolTip") }}</span>
-      </v-tooltip>
-
-      <v-tooltip bottom :open-delay="toolTipOpenDelay"
-        :close-delay="toolTipCloseDelay" max-width="400px">
-        <template v-slot:activator="{ on }">
-          <v-btn v-on="on"
-            v-show="fillColorAgreement && !totallyDisableFillColorSelector"
-            @click="resetFillColorToDefaults" text small outlined ripple>
-            {{ $t("style.restoreDefaults") }}
-          </v-btn>
-        </template>
-        <span>{{ $t("style.restoreDefaultsToolTip") }}</span>
-      </v-tooltip>
-
-      <v-color-picker hide-canvas mode="hsla" :disabled="
-          !fillColorAgreement || totallyDisableFillColorSelector || noFill
-        " show-swatches
-        :hide-inputs="!fillColorAgreement || !showFillOptions"
-        hide-mode-switch :swatches-max-height="fillSwatchHeight"
-        v-model="hslaFillColorObject" id="fillColorPicker"
-        @update:color="onFillColorChange"></v-color-picker>
-      <v-checkbox v-show="fillColorAgreement" v-model="noFill"
-        label="No Fill" color="indigo darken-3" @change="setNoFill"
-        hide-details x-small dense></v-checkbox>
+      <ColorSelector title-key="style.fillColor" style-name="fillColor"
+        :data.sync="hslaFillColorObject" :front-side="true"
+        :initial-style-states="initialStyleStates">
+      </ColorSelector>
     </fade-in-card>
 
     <fade-in-card :showWhen="
         (!isBackFace() && (hasStrokeWidthPercent || noObjectsSelected)) ||
           (isBackFace() && !dynamicBackStyle && hasStrokeWidthPercent)
       ">
-      <SliderInput v-bind:data.sync="strokeWidthPercent"
+      <NumberSelector v-bind:data.sync="strokeWidthPercent"
         style-name="strokeWidthPercent"
         title-key="style.strokeWidthPercent"
         v-bind:min-value="minStrokeWidthPercent"
@@ -279,19 +160,19 @@
             (Percent of Default: {{ strokeWidthPercent }}%)
           </span-->
         </template>
-      </SliderInput>
+      </NumberSelector>
     </fade-in-card>
 
     <fade-in-card :showWhen="
         (!isBackFace() && (hasPointRadiusPercent || noObjectsSelected)) ||
           (isBackFace() && !dynamicBackStyle && hasPointRadiusPercent)
       ">
-      <SliderInput :data.sync="pointRadiusPercent"
+      <NumberSelector :data.sync="pointRadiusPercent"
         title-key="style.pointRadiusPercent"
         style-name="pointRadiusPercent" :min-value="minPointRadiusPercent"
         :max-value="maxPointRadiusPercent"
         v-bind:initial-style-states="initialStyleStates"
-        :front-side="true"></SliderInput>
+        :front-side="true"></NumberSelector>
       <!--span v-show="
           !totallyDisablePointRadiusPercentSelector &&
             pointRadiusPercentAgreement
@@ -306,9 +187,10 @@
         (!isBackFace() && (hasOpacity || noObjectsSelected)) ||
           (isBackFace() && !dynamicBackStyle)
       ">
-      <SliderInput title-key="style.opacity" :data.sync="opacity"
-        :min-value="0" :max-value="1" :step="0.1">
-      </SliderInput>
+      <NumberSelector title-key="style.opacity" :data.sync="opacity"
+        style-name="opacity" :min-value="0" :max-value="1" :step="0.1"
+        v-bind:initial-style-states="initialStyleStates">
+      </NumberSelector>
 
     </fade-in-card>
 
@@ -359,7 +241,7 @@
         :close-delay="toolTipCloseDelay" max-width="400px">
         <template v-slot:activator="{ on }">
           <v-btn v-on="on"
-            v-show="!totallyDisableFillColorSelector && dashPatternAgreement"
+            v-show="!totallyDisableDashPatternSelector && dashPatternAgreement"
             text outlined ripple small
             @click="toggleDashPatternSliderAvailibity">
             {{ $t("style.disableDashPatternSlider") }}
@@ -386,8 +268,7 @@
       <v-tooltip bottom :open-delay="toolTipOpenDelay"
         :close-delay="toolTipCloseDelay" max-width="400px">
         <template v-slot:activator="{ on }">
-          <v-btn v-on="on" v-show="
-              dashPatternAgreement &&
+          <v-btn v-on="on" v-show="dashPatternAgreement &&
                 !totallyDisableDashPatternSelector &&
                 !emptyDashPattern
             " @click="resetDashPatternToDefaults" text small outlined
@@ -430,7 +311,8 @@ import FadeInCard from "@/components/FadeInCard.vue";
 import { hslaColorType } from "@/types";
 import { StyleNoduleCommand } from "@/commands/StyleNoduleCommand";
 import EventBus from "@/eventHandlers/EventBus";
-import SliderInput from "@/components/SliderInput.vue"
+import NumberSelector from "@/components/NumberSelector.vue"
+import ColorSelector from "@/components/ColorSelector.vue"
 // import { getModule } from "vuex-module-decorators";
 // import UI from "@/store/ui-styles";
 
@@ -450,7 +332,7 @@ const keys = values.map(e => {
   return a;
 });
 
-@Component({ components: { FadeInCard, SliderInput } })
+@Component({ components: { FadeInCard, NumberSelector, ColorSelector } })
 export default class FrontStyle extends Vue {
   @Prop()
   readonly frontSide!: boolean;
@@ -495,27 +377,9 @@ export default class FrontStyle extends Vue {
   private maxPointRadiusPercent = SETTINGS.style.maxPointRadiusPercent;
   private minPointRadiusPercent = SETTINGS.style.minPointRadiusPercent;
 
-  private strokeColor: string | undefined = "hsl(0,0%,0%,0)"; //Color recognisable by TwoJs
   private hslaStrokeColorObject: hslaColorType = { h: 0, s: 1, l: 1, a: 0 }; // Color for Vuetify Color picker
-  private strokeColorAgreement = true;
-  private strokeSwatchHeight = 100;
-  // strokeCanvasHeight is disabled it doesn't work right change hide-canvas to :canvas-height="strokeCanvasHeight" to enable
-  private strokeCanvasHeight = 40;
-  private showStrokeOptions = false;
-  private totallyDisableStrokeColorSelector = false;
-  private noStroke = false;
-  private preNoStrokeColor: string | undefined = "";
 
-  private fillColor: string | undefined = "hsl(0,0%,0%,0)"; //Color recognisable by TwoJs
   private hslaFillColorObject: hslaColorType = { h: 0, s: 1, l: 1, a: 0 }; // Color for Vuetify Color picker
-  private fillColorAgreement = true;
-  private fillSwatchHeight = 0;
-  // strokeCanvasHeight is disabled it doesn't work right change hide-canvas to :canvas-height="fillCanvasHeight" to enable
-  private fillCanvasHeight = 40;
-  private showFillOptions = false;
-  private totallyDisableFillColorSelector = false;
-  private noFill = false;
-  private preNoFillColor: string | undefined = "";
 
   /** gapLength = sliderArray[0] */
   private gapLength = 5;
@@ -563,247 +427,6 @@ export default class FrontStyle extends Vue {
 
   isBackFace(): boolean {
     return this.frontSide === false;
-  }
-
-
-
-  // These methods are linked to the the stroke color of the elements in the selected objects
-  onStrokeColorChange(): void {
-    this.strokeColor = Nodule.convertHSLAObjectToString(
-      this.hslaStrokeColorObject
-    );
-    this.$store.commit("changeStyle", {
-      selected: this.$store.getters.selectedSENodules(),
-      front: this.frontSide,
-      strokeColor: this.strokeColor
-    });
-  }
-  setCommonStrokeColorArgreement(): void {
-    this.strokeColorAgreement = true;
-  }
-  showStrokeColorOptions(): void {
-    if (!this.noStroke) {
-      this.showStrokeOptions = !this.showStrokeOptions;
-      if (this.showStrokeOptions) {
-        this.strokeSwatchHeight = 100;
-        // this.strokeCanvasHeight = 30;
-      } else {
-        this.strokeSwatchHeight = 0;
-        // this.strokeCanvasHeight = 0;
-      }
-    } else {
-      this.strokeSwatchHeight = 0;
-      // this.strokeCanvasHeight = 0;
-      this.showStrokeOptions = false;
-    }
-  }
-  clearRecentStrokeColorChanges(): void {
-    const selected = this.$store.getters.selectedSENodules();
-    for (let i = 0; i < selected.length; i++) {
-      this.$store.commit("changeStyle", {
-        selected: [selected[i]],
-        front: this.frontSide,
-        strokeColor: this.initialStyleStates[i].strokeColor
-      });
-    }
-    this.preNoStrokeColor = this.strokeColor;
-    this.setStrokeColorSelectorState(this.initialStyleStates);
-  }
-  resetStrokeColorToDefaults(): void {
-    const selected = this.$store.getters.selectedSENodules();
-    for (let i = 0; i < selected.length; i++) {
-      this.$store.commit("changeStyle", {
-        selected: [selected[i]],
-        front: this.frontSide,
-        strokeColor: this.defaultStyleStates[i].strokeColor
-      });
-    }
-    this.setStrokeColorSelectorState(this.defaultStyleStates);
-  }
-  setStrokeColorSelectorState(styleState: StyleOptions[]): void {
-    this.strokeColorAgreement = true;
-    this.totallyDisableStrokeColorSelector = false;
-    this.strokeColor = styleState[0].strokeColor;
-    if (this.strokeColor == "noStroke") {
-      this.hslaStrokeColorObject = Nodule.convertStringToHSLAObject(
-        "hsla(0,0%,0%,0.001)"
-      );
-      this.strokeSwatchHeight = 0;
-      this.strokeCanvasHeight = 0;
-      this.showStrokeOptions = false;
-      this.noStroke = true;
-    } else {
-      this.hslaStrokeColorObject = Nodule.convertStringToHSLAObject(
-        this.strokeColor
-      );
-      this.strokeCanvasHeight = 50;
-      this.noStroke = false;
-    }
-
-    // screen for undefined - if undefined then this is not a property that is going to be set by the style panel for this selection of objects
-    if (this.strokeColor) {
-      if (
-        !styleState.every(
-          styleObject => styleObject.strokeColor == this.strokeColor
-        )
-      ) {
-        // The strokeColor property exists on the selected objects but the stroke color doesn't agree (so don't totally disable the selector)
-        this.disableStrokeColorSelector(false);
-      }
-    } else {
-      // The strokeColor property doesn't exists on the selected objects so totally disable the selector
-      this.disableStrokeColorSelector(true);
-    }
-  }
-  disableStrokeColorSelector(totally: boolean): void {
-    this.strokeColorAgreement = false;
-    this.strokeColor = "hsla(0,100%,100%,0)";
-    this.hslaStrokeColorObject = Nodule.convertStringToHSLAObject(
-      this.strokeColor
-    );
-    this.strokeSwatchHeight = 0;
-    this.strokeCanvasHeight = 0;
-    this.showStrokeOptions = false;
-    this.totallyDisableStrokeColorSelector = totally;
-  }
-  setNoStroke(): void {
-    if (this.noStroke) {
-      this.preNoStrokeColor = this.strokeColor;
-      this.strokeColor = "noStroke";
-      this.hslaStrokeColorObject = Nodule.convertStringToHSLAObject(
-        "hsla(0,100%,100%,0)"
-      );
-      this.strokeSwatchHeight = 0;
-      this.strokeCanvasHeight = 0;
-      this.showStrokeOptions = false;
-    } else {
-      this.strokeCanvasHeight = 50;
-      this.strokeColor = this.preNoStrokeColor;
-      this.hslaStrokeColorObject = Nodule.convertStringToHSLAObject(
-        this.strokeColor
-      );
-    }
-    this.$store.commit("changeStyle", {
-      selected: this.$store.getters.selectedSENodules(),
-      front: this.frontSide,
-      strokeColor: this.strokeColor
-    });
-  }
-
-  // These methods are linked to the fill color of the elements in the selected objects
-  onFillColorChange(): void {
-    this.fillColor = Nodule.convertHSLAObjectToString(this.hslaFillColorObject);
-    this.$store.commit("changeStyle", {
-      selected: this.$store.getters.selectedSENodules(),
-      front: this.frontSide,
-      fillColor: this.fillColor
-    });
-  }
-  setCommonFillColorAgreement(): void {
-    this.fillColorAgreement = true;
-  }
-  showFillColorOptions(): void {
-    if (!this.noFill) {
-      this.showFillOptions = !this.showFillOptions;
-      if (this.showFillOptions) {
-        this.fillSwatchHeight = 100;
-      } else {
-        this.fillSwatchHeight = 0;
-      }
-    } else {
-      this.fillSwatchHeight = 0;
-      this.showFillOptions = false;
-    }
-  }
-  clearRecentFillColorChanges(): void {
-    const selected = this.$store.getters.selectedSENodules();
-    for (let i = 0; i < selected.length; i++) {
-      this.$store.commit("changeStyle", {
-        selected: [selected[i]],
-        front: this.frontSide,
-        fillColor: this.initialStyleStates[i].fillColor
-      });
-    }
-    this.preNoFillColor = this.fillColor;
-    this.setFillColorSelectorState(this.initialStyleStates);
-  }
-  resetFillColorToDefaults(): void {
-    const selected = this.$store.getters.selectedSENodules();
-    for (let i = 0; i < selected.length; i++) {
-      this.$store.commit("changeStyle", {
-        selected: [selected[i]],
-        front: this.frontSide,
-        fillColor: this.defaultStyleStates[i].fillColor
-      });
-    }
-    this.setFillColorSelectorState(this.defaultStyleStates);
-  }
-  setFillColorSelectorState(styleState: StyleOptions[]): void {
-    this.fillColorAgreement = true;
-    this.totallyDisableFillColorSelector = false;
-    this.fillColor = styleState[0].fillColor;
-
-    if (this.fillColor == "noFill") {
-      this.hslaFillColorObject = Nodule.convertStringToHSLAObject(
-        "hsla(0,0%,0%,0.001)"
-      );
-      this.fillSwatchHeight = 0;
-      this.fillCanvasHeight = 0;
-      this.showFillOptions = false;
-      this.noFill = true;
-    } else {
-      this.fillCanvasHeight = 50;
-      this.hslaFillColorObject = Nodule.convertStringToHSLAObject(
-        this.fillColor
-      );
-      this.noFill = false;
-    }
-    // screen for undefined - if undefined then this is not a property that is going to be set by the style panel for this selection of objects
-    if (this.fillColor) {
-      if (
-        !styleState.every(
-          styleObject => styleObject.fillColor == this.fillColor
-        )
-      ) {
-        // The fillColor property exists on the selected objects but the fill color doesn't agree (so don't totally disable the selector)
-        this.disableFillColorSelector(false);
-      }
-    } else {
-      // The fillColor property doesn't exists on the selected objects so totally disable the selector
-      this.disableFillColorSelector(true);
-    }
-  }
-  disableFillColorSelector(totally: boolean): void {
-    this.fillColorAgreement = false;
-    this.fillColor = "hsla(0,100%,100%,0)";
-    this.hslaFillColorObject = Nodule.convertStringToHSLAObject(this.fillColor);
-    this.fillSwatchHeight = 0;
-    this.fillCanvasHeight = 0;
-    this.showFillOptions = false;
-    this.totallyDisableFillColorSelector = totally;
-  }
-  setNoFill(): void {
-    if (this.noFill) {
-      this.preNoFillColor = this.fillColor;
-      this.fillColor = "noFill";
-      this.hslaFillColorObject = Nodule.convertStringToHSLAObject(
-        "hsla(0,100%,100%,0)"
-      );
-      this.fillSwatchHeight = 0;
-      this.fillCanvasHeight = 0;
-      this.showFillOptions = false;
-    } else {
-      this.fillCanvasHeight = 50;
-      this.fillColor = this.preNoFillColor;
-      this.hslaFillColorObject = Nodule.convertStringToHSLAObject(
-        this.fillColor
-      );
-    }
-    this.$store.commit("changeStyle", {
-      selected: this.$store.getters.selectedSENodules(),
-      front: this.frontSide,
-      fillColor: this.fillColor
-    });
   }
 
   // These methods are linked to the dashPattern fade-in-card
@@ -968,7 +591,7 @@ export default class FrontStyle extends Vue {
             }
           })
         ) {
-          // The strokeColor property exists on the selected objects but the dash array doesn't agree (so don't totally disable the selector)
+          // The dashPattern property exists on the selected objects but the dash array doesn't agree (so don't totally disable the selector)
           this.disableDashPatternSelector(false);
         }
       } else {
@@ -982,12 +605,12 @@ export default class FrontStyle extends Vue {
             }
           })
         ) {
-          // The strokeColor property exists on the selected objects but the dash array doesn't agree (so don't totally disable the selector)
+          // The dashPattern property exists on the selected objects but the dash array doesn't agree (so don't totally disable the selector)
           this.disableDashPatternSelector(false);
         }
       }
     } else {
-      // The strokeColor property doesn't exists on the selected objects so totally disable the selector
+      // The dashPattern property doesn't exists on the selected objects so totally disable the selector
       this.disableDashPatternSelector(true);
     }
     // Set the slider dash array values
@@ -1086,7 +709,7 @@ export default class FrontStyle extends Vue {
           styleObject => styleObject.dynamicBackStyle == this.dynamicBackStyle
         )
       ) {
-        // The strokeColor property exists on the selected objects but the dynamicBackStyle doesn't agree (so don't totally disable the selector)
+        // The dynamic backstyle property exists on the selected objects but the dynamicBackStyle doesn't agree (so don't totally disable the selector)
         this.disableDynamicBackStyleSelector(false);
       }
     } else {
@@ -1186,8 +809,6 @@ export default class FrontStyle extends Vue {
     this.commonStyleProperties.clear();
     if (newSelection.length === 0) {
       //totally disable the selectors
-      this.disableStrokeColorSelector(true);
-      this.disableFillColorSelector(true);
       this.disableDashPatternSelector(true);
       this.disableDynamicBackStyleSelector(true);
       this.noObjectsSelected = true;
@@ -1223,8 +844,6 @@ export default class FrontStyle extends Vue {
 
     //Set the initial state of the fade-in-card/selectors (checking to see if the property is the same across all selected objects)
     // TODO this.setStrokeWidthPercentSelectorState(this.initialStyleStates);
-    this.setStrokeColorSelectorState(this.initialStyleStates);
-    this.setFillColorSelectorState(this.initialStyleStates);
     this.setDashPatternSelectorState(this.initialStyleStates);
     this.setDynamicBackStyleSelectorState(this.initialStyleStates);
   }

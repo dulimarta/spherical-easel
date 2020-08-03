@@ -976,7 +976,7 @@ export default class Circle extends Nodule {
           this.frontGradientColor.color = this.fillColorFront;
           this.frontFill.fill = this.frontGradient;
         }
-        if (this.fillColorFront === "noStroke") {
+        if (this.strokeColorFront === "noStroke") {
           this.frontFill.noStroke();
         } else {
           this.frontPart.stroke = this.strokeColorFront;

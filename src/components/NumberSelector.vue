@@ -64,20 +64,16 @@ import { StyleOptions, Styles } from "@/types/Styles";
 import { State } from "vuex-class";
 import { SENodule } from "@/models/SENodule"
 
-// const propNames: string[] = Object.entries(Styles)
-//   .filter(x => x[0].match(/[0-9]+/))
-//   .map(x => x[1] as string);
-
 @Component({})
-export default class SliderInput extends Vue {
+export default class NumberSelector extends Vue {
 
   @Prop() readonly frontSide!: boolean;
   @Prop() readonly titleKey!: string
-  @Prop() readonly initialStyleStates!: StyleOptions[]
-  @Prop() readonly styleName!: string
-  @PropSync('data', { type: Number }) styleData?: number;
-  @Prop() readonly minValue!: number;
-  @Prop() readonly maxValue!: number;
+  @Prop({ required: true }) readonly initialStyleStates!: StyleOptions[]
+  @Prop({ required: true }) readonly styleName!: string
+  @PropSync('data', { type: Number }) styleData?: number | undefined;
+  @Prop({ required: true }) readonly minValue!: number;
+  @Prop({ required: true }) readonly maxValue!: number;
   @Prop() readonly step?: number
 
   @State
@@ -134,7 +130,8 @@ export default class SliderInput extends Vue {
   setSelectorState(styleState: StyleOptions[]): void {
     this.styleDataAgreement = true;
     this.totalyDisableSelector = false;
-    this.styleData = (styleState[0] as any)[this.styleName];
+
+    this.styleData = this.styleName in styleState[0] ? (styleState[0] as any)[this.styleName] : undefined;
     // screen for undefined - if undefined then this is not a property that is going to be set by the style panel for this selection of objects
     if (this.styleData) {
       if (styleState.length > 1 &&
