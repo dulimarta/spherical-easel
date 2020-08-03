@@ -1,11 +1,17 @@
 import { SENodule } from "./SENodule";
 import { Styles } from "@/types/Styles";
-import { UpdateStateType } from "@/types";
+import { UpdateStateType, SEOneDimensional } from "@/types";
 import { Vector3 } from "three";
 let EXPR_COUNT = 0;
 
 const emptySet = new Set<Styles>();
 export abstract class SEExpression extends SENodule {
+  // public isPointOnOneDimensional = (): boolean => false;
+  public isFreePoint = (): boolean => false;
+  public isPoint = (): boolean => false;
+
+  public isOneDimensional = (): this is SEOneDimensional => false;
+
   constructor() {
     super();
     EXPR_COUNT++;

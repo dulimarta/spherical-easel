@@ -57,7 +57,7 @@ export default class FrontStyle extends Vue {
   }
 
   onDashPatternChanged(): void {
-    this.store.commit.changeDashPattern([this.dashLength, this.gapLength]);
+    // this.store.commit.changeDashPattern([this.dashLength, this.gapLength]);
   }
   hasStyles(s: Styles): boolean {
     const sNum = Number(s);
@@ -97,11 +97,11 @@ export default class FrontStyle extends Vue {
   }
 
   get hasStrokeWidth(): boolean {
-    return this.hasStyles(Styles.strokeWidthPercentage);
+    return this.hasStyles(Styles.strokeWidthPercent);
   }
 
   get hasDash(): boolean {
-    return this.hasStyles(Styles.dashPattern);
+    return this.hasStyles(Styles.dashArray);
   }
 
   @Watch("selections", { deep: true })

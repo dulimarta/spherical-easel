@@ -2,7 +2,16 @@ export default {
   nearlyAntipodalIdeal: 0.01, // Two unit vectors, U and V, are nearly antipodal if |U+V| < nearlyAntipodalIdeal
   nearlyAntipodalPixel: 3, // Two vectors on the default sphere, U and V, are nearly antipodal if |U+V| < nearlyAntipodalPixel
   tolerance: 0.0000001, // Any number less that this tolerance is considered zero
-  contrast: 0.5, //The number that controls the automatic setting of the back styling for objects that have dynamicBackStyle set to true.
+  style: {
+    frontFace: true,
+    backFace: false,
+    backStyleContrast: 0.5, //The number that controls the automatic setting of the back styling for objects that have dynamicBackStyle set to true.
+    maxStrokeWidthPercent: 500, // The maximum percent stroke width different from the scaled for zoom size
+    minStrokeWidthPercent: 20, // The minimum percent stroke width different from the scaled for zoom size
+    maxPointRadiusPercent: 500, // The maximum percent point radius different from the scaled for zoom size
+    minPointRadiusPercent: 20, // The minimum percent point radius different from the scaled for zoom size
+    maxGapLengthPlusDashLength: 20 // the maximum of the sum of the gap and dash and the endpoint (max value) of the dash range slider
+  },
   zoom: {
     maxMagnification: 10, // The greatest zoom in magnification factor
     minMagnification: 0.8, // The least zoom out magnification factor
@@ -31,59 +40,56 @@ export default {
     radius: 250 /* default radius */,
     numPoints: 50,
     opacity: 0.5,
-    color: "black",
+    color: "hsla(0, 0%, 0%, 1)",
     lineWidth: 3
   },
   // #endregion boundarycircle
   point: {
     hitPixelDistance: 8, //When a pixel distance between a mouse event and the pixel coords of a point is less than this number, it is hit
     hitIdealDistance: 0.02, // The user has to be within this distance on the ideal unit sphere to select the point.
-    //dynamicRadius is a flag that means the radius of the point will be linked to zoom level
-    dynamicRadii: true,
     //dynamicBackStyle is a flag that means the fill color,stroke, and opacity of the points drawn on the back are automatically calculated based on the value of SETTINGS.contrast and their front counterparts
     dynamicBackStyle: true,
     //The properties of the point when it is drawn on the sphereCanvas and is not glowing
     drawn: {
-      radius: { front: 2, back: 1.5, rmin: 1, rmax: 3, fbDifference: 1 }, // The radius of the point drawn on the front/back, rmin, rmax, and fbDifferencer are used only if the dynamic is true, then the drawn radius is between rmin and rmax (depending on the size of the sphere) and fbDifference (front-back difference) is the value of the front radius minus back radius.
+      radius: {
+        front: 4, // The default radius of the point drawn on the front,
+        back: 3 // The default radius of the point drawn on the back,
+      },
       fillColor: {
         front: "hsla(0, 100%, 75%, 1)", //"#FF8080", // { r: 255, g: 128, b: 128 },#f55742
         back: "hsla(0, 100%, 75%, 1)" //"#FFBFBF" // The fill color on the back defaults to a contrast value of 0.5
       },
       strokeColor: {
-        front: "#4C4CCD", // { r: 76, g: 76, b: 205 },
-        back: "#A5A5E6" // the back stroke color is calculated using the contrast of 0.5
+        front: "hsla(240, 56%, 55%, 1)", // { r: 76, g: 76, b: 205 },
+        back: "hsla(240, 57%, 77%, 1)" // the back stroke color is calculated using the contrast of 0.5
       },
-      strokeWidth: { front: 1, back: 0.5 }, // The thickness of the edge of the point when drawn
+      pointStrokeWidth: { front: 2, back: 2 }, // The thickness of the edge of the point when drawn
       opacity: { front: 1, back: 1 }
       // No dashing for points
     },
     // The properties of the annular region around a point when it is glowing
     glowing: {
-      annularWidth: 1, // width is the width of the annular region around the point that shows the glow it is always bigger than the drawn radius
+      annularWidth: 2.5, // width is the width of the annular region around the point that shows the glow it is always bigger than the drawn radius
       fillColor: {
         front: "hsla(0, 100%, 50%, 1)",
         back: "hsla(0, 100%, 75%, 0.7)" // the back fill color is calculated using the contrast of 0.5
       },
-      strokeColor: {
-        front: "noStroke",
-        back: "noStroke"
-      },
-      strokeWidth: { front: 1, back: 1 }, // The thickness of the edge of the point when drawn
+      // No stroke for glowing points
       opacity: { front: 1, back: 1 }
       // No dashing - this is highlighting the object
     },
     //The properties of the point when it is temporarily shown by the point tool while drawing
     temp: {
-      radius: { front: 3, back: 3, difference: 2 }, //The front/back radius of the temp point, difference is only used if dynamic is true and difference is how much smaller the temp radius is than the drawn one.
+      // The radius is the same as the default for drawn points
       fillColor: {
-        front: "#808080", // { r: 128, g: 128, b: 128 },
-        back: "#BFBFBF" // the back fill color is calculated using the contrast of 0.5
+        front: "hsla(0, 0%, 50%, 1)", // { r: 128, g: 128, b: 128 },
+        back: "hsla(0, 0%, 75%, 1)" // the back fill color is calculated using the contrast of 0.5
       },
       strokeColor: {
-        front: "#000000", // black { r: 0, g: 0, b: 0 },
-        back: "#808080" // the back stroke color is calculated using the contrast of 0.5
+        front: "hsla(0, 0%, 0%, 1)", // black { r: 0, g: 0, b: 0 },
+        back: "hsla(0, 0%, 50%, 1)" // the back stroke color is calculated using the contrast of 0.5
       },
-      strokeWidth: { front: 1, back: 1 }, // The thickness of the edge of the point when drawn
+      // The temp stroke width is the same as the default drawn stroke width
       opacity: { front: 1, back: 1 }
       // No dashing for points
     }
@@ -94,26 +100,22 @@ export default {
     numPoints: 20, // The number of vertices used to render the segment. These are spread over the front and back parts. MAKE THIS EVEN!
     hitPixelDistance: 8, //When a pixel distance between a mouse event and the pixel coords of a line is less than this number, it is hit
     hitIdealDistance: 0.02, // The user has to be within this distance on the ideal unit sphere to select the line.
-    //dynamicWidth is a flag that means the width of the segment will be linked to zoom level
-    dynamicWidth: true,
     //dynamicBackStyle is a flag that means the fill color,stroke, and opacity of the segments drawn on the back are automatically calculated based on the value of SETTINGS.contrast and their front counterparts
     dynamicBackStyle: true,
     drawn: {
       // No fill for line segments
       strokeColor: {
-        front: "#4287f5", // { r: 66, g: 135, b: 245 },
-        back: "#a0c3fa" // The fill color on the back defaults to a contrast value of 0.5
+        front: "hsla(217, 90%, 61%, 1)", // { r: 66, g: 135, b: 245 },
+        back: "hsla(217, 90%, 80%, 1)" // The fill color on the back defaults to a contrast value of 0.5
       },
       strokeWidth: {
-        front: 1.5,
-        back: 1,
-        min: 1, //On zoom this is the minimum thickness displayed
-        max: 3 //On zoom this is the maximum thickness displayed
+        front: 2.5,
+        back: 2
       }, // The thickness of the segment when drawn
       opacity: { front: 1, back: 1 },
       dashArray: {
         offset: { front: 0, back: 0 },
-        front: [], // An empty array means no dashing.
+        front: [] as number[], // An empty array means no dashing.
         back: [10, 5] // An empty array means no dashing.
       } // An empty array means no dashing.
     },
@@ -125,31 +127,19 @@ export default {
         back: "hsla(0, 100%, 75%, 0.7)" // the back fill color is calculated using the contrast of 0.5
       },
       edgeWidth: 2, // edgeWidth/2 is the width of the region around the segment that shows the glow
-      opacity: { front: 1, back: 1 },
-      dashArray: {
-        offset: { front: 0, back: 0 },
-        front: [], // An empty array means no dashing.
-        back: [10, 5] // An empty array means no dashing.
-      }
+      opacity: { front: 1, back: 1 }
+      // the dashing pattern is copied from the drawn version
     },
     //The properties of the circle when it is temporarily shown by the segment tool while drawing
     temp: {
       // No fill for line segments
       strokeColor: {
-        front: "#6A6A6A",
-        back: "#B4B4B4" // the back fill color is calculated using the contrast of 0.5
+        front: "hsla(0, 0%, 42%, 1)",
+        back: "hsla(0, 0%, 71%, 1)" // the back fill color is calculated using the contrast of 0.5
       },
-      strokeWidth: {
-        // The thickness of the edge of the point when drawn
-        front: 2.5,
-        back: 2
-      },
-      opacity: { front: 1, back: 1 },
-      dashArray: {
-        offset: { front: 0, back: 0 },
-        front: [], // An empty array means no dashing.
-        back: [10, 5] // An empty array means no dashing.
-      }
+      // The width is the same as the default drawn version
+      opacity: { front: 1, back: 1 }
+      // The dashing pattern is copied from the default drawn version
     }
   },
   line: {
@@ -158,28 +148,25 @@ export default {
     numPoints: 50, // The number of vertices used to render the line. These are spread over the front and back parts. MAKE THIS EVEN!
     hitPixelDistance: 8, //When a pixel distance between a mouse event and the pixel coords of a line is less than this number, it is hit
     hitIdealDistance: 0.02, // The user has to be within this distance on the ideal unit sphere to select the line.
-    //dynamicWidth is a flag that means the width of the line will be linked to zoom level
-    dynamicWidth: true,
     //dynamicBackStyle is a flag that means the fill color,stroke, and opacity of the lines drawn on the back are automatically calculated based on the value of SETTINGS.contrast and their front counterparts
     dynamicBackStyle: true,
     drawn: {
       // No fill for lines
       strokeColor: {
-        front: "#4287f5", // { r: 66, g: 135, b: 245 },
-        back: "#a0c3fa" // The fill color on the back defaults to a contrast value of 0.5
+        front: "hsla(217, 90%, 61%, 1)", // { r: 66, g: 135, b: 245 },
+        back: "hsla(217, 90%, 80%, 1)" // The fill color on the back defaults to a contrast value of 0.5
       },
+      // The thickness of the line when drawn
       strokeWidth: {
-        front: 1.5,
-        back: 1,
-        min: 1, //On zoom this is the minimum thickness displayed
-        max: 3 //On zoom this is the maximum thickness displayed
-      }, // The thickness of the line when drawn
+        front: 2.5,
+        back: 2
+      },
       opacity: { front: 1, back: 1 },
       dashArray: {
         offset: { front: 0, back: 0 },
-        front: [], // An empty array means no dashing.
+        front: [] as number[], // An empty array means no dashing.
         back: [10, 5] // An empty array means no dashing.
-      } // An empty array means no dashing.
+      }
     },
     //The properties of the region around a line when it is glowing
     glowing: {
@@ -189,64 +176,46 @@ export default {
         back: "hsla(0, 100%, 75%, 0.7)" // the back fill color is calculated using the contrast of 0.5
       },
       edgeWidth: 2, // edgeWidth/2 is the width of the region around the line that shows the glow
-      opacity: { front: 1, back: 1 },
-      dashArray: {
-        offset: { front: 0, back: 0 },
-        front: [], // An empty array means no dashing.
-        back: [10, 5] // An empty array means no dashing.
-      }
+      opacity: { front: 1, back: 1 }
+      // Dashing is the same as the drawn version
     },
     //The properties of the line when it is temporarily shown by the line tool while drawing
     temp: {
       // No fill for lines
       strokeColor: {
-        front: "#6A6A6A",
-        back: "#B4B4B4" // the back fill color is calculated using the contrast of 0.5
+        front: "hsla(0, 0%, 42%, 1)",
+        back: "hsla(0, 0%, 71%, 1)" // the back fill color is calculated using the contrast of 0.5
       },
-      strokeWidth: {
-        // The thickness of the edge of the point when drawn
-        front: 2.5,
-        back: 2,
-        min: 2, //On zoom this is the minimum thickness displayed
-        max: 6 //On zoom this is the maximum thickness displayed
-      },
-      opacity: { front: 1, back: 1 },
-      dashArray: {
-        offset: { front: 0, back: 0 },
-        front: [], // An empty array means no dashing.
-        back: [10, 5] // An empty array means no dashing.
-      }
+      // The width is the same as the default drawn version
+      opacity: { front: 1, back: 1 }
+      // Dashing is the same as the default drawn version
     }
   },
   circle: {
     minimumRadius: 0.02, // Don't create circles with a radius smaller than this
     numPoints: 100, // The number of vertices used to render the circle. These are spread over the front and back parts. MAKE THIS EVEN!
     hitIdealDistance: 0.01, // The user has to be within this distance on the ideal unit sphere to select the circle.
-    //dynamicWidth is a flag that means the width of the circle will be linked to zoom level
-    dynamicWidth: true,
     //dynamicBackStyle is a flag that means the fill, linewidth, strokeColor, and opacity of the circles drawn on the back are automatically calculated based on the value of SETTINGS.contrast and their front counterparts
     dynamicBackStyle: true,
     //The properties of the circle when it is drawn on the sphereCanvas and is not glowing
     drawn: {
       fillColor: {
-        front: "hsla(217, 100%, 80%, 0)", //"noFill",
-        back: "hsla(217, 100%, 80%, 0)" //"noFill"
+        front: "hsla(217, 100%, 80%, 0.0005)", //"noFill",
+        back: "hsla(217, 100%, 80%, 0.0002)" //"noFill"
       },
       strokeColor: {
-        front: "#4287f5", // { r: 66, g: 135, b: 245 },
-        back: "#a0c3fa" // The fill color on the back defaults to a contrast value of 0.5
+        front: "hsla(217, 90%, 61%, 1)", // { r: 66, g: 135, b: 245 },
+        back: "hsla(217, 90%, 80%, 1)" // The fill color on the back defaults to a contrast value of 0.5
       },
       strokeWidth: {
         // The thickness of the circle when drawn front/back
-        front: 1.5,
-        back: 1,
-        min: 1, //On zoom this is the minimum thickness displayed
-        max: 3 //On zoom this is the maximum thickness displayed
+        front: 2.5,
+        back: 2
       }, // The thickness of the circle when drawn front/back
       opacity: { front: 1, back: 1 },
       dashArray: {
         offset: { front: 0, back: 0 },
-        front: [], // An empty array means no dashing.
+        front: [] as number[], // An empty array means no dashing.
         back: [10, 5] // An empty array means no dashing.
       } // An empty array means no dashing.
     },
@@ -258,12 +227,8 @@ export default {
         back: "hsla(0, 100%, 75%, 0.7)" // the back fill color is calculated using the contrast of 0.5
       },
       edgeWidth: 2, // edgeWidth/2 is the width of the region around the circle (on each side) that shows the glow
-      opacity: { front: 1, back: 1 },
-      dashArray: {
-        offset: { front: 0, back: 0 },
-        front: [], // An empty array means no dashing.
-        back: [10, 5] // An empty array means no dashing.
-      }
+      opacity: { front: 1, back: 1 }
+      // The dash pattern will always be the same as the drawn version
     },
     //The properties of the circle when it is temporarily shown by the circle tool while drawing
     temp: {
@@ -275,13 +240,9 @@ export default {
         front: "hsla(0, 0%, 0%, 1.0)",
         back: "hsla(0, 0%, 0%, 0.1)" // "#B4B4B4"
       },
-      strokeWidth: { front: 1, back: 1 }, // The thickness of the circle when drawn
-      opacity: { front: 1, back: 1 },
-      dashArray: {
-        offset: { front: 0, back: 0 },
-        front: [], // An empty array means no dashing.
-        back: [10, 5] // An empty array means no dashing.
-      }
+      // The width is the same as the default drawn version
+      opacity: { front: 1, back: 1 }
+      // The dash pattern will always be the same as the default drawn version
     }
   },
   /* Controls the length of time (in ms) the tool tip are displayed */

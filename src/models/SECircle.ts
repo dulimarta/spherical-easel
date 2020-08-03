@@ -18,10 +18,11 @@ let CIRCLE_COUNT = 0;
 
 const styleSet = new Set([
   Styles.strokeColor,
-  Styles.strokeWidthPercentage,
-  Styles.dashPattern
-  //Styles.fillColorGray,
-  //Styles.fillColorWhite,
+  Styles.strokeWidthPercent,
+  Styles.dashArray,
+  Styles.fillColor,
+  Styles.opacity,
+  Styles.dynamicBackStyle
 ]);
 export class SECircle extends SENodule implements Visitable, OneDimensional {
   /**
@@ -79,13 +80,16 @@ export class SECircle extends SENodule implements Visitable, OneDimensional {
     );
   }
 
-  public isHitAt(unitIdealVector: Vector3): boolean {
+  public isHitAt(
+    unitIdealVector: Vector3,
+    currentMagnificationFactor: number
+  ): boolean {
     const angleToCenter = unitIdealVector.angleTo(
       this._centerSEPoint.locationVector
     );
     return (
       Math.abs(angleToCenter - this.circleRadius) <
-      SETTINGS.circle.hitIdealDistance
+      SETTINGS.circle.hitIdealDistance / currentMagnificationFactor
     );
   }
 
@@ -196,6 +200,9 @@ export class SECircle extends SENodule implements Visitable, OneDimensional {
         .applyMatrix4(this.changeInPositionRotationMatrix);
       this.circleSEPoint.locationVector = tmpVector;
       // Update both points, because we might need to update their kids!
+      // First mark the kids out of date so that the update method does a topological sort
+      this.circleSEPoint.markKidsOutOfDate();
+      this.centerSEPoint.markKidsOutOfDate();
       this.circleSEPoint.update({
         mode: UpdateMode.DisplayOnly,
         stateArray: []
@@ -205,5 +212,20 @@ export class SECircle extends SENodule implements Visitable, OneDimensional {
         stateArray: []
       });
     }
+  }
+
+  // I wish the SENodule methods would work but I couldn't figure out how
+  // See the attempts in SENodule
+  public isFreePoint() {
+    return false;
+  }
+  public isOneDimensional() {
+    return true;
+  }
+  public isPoint() {
+    return false;
+  }
+  public isPointOnOneDimensional() {
+    return false;
   }
 }

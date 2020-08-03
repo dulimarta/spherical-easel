@@ -232,9 +232,11 @@ export default class SphereFrame extends VueComponent {
   }
 
   /** Apply the affine transform (m) to the entire TwoJS SVG tree! */
+
   // The translation element of the CSS transform matrix
   // is actually the pivot/origin of the zoom
-  // #region updateViewµ
+
+  //#region updateView
   private updateView() {
     // Get the current maginiication factor and translation vector
     const mag = this.store.state.zoomMagnificationFactor;
@@ -252,7 +254,7 @@ export default class SphereFrame extends VueComponent {
     // What does this do?
     el.style.overflow = "visible";
   }
-  // #endregion updateView
+  //#endregion updateView
 
   handleMouseWheel(event: MouseWheelEvent): void {
     console.log("Mouse Wheel Zoom!");
@@ -366,6 +368,11 @@ export default class SphereFrame extends VueComponent {
   }
   //#endregion handleSphereRotation
 
+  /**
+   * Watch the actionMode in the store. This is the two-way binding of variables in the Vuex Store.  Notice that this
+   * is a vue component so we are able to Watch for changes in variables in the store. If this was not a vue component
+   * we would not be able to do this (at least not directly).
+   */
   @Watch("actionMode")
   switchActionMode(mode: string): void {
     this.currentTool?.deactivate();

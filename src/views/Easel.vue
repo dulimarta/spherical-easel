@@ -40,8 +40,12 @@
                         <!-- TODO:   
                         When not available they should be greyed out (i.e. disabled).-->
                         <template v-slot:activator="{ on }">
-                          <v-btn icon @click="undoEdit" v-on="on">
-                            <v-icon>mdi-undo</v-icon>
+                          <v-btn
+                            :disabled="!stylePanelMinified || !undoEnabled"
+                            icon @click="undoEdit" v-on="on">
+                            <v-icon color="blue"
+                              :disabled="!stylePanelMinified || !undoEnabled">
+                              mdi-undo</v-icon>
                           </v-btn>
                         </template>
                         <span>{{ $t("main.UndoLastAction") }}</span>
@@ -49,8 +53,12 @@
                       <v-tooltip bottom :open-delay="toolTipOpenDelay"
                         :close-delay="toolTipCloseDelay">
                         <template v-slot:activator="{ on }">
-                          <v-btn icon @click="redoAction" v-on="on">
-                            <v-icon>mdi-redo</v-icon>
+                          <v-btn
+                            :disabled="!stylePanelMinified || !redoEnabled"
+                            icon @click="redoAction" v-on="on">
+                            <v-icon color="blue"
+                              :disabled="!stylePanelMinified || !redoEnabled">
+                              mdi-redo</v-icon>
                           </v-btn>
                         </template>
                         <span>{{ $t("main.RedoLastAction") }}</span>
@@ -166,16 +174,21 @@ import SphereFrame from "@/components/SphereFrame.vue";
 import { Command } from "@/commands/Command";
 import SETTINGS from "@/global-settings";
 import EventBus from "../eventHandlers/EventBus";
-// import { SEPoint } from "@/models/SEPoint";
-// import { SELine } from "@/models/SELine";
+
 import buttonList from "@/components/ToolGroups.vue";
 import ToolButton from "@/components/ToolButton.vue";
 import StylePanel from "@/components/Style.vue";
 import { SECircle } from "../models/SECircle";
-// import { SESegment } from "../models/SESegment";
+import { SESegment } from "../models/SESegment";
+import { SEPoint } from "@/models/SEPoint";
+import { SELine } from "@/models/SELine";
 import Circle from "@/plottables/Circle";
+import Point from "@/plottables/Point";
+import Line from "@/plottables/Line";
+import Segment from "@/plottables/Segment";
 import { State } from "vuex-class";
 import { SENodule } from "../models/SENodule";
+import Nodule from "@/plottables/Nodule";
 
 // import { getModule } from "vuex-module-decorators";
 // import UI from "@/store/ui-styles";
@@ -217,6 +230,8 @@ export default class Easel extends Vue {
   private toolUseMessageDelay = SETTINGS.toolUse.delay;
   private displayToolUseMessage = SETTINGS.toolUse.display;
 
+  private undoEnabled = false;
+  private redoEnabled = false;
   private displayZoomInToolUseMessage = false;
   private displayZoomOutToolUseMessage = false;
   private displayZoomFitToolUseMessage = false;
@@ -233,8 +248,19 @@ export default class Easel extends Vue {
   constructor() {
     super();
     EventBus.listen("magnification-updated", this.resizePlottables);
+    EventBus.listen("undo-enabled", this.setUndoEnabled);
+    EventBus.listen("redo-enabled", this.setRedoEnabled);
   }
   //#endregion magnificationUpdate
+
+  private setUndoEnabled(e: unknown): void {
+    this.undoEnabled = (e as any).value;
+    console.log("undo enabled", this.undoEnabled);
+  }
+  private setRedoEnabled(e: unknown): void {
+    this.redoEnabled = (e as any).value;
+    console.log("redo enabled", this.redoEnabled);
+  }
 
   private enableZoomIn(): void {
     this.displayZoomInToolUseMessage = true;
@@ -266,7 +292,7 @@ export default class Easel extends Vue {
   /** mounted() is part of VueJS lifecycle hooks */
   mounted(): void {
     window.addEventListener("resize", this.onWindowResized);
-    this.adjustSize();
+    this.adjustSize(); // Why do we need this?  this.onWindowResized just calls this.adjustSize() but if you remove it the app doesn't work -- strange!
   }
 
   /** Split Pane resize handler
@@ -305,10 +331,11 @@ export default class Easel extends Vue {
     if (!this.toolboxMinified && !this.stylePanelMinified) {
       this.toolboxMinified = true;
     }
+    // Set the selection tool to be active when opening the style panel.
     if (!this.stylePanelMinified) {
       this.store.commit.setActionMode({
         id: "select",
-        name: "CreateSelectDisplayedName"
+        name: "SelectDisplayedName"
       });
     }
   }
@@ -330,20 +357,21 @@ export default class Easel extends Vue {
 
   //#region resizePlottables
   resizePlottables(e: any): void {
-    const oldFactor = this.$store.state.previousZoomMagnificationFactor;
-    Circle.currentCircleStrokeWidthFront *= oldFactor / e.factor;
-    // this.$store.state.points.forEach((p: SEPoint) => {
-    //   p.ref.adjustSizeForZoom(e.factor);
-    // });
-    // this.$store.state.lines.forEach((p: SELine) => {
-    //   p.ref.adjustSizeForZoom(e.factor);
-    // });
-    this.$store.state.circles.forEach((p: SECircle) => {
-      p.ref.adjustSizeForZoom();
+    const oldFactor = this.$store.getters.previousZoomMagnificationFactor();
+    // Update the current stroke widths in each plottable class
+    Line.updateCurrentStrokeWidthForZoom(oldFactor / e.factor);
+    Segment.updateCurrentStrokeWidthForZoom(oldFactor / e.factor);
+    Circle.updateCurrentStrokeWidthForZoom(oldFactor / e.factor);
+    Point.updatePointScaleFactorForZoom(oldFactor / e.factor);
+
+    // Update the size of each nodule in the store
+    this.$store.state.seNodules.forEach((p: SENodule) => {
+      p.ref.adjustSize();
     });
-    // this.$store.state.segments.forEach((p: SESegment) => {
-    //   p.ref.adjustSizeForZoom(e.factor);
-    // });
+    // The temporary plottables need to be resized too
+    this.$store.state.temporaryNodules.forEach((p: Nodule) => {
+      p.adjustSize();
+    });
   }
   //#endregion resizePlottables
 }

@@ -44,7 +44,7 @@ export default abstract class Highlighter extends MouseHandler {
 
     // Create an array of SENodules of all nearby objects by querying the store
     this.hitSENodules = this.store.getters
-      .findNearbyObjects(this.currentSphereVector, this.currentScreenVector)
+      .findNearbySENodules(this.currentSphereVector, this.currentScreenVector)
       .filter((n: SENodule) => {
         if (n instanceof SEIntersectionPoint) {
           if (!n.isUserCreated) {
@@ -126,10 +126,10 @@ export default abstract class Highlighter extends MouseHandler {
   }
 
   activate(): void {
-    this.store.getters.selectedObjects().forEach((obj: SENodule) => {
+    this.store.getters.selectedSENodules().forEach((obj: SENodule) => {
       obj.selected = false;
     });
     // Clear the selected objects array
-    this.store.commit.setSelectedObjects([]);
+    this.store.commit.setSelectedSENodules([]);
   }
 }

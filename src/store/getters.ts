@@ -382,22 +382,24 @@ function intersectCircles(
 }
 
 export default {
-  findNearbyObjects: (state: AppState) => (
+  findNearbySENodules: (state: AppState) => (
     unitIdealVector: Vector3,
     screenPosition: Two.Vector
   ): SENodule[] => {
-    return state.nodules.filter(obj => obj.isHitAt(unitIdealVector));
+    return state.seNodules.filter(obj =>
+      obj.isHitAt(unitIdealVector, state.zoomMagnificationFactor)
+    );
   },
   /** Find nearby points by checking the distance in the ideal sphere
    * or screen distance (in pixels)
    */
-  findNearbyPoints: (state: AppState) => (
+  findNearbySEPoints: (state: AppState) => (
     unitIdealVector: Vector3,
     screenPosition: Two.Vector
   ): SEPoint[] => {
-    return state.points.filter(
+    return state.sePoints.filter(
       p =>
-        p.isHitAt(unitIdealVector) &&
+        p.isHitAt(unitIdealVector, state.zoomMagnificationFactor) &&
         p.ref.defaultScreenVectorLocation.distanceTo(screenPosition) <
           PIXEL_CLOSE_ENOUGH
     );
@@ -405,23 +407,29 @@ export default {
 
   /** When a point is on a geodesic circle, it has to be perpendicular to
    * the normal direction of that circle */
-  findNearbyLines: (state: AppState) => (
+  findNearbySELines: (state: AppState) => (
     unitIdealVector: Vector3,
     screenPosition: Two.Vector
   ): SELine[] => {
-    return state.lines.filter((z: SELine) => z.isHitAt(unitIdealVector));
+    return state.seLines.filter((z: SELine) =>
+      z.isHitAt(unitIdealVector, state.zoomMagnificationFactor)
+    );
   },
-  findNearbySegments: (state: AppState) => (
+  findNearbySESegments: (state: AppState) => (
     unitIdealVector: Vector3,
     screenPosition: Two.Vector
   ): SESegment[] => {
-    return state.segments.filter((z: SESegment) => z.isHitAt(unitIdealVector));
+    return state.seSegments.filter((z: SESegment) =>
+      z.isHitAt(unitIdealVector, state.zoomMagnificationFactor)
+    );
   },
-  findNearbyCircles: (state: AppState) => (
+  findNearbySECircles: (state: AppState) => (
     unitIdealVector: Vector3,
     screenPosition: Two.Vector
   ): SECircle[] => {
-    return state.circles.filter((z: SECircle) => z.isHitAt(unitIdealVector));
+    return state.seCircles.filter((z: SECircle) =>
+      z.isHitAt(unitIdealVector, state.zoomMagnificationFactor)
+    );
   },
   // forwardTransform: (state: AppState): Matrix4 => {
   //   tmpMatrix.fromArray(state.transformMatElements);
@@ -440,13 +448,13 @@ export default {
     //  they won't have been added to the state.points array yet so add them first
     avoidVectors.push(newLine.startSEPoint.locationVector);
     avoidVectors.push(newLine.endSEPoint.locationVector);
-    state.points.forEach(pt => avoidVectors.push(pt.locationVector));
+    state.sePoints.forEach(pt => avoidVectors.push(pt.locationVector));
 
     // The intersectionPointList to return
     const intersectionPointList: SEIntersectionReturnType[] = [];
 
     // Intersect this new line with all old lines
-    state.lines
+    state.seLines
       .filter((line: SELine) => line.id !== newLine.id) // ignore self
       .forEach((oldLine: SELine) => {
         const intersectionInfo = intersectLineWithLine(oldLine, newLine);
@@ -455,9 +463,9 @@ export default {
             !avoidVectors.some(v => tempVec.subVectors(info.vector, v).isZero())
           ) {
             // info.vector is not on the avoidVectors array, so create an intersection
-            console.debug("made intersection");
             const newPt = new Point();
-            newPt.stylize(DisplayStyle.TEMPORARY);
+            newPt.stylize(DisplayStyle.APPLYTEMPORARYVARIABLES);
+            newPt.adjustSize();
             const newSEIntersectionPt = new SEIntersectionPoint(
               newPt,
               oldLine,
@@ -476,7 +484,7 @@ export default {
         });
       });
     //Intersect this new line with all old segments
-    state.segments.forEach((oldSegment: SESegment) => {
+    state.seSegments.forEach((oldSegment: SESegment) => {
       const intersectionInfo = intersectLineWithSegment(newLine, oldSegment);
       intersectionInfo.forEach((info, index) => {
         if (
@@ -484,7 +492,8 @@ export default {
         ) {
           // info.vector is not on the avoidVectors array, so create an intersection
           const newPt = new Point();
-          newPt.stylize(DisplayStyle.TEMPORARY);
+          newPt.stylize(DisplayStyle.APPLYTEMPORARYVARIABLES);
+          newPt.adjustSize();
           const newSEIntersectionPt = new SEIntersectionPoint(
             newPt,
             newLine,
@@ -503,7 +512,7 @@ export default {
       });
     });
     //Intersect this new line with all old circles
-    state.circles.forEach((oldCircle: SECircle) => {
+    state.seCircles.forEach((oldCircle: SECircle) => {
       const intersectionInfo = intersectLineWithCircle(newLine, oldCircle);
       intersectionInfo.forEach((info, index) => {
         if (
@@ -511,7 +520,8 @@ export default {
         ) {
           // info.vector is not on the avoidVectors array, so create an intersection
           const newPt = new Point();
-          newPt.stylize(DisplayStyle.TEMPORARY);
+          newPt.stylize(DisplayStyle.APPLYTEMPORARYVARIABLES);
+          newPt.adjustSize();
           const newSEIntersectionPt = new SEIntersectionPoint(
             newPt,
             newLine,
@@ -540,12 +550,12 @@ export default {
     //  they won't have been added to the state.points array yet so add them first
     avoidVectors.push(newSegment.startSEPoint.locationVector);
     avoidVectors.push(newSegment.endSEPoint.locationVector);
-    state.points.forEach(pt => avoidVectors.push(pt.locationVector));
+    state.sePoints.forEach(pt => avoidVectors.push(pt.locationVector));
 
     // The intersectionPointList to return
     const intersectionPointList: SEIntersectionReturnType[] = [];
     // Intersect this new segment with all old lines
-    state.lines.forEach((oldLine: SELine) => {
+    state.seLines.forEach((oldLine: SELine) => {
       const intersectionInfo = intersectLineWithSegment(oldLine, newSegment);
       intersectionInfo.forEach((info, index) => {
         if (
@@ -553,7 +563,8 @@ export default {
         ) {
           // info.vector is not on the avoidVectors array, so create an intersection
           const newPt = new Point();
-          newPt.stylize(DisplayStyle.TEMPORARY);
+          newPt.stylize(DisplayStyle.APPLYTEMPORARYVARIABLES);
+          newPt.adjustSize();
           const newSEIntersectionPt = new SEIntersectionPoint(
             newPt,
             oldLine,
@@ -573,7 +584,7 @@ export default {
       });
     });
     //Intersect this new segment with all old segments
-    state.segments
+    state.seSegments
       .filter((segment: SESegment) => segment.id !== newSegment.id) // ignore self
       .forEach((oldSegment: SESegment) => {
         const intersectionInfo = intersectSegmentWithSegment(
@@ -585,7 +596,8 @@ export default {
             !avoidVectors.some(v => tempVec.subVectors(info.vector, v).isZero())
           ) {
             const newPt = new Point();
-            newPt.stylize(DisplayStyle.TEMPORARY);
+            newPt.stylize(DisplayStyle.APPLYTEMPORARYVARIABLES);
+            newPt.adjustSize();
             const newSEIntersectionPt = new SEIntersectionPoint(
               newPt,
               oldSegment,
@@ -604,7 +616,7 @@ export default {
         });
       });
     //Intersect this new segment with all old circles
-    state.circles.forEach((oldCircle: SECircle) => {
+    state.seCircles.forEach((oldCircle: SECircle) => {
       const intersectionInfo = intersectSegmentWithCircle(
         newSegment,
         oldCircle
@@ -615,7 +627,8 @@ export default {
         ) {
           // info.vector is not on the avoidVectors array, so create an intersection
           const newPt = new Point();
-          newPt.stylize(DisplayStyle.TEMPORARY);
+          newPt.stylize(DisplayStyle.APPLYTEMPORARYVARIABLES);
+          newPt.adjustSize();
           const newSEIntersectionPt = new SEIntersectionPoint(
             newPt,
             newSegment,
@@ -645,11 +658,11 @@ export default {
     //  they won't have been added to the state.points array yet so add them first
     avoidVectors.push(newCircle.centerSEPoint.locationVector);
     avoidVectors.push(newCircle.circleSEPoint.locationVector);
-    state.points.forEach(pt => avoidVectors.push(pt.locationVector));
+    state.sePoints.forEach(pt => avoidVectors.push(pt.locationVector));
     // The intersectionPointList to return
     const intersectionPointList: SEIntersectionReturnType[] = [];
     // Intersect this new circle with all old lines
-    state.lines.forEach((oldLine: SELine) => {
+    state.seLines.forEach((oldLine: SELine) => {
       const intersectionInfo = intersectLineWithCircle(oldLine, newCircle);
       intersectionInfo.forEach((info, index) => {
         if (
@@ -657,7 +670,8 @@ export default {
         ) {
           // info.vector is not on the avoidVectors array, so create an intersection
           const newPt = new Point();
-          newPt.stylize(DisplayStyle.TEMPORARY);
+          newPt.stylize(DisplayStyle.APPLYTEMPORARYVARIABLES);
+          newPt.adjustSize();
           const newSEIntersectionPt = new SEIntersectionPoint(
             newPt,
             oldLine,
@@ -676,7 +690,7 @@ export default {
       });
     });
     //Intersect this new circle with all old segments
-    state.segments.forEach((oldSegment: SESegment) => {
+    state.seSegments.forEach((oldSegment: SESegment) => {
       const intersectionInfo = intersectSegmentWithCircle(
         oldSegment,
         newCircle
@@ -687,7 +701,8 @@ export default {
         ) {
           // info.vector is not on the avoidVectors array, so create an intersection
           const newPt = new Point();
-          newPt.stylize(DisplayStyle.TEMPORARY);
+          newPt.stylize(DisplayStyle.APPLYTEMPORARYVARIABLES);
+          newPt.adjustSize();
           const newSEIntersectionPt = new SEIntersectionPoint(
             newPt,
             oldSegment,
@@ -706,7 +721,7 @@ export default {
       });
     });
     //Intersect this new circle with all old circles
-    state.circles
+    state.seCircles
       .filter((circle: SECircle) => circle.id !== newCircle.id) // ignore self
       .forEach((oldCircle: SECircle) => {
         const intersectionInfo = intersectCircles(
@@ -721,7 +736,8 @@ export default {
           ) {
             // info.vector is not on the avoidVectors array, so create an intersection
             const newPt = new Point();
-            newPt.stylize(DisplayStyle.TEMPORARY);
+            newPt.stylize(DisplayStyle.APPLYTEMPORARYVARIABLES);
+            newPt.adjustSize();
             const newSEIntersectionPt = new SEIntersectionPoint(
               newPt,
               oldCircle,
@@ -777,13 +793,13 @@ export default {
   findIntersectionPointsByParent: (state: AppState) => (
     parentNames: string
   ): SEIntersectionPoint[] => {
-    return state.points
+    return state.sePoints
       .filter(
         p => p instanceof SEIntersectionPoint && p.name.includes(parentNames)
       )
       .map(obj => obj as SEIntersectionPoint);
   },
-  selectedObjects: (state: AppState) => (): SENodule[] => {
+  selectedSENodules: (state: AppState) => (): SENodule[] => {
     return state.selections;
   },
   previousActionMode: (state: AppState) => (): { id: string; name: string } => {
@@ -797,6 +813,6 @@ export default {
   // },
   getSENoduleById: (state: AppState) => (id: number): SENodule | undefined => {
     //console.log("All Nodule", state.nodules.length);
-    return state.nodules.find((z: SENodule) => z.id === id);
+    return state.seNodules.find((z: SENodule) => z.id === id);
   }
 };

@@ -4,7 +4,7 @@
       <v-expansion-panels :value="selectedPanel">
         <v-expansion-panel v-for="(p, idx) in panels" :key="idx">
           <v-expansion-panel-header :key="`header${idx}`">
-            {{ p.name }}
+            {{ $t(p.i18n_key) }}
           </v-expansion-panel-header>
           <v-expansion-panel-content :key="`content${idx}`">
             <component :is="p.component"></component>
@@ -23,6 +23,8 @@ import Vue from "vue";
 import Component from "vue-class-component";
 import FrontStyle from "@/components/FrontStyle.vue";
 import { Prop } from "vue-property-decorator";
+import EventBus from "../eventHandlers/EventBus";
+//import SETTINGS from "@/global-settings";
 
 @Component({ components: { FrontStyle } })
 export default class Style extends Vue {
@@ -31,18 +33,23 @@ export default class Style extends Vue {
   private selectedPanel = 0; // Default selection is the Foreground panel
   private readonly panels = [
     {
-      name: "Foreground Style",
+      i18n_key: "style.foregroundStyle",
       component: () => import("@/components/FrontStyle.vue")
     },
     {
-      name: "Background Style",
+      i18n_key: "style.backgroundStyle",
       component: () => import("@/components/BackStyle.vue")
     },
     {
-      name: "Advanced Style",
+      i18n_key: "style.advancedStyle",
       component: () => import("@/components/AdvancedStyle.vue")
     }
   ];
+
+  //When the user changes panels or click on a panel, the style state should be saved
+  saveStyleState(): void {
+    EventBus.fire("save-style-state", {});
+  }
 }
 </script>
 

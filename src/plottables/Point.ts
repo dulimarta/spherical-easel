@@ -13,9 +13,6 @@ import { StyleOptions } from "@/types/Styles";
  * SEPoint concerns mainly with geometry computations.
  */
 
-const defaultRadiusFront = SETTINGS.point.drawn.radius.front;
-const defaultRadiusBack = SETTINGS.point.drawn.radius.back;
-
 export default class Point extends Nodule {
   /**
    * The vector location of the Point on the default sphere
@@ -39,42 +36,68 @@ export default class Point extends Nodule {
 
   /**
    * The styling variables for the drawn point. The user can modify these.
-   * Created with the Google Sheet "Point Styling Code" in the "Set Drawn Variables" tab
+   * Created with the Google Sheet "Point Styling Code" in the "Declare Private Variables" tab
    */
-  // FRONT
+  // Front
   private fillColorFront = SETTINGS.point.drawn.fillColor.front;
   private strokeColorFront = SETTINGS.point.drawn.strokeColor.front;
-  private strokeWidthFront = SETTINGS.point.drawn.strokeWidth.front;
+  private pointRadiusPercentFront = 100;
   private opacityFront = SETTINGS.point.drawn.opacity.front;
-  // BACK
+  // Back
   private fillColorBack = SETTINGS.point.dynamicBackStyle
     ? Nodule.contrastFillColor(SETTINGS.point.drawn.fillColor.front)
     : SETTINGS.point.drawn.fillColor.back;
   private strokeColorBack = SETTINGS.point.dynamicBackStyle
     ? Nodule.contrastStrokeColor(SETTINGS.point.drawn.strokeColor.front)
     : SETTINGS.point.drawn.strokeColor.back;
-  private strokeWidthBack = SETTINGS.point.dynamicBackStyle
-    ? Nodule.contractStrokeWidth(SETTINGS.point.drawn.strokeWidth.front)
-    : SETTINGS.point.drawn.strokeWidth.back;
+  private pointRadiusPercentBack = SETTINGS.point.dynamicBackStyle
+    ? Nodule.contrastPointRadiusPercent(
+        SETTINGS.point.drawn.pointStrokeWidth.front
+      )
+    : 100;
   private opacityBack = SETTINGS.point.dynamicBackStyle
     ? Nodule.contrastOpacity(SETTINGS.point.drawn.opacity.front)
     : SETTINGS.point.drawn.opacity.back;
+  private dynamicBackStyle = SETTINGS.point.dynamicBackStyle;
+
+  /**
+   * Initialize the current point scale factor that is adjusted by the zoom level and the user pointRadiusPercent
+   * The initial size of the points are
+   */
+  static currentPointRadiusFront = SETTINGS.point.drawn.radius.front;
+  static currentPointRadiusBack = SETTINGS.point.drawn.radius.back;
+  static currentGlowingPointRadiusFront =
+    SETTINGS.point.drawn.radius.front + SETTINGS.point.glowing.annularWidth;
+  static currentGlowingPointRadiusBack =
+    SETTINGS.point.drawn.radius.back + SETTINGS.point.glowing.annularWidth;
+  static pointScaleFactor = 1;
+
+  /**
+   * Update the point scale factor -- the points are drawn of the default size in the constructor
+   * so to account for the zoom magnification we only need to keep track of the scale factor (which is
+   * really just one over the current magnification factor) and then scale the point on the zoom event.
+   * This is accomplished by the adjustSize() method
+   * @param factor The ratio of the old magnification factor over the new magnification factor
+   */
+  static updatePointScaleFactorForZoom(factor: number): void {
+    Point.pointScaleFactor *= factor;
+  }
 
   constructor() {
     super();
 
-    //Create the front/back/glowing/drawn TwoJS objects
-    this.frontPoint = new Two.Circle(0, 0, defaultRadiusFront);
-    this.backPoint = new Two.Circle(0, 0, defaultRadiusBack);
+    //Create the front/back/glowing/drawn TwoJS objects of the default size
+    this.frontPoint = new Two.Circle(0, 0, SETTINGS.point.drawn.radius.front);
+    this.backPoint = new Two.Circle(0, 0, SETTINGS.point.drawn.radius.back);
     this.glowingFrontPoint = new Two.Circle(
       0,
       0,
-      defaultRadiusFront + SETTINGS.point.glowing.annularWidth
+      SETTINGS.point.drawn.radius.front + SETTINGS.point.glowing.annularWidth
     );
     this.glowingBackPoint = new Two.Circle(
       0,
       0,
-      defaultRadiusBack + SETTINGS.point.glowing.annularWidth
+      SETTINGS.point.drawn.radius.back + SETTINGS.point.glowing.annularWidth
     );
 
     // Set the location of the points front/back/glowing/drawn
@@ -91,6 +114,30 @@ export default class Point extends Nodule {
     this.glowingFrontPoint.visible = false;
     this.backPoint.visible = false;
     this.glowingBackPoint.visible = false;
+
+    // Set the properties of the points that never change - stroke width and glowing options
+    this.frontPoint.linewidth = SETTINGS.point.drawn.pointStrokeWidth.front;
+    this.backPoint.linewidth = SETTINGS.point.drawn.pointStrokeWidth.back;
+
+    // FRONT Glowing
+    if (SETTINGS.point.glowing.fillColor.front === "noFill") {
+      this.glowingFrontPoint.noFill();
+    } else {
+      this.glowingFrontPoint.fill = SETTINGS.point.glowing.fillColor.front;
+    }
+    this.glowingFrontPoint.noStroke();
+    this.glowingFrontPoint.opacity = SETTINGS.point.glowing.opacity.front;
+    // points have no dashing
+
+    // Back Glowing
+    if (SETTINGS.point.glowing.fillColor.back === "noFill") {
+      this.glowingBackPoint.noFill();
+    } else {
+      this.glowingBackPoint.fill = SETTINGS.point.glowing.fillColor.back;
+    }
+    this.glowingBackPoint.noStroke();
+    this.glowingBackPoint.opacity = SETTINGS.point.glowing.opacity.back;
+    // points have no dashing
   }
 
   /**
@@ -109,26 +156,6 @@ export default class Point extends Nodule {
   }
   get positionVector(): Vector3 {
     return this._locationVector;
-  }
-
-  /**
-   * Adjust the size of the point (by scaling) so that zooming doesn't make the point too big and
-   * zooming out doesn't make the point too small
-   * @param factor The scale factor of the current zoom port
-   */
-  adjustSizeForZoom(): void {
-    // console.log("point adjust for zoom");
-    // const newRadius = defaultRadiusFront * factor;
-    // let newScale = 1;
-    // if (newRadius > SETTINGS.point.drawn.radius.rmax) {
-    //   // debugger; // eslint-disable-line
-    //   newScale = SETTINGS.point.drawn.radius.rmax / newRadius;
-    // }
-    // if (newRadius < SETTINGS.point.drawn.radius.rmin) {
-    //   // debugger; // eslint-disable-line
-    //   newScale = SETTINGS.point.drawn.radius.rmin / newRadius;
-    // }
-    // this.frontPoint.scale = newScale;
   }
 
   frontGlowingDisplay(): void {
@@ -175,20 +202,6 @@ export default class Point extends Nodule {
     }
   }
 
-  updateStyle(options: StyleOptions): void {
-    if (options.strokeWidthPercentage) {
-      this.frontPoint.linewidth =
-        (SETTINGS.point.drawn.strokeWidth.front *
-          options.strokeWidthPercentage) /
-        100;
-      this.glowingFrontPoint.linewidth =
-        ((SETTINGS.point.drawn.strokeWidth.front +
-          SETTINGS.point.glowing.annularWidth) *
-          options.strokeWidthPercentage) /
-        100;
-    }
-  }
-
   addToLayers(layers: Two.Group[]): void {
     this.frontPoint.addTo(layers[LAYER.foregroundPoints]);
     this.glowingFrontPoint.addTo(layers[LAYER.foregroundPointsGlowing]);
@@ -203,7 +216,7 @@ export default class Point extends Nodule {
     this.glowingBackPoint.remove();
   }
 
-  public updateDisplay(): void {
+  updateDisplay(): void {
     this.normalDisplay();
   }
 
@@ -217,135 +230,233 @@ export default class Point extends Nodule {
       this.normalDisplay();
     }
   }
+  /**
+   * Copies the style options set by the Style Panel into the style variables and then updates the
+   * Two.js objects (with adjustSize and stylize(ApplyVariables))
+   * @param options The style options
+   */
+  updateStyle(options: StyleOptions): void {
+    console.debug("Point: Update style of", this.name, "using", options);
+    if (options.front) {
+      // Set the front options
+      if (options.pointRadiusPercent) {
+        this.pointRadiusPercentFront = options.pointRadiusPercent;
+      }
+      if (options.fillColor) {
+        this.fillColorFront = options.fillColor;
+      }
+      if (options.strokeColor) {
+        this.strokeColorFront = options.strokeColor;
+      }
+      if (options.opacity) {
+        this.opacityFront = options.opacity;
+      }
+    } else {
+      // Set the back options
+      // options.dynamicBackStyle is true, so we need to explicitly check for undefined otherwise
+      // when it is false, this doesn't execute and this.dynamicBackStyle is not set
+      if (options.dynamicBackStyle != undefined) {
+        this.dynamicBackStyle = options.dynamicBackStyle;
+      }
+      if (options.pointRadiusPercent) {
+        this.pointRadiusPercentBack = options.pointRadiusPercent;
+      }
+      if (options.fillColor) {
+        this.fillColorBack = options.fillColor;
+      }
+      if (options.strokeColor) {
+        this.strokeColorBack = options.strokeColor;
+      }
+      if (options.opacity) {
+        this.opacityBack = options.opacity;
+      }
+    }
+    // Now apply the style and size
+    this.stylize(DisplayStyle.APPLYCURRENTVARIABLES);
+    this.adjustSize();
+  }
+  /**
+   * Return the current style state
+   */
+  currentStyleState(front: boolean): StyleOptions {
+    if (front) {
+      return {
+        front: front,
+        pointRadiusPercent: this.pointRadiusPercentFront,
+        strokeColor: this.strokeColorFront,
+        fillColor: this.fillColorFront,
+        opacity: this.opacityFront
+      };
+    } else {
+      return {
+        front: front,
+        pointRadiusPercent: this.pointRadiusPercentBack,
+        strokeColor: this.strokeColorBack,
+        fillColor: this.fillColorBack,
+        opacity: this.opacityBack,
+        dynamicBackStyle: this.dynamicBackStyle
+      };
+    }
+  }
+  /**
+   * Return the default style state
+   */
+  defaultStyleState(front: boolean): StyleOptions {
+    if (front) {
+      return {
+        front: front,
+        pointRadiusPercent: 100,
+        strokeColor: SETTINGS.point.drawn.strokeColor.front,
+        fillColor: SETTINGS.point.drawn.fillColor.front,
+        opacity: SETTINGS.point.drawn.opacity.front
+      };
+      // Back
+    } else {
+      return {
+        front: front,
+
+        pointRadiusPercent: SETTINGS.point.dynamicBackStyle
+          ? Nodule.contrastPointRadiusPercent(100)
+          : 100,
+
+        strokeColor: SETTINGS.point.dynamicBackStyle
+          ? Nodule.contrastStrokeColor(SETTINGS.point.drawn.strokeColor.front)
+          : SETTINGS.circle.drawn.strokeColor.back,
+
+        fillColor: SETTINGS.point.dynamicBackStyle
+          ? Nodule.contrastFillColor(SETTINGS.point.drawn.fillColor.front)
+          : SETTINGS.circle.drawn.fillColor.back,
+
+        opacity: SETTINGS.point.dynamicBackStyle
+          ? Nodule.contrastOpacity(SETTINGS.point.drawn.opacity.front)
+          : SETTINGS.point.drawn.opacity.back,
+
+        dynamicBackStyle: SETTINGS.point.dynamicBackStyle
+      };
+    }
+  }
+  /**
+   * Sets the variables for point radius glowing/not
+   */
+  adjustSize(): void {
+    this.frontPoint.scale =
+      (Point.pointScaleFactor * this.pointRadiusPercentFront) / 100;
+
+    this.backPoint.scale =
+      (Point.pointScaleFactor *
+        (this.dynamicBackStyle
+          ? Nodule.contrastPointRadiusPercent(this.pointRadiusPercentFront)
+          : this.pointRadiusPercentBack)) /
+      100;
+
+    this.glowingFrontPoint.scale =
+      (Point.pointScaleFactor * this.pointRadiusPercentFront) / 100;
+
+    this.glowingBackPoint.scale =
+      (Point.pointScaleFactor *
+        (this.dynamicBackStyle
+          ? Nodule.contrastStrokeWidthPercent(this.pointRadiusPercentFront)
+          : this.pointRadiusPercentBack)) /
+      100;
+  }
 
   /**
-   * Set the rendering style (flags: temporary, default, glowing, update) of the point
-   * Update flag means at least one of the private variables storing style information has
-   * changed and should be applied to the displayed point.
+   * Set the rendering style (flags: ApplyTemporaryVariables, ApplyCurrentVariables, ResetVariablesToDefaults) of the line
+   *
+   * ApplyTemporaryVariables means that
+   *    1) The temporary variables from SETTINGS.point.temp are copied into the actual Two.js objects
+   *    2) The pointScaleFactor is copied from the Point.pointScaleFactor (which accounts for the Zoom magnification) into the actual Two.js objects
+   *
+   * Apply CurrentVariables means that all current values of the private style variables are copied into the actual Two.js objects
+   *
+   * ResetVariablesToDefaults means that all the private style variables are set to their defaults from SETTINGS.
    */
-
   stylize(flag: DisplayStyle): void {
     switch (flag) {
-      case DisplayStyle.TEMPORARY: {
-        // The style for the temporary circle display.  These options are not user modifiable.
-        // Created with the Google Sheet "Point Styling Code" in the "Temporary" tab
+      case DisplayStyle.APPLYTEMPORARYVARIABLES: {
+        // Use the SETTINGS temporary options to directly modify the Two.js objects.
         // FRONT
         if (SETTINGS.point.temp.fillColor.front === "noFill") {
           this.frontPoint.noFill();
         } else {
           this.frontPoint.fill = SETTINGS.point.temp.fillColor.front;
         }
-        if (SETTINGS.point.temp.strokeColor.front === "noStroke") {
-          this.frontPoint.noStroke();
-        } else {
-          this.frontPoint.stroke = SETTINGS.point.temp.strokeColor.front;
-        }
-        this.frontPoint.linewidth = SETTINGS.point.temp.strokeWidth.front;
+        this.frontPoint.stroke = SETTINGS.point.temp.strokeColor.front;
+        // strokeWidth is not user modifiable, strokeWidth is always the default drawn one
+        this.frontPoint.vertices.forEach(v => {
+          v.normalize().multiplyScalar(Point.currentPointRadiusFront);
+        }); // temporary points are always the currentPointSize (accounts for zoom)
         this.frontPoint.opacity = SETTINGS.point.temp.opacity.front;
+
         // BACK
         if (SETTINGS.point.temp.fillColor.back === "noFill") {
           this.backPoint.noFill();
         } else {
           this.backPoint.fill = SETTINGS.point.temp.fillColor.back;
         }
-        if (SETTINGS.point.temp.strokeColor.back === "noStroke") {
-          this.backPoint.noStroke();
-        } else {
-          this.backPoint.stroke = SETTINGS.point.temp.strokeColor.back;
-        }
-        this.backPoint.linewidth = SETTINGS.point.temp.strokeWidth.back;
+        this.backPoint.stroke = SETTINGS.point.temp.strokeColor.back;
+        // strokeWidth is not user modifiable, strokeWidth is always the default drawn one
+        this.backPoint.vertices.forEach(v => {
+          v.normalize().multiplyScalar(Point.currentPointRadiusBack);
+        }); // temporary points are always the currentPointSize (accounts for zoom)
         this.backPoint.opacity = SETTINGS.point.temp.opacity.back;
+
         break;
       }
 
-      case DisplayStyle.GLOWING: {
-        // The style for the glowing circle display.  These options are not user modifiable.
-        // Created with the Google Sheet "Point Styling Code" in the "Glowing" tab
-        // FRONT
-        if (SETTINGS.point.glowing.fillColor.front === "noFill") {
-          this.glowingFrontPoint.noFill();
-        } else {
-          this.glowingFrontPoint.fill = SETTINGS.point.glowing.fillColor.front;
-        }
-        if (SETTINGS.point.glowing.strokeColor.front === "noStroke") {
-          this.glowingFrontPoint.noStroke();
-        } else {
-          this.glowingFrontPoint.stroke =
-            SETTINGS.point.glowing.strokeColor.front;
-        }
-        this.glowingFrontPoint.linewidth =
-          SETTINGS.point.glowing.strokeWidth.front;
-        this.glowingFrontPoint.opacity = SETTINGS.point.glowing.opacity.front;
-        // BACK
-        if (SETTINGS.point.glowing.fillColor.back === "noFill") {
-          this.glowingBackPoint.noFill();
-        } else {
-          this.glowingBackPoint.fill = SETTINGS.point.glowing.fillColor.back;
-        }
-        if (SETTINGS.point.glowing.strokeColor.back === "noStroke") {
-          this.glowingBackPoint.noStroke();
-        } else {
-          this.glowingBackPoint.stroke =
-            SETTINGS.point.glowing.strokeColor.back;
-        }
-        this.glowingBackPoint.linewidth =
-          SETTINGS.point.glowing.strokeWidth.back;
-        this.glowingBackPoint.opacity = SETTINGS.point.glowing.opacity.back;
-        break;
-      }
-      case DisplayStyle.UPDATE: {
-        // Use the current variables to update the display style
-        // Created with the Google Sheet "Point Styling Code" in the "Drawn Update" tab
+      case DisplayStyle.APPLYCURRENTVARIABLES: {
+        // Use the current variables to directly modify the Two.js objects.
         // FRONT
         if (this.fillColorFront === "noFill") {
           this.frontPoint.noFill();
         } else {
           this.frontPoint.fill = this.fillColorFront;
         }
-        this.frontPoint.stroke = this.strokeColorFront;
-        this.frontPoint.linewidth = this.strokeWidthFront;
-        this.frontPoint.opacity = this.opacityFront;
-        // BACK
-        if (this.fillColorBack === "noFill") {
-          this.backPoint.noFill();
-        } else {
-          this.backPoint.fill = this.fillColorBack;
-        }
-        this.backPoint.stroke = this.strokeColorBack;
-        this.backPoint.linewidth = this.strokeWidthBack;
-        this.backPoint.opacity = this.opacityBack;
-        break;
-      }
-      case DisplayStyle.DEFAULT:
-      default: {
-        // Reset the style to the defaults i.e. Use the global defaults to update the display style
-        // Created with the Google Sheet "Point Styling Code" in the "Drawn Set To Defaults" tab
-        // FRONT
-        if (SETTINGS.point.drawn.fillColor.front === "noFill") {
-          this.frontPoint.noFill();
-        } else {
-          this.frontPoint.fill = SETTINGS.point.drawn.fillColor.front;
-        }
-        if (SETTINGS.point.drawn.strokeColor.front === "noStroke") {
+        if (this.strokeColorFront == "noStroke") {
           this.frontPoint.noStroke();
         } else {
-          this.frontPoint.stroke = SETTINGS.point.drawn.strokeColor.front;
+          this.frontPoint.stroke = this.strokeColorFront;
         }
-        this.frontPoint.linewidth = SETTINGS.point.drawn.strokeWidth.front;
-        this.frontPoint.opacity = SETTINGS.point.drawn.opacity.front;
+        //stroke width is not user modifiable - set in the constructor
+        // pointRadiusPercent applied by adjustSize();
+        this.frontPoint.opacity = this.opacityFront;
+
         // BACK
-        if (SETTINGS.point.drawn.fillColor.back === "noFill") {
-          this.backPoint.noFill();
+        if (this.dynamicBackStyle) {
+          if (Nodule.contrastFillColor(this.fillColorFront) === "noFill") {
+            this.backPoint.noFill();
+          } else {
+            this.backPoint.fill = Nodule.contrastFillColor(this.fillColorFront);
+          }
         } else {
-          this.backPoint.fill = SETTINGS.point.drawn.fillColor.back;
+          if (this.fillColorBack === "noFill") {
+            this.backPoint.noFill();
+          } else {
+            this.backPoint.fill = this.fillColorBack;
+          }
         }
-        if (SETTINGS.point.drawn.strokeColor.back === "noStroke") {
-          this.backPoint.noStroke();
+        if (this.dynamicBackStyle) {
+          if (
+            Nodule.contrastStrokeColor(this.strokeColorFront) === "noStroke"
+          ) {
+            this.backPoint.noStroke();
+          } else {
+            this.backPoint.stroke = Nodule.contrastStrokeColor(
+              this.strokeColorFront
+            );
+          }
         } else {
-          this.backPoint.stroke = SETTINGS.point.drawn.strokeColor.back;
+          if (this.strokeColorBack === "noStroke") {
+            this.backPoint.noStroke();
+          } else {
+            this.backPoint.stroke = this.strokeColorBack;
+          }
         }
-        this.backPoint.linewidth = SETTINGS.point.drawn.strokeWidth.back;
-        this.backPoint.opacity = SETTINGS.point.drawn.opacity.back;
+        //stroke width is not user modifiable - set in the constructor
+        // pointRadiusPercent applied by adjustSize();
+        this.backPoint.opacity = this.dynamicBackStyle
+          ? Nodule.contrastOpacity(this.opacityFront)
+          : this.opacityBack;
 
         break;
       }

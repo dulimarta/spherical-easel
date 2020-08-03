@@ -242,12 +242,15 @@ export default class IntersectionPointHandler extends Highlighter {
     intersectionConversionCommandGroup.execute();
   }
   activate(): void {
-    if (this.store.getters.selectedObjects().length == 2) {
-      const object1 = this.store.getters.selectedObjects()[0];
-      const object2 = this.store.getters.selectedObjects()[1];
+    if (this.store.getters.selectedSENodules().length == 2) {
+      const object1 = this.store.getters.selectedSENodules()[0];
+      const object2 = this.store.getters.selectedSENodules()[1];
 
       if (object1.isOneDimensional() && object2.isOneDimensional()) {
-        this.doIntersection(object1, object2);
+        this.doIntersection(
+          object1 as SEOneDimensional,
+          object2 as SEOneDimensional
+        );
       }
     }
     // Unselect the selected objects and clear the selectedObject array

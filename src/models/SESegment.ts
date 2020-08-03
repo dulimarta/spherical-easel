@@ -1,6 +1,6 @@
 import { SENodule } from "./SENodule";
 import Segment from "@/plottables/Segment";
-import { Vector3 } from "three";
+import { Vector3, StaticCopyUsage } from "three";
 import { Visitable } from "@/visitors/Visitable";
 import { Visitor } from "@/visitors/Visitor";
 import { SEPoint } from "./SEPoint";
@@ -12,10 +12,13 @@ import { Styles } from "@/types/Styles";
 
 let SEGMENT_COUNT = 0;
 const styleSet = new Set([
-  Styles.strokeWidthPercentage,
+  Styles.strokeWidthPercent,
   Styles.strokeColor,
-  Styles.dashPattern
+  Styles.dashArray,
+  Styles.dynamicBackStyle,
+  Styles.opacity
 ]);
+
 const tmpVector = new Vector3();
 const tmpVector1 = new Vector3();
 const tmpVector2 = new Vector3();
@@ -112,9 +115,16 @@ export class SESegment extends SENodule implements Visitable, OneDimensional {
     this._arcLength = len;
   }
 
-  public isHitAt(unitIdealVector: Vector3): boolean {
+  public isHitAt(
+    unitIdealVector: Vector3,
+    currentMagnificationFactor: number
+  ): boolean {
     // Is the unitIdealVector is perpendicular to the normal to the plane containing the segment?
-    if (Math.abs(unitIdealVector.dot(this._normalVector)) > 1e-2) return false;
+    if (
+      Math.abs(unitIdealVector.dot(this._normalVector)) >
+      SETTINGS.segment.hitIdealDistance / currentMagnificationFactor
+    )
+      return false;
 
     // Is the unitIdealVector inside the radius arcLength/2 circle about the midVector?
     // NOTE: normalVector x startVector *(this.arcLength > Math.PI ? -1 : 1)
@@ -130,7 +140,8 @@ export class SESegment extends SENodule implements Visitable, OneDimensional {
 
     return (
       tmpVector.angleTo(unitIdealVector) <
-      this._arcLength / 2 + SETTINGS.segment.hitIdealDistance
+      this._arcLength / 2 +
+        SETTINGS.segment.hitIdealDistance / currentMagnificationFactor
     );
   }
 
@@ -351,6 +362,9 @@ export class SESegment extends SENodule implements Visitable, OneDimensional {
           .applyAxisAngle(desiredZAxis, rotationAngle);
         this.endSEPoint.locationVector = tmpVector2;
         // Update both points, because we might need to update their kids!
+        // First mark the kids out of date so that the update method does a topological sort
+        this.endSEPoint.markKidsOutOfDate();
+        this.startSEPoint.markKidsOutOfDate();
         this.endSEPoint.update({
           mode: UpdateMode.DisplayOnly,
           stateArray: []
@@ -407,15 +421,35 @@ export class SESegment extends SENodule implements Visitable, OneDimensional {
         tmpVector1.copy(this.normalVector);
         tmpVector1.applyAxisAngle(axisOfRotation, rotationAngle);
         this.normalVector = tmpVector1;
+        //Mark kids out of date so that the update method does a topological sort
+        this.markKidsOutOfDate();
         this.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
       } else {
         // For non-antipodal points move the freeEnd
         tmpVector1.copy(freeEnd.locationVector);
         tmpVector1.applyAxisAngle(axisOfRotation, rotationAngle);
         freeEnd.locationVector = tmpVector1;
+        // First mark the kids out of date so that the update method does a topological sort
+        freeEnd.markKidsOutOfDate();
+        pivot.markKidsOutOfDate();
         freeEnd.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
         pivot.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
       }
     }
+  }
+
+  // I wish the SENodule methods would work but I couldn't figure out how
+  // See the attempts in SENodule
+  public isFreePoint() {
+    return false;
+  }
+  public isOneDimensional() {
+    return true;
+  }
+  public isPoint() {
+    return false;
+  }
+  public isPointOnOneDimensional() {
+    return false;
   }
 }

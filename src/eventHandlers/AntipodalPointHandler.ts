@@ -27,9 +27,9 @@ export default class AntipodalPointHandler extends Highlighter {
       if (this.parentPoint != null) {
         const newPoint = new Point();
         // Set the display to the default values
-        newPoint.stylize(DisplayStyle.DEFAULT);
-        // Set up the glowing display
-        newPoint.stylize(DisplayStyle.GLOWING);
+        newPoint.stylize(DisplayStyle.APPLYCURRENTVARIABLES);
+        newPoint.adjustSize();
+
         // Create the model object for the new point and link them
         const vtx = new SEAntipodalPoint(newPoint, this.parentPoint);
 
@@ -57,14 +57,14 @@ export default class AntipodalPointHandler extends Highlighter {
   }
   activate(): void {
     // If there is exactly one point selected, create its anitpode
-    if (this.store.getters.selectedObjects().length == 1) {
-      const object = this.store.getters.selectedObjects()[0];
+    if (this.store.getters.selectedSENodules().length == 1) {
+      const object = this.store.getters.selectedSENodules()[0];
       if (object instanceof SEPoint) {
         const newPoint = new Point();
         // Set the display to the default values
-        newPoint.stylize(DisplayStyle.DEFAULT);
-        // Set up the glowing display
-        newPoint.stylize(DisplayStyle.GLOWING);
+        newPoint.stylize(DisplayStyle.APPLYCURRENTVARIABLES);
+        newPoint.adjustSize();
+
         // Create the model object for the new point and link them
         const vtx = new SEAntipodalPoint(newPoint, object);
 

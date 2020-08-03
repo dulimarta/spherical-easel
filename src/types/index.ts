@@ -6,6 +6,7 @@ import { SELine } from "@/models/SELine";
 import { SECircle } from "@/models/SECircle";
 import { SESegment } from "@/models/SESegment";
 import { SENodule } from "@/models/SENodule";
+import Nodule from "@/plottables/Nodule";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import { Vector3 } from "three";
 import { SEMeasurement } from "@/models/SEMeasurement";
@@ -25,16 +26,16 @@ export interface AppState {
   previousActionMode: string;
   activeToolName: string;
   previousActiveToolName: string;
-  // nodes: SENodule[], Do we need this?
-  points: SEPoint[];
-  lines: SELine[];
-  segments: SESegment[];
-  circles: SECircle[];
-  nodules: SENodule[];
+  sePoints: SEPoint[];
+  seLines: SELine[];
+  seSegments: SESegment[];
+  seCircles: SECircle[];
+  seNodules: SENodule[];
   selections: SENodule[];
   intersections: SEIntersectionPoint[];
   measurements: SEMeasurement[];
   calculations: SECalculation[];
+  temporaryNodules: Nodule[];
 }
 /* This interface lists all the properties that each tool/button must have. */
 export interface ToolButtonType {
@@ -78,11 +79,18 @@ export interface OneDimensional {
  */
 export type SEOneDimensional = SELine | SESegment | SECircle;
 
+export type hslaColorType = {
+  h: number;
+  s: number;
+  l: number;
+  a: number;
+};
 /**
- * The
+ * There are three modes for updating. The DisplayOnly doesn't record information as the update(mode: , stateArray:[]) method is
+ * executed
  */
 export enum UpdateMode {
-  DisplayOnly,
+  DisplayOnly, // Record nothing in the state Array
   RecordStateForDelete, // All visited objects must be put into the stateArray
   RecordStateForMove // Only those objects which depend on more than their point parents need to record that information
 }

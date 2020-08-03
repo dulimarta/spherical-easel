@@ -5,14 +5,22 @@ import { SENodule } from "./SENodule";
 import { Vector3 } from "three";
 import SETTINGS from "@/global-settings";
 import { Styles } from "@/types/Styles";
-import { UpdateMode, UpdateStateType, PointState } from "@/types";
+import {
+  UpdateMode,
+  UpdateStateType,
+  PointState,
+  SEOneDimensional
+} from "@/types";
 
 let POINT_COUNT = 0;
 const styleSet = new Set([
-  Styles.pointFrontRadius,
-  Styles.pointBackRadius,
-  Styles.strokeColor
+  Styles.fillColor,
+  Styles.strokeColor,
+  Styles.pointRadiusPercent,
+  Styles.opacity,
+  Styles.dynamicBackStyle
 ]);
+
 export class SEPoint extends SENodule implements Visitable {
   /* This should be the only reference to the plotted version of this SEPoint */
   public ref: Point;
@@ -97,10 +105,28 @@ export class SEPoint extends SENodule implements Visitable {
     v.actionOnPoint(this);
   }
 
-  public isHitAt(unitIdealVector: Vector3): boolean {
+  public isHitAt(
+    unitIdealVector: Vector3,
+    currentMagnificationFactor: number
+  ): boolean {
     return (
       this._locationVector.distanceTo(unitIdealVector) <
-      SETTINGS.point.hitIdealDistance
+      SETTINGS.point.hitIdealDistance / currentMagnificationFactor
     );
+  }
+
+  // I wish the SENodule methods would work but I couldn't figure out how
+  // See the attempts in SENodule
+  public isFreePoint(): boolean {
+    return this._parents.length === 0;
+  }
+  public isOneDimensional(): this is SEOneDimensional {
+    return false;
+  }
+  public isPoint(): boolean {
+    return true;
+  }
+  public isPointOnOneDimensional(): false {
+    return false;
   }
 }

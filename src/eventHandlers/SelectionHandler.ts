@@ -1,6 +1,10 @@
 import MouseHandler from "./MouseHandler";
 import { SENodule } from "@/models/SENodule";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
+import EventBus from "@/eventHandlers/EventBus";
+// import { SEPoint } from "@/models/SEPoint";
+// import { SELine } from "@/models/SELine";
+// import { SESegment } from "@/models/SESegment";
 
 export default class SelectionHandler extends MouseHandler {
   /**
@@ -10,7 +14,10 @@ export default class SelectionHandler extends MouseHandler {
    */
   private currentSelection: SENodule[] = [];
 
+  // To make the objects appear normal for M ms and then glow for N ms we need two timers
   private highlightTimer: NodeJS.Timeout | null = null;
+  private highlightTimer2: NodeJS.Timeout | null = null;
+  private delayedStart: NodeJS.Timeout | null = null;
   private highlightOn = false;
   /**
    * An array to store the object selected by the key press handler
@@ -82,7 +89,7 @@ export default class SelectionHandler extends MouseHandler {
         this.currentSelection = this.hitSENodules.filter(n => n.selected);
       }
     }
-    this.store.commit.setSelectedObjects(this.currentSelection);
+    this.store.commit.setSelectedSENodules(this.currentSelection);
     /** 
     console.log("----selected---- objects------");
     this.currentSelection.forEach(n =>
@@ -93,15 +100,25 @@ export default class SelectionHandler extends MouseHandler {
     /* Enable/disable interval timer to flasher selected objects */
 
     if (this.currentSelection.length > 0 && this.highlightTimer === null) {
-      // We have selections and interval timer is not running, then start timer
-      this.highlightTimer = setInterval(this.blinkSelections.bind(this), 500);
+      // We have selections and interval timer is not running, then start timer and offset timer
+      this.highlightTimer = setInterval(this.blinkSelections.bind(this), 1500);
+      this.delayedStart = setTimeout(() => {
+        this.highlightTimer2 = setInterval(
+          this.blinkSelections.bind(this),
+          1500
+        );
+      }, 300);
     } else if (
       this.currentSelection.length === 0 &&
       this.highlightTimer !== null
     ) {
       // interval timer is running and we have no selections, then stop timer
       clearInterval(this.highlightTimer);
+      if (this.highlightTimer2) clearInterval(this.highlightTimer2);
+      if (this.delayedStart) clearInterval(this.delayedStart);
+      this.delayedStart = null;
       this.highlightTimer = null;
+      this.highlightTimer2 = null;
     }
   }
 
@@ -119,7 +136,7 @@ export default class SelectionHandler extends MouseHandler {
       this.keyPressSelection.forEach(n => (n as any).ref.normalDisplay());
     }
     super.mouseMoved(event);
-    this.hitSENodules = this.store.getters.findNearbyObjects(
+    this.hitSENodules = this.store.getters.findNearbySENodules(
       this.currentSphereVector,
       this.currentScreenVector
     );
@@ -129,7 +146,7 @@ export default class SelectionHandler extends MouseHandler {
     // );
     // Create an array of SENodules of all nearby objects by querying the store
     this.hitSENodules = this.store.getters
-      .findNearbyObjects(this.currentSphereVector, this.currentScreenVector)
+      .findNearbySENodules(this.currentSphereVector, this.currentScreenVector)
       .filter((n: SENodule) => {
         if (n instanceof SEIntersectionPoint) {
           if (!n.isUserCreated) {
@@ -154,17 +171,31 @@ export default class SelectionHandler extends MouseHandler {
   }
 
   deactivate(): void {
+    // Clear the timers
     if (this.highlightTimer !== null) {
       clearInterval(this.highlightTimer);
       this.highlightTimer = null;
+      if (this.highlightTimer2) clearInterval(this.highlightTimer2);
+      this.highlightTimer2 = null;
+      if (this.delayedStart) clearInterval(this.delayedStart);
+      this.delayedStart = null;
     }
     // Unselect all selected objects
-    this.store.getters.selectedObjects().forEach((obj: SENodule) => {
+    this.store.getters.selectedSENodules().forEach((obj: SENodule) => {
       obj.selected = false;
     });
     // Clear the selected objects array
-    this.store.commit.setSelectedObjects([]);
+    this.store.commit.setSelectedSENodules([]);
     this.currentSelection.clear();
+    // Do not clear the selections array here! If the right items are selected, then other tools automatically do their thing!
+    //  For example, if a point is selected with the selection tool, then when the antipode tool is
+    //  activated, it automatically creates the antipode of the selected point. The last thing each
+    //  tool does in its activate method is clear the selected array in the store.
+
+    // Remove the listener
     window.removeEventListener("keypress", this.keyPressHandler);
+    // If the user has been styling objects and then, without selecting new objects, activates
+    //  another tool, the style state should be saved.
+    EventBus.fire("save-style-state", {});
   }
 }

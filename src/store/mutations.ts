@@ -12,9 +12,10 @@ import { Vector3 } from "three";
 import { StyleOptions } from "@/types/Styles";
 import { LineNormalVisitor } from "@/visitors/LineNormalVisitor";
 import { SegmentNormalArcLengthVisitor } from "@/visitors/SegmentNormalArcLengthVisitor";
-import { UpdateMode } from "@/types";
 import { SEMeasurement } from "@/models/SEMeasurement";
 import { SECalculation } from "@/models/SECalculation";
+import { UpdateMode, UpdateStateType } from "@/types";
+import Nodule, { DisplayStyle } from "@/plottables/Nodule";
 
 // const tmpMatrix = new Matrix4();
 
@@ -29,16 +30,21 @@ export const initialState: AppState = {
   zoomMagnificationFactor: 1, // The CSSTransform magnification factor
   previousZoomMagnificationFactor: 1, // The previous CSSTransform magnification factor
   zoomTranslation: [0, 0], // The CSSTransform translation vector
-  nodules: [], // An array of all SENodules
+  seNodules: [], // An array of all SENodules
   selections: [], // An array of selected SENodules
   layers: [], // An array of Two.Group pointer to the layers in the twoInstance
-  points: [], // An array of all SEPoints
-  lines: [], // An array of all SELines
-  segments: [], // An array of all SESegments
-  circles: [], // An array of all SECircles
+  // points: [], // An array of all SEPoints
+  // lines: [], // An array of all SELines
+  // segments: [], // An array of all SESegments
+  // circles: [], // An array of all SECircles
   intersections: [], // An array of all SEPoints that are intersections of the one-dimensional objects in the arrangement
   measurements: [], // An array of measurements on objects
-  calculations: []
+  calculations: [],
+  sePoints: [], // An array of all SEPoints
+  seLines: [], // An array of all SELines
+  seSegments: [], // An array of all SESegments
+  seCircles: [], // An array of all SECircles
+  temporaryNodules: [] // An array of all Nodules that are temporary - created by the handlers.
 };
 //#endregion appState
 
@@ -52,15 +58,16 @@ export default {
     state.actionMode = "";
     state.activeToolName = "";
     // Do not clear the layers array!
-    state.nodules.clear();
-    state.points.clear();
-    state.lines.clear();
-    state.segments.clear();
-    state.circles.clear();
+    state.seNodules.clear();
+    state.sePoints.clear();
+    state.seLines.clear();
+    state.seSegments.clear();
+    state.seCircles.clear();
     state.selections.clear();
     state.intersections.clear();
     state.measurements.clear();
     state.calculations.clear();
+    //state.temporaryNodules.clear(); // Do not clear the temporaryNodules array because the constructors of the tools (handlers) place the temporary Nodules in this array *before* the this.init is called in App.vue mount.
   },
   setLayers(state: AppState, layers: Two.Group[]): void {
     state.layers = layers;
@@ -95,76 +102,81 @@ export default {
 
   //#region addPoint
   addPoint(state: AppState, point: SEPoint): void {
-    state.points.push(point);
-    state.nodules.push(point);
+    state.sePoints.push(point);
+    state.seNodules.push(point);
     point.ref.addToLayers(state.layers);
   },
   //#endregion addPoint
 
   removePoint(state: AppState, pointId: number): void {
-    const pos = state.points.findIndex(x => x.id === pointId);
-    const pos2 = state.nodules.findIndex(x => x.id === pointId);
+    const pos = state.sePoints.findIndex(x => x.id === pointId);
+    const pos2 = state.seNodules.findIndex(x => x.id === pointId);
     if (pos >= 0) {
-      const victimPoint = state.points[pos];
-      state.points.splice(pos, 1);
-      state.nodules.splice(pos2, 1);
+      const victimPoint = state.sePoints[pos];
+      state.sePoints.splice(pos, 1);
+      state.seNodules.splice(pos2, 1);
       // Remove the associated plottable (Nodule) object from being rendered
       victimPoint.ref.removeFromLayers();
     }
   },
 
   addLine(state: AppState, line: SELine): void {
-    state.lines.push(line);
-    state.nodules.push(line);
+    state.seLines.push(line);
+    state.seNodules.push(line);
     line.ref.addToLayers(state.layers);
   },
   removeLine(state: AppState, lineId: number): void {
-    const pos = state.lines.findIndex(x => x.id === lineId);
-    const pos2 = state.nodules.findIndex(x => x.id === lineId);
+    const pos = state.seLines.findIndex(x => x.id === lineId);
+    const pos2 = state.seNodules.findIndex(x => x.id === lineId);
     if (pos >= 0) {
       /* victim line is found */
-      const victimLine = state.lines[pos];
+      const victimLine = state.seLines[pos];
       victimLine.ref.removeFromLayers();
-      state.lines.splice(pos, 1); // Remove the line from the list
-      state.nodules.splice(pos2, 1);
+      state.seLines.splice(pos, 1); // Remove the line from the list
+      state.seNodules.splice(pos2, 1);
     }
   },
   addSegment(state: AppState, segment: SESegment): void {
-    state.segments.push(segment);
-    state.nodules.push(segment);
+    state.seSegments.push(segment);
+    state.seNodules.push(segment);
     segment.ref.addToLayers(state.layers);
   },
   removeSegment(state: AppState, segId: number): void {
-    const pos = state.segments.findIndex(x => x.id === segId);
-    const pos2 = state.nodules.findIndex(x => x.id === segId);
+    const pos = state.seSegments.findIndex(x => x.id === segId);
+    const pos2 = state.seNodules.findIndex(x => x.id === segId);
     if (pos >= 0) {
-      const victimSegment = state.segments[pos];
+      const victimSegment = state.seSegments[pos];
       victimSegment.ref.removeFromLayers();
-      state.segments.splice(pos, 1);
-      state.nodules.splice(pos2, 1);
+      state.seSegments.splice(pos, 1);
+      state.seNodules.splice(pos2, 1);
     }
   },
   addCircle(state: AppState, circle: SECircle): void {
-    state.circles.push(circle);
-    state.nodules.push(circle);
+    state.seCircles.push(circle);
+    state.seNodules.push(circle);
     circle.ref.addToLayers(state.layers);
   },
   removeCircle(state: AppState, circleId: number): void {
-    const circlePos = state.circles.findIndex(x => x.id === circleId);
-    const pos2 = state.nodules.findIndex(x => x.id === circleId);
+    const circlePos = state.seCircles.findIndex(x => x.id === circleId);
+    const pos2 = state.seNodules.findIndex(x => x.id === circleId);
     if (circlePos >= 0) {
       /* victim line is found */
-      const victimCircle: SECircle = state.circles[circlePos];
+      const victimCircle: SECircle = state.seCircles[circlePos];
       victimCircle.ref.removeFromLayers();
       // victimCircle.removeSelfSafely();
-      state.circles.splice(circlePos, 1); // Remove the line from the list
-      state.nodules.splice(pos2, 1);
+      state.seCircles.splice(circlePos, 1); // Remove the line from the list
+      state.seNodules.splice(pos2, 1);
     }
   },
+  // These are added to the store so that I can update the size of the temporary objects when there is a resize event.
+  addTemporaryNodule(state: AppState, nodule: Nodule): void {
+    state.temporaryNodules.push(nodule);
+  },
+  // The temporary nodules are added to the store when a handler is constructed, when are they removed? Do I need a removeTemporaryNodule?
   //#region rotateSphere
   rotateSphere(state: AppState, rotationMat: Matrix4): void {
     rotationVisitor.setTransform(rotationMat);
-    state.points.forEach((p: SEPoint) => {
+    state.sePoints.forEach((p: SEPoint) => {
       p.accept(rotationVisitor);
     });
   },
@@ -174,16 +186,16 @@ export default {
     move: { pointId: number; location: Vector3 }
   ): void {
     pointMoverVisitor.setNewLocation(move.location);
-    const pos = state.points.findIndex(x => x.id === move.pointId);
-    state.points[pos].accept(pointMoverVisitor);
+    const pos = state.sePoints.findIndex(x => x.id === move.pointId);
+    state.sePoints[pos].accept(pointMoverVisitor);
   },
   changeLineNormalVector(
     state: AppState,
     change: { lineId: number; normal: Vector3 }
   ): void {
     lineNormalVisitor.setNewNormal(change.normal);
-    const pos = state.lines.findIndex(x => x.id === change.lineId);
-    if (pos >= 0) state.lines[pos].accept(lineNormalVisitor);
+    const pos = state.seLines.findIndex(x => x.id === change.lineId);
+    if (pos >= 0) state.seLines[pos].accept(lineNormalVisitor);
   },
   changeSegmentNormalVectorArcLength(
     state: AppState,
@@ -191,75 +203,86 @@ export default {
   ): void {
     segmentNormalArcLengthVisitor.setNewNormal(change.normal);
     segmentNormalArcLengthVisitor.setNewArcLength(change.arcLength);
-    const pos = state.segments.findIndex(x => x.id === change.segmentId);
-    if (pos >= 0) state.segments[pos].accept(segmentNormalArcLengthVisitor);
+    const pos = state.seSegments.findIndex(x => x.id === change.segmentId);
+    if (pos >= 0) state.seSegments[pos].accept(segmentNormalArcLengthVisitor);
   },
-  setSelectedObjects(state: AppState, payload: SENodule[]): void {
+  setSelectedSENodules(state: AppState, payload: SENodule[]): void {
     state.selections.splice(0);
     state.selections.push(...payload);
   },
   // Update the display of all free SEPoints to update the entire display
   updateDisplay(state: AppState): void {
-    state.nodules
+    state.seNodules
       .filter(obj => obj.isFreePoint())
-      .forEach(obj =>
-        obj.update({ mode: UpdateMode.DisplayOnly, stateArray: [] })
-      );
-  },
-  // TODO: combine the following changeXXXX functions
-  changeStrokeWidth(state: AppState, percent: number): void {
-    const opt: StyleOptions = {
-      strokeWidthPercentage: percent
-    };
-    state.selections
-      .filter(n => !(n instanceof SEPoint))
-      .map(n => n as SEOneDimensional) // TODO: handle other object types
-      .forEach((n: SEOneDimensional) => {
-        // console.debug(`Changing stroke width of ${n.name} to ${width}`);
-        n.ref.updateStyle(opt);
+      .forEach(obj => {
+        // First mark the kids out of date so that the update method does a topological sort
+        obj.markKidsOutOfDate();
+        obj.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
       });
   },
-  changeColor(
+  changeStyle(
     state: AppState,
-    { color, props }: { color: string; props: string[] }
+    {
+      selected, // The selected SENodules that this change applies to, passing this as a argument allows styling to be undone.
+      front,
+      strokeWidthPercent,
+      strokeColor,
+      fillColor,
+      dashArray,
+      opacity,
+      dynamicBackStyle,
+      pointRadiusPercent,
+      backStyleContrast
+    }: {
+      selected: SENodule[];
+      front: boolean;
+      strokeWidthPercent: number | undefined;
+      strokeColor: string | undefined;
+      fillColor: string | undefined;
+      dashArray: number[] | undefined;
+      opacity: number | undefined;
+      dynamicBackStyle: boolean | undefined;
+      pointRadiusPercent: number | undefined;
+      backStyleContrast: number | undefined;
+    }
   ): void {
-    const opt: any = {};
-    props.forEach(s => {
-      opt[s] = color;
-    });
-    state.selections
-      .filter(n => !(n instanceof SEPoint))
-      .map(n => n as SEOneDimensional) // TODO: handle other object types
-      .forEach((n: SEOneDimensional) => {
-        // console.debug(`Changing stroke color of ${n.name} to ${color}`);
-        n.ref.updateStyle(opt);
-      });
-  },
-  changeDashPattern(state: AppState, dashPattern: number[]): void {
-    const opt: StyleOptions = {
-      dashPattern
+    const opt: any = {
+      front: front,
+      strokeWidthPercent: strokeWidthPercent,
+      strokeColor: strokeColor,
+      fillColor: fillColor,
+      dashArray: dashArray,
+      opacity: opacity,
+      dynamicBackStyle: dynamicBackStyle,
+      pointRadiusPercent: pointRadiusPercent
     };
-    state.selections
-      .filter(n => !(n instanceof SEPoint))
-      .map(n => n as SEOneDimensional) // TODO: handle other object types
-      .forEach((n: SEOneDimensional) => {
-        // console.debug(`Changing stroke color of ${n.name} to ${color}`);
-        n.ref.updateStyle(opt);
+    if (
+      backStyleContrast &&
+      backStyleContrast != Nodule.getBackStyleContrast()
+    ) {
+      // Update all Nodules because more than just the selected nodules depend on the backStyleContrast
+      Nodule.setBackStyleContrast(backStyleContrast);
+      state.seNodules.forEach((n: SENodule) => {
+        n.ref.stylize(DisplayStyle.APPLYCURRENTVARIABLES);
       });
+      selected.forEach((n: SENodule) => {
+        n.ref.updateStyle(opt as StyleOptions);
+      });
+    }
   },
 
   addMeasurement(state: AppState, measurement: SEMeasurement): void {
     state.measurements.push(measurement);
-    state.nodules.push(measurement);
+    state.seNodules.push(measurement);
   },
 
   removeMeasurement(state: AppState, measId: number): void {
     const pos = state.measurements.findIndex(x => x.id === measId);
-    const pos2 = state.nodules.findIndex(x => x.id === measId);
+    const pos2 = state.seNodules.findIndex(x => x.id === measId);
     if (pos >= 0) {
       // const victimSegment = state.measurements[pos];
       state.measurements.splice(pos, 1);
-      state.nodules.splice(pos2, 1);
+      state.seNodules.splice(pos2, 1);
     }
   },
 
