@@ -11,7 +11,7 @@ import SETTINGS, { LAYER } from "@/global-settings";
 import { State } from "vuex-class";
 import AppStore from "@/store";
 import { ZoomSphereCommand } from "@/commands/ZoomSphereCommand";
-
+import { Command } from "@/commands/Command";
 import { ToolStrategy } from "@/eventHandlers/ToolStrategy";
 import SelectionHandler from "@/eventHandlers/SelectionHandler";
 import PointHandler from "@/eventHandlers/PointHandler";
@@ -323,16 +323,30 @@ export default class SphereFrame extends VueComponent {
     this.store.commit("setZoomTranslation", newTranslationVector);
     // Update the display
     this.updateView();
-    //EventBus.fire("zoom-updated", {});
-    // Store the zoom as a command that can be undone or redone
-    const zoomCommand = new ZoomSphereCommand(
-      newMagFactor,
-      newTranslationVector,
-      currentMagFactor,
-      currentTranslationVector
-    );
-    // Push the command on to the command stack, but do not execute it because it has already been enacted
-    zoomCommand.push();
+    // Query to see if the last command on the stack was also a zoom sphere command. If it was, simply update that command with the new
+    // magnification factor and translations vector. If the last command wasn't a zoom sphere command, push a new one onto the stack.
+    const commandStackLength = Command.commandHistory.length;
+    if (
+      Command.commandHistory[commandStackLength - 1] instanceof
+      ZoomSphereCommand
+    ) {
+      (Command.commandHistory[
+        commandStackLength - 1
+      ] as ZoomSphereCommand).setMagnificationFactor = newMagFactor;
+      (Command.commandHistory[
+        commandStackLength - 1
+      ] as ZoomSphereCommand).setTranslationVector = newTranslationVector;
+    } else {
+      // Store the zoom as a command that can be undone or redone
+      const zoomCommand = new ZoomSphereCommand(
+        newMagFactor,
+        newTranslationVector,
+        currentMagFactor,
+        currentTranslationVector
+      );
+      // Push the command on to the command stack, but do not execute it because it has already been enacted
+      zoomCommand.push();
+    }
   }
   handleMouseMoved(e: MouseEvent): void {
     // Only process events from the left (inner) mouse button to avoid adverse interactions with any pop-up menu

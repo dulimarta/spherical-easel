@@ -21,11 +21,18 @@ export class ZoomSphereCommand extends Command {
     }
   }
 
+  set setMagnificationFactor(mag: number) {
+    this.magnificationFactor = mag;
+  }
+  set setTranslationVector(transVec: number[]) {
+    for (let i = 0; i < 2; i++) {
+      this.translationVector[i] = transVec[i];
+    }
+  }
   do(): void {
     Command.store.dispatch("changeZoomFactor", this.magnificationFactor);
     Command.store.commit("setZoomTranslation", this.translationVector);
     EventBus.fire("zoom-updated", {});
-    //Command.store.commit("zoomSphere");
   }
 
   saveState(): void {
