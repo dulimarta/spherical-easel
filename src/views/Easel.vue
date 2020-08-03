@@ -228,8 +228,6 @@ import Circle from "@/plottables/Circle";
 import Point from "@/plottables/Point";
 import Line from "@/plottables/Line";
 import Segment from "@/plottables/Segment";
-import { State } from "vuex-class";
-import { SENodule } from "../models/SENodule";
 import Nodule from "@/plottables/Nodule";
 
 // import { getModule } from "vuex-module-decorators";
@@ -313,6 +311,10 @@ export default class Easel extends Vue {
   private enableZoomFit(): void {
     this.displayZoomFitToolUseMessage = true;
     this.store.commit.setActionMode({ id: "zoomFit", name: "Zoom Fit" });
+<<<<<<< HEAD
+=======
+
+>>>>>>> 53be2f083ea86c5da63770c7fd8e36bc775ad494
   }
   private adjustSize(): void {
     this.availHeight =

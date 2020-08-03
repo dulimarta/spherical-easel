@@ -257,10 +257,10 @@ export default {
       state.seNodules.forEach((n: SENodule) => {
         n.ref.stylize(DisplayStyle.APPLYCURRENTVARIABLES);
       });
-      selected.forEach((n: SENodule) => {
-        n.ref.updateStyle(opt as StyleOptions);
-      });
     }
+    selected.forEach((n: SENodule) => {
+      n.ref.updateStyle(opt as StyleOptions);
+    });
   },
 
   addMeasurement(state: AppState, measurement: SEMeasurement): void {

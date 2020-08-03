@@ -247,7 +247,10 @@ export default class IntersectionPointHandler extends Highlighter {
       const object2 = this.store.getters.selectedSENodules()[1];
 
       if (object1.isOneDimensional() && object2.isOneDimensional()) {
-        this.doIntersection(object1, object2);
+        this.doIntersection(
+          object1 as SEOneDimensional,
+          object2 as SEOneDimensional
+        );
       }
     }
     // Unselect the selected objects and clear the selectedObject array

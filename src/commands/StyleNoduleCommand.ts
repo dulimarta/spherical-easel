@@ -67,7 +67,7 @@ export class StyleNoduleCommand extends Command {
 
   do(): void {
     for (let i = 0; i < this.seNodules.length; i++) {
-      Command.store.commit("changeStyle", {
+      Command.store.commit.changeStyle({
         selected: [this.seNodules[i]],
         front: this.side,
         strokeWidthPercent: this.currentStyles[i].strokeWidthPercent,
@@ -89,7 +89,7 @@ export class StyleNoduleCommand extends Command {
   restoreState(): void {
     console.log("seNodules", this.seNodules);
     for (let i = 0; i < this.seNodules.length; i++) {
-      Command.store.commit("changeStyle", {
+      Command.store.commit.changeStyle({
         selected: [this.seNodules[i]],
         front: this.side,
         strokeWidthPercent: this.pastStyles[i].strokeWidthPercent,

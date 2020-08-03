@@ -104,7 +104,7 @@ export class SEPointOnOneDimensional extends SEPoint {
 
   // I wish the SENodule methods would work but I couldn't figure out how
   // See the attempts in SENodule
-  public isPointOnOneDimensional() {
-    return true;
-  }
+  // public isPointOnOneDimensional() {
+  // return true;
+  // }
 }

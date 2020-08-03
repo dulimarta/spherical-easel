@@ -216,6 +216,13 @@ export default class SelectionHandler extends MouseHandler {
       if (this.delayedStart) clearInterval(this.delayedStart);
       this.delayedStart = null;
     }
+    // Unselect all selected objects
+    this.store.getters.selectedSENodules().forEach((obj: SENodule) => {
+      obj.selected = false;
+    });
+    // Clear the selected objects array
+    this.store.commit.setSelectedSENodules([]);
+    this.currentSelection.clear();
     // Do not clear the selections array here! If the right items are selected, then other tools automatically do their thing!
     //  For example, if a point is selected with the selection tool, then when the antipode tool is
     //  activated, it automatically creates the antipode of the selected point. The last thing each

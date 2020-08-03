@@ -37,7 +37,7 @@ export abstract class Command {
     // Update the free points to update the display so that individual command and visitors do
     // not have to update the display in the middle of undoing or redoing a command (this middle stuff causes
     // problems with the move *redo*)
-    Command.store.commit("updateDisplay");
+    Command.store.commit.updateDisplay();
     EventBus.fire("undo-enabled", { value: Command.commandHistory.length > 0 });
     EventBus.fire("redo-enabled", { value: Command.redoHistory.length > 0 });
   }
@@ -57,10 +57,7 @@ export abstract class Command {
     // Update the free points to update the display so that individual command and visitors do
     // not have to update the display in the middle of undoing or redoing a command (this middle stuff causes
     // problems with the move *redo*)
-    Command.store.commit("updateDisplay");
-
-    EventBus.fire("undo-enabled", { value: Command.commandHistory.length > 0 });
-    EventBus.fire("redo-enabled", { value: Command.redoHistory.length > 0 });
+    Command.store.commit.updateDisplay();
   }
   //#endregion redo
 

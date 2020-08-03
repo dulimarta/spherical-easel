@@ -90,16 +90,16 @@ export default class SegmentHandler extends Highlighter {
     super(layers);
     this.tempSegment = new Segment();
     this.tempSegment.stylize(DisplayStyle.APPLYTEMPORARYVARIABLES);
-    this.store.commit("addTemporaryNodule", this.tempSegment);
+    this.store.commit.addTemporaryNodule(this.tempSegment);
     this.isTemporarySegmentAdded = false;
     this.isDragging = false;
     // Create and style the temporary points marking the start/end of an object being created
     this.startMarker = new Point();
     this.startMarker.stylize(DisplayStyle.APPLYTEMPORARYVARIABLES);
-    this.store.commit("addTemporaryNodule", this.startMarker);
+    this.store.commit.addTemporaryNodule(this.startMarker);
     this.endMarker = new Point();
     this.endMarker.stylize(DisplayStyle.APPLYTEMPORARYVARIABLES);
-    this.store.commit("addTemporaryNodule", this.endMarker);
+    this.store.commit.addTemporaryNodule(this.endMarker);
   }
 
   mousePressed(event: MouseEvent): void {

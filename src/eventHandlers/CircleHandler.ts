@@ -66,14 +66,14 @@ export default class CircleHandler extends Highlighter {
     this.temporaryCircle = new Circle();
     // Set the style using the temporary defaults
     this.temporaryCircle.stylize(DisplayStyle.APPLYTEMPORARYVARIABLES);
-    this.store.commit("addTemporaryNodule", this.temporaryCircle);
+    this.store.commit.addTemporaryNodule(this.temporaryCircle);
     // Create and style the temporary points marking the start/end of an object being created
     this.startMarker = new Point();
     this.startMarker.stylize(DisplayStyle.APPLYTEMPORARYVARIABLES);
-    this.store.commit("addTemporaryNodule", this.startMarker);
+    this.store.commit.addTemporaryNodule(this.startMarker);
     this.endMarker = new Point();
     this.endMarker.stylize(DisplayStyle.APPLYTEMPORARYVARIABLES);
-    this.store.commit("addTemporaryNodule", this.endMarker);
+    this.store.commit.addTemporaryNodule(this.endMarker);
   }
 
   mousePressed(event: MouseEvent): void {

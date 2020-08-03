@@ -207,11 +207,11 @@ export abstract class SENodule {
   }
 
   //Should return true only if this is an instance of SEPointOnOneDimensional
-  public abstract isPointOnOneDimensional(): boolean;
+  // public abstract isPointOnOneDimensional(): boolean;
   // This doesn't work
-  // public isPointOnOneDimensional(): this is SEPointOnOneDimensional {
-  //   return true;
-  // }
+  public isPointOnOneDimensional(): this is SEPointOnOneDimensional {
+    return true;
+  }
 
   // Only returns true if this is an SEPoint and this has no parents
   public abstract isFreePoint(): boolean;
@@ -236,7 +236,9 @@ export abstract class SENodule {
     return this._parents.every(n => n.isFreePoint());
   }
 
-  public abstract isOneDimensional(): boolean;
+  public isOneDimensional(): this is SEOneDimensional {
+    return true;
+  }
   // This doesn't work return true for SEPoint
   // public isOneDimensional(): this is SEOneDimensional {
   //   return true;

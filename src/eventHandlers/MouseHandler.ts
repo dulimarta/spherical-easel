@@ -50,7 +50,6 @@ export default abstract class MouseHandler implements ToolStrategy {
   protected hitSELines: SELine[] = [];
   protected hitSESegments: SESegment[] = [];
   protected hitSECircles: SECircle[] = [];
-  
 
   /**
    * Holds the layers for each type of object, background, glowing background, etc..

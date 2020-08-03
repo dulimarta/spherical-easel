@@ -3,13 +3,13 @@
     <div v-if="!minified" key="full">
       <v-expansion-panels :value="selectedPanel">
         <v-expansion-panel v-for="(p, idx) in panels" :key="idx">
-          <v-expansion-panel-header
-            color="blue lighten-3"
-            :key="`header${idx}`"
-            @click="saveStyleState"
-          >{{ $t(p.i18n_key) }}</v-expansion-panel-header>
-          <v-expansion-panel-content :color="panelBackgroundColor(idx)" :key="`content${idx}`">
-            <component :is="p.component" :side="frontPanel(idx)"></component>
+          <v-expansion-panel-header color="blue lighten-3"
+            :key="`header${idx}`" @click="saveStyleState">
+            {{ $t(p.i18n_key) }}</v-expansion-panel-header>
+          <v-expansion-panel-content :color="panelBackgroundColor(idx)"
+            :key="`content${idx}`">
+            <component :is="p.component" :side="p.isFront">
+            </component>
           </v-expansion-panel-content>
         </v-expansion-panel>
       </v-expansion-panels>
@@ -36,15 +36,18 @@ export default class Style extends Vue {
   private readonly panels = [
     {
       i18n_key: "style.foregroundStyle",
-      component: () => import("@/components/FrontStyle.vue")
+      component: () => import("@/components/FrontStyle.vue"),
+      isFront: true
     },
     {
       i18n_key: "style.backgroundStyle",
-      component: () => import("@/components/FrontStyle.vue") // Note: The frontPanel(idx) returns false for this panel - setting the panel to back side
+      component: () => import("@/components/FrontStyle.vue"), // Note: The frontPanel(idx) returns false for this panel - setting the panel to back side
+      isFront: false
     },
     {
       i18n_key: "style.advancedStyle",
-      component: () => import("@/components/AdvancedStyle.vue")
+      component: () => import("@/components/AdvancedStyle.vue"),
+      isFront: undefined
     }
   ];
 
@@ -52,13 +55,13 @@ export default class Style extends Vue {
   saveStyleState(): void {
     EventBus.fire("save-style-state", {});
   }
-  frontPanel(idx: number): boolean {
-    if (idx == 0) {
-      return SETTINGS.style.frontFace;
-    } else {
-      return SETTINGS.style.backFace;
-    }
-  }
+  // frontPanel(idx: number): boolean {
+  //   if (idx == 0) {
+  //     return SETTINGS.style.frontFace;
+  //   } else {
+  //     return SETTINGS.style.backFace;
+  //   }
+  // }
   panelBackgroundColor(idx: number): string {
     if (idx == 1) {
       return "grey darken-2";

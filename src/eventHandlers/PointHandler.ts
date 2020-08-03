@@ -22,7 +22,7 @@ export default class PointHandler extends Highlighter {
     // Create and style the temporary points marking the object being created
     this.startMarker = new Point();
     this.startMarker.stylize(DisplayStyle.APPLYTEMPORARYVARIABLES);
-    this.store.commit("addTemporaryNodule", this.startMarker);
+    this.store.commit.addTemporaryNodule(this.startMarker);
   }
 
   mousePressed(event: MouseEvent): void {

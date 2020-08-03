@@ -77,16 +77,16 @@ export default class LineHandler extends Highlighter {
     // Create and style the temporary line
     this.tempLine = new Line();
     this.tempLine.stylize(DisplayStyle.APPLYTEMPORARYVARIABLES);
-    this.store.commit("addTemporaryNodule", this.tempLine);
+    this.store.commit.addTemporaryNodule(this.tempLine);
     this.isTemporaryLineAdded = false;
     this.isDragging = false;
     // Create and style the temporary points marking the start/end of an object being created
     this.startMarker = new Point();
     this.startMarker.stylize(DisplayStyle.APPLYTEMPORARYVARIABLES);
-    this.store.commit("addTemporaryNodule", this.startMarker);
+    this.store.commit.addTemporaryNodule(this.startMarker);
     this.endMarker = new Point();
     this.endMarker.stylize(DisplayStyle.APPLYTEMPORARYVARIABLES);
-    this.store.commit("addTemporaryNodule", this.endMarker);
+    this.store.commit.addTemporaryNodule(this.endMarker);
   }
   //eslint-disable-next-line
   mousePressed(event: MouseEvent): void {

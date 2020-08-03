@@ -5,7 +5,12 @@ import { SENodule } from "./SENodule";
 import { Vector3 } from "three";
 import SETTINGS from "@/global-settings";
 import { Styles } from "@/types/Styles";
-import { UpdateMode, UpdateStateType, PointState } from "@/types";
+import {
+  UpdateMode,
+  UpdateStateType,
+  PointState,
+  SEOneDimensional
+} from "@/types";
 
 let POINT_COUNT = 0;
 const styleSet = new Set([
@@ -112,16 +117,16 @@ export class SEPoint extends SENodule implements Visitable {
 
   // I wish the SENodule methods would work but I couldn't figure out how
   // See the attempts in SENodule
-  public isFreePoint() {
+  public isFreePoint(): boolean {
     return this._parents.length === 0;
   }
-  public isOneDimensional() {
+  public isOneDimensional(): this is SEOneDimensional {
     return false;
   }
-  public isPoint() {
+  public isPoint(): boolean {
     return true;
   }
-  public isPointOnOneDimensional() {
+  public isPointOnOneDimensional(): false {
     return false;
   }
 }
