@@ -6,7 +6,8 @@
   <transition name="slide-out" mode="out-in">
     <div v-if="!minified" key="full">
       <!-- Two tabs set up TODO: fix the behavior of the tabs-->
-      <v-tabs v-model="activeLeftDrawerTab" centered grow>
+      <v-tabs v-model="activeLeftDrawerTab" centered grow
+        @change="switchTab">
         <v-tooltip bottom :open-delay="toolTipOpenDelay"
           :close-delay="toolTipCloseDelay">
           <template v-slot:activator="{ on }">
@@ -57,7 +58,7 @@ export default class Toolbox extends Vue {
   @Prop()
   readonly minified!: boolean;
 
-  // @State
+  // ('layers')')
   // private layers!: Two.Group[];
 
   private leftDrawerMinified = false;
@@ -69,6 +70,12 @@ export default class Toolbox extends Vue {
 
   mounted(): void {
     // this.scene = this.layers[LAYER.midground];
+  }
+
+  switchTab(): void {
+    if (this.activeLeftDrawerTab === "objectListTab") {
+      this.$store.direct.commit.setActionMode({ id: "move", name: "Move Tool" })
+    }
   }
 }
 </script>

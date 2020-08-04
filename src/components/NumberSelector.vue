@@ -76,7 +76,7 @@ export default class NumberSelector extends Vue {
   @Prop({ required: true }) readonly maxValue!: number;
   @Prop() readonly step?: number
 
-  @State
+  @State('selections')
   readonly selections!: SENodule[]
   /**
      * When the selected objects are first processed by the style panel their style state is recorded here

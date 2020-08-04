@@ -203,16 +203,16 @@ import { SENodule } from '@/models/SENodule';
 })
 export default class Easel extends Vue {
   readonly store = this.$store.direct;
-  @State
+  @State('sePoints')
   readonly points!: SENodule[];
 
-  @State
+  @State('seLines')
   readonly lines!: SENodule[];
 
-  @State
+  @State('seSegments')
   readonly segments!: SENodule[];
 
-  @State
+  @State('seCircles')
   readonly circles!: SENodule[];
 
   // readonly UIModule = getModule(UI, this.$store);
@@ -353,7 +353,7 @@ export default class Easel extends Vue {
 
   //#region resizePlottables
   resizePlottables(e: any): void {
-    const oldFactor = this.$store.getters.previousZoomMagnificationFactor();
+    const oldFactor = this.store.state.previousZoomMagnificationFactor;
     // Update the current stroke widths in each plottable class
     Line.updateCurrentStrokeWidthForZoom(oldFactor / e.factor);
     Segment.updateCurrentStrokeWidthForZoom(oldFactor / e.factor);

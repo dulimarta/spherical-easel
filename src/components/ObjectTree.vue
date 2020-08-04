@@ -87,25 +87,25 @@ export default class ObjectTree extends Vue {
   // private selection = [];
   private parser = new ExpressionParser();
 
-  @State
+  @State('sePoints')
   readonly points!: SENodule[];
 
-  @State
+  @State('seLines')
   readonly lines!: SENodule[];
 
-  @State
+  @State('seSegments')
   readonly segments!: SENodule[];
 
-  @State
+  @State('seCircles')
   readonly circles!: SENodule[];
 
-  @State
+  @State('seNodules')
   readonly nodules!: SENodule[];
 
-  @State
+  @State('measurements')
   readonly measurements!: SEMeasurement[];
 
-  @State
+  @State('calculations')
   readonly calculations!: SECalculation[];
 
   private calcExpression = "";
@@ -114,8 +114,9 @@ export default class ObjectTree extends Vue {
   private parsingError = "";
   private timerInstance: NodeJS.Timeout | null = null;
   readonly varMap = new Map<string, number>();
+
   get zeroObjects(): boolean {
-    return this.nodules.filter(n => n.exists).length === 0 || this.calculations.length === 0;
+    return this.nodules.filter(n => n.exists).length === 0 && this.calculations.length === 0;
   }
 
   calculateExpression(): void {

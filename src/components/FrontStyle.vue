@@ -331,7 +331,7 @@ export default class FrontStyle extends Vue {
   @Prop()
   readonly side!: boolean;
 
-  @State
+  @State('selections')
   readonly selections!: SENodule[];
   // The old selection to help with undo/redo commands
   private oldSelection: SENodule[] = [];
