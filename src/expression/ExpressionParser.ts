@@ -260,7 +260,6 @@ export class ExpressionParser {
         };
       } else if (token.value.kind === TokenType.MEASUREMENT) {
         // TODO: look up the actual value of measurement
-        console.debug("Var/Measurement", token.value.text);
         const out = token.value;
         token = tokenizer.next();
         return { node: out };

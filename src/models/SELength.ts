@@ -27,5 +27,7 @@ export class SELength extends SEMeasurement {
     if (!this.canUpdateNow()) return;
     const pos = this.name.lastIndexOf("):");
     this.name = this.name.substring(0, pos + 2) + this.length();
+    this.setOutOfDate(false);
+    this.updateKids(state);
   };
 }
