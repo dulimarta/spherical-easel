@@ -1,49 +1,86 @@
 <template>
   <div>
     <div class="text-subtitle-2">{{ $t(titleKey) }}</div>
-    <div v-show="totalyDisableSelector">
-      {{ $t("style.selectAnObject") }}
-    </div>
-    <v-tooltip v-if="!styleDataAgreement" bottom
-      :open-delay="toolTipOpenDelay" :close-delay="toolTipCloseDelay"
-      max-width="400px">
+    <div
+      v-show="totalyDisableSelector"
+      class="select-an-object-text"
+    >{{ $t("style.selectAnObject") }}</div>
+    <v-tooltip
+      v-if="!styleDataAgreement"
+      bottom
+      :open-delay="toolTipOpenDelay"
+      :close-delay="toolTipCloseDelay"
+      max-width="400px"
+    >
       k
       <template v-slot:activator="{ on }">
-        <v-btn color="error" v-on="on" v-show="!totalyDisableSelector" text
-          small outlined ripple @click="setStyleDataAgreement">
-          {{ $t("style.differingStylesDetected") }}
-        </v-btn>
+        <v-btn
+          color="error"
+          v-on="on"
+          v-show="!totalyDisableSelector"
+          text
+          small
+          outlined
+          ripple
+          @click="setStyleDataAgreement"
+        >{{ $t("style.differingStylesDetected") }}</v-btn>
       </template>
       <span>{{ $t("style.differingStylesDetectedToolTip") }}</span>
     </v-tooltip>
 
-    <v-tooltip bottom :open-delay="toolTipOpenDelay"
-      :close-delay="toolTipCloseDelay" max-width="400px">
+    <v-tooltip
+      bottom
+      :open-delay="toolTipOpenDelay"
+      :close-delay="toolTipCloseDelay"
+      max-width="400px"
+    >
       <template v-slot:activator="{ on }">
-        <v-btn v-on="on" v-show="styleDataAgreement && !totalyDisableSelector
-            " @click="clearChanges" text outlined ripple small>
-          {{ $t("style.clearChanges") }}
-        </v-btn>
+        <v-btn
+          v-on="on"
+          v-show="styleDataAgreement && !totalyDisableSelector
+            "
+          @click="clearChanges"
+          text
+          outlined
+          ripple
+          small
+        >{{ $t("style.clearChanges") }}</v-btn>
       </template>
       <span>{{ $t("style.clearChangesToolTip") }}</span>
     </v-tooltip>
 
-    <v-tooltip bottom :open-delay="toolTipOpenDelay"
-      :close-delay="toolTipCloseDelay" max-width="400px">
+    <v-tooltip
+      bottom
+      :open-delay="toolTipOpenDelay"
+      :close-delay="toolTipCloseDelay"
+      max-width="400px"
+    >
       <template v-slot:activator="{ on }">
-        <v-btn v-on="on" v-show="styleDataAgreement && !totalyDisableSelector
-            " @click="resetToDefaults" text small outlined ripple>
-          {{ $t("style.restoreDefaults") }}
-        </v-btn>
+        <v-btn
+          v-on="on"
+          v-show="styleDataAgreement && !totalyDisableSelector
+            "
+          @click="resetToDefaults"
+          text
+          small
+          outlined
+          ripple
+        >{{ $t("style.restoreDefaults") }}</v-btn>
       </template>
       <span>{{ $t("style.restoreDefaultsToolTip") }}</span>
     </v-tooltip>
     <br />
 
-    <v-slider v-model.number="styleData" :min="minValue"
+    <v-slider
+      v-model.number="styleData"
+      :min="minValue"
       :disabled="!styleDataAgreement ||totalyDisableSelector"
-      @change="onDataChanged" :max="maxValue" :step="step" type="range"
-      class="mt-8">
+      @change="onDataChanged"
+      :max="maxValue"
+      :step="step"
+      type="range"
+      class="mt-8"
+    >
       <template v-slot:prepend>
         <v-icon @click="decrementDataValue">mdi-minus</v-icon>
       </template>
@@ -56,38 +93,38 @@
 </template>
 
 <script lang="ts">
-import Vue from 'vue'
-import Component from 'vue-class-component';
+import Vue from "vue";
+import Component from "vue-class-component";
 import SETTINGS from "@/global-settings";
-import { Watch, Prop, PropSync } from "vue-property-decorator"
+import { Watch, Prop, PropSync } from "vue-property-decorator";
 import { StyleOptions, Styles } from "@/types/Styles";
 import { State } from "vuex-class";
-import { SENodule } from "@/models/SENodule"
+import { SENodule } from "@/models/SENodule";
 
 @Component({})
 export default class NumberSelector extends Vue {
-
   @Prop() readonly frontSide!: boolean;
-  @Prop() readonly titleKey!: string
-  @Prop({ required: true }) readonly initialStyleStates!: StyleOptions[]
-  @Prop({ required: true }) readonly styleName!: string
-  @PropSync('data', { type: Number }) styleData?: number | undefined;
+  @Prop() readonly titleKey!: string;
+  @Prop({ required: true }) readonly initialStyleStates!: StyleOptions[];
+  @Prop({ required: true }) readonly defaultStyleStates!: StyleOptions[];
+  @Prop({ required: true }) readonly styleName!: string;
+  @PropSync("data", { type: Number }) styleData?: number | undefined;
   @Prop({ required: true }) readonly minValue!: number;
   @Prop({ required: true }) readonly maxValue!: number;
-  @Prop() readonly step?: number
+  @Prop() readonly step?: number;
 
   @State
-  readonly selections!: SENodule[]
+  readonly selections!: SENodule[];
   /**
-     * When the selected objects are first processed by the style panel their style state is recorded here
-     * this is so we can undo the styling changes and have a revert to initial state button
-     */
+   * When the selected objects are first processed by the style panel their style state is recorded here
+   * this is so we can undo the styling changes and have a revert to initial state button
+   */
   // private initialStyleStates: StyleOptions[] = [];
   /**
    * These are the default style state for the selected objects.
    */
   // private styleName!: string;
-  private defaultStyleStates: StyleOptions[] = [];
+  //private defaultStyleStates: StyleOptions[] = [];
 
   readonly toolTipOpenDelay = SETTINGS.toolTip.openDelay;
   readonly toolTipCloseDelay = SETTINGS.toolTip.closeDelay;
@@ -103,9 +140,8 @@ export default class NumberSelector extends Vue {
   beforeUpdate(): void {
     // console.debug("beforeUpdate", this.styleData);
     // Make a copy of the initial state
-    if (this.defaultStyleStates.length !== this.initialStyleStates.length)
-      this.defaultStyleStates = this.initialStyleStates.slice();
-
+    // if (this.defaultStyleStates.length !== this.initialStyleStates.length)
+    // this.defaultStyleStates = this.initialStyleStates.slice();
   }
   // These methods are linked to the styleData fade-in-card
   onDataChanged(): void {
@@ -131,16 +167,19 @@ export default class NumberSelector extends Vue {
     this.styleDataAgreement = true;
     this.totalyDisableSelector = false;
 
-    this.styleData = this.styleName in styleState[0] ? (styleState[0] as any)[this.styleName] : undefined;
+    this.styleData =
+      this.styleName in styleState[0]
+        ? (styleState[0] as any)[this.styleName]
+        : undefined;
     // screen for undefined - if undefined then this is not a property that is going to be set by the style panel for this selection of objects
     if (this.styleData) {
-      if (styleState.length > 1 &&
+      if (
+        styleState.length > 1 &&
         !styleState.every(
-          styleObject =>
-            (styleObject as any)[this.styleName] === this.styleData
+          styleObject => (styleObject as any)[this.styleName] === this.styleData
         )
       ) {
-        // The style property exists on the selected objects but value 
+        // The style property exists on the selected objects but value
         // doesn't agree (so don't totally disable the selector)
         this.disableSelector(false);
       }
@@ -200,14 +239,19 @@ export default class NumberSelector extends Vue {
   @Watch("selections")
   onSelectionChanged(newSelection: SENodule[]): void {
     if (newSelection.length === 0) {
-      this.disableSelector(true)
+      this.disableSelector(true);
       return;
     }
 
-    this.setSelectorState(this.initialStyleStates)
+    this.setSelectorState(this.initialStyleStates);
   }
 }
 </script>
 
 <style lang="scss" scoped>
+@import "@/scss/variables.scss";
+
+.select-an-object-text {
+  color: rgb(255, 82, 82);
+}
 </style>

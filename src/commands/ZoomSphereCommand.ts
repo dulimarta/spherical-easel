@@ -20,7 +20,9 @@ export class ZoomSphereCommand extends Command {
       this.previousTranslationVector[i] = previousTransVector[i];
     }
   }
-
+  /**
+   * Used to combine two zoom commands that happen in a row (like with MouseWheel Zoom)
+   */
   set setMagnificationFactor(mag: number) {
     this.magnificationFactor = mag;
   }
