@@ -17,7 +17,7 @@ import FadeInCard from "@/components/FadeInCard.vue";
 export default class BasicStyle extends Vue {
   // readonly UIModule = getModule(UI, this.$store);
 
-  @State
+  @State('selections')
   readonly selections!: SENodule[];
 
   commonStyleProperties: number[] = [];

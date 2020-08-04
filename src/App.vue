@@ -84,7 +84,7 @@ import MessageBox from "@/components/MessageBox.vue";
 /* This view has no (sub)components (but the Easel view does) so this is empty*/
 @Component({ components: { MessageBox } })
 export default class App extends Vue {
-  @State
+  @State('activeToolName')
   activeToolName!: string;
 
   mounted(): void {

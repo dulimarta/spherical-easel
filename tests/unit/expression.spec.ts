@@ -229,9 +229,11 @@ describe("SEExpression", () => {
     });
 
     it("detects unknown character", () => {
-      expect(() => {
+      try {
         parser.evaluate("20 # 60");
-      }).toThrowError();
+      } catch (e) {
+        expect(e.message).toContain("#");
+      }
     });
     it("detects invalid numbers", () => {
       expect(() => {
@@ -250,30 +252,40 @@ describe("SEExpression", () => {
     });
 
     it("detects missing operand after binary minus", () => {
-      expect(() => {
+      try {
         parser.evaluate("20 -");
-      }).toThrowError();
+      } catch (e) {
+        expect(e.message).toEqual(expect.stringMatching(/IDENT|\(/));
+      }
     });
 
     it("detects missing operand after exponentiation", () => {
-      expect(() => {
+      try {
         parser.evaluate("20 **");
-      }).toThrowError();
+      } catch (e) {
+        expect(e.message).toEqual(expect.stringMatching(/IDENT|NUMBER|\(/));
+      }
     });
     it("detects missing parenthesis", () => {
-      expect(() => {
+      try {
         parser.evaluate("20 * (4 ^ 3");
-      }).toThrowError();
+      } catch (e) {
+        expect(e.message).toContain(")");
+      }
     });
     it("detects missing left parenthesis after builtin func", () => {
-      expect(() => {
-        parser.evaluate("20 * cos pi)");
-      }).toThrowError();
+      try {
+        parser.evaluate("20 * cos pi");
+      } catch (e) {
+        expect(e.message).toContain("(");
+      }
     });
     it("detects missing right parenthesis after builtin func args", () => {
-      expect(() => {
+      try {
         parser.evaluate("20 * cos(pi/4");
-      }).toThrowError();
+      } catch (e) {
+        expect(e.message).toContain(")");
+      }
     });
   });
 

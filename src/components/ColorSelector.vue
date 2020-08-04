@@ -114,7 +114,7 @@ export default class ColorSelector extends Vue {
   @Prop({ required: true }) readonly defaultStyleStates!: StyleOptions[];
   @Prop({ required: true }) readonly styleName!: string;
 
-  @State
+  @State('selections')
   selections!: SENodule[];
 
   //private defaultStyleStates: StyleOptions[] = [];

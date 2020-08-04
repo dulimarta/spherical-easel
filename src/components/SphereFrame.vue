@@ -35,13 +35,13 @@ export default class SphereFrame extends VueComponent {
   @Prop()
   readonly canvasSize!: number;
 
-  @State
+  @State('actionMode')
   readonly actionMode!: string;
 
-  @State
+  @State('zoomMagnificationFactor')
   readonly zoomMagnificationFactor!: number;
 
-  @State
+  @State('zoomTranslation')
   readonly zoomTranslation!: number[];
 
   $refs!: {

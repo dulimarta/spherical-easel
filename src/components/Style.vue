@@ -1,20 +1,28 @@
 <template>
-  <transition name="slide-out" mode="out-in">
-    <div v-if="!minified" key="full">
+  <transition name="slide-out"
+    mode="out-in">
+    <div v-if="!minified"
+      key="full"
+      style="height: 100%; overflow:auto">
       <v-expansion-panels :value="selectedPanel">
-        <v-expansion-panel v-for="(p, idx) in panels" :key="idx">
+        <v-expansion-panel v-for="(p, idx) in panels"
+          :key="idx">
           <v-expansion-panel-header color="blue lighten-3"
-            :key="`header${idx}`" @click="saveStyleState">
+            :key="`header${idx}`"
+            @click="saveStyleState">
             {{ $t(p.i18n_key) }}</v-expansion-panel-header>
           <v-expansion-panel-content :color="panelBackgroundColor(idx)"
             :key="`content${idx}`">
-            <component :is="p.component" :side="p.isFront">
+            <component :is="p.component"
+              :side="p.isFront">
             </component>
           </v-expansion-panel-content>
         </v-expansion-panel>
       </v-expansion-panels>
     </div>
-    <div v-else id="mini-icons" key="partial">
+    <div v-else
+      id="mini-icons"
+      key="partial">
       <v-icon>mdi-palette</v-icon>
     </div>
   </transition>
