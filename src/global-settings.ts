@@ -52,7 +52,7 @@ export default {
     //The properties of the point when it is drawn on the sphereCanvas and is not glowing
     drawn: {
       radius: {
-        front: 4, // The default radius of the point drawn on the front,
+        front: 3.5, // The default radius of the point drawn on the front,
         back: 3 // The default radius of the point drawn on the back,
       },
       fillColor: {
@@ -63,20 +63,20 @@ export default {
         front: "hsla(240, 55%, 55%, 1)",
         back: "hsla(240, 55%, 75%, 1)"
       },
-      pointStrokeWidth: { front: 2, back: 2 }, // The thickness of the edge of the point when drawn
+      pointStrokeWidth: { front: 1, back: 1 }, // The thickness of the edge of the point when drawn
       opacity: { front: 1, back: 1 }
       // No dashing for points
     },
     // The properties of the annular region around a point when it is glowing
     glowing: {
-      annularWidth: 2.5, // width is the width of the annular region around the point that shows the glow it is always bigger than the drawn radius
+      annularWidth: 3, // width is the width of the annular region around the point that shows the glow it is always bigger than the drawn radius
       fillColor: {
         front: "hsla(0, 100%, 50%, 1)",
         back: "hsla(0, 100%, 75%, 0.7)"
       },
       strokeColor: {
-        front: "hsla(240, 56%, 55%, 1)",
-        back: "hsla(240, 57%, 77%, 1)"
+        front: "hsla(0, 100%, 35%, 1)",
+        back: "hsla(0, 100%, 45%, 0.7)"
       },
       opacity: { front: 1, back: 1 }
       // No dashing - this is highlighting the object
@@ -144,7 +144,7 @@ export default {
         front: "hsla(0, 100%, 50%, 1)",
         back: "hsla(0, 100%, 75%, 0.7)"
       },
-      edgeWidth: 2, // edgeWidth/2 is the width of the region around the segment that shows the glow
+      edgeWidth: 4, // edgeWidth/2 is the width of the region around the segment that shows the glow
       opacity: { front: 1, back: 1 }
       // the dashing pattern is copied from the drawn version
     },
@@ -193,7 +193,7 @@ export default {
         front: "hsla(0, 100%, 50%, 1)",
         back: "hsla(0, 100%, 75%, 0.7)"
       },
-      edgeWidth: 2, // edgeWidth/2 is the width of the region around the line that shows the glow
+      edgeWidth: 4, // edgeWidth/2 is the width of the region around the line that shows the glow
       opacity: { front: 1, back: 1 }
       // Dashing is the same as the drawn version
     },
@@ -244,7 +244,7 @@ export default {
         front: "hsla(0, 100%, 50%, 1)",
         back: "hsla(0, 100%, 75%, 0.7)"
       },
-      edgeWidth: 2, // edgeWidth/2 is the width of the region around the circle (on each side) that shows the glow
+      edgeWidth: 4, // edgeWidth/2 is the width of the region around the circle (on each side) that shows the glow
       opacity: { front: 1, back: 1 }
       // The dash pattern will always be the same as the drawn version
     },

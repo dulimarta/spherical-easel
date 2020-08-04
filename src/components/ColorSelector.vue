@@ -3,91 +3,76 @@
     <div>
       <span class="text-subtitle-2">{{ $t(titleKey) }}</span>
     </div>
-    <span
-      v-show="totallyDisableColorSelector"
-      class="select-an-object-text"
-    >{{ $t("style.selectAnObject") }}</span>
-    <v-tooltip
-      v-if="!colorAgreement"
+    <span v-show="totallyDisableColorSelector"
+      class="select-an-object-text">{{ $t("style.selectAnObject") }}</span>
+    <v-tooltip v-if="!colorAgreement"
       bottom
       :open-delay="toolTipOpenDelay"
       :close-delay="toolTipCloseDelay"
-      max-width="400px"
-    >
+      max-width="400px">
       <template v-slot:activator="{ on }">
-        <v-btn
-          color="error"
+        <v-btn color="error"
           v-on="on"
           v-show="!totallyDisableColorSelector"
           text
           small
           outlined
           ripple
-          @click="setCommonColorArgreement"
-        >{{ $t("style.differingStylesDetected") }}</v-btn>
+          @click="setCommonColorArgreement">
+          {{ $t("style.differingStylesDetected") }}</v-btn>
       </template>
       <span>{{ $t("style.differingStylesDetectedToolTip") }}</span>
     </v-tooltip>
-    <v-tooltip
-      bottom
+    <v-tooltip bottom
       v-else
       :open-delay="toolTipOpenDelay"
       :close-delay="toolTipCloseDelay"
-      max-width="400px"
-    >
+      max-width="400px">
       <template v-slot:activator="{ on }">
-        <v-btn
-          v-on="on"
+        <v-btn v-on="on"
           v-show="!totallyDisableColorSelector"
           text
           outlined
           ripple
           small
-          @click="showColorPresets"
-        >{{ $t("style.showColorPresets") }}</v-btn>
+          @click="showColorPresets">
+          {{ $t("style.showColorPresets") }}</v-btn>
       </template>
       <span>{{ $t("style.showColorPresetsToolTip") }}</span>
     </v-tooltip>
-    <v-tooltip
-      bottom
+    <v-tooltip bottom
       :open-delay="toolTipOpenDelay"
       :close-delay="toolTipCloseDelay"
-      max-width="400px"
-    >
+      max-width="400px">
       <template v-slot:activator="{ on }">
-        <v-btn
-          v-on="on"
+        <v-btn v-on="on"
           v-show="colorAgreement && !totallyDisableColorSelector"
           @click="clearRecentColorChanges"
           text
           outlined
           ripple
-          small
-        >{{ $t("style.clearChanges") }}</v-btn>
+          small>
+          {{ $t("style.clearChanges") }}</v-btn>
       </template>
       <span>{{ $t("style.clearChangesToolTip") }}</span>
     </v-tooltip>
-    <v-tooltip
-      bottom
+    <v-tooltip bottom
       :open-delay="toolTipOpenDelay"
       :close-delay="toolTipCloseDelay"
-      max-width="400px"
-    >
+      max-width="400px">
       <template v-slot:activator="{ on }">
-        <v-btn
-          v-on="on"
+        <v-btn v-on="on"
           v-show="colorAgreement && !totallyDisableColorSelector"
           @click="resetColorToDefaults"
           text
           small
           outlined
-          ripple
-        >{{ $t("style.restoreDefaults") }}</v-btn>
+          ripple>
+          {{ $t("style.restoreDefaults") }}</v-btn>
       </template>
       <span>{{ $t("style.restoreDefaultsToolTip") }}</span>
     </v-tooltip>
-    <v-color-picker
-      hide-canvas
+    <v-color-picker hide-canvas
       mode="hsla"
       :disabled="!colorAgreement || totallyDisableColorSelector || noData"
       show-swatches
@@ -96,18 +81,16 @@
       :swatches-max-height="colorSwatchHeight"
       v-model="colorData"
       id="colorPicker"
-      @update:color="onColorChange"
-    ></v-color-picker>
-    <v-checkbox
-      v-show="colorAgreement"
+      @update:color="onColorChange">
+    </v-color-picker>
+    <v-checkbox v-show="colorAgreement"
       v-model="noData"
       :label="noDataUILabel"
       color="indigo darken-3"
       @change="setNoData"
       hide-details
       x-small
-      dense
-    ></v-checkbox>
+      dense></v-checkbox>
   </div>
 </template>
 
@@ -126,7 +109,7 @@ import { StyleOptions } from "@/types/Styles";
 export default class ColorSelector extends Vue {
   @Prop() readonly titleKey!: string;
   @PropSync("data") colorData?: hslaColorType;
-  @Prop() readonly frontSide!: boolean;
+  @Prop() readonly side!: boolean;
   @Prop({ required: true }) readonly initialStyleStates!: StyleOptions[];
   @Prop({ required: true }) readonly defaultStyleStates!: StyleOptions[];
   @Prop({ required: true }) readonly styleName!: string;
@@ -155,20 +138,24 @@ export default class ColorSelector extends Vue {
   private noDataStr = "";
   private noDataUILabel = "";
 
-  mounted(): void {
+  mounted (): void {
     //If there are already objects selected set the style panel to edit them (OK to pass empty string because that will set the defaults)
+    console.log(
+      "mounted initialStyleStates before",
+      this.initialStyleStates[0].fillColor
+    );
     this.onSelectionChanged(this.$store.getters.selectedSENodules());
-    console.log("mounted initialStyleStates", this.initialStyleStates);
+    console.log("mounted initialStyleStates aftger");
   }
 
-  beforeUpdate(): void {
+  beforeUpdate (): void {
     const propName = this.styleName.replace("Color", "");
     const firstLetter = this.styleName.charAt(0);
     const inTitleCase = firstLetter.toUpperCase() + propName.substring(1);
     this.noDataStr = `no${inTitleCase}`;
     this.noDataUILabel = `No ${inTitleCase}`;
   }
-  showColorPresets(): void {
+  showColorPresets (): void {
     if (!this.noData) {
       this.showColorOptions = !this.showColorOptions;
       if (this.showColorOptions) {
@@ -184,47 +171,53 @@ export default class ColorSelector extends Vue {
       this.showColorOptions = false;
     }
   }
-  onColorChange(): void {
+  onColorChange (): void {
     this.colorString = Nodule.convertHSLAObjectToString(
       this.colorData ?? { h: 0, s: 0, l: 0, a: 1 }
     );
-    this.$store.commit("changeStyle", {
+    this.$store.direct.commit.changeStyle({
       selected: this.$store.getters.selectedSENodules(),
-      front: this.frontSide,
-      [this.styleName]: this.colorString
+      payload: {
+        front: this.side,
+        [this.styleName]: this.colorString
+      }
     });
   }
-  setCommonColorArgreement(): void {
+  setCommonColorArgreement (): void {
     this.colorAgreement = true;
   }
-  clearRecentColorChanges(): void {
+  clearRecentColorChanges (): void {
     const selected = this.$store.getters.selectedSENodules();
     for (let i = 0; i < selected.length; i++) {
-      this.$store.commit("changeStyle", {
+      this.$store.direct.commit.changeStyle({
         selected: [selected[i]],
-        front: this.frontSide,
-        [this.styleName]: (this.initialStyleStates[i] as any)[this.styleName]
+        payload: {
+          front: this.side,
+          [this.styleName]: (this.initialStyleStates[i] as any)[this.styleName]
+        }
       });
     }
     this.preNoColor = this.colorString;
     this.setColorSelectorState(this.initialStyleStates);
   }
-  resetColorToDefaults(): void {
+  resetColorToDefaults (): void {
     const selected = this.$store.getters.selectedSENodules();
     for (let i = 0; i < selected.length; i++) {
-      this.$store.commit("changeStyle", {
+      this.$store.direct.commit.changeStyle({
         selected: [selected[i]],
-        front: this.frontSide,
-        [this.styleName]: (this.defaultStyleStates[i] as any)[this.styleName]
+        payload: {
+          front: this.side,
+          [this.styleName]: (this.defaultStyleStates[i] as any)[this.styleName]
+        }
       });
     }
     this.setColorSelectorState(this.defaultStyleStates);
   }
-  setColorSelectorState(styleState: StyleOptions[]): void {
+  setColorSelectorState (styleState: StyleOptions[]): void {
     this.colorAgreement = true;
     this.totallyDisableColorSelector = false;
 
-    console.log("color style State", this.styleName, styleState[0]);
+    console.log("color style State", this.styleName, styleState[0].fillColor);
     this.colorString =
       this.styleName in styleState[0]
         ? (styleState[0] as any)[this.styleName]
@@ -262,7 +255,7 @@ export default class ColorSelector extends Vue {
       this.disableColorSelector(true);
     }
   }
-  disableColorSelector(totally: boolean): void {
+  disableColorSelector (totally: boolean): void {
     this.colorAgreement = false;
     this.colorString = "hsla(0,100%,100%,0)";
     this.colorData = Nodule.convertStringToHSLAObject(this.colorString);
@@ -271,7 +264,7 @@ export default class ColorSelector extends Vue {
     this.showColorOptions = false;
     this.totallyDisableColorSelector = totally;
   }
-  setNoData(): void {
+  setNoData (): void {
     if (this.noData) {
       this.preNoColor = this.colorString;
       this.colorString = this.noDataStr;
@@ -284,21 +277,27 @@ export default class ColorSelector extends Vue {
       this.colorString = this.preNoColor;
       this.colorData = Nodule.convertStringToHSLAObject(this.colorString);
     }
-    this.$store.commit("changeStyle", {
+    this.$store.direct.commit.changeStyle({
       selected: this.$store.getters.selectedSENodules(),
-      front: this.frontSide,
-      [this.styleName]: this.colorString
+      payload: {
+        front: this.side,
+        [this.styleName]: this.colorString
+      }
     });
   }
 
   @Watch("selections")
-  onSelectionChanged(newSelection: SENodule[]): void {
+  onSelectionChanged (newSelection: SENodule[]): void {
     // no code yet
     if (newSelection.length === 0) {
       //totally disable the selectors
       this.disableColorSelector(true);
       return;
     }
+    console.log(
+      "onselectionChange init style state",
+      this.initialStyleStates[0].fillColor
+    );
     this.setColorSelectorState(this.initialStyleStates);
   }
 }

@@ -1,86 +1,70 @@
 <template>
   <div>
     <div class="text-subtitle-2">{{ $t(titleKey) }}</div>
-    <div
-      v-show="totalyDisableSelector"
-      class="select-an-object-text"
-    >{{ $t("style.selectAnObject") }}</div>
-    <v-tooltip
-      v-if="!styleDataAgreement"
+    <div v-show="totalyDisableSelector"
+      class="select-an-object-text">{{ $t("style.selectAnObject") }}</div>
+    <v-tooltip v-if="!styleDataAgreement"
       bottom
       :open-delay="toolTipOpenDelay"
       :close-delay="toolTipCloseDelay"
-      max-width="400px"
-    >
+      max-width="400px">
       k
       <template v-slot:activator="{ on }">
-        <v-btn
-          color="error"
+        <v-btn color="error"
           v-on="on"
           v-show="!totalyDisableSelector"
           text
           small
           outlined
           ripple
-          @click="setStyleDataAgreement"
-        >{{ $t("style.differingStylesDetected") }}</v-btn>
+          @click="setStyleDataAgreement">
+          {{ $t("style.differingStylesDetected") }}</v-btn>
       </template>
       <span>{{ $t("style.differingStylesDetectedToolTip") }}</span>
     </v-tooltip>
 
-    <v-tooltip
-      bottom
+    <v-tooltip bottom
       :open-delay="toolTipOpenDelay"
       :close-delay="toolTipCloseDelay"
-      max-width="400px"
-    >
+      max-width="400px">
       <template v-slot:activator="{ on }">
-        <v-btn
-          v-on="on"
+        <v-btn v-on="on"
           v-show="styleDataAgreement && !totalyDisableSelector
             "
           @click="clearChanges"
           text
           outlined
           ripple
-          small
-        >{{ $t("style.clearChanges") }}</v-btn>
+          small>{{ $t("style.clearChanges") }}</v-btn>
       </template>
       <span>{{ $t("style.clearChangesToolTip") }}</span>
     </v-tooltip>
 
-    <v-tooltip
-      bottom
+    <v-tooltip bottom
       :open-delay="toolTipOpenDelay"
       :close-delay="toolTipCloseDelay"
-      max-width="400px"
-    >
+      max-width="400px">
       <template v-slot:activator="{ on }">
-        <v-btn
-          v-on="on"
+        <v-btn v-on="on"
           v-show="styleDataAgreement && !totalyDisableSelector
             "
           @click="resetToDefaults"
           text
           small
           outlined
-          ripple
-        >{{ $t("style.restoreDefaults") }}</v-btn>
+          ripple>{{ $t("style.restoreDefaults") }}</v-btn>
       </template>
       <span>{{ $t("style.restoreDefaultsToolTip") }}</span>
     </v-tooltip>
     <br />
 
-    <v-slider
-      v-model.number="styleData"
+    <v-slider v-model.number="styleData"
       :min="minValue"
       :disabled="!styleDataAgreement ||totalyDisableSelector"
       @change="onDataChanged"
       :max="maxValue"
       :step="step"
-      type="range"
-      class="mt-8"
-    >
+      type="range">
       <template v-slot:prepend>
         <v-icon @click="decrementDataValue">mdi-minus</v-icon>
       </template>
@@ -103,7 +87,7 @@ import { SENodule } from "@/models/SENodule";
 
 @Component({})
 export default class NumberSelector extends Vue {
-  @Prop() readonly frontSide!: boolean;
+  @Prop() readonly side!: boolean;
   @Prop() readonly titleKey!: string;
   @Prop({ required: true }) readonly initialStyleStates!: StyleOptions[];
   @Prop({ required: true }) readonly defaultStyleStates!: StyleOptions[];
@@ -132,38 +116,42 @@ export default class NumberSelector extends Vue {
   private styleDataAgreement = true;
   private totalyDisableSelector = true;
 
-  mounted(): void {
+  mounted (): void {
     // No code here
     // this.styleName = propNames[this.styleOption];
   }
 
-  beforeUpdate(): void {
+  beforeUpdate (): void {
     // console.debug("beforeUpdate", this.styleData);
     // Make a copy of the initial state
     // if (this.defaultStyleStates.length !== this.initialStyleStates.length)
     // this.defaultStyleStates = this.initialStyleStates.slice();
   }
   // These methods are linked to the styleData fade-in-card
-  onDataChanged(): void {
-    this.$store.commit("changeStyle", {
+  onDataChanged (): void {
+    this.$store.direct.commit.changeStyle({
       selected: this.$store.getters.selectedSENodules(),
-      front: this.frontSide,
-      [this.styleName]: this.styleData
+      payload: {
+        front: this.side,
+        [this.styleName]: this.styleData
+      }
     });
   }
 
-  resetToDefaults(): void {
+  resetToDefaults (): void {
     const selected = this.$store.getters.selectedSENodules();
     for (let i = 0; i < selected.length; i++) {
-      this.$store.commit("changeStyle", {
+      this.$store.direct.commit.changeStyle({
         selected: [selected[i]],
-        front: this.frontSide,
-        [this.styleName]: (this.defaultStyleStates[i] as any)[this.styleName]
+        payload: {
+          front: this.side,
+          [this.styleName]: (this.defaultStyleStates[i] as any)[this.styleName]
+        }
       });
     }
     this.setSelectorState(this.defaultStyleStates);
   }
-  setSelectorState(styleState: StyleOptions[]): void {
+  setSelectorState (styleState: StyleOptions[]): void {
     this.styleDataAgreement = true;
     this.totalyDisableSelector = false;
 
@@ -188,56 +176,62 @@ export default class NumberSelector extends Vue {
       this.disableSelector(true);
     }
   }
-  disableSelector(totally: boolean): void {
+  disableSelector (totally: boolean): void {
     this.styleDataAgreement = false;
     // TODO: which value to use below?
     // this.styleData = 100;
     this.totalyDisableSelector = totally;
   }
-  setStyleDataAgreement(): void {
+  setStyleDataAgreement (): void {
     this.styleDataAgreement = true;
   }
-  clearChanges(): void {
+  clearChanges (): void {
     const selected = this.$store.getters.selectedSENodules();
     for (let i = 0; i < selected.length; i++) {
-      this.$store.commit("changeStyle", {
+      this.$store.direct.commit.changeStyle({
         selected: [selected[i]],
-        front: this.frontSide,
-        [this.styleName]: (this.initialStyleStates[i] as any)[this.styleName]
+        payload: {
+          front: this.side,
+          [this.styleName]: (this.initialStyleStates[i] as any)[this.styleName]
+        }
       });
     }
     this.setSelectorState(this.initialStyleStates);
   }
 
-  incrementDataValue(): void {
+  incrementDataValue (): void {
     if (
       this.styleData != undefined &&
       this.styleData + (this.step ?? 1) <= this.maxValue
     ) {
       this.styleData += this.step ?? 1;
-      this.$store.commit("changeStyle", {
+      this.$store.direct.commit.changeStyle({
         selected: this.$store.getters.selectedSENodules(),
-        front: this.frontSide,
-        [this.styleName]: this.styleData
+        payload: {
+          front: this.side,
+          [this.styleName]: this.styleData
+        }
       });
     }
   }
-  decrementDataValue(): void {
+  decrementDataValue (): void {
     if (
       this.styleData != undefined &&
       this.styleData - (this.step ?? 1) >= this.minValue
     ) {
       this.styleData -= this.step ?? 1;
-      this.$store.commit("changeStyle", {
+      this.$store.direct.commit.changeStyle({
         selected: this.$store.getters.selectedSENodules(),
-        front: this.frontSide,
-        [this.styleName]: this.styleData
+        payload: {
+          front: this.side,
+          [this.styleName]: this.styleData
+        }
       });
     }
   }
 
   @Watch("selections")
-  onSelectionChanged(newSelection: SENodule[]): void {
+  onSelectionChanged (newSelection: SENodule[]): void {
     if (newSelection.length === 0) {
       this.disableSelector(true);
       return;

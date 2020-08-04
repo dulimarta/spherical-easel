@@ -3,13 +3,11 @@ export enum Styles {
   // that refers to Color property
   strokeWidthPercent,
   strokeColor,
-  fillColorWhite,
-  fillColorGray,
   fillColor,
   dashArray,
   opacity,
   dynamicBackStyle,
-  pointRadiusPercent
+  pointRadiusPercent,
 }
 
 export type StyleOptions = {
@@ -21,4 +19,5 @@ export type StyleOptions = {
   opacity?: number;
   dynamicBackStyle?: boolean;
   pointRadiusPercent?: number;
+  backStyleContrast?: number;
 };

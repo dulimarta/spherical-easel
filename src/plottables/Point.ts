@@ -117,6 +117,10 @@ export default class Point extends Nodule {
     // Set the properties of the points that never change - stroke width and glowing options
     this.frontPoint.linewidth = SETTINGS.point.drawn.pointStrokeWidth.front;
     this.backPoint.linewidth = SETTINGS.point.drawn.pointStrokeWidth.back;
+    this.glowingFrontPoint.linewidth =
+      SETTINGS.point.drawn.pointStrokeWidth.front;
+    this.glowingBackPoint.linewidth =
+      SETTINGS.point.drawn.pointStrokeWidth.back;
 
     // FRONT Glowing
     if (SETTINGS.point.glowing.fillColor.front === "noFill") {
@@ -124,7 +128,7 @@ export default class Point extends Nodule {
     } else {
       this.glowingFrontPoint.fill = SETTINGS.point.glowing.fillColor.front;
     }
-    if (SETTINGS.point.glowing.fillColor.front === "noStroke") {
+    if (SETTINGS.point.glowing.strokeColor.front === "noStroke") {
       this.glowingFrontPoint.noStroke();
     } else {
       this.glowingFrontPoint.stroke = SETTINGS.point.glowing.strokeColor.front;
@@ -138,7 +142,7 @@ export default class Point extends Nodule {
     } else {
       this.glowingBackPoint.fill = SETTINGS.point.glowing.fillColor.back;
     }
-    if (SETTINGS.point.glowing.fillColor.back === "noStroke") {
+    if (SETTINGS.point.glowing.strokeColor.back === "noStroke") {
       this.glowingBackPoint.noStroke();
     } else {
       this.glowingBackPoint.stroke = SETTINGS.point.glowing.strokeColor.back;
