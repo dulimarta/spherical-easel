@@ -22,10 +22,6 @@ export abstract class SEExpression extends SENodule {
 
   public customStyles = (): Set<Styles> => emptySet;
 
-  public update = (state: UpdateStateType): void => {
-    // No code here
-  };
-
   /**
    * Is the object hit a point at a particular sphere location?
    * @param sphereVector a location on the ideal unit sphere
