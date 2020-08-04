@@ -37,9 +37,9 @@ export default class BasicStyle extends Vue {
 
   get hasColor(): boolean {
     return (
-      this.hasStyles(Styles.strokeColor) ||
+      this.hasStyles(Styles.strokeColor) /*||
       this.hasStyles(Styles.fillColorWhite) ||
-      this.hasStyles(Styles.fillColorGray)
+      this.hasStyles(Styles.fillColorGray)*/
     );
   }
 

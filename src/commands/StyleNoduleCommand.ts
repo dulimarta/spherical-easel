@@ -69,15 +69,17 @@ export class StyleNoduleCommand extends Command {
     for (let i = 0; i < this.seNodules.length; i++) {
       Command.store.commit.changeStyle({
         selected: [this.seNodules[i]],
-        front: this.side,
-        strokeWidthPercent: this.currentStyles[i].strokeWidthPercent,
-        strokeColor: this.currentStyles[i].strokeColor,
-        fillColor: this.currentStyles[i].fillColor,
-        dashArray: this.currentStyles[i].dashArray,
-        opacity: this.currentStyles[i].opacity,
-        dynamicBackStyle: this.currentStyles[i].dynamicBackStyle,
-        pointRadiusPercent: this.currentStyles[i].pointRadiusPercent,
-        backStyleContrast: this.currentBackStyleContrast
+        payload: {
+          front: this.side,
+          strokeWidthPercent: this.currentStyles[i].strokeWidthPercent,
+          strokeColor: this.currentStyles[i].strokeColor,
+          fillColor: this.currentStyles[i].fillColor,
+          dashArray: this.currentStyles[i].dashArray,
+          opacity: this.currentStyles[i].opacity,
+          dynamicBackStyle: this.currentStyles[i].dynamicBackStyle,
+          pointRadiusPercent: this.currentStyles[i].pointRadiusPercent,
+          backStyleContrast: this.currentBackStyleContrast
+        }
       });
     }
   }
@@ -91,15 +93,17 @@ export class StyleNoduleCommand extends Command {
     for (let i = 0; i < this.seNodules.length; i++) {
       Command.store.commit.changeStyle({
         selected: [this.seNodules[i]],
-        front: this.side,
-        strokeWidthPercent: this.pastStyles[i].strokeWidthPercent,
-        strokeColor: this.pastStyles[i].strokeColor,
-        fillColor: this.pastStyles[i].fillColor,
-        dashArray: this.pastStyles[i].dashArray,
-        opacity: this.pastStyles[i].opacity,
-        dynamicBackStyle: this.pastStyles[i].dynamicBackStyle,
-        pointRadiusPercent: this.pastStyles[i].pointRadiusPercent,
-        backStyleContrast: this.pastBackStyleContrast
+        payload: {
+          front: this.side,
+          strokeWidthPercent: this.pastStyles[i].strokeWidthPercent,
+          strokeColor: this.pastStyles[i].strokeColor,
+          fillColor: this.pastStyles[i].fillColor,
+          dashArray: this.pastStyles[i].dashArray,
+          opacity: this.pastStyles[i].opacity,
+          dynamicBackStyle: this.pastStyles[i].dynamicBackStyle,
+          pointRadiusPercent: this.pastStyles[i].pointRadiusPercent,
+          backStyleContrast: this.pastBackStyleContrast
+        }
       });
     }
   }
