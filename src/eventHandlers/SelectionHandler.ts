@@ -65,6 +65,7 @@ export default class SelectionHandler extends MouseHandler {
         (n as any).ref.glowingDisplay();
       });
     }
+    // Now process the hitSENodules so the user can select by number
     // If there is nothing or only one nearby ignore this key event
     if (this.hitSENodules?.length <= 1) return;
 
