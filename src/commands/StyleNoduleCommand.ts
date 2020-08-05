@@ -79,8 +79,8 @@ export class StyleNoduleCommand extends Command {
           opacity: this.currentStyles[i].opacity,
           dynamicBackStyle: this.currentStyles[i].dynamicBackStyle,
           pointRadiusPercent: this.currentStyles[i].pointRadiusPercent,
-          backStyleContrast: this.currentBackStyleContrast,
-        },
+          backStyleContrast: this.currentBackStyleContrast
+        }
       });
     }
   }
@@ -102,8 +102,8 @@ export class StyleNoduleCommand extends Command {
           opacity: this.pastStyles[i].opacity,
           dynamicBackStyle: this.pastStyles[i].dynamicBackStyle,
           pointRadiusPercent: this.pastStyles[i].pointRadiusPercent,
-          backStyleContrast: this.pastBackStyleContrast,
-        },
+          backStyleContrast: this.pastBackStyleContrast
+        }
       });
     }
   }

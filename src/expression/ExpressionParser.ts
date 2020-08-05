@@ -213,6 +213,7 @@ class Lexer {
 
 export class ExpressionParser {
   readonly EMPTY_MAP = new Map();
+
   /**
    * Parse the arithmetic expression using a recursive descent parser.
    * Refer to the railroad diagrams and the expr.ebnf
@@ -224,6 +225,11 @@ export class ExpressionParser {
     const tokenizer = lexer.tokenize();
     let token = tokenizer.next();
 
+    function throwError(msg: string, info: Lexicon): never {
+      if (info.kind === TokenType.EOF)
+        throw new SyntaxError("Reach end of input while parsing expression");
+      else throw new SyntaxError(msg);
+    }
     function atom(): SyntaxTree {
       // factor() is 3-level deep from EXPR (highest precedence)
       if (token.value.kind === TokenType.LEFT_PAREN) {
@@ -234,7 +240,10 @@ export class ExpressionParser {
           token = tokenizer.next();
           return eTree;
         } else
-          throw new SyntaxError(`expected ')' around '${lexer.lastToken()}'`);
+          return throwError(
+            `expected ')' at '${token.value.text}'`,
+            token.value
+          );
       }
       if (token.value.kind === TokenType.MINUS) {
         // Unary minus
@@ -251,7 +260,6 @@ export class ExpressionParser {
         };
       } else if (token.value.kind === TokenType.MEASUREMENT) {
         // TODO: look up the actual value of measurement
-        console.debug("Var/Measurement", token.value.text);
         const out = token.value;
         token = tokenizer.next();
         return { node: out };
@@ -263,8 +271,9 @@ export class ExpressionParser {
         const out = token.value;
         token = tokenizer.next();
         if (token.value.kind !== TokenType.LEFT_PAREN)
-          throw new SyntaxError(
-            `expected '(' at function name '${lexer.lastToken()}'`
+          return throwError(
+            `expected '(' at function name '${lexer.lastToken()}'`,
+            token.value
           );
         token = tokenizer.next();
         const exprTree = expr();
@@ -278,9 +287,16 @@ export class ExpressionParser {
         if (token.value.kind === TokenType.RIGHT_PAREN) {
           token = tokenizer.next();
           return { node: out, args };
-        } else throw new SyntaxError("Missing ')' after function argument");
+        } else
+          return throwError(
+            `Expected ')', but received ${token.value.text}`,
+            token.value
+          );
       } else
-        throw new SyntaxError("Expected IDENT, NUMBER, '+', '-', or '(' at ");
+        return throwError(
+          `Unexpected input at '${token.value.text}'`,
+          token.value
+        );
     }
 
     // Parses: base ^ power1 ^ power2 ^ ...
