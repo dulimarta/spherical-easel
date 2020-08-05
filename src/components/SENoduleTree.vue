@@ -1,8 +1,11 @@
 <template>
   <div>
     <!-- <span v-for="c in points" :key="c.id">{{c.name}}</span> -->
-    <div id="topContainer" :style="indent">
-      <div id="nodeContent" :class="nodeOrLabel" @mouseenter="glowMe(true)"
+    <div id="topContainer"
+      :style="indent">
+      <div id="nodeContent"
+        :class="nodeOrLabel"
+        @mouseenter="glowMe(true)"
         @mouseleave="glowMe(false)">
         <v-icon v-if="isPoint">mdi-vector-point</v-icon>
         <v-icon v-else-if="isLineSegment">mdi-vector-radius</v-icon>
@@ -15,26 +18,36 @@
         </v-icon>
         <v-icon v-else-if="isMeasurement">mdi-tape-measure</v-icon>
         <v-icon v-else-if="isCalculation">mdi-calculator</v-icon>
-        <span class="contentText" v-if="label && label.length > 0">
+        <span class="contentText"
+          v-if="label && label.length > 0">
           {{ label }}
         </span>
-        <v-tooltip v-else right>
+        <v-tooltip v-else
+          right>
           <template v-slot:activator="{ on }">
-            <div class="contentText ml-1" v-on="on" :class="showClass">
+            <div class="contentText ml-1"
+              v-on="on"
+              :class="showClass">
               {{ prettyName }}
             </div>
           </template>
           <span>{{ definitionText }}</span>
         </v-tooltip>
-        <div v-show="isPlottable" @click="toggleVisibility" class="mr-2">
-          <v-icon small v-if="isHidden">
+        <div v-show="isPlottable"
+          @click="toggleVisibility"
+          class="mr-2">
+          <v-icon small
+            v-if="isHidden">
             mdi-eye
           </v-icon>
-          <v-icon small v-else style="color:gray">
+          <v-icon small
+            v-else
+            style="color:gray">
             mdi-eye-off
           </v-icon>
         </div>
-        <v-btn small v-show="hasExistingChildren"
+        <v-btn small
+          v-show="hasExistingChildren"
           @click="expanded = !expanded">
           <v-icon v-if="!expanded">mdi-chevron-right</v-icon>
           <v-icon v-else>mdi-chevron-down</v-icon>
@@ -44,8 +57,11 @@
       <transition name="slide-right">
         <div v-show="expanded">
           <!-- Recursive component here -->
-          <SENoduleTree v-for="(n, pos) in existingChildren" :key="pos"
-            :children="n.kids" :depth="depth + 1" :node="n"></SENoduleTree>
+          <SENoduleTree v-for="(n, pos) in existingChildren"
+            :key="pos"
+            :children="n.kids"
+            :depth="depth + 1"
+            :node="n"></SENoduleTree>
         </div>
       </transition>
     </div>
@@ -65,6 +81,7 @@ import { SECircle } from "../models/SECircle";
 import { SEMeasurement } from "@/models/SEMeasurement";
 import { SELength } from "@/models/SELength";
 import { SECalculation } from '../models/SECalculation';
+import { SEExpression } from '@/models/SEExpression';
 
 @Component({})
 export default class SENoduleTree extends Vue {
@@ -188,10 +205,10 @@ export default class SENoduleTree extends Vue {
         this.node.parents.map(p => p.name).join(",") +
         ")"
       );
-    else if (this.node instanceof SEMeasurement) {
-      const targetSegment = this.node?.parents[0] as SESegment;
-      const len = `${(targetSegment.arcLength / Math.PI).toFixed(2)} \u{1D7B9}`;
-      return this.node?.name + `Len(${targetSegment.name}) = ${len}`;
+    else if (this.node instanceof SEExpression) {
+      // const targetSegment = this.node?.parents[0] as SESegment;
+      // const len = `${(this.node.value / Math.PI).toFixed(2)} \u{1D7B9}`;
+      return this.node.name;
     } else return "n/a";
   }
 }
