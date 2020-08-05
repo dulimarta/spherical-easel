@@ -52,6 +52,7 @@
         <v-btn v-on="on"
           v-show="colorAgreement && !totallyDisableColorSelector"
           @click="clearRecentColorChanges"
+          :disabled="disableUndoButton"
           text
           outlined
           ripple
@@ -120,9 +121,11 @@ export default class ColorSelector extends Vue {
   // @Prop({ required: true }) readonly initialStyleStates!: StyleOptions[];
   // @Prop({ required: true }) readonly defaultStyleStates!: StyleOptions[];
   @Prop({ required: true }) readonly styleName!: string;
+  @Prop() readonly tempStyleStates!: StyleOptions[];
 
   @State('selections')
   selections!: SENodule[];
+
 
   //private defaultStyleStates: StyleOptions[] = [];
 
@@ -131,8 +134,10 @@ export default class ColorSelector extends Vue {
 
   private totallyDisableColorSelector = false;
   private colorAgreement = true;
-  private noData = false;
+  private noData = false; // no data means noFill or noStroke
   private preNoColor: string | undefined = "";
+
+  private disableUndoButton = true;
 
   // For TwoJS
   private colorString: string | undefined = "hsla(0, 0%,0%,0)";
@@ -141,7 +146,7 @@ export default class ColorSelector extends Vue {
   private showColorOptions = false;
   private colorSwatchHeight = 100;
   // colorCanvasHeight is disabled it doesn't work right change hide-canvas to :canvas-height="colorCanvasHeight" to enable
-  private colorCanvasHeight = 40;
+  // private colorCanvasHeight = 40;
   private noDataStr = "";
   private noDataUILabel = "";
 
@@ -173,6 +178,13 @@ export default class ColorSelector extends Vue {
     // this.noDataStr = `no${inTitleCase}`; // the noStroke/noFill option
     // this.noDataUILabel = `No ${inTitleCase}`;
   }
+
+  @Watch("tempStyleStates")
+  setTempStyleState (tempStyleStates: StyleOptions[]): void {
+    console.log("tempStyleState event", tempStyleStates);
+    this.setColorSelectorState(tempStyleStates);
+  }
+
   showColorPresets (): void {
     if (!this.noData) {
       this.showColorOptions = !this.showColorOptions;
@@ -192,6 +204,7 @@ export default class ColorSelector extends Vue {
   onColorChange (newColor: any): void {
     // console.log("color Data", this.colorData);
     // console.log("side", this.side);
+    this.disableUndoButton = false;
     this.colorString = Nodule.convertHSLAObjectToString(
       newColor.hsla ?? { h: 0, s: 0, l: 0, a: 1 }
     );
@@ -218,6 +231,7 @@ export default class ColorSelector extends Vue {
         }
       });
     }
+    this.disableUndoButton = true;
     this.preNoColor = this.colorString;
     this.setColorSelectorState(initialStyleStates);
   }
@@ -238,6 +252,7 @@ export default class ColorSelector extends Vue {
   setColorSelectorState (styleState: StyleOptions[]): void {
     this.colorAgreement = true;
     this.totallyDisableColorSelector = false;
+    this.colorSwatchHeight = 0;
 
     // console.log("color style State", this.styleName);
     // console.log(styleState[0].fillColor);
@@ -251,15 +266,15 @@ export default class ColorSelector extends Vue {
     ) {
       this.colorData = Nodule.convertStringToHSLAObject("hsla(0,0%,0%,0.001)");
       this.colorSwatchHeight = 0;
-      this.colorCanvasHeight = 0;
+      // this.colorCanvasHeight = 0;
       this.showColorOptions = false;
       this.noData = true;
     } else {
       this.colorData = Nodule.convertStringToHSLAObject(this.colorString);
-      this.colorCanvasHeight = 50;
+      // this.colorCanvasHeight = 50;
       this.noData = false;
     }
-    console.log("style states", styleState);
+    this.disableUndoButton = true;
     // screen for undefined - if undefined then this is not a property that is going to be set by the style panel for this selection of objects
     if (this.colorString) {
       if (
@@ -278,24 +293,27 @@ export default class ColorSelector extends Vue {
     }
   }
   disableColorSelector (totally: boolean): void {
+    this.disableUndoButton = true;
     this.colorAgreement = false;
     this.colorString = "hsla(0,100%,100%,0)";
     this.colorData = Nodule.convertStringToHSLAObject(this.colorString);
     this.colorSwatchHeight = 0;
-    this.colorCanvasHeight = 0;
+    // this.colorCanvasHeight = 0;
     this.showColorOptions = false;
     this.totallyDisableColorSelector = totally;
   }
+  //No Data means noFill or noStroke
   setNoData (): void {
+    this.disableUndoButton = false;
     if (this.noData) {
       this.preNoColor = this.colorString;
       this.colorString = this.noDataStr;
       this.colorData = Nodule.convertStringToHSLAObject("hsla(0,100%,100%,0)");
       this.colorSwatchHeight = 0;
-      this.colorCanvasHeight = 0;
+      // this.colorCanvasHeight = 0;
       this.showColorOptions = false;
     } else {
-      this.colorCanvasHeight = 50;
+      // this.colorCanvasHeight = 50;
       this.colorString = this.preNoColor;
       this.colorData = Nodule.convertStringToHSLAObject(this.colorString);
     }

@@ -1,13 +1,15 @@
 // Globals
-$font-family: Helvetica, sans-serif;
+$font-family: Roboto, sans-serif;
 // $border-radius-root: 6px;
 // $font-size-root: 14px;
 
 // Variables must come before the import
-$color-picker-edit-margin-top: 0px;
+$color-picker-edit-margin-top: 3px;
+$color-picker-controls-padding: 6px;
 $slider-vertical-margin-top: 0px;
 $slider-vertical-margin-bottom: 0px;
 $slider-vertical-min-height: 50px;
+$slider-thumb-label-height: 10px;
 // $btn-letter-spacing: 0;
 // $btn-font-weight: 400;
 // $list-item-title-font-size: 0.929rem;

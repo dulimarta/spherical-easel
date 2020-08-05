@@ -55,18 +55,12 @@ export default class Line extends Nodule {
   private dashArrayFront = [] as number[]; // Initialize in constructor
   private strokeWidthPercentFront = 100;
 
-  // Back
+  // Back use the default non-dynamic back style options so that when the user disables the dynamic back style these options are displayed
   private dynamicBackStyle = SETTINGS.line.dynamicBackStyle;
-  private strokeColorBack = SETTINGS.line.dynamicBackStyle
-    ? Nodule.contrastStrokeColor(SETTINGS.line.drawn.strokeColor.front)
-    : SETTINGS.line.drawn.strokeColor.back;
-  private opacityBack = SETTINGS.line.dynamicBackStyle
-    ? Nodule.contrastOpacity(SETTINGS.line.drawn.opacity.front)
-    : SETTINGS.line.drawn.opacity.back;
+  private strokeColorBack = SETTINGS.line.drawn.strokeColor.back;
+  private opacityBack = SETTINGS.line.drawn.opacity.back;
   private dashArrayBack = [] as number[]; // Initialize in constructor
-  private strokeWidthPercentBack = SETTINGS.line.dynamicBackStyle
-    ? Nodule.contrastStrokeWidthPercent(this.strokeWidthPercentFront)
-    : 100;
+  private strokeWidthPercentBack = 100;
 
   /** Initialize the current line width that is adjust by the zoom level and the user widthPercent */
   static currentLineStrokeWidthFront = SETTINGS.line.drawn.strokeWidth.front;
@@ -347,20 +341,23 @@ export default class Line extends Nodule {
       if (options.dynamicBackStyle != undefined) {
         this.dynamicBackStyle = options.dynamicBackStyle;
       }
-      if (options.strokeWidthPercent) {
-        this.strokeWidthPercentBack = options.strokeWidthPercent;
-      }
-      if (options.strokeColor) {
-        this.strokeColorBack = options.strokeColor;
-      }
-      if (options.opacity) {
-        this.opacityBack = options.opacity;
-      }
-      if (options.dashArray) {
-        // clear the dashArray
-        this.dashArrayBack.clear();
-        for (let i = 0; i < options.dashArray.length; i++) {
-          this.dashArrayBack.push(options.dashArray[i]);
+      // overwrite the back options only in the case the dynamic style is not enabled
+      if (!this.dynamicBackStyle) {
+        if (options.strokeWidthPercent) {
+          this.strokeWidthPercentBack = options.strokeWidthPercent;
+        }
+        if (options.strokeColor) {
+          this.strokeColorBack = options.strokeColor;
+        }
+        if (options.opacity) {
+          this.opacityBack = options.opacity;
+        }
+        if (options.dashArray) {
+          // clear the dashArray
+          this.dashArrayBack.clear();
+          for (let i = 0; i < options.dashArray.length; i++) {
+            this.dashArrayBack.push(options.dashArray[i]);
+          }
         }
       }
     }

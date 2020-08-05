@@ -57,16 +57,10 @@ export default class Segment extends Nodule {
   private strokeWidthPercentFront = 100;
   private opacityFront = SETTINGS.segment.drawn.opacity.front;
   private dashArrayFront = [] as number[]; // Initialize in constructor
-  // Back
-  private strokeColorBack = SETTINGS.segment.dynamicBackStyle
-    ? Nodule.contrastStrokeColor(SETTINGS.segment.drawn.strokeColor.front)
-    : SETTINGS.segment.drawn.strokeColor.back;
-  private strokeWidthPercentBack = SETTINGS.segment.dynamicBackStyle
-    ? Nodule.contrastStrokeWidthPercent(100)
-    : 100;
-  private opacityBack = SETTINGS.segment.dynamicBackStyle
-    ? Nodule.contrastOpacity(SETTINGS.segment.drawn.opacity.front)
-    : SETTINGS.segment.drawn.opacity.back;
+  // Back-- use the default non-dynamic back style options so that when the user disables the dynamic back style these options are displayed
+  private strokeColorBack = SETTINGS.segment.drawn.strokeColor.back;
+  private strokeWidthPercentBack = 100;
+  private opacityBack = SETTINGS.segment.drawn.opacity.back;
   private dashArrayBack = [] as number[]; // Initialize in constructor
   private dynamicBackStyle = SETTINGS.segment.dynamicBackStyle;
 
@@ -475,20 +469,23 @@ export default class Segment extends Nodule {
       if (options.dynamicBackStyle != undefined) {
         this.dynamicBackStyle = options.dynamicBackStyle;
       }
-      if (options.strokeWidthPercent) {
-        this.strokeWidthPercentBack = options.strokeWidthPercent;
-      }
-      if (options.strokeColor) {
-        this.strokeColorBack = options.strokeColor;
-      }
-      if (options.opacity) {
-        this.opacityBack = options.opacity;
-      }
-      if (options.dashArray) {
-        // clear the dashArray
-        this.dashArrayBack.clear();
-        for (let i = 0; i < options.dashArray.length; i++) {
-          this.dashArrayBack.push(options.dashArray[i]);
+      // overwrite the back options only in the case the dynamic style is not enabled
+      if (!this.dynamicBackStyle) {
+        if (options.strokeWidthPercent) {
+          this.strokeWidthPercentBack = options.strokeWidthPercent;
+        }
+        if (options.strokeColor) {
+          this.strokeColorBack = options.strokeColor;
+        }
+        if (options.opacity) {
+          this.opacityBack = options.opacity;
+        }
+        if (options.dashArray) {
+          // clear the dashArray
+          this.dashArrayBack.clear();
+          for (let i = 0; i < options.dashArray.length; i++) {
+            this.dashArrayBack.push(options.dashArray[i]);
+          }
         }
       }
     }

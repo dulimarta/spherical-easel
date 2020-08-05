@@ -37,6 +37,7 @@
           v-show="styleDataAgreement && !totalyDisableSelector
             "
           @click="clearChanges"
+          :disabled="disableUndoButton"
           text
           outlined
           ripple
@@ -103,19 +104,12 @@ export default class NumberSelector extends Vue {
   @Prop({ required: true }) readonly minValue!: number;
   @Prop({ required: true }) readonly maxValue!: number;
   @Prop() readonly step?: number;
+  @Prop() readonly tempStyleStates!: StyleOptions[];
 
   @State('selections')
   readonly selections!: SENodule[];
-  /**
-   * When the selected objects are first processed by the style panel their style state is recorded here
-   * this is so we can undo the styling changes and have a revert to initial state button
-   */
-  // private initialStyleStates: StyleOptions[] = [];
-  /**
-   * These are the default style state for the selected objects.
-   */
-  // private styleName!: string;
-  //private defaultStyleStates: StyleOptions[] = [];
+
+  private disableUndoButton = true;
 
   readonly toolTipOpenDelay = SETTINGS.toolTip.openDelay;
   readonly toolTipCloseDelay = SETTINGS.toolTip.closeDelay;
@@ -128,6 +122,11 @@ export default class NumberSelector extends Vue {
     this.onSelectionChanged(this.$store.getters.selectedSENodules());
 
   }
+  @Watch("tempStyleStates")
+  setTempStyleState (tempStyleStates: StyleOptions[]): void {
+    console.log("tempStyleState event");
+    this.setSelectorState(tempStyleStates);
+  }
 
   beforeUpdate (): void {
     // console.debug("beforeUpdate", this.styleData);
@@ -137,6 +136,7 @@ export default class NumberSelector extends Vue {
   }
   // These methods are linked to the styleData fade-in-card
   onDataChanged (newData: number): void {
+    this.disableUndoButton = false;
     this.$store.direct.commit.changeStyle({
       selected: this.$store.getters.selectedSENodules(),
       payload: {
@@ -161,6 +161,7 @@ export default class NumberSelector extends Vue {
     this.setSelectorState(defaultStyleStates);
   }
   setSelectorState (styleState: StyleOptions[]): void {
+    this.disableUndoButton = true;
     this.styleDataAgreement = true;
     this.totalyDisableSelector = false;
 
@@ -187,14 +188,14 @@ export default class NumberSelector extends Vue {
   }
   disableSelector (totally: boolean): void {
     this.styleDataAgreement = false;
-    // TODO: which value to use below?
-    // this.styleData = 100;
+    this.disableUndoButton = true;
     this.totalyDisableSelector = totally;
   }
   setStyleDataAgreement (): void {
     this.styleDataAgreement = true;
   }
   clearChanges (): void {
+    this.disableUndoButton = true;
     const selected = this.$store.getters.selectedSENodules();
     const initialStyleStates = this.$store.getters.getInitialStyleState(this.side);
     for (let i = 0; i < selected.length; i++) {
@@ -210,10 +211,12 @@ export default class NumberSelector extends Vue {
   }
 
   incrementDataValue (): void {
+
     if (
       this.styleData != undefined &&
       this.styleData + (this.step ?? 1) <= this.maxValue
     ) {
+      this.disableUndoButton = false;
       this.styleData += this.step ?? 1;
       this.$store.direct.commit.changeStyle({
         selected: this.$store.getters.selectedSENodules(),
@@ -225,10 +228,12 @@ export default class NumberSelector extends Vue {
     }
   }
   decrementDataValue (): void {
+
     if (
       this.styleData != undefined &&
       this.styleData - (this.step ?? 1) >= this.minValue
     ) {
+      this.disableUndoButton = false;
       this.styleData -= this.step ?? 1;
       this.$store.direct.commit.changeStyle({
         selected: this.$store.getters.selectedSENodules(),

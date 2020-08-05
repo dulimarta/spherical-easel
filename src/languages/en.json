@@ -97,10 +97,10 @@
 
     "selectAnObject": "Select An Object",
 
-    "clearChanges": "Undo Recent Changes",
+    "clearChanges": "Undo",
     "clearChangesToolTip": "Click this button to revert the selected objects back to the style they had when they were selected.",
 
-    "restoreDefaults": "Set To Defaults",
+    "restoreDefaults": "Apply Defaults",
     "restoreDefaultsToolTip": "Click this button to revert the selected objects back to their default style.",
 
     "differingStylesDetected": "Differing Styles Detected -- Override",

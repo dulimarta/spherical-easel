@@ -69,6 +69,7 @@ Every <span class="class">SENodule</span> object has the following boolean prope
 Plottable classes are the front-end collection of classes that organize and display graphical representations of objects on the [ideal unit sphere](/design/#coordinates). Classes in this directory should only receive updates and information from the <span class="class">SENodule</span> classes to which they are associated. While there are over 40 <span class="class">SENodule</span> classes (one for each [geometric tool](/userguide/toolsobjectspanel.html#tools-tab)), there are only about 10 graphically rendered objects and each has its own class in the <span class="directory">plottables</span> directory. This [spreadsheet](https://docs.google.com/spreadsheets/d/1o0s0l-offb5uPaimqiIyfVzv22wsuXrKBfjXbZHzxl8/edit?usp=sharing) contains a list of the <span class="class">SENodule</span> classes and their corresponding <span class="class">Nodule</span> classes. The plottable classes are
 
 - <span class="class">Point</span>
+- <span class="class">NonFreePoint</span>
 - <span class="class">Segment</span>
 - <span class="class">Line</span>
 - <span class="class">Circle</span>
@@ -391,6 +392,62 @@ Notice that this creates a <span class="class">RotationVisitor</span> based on t
 
 The <span class="class">RotationVisitor</span> merely updates all other <span class="class">SENodule</span> objects. Notice how the sequence of triggered event is now outside of the Vue Components again, but has been accessed in the Store along the way. Also notice how the <span class="class">RotationVisitor</span> marks the kids of each point out of date before called the <span class="method">update</span> method.
 
+## Stylizing Objects
+
+When the user opens the [Style Panel](/userguide/stylepanel.html) a set of options (in the form of four expansion panels: Basic, Foreground, Background, and Advanced) appears on the right side of the canvas, the [Tools and Object Panel](/userguide/toolsobjectspanel.html) is minimized, the active tool is set to the <span class="tool">Selection</span> tool, and the undo and redo buttons are disabled. This is because the user should only be styling objects and not creating new ones (and each option on the style panel has an <span class="button">Undo</span> button).
+
+### Fore- and Back-ground Panels
+
+The user can select items to style before entering the Styling Mode (the mode where the Style Panel is open and the others are minimizied). The selected items are imported in the <span class="method">mount()</span> and passed to the <span class="method">OnSelectionChange()</span> method. This method is run when ever there is a change in the selection
+
+```ts
+@Watch("selections")
+  onSelectionChanged (newSelection: SENodule[]): void {
+```
+
+This method then checks to see if there are any style changes that need to be stored in the command stack so they can be undone later. If there is a non-empty selection, the `initialStyleState` and `defaultStyleState` of the selected objects (for front and back) is recorded in these variables in the Vuex store. These are keep in the store because there are Vue <span class="component">ColorSelector</span> and <span class="component">NumberSelector</span> components across _two_ expansion panels that need access these variables to set the state of their selectors.
+
+<<@/scr/components/FrontAndBackStyle.vue#setStyle
+
+Upon <span class="method">setXXXSelectorState()</span> method being executed, the program first determines if all the selected objects have style XXX (via the <span class="method">hasXXX()</span>). If they, do the <span class="component">fade-in-card</span> is display for that style, if not it is not displayed. If the style is common to all selected objects, the program then check to see if the value of that style is the same across all selected objects. If it is not, the <span class="variable">XXXAgreement</span> variable is set to <span class="component">false</span> and a button saying "Differing Styles Detected -- Override" is displayed. If the user clicks that button, the <span class="variable">XXXAgreement</span> variable is set to <span class="component">true</span> and any style selection will set that one style property of all selected objects to be the same. Once a selection is made the <span class="button">Undo</span> button is activative, and by clicking it all selected objects will revert that style property back to the style they had when they were _selected_. Clicking the <span class="button">Apply Defaults</span> button will revert the selected objects back to their default style.
+
+The big picture idea is that to update the display of an object. The
+
+```ts
+updateStyle(options: StyleOptions): void</span>
+```
+
+method records the new style choices in the variables of the plottable class. Then the
+
+```ts
+this.stylize(DisplayStyle.APPLYCURRENTVARIABLES);
+this.adjustSize();
+```
+
+commands apply the newly updated variables to the actual TwoJS objects so that they are rendered to the screen. This way the current style state of the plottable is readable with the
+
+```ts
+currentStyleState(front: boolean): StyleOptions {
+```
+
+method which returns the current value of each style variable.
+
+The background panel has slightly different options because of the <span class="variable">dynamicBackStyle</span> variable. When this variable is set many of the styles for the back side display are automatically calculated based on the value of <span class="variable">Nodule.backStyleContrast</span> variable (always between 0 and 1) and the methods
+
+```ts
+static contrastFillColor(frontColor: string): string {
+static contrastStrokeColor(frontColor: string): string {
+static contrastOpacity(frontOpacity: number): number {
+static contrastStrokeWidthPercent(frontPercent: number): number {
+static contrastPointRadiusPercent(frontPercent: number): number
+```
+
+found in the <span class="class">Nodule</span> class. The idea is that if <span class="variable">Nodule.backStyleContrast</span> is equal to one there is essentially no difference between front and back styling and if equal to zero almost nothing appears on back of sphere for colors and size reduction is maximized. The background panel always displays a slider for adjusting <span class="variable">Nodule.backStyleContrast</span> and the results are automatically displayed on the screen in real time. The other option is the enable/disable the <span class="variable">dynamicBackStyle</span> for the selected objects (each object has its own copy of the <span class="variable">dynamicBackStyle</span> variable). If <span class="variable">dynamicBackStyle</span> is true, the only way to adjust the styling (except for dash pattern) is via the <span class="variable">Nodule.backStyleContrast</span> slider. If <span class="variable">dynamicBackStyle</span> is false, then the common style for the selected objects is adjustable with the styling options that appear.
+
 ## Languages
 
-Spherical Easel uses the [Vue I18n internationalization plugin for Vue.js](https://kazupon.github.io/vue-i18n/api/#extension-of-vue).
+Spherical Easel uses the [Vue I18n internationalization plugin for Vue.js](https://kazupon.github.io/vue-i18n/api/#extension-of-vue). If you are interested in helping translate this program into another language, please (TODO: add a link)
+
+```
+
+```

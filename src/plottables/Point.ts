@@ -42,21 +42,11 @@ export default class Point extends Nodule {
   protected strokeColorFront = SETTINGS.point.drawn.strokeColor.front;
   protected pointRadiusPercentFront = 100;
   protected opacityFront = SETTINGS.point.drawn.opacity.front;
-  // Back
-  protected fillColorBack = SETTINGS.point.dynamicBackStyle
-    ? Nodule.contrastFillColor(SETTINGS.point.drawn.fillColor.front)
-    : SETTINGS.point.drawn.fillColor.back;
-  protected strokeColorBack = SETTINGS.point.dynamicBackStyle
-    ? Nodule.contrastStrokeColor(SETTINGS.point.drawn.strokeColor.front)
-    : SETTINGS.point.drawn.strokeColor.back;
-  protected pointRadiusPercentBack = SETTINGS.point.dynamicBackStyle
-    ? Nodule.contrastPointRadiusPercent(
-        SETTINGS.point.drawn.pointStrokeWidth.front
-      )
-    : 100;
-  protected opacityBack = SETTINGS.point.dynamicBackStyle
-    ? Nodule.contrastOpacity(SETTINGS.point.drawn.opacity.front)
-    : SETTINGS.point.drawn.opacity.back;
+  // Back - use the default non-dynamic back style options so that when the user disables the dynamic back style these options are displayed
+  protected fillColorBack = SETTINGS.point.drawn.fillColor.back;
+  protected strokeColorBack = SETTINGS.point.drawn.strokeColor.back;
+  protected pointRadiusPercentBack = 100;
+  protected opacityBack = SETTINGS.point.drawn.opacity.back;
   protected dynamicBackStyle = SETTINGS.point.dynamicBackStyle;
 
   /**
@@ -269,17 +259,20 @@ export default class Point extends Nodule {
       if (options.dynamicBackStyle != undefined) {
         this.dynamicBackStyle = options.dynamicBackStyle;
       }
-      if (options.pointRadiusPercent) {
-        this.pointRadiusPercentBack = options.pointRadiusPercent;
-      }
-      if (options.fillColor) {
-        this.fillColorBack = options.fillColor;
-      }
-      if (options.strokeColor) {
-        this.strokeColorBack = options.strokeColor;
-      }
-      if (options.opacity) {
-        this.opacityBack = options.opacity;
+      // overwrite the back options only in the case the dynamic style is not enabled
+      if (!this.dynamicBackStyle) {
+        if (options.pointRadiusPercent) {
+          this.pointRadiusPercentBack = options.pointRadiusPercent;
+        }
+        if (options.fillColor) {
+          this.fillColorBack = options.fillColor;
+        }
+        if (options.strokeColor) {
+          this.strokeColorBack = options.strokeColor;
+        }
+        if (options.opacity) {
+          this.opacityBack = options.opacity;
+        }
       }
     }
     // Now apply the style and size
@@ -296,7 +289,7 @@ export default class Point extends Nodule {
         pointRadiusPercent: this.pointRadiusPercentFront,
         strokeColor: this.strokeColorFront,
         fillColor: this.fillColorFront,
-        opacity: this.opacityFront,
+        opacity: this.opacityFront
       };
     } else {
       return {
@@ -305,7 +298,7 @@ export default class Point extends Nodule {
         strokeColor: this.strokeColorBack,
         fillColor: this.fillColorBack,
         opacity: this.opacityBack,
-        dynamicBackStyle: this.dynamicBackStyle,
+        dynamicBackStyle: this.dynamicBackStyle
       };
     }
   }
@@ -319,7 +312,7 @@ export default class Point extends Nodule {
         pointRadiusPercent: 100,
         strokeColor: SETTINGS.point.drawn.strokeColor.front,
         fillColor: SETTINGS.point.drawn.fillColor.front,
-        opacity: SETTINGS.point.drawn.opacity.front,
+        opacity: SETTINGS.point.drawn.opacity.front
       };
       // Back
     } else {
@@ -342,7 +335,7 @@ export default class Point extends Nodule {
           ? Nodule.contrastOpacity(SETTINGS.point.drawn.opacity.front)
           : SETTINGS.point.drawn.opacity.back,
 
-        dynamicBackStyle: SETTINGS.point.dynamicBackStyle,
+        dynamicBackStyle: SETTINGS.point.dynamicBackStyle
       };
     }
   }
@@ -394,7 +387,7 @@ export default class Point extends Nodule {
         }
         this.frontPoint.stroke = SETTINGS.point.temp.strokeColor.front;
         // strokeWidth is not user modifiable, strokeWidth is always the default drawn one
-        this.frontPoint.vertices.forEach((v) => {
+        this.frontPoint.vertices.forEach(v => {
           v.normalize().multiplyScalar(Point.currentPointRadiusFront);
         }); // temporary points are always the currentPointSize (accounts for zoom)
         this.frontPoint.opacity = SETTINGS.point.temp.opacity.front;
@@ -407,7 +400,7 @@ export default class Point extends Nodule {
         }
         this.backPoint.stroke = SETTINGS.point.temp.strokeColor.back;
         // strokeWidth is not user modifiable, strokeWidth is always the default drawn one
-        this.backPoint.vertices.forEach((v) => {
+        this.backPoint.vertices.forEach(v => {
           v.normalize().multiplyScalar(Point.currentPointRadiusBack);
         }); // temporary points are always the currentPointSize (accounts for zoom)
         this.backPoint.opacity = SETTINGS.point.temp.opacity.back;
