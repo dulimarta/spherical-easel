@@ -22,7 +22,8 @@ export abstract class SENodule {
   /**
    * A pointer to the corresponding plottable object
    */
-  public ref!: Nodule;
+  // TODO: SEExpression and it subclasses have no associated plottables
+  public ref?: Nodule;
 
   /* A unique identification number and name for each node */
   public id: number;
@@ -265,7 +266,7 @@ export abstract class SENodule {
     // Set the showing variable
     this._showing = b;
     // Set the display for the corresponding plottable object
-    this.ref.setVisible(b);
+    this.ref?.setVisible(b);
   }
 
   get showing(): boolean {
@@ -277,9 +278,9 @@ export abstract class SENodule {
     if (/*this._selected || */ !this._showing) return;
     if (b) {
       // Set the display for the corresponding plottable object
-      this.ref.glowingDisplay();
+      this.ref?.glowingDisplay();
     } else {
-      this.ref.normalDisplay();
+      this.ref?.normalDisplay();
       // TODO: not glowing implies not selected?
       // this.selected = false;
     }
@@ -291,11 +292,11 @@ export abstract class SENodule {
     this._selected = b;
     if (b) {
       // Set the display for the corresponding plottable object
-      this.ref.glowingDisplay();
+      this.ref?.glowingDisplay();
       // TODO: do we need to set glowing?
       // this.glowing = true;
     } else {
-      this.ref.normalDisplay();
+      this.ref?.normalDisplay();
     }
   }
 

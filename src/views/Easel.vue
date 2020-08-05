@@ -405,7 +405,7 @@ export default class Easel extends Vue {
 
     // Update the size of each nodule in the store
     this.$store.state.seNodules.forEach((p: SENodule) => {
-      p.ref.adjustSize();
+      p.ref?.adjustSize();
     });
     // The temporary plottables need to be resized too
     this.$store.state.temporaryNodules.forEach((p: Nodule) => {

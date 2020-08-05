@@ -524,18 +524,18 @@ export default class FrontStyle extends Vue {
   }
 
   /** mounted() is part of VueJS lifecycle hooks */
-  mounted (): void {
+  mounted(): void {
     //If there are already objects selected set the style panel to edit them (OK to pass empty string because that will set the defaults)
     this.onSelectionChanged(this.$store.getters.selectedSENodules());
     EventBus.listen("save-style-state", this.saveStyleState);
   }
 
-  isBackFace (): boolean {
+  isBackFace(): boolean {
     return this.side === false;
   }
 
   // These methods are linked to the dashPattern fade-in-card
-  onDashPatternChange (): void {
+  onDashPatternChange(): void {
     this.gapLength = this.sliderDashArray[0];
     this.dashLength = this.sliderDashArray[1] - this.sliderDashArray[0];
     this.$store.direct.commit.changeStyle({
@@ -547,10 +547,10 @@ export default class FrontStyle extends Vue {
     }
     );
   }
-  setCommonDashPatternAgreement (): void {
+  setCommonDashPatternAgreement(): void {
     this.dashPatternAgreement = true;
   }
-  clearRecentDashPatternChanges (): void {
+  clearRecentDashPatternChanges(): void {
     const selected = this.$store.getters.selectedSENodules();
     for (let i = 0; i < selected.length; i++) {
       // Check see if the initialStylesStates[i] exist and has length >0
@@ -582,7 +582,7 @@ export default class FrontStyle extends Vue {
     }
     this.setDashPatternSelectorState(this.initialStyleStates);
   }
-  resetDashPatternToDefaults (): void {
+  resetDashPatternToDefaults(): void {
     const selected = this.$store.getters.selectedSENodules();
     for (let i = 0; i < selected.length; i++) {
       // Check see if the selected[i] exist and has length >0
@@ -615,7 +615,7 @@ export default class FrontStyle extends Vue {
     this.setDashPatternSelectorState(this.defaultStyleStates);
   }
 
-  toggleDashPatternSliderAvailibity (): void {
+  toggleDashPatternSliderAvailibity(): void {
     if (this.emptyDashPattern) {
       this.sliderDashArray.clear();
       this.sliderDashArray.push(this.gapLength as number);
@@ -646,7 +646,7 @@ export default class FrontStyle extends Vue {
     this.emptyDashPattern = !this.emptyDashPattern;
   }
 
-  incrementDashPattern (): void {
+  incrementDashPattern(): void {
     // increasing the value of the sliderDashArray[1] increases the length of the dash
     if (
       this.sliderDashArray[1] + 1 <=
@@ -666,7 +666,7 @@ export default class FrontStyle extends Vue {
     }
   }
 
-  decrementDashPattern (): void {
+  decrementDashPattern(): void {
     // increasing the value of the sliderDashArray[0] decreases the length of the dash
     if (
       this.sliderDashArray[0] + 1 <=
@@ -690,7 +690,7 @@ export default class FrontStyle extends Vue {
      */
   }
 
-  setDashPatternSelectorState (styleState: StyleOptions[]): void {
+  setDashPatternSelectorState(styleState: StyleOptions[]): void {
     // reset to the default which are overwritten as necessary
     this.emptyDashPattern = true;
     this.dashPatternAgreement = true;
@@ -744,7 +744,7 @@ export default class FrontStyle extends Vue {
     this.sliderDashArray.push(this.gapLength + this.dashLength);
   }
 
-  disableDashPatternSelector (totally: boolean): void {
+  disableDashPatternSelector(totally: boolean): void {
     this.dashPatternAgreement = false;
     // Set the gap and dash to the default
     this.gapLength = 5;
@@ -753,7 +753,7 @@ export default class FrontStyle extends Vue {
   }
 
   // These methods are linked to the dynamicBackStyle fade-in-card
-  onBackStyleContrastChange (): void {
+  onBackStyleContrastChange(): void {
     this.$store.direct.commit.changeStyle({
       selected: this.$store.getters.selectedSENodules(),
       payload: {
@@ -762,10 +762,10 @@ export default class FrontStyle extends Vue {
       }
     });
   }
-  setCommonDynamicBackStyleAgreement (): void {
+  setCommonDynamicBackStyleAgreement(): void {
     this.dynamicBackStyleAgreement = true;
   }
-  clearRecentDynamicBackStyleChanges (): void {
+  clearRecentDynamicBackStyleChanges(): void {
     const selected = this.$store.getters.selectedSENodules();
     for (let i = 0; i < selected.length; i++) {
       this.$store.direct.commit.changeStyle({
@@ -779,7 +779,7 @@ export default class FrontStyle extends Vue {
     this.backStyleContrast = this.initialBackStyleContrast;
     this.setDynamicBackStyleSelectorState(this.initialStyleStates);
   }
-  resetDynamicBackStyleToDefaults (): void {
+  resetDynamicBackStyleToDefaults(): void {
     const selected = this.$store.getters.selectedSENodules();
     for (let i = 0; i < selected.length; i++) {
       this.$store.direct.commit.changeStyle({
@@ -793,7 +793,7 @@ export default class FrontStyle extends Vue {
     this.backStyleContrast = SETTINGS.style.backStyleContrast;
     this.setDynamicBackStyleSelectorState(this.defaultStyleStates);
   }
-  toggleBackStyleOptionsAvailability (): void {
+  toggleBackStyleOptionsAvailability(): void {
     this.dynamicBackStyle = !this.dynamicBackStyle;
     console.log("dynamicBackSyle", this.dynamicBackStyle);
 
@@ -810,7 +810,8 @@ export default class FrontStyle extends Vue {
       const selectedSENodules = this.$store.getters.selectedSENodules() as SENodule[];
       const tempStyleState: StyleOptions[] = [];
       selectedSENodules.forEach(seNodule => {
-        tempStyleState.push(seNodule.ref.currentStyleState(this.side));
+        if (seNodule.ref)
+          tempStyleState.push(seNodule.ref.currentStyleState(this.side));
       });
       console.log("tempStyleState", tempStyleState);
       // TODO: uncomment the following ?
@@ -821,7 +822,7 @@ export default class FrontStyle extends Vue {
     }
   }
 
-  incrementBackStyleContrast (): void {
+  incrementBackStyleContrast(): void {
     if (
       this.dynamicBackStyle != undefined &&
       this.backStyleContrast + 0.1 <= 1
@@ -837,7 +838,7 @@ export default class FrontStyle extends Vue {
       });
     }
   }
-  decrementBackStyleContrast (): void {
+  decrementBackStyleContrast(): void {
     if (
       this.dynamicBackStyle != undefined &&
       this.backStyleContrast - 0.1 >= 0
@@ -853,7 +854,7 @@ export default class FrontStyle extends Vue {
     }
   }
 
-  setDynamicBackStyleSelectorState (styleState: StyleOptions[]): void {
+  setDynamicBackStyleSelectorState(styleState: StyleOptions[]): void {
     this.dynamicBackStyleAgreement = true;
     this.totallyDisableDynamicBackStyleSelector = false;
     this.dynamicBackStyle = styleState[0].dynamicBackStyle;
@@ -873,7 +874,7 @@ export default class FrontStyle extends Vue {
     }
   }
 
-  disableDynamicBackStyleSelector (totally: boolean): void {
+  disableDynamicBackStyleSelector(totally: boolean): void {
     this.dynamicBackStyleAgreement = false;
     this.dynamicBackStyle = true;
     this.totallyDisableDynamicBackStyleSelector = totally;
@@ -883,7 +884,7 @@ export default class FrontStyle extends Vue {
    * Determines if the commonStyleProperties has the given input of type Styles
    * The input is an enum of type Styles
    */
-  hasStyle (s: Styles): boolean {
+  hasStyle(s: Styles): boolean {
     const sNum = Number(s);
     return (
       this.commonStyleProperties.length > 0 &&
@@ -894,7 +895,7 @@ export default class FrontStyle extends Vue {
   /**
    * Used to determine which objects the color picker should control (i.e. the check boxes under the color picker)
    */
-  get colorKeys (): any[] {
+  get colorKeys(): any[] {
     return this.commonStyleProperties
       .map((id: number) => ({
         // Convert camelCase to title format
@@ -918,37 +919,37 @@ export default class FrontStyle extends Vue {
   /**
    * Used to determine if the color picker Vue component (i.e. fade-in-card) should be displayed
    */
-  get hasStrokeColor (): boolean {
+  get hasStrokeColor(): boolean {
     return this.hasStyle(Styles.strokeColor);
   }
 
   /**
    * Used to determine if the color picker Vue component (i.e. fade-in-card) should be displayed
    */
-  get hasFillColor (): boolean {
+  get hasFillColor(): boolean {
     return this.hasStyle(Styles.fillColor);
   }
   /**
    * Used to determine if the stroke width slider (i.e. fade-in-card containing the slider) should be displayed
    */
-  get hasStrokeWidthPercent (): boolean {
+  get hasStrokeWidthPercent(): boolean {
     return this.hasStyle(Styles.strokeWidthPercent);
   }
 
-  get hasPointRadiusPercent (): boolean {
+  get hasPointRadiusPercent(): boolean {
     return this.hasStyle(Styles.pointRadiusPercent);
   }
 
-  get hasOpacity (): boolean {
+  get hasOpacity(): boolean {
     return this.hasStyle(Styles.opacity);
   }
   /**
    * Used to determine if the dash gap and dash length  (i.e. fade-in-card containing the sliders) should be displayed
    */
-  get hasDashPattern (): boolean {
+  get hasDashPattern(): boolean {
     return this.hasStyle(Styles.dashArray);
   }
-  get hasDynamicBackStyle (): boolean {
+  get hasDynamicBackStyle(): boolean {
     return this.hasStyle(Styles.dynamicBackStyle);
   }
 
@@ -957,7 +958,7 @@ export default class FrontStyle extends Vue {
    * when they change, this method wil execute in response to that change.
    */
   @Watch("selections")
-  onSelectionChanged (newSelection: SENodule[]): void {
+  onSelectionChanged(newSelection: SENodule[]): void {
     // Before changing the selections save the state for an undo/redo command (if necessary)
     this.saveStyleState();
 
@@ -988,8 +989,10 @@ export default class FrontStyle extends Vue {
     this.initialStyleStates.clear();
     this.defaultStyleStates.clear();
     newSelection.forEach(seNodule => {
-      this.initialStyleStates.push(seNodule.ref.currentStyleState(this.side));
-      this.defaultStyleStates.push(seNodule.ref.defaultStyleState(this.side));
+      if (seNodule.ref) {
+        this.initialStyleStates.push(seNodule.ref.currentStyleState(this.side));
+        this.defaultStyleStates.push(seNodule.ref.defaultStyleState(this.side));
+      }
     });
     this.initialBackStyleContrast = Nodule.getBackStyleContrast();
 
@@ -999,7 +1002,7 @@ export default class FrontStyle extends Vue {
     this.setDynamicBackStyleSelectorState(this.initialStyleStates);
   }
 
-  areEquivalentStyles (
+  areEquivalentStyles(
     styleStates1: StyleOptions[],
     styleStates2: StyleOptions[]
   ): boolean {
@@ -1055,15 +1058,17 @@ export default class FrontStyle extends Vue {
     return true;
   }
 
-  saveStyleState (): void {
+  saveStyleState(): void {
     if (this.oldSelection.length > 0) {
       console.log("save style state");
       // Check to see if there have been any difference between the current and initial
       //Record the current state of each Nodule
       this.currentStyleStates.clear();
-      this.oldSelection.forEach(seNodule => {
-        this.currentStyleStates.push(seNodule.ref.currentStyleState(this.side));
-      });
+      this.oldSelection.
+        forEach(seNodule => {
+          if (seNodule.ref)
+            this.currentStyleStates.push(seNodule.ref?.currentStyleState(this.side));
+        });
       if (
         !this.areEquivalentStyles(
           this.currentStyleStates,

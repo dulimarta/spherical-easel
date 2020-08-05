@@ -40,7 +40,7 @@ export const initialState: AppState = {
   temporaryNodules: [], // An array of all Nodules that are temporary - created by the handlers.
   intersections: [],
   measurements: [],
-  calculations: [],
+  calculations: []
 };
 //#endregion appState
 
@@ -102,8 +102,8 @@ export default {
   },
   //#endregion addPoint
   removePoint(state: AppState, pointId: number): void {
-    const pos = state.sePoints.findIndex((x) => x.id === pointId);
-    const pos2 = state.seNodules.findIndex((x) => x.id === pointId);
+    const pos = state.sePoints.findIndex(x => x.id === pointId);
+    const pos2 = state.seNodules.findIndex(x => x.id === pointId);
     if (pos >= 0) {
       const victimPoint = state.sePoints[pos];
       state.sePoints.splice(pos, 1);
@@ -118,8 +118,8 @@ export default {
     line.ref.addToLayers(state.layers);
   },
   removeLine(state: AppState, lineId: number): void {
-    const pos = state.seLines.findIndex((x) => x.id === lineId);
-    const pos2 = state.seNodules.findIndex((x) => x.id === lineId);
+    const pos = state.seLines.findIndex(x => x.id === lineId);
+    const pos2 = state.seNodules.findIndex(x => x.id === lineId);
     if (pos >= 0) {
       /* victim line is found */
       const victimLine = state.seLines[pos];
@@ -134,8 +134,8 @@ export default {
     segment.ref.addToLayers(state.layers);
   },
   removeSegment(state: AppState, segId: number): void {
-    const pos = state.seSegments.findIndex((x) => x.id === segId);
-    const pos2 = state.seNodules.findIndex((x) => x.id === segId);
+    const pos = state.seSegments.findIndex(x => x.id === segId);
+    const pos2 = state.seNodules.findIndex(x => x.id === segId);
     if (pos >= 0) {
       const victimSegment = state.seSegments[pos];
       victimSegment.ref.removeFromLayers();
@@ -149,8 +149,8 @@ export default {
     circle.ref.addToLayers(state.layers);
   },
   removeCircle(state: AppState, circleId: number): void {
-    const circlePos = state.seCircles.findIndex((x) => x.id === circleId);
-    const pos2 = state.seNodules.findIndex((x) => x.id === circleId);
+    const circlePos = state.seCircles.findIndex(x => x.id === circleId);
+    const pos2 = state.seNodules.findIndex(x => x.id === circleId);
     if (circlePos >= 0) {
       /* victim line is found */
       const victimCircle: SECircle = state.seCircles[circlePos];
@@ -178,7 +178,7 @@ export default {
     move: { pointId: number; location: Vector3 }
   ): void {
     pointMoverVisitor.setNewLocation(move.location);
-    const pos = state.sePoints.findIndex((x) => x.id === move.pointId);
+    const pos = state.sePoints.findIndex(x => x.id === move.pointId);
     state.sePoints[pos].accept(pointMoverVisitor);
   },
   changeLineNormalVector(
@@ -186,7 +186,7 @@ export default {
     change: { lineId: number; normal: Vector3 }
   ): void {
     lineNormalVisitor.setNewNormal(change.normal);
-    const pos = state.seLines.findIndex((x) => x.id === change.lineId);
+    const pos = state.seLines.findIndex(x => x.id === change.lineId);
     if (pos >= 0) state.seLines[pos].accept(lineNormalVisitor);
   },
   changeSegmentNormalVectorArcLength(
@@ -195,7 +195,7 @@ export default {
   ): void {
     segmentNormalArcLengthVisitor.setNewNormal(change.normal);
     segmentNormalArcLengthVisitor.setNewArcLength(change.arcLength);
-    const pos = state.seSegments.findIndex((x) => x.id === change.segmentId);
+    const pos = state.seSegments.findIndex(x => x.id === change.segmentId);
     if (pos >= 0) state.seSegments[pos].accept(segmentNormalArcLengthVisitor);
   },
   setSelectedSENodules(state: AppState, payload: SENodule[]): void {
@@ -205,8 +205,8 @@ export default {
   // Update the display of all free SEPoints to update the entire display
   updateDisplay(state: AppState): void {
     state.seNodules
-      .filter((obj) => obj.isFreePoint())
-      .forEach((obj) => {
+      .filter(obj => obj.isFreePoint())
+      .forEach(obj => {
         // First mark the kids out of date so that the update method does a topological sort
         obj.markKidsOutOfDate();
         obj.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
@@ -216,7 +216,7 @@ export default {
     state: AppState,
     {
       selected, // The selected SENodules that this change applies to, passing this as a argument allows styling to be undone.
-      payload,
+      payload
     }: {
       selected: SENodule[];
       payload: StyleOptions;
@@ -230,7 +230,7 @@ export default {
       dashArray: payload.dashArray,
       opacity: payload.opacity,
       dynamicBackStyle: payload.dynamicBackStyle,
-      pointRadiusPercent: payload.pointRadiusPercent,
+      pointRadiusPercent: payload.pointRadiusPercent
     };
     if (
       payload.backStyleContrast &&
@@ -239,11 +239,11 @@ export default {
       // Update all Nodules because more than just the selected nodules depend on the backStyleContrast
       Nodule.setBackStyleContrast(payload.backStyleContrast);
       state.seNodules.forEach((n: SENodule) => {
-        n.ref.stylize(DisplayStyle.APPLYCURRENTVARIABLES);
+        n.ref?.stylize(DisplayStyle.APPLYCURRENTVARIABLES);
       });
     }
     selected.forEach((n: SENodule) => {
-      n.ref.updateStyle(opt as StyleOptions);
+      n.ref?.updateStyle(opt as StyleOptions);
     });
   },
   addMeasurement(state: AppState, measurement: SEMeasurement): void {
@@ -251,8 +251,8 @@ export default {
     state.seNodules.push(measurement);
   },
   removeMeasurement(state: AppState, measId: number): void {
-    const pos = state.measurements.findIndex((x) => x.id === measId);
-    const pos2 = state.seNodules.findIndex((x) => x.id === measId);
+    const pos = state.measurements.findIndex(x => x.id === measId);
+    const pos2 = state.seNodules.findIndex(x => x.id === measId);
     if (pos >= 0) {
       // const victimSegment = state.measurements[pos];
       state.measurements.splice(pos, 1);
@@ -265,11 +265,11 @@ export default {
     state.calculations.push(calc);
   },
   removeCalculation(state: AppState, calcId: number): void {
-    const pos = state.calculations.findIndex((c) => c.id === calcId);
+    const pos = state.calculations.findIndex(c => c.id === calcId);
     // const pos2 = state.nodules.findIndex(x => x.id === calcId);
     if (pos >= 0) {
       state.calculations.splice(pos, 1);
       // state.nodules.splice(pos2, 1);
     }
-  },
+  }
 };
