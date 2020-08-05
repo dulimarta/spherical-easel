@@ -31,12 +31,12 @@
 <script lang="ts">
 import Vue from "vue";
 import Component from "vue-class-component";
-import FrontStyle from "@/components/FrontStyle.vue";
+import FrontAndBackStyle from "@/components/FrontAndBackStyle.vue";
 import { Prop } from "vue-property-decorator";
 import EventBus from "../eventHandlers/EventBus";
 import SETTINGS from "@/global-settings";
 
-@Component({ components: { FrontStyle } })
+@Component({ components: { FrontAndBackStyle } })
 export default class Style extends Vue {
   @Prop()
   readonly minified!: boolean;
@@ -44,12 +44,12 @@ export default class Style extends Vue {
   private readonly panels = [
     {
       i18n_key: "style.foregroundStyle",
-      component: () => import("@/components/FrontStyle.vue"),
+      component: () => import("@/components/FrontAndBackStyle.vue"),
       isFront: true
     },
     {
       i18n_key: "style.backgroundStyle",
-      component: () => import("@/components/FrontStyle.vue"), // Note: The frontPanel(idx) returns false for this panel - setting the panel to back side
+      component: () => import("@/components/FrontAndBackStyle.vue"), // Note: The frontPanel(idx) returns false for this panel - setting the panel to back side
       isFront: false
     },
     {
@@ -60,7 +60,7 @@ export default class Style extends Vue {
   ];
 
   //When the user changes panels or click on a panel header, the style state should be saved
-  saveStyleState(): void {
+  saveStyleState (): void {
     EventBus.fire("save-style-state", {});
   }
   // frontPanel(idx: number): boolean {
@@ -70,7 +70,7 @@ export default class Style extends Vue {
   //     return SETTINGS.style.backFace;
   //   }
   // }
-  panelBackgroundColor(idx: number): string {
+  panelBackgroundColor (idx: number): string {
     if (idx == 1) {
       return "grey darken-2";
     } else {

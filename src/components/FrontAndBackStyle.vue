@@ -456,7 +456,7 @@ const keys = values.map(e => {
 });
 
 @Component({ components: { FadeInCard, NumberSelector, ColorSelector } })
-export default class FrontStyle extends Vue {
+export default class FrontAndBackStyle extends Vue {
   @Prop()
   readonly side!: boolean;
 
@@ -547,7 +547,7 @@ export default class FrontStyle extends Vue {
     //If there are no initial style state, then onSelection with non-empty selections has not been
     // executed, so if there are already objects selected set the style panel to edit them 
     // (OK to pass empty string because that will set the defaults)
-    //  initialStyleStates is *only* set in the FrontStyle.vue onSelectionChangedn method
+    //  initialStyleStates is *only* set in the FrontAndBackStyle.vue onSelectionChangedn method
     //  initialStyleStates is *only* cleared after a save command. 
     // if (this.initialStyleStates.length === 0) {
     this.onSelectionChanged(this.$store.getters.selectedSENodules());
@@ -1035,7 +1035,7 @@ export default class FrontStyle extends Vue {
         selected: newSelection,
         backContrast: Nodule.getBackStyleContrast()
       });
-   //#endregion
+    //#endregion
     //Set the initial state of the fade-in-card/selectors (checking to see if the property is the same across all selected objects)
     this.setDashPatternSelectorState(this.$store.getters.getInitialStyleState(this.side));
     this.setDynamicBackStyleSelectorState(this.$store.getters.getInitialStyleState(this.side));
