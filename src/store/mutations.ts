@@ -16,6 +16,7 @@ import { UpdateMode, UpdateStateType } from "@/types";
 import Nodule, { DisplayStyle } from "@/plottables/Nodule";
 import { SEMeasurement } from "@/models/SEMeasurement";
 import { SECalculation } from "@/models/SECalculation";
+import SETTINGS from "@/global-settings";
 
 // const tmpMatrix = new Matrix4();
 
@@ -41,6 +42,9 @@ export const initialState: AppState = {
   intersections: [],
   measurements: [],
   calculations: [],
+  initialStyleStates: [],
+  defaultStyleStates: [],
+  initialBackStyleContrast: SETTINGS.style.backStyleContrast,
 };
 //#endregion appState
 
@@ -63,7 +67,11 @@ export default {
     state.intersections.clear();
     state.measurements.clear();
     state.calculations.clear();
-    //state.temporaryNodules.clear(); // Do not clear the temporaryNodules array because the constructors of the tools (handlers) place the temporary Nodules in this array *before* the this.init is called in App.vue mount.
+    state.initialStyleStates.clear();
+    state.defaultStyleStates.clear();
+    //state.temporaryNodules.clear(); // Do not clear the temporaryNodules array
+    // because the constructors of the tools (handlers) place the temporary Nodules
+    // in this array *before* the this.init is called in App.vue mount.
   },
   setLayers(state: AppState, layers: Two.Group[]): void {
     state.layers = layers;
@@ -271,5 +279,36 @@ export default {
       state.calculations.splice(pos, 1);
       // state.nodules.splice(pos2, 1);
     }
+  },
+  setStyleState(
+    state: AppState,
+    {
+      selected, // The selected SENodules that this change applies to, passing this as a argument allows styling to be undone.
+      backContrast,
+    }: {
+      selected: SENodule[];
+      backContrast: number;
+    }
+  ): void {
+    state.initialStyleStates.clear();
+    state.defaultStyleStates.clear();
+    selected.forEach((seNodule) => {
+      // The first half is the front style settings, the second half the back
+      state.initialStyleStates.push(
+        seNodule.ref.currentStyleState(SETTINGS.style.frontFace)
+      );
+      state.defaultStyleStates.push(
+        seNodule.ref.defaultStyleState(SETTINGS.style.frontFace)
+      );
+    });
+    selected.forEach((seNodule) => {
+      state.initialStyleStates.push(
+        seNodule.ref.currentStyleState(SETTINGS.style.backFace)
+      );
+      state.defaultStyleStates.push(
+        seNodule.ref.defaultStyleState(SETTINGS.style.backFace)
+      );
+    });
+    state.initialBackStyleContrast = backContrast;
   },
 };

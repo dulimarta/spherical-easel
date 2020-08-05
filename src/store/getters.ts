@@ -5,7 +5,7 @@ import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import {
   AppState,
   IntersectionReturnType,
-  SEIntersectionReturnType
+  SEIntersectionReturnType,
 } from "@/types";
 import { Vector3 } from "three";
 import Two, { Vector } from "two.js";
@@ -13,6 +13,8 @@ import { SENodule } from "@/models/SENodule";
 import { SEPoint } from "@/models/SEPoint";
 import NonFreePoint from "@/plottables/NonFreePoint";
 import { DisplayStyle } from "@/plottables/Nodule";
+import { StyleOptions } from "@/types/Styles";
+import SETTINGS from "@/global-settings";
 
 const PIXEL_CLOSE_ENOUGH = 8;
 
@@ -52,7 +54,7 @@ const tempVec2 = new Vector3();
  * @param vectorList The list of vectors
  */
 function vectorOnList(vec: Vector3, vectorList: Vector3[]) {
-  return vectorList.some(v => tempVec.subVectors(vec, v).isZero());
+  return vectorList.some((v) => tempVec.subVectors(vec, v).isZero());
 }
 
 /**
@@ -70,11 +72,11 @@ function intersectLineWithLine(
   // console.debug("Create 2 new Vector3()");
   const intersection1: IntersectionReturnType = {
     vector: new Vector3(),
-    exists: true
+    exists: true,
   };
   const intersection2: IntersectionReturnType = {
     vector: new Vector3(),
-    exists: true
+    exists: true,
   };
 
   // Plus and minus the cross product of the normal vectors are the intersection vectors
@@ -108,11 +110,11 @@ function intersectLineWithSegment(
   // console.debug("Create 2 new Vector3()");
   const intersection1: IntersectionReturnType = {
     vector: new Vector3(),
-    exists: true
+    exists: true,
   };
   const intersection2: IntersectionReturnType = {
     vector: new Vector3(),
-    exists: true
+    exists: true,
   };
   // Plus and minus the cross product of the normal vectors are the possible intersection vectors
 
@@ -175,11 +177,11 @@ function intersectSegmentWithSegment(
   // console.debug("Create 2 new Vector3()");
   const intersection1: IntersectionReturnType = {
     vector: new Vector3(),
-    exists: true
+    exists: true,
   };
   const intersection2: IntersectionReturnType = {
     vector: new Vector3(),
-    exists: true
+    exists: true,
   };
   // Plus and minus the cross product of the normal vectors are the possible intersection vectors
   tempVec1
@@ -228,7 +230,7 @@ function intersectSegmentWithCircle(
   );
 
   // If the segment and the circle don't intersect, the return vector is the zero vector and this shouldn't be passed to the onSegment because that method expects a unit vector
-  temp.forEach(item => {
+  temp.forEach((item) => {
     if (item.vector.isZero()) {
       item.exists = false;
     } else {
@@ -259,11 +261,11 @@ function intersectCircles(
   // console.debug("Create 2 new Vector3()");
   const intersection1: IntersectionReturnType = {
     vector: new Vector3(),
-    exists: true
+    exists: true,
   };
   const intersection2: IntersectionReturnType = {
     vector: new Vector3(),
-    exists: true
+    exists: true,
   };
 
   //Convert to the case where all arc lengths are less than Pi/2
@@ -386,7 +388,7 @@ export default {
     unitIdealVector: Vector3,
     screenPosition: Two.Vector
   ): SENodule[] => {
-    return state.seNodules.filter(obj =>
+    return state.seNodules.filter((obj) =>
       obj.isHitAt(unitIdealVector, state.zoomMagnificationFactor)
     );
   },
@@ -398,7 +400,7 @@ export default {
     screenPosition: Two.Vector
   ): SEPoint[] => {
     return state.sePoints.filter(
-      p =>
+      (p) =>
         p.isHitAt(unitIdealVector, state.zoomMagnificationFactor) &&
         p.ref.defaultScreenVectorLocation.distanceTo(screenPosition) <
           PIXEL_CLOSE_ENOUGH
@@ -447,7 +449,7 @@ export default {
     //  they won't have been added to the state.points array yet so add them first
     avoidVectors.push(newLine.startSEPoint.locationVector);
     avoidVectors.push(newLine.endSEPoint.locationVector);
-    state.sePoints.forEach(pt => avoidVectors.push(pt.locationVector));
+    state.sePoints.forEach((pt) => avoidVectors.push(pt.locationVector));
 
     // The intersectionPointList to return
     const intersectionPointList: SEIntersectionReturnType[] = [];
@@ -459,7 +461,9 @@ export default {
         const intersectionInfo = intersectLineWithLine(oldLine, newLine);
         intersectionInfo.forEach((info, index) => {
           if (
-            !avoidVectors.some(v => tempVec.subVectors(info.vector, v).isZero())
+            !avoidVectors.some((v) =>
+              tempVec.subVectors(info.vector, v).isZero()
+            )
           ) {
             // info.vector is not on the avoidVectors array, so create an intersection
             const newPt = new NonFreePoint();
@@ -477,7 +481,7 @@ export default {
             intersectionPointList.push({
               SEIntersectionPoint: newSEIntersectionPt,
               parent1: oldLine,
-              parent2: newLine
+              parent2: newLine,
             });
           }
         });
@@ -487,7 +491,7 @@ export default {
       const intersectionInfo = intersectLineWithSegment(newLine, oldSegment);
       intersectionInfo.forEach((info, index) => {
         if (
-          !avoidVectors.some(v => tempVec.subVectors(info.vector, v).isZero())
+          !avoidVectors.some((v) => tempVec.subVectors(info.vector, v).isZero())
         ) {
           // info.vector is not on the avoidVectors array, so create an intersection
           const newPt = new NonFreePoint();
@@ -505,7 +509,7 @@ export default {
           intersectionPointList.push({
             SEIntersectionPoint: newSEIntersectionPt,
             parent1: newLine,
-            parent2: oldSegment
+            parent2: oldSegment,
           });
         }
       });
@@ -515,7 +519,7 @@ export default {
       const intersectionInfo = intersectLineWithCircle(newLine, oldCircle);
       intersectionInfo.forEach((info, index) => {
         if (
-          !avoidVectors.some(v => tempVec.subVectors(info.vector, v).isZero())
+          !avoidVectors.some((v) => tempVec.subVectors(info.vector, v).isZero())
         ) {
           // info.vector is not on the avoidVectors array, so create an intersection
           const newPt = new NonFreePoint();
@@ -533,7 +537,7 @@ export default {
           intersectionPointList.push({
             SEIntersectionPoint: newSEIntersectionPt,
             parent1: newLine,
-            parent2: oldCircle
+            parent2: oldCircle,
           });
         }
       });
@@ -549,7 +553,7 @@ export default {
     //  they won't have been added to the state.points array yet so add them first
     avoidVectors.push(newSegment.startSEPoint.locationVector);
     avoidVectors.push(newSegment.endSEPoint.locationVector);
-    state.sePoints.forEach(pt => avoidVectors.push(pt.locationVector));
+    state.sePoints.forEach((pt) => avoidVectors.push(pt.locationVector));
 
     // The intersectionPointList to return
     const intersectionPointList: SEIntersectionReturnType[] = [];
@@ -558,7 +562,7 @@ export default {
       const intersectionInfo = intersectLineWithSegment(oldLine, newSegment);
       intersectionInfo.forEach((info, index) => {
         if (
-          !avoidVectors.some(v => tempVec.subVectors(info.vector, v).isZero())
+          !avoidVectors.some((v) => tempVec.subVectors(info.vector, v).isZero())
         ) {
           // info.vector is not on the avoidVectors array, so create an intersection
           const newPt = new NonFreePoint();
@@ -577,7 +581,7 @@ export default {
           intersectionPointList.push({
             SEIntersectionPoint: newSEIntersectionPt,
             parent1: oldLine,
-            parent2: newSegment
+            parent2: newSegment,
           });
         }
       });
@@ -592,7 +596,9 @@ export default {
         );
         intersectionInfo.forEach((info, index) => {
           if (
-            !avoidVectors.some(v => tempVec.subVectors(info.vector, v).isZero())
+            !avoidVectors.some((v) =>
+              tempVec.subVectors(info.vector, v).isZero()
+            )
           ) {
             const newPt = new NonFreePoint();
             newPt.stylize(DisplayStyle.APPLYTEMPORARYVARIABLES);
@@ -609,7 +615,7 @@ export default {
             intersectionPointList.push({
               SEIntersectionPoint: newSEIntersectionPt,
               parent1: oldSegment,
-              parent2: newSegment
+              parent2: newSegment,
             });
           }
         });
@@ -622,7 +628,7 @@ export default {
       );
       intersectionInfo.forEach((info, index) => {
         if (
-          !avoidVectors.some(v => tempVec.subVectors(info.vector, v).isZero())
+          !avoidVectors.some((v) => tempVec.subVectors(info.vector, v).isZero())
         ) {
           // info.vector is not on the avoidVectors array, so create an intersection
           const newPt = new NonFreePoint();
@@ -640,7 +646,7 @@ export default {
           intersectionPointList.push({
             SEIntersectionPoint: newSEIntersectionPt,
             parent1: newSegment,
-            parent2: oldCircle
+            parent2: oldCircle,
           });
         }
       });
@@ -656,7 +662,7 @@ export default {
     //  they won't have been added to the state.points array yet so add them first
     avoidVectors.push(newCircle.centerSEPoint.locationVector);
     avoidVectors.push(newCircle.circleSEPoint.locationVector);
-    state.sePoints.forEach(pt => avoidVectors.push(pt.locationVector));
+    state.sePoints.forEach((pt) => avoidVectors.push(pt.locationVector));
     // The intersectionPointList to return
     const intersectionPointList: SEIntersectionReturnType[] = [];
     // Intersect this new circle with all old lines
@@ -664,7 +670,7 @@ export default {
       const intersectionInfo = intersectLineWithCircle(oldLine, newCircle);
       intersectionInfo.forEach((info, index) => {
         if (
-          !avoidVectors.some(v => tempVec.subVectors(info.vector, v).isZero())
+          !avoidVectors.some((v) => tempVec.subVectors(info.vector, v).isZero())
         ) {
           // info.vector is not on the avoidVectors array, so create an intersection
           const newPt = new NonFreePoint();
@@ -682,7 +688,7 @@ export default {
           intersectionPointList.push({
             SEIntersectionPoint: newSEIntersectionPt,
             parent1: oldLine,
-            parent2: newCircle
+            parent2: newCircle,
           });
         }
       });
@@ -695,7 +701,7 @@ export default {
       );
       intersectionInfo.forEach((info, index) => {
         if (
-          !avoidVectors.some(v => tempVec.subVectors(info.vector, v).isZero())
+          !avoidVectors.some((v) => tempVec.subVectors(info.vector, v).isZero())
         ) {
           // info.vector is not on the avoidVectors array, so create an intersection
           const newPt = new NonFreePoint();
@@ -713,7 +719,7 @@ export default {
           intersectionPointList.push({
             SEIntersectionPoint: newSEIntersectionPt,
             parent1: oldSegment,
-            parent2: newCircle
+            parent2: newCircle,
           });
         }
       });
@@ -730,7 +736,9 @@ export default {
         );
         intersectionInfo.forEach((info, index) => {
           if (
-            !avoidVectors.some(v => tempVec.subVectors(info.vector, v).isZero())
+            !avoidVectors.some((v) =>
+              tempVec.subVectors(info.vector, v).isZero()
+            )
           ) {
             // info.vector is not on the avoidVectors array, so create an intersection
             const newPt = new NonFreePoint();
@@ -748,7 +756,7 @@ export default {
             intersectionPointList.push({
               SEIntersectionPoint: newSEIntersectionPt,
               parent1: oldCircle,
-              parent2: newCircle
+              parent2: newCircle,
             });
           }
         });
@@ -793,9 +801,9 @@ export default {
   ): SEIntersectionPoint[] => {
     return state.sePoints
       .filter(
-        p => p instanceof SEIntersectionPoint && p.name.includes(parentNames)
+        (p) => p instanceof SEIntersectionPoint && p.name.includes(parentNames)
       )
-      .map(obj => obj as SEIntersectionPoint);
+      .map((obj) => obj as SEIntersectionPoint);
   },
   selectedSENodules: (state: AppState) => (): SENodule[] => {
     return state.selections;
@@ -824,5 +832,40 @@ export default {
   getSENoduleById: (state: AppState) => (id: number): SENodule | undefined => {
     //console.log("All Nodule", state.nodules.length);
     return state.seNodules.find((z: SENodule) => z.id === id);
-  }
+  },
+  getInitialStyleState: (state: AppState) => (
+    side: boolean
+  ): StyleOptions[] => {
+    // The first half is the front style settings, the second half the back
+    if (side == SETTINGS.style.frontFace) {
+      return state.initialStyleStates.slice(
+        0,
+        state.initialStyleStates.length / 2
+      );
+    } else {
+      return state.initialStyleStates.slice(
+        state.initialStyleStates.length / 2,
+        state.initialStyleStates.length
+      );
+    }
+  },
+  getDefaultStyleState: (state: AppState) => (
+    side: boolean
+  ): StyleOptions[] => {
+    // The first half is the front style settings, the second half the back
+    if (side == SETTINGS.style.frontFace) {
+      return state.defaultStyleStates.slice(
+        0,
+        state.defaultStyleStates.length / 2
+      );
+    } else {
+      return state.defaultStyleStates.slice(
+        state.defaultStyleStates.length / 2,
+        state.defaultStyleStates.length
+      );
+    }
+  },
+  getInitialBackStyleContrast: (state: AppState) => (): number => {
+    return state.initialBackStyleContrast;
+  },
 };

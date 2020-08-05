@@ -27,7 +27,7 @@ export default class BasicStyle extends Vue {
     // this.commonProperties = new Set();
   }
 
-  hasStyles(s: Styles): boolean {
+  hasStyles (s: Styles): boolean {
     const sNum = Number(s);
     return (
       this.commonStyleProperties.length > 0 &&
@@ -35,20 +35,18 @@ export default class BasicStyle extends Vue {
     );
   }
 
-  get hasColor(): boolean {
+  get hasColor (): boolean {
     return (
-      this.hasStyles(Styles.strokeColor) ||
-      this.hasStyles(Styles.fillColorWhite) ||
-      this.hasStyles(Styles.fillColorGray)
+      this.hasStyles(Styles.strokeColor) || this.hasStyles(Styles.fillColor)
     );
   }
 
-  get hasStrokeWidth(): boolean {
+  get hasStrokeWidth (): boolean {
     return this.hasStyles(Styles.strokeWidthPercent);
   }
 
   @Watch("selections", { deep: true })
-  onSelectionChanged(newSelection: SENodule[]): void {
+  onSelectionChanged (newSelection: SENodule[]): void {
     // newSelection.forEach(s => {
     // console.debug("Set ", s.customStyles());
     // })

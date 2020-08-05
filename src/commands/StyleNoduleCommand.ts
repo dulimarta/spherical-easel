@@ -19,9 +19,9 @@ export class StyleNoduleCommand extends Command {
     pastBackStyleContrast?: number
   ) {
     super();
-    seNodules.forEach(obj => this.seNodules.push(obj));
+    seNodules.forEach((obj) => this.seNodules.push(obj));
     this.side = side;
-    currentStyles.forEach(obj => {
+    currentStyles.forEach((obj) => {
       const newObj = {} as StyleOptions;
       newObj.front = obj.front;
       newObj.strokeWidthPercent = obj.strokeWidthPercent;
@@ -41,7 +41,7 @@ export class StyleNoduleCommand extends Command {
       newObj.pointRadiusPercent = obj.pointRadiusPercent;
       this.currentStyles.push(newObj);
     });
-    pastStyles.forEach(obj => {
+    pastStyles.forEach((obj) => {
       const newObj = {} as StyleOptions;
       newObj.front = obj.front;
       newObj.strokeWidthPercent = obj.strokeWidthPercent;
@@ -66,18 +66,21 @@ export class StyleNoduleCommand extends Command {
   }
 
   do(): void {
+    console.log("do in syle nodule command");
     for (let i = 0; i < this.seNodules.length; i++) {
       Command.store.commit.changeStyle({
         selected: [this.seNodules[i]],
-        front: this.side,
-        strokeWidthPercent: this.currentStyles[i].strokeWidthPercent,
-        strokeColor: this.currentStyles[i].strokeColor,
-        fillColor: this.currentStyles[i].fillColor,
-        dashArray: this.currentStyles[i].dashArray,
-        opacity: this.currentStyles[i].opacity,
-        dynamicBackStyle: this.currentStyles[i].dynamicBackStyle,
-        pointRadiusPercent: this.currentStyles[i].pointRadiusPercent,
-        backStyleContrast: this.currentBackStyleContrast
+        payload: {
+          front: this.side,
+          strokeWidthPercent: this.currentStyles[i].strokeWidthPercent,
+          strokeColor: this.currentStyles[i].strokeColor,
+          fillColor: this.currentStyles[i].fillColor,
+          dashArray: this.currentStyles[i].dashArray,
+          opacity: this.currentStyles[i].opacity,
+          dynamicBackStyle: this.currentStyles[i].dynamicBackStyle,
+          pointRadiusPercent: this.currentStyles[i].pointRadiusPercent,
+          backStyleContrast: this.currentBackStyleContrast,
+        },
       });
     }
   }
@@ -87,19 +90,20 @@ export class StyleNoduleCommand extends Command {
   }
 
   restoreState(): void {
-    console.log("seNodules", this.seNodules);
     for (let i = 0; i < this.seNodules.length; i++) {
       Command.store.commit.changeStyle({
         selected: [this.seNodules[i]],
-        front: this.side,
-        strokeWidthPercent: this.pastStyles[i].strokeWidthPercent,
-        strokeColor: this.pastStyles[i].strokeColor,
-        fillColor: this.pastStyles[i].fillColor,
-        dashArray: this.pastStyles[i].dashArray,
-        opacity: this.pastStyles[i].opacity,
-        dynamicBackStyle: this.pastStyles[i].dynamicBackStyle,
-        pointRadiusPercent: this.pastStyles[i].pointRadiusPercent,
-        backStyleContrast: this.pastBackStyleContrast
+        payload: {
+          front: this.side,
+          strokeWidthPercent: this.pastStyles[i].strokeWidthPercent,
+          strokeColor: this.pastStyles[i].strokeColor,
+          fillColor: this.pastStyles[i].fillColor,
+          dashArray: this.pastStyles[i].dashArray,
+          opacity: this.pastStyles[i].opacity,
+          dynamicBackStyle: this.pastStyles[i].dynamicBackStyle,
+          pointRadiusPercent: this.pastStyles[i].pointRadiusPercent,
+          backStyleContrast: this.pastBackStyleContrast,
+        },
       });
     }
   }

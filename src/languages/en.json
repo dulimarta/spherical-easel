@@ -89,9 +89,15 @@
     "circles": "Circles"
   },
   "style": {
+    "contrast": "Contrast",
+    "front": "Front",
+    "back": "Back",
+    "value": "Value",
+    "gapDashPattern": "Gap/Dash Pattern",
+
     "selectAnObject": "Select An Object",
 
-    "clearChanges": "Undo Changes",
+    "clearChanges": "Undo Recent Changes",
     "clearChangesToolTip": "Click this button to revert the selected objects back to the style they had when they were selected.",
 
     "restoreDefaults": "Set To Defaults",

@@ -10,12 +10,12 @@ export default {
     minStrokeWidthPercent: 20, // The minimum percent stroke width different from the scaled for zoom size
     maxPointRadiusPercent: 500, // The maximum percent point radius different from the scaled for zoom size
     minPointRadiusPercent: 20, // The minimum percent point radius different from the scaled for zoom size
-    maxGapLengthPlusDashLength: 20 // the maximum of the sum of the gap and dash and the endpoint (max value) of the dash range slider
+    maxGapLengthPlusDashLength: 20, // the maximum of the sum of the gap and dash and the endpoint (max value) of the dash range slider
   },
   zoom: {
     maxMagnification: 10, // The greatest zoom in magnification factor
     minMagnification: 0.8, // The least zoom out magnification factor
-    percentChange: 10 // The percent that a zoom in or out out click will change the view
+    percentChange: 10, // The percent that a zoom in or out out click will change the view
   },
   rotate: {
     minAngle: Math.PI / 1000, // the minimum angular distance before a new rotation is computed as we click and drag in rotate mode
@@ -23,17 +23,17 @@ export default {
       enabled: true, // If momentum is enabled then the sphere keeps rotating depending after the user has stopped intentionally rotating it.
       decayTime: 0.5, // Time in seconds for the rotation to stop, max value of 300 seconds (5 minutes).
       framesPerSecond: 30, // The momentum rotation will be updated this many times per second
-      pauseTimeToTemporarilyDisableMomentum: 0.25 // if you hold the mousepress this long (in seconds) while dragging the momentum doesn't activate
-    }
+      pauseTimeToTemporarilyDisableMomentum: 0.25, // if you hold the mousepress this long (in seconds) while dragging the momentum doesn't activate
+    },
   },
   fill: {
     //The location of the light source when shading
     lightSource: {
       x: -250 / 3,
-      y: 250 / 3
+      y: 250 / 3,
     },
     frontWhite: "hsla(0, 0%, 90%, 0.2)", // The light source location on the front is this shade of gray (white)
-    backGray: "hsla(0, 0%, 85%, 0.2)" // The antipode of the light source on the back is this shade of gray
+    backGray: "hsla(0, 0%, 85%, 0.2)", // The antipode of the light source on the back is this shade of gray
   },
   // #region boundarycircle
   boundaryCircle: {
@@ -41,7 +41,7 @@ export default {
     numPoints: 50,
     opacity: 0.5,
     color: "hsla(0, 0%, 0%, 1)",
-    lineWidth: 3
+    lineWidth: 3,
   },
   // #endregion boundarycircle
   point: {
@@ -53,18 +53,18 @@ export default {
     drawn: {
       radius: {
         front: 3.5, // The default radius of the point drawn on the front,
-        back: 3 // The default radius of the point drawn on the back,
+        back: 3, // The default radius of the point drawn on the back,
       },
       fillColor: {
         front: "hsla(0, 100%, 75%, 1)",
-        back: "hsla(0, 100%, 75%, 1)"
+        back: "hsla(0, 100%, 75%, 1)",
       },
       strokeColor: {
         front: "hsla(240, 55%, 55%, 1)",
-        back: "hsla(240, 55%, 75%, 1)"
+        back: "hsla(240, 55%, 75%, 1)",
       },
       pointStrokeWidth: { front: 1, back: 1 }, // The thickness of the edge of the point when drawn
-      opacity: { front: 1, back: 1 }
+      opacity: { front: 1, back: 1 },
       // No dashing for points
     },
     // The properties of the annular region around a point when it is glowing
@@ -72,13 +72,13 @@ export default {
       annularWidth: 3, // width is the width of the annular region around the point that shows the glow it is always bigger than the drawn radius
       fillColor: {
         front: "hsla(0, 100%, 50%, 1)",
-        back: "hsla(0, 100%, 75%, 0.7)"
+        back: "hsla(0, 100%, 75%, 0.7)",
       },
       strokeColor: {
         front: "hsla(0, 100%, 35%, 1)",
-        back: "hsla(0, 100%, 45%, 0.7)"
+        back: "hsla(0, 100%, 45%, 0.7)",
       },
-      opacity: { front: 1, back: 1 }
+      opacity: { front: 1, back: 1 },
       // No dashing - this is highlighting the object
     },
     //The properties of the point when it is temporarily shown by the point tool while drawing
@@ -86,30 +86,30 @@ export default {
       // The radius is the same as the default for drawn points
       fillColor: {
         front: "hsla(0, 0%, 50%, 1)",
-        back: "hsla(0, 0%, 75%, 1)"
+        back: "hsla(0, 0%, 75%, 1)",
       },
       strokeColor: {
         front: "hsla(0, 0%, 0%, 1)",
-        back: "hsla(0, 0%, 50%, 1)"
+        back: "hsla(0, 0%, 50%, 1)",
       },
       // The temp stroke width is the same as the default drawn stroke width
-      opacity: { front: 1, back: 1 }
+      opacity: { front: 1, back: 1 },
       // No dashing for points
     },
     nonFree: {
       scalePercent: 85, // The percent that the size of the (free) points are scaled by to get the size of the nonFreePoint
       fillColor: {
         front: "hsla(0, 50%, 75%, 1)",
-        back: "hsla(0, 25%, 75%, 1)"
+        back: "hsla(0, 25%, 75%, 1)",
       },
       strokeColor: {
         front: "hsla(240, 30%, 55%, 1)",
-        back: "hsla(240, 35%, 75%, 1)"
+        back: "hsla(240, 35%, 75%, 1)",
       },
       pointStrokeWidth: { front: 2, back: 2 }, // The thickness of the edge of the point when drawn
-      opacity: { front: 1, back: 1 }
+      opacity: { front: 1, back: 1 },
       // No dashing for points
-    }
+    },
   },
 
   segment: {
@@ -124,28 +124,28 @@ export default {
       // No fill for line segments
       strokeColor: {
         front: "hsla(217, 90%, 61%, 1)",
-        back: "hsla(217, 90%, 80%, 1)"
+        back: "hsla(217, 90%, 80%, 1)",
       },
       strokeWidth: {
         front: 2.5,
-        back: 2
+        back: 2,
       }, // The thickness of the segment when drawn
       opacity: { front: 1, back: 1 },
       dashArray: {
         offset: { front: 0, back: 0 },
         front: [] as number[], // An empty array means no dashing.
-        back: [10, 5] // An empty array means no dashing.
-      } // An empty array means no dashing.
+        back: [10, 5], // An empty array means no dashing.
+      }, // An empty array means no dashing.
     },
     //The properties of the region around a segment when it is glowing
     glowing: {
       // No fill for line segments
       strokeColor: {
         front: "hsla(0, 100%, 50%, 1)",
-        back: "hsla(0, 100%, 75%, 0.7)"
+        back: "hsla(0, 100%, 75%, 0.7)",
       },
       edgeWidth: 4, // edgeWidth/2 is the width of the region around the segment that shows the glow
-      opacity: { front: 1, back: 1 }
+      opacity: { front: 1, back: 1 },
       // the dashing pattern is copied from the drawn version
     },
     //The properties of the circle when it is temporarily shown by the segment tool while drawing
@@ -153,12 +153,12 @@ export default {
       // No fill for line segments
       strokeColor: {
         front: "hsla(0, 0%, 42%, 1)",
-        back: "hsla(0, 0%, 71%, 1)"
+        back: "hsla(0, 0%, 71%, 1)",
       },
       // The width is the same as the default drawn version
-      opacity: { front: 1, back: 1 }
+      opacity: { front: 1, back: 1 },
       // The dashing pattern is copied from the default drawn version
-    }
+    },
   },
   line: {
     minimumLength: 0.02, // Don't create lines with arc length  smaller than this
@@ -172,29 +172,29 @@ export default {
       // No fill for lines
       strokeColor: {
         front: "hsla(217, 90%, 61%, 1)",
-        back: "hsla(217, 90%, 80%, 1)"
+        back: "hsla(217, 90%, 80%, 1)",
       },
       // The thickness of the line when drawn
       strokeWidth: {
         front: 2.5,
-        back: 2
+        back: 2,
       },
       opacity: { front: 1, back: 1 },
       dashArray: {
         offset: { front: 0, back: 0 },
         front: [] as number[], // An empty array means no dashing.
-        back: [10, 5] // An empty array means no dashing.
-      }
+        back: [10, 5], // An empty array means no dashing.
+      },
     },
     //The properties of the region around a line when it is glowing
     glowing: {
       // No fill for lines
       strokeColor: {
         front: "hsla(0, 100%, 50%, 1)",
-        back: "hsla(0, 100%, 75%, 0.7)"
+        back: "hsla(0, 100%, 75%, 0.7)",
       },
       edgeWidth: 4, // edgeWidth/2 is the width of the region around the line that shows the glow
-      opacity: { front: 1, back: 1 }
+      opacity: { front: 1, back: 1 },
       // Dashing is the same as the drawn version
     },
     //The properties of the line when it is temporarily shown by the line tool while drawing
@@ -202,12 +202,12 @@ export default {
       // No fill for lines
       strokeColor: {
         front: "hsla(0, 0%, 42%, 1)",
-        back: "hsla(0, 0%, 71%, 1)"
+        back: "hsla(0, 0%, 71%, 1)",
       },
       // The width is the same as the default drawn version
-      opacity: { front: 1, back: 1 }
+      opacity: { front: 1, back: 1 },
       // Dashing is the same as the default drawn version
-    }
+    },
   },
   circle: {
     minimumRadius: 0.02, // Don't create circles with a radius smaller than this
@@ -219,60 +219,60 @@ export default {
     drawn: {
       fillColor: {
         front: "hsla(217, 100%, 80%, 0.0005)", //"noFill",
-        back: "hsla(217, 100%, 80%, 0.0002)" //"noFill"
+        back: "hsla(217, 100%, 80%, 0.0002)", //"noFill"
       },
       strokeColor: {
         front: "hsla(217, 90%, 61%, 1)",
-        back: "hsla(217, 90%, 80%, 1)"
+        back: "hsla(217, 90%, 80%, 1)",
       },
       strokeWidth: {
         // The thickness of the circle when drawn front/back
         front: 2.5,
-        back: 2
+        back: 2,
       }, // The thickness of the circle when drawn front/back
       opacity: { front: 1, back: 1 },
       dashArray: {
         offset: { front: 0, back: 0 },
         front: [] as number[], // An empty array means no dashing.
-        back: [10, 5] // An empty array means no dashing.
-      } // An empty array means no dashing.
+        back: [10, 5], // An empty array means no dashing.
+      }, // An empty array means no dashing.
     },
     //The properties of the region around a circle when it is glowing
     glowing: {
       // There is no fill for highlighting objects
       strokeColor: {
         front: "hsla(0, 100%, 50%, 1)",
-        back: "hsla(0, 100%, 75%, 0.7)"
+        back: "hsla(0, 100%, 75%, 0.7)",
       },
       edgeWidth: 4, // edgeWidth/2 is the width of the region around the circle (on each side) that shows the glow
-      opacity: { front: 1, back: 1 }
+      opacity: { front: 1, back: 1 },
       // The dash pattern will always be the same as the drawn version
     },
     //The properties of the circle when it is temporarily shown by the circle tool while drawing
     temp: {
       fillColor: {
         front: "hsla(0, 0%, 90%, 0.3)", //"noFill",
-        back: "hsla(0, 0%, 50%, 0.3)" //"noFill"
+        back: "hsla(0, 0%, 50%, 0.3)", //"noFill"
       },
       strokeColor: {
         front: "hsla(0, 0%, 0%, 1.0)",
-        back: "hsla(0, 0%, 0%, 0.1)"
+        back: "hsla(0, 0%, 0%, 0.1)",
       },
       // The width is the same as the default drawn version
-      opacity: { front: 1, back: 1 }
+      opacity: { front: 1, back: 1 },
       // The dash pattern will always be the same as the default drawn version
-    }
+    },
   },
   /* Controls the length of time (in ms) the tool tip are displayed */
   toolTip: {
     openDelay: 500,
     closeDelay: 250,
-    disableDisplay: false // controls if all tooltips should be displayed
+    disableDisplay: false, // controls if all tooltips should be displayed
   },
   /* Sets the length of time (in ms) that the tool use display message is displayed in a snackbar */
   toolUse: {
     delay: 2000,
-    display: true // controls if they should be displayed
+    display: true, // controls if they should be displayed
   },
   /*A list of which buttons to display - adjusted by the users settings.
   This does NOT belong here but I don't know where else to put it at the moment*/
@@ -286,12 +286,12 @@ export default {
     "select",
     "zoomIn",
     "zoomOut",
-    "intersect"
+    "intersect",
   ],
   supportedLanguages: [
     { locale: "en", name: "English" },
-    { locale: "id", name: "Bahasa Indonesia" }
-  ]
+    { locale: "id", name: "Bahasa Indonesia" },
+  ],
 };
 
 //#region layers
@@ -312,6 +312,6 @@ export enum LAYER {
   foregroundPointsGlowing,
   foregroundPoints,
   foregroundTextGlowing,
-  foregroundText
+  foregroundText,
 }
 //#endregion layers

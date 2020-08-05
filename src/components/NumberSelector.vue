@@ -1,6 +1,11 @@
 <template>
   <div>
-    <div class="text-subtitle-2">{{ $t(titleKey) }}</div>
+    <span v-show="side"
+      class="text-subtitle-2">{{ $t(sideFrontKey) }} </span>
+    <span v-show="!side"
+      class="text-subtitle-2">{{ $t(sideBackKey) }} </span>
+    <span class="text-subtitle-2">{{ $t(titleKey) }}</span>
+    <br />
     <div v-show="totalyDisableSelector"
       class="select-an-object-text">{{ $t("style.selectAnObject") }}</div>
     <v-tooltip v-if="!styleDataAgreement"
@@ -89,8 +94,10 @@ import { SENodule } from "@/models/SENodule";
 export default class NumberSelector extends Vue {
   @Prop() readonly side!: boolean;
   @Prop() readonly titleKey!: string;
-  @Prop({ required: true }) readonly initialStyleStates!: StyleOptions[];
-  @Prop({ required: true }) readonly defaultStyleStates!: StyleOptions[];
+  @Prop() readonly sideFrontKey!: string;
+  @Prop() readonly sideBackKey!: string;
+  // @Prop({ required: true }) readonly initialStyleStates!: StyleOptions[];
+  // @Prop({ required: true }) readonly defaultStyleStates!: StyleOptions[];
   @Prop({ required: true }) readonly styleName!: string;
   @PropSync("data", { type: Number }) styleData?: number | undefined;
   @Prop({ required: true }) readonly minValue!: number;
@@ -117,8 +124,9 @@ export default class NumberSelector extends Vue {
   private totalyDisableSelector = true;
 
   mounted (): void {
-    // No code here
-    // this.styleName = propNames[this.styleOption];
+
+    this.onSelectionChanged(this.$store.getters.selectedSENodules());
+
   }
 
   beforeUpdate (): void {
@@ -128,28 +136,29 @@ export default class NumberSelector extends Vue {
     // this.defaultStyleStates = this.initialStyleStates.slice();
   }
   // These methods are linked to the styleData fade-in-card
-  onDataChanged (): void {
+  onDataChanged (newData: number): void {
     this.$store.direct.commit.changeStyle({
       selected: this.$store.getters.selectedSENodules(),
       payload: {
         front: this.side,
-        [this.styleName]: this.styleData
+        [this.styleName]: newData
       }
     });
   }
 
   resetToDefaults (): void {
     const selected = this.$store.getters.selectedSENodules();
+    const defaultStyleStates = this.$store.getters.getDefaultStyleState(this.side);
     for (let i = 0; i < selected.length; i++) {
       this.$store.direct.commit.changeStyle({
         selected: [selected[i]],
         payload: {
           front: this.side,
-          [this.styleName]: (this.defaultStyleStates[i] as any)[this.styleName]
+          [this.styleName]: (defaultStyleStates[i] as any)[this.styleName]
         }
       });
     }
-    this.setSelectorState(this.defaultStyleStates);
+    this.setSelectorState(defaultStyleStates);
   }
   setSelectorState (styleState: StyleOptions[]): void {
     this.styleDataAgreement = true;
@@ -187,16 +196,17 @@ export default class NumberSelector extends Vue {
   }
   clearChanges (): void {
     const selected = this.$store.getters.selectedSENodules();
+    const initialStyleStates = this.$store.getters.getInitialStyleState(this.side);
     for (let i = 0; i < selected.length; i++) {
       this.$store.direct.commit.changeStyle({
         selected: [selected[i]],
         payload: {
           front: this.side,
-          [this.styleName]: (this.initialStyleStates[i] as any)[this.styleName]
+          [this.styleName]: (initialStyleStates[i] as any)[this.styleName]
         }
       });
     }
-    this.setSelectorState(this.initialStyleStates);
+    this.setSelectorState(initialStyleStates);
   }
 
   incrementDataValue (): void {
@@ -236,8 +246,7 @@ export default class NumberSelector extends Vue {
       this.disableSelector(true);
       return;
     }
-
-    this.setSelectorState(this.initialStyleStates);
+    this.setSelectorState(this.$store.getters.getInitialStyleState(this.side));
   }
 }
 </script>
