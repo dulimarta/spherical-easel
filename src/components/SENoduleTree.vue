@@ -6,7 +6,8 @@
       <div id="nodeContent"
         :class="nodeOrLabel"
         @mouseenter="glowMe(true)"
-        @mouseleave="glowMe(false)">
+        @mouseleave="glowMe(false)"
+        @click="selectMe">
         <v-icon v-if="isPoint">mdi-vector-point</v-icon>
         <v-icon v-else-if="isLineSegment">mdi-vector-radius</v-icon>
         <v-icon v-else-if="isLine">mdi-vector-line</v-icon>
@@ -56,12 +57,13 @@
       <v-divider></v-divider>
       <transition name="slide-right">
         <div v-show="expanded">
-          <!-- Recursive component here -->
+          <!-- Recursive component here, the event "object-select" must be passed on to parent component (recursively -->
           <SENoduleTree v-for="(n, pos) in existingChildren"
             :key="pos"
             :children="n.kids"
             :depth="depth + 1"
-            :node="n"></SENoduleTree>
+            :node="n"
+            @object-select="$emit('object-select', $event)"></SENoduleTree>
         </div>
       </transition>
     </div>
@@ -124,6 +126,12 @@ export default class SENoduleTree extends Vue {
     }
   }
 
+  selectMe(): void {
+    if (this.node instanceof SEExpression) {
+      console.debug("Clicked", this.node.name);
+      this.$emit("object-select", { id: this.node.id });
+    }
+  }
   get nodeOrLabel(): string {
     return this.node ? "node" : "label";
   }

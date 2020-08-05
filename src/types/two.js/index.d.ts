@@ -276,11 +276,10 @@ declare module "two.js" {
       static MakeObservable(obj: any): any;
     }
 
-    interface BoundingClientRect
-      extends Record<
+    type BoundingClientRect = Record<
         "top" | "left" | "right" | "bottom" | "width" | "height",
         number
-      > {}
+      >
 
     type Object = Path | Group | Text;
 
