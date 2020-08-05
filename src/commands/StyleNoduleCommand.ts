@@ -19,9 +19,9 @@ export class StyleNoduleCommand extends Command {
     pastBackStyleContrast?: number
   ) {
     super();
-    seNodules.forEach(obj => this.seNodules.push(obj));
+    seNodules.forEach((obj) => this.seNodules.push(obj));
     this.side = side;
-    currentStyles.forEach(obj => {
+    currentStyles.forEach((obj) => {
       const newObj = {} as StyleOptions;
       newObj.front = obj.front;
       newObj.strokeWidthPercent = obj.strokeWidthPercent;
@@ -41,7 +41,7 @@ export class StyleNoduleCommand extends Command {
       newObj.pointRadiusPercent = obj.pointRadiusPercent;
       this.currentStyles.push(newObj);
     });
-    pastStyles.forEach(obj => {
+    pastStyles.forEach((obj) => {
       const newObj = {} as StyleOptions;
       newObj.front = obj.front;
       newObj.strokeWidthPercent = obj.strokeWidthPercent;
@@ -66,6 +66,7 @@ export class StyleNoduleCommand extends Command {
   }
 
   do(): void {
+    console.log("do in syle nodule command");
     for (let i = 0; i < this.seNodules.length; i++) {
       Command.store.commit.changeStyle({
         selected: [this.seNodules[i]],
@@ -89,7 +90,6 @@ export class StyleNoduleCommand extends Command {
   }
 
   restoreState(): void {
-    console.log("seNodules", this.seNodules);
     for (let i = 0; i < this.seNodules.length; i++) {
       Command.store.commit.changeStyle({
         selected: [this.seNodules[i]],

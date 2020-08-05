@@ -11,6 +11,7 @@ import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import { Vector3 } from "three";
 import { SEMeasurement } from "@/models/SEMeasurement";
 import { SECalculation } from "@/models/SECalculation";
+import { StyleOptions } from "@/types/Styles";
 
 export interface Selectable {
   hit(x: number, y: number, coord: unknown, who: unknown): boolean;
@@ -36,6 +37,9 @@ export interface AppState {
   measurements: SEMeasurement[];
   calculations: SECalculation[];
   temporaryNodules: Nodule[];
+  initialStyleStates: StyleOptions[];
+  defaultStyleStates: StyleOptions[];
+  initialBackStyleContrast: number;
 }
 /* This interface lists all the properties that each tool/button must have. */
 export interface ToolButtonType {
@@ -92,7 +96,7 @@ export type hslaColorType = {
 export enum UpdateMode {
   DisplayOnly, // Record nothing in the state Array
   RecordStateForDelete, // All visited objects must be put into the stateArray
-  RecordStateForMove // Only those objects which depend on more than their point parents need to record that information
+  RecordStateForMove, // Only those objects which depend on more than their point parents need to record that information
 }
 
 export interface UpdateStateType {

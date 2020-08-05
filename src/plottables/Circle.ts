@@ -221,10 +221,10 @@ export default class Circle extends Nodule {
 
     this.originalVertices = [];
 
-    frontVertices.forEach(v => {
+    frontVertices.forEach((v) => {
       this.originalVertices.push(new Vector2(v.x, v.y));
     });
-    backVertices.forEach(v => {
+    backVertices.forEach((v) => {
       this.originalVertices.push(new Vector2(v.x, v.y));
     });
 
@@ -239,12 +239,12 @@ export default class Circle extends Nodule {
     this.glowingBackPart.noFill();
 
     if (SETTINGS.circle.drawn.dashArray.front.length > 0) {
-      SETTINGS.circle.drawn.dashArray.front.forEach(v =>
+      SETTINGS.circle.drawn.dashArray.front.forEach((v) =>
         this.dashArrayFront.push(v)
       );
     }
     if (SETTINGS.circle.drawn.dashArray.back.length > 0) {
-      SETTINGS.circle.drawn.dashArray.back.forEach(v =>
+      SETTINGS.circle.drawn.dashArray.back.forEach((v) =>
         this.dashArrayBack.push(v)
       );
     }
@@ -792,7 +792,7 @@ export default class Circle extends Nodule {
     if (front) {
       const dashArrayFront = [] as number[];
       if (this.dashArrayFront.length > 0) {
-        this.dashArrayFront.forEach(v => dashArrayFront.push(v));
+        this.dashArrayFront.forEach((v) => dashArrayFront.push(v));
       }
       return {
         front: front,
@@ -800,12 +800,12 @@ export default class Circle extends Nodule {
         strokeColor: this.strokeColorFront,
         fillColor: this.fillColorFront,
         dashArray: dashArrayFront,
-        opacity: this.opacityFront
+        opacity: this.opacityFront,
       };
     } else {
       const dashArrayBack = [] as number[];
       if (this.dashArrayBack.length > 0) {
-        this.dashArrayBack.forEach(v => dashArrayBack.push(v));
+        this.dashArrayBack.forEach((v) => dashArrayBack.push(v));
       }
       return {
         front: front,
@@ -814,7 +814,7 @@ export default class Circle extends Nodule {
         fillColor: this.fillColorBack,
         dashArray: dashArrayBack,
         opacity: this.opacityBack,
-        dynamicBackStyle: this.dynamicBackStyle
+        dynamicBackStyle: this.dynamicBackStyle,
       };
     }
   }
@@ -825,7 +825,7 @@ export default class Circle extends Nodule {
     if (front) {
       const dashArrayFront = [] as number[];
       if (SETTINGS.circle.drawn.dashArray.front.length > 0) {
-        SETTINGS.circle.drawn.dashArray.front.forEach(v =>
+        SETTINGS.circle.drawn.dashArray.front.forEach((v) =>
           dashArrayFront.push(v)
         );
       }
@@ -835,13 +835,13 @@ export default class Circle extends Nodule {
         fillColor: SETTINGS.circle.drawn.fillColor.front,
         strokeColor: SETTINGS.circle.drawn.strokeColor.front,
         opacity: SETTINGS.circle.drawn.opacity.front,
-        dashArray: dashArrayFront
+        dashArray: dashArrayFront,
       };
     } else {
       const dashArrayBack = [] as number[];
 
       if (SETTINGS.circle.drawn.dashArray.back.length > 0) {
-        SETTINGS.circle.drawn.dashArray.back.forEach(v =>
+        SETTINGS.circle.drawn.dashArray.back.forEach((v) =>
           dashArrayBack.push(v)
         );
       }
@@ -866,7 +866,7 @@ export default class Circle extends Nodule {
           ? Nodule.contrastOpacity(SETTINGS.circle.drawn.opacity.front)
           : SETTINGS.circle.drawn.opacity.back,
 
-        dynamicBackStyle: SETTINGS.circle.dynamicBackStyle
+        dynamicBackStyle: SETTINGS.circle.dynamicBackStyle,
       };
     }
   }
@@ -931,7 +931,7 @@ export default class Circle extends Nodule {
         // Copy the front dash properties from the front default drawn dash properties
         if (SETTINGS.circle.drawn.dashArray.front.length > 0) {
           this.frontPart.dashes.clear();
-          SETTINGS.circle.drawn.dashArray.front.forEach(v => {
+          SETTINGS.circle.drawn.dashArray.front.forEach((v) => {
             this.frontPart.dashes.push(v);
           });
         }
@@ -953,7 +953,7 @@ export default class Circle extends Nodule {
         // Copy the front dash properties from the front default drawn dash properties
         if (SETTINGS.circle.drawn.dashArray.back.length > 0) {
           this.backPart.dashes.clear();
-          SETTINGS.circle.drawn.dashArray.back.forEach(v => {
+          SETTINGS.circle.drawn.dashArray.back.forEach((v) => {
             this.backPart.dashes.push(v);
           });
         }
@@ -974,6 +974,7 @@ export default class Circle extends Nodule {
           this.frontGradientColor.color = this.fillColorFront;
           this.frontFill.fill = this.frontGradient;
         }
+
         if (this.strokeColorFront === "noStroke") {
           this.frontPart.noStroke();
         } else {
@@ -984,7 +985,7 @@ export default class Circle extends Nodule {
         this.frontFill.opacity = this.opacityFront;
         if (this.dashArrayFront.length > 0) {
           this.frontPart.dashes.clear();
-          this.dashArrayFront.forEach(v => {
+          this.dashArrayFront.forEach((v) => {
             this.frontPart.dashes.push(v);
           });
         } else {
@@ -1035,7 +1036,7 @@ export default class Circle extends Nodule {
           : this.opacityBack;
         if (this.dashArrayBack.length > 0) {
           this.backPart.dashes.clear();
-          this.dashArrayBack.forEach(v => {
+          this.dashArrayBack.forEach((v) => {
             this.backPart.dashes.push(v);
           });
         } else {
@@ -1055,7 +1056,7 @@ export default class Circle extends Nodule {
         // Copy the front dash properties to the glowing object
         if (this.dashArrayFront.length > 0) {
           this.glowingFrontPart.dashes.clear();
-          this.dashArrayFront.forEach(v => {
+          this.dashArrayFront.forEach((v) => {
             this.glowingFrontPart.dashes.push(v);
           });
         } else {
@@ -1072,7 +1073,7 @@ export default class Circle extends Nodule {
         // Copy the back dash properties to the glowing object
         if (this.dashArrayBack.length > 0) {
           this.glowingBackPart.dashes.clear();
-          this.dashArrayBack.forEach(v => {
+          this.dashArrayBack.forEach((v) => {
             this.glowingBackPart.dashes.push(v);
           });
         } else {
