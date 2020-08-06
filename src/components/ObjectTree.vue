@@ -127,6 +127,7 @@ import { SEMeasurement } from "@/models/SEMeasurement";
 // import { SELength } from '@/models/SELength';
 import { SECalculation } from "@/models/SECalculation"
 import { AddCalculationCommand } from "@/commands/AddCalculationCommand"
+import { AppState } from '@/types';
 
 @Component({ components: { SENoduleTree } })
 export default class ObjectTree extends Vue {
@@ -135,25 +136,25 @@ export default class ObjectTree extends Vue {
   // private selection = [];
   private parser = new ExpressionParser();
 
-  @State('sePoints')
+  @State((s: AppState) => s.sePoints)
   readonly points!: SENodule[];
 
-  @State('seLines')
+  @State((s: AppState) => s.seLines)
   readonly lines!: SENodule[];
 
-  @State('seSegments')
+  @State((s: AppState) => s.seSegments)
   readonly segments!: SENodule[];
 
-  @State('seCircles')
+  @State((s: AppState) => s.seCircles)
   readonly circles!: SENodule[];
 
-  @State('seNodules')
+  @State((s: AppState) => s.seNodules)
   readonly nodules!: SENodule[];
 
-  @State('measurements')
+  @State((s: AppState) => s.measurements)
   readonly measurements!: SEMeasurement[];
 
-  @State('calculations')
+  @State((s: AppState) => s.calculations)
   readonly calculations!: SECalculation[];
 
   private calcExpression = "";
