@@ -58,9 +58,7 @@
           class="my-3"
           v-show="points.length > 0">
           <SENoduleList label="Points"
-            :children="points"
-            :depth="0"
-            show-children="true"></SENoduleList>
+            :children="points"></SENoduleList>
         </v-sheet>
         <v-sheet rounded
           color="accent"
@@ -68,9 +66,7 @@
           class="my-3"
           v-show="lines.length > 0">
           <SENoduleList label="Lines"
-            :children="lines"
-            :depth="0"
-            show-children="true"></SENoduleList>
+            :children="lines"></SENoduleList>
         </v-sheet>
         <v-sheet rounded
           color="accent"
@@ -78,9 +74,7 @@
           class="my-3"
           v-show="segments.length > 0">
           <SENoduleList label="Line Segments"
-            :children="segments"
-            :depth="0"
-            show-children="true"></SENoduleList>
+            :children="segments"></SENoduleList>
         </v-sheet>
         <v-sheet rounded
           color="accent"
@@ -88,21 +82,17 @@
           class="my-3"
           v-show="circles.length > 0">
           <SENoduleList label="Circles"
-            :children="circles"
-            :depth="0"
-            show-children="true"></SENoduleList>
+            :children="circles"></SENoduleList>
         </v-sheet>
-        <!--v-sheet rounded
+        <v-sheet rounded
           color="accent"
           :elevation="4"
           class="my-3"
-          v-show="measurements.length > 0"-->
-        <SENoduleList label="Measurements"
-          :children="measurements"
-          v-on:object-select="onExpressionSelect"
-          :depth="0"
-          show-children="true"></SENoduleList>
-        <!--/v-sheet-->
+          v-show="measurements.length > 0">
+          <SENoduleList label="Measurements"
+            :children="measurements"
+            v-on:object-select="onExpressionSelect"></SENoduleList>
+        </v-sheet>
         <v-sheet rounded
           color="accent"
           :elevation="4"
@@ -110,9 +100,7 @@
           v-show="calculations.length > 0">
           <SENoduleList label="Calculations"
             :children="calculations"
-            @object-select="onExpressionSelect"
-            :depth="0"
-            show-children="true"></SENoduleList>
+            @object-select="onExpressionSelect"></SENoduleList>
         </v-sheet>
         <span class="text-body-2 ma-2"
           v-show="zeroObjects">
@@ -138,9 +126,6 @@ import { AppState } from "@/types";
 
 @Component({ components: { SENoduleList } })
 export default class ObjectTree extends Vue {
-  // private selectedPoint: SEPoint | null = null;
-  // private selectedObject: SENodule | null = null;
-  // private selection = [];
   private parser = new ExpressionParser();
 
   @State((s: AppState) => s.sePoints)
@@ -180,7 +165,6 @@ export default class ObjectTree extends Vue {
 
   calculateExpression(): void {
     this.varMap.clear();
-    console.debug("Calc me!");
     // this.measurements.forEach((m: SEMeasurement) => {
     //   console.debug("Measurement", m)
     //   const measurementName = m.name.replace("-", "");
@@ -194,8 +178,6 @@ export default class ObjectTree extends Vue {
           ? this.parser.evaluateWithVars(this.calcExpression, this.varMap)
           : 0;
     } catch (err) {
-      // no code
-      console.debug("Got an error", err);
       this.parsingError = err.message;
     }
   }
