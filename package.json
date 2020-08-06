@@ -83,7 +83,7 @@
       "ecmaVersion": 2020
     },
     "rules": {
-      "space-before-function-paren": "never"
+      "space-before-function-paren": "off"
     },
     "overrides": [
       {

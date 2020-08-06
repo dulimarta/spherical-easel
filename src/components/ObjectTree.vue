@@ -9,16 +9,20 @@
           <v-container>
             <v-row>
               <v-col cols="12">
-                <v-text-field dense
+                <v-textarea auto-grow
+                  dense
+                  full-width
                   outlined
                   clearable
+                  rows="3"
                   label="Calculation Expression"
                   placeholder="cos(pi/2)"
                   class="ma-0"
                   v-model="calcExpression"
                   :error-messages="parsingError"
                   @keypress="onKeyPressed"
-                  @click:clear="calcResult = 0"></v-text-field>
+                  @click:clear="calcResult = 0">
+                </v-textarea>
 
               </v-col>
             </v-row>
@@ -33,10 +37,13 @@
         </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
+          <!--- Disable the FAB when either the expression text is empty or
+          there is a syntax error -->
           <v-btn small
             fab
             right
             color="accent"
+            :disabled="calcExpression.length === 0 || parsingError.length > 0"
             @click="addExpression">
             <v-icon>mdi-plus</v-icon>
           </v-btn>
@@ -50,62 +57,62 @@
           :elevation="4"
           class="my-3"
           v-show="points.length > 0">
-          <SENoduleTree label="Points"
+          <SENoduleList label="Points"
             :children="points"
             :depth="0"
-            show-children="true"></SENoduleTree>
+            show-children="true"></SENoduleList>
         </v-sheet>
         <v-sheet rounded
           color="accent"
           :elevation="4"
           class="my-3"
           v-show="lines.length > 0">
-          <SENoduleTree label="Lines"
+          <SENoduleList label="Lines"
             :children="lines"
             :depth="0"
-            show-children="true"></SENoduleTree>
+            show-children="true"></SENoduleList>
         </v-sheet>
         <v-sheet rounded
           color="accent"
           :elevation="4"
           class="my-3"
           v-show="segments.length > 0">
-          <SENoduleTree label="Line Segments"
+          <SENoduleList label="Line Segments"
             :children="segments"
             :depth="0"
-            show-children="true"></SENoduleTree>
+            show-children="true"></SENoduleList>
         </v-sheet>
         <v-sheet rounded
           color="accent"
           :elevation="4"
           class="my-3"
           v-show="circles.length > 0">
-          <SENoduleTree label="Circles"
+          <SENoduleList label="Circles"
             :children="circles"
             :depth="0"
-            show-children="true"></SENoduleTree>
+            show-children="true"></SENoduleList>
         </v-sheet>
         <!--v-sheet rounded
           color="accent"
           :elevation="4"
           class="my-3"
           v-show="measurements.length > 0"-->
-        <SENoduleTree label="Measurements"
+        <SENoduleList label="Measurements"
           :children="measurements"
           v-on:object-select="onExpressionSelect"
           :depth="0"
-          show-children="true"></SENoduleTree>
+          show-children="true"></SENoduleList>
         <!--/v-sheet-->
         <v-sheet rounded
           color="accent"
           :elevation="4"
           class="my-3"
           v-show="calculations.length > 0">
-          <SENoduleTree label="Calculations"
+          <SENoduleList label="Calculations"
             :children="calculations"
             @object-select="onExpressionSelect"
             :depth="0"
-            show-children="true"></SENoduleTree>
+            show-children="true"></SENoduleList>
         </v-sheet>
         <span class="text-body-2 ma-2"
           v-show="zeroObjects">
@@ -120,16 +127,16 @@ import Vue from "vue";
 import Component from "vue-class-component";
 import { State } from "vuex-class";
 
-import SENoduleTree from "@/components/SENoduleTree.vue";
+import SENoduleList from "@/components/SENoduleList.vue";
 import { SENodule } from "@/models/SENodule";
 import { ExpressionParser } from "@/expression/ExpressionParser";
 import { SEMeasurement } from "@/models/SEMeasurement";
 // import { SELength } from '@/models/SELength';
-import { SECalculation } from "@/models/SECalculation"
-import { AddCalculationCommand } from "@/commands/AddCalculationCommand"
-import { AppState } from '@/types';
+import { SECalculation } from "@/models/SECalculation";
+import { AddCalculationCommand } from "@/commands/AddCalculationCommand";
+import { AppState } from "@/types";
 
-@Component({ components: { SENoduleTree } })
+@Component({ components: { SENoduleList } })
 export default class ObjectTree extends Vue {
   // private selectedPoint: SEPoint | null = null;
   // private selectedObject: SENodule | null = null;
@@ -165,12 +172,15 @@ export default class ObjectTree extends Vue {
   readonly varMap = new Map<string, number>();
 
   get zeroObjects(): boolean {
-    return this.nodules.filter(n => n.exists).length === 0 && this.calculations.length === 0;
+    return (
+      this.nodules.filter(n => n.exists).length === 0 &&
+      this.calculations.length === 0
+    );
   }
 
   calculateExpression(): void {
     this.varMap.clear();
-    console.debug("Calc me!")
+    console.debug("Calc me!");
     // this.measurements.forEach((m: SEMeasurement) => {
     //   console.debug("Measurement", m)
     //   const measurementName = m.name.replace("-", "");
@@ -192,18 +202,18 @@ export default class ObjectTree extends Vue {
 
   onKeyPressed(): void {
     console.debug("Key press");
-    this.parsingError = ""
+    this.parsingError = "";
     if (this.timerInstance) clearTimeout(this.timerInstance);
     this.timerInstance = setTimeout(() => {
       try {
         this.varMap.clear();
-        console.debug("Calc me!")
+        console.debug("Calc me!");
         this.measurements.forEach((m: SEMeasurement) => {
           const measurementName = m.name;
-          console.debug("Measurement", m, measurementName)
+          console.debug("Measurement", m, measurementName);
           this.varMap.set(measurementName.replace(/-.+/, ""), m.value);
         });
-        console.debug("Variable map", this.varMap)
+        console.debug("Variable map", this.varMap);
         // no code
         this.calcResult =
           this.calcExpression.length > 0
