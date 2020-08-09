@@ -228,9 +228,10 @@ import { SELine } from "@/models/SELine";
 import Circle from "@/plottables/Circle";
 import Point from "@/plottables/Point";
 import Line from "@/plottables/Line";
+import Label from "@/plottables/Label";
 import Segment from "@/plottables/Segment";
 import Nodule from "@/plottables/Nodule";
-import { State } from "vuex-class"
+import { State } from "vuex-class";
 import { SENodule } from '@/models/SENodule';
 // import { getModule } from "vuex-module-decorators";
 // import UI from "@/store/ui-styles";
@@ -295,26 +296,26 @@ export default class Easel extends Vue {
   }
   //#endregion magnificationUpdate
 
-  private setUndoEnabled(e: unknown): void {
+  private setUndoEnabled (e: unknown): void {
     this.undoEnabled = (e as any).value;
   }
-  private setRedoEnabled(e: unknown): void {
+  private setRedoEnabled (e: unknown): void {
     this.redoEnabled = (e as any).value;
   }
 
-  private enableZoomIn(): void {
+  private enableZoomIn (): void {
     this.displayZoomInToolUseMessage = true;
     this.store.commit.setActionMode({ id: "zoomIn", name: "Zoom In" });
   }
-  private enableZoomOut(): void {
+  private enableZoomOut (): void {
     this.displayZoomOutToolUseMessage = true;
     this.store.commit.setActionMode({ id: "zoomOut", name: "Zoom Out" });
   }
-  private enableZoomFit(): void {
+  private enableZoomFit (): void {
     this.displayZoomFitToolUseMessage = true;
     this.store.commit.setActionMode({ id: "zoomFit", name: "Zoom Fit" });
   }
-  private adjustSize(): void {
+  private adjustSize (): void {
     this.availHeight =
       window.innerHeight -
       this.$vuetify.application.footer -
@@ -329,7 +330,7 @@ export default class Easel extends Vue {
   }
 
   /** mounted() is part of VueJS lifecycle hooks */
-  mounted(): void {
+  mounted (): void {
     window.addEventListener("resize", this.onWindowResized);
     this.adjustSize(); // Why do we need this?  this.onWindowResized just calls this.adjustSize() but if you remove it the app doesn't work -- strange!
   }
@@ -337,7 +338,7 @@ export default class Easel extends Vue {
   /** Split Pane resize handler
    * @param leftPercentage the percentage of the left pane width relative to the entire pane
    */
-  leftDividerMoved(leftPercentage: number): void {
+  leftDividerMoved (leftPercentage: number): void {
     // console.debug("Left divider percentage", leftPercentage);
 
     const rightBox = this.$refs.rightPanel.getBoundingClientRect();
@@ -347,7 +348,7 @@ export default class Easel extends Vue {
     this.currentCanvasSize = Math.min(availableWidth, this.availHeight);
   }
 
-  rightDividerMoved(rightPercentage: number): void {
+  rightDividerMoved (rightPercentage: number): void {
     // console.debug("Right divider percentage", rightPercentage);
     const leftBox = this.$refs.toolbox.$el.getBoundingClientRect();
     // Calculate the available width for the main panel
@@ -356,7 +357,7 @@ export default class Easel extends Vue {
     this.currentCanvasSize = Math.min(availableWidth, this.availHeight);
   }
 
-  minifyToolbox(): void {
+  minifyToolbox (): void {
     this.toolboxMinified = !this.toolboxMinified;
     // Minify the other panel when this one is expanded
     if (!this.toolboxMinified && !this.stylePanelMinified) {
@@ -364,7 +365,7 @@ export default class Easel extends Vue {
     }
   }
 
-  minifyStylePanel(): void {
+  minifyStylePanel (): void {
     this.stylePanelMinified = !this.stylePanelMinified;
     // Minify the other panel when this one is expanded
     if (!this.toolboxMinified && !this.stylePanelMinified) {
@@ -379,29 +380,30 @@ export default class Easel extends Vue {
     }
   }
 
-  switchActionMode(): void {
+  switchActionMode (): void {
     this.store.commit.setActionMode(this.actionMode);
   }
-  onWindowResized(): void {
+  onWindowResized (): void {
     this.adjustSize();
   }
   /* Undoes the last user action that changed the state of the sphere. */
-  undoEdit(): void {
+  undoEdit (): void {
     Command.undo();
   }
   /* Redoes the last user action that changed the state of the sphere. */
-  redoAction(): void {
+  redoAction (): void {
     Command.redo();
   }
 
   //#region resizePlottables
-  resizePlottables(e: any): void {
+  resizePlottables (e: any): void {
     const oldFactor = this.store.state.previousZoomMagnificationFactor;
     // Update the current stroke widths in each plottable class
     Line.updateCurrentStrokeWidthForZoom(oldFactor / e.factor);
     Segment.updateCurrentStrokeWidthForZoom(oldFactor / e.factor);
     Circle.updateCurrentStrokeWidthForZoom(oldFactor / e.factor);
     Point.updatePointScaleFactorForZoom(oldFactor / e.factor);
+    Label.updateTextScaleFactorForZoom(oldFactor / e.factor);
 
     // Update the size of each nodule in the store
     this.$store.state.seNodules.forEach((p: SENodule) => {

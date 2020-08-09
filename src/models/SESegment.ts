@@ -5,8 +5,9 @@ import { Visitable } from "@/visitors/Visitable";
 import { Visitor } from "@/visitors/Visitor";
 import { SEPoint } from "./SEPoint";
 import SETTINGS from "@/global-settings";
-import { OneDimensional, SegmentState } from "@/types";
+import { OneDimensional, SegmentState, Labelable } from "@/types";
 import { UpdateMode, UpdateStateType } from "@/types";
+import { SELabel } from "@/models/SELabel";
 
 import { Styles } from "@/types/Styles";
 
@@ -19,17 +20,16 @@ const styleSet = new Set([
   Styles.opacity
 ]);
 
-const tmpVector = new Vector3();
-const tmpVector1 = new Vector3();
-const tmpVector2 = new Vector3();
-const desiredZAxis = new Vector3();
-const toVector = new Vector3();
-
-export class SESegment extends SENodule implements Visitable, OneDimensional {
+export class SESegment extends SENodule
+  implements Visitable, OneDimensional, Labelable {
   /**
    * The plottable (TwoJS) segment associated with this model segment
    */
   public ref: Segment;
+  /**
+   * Pointer to the label of this SESegment import { SELabel } from "@/models/SELabel";
+   */
+  public label?: SELabel;
   /**
    * The model SE object that is the start of the segment
    */
@@ -56,6 +56,13 @@ export class SESegment extends SENodule implements Visitable, OneDimensional {
    * comments below.
    */
   private nearlyAntipodal = false;
+
+  /* Temporary vectors to help with calculuations */
+  private tmpVector = new Vector3();
+  private tmpVector1 = new Vector3();
+  private tmpVector2 = new Vector3();
+  private desiredZAxis = new Vector3();
+  private toVector = new Vector3();
 
   /**
    * Create a model SESegment using:
@@ -129,17 +136,20 @@ export class SESegment extends SENodule implements Visitable, OneDimensional {
     // Is the unitIdealVector inside the radius arcLength/2 circle about the midVector?
     // NOTE: normalVector x startVector *(this.arcLength > Math.PI ? -1 : 1)
     // gives the direction in which the segment is drawn
-    toVector
+    this.toVector
       .crossVectors(this._normalVector, this._startSEPoint.locationVector)
       .multiplyScalar(this._arcLength > Math.PI ? -1 : 1);
     // midVector = tmpVector = cos(arcLength/2)*start + sin(arcLength/2)*toVector
-    tmpVector
+    this.tmpVector
       .copy(this._startSEPoint.locationVector)
       .multiplyScalar(Math.cos(this._arcLength / 2));
-    tmpVector.addScaledVector(toVector, Math.sin(this._arcLength / 2));
+    this.tmpVector.addScaledVector(
+      this.toVector,
+      Math.sin(this._arcLength / 2)
+    );
 
     return (
-      tmpVector.angleTo(unitIdealVector) <
+      this.tmpVector.angleTo(unitIdealVector) <
       this._arcLength / 2 +
         SETTINGS.segment.hitIdealDistance / currentMagnificationFactor
     );
@@ -154,21 +164,19 @@ export class SESegment extends SENodule implements Visitable, OneDimensional {
     // NOTE: normalVector x startVector * (this.arcLength > Math.PI ? -1 : 1)
     // gives the direction in which the segment is drawn
 
-    toVector
+    this.toVector
       .crossVectors(this._normalVector, this._startSEPoint.locationVector)
       .multiplyScalar(this._arcLength > Math.PI ? -1 : 1);
     // midVector = tmpVector = cos(arcLength/2)*start + sin(arcLength/2)*this.toVector
-    tmpVector
+    this.tmpVector
       .copy(this._startSEPoint.locationVector)
       .multiplyScalar(Math.cos(this._arcLength / 2));
-    tmpVector.addScaledVector(toVector, Math.sin(this._arcLength / 2));
+    this.tmpVector.addScaledVector(
+      this.toVector,
+      Math.sin(this._arcLength / 2)
+    );
 
-    // console.debug("start vec", this._startSEPoint.locationVector.toFixed(2));
-    // console.debug("toVector", this.toVector.toFixed(2));
-    // console.debug("arclengh", this.arcLength);
-    // console.debug("midPoint", this.tmpVector.toFixed(2));
-
-    return tmpVector.angleTo(unitIdealVector) <= this._arcLength / 2;
+    return this.tmpVector.angleTo(unitIdealVector) <= this._arcLength / 2;
   }
 
   /**
@@ -177,22 +185,22 @@ export class SESegment extends SENodule implements Visitable, OneDimensional {
    */
   public closestVector(idealUnitSphereVector: Vector3): Vector3 {
     // The normal to the plane of the normal vector to the plane containing the segment and the idealUnitVector
-    tmpVector1.crossVectors(this._normalVector, idealUnitSphereVector);
+    this.tmpVector1.crossVectors(this._normalVector, idealUnitSphereVector);
     // Check to see if the tmpVector is zero (i.e the normal and  idealUnit vectors are parallel -- ether
     // nearly antipodal or in the same direction)
-    if (tmpVector1.isZero()) {
+    if (this.tmpVector1.isZero()) {
       return this._endSEPoint.locationVector; // An arbitrary point will do as all points are equally far away
     } else {
-      // Make the tmpVector (soon to be the to vector) unit
-      tmpVector1.normalize();
+      // Make the tmpVector (soon to be the toVector) unit
+      this.tmpVector1.normalize();
       // The vector that is closest to the idealUnitSphereVector in the plane of the segment
-      tmpVector1.cross(this._normalVector).normalize();
+      this.tmpVector1.cross(this._normalVector).normalize();
       // If this tmpVector is onSegment then return it, otherwise the closest endpoint is the correct return
-      if (this.onSegment(tmpVector1)) {
-        return tmpVector1;
+      if (this.onSegment(this.tmpVector1)) {
+        return this.tmpVector1;
       } else if (
-        tmpVector1.angleTo(this._startSEPoint.locationVector) <
-        tmpVector1.angleTo(this._endSEPoint.locationVector)
+        this.tmpVector1.angleTo(this._startSEPoint.locationVector) <
+        this.tmpVector1.angleTo(this._endSEPoint.locationVector)
       ) {
         return this._startSEPoint.locationVector;
       } else {
@@ -213,39 +221,45 @@ export class SESegment extends SENodule implements Visitable, OneDimensional {
       //////////////// This is  essentially setArcLengthAndNormalVector from segmentHandler/////////////////
       // Compute the normal vector from the this.startVector, the (old) normal vector and this.endVector
       // Compute a temporary normal from the two points' vectors
-      tmpVector.crossVectors(
+      this.tmpVector.crossVectors(
         this._startSEPoint.locationVector,
         this._endSEPoint.locationVector
       );
       // Check to see if the temporary normal is zero (i.e the start and end vectors are parallel -- ether
       // nearly antipodal or in the same direction)
-      if (tmpVector.isZero()) {
+      if (this.tmpVector.isZero()) {
         // Make the tmpVector (soon to be the to vector) unit
-        tmpVector.normalize();
+        this.tmpVector.normalize();
         if (this._normalVector.length() == 0) {
           // The normal vector is still at its initial value so can't be used to compute the next normal, so set the
           // the normal vector to an arbitrarily chosen vector perpendicular to the start vector
-          tmpVector.set(1, 0, 0);
-          tmpVector.crossVectors(this._startSEPoint.locationVector, tmpVector);
-          if (tmpVector.isZero()) {
-            tmpVector.set(0, 1, 0);
+          this.tmpVector.set(1, 0, 0);
+          this.tmpVector.crossVectors(
+            this._startSEPoint.locationVector,
+            this.tmpVector
+          );
+          if (this.tmpVector.isZero()) {
+            this.tmpVector.set(0, 1, 0);
             // The cross or startVector and (1,0,0) and (0,1,0) can't *both* be zero
-            tmpVector.crossVectors(
+            this.tmpVector.crossVectors(
               this._startSEPoint.locationVector,
-              tmpVector
+              this.tmpVector
             );
           }
         } else {
           // The start and end vectors align, compute  the next normal vector from the old normal and the start vector
-          tmpVector.crossVectors(
+          this.tmpVector.crossVectors(
             this._startSEPoint.locationVector,
             this._normalVector
           );
-          tmpVector.crossVectors(tmpVector, this._startSEPoint.locationVector);
+          this.tmpVector.crossVectors(
+            this.tmpVector,
+            this._startSEPoint.locationVector
+          );
         }
       }
       // The normal vector is now set
-      this._normalVector.copy(tmpVector).normalize();
+      this._normalVector.copy(this.tmpVector).normalize();
 
       // Record if the previous segment was longThanPi
       let longerThanPi = this._arcLength > Math.PI;
@@ -264,10 +278,12 @@ export class SESegment extends SENodule implements Visitable, OneDimensional {
       ) {
         // The startVector and endVector might be antipodal proceed with caution,
         // Set tmpVector to the antipode of the start Vector
-        tmpVector.copy(this._startSEPoint.locationVector).multiplyScalar(-1);
+        this.tmpVector
+          .copy(this._startSEPoint.locationVector)
+          .multiplyScalar(-1);
         // Check to see if the pixel distance (in the default screen plane)
         if (
-          tmpVector.angleTo(this._endSEPoint.locationVector) *
+          this.tmpVector.angleTo(this._endSEPoint.locationVector) *
             SETTINGS.boundaryCircle.radius <
           SETTINGS.nearlyAntipodalPixel
         ) {
@@ -325,6 +341,42 @@ export class SESegment extends SENodule implements Visitable, OneDimensional {
   }
 
   /**
+   * Return the vector near the SESegment (within SETTINGS.segment.maxLabelDistance) that is closest to the idealUnitSphereVector
+   * @param idealUnitSphereVector A vector on the unit sphere
+   */
+  public closestLabelLocationVector(idealUnitSphereVector: Vector3): Vector3 {
+    // First find the closest point on the segment to the idealUnitSphereVector
+    this.tmpVector.copy(this.closestVector(idealUnitSphereVector));
+
+    // If the idealUnitSphereVector is within the tolerance of the closest point, do nothing, otherwise return the vector in the plane of the ideanUnitSphereVector and the closest point that is at the tolerance distance away.
+    if (
+      this.tmpVector.angleTo(idealUnitSphereVector) <
+      SETTINGS.segment.maxLabelDistance
+    ) {
+      return idealUnitSphereVector;
+    } else {
+      // tmpVector1 is the normal to the plane of the closest point vector and the idealUnitVector
+      // This can't be zero because tmpVector can be the closest on the segment to idealUnitSphereVector and parallel with ideanUnitSphereVector
+      this.tmpVector1
+        .crossVectors(idealUnitSphereVector, this.tmpVector)
+        .normalize();
+      // compute the toVector (so that tmpVector2= toVector, tmpVector= fromVector, tmpVector1 form an orthonormal frame)
+      this.tmpVector2.crossVectors(this.tmpVector, this.tmpVector1).normalize;
+      // return cos(SETTINGS.segment.maxLabelDistance)*fromVector/tmpVec + sin(SETTINGS.segment.maxLabelDistance)*toVector/tmpVec2
+      this.tmpVector2.multiplyScalar(
+        Math.sin(SETTINGS.segment.maxLabelDistance)
+      );
+
+      return this.tmpVector2
+        .addScaledVector(
+          this.tmpVector,
+          Math.cos(SETTINGS.segment.maxLabelDistance)
+        )
+        .normalize();
+    }
+  }
+
+  /**
    * Move the segment
    * @param currentSphereVector The current location of the mouse
    * @param previousSphereVector The previous location of the mouse
@@ -345,7 +397,7 @@ export class SESegment extends SENodule implements Visitable, OneDimensional {
       // If the rotation is big enough preform the rotation
       if (rotationAngle > SETTINGS.rotate.minAngle) {
         // The axis of rotation
-        desiredZAxis
+        this.desiredZAxis
           .crossVectors(previousSphereVector, currentSphereVector)
           .normalize();
         // Form the matrix that performs the rotation
@@ -353,14 +405,14 @@ export class SESegment extends SENodule implements Visitable, OneDimensional {
         //   desiredZAxis,
         //   rotationAngle
         // );
-        tmpVector1
+        this.tmpVector1
           .copy(this.startSEPoint.locationVector)
-          .applyAxisAngle(desiredZAxis, rotationAngle);
-        this.startSEPoint.locationVector = tmpVector1;
-        tmpVector2
+          .applyAxisAngle(this.desiredZAxis, rotationAngle);
+        this.startSEPoint.locationVector = this.tmpVector1;
+        this.tmpVector2
           .copy(this.endSEPoint.locationVector)
-          .applyAxisAngle(desiredZAxis, rotationAngle);
-        this.endSEPoint.locationVector = tmpVector2;
+          .applyAxisAngle(this.desiredZAxis, rotationAngle);
+        this.endSEPoint.locationVector = this.tmpVector2;
         // Update both points, because we might need to update their kids!
         // First mark the kids out of date so that the update method does a topological sort
         this.endSEPoint.markKidsOutOfDate();
@@ -388,19 +440,19 @@ export class SESegment extends SENodule implements Visitable, OneDimensional {
       // plane normal vector
 
       // Determine the normal vector to the plane containing the pivot and the previous position
-      tmpVector1
+      this.tmpVector1
         .crossVectors(pivot.locationVector, previousSphereVector)
         .normalize();
       // Determine the normal vector to the plane containing the pivot and the current position
-      tmpVector2
+      this.tmpVector2
         .crossVectors(pivot.locationVector, currentSphereVector)
         .normalize();
       // The angle between tmpVector1 and tmpVector2 is the distance to move on the Ideal Unit Sphere
-      rotationAngle = tmpVector1.angleTo(tmpVector2);
+      rotationAngle = this.tmpVector1.angleTo(this.tmpVector2);
 
       // Determine which direction to rotate.
-      tmpVector1.cross(tmpVector2);
-      rotationAngle *= Math.sign(tmpVector1.z);
+      this.tmpVector1.cross(this.tmpVector2);
+      rotationAngle *= Math.sign(this.tmpVector1.z);
 
       // Reverse the direction of the rotation if the current points is on the back of the sphere
       if (currentSphereVector.z < 0) {
@@ -411,24 +463,24 @@ export class SESegment extends SENodule implements Visitable, OneDimensional {
       const axisOfRotation = pivot.locationVector;
       // Test for antipodal endpoints
       if (
-        tmpVector1
+        this.tmpVector1
           .addVectors(freeEnd.locationVector, pivot.locationVector)
           .isZero()
       ) {
         // Set the direction of the rotation correctly for moving the normalvector
         rotationAngle *= currentSphereVector.z < 0 ? -1 : 1;
         // If the end points are antipodal move the normal vector
-        tmpVector1.copy(this.normalVector);
-        tmpVector1.applyAxisAngle(axisOfRotation, rotationAngle);
-        this.normalVector = tmpVector1;
+        this.tmpVector1.copy(this.normalVector);
+        this.tmpVector1.applyAxisAngle(axisOfRotation, rotationAngle);
+        this.normalVector = this.tmpVector1;
         //Mark kids out of date so that the update method does a topological sort
         this.markKidsOutOfDate();
         this.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
       } else {
         // For non-antipodal points move the freeEnd
-        tmpVector1.copy(freeEnd.locationVector);
-        tmpVector1.applyAxisAngle(axisOfRotation, rotationAngle);
-        freeEnd.locationVector = tmpVector1;
+        this.tmpVector1.copy(freeEnd.locationVector);
+        this.tmpVector1.applyAxisAngle(axisOfRotation, rotationAngle);
+        freeEnd.locationVector = this.tmpVector1;
         // First mark the kids out of date so that the update method does a topological sort
         freeEnd.markKidsOutOfDate();
         pivot.markKidsOutOfDate();
@@ -450,6 +502,9 @@ export class SESegment extends SENodule implements Visitable, OneDimensional {
     return false;
   }
   public isPointOnOneDimensional() {
+    return false;
+  }
+  public isLabel(): boolean {
     return false;
   }
 }

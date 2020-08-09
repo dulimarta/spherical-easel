@@ -362,7 +362,7 @@ export default class Line extends Nodule {
       }
     }
     // Now update the style and size
-    this.stylize(DisplayStyle.APPLYCURRENTVARIABLES);
+    this.stylize(DisplayStyle.ApplyCurrentVariables);
     this.adjustSize();
   }
   /**
@@ -478,7 +478,7 @@ export default class Line extends Nodule {
    */
   stylize(flag: DisplayStyle): void {
     switch (flag) {
-      case DisplayStyle.APPLYTEMPORARYVARIABLES: {
+      case DisplayStyle.ApplyTemporaryVariables: {
         // Use the SETTINGS temporary options to directly modify the Two.js objects.
 
         // Front
@@ -523,7 +523,7 @@ export default class Line extends Nodule {
         break;
       }
 
-      case DisplayStyle.APPLYCURRENTVARIABLES: {
+      case DisplayStyle.ApplyCurrentVariables: {
         // Use the current variables to directly modify the Two.js objects.
 
         // Front

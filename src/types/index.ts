@@ -2,6 +2,7 @@
 
 import Two from "two.js";
 import { SEPoint } from "@/models/SEPoint";
+import { SELabel } from "@/models/SELabel";
 import { SELine } from "@/models/SELine";
 import { SECircle } from "@/models/SECircle";
 import { SESegment } from "@/models/SESegment";
@@ -23,6 +24,7 @@ export interface AppState {
   zoomTranslation: number[]; // current zoom translation vector
   zoomMagnificationFactor: number; // current zoom magnification factor
   previousZoomMagnificationFactor: number;
+  canvasWidth: number;
   actionMode: string;
   previousActionMode: string;
   activeToolName: string;
@@ -31,6 +33,7 @@ export interface AppState {
   seLines: SELine[];
   seSegments: SESegment[];
   seCircles: SECircle[];
+  seLabels: SELabel[];
   seNodules: SENodule[];
   selections: SENodule[];
   intersections: SEIntersectionPoint[];
@@ -78,6 +81,15 @@ export interface OneDimensional {
   closestVector(idealUnitSphereVector: Vector3): Vector3;
 }
 
+export interface Labelable {
+  /**
+   * Returns the closest label location vector on the parent object to the idealUnitSphereVector
+   * @param idealUnitSphereVector A vector location on the sphere
+   */
+  closestLabelLocationVector(idealUnitSphereVector: Vector3): Vector3;
+  label?: SELabel;
+}
+
 /**
  * All the one dimensional SE Classes
  */
@@ -96,17 +108,29 @@ export type hslaColorType = {
 export enum UpdateMode {
   DisplayOnly, // Record nothing in the state Array
   RecordStateForDelete, // All visited objects must be put into the stateArray
-  RecordStateForMove, // Only those objects which depend on more than their point parents need to record that information
+  RecordStateForMove // Only those objects which depend on more than their point parents need to record that information
+}
+
+export enum TextLabelMode {
+  NameOnly, // display only the name
+  CaptionOnly, // display the caption only
+  NameAndCaption // display the name and caption
 }
 
 export interface UpdateStateType {
   mode: UpdateMode;
   stateArray: ObjectState[];
 }
+
 /**
  * Record the information necessary to restore/undo a move or delete of the object
  */
-export type ObjectState = CircleState | LineState | SegmentState | PointState;
+export type ObjectState =
+  | CircleState
+  | LineState
+  | SegmentState
+  | PointState
+  | LabelState;
 
 export interface LineState {
   kind: "line";
@@ -138,6 +162,16 @@ export interface PointState {
 }
 export function isPointState(entry: ObjectState): entry is PointState {
   return entry.kind === "point";
+}
+export interface LabelState {
+  kind: "label";
+  object: SELabel;
+  locationVectorX: number;
+  locationVectorY: number;
+  locationVectorZ: number;
+}
+export function isLabelState(entry: ObjectState): entry is LabelState {
+  return entry.kind === "label";
 }
 export interface CircleState {
   // No fields are needed for moving circles because they are completely determined by their point parents

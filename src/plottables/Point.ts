@@ -40,25 +40,19 @@ export default class Point extends Nodule {
   // Front
   protected fillColorFront = SETTINGS.point.drawn.fillColor.front;
   protected strokeColorFront = SETTINGS.point.drawn.strokeColor.front;
-  protected pointRadiusPercentFront = 100;
+  protected pointRadiusPercentFront = SETTINGS.point.radiusPercent.front;
   protected opacityFront = SETTINGS.point.drawn.opacity.front;
   // Back - use the default non-dynamic back style options so that when the user disables the dynamic back style these options are displayed
   protected fillColorBack = SETTINGS.point.drawn.fillColor.back;
   protected strokeColorBack = SETTINGS.point.drawn.strokeColor.back;
-  protected pointRadiusPercentBack = 100;
+  protected pointRadiusPercentBack = SETTINGS.point.radiusPercent.back;
   protected opacityBack = SETTINGS.point.drawn.opacity.back;
   protected dynamicBackStyle = SETTINGS.point.dynamicBackStyle;
 
   /**
    * Initialize the current point scale factor that is adjusted by the zoom level and the user pointRadiusPercent
-   * The initial size of the points are
+   * The initial size of the points are set by the defaults in SETTINGS
    */
-  static currentPointRadiusFront = SETTINGS.point.drawn.radius.front;
-  static currentPointRadiusBack = SETTINGS.point.drawn.radius.back;
-  static currentGlowingPointRadiusFront =
-    SETTINGS.point.drawn.radius.front + SETTINGS.point.glowing.annularWidth;
-  static currentGlowingPointRadiusBack =
-    SETTINGS.point.drawn.radius.back + SETTINGS.point.glowing.annularWidth;
   static pointScaleFactor = 1;
 
   /**
@@ -98,7 +92,7 @@ export default class Point extends Nodule {
     this.glowingBackPoint.translation = this.defaultScreenVectorLocation;
     this.backPoint.translation = this.defaultScreenVectorLocation;
 
-    // The points are not initially glowing
+    // The points are not initially visible
     this.frontPoint.visible = false;
     this.glowingFrontPoint.visible = false;
     this.backPoint.visible = false;
@@ -276,7 +270,7 @@ export default class Point extends Nodule {
       }
     }
     // Now apply the style and size
-    this.stylize(DisplayStyle.APPLYCURRENTVARIABLES);
+    this.stylize(DisplayStyle.ApplyCurrentVariables);
     this.adjustSize();
   }
   /**
@@ -309,7 +303,7 @@ export default class Point extends Nodule {
     if (front) {
       return {
         front: front,
-        pointRadiusPercent: 100,
+        pointRadiusPercent: SETTINGS.point.radiusPercent.front,
         strokeColor: SETTINGS.point.drawn.strokeColor.front,
         fillColor: SETTINGS.point.drawn.fillColor.front,
         opacity: SETTINGS.point.drawn.opacity.front
@@ -320,8 +314,10 @@ export default class Point extends Nodule {
         front: front,
 
         pointRadiusPercent: SETTINGS.point.dynamicBackStyle
-          ? Nodule.contrastPointRadiusPercent(100)
-          : 100,
+          ? Nodule.contrastPointRadiusPercent(
+              SETTINGS.point.radiusPercent.front
+            )
+          : SETTINGS.point.radiusPercent.back,
 
         strokeColor: SETTINGS.point.dynamicBackStyle
           ? Nodule.contrastStrokeColor(SETTINGS.point.drawn.strokeColor.front)
@@ -377,7 +373,7 @@ export default class Point extends Nodule {
    */
   stylize(flag: DisplayStyle): void {
     switch (flag) {
-      case DisplayStyle.APPLYTEMPORARYVARIABLES: {
+      case DisplayStyle.ApplyTemporaryVariables: {
         // Use the SETTINGS temporary options to directly modify the Two.js objects.
         // FRONT
         if (SETTINGS.point.temp.fillColor.front === "noFill") {
@@ -387,9 +383,7 @@ export default class Point extends Nodule {
         }
         this.frontPoint.stroke = SETTINGS.point.temp.strokeColor.front;
         // strokeWidth is not user modifiable, strokeWidth is always the default drawn one
-        this.frontPoint.vertices.forEach(v => {
-          v.normalize().multiplyScalar(Point.currentPointRadiusFront);
-        }); // temporary points are always the currentPointSize (accounts for zoom)
+        // front pointRadiusPercent applied by adjustSize(); (accounts for zoom)
         this.frontPoint.opacity = SETTINGS.point.temp.opacity.front;
 
         // BACK
@@ -400,15 +394,13 @@ export default class Point extends Nodule {
         }
         this.backPoint.stroke = SETTINGS.point.temp.strokeColor.back;
         // strokeWidth is not user modifiable, strokeWidth is always the default drawn one
-        this.backPoint.vertices.forEach(v => {
-          v.normalize().multiplyScalar(Point.currentPointRadiusBack);
-        }); // temporary points are always the currentPointSize (accounts for zoom)
+        // back pointRadiusPercent applied by adjustSize(); (accounts for zoom)
         this.backPoint.opacity = SETTINGS.point.temp.opacity.back;
 
         break;
       }
 
-      case DisplayStyle.APPLYCURRENTVARIABLES: {
+      case DisplayStyle.ApplyCurrentVariables: {
         // Use the current variables to directly modify the Two.js objects.
         // FRONT
         if (this.fillColorFront === "noFill") {

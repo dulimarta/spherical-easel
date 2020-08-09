@@ -19,7 +19,7 @@ export class SEIntersectionPoint extends SEPoint {
   private seParent2: SEOneDimensional;
 
   /**
-   * The numbering of the intersection in the case of
+   * The numbering of the intersection in the case of multiple intersection
    */
   private order: number;
   /**
@@ -136,6 +136,9 @@ export class SEIntersectionPoint extends SEPoint {
     return false;
   }
   public isPoint() {
+    return false;
+  }
+  public isLabel(): boolean {
     return false;
   }
 }

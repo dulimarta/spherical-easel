@@ -1,5 +1,6 @@
 import { Visitor } from "./Visitor";
 import { SEPoint } from "@/models/SEPoint";
+import { SELabel } from "@/models/SELabel";
 import { SELine } from "@/models/SELine";
 import { Vector3 } from "three";
 import { SECircle } from "@/models/SECircle";
@@ -15,12 +16,13 @@ export class PointMoverVisitor implements Visitor {
 
   //#region actionOnPoint
   actionOnPoint(p: SEPoint): void {
+    // Don't use the usual location setter for points on one dimensional because that will move the label to the location on a possibly out of date parent.
     if (!(p instanceof SEPointOnOneDimensional)) {
       p.locationVector = this.locationVector; // Set the new position vector
     } else {
-      p.pointMoverLocationSetter(this.locationVector);
+      p.pointDirectLocationSetter(this.locationVector);
     }
-    //console.log("position mover on point", p.name, p.locationVector.toFixed(2));
+
     // Don't update here, because it may cause a point on one dimensional to update to the wrong location
     // The undo and restore methods of command cause one update for display at the end of every command or
     // command group
@@ -38,5 +40,8 @@ export class PointMoverVisitor implements Visitor {
 
   actionOnCircle(c: SECircle): void {
     // c.update();
+  }
+  actionOnLabel(l: SELabel): void {
+    // l.update();
   }
 }

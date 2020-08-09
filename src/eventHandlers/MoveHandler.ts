@@ -7,6 +7,7 @@ import { SENodule } from "@/models/SENodule";
 import { SELine } from "@/models/SELine";
 import { SESegment } from "@/models/SESegment";
 import { SECircle } from "@/models/SECircle";
+import { SELabel } from "@/models/SELabel";
 import SETTINGS from "@/global-settings";
 import EventBus from "./EventBus";
 import { RotateSphereCommand } from "@/commands/RotateSphereCommand";
@@ -14,11 +15,18 @@ import Highlighter from "./Highlighter";
 import { MovePointCommand } from "@/commands/MovePointCommand";
 import { MoveLineCommand } from "@/commands/MoveLineCommand";
 import { MoveSegmentCommand } from "@/commands/MoveSegmentCommand";
-import { isLineState, isSegmentState, isPointState } from "@/types";
+import { MoveLabelCommand } from "@/commands/MoveLabelCommand";
+import {
+  isLineState,
+  isSegmentState,
+  isPointState,
+  isLabelState
+} from "@/types";
 import {
   UpdateMode,
   UpdateStateType,
   LineState,
+  LabelState,
   SegmentState,
   PointState
 } from "@/types";
@@ -102,8 +110,10 @@ export default class MoveHandler extends Highlighter {
 
     // Query the nearby SENodules to select the one the user wishes to move (if none the sphere rotates)
     if (this.hitSENodules.length > 0) {
-      // Prioritize moving points then lines then segments, then circles
-      const freePoints = this.hitSEPoints.filter(n => n.isFreeToMove());
+      // Prioritize moving points then label then lines then segments, then circles
+      const freePoints = this.hitSEPoints.filter(
+        n => n.isFreeToMove() && n.showing
+      );
       if (freePoints.length > 0) {
         this.moveTarget = freePoints[0];
         // First mark all children of the target out of date so that the update method does a topological sort
@@ -112,9 +122,23 @@ export default class MoveHandler extends Highlighter {
         this.moveTarget.update(this.beforeMoveState);
         return;
       }
+      const labels = this.hitSELabels.filter(
+        n => n.isFreeToMove() && n.showing
+      );
+
+      if (labels.length > 0) {
+        this.moveTarget = labels[0];
+        // First mark all children of the target out of date so that the update method does a topological sort
+        this.moveTarget.markKidsOutOfDate();
+        // Store the state of the freePoints, segments and lines before the move
+        this.moveTarget.update(this.beforeMoveState);
+        return;
+      }
       //If the user tries to move a nonFree point, nothing should happen
       if (this.hitSEPoints.length == 0) {
-        const freeLines = this.hitSELines.filter(n => n.isFreeToMove());
+        const freeLines = this.hitSELines.filter(
+          n => n.isFreeToMove() && n.showing
+        );
         if (freeLines.length > 0) {
           this.moveTarget = freeLines[0];
           // First mark all children of the target's point parents out of date so that the update method does a topological sort
@@ -125,7 +149,9 @@ export default class MoveHandler extends Highlighter {
           (this.moveTarget as SELine).endSEPoint.update(this.beforeMoveState);
           return;
         }
-        const freeSegments = this.hitSESegments.filter(n => n.isFreeToMove());
+        const freeSegments = this.hitSESegments.filter(
+          n => n.isFreeToMove() && n.showing
+        );
         if (freeSegments.length > 0) {
           this.moveTarget = freeSegments[0];
           // First mark all children of the target's point parents out of date so that the update method does a topological sort
@@ -141,7 +167,9 @@ export default class MoveHandler extends Highlighter {
           return;
         }
 
-        const freeCircles = this.hitSECircles.filter(n => n.isFreeToMove());
+        const freeCircles = this.hitSECircles.filter(
+          n => n.isFreeToMove() && n.showing
+        );
         if (freeCircles.length > 0) {
           this.moveTarget = freeCircles[0];
           // First mark all children of the target's point parents out of date so that the update method does a topological sort
@@ -182,6 +210,14 @@ export default class MoveHandler extends Highlighter {
           stateArray: []
         });
         //#endregion displayOnlyUpdate
+      } else if (this.moveTarget instanceof SELabel) {
+        // Move the selected SELabel
+        this.moveTarget.locationVector = this.currentSphereVector;
+        // Update the display based on the new location of the label
+        this.moveTarget.update({
+          mode: UpdateMode.DisplayOnly,
+          stateArray: []
+        });
       } else if (
         this.moveTarget instanceof SELine ||
         this.moveTarget instanceof SESegment
@@ -249,6 +285,10 @@ export default class MoveHandler extends Highlighter {
         // First mark all children of the target's point parents out of date so that the update method does a topological sort
         this.moveTarget.markKidsOutOfDate();
         this.moveTarget.update(this.afterMoveState);
+      } else if (this.moveTarget instanceof SELabel) {
+        // First mark all children of the target's point parents out of date so that the update method does a topological sort
+        this.moveTarget.markKidsOutOfDate();
+        this.moveTarget.update(this.afterMoveState);
       } else if (this.moveTarget instanceof SESegment) {
         // First mark all children of the target's point parents out of date so that the update method does a topological sort
         this.moveTarget.startSEPoint.markKidsOutOfDate();
@@ -289,6 +329,7 @@ export default class MoveHandler extends Highlighter {
             entry.locationVectorY,
             entry.locationVectorZ
           );
+
           const afterLocationVector = new Vector3(
             (this.afterMoveState.stateArray[
               index
@@ -305,14 +346,41 @@ export default class MoveHandler extends Highlighter {
               .subVectors(beforeLocationVector, afterLocationVector)
               .isZero()
           ) {
-            // console.log(
-            //   "Move Pt Com",
-            //   entry.object.name,
-            //   beforeLocationVector.toFixed(2),
-            //   afterLocationVector.toFixed(2)
-            // );
+            console.log("point state move");
             moveCommandGroup.addCommand(
               new MovePointCommand(
+                entry.object,
+                beforeLocationVector,
+                afterLocationVector
+              )
+            );
+          }
+        } else if (isLabelState(entry)) {
+          const beforeLocationVector = new Vector3(
+            entry.locationVectorX,
+            entry.locationVectorY,
+            entry.locationVectorZ
+          );
+
+          const afterLocationVector = new Vector3(
+            (this.afterMoveState.stateArray[
+              index
+            ] as LabelState).locationVectorX,
+            (this.afterMoveState.stateArray[
+              index
+            ] as LabelState).locationVectorY,
+            (this.afterMoveState.stateArray[
+              index
+            ] as LabelState).locationVectorZ
+          );
+          if (
+            !tmpVector1
+              .subVectors(beforeLocationVector, afterLocationVector)
+              .isZero()
+          ) {
+            console.log("label state move");
+            moveCommandGroup.addCommand(
+              new MoveLabelCommand(
                 entry.object,
                 beforeLocationVector,
                 afterLocationVector

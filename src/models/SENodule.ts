@@ -208,14 +208,15 @@ export abstract class SENodule {
   }
 
   //Should return true only if this is an instance of SEPointOnOneDimensional
-  // public abstract isPointOnOneDimensional(): boolean;
+  public abstract isPointOnOneDimensional(): boolean;
   // This doesn't work
-  public isPointOnOneDimensional(): this is SEPointOnOneDimensional {
-    return true;
-  }
+  // public isPointOnOneDimensional(): this is SEPointOnOneDimensional {
+  //   return true;
+  // }
 
   // Only returns true if this is an SEPoint and this has no parents
   public abstract isFreePoint(): boolean;
+
   // This doesn't work
   // public isFreePoint(): this is SEPoint {
   //   return this._parents.length == 0;
@@ -228,8 +229,12 @@ export abstract class SENodule {
   //   return true;
   // }
 
+  // Only returns true if this is an SELabel
+  public abstract isLabel(): boolean;
+
   public isFreeToMove(): boolean {
-    if (this.isFreePoint() || this.isPointOnOneDimensional()) return true;
+    if (this.isFreePoint() || this.isPointOnOneDimensional() || this.isLabel())
+      return true;
     if (this.isPoint()) {
       // don't let this fall through because if a point has an empty parents array the .every method returns true
       return false;
@@ -237,9 +242,7 @@ export abstract class SENodule {
     return this._parents.every(n => n.isFreePoint());
   }
 
-  public isOneDimensional(): this is SEOneDimensional {
-    return true;
-  }
+  public abstract isOneDimensional(): boolean;
   // This doesn't work return true for SEPoint
   // public isOneDimensional(): this is SEOneDimensional {
   //   return true;

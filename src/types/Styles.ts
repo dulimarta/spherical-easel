@@ -1,3 +1,5 @@
+import { TextLabelMode } from "@/types";
+
 export enum Styles {
   // Important: Be sure to include "Color" for enum member
   // that refers to Color property
@@ -8,6 +10,14 @@ export enum Styles {
   opacity,
   dynamicBackStyle,
   pointRadiusPercent,
+  textName,
+  textCaption,
+  textStyle,
+  textFamily,
+  textDecoration,
+  textRotation,
+  textScalePercent,
+  textLabelMode
 }
 
 export type StyleOptions = {
@@ -20,4 +30,12 @@ export type StyleOptions = {
   dynamicBackStyle?: boolean;
   pointRadiusPercent?: number;
   backStyleContrast?: number;
+  textStyle?: string;
+  textFamily?: string;
+  textDecoration?: string;
+  textRotation?: number;
+  textScalePercent?: number;
+  textName?: string;
+  textCaption?: string;
+  textLabelMode?: TextLabelMode;
 };

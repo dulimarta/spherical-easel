@@ -490,7 +490,7 @@ export default class Segment extends Nodule {
       }
     }
     // Now apply the style and size
-    this.stylize(DisplayStyle.APPLYCURRENTVARIABLES);
+    this.stylize(DisplayStyle.ApplyCurrentVariables);
     this.adjustSize();
   }
   /**
@@ -630,7 +630,7 @@ export default class Segment extends Nodule {
    */
   stylize(flag: DisplayStyle): void {
     switch (flag) {
-      case DisplayStyle.APPLYTEMPORARYVARIABLES: {
+      case DisplayStyle.ApplyTemporaryVariables: {
         // Use the SETTINGS temporary options to directly modify the Two.js objects.
 
         // FRONT PART
@@ -695,7 +695,7 @@ export default class Segment extends Nodule {
         break;
       }
 
-      case DisplayStyle.APPLYCURRENTVARIABLES: {
+      case DisplayStyle.ApplyCurrentVariables: {
         // Use the current variables to directly modify the Two.js objects.
 
         // FRONT PART

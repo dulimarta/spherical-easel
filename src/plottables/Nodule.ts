@@ -6,8 +6,8 @@ import { StyleOptions } from "@/types/Styles";
 import { hslaColorType } from "@/types";
 
 export enum DisplayStyle {
-  APPLYTEMPORARYVARIABLES,
-  APPLYCURRENTVARIABLES
+  ApplyTemporaryVariables,
+  ApplyCurrentVariables
 }
 
 /**
@@ -32,7 +32,7 @@ export default abstract class Nodule implements Stylable, Resizeable {
   /**
    * This operation reverses the action performed by addToLayers()
    */
-  abstract removeFromLayers(): void;
+  abstract removeFromLayers(layers?: Two.Group[]): void;
 
   /**This operation constraint the visual properties (linewidth, circle size, etc) when the view is zoomed in/out */
   abstract adjustSize(): void;
@@ -100,6 +100,9 @@ export default abstract class Nodule implements Stylable, Resizeable {
   }
   // The back points can be up to 20% smaller in radius than their front counterparts.
   static contrastPointRadiusPercent(frontPercent: number): number {
+    return frontPercent - 20 * (1 - Nodule.backStyleContrast);
+  }
+  static contrastTextScalePercent(frontPercent: number): number {
     return frontPercent - 20 * (1 - Nodule.backStyleContrast);
   }
   static convertStringToHSLAObject(

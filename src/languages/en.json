@@ -66,7 +66,11 @@
 
     "SelectDisplayedName": "Selection",
     "SelectToolTipMessage": "Select Objects",
-    "SelectToolUseMessage": "Click on objects to select them, hold the Alt key to add to your selection",
+    "SelectToolUseMessage": "Click on objects to select them, hold the Alt key to add to your selection.",
+
+    "ToggleLabelDisplayedName": "Toggle Label Display",
+    "ToggleLabelToolTipMessage": "Toggle Display Of Labels",
+    "ToggleLabelToolUseMessage": "Click on objects to toggle the display of their labels.",
 
     "DeleteDisplayedName": "Delete",
     "DeleteToolTipMessage": "Delete Objects",

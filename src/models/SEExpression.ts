@@ -26,5 +26,12 @@ export abstract class SEExpression extends SENodule {
    * Is the object hit a point at a particular sphere location?
    * @param sphereVector a location on the ideal unit sphere
    */
-  public isHitAt = (unitIdealVector: Vector3): boolean => false;
+  public isHitAt = (
+    unitIdealVector: Vector3,
+    currentMagnificationFactor: number
+  ): boolean => false;
+
+  public isLabel(): boolean {
+    return false;
+  }
 }

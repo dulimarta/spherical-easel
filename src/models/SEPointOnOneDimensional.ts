@@ -54,7 +54,7 @@ export class SEPointOnOneDimensional extends SEPoint {
    * use the closest point method and that the object that this point depends on will be move under this point (if necessary)
    * @param pos The new position of the point
    */
-  public pointMoverLocationSetter(pos: Vector3): void {
+  public pointDirectLocationSetter(pos: Vector3): void {
     // Record the location on the unit ideal sphere of this SEPoint
     this._locationVector.copy(pos).normalize();
     // Set the position of the associated displayed plottable Point
@@ -104,7 +104,7 @@ export class SEPointOnOneDimensional extends SEPoint {
 
   // I wish the SENodule methods would work but I couldn't figure out how
   // See the attempts in SENodule
-  // public isPointOnOneDimensional() {
-  // return true;
-  // }
+  public isPointOnOneDimensional(): boolean {
+    return true;
+  }
 }

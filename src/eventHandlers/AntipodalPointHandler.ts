@@ -6,12 +6,19 @@ import { DisplayStyle } from "@/plottables/Nodule";
 import Highlighter from "./Highlighter";
 import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
 import { UpdateMode } from "@/types";
+import Label from "@/plottables/Label";
+import { SELabel } from "@/models/SELabel";
+import { Vector3 } from "three";
+import SETTINGS from "@/global-settings";
 
 export default class AntipodalPointHandler extends Highlighter {
   /**
-   * The part
+   * The parent of this point
    */
   private parentPoint: SEPoint | null = null;
+
+  /* temporary vector to help with computation */
+  private tmpVector = new Vector3();
 
   constructor(layers: Two.Group[]) {
     super(layers);
@@ -27,14 +34,35 @@ export default class AntipodalPointHandler extends Highlighter {
       if (this.parentPoint != null) {
         const newPoint = new NonFreePoint();
         // Set the display to the default values
-        newPoint.stylize(DisplayStyle.APPLYCURRENTVARIABLES);
+        newPoint.stylize(DisplayStyle.ApplyCurrentVariables);
         newPoint.adjustSize();
 
         // Create the model object for the new point and link them
         const vtx = new SEAntipodalPoint(newPoint, this.parentPoint);
 
+        // Create the plottable label
+        const newLabel = new Label();
+        const newSELabel = new SELabel(newLabel, vtx);
+
+        // Set the initial label location
+        this.tmpVector
+          .copy(vtx.locationVector)
+          .add(
+            new Vector3(
+              2 * SETTINGS.point.initialLabelOffset,
+              SETTINGS.point.initialLabelOffset,
+              0
+            )
+          )
+          .normalize();
+        newSELabel.locationVector = this.tmpVector;
+
         // Create and execute the command to create a new point for undo/redo
-        new AddAntipodalPointCommand(vtx, this.parentPoint).execute();
+        new AddAntipodalPointCommand(
+          vtx,
+          this.parentPoint,
+          newSELabel
+        ).execute();
         // Update the display of the antipodal point
         vtx.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
 
@@ -62,14 +90,31 @@ export default class AntipodalPointHandler extends Highlighter {
       if (object instanceof SEPoint) {
         const newPoint = new NonFreePoint();
         // Set the display to the default values
-        newPoint.stylize(DisplayStyle.APPLYCURRENTVARIABLES);
+        newPoint.stylize(DisplayStyle.ApplyCurrentVariables);
         newPoint.adjustSize();
 
         // Create the model object for the new point and link them
         const vtx = new SEAntipodalPoint(newPoint, object);
 
+        // Create the plottable label
+        const newLabel = new Label();
+        const newSELabel = new SELabel(newLabel, vtx);
+
+        // Set the initial label location
+        this.tmpVector
+          .copy(vtx.locationVector)
+          .add(
+            new Vector3(
+              2 * SETTINGS.point.initialLabelOffset,
+              SETTINGS.point.initialLabelOffset,
+              0
+            )
+          )
+          .normalize();
+        newSELabel.locationVector = this.tmpVector;
+
         // Create and execute the command to create a new point for undo/redo
-        new AddAntipodalPointCommand(vtx, object).execute();
+        new AddAntipodalPointCommand(vtx, object, newSELabel).execute();
         // Update the display of the antipodal point
         vtx.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
       }
