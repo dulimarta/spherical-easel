@@ -1,6 +1,7 @@
 <template>
   <v-card :elevation="20">
-    <div class="tikz" v-html="latexSnippet">
+    <div class="tikz"
+      v-html="latexSnippet">
       Please refresh your browser
     </div>
   </v-card>

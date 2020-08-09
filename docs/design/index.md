@@ -144,7 +144,7 @@ As one of the main goals of this project was to draw simple, clean, and labeled 
 As explained above, the classes in the [Models Directory](/design/#models-directory) store information about geometric objects on the ideal unit sphere and the classes in the [Plottables Directory](/design/#plottables-directory) are responsible for methods to
 render the geometric objects to the screen. This process of going from the ideal unit sphere to the screen is handled in stages. The following diagrams helps to organize this process.
 
-<TikZPicture latex="coordinates.tex"></TikZPicture>
+<tik-z-picture latex="coordinates.tex"></tik-z-picture>
 
 First the unit sphere information is scaled to be on the Default Sphere. The default radius of the sphere (which is the same as the black boundary circle seen in the Default Screen Plane) was arbitrarily fixed at 250 (the default radius is in pixels if the Zoom Magnification Factor is 1) as set in the <span class="file">global-settings.ts</span> file:
 
@@ -207,7 +207,7 @@ As the location of first four points created are not constrained by any other ge
 
 To determine the rest of the DAG, consider what changes as we move these points. If the user moves $P_1$ then $C_1$ also moves, so there is an arrow in the DAG from the vertex corresponding to $P_1$ to the vertex corresponding to $C_1$. Similarly segment $S_1$ also moves so there is an arrow between the vertices corresponding to those objects. Continuing in this way we obtain the following DAG where the round green circles correspond to free objects (i.e. individually moveable with the [Move Tool](/tools/display.html#move)) and the red rectangles correspond to fixed objects (i.e. unmovable with the [Move Tool](/tools/display.html#move)):
 
-<TikZPicture latex="directed_graph.tex"></TikZPicture>
+<tik-z-picture latex="directed_graph.tex"></tik-z-picture>
 
 The DAG associated to any geometric arrangement is used to determine which objects need to be refreshed when other objects change their location. For example, if point $P_1$ is moved, then only those objects that depend on $P_1$ (i.e. all descendents $C_1$, $P_6$, and $S_1$) need to be refreshed.
 

@@ -12,7 +12,7 @@
     </div>
 
     <div v-show="expanded">
-      <template v-for="node in children">
+      <template v-for="node in existingChildren">
 
         <div id="nodeContent"
           :key="node.id"
