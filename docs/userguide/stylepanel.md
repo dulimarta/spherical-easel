@@ -71,14 +71,14 @@ Maximum length is ?30? characters. TODO: Update? Is a limit even needed?
 
 This allows the user to select the attributes of how the text of the name and caption are rendered on the front and back of the sphere. The options are
 
-- Font Size
 - Font Family
+- Font Size
 - Font Style
-- Font Weight
 - Display Angle
 - Decorations
 - Front Color
 - Back Color
+- Front Opacity
 - Back Opacity
 
 The front color is the color used when rendering the text on the front of the sphere. The back color option is both a check box (labelled "Auto") and a color picker. If the box is unchecked the selected color is used. If the box is checked the color is automatically computed based on a contrast constant and the front color (and the color picker value is ignored). To adjust the contrast use the [Global Settings](/userguide/titlebar.html#global-settings).

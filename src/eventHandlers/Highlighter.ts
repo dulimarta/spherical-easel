@@ -4,6 +4,7 @@ import { LAYER } from "@/global-settings";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import { SENodule } from "@/models/SENodule";
 import { SELine } from "@/models/SELine";
+import { SELabel } from "@/models/SELabel";
 import { SESegment } from "@/models/SESegment";
 import { SECircle } from "@/models/SECircle";
 
@@ -40,6 +41,7 @@ export default abstract class Highlighter extends MouseHandler {
     this.hitSELines.clear();
     this.hitSESegments.clear();
     this.hitSECircles.clear();
+    this.hitSELabels.clear();
     this.infoText.hide();
 
     // Create an array of SENodules of all nearby objects by querying the store
@@ -64,7 +66,6 @@ export default abstract class Highlighter extends MouseHandler {
     // Of the nearby SEPoints make the intersection points display, and the others glow
     this.hitSEPoints.forEach((obj: SEPoint) => {
       obj.glowing = true;
-      // console.debug("hitSEPoint", obj.name);
     });
 
     // Sort the nearby SENodules list into their more specific SE classes
@@ -80,6 +81,10 @@ export default abstract class Highlighter extends MouseHandler {
       .filter(obj => obj instanceof SECircle)
       .map(obj => obj as SECircle);
 
+    this.hitSELabels = this.hitSENodules
+      .filter(obj => obj instanceof SELabel)
+      .map(obj => obj as SELabel);
+
     // Prioritize the SEPoints, the above code makes the nearby SEPoints glow but if there
     // are no nearby SEPoints, make the other nearby SENodules glow and display their names
     if (this.hitSEPoints.length == 0) {
@@ -90,6 +95,9 @@ export default abstract class Highlighter extends MouseHandler {
         obj.glowing = true;
       });
       this.hitSECircles.forEach((obj: SECircle) => {
+        obj.glowing = true;
+      });
+      this.hitSELabels.forEach((obj: SELabel) => {
         obj.glowing = true;
       });
 

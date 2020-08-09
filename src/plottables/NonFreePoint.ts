@@ -49,7 +49,7 @@ export default class NonFreePoint extends Point {
     this.dynamicBackStyle = SETTINGS.point.dynamicBackStyle;
 
     // Now apply the new style and size
-    this.stylize(DisplayStyle.APPLYCURRENTVARIABLES);
+    this.stylize(DisplayStyle.ApplyCurrentVariables);
     this.adjustSize();
   }
 

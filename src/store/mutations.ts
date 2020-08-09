@@ -6,7 +6,9 @@ import { SESegment } from "@/models/SESegment";
 import { SECircle } from "@/models/SECircle";
 import { RotationVisitor } from "@/visitors/RotationVisitor";
 import { PointMoverVisitor } from "@/visitors/PointMoverVisitor";
+import { LabelMoverVisitor } from "@/visitors/LabelMoverVisitor";
 import { SELine } from "@/models/SELine";
+import { SELabel } from "@/models/SELabel";
 import { SENodule } from "@/models/SENodule";
 import { Vector3 } from "three";
 import { StyleOptions } from "@/types/Styles";
@@ -31,6 +33,7 @@ export const initialState: AppState = {
   zoomMagnificationFactor: 1, // The CSSTransform magnification factor
   previousZoomMagnificationFactor: 1, // The previous CSSTransform magnification factor
   zoomTranslation: [0, 0], // The CSSTransform translation vector
+  canvasWidth: 0, //A temporary canvas width;
   seNodules: [], // An array of all SENodules
   selections: [], // An array of selected SENodules
   layers: [], // An array of Two.Group pointer to the layers in the twoInstance
@@ -38,6 +41,7 @@ export const initialState: AppState = {
   seLines: [], // An array of all SELines
   seSegments: [], // An array of all SESegments
   seCircles: [], // An array of all SECircles
+  seLabels: [], // An array of all SELabels
   temporaryNodules: [], // An array of all Nodules that are temporary - created by the handlers.
   intersections: [],
   measurements: [],
@@ -50,6 +54,7 @@ export const initialState: AppState = {
 
 const rotationVisitor = new RotationVisitor();
 const pointMoverVisitor = new PointMoverVisitor();
+const labelMoverVisitor = new LabelMoverVisitor();
 const lineNormalVisitor = new LineNormalVisitor();
 const segmentNormalArcLengthVisitor = new SegmentNormalArcLengthVisitor();
 
@@ -63,6 +68,7 @@ export default {
     state.seLines.clear();
     state.seSegments.clear();
     state.seCircles.clear();
+    state.seLabels.clear();
     state.selections.clear();
     state.intersections.clear();
     state.measurements.clear();
@@ -118,6 +124,22 @@ export default {
       state.seNodules.splice(pos2, 1);
       // Remove the associated plottable (Nodule) object from being rendered
       victimPoint.ref.removeFromLayers();
+    }
+  },
+  addLabel(state: AppState, label: SELabel): void {
+    state.seLabels.push(label);
+    state.seNodules.push(label);
+    label.ref.addToLayers(state.layers);
+  },
+  removeLabel(state: AppState, labelId: number): void {
+    const pos = state.seLabels.findIndex(x => x.id === labelId);
+    const pos2 = state.seNodules.findIndex(x => x.id === labelId);
+    if (pos >= 0) {
+      const victimLabel = state.seLabels[pos];
+      state.seLabels.splice(pos, 1);
+      state.seNodules.splice(pos2, 1);
+      // Remove the associated plottable (Nodule) object from being rendered
+      victimLabel.ref.removeFromLayers(state.layers);
     }
   },
   addLine(state: AppState, line: SELine): void {
@@ -176,8 +198,25 @@ export default {
   //#region rotateSphere
   rotateSphere(state: AppState, rotationMat: Matrix4): void {
     rotationVisitor.setTransform(rotationMat);
+    // apply the rotation to the line, segments, labels, then points. Only the points update. (Circles depend on only the points, so will be updated)
+    state.seLines.forEach((m: SELine) => {
+      m.accept(rotationVisitor); // Does no updating of the display
+    });
+    state.seSegments.forEach((s: SESegment) => {
+      s.accept(rotationVisitor); // Does no updating of the display
+    });
+    state.seLabels.forEach((l: SELabel) => {
+      l.accept(rotationVisitor); // Does no updating of the display
+    });
     state.sePoints.forEach((p: SEPoint) => {
-      p.accept(rotationVisitor);
+      p.accept(rotationVisitor); // Does no updating of the display
+    });
+    // now do the update of the free points so that display is correct
+    state.sePoints.forEach((p: SEPoint) => {
+      if (p.isFreeToMove()) {
+        p.markKidsOutOfDate(); // so this does a topological sort and update is only executed once on each point
+        p.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
+      }
     });
   },
   //#endregion rotateSphere
@@ -188,6 +227,14 @@ export default {
     pointMoverVisitor.setNewLocation(move.location);
     const pos = state.sePoints.findIndex(x => x.id === move.pointId);
     state.sePoints[pos].accept(pointMoverVisitor);
+  },
+  moveLabel(
+    state: AppState,
+    move: { labelId: number; location: Vector3 }
+  ): void {
+    labelMoverVisitor.setNewLocation(move.location);
+    const pos = state.seLabels.findIndex(x => x.id === move.labelId);
+    state.seLabels[pos].accept(labelMoverVisitor);
   },
   changeLineNormalVector(
     state: AppState,
@@ -247,7 +294,7 @@ export default {
       // Update all Nodules because more than just the selected nodules depend on the backStyleContrast
       Nodule.setBackStyleContrast(payload.backStyleContrast);
       state.seNodules.forEach((n: SENodule) => {
-        n.ref?.stylize(DisplayStyle.APPLYCURRENTVARIABLES);
+        n.ref?.stylize(DisplayStyle.ApplyCurrentVariables);
       });
     }
     selected.forEach((n: SENodule) => {
@@ -314,5 +361,8 @@ export default {
       }
     });
     state.initialBackStyleContrast = backContrast;
+  },
+  setCanvasWidth(state: AppState, canvasWidth: number): void {
+    state.canvasWidth = canvasWidth;
   }
 };

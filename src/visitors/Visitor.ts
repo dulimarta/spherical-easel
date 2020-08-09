@@ -2,6 +2,7 @@ import { SEPoint } from "@/models/SEPoint";
 import { SELine } from "@/models/SELine";
 import { SESegment } from "@/models/SESegment";
 import { SECircle } from "@/models/SECircle";
+import { SELabel } from "@/models/SELabel";
 /**
  * Use the Visitor design pattern to apply operation on different types
  * of geometric objects. The non-abstract class that implements this
@@ -12,9 +13,5 @@ export interface Visitor {
   actionOnLine(x: SELine): void;
   actionOnSegment(s: SESegment): void;
   actionOnCircle(c: SECircle): void;
-
-  // TODO: add the following abstract methods later
-  /*
-  actionOnCircle(x:SECircle): void;
-  */
+  actionOnLabel(l: SELabel): void;
 }

@@ -9,8 +9,11 @@ import {
   UpdateMode,
   UpdateStateType,
   PointState,
-  SEOneDimensional
+  SEOneDimensional,
+  Labelable
 } from "@/types";
+import { SELabel } from "./SELabel";
+import Label from "@/plottables/Label";
 
 let POINT_COUNT = 0;
 const styleSet = new Set([
@@ -21,14 +24,22 @@ const styleSet = new Set([
   Styles.dynamicBackStyle
 ]);
 
-export class SEPoint extends SENodule implements Visitable {
+export class SEPoint extends SENodule implements Visitable, Labelable {
   /* This should be the only reference to the plotted version of this SEPoint */
   public ref: Point;
 
   /**
+   * Pointer to the label of this point
+   */
+  public label?: SELabel;
+  /**
    * The vector location of the SEPoint on the ideal unit sphere
    */
   protected _locationVector = new Vector3();
+  /** Temporary vectors to help with calculations */
+  private tmpVector = new Vector3(); //
+  private tmpVector1 = new Vector3();
+  private tmpVector2 = new Vector3();
 
   /**
    * Create a model SEPoint using:
@@ -52,6 +63,7 @@ export class SEPoint extends SENodule implements Visitable {
       return;
     }
     this.setOutOfDate(false);
+
     //These points always exist - they have no parents to depend on
 
     //Update the location of the associate plottable Point (setter also updates the display)
@@ -70,11 +82,7 @@ export class SEPoint extends SENodule implements Visitable {
       state.mode == UpdateMode.RecordStateForDelete ||
       state.mode == UpdateMode.RecordStateForMove
     ) {
-      // If the parent points of the segment are antipodal, the normal vector determines the
-      // plane of the segment.  The points also don't determine the arcLength of the segments.
-      // Both of these quantities could change during a move therefore store normal vector and arcLength
-      // in stateArray for undo move. (No need to store the parent points, they will be updated on their own
-      // before this line is updated.) Store the coordinate values of the vector and not the point to the vector.
+      //  Store the coordinate values of the vector and not the pointer to the vector.
       const pointState: PointState = {
         kind: "point",
         locationVectorX: this._locationVector.x,
@@ -104,6 +112,57 @@ export class SEPoint extends SENodule implements Visitable {
   accept(v: Visitor): void {
     v.actionOnPoint(this);
   }
+  /**
+   * Return the vector near the SELine (within SETTINGS.point.maxLabelDistance) that is closest to the idealUnitSphereVector
+   * @param currentLabelLocationVector A vector on the unit sphere
+   */
+  public closestLabelLocationVector(
+    currentLabelLocationVector: Vector3
+  ): Vector3 {
+    // If the idealUnitSphereVector is within the tolerance of the point, do nothing, otherwise return the vector in the plane of the ideanUnitSphereVector and the point that is at the tolerance distance away.
+    if (
+      this._locationVector.angleTo(currentLabelLocationVector) <
+      SETTINGS.point.maxLabelDistance
+    ) {
+      return currentLabelLocationVector;
+    } else {
+      // tmpVector1 is the normal to the plane of the point vector and the idealUnitVector
+      this.tmpVector1.crossVectors(
+        currentLabelLocationVector,
+        this._locationVector
+      );
+
+      if (this.tmpVector1.isZero()) {
+        // The idealUnitSphereVector and location of the point are parallel (well antipodal because the case of being on top of each other is covered)
+        // Use the north pole because any point will do as long at the crossproduct with the _locationVector is not zero.
+        this.tmpVector1.set(0, 0, 1);
+
+        if (
+          this.tmpVector2
+            .crossVectors(this._locationVector, this.tmpVector1)
+            .isZero()
+        ) {
+          this.tmpVector1.set(0, 1, 0);
+        }
+      } else {
+        // normalize the tmpVector1
+        this.tmpVector1.normalize();
+      }
+      // compute the toVector (so that tmpVector2= toVector, this._locationVector, tmpVector1 form an orthonormal frame)
+      this.tmpVector2
+        .crossVectors(this._locationVector, this.tmpVector1)
+        .normalize();
+      // return cos(SETTINGS.segment.maxLabelDistance)*fromVector/tmpVec + sin(SETTINGS.segment.maxLabelDistance)*toVector/tmpVec2
+      this.tmpVector2.multiplyScalar(Math.sin(SETTINGS.point.maxLabelDistance));
+      this.tmpVector2
+        .addScaledVector(
+          this._locationVector,
+          Math.cos(SETTINGS.point.maxLabelDistance)
+        )
+        .normalize();
+      return this.tmpVector2;
+    }
+  }
 
   public isHitAt(
     unitIdealVector: Vector3,
@@ -126,7 +185,10 @@ export class SEPoint extends SENodule implements Visitable {
   public isPoint(): boolean {
     return true;
   }
-  public isPointOnOneDimensional(): false {
+  public isPointOnOneDimensional(): boolean {
+    return false;
+  }
+  public isLabel(): boolean {
     return false;
   }
 }

@@ -24,7 +24,7 @@ This menu allows you to select among the following options:
 Clicking on this icon (TODO: AddIconImage) allows user to
 
 - pick a different language,
-- The front/back contrast that allows the styling of the objects on the back of the sphere to be rendered based on the front style and the value of this contrast.
+- Decide which object types are labeled initially.
 - Set the number of displayed decimal places,
 - Set the Momentum and Decay feature of the [Rotate Tool](/tools/display.html#rotateion). Checking the Momentum box will allow the rotate tool to continue rotating the current view after the user has stopped actively rotating the sphere. The sphere will continue to rotate and slow depending on a Decay parameter. A Decay value of zero is the same as not allowing Momentum and a Decay value of 1 means the sphere never stops rotating (if left undisturbed).
 - Upload a custom background image for the sphere?

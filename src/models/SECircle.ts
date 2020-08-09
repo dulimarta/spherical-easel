@@ -8,11 +8,8 @@ import { OneDimensional } from "@/types";
 import SETTINGS from "@/global-settings";
 import { Styles } from "@/types/Styles";
 import { UpdateMode, UpdateStateType, CircleState } from "@/types";
-
-/** Use in the rotation matrix during a move event */
-const desiredZAxis = new Vector3();
-const tmpVector = new Vector3();
-const tmpVector1 = new Vector3();
+import { Labelable } from "@/types";
+import { SELabel } from "@/models/SELabel";
 
 let CIRCLE_COUNT = 0;
 
@@ -24,11 +21,16 @@ const styleSet = new Set([
   Styles.opacity,
   Styles.dynamicBackStyle
 ]);
-export class SECircle extends SENodule implements Visitable, OneDimensional {
+export class SECircle extends SENodule
+  implements Visitable, OneDimensional, Labelable {
   /**
    * The plottable (TwoJS) segment associated with this model segment
    */
   public ref!: Circle;
+  /**
+   * Pointer to the label of this SESegment
+   */
+  public label?: SELabel;
   /**
    * The model SE object that is the center of the circle
    */
@@ -43,6 +45,11 @@ export class SECircle extends SENodule implements Visitable, OneDimensional {
    * circle on the sphere.
    */
   private changeInPositionRotationMatrix: Matrix4 = new Matrix4();
+  /** Use in the rotation matrix during a move event */
+  private desiredZAxis = new Vector3();
+  private tmpVector = new Vector3();
+  private tmpVector1 = new Vector3();
+  private tmpVector2 = new Vector3();
 
   // #region circleConstructor
   /**
@@ -138,31 +145,64 @@ export class SECircle extends SENodule implements Visitable, OneDimensional {
    */
   public closestVector(idealUnitSphereVector: Vector3): Vector3 {
     // The normal to the plane of the center and the idealUnitVector
-    tmpVector.crossVectors(
+    this.tmpVector.crossVectors(
       this._centerSEPoint.locationVector,
       idealUnitSphereVector
     );
     // Check to see if the tmpVector is zero (i.e the center and  idealUnit vectors are parallel -- ether
     // nearly antipodal or in the same direction)
-    if (tmpVector.isZero()) {
+    if (this.tmpVector.isZero()) {
       return this._circleSEPoint.locationVector; // An arbitrary point will do as all points are equally far away
     } else {
       // Make the tmpVector (soon to be the to vector) unit
-      tmpVector.normalize();
+      this.tmpVector.normalize();
       // A vector perpendicular to the center vector in the direction of the idealUnitSphereVector
-      tmpVector.cross(this._centerSEPoint.locationVector).normalize();
+      this.tmpVector.cross(this._centerSEPoint.locationVector).normalize();
       // The closest point is cos(arcLength)*this._centerSEPoint.locationVector+ sin(arcLength)*this.tmpVector
-      tmpVector.multiplyScalar(Math.sin(this.circleRadius));
-      tmpVector
+      this.tmpVector.multiplyScalar(Math.sin(this.circleRadius));
+      this.tmpVector
         .addScaledVector(
           this._centerSEPoint.locationVector,
           Math.cos(this.circleRadius)
         )
         .normalize();
-      return tmpVector;
+      return this.tmpVector;
     }
   }
+  /**
+   * Return the vector near the SECircle (within SETTINGS.circle.maxLabelDistance) that is closest to the idealUnitSphereVector
+   * @param idealUnitSphereVector A vector on the unit sphere
+   */
+  public closestLabelLocationVector(idealUnitSphereVector: Vector3): Vector3 {
+    // First find the closest point on the segment to the idealUnitSphereVector
+    this.tmpVector.copy(this.closestVector(idealUnitSphereVector));
 
+    // If the idealUnitSphereVector is within the tolerance of the closest point, do nothing, otherwise return the vector in the plane of the ideanUnitSphereVector and the closest point that is at the tolerance distance away.
+    if (
+      this.tmpVector.angleTo(idealUnitSphereVector) <
+      SETTINGS.circle.maxLabelDistance
+    ) {
+      return idealUnitSphereVector;
+    } else {
+      // tmpVector1 is the normal to the plane of the closest point vector and the idealUnitVector
+      // This can't be zero because tmpVector can be the closest on the segment to idealUnitSphereVector and parallel with ideanUnitSphereVector
+      this.tmpVector1
+        .crossVectors(idealUnitSphereVector, this.tmpVector)
+        .normalize();
+      // compute the toVector (so that tmpVector2= toVector, tmpVector= fromVector, tmpVector1 form an orthonormal frame)
+      this.tmpVector2.crossVectors(this.tmpVector, this.tmpVector1).normalize;
+      // return cos(SETTINGS.segment.maxLabelDistance)*fromVector/tmpVec + sin(SETTINGS.segment.maxLabelDistance)*toVector/tmpVec2
+      this.tmpVector2.multiplyScalar(
+        Math.sin(SETTINGS.circle.maxLabelDistance)
+      );
+      return this.tmpVector2
+        .addScaledVector(
+          this.tmpVector,
+          Math.cos(SETTINGS.circle.maxLabelDistance)
+        )
+        .normalize();
+    }
+  }
   accept(v: Visitor): void {
     v.actionOnCircle(this);
   }
@@ -183,22 +223,22 @@ export class SECircle extends SENodule implements Visitable, OneDimensional {
     // If the rotation is big enough preform the rotation
     if (Math.abs(rotationAngle) > SETTINGS.rotate.minAngle) {
       // The axis of rotation
-      desiredZAxis
+      this.desiredZAxis
         .crossVectors(previousSphereVector, currentSphereVector)
         .normalize();
       // Form the matrix that performs the rotation
       this.changeInPositionRotationMatrix.makeRotationAxis(
-        desiredZAxis,
+        this.desiredZAxis,
         rotationAngle
       );
-      tmpVector1
+      this.tmpVector1
         .copy(this.centerSEPoint.locationVector)
         .applyMatrix4(this.changeInPositionRotationMatrix);
-      this.centerSEPoint.locationVector = tmpVector1;
-      tmpVector
+      this.centerSEPoint.locationVector = this.tmpVector1;
+      this.tmpVector
         .copy(this.circleSEPoint.locationVector)
         .applyMatrix4(this.changeInPositionRotationMatrix);
-      this.circleSEPoint.locationVector = tmpVector;
+      this.circleSEPoint.locationVector = this.tmpVector;
       // Update both points, because we might need to update their kids!
       // First mark the kids out of date so that the update method does a topological sort
       this.circleSEPoint.markKidsOutOfDate();
@@ -226,6 +266,9 @@ export class SECircle extends SENodule implements Visitable, OneDimensional {
     return false;
   }
   public isPointOnOneDimensional() {
+    return false;
+  }
+  public isLabel(): boolean {
     return false;
   }
 }

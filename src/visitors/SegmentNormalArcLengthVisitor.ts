@@ -4,6 +4,7 @@ import { SELine } from "@/models/SELine";
 import { Vector3 } from "three";
 import { SECircle } from "@/models/SECircle";
 import { SESegment } from "@/models/SESegment";
+import { SELabel } from "@/models/SELabel";
 // import { UpdateMode, UpdateStateType } from "@/types";
 
 export class SegmentNormalArcLengthVisitor implements Visitor {
@@ -37,5 +38,8 @@ export class SegmentNormalArcLengthVisitor implements Visitor {
 
   actionOnCircle(c: SECircle): void {
     // c.update();
+  }
+  actionOnLabel(l: SELabel): void {
+    // l.update();
   }
 }

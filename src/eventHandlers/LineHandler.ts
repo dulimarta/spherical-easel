@@ -19,6 +19,8 @@ import { AddIntersectionPointCommand } from "@/commands/AddIntersectionPointComm
 import { AddPointOnOneDimensionalCommand } from "@/commands/AddPointOnOneDimensionalCommand";
 import { SEOneDimensional, SEIntersectionReturnType } from "@/types";
 import { UpdateMode } from "@/types";
+import Label from "@/plottables/Label";
+import { SELabel } from "@/models/SELabel";
 
 export default class LineHandler extends Highlighter {
   /**
@@ -76,16 +78,16 @@ export default class LineHandler extends Highlighter {
     super(layers);
     // Create and style the temporary line
     this.tempLine = new Line();
-    this.tempLine.stylize(DisplayStyle.APPLYTEMPORARYVARIABLES);
+    this.tempLine.stylize(DisplayStyle.ApplyTemporaryVariables);
     this.store.commit.addTemporaryNodule(this.tempLine);
     this.isTemporaryLineAdded = false;
     this.isDragging = false;
     // Create and style the temporary points marking the start/end of an object being created
     this.startMarker = new Point();
-    this.startMarker.stylize(DisplayStyle.APPLYTEMPORARYVARIABLES);
+    this.startMarker.stylize(DisplayStyle.ApplyTemporaryVariables);
     this.store.commit.addTemporaryNodule(this.startMarker);
     this.endMarker = new Point();
-    this.endMarker.stylize(DisplayStyle.APPLYTEMPORARYVARIABLES);
+    this.endMarker.stylize(DisplayStyle.ApplyTemporaryVariables);
     this.store.commit.addTemporaryNodule(this.endMarker);
   }
   //eslint-disable-next-line
@@ -265,10 +267,13 @@ export default class LineHandler extends Highlighter {
       // We have to create a new SEPointOnOneDimensional or SEPoint and Point
       const newStartPoint = new Point();
       // Set the display and size to the default values
-      newStartPoint.stylize(DisplayStyle.APPLYCURRENTVARIABLES);
+      newStartPoint.stylize(DisplayStyle.ApplyCurrentVariables);
       newStartPoint.adjustSize();
+      // Create the plottable label
+      const newLabel = new Label();
 
       let vtx: SEPoint | SEPointOnOneDimensional | null = null;
+      let newSELabel: SELabel | null = null;
       if (this.startSEPointOneDimensionalParent) {
         // Starting mouse press landed near a oneDimensional
         // Create the model object for the new point and link them
@@ -276,20 +281,35 @@ export default class LineHandler extends Highlighter {
           newStartPoint,
           this.startSEPointOneDimensionalParent
         );
+        newSELabel = new SELabel(newLabel, vtx);
         // Create and execute the command to create a new point for undo/redo
         lineGroup.addCommand(
           new AddPointOnOneDimensionalCommand(
             vtx,
-            this.startSEPointOneDimensionalParent
+            this.startSEPointOneDimensionalParent,
+            newSELabel
           )
         );
       } else {
         // Starting mouse press landed on an open space
         vtx = new SEPoint(newStartPoint);
+        newSELabel = new SELabel(newLabel, vtx);
         // Create and execute the command to create a new point for undo/redo
-        lineGroup.addCommand(new AddPointCommand(vtx));
+        lineGroup.addCommand(new AddPointCommand(vtx, newSELabel));
       }
       vtx.locationVector = this.startVector;
+      // Set the initial label location
+      this.tmpVector
+        .copy(vtx.locationVector)
+        .add(
+          new Vector3(
+            2 * SETTINGS.point.initialLabelOffset,
+            SETTINGS.point.initialLabelOffset,
+            0
+          )
+        )
+        .normalize();
+      newSELabel.locationVector = this.tmpVector;
       this.startSEPoint = vtx;
     } else if (
       this.startSEPoint instanceof SEIntersectionPoint &&
@@ -317,10 +337,13 @@ export default class LineHandler extends Highlighter {
       // We have to create a new Point for the end
       const newEndPoint = new Point();
       // Set the display and size to the default values
-      newEndPoint.stylize(DisplayStyle.APPLYCURRENTVARIABLES);
+      newEndPoint.stylize(DisplayStyle.ApplyCurrentVariables);
       newEndPoint.adjustSize();
+      // Create the plottable label
+      const newLabel = new Label();
 
       let vtx: SEPoint | SEPointOnOneDimensional | null = null;
+      let newSELabel: SELabel | null = null;
       if (this.hitSESegments.length > 0) {
         // The end of the line will be a point on a segment
         // Create the model object for the new point and link them
@@ -329,8 +352,14 @@ export default class LineHandler extends Highlighter {
         vtx.locationVector = this.hitSESegments[0].closestVector(
           this.currentSphereVector
         );
+        newSELabel = new SELabel(newLabel, vtx);
+
         lineGroup.addCommand(
-          new AddPointOnOneDimensionalCommand(vtx, this.hitSESegments[0])
+          new AddPointOnOneDimensionalCommand(
+            vtx,
+            this.hitSESegments[0],
+            newSELabel
+          )
         );
       } else if (this.hitSELines.length > 0) {
         // The end of the line will be a point on a line
@@ -340,8 +369,14 @@ export default class LineHandler extends Highlighter {
         vtx.locationVector = this.hitSELines[0].closestVector(
           this.currentSphereVector
         );
+        newSELabel = new SELabel(newLabel, vtx);
+
         lineGroup.addCommand(
-          new AddPointOnOneDimensionalCommand(vtx, this.hitSELines[0])
+          new AddPointOnOneDimensionalCommand(
+            vtx,
+            this.hitSELines[0],
+            newSELabel
+          )
         );
       } else if (this.hitSECircles.length > 0) {
         // The end of the line will be a point on a circle
@@ -350,17 +385,37 @@ export default class LineHandler extends Highlighter {
         vtx.locationVector = this.hitSECircles[0].closestVector(
           this.currentSphereVector
         );
+        newSELabel = new SELabel(newLabel, vtx);
+
         lineGroup.addCommand(
-          new AddPointOnOneDimensionalCommand(vtx, this.hitSECircles[0])
+          new AddPointOnOneDimensionalCommand(
+            vtx,
+            this.hitSECircles[0],
+            newSELabel
+          )
         );
       } else {
         // The ending mouse release landed on an open space
         vtx = new SEPoint(newEndPoint);
         // Set the Location
         vtx.locationVector = this.currentSphereVector;
-        lineGroup.addCommand(new AddPointCommand(vtx));
+        newSELabel = new SELabel(newLabel, vtx);
+
+        lineGroup.addCommand(new AddPointCommand(vtx, newSELabel));
       }
       this.endSEPoint = vtx;
+      // Set the initial label location
+      this.tmpVector
+        .copy(vtx.locationVector)
+        .add(
+          new Vector3(
+            2 * SETTINGS.point.initialLabelOffset,
+            SETTINGS.point.initialLabelOffset,
+            0
+          )
+        )
+        .normalize();
+      newSELabel.locationVector = this.tmpVector;
     }
 
     // Compute a temporary normal from the two points' vectors
@@ -389,7 +444,7 @@ export default class LineHandler extends Highlighter {
     // Create the new line after the normalVector is set
     const newLine = this.tempLine.clone();
     // Stylize the new Line
-    newLine.stylize(DisplayStyle.APPLYCURRENTVARIABLES);
+    newLine.stylize(DisplayStyle.ApplyCurrentVariables);
     newLine.adjustSize();
 
     const newSELine = new SELine(
@@ -398,22 +453,58 @@ export default class LineHandler extends Highlighter {
       this.normalVector,
       this.endSEPoint
     );
+    // Create the plottable label
+    const newLabel = new Label();
+    const newSELabel = new SELabel(newLabel, newSELine);
+    this.tmpVector
+      .addVectors(
+        this.startSEPoint.locationVector,
+        this.endSEPoint.locationVector
+      )
+      .normalize()
+      .add(new Vector3(0, SETTINGS.line.initialLabelOffset, 0))
+      .normalize();
+    newSELabel.locationVector = this.tmpVector;
+
     lineGroup.addCommand(
-      new AddLineCommand(newSELine, this.startSEPoint, this.endSEPoint)
+      new AddLineCommand(
+        newSELine,
+        this.startSEPoint,
+        this.endSEPoint,
+        newSELabel
+      )
     );
 
     // Determine all new intersection points and add their creation to the command so it can be undone
     this.store.getters
       .createAllIntersectionsWithLine(newSELine)
       .forEach((item: SEIntersectionReturnType) => {
+        // Create the plottable label
+        const newLabel = new Label();
+        const newSELabel = new SELabel(newLabel, item.SEIntersectionPoint);
+        // Set the initial label location
+        this.tmpVector
+          .copy(item.SEIntersectionPoint.locationVector)
+          .add(
+            new Vector3(
+              2 * SETTINGS.point.initialLabelOffset,
+              SETTINGS.point.initialLabelOffset,
+              0
+            )
+          )
+          .normalize();
+        newSELabel.locationVector = this.tmpVector;
+
         lineGroup.addCommand(
           new AddIntersectionPointCommand(
             item.SEIntersectionPoint,
             item.parent1,
-            item.parent2
+            item.parent2,
+            newSELabel
           )
         );
-        item.SEIntersectionPoint.showing = false; // don not display the automatically created intersection points
+        item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points
+        newSELabel.showing = false;
       });
     lineGroup.execute();
   }
@@ -426,10 +517,12 @@ export default class LineHandler extends Highlighter {
       // we have to create a new SEPointOnOneDimensional or SEPoint and Point
       const newPoint = new Point();
       // Set the display to the default values
-      newPoint.stylize(DisplayStyle.APPLYCURRENTVARIABLES);
+      newPoint.stylize(DisplayStyle.ApplyCurrentVariables);
       newPoint.adjustSize();
+      const newLabel = new Label();
 
       let vtx: SEPoint | SEPointOnOneDimensional | null = null;
+      let newSELabel: SELabel | null = null;
       if (this.startSEPointOneDimensionalParent) {
         // Starting mouse press landed near a oneDimensional
         // Create the model object for the new point and link them
@@ -437,19 +530,34 @@ export default class LineHandler extends Highlighter {
           newPoint,
           this.startSEPointOneDimensionalParent
         );
+        newSELabel = new SELabel(newLabel, vtx);
         // Create and execute the command to create a new point for undo/redo
         new AddPointOnOneDimensionalCommand(
           vtx,
-          this.startSEPointOneDimensionalParent
+          this.startSEPointOneDimensionalParent,
+          newSELabel
         ).execute();
       } else {
         // Starting mouse press landed on an open space
         // we have to create a new point and it to the group/store
         vtx = new SEPoint(newPoint);
+        newSELabel = new SELabel(newLabel, vtx);
         // Create and execute the command to create a new point for undo/redo
-        new AddPointCommand(vtx).execute();
+        new AddPointCommand(vtx, newSELabel).execute();
       }
       vtx.locationVector = this.startVector;
+      // Set the initial label location
+      this.tmpVector
+        .copy(vtx.locationVector)
+        .add(
+          new Vector3(
+            2 * SETTINGS.point.initialLabelOffset,
+            SETTINGS.point.initialLabelOffset,
+            0
+          )
+        )
+        .normalize();
+      newSELabel.locationVector = this.tmpVector;
     }
     if (
       this.startSEPoint instanceof SEIntersectionPoint &&
@@ -471,8 +579,9 @@ export default class LineHandler extends Highlighter {
         // Create a new plottable Line
         const newLine = new Line();
         // Set the display to the default values
-        newLine.stylize(DisplayStyle.APPLYCURRENTVARIABLES);
+        newLine.stylize(DisplayStyle.ApplyCurrentVariables);
         newLine.adjustSize();
+        const newLabel = new Label();
 
         this.tmpVector.crossVectors(
           object1.locationVector,
@@ -500,9 +609,17 @@ export default class LineHandler extends Highlighter {
         // Update the newSECircle so the display is correct when the command group is executed
         newSELine.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
 
+        const newSELabel = new SELabel(newLabel, newSELine);
+        this.tmpVector
+          .addVectors(object1.locationVector, object2.locationVector)
+          .normalize()
+          .add(new Vector3(0, SETTINGS.line.initialLabelOffset, 0))
+          .normalize();
+        newSELabel.locationVector = this.tmpVector;
+
         const lineCommandGroup = new CommandGroup();
         lineCommandGroup.addCommand(
-          new AddLineCommand(newSELine, object1, object2)
+          new AddLineCommand(newSELine, object1, object2, newSELabel)
         );
 
         // Generate new intersection points. These points must be computed and created
@@ -510,14 +627,32 @@ export default class LineHandler extends Highlighter {
         this.store.getters
           .createAllIntersectionsWithLine(newSELine)
           .forEach((item: SEIntersectionReturnType) => {
+            // Create the plottable label
+            const newLabel = new Label();
+            const newSELabel = new SELabel(newLabel, item.SEIntersectionPoint);
+            // Set the initial label location
+            this.tmpVector
+              .copy(item.SEIntersectionPoint.locationVector)
+              .add(
+                new Vector3(
+                  2 * SETTINGS.point.initialLabelOffset,
+                  SETTINGS.point.initialLabelOffset,
+                  0
+                )
+              )
+              .normalize();
+            newSELabel.locationVector = this.tmpVector;
+
             lineCommandGroup.addCommand(
               new AddIntersectionPointCommand(
                 item.SEIntersectionPoint,
                 item.parent1,
-                item.parent2
+                item.parent2,
+                newSELabel
               )
             );
-            item.SEIntersectionPoint.showing = false; // don not display the automatically created intersection points
+            item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points
+            newSELabel.showing = false;
           });
 
         lineCommandGroup.execute();

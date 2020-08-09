@@ -1,6 +1,8 @@
 import { Command } from "./Command";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import { DisplayStyle } from "@/plottables/Nodule";
+import { Labelable } from "@/types";
+import { SEPoint } from "@/models/SEPoint";
 
 /**
  * This is used when an intersection point was automatically created and the user
@@ -17,10 +19,14 @@ export class ConvertInterPtToUserCreatedCommand extends Command {
   do(): void {
     this.seIntersectionPoint.isUserCreated = true;
     // Set the display to the default values
-    this.seIntersectionPoint.ref.stylize(DisplayStyle.APPLYCURRENTVARIABLES);
+    this.seIntersectionPoint.ref.stylize(DisplayStyle.ApplyCurrentVariables);
     // Set the size for the current zoom magnification factor
     this.seIntersectionPoint.ref.adjustSize();
     this.seIntersectionPoint.showing = true;
+    // show the label
+    if (this.seIntersectionPoint.label != null) {
+      this.seIntersectionPoint.label.showing = true;
+    }
   }
 
   saveState(): void {
@@ -28,8 +34,15 @@ export class ConvertInterPtToUserCreatedCommand extends Command {
   }
 
   restoreState(): void {
-    this.seIntersectionPoint.isUserCreated = false;
+    // hide the label
+    if (this.seIntersectionPoint.label != null) {
+      this.seIntersectionPoint.label.showing = false;
+    }
+    // hide the point
     this.seIntersectionPoint.showing = false;
-    this.seIntersectionPoint.ref.stylize(DisplayStyle.APPLYTEMPORARYVARIABLES);
+    // revert to temporary status
+    this.seIntersectionPoint.ref.stylize(DisplayStyle.ApplyTemporaryVariables);
+    // set back to automatically created
+    this.seIntersectionPoint.isUserCreated = false;
   }
 }

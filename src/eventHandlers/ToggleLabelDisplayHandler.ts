@@ -1,13 +1,13 @@
 import Two from "two.js";
 import Highlighter from "./Highlighter";
-import { SENodule } from "@/models/SENodule";
+import { SELabel } from "@/models/SELabel";
 import { SetNoduleDisplayCommand } from "@/commands/SetNoduleDisplayCommand";
 
-export default class HideObjectHandler extends Highlighter {
+export default class ToggleLabelDisplayHandler extends Highlighter {
   /**
    * Object to hide - the victim!
    */
-  private victim: SENodule | null = null;
+  private label: SELabel | null = null;
 
   constructor(layers: Two.Group[]) {
     super(layers);
@@ -18,21 +18,29 @@ export default class HideObjectHandler extends Highlighter {
     if (this.isOnSphere) {
       // In the case of multiple selections prioritize points > lines > segments > circles
       if (this.hitSEPoints.length > 0) {
-        this.victim = this.hitSEPoints[0];
+        if (this.hitSEPoints[0].label != null) {
+          this.label = this.hitSEPoints[0].label;
+        }
       } else if (this.hitSELines.length > 0) {
-        this.victim = this.hitSELines[0];
+        if (this.hitSELines[0].label != null) {
+          this.label = this.hitSELines[0].label;
+        }
       } else if (this.hitSESegments.length > 0) {
-        this.victim = this.hitSESegments[0];
+        if (this.hitSESegments[0].label != null) {
+          this.label = this.hitSESegments[0].label;
+        }
       } else if (this.hitSECircles.length > 0) {
-        this.victim = this.hitSECircles[0];
+        if (this.hitSECircles[0].label != null) {
+          this.label = this.hitSECircles[0].label;
+        }
       } else if (this.hitSELabels.length > 0) {
-        this.victim = this.hitSELabels[0];
+        this.label = this.hitSELabels[0];
       }
 
-      if (this.victim != null) {
+      if (this.label != null) {
         // Do the hiding via command so it will be undoable
-        new SetNoduleDisplayCommand(this.victim, false).execute();
-        this.victim = null;
+        new SetNoduleDisplayCommand(this.label, !this.label.showing).execute();
+        this.label = null;
       }
     }
   }
@@ -48,7 +56,7 @@ export default class HideObjectHandler extends Highlighter {
   mouseLeave(event: MouseEvent): void {
     super.mouseLeave(event);
     // Reset the victim in preparation for another deletion.
-    this.victim = null;
+    this.label = null;
   }
   activate(): void {
     // Hide all selected objects

@@ -4,6 +4,7 @@ import { SENodule } from "@/models/SENodule";
 import { UpdateMode, UpdateStateType } from "@/types";
 import { CommandGroup } from "@/commands/CommandGroup";
 import { DeleteNoduleCommand } from "@/commands/DeleteNoduleCommand";
+import { SetNoduleDisplayCommand } from "@/commands/SetNoduleDisplayCommand";
 
 export default class DeleteHandler extends Highlighter {
   /**
@@ -26,7 +27,8 @@ export default class DeleteHandler extends Highlighter {
   mousePressed(event: MouseEvent): void {
     //Select an object to delete
     if (this.isOnSphere) {
-      // In the case of multiple selections prioritize points > lines > segments > circles
+      // In the case of multiple selections prioritize points > lines > segments > circles > labels
+      // Deleting an object deletes all objects that depend on that object including the label
       if (this.hitSEPoints.length > 0) {
         this.victim = this.hitSEPoints[0];
       } else if (this.hitSELines.length > 0) {
@@ -35,6 +37,9 @@ export default class DeleteHandler extends Highlighter {
         this.victim = this.hitSESegments[0];
       } else if (this.hitSECircles.length > 0) {
         this.victim = this.hitSECircles[0];
+      } else if (this.hitSELabels.length > 0) {
+        // Do not allow deletion of labels - if a user selects a label with this tool, merely hide the label.
+        new SetNoduleDisplayCommand(this.hitSELabels[0], false).execute();
       }
 
       if (this.victim != null) {
@@ -99,9 +104,5 @@ export default class DeleteHandler extends Highlighter {
       deleteCommandGroup.addCommand(new DeleteNoduleCommand(element.object));
     });
     deleteCommandGroup.execute();
-    // console.log(
-    //   "End Delete Handler: parent victim parents:",
-    //   victim.parents.length
-    // );
   }
 }

@@ -19,6 +19,8 @@ import { ConvertInterPtToUserCreatedCommand } from "@/commands/ConvertInterPtToU
 import { SEOneDimensional, SEIntersectionReturnType } from "@/types";
 import { SEPointOnOneDimensional } from "@/models/SEPointOnOneDimensional";
 import { UpdateMode } from "@/types";
+import Label from "@/plottables/Label";
+import { SELabel } from "@/models/SELabel";
 
 export default class SegmentHandler extends Highlighter {
   /**
@@ -89,16 +91,16 @@ export default class SegmentHandler extends Highlighter {
   constructor(layers: Two.Group[]) {
     super(layers);
     this.tempSegment = new Segment();
-    this.tempSegment.stylize(DisplayStyle.APPLYTEMPORARYVARIABLES);
+    this.tempSegment.stylize(DisplayStyle.ApplyTemporaryVariables);
     this.store.commit.addTemporaryNodule(this.tempSegment);
     this.isTemporarySegmentAdded = false;
     this.isDragging = false;
     // Create and style the temporary points marking the start/end of an object being created
     this.startMarker = new Point();
-    this.startMarker.stylize(DisplayStyle.APPLYTEMPORARYVARIABLES);
+    this.startMarker.stylize(DisplayStyle.ApplyTemporaryVariables);
     this.store.commit.addTemporaryNodule(this.startMarker);
     this.endMarker = new Point();
-    this.endMarker.stylize(DisplayStyle.APPLYTEMPORARYVARIABLES);
+    this.endMarker.stylize(DisplayStyle.ApplyTemporaryVariables);
     this.store.commit.addTemporaryNodule(this.endMarker);
   }
 
@@ -282,10 +284,13 @@ export default class SegmentHandler extends Highlighter {
       // We have to create a new SEPointOnOneDimensional or SEPoint and Point
       const newStartPoint = new Point();
       // Set the display to the default values
-      newStartPoint.stylize(DisplayStyle.APPLYCURRENTVARIABLES);
+      newStartPoint.stylize(DisplayStyle.ApplyCurrentVariables);
       newStartPoint.adjustSize();
+      // Create Plottable Label
+      const newLabel = new Label();
 
       let vtx: SEPoint | SEPointOnOneDimensional | null = null;
+      let newSELabel: SELabel | null = null;
       if (this.startSEPointOneDimensionalParent) {
         // Starting mouse press landed near a oneDimensional
         // Create the model object for the new point and link them
@@ -293,19 +298,36 @@ export default class SegmentHandler extends Highlighter {
           newStartPoint,
           this.startSEPointOneDimensionalParent
         );
+        newSELabel = new SELabel(newLabel, vtx);
+
         segmentGroup.addCommand(
           new AddPointOnOneDimensionalCommand(
             vtx,
-            this.startSEPointOneDimensionalParent
+            this.startSEPointOneDimensionalParent,
+            newSELabel
           )
         );
       } else {
         // Starting mouse press landed on an open space
         // Create the model object for the new point and link them
         vtx = new SEPoint(newStartPoint);
-        segmentGroup.addCommand(new AddPointCommand(vtx));
+        newSELabel = new SELabel(newLabel, vtx);
+        segmentGroup.addCommand(new AddPointCommand(vtx, newSELabel));
       }
       vtx.locationVector = this.startVector;
+      // Set the initial label location
+      this.tmpVector
+        .copy(vtx.locationVector)
+        .add(
+          new Vector3(
+            2 * SETTINGS.point.initialLabelOffset,
+            SETTINGS.point.initialLabelOffset,
+            0
+          )
+        )
+        .normalize();
+      newSELabel.locationVector = this.tmpVector;
+
       this.startSEPoint = vtx;
     } else if (
       this.startSEPoint instanceof SEIntersectionPoint &&
@@ -346,10 +368,13 @@ export default class SegmentHandler extends Highlighter {
       // We have to create a new Point for the end
       const newEndPoint = new Point();
       // Set the display to the default values
-      newEndPoint.stylize(DisplayStyle.APPLYCURRENTVARIABLES);
+      newEndPoint.stylize(DisplayStyle.ApplyCurrentVariables);
       newEndPoint.adjustSize();
+      // Create Plottable Label
+      const newLabel = new Label();
 
       let vtx: SEPoint | SEPointOnOneDimensional | null = null;
+      let newSELabel: SELabel | null = null;
       if (this.hitSESegments.length > 0) {
         // The end of the line will be a point on a segment
         // Create the model object for the new point and link them
@@ -358,8 +383,13 @@ export default class SegmentHandler extends Highlighter {
         vtx.locationVector = this.hitSESegments[0].closestVector(
           this.currentSphereVector
         );
+        newSELabel = new SELabel(newLabel, vtx);
         segmentGroup.addCommand(
-          new AddPointOnOneDimensionalCommand(vtx, this.hitSESegments[0])
+          new AddPointOnOneDimensionalCommand(
+            vtx,
+            this.hitSESegments[0],
+            newSELabel
+          )
         );
       } else if (this.hitSELines.length > 0) {
         // The end of the line will be a point on a line
@@ -369,8 +399,14 @@ export default class SegmentHandler extends Highlighter {
         vtx.locationVector = this.hitSELines[0].closestVector(
           this.currentSphereVector
         );
+        newSELabel = new SELabel(newLabel, vtx);
+
         segmentGroup.addCommand(
-          new AddPointOnOneDimensionalCommand(vtx, this.hitSELines[0])
+          new AddPointOnOneDimensionalCommand(
+            vtx,
+            this.hitSELines[0],
+            newSELabel
+          )
         );
       } else if (this.hitSECircles.length > 0) {
         // The end of the line will be a point on a circle
@@ -379,17 +415,37 @@ export default class SegmentHandler extends Highlighter {
         vtx.locationVector = this.hitSECircles[0].closestVector(
           this.currentSphereVector
         );
+        newSELabel = new SELabel(newLabel, vtx);
+
         segmentGroup.addCommand(
-          new AddPointOnOneDimensionalCommand(vtx, this.hitSECircles[0])
+          new AddPointOnOneDimensionalCommand(
+            vtx,
+            this.hitSECircles[0],
+            newSELabel
+          )
         );
       } else {
         // The ending mouse release landed on an open space
         vtx = new SEPoint(newEndPoint);
         // Set the Location
         vtx.locationVector = this.currentSphereVector;
-        segmentGroup.addCommand(new AddPointCommand(vtx));
+        newSELabel = new SELabel(newLabel, vtx);
+
+        segmentGroup.addCommand(new AddPointCommand(vtx, newSELabel));
       }
       this.endSEPoint = vtx;
+      // Set the initial label location
+      this.tmpVector
+        .copy(vtx.locationVector)
+        .add(
+          new Vector3(
+            2 * SETTINGS.point.initialLabelOffset,
+            SETTINGS.point.initialLabelOffset,
+            0
+          )
+        )
+        .normalize();
+      newSELabel.locationVector = this.tmpVector;
     }
 
     // update the display based on the potentially new endSEPoint location
@@ -409,8 +465,10 @@ export default class SegmentHandler extends Highlighter {
     this.isTemporarySegmentAdded = false;
     const newSegment = this.tempSegment.clone();
     // Stylize the new segment
-    newSegment.stylize(DisplayStyle.APPLYCURRENTVARIABLES);
+    newSegment.stylize(DisplayStyle.ApplyCurrentVariables);
     newSegment.adjustSize();
+    // Create Plottable Label
+    const newLabel = new Label();
 
     const newSESegment = new SESegment(
       newSegment,
@@ -419,20 +477,57 @@ export default class SegmentHandler extends Highlighter {
       this.arcLength,
       this.endSEPoint
     );
+    const newSELabel = new SELabel(newLabel, newSESegment);
+    this.tmpVector
+      .addVectors(
+        this.startSEPoint.locationVector,
+        this.endSEPoint.locationVector
+      )
+      .normalize()
+      .add(new Vector3(0, SETTINGS.line.initialLabelOffset, 0))
+      .normalize();
+    if (this.arcLength > Math.PI) {
+      this.tmpVector.multiplyScalar(-1);
+    }
+    newSELabel.locationVector = this.tmpVector;
+
     segmentGroup.addCommand(
-      new AddSegmentCommand(newSESegment, this.startSEPoint, this.endSEPoint)
+      new AddSegmentCommand(
+        newSESegment,
+        this.startSEPoint,
+        this.endSEPoint,
+        newSELabel
+      )
     );
     this.store.getters
       .createAllIntersectionsWithSegment(newSESegment)
       .forEach((item: SEIntersectionReturnType) => {
+        // Create the plottable label
+        const newLabel = new Label();
+        const newSELabel = new SELabel(newLabel, item.SEIntersectionPoint);
+        // Set the initial label location
+        this.tmpVector
+          .copy(item.SEIntersectionPoint.locationVector)
+          .add(
+            new Vector3(
+              2 * SETTINGS.point.initialLabelOffset,
+              SETTINGS.point.initialLabelOffset,
+              0
+            )
+          )
+          .normalize();
+        newSELabel.locationVector = this.tmpVector;
+
         segmentGroup.addCommand(
           new AddIntersectionPointCommand(
             item.SEIntersectionPoint,
             item.parent1,
-            item.parent2
+            item.parent2,
+            newSELabel
           )
         );
         item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points
+        newSELabel.showing = false;
       });
     segmentGroup.execute();
   }
@@ -444,9 +539,12 @@ export default class SegmentHandler extends Highlighter {
       // we have to create a new SEPointOnOneDimensional or SEPoint and Point
       const newPoint = new Point();
       // Set the display to the default values
-      newPoint.stylize(DisplayStyle.APPLYCURRENTVARIABLES);
+      newPoint.stylize(DisplayStyle.ApplyCurrentVariables);
       newPoint.adjustSize();
+      const newLabel = new Label();
+
       let vtx: SEPoint | SEPointOnOneDimensional | null = null;
+      let newSELabel: SELabel | null = null;
       if (this.startSEPointOneDimensionalParent) {
         // Starting mouse press landed near a oneDimensional
         // Create the model object for the new point and link them
@@ -454,19 +552,35 @@ export default class SegmentHandler extends Highlighter {
           newPoint,
           this.startSEPointOneDimensionalParent
         );
+        newSELabel = new SELabel(newLabel, vtx);
+
         // Create and execute the command to create a new point for undo/redo
         new AddPointOnOneDimensionalCommand(
           vtx,
-          this.startSEPointOneDimensionalParent
+          this.startSEPointOneDimensionalParent,
+          newSELabel
         ).execute();
       } else {
         // Starting mouse press landed on an open space
         // we have to create a new point and it to the group/store
         vtx = new SEPoint(newPoint);
+        newSELabel = new SELabel(newLabel, vtx);
         // Create and execute the command to create a new point for undo/redo
-        new AddPointCommand(vtx).execute();
+        new AddPointCommand(vtx, newSELabel).execute();
       }
       vtx.locationVector = this.startVector;
+      // Set the initial label location
+      this.tmpVector
+        .copy(vtx.locationVector)
+        .add(
+          new Vector3(
+            2 * SETTINGS.point.initialLabelOffset,
+            SETTINGS.point.initialLabelOffset,
+            0
+          )
+        )
+        .normalize();
+      newSELabel.locationVector = this.tmpVector;
     } else if (
       this.startSEPoint instanceof SEIntersectionPoint &&
       !this.startSEPoint.isUserCreated
@@ -551,7 +665,7 @@ export default class SegmentHandler extends Highlighter {
         // Create a new plottable Line
         const newSegment = new Segment();
         // Set the display to the default values
-        newSegment.stylize(DisplayStyle.APPLYCURRENTVARIABLES);
+        newSegment.stylize(DisplayStyle.ApplyCurrentVariables);
         newSegment.adjustSize();
 
         this.tmpVector.crossVectors(
@@ -583,10 +697,19 @@ export default class SegmentHandler extends Highlighter {
           mode: UpdateMode.DisplayOnly,
           stateArray: []
         });
+        // Create the plottable label
+        const newLabel = new Label();
+        const newSELabel = new SELabel(newLabel, newSESegment);
+        this.tmpVector
+          .addVectors(object1.locationVector, object2.locationVector)
+          .normalize()
+          .add(new Vector3(0, SETTINGS.line.initialLabelOffset, 0))
+          .normalize();
+        newSELabel.locationVector = this.tmpVector;
 
         const segmentCommandGroup = new CommandGroup();
         segmentCommandGroup.addCommand(
-          new AddSegmentCommand(newSESegment, object1, object2)
+          new AddSegmentCommand(newSESegment, object1, object2, newSELabel)
         );
 
         // Generate new intersection points. These points must be computed and created
@@ -594,14 +717,32 @@ export default class SegmentHandler extends Highlighter {
         this.store.getters
           .createAllIntersectionsWithSegment(newSESegment)
           .forEach((item: SEIntersectionReturnType) => {
+            // Create the plottable label
+            const newLabel = new Label();
+            const newSELabel = new SELabel(newLabel, item.SEIntersectionPoint);
+            // Set the initial label location
+            this.tmpVector
+              .copy(item.SEIntersectionPoint.locationVector)
+              .add(
+                new Vector3(
+                  2 * SETTINGS.point.initialLabelOffset,
+                  SETTINGS.point.initialLabelOffset,
+                  0
+                )
+              )
+              .normalize();
+            newSELabel.locationVector = this.tmpVector;
+
             segmentCommandGroup.addCommand(
               new AddIntersectionPointCommand(
                 item.SEIntersectionPoint,
                 item.parent1,
-                item.parent2
+                item.parent2,
+                newSELabel
               )
             );
-            item.SEIntersectionPoint.showing = false; // don not display the automatically created intersection points
+            item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points
+            newSELabel.showing = false;
           });
 
         segmentCommandGroup.execute();

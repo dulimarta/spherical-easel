@@ -4,6 +4,7 @@ import { SEPoint } from "@/models/SEPoint";
 import { SELine } from "@/models/SELine";
 import { SECircle } from "@/models/SECircle";
 import { SESegment } from "@/models/SESegment";
+import { SELabel } from "@/models/SELabel";
 
 export class DeleteNoduleCommand extends Command {
   private seNodule: SENodule;
@@ -29,9 +30,10 @@ export class DeleteNoduleCommand extends Command {
     // Remove from the Data Structure (DAG)
     // Notice that this make the parents array empty so that is why we stored the parents ids in a separate
     // array for restore state. Also notice that we can *not* do this with
-    //
     // this.seNodule.parents.forEach (obj => obj.unregister(this.seNodule))
     // because unregister modifies the parent array and you never want to modify the parent array while in a forEach
+    //
+    //This command is always called when there are no children of the
     for (let i = 0; i < this.parentIds.length; i++) {
       const nodule = Command.store.getters.getSENoduleById(this.parentIds[i]);
       if (nodule) {
@@ -49,6 +51,8 @@ export class DeleteNoduleCommand extends Command {
       Command.store.commit.removeCircle(this.seNodule.id);
     } else if (this.seNodule instanceof SESegment) {
       Command.store.commit.removeSegment(this.seNodule.id);
+    } else if (this.seNodule instanceof SELabel) {
+      Command.store.commit.removeLabel(this.seNodule.id);
     }
   }
 
@@ -75,6 +79,8 @@ export class DeleteNoduleCommand extends Command {
       Command.store.commit.addCircle(this.seNodule);
     } else if (this.seNodule instanceof SESegment) {
       Command.store.commit.addSegment(this.seNodule);
+    } else if (this.seNodule instanceof SELabel) {
+      Command.store.commit.addLabel(this.seNodule);
     }
     // The parent array of this.seNodule is empty prior to the execution of this loop
     for (let i = 0; i < this.parentIds.length; i++) {

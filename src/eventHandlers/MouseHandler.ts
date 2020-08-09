@@ -13,6 +13,7 @@ import { SESegment } from "@/models/SESegment";
 import { TextBox } from "@/plottables/TextBox";
 import { SENodule } from "@/models/SENodule";
 import { DisplayStyle } from "@/plottables/Nodule";
+import { SELabel } from "@/models/SELabel";
 
 export default abstract class MouseHandler implements ToolStrategy {
   protected readonly X_AXIS = new Vector3(1, 0, 0);
@@ -50,6 +51,7 @@ export default abstract class MouseHandler implements ToolStrategy {
   protected hitSELines: SELine[] = [];
   protected hitSESegments: SESegment[] = [];
   protected hitSECircles: SECircle[] = [];
+  protected hitSELabels: SELabel[] = [];
 
   /**
    * Holds the layers for each type of object, background, glowing background, etc..
@@ -61,7 +63,6 @@ export default abstract class MouseHandler implements ToolStrategy {
    * Temporary objects that help process the mouse event location
    */
   private mouseVector = new Vector3();
-  private tmpMatrix = new Matrix4();
 
   /**
    * An object to hold information about the nearby objects when then pause over a highlighted object

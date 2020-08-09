@@ -9,7 +9,8 @@
           :key="idx">
           <v-expansion-panel-header color="blue lighten-3"
             :key="`header${idx}`"
-            @click="saveStyleState">
+            @click="saveStyleState"
+            class="body-1 font-weight-bold">
             {{ $t(p.i18n_key) }}</v-expansion-panel-header>
           <v-expansion-panel-content :color="panelBackgroundColor(idx)"
             :key="`content${idx}`">
@@ -60,17 +61,11 @@ export default class Style extends Vue {
   ];
 
   //When the user changes panels or click on a panel header, the style state should be saved
-  saveStyleState (): void {
+  saveStyleState(): void {
     EventBus.fire("save-style-state", {});
   }
-  // frontPanel(idx: number): boolean {
-  //   if (idx == 0) {
-  //     return SETTINGS.style.frontFace;
-  //   } else {
-  //     return SETTINGS.style.backFace;
-  //   }
-  // }
-  panelBackgroundColor (idx: number): string {
+
+  panelBackgroundColor(idx: number): string {
     if (idx == 1) {
       return "grey darken-2";
     } else {

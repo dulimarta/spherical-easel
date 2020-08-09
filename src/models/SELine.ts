@@ -5,15 +5,10 @@ import { Visitable } from "@/visitors/Visitable";
 import { Visitor } from "@/visitors/Visitor";
 import { SEPoint } from "./SEPoint";
 import SETTINGS from "@/global-settings";
-import { OneDimensional } from "@/types";
+import { OneDimensional, Labelable } from "@/types";
 import { Styles } from "@/types/Styles";
 import { UpdateMode, UpdateStateType, LineState } from "@/types";
-
-/** Temporary vectors to help with calculations */
-const tmpVector = new Vector3(); //
-const tmpVector1 = new Vector3();
-const tmpVector2 = new Vector3();
-const desiredZAxis = new Vector3();
+import { SELabel } from "@/models/SELabel";
 
 let LINE_COUNT = 0;
 const styleSet = new Set([
@@ -24,11 +19,16 @@ const styleSet = new Set([
   Styles.dynamicBackStyle
 ]);
 
-export class SELine extends SENodule implements Visitable, OneDimensional {
+export class SELine extends SENodule
+  implements Visitable, OneDimensional, Labelable {
   /**
    * The corresponding plottable TwoJS object
    */
   public ref: Line;
+  /**
+   * Pointer to the label of this SESegment
+   */
+  public label?: SELabel;
   /**
    * The model SE object that is one point on the line
    */
@@ -41,7 +41,11 @@ export class SELine extends SENodule implements Visitable, OneDimensional {
    * The Vector3 that the normal vector to the plane of the line
    */
   private _normalVector = new Vector3();
-
+  /** Temporary vectors to help with calculations */
+  private tmpVector = new Vector3(); //
+  private tmpVector1 = new Vector3();
+  private tmpVector2 = new Vector3();
+  private desiredZAxis = new Vector3();
   /**
    * Create an SELine
    * @param line plottable (TwoJS) line associated with this line
@@ -106,19 +110,51 @@ export class SELine extends SENodule implements Visitable, OneDimensional {
    */
   public closestVector(idealUnitSphereVector: Vector3): Vector3 {
     // The normal to the plane of the normal vector and the idealUnitVector
-    tmpVector.crossVectors(this._normalVector, idealUnitSphereVector);
+    this.tmpVector.crossVectors(this._normalVector, idealUnitSphereVector);
 
     // Check to see if the tmpVector is zero (i.e the normal and  idealUnit vectors are parallel -- ether
     // nearly antipodal or in the same direction)
-    if (tmpVector.isZero()) {
+    if (this.tmpVector.isZero()) {
       return this._endSEPoint.locationVector; // An arbitrary point will do as all points are equally far away
     } else {
       // Make the tmpVector unit
-      tmpVector.normalize();
-      return tmpVector.cross(this._normalVector).normalize();
+      this.tmpVector.normalize();
+      return this.tmpVector.cross(this._normalVector).normalize();
     }
   }
 
+  /**
+   * Return the vector near the SELine (within SETTINGS.line.maxLabelDistance) that is closest to the idealUnitSphereVector
+   * @param idealUnitSphereVector A vector on the unit sphere
+   */
+  public closestLabelLocationVector(idealUnitSphereVector: Vector3): Vector3 {
+    // First find the closest point on the segment to the idealUnitSphereVector
+    this.tmpVector.copy(this.closestVector(idealUnitSphereVector));
+
+    // If the idealUnitSphereVector is within the tolerance of the closest point, do nothing, otherwise return the vector in the plane of the ideanUnitSphereVector and the closest point that is at the tolerance distance away.
+    if (
+      this.tmpVector.angleTo(idealUnitSphereVector) <
+      SETTINGS.line.maxLabelDistance
+    ) {
+      return idealUnitSphereVector;
+    } else {
+      // tmpVector1 is the normal to the plane of the closest point vector and the idealUnitVector
+      // This can't be zero because tmpVector can be the closest on the segment to idealUnitSphereVector and parallel with ideanUnitSphereVector
+      this.tmpVector1
+        .crossVectors(idealUnitSphereVector, this.tmpVector)
+        .normalize();
+      // compute the toVector (so that tmpVector2= toVector, tmpVector= fromVector, tmpVector1 form an orthonormal frame)
+      this.tmpVector2.crossVectors(this.tmpVector, this.tmpVector1).normalize;
+      // return cos(SETTINGS.segment.maxLabelDistance)*fromVector/tmpVec + sin(SETTINGS.segment.maxLabelDistance)*toVector/tmpVec2
+      this.tmpVector2.multiplyScalar(Math.sin(SETTINGS.line.maxLabelDistance));
+      return this.tmpVector2
+        .addScaledVector(
+          this.tmpVector,
+          Math.cos(SETTINGS.line.maxLabelDistance)
+        )
+        .normalize();
+    }
+  }
   public update(state: UpdateStateType): void {
     // If any one parent is not up to date, don't do anything
     if (!this.canUpdateNow()) {
@@ -129,22 +165,25 @@ export class SELine extends SENodule implements Visitable, OneDimensional {
     if (this._exists) {
       // Given an set of this.startPoint, this.endPoint and (old) this.normalVector, and compute the next normal vector
       // Compute a temporary normal from the two points
-      tmpVector.crossVectors(
+      this.tmpVector.crossVectors(
         this._startSEPoint.locationVector,
         this._endSEPoint.locationVector
       );
       // Check to see if the tempNormal is zero (i.e the start and end vectors are parallel -- ether
       // nearly antipodal or in the same direction)
-      if (tmpVector.isZero()) {
+      if (this.tmpVector.isZero()) {
         // The start and end vectors align, compute  the next normal vector from the old normal and the start vector
-        tmpVector.crossVectors(
+        this.tmpVector.crossVectors(
           this._startSEPoint.locationVector,
           this._normalVector
         );
-        tmpVector.crossVectors(tmpVector, this._startSEPoint.locationVector);
+        this.tmpVector.crossVectors(
+          this.tmpVector,
+          this._startSEPoint.locationVector
+        );
       }
 
-      this._normalVector.copy(tmpVector).normalize();
+      this._normalVector.copy(this.tmpVector).normalize();
 
       // Set the normal vector in the plottable object (the setter also calls the updateDisplay() method)
       this.ref.normalVector = this._normalVector;
@@ -200,7 +239,7 @@ export class SELine extends SENodule implements Visitable, OneDimensional {
       // If the rotation is big enough preform the rotation
       if (rotationAngle > SETTINGS.rotate.minAngle) {
         // The axis of rotation
-        desiredZAxis
+        this.desiredZAxis
           .crossVectors(previousSphereVector, currentSphereVector)
           .normalize();
         // Form the matrix that performs the rotation
@@ -208,14 +247,14 @@ export class SELine extends SENodule implements Visitable, OneDimensional {
         //   desiredZAxis,
         //   rotationAngle
         // );
-        tmpVector1
+        this.tmpVector1
           .copy(this.startSEPoint.locationVector)
-          .applyAxisAngle(desiredZAxis, rotationAngle);
-        this.startSEPoint.locationVector = tmpVector1;
-        tmpVector2
+          .applyAxisAngle(this.desiredZAxis, rotationAngle);
+        this.startSEPoint.locationVector = this.tmpVector1;
+        this.tmpVector2
           .copy(this.endSEPoint.locationVector)
-          .applyAxisAngle(desiredZAxis, rotationAngle);
-        this.endSEPoint.locationVector = tmpVector2;
+          .applyAxisAngle(this.desiredZAxis, rotationAngle);
+        this.endSEPoint.locationVector = this.tmpVector2;
         // Update both points, because we might need to update their kids!
         // First mark the kids out of date so that the update method does a topological sort
         this.startSEPoint.markKidsOutOfDate();
@@ -243,19 +282,19 @@ export class SELine extends SENodule implements Visitable, OneDimensional {
       // plane normal vector
 
       // Determine the normal vector to the plane containing the pivot and the previous position
-      tmpVector1
+      this.tmpVector1
         .crossVectors(pivot.locationVector, previousSphereVector)
         .normalize();
       // Determine the normal vector to the plane containing the pivot and the current position
-      tmpVector2
+      this.tmpVector2
         .crossVectors(pivot.locationVector, currentSphereVector)
         .normalize();
       // The angle between tmpVector1 and tmpVector2 is the distance to move on the Ideal Unit Sphere
-      rotationAngle = tmpVector1.angleTo(tmpVector2);
+      rotationAngle = this.tmpVector1.angleTo(this.tmpVector2);
 
       // Determine which direction to rotate.
-      tmpVector1.cross(tmpVector2);
-      rotationAngle *= Math.sign(tmpVector1.z);
+      this.tmpVector1.cross(this.tmpVector2);
+      rotationAngle *= Math.sign(this.tmpVector1.z);
 
       // Reverse the direction of the rotation if the current points is on the back of the sphere
       if (currentSphereVector.z < 0) {
@@ -266,22 +305,22 @@ export class SELine extends SENodule implements Visitable, OneDimensional {
       const axisOfRotation = pivot.locationVector;
       // Test for antipodal endpoints
       if (
-        tmpVector1
+        this.tmpVector1
           .addVectors(freeEnd.locationVector, pivot.locationVector)
           .isZero()
       ) {
         // Set the direction of the rotation correctly for moving the normalVector
         rotationAngle *= currentSphereVector.z < 0 ? -1 : 1;
         // If the end points are antipodal move the normal vector
-        tmpVector1.copy(this.normalVector);
-        tmpVector1.applyAxisAngle(axisOfRotation, rotationAngle);
-        this.normalVector = tmpVector1;
+        this.tmpVector1.copy(this.normalVector);
+        this.tmpVector1.applyAxisAngle(axisOfRotation, rotationAngle);
+        this.normalVector = this.tmpVector1;
         this.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
       } else {
         // For non-antipodal points move the freeEnd
-        tmpVector1.copy(freeEnd.locationVector);
-        tmpVector1.applyAxisAngle(axisOfRotation, rotationAngle);
-        freeEnd.locationVector = tmpVector1;
+        this.tmpVector1.copy(freeEnd.locationVector);
+        this.tmpVector1.applyAxisAngle(axisOfRotation, rotationAngle);
+        freeEnd.locationVector = this.tmpVector1;
         // First mark the kids out of date so that the update method does a topological sort
         // First mark the kids out of date so that the update method does a topological sort
         freeEnd.markKidsOutOfDate();
@@ -304,6 +343,9 @@ export class SELine extends SENodule implements Visitable, OneDimensional {
     return false;
   }
   public isPointOnOneDimensional() {
+    return false;
+  }
+  public isLabel(): boolean {
     return false;
   }
 }

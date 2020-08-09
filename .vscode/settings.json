@@ -41,5 +41,36 @@
   },
   "[vue]": {
     "editor.defaultFormatter": "octref.vetur"
-  }
+  },
+  "files.exclude": {
+    "\"**/*.js\": {\"when\": \"$(basename).ts\"}": true,
+    "**/.classpath": true,
+    "**/.factorypath": true,
+    "**/.project": true,
+    "**/.settings": true,
+    "**/*_latexmk": true,
+    "**/*.aux": true,
+    "**/*.bbl": true,
+    "**/*.blg": true,
+    "**/*.fls": true,
+    "**/*.gz": true,
+    "**/*.js.map": true,
+    "**/*.log": true,
+    "**/*.wasm": true
+  },
+  "cSpell.words": [
+    "Labelable",
+    "Resizeable",
+    "Styleable",
+    "linewidth",
+    "midground",
+    "noglow",
+    "plottable",
+    "plottables",
+    "renderable",
+    "selectables",
+    "unregistering",
+    "untransform",
+    "untransforming"
+  ]
 }

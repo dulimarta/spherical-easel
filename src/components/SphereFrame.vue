@@ -26,8 +26,9 @@ import AntipodalPointHandler from "@/eventHandlers/AntipodalPointHandler";
 import PanZoomHandler, { ZoomMode } from "@/eventHandlers/PanZoomHandler";
 import DeleteHandler from "@/eventHandlers/DeleteHandler";
 import HideObjectHandler from "@/eventHandlers/HideObjectHandler";
-import SegmentLengthHandler from "@/eventHandlers/SegmentLengthHandler"
-// import { RotationVisitor } from "@/visitors/RotationVisitor";
+import SegmentLengthHandler from "@/eventHandlers/SegmentLengthHandler";
+import ToggleLabelDisplayHandler from "@/eventHandlers/ToggleLabelDisplayHandler";
+
 import EventBus from "@/eventHandlers/EventBus";
 import MoveHandler from "../eventHandlers/MoveHandler";
 import { AppState } from '@/types';
@@ -83,6 +84,7 @@ export default class SphereFrame extends VueComponent {
   private deleteTool!: DeleteHandler;
   private hideTool!: HideObjectHandler;
   private segmentLengthTool!: SegmentLengthHandler;
+  private toggleLabelDisplayTool!: ToggleLabelDisplayHandler;
 
   /**
    * The layers for displaying the various objects in the right way. So a point in the
@@ -144,14 +146,18 @@ export default class SphereFrame extends VueComponent {
     // box1.addTo(this.layers[LAYER.background]);
     // box2.addTo(this.layers[LAYER.foregroundText]);
 
-    const t1 = new Two.Text("Text must be upright 2\u{1D7B9}", 50, 80, {
-      size: 12,
-      alignment: "left",
-      family: "Arial",
-      style: "bold"
-    });
-    this.layers[LAYER.foregroundText].add(t1);
+    const t1 = new Two.Text("Text must &#13;&#10; be upright 2\u{1D7B9}", 50, 80, {});
+    t1.size = 12;
+    t1.noStroke();
+    t1.fill = "#000";
+    (t1 as any).leading = 50;
+    // (t1 as any).linewidth = 30;
+    (t1 as any).id = "mytext";
+    (t1 as any).className = "myclass";
+    // console.log("text", t1);
 
+    this.layers[LAYER.foregroundText].add(t1);
+    // console.log("bound box", t1.getBoundingClientRect());
     // Draw horizontal and vertical lines (just for debugging)
     // const R = SETTINGS.boundaryCircle.radius;
     // const hLine = new Two.Line(-R, 0, R, 0);
@@ -202,6 +208,7 @@ export default class SphereFrame extends VueComponent {
     this.deleteTool = new DeleteHandler(this.layers);
     this.hideTool = new HideObjectHandler(this.layers);
     this.segmentLengthTool = new SegmentLengthHandler(this.layers);
+    this.toggleLabelDisplayTool = new ToggleLabelDisplayHandler(this.layers);
   }
 
   beforeDestroy(): void {
@@ -231,6 +238,8 @@ export default class SphereFrame extends VueComponent {
     this.store.commit.setZoomTranslation([0, 0]);
 
     this.updateView();
+    // record the canvas width for the SELabel so that the bounding box of the text can be computed correctly
+    this.store.commit.setCanvasWidth(size);
   }
 
   /** Apply the affine transform (m) to the entire TwoJS SVG tree! */
@@ -445,7 +454,10 @@ export default class SphereFrame extends VueComponent {
         break;
       case "segmentLength":
         this.currentTool = this.segmentLengthTool;
-        break
+        break;
+      case "toggleLabelDisplay":
+        this.currentTool = this.toggleLabelDisplayTool;
+        break;
       default:
         this.currentTool = null;
     }
@@ -453,3 +465,12 @@ export default class SphereFrame extends VueComponent {
   }
 }
 </script>
+
+<style lang="scss" scoped>
+@import "@/scss/variables.scss";
+#mytext {
+  font: italic 40px serif;
+  fill: red;
+  rotate: 90;
+}
+</style>

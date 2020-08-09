@@ -1,0 +1,224 @@
+import Label from "../plottables/Label";
+import { Visitable } from "@/visitors/Visitable";
+import { Visitor } from "@/visitors/Visitor";
+import { SENodule } from "./SENodule";
+import { Vector3 } from "three";
+import SETTINGS from "@/global-settings";
+import { Styles } from "@/types/Styles";
+import {
+  UpdateMode,
+  UpdateStateType,
+  LabelState,
+  SEOneDimensional,
+  Labelable
+} from "@/types";
+
+import AppStore from "@/store";
+import { SEPoint } from "./SEPoint";
+import { SESegment } from "./SESegment";
+import { SELine } from "./SELine";
+import { SECircle } from "./SECircle";
+
+const styleSet = new Set([
+  Styles.fillColor,
+  Styles.opacity,
+  Styles.dynamicBackStyle,
+  Styles.textStyle,
+  Styles.textFamily,
+  Styles.textDecoration,
+  Styles.textRotation,
+  Styles.textScalePercent,
+  Styles.textCaption,
+  Styles.textName,
+  Styles.textLabelMode
+]);
+
+export class SELabel extends SENodule implements Visitable {
+  /* Access to the store to retrieve the canvas size so that the bounding rectangle for the text can be computed properly*/
+  protected static store = AppStore;
+  /* Variables to determine which labels to show initially*/
+  static showPointLabelsInitially = SETTINGS.point.showLabelsInitially;
+  static showLineLabelsInitially = SETTINGS.line.showLabelsInitially;
+  static showSegmentLabelsInitially = SETTINGS.segment.showLabelsInitially;
+  static showCircleLabelsInitially = SETTINGS.circle.showLabelsInitially;
+
+  /* This should be the only reference to the plotted version of this SELabel */
+  public ref: Label;
+  /**
+   * The  parent of this SELabel
+   */
+  private parent: SENodule;
+  /**
+   * The vector location of the SEPoint on the ideal unit sphere
+   */
+  protected _locationVector = new Vector3();
+
+  /**
+   * Create a label of the parent object
+   * @param label the TwoJS label associated with this SELabel
+   * @param parent The parent SENodule object
+   */
+  constructor(label: Label, parent: SENodule) {
+    super();
+    this.ref = label;
+    this.parent = parent;
+    ((this.parent as unknown) as Labelable).label = this;
+    this.name = `LabelOf(${parent.name})`;
+    // Set the initial names.
+    label.initialNames = parent.name;
+    // Set the size for zoom
+    this.ref.adjustSize();
+    // Display the label
+    if (parent instanceof SEPoint && SELabel.showPointLabelsInitially) {
+      this.showing = true;
+    } else if (parent instanceof SELine && SELabel.showLineLabelsInitially) {
+      this.showing = true;
+    } else if (
+      parent instanceof SESegment &&
+      SELabel.showSegmentLabelsInitially
+    ) {
+      this.showing = true;
+    } else if (
+      parent instanceof SECircle &&
+      SELabel.showCircleLabelsInitially
+    ) {
+      this.showing = true;
+    } else {
+      this.showing = false;
+    }
+  }
+
+  customStyles(): Set<Styles> {
+    return styleSet;
+  }
+
+  /**
+   * When undoing or redoing a move, we do *not* want to use the "set locationVector" method because
+   * that will set the position on a potentially out of date object. We will trust that we do not need to
+   * use the closest point method and that the object that this point depends on will be move under this point (if necessary)
+   * @param pos The new position of the point
+   */
+  public labelDirectLocationSetter(pos: Vector3): void {
+    // Record the location on the unit ideal sphere of this SEPoint
+    this._locationVector.copy(pos).normalize();
+    // Set the position of the associated displayed plottable Point
+    this.ref.positionVector = this._locationVector;
+  }
+
+  accept(v: Visitor): void {
+    v.actionOnLabel(this);
+  }
+
+  public update(state: UpdateStateType): void {
+    // If any one parent is not up to date, don't do anything
+    if (!this.canUpdateNow()) {
+      return;
+    }
+    this.setOutOfDate(false);
+
+    //These labels don't exist when their parent doesn't exist
+    this._exists = this.parent.exists;
+    if (this._exists) {
+      this._locationVector = ((this
+        .parent as unknown) as Labelable).closestLabelLocationVector(
+        this._locationVector
+      );
+      //Update the location of the associate plottable Label (setter also updates the display)
+      this.ref.positionVector = this._locationVector;
+    }
+    // Update visibility
+    if (this._showing && this._exists) {
+      this.ref.setVisible(true);
+    } else {
+      this.ref.setVisible(false);
+    }
+
+    // Record the state of the object in state.stateArray if necessary
+    //#region saveState
+    // Create a label state for a Move or delete if necessary
+    if (
+      state.mode == UpdateMode.RecordStateForDelete ||
+      state.mode == UpdateMode.RecordStateForMove
+    ) {
+      // Store the coordinate values of the current location vector of the label.
+      const labelState: LabelState = {
+        kind: "label",
+        locationVectorX: this._locationVector.x,
+        locationVectorY: this._locationVector.y,
+        locationVectorZ: this._locationVector.z,
+        object: this
+      };
+      state.stateArray.push(labelState);
+    }
+    //#endregion saveState
+    this.updateKids(state);
+  }
+
+  /**
+   * Set or get the location vector of the SEPoint on the unit ideal sphere
+   */
+  set locationVector(pos: Vector3) {
+    // Record the location on the unit ideal sphere of this SELabel
+    // If the parent is not out of date, use the closest vector, if not set the location directly
+    // and the program will update the parent later so that the set location is on the parent (even though it is
+    // at the time of execution)
+    if (!this.parent.isOutOfDate()) {
+      this._locationVector
+        .copy(
+          ((this.parent as unknown) as Labelable).closestLabelLocationVector(
+            pos
+          )
+        )
+        .normalize();
+    } else {
+      this._locationVector.copy(pos);
+    }
+    // Set the position of the associated displayed plottable Label
+    this.ref.positionVector = this._locationVector;
+  }
+  get locationVector(): Vector3 {
+    return this._locationVector;
+  }
+
+  public isHitAt(
+    unitIdealVector: Vector3,
+    currentMagnificationFactor: number
+  ): boolean {
+    // First check to see if the label and the unitIdealVector are on the same side of the sphere
+    if (unitIdealVector.z * this._locationVector.z < 0) return false;
+
+    // Get the bounding box of the text
+    const boundingBox = this.ref.boundingRectangle;
+    // Get the canvas size so the bounding box can be corrected
+    const canvasSize = SELabel.store.getters.getCanvasWidth();
+
+    return (
+      boundingBox.left - canvasSize / 2 <
+        unitIdealVector.x * SETTINGS.boundaryCircle.radius &&
+      unitIdealVector.x * SETTINGS.boundaryCircle.radius <
+        boundingBox.right - canvasSize / 2 &&
+      boundingBox.top - canvasSize / 2 <
+        -unitIdealVector.y * SETTINGS.boundaryCircle.radius && // minus sign because text layers are not y flipped
+      -unitIdealVector.y * SETTINGS.boundaryCircle.radius < // minus sign because text layers are not y flipped
+        boundingBox.bottom - canvasSize / 2
+    );
+  }
+
+  // I wish the SENodule methods would work but I couldn't figure out how
+  // See the attempts in SENodule
+  public isFreePoint(): boolean {
+    return false;
+  }
+  public isOneDimensional(): this is SEOneDimensional {
+    return false;
+  }
+  public isPoint(): boolean {
+    return false;
+  }
+  public isPointOnOneDimensional(): false {
+    return false;
+  }
+  public isLabel(): boolean {
+    return true;
+  }
+}

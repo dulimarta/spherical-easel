@@ -4,6 +4,7 @@ import { SELine } from "@/models/SELine";
 import { Vector3 } from "three";
 import { SECircle } from "@/models/SECircle";
 import { SESegment } from "@/models/SESegment";
+import { SELabel } from "@/models/SELabel";
 
 export class LineNormalVisitor implements Visitor {
   private normalVector: Vector3 = new Vector3();
@@ -31,5 +32,8 @@ export class LineNormalVisitor implements Visitor {
 
   actionOnCircle(c: SECircle): void {
     // c.update();
+  }
+  actionOnLabel(l: SELabel): void {
+    // l.update();
   }
 }

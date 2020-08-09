@@ -19,9 +19,10 @@ export class StyleNoduleCommand extends Command {
     pastBackStyleContrast?: number
   ) {
     super();
-    seNodules.forEach((obj) => this.seNodules.push(obj));
+    seNodules.forEach(obj => this.seNodules.push(obj));
     this.side = side;
-    currentStyles.forEach((obj) => {
+    // Carefully copy so that we create new objects and no pointer from the inputs are carried to the variables of this command
+    currentStyles.forEach(obj => {
       const newObj = {} as StyleOptions;
       newObj.front = obj.front;
       newObj.strokeWidthPercent = obj.strokeWidthPercent;
@@ -41,7 +42,7 @@ export class StyleNoduleCommand extends Command {
       newObj.pointRadiusPercent = obj.pointRadiusPercent;
       this.currentStyles.push(newObj);
     });
-    pastStyles.forEach((obj) => {
+    pastStyles.forEach(obj => {
       const newObj = {} as StyleOptions;
       newObj.front = obj.front;
       newObj.strokeWidthPercent = obj.strokeWidthPercent;
