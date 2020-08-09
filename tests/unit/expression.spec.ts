@@ -25,10 +25,16 @@ describe("SEExpression", () => {
   });
 
   describe("Whitespaces", () => {
-    it("ignores whitespaces before a token", () => {
+    it("ignores blanks before a token", () => {
       expect(parser.evaluate("  456")).toBeCloseTo(456, 0);
     });
-    it("parses expressions without whitespaces", () => {
+    it("ignore newline ", () => {
+      expect(parser.evaluate("  4 + \n56\n")).toBeCloseTo(60, 0);
+    });
+    it("ignore tab ", () => {
+      expect(parser.evaluate("  4 + \t56\t")).toBeCloseTo(60, 0);
+    });
+    it("parses expressions without blanks", () => {
       expect(parser.evaluate("2+456")).toBeCloseTo(458, 0);
     });
   });

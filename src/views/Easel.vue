@@ -233,6 +233,7 @@ import Segment from "@/plottables/Segment";
 import Nodule from "@/plottables/Nodule";
 import { State } from "vuex-class";
 import { SENodule } from '@/models/SENodule';
+import { AppState } from '@/types';
 // import { getModule } from "vuex-module-decorators";
 // import UI from "@/store/ui-styles";
 
@@ -247,16 +248,16 @@ import { SENodule } from '@/models/SENodule';
 })
 export default class Easel extends Vue {
   readonly store = this.$store.direct;
-  @State('sePoints')
+  @State((s: AppState) => s.sePoints)
   readonly points!: SENodule[];
 
-  @State('seLines')
+  @State((s: AppState) => s.seLines)
   readonly lines!: SENodule[];
 
-  @State('seSegments')
+  @State((s: AppState) => s.seSegments)
   readonly segments!: SENodule[];
 
-  @State('seCircles')
+  @State((s: AppState) => s.seCircles)
   readonly circles!: SENodule[];
 
   // readonly UIModule = getModule(UI, this.$store);

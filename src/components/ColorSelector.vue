@@ -109,7 +109,7 @@ import { SENodule } from "@/models/SENodule";
 import Nodule from "@/plottables/Nodule";
 import { hslaColorType } from "@/types";
 import { StyleOptions } from "@/types/Styles";
-
+import { AppState } from "@/types"
 @Component
 export default class ColorSelector extends Vue {
   @Prop() readonly titleKey!: string;
@@ -123,7 +123,7 @@ export default class ColorSelector extends Vue {
   @Prop({ required: true }) readonly styleName!: string;
   @Prop() readonly tempStyleStates!: StyleOptions[];
 
-  @State('selections')
+  @State((s: AppState) => s.selections)
   selections!: SENodule[];
 
 
@@ -151,7 +151,7 @@ export default class ColorSelector extends Vue {
   private noDataUILabel = "";
 
   // Vue component life cycle hook
-  mounted (): void {
+  mounted(): void {
     //If there are already objects selected set the style panel to edit them (OK to pass empty string because that will set the defaults)
     // console.log(
     //   "mounted initialStyleStates before",
@@ -170,7 +170,7 @@ export default class ColorSelector extends Vue {
     this.noDataUILabel = `No ${inTitleCase}`;
   }
   // Vue component life cycle hook
-  beforeUpdate (): void {
+  beforeUpdate(): void {
     // console.log("before update");
     // const propName = this.styleName.replace("Color", "");
     // const firstLetter = this.styleName.charAt(0);
@@ -180,12 +180,12 @@ export default class ColorSelector extends Vue {
   }
 
   @Watch("tempStyleStates")
-  setTempStyleState (tempStyleStates: StyleOptions[]): void {
+  setTempStyleState(tempStyleStates: StyleOptions[]): void {
     console.log("tempStyleState event", tempStyleStates);
     this.setColorSelectorState(tempStyleStates);
   }
 
-  showColorPresets (): void {
+  showColorPresets(): void {
     if (!this.noData) {
       this.showColorOptions = !this.showColorOptions;
       if (this.showColorOptions) {
@@ -201,7 +201,7 @@ export default class ColorSelector extends Vue {
       this.showColorOptions = false;
     }
   }
-  onColorChange (newColor: any): void {
+  onColorChange(newColor: any): void {
     // console.log("color Data", this.colorData);
     // console.log("side", this.side);
     this.disableUndoButton = false;
@@ -216,10 +216,10 @@ export default class ColorSelector extends Vue {
       }
     });
   }
-  setCommonColorArgreement (): void {
+  setCommonColorArgreement(): void {
     this.colorAgreement = true;
   }
-  clearRecentColorChanges (): void {
+  clearRecentColorChanges(): void {
     const selected = this.$store.getters.selectedSENodules();
     const initialStyleStates = this.$store.getters.getInitialStyleState(this.side);
     for (let i = 0; i < selected.length; i++) {
@@ -235,7 +235,7 @@ export default class ColorSelector extends Vue {
     this.preNoColor = this.colorString;
     this.setColorSelectorState(initialStyleStates);
   }
-  resetColorToDefaults (): void {
+  resetColorToDefaults(): void {
     const selected = this.$store.getters.selectedSENodules();
     const defaultStyleStates = this.$store.getters.getDefaultStyleState(this.side);
     for (let i = 0; i < selected.length; i++) {
@@ -249,7 +249,7 @@ export default class ColorSelector extends Vue {
     }
     this.setColorSelectorState(defaultStyleStates);
   }
-  setColorSelectorState (styleState: StyleOptions[]): void {
+  setColorSelectorState(styleState: StyleOptions[]): void {
     this.colorAgreement = true;
     this.totallyDisableColorSelector = false;
     this.colorSwatchHeight = 0;
@@ -292,7 +292,7 @@ export default class ColorSelector extends Vue {
       this.disableColorSelector(true);
     }
   }
-  disableColorSelector (totally: boolean): void {
+  disableColorSelector(totally: boolean): void {
     this.disableUndoButton = true;
     this.colorAgreement = false;
     this.colorString = "hsla(0,100%,100%,0)";
@@ -303,7 +303,7 @@ export default class ColorSelector extends Vue {
     this.totallyDisableColorSelector = totally;
   }
   //No Data means noFill or noStroke
-  setNoData (): void {
+  setNoData(): void {
     this.disableUndoButton = false;
     if (this.noData) {
       this.preNoColor = this.colorString;
@@ -327,7 +327,7 @@ export default class ColorSelector extends Vue {
   }
 
   @Watch("selections")
-  onSelectionChanged (newSelection: SENodule[]): void {
+  onSelectionChanged(newSelection: SENodule[]): void {
     if (newSelection.length === 0) {
       //totally disable the selectors
       this.disableColorSelector(true);

@@ -14,15 +14,22 @@
     <!-- This is the main app bar in the window. Notice the internationalization in the toolbar
     title where $t('key') means that the key should be looked up in the current language file named
     ##.lang.json.-->
-    <v-app-bar app color="primary" dark dense clipped-left>
+    <v-app-bar app
+      color="primary"
+      dark
+      dense
+      clipped-left>
       <!-- This is where the file and export (to EPS, TIKZ, animated GIF?) operations will go -->
       <v-app-bar-nav-icon></v-app-bar-nav-icon>
 
       <div class="d-flex align-center">
         <router-link to="/">
-          <v-img alt="Spherical Easel Logo" class="shrink mr-2" contain
+          <v-img alt="Spherical Easel Logo"
+            class="shrink mr-2"
+            contain
             src="../docs/.vuepress/public/SphericalEaselLogo.png"
-            transition="scale-transition" width="40" />
+            transition="scale-transition"
+            width="40" />
         </router-link>
         <v-toolbar-title>
           {{ $t("main.SphericalEaselMainTitle") }}
@@ -30,7 +37,8 @@
         <v-tooltip left>
           <template v-slot:activator="{ on }">
             <a href="/docs">
-              <v-icon class="ml-2" v-on="on">mdi-help-circle</v-icon>
+              <v-icon class="ml-2"
+                v-on="on">mdi-help-circle</v-icon>
             </a>
           </template>
           <span>Open Doc</span>
@@ -56,7 +64,9 @@
       </router-view>
       <MessageBox></MessageBox>
     </v-main>
-    <v-footer app color="accent" padless>
+    <v-footer app
+      color="accent"
+      padless>
       <v-col class="text-center">
         <span v-if="activeToolName">
           Current Tool:
@@ -78,13 +88,14 @@ import Vue from "vue";
 import Component from "vue-class-component";
 import { State } from "vuex-class";
 import MessageBox from "@/components/MessageBox.vue";
+import { AppState } from "./types";
 
 /* This allows for the State of the app to be initialized with in vuex store */
 /* TODO: What does this do? */
 /* This view has no (sub)components (but the Easel view does) so this is empty*/
 @Component({ components: { MessageBox } })
 export default class App extends Vue {
-  @State('activeToolName')
+  @State((s: AppState) => s.activeToolName)
   activeToolName!: string;
 
   mounted(): void {

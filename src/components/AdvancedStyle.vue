@@ -10,6 +10,7 @@ import { State } from "vuex-class";
 import { Styles } from "../types/Styles";
 import SETTINGS from "@/global-settings";
 import FadeInCard from "@/components/FadeInCard.vue";
+import { AppState } from "@/types"
 // import { getModule } from "vuex-module-decorators";
 // import UI from "@/store/ui-styles";
 
@@ -17,7 +18,7 @@ import FadeInCard from "@/components/FadeInCard.vue";
 export default class AdvancedStyle extends Vue {
   // readonly UIModule = getModule(UI, this.$store);
 
-  @State('selections')
+  @State((s: AppState) => s.selections)
   readonly selections!: SENodule[];
 
   commonStyleProperties: number[] = [];
@@ -27,7 +28,7 @@ export default class AdvancedStyle extends Vue {
     // this.commonProperties = new Set();
   }
 
-  hasStyles (s: Styles): boolean {
+  hasStyles(s: Styles): boolean {
     const sNum = Number(s);
     return (
       this.commonStyleProperties.length > 0 &&
@@ -35,19 +36,19 @@ export default class AdvancedStyle extends Vue {
     );
   }
 
-  get hasColor (): boolean {
+  get hasColor(): boolean {
     return (
       this.hasStyles(Styles.strokeColor) ||
       this.hasStyles(Styles.fillColor)
     );
   }
 
-  get hasStrokeWidth (): boolean {
+  get hasStrokeWidth(): boolean {
     return this.hasStyles(Styles.strokeWidthPercent);
   }
 
   @Watch("selections", { deep: true })
-  onSelectionChanged (newSelection: SENodule[]): void {
+  onSelectionChanged(newSelection: SENodule[]): void {
     // newSelection.forEach(s => {
     // console.debug("Set ", s.customStyles());
     // })

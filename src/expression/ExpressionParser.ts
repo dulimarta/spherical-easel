@@ -72,7 +72,8 @@ class Lexer {
     return this.prev?.text ?? "Start of input";
   }
   skipWhiteSpaces(): void {
-    while (!this.nextChar.done && this.nextChar.value === " ") {
+    // \s is Regex for whitespace
+    while (!this.nextChar.done && this.nextChar.value.match(/\s/)) {
       this.nextChar = this.iterator.next();
     }
   }

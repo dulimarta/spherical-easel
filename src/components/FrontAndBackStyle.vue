@@ -431,7 +431,7 @@ import { State } from "vuex-class";
 import { Styles, StyleOptions } from "../types/Styles";
 import SETTINGS from "@/global-settings";
 import FadeInCard from "@/components/FadeInCard.vue";
-import { hslaColorType } from "@/types";
+import { hslaColorType, AppState } from "@/types";
 import { StyleNoduleCommand } from "@/commands/StyleNoduleCommand";
 import EventBus from "@/eventHandlers/EventBus";
 import NumberSelector from "@/components/NumberSelector.vue";
@@ -460,7 +460,7 @@ export default class FrontAndBackStyle extends Vue {
   @Prop()
   readonly side!: boolean;
 
-  @State('selections')
+  @State((s: AppState) => s.selections)
   readonly selections!: SENodule[];
 
   // The old selection to help with undo/redo commands
@@ -565,8 +565,7 @@ export default class FrontAndBackStyle extends Vue {
         front: this.side,
         dashArray: [this.dashLength, this.gapLength] //correct order!!!!
       }
-    }
-    );
+    });
   }
   setCommonDashPatternAgreement(): void {
     this.dashPatternAgreement = true;
@@ -574,14 +573,15 @@ export default class FrontAndBackStyle extends Vue {
   clearRecentDashPatternChanges(): void {
     this.disableDashPatternUndoButton = true;
     const selected = this.$store.getters.selectedSENodules();
-    const initialStyleStates = this.$store.getters.getInitialStyleState(this.side);
+    const initialStyleStates = this.$store.getters.getInitialStyleState(
+      this.side
+    );
     for (let i = 0; i < selected.length; i++) {
       // Check see if the initialStylesStates[i] exist and has length >0
       if (
         initialStyleStates[i].dashArray &&
         (initialStyleStates[i].dashArray as number[]).length > 0
       ) {
-
         this.$store.direct.commit.changeStyle({
           selected: [selected[i]],
           payload: {
@@ -607,14 +607,15 @@ export default class FrontAndBackStyle extends Vue {
   }
   resetDashPatternToDefaults(): void {
     const selected = this.$store.getters.selectedSENodules();
-    const defaultStyleStates = this.$store.getters.getDefaultStyleState(this.side);
+    const defaultStyleStates = this.$store.getters.getDefaultStyleState(
+      this.side
+    );
     for (let i = 0; i < selected.length; i++) {
       // Check see if the selected[i] exist and has length >0
       if (
         defaultStyleStates[i].dashArray &&
         (defaultStyleStates[i].dashArray as number[]).length > 0
       ) {
-
         this.$store.direct.commit.changeStyle({
           selected: [selected[i]],
           payload: {
@@ -654,7 +655,6 @@ export default class FrontAndBackStyle extends Vue {
           dashArray: [this.dashLength, this.gapLength]
         }
       });
-
     } else {
       this.$store.direct.commit.changeStyle({
         selected: this.$store.getters.selectedSENodules(),
@@ -671,7 +671,6 @@ export default class FrontAndBackStyle extends Vue {
   }
 
   incrementDashPattern(): void {
-
     // increasing the value of the sliderDashArray[1] increases the length of the dash
     if (
       this.sliderDashArray[1] + 1 <=
@@ -799,7 +798,9 @@ export default class FrontAndBackStyle extends Vue {
   clearRecentDynamicBackStyleChanges(): void {
     this.disableBackStyleContrastUndoButton = true;
     const selected = this.$store.getters.selectedSENodules();
-    const initialStyleStates = this.$store.getters.getInitialStyleState(this.side);
+    const initialStyleStates = this.$store.getters.getInitialStyleState(
+      this.side
+    );
     const initialBackStyleContrast = this.$store.getters.getInitialBackStyleContrast();
     for (let i = 0; i < selected.length; i++) {
       this.$store.direct.commit.changeStyle({
@@ -815,7 +816,9 @@ export default class FrontAndBackStyle extends Vue {
   }
   resetDynamicBackStyleToDefaults(): void {
     const selected = this.$store.getters.selectedSENodules();
-    const defaultStyleStates = this.$store.getters.getDefaultStyleState(this.side);
+    const defaultStyleStates = this.$store.getters.getDefaultStyleState(
+      this.side
+    );
     for (let i = 0; i < selected.length; i++) {
       this.$store.direct.commit.changeStyle({
         selected: [selected[i]],
@@ -1021,19 +1024,22 @@ export default class FrontAndBackStyle extends Vue {
         this.commonStyleProperties.push(k);
     }
 
-    // Get the initial and default style state of the object for undo/redo and buttons to revert to initial style. 
+    // Get the initial and default style state of the object for undo/redo and buttons to revert to initial style.
     // Put this in the store so that it is availble to *all* panels. Get the front and back information at the same time.
     console.log("set initial style");
     //#region setStyle
-    this.$store.direct.commit.setStyleState(
-      {
-        selected: newSelection,
-        backContrast: Nodule.getBackStyleContrast()
-      });
+    this.$store.direct.commit.setStyleState({
+      selected: newSelection,
+      backContrast: Nodule.getBackStyleContrast()
+    });
     //#endregion
     //Set the initial state of the fade-in-card/selectors (checking to see if the property is the same across all selected objects)
-    this.setDashPatternSelectorState(this.$store.getters.getInitialStyleState(this.side));
-    this.setDynamicBackStyleSelectorState(this.$store.getters.getInitialStyleState(this.side));
+    this.setDashPatternSelectorState(
+      this.$store.getters.getInitialStyleState(this.side)
+    );
+    this.setDynamicBackStyleSelectorState(
+      this.$store.getters.getInitialStyleState(this.side)
+    );
   }
 
   areEquivalentStyles(
@@ -1101,9 +1107,13 @@ export default class FrontAndBackStyle extends Vue {
       this.currentStyleStates.clear();
       this.oldSelection.forEach(seNodule => {
         if (seNodule.ref)
-          this.currentStyleStates.push(seNodule.ref.currentStyleState(this.side));
+          this.currentStyleStates.push(
+            seNodule.ref.currentStyleState(this.side)
+          );
       });
-      const initialStyleStates = this.$store.getters.getInitialStyleState(this.side);
+      const initialStyleStates = this.$store.getters.getInitialStyleState(
+        this.side
+      );
       const initialBackStyleContrast = this.$store.getters.getInitialBackStyleContrast();
       if (
         !this.areEquivalentStyles(

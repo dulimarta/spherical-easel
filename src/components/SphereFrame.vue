@@ -31,19 +31,20 @@ import ToggleLabelDisplayHandler from "@/eventHandlers/ToggleLabelDisplayHandler
 
 import EventBus from "@/eventHandlers/EventBus";
 import MoveHandler from "../eventHandlers/MoveHandler";
+import { AppState } from '@/types';
 
 @Component({})
 export default class SphereFrame extends VueComponent {
   @Prop()
   readonly canvasSize!: number;
 
-  @State('actionMode')
+  @State((s: AppState) => s.actionMode)
   readonly actionMode!: string;
 
-  @State('zoomMagnificationFactor')
+  @State((s: AppState) => s.zoomMagnificationFactor)
   readonly zoomMagnificationFactor!: number;
 
-  @State('zoomTranslation')
+  @State((s: AppState) => s.zoomTranslation)
   readonly zoomTranslation!: number[];
 
   $refs!: {
