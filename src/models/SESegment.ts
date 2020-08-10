@@ -8,7 +8,6 @@ import SETTINGS from "@/global-settings";
 import { OneDimensional, SegmentState, Labelable } from "@/types";
 import { UpdateMode, UpdateStateType } from "@/types";
 import { SELabel } from "@/models/SELabel";
-
 import { Styles } from "@/types/Styles";
 
 let SEGMENT_COUNT = 0;

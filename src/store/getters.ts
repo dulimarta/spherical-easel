@@ -826,7 +826,7 @@ export default {
     side: boolean
   ): StyleOptions[] => {
     // The first half is the front style settings, the second half the back
-    if (side == SETTINGS.style.frontFace) {
+    if (side == SETTINGS.style.frontSide) {
       return state.initialStyleStates.slice(
         0,
         state.initialStyleStates.length / 2
@@ -842,7 +842,7 @@ export default {
     side: boolean
   ): StyleOptions[] => {
     // The first half is the front style settings, the second half the back
-    if (side == SETTINGS.style.frontFace) {
+    if (side == SETTINGS.style.frontSide) {
       return state.defaultStyleStates.slice(
         0,
         state.defaultStyleStates.length / 2

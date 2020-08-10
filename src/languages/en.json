@@ -126,6 +126,7 @@
     "advancedStyle": "Advanced Style",
     "backgroundStyle": "Background Style",
     "foregroundStyle": "Foreground Style",
+    "basicStyle": "Basic Style",
 
     "emptySelectionMessage": "Here we go! Please select object(s) to style!",
     "strokeColor": "Stroke Color",

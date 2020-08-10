@@ -5,8 +5,8 @@ export default {
   nearlyAntipodalPixel: 3, // Two vectors on the default sphere, U and V, are nearly antipodal if |U+V| < nearlyAntipodalPixel
   tolerance: 0.0000001, // Any number less that this tolerance is considered zero
   style: {
-    frontFace: true,
-    backFace: false,
+    frontSide: true,
+    backSide: false,
     backStyleContrast: 0.5, //The number that controls the automatic setting of the back styling for objects that have dynamicBackStyle set to true.
     maxStrokeWidthPercent: 500, // The maximum percent stroke width different from the scaled for zoom size
     minStrokeWidthPercent: 20, // The minimum percent stroke width different from the scaled for zoom size

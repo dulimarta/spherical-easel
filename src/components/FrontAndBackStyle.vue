@@ -1,6 +1,6 @@
 <template>
   <div>
-    <fade-in-card :showWhen="isBackFace()"
+    <fade-in-card :showWhen="isBackSide()"
       color="red">
       <v-tooltip bottom
         :open-delay="toolTipOpenDelay"
@@ -66,7 +66,7 @@
     </fade-in-card>
 
     <fade-in-card
-      :showWhen="isBackFace() && (hasDynamicBackStyle || noObjectsSelected)">
+      :showWhen="isBackSide() && (hasDynamicBackStyle || noObjectsSelected)">
       <span
         class="text-subtitle-2">{{ $t("style.dynamicBackStyle") }}</span>
 
@@ -194,8 +194,8 @@
     </fade-in-card>
 
     <fade-in-card :showWhen="
-        (!isBackFace() && (hasStrokeColor || noObjectsSelected)) ||
-          (isBackFace() && !dynamicBackStyle && hasStrokeColor)
+        (!isBackSide() && (hasStrokeColor || noObjectsSelected)) ||
+          (isBackSide() && !dynamicBackStyle && hasStrokeColor)
       ">
       <ColorSelector title-key="style.strokeColor"
         side-front-key="style.front"
@@ -207,8 +207,8 @@
     </fade-in-card>
 
     <fade-in-card :showWhen="
-        (!isBackFace() && (hasFillColor || noObjectsSelected)) ||
-          (isBackFace() && !dynamicBackStyle && hasFillColor)
+        (!isBackSide() && (hasFillColor || noObjectsSelected)) ||
+          (isBackSide() && !dynamicBackStyle && hasFillColor)
       ">
       <ColorSelector title-key="style.fillColor"
         side-front-key="style.front"
@@ -220,8 +220,8 @@
     </fade-in-card>
 
     <fade-in-card :showWhen="
-        (!isBackFace() && (hasStrokeWidthPercent || noObjectsSelected)) ||
-          (isBackFace() && !dynamicBackStyle && hasStrokeWidthPercent)
+        (!isBackSide() && (hasStrokeWidthPercent || noObjectsSelected)) ||
+          (isBackSide() && !dynamicBackStyle && hasStrokeWidthPercent)
       ">
       <NumberSelector id="strokeWidthPercentSlider"
         v-bind:data.sync="strokeWidthPercent"
@@ -246,8 +246,8 @@
     </fade-in-card>
 
     <fade-in-card :showWhen="
-        (!isBackFace() && (hasPointRadiusPercent || noObjectsSelected)) ||
-          (isBackFace() && !dynamicBackStyle && hasPointRadiusPercent)
+        (!isBackSide() && (hasPointRadiusPercent || noObjectsSelected)) ||
+          (isBackSide() && !dynamicBackStyle && hasPointRadiusPercent)
       ">
       <NumberSelector :data.sync="pointRadiusPercent"
         title-key="style.pointRadiusPercent"
@@ -268,8 +268,8 @@
     </fade-in-card>
 
     <fade-in-card :showWhen="
-        (!isBackFace() && (hasOpacity || noObjectsSelected)) ||
-          (isBackFace() && !dynamicBackStyle)
+        (!isBackSide() && (hasOpacity || noObjectsSelected)) ||
+          (isBackSide() && !dynamicBackStyle)
       ">
       <NumberSelector title-key="style.opacity"
         side-front-key="style.front"
@@ -500,7 +500,6 @@ export default class FrontAndBackStyle extends Vue {
   private minPointRadiusPercent = SETTINGS.style.minPointRadiusPercent;
 
   private hslaStrokeColorObject: hslaColorType = { h: 0, s: 1, l: 1, a: 0 }; // Color for Vuetify Color picker
-
   private hslaFillColorObject: hslaColorType = { h: 0, s: 1, l: 1, a: 0 }; // Color for Vuetify Color picker
 
   /** gapLength = sliderArray[0] */
@@ -526,16 +525,6 @@ export default class FrontAndBackStyle extends Vue {
   private disableDashPatternUndoButton = false;
   private disableBackStyleContrastUndoButton = false;
 
-  /**
- * Common style properties are the enum with values of 
-  //   strokeWidthPercent,
-  //   strokeColor,
-  //   fillColor,
-  //   dashArray,
-  //   opacity,
-  //   dynamicBackStyle,
-  //   pointRadiusPercent
- */
   commonStyleProperties: number[] = [];
 
   constructor() {
@@ -549,11 +538,9 @@ export default class FrontAndBackStyle extends Vue {
     //  Mount a save listener
     EventBus.listen("save-style-state", this.saveStyleState);
   }
-
-  isBackFace(): boolean {
+  isBackSide(): boolean {
     return this.side === false;
   }
-
   // These methods are linked to the dashPattern fade-in-card
   onDashPatternChange(): void {
     this.disableDashPatternUndoButton = false;
@@ -639,7 +626,6 @@ export default class FrontAndBackStyle extends Vue {
     }
     this.setDashPatternSelectorState(defaultStyleStates);
   }
-
   toggleDashPatternSliderAvailibity(): void {
     if (this.emptyDashPattern) {
       this.sliderDashArray.clear();
@@ -669,7 +655,6 @@ export default class FrontAndBackStyle extends Vue {
     }
     this.emptyDashPattern = !this.emptyDashPattern;
   }
-
   incrementDashPattern(): void {
     // increasing the value of the sliderDashArray[1] increases the length of the dash
     if (
@@ -690,7 +675,6 @@ export default class FrontAndBackStyle extends Vue {
       });
     }
   }
-
   decrementDashPattern(): void {
     this.disableDashPatternUndoButton = false;
     // increasing the value of the sliderDashArray[0] decreases the length of the dash
@@ -716,7 +700,6 @@ export default class FrontAndBackStyle extends Vue {
      * How do I trigger an event that will cause the actual dots on the slider to move?
      */
   }
-
   setDashPatternSelectorState(styleState: StyleOptions[]): void {
     this.disableDashPatternUndoButton = true;
     // reset to the default which are overwritten as necessary
@@ -771,7 +754,6 @@ export default class FrontAndBackStyle extends Vue {
     this.sliderDashArray.push(this.gapLength);
     this.sliderDashArray.push(this.gapLength + this.dashLength);
   }
-
   disableDashPatternSelector(totally: boolean): void {
     this.dashPatternAgreement = false;
     this.disableDashPatternUndoButton = true;
@@ -859,7 +841,6 @@ export default class FrontAndBackStyle extends Vue {
       // this.setStrokeWidthPercentSelectorState(tempStyleState);
     }
   }
-
   incrementBackStyleContrast(): void {
     if (
       this.dynamicBackStyle != undefined &&
@@ -892,7 +873,6 @@ export default class FrontAndBackStyle extends Vue {
       });
     }
   }
-
   setDynamicBackStyleSelectorState(styleState: StyleOptions[]): void {
     this.dynamicBackStyleAgreement = true;
     this.totallyDisableDynamicBackStyleSelector = false;
@@ -912,7 +892,6 @@ export default class FrontAndBackStyle extends Vue {
       this.disableDynamicBackStyleSelector(true);
     }
   }
-
   disableDynamicBackStyleSelector(totally: boolean): void {
     this.dynamicBackStyleAgreement = false;
     this.dynamicBackStyle = true;
@@ -934,26 +913,26 @@ export default class FrontAndBackStyle extends Vue {
   /**
    * Used to determine which objects the color picker should control (i.e. the check boxes under the color picker)
    */
-  get colorKeys(): any[] {
-    return this.commonStyleProperties
-      .map((id: number) => ({
-        // Convert camelCase to title format
-        // i.e. "justASimpleText" becomes "Just A Simple Text"
-        label: keys[id]
-          .replace(
-            /([a-z])([A-Z])/g, // global regex
-            (_, lowLetter, upLetter) => `${lowLetter} ${upLetter}`
-          )
-          .replace(/^([a-z])/, (_, firstLetter: string) =>
-            firstLetter.toUpperCase()
-          ),
-        value: keys[id]
-      }))
-      .filter((e: any) => {
-        const { label, _ } = e;
-        return label.toLowerCase().indexOf("color") >= 0; // Select entry with "Color" in its label
-      });
-  }
+  // get colorKeys(): any[] {
+  //   return this.commonStyleProperties
+  //     .map((id: number) => ({
+  //       // Convert camelCase to title format
+  //       // i.e. "justASimpleText" becomes "Just A Simple Text"
+  //       label: keys[id]
+  //         .replace(
+  //           /([a-z])([A-Z])/g, // global regex
+  //           (_, lowLetter, upLetter) => `${lowLetter} ${upLetter}`
+  //         )
+  //         .replace(/^([a-z])/, (_, firstLetter: string) =>
+  //           firstLetter.toUpperCase()
+  //         ),
+  //       value: keys[id]
+  //     }))
+  //     .filter((e: any) => {
+  //       const { label, _ } = e;
+  //       return label.toLowerCase().indexOf("color") >= 0; // Select entry with "Color" in its label
+  //     });
+  // }
 
   /**
    * Used to determine if the color picker Vue component (i.e. fade-in-card) should be displayed

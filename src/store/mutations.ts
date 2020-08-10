@@ -343,20 +343,20 @@ export default {
       // The first half is the front style settings, the second half the back
       if (seNodule.ref) {
         state.initialStyleStates.push(
-          seNodule.ref.currentStyleState(SETTINGS.style.frontFace)
+          seNodule.ref.currentStyleState(SETTINGS.style.frontSide)
         );
         state.defaultStyleStates.push(
-          seNodule.ref.defaultStyleState(SETTINGS.style.frontFace)
+          seNodule.ref.defaultStyleState(SETTINGS.style.frontSide)
         );
       }
     });
     selected.forEach(seNodule => {
       if (seNodule.ref) {
         state.initialStyleStates.push(
-          seNodule.ref.currentStyleState(SETTINGS.style.backFace)
+          seNodule.ref.currentStyleState(SETTINGS.style.backSide)
         );
         state.defaultStyleStates.push(
-          seNodule.ref.defaultStyleState(SETTINGS.style.backFace)
+          seNodule.ref.defaultStyleState(SETTINGS.style.backSide)
         );
       }
     });

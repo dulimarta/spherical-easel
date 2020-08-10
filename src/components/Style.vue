@@ -15,7 +15,7 @@
           <v-expansion-panel-content :color="panelBackgroundColor(idx)"
             :key="`content${idx}`">
             <component :is="p.component"
-              :side="p.isFront">
+              :side="p.side">
             </component>
           </v-expansion-panel-content>
         </v-expansion-panel>
@@ -44,19 +44,24 @@ export default class Style extends Vue {
   private selectedPanel = 0; // Default selection is the Foreground panel
   private readonly panels = [
     {
+      i18n_key: "style.backStyle",
+      component: () => import("@/components/BasicStyle.vue"),
+      side: undefined
+    },
+    {
       i18n_key: "style.foregroundStyle",
       component: () => import("@/components/FrontAndBackStyle.vue"),
-      isFront: true
+      side: SETTINGS.style.frontSide
     },
     {
       i18n_key: "style.backgroundStyle",
       component: () => import("@/components/FrontAndBackStyle.vue"), // Note: The frontPanel(idx) returns false for this panel - setting the panel to back side
-      isFront: false
+      side: SETTINGS.style.backSide
     },
     {
       i18n_key: "style.advancedStyle",
       component: () => import("@/components/AdvancedStyle.vue"),
-      isFront: undefined
+      side: undefined
     }
   ];
 

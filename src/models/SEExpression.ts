@@ -6,7 +6,7 @@ let EXPR_COUNT = 0;
 
 const emptySet = new Set<Styles>();
 export abstract class SEExpression extends SENodule {
-  // public isPointOnOneDimensional = (): boolean => false;
+  public isPointOnOneDimensional = (): boolean => false;
   public isFreePoint = (): boolean => false;
   public isPoint = (): boolean => false;
 
