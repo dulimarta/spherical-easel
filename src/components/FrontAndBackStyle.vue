@@ -1,60 +1,65 @@
 <template>
   <div>
-    <fade-in-card :showWhen="isBackSide()"
-      color="red">
-      <v-tooltip bottom
+    <fade-in-card :showWhen="editModeIsBack()" color="red">
+      <v-tooltip
+        bottom
         :open-delay="toolTipOpenDelay"
         :close-delay="toolTipCloseDelay"
-        max-width="400px">
+        max-width="400px"
+      >
         <template v-slot:activator="{ on }">
-          <span v-on="on"
-            class="text-subtitle-2">{{ $t("style.backStyleContrast") }}</span>
+          <span v-on="on" class="text-subtitle-2">{{ $t("style.backStyleContrast") }}</span>
         </template>
         <span>{{ $t("style.backStyleContrastToolTip") }}</span>
       </v-tooltip>
-      <span>({{ $t("style.value") }}:
-        {{ this.backStyleContrast }})</span>
+      <span>
+        ({{ $t("style.value") }}:
+        {{ this.backStyleContrast }})
+      </span>
       <br />
-      <v-tooltip bottom
+      <v-tooltip
+        bottom
         :open-delay="toolTipOpenDelay"
         :close-delay="toolTipCloseDelay"
-        max-width="400px">
+        max-width="400px"
+      >
         <template v-slot:activator="{ on }">
-          <v-btn v-on="on"
+          <v-btn
+            v-on="on"
             @click="clearRecentDynamicBackStyleChanges"
             text
             :disabled="disableBackStyleContrastUndoButton"
             outlined
             ripple
-            small>{{ $t("style.clearChanges") }}</v-btn>
+            small
+          >{{ $t("style.clearChanges") }}</v-btn>
         </template>
         <span>{{ $t("style.clearChangesToolTip") }}</span>
       </v-tooltip>
 
-      <v-tooltip bottom
+      <v-tooltip
+        bottom
         :open-delay="toolTipOpenDelay"
         :close-delay="toolTipCloseDelay"
-        max-width="400px">
+        max-width="400px"
+      >
         <template v-slot:activator="{ on }">
-          <v-btn v-on="on"
-            @click="resetDynamicBackStyleToDefaults"
-            text
-            small
-            outlined
-            ripple>
+          <v-btn v-on="on" @click="resetDynamicBackStyleToDefaults" text small outlined ripple>
             <span>{{ $t("style.restoreDefaults") }}</span>
           </v-btn>
         </template>
         <span>{{ $t("style.restoreDefaultsToolTip") }}</span>
       </v-tooltip>
 
-      <v-slider v-model.number="backStyleContrast"
+      <v-slider
+        v-model.number="backStyleContrast"
         :min="0"
         step="0.1"
         @change="onBackStyleContrastChange"
         :max="1"
         type="range"
-        dense>
+        dense
+      >
         <template v-slot:prepend>
           <v-icon @click="decrementBackStyleContrast">mdi-minus</v-icon>
         </template>
@@ -65,40 +70,46 @@
       </v-slider>
     </fade-in-card>
 
-    <fade-in-card
-      :showWhen="isBackSide() && (hasDynamicBackStyle || noObjectsSelected)">
-      <span
-        class="text-subtitle-2">{{ $t("style.dynamicBackStyle") }}</span>
+    <fade-in-card :showWhen="editModeIsBack() && (hasDynamicBackStyle || noObjectsSelected)">
+      <span class="text-subtitle-2">{{ $t("style.dynamicBackStyle") }}</span>
 
       <br />
-      <span v-show="totallyDisableDynamicBackStyleSelector"
-        class="select-an-object-text">{{ $t("style.selectAnObject") }}</span>
-      <v-tooltip v-if="!dynamicBackStyleAgreement"
+      <span
+        v-show="totallyDisableDynamicBackStyleSelector"
+        class="select-an-object-text"
+      >{{ $t("style.selectAnObject") }}</span>
+      <v-tooltip
+        v-if="!dynamicBackStyleAgreement"
         bottom
         :open-delay="toolTipOpenDelay"
         :close-delay="toolTipCloseDelay"
-        max-width="400px">
+        max-width="400px"
+      >
         <template v-slot:activator="{ on }">
-          <v-btn color="error"
+          <v-btn
+            color="error"
             v-on="on"
             v-show="!totallyDisableDynamicBackStyleSelector"
             text
             small
             outlined
             ripple
-            @click="setCommonDynamicBackStyleAgreement">
-            {{ $t("style.differingStylesDetected") }}</v-btn>
+            @click="setCommonDynamicBackStyleAgreement"
+          >{{ $t("style.differingStylesDetected") }}</v-btn>
         </template>
         <span>{{ $t("style.differingStylesDetectedToolTip") }}</span>
       </v-tooltip>
 
-      <v-tooltip v-if="!dynamicBackStyle"
+      <v-tooltip
+        v-if="!dynamicBackStyle"
         bottom
         :open-delay="toolTipOpenDelay"
         :close-delay="toolTipCloseDelay"
-        max-width="400px">
+        max-width="400px"
+      >
         <template v-slot:activator="{ on }">
-          <v-btn v-on="on"
+          <v-btn
+            v-on="on"
             v-show="
               !totallyDisableDynamicBackStyleSelector &&
                 dynamicBackStyleAgreement
@@ -109,22 +120,24 @@
             ripple
             small
             block
-            @click="toggleBackStyleOptionsAvailability">
-            <span style=""
-              class="long-text-button">
-              {{ $t("style.enableBackStyleContrastSlider") }}</span>
+            @click="toggleBackStyleOptionsAvailability"
+          >
+            <span style class="long-text-button">{{ $t("style.enableBackStyleContrastSlider") }}</span>
           </v-btn>
         </template>
         <span>{{ $t("style.enableBackStyleContrastSliderToolTip") }}</span>
       </v-tooltip>
 
-      <v-tooltip v-else
+      <v-tooltip
+        v-else
         bottom
         :open-delay="toolTipOpenDelay"
         :close-delay="toolTipCloseDelay"
-        max-width="400px">
+        max-width="400px"
+      >
         <template v-slot:activator="{ on }">
-          <v-btn v-on="on"
+          <v-btn
+            v-on="on"
             v-show="
               !totallyDisableDynamicBackStyleSelector &&
                 dynamicBackStyleAgreement
@@ -135,10 +148,9 @@
             ripple
             small
             block
-            @click="toggleBackStyleOptionsAvailability">
-            <span style=""
-              class="long-text-button">
-              {{ $t("style.disableBackStyleContrastSlider") }}</span>
+            @click="toggleBackStyleOptionsAvailability"
+          >
+            <span style class="long-text-button">{{ $t("style.disableBackStyleContrastSlider") }}</span>
           </v-btn>
         </template>
         <span>{{ $t("style.disableBackStyleContrastSliderToolTip") }}</span>
@@ -193,177 +205,197 @@
       </v-tooltip>-->
     </fade-in-card>
 
-    <fade-in-card :showWhen="
-        (!isBackSide() && (hasStrokeColor || noObjectsSelected)) ||
-          (isBackSide() && !dynamicBackStyle && hasStrokeColor)
-      ">
-      <ColorSelector title-key="style.strokeColor"
-        side-front-key="style.front"
-        side-back-key="style.back"
+    <fade-in-card
+      :showWhen="
+        (editModeIsFront() && (hasStrokeColor || noObjectsSelected)) ||
+          (editModeIsBack() && !dynamicBackStyle && hasStrokeColor)
+      "
+    >
+      <ColorSelector
+        title-key="style.strokeColor"
+        mode-front-key="style.front"
+        mode-back-key="style.back"
         style-name="strokeColor"
         :data.sync="hslaStrokeColorObject"
         :temp-style-states="tempStyleStates"
-        :side="side"></ColorSelector>
+        :mode="mode"
+      ></ColorSelector>
     </fade-in-card>
 
-    <fade-in-card :showWhen="
-        (!isBackSide() && (hasFillColor || noObjectsSelected)) ||
-          (isBackSide() && !dynamicBackStyle && hasFillColor)
-      ">
-      <ColorSelector title-key="style.fillColor"
-        side-front-key="style.front"
-        side-back-key="style.back"
+    <fade-in-card
+      :showWhen="
+        (editModeIsFront() && (hasFillColor || noObjectsSelected)) ||
+          (editModeIsBack() && !dynamicBackStyle && hasFillColor)
+      "
+    >
+      <ColorSelector
+        title-key="style.fillColor"
+        mode-front-key="style.front"
+        mode-back-key="style.back"
         style-name="fillColor"
         :data.sync="hslaFillColorObject"
         :temp-style-states="tempStyleStates"
-        :side="side"></ColorSelector>
+        :mode="mode"
+      ></ColorSelector>
     </fade-in-card>
 
-    <fade-in-card :showWhen="
-        (!isBackSide() && (hasStrokeWidthPercent || noObjectsSelected)) ||
-          (isBackSide() && !dynamicBackStyle && hasStrokeWidthPercent)
-      ">
-      <NumberSelector id="strokeWidthPercentSlider"
+    <fade-in-card
+      :showWhen="
+        (editModeIsFront() && (hasStrokeWidthPercent || noObjectsSelected)) ||
+          (editModeIsBack() && !dynamicBackStyle && hasStrokeWidthPercent)
+      "
+    >
+      <NumberSelector
+        id="strokeWidthPercentSlider"
         v-bind:data.sync="strokeWidthPercent"
         style-name="strokeWidthPercent"
         title-key="style.strokeWidthPercent"
-        side-front-key="style.front"
-        side-back-key="style.back"
+        mode-front-key="style.front"
+        mode-back-key="style.back"
         v-bind:min-value="minStrokeWidthPercent"
         v-bind:max-value="maxStrokeWidthPercent"
         v-bind:step="10"
         :temp-style-states="tempStyleStates"
-        :side="side">
-        <template v-slot:title>
-          <!--span v-show="
-          !totallyDisableStrokeWidthPercentSelector &&
-            strokeWidthPercentAgreement
-        ">
-            (Percent of Default: {{ strokeWidthPercent }}%)
-          </span-->
-        </template>
-      </NumberSelector>
+        :mode="mode"
+      ></NumberSelector>
     </fade-in-card>
 
-    <fade-in-card :showWhen="
-        (!isBackSide() && (hasPointRadiusPercent || noObjectsSelected)) ||
-          (isBackSide() && !dynamicBackStyle && hasPointRadiusPercent)
-      ">
-      <NumberSelector :data.sync="pointRadiusPercent"
+    <fade-in-card
+      :showWhen="
+        (editModeIsFront() && (hasPointRadiusPercent || noObjectsSelected)) ||
+          (editModeIsBack() && !dynamicBackStyle && hasPointRadiusPercent)
+      "
+    >
+      <NumberSelector
+        :data.sync="pointRadiusPercent"
         title-key="style.pointRadiusPercent"
-        side-front-key="style.front"
-        side-back-key="style.back"
+        mode-front-key="style.front"
+        mode-back-key="style.back"
         style-name="pointRadiusPercent"
         :min-value="minPointRadiusPercent"
         :max-value="maxPointRadiusPercent"
         :temp-style-states="tempStyleStates"
-        :side="side"></NumberSelector>
-      <!--span v-show="
-          !totallyDisablePointRadiusPercentSelector &&
-            pointRadiusPercentAgreement
-        ">
-        (Percent of Default: {{ pointRadiusPercent }}%)
-      </span-->
-      <br />
+        :mode="mode"
+      ></NumberSelector>
     </fade-in-card>
 
-    <fade-in-card :showWhen="
-        (!isBackSide() && (hasOpacity || noObjectsSelected)) ||
-          (isBackSide() && !dynamicBackStyle)
-      ">
-      <NumberSelector title-key="style.opacity"
-        side-front-key="style.front"
-        side-back-key="style.back"
+    <fade-in-card
+      :showWhen="
+        (editModeIsFront() && (hasOpacity || noObjectsSelected)) ||
+          (editModeIsBack() && !dynamicBackStyle && hasOpacity)
+      "
+    >
+      <NumberSelector
+        title-key="style.opacity"
+        mode-front-key="style.front"
+        mode-back-key="style.back"
         :data.sync="opacity"
         style-name="opacity"
         :min-value="0"
         :max-value="1"
         :step="0.1"
         :temp-style-states="tempStyleStates"
-        :side="side"></NumberSelector>
+        :mode="mode"
+      ></NumberSelector>
     </fade-in-card>
 
     <!-- Dash array card is displayed for front and back so long as there is a dash array property common to all selected objects-->
-    <fade-in-card :showWhen="hasDashPattern || noObjectsSelected">
-      <span v-show="side"
-        class="text-subtitle-2">{{ $t("style.front") }} </span>
-      <span v-show="!side"
-        class="text-subtitle-2">{{ $t("style.back") }} </span>
+    <fade-in-card
+      :showWhen="(hasDashPattern || noObjectsSelected) && (editModeIsFront() || editModeIsBack())"
+    >
+      <span v-show="editModeIsFront()" class="text-subtitle-2">{{ $t("style.front") }}</span>
+      <span v-show="editModeIsBack()" class="text-subtitle-2">{{ $t("style.back") }}</span>
       <span class="text-subtitle-2">{{ $t("style.dashPattern") }}</span>
-      <span v-show="
+      <span
+        v-show="
           !emptyDashPattern &&
             !totallyDisableDashPatternSelector &&
             dashPatternAgreement
-        ">
+        "
+      >
         ({{$t("style.gapDashPattern")}}: {{ gapLength.toFixed(1) }}/{{
         dashLength.toFixed(1)
         }})
       </span>
       <br />
-      <span v-show="totallyDisableDashPatternSelector"
-        class="select-an-object-text">{{ $t("style.selectAnObject") }}</span>
-      <v-tooltip v-if="!dashPatternAgreement"
+      <span
+        v-show="totallyDisableDashPatternSelector"
+        class="select-an-object-text"
+      >{{ $t("style.selectAnObject") }}</span>
+      <v-tooltip
+        v-if="!dashPatternAgreement"
         bottom
         :open-delay="toolTipOpenDelay"
         :close-delay="toolTipCloseDelay"
-        max-width="400px">
+        max-width="400px"
+      >
         <template v-slot:activator="{ on }">
-          <v-btn color="error"
+          <v-btn
+            color="error"
             v-on="on"
             v-show="!totallyDisableDashPatternSelector"
             text
             small
             outlined
             ripple
-            @click="setCommonDashPatternAgreement">
-            {{ $t("style.differingStylesDetected") }}</v-btn>
+            @click="setCommonDashPatternAgreement"
+          >{{ $t("style.differingStylesDetected") }}</v-btn>
         </template>
         <span>{{ $t("style.differingStylesDetectedToolTip") }}</span>
       </v-tooltip>
 
-      <v-tooltip v-if="emptyDashPattern"
+      <v-tooltip
+        v-if="emptyDashPattern"
         bottom
         :open-delay="toolTipOpenDelay"
         :close-delay="toolTipCloseDelay"
-        max-width="400px">
+        max-width="400px"
+      >
         <template v-slot:activator="{ on }">
-          <v-btn v-on="on"
+          <v-btn
+            v-on="on"
             v-show="!totallyDisableDashPatternSelector && dashPatternAgreement"
             text
             color="error"
             outlined
             ripple
             small
-            @click="toggleDashPatternSliderAvailibity">
-            {{ $t("style.enableDashPatternSlider") }}</v-btn>
+            @click="toggleDashPatternSliderAvailibity"
+          >{{ $t("style.enableDashPatternSlider") }}</v-btn>
         </template>
         <span>{{ $t("style.enableDashPatternSliderToolTip") }}</span>
       </v-tooltip>
 
-      <v-tooltip v-else
+      <v-tooltip
+        v-else
         bottom
         :open-delay="toolTipOpenDelay"
         :close-delay="toolTipCloseDelay"
-        max-width="400px">
+        max-width="400px"
+      >
         <template v-slot:activator="{ on }">
-          <v-btn v-on="on"
+          <v-btn
+            v-on="on"
             v-show="!totallyDisableDashPatternSelector && dashPatternAgreement"
             text
             outlined
             ripple
             small
-            @click="toggleDashPatternSliderAvailibity">
-            {{ $t("style.disableDashPatternSlider") }}</v-btn>
+            @click="toggleDashPatternSliderAvailibity"
+          >{{ $t("style.disableDashPatternSlider") }}</v-btn>
         </template>
         <span>{{ $t("style.disableDashPatternSliderToolTip") }}</span>
       </v-tooltip>
 
-      <v-tooltip bottom
+      <v-tooltip
+        bottom
         :open-delay="toolTipOpenDelay"
         :close-delay="toolTipCloseDelay"
-        max-width="400px">
+        max-width="400px"
+      >
         <template v-slot:activator="{ on }">
-          <v-btn v-on="on"
+          <v-btn
+            v-on="on"
             v-show="
               dashPatternAgreement &&
                 !totallyDisableDashPatternSelector &&
@@ -374,17 +406,21 @@
             text
             outlined
             ripple
-            small>{{ $t("style.clearChanges") }}</v-btn>
+            small
+          >{{ $t("style.clearChanges") }}</v-btn>
         </template>
         <span>{{ $t("style.clearChangesToolTip") }}</span>
       </v-tooltip>
 
-      <v-tooltip bottom
+      <v-tooltip
+        bottom
         :open-delay="toolTipOpenDelay"
         :close-delay="toolTipCloseDelay"
-        max-width="400px">
+        max-width="400px"
+      >
         <template v-slot:activator="{ on }">
-          <v-btn v-on="on"
+          <v-btn
+            v-on="on"
             v-show="dashPatternAgreement &&
                 !totallyDisableDashPatternSelector &&
                 !emptyDashPattern
@@ -393,12 +429,14 @@
             text
             small
             outlined
-            ripple>{{ $t("style.restoreDefaults") }}</v-btn>
+            ripple
+          >{{ $t("style.restoreDefaults") }}</v-btn>
         </template>
         <span>{{ $t("style.restoreDefaultsToolTip") }}</span>
       </v-tooltip>
 
-      <v-range-slider v-model="sliderDashArray"
+      <v-range-slider
+        v-model="sliderDashArray"
         :min="0"
         step="1"
         :disabled="
@@ -409,7 +447,8 @@
         @change="onDashPatternChange"
         :max="maxGapLengthPlusDashLength"
         type="range"
-        dense>
+        dense
+      >
         <template v-slot:prepend>
           <v-icon @click="decrementDashPattern">mdi-minus</v-icon>
         </template>
@@ -418,6 +457,206 @@
           <v-icon @click="incrementDashPattern">mdi-plus</v-icon>
         </template>
       </v-range-slider>
+    </fade-in-card>
+
+    <!-- Basic card is displayed only on the basic panel -->
+    <fade-in-card :showWhen="editModeIsLabel() &&(hasLabelStyle || noObjectsSelected)">
+      <span class="text-subtitle-2">{{ $t("style.labelStyleOptions") }}</span>
+      <div style="line-height:15%;">
+        <br />
+      </div>
+      <div
+        v-show="totalyDisableStyleDataSelector"
+        class="select-an-object-text"
+      >{{ $t("style.selectAnObject") }}</div>
+      <v-text-field
+        v-model="labelDisplayText"
+        v-bind:label="$t('style.labelText')"
+        :counter="maxLabelDisplayTextLength"
+        :disabled="!styleDataAgreement || totalyDisableStyleDataSelector"
+        filled
+        outlined
+        dense
+        v-bind:error-messages="$t(labelDisplayTextErrorMessageKey, { max: maxLabelDisplayTextLength })"
+        :rules="[labelDisplayTextCheck]"
+        @keyup="setlabelDisplayTextChange(); onStyleDataChanged()"
+        @blur="setlabelDisplayTextChange(); onStyleDataChanged()"
+        @change="setlabelDisplayTextChange(); onStyleDataChanged()"
+      ></v-text-field>
+      <v-text-field
+        v-model="labelDisplayCaption"
+        v-bind:label="$t('style.labelCaption')"
+        :counter="maxLabelDisplayCaptionLength"
+        :disabled="!styleDataAgreement || totalyDisableStyleDataSelector"
+        filled
+        outlined
+        dense
+        v-bind:error-messages="$t(labelDisplayCaptionErrorMessageKey, { max: maxLabelDisplayCaptionLength })"
+        :rules="[labelDisplayCaptionCheck]"
+        @keyup="setlabelDisplayCaptionChange(); onStyleDataChanged()"
+        @blur="setlabelDisplayCaptionChange(); onStyleDataChanged()"
+        @change="setlabelDisplayCaptionChange(); onStyleDataChanged()"
+      ></v-text-field>
+      <v-select
+        v-model="labelDisplayMode"
+        v-bind:label="$t('style.labelDisplayMode')"
+        :disabled="!styleDataAgreement || totalyDisableStyleDataSelector"
+        :items="labelDisplayModeItems"
+        filled
+        outlined
+        dense
+        @blur="setlabelDisplayModeChange(); onStyleDataChanged()"
+        @change="setlabelDisplayModeChange(); onStyleDataChanged()"
+      ></v-select>
+      <v-select
+        v-model="labelTextFamily"
+        v-bind:label="$t('style.labelTextFamily')"
+        :disabled="!styleDataAgreement || totalyDisableStyleDataSelector"
+        :items="labelTextFamilyItems"
+        filled
+        outlined
+        dense
+        @blur="setlabelTextFamilyChange(); onStyleDataChanged()"
+        @change="setlabelTextFamilyChange(); onStyleDataChanged()"
+      ></v-select>
+      <v-select
+        v-model="labelTextStyle"
+        v-bind:label="$t('style.labelTextStyle')"
+        :disabled="!styleDataAgreement || totalyDisableStyleDataSelector"
+        :items="labelTextStyleItems"
+        filled
+        outlined
+        dense
+        @blur="setlabelTextStyleChange(); onStyleDataChanged()"
+        @change="setlabelTextStyleChange(); onStyleDataChanged()"
+      ></v-select>
+      <v-select
+        v-model="labelTextDecoration"
+        v-bind:label="$t('style.labelTextDecoration')"
+        :disabled="!styleDataAgreement || totalyDisableStyleDataSelector"
+        :items="labelTextDecorationItems"
+        filled
+        outlined
+        dense
+        @blur="setlabelTextDecorationChange(); onStyleDataChanged()"
+        @change="setlabelTextDecorationChange(); onStyleDataChanged()"
+      ></v-select>
+      <v-select
+        v-model="labelObjectVisibility"
+        v-bind:label="$t('style.labelObjectVisibility')"
+        :disabled="!styleDataAgreement || totalyDisableStyleDataSelector"
+        :items="labelObjectVisibilityItems"
+        filled
+        outlined
+        dense
+        multiple
+        chips
+        small-chips
+        v-bind:no-data-text="$t('style.selectObjectsToHide')"
+        @blur="setLabelObjectVisibilityChange(); onStyleDataChanged()"
+        @change="setLabelObjectVisibilityChange(); onStyleDataChanged()"
+      ></v-select>
+      <v-tooltip
+        v-if="!styleDataAgreement"
+        bottom
+        :open-delay="toolTipOpenDelay"
+        :close-delay="toolTipCloseDelay"
+        max-width="400px"
+      >
+        <template v-slot:activator="{ on }">
+          <v-btn
+            color="error"
+            v-on="on"
+            v-show="!totalyDisableStyleDataSelector"
+            text
+            small
+            outlined
+            ripple
+            @click="setStyleDataAgreement"
+          >{{ $t("style.differingStylesDetected") }}</v-btn>
+        </template>
+        <span>{{ $t("style.differingStylesDetectedToolTip") }}</span>
+      </v-tooltip>
+
+      <v-tooltip
+        bottom
+        :open-delay="toolTipOpenDelay"
+        :close-delay="toolTipCloseDelay"
+        max-width="400px"
+      >
+        <template v-slot:activator="{ on }">
+          <v-btn
+            v-on="on"
+            v-show="styleDataAgreement && !totalyDisableStyleDataSelector
+            "
+            @click="clearStyleData"
+            :disabled="disableStyleSelectorUndoButton"
+            text
+            outlined
+            ripple
+            small
+          >{{ $t("style.clearChanges") }}</v-btn>
+        </template>
+        <span>{{ $t("style.clearChangesToolTip") }}</span>
+      </v-tooltip>
+
+      <v-tooltip
+        bottom
+        :open-delay="toolTipOpenDelay"
+        :close-delay="toolTipCloseDelay"
+        max-width="400px"
+      >
+        <template v-slot:activator="{ on }">
+          <v-btn
+            v-on="on"
+            v-show="styleDataAgreement && !totalyDisableStyleDataSelector
+            "
+            @click="resetStyleDataToDefaults"
+            text
+            small
+            outlined
+            ripple
+          >{{ $t("style.restoreDefaults") }}</v-btn>
+        </template>
+        <span>{{ $t("style.restoreDefaultsToolTip") }}</span>
+      </v-tooltip>
+    </fade-in-card>
+
+    <fade-in-card
+      :showWhen="
+        (editModeIsLabel() && (hasLabelTextScalePercent || noObjectsSelected)) 
+      "
+    >
+      <NumberSelector
+        id="textScalePercentSlider"
+        v-bind:data.sync="labelTextScalePercent"
+        style-name="labelTextScalePercent"
+        title-key="style.labelTextScalePercent"
+        mode-front-key="style.front"
+        mode-back-key="style.back"
+        v-bind:min-value="minLabelTextScalePercent"
+        v-bind:max-value="maxLabelTextScalePercent"
+        v-bind:step="10"
+        :mode="mode"
+      ></NumberSelector>
+    </fade-in-card>
+
+    <fade-in-card
+      :showWhen="
+        (editModeIsLabel() && (hasLabelTextRotation || noObjectsSelected))
+      "
+    >
+      <NumberSelector
+        id="labelTextRotationSlider"
+        v-bind:data.sync="labelTextRotation"
+        style-name="labelTextRotation"
+        title-key="style.labelTextRotation"
+        v-bind:min-value="-3.14159"
+        v-bind:max-value="3.14159"
+        v-bind:step="0.1"
+        :temp-style-states="tempStyleStates"
+        :mode="mode"
+      ></NumberSelector>
     </fade-in-card>
   </div>
 </template>
@@ -428,14 +667,22 @@ import { Watch, Prop } from "vue-property-decorator";
 import { SENodule } from "../models/SENodule";
 import Nodule from "../plottables/Nodule";
 import { State } from "vuex-class";
-import { Styles, StyleOptions } from "../types/Styles";
+import {
+  Styles,
+  StyleOptions,
+  StyleEditMode,
+  LabelDisplayMode
+} from "../types/Styles";
 import SETTINGS from "@/global-settings";
 import FadeInCard from "@/components/FadeInCard.vue";
 import { hslaColorType, AppState } from "@/types";
 import { StyleNoduleCommand } from "@/commands/StyleNoduleCommand";
 import EventBus from "@/eventHandlers/EventBus";
 import NumberSelector from "@/components/NumberSelector.vue";
+import TextInputSelector from "@/components/TextInputSelector.vue";
 import ColorSelector from "@/components/ColorSelector.vue";
+//import { TranslateResult } from "vue-i18n";
+import i18n from "../i18n";
 // import { getModule } from "vuex-module-decorators";
 // import UI from "@/store/ui-styles";
 
@@ -455,10 +702,12 @@ const keys = values.map(e => {
   return a;
 });
 
-@Component({ components: { FadeInCard, NumberSelector, ColorSelector } })
+@Component({
+  components: { FadeInCard, NumberSelector, ColorSelector, TextInputSelector }
+})
 export default class FrontAndBackStyle extends Vue {
   @Prop()
-  readonly side!: boolean;
+  readonly mode!: StyleEditMode;
 
   @State((s: AppState) => s.selections)
   readonly selections!: SENodule[];
@@ -486,7 +735,7 @@ export default class FrontAndBackStyle extends Vue {
   private toolTipOpenDelay = SETTINGS.toolTip.openDelay;
   private toolTipCloseDelay = SETTINGS.toolTip.closeDelay;
   /**
-   * There are 7 style options. In the case that there
+   * There are many style options. In the case that there
    * are more than one object selected, the XXXAgreement boolean indicates if the XXX property is *initially* the
    * same across the selected objects. In the case that they are not initially the same, the cooresponding adjustment tool
    * is display in a different way than the usual default.
@@ -495,12 +744,140 @@ export default class FrontAndBackStyle extends Vue {
   private maxStrokeWidthPercent = SETTINGS.style.maxStrokeWidthPercent;
   private minStrokeWidthPercent = SETTINGS.style.minStrokeWidthPercent;
 
+  private labelTextScalePercent: number | undefined = 100;
+  private maxLabelTextScalePercent = SETTINGS.style.maxLabelTextScalePercent;
+  private minLabelTextScalePercent = SETTINGS.style.minLabelTextScalePercent;
+
+  // Style Data:
+  //  labelDisplayText,
+  //   labelDisplayCaption,
+  //   labelTextStyle,
+  //   labelTextFamily,
+  //   labelTextDecoration,
+  //   labelDisplayMode,
+  //   labelVisibility,
+  //   objectVisibility
+  private styleDataAgreement = true;
+  private totalyDisableStyleDataSelector = false;
+  private disableStyleSelectorUndoButton = true;
+
+  private labelDisplayText: string | undefined = "";
+  private labelDisplayTextChange = false;
+  private maxLabelDisplayTextLength = SETTINGS.label.maxLabelDisplayTextLength;
+  private labelDisplayTextErrorMessageKey = "";
+  private labelDisplayTestResults = [true, true];
+
+  private labelDisplayCaption: string | undefined = "";
+  private labelDisplayCaptionChange = false;
+  private maxLabelDisplayCaptionLength =
+    SETTINGS.label.maxLabelDisplayCaptionLength;
+  private labelDisplayCaptionErrorMessageKey = "";
+  private labelDisplayCaptionTestResults = [true, true];
+
+  private labelDisplayMode: LabelDisplayMode | undefined =
+    LabelDisplayMode.NameOnly;
+  private labelDisplayModeItems = [
+    {
+      text: i18n.t("style.labelDisplayModes.nameOnly"),
+      value: LabelDisplayMode.NameOnly
+    },
+    {
+      text: i18n.t("style.labelDisplayModes.captionOnly"),
+      value: LabelDisplayMode.CaptionOnly
+    },
+    {
+      text: i18n.t("style.labelDisplayModes.nameAndCaption"),
+      value: LabelDisplayMode.NameAndCaption
+    }
+  ];
+  private labelDisplayModeChange = false;
+
+  private labelTextFamily: string | undefined = "";
+  private labelTextFamilyItems = [
+    {
+      text: i18n.t("style.genericSanSerif"),
+      value: "sans/-serif"
+    },
+    {
+      text: i18n.t("style.genericSerif"),
+      value: "serif"
+    },
+    {
+      text: i18n.t("style.monospace"),
+      value: "monospace"
+    },
+    {
+      text: i18n.t("style.cursive"),
+      value: "cursive"
+    },
+    {
+      text: i18n.t("style.fantasy"),
+      value: "fantasy"
+    }
+  ];
+  private labelTextFamilyChange = false;
+
+  private labelTextStyle: string | undefined = "";
+  private labelTextStyleItems = [
+    {
+      text: i18n.t("style.normal"),
+      value: "normal"
+    },
+    {
+      text: i18n.t("style.italic"),
+      value: "italic"
+    },
+    {
+      text: i18n.t("style.bold"),
+      value: "bold"
+    }
+  ];
+  private labelTextStyleChange = false;
+
+  private labelTextDecoration: string | undefined = "";
+  private labelTextDecorationItems = [
+    {
+      text: i18n.t("style.none"),
+      value: "none"
+    },
+    {
+      text: i18n.t("style.underline"),
+      value: "underline"
+    },
+    {
+      text: i18n.t("style.strikethrough"),
+      value: "strikethrough"
+    },
+    {
+      text: i18n.t("style.overline"),
+      value: "overline"
+    }
+  ];
+  private labelTextDecorationChange = false;
+
+  private labelObjectVisibility: string[] | undefined = [];
+  private labelObjectVisibilityItems = [
+    {
+      text: i18n.t("style.labelHidden"),
+      value: "labelHidden"
+    },
+    {
+      text: i18n.t("style.objectHidden"),
+      value: "objectHidden"
+    }
+  ];
+  private labelObjectVisibilityChange = false;
+
+  private labelTextRotation: number | undefined = 0;
+
   private pointRadiusPercent: number | undefined = 100;
   private maxPointRadiusPercent = SETTINGS.style.maxPointRadiusPercent;
   private minPointRadiusPercent = SETTINGS.style.minPointRadiusPercent;
 
-  private hslaStrokeColorObject: hslaColorType = { h: 0, s: 1, l: 1, a: 0 }; // Color for Vuetify Color picker
-  private hslaFillColorObject: hslaColorType = { h: 0, s: 1, l: 1, a: 0 }; // Color for Vuetify Color picker
+  private hslaStrokeColorObject: hslaColorType = { h: 0, s: 1, l: 1, a: 0.001 }; // Color for Vuetify Color picker NOTE: setting a=0 creates the following error:
+  // create a circle, open the style panel, select the circle when the basic panel is open, switch to the foreground panel, the selected circle has a displayed opacity of 0 --
+  // that is the blinking is between nothing and a red circle glowing circle) The color picker display is correct though... strange!
+  private hslaFillColorObject: hslaColorType = { h: 0, s: 1, l: 1, a: 0.001 }; // Color for Vuetify Color picker
 
   /** gapLength = sliderArray[0] */
   private gapLength = 5;
@@ -538,9 +915,301 @@ export default class FrontAndBackStyle extends Vue {
     //  Mount a save listener
     EventBus.listen("save-style-state", this.saveStyleState);
   }
-  isBackSide(): boolean {
-    return this.side === false;
+  editModeIsBack(): boolean {
+    return this.mode == StyleEditMode.Back;
   }
+  editModeIsFront(): boolean {
+    return this.mode == StyleEditMode.Front;
+  }
+  editModeIsLabel(): boolean {
+    return this.mode == StyleEditMode.Label;
+  }
+  // These methods are linked to the Style Data fade-in-card
+  labelDisplayTextCheck() {
+    this.labelDisplayTestResults[0] = this.labelDisplayTestResults[1];
+    this.labelDisplayTestResults[1] =
+      this.labelDisplayText !== undefined &&
+      (this.labelDisplayText.length === 0 ||
+        this.labelDisplayText.length <=
+          SETTINGS.label.maxLabelDisplayTextLength);
+    // const translation = i18n.t("style.maxMinLabelDisplayTextLengthWarning", {
+    //   max: SETTINGS.label.maxLabelDisplayTextLength
+    // });
+    if (!this.labelDisplayTestResults[0]) {
+      this.labelDisplayTextErrorMessageKey =
+        "style.maxMinLabelDisplayTextLengthWarning";
+    } else {
+      this.labelDisplayTextErrorMessageKey = "";
+    }
+    // set the label text to the first 6 characters
+    this.labelDisplayText =
+      this.labelDisplayText !== undefined
+        ? this.labelDisplayText.slice(
+            0,
+            SETTINGS.label.maxLabelDisplayTextLength
+          )
+        : "";
+    return this.labelDisplayTestResults[1]; // || translation;
+  }
+  labelDisplayCaptionCheck() {
+    this.labelDisplayCaptionTestResults[0] = this.labelDisplayCaptionTestResults[1];
+    this.labelDisplayCaptionTestResults[1] =
+      this.labelDisplayCaption !== undefined &&
+      this.labelDisplayCaption.length <=
+        SETTINGS.label.maxLabelDisplayCaptionLength;
+    // display the error message
+    if (!this.labelDisplayCaptionTestResults[0]) {
+      this.labelDisplayCaptionErrorMessageKey =
+        "style.maxMinLabelDisplayCaptionLengthWarning";
+    } else {
+      this.labelDisplayCaptionErrorMessageKey = "";
+    }
+    // const translation = i18n.t("style.maxMinLabelDisplayCaptionLengthWarning", {
+    //   max: SETTINGS.label.maxLabelDisplayCaptionLength
+    // });
+    this.labelDisplayCaption =
+      this.labelDisplayCaption !== undefined
+        ? this.labelDisplayCaption.slice(
+            0,
+            SETTINGS.label.maxLabelDisplayCaptionLength
+          )
+        : "";
+    return this.labelDisplayCaptionTestResults[1];
+  }
+  resetStyleDataToDefaults(): void {
+    const selected = this.$store.getters.selectedSENodules();
+    const defaultStyleStates = this.$store.getters.getDefaultStyleState(
+      this.mode
+    );
+    for (let i = 0; i < selected.length; i++) {
+      this.$store.direct.commit.changeStyle({
+        selected: [selected[i]],
+        payload: {
+          mode: this.mode,
+          labelDisplayText: defaultStyleStates[i].labelDisplayText,
+          labelDisplayCaption: defaultStyleStates[i].labelDisplayCaption,
+          labelTextStyle: defaultStyleStates[i].labelTextStyle,
+          labelTextFamily: defaultStyleStates[i].labelTextFamily,
+          labelTextDecoration: defaultStyleStates[i].labelTextDecoration,
+          labelDisplayMode: defaultStyleStates[i].labelDisplayMode,
+          labelVisibility: defaultStyleStates[i].labelVisibility,
+          objectVisibility: defaultStyleStates[i].objectVisibility
+        }
+      });
+    }
+    this.setStyleDataSelectorState(defaultStyleStates);
+  }
+  clearStyleData(): void {
+    const selected = this.$store.getters.selectedSENodules();
+    const initialStyleStates = this.$store.getters.getInitialStyleState(
+      this.mode
+    );
+    for (let i = 0; i < selected.length; i++) {
+      this.$store.direct.commit.changeStyle({
+        selected: [selected[i]],
+        payload: {
+          mode: this.mode,
+          labelDisplayText: initialStyleStates[i].labelDisplayText,
+          labelDisplayCaption: initialStyleStates[i].labelDisplayCaption,
+          labelTextStyle: initialStyleStates[i].labelTextStyle,
+          labelTextFamily: initialStyleStates[i].labelTextFamily,
+          labelTextDecoration: initialStyleStates[i].labelTextDecoration,
+          labelDisplayMode: initialStyleStates[i].labelDisplayMode,
+          labelVisibility: initialStyleStates[i].labelVisibility,
+          objectVisibility: initialStyleStates[i].objectVisibility
+        }
+      });
+    }
+    this.setStyleDataSelectorState(initialStyleStates);
+  }
+  setStyleDataSelectorState(styleState: StyleOptions[]): void {
+    this.disableStyleSelectorUndoButton = true;
+    this.styleDataAgreement = true;
+    this.totalyDisableStyleDataSelector = false;
+    // Make sure that across the selected objects all 8 properties are defined and agree
+    //   If one property on one selected is undefined, then set styleDataAgreement=false, and totalyDisableStyleDataSelector = true
+    //   If all properties are defined,but one property doesn't agree across all selected then set styleDataAgreement=false, and totalyDisableStyleDataSelector = false
+    // start at 1 because the first styleState always agress with itself -- in the case of only one object selected, this shouldn't execute
+    for (var style of [
+      "labelDisplayText",
+      "labelDisplayCaption",
+      "labelDisplayMode",
+      "labelTextFamily",
+      "labelTextStyle",
+      "labelTextDecoration",
+      "labelVisibility",
+      "objectVisibility"
+    ]) {
+      let value = (styleState[0] as any)[style];
+      // screen for undefined - if undefined then this is not a property that is going to be set by the style panel for this selection of objects
+      if (value !== undefined) {
+        if (
+          styleState.length > 1 &&
+          !styleState.every(
+            styleObject => (styleObject as any)[style] === value
+          )
+        ) {
+          // The style property exists on the selected objects but value
+          // doesn't agree (so don't totally disable the selector)
+          this.disableStyleDataSelector(false);
+          break;
+        }
+      } else {
+        // The style property doesn't exists on the selected objects so totally disable the selector
+        this.disableStyleDataSelector(true);
+        break;
+      }
+    }
+    // Now set the displays of the text field (labelDisplayName), text area(labelDisplayCaption), checkboxes (label visible, object visible),
+    //  and combo-boxes (font, family, style, decoration)
+    if (!this.totalyDisableStyleDataSelector && this.styleDataAgreement) {
+      this.labelDisplayText = (styleState[0] as StyleOptions).labelDisplayText;
+      this.labelDisplayCaption = (styleState[0] as StyleOptions).labelDisplayCaption;
+      this.labelDisplayMode = (styleState[0] as StyleOptions).labelDisplayMode;
+      this.labelTextFamily = (styleState[0] as StyleOptions).labelTextFamily;
+      this.labelTextStyle = (styleState[0] as StyleOptions).labelTextStyle;
+      this.labelTextDecoration = (styleState[0] as StyleOptions).labelTextDecoration;
+      this.labelObjectVisibility?.splice(0, this.labelObjectVisibility.length);
+      // if (this.labelObjectVisibility !== undefined) {
+      //   Vue.set(this.labelObjectVisibility, 0, undefined);
+      //   Vue.set(this.labelObjectVisibility, 1, undefined);
+      // }
+      if (!(styleState[0] as StyleOptions).labelVisibility)
+        if (this.labelObjectVisibility !== undefined) {
+          Vue.set(this.labelObjectVisibility, 0, "labelHidden");
+          // this.labelObjectVisibility.push("labelHidden");
+        }
+    }
+    if (!(styleState[0] as StyleOptions).objectVisibility) {
+      if (this.labelObjectVisibility !== undefined) {
+        Vue.set(
+          this.labelObjectVisibility,
+          this.labelObjectVisibility.length,
+          "objectHidden"
+        );
+        // this.labelObjectVisibility.push("objectHidden");
+      }
+    }
+    // Vue.set(this.labelObjectVisibility, 1, this.sliderDashArray[1] + 1);
+    console.log(
+      "post set label and ob vis",
+      this.labelObjectVisibility.toString()
+    );
+  }
+  disableStyleDataSelector(totally: boolean): void {
+    this.styleDataAgreement = false;
+    this.disableStyleSelectorUndoButton = true;
+    this.totalyDisableStyleDataSelector = totally;
+    // Set the display disabled values
+    this.labelDisplayText = "Label Text";
+    this.labelDisplayCaption = "";
+    this.labelDisplayMode = undefined;
+    this.labelTextFamily = "";
+    this.labelTextStyle = "";
+    this.labelTextDecoration = "";
+    if (this.labelObjectVisibility !== undefined) {
+      this.labelObjectVisibility.splice(0, this.labelObjectVisibility.length);
+    }
+  }
+  setlabelDisplayTextChange(): void {
+    this.labelDisplayTextChange = true;
+  }
+  setlabelDisplayCaptionChange(): void {
+    this.labelDisplayCaptionChange = true;
+  }
+  setlabelDisplayModeChange(): void {
+    this.labelDisplayModeChange = true;
+  }
+  setlabelTextFamilyChange(): void {
+    this.labelTextFamilyChange = true;
+  }
+  setlabelTextStyleChange(): void {
+    this.labelTextStyleChange = true;
+  }
+  setlabelTextDecorationChange(): void {
+    this.labelTextDecorationChange = true;
+  }
+  setLabelObjectVisibilityChange(): void {
+    this.labelObjectVisibilityChange = true;
+  }
+  onStyleDataChanged(): void {
+    this.disableStyleSelectorUndoButton = false;
+    // If the label text is empty set it to the default
+    const selected = this.$store.getters.selectedSENodules();
+    // Check for a label display name of all spaces
+    if (
+      this.labelDisplayText !== undefined &&
+      this.labelDisplayText.trim().length === 0
+    ) {
+      const defaultStyleStates = this.$store.getters.getDefaultStyleState(
+        this.mode
+      );
+      const translation = i18n.t("style.renameLabels");
+      this.labelDisplayText =
+        selected.length <= 1
+          ? defaultStyleStates[0].labelDisplayText
+          : translation;
+      for (let i = 0; i < selected.length; i++) {
+        this.$store.direct.commit.changeStyle({
+          selected: [selected[i]],
+          payload: {
+            mode: this.mode,
+            labelDisplayText: defaultStyleStates[i].labelDisplayText
+          }
+        });
+      }
+    }
+    const labelVisible: boolean | undefined =
+      this.labelObjectVisibility !== undefined
+        ? !(this.labelObjectVisibility.indexOf("labelHidden") > -1)
+        : undefined;
+    const objectVisible: boolean | undefined =
+      this.labelObjectVisibility !== undefined
+        ? !(this.labelObjectVisibility.indexOf("objectHidden") > -1)
+        : undefined;
+
+    this.$store.direct.commit.changeStyle({
+      selected: selected,
+      payload: {
+        mode: this.mode,
+        labelTextStyle: this.labelTextStyleChange
+          ? this.labelTextStyle
+          : undefined,
+        labelTextFamily: this.labelTextFamilyChange
+          ? this.labelTextFamily
+          : undefined,
+        labelTextDecoration: this.labelTextDecorationChange
+          ? this.labelTextDecoration
+          : undefined,
+        labelDisplayText: this.labelDisplayTextChange
+          ? this.labelDisplayText
+          : undefined,
+        labelDisplayCaption: this.labelDisplayCaptionChange
+          ? this.labelDisplayCaption
+          : undefined,
+        labelDisplayMode: this.labelDisplayModeChange
+          ? this.labelDisplayMode
+          : undefined,
+        labelVisibility: this.labelObjectVisibilityChange
+          ? labelVisible
+          : undefined,
+        objectVisibility: this.labelObjectVisibilityChange
+          ? objectVisible
+          : undefined
+      }
+    });
+    this.labelDisplayTextChange = false;
+    this.labelDisplayCaptionChange = false;
+    this.labelDisplayModeChange = false;
+    this.labelTextFamilyChange = false;
+    this.labelTextStyleChange = false;
+    this.labelTextDecorationChange = false;
+    this.labelObjectVisibilityChange = false;
+  }
+  setStyleDataAgreement(): void {
+    this.styleDataAgreement = true;
+  }
+
   // These methods are linked to the dashPattern fade-in-card
   onDashPatternChange(): void {
     this.disableDashPatternUndoButton = false;
@@ -549,7 +1218,7 @@ export default class FrontAndBackStyle extends Vue {
     this.$store.direct.commit.changeStyle({
       selected: this.$store.getters.selectedSENodules(),
       payload: {
-        front: this.side,
+        mode: this.mode,
         dashArray: [this.dashLength, this.gapLength] //correct order!!!!
       }
     });
@@ -561,7 +1230,7 @@ export default class FrontAndBackStyle extends Vue {
     this.disableDashPatternUndoButton = true;
     const selected = this.$store.getters.selectedSENodules();
     const initialStyleStates = this.$store.getters.getInitialStyleState(
-      this.side
+      this.mode
     );
     for (let i = 0; i < selected.length; i++) {
       // Check see if the initialStylesStates[i] exist and has length >0
@@ -572,7 +1241,7 @@ export default class FrontAndBackStyle extends Vue {
         this.$store.direct.commit.changeStyle({
           selected: [selected[i]],
           payload: {
-            front: this.side,
+            mode: this.mode,
             dashArray: [
               (initialStyleStates[i].dashArray as number[])[0],
               (initialStyleStates[i].dashArray as number[])[1]
@@ -584,7 +1253,7 @@ export default class FrontAndBackStyle extends Vue {
         this.$store.direct.commit.changeStyle({
           selected: [selected[i]],
           payload: {
-            front: this.side,
+            mode: this.mode,
             dashArray: []
           }
         });
@@ -595,7 +1264,7 @@ export default class FrontAndBackStyle extends Vue {
   resetDashPatternToDefaults(): void {
     const selected = this.$store.getters.selectedSENodules();
     const defaultStyleStates = this.$store.getters.getDefaultStyleState(
-      this.side
+      this.mode
     );
     for (let i = 0; i < selected.length; i++) {
       // Check see if the selected[i] exist and has length >0
@@ -606,7 +1275,7 @@ export default class FrontAndBackStyle extends Vue {
         this.$store.direct.commit.changeStyle({
           selected: [selected[i]],
           payload: {
-            front: this.side,
+            mode: this.mode,
             dashArray: [
               (defaultStyleStates[i].dashArray as number[])[0],
               (defaultStyleStates[i].dashArray as number[])[1]
@@ -618,7 +1287,7 @@ export default class FrontAndBackStyle extends Vue {
         this.$store.direct.commit.changeStyle({
           selected: [selected[i]],
           payload: {
-            front: this.side,
+            mode: this.mode,
             dashArray: []
           }
         });
@@ -637,7 +1306,7 @@ export default class FrontAndBackStyle extends Vue {
       this.$store.direct.commit.changeStyle({
         selected: this.$store.getters.selectedSENodules(),
         payload: {
-          front: this.side,
+          mode: this.mode,
           dashArray: [this.dashLength, this.gapLength]
         }
       });
@@ -645,7 +1314,7 @@ export default class FrontAndBackStyle extends Vue {
       this.$store.direct.commit.changeStyle({
         selected: this.$store.getters.selectedSENodules(),
         payload: {
-          front: this.side,
+          mode: this.mode,
           dashArray: []
         }
       });
@@ -669,7 +1338,7 @@ export default class FrontAndBackStyle extends Vue {
       this.$store.direct.commit.changeStyle({
         selected: this.$store.getters.selectedSENodules(),
         payload: {
-          front: this.side,
+          mode: this.mode,
           dashArray: [this.dashLength, this.gapLength]
         }
       });
@@ -690,7 +1359,7 @@ export default class FrontAndBackStyle extends Vue {
       this.$store.direct.commit.changeStyle({
         selected: this.$store.getters.selectedSENodules(),
         payload: {
-          front: this.side,
+          mode: this.mode,
           dashArray: [this.dashLength, this.gapLength]
         }
       });
@@ -708,7 +1377,7 @@ export default class FrontAndBackStyle extends Vue {
     this.gapLength = 5;
     this.dashLength = 10;
     this.totallyDisableDashPatternSelector = false;
-    if (styleState[0].dashArray) {
+    if (styleState[0].dashArray !== undefined) {
       if (styleState[0].dashArray.length > 0) {
         // all selected nodules should have length>0 and the same gap and dash length
         this.dashLength = styleState[0].dashArray[0];
@@ -769,7 +1438,7 @@ export default class FrontAndBackStyle extends Vue {
     this.$store.direct.commit.changeStyle({
       selected: this.$store.getters.selectedSENodules(),
       payload: {
-        front: this.side,
+        mode: this.mode,
         backStyleContrast: this.backStyleContrast
       }
     });
@@ -781,14 +1450,14 @@ export default class FrontAndBackStyle extends Vue {
     this.disableBackStyleContrastUndoButton = true;
     const selected = this.$store.getters.selectedSENodules();
     const initialStyleStates = this.$store.getters.getInitialStyleState(
-      this.side
+      this.mode
     );
     const initialBackStyleContrast = this.$store.getters.getInitialBackStyleContrast();
     for (let i = 0; i < selected.length; i++) {
       this.$store.direct.commit.changeStyle({
         selected: [selected[i]],
         payload: {
-          front: this.side,
+          mode: this.mode,
           backStyleContrast: initialBackStyleContrast
         }
       });
@@ -799,13 +1468,13 @@ export default class FrontAndBackStyle extends Vue {
   resetDynamicBackStyleToDefaults(): void {
     const selected = this.$store.getters.selectedSENodules();
     const defaultStyleStates = this.$store.getters.getDefaultStyleState(
-      this.side
+      this.mode
     );
     for (let i = 0; i < selected.length; i++) {
       this.$store.direct.commit.changeStyle({
         selected: [selected[i]],
         payload: {
-          front: this.side,
+          mode: this.mode,
           backStyleContrast: SETTINGS.style.backStyleContrast
         }
       });
@@ -819,18 +1488,17 @@ export default class FrontAndBackStyle extends Vue {
     this.$store.direct.commit.changeStyle({
       selected: this.$store.getters.selectedSENodules(),
       payload: {
-        front: this.side,
+        mode: this.mode,
         dynamicBackStyle: this.dynamicBackStyle
       }
     });
 
     if (!this.dynamicBackStyle) {
-      console.log("attempt set");
       const selectedSENodules = this.$store.getters.selectedSENodules() as SENodule[];
       this.tempStyleStates.clear();
       selectedSENodules.forEach(seNodule => {
         if (seNodule.ref)
-          this.tempStyleStates.push(seNodule.ref.currentStyleState(this.side));
+          this.tempStyleStates.push(seNodule.ref.currentStyleState(this.mode));
       });
       this.setDashPatternSelectorState(this.tempStyleStates);
 
@@ -843,7 +1511,7 @@ export default class FrontAndBackStyle extends Vue {
   }
   incrementBackStyleContrast(): void {
     if (
-      this.dynamicBackStyle != undefined &&
+      this.dynamicBackStyle !== undefined &&
       this.backStyleContrast + 0.1 <= 1
     ) {
       this.disableBackStyleContrastUndoButton = false;
@@ -851,7 +1519,7 @@ export default class FrontAndBackStyle extends Vue {
       this.$store.direct.commit.changeStyle({
         selected: this.$store.getters.selectedSENodules(),
         payload: {
-          front: this.side,
+          mode: this.mode,
           backStyleContrast: this.backStyleContrast
         }
       });
@@ -859,7 +1527,7 @@ export default class FrontAndBackStyle extends Vue {
   }
   decrementBackStyleContrast(): void {
     if (
-      this.dynamicBackStyle != undefined &&
+      this.dynamicBackStyle !== undefined &&
       this.backStyleContrast - 0.1 >= 0
     ) {
       this.disableBackStyleContrastUndoButton = false;
@@ -867,7 +1535,7 @@ export default class FrontAndBackStyle extends Vue {
       this.$store.direct.commit.changeStyle({
         selected: this.$store.getters.selectedSENodules(),
         payload: {
-          front: this.side,
+          mode: this.mode,
           backStyleContrast: this.backStyleContrast
         }
       });
@@ -878,7 +1546,7 @@ export default class FrontAndBackStyle extends Vue {
     this.totallyDisableDynamicBackStyleSelector = false;
     this.dynamicBackStyle = styleState[0].dynamicBackStyle;
     // screen for undefined - if undefined then this is not a property that is going to be set by the style panel for this selection of objects
-    if (this.dynamicBackStyle != undefined) {
+    if (this.dynamicBackStyle !== undefined) {
       if (
         !styleState.every(
           styleObject => styleObject.dynamicBackStyle == this.dynamicBackStyle
@@ -901,6 +1569,7 @@ export default class FrontAndBackStyle extends Vue {
   /**
    * Determines if the commonStyleProperties has the given input of type Styles
    * The input is an enum of type Styles
+   * This is the key method for the hasXXX() methods which control the display of the XXX fade-in-card
    */
   hasStyle(s: Styles): boolean {
     const sNum = Number(s);
@@ -909,66 +1578,44 @@ export default class FrontAndBackStyle extends Vue {
       this.commonStyleProperties.findIndex(x => x === sNum) >= 0
     );
   }
-
-  /**
-   * Used to determine which objects the color picker should control (i.e. the check boxes under the color picker)
-   */
-  // get colorKeys(): any[] {
-  //   return this.commonStyleProperties
-  //     .map((id: number) => ({
-  //       // Convert camelCase to title format
-  //       // i.e. "justASimpleText" becomes "Just A Simple Text"
-  //       label: keys[id]
-  //         .replace(
-  //           /([a-z])([A-Z])/g, // global regex
-  //           (_, lowLetter, upLetter) => `${lowLetter} ${upLetter}`
-  //         )
-  //         .replace(/^([a-z])/, (_, firstLetter: string) =>
-  //           firstLetter.toUpperCase()
-  //         ),
-  //       value: keys[id]
-  //     }))
-  //     .filter((e: any) => {
-  //       const { label, _ } = e;
-  //       return label.toLowerCase().indexOf("color") >= 0; // Select entry with "Color" in its label
-  //     });
-  // }
-
-  /**
-   * Used to determine if the color picker Vue component (i.e. fade-in-card) should be displayed
-   */
   get hasStrokeColor(): boolean {
     return this.hasStyle(Styles.strokeColor);
   }
-
-  /**
-   * Used to determine if the color picker Vue component (i.e. fade-in-card) should be displayed
-   */
   get hasFillColor(): boolean {
     return this.hasStyle(Styles.fillColor);
   }
-  /**
-   * Used to determine if the stroke width slider (i.e. fade-in-card containing the slider) should be displayed
-   */
   get hasStrokeWidthPercent(): boolean {
     return this.hasStyle(Styles.strokeWidthPercent);
   }
-
   get hasPointRadiusPercent(): boolean {
     return this.hasStyle(Styles.pointRadiusPercent);
   }
-
   get hasOpacity(): boolean {
     return this.hasStyle(Styles.opacity);
   }
-  /**
-   * Used to determine if the dash gap and dash length  (i.e. fade-in-card containing the sliders) should be displayed
-   */
   get hasDashPattern(): boolean {
     return this.hasStyle(Styles.dashArray);
   }
   get hasDynamicBackStyle(): boolean {
     return this.hasStyle(Styles.dynamicBackStyle);
+  }
+  get hasLabelStyle(): boolean {
+    return (
+      this.hasStyle(Styles.labelDisplayText) &&
+      this.hasStyle(Styles.labelDisplayCaption) &&
+      this.hasStyle(Styles.labelTextStyle) &&
+      this.hasStyle(Styles.labelTextFamily) &&
+      this.hasStyle(Styles.labelTextDecoration) &&
+      this.hasStyle(Styles.labelDisplayMode) &&
+      this.hasStyle(Styles.labelVisibility) &&
+      this.hasStyle(Styles.objectVisibility)
+    );
+  }
+  get hasLabelTextRotation(): boolean {
+    return this.hasStyle(Styles.labelTextRotation);
+  }
+  get hasLabelTextScalePercent(): boolean {
+    return this.hasStyle(Styles.labelTextScalePercent);
   }
 
   /**
@@ -982,9 +1629,10 @@ export default class FrontAndBackStyle extends Vue {
 
     this.commonStyleProperties.clear();
     if (newSelection.length === 0) {
-      //totally disable the selectors
+      //totally disable the selectors in this component
       this.disableDashPatternSelector(true);
       this.disableDynamicBackStyleSelector(true);
+      this.disableStyleDataSelector(true);
       this.noObjectsSelected = true;
       this.oldSelection.clear();
       return;
@@ -1005,19 +1653,22 @@ export default class FrontAndBackStyle extends Vue {
 
     // Get the initial and default style state of the object for undo/redo and buttons to revert to initial style.
     // Put this in the store so that it is availble to *all* panels. Get the front and back information at the same time.
-    console.log("set initial style");
+    console.log("Record initial style");
     //#region setStyle
-    this.$store.direct.commit.setStyleState({
+    this.$store.direct.commit.recordStyleState({
       selected: newSelection,
       backContrast: Nodule.getBackStyleContrast()
     });
     //#endregion
     //Set the initial state of the fade-in-card/selectors (checking to see if the property is the same across all selected objects)
     this.setDashPatternSelectorState(
-      this.$store.getters.getInitialStyleState(this.side)
+      this.$store.getters.getInitialStyleState(this.mode)
     );
     this.setDynamicBackStyleSelectorState(
-      this.$store.getters.getInitialStyleState(this.side)
+      this.$store.getters.getInitialStyleState(this.mode)
+    );
+    this.setStyleDataSelectorState(
+      this.$store.getters.getInitialStyleState(this.mode)
     );
   }
 
@@ -1043,7 +1694,7 @@ export default class FrontAndBackStyle extends Vue {
         if (a.dashArray == undefined && b.dashArray == undefined) {
           break; // stop checking this pair in the array because we can conclude they are equal.
         }
-        if (a.dashArray != undefined && b.dashArray != undefined) {
+        if (a.dashArray !== undefined && b.dashArray !== undefined) {
           if (a.dashArray.length == b.dashArray.length) {
             if (a.dashArray.length == 0 && b.dashArray.length == 0) {
               break; // stop checking this pair in the array because we can conclude they are equal.
@@ -1087,11 +1738,12 @@ export default class FrontAndBackStyle extends Vue {
       this.oldSelection.forEach(seNodule => {
         if (seNodule.ref)
           this.currentStyleStates.push(
-            seNodule.ref.currentStyleState(this.side)
+            seNodule.ref.currentStyleState(this.mode)
           );
       });
+
       const initialStyleStates = this.$store.getters.getInitialStyleState(
-        this.side
+        this.mode
       );
       const initialBackStyleContrast = this.$store.getters.getInitialBackStyleContrast();
       if (
@@ -1101,10 +1753,10 @@ export default class FrontAndBackStyle extends Vue {
         ) ||
         initialBackStyleContrast != Nodule.getBackStyleContrast()
       ) {
-        console.log("Issued new style save command");
+        console.log("Issued style save command");
         new StyleNoduleCommand(
           this.oldSelection,
-          this.side,
+          this.mode,
           this.currentStyleStates,
           initialStyleStates,
           Nodule.getBackStyleContrast(),

@@ -5,7 +5,7 @@ import Two from "two.js";
 import SETTINGS, { LAYER } from "@/global-settings";
 import Nodule, { DisplayStyle } from "./Nodule";
 import { Vector3 } from "three";
-import { StyleOptions } from "@/types/Styles";
+import { StyleOptions, StyleEditMode } from "@/types/Styles";
 
 /**
  * Each Point object is uniquely associated with a SEPoint object.
@@ -232,39 +232,39 @@ export default class Point extends Nodule {
    */
   updateStyle(options: StyleOptions): void {
     console.debug("Point: Update style of", this.name, "using", options);
-    if (options.front) {
+    if (options.mode === StyleEditMode.Front) {
       // Set the front options
-      if (options.pointRadiusPercent) {
+      if (options.pointRadiusPercent !== undefined) {
         this.pointRadiusPercentFront = options.pointRadiusPercent;
       }
-      if (options.fillColor) {
+      if (options.fillColor !== undefined) {
         this.fillColorFront = options.fillColor;
       }
-      if (options.strokeColor) {
+      if (options.strokeColor !== undefined) {
         this.strokeColorFront = options.strokeColor;
       }
-      if (options.opacity) {
+      if (options.opacity !== undefined) {
         this.opacityFront = options.opacity;
       }
-    } else {
+    } else if (options.mode === StyleEditMode.Back) {
       // Set the back options
       // options.dynamicBackStyle is boolean, so we need to explicitly check for undefined otherwise
       // when it is false, this doesn't execute and this.dynamicBackStyle is not set
-      if (options.dynamicBackStyle != undefined) {
+      if (options.dynamicBackStyle !== undefined) {
         this.dynamicBackStyle = options.dynamicBackStyle;
       }
       // overwrite the back options only in the case the dynamic style is not enabled
-      if (!this.dynamicBackStyle) {
+      if (!this.dynamicBackStyle !== undefined) {
         if (options.pointRadiusPercent) {
           this.pointRadiusPercentBack = options.pointRadiusPercent;
         }
-        if (options.fillColor) {
+        if (options.fillColor !== undefined) {
           this.fillColorBack = options.fillColor;
         }
-        if (options.strokeColor) {
+        if (options.strokeColor !== undefined) {
           this.strokeColorBack = options.strokeColor;
         }
-        if (options.opacity) {
+        if (options.opacity !== undefined) {
           this.opacityBack = options.opacity;
         }
       }
@@ -276,63 +276,71 @@ export default class Point extends Nodule {
   /**
    * Return the current style state
    */
-  currentStyleState(front: boolean): StyleOptions {
-    if (front) {
-      return {
-        front: front,
-        pointRadiusPercent: this.pointRadiusPercentFront,
-        strokeColor: this.strokeColorFront,
-        fillColor: this.fillColorFront,
-        opacity: this.opacityFront
-      };
-    } else {
-      return {
-        front: front,
-        pointRadiusPercent: this.pointRadiusPercentBack,
-        strokeColor: this.strokeColorBack,
-        fillColor: this.fillColorBack,
-        opacity: this.opacityBack,
-        dynamicBackStyle: this.dynamicBackStyle
-      };
+  currentStyleState(mode: StyleEditMode): StyleOptions {
+    switch (mode) {
+      case StyleEditMode.Front: {
+        return {
+          mode: mode,
+          pointRadiusPercent: this.pointRadiusPercentFront,
+          strokeColor: this.strokeColorFront,
+          fillColor: this.fillColorFront,
+          opacity: this.opacityFront
+        };
+      }
+      default:
+      case StyleEditMode.Back: {
+        return {
+          mode: mode,
+          pointRadiusPercent: this.pointRadiusPercentBack,
+          strokeColor: this.strokeColorBack,
+          fillColor: this.fillColorBack,
+          opacity: this.opacityBack,
+          dynamicBackStyle: this.dynamicBackStyle
+        };
+      }
     }
   }
   /**
    * Return the default style state
    */
-  defaultStyleState(front: boolean): StyleOptions {
-    if (front) {
-      return {
-        front: front,
-        pointRadiusPercent: SETTINGS.point.radiusPercent.front,
-        strokeColor: SETTINGS.point.drawn.strokeColor.front,
-        fillColor: SETTINGS.point.drawn.fillColor.front,
-        opacity: SETTINGS.point.drawn.opacity.front
-      };
-      // Back
-    } else {
-      return {
-        front: front,
+  defaultStyleState(mode: StyleEditMode): StyleOptions {
+    switch (mode) {
+      case StyleEditMode.Front: {
+        return {
+          mode: mode,
+          pointRadiusPercent: SETTINGS.point.radiusPercent.front,
+          strokeColor: SETTINGS.point.drawn.strokeColor.front,
+          fillColor: SETTINGS.point.drawn.fillColor.front,
+          opacity: SETTINGS.point.drawn.opacity.front
+        };
+        // Back
+      }
+      default:
+      case StyleEditMode.Back: {
+        return {
+          mode: mode,
 
-        pointRadiusPercent: SETTINGS.point.dynamicBackStyle
-          ? Nodule.contrastPointRadiusPercent(
-              SETTINGS.point.radiusPercent.front
-            )
-          : SETTINGS.point.radiusPercent.back,
+          pointRadiusPercent: SETTINGS.point.dynamicBackStyle
+            ? Nodule.contrastPointRadiusPercent(
+                SETTINGS.point.radiusPercent.front
+              )
+            : SETTINGS.point.radiusPercent.back,
 
-        strokeColor: SETTINGS.point.dynamicBackStyle
-          ? Nodule.contrastStrokeColor(SETTINGS.point.drawn.strokeColor.front)
-          : SETTINGS.point.drawn.strokeColor.back,
+          strokeColor: SETTINGS.point.dynamicBackStyle
+            ? Nodule.contrastStrokeColor(SETTINGS.point.drawn.strokeColor.front)
+            : SETTINGS.point.drawn.strokeColor.back,
 
-        fillColor: SETTINGS.point.dynamicBackStyle
-          ? Nodule.contrastFillColor(SETTINGS.point.drawn.fillColor.front)
-          : SETTINGS.point.drawn.fillColor.back,
+          fillColor: SETTINGS.point.dynamicBackStyle
+            ? Nodule.contrastFillColor(SETTINGS.point.drawn.fillColor.front)
+            : SETTINGS.point.drawn.fillColor.back,
 
-        opacity: SETTINGS.point.dynamicBackStyle
-          ? Nodule.contrastOpacity(SETTINGS.point.drawn.opacity.front)
-          : SETTINGS.point.drawn.opacity.back,
+          opacity: SETTINGS.point.dynamicBackStyle
+            ? Nodule.contrastOpacity(SETTINGS.point.drawn.opacity.front)
+            : SETTINGS.point.drawn.opacity.back,
 
-        dynamicBackStyle: SETTINGS.point.dynamicBackStyle
-      };
+          dynamicBackStyle: SETTINGS.point.dynamicBackStyle
+        };
+      }
     }
   }
   /**

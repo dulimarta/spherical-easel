@@ -1,10 +1,10 @@
 import { Command } from "./Command";
 import { SENodule } from "@/models/SENodule";
-import { Styles, StyleOptions } from "../types/Styles";
+import { Styles, StyleOptions, StyleEditMode } from "../types/Styles";
 
 export class StyleNoduleCommand extends Command {
   private seNodules: SENodule[] = [];
-  private side: boolean;
+  private mode: StyleEditMode;
   private currentStyles: StyleOptions[] = [];
   private pastStyles: StyleOptions[] = [];
   private currentBackStyleContrast: number | undefined;
@@ -12,7 +12,7 @@ export class StyleNoduleCommand extends Command {
 
   constructor(
     seNodules: SENodule[],
-    side: boolean,
+    mode: StyleEditMode,
     currentStyles: StyleOptions[],
     pastStyles: StyleOptions[],
     currentBackStyleContrast?: number,
@@ -20,11 +20,11 @@ export class StyleNoduleCommand extends Command {
   ) {
     super();
     seNodules.forEach(obj => this.seNodules.push(obj));
-    this.side = side;
-    // Carefully copy so that we create new objects and no pointer from the inputs are carried to the variables of this command
+    this.mode = mode;
+    // Carefully clone so that we create new objects and no pointer from the inputs are carried to the variables of this command
     currentStyles.forEach(obj => {
       const newObj = {} as StyleOptions;
-      newObj.front = obj.front;
+      newObj.mode = obj.mode;
       newObj.strokeWidthPercent = obj.strokeWidthPercent;
       newObj.strokeColor = obj.strokeColor;
       newObj.fillColor = obj.fillColor;
@@ -40,11 +40,21 @@ export class StyleNoduleCommand extends Command {
       newObj.opacity = obj.opacity;
       newObj.dynamicBackStyle = obj.dynamicBackStyle;
       newObj.pointRadiusPercent = obj.pointRadiusPercent;
+      newObj.labelTextStyle = obj.labelTextStyle;
+      newObj.labelTextFamily = obj.labelTextFamily;
+      newObj.labelTextDecoration = obj.labelTextDecoration;
+      newObj.labelTextRotation = obj.labelTextRotation;
+      newObj.labelTextScalePercent = obj.labelTextScalePercent;
+      newObj.labelDisplayText = obj.labelDisplayText;
+      newObj.labelDisplayCaption = obj.labelDisplayCaption;
+      newObj.labelDisplayMode = obj.labelDisplayMode;
+      newObj.labelVisibility = obj.labelVisibility;
+      newObj.objectVisibility = obj.objectVisibility;
       this.currentStyles.push(newObj);
     });
     pastStyles.forEach(obj => {
       const newObj = {} as StyleOptions;
-      newObj.front = obj.front;
+      newObj.mode = obj.mode;
       newObj.strokeWidthPercent = obj.strokeWidthPercent;
       newObj.strokeColor = obj.strokeColor;
       newObj.fillColor = obj.fillColor;
@@ -60,6 +70,16 @@ export class StyleNoduleCommand extends Command {
       newObj.opacity = obj.opacity;
       newObj.dynamicBackStyle = obj.dynamicBackStyle;
       newObj.pointRadiusPercent = obj.pointRadiusPercent;
+      newObj.labelTextStyle = obj.labelTextStyle;
+      newObj.labelTextFamily = obj.labelTextFamily;
+      newObj.labelTextDecoration = obj.labelTextDecoration;
+      newObj.labelTextRotation = obj.labelTextRotation;
+      newObj.labelTextScalePercent = obj.labelTextScalePercent;
+      newObj.labelDisplayText = obj.labelDisplayText;
+      newObj.labelDisplayCaption = obj.labelDisplayCaption;
+      newObj.labelDisplayMode = obj.labelDisplayMode;
+      newObj.labelVisibility = obj.labelVisibility;
+      newObj.objectVisibility = obj.objectVisibility;
       this.pastStyles.push(newObj);
     });
     this.currentBackStyleContrast = currentBackStyleContrast;
@@ -67,12 +87,11 @@ export class StyleNoduleCommand extends Command {
   }
 
   do(): void {
-    console.log("do in syle nodule command");
     for (let i = 0; i < this.seNodules.length; i++) {
       Command.store.commit.changeStyle({
         selected: [this.seNodules[i]],
         payload: {
-          front: this.side,
+          mode: this.mode,
           strokeWidthPercent: this.currentStyles[i].strokeWidthPercent,
           strokeColor: this.currentStyles[i].strokeColor,
           fillColor: this.currentStyles[i].fillColor,
@@ -80,6 +99,16 @@ export class StyleNoduleCommand extends Command {
           opacity: this.currentStyles[i].opacity,
           dynamicBackStyle: this.currentStyles[i].dynamicBackStyle,
           pointRadiusPercent: this.currentStyles[i].pointRadiusPercent,
+          labelTextStyle: this.currentStyles[i].labelTextStyle,
+          labelTextFamily: this.currentStyles[i].labelTextFamily,
+          labelTextDecoration: this.currentStyles[i].labelTextDecoration,
+          labelTextRotation: this.currentStyles[i].labelTextRotation,
+          labelTextScalePercent: this.currentStyles[i].labelTextScalePercent,
+          labelDisplayText: this.currentStyles[i].labelDisplayText,
+          labelDisplayCaption: this.currentStyles[i].labelDisplayCaption,
+          labelDisplayMode: this.currentStyles[i].labelDisplayMode,
+          labelVisibility: this.currentStyles[i].labelVisibility,
+          objectVisibility: this.currentStyles[i].objectVisibility,
           backStyleContrast: this.currentBackStyleContrast
         }
       });
@@ -95,7 +124,7 @@ export class StyleNoduleCommand extends Command {
       Command.store.commit.changeStyle({
         selected: [this.seNodules[i]],
         payload: {
-          front: this.side,
+          mode: this.mode,
           strokeWidthPercent: this.pastStyles[i].strokeWidthPercent,
           strokeColor: this.pastStyles[i].strokeColor,
           fillColor: this.pastStyles[i].fillColor,
@@ -103,6 +132,16 @@ export class StyleNoduleCommand extends Command {
           opacity: this.pastStyles[i].opacity,
           dynamicBackStyle: this.pastStyles[i].dynamicBackStyle,
           pointRadiusPercent: this.pastStyles[i].pointRadiusPercent,
+          labelTextStyle: this.pastStyles[i].labelTextStyle,
+          labelTextFamily: this.pastStyles[i].labelTextFamily,
+          labelTextDecoration: this.pastStyles[i].labelTextDecoration,
+          labelTextRotation: this.pastStyles[i].labelTextRotation,
+          labelTextScalePercent: this.pastStyles[i].labelTextScalePercent,
+          labelDisplayText: this.pastStyles[i].labelDisplayText,
+          labelDisplayCaption: this.pastStyles[i].labelDisplayCaption,
+          labelDisplayMode: this.pastStyles[i].labelDisplayMode,
+          labelVisibility: this.pastStyles[i].labelVisibility,
+          objectVisibility: this.pastStyles[i].objectVisibility,
           backStyleContrast: this.pastBackStyleContrast
         }
       });

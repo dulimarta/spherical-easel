@@ -12,7 +12,8 @@ import {
   SEOneDimensional,
   Labelable
 } from "@/types";
-
+import { Store } from "vuex";
+import { AppState } from "@/types";
 import AppStore from "@/store";
 import { SEPoint } from "./SEPoint";
 import { SESegment } from "./SESegment";
@@ -22,20 +23,23 @@ import { SECircle } from "./SECircle";
 const styleSet = new Set([
   Styles.fillColor,
   Styles.opacity,
+  Styles.labelTextScalePercent,
   Styles.dynamicBackStyle,
-  Styles.textStyle,
-  Styles.textFamily,
-  Styles.textDecoration,
-  Styles.textRotation,
-  Styles.textScalePercent,
-  Styles.textCaption,
-  Styles.textName,
-  Styles.textLabelMode
+  Styles.labelTextStyle,
+  Styles.labelTextFamily,
+  Styles.labelTextDecoration,
+  Styles.labelTextRotation,
+  Styles.labelDisplayCaption,
+  Styles.labelDisplayText,
+  Styles.labelDisplayMode,
+  Styles.labelVisibility,
+  Styles.objectVisibility
 ]);
 
 export class SELabel extends SENodule implements Visitable {
   /* Access to the store to retrieve the canvas size so that the bounding rectangle for the text can be computed properly*/
-  protected static store = AppStore;
+  protected store = AppStore;
+
   /* Variables to determine which labels to show initially*/
   static showPointLabelsInitially = SETTINGS.point.showLabelsInitially;
   static showLineLabelsInitially = SETTINGS.line.showLabelsInitially;
@@ -47,7 +51,7 @@ export class SELabel extends SENodule implements Visitable {
   /**
    * The  parent of this SELabel
    */
-  private parent: SENodule;
+  public parent: SENodule;
   /**
    * The vector location of the SEPoint on the ideal unit sphere
    */
@@ -60,8 +64,10 @@ export class SELabel extends SENodule implements Visitable {
    */
   constructor(label: Label, parent: SENodule) {
     super();
+    // console.log("store", SELabel.store);
     this.ref = label;
     this.parent = parent;
+    label.seLabel = this; // used so that Label (the plottable) can set the visibility of the parent
     ((this.parent as unknown) as Labelable).label = this;
     this.name = `LabelOf(${parent.name})`;
     // Set the initial names.
@@ -69,22 +75,16 @@ export class SELabel extends SENodule implements Visitable {
     // Set the size for zoom
     this.ref.adjustSize();
     // Display the label
-    if (parent instanceof SEPoint && SELabel.showPointLabelsInitially) {
-      this.showing = true;
-    } else if (parent instanceof SELine && SELabel.showLineLabelsInitially) {
-      this.showing = true;
-    } else if (
-      parent instanceof SESegment &&
-      SELabel.showSegmentLabelsInitially
-    ) {
-      this.showing = true;
-    } else if (
-      parent instanceof SECircle &&
-      SELabel.showCircleLabelsInitially
-    ) {
-      this.showing = true;
+    if (parent instanceof SEPoint) {
+      this.showing = SELabel.showPointLabelsInitially;
+    } else if (parent instanceof SELine) {
+      this.showing = SELabel.showLineLabelsInitially;
+    } else if (parent instanceof SESegment) {
+      this.showing = SELabel.showSegmentLabelsInitially;
+    } else if (parent instanceof SECircle) {
+      this.showing = SELabel.showCircleLabelsInitially;
     } else {
-      this.showing = false;
+      this.showing = true;
     }
   }
 
@@ -190,7 +190,8 @@ export class SELabel extends SENodule implements Visitable {
     // Get the bounding box of the text
     const boundingBox = this.ref.boundingRectangle;
     // Get the canvas size so the bounding box can be corrected
-    const canvasSize = SELabel.store.getters.getCanvasWidth();
+    // console.log("SELabel.store.getters", this.store);
+    const canvasSize = this.store.getters.getCanvasWidth();
 
     return (
       boundingBox.left - canvasSize / 2 <

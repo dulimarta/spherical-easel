@@ -4,7 +4,7 @@ import { Vector3, Vector2, Matrix4 } from "three";
 import Two from "two.js";
 import SETTINGS, { LAYER } from "@/global-settings";
 import Nodule, { DisplayStyle } from "./Nodule";
-import { StyleOptions } from "@/types/Styles";
+import { StyleOptions, StyleEditMode } from "@/types/Styles";
 import AppStore from "@/store";
 
 const desiredXAxis = new Vector3();
@@ -725,48 +725,48 @@ export default class Circle extends Nodule {
    */
   updateStyle(options: StyleOptions): void {
     console.debug("Circle Update style of", this.name, "using", options);
-    if (options.front) {
+    if (options.mode === StyleEditMode.Front) {
       // Set the front options
-      if (options.strokeWidthPercent) {
+      if (options.strokeWidthPercent !== undefined) {
         this.strokeWidthPercentFront = options.strokeWidthPercent;
       }
-      if (options.fillColor) {
+      if (options.fillColor !== undefined) {
         this.fillColorFront = options.fillColor;
       }
-      if (options.strokeColor) {
+      if (options.strokeColor !== undefined) {
         this.strokeColorFront = options.strokeColor;
       }
-      if (options.opacity) {
+      if (options.opacity !== undefined) {
         this.opacityFront = options.opacity;
       }
-      if (options.dashArray) {
+      if (options.dashArray !== undefined) {
         this.dashArrayFront.clear();
         for (let i = 0; i < options.dashArray.length; i++) {
           this.dashArrayFront.push(options.dashArray[i]);
         }
       }
-    } else {
+    } else if (options.mode == StyleEditMode.Back) {
       // Set the back options
       // options.dynamicBackStyle is boolean, so we need to explicitly check for undefined otherwise
       // when it is false, this doesn't execute and this.dynamicBackStyle is not set
-      if (options.dynamicBackStyle != undefined) {
+      if (options.dynamicBackStyle !== undefined) {
         this.dynamicBackStyle = options.dynamicBackStyle;
       }
       // overwrite the back options only in the case the dynamic style is not enabled
       if (!this.dynamicBackStyle) {
-        if (options.strokeWidthPercent) {
+        if (options.strokeWidthPercent !== undefined) {
           this.strokeWidthPercentBack = options.strokeWidthPercent;
         }
-        if (options.fillColor) {
+        if (options.fillColor !== undefined) {
           this.fillColorBack = options.fillColor;
         }
-        if (options.strokeColor) {
+        if (options.strokeColor !== undefined) {
           this.strokeColorBack = options.strokeColor;
         }
-        if (options.opacity) {
+        if (options.opacity !== undefined) {
           this.opacityBack = options.opacity;
         }
-        if (options.dashArray) {
+        if (options.dashArray !== undefined) {
           // clear the dashArray
           this.dashArrayBack.clear();
           for (let i = 0; i < options.dashArray.length; i++) {
@@ -783,86 +783,98 @@ export default class Circle extends Nodule {
   /**
    * Return the current style state
    */
-  currentStyleState(front: boolean): StyleOptions {
-    if (front) {
-      const dashArrayFront = [] as number[];
-      if (this.dashArrayFront.length > 0) {
-        this.dashArrayFront.forEach(v => dashArrayFront.push(v));
+  currentStyleState(mode: StyleEditMode): StyleOptions {
+    switch (mode) {
+      case StyleEditMode.Front: {
+        const dashArrayFront = [] as number[];
+        if (this.dashArrayFront.length > 0) {
+          this.dashArrayFront.forEach(v => dashArrayFront.push(v));
+        }
+        return {
+          mode: mode,
+          strokeWidthPercent: this.strokeWidthPercentFront,
+          strokeColor: this.strokeColorFront,
+          fillColor: this.fillColorFront,
+          dashArray: dashArrayFront,
+          opacity: this.opacityFront
+        };
+        break;
       }
-      return {
-        front: front,
-        strokeWidthPercent: this.strokeWidthPercentFront,
-        strokeColor: this.strokeColorFront,
-        fillColor: this.fillColorFront,
-        dashArray: dashArrayFront,
-        opacity: this.opacityFront
-      };
-    } else {
-      const dashArrayBack = [] as number[];
-      if (this.dashArrayBack.length > 0) {
-        this.dashArrayBack.forEach(v => dashArrayBack.push(v));
+      default:
+      case StyleEditMode.Back: {
+        const dashArrayBack = [] as number[];
+        if (this.dashArrayBack.length > 0) {
+          this.dashArrayBack.forEach(v => dashArrayBack.push(v));
+        }
+        return {
+          mode: mode,
+          strokeWidthPercent: this.strokeWidthPercentBack,
+          strokeColor: this.strokeColorBack,
+          fillColor: this.fillColorBack,
+          dashArray: dashArrayBack,
+          opacity: this.opacityBack,
+          dynamicBackStyle: this.dynamicBackStyle
+        };
       }
-      return {
-        front: front,
-        strokeWidthPercent: this.strokeWidthPercentBack,
-        strokeColor: this.strokeColorBack,
-        fillColor: this.fillColorBack,
-        dashArray: dashArrayBack,
-        opacity: this.opacityBack,
-        dynamicBackStyle: this.dynamicBackStyle
-      };
     }
   }
   /**
    * Return the default style state
    */
-  defaultStyleState(front: boolean): StyleOptions {
-    if (front) {
-      const dashArrayFront = [] as number[];
-      if (SETTINGS.circle.drawn.dashArray.front.length > 0) {
-        SETTINGS.circle.drawn.dashArray.front.forEach(v =>
-          dashArrayFront.push(v)
-        );
+  defaultStyleState(mode: StyleEditMode): StyleOptions {
+    switch (mode) {
+      case StyleEditMode.Front: {
+        const dashArrayFront = [] as number[];
+        if (SETTINGS.circle.drawn.dashArray.front.length > 0) {
+          SETTINGS.circle.drawn.dashArray.front.forEach(v =>
+            dashArrayFront.push(v)
+          );
+        }
+        return {
+          mode: mode,
+          strokeWidthPercent: 100,
+          fillColor: SETTINGS.circle.drawn.fillColor.front,
+          strokeColor: SETTINGS.circle.drawn.strokeColor.front,
+          opacity: SETTINGS.circle.drawn.opacity.front,
+          dashArray: dashArrayFront
+        };
+        break;
       }
-      return {
-        front: front,
-        strokeWidthPercent: 100,
-        fillColor: SETTINGS.circle.drawn.fillColor.front,
-        strokeColor: SETTINGS.circle.drawn.strokeColor.front,
-        opacity: SETTINGS.circle.drawn.opacity.front,
-        dashArray: dashArrayFront
-      };
-    } else {
-      const dashArrayBack = [] as number[];
+      default:
+      case StyleEditMode.Back: {
+        const dashArrayBack = [] as number[];
 
-      if (SETTINGS.circle.drawn.dashArray.back.length > 0) {
-        SETTINGS.circle.drawn.dashArray.back.forEach(v =>
-          dashArrayBack.push(v)
-        );
+        if (SETTINGS.circle.drawn.dashArray.back.length > 0) {
+          SETTINGS.circle.drawn.dashArray.back.forEach(v =>
+            dashArrayBack.push(v)
+          );
+        }
+        return {
+          mode: mode,
+
+          strokeWidthPercent: SETTINGS.circle.dynamicBackStyle
+            ? Nodule.contrastStrokeWidthPercent(100)
+            : 100,
+
+          strokeColor: SETTINGS.circle.dynamicBackStyle
+            ? Nodule.contrastStrokeColor(
+                SETTINGS.circle.drawn.strokeColor.front
+              )
+            : SETTINGS.circle.drawn.strokeColor.back,
+
+          fillColor: SETTINGS.circle.dynamicBackStyle
+            ? Nodule.contrastFillColor(SETTINGS.circle.drawn.fillColor.front)
+            : SETTINGS.circle.drawn.fillColor.back,
+
+          dashArray: dashArrayBack,
+
+          opacity: SETTINGS.circle.dynamicBackStyle
+            ? Nodule.contrastOpacity(SETTINGS.circle.drawn.opacity.front)
+            : SETTINGS.circle.drawn.opacity.back,
+
+          dynamicBackStyle: SETTINGS.circle.dynamicBackStyle
+        };
       }
-      return {
-        front: front,
-
-        strokeWidthPercent: SETTINGS.circle.dynamicBackStyle
-          ? Nodule.contrastStrokeWidthPercent(100)
-          : 100,
-
-        strokeColor: SETTINGS.circle.dynamicBackStyle
-          ? Nodule.contrastStrokeColor(SETTINGS.circle.drawn.strokeColor.front)
-          : SETTINGS.circle.drawn.strokeColor.back,
-
-        fillColor: SETTINGS.circle.dynamicBackStyle
-          ? Nodule.contrastFillColor(SETTINGS.circle.drawn.fillColor.front)
-          : SETTINGS.circle.drawn.fillColor.back,
-
-        dashArray: dashArrayBack,
-
-        opacity: SETTINGS.circle.dynamicBackStyle
-          ? Nodule.contrastOpacity(SETTINGS.circle.drawn.opacity.front)
-          : SETTINGS.circle.drawn.opacity.back,
-
-        dynamicBackStyle: SETTINGS.circle.dynamicBackStyle
-      };
     }
   }
 

@@ -346,7 +346,6 @@ export default class MoveHandler extends Highlighter {
               .subVectors(beforeLocationVector, afterLocationVector)
               .isZero()
           ) {
-            console.log("point state move");
             moveCommandGroup.addCommand(
               new MovePointCommand(
                 entry.object,
@@ -378,7 +377,6 @@ export default class MoveHandler extends Highlighter {
               .subVectors(beforeLocationVector, afterLocationVector)
               .isZero()
           ) {
-            console.log("label state move");
             moveCommandGroup.addCommand(
               new MoveLabelCommand(
                 entry.object,

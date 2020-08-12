@@ -111,12 +111,6 @@ export enum UpdateMode {
   RecordStateForMove // Only those objects which depend on more than their point parents need to record that information
 }
 
-export enum TextLabelMode {
-  NameOnly, // display only the name
-  CaptionOnly, // display the caption only
-  NameAndCaption // display the name and caption
-}
-
 export interface UpdateStateType {
   mode: UpdateMode;
   stateArray: ObjectState[];

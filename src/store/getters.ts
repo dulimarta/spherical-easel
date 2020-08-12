@@ -11,9 +11,10 @@ import { Vector3 } from "three";
 import Two, { Vector } from "two.js";
 import { SENodule } from "@/models/SENodule";
 import { SEPoint } from "@/models/SEPoint";
+import { SELabel } from "@/models/SELabel";
 import NonFreePoint from "@/plottables/NonFreePoint";
 import { DisplayStyle } from "@/plottables/Nodule";
-import { StyleOptions } from "@/types/Styles";
+import { StyleOptions, StyleEditMode } from "@/types/Styles";
 import SETTINGS from "@/global-settings";
 
 const PIXEL_CLOSE_ENOUGH = 8;
@@ -806,6 +807,9 @@ export default {
   allSELines: (state: AppState) => (): SELine[] => {
     return state.seLines;
   },
+  allSELabels: (state: AppState) => (): SELabel[] => {
+    return state.seLabels;
+  },
   previousActionMode: (state: AppState) => (): { id: string; name: string } => {
     return { id: state.actionMode, name: state.activeToolName };
   },
@@ -823,35 +827,54 @@ export default {
     return state.seNodules.find((z: SENodule) => z.id === id);
   },
   getInitialStyleState: (state: AppState) => (
-    side: boolean
+    mode: StyleEditMode
   ): StyleOptions[] => {
-    // The first half is the front style settings, the second half the back
-    if (side == SETTINGS.style.frontSide) {
-      return state.initialStyleStates.slice(
-        0,
-        state.initialStyleStates.length / 2
-      );
-    } else {
-      return state.initialStyleStates.slice(
-        state.initialStyleStates.length / 2,
-        state.initialStyleStates.length
-      );
+    switch (mode) {
+      case StyleEditMode.Front: {
+        return state.initialStyleStates.slice(
+          0,
+          state.initialStyleStates.length / 3
+        );
+      }
+      case StyleEditMode.Back: {
+        return state.initialStyleStates.slice(
+          state.initialStyleStates.length / 3,
+          (2 * state.initialStyleStates.length) / 3
+        );
+      }
+      default:
+      case StyleEditMode.Label: {
+        return state.initialStyleStates.slice(
+          (2 * state.initialStyleStates.length) / 3,
+          state.initialStyleStates.length
+        );
+      }
     }
   },
   getDefaultStyleState: (state: AppState) => (
-    side: boolean
+    mode: StyleEditMode
   ): StyleOptions[] => {
-    // The first half is the front style settings, the second half the back
-    if (side == SETTINGS.style.frontSide) {
-      return state.defaultStyleStates.slice(
-        0,
-        state.defaultStyleStates.length / 2
-      );
-    } else {
-      return state.defaultStyleStates.slice(
-        state.defaultStyleStates.length / 2,
-        state.defaultStyleStates.length
-      );
+    switch (mode) {
+      case StyleEditMode.Front: {
+        return state.defaultStyleStates.slice(
+          0,
+          state.defaultStyleStates.length / 3
+        );
+      }
+
+      case StyleEditMode.Back: {
+        return state.defaultStyleStates.slice(
+          state.defaultStyleStates.length / 3,
+          (2 * state.defaultStyleStates.length) / 3
+        );
+      }
+      default:
+      case StyleEditMode.Label: {
+        return state.defaultStyleStates.slice(
+          (2 * state.defaultStyleStates.length) / 3,
+          state.defaultStyleStates.length
+        );
+      }
     }
   },
   getInitialBackStyleContrast: (state: AppState) => (): number => {

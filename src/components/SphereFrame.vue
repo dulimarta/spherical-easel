@@ -1,6 +1,5 @@
 <template>
-  <div id="canvas"
-    ref="canvas"></div>
+  <div id="canvas" ref="canvas"></div>
 </template>
 
 <style lang="scss" scoped></style>
@@ -31,7 +30,7 @@ import ToggleLabelDisplayHandler from "@/eventHandlers/ToggleLabelDisplayHandler
 
 import EventBus from "@/eventHandlers/EventBus";
 import MoveHandler from "../eventHandlers/MoveHandler";
-import { AppState } from '@/types';
+import { AppState } from "@/types";
 
 @Component({})
 export default class SphereFrame extends VueComponent {
@@ -146,7 +145,12 @@ export default class SphereFrame extends VueComponent {
     // box1.addTo(this.layers[LAYER.background]);
     // box2.addTo(this.layers[LAYER.foregroundText]);
 
-    const t1 = new Two.Text("Text must &#13;&#10; be upright 2\u{1D7B9}", 50, 80, {});
+    const t1 = new Two.Text(
+      "Text must &#13;&#10; be upright 2\u{1D7B9}",
+      50,
+      80,
+      {}
+    );
     t1.size = 12;
     t1.noStroke();
     t1.fill = "#000";
@@ -154,7 +158,7 @@ export default class SphereFrame extends VueComponent {
     // (t1 as any).linewidth = 30;
     (t1 as any).id = "mytext";
     (t1 as any).className = "myclass";
-    // console.log("text", t1);
+    t1.decoration = "strikethrough";
 
     this.layers[LAYER.foregroundText].add(t1);
     // console.log("bound box", t1.getBoundingClientRect());

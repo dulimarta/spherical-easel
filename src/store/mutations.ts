@@ -1,4 +1,4 @@
-import { AppState, SEOneDimensional } from "@/types";
+import { AppState, SEOneDimensional, Labelable } from "@/types";
 import Two from "two.js";
 import { SEPoint } from "@/models/SEPoint";
 import { Matrix4 } from "three";
@@ -11,7 +11,7 @@ import { SELine } from "@/models/SELine";
 import { SELabel } from "@/models/SELabel";
 import { SENodule } from "@/models/SENodule";
 import { Vector3 } from "three";
-import { StyleOptions } from "@/types/Styles";
+import { StyleOptions, StyleEditMode } from "@/types/Styles";
 import { LineNormalVisitor } from "@/visitors/LineNormalVisitor";
 import { SegmentNormalArcLengthVisitor } from "@/visitors/SegmentNormalArcLengthVisitor";
 import { UpdateMode, UpdateStateType } from "@/types";
@@ -277,15 +277,25 @@ export default {
       payload: StyleOptions;
     }
   ): void {
-    const opt: any = {
-      front: payload.front,
+    const opt: StyleOptions = {
+      mode: payload.mode,
       strokeWidthPercent: payload.strokeWidthPercent,
       strokeColor: payload.strokeColor,
       fillColor: payload.fillColor,
       dashArray: payload.dashArray,
       opacity: payload.opacity,
       dynamicBackStyle: payload.dynamicBackStyle,
-      pointRadiusPercent: payload.pointRadiusPercent
+      pointRadiusPercent: payload.pointRadiusPercent,
+      labelTextStyle: payload.labelTextStyle,
+      labelTextFamily: payload.labelTextFamily,
+      labelTextDecoration: payload.labelTextDecoration,
+      labelTextRotation: payload.labelTextRotation,
+      labelTextScalePercent: payload.labelTextScalePercent,
+      labelDisplayText: payload.labelDisplayText,
+      labelDisplayCaption: payload.labelDisplayCaption,
+      labelDisplayMode: payload.labelDisplayMode,
+      labelVisibility: payload.labelVisibility,
+      objectVisibility: payload.objectVisibility
     };
     if (
       payload.backStyleContrast &&
@@ -298,7 +308,7 @@ export default {
       });
     }
     selected.forEach((n: SENodule) => {
-      n.ref?.updateStyle(opt as StyleOptions);
+      n.ref?.updateStyle(opt);
     });
   },
   addMeasurement(state: AppState, measurement: SEMeasurement): void {
@@ -327,7 +337,7 @@ export default {
       // state.nodules.splice(pos2, 1);
     }
   },
-  setStyleState(
+  recordStyleState(
     state: AppState,
     {
       selected, // The selected SENodules that this change applies to, passing this as a argument allows styling to be undone.
@@ -340,24 +350,48 @@ export default {
     state.initialStyleStates.clear();
     state.defaultStyleStates.clear();
     selected.forEach(seNodule => {
-      // The first half is the front style settings, the second half the back
+      // The first third is the front style settings, the second third is the back, the final third are the corresponding labels
       if (seNodule.ref) {
         state.initialStyleStates.push(
-          seNodule.ref.currentStyleState(SETTINGS.style.frontSide)
+          seNodule.ref.currentStyleState(StyleEditMode.Front)
         );
         state.defaultStyleStates.push(
-          seNodule.ref.defaultStyleState(SETTINGS.style.frontSide)
+          seNodule.ref.defaultStyleState(StyleEditMode.Front)
         );
       }
     });
     selected.forEach(seNodule => {
-      if (seNodule.ref) {
+      // The first third is the front style settings, the second third is the back, the final third are the corresponding labels
+      if (seNodule.ref !== undefined) {
         state.initialStyleStates.push(
-          seNodule.ref.currentStyleState(SETTINGS.style.backSide)
+          seNodule.ref.currentStyleState(StyleEditMode.Back)
         );
         state.defaultStyleStates.push(
-          seNodule.ref.defaultStyleState(SETTINGS.style.backSide)
+          seNodule.ref.defaultStyleState(StyleEditMode.Back)
         );
+      }
+    });
+    selected.forEach(seNodule => {
+      // The first third is the front style settings, the second third is the back, the final third are the corresponding labels
+      if (seNodule instanceof SELabel && seNodule.ref !== undefined) {
+        state.initialStyleStates.push(
+          seNodule.ref.currentStyleState(StyleEditMode.Label)
+        );
+        state.defaultStyleStates.push(
+          seNodule.ref.defaultStyleState(StyleEditMode.Label)
+        );
+      } else {
+        const label = ((seNodule as unknown) as Labelable).label;
+        if (label !== undefined) {
+          state.initialStyleStates.push(
+            label.ref.currentStyleState(StyleEditMode.Label)
+          );
+          state.defaultStyleStates.push(
+            label.ref.defaultStyleState(StyleEditMode.Label)
+          );
+        } else {
+          throw "Attempted to use the label of an unlabelable SENodule in recordStyleState in mutations.ts";
+        }
       }
     });
     state.initialBackStyleContrast = backContrast;

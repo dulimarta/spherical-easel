@@ -38,7 +38,7 @@ export default class SelectionHandler extends MouseHandler {
         .allSEPoints()
         .filter(
           (n: any) => !(n instanceof SEIntersectionPoint && !n.isUserCreated)
-        ) // no uncreated intersection points allowed
+        ) // no unUserCreated intersection points allowed
         .forEach((n: any) => {
           this.keyPressSelection.push(n);
           (n as any).ref.glowingDisplay();
@@ -61,6 +61,13 @@ export default class SelectionHandler extends MouseHandler {
     // Get all SESegments
     if (keyEvent.key.match("s")) {
       this.store.getters.allSESegments().forEach((n: any) => {
+        this.keyPressSelection.push(n);
+        (n as any).ref.glowingDisplay();
+      });
+    }
+    // Get all SELabels
+    if (keyEvent.key.match("L")) {
+      this.store.getters.allSELabels().forEach((n: any) => {
         this.keyPressSelection.push(n);
         (n as any).ref.glowingDisplay();
       });

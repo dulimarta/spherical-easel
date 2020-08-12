@@ -2,7 +2,7 @@ import { Vector3, Matrix4 } from "three";
 import Two from "two.js";
 import SETTINGS, { LAYER } from "@/global-settings";
 import Nodule, { DisplayStyle } from "./Nodule";
-import { StyleOptions } from "@/types/Styles";
+import { StyleOptions, StyleEditMode } from "@/types/Styles";
 
 // The number of vectors used to render the one part of the segment (like the frontPart, frontExtra, etc.)
 const SUBDIVS = SETTINGS.segment.numPoints;
@@ -445,42 +445,42 @@ export default class Segment extends Nodule {
    */
   updateStyle(options: StyleOptions): void {
     console.debug("Segment: Update style of", this.name, "using", options);
-    if (options.front) {
+    if (options.mode === StyleEditMode.Front) {
       // Set the front options
-      if (options.strokeWidthPercent) {
+      if (options.strokeWidthPercent !== undefined) {
         this.strokeWidthPercentFront = options.strokeWidthPercent;
       }
-      if (options.strokeColor) {
+      if (options.strokeColor !== undefined) {
         this.strokeColorFront = options.strokeColor;
       }
-      if (options.opacity) {
+      if (options.opacity !== undefined) {
         this.opacityFront = options.opacity;
       }
-      if (options.dashArray) {
+      if (options.dashArray !== undefined) {
         // clear the dashArray
         this.dashArrayFront.clear();
         for (let i = 0; i < options.dashArray.length; i++) {
           this.dashArrayFront.push(options.dashArray[i]);
         }
       }
-    } else {
+    } else if (options.mode === StyleEditMode.Back) {
       // options.dynamicBackStyle is boolean, so we need to explicitly check for undefined otherwise
       // when it is false, this doesn't execute and this.dynamicBackStyle is not set
-      if (options.dynamicBackStyle != undefined) {
+      if (options.dynamicBackStyle !== undefined) {
         this.dynamicBackStyle = options.dynamicBackStyle;
       }
       // overwrite the back options only in the case the dynamic style is not enabled
-      if (!this.dynamicBackStyle) {
+      if (!this.dynamicBackStyle !== undefined) {
         if (options.strokeWidthPercent) {
           this.strokeWidthPercentBack = options.strokeWidthPercent;
         }
-        if (options.strokeColor) {
+        if (options.strokeColor !== undefined) {
           this.strokeColorBack = options.strokeColor;
         }
-        if (options.opacity) {
+        if (options.opacity !== undefined) {
           this.opacityBack = options.opacity;
         }
-        if (options.dashArray) {
+        if (options.dashArray !== undefined) {
           // clear the dashArray
           this.dashArrayBack.clear();
           for (let i = 0; i < options.dashArray.length; i++) {
@@ -496,79 +496,89 @@ export default class Segment extends Nodule {
   /**
    * Return the current style state
    */
-  currentStyleState(front: boolean): StyleOptions {
-    if (front) {
-      const dashArrayFront = [] as number[];
-      if (this.dashArrayFront.length > 0) {
-        this.dashArrayFront.forEach(v => dashArrayFront.push(v));
+  currentStyleState(mode: StyleEditMode): StyleOptions {
+    switch (mode) {
+      case StyleEditMode.Front: {
+        const dashArrayFront = [] as number[];
+        if (this.dashArrayFront.length > 0) {
+          this.dashArrayFront.forEach(v => dashArrayFront.push(v));
+        }
+        return {
+          mode: mode,
+          strokeWidthPercent: this.strokeWidthPercentFront,
+          strokeColor: this.strokeColorFront,
+          dashArray: dashArrayFront,
+          opacity: this.opacityFront
+        };
       }
-      return {
-        front: front,
-        strokeWidthPercent: this.strokeWidthPercentFront,
-        strokeColor: this.strokeColorFront,
-        dashArray: dashArrayFront,
-        opacity: this.opacityFront
-      };
-    } else {
-      const dashArrayBack = [] as number[];
-      if (this.dashArrayBack.length > 0) {
-        this.dashArrayBack.forEach(v => dashArrayBack.push(v));
+      default:
+      case StyleEditMode.Back: {
+        const dashArrayBack = [] as number[];
+        if (this.dashArrayBack.length > 0) {
+          this.dashArrayBack.forEach(v => dashArrayBack.push(v));
+        }
+        return {
+          mode: mode,
+          strokeWidthPercent: this.strokeWidthPercentBack,
+          strokeColor: this.strokeColorBack,
+          dashArray: dashArrayBack,
+          opacity: this.opacityBack,
+          dynamicBackStyle: this.dynamicBackStyle
+        };
       }
-      return {
-        front: front,
-        strokeWidthPercent: this.strokeWidthPercentBack,
-        strokeColor: this.strokeColorBack,
-        dashArray: dashArrayBack,
-        opacity: this.opacityBack,
-        dynamicBackStyle: this.dynamicBackStyle
-      };
     }
   }
   /**
    * Return the default style state
    */
-  defaultStyleState(front: boolean): StyleOptions {
-    if (front) {
-      const dashArrayFront = [] as number[];
-      if (SETTINGS.segment.drawn.dashArray.front.length > 0) {
-        SETTINGS.segment.drawn.dashArray.front.forEach(v =>
-          dashArrayFront.push(v)
-        );
+  defaultStyleState(mode: StyleEditMode): StyleOptions {
+    switch (mode) {
+      case StyleEditMode.Front: {
+        const dashArrayFront = [] as number[];
+        if (SETTINGS.segment.drawn.dashArray.front.length > 0) {
+          SETTINGS.segment.drawn.dashArray.front.forEach(v =>
+            dashArrayFront.push(v)
+          );
+        }
+        return {
+          mode: mode,
+          strokeWidthPercent: 100,
+          strokeColor: SETTINGS.segment.drawn.strokeColor.front,
+          dashArray: dashArrayFront,
+          opacity: SETTINGS.segment.drawn.opacity.front
+        };
       }
-      return {
-        front: front,
-        strokeWidthPercent: 100,
-        strokeColor: SETTINGS.segment.drawn.strokeColor.front,
-        dashArray: dashArrayFront,
-        opacity: SETTINGS.segment.drawn.opacity.front
-      };
-    } else {
-      const dashArrayBack = [] as number[];
+      default:
+      case StyleEditMode.Back: {
+        const dashArrayBack = [] as number[];
 
-      if (SETTINGS.segment.drawn.dashArray.back.length > 0) {
-        SETTINGS.segment.drawn.dashArray.back.forEach(v =>
-          dashArrayBack.push(v)
-        );
+        if (SETTINGS.segment.drawn.dashArray.back.length > 0) {
+          SETTINGS.segment.drawn.dashArray.back.forEach(v =>
+            dashArrayBack.push(v)
+          );
+        }
+        return {
+          mode: mode,
+
+          strokeWidthPercent: SETTINGS.segment.dynamicBackStyle
+            ? Nodule.contrastStrokeWidthPercent(100)
+            : 100,
+
+          strokeColor: SETTINGS.segment.dynamicBackStyle
+            ? Nodule.contrastStrokeColor(
+                SETTINGS.segment.drawn.strokeColor.front
+              )
+            : SETTINGS.segment.drawn.strokeColor.back,
+
+          dashArray: dashArrayBack,
+
+          opacity: SETTINGS.segment.dynamicBackStyle
+            ? Nodule.contrastOpacity(SETTINGS.segment.drawn.opacity.front)
+            : SETTINGS.segment.drawn.opacity.back,
+
+          dynamicBackStyle: SETTINGS.segment.dynamicBackStyle
+        };
       }
-      return {
-        front: front,
-
-        strokeWidthPercent: SETTINGS.segment.dynamicBackStyle
-          ? Nodule.contrastStrokeWidthPercent(100)
-          : 100,
-
-        strokeColor: SETTINGS.segment.dynamicBackStyle
-          ? Nodule.contrastStrokeColor(SETTINGS.segment.drawn.strokeColor.front)
-          : SETTINGS.segment.drawn.strokeColor.back,
-
-        dashArray: dashArrayBack,
-
-        opacity: SETTINGS.segment.dynamicBackStyle
-          ? Nodule.contrastOpacity(SETTINGS.segment.drawn.opacity.front)
-          : SETTINGS.segment.drawn.opacity.back,
-
-        dynamicBackStyle: SETTINGS.segment.dynamicBackStyle
-      };
     }
   }
   /**

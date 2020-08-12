@@ -15,7 +15,7 @@
           <v-expansion-panel-content :color="panelBackgroundColor(idx)"
             :key="`content${idx}`">
             <component :is="p.component"
-              :side="p.side">
+              :mode="p.mode">
             </component>
           </v-expansion-panel-content>
         </v-expansion-panel>
@@ -36,6 +36,7 @@ import FrontAndBackStyle from "@/components/FrontAndBackStyle.vue";
 import { Prop } from "vue-property-decorator";
 import EventBus from "../eventHandlers/EventBus";
 import SETTINGS from "@/global-settings";
+import { StyleEditMode } from "@/types/Styles";
 
 @Component({ components: { FrontAndBackStyle } })
 export default class Style extends Vue {
@@ -44,24 +45,24 @@ export default class Style extends Vue {
   private selectedPanel = 0; // Default selection is the Foreground panel
   private readonly panels = [
     {
-      i18n_key: "style.backStyle",
-      component: () => import("@/components/BasicStyle.vue"),
-      side: undefined
+      i18n_key: "style.labelStyle",
+      component: () => import("@/components/FrontAndBackStyle.vue"),
+      mode: StyleEditMode.Label
     },
     {
       i18n_key: "style.foregroundStyle",
       component: () => import("@/components/FrontAndBackStyle.vue"),
-      side: SETTINGS.style.frontSide
+      mode: StyleEditMode.Front
     },
     {
       i18n_key: "style.backgroundStyle",
       component: () => import("@/components/FrontAndBackStyle.vue"), // Note: The frontPanel(idx) returns false for this panel - setting the panel to back side
-      side: SETTINGS.style.backSide
+      mode: StyleEditMode.Back
     },
     {
       i18n_key: "style.advancedStyle",
       component: () => import("@/components/AdvancedStyle.vue"),
-      side: undefined
+      mode: undefined
     }
   ];
 

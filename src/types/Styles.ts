@@ -1,4 +1,14 @@
-import { TextLabelMode } from "@/types";
+export enum StyleEditMode {
+  Front,
+  Back,
+  Label
+}
+
+export enum LabelDisplayMode {
+  NameOnly, // display only the name
+  CaptionOnly, // display the caption only
+  NameAndCaption // display the name and caption
+}
 
 export enum Styles {
   // Important: Be sure to include "Color" for enum member
@@ -10,18 +20,20 @@ export enum Styles {
   opacity,
   dynamicBackStyle,
   pointRadiusPercent,
-  textName,
-  textCaption,
-  textStyle,
-  textFamily,
-  textDecoration,
-  textRotation,
-  textScalePercent,
-  textLabelMode
+  labelDisplayText,
+  labelDisplayCaption,
+  labelTextStyle,
+  labelTextFamily,
+  labelTextDecoration,
+  labelTextRotation,
+  labelTextScalePercent,
+  labelDisplayMode,
+  labelVisibility,
+  objectVisibility
 }
 
 export type StyleOptions = {
-  front: boolean;
+  mode: StyleEditMode;
   strokeWidthPercent?: number;
   strokeColor?: string;
   fillColor?: string;
@@ -30,12 +42,14 @@ export type StyleOptions = {
   dynamicBackStyle?: boolean;
   pointRadiusPercent?: number;
   backStyleContrast?: number;
-  textStyle?: string;
-  textFamily?: string;
-  textDecoration?: string;
-  textRotation?: number;
-  textScalePercent?: number;
-  textName?: string;
-  textCaption?: string;
-  textLabelMode?: TextLabelMode;
+  labelTextStyle?: string;
+  labelTextFamily?: string;
+  labelTextDecoration?: string;
+  labelTextRotation?: number;
+  labelTextScalePercent?: number;
+  labelDisplayText?: string;
+  labelDisplayCaption?: string;
+  labelDisplayMode?: LabelDisplayMode;
+  labelVisibility?: boolean;
+  objectVisibility?: boolean;
 };

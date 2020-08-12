@@ -5,8 +5,12 @@ import Two from "two.js";
 import SETTINGS, { LAYER } from "@/global-settings";
 import Nodule, { DisplayStyle } from "./Nodule";
 import { Vector3 } from "three";
-import { StyleOptions } from "@/types/Styles";
-import { TextLabelMode } from "@/types";
+import { StyleOptions, LabelDisplayMode, StyleEditMode } from "@/types/Styles";
+import { SELabel } from "@/models/SELabel";
+import { SELine } from "@/models/SELine";
+import { SEPoint } from "@/models/SEPoint";
+import { SESegment } from "@/models/SESegment";
+import { SECircle } from "@/models/SECircle";
 
 /**
  * Each Point object is uniquely associated with a SEPoint object.
@@ -15,6 +19,10 @@ import { TextLabelMode } from "@/types";
  */
 
 export default class Label extends Nodule {
+  /**
+   * This Label's corresponding SELabel, used so that this Label class can turn off and on the visibility of the object it is labeling
+   */
+  public seLabel?: SELabel;
   /**
    * The vector location of the Label on the default unit sphere
    * The location vector in the Default Screen Plane
@@ -124,10 +132,10 @@ export default class Label extends Nodule {
    * A number that represents the uniform scale of the text in the drawing space. May be changed by the user to increase/decrease the
    * size of the text relative to the scaled default (ie. the default size is the same at all zoom levels)
    */
-  protected textScalePercentFront = 100;
-  protected textScalePercentBack = 100;
+  protected textScalePercent = SETTINGS.label.textScalePercent;
 
   protected dynamicBackStyle = SETTINGS.label.dynamicBackStyle;
+
   /**
    * Initialize the current point scale factor that is adjusted by the zoom level and the user pointRadiusPercent
    * Set with text.scale=this.scale;
@@ -293,55 +301,61 @@ export default class Label extends Nodule {
    */
   updateStyle(options: StyleOptions): void {
     console.debug("Label: Update style of", this.initialName, "using", options);
-    if (options.textLabelMode) {
-      this.textLabelMode = options.textLabelMode;
+    if (options.labelDisplayMode !== undefined) {
+      this.textLabelMode = options.labelDisplayMode;
     }
-    if (options.textName) {
-      this.shortUserName = options.textName;
+    if (options.labelDisplayText !== undefined) {
+      this.shortUserName = options.labelDisplayText;
     }
-    if (options.textCaption) {
-      this.caption = options.textCaption;
+    if (options.labelDisplayCaption !== undefined) {
+      this.caption = options.labelDisplayCaption;
     }
-    if (options.textFamily) {
-      this.textFamily = options.textFamily;
+    if (options.labelTextFamily !== undefined) {
+      this.textFamily = options.labelTextFamily;
     }
-    if (options.textStyle) {
-      this.textStyle = options.textStyle;
+    if (options.labelTextStyle !== undefined) {
+      this.textStyle = options.labelTextStyle;
     }
-    if (options.textDecoration) {
-      this.textDecoration = options.textDecoration;
+    if (options.labelTextDecoration !== undefined) {
+      this.textDecoration = options.labelTextDecoration;
     }
-    if (options.textRotation) {
-      this.textRotation = options.textRotation;
+    if (options.labelTextRotation !== undefined) {
+      this.textRotation = options.labelTextRotation;
     }
-
-    if (options.front) {
-      if (options.textScalePercent) {
-        this.textScalePercentFront = options.textScalePercent;
+    if (options.labelVisibility !== undefined) {
+      if (this.seLabel !== undefined) {
+        this.seLabel.showing = options.labelVisibility; //Applied immediately
       }
+    }
+    if (options.objectVisibility !== undefined) {
+      if (this.seLabel !== undefined) {
+        this.seLabel.parent.showing = options.objectVisibility; //Applied immediately
+      }
+    }
+    if (options.labelTextScalePercent) {
+      this.textScalePercent = options.labelTextScalePercent;
+    }
+    if (options.mode === StyleEditMode.Front) {
       // Set the front options
-      if (options.fillColor) {
+      if (options.fillColor !== undefined) {
         this.frontFillColor = options.fillColor;
       }
-      if (options.opacity) {
+      if (options.opacity !== undefined) {
         this.frontOpacity = options.opacity;
       }
-    } else {
+    } else if (options.mode === StyleEditMode.Back) {
       // Set the back options
       // options.dynamicBackStyle is boolean, so we need to explicitly check for undefined otherwise
       // when it is false, this doesn't execute and this.dynamicBackStyle is not set
-      if (options.dynamicBackStyle != undefined) {
+      if (options.dynamicBackStyle !== undefined) {
         this.dynamicBackStyle = options.dynamicBackStyle;
       }
       // overwrite the back options only in the case the dynamic style is not enabled
       if (!this.dynamicBackStyle) {
-        if (options.textScalePercent) {
-          this.textScalePercentBack = options.textScalePercent;
-        }
-        if (options.fillColor) {
+        if (options.fillColor !== undefined) {
           this.backFillColor = options.fillColor;
         }
-        if (options.opacity) {
+        if (options.opacity !== undefined) {
           this.backOpacity = options.opacity;
         }
       }
@@ -353,105 +367,126 @@ export default class Label extends Nodule {
   /**
    * Return the current style state
    */
-  currentStyleState(front: boolean): StyleOptions {
-    if (front) {
-      return {
-        front: front,
-        textLabelMode: this.textLabelMode,
-        fillColor: this.frontFillColor,
-        opacity: this.frontOpacity,
-        dynamicBackStyle: this.dynamicBackStyle,
-        textStyle: this.textStyle,
-        textFamily: this.textFamily,
-        textDecoration: this.textDecoration,
-        textRotation: this.textRotation,
-        textScalePercent: this.textScalePercentFront,
-        textCaption: this.caption,
-        textName: this.shortUserName
-      };
-    } else {
-      return {
-        front: front,
-        textLabelMode: this.textLabelMode,
-        fillColor: this.backFillColor,
-        opacity: this.backOpacity,
-        dynamicBackStyle: this.dynamicBackStyle,
-        textStyle: this.textStyle,
-        textFamily: this.textFamily,
-        textDecoration: this.textDecoration,
-        textRotation: this.textRotation,
-        textScalePercent: this.textScalePercentBack,
-        textCaption: this.caption,
-        textName: this.shortUserName
-      };
+  currentStyleState(mode: StyleEditMode): StyleOptions {
+    switch (mode) {
+      case StyleEditMode.Front: {
+        return {
+          mode: mode,
+          fillColor: this.frontFillColor,
+          opacity: this.frontOpacity,
+          dynamicBackStyle: this.dynamicBackStyle
+        };
+      }
+      case StyleEditMode.Back: {
+        return {
+          mode: mode,
+          fillColor: this.backFillColor,
+          opacity: this.backOpacity,
+          dynamicBackStyle: this.dynamicBackStyle
+        };
+      }
+      default:
+      case StyleEditMode.Label: {
+        let objectVisibility: boolean | undefined = undefined;
+        if (this.seLabel !== undefined) {
+          objectVisibility = this.seLabel.parent.showing;
+        }
+        return {
+          mode: mode,
+          labelDisplayText: this.shortUserName,
+          labelDisplayCaption: this.caption,
+          labelDisplayMode: this.textLabelMode,
+          labelTextFamily: this.textFamily,
+          labelTextStyle: this.textStyle,
+          labelTextDecoration: this.textDecoration,
+          labelTextRotation: this.textRotation,
+          labelVisibility: this.frontText.visible || this.backText.visible,
+          objectVisibility: objectVisibility,
+          labelTextScalePercent: this.textScalePercent
+        };
+      }
     }
   }
   /**
    * Return the default style state
    */
-  defaultStyleState(front: boolean): StyleOptions {
-    if (front) {
-      return {
-        front: front,
-        textLabelMode: SETTINGS.label.labelMode,
-        fillColor: SETTINGS.label.fillColor.front,
-        opacity: SETTINGS.label.opacity.front,
-        dynamicBackStyle: SETTINGS.label.dynamicBackStyle,
-        textStyle: SETTINGS.label.style,
-        textFamily: SETTINGS.label.family,
-        textDecoration: SETTINGS.label.decoration,
-        textRotation: SETTINGS.label.rotation,
-        textScalePercent: SETTINGS.label.scalePercent.front,
-        textCaption: "",
-        textName: this.initialName
-      };
-      // Back
-    } else {
-      return {
-        front: front,
-        textLabelMode: SETTINGS.label.labelMode,
-        fillColor: SETTINGS.label.dynamicBackStyle
-          ? Nodule.contrastFillColor(SETTINGS.label.fillColor.front)
-          : SETTINGS.label.fillColor.back,
-        opacity: SETTINGS.label.dynamicBackStyle
-          ? Nodule.contrastOpacity(SETTINGS.label.opacity.front)
-          : SETTINGS.label.opacity.back,
-        textScalePercent: SETTINGS.label.dynamicBackStyle
-          ? Nodule.contrastTextScalePercent(SETTINGS.label.scalePercent.front)
-          : SETTINGS.label.scalePercent.back,
-        dynamicBackStyle: SETTINGS.label.dynamicBackStyle,
-        textStyle: SETTINGS.label.style,
-        textFamily: SETTINGS.label.family,
-        textDecoration: SETTINGS.label.decoration,
-        textRotation: SETTINGS.label.rotation,
-        textCaption: "",
-        textName: this.initialName
-      };
+  defaultStyleState(mode: StyleEditMode): StyleOptions {
+    switch (mode) {
+      case StyleEditMode.Front: {
+        return {
+          mode: mode,
+          fillColor: SETTINGS.label.fillColor.front,
+          opacity: SETTINGS.label.opacity.front,
+          dynamicBackStyle: SETTINGS.label.dynamicBackStyle
+        };
+      }
+      case StyleEditMode.Back: {
+        return {
+          mode: mode,
+          fillColor: SETTINGS.label.dynamicBackStyle
+            ? Nodule.contrastFillColor(SETTINGS.label.fillColor.front)
+            : SETTINGS.label.fillColor.back,
+          opacity: SETTINGS.label.dynamicBackStyle
+            ? Nodule.contrastOpacity(SETTINGS.label.opacity.front)
+            : SETTINGS.label.opacity.back,
+          dynamicBackStyle: SETTINGS.label.dynamicBackStyle
+        };
+      }
+      default:
+      case StyleEditMode.Label: {
+        let labelVisibility: boolean | undefined = undefined;
+        if (this.seLabel !== undefined) {
+          if (this.seLabel.parent instanceof SEPoint) {
+            labelVisibility = SETTINGS.point.showLabelsInitially;
+          } else if (this.seLabel.parent instanceof SELine) {
+            labelVisibility = SETTINGS.line.showLabelsInitially;
+          } else if (this.seLabel.parent instanceof SESegment) {
+            labelVisibility = SETTINGS.segment.showLabelsInitially;
+          } else if (this.seLabel.parent instanceof SECircle) {
+            labelVisibility = SETTINGS.circle.showLabelsInitially;
+          }
+        }
+        return {
+          mode: mode, //
+          labelDisplayText: this.initialName,
+          labelDisplayCaption: "",
+          labelDisplayMode: SETTINGS.label.labelMode,
+          labelTextFamily: SETTINGS.label.family,
+          labelTextStyle: SETTINGS.label.style,
+          labelTextDecoration: SETTINGS.label.decoration,
+          labelTextRotation: SETTINGS.label.rotation,
+          labelVisibility: labelVisibility,
+          objectVisibility: true,
+          labelTextScalePercent: SETTINGS.label.textScalePercent
+        };
+      }
     }
   }
+
   /**
    * Sets the variables for point radius glowing/not
    */
   adjustSize(): void {
     this.frontText.scale =
-      (Label.textScaleFactor * this.textScalePercentFront) / 100;
-
-    this.backText.scale =
-      (Label.textScaleFactor *
-        (this.dynamicBackStyle
-          ? Nodule.contrastTextScalePercent(this.textScalePercentFront)
-          : this.textScalePercentBack)) /
-      100;
+      (Label.textScaleFactor * this.textScalePercent) / 100;
+    this.backText.scale = (Label.textScaleFactor * this.textScalePercent) / 100;
+    // this.backText.scale =
+    //   (Label.textScaleFactor *
+    //     (this.dynamicBackStyle
+    //       ? Nodule.contrastTextScalePercent(this.textScalePercentFront)
+    //       : this.textScalePercentBack)) /
+    //   100;
 
     this.glowingFrontText.scale =
-      (Label.textScaleFactor * this.textScalePercentFront) / 100;
-
+      (Label.textScaleFactor * this.textScalePercent) / 100;
     this.glowingBackText.scale =
-      (Label.textScaleFactor *
-        (this.dynamicBackStyle
-          ? Nodule.contrastTextScalePercent(this.textScalePercentFront)
-          : this.textScalePercentBack)) /
-      100;
+      (Label.textScaleFactor * this.textScalePercent) / 100;
+    // this.glowingBackText.scale =
+    //   (Label.textScaleFactor *
+    //     (this.dynamicBackStyle
+    //       ? Nodule.contrastTextScalePercent(this.textScalePercentFront)
+    //       : this.textScalePercentBack)) /
+    //   100;
   }
 
   /**
@@ -478,15 +513,15 @@ export default class Label extends Nodule {
         // Properties that have no sides
         let value: string;
         switch (this.textLabelMode) {
-          case TextLabelMode.NameOnly: {
+          case LabelDisplayMode.NameOnly: {
             value = this.shortUserName;
             break;
           }
-          case TextLabelMode.CaptionOnly: {
+          case LabelDisplayMode.CaptionOnly: {
             value = this.caption;
             break;
           }
-          case TextLabelMode.NameAndCaption: {
+          case LabelDisplayMode.NameAndCaption: {
             value = this.shortUserName + ": " + this.caption;
             break;
           }
@@ -495,11 +530,21 @@ export default class Label extends Nodule {
         this.backText.value = value;
         this.glowingFrontText.value = value;
         this.glowingBackText.value = value;
-
-        this.frontText.style = this.textStyle;
-        this.backText.style = this.textStyle;
-        this.glowingFrontText.style = this.textStyle;
-        this.glowingBackText.style = this.textStyle;
+        if (this.textStyle !== "bold") {
+          this.frontText.style = this.textStyle;
+          this.backText.style = this.textStyle;
+          this.glowingFrontText.style = this.textStyle;
+          this.glowingBackText.style = this.textStyle;
+          this.frontText.weight = "normal";
+          this.backText.weight = "normal";
+          this.glowingFrontText.weight = "normal";
+          this.glowingBackText.weight = "normal";
+        } else if (this.textStyle === "bold") {
+          this.frontText.weight = "bold";
+          this.backText.weight = "bold";
+          this.glowingFrontText.weight = "bold";
+          this.glowingBackText.weight = "bold";
+        }
 
         this.frontText.family = this.textFamily;
         this.backText.family = this.textFamily;

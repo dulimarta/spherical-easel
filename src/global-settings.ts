@@ -1,18 +1,18 @@
-import { TextLabelMode as LabelDisplayMode } from "./types";
+import { LabelDisplayMode } from "./types/Styles";
 
 export default {
   nearlyAntipodalIdeal: 0.01, // Two unit vectors, U and V, are nearly antipodal if |U+V| < nearlyAntipodalIdeal
   nearlyAntipodalPixel: 3, // Two vectors on the default sphere, U and V, are nearly antipodal if |U+V| < nearlyAntipodalPixel
   tolerance: 0.0000001, // Any number less that this tolerance is considered zero
   style: {
-    frontSide: true,
-    backSide: false,
     backStyleContrast: 0.5, //The number that controls the automatic setting of the back styling for objects that have dynamicBackStyle set to true.
     maxStrokeWidthPercent: 500, // The maximum percent stroke width different from the scaled for zoom size
     minStrokeWidthPercent: 20, // The minimum percent stroke width different from the scaled for zoom size
     maxPointRadiusPercent: 500, // The maximum percent point radius different from the scaled for zoom size
     minPointRadiusPercent: 20, // The minimum percent point radius different from the scaled for zoom size
-    maxGapLengthPlusDashLength: 20 // the maximum of the sum of the gap and dash and the endpoint (max value) of the dash range slider
+    maxGapLengthPlusDashLength: 20, // the maximum of the sum of the gap and dash and the endpoint (max value) of the dash range slider
+    maxLabelTextScalePercent: 500, // The maximum percent text scale different from the scaled for zoom size
+    minLabelTextScalePercent: 20 // The minimum percent text scale different from the scaled for zoom size
   },
   zoom: {
     maxMagnification: 10, // The greatest zoom in magnification factor
@@ -278,9 +278,11 @@ export default {
     }
   },
   label: {
+    maxLabelDisplayCaptionLength: 30, // The maximum number of characters in the displayed label caption
+    maxLabelDisplayTextLength: 15, // The maximum number of characters in the displayed label name
     labelMode: LabelDisplayMode.NameOnly,
     //The scaling of the points relative to the scaled for zoom default size
-    scalePercent: { front: 100, back: 90 },
+    textScalePercent: 100,
     dynamicBackStyle: true,
     fontSize: 15,
     fillColor: {
@@ -289,7 +291,7 @@ export default {
     },
     opacity: { front: 1, back: 0.8 },
     style: "normal",
-    family: "sans-serif",
+    family: "sans/-serif",
     decoration: "none",
     rotation: 0,
     glowingStrokeWidth: { front: 3, back: 3 },

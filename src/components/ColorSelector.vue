@@ -1,9 +1,9 @@
 <template>
   <div>
     <div>
-      <span v-show="side"
+      <span v-show="mode"
         class="text-subtitle-2">{{ $t(sideFrontKey) }} </span>
-      <span v-show="!side"
+      <span v-show="!mode"
         class="text-subtitle-2">{{ $t(sideBackKey) }} </span>
       <span class="text-subtitle-2">{{ $t(titleKey) }}</span>
     </div>
@@ -108,8 +108,8 @@ import { State } from "vuex-class";
 import { SENodule } from "@/models/SENodule";
 import Nodule from "@/plottables/Nodule";
 import { hslaColorType } from "@/types";
-import { StyleOptions } from "@/types/Styles";
-import { AppState } from "@/types"
+import { StyleOptions, StyleEditMode } from "@/types/Styles";
+import { AppState } from "@/types";
 @Component
 export default class ColorSelector extends Vue {
   @Prop() readonly titleKey!: string;
@@ -117,15 +117,12 @@ export default class ColorSelector extends Vue {
   @Prop() readonly sideBackKey!: string;
   @PropSync("data") colorData?: hslaColorType;
   @Prop() readonly defaultStyleStates?: StyleOptions[];
-  @Prop() readonly side!: boolean;
-  // @Prop({ required: true }) readonly initialStyleStates!: StyleOptions[];
-  // @Prop({ required: true }) readonly defaultStyleStates!: StyleOptions[];
+  @Prop() readonly mode!: StyleEditMode;
   @Prop({ required: true }) readonly styleName!: string;
   @Prop() readonly tempStyleStates!: StyleOptions[];
 
   @State((s: AppState) => s.selections)
   selections!: SENodule[];
-
 
   //private defaultStyleStates: StyleOptions[] = [];
 
@@ -159,8 +156,6 @@ export default class ColorSelector extends Vue {
 
     this.onSelectionChanged(this.$store.getters.selectedSENodules());
 
-    // console.log("mounted initialStyleStates aftger");
-
     // If these commands are in the beforeUpdate() method they are executed over and over but
     // they only need to be executed once.
     const propName = this.styleName.replace("Color", "");
@@ -181,7 +176,6 @@ export default class ColorSelector extends Vue {
 
   @Watch("tempStyleStates")
   setTempStyleState(tempStyleStates: StyleOptions[]): void {
-    console.log("tempStyleState event", tempStyleStates);
     this.setColorSelectorState(tempStyleStates);
   }
 
@@ -203,15 +197,14 @@ export default class ColorSelector extends Vue {
   }
   onColorChange(newColor: any): void {
     // console.log("color Data", this.colorData);
-    // console.log("side", this.side);
     this.disableUndoButton = false;
     this.colorString = Nodule.convertHSLAObjectToString(
-      newColor.hsla ?? { h: 0, s: 0, l: 0, a: 1 }
+      newColor.hsla ?? { h: 0, s: 0, l: 1, a: 1 }
     );
     this.$store.direct.commit.changeStyle({
       selected: this.$store.getters.selectedSENodules(),
       payload: {
-        front: this.side,
+        mode: this.mode,
         [this.styleName]: this.colorString
       }
     });
@@ -221,12 +214,14 @@ export default class ColorSelector extends Vue {
   }
   clearRecentColorChanges(): void {
     const selected = this.$store.getters.selectedSENodules();
-    const initialStyleStates = this.$store.getters.getInitialStyleState(this.side);
+    const initialStyleStates = this.$store.getters.getInitialStyleState(
+      this.mode
+    );
     for (let i = 0; i < selected.length; i++) {
       this.$store.direct.commit.changeStyle({
         selected: [selected[i]],
         payload: {
-          front: this.side,
+          mode: this.mode,
           [this.styleName]: (initialStyleStates[i] as any)[this.styleName]
         }
       });
@@ -237,12 +232,14 @@ export default class ColorSelector extends Vue {
   }
   resetColorToDefaults(): void {
     const selected = this.$store.getters.selectedSENodules();
-    const defaultStyleStates = this.$store.getters.getDefaultStyleState(this.side);
+    const defaultStyleStates = this.$store.getters.getDefaultStyleState(
+      this.mode
+    );
     for (let i = 0; i < selected.length; i++) {
       this.$store.direct.commit.changeStyle({
         selected: [selected[i]],
         payload: {
-          front: this.side,
+          mode: this.mode,
           [this.styleName]: (defaultStyleStates[i] as any)[this.styleName]
         }
       });
@@ -261,9 +258,7 @@ export default class ColorSelector extends Vue {
         ? (styleState[0] as any)[this.styleName]
         : undefined;
     // console.log("color string", this.colorString);
-    if (
-      this.colorString == this.noDataStr
-    ) {
+    if (this.colorString == this.noDataStr) {
       this.colorData = Nodule.convertStringToHSLAObject("hsla(0,0%,0%,0.001)");
       this.colorSwatchHeight = 0;
       // this.colorCanvasHeight = 0;
@@ -276,7 +271,7 @@ export default class ColorSelector extends Vue {
     }
     this.disableUndoButton = true;
     // screen for undefined - if undefined then this is not a property that is going to be set by the style panel for this selection of objects
-    if (this.colorString) {
+    if (this.colorString !== undefined) {
       if (
         !styleState.every(
           styleObject =>
@@ -320,7 +315,7 @@ export default class ColorSelector extends Vue {
     this.$store.direct.commit.changeStyle({
       selected: this.$store.getters.selectedSENodules(),
       payload: {
-        front: this.side,
+        mode: this.mode,
         [this.styleName]: this.colorString
       }
     });
@@ -333,7 +328,9 @@ export default class ColorSelector extends Vue {
       this.disableColorSelector(true);
       return;
     }
-    this.setColorSelectorState(this.$store.getters.getInitialStyleState(this.side));
+    this.setColorSelectorState(
+      this.$store.getters.getInitialStyleState(this.mode)
+    );
   }
 }
 </script>

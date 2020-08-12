@@ -5,7 +5,7 @@ import Two from "two.js";
 import SETTINGS, { LAYER } from "@/global-settings";
 import Nodule, { DisplayStyle } from "./Nodule";
 import { Vector3 } from "three";
-import { StyleOptions } from "@/types/Styles";
+import { StyleOptions, StyleEditMode } from "@/types/Styles";
 import Point from "@/plottables/Point";
 
 /**
@@ -56,38 +56,44 @@ export default class NonFreePoint extends Point {
   /**
    * Return the default style state
    */
-  defaultStyleState(front: boolean): StyleOptions {
-    if (front) {
-      return {
-        front: front,
-        pointRadiusPercent: 100,
-        strokeColor: SETTINGS.point.nonFree.strokeColor.front,
-        fillColor: SETTINGS.point.nonFree.fillColor.front,
-        opacity: SETTINGS.point.nonFree.opacity.front
-      };
-      // Back
-    } else {
-      return {
-        front: front,
+  defaultStyleState(mode: StyleEditMode): StyleOptions {
+    switch (mode) {
+      case StyleEditMode.Front: {
+        return {
+          mode: mode,
+          pointRadiusPercent: 100,
+          strokeColor: SETTINGS.point.nonFree.strokeColor.front,
+          fillColor: SETTINGS.point.nonFree.fillColor.front,
+          opacity: SETTINGS.point.nonFree.opacity.front
+        };
+        // Back
+      }
+      default:
+      case StyleEditMode.Back: {
+        return {
+          mode: mode,
 
-        pointRadiusPercent: SETTINGS.point.dynamicBackStyle
-          ? Nodule.contrastPointRadiusPercent(100)
-          : 100,
+          pointRadiusPercent: SETTINGS.point.dynamicBackStyle
+            ? Nodule.contrastPointRadiusPercent(100)
+            : 100,
 
-        strokeColor: SETTINGS.point.dynamicBackStyle
-          ? Nodule.contrastStrokeColor(SETTINGS.point.nonFree.strokeColor.front)
-          : SETTINGS.point.nonFree.strokeColor.back,
+          strokeColor: SETTINGS.point.dynamicBackStyle
+            ? Nodule.contrastStrokeColor(
+                SETTINGS.point.nonFree.strokeColor.front
+              )
+            : SETTINGS.point.nonFree.strokeColor.back,
 
-        fillColor: SETTINGS.point.dynamicBackStyle
-          ? Nodule.contrastFillColor(SETTINGS.point.nonFree.fillColor.front)
-          : SETTINGS.point.nonFree.fillColor.back,
+          fillColor: SETTINGS.point.dynamicBackStyle
+            ? Nodule.contrastFillColor(SETTINGS.point.nonFree.fillColor.front)
+            : SETTINGS.point.nonFree.fillColor.back,
 
-        opacity: SETTINGS.point.dynamicBackStyle
-          ? Nodule.contrastOpacity(SETTINGS.point.nonFree.opacity.front)
-          : SETTINGS.point.nonFree.opacity.back,
+          opacity: SETTINGS.point.dynamicBackStyle
+            ? Nodule.contrastOpacity(SETTINGS.point.nonFree.opacity.front)
+            : SETTINGS.point.nonFree.opacity.back,
 
-        dynamicBackStyle: SETTINGS.point.dynamicBackStyle
-      };
+          dynamicBackStyle: SETTINGS.point.dynamicBackStyle
+        };
+      }
     }
   }
   /**
