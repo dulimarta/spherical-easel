@@ -61,7 +61,7 @@
             </v-icon>
           </div>
         </div>
-        <v-divider :key="node.id"></v-divider>
+        <v-divider :key="`${node.id}-divider`"></v-divider>
       </template>
     </div>
     <transition name="slide-right">
@@ -93,6 +93,7 @@ import { SEMeasurement } from "@/models/SEMeasurement";
 import { SELength } from "@/models/SELength";
 import { SECalculation } from "../models/SECalculation";
 import { SEExpression } from "@/models/SEExpression";
+import { SEDistance } from "@/models/SEDistance";
 
 @Component({})
 export default class SENoduleTree extends Vue {
@@ -119,6 +120,12 @@ export default class SENoduleTree extends Vue {
     else if (node instanceof SELength) {
       const target = node.parents[0] as SESegment;
       target.glowing = flag;
+    } else if (node instanceof SEDistance) {
+      node.parents
+        .map(n => n as SEPoint)
+        .forEach((p: SEPoint) => {
+          p.glowing = flag;
+        });
     }
   }
 

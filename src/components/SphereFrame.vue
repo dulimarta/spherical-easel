@@ -26,6 +26,7 @@ import PanZoomHandler, { ZoomMode } from "@/eventHandlers/PanZoomHandler";
 import DeleteHandler from "@/eventHandlers/DeleteHandler";
 import HideObjectHandler from "@/eventHandlers/HideObjectHandler";
 import SegmentLengthHandler from "@/eventHandlers/SegmentLengthHandler";
+import PointDistanceHandler from "@/eventHandlers/PointDistanceHandler";
 import ToggleLabelDisplayHandler from "@/eventHandlers/ToggleLabelDisplayHandler";
 
 import EventBus from "@/eventHandlers/EventBus";
@@ -83,6 +84,7 @@ export default class SphereFrame extends VueComponent {
   private deleteTool!: DeleteHandler;
   private hideTool!: HideObjectHandler;
   private segmentLengthTool!: SegmentLengthHandler;
+  private pointDistanceTool!: PointDistanceHandler;
   private toggleLabelDisplayTool!: ToggleLabelDisplayHandler;
 
   /**
@@ -212,6 +214,7 @@ export default class SphereFrame extends VueComponent {
     this.deleteTool = new DeleteHandler(this.layers);
     this.hideTool = new HideObjectHandler(this.layers);
     this.segmentLengthTool = new SegmentLengthHandler(this.layers);
+    this.pointDistanceTool = new PointDistanceHandler(this.layers);
     this.toggleLabelDisplayTool = new ToggleLabelDisplayHandler(this.layers);
   }
 
@@ -458,6 +461,9 @@ export default class SphereFrame extends VueComponent {
         break;
       case "segmentLength":
         this.currentTool = this.segmentLengthTool;
+        break;
+      case "pointDistance":
+        this.currentTool = this.pointDistanceTool;
         break;
       case "toggleLabelDisplay":
         this.currentTool = this.toggleLabelDisplayTool;
