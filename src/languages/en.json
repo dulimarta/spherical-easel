@@ -18,71 +18,55 @@
     "ResetSphereOrientation": "Press \"R\" to reset sphere orientation"
   },
   "buttons": {
-    "NoToolSelected": "No tool selected",
-
-    "RotateDisplayedName": "Rotate",
-    "RotateSphereToolTipMessage": "Rotate Sphere",
-    "RotateSphereToolUseMessage": "Click and drag to rotate the sphere.",
-
-    "PanZoomInDisplayedName": "Pan/Zoom In",
-    "PanZoomInToolTipMessage": "Pan or Zoom In",
-    "PanZoomInToolUseMessage": "Click to zoom in at the location of the mouse. Click and drag to pan the current view.",
-
-    "PanZoomOutDisplayedName": "Pan/Zoom Out",
-    "PanZoomOutToolTipMessage": "Pan or Zoom Out",
-    "PanZoomOutToolUseMessage": "Click to zoom out at the location of the mouse. Click and drag to pan the current view.",
-
-    "ZoomFitDisplayedName": "Zoom Fit",
-    "ZoomFitToolTipMessage": "Zoom Fit",
-    "ZoomFitToolUseMessage": "Click to fit the sphere in the available space.",
-
-    "MoveDisplayedName": "Move",
-    "MoveObjectToolTipMessage": "Move object",
-    "MoveObjectToolUseMessage": "Click and drag an object to move it. Movable objects include labels, free points, and line segments with antipodal endpoints. Hold the SHIFT key to select from the back of the sphere.",
-
-    "HideDisplayedName": "Hide",
-    "HideObjectToolTipMessage": "Hide object",
-    "HideObjectToolUseMessage": "Click at location to hide an object. Hold the SHIFT key to select from the back of the sphere.",
-
-    "CreatePointDisplayedName": "Point",
-    "CreatePointToolTipMessage": "Insert point",
-    "CreatePointToolUseMessage": "Click to insert a free point.",
-
-    "CreateLineDisplayedName": "Line",
-    "CreateLineToolTipMessage": "Insert line",
-    "CreateLineToolUseMessage": "Click and drag to insert a line defined by two points.",
-
-    "CreateLineSegmentDisplayedName": "Line Segment",
-    "CreateLineSegmentToolTipMessage": "Insert line segment",
-    "CreateLineSegmentToolUseMessage": "Click and drag to insert line segment defined by two points.",
-
-    "CreateIntersectionDisplayedName": "Intersection",
-    "CreateIntersectionToolTipMessage": "Intersect two objects",
-    "CreateIntersectionToolUseMessage": "Select two one-dimensional objects to create their intersection point(s).",
-
-    "CreateCircleDisplayedName": "Circle",
-    "CreateCircleToolTipMessage": "Insert circle",
-    "CreateCircleToolUseMessage": "Click and drag to insert a circle with a given center point and through a second point.",
-
-    "SelectDisplayedName": "Selection",
-    "SelectToolTipMessage": "Select Objects",
-    "SelectToolUseMessage": "Click on objects to select them, hold the Alt key to add to your selection.",
-
-    "ToggleLabelDisplayedName": "Toggle Label Display",
-    "ToggleLabelToolTipMessage": "Toggle Display Of Labels",
-    "ToggleLabelToolUseMessage": "Click on objects to toggle the display of their labels.",
-
-    "DeleteDisplayedName": "Delete",
-    "DeleteToolTipMessage": "Delete Objects",
-    "DeleteToolUseMessage": "Click on objects to delete them.",
-
     "CreateAntipodalPointDisplayedName": "Antipodal Point",
     "CreateAntipodalPointToolTipMessage": "Select a point",
     "CreateAntipodalPointToolUseMessage": "Click on a point to create its antipode",
-
+    "CreateCircleDisplayedName": "Circle",
+    "CreateCircleToolTipMessage": "Insert circle",
+    "CreateCircleToolUseMessage": "Click and drag to insert a circle with a given center point and through a second point.",
+    "CreateIntersectionDisplayedName": "Intersection",
+    "CreateIntersectionToolTipMessage": "Intersect two objects",
+    "CreateIntersectionToolUseMessage": "Select two one-dimensional objects to create their intersection point(s).",
+    "CreateLineDisplayedName": "Line",
+    "CreateLineSegmentDisplayedName": "Line Segment",
+    "CreateLineSegmentToolTipMessage": "Insert line segment",
+    "CreateLineSegmentToolUseMessage": "Click and drag to insert line segment defined by two points.",
+    "CreateLineToolTipMessage": "Insert line",
+    "CreateLineToolUseMessage": "Click and drag to insert a line defined by two points.",
+    "CreatePointDisplayedName": "Point",
     "CreatePointOnOneDimDisplayedName": "Point On One Dimensional Object",
     "CreatePointOnOneDimToolTipMessage": "Select a one-dimensional object to place a point on",
-    "CreatePointOnOneDimToolUseMessage": "Select a one-dimensional object to add a point to."
+    "CreatePointOnOneDimToolUseMessage": "Select a one-dimensional object to add a point to.",
+    "CreatePointToolTipMessage": "Insert point",
+    "CreatePointToolUseMessage": "Click to insert a free point.",
+    "DeleteDisplayedName": "Delete",
+    "DeleteToolTipMessage": "Delete Objects",
+    "DeleteToolUseMessage": "Click on objects to delete them.",
+    "HideDisplayedName": "Hide",
+    "HideObjectToolTipMessage": "Hide object",
+    "HideObjectToolUseMessage": "Click at location to hide an object. Hold the SHIFT key to select from the back of the sphere.",
+    "MoveDisplayedName": "Move",
+    "MoveObjectToolTipMessage": "Move object",
+    "MoveObjectToolUseMessage": "Click and drag an object to move it. Movable objects include labels, free points, and line segments with antipodal endpoints. Hold the SHIFT key to select from the back of the sphere.",
+    "NoToolSelected": "No tool selected",
+    "PanZoomInDisplayedName": "Pan/Zoom In",
+    "PanZoomInToolTipMessage": "Pan or Zoom In",
+    "PanZoomInToolUseMessage": "Click to zoom in at the location of the mouse. Click and drag to pan the current view.",
+    "PanZoomOutDisplayedName": "Pan/Zoom Out",
+    "PanZoomOutToolTipMessage": "Pan or Zoom Out",
+    "PanZoomOutToolUseMessage": "Click to zoom out at the location of the mouse. Click and drag to pan the current view.",
+    "RotateDisplayedName": "Rotate",
+    "RotateSphereToolTipMessage": "Rotate Sphere",
+    "RotateSphereToolUseMessage": "Click and drag to rotate the sphere.",
+    "SelectDisplayedName": "Selection",
+    "SelectToolTipMessage": "Select Objects",
+    "SelectToolUseMessage": "Click on objects to select them, hold the Alt key to add to your selection.",
+    "ToggleLabelDisplayedName": "Toggle Label Display",
+    "ToggleLabelToolTipMessage": "Toggle Display Of Labels",
+    "ToggleLabelToolUseMessage": "Click on objects to toggle the display of their labels.",
+    "ZoomFitDisplayedName": "Zoom Fit",
+    "ZoomFitToolTipMessage": "Zoom Fit",
+    "ZoomFitToolUseMessage": "Click to fit the sphere in the available space."
   },
   "settings": {
     "title": "Preferences"
@@ -93,55 +77,42 @@
     "circles": "Circles"
   },
   "style": {
-    "contrast": "Contrast",
-    "front": "Front",
+    "advancedStyle": "Advanced Style",
     "back": "Back",
-    "value": "Value",
-    "gapDashPattern": "Gap/Dash Pattern",
-
-    "selectAnObject": "Select An Object",
-
+    "backgroundStyle": "Background Style",
+    "backStyleContrast": "Back Style Contrast",
+    "backStyleContrastToolTip": "By default the back side display style of an object is determined by the front style of that object and the value of the Back Style Contrast. A Back Style Contrast of 1 means there is no color difference between front and back styling. A Back Style Contrast of 0 means that the object is barely visible and its size reduction is maximized.",
     "clearChanges": "Undo",
     "clearChangesToolTip": "Click this button to revert the selected objects back to the style they had when they were selected.",
-
-    "restoreDefaults": "Apply Defaults",
-    "restoreDefaultsToolTip": "Click this button to revert the selected objects back to their default style.",
-
-    "differingStylesDetected": "Differing Styles Detected -- Override",
-    "differingStylesDetectedToolTip": "The selected objects have the different values for this style. Click this button and select a style to make all selected objects have this common style.",
-
-    "showColorPresets": "Color Presets",
-    "showColorPresetsToolTip": "Click this toggle button to enter HSLA values directly or to select a color preset.",
-
-    "enableDashPatternSlider": "Set A Dash Pattern",
-    "enableDashPatternSliderToolTip": "The selected object(s) have no dash pattern. Click this button to set a pattern.",
-    "disableDashPatternSlider": "Set No Dash Pattern",
-    "disableDashPatternSliderToolTip": "Click this button to set no dash pattern on all selected object(s).",
-
-    "enableBackStyleContrastSlider": "Enable Dynamic Back Style For Selected Object(s)",
-    "enableBackStyleContrastSliderToolTip": "The selected objects do not have dynamic back style enabled. Click this button enable it and adjust the Back Contrast Slider.",
-    "disableBackStyleContrastSlider": "Disable Dynamic Back Style For Selected Object(s)",
-    "disableBackStyleContrastSliderToolTip": "The selected objects have dynamic back style enabled. Click this button disable it for only the selected object(s). Then you can change the back style of the selected object(s) using the style options in this panel.",
-
-    "advancedStyle": "Advanced Style",
-    "backgroundStyle": "Background Style",
-    "foregroundStyle": "Foreground Style",
-
-    "emptySelectionMessage": "Here we go! Please select object(s) to style!",
-    "strokeColor": "Stroke Color",
-    "fillColor": "Fill Color",
-    "strokeWidthPercent": "Stroke Width",
-
-    "pointRadiusPercent": "Point Radius",
-
-    "opacity": "Overall Opacity",
-    "dashPattern": "Dash Pattern",
+    "contrast": "Contrast",
     "dashGap": "Dash Gap",
     "dashLength": "Dash Length",
-
+    "dashPattern": "Dash Pattern",
+    "differingStylesDetected": "Differing Styles Detected -- Override",
+    "differingStylesDetectedToolTip": "The selected objects have the different values for this style. Click this button and select a style to make all selected objects have this common style.",
+    "disableBackStyleContrastSlider": "Disable Dynamic Back Style For Selected Object(s)",
+    "disableBackStyleContrastSliderToolTip": "The selected objects have dynamic back style enabled. Click this button disable it for only the selected object(s). Then you can change the back style of the selected object(s) using the style options in this panel.",
+    "disableDashPatternSlider": "Set No Dash Pattern",
+    "disableDashPatternSliderToolTip": "Click this button to set no dash pattern on all selected object(s).",
     "dynamicBackStyle": "Dynamic Back Style",
-
-    "backStyleContrast": "Back Style Contrast",
-    "backStyleContrastToolTip": "By default the back side display style of an object is determined by the front style of that object and the value of the Back Style Contrast. A Back Style Contrast of 1 means there is no color difference between front and back styling. A Back Style Contrast of 0 means that the object is barely visible and its size reduction is maximized."
+    "emptySelectionMessage": "Here we go! Please select object(s) to style!",
+    "enableBackStyleContrastSlider": "Enable Dynamic Back Style For Selected Object(s)",
+    "enableBackStyleContrastSliderToolTip": "The selected objects do not have dynamic back style enabled. Click this button enable it and adjust the Back Contrast Slider.",
+    "enableDashPatternSlider": "Set A Dash Pattern",
+    "enableDashPatternSliderToolTip": "The selected object(s) have no dash pattern. Click this button to set a pattern.",
+    "fillColor": "Fill Color",
+    "foregroundStyle": "Foreground Style",
+    "front": "Front",
+    "gapDashPattern": "Gap/Dash Pattern",
+    "opacity": "Overall Opacity",
+    "pointRadiusPercent": "Point Radius",
+    "restoreDefaults": "Apply Defaults",
+    "restoreDefaultsToolTip": "Click this button to revert the selected objects back to their default style.",
+    "selectAnObject": "Select An Object",
+    "showColorPresets": "Color Presets",
+    "showColorPresetsToolTip": "Click this toggle button to enter HSLA values directly or to select a color preset.",
+    "strokeColor": "Stroke Color",
+    "strokeWidthPercent": "Stroke Width",
+    "value": "Value"
   }
 }
