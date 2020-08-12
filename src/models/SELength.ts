@@ -1,7 +1,6 @@
 import { SEMeasurement } from "./SEMeasurement";
 import { SESegment } from "./SESegment";
 import { UpdateStateType, UpdateMode } from "@/types";
-import { StaticCopyUsage } from "three";
 
 export class SELength extends SEMeasurement {
   readonly seSegment: SESegment;

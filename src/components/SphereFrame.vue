@@ -27,11 +27,12 @@ import PanZoomHandler, { ZoomMode } from "@/eventHandlers/PanZoomHandler";
 import DeleteHandler from "@/eventHandlers/DeleteHandler";
 import HideObjectHandler from "@/eventHandlers/HideObjectHandler";
 import SegmentLengthHandler from "@/eventHandlers/SegmentLengthHandler";
+import PointDistanceHandler from "@/eventHandlers/PointDistanceHandler";
 import ToggleLabelDisplayHandler from "@/eventHandlers/ToggleLabelDisplayHandler";
 
 import EventBus from "@/eventHandlers/EventBus";
 import MoveHandler from "../eventHandlers/MoveHandler";
-import { AppState } from '@/types';
+import { AppState } from "@/types";
 
 @Component({})
 export default class SphereFrame extends VueComponent {
@@ -84,6 +85,7 @@ export default class SphereFrame extends VueComponent {
   private deleteTool!: DeleteHandler;
   private hideTool!: HideObjectHandler;
   private segmentLengthTool!: SegmentLengthHandler;
+  private pointDistanceTool!: PointDistanceHandler;
   private toggleLabelDisplayTool!: ToggleLabelDisplayHandler;
 
   /**
@@ -146,7 +148,12 @@ export default class SphereFrame extends VueComponent {
     // box1.addTo(this.layers[LAYER.background]);
     // box2.addTo(this.layers[LAYER.foregroundText]);
 
-    const t1 = new Two.Text("Text must &#13;&#10; be upright 2\u{1D7B9}", 50, 80, {});
+    const t1 = new Two.Text(
+      "Text must &#13;&#10; be upright 2\u{1D7B9}",
+      50,
+      80,
+      {}
+    );
     t1.size = 12;
     t1.noStroke();
     t1.fill = "#000";
@@ -208,6 +215,7 @@ export default class SphereFrame extends VueComponent {
     this.deleteTool = new DeleteHandler(this.layers);
     this.hideTool = new HideObjectHandler(this.layers);
     this.segmentLengthTool = new SegmentLengthHandler(this.layers);
+    this.pointDistanceTool = new PointDistanceHandler(this.layers);
     this.toggleLabelDisplayTool = new ToggleLabelDisplayHandler(this.layers);
   }
 
@@ -454,6 +462,9 @@ export default class SphereFrame extends VueComponent {
         break;
       case "segmentLength":
         this.currentTool = this.segmentLengthTool;
+        break;
+      case "pointDistance":
+        this.currentTool = this.pointDistanceTool;
         break;
       case "toggleLabelDisplay":
         this.currentTool = this.toggleLabelDisplayTool;
