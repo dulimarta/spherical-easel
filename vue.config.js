@@ -5,7 +5,7 @@ module.exports = {
       locale: "en",
       fallbackLocale: "en",
       localeDir: "languages",
-      enableInSFC: false
+      enableInSFC: true
     }
   }
   // crossorigin: "no-cors",
