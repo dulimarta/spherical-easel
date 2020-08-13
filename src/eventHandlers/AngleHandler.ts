@@ -30,13 +30,25 @@ export default class AngleHandler extends Highlighter {
   private handleNextPoint(candidate: SEPoint) {
     // Check for duplicate points
     const pos = this.targetPoints.findIndex(x => x.id === candidate.id);
-    if (pos < 0) this.targetPoints.push(candidate);
+    if (pos < 0) {
+      this.targetPoints.push(candidate);
+    } else
+      EventBus.fire("show-alert", {
+        text: `Duplicate point. Select another`,
+        type: "warning"
+      });
   }
 
   private handleNextLine(candidate: SELine | SESegment) {
     // Check for duplicate lines
     const pos = this.targetLines.findIndex(x => x.id === candidate.id);
-    if (pos < 0) this.targetLines.push(candidate);
+    if (pos < 0) {
+      this.targetLines.push(candidate);
+    } else
+      EventBus.fire("show-alert", {
+        text: `Duplicate line. Select another`,
+        type: "warning"
+      });
   }
 
   mousePressed(event: MouseEvent): void {
@@ -105,11 +117,27 @@ export default class AngleHandler extends Highlighter {
           lines: this.targetLines
         });
         EventBus.fire("show-alert", {
-          text: `New measurement ${angleFrom2Lines.name} added`,
+          text: `New angle ${angleFrom2Lines.name} added`,
           type: "success"
         });
         new AddMeasurementCommand(angleFrom2Lines).execute();
         this.mode = AngleMode.NONE;
+      } else {
+        let needed = 0;
+        switch (this.mode) {
+          case AngleMode.POINTS:
+            needed = 3 - this.targetPoints.length;
+            EventBus.fire("show-alert", {
+              text: `Select ${needed} more point(s)`,
+              type: "info"
+            });
+            break;
+          case AngleMode.LINES:
+            EventBus.fire("show-alert", {
+              text: `Select 1 more line`,
+              type: "info"
+            });
+        }
       }
     }
   }
