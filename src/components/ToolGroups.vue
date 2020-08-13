@@ -371,6 +371,16 @@ export default class ToolGroups extends Vue {
       toolUseMessage: "CreateAngleToolUseMessage",
       displayToolUseMessage: false,
       toolGroup: "construction"
+    },
+    {
+      id: 70,
+      actionModeValue: "coordinate",
+      displayedName: "CreateCoordinateDisplayedName",
+      icon: "mdi-video-3d",
+      toolTipMessage: "CreateCoordinateToolTipMessage",
+      toolUseMessage: "CreateCoordinateToolUseMessage",
+      displayToolUseMessage: false,
+      toolGroup: "construction"
     }
 
     //sort the button list by id so that we don't have to reorder the list each item we add a new button

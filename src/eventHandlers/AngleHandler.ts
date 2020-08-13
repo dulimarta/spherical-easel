@@ -8,7 +8,6 @@ import { SENodule } from "@/models/SENodule";
 import { AddMeasurementCommand } from "@/commands/AddMeasuremeent";
 import { SEAngle } from "@/models/SEAngle";
 import EventBus from "@/eventHandlers/EventBus";
-// import { SetNoduleDisplayCommand } from "@/commands/SetNoduleDisplayCommand";
 enum AngleMode {
   NONE,
   LINES,

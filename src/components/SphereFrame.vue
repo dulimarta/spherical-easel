@@ -29,6 +29,7 @@ import HideObjectHandler from "@/eventHandlers/HideObjectHandler";
 import SegmentLengthHandler from "@/eventHandlers/SegmentLengthHandler";
 import PointDistanceHandler from "@/eventHandlers/PointDistanceHandler";
 import AngleHandler from "@/eventHandlers/AngleHandler";
+import CoordinateHandler from "@/eventHandlers/PointCoordinateHandler";
 import ToggleLabelDisplayHandler from "@/eventHandlers/ToggleLabelDisplayHandler";
 
 import EventBus from "@/eventHandlers/EventBus";
@@ -88,6 +89,7 @@ export default class SphereFrame extends VueComponent {
   private segmentLengthTool!: SegmentLengthHandler;
   private pointDistanceTool!: PointDistanceHandler;
   private angleTool!: AngleHandler;
+  private coordinateTool!: CoordinateHandler;
   private toggleLabelDisplayTool!: ToggleLabelDisplayHandler;
 
   /**
@@ -219,6 +221,7 @@ export default class SphereFrame extends VueComponent {
     this.segmentLengthTool = new SegmentLengthHandler(this.layers);
     this.pointDistanceTool = new PointDistanceHandler(this.layers);
     this.angleTool = new AngleHandler(this.layers);
+    this.coordinateTool = new CoordinateHandler(this.layers);
     this.toggleLabelDisplayTool = new ToggleLabelDisplayHandler(this.layers);
   }
 
@@ -471,6 +474,9 @@ export default class SphereFrame extends VueComponent {
         break;
       case "angle":
         this.currentTool = this.angleTool;
+        break;
+      case "coordinate":
+        this.currentTool = this.coordinateTool;
         break;
       case "toggleLabelDisplay":
         this.currentTool = this.toggleLabelDisplayTool;

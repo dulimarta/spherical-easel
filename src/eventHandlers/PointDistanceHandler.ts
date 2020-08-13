@@ -5,7 +5,6 @@ import { SENodule } from "@/models/SENodule";
 import { AddMeasurementCommand } from "@/commands/AddMeasuremeent";
 import { SEDistance } from "@/models/SEDistance";
 import EventBus from "@/eventHandlers/EventBus";
-// import { SetNoduleDisplayCommand } from "@/commands/SetNoduleDisplayCommand";
 
 export default class PointDistantHandler extends Highlighter {
   /**

@@ -73,16 +73,7 @@ export class SEAngle extends SEMeasurement {
     // );
   }
 
-  private prettyValue(): string {
+  public prettyValue(): string {
     return (this.value / Math.PI).toFixed(2) + "\u{1D7B9}";
   }
-
-  public update = (state: UpdateStateType): void => {
-    if (state.mode !== UpdateMode.DisplayOnly) return;
-    if (!this.canUpdateNow()) return;
-    const pos = this.name.lastIndexOf("):");
-    this.name = this.name.substring(0, pos + 2) + this.prettyValue();
-    this.setOutOfDate(false);
-    this.updateKids(state);
-  };
 }

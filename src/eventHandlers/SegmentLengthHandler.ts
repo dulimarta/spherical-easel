@@ -6,7 +6,7 @@ import { AddMeasurementCommand } from "@/commands/AddMeasuremeent";
 import { SEMeasurement } from "@/models/SEMeasurement";
 import { SELength } from "@/models/SELength";
 import EventBus from "@/eventHandlers/EventBus";
-// import { SetNoduleDisplayCommand } from "@/commands/SetNoduleDisplayCommand";
+import { SetNoduleDisplayCommand } from "@/commands/SetNoduleDisplayCommand";
 
 export default class SegmentLengthHandler extends Highlighter {
   /**
@@ -63,14 +63,15 @@ export default class SegmentLengthHandler extends Highlighter {
     // Reset the targetSegment in preparation for another deletion.
     this.targetSegment = null;
   }
-  activate(): void {
-    this.hitSESegments.forEach(object => {
-      // new SetNoduleDisplayCommand(object, false).execute()
-    });
-    // Unselect the selected objects and clear the selectedObject array
-    super.activate();
-  }
-  deactivate(): void {
-    super.deactivate();
-  }
+  // activate(): void {
+  //   this.hitSESegments.forEach(object => {
+  //     // TODO: Why do we want to hide hit segments?
+  //     // new SetNoduleDisplayCommand(object, false).execute();
+  //   });
+  //   // Unselect the selected objects and clear the selectedObject array
+  //   super.activate();
+  // }
+  // deactivate(): void {
+  //   super.deactivate();
+  // }
 }

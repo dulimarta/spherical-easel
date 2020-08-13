@@ -8,7 +8,6 @@
   // "vetur.experimental.templateInterpolationService": true,
   // "vetur.format.defaultFormatter.js": "prettier-eslint",
   // "vetur.format.defaultFormatter.ts": "prettier-tslint",
-
   "vetur.format.defaultFormatter.html": "js-beautify-html",
   "vetur.format.defaultFormatterOptions": {
     "js-beautify-html": {
