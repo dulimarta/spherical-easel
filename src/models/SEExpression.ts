@@ -10,7 +10,6 @@ export abstract class SEExpression extends SENodule {
   public isFreePoint = (): boolean => false;
   public isPoint = (): boolean => false;
   public isOneDimensional = (): this is SEOneDimensional => false;
-  public isPointOnOneDimensional = (): boolean => false;
 
   constructor() {
     super();

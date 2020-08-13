@@ -1,14 +1,14 @@
 <template>
   <div>
-    <fade-in-card :showWhen="editModeIsBack()" color="red">
-      <v-tooltip
-        bottom
+    <fade-in-card :showWhen="editModeIsBack()"
+      color="red">
+      <v-tooltip bottom
         :open-delay="toolTipOpenDelay"
         :close-delay="toolTipCloseDelay"
-        max-width="400px"
-      >
+        max-width="400px">
         <template v-slot:activator="{ on }">
-          <span v-on="on" class="text-subtitle-2">{{ $t("style.backStyleContrast") }}</span>
+          <span v-on="on"
+            class="text-subtitle-2">{{ $t("style.backStyleContrast") }}</span>
         </template>
         <span>{{ $t("style.backStyleContrastToolTip") }}</span>
       </v-tooltip>
@@ -17,49 +17,46 @@
         {{ this.backStyleContrast }})
       </span>
       <br />
-      <v-tooltip
-        bottom
+      <v-tooltip bottom
         :open-delay="toolTipOpenDelay"
         :close-delay="toolTipCloseDelay"
-        max-width="400px"
-      >
+        max-width="400px">
         <template v-slot:activator="{ on }">
-          <v-btn
-            v-on="on"
+          <v-btn v-on="on"
             @click="clearRecentDynamicBackStyleChanges"
             text
             :disabled="disableBackStyleContrastUndoButton"
             outlined
             ripple
-            small
-          >{{ $t("style.clearChanges") }}</v-btn>
+            small>{{ $t("style.clearChanges") }}</v-btn>
         </template>
         <span>{{ $t("style.clearChangesToolTip") }}</span>
       </v-tooltip>
 
-      <v-tooltip
-        bottom
+      <v-tooltip bottom
         :open-delay="toolTipOpenDelay"
         :close-delay="toolTipCloseDelay"
-        max-width="400px"
-      >
+        max-width="400px">
         <template v-slot:activator="{ on }">
-          <v-btn v-on="on" @click="resetDynamicBackStyleToDefaults" text small outlined ripple>
+          <v-btn v-on="on"
+            @click="resetDynamicBackStyleToDefaults"
+            text
+            small
+            outlined
+            ripple>
             <span>{{ $t("style.restoreDefaults") }}</span>
           </v-btn>
         </template>
         <span>{{ $t("style.restoreDefaultsToolTip") }}</span>
       </v-tooltip>
 
-      <v-slider
-        v-model.number="backStyleContrast"
+      <v-slider v-model.number="backStyleContrast"
         :min="0"
         step="0.1"
         @change="onBackStyleContrastChange"
         :max="1"
         type="range"
-        dense
-      >
+        dense>
         <template v-slot:prepend>
           <v-icon @click="decrementBackStyleContrast">mdi-minus</v-icon>
         </template>
@@ -70,46 +67,40 @@
       </v-slider>
     </fade-in-card>
 
-    <fade-in-card :showWhen="editModeIsBack() && (hasDynamicBackStyle || noObjectsSelected)">
-      <span class="text-subtitle-2">{{ $t("style.dynamicBackStyle") }}</span>
+    <fade-in-card
+      :showWhen="editModeIsBack() && (hasDynamicBackStyle || noObjectsSelected)">
+      <span
+        class="text-subtitle-2">{{ $t("style.dynamicBackStyle") }}</span>
 
       <br />
-      <span
-        v-show="totallyDisableDynamicBackStyleSelector"
-        class="select-an-object-text"
-      >{{ $t("style.selectAnObject") }}</span>
-      <v-tooltip
-        v-if="!dynamicBackStyleAgreement"
+      <span v-show="totallyDisableDynamicBackStyleSelector"
+        class="select-an-object-text">{{ $t("style.selectAnObject") }}</span>
+      <v-tooltip v-if="!dynamicBackStyleAgreement"
         bottom
         :open-delay="toolTipOpenDelay"
         :close-delay="toolTipCloseDelay"
-        max-width="400px"
-      >
+        max-width="400px">
         <template v-slot:activator="{ on }">
-          <v-btn
-            color="error"
+          <v-btn color="error"
             v-on="on"
             v-show="!totallyDisableDynamicBackStyleSelector"
             text
             small
             outlined
             ripple
-            @click="setCommonDynamicBackStyleAgreement"
-          >{{ $t("style.differingStylesDetected") }}</v-btn>
+            @click="setCommonDynamicBackStyleAgreement">
+            {{ $t("style.differingStylesDetected") }}</v-btn>
         </template>
         <span>{{ $t("style.differingStylesDetectedToolTip") }}</span>
       </v-tooltip>
 
-      <v-tooltip
-        v-if="!dynamicBackStyle"
+      <v-tooltip v-if="!dynamicBackStyle"
         bottom
         :open-delay="toolTipOpenDelay"
         :close-delay="toolTipCloseDelay"
-        max-width="400px"
-      >
+        max-width="400px">
         <template v-slot:activator="{ on }">
-          <v-btn
-            v-on="on"
+          <v-btn v-on="on"
             v-show="
               !totallyDisableDynamicBackStyleSelector &&
                 dynamicBackStyleAgreement
@@ -120,24 +111,21 @@
             ripple
             small
             block
-            @click="toggleBackStyleOptionsAvailability"
-          >
-            <span style class="long-text-button">{{ $t("style.enableBackStyleContrastSlider") }}</span>
+            @click="toggleBackStyleOptionsAvailability">
+            <span style
+              class="long-text-button">{{ $t("style.enableBackStyleContrastSlider") }}</span>
           </v-btn>
         </template>
         <span>{{ $t("style.enableBackStyleContrastSliderToolTip") }}</span>
       </v-tooltip>
 
-      <v-tooltip
-        v-else
+      <v-tooltip v-else
         bottom
         :open-delay="toolTipOpenDelay"
         :close-delay="toolTipCloseDelay"
-        max-width="400px"
-      >
+        max-width="400px">
         <template v-slot:activator="{ on }">
-          <v-btn
-            v-on="on"
+          <v-btn v-on="on"
             v-show="
               !totallyDisableDynamicBackStyleSelector &&
                 dynamicBackStyleAgreement
@@ -148,9 +136,9 @@
             ripple
             small
             block
-            @click="toggleBackStyleOptionsAvailability"
-          >
-            <span style class="long-text-button">{{ $t("style.disableBackStyleContrastSlider") }}</span>
+            @click="toggleBackStyleOptionsAvailability">
+            <span style
+              class="long-text-button">{{ $t("style.disableBackStyleContrastSlider") }}</span>
           </v-btn>
         </template>
         <span>{{ $t("style.disableBackStyleContrastSliderToolTip") }}</span>
@@ -205,48 +193,37 @@
       </v-tooltip>-->
     </fade-in-card>
 
-    <fade-in-card
-      :showWhen="
+    <fade-in-card :showWhen="
         (editModeIsFront() && (hasStrokeColor || noObjectsSelected)) ||
           (editModeIsBack() && !dynamicBackStyle && hasStrokeColor)
-      "
-    >
-      <ColorSelector
-        title-key="style.strokeColor"
+      ">
+      <ColorSelector title-key="style.strokeColor"
         mode-front-key="style.front"
         mode-back-key="style.back"
         style-name="strokeColor"
         :data.sync="hslaStrokeColorObject"
         :temp-style-states="tempStyleStates"
-        :mode="mode"
-      ></ColorSelector>
+        :mode="mode"></ColorSelector>
     </fade-in-card>
 
-    <fade-in-card
-      :showWhen="
+    <fade-in-card :showWhen="
         (editModeIsFront() && (hasFillColor || noObjectsSelected)) ||
           (editModeIsBack() && !dynamicBackStyle && hasFillColor)
-      "
-    >
-      <ColorSelector
-        title-key="style.fillColor"
+      ">
+      <ColorSelector title-key="style.fillColor"
         mode-front-key="style.front"
         mode-back-key="style.back"
         style-name="fillColor"
         :data.sync="hslaFillColorObject"
         :temp-style-states="tempStyleStates"
-        :mode="mode"
-      ></ColorSelector>
+        :mode="mode"></ColorSelector>
     </fade-in-card>
 
-    <fade-in-card
-      :showWhen="
+    <fade-in-card :showWhen="
         (editModeIsFront() && (hasStrokeWidthPercent || noObjectsSelected)) ||
           (editModeIsBack() && !dynamicBackStyle && hasStrokeWidthPercent)
-      "
-    >
-      <NumberSelector
-        id="strokeWidthPercentSlider"
+      ">
+      <NumberSelector id="strokeWidthPercentSlider"
         v-bind:data.sync="strokeWidthPercent"
         style-name="strokeWidthPercent"
         title-key="style.strokeWidthPercent"
@@ -256,18 +233,14 @@
         v-bind:max-value="maxStrokeWidthPercent"
         v-bind:step="10"
         :temp-style-states="tempStyleStates"
-        :mode="mode"
-      ></NumberSelector>
+        :mode="mode"></NumberSelector>
     </fade-in-card>
 
-    <fade-in-card
-      :showWhen="
+    <fade-in-card :showWhen="
         (editModeIsFront() && (hasPointRadiusPercent || noObjectsSelected)) ||
           (editModeIsBack() && !dynamicBackStyle && hasPointRadiusPercent)
-      "
-    >
-      <NumberSelector
-        :data.sync="pointRadiusPercent"
+      ">
+      <NumberSelector :data.sync="pointRadiusPercent"
         title-key="style.pointRadiusPercent"
         mode-front-key="style.front"
         mode-back-key="style.back"
@@ -275,18 +248,14 @@
         :min-value="minPointRadiusPercent"
         :max-value="maxPointRadiusPercent"
         :temp-style-states="tempStyleStates"
-        :mode="mode"
-      ></NumberSelector>
+        :mode="mode"></NumberSelector>
     </fade-in-card>
 
-    <fade-in-card
-      :showWhen="
+    <fade-in-card :showWhen="
         (editModeIsFront() && (hasOpacity || noObjectsSelected)) ||
           (editModeIsBack() && !dynamicBackStyle && hasOpacity)
-      "
-    >
-      <NumberSelector
-        title-key="style.opacity"
+      ">
+      <NumberSelector title-key="style.opacity"
         mode-front-key="style.front"
         mode-back-key="style.back"
         :data.sync="opacity"
@@ -295,107 +264,91 @@
         :max-value="1"
         :step="0.1"
         :temp-style-states="tempStyleStates"
-        :mode="mode"
-      ></NumberSelector>
+        :mode="mode"></NumberSelector>
     </fade-in-card>
 
     <!-- Dash array card is displayed for front and back so long as there is a dash array property common to all selected objects-->
     <fade-in-card
-      :showWhen="(hasDashPattern || noObjectsSelected) && (editModeIsFront() || editModeIsBack())"
-    >
-      <span v-show="editModeIsFront()" class="text-subtitle-2">{{ $t("style.front") }}</span>
-      <span v-show="editModeIsBack()" class="text-subtitle-2">{{ $t("style.back") }}</span>
+      :showWhen="(hasDashPattern || noObjectsSelected) && (editModeIsFront() || editModeIsBack())">
+      <span v-show="editModeIsFront()"
+        class="text-subtitle-2">{{ $t("style.front") }}</span>
+      <span v-show="editModeIsBack()"
+        class="text-subtitle-2">{{ $t("style.back") }}</span>
       <span class="text-subtitle-2">{{ $t("style.dashPattern") }}</span>
-      <span
-        v-show="
+      <span v-show="
           !emptyDashPattern &&
             !totallyDisableDashPatternSelector &&
             dashPatternAgreement
-        "
-      >
+        ">
         ({{$t("style.gapDashPattern")}}: {{ gapLength.toFixed(1) }}/{{
         dashLength.toFixed(1)
         }})
       </span>
       <br />
-      <span
-        v-show="totallyDisableDashPatternSelector"
-        class="select-an-object-text"
-      >{{ $t("style.selectAnObject") }}</span>
-      <v-tooltip
-        v-if="!dashPatternAgreement"
+      <span v-show="totallyDisableDashPatternSelector"
+        class="select-an-object-text">{{ $t("style.selectAnObject") }}</span>
+      <v-tooltip v-if="!dashPatternAgreement"
         bottom
         :open-delay="toolTipOpenDelay"
         :close-delay="toolTipCloseDelay"
-        max-width="400px"
-      >
+        max-width="400px">
         <template v-slot:activator="{ on }">
-          <v-btn
-            color="error"
+          <v-btn color="error"
             v-on="on"
             v-show="!totallyDisableDashPatternSelector"
             text
             small
             outlined
             ripple
-            @click="setCommonDashPatternAgreement"
-          >{{ $t("style.differingStylesDetected") }}</v-btn>
+            @click="setCommonDashPatternAgreement">
+            {{ $t("style.differingStylesDetected") }}</v-btn>
         </template>
         <span>{{ $t("style.differingStylesDetectedToolTip") }}</span>
       </v-tooltip>
 
-      <v-tooltip
-        v-if="emptyDashPattern"
+      <v-tooltip v-if="emptyDashPattern"
         bottom
         :open-delay="toolTipOpenDelay"
         :close-delay="toolTipCloseDelay"
-        max-width="400px"
-      >
+        max-width="400px">
         <template v-slot:activator="{ on }">
-          <v-btn
-            v-on="on"
+          <v-btn v-on="on"
             v-show="!totallyDisableDashPatternSelector && dashPatternAgreement"
             text
             color="error"
             outlined
             ripple
             small
-            @click="toggleDashPatternSliderAvailibity"
-          >{{ $t("style.enableDashPatternSlider") }}</v-btn>
+            @click="toggleDashPatternSliderAvailibity">
+            {{ $t("style.enableDashPatternSlider") }}</v-btn>
         </template>
         <span>{{ $t("style.enableDashPatternSliderToolTip") }}</span>
       </v-tooltip>
 
-      <v-tooltip
-        v-else
+      <v-tooltip v-else
         bottom
         :open-delay="toolTipOpenDelay"
         :close-delay="toolTipCloseDelay"
-        max-width="400px"
-      >
+        max-width="400px">
         <template v-slot:activator="{ on }">
-          <v-btn
-            v-on="on"
+          <v-btn v-on="on"
             v-show="!totallyDisableDashPatternSelector && dashPatternAgreement"
             text
             outlined
             ripple
             small
-            @click="toggleDashPatternSliderAvailibity"
-          >{{ $t("style.disableDashPatternSlider") }}</v-btn>
+            @click="toggleDashPatternSliderAvailibity">
+            {{ $t("style.disableDashPatternSlider") }}</v-btn>
         </template>
         <span>{{ $t("style.disableDashPatternSliderToolTip") }}</span>
       </v-tooltip>
 
-      <v-tooltip
-        bottom
+      <v-tooltip bottom
         :open-delay="toolTipOpenDelay"
         :close-delay="toolTipCloseDelay"
-        max-width="400px"
-      >
+        max-width="400px">
         <template v-slot:activator="{ on }">
-          <v-btn
-            v-on="on"
+          <v-btn v-on="on"
             v-show="
               dashPatternAgreement &&
                 !totallyDisableDashPatternSelector &&
@@ -406,21 +359,17 @@
             text
             outlined
             ripple
-            small
-          >{{ $t("style.clearChanges") }}</v-btn>
+            small>{{ $t("style.clearChanges") }}</v-btn>
         </template>
         <span>{{ $t("style.clearChangesToolTip") }}</span>
       </v-tooltip>
 
-      <v-tooltip
-        bottom
+      <v-tooltip bottom
         :open-delay="toolTipOpenDelay"
         :close-delay="toolTipCloseDelay"
-        max-width="400px"
-      >
+        max-width="400px">
         <template v-slot:activator="{ on }">
-          <v-btn
-            v-on="on"
+          <v-btn v-on="on"
             v-show="dashPatternAgreement &&
                 !totallyDisableDashPatternSelector &&
                 !emptyDashPattern
@@ -429,14 +378,12 @@
             text
             small
             outlined
-            ripple
-          >{{ $t("style.restoreDefaults") }}</v-btn>
+            ripple>{{ $t("style.restoreDefaults") }}</v-btn>
         </template>
         <span>{{ $t("style.restoreDefaultsToolTip") }}</span>
       </v-tooltip>
 
-      <v-range-slider
-        v-model="sliderDashArray"
+      <v-range-slider v-model="sliderDashArray"
         :min="0"
         step="1"
         :disabled="
@@ -447,8 +394,7 @@
         @change="onDashPatternChange"
         :max="maxGapLengthPlusDashLength"
         type="range"
-        dense
-      >
+        dense>
         <template v-slot:prepend>
           <v-icon @click="decrementDashPattern">mdi-minus</v-icon>
         </template>
@@ -460,17 +406,17 @@
     </fade-in-card>
 
     <!-- Basic card is displayed only on the basic panel -->
-    <fade-in-card :showWhen="editModeIsLabel() &&(hasLabelStyle || noObjectsSelected)">
-      <span class="text-subtitle-2">{{ $t("style.labelStyleOptions") }}</span>
+    <fade-in-card
+      :showWhen="editModeIsLabel() &&(hasLabelStyle || noObjectsSelected)">
+      <span
+        class="text-subtitle-2">{{ $t("style.labelStyleOptions") }}</span>
       <div style="line-height:15%;">
         <br />
       </div>
-      <div
-        v-show="totalyDisableStyleDataSelector"
-        class="select-an-object-text"
-      >{{ $t("style.selectAnObject") }}</div>
-      <v-text-field
-        v-model="labelDisplayText"
+      <div v-show="totalyDisableStyleDataSelector"
+        class="select-an-object-text">{{ $t("style.selectAnObject") }}
+      </div>
+      <v-text-field v-model="labelDisplayText"
         v-bind:label="$t('style.labelText')"
         :counter="maxLabelDisplayTextLength"
         :disabled="!styleDataAgreement || totalyDisableStyleDataSelector"
@@ -481,10 +427,9 @@
         :rules="[labelDisplayTextCheck]"
         @keyup="setlabelDisplayTextChange(); onStyleDataChanged()"
         @blur="setlabelDisplayTextChange(); onStyleDataChanged()"
-        @change="setlabelDisplayTextChange(); onStyleDataChanged()"
-      ></v-text-field>
-      <v-text-field
-        v-model="labelDisplayCaption"
+        @change="setlabelDisplayTextChange(); onStyleDataChanged()">
+      </v-text-field>
+      <v-text-field v-model="labelDisplayCaption"
         v-bind:label="$t('style.labelCaption')"
         :counter="maxLabelDisplayCaptionLength"
         :disabled="!styleDataAgreement || totalyDisableStyleDataSelector"
@@ -495,10 +440,9 @@
         :rules="[labelDisplayCaptionCheck]"
         @keyup="setlabelDisplayCaptionChange(); onStyleDataChanged()"
         @blur="setlabelDisplayCaptionChange(); onStyleDataChanged()"
-        @change="setlabelDisplayCaptionChange(); onStyleDataChanged()"
-      ></v-text-field>
-      <v-select
-        v-model="labelDisplayMode"
+        @change="setlabelDisplayCaptionChange(); onStyleDataChanged()">
+      </v-text-field>
+      <v-select v-model="labelDisplayMode"
         v-bind:label="$t('style.labelDisplayMode')"
         :disabled="!styleDataAgreement || totalyDisableStyleDataSelector"
         :items="labelDisplayModeItems"
@@ -506,10 +450,9 @@
         outlined
         dense
         @blur="setlabelDisplayModeChange(); onStyleDataChanged()"
-        @change="setlabelDisplayModeChange(); onStyleDataChanged()"
-      ></v-select>
-      <v-select
-        v-model="labelTextFamily"
+        @change="setlabelDisplayModeChange(); onStyleDataChanged()">
+      </v-select>
+      <v-select v-model="labelTextFamily"
         v-bind:label="$t('style.labelTextFamily')"
         :disabled="!styleDataAgreement || totalyDisableStyleDataSelector"
         :items="labelTextFamilyItems"
@@ -517,10 +460,9 @@
         outlined
         dense
         @blur="setlabelTextFamilyChange(); onStyleDataChanged()"
-        @change="setlabelTextFamilyChange(); onStyleDataChanged()"
-      ></v-select>
-      <v-select
-        v-model="labelTextStyle"
+        @change="setlabelTextFamilyChange(); onStyleDataChanged()">
+      </v-select>
+      <v-select v-model="labelTextStyle"
         v-bind:label="$t('style.labelTextStyle')"
         :disabled="!styleDataAgreement || totalyDisableStyleDataSelector"
         :items="labelTextStyleItems"
@@ -528,10 +470,9 @@
         outlined
         dense
         @blur="setlabelTextStyleChange(); onStyleDataChanged()"
-        @change="setlabelTextStyleChange(); onStyleDataChanged()"
-      ></v-select>
-      <v-select
-        v-model="labelTextDecoration"
+        @change="setlabelTextStyleChange(); onStyleDataChanged()">
+      </v-select>
+      <v-select v-model="labelTextDecoration"
         v-bind:label="$t('style.labelTextDecoration')"
         :disabled="!styleDataAgreement || totalyDisableStyleDataSelector"
         :items="labelTextDecorationItems"
@@ -539,10 +480,9 @@
         outlined
         dense
         @blur="setlabelTextDecorationChange(); onStyleDataChanged()"
-        @change="setlabelTextDecorationChange(); onStyleDataChanged()"
-      ></v-select>
-      <v-select
-        v-model="labelObjectVisibility"
+        @change="setlabelTextDecorationChange(); onStyleDataChanged()">
+      </v-select>
+      <v-select v-model="labelObjectVisibility"
         v-bind:label="$t('style.labelObjectVisibility')"
         :disabled="!styleDataAgreement || totalyDisableStyleDataSelector"
         :items="labelObjectVisibilityItems"
@@ -554,39 +494,33 @@
         small-chips
         v-bind:no-data-text="$t('style.selectObjectsToHide')"
         @blur="setLabelObjectVisibilityChange(); onStyleDataChanged()"
-        @change="setLabelObjectVisibilityChange(); onStyleDataChanged()"
-      ></v-select>
-      <v-tooltip
-        v-if="!styleDataAgreement"
+        @change="setLabelObjectVisibilityChange(); onStyleDataChanged()">
+      </v-select>
+      <v-tooltip v-if="!styleDataAgreement"
         bottom
         :open-delay="toolTipOpenDelay"
         :close-delay="toolTipCloseDelay"
-        max-width="400px"
-      >
+        max-width="400px">
         <template v-slot:activator="{ on }">
-          <v-btn
-            color="error"
+          <v-btn color="error"
             v-on="on"
             v-show="!totalyDisableStyleDataSelector"
             text
             small
             outlined
             ripple
-            @click="setStyleDataAgreement"
-          >{{ $t("style.differingStylesDetected") }}</v-btn>
+            @click="setStyleDataAgreement">
+            {{ $t("style.differingStylesDetected") }}</v-btn>
         </template>
         <span>{{ $t("style.differingStylesDetectedToolTip") }}</span>
       </v-tooltip>
 
-      <v-tooltip
-        bottom
+      <v-tooltip bottom
         :open-delay="toolTipOpenDelay"
         :close-delay="toolTipCloseDelay"
-        max-width="400px"
-      >
+        max-width="400px">
         <template v-slot:activator="{ on }">
-          <v-btn
-            v-on="on"
+          <v-btn v-on="on"
             v-show="styleDataAgreement && !totalyDisableStyleDataSelector
             "
             @click="clearStyleData"
@@ -594,41 +528,33 @@
             text
             outlined
             ripple
-            small
-          >{{ $t("style.clearChanges") }}</v-btn>
+            small>{{ $t("style.clearChanges") }}</v-btn>
         </template>
         <span>{{ $t("style.clearChangesToolTip") }}</span>
       </v-tooltip>
 
-      <v-tooltip
-        bottom
+      <v-tooltip bottom
         :open-delay="toolTipOpenDelay"
         :close-delay="toolTipCloseDelay"
-        max-width="400px"
-      >
+        max-width="400px">
         <template v-slot:activator="{ on }">
-          <v-btn
-            v-on="on"
+          <v-btn v-on="on"
             v-show="styleDataAgreement && !totalyDisableStyleDataSelector
             "
             @click="resetStyleDataToDefaults"
             text
             small
             outlined
-            ripple
-          >{{ $t("style.restoreDefaults") }}</v-btn>
+            ripple>{{ $t("style.restoreDefaults") }}</v-btn>
         </template>
         <span>{{ $t("style.restoreDefaultsToolTip") }}</span>
       </v-tooltip>
     </fade-in-card>
 
-    <fade-in-card
-      :showWhen="
+    <fade-in-card :showWhen="
         (editModeIsLabel() && (hasLabelTextScalePercent || noObjectsSelected)) 
-      "
-    >
-      <NumberSelector
-        id="textScalePercentSlider"
+      ">
+      <NumberSelector id="textScalePercentSlider"
         v-bind:data.sync="labelTextScalePercent"
         style-name="labelTextScalePercent"
         title-key="style.labelTextScalePercent"
@@ -637,17 +563,13 @@
         v-bind:min-value="minLabelTextScalePercent"
         v-bind:max-value="maxLabelTextScalePercent"
         v-bind:step="10"
-        :mode="mode"
-      ></NumberSelector>
+        :mode="mode"></NumberSelector>
     </fade-in-card>
 
-    <fade-in-card
-      :showWhen="
+    <fade-in-card :showWhen="
         (editModeIsLabel() && (hasLabelTextRotation || noObjectsSelected))
-      "
-    >
-      <NumberSelector
-        id="labelTextRotationSlider"
+      ">
+      <NumberSelector id="labelTextRotationSlider"
         v-bind:data.sync="labelTextRotation"
         style-name="labelTextRotation"
         title-key="style.labelTextRotation"
@@ -655,8 +577,7 @@
         v-bind:max-value="3.14159"
         v-bind:step="0.1"
         :temp-style-states="tempStyleStates"
-        :mode="mode"
-      ></NumberSelector>
+        :mode="mode"></NumberSelector>
     </fade-in-card>
   </div>
 </template>
@@ -1093,7 +1014,7 @@ export default class FrontAndBackStyle extends Vue {
     // Vue.set(this.labelObjectVisibility, 1, this.sliderDashArray[1] + 1);
     console.log(
       "post set label and ob vis",
-      this.labelObjectVisibility.toString()
+      this.labelObjectVisibility?.toString()
     );
   }
   disableStyleDataSelector(totally: boolean): void {

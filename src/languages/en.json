@@ -18,6 +18,9 @@
     "ResetSphereOrientation": "Press \"R\" to reset sphere orientation"
   },
   "buttons": {
+    "CreateAngleDisplayedName": "Angle",
+    "CreateAngleToolTipMessage": "Calculate Angle",
+    "CreateAngleToolUseMessage": "Click on two lines/segments or three points to calculate angle.",
     "CreateAntipodalPointDisplayedName": "Antipodal Point",
     "CreateAntipodalPointToolTipMessage": "Select a point",
     "CreateAntipodalPointToolUseMessage": "Click on a point to create its antipode",
@@ -42,6 +45,9 @@
     "CreatePointOnOneDimToolUseMessage": "Select a one-dimensional object to add a point to.",
     "CreatePointToolTipMessage": "Insert point",
     "CreatePointToolUseMessage": "Click to insert a free point.",
+    "CreateSegmentLengthDisplayedName": "Length of Line Segment",
+    "CreateSegmentLengthToolTipMessage": "Length of Line Segment",
+    "CreateSegmentLengthToolUseMessage": "Click this button to compute the length of Line Segment",
     "DeleteDisplayedName": "Delete",
     "DeleteToolTipMessage": "Delete Objects",
     "DeleteToolUseMessage": "Click on objects to delete them.",

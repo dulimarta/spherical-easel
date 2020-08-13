@@ -9,14 +9,14 @@
   // "vetur.format.defaultFormatter.js": "prettier-eslint",
   // "vetur.format.defaultFormatter.ts": "prettier-tslint",
 
-  // "vetur.format.defaultFormatter.html": "js-beautify-html",
-  // "vetur.format.defaultFormatterOptions": {
-  //   "js-beautify-html": {
-  //     "wrap_attributes": "force",
-  //     "wrap_line_length": "75",
-  //     "indent_size": 2
-  //   }
-  // },
+  "vetur.format.defaultFormatter.html": "js-beautify-html",
+  "vetur.format.defaultFormatterOptions": {
+    "js-beautify-html": {
+      "wrap_attributes": "force",
+      "wrap_line_length": "75",
+      "indent_size": 2
+    }
+  },
   "vetur.format.options.tabSize": 2,
   "workbench.colorCustomizations": {
     "activityBar.activeBackground": "#aa83d3",
@@ -27,12 +27,10 @@
     "activityBarBadge.background": "#e6cfb8",
     "activityBarBadge.foreground": "#15202b",
     "statusBar.background": "#905dc6",
-    "statusBar.border": "#905dc6",
     "statusBar.foreground": "#e7e7e7",
     "statusBarItem.hoverBackground": "#aa83d3",
     "titleBar.activeBackground": "#905dc6",
     "titleBar.activeForeground": "#e7e7e7",
-    "titleBar.border": "#905dc6",
     "titleBar.inactiveBackground": "#905dc699",
     "titleBar.inactiveForeground": "#e7e7e799"
   },

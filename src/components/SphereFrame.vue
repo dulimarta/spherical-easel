@@ -1,5 +1,6 @@
 <template>
-  <div id="canvas" ref="canvas"></div>
+  <div id="canvas"
+    ref="canvas"></div>
 </template>
 
 <style lang="scss" scoped></style>
@@ -27,6 +28,7 @@ import DeleteHandler from "@/eventHandlers/DeleteHandler";
 import HideObjectHandler from "@/eventHandlers/HideObjectHandler";
 import SegmentLengthHandler from "@/eventHandlers/SegmentLengthHandler";
 import PointDistanceHandler from "@/eventHandlers/PointDistanceHandler";
+import AngleHandler from "@/eventHandlers/AngleHandler";
 import ToggleLabelDisplayHandler from "@/eventHandlers/ToggleLabelDisplayHandler";
 
 import EventBus from "@/eventHandlers/EventBus";
@@ -85,6 +87,7 @@ export default class SphereFrame extends VueComponent {
   private hideTool!: HideObjectHandler;
   private segmentLengthTool!: SegmentLengthHandler;
   private pointDistanceTool!: PointDistanceHandler;
+  private angleTool!: AngleHandler;
   private toggleLabelDisplayTool!: ToggleLabelDisplayHandler;
 
   /**
@@ -215,6 +218,7 @@ export default class SphereFrame extends VueComponent {
     this.hideTool = new HideObjectHandler(this.layers);
     this.segmentLengthTool = new SegmentLengthHandler(this.layers);
     this.pointDistanceTool = new PointDistanceHandler(this.layers);
+    this.angleTool = new AngleHandler(this.layers);
     this.toggleLabelDisplayTool = new ToggleLabelDisplayHandler(this.layers);
   }
 
@@ -464,6 +468,9 @@ export default class SphereFrame extends VueComponent {
         break;
       case "pointDistance":
         this.currentTool = this.pointDistanceTool;
+        break;
+      case "angle":
+        this.currentTool = this.angleTool;
         break;
       case "toggleLabelDisplay":
         this.currentTool = this.toggleLabelDisplayTool;
