@@ -5,7 +5,7 @@ import Two from "two.js";
 import SETTINGS, { LAYER } from "@/global-settings";
 import Nodule, { DisplayStyle } from "./Nodule";
 import { Vector3 } from "three";
-import { StyleOptions, StyleEditMode } from "@/types/Styles";
+import { StyleOptions, StyleEditPanels } from "@/types/Styles";
 
 /**
  * Each Point object is uniquely associated with a SEPoint object.
@@ -232,7 +232,7 @@ export default class Point extends Nodule {
    */
   updateStyle(options: StyleOptions): void {
     console.debug("Point: Update style of", this.name, "using", options);
-    if (options.mode === StyleEditMode.Front) {
+    if (options.panel === StyleEditPanels.Front) {
       // Set the front options
       if (options.pointRadiusPercent !== undefined) {
         this.pointRadiusPercentFront = options.pointRadiusPercent;
@@ -246,7 +246,7 @@ export default class Point extends Nodule {
       if (options.opacity !== undefined) {
         this.opacityFront = options.opacity;
       }
-    } else if (options.mode === StyleEditMode.Back) {
+    } else if (options.panel === StyleEditPanels.Back) {
       // Set the back options
       // options.dynamicBackStyle is boolean, so we need to explicitly check for undefined otherwise
       // when it is false, this doesn't execute and this.dynamicBackStyle is not set
@@ -276,21 +276,20 @@ export default class Point extends Nodule {
   /**
    * Return the current style state
    */
-  currentStyleState(mode: StyleEditMode): StyleOptions {
-    switch (mode) {
-      case StyleEditMode.Front: {
+  currentStyleState(panel: StyleEditPanels): StyleOptions {
+    switch (panel) {
+      case StyleEditPanels.Front: {
         return {
-          mode: mode,
+          panel: panel,
           pointRadiusPercent: this.pointRadiusPercentFront,
           strokeColor: this.strokeColorFront,
           fillColor: this.fillColorFront,
           opacity: this.opacityFront
         };
       }
-      default:
-      case StyleEditMode.Back: {
+      case StyleEditPanels.Back: {
         return {
-          mode: mode,
+          panel: panel,
           pointRadiusPercent: this.pointRadiusPercentBack,
           strokeColor: this.strokeColorBack,
           fillColor: this.fillColorBack,
@@ -298,16 +297,22 @@ export default class Point extends Nodule {
           dynamicBackStyle: this.dynamicBackStyle
         };
       }
+      default:
+      case StyleEditPanels.Basic: {
+        return {
+          panel: panel
+        };
+      }
     }
   }
   /**
    * Return the default style state
    */
-  defaultStyleState(mode: StyleEditMode): StyleOptions {
-    switch (mode) {
-      case StyleEditMode.Front: {
+  defaultStyleState(panel: StyleEditPanels): StyleOptions {
+    switch (panel) {
+      case StyleEditPanels.Front: {
         return {
-          mode: mode,
+          panel: panel,
           pointRadiusPercent: SETTINGS.point.radiusPercent.front,
           strokeColor: SETTINGS.point.drawn.strokeColor.front,
           fillColor: SETTINGS.point.drawn.fillColor.front,
@@ -315,10 +320,10 @@ export default class Point extends Nodule {
         };
         // Back
       }
-      default:
-      case StyleEditMode.Back: {
+
+      case StyleEditPanels.Back: {
         return {
-          mode: mode,
+          panel: panel,
 
           pointRadiusPercent: SETTINGS.point.dynamicBackStyle
             ? Nodule.contrastPointRadiusPercent(
@@ -339,6 +344,12 @@ export default class Point extends Nodule {
             : SETTINGS.point.drawn.opacity.back,
 
           dynamicBackStyle: SETTINGS.point.dynamicBackStyle
+        };
+      }
+      default:
+      case StyleEditPanels.Basic: {
+        return {
+          panel: panel
         };
       }
     }

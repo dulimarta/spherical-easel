@@ -22,7 +22,9 @@
           outlined
           ripple
           @click="setStyleDataAgreement">
-          {{ $t("style.differingStylesDetected") }}</v-btn>
+          <span
+            class="long-text-button">{{ $t("style.differingStylesDetected") }}</span>
+        </v-btn>
       </template>
       <span>{{ $t("style.differingStylesDetectedToolTip") }}</span>
     </v-tooltip>
@@ -86,14 +88,15 @@ import Vue from "vue";
 import Component from "vue-class-component";
 import SETTINGS from "@/global-settings";
 import { Watch, Prop, PropSync } from "vue-property-decorator";
-import { StyleOptions, Styles, StyleEditMode } from "@/types/Styles";
+import { StyleOptions, Styles, StyleEditPanels } from "@/types/Styles";
 import { State } from "vuex-class";
 import { SENodule } from "@/models/SENodule";
-import { AppState } from "@/types";
+import { AppState, Labelable } from "@/types";
 
 @Component({})
 export default class NumberSelector extends Vue {
-  @Prop() readonly mode!: StyleEditMode;
+  @Prop() readonly panel!: StyleEditPanels;
+  @Prop() readonly activePanel!: StyleEditPanels;
   @Prop() readonly titleKey!: string;
   @Prop() readonly sideFrontKey!: string;
   @Prop() readonly sideBackKey!: string;
@@ -116,7 +119,7 @@ export default class NumberSelector extends Vue {
   private totalyDisableSelector = true;
 
   mounted(): void {
-    this.onSelectionChanged(this.$store.getters.selectedSENodules());
+    // this.onSelectionChanged(this.$store.getters.selectedSENodules());
   }
   @Watch("tempStyleStates")
   setTempStyleState(tempStyleStates: StyleOptions[]): void {
@@ -124,13 +127,13 @@ export default class NumberSelector extends Vue {
   }
 
   editModeIsBack(): boolean {
-    return this.mode == StyleEditMode.Back;
+    return this.panel === StyleEditPanels.Back;
   }
   editModeIsFront(): boolean {
-    return this.mode == StyleEditMode.Front;
+    return this.panel === StyleEditPanels.Front;
   }
   editModeIsLabel(): boolean {
-    return this.mode == StyleEditMode.Label;
+    return this.panel === StyleEditPanels.Basic;
   }
 
   beforeUpdate(): void {
@@ -142,25 +145,38 @@ export default class NumberSelector extends Vue {
   // These methods are linked to the styleData fade-in-card
   onDataChanged(newData: number): void {
     this.disableUndoButton = false;
+    const selected = [];
+    selected.push(...this.$store.getters.selectedSENodules());
+    if (this.$store.getters.getUseLabelMode()) {
+      const label = ((selected[0] as unknown) as Labelable).label;
+      selected.clear();
+      selected.push(label);
+    }
     this.$store.direct.commit.changeStyle({
-      selected: this.$store.getters.selectedSENodules(),
+      selected: selected,
       payload: {
-        mode: this.mode,
+        panel: this.panel,
         [this.styleName]: newData
       }
     });
   }
 
   resetToDefaults(): void {
-    const selected = this.$store.getters.selectedSENodules();
+    const selected = [];
+    selected.push(...this.$store.getters.selectedSENodules());
+    if (this.$store.getters.getUseLabelMode()) {
+      const label = ((selected[0] as unknown) as Labelable).label;
+      selected.clear();
+      selected.push(label);
+    }
     const defaultStyleStates = this.$store.getters.getDefaultStyleState(
-      this.mode
+      this.panel
     );
     for (let i = 0; i < selected.length; i++) {
       this.$store.direct.commit.changeStyle({
         selected: [selected[i]],
         payload: {
-          mode: this.mode,
+          panel: this.panel,
           [this.styleName]: (defaultStyleStates[i] as any)[this.styleName]
         }
       });
@@ -172,26 +188,26 @@ export default class NumberSelector extends Vue {
     this.styleDataAgreement = true;
     this.totalyDisableSelector = false;
 
-    console.log(
-      "Style Name:",
-      this.styleName,
-      "Before RHS computed:",
-      (styleState[0] as any)[this.styleName],
-      "Before Style Data",
-      this.styleData
-    );
+    // console.log(
+    //   "Style Name:",
+    //   this.styleName,
+    //   "Before RHS computed:",
+    //   (styleState[0] as any)[this.styleName],
+    //   "Before Style Data",
+    //   this.styleData
+    // );
     this.styleData =
       this.styleName in styleState[0]
         ? (styleState[0] as any)[this.styleName]
         : undefined;
 
-    console.log(
-      "After RHS computed:",
-      (styleState[0] as any)[this.styleName],
-      "After Style Data",
-      this.styleData,
-      "These two values should be the same!"
-    );
+    // console.log(
+    //   "After RHS computed:",
+    //   (styleState[0] as any)[this.styleName],
+    //   "After Style Data",
+    //   this.styleData,
+    //   "These two values should be the same!"
+    // );
     // screen for undefined - if undefined then this is not a property that is going to be set by the style panel for this selection of objects
     if (this.styleData !== undefined) {
       if (
@@ -219,15 +235,21 @@ export default class NumberSelector extends Vue {
   }
   clearChanges(): void {
     this.disableUndoButton = true;
-    const selected = this.$store.getters.selectedSENodules();
+    const selected = [];
+    selected.push(...this.$store.getters.selectedSENodules());
+    if (this.$store.getters.getUseLabelMode()) {
+      const label = ((selected[0] as unknown) as Labelable).label;
+      selected.clear();
+      selected.push(label);
+    }
     const initialStyleStates = this.$store.getters.getInitialStyleState(
-      this.mode
+      this.panel
     );
     for (let i = 0; i < selected.length; i++) {
       this.$store.direct.commit.changeStyle({
         selected: [selected[i]],
         payload: {
-          mode: this.mode,
+          panel: this.panel,
           [this.styleName]: (initialStyleStates[i] as any)[this.styleName]
         }
       });
@@ -245,7 +267,7 @@ export default class NumberSelector extends Vue {
       this.$store.direct.commit.changeStyle({
         selected: this.$store.getters.selectedSENodules(),
         payload: {
-          mode: this.mode,
+          panel: this.panel,
           [this.styleName]: this.styleData
         }
       });
@@ -261,10 +283,17 @@ export default class NumberSelector extends Vue {
       this.$store.direct.commit.changeStyle({
         selected: this.$store.getters.selectedSENodules(),
         payload: {
-          mode: this.mode,
+          panel: this.panel,
           [this.styleName]: this.styleData
         }
       });
+    }
+  }
+  @Watch("activePanel")
+  private activePanelChange(): void {
+    if (this.activePanel !== undefined && this.panel === this.activePanel) {
+      // activePanel = undefined means that no edit panel is open
+      this.onSelectionChanged(this.$store.getters.selectedSENodules());
     }
   }
 
@@ -274,7 +303,7 @@ export default class NumberSelector extends Vue {
       this.disableSelector(true);
       return;
     }
-    this.setSelectorState(this.$store.getters.getInitialStyleState(this.mode));
+    this.setSelectorState(this.$store.getters.getInitialStyleState(this.panel));
   }
 }
 </script>
@@ -284,5 +313,10 @@ export default class NumberSelector extends Vue {
 
 .select-an-object-text {
   color: rgb(255, 82, 82);
+}
+.long-text-button {
+  max-width: 250px;
+  word-wrap: break-word;
+  display: inline-block;
 }
 </style>

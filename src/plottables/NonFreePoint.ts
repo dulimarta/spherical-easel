@@ -5,7 +5,7 @@ import Two from "two.js";
 import SETTINGS, { LAYER } from "@/global-settings";
 import Nodule, { DisplayStyle } from "./Nodule";
 import { Vector3 } from "three";
-import { StyleOptions, StyleEditMode } from "@/types/Styles";
+import { StyleOptions, StyleEditPanels } from "@/types/Styles";
 import Point from "@/plottables/Point";
 
 /**
@@ -56,11 +56,11 @@ export default class NonFreePoint extends Point {
   /**
    * Return the default style state
    */
-  defaultStyleState(mode: StyleEditMode): StyleOptions {
-    switch (mode) {
-      case StyleEditMode.Front: {
+  defaultStyleState(panel: StyleEditPanels): StyleOptions {
+    switch (panel) {
+      case StyleEditPanels.Front: {
         return {
-          mode: mode,
+          panel: panel,
           pointRadiusPercent: 100,
           strokeColor: SETTINGS.point.nonFree.strokeColor.front,
           fillColor: SETTINGS.point.nonFree.fillColor.front,
@@ -68,10 +68,9 @@ export default class NonFreePoint extends Point {
         };
         // Back
       }
-      default:
-      case StyleEditMode.Back: {
+      case StyleEditPanels.Back: {
         return {
-          mode: mode,
+          panel: panel,
 
           pointRadiusPercent: SETTINGS.point.dynamicBackStyle
             ? Nodule.contrastPointRadiusPercent(100)
@@ -92,6 +91,12 @@ export default class NonFreePoint extends Point {
             : SETTINGS.point.nonFree.opacity.back,
 
           dynamicBackStyle: SETTINGS.point.dynamicBackStyle
+        };
+      }
+      default:
+      case StyleEditPanels.Basic: {
+        return {
+          panel: panel
         };
       }
     }

@@ -1,9 +1,9 @@
 <template>
   <div>
     <div>
-      <span v-show="mode"
+      <span v-show="panel"
         class="text-subtitle-2">{{ $t(sideFrontKey) }} </span>
-      <span v-show="!mode"
+      <span v-show="!panel"
         class="text-subtitle-2">{{ $t(sideBackKey) }} </span>
       <span class="text-subtitle-2">{{ $t(titleKey) }}</span>
     </div>
@@ -23,7 +23,9 @@
           outlined
           ripple
           @click="setCommonColorArgreement">
-          {{ $t("style.differingStylesDetected") }}</v-btn>
+          <span
+            class="long-text-button">{{ $t("style.differingStylesDetected") }}</span>
+        </v-btn>
       </template>
       <span>{{ $t("style.differingStylesDetectedToolTip") }}</span>
     </v-tooltip>
@@ -78,11 +80,11 @@
       <span>{{ $t("style.restoreDefaultsToolTip") }}</span>
     </v-tooltip>
     <v-color-picker hide-canvas
-      mode="hsla"
+      panel="hsla"
       :disabled="!colorAgreement || totallyDisableColorSelector || noData"
       show-swatches
       :hide-inputs="!colorAgreement || !showColorOptions"
-      hide-mode-switch
+      hide-panel-switch
       :swatches-max-height="colorSwatchHeight"
       v-model="colorData"
       id="colorPicker"
@@ -108,7 +110,7 @@ import { State } from "vuex-class";
 import { SENodule } from "@/models/SENodule";
 import Nodule from "@/plottables/Nodule";
 import { hslaColorType } from "@/types";
-import { StyleOptions, StyleEditMode } from "@/types/Styles";
+import { StyleOptions, StyleEditPanels } from "@/types/Styles";
 import { AppState } from "@/types";
 @Component
 export default class ColorSelector extends Vue {
@@ -117,7 +119,8 @@ export default class ColorSelector extends Vue {
   @Prop() readonly sideBackKey!: string;
   @PropSync("data") colorData?: hslaColorType;
   @Prop() readonly defaultStyleStates?: StyleOptions[];
-  @Prop() readonly mode!: StyleEditMode;
+  @Prop() readonly panel!: StyleEditPanels;
+  @Prop() readonly activePanel!: StyleEditPanels;
   @Prop({ required: true }) readonly styleName!: string;
   @Prop() readonly tempStyleStates!: StyleOptions[];
 
@@ -154,7 +157,7 @@ export default class ColorSelector extends Vue {
     //   "mounted initialStyleStates before",
     //   JSON.stringify(this.initialStyleStates[0]));
 
-    this.onSelectionChanged(this.$store.getters.selectedSENodules());
+    //this.onSelectionChanged(this.$store.getters.selectedSENodules());
 
     // If these commands are in the beforeUpdate() method they are executed over and over but
     // they only need to be executed once.
@@ -204,7 +207,7 @@ export default class ColorSelector extends Vue {
     this.$store.direct.commit.changeStyle({
       selected: this.$store.getters.selectedSENodules(),
       payload: {
-        mode: this.mode,
+        panel: this.panel,
         [this.styleName]: this.colorString
       }
     });
@@ -215,13 +218,13 @@ export default class ColorSelector extends Vue {
   clearRecentColorChanges(): void {
     const selected = this.$store.getters.selectedSENodules();
     const initialStyleStates = this.$store.getters.getInitialStyleState(
-      this.mode
+      this.panel
     );
     for (let i = 0; i < selected.length; i++) {
       this.$store.direct.commit.changeStyle({
         selected: [selected[i]],
         payload: {
-          mode: this.mode,
+          panel: this.panel,
           [this.styleName]: (initialStyleStates[i] as any)[this.styleName]
         }
       });
@@ -233,13 +236,13 @@ export default class ColorSelector extends Vue {
   resetColorToDefaults(): void {
     const selected = this.$store.getters.selectedSENodules();
     const defaultStyleStates = this.$store.getters.getDefaultStyleState(
-      this.mode
+      this.panel
     );
     for (let i = 0; i < selected.length; i++) {
       this.$store.direct.commit.changeStyle({
         selected: [selected[i]],
         payload: {
-          mode: this.mode,
+          panel: this.panel,
           [this.styleName]: (defaultStyleStates[i] as any)[this.styleName]
         }
       });
@@ -258,7 +261,7 @@ export default class ColorSelector extends Vue {
         ? (styleState[0] as any)[this.styleName]
         : undefined;
     // console.log("color string", this.colorString);
-    if (this.colorString == this.noDataStr) {
+    if (this.colorString === this.noDataStr) {
       this.colorData = Nodule.convertStringToHSLAObject("hsla(0,0%,0%,0.001)");
       this.colorSwatchHeight = 0;
       // this.colorCanvasHeight = 0;
@@ -315,10 +318,18 @@ export default class ColorSelector extends Vue {
     this.$store.direct.commit.changeStyle({
       selected: this.$store.getters.selectedSENodules(),
       payload: {
-        mode: this.mode,
+        panel: this.panel,
         [this.styleName]: this.colorString
       }
     });
+  }
+
+  @Watch("activePanel")
+  private activePanelChange(): void {
+    if (this.activePanel !== undefined && this.panel === this.activePanel) {
+      // activePanel = undefined means that no edit panel is open
+      this.onSelectionChanged(this.$store.getters.selectedSENodules());
+    }
   }
 
   @Watch("selections")
@@ -329,7 +340,7 @@ export default class ColorSelector extends Vue {
       return;
     }
     this.setColorSelectorState(
-      this.$store.getters.getInitialStyleState(this.mode)
+      this.$store.getters.getInitialStyleState(this.panel)
     );
   }
 }
@@ -340,5 +351,12 @@ export default class ColorSelector extends Vue {
 
 .select-an-object-text {
   color: rgb(255, 82, 82);
+}
+.long-text-button {
+  max-width: 250px;
+  word-wrap: break-word;
+  display: inline-block;
+  height: 1em;
+  white-space: pre-line;
 }
 </style>

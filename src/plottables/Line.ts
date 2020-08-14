@@ -2,7 +2,7 @@ import { Vector3, Matrix4 } from "three";
 import Two from "two.js";
 import SETTINGS, { LAYER } from "@/global-settings";
 import Nodule, { DisplayStyle } from "./Nodule";
-import { StyleOptions, StyleEditMode } from "@/types/Styles";
+import { StyleOptions, StyleEditPanels } from "@/types/Styles";
 
 // The number of vectors used to render the front half (and the same number in the back half)
 const SUBDIVS = SETTINGS.line.numPoints;
@@ -316,7 +316,7 @@ export default class Line extends Nodule {
    */
   updateStyle(options: StyleOptions): void {
     console.debug("Line: Update style of", this.name, "using", options);
-    if (options.mode === StyleEditMode.Front) {
+    if (options.panel === StyleEditPanels.Front) {
       // Set the front options
       if (options.strokeWidthPercent !== undefined) {
         this.strokeWidthPercentFront = options.strokeWidthPercent;
@@ -334,7 +334,7 @@ export default class Line extends Nodule {
           this.dashArrayFront.push(options.dashArray[i]);
         }
       }
-    } else if (options.mode === StyleEditMode.Back) {
+    } else if (options.panel === StyleEditPanels.Back) {
       // Set the back options
       // options.dynamicBackStyle is boolean, so we need to explicitly check for undefined otherwise
       // when it is false, this doesn't execute and this.dynamicBackStyle is not set
@@ -368,29 +368,28 @@ export default class Line extends Nodule {
   /**
    * Return the current style state
    */
-  currentStyleState(mode: StyleEditMode): StyleOptions {
-    switch (mode) {
-      case StyleEditMode.Front: {
+  currentStyleState(panel: StyleEditPanels): StyleOptions {
+    switch (panel) {
+      case StyleEditPanels.Front: {
         const dashArrayFront = [] as number[];
         if (this.dashArrayFront.length > 0) {
           this.dashArrayFront.forEach(v => dashArrayFront.push(v));
         }
         return {
-          mode: mode,
+          panel: panel,
           strokeWidthPercent: this.strokeWidthPercentFront,
           strokeColor: this.strokeColorFront,
           dashArray: dashArrayFront,
           opacity: this.opacityFront
         };
       }
-      default:
-      case StyleEditMode.Back: {
+      case StyleEditPanels.Back: {
         const dashArrayBack = [] as number[];
         if (this.dashArrayBack.length > 0) {
           this.dashArrayBack.forEach(v => dashArrayBack.push(v));
         }
         return {
-          mode: mode,
+          panel: panel,
           strokeWidthPercent: this.strokeWidthPercentBack,
           strokeColor: this.strokeColorBack,
           dashArray: dashArrayBack,
@@ -398,14 +397,20 @@ export default class Line extends Nodule {
           dynamicBackStyle: this.dynamicBackStyle
         };
       }
+      default:
+      case StyleEditPanels.Basic: {
+        return {
+          panel: panel
+        };
+      }
     }
   }
   /**
    * Return the default style state
    */
-  defaultStyleState(mode: StyleEditMode): StyleOptions {
-    switch (mode) {
-      case StyleEditMode.Front: {
+  defaultStyleState(panel: StyleEditPanels): StyleOptions {
+    switch (panel) {
+      case StyleEditPanels.Front: {
         const dashArrayFront = [] as number[];
         if (SETTINGS.line.drawn.dashArray.front.length > 0) {
           SETTINGS.line.drawn.dashArray.front.forEach(v =>
@@ -413,15 +418,14 @@ export default class Line extends Nodule {
           );
         }
         return {
-          mode: mode,
+          panel: panel,
           strokeWidthPercent: 100,
           strokeColor: SETTINGS.line.drawn.strokeColor.front,
           dashArray: dashArrayFront,
           opacity: SETTINGS.line.drawn.opacity.front
         };
       }
-      default:
-      case StyleEditMode.Back: {
+      case StyleEditPanels.Back: {
         const dashArrayBack = [] as number[];
 
         if (SETTINGS.line.drawn.dashArray.back.length > 0) {
@@ -430,7 +434,7 @@ export default class Line extends Nodule {
           );
         }
         return {
-          mode: mode,
+          panel: panel,
 
           strokeWidthPercent: SETTINGS.line.dynamicBackStyle
             ? Nodule.contrastStrokeWidthPercent(100)
@@ -447,6 +451,12 @@ export default class Line extends Nodule {
             : SETTINGS.line.drawn.opacity.back,
 
           dynamicBackStyle: SETTINGS.line.dynamicBackStyle
+        };
+      }
+      default:
+      case StyleEditPanels.Basic: {
+        return {
+          panel: panel
         };
       }
     }

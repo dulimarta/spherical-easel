@@ -1,7 +1,8 @@
-export enum StyleEditMode {
+export enum StyleEditPanels { // The order of these *must* match the order of the panels in Style.vue
+  Basic,
   Front,
   Back,
-  Label
+  Advanced
 }
 
 export enum LabelDisplayMode {
@@ -33,7 +34,7 @@ export enum Styles {
 }
 
 export type StyleOptions = {
-  mode: StyleEditMode;
+  panel: StyleEditPanels;
   strokeWidthPercent?: number;
   strokeColor?: string;
   fillColor?: string;

@@ -14,7 +14,7 @@ import { SEPoint } from "@/models/SEPoint";
 import { SELabel } from "@/models/SELabel";
 import NonFreePoint from "@/plottables/NonFreePoint";
 import { DisplayStyle } from "@/plottables/Nodule";
-import { StyleOptions, StyleEditMode } from "@/types/Styles";
+import { StyleOptions, StyleEditPanels } from "@/types/Styles";
 import SETTINGS from "@/global-settings";
 
 const PIXEL_CLOSE_ENOUGH = 8;
@@ -827,23 +827,23 @@ export default {
     return state.seNodules.find((z: SENodule) => z.id === id);
   },
   getInitialStyleState: (state: AppState) => (
-    mode: StyleEditMode
+    panel: StyleEditPanels
   ): StyleOptions[] => {
-    switch (mode) {
-      case StyleEditMode.Front: {
+    switch (panel) {
+      case StyleEditPanels.Front: {
         return state.initialStyleStates.slice(
           0,
           state.initialStyleStates.length / 3
         );
       }
-      case StyleEditMode.Back: {
+      case StyleEditPanels.Back: {
         return state.initialStyleStates.slice(
           state.initialStyleStates.length / 3,
           (2 * state.initialStyleStates.length) / 3
         );
       }
       default:
-      case StyleEditMode.Label: {
+      case StyleEditPanels.Basic: {
         return state.initialStyleStates.slice(
           (2 * state.initialStyleStates.length) / 3,
           state.initialStyleStates.length
@@ -852,24 +852,24 @@ export default {
     }
   },
   getDefaultStyleState: (state: AppState) => (
-    mode: StyleEditMode
+    panel: StyleEditPanels
   ): StyleOptions[] => {
-    switch (mode) {
-      case StyleEditMode.Front: {
+    switch (panel) {
+      case StyleEditPanels.Front: {
         return state.defaultStyleStates.slice(
           0,
           state.defaultStyleStates.length / 3
         );
       }
 
-      case StyleEditMode.Back: {
+      case StyleEditPanels.Back: {
         return state.defaultStyleStates.slice(
           state.defaultStyleStates.length / 3,
           (2 * state.defaultStyleStates.length) / 3
         );
       }
       default:
-      case StyleEditMode.Label: {
+      case StyleEditPanels.Basic: {
         return state.defaultStyleStates.slice(
           (2 * state.defaultStyleStates.length) / 3,
           state.defaultStyleStates.length
@@ -882,5 +882,10 @@ export default {
   },
   getCanvasWidth: (state: AppState) => (): number => {
     return state.canvasWidth;
+  },
+  // In the case of one non-labe object being selected, the label panel should edit that object's label and the fore/back ground should edit
+  // that selectedObject fore and back properties: useLabelMode indicates that we are doing this.
+  getUseLabelMode: (state: AppState) => (): boolean => {
+    return state.useLabelMode;
   }
 };

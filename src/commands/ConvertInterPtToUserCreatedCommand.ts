@@ -24,7 +24,7 @@ export class ConvertInterPtToUserCreatedCommand extends Command {
     this.seIntersectionPoint.ref.adjustSize();
     this.seIntersectionPoint.showing = true;
     // show the label
-    if (this.seIntersectionPoint.label != null) {
+    if (this.seIntersectionPoint.label != undefined) {
       this.seIntersectionPoint.label.showing = true;
     }
   }
@@ -35,7 +35,7 @@ export class ConvertInterPtToUserCreatedCommand extends Command {
 
   restoreState(): void {
     // hide the label
-    if (this.seIntersectionPoint.label != null) {
+    if (this.seIntersectionPoint.label != undefined) {
       this.seIntersectionPoint.label.showing = false;
     }
     // hide the point

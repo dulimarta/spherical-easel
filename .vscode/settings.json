@@ -6,17 +6,17 @@
   "prettier.useEditorConfig": false,
   "prettier.requireConfig": true,
   // "vetur.experimental.templateInterpolationService": true,
-  // "vetur.format.defaultFormatter.js": "prettier-eslint",
-  // "vetur.format.defaultFormatter.ts": "prettier-tslint",
+  "vetur.format.defaultFormatter.js": "prettier-eslint",
+  "vetur.format.defaultFormatter.ts": "prettier-tslint",
 
-  // "vetur.format.defaultFormatter.html": "js-beautify-html",
-  // "vetur.format.defaultFormatterOptions": {
-  //   "js-beautify-html": {
-  //     "wrap_attributes": "force",
-  //     "wrap_line_length": "75",
-  //     "indent_size": 2
-  //   }
-  // },
+  "vetur.format.defaultFormatter.html": "js-beautify-html",
+  "vetur.format.defaultFormatterOptions": {
+    "js-beautify-html": {
+      "wrap_attributes": "force",
+      "wrap_line_length": "75",
+      "indent_size": 2
+    }
+  },
   "vetur.format.options.tabSize": 2,
   "workbench.colorCustomizations": {
     "activityBar.activeBackground": "#aa83d3",

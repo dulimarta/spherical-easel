@@ -4,7 +4,7 @@ import { Vector3, Vector2, Matrix4 } from "three";
 import Two from "two.js";
 import SETTINGS, { LAYER } from "@/global-settings";
 import Nodule, { DisplayStyle } from "./Nodule";
-import { StyleOptions, StyleEditMode } from "@/types/Styles";
+import { StyleOptions, StyleEditPanels } from "@/types/Styles";
 import AppStore from "@/store";
 
 const desiredXAxis = new Vector3();
@@ -725,7 +725,7 @@ export default class Circle extends Nodule {
    */
   updateStyle(options: StyleOptions): void {
     console.debug("Circle Update style of", this.name, "using", options);
-    if (options.mode === StyleEditMode.Front) {
+    if (options.panel === StyleEditPanels.Front) {
       // Set the front options
       if (options.strokeWidthPercent !== undefined) {
         this.strokeWidthPercentFront = options.strokeWidthPercent;
@@ -745,7 +745,7 @@ export default class Circle extends Nodule {
           this.dashArrayFront.push(options.dashArray[i]);
         }
       }
-    } else if (options.mode == StyleEditMode.Back) {
+    } else if (options.panel == StyleEditPanels.Back) {
       // Set the back options
       // options.dynamicBackStyle is boolean, so we need to explicitly check for undefined otherwise
       // when it is false, this doesn't execute and this.dynamicBackStyle is not set
@@ -783,15 +783,15 @@ export default class Circle extends Nodule {
   /**
    * Return the current style state
    */
-  currentStyleState(mode: StyleEditMode): StyleOptions {
-    switch (mode) {
-      case StyleEditMode.Front: {
+  currentStyleState(panel: StyleEditPanels): StyleOptions {
+    switch (panel) {
+      case StyleEditPanels.Front: {
         const dashArrayFront = [] as number[];
         if (this.dashArrayFront.length > 0) {
           this.dashArrayFront.forEach(v => dashArrayFront.push(v));
         }
         return {
-          mode: mode,
+          panel: panel,
           strokeWidthPercent: this.strokeWidthPercentFront,
           strokeColor: this.strokeColorFront,
           fillColor: this.fillColorFront,
@@ -800,14 +800,13 @@ export default class Circle extends Nodule {
         };
         break;
       }
-      default:
-      case StyleEditMode.Back: {
+      case StyleEditPanels.Back: {
         const dashArrayBack = [] as number[];
         if (this.dashArrayBack.length > 0) {
           this.dashArrayBack.forEach(v => dashArrayBack.push(v));
         }
         return {
-          mode: mode,
+          panel: panel,
           strokeWidthPercent: this.strokeWidthPercentBack,
           strokeColor: this.strokeColorBack,
           fillColor: this.fillColorBack,
@@ -816,14 +815,20 @@ export default class Circle extends Nodule {
           dynamicBackStyle: this.dynamicBackStyle
         };
       }
+      default:
+      case StyleEditPanels.Basic: {
+        return {
+          panel: panel
+        };
+      }
     }
   }
   /**
    * Return the default style state
    */
-  defaultStyleState(mode: StyleEditMode): StyleOptions {
-    switch (mode) {
-      case StyleEditMode.Front: {
+  defaultStyleState(panel: StyleEditPanels): StyleOptions {
+    switch (panel) {
+      case StyleEditPanels.Front: {
         const dashArrayFront = [] as number[];
         if (SETTINGS.circle.drawn.dashArray.front.length > 0) {
           SETTINGS.circle.drawn.dashArray.front.forEach(v =>
@@ -831,17 +836,15 @@ export default class Circle extends Nodule {
           );
         }
         return {
-          mode: mode,
+          panel: panel,
           strokeWidthPercent: 100,
           fillColor: SETTINGS.circle.drawn.fillColor.front,
           strokeColor: SETTINGS.circle.drawn.strokeColor.front,
           opacity: SETTINGS.circle.drawn.opacity.front,
           dashArray: dashArrayFront
         };
-        break;
       }
-      default:
-      case StyleEditMode.Back: {
+      case StyleEditPanels.Back: {
         const dashArrayBack = [] as number[];
 
         if (SETTINGS.circle.drawn.dashArray.back.length > 0) {
@@ -850,7 +853,7 @@ export default class Circle extends Nodule {
           );
         }
         return {
-          mode: mode,
+          panel: panel,
 
           strokeWidthPercent: SETTINGS.circle.dynamicBackStyle
             ? Nodule.contrastStrokeWidthPercent(100)
@@ -873,6 +876,12 @@ export default class Circle extends Nodule {
             : SETTINGS.circle.drawn.opacity.back,
 
           dynamicBackStyle: SETTINGS.circle.dynamicBackStyle
+        };
+      }
+      default:
+      case StyleEditPanels.Basic: {
+        return {
+          panel: panel
         };
       }
     }

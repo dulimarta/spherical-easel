@@ -11,7 +11,7 @@ import { SELine } from "@/models/SELine";
 import { SELabel } from "@/models/SELabel";
 import { SENodule } from "@/models/SENodule";
 import { Vector3 } from "three";
-import { StyleOptions, StyleEditMode } from "@/types/Styles";
+import { StyleOptions, StyleEditPanels } from "@/types/Styles";
 import { LineNormalVisitor } from "@/visitors/LineNormalVisitor";
 import { SegmentNormalArcLengthVisitor } from "@/visitors/SegmentNormalArcLengthVisitor";
 import { UpdateMode, UpdateStateType } from "@/types";
@@ -48,7 +48,8 @@ export const initialState: AppState = {
   calculations: [],
   initialStyleStates: [],
   defaultStyleStates: [],
-  initialBackStyleContrast: SETTINGS.style.backStyleContrast
+  initialBackStyleContrast: SETTINGS.style.backStyleContrast,
+  useLabelMode: false
 };
 //#endregion appState
 
@@ -107,6 +108,11 @@ export default {
     for (let i = 0; i < 2; i++) {
       state.zoomTranslation[i] = vec[i];
     }
+  },
+  // In the case of one non-labe object being selected, the label panel should edit that object's label and the fore/back ground should edit
+  // that selectedObject fore and back properties: useLabelMode indicates that we are doing this.
+  setUseLabelMode(state: AppState, value: boolean): void {
+    state.useLabelMode = value;
   },
   //#region addPoint
   addPoint(state: AppState, point: SEPoint): void {
@@ -278,7 +284,7 @@ export default {
     }
   ): void {
     const opt: StyleOptions = {
-      mode: payload.mode,
+      panel: payload.panel,
       strokeWidthPercent: payload.strokeWidthPercent,
       strokeColor: payload.strokeColor,
       fillColor: payload.fillColor,
@@ -349,14 +355,15 @@ export default {
   ): void {
     state.initialStyleStates.clear();
     state.defaultStyleStates.clear();
+    console.log("record style selected", selected);
     selected.forEach(seNodule => {
       // The first third is the front style settings, the second third is the back, the final third are the corresponding labels
       if (seNodule.ref) {
         state.initialStyleStates.push(
-          seNodule.ref.currentStyleState(StyleEditMode.Front)
+          seNodule.ref.currentStyleState(StyleEditPanels.Front)
         );
         state.defaultStyleStates.push(
-          seNodule.ref.defaultStyleState(StyleEditMode.Front)
+          seNodule.ref.defaultStyleState(StyleEditPanels.Front)
         );
       }
     });
@@ -364,10 +371,10 @@ export default {
       // The first third is the front style settings, the second third is the back, the final third are the corresponding labels
       if (seNodule.ref !== undefined) {
         state.initialStyleStates.push(
-          seNodule.ref.currentStyleState(StyleEditMode.Back)
+          seNodule.ref.currentStyleState(StyleEditPanels.Back)
         );
         state.defaultStyleStates.push(
-          seNodule.ref.defaultStyleState(StyleEditMode.Back)
+          seNodule.ref.defaultStyleState(StyleEditPanels.Back)
         );
       }
     });
@@ -375,19 +382,19 @@ export default {
       // The first third is the front style settings, the second third is the back, the final third are the corresponding labels
       if (seNodule instanceof SELabel && seNodule.ref !== undefined) {
         state.initialStyleStates.push(
-          seNodule.ref.currentStyleState(StyleEditMode.Label)
+          seNodule.ref.currentStyleState(StyleEditPanels.Basic)
         );
         state.defaultStyleStates.push(
-          seNodule.ref.defaultStyleState(StyleEditMode.Label)
+          seNodule.ref.defaultStyleState(StyleEditPanels.Basic)
         );
       } else {
         const label = ((seNodule as unknown) as Labelable).label;
         if (label !== undefined) {
           state.initialStyleStates.push(
-            label.ref.currentStyleState(StyleEditMode.Label)
+            label.ref.currentStyleState(StyleEditPanels.Basic)
           );
           state.defaultStyleStates.push(
-            label.ref.defaultStyleState(StyleEditMode.Label)
+            label.ref.defaultStyleState(StyleEditPanels.Basic)
           );
         } else {
           throw "Attempted to use the label of an unlabelable SENodule in recordStyleState in mutations.ts";

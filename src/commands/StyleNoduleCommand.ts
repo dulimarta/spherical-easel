@@ -1,10 +1,10 @@
 import { Command } from "./Command";
 import { SENodule } from "@/models/SENodule";
-import { Styles, StyleOptions, StyleEditMode } from "../types/Styles";
+import { Styles, StyleOptions, StyleEditPanels } from "../types/Styles";
 
 export class StyleNoduleCommand extends Command {
   private seNodules: SENodule[] = [];
-  private mode: StyleEditMode;
+  private panel: StyleEditPanels;
   private currentStyles: StyleOptions[] = [];
   private pastStyles: StyleOptions[] = [];
   private currentBackStyleContrast: number | undefined;
@@ -12,7 +12,7 @@ export class StyleNoduleCommand extends Command {
 
   constructor(
     seNodules: SENodule[],
-    mode: StyleEditMode,
+    panel: StyleEditPanels,
     currentStyles: StyleOptions[],
     pastStyles: StyleOptions[],
     currentBackStyleContrast?: number,
@@ -20,11 +20,11 @@ export class StyleNoduleCommand extends Command {
   ) {
     super();
     seNodules.forEach(obj => this.seNodules.push(obj));
-    this.mode = mode;
+    this.panel = panel;
     // Carefully clone so that we create new objects and no pointer from the inputs are carried to the variables of this command
     currentStyles.forEach(obj => {
       const newObj = {} as StyleOptions;
-      newObj.mode = obj.mode;
+      newObj.panel = obj.panel;
       newObj.strokeWidthPercent = obj.strokeWidthPercent;
       newObj.strokeColor = obj.strokeColor;
       newObj.fillColor = obj.fillColor;
@@ -54,7 +54,7 @@ export class StyleNoduleCommand extends Command {
     });
     pastStyles.forEach(obj => {
       const newObj = {} as StyleOptions;
-      newObj.mode = obj.mode;
+      newObj.panel = obj.panel;
       newObj.strokeWidthPercent = obj.strokeWidthPercent;
       newObj.strokeColor = obj.strokeColor;
       newObj.fillColor = obj.fillColor;
@@ -91,7 +91,7 @@ export class StyleNoduleCommand extends Command {
       Command.store.commit.changeStyle({
         selected: [this.seNodules[i]],
         payload: {
-          mode: this.mode,
+          panel: this.panel,
           strokeWidthPercent: this.currentStyles[i].strokeWidthPercent,
           strokeColor: this.currentStyles[i].strokeColor,
           fillColor: this.currentStyles[i].fillColor,
@@ -124,7 +124,7 @@ export class StyleNoduleCommand extends Command {
       Command.store.commit.changeStyle({
         selected: [this.seNodules[i]],
         payload: {
-          mode: this.mode,
+          panel: this.panel,
           strokeWidthPercent: this.pastStyles[i].strokeWidthPercent,
           strokeColor: this.pastStyles[i].strokeColor,
           fillColor: this.pastStyles[i].fillColor,

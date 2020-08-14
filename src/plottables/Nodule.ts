@@ -2,7 +2,7 @@ import Two from "two.js";
 import { Stylable } from "./Styleable";
 import { Resizeable } from "./Resizeable";
 import SETTINGS from "@/global-settings";
-import { StyleOptions, StyleEditMode } from "@/types/Styles";
+import { StyleOptions, StyleEditPanels } from "@/types/Styles";
 import { hslaColorType } from "@/types";
 
 export enum DisplayStyle {
@@ -43,9 +43,9 @@ export default abstract class Nodule implements Stylable, Resizeable {
   abstract updateStyle(options: StyleOptions): void;
 
   /** Get the current style state of the Nodule */
-  abstract currentStyleState(mode: StyleEditMode): StyleOptions;
+  abstract currentStyleState(mode: StyleEditPanels): StyleOptions;
   /** Get the default style state of the Nodule */
-  abstract defaultStyleState(mode: StyleEditMode): StyleOptions;
+  abstract defaultStyleState(mode: StyleEditPanels): StyleOptions;
 
   /** Set the temporary/glowing/default/updated style*/
   abstract stylize(flag: DisplayStyle): void;

@@ -2,7 +2,7 @@ import { Vector3, Matrix4 } from "three";
 import Two from "two.js";
 import SETTINGS, { LAYER } from "@/global-settings";
 import Nodule, { DisplayStyle } from "./Nodule";
-import { StyleOptions, StyleEditMode } from "@/types/Styles";
+import { StyleOptions, StyleEditPanels } from "@/types/Styles";
 
 // The number of vectors used to render the one part of the segment (like the frontPart, frontExtra, etc.)
 const SUBDIVS = SETTINGS.segment.numPoints;
@@ -445,7 +445,7 @@ export default class Segment extends Nodule {
    */
   updateStyle(options: StyleOptions): void {
     console.debug("Segment: Update style of", this.name, "using", options);
-    if (options.mode === StyleEditMode.Front) {
+    if (options.panel === StyleEditPanels.Front) {
       // Set the front options
       if (options.strokeWidthPercent !== undefined) {
         this.strokeWidthPercentFront = options.strokeWidthPercent;
@@ -463,7 +463,7 @@ export default class Segment extends Nodule {
           this.dashArrayFront.push(options.dashArray[i]);
         }
       }
-    } else if (options.mode === StyleEditMode.Back) {
+    } else if (options.panel === StyleEditPanels.Back) {
       // options.dynamicBackStyle is boolean, so we need to explicitly check for undefined otherwise
       // when it is false, this doesn't execute and this.dynamicBackStyle is not set
       if (options.dynamicBackStyle !== undefined) {
@@ -496,29 +496,28 @@ export default class Segment extends Nodule {
   /**
    * Return the current style state
    */
-  currentStyleState(mode: StyleEditMode): StyleOptions {
-    switch (mode) {
-      case StyleEditMode.Front: {
+  currentStyleState(panel: StyleEditPanels): StyleOptions {
+    switch (panel) {
+      case StyleEditPanels.Front: {
         const dashArrayFront = [] as number[];
         if (this.dashArrayFront.length > 0) {
           this.dashArrayFront.forEach(v => dashArrayFront.push(v));
         }
         return {
-          mode: mode,
+          panel: panel,
           strokeWidthPercent: this.strokeWidthPercentFront,
           strokeColor: this.strokeColorFront,
           dashArray: dashArrayFront,
           opacity: this.opacityFront
         };
       }
-      default:
-      case StyleEditMode.Back: {
+      case StyleEditPanels.Back: {
         const dashArrayBack = [] as number[];
         if (this.dashArrayBack.length > 0) {
           this.dashArrayBack.forEach(v => dashArrayBack.push(v));
         }
         return {
-          mode: mode,
+          panel: panel,
           strokeWidthPercent: this.strokeWidthPercentBack,
           strokeColor: this.strokeColorBack,
           dashArray: dashArrayBack,
@@ -526,14 +525,20 @@ export default class Segment extends Nodule {
           dynamicBackStyle: this.dynamicBackStyle
         };
       }
+      default:
+      case StyleEditPanels.Basic: {
+        return {
+          panel: panel
+        };
+      }
     }
   }
   /**
    * Return the default style state
    */
-  defaultStyleState(mode: StyleEditMode): StyleOptions {
-    switch (mode) {
-      case StyleEditMode.Front: {
+  defaultStyleState(panel: StyleEditPanels): StyleOptions {
+    switch (panel) {
+      case StyleEditPanels.Front: {
         const dashArrayFront = [] as number[];
         if (SETTINGS.segment.drawn.dashArray.front.length > 0) {
           SETTINGS.segment.drawn.dashArray.front.forEach(v =>
@@ -541,15 +546,14 @@ export default class Segment extends Nodule {
           );
         }
         return {
-          mode: mode,
+          panel: panel,
           strokeWidthPercent: 100,
           strokeColor: SETTINGS.segment.drawn.strokeColor.front,
           dashArray: dashArrayFront,
           opacity: SETTINGS.segment.drawn.opacity.front
         };
       }
-      default:
-      case StyleEditMode.Back: {
+      case StyleEditPanels.Back: {
         const dashArrayBack = [] as number[];
 
         if (SETTINGS.segment.drawn.dashArray.back.length > 0) {
@@ -558,7 +562,7 @@ export default class Segment extends Nodule {
           );
         }
         return {
-          mode: mode,
+          panel: panel,
 
           strokeWidthPercent: SETTINGS.segment.dynamicBackStyle
             ? Nodule.contrastStrokeWidthPercent(100)
@@ -577,6 +581,12 @@ export default class Segment extends Nodule {
             : SETTINGS.segment.drawn.opacity.back,
 
           dynamicBackStyle: SETTINGS.segment.dynamicBackStyle
+        };
+      }
+      default:
+      case StyleEditPanels.Basic: {
+        return {
+          panel: panel
         };
       }
     }

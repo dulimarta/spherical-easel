@@ -5,7 +5,11 @@ import Two from "two.js";
 import SETTINGS, { LAYER } from "@/global-settings";
 import Nodule, { DisplayStyle } from "./Nodule";
 import { Vector3 } from "three";
-import { StyleOptions, LabelDisplayMode, StyleEditMode } from "@/types/Styles";
+import {
+  StyleOptions,
+  LabelDisplayMode,
+  StyleEditPanels
+} from "@/types/Styles";
 import { SELabel } from "@/models/SELabel";
 import { SELine } from "@/models/SELine";
 import { SEPoint } from "@/models/SEPoint";
@@ -335,7 +339,7 @@ export default class Label extends Nodule {
     if (options.labelTextScalePercent) {
       this.textScalePercent = options.labelTextScalePercent;
     }
-    if (options.mode === StyleEditMode.Front) {
+    if (options.panel === StyleEditPanels.Front) {
       // Set the front options
       if (options.fillColor !== undefined) {
         this.frontFillColor = options.fillColor;
@@ -343,7 +347,7 @@ export default class Label extends Nodule {
       if (options.opacity !== undefined) {
         this.frontOpacity = options.opacity;
       }
-    } else if (options.mode === StyleEditMode.Back) {
+    } else if (options.panel === StyleEditPanels.Back) {
       // Set the back options
       // options.dynamicBackStyle is boolean, so we need to explicitly check for undefined otherwise
       // when it is false, this doesn't execute and this.dynamicBackStyle is not set
@@ -367,32 +371,32 @@ export default class Label extends Nodule {
   /**
    * Return the current style state
    */
-  currentStyleState(mode: StyleEditMode): StyleOptions {
-    switch (mode) {
-      case StyleEditMode.Front: {
+  currentStyleState(panel: StyleEditPanels): StyleOptions {
+    switch (panel) {
+      case StyleEditPanels.Front: {
         return {
-          mode: mode,
+          panel: panel,
           fillColor: this.frontFillColor,
           opacity: this.frontOpacity,
           dynamicBackStyle: this.dynamicBackStyle
         };
       }
-      case StyleEditMode.Back: {
+      case StyleEditPanels.Back: {
         return {
-          mode: mode,
+          panel: panel,
           fillColor: this.backFillColor,
           opacity: this.backOpacity,
           dynamicBackStyle: this.dynamicBackStyle
         };
       }
       default:
-      case StyleEditMode.Label: {
+      case StyleEditPanels.Basic: {
         let objectVisibility: boolean | undefined = undefined;
         if (this.seLabel !== undefined) {
           objectVisibility = this.seLabel.parent.showing;
         }
         return {
-          mode: mode,
+          panel: panel,
           labelDisplayText: this.shortUserName,
           labelDisplayCaption: this.caption,
           labelDisplayMode: this.textLabelMode,
@@ -410,19 +414,19 @@ export default class Label extends Nodule {
   /**
    * Return the default style state
    */
-  defaultStyleState(mode: StyleEditMode): StyleOptions {
-    switch (mode) {
-      case StyleEditMode.Front: {
+  defaultStyleState(panel: StyleEditPanels): StyleOptions {
+    switch (panel) {
+      case StyleEditPanels.Front: {
         return {
-          mode: mode,
+          panel: panel,
           fillColor: SETTINGS.label.fillColor.front,
           opacity: SETTINGS.label.opacity.front,
           dynamicBackStyle: SETTINGS.label.dynamicBackStyle
         };
       }
-      case StyleEditMode.Back: {
+      case StyleEditPanels.Back: {
         return {
-          mode: mode,
+          panel: panel,
           fillColor: SETTINGS.label.dynamicBackStyle
             ? Nodule.contrastFillColor(SETTINGS.label.fillColor.front)
             : SETTINGS.label.fillColor.back,
@@ -433,7 +437,7 @@ export default class Label extends Nodule {
         };
       }
       default:
-      case StyleEditMode.Label: {
+      case StyleEditPanels.Basic: {
         let labelVisibility: boolean | undefined = undefined;
         if (this.seLabel !== undefined) {
           if (this.seLabel.parent instanceof SEPoint) {
@@ -447,7 +451,7 @@ export default class Label extends Nodule {
           }
         }
         return {
-          mode: mode, //
+          panel: panel, //
           labelDisplayText: this.initialName,
           labelDisplayCaption: "",
           labelDisplayMode: SETTINGS.label.labelMode,

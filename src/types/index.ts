@@ -43,6 +43,8 @@ export interface AppState {
   initialStyleStates: StyleOptions[];
   defaultStyleStates: StyleOptions[];
   initialBackStyleContrast: number;
+  useLabelMode: boolean; // In the case of one non-labe object being selected, the label panel should edit that object's label and the fore/back ground should edit
+  // that selectedObject fore and back properties: useLabelMode indicates that we are doing this.
 }
 /* This interface lists all the properties that each tool/button must have. */
 export interface ToolButtonType {

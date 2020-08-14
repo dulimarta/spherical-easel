@@ -4,18 +4,18 @@
     <div v-if="!minified"
       key="full"
       style="height: 100%; overflow:auto">
-      <v-expansion-panels :value="selectedPanel">
+      <v-expansion-panels v-model="activePanel">
         <v-expansion-panel v-for="(p, idx) in panels"
           :key="idx">
           <v-expansion-panel-header color="blue lighten-3"
             :key="`header${idx}`"
-            @click="saveStyleState"
             class="body-1 font-weight-bold">
             {{ $t(p.i18n_key) }}</v-expansion-panel-header>
           <v-expansion-panel-content :color="panelBackgroundColor(idx)"
             :key="`content${idx}`">
             <component :is="p.component"
-              :mode="p.mode">
+              :panel="p.panel"
+              :active-panel="activePanel">
             </component>
           </v-expansion-panel-content>
         </v-expansion-panel>
@@ -32,47 +32,53 @@
 <script lang="ts">
 import Vue from "vue";
 import Component from "vue-class-component";
-import FrontAndBackStyle from "@/components/FrontAndBackStyle.vue";
-import { Prop } from "vue-property-decorator";
+import BasicFrontBackStyle from "@/components/BasicFrontBackStyle.vue";
+import { Watch, Prop } from "vue-property-decorator";
 import EventBus from "../eventHandlers/EventBus";
 import SETTINGS from "@/global-settings";
-import { StyleEditMode } from "@/types/Styles";
+import { StyleEditPanels } from "@/types/Styles";
 
-@Component({ components: { FrontAndBackStyle } })
+@Component({ components: { BasicFrontBackStyle } })
 export default class Style extends Vue {
   @Prop()
   readonly minified!: boolean;
-  private selectedPanel = 0; // Default selection is the Foreground panel
+
+  private activePanel: number | undefined = 0; // Default selection is the Label panel
+
+  @Watch("minified")
+  closeAllPanels(): void {
+    console.log("minified");
+    this.activePanel = undefined;
+    // If the user has been styling objects and then, without selecting new objects, or deactivating selection the style state should be saved.
+    EventBus.fire("save-style-state", {});
+  }
+
+  // The order of these panels *must* match the order of the StyleEditPanels in Style.ts
   private readonly panels = [
     {
-      i18n_key: "style.labelStyle",
-      component: () => import("@/components/FrontAndBackStyle.vue"),
-      mode: StyleEditMode.Label
+      i18n_key: "style.basicStyle",
+      component: () => import("@/components/BasicFrontBackStyle.vue"),
+      panel: StyleEditPanels.Basic
     },
     {
       i18n_key: "style.foregroundStyle",
-      component: () => import("@/components/FrontAndBackStyle.vue"),
-      mode: StyleEditMode.Front
+      component: () => import("@/components/BasicFrontBackStyle.vue"),
+      panel: StyleEditPanels.Front
     },
     {
       i18n_key: "style.backgroundStyle",
-      component: () => import("@/components/FrontAndBackStyle.vue"), // Note: The frontPanel(idx) returns false for this panel - setting the panel to back side
-      mode: StyleEditMode.Back
+      component: () => import("@/components/BasicFrontBackStyle.vue"),
+      panel: StyleEditPanels.Back
     },
     {
       i18n_key: "style.advancedStyle",
       component: () => import("@/components/AdvancedStyle.vue"),
-      mode: undefined
+      panel: StyleEditPanels.Advanced
     }
   ];
 
-  //When the user changes panels or click on a panel header, the style state should be saved
-  saveStyleState(): void {
-    EventBus.fire("save-style-state", {});
-  }
-
   panelBackgroundColor(idx: number): string {
-    if (idx == 1) {
+    if (idx === 1) {
       return "grey darken-2";
     } else {
       return "grey";
