@@ -1,16 +1,17 @@
 import { Command } from "./Command";
 import { SEMeasurement } from "@/models/SEMeasurement";
+import { SEExpression } from "@/models/SEExpression";
 
 //#region addPointCommand
-export class AddMeasurementCommand extends Command {
-  private seMeasurement: SEMeasurement;
-  constructor(seMeasurement: SEMeasurement) {
+export class AddExpressionCommand extends Command {
+  private seMeasurement: SEExpression;
+  constructor(seMeasurement: SEExpression) {
     super();
     this.seMeasurement = seMeasurement;
   }
 
   do(): void {
-    Command.store.commit.addMeasurement(this.seMeasurement);
+    Command.store.commit.addExpression(this.seMeasurement);
   }
 
   saveState(): void {
@@ -18,7 +19,7 @@ export class AddMeasurementCommand extends Command {
   }
 
   restoreState(): void {
-    Command.store.commit.removeMeasurement(this.lastState);
+    Command.store.commit.addExpression(this.lastState);
   }
 }
 //#endregion addPointCommand

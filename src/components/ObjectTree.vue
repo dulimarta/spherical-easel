@@ -2,54 +2,24 @@
   <div>
     <!-- this top level div is required, otherwise the style applied to id="topContainer" does not work -->
     <div id="topContainer">
+      <v-expansion-panels>
+        <v-expansion-panel>
+          <v-expansion-panel-header color="accent">Exprression
+          </v-expansion-panel-header>
+          <v-expansion-panel-content>
+            <ExpressionForm></ExpressionForm>
 
-      <v-card raised
-        outlined>
-        <v-card-text>
-          <v-container>
-            <v-row>
-              <v-col cols="12">
-                <v-textarea auto-grow
-                  dense
-                  full-width
-                  outlined
-                  clearable
-                  rows="3"
-                  label="Calculation Expression"
-                  placeholder="cos(pi/2)"
-                  class="ma-0"
-                  v-model="calcExpression"
-                  :error-messages="parsingError"
-                  @keypress="onKeyPressed"
-                  @click:clear="calcResult = 0">
-                </v-textarea>
+          </v-expansion-panel-content>
+        </v-expansion-panel>
+        <v-expansion-panel>
+          <v-expansion-panel-header color="accent">Slider
+          </v-expansion-panel-header>
+          <v-expansion-panel-content>
+            <SliderForm></SliderForm>
 
-              </v-col>
-            </v-row>
-            <v-text-field dense
-              outlined
-              readonly
-              label="Result"
-              placeholder="0"
-              v-model.number="calcResult">
-            </v-text-field>
-          </v-container>
-        </v-card-text>
-        <v-card-actions>
-          <v-spacer></v-spacer>
-          <!--- Disable the FAB when either the expression text is empty or
-          there is a syntax error -->
-          <v-btn small
-            fab
-            right
-            color="accent"
-            :disabled="calcExpression.length === 0 || parsingError.length > 0"
-            @click="addExpression">
-            <v-icon>mdi-plus</v-icon>
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-
+          </v-expansion-panel-content>
+        </v-expansion-panel>
+      </v-expansion-panels>
       <div class="ma-2 pa-1"
         id="objectTreeContainer">
         <v-sheet rounded
@@ -88,12 +58,12 @@
           color="accent"
           :elevation="4"
           class="my-3"
-          v-show="measurements.length > 0">
+          v-show="expressionss.length > 0">
           <SENoduleList label="Measurements"
-            :children="measurements"
+            :children="expressionss"
             v-on:object-select="onExpressionSelect"></SENoduleList>
         </v-sheet>
-        <v-sheet rounded
+        <!-- <v-sheet rounded
           color="accent"
           :elevation="4"
           class="my-3"
@@ -101,7 +71,7 @@
           <SENoduleList label="Calculations"
             :children="calculations"
             @object-select="onExpressionSelect"></SENoduleList>
-        </v-sheet>
+        </v-sheet> -->
         <span class="text-body-2 ma-2"
           v-show="zeroObjects">
           No objects in database
@@ -121,13 +91,15 @@ import { ExpressionParser } from "@/expression/ExpressionParser";
 import { SEMeasurement } from "@/models/SEMeasurement";
 // import { SELength } from '@/models/SELength';
 import { SECalculation } from "@/models/SECalculation";
-import { AddCalculationCommand } from "@/commands/AddCalculationCommand";
+import ExpressionForm from "@/components/ExpressionForm.vue";
+import SliderForm from "@/components/SliderForm.vue";
+import { AddExpressionCommand } from "@/commands/AddExpressionCommand";
 import { AppState } from "@/types";
+import EventBus from "@/eventHandlers/EventBus";
+import { SEExpression } from "@/models/SEExpression";
 
-@Component({ components: { SENoduleList } })
+@Component({ components: { SENoduleList, ExpressionForm, SliderForm } })
 export default class ObjectTree extends Vue {
-  private parser = new ExpressionParser();
-
   @State((s: AppState) => s.sePoints)
   readonly points!: SENodule[];
 
@@ -143,86 +115,38 @@ export default class ObjectTree extends Vue {
   @State((s: AppState) => s.seNodules)
   readonly nodules!: SENodule[];
 
-  @State((s: AppState) => s.measurements)
-  readonly measurements!: SEMeasurement[];
-
-  @State((s: AppState) => s.calculations)
-  readonly calculations!: SECalculation[];
-
-  private calcExpression = "";
-
-  private calcResult = 0;
-  private parsingError = "";
-  private timerInstance: NodeJS.Timeout | null = null;
-  readonly varMap = new Map<string, number>();
+  @State((s: AppState) => s.expressions)
+  readonly expressionss!: SEExpression[];
 
   get zeroObjects(): boolean {
     return (
       this.nodules.filter(n => n.exists).length === 0 &&
-      this.calculations.length === 0
+      this.expressionss.length === 0
     );
   }
 
-  calculateExpression(): void {
-    this.varMap.clear();
-    // this.measurements.forEach((m: SEMeasurement) => {
-    //   console.debug("Measurement", m)
-    //   const measurementName = m.name.replace("-", "");
-    //   this.varMap.set(measurementName, m.value);
-    // });
-    // console.debug("Variable map", this.varMap)
-    try {
-      // no code
-      this.calcResult =
-        this.calcExpression.length > 0
-          ? this.parser.evaluateWithVars(this.calcExpression, this.varMap)
-          : 0;
-    } catch (err) {
-      this.parsingError = err.message;
-    }
-  }
-
-  onKeyPressed(): void {
-    console.debug("Key press");
-    this.parsingError = "";
-    if (this.timerInstance) clearTimeout(this.timerInstance);
-    this.timerInstance = setTimeout(() => {
-      try {
-        this.varMap.clear();
-        console.debug("Calc me!");
-        this.measurements.forEach((m: SEMeasurement) => {
-          const measurementName = m.name;
-          console.debug("Measurement", m, measurementName);
-          this.varMap.set(measurementName.replace(/-.+/, ""), m.value);
-        });
-        console.debug("Variable map", this.varMap);
-        // no code
-        this.calcResult =
-          this.calcExpression.length > 0
-            ? this.parser.evaluateWithVars(this.calcExpression, this.varMap)
-            : 0;
-      } catch (err) {
-        // no code
-        // console.debug("Got an error", err);
-        this.parsingError = err.message;
-      }
-    }, 1000);
-  }
-
-  addExpression(): void {
-    console.debug("Adding experssion", this.calcExpression);
-    const calc = new SECalculation(this.calcExpression);
-    new AddCalculationCommand(calc).execute();
-  }
+  // calculateExpression(): void {
+  // this.varMap.clear();
+  // try {
+  //   // no code
+  //   this.calcResult =
+  //     this.calcExpression.length > 0
+  //       ? this.parser.evaluateWithVars(this.calcExpression, this.varMap)
+  //       : 0;
+  // } catch (err) {
+  //   this.parsingError = err.message;
+  // }
+  // }
 
   onExpressionSelect(x: any): void {
-    // console.debug("****Selection", x);
     const pos = this.nodules.findIndex(n => n.id === x.id);
+    console.debug("****Selection", x, "at", pos);
     if (pos >= 0) {
       const pos1 = this.nodules[pos].name.indexOf("-");
       const varName = this.nodules[pos].name.substring(0, pos1);
-      this.calcExpression += varName;
-      this.onKeyPressed(); // emulate a key prress
+      EventBus.fire("measurement-selected", varName);
+      // this.calcExpression += varName;
+      // this.onKeyPressed(); // emulate a key prress
     }
   }
 }

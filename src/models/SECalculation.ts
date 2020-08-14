@@ -19,7 +19,7 @@ export class SECalculation extends SEExpression {
       vars.push(v[0]);
     }
 
-    store.state.measurements
+    store.state.expressions
       .filter(m => {
         const pos = m.name.indexOf("-");
         if (pos < 0) return false;

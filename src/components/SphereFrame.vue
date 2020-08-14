@@ -1,9 +1,11 @@
 <template>
-  <div id="canvas"
-    ref="canvas"></div>
+  <div>
+    <div id="canvas"
+      ref="canvas"></div>
+  </div>
 </template>
 
-<style lang="scss" scoped></style>
+
 <script lang="ts">
 import VueComponent from "vue";
 import { Prop, Component, Watch } from "vue-property-decorator";
@@ -30,6 +32,7 @@ import SegmentLengthHandler from "@/eventHandlers/SegmentLengthHandler";
 import PointDistanceHandler from "@/eventHandlers/PointDistanceHandler";
 import AngleHandler from "@/eventHandlers/AngleHandler";
 import CoordinateHandler from "@/eventHandlers/PointCoordinateHandler";
+import SliderHandler from "@/eventHandlers/SliderHandler";
 import ToggleLabelDisplayHandler from "@/eventHandlers/ToggleLabelDisplayHandler";
 
 import EventBus from "@/eventHandlers/EventBus";
@@ -91,6 +94,7 @@ export default class SphereFrame extends VueComponent {
   private pointDistanceTool!: PointDistanceHandler;
   private angleTool!: AngleHandler;
   private coordinateTool!: CoordinateHandler;
+  private sliderTool!: SliderHandler;
   private toggleLabelDisplayTool!: ToggleLabelDisplayHandler;
 
   /**
@@ -223,6 +227,7 @@ export default class SphereFrame extends VueComponent {
     this.pointDistanceTool = new PointDistanceHandler(this.layers);
     this.angleTool = new AngleHandler(this.layers);
     this.coordinateTool = new CoordinateHandler(this.layers);
+    this.sliderTool = new SliderHandler(this.layers);
     this.toggleLabelDisplayTool = new ToggleLabelDisplayHandler(this.layers);
   }
 
@@ -232,6 +237,7 @@ export default class SphereFrame extends VueComponent {
     this.$refs.canvas.removeEventListener("mouseup", this.handleMouseReleased);
     this.$refs.canvas.removeEventListener("mouseleave", this.handleMouseLeave);
     this.$refs.canvas.removeEventListener("wheel", this.handleMouseWheel);
+    EventBus.unlisten("new-slider-requested");
   }
 
   @Watch("canvasSize")
@@ -592,9 +598,6 @@ export default class SphereFrame extends VueComponent {
       case "hide":
         this.currentTool = this.hideTool;
         break;
-      case "toggleLabelDisplay":
-        this.currentTool = this.toggleLabelDisplayTool;
-        break;
       case "move":
         this.currentTool = this.moveTool;
         EventBus.fire("set-footer-color", { color: colors.red.lighten5 });
@@ -646,7 +649,12 @@ export default class SphereFrame extends VueComponent {
         this.currentTool = this.coordinateTool;
         EventBus.fire("set-footer-color", { color: colors.blue.lighten2 });
         break;
-
+      case "slider":
+        this.currentTool = this.sliderTool;
+        break;
+      case "toggleLabelDisplay":
+        this.currentTool = this.toggleLabelDisplayTool;
+        break;
       default:
         this.currentTool = null;
     }
@@ -656,10 +664,4 @@ export default class SphereFrame extends VueComponent {
 </script>
 
 <style lang="scss" scoped>
-@import "@/scss/variables.scss";
-#mytext {
-  font: italic 40px serif;
-  fill: red;
-  rotate: 90;
-}
 </style>

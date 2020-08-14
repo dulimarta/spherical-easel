@@ -2,7 +2,7 @@ import Two from "two.js";
 import Highlighter from "./Highlighter";
 import { SEPoint } from "@/models/SEPoint";
 import { SENodule } from "@/models/SENodule";
-import { AddMeasurementCommand } from "@/commands/AddMeasuremeent";
+import { AddExpressionCommand } from "@/commands/AddExpressionCommand";
 import { SEDistance } from "@/models/SEDistance";
 import EventBus from "@/eventHandlers/EventBus";
 
@@ -46,7 +46,7 @@ export default class PointDistantHandler extends Highlighter {
           keyOptions: { name: `${distanceMeasure.name}` },
           type: "success"
         });
-        new AddMeasurementCommand(distanceMeasure).execute();
+        new AddExpressionCommand(distanceMeasure).execute();
         this.targetPoints.splice(0);
         // this.targetSegment = null;
       } else

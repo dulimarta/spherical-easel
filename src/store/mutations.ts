@@ -19,6 +19,7 @@ import Nodule, { DisplayStyle } from "@/plottables/Nodule";
 import { SEMeasurement } from "@/models/SEMeasurement";
 import { SECalculation } from "@/models/SECalculation";
 import SETTINGS from "@/global-settings";
+import { SEExpression } from "@/models/SEExpression";
 
 // const tmpMatrix = new Matrix4();
 
@@ -44,8 +45,8 @@ export const initialState: AppState = {
   seLabels: [], // An array of all SELabels
   temporaryNodules: [], // An array of all Nodules that are temporary - created by the handlers.
   intersections: [],
-  measurements: [],
-  calculations: [],
+  // measurements: [],
+  expressions: [],
   initialStyleStates: [],
   defaultStyleStates: [],
   initialBackStyleContrast: SETTINGS.style.backStyleContrast,
@@ -72,8 +73,7 @@ export default {
     state.seLabels.clear();
     state.selections.clear();
     state.intersections.clear();
-    state.measurements.clear();
-    state.calculations.clear();
+    state.expressions.clear();
     state.initialStyleStates.clear();
     state.defaultStyleStates.clear();
     //state.temporaryNodules.clear(); // Do not clear the temporaryNodules array
@@ -317,32 +317,32 @@ export default {
       n.ref?.updateStyle(opt);
     });
   },
-  addMeasurement(state: AppState, measurement: SEMeasurement): void {
-    state.measurements.push(measurement);
+  addExpression(state: AppState, measurement: SEExpression): void {
+    state.expressions.push(measurement);
     state.seNodules.push(measurement);
   },
-  removeMeasurement(state: AppState, measId: number): void {
-    const pos = state.measurements.findIndex(x => x.id === measId);
+  removeExpression(state: AppState, measId: number): void {
+    const pos = state.expressions.findIndex(x => x.id === measId);
     const pos2 = state.seNodules.findIndex(x => x.id === measId);
     if (pos >= 0) {
       // const victimSegment = state.measurements[pos];
-      state.measurements.splice(pos, 1);
+      state.expressions.splice(pos, 1);
       state.seNodules.splice(pos2, 1);
     }
   },
-  addCalculation(state: AppState, calc: SECalculation): void {
-    // TODO: should we also push it to state.nodules?
-    // state.nodules.push(calc);
-    state.calculations.push(calc);
-  },
-  removeCalculation(state: AppState, calcId: number): void {
-    const pos = state.calculations.findIndex(c => c.id === calcId);
-    // const pos2 = state.nodules.findIndex(x => x.id === calcId);
-    if (pos >= 0) {
-      state.calculations.splice(pos, 1);
-      // state.nodules.splice(pos2, 1);
-    }
-  },
+  // addCalculation(state: AppState, calc: SECalculation): void {
+  //   // TODO: should we also push it to state.nodules?
+  //   // state.nodules.push(calc);
+  //   state.calculations.push(calc);
+  // },
+  // removeCalculation(state: AppState, calcId: number): void {
+  //   const pos = state.calculations.findIndex(c => c.id === calcId);
+  //   // const pos2 = state.nodules.findIndex(x => x.id === calcId);
+  //   if (pos >= 0) {
+  //     state.calculations.splice(pos, 1);
+  //     // state.nodules.splice(pos2, 1);
+  //   }
+  // },
   recordStyleState(
     state: AppState,
     {

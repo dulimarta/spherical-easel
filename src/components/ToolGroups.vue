@@ -399,12 +399,22 @@ export default class ToolGroups extends Vue {
       id: 15,
       actionModeValue: "coordinate",
       displayedName: "CreateCoordinateDisplayedName",
-      icon: "mdi-video-3d",
+      icon: "mdi-axis-arrow-info",
       toolTipMessage: "CreateCoordinateToolTipMessage",
       toolUseMessage: "CreateCoordinateToolUseMessage",
       displayToolUseMessage: false,
       toolGroup: "measurement"
     }
+    // {
+    //   id: 75,
+    //   actionModeValue: "slider",
+    //   displayedName: "CreateSliderDisplayedName",
+    //   icon: "mdi-arrow-left-right-bold",
+    //   toolTipMessage: "CreateSliderToolTipMessage",
+    //   toolUseMessage: "CreateSliderToolUseMessage",
+    //   displayToolUseMessage: false,
+    //   toolGroup: "construction"
+    // }
 
     //sort the button list by id so that we don't have to reorder the list each item we add a new button
   ].sort((a: ToolButtonType, b: ToolButtonType) => {

@@ -19,6 +19,10 @@ class EventBus {
     this.vueInstance.$on(eventName, callback);
   }
 
+  unlisten(eventName: string): void {
+    this.verifyKebabCase(eventName);
+    this.vueInstance.$off(eventName);
+  }
   // TODO: do we need a function to "unregister" the event listener?
 
   private verifyKebabCase(name: string): void {

@@ -13,6 +13,7 @@ import { Vector3 } from "three";
 import { SEMeasurement } from "@/models/SEMeasurement";
 import { SECalculation } from "@/models/SECalculation";
 import { StyleOptions } from "@/types/Styles";
+import { SEExpression } from "@/models/SEExpression";
 
 export interface Selectable {
   hit(x: number, y: number, coord: unknown, who: unknown): boolean;
@@ -37,8 +38,8 @@ export interface AppState {
   seNodules: SENodule[];
   selections: SENodule[];
   intersections: SEIntersectionPoint[];
-  measurements: SEMeasurement[];
-  calculations: SECalculation[];
+  // measurements: SEMeasurement[];
+  expressions: SEExpression[];
   temporaryNodules: Nodule[];
   initialStyleStates: StyleOptions[];
   defaultStyleStates: StyleOptions[];

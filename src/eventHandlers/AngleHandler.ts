@@ -5,7 +5,7 @@ import { SELine } from "@/models/SELine";
 import { SESegment } from "@/models/SESegment";
 import { SECircle } from "@/models/SECircle";
 import { SENodule } from "@/models/SENodule";
-import { AddMeasurementCommand } from "@/commands/AddMeasuremeent";
+import { AddExpressionCommand } from "@/commands/AddExpressionCommand";
 import { SEAngle } from "@/models/SEAngle";
 import EventBus from "@/eventHandlers/EventBus";
 enum AngleMode {
@@ -112,8 +112,7 @@ export default class AngleHandler extends Highlighter {
           keyOptions: {},
           type: "success"
         });
-
-        new AddMeasurementCommand(angleFrom3Points).execute();
+        new AddExpressionCommand(angleFrom3Points).execute();
         this.mode = AngleMode.NONE;
       } else if (this.targetLines.length === 2) {
         const angleFrom2Lines = new SEAngle({
@@ -124,7 +123,7 @@ export default class AngleHandler extends Highlighter {
           keyOptions: { name: `${angleFrom2Lines.name}` },
           type: "success"
         });
-        new AddMeasurementCommand(angleFrom2Lines).execute();
+        new AddExpressionCommand(angleFrom2Lines).execute();
         this.mode = AngleMode.NONE;
       } else {
         let needed = 0;

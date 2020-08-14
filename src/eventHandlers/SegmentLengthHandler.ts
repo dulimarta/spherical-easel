@@ -2,7 +2,7 @@ import Two from "two.js";
 import Highlighter from "./Highlighter";
 import { SESegment } from "@/models/SESegment";
 import { SENodule } from "@/models/SENodule";
-import { AddMeasurementCommand } from "@/commands/AddMeasuremeent";
+import { AddExpressionCommand } from "@/commands/AddExpressionCommand";
 import { SEMeasurement } from "@/models/SEMeasurement";
 import { SELength } from "@/models/SELength";
 import EventBus from "@/eventHandlers/EventBus";
@@ -33,7 +33,7 @@ export default class SegmentLengthHandler extends Highlighter {
           keyOptions: { name: `${lenMeasure.name}` },
           type: "success"
         });
-        new AddMeasurementCommand(lenMeasure).execute();
+        new AddExpressionCommand(lenMeasure).execute();
         // this.targetSegment = null;
       }
     }

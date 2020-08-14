@@ -62,8 +62,10 @@
     "CreateSegmentLengthDisplayedName": "Line Segment<br>Length",
     "CreateSegmentLengthToolTipMessage": "Length of Line Segment",
     "CreateSegmentLengthToolUseMessage": "Click this button to compute the length of Line Segment",
-
-    "DeleteDisplayedName": "Delete<br>Objects",
+    "CreateSliderDisplayedName": "Measurement Slider",
+    "CreateSliderToolTipMessage": "User Controlled Value",
+    "CreateSliderToolUseMessage": "Click this button to create a value slider ",
+    "DeleteDisplayedName": "Delete",
     "DeleteToolTipMessage": "Delete Objects",
     "DeleteToolUseMessage": "Click on objects to delete them.",
 
