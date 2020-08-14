@@ -1049,6 +1049,11 @@ export default class BasicFrontBackStyle extends Vue {
         }
       }
     }
+    // Vue.set(this.labelObjectVisibility, 1, this.sliderDashArray[1] + 1);
+    console.log(
+      "post set label and ob vis",
+      this.labelObjectVisibility?.toString()
+    );
   }
   disableStyleDataSelector(totally: boolean): void {
     this.styleDataAgreement = false;

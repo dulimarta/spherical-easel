@@ -17,6 +17,9 @@
     "ResetSphereOrientation": "Tekan 'R' putar bola ke orientasi awal"
   },
   "buttons": {
+    "CreateAngleDisplayedName": "Sudut",
+    "CreateAngleToolTipMessage": "Hitung Sudut",
+    "CreateAngleToolUseMessage": "Gunakan tombol ini untuk menghitung sudut antara dua garis atau 3 titik.",
     "CreateAntipodalPointDisplayedName": "Titik Antipodal",
     "CreateAntipodalPointToolTipMessage": "Pilih titik",
     "CreateAntipodalPointToolUseMessage": "Pilih salah satu titik untuk menciptakan titik pasangan antipodal",
@@ -42,6 +45,9 @@
     "CreatePointOnOneDimToolUseMessage": "Pilih objek satu dimensi untuk penempatan titik",
     "CreatePointToolTipMessage": "Tambahkan titik",
     "CreatePointToolUseMessage": "Tekan mouse untuk tambahkan titik bebas.",
+    "CreateSegmentLengthDisplayedName": "Panjang Segment Garis",
+    "CreateSegmentLengthToolTipMessage": "Panjang Segment Garis",
+    "CreateSegmentLengthToolUseMessage": "Gunakan tombol ini untuk menentukan panjang segmen garis",
     "DeleteDisplayedName": "Hapus",
     "DeleteToolTipMessage": "Hapus objek",
     "DeleteToolUseMessage": "Pilih objek untuk dihapus",

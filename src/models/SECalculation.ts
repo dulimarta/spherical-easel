@@ -53,6 +53,7 @@ export class SECalculation extends SEExpression {
     this.computedValue = parser.evaluateWithVars(this.exprText, varMap);
   }
 
+  // TODO: Move this method up to the parent class?
   public update(state: UpdateStateType): void {
     if (state.mode !== UpdateMode.DisplayOnly) return;
     if (!this.canUpdateNow()) return;

@@ -5,7 +5,6 @@ import { SENodule } from "@/models/SENodule";
 import { AddMeasurementCommand } from "@/commands/AddMeasuremeent";
 import { SEDistance } from "@/models/SEDistance";
 import EventBus from "@/eventHandlers/EventBus";
-// import { SetNoduleDisplayCommand } from "@/commands/SetNoduleDisplayCommand";
 
 export default class PointDistantHandler extends Highlighter {
   /**
@@ -21,8 +20,19 @@ export default class PointDistantHandler extends Highlighter {
     //Select an object to delete
     if (this.isOnSphere) {
       // In the case of multiple selections prioritize points > lines > segments > circles
-      if (this.hitSEPoints.length > 0)
+      if (this.hitSEPoints.length > 0) {
+        const pos = this.targetPoints.findIndex(
+          (p: SEPoint) => p.id === this.hitSEPoints[0].id
+        );
+        if (pos >= 0) {
+          EventBus.fire("show-alert", {
+            text: `Duplicate point. Select anothere`,
+            type: "warning"
+          });
+          return;
+        }
         this.targetPoints.push(this.hitSEPoints[0]);
+      }
 
       if (this.targetPoints.length === 2) {
         // Do the hiding via command so it will be undoable
@@ -37,7 +47,11 @@ export default class PointDistantHandler extends Highlighter {
         new AddMeasurementCommand(distanceMeasure).execute();
         this.targetPoints.splice(0);
         // this.targetSegment = null;
-      }
+      } else
+        EventBus.fire("show-alert", {
+          text: `Select the next point`,
+          type: "info"
+        });
     }
   }
 
