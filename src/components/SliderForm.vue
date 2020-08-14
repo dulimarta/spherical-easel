@@ -1,8 +1,8 @@
 <template>
   <v-card>
-    <v-card-title class="headline">
-      Measurement Slider
-    </v-card-title>
+    <!--v-card-title class="headline">
+      Slider
+    </v-card-title-->
     <v-card-text>
       <v-container>
         <v-row>

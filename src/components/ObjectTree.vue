@@ -87,13 +87,8 @@ import { State } from "vuex-class";
 
 import SENoduleList from "@/components/SENoduleList.vue";
 import { SENodule } from "@/models/SENodule";
-import { ExpressionParser } from "@/expression/ExpressionParser";
-import { SEMeasurement } from "@/models/SEMeasurement";
-// import { SELength } from '@/models/SELength';
-import { SECalculation } from "@/models/SECalculation";
 import ExpressionForm from "@/components/ExpressionForm.vue";
 import SliderForm from "@/components/SliderForm.vue";
-import { AddExpressionCommand } from "@/commands/AddExpressionCommand";
 import { AppState } from "@/types";
 import EventBus from "@/eventHandlers/EventBus";
 import { SEExpression } from "@/models/SEExpression";
