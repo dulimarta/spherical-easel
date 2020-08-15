@@ -41,7 +41,7 @@ export class SEAntipodalPoint extends SEPoint {
     }
 
     // Update visibility
-    if (this._showing) {
+    if (this._showing && this._exists) {
       this.ref.setVisible(true);
     } else {
       this.ref.setVisible(false);

@@ -13,6 +13,9 @@
 import Vue from "vue";
 import Component from "vue-class-component";
 import EventBus from "@/eventHandlers/EventBus";
+import i18n from "../i18n";
+import { TranslateResult } from "vue-i18n";
+
 @Component({})
 export default class MessageBox extends Vue {
   private showMe = false;
@@ -26,12 +29,14 @@ export default class MessageBox extends Vue {
   }
 
   addMessage(m: any): void {
+    console.log(m.keyOptions, i18n.t(m.key, m.keyOptions));
+    const translation = i18n.t(m.key, m.keyOptions).toString();
     if (this.messageTimer) {
       // We have an active message on display
       console.debug("Queue incoming messages", m);
       this.messages.push(m);
     } else {
-      this.messageText = m.text;
+      this.messageText = translation;
       this.messageType = m.type;
       this.showMe = true;
       this.messageTimer = setInterval(this.swapMessages, 2000);
@@ -43,7 +48,10 @@ export default class MessageBox extends Vue {
     await Vue.nextTick();
     if (this.messages.length > 0) {
       const next = this.messages.shift();
-      this.messageText = (next as any).text;
+      const translation = i18n
+        .t((next as any).key, (next as any).keyOptions)
+        .toString();
+      this.messageText = translation;
       this.messageType = (next as any).type;
       this.showMe = true;
     } else {

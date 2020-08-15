@@ -65,12 +65,12 @@ export class SEPoint extends SENodule implements Visitable, Labelable {
     this.setOutOfDate(false);
 
     //These points always exist - they have no parents to depend on
+    this.ref.updateDisplay();
 
     //Update the location of the associate plottable Point (setter also updates the display)
     this.ref.positionVector = this._locationVector;
 
     if (this.showing) {
-      this.ref.updateDisplay();
       this.ref.setVisible(true);
     } else {
       this.ref.setVisible(false);

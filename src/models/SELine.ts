@@ -187,15 +187,15 @@ export class SELine extends SENodule
 
       // Set the normal vector in the plottable object (the setter also calls the updateDisplay() method)
       this.ref.normalVector = this._normalVector;
-      if (this.showing) {
-        this.ref.updateDisplay();
-        this.ref.setVisible(true);
-      } else {
-        this.ref.setVisible(false);
-      }
+      this.ref.updateDisplay();
+    }
+
+    if (this.showing && this._exists) {
+      this.ref.setVisible(true);
     } else {
       this.ref.setVisible(false);
     }
+
     // Create a line state for a Move or delete if necessary
     if (
       state.mode == UpdateMode.RecordStateForDelete ||

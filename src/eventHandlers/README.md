@@ -1,3 +1,0 @@
-The files in the subdirectory are the event handlers. When the user initiates an event on the sphere,
-one of these handlers (instantiated as tools in the program) determines what to do with that event.
-The active tool is determined by the user clicking a button and changing the actionMode.

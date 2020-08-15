@@ -37,7 +37,8 @@ export default class PointCoordinateHandler extends Highlighter {
           CoordinateSelection.Z_VALUE
         );
         EventBus.fire("show-alert", {
-          text: `New coordinate measurements added`,
+          key: `handlers.newCoordinatePointMeasurementAdded`,
+          keyOptions: {},
           type: "success"
         });
         new AddMeasurementCommand(xMeasure).execute();

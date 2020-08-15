@@ -19,7 +19,7 @@ export default class SegmentLengthHandler extends Highlighter {
   }
 
   mousePressed(event: MouseEvent): void {
-    //Select an object to delete
+    //Select an object to measure
     if (this.isOnSphere) {
       // In the case of multiple selections prioritize points > lines > segments > circles
       if (this.hitSESegments.length > 0)
@@ -29,7 +29,8 @@ export default class SegmentLengthHandler extends Highlighter {
         // Do the hiding via command so it will be undoable
         const lenMeasure = new SELength(this.targetSegment);
         EventBus.fire("show-alert", {
-          text: `New measurement ${lenMeasure.name} added`,
+          key: `handlers.newSegmentMeasurementAdded`,
+          keyOptions: { name: `${lenMeasure.name}` },
           type: "success"
         });
         new AddMeasurementCommand(lenMeasure).execute();
@@ -63,15 +64,24 @@ export default class SegmentLengthHandler extends Highlighter {
     // Reset the targetSegment in preparation for another deletion.
     this.targetSegment = null;
   }
-  // activate(): void {
-  //   this.hitSESegments.forEach(object => {
-  //     // TODO: Why do we want to hide hit segments?
-  //     // new SetNoduleDisplayCommand(object, false).execute();
-  //   });
-  //   // Unselect the selected objects and clear the selectedObject array
-  //   super.activate();
-  // }
-  // deactivate(): void {
-  //   super.deactivate();
-  // }
+  activate(): void {
+    if (this.store.getters.selectedSENodules().length == 1) {
+      const object1 = this.store.getters.selectedSENodules()[0];
+
+      if (object1 instanceof SESegment) {
+        const lenMeasure = new SELength(object1);
+        EventBus.fire("show-alert", {
+          key: `handlers.newSegmentMeasurementAdded`,
+          keyOptions: { name: `${lenMeasure.name}` },
+          type: "success"
+        });
+        new AddMeasurementCommand(lenMeasure).execute();
+      }
+    }
+    // Unselect the selected objects and clear the selectedObject array
+    super.activate();
+  }
+  deactivate(): void {
+    super.deactivate();
+  }
 }

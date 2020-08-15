@@ -92,13 +92,10 @@ export class SEIntersectionPoint extends SEPoint {
 
       this._exists = updatedIntersectionInfo[this.order].exists;
       this.locationVector = updatedIntersectionInfo[this.order].vector; // Calls the setter of SEPoint which calls the setter of Point which updates the display
-
-      if (this._exists && this._isUserCreated && this._showing) {
-        // Update visibility
-        this.ref.setVisible(true);
-      } else {
-        this.ref.setVisible(false);
-      }
+    }
+    // Update visibility
+    if (this._exists && this._isUserCreated && this._showing) {
+      this.ref.setVisible(true);
     } else {
       this.ref.setVisible(false);
     }

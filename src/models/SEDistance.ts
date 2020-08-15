@@ -23,7 +23,7 @@ export class SEDistance extends SEMeasurement {
   }
 
   public get value(): number {
-    return this.firstSEPoint.locationVector.distanceTo(
+    return this.firstSEPoint.locationVector.angleTo(
       this.secondSEPoint.locationVector
     );
   }

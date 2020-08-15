@@ -306,12 +306,10 @@ export class SESegment extends SENodule
       this.ref.arcLength = this._arcLength;
       this.ref.normalVector = this._normalVector;
       // update the display of the segment now that the start, normal vectors and arcLength are set, but only if showing
-      if (this.showing) {
-        this.ref.updateDisplay();
-        this.ref.setVisible(true);
-      } else {
-        this.ref.setVisible(false);
-      }
+      this.ref.updateDisplay();
+    }
+    if (this.showing && this._exists) {
+      this.ref.setVisible(true);
     } else {
       this.ref.setVisible(false);
     }
