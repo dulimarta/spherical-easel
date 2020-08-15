@@ -1,5 +1,5 @@
 import Label from "../plottables/Label";
-import { Vector3 } from "three";
+import { Vector3, NumberKeyframeTrack } from "three";
 import SETTINGS from "@/global-settings";
 import { Styles } from "@/types/Styles";
 import { SEOneDimensional } from "@/types";
@@ -24,31 +24,46 @@ import AppStore from "@/store";
 
 export class SESlider extends SEMeasurement /*implements Visitable*/ {
   /* Access to the store to retrieve the canvas size so that the bounding rectangle for the text can be computed properly*/
-  protected store = AppStore;
+  // protected store = AppStore;
 
   /**
    * The vector location of the SEPoint on the ideal unit sphere
    */
   // protected _locationVector = new Vector3();
 
-  /**
-   * Create a label of the parent object
-   * @param label the TwoJS label associated with this SESlider
-   * @param location The unit sphere location of this SESlider
-   */
-  constructor({ min, max, step }: { min: number; max: number; step: number }) {
+  readonly min: number;
+  readonly max: number;
+  private current: number;
+  readonly step: number;
+  constructor({
+    min,
+    max,
+    step,
+    value
+  }: {
+    min: number;
+    max: number;
+    step: number;
+    value: number;
+  }) {
     super();
     // console.log("store", SELabel.store);
-
+    this.min = min;
+    this.max = max;
+    this.step = step;
+    this.current = value;
     this.name = this.name + "-Slider";
-    // this._locationVector.copy(location);
+
     this.showing = true;
   }
 
   public prettyValue(): string {
-    throw new Error("Method not implemented.");
+    return this.current.toFixed(3);
   }
   get value(): number {
-    throw new Error("Method not implemented.");
+    return this.current;
+  }
+  set value(v: number) {
+    this.current = v;
   }
 }

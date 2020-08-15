@@ -17,7 +17,11 @@
         <template v-for="n in existingChildren">
           <!-- content goes here -->
           <SENoduleItem :node="n"
+            v-if="!isSlider(n)"
             :key="n.id"></SENoduleItem>
+          <SESliderItem v-else
+            :node="n"
+            :key="`${n.id}-slider`"></SESliderItem>
           <v-divider :key="`${n.id}-divider`"></v-divider>
         </template>
       </div>
@@ -33,8 +37,10 @@ import { Prop } from "vue-property-decorator";
 import { SENodule } from "../models/SENodule";
 import { SEIntersectionPoint } from "../models/SEIntersectionPoint";
 import SENoduleItem from "@/components/SENoduleItem.vue";
+import SESliderItem from "@/components/SESliderItem.vue";
+import { SESlider } from "@/models/SESlider";
 
-@Component({ components: { SENoduleItem } })
+@Component({ components: { SENoduleItem, SESliderItem } })
 export default class SENoduleTree extends Vue {
   @Prop()
   readonly children!: SENodule[];
@@ -57,6 +63,10 @@ export default class SENoduleTree extends Vue {
       if (n instanceof SEIntersectionPoint) return n.isUserCreated;
       else return n.exists;
     });
+  }
+
+  isSlider(n: SENodule): boolean {
+    return n instanceof SESlider;
   }
 }
 </script>

@@ -1,6 +1,6 @@
 import { SENodule } from "./SENodule";
 import { Styles } from "@/types/Styles";
-import { UpdateStateType, SEOneDimensional } from "@/types";
+import { SEOneDimensional } from "@/types";
 import { Vector3 } from "three";
 let EXPR_COUNT = 0;
 
