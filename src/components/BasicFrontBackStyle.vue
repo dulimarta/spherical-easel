@@ -1888,4 +1888,8 @@ export default class BasicFrontBackStyle extends Vue {
   height: 1em;
   white-space: pre-line;
 }
+.v-btn__content {
+  height: 400px;
+  word-wrap: break-word;
+}
 </style>

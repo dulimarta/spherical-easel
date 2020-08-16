@@ -1,44 +1,46 @@
 <template>
   <!-- Displays a button only if the user has permission to see it. -->
-  <div class="pa-0" :id="button.id">
+  <div class="pa-0"
+    :id="button.id">
     <!--v-if="(buttonDisplayList.indexOf(button.actionModeValue) !== -1)"-->
     <!-- The button is wrapped in to tooltip vue component -->
-    <v-tooltip
-      bottom
+    <v-tooltip bottom
       :open-delay="toolTipOpenDelay"
       :close-delay="toolTipCloseDelay"
-      :disabled="displayToolTips"
-    >
+      :disabled="displayToolTips">
       <template v-slot:activator="{ on }">
-        <v-btn
-          icon
+        <v-btn icon
           :value="{ id: button.actionModeValue, name: button.displayedName }"
           v-on="on"
           @click="
-            $emit('displayOnlyThisToolUseMessage', button.id);
+            $emit('display-only-this-tool-use-message', button.id);
             displayToolUseMessage = true;
           "
-        >
-          <v-icon>{{ button.icon }}</v-icon>
+          x-large>
+          <v-flex xs12>
+            <v-icon>{{ button.icon }}</v-icon>
+            <p class="button-text"
+              v-html="$t('buttons.' + button.displayedName )"> </p>
+          </v-flex>
         </v-btn>
       </template>
       <span>{{ $t("buttons." + button.toolTipMessage) }}</span>
     </v-tooltip>
     <!--- To Check: Does the property multi-line allow the snackbars to be formated correctly
     automatically when the message is many lines long due to font or number of characters? --->
-    <v-snackbar
-      v-model="displayToolUseMessage"
+    <v-snackbar v-model="displayToolUseMessage"
       bottom
       left
       :timeout="toolUseMessageDelay"
       :value="displayToolUseMessages"
-      multi-line
-    >
+      multi-line>
       <span>
-        <strong class="warning--text">{{ $t("buttons." + button.displayedName) + ": " }}</strong>
+        <strong class="warning--text"
+          v-html="$t('buttons.' +button.displayedName).split('<br>').join(' ').trim() + ': '"></strong>
         {{ $t("buttons." + button.toolUseMessage) }}
       </span>
-      <v-btn @click="displayToolUseMessage = false" icon>
+      <v-btn @click="displayToolUseMessage = false"
+        icon>
         <v-icon color="success">mdi-close</v-icon>
       </v-btn>
     </v-snackbar>
@@ -89,4 +91,20 @@ export default class ToolButton extends Vue {
 }
 </script>
 
-<style lang="scss"></style>
+<style lang="scss">
+.button-text {
+  padding-top: 9px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: 12px;
+  word-wrap: break-word;
+  white-space: pre-wrap;
+  letter-spacing: 0px;
+}
+.v-btn--icon.v-size--x-large {
+  padding-top: 9px;
+  height: 80px;
+  width: 80px;
+}
+</style>

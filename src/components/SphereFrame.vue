@@ -35,6 +35,7 @@ import ToggleLabelDisplayHandler from "@/eventHandlers/ToggleLabelDisplayHandler
 import EventBus from "@/eventHandlers/EventBus";
 import MoveHandler from "../eventHandlers/MoveHandler";
 import { AppState } from "@/types";
+import colors from "vuetify/es5/util/colors";
 
 @Component({})
 export default class SphereFrame extends VueComponent {
@@ -61,7 +62,7 @@ export default class SphereFrame extends VueComponent {
    */
   private twoInstance: Two;
 
-  private sphereCanvas!: Two.Group;
+  // private sphereCanvas!: Two.Group;
   /**
    * The circle that is the end of the projection of the Default Sphere in the Default Screen Plane
    */
@@ -134,7 +135,7 @@ export default class SphereFrame extends VueComponent {
     //#endregion addlayers
 
     // The midground is where the temporary objects and the boundary circle were drawn TODO: Needed?
-    this.sphereCanvas = this.layers[LAYER.midground];
+    //this.sphereCanvas = this.layers[LAYER.midground];
     // console.info("Sphere canvas ID", this.sphereCanvas.id);
     // Add the layers to the store
     this.store.commit.setLayers(this.layers);
@@ -152,22 +153,22 @@ export default class SphereFrame extends VueComponent {
     // box1.addTo(this.layers[LAYER.background]);
     // box2.addTo(this.layers[LAYER.foregroundText]);
 
-    const t1 = new Two.Text(
-      "Text must &#13;&#10; be upright 2\u{1D7B9}",
-      50,
-      80,
-      {}
-    );
-    t1.size = 12;
-    t1.noStroke();
-    t1.fill = "#000";
-    (t1 as any).leading = 50;
-    // (t1 as any).linewidth = 30;
-    (t1 as any).id = "mytext";
-    (t1 as any).className = "myclass";
-    t1.decoration = "strikethrough";
+    // const t1 = new Two.Text(
+    //   "Text must &#13;&#10; be upright 2\u{1D7B9}",
+    //   50,
+    //   80,
+    //   {}
+    // );
+    // t1.size = 12;
+    // t1.noStroke();
+    // t1.fill = "#000";
+    // (t1 as any).leading = 50;
+    // // (t1 as any).linewidth = 30;
+    // (t1 as any).id = "mytext";
+    // (t1 as any).className = "myclass";
+    // t1.decoration = "strikethrough";
 
-    this.layers[LAYER.foregroundText].add(t1);
+    // this.layers[LAYER.foregroundText].add(t1);
     // console.log("bound box", t1.getBoundingClientRect());
     // Draw horizontal and vertical lines (just for debugging)
     // const R = SETTINGS.boundaryCircle.radius;
@@ -182,10 +183,10 @@ export default class SphereFrame extends VueComponent {
     //   new Two.Line(-R, 100, R, 100)
     // );
     //this.visitor = new RotationVisitor();
-
     // Add Event Bus (a Vue component) listeners to change the display of the sphere - rotate and Zoom/Pan
     EventBus.listen("sphere-rotate", this.handleSphereRotation);
     EventBus.listen("zoom-updated", this.updateView);
+    EventBus.listen("export-current-svg", this.getCurrentSVGHtml);
   }
 
   mounted(): void {
@@ -407,6 +408,9 @@ export default class SphereFrame extends VueComponent {
   }
   //#endregion handleSphereRotation
 
+  getCurrentSVGHtml(): void {
+    console.log("SVG", this.$refs.canvas.innerHTML);
+  }
   /**
    * Watch the actionMode in the store. This is the two-way binding of variables in the Vuex Store.  Notice that this
    * is a vue component so we are able to Watch for changes in variables in the store. If this was not a vue component
@@ -416,40 +420,66 @@ export default class SphereFrame extends VueComponent {
   switchActionMode(mode: string): void {
     this.currentTool?.deactivate();
     this.currentTool = null;
+    //set the default footer color -- override
+    EventBus.fire("set-footer-color", { color: colors.blue.lighten4 });
     switch (mode) {
       case "select":
         this.currentTool = this.selectTool;
+        EventBus.fire("set-footer-color", { color: colors.blue.lighten2 });
         break;
-      case "rotate":
-        this.currentTool = this.rotateTool;
-        break;
-      case "move":
-        this.currentTool = this.moveTool;
-        break;
-      case "point":
-        this.currentTool = this.pointTool;
-        break;
-      case "line":
-        this.currentTool = this.lineTool;
-        break;
-      case "segment":
-        this.currentTool = this.segmentTool;
-        break;
-      case "circle":
-        this.currentTool = this.circleTool;
+      case "delete":
+        this.currentTool = this.deleteTool;
+        EventBus.fire("set-footer-color", { color: colors.blue.lighten2 });
         break;
       case "zoomIn":
         this.currentTool = this.zoomTool;
         this.zoomTool.zoomMode = ZoomMode.MAGNIFY;
+        EventBus.fire("set-footer-color", { color: colors.blue.lighten2 });
         break;
       case "zoomOut":
         this.currentTool = this.zoomTool;
         this.zoomTool.zoomMode = ZoomMode.MINIFY;
+        EventBus.fire("set-footer-color", { color: colors.blue.lighten2 });
         break;
       case "zoomFit":
         // This is a tool that only needs to run once and then the actionMode should be the same as the is was before the zoom fit (and the tool should be the same)
         this.zoomTool.doZoomFit(this.canvasSize);
         this.store.commit.revertActionMode();
+        break;
+
+      case "hide":
+        this.currentTool = this.hideTool;
+        break;
+      case "toggleLabelDisplay":
+        this.currentTool = this.toggleLabelDisplayTool;
+        break;
+      case "move":
+        this.currentTool = this.moveTool;
+        EventBus.fire("set-footer-color", { color: colors.red.lighten5 });
+        break;
+      case "rotate":
+        this.currentTool = this.rotateTool;
+        break;
+
+      case "point":
+        this.currentTool = this.pointTool;
+        EventBus.fire("set-footer-color", { color: colors.blue.lighten2 });
+        break;
+      case "line":
+        this.currentTool = this.lineTool;
+        EventBus.fire("set-footer-color", { color: colors.blue.lighten2 });
+        break;
+      case "segment":
+        this.currentTool = this.segmentTool;
+        EventBus.fire("set-footer-color", { color: colors.blue.lighten2 });
+        break;
+      case "circle":
+        this.currentTool = this.circleTool;
+        EventBus.fire("set-footer-color", { color: colors.blue.lighten2 });
+        break;
+
+      case "antipodalPoint":
+        this.currentTool = this.antipodalPointTool;
         break;
       case "intersect":
         this.currentTool = this.intersectTool;
@@ -457,30 +487,24 @@ export default class SphereFrame extends VueComponent {
       case "pointOnOneDim":
         this.currentTool = this.pointOnOneDimensionalTool;
         break;
-      case "antipodalPoint":
-        this.currentTool = this.antipodalPointTool;
-        break;
-      case "delete":
-        this.currentTool = this.deleteTool;
-        break;
-      case "hide":
-        this.currentTool = this.hideTool;
-        break;
+
       case "segmentLength":
         this.currentTool = this.segmentLengthTool;
+        EventBus.fire("set-footer-color", { color: colors.blue.lighten2 });
         break;
       case "pointDistance":
         this.currentTool = this.pointDistanceTool;
+        EventBus.fire("set-footer-color", { color: colors.blue.lighten2 });
         break;
       case "angle":
         this.currentTool = this.angleTool;
+        EventBus.fire("set-footer-color", { color: colors.blue.lighten2 });
         break;
       case "coordinate":
         this.currentTool = this.coordinateTool;
+        EventBus.fire("set-footer-color", { color: colors.blue.lighten2 });
         break;
-      case "toggleLabelDisplay":
-        this.currentTool = this.toggleLabelDisplayTool;
-        break;
+
       default:
         this.currentTool = null;
     }
