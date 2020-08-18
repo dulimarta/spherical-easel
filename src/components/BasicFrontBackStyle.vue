@@ -17,38 +17,14 @@
         {{ this.backStyleContrast }})
       </span>
       <br />
-      <v-tooltip bottom
-        :open-delay="toolTipOpenDelay"
-        :close-delay="toolTipCloseDelay"
-        max-width="400px">
-        <template v-slot:activator="{ on }">
-          <v-btn v-on="on"
-            @click="clearRecentDynamicBackStyleChanges"
-            text
-            :disabled="disableBackStyleContrastUndoButton"
-            outlined
-            ripple
-            small>{{ $t("style.clearChanges") }}</v-btn>
-        </template>
-        <span>{{ $t("style.clearChangesToolTip") }}</span>
-      </v-tooltip>
+      <HintButton @click="clearRecentDynamicBackStyleChanges"
+        :disabled="disableBackStyleContrastUndoButton"
+        i18n-label="style.clearChanges"
+        i18n-tooltip="style.clearChangesToolTip"></HintButton>
 
-      <v-tooltip bottom
-        :open-delay="toolTipOpenDelay"
-        :close-delay="toolTipCloseDelay"
-        max-width="400px">
-        <template v-slot:activator="{ on }">
-          <v-btn v-on="on"
-            @click="resetDynamicBackStyleToDefaults"
-            text
-            small
-            outlined
-            ripple>
-            <span>{{ $t("style.restoreDefaults") }}</span>
-          </v-btn>
-        </template>
-        <span>{{ $t("style.restoreDefaultsToolTip") }}</span>
-      </v-tooltip>
+      <HintButton @click="resetDynamicBackStyleToDefaults"
+        i18n-label="style.restoreDefaults"
+        i18n-tooltip="style.restoreDefaultsToolTip"></HintButton>
 
       <v-slider v-model.number="backStyleContrast"
         :min="0"
@@ -75,124 +51,32 @@
       <br />
       <span v-show="totallyDisableDynamicBackStyleSelector"
         class="select-an-object-text">{{ $t("style.selectAnObject") }}</span>
-      <v-tooltip v-if="!dynamicBackStyleAgreement"
-        bottom
-        :open-delay="toolTipOpenDelay"
-        :close-delay="toolTipCloseDelay"
-        max-width="400px">
-        <template v-slot:activator="{ on }">
-          <v-btn color="error"
-            v-on="on"
-            v-show="!totallyDisableDynamicBackStyleSelector"
-            text
-            small
-            outlined
-            ripple
-            @click="setCommonDynamicBackStyleAgreement">
-            <span
-              class="long-text-button">{{ $t("style.differingStylesDetected") }}</span>
-          </v-btn>
-        </template>
-        <span>{{ $t("style.differingStylesDetectedToolTip") }}</span>
-      </v-tooltip>
 
-      <v-tooltip v-if="!dynamicBackStyle"
-        bottom
-        :open-delay="toolTipOpenDelay"
-        :close-delay="toolTipCloseDelay"
-        max-width="400px">
-        <template v-slot:activator="{ on }">
-          <v-btn v-on="on"
-            v-show="
-              !totallyDisableDynamicBackStyleSelector &&
-                dynamicBackStyleAgreement
-            "
-            text
-            color="error"
-            outlined
-            ripple
-            small
-            block
-            @click="toggleBackStyleOptionsAvailability">
-            <span
-              class="long-text-button">{{ $t("style.enableBackStyleContrastSlider") }}</span>
-          </v-btn>
-        </template>
-        <span>{{ $t("style.enableBackStyleContrastSliderToolTip") }}</span>
-      </v-tooltip>
+      <NintButton v-if="!dynamicBackStyleAgreement"
+        color="error"
+        v-show="!totallyDisableDynamicBackStyleSelector"
+        @click="setCommonDynamicBackStyleAgreement"
+        i18n-label="style.differingStylesDetected"
+        i18n-tooltip="style.differingStylesDetectedToolTip"
+        long-label></NintButton>
 
-      <v-tooltip v-else
-        bottom
-        :open-delay="toolTipOpenDelay"
-        :close-delay="toolTipCloseDelay"
-        max-width="400px">
-        <template v-slot:activator="{ on }">
-          <v-btn v-on="on"
-            v-show="
-              !totallyDisableDynamicBackStyleSelector &&
-                dynamicBackStyleAgreement
-            "
-            color="error"
-            text
-            outlined
-            ripple
-            small
-            block
-            @click="toggleBackStyleOptionsAvailability">
-            <span style
-              class="long-text-button">{{ $t("style.disableBackStyleContrastSlider") }}</span>
-          </v-btn>
-        </template>
-        <span>{{ $t("style.disableBackStyleContrastSliderToolTip") }}</span>
-      </v-tooltip>
-
-      <!-- <v-tooltip
-        bottom
-        :open-delay="toolTipOpenDelay"
-        :close-delay="toolTipCloseDelay"
-        max-width="400px"
-      >
-        <template v-slot:activator="{ on }">
-          <v-btn
-            v-on="on"
-            v-show="
-              dynamicBackStyleAgreement &&
-                !totallyDisableDynamicBackStyleSelector &&
-                dynamicBackStyle
-            "
-            @click="clearRecentDynamicBackStyleChanges"
-            text
-            outlined
-            ripple
-            small
-          >{{ $t("style.clearChanges") }}</v-btn>
-        </template>
-        <span>{{ $t("style.clearChangesToolTip") }}</span>
-      </v-tooltip>-->
-
-      <!-- <v-tooltip
-        bottom
-        :open-delay="toolTipOpenDelay"
-        :close-delay="toolTipCloseDelay"
-        max-width="400px"
-      >
-        <template v-slot:activator="{ on }">
-          <v-btn
-            v-on="on"
-            v-show="
-              dynamicBackStyleAgreement &&
-                !totallyDisableDynamicBackStyleSelector &&
-                dynamicBackStyle
-            "
-            @click="resetDynamicBackStyleToDefaults"
-            text
-            small
-            outlined
-            ripple
-          >{{ $t("style.restoreDefaults") }}</v-btn>
-        </template>
-        <span>{{ $t("style.restoreDefaultsToolTip") }}</span>
-      </v-tooltip>-->
+      <template v-show="!totallyDisableDynamicBackStyleSelector &&
+                dynamicBackStyleAgreement">
+        <HintButton v-if="!dynamicBackStyle"
+          color="error"
+          @click="toggleBackStyleOptionsAvailability"
+          i18n-label="style.enableBackStyleContrastSlider"
+          long-label
+          i18n-tooltip="style.enableBackStyleContrastSliderToolTip">
+        </HintButton>
+        <HintButton v-else
+          color="error"
+          @click="toggleBackStyleOptionsAvailability"
+          long-label
+          i18n-label="style.disableBackStyleContrastSlider"
+          i18n-tooltip="style.disableBackStyleContrastSliderToolTip">
+        </HintButton>
+      </template>
     </fade-in-card>
 
     <fade-in-card :showWhen="
@@ -294,103 +178,42 @@
       <br />
       <span v-show="totallyDisableDashPatternSelector"
         class="select-an-object-text">{{ $t("style.selectAnObject") }}</span>
-      <v-tooltip v-if="!dashPatternAgreement"
-        bottom
-        :open-delay="toolTipOpenDelay"
-        :close-delay="toolTipCloseDelay"
-        max-width="400px">
-        <template v-slot:activator="{ on }">
-          <v-btn color="error"
-            v-on="on"
-            v-show="!totallyDisableDashPatternSelector"
-            text
-            small
-            outlined
-            ripple
-            @click="setCommonDashPatternAgreement">
-            <span
-              class="long-text-button">{{ $t("style.differingStylesDetected") }}</span>
-          </v-btn>
-        </template>
-        <span>{{ $t("style.differingStylesDetectedToolTip") }}</span>
-      </v-tooltip>
+      <HintButton v-if="!dashPatternAgreement"
+        v-show="!totallyDisableDashPatternSelector"
+        @click="setCommonDashPatternAgreement"
+        i18n-label="style.differingStylesDetected"
+        long-label
+        i18n-tooltip="style.differingStylesDetectedToolTip">
+      </HintButton>
 
-      <v-tooltip v-if="emptyDashPattern"
-        bottom
-        :open-delay="toolTipOpenDelay"
-        :close-delay="toolTipCloseDelay"
-        max-width="400px">
-        <template v-slot:activator="{ on }">
-          <v-btn v-on="on"
-            v-show="!totallyDisableDashPatternSelector && dashPatternAgreement"
-            text
-            color="error"
-            outlined
-            ripple
-            small
-            @click="toggleDashPatternSliderAvailibity">
-            {{ $t("style.enableDashPatternSlider") }}</v-btn>
-        </template>
-        <span>{{ $t("style.enableDashPatternSliderToolTip") }}</span>
-      </v-tooltip>
+      <template
+        v-show="!totallyDisableDashPatternSelector && dashPatternAgreement">
+        <HintButton v-if="emptyDashPattern"
+          color="error"
+          @click="toggleDashPatternSliderAvailibity"
+          i18n-label="style.enableDashPatternSlider"
+          i18n-tooltip="style.enableDashPatternSliderToolTip"></HintButton>
+        <HintButton v-else
+          @click="toggleDashPatternSliderAvailibity"
+          i18n-label="style.disableDashPatternSlider"
+          i18n-tooltip="style.disableDashPatternSliderToolTip">
+        </HintButton>
+      </template>
 
-      <v-tooltip v-else
-        bottom
-        :open-delay="toolTipOpenDelay"
-        :close-delay="toolTipCloseDelay"
-        max-width="400px">
-        <template v-slot:activator="{ on }">
-          <v-btn v-on="on"
-            v-show="!totallyDisableDashPatternSelector && dashPatternAgreement"
-            text
-            outlined
-            ripple
-            small
-            @click="toggleDashPatternSliderAvailibity">
-            {{ $t("style.disableDashPatternSlider") }}</v-btn>
-        </template>
-        <span>{{ $t("style.disableDashPatternSliderToolTip") }}</span>
-      </v-tooltip>
-
-      <v-tooltip bottom
-        :open-delay="toolTipOpenDelay"
-        :close-delay="toolTipCloseDelay"
-        max-width="400px">
-        <template v-slot:activator="{ on }">
-          <v-btn v-on="on"
-            v-show="
-              dashPatternAgreement &&
+      <HintButton v-show="dashPatternAgreement &&
                 !totallyDisableDashPatternSelector &&
-                !emptyDashPattern
-            "
-            :disabled="disableDashPatternUndoButton"
-            @click="clearRecentDashPatternChanges"
-            text
-            outlined
-            ripple
-            small>{{ $t("style.clearChanges") }}</v-btn>
-        </template>
-        <span>{{ $t("style.clearChangesToolTip") }}</span>
-      </v-tooltip>
+                !emptyDashPattern"
+        :disabled="disableDashPatternUndoButton"
+        @click="clearRecentDashPatternChanges"
+        i18n-label="style.clearChanges"
+        i18n-tooltip="style.clearChangesToolTip"></HintButton>
 
-      <v-tooltip bottom
-        :open-delay="toolTipOpenDelay"
-        :close-delay="toolTipCloseDelay"
-        max-width="400px">
-        <template v-slot:activator="{ on }">
-          <v-btn v-on="on"
-            v-show="dashPatternAgreement &&
+      <HintButton v-show="dashPatternAgreement &&
                 !totallyDisableDashPatternSelector &&
-                !emptyDashPattern
-            "
-            @click="resetDashPatternToDefaults"
-            text
-            small
-            outlined
-            ripple>{{ $t("style.restoreDefaults") }}</v-btn>
-        </template>
-        <span>{{ $t("style.restoreDefaultsToolTip") }}</span>
-      </v-tooltip>
+                !emptyDashPattern"
+        @click="resetDashPatternToDefaults"
+        i18n-label="style.restoreDefaults"
+        i18n-tooltip="style.restoreDefaultsToolTip"></HintButton>
 
       <v-range-slider v-model="sliderDashArray"
         :min="0"
@@ -520,61 +343,29 @@
         @blur="setLabelObjectVisibilityChange(); onStyleDataChanged()"
         @change="setLabelObjectVisibilityChange(); onStyleDataChanged()">
       </v-select>
-      <v-tooltip v-if="!styleDataAgreement"
-        bottom
-        :open-delay="toolTipOpenDelay"
-        :close-delay="toolTipCloseDelay"
-        max-width="400px">
-        <template v-slot:activator="{ on }">
-          <v-btn color="error"
-            v-on="on"
-            v-show="!totalyDisableStyleDataSelector"
-            text
-            small
-            outlined
-            ripple
-            @click="setStyleDataAgreement">
-            <span
-              class="long-text-button">{{ $t("style.differingStylesDetected") }}</span>
-          </v-btn>
-        </template>
-        <span>{{ $t("style.differingStylesDetectedToolTip") }}</span>
-      </v-tooltip>
+      <HintButton v-if="!styleDataAgreement"
+        color="error"
+        v-show="!totalyDisableStyleDataSelector"
+        @click="setStyleDataAgreement"
+        i18n-label="style.differingStylesDetected"
+        long-label
+        i18n-tooltip="style.differingStylesDetectedToolTip">
 
-      <v-tooltip bottom
-        :open-delay="toolTipOpenDelay"
-        :close-delay="toolTipCloseDelay"
-        max-width="400px">
-        <template v-slot:activator="{ on }">
-          <v-btn v-on="on"
-            v-show="styleDataAgreement && !totalyDisableStyleDataSelector
-            "
-            @click="clearStyleData"
-            :disabled="disableStyleSelectorUndoButton"
-            text
-            outlined
-            ripple
-            small>{{ $t("style.clearChanges") }}</v-btn>
-        </template>
-        <span>{{ $t("style.clearChangesToolTip") }}</span>
-      </v-tooltip>
+      </HintButton>
 
-      <v-tooltip bottom
-        :open-delay="toolTipOpenDelay"
-        :close-delay="toolTipCloseDelay"
-        max-width="400px">
-        <template v-slot:activator="{ on }">
-          <v-btn v-on="on"
-            v-show="styleDataAgreement && !totalyDisableStyleDataSelector
-            "
-            @click="resetStyleDataToDefaults"
-            text
-            small
-            outlined
-            ripple>{{ $t("style.restoreDefaults") }}</v-btn>
-        </template>
-        <span>{{ $t("style.restoreDefaultsToolTip") }}</span>
-      </v-tooltip>
+      <HintButton
+        v-show="styleDataAgreement && !totalyDisableStyleDataSelector"
+        @click="clearStyleData"
+        :disabled="disableStyleSelectorUndoButton"
+        i18n-label="style.clearChanges"
+        i18n-tooltip="style.clearChangesToolTip"></HintButton>
+
+      <HintButton
+        v-show="styleDataAgreement && !totalyDisableStyleDataSelector"
+        @click="resetStyleDataToDefaults"
+        i18n-label="style.restoreDefaults"
+        i18n-tooltip="style.restoreDefaultsToolTip"></HintButton>
+
     </fade-in-card>
 
     <fade-in-card :showWhen="
@@ -630,12 +421,14 @@ import { hslaColorType, AppState, Labelable } from "@/types";
 import { StyleNoduleCommand } from "@/commands/StyleNoduleCommand";
 import EventBus from "@/eventHandlers/EventBus";
 import NumberSelector from "@/components/NumberSelector.vue";
-import TextInputSelector from "@/components/TextInputSelector.vue";
+// import TextInputSelector from "@/components/TextInputSelector.vue";
 import ColorSelector from "@/components/ColorSelector.vue";
 //import { TranslateResult } from "vue-i18n";
 import i18n from "../i18n";
 import { SELabel } from "@/models/SELabel";
 import Style from "./Style.vue";
+import HintButton from "@/components/HintButton.vue";
+
 // import { getModule } from "vuex-module-decorators";
 // import UI from "@/store/ui-styles";
 
@@ -656,7 +449,7 @@ const keys = values.map(e => {
 });
 
 @Component({
-  components: { FadeInCard, NumberSelector, ColorSelector }
+  components: { FadeInCard, NumberSelector, ColorSelector, HintButton }
 })
 export default class BasicFrontBackStyle extends Vue {
   @Prop()
@@ -1881,13 +1674,7 @@ export default class BasicFrontBackStyle extends Vue {
 .select-an-object-text {
   color: rgb(255, 82, 82);
 }
-.long-text-button {
-  max-width: 250px;
-  word-wrap: break-word;
-  display: inline-block;
-  height: 1em;
-  white-space: pre-line;
-}
+
 .v-btn__content {
   height: 400px;
   word-wrap: break-word;

@@ -75,7 +75,7 @@ export default class SegmentLengthHandler extends Highlighter {
           keyOptions: { name: `${lenMeasure.name}` },
           type: "success"
         });
-        new AddMeasurementCommand(lenMeasure).execute();
+        new AddExpressionCommand(lenMeasure).execute();
       }
     }
     // Unselect the selected objects and clear the selectedObject array

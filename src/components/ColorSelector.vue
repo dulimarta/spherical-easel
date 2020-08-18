@@ -9,76 +9,27 @@
     </div>
     <span v-show="totallyDisableColorSelector"
       class="select-an-object-text">{{ $t("style.selectAnObject") }}</span>
-    <v-tooltip v-if="!colorAgreement"
-      bottom
-      :open-delay="toolTipOpenDelay"
-      :close-delay="toolTipCloseDelay"
-      max-width="400px">
-      <template v-slot:activator="{ on }">
-        <v-btn color="error"
-          v-on="on"
-          v-show="!totallyDisableColorSelector"
-          text
-          small
-          outlined
-          ripple
-          @click="setCommonColorArgreement">
-          <span
-            class="long-text-button">{{ $t("style.differingStylesDetected") }}</span>
-        </v-btn>
-      </template>
-      <span>{{ $t("style.differingStylesDetectedToolTip") }}</span>
-    </v-tooltip>
-    <v-tooltip bottom
-      v-else
-      :open-delay="toolTipOpenDelay"
-      :close-delay="toolTipCloseDelay"
-      max-width="400px">
-      <template v-slot:activator="{ on }">
-        <v-btn v-on="on"
-          v-show="!totallyDisableColorSelector"
-          text
-          outlined
-          ripple
-          small
-          @click="showColorPresets">
-          {{ $t("style.showColorPresets") }}</v-btn>
-      </template>
-      <span>{{ $t("style.showColorPresetsToolTip") }}</span>
-    </v-tooltip>
-    <v-tooltip bottom
-      :open-delay="toolTipOpenDelay"
-      :close-delay="toolTipCloseDelay"
-      max-width="400px">
-      <template v-slot:activator="{ on }">
-        <v-btn v-on="on"
-          v-show="colorAgreement && !totallyDisableColorSelector"
-          @click="clearRecentColorChanges"
-          :disabled="disableUndoButton"
-          text
-          outlined
-          ripple
-          small>
-          {{ $t("style.clearChanges") }}</v-btn>
-      </template>
-      <span>{{ $t("style.clearChangesToolTip") }}</span>
-    </v-tooltip>
-    <v-tooltip bottom
-      :open-delay="toolTipOpenDelay"
-      :close-delay="toolTipCloseDelay"
-      max-width="400px">
-      <template v-slot:activator="{ on }">
-        <v-btn v-on="on"
-          v-show="colorAgreement && !totallyDisableColorSelector"
-          @click="resetColorToDefaults"
-          text
-          small
-          outlined
-          ripple>
-          {{ $t("style.restoreDefaults") }}</v-btn>
-      </template>
-      <span>{{ $t("style.restoreDefaultsToolTip") }}</span>
-    </v-tooltip>
+    <template v-show="!totallyDisableColorSelector">
+      <HintButton v-if="!colorAgreement"
+        @click="setCommonColorArgreement"
+        i18n-label="style.differingStylesDetected"
+        long-label
+        i18n-tooltip="style.differingStylesDetectedToolTip"></HintButton>
+      <HintButton v-else
+        @click="showColorPresets"
+        i18n-label="style.showColorPresets"
+        i18n-tooltup="style.showColorPresetsToolTip"></HintButton>
+    </template>
+    <HintButton v-show="colorAgreement && !totallyDisableColorSelector"
+      @click="clearRecentColorChanges"
+      :disabled="disableUndoButton"
+      i18n-label="style.clearChanges"
+      i18n-tooltip="style.clearChangesToolTip"></HintButton>
+    <HintButton v-show="colorAgreement && !totallyDisableColorSelector"
+      @click="resetColorToDefaults"
+      i18n-label="style.restoreDefaults"
+      i18n-tooltip="style.restoreDefaultsToolTip"></HintButton>
+
     <v-color-picker hide-canvas
       panel="hsla"
       :disabled="!colorAgreement || totallyDisableColorSelector || noData"
@@ -112,7 +63,9 @@ import Nodule from "@/plottables/Nodule";
 import { hslaColorType } from "@/types";
 import { StyleOptions, StyleEditPanels } from "@/types/Styles";
 import { AppState } from "@/types";
-@Component
+import HintButton from "@/components/HintButton.vue";
+
+@Component({ components: { HintButton } })
 export default class ColorSelector extends Vue {
   @Prop() readonly titleKey!: string;
   @Prop() readonly sideFrontKey!: string;
@@ -351,12 +304,5 @@ export default class ColorSelector extends Vue {
 
 .select-an-object-text {
   color: rgb(255, 82, 82);
-}
-.long-text-button {
-  max-width: 250px;
-  word-wrap: break-word;
-  display: inline-block;
-  height: 1em;
-  white-space: pre-line;
 }
 </style>

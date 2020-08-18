@@ -96,7 +96,7 @@ export default class PointDistantHandler extends Highlighter {
           text: `New measurement ${distanceMeasure.name} added`,
           type: "success"
         });
-        new AddMeasurementCommand(distanceMeasure).execute();
+        new AddExpressionCommand(distanceMeasure).execute();
       }
     }
     //Unselect the selected objects and clear the selectedObject array
