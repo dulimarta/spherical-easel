@@ -70,7 +70,7 @@
       <v-col class="text-center">
         <span v-if="activeToolName"
           class="footer-text"
-          v-html="$t('buttons.CurrentTool')+ ': ' + $t('buttons.' +activeToolName).split('<br>').join(' ').trim()">
+          v-html="$t('buttons.CurrentTool')+ ': ' + $t('buttons.' + activeToolName).split('<br>').join(' ').trim()">
         </span>
         <span v-else
           class="footer-text">{{ $t(`buttons.NoToolSelected`) }}</span>

@@ -83,6 +83,10 @@
     "PanZoomOutToolTipMessage": "Pan or Zoom Out",
     "PanZoomOutToolUseMessage": "Click to zoom out at the location of the mouse. Click and drag to pan the current view.",
 
+    "ZoomFitDisplayedName": "Zoom Fit<br>&nbsp;",
+    "ZoomFitToolTipMessage": "Zoom Fit",
+    "ZoomFitToolUseMessage": "Click to fit the sphere in the available space.",
+
     "RotateDisplayedName": "Rotate<br>Sphere",
     "RotateSphereToolTipMessage": "Rotate Sphere",
     "RotateSphereToolUseMessage": "Click and drag to rotate the sphere.",
@@ -93,11 +97,7 @@
 
     "ToggleLabelDisplayedName": "Toggle Label<br>Display",
     "ToggleLabelToolTipMessage": "Toggle Display Of Labels",
-    "ToggleLabelToolUseMessage": "Click on objects to toggle the display of their labels.",
-
-    "ZoomFitDisplayedName": "Zoom Fit<br>&nbsp;",
-    "ZoomFitToolTipMessage": "Zoom Fit",
-    "ZoomFitToolUseMessage": "Click to fit the sphere in the available space."
+    "ToggleLabelToolUseMessage": "Click on objects to toggle the display of their labels."
   },
   "settings": {
     "title": "Preferences"

@@ -186,7 +186,7 @@ export default class SphereFrame extends VueComponent {
     // Add Event Bus (a Vue component) listeners to change the display of the sphere - rotate and Zoom/Pan
     EventBus.listen("sphere-rotate", this.handleSphereRotation);
     EventBus.listen("zoom-updated", this.updateView);
-    EventBus.listen("export-current-svg", this.getCurrentSVGHtml);
+    EventBus.listen("export-current-svg", this.getCurrentSVGForIcon);
   }
 
   mounted(): void {
@@ -408,8 +408,150 @@ export default class SphereFrame extends VueComponent {
   }
   //#endregion handleSphereRotation
 
-  getCurrentSVGHtml(): void {
-    console.log("SVG", this.$refs.canvas.innerHTML);
+  getCurrentSVGForIcon(): void {
+    const minimumNormForOneDimensional = 20000;
+    const desiredIconSize = 32;
+    const desiredSphereOutlineRadiusSize = 28;
+    const sphereBoundaryStrokeWidth = 1;
+    const desiredPointScale = 0.6;
+    const num = this.canvasSize;
+    const searchString = String(num / 2);
+    const SVG = this.$refs.canvas.innerHTML.split(searchString).join("0");
+    const splitSVG = SVG.split(/(<g.+?><\/g>)/);
+    const noTextNoHidden = splitSVG.filter(
+      subStr => !(subStr.indexOf("hidden") > -1 || subStr.indexOf("text") > -1)
+    );
+    const regEx1 = /\swidth.*defs>/g;
+    const regEx2 = /\B<g id="two-\d*?" transform="matrix\(\d \d \d (\d|-\d) \d+ \d+\)" opacity="\d*?"><\/g>\B/g;
+    // Remove the id="two-126" like strings
+    const regEx3 = /\sid="two-\d*?"(\B|\s)/g;
+    const regEx4 = /\btransform="matrix\(1 0 0 1 0\s0\)"\s\b/g;
+    // Set the width of the boundary circle
+    const regEx5 = /\sstroke-width="3"\s/g;
+
+    const nextSVG1 = noTextNoHidden
+      .join("")
+      .replace(
+        regEx1,
+        ' viewBox=" ' +
+          -desiredIconSize / 2 +
+          " " +
+          -desiredIconSize / 2 +
+          " " +
+          desiredIconSize +
+          " " +
+          desiredIconSize +
+          '" preserveAspectRatio="xMidYMid meet" style="overflow: visible;">'
+      )
+      .replace(regEx2, "")
+      .replace(regEx3, "")
+      .replace(regEx4, "")
+      .replace(regEx5, 'stroke-width="' + sphereBoundaryStrokeWidth + '"');
+    const splitSVG2: string[] = [];
+    const pointTransformMatrixIndices: number[] = [];
+    nextSVG1.split('"').forEach((subStr, ind) => {
+      const splitSubString = subStr.split(" ");
+
+      if (
+        splitSubString[0] === "M" &&
+        Number(splitSubString[1]) !== undefined &&
+        Number(splitSubString[2]) !== undefined
+      ) {
+        if (
+          Number(splitSubString[1]) * Number(splitSubString[1]) +
+            Number(splitSubString[2]) * Number(splitSubString[2]) >
+          minimumNormForOneDimensional
+        ) {
+          // this is a line or segment or boundary circle description
+          // so scale all the numbers in the subString
+          const scaledSplitSubstring: string[] = [];
+          splitSubString.forEach(str => {
+            if (Number(str)) {
+              scaledSplitSubstring.push(
+                String((2 * desiredSphereOutlineRadiusSize * Number(str)) / num)
+              );
+            } else {
+              scaledSplitSubstring.push(str);
+            }
+          });
+          splitSVG2.push(scaledSplitSubstring.join(" "));
+        } else {
+          // This is the point description record the location and push it onto the splitSVG2
+          pointTransformMatrixIndices.push(ind);
+          splitSVG2.push(subStr);
+        }
+      } else {
+        splitSVG2.push(subStr);
+      }
+    });
+    // Two before each of the numbers in pointTransformMatrixIndices is a string of the form
+    //   "matrix(0.649 0 0 0.649 -110.532 -112.988)"
+    // replace it with
+    //  "matrix(desiredPointScale 0 0 desiredPointScale <scaled1> <scaled2>)
+    pointTransformMatrixIndices.forEach(num => {
+      const str = splitSVG2[num - 2];
+      const splitStr = str.split(" ");
+      const transX = splitStr[4];
+      const transY = splitStr[5].slice(0, splitStr[5].length - 2);
+      const oldPointScale = splitStr[3];
+      // oldx * scale + tranx = old locx--> newLocx= old/nummm
+
+      const newStr =
+        "matrix(" +
+        oldPointScale +
+        " 0 0 " +
+        oldPointScale +
+        " " +
+        ((desiredSphereOutlineRadiusSize * Number(transX)) / num) * 0.28 +
+        " " +
+        ((desiredSphereOutlineRadiusSize * Number(transY)) / num) * 0.28 +
+        ")";
+      splitSVG2[num - 2] = newStr;
+    });
+    console.log(splitSVG2.join('"'));
+    // const scaledSVG = splitSVG.join("");
+    // //Divide all numbers surrounded by spaces that are not 1 or -1 by the num/(2*desiredSphereOutlineRadiusSize)
+    // // SVG.split(" ").forEach(str => {
+    // //   if (Number(str)) {
+    // //     if (str === "1" || str === "-1") {
+    // //       scaledSVG.push(str);
+    // //     } else {
+    // //       scaledSVG.push(
+    // //         String((2 * desiredSphereOutlineRadiusSize * Number(str)) / num)
+    // //       );
+    // //     }
+    // //   } else {
+    // //     scaledSVG.push(str);
+    // //   }
+    // // });
+    // console.log(scaledSVG);
+    // const regEx1 = /(\B<g\sid="two-\d*"\stransform="matrix\(1 0 0 -1 0\s0\)" opacity="1"><\/g>\B|\B<g\sid="two-\d*"\stransform="matrix\(1 0 0 1 0\s0\)" opacity="1"><\/g>\B)/g;
+    // const nextSVG1 = scaledSVG.replace(regEx1, "");
+    // const regEx2 = /\btransform="matrix\(1 0 0 1 0\s0\)"\s\b/g;
+    // const nextSVG2 = nextSVG1.replace(regEx2, "");
+
+    // // Set the width of the boundary circle
+    // const regEx4 = /\sstroke-width="3"\s/g;
+    // const nextSVG4 = nextSVG3.replace(
+    //   regEx4,
+    //   'stroke-width="' + sphereBoundaryStrokeWidth + '"'
+    // );
+    // // // remove the text
+    // // const regEx5 = /\B<text.*?<\/text>\B/g;
+    // // const nextSVG5 = nextSVG4.replace(regEx5, "");
+
+    // // Remove <g id="two-8" opacity="1"></g> like strings
+    // const regEx6 = /\B<g id="two-\d*?" opacity="\d*?"><\/g>\B/g;
+    // const nextSVG6 = nextSVG5.replace(regEx6, "");
+
+    // // Remove the id="two-126" like strings
+    // const regEx7 = /\sid="two-\d*?"(\B|\s)/g;
+    // const nextSVG7 = nextSVG6.replace(regEx7, "");
+
+    // // // Remove the hidden groups
+    // // const regEx8 = /<g.+?(?=visibility="hidden").*?<\/g>/g;
+    // // const nextSVG8 = nextSVG7.replace(regEx8, "");
+    // console.log(nextSVG8);
   }
   /**
    * Watch the actionMode in the store. This is the two-way binding of variables in the Vuex Store.  Notice that this
@@ -420,7 +562,7 @@ export default class SphereFrame extends VueComponent {
   switchActionMode(mode: string): void {
     this.currentTool?.deactivate();
     this.currentTool = null;
-    //set the default footer color -- override
+    //set the default footer color -- override as necessary
     EventBus.fire("set-footer-color", { color: colors.blue.lighten4 });
     switch (mode) {
       case "select":

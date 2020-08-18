@@ -315,15 +315,24 @@ export default class Easel extends Vue {
 
   private enableZoomIn(): void {
     this.displayZoomInToolUseMessage = true;
-    this.store.commit.setActionMode({ id: "zoomIn", name: "Zoom In" });
+    this.store.commit.setActionMode({
+      id: "zoomIn",
+      name: "PanZoomInDisplayedName"
+    });
   }
   private enableZoomOut(): void {
     this.displayZoomOutToolUseMessage = true;
-    this.store.commit.setActionMode({ id: "zoomOut", name: "Zoom Out" });
+    this.store.commit.setActionMode({
+      id: "zoomOut",
+      name: "PanZoomOutDisplayedName"
+    });
   }
   private enableZoomFit(): void {
     this.displayZoomFitToolUseMessage = true;
-    this.store.commit.setActionMode({ id: "zoomFit", name: "Zoom Fit" });
+    this.store.commit.setActionMode({
+      id: "zoomFit",
+      name: "ZoomFitDisplayedName"
+    });
   }
   private adjustSize(): void {
     this.availHeight =
