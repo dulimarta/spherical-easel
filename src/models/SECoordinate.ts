@@ -18,7 +18,7 @@ export class SECoordinate extends SEMeasurement {
     point.registerChild(this);
 
     this.name =
-      this.name + `-${this.coordName}(${point.name}):${this.prettyValue()}`;
+      this.name + `-${this.coordName}(${point.name}):${this.prettyValue}`;
   }
 
   private get coordName(): string {
@@ -44,9 +44,5 @@ export class SECoordinate extends SEMeasurement {
       default:
         return Number.NaN;
     }
-  }
-
-  public prettyValue(): string {
-    return this.value.toFixed(3);
   }
 }

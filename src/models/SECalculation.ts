@@ -17,6 +17,12 @@ export class SECalculation extends SEExpression {
     const vars = [];
     for (const v of text.matchAll(/[Mm][0-9]+/g)) {
       vars.push(v[0]);
+
+      // Find and add dependent nodes as a child
+      const pos = store.state.expressions.findIndex(z =>
+        z.name.startsWith(`${v[0]}-`)
+      );
+      if (pos > 0) store.state.expressions[pos].registerChild(this);
     }
 
     store.state.expressions
