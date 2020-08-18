@@ -39,7 +39,7 @@
         </v-tooltip>
 
         <v-tab-item value="toolListTab">
-          <ToolGroups></ToolGroups>
+          <ToolGroups id="toolGroups"></ToolGroups>
         </v-tab-item>
         <v-tab-item value="objectListTab">
           <ObjectTree id="objtree">
@@ -49,7 +49,7 @@
     </div>
 
     <div v-else
-      id="mini-icons"
+      class="mini-icons"
       key="partial">
       <v-icon>mdi-calculator</v-icon>
       <v-icon>mdi-format-list-bulleted</v-icon>
@@ -96,19 +96,19 @@ export default class Toolbox extends Vue {
 </script>
 
 <style lang="scss" scoped>
-#mini-icons {
+.mini-icons {
   width: 100%;
   height: 100%;
   display: flex;
   flex-direction: column;
-  // flex-grow: 1;
-  background: red;
   justify-content: center; /* Center it vertically */
 }
 
-#objtree {
+#objtree,
+#toolGroups {
   /* It is important to set the height otherwise the "overflow' option in <ObjectTree> won't work correctly */
   height: calc(100vh - 200px);
+  overflow: auto;
 }
 .slide-out-enter-active,
 .slide-out-leave-active {
