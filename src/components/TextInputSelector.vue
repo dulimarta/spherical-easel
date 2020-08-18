@@ -15,14 +15,12 @@ import Vue from "vue";
 import Component from "vue-class-component";
 import SETTINGS from "@/global-settings";
 import { Watch, Prop, PropSync } from "vue-property-decorator";
-import { StyleOptions, Styles, StyleEditMode } from "@/types/Styles";
+import { StyleEditPanels } from "@/types/Styles";
 import { State } from "vuex-class";
-import { SENodule } from "@/models/SENodule";
-import { AppState } from "@/types";
 
 @Component({})
 export default class TextInputSelector extends Vue {
-  @Prop() readonly mode!: StyleEditMode;
+  @Prop() readonly mode!: StyleEditPanels;
   // @Prop() readonly titleKey!: string;
   @Prop({ required: true }) readonly styleName!: string;
   // @PropSync("data") styleData?: string | undefined;
@@ -47,7 +45,7 @@ export default class TextInputSelector extends Vue {
     this.$store.direct.commit.changeStyle({
       selected: this.$store.getters.selectedSENodules(),
       payload: {
-        mode: this.mode,
+        panel: this.mode,
         [this.styleName]: newData
       }
     });
