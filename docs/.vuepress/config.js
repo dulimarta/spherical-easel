@@ -1,8 +1,7 @@
-//const moment = require("moment");
-
 module.exports = {
   //Specify the output directory for vuepress build. If a relative path is specified, it will be resolved based on process.cwd().
-  dest: "../dist/docs",
+  dest: "./dist/docs",
+  base: "/docs/",
   // To use the http://tikzjax.com/ these must be included in the header.
   head: [
     [
