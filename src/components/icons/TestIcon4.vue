@@ -79,6 +79,7 @@
       </g>
     </g>
   </svg>
+
 </template>
 <script>
 export default {

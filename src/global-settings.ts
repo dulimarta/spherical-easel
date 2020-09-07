@@ -70,7 +70,7 @@ export default {
         front: "hsla(240, 55%, 55%, 1)",
         back: "hsla(240, 55%, 75%, 1)"
       },
-      pointStrokeWidth: { front: 1, back: 1 }, // The thickness of the edge of the point when drawn
+      pointStrokeWidth: { front: 2, back: 2 }, // The thickness of the edge of the point when drawn
       opacity: { front: 1, back: 1 }
       // No dashing for points
     },

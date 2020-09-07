@@ -415,46 +415,76 @@ export default class SphereFrame extends VueComponent {
   //#endregion handleSphereRotation
 
   getCurrentSVGForIcon(): void {
-    const minimumNormForOneDimensional = 20000;
+    const minimumNormForOneDimensional = 200;
     const desiredIconSize = 32;
     const desiredSphereOutlineRadiusSize = 28;
     const sphereBoundaryStrokeWidth = 1;
-    const desiredPointScale = 0.6;
+    const desiredPointScale = 0.3;
     const num = this.canvasSize;
     const searchString = String(num / 2);
-    const SVG = this.$refs.canvas.innerHTML.split(searchString).join("0");
-    const splitSVG = SVG.split(/(<g.+?><\/g>)/);
-    const noTextNoHidden = splitSVG.filter(
-      subStr => !(subStr.indexOf("hidden") > -1 || subStr.indexOf("text") > -1)
-    );
-    const regEx1 = /\swidth.*defs>/g;
+    console.log(this.$refs.canvas.innerHTML);
+    // Remove the translation to num/2, num/2 transformations
+    let originalScale = this.$refs.canvas.innerHTML.split(" ")[10];
+    originalScale = originalScale.substring(0, originalScale.length - 1);
+    let SVG = this.$refs.canvas.innerHTML.split(searchString).join("0");
+    //Remove all <text/path/g blah... visibility="hidden" blah... ></text/path/g> parts
+    while (SVG.indexOf("hidden") > -1) {
+      const hiddenIndex = SVG.indexOf("hidden");
+      const startDeletIndex = SVG.lastIndexOf("<", hiddenIndex);
+      const endOfSectionIndex = SVG.indexOf(">", hiddenIndex);
+      const endDeleteIndex = SVG.indexOf(">", endOfSectionIndex + 1);
+      let result = SVG.split("");
+      result.splice(startDeletIndex, endDeleteIndex - startDeletIndex + 1);
+      SVG = result.join("");
+    }
+    //Remove all <text blah...  ></text> parts
+    while (SVG.indexOf("<text") > -1) {
+      const hiddenIndex = SVG.indexOf("<text");
+      const endOfSectionIndex = SVG.indexOf(">", hiddenIndex);
+      const endDeleteIndex = SVG.indexOf(">", endOfSectionIndex + 1);
+      let result = SVG.split("");
+      result.splice(hiddenIndex, endDeleteIndex - hiddenIndex + 1);
+      SVG = result.join("");
+    }
+    //Remove all <text/path/g blah... d="" blah... ></text/path/g> parts
+    while (SVG.indexOf('d=""') > -1) {
+      const hiddenIndex = SVG.indexOf('d=""');
+      const startDeletIndex = SVG.lastIndexOf("<", hiddenIndex);
+      const endOfSectionIndex = SVG.indexOf(">", hiddenIndex);
+      const endDeleteIndex = SVG.indexOf(">", endOfSectionIndex + 1);
+      let result = SVG.split("");
+      result.splice(startDeletIndex, endDeleteIndex - startDeletIndex + 1);
+      SVG = result.join("");
+    }
+
+    const regEx1 = /\swidth.*\/defs>/g;
     const regEx2 = /\B<g id="two-\d*?" transform="matrix\(\d \d \d (\d|-\d) \d+ \d+\)" opacity="\d*?"><\/g>\B/g;
-    // Remove the id="two-126" like strings
+    //  Remove the id="two-126" like strings
     const regEx3 = /\sid="two-\d*?"(\B|\s)/g;
     const regEx4 = /\btransform="matrix\(1 0 0 1 0\s0\)"\s\b/g;
-    // Set the width of the boundary circle
+    // // Set the width of the boundary circle
     const regEx5 = /\sstroke-width="3"\s/g;
 
-    const nextSVG1 = noTextNoHidden
-      .join("")
-      .replace(
-        regEx1,
-        ' viewBox=" ' +
-          -desiredIconSize / 2 +
-          " " +
-          -desiredIconSize / 2 +
-          " " +
-          desiredIconSize +
-          " " +
-          desiredIconSize +
-          '" preserveAspectRatio="xMidYMid meet" style="overflow: visible;">'
-      )
+    const nextSVG1 = SVG.replace(
+      regEx1,
+      ' viewBox=" ' +
+        -desiredIconSize / 2 +
+        " " +
+        -desiredIconSize / 2 +
+        " " +
+        desiredIconSize +
+        " " +
+        desiredIconSize +
+        '" preserveAspectRatio="xMidYMid meet" style="overflow: visible;">'
+    )
       .replace(regEx2, "")
       .replace(regEx3, "")
       .replace(regEx4, "")
       .replace(regEx5, 'stroke-width="' + sphereBoundaryStrokeWidth + '"');
+    //now scale the numerical values
     const splitSVG2: string[] = [];
     const pointTransformMatrixIndices: number[] = [];
+    const oneDimensionalTransformMatrixIndices: number[] = [];
     nextSVG1.split('"').forEach((subStr, ind) => {
       const splitSubString = subStr.split(" ");
 
@@ -468,6 +498,7 @@ export default class SphereFrame extends VueComponent {
             Number(splitSubString[2]) * Number(splitSubString[2]) >
           minimumNormForOneDimensional
         ) {
+          oneDimensionalTransformMatrixIndices.push(ind);
           // this is a line or segment or boundary circle description
           // so scale all the numbers in the subString
           const scaledSplitSubstring: string[] = [];
@@ -490,6 +521,7 @@ export default class SphereFrame extends VueComponent {
         splitSVG2.push(subStr);
       }
     });
+
     // Two before each of the numbers in pointTransformMatrixIndices is a string of the form
     //   "matrix(0.649 0 0 0.649 -110.532 -112.988)"
     // replace it with
@@ -504,17 +536,20 @@ export default class SphereFrame extends VueComponent {
 
       const newStr =
         "matrix(" +
-        oldPointScale +
+        desiredPointScale +
         " 0 0 " +
-        oldPointScale +
+        desiredPointScale +
         " " +
-        ((desiredSphereOutlineRadiusSize * Number(transX)) / num) * 0.28 +
+        (desiredSphereOutlineRadiusSize * Number(transX)) /
+          (num * Number(originalScale)) +
         " " +
-        ((desiredSphereOutlineRadiusSize * Number(transY)) / num) * 0.28 +
+        (desiredSphereOutlineRadiusSize * Number(transY)) /
+          (num * Number(originalScale)) +
         ")";
       splitSVG2[num - 2] = newStr;
     });
     console.log(splitSVG2.join('"'));
+    console.log(originalScale);
     // const scaledSVG = splitSVG.join("");
     // //Divide all numbers surrounded by spaces that are not 1 or -1 by the num/(2*desiredSphereOutlineRadiusSize)
     // // SVG.split(" ").forEach(str => {

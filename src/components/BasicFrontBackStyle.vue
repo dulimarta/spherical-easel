@@ -52,13 +52,13 @@
       <span v-show="totallyDisableDynamicBackStyleSelector"
         class="select-an-object-text">{{ $t("style.selectAnObject") }}</span>
 
-      <NintButton v-if="!dynamicBackStyleAgreement"
+      <HintButton v-if="!dynamicBackStyleAgreement"
         color="error"
         v-show="!totallyDisableDynamicBackStyleSelector"
         @click="setCommonDynamicBackStyleAgreement"
         i18n-label="style.differingStylesDetected"
         i18n-tooltip="style.differingStylesDetectedToolTip"
-        long-label></NintButton>
+        long-label></HintButton>
 
       <template v-show="!totallyDisableDynamicBackStyleSelector &&
                 dynamicBackStyleAgreement">
