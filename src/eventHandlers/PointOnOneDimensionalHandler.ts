@@ -15,6 +15,7 @@ export default class PointOnOneDimensionalHandler extends Highlighter {
    * The parent of the point
    */
   private oneDimensional: SEOneDimensional | null = null;
+
   /* temporary vector to help with computation */
   private tmpVector = new Vector3();
 

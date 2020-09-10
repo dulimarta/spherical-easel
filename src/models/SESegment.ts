@@ -208,6 +208,24 @@ export class SESegment extends SENodule
     }
   }
 
+  /**
+   * Return the normal vector to the plane containing the line that is perpendicular to this segment through the
+   * sePoint, in the case that the usual way of defining this line is not well defined  (something is parallel),
+   * use the oldNormal to help compute a new normal (which is returned)
+   * @param sePoint A point on the line normal to this circle
+   */
+  public getNormalToLineThru(sePoint: SEPoint, oldNormal: Vector3): Vector3 {
+    this.tmpVector.crossVectors(sePoint.locationVector, this._normalVector);
+    // Check to see if the tmpVector is zero (i.e the center point and given point are parallel -- ether
+    // nearly antipodal or in the same direction)
+    if (this.tmpVector.isZero()) {
+      // In this case any line containing the sePoint will be perpendicular to the segment, but
+      //  we want to choose one line whose normal is near the oldNormal
+      this.tmpVector.copy(oldNormal);
+    }
+    return this.tmpVector.normalize();
+  }
+
   public update(state: UpdateStateType): void {
     // If any one parent is not up to date, don't do anything
     if (!this.canUpdateNow()) {

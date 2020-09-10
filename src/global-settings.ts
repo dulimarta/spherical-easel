@@ -47,7 +47,8 @@ export default {
   },
   // #endregion boundarycircle
   point: {
-    showLabelsInitially: true, // Should the labels be show upon creating the point
+    showLabelsOfFreePointsInitially: true, // Should the labels of free points be shown upon creating the point
+    showLabelOfNonFreePointsInitially: false, // Should the labels of non-free points be shown upon creating the point
     maxLabelDistance: 0.08, // The maximum distance that a label is allowed to get away from the point
     initialLabelOffset: 0.02, // When making point labels this is initially how far (roughly) they are from the location of the point
     hitPixelDistance: 8, //When a pixel distance between a mouse event and the pixel coords of a point is less than this number, it is hit
@@ -119,7 +120,7 @@ export default {
     }
   },
   segment: {
-    showLabelsInitially: true, // Should the labels be show upon creating the segment
+    showLabelsInitially: false, // Should the labels be show upon creating the segment
     maxLabelDistance: 0.08, // The maximum distance that a label is allowed to get away from the segment
     minimumArcLength: 0.02, // Don't create segments with a length less than this
     midPointMovementThreshold: (2.0 * Math.PI) / 180, // If the midpoint of a segment being created (not moved), changes by more than this amount, handle that case separately.
@@ -169,7 +170,7 @@ export default {
     }
   },
   line: {
-    showLabelsInitially: true, // Should the labels be show upon creating the line
+    showLabelsInitially: false, // Should the labels be show upon creating the line
     maxLabelDistance: 0.08, // The maximum distance that a label is allowed to get away from the line
     initialLabelOffset: 0.02, // When making point labels this is initially how far (roughly) they are from the line
     minimumLength: 0.02, // Don't create lines with arc length  smaller than this
@@ -221,7 +222,7 @@ export default {
     }
   },
   circle: {
-    showLabelsInitially: true, // Should the labels be show upon creating the circle
+    showLabelsInitially: false, // Should the labels be show upon creating the circle
     maxLabelDistance: 0.08, // The maximum distance that a label is allowed to get away from the circle
     initialLabelOffset: 0.02, // When making point labels this is initially how far (roughly) they are from the circle
     minimumRadius: 0.02, // Don't create circles with a radius smaller than this

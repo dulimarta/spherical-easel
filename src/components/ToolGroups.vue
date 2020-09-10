@@ -346,6 +346,16 @@ export default class ToolGroups extends Vue {
       toolGroup: "construction"
     },
     {
+      id: 30,
+      actionModeValue: "perpendicular",
+      displayedName: "CreatePerpendicularDisplayedName",
+      icon: "mdi-nail",
+      toolTipMessage: "CreatePerpendicularToolTipMessage",
+      toolUseMessage: "CreatePerpendicularToolUseMessage",
+      displayToolUseMessage: false,
+      toolGroup: "construction"
+    },
+    {
       id: 45,
       actionModeValue: "intersect",
       displayedName: "CreateIntersectionDisplayedName",

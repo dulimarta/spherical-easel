@@ -134,6 +134,10 @@ export default class SelectionHandler extends MouseHandler {
       }
     }
     this.store.commit.setSelectedSENodules(this.currentSelection);
+    console.log(
+      "number selected",
+      this.store.getters.selectedSENodules().length
+    );
     /** 
     console.log("----selected---- objects------");
     this.currentSelection.forEach(n =>
@@ -228,13 +232,13 @@ export default class SelectionHandler extends MouseHandler {
     this.store.getters.selectedSENodules().forEach((obj: SENodule) => {
       obj.selected = false;
     });
-    // Clear the selected objects array
-    this.store.commit.setSelectedSENodules([]);
-    this.currentSelection.clear();
+
     // Do not clear the selections array here! If the right items are selected, then other tools automatically do their thing!
     //  For example, if a point is selected with the selection tool, then when the antipode tool is
     //  activated, it automatically creates the antipode of the selected point. The last thing each
     //  tool does in its activate method is clear the selected array in the store.
+    //this.store.commit.setSelectedSENodules([]);
+    //this.currentSelection.clear();
 
     // Remove the listener
     window.removeEventListener("keypress", this.keyPressHandler);

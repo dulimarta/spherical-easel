@@ -34,6 +34,7 @@ import AngleHandler from "@/eventHandlers/AngleHandler";
 import CoordinateHandler from "@/eventHandlers/PointCoordinateHandler";
 import SliderHandler from "@/eventHandlers/SliderHandler";
 import ToggleLabelDisplayHandler from "@/eventHandlers/ToggleLabelDisplayHandler";
+import PerpendicularLineThruPointHandler from "@/eventHandlers/PerpendicularLineThruPointHandler";
 
 import EventBus from "@/eventHandlers/EventBus";
 import MoveHandler from "../eventHandlers/MoveHandler";
@@ -96,6 +97,7 @@ export default class SphereFrame extends VueComponent {
   private coordinateTool!: CoordinateHandler;
   private sliderTool!: SliderHandler;
   private toggleLabelDisplayTool!: ToggleLabelDisplayHandler;
+  private perpendicularLineThruPointTool!: PerpendicularLineThruPointHandler;
 
   /**
    * The layers for displaying the various objects in the right way. So a point in the
@@ -229,6 +231,9 @@ export default class SphereFrame extends VueComponent {
     this.coordinateTool = new CoordinateHandler(this.layers);
     this.sliderTool = new SliderHandler(this.layers);
     this.toggleLabelDisplayTool = new ToggleLabelDisplayHandler(this.layers);
+    this.perpendicularLineThruPointTool = new PerpendicularLineThruPointHandler(
+      this.layers
+    );
   }
 
   beforeDestroy(): void {
@@ -689,6 +694,9 @@ export default class SphereFrame extends VueComponent {
         break;
       case "toggleLabelDisplay":
         this.currentTool = this.toggleLabelDisplayTool;
+        break;
+      case "perpendicular":
+        this.currentTool = this.perpendicularLineThruPointTool;
         break;
       default:
         this.currentTool = null;

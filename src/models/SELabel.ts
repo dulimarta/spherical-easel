@@ -19,6 +19,7 @@ import { SEPoint } from "./SEPoint";
 import { SESegment } from "./SESegment";
 import { SELine } from "./SELine";
 import { SECircle } from "./SECircle";
+import { SetNoduleDisplayCommand } from "@/commands/SetNoduleDisplayCommand";
 
 const styleSet = new Set([
   Styles.fillColor,
@@ -41,7 +42,10 @@ export class SELabel extends SENodule implements Visitable {
   protected store = AppStore;
 
   /* Variables to determine which labels to show initially*/
-  static showPointLabelsInitially = SETTINGS.point.showLabelsInitially;
+  static showFreePointsLabelsInitially =
+    SETTINGS.point.showLabelsOfFreePointsInitially;
+  static showNonFreePointsLabelsInitially =
+    SETTINGS.point.showLabelsOfFreePointsInitially;
   static showLineLabelsInitially = SETTINGS.line.showLabelsInitially;
   static showSegmentLabelsInitially = SETTINGS.segment.showLabelsInitially;
   static showCircleLabelsInitially = SETTINGS.circle.showLabelsInitially;
@@ -74,9 +78,15 @@ export class SELabel extends SENodule implements Visitable {
     label.initialNames = parent.name;
     // Set the size for zoom
     this.ref.adjustSize();
+
     // Display the label
+    console.log("Label Parent", parent);
     if (parent instanceof SEPoint) {
-      this.showing = SELabel.showPointLabelsInitially;
+      if (parent.isFreePoint()) {
+        this.showing = SELabel.showFreePointsLabelsInitially;
+      } else {
+        this.showing = SELabel.showNonFreePointsLabelsInitially;
+      }
     } else if (parent instanceof SELine) {
       this.showing = SELabel.showLineLabelsInitially;
     } else if (parent instanceof SESegment) {
@@ -86,6 +96,13 @@ export class SELabel extends SENodule implements Visitable {
     } else {
       this.showing = true;
     }
+    // this.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
+    console.log("SELabel show", this._showing);
+    // this.ref.setVisible(false);
+    // this.ref.setVisible(true);
+    // this.ref.setVisible(false);
+    //label.seLabel.showing = false;
+    // new SetNoduleDisplayCommand(this, false).execute();
   }
 
   customStyles(): Set<Styles> {
@@ -110,6 +127,7 @@ export class SELabel extends SENodule implements Visitable {
   }
 
   public update(state: UpdateStateType): void {
+    console.log("update label");
     // If any one parent is not up to date, don't do anything
     if (!this.canUpdateNow()) {
       return;

@@ -288,6 +288,7 @@ export default class Label extends Nodule {
   }
 
   setVisible(flag: boolean): void {
+    console.log("Label set Visible", flag, "parent", this.seLabel?.parent);
     if (!flag) {
       this.frontText.visible = false;
       this.glowingFrontText.visible = false;
@@ -296,6 +297,7 @@ export default class Label extends Nodule {
     } else {
       this.normalDisplay();
     }
+    console.log("this.frontText.visible", this.frontText.visible);
   }
 
   /**
@@ -336,7 +338,7 @@ export default class Label extends Nodule {
         this.seLabel.parent.showing = options.objectVisibility; //Applied immediately
       }
     }
-    if (options.labelTextScalePercent) {
+    if (options.labelTextScalePercent !== undefined) {
       this.textScalePercent = options.labelTextScalePercent;
     }
     if (options.panel === StyleEditPanels.Front) {
@@ -441,7 +443,12 @@ export default class Label extends Nodule {
         let labelVisibility: boolean | undefined = undefined;
         if (this.seLabel !== undefined) {
           if (this.seLabel.parent instanceof SEPoint) {
-            labelVisibility = SETTINGS.point.showLabelsInitially;
+            if (this.seLabel.parent.isFreePoint()) {
+              labelVisibility = SETTINGS.point.showLabelsOfFreePointsInitially;
+            } else {
+              labelVisibility =
+                SETTINGS.point.showLabelOfNonFreePointsInitially;
+            }
           } else if (this.seLabel.parent instanceof SELine) {
             labelVisibility = SETTINGS.line.showLabelsInitially;
           } else if (this.seLabel.parent instanceof SESegment) {
