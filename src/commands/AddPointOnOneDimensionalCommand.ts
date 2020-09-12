@@ -2,6 +2,7 @@ import { Command } from "./Command";
 import { SEPoint } from "@/models/SEPoint";
 import { SEOneDimensional } from "@/types";
 import { SELabel } from "@/models/SELabel";
+import SETTINGS from "@/global-settings";
 
 export class AddPointOnOneDimensionalCommand extends Command {
   private sePoint: SEPoint;
@@ -17,6 +18,11 @@ export class AddPointOnOneDimensionalCommand extends Command {
   do(): void {
     this.parent.registerChild(this.sePoint);
     this.sePoint.registerChild(this.seLabel);
+    if (SETTINGS.point.showLabelsOfPointOnObjectInitially) {
+      this.seLabel.showing = true;
+    } else {
+      this.seLabel.showing = false;
+    }
     Command.store.commit.addPoint(this.sePoint);
     Command.store.commit.addLabel(this.seLabel);
   }

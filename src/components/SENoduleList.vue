@@ -3,7 +3,7 @@
     <!-- <span v-for="c in points" :key="c.id">{{c.name}}</span> -->
     <div id="header"
       class="accent">
-      <span class="text-subtitle-1">{{label}}</span>
+      <span class="text-subtitle-1">{{$t(i18LabelKey)}}</span>
       <v-btn small
         v-show="hasExistingChildren"
         @click="expanded = !expanded">
@@ -46,7 +46,7 @@ export default class SENoduleTree extends Vue {
   readonly children!: SENodule[];
 
   @Prop()
-  readonly label!: string; /** Wheen defined, label takes over the node name */
+  readonly i18LabelKey!: string; /** When defined, label takes over the node name */
 
   private expanded = false;
 

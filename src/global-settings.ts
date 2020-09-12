@@ -48,7 +48,8 @@ export default {
   // #endregion boundarycircle
   point: {
     showLabelsOfFreePointsInitially: true, // Should the labels of free points be shown upon creating the point
-    showLabelOfNonFreePointsInitially: false, // Should the labels of non-free points be shown upon creating the point
+    showLabelsOfNonFreePointsInitially: false, // Should the labels of non-free points be shown upon creating the point
+    showLabelsOfPointOnObjectInitially: false, // Should the labels of points on objects be shown upon creating the point
     maxLabelDistance: 0.08, // The maximum distance that a label is allowed to get away from the point
     initialLabelOffset: 0.02, // When making point labels this is initially how far (roughly) they are from the location of the point
     hitPixelDistance: 8, //When a pixel distance between a mouse event and the pixel coords of a point is less than this number, it is hit

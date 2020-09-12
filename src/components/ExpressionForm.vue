@@ -12,7 +12,7 @@
                 outlined
                 clearable
                 rows="3"
-                label="Calculation Expression"
+                v-bind:label="$t('objectTree.calculationExpression')"
                 placeholder="cos(pi/2)"
                 class="ma-0"
                 v-model="calcExpression"
@@ -26,7 +26,7 @@
           <v-text-field dense
             outlined
             readonly
-            label="Result"
+            v-bind:label="$t('objectTree.result')"
             placeholder="0"
             v-model.number="calcResult">
           </v-text-field>

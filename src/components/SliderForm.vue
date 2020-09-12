@@ -2,20 +2,20 @@
 
   <v-form v-model="isValid">
     <div id="dataEntry">
-      <v-text-field label="Min"
+      <v-text-field v-bind:label="$t('objectTree.min')"
         class="field"
         outlined
         dense
         v-model.number="sliderMin"
         :error="sliderMin > sliderMax">
       </v-text-field>
-      <v-text-field label="Step"
+      <v-text-field v-bind:label="$t('objectTree.step')"
         class="field"
         outlined
         dense
         v-model.number="sliderStep"
         :error="sliderStep > sliderMax - sliderMin"></v-text-field>
-      <v-text-field label="Max"
+      <v-text-field v-bind:label="$t('objectTree.max')"
         class="field"
         outlined
         dense
@@ -36,7 +36,7 @@
       <v-btn color="primary"
         text
         :disabled="!isValid"
-        @click="addSlider">Create</v-btn>
+        @click="addSlider">{{$t("objectTree.create")}}</v-btn>
     </div>
   </v-form>
 

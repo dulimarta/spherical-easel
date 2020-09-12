@@ -201,7 +201,9 @@ export default class Label extends Nodule {
       this._locationVector.x,
       -this._locationVector.y // the minus sign because the up/down coordinate are *not* reversed on text layers
     );
-    this.updateDisplay();
+    if (this.seLabel?.showing) {
+      this.updateDisplay();
+    }
   }
   get positionVector(): Vector3 {
     return this._locationVector;
@@ -288,7 +290,6 @@ export default class Label extends Nodule {
   }
 
   setVisible(flag: boolean): void {
-    console.log("Label set Visible", flag, "parent", this.seLabel?.parent);
     if (!flag) {
       this.frontText.visible = false;
       this.glowingFrontText.visible = false;
@@ -297,7 +298,6 @@ export default class Label extends Nodule {
     } else {
       this.normalDisplay();
     }
-    console.log("this.frontText.visible", this.frontText.visible);
   }
 
   /**
@@ -447,7 +447,7 @@ export default class Label extends Nodule {
               labelVisibility = SETTINGS.point.showLabelsOfFreePointsInitially;
             } else {
               labelVisibility =
-                SETTINGS.point.showLabelOfNonFreePointsInitially;
+                SETTINGS.point.showLabelsOfNonFreePointsInitially;
             }
           } else if (this.seLabel.parent instanceof SELine) {
             labelVisibility = SETTINGS.line.showLabelsInitially;

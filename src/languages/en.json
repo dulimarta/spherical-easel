@@ -113,7 +113,9 @@
   "objects": {
     "points": "Points",
     "lines": "Lines",
-    "circles": "Circles"
+    "circles": "Circles",
+    "segments": "Line Segments",
+    "measurements": "Measurements"
   },
   "style": {
     "basicStyle": "Basic Style",
@@ -213,5 +215,17 @@
     "selectMorePoints": "Select {needed} more point(s)",
     "selectAnotherLine": "Select 1 more line",
     "newCoordinatePointMeasurementAdded": "New coordinate measurements added"
+  },
+
+  "objectTree": {
+    "expression": "Expression",
+    "slider": "Slider",
+    "noObjectsInDatabase": "No objects in database",
+    "result": "Result",
+    "calculationExpression": "Calculation Expression",
+    "min": "Min",
+    "max": "Max",
+    "step": "Step",
+    "create": "Create"
   }
 }

@@ -4,7 +4,8 @@
     <div id="topContainer">
       <v-expansion-panels>
         <v-expansion-panel>
-          <v-expansion-panel-header color="accent">Exprression
+          <v-expansion-panel-header color="accent">
+            {{ $t("objectTree.expression") }}
           </v-expansion-panel-header>
           <v-expansion-panel-content>
             <ExpressionForm></ExpressionForm>
@@ -12,7 +13,8 @@
           </v-expansion-panel-content>
         </v-expansion-panel>
         <v-expansion-panel>
-          <v-expansion-panel-header color="accent">Slider
+          <v-expansion-panel-header color="accent">
+            {{ $t("objectTree.slider") }}
           </v-expansion-panel-header>
           <v-expansion-panel-content>
             <SliderForm></SliderForm>
@@ -27,7 +29,7 @@
           :elevation="4"
           class="my-3"
           v-show="points.length > 0">
-          <SENoduleList label="Points"
+          <SENoduleList i18LabelKey="objects.points"
             :children="points"></SENoduleList>
         </v-sheet>
         <v-sheet rounded
@@ -35,7 +37,7 @@
           :elevation="4"
           class="my-3"
           v-show="lines.length > 0">
-          <SENoduleList label="Lines"
+          <SENoduleList i18LabelKey="objects.lines"
             :children="lines"></SENoduleList>
         </v-sheet>
         <v-sheet rounded
@@ -43,7 +45,7 @@
           :elevation="4"
           class="my-3"
           v-show="segments.length > 0">
-          <SENoduleList label="Line Segments"
+          <SENoduleList i18LabelKey="objects.segments"
             :children="segments"></SENoduleList>
         </v-sheet>
         <v-sheet rounded
@@ -51,7 +53,7 @@
           :elevation="4"
           class="my-3"
           v-show="circles.length > 0">
-          <SENoduleList label="Circles"
+          <SENoduleList i18LabelKey="objects.circles"
             :children="circles"></SENoduleList>
         </v-sheet>
         <v-sheet rounded
@@ -59,7 +61,7 @@
           :elevation="4"
           class="my-3"
           v-show="expressionss.length > 0">
-          <SENoduleList label="Measurements"
+          <SENoduleList i18LabelKey="objects.measurements"
             :children="expressionss"
             v-on:object-select="onExpressionSelect"></SENoduleList>
         </v-sheet>
@@ -68,13 +70,13 @@
           :elevation="4"
           class="my-3"
           v-show="calculations.length > 0">
-          <SENoduleList label="Calculations"
+          <SENoduleList i18LabelKey="Calculations"
             :children="calculations"
             @object-select="onExpressionSelect"></SENoduleList>
         </v-sheet> -->
         <span class="text-body-2 ma-2"
           v-show="zeroObjects">
-          No objects in database
+          {{$t("objectTree.noObjectsInDatabase")}}
         </span>
       </div>
     </div>

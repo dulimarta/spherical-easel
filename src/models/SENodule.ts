@@ -268,7 +268,7 @@ export abstract class SENodule {
   set showing(b: boolean) {
     // Set the showing variable
     this._showing = b;
-    console.log("set showing in SENodule", b);
+
     // Set the display for the corresponding plottable object
     this.ref?.setVisible(b);
   }
