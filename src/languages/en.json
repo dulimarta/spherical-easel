@@ -63,15 +63,15 @@
     "CreateSegmentLengthToolTipMessage": "Length of Line Segment",
     "CreateSegmentLengthToolUseMessage": "Click this button to compute the length of Line Segment",
 
-    "CreateSliderDisplayedName": "Measurement Slider",
+    "CreateSliderDisplayedName": "Measurement<br>Slider",
     "CreateSliderToolTipMessage": "User Controlled Value",
     "CreateSliderToolUseMessage": "Click this button to create a value slider ",
 
-    "CreatePerpendicularDisplayedName": "Perpendicular",
+    "CreatePerpendicularDisplayedName": "Perpendicular<br>&nbsp;",
     "CreatePerpendicularToolTipMessage": "Perpendicular Through Point",
     "CreatePerpendicularToolUseMessage": "Create a perpendicular line to a selected one-dimensional object and selected point.",
 
-    "DeleteDisplayedName": "Delete",
+    "DeleteDisplayedName": "Delete<br>&nbsp;",
     "DeleteToolTipMessage": "Delete Objects",
     "DeleteToolUseMessage": "Click on objects to delete them.",
 

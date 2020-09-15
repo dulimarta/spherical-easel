@@ -51,7 +51,7 @@ export class SEPerpendicularLineThruPoint extends SELine {
     if (this._exists) {
       // Get the normal vector to the line
       this.normalVector = this.seParentOneDimensional.getNormalToLineThru(
-        this.seParentPoint,
+        this.seParentPoint.locationVector,
         this.normalVector
       );
 

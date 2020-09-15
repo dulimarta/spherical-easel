@@ -214,8 +214,11 @@ export class SESegment extends SENodule
    * use the oldNormal to help compute a new normal (which is returned)
    * @param sePoint A point on the line normal to this circle
    */
-  public getNormalToLineThru(sePoint: SEPoint, oldNormal: Vector3): Vector3 {
-    this.tmpVector.crossVectors(sePoint.locationVector, this._normalVector);
+  public getNormalToLineThru(
+    sePointVector: Vector3,
+    oldNormal: Vector3
+  ): Vector3 {
+    this.tmpVector.crossVectors(sePointVector, this._normalVector);
     // Check to see if the tmpVector is zero (i.e the center point and given point are parallel -- ether
     // nearly antipodal or in the same direction)
     if (this.tmpVector.isZero()) {

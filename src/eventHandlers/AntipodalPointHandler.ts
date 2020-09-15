@@ -10,6 +10,9 @@ import Label from "@/plottables/Label";
 import { SELabel } from "@/models/SELabel";
 import { Vector3 } from "three";
 import SETTINGS from "@/global-settings";
+import { CommandGroup } from "@/commands/CommandGroup";
+import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
+import { ConvertInterPtToUserCreatedCommand } from "@/commands/ConvertInterPtToUserCreatedCommand";
 
 export default class AntipodalPointHandler extends Highlighter {
   /**
@@ -32,6 +35,19 @@ export default class AntipodalPointHandler extends Highlighter {
       }
 
       if (this.parentPoint != null) {
+        const antipodalCommandGroup = new CommandGroup();
+        if (
+          this.parentPoint instanceof SEIntersectionPoint &&
+          !(this.parentPoint as SEIntersectionPoint).isUserCreated
+        ) {
+          //Make it user created and turn on the display
+          antipodalCommandGroup.addCommand(
+            new ConvertInterPtToUserCreatedCommand(
+              this.parentPoint as SEIntersectionPoint
+            )
+          );
+        }
+
         const newPoint = new NonFreePoint();
         // Set the display to the default values
         newPoint.stylize(DisplayStyle.ApplyCurrentVariables);
@@ -58,11 +74,11 @@ export default class AntipodalPointHandler extends Highlighter {
         newSELabel.locationVector = this.tmpVector;
 
         // Create and execute the command to create a new point for undo/redo
-        new AddAntipodalPointCommand(
-          vtx,
-          this.parentPoint,
-          newSELabel
-        ).execute();
+        antipodalCommandGroup
+          .addCommand(
+            new AddAntipodalPointCommand(vtx, this.parentPoint, newSELabel)
+          )
+          .execute();
         // Update the display of the antipodal point
         vtx.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
 
