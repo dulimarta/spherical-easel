@@ -60,19 +60,20 @@
     -->
     <v-main>
       <router-view>
-        <!-- this is the spot where the views controlled by Vue Router will be rendred -->
+        <!-- this is the spot where the views controlled by Vue Router will be rendred v-html="$t('buttons.' + button.displayedName )"-->
       </router-view>
       <MessageBox></MessageBox>
     </v-main>
     <v-footer app
-      color="accent"
+      :color="footerColor"
       padless>
       <v-col class="text-center">
-        <span v-if="activeToolName">
-          Current Tool:
-          {{ $t(`buttons.${activeToolName}`) }}
+        <span v-if="activeToolName"
+          class="footer-text"
+          v-html="$t('buttons.CurrentTool')+ ': ' + $t('buttons.' + activeToolName).split('<br>').join(' ').trim()">
         </span>
-        <span v-else>{{ $t(`buttons.NoToolSelected`) }}</span>
+        <span v-else
+          class="footer-text">{{ $t(`buttons.NoToolSelected`) }}</span>
       </v-col>
     </v-footer>
   </v-app>
@@ -89,6 +90,8 @@ import Component from "vue-class-component";
 import { State } from "vuex-class";
 import MessageBox from "@/components/MessageBox.vue";
 import { AppState } from "./types";
+import { Watch } from "vue-property-decorator";
+import EventBus from "@/eventHandlers/EventBus";
 
 /* This allows for the State of the app to be initialized with in vuex store */
 /* TODO: What does this do? */
@@ -98,8 +101,28 @@ export default class App extends Vue {
   @State((s: AppState) => s.activeToolName)
   activeToolName!: string;
 
+  footerColor = "accent";
+
   mounted(): void {
     this.$store.direct.commit.init();
+    EventBus.listen("set-footer-color", this.setFooterColor);
+  }
+
+  setFooterColor(e: unknown): void {
+    this.footerColor = (e as any).color;
   }
 }
 </script>
+
+<style lang="scss">
+.footer-text {
+  padding-top: 9px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: 15px;
+}
+.footer-color {
+  color: "accent";
+}
+</style>

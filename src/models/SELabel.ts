@@ -19,6 +19,7 @@ import { SEPoint } from "./SEPoint";
 import { SESegment } from "./SESegment";
 import { SELine } from "./SELine";
 import { SECircle } from "./SECircle";
+import { SetNoduleDisplayCommand } from "@/commands/SetNoduleDisplayCommand";
 
 const styleSet = new Set([
   Styles.fillColor,
@@ -41,10 +42,13 @@ export class SELabel extends SENodule implements Visitable {
   protected store = AppStore;
 
   /* Variables to determine which labels to show initially*/
-  static showPointLabelsInitially = SETTINGS.point.showLabelsInitially;
-  static showLineLabelsInitially = SETTINGS.line.showLabelsInitially;
-  static showSegmentLabelsInitially = SETTINGS.segment.showLabelsInitially;
-  static showCircleLabelsInitially = SETTINGS.circle.showLabelsInitially;
+  // static showFreePointsLabelsInitially =
+  //   SETTINGS.point.showLabelsOfFreePointsInitially;
+  // static showNonFreePointsLabelsInitially =
+  //   SETTINGS.point.showLabelsOfFreePointsInitially;
+  // static showLineLabelsInitially = SETTINGS.line.showLabelsInitially;
+  // static showSegmentLabelsInitially = SETTINGS.segment.showLabelsInitially;
+  // static showCircleLabelsInitially = SETTINGS.circle.showLabelsInitially;
 
   /* This should be the only reference to the plotted version of this SELabel */
   public ref: Label;
@@ -74,15 +78,21 @@ export class SELabel extends SENodule implements Visitable {
     label.initialNames = parent.name;
     // Set the size for zoom
     this.ref.adjustSize();
+
     // Display the label
+
     if (parent instanceof SEPoint) {
-      this.showing = SELabel.showPointLabelsInitially;
+      if (parent.isFreePoint()) {
+        this.showing = SETTINGS.point.showLabelsOfFreePointsInitially;
+      } else {
+        this.showing = SETTINGS.point.showLabelsOfNonFreePointsInitially;
+      }
     } else if (parent instanceof SELine) {
-      this.showing = SELabel.showLineLabelsInitially;
+      this.showing = SETTINGS.line.showLabelsInitially;
     } else if (parent instanceof SESegment) {
-      this.showing = SELabel.showSegmentLabelsInitially;
+      this.showing = SETTINGS.segment.showLabelsInitially;
     } else if (parent instanceof SECircle) {
-      this.showing = SELabel.showCircleLabelsInitially;
+      this.showing = SETTINGS.circle.showLabelsInitially;
     } else {
       this.showing = true;
     }
@@ -110,6 +120,7 @@ export class SELabel extends SENodule implements Visitable {
   }
 
   public update(state: UpdateStateType): void {
+    console.log("update label");
     // If any one parent is not up to date, don't do anything
     if (!this.canUpdateNow()) {
       return;

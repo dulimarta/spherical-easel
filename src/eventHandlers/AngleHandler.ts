@@ -5,7 +5,7 @@ import { SELine } from "@/models/SELine";
 import { SESegment } from "@/models/SESegment";
 import { SECircle } from "@/models/SECircle";
 import { SENodule } from "@/models/SENodule";
-import { AddMeasurementCommand } from "@/commands/AddMeasuremeent";
+import { AddExpressionCommand } from "@/commands/AddExpressionCommand";
 import { SEAngle } from "@/models/SEAngle";
 import EventBus from "@/eventHandlers/EventBus";
 enum AngleMode {
@@ -33,7 +33,8 @@ export default class AngleHandler extends Highlighter {
       this.targetPoints.push(candidate);
     } else
       EventBus.fire("show-alert", {
-        text: `Duplicate point. Select another`,
+        key: `handlers.duplicatePointMessage`,
+        keyOptions: {},
         type: "warning"
       });
   }
@@ -45,7 +46,8 @@ export default class AngleHandler extends Highlighter {
       this.targetLines.push(candidate);
     } else
       EventBus.fire("show-alert", {
-        text: `Duplicate line. Select another`,
+        key: `handlers.duplicateLineMessage`,
+        keyOptions: {},
         type: "warning"
       });
   }
@@ -106,20 +108,22 @@ export default class AngleHandler extends Highlighter {
           points: this.targetPoints
         });
         EventBus.fire("show-alert", {
-          text: `New angle added`,
+          key: `handlers.newAngleAdded`,
+          keyOptions: {},
           type: "success"
         });
-        new AddMeasurementCommand(angleFrom3Points).execute();
+        new AddExpressionCommand(angleFrom3Points).execute();
         this.mode = AngleMode.NONE;
       } else if (this.targetLines.length === 2) {
         const angleFrom2Lines = new SEAngle({
           lines: this.targetLines
         });
         EventBus.fire("show-alert", {
-          text: `New angle ${angleFrom2Lines.name} added`,
+          key: `handlers.newAngleAddedV2`,
+          keyOptions: { name: `${angleFrom2Lines.name}` },
           type: "success"
         });
-        new AddMeasurementCommand(angleFrom2Lines).execute();
+        new AddExpressionCommand(angleFrom2Lines).execute();
         this.mode = AngleMode.NONE;
       } else {
         let needed = 0;
@@ -127,13 +131,15 @@ export default class AngleHandler extends Highlighter {
           case AngleMode.POINTS:
             needed = 3 - this.targetPoints.length;
             EventBus.fire("show-alert", {
-              text: `Select ${needed} more point(s)`,
+              key: `handlers.selectMorePoints`,
+              keyOptions: { needed: `${needed}` },
               type: "info"
             });
             break;
           case AngleMode.LINES:
             EventBus.fire("show-alert", {
-              text: `Select 1 more line`,
+              key: `handlers.selectAnotherLine`,
+              keyOptions: {},
               type: "info"
             });
         }

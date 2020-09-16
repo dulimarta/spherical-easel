@@ -11,19 +11,19 @@ export class SEDistance extends SEMeasurement {
     this.firstSEPoint = first;
     this.secondSEPoint = second;
     this.name =
-      this.name + `-Dist(${first.name},${second.name}):${this.prettyValue()}`;
+      this.name + `-Dist(${first.name},${second.name}):${this.prettyValue}`;
 
     // This length object is a child of the segment
     first.registerChild(this);
     second.registerChild(this);
   }
 
-  public prettyValue(): string {
+  public get prettyValue(): string {
     return (this.value / Math.PI).toFixed(2) + "\u{1D7B9}";
   }
 
   public get value(): number {
-    return this.firstSEPoint.locationVector.distanceTo(
+    return this.firstSEPoint.locationVector.angleTo(
       this.secondSEPoint.locationVector
     );
   }

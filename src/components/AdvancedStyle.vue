@@ -10,7 +10,7 @@ import { State } from "vuex-class";
 import { Styles } from "../types/Styles";
 import SETTINGS from "@/global-settings";
 import FadeInCard from "@/components/FadeInCard.vue";
-import { AppState } from "@/types"
+import { AppState } from "@/types";
 // import { getModule } from "vuex-module-decorators";
 // import UI from "@/store/ui-styles";
 
@@ -38,8 +38,7 @@ export default class AdvancedStyle extends Vue {
 
   get hasColor(): boolean {
     return (
-      this.hasStyles(Styles.strokeColor) ||
-      this.hasStyles(Styles.fillColor)
+      this.hasStyles(Styles.strokeColor) || this.hasStyles(Styles.fillColor)
     );
   }
 
@@ -47,7 +46,7 @@ export default class AdvancedStyle extends Vue {
     return this.hasStyles(Styles.strokeWidthPercent);
   }
 
-  @Watch("selections", { deep: true })
+  @Watch("selections")
   onSelectionChanged(newSelection: SENodule[]): void {
     // newSelection.forEach(s => {
     // console.debug("Set ", s.customStyles());

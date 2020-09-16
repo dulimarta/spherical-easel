@@ -9,12 +9,14 @@ import Label from "@/plottables/Label";
 import { SELabel } from "@/models/SELabel";
 import SETTINGS from "@/global-settings";
 import { Vector3 } from "three";
+import { AddPointOnOneDimensionalCommand } from '@/commands/AddPointOnOneDimensionalCommand';
 
 export default class PointOnOneDimensionalHandler extends Highlighter {
   /**
    * The parent of the point
    */
   private oneDimensional: SEOneDimensional | null = null;
+
   /* temporary vector to help with computation */
   private tmpVector = new Vector3();
 
@@ -60,8 +62,8 @@ export default class PointOnOneDimensionalHandler extends Highlighter {
           .normalize();
         newSELabel.locationVector = this.tmpVector;
         // Create and execute the command to create a new point for undo/redo
-        new AddPointCommand(vtx, newSELabel).execute();
-
+        //new AddPointCommand(vtx, newSELabel).execute();
+        new AddPointOnOneDimensionalCommand(vtx,this.oneDimensional,newSELabel)
         this.oneDimensional = null;
       }
     }

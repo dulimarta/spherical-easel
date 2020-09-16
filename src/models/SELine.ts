@@ -42,7 +42,7 @@ export class SELine extends SENodule
    */
   private _normalVector = new Vector3();
   /** Temporary vectors to help with calculations */
-  private tmpVector = new Vector3(); //
+  protected tmpVector = new Vector3(); //
   private tmpVector1 = new Vector3();
   private tmpVector2 = new Vector3();
   private desiredZAxis = new Vector3();
@@ -155,6 +155,28 @@ export class SELine extends SENodule
         .normalize();
     }
   }
+
+  /**
+   * Return the normal vector to the plane containing the line that is perpendicular to this line through the
+   * sePoint, in the case that the usual way of defining this line is not well defined  (something is parallel),
+   * use the oldNormal to help compute a new normal (which is returned)
+   * @param sePoint A point on the line normal to this circle
+   */
+  public getNormalToLineThru(
+    sePointVector: Vector3,
+    oldNormal: Vector3
+  ): Vector3 {
+    this.tmpVector.crossVectors(sePointVector, this._normalVector);
+    // Check to see if the tmpVector is zero (i.e the normal vector and given point are parallel -- ether
+    // nearly antipodal or in the same direction)
+    if (this.tmpVector.isZero()) {
+      // In this case any line containing the sePoint will be perpendicular to the line, but
+      //  we want to choose one line whose normal is near the oldNormal
+      this.tmpVector.copy(oldNormal);
+    }
+    return this.tmpVector.normalize();
+  }
+
   public update(state: UpdateStateType): void {
     // If any one parent is not up to date, don't do anything
     if (!this.canUpdateNow()) {
@@ -187,33 +209,30 @@ export class SELine extends SENodule
 
       // Set the normal vector in the plottable object (the setter also calls the updateDisplay() method)
       this.ref.normalVector = this._normalVector;
-      if (this.showing) {
-        this.ref.updateDisplay();
-        this.ref.setVisible(true);
-      } else {
-        this.ref.setVisible(false);
-      }
+      // this.ref.updateDisplay();
+    }
+
+    if (this.showing && this._exists) {
+      this.ref.setVisible(true);
     } else {
       this.ref.setVisible(false);
     }
+
     // Create a line state for a Move or delete if necessary
     if (
       state.mode == UpdateMode.RecordStateForDelete ||
       state.mode == UpdateMode.RecordStateForMove
     ) {
-      // If the parent points of the segment are antipodal, the normal vector determines the
-      // plane of the segment.  The points also don't determine the arcLength of the segments.
-      // Both of these quantities could change during a move therefore store normal vector and arcLength
-      // in stateArray for undo move. (No need to store the parent points, they will be updated on their own
-      // before this line is updated.) Store the coordinate values of the vector and not the point to the vector.
-      const segState: LineState = {
+      // If the parent points of the line are antipodal, the normal vector determines the
+      // plane of the line.   Store the coordinate values of the normal vector and not the pointer to the vector.
+      const lineState: LineState = {
         kind: "line",
         object: this,
         normalVectorX: this._normalVector.x,
         normalVectorY: this._normalVector.y,
         normalVectorZ: this._normalVector.z
       };
-      state.stateArray.push(segState);
+      state.stateArray.push(lineState);
     }
     this.updateKids(state);
   }

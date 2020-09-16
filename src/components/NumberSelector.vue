@@ -8,61 +8,21 @@
     <br />
     <div v-show="totalyDisableSelector"
       class="select-an-object-text">{{ $t("style.selectAnObject") }}</div>
-    <v-tooltip v-if="!styleDataAgreement"
-      bottom
-      :open-delay="toolTipOpenDelay"
-      :close-delay="toolTipCloseDelay"
-      max-width="400px">
-      <template v-slot:activator="{ on }">
-        <v-btn color="error"
-          v-on="on"
-          v-show="!totalyDisableSelector"
-          text
-          small
-          outlined
-          ripple
-          @click="setStyleDataAgreement">
-          <span
-            class="long-text-button">{{ $t("style.differingStylesDetected") }}</span>
-        </v-btn>
-      </template>
-      <span>{{ $t("style.differingStylesDetectedToolTip") }}</span>
-    </v-tooltip>
+    <HintButton v-show="!totalyDisableSelector"
+      @click="setStyleDataAgreement"
+      long-label
+      i18n-label="style.differingStylesDetected"
+      i18n-tooltip="style.differingStylesDetectedToolTip"></HintButton>
+    <HintButton v-show="styleDataAgreement && !totalyDisableSelector"
+      @click="clearChanges"
+      :disabled="disableUndoButton"
+      i18n-label="style.clearChanges"
+      i18n-tooltip="style.clearChangesToolTip"></HintButton>
+    <HintButton v-show="styleDataAgreement && !totalyDisableSelector"
+      @click="resetToDefaults"
+      i18n-label="style.restoreDefaults"
+      i18n-tooltip="style.restoreDefaultsToolTip"></HintButton>
 
-    <v-tooltip bottom
-      :open-delay="toolTipOpenDelay"
-      :close-delay="toolTipCloseDelay"
-      max-width="400px">
-      <template v-slot:activator="{ on }">
-        <v-btn v-on="on"
-          v-show="styleDataAgreement && !totalyDisableSelector
-            "
-          @click="clearChanges"
-          :disabled="disableUndoButton"
-          text
-          outlined
-          ripple
-          small>{{ $t("style.clearChanges") }}</v-btn>
-      </template>
-      <span>{{ $t("style.clearChangesToolTip") }}</span>
-    </v-tooltip>
-
-    <v-tooltip bottom
-      :open-delay="toolTipOpenDelay"
-      :close-delay="toolTipCloseDelay"
-      max-width="400px">
-      <template v-slot:activator="{ on }">
-        <v-btn v-on="on"
-          v-show="styleDataAgreement && !totalyDisableSelector
-            "
-          @click="resetToDefaults"
-          text
-          small
-          outlined
-          ripple>{{ $t("style.restoreDefaults") }}</v-btn>
-      </template>
-      <span>{{ $t("style.restoreDefaultsToolTip") }}</span>
-    </v-tooltip>
     <br />
 
     <v-slider v-model.number="styleData"
@@ -92,8 +52,9 @@ import { StyleOptions, Styles, StyleEditPanels } from "@/types/Styles";
 import { State } from "vuex-class";
 import { SENodule } from "@/models/SENodule";
 import { AppState, Labelable } from "@/types";
+import HintButton from "@/components/HintButton.vue";
 
-@Component({})
+@Component({ components: { HintButton } })
 export default class NumberSelector extends Vue {
   @Prop() readonly panel!: StyleEditPanels;
   @Prop() readonly activePanel!: StyleEditPanels;
@@ -313,10 +274,5 @@ export default class NumberSelector extends Vue {
 
 .select-an-object-text {
   color: rgb(255, 82, 82);
-}
-.long-text-button {
-  max-width: 250px;
-  word-wrap: break-word;
-  display: inline-block;
 }
 </style>

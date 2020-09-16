@@ -1,21 +1,14 @@
 import Vue from "vue";
 import VueRouter, { RouteConfig } from "vue-router";
 import Easel from "@/views/Easel.vue";
-import { SVGRenderer } from 'three/examples/jsm/renderers/SVGRenderer';
 
 Vue.use(VueRouter);
-
-const renderer = new SVGRenderer();
 
 const routes: Array<RouteConfig> = [
   {
     path: "/",
     name: "Home",
-    component: Easel,
-    props: {
-      renderer,
-      canvas: renderer.domElement
-    }
+    component: Easel
   },
   {
     path: "/settings",

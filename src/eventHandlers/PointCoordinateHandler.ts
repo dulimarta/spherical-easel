@@ -2,7 +2,7 @@ import Two from "two.js";
 import Highlighter from "./Highlighter";
 import { SEPoint } from "@/models/SEPoint";
 import { SENodule } from "@/models/SENodule";
-import { AddMeasurementCommand } from "@/commands/AddMeasuremeent";
+import { AddExpressionCommand } from "@/commands/AddExpressionCommand";
 
 import EventBus from "@/eventHandlers/EventBus";
 import { SECoordinate, CoordinateSelection } from "@/models/SECoordinate";
@@ -37,12 +37,13 @@ export default class PointCoordinateHandler extends Highlighter {
           CoordinateSelection.Z_VALUE
         );
         EventBus.fire("show-alert", {
-          text: `New coordinate measurements added`,
+          key: `handlers.newCoordinatePointMeasurementAdded`,
+          keyOptions: {},
           type: "success"
         });
-        new AddMeasurementCommand(xMeasure).execute();
-        new AddMeasurementCommand(yMeasure).execute();
-        new AddMeasurementCommand(zMeasure).execute();
+        new AddExpressionCommand(xMeasure).execute();
+        new AddExpressionCommand(yMeasure).execute();
+        new AddExpressionCommand(zMeasure).execute();
       }
     }
   }

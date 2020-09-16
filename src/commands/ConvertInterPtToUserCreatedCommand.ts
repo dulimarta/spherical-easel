@@ -3,6 +3,7 @@ import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import { DisplayStyle } from "@/plottables/Nodule";
 import { Labelable } from "@/types";
 import { SEPoint } from "@/models/SEPoint";
+import SETTINGS from "@/global-settings";
 
 /**
  * This is used when an intersection point was automatically created and the user
@@ -24,7 +25,10 @@ export class ConvertInterPtToUserCreatedCommand extends Command {
     this.seIntersectionPoint.ref.adjustSize();
     this.seIntersectionPoint.showing = true;
     // show the label
-    if (this.seIntersectionPoint.label != undefined) {
+    if (
+      this.seIntersectionPoint.label != undefined &&
+      SETTINGS.point.showLabelsOfNonFreePointsInitially
+    ) {
       this.seIntersectionPoint.label.showing = true;
     }
   }

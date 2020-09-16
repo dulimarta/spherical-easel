@@ -126,10 +126,11 @@
                             tile
                             @click="enableZoomFit"
                             v-on="on">
-                            <v-icon>mdi-magnify-scan</v-icon>
+                            <v-icon>mdi-magnify-scan
+                            </v-icon>
                           </v-btn>
                         </template>
-                        <span>{{ $t("buttons.PanZoomOutToolTipMessage") }}</span>
+                        <span>{{ $t("buttons.ZoomFitToolTipMessage") }}</span>
                       </v-tooltip>
                     </div>
                   </v-responsive>
@@ -143,8 +144,8 @@
               :value="displayToolUseMessage"
               multi-line>
               <span>
-                <strong
-                  class="warning--text">{{ $t("buttons.PanZoomInDisplayedName") + ": " }}</strong>
+                <strong class="warning--text"
+                  v-html="$t('buttons.PanZoomInDisplayedName').split('<br>').join('').trim() + ': '"></strong>
                 {{ $t("buttons.PanZoomInToolUseMessage") }}
               </span>
               <v-btn @click="displayToolUseMessage = false"
@@ -160,8 +161,8 @@
               :value="displayToolUseMessage"
               multi-line>
               <span>
-                <strong
-                  class="warning--text">{{ $t("buttons.ZoomFitDisplayedName") + ": " }}</strong>
+                <strong class="warning--text"
+                  v-html="$t('buttons.ZoomFitDisplayedName').split('<br>').join('').trim() + ': '"></strong>
                 {{ $t("buttons.ZoomFitToolUseMessage") }}
               </span>
               <v-btn @click="displayToolUseMessage = false"
@@ -177,8 +178,8 @@
               :value="displayToolUseMessage"
               multi-line>
               <span>
-                <strong
-                  class="warning--text">{{ $t("buttons.PanZoomOutDisplayedName") + ": " }}</strong>
+                <strong class="warning--text"
+                  v-html="$t('buttons.PanZoomOutDisplayedName').split('<br>').join('').trim() + ': '"></strong>
                 {{ $t("buttons.PanZoomOutToolUseMessage") }}
               </span>
               <v-btn @click="displayToolUseMessage = false"
@@ -189,7 +190,7 @@
           </v-container>
         </template>
         <template slot="paneR">
-          <div ref="rightPanel"
+          <div ref="stylePanel"
             id="styleContainer">
             <div>
               <v-btn icon
@@ -221,10 +222,6 @@ import EventBus from "../eventHandlers/EventBus";
 import buttonList from "@/components/ToolGroups.vue";
 import ToolButton from "@/components/ToolButton.vue";
 import StylePanel from "@/components/Style.vue";
-import { SECircle } from "../models/SECircle";
-import { SESegment } from "../models/SESegment";
-import { SEPoint } from "@/models/SEPoint";
-import { SELine } from "@/models/SELine";
 import Circle from "@/plottables/Circle";
 import Point from "@/plottables/Point";
 import Line from "@/plottables/Line";
@@ -234,6 +231,7 @@ import Nodule from "@/plottables/Nodule";
 import { State } from "vuex-class";
 import { SENodule } from "@/models/SENodule";
 import { AppState } from "@/types";
+import IconBase from "@/components/IconBase.vue";
 // import { getModule } from "vuex-module-decorators";
 // import UI from "@/store/ui-styles";
 
@@ -244,7 +242,14 @@ import { AppState } from "@/types";
  * When left panel minifie, right panel open: 5:75:20 (1:15:4)
  */
 @Component({
-  components: { SplitPane, Toolbox, SphereFrame, ToolButton, StylePanel }
+  components: {
+    SplitPane,
+    Toolbox,
+    SphereFrame,
+    ToolButton,
+    StylePanel,
+    IconBase
+  }
 })
 export default class Easel extends Vue {
   readonly store = this.$store.direct;
@@ -285,7 +290,7 @@ export default class Easel extends Vue {
     responsiveBox: VueComponent;
     toolbox: VueComponent;
     mainPanel: VueComponent;
-    rightPanel: HTMLDivElement;
+    stylePanel: HTMLDivElement;
   };
 
   //#region magnificationUpdate
@@ -306,15 +311,24 @@ export default class Easel extends Vue {
 
   private enableZoomIn(): void {
     this.displayZoomInToolUseMessage = true;
-    this.store.commit.setActionMode({ id: "zoomIn", name: "Zoom In" });
+    this.store.commit.setActionMode({
+      id: "zoomIn",
+      name: "PanZoomInDisplayedName"
+    });
   }
   private enableZoomOut(): void {
     this.displayZoomOutToolUseMessage = true;
-    this.store.commit.setActionMode({ id: "zoomOut", name: "Zoom Out" });
+    this.store.commit.setActionMode({
+      id: "zoomOut",
+      name: "PanZoomOutDisplayedName"
+    });
   }
   private enableZoomFit(): void {
     this.displayZoomFitToolUseMessage = true;
-    this.store.commit.setActionMode({ id: "zoomFit", name: "Zoom Fit" });
+    this.store.commit.setActionMode({
+      id: "zoomFit",
+      name: "ZoomFitDisplayedName"
+    });
   }
   private adjustSize(): void {
     this.availHeight =
@@ -342,7 +356,7 @@ export default class Easel extends Vue {
   leftDividerMoved(leftPercentage: number): void {
     // console.debug("Left divider percentage", leftPercentage);
 
-    const rightBox = this.$refs.rightPanel.getBoundingClientRect();
+    const rightBox = this.$refs.stylePanel.getBoundingClientRect();
     // Calculate the available width of the main panel
     const availableWidth =
       (1 - leftPercentage / 100) * (window.innerWidth - rightBox.width) - 24;
@@ -427,6 +441,9 @@ export default class Easel extends Vue {
   justify-content: flex-start; /* Pull contents vertically to the top */
   align-items: flex-end; /* Align contents horizontally to the right */
   height: 100%;
+  color: #000;
+  font-family: "Gill Sans", "Gill Sans MT", "Calibri", "Trebuchet MS",
+    sans-serif;
 }
 
 #toolbox {
@@ -445,6 +462,9 @@ export default class Easel extends Vue {
   // border: 2px solid red;
   height: calc(100vh - 136px);
   padding-bottom: 0;
+  color: #000;
+  font-family: "Gill Sans", "Gill Sans MT", "Calibri", "Trebuchet MS",
+    sans-serif;
 }
 .left {
   left: 0;

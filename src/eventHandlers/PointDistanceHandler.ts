@@ -2,7 +2,7 @@ import Two from "two.js";
 import Highlighter from "./Highlighter";
 import { SEPoint } from "@/models/SEPoint";
 import { SENodule } from "@/models/SENodule";
-import { AddMeasurementCommand } from "@/commands/AddMeasuremeent";
+import { AddExpressionCommand } from "@/commands/AddExpressionCommand";
 import { SEDistance } from "@/models/SEDistance";
 import EventBus from "@/eventHandlers/EventBus";
 
@@ -26,7 +26,8 @@ export default class PointDistantHandler extends Highlighter {
         );
         if (pos >= 0) {
           EventBus.fire("show-alert", {
-            text: `Duplicate point. Select anothere`,
+            key: `handlers.duplicatePointMessage`,
+            keyOptions: {},
             type: "warning"
           });
           return;
@@ -41,15 +42,17 @@ export default class PointDistantHandler extends Highlighter {
           this.targetPoints[1]
         );
         EventBus.fire("show-alert", {
-          text: `New measurement ${distanceMeasure.name} added`,
+          key: `handlers.newMeasurementAdded`,
+          keyOptions: { name: `${distanceMeasure.name}` },
           type: "success"
         });
-        new AddMeasurementCommand(distanceMeasure).execute();
+        new AddExpressionCommand(distanceMeasure).execute();
         this.targetPoints.splice(0);
         // this.targetSegment = null;
       } else
         EventBus.fire("show-alert", {
-          text: `Select the next point`,
+          key: `handlers.selectAnotherPoint`,
+          keyOptions: {},
           type: "info"
         });
     }
@@ -81,14 +84,25 @@ export default class PointDistantHandler extends Highlighter {
     this.targetPoints.clear();
   }
 
-  // activate(): void {
-  // this.hitSEPoints.forEach(object => {
-  // new SetNoduleDisplayCommand(object, false).execute()
-  // });
-  // Unselect the selected objects and clear the selectedObject array
-  // super.activate();
-  // }
-  // deactivate(): void {
-  // super.deactivate();
-  // }
+  activate(): void {
+    if (this.store.getters.selectedSENodules().length == 2) {
+      const object1 = this.store.getters.selectedSENodules()[0];
+      const object2 = this.store.getters.selectedSENodules()[1];
+
+      if (object1 instanceof SEPoint && object2 instanceof SEPoint) {
+        const distanceMeasure = new SEDistance(object1, object2);
+
+        EventBus.fire("show-alert", {
+          text: `New measurement ${distanceMeasure.name} added`,
+          type: "success"
+        });
+        new AddExpressionCommand(distanceMeasure).execute();
+      }
+    }
+    //Unselect the selected objects and clear the selectedObject array
+    super.activate();
+  }
+  deactivate(): void {
+    super.deactivate();
+  }
 }

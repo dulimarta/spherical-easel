@@ -201,7 +201,9 @@ export default class Label extends Nodule {
       this._locationVector.x,
       -this._locationVector.y // the minus sign because the up/down coordinate are *not* reversed on text layers
     );
-    this.updateDisplay();
+    if (this.seLabel?.showing) {
+      this.updateDisplay();
+    }
   }
   get positionVector(): Vector3 {
     return this._locationVector;
@@ -336,7 +338,7 @@ export default class Label extends Nodule {
         this.seLabel.parent.showing = options.objectVisibility; //Applied immediately
       }
     }
-    if (options.labelTextScalePercent) {
+    if (options.labelTextScalePercent !== undefined) {
       this.textScalePercent = options.labelTextScalePercent;
     }
     if (options.panel === StyleEditPanels.Front) {
@@ -441,7 +443,12 @@ export default class Label extends Nodule {
         let labelVisibility: boolean | undefined = undefined;
         if (this.seLabel !== undefined) {
           if (this.seLabel.parent instanceof SEPoint) {
-            labelVisibility = SETTINGS.point.showLabelsInitially;
+            if (this.seLabel.parent.isFreePoint()) {
+              labelVisibility = SETTINGS.point.showLabelsOfFreePointsInitially;
+            } else {
+              labelVisibility =
+                SETTINGS.point.showLabelsOfNonFreePointsInitially;
+            }
           } else if (this.seLabel.parent instanceof SELine) {
             labelVisibility = SETTINGS.line.showLabelsInitially;
           } else if (this.seLabel.parent instanceof SESegment) {

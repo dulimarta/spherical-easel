@@ -40,7 +40,7 @@ export class SEAngle extends SEMeasurement {
     } else {
       throw new Error("Angles are computed only from 2 lines or 3 points");
     }
-    this.name = this.name + `-Angle(${parentNames}):${this.prettyValue()}`;
+    this.name = this.name + `-Angle(${parentNames}):${this.prettyValue}`;
   }
 
   public get value(): number {
@@ -73,7 +73,7 @@ export class SEAngle extends SEMeasurement {
     // );
   }
 
-  public prettyValue(): string {
+  public get prettyValue(): string {
     return (this.value / Math.PI).toFixed(2) + "\u{1D7B9}";
   }
 }

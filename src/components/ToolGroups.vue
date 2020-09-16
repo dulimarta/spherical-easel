@@ -83,6 +83,28 @@
     </div>
 
     <!-- 
+      The Measurement Tool Group only shown if the user has permission to use a tool in this 
+      group. Note the use of the translation $t(key_value).
+    -->
+    <div id="MeasurementToolGroup"
+      v-show="nonEmptyGroup('measurement')">
+      <h3 class="body-1 font-weight-bold">
+        {{ $t("toolGroups.MeasurementTools") }}
+      </h3>
+      <v-btn-toggle v-model="actionMode"
+        @change="switchActionMode"
+        class="mr-2 d-flex flex-wrap accent">
+        <ToolButton v-for="(button, pos) in buttonList.filter(
+            b => b.toolGroup === 'measurement'
+          )"
+          :key="pos"
+          :button="button"
+          v-on:displayOnlyThisToolUseMessage="displayOnlyThisToolUseMessageFunc">
+        </ToolButton>
+      </v-btn-toggle>
+    </div>
+
+    <!-- 
       The Advanced Tool Group only shown if the user has permission to use a tool in this 
       group. Note the use of the translation $t(key_value).
     -->
@@ -117,10 +139,11 @@
       <v-btn-toggle v-model="actionMode"
         @change="switchActionMode"
         class="mr-2 d-flex flex-wrap accent">
-        <ToolButton v-for="(button, pos) in buttonList"
+        <ToolButton v-for="(button, pos) in buttonList.filter(
+            b => b.toolGroup === 'transformation'
+          )"
           :key="pos"
           :button="button"
-          toolGroup="transformational"
           v-on:displayOnlyThisToolUseMessage="displayOnlyThisToolUseMessageFunc">
         </ToolButton>
       </v-btn-toggle>
@@ -192,7 +215,7 @@ export default class ToolGroups extends Vue {
       id: 5,
       actionModeValue: "line",
       displayedName: "CreateLineDisplayedName",
-      icon: "mdi-vector-radius",
+      icon: "$vuetify.icons.value.test",
       toolTipMessage: "CreateLineToolTipMessage",
       toolUseMessage: "CreateLineToolUseMessage",
       displayToolUseMessage: false,
@@ -323,6 +346,16 @@ export default class ToolGroups extends Vue {
       toolGroup: "construction"
     },
     {
+      id: 30,
+      actionModeValue: "perpendicular",
+      displayedName: "CreatePerpendicularDisplayedName",
+      icon: "mdi-nail",
+      toolTipMessage: "CreatePerpendicularToolTipMessage",
+      toolUseMessage: "CreatePerpendicularToolUseMessage",
+      displayToolUseMessage: false,
+      toolGroup: "construction"
+    },
+    {
       id: 45,
       actionModeValue: "intersect",
       displayedName: "CreateIntersectionDisplayedName",
@@ -343,45 +376,55 @@ export default class ToolGroups extends Vue {
       toolGroup: "construction"
     },
     {
-      id: 55,
+      id: 0,
       actionModeValue: "segmentLength",
       displayedName: "CreateSegmentLengthDisplayedName",
       icon: "mdi-tape-measure",
       toolTipMessage: "CreateSegmentLengthToolTipMessage",
       toolUseMessage: "CreateSegmentLengthToolUseMessage",
       displayToolUseMessage: false,
-      toolGroup: "construction"
+      toolGroup: "measurement"
     },
     {
-      id: 60,
+      id: 5,
       actionModeValue: "pointDistance",
       displayedName: "CreatePointDistanceDisplayedName",
       icon: "mdi-ray-start-end",
       toolTipMessage: "CreatePointDistanceToolTipMessage",
       toolUseMessage: "CreatePointDistanceToolUseMessage",
       displayToolUseMessage: false,
-      toolGroup: "construction"
+      toolGroup: "measurement"
     },
     {
-      id: 65,
+      id: 10,
       actionModeValue: "angle",
       displayedName: "CreateAngleDisplayedName",
       icon: "mdi-angle-acute",
       toolTipMessage: "CreateAngleToolTipMessage",
       toolUseMessage: "CreateAngleToolUseMessage",
       displayToolUseMessage: false,
-      toolGroup: "construction"
+      toolGroup: "measurement"
     },
     {
-      id: 70,
+      id: 15,
       actionModeValue: "coordinate",
       displayedName: "CreateCoordinateDisplayedName",
-      icon: "mdi-video-3d",
+      icon: "mdi-axis-arrow-info",
       toolTipMessage: "CreateCoordinateToolTipMessage",
       toolUseMessage: "CreateCoordinateToolUseMessage",
       displayToolUseMessage: false,
-      toolGroup: "construction"
+      toolGroup: "measurement"
     }
+    // {
+    //   id: 75,
+    //   actionModeValue: "slider",
+    //   displayedName: "CreateSliderDisplayedName",
+    //   icon: "mdi-arrow-left-right-bold",
+    //   toolTipMessage: "CreateSliderToolTipMessage",
+    //   toolUseMessage: "CreateSliderToolUseMessage",
+    //   displayToolUseMessage: false,
+    //   toolGroup: "construction"
+    // }
 
     //sort the button list by id so that we don't have to reorder the list each item we add a new button
   ].sort((a: ToolButtonType, b: ToolButtonType) => {

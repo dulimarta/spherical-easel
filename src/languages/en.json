@@ -13,72 +13,99 @@
     "ConstructionTools": "Construction Tools",
     "AdvancedTools": "Advanced Tools",
     "TransformationalTools": "Transformational Tools",
-
-    "KeyShortCut": "Key Short Cut",
-    "ResetSphereOrientation": "Press \"R\" to reset sphere orientation"
+    "MeasurementTools": "Measurement Tools"
   },
   "buttons": {
-    "CreateAngleDisplayedName": "Angle",
+    "CurrentTool": "Current Tool",
+    "NoToolSelected": "No Tool Selected",
+
+    "CreateAngleDisplayedName": "Measure<br>Angle",
     "CreateAngleToolTipMessage": "Calculate Angle",
     "CreateAngleToolUseMessage": "Click on two lines/segments or three points to calculate angle.",
-    "CreateAntipodalPointDisplayedName": "Antipodal Point",
+
+    "CreateAntipodalPointDisplayedName": "Antipodal<br>Point",
     "CreateAntipodalPointToolTipMessage": "Select a point",
     "CreateAntipodalPointToolUseMessage": "Click on a point to create its antipode",
-    "CreateCircleDisplayedName": "Circle",
+
+    "CreateCircleDisplayedName": "Create<br>Circle",
     "CreateCircleToolTipMessage": "Insert circle",
     "CreateCircleToolUseMessage": "Click and drag to insert a circle with a given center point and through a second point.",
-    "CreateCoordinateDisplayedName": "Coordinate",
+
+    "CreateCoordinateDisplayedName": "Coordinates<br>&nbsp;",
     "CreateCoordinateToolTipMessage": "Measure x,y,z coordinates",
     "CreateCoordinateToolUseMessage": "Click on a point to measure its x,y,z coordinates",
-    "CreateIntersectionDisplayedName": "Intersection",
+
+    "CreateIntersectionDisplayedName": "Intersection<br>Point(s)",
     "CreateIntersectionToolTipMessage": "Intersect two objects",
     "CreateIntersectionToolUseMessage": "Select two one-dimensional objects to create their intersection point(s).",
-    "CreateLineDisplayedName": "Line",
-    "CreateLineSegmentDisplayedName": "Line Segment",
+
+    "CreateLineSegmentDisplayedName": "Create Line<br>Segment",
     "CreateLineSegmentToolTipMessage": "Insert line segment",
     "CreateLineSegmentToolUseMessage": "Click and drag to insert line segment defined by two points.",
+
+    "CreateLineDisplayedName": "Create<br>Line",
     "CreateLineToolTipMessage": "Insert line",
     "CreateLineToolUseMessage": "Click and drag to insert a line defined by two points.",
-    "CreatePointDisplayedName": "Point",
-    "CreatePointDistanceDisplayedName": "Distance of Two Points",
+
+    "CreatePointDistanceDisplayedName": "Point<br>Distance",
     "CreatePointDistanceToolTipMessage": "Distance of Two Points",
     "CreatePointDistanceToolUseMessage": "Select two points to measure the distance between them",
-    "CreatePointOnOneDimDisplayedName": "Point On One Dimensional Object",
+
+    "CreatePointOnOneDimDisplayedName": "Point On<br>Object",
     "CreatePointOnOneDimToolTipMessage": "Select a one-dimensional object to place a point on",
     "CreatePointOnOneDimToolUseMessage": "Select a one-dimensional object to add a point to.",
+
+    "CreatePointDisplayedName": "Create<br>Point",
     "CreatePointToolTipMessage": "Insert point",
     "CreatePointToolUseMessage": "Click to insert a free point.",
-    "CreateSegmentLengthDisplayedName": "Length of Line Segment",
+
+    "CreateSegmentLengthDisplayedName": "Line Segment<br>Length",
     "CreateSegmentLengthToolTipMessage": "Length of Line Segment",
     "CreateSegmentLengthToolUseMessage": "Click this button to compute the length of Line Segment",
-    "DeleteDisplayedName": "Delete",
+
+    "CreateSliderDisplayedName": "Measurement<br>Slider",
+    "CreateSliderToolTipMessage": "User Controlled Value",
+    "CreateSliderToolUseMessage": "Click this button to create a value slider ",
+
+    "CreatePerpendicularDisplayedName": "Perpendicular<br>&nbsp;",
+    "CreatePerpendicularToolTipMessage": "Perpendicular Through Point",
+    "CreatePerpendicularToolUseMessage": "Create a perpendicular line to a selected one-dimensional object and selected point.",
+
+    "DeleteDisplayedName": "Delete<br>&nbsp;",
     "DeleteToolTipMessage": "Delete Objects",
     "DeleteToolUseMessage": "Click on objects to delete them.",
-    "HideDisplayedName": "Hide",
+
+    "HideDisplayedName": "Hide<br>Objects",
     "HideObjectToolTipMessage": "Hide object",
     "HideObjectToolUseMessage": "Click at location to hide an object. Hold the SHIFT key to select from the back of the sphere.",
-    "MoveDisplayedName": "Move",
+
+    "MoveDisplayedName": "Move<br>Objects",
     "MoveObjectToolTipMessage": "Move object",
     "MoveObjectToolUseMessage": "Click and drag an object to move it. Movable objects include labels, free points, and line segments with antipodal endpoints. Hold the SHIFT key to select from the back of the sphere.",
-    "NoToolSelected": "No tool selected",
-    "PanZoomInDisplayedName": "Pan/Zoom In",
+
+    "PanZoomInDisplayedName": "Zoom In<br>Pan",
     "PanZoomInToolTipMessage": "Pan or Zoom In",
     "PanZoomInToolUseMessage": "Click to zoom in at the location of the mouse. Click and drag to pan the current view.",
-    "PanZoomOutDisplayedName": "Pan/Zoom Out",
+
+    "PanZoomOutDisplayedName": "Zoom Out<br>Pan",
     "PanZoomOutToolTipMessage": "Pan or Zoom Out",
     "PanZoomOutToolUseMessage": "Click to zoom out at the location of the mouse. Click and drag to pan the current view.",
-    "RotateDisplayedName": "Rotate",
+
+    "ZoomFitDisplayedName": "Zoom Fit<br>&nbsp;",
+    "ZoomFitToolTipMessage": "Zoom Fit",
+    "ZoomFitToolUseMessage": "Click to fit the sphere in the available space.",
+
+    "RotateDisplayedName": "Rotate<br>Sphere",
     "RotateSphereToolTipMessage": "Rotate Sphere",
     "RotateSphereToolUseMessage": "Click and drag to rotate the sphere.",
-    "SelectDisplayedName": "Selection",
+
+    "SelectDisplayedName": "Select<br>Objects",
     "SelectToolTipMessage": "Select Objects",
     "SelectToolUseMessage": "Click on objects to select them, hold the Alt key to add to your selection.",
-    "ToggleLabelDisplayedName": "Toggle Label Display",
+
+    "ToggleLabelDisplayedName": "Toggle Label<br>Display",
     "ToggleLabelToolTipMessage": "Toggle Display Of Labels",
-    "ToggleLabelToolUseMessage": "Click on objects to toggle the display of their labels.",
-    "ZoomFitDisplayedName": "Zoom Fit",
-    "ZoomFitToolTipMessage": "Zoom Fit",
-    "ZoomFitToolUseMessage": "Click to fit the sphere in the available space."
+    "ToggleLabelToolUseMessage": "Click on objects to toggle the display of their labels."
   },
   "settings": {
     "title": "Preferences"
@@ -86,7 +113,9 @@
   "objects": {
     "points": "Points",
     "lines": "Lines",
-    "circles": "Circles"
+    "circles": "Circles",
+    "segments": "Line Segments",
+    "measurements": "Measurements"
   },
   "style": {
     "basicStyle": "Basic Style",
@@ -174,5 +203,29 @@
     "selectObjectsToHide": "Select Objects to Hide",
     "labelHidden": "Label Hidden",
     "objectHidden": "Object Hidden"
+  },
+  "handlers": {
+    "duplicatePointMessage": "Duplicate point. Select another.",
+    "newMeasurementAdded": "New measurement {name} added",
+    "selectAnotherPoint": "Select the next point",
+    "newSegmentMeasurementAdded": "New measurement {name} added",
+    "duplicateLineMessage": "Duplicate line. Select another.",
+    "newAngleAdded": "New angle measure added",
+    "newAngleAddedV2": "New angle measure {name} added",
+    "selectMorePoints": "Select {needed} more point(s)",
+    "selectAnotherLine": "Select 1 more line",
+    "newCoordinatePointMeasurementAdded": "New coordinate measurements added"
+  },
+
+  "objectTree": {
+    "expression": "Expression",
+    "slider": "Slider",
+    "noObjectsInDatabase": "No objects in database",
+    "result": "Result",
+    "calculationExpression": "Calculation Expression",
+    "min": "Min",
+    "max": "Max",
+    "step": "Step",
+    "create": "Create"
   }
 }
