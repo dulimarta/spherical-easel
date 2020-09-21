@@ -53,7 +53,7 @@ export default {
     maxLabelDistance: 0.08, // The maximum distance that a label is allowed to get away from the point
     initialLabelOffset: 0.02, // When making point labels this is initially how far (roughly) they are from the location of the point
     hitPixelDistance: 8, //When a pixel distance between a mouse event and the pixel coords of a point is less than this number, it is hit
-    hitIdealDistance: 0.02, // The user has to be within this distance on the ideal unit sphere to select the point.
+    hitIdealDistance: 0.04, // The user has to be within this distance on the ideal unit sphere to select the point.
     //dynamicBackStyle is a flag that means the fill color,stroke, and opacity of the points drawn on the back are automatically calculated based on the value of SETTINGS.contrast and their front counterparts
     dynamicBackStyle: true,
     //The scaling of the points relative to the scaled for zoom default size

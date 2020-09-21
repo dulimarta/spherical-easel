@@ -206,15 +206,17 @@
   },
   "handlers": {
     "duplicatePointMessage": "Duplicate point. Select another.",
-    "newMeasurementAdded": "New measurement {name} added",
-    "selectAnotherPoint": "Select the next point",
-    "newSegmentMeasurementAdded": "New measurement {name} added",
+    "newMeasurementAdded": "New measurement {name} added.",
+    "selectAnotherPoint": "Select the next point.",
+    "newSegmentMeasurementAdded": "New measurement {name} added.",
     "duplicateLineMessage": "Duplicate line. Select another.",
-    "newAngleAdded": "New angle measure added",
-    "newAngleAddedV2": "New angle measure {name} added",
-    "selectMorePoints": "Select {needed} more point(s)",
-    "selectAnotherLine": "Select 1 more line",
-    "newCoordinatePointMeasurementAdded": "New coordinate measurements added"
+    "newAngleAdded": "New angle measure added.",
+    "newAngleAddedV2": "New angle measure {name} added.",
+    "selectMorePoints": "Select {needed} more point(s).",
+    "selectAnotherLine": "Select 1 more line.",
+    "newCoordinatePointMeasurementAdded": "New coordinate measurements added",
+    "intersectionOneDimensionalAdded": "One dimensional object {name} added. Select another.",
+    "intersectionOneDimensionalDuplicate": "Duplicate object. Select another."
   },
 
   "objectTree": {
