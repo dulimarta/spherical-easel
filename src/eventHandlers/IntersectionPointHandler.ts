@@ -8,6 +8,7 @@ import { SECircle } from "@/models/SECircle";
 import { IntersectionReturnType, SEOneDimensional } from "@/types";
 import store from "@/store";
 import { CommandGroup } from "@/commands/CommandGroup";
+import EventBus from "./EventBus";
 
 export default class IntersectionPointHandler extends Highlighter {
   /**
@@ -34,32 +35,59 @@ export default class IntersectionPointHandler extends Highlighter {
   mousePressed(event: MouseEvent): void {
     //Select the objects to intersect
     if (this.isOnSphere) {
+      // If the user clicks on an intersection create that intersection point (i.e. convert to user created)
+      if (this.hitSEPoints.length > 0) {
+        if (
+          this.hitSEPoints[0] instanceof SEIntersectionPoint &&
+          !(this.hitSEPoints[0] as SEIntersectionPoint).isUserCreated
+        ) {
+          //Make it user created and turn on the display
+          new ConvertInterPtToUserCreatedCommand(
+            this.hitSEPoints[0] as SEIntersectionPoint
+          ).execute();
+          return;
+        }
+        return;
+      }
       // Fill the first oneDimensional object
       if (this.oneDimensional1 == null) {
         if (this.hitSESegments.length > 0) {
           this.oneDimensional1 = this.hitSESegments[0];
-          this.oneDimensional1.selected = true;
         } else if (this.hitSELines.length > 0) {
           this.oneDimensional1 = this.hitSELines[0];
-          this.oneDimensional1.selected = true;
         } else if (this.hitSECircles.length > 0) {
           this.oneDimensional1 = this.hitSECircles[0];
+        }
+        if (this.oneDimensional1 !== null) {
           this.oneDimensional1.selected = true;
+          EventBus.fire("show-alert", {
+            key: `handlers.intersectionOneDimensionalAdded`,
+            keyOptions: { name: `${this.oneDimensional1.name}` },
+            type: "success"
+          });
         }
       } else if (this.oneDimensional2 == null) {
         // Fill the second oneDimensional object
         if (this.hitSESegments.length > 0) {
           this.oneDimensional2 = this.hitSESegments[0];
-          this.oneDimensional2.selected = true;
         } else if (this.hitSELines.length > 0) {
           this.oneDimensional2 = this.hitSELines[0];
-          this.oneDimensional2.selected = true;
         } else if (this.hitSECircles.length > 0) {
           this.oneDimensional2 = this.hitSECircles[0];
-          this.oneDimensional2.selected = true;
+        }
+        if (this.oneDimensional2 !== null) {
+          if (this.oneDimensional1.name !== this.oneDimensional2.name) {
+            this.oneDimensional2.selected = true;
+          } else {
+            this.oneDimensional2 = null;
+            EventBus.fire("show-alert", {
+              key: `handlers.intersectionOneDimensionalDuplicate`,
+              keyOptions: {},
+              type: "warning"
+            });
+          }
         }
       }
-
       // As soon as both oneDimensional objects are not null do the intersection
       if (this.oneDimensional1 != null && this.oneDimensional2 != null) {
         this.doIntersection(this.oneDimensional1, this.oneDimensional2);
