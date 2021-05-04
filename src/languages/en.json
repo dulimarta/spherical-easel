@@ -93,7 +93,7 @@
 
     "ZoomFitDisplayedName": "Zoom Fit<br>&nbsp;",
     "ZoomFitToolTipMessage": "Zoom Fit",
-    "ZoomFitToolUseMessage": "Click to fit the sphere in the available space.",
+    "ZoomFitToolUseMessage": "Fits the sphere in the available space.",
 
     "RotateDisplayedName": "Rotate<br>Sphere",
     "RotateSphereToolTipMessage": "Rotate Sphere",

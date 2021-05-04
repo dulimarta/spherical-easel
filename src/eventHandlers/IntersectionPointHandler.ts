@@ -9,6 +9,9 @@ import { IntersectionReturnType, SEOneDimensional } from "@/types";
 import store from "@/store";
 import { CommandGroup } from "@/commands/CommandGroup";
 import EventBus from "./EventBus";
+import { SENodule } from "@/models/SENodule";
+import { SEPoint } from "@/models/SEPoint";
+import { SELabel } from "@/models/SELabel";
 
 export default class IntersectionPointHandler extends Highlighter {
   /**
@@ -76,7 +79,7 @@ export default class IntersectionPointHandler extends Highlighter {
           this.oneDimensional2 = this.hitSECircles[0];
         }
         if (this.oneDimensional2 !== null) {
-          if (this.oneDimensional1.name !== this.oneDimensional2.name) {
+          if (this.oneDimensional1.id !== this.oneDimensional2.id) {
             this.oneDimensional2.selected = true;
           } else {
             this.oneDimensional2 = null;
@@ -104,6 +107,26 @@ export default class IntersectionPointHandler extends Highlighter {
   mouseMoved(event: MouseEvent): void {
     // Highlight all nearby objects and update location vectors
     super.mouseMoved(event);
+    // don't highlight any non-user created points
+    this.hitSENodules
+      .filter((n: SENodule) => n instanceof SEPoint)
+      .map(n => n as SEPoint)
+      .forEach((p: SEPoint) => {
+        if (
+          !(p instanceof SEIntersectionPoint) ||
+          (p instanceof SEIntersectionPoint &&
+            (p as SEIntersectionPoint).isUserCreated)
+        ) {
+          p.glowing = false;
+        }
+      });
+    // don't highlight any labels
+    this.hitSENodules
+      .filter((n: SENodule) => n instanceof SELabel)
+      .map(n => n as SELabel)
+      .forEach((p: SELabel) => {
+        p.glowing = false;
+      });
   }
 
   // eslint-disable-next-line

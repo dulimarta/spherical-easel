@@ -62,7 +62,7 @@ Every <span class="class">SENodule</span> object has the following boolean prope
 
 - <span class="variable">\_selected</span>: If an object is selected it remains glowing until it is unselected. This property is used to indicate to the user which objects have already been selected when multiple objects need to be selected for an operation.
 
-- <span class="variable">\_isUserCreated</span>: (This property applies to only <span class="class">SEIntersectionPoint</span> objects.) Every time you add a one dimensional object all intersections with all other one dimensional objects are created as <span class="class">SEIntersectionPoint</span> objects. See <span class="class">intersectTwoObjects()</span> method in the span class="class">getters.ts</span> in the [Store](/design/#store). When they are created in this way, the value of <span class="variable">\_isUserCreated</span> is false. When this value is false, mousing over an intersection will make it display in the temporary style instead of glowing. If the user actually uses the point in a construction, <span class="variable">\_isUserCreated</span> is true and mousing over it will make it glow as usual. See <span class="command">ConvertInterPtToUserCreatedCommand</span>.
+- <span class="variable">\_isUserCreated</span>: (This property applies to only <span class="class">SEIntersectionPoint</span> objects.) Every time you add a one dimensional object all intersections with all other one dimensional objects are created as <span class="class">SEIntersectionPoint</span> objects. See <span class="class">intersectTwoObjects()</span> method in the <span class="class">getters.ts</span> in the [Store](/design/#store). When they are created in this way, the value of <span class="variable">\_isUserCreated</span> is false. When this value is false, mousing over an intersection will make it display in the temporary style instead of glowing. If the user actually uses the point in a construction, <span class="variable">\_isUserCreated</span> is true and mousing over it will make it glow as usual. See <span class="command">ConvertInterPtToUserCreatedCommand</span>.
 
 ## Plottables Directory
 
@@ -90,7 +90,7 @@ Each of these classes extends the <span class="class">Nodule</span> class and th
 
 - <span class="method">addToLayers(layers:Two.Group[])</span>: This method places all of the graphical objects of this object into the appropriate layers so that the display is rendered appropriately. For example, a point on the back of the sphere is not drawn on top of a circle that is on the front of the sphere.
 - <span class="method">removeFromLayers()</span>: This reverses the operation of <span class="method">addToLayers()</span>.
-- <span class="method">adjustSizeForZoom(factor: number)</span>: This method is called every time the Zoom Magnification Factor is changed ([see Zooming And Panning for details](/design/#zooming-and-panning)) and allows us to set the display size of points and linewidth of one-dimensional objects so that more detailed views are possible. That is, zooming the view doesn't result in a very large point that obscures other details.
+- <span class="method">adjustSize(factor: number)</span>: This method is called every time the Zoom Magnification Factor is changed ([see Zooming And Panning for details](/design/#zooming-and-panning)) and allows us to set the display size of points and linewidth of one-dimensional objects so that more detailed views are possible. That is, zooming the view doesn't result in a very large point that obscures other details.
 - <span class="method">normalDisplay()</span>: Running this method sets the rendering (i.e. actual view) style of the actually displayed object to the style where the object is not selected or highlighted. It doesn't change the style of the object (that is the method <span class="method">stylize(UPDATE)</span>), but is merely a unidirectional switch to set the display to normal. This method will be called many times during a construction.
 - <span class="method">glowingDisplay()</span>: This method is like <span class="method">normalDisplay()</span> except it sets the actual display to a glowing style to indicate that the user has moused over or selected an object. This method will be called many times during a construction. Note: To make an object glow, a second identically-located object is displayed under the original object ([see Layers](/design/#layers)), but with a slightly larger size or line width but colored differently. This is why all the graphical variables in each <span class="class">Nodule</span> class have two versions: a glowing version and a regular one. For example, in the <span class="class">Circle</span> the variable <span class="variable">backVertices</span> has an identically located <span class="variable">glowingBackVertices</span> version. The prefix glowing indicates this.
 - <span class="method">stylize(flag: DisplayStyle)</span>: This method allows the application to two things:
@@ -162,7 +162,7 @@ In general the rendering process is more complex than this. For example, conside
 
 ## Zooming and Panning
 
-Zooming and panning are accomplished using a CSS (affine) transform applied to the **root** SVG object that the renderer produces. Once an object has been [rendered on the Default Screen Plane](/design/#rendering-objects), the CSS transform displays it in the Viewport (see the illustration in the [Rendering Objects](/design/#rendering-objects) section) using a Zoom Magnification Factor and a Zoom Translation Vector. (Note: in the case that Zoom Magnification Factor is 1 and the Zoom Translation Vector is $\langle 0, 0 \rangle$, the Viewport is the same as the Default Screen Plane.) There are two ways that the user can zoom and pan.
+Zooming and panning are accomplished using a CSS (affine) transform applied to the **root** SVG object that the renderer produces. Once an object has been [rendered on the Default Screen Plane](/design/#rendering-objects), the CSS transform displays it in the Viewport (see the illustration in the [Rendering Objects](/design/#rendering-objects) section) using a Zoom Magnification Factor and a Zoom Translation Vector. (Note: In the case that Zoom Magnification Factor is 1 and the Zoom Translation Vector is $\langle 0, 0 \rangle$ the Viewport is the same as the Default Screen Plane.) There are two ways that the user can zoom and pan.
 
 1. Using a track pad or mouse wheel. These trigger the <span class="method">handleMouseWheelEvent(MouseEvent)</span> method in the <span class="file">SphereFrame.vue</span> file.
 2. Using the [Zooming and Panning Tools](/tools/display.html#zoom-pan-and-standard-view). This fires a <span class="string">"zoom-update"</span> [EventBus](/design/#event-bus) action.
@@ -173,13 +173,13 @@ In both cases the new Zoom Magnification Factor and Translation Vector are writt
 
 <<< @/src/components/SphereFrame.vue#updateView{9}
 
-When we zoom we control the size of the displayed geometric objects so that the text size, stroke width, point size, etc. do not become so large as to obscure other details in the arrangement. To account for the magnification factor in the display, every class in the [Plottables Directory](/design/#plottables-directory) (i.e. all <span class="class">Nodule</span> classes) has a method called <span class="method">adjustSizeForZoom()</span>. This method is called on all plottables through a chain of events that are outlined here.
+When we zoom we control the size of the displayed geometric objects so that the text size, stroke width, point size, etc. do not become so large as to obscure other details in the arrangement. To account for the magnification factor in the display, every class in the [Plottables Directory](/design/#plottables-directory) (i.e. all <span class="class">Nodule</span> classes) has a method called <span class="method">adjustSize()</span>. This method is called on all plottables through a chain of events that are outlined here.
 
 Whenever a new magnification factor is computed the value is written to the [Store](/design/#store) with a dispatch command like the one highlighted in this code snippet from <span class="file">PanZoomHandler.ts</span>:
 
 <<< @/src/eventHandlers/PanZoomHandler.ts#writeFactorVectorToStore{2}
 
-The <span class="string">"changeZoomFactor"</span> <span class="method">dispatch(...)</span> method results in a <span class="method">commit(...)</span> of the magnification factor to the store and fires an <span class="string">"magnification-updated"</span> [Event Bus](/design/#event-bus) action.
+The <span class="string">"changeZoomFactor"</span> <span class="method">dispatch(...)</span> method results in a <span class="method">commit(...)</span> of the magnification factor to the store and fires a <span class="string">"magnification-updated"</span> [Event Bus](/design/#event-bus) action.
 
 <<< @/src/store/index.ts#magnificationUpdate
 
@@ -191,7 +191,7 @@ this action calls
 
 <<< @/src/views/Easel.vue#resizePlottables{3,6}
 
-which calls <span class="method">adjustSizeForZoom()</span> on all plottable retrieved from the from the [Store](/design/#store).
+which calls <span class="method">adjustSize()</span> on all plottable retrieved from the from the [Store](/design/#store).
 
 ## Data Structure
 
@@ -203,7 +203,7 @@ The geometric objects in any arrangement are associated to an abstract data stru
 - A line segment, $S_1$, from point $P_1$ to new point $P_5$ that is constrained to be on $C_2$.
 - One of the intersection points, $P_6$, of $C_1$ and $C_2$.
 
-As the location of first four points created are not constrained by any other geometric objects (except the surface of the sphere, of course), the vertices in the DAG corresponding to these points have no incoming arrows and are called **free points**. Point $P_5$, and any point that is constrained to be located on any one-dimensional object, is also considered to free. Any object that is free or only depends on free points is considered to be a **free object**. Free objects are individually movable with the [Move Tool](/tools/display.html#move).
+As the location of first four points created are not constrained by any other geometric objects (except the surface of the sphere, of course), the vertices in the DAG corresponding to these points have no incoming arrows and are called **free points**. Point $P_5$, and any point that is only constrained to be located on any one-dimensional object, is also considered to free. Any object that is free or only depends on free points is considered to be a **free object**. Free objects are individually movable with the [Move Tool](/tools/display.html#move).
 
 To determine the rest of the DAG, consider what changes as we move these points. If the user moves $P_1$ then $C_1$ also moves, so there is an arrow in the DAG from the vertex corresponding to $P_1$ to the vertex corresponding to $C_1$. Similarly segment $S_1$ also moves so there is an arrow between the vertices corresponding to those objects. Continuing in this way we obtain the following DAG where the round green circles correspond to free objects (i.e. individually moveable with the [Move Tool](/tools/display.html#move)) and the red rectangles correspond to fixed objects (i.e. unmovable with the [Move Tool](/tools/display.html#move)):
 
@@ -407,7 +407,7 @@ The user can select items to style before entering the Styling Mode (the mode wh
 
 This method then checks to see if there are any style changes that need to be stored in the command stack so they can be undone later. If there is a non-empty selection, the `initialStyleState` and `defaultStyleState` of the selected objects (for front and back) is recorded in these variables in the Vuex store. These are keep in the store because there are Vue <span class="component">ColorSelector</span> and <span class="component">NumberSelector</span> components across _two_ expansion panels that need access these variables to set the state of their selectors.
 
-<<@/scr/components/FrontAndBackStyle.vue#setStyle
+<<< @/src/components/BasicFrontBackStyle.vue#setStyle
 
 Upon <span class="method">setXXXSelectorState()</span> method being executed, the program first determines if all the selected objects have style XXX (via the <span class="method">hasXXX()</span>). If they, do the <span class="component">fade-in-card</span> is display for that style, if not it is not displayed. If the style is common to all selected objects, the program then check to see if the value of that style is the same across all selected objects. If it is not, the <span class="variable">XXXAgreement</span> variable is set to <span class="component">false</span> and a button saying "Differing Styles Detected -- Override" is displayed. If the user clicks that button, the <span class="variable">XXXAgreement</span> variable is set to <span class="component">true</span> and any style selection will set that one style property of all selected objects to be the same. Once a selection is made the <span class="button">Undo</span> button is activative, and by clicking it all selected objects will revert that style property back to the style they had when they were _selected_. Clicking the <span class="button">Apply Defaults</span> button will revert the selected objects back to their default style.
 

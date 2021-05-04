@@ -221,13 +221,13 @@ export class SELabel extends SENodule implements Visitable {
   public isFreePoint(): boolean {
     return false;
   }
-  public isOneDimensional(): this is SEOneDimensional {
+  public isOneDimensional(): boolean {
     return false;
   }
   public isPoint(): boolean {
     return false;
   }
-  public isPointOnOneDimensional(): false {
+  public isPointOnOneDimensional(): boolean {
     return false;
   }
   public isLabel(): boolean {

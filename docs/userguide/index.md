@@ -12,7 +12,7 @@ All objects are created on the surface of the sphere. The basic objects are defi
 
 - A sphere is the set of **points** a unit distance from the origin in Euclidean three space.
 - A **line** is the intersection of a plane containing the center of the sphere and the surface of the sphere.
-- A **line segment** is the continuous image of an interval on a line.
+- A **line segment** is the continuous one-to-one (but not onto) image of an interval to a line.
 - A **circle** is the intersection of a plane not containing the center of the sphere and the surface of the sphere. A circle of radius $R$ is also the collection of points that are $R$ away from a center point over the surface of the sphere. As the sphere is a unit sphere, a distance of $R$ on the surface corresponds to an angle of $R$ subtended at the center of the sphere.
 - An **ellipse** with two (non-antipodal) foci is the set of points where the sum of the distances to each focus is constant.
 

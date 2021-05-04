@@ -1459,7 +1459,7 @@ export default class BasicFrontBackStyle extends Vue {
         selected: newSelection,
         backContrast: Nodule.getBackStyleContrast()
       });
-      //#endregion
+      //#endregion setStyle
     }
     BasicFrontBackStyle.savedFromThisPanel = this.panel;
     //Set the initial state of the fade-in-card/selectors (checking to see if the property is the same across all selected objects)

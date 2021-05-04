@@ -54,10 +54,10 @@ export default class Label extends Nodule {
   });
 
   /**
-   * A string representing the text that will be rendered to the stage. Set with text.value = this.shortName
-   * shortName is at most 5 characters long
+   * A string representing the text that will be rendered to the screen. Set with text.value = this.shortUserName
+   * shortName is at most ??? characters long
    * caption is a longer, 60 characters long
-   * initialName is not user modifable and is used until the user changes the name and this is the name that is restored when defaults are restored.
+   * initialName is not user modifiable and is used until the user changes the name and this is the name that is restored when defaults are restored.
    */
   protected initialName = "";
   protected shortUserName = "";
