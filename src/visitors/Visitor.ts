@@ -3,6 +3,7 @@ import { SELine } from "@/models/SELine";
 import { SESegment } from "@/models/SESegment";
 import { SECircle } from "@/models/SECircle";
 import { SELabel } from "@/models/SELabel";
+import { SEAngleMarker } from "@/models/SEAngleMarker";
 /**
  * Use the Visitor design pattern to apply operation on different types
  * of geometric objects. The non-abstract class that implements this
@@ -14,4 +15,5 @@ export interface Visitor {
   actionOnSegment(s: SESegment): void;
   actionOnCircle(c: SECircle): void;
   actionOnLabel(l: SELabel): void;
+  actionOnAngleMarker(a: SEAngleMarker): void;
 }

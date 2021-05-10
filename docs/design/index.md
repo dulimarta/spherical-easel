@@ -152,7 +152,10 @@ First the unit sphere information is scaled to be on the Default Sphere. The def
 
 To determine the location of a point on the ideal unit sphere in the Default Screen Plane, we first scale its position vector by the default radius, and then orthographically project by simply dropping the $z$ coordinate. The sign of the $z$ coordinate indicates if the point is rendered in a style that indicates that it is on the back of the sphere or the front. This process is used repeatedly to draw one-dimensional geometric objects. In general, the rendering follows this outline:
 
-1. Create a transformation matrix (<span class="class">Matrix4</span>) that maps the object of the correct size in a standard position (say centered at the North Pole) to the current view of the object on the unit ideal sphere.
+1. Create a transformation matrix (<span class="class">Matrix4</span>) that maps the object of the correct size in a standard position (say centered at the North Pole) to the current view of the object on the unit ideal sphere. For example, this is how it is done for circles:
+
+<<< @/src/plottables/Circle.ts#circleDisplay
+
 2. Transform a sampling of points on the object in standard position to the current view.
 3. Using the steps above, transform the current view points to the Default Screen Plane, keeping track of if they should be rendered in a style for the front or back.
 4. Group the points that should be rendered on the front of the sphere into a front path and similarity for the back.

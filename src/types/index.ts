@@ -14,6 +14,8 @@ import { SEMeasurement } from "@/models/SEMeasurement";
 import { SECalculation } from "@/models/SECalculation";
 import { StyleOptions } from "@/types/Styles";
 import { SEExpression } from "@/models/SEExpression";
+import { SEAngleMarker } from "@/models/SEAngleMarker";
+import { SEPerpendicularLineThruPoint } from "@/models/SEPerpendicularLineThruPoint";
 
 export interface Selectable {
   hit(x: number, y: number, coord: unknown, who: unknown): boolean;
@@ -127,7 +129,39 @@ export type ObjectState =
   | LineState
   | SegmentState
   | PointState
-  | LabelState;
+  | LabelState
+  | AngleMarkerState
+  | PerpendicularLineThruPointState;
+
+export interface PerpendicularLineThruPointState {
+  kind: "perpendicularLineThruPoint";
+  object: SEPerpendicularLineThruPoint;
+}
+
+export function isPerpendicularLineThruPointState(
+  entry: ObjectState
+): entry is PerpendicularLineThruPointState {
+  return entry.kind === "perpendicularLineThruPoint";
+}
+
+export interface AngleMarkerState {
+  kind: "angleMarker";
+  object: SEAngleMarker;
+  // vertexVectorX: number;
+  // vertexVectorY: number;
+  // vertexVectorZ: number;
+  // startVectorX: number;
+  // startVectorY: number;
+  // startVectorZ: number;
+  // endVectorX: number;
+  // endVectorY: number;
+  // endVectorZ: number;
+}
+export function isAngleMarkerState(
+  entry: ObjectState
+): entry is AngleMarkerState {
+  return entry.kind === "angleMarker";
+}
 
 export interface LineState {
   kind: "line";

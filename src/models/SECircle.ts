@@ -150,7 +150,7 @@ export class SECircle extends SENodule
     );
     // Check to see if the tmpVector is zero (i.e the center and  idealUnit vectors are parallel -- ether
     // nearly antipodal or in the same direction)
-    if (this.tmpVector.isZero()) {
+    if (this.tmpVector.length() < SETTINGS.nearlyAntipodalIdeal) {
       return this._circleSEPoint.locationVector; // An arbitrary point will do as all points are equally far away
     } else {
       // Make the tmpVector (soon to be the to vector) unit
@@ -173,7 +173,7 @@ export class SECircle extends SENodule
    * @param idealUnitSphereVector A vector on the unit sphere
    */
   public closestLabelLocationVector(idealUnitSphereVector: Vector3): Vector3 {
-    // First find the closest point on the segment to the idealUnitSphereVector
+    // First find the closest point on the circle to the idealUnitSphereVector
     this.tmpVector.copy(this.closestVector(idealUnitSphereVector));
 
     // If the idealUnitSphereVector is within the tolerance of the closest point, do nothing, otherwise return the vector in the plane of the ideanUnitSphereVector and the closest point that is at the tolerance distance away.

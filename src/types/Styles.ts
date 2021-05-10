@@ -30,7 +30,8 @@ export enum Styles {
   labelTextScalePercent,
   labelDisplayMode,
   labelVisibility,
-  objectVisibility
+  objectVisibility,
+  angleMarkerRadiusPercent
 }
 
 export type StyleOptions = {
@@ -53,4 +54,5 @@ export type StyleOptions = {
   labelDisplayMode?: LabelDisplayMode;
   labelVisibility?: boolean;
   objectVisibility?: boolean;
+  angleMarkerRadiusPercent?: number;
 };

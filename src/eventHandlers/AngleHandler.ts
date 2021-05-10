@@ -53,7 +53,7 @@ export default class AngleHandler extends Highlighter {
   }
 
   mousePressed(event: MouseEvent): void {
-    //Select an object to delete
+    //Select an object
     if (this.isOnSphere) {
       switch (this.mode) {
         case AngleMode.NONE:
@@ -88,7 +88,7 @@ export default class AngleHandler extends Highlighter {
           break;
         case AngleMode.LINES:
           if (this.hitSEPoints.length > 0) {
-            // The user change mind from linees to points?
+            // The user change mind from lines to points?
             this.targetLines.clear();
             this.mode = AngleMode.POINTS;
             this.targetPoints.push(this.hitSEPoints[0]);
