@@ -17,6 +17,7 @@ import Point from "@/plottables/Point";
 import { SEPointOnOneDimensional } from "@/models/SEPointOnOneDimensional";
 import { AddPointOnOneDimensionalCommand } from "@/commands/AddPointOnOneDimensionalCommand";
 import { AddPointCommand } from "@/commands/AddPointCommand";
+import { SENodule } from "@/models/SENodule";
 
 export default class AntipodalPointHandler extends Highlighter {
   /**
@@ -208,8 +209,20 @@ export default class AntipodalPointHandler extends Highlighter {
   }
 
   mouseMoved(event: MouseEvent): void {
-    // Highlight all nearby objects and update location vectors
+    // Find all the nearby (hitSE... objects) and update location vectors
     super.mouseMoved(event);
+    // Only one point can be processed at a time, so set the first point nearby to glowing
+    // The user can create points (with the antipode) on circles, segments, and lines, so
+    // highlight those as well (but only one) if they are nearby also
+    if (this.hitSEPoints.length > 0) {
+      this.hitSEPoints[0].glowing = true;
+    } else if (this.hitSESegments.length > 0) {
+      this.hitSESegments[0].glowing = true;
+    } else if (this.hitSELines.length > 0) {
+      this.hitSELines[0].glowing = true;
+    } else if (this.hitSECircles.length > 0) {
+      this.hitSECircles[0].glowing = true;
+    }
   }
   // eslint-disable-next-line
   mouseReleased(event: MouseEvent): void {}

@@ -24,8 +24,8 @@
     "CreateAngleToolUseMessage": "Click on two lines/segments or three points to calculate angle.",
 
     "CreateAntipodalPointDisplayedName": "Antipodal<br>Point",
-    "CreateAntipodalPointToolTipMessage": "Select a point",
-    "CreateAntipodalPointToolUseMessage": "Click on a point to create its antipode",
+    "CreateAntipodalPointToolTipMessage": "Select a location",
+    "CreateAntipodalPointToolUseMessage": "Click on a location to create a point (if necessary) and its antipode",
 
     "CreateCircleDisplayedName": "Create<br>Circle",
     "CreateCircleToolTipMessage": "Insert circle",

@@ -273,6 +273,11 @@ export default {
         obj.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
       });
   },
+  unglowAllSENodules(state: AppState): void {
+    state.seNodules.forEach((p: SENodule) => {
+      p.glowing = false;
+    });
+  },
   changeStyle(
     state: AppState,
     {

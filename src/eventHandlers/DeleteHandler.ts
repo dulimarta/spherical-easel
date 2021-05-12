@@ -1,10 +1,16 @@
 import Two from "two.js";
 import Highlighter from "./Highlighter";
 import { SENodule } from "@/models/SENodule";
-import { UpdateMode, UpdateStateType } from "@/types";
+import {
+  isPerpendicularLineThruPointState,
+  UpdateMode,
+  UpdateStateType
+} from "@/types";
 import { CommandGroup } from "@/commands/CommandGroup";
 import { DeleteNoduleCommand } from "@/commands/DeleteNoduleCommand";
 import { SetNoduleDisplayCommand } from "@/commands/SetNoduleDisplayCommand";
+import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
+import { SECircle } from "@/models/SECircle";
 
 export default class DeleteHandler extends Highlighter {
   /**
@@ -30,7 +36,12 @@ export default class DeleteHandler extends Highlighter {
       // In the case of multiple selections prioritize points > lines > segments > circles > labels
       // Deleting an object deletes all objects that depend on that object including the label
       if (this.hitSEPoints.length > 0) {
-        this.victim = this.hitSEPoints[0];
+        if (
+          !(this.hitSEPoints[1] instanceof SEIntersectionPoint) ||
+          (this.hitSEPoints[1] as SEIntersectionPoint).isUserCreated
+        ) {
+          this.victim = this.hitSEPoints[0];
+        }
       } else if (this.hitSELines.length > 0) {
         this.victim = this.hitSELines[0];
       } else if (this.hitSESegments.length > 0) {
@@ -58,6 +69,40 @@ export default class DeleteHandler extends Highlighter {
   mouseMoved(event: MouseEvent): void {
     // Highlight all nearby objects and update location vectors
     super.mouseMoved(event);
+    // only one object at a time can be deleted, so unglow others if there are multiple objects glowing
+    // but prioritize points, if there is a point nearby, assume the user wants it to be the selection to delete
+    if (this.hitSEPoints.length === 0) {
+      if (this.hitSENodules.length > 1) {
+        for (let i = 1; i < this.hitSENodules.length; i++) {
+          this.hitSENodules[i].glowing = false;
+        }
+      }
+      // there is another case here if the nearby point is an intersection point that is not user created, then the first other object should be glowing
+    } else {
+      if (this.hitSEPoints.length > 1) {
+        for (let i = 1; i < this.hitSEPoints.length; i++) {
+          this.hitSEPoints[i].glowing = false;
+        }
+      }
+      // do not allow the user to delete an intersection point that has not been user created
+      if (this.hitSEPoints[0] instanceof SEIntersectionPoint) {
+        if (!(this.hitSEPoints[0] as SEIntersectionPoint).isUserCreated) {
+          this.hitSEPoints[0].glowing = false;
+        }
+      }
+      this.hitSECircles.forEach((obj: SENodule) => {
+        obj.glowing = false;
+      });
+      this.hitSESegments.forEach((obj: SENodule) => {
+        obj.glowing = false;
+      });
+      this.hitSELines.forEach((obj: SENodule) => {
+        obj.glowing = false;
+      });
+      this.hitSELabels.forEach((obj: SENodule) => {
+        obj.glowing = false;
+      });
+    }
   }
 
   // eslint-disable-next-line
