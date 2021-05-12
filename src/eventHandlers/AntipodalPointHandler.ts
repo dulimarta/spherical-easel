@@ -39,8 +39,20 @@ export default class AntipodalPointHandler extends Highlighter {
   /* temporary vector to help with computation */
   private tmpVector = new Vector3();
 
+  /**
+   * A temporary plottable (TwoJS) point created while the user is making the antipode
+   */
+  protected temporaryAntipodeMarker: Point;
+
+  /** Has the temporary antipode been added to the scene?*/
+  private isTemporaryAntipodeAdded = false;
+
   constructor(layers: Two.Group[]) {
     super(layers);
+    // Create and style the temporary antipode marking the antipode being created
+    this.temporaryAntipodeMarker = new Point();
+    this.temporaryAntipodeMarker.stylize(DisplayStyle.ApplyTemporaryVariables);
+    this.store.commit.addTemporaryNodule(this.temporaryAntipodeMarker);
   }
 
   mousePressed(event: MouseEvent): void {
@@ -213,7 +225,7 @@ export default class AntipodalPointHandler extends Highlighter {
     super.mouseMoved(event);
     // Only one point can be processed at a time, so set the first point nearby to glowing
     // The user can create points (with the antipode) on circles, segments, and lines, so
-    // highlight those as well (but only one) if they are nearby also
+    // highlight those as well (but only one) if they are the only nearby objects
     if (this.hitSEPoints.length > 0) {
       this.hitSEPoints[0].glowing = true;
     } else if (this.hitSESegments.length > 0) {
@@ -222,6 +234,21 @@ export default class AntipodalPointHandler extends Highlighter {
       this.hitSELines[0].glowing = true;
     } else if (this.hitSECircles.length > 0) {
       this.hitSECircles[0].glowing = true;
+    }
+    if (this.isOnSphere) {
+      // If the temporary antipode has *not* been added to the scene do so now (only once)
+      if (!this.isTemporaryAntipodeAdded) {
+        this.isTemporaryAntipodeAdded = true;
+        this.temporaryAntipodeMarker.addToLayers(this.layers);
+      }
+      // Move the temporaryAntipodeMarker to the antipode of the current mouse location
+      this.temporaryAntipodeMarker.positionVector = this.tmpVector
+        .copy(this.currentSphereVector)
+        .multiplyScalar(-1);
+    } else if (this.isTemporaryAntipodeAdded) {
+      // Remove the temporary objects from the display.
+      this.temporaryAntipodeMarker.removeFromLayers();
+      this.isTemporaryAntipodeAdded = false;
     }
   }
   // eslint-disable-next-line
@@ -233,6 +260,11 @@ export default class AntipodalPointHandler extends Highlighter {
     this.parentPoint = null;
     this.oneDimensionalContainingParentPoint = null;
     this.parentPointVector.set(0, 0, 0);
+    if (this.isTemporaryAntipodeAdded) {
+      // Remove the temporary objects from the display.
+      this.temporaryAntipodeMarker.removeFromLayers();
+    }
+    this.isTemporaryAntipodeAdded = false;
   }
   activate(): void {
     // If there is exactly one point selected, create its anitpode
