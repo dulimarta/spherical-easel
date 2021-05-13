@@ -33,11 +33,6 @@ export default class LineHandler extends Highlighter {
   private normalVector = new Vector3(0, 0, 0);
 
   /**
-   * The user is dragging to create a line
-   */
-  private isDragging: boolean;
-
-  /**
    * The starting and ending SEPoints of the line. The possible parent of the startSEPoint
    */
   private startSEPoint: SEPoint | null = null;
@@ -81,7 +76,7 @@ export default class LineHandler extends Highlighter {
     this.tempLine.stylize(DisplayStyle.ApplyTemporaryVariables);
     this.store.commit.addTemporaryNodule(this.tempLine);
     this.isTemporaryLineAdded = false;
-    this.isDragging = false;
+
     // Create and style the temporary points marking the start/end of an object being created
     this.startMarker = new Point();
     this.startMarker.stylize(DisplayStyle.ApplyTemporaryVariables);
@@ -96,12 +91,9 @@ export default class LineHandler extends Highlighter {
     // otherwise if the user has finished making an new point, then *without* triggering a mouse move
     // event, mouse press will *not* select the newly created point. This is not what we want so we call super.mouseMove
     super.mouseMoved(event);
-    if (this.isOnSphere) {
+    if (this.isOnSphere && !this.makingALine) {
       // The user is making a line
       this.makingALine = true;
-
-      // The user is dragging to add a line
-      this.isDragging = true;
 
       // Decide if the starting location is near an already existing SEPoint or near a oneDimensional SENodule
       if (this.hitSEPoints.length > 0) {
@@ -110,6 +102,9 @@ export default class LineHandler extends Highlighter {
         this.startVector.copy(selected.locationVector);
         this.startSEPoint = this.hitSEPoints[0];
         this.startMarker.positionVector = selected.locationVector;
+        // Glow the selected point and select it so the highlighter.ts doesn't unglow it with the mouseMoved method
+        this.startSEPoint.glowing = true;
+        this.startSEPoint.selected = true;
       } else if (this.hitSESegments.length > 0) {
         // The start of the line will be a point on a segment
         //  Eventually, we will create a new SEPointOneDimensional and Point
@@ -155,57 +150,69 @@ export default class LineHandler extends Highlighter {
     }
   }
   mouseMoved(event: MouseEvent): void {
-    // Highlights the objects near the mouse event
+    // Find all the nearby (hitSE... objects) and update location vectors
     super.mouseMoved(event);
-    if (this.isOnSphere) {
-      if (this.isDragging) {
-        // Do we need to show the temporary line?
-        if (!this.isTemporaryLineAdded) {
-          this.isTemporaryLineAdded = true;
-          this.tempLine.addToLayers(this.layers);
+    // Only one point can be processed at a time, so set the first point nearby to glowing
+    // The user can create points (with the antipode) on circles, segments, and lines, so
+    // highlight those as well (but only one) if they are nearby also
+    if (this.hitSEPoints.length > 0) {
+      this.hitSEPoints[0].glowing = true;
+    } else if (this.hitSESegments.length > 0) {
+      this.hitSESegments[0].glowing = true;
+    } else if (this.hitSELines.length > 0) {
+      this.hitSELines[0].glowing = true;
+    } else if (this.hitSECircles.length > 0) {
+      this.hitSECircles[0].glowing = true;
+    }
 
-          // Only add the start marker if the start point is going to be new or is non-user created intersection point
-          if (
-            this.startSEPoint == null ||
-            (this.startSEPoint instanceof SEIntersectionPoint &&
-              !this.startSEPoint.isUserCreated)
-          ) {
-            this.startMarker.addToLayers(this.layers);
-          }
-          this.endMarker.addToLayers(this.layers);
+    // Make sure that the event is on the sphere
+    if (this.isOnSphere && this.makingALine) {
+      // Do we need to show the temporary line?
+      if (!this.isTemporaryLineAdded) {
+        this.isTemporaryLineAdded = true;
+        this.tempLine.addToLayers(this.layers);
+
+        // Only add the start marker if the start point is going to be new or is non-user created intersection point
+        if (
+          this.startSEPoint == null ||
+          (this.startSEPoint instanceof SEIntersectionPoint &&
+            !this.startSEPoint.isUserCreated)
+        ) {
+          this.startMarker.addToLayers(this.layers);
         }
-        // Compute the normal vector from the this.startVector, the (old) normal vector and this.endVector
-        // Compute a temporary normal from the two points' vectors
-        this.tmpVector.crossVectors(this.startVector, this.currentSphereVector);
-
-        // Check to see if the temporary normal is zero (i.e the start and end vectors are parallel -- ether
-        // nearly antipodal or in the same direction)
-        if (this.tmpVector.isZero()) {
-          this.tmpVector
-            .crossVectors(this.startVector, this.currentSphereVector)
-            .normalize();
-          if (this.normalVector.length() == 0) {
-            // The normal vector is still at its initial value so can't be used to compute the next normal, so set the
-            // the normal vector to an arbitrarily chosen vector perpendicular to the start vector
-            this.tmpVector.set(1, 0, 0);
-            this.tmpVector.crossVectors(this.startVector, this.tmpVector);
-            if (this.tmpVector.isZero()) {
-              this.tmpVector.set(0, 1, 0);
-              // The cross or startVector and (1,0,0) and (0,1,0) can't *both* be zero
-              this.tmpVector.crossVectors(this.startVector, this.tmpVector);
-            }
-          } else {
-            // The start and end vectors align, compute  the next normal vector from the old normal and the start vector
-            this.tmpVector.crossVectors(this.startVector, this.normalVector);
-            this.tmpVector.crossVectors(this.tmpVector, this.startVector);
-          }
-        }
-        this.normalVector.copy(this.tmpVector).normalize();
-
-        // Set the normal vector to the line in the plottable object, this setter calls updateDisplay()
-        this.tempLine.normalVector = this.normalVector;
-        this.endMarker.positionVector = this.currentSphereVector;
+        this.endMarker.addToLayers(this.layers);
       }
+      // Compute the normal vector from the this.startVector, the (old) normal vector and this.endVector
+      // Compute a temporary normal from the two points' vectors
+      this.tmpVector.crossVectors(this.startVector, this.currentSphereVector);
+
+      // Check to see if the temporary normal is zero (i.e the start and end vectors are parallel -- ether
+      // nearly antipodal or in the same direction)
+      if (this.tmpVector.isZero()) {
+        this.tmpVector
+          .crossVectors(this.startVector, this.currentSphereVector)
+          .normalize();
+        if (this.normalVector.length() == 0) {
+          // The normal vector is still at its initial value so can't be used to compute the next normal, so set the
+          // the normal vector to an arbitrarily chosen vector perpendicular to the start vector
+          this.tmpVector.set(1, 0, 0);
+          this.tmpVector.crossVectors(this.startVector, this.tmpVector);
+          if (this.tmpVector.isZero()) {
+            this.tmpVector.set(0, 1, 0);
+            // The cross or startVector and (1,0,0) and (0,1,0) can't *both* be zero
+            this.tmpVector.crossVectors(this.startVector, this.tmpVector);
+          }
+        } else {
+          // The start and end vectors align, compute  the next normal vector from the old normal and the start vector
+          this.tmpVector.crossVectors(this.startVector, this.normalVector);
+          this.tmpVector.crossVectors(this.tmpVector, this.startVector);
+        }
+      }
+      this.normalVector.copy(this.tmpVector).normalize();
+
+      // Set the normal vector to the line in the plottable object, this setter calls updateDisplay()
+      this.tempLine.normalVector = this.normalVector;
+      this.endMarker.positionVector = this.currentSphereVector;
     } else if (this.isTemporaryLineAdded) {
       // Remove the temporary objects
       this.tempLine.removeFromLayers();
@@ -215,7 +222,6 @@ export default class LineHandler extends Highlighter {
     }
   }
   mouseReleased(event: MouseEvent): void {
-    this.isDragging = false;
     if (this.isOnSphere) {
       // Make sure the user didn't trigger the mouse leave event and is actually making a segment
       if (this.makingALine) {
@@ -225,25 +231,34 @@ export default class LineHandler extends Highlighter {
           SETTINGS.line.minimumLength
         ) {
           this.makeLine();
-        } else {
-          this.makePoint();
+          // remove the temporary line and markers and get ready for the next line
+          this.tempLine.removeFromLayers();
+          this.startMarker.removeFromLayers();
+          this.endMarker.removeFromLayers();
+          this.isTemporaryLineAdded = false;
+          this.makingALine = false;
+          if (this.startSEPoint) {
+            this.startSEPoint.glowing = false;
+            this.startSEPoint.selected = false;
+          }
+          this.startSEPoint = null;
+          this.endSEPoint = null;
+          this.startSEPointOneDimensionalParent = null;
+          // call an unglow all command
+          Highlighter.store.commit.unglowAllSENodules();
         }
-        // remove the temporary line and markers and get ready for the next line
+      } else {
         this.tempLine.removeFromLayers();
         this.startMarker.removeFromLayers();
         this.endMarker.removeFromLayers();
         this.isTemporaryLineAdded = false;
-        this.makingALine = false;
-        this.startSEPoint = null;
-        this.endSEPoint = null;
-        this.startSEPointOneDimensionalParent = null;
       }
     }
   }
 
   mouseLeave(event: MouseEvent): void {
     super.mouseLeave(event);
-    this.isDragging = false;
+
     if (this.isTemporaryLineAdded) {
       this.tempLine.removeFromLayers();
       this.startMarker.removeFromLayers();
@@ -251,11 +266,17 @@ export default class LineHandler extends Highlighter {
       this.isTemporaryLineAdded = false;
     }
     // Clear old points and values to get ready for creating the next segment.
+    if (this.startSEPoint) {
+      this.startSEPoint.glowing = false;
+      this.startSEPoint.selected = false;
+    }
     this.startSEPoint = null;
     this.endSEPoint = null;
     this.startSEPointOneDimensionalParent = null;
     this.normalVector.set(0, 0, 0);
     this.makingALine = false;
+    // call an unglow all command
+    Highlighter.store.commit.unglowAllSENodules();
   }
 
   // Create a new line from the mouse event information

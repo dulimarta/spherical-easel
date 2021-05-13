@@ -211,7 +211,6 @@ export default class CircleHandler extends Highlighter {
   }
 
   mouseReleased(event: MouseEvent): void {
-    //this.isDragging = false;
     if (this.isOnSphere) {
       // Make sure the user didn't trigger the mouse leave event and is actually making a circle
       if (this.makingACircle) {
@@ -241,9 +240,6 @@ export default class CircleHandler extends Highlighter {
           // call an unglow all command
           Highlighter.store.commit.unglowAllSENodules();
         }
-        // else {
-        //   this.makePoint();
-        // }
       } else {
         // Remove the temporary objects from the scene and mark the temporary object
         //  not added to the scene
