@@ -11,6 +11,7 @@ import { DeleteNoduleCommand } from "@/commands/DeleteNoduleCommand";
 import { SetNoduleDisplayCommand } from "@/commands/SetNoduleDisplayCommand";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import { SECircle } from "@/models/SECircle";
+import { SEPoint } from "@/models/SEPoint";
 
 export default class DeleteHandler extends Highlighter {
   /**
@@ -37,8 +38,8 @@ export default class DeleteHandler extends Highlighter {
       // Deleting an object deletes all objects that depend on that object including the label
       if (this.hitSEPoints.length > 0) {
         if (
-          !(this.hitSEPoints[1] instanceof SEIntersectionPoint) ||
-          (this.hitSEPoints[1] as SEIntersectionPoint).isUserCreated
+          !(this.hitSEPoints[0] instanceof SEIntersectionPoint) ||
+          (this.hitSEPoints[0] as SEIntersectionPoint).isUserCreated
         ) {
           this.victim = this.hitSEPoints[0];
         }
@@ -69,39 +70,25 @@ export default class DeleteHandler extends Highlighter {
   mouseMoved(event: MouseEvent): void {
     // Highlight all nearby objects and update location vectors
     super.mouseMoved(event);
-    // only one object at a time can be deleted, so unglow others if there are multiple objects glowing
-    // but prioritize points, if there is a point nearby, assume the user wants it to be the selection to delete
-    if (this.hitSEPoints.length === 0) {
-      if (this.hitSENodules.length > 1) {
-        for (let i = 1; i < this.hitSENodules.length; i++) {
-          this.hitSENodules[i].glowing = false;
+    // only one object at a time can be deleted so only glow the potential victim
+    // prioritize points, if there is a point nearby, assume the user wants it to be the selection to delete
+    if (this.hitSEPoints.length > 0) {
+      // never highlight non user created intersection points
+      this.hitSEPoints.filter((p: SEPoint) => {
+        if (p instanceof SEIntersectionPoint && !p.isUserCreated) {
+          return false;
+        } else {
+          return true;
         }
-      }
-      // there is another case here if the nearby point is an intersection point that is not user created, then the first other object should be glowing
-    } else {
-      if (this.hitSEPoints.length > 1) {
-        for (let i = 1; i < this.hitSEPoints.length; i++) {
-          this.hitSEPoints[i].glowing = false;
-        }
-      }
-      // do not allow the user to delete an intersection point that has not been user created
-      if (this.hitSEPoints[0] instanceof SEIntersectionPoint) {
-        if (!(this.hitSEPoints[0] as SEIntersectionPoint).isUserCreated) {
-          this.hitSEPoints[0].glowing = false;
-        }
-      }
-      this.hitSECircles.forEach((obj: SENodule) => {
-        obj.glowing = false;
-      });
-      this.hitSESegments.forEach((obj: SENodule) => {
-        obj.glowing = false;
-      });
-      this.hitSELines.forEach((obj: SENodule) => {
-        obj.glowing = false;
-      });
-      this.hitSELabels.forEach((obj: SENodule) => {
-        obj.glowing = false;
-      });
+      })[0].glowing = true;
+    } else if (this.hitSESegments.length > 0) {
+      this.hitSESegments[0].glowing = true;
+    } else if (this.hitSELines.length > 0) {
+      this.hitSELines[0].glowing = true;
+    } else if (this.hitSECircles.length > 0) {
+      this.hitSECircles[0].glowing = true;
+    } else if (this.hitSELabels.length > 0) {
+      this.hitSELabels[0].glowing = true;
     }
   }
 

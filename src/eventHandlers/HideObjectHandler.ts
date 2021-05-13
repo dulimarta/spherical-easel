@@ -2,6 +2,8 @@ import Two from "two.js";
 import Highlighter from "./Highlighter";
 import { SENodule } from "@/models/SENodule";
 import { SetNoduleDisplayCommand } from "@/commands/SetNoduleDisplayCommand";
+import { SEPoint } from "@/models/SEPoint";
+import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 
 export default class HideObjectHandler extends Highlighter {
   /**
@@ -18,7 +20,12 @@ export default class HideObjectHandler extends Highlighter {
     if (this.isOnSphere) {
       // In the case of multiple selections prioritize points > lines > segments > circles
       if (this.hitSEPoints.length > 0) {
-        this.victim = this.hitSEPoints[0];
+        if (
+          !(this.hitSEPoints[0] instanceof SEIntersectionPoint) ||
+          (this.hitSEPoints[0] as SEIntersectionPoint).isUserCreated
+        ) {
+          this.victim = this.hitSEPoints[0];
+        }
       } else if (this.hitSELines.length > 0) {
         this.victim = this.hitSELines[0];
       } else if (this.hitSESegments.length > 0) {
@@ -38,8 +45,26 @@ export default class HideObjectHandler extends Highlighter {
   }
 
   mouseMoved(event: MouseEvent): void {
-    // Highlight all nearby objects and update location vectors
+    // Highlight only one object, the one that will be hidden if the user mouse presses
     super.mouseMoved(event);
+    if (this.hitSEPoints.length > 0) {
+      // never highlight non user created intersection points
+      this.hitSEPoints.filter((p: SEPoint) => {
+        if (p instanceof SEIntersectionPoint && !p.isUserCreated) {
+          return false;
+        } else {
+          return true;
+        }
+      })[0].glowing = true;
+    } else if (this.hitSESegments.length > 0) {
+      this.hitSESegments[0].glowing = true;
+    } else if (this.hitSELines.length > 0) {
+      this.hitSELines[0].glowing = true;
+    } else if (this.hitSECircles.length > 0) {
+      this.hitSECircles[0].glowing = true;
+    } else if (this.hitSELabels.length > 0) {
+      this.hitSELabels[0].glowing = true;
+    }
   }
 
   // eslint-disable-next-line

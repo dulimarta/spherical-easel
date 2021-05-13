@@ -105,28 +105,27 @@ export default class IntersectionPointHandler extends Highlighter {
   }
 
   mouseMoved(event: MouseEvent): void {
-    // Highlight all nearby objects and update location vectors
+    // Update location vectors
     super.mouseMoved(event);
-    // don't highlight any non-user created points
-    this.hitSENodules
-      .filter((n: SENodule) => n instanceof SEPoint)
-      .map(n => n as SEPoint)
-      .forEach((p: SEPoint) => {
-        if (
-          !(p instanceof SEIntersectionPoint) ||
-          (p instanceof SEIntersectionPoint &&
-            (p as SEIntersectionPoint).isUserCreated)
-        ) {
-          p.glowing = false;
+
+    // Only non-user created points can be created so only highlight those.
+    // but then the user can select two one dimensional parents to intersect
+    if (this.hitSEPoints.length > 0 && this.oneDimensional1 === null) {
+      // never highlight user created intersection points
+      this.hitSEPoints.filter((p: SEPoint) => {
+        if (p instanceof SEIntersectionPoint && !p.isUserCreated) {
+          return true;
+        } else {
+          return false;
         }
-      });
-    // don't highlight any labels
-    this.hitSENodules
-      .filter((n: SENodule) => n instanceof SELabel)
-      .map(n => n as SELabel)
-      .forEach((p: SELabel) => {
-        p.glowing = false;
-      });
+      })[0].glowing = true;
+    } else if (this.hitSESegments.length > 0) {
+      this.hitSESegments[0].glowing = true;
+    } else if (this.hitSELines.length > 0) {
+      this.hitSELines[0].glowing = true;
+    } else if (this.hitSECircles.length > 0) {
+      this.hitSECircles[0].glowing = true;
+    }
   }
 
   // eslint-disable-next-line
@@ -276,18 +275,33 @@ export default class IntersectionPointHandler extends Highlighter {
       this.intersectionPointParentNames = `(${oneDimensional2.name},${oneDimensional1.name}`;
     }
 
-    // Get all the SEIntersectionPoints that start with this prefix and convert them to user created points, but only if the point exists on the screen as an actual intersection point.
+    // Get all the SEIntersectionPoints that start with this prefix and convert them to user created points,
+    // but only if the point exists on the screen as an actual intersection point.
     const intersectionConversionCommandGroup = new CommandGroup();
     this.store.getters
       .findIntersectionPointsByParent(this.intersectionPointParentNames)
       .forEach((element: SEIntersectionPoint, index: number) => {
-        if (
-          !element.isUserCreated &&
-          this.updatedIntersectionInfo[index].exists
-        ) {
-          intersectionConversionCommandGroup.addCommand(
-            new ConvertInterPtToUserCreatedCommand(element)
-          );
+        if (!element.isUserCreated) {
+          if (this.updatedIntersectionInfo[index].exists) {
+            intersectionConversionCommandGroup.addCommand(
+              new ConvertInterPtToUserCreatedCommand(element)
+            );
+          } else if (index === 0) {
+            // only display the error once (for index 0)
+            // warn the user that the selected objects don't intersect
+            EventBus.fire("show-alert", {
+              key: `handlers.intersectionOneDimensionalNotIntersect`,
+              keyOptions: {},
+              type: "error"
+            });
+          }
+        } else {
+          // warn the user that the selected objects already exists
+          EventBus.fire("show-alert", {
+            key: `handlers.intersectionOneDimensionalAlreadyExists`,
+            keyOptions: {},
+            type: "warning"
+          });
         }
       });
     intersectionConversionCommandGroup.execute();

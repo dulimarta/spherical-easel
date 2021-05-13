@@ -216,7 +216,9 @@
     "selectAnotherLine": "Select 1 more line.",
     "newCoordinatePointMeasurementAdded": "New coordinate measurements added",
     "intersectionOneDimensionalAdded": "One dimensional object {name} added. Select another.",
-    "intersectionOneDimensionalDuplicate": "Duplicate object. Select another."
+    "intersectionOneDimensionalDuplicate": "Duplicate object. Select another.",
+    "intersectionOneDimensionalNotIntersect": "Selected objects do not intersect.",
+    "intersectionOneDimensionalAlreadyExists": "Intersection point already exists."
   },
 
   "objectTree": {
