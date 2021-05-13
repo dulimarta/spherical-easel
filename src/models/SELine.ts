@@ -352,19 +352,22 @@ export class SELine extends SENodule
 
   // I wish the SENodule methods would work but I couldn't figure out how
   // See the attempts in SENodule
-  public isFreePoint() {
+  public isFreePoint(): boolean {
     return false;
   }
-  public isOneDimensional() {
+  public isOneDimensional(): boolean {
     return true;
   }
-  public isPoint() {
+  public isPoint(): boolean {
     return false;
   }
-  public isPointOnOneDimensional() {
+  public isPointOnOneDimensional(): boolean {
     return false;
   }
   public isLabel(): boolean {
+    return false;
+  }
+  public isSegmentOfLengthPi(): boolean {
     return false;
   }
 }

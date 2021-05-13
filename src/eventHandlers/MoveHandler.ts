@@ -122,10 +122,10 @@ export default class MoveHandler extends Highlighter {
         this.moveTarget.update(this.beforeMoveState);
         return;
       }
+
       const labels = this.hitSELabels.filter(
         n => n.isFreeToMove() && n.showing
       );
-
       if (labels.length > 0) {
         this.moveTarget = labels[0];
         // First mark all children of the target out of date so that the update method does a topological sort
@@ -134,21 +134,9 @@ export default class MoveHandler extends Highlighter {
         this.moveTarget.update(this.beforeMoveState);
         return;
       }
-      //If the user tries to move a nonFree point, nothing should happen
+      //If the user tries to move a nonFree point or object, nothing should happen -- this communicates
+      //to the user they are trying to move something that can't be moved
       if (this.hitSEPoints.length == 0) {
-        const freeLines = this.hitSELines.filter(
-          n => n.isFreeToMove() && n.showing
-        );
-        if (freeLines.length > 0) {
-          this.moveTarget = freeLines[0];
-          // First mark all children of the target's point parents out of date so that the update method does a topological sort
-          (this.moveTarget as SELine).startSEPoint.markKidsOutOfDate();
-          (this.moveTarget as SELine).endSEPoint.markKidsOutOfDate();
-          // Store the state of the freePoints, segments and lines before the move
-          (this.moveTarget as SELine).startSEPoint.update(this.beforeMoveState);
-          (this.moveTarget as SELine).endSEPoint.update(this.beforeMoveState);
-          return;
-        }
         const freeSegments = this.hitSESegments.filter(
           n => n.isFreeToMove() && n.showing
         );
@@ -164,6 +152,20 @@ export default class MoveHandler extends Highlighter {
           (this.moveTarget as SESegment).endSEPoint.update(
             this.beforeMoveState
           );
+          return;
+        }
+
+        const freeLines = this.hitSELines.filter(
+          n => n.isFreeToMove() && n.showing
+        );
+        if (freeLines.length > 0) {
+          this.moveTarget = freeLines[0];
+          // First mark all children of the target's point parents out of date so that the update method does a topological sort
+          (this.moveTarget as SELine).startSEPoint.markKidsOutOfDate();
+          (this.moveTarget as SELine).endSEPoint.markKidsOutOfDate();
+          // Store the state of the freePoints, segments and lines before the move
+          (this.moveTarget as SELine).startSEPoint.update(this.beforeMoveState);
+          (this.moveTarget as SELine).endSEPoint.update(this.beforeMoveState);
           return;
         }
 
@@ -189,6 +191,11 @@ export default class MoveHandler extends Highlighter {
       // In this case the user mouse pressed in a location with *no* nodules (nothing was highlighted when she mouse pressed)
       this.rotateSphere = true;
       this.beforeMoveVector1.copy(this.currentSphereVector);
+      EventBus.fire("show-alert", {
+        key: `handlers.moveHandlerNothingSelected`,
+        keyOptions: {},
+        type: "warning"
+      });
     }
   }
 
@@ -198,7 +205,35 @@ export default class MoveHandler extends Highlighter {
       return;
     }
     event.preventDefault();
-
+    // highlight the objects that can be moved
+    // and only the highlight the object that will be moved when the user clicks and drags
+    if (!this.isDragging) {
+      if (
+        this.hitSEPoints.filter(n => n.isFreeToMove() && n.showing).length > 0
+      ) {
+        this.hitSEPoints[0].glowing = true;
+      } else if (
+        this.hitSELabels.filter(n => n.isFreeToMove() && n.showing).length > 0
+      ) {
+        this.hitSELabels[0].glowing = true;
+      } else if (this.hitSEPoints.length == 0) {
+        if (
+          this.hitSESegments.filter(n => n.isFreeToMove() && n.showing).length >
+          0
+        ) {
+          this.hitSESegments[0].glowing = true;
+        } else if (
+          this.hitSELines.filter(n => n.isFreeToMove() && n.showing).length > 0
+        ) {
+          this.hitSELines[0].glowing = true;
+        } else if (
+          this.hitSECircles.filter(n => n.isFreeToMove() && n.showing).length >
+          0
+        ) {
+          this.hitSECircles[0].glowing = true;
+        }
+      }
+    }
     if (this.isDragging && this.movingSomething) {
       if (this.moveTarget instanceof SEPoint) {
         // Move the selected SEPoint

@@ -129,6 +129,7 @@ export default {
     hitPixelDistance: 8, //When a pixel distance between a mouse event and the pixel coords of a line is less than this number, it is hit
     hitIdealDistance: 0.02, // The user has to be within this distance on the ideal unit sphere to select the line.
     //dynamicBackStyle is a flag that means the fill color,stroke, and opacity of the segments drawn on the back are automatically calculated based on the value of SETTINGS.contrast and their front counterparts
+    closeEnoughToPi: 0.005, //If the arcLength of a segment is within this distance of pi, consider it length pi, so that it is not defined by its endpoints and can be moved
     dynamicBackStyle: true,
     drawn: {
       // No fill for line segments

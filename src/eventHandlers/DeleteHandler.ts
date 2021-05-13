@@ -2,7 +2,7 @@ import Two from "two.js";
 import Highlighter from "./Highlighter";
 import { SENodule } from "@/models/SENodule";
 import {
-  isPerpendicularLineThruPointState,
+  // isPerpendicularLineThruPointState,
   UpdateMode,
   UpdateStateType
 } from "@/types";

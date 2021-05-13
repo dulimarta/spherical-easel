@@ -120,7 +120,7 @@ export class SELabel extends SENodule implements Visitable {
   }
 
   public update(state: UpdateStateType): void {
-    console.log("update label");
+    //console.log("update label");
     // If any one parent is not up to date, don't do anything
     if (!this.canUpdateNow()) {
       return;
@@ -232,5 +232,8 @@ export class SELabel extends SENodule implements Visitable {
   }
   public isLabel(): boolean {
     return true;
+  }
+  public isSegmentOfLengthPi(): boolean {
+    return false;
   }
 }

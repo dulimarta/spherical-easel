@@ -191,4 +191,7 @@ export class SEPoint extends SENodule implements Visitable, Labelable {
   public isLabel(): boolean {
     return false;
   }
+  public isSegmentOfLengthPi(): boolean {
+    return false;
+  }
 }

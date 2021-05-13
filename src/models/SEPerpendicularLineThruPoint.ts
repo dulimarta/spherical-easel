@@ -104,16 +104,16 @@ export class SEPerpendicularLineThruPoint extends SELine {
   }
   // I wish the SENodule methods would work but I couldn't figure out how
   // See the attempts in SENodule
-  public isFreePoint() {
-    return false;
-  }
-  public isOneDimensional() {
-    return true;
-  }
-  public isPoint() {
-    return false;
-  }
-  public isLabel(): boolean {
-    return false;
-  }
+  // public isFreePoint() {
+  //   return false;
+  // }
+  // public isOneDimensional() {
+  //   return true;
+  // }
+  // public isPoint() {
+  //   return false;
+  // }
+  // public isLabel(): boolean {
+  //   return false;
+  // }
 }

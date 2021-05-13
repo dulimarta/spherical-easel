@@ -24,6 +24,9 @@ export abstract class SEExpression extends SENodule {
   public isOneDimensional(): this is SEOneDimensional {
     return false;
   }
+  public isSegmentOfLengthPi(): boolean {
+    return false;
+  }
 
   /* TODO: Evaluate or get the value of the expressions */
   abstract get value(): number;

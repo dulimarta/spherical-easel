@@ -207,6 +207,7 @@ export abstract class SENodule {
     return this._outOfDate;
   }
 
+  //Hans -  why doesn't this testing for class work?
   //Should return true only if this is an instance of SEPointOnOneDimensional
   public abstract isPointOnOneDimensional(): boolean;
   // This doesn't work
@@ -216,7 +217,6 @@ export abstract class SENodule {
 
   // Only returns true if this is an SEPoint and this has no parents
   public abstract isFreePoint(): boolean;
-
   // This doesn't work
   // public isFreePoint(): this is SEPoint {
   //   return this._parents.length == 0;
@@ -231,22 +231,33 @@ export abstract class SENodule {
 
   // Only returns true if this is an SELabel
   public abstract isLabel(): boolean;
+  // This doesn't work
+  // public isLabel(): this is SELabel {
+  //   return true;
+  // }
+
+  // Only returns true if this is an SEOneDimensional
+  public abstract isOneDimensional(): boolean;
+  // This doesn't work
+  // public isOneDimensional(): this is SEOneDimensional {
+  //   return true;
+  // }
+
+  // Only returns true if this is an SESegment of length pi
+  public abstract isSegmentOfLengthPi(): boolean;
 
   public isFreeToMove(): boolean {
     if (this.isFreePoint() || this.isPointOnOneDimensional() || this.isLabel())
       return true;
     if (this.isPoint()) {
-      // don't let this fall through because if a point has an empty parents array the .every method returns true
+      // don't let this fall through because if a point has an empty parents array the .every method returns true even for non-free points
       return false;
+    }
+    if (this.isSegmentOfLengthPi()) {
+      return true;
     }
     return this._parents.every(n => n.isFreePoint());
   }
-
-  public abstract isOneDimensional(): boolean;
-  // This doesn't work return true for SEPoint
-  // public isOneDimensional(): this is SEOneDimensional {
-  //   return true;
-  // }
 
   //Getters and Setters
   set exists(b: boolean) {

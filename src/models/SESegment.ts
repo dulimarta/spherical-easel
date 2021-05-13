@@ -247,8 +247,15 @@ export class SESegment extends SENodule
       );
       // Check to see if the temporary normal is zero (i.e the start and end vectors are parallel -- ether
       // nearly antipodal or in the same direction)
-      if (this.tmpVector.isZero()) {
-        // Make the tmpVector (soon to be the to vector) unit
+      if (
+        this.tmpVector1
+          .addVectors(
+            this._startSEPoint.locationVector,
+            this._endSEPoint.locationVector
+          )
+          .length() < SETTINGS.nearlyAntipodalIdeal
+      ) {
+        // Make the tmpVector (soon to be the "to" vector) unit
         this.tmpVector.normalize();
         if (this._normalVector.length() == 0) {
           // The normal vector is still at its initial value so can't be used to compute the next normal, so set the
@@ -476,25 +483,31 @@ export class SESegment extends SENodule
       if (currentSphereVector.z < 0) {
         rotationAngle *= -1;
       }
-
+      //console.log("rotate angle", rotationAngle);
       // Rotate the freeEnd by the rotation angle around the axisOfRotation
       const axisOfRotation = pivot.locationVector;
       // Test for antipodal endpoints
       if (
         this.tmpVector1
           .addVectors(freeEnd.locationVector, pivot.locationVector)
-          .isZero()
+          .length() < SETTINGS.nearlyAntipodalIdeal
       ) {
+        //console.log("parallel free and pivot");
         // Set the direction of the rotation correctly for moving the normalvector
         rotationAngle *= currentSphereVector.z < 0 ? -1 : 1;
         // If the end points are antipodal move the normal vector
         this.tmpVector1.copy(this.normalVector);
         this.tmpVector1.applyAxisAngle(axisOfRotation, rotationAngle);
+        // console.log(
+        //   "normal rotated",
+        //   this.tmpVector1.angleTo(this.normalVector)
+        // );
         this.normalVector = this.tmpVector1;
         //Mark kids out of date so that the update method does a topological sort
         this.markKidsOutOfDate();
         this.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
       } else {
+        //console.log("not parallel free and pivot");
         // For non-antipodal points move the freeEnd
         this.tmpVector1.copy(freeEnd.locationVector);
         this.tmpVector1.applyAxisAngle(axisOfRotation, rotationAngle);
@@ -510,19 +523,24 @@ export class SESegment extends SENodule
 
   // I wish the SENodule methods would work but I couldn't figure out how
   // See the attempts in SENodule
-  public isFreePoint() {
+  public isFreePoint(): boolean {
     return false;
   }
-  public isOneDimensional() {
+  public isOneDimensional(): boolean {
     return true;
   }
-  public isPoint() {
+  public isPoint(): boolean {
     return false;
   }
-  public isPointOnOneDimensional() {
+  public isPointOnOneDimensional(): boolean {
     return false;
   }
   public isLabel(): boolean {
     return false;
+  }
+  public isSegmentOfLengthPi(): boolean {
+    return (
+      Math.abs(this._arcLength - Math.PI) < SETTINGS.segment.closeEnoughToPi
+    );
   }
 }

@@ -298,4 +298,7 @@ export class SECircle extends SENodule
   public isLabel(): boolean {
     return false;
   }
+  public isSegmentOfLengthPi() {
+    return false;
+  }
 }

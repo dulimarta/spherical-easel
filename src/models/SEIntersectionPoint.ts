@@ -126,16 +126,17 @@ export class SEIntersectionPoint extends SEPoint {
   }
   // I wish the SENodule methods would work but I couldn't figure out how
   // See the attempts in SENodule
-  public isFreePoint() {
+  public isFreePoint(): boolean {
+    //override the method from SEPoint
     return false;
   }
-  public isOneDimensional() {
-    return false;
-  }
-  public isPoint() {
-    return false;
-  }
-  public isLabel(): boolean {
-    return false;
-  }
+  // public isOneDimensional():boolean {
+  //   return false;
+  // }
+  // public isPoint():boolean {
+  //   return true;
+  // }
+  // public isLabel(): boolean {
+  //   return false;
+  // }
 }

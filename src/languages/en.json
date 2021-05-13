@@ -218,7 +218,9 @@
     "intersectionOneDimensionalAdded": "One dimensional object {name} added. Select another.",
     "intersectionOneDimensionalDuplicate": "Duplicate object. Select another.",
     "intersectionOneDimensionalNotIntersect": "Selected objects do not intersect.",
-    "intersectionOneDimensionalAlreadyExists": "Intersection point already exists."
+    "intersectionOneDimensionalAlreadyExists": "Intersection point already exists.",
+    "moveHandlerNothingSelected": "No object selected. Rotating Sphere."
+
   },
 
   "objectTree": {
