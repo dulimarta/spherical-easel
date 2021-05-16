@@ -60,6 +60,8 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
 
   /* temporary vector to help with computation */
   private tmpVector = new Vector3();
+  private tmpVector1 = new Vector3();
+  private tmpVector2 = new Vector3();
 
   /* A variable to ensure that only one object is selected with each mouse press event*/
   private selectOneObjectAtATime = true;
@@ -84,28 +86,14 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
     if (this.isOnSphere) {
       // If we don't have selectOneObjectAtATime clicking on a point on a line/segment/circle selects both the point and the line/segment/circle
       this.selectOneObjectAtATime = true;
-      // Fill the oneDimensional object first if there is a nearby one-dimensional object
-      if (this.oneDimensional === null) {
-        if (this.hitSESegments.length > 0) {
-          this.oneDimensional = this.hitSESegments[0];
-          this.oneDimensional.selected = true;
-          this.selectOneObjectAtATime = false;
-        } else if (this.hitSELines.length > 0) {
-          this.oneDimensional = this.hitSELines[0];
-          this.oneDimensional.selected = true;
-          this.selectOneObjectAtATime = false;
-        } else if (this.hitSECircles.length > 0) {
-          this.oneDimensional = this.hitSECircles[0];
-          this.oneDimensional.selected = true;
-          this.selectOneObjectAtATime = false;
-        }
-      }
-      // Second attempt to fill the point
+      // Attempt to fill the point
       if (
         this.sePoint === null &&
         this.sePointOneDimensionalParent === null &&
         this.sePointVector.isZero() &&
-        this.selectOneObjectAtATime
+        (this.hitSEPoints.length !== 0 ||
+          this.oneDimensional !== null ||
+          this.hitSENodules.length === 0)
       ) {
         // Fill the point object first by the nearby points, then by nearby intersection points,
         // then point on one-dimensional object, then by creating a new point
@@ -113,6 +101,15 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
           this.sePoint = this.hitSEPoints[0];
           this.sePoint.selected = true;
           this.sePointVector.copy(this.sePoint.locationVector);
+          // if the point is an intersection point and is not user created add a temporary marker
+          if (
+            this.sePoint instanceof SEIntersectionPoint &&
+            !this.sePoint.isUserCreated
+          ) {
+            this.tempPointMarker.positionVector = this.sePointVector;
+            this.tempPointMarker.addToLayers(this.layers);
+            this.temporaryPointAdded = true;
+          }
         } else if (this.hitSESegments.length > 0) {
           // The start of the line will be a point on a segment
           //  Eventually, we will create a new SEPointOneDimensional and Point
@@ -162,6 +159,21 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
           this.temporaryPointAdded = true;
           this.sePoint = null;
         }
+        this.selectOneObjectAtATime = false;
+      }
+
+      // Fill the oneDimensional object if there is a nearby one-dimensional object
+      if (this.oneDimensional === null && this.selectOneObjectAtATime) {
+        if (this.hitSESegments.length > 0) {
+          this.oneDimensional = this.hitSESegments[0];
+          this.oneDimensional.selected = true;
+        } else if (this.hitSELines.length > 0) {
+          this.oneDimensional = this.hitSELines[0];
+          this.oneDimensional.selected = true;
+        } else if (this.hitSECircles.length > 0) {
+          this.oneDimensional = this.hitSECircles[0];
+          this.oneDimensional.selected = true;
+        }
       }
 
       // As soon as both oneDimensional and point objects are not null do the perpendicular
@@ -201,8 +213,42 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
   }
 
   mouseMoved(event: MouseEvent): void {
-    // Highlight all nearby objects and update location vectors
+    // Find all the nearby (hitSE... objects) and update location vectors
     super.mouseMoved(event);
+    // Only one object can be processed at a time, so set the first point nearby to glowing
+    // The user can create points (with the antipode) on circles, segments, and lines, so
+    // highlight those as well (but only one) if they are nearby also
+    if (
+      this.sePoint === null &&
+      this.sePointOneDimensionalParent === null &&
+      this.sePointVector.isZero()
+    ) {
+      if (this.hitSEPoints.length > 0) {
+        this.hitSEPoints[0].glowing = true;
+      } else if (this.hitSESegments.length > 0) {
+        this.hitSESegments[0].glowing = true;
+      } else if (this.hitSELines.length > 0) {
+        this.hitSELines[0].glowing = true;
+      } else if (this.hitSECircles.length > 0) {
+        this.hitSECircles[0].glowing = true;
+      }
+    } else if (
+      !(
+        this.sePoint === null &&
+        this.sePointOneDimensionalParent === null &&
+        this.sePointVector.isZero()
+      ) &&
+      this.oneDimensional === null
+    ) {
+      if (this.hitSESegments.length > 0) {
+        this.hitSESegments[0].glowing = true;
+      } else if (this.hitSELines.length > 0) {
+        this.hitSELines[0].glowing = true;
+      } else if (this.hitSECircles.length > 0) {
+        this.hitSECircles[0].glowing = true;
+      }
+    }
+
     if (this.isOnSphere) {
       if (
         this.sePoint === null &&
@@ -356,12 +402,34 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
       this.tmpVector.crossVectors(sePointVector, oneDimensional.normalVector);
       // Check to see if the tmpVector is zero (i.e the normal vector to the line and given point are parallel -- ether
       // nearly antipodal or in the same direction)
-      if (this.tmpVector.isZero()) {
-        // In this case any line containing the sePoint will be perpendicular to the line/segment, so choose the one thru the start point of the line
-        this.tmpVector.crossVectors(
-          sePointVector,
-          oneDimensional.startSEPoint.locationVector
-        );
+      if (this.tmpVector.isZero(SETTINGS.nearlyAntipodalIdeal)) {
+        //console.log("parallel normal and sePointVector in handler");
+        // In this case any line containing the sePoint will be perpendicular to the line/segment,
+        // grab the temporary normal vector if it has been added otherwise make the perpendicular pass through the
+        // mid point of the start and end vector or if that fails the start vector
+        if (this.temporaryLineAdded) {
+          this.tmpVector.copy(this.temporaryNormal);
+        } else if (
+          !this.tmpVector1
+            .crossVectors(
+              oneDimensional.startSEPoint.locationVector,
+              oneDimensional.endSEPoint.locationVector
+            )
+            .isZero(SETTINGS.nearlyAntipodalIdeal)
+        ) {
+          this.tmpVector.crossVectors(
+            sePointVector,
+            this.tmpVector1
+              .copy(oneDimensional.startSEPoint.locationVector)
+              .add(oneDimensional.endSEPoint.locationVector)
+              .normalize()
+          );
+        } else {
+          this.tmpVector.crossVectors(
+            sePointVector,
+            oneDimensional.startSEPoint.locationVector
+          );
+        }
       }
     }
 
@@ -373,12 +441,19 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
       );
       // Check to see if the tmpVector is zero (i.e the center vector and given point are parallel -- ether
       // nearly antipodal or in the same direction)
-      if (this.tmpVector.isZero()) {
-        // In this case any line containing the sePoint will be perpendicular to the circle, so choose the one thru the circle point of the circle
-        this.tmpVector.crossVectors(
-          sePointVector,
-          oneDimensional.circleSEPoint.locationVector
-        );
+      if (this.tmpVector.isZero(SETTINGS.nearlyAntipodalIdeal)) {
+        //console.log("parallel normal and sePointVector in handler");
+        // In this case any line containing the sePoint will be perpendicular to the line/segment,
+        // grab the temporary normal vector if it has been added otherwise make the perpendicular pass through the
+        // circle point
+        if (this.temporaryLineAdded) {
+          this.tmpVector.copy(this.temporaryNormal);
+        } else {
+          this.tmpVector.crossVectors(
+            sePointVector,
+            oneDimensional.circleSEPoint.locationVector
+          );
+        }
       }
     }
     // this.tmpVector is the normal vector to the plane containing the line perpendicular to the one Dimensional through the point
@@ -476,21 +551,31 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
       const object2 = this.store.getters.selectedSENodules()[1];
 
       if (object1.isOneDimensional() && object2.isPoint()) {
-        this.createPerpendicular(
-          object1 as SEOneDimensional,
-          null,
-          (object2 as SEPoint).locationVector,
-          object2 as SEPoint
-        );
+        if (
+          !(object2 instanceof SEIntersectionPoint) ||
+          (object2 as SEIntersectionPoint).isUserCreated
+        ) {
+          this.createPerpendicular(
+            object1 as SEOneDimensional,
+            null,
+            (object2 as SEPoint).locationVector,
+            object2 as SEPoint
+          );
+        }
       }
 
       if (object2.isOneDimensional() && object1.isPoint()) {
-        this.createPerpendicular(
-          object2 as SEOneDimensional,
-          null,
-          (object1 as SEPoint).locationVector,
-          object1 as SEPoint
-        );
+        if (
+          !(object1 instanceof SEIntersectionPoint) ||
+          (object1 as SEIntersectionPoint).isUserCreated
+        ) {
+          this.createPerpendicular(
+            object2 as SEOneDimensional,
+            null,
+            (object1 as SEPoint).locationVector,
+            object1 as SEPoint
+          );
+        }
       }
     }
     // Unselect the selected objects and clear the selectedObject array

@@ -236,4 +236,7 @@ export class SELabel extends SENodule implements Visitable {
   public isSegmentOfLengthPi(): boolean {
     return false;
   }
+  public isLabelable(): boolean {
+    return false;
+  }
 }

@@ -6,9 +6,17 @@ import { SEPointOnOneDimensional } from "./SEPointOnOneDimensional";
 import { Styles } from "@/types/Styles";
 import { SEOneDimensional, OneDimensional } from "@/types";
 import { UpdateMode, UpdateStateType } from "@/types";
+//import AppStore from "@/store";
+
+//import { magnificationLevel } from "@/components/SENoduleItem.vue";
 
 let NODE_COUNT = 0;
 export abstract class SENodule {
+  /**
+   * The Global Vuex Store
+   */
+  //protected static store = AppStore;
+
   /**
    * An array to store the parents of the node (i.e. the objects that this node depends on)
    */
@@ -242,6 +250,8 @@ export abstract class SENodule {
   // public isOneDimensional(): this is SEOneDimensional {
   //   return true;
   // }
+  // Only returns true if this is an Labelable
+  public abstract isLabelable(): boolean;
 
   // Only returns true if this is an SESegment of length pi
   public abstract isSegmentOfLengthPi(): boolean;

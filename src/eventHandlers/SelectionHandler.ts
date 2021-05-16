@@ -3,11 +3,12 @@ import { SENodule } from "@/models/SENodule";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import EventBus from "@/eventHandlers/EventBus";
 import { SEPoint } from "@/models/SEPoint";
+import Highlighter from "./Highlighter";
 // import { SEPoint } from "@/models/SEPoint";
 // import { SELine } from "@/models/SELine";
 // import { SESegment } from "@/models/SESegment";
 
-export default class SelectionHandler extends MouseHandler {
+export default class SelectionHandler extends Highlighter {
   /**
    * An array of the selected objects.  These objects should stay highlighted/selected until either this
    * tool unselects them or the next tools activate() method clears (and possibly processes) them.
@@ -37,8 +38,9 @@ export default class SelectionHandler extends MouseHandler {
       this.store.getters
         .allSEPoints()
         .filter(
-          (n: any) => !(n instanceof SEIntersectionPoint && !n.isUserCreated)
-        ) // no unUserCreated intersection points allowed
+          (n: any) =>
+            !(n instanceof SEIntersectionPoint && !n.isUserCreated) && n.showing
+        ) // no unUserCreated intersection points allowed and no hidden points allowed
         .forEach((n: any) => {
           this.keyPressSelection.push(n);
           (n as any).ref.glowingDisplay();
@@ -46,31 +48,43 @@ export default class SelectionHandler extends MouseHandler {
     }
     // Get all SECircles
     if (keyEvent.key.match("c")) {
-      this.store.getters.allSECircles().forEach((n: any) => {
-        this.keyPressSelection.push(n);
-        (n as any).ref.glowingDisplay();
-      });
+      this.store.getters
+        .allSECircles()
+        .filter((n: any) => n.showing) //no hidden circles allowed
+        .forEach((n: any) => {
+          this.keyPressSelection.push(n);
+          (n as any).ref.glowingDisplay();
+        });
     }
     // Get all SELines
     if (keyEvent.key.match("l")) {
-      this.store.getters.allSELines().forEach((n: any) => {
-        this.keyPressSelection.push(n);
-        (n as any).ref.glowingDisplay();
-      });
+      this.store.getters
+        .allSELines()
+        .filter((n: any) => n.showing) //no hidden lines allowed
+        .forEach((n: any) => {
+          this.keyPressSelection.push(n);
+          (n as any).ref.glowingDisplay();
+        });
     }
     // Get all SESegments
     if (keyEvent.key.match("s")) {
-      this.store.getters.allSESegments().forEach((n: any) => {
-        this.keyPressSelection.push(n);
-        (n as any).ref.glowingDisplay();
-      });
+      this.store.getters
+        .allSESegments()
+        .filter((n: any) => n.showing) //no hidden segments allowed
+        .forEach((n: any) => {
+          this.keyPressSelection.push(n);
+          (n as any).ref.glowingDisplay();
+        });
     }
     // Get all SELabels
     if (keyEvent.key.match("L")) {
-      this.store.getters.allSELabels().forEach((n: any) => {
-        this.keyPressSelection.push(n);
-        (n as any).ref.glowingDisplay();
-      });
+      this.store.getters
+        .allSELabels()
+        .filter((n: any) => n.showing) //no hidden labels allowed
+        .forEach((n: any) => {
+          this.keyPressSelection.push(n);
+          (n as any).ref.glowingDisplay();
+        });
     }
     // Now process the hitSENodules so the user can select by number
     // If there is nothing or only one nearby ignore this key event
@@ -88,30 +102,47 @@ export default class SelectionHandler extends MouseHandler {
             (n as any).ref.glowingDisplay();
             // Show the name of the selected item
             this.infoText.text = n.name;
-          } else (n as any).ref.normalDisplay();
-          pos === val;
+          } else {
+            (n as any).ref.normalDisplay();
+          }
         });
     }
   };
 
   mousePressed(event: MouseEvent): void {
     if (!this.isOnSphere) return;
+
     // event.preventDefault();
     if (this.keyPressSelection.length != 0) {
+      //console.log("before filter length", this.keyPressSelection.length);
+      // remove any items from the keyPressSelection if they are already selected
+      const newKeyPressSelections = this.keyPressSelection.filter(
+        (n: SENodule) => {
+          // console.log(
+          //   "test id",
+          //   n.id,
+          //   this.currentSelection.findIndex(h => h.id === n.id) < 0
+          // );
+          return this.currentSelection.findIndex(h => h.id === n.id) < 0;
+        }
+      );
+      //console.log("after filter length", newKeyPressSelections.length);
       // Select all the objects in the keypress selection
-      this.keyPressSelection.forEach(n => {
+      newKeyPressSelections.forEach(n => {
         n.selected = true;
       });
+
       // Add the key press selection to the selected list.
-      this.currentSelection.push(...this.keyPressSelection);
+      this.currentSelection.push(...newKeyPressSelections);
       this.keyPressSelection.clear();
     } else {
       if (event.altKey) {
         // Add current hit list to the current selection
         this.hitSENodules.forEach(h => {
           h.selected = !h.selected;
-          if (h.selected) this.currentSelection.push(h);
-          else {
+          if (h.selected) {
+            this.currentSelection.push(h);
+          } else {
             // Remove hit object from current selection
             const idx = this.currentSelection.findIndex(c => c.id === h.id);
             if (idx >= 0) this.currentSelection.splice(idx, 1);
@@ -129,22 +160,36 @@ export default class SelectionHandler extends MouseHandler {
           //console.log("toggle select", h.name, h.selected);
         });
 
-        // Filter only selected items
+        // Add/Filter only selected items
         this.currentSelection = this.hitSENodules.filter(n => n.selected);
       }
     }
     this.store.commit.setSelectedSENodules(this.currentSelection);
-    console.log(
-      "number selected",
-      this.store.getters.selectedSENodules().length
-    );
+    // console.log(
+    //   "number selected",
+    //   this.store.getters.selectedSENodules().length
+    // );
     /** 
     console.log("----selected---- objects------");
     this.currentSelection.forEach(n =>
       console.log("hit object", n.name, n.selected)
     );
     **/
-
+    if (this.store.getters.selectedSENodules().length === 0) {
+      EventBus.fire("show-alert", {
+        key: `handlers.selectionUpdateNothingSelected`,
+        keyOptions: {},
+        type: "error"
+      });
+    } else {
+      EventBus.fire("show-alert", {
+        key: `handlers.selectionUpdate`,
+        keyOptions: {
+          number: `${this.store.getters.selectedSENodules().length}`
+        },
+        type: "success"
+      });
+    }
     /* Enable/disable interval timer to flash selected objects */
 
     if (this.currentSelection.length > 0 && this.highlightTimer === null) {
@@ -179,31 +224,49 @@ export default class SelectionHandler extends MouseHandler {
 
   mouseMoved(event: MouseEvent): void {
     // console.log("mouse move event");
-    // Clear any objects in the keyPressSelection
+    // UnGlow and clear any objects in the keyPressSelection
     if (this.keyPressSelection.length != 0) {
       this.keyPressSelection.forEach(n => (n as any).ref.normalDisplay());
+      this.keyPressSelection.clear();
     }
     super.mouseMoved(event);
-    this.hitSENodules = this.store.getters.findNearbySENodules(
-      this.currentSphereVector,
-      this.currentScreenVector
-    );
+    // this.hitSENodules = this.store.getters.findNearbySENodules(
+    //   this.currentSphereVector,
+    //   this.currentScreenVector
+    // );
     // console.log("----------------------------");
     // this.hitSENodules.forEach(n =>
     //   console.log("hit object", n.name, n.selected)
     // );
     // Create an array of SENodules of all nearby objects by querying the store
-    this.hitSENodules = this.store.getters
-      .findNearbySENodules(this.currentSphereVector, this.currentScreenVector)
-      .filter((n: SENodule) => {
-        if (n instanceof SEIntersectionPoint) {
-          if (!n.isUserCreated) {
-            return n.exists; //You always select automatically created intersection points if it exists
-          } else {
-            return n.showing && n.exists; //You can't select hidden objects or items that don't exist
-          }
+    // this.hitSENodules = this.store.getters
+    //   .findNearbySENodules(this.currentSphereVector, this.currentScreenVector)
+    //   .filter((n: SENodule) => {
+    //     if (n instanceof SEIntersectionPoint) {
+    //       if (!n.isUserCreated) {
+    //         return n.exists; //You always select automatically created intersection points if it exists
+    //       } else {
+    //         return n.showing && n.exists; //You can't select hidden objects or items that don't exist
+    //       }
+    //     } else {
+    //       return n.showing && n.exists; //You can't select hidden objects or items that don't exist
+    //     }
+    //   });
+
+    // Glow the appropriate object, only the top one should glow because the user can only add one at a time with a mouse press
+    this.hitSENodules
+      .filter((p: SENodule) => {
+        if (p instanceof SEIntersectionPoint && !p.isUserCreated) {
+          return false;
         } else {
-          return n.showing && n.exists; //You can't select hidden objects or items that don't exist
+          return true;
+        }
+      })
+      .forEach((n: SENodule, index) => {
+        if (index === 0) {
+          n.glowing = true;
+        } else {
+          n.glowing = false;
         }
       });
   }

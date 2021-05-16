@@ -9,6 +9,9 @@ import { OneDimensional, Labelable } from "@/types";
 import { Styles } from "@/types/Styles";
 import { UpdateMode, UpdateStateType, LineState } from "@/types";
 import { SELabel } from "@/models/SELabel";
+// import  SENoduleItem  from "*.vue";
+// import magnificationLevel from "*.vue";
+import magnificationLevel from "@/components/SENoduleItem.vue";
 
 let LINE_COUNT = 0;
 const styleSet = new Set([
@@ -43,8 +46,8 @@ export class SELine extends SENodule
   private _normalVector = new Vector3();
   /** Temporary vectors to help with calculations */
   protected tmpVector = new Vector3(); //
-  private tmpVector1 = new Vector3();
-  private tmpVector2 = new Vector3();
+  protected tmpVector1 = new Vector3();
+  protected tmpVector2 = new Vector3();
   private desiredZAxis = new Vector3();
   /**
    * Create an SELine
@@ -114,7 +117,7 @@ export class SELine extends SENodule
 
     // Check to see if the tmpVector is zero (i.e the normal and  idealUnit vectors are parallel -- ether
     // nearly antipodal or in the same direction)
-    if (this.tmpVector.isZero()) {
+    if (this.tmpVector.isZero(SETTINGS.nearlyAntipodalIdeal)) {
       return this._endSEPoint.locationVector; // An arbitrary point will do as all points are equally far away
     } else {
       // Make the tmpVector unit
@@ -131,10 +134,15 @@ export class SELine extends SENodule
     // First find the closest point on the segment to the idealUnitSphereVector
     this.tmpVector.copy(this.closestVector(idealUnitSphereVector));
 
+    // The current magnification level
+    //const mag = SENodule.store.state.zoomMagnificationFactor;
+    //const mag = (magnificationLevel as unknown) as number;
+    const mag = 1;
+
     // If the idealUnitSphereVector is within the tolerance of the closest point, do nothing, otherwise return the vector in the plane of the ideanUnitSphereVector and the closest point that is at the tolerance distance away.
     if (
       this.tmpVector.angleTo(idealUnitSphereVector) <
-      SETTINGS.line.maxLabelDistance
+      SETTINGS.line.maxLabelDistance / mag
     ) {
       return idealUnitSphereVector;
     } else {
@@ -146,11 +154,13 @@ export class SELine extends SENodule
       // compute the toVector (so that tmpVector2= toVector, tmpVector= fromVector, tmpVector1 form an orthonormal frame)
       this.tmpVector2.crossVectors(this.tmpVector, this.tmpVector1).normalize;
       // return cos(SETTINGS.segment.maxLabelDistance)*fromVector/tmpVec + sin(SETTINGS.segment.maxLabelDistance)*toVector/tmpVec2
-      this.tmpVector2.multiplyScalar(Math.sin(SETTINGS.line.maxLabelDistance));
+      this.tmpVector2.multiplyScalar(
+        Math.sin(SETTINGS.line.maxLabelDistance / mag)
+      );
       return this.tmpVector2
         .addScaledVector(
           this.tmpVector,
-          Math.cos(SETTINGS.line.maxLabelDistance)
+          Math.cos(SETTINGS.line.maxLabelDistance / mag)
         )
         .normalize();
     }
@@ -169,10 +179,20 @@ export class SELine extends SENodule
     this.tmpVector.crossVectors(sePointVector, this._normalVector);
     // Check to see if the tmpVector is zero (i.e the normal vector and given point are parallel -- ether
     // nearly antipodal or in the same direction)
-    if (this.tmpVector.isZero()) {
+    if (this.tmpVector.isZero(SETTINGS.nearlyAntipodalIdeal)) {
       // In this case any line containing the sePoint will be perpendicular to the line, but
-      //  we want to choose one line whose normal is near the oldNormal
-      this.tmpVector.copy(oldNormal);
+      //  we want to choose one line whose normal is near the oldNormal and perpendicular to sePointVector
+      // So project the oldNormal vector onto the plane perpendicular to sePointVector
+      this.tmpVector
+        .copy(oldNormal)
+        .addScaledVector(sePointVector, -1 * oldNormal.dot(sePointVector))
+        .normalize();
+      // if (oldNormal.angleTo(this.tmpVector) > 0.0009) {
+      //   console.log(
+      //     "change in normal vector in getNormalToLineThru",
+      //     oldNormal.angleTo(this.tmpVector)
+      //   );
+      // }
     }
     return this.tmpVector.normalize();
   }
@@ -193,7 +213,7 @@ export class SELine extends SENodule
       );
       // Check to see if the tempNormal is zero (i.e the start and end vectors are parallel -- ether
       // nearly antipodal or in the same direction)
-      if (this.tmpVector.isZero()) {
+      if (this.tmpVector.isZero(SETTINGS.nearlyAntipodalIdeal)) {
         // The start and end vectors align, compute  the next normal vector from the old normal and the start vector
         this.tmpVector.crossVectors(
           this._startSEPoint.locationVector,
@@ -326,7 +346,7 @@ export class SELine extends SENodule
       if (
         this.tmpVector1
           .addVectors(freeEnd.locationVector, pivot.locationVector)
-          .isZero()
+          .isZero(SETTINGS.nearlyAntipodalIdeal)
       ) {
         // Set the direction of the rotation correctly for moving the normalVector
         rotationAngle *= currentSphereVector.z < 0 ? -1 : 1;
@@ -369,5 +389,8 @@ export class SELine extends SENodule
   }
   public isSegmentOfLengthPi(): boolean {
     return false;
+  }
+  public isLabelable(): boolean {
+    return true;
   }
 }

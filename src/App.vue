@@ -68,9 +68,14 @@
       :color="footerColor"
       padless>
       <v-col class="text-center">
-        <span v-if="activeToolName"
+        <span
+          v-if="activeToolName==='PanZoomInDisplayedName' || activeToolName==='PanZoomOutDisplayedName'"
           class="footer-text"
-          v-html="$t('buttons.CurrentTool')+ ': ' + $t('buttons.' + activeToolName).split('<br>').join(' ').trim()">
+          v-html="$t('buttons.CurrentTool')+ ': ' + $t('buttons.' + activeToolName).split('<br>').join('/').trim()">
+        </span>
+        <span v-else-if="activeToolName!== ''"
+          class="footer-text"
+          v-html="$t('buttons.CurrentTool')+ ': '  + $t('buttons.' + activeToolName).split('<br>').join(' ').trim()">
         </span>
         <span v-else
           class="footer-text">{{ $t(`buttons.NoToolSelected`) }}</span>
@@ -94,8 +99,6 @@ import { Watch } from "vue-property-decorator";
 import EventBus from "@/eventHandlers/EventBus";
 
 /* This allows for the State of the app to be initialized with in vuex store */
-/* TODO: What does this do? */
-/* This view has no (sub)components (but the Easel view does) so this is empty*/
 @Component({ components: { MessageBox } })
 export default class App extends Vue {
   @State((s: AppState) => s.activeToolName)

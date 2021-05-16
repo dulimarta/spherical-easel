@@ -34,7 +34,21 @@
       :timeout="toolUseMessageDelay"
       :value="displayToolUseMessages"
       multi-line>
-      <span>
+      <!---If the displayed name is zoom in or out add a slash before the word pan --->
+      <span
+        v-if="button.displayedName==='PanZoomInDisplayedName' || button.displayedName==='PanZoomOutDisplayedName'">
+        <strong class="warning--text"
+          v-html="$t('buttons.' +button.displayedName).split('<br>').join('/').trim() + ': '"></strong>
+        {{ $t("buttons." + button.toolUseMessage) }}
+      </span>
+      <!---If the displayed name is only one line delete the non-breaking space --->
+      <span
+        v-else-if="button.displayedName==='CreateCoordinateDisplayedName' || button.displayedName==='DeleteDisplayedName' || button.displayedName==='CreatePerpendicularDisplayedName'">
+        <strong class="warning--text"
+          v-html="$t('buttons.' +button.displayedName).split('<br>').join('').slice(0,-6) + ': '"></strong>
+        {{ $t("buttons." + button.toolUseMessage) }}
+      </span>
+      <span v-else>
         <strong class="warning--text"
           v-html="$t('buttons.' +button.displayedName).split('<br>').join(' ').trim() + ': '"></strong>
         {{ $t("buttons." + button.toolUseMessage) }}

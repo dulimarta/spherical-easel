@@ -136,7 +136,7 @@ export default class PointHandler extends Highlighter {
   }
 
   mouseMoved(event: MouseEvent): void {
-    // Highlight all nearby objects and update location vectors
+    // Find all the nearby (hitSE... objects) and update location vectors
     super.mouseMoved(event);
     if (this.isOnSphere) {
       if (!this.isTemporaryPointAdded) {

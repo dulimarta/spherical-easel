@@ -1,9 +1,9 @@
 import { LabelDisplayMode } from "./types/Styles";
 
 export default {
-  nearlyAntipodalIdeal: 0.01, // Two unit vectors, U and V, are nearly antipodal if |U+V| < nearlyAntipodalIdeal
-  nearlyAntipodalPixel: 3, // Two vectors on the default sphere, U and V, are nearly antipodal if |U+V| < nearlyAntipodalPixel
+  nearlyAntipodalIdeal: 0.005, // Two unit vectors, U and V, are nearly antipodal if crossVectors(U,V).isZero(nearlyAntipodalIdeal) is true
   tolerance: 0.0000001, // Any number less that this tolerance is considered zero
+  hideObjectHidesLabel: true, // hiding an object hide the label of that object automatically if this is true
   style: {
     backStyleContrast: 0.5, //The number that controls the automatic setting of the back styling for objects that have dynamicBackStyle set to true.
     maxStrokeWidthPercent: 500, // The maximum percent stroke width different from the scaled for zoom size
@@ -124,7 +124,6 @@ export default {
     showLabelsInitially: false, // Should the labels be show upon creating the segment
     maxLabelDistance: 0.08, // The maximum distance that a label is allowed to get away from the segment
     minimumArcLength: 0.02, // Don't create segments with a length less than this
-    midPointMovementThreshold: (2.0 * Math.PI) / 180, // If the midpoint of a segment being created (not moved), changes by more than this amount, handle that case separately.
     numPoints: 20, // The number of vertices used to render the segment. These are spread over the front and back parts. MAKE THIS EVEN!
     hitPixelDistance: 8, //When a pixel distance between a mouse event and the pixel coords of a line is less than this number, it is hit
     hitIdealDistance: 0.02, // The user has to be within this distance on the ideal unit sphere to select the line.

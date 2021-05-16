@@ -163,15 +163,27 @@ export default class PanZoomHandler implements ToolStrategy {
     if (this._mode === ZoomMode.MINIFY) {
       if (currentMagFactor < SETTINGS.zoom.minMagnification) {
         console.error(
-          `Exceed zoom out limit ${SETTINGS.zoom.minMagnification}`
+          `Exceeded zoom out limit ${SETTINGS.zoom.minMagnification}`
         );
+        EventBus.fire("show-alert", {
+          key: `handlers.pamZoomHandlerZoomOutLimitReached`,
+          keyOptions: {},
+          type: "warning"
+        });
         return;
       }
       newMagFactor = (1 - this.percentChange) * currentMagFactor;
     }
     if (this._mode === ZoomMode.MAGNIFY) {
       if (currentMagFactor > SETTINGS.zoom.maxMagnification) {
-        console.error(`Exceed zoom in limit ${SETTINGS.zoom.maxMagnification}`);
+        console.error(
+          `Exceeded zoom in limit ${SETTINGS.zoom.maxMagnification}`
+        );
+        EventBus.fire("show-alert", {
+          key: `handlers.pamZoomHandlerZoomInLimitReached`,
+          keyOptions: {},
+          type: "warning"
+        });
         return;
       }
       newMagFactor = (1 + this.percentChange) * currentMagFactor;

@@ -188,7 +188,7 @@ export default class LineHandler extends Highlighter {
 
       // Check to see if the temporary normal is zero (i.e the start and end vectors are parallel -- ether
       // nearly antipodal or in the same direction)
-      if (this.tmpVector.isZero()) {
+      if (this.tmpVector.isZero(SETTINGS.nearlyAntipodalIdeal)) {
         this.tmpVector
           .crossVectors(this.startVector, this.currentSphereVector)
           .normalize();
@@ -197,7 +197,7 @@ export default class LineHandler extends Highlighter {
           // the normal vector to an arbitrarily chosen vector perpendicular to the start vector
           this.tmpVector.set(1, 0, 0);
           this.tmpVector.crossVectors(this.startVector, this.tmpVector);
-          if (this.tmpVector.isZero()) {
+          if (this.tmpVector.isZero(SETTINGS.nearlyAntipodalIdeal)) {
             this.tmpVector.set(0, 1, 0);
             // The cross or startVector and (1,0,0) and (0,1,0) can't *both* be zero
             this.tmpVector.crossVectors(this.startVector, this.tmpVector);
@@ -446,7 +446,7 @@ export default class LineHandler extends Highlighter {
     );
     // Check to see if the temporary normal is zero (i.e the start and end vectors are parallel -- ether
     // nearly antipodal or in the same direction)
-    if (this.tmpVector.isZero()) {
+    if (this.tmpVector.isZero(SETTINGS.nearlyAntipodalIdeal)) {
       // The start and end vectors align, compute the next normal vector from the old normal and the start vector
       this.tmpVector.crossVectors(
         this.startSEPoint.locationVector,
@@ -609,11 +609,11 @@ export default class LineHandler extends Highlighter {
           object2.locationVector
         );
         // Check to see if the points are antipodal
-        if (this.tmpVector.isZero()) {
+        if (this.tmpVector.isZero(SETTINGS.nearlyAntipodalIdeal)) {
           // They are antipodal, create an arbitrary normal vector
           this.tmpVector.set(1, 0, 0);
           this.tmpVector.crossVectors(object1.locationVector, this.tmpVector);
-          if (this.tmpVector.isZero()) {
+          if (this.tmpVector.isZero(SETTINGS.nearlyAntipodalIdeal)) {
             this.tmpVector.set(0, 1, 0);
             // The cross of object1.locationVector, and (1,0,0) and (0,1,0) can't *both* be zero
             this.tmpVector.crossVectors(object1.locationVector, this.tmpVector);

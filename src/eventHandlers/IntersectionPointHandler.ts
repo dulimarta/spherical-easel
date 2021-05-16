@@ -105,7 +105,7 @@ export default class IntersectionPointHandler extends Highlighter {
   }
 
   mouseMoved(event: MouseEvent): void {
-    // Update location vectors
+    // Find all the nearby (hitSE... objects) and update location vectors
     super.mouseMoved(event);
 
     // Only non-user created points can be created so only highlight those.

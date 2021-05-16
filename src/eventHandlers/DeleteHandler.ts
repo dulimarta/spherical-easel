@@ -68,7 +68,7 @@ export default class DeleteHandler extends Highlighter {
   }
 
   mouseMoved(event: MouseEvent): void {
-    // Highlight all nearby objects and update location vectors
+    // Find all the nearby (hitSE... objects) and update location vectors
     super.mouseMoved(event);
     // only one object at a time can be deleted so only glow the potential victim
     // prioritize points, if there is a point nearby, assume the user wants it to be the selection to delete

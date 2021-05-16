@@ -14,6 +14,11 @@ export class PointMoverVisitor implements Visitor {
     this.locationVector.copy(vec);
   }
 
+  /**
+   * Without the pointDirectLocationSetter being called from rotationVisitor and pointMoverVisitor, if you create a line segment, a point on that line segment.
+   * Then if you move one endpoint of the line segment (causing the point on it to move maybe by shrinking the original line segment) and then you undo the movement of the
+   * endpoint of the line segment, the point on the segment doesn’t return to its proper (original) location.
+   */
   //#region actionOnPoint
   actionOnPoint(p: SEPoint): void {
     // Don't use the usual location setter for points on one dimensional because that will move the label to the location on a possibly out of date parent.
@@ -22,11 +27,6 @@ export class PointMoverVisitor implements Visitor {
     } else {
       p.pointDirectLocationSetter(this.locationVector);
     }
-
-    // Don't update here, because it may cause a point on one dimensional to update to the wrong location
-    // The undo and restore methods of command cause one update for display at the end of every command or
-    // command group
-    //p.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
   }
   //#endregion actionOnPoint
 

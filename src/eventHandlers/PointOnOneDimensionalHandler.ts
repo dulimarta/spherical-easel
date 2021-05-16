@@ -9,7 +9,7 @@ import Label from "@/plottables/Label";
 import { SELabel } from "@/models/SELabel";
 import SETTINGS from "@/global-settings";
 import { Vector3 } from "three";
-import { AddPointOnOneDimensionalCommand } from '@/commands/AddPointOnOneDimensionalCommand';
+import { AddPointOnOneDimensionalCommand } from "@/commands/AddPointOnOneDimensionalCommand";
 
 export default class PointOnOneDimensionalHandler extends Highlighter {
   /**
@@ -63,14 +63,18 @@ export default class PointOnOneDimensionalHandler extends Highlighter {
         newSELabel.locationVector = this.tmpVector;
         // Create and execute the command to create a new point for undo/redo
         //new AddPointCommand(vtx, newSELabel).execute();
-        new AddPointOnOneDimensionalCommand(vtx,this.oneDimensional,newSELabel)
+        new AddPointOnOneDimensionalCommand(
+          vtx,
+          this.oneDimensional,
+          newSELabel
+        );
         this.oneDimensional = null;
       }
     }
   }
 
   mouseMoved(event: MouseEvent): void {
-    // Highlight all nearby objects and update location vectors
+    // Find all the nearby (hitSE... objects) and update location vectors
     super.mouseMoved(event);
   }
 

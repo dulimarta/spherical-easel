@@ -187,7 +187,7 @@ export class SESegment extends SENodule
     this.tmpVector1.crossVectors(this._normalVector, idealUnitSphereVector);
     // Check to see if the tmpVector is zero (i.e the normal and  idealUnit vectors are parallel -- ether
     // nearly antipodal or in the same direction)
-    if (this.tmpVector1.isZero()) {
+    if (this.tmpVector1.isZero(SETTINGS.nearlyAntipodalIdeal)) {
       return this._endSEPoint.locationVector; // An arbitrary point will do as all points are equally far away
     } else {
       // Make the tmpVector (soon to be the toVector) unit
@@ -221,7 +221,7 @@ export class SESegment extends SENodule
     this.tmpVector.crossVectors(sePointVector, this._normalVector);
     // Check to see if the tmpVector is zero (i.e the center point and given point are parallel -- ether
     // nearly antipodal or in the same direction)
-    if (this.tmpVector.isZero()) {
+    if (this.tmpVector.isZero(SETTINGS.nearlyAntipodalIdeal)) {
       // In this case any line containing the sePoint will be perpendicular to the segment, but
       //  we want to choose one line whose normal is near the oldNormal
       this.tmpVector.copy(oldNormal);
@@ -249,11 +249,11 @@ export class SESegment extends SENodule
       // nearly antipodal or in the same direction)
       if (
         this.tmpVector1
-          .addVectors(
+          .crossVectors(
             this._startSEPoint.locationVector,
             this._endSEPoint.locationVector
           )
-          .length() < SETTINGS.nearlyAntipodalIdeal
+          .isZero(SETTINGS.nearlyAntipodalIdeal)
       ) {
         // Make the tmpVector (soon to be the "to" vector) unit
         this.tmpVector.normalize();
@@ -303,16 +303,25 @@ export class SESegment extends SENodule
           this._endSEPoint.locationVector
         ) > 2
       ) {
-        // The startVector and endVector might be antipodal proceed with caution,
-        // Set tmpVector to the antipode of the start Vector
-        this.tmpVector
-          .copy(this._startSEPoint.locationVector)
-          .multiplyScalar(-1);
-        // Check to see if the pixel distance (in the default screen plane)
+        // // The startVector and endVector might be antipodal proceed with caution,
+
+        // // Set tmpVector to the antipode of the start Vector
+        // this.tmpVector
+        //   .copy(this._startSEPoint.locationVector)
+        //   .multiplyScalar(-1);
+        // // Check to see if the pixel distance (in the default screen plane)
+        // if (
+        //   this.tmpVector.angleTo(this._endSEPoint.locationVector) *
+        //     SETTINGS.boundaryCircle.radius <
+        //   SETTINGS.nearlyAntipodalPixel
+
         if (
-          this.tmpVector.angleTo(this._endSEPoint.locationVector) *
-            SETTINGS.boundaryCircle.radius <
-          SETTINGS.nearlyAntipodalPixel
+          this.tmpVector
+            .crossVectors(
+              this._endSEPoint.locationVector,
+              this._startSEPoint.locationVector
+            )
+            .isZero(SETTINGS.nearlyAntipodalIdeal)
         ) {
           // The points are antipodal on the screen
           this.nearlyAntipodal = true;
@@ -373,10 +382,14 @@ export class SESegment extends SENodule
     // First find the closest point on the segment to the idealUnitSphereVector
     this.tmpVector.copy(this.closestVector(idealUnitSphereVector));
 
+    // The current magnification level
+    //const mag = SENodule.store.state.zoomMagnificationFactor;
+    const mag = 1;
+
     // If the idealUnitSphereVector is within the tolerance of the closest point, do nothing, otherwise return the vector in the plane of the ideanUnitSphereVector and the closest point that is at the tolerance distance away.
     if (
       this.tmpVector.angleTo(idealUnitSphereVector) <
-      SETTINGS.segment.maxLabelDistance
+      SETTINGS.segment.maxLabelDistance / mag
     ) {
       return idealUnitSphereVector;
     } else {
@@ -389,13 +402,13 @@ export class SESegment extends SENodule
       this.tmpVector2.crossVectors(this.tmpVector, this.tmpVector1).normalize;
       // return cos(SETTINGS.segment.maxLabelDistance)*fromVector/tmpVec + sin(SETTINGS.segment.maxLabelDistance)*toVector/tmpVec2
       this.tmpVector2.multiplyScalar(
-        Math.sin(SETTINGS.segment.maxLabelDistance)
+        Math.sin(SETTINGS.segment.maxLabelDistance / mag)
       );
 
       return this.tmpVector2
         .addScaledVector(
           this.tmpVector,
-          Math.cos(SETTINGS.segment.maxLabelDistance)
+          Math.cos(SETTINGS.segment.maxLabelDistance / mag)
         )
         .normalize();
     }
@@ -489,8 +502,8 @@ export class SESegment extends SENodule
       // Test for antipodal endpoints
       if (
         this.tmpVector1
-          .addVectors(freeEnd.locationVector, pivot.locationVector)
-          .length() < SETTINGS.nearlyAntipodalIdeal
+          .crossVectors(freeEnd.locationVector, pivot.locationVector)
+          .isZero(SETTINGS.nearlyAntipodalIdeal)
       ) {
         //console.log("parallel free and pivot");
         // Set the direction of the rotation correctly for moving the normalvector
@@ -522,7 +535,7 @@ export class SESegment extends SENodule
   }
 
   // I wish the SENodule methods would work but I couldn't figure out how
-  // See the attempts in SENodule
+  // See the attempts in SENodule around line 218
   public isFreePoint(): boolean {
     return false;
   }
@@ -542,5 +555,8 @@ export class SESegment extends SENodule
     return (
       Math.abs(this._arcLength - Math.PI) < SETTINGS.segment.closeEnoughToPi
     );
+  }
+  public isLabelable(): boolean {
+    return true;
   }
 }

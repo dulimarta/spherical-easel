@@ -235,15 +235,15 @@ All handlers implement the interface <span class="interface">ToolStrategy</span>
 
 The <span class="method">activate()</span> and <span class="method">deactivate()</span> methods are run at the eponymous times during the life cycle of the tool. The <span class="method">activate()</span> method processes all the [selected objects](/tools/edit.html#selection) and decides whether or not to execute the appropriate tool routines. The <span class="method">deactivate()</span> method clears the appropriate variable in the tool so that they don't interfere with the execution of other tools.
 
-Almost all handlers extend <span class="class">MouseHandler</span> (the exception is <span class="class">PanZoomHandler</span>). This means that almost all handlers have access to the following variables that are computed in the <span class="method">mouseMoved()</span> method.
+Almost all handlers extend <span class="class">Highlighter</span> which itself extends <span class="class">MouseHandler</span> (the exception is <span class="class">PanZoomHandler</span>). This means that almost all handlers have access to the following variables that are computed in the <span class="method">mouseMoved()</span> method.
 
-- <span class="variable">currentSphereVector</span>: This the <span class="class">Vector3</span> location on the ideal unit sphere corresponding to the current mouse location.
-- <span class="variable">previousSphereVector</span>: This the <span class="class">Vector3</span> location on the ideal unit sphere of corresponding to the previous mouse location.
-- <span class="variable">currentScreenVector</span>: This the <span class="class">Two.Vector</span> location in the Default Screen Plane of the current mouse location.
-- <span class="variable">previousScreenVector</span>: This the <span class="class">Two.Vector</span> location in the Default Screen Plane of the previous mouse location.
-- <span class="variable">isOnSphere</span>: This boolean variable indicates if the current mouse location is inside the boundary circle in the Default Screen Plane
+- <span class="variable">currentSphereVector</span>: This the <span class="class">Vector3</span> location on the ideal unit sphere corresponding to the current mouse location. (Set in <span class="class">MouseHandler</span>)
+- <span class="variable">previousSphereVector</span>: This the <span class="class">Vector3</span> location on the ideal unit sphere of corresponding to the previous mouse location. (Set in <span class="class">MouseHandler</span>)
+- <span class="variable">currentScreenVector</span>: This the <span class="class">Two.Vector</span> location in the Default Screen Plane of the current mouse location. (Set in <span class="class">MouseHandler</span>)
+- <span class="variable">previousScreenVector</span>: This the <span class="class">Two.Vector</span> location in the Default Screen Plane of the previous mouse location. (Set in <span class="class">MouseHandler</span>)
+- <span class="variable">isOnSphere</span>: This boolean variable indicates if the current mouse location is inside the boundary circle in the Default Screen Plane (Set in <span class="class">MouseHandler</span>)
 
-In addition, the <span class="method">mouseMoved()</span> method queries (via the getters) the [Store](/design/#store) to find and highlight all the nearby objects. The variable <span class="variable">hitNodules</span> is an array of nearby SEObjects that is sorted into the different class like <span class="variable">hitPoints</span>, <span class="variable">hitSegments</span>, <span class="variable">hitLines</span>, etc. all of which are available to the children of <span class="class">MouseHandler</span>.
+In addition, the <span class="method">mouseMoved()</span> method (in <span class="class">Highlighter</span>) queries (via the getters) the [Store](/design/#store) to find all the nearby objects. The variable <span class="variable">hitNodules</span> is an array of nearby SEObjects that is sorted into the different class like <span class="variable">hitPoints</span>, <span class="variable">hitSegments</span>, <span class="variable">hitLines</span>, etc. all of which are available to the children of <span class="class">Highlighter</span>. It is the job of each handle to highlight/glow all the objects that it can properly interact with.
 
 ### Move Handler
 
@@ -378,7 +378,7 @@ The [Rotation Handler](/design/handlers/display.html#rotation) uses the user mou
 
 <<< @/src/eventHandlers/RotateHandler.ts#sphereRotate
 
-The <span class="string">"sphere-rotate"</span> [EventBus](/design/#event-bus) listener is in <span class="file">SphereFrame.vue</span>. Notice how an events outside of the Vue Component (in the handler) is no triggering event in a Vue Component. This listener calls
+The <span class="string">"sphere-rotate"</span> [EventBus](/design/#event-bus) listener is in <span class="file">SphereFrame.vue</span>. Notice how an events outside of the Vue Component (in the handler) is now triggering an event in a Vue Component. This listener calls
 
 <<< @/src/components/SphereFrame.vue#handleSphereRotation
 

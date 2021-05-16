@@ -87,8 +87,9 @@ function intersectLineWithLine(
 
   // If the normal vectors are on top of each other or antipodal, exists is false
   if (
-    tempVec.addVectors(lineOne.normalVector, lineTwo.normalVector).isZero() ||
-    tempVec.subVectors(lineOne.normalVector, lineTwo.normalVector).isZero()
+    tempVec
+      .crossVectors(lineOne.normalVector, lineTwo.normalVector)
+      .isZero(SETTINGS.nearlyAntipodalIdeal)
   ) {
     intersection1.exists = false;
     intersection2.exists = false;
@@ -134,8 +135,9 @@ function intersectLineWithSegment(
   }
   // If the normal vectors are on top of each other or antipodal, exists is false
   if (
-    tempVec.addVectors(line.normalVector, segment.normalVector).isZero() ||
-    tempVec.subVectors(line.normalVector, segment.normalVector).isZero()
+    tempVec
+      .crossVectors(line.normalVector, segment.normalVector)
+      .isZero(SETTINGS.nearlyAntipodalIdeal)
   ) {
     intersection1.exists = false;
     intersection2.exists = false;
@@ -202,8 +204,9 @@ function intersectSegmentWithSegment(
   }
   // If the normal vectors are on top of each other or antipodal, exists is false
   if (
-    tempVec.addVectors(segment1.normalVector, segment2.normalVector).isZero() ||
-    tempVec.subVectors(segment1.normalVector, segment2.normalVector).isZero()
+    tempVec
+      .crossVectors(segment1.normalVector, segment2.normalVector)
+      .isZero(SETTINGS.nearlyAntipodalIdeal)
   ) {
     intersection1.exists = false;
     intersection2.exists = false;

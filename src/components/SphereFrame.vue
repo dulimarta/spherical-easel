@@ -38,8 +38,10 @@ import PerpendicularLineThruPointHandler from "@/eventHandlers/PerpendicularLine
 
 import EventBus from "@/eventHandlers/EventBus";
 import MoveHandler from "../eventHandlers/MoveHandler";
-import { AppState } from "@/types";
+import { AppState, UpdateMode } from "@/types";
 import colors from "vuetify/es5/util/colors";
+import { SEPoint } from "@/models/SEPoint";
+import { SELabel } from "@/models/SELabel";
 
 @Component({})
 export default class SphereFrame extends VueComponent {
@@ -290,6 +292,10 @@ export default class SphereFrame extends VueComponent {
     el.style.transformOrigin = `${origin}px ${origin}px`;
     // What does this do?
     el.style.overflow = "visible";
+    //Now update the display of the arrangment (i.e. make sure the labels are not too far from their associated objects)
+    this.store.state.seLabels.forEach((l: SELabel) => {
+      l.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
+    });
   }
   //#endregion updateView
 

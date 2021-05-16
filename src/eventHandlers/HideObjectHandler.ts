@@ -4,12 +4,18 @@ import { SENodule } from "@/models/SENodule";
 import { SetNoduleDisplayCommand } from "@/commands/SetNoduleDisplayCommand";
 import { SEPoint } from "@/models/SEPoint";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
+import { CommandGroup } from "@/commands/CommandGroup";
+import AppStore from "@/store";
 
 export default class HideObjectHandler extends Highlighter {
   /**
    * Object to hide - the victim!
    */
   private victim: SENodule | null = null;
+  /**
+   * The Global Vuex Store
+   */
+  protected static store = AppStore;
 
   constructor(layers: Two.Group[]) {
     super(layers);
@@ -18,8 +24,9 @@ export default class HideObjectHandler extends Highlighter {
   mousePressed(event: MouseEvent): void {
     //Select an object to delete
     if (this.isOnSphere) {
-      // In the case of multiple selections prioritize points > lines > segments > circles
+      // In the case of multiple selections prioritize points > lines > segments > circles > labels
       if (this.hitSEPoints.length > 0) {
+        // you can't hide non-user created intersection points
         if (
           !(this.hitSEPoints[0] instanceof SEIntersectionPoint) ||
           (this.hitSEPoints[0] as SEIntersectionPoint).isUserCreated
@@ -76,10 +83,21 @@ export default class HideObjectHandler extends Highlighter {
     this.victim = null;
   }
   activate(): void {
+    console.log("hide activate");
     // Hide all selected objects
-    this.hitSENodules.forEach(object =>
-      new SetNoduleDisplayCommand(object, false).execute()
-    );
+    const hideCommandGroup = new CommandGroup();
+    this.store.getters
+      .selectedSENodules()
+      .filter(
+        (object: SENodule) =>
+          !(object instanceof SEIntersectionPoint) ||
+          (object as SEIntersectionPoint).isUserCreated
+      )
+      .forEach((object: SENodule) =>
+        hideCommandGroup.addCommand(new SetNoduleDisplayCommand(object, false))
+      );
+
+    hideCommandGroup.execute();
     // Unselect the selected objects and clear the selectedObject array
     super.activate();
   }

@@ -219,7 +219,11 @@
     "intersectionOneDimensionalDuplicate": "Duplicate object. Select another.",
     "intersectionOneDimensionalNotIntersect": "Selected objects do not intersect.",
     "intersectionOneDimensionalAlreadyExists": "Intersection point already exists.",
-    "moveHandlerNothingSelected": "No object selected. Rotating Sphere."
+    "moveHandlerNothingSelected": "No object selected. Rotating Sphere.",
+    "pamZoomHandlerZoomInLimitReached": "Zoom in limit reached.",
+    "pamZoomHandlerZoomOutLimitReached": "Zoom out limit reached.",
+    "selectionUpdate": "Selection Update: {number} objects selected. Hold the Alt/Option key to add or subtract from the current selection.",
+    "selectionUpdateNothingSelected": "No objects selected."
 
   },
 

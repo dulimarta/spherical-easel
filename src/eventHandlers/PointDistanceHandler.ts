@@ -59,7 +59,7 @@ export default class PointDistantHandler extends Highlighter {
   }
 
   mouseMoved(event: MouseEvent): void {
-    // Highlight all nearby objects and update location vectors
+    // Find all the nearby (hitSE... objects) and update location vectors
     super.mouseMoved(event);
 
     // Do not highlight non SEPoint objects

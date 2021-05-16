@@ -50,27 +50,29 @@ export class SEPerpendicularLineThruPoint extends SELine {
       this.seParentOneDimensional.exists && this.seParentPoint.exists;
     if (this._exists) {
       // Get the normal vector to the line
+      this.tmpVector.copy(this.normalVector);
       this.normalVector = this.seParentOneDimensional.getNormalToLineThru(
+        this.seParentPoint.locationVector,
+        this.normalVector // the soon to be old normal vector
+      );
+      // if (this.normalVector.angleTo(this.tmpVector) > 0.0009) {
+      //   console.log(
+      //     "change in normal vector in SEPerp",
+      //     this.normalVector.angleTo(this.tmpVector)
+      //   );
+      // }
+      // Given this.startPoint (in SELine)=this.seParentPoint and this.normalVector compute the endSEPoint
+      // This is *never* undefined because the getNormalToLineThru *never* returns a point with
+      //  location parallel to this.seParentPoint.locationVector
+      this.tmpVector1.crossVectors(
         this.seParentPoint.locationVector,
         this.normalVector
       );
 
-      // Given this.startPoint and this.normalVector compute the endSEPoint
-      // This is *never* undefined because the getNormalToLineThru never returns a point with
-      //  location parallel to this.seParentPoint.locationVector
-      this.tmpVector.crossVectors(
-        this.startSEPoint.locationVector,
-        this.normalVector
-      );
-
-      this.endSEPoint.locationVector = this.tmpVector.normalize();
+      this.endSEPoint.locationVector = this.tmpVector1.normalize();
 
       // Set the normal vector in the plottable object (the setter also calls the updateDisplay() method)
       this.ref.normalVector = this.normalVector;
-      // this.ref.updateDisplay();
-
-      // update the se end point
-      // Redraw the line
     }
     // Update visibility
     if (this._exists && this._showing) {
@@ -102,18 +104,4 @@ export class SEPerpendicularLineThruPoint extends SELine {
   set glowing(b: boolean) {
     super.glowing = b;
   }
-  // I wish the SENodule methods would work but I couldn't figure out how
-  // See the attempts in SENodule
-  // public isFreePoint() {
-  //   return false;
-  // }
-  // public isOneDimensional() {
-  //   return true;
-  // }
-  // public isPoint() {
-  //   return false;
-  // }
-  // public isLabel(): boolean {
-  //   return false;
-  // }
 }

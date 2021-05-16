@@ -20,7 +20,7 @@ Select object(s) to change their visual style or to perform actions on them with
 
 ::: tool-details Selecting Objects:
 
-- All selected objects will glow (i.e. have a highlight color displayed in the background of the object).
+- All selected objects will glow (i.e. have a highlight color displayed in the background of the object) and slowly blink.
 - Not Implemented? To select multiple objects, mouse drag and create a rectangle. Anything (TODO: entirely? partially?) with in that region will be selected when the mouse is released.
 - To clear your selection, mouse press and release at a location with no objects nearby.
 - To add or subtract to your current selection, press and hold the <kbd>Alt/Option</kbd> key when mouse pressing. A mouse press will add the objects to the current selection or, if the mouse press is on already selected objects, those objects will be removed from the current selection.

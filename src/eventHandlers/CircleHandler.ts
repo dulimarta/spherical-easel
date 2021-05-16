@@ -603,7 +603,7 @@ export default class CircleHandler extends Highlighter {
         object2 instanceof SEPoint &&
         !tmpVector
           .crossVectors(object1.locationVector, object2.locationVector)
-          .isZero() // if the points are antipodal do nothing
+          .isZero(SETTINGS.nearlyAntipodalIdeal) // if the points are antipodal do nothing
       ) {
         // Create a new plottable Circle
         const newCircle = new Circle();

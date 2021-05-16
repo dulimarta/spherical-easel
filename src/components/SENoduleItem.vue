@@ -157,6 +157,10 @@ export default class SENoduleItem extends Vue {
       return this.node.name;
     } else return "n/a";
   }
+
+  get magnificationLevel(): number {
+    return this.$store.getters.magnificationLevel() as number;
+  }
 }
 </script>
 

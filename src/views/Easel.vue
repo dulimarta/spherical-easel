@@ -145,7 +145,7 @@
               multi-line>
               <span>
                 <strong class="warning--text"
-                  v-html="$t('buttons.PanZoomInDisplayedName').split('<br>').join('').trim() + ': '"></strong>
+                  v-html="$t('buttons.PanZoomInDisplayedName').split('<br>').join('/').trim() + ': '"></strong>
                 {{ $t("buttons.PanZoomInToolUseMessage") }}
               </span>
               <v-btn @click="displayToolUseMessage = false"
@@ -162,7 +162,7 @@
               multi-line>
               <span>
                 <strong class="warning--text"
-                  v-html="$t('buttons.ZoomFitDisplayedName').split('<br>').join('').trim() + ': '"></strong>
+                  v-html="$t('buttons.ZoomFitDisplayedName').split('<br>').join('').slice(0,-6) + ': '"></strong>
                 {{ $t("buttons.ZoomFitToolUseMessage") }}
               </span>
               <v-btn @click="displayToolUseMessage = false"
@@ -179,7 +179,7 @@
               multi-line>
               <span>
                 <strong class="warning--text"
-                  v-html="$t('buttons.PanZoomOutDisplayedName').split('<br>').join('').trim() + ': '"></strong>
+                  v-html="$t('buttons.PanZoomOutDisplayedName').split('<br>').join('/').trim() + ': '"></strong>
                 {{ $t("buttons.PanZoomOutToolUseMessage") }}
               </span>
               <v-btn @click="displayToolUseMessage = false"

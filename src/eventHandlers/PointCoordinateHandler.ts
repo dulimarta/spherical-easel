@@ -50,7 +50,7 @@ export default class PointCoordinateHandler extends Highlighter {
 
   mouseMoved(event: MouseEvent): void {
     console.debug("PointCoordinateeHandler -- mouseMoved");
-    // Highlight all nearby objects and update location vectors
+    // Find all the nearby (hitSE... objects) and update location vectors
     super.mouseMoved(event);
 
     // Do not highlight non SEPoint objects

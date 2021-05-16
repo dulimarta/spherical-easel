@@ -292,7 +292,7 @@ export default class MoveHandler extends Highlighter {
         this.afterMoveVector1
       );
       desiredZAxis.crossVectors(this.beforeMoveVector1, this.afterMoveVector1);
-      if (desiredZAxis.isZero()) {
+      if (desiredZAxis.isZero(SETTINGS.nearlyAntipodalIdeal)) {
         if (rotationAngle == 0) {
           // The vectors are identical
           this.changeInPositionRotationMatrix.identity();
@@ -379,7 +379,7 @@ export default class MoveHandler extends Highlighter {
           if (
             !tmpVector1
               .subVectors(beforeLocationVector, afterLocationVector)
-              .isZero()
+              .isZero(SETTINGS.nearlyAntipodalIdeal)
           ) {
             moveCommandGroup.addCommand(
               new MovePointCommand(
@@ -410,7 +410,7 @@ export default class MoveHandler extends Highlighter {
           if (
             !tmpVector1
               .subVectors(beforeLocationVector, afterLocationVector)
-              .isZero()
+              .isZero(SETTINGS.nearlyAntipodalIdeal)
           ) {
             moveCommandGroup.addCommand(
               new MoveLabelCommand(
@@ -435,7 +435,7 @@ export default class MoveHandler extends Highlighter {
           if (
             !tmpVector1
               .subVectors(beforeNormalVector, afterNormalVector)
-              .isZero()
+              .isZero(SETTINGS.nearlyAntipodalIdeal)
           ) {
             moveCommandGroup.addCommand(
               new MoveLineCommand(
@@ -466,7 +466,7 @@ export default class MoveHandler extends Highlighter {
           if (
             !tmpVector1
               .subVectors(beforeNormalVector, afterNormalVector)
-              .isZero() ||
+              .isZero(SETTINGS.nearlyAntipodalIdeal) ||
             (entry.arcLength < Math.PI &&
               (this.afterMoveState.stateArray[index] as SegmentState)
                 .arcLength > Math.PI) ||

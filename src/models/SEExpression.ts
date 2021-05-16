@@ -27,7 +27,9 @@ export abstract class SEExpression extends SENodule {
   public isSegmentOfLengthPi(): boolean {
     return false;
   }
-
+  public isLabelable(): boolean {
+    return false;
+  }
   /* TODO: Evaluate or get the value of the expressions */
   abstract get value(): number;
 

@@ -17,11 +17,13 @@ export default abstract class Highlighter extends MouseHandler {
    */
   protected static store = AppStore;
   /**
-   * Provides an array of nearby objects (in hitPoints, hitLines,... ) and highlights them
+   * Provides an array of nearby objects (in hitPoints, hitLines,... )
    * @param event Mouse Event
    */
   mouseMoved(event: MouseEvent): void {
+    // Set the isOnSphere boolean and location vectors correctly
     super.mouseMoved(event);
+
     if (!this.isOnSphere) return;
     // Set the display to normal for all previously nearby objects
     this.hitSENodules.forEach((n: SENodule) => {
@@ -37,17 +39,18 @@ export default abstract class Highlighter extends MouseHandler {
     this.infoText.hide();
 
     // Create an array of SENodules of all nearby objects by querying the store
+    // only SENodules that exist and are showing are returned
     this.hitSENodules = this.store.getters
       .findNearbySENodules(this.currentSphereVector, this.currentScreenVector)
       .filter((n: SENodule) => {
         if (n instanceof SEIntersectionPoint) {
           if (!n.isUserCreated) {
-            return n.exists; //You always select automatically created intersection points if it exists
+            return n.exists; //You always hit automatically created intersection points if it exists
           } else {
-            return n.showing && n.exists; //You can't select hidden objects or items that don't exist
+            return n.showing && n.exists; //You can't hit hidden objects or items that don't exist
           }
         } else {
-          return n.showing && n.exists; //You can't select hidden objects or items that don't exist
+          return n.showing && n.exists; //You can't hit hidden objects or items that don't exist
         }
       });
 
@@ -91,7 +94,6 @@ export default abstract class Highlighter extends MouseHandler {
     if (text.length > 0) {
       // Show the names temporarily
       this.infoText.showWithDelay(this.layers[LAYER.foregroundText], 300);
-      // Textbox is set to handle a ???? How does this work????
       this.infoText.text = text;
       this.infoText.translation.set(
         this.currentScreenVector.x,
