@@ -55,10 +55,10 @@ import { SELine } from "../models/SELine";
 import { SESegment } from "@/models/SESegment";
 import { SECircle } from "../models/SECircle";
 import { SEMeasurement } from "@/models/SEMeasurement";
-import { SELength } from "@/models/SELength";
+import { SESegmentLength } from "@/models/SESegmentLength";
 import { SECalculation } from "../models/SECalculation";
 import { SEExpression } from "@/models/SEExpression";
-import { SEDistance } from "@/models/SEDistance";
+import { SESegmentDistance } from "@/models/SESegmentDistance";
 import { SESlider } from "@/models/SESlider";
 
 @Component
@@ -68,10 +68,10 @@ export default class SENoduleItem extends Vue {
 
   glowMe(flag: boolean): void {
     if (this.isPlottable) this.node.glowing = flag;
-    else if (this.node instanceof SELength) {
+    else if (this.node instanceof SESegmentLength) {
       const target = this.node.parents[0] as SESegment;
       target.glowing = flag;
-    } else if (this.node instanceof SEDistance) {
+    } else if (this.node instanceof SESegmentDistance) {
       this.node.parents
         .map(n => n as SEPoint)
         .forEach((p: SEPoint) => {

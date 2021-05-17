@@ -4,7 +4,7 @@ import { SESegment } from "@/models/SESegment";
 import { SENodule } from "@/models/SENodule";
 import { AddExpressionCommand } from "@/commands/AddExpressionCommand";
 import { SEMeasurement } from "@/models/SEMeasurement";
-import { SELength } from "@/models/SELength";
+import { SESegmentLength } from "@/models/SESegmentLength";
 import EventBus from "@/eventHandlers/EventBus";
 import { SetNoduleDisplayCommand } from "@/commands/SetNoduleDisplayCommand";
 
@@ -21,20 +21,19 @@ export default class SegmentLengthHandler extends Highlighter {
   mousePressed(event: MouseEvent): void {
     //Select an object to measure
     if (this.isOnSphere) {
-      // In the case of multiple selections prioritize points > lines > segments > circles
-      if (this.hitSESegments.length > 0)
+      if (this.hitSESegments.length > 0) {
         this.targetSegment = this.hitSESegments[0];
+      }
 
       if (this.targetSegment != null) {
-        // Do the hiding via command so it will be undoable
-        const lenMeasure = new SELength(this.targetSegment);
+        const lenMeasure = new SESegmentLength(this.targetSegment);
         EventBus.fire("show-alert", {
           key: `handlers.newSegmentMeasurementAdded`,
           keyOptions: { name: `${lenMeasure.name}` },
           type: "success"
         });
-        new AddExpressionCommand(lenMeasure).execute();
-        // this.targetSegment = null;
+        new AddExpressionCommand(lenMeasure, [this.targetSegment]).execute();
+        this.targetSegment = null;
       }
     }
   }
@@ -43,12 +42,8 @@ export default class SegmentLengthHandler extends Highlighter {
     // Find all the nearby (hitSE... objects) and update location vectors
     super.mouseMoved(event);
 
-    // Do not highlight non SESegment objects
-    this.hitSENodules
-      .filter((n: SENodule) => !(n instanceof SESegment))
-      .forEach((p: SENodule) => {
-        p.glowing = false;
-      });
+    // Glow the first SESegment
+    this.hitSESegments[0].glowing = true;
     if (this.hitSESegments.length > 0) {
       this.targetSegment = this.hitSESegments[0];
       const len = this.targetSegment.arcLength;
@@ -69,13 +64,13 @@ export default class SegmentLengthHandler extends Highlighter {
       const object1 = this.store.getters.selectedSENodules()[0];
 
       if (object1 instanceof SESegment) {
-        const lenMeasure = new SELength(object1);
+        const lenMeasure = new SESegmentLength(object1);
         EventBus.fire("show-alert", {
           key: `handlers.newSegmentMeasurementAdded`,
           keyOptions: { name: `${lenMeasure.name}` },
           type: "success"
         });
-        new AddExpressionCommand(lenMeasure).execute();
+        new AddExpressionCommand(lenMeasure, [object1]).execute();
       }
     }
     // Unselect the selected objects and clear the selectedObject array

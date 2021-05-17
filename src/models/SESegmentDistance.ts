@@ -2,7 +2,7 @@ import { SEMeasurement } from "./SEMeasurement";
 import { SEPoint } from "./SEPoint";
 import { UpdateStateType, UpdateMode } from "@/types";
 
-export class SEDistance extends SEMeasurement {
+export class SESegmentDistance extends SEMeasurement {
   readonly firstSEPoint: SEPoint;
   readonly secondSEPoint: SEPoint;
 
@@ -14,8 +14,8 @@ export class SEDistance extends SEMeasurement {
       this.name + `-Dist(${first.name},${second.name}):${this.prettyValue}`;
 
     // This length object is a child of the segment
-    first.registerChild(this);
-    second.registerChild(this);
+    // first.registerChild(this);
+    // second.registerChild(this); //registering always happens in the commands
   }
 
   public get prettyValue(): string {

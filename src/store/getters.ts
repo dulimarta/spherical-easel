@@ -7,7 +7,7 @@ import {
   IntersectionReturnType,
   SEIntersectionReturnType
 } from "@/types";
-import { Vector3 } from "three";
+import { Matrix4, Vector3 } from "three";
 import Two, { Vector } from "two.js";
 import { SENodule } from "@/models/SENodule";
 import { SEPoint } from "@/models/SEPoint";
@@ -890,5 +890,8 @@ export default {
   // that selectedObject fore and back properties: useLabelMode indicates that we are doing this.
   getUseLabelMode: (state: AppState) => (): boolean => {
     return state.useLabelMode;
+  },
+  getInverseTotalRotationMatrix: (state: AppState) => (): Matrix4 => {
+    return state.inverseTotalRotationMatrix;
   }
 };

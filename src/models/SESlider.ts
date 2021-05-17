@@ -5,11 +5,6 @@ export class SESlider extends SEMeasurement /*implements Visitable*/ {
   /* Access to the store to retrieve the canvas size so that the bounding rectangle for the text can be computed properly*/
   // protected store = AppStore;
 
-  /**
-   * The vector location of the SEPoint on the ideal unit sphere
-   */
-  // protected _locationVector = new Vector3();
-
   readonly min: number;
   readonly max: number;
   private current: number;

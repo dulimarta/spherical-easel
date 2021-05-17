@@ -37,6 +37,6 @@ export default class SliderHandler extends MouseHandler {
     console.debug(sliderParams, "at", this.currentSphereVector.toFixed(3));
 
     const slider = new SESlider(sliderParams);
-    new AddExpressionCommand(slider).execute();
+    new AddExpressionCommand(slider, []).execute();
   }
 }

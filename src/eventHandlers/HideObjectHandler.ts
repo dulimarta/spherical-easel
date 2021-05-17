@@ -83,7 +83,6 @@ export default class HideObjectHandler extends Highlighter {
     this.victim = null;
   }
   activate(): void {
-    console.log("hide activate");
     // Hide all selected objects
     const hideCommandGroup = new CommandGroup();
     this.store.getters

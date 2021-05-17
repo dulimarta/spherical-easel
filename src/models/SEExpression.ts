@@ -30,6 +30,9 @@ export abstract class SEExpression extends SENodule {
   public isLabelable(): boolean {
     return false;
   }
+  public isLabel(): boolean {
+    return false;
+  }
   /* TODO: Evaluate or get the value of the expressions */
   abstract get value(): number;
 
@@ -41,6 +44,7 @@ export abstract class SEExpression extends SENodule {
 
   /**
    * Is the object hit a point at a particular sphere location?
+   * Never this object is not on the sphere
    * @param sphereVector a location on the ideal unit sphere
    */
   public isHitAt(
@@ -50,9 +54,6 @@ export abstract class SEExpression extends SENodule {
     return false;
   }
 
-  public isLabel(): boolean {
-    return false;
-  }
   public update(state: UpdateStateType): void {
     if (state.mode !== UpdateMode.DisplayOnly) return;
     if (!this.canUpdateNow()) return;

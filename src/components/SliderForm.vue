@@ -82,7 +82,7 @@ export default class SliderFoorm extends Vue {
       step: this.sliderStep,
       value: this.sliderValue
     });
-    new AddExpressionCommand(sliderMeasure).execute();
+    new AddExpressionCommand(sliderMeasure, []).execute();
   }
 
   private adjustSlidertep() {

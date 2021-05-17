@@ -1,7 +1,6 @@
 import { AppState, SEOneDimensional, Labelable } from "@/types";
 import Two from "two.js";
 import { SEPoint } from "@/models/SEPoint";
-import { Matrix4 } from "three";
 import { SESegment } from "@/models/SESegment";
 import { SECircle } from "@/models/SECircle";
 import { RotationVisitor } from "@/visitors/RotationVisitor";
@@ -10,7 +9,7 @@ import { LabelMoverVisitor } from "@/visitors/LabelMoverVisitor";
 import { SELine } from "@/models/SELine";
 import { SELabel } from "@/models/SELabel";
 import { SENodule } from "@/models/SENodule";
-import { Vector3 } from "three";
+import { Vector3, Matrix4 } from "three";
 import { StyleOptions, StyleEditPanels } from "@/types/Styles";
 import { LineNormalVisitor } from "@/visitors/LineNormalVisitor";
 import { SegmentNormalArcLengthVisitor } from "@/visitors/SegmentNormalArcLengthVisitor";
@@ -21,7 +20,7 @@ import { SECalculation } from "@/models/SECalculation";
 import SETTINGS from "@/global-settings";
 import { SEExpression } from "@/models/SEExpression";
 
-// const tmpMatrix = new Matrix4();
+const tmpMatrix = new Matrix4();
 
 //#region appState
 export const initialState: AppState = {
@@ -50,7 +49,8 @@ export const initialState: AppState = {
   initialStyleStates: [],
   defaultStyleStates: [],
   initialBackStyleContrast: SETTINGS.style.backStyleContrast,
-  useLabelMode: false
+  useLabelMode: false,
+  inverseTotalRotationMatrix: new Matrix4() //initially the identity. The composition of all the inverses of the rotation matrices applied to the sphere
 };
 //#endregion appState
 
@@ -203,8 +203,14 @@ export default {
   // The temporary nodules are added to the store when a handler is constructed, when are they removed? Do I need a removeTemporaryNodule?
   //#region rotateSphere
   rotateSphere(state: AppState, rotationMat: Matrix4): void {
+    // Update the inverseTotalRotationMatrix. We have a new rotationMat which is transforming by
+    //   rotationMat*oldTotalRotationMatrix * VEC
+    // so to undo that action we find the inverse which is
+    //  inverseTotalRotationMatrix*(inverse of rotationMat)
+    tmpMatrix.copy(rotationMat);
+    state.inverseTotalRotationMatrix.multiply(tmpMatrix.getInverse(tmpMatrix));
     rotationVisitor.setTransform(rotationMat);
-    // apply the rotation to the line, segments, labels, then points. Only the points update. (Circles depend on only the points, so will be updated)
+    // apply the rotation to the line, segments, labels, then points.
     state.seLines.forEach((m: SELine) => {
       m.accept(rotationVisitor); // Does no updating of the display
     });

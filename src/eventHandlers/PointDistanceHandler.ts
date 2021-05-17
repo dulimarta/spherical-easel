@@ -3,8 +3,9 @@ import Highlighter from "./Highlighter";
 import { SEPoint } from "@/models/SEPoint";
 import { SENodule } from "@/models/SENodule";
 import { AddExpressionCommand } from "@/commands/AddExpressionCommand";
-import { SEDistance } from "@/models/SEDistance";
+import { SESegmentDistance } from "@/models/SESegmentDistance";
 import EventBus from "@/eventHandlers/EventBus";
+import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 
 export default class PointDistantHandler extends Highlighter {
   /**
@@ -19,10 +20,12 @@ export default class PointDistantHandler extends Highlighter {
   mousePressed(event: MouseEvent): void {
     //Select an object to delete
     if (this.isOnSphere) {
-      // In the case of multiple selections prioritize points > lines > segments > circles
-      if (this.hitSEPoints.length > 0) {
+      const possibleTargetPointList = this.hitSEPoints.filter(
+        p => !(p instanceof SEIntersectionPoint && !p.isUserCreated)
+      );
+      if (possibleTargetPointList.length > 0) {
         const pos = this.targetPoints.findIndex(
-          (p: SEPoint) => p.id === this.hitSEPoints[0].id
+          (p: SEPoint) => p.id === possibleTargetPointList[0].id
         );
         if (pos >= 0) {
           EventBus.fire("show-alert", {
@@ -32,12 +35,11 @@ export default class PointDistantHandler extends Highlighter {
           });
           return;
         }
-        this.targetPoints.push(this.hitSEPoints[0]);
+        this.targetPoints.push(possibleTargetPointList[0]);
       }
 
       if (this.targetPoints.length === 2) {
-        // Do the hiding via command so it will be undoable
-        const distanceMeasure = new SEDistance(
+        const distanceMeasure = new SESegmentDistance(
           this.targetPoints[0],
           this.targetPoints[1]
         );
@@ -46,7 +48,10 @@ export default class PointDistantHandler extends Highlighter {
           keyOptions: { name: `${distanceMeasure.name}` },
           type: "success"
         });
-        new AddExpressionCommand(distanceMeasure).execute();
+        new AddExpressionCommand(distanceMeasure, [
+          this.targetPoints[0],
+          this.targetPoints[1]
+        ]).execute();
         this.targetPoints.splice(0);
         // this.targetSegment = null;
       } else
@@ -62,17 +67,10 @@ export default class PointDistantHandler extends Highlighter {
     // Find all the nearby (hitSE... objects) and update location vectors
     super.mouseMoved(event);
 
-    // Do not highlight non SEPoint objects
-    this.hitSENodules
-      .filter((n: SENodule) => !(n instanceof SEPoint))
-      .forEach((p: SENodule) => {
-        p.glowing = false;
-      });
-    // if (this.hitSESegments.length > 0) {
-    //   this.targetSegment = this.hitSESegments[0];
-    //   const len = this.targetSegment.arcLength;
-    //   this.infoText.text = `Arc length ${(len / Math.PI).toFixed(2)}\u{1D7B9}`;
-    // }
+    // Glow only the first SEPoint (must be user created)
+    this.hitSEPoints.filter(
+      p => !(p instanceof SEIntersectionPoint && !p.isUserCreated)
+    )[0].glowing = true;
   }
 
   // eslint-disable-next-line
@@ -90,13 +88,13 @@ export default class PointDistantHandler extends Highlighter {
       const object2 = this.store.getters.selectedSENodules()[1];
 
       if (object1 instanceof SEPoint && object2 instanceof SEPoint) {
-        const distanceMeasure = new SEDistance(object1, object2);
+        const distanceMeasure = new SESegmentDistance(object1, object2);
 
         EventBus.fire("show-alert", {
           text: `New measurement ${distanceMeasure.name} added`,
           type: "success"
         });
-        new AddExpressionCommand(distanceMeasure).execute();
+        new AddExpressionCommand(distanceMeasure, [object1, object2]).execute();
       }
     }
     //Unselect the selected objects and clear the selectedObject array
