@@ -12,6 +12,7 @@ import Label from "@/plottables/Label";
 import { SELabel } from "@/models/SELabel";
 import { Vector3 } from "three";
 import SETTINGS from "@/global-settings";
+import EventBus from "./EventBus";
 
 export default class PointHandler extends Highlighter {
   // The temporary point displayed as the user drags
@@ -51,6 +52,11 @@ export default class PointHandler extends Highlighter {
           ).execute();
           return;
         }
+        EventBus.fire("show-alert", {
+          key: `handlers.pointCreationAttemptDuplicate`,
+          keyOptions: {},
+          type: "warning"
+        });
         return;
       } else {
         //#region linkNoduleSENodule
@@ -138,6 +144,27 @@ export default class PointHandler extends Highlighter {
   mouseMoved(event: MouseEvent): void {
     // Find all the nearby (hitSE... objects) and update location vectors
     super.mouseMoved(event);
+    // glow/highlight all the nearby objects that a point might be put on
+    // Only one point can be processed at a time, so set the first point that is not user created nearby to glowing
+    // The user can create points on circles, segments, and lines, so
+    // highlight those as well (but only one) if they are nearby also
+    if (this.hitSEPoints.length > 0) {
+      if (
+        this.hitSEPoints.filter(
+          p => p instanceof SEIntersectionPoint && !p.isUserCreated
+        ).length > 0
+      ) {
+        this.hitSEPoints.filter(
+          p => p instanceof SEIntersectionPoint && !p.isUserCreated
+        )[0].glowing = true;
+      }
+    } else if (this.hitSESegments.length > 0) {
+      this.hitSESegments[0].glowing = true;
+    } else if (this.hitSELines.length > 0) {
+      this.hitSELines[0].glowing = true;
+    } else if (this.hitSECircles.length > 0) {
+      this.hitSECircles[0].glowing = true;
+    }
     if (this.isOnSphere) {
       if (!this.isTemporaryPointAdded) {
         this.isTemporaryPointAdded = true;
@@ -169,7 +196,6 @@ export default class PointHandler extends Highlighter {
   activate(): void {
     super.activate();
   }
-
   deactivate(): void {
     super.deactivate();
   }

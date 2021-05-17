@@ -28,9 +28,9 @@ export default class PointOnOneDimensionalHandler extends Highlighter {
     //Select the oneDimensional object to put point on
     if (this.isOnSphere) {
       if (this.hitSELines.length > 0) {
-        this.oneDimensional = this.hitSELines[0];
-      } else if (this.hitSESegments.length > 0) {
         this.oneDimensional = this.hitSESegments[0];
+      } else if (this.hitSESegments.length > 0) {
+        this.oneDimensional = this.hitSELines[0];
       } else if (this.hitSECircles.length > 0) {
         this.oneDimensional = this.hitSECircles[0];
       }
@@ -76,6 +76,14 @@ export default class PointOnOneDimensionalHandler extends Highlighter {
   mouseMoved(event: MouseEvent): void {
     // Find all the nearby (hitSE... objects) and update location vectors
     super.mouseMoved(event);
+    //highlight nearby onedimensional
+    if (this.hitSESegments.length > 0) {
+      this.hitSESegments[0].glowing = true;
+    } else if (this.hitSELines.length > 0) {
+      this.hitSELines[0].glowing = true;
+    } else if (this.hitSECircles.length > 0) {
+      this.hitSECircles[0].glowing = true;
+    }
   }
 
   // eslint-disable-next-line

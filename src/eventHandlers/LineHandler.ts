@@ -165,7 +165,7 @@ export default class LineHandler extends Highlighter {
       this.hitSECircles[0].glowing = true;
     }
 
-    // Make sure that the event is on the sphere
+    // Make sure that the event is on the sphere and the user is making a line.
     if (this.isOnSphere && this.makingALine) {
       // Do we need to show the temporary line?
       if (!this.isTemporaryLineAdded) {

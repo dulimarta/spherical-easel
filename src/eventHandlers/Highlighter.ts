@@ -10,12 +10,22 @@ import { SECircle } from "@/models/SECircle";
 import AppStore from "@/store";
 
 export default abstract class Highlighter extends MouseHandler {
-  abstract mousePressed(event: MouseEvent): void;
-  abstract mouseReleased(event: MouseEvent): void;
   /**
    * The Vuex store
    */
   protected static store = AppStore;
+
+  abstract mousePressed(event: MouseEvent): void;
+
+  abstract mouseReleased(event: MouseEvent): void;
+
+  mouseLeave(event: MouseEvent): void {
+    super.mouseLeave(event);
+    // call an unglow all command
+    Highlighter.store.commit.unglowAllSENodules();
+    this.infoText.hide();
+  }
+
   /**
    * Provides an array of nearby objects (in hitPoints, hitLines,... )
    * @param event Mouse Event

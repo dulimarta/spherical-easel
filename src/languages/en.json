@@ -29,7 +29,7 @@
 
     "CreateCircleDisplayedName": "Create<br>Circle",
     "CreateCircleToolTipMessage": "Insert circle",
-    "CreateCircleToolUseMessage": "Click and drag to insert a circle with a given center point and through a second point.",
+    "CreateCircleToolUseMessage": "Click to insert a circle with a given center point and through a second point.",
 
     "CreateCoordinateDisplayedName": "Coordinates<br>&nbsp;",
     "CreateCoordinateToolTipMessage": "Measure x,y,z coordinates",
@@ -41,11 +41,11 @@
 
     "CreateLineSegmentDisplayedName": "Create Line<br>Segment",
     "CreateLineSegmentToolTipMessage": "Insert line segment",
-    "CreateLineSegmentToolUseMessage": "Click and drag to insert line segment defined by two points.",
+    "CreateLineSegmentToolUseMessage": "Click to insert line segment defined by two points.",
 
     "CreateLineDisplayedName": "Create<br>Line",
     "CreateLineToolTipMessage": "Insert line",
-    "CreateLineToolUseMessage": "Click and drag to insert a line defined by two points.",
+    "CreateLineToolUseMessage": "Click to insert a line defined by two points.",
 
     "CreatePointDistanceDisplayedName": "Point<br>Distance",
     "CreatePointDistanceToolTipMessage": "Distance of Two Points",
@@ -220,10 +220,11 @@
     "intersectionOneDimensionalNotIntersect": "Selected objects do not intersect.",
     "intersectionOneDimensionalAlreadyExists": "Intersection point already exists.",
     "moveHandlerNothingSelected": "No object selected. Rotating Sphere.",
-    "pamZoomHandlerZoomInLimitReached": "Zoom in limit reached.",
-    "pamZoomHandlerZoomOutLimitReached": "Zoom out limit reached.",
+    "panZoomHandlerZoomInLimitReached": "Zoom in limit reached.",
+    "panZoomHandlerZoomOutLimitReached": "Zoom out limit reached.",
     "selectionUpdate": "Selection Update: {number} objects selected. Hold the Alt/Option key to add or subtract from the current selection.",
-    "selectionUpdateNothingSelected": "No objects selected."
+    "selectionUpdateNothingSelected": "No objects selected.",
+    "pointCreationAttemptDuplicate": "There is already a point at this location."
 
   },
 

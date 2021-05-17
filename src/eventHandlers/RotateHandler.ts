@@ -212,6 +212,7 @@ export default class RotateHandler extends MouseHandler {
   }
 
   mouseLeave(event: MouseEvent): void {
+    super.mouseLeave(event);
     // Make sure that the last move gets recorded in the command structure so it can be undone/redone
     if (this.userIsRotating) {
       // In this case, the rotation was started but hasn't been recorded

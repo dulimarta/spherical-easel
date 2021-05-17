@@ -38,10 +38,7 @@ export default class SegmentHandler extends Highlighter {
    * The arcLength of the segment
    */
   private arcLength = 0;
-  /**
-   * Indicates if the user is dragging
-   */
-  private isDragging = false;
+
   /**
    * A temporary plottable (TwoJS) segment to display while the user is creating a segment
    */
@@ -94,7 +91,7 @@ export default class SegmentHandler extends Highlighter {
     this.tempSegment.stylize(DisplayStyle.ApplyTemporaryVariables);
     this.store.commit.addTemporaryNodule(this.tempSegment);
     this.isTemporarySegmentAdded = false;
-    this.isDragging = false;
+
     // Create and style the temporary points marking the start/end of an object being created
     this.startMarker = new Point();
     this.startMarker.stylize(DisplayStyle.ApplyTemporaryVariables);
@@ -110,12 +107,9 @@ export default class SegmentHandler extends Highlighter {
     // event, mouse press will *not* select the newly created point. This is not what we want so we call super.mouseMove
     super.mouseMoved(event);
 
-    if (this.isOnSphere) {
+    if (this.isOnSphere && !this.makingASegment) {
       // The user is making a segment
       this.makingASegment = true;
-
-      // The user is dragging to add a line
-      this.isDragging = true;
 
       // Decide if the starting location is near an already existing SEPoint or near a oneDimensional SENodule
       if (this.hitSEPoints.length > 0) {
@@ -126,6 +120,9 @@ export default class SegmentHandler extends Highlighter {
         // Set the start of the temp segment and the startMarker at the location of the selected point
         this.startMarker.positionVector = selected.locationVector;
         this.tempSegment.startVector = selected.locationVector;
+        // Glow the selected point and select it so the highlighter.ts doesn't unglow it with the mouseMoved method
+        this.startSEPoint.glowing = true;
+        this.startSEPoint.selected = true;
       } else if (this.hitSESegments.length > 0) {
         // The start of the line will be a point on a segment
         //  Eventually, we will create a new SEPointOneDimensional and Point
@@ -187,37 +184,44 @@ export default class SegmentHandler extends Highlighter {
     // Highlights the objects near the mouse event
     super.mouseMoved(event);
 
-    // If the mouse event is on the sphere and the user is dragging.
-    if (this.isOnSphere) {
-      if (this.isDragging) {
-        // This is executed once per segment to be added
-        if (!this.isTemporarySegmentAdded) {
-          this.isTemporarySegmentAdded = true;
-          // Add the temporary objects to the correct layers
-          this.endMarker.addToLayers(this.layers);
-          // Only add the start marker if the start point is going to be new or is non-user created intersection point
-          if (
-            this.startSEPoint == null ||
-            (this.startSEPoint instanceof SEIntersectionPoint &&
-              !this.startSEPoint.isUserCreated)
-          ) {
-            this.startMarker.addToLayers(this.layers);
-          }
-          this.tempSegment.addToLayers(this.layers);
+    // Only one point can be processed at a time, so set the first point nearby to glowing
+    // The user can create points (with the antipode) on circles, segments, and lines, so
+    // highlight those as well (but only one) if they are nearby also
+    if (this.hitSEPoints.length > 0) {
+      this.hitSEPoints[0].glowing = true;
+    } else if (this.hitSESegments.length > 0) {
+      this.hitSESegments[0].glowing = true;
+    } else if (this.hitSELines.length > 0) {
+      this.hitSELines[0].glowing = true;
+    } else if (this.hitSECircles.length > 0) {
+      this.hitSECircles[0].glowing = true;
+    }
+    // If the mouse event is on the sphere and the user is making a segment.
+    if (this.isOnSphere && this.makingASegment) {
+      // This is executed once per segment to be added
+      if (!this.isTemporarySegmentAdded) {
+        this.isTemporarySegmentAdded = true;
+        // Add the temporary objects to the correct layers
+        this.endMarker.addToLayers(this.layers);
+        // Only add the start marker if the start point is going to be new or is non-user created intersection point
+        if (
+          this.startSEPoint == null ||
+          (this.startSEPoint instanceof SEIntersectionPoint &&
+            !this.startSEPoint.isUserCreated)
+        ) {
+          this.startMarker.addToLayers(this.layers);
         }
-        this.setArcLengthAndNormalVector(
-          event.ctrlKey,
-          this.currentSphereVector
-        );
-
-        // update the location of the endMarker
-        this.endMarker.positionVector = this.currentSphereVector;
-
-        // Finally set the values for the unit vectors defining the segment and update the display
-        this.tempSegment.arcLength = this.arcLength;
-        this.tempSegment.normalVector = this.normalVector;
-        this.tempSegment.updateDisplay();
+        this.tempSegment.addToLayers(this.layers);
       }
+      this.setArcLengthAndNormalVector(event.ctrlKey, this.currentSphereVector);
+
+      // update the location of the endMarker
+      this.endMarker.positionVector = this.currentSphereVector;
+
+      // Finally set the values for the unit vectors defining the segment and update the display
+      this.tempSegment.arcLength = this.arcLength;
+      this.tempSegment.normalVector = this.normalVector;
+      this.tempSegment.updateDisplay();
     } else if (this.isTemporarySegmentAdded) {
       //if not on the sphere and the temporary segment has been added remove the temporary objects
       this.tempSegment.removeFromLayers();
@@ -228,7 +232,6 @@ export default class SegmentHandler extends Highlighter {
   }
 
   mouseReleased(event: MouseEvent): void {
-    this.isDragging = false;
     if (this.isOnSphere) {
       // Make sure the user didn't trigger the mouse leave event and is actually making a segment
       if (this.makingASegment) {
@@ -239,28 +242,33 @@ export default class SegmentHandler extends Highlighter {
           SETTINGS.segment.minimumArcLength
         ) {
           this.makeSegment(event);
-        } else {
-          this.makePoint();
+
+          // Remove the temporary objects
+          this.tempSegment.removeFromLayers();
+          this.startMarker.removeFromLayers();
+          this.endMarker.removeFromLayers();
+          // Clear old points and values to get ready for creating the next segment.
+          this.startSEPoint = null;
+          this.endSEPoint = null;
+          this.nearlyAntipodal = false;
+          this.longerThanPi = false;
+          this.makingASegment = false;
+          this.arcLength = 0;
+          this.startSEPointOneDimensionalParent = null;
+          // call an unglow all command
+          Highlighter.store.commit.unglowAllSENodules();
         }
+      } else {
+        this.tempSegment.removeFromLayers();
+        this.startMarker.removeFromLayers();
+        this.endMarker.removeFromLayers();
+        this.isTemporarySegmentAdded = false;
       }
-      // Remove the temporary objects
-      this.tempSegment.removeFromLayers();
-      this.startMarker.removeFromLayers();
-      this.endMarker.removeFromLayers();
-      // Clear old points and values to get ready for creating the next segment.
-      this.startSEPoint = null;
-      this.endSEPoint = null;
-      this.nearlyAntipodal = false;
-      this.longerThanPi = false;
-      this.makingASegment = false;
-      this.arcLength = 0;
-      this.startSEPointOneDimensionalParent = null;
     }
   }
 
   mouseLeave(event: MouseEvent): void {
     super.mouseLeave(event);
-    this.isDragging = false;
     if (this.isTemporarySegmentAdded) {
       this.tempSegment.removeFromLayers();
       this.startMarker.removeFromLayers();

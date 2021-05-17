@@ -166,7 +166,7 @@ export default class PanZoomHandler implements ToolStrategy {
           `Exceeded zoom out limit ${SETTINGS.zoom.minMagnification}`
         );
         EventBus.fire("show-alert", {
-          key: `handlers.pamZoomHandlerZoomOutLimitReached`,
+          key: `handlers.panZoomHandlerZoomOutLimitReached`,
           keyOptions: {},
           type: "warning"
         });
@@ -180,7 +180,7 @@ export default class PanZoomHandler implements ToolStrategy {
           `Exceeded zoom in limit ${SETTINGS.zoom.maxMagnification}`
         );
         EventBus.fire("show-alert", {
-          key: `handlers.pamZoomHandlerZoomInLimitReached`,
+          key: `handlers.panZoomHandlerZoomInLimitReached`,
           keyOptions: {},
           type: "warning"
         });

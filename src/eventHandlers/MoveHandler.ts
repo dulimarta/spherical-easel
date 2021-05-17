@@ -208,28 +208,16 @@ export default class MoveHandler extends Highlighter {
     // highlight the objects that can be moved
     // and only the highlight the object that will be moved when the user clicks and drags
     if (!this.isDragging) {
-      if (
-        this.hitSEPoints.filter(n => n.isFreeToMove() && n.showing).length > 0
-      ) {
+      if (this.hitSEPoints.filter(n => n.isFreeToMove()).length > 0) {
         this.hitSEPoints[0].glowing = true;
-      } else if (
-        this.hitSELabels.filter(n => n.isFreeToMove() && n.showing).length > 0
-      ) {
+      } else if (this.hitSELabels.filter(n => n.isFreeToMove()).length > 0) {
         this.hitSELabels[0].glowing = true;
       } else if (this.hitSEPoints.length == 0) {
-        if (
-          this.hitSESegments.filter(n => n.isFreeToMove() && n.showing).length >
-          0
-        ) {
+        if (this.hitSESegments.filter(n => n.isFreeToMove()).length > 0) {
           this.hitSESegments[0].glowing = true;
-        } else if (
-          this.hitSELines.filter(n => n.isFreeToMove() && n.showing).length > 0
-        ) {
+        } else if (this.hitSELines.filter(n => n.isFreeToMove()).length > 0) {
           this.hitSELines[0].glowing = true;
-        } else if (
-          this.hitSECircles.filter(n => n.isFreeToMove() && n.showing).length >
-          0
-        ) {
+        } else if (this.hitSECircles.filter(n => n.isFreeToMove()).length > 0) {
           this.hitSECircles[0].glowing = true;
         }
       }
@@ -514,6 +502,7 @@ export default class MoveHandler extends Highlighter {
   }
 
   mouseLeave(event: MouseEvent): void {
+    super.mouseLeave(event);
     // Make sure that the last move gets recorded in the command structure so it can be undone/redone
     this.mouseReleased(event);
   }

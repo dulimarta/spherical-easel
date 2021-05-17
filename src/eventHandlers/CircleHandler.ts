@@ -173,7 +173,7 @@ export default class CircleHandler extends Highlighter {
       this.hitSECircles[0].glowing = true;
     }
 
-    // Make sure that the event is on the sphere
+    // Make sure that the event is on the sphere and the user is making a circle.
     if (this.isOnSphere && this.makingACircle) {
       // If the temporary circle (and end/startMarker) has *not* been added to the scene do so now (only once)
       if (!this.isTemporaryCircleAdded) {
@@ -270,8 +270,6 @@ export default class CircleHandler extends Highlighter {
     this.centerSEPoint = null;
     this.centerSEPointOneDimensionalParent = null;
     this.makingACircle = false;
-    // call an unglow all command
-    Highlighter.store.commit.unglowAllSENodules();
   }
   /**
    * Add a new circle the user has moved the mouse far enough (but not a radius of PI)

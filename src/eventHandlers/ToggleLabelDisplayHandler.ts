@@ -2,6 +2,8 @@ import Two from "two.js";
 import Highlighter from "./Highlighter";
 import { SELabel } from "@/models/SELabel";
 import { SetNoduleDisplayCommand } from "@/commands/SetNoduleDisplayCommand";
+import { SEPoint } from "@/models/SEPoint";
+import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 
 export default class ToggleLabelDisplayHandler extends Highlighter {
   /**
@@ -16,18 +18,17 @@ export default class ToggleLabelDisplayHandler extends Highlighter {
   mousePressed(event: MouseEvent): void {
     //Select an object to delete
     if (this.isOnSphere) {
-      // In the case of multiple selections prioritize points > lines > segments > circles
       if (this.hitSEPoints.length > 0) {
         if (this.hitSEPoints[0].label != null) {
           this.label = this.hitSEPoints[0].label;
         }
-      } else if (this.hitSELines.length > 0) {
-        if (this.hitSELines[0].label != null) {
-          this.label = this.hitSELines[0].label;
-        }
       } else if (this.hitSESegments.length > 0) {
         if (this.hitSESegments[0].label != null) {
           this.label = this.hitSESegments[0].label;
+        }
+      } else if (this.hitSELines.length > 0) {
+        if (this.hitSELines[0].label != null) {
+          this.label = this.hitSELines[0].label;
         }
       } else if (this.hitSECircles.length > 0) {
         if (this.hitSECircles[0].label != null) {
@@ -48,6 +49,27 @@ export default class ToggleLabelDisplayHandler extends Highlighter {
   mouseMoved(event: MouseEvent): void {
     // Find all the nearby (hitSE... objects) and update location vectors
     super.mouseMoved(event);
+    // Only one point can be processed at a time, so set the first point nearby to glowing
+    // The user can create points (with the antipode) on circles, segments, and lines, so
+    // highlight those as well (but only one) if they are nearby also
+    if (this.hitSEPoints.length > 0) {
+      // never highlight non user created intersection points
+      this.hitSEPoints.filter((p: SEPoint) => {
+        if (p instanceof SEIntersectionPoint && !p.isUserCreated) {
+          return false;
+        } else {
+          return true;
+        }
+      })[0].glowing = true;
+    } else if (this.hitSESegments.length > 0) {
+      this.hitSESegments[0].glowing = true;
+    } else if (this.hitSELines.length > 0) {
+      this.hitSELines[0].glowing = true;
+    } else if (this.hitSECircles.length > 0) {
+      this.hitSECircles[0].glowing = true;
+    } else if (this.hitSELabels.length > 0) {
+      this.hitSELabels[0].glowing = true;
+    }
   }
 
   // eslint-disable-next-line
