@@ -893,5 +893,49 @@ export default {
   },
   getInverseTotalRotationMatrix: (state: AppState) => (): Matrix4 => {
     return state.inverseTotalRotationMatrix;
+  },
+  //Given a test point, does there exist an *exact* antipode of it?
+  hasNoAntipode: (state: AppState) => (testPoint: SEPoint): boolean => {
+    // create the antipode location vector
+    tempVec.copy(testPoint.locationVector).multiplyScalar(-1);
+    // search for the antippode location vector
+    const ind = state.sePoints.findIndex(p => {
+      return tempVec.equals(p.locationVector);
+    });
+    if (ind < 0) {
+      // If -1*testPoint.location doesn't appear on the sePoints array then there is *no* antipode to testPoint (so return true)
+      return true;
+    } else {
+      //now realize that the intersection of two lines/segments creates two SEPoints (which are an antipodal pair A and B) and
+      // puts them on the sePoints array, but some of them may or may not be user created.
+      // if the user try to create the antipode of one of the intersections A, then -1*A appears on the list as B
+      // (1) if B is user created, then we should *not* create the antipode at -1*A so return false (not no antipode = antipode exists)
+      // (2) if B is not user created, then we we should still create the antipode at -1*A, so return true (these is no antipode)
+
+      // In the case that (2) happens it is possible that there are two points in the array sePoint with *exactly* the
+      // same location vector at -1*A, if that happens then the antipode is already created and we should return false (not no antipode = antipode exists)
+      const ind2 = state.sePoints.findIndex((p, index) => {
+        if (index <= ind) {
+          // ignore the entries in sePoint upto index ind, because they have already been searched
+          return false;
+        } else {
+          return tempVec.equals(p.locationVector);
+        }
+      });
+      // the -1*testPoint.location appears twice!
+      if (ind2 >= 0) {
+        return false;
+      }
+
+      if (state.sePoints[ind] instanceof SEIntersectionPoint) {
+        if (!(state.sePoints[ind] as SEIntersectionPoint).isUserCreated) {
+          return true; // Case (2)
+        } else {
+          return false; // Case (1)
+        }
+      } else {
+        return false;
+      }
+    }
   }
 };

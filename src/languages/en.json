@@ -21,11 +21,11 @@
 
     "CreateAngleDisplayedName": "Measure<br>Angle",
     "CreateAngleToolTipMessage": "Calculate Angle",
-    "CreateAngleToolUseMessage": "Click on two lines/segments or three points to calculate angle.",
+    "CreateAngleToolUseMessage": "Select two lines/segments or three points to calculate an angle.",
 
     "CreateAntipodalPointDisplayedName": "Antipodal<br>Point",
     "CreateAntipodalPointToolTipMessage": "Select a location",
-    "CreateAntipodalPointToolUseMessage": "Click on a location to create a point (if necessary) and its antipode",
+    "CreateAntipodalPointToolUseMessage": "Select a location to create a point (if necessary) and its antipode",
 
     "CreateCircleDisplayedName": "Create<br>Circle",
     "CreateCircleToolTipMessage": "Insert circle",
@@ -33,10 +33,10 @@
 
     "CreateCoordinateDisplayedName": "Coordinates<br>&nbsp;",
     "CreateCoordinateToolTipMessage": "Measure x,y,z coordinates",
-    "CreateCoordinateToolUseMessage": "Click on a point to measure its x,y,z coordinates",
+    "CreateCoordinateToolUseMessage": "Select a point to measure its x,y,z coordinates on the sphere",
 
     "CreateIntersectionDisplayedName": "Intersection<br>Point(s)",
-    "CreateIntersectionToolTipMessage": "Intersect two objects",
+    "CreateIntersectionToolTipMessage": "Intersect two one-dimensional objects",
     "CreateIntersectionToolUseMessage": "Select two one-dimensional objects to create their intersection point(s).",
 
     "CreateLineSegmentDisplayedName": "Create Line<br>Segment",
@@ -69,15 +69,15 @@
 
     "CreatePerpendicularDisplayedName": "Perpendicular<br>&nbsp;",
     "CreatePerpendicularToolTipMessage": "Perpendicular Through Point",
-    "CreatePerpendicularToolUseMessage": "Create a perpendicular line to a selected one-dimensional object and selected point.",
+    "CreatePerpendicularToolUseMessage": "Create a perpendicular line to a selected one-dimensional object and selected location.",
 
     "DeleteDisplayedName": "Delete<br>&nbsp;",
     "DeleteToolTipMessage": "Delete Objects",
-    "DeleteToolUseMessage": "Click on objects to delete them.",
+    "DeleteToolUseMessage": "Select objects to delete. Hold the SHIFT key to select from the back of the sphere.",
 
     "HideDisplayedName": "Hide<br>Objects",
-    "HideObjectToolTipMessage": "Hide object",
-    "HideObjectToolUseMessage": "Click at location to hide an object. Hold the SHIFT key to select from the back of the sphere.",
+    "HideObjectToolTipMessage": "Hide objects",
+    "HideObjectToolUseMessage": "Select objects to hide. Hold the SHIFT key to select from the back of the sphere.",
 
     "MoveDisplayedName": "Move<br>Objects",
     "MoveObjectToolTipMessage": "Move object",
@@ -215,17 +215,22 @@
     "selectMorePoints": "Select {needed} more point(s).",
     "selectAnotherLine": "Select 1 more line.",
     "newCoordinatePointMeasurementAdded": "New coordinate measurements added",
-    "intersectionOneDimensionalAdded": "One dimensional object {name} added. Select another.",
+    "intersectionOneDimensionalSelected": "One dimensional object {name} selected. Select another.",
     "intersectionOneDimensionalDuplicate": "Duplicate object. Select another.",
     "intersectionOneDimensionalNotIntersect": "Selected objects do not intersect.",
     "intersectionOneDimensionalAlreadyExists": "Intersection point already exists.",
+    "intersectionOneDimensionalPointCreated":"Intersection point successfully created.",
     "moveHandlerNothingSelected": "No object selected. Rotating Sphere.",
     "panZoomHandlerZoomInLimitReached": "Zoom in limit reached.",
     "panZoomHandlerZoomOutLimitReached": "Zoom out limit reached.",
     "selectionUpdate": "Selection Update: {number} objects selected. Hold the Alt/Option key to add or subtract from the current selection.",
     "selectionUpdateNothingSelected": "No objects selected.",
-    "pointCreationAttemptDuplicate": "There is already a point at this location."
-
+    "pointCreationAttemptDuplicate": "There is already a point at this location.",
+    "perpendicularLineThruPointPointSelected":"Point selected. Now select a one dimensional object to determine the perpendicular.",
+    "perpendicularLineThruPointLineSelected":"Line {name} selected. Now select a location to create a new point or to create a point on an object.",
+    "perpendicularLineThruPointSegmentSelected":"Segment {name} selected. Now select a location to create a new point or to create a point on an object.",
+    "perpendicularLineThruPointCircleSelected":"Circle {name} selected. Now select a location to create a new point or to create a point on an object.",
+    "antipodeDuplicate":"The antipode of this point has already been created."
   },
 
   "objectTree": {

@@ -21,6 +21,7 @@ import SETTINGS from "@/global-settings";
 import { SEExpression } from "@/models/SEExpression";
 
 const tmpMatrix = new Matrix4();
+const tmpVector = new Vector3();
 
 //#region appState
 export const initialState: AppState = {

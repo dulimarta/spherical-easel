@@ -13,10 +13,15 @@ import { SELabel } from "@/models/SELabel";
 import { Vector3 } from "three";
 import SETTINGS from "@/global-settings";
 import EventBus from "./EventBus";
+import { SEOneDimensional } from "@/types";
 
 export default class PointHandler extends Highlighter {
-  // The temporary point displayed as the user drags
+  // The temporary point displayed as the user moves the pointer
   private isTemporaryPointAdded = false;
+  /**
+   * As the user moves the pointer around snap the temporary marker to this object temporarily
+   */
+  protected snapToTemporaryOneDimensional: SEOneDimensional | null = null;
   /**
    * A temporary plottable (TwoJS) point created while the user is making a point
    */
@@ -157,13 +162,19 @@ export default class PointHandler extends Highlighter {
         this.hitSEPoints.filter(
           p => p instanceof SEIntersectionPoint && !p.isUserCreated
         )[0].glowing = true;
+        this.snapToTemporaryOneDimensional = null;
       }
     } else if (this.hitSESegments.length > 0) {
       this.hitSESegments[0].glowing = true;
+      this.snapToTemporaryOneDimensional = this.hitSESegments[0];
     } else if (this.hitSELines.length > 0) {
       this.hitSELines[0].glowing = true;
+      this.snapToTemporaryOneDimensional = this.hitSELines[0];
     } else if (this.hitSECircles.length > 0) {
       this.hitSECircles[0].glowing = true;
+      this.snapToTemporaryOneDimensional = this.hitSECircles[0];
+    } else {
+      this.snapToTemporaryOneDimensional = null;
     }
     if (this.isOnSphere) {
       if (!this.isTemporaryPointAdded) {
@@ -171,12 +182,29 @@ export default class PointHandler extends Highlighter {
         // Add the temporary point to the appropriate layers
         this.startMarker.addToLayers(this.layers);
       }
-      // Move the temporary point to the location of the mouse event, and update the display
-      this.startMarker.positionVector = this.currentSphereVector;
+      // Move the temporary point to the location of the mouse event, and update the display, snap to a nearby one dimensional object (if there is one)
+      if (this.snapToTemporaryOneDimensional === null) {
+        this.startMarker.positionVector = this.currentSphereVector;
+      } else {
+        this.startMarker.positionVector = this.snapToTemporaryOneDimensional.closestVector(
+          this.currentSphereVector
+        );
+      }
+
+      // If there is a nearby (possibly user created or not) point turn off the temporary marker
+      if (this.hitSEPoints.length > 0) {
+        if (this.isTemporaryPointAdded) {
+          // Remove the temporary object
+          this.startMarker.removeFromLayers();
+          this.isTemporaryPointAdded = false;
+          this.snapToTemporaryOneDimensional = null;
+        }
+      }
     } else if (this.isTemporaryPointAdded) {
       //if not on the sphere and the temporary segment has been added remove the temporary objects
       this.startMarker.removeFromLayers();
       this.isTemporaryPointAdded = false;
+      this.snapToTemporaryOneDimensional = null;
     }
   }
 
@@ -192,6 +220,7 @@ export default class PointHandler extends Highlighter {
       this.startMarker.removeFromLayers();
       this.isTemporaryPointAdded = false;
     }
+    this.snapToTemporaryOneDimensional = null;
   }
   activate(): void {
     super.activate();

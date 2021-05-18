@@ -64,9 +64,9 @@ export default class IntersectionPointHandler extends Highlighter {
         if (this.oneDimensional1 !== null) {
           this.oneDimensional1.selected = true;
           EventBus.fire("show-alert", {
-            key: `handlers.intersectionOneDimensionalAdded`,
+            key: `handlers.intersectionOneDimensionalSelected`,
             keyOptions: { name: `${this.oneDimensional1.name}` },
-            type: "success"
+            type: "info"
           });
         }
       } else if (this.oneDimensional2 == null) {
@@ -86,7 +86,7 @@ export default class IntersectionPointHandler extends Highlighter {
             EventBus.fire("show-alert", {
               key: `handlers.intersectionOneDimensionalDuplicate`,
               keyOptions: {},
-              type: "warning"
+              type: "error"
             });
           }
         }
@@ -286,6 +286,11 @@ export default class IntersectionPointHandler extends Highlighter {
             intersectionConversionCommandGroup.addCommand(
               new ConvertInterPtToUserCreatedCommand(element)
             );
+            EventBus.fire("show-alert", {
+              key: `handlers.intersectionOneDimensionalPointCreated`,
+              keyOptions: {},
+              type: "success"
+            });
           } else if (index === 0) {
             // only display the error once (for index 0)
             // warn the user that the selected objects don't intersect
@@ -300,7 +305,7 @@ export default class IntersectionPointHandler extends Highlighter {
           EventBus.fire("show-alert", {
             key: `handlers.intersectionOneDimensionalAlreadyExists`,
             keyOptions: {},
-            type: "warning"
+            type: "error"
           });
         }
       });

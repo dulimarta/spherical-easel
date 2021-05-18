@@ -28,6 +28,7 @@ import { AddPointOnOneDimensionalCommand } from "@/commands/AddPointOnOneDimensi
 import { SEPointOnOneDimensional } from "@/models/SEPointOnOneDimensional";
 import { AddPointCommand } from "@/commands/AddPointCommand";
 import { ConvertInterPtToUserCreatedCommand } from "@/commands/ConvertInterPtToUserCreatedCommand";
+import EventBus from "./EventBus";
 
 export default class PerpendicularLineThruPointHandler extends Highlighter {
   /**
@@ -159,6 +160,13 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
           this.temporaryPointAdded = true;
           this.sePoint = null;
         }
+        if (this.oneDimensional === null) {
+          EventBus.fire("show-alert", {
+            key: `handlers.perpendicularLineThruPointPointSelected`,
+            keyOptions: {},
+            type: "info"
+          });
+        }
         this.selectOneObjectAtATime = false;
       }
 
@@ -167,12 +175,45 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
         if (this.hitSESegments.length > 0) {
           this.oneDimensional = this.hitSESegments[0];
           this.oneDimensional.selected = true;
+          if (
+            this.sePoint === null &&
+            this.sePointOneDimensionalParent === null &&
+            this.sePointVector.isZero()
+          ) {
+            EventBus.fire("show-alert", {
+              key: `handlers.perpendicularLineThruPointSegmentSelected`,
+              keyOptions: { name: `${this.oneDimensional.name}` },
+              type: "info"
+            });
+          }
         } else if (this.hitSELines.length > 0) {
           this.oneDimensional = this.hitSELines[0];
           this.oneDimensional.selected = true;
+          if (
+            this.sePoint === null &&
+            this.sePointOneDimensionalParent === null &&
+            this.sePointVector.isZero()
+          ) {
+            EventBus.fire("show-alert", {
+              key: `handlers.perpendicularLineThruPointLineSelected`,
+              keyOptions: { name: `${this.oneDimensional.name}` },
+              type: "info"
+            });
+          }
         } else if (this.hitSECircles.length > 0) {
           this.oneDimensional = this.hitSECircles[0];
           this.oneDimensional.selected = true;
+          if (
+            this.sePoint === null &&
+            this.sePointOneDimensionalParent === null &&
+            this.sePointVector.isZero()
+          ) {
+            EventBus.fire("show-alert", {
+              key: `handlers.perpendicularLineThruPointCircleSelected`,
+              keyOptions: { name: `${this.oneDimensional.name}` },
+              type: "info"
+            });
+          }
         }
       }
 
