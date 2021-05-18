@@ -168,10 +168,10 @@ export default class CircleHandler extends Highlighter {
   mouseMoved(event: MouseEvent): void {
     // Find all the nearby (hitSE... objects) and update location vectors
     super.mouseMoved(event);
-    // Only one point can be processed at a time, so set the first point nearby to glowing
+    // Only object can be interacted with at a given time, so set the first point nearby to glowing
     // The user can create points  on circles, segments, and lines, so
     // highlight those as well (but only one) if they are nearby also
-    // also set the snap objects
+    // Also set the snap objects
     if (this.hitSEPoints.length > 0) {
       this.hitSEPoints[0].glowing = true;
       if (!this.makingACircle) {
@@ -284,7 +284,7 @@ export default class CircleHandler extends Highlighter {
           this.temporaryEndMarker.positionVector = this.currentSphereVector;
         }
 
-        // If the temporary circle and startMarker has *not* been added to the scene do so now (only once)
+        // If the temporary circle has *not* been added to the scene do so now (only once)
         if (!this.isTemporaryCircleAdded) {
           this.isTemporaryCircleAdded = true;
           this.temporaryCircle.addToLayers(this.layers);
@@ -328,6 +328,8 @@ export default class CircleHandler extends Highlighter {
       if (this.makingACircle) {
         // If the user hasn't moved the mouse far enough or is trying to make a circle of radius Pi,
         //  don't add a circle
+        // don't use the this.arcRadius variable (which calculate the radius based on the temporary objects) because this
+        //  can be larger than the value (radius) below and will create circles of radius zero
         const radius = this.currentSphereVector.angleTo(this.centerVector);
         if (
           radius > SETTINGS.circle.minimumRadius &&
@@ -404,6 +406,8 @@ export default class CircleHandler extends Highlighter {
     this.centerSEPoint = null;
     this.centerSEPointOneDimensionalParent = null;
     this.makingACircle = false;
+    // call an unglow all command
+    Highlighter.store.commit.unglowAllSENodules();
   }
   /**
    * Add a new circle the user has moved the mouse far enough (but not a radius of PI)
@@ -664,66 +668,6 @@ export default class CircleHandler extends Highlighter {
     circleCommandGroup.execute();
   }
 
-  /**
-   * The user is attempting to make a circle smaller than the minimum radius or close to radius PI so
-   * create  a point at the location of the start vector
-   */
-  // makePoint(): void {
-  //   if (this.centerSEPoint === null) {
-  //     // we have to create a new SEPointOnOneDimensional or SEPoint and Point
-  //     const newPoint = new Point();
-  //     // Set the display to the default values
-  //     newPoint.stylize(DisplayStyle.ApplyCurrentVariables);
-  //     // Adjust the size of the point to the current zoom magnification factor
-  //     newPoint.adjustSize();
-  //     const newLabel = new Label();
-
-  //     let vtx: SEPoint | SEPointOnOneDimensional | null = null;
-  //     let newSELabel: SELabel | null = null;
-  //     if (this.centerSEPointOneDimensionalParent) {
-  //       // Starting mouse press landed near a oneDimensional
-  //       // Create the model object for the new point and link them
-  //       vtx = new SEPointOnOneDimensional(
-  //         newPoint,
-  //         this.centerSEPointOneDimensionalParent
-  //       );
-  //       newSELabel = new SELabel(newLabel, vtx);
-
-  //       new AddPointOnOneDimensionalCommand(
-  //         vtx,
-  //         this.centerSEPointOneDimensionalParent,
-  //         newSELabel
-  //       ).execute();
-  //     } else {
-  //       // Starting mouse press landed on an open space
-  //       // we have to create a new point and it to the group/store
-  //       // Create and execute the command to create a new point for undo/redo
-  //       vtx = new SEPoint(newPoint);
-  //       newSELabel = new SELabel(newLabel, vtx);
-  //       new AddPointCommand(vtx, newSELabel).execute();
-  //     }
-  //     vtx.locationVector = this.centerVector;
-  //     // Set the initial label location
-  //     this.tmpVector
-  //       .copy(vtx.locationVector)
-  //       .add(
-  //         new Vector3(
-  //           2 * SETTINGS.point.initialLabelOffset,
-  //           SETTINGS.point.initialLabelOffset,
-  //           0
-  //         )
-  //       )
-  //       .normalize();
-  //     newSELabel.locationVector = this.tmpVector;
-  //   } else if (
-  //     this.centerSEPoint instanceof SEIntersectionPoint &&
-  //     !this.centerSEPoint.isUserCreated
-  //   ) {
-  //     // Mark the intersection point as created, the display style is changed and the glowing style is set up
-  //     new ConvertInterPtToUserCreatedCommand(this.centerSEPoint).execute();
-  //   }
-  // }
-
   activate(): void {
     // If there are exactly two SEPoints selected, create a circle with the first as the center
     // and the second as the circle point
@@ -800,5 +744,8 @@ export default class CircleHandler extends Highlighter {
     }
     // Unselect the selected objects and clear the selectedObject array
     super.activate();
+  }
+  deactivate(): void {
+    super.deactivate();
   }
 }

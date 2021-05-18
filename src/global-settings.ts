@@ -52,7 +52,7 @@ export default {
     showLabelsOfPointOnObjectInitially: false, // Should the labels of points on objects be shown upon creating the point
     maxLabelDistance: 0.08, // The maximum distance that a label is allowed to get away from the point
     initialLabelOffset: 0.02, // When making point labels this is initially how far (roughly) they are from the location of the point
-    hitIdealDistance: 0.04, // The user has to be within this distance on the ideal unit sphere to select the point.
+    hitIdealDistance: 0.04, // The user has to be within this distance on the ideal unit sphere to select the point. (must be smaller than line/segment/circle.minArcLength.minimumLength.minRadius)
     //dynamicBackStyle is a flag that means the fill color,stroke, and opacity of the points drawn on the back are automatically calculated based on the value of SETTINGS.contrast and their front counterparts
     dynamicBackStyle: true,
     //The scaling of the points relative to the scaled for zoom default size
@@ -122,7 +122,7 @@ export default {
   segment: {
     showLabelsInitially: false, // Should the labels be show upon creating the segment
     maxLabelDistance: 0.08, // The maximum distance that a label is allowed to get away from the segment
-    minimumArcLength: 0.02, // Don't create segments with a length less than this
+    minimumArcLength: 0.045, // Don't create segments with a length less than this (must be larger than point.hitIdealDistance because if not it is possible to create a line segment of length zero )
     numPoints: 20, // The number of vertices used to render the segment. These are spread over the front and back parts. MAKE THIS EVEN!
     hitIdealDistance: 0.03, // The user has to be within this distance on the ideal unit sphere to select the line.
     //dynamicBackStyle is a flag that means the fill color,stroke, and opacity of the segments drawn on the back are automatically calculated based on the value of SETTINGS.contrast and their front counterparts
@@ -172,7 +172,7 @@ export default {
     showLabelsInitially: false, // Should the labels be show upon creating the line
     maxLabelDistance: 0.08, // The maximum distance that a label is allowed to get away from the line
     initialLabelOffset: 0.02, // When making point labels this is initially how far (roughly) they are from the line
-    minimumLength: 0.02, // Don't create lines distance between the two defining point with arc length between them smaller than this
+    minimumLength: 0.045, // Don't create lines distance between the two defining point with arc length between them smaller than this (must be larger than point.hitIdealDistance because if not it is possible to create a line segment of length zero )
     numPoints: 50, // The number of vertices used to render the line. These are spread over the front and back parts. MAKE THIS EVEN!
     hitIdealDistance: 0.03, // The user has to be within this distance on the ideal unit sphere to select the line.
     //dynamicBackStyle is a flag that means the fill color,stroke, and opacity of the lines drawn on the back are automatically calculated based on the value of SETTINGS.contrast and their front counterparts

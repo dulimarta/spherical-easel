@@ -41,8 +41,14 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
   /**
    * A temporary plottable (TwoJS) point created while the user is making the circles or segments
    */
-  protected tempPointMarker: Point;
+  protected temporaryPointMarker: Point;
   private temporaryPointAdded: boolean;
+
+  /**
+   * As the user moves the pointer around snap the temporary point marker to this object temporarily
+   */
+  protected snapToTemporaryOneDimensional: SEOneDimensional | null = null;
+  protected snapToTemporaryPoint: SEPoint | null = null;
 
   /**
    * The one dimensional object and the point (to create line perpendicular to the object thru the point)
@@ -76,9 +82,9 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
     this.temporaryLineAdded = false;
 
     // Create and style the temporary point marking the point on the perpendicular being created
-    this.tempPointMarker = new Point();
-    this.tempPointMarker.stylize(DisplayStyle.ApplyTemporaryVariables);
-    this.store.commit.addTemporaryNodule(this.tempPointMarker);
+    this.temporaryPointMarker = new Point();
+    this.temporaryPointMarker.stylize(DisplayStyle.ApplyTemporaryVariables);
+    this.store.commit.addTemporaryNodule(this.temporaryPointMarker);
     this.temporaryPointAdded = false;
   }
 
@@ -107,8 +113,8 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
             this.sePoint instanceof SEIntersectionPoint &&
             !this.sePoint.isUserCreated
           ) {
-            this.tempPointMarker.positionVector = this.sePointVector;
-            this.tempPointMarker.addToLayers(this.layers);
+            this.temporaryPointMarker.positionVector = this.sePointVector;
+            this.temporaryPointMarker.addToLayers(this.layers);
             this.temporaryPointAdded = true;
           }
         } else if (this.hitSESegments.length > 0) {
@@ -120,8 +126,8 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
               this.currentSphereVector
             )
           );
-          this.tempPointMarker.positionVector = this.sePointVector;
-          this.tempPointMarker.addToLayers(this.layers);
+          this.temporaryPointMarker.positionVector = this.sePointVector;
+          this.temporaryPointMarker.addToLayers(this.layers);
           this.temporaryPointAdded = true;
           this.sePoint = null;
         } else if (this.hitSELines.length > 0) {
@@ -133,8 +139,8 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
               this.currentSphereVector
             )
           );
-          this.tempPointMarker.positionVector = this.sePointVector;
-          this.tempPointMarker.addToLayers(this.layers);
+          this.temporaryPointMarker.positionVector = this.sePointVector;
+          this.temporaryPointMarker.addToLayers(this.layers);
           this.temporaryPointAdded = true;
           this.sePoint = null;
         } else if (this.hitSECircles.length > 0) {
@@ -146,17 +152,17 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
               this.currentSphereVector
             )
           );
-          this.tempPointMarker.positionVector = this.sePointVector;
-          this.tempPointMarker.addToLayers(this.layers);
+          this.temporaryPointMarker.positionVector = this.sePointVector;
+          this.temporaryPointMarker.addToLayers(this.layers);
           this.temporaryPointAdded = true;
           this.sePoint = null;
         } else {
           // The mouse press is not near an existing point or one dimensional object.
           //  Record the location in a temporary point (tempPointMarker found in MouseHandler).
           //  Eventually, we will create a new SEPoint and Point
-          this.tempPointMarker.positionVector = this.currentSphereVector;
+          this.temporaryPointMarker.positionVector = this.currentSphereVector;
           this.sePointVector.copy(this.currentSphereVector);
-          this.tempPointMarker.addToLayers(this.layers);
+          this.temporaryPointMarker.addToLayers(this.layers);
           this.temporaryPointAdded = true;
           this.sePoint = null;
         }
@@ -239,10 +245,10 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
         }
         this.sePoint = null;
         if (this.temporaryPointAdded) {
-          this.tempPointMarker.removeFromLayers();
+          this.temporaryPointMarker.removeFromLayers();
           this.temporaryPointAdded = false;
         }
-        this.tempPointMarker.removeFromLayers();
+        this.temporaryPointMarker.removeFromLayers();
         this.temporaryPointAdded = false;
         if (this.temporaryLineAdded) {
           this.tempLine.removeFromLayers();
@@ -256,22 +262,35 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
   mouseMoved(event: MouseEvent): void {
     // Find all the nearby (hitSE... objects) and update location vectors
     super.mouseMoved(event);
-    // Only one object can be processed at a time, so set the first point nearby to glowing
-    // The user can create points (with the antipode) on circles, segments, and lines, so
+    // Only object can be interacted with at a given time, so set the first point nearby to glowing
+    // The user can create points  on circles, segments, and lines, so
     // highlight those as well (but only one) if they are nearby also
+    // Also set the snap objects
     if (
       this.sePoint === null &&
       this.sePointOneDimensionalParent === null &&
       this.sePointVector.isZero()
     ) {
+      // glow the one-dimensional and points objects when both point is not set
       if (this.hitSEPoints.length > 0) {
         this.hitSEPoints[0].glowing = true;
+        this.snapToTemporaryPoint = this.hitSEPoints[0];
+        this.snapToTemporaryOneDimensional = null;
       } else if (this.hitSESegments.length > 0) {
         this.hitSESegments[0].glowing = true;
+        this.snapToTemporaryOneDimensional = this.hitSESegments[0];
+        this.snapToTemporaryPoint = null;
       } else if (this.hitSELines.length > 0) {
         this.hitSELines[0].glowing = true;
+        this.snapToTemporaryOneDimensional = this.hitSELines[0];
+        this.snapToTemporaryPoint = null;
       } else if (this.hitSECircles.length > 0) {
         this.hitSECircles[0].glowing = true;
+        this.snapToTemporaryOneDimensional = this.hitSECircles[0];
+        this.snapToTemporaryPoint = null;
+      } else {
+        this.snapToTemporaryOneDimensional = null;
+        this.snapToTemporaryPoint = null;
       }
     } else if (
       !(
@@ -281,12 +300,23 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
       ) &&
       this.oneDimensional === null
     ) {
+      // in this case the point is set and the one-dimensional is not, so only glow the one-dimensional
+      // no need to snap
       if (this.hitSESegments.length > 0) {
         this.hitSESegments[0].glowing = true;
+        this.snapToTemporaryOneDimensional = null;
+        this.snapToTemporaryPoint = null;
       } else if (this.hitSELines.length > 0) {
         this.hitSELines[0].glowing = true;
+        this.snapToTemporaryOneDimensional = null;
+        this.snapToTemporaryPoint = null;
       } else if (this.hitSECircles.length > 0) {
         this.hitSECircles[0].glowing = true;
+        this.snapToTemporaryOneDimensional = null;
+        this.snapToTemporaryPoint = null;
+      } else {
+        this.snapToTemporaryOneDimensional = null;
+        this.snapToTemporaryPoint = null;
       }
     }
 
@@ -299,21 +329,63 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
       ) {
         // add the temporary point to the display and set its location to the currentSphereVector
         if (!this.temporaryPointAdded) {
-          this.tempPointMarker.addToLayers(this.layers);
+          this.temporaryPointMarker.addToLayers(this.layers);
           this.temporaryPointAdded = true;
         }
-        this.tempPointMarker.positionVector = this.currentSphereVector;
+
+        // Remove the temporary startMarker if there is a nearby point which can be glowing
+        if (this.snapToTemporaryPoint !== null) {
+          // if the user is over a non user created intersection point (which can't be selected so will not remain
+          // ????glowing when the user select that location and then moves the mouse away - see line 119) we don't
+          // remove the temporary start marker from the scene, instead we move it to the location of the intersection point
+          if (
+            this.snapToTemporaryPoint instanceof SEIntersectionPoint &&
+            !this.snapToTemporaryPoint.isUserCreated
+          ) {
+            this.temporaryPointMarker.positionVector = this.snapToTemporaryPoint.locationVector;
+          } else {
+            this.temporaryPointMarker.removeFromLayers();
+            this.temporaryPointAdded = false;
+          }
+        }
+        // Set the location of the temporary startMarker by snapping to appropriate object (if any)
+        if (this.snapToTemporaryOneDimensional !== null) {
+          this.temporaryPointMarker.positionVector = this.snapToTemporaryOneDimensional.closestVector(
+            this.currentSphereVector
+          );
+        } else if (this.snapToTemporaryPoint == null) {
+          this.temporaryPointMarker.positionVector = this.currentSphereVector;
+        }
       }
       if (this.oneDimensional !== null) {
         // add the temporary line to the display and set its position using the oneDimensional and the currentSphereVector  to the position of the pointer
         // Set the normal vector to the line in the plottable object, this setter calls updateDisplay()
-        this.temporaryNormal.copy(
-          this.oneDimensional.getNormalToLineThru(
-            this.currentSphereVector,
-            this.temporaryNormal
-          )
-        );
+        if (this.snapToTemporaryPoint !== null) {
+          this.temporaryNormal.copy(
+            this.oneDimensional.getNormalToLineThru(
+              this.snapToTemporaryPoint.locationVector,
+              this.temporaryNormal
+            )
+          );
+        } else if (this.snapToTemporaryOneDimensional !== null) {
+          this.temporaryNormal.copy(
+            this.oneDimensional.getNormalToLineThru(
+              this.snapToTemporaryOneDimensional.closestVector(
+                this.currentSphereVector
+              ),
+              this.temporaryNormal
+            )
+          );
+        } else {
+          this.temporaryNormal.copy(
+            this.oneDimensional.getNormalToLineThru(
+              this.currentSphereVector,
+              this.temporaryNormal
+            )
+          );
+        }
         this.tempLine.normalVector = this.temporaryNormal;
+        // add the line exactly once
         if (!this.temporaryLineAdded) {
           this.tempLine.addToLayers(this.layers);
           this.temporaryLineAdded = true;
@@ -340,13 +412,16 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
     if (this.sePointOneDimensionalParent !== null) {
       this.sePointOneDimensionalParent = null;
     }
-    this.tempPointMarker.removeFromLayers();
+    this.temporaryPointMarker.removeFromLayers();
     this.temporaryPointAdded = false;
 
     this.tempLine.removeFromLayers();
     this.temporaryLineAdded = false;
 
     this.sePointVector.set(0, 0, 0);
+
+    this.snapToTemporaryOneDimensional = null;
+    this.snapToTemporaryPoint = null;
   }
   createPerpendicular(
     oneDimensional: SEOneDimensional,

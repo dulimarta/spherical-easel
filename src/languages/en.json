@@ -219,7 +219,7 @@
     "intersectionOneDimensionalDuplicate": "Duplicate object. Select another.",
     "intersectionOneDimensionalNotIntersect": "Selected objects do not intersect.",
     "intersectionOneDimensionalAlreadyExists": "Intersection point already exists.",
-    "intersectionOneDimensionalPointCreated":"Intersection point successfully created.",
+    "intersectionOneDimensionalPointCreated":"One intersection point successfully created.",
     "moveHandlerNothingSelected": "No object selected. Rotating Sphere.",
     "panZoomHandlerZoomInLimitReached": "Zoom in limit reached.",
     "panZoomHandlerZoomOutLimitReached": "Zoom out limit reached.",
