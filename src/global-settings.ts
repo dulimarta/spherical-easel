@@ -4,6 +4,7 @@ export default {
   nearlyAntipodalIdeal: 0.005, // Two unit vectors, U and V, are nearly antipodal or nearly parallel (the) if crossVectors(U,V).isZero(nearlyAntipodalIdeal) is true
   tolerance: 0.0000001, // Any number less that this tolerance is considered zero
   hideObjectHidesLabel: true, // hiding an object hide the label of that object automatically if this is true
+  showObjectShowsLabel: false, // showing an object (via the object tree) automatically shows the label if this is true
   style: {
     backStyleContrast: 0.5, //The number that controls the automatic setting of the back styling for objects that have dynamicBackStyle set to true.
     maxStrokeWidthPercent: 500, // The maximum percent stroke width different from the scaled for zoom size

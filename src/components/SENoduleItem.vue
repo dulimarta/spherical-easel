@@ -60,6 +60,9 @@ import { SECalculation } from "../models/SECalculation";
 import { SEExpression } from "@/models/SEExpression";
 import { SESegmentDistance } from "@/models/SESegmentDistance";
 import { SESlider } from "@/models/SESlider";
+import { SetNoduleDisplayCommand } from "@/commands/SetNoduleDisplayCommand";
+import SETTINGS from "@/global-settings";
+import { Labelable, LabelState } from "@/types";
 
 @Component
 export default class SENoduleItem extends Vue {
@@ -88,7 +91,7 @@ export default class SENoduleItem extends Vue {
   }
 
   toggleVisibility(): void {
-    this.node.showing = !this.node.showing;
+    new SetNoduleDisplayCommand(this.node, !this.node.showing).execute();
   }
 
   get isPoint(): boolean {
@@ -186,7 +189,7 @@ export default class SENoduleItem extends Vue {
   }
 
   &:hover {
-    /* Change background on mouse hver only for nodes
+    /* Change background on mouse hover only for nodes
        i.e. do not change bbackground on labels */
     background-color: var(--v-accent-lighten1);
   }
