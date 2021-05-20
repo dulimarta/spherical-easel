@@ -14,6 +14,7 @@ import { TextBox } from "@/plottables/TextBox";
 import { SENodule } from "@/models/SENodule";
 import { DisplayStyle } from "@/plottables/Nodule";
 import { SELabel } from "@/models/SELabel";
+import { SEAngleMarker } from "@/models/SEAngleMarker";
 
 export default abstract class MouseHandler implements ToolStrategy {
   protected readonly X_AXIS = new Vector3(1, 0, 0);
@@ -52,6 +53,7 @@ export default abstract class MouseHandler implements ToolStrategy {
   protected hitSESegments: SESegment[] = [];
   protected hitSECircles: SECircle[] = [];
   protected hitSELabels: SELabel[] = [];
+  protected hitSEAngleMarkers: SEAngleMarker[] = [];
 
   /**
    * Holds the layers for each type of object, background, glowing background, etc..

@@ -1,3 +1,4 @@
+import { SEMeasurement } from "./SEMeasurement";
 import { SENodule } from "./SENodule";
 import { SEPoint } from "./SEPoint";
 import { SELine } from "./SELine";
@@ -17,6 +18,14 @@ import AppStore from "@/store";
 
 let ANGLEMARKER_COUNT = 0;
 
+enum AngleMode {
+  NONE,
+  LINES,
+  POINTS,
+  SEGMENTS,
+  LINEANDSEGMENT
+}
+
 const styleSet = new Set([
   Styles.strokeColor,
   Styles.strokeWidthPercent,
@@ -26,7 +35,9 @@ const styleSet = new Set([
   Styles.dynamicBackStyle,
   Styles.angleMarkerRadiusPercent
 ]);
-export class SEAngleMarker extends SENodule implements Visitable, Labelable {
+
+export class SEAngleMarker extends SEMeasurement
+  implements Visitable, Labelable {
   /**
    * The plottable (TwoJS) AngleMarker associated with this model AngleMarker
    */
@@ -51,6 +62,9 @@ export class SEAngleMarker extends SENodule implements Visitable, Labelable {
    */
   private _thirdSEParent: SEPoint | undefined = undefined;
 
+  // The type of SENodules that make up the angle
+  private mode = AngleMode.NONE;
+
   /**
    * Used during this.move(): A matrix that is used to indicate the *change* in position of the
    * angleMarker on the sphere.
@@ -69,14 +83,10 @@ export class SEAngleMarker extends SENodule implements Visitable, Labelable {
   private unitPositiveYAxis = new Vector3();
 
   /**
-   * The radius of the angle marker is between SETTINGS.angleMarker.minimumRadius and SETTINGS.angleMarker.maximumRadius
-   */
-  private _angleMarkerRadius: number = SETTINGS.angleMarker.defaultRadius;
-
-  /**
-   * The angle marker is a segment of a circle of radius _angleMarkerRadius and center _vertexVector from _startVector to _endVector
+   * The angle marker is a segment of a circle of radius SETTINGS.angleMarker.defaultRadius and center _vertexVector from _startVector to _endVector
    * This is always drawn counterclockwise when seen from outside of the sphere. The angle from vertexVector to start/end Vector should
-   * always be _angleMarkerRadius
+   * always be SETTINGS.angleMarker.defaultRadius (note that the AngleMarker can scale this to create angleMarkers of different sizes,
+   * but the SEAngleMarker is always the default radius)
    */
   private _vertexVector = new Vector3(0, 0, 0); // Set this vector to the origin so that the I can tell during the update method if this is the first time through the update routine
   private _startVector = new Vector3();
@@ -105,16 +115,17 @@ export class SEAngleMarker extends SENodule implements Visitable, Labelable {
    */
   constructor(
     angMar: AngleMarker,
-    firstParent: SELine | SESegment | SEPoint,
-    secondParent: SELine | SESegment | SEPoint,
+    mode: AngleMode,
+    firstSEParent: SELine | SESegment | SEPoint,
+    secondSEParent: SELine | SESegment | SEPoint,
     thirdSEParent?: SEPoint | undefined
   ) {
     super();
     this.ref = angMar;
-    this._firstSEParent = firstParent;
-    this._secondSEParent = secondParent;
+    this._firstSEParent = firstSEParent;
+    this._secondSEParent = secondSEParent;
     this._thirdSEParent = thirdSEParent;
-
+    this.mode = mode;
     ANGLEMARKER_COUNT++;
     this.name = `Am-${ANGLEMARKER_COUNT}`;
   }
@@ -123,39 +134,20 @@ export class SEAngleMarker extends SENodule implements Visitable, Labelable {
     return styleSet;
   }
 
-  get firstSEParent(): SELine | SESegment | SEPoint {
-    return this._firstSEParent;
+  get angleMode(): AngleMode {
+    return this.mode;
   }
 
-  get secondSEParent(): SELine | SESegment | SEPoint {
-    return this._secondSEParent;
+  public get value(): number {
+    return this.measureAngle(
+      this._startVector,
+      this._vertexVector,
+      this._endVector
+    );
   }
 
-  get thirdSEParent(): SEPoint | undefined {
-    return this._thirdSEParent;
-  }
-
-  get angleMarkerRadius(): number {
-    return this._angleMarkerRadius;
-  }
-
-  set angleMarkerRadius(newRadius: number) {
-    // Record the new radius of this SEAngleMarker
-    this._angleMarkerRadius = newRadius;
-    this.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
-    // // Set the new radius of the associated displayed plottable AngleMarker
-    // this.ref.angleMarkerRadius = this._angleMarkerRadius;
-  }
-  get vertexVector(): Vector3 {
-    return this._vertexVector;
-  }
-
-  get startVector(): Vector3 {
-    return this._startVector;
-  }
-
-  get endVector(): Vector3 {
-    return this._endVector;
+  public get prettyValue(): string {
+    return (this.value / Math.PI).toFixed(2) + "\u{1D7B9}";
   }
 
   public isHitAt(
@@ -172,7 +164,7 @@ export class SEAngleMarker extends SENodule implements Visitable, Labelable {
       return true;
     } else if (
       angleToVertex >
-      this._angleMarkerRadius +
+      SETTINGS.angleMarker.defaultRadius +
         SETTINGS.angleMarker.hitIdealDistance / currentMagnificationFactor
     ) {
       // The unitIdealVector is not in the circle with center vertexVector (plus a little tolerance)
@@ -181,12 +173,12 @@ export class SEAngleMarker extends SENodule implements Visitable, Labelable {
       // The unitIdealVector is in the circle, now figure out if it is in the segment of the circle
       // That is, figure out if the angle from the startVector to the idealUnit is less than the angle
       // to the endVector (with some tolerance)
-      const ang1 = this.angle(
+      const ang1 = this.measureAngle(
         this._startVector,
         this._vertexVector,
         unitIdealVector
       );
-      const ang2 = this.angle(
+      const ang2 = this.measureAngle(
         this._startVector,
         this._vertexVector,
         this._endVector
@@ -225,6 +217,8 @@ export class SEAngleMarker extends SENodule implements Visitable, Labelable {
     this._exists = this._firstSEParent.exists && this._secondSEParent.exists;
 
     // If the third parent is not null it should exist in order for the angle marker to exist
+    // I could use this.mode === AngleMode, but then I would have to cast all the parents to SEPoints
+    // each time I used them
     if (
       this._secondSEParent instanceof SEPoint &&
       this._firstSEParent instanceof SEPoint &&
@@ -234,36 +228,18 @@ export class SEAngleMarker extends SENodule implements Visitable, Labelable {
       // If either (1st and 2nd) or (2nd and 3rd)  pair are the same or nearly antipodal points then this angle marker doesn't exist
       this._exists =
         this._exists &&
-        this.tmpVector1
-          .subVectors(
+        !this.tmpVector1
+          .crossVectors(
             this._firstSEParent.locationVector,
             this._secondSEParent.locationVector
           )
-          .length() < SETTINGS.nearlyAntipodalIdeal;
-      this._exists =
-        this._exists &&
-        this.tmpVector1
-          .addVectors(
-            this._firstSEParent.locationVector,
-            this._secondSEParent.locationVector
-          )
-          .length() < SETTINGS.nearlyAntipodalIdeal;
-      this._exists =
-        this._exists &&
-        this.tmpVector1
-          .subVectors(
+          .isZero(SETTINGS.nearlyAntipodalIdeal) &&
+        !this.tmpVector1
+          .crossVectors(
             this._thirdSEParent.locationVector,
             this._secondSEParent.locationVector
           )
-          .length() < SETTINGS.nearlyAntipodalIdeal;
-      this._exists =
-        this._exists &&
-        this.tmpVector1
-          .addVectors(
-            this._thirdSEParent.locationVector,
-            this._secondSEParent.locationVector
-          )
-          .length() < SETTINGS.nearlyAntipodalIdeal;
+          .isZero(SETTINGS.nearlyAntipodalIdeal);
     }
 
     //update _vertexVector , _startVector , _endVector using _angleMarkerRadius (which is set in the )
@@ -278,45 +254,20 @@ export class SEAngleMarker extends SENodule implements Visitable, Labelable {
         this._firstSEParent instanceof SEPoint &&
         this._thirdSEParent instanceof SEPoint
       ) {
-        // In this case the parents are three points and we have already checked that the (1st and 2nd) and (2nd and 3rd) are not the same or antipodal
-        // The vertex of the angle marker is the second selected one
-        this._vertexVector.copy(this._secondSEParent.locationVector);
-
-        // Create a orthonormal frame using the first and second parent points to set the startVector
-        this.tmpVector1
-          .crossVectors(this._vertexVector, this._firstSEParent.locationVector)
-          .normalize(); // tmpVector1 is now perpendicular to the plane containing the first and second parent vectors
-        this.tmpVector1
-          .crossVectors(this.tmpVector1, this._vertexVector)
-          .normalize(); // tmpVector1 is now perpendicular to the vertexVector and in the plane containing the first and second parent vectors
-
-        // Now set the _startVector
-        this._startVector.set(0, 0, 0);
-        this._startVector.addScaledVector(
-          this._vertexVector,
-          Math.cos(this._angleMarkerRadius)
+        // This uses a method in the AngleMarker plottable object (setAngleMarkerFromThreeVectors) because this is the only case in which a
+        // temporary angleMarker is displayed.  This method is used both here and in the AngleHandler.
+        // This avoids having duplicate code. setAngleMarkerFromThreeVectors is in AngleMarker instead of SEAngleMarker because
+        // it needs to be used by the temporary angle marker before SEAngleMarker exists
+        // This returns the _start,_vertex,_end vectors and sets those same vectors in AngleMarker
+        const vectorList = this.ref.setAngleMarkerFromThreeVectors(
+          this._firstSEParent.locationVector,
+          this._secondSEParent.locationVector,
+          this._thirdSEParent.locationVector,
+          SETTINGS.angleMarker.defaultRadius
         );
-        this._startVector
-          .addScaledVector(this.tmpVector1, Math.sin(this._angleMarkerRadius))
-          .normalize();
-
-        // Create a orthonormal frame using the third and second parent points to set the endVector
-        this.tmpVector1
-          .crossVectors(this._vertexVector, this._thirdSEParent.locationVector)
-          .normalize(); // tmpVector1 is now perpendicular to the plane containing the first and third parent vectors
-        this.tmpVector1
-          .crossVectors(this.tmpVector1, this._vertexVector)
-          .normalize(); // tmpVector1 is now perpendicular to the vertexVector and in the plane containing the first and third parent vectors
-
-        // Now set the _endVector
-        this._endVector.set(0, 0, 0);
-        this._endVector.addScaledVector(
-          this._vertexVector,
-          Math.cos(this._angleMarkerRadius)
-        );
-        this._endVector
-          .addScaledVector(this.tmpVector1, Math.sin(this._angleMarkerRadius))
-          .normalize();
+        this._startVector.copy(vectorList[0]);
+        this._vertexVector.copy(vectorList[1]);
+        this._endVector.copy(vectorList[2]);
       } else if (
         this._secondSEParent instanceof SELine &&
         this._firstSEParent instanceof SELine
@@ -356,10 +307,13 @@ export class SEAngleMarker extends SENodule implements Visitable, Labelable {
         this._startVector.set(0, 0, 0);
         this._startVector.addScaledVector(
           this._vertexVector,
-          Math.cos(this._angleMarkerRadius)
+          Math.cos(SETTINGS.angleMarker.defaultRadius)
         );
         this._startVector
-          .addScaledVector(this.tmpVector1, Math.sin(this._angleMarkerRadius))
+          .addScaledVector(
+            this.tmpVector1,
+            Math.sin(SETTINGS.angleMarker.defaultRadius)
+          )
           .normalize();
 
         // Third set the end vector
@@ -369,11 +323,19 @@ export class SEAngleMarker extends SENodule implements Visitable, Labelable {
         this._endVector.set(0, 0, 0);
         this._endVector.addScaledVector(
           this._vertexVector,
-          Math.cos(this._angleMarkerRadius)
+          Math.cos(SETTINGS.angleMarker.defaultRadius)
         );
         this._endVector
-          .addScaledVector(this.tmpVector1, Math.sin(this._angleMarkerRadius))
+          .addScaledVector(
+            this.tmpVector1,
+            Math.sin(SETTINGS.angleMarker.defaultRadius)
+          )
           .normalize();
+
+        // Record the new vertex/start/end vectors in the plottable element
+        this.ref.vertexVector = this._vertexVector;
+        this.ref.startVector = this._startVector;
+        this.ref.endVector = this._endVector;
       } else if (
         this._secondSEParent instanceof SESegment &&
         this._firstSEParent instanceof SESegment
@@ -410,10 +372,13 @@ export class SEAngleMarker extends SENodule implements Visitable, Labelable {
         this._startVector.set(0, 0, 0);
         this._startVector.addScaledVector(
           this._vertexVector,
-          Math.cos(this._angleMarkerRadius)
+          Math.cos(SETTINGS.angleMarker.defaultRadius)
         );
         this._startVector
-          .addScaledVector(this.tmpVector1, Math.sin(this._angleMarkerRadius))
+          .addScaledVector(
+            this.tmpVector1,
+            Math.sin(SETTINGS.angleMarker.defaultRadius)
+          )
           .normalize();
 
         // Third set the end vector
@@ -423,11 +388,19 @@ export class SEAngleMarker extends SENodule implements Visitable, Labelable {
         this._endVector.set(0, 0, 0);
         this._endVector.addScaledVector(
           this._vertexVector,
-          Math.cos(this._angleMarkerRadius)
+          Math.cos(SETTINGS.angleMarker.defaultRadius)
         );
         this._endVector
-          .addScaledVector(this.tmpVector1, Math.sin(this._angleMarkerRadius))
+          .addScaledVector(
+            this.tmpVector1,
+            Math.sin(SETTINGS.angleMarker.defaultRadius)
+          )
           .normalize();
+
+        // Record the new vertex/start/end vectors in the plottable element
+        this.ref.vertexVector = this._vertexVector;
+        this.ref.startVector = this._startVector;
+        this.ref.endVector = this._endVector;
       } else if (
         (this._secondSEParent instanceof SESegment &&
           this._firstSEParent instanceof SELine) ||
@@ -487,10 +460,13 @@ export class SEAngleMarker extends SENodule implements Visitable, Labelable {
         this._startVector.set(0, 0, 0);
         this._startVector.addScaledVector(
           this._vertexVector,
-          Math.cos(this._angleMarkerRadius)
+          Math.cos(SETTINGS.angleMarker.defaultRadius)
         );
         this._startVector
-          .addScaledVector(this.tmpVector1, Math.sin(this._angleMarkerRadius))
+          .addScaledVector(
+            this.tmpVector1,
+            Math.sin(SETTINGS.angleMarker.defaultRadius)
+          )
           .normalize();
 
         // Third set the end vector
@@ -500,17 +476,19 @@ export class SEAngleMarker extends SENodule implements Visitable, Labelable {
         this._endVector.set(0, 0, 0);
         this._endVector.addScaledVector(
           this._vertexVector,
-          Math.cos(this._angleMarkerRadius)
+          Math.cos(SETTINGS.angleMarker.defaultRadius)
         );
         this._endVector
-          .addScaledVector(this.tmpVector1, Math.sin(this._angleMarkerRadius))
+          .addScaledVector(
+            this.tmpVector1,
+            Math.sin(SETTINGS.angleMarker.defaultRadius)
+          )
           .normalize();
+        // Record the new vertex/start/end vectors in the plottable element
+        this.ref.vertexVector = this._vertexVector;
+        this.ref.startVector = this._startVector;
+        this.ref.endVector = this._endVector;
       }
-
-      // Record the new vertex/start/end vectors in the plottable element
-      this.ref.vertexVector = this._vertexVector;
-      this.ref.startVector = this._startVector;
-      this.ref.endVector = this._endVector;
 
       // display the new angleMarker with the updated values
       this.ref.updateDisplay();
@@ -541,6 +519,9 @@ export class SEAngleMarker extends SENodule implements Visitable, Labelable {
       };
       state.stateArray.push(angleMarkerState);
     }
+    //update the name to include the new value
+    const pos = this.name.lastIndexOf("):");
+    this.name = this.name.substring(0, pos + 2) + this.prettyValue;
 
     this.updateKids(state);
   }
@@ -551,19 +532,20 @@ export class SEAngleMarker extends SENodule implements Visitable, Labelable {
    */
   public closestVector(unitIdealVector: Vector3): Vector3 {
     // First check if the unitIdealVector is the vertexVector or its antipodal
-    if (
-      this.tmpVector1.subVectors(this._vertexVector, unitIdealVector).length() <
-      SETTINGS.nearlyAntipodalIdeal
-    ) {
-      return this._vertexVector;
-    }
-    if (
-      this.tmpVector1
-        .crossVectors(this._vertexVector, unitIdealVector)
-        .length() < SETTINGS.nearlyAntipodalIdeal
-    ) {
-      return this._endVector; // arbitrary choice, unitIdealVector is essentially equidistant from all the circular part of the angle marker
-    }
+    // if (
+    //   this.tmpVector1.subVectors(this._vertexVector, unitIdealVector).length() <
+    //   SETTINGS.nearlyAntipodalIdeal
+    // ) {
+    //   console.log("her1");
+    //   return this._vertexVector;
+    // }
+    // if (
+    //   this.tmpVector1.addVectors(this._vertexVector, unitIdealVector).length() <
+    //   SETTINGS.nearlyAntipodalIdeal
+    // ) {
+    //   console.log("her2");
+    //   return this._endVector; // arbitrary choice, unitIdealVector is essentially equidistant from all the circular parts of the angle marker
+    // }
 
     // if the unitIdealVector lead to a hit then return the unitIdealVector
     if (
@@ -575,7 +557,7 @@ export class SEAngleMarker extends SENodule implements Visitable, Labelable {
     // the angle measure FROM the half-plane (startHalfPlane) with edge the line containing vertexVector and containing origin of sphere, startVector, vertexVector
     // TO the half-plane (endHalfPlane) with edge the line containing vertexVector and containing origin of sphere, endVector, vertexVector
     // Result is between 0 and 2 Pi
-    const angleMarkerAngle = this.angle(
+    const angleMarkerAngle = this.measureAngle(
       this._startVector,
       this._vertexVector,
       this._endVector
@@ -583,16 +565,20 @@ export class SEAngleMarker extends SENodule implements Visitable, Labelable {
 
     // the angle measure FROM startHalfPlane TO the half-plane (unitIdealHalfPlane) with edge the line containing vertexVector and
     // containing origin of sphere, unitIdealVector, vertexVector.  Result is between 0 and 2 Pi
-    const unitIdealAngle = this.angle(
+    const unitIdealAngle = this.measureAngle(
       this._startVector,
       this._vertexVector,
       unitIdealVector
     );
 
-    // Divide into two cases: non-convex angle markers versus convex ones. See the picture in the Google Drive folder for a break down of the closest point regions
-
-    // In both cases if unitIdealAngle is less than angleMarkerAngle, project onto the circular part of the angleMarker
+    // Divide into two cases: non-convex angle markers versus convex ones. See the picture in
+    // the Google Drive folder for a break down of the closest point regions
+    console.log("angle", unitIdealAngle, angleMarkerAngle);
+    // In both cases if unitIdealAngle is less than angleMarkerAngle, project onto the circular
+    // part of the angleMarker
     if (unitIdealAngle <= angleMarkerAngle) {
+      //console.log("project on circular part");
+
       // project onto the circular part of the angle marker
       this.tmpVector1
         .crossVectors(this._vertexVector, unitIdealVector)
@@ -603,11 +589,17 @@ export class SEAngleMarker extends SENodule implements Visitable, Labelable {
       this.tmpVector2.set(0, 0, 0);
       this.tmpVector2.addScaledVector(
         this._vertexVector,
-        Math.cos(this._angleMarkerRadius)
+        Math.cos(
+          SETTINGS.angleMarker.defaultRadius /
+            this.store.state.zoomMagnificationFactor
+        )
       );
       this.tmpVector2.addScaledVector(
         this.tmpVector1,
-        Math.sin(this._angleMarkerRadius)
+        Math.sin(
+          SETTINGS.angleMarker.defaultRadius /
+            this.store.state.zoomMagnificationFactor
+        )
       );
       return this.tmpVector2;
     } else if (angleMarkerAngle <= Math.PI) {
@@ -768,14 +760,26 @@ export class SEAngleMarker extends SENodule implements Visitable, Labelable {
   public closestLabelLocationVector(idealUnitSphereVector: Vector3): Vector3 {
     // First find the closest point on the segment to the idealUnitSphereVector
     this.tmpVector1.copy(this.closestVector(idealUnitSphereVector));
-
-    // If the idealUnitSphereVector is within the tolerance of the closest point, do nothing, otherwise return the vector in the plane of the idealUnitSphereVector and the closest point that is at the tolerance distance away.
+    console.log("ideal x val", idealUnitSphereVector.x);
+    return this.tmpVector1;
+    console.log(
+      "angles cllv",
+      this.measureAngle(this._startVector, this._vertexVector, this.tmpVector1),
+      this.measureAngle(
+        this._startVector,
+        this._vertexVector,
+        idealUnitSphereVector
+      )
+    );
+    // If the idealUnitSphereVector is within the tolerance of the closest point, do nothing, otherwise return the vector in the plane
+    //  of the idealUnitSphereVector and the closest point that is at the tolerance distance away.
     if (
       this.tmpVector1.angleTo(idealUnitSphereVector) <
       SETTINGS.angleMarker.maxLabelDistance
     ) {
       return idealUnitSphereVector;
     } else {
+      console.log("heeeeer");
       // tmpVector2 is the normal to the plane of the closest point vector and the idealUnitVector
       // This can't be zero because tmpVector1 can be the closest on the circle to idealUnitSphereVector and parallel with ideanUnitSphereVector
       this.tmpVector2
@@ -796,7 +800,7 @@ export class SEAngleMarker extends SENodule implements Visitable, Labelable {
     }
   }
   accept(v: Visitor): void {
-    v.actionOnAngleMarker(this);
+    // v.actionOnAngleMarker(this);
   }
 
   /**
@@ -892,12 +896,12 @@ export class SEAngleMarker extends SENodule implements Visitable, Labelable {
    * @param unitIdealVector distinct unit vector and not the anitpode of vertexVector
    * @returns an angle in [0,2pi)
    */
-  private angle(
+  private measureAngle(
     startVector: Vector3,
     vertexVector: Vector3,
     unitIdealVector: Vector3
   ): number {
-    // To do this project the idealUnitVector and the startVector onto the plane perpendicular to the vertexVector
+    //  Project the idealUnitVector and the startVector onto the plane perpendicular to the vertexVector
     // through the origin of sphere then use the atan2 function (with the projections of start and unitIdeal vector)
     // to figure out the angle
     //
@@ -921,13 +925,13 @@ export class SEAngleMarker extends SENodule implements Visitable, Labelable {
 
     // the positive unit y-axis vector is the cross product of the unit positive z axis (vertexVector) and the unit
     // positive x-axis (tmpVector2)
+    this.tmpVector3.crossVectors(vertexVector, this.tmpVector2).normalize();
 
-    //The dot product with each of these positive unit vectors are the x(rsp. y) coordinates on plane Q
-
+    //NOTE: the syntax for atan2 is atan2(y,x) and the return is in (-pi,pi]!!!!!
     return Math.atan2(
-      this.tmpVector2.dot(this.tmpVector1),
-      vertexVector.cross(this.tmpVector2).dot(this.tmpVector1)
-    );
+      this.tmpVector3.dot(this.tmpVector1),
+      this.tmpVector2.dot(this.tmpVector1)
+    ).modTwoPi();
   }
 
   /**
@@ -994,16 +998,16 @@ export class SEAngleMarker extends SENodule implements Visitable, Labelable {
 
   // I wish the SENodule methods would work but I couldn't figure out how
   // See the attempts in SENodule
-  public isFreePoint() {
+  public isFreePoint(): boolean {
     return false;
   }
-  public isOneDimensional() {
+  public isOneDimensional(): boolean {
     return false;
   }
-  public isPoint() {
+  public isPoint(): boolean {
     return false;
   }
-  public isPointOnOneDimensional() {
+  public isPointOnOneDimensional(): boolean {
     return false;
   }
   public isLabel(): boolean {

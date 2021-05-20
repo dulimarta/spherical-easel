@@ -3,7 +3,8 @@ import { UpdateStateType, isSegmentState, UpdateMode } from "@/types";
 import { ExpressionParser } from "@/expression/ExpressionParser";
 import AppStore from "@/store";
 import store from "@/store";
-
+import { Styles } from "@/types/Styles";
+const emptySet = new Set<Styles>();
 const parser = new ExpressionParser();
 export class SECalculation extends SEExpression {
   // static parser = new ExpressionParser();
@@ -69,4 +70,6 @@ export class SECalculation extends SEExpression {
     this.setOutOfDate(false);
     this.updateKids(state);
   }
+
+  public customStyles = (): Set<Styles> => emptySet;
 }

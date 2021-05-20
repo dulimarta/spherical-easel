@@ -50,6 +50,10 @@ export default class AngleMarker extends Nodule {
    */
 
   /**
+   * The radius of the angle marker. This get scaled by angleMarkerRadiusPercent
+   */
+  private _angleMarkerRadius = SETTINGS.angleMarker.defaultRadius;
+  /**
    * Vuex global state
    */
   protected store = AppStore; //
@@ -307,12 +311,12 @@ export default class AngleMarker extends Nodule {
     // Any vector perpendicular the desired z axis can be the desired x axis, but we want one that points from the origin to the
     // the projection of the startVector onto the plane perpendicular to the desiredZAxis.
     this.tmpVector
-      .crossVectors(this._startVector, this._vertexVector)
+      .crossVectors(this._vertexVector, this._startVector)
       .normalize();
-    desiredXAxis.crossVectors(this._vertexVector, this.tmpVector).normalize();
+    desiredXAxis.crossVectors(this.tmpVector, this._vertexVector).normalize();
 
     // Use the cross product to create the vector perpendicular to both the desired z and x axis
-    desiredYAxis.crossVectors(desiredZAxis, desiredXAxis);
+    desiredYAxis.crossVectors(desiredZAxis, desiredXAxis).normalize();
 
     // Set up the local coordinates from for the circle,
     //  transformMatrix will now map (1,0,0) to the point on the desired x axis a unit from the origin in the positive direction.
@@ -350,12 +354,21 @@ export default class AngleMarker extends Nodule {
       this._vertexVector,
       -1 * this._vertexVector.dot(this._endVector)
     );
-    // Now use the atan2 function in the plane perpendicular to vertexVector where the positive x axis is the desiredXAxis
-    const angularLengthOfMarker = Math.atan2(
-      desiredXAxis.dot(this.tmpVector),
-      desiredYAxis.dot(this.tmpVector)
-    );
 
+    // Now use the atan2 function in the plane perpendicular to vertexVector where the positive x axis is the desiredXAxis
+    //NOTE: the syntax for atan2 is atan2(y,x)!!!!!
+    // Returns angle in the range (-pi,pi] to convert to [0,2pi) use modulus 2*Pi operator
+    // Note that while in most languages, ‘%’ is a remainder operator, in some (e.g. Python, Perl) it is a
+    // modulo operator. For positive values, the two are equivalent, but when the dividend and divisor are
+    // of different signs, they give different results. To obtain a modulo in JavaScript,
+    // in place of a % n, use ((a % n ) + n ) % n.
+    // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Remainder
+
+    const angularLengthOfMarker = Math.atan2(
+      desiredYAxis.dot(this.tmpVector),
+      desiredXAxis.dot(this.tmpVector)
+    ).modTwoPi();
+    //console.log("angularLength", angularLengthOfMarker);
     // Recalculate the 2D coordinate of the TwoJS path (From the originalVertices array)
     // As we drag the mouse, the number of vertices in the front half
     // and back half are dynamically changing and to avoid
@@ -373,7 +386,8 @@ export default class AngleMarker extends Nodule {
       // Only add a transformed vertex if the angle it makes with the positive x axis in the original circle
       // (the one with radius SETTINGS.boundaryCircle.radius in the plane z=0) is less than angularLengthOfMarker.
       // store the remaining vertices in the storageCirclePath
-      if (Math.atan2(v.x, v.y) <= angularLengthOfMarker) {
+      //NOTE: the syntax for atan2 is atan2(y,x) and returns a value in (-pi,pi]!!!!!
+      if (Math.atan2(v.y, v.x).modTwoPi() <= angularLengthOfMarker) {
         this.tmpVector.set(v.x, v.y, 0);
         this.tmpVector.applyMatrix4(transformMatrix);
 
@@ -383,17 +397,20 @@ export default class AngleMarker extends Nodule {
           if (firstFrontCircleIndexInOriginal === -1)
             firstFrontCircleIndexInOriginal = pos;
           if (frontCircleIndex >= frontCircleLen) {
-            // Steal one element from the backPath
-            let extra = this.backCirclePath.vertices.pop();
-            if (extra === undefined) {
-              extra = this.storageCirclePath.vertices.pop();
-            } else {
+            // Steal one element from the backPath or storage
+            let extra;
+            if (this.backCirclePath.vertices.length !== 0) {
+              extra = this.backCirclePath.vertices.pop();
               backCircleLen--;
+            } else {
+              extra = this.storageCirclePath.vertices.pop();
             }
             this.frontCirclePath.vertices.push(extra!);
 
-            let glowExtra = this.glowingBackCirclePath.vertices.pop();
-            if (glowExtra === undefined) {
+            let glowExtra;
+            if (this.glowingBackCirclePath.vertices.length !== 0) {
+              glowExtra = this.glowingBackCirclePath.vertices.pop();
+            } else {
               glowExtra = this.glowingStorageCirclePath.vertices.pop();
             }
             this.glowingFrontCirclePath.vertices.push(glowExtra!);
@@ -413,17 +430,20 @@ export default class AngleMarker extends Nodule {
           if (firstBackCircleIndexInOriginal === -1)
             firstBackCircleIndexInOriginal = pos;
           if (backCircleIndex >= backCircleLen) {
-            // Steal one element from the frontPath
-            let extra = this.frontCirclePath.vertices.pop();
-            if (extra === undefined) {
-              extra = this.storageCirclePath.vertices.pop();
-            } else {
+            // Steal one element from the frontPath or storage
+            let extra;
+            if (this.frontCirclePath.vertices.length !== 0) {
+              extra = this.frontCirclePath.vertices.pop();
               frontCircleLen--;
+            } else {
+              extra = this.storageCirclePath.vertices.pop();
             }
             this.backCirclePath.vertices.push(extra!);
 
-            let glowingExtra = this.glowingFrontCirclePath.vertices.pop();
-            if (glowingExtra === undefined) {
+            let glowingExtra;
+            if (this.glowingFrontCirclePath.vertices.length !== 0) {
+              glowingExtra = this.glowingFrontCirclePath.vertices.pop();
+            } else {
               glowingExtra = this.glowingStorageCirclePath.vertices.pop();
             }
             this.glowingBackCirclePath.vertices.push(glowingExtra!);
@@ -706,7 +726,7 @@ export default class AngleMarker extends Nodule {
   }
 
   /**
-   * Set (or Get?) the vertex/start/end vectors of the angle marker. Setting it updates the display.
+   * Set the vertex/start/end vectors of the angle marker. Setting it updates the display.
    */
   set vertexVector(newVertex: Vector3) {
     this._vertexVector.copy(newVertex);
@@ -716,6 +736,58 @@ export default class AngleMarker extends Nodule {
   }
   set endVector(newEndVector: Vector3) {
     this._endVector.copy(newEndVector);
+  }
+
+  /**
+   * Use this method to set the display of the angle marker using three vectors. The angle from vertex to start is *not* necessary the
+   * the same aa the angle form vertex to end. This method sets the _vertex, _start, _end vectors (all non-zero and unit) so that
+   *  1) angle(_vertex,_start) = angle (_vertex,_end) = angleMarkerRadius
+   *  2) _vertex, _start, start are all co-planar (and in this plane, when divided by the line containing _vertex, _start & start are on the same side)
+   *  3) _vertex, _end, end are all co-planar (and in this plane, when divided by the line containing _vertex, _end & end are on the same side)
+   * @param startVector The *direction* of the start of the angleMarker from tempVertex (assume not parallel with tempVertex)
+   * @param vertexVector The vertex of the angle Marker
+   * @param endVector The *direction* of the end of the angleMarker from tempVertex (assume not parallel with tempVertex)
+   * @param angleMarkerRadius The radius of the angleMarker
+   * @returns returns the _start,_vertex,_end vectors and sets those same vectors in AngleMarker
+   */
+  public setAngleMarkerFromThreeVectors(
+    startVector: Vector3,
+    vertexVector: Vector3,
+    endVector: Vector3,
+    angleMarkerRadius: number
+  ): Vector3[] {
+    // In this case the parents are three points and we have already checked that the (1st and 2nd) and (2nd and 3rd) are not the same or antipodal
+    // The vertex of the angle marker is the second selected one
+    this._vertexVector.copy(vertexVector).normalize();
+
+    // Create a orthonormal frame using the first and second parent points to set the startVector
+    this.tmpVector.crossVectors(this._vertexVector, startVector).normalize(); // tmpVector is now perpendicular to the plane containing the first and second parent vectors
+    this.tmpVector.crossVectors(this.tmpVector, this._vertexVector).normalize(); // tmpVector is now perpendicular to the vertexVector and in the plane containing the first(start) and second(vertex) parent vectors
+
+    // Now set the _startVector
+    this._startVector.set(0, 0, 0);
+    this._startVector.addScaledVector(
+      this._vertexVector,
+      Math.cos(angleMarkerRadius)
+    );
+    this._startVector
+      .addScaledVector(this.tmpVector, Math.sin(angleMarkerRadius))
+      .normalize();
+
+    // Create a orthonormal frame using the third and second parent points to set the endVector
+    this.tmpVector.crossVectors(this._vertexVector, endVector).normalize(); // tmpVector is now perpendicular to the plane containing the first and third parent vectors
+    this.tmpVector.crossVectors(this.tmpVector, this._vertexVector).normalize(); // tmpVector is now perpendicular to the vertexVector and in the plane containing the first and third parent vectors
+
+    // Now set the _endVector
+    this._endVector.set(0, 0, 0);
+    this._endVector.addScaledVector(
+      this._vertexVector,
+      Math.cos(angleMarkerRadius)
+    );
+    this._endVector
+      .addScaledVector(this.tmpVector, Math.sin(angleMarkerRadius))
+      .normalize();
+    return [this._startVector, this._vertexVector, this._endVector];
   }
 
   frontGlowingDisplay(): void {
@@ -761,8 +833,8 @@ export default class AngleMarker extends Nodule {
   }
 
   /**
-   * This method is used to copy the temporary circle created with the Circle Tool (in the midground) into a
-   * permanent one in the scene (in the foreground).
+   * This method is used to copy the temporary angleMarker created with the Angle Tool (in the midground) into a
+   * permanent one in the scene (in the the correct layer).
    */
   clone(): this {
     // Use the constructor for this class to create a template to copy over the
@@ -867,11 +939,15 @@ export default class AngleMarker extends Nodule {
     // These must always be executed even if the front/back part is empty
     // Otherwise when they become non-empty they are not displayed
     // this.frontFill.addTo(layers[LAYER.foreground]);
-    this.frontCirclePath.addTo(layers[LAYER.foreground]);
-    this.glowingFrontCirclePath.addTo(layers[LAYER.foregroundGlowing]);
+    this.frontCirclePath.addTo(layers[LAYER.foregroundAngleMarkers]);
+    this.glowingFrontCirclePath.addTo(
+      layers[LAYER.foregroundAngleMarkersGlowing]
+    );
     // this.backFill.addTo(layers[LAYER.background]);
-    this.backCirclePath.addTo(layers[LAYER.background]);
-    this.glowingBackCirclePath.addTo(layers[LAYER.backgroundGlowing]);
+    this.backCirclePath.addTo(layers[LAYER.backgroundAngleMarkers]);
+    this.glowingBackCirclePath.addTo(
+      layers[LAYER.backgroundAngleMarkersGlowing]
+    );
   }
 
   removeFromLayers(/*layers: Two.Group[]*/): void {
@@ -1092,9 +1168,16 @@ export default class AngleMarker extends Nodule {
           : this.strokeWidthPercentBack)) /
       100;
 
-    //THIS IS NOT THE WAY TO DO THIS BUT I DON'T SEE ANY OTHER WAY
-    // adjust the radius of the angle marker by sending the new radius to the model object
-    //this.(reference to SEAngleMarker).angleMarkerRadius();
+    // adjust the radius of the angle marker by setting the
+    this._angleMarkerRadius =
+      (this._angleMarkerRadius * this.angleMarkerRadiusPercent) / 100;
+
+    this.setAngleMarkerFromThreeVectors(
+      this._startVector,
+      this._vertexVector,
+      this._endVector,
+      this._angleMarkerRadius
+    );
   }
 
   /**

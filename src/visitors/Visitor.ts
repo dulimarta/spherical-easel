@@ -15,5 +15,5 @@ export interface Visitor {
   actionOnSegment(s: SESegment): void;
   actionOnCircle(c: SECircle): void;
   actionOnLabel(l: SELabel): void;
-  actionOnAngleMarker(a: SEAngleMarker): void;
+  //actionOnAngleMarker(a: SEAngleMarker): void;
 }

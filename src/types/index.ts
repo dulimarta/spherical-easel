@@ -36,6 +36,7 @@ export interface AppState {
   seLines: SELine[];
   seSegments: SESegment[];
   seCircles: SECircle[];
+  seAngleMarkers: SEAngleMarker[];
   seLabels: SELabel[];
   seNodules: SENodule[];
   selections: SENodule[];

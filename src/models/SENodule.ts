@@ -8,6 +8,7 @@ import { SEOneDimensional, OneDimensional } from "@/types";
 import { UpdateMode, UpdateStateType } from "@/types";
 
 let NODE_COUNT = 0;
+
 export abstract class SENodule {
   /**
    * An array to store the parents of the node (i.e. the objects that this node depends on)

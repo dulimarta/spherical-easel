@@ -1,16 +1,25 @@
 import { Command } from "./Command";
 import { SEMeasurement } from "@/models/SEMeasurement";
 import { SEExpression } from "@/models/SEExpression";
+import { SENodule } from "@/models/SENodule";
 
-//#region addPointCommand
 export class AddExpressionCommand extends Command {
   private seMeasurement: SEExpression;
-  constructor(seMeasurement: SEExpression) {
+  private parents: SENodule[] = [];
+  /**
+   * @param seMeasurementzs
+   * @param parents If this is included then the seMeasurement is made a child of all the SENodules in this array
+   */
+  constructor(seMeasurement: SEExpression, parents?: SENodule[]) {
     super();
     this.seMeasurement = seMeasurement;
+    if (parents !== undefined) {
+      this.parents.push(...parents);
+    }
   }
 
   do(): void {
+    this.parents.forEach(nodule => nodule.registerChild(this.seMeasurement));
     Command.store.commit.addExpression(this.seMeasurement);
   }
 
@@ -19,7 +28,7 @@ export class AddExpressionCommand extends Command {
   }
 
   restoreState(): void {
-    Command.store.commit.addExpression(this.lastState);
+    Command.store.commit.removeExpression(this.lastState);
+    this.parents.forEach(nodule => nodule.unregisterChild(this.seMeasurement));
   }
 }
-//#endregion addPointCommand

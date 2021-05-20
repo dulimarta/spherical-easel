@@ -20,6 +20,7 @@ import { SEMeasurement } from "@/models/SEMeasurement";
 import { SECalculation } from "@/models/SECalculation";
 import SETTINGS from "@/global-settings";
 import { SEExpression } from "@/models/SEExpression";
+import { SEAngleMarker } from "@/models/SEAngleMarker";
 
 // const tmpMatrix = new Matrix4();
 
@@ -42,6 +43,7 @@ export const initialState: AppState = {
   seLines: [], // An array of all SELines
   seSegments: [], // An array of all SESegments
   seCircles: [], // An array of all SECircles
+  seAngleMarkers: [], // An array of all SEAngleMarkers
   seLabels: [], // An array of all SELabels
   temporaryNodules: [], // An array of all Nodules that are temporary - created by the handlers.
   intersections: [],
@@ -70,6 +72,7 @@ export default {
     state.seLines.clear();
     state.seSegments.clear();
     state.seCircles.clear();
+    state.seAngleMarkers.clear();
     state.seLabels.clear();
     state.selections.clear();
     state.intersections.clear();
@@ -192,7 +195,46 @@ export default {
       const victimCircle: SECircle = state.seCircles[circlePos];
       victimCircle.ref.removeFromLayers();
       // victimCircle.removeSelfSafely();
-      state.seCircles.splice(circlePos, 1); // Remove the line from the list
+      state.seCircles.splice(circlePos, 1); // Remove the circle from the list
+      state.seNodules.splice(pos2, 1);
+    }
+  },
+  addAngleMarkerAndExpression(
+    state: AppState,
+    angleMarker: SEAngleMarker
+  ): void {
+    state.expressions.push(angleMarker);
+    state.seAngleMarkers.push(angleMarker);
+    state.seNodules.push(angleMarker);
+    angleMarker.ref.addToLayers(state.layers);
+  },
+  removeAngleMarkerAndExpression(state: AppState, angleMarkerId: number): void {
+    const angleMarkerPos = state.seAngleMarkers.findIndex(
+      x => x.id === angleMarkerId
+    );
+    const pos2 = state.seNodules.findIndex(x => x.id === angleMarkerId);
+    const pos3 = state.expressions.findIndex(x => x.id === angleMarkerId);
+    if (angleMarkerPos >= 0) {
+      /* victim angleMarker is found */
+      const victimAngleMarker: SEAngleMarker =
+        state.seAngleMarkers[angleMarkerPos];
+      victimAngleMarker.ref.removeFromLayers();
+      // victimCircle.removeSelfSafely();
+      state.seAngleMarkers.splice(angleMarkerPos, 1); // Remove the angleMarker from the list
+      state.seNodules.splice(pos2, 1);
+      state.expressions.splice(pos3, 1);
+    }
+  },
+  addExpression(state: AppState, measurement: SEExpression): void {
+    state.expressions.push(measurement);
+    state.seNodules.push(measurement);
+  },
+  removeExpression(state: AppState, measId: number): void {
+    const pos = state.expressions.findIndex(x => x.id === measId);
+    const pos2 = state.seNodules.findIndex(x => x.id === measId);
+    if (pos >= 0) {
+      // const victimSegment = state.measurements[pos];
+      state.expressions.splice(pos, 1);
       state.seNodules.splice(pos2, 1);
     }
   },
@@ -317,19 +359,7 @@ export default {
       n.ref?.updateStyle(opt);
     });
   },
-  addExpression(state: AppState, measurement: SEExpression): void {
-    state.expressions.push(measurement);
-    state.seNodules.push(measurement);
-  },
-  removeExpression(state: AppState, measId: number): void {
-    const pos = state.expressions.findIndex(x => x.id === measId);
-    const pos2 = state.seNodules.findIndex(x => x.id === measId);
-    if (pos >= 0) {
-      // const victimSegment = state.measurements[pos];
-      state.expressions.splice(pos, 1);
-      state.seNodules.splice(pos2, 1);
-    }
-  },
+
   // addCalculation(state: AppState, calc: SECalculation): void {
   //   // TODO: should we also push it to state.nodules?
   //   // state.nodules.push(calc);
@@ -355,7 +385,7 @@ export default {
   ): void {
     state.initialStyleStates.clear();
     state.defaultStyleStates.clear();
-    console.log("record style selected", selected);
+    //  console.log("record style selected", selected);
     selected.forEach(seNodule => {
       // The first third is the front style settings, the second third is the back, the final third are the corresponding labels
       if (seNodule.ref) {

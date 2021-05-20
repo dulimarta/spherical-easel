@@ -1,7 +1,8 @@
 import { SEMeasurement } from "./SEMeasurement";
 import { SESegment } from "./SESegment";
 import { UpdateStateType, UpdateMode } from "@/types";
-
+import { Styles } from "@/types/Styles";
+const emptySet = new Set<Styles>();
 export class SELength extends SEMeasurement {
   readonly seSegment: SESegment;
 
@@ -20,4 +21,6 @@ export class SELength extends SEMeasurement {
   public get value(): number {
     return this.seSegment.arcLength;
   }
+
+  public customStyles = (): Set<Styles> => emptySet;
 }

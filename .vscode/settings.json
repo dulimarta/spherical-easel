@@ -57,8 +57,10 @@
     "**/*.wasm": true
   },
   "cSpell.words": [
+    "LINEANDSEGMENT",
     "Labelable",
     "Monospace",
+    "ONLYPOINTS",
     "Resizeable",
     "Strikethrough",
     "Styleable",

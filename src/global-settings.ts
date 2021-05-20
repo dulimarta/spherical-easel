@@ -223,7 +223,7 @@ export default {
     }
   },
   circle: {
-    showLabelsInitially: false, // Should the labels be show upon creating the circle
+    showLabelsInitially: true, // Should the labels be show upon creating the circle
     maxLabelDistance: 0.08, // The maximum distance that a label is allowed to get away from the circle
     initialLabelOffset: 0.02, // When making point labels this is initially how far (roughly) they are from the circle
     minimumRadius: 0.02, // Don't create circles with a radius smaller than this
@@ -311,28 +311,28 @@ export default {
     maximumRadius: 0.1, // Don't scale angleMarkers to have a radius larger than this (This can't be bigger than Pi/2 or else some of the algortihms break down)
     numCirclePoints: 100, // The number of vertices used to render the circle part of the angleMarker. These are spread over the front and back parts. MAKE THIS EVEN!
     numEdgePoints: 50, // The number of vertices used to render each of the start and end vector edge of the angleMarker. These are spread over the front and back parts. MAKE THIS EVEN!
-    hitIdealDistance: 0.01, // The user has to be within this distance on the ideal unit sphere to select the angleMarker.
+    hitIdealDistance: 0.03, // The user has to be within this distance on the ideal unit sphere to select the angleMarker.
     //dynamicBackStyle is a flag that means the fill, linewidth, strokeColor, and opacity of the angleMarkers drawn on the back are automatically calculated based on the value of SETTINGS.contrast and their front counterparts
     dynamicBackStyle: true,
     //The properties of the angleMarker when it is drawn on the sphereCanvas and is not glowing
     drawn: {
       fillColor: {
-        front: "hsla(217, 100%, 80%, 0.0005)", //"noFill",
-        back: "hsla(217, 100%, 80%, 0.0002)" //"noFill"
+        front: "hsla(0, 0%, 0%, 0.001)", //"noFill",
+        back: "hsla(0, 0%, 0%, 0.0001)" //"noFill"
       },
       strokeColor: {
-        front: "hsla(217, 90%, 61%, 1)",
-        back: "hsla(217, 90%, 80%, 1)"
+        front: "hsla(0, 0%, 0%, 0.5)",
+        back: "hsla(0, 0%, 0%, 0.3)"
       },
       strokeWidth: {
-        front: 2.5,
-        back: 2
+        front: 4,
+        back: 3
       }, // The thickness of the edge of the angleMarker when drawn front/back
       opacity: { front: 1, back: 1 },
       dashArray: {
         offset: { front: 0, back: 0 },
         front: [] as number[], // An empty array means no dashing.
-        back: [10, 5] // An empty array means no dashing.
+        back: [] // An empty array means no dashing.
       } // An empty array means no dashing.
     },
     //The properties of the region around an angle when it is glowing
@@ -342,7 +342,7 @@ export default {
         front: "hsla(0, 100%, 50%, 1)",
         back: "hsla(0, 100%, 75%, 0.7)"
       },
-      edgeWidth: 4, // edgeWidth/2 is the width of the region around the angle (on all sides) that shows the glow
+      edgeWidth: 3, // edgeWidth/2 is the width of the region around the angle (on all sides) that shows the glow
       opacity: { front: 1, back: 1 }
       // The dash pattern will always be the same as the drawn version
     },
@@ -353,8 +353,8 @@ export default {
         back: "hsla(0, 0%, 50%, 0.3)" //"noFill"
       },
       strokeColor: {
-        front: "hsla(0, 0%, 0%, 1.0)",
-        back: "hsla(0, 0%, 0%, 0.1)"
+        front: "hsla(0, 0%, 0%, 0.6)",
+        back: "hsla(0, 0%, 0%, 0.4)"
       },
       // The width is the same as the default drawn version
       opacity: { front: 1, back: 1 }

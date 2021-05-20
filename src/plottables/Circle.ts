@@ -375,12 +375,14 @@ export default class Circle extends Nodule {
       //} && this.arcRadius < Math.PI / 2) {
       //find the angular width of the part of the boundary circle to be copied
       // Compute the angle from the positive x axis to the last frontPartVertex
+      //NOTE: the syntax for atan2 is atan2(y,x)!!!!!
       const startAngle = Math.atan2(
         this.frontPart.vertices[frontLen - 1].y,
         this.frontPart.vertices[frontLen - 1].x
       );
 
       // Compute the angle from the positive x axis to the first frontPartVertex
+      //NOTE: the syntax for atan2 is atan2(y,x)!!!!!
       const endAngle = Math.atan2(
         this.frontPart.vertices[0].y,
         this.frontPart.vertices[0].x

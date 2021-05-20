@@ -7,6 +7,7 @@ import { SELine } from "@/models/SELine";
 import { SELabel } from "@/models/SELabel";
 import { SESegment } from "@/models/SESegment";
 import { SECircle } from "@/models/SECircle";
+import { SEAngleMarker } from "@/models/SEAngleMarker";
 
 export default abstract class Highlighter extends MouseHandler {
   abstract mousePressed(event: MouseEvent): void;
@@ -42,6 +43,7 @@ export default abstract class Highlighter extends MouseHandler {
     this.hitSESegments.clear();
     this.hitSECircles.clear();
     this.hitSELabels.clear();
+    this.hitSEAngleMarkers.clear();
     this.infoText.hide();
 
     // Create an array of SENodules of all nearby objects by querying the store
@@ -67,7 +69,6 @@ export default abstract class Highlighter extends MouseHandler {
     this.hitSEPoints.forEach((obj: SEPoint) => {
       obj.glowing = true;
     });
-
     // Sort the nearby SENodules list into their more specific SE classes
     this.hitSELines = this.hitSENodules
       .filter(obj => obj instanceof SELine)
@@ -84,6 +85,10 @@ export default abstract class Highlighter extends MouseHandler {
     this.hitSELabels = this.hitSENodules
       .filter(obj => obj instanceof SELabel)
       .map(obj => obj as SELabel);
+
+    this.hitSEAngleMarkers = this.hitSENodules
+      .filter(obj => obj instanceof SEAngleMarker)
+      .map(obj => obj as SEAngleMarker);
 
     // Prioritize the SEPoints, the above code makes the nearby SEPoints glow but if there
     // are no nearby SEPoints, make the other nearby SENodules glow and display their names
@@ -103,9 +108,11 @@ export default abstract class Highlighter extends MouseHandler {
 
       // Pull the name field from all these objects into one array of strings
       const text = [
+        ...this.hitSEPoints,
         ...this.hitSELines,
         ...this.hitSESegments,
-        ...this.hitSECircles
+        ...this.hitSECircles,
+        ...this.hitSEAngleMarkers
       ]
         .map(n => n.name)
         .join(", ");

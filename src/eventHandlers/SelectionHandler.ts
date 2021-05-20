@@ -134,10 +134,10 @@ export default class SelectionHandler extends MouseHandler {
       }
     }
     this.store.commit.setSelectedSENodules(this.currentSelection);
-    console.log(
-      "number selected",
-      this.store.getters.selectedSENodules().length
-    );
+    // console.log(
+    //   "number selected",
+    //   this.store.getters.selectedSENodules().length
+    // );
     /** 
     console.log("----selected---- objects------");
     this.currentSelection.forEach(n =>

@@ -20,6 +20,7 @@ import { SESegment } from "./SESegment";
 import { SELine } from "./SELine";
 import { SECircle } from "./SECircle";
 import { SetNoduleDisplayCommand } from "@/commands/SetNoduleDisplayCommand";
+import { SEAngleMarker } from "./SEAngleMarker";
 
 const styleSet = new Set([
   Styles.fillColor,
@@ -41,15 +42,6 @@ export class SELabel extends SENodule implements Visitable {
   /* Access to the store to retrieve the canvas size so that the bounding rectangle for the text can be computed properly*/
   protected store = AppStore;
 
-  /* Variables to determine which labels to show initially*/
-  // static showFreePointsLabelsInitially =
-  //   SETTINGS.point.showLabelsOfFreePointsInitially;
-  // static showNonFreePointsLabelsInitially =
-  //   SETTINGS.point.showLabelsOfFreePointsInitially;
-  // static showLineLabelsInitially = SETTINGS.line.showLabelsInitially;
-  // static showSegmentLabelsInitially = SETTINGS.segment.showLabelsInitially;
-  // static showCircleLabelsInitially = SETTINGS.circle.showLabelsInitially;
-
   /* This should be the only reference to the plotted version of this SELabel */
   public ref: Label;
   /**
@@ -68,7 +60,7 @@ export class SELabel extends SENodule implements Visitable {
    */
   constructor(label: Label, parent: SENodule) {
     super();
-    // console.log("store", SELabel.store);
+
     this.ref = label;
     this.parent = parent;
     label.seLabel = this; // used so that Label (the plottable) can set the visibility of the parent
@@ -79,8 +71,7 @@ export class SELabel extends SENodule implements Visitable {
     // Set the size for zoom
     this.ref.adjustSize();
 
-    // Display the label
-
+    // Display the label initially
     if (parent instanceof SEPoint) {
       if (parent.isFreePoint()) {
         this.showing = SETTINGS.point.showLabelsOfFreePointsInitially;
@@ -93,6 +84,8 @@ export class SELabel extends SENodule implements Visitable {
       this.showing = SETTINGS.segment.showLabelsInitially;
     } else if (parent instanceof SECircle) {
       this.showing = SETTINGS.circle.showLabelsInitially;
+    } else if (parent instanceof SEAngleMarker) {
+      this.showing = true; // SETTINGS.angleMarker.showLabelsInitially;
     } else {
       this.showing = true;
     }

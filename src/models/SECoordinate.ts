@@ -2,13 +2,14 @@ import { SEMeasurement } from "./SEMeasurement";
 import { SEPoint } from "./SEPoint";
 
 import { UpdateStateType, UpdateMode } from "@/types";
+import { Styles } from "@/types/Styles";
 
 export enum CoordinateSelection {
   X_VALUE,
   Y_VALUE,
   Z_VALUE
 }
-
+const emptySet = new Set<Styles>();
 export class SECoordinate extends SEMeasurement {
   private selector = CoordinateSelection.X_VALUE;
 
@@ -45,4 +46,5 @@ export class SECoordinate extends SEMeasurement {
         return Number.NaN;
     }
   }
+  public customStyles = (): Set<Styles> => emptySet;
 }
