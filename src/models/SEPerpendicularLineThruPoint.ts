@@ -1,6 +1,10 @@
 import { SEPoint } from "./SEPoint";
 import Point from "@/plottables/Point";
-import { IntersectionReturnType, LineState } from "@/types";
+import {
+  IntersectionReturnType,
+  LineState,
+  PerpendicularLineThruPointState
+} from "@/types";
 import store from "@/store";
 import { SEOneDimensional } from "@/types";
 import { UpdateMode, UpdateStateType } from "@/types";
@@ -82,22 +86,14 @@ export class SEPerpendicularLineThruPoint extends SELine {
     }
     // Perpendicular Lines are completely determined by their parents and an update on the parents
     // will cause this line to be put into the correct location. Therefore there is no need to
-    // store it in the stateArray for undo move or delete
-    // if (
-    //   state.mode == UpdateMode.RecordStateForDelete ||
-    //   state.mode == UpdateMode.RecordStateForMove
-    // ) {
-    //   // If the parent points of the line are antipodal, the normal vector determines the
-    //   // plane of the line.   Store the coordinate values of the normal vector and not the pointer to the vector.
-    //   const lineState: LineState = {
-    //     kind: "line",
-    //     object: this,
-    //     normalVectorX: this.normalVector.x,
-    //     normalVectorY: this.normalVector.y,
-    //     normalVectorZ: this.normalVector.z
-    //   };
-    //   state.stateArray.push(lineState);
-    // }
+    // store it in the stateArray for undo move. Store only for delete
+    if (state.mode == UpdateMode.RecordStateForDelete) {
+      const perpendicularLineThruPointState: PerpendicularLineThruPointState = {
+        kind: "perpendicularLineThruPoint",
+        object: this
+      };
+      state.stateArray.push(perpendicularLineThruPointState);
+    }
     this.updateKids(state);
   }
 

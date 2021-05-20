@@ -1,6 +1,9 @@
 import { SEMeasurement } from "./SEMeasurement";
 import { SEPoint } from "./SEPoint";
 import { UpdateStateType, UpdateMode } from "@/types";
+import { Styles } from "@/types/Styles";
+
+const emptySet = new Set<Styles>();
 
 export class SESegmentDistance extends SEMeasurement {
   readonly firstSEPoint: SEPoint;
@@ -27,4 +30,6 @@ export class SESegmentDistance extends SEMeasurement {
       this.secondSEPoint.locationVector
     );
   }
+
+  public customStyles = (): Set<Styles> => emptySet;
 }

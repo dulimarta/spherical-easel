@@ -4,7 +4,7 @@ import { SEOneDimensional, UpdateStateType, UpdateMode } from "@/types";
 import { Vector3 } from "three";
 let EXPR_COUNT = 0;
 
-const emptySet = new Set<Styles>();
+//const emptySet = new Set<Styles>();
 export abstract class SEExpression extends SENodule {
   constructor() {
     super();
@@ -40,7 +40,7 @@ export abstract class SEExpression extends SENodule {
     return this.value.toFixed(3);
   }
 
-  public customStyles = (): Set<Styles> => emptySet;
+  //public customStyles = (): Set<Styles> => emptySet;
 
   /**
    * Is the object hit a point at a particular sphere location?
@@ -53,7 +53,6 @@ export abstract class SEExpression extends SENodule {
   ): boolean {
     return false;
   }
-
   public update(state: UpdateStateType): void {
     if (state.mode !== UpdateMode.DisplayOnly) return;
     if (!this.canUpdateNow()) return;

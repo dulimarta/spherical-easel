@@ -173,7 +173,7 @@ export class SECircle extends SENodule
    * @param idealUnitSphereVector A vector on the unit sphere
    */
   public closestLabelLocationVector(idealUnitSphereVector: Vector3): Vector3 {
-    // First find the closest point on the segment to the idealUnitSphereVector
+    // First find the closest point on the circle to the idealUnitSphereVector
     this.tmpVector.copy(this.closestVector(idealUnitSphereVector));
 
     // The current magnification level

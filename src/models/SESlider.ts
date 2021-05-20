@@ -1,6 +1,7 @@
 import { SEMeasurement } from "./SEMeasurement";
 import { UpdateStateType, UpdateMode } from "@/types";
-
+import { Styles } from "@/types/Styles";
+const emptySet = new Set<Styles>();
 export class SESlider extends SEMeasurement /*implements Visitable*/ {
   /* Access to the store to retrieve the canvas size so that the bounding rectangle for the text can be computed properly*/
   // protected store = AppStore;
@@ -38,4 +39,6 @@ export class SESlider extends SEMeasurement /*implements Visitable*/ {
     this.current = v;
     this.updateKids({ mode: UpdateMode.DisplayOnly, stateArray: [] });
   }
+
+  public customStyles = (): Set<Styles> => emptySet;
 }

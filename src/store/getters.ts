@@ -16,6 +16,7 @@ import NonFreePoint from "@/plottables/NonFreePoint";
 import { DisplayStyle } from "@/plottables/Nodule";
 import { StyleOptions, StyleEditPanels } from "@/types/Styles";
 import SETTINGS from "@/global-settings";
+import { SEAngleMarker } from "@/models/SEAngleMarker";
 
 const PIXEL_CLOSE_ENOUGH = 8;
 
@@ -399,43 +400,43 @@ export default {
   /** Find nearby points by checking the distance in the ideal sphere
    * or screen distance (in pixels)
    */
-  findNearbySEPoints: (state: AppState) => (
-    unitIdealVector: Vector3,
-    screenPosition: Two.Vector
-  ): SEPoint[] => {
-    return state.sePoints.filter(
-      p =>
-        p.isHitAt(unitIdealVector, state.zoomMagnificationFactor) &&
-        p.ref.defaultScreenVectorLocation.distanceTo(screenPosition) <
-          PIXEL_CLOSE_ENOUGH
-    );
-  },
-  /** When a point is on a geodesic circle, it has to be perpendicular to
-   * the normal direction of that circle */
-  findNearbySELines: (state: AppState) => (
-    unitIdealVector: Vector3,
-    screenPosition: Two.Vector
-  ): SELine[] => {
-    return state.seLines.filter((z: SELine) =>
-      z.isHitAt(unitIdealVector, state.zoomMagnificationFactor)
-    );
-  },
-  findNearbySESegments: (state: AppState) => (
-    unitIdealVector: Vector3,
-    screenPosition: Two.Vector
-  ): SESegment[] => {
-    return state.seSegments.filter((z: SESegment) =>
-      z.isHitAt(unitIdealVector, state.zoomMagnificationFactor)
-    );
-  },
-  findNearbySECircles: (state: AppState) => (
-    unitIdealVector: Vector3,
-    screenPosition: Two.Vector
-  ): SECircle[] => {
-    return state.seCircles.filter((z: SECircle) =>
-      z.isHitAt(unitIdealVector, state.zoomMagnificationFactor)
-    );
-  },
+  // findNearbySEPoints: (state: AppState) => (
+  //   unitIdealVector: Vector3,
+  //   screenPosition: Two.Vector
+  // ): SEPoint[] => {
+  //   return state.sePoints.filter(
+  //     p =>
+  //       p.isHitAt(unitIdealVector, state.zoomMagnificationFactor) &&
+  //       p.ref.defaultScreenVectorLocation.distanceTo(screenPosition) <
+  //         PIXEL_CLOSE_ENOUGH
+  //   );
+  // },
+  // /** When a point is on a geodesic circle, it has to be perpendicular to
+  //  * the normal direction of that circle */
+  // findNearbySELines: (state: AppState) => (
+  //   unitIdealVector: Vector3,
+  //   screenPosition: Two.Vector
+  // ): SELine[] => {
+  //   return state.seLines.filter((z: SELine) =>
+  //     z.isHitAt(unitIdealVector, state.zoomMagnificationFactor)
+  //   );
+  // },
+  // findNearbySESegments: (state: AppState) => (
+  //   unitIdealVector: Vector3,
+  //   screenPosition: Two.Vector
+  // ): SESegment[] => {
+  //   return state.seSegments.filter((z: SESegment) =>
+  //     z.isHitAt(unitIdealVector, state.zoomMagnificationFactor)
+  //   );
+  // },
+  // findNearbySECircles: (state: AppState) => (
+  //   unitIdealVector: Vector3,
+  //   screenPosition: Two.Vector
+  // ): SECircle[] => {
+  //   return state.seCircles.filter((z: SECircle) =>
+  //     z.isHitAt(unitIdealVector, state.zoomMagnificationFactor)
+  //   );
+  // },
   createAllIntersectionsWithLine: (state: AppState) => (
     newLine: SELine
   ): SEIntersectionReturnType[] => {
@@ -812,6 +813,9 @@ export default {
   },
   allSELabels: (state: AppState) => (): SELabel[] => {
     return state.seLabels;
+  },
+  allSEAngleMarkers: (state: AppState) => (): SEAngleMarker[] => {
+    return state.seAngleMarkers;
   },
   previousActionMode: (state: AppState) => (): { id: string; name: string } => {
     return { id: state.actionMode, name: state.activeToolName };

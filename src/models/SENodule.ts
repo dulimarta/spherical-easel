@@ -11,6 +11,7 @@ import { UpdateMode, UpdateStateType } from "@/types";
 //import { magnificationLevel } from "@/components/SENoduleItem.vue";
 
 let NODE_COUNT = 0;
+
 export abstract class SENodule {
   /**
    * The Global Vuex Store

@@ -8,6 +8,7 @@ import { SELabel } from "@/models/SELabel";
 import { SESegment } from "@/models/SESegment";
 import { SECircle } from "@/models/SECircle";
 import AppStore from "@/store";
+import { SEAngleMarker } from "@/models/SEAngleMarker";
 
 export default abstract class Highlighter extends MouseHandler {
   /**
@@ -46,6 +47,7 @@ export default abstract class Highlighter extends MouseHandler {
     this.hitSESegments.clear();
     this.hitSECircles.clear();
     this.hitSELabels.clear();
+    this.hitSEAngleMarkers.clear();
     this.infoText.hide();
 
     // Create an array of SENodules of all nearby objects by querying the store
@@ -91,12 +93,17 @@ export default abstract class Highlighter extends MouseHandler {
       .filter(obj => obj instanceof SELabel)
       .map(obj => obj as SELabel);
 
+    this.hitSEAngleMarkers = this.hitSENodules
+      .filter(obj => obj instanceof SEAngleMarker)
+      .map(obj => obj as SEAngleMarker);
+
     // Pull the name field from all these objects into one array of strings
     const text = [
       ...this.hitSEPoints,
       ...this.hitSELines,
       ...this.hitSESegments,
-      ...this.hitSECircles
+      ...this.hitSECircles,
+      ...this.hitSEAngleMarkers
     ]
       .map(n => n.name)
       .join(", ");
@@ -104,6 +111,7 @@ export default abstract class Highlighter extends MouseHandler {
     if (text.length > 0) {
       // Show the names temporarily
       this.infoText.showWithDelay(this.layers[LAYER.foregroundText], 300);
+      // Textbox is set to handle a ???? How does this work????
       this.infoText.text = text;
       this.infoText.translation.set(
         this.currentScreenVector.x,

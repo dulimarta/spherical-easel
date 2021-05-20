@@ -62,8 +62,9 @@ export default class MoveHandler extends Highlighter {
   /**
    * Objects that define the moved objects (and all descendants) states before and after moving (for undoing moving)
    * Issuing a update(this.beforeMoveState) creates an array of SENodules that is a Topological Sort and
-   * records the state of certain key variables (*not* pointers to the variables) so that they can be
-   * compared to the after the move. If they are different we issue a MoveXXXCommand to change the value
+   * records the state of certain key variables (*not* pointers to the variables) before the move so that they can be
+   * compared to them after the move. If they are different we issue a MoveXXXCommand (but not executed only
+   * pushed onto the undo/redo stack) to change the value.
    */
   //#region beforeSaveState
   private beforeMoveState: UpdateStateType = {

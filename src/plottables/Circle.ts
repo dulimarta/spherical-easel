@@ -248,26 +248,44 @@ export default class Circle extends Nodule {
    * call this method once those variables are updated.
    */
   public updateDisplay(): void {
-    const sphereRadius = SETTINGS.boundaryCircle.radius; // in pixels
+    //#region circleDisplay
+    // Create a matrix4 in the three.js package (called transformMatrix) that maps a circle in standard position (i.e. the
+    //  original circle with vertices forming a circle in the plane z=0 of radius SETTINGS.boundaryCircle.radius) onto
+    //  the one in the target desired (updated) position (i.e. the target circle).
+
+    // First set up the coordinate system of the target circle
     // The vector to the circle center is ALSO the normal direction of the circle
-    // These three vectors will be stored in SECircle -- just copy them from there
     desiredZAxis.copy(this._centerVector).normalize();
+    // Any vector perpendicular the desired z axis can be the desired x axis
     desiredXAxis
       .set(-this._centerVector.y, this._centerVector.x, 0)
       .normalize();
+    // Use the cross product to create the vector perpendicular to both the desired z and x axis
     desiredYAxis.crossVectors(desiredZAxis, desiredXAxis);
 
-    // Set up the local coordinates from for the circle
+    // Set up the local coordinates from for the circle,
+    //  transformMatrix will now map (1,0,0) to the point on the desired x axis a unit from the origin in the positive direction.
     transformMatrix.makeBasis(desiredXAxis, desiredYAxis, desiredZAxis);
-    // The circle plane is below the tangent plane
-    const distanceFromOrigin = Math.cos(this._circleRadius);
+
+    //Now appropriately translate and scale the circle in standard position to the one in the desired location
 
     // translate along the Z of the local coordinate frame
-    this.tmpMatrix.makeTranslation(0, 0, distanceFromOrigin * sphereRadius);
+    // The standard circle plane (z=0) is below the plane of the target circle so translate the plane z=0 to the
+    // the target circle plane
+    const distanceFromOrigin = Math.cos(this._circleRadius);
+    this.tmpMatrix.makeTranslation(
+      0,
+      0,
+      distanceFromOrigin * SETTINGS.boundaryCircle.radius
+    );
     transformMatrix.multiply(this.tmpMatrix);
-    // scale the circle on the XY-plane of the local coordinate frame
+
+    // The target circle is scaled version of the original circle (but now in the plane of the target circle)
+    // so scale XYZ space in the XY directions by the projected radius (z direction by 1)
+    // this will make the original circle (in the plane of the target circle) finally coincide with the target circle
     this.tmpMatrix.makeScale(this.projectedRadius, this.projectedRadius, 1);
-    transformMatrix.multiply(this.tmpMatrix);
+    transformMatrix.multiply(this.tmpMatrix); // transformMatrix now maps the original circle to the target circle
+    //#endregion circleDisplay
 
     // Recalculate the 2D coordinate of the TwoJS path (From the originalVertices array)
     // As we drag the mouse, the number of vertices in the front half
@@ -286,7 +304,7 @@ export default class Circle extends Nodule {
       this.tmpVector.applyMatrix4(transformMatrix);
 
       // When the Z-coordinate is negative, the vertex belongs the
-      // the back semi circle
+      // the back side of the sphere
       if (this.tmpVector.z > 0) {
         if (firstPos === -1) firstPos = pos;
         if (posIndex >= frontLen) {
@@ -357,12 +375,14 @@ export default class Circle extends Nodule {
       //} && this.arcRadius < Math.PI / 2) {
       //find the angular width of the part of the boundary circle to be copied
       // Compute the angle from the positive x axis to the last frontPartVertex
+      //NOTE: the syntax for atan2 is atan2(y,x)!!!!!
       const startAngle = Math.atan2(
         this.frontPart.vertices[frontLen - 1].y,
         this.frontPart.vertices[frontLen - 1].x
       );
 
       // Compute the angle from the positive x axis to the first frontPartVertex
+      //NOTE: the syntax for atan2 is atan2(y,x)!!!!!
       const endAngle = Math.atan2(
         this.frontPart.vertices[0].y,
         this.frontPart.vertices[0].x
