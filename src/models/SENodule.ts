@@ -1,11 +1,7 @@
 import { Vector3 } from "three";
-import { SEPoint } from "./SEPoint";
-import SETTINGS from "@/global-settings";
 import Nodule from "@/plottables/Nodule";
-import { SEPointOnOneDimensional } from "./SEPointOnOneDimensional";
 import { Styles } from "@/types/Styles";
-import { SEOneDimensional, OneDimensional } from "@/types";
-import { UpdateMode, UpdateStateType } from "@/types";
+import { UpdateStateType } from "@/types";
 //import AppStore from "@/store";
 
 //import { magnificationLevel } from "@/components/SENoduleItem.vue";

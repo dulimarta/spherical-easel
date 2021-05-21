@@ -1,4 +1,4 @@
-import { AppState, SEOneDimensional, Labelable } from "@/types";
+import { AppState, Labelable } from "@/types";
 import Two from "two.js";
 import { SEPoint } from "@/models/SEPoint";
 import { SESegment } from "@/models/SESegment";
@@ -13,16 +13,14 @@ import { Vector3, Matrix4 } from "three";
 import { StyleOptions, StyleEditPanels } from "@/types/Styles";
 import { LineNormalVisitor } from "@/visitors/LineNormalVisitor";
 import { SegmentNormalArcLengthVisitor } from "@/visitors/SegmentNormalArcLengthVisitor";
-import { UpdateMode, UpdateStateType } from "@/types";
+import { UpdateMode } from "@/types";
 import Nodule, { DisplayStyle } from "@/plottables/Nodule";
-import { SEMeasurement } from "@/models/SEMeasurement";
-import { SECalculation } from "@/models/SECalculation";
 import SETTINGS from "@/global-settings";
 import { SEExpression } from "@/models/SEExpression";
 import { SEAngleMarker } from "@/models/SEAngleMarker";
 
 const tmpMatrix = new Matrix4();
-const tmpVector = new Vector3();
+//const tmpVector = new Vector3();
 
 //#region appState
 export const initialState: AppState = {

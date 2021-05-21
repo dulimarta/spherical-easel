@@ -5,7 +5,7 @@ import { AddAntipodalPointCommand } from "@/commands/AddAntipodalPointCommand";
 import { DisplayStyle } from "@/plottables/Nodule";
 import Highlighter from "./Highlighter";
 import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
-import { UpdateMode, OneDimensional, SEOneDimensional } from "@/types";
+import { UpdateMode, SEOneDimensional } from "@/types";
 import Label from "@/plottables/Label";
 import { SELabel } from "@/models/SELabel";
 import { Vector3 } from "three";
@@ -17,7 +17,6 @@ import Point from "@/plottables/Point";
 import { SEPointOnOneDimensional } from "@/models/SEPointOnOneDimensional";
 import { AddPointOnOneDimensionalCommand } from "@/commands/AddPointOnOneDimensionalCommand";
 import { AddPointCommand } from "@/commands/AddPointCommand";
-import { SENodule } from "@/models/SENodule";
 import EventBus from "./EventBus";
 
 export default class AntipodalPointHandler extends Highlighter {

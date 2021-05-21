@@ -1,6 +1,6 @@
 /** @format */
 
-import { Vector3, Vector2, Matrix4, UnsignedShort4444Type } from "three";
+import { Vector3, Vector2, Matrix4 } from "three";
 import Two from "two.js";
 import SETTINGS, { LAYER } from "@/global-settings";
 import Nodule, { DisplayStyle } from "./Nodule";
@@ -10,7 +10,7 @@ import AppStore from "@/store";
 const desiredXAxis = new Vector3();
 const desiredYAxis = new Vector3();
 const desiredZAxis = new Vector3();
-const Z_AXIS = new Vector3(0, 0, 1);
+// const Z_AXIS = new Vector3(0, 0, 1);
 const transformMatrix = new Matrix4();
 const CIRCLEEDGESUBDIVISIONS = SETTINGS.angleMarker.numCirclePoints;
 //const EDGESUBDIVISIONS = SETTINGS.angleMarker.numEdgePoints;

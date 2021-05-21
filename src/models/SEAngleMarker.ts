@@ -1,5 +1,4 @@
 import { SEMeasurement } from "./SEMeasurement";
-import { SENodule } from "./SENodule";
 import { SEPoint } from "./SEPoint";
 import { SELine } from "./SELine";
 import { SESegment } from "./SESegment";
@@ -7,7 +6,7 @@ import AngleMarker from "@/plottables/AngleMarker";
 import { Vector3, Matrix4 } from "three";
 import { Visitable } from "@/visitors/Visitable";
 import { Visitor } from "@/visitors/Visitor";
-import { AngleMarkerState, OneDimensional } from "@/types";
+import { AngleMarkerState } from "@/types";
 import SETTINGS from "@/global-settings";
 import { Styles } from "@/types/Styles";
 import { UpdateMode, UpdateStateType } from "@/types";

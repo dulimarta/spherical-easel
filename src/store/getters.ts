@@ -18,7 +18,7 @@ import { StyleOptions, StyleEditPanels } from "@/types/Styles";
 import SETTINGS from "@/global-settings";
 import { SEAngleMarker } from "@/models/SEAngleMarker";
 
-const PIXEL_CLOSE_ENOUGH = 8;
+// const PIXEL_CLOSE_ENOUGH = 8;
 
 /**
  * The vectors to the centers of the circles
