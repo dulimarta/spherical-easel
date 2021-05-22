@@ -49,9 +49,12 @@
 
       <!-- This will open up the global settings view setting the language, decimals 
       display and other global options-->
-      <router-link to="/account">
-        <v-icon class="mr-2">mdi-account</v-icon>
-      </router-link>
+      <span>{{whoami}}</span>
+
+      <v-icon class="mr-2"
+        @click="doLoginOrCheck">mdi-account</v-icon>
+
+      <v-menu></v-menu>
       <router-link to="/settings">
         <v-icon>mdi-cog</v-icon>
       </router-link>
@@ -84,6 +87,14 @@
           class="footer-text">{{ $t(`buttons.NoToolSelected`) }}</span>
       </v-col>
     </v-footer>
+    <Dialog ref="logoutDialog"
+      title="Confirm Logout"
+      yes-text="Proceed"
+      :yes-action="() => doLogout()"
+      no-text="Cancel"
+      max-width="40%">
+      You are about to logout. Proceed or Stay login?
+    </Dialog>
   </v-app>
 </template>
 
@@ -93,27 +104,58 @@
 -->
 <script lang="ts">
 /* Import the custom components */
+import VueComponent from "vue";
 import { Vue, Component } from "vue-property-decorator";
 import { State } from "vuex-class";
 import MessageBox from "@/components/MessageBox.vue";
+import Dialog, { DialogAction } from "@/components/Dialog.vue";
 import { AppState } from "./types";
 import EventBus from "@/eventHandlers/EventBus";
+import { FirebaseAuth, User } from "node_modules/@firebase/auth-types";
 
 /* This allows for the State of the app to be initialized with in vuex store */
-@Component({ components: { MessageBox } })
+@Component({ components: { MessageBox, Dialog } })
 export default class App extends Vue {
   @State((s: AppState) => s.activeToolName)
   activeToolName!: string;
 
+  readonly $appAuth!: FirebaseAuth;
+  $refs!: {
+    logoutDialog: VueComponent & DialogAction;
+  };
   footerColor = "accent";
+  authSubscription: any;
+  whoami = "";
 
   mounted(): void {
     this.$store.direct.commit.init();
     EventBus.listen("set-footer-color", this.setFooterColor);
+    this.authSubscription = this.$appAuth.onAuthStateChanged(
+      (u: User | null) => {
+        if (u !== null) this.whoami = u.email ?? "unknown email";
+        else this.whoami = "";
+      }
+    );
   }
 
+  beforeDestroy(): void {
+    if (this.authSubscription) this.authSubscription();
+  }
   setFooterColor(e: unknown): void {
     this.footerColor = (e as any).color;
+  }
+
+  doLogout(): void {
+    this.$appAuth.signOut();
+    this.$refs.logoutDialog.hide();
+  }
+
+  doLoginOrCheck(): void {
+    if (this.$appAuth.currentUser !== null) {
+      this.$refs.logoutDialog.show();
+    } else {
+      this.$router.replace({ path: "/account" });
+    }
   }
 }
 </script>
