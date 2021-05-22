@@ -89,6 +89,13 @@ export default class Login extends Vue {
           keyOptions: { emailAddr: cred.user?.email },
           type: "info"
         });
+      })
+      .catch((error: any) => {
+        EventBus.fire("show-alert", {
+          key: "account.createError",
+          keyOptions: { error },
+          type: "error"
+        });
       });
   }
 

@@ -216,6 +216,7 @@
     "emailVerification": "An account verification email has been delivered to {emailAddr}",
     "emailNotVerified": "Your account is not yet verified. Please check your email",
     "loginError": "Unable to login: {error}",
+    "createError": "Unable to create account: {error}",
     "passwordReset": "A link to reset your password has been delivered to {emailAddr}"
   }
 }

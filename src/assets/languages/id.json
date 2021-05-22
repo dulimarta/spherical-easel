@@ -121,13 +121,14 @@
     "showColorPresets": "Warna standar",
     "showColorPresetsToolTip": "Tekan tombol ini untuk memasukan warna HSLA atau memilih warna standar",
     "strokeColor": "Warna garis",
-    "stokeWidthPercent": "Persentasw Tebal Garis",
+    "stokeWidthPercent": "Persentase Tebal Garis",
     "value": "Nilai"
   },
   "account": {
     "emailVerification": "Email untuk verifikasi akun telah dikirim ke {emailAddr}",
     "emailNotVerified": "Akun anda belum diverifikasi. Periksalah email anda",
     "loginError": "Login tidak berhasil: {error}",
+    "createError": "Pembuatan akun baru tidak berhasil: {error}",
     "passwordReset": "Periksalah email and ({emailAddr}) untuk mereset password"
   }
 }
