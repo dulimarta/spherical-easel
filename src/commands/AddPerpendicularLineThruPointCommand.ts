@@ -1,5 +1,4 @@
 import { Command } from "./Command";
-import { SELine } from "@/models/SELine";
 import { SEPoint } from "@/models/SEPoint";
 import { SELabel } from "@/models/SELabel";
 import { SEPerpendicularLineThruPoint } from "@/models/SEPerpendicularLineThruPoint";

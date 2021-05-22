@@ -13,7 +13,6 @@ import {
   Labelable
 } from "@/types";
 import { SELabel } from "./SELabel";
-import Label from "@/plottables/Label";
 
 let POINT_COUNT = 0;
 const styleSet = new Set([

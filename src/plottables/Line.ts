@@ -222,7 +222,7 @@ export default class Line extends Nodule {
       if (this.tmpVector.z > 0) {
         if (posIndex === this.frontHalf.vertices.length) {
           const extra = this.backHalf.vertices.pop();
-          this.frontHalf.vertices.push(extra!);
+          if (extra) this.frontHalf.vertices.push(extra);
         }
         this.frontHalf.vertices[posIndex].x = this.tmpVector.x;
         this.frontHalf.vertices[posIndex].y = this.tmpVector.y;
@@ -232,7 +232,7 @@ export default class Line extends Nodule {
       } else {
         if (negIndex === this.backHalf.vertices.length) {
           const extra = this.frontHalf.vertices.pop();
-          this.backHalf.vertices.push(extra!);
+          if (extra) this.backHalf.vertices.push(extra);
         }
         this.backHalf.vertices[negIndex].x = this.tmpVector.x;
         this.backHalf.vertices[negIndex].y = this.tmpVector.y;

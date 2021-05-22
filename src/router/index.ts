@@ -1,7 +1,7 @@
 import Vue from "vue";
 import VueRouter, { RouteConfig } from "vue-router";
 import Easel from "@/views/Easel.vue";
-
+import Login from "@/views/Login.vue";
 Vue.use(VueRouter);
 
 const routes: Array<RouteConfig> = [
@@ -9,6 +9,11 @@ const routes: Array<RouteConfig> = [
     path: "/",
     name: "Home",
     component: Easel
+  },
+  {
+    path: "/account",
+    name: "Account",
+    component: Login
   },
   {
     path: "/settings",

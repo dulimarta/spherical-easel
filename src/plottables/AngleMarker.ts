@@ -401,11 +401,11 @@ export default class AngleMarker extends Nodule {
             let extra;
             if (this.backCirclePath.vertices.length !== 0) {
               extra = this.backCirclePath.vertices.pop();
-              backCircleLen--;
+              if (extra) backCircleLen--;
             } else {
               extra = this.storageCirclePath.vertices.pop();
             }
-            this.frontCirclePath.vertices.push(extra!);
+            if (extra) this.frontCirclePath.vertices.push(extra);
 
             let glowExtra;
             if (this.glowingBackCirclePath.vertices.length !== 0) {
@@ -413,7 +413,7 @@ export default class AngleMarker extends Nodule {
             } else {
               glowExtra = this.glowingStorageCirclePath.vertices.pop();
             }
-            this.glowingFrontCirclePath.vertices.push(glowExtra!);
+            if (glowExtra) this.glowingFrontCirclePath.vertices.push(glowExtra);
             frontCircleLen++;
           }
           this.frontCirclePath.vertices[frontCircleIndex].x = this.tmpVector.x;
@@ -434,11 +434,11 @@ export default class AngleMarker extends Nodule {
             let extra;
             if (this.frontCirclePath.vertices.length !== 0) {
               extra = this.frontCirclePath.vertices.pop();
-              frontCircleLen--;
+              if (extra) frontCircleLen--;
             } else {
               extra = this.storageCirclePath.vertices.pop();
             }
-            this.backCirclePath.vertices.push(extra!);
+            if (extra) this.backCirclePath.vertices.push(extra);
 
             let glowingExtra;
             if (this.glowingFrontCirclePath.vertices.length !== 0) {
@@ -446,8 +446,10 @@ export default class AngleMarker extends Nodule {
             } else {
               glowingExtra = this.glowingStorageCirclePath.vertices.pop();
             }
-            this.glowingBackCirclePath.vertices.push(glowingExtra!);
-            backCircleLen++;
+            if (glowingExtra) {
+              this.glowingBackCirclePath.vertices.push(glowingExtra);
+              backCircleLen++;
+            }
           }
           this.backCirclePath.vertices[backCircleIndex].x = this.tmpVector.x;
           this.backCirclePath.vertices[backCircleIndex].y = this.tmpVector.y;
@@ -468,22 +470,20 @@ export default class AngleMarker extends Nodule {
 
     //Handle case 1
     for (let i = frontCircleIndex; i < frontCircleLen; i++) {
-      this.storageCirclePath.vertices.push(
-        this.frontCirclePath.vertices.pop()!
-      );
+      const v1 = this.frontCirclePath.vertices.pop();
+      if (v1) this.storageCirclePath.vertices.push(v1);
 
-      this.glowingStorageCirclePath.vertices.push(
-        this.glowingFrontCirclePath.vertices.pop()!
-      );
+      const v2 = this.glowingFrontCirclePath.vertices.pop();
+      if (v2) this.glowingStorageCirclePath.vertices.push(v2);
     }
 
     // Handle case 2
     for (let i = backCircleIndex; i < backCircleLen; i++) {
-      this.storageCirclePath.vertices.push(this.backCirclePath.vertices.pop()!);
+      const v1 = this.backCirclePath.vertices.pop();
+      if (v1) this.storageCirclePath.vertices.push(v1);
 
-      this.glowingStorageCirclePath.vertices.push(
-        this.glowingBackCirclePath.vertices.pop()!
-      );
+      const v2 = this.glowingBackCirclePath.vertices.pop();
+      if (v2) this.glowingStorageCirclePath.vertices.push(v2);
     }
 
     // update the lengths of the front/back paths
@@ -870,10 +870,10 @@ export default class AngleMarker extends Nodule {
       dup.frontCirclePath.vertices.length > this.frontCirclePath.vertices.length
     ) {
       // Transfer from frontPath to backPath
-      dup.backCirclePath.vertices.push(dup.frontCirclePath.vertices.pop()!);
-      dup.glowingBackCirclePath.vertices.push(
-        dup.glowingFrontCirclePath.vertices.pop()!
-      );
+      const v1 = dup.frontCirclePath.vertices.pop();
+      if (v1) dup.backCirclePath.vertices.push(v1);
+      const v2 = dup.glowingFrontCirclePath.vertices.pop();
+      if (v2) dup.glowingBackCirclePath.vertices.push(v2);
     }
 
     // Second remove (if necessary) vertices from the frontCirclePath to backCirclePath
@@ -881,10 +881,10 @@ export default class AngleMarker extends Nodule {
       dup.frontCirclePath.vertices.length < this.frontCirclePath.vertices.length
     ) {
       // Transfer from backPath to frontPath
-      dup.frontCirclePath.vertices.push(dup.backCirclePath.vertices.pop()!);
-      dup.glowingFrontCirclePath.vertices.push(
-        dup.glowingBackCirclePath.vertices.pop()!
-      );
+      const v1 = dup.backCirclePath.vertices.pop();
+      if (v1) dup.frontCirclePath.vertices.push(v1);
+      const v2 = dup.glowingBackCirclePath.vertices.pop();
+      if (v2) dup.glowingFrontCirclePath.vertices.push(v2);
     }
     // Now we know that the dup.frontCirclePath and this.frontCirclePath have the same length
     // Further we can guarantee that dup.backCirclePath has more (or equal) vertices than this.backCirclePath
@@ -894,10 +894,10 @@ export default class AngleMarker extends Nodule {
       dup.backCirclePath.vertices.length > this.backCirclePath.vertices.length
     ) {
       // Transfer from backPath to storagePath
-      dup.storageCirclePath.vertices.push(dup.backCirclePath.vertices.pop()!);
-      dup.glowingStorageCirclePath.vertices.push(
-        dup.glowingBackCirclePath.vertices.pop()!
-      );
+      const v1 = dup.backCirclePath.vertices.pop();
+      if (v1) dup.storageCirclePath.vertices.push(v1);
+      const v2 = dup.glowingBackCirclePath.vertices.pop();
+      if (v2) dup.glowingStorageCirclePath.vertices.push(v2);
     }
 
     // After the above statements execute this.front/back/storage and dup.front/back/storage are the same length

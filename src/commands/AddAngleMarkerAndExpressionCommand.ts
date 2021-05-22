@@ -1,9 +1,7 @@
 import { Command } from "./Command";
-import { SECircle } from "@/models/SECircle";
 import { SEPoint } from "@/models/SEPoint";
 import { SELabel } from "@/models/SELabel";
 import { SEAngleMarker } from "@/models/SEAngleMarker";
-import { SENodule } from "@/models/SENodule";
 import { SELine } from "@/models/SELine";
 import { SESegment } from "@/models/SESegment";
 

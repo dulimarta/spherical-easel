@@ -9,8 +9,8 @@
  * the actual action of the command.
  */
 
-import { Store } from "vuex";
-import { AppState } from "@/types";
+// import { Store } from "vuex";
+// import { AppState } from "@/types";
 import AppStore from "@/store";
 import EventBus from "@/eventHandlers/EventBus";
 export abstract class Command {

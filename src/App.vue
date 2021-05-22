@@ -49,6 +49,9 @@
 
       <!-- This will open up the global settings view setting the language, decimals 
       display and other global options-->
+      <router-link to="/account">
+        <v-icon class="mr-2">mdi-account</v-icon>
+      </router-link>
       <router-link to="/settings">
         <v-icon>mdi-cog</v-icon>
       </router-link>
@@ -89,13 +92,11 @@
   actions to desired changes in the display and the rest of the app. 
 -->
 <script lang="ts">
-import Vue from "vue";
 /* Import the custom components */
-import Component from "vue-class-component";
+import { Vue, Component } from "vue-property-decorator";
 import { State } from "vuex-class";
 import MessageBox from "@/components/MessageBox.vue";
 import { AppState } from "./types";
-import { Watch } from "vue-property-decorator";
 import EventBus from "@/eventHandlers/EventBus";
 
 /* This allows for the State of the app to be initialized with in vuex store */

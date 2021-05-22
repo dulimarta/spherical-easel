@@ -10,7 +10,7 @@ import AppStore from "@/store";
 const desiredXAxis = new Vector3();
 const desiredYAxis = new Vector3();
 const desiredZAxis = new Vector3();
-const Z_AXIS = new Vector3(0, 0, 1);
+// const Z_AXIS = new Vector3(0, 0, 1);
 const transformMatrix = new Matrix4();
 const SUBDIVISIONS = SETTINGS.circle.numPoints;
 let CIRCLE_COUNT = 0;
@@ -310,11 +310,13 @@ export default class Circle extends Nodule {
         if (posIndex >= frontLen) {
           // Steal one element from the backPart
           const extra = this.backPart.vertices.pop();
-          this.frontPart.vertices.push(extra!);
           const glowExtra = this.glowingBackPart.vertices.pop();
-          this.glowingFrontPart.vertices.push(glowExtra!);
-          backLen--;
-          frontLen++;
+          if (extra && glowExtra) {
+            this.frontPart.vertices.push(extra);
+            this.glowingFrontPart.vertices.push(glowExtra);
+            backLen--;
+            frontLen++;
+          }
         }
         this.frontPart.vertices[posIndex].x = this.tmpVector.x;
         this.frontPart.vertices[posIndex].y = this.tmpVector.y;
@@ -326,11 +328,13 @@ export default class Circle extends Nodule {
         if (negIndex >= backLen) {
           // Steal one element from the frontPart
           const extra = this.frontPart.vertices.pop();
-          this.backPart.vertices.push(extra!);
           const glowingExtra = this.glowingFrontPart.vertices.pop();
-          this.glowingBackPart.vertices.push(glowingExtra!);
-          frontLen--;
-          backLen++;
+          if (extra && glowingExtra) {
+            this.backPart.vertices.push(extra);
+            this.glowingBackPart.vertices.push(glowingExtra);
+            frontLen--;
+            backLen++;
+          }
         }
         this.backPart.vertices[negIndex].x = this.tmpVector.x;
         this.backPart.vertices[negIndex].y = this.tmpVector.y;
@@ -657,10 +661,12 @@ export default class Circle extends Nodule {
     //  move them to the other
     while (dup.frontPart.vertices.length > this.frontPart.vertices.length) {
       // Transfer from frontPart to backPart
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       dup.backPart.vertices.push(dup.frontPart.vertices.pop()!);
     }
     while (dup.backPart.vertices.length > this.backPart.vertices.length) {
       // Transfer from backPart to frontPart
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       dup.frontPart.vertices.push(dup.backPart.vertices.pop()!);
     }
     // After the above two while statement execute this.front/back and dup.front/back are the same length
@@ -696,12 +702,14 @@ export default class Circle extends Nodule {
       this.glowingFrontPart.vertices.length
     ) {
       // Transfer from frontPart to backPart
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       dup.glowingBackPart.vertices.push(dup.glowingFrontPart.vertices.pop()!);
     }
     while (
       dup.glowingBackPart.vertices.length > this.glowingBackPart.vertices.length
     ) {
       // Transfer from backpart to frontPart
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       dup.glowingFrontPart.vertices.push(dup.glowingBackPart.vertices.pop()!);
     }
     dup.glowingFrontPart.vertices.forEach((v: Two.Anchor, pos: number) => {

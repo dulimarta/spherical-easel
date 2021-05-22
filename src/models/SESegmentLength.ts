@@ -1,6 +1,6 @@
 import { SEMeasurement } from "./SEMeasurement";
 import { SESegment } from "./SESegment";
-import { UpdateStateType, UpdateMode } from "@/types";
+// import { UpdateStateType, UpdateMode } from "@/types";
 
 import { Styles } from "@/types/Styles";
 const emptySet = new Set<Styles>();

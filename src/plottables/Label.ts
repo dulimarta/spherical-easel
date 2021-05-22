@@ -1,7 +1,7 @@
 /** @format */
 
 // import SETTINGS from "@/global-settings";
-import Two from "two.js";
+import Two, { BoundingClientRect } from "two.js";
 import SETTINGS, { LAYER } from "@/global-settings";
 import Nodule, { DisplayStyle } from "./Nodule";
 import { Vector3 } from "three";
@@ -217,14 +217,14 @@ export default class Label extends Nodule {
     top: number;
     width: number;
   } {
-    const rect = this.frontText.getBoundingClientRect();
+    const rect = this.frontText.getBoundingClientRect() as BoundingClientRect;
     return {
-      bottom: (rect as any).bottom,
-      height: (rect as any).height,
-      left: (rect as any).left,
-      right: (rect as any).right,
-      top: (rect as any).top,
-      width: (rect as any).width
+      bottom: rect.bottom,
+      height: rect.height,
+      left: rect.left,
+      right: rect.right,
+      top: rect.top,
+      width: rect.width
     };
   }
   frontGlowingDisplay(): void {

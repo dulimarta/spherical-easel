@@ -23,7 +23,6 @@
     "CreateAntipodalPointDisplayedName": "Titik Antipodal",
     "CreateAntipodalPointToolTipMessage": "Pilih titik",
     "CreateAntipodalPointToolUseMessage": "Pilih salah satu titik untuk menciptakan titik pasangan antipodal",
-
     "CreateCircleDisplayedName": "Lingkaran",
     "CreateCircleToolTipMessage": "Tambahkan lingkaran",
     "CreateCircleToolUseMessage": "Tekan dan geser untuk tambahkan lingkaran dengan titik pusat dan titik luar.",
@@ -124,5 +123,11 @@
     "strokeColor": "Warna garis",
     "stokeWidthPercent": "Persentasw Tebal Garis",
     "value": "Nilai"
+  },
+  "account": {
+    "emailVerification": "Email untuk verifikasi akun telah dikirim ke {emailAddr}",
+    "emailNotVerified": "Akun anda belum diverifikasi. Periksalah email anda",
+    "loginError": "Login tidak berhasil: {error}",
+    "passwordReset": "Periksalah email and ({emailAddr}) untuk mereset password"
   }
 }
