@@ -112,13 +112,10 @@ export default class IntersectionPointHandler extends Highlighter {
     // but then the user can select two one dimensional parents to intersect
     if (this.hitSEPoints.length > 0 && this.oneDimensional1 === null) {
       // never highlight user created intersection points
-      this.hitSEPoints.filter((p: SEPoint) => {
-        if (p instanceof SEIntersectionPoint && !p.isUserCreated) {
-          return true;
-        } else {
-          return false;
-        }
-      })[0].glowing = true;
+      const filtered = this.hitSEPoints.filter(
+        (p: SEPoint) => p instanceof SEIntersectionPoint && !p.isUserCreated
+      );
+      if (filtered.length > 0) filtered[0].glowing = true;
     } else if (this.hitSESegments.length > 0) {
       this.hitSESegments[0].glowing = true;
     } else if (this.hitSELines.length > 0) {

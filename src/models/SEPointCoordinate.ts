@@ -1,8 +1,8 @@
 import { SEMeasurement } from "./SEMeasurement";
 import { SEPoint } from "./SEPoint";
 import AppStore from "@/store";
-import { UpdateStateType, UpdateMode } from "@/types";
 import { Matrix4, Vector3 } from "three";
+import { Styles } from "@/types/Styles";
 
 export enum CoordinateSelection {
   X_VALUE,
@@ -11,6 +11,9 @@ export enum CoordinateSelection {
 }
 
 export class SEPointCoordinate extends SEMeasurement {
+  public customStyles(): Set<Styles> {
+    throw new Error("Method not implemented.");
+  }
   private selector = CoordinateSelection.X_VALUE;
   private point: SEPoint;
   /**

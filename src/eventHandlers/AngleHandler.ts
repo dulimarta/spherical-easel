@@ -304,7 +304,7 @@ export default class AngleHandler extends Highlighter {
       case AngleMode.LINES:
         //Only highlight lines
         if (this.hitSELines.length > 0) {
-          this.hitSESegments[0].glowing;
+          this.hitSELines[0].glowing;
         }
         break;
       case AngleMode.SEGMENTS:
