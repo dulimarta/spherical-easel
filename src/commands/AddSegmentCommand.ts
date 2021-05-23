@@ -1,9 +1,9 @@
-import { Command } from "./Command";
+import { Command, PersistableCommand } from "./Command";
 import { SESegment } from "@/models/SESegment";
 import { SEPoint } from "@/models/SEPoint";
 import { SELabel } from "@/models/SELabel";
 
-export class AddSegmentCommand extends Command {
+export class AddSegmentCommand extends PersistableCommand {
   private seSegment: SESegment;
   private startSEPoint: SEPoint;
   private endSEPoint: SEPoint;
@@ -39,5 +39,9 @@ export class AddSegmentCommand extends Command {
     this.seSegment.unregisterChild(this.seLabel);
     this.startSEPoint.unregisterChild(this.seSegment);
     this.endSEPoint.unregisterChild(this.seSegment);
+  }
+
+  toJSON(_arg: any): string {
+    return `AddSegment ${this.seSegment.name} ${this.startSEPoint.name} ${this.endSEPoint.name} ${this.seLabel.name}`;
   }
 }

@@ -6,7 +6,7 @@
     "serve": "npm run app:serve & npm run docs:serve # Concurrent",
     "build": "npm run app:build && npm run docs:build # Serial run",
     "test:unit": "MODE=test vue-cli-service test:unit --watch",
-    "lint": "vue-cli-service lint --max-warnings 5",
+    "lint": "vue-cli-service lint",
     "app:build": "vue-cli-service build",
     "app:serve": "vue-cli-service serve",
     "check:links": "vuepress check-md ./docs",

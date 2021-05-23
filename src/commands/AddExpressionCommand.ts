@@ -30,4 +30,8 @@ export class AddExpressionCommand extends Command {
     Command.store.commit.removeExpression(this.lastState);
     this.parents.forEach(nodule => nodule.unregisterChild(this.seMeasurement));
   }
+
+  toJSON(_arg: any): string {
+    return `AddExpressions ${this.seMeasurement.name}`;
+  }
 }

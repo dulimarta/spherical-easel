@@ -1,4 +1,4 @@
-import { Command } from "./Command";
+import { Command, PersistableCommand } from "./Command";
 import { SEPoint } from "@/models/SEPoint";
 import { SEOneDimensional } from "@/types";
 import { SELabel } from "@/models/SELabel";
@@ -41,5 +41,9 @@ export class AddIntersectionPointCommand extends Command {
     this.sePoint.unregisterChild(this.seLabel);
     this.parent1.unregisterChild(this.sePoint);
     this.parent2.unregisterChild(this.sePoint);
+  }
+
+  toJSON(_arg: any): string {
+    return `AddIntersectionPoint ${this.sePoint.name} ${this.parent1.name} ${this.parent2.name} ${this.seLabel.name}`;
   }
 }

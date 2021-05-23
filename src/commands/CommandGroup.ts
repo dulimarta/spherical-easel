@@ -4,7 +4,7 @@
  */
 import { Command } from "./Command";
 export class CommandGroup extends Command {
-  private subCommands: Command[] = [];
+  public subCommands: Command[] = [];
 
   addCommand(c: Command): Command {
     this.subCommands.push(c);
@@ -28,5 +28,9 @@ export class CommandGroup extends Command {
     this.subCommands.forEach(x => {
       x.do();
     });
+  }
+
+  toJSON(_arg: string): string[] {
+    return this.subCommands.map((s: Command) => JSON.stringify(s));
   }
 }

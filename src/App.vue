@@ -51,10 +51,11 @@
       display and other global options-->
       <span>{{whoami}}</span>
 
+      <v-icon v-if="whoami !== ''"
+        @click="doShare">mdi-share</v-icon>
       <v-icon class="mr-2"
         @click="doLoginOrCheck">mdi-account</v-icon>
 
-      <v-menu></v-menu>
       <router-link to="/settings">
         <v-icon>mdi-cog</v-icon>
       </router-link>
@@ -93,7 +94,9 @@
       :yes-action="() => doLogout()"
       no-text="Cancel"
       max-width="40%">
-      You are about to logout. Proceed or Stay login?
+      <p>You are about to logout, any unsaved constructions will be
+        discarded.</p>
+      <p><em>Proceed</em> or <em>cancel?</em></p>
     </Dialog>
   </v-app>
 </template>
@@ -111,7 +114,12 @@ import MessageBox from "@/components/MessageBox.vue";
 import Dialog, { DialogAction } from "@/components/Dialog.vue";
 import { AppState } from "./types";
 import EventBus from "@/eventHandlers/EventBus";
-import { FirebaseAuth, User } from "node_modules/@firebase/auth-types";
+import { FirebaseAuth, User } from "@firebase/auth-types";
+import {
+  FirebaseFirestore,
+  DocumentReference
+} from "@firebase/firestore-types";
+import { Command } from "./commands/Command";
 
 /* This allows for the State of the app to be initialized with in vuex store */
 @Component({ components: { MessageBox, Dialog } })
@@ -120,6 +128,8 @@ export default class App extends Vue {
   activeToolName!: string;
 
   readonly $appAuth!: FirebaseAuth;
+  readonly $appDB!: FirebaseFirestore;
+
   $refs!: {
     logoutDialog: VueComponent & DialogAction;
   };
@@ -156,6 +166,23 @@ export default class App extends Vue {
     } else {
       this.$router.replace({ path: "/account" });
     }
+  }
+
+  doShare(): void {
+    /* dump the command history */
+    const out = Command.dump();
+    console.log("Sharing", out);
+    this.$appDB
+      .collection("constructions")
+      .add({ script: out })
+      .then((doc: DocumentReference) => {
+        console.log("Inserted", doc.id);
+      })
+      .catch((err: any) => {
+        console.log("Can't document", err);
+      });
+    // const parsed = JSON.parse(out);
+    // console.log(parsed);
   }
 }
 </script>

@@ -1,10 +1,10 @@
-import { Command } from "./Command";
+import { Command, PersistableCommand } from "./Command";
 import { SEPoint } from "@/models/SEPoint";
 import { SEOneDimensional } from "@/types";
 import { SELabel } from "@/models/SELabel";
 import SETTINGS from "@/global-settings";
 
-export class AddPointOnOneDimensionalCommand extends Command {
+export class AddPointOnOneDimensionalCommand extends PersistableCommand {
   private sePoint: SEPoint;
   private parent: SEOneDimensional;
   private seLabel: SELabel;
@@ -36,5 +36,9 @@ export class AddPointOnOneDimensionalCommand extends Command {
     Command.store.commit.removePoint(this.lastState);
     this.sePoint.unregisterChild(this.seLabel);
     this.parent.unregisterChild(this.sePoint);
+  }
+
+  toJSON(_arg: string): string {
+    return AddPointOnOneDimensionalCommand.name;
   }
 }

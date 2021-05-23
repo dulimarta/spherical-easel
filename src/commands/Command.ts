@@ -1,5 +1,5 @@
 /** This class uses the Command Design Pattern to
- * wraps actions into objects.
+ * wrap actions into objects.
  * The most important abstract method of this class is the `do()`
  * method, it performs the action wrapped by the object
  *
@@ -80,6 +80,18 @@ export abstract class Command {
     EventBus.fire("redo-enabled", { value: Command.redoHistory.length > 0 });
   }
 
+  static dump(): string {
+    return JSON.stringify(Command.commandHistory);
+    // return (
+    //   "[" +
+    //   Command.commandHistory
+    //     .map((c: Command, cPos: number) => {
+    //       return JSON.stringify(c); //.replaceAll('"', "");
+    //     })
+    //     .join(",") +
+    //   "]"
+    // );
+  }
   // Child classes of Command must implement the following abstract methods
   /**
    * restoreState: Perform necessary action to restore the app state.
@@ -97,4 +109,21 @@ export abstract class Command {
 
   /**  do: Perform necessary action to alter the app state*/
   abstract do(): void;
+}
+
+// This subclass of Command represents a command which can be saved
+// as into a "script"
+export abstract class PersistableCommand extends Command {
+  /* Reference 
+      https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/stringify#tojson_behavior
+  */
+  /**
+   * Invoke at runtime by JSON.stringify()
+   *
+   * @param arg takes one of the following values
+   *    - a property name (if this class is used as a property of another object)
+   *    - an empty string (if JSON.stringify() directly calls on this object)
+   *    - an array index (if this object is an array, nat applicable to our case)
+   */
+  abstract toJSON(arg: string): string;
 }
