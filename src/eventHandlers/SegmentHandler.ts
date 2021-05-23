@@ -86,7 +86,7 @@ export default class SegmentHandler extends Highlighter {
    * The unit normal vector to the plane of containing the segment
    */
   private normalVector = new Vector3(0, 0, 0);
-  /**
+  /**;
    * A temporary vector to help with normal vector computations
    */
   private tmpVector = new Vector3();

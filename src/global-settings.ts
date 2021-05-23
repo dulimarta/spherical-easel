@@ -301,8 +301,8 @@ export default {
   },
   angleMarker: {
     showLabelsInitially: false, // Should the labels be show upon creating the angleMarker
-    maxLabelDistance: 0.08, // The maximum distance that a label is allowed to get away from the angleMarker
-    initialLabelOffset: 0.02, // When making point labels this is initially how far (roughly) they are from the angleMarker
+    maxLabelDistance: 0.1, // The maximum distance that a label is allowed to get away from the angleMarker
+    initialLabelOffset: 0.04, // When making point labels this is initially how far (roughly) they are from the angleMarker
     minimumRadius: 0.02, // Don't scale angleMarkers to have a radius smaller than this
     defaultRadius: 0.04, // The default radius for angleMarkers
     maximumRadius: 0.1, // Don't scale angleMarkers to have a radius larger than this (This can't be bigger than Pi/2 or else some of the algortihms break down)
@@ -311,6 +311,8 @@ export default {
     hitIdealDistance: 0.03, // The user has to be within this distance on the ideal unit sphere to select the angleMarker.
     //dynamicBackStyle is a flag that means the fill, linewidth, strokeColor, and opacity of the angleMarkers drawn on the back are automatically calculated based on the value of SETTINGS.contrast and their front counterparts
     dynamicBackStyle: true,
+    //The scaling of the angle marker relative to the scaled for zoom default size
+    radiusScalePercent: 100,
     //The properties of the angleMarker when it is drawn on the sphereCanvas and is not glowing
     drawn: {
       fillColor: {

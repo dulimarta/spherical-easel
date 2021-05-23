@@ -212,7 +212,8 @@ export default class Segment extends Nodule {
     // Form the Y axis perpendicular to the normal vector and the XAxis
     this.desiredYAxis
       .crossVectors(this._normalVector, this.desiredXAxis)
-      .multiplyScalar(this._arcLength > Math.PI ? -1 : 1).normalize;
+      .multiplyScalar(this._arcLength > Math.PI ? -1 : 1)
+      .normalize();
 
     // Create the rotation matrix that maps the tilted circle to the unit
     // circle on the XY-plane

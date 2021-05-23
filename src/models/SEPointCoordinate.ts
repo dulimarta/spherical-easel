@@ -3,13 +3,14 @@ import { SEPoint } from "./SEPoint";
 import AppStore from "@/store";
 import { UpdateStateType, UpdateMode } from "@/types";
 import { Matrix4, Vector3 } from "three";
+import { Styles } from "@/types/Styles";
 
 export enum CoordinateSelection {
   X_VALUE,
   Y_VALUE,
   Z_VALUE
 }
-
+const emptySet = new Set<Styles>();
 export class SEPointCoordinate extends SEMeasurement {
   private selector = CoordinateSelection.X_VALUE;
   private point: SEPoint;
@@ -60,4 +61,5 @@ export class SEPointCoordinate extends SEMeasurement {
         return Number.NaN;
     }
   }
+  public customStyles = (): Set<Styles> => emptySet;
 }

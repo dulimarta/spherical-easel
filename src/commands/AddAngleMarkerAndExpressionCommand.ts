@@ -12,7 +12,8 @@ enum AngleMode {
   LINES,
   POINTS,
   SEGMENTS,
-  LINEANDSEGMENT
+  LINEANDSEGMENT,
+  SEGMENTSORLINEANDSEGMENT
 }
 
 export class AddAngleMarkerCommand extends Command {
@@ -61,7 +62,7 @@ export class AddAngleMarkerCommand extends Command {
   do(): void {
     this._firstSEParent.registerChild(this.seAngleMarker);
     this._secondSEParent.registerChild(this.seAngleMarker);
-    if (this._thirdSEParent) {
+    if (this._thirdSEParent !== undefined) {
       this._thirdSEParent.registerChild(this.seAngleMarker);
     }
     this.seAngleMarker.registerChild(this.seLabel);
@@ -77,7 +78,7 @@ export class AddAngleMarkerCommand extends Command {
     Command.store.commit.removeLabel(this.seLabel.id);
     Command.store.commit.removeAngleMarkerAndExpression(this.lastState);
     this.seAngleMarker.unregisterChild(this.seLabel);
-    if (this._thirdSEParent) {
+    if (this._thirdSEParent !== undefined) {
       this._thirdSEParent.unregisterChild(this.seAngleMarker);
     }
     this._secondSEParent.unregisterChild(this.seAngleMarker);

@@ -17,6 +17,8 @@ import { DisplayStyle } from "@/plottables/Nodule";
 import { StyleOptions, StyleEditPanels } from "@/types/Styles";
 import SETTINGS from "@/global-settings";
 import { SEAngleMarker } from "@/models/SEAngleMarker";
+import PerpendicularLineThruPointHandler from "@/eventHandlers/PerpendicularLineThruPointHandler";
+import { SEPerpendicularLineThruPoint } from "@/models/SEPerpendicularLineThruPoint";
 
 const PIXEL_CLOSE_ENOUGH = 8;
 
@@ -445,7 +447,11 @@ export default {
     // First add the two parent points of the newLine, if they are new, then
     //  they won't have been added to the state.points array yet so add them first
     avoidVectors.push(newLine.startSEPoint.locationVector);
-    avoidVectors.push(newLine.endSEPoint.locationVector);
+    // Onle perpendiculare to line through point, the SEEndPoint is auto generated SEPoint (never added to the state)
+    // and the user cannot interact with it. So it is *not* a vector to avoid for intersections.
+    if (!(newLine instanceof SEPerpendicularLineThruPoint)) {
+      avoidVectors.push(newLine.endSEPoint.locationVector);
+    }
     state.sePoints.forEach(pt => avoidVectors.push(pt.locationVector));
 
     // The intersectionPointList to return

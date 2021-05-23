@@ -423,6 +423,7 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
     this.snapToTemporaryOneDimensional = null;
     this.snapToTemporaryPoint = null;
   }
+
   createPerpendicular(
     oneDimensional: SEOneDimensional,
     sePointOneDimensionalParent: SEOneDimensional | null,
@@ -582,7 +583,8 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
     // The endSEPoint is also never added to the object tree structure (via un/registrerChild) because it is
     // updated when the the new SEPerpendicularLineThruPoint is updated.
     const endSEPoint = new SEPoint(plottableEndPoint);
-    endSEPoint.showing = false;
+    endSEPoint.showing = false; // this never changes
+    endSEPoint.exists = true; // this never changes
     endSEPoint.locationVector.crossVectors(sePointVector, this.tmpVector);
 
     // Create a plottable line to display for this perpendicular
