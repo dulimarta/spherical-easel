@@ -30,7 +30,8 @@ export class CommandGroup extends Command {
     });
   }
 
-  toJSON(_arg: string): string[] {
+  //eslint-disable-next-line
+  toJSON(arg: string): string[] {
     return this.subCommands.map((s: Command) => JSON.stringify(s));
   }
 }

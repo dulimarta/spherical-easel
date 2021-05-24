@@ -13,6 +13,7 @@ export class LineNormalVisitor implements Visitor {
     this.normalVector.copy(vec);
   }
 
+  // eslint-disable-next-line
   actionOnPoint(p: SEPoint): void {
     // p.update();
   }
@@ -26,13 +27,16 @@ export class LineNormalVisitor implements Visitor {
     // m.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
   }
 
+  // eslint-disable-next-line
   actionOnSegment(s: SESegment): void {
     // s.update();
   }
 
+  // eslint-disable-next-line
   actionOnCircle(c: SECircle): void {
     // c.update();
   }
+  // eslint-disable-next-line
   actionOnLabel(l: SELabel): void {
     // l.update();
   }

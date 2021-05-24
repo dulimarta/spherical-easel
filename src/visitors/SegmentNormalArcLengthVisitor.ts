@@ -18,10 +18,12 @@ export class SegmentNormalArcLengthVisitor implements Visitor {
     this.arcLength = num;
   }
 
+  // eslint-disable-next-line
   actionOnPoint(p: SEPoint): void {
     // p.update();
   }
 
+  // eslint-disable-next-line
   actionOnLine(m: SELine): void {
     // m.update();
   }
@@ -36,9 +38,11 @@ export class SegmentNormalArcLengthVisitor implements Visitor {
     //s.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
   }
 
+  // eslint-disable-next-line
   actionOnCircle(c: SECircle): void {
     // c.update();
   }
+  // eslint-disable-next-line
   actionOnLabel(l: SELabel): void {
     // l.update();
   }

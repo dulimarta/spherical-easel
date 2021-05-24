@@ -28,8 +28,12 @@ export class AddPointCommand extends PersistableCommand {
     Command.store.commit.removePoint(this.lastState);
   }
 
-  toJSON(_arg: any) {
-    return `AddPoint ${this.sePoint.name} ${this.seLabel.name}`;
+  // eslint-disable-next-line
+  toJSON(arg: any): string {
+    return (
+      `AddPoint ${this.sePoint.name} ` +
+      `${this.sePoint.locationVector.toFixed(3)} ${this.seLabel.name}`
+    );
   }
 }
 //#endregion addPointCommand

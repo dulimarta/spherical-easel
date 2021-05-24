@@ -51,11 +51,14 @@
       display and other global options-->
       <span>{{whoami}}</span>
 
-      <v-icon v-if="whoami !== ''"
-        @click="doShare">mdi-share</v-icon>
-      <v-icon class="mr-2"
+      <v-icon class="mx-2"
         @click="doLoginOrCheck">mdi-account</v-icon>
-
+      <v-icon v-if="whoami !== ''"
+        class="mr-2"
+        @click="doShare">mdi-share</v-icon>
+      <!-- TODO: quick hack: temporary place for the "load" icon? -->
+      <v-icon class="mr-2"
+        @click="doLoad">mdi-database</v-icon>
       <router-link to="/settings">
         <v-icon>mdi-cog</v-icon>
       </router-link>
@@ -183,6 +186,10 @@ export default class App extends Vue {
       });
     // const parsed = JSON.parse(out);
     // console.log(parsed);
+  }
+
+  doLoad(): void {
+    this.$router.replace({ path: "/construction" });
   }
 }
 </script>
