@@ -29,7 +29,6 @@ export default class MessageBox extends Vue {
   }
 
   addMessage(m: any): void {
-    console.log(m.keyOptions, i18n.t(m.key, m.keyOptions));
     if (this.messageTimer) {
       // We have an active message on display
       console.debug("Queue incoming messages", m);

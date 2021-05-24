@@ -37,6 +37,18 @@
           </template>
           <span>{{ $t("main.ObjectsTabToolTip") }}</span>
         </v-tooltip>
+        <v-tooltip bottom
+          :open-delay="toolTipOpenDelay"
+          :close-delay="toolTipCloseDelay">
+          <template v-slot:activator="{ on }">
+            <v-tab class="mt-3"
+              href="#constructionListTab"
+              v-on="on">
+              <v-icon left>mdi-database</v-icon>
+            </v-tab>
+          </template>
+          <span>{{ $t("main.ConstructionsTabToolTip") }}</span>
+        </v-tooltip>
 
         <v-tab-item value="toolListTab">
           <ToolGroups id="toolGroups"></ToolGroups>
@@ -44,6 +56,9 @@
         <v-tab-item value="objectListTab">
           <ObjectTree id="objtree">
           </ObjectTree>
+        </v-tab-item>
+        <v-tab-item value="constructionListTab">
+          <ConstructionLoader></ConstructionLoader>
         </v-tab-item>
       </v-tabs>
     </div>
@@ -63,9 +78,10 @@ import Vue from "vue";
 import { Component, Prop } from "vue-property-decorator";
 import ToolGroups from "@/components/ToolGroups.vue";
 import ObjectTree from "@/components/ObjectTree.vue";
+import ConstructionLoader from "@/components/ConstructionLoader.vue";
 import SETTINGS from "@/global-settings";
 
-@Component({ components: { ToolGroups, ObjectTree } })
+@Component({ components: { ToolGroups, ObjectTree, ConstructionLoader } })
 export default class Toolbox extends Vue {
   @Prop()
   readonly minified!: boolean;

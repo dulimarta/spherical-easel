@@ -112,7 +112,9 @@ export abstract class Command {
 }
 
 // This subclass of Command represents a command which can be saved
-// as into a "script"
+// as a "script". To properly re-execute each command. the string output
+// of toJSON must include all the necessary information needed to invoke
+// the constructor of a particular command class
 export abstract class PersistableCommand extends Command {
   /* Reference 
       https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/stringify#tojson_behavior

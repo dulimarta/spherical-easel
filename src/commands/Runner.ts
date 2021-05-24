@@ -1,10 +1,14 @@
 import { SELabel } from "@/models/SELabel";
 import { SEPoint } from "@/models/SEPoint";
 import Label from "@/plottables/Label";
+import { DisplayStyle } from "@/plottables/Nodule";
 import Point from "@/plottables/Point";
+import { Vector3 } from "three";
 import { AddPointCommand } from "./AddPointCommand";
+import SETTINGS from "@/global-settings";
+import { UpdateMode } from "@/types";
 
-function executeIndivitual(commandTokens: Array<string>): void {
+function executeIndividual(commandTokens: Array<string>): void {
   switch (commandTokens[0] /* First token is ALWAYS the command name */) {
     case "AddPoint":
       {
@@ -17,11 +21,27 @@ function executeIndivitual(commandTokens: Array<string>): void {
           .split(",") // split the x, y, z coordinates
           .map(Number); // convert to Number
         const newPoint = new Point();
+        newPoint.stylize(DisplayStyle.ApplyCurrentVariables);
+        newPoint.adjustSize();
         const newLabel = new Label();
         const vtx = new SEPoint(newPoint);
         vtx.locationVector.set(location[0], location[1], location[2]);
         const newSELabel = new SELabel(newLabel, vtx);
+        newSELabel.locationVector.copy(vtx.locationVector);
+        newSELabel.locationVector
+          .add(
+            new Vector3(
+              2 * SETTINGS.point.initialLabelOffset,
+              SETTINGS.point.initialLabelOffset,
+              0
+            )
+          )
+          .normalize();
+
         new AddPointCommand(vtx, newSELabel).execute();
+        // Thanks to Will for suggesting the following magic line
+        // that makes the objects show up correctly on the canvas
+        vtx.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
       }
       break;
     default:
@@ -29,11 +49,24 @@ function executeIndivitual(commandTokens: Array<string>): void {
   }
 }
 
+/**
+ * Reinterpret the command from its script.  The incoming argument
+ * is either a string or an array of strings
+ *
+ * @param command a string that represents a single command or
+ *   an array of strings that represents a command group
+ */
 export function interpret(command: string | Array<string>): void {
-  console.log("Interpret", command);
   if (typeof command === "string") {
-    executeIndivitual(command.split(" "));
+    /* This is an individual command */
+    executeIndividual(command.split(" "));
   } else {
-    command.forEach((c: string) => executeIndivitual(c.split(" ")));
+    // This is a CommandGroup, interpret each command individually
+    command
+      // Remove leading and training quotes
+      .map((s: string) => s.replace(/^"/, "").replace(/"$/, ""))
+      .forEach((c: string, gPos: number) => {
+        executeIndividual(c.split(" "));
+      });
   }
 }

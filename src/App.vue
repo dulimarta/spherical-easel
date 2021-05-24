@@ -56,9 +56,6 @@
       <v-icon v-if="whoami !== ''"
         class="mr-2"
         @click="doShare">mdi-share</v-icon>
-      <!-- TODO: quick hack: temporary place for the "load" icon? -->
-      <v-icon class="mr-2"
-        @click="doLoad">mdi-database</v-icon>
       <router-link to="/settings">
         <v-icon>mdi-cog</v-icon>
       </router-link>
@@ -114,6 +111,7 @@ import VueComponent from "vue";
 import { Vue, Component } from "vue-property-decorator";
 import { State } from "vuex-class";
 import MessageBox from "@/components/MessageBox.vue";
+import ConstructionLoader from "@/components/ConstructionLoader.vue";
 import Dialog, { DialogAction } from "@/components/Dialog.vue";
 import { AppState } from "./types";
 import EventBus from "@/eventHandlers/EventBus";
@@ -125,7 +123,7 @@ import {
 import { Command } from "./commands/Command";
 
 /* This allows for the State of the app to be initialized with in vuex store */
-@Component({ components: { MessageBox, Dialog } })
+@Component({ components: { MessageBox, Dialog, ConstructionLoader } })
 export default class App extends Vue {
   @State((s: AppState) => s.activeToolName)
   activeToolName!: string;
@@ -135,6 +133,7 @@ export default class App extends Vue {
 
   $refs!: {
     logoutDialog: VueComponent & DialogAction;
+    loadConstructionDialog: VueComponent & DialogAction;
   };
   footerColor = "accent";
   authSubscription: any;
@@ -177,19 +176,29 @@ export default class App extends Vue {
     console.log("Sharing", out);
     this.$appDB
       .collection("constructions")
-      .add({ script: out })
+      .add({
+        script: out,
+        dateCreated: new Date().toISOString(),
+        author: this.whoami
+      })
       .then((doc: DocumentReference) => {
         console.log("Inserted", doc.id);
+        EventBus.fire("show-alert", {
+          key: "objectTree.firestoreConstructionSaved",
+          keyOptions: { docId: doc.id },
+          type: "info"
+        });
       })
       .catch((err: any) => {
-        console.log("Can't document", err);
+        console.log("Can't save document", err);
+        EventBus.fire("show-alert", {
+          key: "objectTree.firestoreSaveError",
+          keyOptions: {},
+          type: "error"
+        });
       });
     // const parsed = JSON.parse(out);
     // console.log(parsed);
-  }
-
-  doLoad(): void {
-    this.$router.replace({ path: "/construction" });
   }
 }
 </script>
