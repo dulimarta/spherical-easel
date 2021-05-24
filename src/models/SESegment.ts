@@ -529,6 +529,12 @@ export class SESegment extends SENodule
       if (currentSphereVector.z < 0) {
         rotationAngle *= -1;
       }
+
+      // If the pivot and currentSphereVector are on opposite side of the sphere, reverse the direction
+      if (currentSphereVector.z * pivot.locationVector.z < 0) {
+        rotationAngle *= -1;
+      }
+
       //console.log("rotate angle", rotationAngle);
       // Rotate the freeEnd by the rotation angle around the axisOfRotation
       const axisOfRotation = pivot.locationVector;

@@ -272,7 +272,7 @@ export class SELine extends SENodule
   ): void {
     let rotationAngle;
     // If the ctrlKey Is press translate the segment in the direction of previousSphereVector
-    //  to currentSphereVector (i.e. just rotate the segment)
+    //  to currentSphereVector (i.e. just rotate the line)
     if (ctrlKeyPressed) {
       rotationAngle = previousSphereVector.angleTo(currentSphereVector);
       // If the rotation is big enough preform the rotation
@@ -340,6 +340,10 @@ export class SELine extends SENodule
         rotationAngle *= -1;
       }
 
+      // If the pivot and currentSphereVector are on opposite side of the sphere, reverse the direction
+      if (currentSphereVector.z * pivot.locationVector.z < 0) {
+        rotationAngle *= -1;
+      }
       // Rotate the freeEnd by the rotation angle around the axisOfRotation
       const axisOfRotation = pivot.locationVector;
       // Test for antipodal endpoints
