@@ -1,6 +1,7 @@
 import { SENodule } from "@/models/SENodule";
 import { AddPointCommand } from "./AddPointCommand";
 import { AddSegmentCommand } from "./AddSegmentCommand";
+export type ConstructionScript = Array<string | Array<string>>;
 
 const noduleDictionary = new Map<string, SENodule>();
 function executeIndividual(command: string): void {
@@ -19,7 +20,7 @@ function executeIndividual(command: string): void {
  * @param command a string that represents a single command or
  *   an array of strings that represents a command group
  */
-export function interpret(command: string | Array<string>): void {
+function interpret(command: string | Array<string>): void {
   if (typeof command === "string") {
     /* This is an individual command */
     executeIndividual(command);
@@ -32,4 +33,10 @@ export function interpret(command: string | Array<string>): void {
         executeIndividual(c);
       });
   }
+}
+
+export function run(script: ConstructionScript): void {
+  script.forEach((s: string | Array<string>) => {
+    interpret(s);
+  });
 }

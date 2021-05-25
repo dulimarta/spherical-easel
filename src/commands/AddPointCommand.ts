@@ -48,31 +48,43 @@ export class AddPointCommand extends PersistableCommand {
   static parse(command: string, objMap: Map<string, SENodule>): void {
     console.log("Parsing", command);
     const tokens = command.split(" ");
-    console.log("Create point at", tokens[2]);
-    const location = new Vector3();
-    location.from(tokens[2]); // convert to Number
-    const newPoint = new Point();
-    newPoint.stylize(DisplayStyle.ApplyCurrentVariables);
-    newPoint.adjustSize();
-    const newLabel = new Label();
-    const vtx = new SEPoint(newPoint);
-    vtx.locationVector = location;
-    const newSELabel = new SELabel(newLabel, vtx);
-    newSELabel.locationVector.copy(vtx.locationVector);
-    newSELabel.locationVector
-      .add(
-        new Vector3(
-          2 * SETTINGS.point.initialLabelOffset,
-          SETTINGS.point.initialLabelOffset,
-          0
+    // Check if the point already exists from previous command execution
+    let vtx = objMap.get(tokens[1]) as SEPoint | undefined;
+    if (!vtx) {
+      console.log("Create point at", tokens[2]);
+      const location = new Vector3();
+      location.from(tokens[2]); // convert to Number
+      const newPoint = new Point();
+      newPoint.stylize(DisplayStyle.ApplyCurrentVariables);
+      newPoint.adjustSize();
+      vtx = new SEPoint(newPoint);
+      vtx.locationVector = location;
+      objMap.set(tokens[1], vtx);
+    }
+    // Check if the label already exists from previous command execution
+    let seLabel = objMap.get(tokens[3]) as SELabel | undefined;
+    if (!seLabel) {
+      const newLabel = new Label();
+      seLabel = new SELabel(newLabel, vtx);
+      seLabel.locationVector.copy(vtx.locationVector);
+      seLabel.locationVector
+        .add(
+          new Vector3(
+            2 * SETTINGS.point.initialLabelOffset,
+            SETTINGS.point.initialLabelOffset,
+            0
+          )
         )
-      )
-      .normalize();
-
-    new AddPointCommand(vtx, newSELabel).execute();
+        .normalize();
+      objMap.set(tokens[3], seLabel);
+    }
+    new AddPointCommand(vtx, seLabel).execute();
     // Thanks to Will for suggesting the following magic line
     // that makes the objects show up correctly on the canvas
-    vtx.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
+    vtx.update({
+      mode: UpdateMode.DisplayOnly,
+      stateArray: []
+    });
   }
 }
 //#endregion addPointCommand

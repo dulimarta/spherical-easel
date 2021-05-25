@@ -13,6 +13,7 @@
               </v-list-item-subtitle>
               <v-divider />
             </v-list-item-content>
+            <!--- show a Load button as an overlay when the mouse hovers -->
             <v-overlay absolute
               :value="hover">
               <v-btn rounded
@@ -35,15 +36,14 @@ import {
   QuerySnapshot,
   QueryDocumentSnapshot
 } from "@firebase/firestore-types";
-import { interpret } from "@/commands/Runner";
+import { run, ConstructionScript } from "@/commands/Runner";
 import EventBus from "@/eventHandlers/EventBus";
 
-// TODO: move the following type alias and interface elsewhere later
-type ScriptArray = Array<string | Array<string>>;
+// TODO: move the following type alias and interface elsewhere later?
 interface SphericalConstruction {
   id: string;
   rawScript: string;
-  script: ScriptArray;
+  script: ConstructionScript;
   author: string;
   createdOn: string;
   objectCount: number;
@@ -54,14 +54,19 @@ export default class ConstructionLoader extends Vue {
   availableConstructions: Array<SphericalConstruction> = [];
 
   mounted(): void {
+    // For now, we will keep all constructions under one collection
+    // Later we will separate private from public constructions
     this.$appDB.collection("constructions").onSnapshot((qs: QuerySnapshot) => {
       this.availableConstructions.splice(0);
       qs.forEach((qd: QueryDocumentSnapshot) => {
         const doc = qd.data() as any;
-        const script = JSON.parse(doc.script) as ScriptArray;
+        const script = JSON.parse(doc.script) as ConstructionScript;
 
         if (script.length > 0) {
+          // we care only for non-empty script
           const objectCount = script
+            // A simple command contributes 1 object
+            // A CommandGroup contributes N objects (as many elements in its subcommands)
             .map(z => (typeof z === "string" ? 1 : z.length))
             .reduce((prev: number, curr: number) => prev + curr);
 
@@ -90,11 +95,7 @@ export default class ConstructionLoader extends Vue {
         keyOptions: { docId },
         type: "info"
       });
-      this.availableConstructions[pos].script.forEach(
-        (s: string | Array<string>) => {
-          interpret(s);
-        }
-      );
+      run(this.availableConstructions[pos].script);
     }
   }
 }
