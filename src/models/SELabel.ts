@@ -21,6 +21,7 @@ import { SELine } from "./SELine";
 import { SECircle } from "./SECircle";
 import { SetNoduleDisplayCommand } from "@/commands/SetNoduleDisplayCommand";
 import { SEAngleMarker } from "./SEAngleMarker";
+import { SESegmentLength } from "./SESegmentLength";
 
 const styleSet = new Set([
   Styles.fillColor,
@@ -129,6 +130,17 @@ export class SELabel extends SENodule implements Visitable {
       );
       //Update the location of the associate plottable Label (setter also updates the display)
       this.ref.positionVector = this._locationVector;
+      // For the labels that can include a measurement and update those
+      // if (this.parent instanceof SESegment) {
+      //   const index = this.parent.kids.findIndex(
+      //     p => p instanceof SESegmentLength
+      //   );
+      //   if (index !== -1) {
+      //     this.ref. = this.parent.kids[index].name;
+      //   }
+      // } else if (this.parent instanceof SEAngleMarker) {
+      //   this.ref.name = this.parent.name;
+      // }
     }
     // Update visibility
     if (this._showing && this._exists) {

@@ -14,8 +14,6 @@ export enum DisplayStyle {
  * A Nodule consists of one or more TwoJS(SVG) elements
  */
 export default abstract class Nodule implements Stylable, Resizeable {
-  // Declare owner, this field will be initialized by the associated owner of the plottable Nodule
-  // public owner!: SENodule;
   public name!: string;
 
   /**
