@@ -113,6 +113,8 @@
         label="Description"
         required
         v-model="description"></v-text-field>
+      <v-switch v-model="publicConstruction"
+        label="Public (currently inop)"></v-switch>
     </Dialog>
   </v-app>
 </template>
@@ -147,7 +149,7 @@ export default class App extends Vue {
   readonly $appAuth!: FirebaseAuth;
   readonly $appDB!: FirebaseFirestore;
   description = "";
-
+  publicConstruction = false;
   $refs!: {
     logoutDialog: VueComponent & DialogAction;
     saveConstructionDialog: VueComponent & DialogAction;
@@ -195,6 +197,9 @@ export default class App extends Vue {
     /* dump the command history */
     const out = Command.dump();
     console.log("Sharing", out);
+    // const collectionPath = this.publicConstruction
+    //   ? "constructions"
+    //   : `users/${this.whoami}/constructions`;
     this.$appDB
       .collection("constructions")
       .add({

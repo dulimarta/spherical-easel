@@ -1,5 +1,6 @@
 import EventBus from "@/eventHandlers/EventBus";
 import { SENodule } from "@/models/SENodule";
+import { AddIntersectionPointCommand } from "./AddIntersectionPointCommand";
 import { AddPointCommand } from "./AddPointCommand";
 import { AddSegmentCommand } from "./AddSegmentCommand";
 import { Command } from "./Command";
@@ -13,6 +14,8 @@ function executeIndividual(command: string): Command {
     return AddPointCommand.parse(command, noduleDictionary);
   else if (command.startsWith("AddSegment"))
     return AddSegmentCommand.parse(command, noduleDictionary);
+  else if (command.startsWith("AddIntersectionPoint"))
+    return AddIntersectionPointCommand.parse(command, noduleDictionary);
   else {
     const errMsg = `Not yet implemented: ${command}`;
     EventBus.fire("show-alert", {
@@ -41,6 +44,7 @@ function interpret(command: string | Array<string>): void {
       // Remove leading and training quotes
       .map((s: string) => s.replace(/^"/, "").replace(/"$/, ""))
       .forEach((c: string, gPos: number) => {
+        console.log("Sub-command", gPos, c);
         group.addCommand(executeIndividual(c));
       });
     // Then execute as a group

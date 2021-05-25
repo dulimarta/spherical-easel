@@ -2,11 +2,7 @@ import { Command, PersistableCommand } from "./Command";
 import { SEPoint } from "@/models/SEPoint";
 import { SELabel } from "@/models/SELabel";
 import { Vector3 } from "three";
-import Point from "@/plottables/Point";
-import Label from "@/plottables/Label";
-import SETTINGS from "@/global-settings";
 import { UpdateMode } from "@/types";
-import { DisplayStyle } from "@/plottables/Nodule";
 import { SENodule } from "@/models/SENodule";
 
 //#region addPointCommand
@@ -48,43 +44,18 @@ export class AddPointCommand extends PersistableCommand {
       this.sePoint.name,
       this.sePoint.locationVector.toFixed(7),
       this.seLabel.name
-    ].join(" ");
+    ].join("/");
   }
 
   static parse(command: string, objMap: Map<string, SENodule>): Command {
     // console.log("Parsing", command);
-    const tokens = command.split(" ");
-    // Check if the point already exists from previous command execution
-    let vtx = objMap.get(tokens[1]) as SEPoint | undefined;
-    if (!vtx) {
-      // console.log("Create point at", tokens[2]);
-      const location = new Vector3();
-      location.from(tokens[2]); // convert to Number
-      const newPoint = new Point();
-      newPoint.stylize(DisplayStyle.ApplyCurrentVariables);
-      newPoint.adjustSize();
-      vtx = new SEPoint(newPoint);
-      vtx.locationVector = location;
-      objMap.set(tokens[1], vtx);
-    }
-    // Check if the label already exists from previous command execution
-    let seLabel = objMap.get(tokens[3]) as SELabel | undefined;
-    if (!seLabel) {
-      const newLabel = new Label();
-      seLabel = new SELabel(newLabel, vtx);
-      seLabel.locationVector.copy(vtx.locationVector);
-      seLabel.locationVector
-        .add(
-          new Vector3(
-            2 * SETTINGS.point.initialLabelOffset,
-            SETTINGS.point.initialLabelOffset,
-            0
-          )
-        )
-        .normalize();
-      objMap.set(tokens[3], seLabel);
-    }
-    return new AddPointCommand(vtx, seLabel);
+    const tokens = command.split("/");
+    const location = new Vector3();
+    location.from(tokens[2]); // convert to Number
+    const { point, label } = Command.makePointAndLabel(location);
+    objMap.set(tokens[1], point);
+    objMap.set(tokens[3], label);
+    return new AddPointCommand(point, label);
   }
 }
 //#endregion addPointCommand

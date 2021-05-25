@@ -13,6 +13,13 @@
 // import { AppState } from "@/types";
 import AppStore from "@/store";
 import EventBus from "@/eventHandlers/EventBus";
+import { SEPoint } from "@/models/SEPoint";
+import { SELabel } from "@/models/SELabel";
+import Point from "@/plottables/Point";
+import { DisplayStyle } from "@/plottables/Nodule";
+import Label from "@/plottables/Label";
+import SETTINGS from "@/global-settings";
+import { Vector3 } from "three";
 export abstract class Command {
   protected static store = AppStore;
 
@@ -91,6 +98,21 @@ export abstract class Command {
     //     .join(",") +
     //   "]"
     // );
+  }
+
+  static makePointAndLabel(at: Vector3): { point: SEPoint; label: SELabel } {
+    const newPoint = new Point();
+    newPoint.stylize(DisplayStyle.ApplyCurrentVariables);
+    newPoint.adjustSize();
+    const point = new SEPoint(newPoint);
+    point.locationVector.copy(at);
+
+    const newLabel = new Label();
+    const label = new SELabel(newLabel, point);
+    label.locationVector.copy(at);
+    const offset = SETTINGS.point.initialLabelOffset;
+    label.locationVector.add(new Vector3(2 * offset, offset, 0)).normalize();
+    return { point, label };
   }
   // Child classes of Command must implement the following abstract methods
   /**

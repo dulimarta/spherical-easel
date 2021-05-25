@@ -2,7 +2,6 @@ import { Command, PersistableCommand } from "./Command";
 import { SESegment } from "@/models/SESegment";
 import { SEPoint } from "@/models/SEPoint";
 import { SELabel } from "@/models/SELabel";
-import Point from "@/plottables/Point";
 import { DisplayStyle } from "@/plottables/Nodule";
 import Segment from "@/plottables/Segment";
 import { Vector3 } from "three";
@@ -59,78 +58,62 @@ export class AddSegmentCommand extends PersistableCommand {
       /* arg-6 */ this.endSEPoint.name,
       /* arg-7 */ this.endSEPoint.locationVector.toFixed(7),
       /* arg-8 */ this.seLabel.name
-    ].join(" ");
+    ].join("/");
   }
 
   static parse(command: string, objMap: Map<string, SENodule>): Command {
     console.log("Parsing", command);
-    const tokens = command.split(" ");
-    const normalVector = new Vector3();
-    normalVector.from(tokens[2]);
-    const arcLength = Number(tokens[3]);
+    // WARNING: the split() trick below assumes that "/" does not occur anywhere
+    // in the JSON output
+    const tokens = command.split("/");
 
     // check if the start point already existed from previous command execution
-    let startSEPoint = objMap.get(tokens[4]) as SEPoint | undefined;
-    if (!startSEPoint) {
-      const startPoint = new Point();
-      startPoint.stylize(DisplayStyle.ApplyCurrentVariables);
-      startPoint.adjustSize();
+    const startSEPoint = objMap.get(tokens[4]) as SEPoint | undefined;
+    const endSEPoint = objMap.get(tokens[6]) as SEPoint | undefined;
 
-      startSEPoint = new SEPoint(startPoint);
-      const startLocation = new Vector3();
-      startLocation.from(tokens[5]);
-      startSEPoint.locationVector.copy(startLocation);
-      objMap.set(tokens[4], startSEPoint);
+    // At runtime, both the start point and end point
+    // should have been created by a previous AddPointCommand
+    if (startSEPoint && endSEPoint) {
+      const normalVector = new Vector3();
+      normalVector.from(tokens[2]);
+      const arcLength = Number(tokens[3]);
+      const segment = new Segment();
+      segment.startVector = startSEPoint.locationVector;
+      segment.arcLength = arcLength;
+      segment.normalVector = normalVector;
+      segment.updateDisplay();
+      segment.stylize(DisplayStyle.ApplyCurrentVariables);
+      segment.adjustSize();
+      const newSESegment = new SESegment(
+        segment,
+        startSEPoint,
+        normalVector,
+        arcLength,
+        endSEPoint
+      );
+      objMap.set(tokens[1], newSESegment);
+
+      // check if the label already existed from previous command execution
+      const newSELabel = new SELabel(new Label(), newSESegment);
+      const labelPosition = new Vector3();
+      labelPosition
+        .addVectors(startSEPoint.locationVector, endSEPoint.locationVector)
+        .normalize()
+        .add(new Vector3(0, SETTINGS.line.initialLabelOffset, 0))
+        .normalize();
+      if (arcLength > Math.PI) labelPosition.multiplyScalar(-1);
+      newSELabel.locationVector = labelPosition;
+      objMap.set(tokens[8], newSELabel);
+      return new AddSegmentCommand(
+        newSESegment,
+        startSEPoint,
+        endSEPoint,
+        newSELabel
+      );
     } else {
-      console.log("Using existing start point", startSEPoint.name);
+      throw new Error(
+        `AddSegmentCommand: end points ${tokens[4]} or ${tokens[6]} is not defined`
+      );
     }
-
-    // check if the end point already existed from previous command execution
-    let endSEPoint = objMap.get(tokens[6]) as SEPoint | undefined;
-    if (!endSEPoint) {
-      const endPoint = new Point();
-      endPoint.stylize(DisplayStyle.ApplyCurrentVariables);
-      endPoint.adjustSize();
-
-      endSEPoint = new SEPoint(endPoint);
-      const endLocation = new Vector3();
-      endLocation.from(tokens[7]);
-      endSEPoint.locationVector.copy(endLocation);
-      objMap.set(tokens[6], endSEPoint);
-    } else {
-      console.log("Using existing end point", endSEPoint.name);
-    }
-
-    const segment = new Segment();
-    segment.startVector = startSEPoint.locationVector;
-    segment.arcLength = arcLength;
-    segment.normalVector = normalVector;
-    segment.updateDisplay();
-    segment.stylize(DisplayStyle.ApplyCurrentVariables);
-    segment.adjustSize();
-    const newSESegment = new SESegment(
-      segment,
-      startSEPoint,
-      normalVector,
-      arcLength,
-      endSEPoint
-    );
-
-    // check if the label already existed from previous command execution
-    const newSELabel = new SELabel(new Label(), newSESegment);
-    const labelPosition = new Vector3();
-    labelPosition
-      .addVectors(startSEPoint.locationVector, endSEPoint.locationVector)
-      .normalize()
-      .add(new Vector3(0, SETTINGS.line.initialLabelOffset, 0))
-      .normalize();
-    if (arcLength > Math.PI) labelPosition.multiplyScalar(-1);
-    newSELabel.locationVector = labelPosition;
-    return new AddSegmentCommand(
-      newSESegment,
-      startSEPoint,
-      endSEPoint,
-      newSELabel
-    );
   }
 }

@@ -2,7 +2,7 @@
   <div>
     <h2>Saved Constructions</h2>
     <v-list two-line>
-      <template v-for="(r,pos) in availableConstructions">
+      <template v-for="(r,pos) in publicConstructions">
         <v-hover v-slot:default="{hover}"
           :key="pos">
           <v-list-item>
@@ -60,13 +60,13 @@ interface ConstructionInFirestore {
 @Component
 export default class ConstructionLoader extends Vue {
   readonly $appDB!: FirebaseFirestore;
-  availableConstructions: Array<SphericalConstruction> = [];
+  publicConstructions: Array<SphericalConstruction> = [];
 
   mounted(): void {
     // For now, we will keep all constructions under one collection
     // Later we will separate private from public constructions
     this.$appDB.collection("constructions").onSnapshot((qs: QuerySnapshot) => {
-      this.availableConstructions.splice(0);
+      this.publicConstructions.splice(0);
       qs.forEach((qd: QueryDocumentSnapshot) => {
         const doc = qd.data() as ConstructionInFirestore;
         const parsedScript = JSON.parse(doc.script) as ConstructionScript;
@@ -81,7 +81,7 @@ export default class ConstructionLoader extends Vue {
             )
             .reduce((prev: number, curr: number) => prev + curr);
 
-          this.availableConstructions.push({
+          this.publicConstructions.push({
             id: qd.id,
             script: doc.script,
             parsedScript,
@@ -96,11 +96,11 @@ export default class ConstructionLoader extends Vue {
   }
 
   loadConstruction(docId: string): void {
-    const pos = this.availableConstructions.findIndex(
+    const pos = this.publicConstructions.findIndex(
       (c: SphericalConstruction) => c.id === docId
     );
     if (pos >= 0) {
-      console.log("Open", docId, this.availableConstructions[pos].script);
+      // console.log("Open", docId, this.publicConstructions[pos].script);
       this.$store.direct.commit.removeAllFromLayers();
       this.$store.direct.commit.init();
       SENodule.resetAllCounters();
@@ -110,7 +110,7 @@ export default class ConstructionLoader extends Vue {
         keyOptions: { docId },
         type: "info"
       });
-      run(this.availableConstructions[pos].parsedScript);
+      run(this.publicConstructions[pos].parsedScript);
     }
   }
 }
