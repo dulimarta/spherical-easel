@@ -10,8 +10,6 @@ import { SENodule } from "@/models/SENodule";
 import Nodule from "@/plottables/Nodule";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import { Matrix4, Vector3 } from "three";
-import { SEMeasurement } from "@/models/SEMeasurement";
-import { SECalculation } from "@/models/SECalculation";
 import { StyleOptions } from "@/types/Styles";
 import { SEExpression } from "@/models/SEExpression";
 import { SEAngleMarker } from "@/models/SEAngleMarker";

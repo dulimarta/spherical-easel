@@ -1,5 +1,5 @@
 /** This class uses the Command Design Pattern to
- * wraps actions into objects.
+ * wrap actions into objects.
  * The most important abstract method of this class is the `do()`
  * method, it performs the action wrapped by the object
  *
@@ -9,10 +9,17 @@
  * the actual action of the command.
  */
 
-import { Store } from "vuex";
-import { AppState } from "@/types";
+// import { Store } from "vuex";
+// import { AppState } from "@/types";
 import AppStore from "@/store";
 import EventBus from "@/eventHandlers/EventBus";
+import { SEPoint } from "@/models/SEPoint";
+import { SELabel } from "@/models/SELabel";
+import Point from "@/plottables/Point";
+import { DisplayStyle } from "@/plottables/Nodule";
+import Label from "@/plottables/Label";
+import SETTINGS from "@/global-settings";
+import { Vector3 } from "three";
 export abstract class Command {
   protected static store = AppStore;
 
@@ -80,6 +87,33 @@ export abstract class Command {
     EventBus.fire("redo-enabled", { value: Command.redoHistory.length > 0 });
   }
 
+  static dump(): string {
+    return JSON.stringify(Command.commandHistory);
+    // return (
+    //   "[" +
+    //   Command.commandHistory
+    //     .map((c: Command, cPos: number) => {
+    //       return JSON.stringify(c); //.replaceAll('"', "");
+    //     })
+    //     .join(",") +
+    //   "]"
+    // );
+  }
+
+  static makePointAndLabel(at: Vector3): { point: SEPoint; label: SELabel } {
+    const newPoint = new Point();
+    newPoint.stylize(DisplayStyle.ApplyCurrentVariables);
+    newPoint.adjustSize();
+    const point = new SEPoint(newPoint);
+    point.locationVector.copy(at);
+
+    const newLabel = new Label();
+    const label = new SELabel(newLabel, point);
+    label.locationVector.copy(at);
+    const offset = SETTINGS.point.initialLabelOffset;
+    label.locationVector.add(new Vector3(2 * offset, offset, 0)).normalize();
+    return { point, label };
+  }
   // Child classes of Command must implement the following abstract methods
   /**
    * restoreState: Perform necessary action to restore the app state.
@@ -97,4 +131,23 @@ export abstract class Command {
 
   /**  do: Perform necessary action to alter the app state*/
   abstract do(): void;
+}
+
+// This subclass of Command represents a command which can be saved
+// as a "script". To properly re-execute each command. the string output
+// of toJSON must include all the necessary information needed to invoke
+// the constructor of a particular command class
+export abstract class PersistableCommand extends Command {
+  /* Reference 
+      https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/stringify#tojson_behavior
+  */
+  /**
+   * Invoke at runtime by JSON.stringify()
+   *
+   * @param arg takes one of the following values
+   *    - a property name (if this class is used as a property of another object)
+   *    - an empty string (if JSON.stringify() directly calls on this object)
+   *    - an array index (if this object is an array, nat applicable to our case)
+   */
+  abstract toJSON(arg: string): string;
 }

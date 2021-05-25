@@ -13,7 +13,6 @@ import { SELabel } from "@/models/SELabel";
 // import magnificationLevel from "*.vue";
 import magnificationLevel from "@/components/SENoduleItem.vue";
 
-let LINE_COUNT = 0;
 const styleSet = new Set([
   Styles.strokeWidthPercent,
   Styles.strokeColor,
@@ -68,8 +67,8 @@ export class SELine extends SENodule
     this._normalVector.copy(normalVector);
     this._endSEPoint = lineEndSEPoint;
 
-    LINE_COUNT++;
-    this.name = `Li-${LINE_COUNT}`;
+    SELine.LINE_COUNT++;
+    this.name = `Li-${SELine.LINE_COUNT}`;
   }
 
   customStyles(): Set<Styles> {

@@ -1,5 +1,4 @@
 import { Command } from "./Command";
-import { SEMeasurement } from "@/models/SEMeasurement";
 import { SEExpression } from "@/models/SEExpression";
 import { SENodule } from "@/models/SENodule";
 
@@ -30,5 +29,9 @@ export class AddExpressionCommand extends Command {
   restoreState(): void {
     Command.store.commit.removeExpression(this.lastState);
     this.parents.forEach(nodule => nodule.unregisterChild(this.seMeasurement));
+  }
+
+  toJSON(_arg: any): string {
+    return `AddExpressions ${this.seMeasurement.name}`;
   }
 }

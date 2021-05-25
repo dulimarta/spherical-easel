@@ -1,11 +1,5 @@
 import { SEPoint } from "./SEPoint";
-import Point from "@/plottables/Point";
-import {
-  IntersectionReturnType,
-  LineState,
-  PerpendicularLineThruPointState
-} from "@/types";
-import store from "@/store";
+import { PerpendicularLineThruPointState } from "@/types";
 import { SEOneDimensional } from "@/types";
 import { UpdateMode, UpdateStateType } from "@/types";
 import { SELine } from "./SELine";

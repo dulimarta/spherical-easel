@@ -5,12 +5,13 @@ Vue.use(VueI18n);
 
 function loadLocaleMessages(): LocaleMessages {
   const locales = require.context(
-    "./languages",
+    "@/assets/languages",
     true,
     /[A-Za-z0-9-_,\s]+\.json$/i
   );
   const messages: LocaleMessages = {};
   locales.keys().forEach(key => {
+    console.log("Key is", key);
     const matched = key.match(/([A-Za-z0-9-_]+)\./i);
     if (matched && matched.length > 1) {
       const locale = matched[1];

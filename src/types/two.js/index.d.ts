@@ -277,9 +277,9 @@ declare module "two.js" {
     }
 
     type BoundingClientRect = Record<
-        "top" | "left" | "right" | "bottom" | "width" | "height",
-        number
-      >
+      "top" | "left" | "right" | "bottom" | "width" | "height",
+      number
+    >;
 
     type Object = Path | Group | Text;
 
@@ -403,7 +403,7 @@ declare module "two.js" {
       translation: Vector;
 
       clone(): this;
-      getBoundingClientRect(shallow?: boolean): {};
+      getBoundingClientRect(shallow?: boolean): BoundingClientRect;
       noFill(): this;
       noStroke(): this;
 

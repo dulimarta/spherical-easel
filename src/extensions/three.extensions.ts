@@ -1,12 +1,12 @@
 import { Vector2, Vector3 } from "three";
 import SETTINGS from "@/global-settings";
 
-Vector2.prototype.toFixed = function(precision: number): string {
+Vector2.prototype.toFixed = function (precision: number): string {
   return (
     "(" + this.x.toFixed(precision) + "," + this.y.toFixed(precision) + ")"
   );
 };
-Vector3.prototype.toFixed = function(precision: number): string {
+Vector3.prototype.toFixed = function (precision: number): string {
   return (
     "(" +
     this.x.toFixed(precision) +
@@ -18,7 +18,14 @@ Vector3.prototype.toFixed = function(precision: number): string {
   );
 };
 
-Vector3.prototype.isZero = function(tolerance?: number): boolean {
+Vector3.prototype.from = function (str: string): void {
+  const arr = str.replaceAll(/[()]/g, "").split(",").map(Number);
+  this.setX(arr[0]);
+  this.setY(arr[1]);
+  this.setZ(arr[2]);
+};
+
+Vector3.prototype.isZero = function (tolerance?: number): boolean {
   const useTolerance = tolerance || SETTINGS.tolerance;
   return (
     Math.abs(this.x) <= useTolerance &&

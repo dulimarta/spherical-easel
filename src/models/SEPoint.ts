@@ -13,9 +13,7 @@ import {
   Labelable
 } from "@/types";
 import { SELabel } from "./SELabel";
-import Label from "@/plottables/Label";
 
-let POINT_COUNT = 0;
 const styleSet = new Set([
   Styles.fillColor,
   Styles.strokeColor,
@@ -50,8 +48,8 @@ export class SEPoint extends SENodule implements Visitable, Labelable {
     /* Establish the link between this abstract object on the fixed unit sphere
     and the object that helps create the corresponding renderable object  */
     this.ref = point;
-    POINT_COUNT++;
-    this.name = `P-${POINT_COUNT}`;
+    SENodule.POINT_COUNT++;
+    this.name = `P-${SENodule.POINT_COUNT}`;
   }
   customStyles(): Set<Styles> {
     return styleSet;

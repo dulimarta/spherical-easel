@@ -1,10 +1,8 @@
 /** @format */
 
 // import SETTINGS from "@/global-settings";
-import Two from "two.js";
-import SETTINGS, { LAYER } from "@/global-settings";
+import SETTINGS from "@/global-settings";
 import Nodule, { DisplayStyle } from "./Nodule";
-import { Vector3 } from "three";
 import { StyleOptions, StyleEditPanels } from "@/types/Styles";
 import Point from "@/plottables/Point";
 

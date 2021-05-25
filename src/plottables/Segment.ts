@@ -6,7 +6,6 @@ import { StyleOptions, StyleEditPanels } from "@/types/Styles";
 
 // The number of vectors used to render the one part of the segment (like the frontPart, frontExtra, etc.)
 const SUBDIVS = SETTINGS.segment.numPoints;
-let SEGMENT_COUNT = 0;
 /**
  * A line segment
  *
@@ -101,7 +100,7 @@ export default class Segment extends Nodule {
   constructor() {
     // Initialize the Two.Group
     super();
-    this.name = "Segment-" + SEGMENT_COUNT++;
+    this.name = "Segment-" + Nodule.SEGMENT_COUNT++;
     // Create the vertices for the segment
     const vertices: Two.Vector[] = [];
     for (let k = 0; k < SUBDIVS; k++) {
@@ -288,8 +287,10 @@ export default class Segment extends Nodule {
       if (this.tmpVector1.z > 0) {
         if (posIndex === activeFront.length) {
           // transfer one cell from the common pool
-          activeFront.push(pool.pop()!);
-          glowingActiveFront.push(glowingPool.pop()!);
+          const v1 = pool.pop();
+          if (v1) activeFront.push(v1);
+          const v2 = glowingPool.pop();
+          if (v2) glowingActiveFront.push(v2);
         }
         activeFront[posIndex].x = this.tmpVector1.x;
         activeFront[posIndex].y = this.tmpVector1.y;
@@ -299,8 +300,10 @@ export default class Segment extends Nodule {
       } else {
         if (negIndex === activeBack.length) {
           // transfer one cell from the common pool
-          activeBack.push(pool.pop()!);
-          glowingActiveBack.push(glowingPool.pop()!);
+          const v1 = pool.pop();
+          if (v1) activeBack.push(v1);
+          const v2 = glowingPool.pop();
+          if (v2) glowingActiveBack.push(v2);
         }
         activeBack[negIndex].x = this.tmpVector1.x;
         activeBack[negIndex].y = this.tmpVector1.y;
@@ -375,21 +378,25 @@ export default class Segment extends Nodule {
     // The length of the Pool array is 2*SUBDIVISIONS = this.frontPart.length + this.frontExtra.length + this.backPart.length + this.backExtra.length because dup.frontPart and dup.backPart initially contains all the vertices and frontExtra and backExtra are empty.
     this.frontPart.vertices.forEach((v: Two.Anchor, pos: number) => {
       // Add a vertex in the frontPart (while taking one away from the pool)
-      dup.frontPart.vertices.push(pool.pop()!); // Exclamation point means that the linter assumes that the popped object is non-null
+      const v1 = pool.pop();
+      if (v1) dup.frontPart.vertices.push(v1); // Exclamation point means that the linter assumes that the popped object is non-null
       // Copy the this.frontPart vertex v into the newly added vertex in frontPart
       dup.frontPart.vertices[pos].copy(v); //
     });
     // Repeat for the frontExtra/backPart/backExtra
     this.frontExtra.vertices.forEach((v: Two.Anchor, pos: number) => {
-      dup.frontExtra.vertices.push(pool.pop()!);
+      const v1 = pool.pop();
+      if (v1) dup.frontExtra.vertices.push(v1);
       dup.frontExtra.vertices[pos].copy(v);
     });
     this.backPart.vertices.forEach((v: Two.Anchor, pos: number) => {
-      dup.backPart.vertices.push(pool.pop()!);
+      const v1 = pool.pop();
+      if (v1) dup.backPart.vertices.push(v1);
       dup.backPart.vertices[pos].copy(v);
     });
     this.backExtra.vertices.forEach((v: Two.Anchor, pos: number) => {
-      dup.backExtra.vertices.push(pool.pop()!);
+      const v1 = pool.pop();
+      if (v1) dup.backExtra.vertices.push(v1);
       dup.backExtra.vertices[pos].copy(v);
     });
 
@@ -398,19 +405,23 @@ export default class Segment extends Nodule {
     glowingPool.push(...dup.glowingFrontPart.vertices.splice(0));
     glowingPool.push(...dup.glowingBackPart.vertices.splice(0));
     this.glowingFrontPart.vertices.forEach((v: Two.Anchor, pos: number) => {
-      dup.glowingFrontPart.vertices.push(glowingPool.pop()!);
+      const v1 = glowingPool.pop();
+      if (v1) dup.glowingFrontPart.vertices.push(v1);
       dup.glowingFrontPart.vertices[pos].copy(v);
     });
     this.glowingFrontExtra.vertices.forEach((v: Two.Anchor, pos: number) => {
-      dup.glowingFrontExtra.vertices.push(glowingPool.pop()!);
+      const v1 = glowingPool.pop();
+      if (v1) dup.glowingFrontExtra.vertices.push(v1);
       dup.glowingFrontExtra.vertices[pos].copy(v);
     });
     this.glowingBackPart.vertices.forEach((v: Two.Anchor, pos: number) => {
-      dup.glowingBackPart.vertices.push(glowingPool.pop()!);
+      const v1 = glowingPool.pop();
+      if (v1) dup.glowingBackPart.vertices.push(v1);
       dup.glowingBackPart.vertices[pos].copy(v);
     });
     this.backExtra.vertices.forEach((v: Two.Anchor, pos: number) => {
-      dup.glowingBackExtra.vertices.push(glowingPool.pop()!);
+      const v1 = glowingPool.pop();
+      if (v1) dup.glowingBackExtra.vertices.push(v1);
       dup.glowingBackExtra.vertices[pos].copy(v);
     });
     return dup as this;

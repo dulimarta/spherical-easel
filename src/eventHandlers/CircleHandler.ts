@@ -21,7 +21,6 @@ import { SEOneDimensional, SEIntersectionReturnType } from "@/types";
 import { UpdateMode } from "@/types";
 import Label from "@/plottables/Label";
 import { SELabel } from "@/models/SELabel";
-import { SENodule } from "@/models/SENodule";
 
 const tmpVector = new Vector3();
 

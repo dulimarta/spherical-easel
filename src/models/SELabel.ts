@@ -5,21 +5,12 @@ import { SENodule } from "./SENodule";
 import { Vector3 } from "three";
 import SETTINGS from "@/global-settings";
 import { Styles } from "@/types/Styles";
-import {
-  UpdateMode,
-  UpdateStateType,
-  LabelState,
-  SEOneDimensional,
-  Labelable
-} from "@/types";
-import { Store } from "vuex";
-import { AppState } from "@/types";
+import { UpdateMode, UpdateStateType, LabelState, Labelable } from "@/types";
 import AppStore from "@/store";
 import { SEPoint } from "./SEPoint";
 import { SESegment } from "./SESegment";
 import { SELine } from "./SELine";
 import { SECircle } from "./SECircle";
-import { SetNoduleDisplayCommand } from "@/commands/SetNoduleDisplayCommand";
 import { SEAngleMarker } from "./SEAngleMarker";
 
 const styleSet = new Set([

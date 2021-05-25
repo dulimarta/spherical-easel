@@ -10,7 +10,6 @@ import { UpdateMode, UpdateStateType } from "@/types";
 import { SELabel } from "@/models/SELabel";
 import { Styles } from "@/types/Styles";
 
-let SEGMENT_COUNT = 0;
 const styleSet = new Set([
   Styles.strokeWidthPercent,
   Styles.strokeColor,
@@ -85,8 +84,8 @@ export class SESegment extends SENodule
     this._arcLength = segmentArcLength;
     this._endSEPoint = segmentEndSEPoint;
 
-    SEGMENT_COUNT++;
-    this.name = `Ls-${SEGMENT_COUNT}`;
+    SENodule.SEGMENT_COUNT++;
+    this.name = `Ls-${SENodule.SEGMENT_COUNT}`;
   }
 
   customStyles(): Set<Styles> {

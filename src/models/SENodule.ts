@@ -1,11 +1,7 @@
 import { Vector3 } from "three";
-import { SEPoint } from "./SEPoint";
-import SETTINGS from "@/global-settings";
 import Nodule from "@/plottables/Nodule";
-import { SEPointOnOneDimensional } from "./SEPointOnOneDimensional";
 import { Styles } from "@/types/Styles";
-import { SEOneDimensional, OneDimensional } from "@/types";
-import { UpdateMode, UpdateStateType } from "@/types";
+import { UpdateStateType } from "@/types";
 //import AppStore from "@/store";
 
 //import { magnificationLevel } from "@/components/SENoduleItem.vue";
@@ -13,6 +9,24 @@ import { UpdateMode, UpdateStateType } from "@/types";
 let NODE_COUNT = 0;
 
 export abstract class SENodule {
+  protected static POINT_COUNT = 0;
+  protected static SEGMENT_COUNT = 0;
+  protected static LINE_COUNT = 0;
+  protected static CIRCLE_COUNT = 0;
+  protected static ANGLEMARKER_COUNT = 0;
+  protected static EXPR_COUNT = 0;
+
+  static resetAllCounters(): void {
+    NODE_COUNT = 0;
+    SENodule.POINT_COUNT = 0;
+    SENodule.LINE_COUNT = 0;
+    SENodule.SEGMENT_COUNT = 0;
+    SENodule.ANGLEMARKER_COUNT = 0;
+    SENodule.CIRCLE_COUNT = 0;
+
+    SENodule.EXPR_COUNT = 0;
+  }
+
   /**
    * The Global Vuex Store
    */

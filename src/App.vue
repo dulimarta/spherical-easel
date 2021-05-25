@@ -49,6 +49,14 @@
 
       <!-- This will open up the global settings view setting the language, decimals 
       display and other global options-->
+      <span>{{whoami}}</span>
+
+      <v-icon class="mx-2"
+        @click="doLoginOrCheck">mdi-account</v-icon>
+      <v-icon v-if="whoami !== ''"
+        :disabled="!hasObjects"
+        class="mr-2"
+        @click="$refs.saveConstructionDialog.show()">mdi-share</v-icon>
       <router-link to="/settings">
         <v-icon>mdi-cog</v-icon>
       </router-link>
@@ -81,6 +89,33 @@
           class="footer-text">{{ $t(`buttons.NoToolSelected`) }}</span>
       </v-col>
     </v-footer>
+    <Dialog ref="logoutDialog"
+      title="Confirm Logout"
+      yes-text="Proceed"
+      :yes-action="() => doLogout()"
+      no-text="Cancel"
+      max-width="40%">
+      <p>You are about to logout, any unsaved constructions will be
+        discarded.</p>
+      <p><em>Proceed</em> or <em>cancel?</em></p>
+    </Dialog>
+    <Dialog ref="saveConstructionDialog"
+      title="Save Construction"
+      yes-text="Save"
+      no-text="Cancel"
+      :yes-action="() => doShare()"
+      max-width="40%">
+      <p>Please provide a short description for your construction
+      </p>
+
+      <v-text-field type="text"
+        persistent-hint
+        label="Description"
+        required
+        v-model="description"></v-text-field>
+      <v-switch v-model="publicConstruction"
+        label="Public (currently inop)"></v-switch>
+    </Dialog>
   </v-app>
 </template>
 
@@ -89,30 +124,107 @@
   actions to desired changes in the display and the rest of the app. 
 -->
 <script lang="ts">
-import Vue from "vue";
 /* Import the custom components */
-import Component from "vue-class-component";
+import VueComponent from "vue";
+import { Vue, Component } from "vue-property-decorator";
 import { State } from "vuex-class";
 import MessageBox from "@/components/MessageBox.vue";
+import ConstructionLoader from "@/components/ConstructionLoader.vue";
+import Dialog, { DialogAction } from "@/components/Dialog.vue";
 import { AppState } from "./types";
-import { Watch } from "vue-property-decorator";
 import EventBus from "@/eventHandlers/EventBus";
+import { FirebaseAuth, User } from "@firebase/auth-types";
+import {
+  FirebaseFirestore,
+  DocumentReference
+} from "@firebase/firestore-types";
+import { Command } from "./commands/Command";
 
 /* This allows for the State of the app to be initialized with in vuex store */
-@Component({ components: { MessageBox } })
+@Component({ components: { MessageBox, Dialog, ConstructionLoader } })
 export default class App extends Vue {
   @State((s: AppState) => s.activeToolName)
   activeToolName!: string;
 
+  readonly $appAuth!: FirebaseAuth;
+  readonly $appDB!: FirebaseFirestore;
+  description = "";
+  publicConstruction = false;
+  $refs!: {
+    logoutDialog: VueComponent & DialogAction;
+    saveConstructionDialog: VueComponent & DialogAction;
+  };
   footerColor = "accent";
+  authSubscription: any;
+  whoami = "";
 
+  get hasObjects(): boolean {
+    // Any objects must include at least one point
+    return this.$store.direct.getters.allSEPoints().length > 0;
+  }
   mounted(): void {
     this.$store.direct.commit.init();
     EventBus.listen("set-footer-color", this.setFooterColor);
+    this.authSubscription = this.$appAuth.onAuthStateChanged(
+      (u: User | null) => {
+        if (u !== null) this.whoami = u.email ?? "unknown email";
+        else this.whoami = "";
+      }
+    );
   }
 
+  beforeDestroy(): void {
+    if (this.authSubscription) this.authSubscription();
+  }
   setFooterColor(e: unknown): void {
     this.footerColor = (e as any).color;
+  }
+
+  doLogout(): void {
+    this.$appAuth.signOut();
+    this.$refs.logoutDialog.hide();
+  }
+
+  doLoginOrCheck(): void {
+    if (this.$appAuth.currentUser !== null) {
+      this.$refs.logoutDialog.show();
+    } else {
+      this.$router.replace({ path: "/account" });
+    }
+  }
+
+  doShare(): void {
+    /* dump the command history */
+    const out = Command.dump();
+    console.log("Sharing", out);
+    // const collectionPath = this.publicConstruction
+    //   ? "constructions"
+    //   : `users/${this.whoami}/constructions`;
+    this.$appDB
+      .collection("constructions")
+      .add({
+        script: out,
+        dateCreated: new Date().toISOString(),
+        author: this.whoami,
+        description: this.description
+      })
+      .then((doc: DocumentReference) => {
+        console.log("Inserted", doc.id);
+        EventBus.fire("show-alert", {
+          key: "objectTree.firestoreConstructionSaved",
+          keyOptions: { docId: doc.id },
+          type: "info"
+        });
+      })
+      .catch((err: any) => {
+        console.log("Can't save document", err);
+        EventBus.fire("show-alert", {
+          key: "objectTree.firestoreSaveError",
+          keyOptions: {},
+          type: "error"
+        });
+      });
+    this.$refs.saveConstructionDialog.hide();
   }
 }
 </script>

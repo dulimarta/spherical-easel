@@ -30,17 +30,21 @@ export class PointMoverVisitor implements Visitor {
   }
   //#endregion actionOnPoint
 
+  // eslint-disable-next-line
   actionOnLine(m: SELine): void {
     //m.update();
   }
 
+  // eslint-disable-next-line
   actionOnSegment(s: SESegment): void {
     // s.update();
   }
 
+  // eslint-disable-next-line
   actionOnCircle(c: SECircle): void {
     // c.update();
   }
+  // eslint-disable-next-line
   actionOnLabel(l: SELabel): void {
     // l.update();
   }

@@ -1,6 +1,6 @@
 import { Command } from "./Command";
 import { SENodule } from "@/models/SENodule";
-import { Styles, StyleOptions, StyleEditPanels } from "../types/Styles";
+import { StyleOptions, StyleEditPanels } from "../types/Styles";
 
 export class StyleNoduleCommand extends Command {
   private seNodules: SENodule[] = [];

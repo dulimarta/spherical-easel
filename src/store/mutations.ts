@@ -1,4 +1,4 @@
-import { AppState, SEOneDimensional, Labelable } from "@/types";
+import { AppState, Labelable } from "@/types";
 import Two from "two.js";
 import { SEPoint } from "@/models/SEPoint";
 import { SESegment } from "@/models/SESegment";
@@ -13,16 +13,14 @@ import { Vector3, Matrix4 } from "three";
 import { StyleOptions, StyleEditPanels } from "@/types/Styles";
 import { LineNormalVisitor } from "@/visitors/LineNormalVisitor";
 import { SegmentNormalArcLengthVisitor } from "@/visitors/SegmentNormalArcLengthVisitor";
-import { UpdateMode, UpdateStateType } from "@/types";
+import { UpdateMode } from "@/types";
 import Nodule, { DisplayStyle } from "@/plottables/Nodule";
-import { SEMeasurement } from "@/models/SEMeasurement";
-import { SECalculation } from "@/models/SECalculation";
 import SETTINGS from "@/global-settings";
 import { SEExpression } from "@/models/SEExpression";
 import { SEAngleMarker } from "@/models/SEAngleMarker";
 
 const tmpMatrix = new Matrix4();
-const tmpVector = new Vector3();
+//const tmpVector = new Vector3();
 
 //#region appState
 export const initialState: AppState = {
@@ -125,6 +123,18 @@ export default {
     point.ref.addToLayers(state.layers);
   },
   //#endregion addPoint
+  removeAllFromLayers(state: AppState): void {
+    state.seAngleMarkers.forEach((x: SEAngleMarker) =>
+      x.ref.removeFromLayers()
+    );
+    state.seCircles.forEach((x: SECircle) => x.ref.removeFromLayers());
+    state.seLabels.forEach((x: SELabel) =>
+      x.ref.removeFromLayers(state.layers)
+    );
+    state.seLines.forEach((x: SELine) => x.ref.removeFromLayers());
+    state.sePoints.forEach((x: SEPoint) => x.ref.removeFromLayers());
+    state.seSegments.forEach((x: SESegment) => x.ref.removeFromLayers());
+  },
   removePoint(state: AppState, pointId: number): void {
     const pos = state.sePoints.findIndex(x => x.id === pointId);
     const pos2 = state.seNodules.findIndex(x => x.id === pointId);

@@ -9,9 +9,7 @@ import { IntersectionReturnType, SEOneDimensional } from "@/types";
 import store from "@/store";
 import { CommandGroup } from "@/commands/CommandGroup";
 import EventBus from "./EventBus";
-import { SENodule } from "@/models/SENodule";
 import { SEPoint } from "@/models/SEPoint";
-import { SELabel } from "@/models/SELabel";
 
 export default class IntersectionPointHandler extends Highlighter {
   /**

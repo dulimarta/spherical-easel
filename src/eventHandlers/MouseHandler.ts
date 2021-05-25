@@ -1,10 +1,9 @@
 /** @format */
 
-import { Vector3, Matrix4 } from "three";
+import { Vector3 } from "three";
 import AppStore from "@/store";
 import { ToolStrategy } from "./ToolStrategy";
 import Two from "two.js";
-import Point from "@/plottables/Point";
 import SETTINGS, { LAYER } from "@/global-settings";
 import { SEPoint } from "@/models/SEPoint";
 import { SELine } from "@/models/SELine";
@@ -12,7 +11,6 @@ import { SECircle } from "@/models/SECircle";
 import { SESegment } from "@/models/SESegment";
 import { TextBox } from "@/plottables/TextBox";
 import { SENodule } from "@/models/SENodule";
-import { DisplayStyle } from "@/plottables/Nodule";
 import { SELabel } from "@/models/SELabel";
 import { SEAngleMarker } from "@/models/SEAngleMarker";
 

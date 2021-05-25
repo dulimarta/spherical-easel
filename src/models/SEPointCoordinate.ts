@@ -11,9 +11,6 @@ export enum CoordinateSelection {
 }
 
 export class SEPointCoordinate extends SEMeasurement {
-  public customStyles(): Set<Styles> {
-    throw new Error("Method not implemented.");
-  }
   private selector = CoordinateSelection.X_VALUE;
   private point: SEPoint;
   /**
@@ -62,5 +59,9 @@ export class SEPointCoordinate extends SEMeasurement {
       default:
         return Number.NaN;
     }
+  }
+
+  public customStyles(): Set<Styles> {
+    throw new Error("Method not implemented.");
   }
 }

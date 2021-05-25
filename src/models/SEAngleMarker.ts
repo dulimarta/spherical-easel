@@ -1,5 +1,4 @@
 import { SEMeasurement } from "./SEMeasurement";
-import { SENodule } from "./SENodule";
 import { SEPoint } from "./SEPoint";
 import { SELine } from "./SELine";
 import { SESegment } from "./SESegment";
@@ -7,7 +6,7 @@ import AngleMarker from "@/plottables/AngleMarker";
 import { Vector3, Matrix4 } from "three";
 import { Visitable } from "@/visitors/Visitable";
 import { Visitor } from "@/visitors/Visitor";
-import { AngleMarkerState, OneDimensional } from "@/types";
+import { AngleMarkerState } from "@/types";
 import SETTINGS from "@/global-settings";
 import { Styles } from "@/types/Styles";
 import { UpdateMode, UpdateStateType } from "@/types";
@@ -15,8 +14,6 @@ import { Labelable } from "@/types";
 import { SELabel } from "@/models/SELabel";
 import { SEPointOnOneDimensional } from "./SEPointOnOneDimensional";
 import AppStore from "@/store";
-
-let ANGLEMARKER_COUNT = 0;
 
 enum AngleMode {
   NONE,
@@ -126,8 +123,8 @@ export class SEAngleMarker extends SEMeasurement
     this._secondSEParent = secondSEParent;
     this._thirdSEParent = thirdSEParent;
     this.mode = mode;
-    ANGLEMARKER_COUNT++;
-    this.name = `Am-${ANGLEMARKER_COUNT}`;
+    SEAngleMarker.ANGLEMARKER_COUNT++;
+    this.name = `Am-${SEAngleMarker.ANGLEMARKER_COUNT}`;
   }
 
   customStyles(): Set<Styles> {

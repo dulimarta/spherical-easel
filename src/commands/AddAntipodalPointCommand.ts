@@ -1,8 +1,8 @@
-import { Command } from "./Command";
+import { Command, PersistableCommand } from "./Command";
 import { SEPoint } from "@/models/SEPoint";
 import { SELabel } from "@/models/SELabel";
 
-export class AddAntipodalPointCommand extends Command {
+export class AddAntipodalPointCommand extends PersistableCommand {
   private sePoint: SEPoint;
   private parentSEPoint: SEPoint;
   private seLabel: SELabel;
@@ -29,5 +29,9 @@ export class AddAntipodalPointCommand extends Command {
     Command.store.commit.removePoint(this.lastState);
     this.sePoint.unregisterChild(this.seLabel);
     this.parentSEPoint.unregisterChild(this.sePoint);
+  }
+
+  toJSON(_arg: any): string {
+    return `AddAntipodalPoint ${this.sePoint.name} ${this.parentSEPoint.name}`;
   }
 }

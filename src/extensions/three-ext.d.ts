@@ -23,6 +23,13 @@ declare module "three/src/math/Vector3" {
      */
     toFixed(precision: number): string;
 
+    /**
+     * Create a 3D vector from a string in the following format (___,____,___)
+     *
+     * @param arr
+     */
+    from(arr: string): void;
+
     /** Check if the vector is pretty close to zero within some tolerance
      * @param tolerance
      */

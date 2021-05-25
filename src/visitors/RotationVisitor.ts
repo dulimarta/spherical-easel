@@ -5,7 +5,7 @@ import { Matrix4, Vector3, Matrix3 } from "three";
 import { SECircle } from "@/models/SECircle";
 import { SESegment } from "@/models/SESegment";
 import { SELabel } from "@/models/SELabel";
-import { UpdateMode } from "@/types";
+// import { UpdateMode } from "@/types";
 import { SEPointOnOneDimensional } from "@/models/SEPointOnOneDimensional";
 
 export class RotationVisitor implements Visitor {
@@ -52,6 +52,7 @@ export class RotationVisitor implements Visitor {
     s.normalVector = this.tmpVector;
   }
 
+  // eslint-disable-next-line
   actionOnCircle(c: SECircle): void {
     //Circles are completely determined by two points they depend on so no need to update them
   }

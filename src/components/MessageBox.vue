@@ -29,13 +29,12 @@ export default class MessageBox extends Vue {
   }
 
   addMessage(m: any): void {
-    console.log(m.keyOptions, i18n.t(m.key, m.keyOptions));
-    const translation = i18n.t(m.key, m.keyOptions).toString();
     if (this.messageTimer) {
       // We have an active message on display
       console.debug("Queue incoming messages", m);
       this.messages.push(m);
     } else {
+      const translation = i18n.t(m.key, m.keyOptions).toString();
       this.messageText = translation;
       this.messageType = m.type;
       this.showMe = true;
