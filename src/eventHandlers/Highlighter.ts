@@ -36,6 +36,7 @@ export default abstract class Highlighter extends MouseHandler {
     super.mouseMoved(event);
 
     if (!this.isOnSphere) return;
+
     // Set the display to normal for all previously nearby objects
     this.hitSENodules.forEach((n: SENodule) => {
       if (!n.selected) n.glowing = false;
@@ -68,9 +69,6 @@ export default abstract class Highlighter extends MouseHandler {
 
     // Make NONE of the nearby objects by glow -- it is the job of the handler (active tool) to turn on
     // the glow of objects that the tool can interact with
-    // this.hitSENodules.forEach((obj: SENodule) => {
-    //   obj.glowing = true;
-    // });
 
     // From the array of SENodules pull out the different types
     this.hitSEPoints = this.hitSENodules
@@ -126,5 +124,9 @@ export default abstract class Highlighter extends MouseHandler {
     });
     // Clear the selected objects array
     this.store.commit.setSelectedSENodules([]);
+
+    // call an unglow all command
+    Highlighter.store.commit.unglowAllSENodules();
+    this.infoText.hide();
   }
 }

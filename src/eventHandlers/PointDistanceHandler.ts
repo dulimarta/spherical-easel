@@ -36,6 +36,9 @@ export default class PointDistantHandler extends Highlighter {
           return;
         }
         this.targetPoints.push(possibleTargetPointList[0]);
+        // Glow and select the point, so that Highlighter.ts doesn't unglow it
+        possibleTargetPointList[0].glowing = true;
+        possibleTargetPointList[0].selected = true;
       }
 
       if (this.targetPoints.length === 2) {
@@ -53,7 +56,10 @@ export default class PointDistantHandler extends Highlighter {
           this.targetPoints[1]
         ]).execute();
         this.targetPoints.splice(0);
-        // this.targetSegment = null;
+        // reset for another distance measurement
+        possibleTargetPointList[0].selected = false;
+        possibleTargetPointList[1].selected = false;
+        this.mouseLeave(event);
       } else
         EventBus.fire("show-alert", {
           key: `handlers.selectAnotherPoint`,
@@ -79,6 +85,7 @@ export default class PointDistantHandler extends Highlighter {
   mouseLeave(event: MouseEvent): void {
     super.mouseLeave(event);
     // Reset the targetSegment in preparation for another deletion.
+    this.targetPoints.forEach(p => (p.selected = false));
     this.targetPoints.clear();
   }
 
@@ -87,7 +94,11 @@ export default class PointDistantHandler extends Highlighter {
       const object1 = this.store.getters.selectedSENodules()[0];
       const object2 = this.store.getters.selectedSENodules()[1];
 
-      if (object1 instanceof SEPoint && object2 instanceof SEPoint) {
+      if (
+        object1 instanceof SEPoint &&
+        object2 instanceof SEPoint &&
+        object1 !== object2
+      ) {
         const distanceMeasure = new SESegmentDistance(object1, object2);
 
         EventBus.fire("show-alert", {
