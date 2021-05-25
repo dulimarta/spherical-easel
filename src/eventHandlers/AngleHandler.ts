@@ -463,7 +463,6 @@ export default class AngleHandler extends Highlighter {
           }
           break;
       }
-
       // Check to see if we are ready to make the angle
       if (this.targetPoints.length === 3) {
         this.makeAngleMarkerFromThreePoints();
