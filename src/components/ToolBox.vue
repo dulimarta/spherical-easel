@@ -17,7 +17,6 @@
           :close-delay="toolTipCloseDelay">
           <template v-slot:activator="{ on }">
             <v-tab class="mt-3"
-              href="#toolListTab"
               v-on="on">
               <v-icon left>mdi-calculator</v-icon>
             </v-tab>
@@ -30,7 +29,6 @@
           :close-delay="toolTipCloseDelay">
           <template v-slot:activator="{ on }">
             <v-tab class="mt-3"
-              href="#objectListTab"
               v-on="on">
               <v-icon left>mdi-format-list-bulleted</v-icon>
             </v-tab>
@@ -42,7 +40,6 @@
           :close-delay="toolTipCloseDelay">
           <template v-slot:activator="{ on }">
             <v-tab class="mt-3"
-              href="#constructionListTab"
               v-on="on">
               <v-icon left>mdi-database</v-icon>
             </v-tab>
@@ -50,14 +47,14 @@
           <span>{{ $t("main.ConstructionsTabToolTip") }}</span>
         </v-tooltip>
 
-        <v-tab-item value="toolListTab">
+        <v-tab-item>
           <ToolGroups id="toolGroups"></ToolGroups>
         </v-tab-item>
-        <v-tab-item value="objectListTab">
+        <v-tab-item>
           <ObjectTree id="objtree">
           </ObjectTree>
         </v-tab-item>
-        <v-tab-item value="constructionListTab">
+        <v-tab-item>
           <ConstructionLoader></ConstructionLoader>
         </v-tab-item>
       </v-tabs>
