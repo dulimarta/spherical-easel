@@ -1,15 +1,17 @@
 import { SENodule } from "@/models/SENodule";
 import { AddPointCommand } from "./AddPointCommand";
 import { AddSegmentCommand } from "./AddSegmentCommand";
+import { Command } from "./Command";
+import { CommandGroup } from "./CommandGroup";
 export type ConstructionScript = Array<string | Array<string>>;
 
 const noduleDictionary = new Map<string, SENodule>();
-function executeIndividual(command: string): void {
+function executeIndividual(command: string): Command {
   // console.log("Dictionary contains", noduleDictionary.size, " objects");
   if (command.startsWith("AddPoint"))
-    AddPointCommand.parse(command, noduleDictionary).execute();
+    return AddPointCommand.parse(command, noduleDictionary);
   else if (command.startsWith("AddSegment"))
-    AddSegmentCommand.parse(command, noduleDictionary);
+    return AddSegmentCommand.parse(command, noduleDictionary);
   else throw new Error(`Not yet implemented: ${command}`);
 }
 
@@ -23,20 +25,25 @@ function executeIndividual(command: string): void {
 function interpret(command: string | Array<string>): void {
   if (typeof command === "string") {
     /* This is an individual command */
-    executeIndividual(command);
+    executeIndividual(command).execute();
   } else {
     // This is a CommandGroup, interpret each command individually
+    const group = new CommandGroup();
     command
       // Remove leading and training quotes
       .map((s: string) => s.replace(/^"/, "").replace(/"$/, ""))
       .forEach((c: string, gPos: number) => {
-        executeIndividual(c);
+        group.addCommand(executeIndividual(c));
       });
+    // Then execute as a group
+    group.execute();
   }
 }
 
 export function run(script: ConstructionScript): void {
   noduleDictionary.clear();
+  Command.commandHistory.clear();
+  Command.redoHistory.clear();
   script.forEach((s: string | Array<string>) => {
     interpret(s);
   });

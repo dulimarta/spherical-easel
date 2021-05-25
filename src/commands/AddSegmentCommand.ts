@@ -62,7 +62,7 @@ export class AddSegmentCommand extends PersistableCommand {
     ].join(" ");
   }
 
-  static parse(command: string, objMap: Map<string, SENodule>): void {
+  static parse(command: string, objMap: Map<string, SENodule>): Command {
     console.log("Parsing", command);
     const tokens = command.split(" ");
     const normalVector = new Vector3();
@@ -126,11 +126,11 @@ export class AddSegmentCommand extends PersistableCommand {
       .normalize();
     if (arcLength > Math.PI) labelPosition.multiplyScalar(-1);
     newSELabel.locationVector = labelPosition;
-    new AddSegmentCommand(
+    return new AddSegmentCommand(
       newSESegment,
       startSEPoint,
       endSEPoint,
       newSELabel
-    ).execute();
+    );
   }
 }
