@@ -17,7 +17,6 @@ export abstract class SENodule {
   protected static EXPR_COUNT = 0;
 
   static resetAllCounters(): void {
-    console.log("Reset object counters....");
     NODE_COUNT = 0;
     SENodule.POINT_COUNT = 0;
     SENodule.LINE_COUNT = 0;

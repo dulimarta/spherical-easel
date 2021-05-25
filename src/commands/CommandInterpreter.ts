@@ -1,3 +1,4 @@
+import EventBus from "@/eventHandlers/EventBus";
 import { SENodule } from "@/models/SENodule";
 import { AddPointCommand } from "./AddPointCommand";
 import { AddSegmentCommand } from "./AddSegmentCommand";
@@ -12,7 +13,14 @@ function executeIndividual(command: string): Command {
     return AddPointCommand.parse(command, noduleDictionary);
   else if (command.startsWith("AddSegment"))
     return AddSegmentCommand.parse(command, noduleDictionary);
-  else throw new Error(`Not yet implemented: ${command}`);
+  else {
+    const errMsg = `Not yet implemented: ${command}`;
+    EventBus.fire("show-alert", {
+      key: `Not yet implemented ${errMsg}`,
+      type: "error"
+    });
+    throw new Error(errMsg);
+  }
 }
 
 /**

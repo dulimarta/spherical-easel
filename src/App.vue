@@ -54,8 +54,9 @@
       <v-icon class="mx-2"
         @click="doLoginOrCheck">mdi-account</v-icon>
       <v-icon v-if="whoami !== ''"
+        :disabled="!hasObjects"
         class="mr-2"
-        @click="doShare">mdi-share</v-icon>
+        @click="$refs.saveConstructionDialog.show()">mdi-share</v-icon>
       <router-link to="/settings">
         <v-icon>mdi-cog</v-icon>
       </router-link>
@@ -98,6 +99,21 @@
         discarded.</p>
       <p><em>Proceed</em> or <em>cancel?</em></p>
     </Dialog>
+    <Dialog ref="saveConstructionDialog"
+      title="Save Construction"
+      yes-text="Save"
+      no-text="Cancel"
+      :yes-action="() => doShare()"
+      max-width="40%">
+      <p>Please provide a short description for your construction
+      </p>
+
+      <v-text-field type="text"
+        persistent-hint
+        label="Description"
+        required
+        v-model="description"></v-text-field>
+    </Dialog>
   </v-app>
 </template>
 
@@ -130,15 +146,20 @@ export default class App extends Vue {
 
   readonly $appAuth!: FirebaseAuth;
   readonly $appDB!: FirebaseFirestore;
+  description = "";
 
   $refs!: {
     logoutDialog: VueComponent & DialogAction;
-    loadConstructionDialog: VueComponent & DialogAction;
+    saveConstructionDialog: VueComponent & DialogAction;
   };
   footerColor = "accent";
   authSubscription: any;
   whoami = "";
 
+  get hasObjects(): boolean {
+    // Any objects must include at least one point
+    return this.$store.direct.getters.allSEPoints().length > 0;
+  }
   mounted(): void {
     this.$store.direct.commit.init();
     EventBus.listen("set-footer-color", this.setFooterColor);
@@ -179,7 +200,8 @@ export default class App extends Vue {
       .add({
         script: out,
         dateCreated: new Date().toISOString(),
-        author: this.whoami
+        author: this.whoami,
+        description: this.description
       })
       .then((doc: DocumentReference) => {
         console.log("Inserted", doc.id);
@@ -197,8 +219,7 @@ export default class App extends Vue {
           type: "error"
         });
       });
-    // const parsed = JSON.parse(out);
-    // console.log(parsed);
+    this.$refs.saveConstructionDialog.hide();
   }
 }
 </script>

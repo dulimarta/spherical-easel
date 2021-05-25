@@ -7,8 +7,10 @@
           :key="pos">
           <v-list-item>
             <v-list-item-content>
-              <v-list-item-title>{{r.id}}</v-list-item-title>
-              <v-list-item-subtitle>{{r.objectCount}} objects,
+              <v-list-item-title>{{r.description || "N/A"}}
+              </v-list-item-title>
+              <v-list-item-subtitle><code>{{r.id.substring(0,5)}}</code>
+                {{r.objectCount}} objects,
                 {{r.dateCreated}}
               </v-list-item-subtitle>
               <v-divider />
@@ -42,14 +44,19 @@ import { SENodule } from "@/models/SENodule";
 import Nodule from "@/plottables/Nodule";
 
 // TODO: move the following type alias and interface elsewhere later?
-interface SphericalConstruction {
+interface SphericalConstruction extends ConstructionInFirestore {
   id: string;
-  rawScript: string;
-  script: ConstructionScript;
-  author: string;
-  dateCreated: string;
+  parsedScript: ConstructionScript;
   objectCount: number;
 }
+
+interface ConstructionInFirestore {
+  author: string;
+  dateCreated: string;
+  script: string;
+  description: string;
+}
+
 @Component
 export default class ConstructionLoader extends Vue {
   readonly $appDB!: FirebaseFirestore;
@@ -61,12 +68,12 @@ export default class ConstructionLoader extends Vue {
     this.$appDB.collection("constructions").onSnapshot((qs: QuerySnapshot) => {
       this.availableConstructions.splice(0);
       qs.forEach((qd: QueryDocumentSnapshot) => {
-        const doc = qd.data() as any;
-        const script = JSON.parse(doc.script) as ConstructionScript;
+        const doc = qd.data() as ConstructionInFirestore;
+        const parsedScript = JSON.parse(doc.script) as ConstructionScript;
 
-        if (script.length > 0) {
+        if (parsedScript.length > 0) {
           // we care only for non-empty script
-          const objectCount = script
+          const objectCount = parsedScript
             // A simple command contributes 1 object
             // A CommandGroup contributes N objects (as many elements in its subcommands)
             .map((z: string | Array<string>) =>
@@ -76,11 +83,12 @@ export default class ConstructionLoader extends Vue {
 
           this.availableConstructions.push({
             id: qd.id,
-            rawScript: doc.rawScript,
-            script,
+            script: doc.script,
+            parsedScript,
             objectCount,
             author: doc.author,
-            dateCreated: doc.dateCreated
+            dateCreated: doc.dateCreated,
+            description: doc.description
           });
         }
       });
@@ -102,7 +110,7 @@ export default class ConstructionLoader extends Vue {
         keyOptions: { docId },
         type: "info"
       });
-      run(this.availableConstructions[pos].script);
+      run(this.availableConstructions[pos].parsedScript);
     }
   }
 }
