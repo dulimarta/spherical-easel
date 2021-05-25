@@ -15,8 +15,6 @@ import { SELabel } from "@/models/SELabel";
 import { SEPointOnOneDimensional } from "./SEPointOnOneDimensional";
 import AppStore from "@/store";
 
-let ANGLEMARKER_COUNT = 0;
-
 enum AngleMode {
   NONE,
   LINES,
@@ -125,8 +123,8 @@ export class SEAngleMarker extends SEMeasurement
     this._secondSEParent = secondSEParent;
     this._thirdSEParent = thirdSEParent;
     this.mode = mode;
-    ANGLEMARKER_COUNT++;
-    this.name = `Am-${ANGLEMARKER_COUNT}`;
+    SEAngleMarker.ANGLEMARKER_COUNT++;
+    this.name = `Am-${SEAngleMarker.ANGLEMARKER_COUNT}`;
   }
 
   customStyles(): Set<Styles> {

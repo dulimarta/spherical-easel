@@ -13,7 +13,6 @@ const desiredZAxis = new Vector3();
 // const Z_AXIS = new Vector3(0, 0, 1);
 const transformMatrix = new Matrix4();
 const SUBDIVISIONS = SETTINGS.circle.numPoints;
-let CIRCLE_COUNT = 0;
 
 /**
  * For drawing surface circle. A circle consists of two paths (front and back)
@@ -150,7 +149,7 @@ export default class Circle extends Nodule {
 
   constructor() {
     super();
-    this.name = "Circle-" + CIRCLE_COUNT++;
+    this.name = "Circle-" + Nodule.CIRCLE_COUNT++;
     // Create the initial front and back vertices (glowing/not/fill)
     const frontVertices: Two.Vector[] = [];
     const backVertices: Two.Vector[] = [];

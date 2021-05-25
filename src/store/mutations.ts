@@ -123,6 +123,18 @@ export default {
     point.ref.addToLayers(state.layers);
   },
   //#endregion addPoint
+  removeAllFromLayers(state: AppState): void {
+    state.seAngleMarkers.forEach((x: SEAngleMarker) =>
+      x.ref.removeFromLayers()
+    );
+    state.seCircles.forEach((x: SECircle) => x.ref.removeFromLayers());
+    state.seLabels.forEach((x: SELabel) =>
+      x.ref.removeFromLayers(state.layers)
+    );
+    state.seLines.forEach((x: SELine) => x.ref.removeFromLayers());
+    state.sePoints.forEach((x: SEPoint) => x.ref.removeFromLayers());
+    state.seSegments.forEach((x: SESegment) => x.ref.removeFromLayers());
+  },
   removePoint(state: AppState, pointId: number): void {
     const pos = state.sePoints.findIndex(x => x.id === pointId);
     const pos2 = state.seNodules.findIndex(x => x.id === pointId);

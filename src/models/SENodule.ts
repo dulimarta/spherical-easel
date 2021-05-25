@@ -9,6 +9,25 @@ import { UpdateStateType } from "@/types";
 let NODE_COUNT = 0;
 
 export abstract class SENodule {
+  protected static POINT_COUNT = 0;
+  protected static SEGMENT_COUNT = 0;
+  protected static LINE_COUNT = 0;
+  protected static CIRCLE_COUNT = 0;
+  protected static ANGLEMARKER_COUNT = 0;
+  protected static EXPR_COUNT = 0;
+
+  static resetAllCounters(): void {
+    console.log("Reset object counters....");
+    NODE_COUNT = 0;
+    SENodule.POINT_COUNT = 0;
+    SENodule.LINE_COUNT = 0;
+    SENodule.SEGMENT_COUNT = 0;
+    SENodule.ANGLEMARKER_COUNT = 0;
+    SENodule.CIRCLE_COUNT = 0;
+
+    SENodule.EXPR_COUNT = 0;
+  }
+
   /**
    * The Global Vuex Store
    */

@@ -11,8 +11,6 @@ import { UpdateMode, UpdateStateType, CircleState } from "@/types";
 import { Labelable } from "@/types";
 import { SELabel } from "@/models/SELabel";
 
-let CIRCLE_COUNT = 0;
-
 const styleSet = new Set([
   Styles.strokeColor,
   Styles.strokeWidthPercent,
@@ -64,8 +62,8 @@ export class SECircle extends SENodule
     this._centerSEPoint = centerPoint;
     this._circleSEPoint = circlePoint;
 
-    CIRCLE_COUNT++;
-    this.name = `C-${CIRCLE_COUNT}`;
+    SECircle.CIRCLE_COUNT++;
+    this.name = `C-${SECircle.CIRCLE_COUNT}`;
   }
   // #endregion circleConstructor
 

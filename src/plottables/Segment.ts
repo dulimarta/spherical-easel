@@ -6,7 +6,6 @@ import { StyleOptions, StyleEditPanels } from "@/types/Styles";
 
 // The number of vectors used to render the one part of the segment (like the frontPart, frontExtra, etc.)
 const SUBDIVS = SETTINGS.segment.numPoints;
-let SEGMENT_COUNT = 0;
 /**
  * A line segment
  *
@@ -101,7 +100,7 @@ export default class Segment extends Nodule {
   constructor() {
     // Initialize the Two.Group
     super();
-    this.name = "Segment-" + SEGMENT_COUNT++;
+    this.name = "Segment-" + Nodule.SEGMENT_COUNT++;
     // Create the vertices for the segment
     const vertices: Two.Vector[] = [];
     for (let k = 0; k < SUBDIVS; k++) {

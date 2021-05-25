@@ -23,6 +23,12 @@ export class AddPointCommand extends PersistableCommand {
     Command.store.commit.addLabel(this.seLabel);
     this.sePoint.registerChild(this.seLabel);
     Command.store.commit.addPoint(this.sePoint);
+    // Thanks to Will for suggesting the following magic line
+    // that makes the objects show up correctly on the canvas
+    this.sePoint.update({
+      mode: UpdateMode.DisplayOnly,
+      stateArray: []
+    });
   }
 
   saveState(): void {
@@ -45,13 +51,13 @@ export class AddPointCommand extends PersistableCommand {
     ].join(" ");
   }
 
-  static parse(command: string, objMap: Map<string, SENodule>): void {
-    console.log("Parsing", command);
+  static parse(command: string, objMap: Map<string, SENodule>): Command {
+    // console.log("Parsing", command);
     const tokens = command.split(" ");
     // Check if the point already exists from previous command execution
     let vtx = objMap.get(tokens[1]) as SEPoint | undefined;
     if (!vtx) {
-      console.log("Create point at", tokens[2]);
+      // console.log("Create point at", tokens[2]);
       const location = new Vector3();
       location.from(tokens[2]); // convert to Number
       const newPoint = new Point();
@@ -78,13 +84,7 @@ export class AddPointCommand extends PersistableCommand {
         .normalize();
       objMap.set(tokens[3], seLabel);
     }
-    new AddPointCommand(vtx, seLabel).execute();
-    // Thanks to Will for suggesting the following magic line
-    // that makes the objects show up correctly on the canvas
-    vtx.update({
-      mode: UpdateMode.DisplayOnly,
-      stateArray: []
-    });
+    return new AddPointCommand(vtx, seLabel);
   }
 }
 //#endregion addPointCommand

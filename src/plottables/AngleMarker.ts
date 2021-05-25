@@ -14,7 +14,6 @@ const desiredZAxis = new Vector3();
 const transformMatrix = new Matrix4();
 const CIRCLEEDGESUBDIVISIONS = SETTINGS.angleMarker.numCirclePoints;
 //const EDGESUBDIVISIONS = SETTINGS.angleMarker.numEdgePoints;
-let ANGLEMARKER_COUNT = 0;
 
 /**
  * For drawing angle markers. The circular part of an angle marker consists of two paths (front and back) and a storage path
@@ -176,7 +175,7 @@ export default class AngleMarker extends Nodule {
 
   constructor() {
     super();
-    this.name = "AngleMarker-" + ANGLEMARKER_COUNT++;
+    this.name = "AngleMarker-" + Nodule.ANGLEMARKER_COUNT++;
     // Create the initial front and back vertices (glowing/not/fill)
     // const frontStartVertices: Two.Vector[] = [];
     // const backStartVertices: Two.Vector[] = [];

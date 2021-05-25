@@ -5,9 +5,9 @@ export type ConstructionScript = Array<string | Array<string>>;
 
 const noduleDictionary = new Map<string, SENodule>();
 function executeIndividual(command: string): void {
-  console.log("Dictionary contains", noduleDictionary.size, " objects");
+  // console.log("Dictionary contains", noduleDictionary.size, " objects");
   if (command.startsWith("AddPoint"))
-    AddPointCommand.parse(command, noduleDictionary);
+    AddPointCommand.parse(command, noduleDictionary).execute();
   else if (command.startsWith("AddSegment"))
     AddSegmentCommand.parse(command, noduleDictionary);
   else throw new Error(`Not yet implemented: ${command}`);
@@ -36,6 +36,7 @@ function interpret(command: string | Array<string>): void {
 }
 
 export function run(script: ConstructionScript): void {
+  noduleDictionary.clear();
   script.forEach((s: string | Array<string>) => {
     interpret(s);
   });

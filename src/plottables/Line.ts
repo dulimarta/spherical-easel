@@ -6,7 +6,6 @@ import { StyleOptions, StyleEditPanels } from "@/types/Styles";
 
 // The number of vectors used to render the front half (and the same number in the back half)
 const SUBDIVS = SETTINGS.line.numPoints;
-let LINE_COUNT = 0;
 
 /**
  * A line segment
@@ -88,7 +87,7 @@ export default class Line extends Nodule {
   private transformMatrix = new Matrix4();
   constructor() {
     super();
-    this.name = "Line-" + LINE_COUNT++;
+    this.name = "Line-" + Nodule.LINE_COUNT++;
     const radius = SETTINGS.boundaryCircle.radius;
     const vertices: Two.Vector[] = [];
     const glowingVertices: Two.Vector[] = [];

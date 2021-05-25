@@ -1,8 +1,8 @@
 <template>
   <split-pane split="vertical"
-    :min-percent="15"
+    :min-percent="20"
     :max-percent="35"
-    :default-percent="toolboxMinified ? 5 : 20"
+    :default-percent="toolboxMinified ? 5 : 25"
     @resize="leftDividerMoved">
     <!-- Use the left page for the toolbox -->
     <template slot="paneL">
@@ -13,10 +13,10 @@
             <v-icon v-if="toolboxMinified">mdi-arrow-right</v-icon>
             <v-icon v-else>mdi-arrow-left</v-icon>
           </v-btn>
-          <toolbox id="toolbox"
+          <Toolbox id="toolbox"
             ref="toolbox"
             :minified="toolboxMinified">
-          </toolbox>
+          </Toolbox>
         </div>
       </v-container>
     </template>

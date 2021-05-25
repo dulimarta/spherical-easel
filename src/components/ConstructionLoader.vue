@@ -9,7 +9,7 @@
             <v-list-item-content>
               <v-list-item-title>{{r.id}}</v-list-item-title>
               <v-list-item-subtitle>{{r.objectCount}} objects,
-                {{r.createdOn}}
+                {{r.dateCreated}}
               </v-list-item-subtitle>
               <v-divider />
             </v-list-item-content>
@@ -36,8 +36,10 @@ import {
   QuerySnapshot,
   QueryDocumentSnapshot
 } from "@firebase/firestore-types";
-import { run, ConstructionScript } from "@/commands/Runner";
+import { run, ConstructionScript } from "@/commands/CommandInterpreter";
 import EventBus from "@/eventHandlers/EventBus";
+import { SENodule } from "@/models/SENodule";
+import Nodule from "@/plottables/Nodule";
 
 // TODO: move the following type alias and interface elsewhere later?
 interface SphericalConstruction {
@@ -45,7 +47,7 @@ interface SphericalConstruction {
   rawScript: string;
   script: ConstructionScript;
   author: string;
-  createdOn: string;
+  dateCreated: string;
   objectCount: number;
 }
 @Component
@@ -67,7 +69,9 @@ export default class ConstructionLoader extends Vue {
           const objectCount = script
             // A simple command contributes 1 object
             // A CommandGroup contributes N objects (as many elements in its subcommands)
-            .map(z => (typeof z === "string" ? 1 : z.length))
+            .map((z: string | Array<string>) =>
+              typeof z === "string" ? 1 : z.length
+            )
             .reduce((prev: number, curr: number) => prev + curr);
 
           this.availableConstructions.push({
@@ -76,7 +80,7 @@ export default class ConstructionLoader extends Vue {
             script,
             objectCount,
             author: doc.author,
-            createdOn: doc.createdOn
+            dateCreated: doc.dateCreated
           });
         }
       });
@@ -89,7 +93,10 @@ export default class ConstructionLoader extends Vue {
     );
     if (pos >= 0) {
       console.log("Open", docId, this.availableConstructions[pos].script);
+      this.$store.direct.commit.removeAllFromLayers();
       this.$store.direct.commit.init();
+      SENodule.resetAllCounters();
+      Nodule.resetAllCounters();
       EventBus.fire("show-alert", {
         key: "objectTree.firestoreConstructionLoaded",
         keyOptions: { docId },

@@ -230,6 +230,7 @@ export default class AntipodalPointHandler extends Highlighter {
           )
           .execute();
         // Update the display of the antipodal point
+        // TODO: move this update() call into AddAntipodalPointCommand
         vtx.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
 
         // reset in prep for next antipodal point
@@ -411,6 +412,7 @@ export default class AntipodalPointHandler extends Highlighter {
         // Create and execute the command to create a new point for undo/redo
         new AddAntipodalPointCommand(vtx, object, newSELabel).execute();
         // Update the display of the antipodal point
+        // TODO: move this update() call into AddAntipodalPointCommand
         vtx.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
       }
     }
