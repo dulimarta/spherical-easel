@@ -20,7 +20,8 @@ enum AngleMode {
   LINES,
   POINTS,
   SEGMENTS,
-  LINEANDSEGMENT
+  LINEANDSEGMENT,
+  SEGMENTSORLINEANDSEGMENT
 }
 
 const styleSet = new Set([
@@ -90,6 +91,13 @@ export class SEAngleMarker extends SEMeasurement
   private _endVector = new Vector3();
 
   /**
+   * When first creating the angle marker from two lines, if we have to multiply the cross of first parent normal and
+   * second parent normal (in that order always) by -1 to get the intersection on the front of the sphere
+   * initially, then we *always* have to multiply by -1 to get the correct location.
+   */
+  private _vertexDirectionScalar = 1;
+
+  /**
    * Used in the update method to compute the orthonormal frame for setting _start/_end Vector
    */
   private tmpVector1 = new Vector3();
@@ -98,6 +106,12 @@ export class SEAngleMarker extends SEMeasurement
   private tmpVector4 = new Vector3();
   private tmpVector5 = new Vector3();
 
+  /**
+   * Temporary vectors used in the measureAngle function
+   */
+  private measureTmpVector1 = new Vector3();
+  private measureTmpVector2 = new Vector3();
+  private measureTmpVector3 = new Vector3();
   /**
    * Vuex global state
    */
@@ -125,6 +139,15 @@ export class SEAngleMarker extends SEMeasurement
     this.mode = mode;
     SEAngleMarker.ANGLEMARKER_COUNT++;
     this.name = `Am-${SEAngleMarker.ANGLEMARKER_COUNT}`;
+    if (thirdSEParent !== undefined) {
+      this.name =
+        this.name +
+        `-Angle(${firstSEParent.name},${secondSEParent.name},${thirdSEParent.name}):${this.prettyValue}`;
+    } else {
+      this.name =
+        this.name +
+        `-Angle(${firstSEParent.name},${secondSEParent.name}):${this.prettyValue}`;
+    }
   }
 
   customStyles(): Set<Styles> {
@@ -271,8 +294,28 @@ export class SEAngleMarker extends SEMeasurement
       ) {
         // In this case both parents are SELines
         // First set the vertexVector
-        // Check to see if this is the first time through this update method (if the vertexVector is zero)
+        // the common point defining the line is *always* the _vertex vector
         if (
+          this._firstSEParent.startSEPoint ===
+            this._secondSEParent.startSEPoint ||
+          this._firstSEParent.startSEPoint === this._secondSEParent.endSEPoint
+        ) {
+          // the common point defining the line is *always* the _vertex vector
+          this._vertexVector.copy(
+            this._firstSEParent.startSEPoint.locationVector
+          );
+        } else if (
+          this._firstSEParent.endSEPoint ===
+            this._secondSEParent.startSEPoint ||
+          this._firstSEParent.endSEPoint === this._secondSEParent.endSEPoint
+        ) {
+          // the common point defining the line is *always* the _vertex vector
+          this._vertexVector.copy(
+            this._firstSEParent.endSEPoint.locationVector
+          );
+        } else if (
+          // Check to see if this is the first time through this update method (if the vertexVector is zero)
+          // and the lines do not have a defining point in common
           this._vertexVector.x === 0 &&
           this._vertexVector.y === 0 &&
           this._vertexVector.z === 0
@@ -287,6 +330,10 @@ export class SEAngleMarker extends SEMeasurement
           if (this._vertexVector.z < 0) {
             //choose the intersection point that is on the front of the sphere
             this._vertexVector.multiplyScalar(-1);
+            // remember this choice and multiply the _vertex vector by it *every* time we recompute it
+            this._vertexDirectionScalar = -1;
+          } else {
+            this._vertexDirectionScalar = 1;
           }
         } else {
           this._vertexVector
@@ -294,6 +341,7 @@ export class SEAngleMarker extends SEMeasurement
               this._firstSEParent.normalVector,
               this._secondSEParent.normalVector
             )
+            .multiplyScalar(this._vertexDirectionScalar)
             .normalize();
         }
 
@@ -317,6 +365,20 @@ export class SEAngleMarker extends SEMeasurement
         this.tmpVector1
           .crossVectors(this._vertexVector, this._secondSEParent.normalVector)
           .normalize(); // tmpVector1 is perpendicular to vertexVector in the plane of the second parent line
+
+        // If the angle from the half-plane containing the _startVector ( i.e. the bounded by the line containing the _vertexVector in the plane contain the _vertex, _start vectors)
+        // to the half-plane containing this.tmpVector1 is bigger than Pi then tmpVector1 needs to be multiplied by -1 because the
+        // angle between two lines is never bigger than pi
+        if (
+          this.measureAngle(
+            this._startVector,
+            this._vertexVector,
+            this.tmpVector1
+          ) > Math.PI
+        ) {
+          this.tmpVector1.multiplyScalar(-1);
+        }
+        // now compute the _end vector
         this._endVector.set(0, 0, 0);
         this._endVector.addScaledVector(
           this._vertexVector,
@@ -339,10 +401,26 @@ export class SEAngleMarker extends SEMeasurement
       ) {
         // In this case both parents are SESegments
         // first figure out which endpoint in in common, for that is the vertexVector
+        // Also this tells which endpoint of _firstSEParent (either start/endSEPoint) is not the
+        // _vertexVector. so set _startVector and _endVector TEMPORARILY
+        // Make sure that _startVector and _endVector determine the correct half-plane.  When either
+        // the first or second parent are longer than pi, you have to reverse these temporary settings.
         if (
           this._firstSEParent.startSEPoint.locationVector.equals(
             this._secondSEParent.startSEPoint.locationVector
-          ) ||
+          )
+        ) {
+          this._vertexVector.copy(
+            this._firstSEParent.startSEPoint.locationVector
+          );
+          //temporarily set the _startVector and _endVector
+          this._startVector
+            .copy(this._firstSEParent.endSEPoint.locationVector)
+            .multiplyScalar(this._firstSEParent.arcLength > Math.PI ? -1 : 1);
+          this._endVector
+            .copy(this._secondSEParent.endSEPoint.locationVector)
+            .multiplyScalar(this._secondSEParent.arcLength > Math.PI ? -1 : 1);
+        } else if (
           this._firstSEParent.startSEPoint.locationVector.equals(
             this._secondSEParent.endSEPoint.locationVector
           )
@@ -350,10 +428,29 @@ export class SEAngleMarker extends SEMeasurement
           this._vertexVector.copy(
             this._firstSEParent.startSEPoint.locationVector
           );
+          //temporarily set the _startVector and _endVector
+          this._startVector
+            .copy(this._firstSEParent.endSEPoint.locationVector)
+            .multiplyScalar(this._firstSEParent.arcLength > Math.PI ? -1 : 1);
+          this._endVector
+            .copy(this._secondSEParent.startSEPoint.locationVector)
+            .multiplyScalar(this._secondSEParent.arcLength > Math.PI ? -1 : 1);
         } else if (
           this._firstSEParent.endSEPoint.locationVector.equals(
             this._secondSEParent.startSEPoint.locationVector
-          ) ||
+          )
+        ) {
+          this._vertexVector.copy(
+            this._firstSEParent.endSEPoint.locationVector
+          );
+          //temporarily set the _startVector and _endVector
+          this._startVector
+            .copy(this._firstSEParent.startSEPoint.locationVector)
+            .multiplyScalar(this._firstSEParent.arcLength > Math.PI ? -1 : 1);
+          this._endVector
+            .copy(this._secondSEParent.endSEPoint.locationVector)
+            .multiplyScalar(this._secondSEParent.arcLength > Math.PI ? -1 : 1);
+        } else if (
           this._firstSEParent.endSEPoint.locationVector.equals(
             this._secondSEParent.endSEPoint.locationVector
           )
@@ -361,11 +458,44 @@ export class SEAngleMarker extends SEMeasurement
           this._vertexVector.copy(
             this._firstSEParent.endSEPoint.locationVector
           );
+          //temporarily set the _startVector and _endVector
+          this._startVector
+            .copy(this._firstSEParent.startSEPoint.locationVector)
+            .multiplyScalar(this._firstSEParent.arcLength > Math.PI ? -1 : 1);
+          this._endVector
+            .copy(this._secondSEParent.startSEPoint.locationVector)
+            .multiplyScalar(this._secondSEParent.arcLength > Math.PI ? -1 : 1);
         }
         //Second set the start vector
         this.tmpVector1
           .crossVectors(this._vertexVector, this._firstSEParent.normalVector)
           .normalize(); // tmpVector1 is perpendicular to vertexVector in the plane of the first parent line
+        // we need to be sure that this.tmpVector1 is in the correct half-plane (i.e the plane spanned by
+        // this._vertexVector and (the temporarily set) this._startVector, divided by the line containing the this._vertexVector)
+        // this.tmpVector1 must be in same half plane (the temporarily set) this._startVector. As tmpVector
+        // is perpendicular to
+        // _vertexVector, to be in the same half-plane as (the temporarily set) this._startVector, dot(_start,tmpVector1) must be positive
+        //
+        const dotProd = this.tmpVector1.dot(this._startVector);
+        if (Math.abs(dotProd) < SETTINGS.tolerance) {
+          // in this case _firstSEParent is a line segment of length Pi
+          // make sure that tmpVector1 is on this segment by checking the distance to the closestVector
+          if (
+            this._firstSEParent
+              .closestVector(this.tmpVector1)
+              .angleTo(this.tmpVector1) > SETTINGS.tolerance
+          ) {
+            this.tmpVector1.multiplyScalar(-1);
+          }
+        } else if (dotProd < 0) {
+          this.tmpVector1.multiplyScalar(-1);
+        }
+        // if longer than pi reverse the _start
+        // if (this._firstSEParent.arcLength > Math.PI) {
+        //   this._startVector.multiplyScalar(-1);
+        // }
+
+        // Now that tmpVector1 is set correctly use it to properly set the _startVector
         this._startVector.set(0, 0, 0);
         this._startVector.addScaledVector(
           this._vertexVector,
@@ -382,6 +512,27 @@ export class SEAngleMarker extends SEMeasurement
         this.tmpVector1
           .crossVectors(this._vertexVector, this._secondSEParent.normalVector)
           .normalize(); // tmpVector1 is perpendicular to vertexVector in the plane of the second parent line
+        // we need to be sure that this.tmpVector1 is in the correct half-plane (i.e the plane spanned by
+        // this._vertexVector and (the temporarily set) this._endVector, divided by the line containing the this._vertexVector)
+        // this.tmpVector1 must be in same half plane (the temporarily set) this._endVector. As tmpVector
+        // is perpendicular to
+        // _vertexVector, to be in the same half-plane as (the temporarily set) this._endVector, dot(_end,tmpVector1) must be positive
+        //
+        const dotProd1 = this.tmpVector1.dot(this._endVector);
+        if (Math.abs(dotProd1) < SETTINGS.tolerance) {
+          // in this case _secondSEParent is a line segment of length Pi
+          // make sure that tmpVector1 is on this segment by checking the distance to the closestVector
+          if (
+            this._secondSEParent
+              .closestVector(this.tmpVector1)
+              .angleTo(this.tmpVector1) > SETTINGS.tolerance
+          ) {
+            this.tmpVector1.multiplyScalar(-1);
+          }
+        } else if (dotProd1 < 0) {
+          this.tmpVector1.multiplyScalar(-1);
+        }
+        // Now that tmpVector1 is set correctly use it to properly set the _endVector
         this._endVector.set(0, 0, 0);
         this._endVector.addScaledVector(
           this._vertexVector,
@@ -394,6 +545,10 @@ export class SEAngleMarker extends SEMeasurement
           )
           .normalize();
 
+        // if longer than pi reverse the _start
+        // if (this._secondSEParent.arcLength > Math.PI) {
+        //   this._endVector.multiplyScalar(-1);
+        // }
         // Record the new vertex/start/end vectors in the plottable element
         this.ref.vertexVector = this._vertexVector;
         this.ref.startVector = this._startVector;
@@ -406,32 +561,79 @@ export class SEAngleMarker extends SEMeasurement
       ) {
         // In this case one parent is SESegment and the other is SELine
         // first figure out which endpoint of the line segment is on the SELine
+        // We already know that one of the endpoints of SESegment is on SELine
+        // because the angle handler checked this so we don't care if the
+        // endpoint of the segment is a point on the line or a point defining the line
         if (this._secondSEParent instanceof SESegment) {
           if (
-            this._secondSEParent.startSEPoint instanceof
-              SEPointOnOneDimensional &&
             this._secondSEParent.startSEPoint.locationVector.dot(
               this._firstSEParent.normalVector
-            ) < SETTINGS.nearlyAntipodalIdeal
+            ) < SETTINGS.tolerance
           ) {
             this._vertexVector.copy(
               this._secondSEParent.startSEPoint.locationVector
             );
           } else if (
-            this._secondSEParent.endSEPoint instanceof
-              SEPointOnOneDimensional &&
             this._secondSEParent.endSEPoint.locationVector.dot(
               this._firstSEParent.normalVector
-            ) < SETTINGS.nearlyAntipodalIdeal
+            ) < SETTINGS.tolerance
           ) {
             this._vertexVector.copy(
               this._secondSEParent.endSEPoint.locationVector
             );
           }
+          // set the _endVector direction to pointing in the same direction as the segment is drawn
+          this.tmpVector1
+            .crossVectors(this._vertexVector, this._secondSEParent.normalVector)
+            .normalize(); // tmpVector1 is perpendicular to vertexVector in the plane of the segment
+          if (this._secondSEParent.arcLength < Math.PI) {
+            // Make sure that this.tmpVector1 is points in the direction that the segment is drawn
+            this.tmpVector1.multiplyScalar(-1);
+          }
+
+          this._endVector.set(0, 0, 0);
+          this._endVector.addScaledVector(
+            this._vertexVector,
+            Math.cos(SETTINGS.angleMarker.defaultRadius)
+          );
+          this._endVector
+            .addScaledVector(
+              this.tmpVector1,
+              Math.sin(SETTINGS.angleMarker.defaultRadius)
+            )
+            .normalize();
+
+          // Now set the _startVector
+          this.tmpVector2
+            .crossVectors(this._vertexVector, this._firstSEParent.normalVector)
+            .normalize(); // tmpVector2 is perpendicular to vertexVector in the plane of the second parent line
+
+          // If the angle from the half-plane containing the _startVector ( i.e. the bounded by the line containing the _vertexVector in the plane contain the _vertex, _start vectors)
+          // to the half-plane containing this.tmpVector2 is bigger than Pi then tmpVector2 needs to be multiplied by -1 because the
+          // angle between two lines is never bigger than pi
+          if (
+            this.measureAngle(
+              this.tmpVector2,
+              this._vertexVector,
+              this._endVector
+            ) > Math.PI
+          ) {
+            this.tmpVector2.multiplyScalar(-1);
+          }
+
+          this._startVector.set(0, 0, 0);
+          this._startVector.addScaledVector(
+            this._vertexVector,
+            Math.cos(SETTINGS.angleMarker.defaultRadius)
+          );
+          this._startVector
+            .addScaledVector(
+              this.tmpVector2,
+              Math.sin(SETTINGS.angleMarker.defaultRadius)
+            )
+            .normalize();
         } else if (this._firstSEParent instanceof SESegment) {
           if (
-            this._firstSEParent.startSEPoint instanceof
-              SEPointOnOneDimensional &&
             this._firstSEParent.startSEPoint.locationVector.dot(
               this._firstSEParent.normalVector
             ) < SETTINGS.nearlyAntipodalIdeal
@@ -440,7 +642,6 @@ export class SEAngleMarker extends SEMeasurement
               this._firstSEParent.startSEPoint.locationVector
             );
           } else if (
-            this._firstSEParent.endSEPoint instanceof SEPointOnOneDimensional &&
             this._firstSEParent.endSEPoint.locationVector.dot(
               this._firstSEParent.normalVector
             ) < SETTINGS.nearlyAntipodalIdeal
@@ -449,38 +650,57 @@ export class SEAngleMarker extends SEMeasurement
               this._firstSEParent.endSEPoint.locationVector
             );
           }
-        }
-        //Second set the start vector
-        this.tmpVector1
-          .crossVectors(this._vertexVector, this._firstSEParent.normalVector)
-          .normalize(); // tmpVector1 is perpendicular to vertexVector in the plane of the first parent line
-        this._startVector.set(0, 0, 0);
-        this._startVector.addScaledVector(
-          this._vertexVector,
-          Math.cos(SETTINGS.angleMarker.defaultRadius)
-        );
-        this._startVector
-          .addScaledVector(
-            this.tmpVector1,
-            Math.sin(SETTINGS.angleMarker.defaultRadius)
-          )
-          .normalize();
+          // set the _startVector direction to pointing in the same direction as the segment is drawn
+          this.tmpVector1
+            .crossVectors(this._vertexVector, this._firstSEParent.normalVector)
+            .normalize(); // tmpVector1 is perpendicular to vertexVector in the plane of the segment
+          if (this._firstSEParent.arcLength < Math.PI) {
+            // Make sure that this.tmpVector1 is points in the direction that the segment is drawn
+            this.tmpVector1.multiplyScalar(-1);
+          }
 
-        // Third set the end vector
-        this.tmpVector1
-          .crossVectors(this._vertexVector, this._secondSEParent.normalVector)
-          .normalize(); // tmpVector1 is perpendicular to vertexVector in the plane of the second parent line
-        this._endVector.set(0, 0, 0);
-        this._endVector.addScaledVector(
-          this._vertexVector,
-          Math.cos(SETTINGS.angleMarker.defaultRadius)
-        );
-        this._endVector
-          .addScaledVector(
-            this.tmpVector1,
-            Math.sin(SETTINGS.angleMarker.defaultRadius)
-          )
-          .normalize();
+          this._startVector.set(0, 0, 0);
+          this._startVector.addScaledVector(
+            this._vertexVector,
+            Math.cos(SETTINGS.angleMarker.defaultRadius)
+          );
+          this._startVector
+            .addScaledVector(
+              this.tmpVector1,
+              Math.sin(SETTINGS.angleMarker.defaultRadius)
+            )
+            .normalize();
+
+          // Now set the _endVector
+          this.tmpVector2
+            .crossVectors(this._vertexVector, this._secondSEParent.normalVector)
+            .normalize(); // tmpVector2 is perpendicular to vertexVector in the plane of the second parent line
+
+          // If the angle from the half-plane containing the _startVector ( i.e. the bounded by the line containing the _vertexVector in the plane contain the _vertex, _start vectors)
+          // to the half-plane containing this.tmpVector2 is bigger than Pi then tmpVector2 needs to be multiplied by -1 because the
+          // angle between two lines is never bigger than pi
+          if (
+            this.measureAngle(
+              this._startVector,
+              this._vertexVector,
+              this.tmpVector2
+            ) > Math.PI
+          ) {
+            this.tmpVector2.multiplyScalar(-1);
+          }
+          this._endVector.set(0, 0, 0);
+          this._endVector.addScaledVector(
+            this._vertexVector,
+            Math.cos(SETTINGS.angleMarker.defaultRadius)
+          );
+          this._endVector
+            .addScaledVector(
+              this.tmpVector2,
+              Math.sin(SETTINGS.angleMarker.defaultRadius)
+            )
+            .normalize();
+        }
+
         // Record the new vertex/start/end vectors in the plottable element
         this.ref.vertexVector = this._vertexVector;
         this.ref.startVector = this._startVector;
@@ -528,19 +748,17 @@ export class SEAngleMarker extends SEMeasurement
    * @param unitIdealVector A vector on the unit sphere
    */
   public closestVector(unitIdealVector: Vector3): Vector3 {
-    // First check if the unitIdealVector is the vertexVector or its antipodal
+    //First check if the unitIdealVector is the vertexVector or its antipodal
     // if (
     //   this.tmpVector1.subVectors(this._vertexVector, unitIdealVector).length() <
     //   SETTINGS.nearlyAntipodalIdeal
     // ) {
-    //   console.log("her1");
     //   return this._vertexVector;
     // }
     // if (
     //   this.tmpVector1.addVectors(this._vertexVector, unitIdealVector).length() <
     //   SETTINGS.nearlyAntipodalIdeal
     // ) {
-    //   console.log("her2");
     //   return this._endVector; // arbitrary choice, unitIdealVector is essentially equidistant from all the circular parts of the angle marker
     // }
 
@@ -550,204 +768,208 @@ export class SEAngleMarker extends SEMeasurement
     ) {
       return unitIdealVector;
     }
+    return this._vertexVector;
+    // WHAT IS BELOW MIGHT BE USEFUL FOR A FUTURE SESEGMENTOFCIRCLE object, but is to precise because the
+    // angle marker is so small
+    //
+    //
+    // // the angle measure FROM the half-plane (startHalfPlane) with edge the line containing vertexVector and containing origin of sphere, startVector, vertexVector
+    // // TO the half-plane (endHalfPlane) with edge the line containing vertexVector and containing origin of sphere, endVector, vertexVector
+    // // Result is between 0 and 2 Pi
+    // const angleMarkerAngle = this.measureAngle(
+    //   this._startVector,
+    //   this._vertexVector,
+    //   this._endVector
+    // );
 
-    // the angle measure FROM the half-plane (startHalfPlane) with edge the line containing vertexVector and containing origin of sphere, startVector, vertexVector
-    // TO the half-plane (endHalfPlane) with edge the line containing vertexVector and containing origin of sphere, endVector, vertexVector
-    // Result is between 0 and 2 Pi
-    const angleMarkerAngle = this.measureAngle(
-      this._startVector,
-      this._vertexVector,
-      this._endVector
-    );
+    // // the angle measure FROM startHalfPlane TO the half-plane (unitIdealHalfPlane) with edge the line containing vertexVector and
+    // // containing origin of sphere, unitIdealVector, vertexVector.  Result is between 0 and 2 Pi
+    // const unitIdealAngle = this.measureAngle(
+    //   this._startVector,
+    //   this._vertexVector,
+    //   unitIdealVector
+    // );
 
-    // the angle measure FROM startHalfPlane TO the half-plane (unitIdealHalfPlane) with edge the line containing vertexVector and
-    // containing origin of sphere, unitIdealVector, vertexVector.  Result is between 0 and 2 Pi
-    const unitIdealAngle = this.measureAngle(
-      this._startVector,
-      this._vertexVector,
-      unitIdealVector
-    );
+    // // Divide into two cases: non-convex angle markers versus convex ones. See the picture in
+    // // the Google Drive folder for a break down of the closest point regions
+    // //console.log("angle", unitIdealAngle, angleMarkerAngle);
+    // // In both cases if unitIdealAngle is less than angleMarkerAngle, project onto the circular
+    // // part of the angleMarker
+    // if (unitIdealAngle <= angleMarkerAngle) {
+    //   //console.log("project on circular part");
 
-    // Divide into two cases: non-convex angle markers versus convex ones. See the picture in
-    // the Google Drive folder for a break down of the closest point regions
-    console.log("angle", unitIdealAngle, angleMarkerAngle);
-    // In both cases if unitIdealAngle is less than angleMarkerAngle, project onto the circular
-    // part of the angleMarker
-    if (unitIdealAngle <= angleMarkerAngle) {
-      //console.log("project on circular part");
+    //   // project onto the circular part of the angle marker
+    //   this.tmpVector1
+    //     .crossVectors(this._vertexVector, unitIdealVector)
+    //     .normalize(); // perpendicular to both vertexVector and unitIdealVector
+    //   this.tmpVector1
+    //     .crossVectors(this.tmpVector1, this._vertexVector)
+    //     .normalize(); // perpendicular to vertexVector and in the unitIdealHalfPlane
+    //   this.tmpVector2.set(0, 0, 0);
+    //   this.tmpVector2.addScaledVector(
+    //     this._vertexVector,
+    //     Math.cos(
+    //       SETTINGS.angleMarker.defaultRadius /
+    //         this.store.state.zoomMagnificationFactor
+    //     )
+    //   );
+    //   this.tmpVector2.addScaledVector(
+    //     this.tmpVector1,
+    //     Math.sin(
+    //       SETTINGS.angleMarker.defaultRadius /
+    //         this.store.state.zoomMagnificationFactor
+    //     )
+    //   );
+    //   return this.tmpVector2;
+    // } else if (angleMarkerAngle <= Math.PI) {
+    //   // the angleMarker is convex
 
-      // project onto the circular part of the angle marker
-      this.tmpVector1
-        .crossVectors(this._vertexVector, unitIdealVector)
-        .normalize(); // perpendicular to both vertexVector and unitIdealVector
-      this.tmpVector1
-        .crossVectors(this.tmpVector1, this._vertexVector)
-        .normalize(); // perpendicular to vertexVector and in the unitIdealHalfPlane
-      this.tmpVector2.set(0, 0, 0);
-      this.tmpVector2.addScaledVector(
-        this._vertexVector,
-        Math.cos(
-          SETTINGS.angleMarker.defaultRadius /
-            this.store.state.zoomMagnificationFactor
-        )
-      );
-      this.tmpVector2.addScaledVector(
-        this.tmpVector1,
-        Math.sin(
-          SETTINGS.angleMarker.defaultRadius /
-            this.store.state.zoomMagnificationFactor
-        )
-      );
-      return this.tmpVector2;
-    } else if (angleMarkerAngle <= Math.PI) {
-      // the angleMarker is convex
+    //   // In order to determine the region where vertexVector is the closest point I need to compute the location where the perpendicular bisector of the segment
+    //   // from vertex to end vector and the perpendicular bisector of the segment from vertex to start, intersect (the intersection *not* in the angle marker)
 
-      // In order to determine the region where vertexVector is the closest point I need to compute the location where the perpendicular bisector of the segment
-      // from vertex to end vector and the perpendicular bisector of the segment from vertex to start, intersect (the intersection *not* in the angle marker)
+    //   this.tmpVector1
+    //     .addVectors(this._vertexVector, this._endVector)
+    //     .normalize(); // the midpoint of the segment from vertex to end vector
+    //   this.tmpVector2.crossVectors(this._vertexVector, this._endVector); // a point on the perpendicular bisector of the segment from vertex to end vector
+    //   this.tmpVector3
+    //     .crossVectors(this.tmpVector1, this.tmpVector2)
+    //     .normalize(); // a vector perpendicular to the plane of the perpendicular bisector of the segment from vertex to end vector
 
-      this.tmpVector1
-        .addVectors(this._vertexVector, this._endVector)
-        .normalize(); // the midpoint of the segment from vertex to end vector
-      this.tmpVector2.crossVectors(this._vertexVector, this._endVector); // a point on the perpendicular bisector of the segment from vertex to end vector
-      this.tmpVector3
-        .crossVectors(this.tmpVector1, this.tmpVector2)
-        .normalize(); // a vector perpendicular to the plane of the perpendicular bisector of the segment from vertex to end vector
+    //   this.tmpVector1
+    //     .addVectors(this._vertexVector, this._startVector)
+    //     .normalize(); // the midpoint of the segment from vertex to start vector
+    //   this.tmpVector2.crossVectors(this._startVector, this._vertexVector); // a point on the perpendicular bisector of the segment from vertex to start vector
+    //   this.tmpVector4
+    //     .crossVectors(this.tmpVector2, this.tmpVector1)
+    //     .normalize(); // a vector perpendicular to the plane of the perpendicular bisector of the segment from vertex to start vector
 
-      this.tmpVector1
-        .addVectors(this._vertexVector, this._startVector)
-        .normalize(); // the midpoint of the segment from vertex to start vector
-      this.tmpVector2.crossVectors(this._startVector, this._vertexVector); // a point on the perpendicular bisector of the segment from vertex to start vector
-      this.tmpVector4
-        .crossVectors(this.tmpVector2, this.tmpVector1)
-        .normalize(); // a vector perpendicular to the plane of the perpendicular bisector of the segment from vertex to start vector
+    //   this.tmpVector5
+    //     .crossVectors(this.tmpVector3, this.tmpVector4)
+    //     .normalize(); // the intersection point we are looking for
+    //   // make sure that the intersection is *not* in the angleMarker
+    //   if (this._vertexVector.dot(this.tmpVector5) > 0) {
+    //     this.tmpVector5.multiplyScalar(-1);
+    //   }
 
-      this.tmpVector5
-        .crossVectors(this.tmpVector3, this.tmpVector4)
-        .normalize(); // the intersection point we are looking for
-      // make sure that the intersection is *not* in the angleMarker
-      if (this._vertexVector.dot(this.tmpVector5) > 0) {
-        this.tmpVector5.multiplyScalar(-1);
-      }
+    //   // If the unitIdealVector is in the triangular region project onto the segment from vertexVector to endVector
+    //   if (
+    //     this.inRegion(
+    //       this._vertexVector,
+    //       this._endVector,
+    //       this.tmpVector1.crossVectors(this._vertexVector, this._endVector),
+    //       unitIdealVector
+    //     )
+    //   ) {
+    //     return this.projectToSegment(
+    //       this._vertexVector,
+    //       this._endVector,
+    //       unitIdealVector
+    //     );
+    //   } else if (
+    //     this.inRegion(
+    //       this._startVector,
+    //       this._vertexVector,
+    //       this.tmpVector1.crossVectors(this._startVector, this._vertexVector),
+    //       unitIdealVector
+    //     )
+    //   ) {
+    //     return this.projectToSegment(
+    //       this._vertexVector,
+    //       this._startVector,
+    //       unitIdealVector
+    //     );
+    //   } else if (
+    //     this.inRegion(
+    //       this._vertexVector,
+    //       this.tmpVector1.crossVectors(this._vertexVector, this._endVector),
+    //       this.tmpVector2.crossVectors(this._startVector, this._vertexVector),
+    //       unitIdealVector
+    //     ) ||
+    //     this.inRegion(
+    //       this.tmpVector1.crossVectors(this._vertexVector, this._endVector),
+    //       this.tmpVector5, // the intersection of the perpendicular bisectors of segments vertex/start and vertex/end that is not in the angleMarker
+    //       this.tmpVector2.crossVectors(this._startVector, this._vertexVector),
+    //       unitIdealVector
+    //     )
+    //   ) {
+    //     return this._vertexVector;
+    //   } else if (
+    //     this.inRegion(
+    //       this._endVector,
+    //       this.tmpVector2.set(0, 0, 0).addScaledVector(this._vertexVector, -1), //antipode of the vertex vector
+    //       this.tmpVector1.crossVectors(this._vertexVector, this._endVector),
+    //       unitIdealVector
+    //     ) ||
+    //     this.inRegion(
+    //       this.tmpVector1.crossVectors(this._vertexVector, this._endVector),
+    //       this.tmpVector2.set(0, 0, 0).addScaledVector(this._vertexVector, -1), //antipode of the vertex vector
+    //       this.tmpVector5, // the intersection of the perpendicular bisectors of segments vertex/start and vertex/end that is not in the angleMarker
+    //       unitIdealVector
+    //     )
+    //   ) {
+    //     return this._endVector;
+    //   } else {
+    //     return this._startVector;
+    //   }
+    // } else {
+    //   // the angleMarker is non-convex
 
-      // If the unitIdealVector is in the triangular region project onto the segment from vertexVector to endVector
-      if (
-        this.inRegion(
-          this._vertexVector,
-          this._endVector,
-          this.tmpVector1.crossVectors(this._vertexVector, this._endVector),
-          unitIdealVector
-        )
-      ) {
-        return this.projectToSegment(
-          this._vertexVector,
-          this._endVector,
-          unitIdealVector
-        );
-      } else if (
-        this.inRegion(
-          this._startVector,
-          this._vertexVector,
-          this.tmpVector1.crossVectors(this._startVector, this._vertexVector),
-          unitIdealVector
-        )
-      ) {
-        return this.projectToSegment(
-          this._vertexVector,
-          this._startVector,
-          unitIdealVector
-        );
-      } else if (
-        this.inRegion(
-          this._vertexVector,
-          this.tmpVector1.crossVectors(this._vertexVector, this._endVector),
-          this.tmpVector2.crossVectors(this._startVector, this._vertexVector),
-          unitIdealVector
-        ) ||
-        this.inRegion(
-          this.tmpVector1.crossVectors(this._vertexVector, this._endVector),
-          this.tmpVector5, // the intersection of the perpendicular bisectors of segments vertex/start and vertex/end that is not in the angleMarker
-          this.tmpVector2.crossVectors(this._startVector, this._vertexVector),
-          unitIdealVector
-        )
-      ) {
-        return this._vertexVector;
-      } else if (
-        this.inRegion(
-          this._endVector,
-          this.tmpVector2.set(0, 0, 0).addScaledVector(this._vertexVector, -1), //antipode of the vertex vector
-          this.tmpVector1.crossVectors(this._vertexVector, this._endVector),
-          unitIdealVector
-        ) ||
-        this.inRegion(
-          this.tmpVector1.crossVectors(this._vertexVector, this._endVector),
-          this.tmpVector2.set(0, 0, 0).addScaledVector(this._vertexVector, -1), //antipode of the vertex vector
-          this.tmpVector5, // the intersection of the perpendicular bisectors of segments vertex/start and vertex/end that is not in the angleMarker
-          unitIdealVector
-        )
-      ) {
-        return this._endVector;
-      } else {
-        return this._startVector;
-      }
-    } else {
-      // the angleMarker is non-convex
+    //   // In order to determine the region where vertexVector is the closest point I need to compute the location where the perpendicular (through
+    //   // end vector) to the segment
+    //   // from vertex to end vector and the perpendicular (through the start vector) to the segment from vertex to start, intersect
+    //   // (the intersection closest to the angle marker)
 
-      // In order to determine the region where vertexVector is the closest point I need to compute the location where the perpendicular (through
-      // end vector) to the segment
-      // from vertex to end vector and the perpendicular (through the start vector) to the segment from vertex to start, intersect
-      // (the intersection closest to the angle marker)
+    //   this.tmpVector1.crossVectors(this._vertexVector, this._endVector); // a vector on the perpendicular (through endVector) of the segment from vertex to end vector (this is on ALL perpendiculars to the segment)
+    //   this.tmpVector2
+    //     .crossVectors(this._endVector, this.tmpVector1)
+    //     .normalize(); // a vector perpendicular to the plane of the perpendicular (through the endVector) to the segment from vertex to end vector
 
-      this.tmpVector1.crossVectors(this._vertexVector, this._endVector); // a vector on the perpendicular (through endVector) of the segment from vertex to end vector (this is on ALL perpendiculars to the segment)
-      this.tmpVector2
-        .crossVectors(this._endVector, this.tmpVector1)
-        .normalize(); // a vector perpendicular to the plane of the perpendicular (through the endVector) to the segment from vertex to end vector
+    //   this.tmpVector1.crossVectors(this._startVector, this._vertexVector); // a vector on the perpendicular (through startVector) of the segment from vertex to start vector (this is on ALL perpendiculars to the segment)
+    //   this.tmpVector3
+    //     .crossVectors(this.tmpVector1, this._startVector)
+    //     .normalize(); // a vector perpendicular to the plane of the perpendicular (through the endVector) to the segment from vertex to end vector
 
-      this.tmpVector1.crossVectors(this._startVector, this._vertexVector); // a vector on the perpendicular (through startVector) of the segment from vertex to start vector (this is on ALL perpendiculars to the segment)
-      this.tmpVector3
-        .crossVectors(this.tmpVector1, this._startVector)
-        .normalize(); // a vector perpendicular to the plane of the perpendicular (through the endVector) to the segment from vertex to end vector
+    //   this.tmpVector5
+    //     .crossVectors(this.tmpVector2, this.tmpVector3)
+    //     .normalize(); // the intersection point we are looking for
+    //   // make sure that the intersection is pointing away from the vertex vector (THIS BREAKS DOWN IF angleMarkerRadius is bigger than Pi/2)
+    //   if (this._vertexVector.dot(this.tmpVector5) > 0) {
+    //     this.tmpVector5.multiplyScalar(-1);
+    //   }
 
-      this.tmpVector5
-        .crossVectors(this.tmpVector2, this.tmpVector3)
-        .normalize(); // the intersection point we are looking for
-      // make sure that the intersection is pointing away from the vertex vector (THIS BREAKS DOWN IF angleMarkerRadius is bigger than Pi/2)
-      if (this._vertexVector.dot(this.tmpVector5) > 0) {
-        this.tmpVector5.multiplyScalar(-1);
-      }
-
-      // If the unitIdealVector is in the triangular region project onto the segment from vertexVector to endVector
-      if (
-        this.inRegion(
-          this._vertexVector,
-          this._endVector,
-          this.tmpVector5,
-          unitIdealVector
-        )
-      ) {
-        return this.projectToSegment(
-          this._vertexVector,
-          this._endVector,
-          unitIdealVector
-        );
-      } else if (
-        this.inRegion(
-          this._startVector,
-          this._vertexVector,
-          this.tmpVector5,
-          unitIdealVector
-        )
-      ) {
-        return this.projectToSegment(
-          this._vertexVector,
-          this._startVector,
-          unitIdealVector
-        );
-      } else if (unitIdealAngle <= angleMarkerAngle / 2 + Math.PI) {
-        return this._endVector;
-      } else {
-        return this._startVector;
-      }
-    }
+    //   // If the unitIdealVector is in the triangular region project onto the segment from vertexVector to endVector
+    //   if (
+    //     this.inRegion(
+    //       this._vertexVector,
+    //       this._endVector,
+    //       this.tmpVector5,
+    //       unitIdealVector
+    //     )
+    //   ) {
+    //     return this.projectToSegment(
+    //       this._vertexVector,
+    //       this._endVector,
+    //       unitIdealVector
+    //     );
+    //   } else if (
+    //     this.inRegion(
+    //       this._startVector,
+    //       this._vertexVector,
+    //       this.tmpVector5,
+    //       unitIdealVector
+    //     )
+    //   ) {
+    //     return this.projectToSegment(
+    //       this._vertexVector,
+    //       this._startVector,
+    //       unitIdealVector
+    //     );
+    //   } else if (unitIdealAngle <= angleMarkerAngle / 2 + Math.PI) {
+    //     return this._endVector;
+    //   } else {
+    //     return this._startVector;
+    //   }
+    // }
   }
 
   /**
@@ -757,17 +979,7 @@ export class SEAngleMarker extends SEMeasurement
   public closestLabelLocationVector(idealUnitSphereVector: Vector3): Vector3 {
     // First find the closest point on the segment to the idealUnitSphereVector
     this.tmpVector1.copy(this.closestVector(idealUnitSphereVector));
-    console.log("ideal x val", idealUnitSphereVector.x);
-    return this.tmpVector1;
-    console.log(
-      "angles cllv",
-      this.measureAngle(this._startVector, this._vertexVector, this.tmpVector1),
-      this.measureAngle(
-        this._startVector,
-        this._vertexVector,
-        idealUnitSphereVector
-      )
-    );
+
     // If the idealUnitSphereVector is within the tolerance of the closest point, do nothing, otherwise return the vector in the plane
     //  of the idealUnitSphereVector and the closest point that is at the tolerance distance away.
     if (
@@ -776,7 +988,6 @@ export class SEAngleMarker extends SEMeasurement
     ) {
       return idealUnitSphereVector;
     } else {
-      console.log("heeeeer");
       // tmpVector2 is the normal to the plane of the closest point vector and the idealUnitVector
       // This can't be zero because tmpVector1 can be the closest on the circle to idealUnitSphereVector and parallel with ideanUnitSphereVector
       this.tmpVector2
@@ -904,37 +1115,43 @@ export class SEAngleMarker extends SEMeasurement
     //
     // Project the unitIdealVector and the startVector onto the plane, Q, perpendicular to the vertexVector
     //  Proj_Q(vec) = vec - (vec.vertexVector)vertexVector (vertexVector is unit)
-    this.tmpVector1.copy(unitIdealVector);
-    this.tmpVector1.addScaledVector(
+
+    this.measureTmpVector1.copy(unitIdealVector);
+    this.measureTmpVector1.addScaledVector(
       vertexVector,
       -1 * vertexVector.dot(unitIdealVector)
     );
 
-    this.tmpVector2.copy(startVector);
-    this.tmpVector2.addScaledVector(
+    this.measureTmpVector2.copy(startVector);
+    this.measureTmpVector2.addScaledVector(
       vertexVector,
       -1 * vertexVector.dot(startVector)
     );
 
-    // The vector tmpVector2.normalize is the vector that is positive unit x-axis that determine the coordinates on the plane Q
+    // The vector measureTmpVector2.normalize is the vector that is positive unit x-axis that determine the coordinates on the plane Q
     // so that the projection of the start vector is on the positive x-axis
-    this.tmpVector2.normalize();
+    this.measureTmpVector2.normalize();
 
     // the positive unit y-axis vector is the cross product of the unit positive z axis (vertexVector) and the unit
-    // positive x-axis (tmpVector2)
-    this.tmpVector3.crossVectors(vertexVector, this.tmpVector2).normalize();
+    // positive x-axis (measureTmpVector2)
+    this.measureTmpVector3
+      .crossVectors(vertexVector, this.measureTmpVector2)
+      .normalize();
 
     //NOTE: the syntax for atan2 is atan2(y,x) and the return is in (-pi,pi]!!!!!
     return Math.atan2(
-      this.tmpVector3.dot(this.tmpVector1),
-      this.tmpVector2.dot(this.tmpVector1)
+      this.measureTmpVector3.dot(this.measureTmpVector1),
+      this.measureTmpVector2.dot(this.measureTmpVector1)
     ).modTwoPi();
   }
 
+  // WHAT IS BELOW MIGHT BE USEFUL FOR A FUTURE SESEGMENTOFCIRCLE object, but is to precise because the
+  // angle marker is so small
+  //
   /**
    * Is testVec in the triangle with the given vertices. The interior of the triangle is determined by a person walking with their head away from the
-   * origin of the sphere walking counterclockwise around the triangle. Their left hand is the inside of the triangle. None of the vertices of the triangle
-   * are antipodal
+   * origin of the sphere walking counterclockwise around the triangle (seen from outside the sphere). Their left hand is the inside of the triangle. None of the vertices of the triangle
+   * are antipodal and all segments of the triangle have length less than Pi
    * @param vec1 First vertex of the triangle (unit vector)
    * @param vec2 Second vertex of the triangle (unit vector)
    * @param vec3 Third vertex of the triangle (unit vector)
@@ -961,6 +1178,9 @@ export class SEAngleMarker extends SEMeasurement
     );
   }
 
+  // WHAT IS BELOW MIGHT BE USEFUL FOR A FUTURE SESEGMENTOFCIRCLE object, but is to precise because the
+  // angle marker is so small
+  //
   /**
    * Project the vec to the segment (with length less than Pi) from start to end vectors.
    *  If this method is called we KNOW that the closest point on the segment to vec is on the segment
@@ -993,21 +1213,8 @@ export class SEAngleMarker extends SEMeasurement
     return tmpVector.normalize().cross(perp);
   }
 
-  // I wish the SENodule methods would work but I couldn't figure out how
-  // See the attempts in SENodule
-  public isFreePoint(): boolean {
-    return false;
-  }
-  public isOneDimensional(): boolean {
-    return false;
-  }
-  public isPoint(): boolean {
-    return false;
-  }
-  public isPointOnOneDimensional(): boolean {
-    return false;
-  }
-  public isLabel(): boolean {
-    return false;
+  // Override the isLabelable method in SEExpression
+  public isLabelable(): boolean {
+    return true;
   }
 }

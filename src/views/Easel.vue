@@ -232,6 +232,7 @@ import { State } from "vuex-class";
 import { SENodule } from "@/models/SENodule";
 import { AppState } from "@/types";
 import IconBase from "@/components/IconBase.vue";
+import AngleMarker from "@/plottables/AngleMarker";
 // import { getModule } from "vuex-module-decorators";
 // import UI from "@/store/ui-styles";
 
@@ -419,6 +420,7 @@ export default class Easel extends Vue {
     Line.updateCurrentStrokeWidthForZoom(oldFactor / e.factor);
     Segment.updateCurrentStrokeWidthForZoom(oldFactor / e.factor);
     Circle.updateCurrentStrokeWidthForZoom(oldFactor / e.factor);
+    AngleMarker.updateCurrentStrokeWidthForZoom(oldFactor / e.factor);
     Point.updatePointScaleFactorForZoom(oldFactor / e.factor);
     Label.updateTextScaleFactorForZoom(oldFactor / e.factor);
 

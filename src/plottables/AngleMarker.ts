@@ -725,7 +725,7 @@ export default class AngleMarker extends Nodule {
   }
 
   /**
-   * Set the vertex/start/end vectors of the angle marker. Setting it updates the display.
+   * Set the vertex/start/end vectors of the angle marker plottable.
    */
   set vertexVector(newVertex: Vector3) {
     this._vertexVector.copy(newVertex);

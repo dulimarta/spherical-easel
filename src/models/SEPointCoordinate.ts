@@ -9,7 +9,7 @@ export enum CoordinateSelection {
   Y_VALUE,
   Z_VALUE
 }
-
+const emptySet = new Set<Styles>();
 export class SEPointCoordinate extends SEMeasurement {
   private selector = CoordinateSelection.X_VALUE;
   private point: SEPoint;
@@ -60,8 +60,5 @@ export class SEPointCoordinate extends SEMeasurement {
         return Number.NaN;
     }
   }
-
-  public customStyles(): Set<Styles> {
-    throw new Error("Method not implemented.");
-  }
+  public customStyles = (): Set<Styles> => emptySet;
 }

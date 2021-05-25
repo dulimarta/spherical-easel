@@ -158,13 +158,48 @@ export class SESegment extends SENodule
    * @param unitIdealVector A vector *on* the line containing the segment
    */
   public onSegment(unitIdealVector: Vector3): boolean {
-    // Is the unitIdealVector inside the radius arcLength/2 circle about the midVector?
-    // NOTE: normalVector x startVector * (this.arcLength > Math.PI ? -1 : 1)
-    // gives the direction in which the segment is drawn
+    // check the endpoints
+    if (
+      this.tmpVector
+        .subVectors(this.startSEPoint.locationVector, unitIdealVector)
+        .isZero(SETTINGS.tolerance) ||
+      this.tmpVector
+        .subVectors(this.endSEPoint.locationVector, unitIdealVector)
+        .isZero(SETTINGS.tolerance)
+    ) {
+      return true;
+    }
 
-    this.toVector
-      .crossVectors(this._normalVector, this._startSEPoint.locationVector)
-      .multiplyScalar(this._arcLength > Math.PI ? -1 : 1);
+    // Is the unitIdealVector inside the radius arcLength/2 circle about the midVector?
+    // this.tmpVector is the midPoint vector
+
+    // I think that this is the David Austin way, but I don't know why it is this way
+    // this.toVector
+    //   .crossVectors(this._normalVector, this._startSEPoint.locationVector)
+    //   .multiplyScalar(this._arcLength > Math.PI ? -1 : 1)
+    //   .normalize();
+
+    this.toVector.crossVectors(
+      this._normalVector,
+      this._startSEPoint.locationVector
+    );
+
+    // There are two cases depending on the arcLength
+    // Case 1 ArcLength < PI
+    //  In this case we want dot(toVector, end) > 0
+    // Case 2 ArcLength > PI
+    //  In this case we want dot(toVector, end) < 0
+    // Case 3 Arclength = Pi
+
+    if (this._arcLength > Math.PI) {
+      if (this.toVector.dot(this._endSEPoint.locationVector) > 0) {
+        this.toVector.multiplyScalar(-1);
+      }
+    } else if (this._arcLength < Math.PI) {
+      if (this.toVector.dot(this._endSEPoint.locationVector) < 0) {
+        this.toVector.multiplyScalar(-1);
+      }
+    }
     // midVector = tmpVector = cos(arcLength/2)*start + sin(arcLength/2)*this.toVector
     this.tmpVector
       .copy(this._startSEPoint.locationVector)
@@ -189,7 +224,7 @@ export class SESegment extends SENodule
     if (this.tmpVector1.isZero(SETTINGS.nearlyAntipodalIdeal)) {
       return this._endSEPoint.locationVector; // An arbitrary point will do as all points are equally far away
     } else {
-      // Make the tmpVector (soon to be the toVector) unit
+      // Make the tmpVector unit
       this.tmpVector1.normalize();
       // The vector that is closest to the idealUnitSphereVector in the plane of the segment
       this.tmpVector1.cross(this._normalVector).normalize();
@@ -254,8 +289,6 @@ export class SESegment extends SENodule
           )
           .isZero(SETTINGS.nearlyAntipodalIdeal)
       ) {
-        // Make the tmpVector (soon to be the "to" vector) unit
-        this.tmpVector.normalize();
         if (this._normalVector.length() == 0) {
           // The normal vector is still at its initial value so can't be used to compute the next normal, so set the
           // the normal vector to an arbitrarily chosen vector perpendicular to the start vector
@@ -266,7 +299,7 @@ export class SESegment extends SENodule
           );
           if (this.tmpVector.isZero()) {
             this.tmpVector.set(0, 1, 0);
-            // The cross or startVector and (1,0,0) and (0,1,0) can't *both* be zero
+            // The cross of startVector and (1,0,0) and (0,1,0) can't *both* be zero
             this.tmpVector.crossVectors(
               this._startSEPoint.locationVector,
               this.tmpVector
@@ -285,7 +318,7 @@ export class SESegment extends SENodule
         }
       }
       // The normal vector is now set
-      this._normalVector.copy(this.tmpVector).normalize();
+      this._normalVector.copy(this.tmpVector.normalize());
 
       // Record if the previous segment was longThanPi
       let longerThanPi = this._arcLength > Math.PI;
@@ -495,6 +528,12 @@ export class SESegment extends SENodule
       if (currentSphereVector.z < 0) {
         rotationAngle *= -1;
       }
+
+      // If the pivot and currentSphereVector are on opposite side of the sphere, reverse the direction
+      if (currentSphereVector.z * pivot.locationVector.z < 0) {
+        rotationAngle *= -1;
+      }
+
       //console.log("rotate angle", rotationAngle);
       // Rotate the freeEnd by the rotation angle around the axisOfRotation
       const axisOfRotation = pivot.locationVector;

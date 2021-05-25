@@ -53,12 +53,7 @@ export class SEPerpendicularLineThruPoint extends SELine {
         this.seParentPoint.locationVector,
         this.normalVector // the soon to be old normal vector
       );
-      // if (this.normalVector.angleTo(this.tmpVector) > 0.0009) {
-      //   console.log(
-      //     "change in normal vector in SEPerp",
-      //     this.normalVector.angleTo(this.tmpVector)
-      //   );
-      // }
+
       // Given this.startPoint (in SELine)=this.seParentPoint and this.normalVector compute the endSEPoint
       // This is *never* undefined because the getNormalToLineThru *never* returns a point with
       //  location parallel to this.seParentPoint.locationVector

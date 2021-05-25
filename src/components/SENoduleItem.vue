@@ -15,6 +15,7 @@
         mdi-vector-intersection
       </v-icon>
       <v-icon v-else-if="isSlider">mdi-arrow-left-right</v-icon>
+      <v-icon v-else-if="isAngle">mdi-angle-acute</v-icon>
       <v-icon v-else-if="isMeasurement">mdi-tape-measure
       </v-icon>
       <v-icon v-else-if="isCalculation">mdi-calculator</v-icon>
@@ -63,6 +64,7 @@ import { SESlider } from "@/models/SESlider";
 import { SetNoduleDisplayCommand } from "@/commands/SetNoduleDisplayCommand";
 import SETTINGS from "@/global-settings";
 import { Labelable, LabelState } from "@/types";
+import { SEAngleMarker } from "@/models/SEAngleMarker";
 
 @Component
 export default class SENoduleItem extends Vue {
@@ -111,11 +113,12 @@ export default class SENoduleItem extends Vue {
   get isCircle(): boolean {
     return this.node instanceof SECircle;
   }
-
   get isIntersectionPoint(): boolean {
     return this.node instanceof SEIntersectionPoint;
   }
-
+  get isAngle(): boolean {
+    return this.node instanceof SEAngleMarker;
+  }
   get isMeasurement(): boolean {
     return this.node instanceof SEMeasurement;
   }
@@ -132,7 +135,8 @@ export default class SENoduleItem extends Vue {
       this.node instanceof SEPoint ||
       this.node instanceof SELine ||
       this.node instanceof SESegment ||
-      this.node instanceof SECircle
+      this.node instanceof SECircle ||
+      this.node instanceof SEAngleMarker
     );
   }
 
@@ -155,8 +159,6 @@ export default class SENoduleItem extends Vue {
         ")"
       );
     else if (this.node instanceof SEExpression) {
-      // const targetSegment = node?.parents[0] as SESegment;
-      // const len = `${(node.value / Math.PI).toFixed(2)} \u{1D7B9}`;
       return this.node.name;
     } else return "n/a";
   }

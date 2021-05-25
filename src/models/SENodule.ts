@@ -172,7 +172,7 @@ export abstract class SENodule {
     this would make the kids array of C1 (and C2) contain P and the parent array of P
     contain both C1 and C2.*/
   public registerChild(n: SENodule): void {
-    // console.debug(`Register ${n.name} as child of ${this.name}`);
+    //console.debug(`Register ${n.name} as child of ${this.name}`);
     this.addKid(n);
     n.addParent(this);
   }

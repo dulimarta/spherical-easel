@@ -76,7 +76,7 @@ export class SELabel extends SENodule implements Visitable {
     } else if (parent instanceof SECircle) {
       this.showing = SETTINGS.circle.showLabelsInitially;
     } else if (parent instanceof SEAngleMarker) {
-      this.showing = true; // SETTINGS.angleMarker.showLabelsInitially;
+      this.showing = SETTINGS.angleMarker.showLabelsInitially;
     } else {
       this.showing = true;
     }
