@@ -1,7 +1,6 @@
 <template>
   <div>
     <h2>Saved Constructions</h2>
-    {{availableConstructions.length}}
     <v-list two-line>
       <template v-for="(r,pos) in availableConstructions">
         <v-hover v-slot:default="{hover}"
@@ -14,10 +13,6 @@
               </v-list-item-subtitle>
               <v-divider />
             </v-list-item-content>
-
-            <v-list-item-action v-if="hover">
-
-            </v-list-item-action>
             <v-overlay absolute
               :value="hover">
               <v-btn rounded
@@ -90,12 +85,16 @@ export default class ConstructionLoader extends Vue {
     if (pos >= 0) {
       console.log("Open", docId, this.availableConstructions[pos].script);
       this.$store.direct.commit.init();
-      interpret(this.availableConstructions[pos].script[0]);
       EventBus.fire("show-alert", {
-        key: "objectTree.firestoreLoadError",
+        key: "objectTree.firestoreConstructionLoaded",
         keyOptions: { docId },
         type: "info"
       });
+      this.availableConstructions[pos].script.forEach(
+        (s: string | Array<string>) => {
+          interpret(s);
+        }
+      );
     }
   }
 }

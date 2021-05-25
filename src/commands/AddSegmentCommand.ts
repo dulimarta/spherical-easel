@@ -2,6 +2,13 @@ import { Command, PersistableCommand } from "./Command";
 import { SESegment } from "@/models/SESegment";
 import { SEPoint } from "@/models/SEPoint";
 import { SELabel } from "@/models/SELabel";
+import Point from "@/plottables/Point";
+import { DisplayStyle } from "@/plottables/Nodule";
+import Segment from "@/plottables/Segment";
+import { Vector3 } from "three";
+import Label from "@/plottables/Label";
+import globalSettings from "@/global-settings";
+import { SENodule } from "@/models/SENodule";
 
 export class AddSegmentCommand extends PersistableCommand {
   private seSegment: SESegment;
@@ -42,6 +49,73 @@ export class AddSegmentCommand extends PersistableCommand {
   }
 
   toJSON(_arg: any): string {
-    return `AddSegment ${this.seSegment.name} ${this.startSEPoint.name} ${this.endSEPoint.name} ${this.seLabel.name}`;
+    return [
+      "AddSegment",
+      /* arg-1 */ this.seSegment.name,
+      /* arg-2 */ this.seSegment.normalVector.toFixed(7),
+      /* arg-3 */ this.seSegment.arcLength,
+      /* arg-4 */ this.startSEPoint.name,
+      /* arg-5 */ this.startSEPoint.locationVector.toFixed(7),
+      /* arg-6 */ this.endSEPoint.name,
+      /* arg-7 */ this.endSEPoint.locationVector.toFixed(7),
+      /* arg-8 */ this.seLabel.name
+    ].join(" ");
+  }
+
+  static parse(command: string, objMap: Map<string, SENodule>): void {
+    console.log("Parsing", command);
+    const tokens = command.split(" ");
+    const normalVector = new Vector3();
+    normalVector.from(tokens[2]);
+    const arcLength = Number(tokens[3]);
+
+    const startPoint = new Point();
+    startPoint.stylize(DisplayStyle.ApplyCurrentVariables);
+    startPoint.adjustSize();
+
+    const startSEPoint = new SEPoint(startPoint);
+    const startLocation = new Vector3();
+    startLocation.from(tokens[5]);
+    startSEPoint.locationVector.copy(startLocation);
+
+    const endPoint = new Point();
+    endPoint.stylize(DisplayStyle.ApplyCurrentVariables);
+    endPoint.adjustSize();
+
+    const endSEPoint = new SEPoint(endPoint);
+    const endLocation = new Vector3();
+    endLocation.from(tokens[7]);
+    endSEPoint.locationVector.copy(endLocation);
+
+    const segment = new Segment();
+    segment.startVector = startLocation;
+    segment.arcLength = arcLength;
+    segment.normalVector = normalVector;
+    segment.updateDisplay();
+    segment.stylize(DisplayStyle.ApplyCurrentVariables);
+    segment.adjustSize();
+    const newSESegment = new SESegment(
+      segment,
+      startSEPoint,
+      normalVector,
+      arcLength,
+      endSEPoint
+    );
+
+    const newSELabel = new SELabel(new Label(), newSESegment);
+    const labelPosition = new Vector3();
+    labelPosition
+      .addVectors(startSEPoint.locationVector, endSEPoint.locationVector)
+      .normalize()
+      .add(new Vector3(0, globalSettings.line.initialLabelOffset, 0))
+      .normalize();
+    if (arcLength > Math.PI) labelPosition.multiplyScalar(-1);
+    newSELabel.locationVector = labelPosition;
+    new AddSegmentCommand(
+      newSESegment,
+      startSEPoint,
+      endSEPoint,
+      newSELabel
+    ).execute();
   }
 }
