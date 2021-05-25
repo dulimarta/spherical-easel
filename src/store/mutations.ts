@@ -66,18 +66,20 @@ export default {
     state.actionMode = "";
     state.activeToolName = "";
     // Do not clear the layers array!
-    state.seNodules.clear();
-    state.sePoints.clear();
-    state.seLines.clear();
-    state.seSegments.clear();
-    state.seCircles.clear();
-    state.seAngleMarkers.clear();
-    state.seLabels.clear();
-    state.selections.clear();
-    state.intersections.clear();
-    state.expressions.clear();
-    state.initialStyleStates.clear();
-    state.defaultStyleStates.clear();
+    // Replace clear() with splice(0). Since clear() is an extension function
+    // Update to these arrays are not automatically picked up by VueJS
+    state.seNodules.splice(0);
+    state.sePoints.splice(0);
+    state.seLines.splice(0);
+    state.seSegments.splice(0);
+    state.seCircles.splice(0);
+    state.seAngleMarkers.splice(0);
+    state.seLabels.splice(0);
+    state.selections.splice(0);
+    state.intersections.splice(0);
+    state.expressions.splice(0);
+    state.initialStyleStates.splice(0);
+    state.defaultStyleStates.splice(0);
     //state.temporaryNodules.clear(); // Do not clear the temporaryNodules array
     // because the constructors of the tools (handlers) place the temporary Nodules
     // in this array *before* the this.init is called in App.vue mount.
@@ -405,8 +407,8 @@ export default {
       backContrast: number;
     }
   ): void {
-    state.initialStyleStates.clear();
-    state.defaultStyleStates.clear();
+    state.initialStyleStates.splice(0);
+    state.defaultStyleStates.splice(0);
     //  console.log("record style selected", selected);
     selected.forEach(seNodule => {
       // The first third is the front style settings, the second third is the back, the final third are the corresponding labels

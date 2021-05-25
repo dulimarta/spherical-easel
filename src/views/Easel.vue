@@ -88,6 +88,21 @@
                         <span>{{ $t("main.RedoLastAction") }}</span>
                       </v-tooltip>
                     </div>
+                    <div class="anchored top right">
+                      <v-tooltip bottom
+                        :open-delay="toolTipOpenDelay"
+                        :close-delay="toolTipCloseDelay">
+                        <template v-slot:activator="{ on }">
+                          <v-btn icon
+                            tile
+                            @click="resetSphere"
+                            v-on="on">
+                            <v-icon>mdi-broom</v-icon>
+                          </v-btn>
+                        </template>
+                        <span>Reset sphere</span>
+                      </v-tooltip>
+                    </div>
                     <div class="anchored bottom right">
                       <v-tooltip bottom
                         :open-delay="toolTipOpenDelay"
@@ -413,6 +428,12 @@ export default class Easel extends Vue {
     Command.redo();
   }
 
+  resetSphere(): void {
+    this.$store.direct.commit.removeAllFromLayers();
+    this.$store.direct.commit.init();
+    SENodule.resetAllCounters();
+    Nodule.resetAllCounters();
+  }
   //#region resizePlottables
   resizePlottables(e: any): void {
     const oldFactor = this.store.state.previousZoomMagnificationFactor;
