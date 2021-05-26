@@ -39,12 +39,15 @@ export class AddPointCommand extends PersistableCommand {
 
   // eslint-disable-next-line
   toJSON(arg: any): string {
-    return [
-      "AddPoint",
-      this.sePoint.name,
-      this.sePoint.locationVector.toFixed(7),
-      this.seLabel.name
-    ].join("/");
+    if (this.sePoint.showing)
+      return [
+        "AddPoint",
+        /* arg-1 */ this.sePoint.name,
+        /* arg-2 */ this.sePoint.locationVector.toFixed(7),
+        /* arg-3 */ this.sePoint.showing,
+        /* arg-4 */ this.seLabel.name
+      ].join("/");
+    else return "None";
   }
 
   static parse(command: string, objMap: Map<string, SENodule>): Command {
@@ -54,7 +57,9 @@ export class AddPointCommand extends PersistableCommand {
     location.from(tokens[2]); // convert to Number
     const { point, label } = Command.makePointAndLabel(location);
     objMap.set(tokens[1], point);
-    objMap.set(tokens[3], label);
+    objMap.set(tokens[4], label);
+    point.showing = tokens[3] === "true";
+    label.showing = tokens[3] === "true";
     return new AddPointCommand(point, label);
   }
 }

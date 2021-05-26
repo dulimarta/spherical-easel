@@ -92,6 +92,11 @@ export default class ConstructionLoader extends Vue {
           });
         }
       });
+      // Sort by dcreation date
+      this.publicConstructions.sort(
+        (a: SphericalConstruction, b: SphericalConstruction) =>
+          a.dateCreated.localeCompare(b.dateCreated)
+      );
     });
   }
 
@@ -100,7 +105,7 @@ export default class ConstructionLoader extends Vue {
       (c: SphericalConstruction) => c.id === docId
     );
     if (pos >= 0) {
-      // console.log("Open", docId, this.publicConstructions[pos].script);
+      console.log("Open", docId, this.publicConstructions[pos].description);
       this.$store.direct.commit.removeAllFromLayers();
       this.$store.direct.commit.init();
       SENodule.resetAllCounters();

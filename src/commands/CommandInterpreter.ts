@@ -36,6 +36,7 @@ function executeIndividual(command: string): Command {
 function interpret(command: string | Array<string>): void {
   if (typeof command === "string") {
     /* This is an individual command */
+    console.log("Command", command);
     executeIndividual(command).execute();
   } else {
     // This is a CommandGroup, interpret each command individually
@@ -53,9 +54,11 @@ function interpret(command: string | Array<string>): void {
 }
 
 export function run(script: ConstructionScript): void {
+  console.log("Running script", script);
+  // Reset the command history before interpreting a new script
   noduleDictionary.clear();
-  Command.commandHistory.clear();
-  Command.redoHistory.clear();
+  Command.commandHistory.splice(0);
+  Command.redoHistory.splice(0);
   script.forEach((s: string | Array<string>) => {
     interpret(s);
   });

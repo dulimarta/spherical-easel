@@ -431,9 +431,12 @@ export default class Easel extends Vue {
   resetSphere(): void {
     this.$store.direct.commit.removeAllFromLayers();
     this.$store.direct.commit.init();
+    Command.commandHistory.splice(0);
+    Command.redoHistory.splice(0);
     SENodule.resetAllCounters();
     Nodule.resetAllCounters();
   }
+
   //#region resizePlottables
   resizePlottables(e: any): void {
     const oldFactor = this.store.state.previousZoomMagnificationFactor;

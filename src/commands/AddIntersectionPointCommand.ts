@@ -52,26 +52,30 @@ export class AddIntersectionPointCommand extends Command {
       "AddIntersectionPoint",
       /* arg-1 */ this.sePoint.name,
       /* arg-2 */ this.sePoint.locationVector.toFixed(7),
-      /* arg-3 */ this.parent1.name,
-      /* arg-4 */ this.parent2.name,
-      /* arg-5 */ this.seLabel.name
-    ].join("/"); // We assume that "/" is not used anywhere in the object name
+      /* arg-3 */ this.sePoint.showing,
+      /* arg-4 */ this.parent1.name,
+      /* arg-5 */ this.parent2.name,
+      /* arg-6 */ this.seLabel.name
+    ].join("/");
+    // We assume that "/" is not used anywhere in the object name
   }
 
   static parse(cmd: string, objMap: Map<string, SENodule>): Command {
-    console.log("Parsing", cmd);
+    // console.log("Parsing", cmd);
     const tokens = cmd.split("/");
-    const parent1 = objMap.get(tokens[3]) as SEOneDimensional;
-    const parent2 = objMap.get(tokens[4]) as SEOneDimensional;
+    const parent1 = objMap.get(tokens[4]) as SEOneDimensional;
+    const parent2 = objMap.get(tokens[5]) as SEOneDimensional;
     if (parent1 && parent2) {
       const location = new Vector3();
       location.from(tokens[2]);
 
       const { point, label } = this.makePointAndLabel(location);
+      point.showing = tokens[3] === "true";
+      label.showing = tokens[3] === "true";
       return new AddIntersectionPointCommand(point, parent1, parent2, label);
     } else
       throw new Error(
-        `AddIntersectionPoint: parent ${tokens[3]} or ${tokens[4]} is not found`
+        `AddIntersectionPoint: parent ${tokens[4]} or ${tokens[5]} is not found`
       );
   }
 }
