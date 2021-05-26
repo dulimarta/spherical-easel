@@ -195,8 +195,10 @@ export default class App extends Vue {
 
   doShare(): void {
     /* dump the command history */
-    const out = Command.dump();
-    console.log("Sharing", out);
+    const out = Command.dumpOpcode();
+    const outArr = JSON.parse(out) as Array<any>;
+    console.log("string", out);
+    console.log("parsed", outArr);
     // const collectionPath = this.publicConstruction
     //   ? "constructions"
     //   : `users/${this.whoami}/constructions`;

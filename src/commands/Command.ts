@@ -87,8 +87,12 @@ export abstract class Command {
     EventBus.fire("redo-enabled", { value: Command.redoHistory.length > 0 });
   }
 
-  static dump(): string {
-    return JSON.stringify(Command.commandHistory);
+  static dumpOpcode(): string {
+    const out = Command.commandHistory
+      .map(c => c.toOpcode())
+      .filter(z => z !== null);
+    console.log("Script is ", out);
+    return JSON.stringify(out);
     // return (
     //   "[" +
     //   Command.commandHistory
@@ -131,23 +135,28 @@ export abstract class Command {
 
   /**  do: Perform necessary action to alter the app state*/
   abstract do(): void;
+
+  /** Generate an opcode (assembly code) that can be saved as an executable script
+   * and interpreted by calling the constructor of this class. The generated
+   * opcode shall include sufficient details for invoking the constructor.  */
+  abstract toOpcode(): null | string | Array<string>;
 }
 
 // This subclass of Command represents a command which can be saved
 // as a "script". To properly re-execute each command. the string output
 // of toJSON must include all the necessary information needed to invoke
 // the constructor of a particular command class
-export abstract class PersistableCommand extends Command {
-  /* Reference 
+// export abstract class Command extends Command {
+/* Reference 
       https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/stringify#tojson_behavior
   */
-  /**
-   * Invoke at runtime by JSON.stringify()
-   *
-   * @param arg takes one of the following values
-   *    - a property name (if this class is used as a property of another object)
-   *    - an empty string (if JSON.stringify() directly calls on this object)
-   *    - an array index (if this object is an array, nat applicable to our case)
-   */
-  abstract toJSON(arg: string): string;
-}
+/**
+ * Invoke at runtime by JSON.stringify()
+ *
+ * @param arg takes one of the following values
+ *    - a property name (if this class is used as a property of another object)
+ *    - an empty string (if JSON.stringify() directly calls on this object)
+ *    - an array index (if this object is an array, nat applicable to our case)
+ */
+// abstract toJSON(arg: string): string;
+// }

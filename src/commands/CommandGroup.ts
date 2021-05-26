@@ -30,8 +30,14 @@ export class CommandGroup extends Command {
     });
   }
 
-  //eslint-disable-next-line
-  toJSON(arg: string): string[] {
-    return this.subCommands.map((s: Command) => JSON.stringify(s));
+  toOpcode(): null | string | Array<string> {
+    const group: Array<string> = [];
+    this.subCommands.forEach((cmd: Command) => {
+      const converted = cmd.toOpcode() as null | string;
+      console.log(cmd, " ==> ", converted);
+      if (converted !== null) group.push(converted);
+    });
+    console.log("Group output is", group);
+    return group.length > 0 ? group : null;
   }
 }

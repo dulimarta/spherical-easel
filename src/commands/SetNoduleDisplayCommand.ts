@@ -50,4 +50,8 @@ export class SetNoduleDisplayCommand extends Command {
         .seNodule as unknown) as Labelable).label!.showing = this.initialLabelShowingValue;
     }
   }
+
+  toOpcode(): null | string | Array<string> {
+    return null;
+  }
 }

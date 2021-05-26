@@ -1,4 +1,4 @@
-import { Command, PersistableCommand } from "./Command";
+import { Command } from "./Command";
 import { SEPoint } from "@/models/SEPoint";
 import { SELabel } from "@/models/SELabel";
 import { Vector3 } from "three";
@@ -6,7 +6,7 @@ import { UpdateMode } from "@/types";
 import { SENodule } from "@/models/SENodule";
 
 //#region addPointCommand
-export class AddPointCommand extends PersistableCommand {
+export class AddPointCommand extends Command {
   private sePoint: SEPoint;
   private seLabel: SELabel;
   constructor(sePoint: SEPoint, seLabel: SELabel) {
@@ -37,8 +37,7 @@ export class AddPointCommand extends PersistableCommand {
     Command.store.commit.removePoint(this.lastState);
   }
 
-  // eslint-disable-next-line
-  toJSON(arg: any): string {
+  toOpcode(): null | string | Array<string> {
     if (this.sePoint.showing)
       return [
         "AddPoint",

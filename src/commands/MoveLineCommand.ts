@@ -35,4 +35,8 @@ export class MoveLineCommand extends Command {
       normal: this.oldNormalVector
     });
   }
+
+  toOpcode(): null | string | Array<string> {
+    return null;
+  }
 }

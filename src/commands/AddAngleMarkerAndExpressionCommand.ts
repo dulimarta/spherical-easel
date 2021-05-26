@@ -1,4 +1,4 @@
-import { Command, PersistableCommand } from "./Command";
+import { Command } from "./Command";
 import { SEPoint } from "@/models/SEPoint";
 import { SELabel } from "@/models/SELabel";
 import { SEAngleMarker } from "@/models/SEAngleMarker";
@@ -14,7 +14,7 @@ enum AngleMode {
   SEGMENTSORLINEANDSEGMENT
 }
 
-export class AddAngleMarkerCommand extends PersistableCommand {
+export class AddAngleMarkerCommand extends Command {
   /**
    * The model SE object that is the first parent of this angle marker (line, line segment, point). This is never undefined.
    */
@@ -83,7 +83,7 @@ export class AddAngleMarkerCommand extends PersistableCommand {
     this._firstSEParent.unregisterChild(this.seAngleMarker);
   }
 
-  toJSON(_arg: any): string {
+  toOpcode(): null | string | Array<string> {
     return `AddAngleMarker ${this.seAngleMarker.name}`;
   }
 }

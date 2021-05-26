@@ -1,10 +1,10 @@
-import { Command, PersistableCommand } from "./Command";
+import { Command } from "./Command";
 import { SEPoint } from "@/models/SEPoint";
 import { SELabel } from "@/models/SELabel";
 import { SEPerpendicularLineThruPoint } from "@/models/SEPerpendicularLineThruPoint";
 import { SEOneDimensional } from "@/types";
 
-export class AddPerpendicularLineThruPointCommand extends PersistableCommand {
+export class AddPerpendicularLineThruPointCommand extends Command {
   private sePerpendicularLineThruPoint: SEPerpendicularLineThruPoint;
   private parentSEPoint: SEPoint;
   private parentOneDimensional: SEOneDimensional;
@@ -45,7 +45,7 @@ export class AddPerpendicularLineThruPointCommand extends PersistableCommand {
     this.parentSEPoint.unregisterChild(this.sePerpendicularLineThruPoint);
   }
 
-  toJSON(_arg: any): string {
+  toOpcode(): null | string | Array<string> {
     return AddPerpendicularLineThruPointCommand.name;
   }
 }

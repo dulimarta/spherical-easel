@@ -22,4 +22,8 @@ export class RotateSphereCommand extends Command {
   restoreState(): void {
     Command.store.commit.rotateSphere(this.inverseRotation);
   }
+
+  toOpcode(): null | string | Array<string> {
+    return null;
+  }
 }

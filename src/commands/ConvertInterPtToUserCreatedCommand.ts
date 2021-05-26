@@ -49,4 +49,8 @@ export class ConvertInterPtToUserCreatedCommand extends Command {
     // set back to automatically created
     this.seIntersectionPoint.isUserCreated = false;
   }
+
+  toOpcode(): null | string | Array<string> {
+    return null;
+  }
 }

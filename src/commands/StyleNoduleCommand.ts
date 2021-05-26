@@ -147,4 +147,8 @@ export class StyleNoduleCommand extends Command {
       });
     }
   }
+
+  toOpcode(): null | string | Array<string> {
+    return null;
+  }
 }

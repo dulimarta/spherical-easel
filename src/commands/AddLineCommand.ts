@@ -1,9 +1,9 @@
-import { Command, PersistableCommand } from "./Command";
+import { Command } from "./Command";
 import { SELine } from "@/models/SELine";
 import { SEPoint } from "@/models/SEPoint";
 import { SELabel } from "@/models/SELabel";
 
-export class AddLineCommand extends PersistableCommand {
+export class AddLineCommand extends Command {
   private seLine: SELine;
   private startSEPoint: SEPoint;
   private endSEPoint: SEPoint;
@@ -42,7 +42,7 @@ export class AddLineCommand extends PersistableCommand {
     this.endSEPoint.unregisterChild(this.seLine);
   }
 
-  toJSON(_arg: any): string {
+  toOpcode(): null | string | Array<string> {
     return `AddLine ${this.seLine.name} ${this.startSEPoint.name} ${this.endSEPoint.name} ${this.seLabel.name}`;
   }
 }

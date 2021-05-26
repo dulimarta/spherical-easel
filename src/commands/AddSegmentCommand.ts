@@ -1,4 +1,4 @@
-import { Command, PersistableCommand } from "./Command";
+import { Command } from "./Command";
 import { SESegment } from "@/models/SESegment";
 import { SEPoint } from "@/models/SEPoint";
 import { SELabel } from "@/models/SELabel";
@@ -9,7 +9,7 @@ import Label from "@/plottables/Label";
 import SETTINGS from "@/global-settings";
 import { SENodule } from "@/models/SENodule";
 
-export class AddSegmentCommand extends PersistableCommand {
+export class AddSegmentCommand extends Command {
   private seSegment: SESegment;
   private startSEPoint: SEPoint;
   private endSEPoint: SEPoint;
@@ -47,7 +47,7 @@ export class AddSegmentCommand extends PersistableCommand {
     this.endSEPoint.unregisterChild(this.seSegment);
   }
 
-  toJSON(_arg: any): string {
+  toOpcode(): null | string | Array<string> {
     return [
       "AddSegment",
       /* arg-1 */ this.seSegment.name,

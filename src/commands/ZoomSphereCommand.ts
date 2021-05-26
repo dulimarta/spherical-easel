@@ -47,4 +47,8 @@ export class ZoomSphereCommand extends Command {
     EventBus.fire("zoom-updated", {});
     //Command.store.commit("zoomSphere");
   }
+
+  toOpcode(): null | string | Array<string> {
+    return null;
+  }
 }

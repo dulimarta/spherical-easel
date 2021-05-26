@@ -1,9 +1,9 @@
-import { Command, PersistableCommand } from "./Command";
+import { Command } from "./Command";
 import { SECircle } from "@/models/SECircle";
 import { SEPoint } from "@/models/SEPoint";
 import { SELabel } from "@/models/SELabel";
 
-export class AddCircleCommand extends PersistableCommand {
+export class AddCircleCommand extends Command {
   private seCircle: SECircle;
   private centerSEPoint: SEPoint;
   private circleSEPoint: SEPoint;
@@ -41,7 +41,7 @@ export class AddCircleCommand extends PersistableCommand {
     this.circleSEPoint.unregisterChild(this.seCircle);
   }
 
-  toJSON(_arg: any): string {
+  toOpcode(): null | string | Array<string> {
     return `AddCircle ${this.seCircle.name} ${this.centerSEPoint.name} ${this.circleSEPoint.name} ${this.seLabel.name}`;
   }
 }

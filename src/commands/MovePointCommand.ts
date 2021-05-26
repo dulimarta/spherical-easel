@@ -35,4 +35,8 @@ export class MovePointCommand extends Command {
       location: this.oldLocationVector
     });
   }
+
+  toOpcode(): null | string | Array<string> {
+    return null;
+  }
 }

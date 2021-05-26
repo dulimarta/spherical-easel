@@ -31,7 +31,7 @@ export class AddExpressionCommand extends Command {
     this.parents.forEach(nodule => nodule.unregisterChild(this.seMeasurement));
   }
 
-  toJSON(_arg: any): string {
+  toOpcode(): null | string | Array<string> {
     return `AddExpressions ${this.seMeasurement.name}`;
   }
 }

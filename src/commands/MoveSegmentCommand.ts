@@ -43,4 +43,8 @@ export class MoveSegmentCommand extends Command {
       arcLength: this.oldArcLength
     });
   }
+
+  toOpcode(): null | string | Array<string> {
+    return null;
+  }
 }
