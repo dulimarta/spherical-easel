@@ -1,6 +1,9 @@
 import EventBus from "@/eventHandlers/EventBus";
 import { SENodule } from "@/models/SENodule";
+import { Commands } from "two.js";
+import { AddCircleCommand } from "./AddCircleCommand";
 import { AddIntersectionPointCommand } from "./AddIntersectionPointCommand";
+import { AddLineCommand } from "./AddLineCommand";
 import { AddPointCommand } from "./AddPointCommand";
 import { AddSegmentCommand } from "./AddSegmentCommand";
 import { Command } from "./Command";
@@ -14,6 +17,10 @@ function executeIndividual(command: string): Command {
     return AddPointCommand.parse(command, noduleDictionary);
   else if (command.startsWith("AddSegment"))
     return AddSegmentCommand.parse(command, noduleDictionary);
+  else if (command.startsWith("AddLine"))
+    return AddLineCommand.parse(command, noduleDictionary);
+  else if (command.startsWith("AddCircle"))
+    return AddCircleCommand.parse(command, noduleDictionary);
   else if (command.startsWith("AddIntersectionPoint"))
     return AddIntersectionPointCommand.parse(command, noduleDictionary);
   else {
