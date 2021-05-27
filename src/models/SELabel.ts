@@ -66,26 +66,43 @@ export class SELabel extends SENodule implements Visitable {
     this.parent = parent;
     label.seLabel = this; // used so that Label (the plottable) can set the visibility of the parent
     ((this.parent as unknown) as Labelable).label = this;
-    this.name = `LabelOf(${parent.name})`;
-    // Set the initial names.
-    label.initialNames = parent.name;
+
+    if (this.parent instanceof SEAngleMarker) {
+      // SEAngleMarker is both an expression and a plottable (the only one?)
+      // As an expression to be used in the calculation parent.name must be with "M###" so that it
+      // can be referenced by the user and found by the parser when doing a calculation
+      // however we don't want the initial name and initial shortName of the angle marker to be displayed with a "M###" at the start
+      //  so this is how we get around this
+      this.name = `LabelOf(Am-${this.parent.angleMarkerNumber})`;
+      // Set the initial names.
+      label.initialNames = `Am-${this.parent.angleMarkerNumber}`;
+    } else {
+      this.name = `LabelOf(${parent.name})`;
+      // Set the initial names.
+      label.initialNames = parent.name;
+    }
     // Set the size for zoom
     this.ref.adjustSize();
 
-    // Display the label initially
+    // Display the label initially (both showing or not or the mode)
     if (parent instanceof SEPoint) {
+      this.ref.initialLabelDisplayMode = SETTINGS.point.defaultLabelMode;
       if (parent.isFreePoint()) {
         this.showing = SETTINGS.point.showLabelsOfFreePointsInitially;
       } else {
         this.showing = SETTINGS.point.showLabelsOfNonFreePointsInitially;
       }
     } else if (parent instanceof SELine) {
+      this.ref.initialLabelDisplayMode = SETTINGS.line.defaultLabelMode;
       this.showing = SETTINGS.line.showLabelsInitially;
     } else if (parent instanceof SESegment) {
+      this.ref.initialLabelDisplayMode = SETTINGS.segment.defaultLabelMode;
       this.showing = SETTINGS.segment.showLabelsInitially;
     } else if (parent instanceof SECircle) {
+      this.ref.initialLabelDisplayMode = SETTINGS.circle.defaultLabelMode;
       this.showing = SETTINGS.circle.showLabelsInitially;
     } else if (parent instanceof SEAngleMarker) {
+      this.ref.initialLabelDisplayMode = SETTINGS.angleMarker.defaultLabelMode;
       this.showing = SETTINGS.angleMarker.showLabelsInitially;
     } else {
       this.showing = true;

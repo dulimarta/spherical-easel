@@ -7,6 +7,11 @@ import { SEMeasurement } from "@/models/SEMeasurement";
 import { SESegmentLength } from "@/models/SESegmentLength";
 import EventBus from "@/eventHandlers/EventBus";
 import { SetNoduleDisplayCommand } from "@/commands/SetNoduleDisplayCommand";
+import SETTINGS from "@/global-settings";
+import { CommandGroup } from "@/commands/CommandGroup";
+import { StyleNoduleCommand } from "@/commands/StyleNoduleCommand";
+import { LabelDisplayMode, StyleEditPanels } from "@/types/Styles";
+import { UpdateMode } from "@/types";
 
 export default class SegmentLengthHandler extends Highlighter {
   /**
@@ -32,7 +37,37 @@ export default class SegmentLengthHandler extends Highlighter {
           keyOptions: { name: `${lenMeasure.name}` },
           type: "success"
         });
-        new AddExpressionCommand(lenMeasure, [this.targetSegment]).execute();
+        const segmentCommandGroup = new CommandGroup();
+        segmentCommandGroup.addCommand(
+          new AddExpressionCommand(lenMeasure, [this.targetSegment])
+        );
+        // Set the selected segment's Label to display and to show NameAndValue in an undoable way
+        segmentCommandGroup.addCommand(
+          new StyleNoduleCommand(
+            [this.targetSegment.label!],
+            StyleEditPanels.Front,
+            [
+              {
+                panel: StyleEditPanels.Front,
+                labelVisibility: true,
+                labelDisplayMode: SETTINGS.segment.measuringChangesLabelModeTo
+              }
+            ],
+            [
+              {
+                panel: StyleEditPanels.Front,
+                labelVisibility: this.targetSegment.label!.showing,
+                labelDisplayMode: this.targetSegment.label!.ref.labelDisplayMode
+              }
+            ]
+          )
+        );
+        segmentCommandGroup.execute();
+        // Update the display so the changes become apparent
+        this.targetSegment.update({
+          mode: UpdateMode.DisplayOnly,
+          stateArray: []
+        });
         this.targetSegment = null;
       }
     }
@@ -47,7 +82,9 @@ export default class SegmentLengthHandler extends Highlighter {
     if (this.hitSESegments.length > 0) {
       this.targetSegment = this.hitSESegments[0];
       const len = this.targetSegment.arcLength;
-      this.infoText.text = `Arc length ${(len / Math.PI).toFixed(2)}\u{1D7B9}`;
+      this.infoText.text = `Arc length ${(len / Math.PI).toFixed(
+        SETTINGS.decimalPrecision
+      )}\u{1D7B9}`;
     }
   }
 
@@ -70,7 +107,34 @@ export default class SegmentLengthHandler extends Highlighter {
           keyOptions: { name: `${lenMeasure.name}` },
           type: "success"
         });
-        new AddExpressionCommand(lenMeasure, [object1]).execute();
+        const segmentCommandGroup = new CommandGroup();
+        segmentCommandGroup.addCommand(
+          new AddExpressionCommand(lenMeasure, [object1])
+        );
+        // Set the selected segment's Label to display and to show NameAndValue in an undoable way
+        segmentCommandGroup.addCommand(
+          new StyleNoduleCommand(
+            [object1.label!],
+            StyleEditPanels.Front,
+            [
+              {
+                panel: StyleEditPanels.Front,
+                labelVisibility: true,
+                labelDisplayMode: LabelDisplayMode.NameAndValue
+              }
+            ],
+            [
+              {
+                panel: StyleEditPanels.Front,
+                labelVisibility: object1.label!.showing,
+                labelDisplayMode: object1.label!.ref.labelDisplayMode
+              }
+            ]
+          )
+        );
+        segmentCommandGroup.execute();
+        // make the change show up in the sphere
+        object1.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
       }
     }
     // Unselect the selected objects and clear the selectedObject array

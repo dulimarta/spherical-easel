@@ -638,16 +638,13 @@ export default class Segment extends Nodule {
   }
 
   /**
-   * Set the rendering style (flags: ApplyTemporaryVariables, ApplyCurrentVariables, ResetVariablesToDefaults) of the line
+   * Set the rendering style (flags: ApplyTemporaryVariables, ApplyCurrentVariables) of the segment
    *
    * ApplyTemporaryVariables means that
-   *    1) The temporary variables from SETTINGS.segment.temp are copied into the actual Two.js objects
-   *    2) Dash pattern for temporary is copied  from the SETTINGS.segment.drawn into the actual Two.js objects
-   *    3) The line width is copied from the currentSegmentStrokeWidth (which accounts for the Zoom magnification) into the actual Two.js objects
+   *    1) The temporary variables from SETTINGS.point.temp are copied into the actual Two.js objects
+   *    2) The pointScaleFactor is copied from the Point.pointScaleFactor (which accounts for the Zoom magnification) into the actual Two.js objects
    *
    * Apply CurrentVariables means that all current values of the private style variables are copied into the actual Two.js objects
-   *
-   * ResetVariablesToDefaults means that all the private style variables are set to their defaults from SETTINGS.
    */
   stylize(flag: DisplayStyle): void {
     switch (flag) {

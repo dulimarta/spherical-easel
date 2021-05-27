@@ -125,7 +125,8 @@ export class SEPoint extends SENodule implements Visitable, Labelable {
     // If the idealUnitSphereVector is within the tolerance of the point, do nothing, otherwise return the vector in the plane of the ideanUnitSphereVector and the point that is at the tolerance distance away.
     if (
       this._locationVector.angleTo(currentLabelLocationVector) <
-      SETTINGS.point.maxLabelDistance / mag
+      ((SETTINGS.point.maxLabelDistance / mag) * this.ref.pointRadiusPercent) /
+        100
     ) {
       return currentLabelLocationVector;
     } else {
@@ -157,12 +158,20 @@ export class SEPoint extends SENodule implements Visitable, Labelable {
         .normalize();
       // return cos(SETTINGS.segment.maxLabelDistance)*fromVector/tmpVec + sin(SETTINGS.segment.maxLabelDistance)*toVector/tmpVec2
       this.tmpVector2.multiplyScalar(
-        Math.sin(SETTINGS.point.maxLabelDistance / mag)
+        Math.sin(
+          ((SETTINGS.point.maxLabelDistance / mag) *
+            this.ref.pointRadiusPercent) /
+            100
+        )
       );
       this.tmpVector2
         .addScaledVector(
           this._locationVector,
-          Math.cos(SETTINGS.point.maxLabelDistance / mag)
+          Math.cos(
+            ((SETTINGS.point.maxLabelDistance / mag) *
+              this.ref.pointRadiusPercent) /
+              100
+          )
         )
         .normalize();
       return this.tmpVector2;
@@ -175,7 +184,9 @@ export class SEPoint extends SENodule implements Visitable, Labelable {
   ): boolean {
     return (
       this._locationVector.distanceTo(unitIdealVector) <
-      SETTINGS.point.hitIdealDistance / currentMagnificationFactor
+      ((SETTINGS.point.hitIdealDistance / currentMagnificationFactor) *
+        this.ref.pointRadiusPercent) /
+        100
     );
   }
 

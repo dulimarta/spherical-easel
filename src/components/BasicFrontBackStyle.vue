@@ -526,8 +526,16 @@ export default class BasicFrontBackStyle extends Vue {
       value: LabelDisplayMode.CaptionOnly
     },
     {
+      text: i18n.t("style.labelDisplayModes.valueOnly"),
+      value: LabelDisplayMode.ValueOnly
+    },
+    {
       text: i18n.t("style.labelDisplayModes.nameAndCaption"),
       value: LabelDisplayMode.NameAndCaption
+    },
+    {
+      text: i18n.t("style.labelDisplayModes.nameAndValue"),
+      value: LabelDisplayMode.NameAndValue
     }
   ];
   private labelDisplayModeChange = false;

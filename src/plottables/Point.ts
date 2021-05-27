@@ -153,6 +153,17 @@ export default class Point extends Nodule {
     return this._locationVector;
   }
 
+  /**
+   * The percent that the default radius point is scaled relative to the current magnification factor
+   */
+  get pointRadiusPercent(): number {
+    if (this._locationVector.z < 0) {
+      return this.pointRadiusPercentBack;
+    } else {
+      return this.pointRadiusPercentFront;
+    }
+  }
+
   frontGlowingDisplay(): void {
     this.frontPoint.visible = true;
     this.glowingFrontPoint.visible = true;
@@ -235,6 +246,7 @@ export default class Point extends Nodule {
     if (options.panel === StyleEditPanels.Front) {
       // Set the front options
       if (options.pointRadiusPercent !== undefined) {
+        // if the percent radius changes then the mutations changeStyle commit updates the object which can effect the location of the point's label
         this.pointRadiusPercentFront = options.pointRadiusPercent;
       }
       if (options.fillColor !== undefined) {
@@ -256,6 +268,7 @@ export default class Point extends Nodule {
       // overwrite the back options only in the case the dynamic style is not enabled
       if (!this.dynamicBackStyle !== undefined) {
         if (options.pointRadiusPercent) {
+          // if the percent radius changes then the mutations changeStyle commit updates the object which can effect the location of the point's label
           this.pointRadiusPercentBack = options.pointRadiusPercent;
         }
         if (options.fillColor !== undefined) {
@@ -380,15 +393,13 @@ export default class Point extends Nodule {
   }
 
   /**
-   * Set the rendering style (flags: ApplyTemporaryVariables, ApplyCurrentVariables, ResetVariablesToDefaults) of the line
+   * Set the rendering style (flags: ApplyTemporaryVariables, ApplyCurrentVariables) of the point
    *
    * ApplyTemporaryVariables means that
    *    1) The temporary variables from SETTINGS.point.temp are copied into the actual Two.js objects
    *    2) The pointScaleFactor is copied from the Point.pointScaleFactor (which accounts for the Zoom magnification) into the actual Two.js objects
    *
    * Apply CurrentVariables means that all current values of the private style variables are copied into the actual Two.js objects
-   *
-   * ResetVariablesToDefaults means that all the private style variables are set to their defaults from SETTINGS.
    */
   stylize(flag: DisplayStyle): void {
     switch (flag) {

@@ -18,7 +18,7 @@
                 v-model="calcExpression"
                 :error-messages="parsingError"
                 @keypress="onKeyPressed"
-                @click:clear="calcResult = 0">
+                @click:clear="reset">
               </v-textarea>
 
             </v-col>
@@ -52,12 +52,13 @@
 import Vue from "vue";
 import { State } from "vuex-class";
 import Component from "vue-class-component";
-import { AppState } from "@/types";
+import { AppState, UpdateMode } from "@/types";
 import { SEMeasurement } from "@/models/SEMeasurement";
 import { SECalculation } from "@/models/SECalculation";
 import { AddExpressionCommand } from "@/commands/AddExpressionCommand";
 import { ExpressionParser } from "@/expression/ExpressionParser";
 import EventBus from "@/eventHandlers/EventBus";
+import { DisplayStyle } from "@/plottables/Nodule";
 
 @Component({})
 export default class ExpressionForm extends Vue {
@@ -78,10 +79,17 @@ export default class ExpressionForm extends Vue {
     EventBus.listen("measurement-selected", this.addVarToExpr.bind(this));
   }
 
+  reset(): void {
+    this.calcExpression = "";
+    this.calcResult = 0;
+  }
+
   addVarToExpr(param: any): void {
     console.debug("Variable selected", param);
     this.calcExpression += param;
+    this.onKeyPressed();
   }
+
   onKeyPressed(): void {
     console.debug("Key press");
     this.parsingError = "";
@@ -112,7 +120,9 @@ export default class ExpressionForm extends Vue {
   addExpression(): void {
     console.debug("Adding expression", this.calcExpression);
     const calc = new SECalculation(this.calcExpression);
-    new AddExpressionCommand(calc, []).execute();
+    new AddExpressionCommand(calc, calc.calculationParents).execute();
+    calc.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
+    this.reset();
   }
 }
 </script>

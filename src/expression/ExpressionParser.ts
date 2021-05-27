@@ -1,4 +1,6 @@
-//
+import i18n from "@/i18n";
+import { TranslateResult } from "vue-i18n";
+
 enum TokenType {
   PLUS,
   MINUS,
@@ -228,7 +230,7 @@ export class ExpressionParser {
 
     function throwError(msg: string, info: Lexicon): never {
       if (info.kind === TokenType.EOF)
-        throw new SyntaxError("Reach end of input while parsing expression");
+        throw new SyntaxError("i18n.t(`objectTree.parserError`)");
       else throw new SyntaxError(msg);
     }
     function atom(): SyntaxTree {

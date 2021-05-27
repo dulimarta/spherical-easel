@@ -5,6 +5,7 @@ export default {
   tolerance: 0.0000001, // Any number less that this tolerance is considered zero
   hideObjectHidesLabel: true, // hiding an object hide the label of that object automatically if this is true
   showObjectShowsLabel: false, // showing an object (via the object tree) automatically shows the label if this is true
+  decimalPrecision: 3, // The number decimal places to display when numerically measuring or computing a value
   style: {
     backStyleContrast: 0.5, //The number that controls the automatic setting of the back styling for objects that have dynamicBackStyle set to true.
     maxStrokeWidthPercent: 500, // The maximum percent stroke width different from the scaled for zoom size
@@ -51,8 +52,10 @@ export default {
     showLabelsOfFreePointsInitially: true, // Should the labels of free points be shown upon creating the point
     showLabelsOfNonFreePointsInitially: false, // Should the labels of non-free points be shown upon creating the point
     showLabelsOfPointOnObjectInitially: false, // Should the labels of points on objects be shown upon creating the point
+    readingCoordinatesChangesLabelModeTo: LabelDisplayMode.NameAndValue,
     maxLabelDistance: 0.08, // The maximum distance that a label is allowed to get away from the point
     initialLabelOffset: 0.02, // When making point labels this is initially how far (roughly) they are from the location of the point
+    defaultLabelMode: LabelDisplayMode.NameOnly, // The default way of displaying this objects label
     hitIdealDistance: 0.04, // The user has to be within this distance on the ideal unit sphere to select the point. (must be smaller than line/segment/circle.minArcLength.minimumLength.minRadius)
     //dynamicBackStyle is a flag that means the fill color,stroke, and opacity of the points drawn on the back are automatically calculated based on the value of SETTINGS.contrast and their front counterparts
     dynamicBackStyle: true,
@@ -121,8 +124,12 @@ export default {
     }
   },
   segment: {
+    displayInMultiplesOfPiInitially: true, // Should the measure of the length be in multiples of pi
     showLabelsInitially: false, // Should the labels be show upon creating the segment
-    maxLabelDistance: 0.08, // The maximum distance that a label is allowed to get away from the segment
+    maxLabelDistance: 0.15, // The maximum distance that a label is allowed to get away from the segment
+    defaultLabelMode: LabelDisplayMode.NameOnly, // The default way of displaying this objects label
+    measuringChangesLabelModeTo: LabelDisplayMode.NameAndValue,
+    initialLabelOffset: 0.02, // When making point labels this is initially how far (roughly) they are from the line
     minimumArcLength: 0.045, // Don't create segments with a length less than this (must be larger than point.hitIdealDistance because if not it is possible to create a line segment of length zero )
     numPoints: 20, // The number of vertices used to render the segment. These are spread over the front and back parts. MAKE THIS EVEN!
     hitIdealDistance: 0.03, // The user has to be within this distance on the ideal unit sphere to select the line.
@@ -173,6 +180,7 @@ export default {
     showLabelsInitially: false, // Should the labels be show upon creating the line
     maxLabelDistance: 0.08, // The maximum distance that a label is allowed to get away from the line
     initialLabelOffset: 0.02, // When making point labels this is initially how far (roughly) they are from the line
+    defaultLabelMode: LabelDisplayMode.NameOnly, // The default way of displaying this objects label
     minimumLength: 0.045, // Don't create lines distance between the two defining point with arc length between them smaller than this (must be larger than point.hitIdealDistance because if not it is possible to create a line segment of length zero )
     numPoints: 50, // The number of vertices used to render the line. These are spread over the front and back parts. MAKE THIS EVEN!
     hitIdealDistance: 0.03, // The user has to be within this distance on the ideal unit sphere to select the line.
@@ -220,9 +228,10 @@ export default {
     }
   },
   circle: {
-    showLabelsInitially: true, // Should the labels be show upon creating the circle
+    showLabelsInitially: false, // Should the labels be show upon creating the circle
     maxLabelDistance: 0.08, // The maximum distance that a label is allowed to get away from the circle
     initialLabelOffset: 0.02, // When making point labels this is initially how far (roughly) they are from the circle
+    defaultLabelMode: LabelDisplayMode.NameOnly, // The default way of displaying this objects label
     minimumRadius: 0.045, // Don't create circles with a radius smaller than this or bigger than Pi-this (must be bigger than point.hitIdealDistance to prevent almost zero radius circles at intersection points)
     numPoints: 100, // The number of vertices used to render the circle. These are spread over the front and back parts. MAKE THIS EVEN!
     hitIdealDistance: 0.03, // The user has to be within this distance on the ideal unit sphere to select the circle.
@@ -279,8 +288,7 @@ export default {
   label: {
     maxLabelDisplayCaptionLength: 30, // The maximum number of characters in the displayed label caption
     maxLabelDisplayTextLength: 15, // The maximum number of characters in the displayed label name
-    labelMode: LabelDisplayMode.NameOnly,
-    //The scaling of the points relative to the scaled for zoom default size
+    //The scaling of the label relative to the scaled for zoom default size
     textScalePercent: 100,
     dynamicBackStyle: true,
     fontSize: 15,
@@ -300,9 +308,12 @@ export default {
     }
   },
   angleMarker: {
-    showLabelsInitially: false, // Should the labels be show upon creating the angleMarker
-    maxLabelDistance: 0.1, // The maximum distance that a label is allowed to get away from the angleMarker
-    initialLabelOffset: 0.04, // When making point labels this is initially how far (roughly) they are from the angleMarker
+    displayInMultiplesOfPiInitially: true, // Should the measure of the angle be in multiples of pi
+    showLabelsInitially: true, // Should the labels be show upon creating the angleMarker
+    maxLabelDistance: 0.2, // The maximum distance that a label is allowed to get away from the angleMarker
+    initialLabelOffset: 0.1, // When making point labels this is initially how far (roughly) they are from the angleMarker
+    defaultLabelMode: LabelDisplayMode.ValueOnly, // The default way of displaying this objects label
+
     minimumRadius: 0.02, // Don't scale angleMarkers to have a radius smaller than this
     defaultRadius: 0.04, // The default radius for angleMarkers
     maximumRadius: 0.1, // Don't scale angleMarkers to have a radius larger than this (This can't be bigger than Pi/2 or else some of the algortihms break down)

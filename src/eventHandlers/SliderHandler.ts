@@ -5,6 +5,8 @@ import Label from "@/plottables/Label";
 import { SESlider } from "@/models/SESlider";
 import { AddExpressionCommand } from "@/commands/AddExpressionCommand";
 import AppStore from "@/store";
+import SETTINGS from "@/global-settings";
+
 export default class SliderHandler extends MouseHandler {
   readonly store = AppStore;
   constructor(layers: Two.Group[]) {
@@ -34,7 +36,11 @@ export default class SliderHandler extends MouseHandler {
   }
 
   createSlider(sliderParams: any): void {
-    console.debug(sliderParams, "at", this.currentSphereVector.toFixed(3));
+    console.debug(
+      sliderParams,
+      "at",
+      this.currentSphereVector.toFixed(SETTINGS.decimalPrecision)
+    );
 
     const slider = new SESlider(sliderParams);
     new AddExpressionCommand(slider, []).execute();

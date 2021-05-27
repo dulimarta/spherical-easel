@@ -369,6 +369,10 @@ export default {
     }
     selected.forEach((n: SENodule) => {
       n.ref?.updateStyle(opt);
+      if (opt.pointRadiusPercent !== undefined) {
+        // if the point radius Percent changes then this can effects the label location so run update
+        n.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
+      }
     });
   },
 

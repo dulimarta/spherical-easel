@@ -8,7 +8,9 @@ export enum StyleEditPanels { // The order of these *must* match the order of th
 export enum LabelDisplayMode {
   NameOnly, // display only the name
   CaptionOnly, // display the caption only
-  NameAndCaption // display the name and caption
+  ValueOnly, // display the value only (if any)
+  NameAndCaption, // display the name and caption
+  NameAndValue // display the name and value (if any)
 }
 
 export enum Styles {

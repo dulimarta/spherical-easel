@@ -197,7 +197,9 @@
     "labelDisplayModes": {
       "nameOnly": "Name Only",
       "captionOnly": "Caption Only",
-      "nameAndCaption": "Name and Caption"
+      "valueOnly": "Value Only",
+      "nameAndCaption": "Name and Caption",
+      "nameAndValue": "Name and Value"
     },
     "labelObjectVisibility": "Label And Object Visibility",
     "selectObjectsToHide": "Select Objects to Hide",
@@ -214,7 +216,7 @@
     "segmentsWithOutCommonEndpoint":"The selected segment does not have a common endpoint with the previously selected one. Select another.",
     "segmentWithOutEndpointOnLine":"The selected segment does not have a endpoint on the previously selected line. Select another.",
     "lineDoesNotContainEndpointOfSegment":"The selected line does contain an endpoint on the previously selected segment. Select another.",
-   "antipodalPointMessage":"The selected point is antipodal or equal to the first selected point. Select another.",
+    "antipodalPointMessage":"The selected point is antipodal or equal to the first selected point. Select another.",
     "antipodalPointMessage2":"The selected point is antipodal or equal to the second selected point. Select another.",
     "newAngleAdded": "New angle measure added.",
     "newAngleAddedV2": "New angle measure {name} added.",
@@ -241,6 +243,9 @@
 
   "objectTree": {
     "expression": "Expression",
+    "parserError": "Reached end of input while parsing expression",
+    "multipleOfPiToggle": "Toggle the display of the expression in multiples of Pi",
+    "toggleDisplay":"Toggle the display of the corresponding object.",
     "slider": "Slider",
     "noObjectsInDatabase": "No objects in database",
     "result": "Result",

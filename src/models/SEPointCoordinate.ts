@@ -29,20 +29,26 @@ export class SEPointCoordinate extends SEMeasurement {
     super();
     this.selector = selector;
     this.point = point;
-    //point.registerChild(this); //registering always happens in the commands
-
-    this.name =
-      this.name + `-${this.coordName}(${point.name}):${this.prettyValue}`;
   }
 
   private get coordName(): string {
     switch (this.selector) {
       case CoordinateSelection.X_VALUE:
-        return "xCoord";
+        return "xCoord(";
       case CoordinateSelection.Y_VALUE:
-        return "yCoord";
+        return "yCoord(";
       case CoordinateSelection.Z_VALUE:
-        return "zCoord";
+        return "zCoord(";
+    }
+  }
+  private get coordinateName(): string {
+    switch (this.selector) {
+      case CoordinateSelection.X_VALUE:
+        return "x Coordinate of ";
+      case CoordinateSelection.Y_VALUE:
+        return "y Coordinate of ";
+      case CoordinateSelection.Z_VALUE:
+        return "z Coordinate of ";
     }
   }
   public get value(): number {
@@ -62,4 +68,41 @@ export class SEPointCoordinate extends SEMeasurement {
     }
   }
   public customStyles = (): Set<Styles> => emptySet;
+
+  public get longName(): string {
+    return (
+      this.coordinateName +
+      this.point.label!.ref.shortName +
+      `: ${this.prettyValue}`
+    );
+  }
+
+  public get shortName(): string {
+    return (
+      this.coordName +
+      this.point.label!.ref.shortName +
+      `): ${this.prettyValue}`
+    );
+  }
+
+  public update(state: UpdateStateType): void {
+    if (state.mode !== UpdateMode.DisplayOnly) return;
+    if (!this.canUpdateNow()) return;
+    // When this updates send its value to the label
+    // There is only one label but three coordinate measures so for only one of them update the label value
+    if (this.selector === CoordinateSelection.X_VALUE) {
+      this.tmpVector
+        .copy(this.point.locationVector)
+        .applyMatrix4(this.invMatrix);
+      this.point.label!.ref.value = [
+        this.tmpVector.x,
+        this.tmpVector.y,
+        this.tmpVector.z
+      ];
+    }
+    //const pos = this.name.lastIndexOf(":");
+    //this.name = this.name.substring(0, pos + 2) + this.prettyValue;
+    this.setOutOfDate(false);
+    this.updateKids(state);
+  }
 }

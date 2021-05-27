@@ -15,6 +15,8 @@ import { SELine } from "@/models/SELine";
 import { SEPoint } from "@/models/SEPoint";
 import { SESegment } from "@/models/SESegment";
 import { SECircle } from "@/models/SECircle";
+import { SEAngleMarker } from "@/models/SEAngleMarker";
+import { SESegmentLength } from "@/models/SESegmentLength";
 
 /**
  * Each Point object is uniquely associated with a SEPoint object.
@@ -24,7 +26,7 @@ import { SECircle } from "@/models/SECircle";
 
 export default class Label extends Nodule {
   /**
-   * This Label's corresponding SELabel, used so that this Label class can turn off and on the visibility of the object it is labeling
+   * This Label's corresponding SELabel, used so that this Label class can turn off and on the visibility of the object it is labeling and control other things about the object it is labeling
    */
   public seLabel?: SELabel;
   /**
@@ -58,19 +60,22 @@ export default class Label extends Nodule {
    * shortName is at most ??? characters long
    * caption is a longer, 60 characters long
    * initialName is not user modifiable and is used until the user changes the name and this is the name that is restored when defaults are restored.
+   * value is the associated number array, if any, that describes the object being labeled. Typically this is just one number, but for points is an array of
+   * the three coordinate values.
    */
   protected initialName = "";
   protected shortUserName = "";
   protected caption = "";
+  protected _value: number[] = [];
 
   /**
    * The styling variables for the text. The user can modify these.
    */
-  /**
-   * Controls how the label is displayed
-   */
 
-  protected textLabelMode = SETTINGS.label.labelMode;
+  /**
+   * Controls how the label is displayed, the initial value depends on the object and this is set in the constructor
+   */
+  protected textLabelMode = LabelDisplayMode.NameOnly;
   /**
    * The default size of the text. The size that appears at all zoom levels.
    * Set with text.size = this.defaultSize
@@ -189,6 +194,22 @@ export default class Label extends Nodule {
     this.shortUserName = name;
     this.stylize(DisplayStyle.ApplyCurrentVariables);
   }
+
+  /**
+   * Return the short name associated with this object
+   */
+  get shortName(): string {
+    return this.shortUserName;
+  }
+  /**
+   * Sets the the value of this label and update the display
+   */
+  set value(n: number[]) {
+    this._value.splice(0);
+    n.forEach(num => this._value.push(num));
+    this.stylize(DisplayStyle.ApplyCurrentVariables);
+  }
+
   /**
    * Get and Set the location of the point in the Default Sphere, this also updates the display
    */
@@ -208,7 +229,19 @@ export default class Label extends Nodule {
   get positionVector(): Vector3 {
     return this._locationVector;
   }
-  // Return the a rectangle in pixel space of the text
+
+  /**
+   * Set the initial label display mode and update the display
+   */
+  set initialLabelDisplayMode(mode: LabelDisplayMode) {
+    this.textLabelMode = mode;
+    this.stylize(DisplayStyle.ApplyCurrentVariables);
+  }
+
+  get labelDisplayMode(): LabelDisplayMode {
+    return this.textLabelMode;
+  }
+  /**  Return the a rectangle in pixel space of the text*/
   get boundingRectangle(): {
     bottom: number;
     height: number;
@@ -441,8 +474,10 @@ export default class Label extends Nodule {
       default:
       case StyleEditPanels.Basic: {
         let labelVisibility: boolean | undefined = undefined;
+        let labelDisplayMode = LabelDisplayMode.NameOnly;
         if (this.seLabel !== undefined) {
           if (this.seLabel.parent instanceof SEPoint) {
+            labelDisplayMode = SETTINGS.point.defaultLabelMode;
             if (this.seLabel.parent.isFreePoint()) {
               labelVisibility = SETTINGS.point.showLabelsOfFreePointsInitially;
             } else {
@@ -450,10 +485,16 @@ export default class Label extends Nodule {
                 SETTINGS.point.showLabelsOfNonFreePointsInitially;
             }
           } else if (this.seLabel.parent instanceof SELine) {
+            labelDisplayMode = SETTINGS.line.defaultLabelMode;
             labelVisibility = SETTINGS.line.showLabelsInitially;
           } else if (this.seLabel.parent instanceof SESegment) {
+            labelDisplayMode = SETTINGS.segment.defaultLabelMode;
             labelVisibility = SETTINGS.segment.showLabelsInitially;
           } else if (this.seLabel.parent instanceof SECircle) {
+            labelDisplayMode = SETTINGS.circle.defaultLabelMode;
+            labelVisibility = SETTINGS.circle.showLabelsInitially;
+          } else if (this.seLabel.parent instanceof SEAngleMarker) {
+            labelDisplayMode = SETTINGS.angleMarker.defaultLabelMode;
             labelVisibility = SETTINGS.circle.showLabelsInitially;
           }
         }
@@ -461,7 +502,7 @@ export default class Label extends Nodule {
           panel: panel, //
           labelDisplayText: this.initialName,
           labelDisplayCaption: "",
-          labelDisplayMode: SETTINGS.label.labelMode,
+          labelDisplayMode: labelDisplayMode,
           labelTextFamily: SETTINGS.label.family,
           labelTextStyle: SETTINGS.label.style,
           labelTextDecoration: SETTINGS.label.decoration,
@@ -501,15 +542,13 @@ export default class Label extends Nodule {
   }
 
   /**
-   * Set the rendering style (flags: ApplyTemporaryVariables, ApplyCurrentVariables, ResetVariablesToDefaults) of the line
+   * Set the rendering style (flags: ApplyTemporaryVariables, ApplyCurrentVariables) of the label
    *
    * ApplyTemporaryVariables means that
    *    1) The temporary variables from SETTINGS.point.temp are copied into the actual Two.js objects
    *    2) The pointScaleFactor is copied from the Point.pointScaleFactor (which accounts for the Zoom magnification) into the actual Two.js objects
    *
    * Apply CurrentVariables means that all current values of the private style variables are copied into the actual Two.js objects
-   *
-   * ResetVariablesToDefaults means that all the private style variables are set to their defaults from SETTINGS.
    */
   stylize(flag: DisplayStyle): void {
     switch (flag) {
@@ -522,25 +561,102 @@ export default class Label extends Nodule {
         // Use the current variables to directly modify the Two.js objects.
 
         // Properties that have no sides
-        let value: string;
+        let labelText = "";
         switch (this.textLabelMode) {
           case LabelDisplayMode.NameOnly: {
-            value = this.shortUserName;
+            labelText = this.shortUserName;
             break;
           }
           case LabelDisplayMode.CaptionOnly: {
-            value = this.caption;
+            labelText = this.caption;
+            break;
+          }
+          case LabelDisplayMode.ValueOnly: {
+            if (this._value.length > 0) {
+              if (this.seLabel!.parent instanceof SEPoint) {
+                labelText =
+                  "(" +
+                  `${this._value
+                    .map(num => num.toFixed(SETTINGS.decimalPrecision))
+                    .join(",")}$` +
+                  ")";
+              } else {
+                let multPi = false;
+                if (this.seLabel!.parent instanceof SEAngleMarker) {
+                  multPi = (this.seLabel!.parent as SEAngleMarker)
+                    .displayInMultiplesOfPi;
+                } else if (this.seLabel!.parent instanceof SESegment) {
+                  const seSegLength = this.seLabel!.parent.kids.find(
+                    node => node instanceof SESegmentLength
+                  );
+                  multPi = (seSegLength as SESegmentLength)
+                    .displayInMultiplesOfPi;
+                }
+                if (!multPi) {
+                  labelText = this._value[0].toFixed(SETTINGS.decimalPrecision);
+                } else {
+                  labelText =
+                    (this._value[0] / Math.PI).toFixed(
+                      SETTINGS.decimalPrecision
+                    ) + "\u{1D7B9}";
+                }
+              }
+            } else {
+              labelText = this.shortUserName;
+            }
             break;
           }
           case LabelDisplayMode.NameAndCaption: {
-            value = this.shortUserName + ": " + this.caption;
+            labelText = this.shortUserName + ": " + this.caption;
+            break;
+          }
+          case LabelDisplayMode.NameAndValue: {
+            if (this._value.length > 0) {
+              if (this.seLabel!.parent instanceof SEPoint) {
+                labelText =
+                  this.shortName +
+                  "(" +
+                  `${this._value
+                    .map(num => num.toFixed(SETTINGS.decimalPrecision))
+                    .join(",")}` +
+                  ")";
+              } else {
+                let multPi = false;
+                if (this.seLabel!.parent instanceof SEAngleMarker) {
+                  multPi = (this.seLabel!.parent as SEAngleMarker)
+                    .displayInMultiplesOfPi;
+                } else if (this.seLabel!.parent instanceof SESegment) {
+                  const seSegLength = this.seLabel!.parent.kids.find(
+                    node => node instanceof SESegmentLength
+                  );
+                  multPi = (seSegLength as SESegmentLength)
+                    .displayInMultiplesOfPi;
+                }
+                if (!multPi) {
+                  labelText =
+                    this.shortName +
+                    ": " +
+                    this._value[0].toFixed(SETTINGS.decimalPrecision);
+                } else {
+                  labelText =
+                    this.shortName +
+                    ": " +
+                    (this._value[0] / Math.PI).toFixed(
+                      SETTINGS.decimalPrecision
+                    ) +
+                    "\u{1D7B9}";
+                }
+              }
+            } else {
+              labelText = this.shortUserName;
+            }
             break;
           }
         }
-        this.frontText.value = value;
-        this.backText.value = value;
-        this.glowingFrontText.value = value;
-        this.glowingBackText.value = value;
+        this.frontText.value = labelText;
+        this.backText.value = labelText;
+        this.glowingFrontText.value = labelText;
+        this.glowingBackText.value = labelText;
         if (this.textStyle !== "bold") {
           this.frontText.style = this.textStyle;
           this.backText.style = this.textStyle;
