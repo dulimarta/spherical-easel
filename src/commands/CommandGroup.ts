@@ -34,10 +34,12 @@ export class CommandGroup extends Command {
     const group: Array<string> = [];
     this.subCommands.forEach((cmd: Command) => {
       const converted = cmd.toOpcode() as null | string;
-      console.log(cmd, " ==> ", converted);
+      // We all all add the command to the group when
+      // it returns non-null
       if (converted !== null) group.push(converted);
     });
-    console.log("Group output is", group);
-    return group.length > 0 ? group : null;
+    // When all the subcommands return null, we ended up
+    // with an empty array which then be replaced with a null
+    return group?.length > 0 ? group : null;
   }
 }

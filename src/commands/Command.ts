@@ -89,19 +89,10 @@ export abstract class Command {
 
   static dumpOpcode(): string {
     const out = Command.commandHistory
-      .map(c => c.toOpcode())
-      .filter(z => z !== null);
+      .map(c => c.toOpcode()) // convert each command in the history to its string representation
+      .filter(z => z !== null); // but include only non-null output
     console.log("Script is ", out);
     return JSON.stringify(out);
-    // return (
-    //   "[" +
-    //   Command.commandHistory
-    //     .map((c: Command, cPos: number) => {
-    //       return JSON.stringify(c); //.replaceAll('"', "");
-    //     })
-    //     .join(",") +
-    //   "]"
-    // );
   }
 
   static makePointAndLabel(at: Vector3): { point: SEPoint; label: SELabel } {
@@ -118,6 +109,7 @@ export abstract class Command {
     label.locationVector.add(new Vector3(2 * offset, offset, 0)).normalize();
     return { point, label };
   }
+
   // Child classes of Command must implement the following abstract methods
   /**
    * restoreState: Perform necessary action to restore the app state.
@@ -137,26 +129,13 @@ export abstract class Command {
   abstract do(): void;
 
   /** Generate an opcode (assembly code) that can be saved as an executable script
-   * and interpreted by calling the constructor of this class. The generated
-   * opcode shall include sufficient details for invoking the constructor.  */
+   * and interpreted at runtime by calling the constructor of this class. The generated
+   * opcode shall include sufficient details for invoking the constructor.
+   * - A simple command shall return a string
+   * - A command group shall return an array of string (one string per command in the group)
+   * - A command that should be excluded/ignored during interpretation at runtime
+   *   shall return null
+   */
+
   abstract toOpcode(): null | string | Array<string>;
 }
-
-// This subclass of Command represents a command which can be saved
-// as a "script". To properly re-execute each command. the string output
-// of toJSON must include all the necessary information needed to invoke
-// the constructor of a particular command class
-// export abstract class Command extends Command {
-/* Reference 
-      https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/stringify#tojson_behavior
-  */
-/**
- * Invoke at runtime by JSON.stringify()
- *
- * @param arg takes one of the following values
- *    - a property name (if this class is used as a property of another object)
- *    - an empty string (if JSON.stringify() directly calls on this object)
- *    - an array index (if this object is an array, nat applicable to our case)
- */
-// abstract toJSON(arg: string): string;
-// }
