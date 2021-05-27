@@ -191,7 +191,8 @@ export default class Label extends Nodule {
    */
   set initialNames(name: string) {
     this.initialName = name;
-    this.shortUserName = name;
+    // shortName is the first 6 characters of name
+    this.shortUserName = name.slice(0, 6);
     this.stylize(DisplayStyle.ApplyCurrentVariables);
   }
 
