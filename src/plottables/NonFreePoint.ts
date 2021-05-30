@@ -94,7 +94,7 @@ export default class NonFreePoint extends Point {
         };
       }
       default:
-      case StyleEditPanels.Basic: {
+      case StyleEditPanels.Label: {
         return {
           panel: panel
         };

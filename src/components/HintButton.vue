@@ -34,7 +34,6 @@ export default class HintButton extends Vue {
   @Prop() readonly i18nLabel!: string;
   @Prop() readonly disabled?: boolean;
   @Prop() readonly color?: string;
-  //   @Prop() readonly labelStyle?: any;
   @Prop() readonly longLabel?: boolean;
 
   get labelStyle(): any {

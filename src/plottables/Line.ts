@@ -398,7 +398,7 @@ export default class Line extends Nodule {
         };
       }
       default:
-      case StyleEditPanels.Basic: {
+      case StyleEditPanels.Label: {
         return {
           panel: panel
         };
@@ -454,7 +454,7 @@ export default class Line extends Nodule {
         };
       }
       default:
-      case StyleEditPanels.Basic: {
+      case StyleEditPanels.Label: {
         return {
           panel: panel
         };

@@ -13,8 +13,27 @@ export default {
     maxPointRadiusPercent: 500, // The maximum percent point radius different from the scaled for zoom size
     minPointRadiusPercent: 20, // The minimum percent point radius different from the scaled for zoom size
     maxGapLengthPlusDashLength: 20, // the maximum of the sum of the gap and dash and the endpoint (max value) of the dash range slider
-    maxLabelTextScalePercent: 500, // The maximum percent text scale different from the scaled for zoom size
-    minLabelTextScalePercent: 20 // The minimum percent text scale different from the scaled for zoom size
+    maxLabelTextScalePercent: 200, // The maximum percent text scale different from the scaled for zoom size
+    minLabelTextScalePercent: 60, // The minimum percent text scale different from the scaled for zoom size
+    /* The possible colors to choose from*/
+    swatches: [
+      ["#C62828", "#E53935", "#E57373", "#FFCDD2"],
+      ["#AD1457", "#D81B60", "#F06292", "#F8BBD0"],
+      ["#6A1B9A", "#8E24AA", "#BA68C8", "#E1BEE7"],
+      ["#4527A0", "#5E35B1", "#9575CD", "#D1C4E9"],
+      ["#283593", "#3949AB", "#7986CB", "#C5CAE9"],
+      ["#1565C0", "#1E88E5", "#64B5F6", "#BBDEFB"] //,
+      // ["", "", "", ""],
+      // ["", "", "", ""],
+      // ["", "", "", ""],
+      // ["", "", "", ""],
+      // ["", "", "", ""],
+      // ["", "", "", ""],
+      // ["", "", "", ""],
+      // ["", "", "", ""],
+      // ["", "", "", ""],
+      // ["", "", "", ""]
+    ]
   },
   zoom: {
     maxMagnification: 10, // The greatest zoom in magnification factor
@@ -371,7 +390,6 @@ export default {
       // The dash pattern will always be the same as the default drawn version
     }
   },
-
   /* Controls the length of time (in ms) the tool tip are displayed */
   toolTip: {
     openDelay: 500,

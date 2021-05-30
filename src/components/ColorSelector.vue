@@ -33,6 +33,7 @@
     <v-color-picker hide-canvas
       panel="hsla"
       :disabled="!colorAgreement || totallyDisableColorSelector || noData"
+      hide-sliders
       show-swatches
       :hide-inputs="!colorAgreement || !showColorOptions"
       hide-panel-switch

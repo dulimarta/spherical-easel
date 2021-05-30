@@ -1,5 +1,5 @@
 export enum StyleEditPanels { // The order of these *must* match the order of the panels in Style.vue
-  Basic,
+  Label,
   Front,
   Back,
   Advanced

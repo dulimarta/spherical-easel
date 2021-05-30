@@ -56,9 +56,9 @@ export default class Style extends Vue {
   // The order of these panels *must* match the order of the StyleEditPanels in Style.ts
   private readonly panels = [
     {
-      i18n_key: "style.basicStyle",
+      i18n_key: "style.labelStyle",
       component: () => import("@/components/BasicFrontBackStyle.vue"),
-      panel: StyleEditPanels.Basic
+      panel: StyleEditPanels.Label
     },
     {
       i18n_key: "style.foregroundStyle",
@@ -79,9 +79,9 @@ export default class Style extends Vue {
 
   panelBackgroundColor(idx: number): string {
     if (idx === 1) {
-      return "grey darken-2";
+      return "grey lighten-2";
     } else {
-      return "grey";
+      return "grey lighten-2";
     }
   }
 }

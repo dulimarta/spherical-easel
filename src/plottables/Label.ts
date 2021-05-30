@@ -426,7 +426,7 @@ export default class Label extends Nodule {
         };
       }
       default:
-      case StyleEditPanels.Basic: {
+      case StyleEditPanels.Label: {
         let objectVisibility: boolean | undefined = undefined;
         if (this.seLabel !== undefined) {
           objectVisibility = this.seLabel.parent.showing;
@@ -473,7 +473,7 @@ export default class Label extends Nodule {
         };
       }
       default:
-      case StyleEditPanels.Basic: {
+      case StyleEditPanels.Label: {
         let labelVisibility: boolean | undefined = undefined;
         let labelDisplayMode = LabelDisplayMode.NameOnly;
         if (this.seLabel !== undefined) {

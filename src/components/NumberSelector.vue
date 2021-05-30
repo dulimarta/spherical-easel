@@ -5,21 +5,30 @@
     <span v-show="editModeIsBack()"
       class="text-subtitle-2">{{ $t(sideBackKey) }} </span>
     <span class="text-subtitle-2">{{ $t(titleKey) }}</span>
+    <span v-if="selections.length > 1"
+      class="text-subtitle-2"
+      style="color:red">{{" "+ $t("style.labelStyleOptionsMultiple") }}</span>
     <br />
-    <div v-show="totalyDisableSelector"
-      class="select-an-object-text">{{ $t("style.selectAnObject") }}</div>
-    <HintButton v-show="!totalyDisableSelector"
+    <div v-if="totalyDisableSelector"
+      class="select-an-object-text">{{$t("style.selectAnObject") }}
+    </div>
+
+    <HintButton v-if="totalyDisableSelector || !styleDataAgreement"
       @click="setStyleDataAgreement"
       long-label
       i18n-label="style.differingStylesDetected"
-      i18n-tooltip="style.differingStylesDetectedToolTip"></HintButton>
-    <HintButton v-show="styleDataAgreement && !totalyDisableSelector"
+      i18n-tooltip="style.differingStylesDetectedToolTip"
+      color="error"></HintButton>
+
+    <HintButton v-if="styleDataAgreement && !totalyDisableSelector"
       @click="clearChanges"
-      :disabled="disableUndoButton"
+      :disabled="disableUndoButton || disabledValue"
       i18n-label="style.clearChanges"
       i18n-tooltip="style.clearChangesToolTip"></HintButton>
-    <HintButton v-show="styleDataAgreement && !totalyDisableSelector"
+
+    <HintButton v-if="styleDataAgreement && !totalyDisableSelector"
       @click="resetToDefaults"
+      :disabled="disabledValue"
       i18n-label="style.restoreDefaults"
       i18n-tooltip="style.restoreDefaultsToolTip"></HintButton>
 
@@ -27,15 +36,18 @@
 
     <v-slider v-model.number="styleData"
       :min="minValue"
-      :disabled="!styleDataAgreement ||totalyDisableSelector"
+      v-show="styleDataAgreement &&!totalyDisableSelector"
       @change="onDataChanged"
       :max="maxValue"
       :step="step"
+      :disabled="disabledValue"
       type="range">
       <template v-slot:prepend>
         <v-icon @click="decrementDataValue">mdi-minus</v-icon>
       </template>
-
+      <template v-slot:thumb-label="{ value }">
+        {{ thumbMap(value) }}
+      </template>
       <template v-slot:append>
         <v-icon @click="incrementDataValue">mdi-plus</v-icon>
       </template>
@@ -51,7 +63,7 @@ import { Watch, Prop, PropSync } from "vue-property-decorator";
 import { StyleOptions, Styles, StyleEditPanels } from "@/types/Styles";
 import { State } from "vuex-class";
 import { SENodule } from "@/models/SENodule";
-import { AppState, Labelable } from "@/types";
+import { AppState, Labelable, UpdateMode } from "@/types";
 import HintButton from "@/components/HintButton.vue";
 
 @Component({ components: { HintButton } })
@@ -67,17 +79,18 @@ export default class NumberSelector extends Vue {
   @Prop({ required: true }) readonly maxValue!: number;
   @Prop() readonly step?: number;
   @Prop() readonly tempStyleStates!: StyleOptions[];
+  @Prop() readonly thumbStringValues?: string[];
+  @Prop() readonly disabledValue?: boolean;
 
   @State((s: AppState) => s.selections)
   readonly selections!: SENodule[];
 
-  private disableUndoButton = true;
-
   readonly toolTipOpenDelay = SETTINGS.toolTip.openDelay;
   readonly toolTipCloseDelay = SETTINGS.toolTip.closeDelay;
 
+  private disableUndoButton = true;
   private styleDataAgreement = true;
-  private totalyDisableSelector = true;
+  private totalyDisableSelector = false;
 
   mounted(): void {
     // this.onSelectionChanged(this.$store.getters.selectedSENodules());
@@ -94,11 +107,20 @@ export default class NumberSelector extends Vue {
     return this.panel === StyleEditPanels.Front;
   }
   editModeIsLabel(): boolean {
-    return this.panel === StyleEditPanels.Basic;
+    return this.panel === StyleEditPanels.Label;
   }
 
+  //converts the value of the slider to the text message displayed in the thumb marker
+  thumbMap(val: number): string {
+    if (this.thumbStringValues === undefined) {
+      return String(val);
+    } else {
+      return this.thumbStringValues[
+        Math.floor((val - this.minValue) / this.step!)
+      ];
+    }
+  }
   beforeUpdate(): void {
-    // console.debug("beforeUpdate", this.styleData);
     // Make a copy of the initial state
     // if (this.defaultStyleStates.length !== this.initialStyleStates.length)
     // this.defaultStyleStates = this.initialStyleStates.slice();
@@ -110,7 +132,7 @@ export default class NumberSelector extends Vue {
     selected.push(...this.$store.getters.selectedSENodules());
     if (this.$store.getters.getUseLabelMode()) {
       const label = ((selected[0] as unknown) as Labelable).label;
-      selected.clear();
+      selected.splice(0);
       selected.push(label);
     }
     this.$store.direct.commit.changeStyle({
@@ -149,27 +171,12 @@ export default class NumberSelector extends Vue {
     this.styleDataAgreement = true;
     this.totalyDisableSelector = false;
 
-    // console.log(
-    //   "Style Name:",
-    //   this.styleName,
-    //   "Before RHS computed:",
-    //   (styleState[0] as any)[this.styleName],
-    //   "Before Style Data",
-    //   this.styleData
-    // );
     this.styleData =
       this.styleName in styleState[0]
         ? (styleState[0] as any)[this.styleName]
         : undefined;
 
-    // console.log(
-    //   "After RHS computed:",
-    //   (styleState[0] as any)[this.styleName],
-    //   "After Style Data",
-    //   this.styleData,
-    //   "These two values should be the same!"
-    // );
-    // screen for undefined - if undefined then this is not a property that is going to be set by the style panel for this selection of objects
+    // check for undefined - if undefined then this is not a property that is going to be set by the style panel for this selection of objects
     if (this.styleData !== undefined) {
       if (
         styleState.length > 1 &&
@@ -185,6 +192,7 @@ export default class NumberSelector extends Vue {
       // The style property doesn't exists on the selected objects so totally disable the selector
       this.disableSelector(true);
     }
+    console.log("here TDS", this.totalyDisableSelector);
   }
   disableSelector(totally: boolean): void {
     this.styleDataAgreement = false;
@@ -223,15 +231,8 @@ export default class NumberSelector extends Vue {
       this.styleData !== undefined &&
       this.styleData + (this.step ?? 1) <= this.maxValue
     ) {
-      this.disableUndoButton = false;
       this.styleData += this.step ?? 1;
-      this.$store.direct.commit.changeStyle({
-        selected: this.$store.getters.selectedSENodules(),
-        payload: {
-          panel: this.panel,
-          [this.styleName]: this.styleData
-        }
-      });
+      this.onDataChanged(this.styleData);
     }
   }
   decrementDataValue(): void {
@@ -239,15 +240,8 @@ export default class NumberSelector extends Vue {
       this.styleData !== undefined &&
       this.styleData - (this.step ?? 1) >= this.minValue
     ) {
-      this.disableUndoButton = false;
       this.styleData -= this.step ?? 1;
-      this.$store.direct.commit.changeStyle({
-        selected: this.$store.getters.selectedSENodules(),
-        payload: {
-          panel: this.panel,
-          [this.styleName]: this.styleData
-        }
-      });
+      this.onDataChanged(this.styleData);
     }
   }
   @Watch("activePanel")

@@ -856,7 +856,7 @@ export default {
         );
       }
       default:
-      case StyleEditPanels.Basic: {
+      case StyleEditPanels.Label: {
         return state.initialStyleStates.slice(
           (2 * state.initialStyleStates.length) / 3,
           state.initialStyleStates.length
@@ -882,7 +882,7 @@ export default {
         );
       }
       default:
-      case StyleEditPanels.Basic: {
+      case StyleEditPanels.Label: {
         return state.defaultStyleStates.slice(
           (2 * state.defaultStyleStates.length) / 3,
           state.defaultStyleStates.length

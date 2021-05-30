@@ -118,7 +118,7 @@
     "measurements": "Measurements"
   },
   "style": {
-    "basicStyle": "Basic Style",
+    "labelStyle": "Label Style",
     "foregroundStyle": "Foreground Style",
     "backgroundStyle": "Background Style",
     "advancedStyle": "Advanced Style",
@@ -127,16 +127,16 @@
     "front": "Front",
     "value": "Value",
 
-    "selectAnObject": "Select An Object",
+    "selectAnObject": "Select Object(s) To Style",
 
     "clearChanges": "Undo",
-    "clearChangesToolTip": "Click this button to revert the selected objects back to the style they had when they were selected.",
+    "clearChangesToolTip": "Click this button to revert the selected objects back to the style they had when they were *first* selected.",
 
     "restoreDefaults": "Apply Defaults",
     "restoreDefaultsToolTip": "Click this button to revert the selected objects back to their default ",
 
-    "differingStylesDetected": "Differing Styles Detected &#13;&#10; Click To Override",
-    "differingStylesDetectedToolTip": "The selected objects have the different values for this  Click this button and select a style to make all selected objects have this common ",
+    "differingStylesDetected": "Differing Styles Detected",
+    "differingStylesDetectedToolTip": "The selected objects have different values for this style option.  Click this button and edit a style to make all selected objects have that style value in common.",
 
     "showColorPresets": "Color Presets",
     "showColorPresetsToolTip": "Click this toggle button to enter HSLA values directly or to select a color preset.",
@@ -156,7 +156,13 @@
     "moreThanOneItemSelected": "Multiple Selected Objects Detected -- Select only one.",
     "moreThanOneItemSelectedToolTip": "More than one object is selected, please only select one geometric object to edit its label or select the label directly.",
 
+    "showMoreStyleOptions":"More Options",
+    "showLessStyleOptions":"Less Options",
+    "showMoreLabelStyleOptionsToolTip":"Show more label styling options.",
+    "showLessLabelStyleOptionsToolTip":"Show fewer label styling options.",
+
     "editMultipleBasicPropertiesMessage": "To edit multiple labels simultaneously select the labels directly.",
+    "multipleLabeledObjects":"Multiple Non-label Objects Selected",
 
     "opacity": "Overall Opacity",
     "dashPattern": "Dash Pattern",
@@ -168,7 +174,9 @@
     "backStyleContrast": "Back Style Contrast",
     "backStyleContrastToolTip": "By default the back side display style of an object is determined by the front style of that object and the value of the Back Style Contrast. A Back Style Contrast of 1 means there is no color difference between front and back styling. A Back Style Contrast of 0 means that the object is barely visible and its size reduction is maximized.",
 
+    "notAllLabelsShowing":"In the current selection, not all labels are showing. To make the styling options available, show all labels using the `Label And Object Visibility` selector.",
     "labelStyleOptions": "Label Text Options",
+    "labelStyleOptionsMultiple": "(Multiple)",
     "labelText": "Label Text",
     "labelCaption": "Label Caption",
     "renameLabels": "No Blank Labels",
@@ -202,9 +210,9 @@
       "nameAndValue": "Name and Value"
     },
     "labelObjectVisibility": "Label And Object Visibility",
-    "selectObjectsToHide": "Select Objects to Hide",
-    "labelHidden": "Label Hidden",
-    "objectHidden": "Object Hidden"
+    "selectObjectsToShow": "Select Objects to Show",
+    "labelVisible": "Label Visible",
+    "objectVisible": "Object Visible"
   },
   "handlers": {
     "duplicatePointMessage": "Duplicate point. Select another.",
