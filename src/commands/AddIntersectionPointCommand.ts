@@ -4,8 +4,6 @@ import { SEOneDimensional } from "@/types";
 import { SELabel } from "@/models/SELabel";
 import { SENodule } from "@/models/SENodule";
 import { Vector3 } from "three";
-import Point from "@/plottables/Point";
-import { DisplayStyle } from "@/plottables/Nodule";
 
 export class AddIntersectionPointCommand extends Command {
   private sePoint: SEPoint;

@@ -1,8 +1,10 @@
 import { Command } from "./Command";
 import { SEPoint } from "@/models/SEPoint";
-import { SEOneDimensional } from "@/types";
+import { SEOneDimensional, UpdateMode } from "@/types";
 import { SELabel } from "@/models/SELabel";
 import SETTINGS from "@/global-settings";
+import { SENodule } from "@/models/SENodule";
+import { Vector3 } from "three";
 
 export class AddPointOnOneDimensionalCommand extends Command {
   private sePoint: SEPoint;
@@ -25,6 +27,10 @@ export class AddPointOnOneDimensionalCommand extends Command {
     }
     Command.store.commit.addPoint(this.sePoint);
     Command.store.commit.addLabel(this.seLabel);
+    this.sePoint.update({
+      mode: UpdateMode.DisplayOnly,
+      stateArray: []
+    });
   }
 
   saveState(): void {
@@ -39,6 +45,31 @@ export class AddPointOnOneDimensionalCommand extends Command {
   }
 
   toOpcode(): null | string | Array<string> {
-    return AddPointOnOneDimensionalCommand.name;
+    return [
+      "AddPointOnOneDimensional",
+      /* arg-1 */ this.sePoint.name,
+      /* arg-2 */ this.sePoint.locationVector.toFixed(7),
+      /* arg-3 */ this.parent.name,
+      /* arg-4 */ this.seLabel.name,
+      /* arg-5 */ this.sePoint.showing
+    ].join("/");
+  }
+
+  static parse(command: string, objMap: Map<string, SENodule>): Command {
+    const tokens = command.split("/");
+    const parentLine = objMap.get(tokens[3]) as SEOneDimensional | undefined;
+    if (parentLine) {
+      const pointPosition = new Vector3();
+      pointPosition.from(tokens[2]);
+      const { point, label } = Command.makePointAndLabel(pointPosition);
+      point.showing = tokens[5] === "true";
+      objMap.set(tokens[1], point);
+      objMap.set(tokens[4], label);
+      return new AddPointOnOneDimensionalCommand(point, parentLine, label);
+    } else {
+      throw new Error(
+        `AddPointOnOneDimensional: parent object ${tokens[3]} is undefined`
+      );
+    }
   }
 }

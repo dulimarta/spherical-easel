@@ -52,6 +52,6 @@ export class SetNoduleDisplayCommand extends Command {
   }
 
   toOpcode(): null | string | Array<string> {
-    return null;
+    return null; // Exclude this command from interpretation
   }
 }

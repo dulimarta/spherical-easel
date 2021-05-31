@@ -105,7 +105,7 @@ export default class ConstructionLoader extends Vue {
       (c: SphericalConstruction) => c.id === docId
     );
     if (pos >= 0) {
-      console.log("Open", docId, this.publicConstructions[pos].description);
+      // console.log("Open", docId, this.publicConstructions[pos].description);
       this.$store.direct.commit.removeAllFromLayers();
       this.$store.direct.commit.init();
       SENodule.resetAllCounters();

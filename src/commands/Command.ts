@@ -87,6 +87,10 @@ export abstract class Command {
     EventBus.fire("redo-enabled", { value: Command.redoHistory.length > 0 });
   }
 
+  /**
+   * Convert all the commands in the history to textual operation code
+   * @returns
+   */
   static dumpOpcode(): string {
     const out = Command.commandHistory
       .map(c => c.toOpcode()) // convert each command in the history to its string representation
@@ -128,9 +132,12 @@ export abstract class Command {
   /**  do: Perform necessary action to alter the app state*/
   abstract do(): void;
 
-  /** Generate an opcode (assembly code) that can be saved as an executable script
-   * and interpreted at runtime by calling the constructor of this class. The generated
-   * opcode shall include sufficient details for invoking the constructor.
+  /** Generate an opcode ("assembly code") that can be saved as an executable script
+   * and interpreted at runtime by calling the constructor of Command subclasses. 
+   * The generated opcode shall include sufficient details for invoking the constructor.
+   * 
+   * @returns Several possible return values:
+
    * - A simple command shall return a string
    * - A command group shall return an array of string (one string per command in the group)
    * - A command that should be excluded/ignored during interpretation at runtime

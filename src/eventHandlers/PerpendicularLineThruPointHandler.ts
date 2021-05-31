@@ -1,4 +1,4 @@
-import Two, { Vector } from "two.js";
+import Two from "two.js";
 import Highlighter from "./Highlighter";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import { AddPerpendicularLineThruPointCommand } from "@/commands/AddPerpendicularLineThruPointCommand";
@@ -7,12 +7,10 @@ import { SESegment } from "@/models/SESegment";
 import { SECircle } from "@/models/SECircle";
 import { SELabel } from "@/models/SELabel";
 import {
-  IntersectionReturnType,
   SEOneDimensional,
   UpdateMode,
   SEIntersectionReturnType
 } from "@/types";
-import store from "@/store";
 import { CommandGroup } from "@/commands/CommandGroup";
 import { SEPoint } from "@/models/SEPoint";
 import { Vector3 } from "three";
@@ -88,6 +86,7 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
     this.temporaryPointAdded = false;
   }
 
+  /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
   mousePressed(event: MouseEvent): void {
     //Select the objects to create the perpendicular
     if (this.isOnSphere) {
@@ -597,9 +596,9 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
     const newPerpLine = new SEPerpendicularLineThruPoint(
       plottableLine,
       oneDimensional,
-      this.sePoint,
-      this.tmpVector,
-      endSEPoint
+      this.sePoint /* start point */,
+      this.tmpVector /* normal vector */,
+      endSEPoint /* end point */
     );
     // Update the display of the perpendicular line
     newPerpLine.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });

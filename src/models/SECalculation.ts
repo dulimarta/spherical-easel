@@ -1,5 +1,5 @@
 import { SEExpression } from "./SEExpression";
-import { UpdateStateType, isSegmentState, UpdateMode } from "@/types";
+import { UpdateStateType, UpdateMode } from "@/types";
 import { ExpressionParser } from "@/expression/ExpressionParser";
 import AppStore from "@/store";
 import store from "@/store";

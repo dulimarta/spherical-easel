@@ -17,7 +17,6 @@ import { DisplayStyle } from "@/plottables/Nodule";
 import { StyleOptions, StyleEditPanels } from "@/types/Styles";
 import SETTINGS from "@/global-settings";
 import { SEAngleMarker } from "@/models/SEAngleMarker";
-import PerpendicularLineThruPointHandler from "@/eventHandlers/PerpendicularLineThruPointHandler";
 import { SEPerpendicularLineThruPoint } from "@/models/SEPerpendicularLineThruPoint";
 
 // const PIXEL_CLOSE_ENOUGH = 8;
@@ -769,7 +768,9 @@ export default {
    * If they have the same type put them in alphabetical order.
    * The creation of the intersection objects automatically follows this convention in assigning parents.
    */
-  intersectTwoObjects: (state: AppState) => (
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  intersectTwoObjects: (_state: AppState) => (
     one: SENodule,
     two: SENodule
   ): IntersectionReturnType[] => {

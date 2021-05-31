@@ -747,8 +747,10 @@ export default class AngleHandler extends Highlighter {
     }
   }
 
-  // eslint-disable-next-line
-  mouseReleased(event: MouseEvent): void {}
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  mouseReleased(_event: MouseEvent): void {
+    // No code ???
+  }
 
   mouseLeave(event: MouseEvent): void {
     super.mouseLeave(event);

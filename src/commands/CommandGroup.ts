@@ -38,8 +38,8 @@ export class CommandGroup extends Command {
       // it returns non-null
       if (converted !== null) group.push(converted);
     });
-    // When all the subcommands return null, we ended up
-    // with an empty array which then be replaced with a null
+    // When all the sub-commands return null, we ended up
+    // with an empty array. In which case we return a null.
     return group?.length > 0 ? group : null;
   }
 }

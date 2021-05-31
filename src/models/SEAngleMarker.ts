@@ -12,7 +12,6 @@ import { Styles } from "@/types/Styles";
 import { UpdateMode, UpdateStateType } from "@/types";
 import { Labelable } from "@/types";
 import { SELabel } from "@/models/SELabel";
-import { SEPointOnOneDimensional } from "./SEPointOnOneDimensional";
 import AppStore from "@/store";
 
 enum AngleMode {
@@ -1007,6 +1006,7 @@ export class SEAngleMarker extends SEMeasurement
         .normalize();
     }
   }
+
   accept(v: Visitor): void {
     // v.actionOnAngleMarker(this);
   }

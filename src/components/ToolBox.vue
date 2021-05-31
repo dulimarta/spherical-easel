@@ -55,7 +55,7 @@
           </ObjectTree>
         </v-tab-item>
         <v-tab-item>
-          <ConstructionLoader></ConstructionLoader>
+          <ConstructionLoader id="loader"></ConstructionLoader>
         </v-tab-item>
       </v-tabs>
     </div>
@@ -118,7 +118,8 @@ export default class Toolbox extends Vue {
 }
 
 #objtree,
-#toolGroups {
+#toolGroups,
+#loader {
   /* It is important to set the height otherwise the "overflow' option in <ObjectTree> won't work correctly */
   height: calc(100vh - 200px);
   overflow: auto;

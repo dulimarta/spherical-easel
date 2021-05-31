@@ -62,7 +62,6 @@ export class AddSegmentCommand extends Command {
   }
 
   static parse(command: string, objMap: Map<string, SENodule>): Command {
-    console.log("Parsing", command);
     // WARNING: the split() trick below assumes that "/" does not occur anywhere
     // in the JSON output
     const tokens = command.split("/");

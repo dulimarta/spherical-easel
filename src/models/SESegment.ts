@@ -1,6 +1,6 @@
 import { SENodule } from "./SENodule";
 import Segment from "@/plottables/Segment";
-import { Vector3, StaticCopyUsage } from "three";
+import { Vector3 } from "three";
 import { Visitable } from "@/visitors/Visitable";
 import { Visitor } from "@/visitors/Visitor";
 import { SEPoint } from "./SEPoint";
