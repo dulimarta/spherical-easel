@@ -1,9 +1,8 @@
 import Two from "two.js";
 import MouseHandler from "./MouseHandler";
 import EventBus from "./EventBus";
-import Label from "@/plottables/Label";
 import { SESlider } from "@/models/SESlider";
-import { AddExpressionCommand } from "@/commands/AddExpressionCommand";
+import { AddMeasurementCommand } from "@/commands/AddMeasurementCommand";
 import AppStore from "@/store";
 export default class SliderHandler extends MouseHandler {
   readonly store = AppStore;
@@ -37,6 +36,6 @@ export default class SliderHandler extends MouseHandler {
     console.debug(sliderParams, "at", this.currentSphereVector.toFixed(3));
 
     const slider = new SESlider(sliderParams);
-    new AddExpressionCommand(slider, []).execute();
+    new AddMeasurementCommand(slider, []).execute();
   }
 }

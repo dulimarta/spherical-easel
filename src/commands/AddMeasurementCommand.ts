@@ -1,15 +1,16 @@
 import { Command } from "./Command";
-import { SEExpression } from "@/models/SEExpression";
 import { SENodule } from "@/models/SENodule";
+import { SEMeasurement } from "@/models/SEMeasurement";
+import { CommandGroup } from "./CommandGroup";
 
-export class AddExpressionCommand extends Command {
-  private seMeasurement: SEExpression;
+export class AddMeasurementCommand extends Command {
+  private seMeasurement: SEMeasurement;
   private parents: SENodule[] = [];
   /**
    * @param seMeasurementzs
    * @param parents If this is included then the seMeasurement is made a child of all the SENodules in this array
    */
-  constructor(seMeasurement: SEExpression, parents?: SENodule[]) {
+  constructor(seMeasurement: SEMeasurement, parents?: SENodule[]) {
     super();
     this.seMeasurement = seMeasurement;
     if (parents !== undefined) {
@@ -32,6 +33,18 @@ export class AddExpressionCommand extends Command {
   }
 
   toOpcode(): null | string | Array<string> {
-    return `AddExpressions ${this.seMeasurement.name}`;
+    if (this.parents.length > 0)
+      return (
+        ["AddMeasurement", this.seMeasurement.name].join("/") +
+        ";" +
+        this.parents.map((p: SENodule) => p.name).join("/")
+      );
+    else return ["AddMeasurement", this.seMeasurement.name].join("/");
+  }
+
+  static parse(command: string, objMap: Map<string, SENodule>): Command {
+    const tokens = command.split("/");
+    const numArgs = tokens.length - 2;
+    return new CommandGroup();
   }
 }

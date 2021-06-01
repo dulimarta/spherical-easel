@@ -55,7 +55,7 @@ import Component from "vue-class-component";
 import { AppState } from "@/types";
 import { SEMeasurement } from "@/models/SEMeasurement";
 import { SECalculation } from "@/models/SECalculation";
-import { AddExpressionCommand } from "@/commands/AddExpressionCommand";
+import { AddCalculationCommand } from "@/commands/AddCalculationCommand";
 import { ExpressionParser } from "@/expression/ExpressionParser";
 import EventBus from "@/eventHandlers/EventBus";
 
@@ -112,7 +112,7 @@ export default class ExpressionForm extends Vue {
   addExpression(): void {
     console.debug("Adding expression", this.calcExpression);
     const calc = new SECalculation(this.calcExpression);
-    new AddExpressionCommand(calc, []).execute();
+    new AddCalculationCommand(calc, this.calcExpression).execute();
   }
 }
 </script>

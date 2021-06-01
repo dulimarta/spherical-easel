@@ -109,11 +109,15 @@
       </p>
 
       <v-text-field type="text"
+        dense
+        clearable
+        counter
         persistent-hint
         label="Description"
         required
         v-model="description"></v-text-field>
       <v-switch v-model="publicConstruction"
+        :disabled="firebaseUid === undefined"
         label="Public (currently inop)"></v-switch>
     </Dialog>
   </v-app>
@@ -162,6 +166,10 @@ export default class App extends Vue {
     // Any objects must include at least one point
     return this.$store.direct.getters.allSEPoints().length > 0;
   }
+
+  get firebaseUid(): string | undefined {
+    return this.$appAuth.currentUser?.uid;
+  }
   mounted(): void {
     this.$store.direct.commit.init();
     EventBus.listen("set-footer-color", this.setFooterColor);
@@ -199,11 +207,11 @@ export default class App extends Vue {
     // const outArr = JSON.parse(out) as Array<any>;
 
     // TODO: handle public vs. private constructions differently
-    // const collectionPath = this.publicConstruction
-    //   ? "constructions"
-    //   : `users/${this.whoami}/constructions`;
+    const collectionPath = this.publicConstruction
+      ? "constructions"
+      : `users/${this.firebaseUid}/constructions`;
     this.$appDB
-      .collection("constructions")
+      .collection(collectionPath)
       .add({
         script: out,
         dateCreated: new Date().toISOString(),

@@ -11,6 +11,8 @@ import { AddSegmentCommand } from "./AddSegmentCommand";
 import { AddAngleMarkerCommand } from "./AddAngleMarkerAndExpressionCommand";
 import { Command } from "./Command";
 import { CommandGroup } from "./CommandGroup";
+import { AddCalculationCommand } from "./AddCalculationCommand";
+import { AddMeasurementCommand } from "./AddMeasurementCommand";
 export type ConstructionScript = Array<string | Array<string>>;
 
 const noduleDictionary = new Map<string, SENodule>();
@@ -51,7 +53,11 @@ function executeIndividual(command: string): Command {
     );
   else if (opCode == "AddAngleMarker") {
     return AddAngleMarkerCommand.parse(command, noduleDictionary);
-  } else {
+  } else if (opCode === "AddMeasurement")
+    return AddMeasurementCommand.parse(command, noduleDictionary);
+  else if (opCode === "AddCalculation")
+    return AddCalculationCommand.parse(command, noduleDictionary);
+  else {
     const errMsg = `Not yet implemented: ${command}`;
     EventBus.fire("show-alert", {
       key: `Not yet implemented ${errMsg}`,

@@ -2,7 +2,7 @@ import Two from "two.js";
 import Highlighter from "./Highlighter";
 import { SEPoint } from "@/models/SEPoint";
 import { SENodule } from "@/models/SENodule";
-import { AddExpressionCommand } from "@/commands/AddExpressionCommand";
+import { AddMeasurementCommand } from "@/commands/AddMeasurementCommand";
 
 import EventBus from "@/eventHandlers/EventBus";
 import {
@@ -56,13 +56,13 @@ export default class PointCoordinateHandler extends Highlighter {
         });
         const coordinatizeCommandGroup = new CommandGroup();
         coordinatizeCommandGroup.addCommand(
-          new AddExpressionCommand(xMeasure, [this.targetPoint])
+          new AddMeasurementCommand(xMeasure, [this.targetPoint])
         );
         coordinatizeCommandGroup.addCommand(
-          new AddExpressionCommand(yMeasure, [this.targetPoint])
+          new AddMeasurementCommand(yMeasure, [this.targetPoint])
         );
         coordinatizeCommandGroup.addCommand(
-          new AddExpressionCommand(zMeasure, [this.targetPoint])
+          new AddMeasurementCommand(zMeasure, [this.targetPoint])
         );
         coordinatizeCommandGroup.execute();
         this.targetPoint = null;
@@ -130,13 +130,13 @@ export default class PointCoordinateHandler extends Highlighter {
             CoordinateSelection.Z_VALUE
           );
           coordinatizeCommandGroup.addCommand(
-            new AddExpressionCommand(xMeasure, [p])
+            new AddMeasurementCommand(xMeasure, [p])
           );
           coordinatizeCommandGroup.addCommand(
-            new AddExpressionCommand(yMeasure, [p])
+            new AddMeasurementCommand(yMeasure, [p])
           );
           coordinatizeCommandGroup.addCommand(
-            new AddExpressionCommand(zMeasure, [p])
+            new AddMeasurementCommand(zMeasure, [p])
           );
         });
 

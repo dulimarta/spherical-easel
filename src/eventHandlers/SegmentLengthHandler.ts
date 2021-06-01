@@ -1,12 +1,9 @@
 import Two from "two.js";
 import Highlighter from "./Highlighter";
 import { SESegment } from "@/models/SESegment";
-import { SENodule } from "@/models/SENodule";
-import { AddExpressionCommand } from "@/commands/AddExpressionCommand";
-import { SEMeasurement } from "@/models/SEMeasurement";
+import { AddMeasurementCommand } from "@/commands/AddMeasurementCommand";
 import { SESegmentLength } from "@/models/SESegmentLength";
 import EventBus from "@/eventHandlers/EventBus";
-import { SetNoduleDisplayCommand } from "@/commands/SetNoduleDisplayCommand";
 
 export default class SegmentLengthHandler extends Highlighter {
   /**
@@ -32,7 +29,7 @@ export default class SegmentLengthHandler extends Highlighter {
           keyOptions: { name: `${lenMeasure.name}` },
           type: "success"
         });
-        new AddExpressionCommand(lenMeasure, [this.targetSegment]).execute();
+        new AddMeasurementCommand(lenMeasure, [this.targetSegment]).execute();
         this.targetSegment = null;
       }
     }
@@ -70,7 +67,7 @@ export default class SegmentLengthHandler extends Highlighter {
           keyOptions: { name: `${lenMeasure.name}` },
           type: "success"
         });
-        new AddExpressionCommand(lenMeasure, [object1]).execute();
+        new AddMeasurementCommand(lenMeasure, [object1]).execute();
       }
     }
     // Unselect the selected objects and clear the selectedObject array

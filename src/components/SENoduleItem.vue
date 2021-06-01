@@ -62,8 +62,6 @@ import { SEExpression } from "@/models/SEExpression";
 import { SESegmentDistance } from "@/models/SESegmentDistance";
 import { SESlider } from "@/models/SESlider";
 import { SetNoduleDisplayCommand } from "@/commands/SetNoduleDisplayCommand";
-import SETTINGS from "@/global-settings";
-import { Labelable, LabelState } from "@/types";
 import { SEAngleMarker } from "@/models/SEAngleMarker";
 
 @Component

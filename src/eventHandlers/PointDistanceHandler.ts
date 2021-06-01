@@ -2,7 +2,7 @@ import Two from "two.js";
 import Highlighter from "./Highlighter";
 import { SEPoint } from "@/models/SEPoint";
 import { SENodule } from "@/models/SENodule";
-import { AddExpressionCommand } from "@/commands/AddExpressionCommand";
+import { AddMeasurementCommand } from "@/commands/AddMeasurementCommand";
 import { SESegmentDistance } from "@/models/SESegmentDistance";
 import EventBus from "@/eventHandlers/EventBus";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
@@ -48,7 +48,7 @@ export default class PointDistantHandler extends Highlighter {
           keyOptions: { name: `${distanceMeasure.name}` },
           type: "success"
         });
-        new AddExpressionCommand(distanceMeasure, [
+        new AddMeasurementCommand(distanceMeasure, [
           this.targetPoints[0],
           this.targetPoints[1]
         ]).execute();
@@ -68,9 +68,10 @@ export default class PointDistantHandler extends Highlighter {
     super.mouseMoved(event);
 
     // Glow only the first SEPoint (must be user created)
-    this.hitSEPoints.filter(
+    const hitPoints = this.hitSEPoints.filter(
       p => !(p instanceof SEIntersectionPoint && !p.isUserCreated)
-    )[0].glowing = true;
+    );
+    if (hitPoints.length > 0) hitPoints[0].glowing = true;
   }
 
   // eslint-disable-next-line
@@ -94,7 +95,10 @@ export default class PointDistantHandler extends Highlighter {
           text: `New measurement ${distanceMeasure.name} added`,
           type: "success"
         });
-        new AddExpressionCommand(distanceMeasure, [object1, object2]).execute();
+        new AddMeasurementCommand(distanceMeasure, [
+          object1,
+          object2
+        ]).execute();
       }
     }
     //Unselect the selected objects and clear the selectedObject array

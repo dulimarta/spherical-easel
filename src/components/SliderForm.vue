@@ -65,9 +65,9 @@ import Vue from "vue";
 import Component from "vue-class-component";
 import { SESlider } from "@/models/SESlider";
 import { Watch } from "vue-property-decorator";
-import { AddExpressionCommand } from "@/commands/AddExpressionCommand";
+import { AddMeasurementCommand } from "@/commands/AddMeasurementCommand";
 @Component
-export default class SliderFoorm extends Vue {
+export default class SliderForm extends Vue {
   private sliderMin = 0;
   private sliderMax = 1;
   private sliderStep = 0.1;
@@ -82,7 +82,7 @@ export default class SliderFoorm extends Vue {
       step: this.sliderStep,
       value: this.sliderValue
     });
-    new AddExpressionCommand(sliderMeasure, []).execute();
+    new AddMeasurementCommand(sliderMeasure, []).execute();
   }
 
   private adjustSlidertep() {
@@ -94,6 +94,7 @@ export default class SliderFoorm extends Vue {
       this.sliderStep = (this.sliderMax - this.sliderMin) / 25;
     }
   }
+
   @Watch("sliderMin")
   onMinimumChanged(newVal: number): void {
     if (newVal > this.sliderMax || this.sliderStep === 0) return;
