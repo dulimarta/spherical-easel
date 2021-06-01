@@ -7,41 +7,34 @@
     <span class="text-subtitle-2">{{ $t(titleKey) }}</span>
     <span v-if="selections.length > 1"
       class="text-subtitle-2"
-      style="color:red">{{" "+ $t("style.labelStyleOptionsMultiple") }}</span>
+      style="color:error">{{" "+ $t("style.labelStyleOptionsMultiple") }}</span>
     <br />
-    <div v-if="totalyDisableSelector"
-      class="select-an-object-text">{{$t("style.selectAnObject") }}
-    </div>
 
-    <HintButton v-if="totalyDisableSelector || !styleDataAgreement"
-      @click="setStyleDataAgreement"
-      long-label
-      i18n-label="style.differingStylesDetected"
-      i18n-tooltip="style.differingStylesDetectedToolTip"
-      color="error"></HintButton>
+    <!-- Differing data styles detected Overlay -->
+    <v-overlay absolute
+      v-bind:value="!styleDataAgreement && !totalyDisableSelector"
+      :opacity="0.8">
+      <v-card class="mx-auto"
+        max-width="344"
+        outlined>
 
-    <HintButton v-if="styleDataAgreement && !totalyDisableSelector"
-      @click="clearChanges"
-      :disabled="disableUndoButton || disabledValue"
-      i18n-label="style.clearChanges"
-      i18n-tooltip="style.clearChangesToolTip"></HintButton>
-
-    <HintButton v-if="styleDataAgreement && !totalyDisableSelector"
-      @click="resetToDefaults"
-      :disabled="disabledValue"
-      i18n-label="style.restoreDefaults"
-      i18n-tooltip="style.restoreDefaultsToolTip"></HintButton>
-
-    <br />
+        <v-card-actions>
+          <v-btn color="info"
+            v-on:click="setStyleDataAgreement">
+            {{$t('style.enableCommonStyle')}}
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-overlay>
 
     <v-slider v-model.number="styleData"
       :min="minValue"
-      v-show="styleDataAgreement &&!totalyDisableSelector"
       @change="onDataChanged"
       :max="maxValue"
       :step="step"
       :disabled="disabledValue"
-      type="range">
+      type="range"
+      class="ma-0 pa-0">
       <template v-slot:prepend>
         <v-icon @click="decrementDataValue">mdi-minus</v-icon>
       </template>
@@ -52,6 +45,24 @@
         <v-icon @click="incrementDataValue">mdi-plus</v-icon>
       </template>
     </v-slider>
+
+    <!--<HintButton v-if="totalyDisableSelector || !styleDataAgreement"
+      @click="setStyleDataAgreement"
+      long-label
+      i18n-label="style.differingStylesDetected"
+      i18n-tooltip="style.differingStylesDetectedToolTip"
+      color="error"></HintButton>-->
+
+    <HintButton @click="clearChanges"
+      :disabled="disableUndoButton || disabledValue"
+      i18n-label="style.clearChanges"
+      i18n-tooltip="style.clearChangesToolTip"></HintButton>
+
+    <HintButton @click="resetToDefaults"
+      :disabled="disabledValue"
+      i18n-label="style.restoreDefaults"
+      i18n-tooltip="style.restoreDefaultsToolTip"></HintButton>
+
   </div>
 </template>
 
@@ -192,7 +203,6 @@ export default class NumberSelector extends Vue {
       // The style property doesn't exists on the selected objects so totally disable the selector
       this.disableSelector(true);
     }
-    console.log("here TDS", this.totalyDisableSelector);
   }
   disableSelector(totally: boolean): void {
     this.styleDataAgreement = false;

@@ -127,7 +127,33 @@
     "front": "Front",
     "value": "Value",
 
+    "showLabels": "Show Label(s)",
+    "showObjects": "Show Object(s)",
+
+    "NOSELECTION": " No Selection",
     "selectAnObject": "Select Object(s) To Style",
+    "closeOrSelect": "Close the styling panel or select object(s).",
+    "toSelectObjects": "To select objects:",
+    "selectionDirection1": "Click on glowing objects to select them.",
+    "selectionDirection2": "Hold the Alt/Option key to add or subtract from your selection.",
+    "selectionDirection3": "Hold a number key to select an object at that depth.",
+    "selectionDirection4":"Hold the p key and click in any empty location to add all points. Similar for lines (l), line segment (s), circles (c), and labels (L)",
+    "closeStylingPanel": "Close Styling Panel",
+
+    "LABELISSUE": "LABEL ISSUE",
+    "labelNotVisible": "Label(s) not visible.",
+    "clickToMakeLabelsVisible": "Click the button below to make all labels visible and then to style them.",
+    "makeLabelsVisible": "Make Label(s) Visible",
+
+    "DIFFERINGSTYLESDETECTED": "DIFFERING STYLES DETECTED",
+    "styleDisagreement":" Style Disagreement",
+    "differentValues": "The selected objects have different values for this style option. Click the button below and edit a style to make all selected objects have that style value in common.",
+    "enableCommonStyle": "Enable Common Style",
+
+    "LABELSANDNONLABELSSELECTED":"LABELS AND NON-LABELS SELECTED",
+    "objectMixture":"Object Mixture",
+    "selectOnlyLabels": "Click the button below to change the selection to only the labels of selected objects.",
+    "selectAllLabels":"Select All Labels",
 
     "clearChanges": "Undo",
     "clearChangesToolTip": "Click this button to revert the selected objects back to the style they had when they were *first* selected.",
@@ -143,6 +169,7 @@
 
     "enableDashPatternSlider": "Set A Dash Pattern",
     "enableDashPatternSliderToolTip": "The selected object(s) have no dash pattern. Click this button to set a pattern.",
+    "gapDashPattern": "Gap Dash Pattern",
 
     "disableBackStyleContrastSlider": "Click To Disable Dynamic Back Style For Selected Object(s)",
     "disableBackStyleContrastSliderToolTip": "The selected objects have dynamic back style enabled. Click this button disable it for only the selected object(s). Then you can change the back style of the selected object(s) using the style options in this panel.",
@@ -153,17 +180,13 @@
     "enableBackStyleContrastSlider": "Click To Enable Dynamic Back Style For Selected Object(s)",
     "enableBackStyleContrastSliderToolTip": "The selected objects do not have dynamic back style enabled. Click this button enable it and adjust the Back Contrast Slider.",
 
-    "moreThanOneItemSelected": "Multiple Selected Objects Detected -- Select only one.",
-    "moreThanOneItemSelectedToolTip": "More than one object is selected, please only select one geometric object to edit its label or select the label directly.",
-
     "showMoreStyleOptions":"More Options",
     "showLessStyleOptions":"Less Options",
     "showMoreLabelStyleOptionsToolTip":"Show more label styling options.",
     "showLessLabelStyleOptionsToolTip":"Show fewer label styling options.",
 
-    "editMultipleBasicPropertiesMessage": "To edit multiple labels simultaneously select the labels directly.",
-    "multipleLabeledObjects":"Multiple Non-label Objects Selected",
-
+    "convertSelectionToLabels":"A mix of label and non-label objects were selected when all label displays were changed. In order to do this the current selection was converted to all the labels of those objects.",
+    
     "opacity": "Overall Opacity",
     "dashPattern": "Dash Pattern",
     "fillColor": "Fill Color",
@@ -174,12 +197,11 @@
     "backStyleContrast": "Back Style Contrast",
     "backStyleContrastToolTip": "By default the back side display style of an object is determined by the front style of that object and the value of the Back Style Contrast. A Back Style Contrast of 1 means there is no color difference between front and back styling. A Back Style Contrast of 0 means that the object is barely visible and its size reduction is maximized.",
 
-    "notAllLabelsShowing":"In the current selection, not all labels are showing. To make the styling options available, show all labels using the `Label And Object Visibility` selector.",
     "labelStyleOptions": "Label Text Options",
     "labelStyleOptionsMultiple": "(Multiple)",
     "labelText": "Label Text",
     "labelCaption": "Label Caption",
-    "renameLabels": "No Blank Labels",
+    "renameLabels": "Rename Labels",
     "maxMinLabelDisplayTextLengthWarning": "Must be between 1 and {max} characters long.",
     "maxMinLabelDisplayCaptionLengthWarning": "Must be at most {max} characters long.",
     "labelTextScalePercent": "Label Scale",

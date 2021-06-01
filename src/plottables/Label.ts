@@ -203,12 +203,15 @@ export default class Label extends Nodule {
     return this.shortUserName;
   }
   /**
-   * Sets the the value of this label and update the display
+   * Sets/Gets the the value of this label and update the display
    */
   set value(n: number[]) {
     this._value.splice(0);
     n.forEach(num => this._value.push(num));
     this.stylize(DisplayStyle.ApplyCurrentVariables);
+  }
+  get value(): number[] {
+    return this._value;
   }
 
   /**
@@ -362,14 +365,17 @@ export default class Label extends Nodule {
     if (options.labelTextRotation !== undefined) {
       this.textRotation = options.labelTextRotation;
     }
+    // the label property of a label is the label itself? Should this be adjustable
     if (options.labelVisibility !== undefined) {
       if (this.seLabel !== undefined) {
         this.seLabel.showing = options.labelVisibility; //Applied immediately
       }
     }
+    // Does the object of a label refer to the parent or the label itself?
     if (options.objectVisibility !== undefined) {
       if (this.seLabel !== undefined) {
         this.seLabel.parent.showing = options.objectVisibility; //Applied immediately
+        //this.seLabel.showing = options.objectVisibility; //Applied immediately
       }
     }
     if (options.labelTextScalePercent !== undefined) {

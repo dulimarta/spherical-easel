@@ -73,7 +73,7 @@ export default {
     showLabelsOfPointOnObjectInitially: false, // Should the labels of points on objects be shown upon creating the point
     readingCoordinatesChangesLabelModeTo: LabelDisplayMode.NameAndValue,
     maxLabelDistance: 0.08, // The maximum distance that a label is allowed to get away from the point
-    initialLabelOffset: 0.02, // When making point labels this is initially how far (roughly) they are from the location of the point
+    initialLabelOffset: 0.2, // When making point labels this is initially how far (roughly) they are from the location of the point
     defaultLabelMode: LabelDisplayMode.NameOnly, // The default way of displaying this objects label
     hitIdealDistance: 0.04, // The user has to be within this distance on the ideal unit sphere to select the point. (must be smaller than line/segment/circle.minArcLength.minimumLength.minRadius)
     //dynamicBackStyle is a flag that means the fill color,stroke, and opacity of the points drawn on the back are automatically calculated based on the value of SETTINGS.contrast and their front counterparts

@@ -4,6 +4,7 @@ import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import EventBus from "@/eventHandlers/EventBus";
 import { SEPoint } from "@/models/SEPoint";
 import Highlighter from "./Highlighter";
+
 // import { SEPoint } from "@/models/SEPoint";
 // import { SELine } from "@/models/SELine";
 // import { SESegment } from "@/models/SESegment";
@@ -25,6 +26,7 @@ export default class SelectionHandler extends Highlighter {
    * An array to store the object selected by the key press handler
    */
   private keyPressSelection: SENodule[] = [];
+
   /**
    * This handles the keyboard events and when multiple objects are under
    * the mouse, the user can specify which one to select.
@@ -137,31 +139,28 @@ export default class SelectionHandler extends Highlighter {
       this.keyPressSelection.clear();
     } else {
       if (event.altKey) {
-        // Add current hit list to the current selection
-        this.hitSENodules.forEach(h => {
-          h.selected = !h.selected;
-          if (h.selected) {
-            this.currentSelection.push(h);
-          } else {
-            // Remove hit object from current selection
-            const idx = this.currentSelection.findIndex(c => c.id === h.id);
-            if (idx >= 0) this.currentSelection.splice(idx, 1);
-          }
-        });
+        // Add current hit object list to the current selection
+        this.hitSENodules[0].selected = !this.hitSENodules[0].selected;
+        if (this.hitSENodules[0].selected) {
+          this.currentSelection.push(this.hitSENodules[0]);
+        } else {
+          // Remove hit object from current selection
+          const idx = this.currentSelection.findIndex(
+            c => c.id === this.hitSENodules[0].id
+          );
+          if (idx >= 0) this.currentSelection.splice(idx, 1);
+        }
       } else {
-        // Replace the current selection with the hit list
+        // Replace the current selection with the hit object (if any)
         this.currentSelection.forEach(s => {
-          // Toggle the current selection if it is not in the hit list
-          if (this.hitSENodules.findIndex(h => h.id === s.id) < 0)
-            s.selected = !s.selected;
+          s.selected = false;
         });
-        this.hitSENodules.forEach(h => {
-          h.selected = !h.selected;
-          //console.log("toggle select", h.name, h.selected);
-        });
-
-        // Add/Filter only selected items
-        this.currentSelection = this.hitSENodules.filter(n => n.selected);
+        if (this.hitSENodules[0] !== undefined) {
+          this.hitSENodules[0].selected = true;
+          this.currentSelection = [this.hitSENodules[0]];
+        } else {
+          this.currentSelection = [];
+        }
       }
     }
     this.store.commit.setSelectedSENodules(this.currentSelection);
@@ -190,8 +189,26 @@ export default class SelectionHandler extends Highlighter {
         type: "success"
       });
     }
-    /* Enable/disable interval timer to flash selected objects */
+    this.highlightBlinker();
+  }
 
+  //This method is called by the BasicFrontBackStyle component because, when changing the selection in that
+  // component, in order to make the selections blink we have to use the SelectionHandler
+  private setBlinkingNode(list: any) {
+    // clear the old selection
+    this.currentSelection = [];
+    //turn off the old highlight timers
+    this.highlightBlinker();
+    // set the new current selection
+    (list.objects as SENodule[]).forEach(node =>
+      this.currentSelection.push(node)
+    );
+    // run the new highlight timers
+    this.highlightBlinker();
+  }
+
+  /* Enable/disable interval timer to flash selected objects */
+  private highlightBlinker(): void {
     if (this.currentSelection.length > 0 && this.highlightTimer === null) {
       // We have selections and interval timer is not running, then start timer and offset timer
       this.highlightTimer = setInterval(this.blinkSelections.bind(this), 1500);
@@ -279,6 +296,7 @@ export default class SelectionHandler extends Highlighter {
   activate(): void {
     window.addEventListener("keypress", this.keyPressHandler);
     this.currentSelection.clear();
+    EventBus.listen("blinking-nodes", this.setBlinkingNode.bind(this));
   }
 
   deactivate(): void {
@@ -303,8 +321,9 @@ export default class SelectionHandler extends Highlighter {
     //this.store.commit.setSelectedSENodules([]);
     //this.currentSelection.clear();
 
-    // Remove the listener
+    // Remove the listeners
     window.removeEventListener("keypress", this.keyPressHandler);
+    EventBus.unlisten("blinking-nodes");
     // If the user has been styling objects and then, without selecting new objects, activates
     //  another tool, the style state should be saved.
     EventBus.fire("save-style-state", {});
