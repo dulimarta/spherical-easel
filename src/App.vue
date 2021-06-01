@@ -196,9 +196,9 @@ export default class App extends Vue {
   doShare(): void {
     /* dump the command history */
     const out = Command.dumpOpcode();
-    const outArr = JSON.parse(out) as Array<any>;
-    console.log("string", out);
-    console.log("parsed", outArr);
+    // const outArr = JSON.parse(out) as Array<any>;
+
+    // TODO: handle public vs. private constructions differently
     // const collectionPath = this.publicConstruction
     //   ? "constructions"
     //   : `users/${this.whoami}/constructions`;
@@ -211,7 +211,7 @@ export default class App extends Vue {
         description: this.description
       })
       .then((doc: DocumentReference) => {
-        console.log("Inserted", doc.id);
+        // console.log("Inserted", doc.id);
         EventBus.fire("show-alert", {
           key: "objectTree.firestoreConstructionSaved",
           keyOptions: { docId: doc.id },

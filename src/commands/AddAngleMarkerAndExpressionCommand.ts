@@ -4,6 +4,12 @@ import { SELabel } from "@/models/SELabel";
 import { SEAngleMarker } from "@/models/SEAngleMarker";
 import { SELine } from "@/models/SELine";
 import { SESegment } from "@/models/SESegment";
+import { SENodule } from "@/models/SENodule";
+import AngleMarker from "@/plottables/AngleMarker";
+import { DisplayStyle } from "@/plottables/Nodule";
+import Label from "@/plottables/Label";
+import { Vector3 } from "three";
+import { UpdateMode } from "@/types";
 
 enum AngleMode {
   NONE,
@@ -66,6 +72,7 @@ export class AddAngleMarkerCommand extends Command {
     this.seAngleMarker.registerChild(this.seLabel);
     Command.store.commit.addAngleMarkerAndExpression(this.seAngleMarker);
     Command.store.commit.addLabel(this.seLabel);
+    this.seAngleMarker.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
   }
 
   saveState(): void {
@@ -84,6 +91,67 @@ export class AddAngleMarkerCommand extends Command {
   }
 
   toOpcode(): null | string | Array<string> {
-    return `AddAngleMarker ${this.seAngleMarker.name}`;
+    return [
+      "AddAngleMarker",
+      /* arg-1 */ this.seAngleMarker.name,
+      /* arg-2 */ this.mode,
+      /* arg-3 */ this._firstSEParent.name,
+      /* arg-4 */ this._secondSEParent.name,
+      /* arg-5 */ this._thirdSEParent?.name,
+      /* arg-6 */ this.seLabel.name,
+      /* arg-7 */ this.seLabel.locationVector.toFixed(7)
+    ].join("/");
+  }
+
+  static parse(command: string, objMap: Map<string, SENodule>): Command {
+    const tokens = command.split("/");
+    const mode = Number(tokens[2]);
+    const firstParent = objMap.get(tokens[3]) as
+      | SELine
+      | SESegment
+      | SEPoint
+      | undefined;
+    const secondParent = objMap.get(tokens[4]) as
+      | SELine
+      | SESegment
+      | SEPoint
+      | undefined;
+    const thirdParent = objMap.get(tokens[5]) as SEPoint | undefined;
+    // In the following if-statement we don't check the existence
+    // of the third parent because it may be undefined
+    if (firstParent && secondParent) {
+      const angleMarker = new AngleMarker();
+      angleMarker.stylize(DisplayStyle.ApplyCurrentVariables);
+      angleMarker.adjustSize();
+
+      // All cases of angle marker constructions follow the same recipe
+      // So it's not necessary to distinguish them with a switch statement
+      const seAngleMarker = new SEAngleMarker(
+        angleMarker,
+        mode,
+        firstParent,
+        secondParent,
+        thirdParent // can be undefined
+      );
+      objMap.set(tokens[1], seAngleMarker);
+
+      const seLabel = new SELabel(new Label(), seAngleMarker);
+      const labelPosition = new Vector3();
+      labelPosition.from(tokens[7]);
+      seLabel.locationVector = labelPosition;
+      objMap.set(tokens[6], seLabel);
+
+      return new AddAngleMarkerCommand(
+        mode,
+        seAngleMarker,
+        seLabel,
+        firstParent,
+        secondParent,
+        thirdParent // can be undefined
+      );
+    }
+    throw new Error(
+      `AddAngleMarker: ${tokens[3]}, ${tokens[4]} or ${tokens[5]} is undefined`
+    );
   }
 }

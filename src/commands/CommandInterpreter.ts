@@ -8,6 +8,7 @@ import { AddPerpendicularLineThruPointCommand } from "./AddPerpendicularLineThru
 import { AddPointCommand } from "./AddPointCommand";
 import { AddPointOnOneDimensionalCommand } from "./AddPointOnOneDimensionalCommand";
 import { AddSegmentCommand } from "./AddSegmentCommand";
+import { AddAngleMarkerCommand } from "./AddAngleMarkerAndExpressionCommand";
 import { Command } from "./Command";
 import { CommandGroup } from "./CommandGroup";
 export type ConstructionScript = Array<string | Array<string>>;
@@ -48,7 +49,9 @@ function executeIndividual(command: string): Command {
       command,
       noduleDictionary
     );
-  else {
+  else if (opCode == "AddAngleMarker") {
+    return AddAngleMarkerCommand.parse(command, noduleDictionary);
+  } else {
     const errMsg = `Not yet implemented: ${command}`;
     EventBus.fire("show-alert", {
       key: `Not yet implemented ${errMsg}`,
