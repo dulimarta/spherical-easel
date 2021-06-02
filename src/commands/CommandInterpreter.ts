@@ -14,6 +14,7 @@ import { CommandGroup } from "./CommandGroup";
 import { AddCalculationCommand } from "./AddCalculationCommand";
 import { AddLocationMeasurementCommand } from "./AddLocationMeasurementCommand";
 import { AddDistanceMeasurementCommand } from "./AddDistanceMeasurementCommand";
+import { AddLengthMeasurementCommand } from "./AddLengthMeasurementCommand";
 export type ConstructionScript = Array<string | Array<string>>;
 
 const noduleDictionary = new Map<string, SENodule>();
@@ -33,40 +34,44 @@ function executeIndividual(command: string): Command {
   // Use exact comparison (and not startsWith) because a command name
   // can be a prefix of another command name
   // (example: AddPoint and AddPointOnOneDimensional)
-  if (opCode === "AddPoint")
-    return AddPointCommand.parse(command, noduleDictionary);
-  else if (opCode === "AddPointOnOneDimensional") {
-    return AddPointOnOneDimensionalCommand.parse(command, noduleDictionary);
-  } else if (opCode === "AddIntersectionPoint")
-    return AddIntersectionPointCommand.parse(command, noduleDictionary);
-  else if (opCode === "AddSegment")
-    return AddSegmentCommand.parse(command, noduleDictionary);
-  else if (opCode === "AddLine")
-    return AddLineCommand.parse(command, noduleDictionary);
-  else if (opCode === "AddCircle")
-    return AddCircleCommand.parse(command, noduleDictionary);
-  else if (opCode === "AddAntipodalPoint")
-    return AddAntipodalPointCommand.parse(command, noduleDictionary);
-  else if (opCode === "AddPerpendicularLineThruPoint")
-    return AddPerpendicularLineThruPointCommand.parse(
-      command,
-      noduleDictionary
-    );
-  else if (opCode == "AddAngleMarker") {
-    return AddAngleMarkerCommand.parse(command, noduleDictionary);
-  } else if (opCode === "AddLocationMeasurement")
-    return AddLocationMeasurementCommand.parse(command, noduleDictionary);
-  else if (opCode === "AddDistanceMeasurement")
-    return AddDistanceMeasurementCommand.parse(command, noduleDictionary);
-  else if (opCode === "AddCalculation")
-    return AddCalculationCommand.parse(command, noduleDictionary);
-  else {
-    const errMsg = `Not yet implemented: ${command}`;
-    EventBus.fire("show-alert", {
-      key: `Not yet implemented ${errMsg}`,
-      type: "error"
-    });
-    throw new Error(errMsg);
+  switch (opCode) {
+    case "AddPoint":
+      return AddPointCommand.parse(command, noduleDictionary);
+    case "AddPointOnOneDimensional":
+      return AddPointOnOneDimensionalCommand.parse(command, noduleDictionary);
+    case "AddIntersectionPoint":
+      return AddIntersectionPointCommand.parse(command, noduleDictionary);
+    case "AddSegment":
+      return AddSegmentCommand.parse(command, noduleDictionary);
+    case "AddLine":
+      return AddLineCommand.parse(command, noduleDictionary);
+    case "AddCircle":
+      return AddCircleCommand.parse(command, noduleDictionary);
+    case "AddAntipodalPoint":
+      return AddAntipodalPointCommand.parse(command, noduleDictionary);
+    case "AddPerpendicularLineThruPoint":
+      return AddPerpendicularLineThruPointCommand.parse(
+        command,
+        noduleDictionary
+      );
+    case "AddAngleMarker":
+      return AddAngleMarkerCommand.parse(command, noduleDictionary);
+    case "AddLocationMeasurement":
+      return AddLocationMeasurementCommand.parse(command, noduleDictionary);
+    case "AddDistanceMeasurement":
+      return AddDistanceMeasurementCommand.parse(command, noduleDictionary);
+    case "AddLengthMeasurement":
+      return AddLengthMeasurementCommand.parse(command, noduleDictionary);
+    case "AddCalculation":
+      return AddCalculationCommand.parse(command, noduleDictionary);
+    default: {
+      const errMsg = `Not yet implemented: ${command}`;
+      EventBus.fire("show-alert", {
+        key: `Not yet implemented ${errMsg}`,
+        type: "error"
+      });
+      throw new Error(errMsg);
+    }
   }
 }
 

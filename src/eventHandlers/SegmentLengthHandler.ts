@@ -1,7 +1,7 @@
 import Two from "two.js";
 import Highlighter from "./Highlighter";
 import { SESegment } from "@/models/SESegment";
-import { AddMeasurementCommand } from "@/commands/AddMeasurementCommand";
+import { AddLengthMeasurementCommand } from "@/commands/AddLengthMeasurementCommand";
 import { SESegmentLength } from "@/models/SESegmentLength";
 import EventBus from "@/eventHandlers/EventBus";
 
@@ -29,7 +29,10 @@ export default class SegmentLengthHandler extends Highlighter {
           keyOptions: { name: `${lenMeasure.name}` },
           type: "success"
         });
-        new AddMeasurementCommand(lenMeasure, [this.targetSegment]).execute();
+        new AddLengthMeasurementCommand(
+          lenMeasure,
+          this.targetSegment
+        ).execute();
         this.targetSegment = null;
       }
     }
@@ -39,9 +42,9 @@ export default class SegmentLengthHandler extends Highlighter {
     // Find all the nearby (hitSE... objects) and update location vectors
     super.mouseMoved(event);
 
-    // Glow the first SESegment
-    this.hitSESegments[0].glowing = true;
     if (this.hitSESegments.length > 0) {
+      // Glow the first SESegment
+      this.hitSESegments[0].glowing = true;
       this.targetSegment = this.hitSESegments[0];
       const len = this.targetSegment.arcLength;
       this.infoText.text = `Arc length ${(len / Math.PI).toFixed(2)}\u{1D7B9}`;
@@ -67,7 +70,7 @@ export default class SegmentLengthHandler extends Highlighter {
           keyOptions: { name: `${lenMeasure.name}` },
           type: "success"
         });
-        new AddMeasurementCommand(lenMeasure, [object1]).execute();
+        new AddLengthMeasurementCommand(lenMeasure, object1).execute();
       }
     }
     // Unselect the selected objects and clear the selectedObject array

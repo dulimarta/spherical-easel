@@ -58,13 +58,11 @@ export default class ToggleLabelDisplayHandler extends Highlighter {
     // highlight those as well (but only one) if they are nearby also
     if (this.hitSEPoints.length > 0) {
       // never highlight non user created intersection points
-      this.hitSEPoints.filter((p: SEPoint) => {
-        if (p instanceof SEIntersectionPoint && !p.isUserCreated) {
-          return false;
-        } else {
-          return true;
-        }
-      })[0].glowing = true;
+      const filteredIntersections = this.hitSEPoints.filter(
+        (p: SEPoint) => p instanceof SEIntersectionPoint && !p.isUserCreated
+      );
+      if (filteredIntersections.length > 0)
+        filteredIntersections[0].glowing = true;
     } else if (this.hitSESegments.length > 0) {
       this.hitSESegments[0].glowing = true;
     } else if (this.hitSELines.length > 0) {

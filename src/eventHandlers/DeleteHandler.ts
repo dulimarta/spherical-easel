@@ -76,13 +76,14 @@ export default class DeleteHandler extends Highlighter {
     // prioritize points, if there is a point nearby, assume the user wants it to be the selection to delete
     if (this.hitSEPoints.length > 0) {
       // never highlight non user created intersection points
-      this.hitSEPoints.filter((p: SEPoint) => {
+      const filteredPoints = this.hitSEPoints.filter((p: SEPoint) => {
         if (p instanceof SEIntersectionPoint && !p.isUserCreated) {
           return false;
         } else {
           return true;
         }
-      })[0].glowing = true;
+      });
+      if (filteredPoints.length > 0) filteredPoints[0].glowing = true;
     } else if (this.hitSESegments.length > 0) {
       this.hitSESegments[0].glowing = true;
     } else if (this.hitSELines.length > 0) {

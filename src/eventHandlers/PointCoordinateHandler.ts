@@ -26,14 +26,11 @@ export default class PointCoordinateHandler extends Highlighter {
     //Select a point to examine its coordinates
     if (this.isOnSphere) {
       // only select non-user created points
-      if (
-        this.hitSEPoints.filter(
-          p => !(p instanceof SEIntersectionPoint && !p.isUserCreated)
-        ).length > 0
-      ) {
-        this.targetPoint = this.hitSEPoints.filter(
-          p => !(p instanceof SEIntersectionPoint && !p.isUserCreated)
-        )[0];
+      const userCreatedPoints = this.hitSEPoints.filter(
+        p => !(p instanceof SEIntersectionPoint && !p.isUserCreated)
+      );
+      if (userCreatedPoints.length > 0) {
+        this.targetPoint = userCreatedPoints[0];
       }
 
       if (this.targetPoint != null) {

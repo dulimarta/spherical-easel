@@ -154,14 +154,11 @@ export default class PointHandler extends Highlighter {
     // The user can create points on circles, segments, and lines, so
     // highlight those as well (but only one) if they are nearby also
     if (this.hitSEPoints.length > 0) {
-      if (
-        this.hitSEPoints.filter(
-          p => p instanceof SEIntersectionPoint && !p.isUserCreated
-        ).length > 0
-      ) {
-        this.hitSEPoints.filter(
-          p => p instanceof SEIntersectionPoint && !p.isUserCreated
-        )[0].glowing = true;
+      const filteredIntersections = this.hitSEPoints.filter(
+        p => p instanceof SEIntersectionPoint && !p.isUserCreated
+      );
+      if (filteredIntersections.length > 0) {
+        filteredIntersections[0].glowing = true;
         this.snapToTemporaryOneDimensional = null;
       }
     } else if (this.hitSESegments.length > 0) {
