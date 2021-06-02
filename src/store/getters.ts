@@ -896,11 +896,7 @@ export default {
   getCanvasWidth: (state: AppState) => (): number => {
     return state.canvasWidth;
   },
-  // In the case of one non-labe object being selected, the label panel should edit that object's label and the fore/back ground should edit
-  // that selectedObject fore and back properties: useLabelMode indicates that we are doing this.
-  getUseLabelMode: (state: AppState) => (): boolean => {
-    return state.useLabelMode;
-  },
+
   getInverseTotalRotationMatrix: (state: AppState) => (): Matrix4 => {
     return state.inverseTotalRotationMatrix;
   },

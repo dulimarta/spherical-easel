@@ -78,16 +78,16 @@ export default class SelectionHandler extends Highlighter {
           (n as any).ref.glowingDisplay();
         });
     }
-    // Get all SELabels
-    if (keyEvent.key.match("L")) {
-      this.store.getters
-        .allSELabels()
-        .filter((n: any) => n.showing) //no hidden labels allowed
-        .forEach((n: any) => {
-          this.keyPressSelection.push(n);
-          (n as any).ref.glowingDisplay();
-        });
-    }
+    // // Get all SELabels
+    // if (keyEvent.key.match("L")) {
+    //   this.store.getters
+    //     .allSELabels()
+    //     .filter((n: any) => n.showing) //no hidden labels allowed
+    //     .forEach((n: any) => {
+    //       this.keyPressSelection.push(n);
+    //       (n as any).ref.glowingDisplay();
+    //     });
+    // }
     // Now process the hitSENodules so the user can select by number
     // If there is nothing or only one nearby ignore this key event
     if (this.hitSENodules?.length <= 1) return;
@@ -138,15 +138,26 @@ export default class SelectionHandler extends Highlighter {
       this.currentSelection.push(...newKeyPressSelections);
       this.keyPressSelection.clear();
     } else {
+      // Remove labels and non-selectable intersection points
+      const possibleAdditions = this.hitSENodules.filter((p: SENodule) => {
+        if (
+          (p instanceof SEIntersectionPoint && !p.isUserCreated) ||
+          p.isLabel()
+        ) {
+          return false;
+        } else {
+          return true;
+        }
+      });
       if (event.altKey) {
         // Add current hit object list to the current selection
-        this.hitSENodules[0].selected = !this.hitSENodules[0].selected;
-        if (this.hitSENodules[0].selected) {
-          this.currentSelection.push(this.hitSENodules[0]);
+        possibleAdditions[0].selected = !possibleAdditions[0].selected;
+        if (possibleAdditions[0].selected) {
+          this.currentSelection.push(possibleAdditions[0]);
         } else {
           // Remove hit object from current selection
           const idx = this.currentSelection.findIndex(
-            c => c.id === this.hitSENodules[0].id
+            c => c.id === possibleAdditions[0].id
           );
           if (idx >= 0) this.currentSelection.splice(idx, 1);
         }
@@ -155,9 +166,9 @@ export default class SelectionHandler extends Highlighter {
         this.currentSelection.forEach(s => {
           s.selected = false;
         });
-        if (this.hitSENodules[0] !== undefined) {
-          this.hitSENodules[0].selected = true;
-          this.currentSelection = [this.hitSENodules[0]];
+        if (possibleAdditions[0] !== undefined) {
+          possibleAdditions[0].selected = true;
+          this.currentSelection = [possibleAdditions[0]];
         } else {
           this.currentSelection = [];
         }
@@ -189,26 +200,7 @@ export default class SelectionHandler extends Highlighter {
         type: "success"
       });
     }
-    this.highlightBlinker();
-  }
 
-  //This method is called by the BasicFrontBackStyle component because, when changing the selection in that
-  // component, in order to make the selections blink we have to use the SelectionHandler
-  private setBlinkingNode(list: any) {
-    // clear the old selection
-    this.currentSelection = [];
-    //turn off the old highlight timers
-    this.highlightBlinker();
-    // set the new current selection
-    (list.objects as SENodule[]).forEach(node =>
-      this.currentSelection.push(node)
-    );
-    // run the new highlight timers
-    this.highlightBlinker();
-  }
-
-  /* Enable/disable interval timer to flash selected objects */
-  private highlightBlinker(): void {
     if (this.currentSelection.length > 0 && this.highlightTimer === null) {
       // We have selections and interval timer is not running, then start timer and offset timer
       this.highlightTimer = setInterval(this.blinkSelections.bind(this), 1500);
@@ -240,40 +232,20 @@ export default class SelectionHandler extends Highlighter {
   }
 
   mouseMoved(event: MouseEvent): void {
-    // console.log("mouse move event");
     // UnGlow and clear any objects in the keyPressSelection
     if (this.keyPressSelection.length != 0) {
       this.keyPressSelection.forEach(n => (n as any).ref.normalDisplay());
       this.keyPressSelection.clear();
     }
     super.mouseMoved(event);
-    // this.hitSENodules = this.store.getters.findNearbySENodules(
-    //   this.currentSphereVector,
-    //   this.currentScreenVector
-    // );
-    // console.log("----------------------------");
-    // this.hitSENodules.forEach(n =>
-    //   console.log("hit object", n.name, n.selected)
-    // );
-    // Create an array of SENodules of all nearby objects by querying the store
-    // this.hitSENodules = this.store.getters
-    //   .findNearbySENodules(this.currentSphereVector, this.currentScreenVector)
-    //   .filter((n: SENodule) => {
-    //     if (n instanceof SEIntersectionPoint) {
-    //       if (!n.isUserCreated) {
-    //         return n.exists; //You always select automatically created intersection points if it exists
-    //       } else {
-    //         return n.showing && n.exists; //You can't select hidden objects or items that don't exist
-    //       }
-    //     } else {
-    //       return n.showing && n.exists; //You can't select hidden objects or items that don't exist
-    //     }
-    //   });
 
     // Glow the appropriate object, only the top one should glow because the user can only add one at a time with a mouse press
     this.hitSENodules
       .filter((p: SENodule) => {
-        if (p instanceof SEIntersectionPoint && !p.isUserCreated) {
+        if (
+          (p instanceof SEIntersectionPoint && !p.isUserCreated) ||
+          p.isLabel()
+        ) {
           return false;
         } else {
           return true;
@@ -296,7 +268,6 @@ export default class SelectionHandler extends Highlighter {
   activate(): void {
     window.addEventListener("keypress", this.keyPressHandler);
     this.currentSelection.clear();
-    EventBus.listen("blinking-nodes", this.setBlinkingNode.bind(this));
   }
 
   deactivate(): void {
@@ -309,7 +280,7 @@ export default class SelectionHandler extends Highlighter {
       if (this.delayedStart) clearInterval(this.delayedStart);
       this.delayedStart = null;
     }
-    // Unselect all selected objects
+    // Unselect all selected objects (this unglows them and sets the selected flag to false for them)
     this.store.getters.selectedSENodules().forEach((obj: SENodule) => {
       obj.selected = false;
     });
@@ -321,9 +292,9 @@ export default class SelectionHandler extends Highlighter {
     //this.store.commit.setSelectedSENodules([]);
     //this.currentSelection.clear();
 
-    // Remove the listeners
+    // Remove the listener
     window.removeEventListener("keypress", this.keyPressHandler);
-    EventBus.unlisten("blinking-nodes");
+
     // If the user has been styling objects and then, without selecting new objects, activates
     //  another tool, the style state should be saved.
     EventBus.fire("save-style-state", {});

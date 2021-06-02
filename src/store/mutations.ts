@@ -52,7 +52,6 @@ export const initialState: AppState = {
   initialStyleStates: [],
   defaultStyleStates: [],
   initialBackStyleContrast: SETTINGS.style.backStyleContrast,
-  useLabelMode: false,
   inverseTotalRotationMatrix: new Matrix4() //initially the identity. The composition of all the inverses of the rotation matrices applied to the sphere
 };
 //#endregion appState
@@ -113,11 +112,7 @@ export default {
       state.zoomTranslation[i] = vec[i];
     }
   },
-  // In the case of one non-labe object being selected, the label panel should edit that object's label and the fore/back ground should edit
-  // that selectedObject fore and back properties: useLabelMode indicates that we are doing this. (This *only* applies when there is exactly one object selected)
-  setUseLabelMode(state: AppState, value: boolean): void {
-    state.useLabelMode = value;
-  },
+
   //#region addPoint
   addPoint(state: AppState, point: SEPoint): void {
     state.sePoints.push(point);

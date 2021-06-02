@@ -47,8 +47,6 @@ export interface AppState {
   initialStyleStates: StyleOptions[];
   defaultStyleStates: StyleOptions[];
   initialBackStyleContrast: number;
-  useLabelMode: boolean; // In the case of one non-labeled object being selected, the label panel should edit that object's label and the fore/back ground should edit
-  // that selectedObject fore and back properties: useLabelMode indicates that we are doing this. (i.e. an non-label object is selected)
   inverseTotalRotationMatrix: Matrix4; // Initially the identity. This is the composition of all the inverses of the rotation matrices applied to the sphere.
 }
 /* This interface lists all the properties that each tool/button must have. */

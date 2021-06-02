@@ -245,11 +245,13 @@
 
     <!-- Scope of the Label Not Visible Overlay-->
     <v-card color="grey lighten-2"
+      align="center"
+      justify="center"
       flat>
 
-      <!-- Label(s) not showing overlay-->
+      <!-- Label(s) not showing overlay -- higher z-index rendered on top-->
       <v-overlay absolute
-        z-index="2"
+        z-index="10"
         v-bind:value="editModeIsLabel() && !allLabelsShowing && !totalyDisableStyleDataSelector"
         :opacity="0.8">
         <v-card class="mx-auto"
@@ -279,13 +281,16 @@
         </v-card>
       </v-overlay>
 
-      <!-- Scope of the Label Text Options Overlays-->
-      <v-card color="grey lighten-2"
-        flat>
-        <!-- Differing data styles detected Overlay -->
+      <!-- Scope of the Label Text Options Different Style Detected Overlays -->
+      <v-card flat
+        color="grey lighten-2"
+        align="center"
+        justify="center">
+        <!-- Differing data styles detected Overlay --higher z-index rendered on top-->
         <v-overlay absolute
-          v-bind:value="editModeIsLabel() && hasLabelStyle && !styleDataAgreement && !totalyDisableStyleDataSelector"
-          :opacity="0.8">
+          v-bind:value="editModeIsLabel() && !styleDataAgreement && !totalyDisableStyleDataSelector"
+          :opacity="0.8"
+          z-index="1">
           <v-card class="mx-auto"
             max-width="344"
             outlined>
@@ -312,72 +317,18 @@
           </v-card>
         </v-overlay>
 
-        <!-- (Not only labels) or (more than one non-label object) are Selected Overlay -->
-        <v-overlay absolute
-          v-bind:value="editModeIsLabel() && !hasLabelStyle && !totalyDisableStyleDataSelector"
-          :opacity="0.8">
-          <v-card class="mx-auto"
-            max-width="344"
-            outlined>
-            <v-list-item three-line
-              class="pb-0">
-              <v-list-item-content class="pb-1">
-                <div class="overline mb-2">
-                  {{$t('style.LABELSANDNONLABELSSELECTED')}}
-                </div>
-                <v-list-item-title class="headline mb-1">
-                  {{$t('style.objectMixture')}}
-                </v-list-item-title>
-                <v-list-item-subtitle> {{$t('style.selectOnlyLabels')}}
-                </v-list-item-subtitle>
-              </v-list-item-content>
-            </v-list-item>
-
-            <v-card-actions>
-              <v-btn color="info"
-                v-on:click="changeSelectionToAllLabels">
-                {{$t('style.selectAllLabels')}}
-              </v-btn>
-            </v-card-actions>
-          </v-card>
-        </v-overlay>
-
-        <!--
-    <div v-show="editModeIsLabel() && !hasLabelStyle"
-      style='padding-top: 10px'>
-      <v-tooltip bottom
-        :open-delay="toolTipOpenDelay"
-        :close-delay="toolTipCloseDelay"
-        max-width="400px">
-        <template v-slot:activator="{ on }">
-          <v-alert elevation="0"
-            v-on="on"
-            icon="mdi-alert"
-            transition="scale-transition"
-            type="error">
-            <span>{{ $t("style.multipleLabeledObjects") }}</span>
-          </v-alert>
-        </template>
-        <span>{{ $t("style.editMultipleBasicPropertiesMessage") }}</span>
-      </v-tooltip>
-    </div>
--->
         <!-- Label Text Options -->
         <fade-in-card :showWhen="editModeIsLabel()">
           <span
             class="text-subtitle-2">{{ $t("style.labelStyleOptions") }}</span>
           <span v-if="selections.length > 1"
             class="text-subtitle-2"
-            style="color:error">{{" "+ $t("style.labelStyleOptionsMultiple") }}</span>
+            style="color:red">{{" "+ $t("style.labelStyleOptionsMultiple") }}</span>
           <div style="line-height:15%;">
             <br />
           </div>
-          <!--<div v-show="totalyDisableStyleDataSelector"
-        class="select-an-object-text">
-        {{ $t("style.selectAnObject")}}
-      </div>-->
-          <!-- These should be displayed if there is style data agreement and it is not totally disabled -->
 
+          <!-- Label Text Selections -->
           <v-text-field v-model="labelDisplayText"
             v-bind:label="$t('style.labelText')"
             :counter="maxLabelDisplayTextLength"
@@ -386,11 +337,12 @@
             dense
             v-bind:error-messages="$t(labelDisplayTextErrorMessageKey, { max: maxLabelDisplayTextLength })"
             :rules="[labelDisplayTextCheck]"
-            @keyup="setlabelDisplayTextChange(); onStyleDataChanged()"
-            @blur="setlabelDisplayTextChange(); onStyleDataChanged()"
-            @change="setlabelDisplayTextChange(); onStyleDataChanged()">
+            @keyup="setlabelDisplayTextChange(); onLabelStyleDataChanged()"
+            @blur="setlabelDisplayTextChange(); onLabelStyleDataChanged()"
+            @change="setlabelDisplayTextChange(); onLabelStyleDataChanged()">
           </v-text-field>
 
+          <!-- Label Caption Selections (only if more label style selected) -->
           <div v-show="showMoreLabelStyles">
             <v-text-field v-model="labelDisplayCaption"
               v-bind:label="$t('style.labelCaption')"
@@ -400,95 +352,24 @@
               dense
               v-bind:error-messages="$t(labelDisplayCaptionErrorMessageKey, { max: maxLabelDisplayCaptionLength })"
               :rules="[labelDisplayCaptionCheck]"
-              @keyup="setlabelDisplayCaptionChange(); onStyleDataChanged()"
-              @blur="setlabelDisplayCaptionChange(); onStyleDataChanged()"
-              @change="setlabelDisplayCaptionChange(); onStyleDataChanged()">
+              @keyup="setlabelDisplayCaptionChange(); onLabelStyleDataChanged()"
+              @blur="setlabelDisplayCaptionChange(); onLabelStyleDataChanged()"
+              @change="setlabelDisplayCaptionChange(); onLabelStyleDataChanged()">
             </v-text-field>
           </div>
 
+          <!-- Label Diplay Mode Selections -->
           <v-select v-model="labelDisplayMode"
             v-bind:label="$t('style.labelDisplayMode')"
             :items="labelDisplayModeValueFilter(labelDisplayModeItems)"
             filled
             outlined
             dense
-            @blur="setlabelDisplayModeChange(); onStyleDataChanged()"
-            @change="setlabelDisplayModeChange(); onStyleDataChanged()">
+            @blur="setlabelDisplayModeChange(); onLabelStyleDataChanged()"
+            @change="setlabelDisplayModeChange(); onLabelStyleDataChanged()">
           </v-select>
 
-          <!-- <v-card outlined
-          class="px-4"
-          filled>
-          <v-chip-group v-model="labelObjectVisibility"
-            multiple
-            active-class="primary--text">
-            <v-chip value="labelHidden"
-              filter
-              dense
-              outlined
-              @change="setLabelObjectVisibilityChange(); onStyleDataChanged()">
-              {{ $t('style.labelHidden') }}
-            </v-chip>
-            <v-chip value="objectHidden"
-              dense
-              filter
-              outlined
-              @change="setLabelObjectVisibilityChange(); onStyleDataChanged()">
-              {{$t('style.objectHidden')}}
-            </v-chip>
-          </v-chip-group>
-        </v-card>-->
-          <!-- <v-container fluid
-          outlined>
-          <p>{{$t('style.labelObjectVisibility')}}
-          </p>
-          <v-row class="light--text">
-            <v-col cols="4">
-              <v-checkbox v-model="labelObjectVisibility"
-                :label="$t('style.labelHidden')"
-                value="labelHidden"
-                dense
-                @change="setLabelObjectVisibilityChange(); onStyleDataChanged()">
-              </v-checkbox>
-            </v-col>
-            <v-col cols="4">
-              <v-checkbox v-model="labelObjectVisibility"
-                :label="$t('style.objectHidden')"
-                value="objectHidden"
-                dense
-                @change="setLabelObjectVisibilityChange(); onStyleDataChanged()">
-              </v-checkbox>
-            </v-col>
-          </v-row>
-        </v-container>-->
-          <!-- <v-select v-model="labelObjectVisibility"
-          :label="$t('style.labelObjectVisibility')"
-          :items="labelObjectVisibilityItems"
-          filled
-          outlined
-          dense
-          multiple
-          chips
-          small-chips
-          deletable-chips
-          color="blue"
-          :error="!allLabelsShowing"
-          :no-data-text="$t('style.selectObjectsToShow')"
-          :menu-props="{
-                    closeOnClick: false,
-                    closeOnContentClick: true,
-          }"
-          @blur="setLabelObjectVisibilityChange(); onStyleDataChanged()"
-          @change="setLabelObjectVisibilityChange(); onStyleDataChanged()">
-          <template #selection="{ item }">
-            <v-chip outlined
-              @click:close="deleteChip(item, labelObjectVisibilityItems)">
-              {{item.text}}
-            </v-chip>
-          </template>
-        </v-select>-->
-
-          <!-- These should only be displayed if the user selects more -->
+          <!-- Label Text Family Selections (only if more label style selected) -->
           <div v-show="showMoreLabelStyles">
             <v-select v-model="labelTextFamily"
               v-bind:label="$t('style.labelTextFamily')"
@@ -496,51 +377,49 @@
               filled
               outlined
               dense
-              @blur="setlabelTextFamilyChange(); onStyleDataChanged()"
-              @change="setlabelTextFamilyChange(); onStyleDataChanged()">
+              @blur="setlabelTextFamilyChange(); onLabelStyleDataChanged()"
+              @change="setlabelTextFamilyChange(); onLabelStyleDataChanged()">
             </v-select>
+          </div>
+
+          <!-- Label Text Style Selections (only if more label style selected) -->
+          <div v-show="showMoreLabelStyles">
             <v-select v-model="labelTextStyle"
               v-bind:label="$t('style.labelTextStyle')"
               :items="labelTextStyleItems"
               filled
               outlined
               dense
-              @blur="setlabelTextStyleChange(); onStyleDataChanged()"
-              @change="setlabelTextStyleChange(); onStyleDataChanged()">
+              @blur="setlabelTextStyleChange(); onLabelStyleDataChanged()"
+              @change="setlabelTextStyleChange(); onLabelStyleDataChanged()">
             </v-select>
+          </div>
+
+          <!-- Label Text Decoration Selections (only if more label style selected) -->
+          <div v-show="showMoreLabelStyles">
             <v-select v-model="labelTextDecoration"
               v-bind:label="$t('style.labelTextDecoration')"
               :items="labelTextDecorationItems"
               filled
               outlined
               dense
-              @blur="setlabelTextDecorationChange(); onStyleDataChanged()"
-              @change="setlabelTextDecorationChange(); onStyleDataChanged()">
+              @blur="setlabelTextDecorationChange(); onLabelStyleDataChanged()"
+              @change="setlabelTextDecorationChange(); onLabelStyleDataChanged()">
             </v-select>
           </div>
-          <!--<HintButton v-if="!styleDataAgreement"
-        @click="setStyleDataAgreement"
-        i18n-label="style.differingStylesDetected"
-        long-label
-        i18n-tooltip="style.differingStylesDetectedToolTip"
-        color="error">
-      </HintButton>-->
 
-          <HintButton v-if="styleDataAgreement "
-            @click="clearStyleData"
-            :disabled="disableStyleSelectorUndoButton || !allLabelsShowing"
+          <HintButton @click="clearStyleData"
+            :disabled="disableStyleSelectorUndoButton"
             i18n-label="style.clearChanges"
             i18n-tooltip="style.clearChangesToolTip"></HintButton>
 
-          <HintButton v-if="styleDataAgreement "
-            @click="resetStyleDataToDefaults"
+          <HintButton @click="resetStyleDataToDefaults"
             i18n-label="style.restoreDefaults"
             i18n-tooltip="style.restoreDefaultsToolTip"
             :disabled="!allLabelsShowing"></HintButton>
 
         </fade-in-card>
       </v-card>
-
       <!-- Scope of the Number Selector Overlays-->
       <v-card color="grey lighten-2"
         flat>
@@ -569,9 +448,8 @@
       <v-card color="grey lighten-2"
         flat>
         <!-- Label Text Rotation Number Selector-->
-        <fade-in-card :showWhen="
-        (editModeIsLabel() && hasLabelTextRotation && showMoreLabelStyles)
-      ">
+        <fade-in-card
+          :showWhen="(editModeIsLabel() && hasLabelTextRotation && showMoreLabelStyles)">
           <NumberSelector id="labelTextRotationSlider"
             v-bind:data.sync="labelTextRotation"
             style-name="labelTextRotation"
@@ -587,7 +465,26 @@
         </fade-in-card>
       </v-card>
     </v-card>
-    <HintButton v-if="!showMoreLabelStyles"
+
+    <v-tooltip bottom
+      :open-delay="toolTipOpenDelay"
+      :close-delay="toolTipCloseDelay"
+      max-width="400px"
+      class="pa-0 pm-0">
+      <template v-slot:activator="{on}">
+        <v-btn v-on="on"
+          @click="toggleShowMoreLabelStyles"
+          class="text-subtitle-2"
+          text
+          plain
+          ripple
+          x-small>{{$t('style.toggleStyleOptions')}}
+        </v-btn>
+      </template>
+      {{$t('style.toggleStyleOptionsToolTip')}}
+    </v-tooltip>
+
+    <!--  <HintButton v-if="!showMoreLabelStyles"
       @click="toggleShowMoreLabelStyles"
       i18n-label="style.showMoreStyleOptions"
       i18n-tooltip="style.showMoreLabelStyleOptionsToolTip">
@@ -597,7 +494,7 @@
       @click="toggleShowMoreLabelStyles"
       i18n-label="style.showLessStyleOptions"
       i18n-tooltip="style.showLessLabelStyleOptionsToolTip">
-    </HintButton>
+    </HintButton> -->
 
   </div>
 
@@ -626,12 +523,19 @@ import NumberSelector from "@/components/NumberSelector.vue";
 import ColorSelector from "@/components/ColorSelector.vue";
 //import { TranslateResult } from "vue-i18n";
 import i18n from "../i18n";
+import TranslateResult from "../i18n";
 import { SELabel } from "@/models/SELabel";
 import Style from "./Style.vue";
 import HintButton from "@/components/HintButton.vue";
 
 // import { getModule } from "vuex-module-decorators";
 // import UI from "@/store/ui-styles";
+type labelDisplayModeItem = {
+  text: any; //typeof VueI18n.TranslateResult
+  value: LabelDisplayMode;
+  optionRequiresMeasurementValueToExist: boolean;
+  optionRequiresCaptionToExist: boolean;
+};
 
 /**
  * values is a list of Styles (found in @/types/styles.ts) that are number valued
@@ -718,11 +622,10 @@ export default class BasicFrontBackStyle extends Vue {
   // the user to click to show more of the Label Styling options
   private showMoreLabelStyles = false;
 
-  //If all labels in the selection are showing in the selection then this is true
-  private allSelectedLabelsShowing = false;
-  //If all labels in the selction have a defined value this is true -- this controls if the
-  // labelDisplayModeItems include ValueOnly and NameAndValue
-  private allSelectedLabelsHaveValue = false;
+  private labelVisible: boolean | undefined = false;
+  private objectVisible: boolean | undefined = true;
+  private labelVisibilityChange = false;
+  private objectVisibilityChange = false;
 
   private labelDisplayText: string | undefined = "";
   private labelDisplayTextChange = false;
@@ -739,31 +642,36 @@ export default class BasicFrontBackStyle extends Vue {
 
   private labelDisplayMode: LabelDisplayMode | undefined =
     LabelDisplayMode.NameOnly;
-  private labelDisplayModeItems = [
+  private labelDisplayModeItems: labelDisplayModeItem[] = [
     {
       text: i18n.t("style.labelDisplayModes.nameOnly"),
       value: LabelDisplayMode.NameOnly,
-      optionRequiresMeasurementValueToExist: false
+      optionRequiresMeasurementValueToExist: false,
+      optionRequiresCaptionToExist: false
     },
     {
       text: i18n.t("style.labelDisplayModes.captionOnly"),
       value: LabelDisplayMode.CaptionOnly,
-      optionRequiresMeasurementValueToExist: false
+      optionRequiresMeasurementValueToExist: false,
+      optionRequiresCaptionToExist: true
     },
     {
       text: i18n.t("style.labelDisplayModes.valueOnly"),
       value: LabelDisplayMode.ValueOnly,
-      optionRequiresMeasurementValueToExist: true
+      optionRequiresMeasurementValueToExist: true,
+      optionRequiresCaptionToExist: false
     },
     {
       text: i18n.t("style.labelDisplayModes.nameAndCaption"),
       value: LabelDisplayMode.NameAndCaption,
-      optionRequiresMeasurementValueToExist: false
+      optionRequiresMeasurementValueToExist: false,
+      optionRequiresCaptionToExist: true
     },
     {
       text: i18n.t("style.labelDisplayModes.nameAndValue"),
       value: LabelDisplayMode.NameAndValue,
-      optionRequiresMeasurementValueToExist: true
+      optionRequiresMeasurementValueToExist: true,
+      optionRequiresCaptionToExist: false
     }
   ];
   private labelDisplayModeChange = false;
@@ -830,21 +738,6 @@ export default class BasicFrontBackStyle extends Vue {
     }
   ];
   private labelTextDecorationChange = false;
-
-  private labelObjectVisibility: string[] | undefined = [];
-  private labelObjectVisibilityItems = [
-    { header: i18n.t("style.labelObjectVisibility"), divider: true },
-    {
-      text: i18n.t("style.labelVisible"),
-      value: "labelVisible"
-    },
-    {
-      text: i18n.t("style.objectVisible"),
-      value: "objectVisible"
-    }
-  ];
-  private labelVisibilityChange = false;
-  private objectVisibilityChange = false;
 
   private labelTextRotation: number | undefined = 0;
   //step is Pi/8 from -pi to pi is 17 steps
@@ -989,109 +882,57 @@ export default class BasicFrontBackStyle extends Vue {
     return this.labelDisplayCaptionTestResults[1];
   }
   toggleAllLabelsVisibility(): void {
-    console.log("toggle All Labels Visbility from panel", this.panel);
     //only execute this if the panel is the label panel (only methods from the label panel should call this method)
-    //if (this.panel !== StyleEditPanels.Label) return;
-
-    let labelVisiblility: boolean | undefined =
-      this.labelObjectVisibility !== undefined
-        ? this.labelObjectVisibility.indexOf("labelVisible") > -1
-        : undefined;
-
-    //if there is a mix of objects selected and the user has triggered this method, convert selection to all labels?
-    if (!this.hasLabelStyle) {
-      this.changeSelectionToAllLabels();
-      EventBus.fire("show-alert", {
-        key: `style.convertSelectionToLabels`,
-        keyOptions: {},
-        type: "warning"
-      });
-      labelVisiblility = true;
-      return;
+    if (this.panel !== StyleEditPanels.Label) return;
+    console.log("toggle All Labels Visbility from panel", this.panel);
+    if (!this.labelVisible && !this.objectVisible) {
+      this.objectVisible = true;
+      this.setObjectVisibilityChange();
     }
 
-    if (!labelVisiblility) {
-      this.labelObjectVisibility!.push("labelVisible");
-    } else {
-      const pos = this.labelObjectVisibility!.indexOf("labelVisible");
-      if (pos > -1) {
-        this.labelObjectVisibility?.splice(pos, 1);
-      }
-    }
+    this.labelVisible = !this.labelVisible;
+
     this.setLabelVisibilityChange();
-    this.onStyleDataChanged();
+    this.onLabelStyleDataChanged();
 
     //finally update the labels in the style.vue component
     EventBus.fire("update-all-labels-showing", {});
     EventBus.fire("update-all-objects-showing", {});
   }
   toggleAllObjectsVisibility(): void {
+    if (this.panel !== StyleEditPanels.Label) return;
     console.log("toggle All Objects Visbility from panel", this.panel);
-    //only execute this if the panel is the label panel (only methods from the label panel should call this method)
-    //if (this.panel !== StyleEditPanels.Label) return;
 
-    const objectVisiblility: boolean | undefined =
-      this.labelObjectVisibility !== undefined
-        ? this.labelObjectVisibility.indexOf("objectVisible") > -1
-        : undefined;
-    if (!objectVisiblility) {
-      this.labelObjectVisibility!.push("objectVisible");
-    } else {
-      const pos = this.labelObjectVisibility!.indexOf("objectVisible");
-      if (pos > -1) {
-        this.labelObjectVisibility?.splice(pos, 1);
-      }
+    if (
+      this.objectVisible &&
+      this.labelVisible &&
+      SETTINGS.hideObjectHidesLabel
+    ) {
+      this.labelVisible = false;
+      this.setLabelVisibilityChange();
     }
+
+    this.objectVisible = !this.objectVisible;
+
     this.setObjectVisibilityChange();
-    this.onStyleDataChanged();
+    this.onLabelStyleDataChanged();
 
     //finally update the style.vue component
     EventBus.fire("update-all-labels-showing", {});
     EventBus.fire("update-all-objects-showing", {});
   }
-
-  //Convert the current selection to the labels of all the current objects in the current selections and set them to shwoing
-  changeSelectionToAllLabels(): void {
-    // watch out for case of object and its own label being selected!
-    const newSelection: SENodule[] = [];
-    this.selections.forEach(node => {
-      if (node.isLabel()) {
-        // make sure that the node is not in newSelection before adding it
-        if (newSelection.findIndex(n => node === n) === -1) {
-          newSelection.push(node);
-        }
-      } else if (node.isLabelable()) {
-        const label = ((node as unknown) as Labelable).label;
-        // make sure that the node is not in newSelection before adding it
-        if (newSelection.findIndex(n => label === n) === -1) {
-          newSelection.push(label!);
-        }
-      }
-      //reset the glowing and selection of the old selection
-      node.glowing = false;
-      node.selected = false;
-    });
-    this.store.commit.setSelectedSENodules(newSelection);
-    // set all objects in the new selection to showing
-    newSelection.forEach(node => (node.showing = true));
-
-    //finally update the label in the style.vue component
-    EventBus.fire("update-all-labels-showing", {});
-    EventBus.fire("update-all-objects-showing", {});
-
-    // now make the new selection blink
-    EventBus.fire("blinking-nodes", { objects: newSelection });
-  }
   enableCommonStyle(): void {
     console.log("moo3");
   }
   resetStyleDataToDefaults(): void {
-    const selected = [];
-    selected.push(...this.$store.getters.selectedSENodules());
-    if (this.$store.getters.getUseLabelMode()) {
-      const label = ((selected[0] as unknown) as Labelable).label;
-      selected.clear();
-      selected.push(label);
+    const selected: SENodule[] = [];
+    // If this number selector is on the label panel, then all changes are directed at the label(s).
+    if (this.panel === StyleEditPanels.Label) {
+      (this.$store.getters.selectedSENodules() as SENodule[]).forEach(node => {
+        selected.push(((node as unknown) as Labelable).label!);
+      });
+    } else {
+      selected.push(...this.$store.getters.selectedSENodules());
     }
     const defaultStyleStates = this.$store.getters.getDefaultStyleState(
       this.panel
@@ -1116,12 +957,14 @@ export default class BasicFrontBackStyle extends Vue {
     this.setStyleDataSelectorState(defaultStyleStates);
   }
   clearStyleData(): void {
-    const selected = [];
-    selected.push(...this.$store.getters.selectedSENodules());
-    if (this.$store.getters.getUseLabelMode()) {
-      const label = ((selected[0] as unknown) as Labelable).label;
-      selected.clear();
-      selected.push(label);
+    const selected: SENodule[] = [];
+    // If this number selector is on the label panel, then all changes are directed at the label(s).
+    if (this.panel === StyleEditPanels.Label) {
+      (this.$store.getters.selectedSENodules() as SENodule[]).forEach(node => {
+        selected.push(((node as unknown) as Labelable).label!);
+      });
+    } else {
+      selected.push(...this.$store.getters.selectedSENodules());
     }
     const initialStyleStates = this.$store.getters.getInitialStyleState(
       this.panel
@@ -1184,7 +1027,7 @@ export default class BasicFrontBackStyle extends Vue {
         break;
       }
     }
-    // Now set the displays of the text field (labelDisplayName), text area(labelDisplayCaption), checkboxes (label visible, object visible),
+    // Now set the displays of the text field (labelDisplayName), text area(labelDisplayCaption),
     //  and combo-boxes (font, family, style, decoration)
     if (!this.totalyDisableStyleDataSelector && this.styleDataAgreement) {
       this.labelDisplayText = (styleState[0] as StyleOptions).labelDisplayText;
@@ -1193,28 +1036,9 @@ export default class BasicFrontBackStyle extends Vue {
       this.labelTextFamily = (styleState[0] as StyleOptions).labelTextFamily;
       this.labelTextStyle = (styleState[0] as StyleOptions).labelTextStyle;
       this.labelTextDecoration = (styleState[0] as StyleOptions).labelTextDecoration;
-      this.labelObjectVisibility?.splice(0, this.labelObjectVisibility.length); // the splice() method is wrapped in a vue wrapper so this will effect the vueitfy object (unlike clear())
-      if ((styleState[0] as StyleOptions).labelVisibility) {
-        if (this.labelObjectVisibility !== undefined) {
-          Vue.set(this.labelObjectVisibility, 0, "labelVisible"); // Set this using the Vue.set() method because the usual way will no effect the vueitfy object
-        }
-      }
-      if ((styleState[0] as StyleOptions).objectVisibility) {
-        if (this.labelObjectVisibility !== undefined) {
-          Vue.set(
-            // Set this using the Vue.set() method because the usual way will no effect the vueitfy object
-            this.labelObjectVisibility,
-            this.labelObjectVisibility.length,
-            "objectVisible"
-          );
-        }
-      }
+      this.labelVisible = (styleState[0] as StyleOptions).labelVisibility;
+      this.objectVisible = (styleState[0] as StyleOptions).objectVisibility;
     }
-    // Vue.set(this.labelObjectVisibility, 1, this.sliderDashArray[1] + 1);
-    console.log(
-      "post set label and ob vis",
-      this.labelObjectVisibility?.toString()
-    );
   }
   disableStyleDataSelector(totally: boolean): void {
     this.styleDataAgreement = false;
@@ -1227,9 +1051,8 @@ export default class BasicFrontBackStyle extends Vue {
     this.labelTextFamily = "";
     this.labelTextStyle = "";
     this.labelTextDecoration = "";
-    if (this.labelObjectVisibility !== undefined) {
-      this.labelObjectVisibility.splice(0, this.labelObjectVisibility.length); // the splice() method is wrapped in a vue wrapper so this will effect the vueitfy object (unlike clear())
-    }
+    this.labelVisible = undefined;
+    this.objectVisible = undefined;
   }
   setlabelDisplayTextChange(): void {
     this.labelDisplayTextChange = true;
@@ -1255,17 +1078,19 @@ export default class BasicFrontBackStyle extends Vue {
   setObjectVisibilityChange(): void {
     this.objectVisibilityChange = true;
   }
-  onStyleDataChanged(): void {
+  onLabelStyleDataChanged(): void {
     this.disableStyleSelectorUndoButton = false;
 
-    const selected = [];
-    selected.push(...this.$store.getters.selectedSENodules());
-    if (this.$store.getters.getUseLabelMode()) {
-      const label = ((selected[0] as unknown) as Labelable).label;
-      selected.clear();
-      selected.push(label);
+    const selected: SENodule[] = [];
+    // If this number selector is on the label panel, then all changes are directed at the label(s).
+    if (this.panel === StyleEditPanels.Label) {
+      (this.$store.getters.selectedSENodules() as SENodule[]).forEach(node => {
+        selected.push(((node as unknown) as Labelable).label!);
+      });
+    } else {
+      selected.push(...this.$store.getters.selectedSENodules());
     }
-    // If the label text is empty sring or all spaces it to the default
+    // If the label text is empty sring or all spaces reset it to the default
     if (
       this.labelDisplayText !== undefined &&
       this.labelDisplayText.trim().length === 0
@@ -1288,14 +1113,6 @@ export default class BasicFrontBackStyle extends Vue {
         });
       }
     }
-    const labelVisible: boolean | undefined =
-      this.labelObjectVisibility !== undefined
-        ? this.labelObjectVisibility.indexOf("labelVisible") > -1
-        : undefined;
-    const objectVisible: boolean | undefined =
-      this.labelObjectVisibility !== undefined
-        ? this.labelObjectVisibility.indexOf("objectVisible") > -1
-        : undefined;
 
     this.$store.direct.commit.changeStyle({
       selected: selected,
@@ -1319,9 +1136,11 @@ export default class BasicFrontBackStyle extends Vue {
         labelDisplayMode: this.labelDisplayModeChange
           ? this.labelDisplayMode
           : undefined,
-        labelVisibility: this.labelVisibilityChange ? labelVisible : undefined,
+        labelVisibility: this.labelVisibilityChange
+          ? this.labelVisible
+          : undefined,
         objectVisibility: this.objectVisibilityChange
-          ? objectVisible
+          ? this.objectVisible
           : undefined
       }
     });
@@ -1731,9 +1550,7 @@ export default class BasicFrontBackStyle extends Vue {
       this.hasStyle(Styles.labelTextStyle) &&
       this.hasStyle(Styles.labelTextFamily) &&
       this.hasStyle(Styles.labelTextDecoration) &&
-      this.hasStyle(Styles.labelDisplayMode) // &&
-      // this.hasStyle(Styles.labelVisibility) &&
-      // this.hasStyle(Styles.objectVisibility)
+      this.hasStyle(Styles.labelDisplayMode)
     );
   }
   get hasLabelTextRotation(): boolean {
@@ -1747,9 +1564,7 @@ export default class BasicFrontBackStyle extends Vue {
   get allLabelsShowing(): boolean {
     return (this.$store.getters.selectedSENodules() as SENodule[]).every(
       node => {
-        if (node.isLabel()) {
-          return node.showing;
-        } else if (node.isLabelable()) {
+        if (node.isLabelable()) {
           return ((node as unknown) as Labelable).label!.showing;
         } else {
           return true;
@@ -1757,27 +1572,15 @@ export default class BasicFrontBackStyle extends Vue {
       }
     );
   }
-  //This controls if the labelDisplayModeItems include ValueOnly and NameAndValue
-  @Watch("selections")
-  labelDisplayModeValueFilter(labelDisplayModeItems: []): [] {
-    // console.log(
-    //   "filter display mode values",
-    //   ((this.selections[0] as unknown) as Labelable).label!.ref,
-    //   this.selections.every(node => {
-    //     if (node.isLabel()) {
-    //       return ((node as unknown) as SELabel).ref.value.length !== 0;
-    //     } else if (node.isLabelable()) {
-    //       return ((node as unknown) as Labelable).label!.ref.value.length !== 0;
-    //     } else {
-    //       return true;
-    //     }
-    //   })
-    // );
+  //This controls if the labelDisplayModeItems include ValueOnly and NameAndValue (When no value in the Label)\
+  // and if the caption is empty, NameAndCaption and Caption Only are not options
+  labelDisplayModeValueFilter(
+    items: labelDisplayModeItem[]
+  ): labelDisplayModeItem[] {
+    const returnItems: labelDisplayModeItem[] = [];
     if (
       (this.$store.getters.selectedSENodules() as SENodule[]).every(node => {
-        if (node.isLabel()) {
-          return ((node as unknown) as SELabel).ref.value.length !== 0;
-        } else if (node.isLabelable()) {
+        if (node.isLabelable()) {
           return ((node as unknown) as Labelable).label!.ref.value.length !== 0;
         } else {
           return true;
@@ -1785,14 +1588,34 @@ export default class BasicFrontBackStyle extends Vue {
       })
     ) {
       // value is present in all labels so pass long all options in labelDisplayModeItems
-      return labelDisplayModeItems;
+      returnItems.push(...items);
     } else {
       // value is not present in all labels so pass long all options in labelDisplayModeItems that don't have value in them
-      return (labelDisplayModeItems as any).filter(
-        itm => !(itm as any).optionRequiresMeasurementValueToExist
+      returnItems.push(
+        ...items.filter(itm => !itm.optionRequiresMeasurementValueToExist)
       );
     }
+
+    if (
+      (this.$store.getters.selectedSENodules() as SENodule[]).every(node => {
+        if (node.isLabelable()) {
+          return (
+            ((node as unknown) as Labelable).label!.ref.caption.trim()
+              .length !== 0
+          );
+        } else {
+          return true;
+        }
+      })
+    ) {
+      // caption is present in all labels
+      return returnItems;
+    } else {
+      // caption is not present in all labels so pass long all options in labelDisplayModeItems that don't have caption in them
+      return returnItems.filter(itm => !itm.optionRequiresCaptionToExist);
+    }
   }
+
   @Watch("activePanel")
   private activePanelChange(): void {
     if (this.activePanel !== undefined && this.panel === this.activePanel) {
@@ -1828,57 +1651,21 @@ export default class BasicFrontBackStyle extends Vue {
       this.disableStyleDataSelector(true);
       this.noObjectsSelected = true;
       BasicFrontBackStyle.oldSelection.clear();
-      this.store.commit.setUseLabelMode(false);
       return;
     }
-    //check the label visiblity and values of the labels
-    // If all object's labels in the selection have a defined value this is true
-    this.allSelectedLabelsShowing = newSelection.every(node => {
-      if (node.isLabel()) {
-        return node.showing;
-      } else if (node.isLabelable()) {
-        return ((node as unknown) as Labelable).label!.showing;
-      } else {
-        return true;
-      }
-    });
-    //If all object's labels in the selection have a defined value this is true -- this controls if the
-    // labelDisplayModeItems include ValueOnly and NameAndValue
-    this.allSelectedLabelsHaveValue = newSelection.every(node => {
-      if (node.isLabel()) {
-        return ((node as unknown) as SELabel).ref.value !== undefined;
-      } else if (node.isLabelable()) {
-        return ((node as unknown) as Labelable).label!.ref.value !== undefined;
-      } else {
-        return true;
-      }
-    });
 
     // there is at least one object selected
     this.noObjectsSelected = false;
 
-    // Turn off the useLableMode if the panel is not Label or there is more than one object selected
-    if (this.activePanel !== StyleEditPanels.Label || newSelection.length > 1) {
-      this.store.commit.setUseLabelMode(false);
-    }
-    // If only one non-label object is selected and the panel is label and the active panel is label, use the label instead of the object so turn on useLabelMode
-    if (
-      newSelection.length === 1 &&
-      !(newSelection[0] instanceof SELabel) &&
-      this.activePanel === StyleEditPanels.Label &&
-      this.panel === StyleEditPanels.Label
-    ) {
-      this.store.commit.setUseLabelMode(true);
-    }
-
     // record the new selections in the old
-    BasicFrontBackStyle.oldSelection.clear();
-    // If we are in the useLabelMode, push that one Label onto the oldSelections
-    if (this.$store.getters.getUseLabelMode()) {
-      const label = ((newSelection[0] as unknown) as Labelable).label;
-      if (label !== undefined) {
-        BasicFrontBackStyle.oldSelection.push(label);
-      }
+    BasicFrontBackStyle.oldSelection.splice(0);
+    // If we are on the label panel then push the labels onto the oldSelections
+    if (this.panel === StyleEditPanels.Label) {
+      newSelection.forEach(obj =>
+        BasicFrontBackStyle.oldSelection.push(
+          ((obj as unknown) as Labelable).label!
+        )
+      );
     } else {
       newSelection.forEach(obj => BasicFrontBackStyle.oldSelection.push(obj));
     }
@@ -1886,12 +1673,13 @@ export default class BasicFrontBackStyle extends Vue {
     // Create a list of the common properties that the objects in the selection have.
     // commonStyleProperties is a number (corresponding to an enum) array
     // The customStyles method returns a list of the styles the are adjustable for that object
-
-    // Grab the label of the first selected object (used only if the useLabelMode is on and only one object is selected)
-    const label = ((newSelection[0] as unknown) as Labelable).label;
     for (let k = 0; k < values.length; k++) {
-      if (this.$store.getters.getUseLabelMode()) {
-        if (label != undefined && label.customStyles().has(k)) {
+      if (this.panel === StyleEditPanels.Label) {
+        if (
+          newSelection.every(s =>
+            ((s as unknown) as Labelable).label!.customStyles().has(k)
+          )
+        ) {
           this.commonStyleProperties.push(k);
         }
       } else {
@@ -1903,14 +1691,13 @@ export default class BasicFrontBackStyle extends Vue {
 
     // Get the initial and default style state of the object for undo/redo and buttons to revert to initial style.
     // Put this in the store so that it is availble to *all* panels. Get the front and back information at the same time.
-    if (this.$store.getters.getUseLabelMode()) {
-      const label = ((newSelection[0] as unknown) as Labelable).label;
-      if (label !== undefined) {
-        this.$store.direct.commit.recordStyleState({
-          selected: [label],
-          backContrast: Nodule.getBackStyleContrast()
-        });
-      }
+    if (this.panel === StyleEditPanels.Label) {
+      this.$store.direct.commit.recordStyleState({
+        selected: newSelection.map(
+          obj => ((obj as unknown) as Labelable).label!
+        ),
+        backContrast: Nodule.getBackStyleContrast()
+      });
     } else {
       //#region setStyle
       this.$store.direct.commit.recordStyleState({
@@ -1930,14 +1717,6 @@ export default class BasicFrontBackStyle extends Vue {
     this.setStyleDataSelectorState(
       this.$store.getters.getInitialStyleState(this.panel)
     );
-    // // Warn the user if there are hidden labels and they open the label edit panel
-    // if (this.activePanel === StyleEditPanels.Label && !this.allLabelsShowing) {
-    //   EventBus.fire("show-alert", {
-    //     key: `style.notAllLabelsShowing`,
-    //     keyOptions: {},
-    //     type: "warning"
-    //   });
-    // }
   }
 
   areEquivalentStyles(
@@ -2093,7 +1872,7 @@ export default class BasicFrontBackStyle extends Vue {
     // There must be an old selection in order for there to be a change to save
     if (BasicFrontBackStyle.oldSelection.length > 0) {
       //Record the current state of each Nodule
-      this.currentStyleStates.clear();
+      this.currentStyleStates.splice(0);
 
       BasicFrontBackStyle.oldSelection.forEach(seNodule => {
         if (seNodule.ref !== undefined)
@@ -2126,7 +1905,7 @@ export default class BasicFrontBackStyle extends Vue {
         ).push();
       }
       // clear the old selection so that this save style state will not be executed again until changes are made.
-      BasicFrontBackStyle.oldSelection.clear();
+      BasicFrontBackStyle.oldSelection.splice(0);
       //break; // only one panel can have made changes
     }
     // }

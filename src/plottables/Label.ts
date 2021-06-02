@@ -65,7 +65,7 @@ export default class Label extends Nodule {
    */
   protected initialName = "";
   protected shortUserName = "";
-  protected caption = "";
+  protected _caption = "";
   protected _value: number[] = [];
 
   /**
@@ -202,6 +202,14 @@ export default class Label extends Nodule {
   get shortName(): string {
     return this.shortUserName;
   }
+
+  /**
+   * Return the caption associated with this object
+   */
+  get caption(): string {
+    return this._caption;
+  }
+
   /**
    * Sets/Gets the the value of this label and update the display
    */
@@ -351,7 +359,7 @@ export default class Label extends Nodule {
       this.shortUserName = options.labelDisplayText;
     }
     if (options.labelDisplayCaption !== undefined) {
-      this.caption = options.labelDisplayCaption;
+      this._caption = options.labelDisplayCaption;
     }
     if (options.labelTextFamily !== undefined) {
       this.textFamily = options.labelTextFamily;
@@ -365,17 +373,15 @@ export default class Label extends Nodule {
     if (options.labelTextRotation !== undefined) {
       this.textRotation = options.labelTextRotation;
     }
-    // the label property of a label is the label itself? Should this be adjustable
     if (options.labelVisibility !== undefined) {
       if (this.seLabel !== undefined) {
         this.seLabel.showing = options.labelVisibility; //Applied immediately
       }
     }
-    // Does the object of a label refer to the parent or the label itself?
+    // The object of a label refers to the parent
     if (options.objectVisibility !== undefined) {
       if (this.seLabel !== undefined) {
         this.seLabel.parent.showing = options.objectVisibility; //Applied immediately
-        //this.seLabel.showing = options.objectVisibility; //Applied immediately
       }
     }
     if (options.labelTextScalePercent !== undefined) {
@@ -440,7 +446,7 @@ export default class Label extends Nodule {
         return {
           panel: panel,
           labelDisplayText: this.shortUserName,
-          labelDisplayCaption: this.caption,
+          labelDisplayCaption: this._caption,
           labelDisplayMode: this.textLabelMode,
           labelTextFamily: this.textFamily,
           labelTextStyle: this.textStyle,
@@ -575,7 +581,7 @@ export default class Label extends Nodule {
             break;
           }
           case LabelDisplayMode.CaptionOnly: {
-            labelText = this.caption;
+            labelText = this._caption;
             break;
           }
           case LabelDisplayMode.ValueOnly: {
@@ -614,7 +620,7 @@ export default class Label extends Nodule {
             break;
           }
           case LabelDisplayMode.NameAndCaption: {
-            labelText = this.shortUserName + ": " + this.caption;
+            labelText = this.shortUserName + ": " + this._caption;
             break;
           }
           case LabelDisplayMode.NameAndValue: {

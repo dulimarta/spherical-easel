@@ -30,12 +30,11 @@ Select object(s) to change their visual style or to perform actions on them with
   2. Mouse press and release (without moving the mouse) - the first object should be selected
   3. Mouse over a location near the second object and key press a number to highlight the desired object
   4. Mouse press and release (without moving the mouse) - the first and second objects should be selected
-- To select all points, move the mouse into the sphere and press and hold the <kbd>p</kbd> key. All points should be highlighted. To move them into the current selection, mouse press and release once. Similarly to select...
+- To select all points, move the mouse into the sphere and press and hold the <kbd>p</kbd> key. All points should be highlighted. To move them into the current selection, mouse press at an empty location on the sphere and release once. Similarly to select...
   - All circles use the <kbd>c</kbd> key
   - All lines use the <kbd>l</kbd> key
   - All segments use the <kbd>s</kbd> key
   - All ellipses use the <kbd>e</kbd> key
-  - All labels use the <kbd>L</kbd> key
 
 **Changing Visual Style:**
 

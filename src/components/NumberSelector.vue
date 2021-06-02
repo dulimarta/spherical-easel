@@ -7,7 +7,7 @@
     <span class="text-subtitle-2">{{ $t(titleKey) }}</span>
     <span v-if="selections.length > 1"
       class="text-subtitle-2"
-      style="color:error">{{" "+ $t("style.labelStyleOptionsMultiple") }}</span>
+      style="color:red">{{" "+ $t("style.labelStyleOptionsMultiple") }}</span>
     <br />
 
     <!-- Differing data styles detected Overlay -->
@@ -34,7 +34,7 @@
       :step="step"
       :disabled="disabledValue"
       type="range"
-      class="ma-0 pa-0">
+      class="mb-n4 pa-n4">
       <template v-slot:prepend>
         <v-icon @click="decrementDataValue">mdi-minus</v-icon>
       </template>
@@ -45,13 +45,6 @@
         <v-icon @click="incrementDataValue">mdi-plus</v-icon>
       </template>
     </v-slider>
-
-    <!--<HintButton v-if="totalyDisableSelector || !styleDataAgreement"
-      @click="setStyleDataAgreement"
-      long-label
-      i18n-label="style.differingStylesDetected"
-      i18n-tooltip="style.differingStylesDetectedToolTip"
-      color="error"></HintButton>-->
 
     <HintButton @click="clearChanges"
       :disabled="disableUndoButton || disabledValue"
@@ -76,6 +69,7 @@ import { State } from "vuex-class";
 import { SENodule } from "@/models/SENodule";
 import { AppState, Labelable, UpdateMode } from "@/types";
 import HintButton from "@/components/HintButton.vue";
+import Style from "./Style.vue";
 
 @Component({ components: { HintButton } })
 export default class NumberSelector extends Vue {
@@ -139,13 +133,16 @@ export default class NumberSelector extends Vue {
   // These methods are linked to the styleData fade-in-card
   onDataChanged(newData: number): void {
     this.disableUndoButton = false;
-    const selected = [];
-    selected.push(...this.$store.getters.selectedSENodules());
-    if (this.$store.getters.getUseLabelMode()) {
-      const label = ((selected[0] as unknown) as Labelable).label;
-      selected.splice(0);
-      selected.push(label);
+    const selected: SENodule[] = [];
+    // If this number selector is on the label panel, then all changes are directed at the label(s).
+    if (this.panel === StyleEditPanels.Label) {
+      (this.$store.getters.selectedSENodules() as SENodule[]).forEach(node => {
+        selected.push(((node as unknown) as Labelable).label!);
+      });
+    } else {
+      selected.push(...this.$store.getters.selectedSENodules());
     }
+
     this.$store.direct.commit.changeStyle({
       selected: selected,
       payload: {
@@ -156,12 +153,14 @@ export default class NumberSelector extends Vue {
   }
 
   resetToDefaults(): void {
-    const selected = [];
-    selected.push(...this.$store.getters.selectedSENodules());
-    if (this.$store.getters.getUseLabelMode()) {
-      const label = ((selected[0] as unknown) as Labelable).label;
-      selected.clear();
-      selected.push(label);
+    const selected: SENodule[] = [];
+    // If this number selector is on the label panel, then all changes are directed at the label(s).
+    if (this.panel === StyleEditPanels.Label) {
+      (this.$store.getters.selectedSENodules() as SENodule[]).forEach(node => {
+        selected.push(((node as unknown) as Labelable).label!);
+      });
+    } else {
+      selected.push(...this.$store.getters.selectedSENodules());
     }
     const defaultStyleStates = this.$store.getters.getDefaultStyleState(
       this.panel
@@ -214,12 +213,14 @@ export default class NumberSelector extends Vue {
   }
   clearChanges(): void {
     this.disableUndoButton = true;
-    const selected = [];
-    selected.push(...this.$store.getters.selectedSENodules());
-    if (this.$store.getters.getUseLabelMode()) {
-      const label = ((selected[0] as unknown) as Labelable).label;
-      selected.clear();
-      selected.push(label);
+    const selected: SENodule[] = [];
+    // If this number selector is on the label panel, then all changes are directed at the label(s).
+    if (this.panel === StyleEditPanels.Label) {
+      (this.$store.getters.selectedSENodules() as SENodule[]).forEach(node => {
+        selected.push(((node as unknown) as Labelable).label!);
+      });
+    } else {
+      selected.push(...this.$store.getters.selectedSENodules());
     }
     const initialStyleStates = this.$store.getters.getInitialStyleState(
       this.panel

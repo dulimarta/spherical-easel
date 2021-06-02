@@ -8,7 +8,7 @@
       <span class="text-subtitle-2">{{ $t(titleKey) }}</span>
       <span v-if="selections.length > 1"
         class="text-subtitle-2"
-        style="color:error">{{" "+ $t("style.labelStyleOptionsMultiple") }}</span>
+        style="color:red">{{" "+ $t("style.labelStyleOptionsMultiple") }}</span>
     </div>
     <span v-show="totallyDisableColorSelector"
       class="select-an-object-text">{{ $t("style.selectAnObject") }}</span>

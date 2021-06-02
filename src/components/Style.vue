@@ -23,7 +23,7 @@
                   color="primary"
                   hide-details
                   class="ma-0 pl-0 pb-0 pt-0 pr-0"
-                  :disabled="!(this.selections.length > 0) || onlyLabelsSelected()">
+                  :disabled="!(this.selections.length > 0) || !allObjectsShowing">
                 </v-switch>
               </v-col>
               <v-col cols="12"
@@ -99,7 +99,7 @@
           :key="idx">
           <v-expansion-panel-header color="blue lighten-3"
             :key="`header${idx}`"
-            class="body-1 font-weight-bold">
+            class="body-1 font-weight-bold ps-6 pe-0 pt-n4 pb-n4 pm-0">
 
             {{ $t(p.i18n_key) }}
 
@@ -176,16 +176,13 @@ export default class Style extends Vue {
   @Watch("selections")
   private allLabelsShowingCheck(): void {
     this.allLabelsShowing = this.selections.every(node => {
-      if (node.isLabel()) {
-        return node.showing;
-      } else if (node.isLabelable()) {
+      if (node.isLabelable()) {
         return ((node as unknown) as Labelable).label!.showing;
       } else {
         return true;
       }
     });
   }
-
   @Watch("selections")
   private allObjectsShowingCheck(): void {
     this.allObjectsShowing = this.selections.every(node => {
@@ -195,7 +192,7 @@ export default class Style extends Vue {
 
   //Convert the selections into a short list of the type (and number) of the objects in the selection
   @Watch("selections")
-  private selectedObjectsCheck(): void {
+  private updateSelectedItemArray(): void {
     const tempArray: string[] = [];
     this.selections.forEach(node => tempArray.push(node.name));
     const elementListPural = [
@@ -229,17 +226,6 @@ export default class Style extends Vue {
         }
       })
       .filter(str => !str.startsWith("0"));
-  }
-
-  @Watch("selections")
-  private onlyLabelsSelected(): boolean {
-    return this.selections.every(node => {
-      if (node !== undefined) {
-        return node.isLabel();
-      } else {
-        return true;
-      }
-    });
   }
 
   // The order of these panels *must* match the order of the StyleEditPanels in Style.ts
@@ -279,7 +265,7 @@ export default class Style extends Vue {
 
   panelBackgroundColor(idx: number): string {
     if (idx === 1) {
-      return "grey lighten-2";
+      return "grey lighten-2"; //used to be different but I changed my mind
     } else {
       return "grey lighten-2";
     }
@@ -294,12 +280,7 @@ export default class Style extends Vue {
       // the label panel is not mounted
       const toggleLabelDisplayCommandGroup = new CommandGroup();
       this.selections.forEach(node => {
-        //The label of a label doesn't exist! So ignore this directive?
-        if (node.isLabel()) {
-          toggleLabelDisplayCommandGroup.addCommand(
-            new SetNoduleDisplayCommand(node, this.allLabelsShowing)
-          );
-        } else if (node.isLabelable()) {
+        if (node.isLabelable()) {
           toggleLabelDisplayCommandGroup.addCommand(
             new SetNoduleDisplayCommand(
               ((node as unknown) as Labelable).label!,
@@ -313,12 +294,6 @@ export default class Style extends Vue {
       console.log("toggle label from style.vue - label panel mounted");
       // the label panel is mounted
       EventBus.fire("toggle-label-visibility", {});
-    }
-    //check the objects because the label not displayed anymore could have been a label
-    this.allObjectsShowingCheck();
-    //If all objects are labels then this.allObjectsShowing=this.allLabelsShowing
-    if (this.selections.every(n => n instanceof Label)) {
-      this.allObjectsShowing = this.allLabelsShowing;
     }
   }
 
@@ -337,12 +312,10 @@ export default class Style extends Vue {
       // the label panel is mounted
       EventBus.fire("toggle-object-visibility", {});
     }
-    //check the labels because the object not displayed anymore could have been a label
+    // update the this.allLabelsShowing varaible, because hiding an object hide the label (depending on
+    //  SETTINGS.hideObjectHidesLabel) and similarly showing an object shows the label (depending
+    //  SETTIGNS.showObjectShowsLabel)
     this.allLabelsShowingCheck();
-    //If all objects are labels then this.allObjectsShowing=this.allLabelsShowing
-    if (this.selections.every(n => n instanceof Label)) {
-      this.allLabelsShowing = this.allObjectsShowing;
-    }
   }
 }
 </script>
