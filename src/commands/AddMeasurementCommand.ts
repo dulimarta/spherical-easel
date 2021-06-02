@@ -4,10 +4,10 @@ import { SEMeasurement } from "@/models/SEMeasurement";
 import { CommandGroup } from "./CommandGroup";
 
 export class AddMeasurementCommand extends Command {
-  private seMeasurement: SEMeasurement;
-  private parents: SENodule[] = [];
+  protected seMeasurement: SEMeasurement;
+  protected parents: SENodule[] = [];
   /**
-   * @param seMeasurementzs
+   * @param seMeasurements
    * @param parents If this is included then the seMeasurement is made a child of all the SENodules in this array
    */
   constructor(seMeasurement: SEMeasurement, parents?: SENodule[]) {
@@ -42,9 +42,9 @@ export class AddMeasurementCommand extends Command {
     else return ["AddMeasurement", this.seMeasurement.name].join("/");
   }
 
-  static parse(command: string, objMap: Map<string, SENodule>): Command {
-    const tokens = command.split("/");
-    const numArgs = tokens.length - 2;
-    return new CommandGroup();
-  }
+  // static parse(command: string, objMap: Map<string, SENodule>): Command {
+  //   const tokens = command.split("/");
+  //   const numArgs = tokens.length - 2;
+  //   return new CommandGroup();
+  // }
 }

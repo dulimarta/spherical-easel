@@ -11,6 +11,7 @@
               </v-list-item-title>
               <v-list-item-subtitle><code>{{r.id.substring(0,5)}}</code>
                 {{r.objectCount}} objects,
+                {{r.author}}
                 {{r.dateCreated.substring(0,10)}}
               </v-list-item-subtitle>
               <v-divider />
@@ -35,10 +36,12 @@
           :key="pos">
           <v-list-item>
             <v-list-item-content>
-              <v-list-item-title>{{r.description.substring(0,25) || "N/A"}}
+              <v-list-item-title class="text-truncated">{{r.description ||
+                "N/A"}}
               </v-list-item-title>
               <v-list-item-subtitle><code>{{r.id.substring(0,5)}}</code>
-                {{r.objectCount}} objects,
+                {{r.objectCount}} objects, {{r.author}}
+
                 {{r.dateCreated.substring(0,10)}}
               </v-list-item-subtitle>
               <v-divider />

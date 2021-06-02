@@ -2,7 +2,7 @@ import Two from "two.js";
 import Highlighter from "./Highlighter";
 import { SEPoint } from "@/models/SEPoint";
 import { SENodule } from "@/models/SENodule";
-import { AddMeasurementCommand } from "@/commands/AddMeasurementCommand";
+import { AddLocationMeasurementCommand } from "@/commands/AddLocationMeasurementCommand";
 
 import EventBus from "@/eventHandlers/EventBus";
 import {
@@ -56,13 +56,25 @@ export default class PointCoordinateHandler extends Highlighter {
         });
         const coordinatizeCommandGroup = new CommandGroup();
         coordinatizeCommandGroup.addCommand(
-          new AddMeasurementCommand(xMeasure, [this.targetPoint])
+          new AddLocationMeasurementCommand(
+            xMeasure,
+            this.targetPoint,
+            CoordinateSelection.X_VALUE
+          )
         );
         coordinatizeCommandGroup.addCommand(
-          new AddMeasurementCommand(yMeasure, [this.targetPoint])
+          new AddLocationMeasurementCommand(
+            yMeasure,
+            this.targetPoint,
+            CoordinateSelection.Y_VALUE
+          )
         );
         coordinatizeCommandGroup.addCommand(
-          new AddMeasurementCommand(zMeasure, [this.targetPoint])
+          new AddLocationMeasurementCommand(
+            zMeasure,
+            this.targetPoint,
+            CoordinateSelection.Z_VALUE
+          )
         );
         coordinatizeCommandGroup.execute();
         this.targetPoint = null;
@@ -75,9 +87,10 @@ export default class PointCoordinateHandler extends Highlighter {
     super.mouseMoved(event);
 
     // Do highlight only  SEPoint that are not non-user created intersection points
-    this.hitSEPoints.filter(
+    const hitPoints = this.hitSEPoints.filter(
       p => !(p instanceof SEIntersectionPoint && !p.isUserCreated)
-    )[0].glowing = true;
+    );
+    if (hitPoints.length > 0) hitPoints[0].glowing = true;
   }
 
   // eslint-disable-next-line
@@ -130,13 +143,25 @@ export default class PointCoordinateHandler extends Highlighter {
             CoordinateSelection.Z_VALUE
           );
           coordinatizeCommandGroup.addCommand(
-            new AddMeasurementCommand(xMeasure, [p])
+            new AddLocationMeasurementCommand(
+              xMeasure,
+              p as SEPoint,
+              CoordinateSelection.Z_VALUE
+            )
           );
           coordinatizeCommandGroup.addCommand(
-            new AddMeasurementCommand(yMeasure, [p])
+            new AddLocationMeasurementCommand(
+              yMeasure,
+              p as SEPoint,
+              CoordinateSelection.Y_VALUE
+            )
           );
           coordinatizeCommandGroup.addCommand(
-            new AddMeasurementCommand(zMeasure, [p])
+            new AddLocationMeasurementCommand(
+              zMeasure,
+              p as SEPoint,
+              CoordinateSelection.Z_VALUE
+            )
           );
         });
 

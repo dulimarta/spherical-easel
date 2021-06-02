@@ -49,7 +49,7 @@
 
       <!-- This will open up the global settings view setting the language, decimals 
       display and other global options-->
-      <span>{{whoami}}</span>
+      <span>{{whoami}} {{firebaseUid}}</span>
 
       <v-icon class="mx-2"
         @click="doLoginOrCheck">mdi-account</v-icon>
@@ -117,7 +117,7 @@
         required
         v-model="description"></v-text-field>
       <v-switch v-model="publicConstruction"
-        :disabled="firebaseUid === undefined"
+        :disabled="!firebaseUid"
         label="Public (currently inop)"></v-switch>
     </Dialog>
   </v-app>
@@ -137,7 +137,7 @@ import ConstructionLoader from "@/components/ConstructionLoader.vue";
 import Dialog, { DialogAction } from "@/components/Dialog.vue";
 import { AppState } from "./types";
 import EventBus from "@/eventHandlers/EventBus";
-import { FirebaseAuth, User } from "@firebase/auth-types";
+import { Error, FirebaseAuth, User } from "@firebase/auth-types";
 import {
   FirebaseFirestore,
   DocumentReference
@@ -226,7 +226,7 @@ export default class App extends Vue {
           type: "info"
         });
       })
-      .catch((err: any) => {
+      .catch((err: Error) => {
         console.log("Can't save document", err);
         EventBus.fire("show-alert", {
           key: "objectTree.firestoreSaveError",
