@@ -1,8 +1,7 @@
 import Two from "two.js";
 import Highlighter from "./Highlighter";
 import { SEPoint } from "@/models/SEPoint";
-import { SENodule } from "@/models/SENodule";
-import { AddMeasurementCommand } from "@/commands/AddMeasurementCommand";
+import { AddDistanceMeasurementCommand } from "@/commands/AddDistanceMeasurementCommand";
 import { SESegmentDistance } from "@/models/SESegmentDistance";
 import EventBus from "@/eventHandlers/EventBus";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
@@ -48,7 +47,7 @@ export default class PointDistantHandler extends Highlighter {
           keyOptions: { name: `${distanceMeasure.name}` },
           type: "success"
         });
-        new AddMeasurementCommand(distanceMeasure, [
+        new AddDistanceMeasurementCommand(distanceMeasure, [
           this.targetPoints[0],
           this.targetPoints[1]
         ]).execute();
@@ -95,7 +94,7 @@ export default class PointDistantHandler extends Highlighter {
           text: `New measurement ${distanceMeasure.name} added`,
           type: "success"
         });
-        new AddMeasurementCommand(distanceMeasure, [
+        new AddDistanceMeasurementCommand(distanceMeasure, [
           object1,
           object2
         ]).execute();

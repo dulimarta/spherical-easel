@@ -49,7 +49,7 @@
 
       <!-- This will open up the global settings view setting the language, decimals 
       display and other global options-->
-      <span>{{whoami}} {{firebaseUid}}</span>
+      <span>{{whoami}} {{uid}}</span>
 
       <v-icon class="mx-2"
         @click="doLoginOrCheck">mdi-account</v-icon>
@@ -117,8 +117,8 @@
         required
         v-model="description"></v-text-field>
       <v-switch v-model="publicConstruction"
-        :disabled="!firebaseUid"
-        label="Public (currently inop)"></v-switch>
+        :disabled="uid.length === 0"
+        label="Available to public"></v-switch>
     </Dialog>
   </v-app>
 </template>
@@ -161,28 +161,33 @@ export default class App extends Vue {
   footerColor = "accent";
   authSubscription: any;
   whoami = "";
+  uid = "";
 
   get hasObjects(): boolean {
-    // Any objects must include at least one point
+    // Any objects must include at least one pointd
     return this.$store.direct.getters.allSEPoints().length > 0;
   }
 
-  get firebaseUid(): string | undefined {
-    return this.$appAuth.currentUser?.uid;
-  }
+  // get firebaseUid(): string | undefined {d
+  //   return this.$appAuth.currentUser?.udddid;
+  // }
   mounted(): void {
     this.$store.direct.commit.init();
     EventBus.listen("set-footer-color", this.setFooterColor);
     this.authSubscription = this.$appAuth.onAuthStateChanged(
       (u: User | null) => {
-        if (u !== null) this.whoami = u.email ?? "unknown email";
-        else this.whoami = "";
+        if (u !== null) {
+          this.whoami = u.email ?? "unknown email";
+          this.uid = u.uid;
+        } else this.whoami = "";
       }
     );
   }
 
   beforeDestroy(): void {
     if (this.authSubscription) this.authSubscription();
+    this.whoami = "";
+    this.uid = "";
   }
   setFooterColor(e: unknown): void {
     this.footerColor = (e as any).color;
@@ -209,7 +214,7 @@ export default class App extends Vue {
     // TODO: handle public vs. private constructions differently
     const collectionPath = this.publicConstruction
       ? "constructions"
-      : `users/${this.firebaseUid}/constructions`;
+      : `users/${this.uid}/constructions`;
     this.$appDB
       .collection(collectionPath)
       .add({

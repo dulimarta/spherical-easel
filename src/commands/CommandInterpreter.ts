@@ -13,6 +13,7 @@ import { Command } from "./Command";
 import { CommandGroup } from "./CommandGroup";
 import { AddCalculationCommand } from "./AddCalculationCommand";
 import { AddLocationMeasurementCommand } from "./AddLocationMeasurementCommand";
+import { AddDistanceMeasurementCommand } from "./AddDistanceMeasurementCommand";
 export type ConstructionScript = Array<string | Array<string>>;
 
 const noduleDictionary = new Map<string, SENodule>();
@@ -55,6 +56,8 @@ function executeIndividual(command: string): Command {
     return AddAngleMarkerCommand.parse(command, noduleDictionary);
   } else if (opCode === "AddLocationMeasurement")
     return AddLocationMeasurementCommand.parse(command, noduleDictionary);
+  else if (opCode === "AddDistanceMeasurement")
+    return AddDistanceMeasurementCommand.parse(command, noduleDictionary);
   else if (opCode === "AddCalculation")
     return AddCalculationCommand.parse(command, noduleDictionary);
   else {
