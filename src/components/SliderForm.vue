@@ -65,7 +65,7 @@ import Vue from "vue";
 import Component from "vue-class-component";
 import { SESlider } from "@/models/SESlider";
 import { Watch } from "vue-property-decorator";
-import { AddMeasurementCommand } from "@/commands/AddMeasurementCommand";
+import { AddSliderMeasurementCommand } from "@/commands/AddSliderMeasurementCommand";
 @Component
 export default class SliderForm extends Vue {
   private sliderMin = 0;
@@ -82,7 +82,7 @@ export default class SliderForm extends Vue {
       step: this.sliderStep,
       value: this.sliderValue
     });
-    new AddMeasurementCommand(sliderMeasure, []).execute();
+    new AddSliderMeasurementCommand(sliderMeasure).execute();
   }
 
   private adjustSlidertep() {

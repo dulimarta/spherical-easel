@@ -1,9 +1,8 @@
 import { Command } from "./Command";
 import { SENodule } from "@/models/SENodule";
 import { SEMeasurement } from "@/models/SEMeasurement";
-import { CommandGroup } from "./CommandGroup";
 
-export class AddMeasurementCommand extends Command {
+export abstract class AddMeasurementCommand extends Command {
   protected seMeasurement: SEMeasurement;
   protected parents: SENodule[] = [];
   /**
@@ -31,20 +30,4 @@ export class AddMeasurementCommand extends Command {
     Command.store.commit.removeExpression(this.lastState);
     this.parents.forEach(nodule => nodule.unregisterChild(this.seMeasurement));
   }
-
-  toOpcode(): null | string | Array<string> {
-    if (this.parents.length > 0)
-      return (
-        ["AddMeasurement", this.seMeasurement.name].join("/") +
-        ";" +
-        this.parents.map((p: SENodule) => p.name).join("/")
-      );
-    else return ["AddMeasurement", this.seMeasurement.name].join("/");
-  }
-
-  // static parse(command: string, objMap: Map<string, SENodule>): Command {
-  //   const tokens = command.split("/");
-  //   const numArgs = tokens.length - 2;
-  //   return new CommandGroup();
-  // }
 }
