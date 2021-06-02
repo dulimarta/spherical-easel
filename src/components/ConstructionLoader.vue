@@ -20,9 +20,11 @@
             <v-overlay absolute
               :value="hover">
               <v-btn rounded
+                small
                 color="secondary"
                 @click="loadConstruction(r.id)">
-                <v-icon left>mdi-folder-open-outline</v-icon>Load
+                <v-icon left
+                  small>mdi-folder-open-outline</v-icon>Load
               </v-btn>
             </v-overlay>
           </v-list-item>
@@ -49,20 +51,49 @@
             <!--- show a Load button as an overlay when the mouse hovers -->
             <v-overlay absolute
               :value="hover">
-              <v-btn rounded
-                color="secondary"
-                @click="loadConstruction(r.id)">
-                <v-icon left>mdi-folder-open-outline</v-icon>Load
-              </v-btn>
+              <v-row>
+                <v-col>
+                  <v-btn rounded
+                    small
+                    color="secondary"
+                    @click="loadConstruction(r.id)">
+                    <v-icon left
+                      small>mdi-folder-open-outline</v-icon>Load
+                  </v-btn>
+                </v-col>
+                <v-col>
+                  <v-btn rounded
+                    small
+                    color="secondary"
+                    @click="doShareURL(r.id)">
+                    <v-icon small
+                      left>mdi-share-variant</v-icon>Share
+                  </v-btn>
+                </v-col>
+              </v-row>
             </v-overlay>
           </v-list-item>
         </v-hover>
       </template>
     </v-list>
+    <Dialog ref="constructionShareDialog"
+      title="Share Construction"
+      :yes-text="`Copy URL`"
+      :yes-action="doCopyURL"
+      max-width="50%">
+      <p>Use this URL</p>
+      <textarea :cols="shareURL.length"
+        rows="1"
+        readonly
+        ref="docURL"
+        v-html="shareURL" />
+
+    </Dialog>
   </div>
 </template>
 
 <script lang="ts">
+import VueComponent from "vue";
 import { Component, Vue } from "vue-property-decorator";
 import {
   FirebaseFirestore,
@@ -74,6 +105,7 @@ import EventBus from "@/eventHandlers/EventBus";
 import { SENodule } from "@/models/SENodule";
 import Nodule from "@/plottables/Nodule";
 import { FirebaseAuth } from "@firebase/auth-types";
+import Dialog, { DialogAction } from "@/components/Dialog.vue";
 import { Matrix4 } from "three";
 
 // TODO: move the following type alias and interface elsewhere later?
@@ -92,13 +124,18 @@ interface ConstructionInFirestore {
   rotationMatrix?: string;
 }
 
-@Component
+@Component({ components: { Dialog } })
 export default class ConstructionLoader extends Vue {
   readonly $appDB!: FirebaseFirestore;
   readonly $appAuth!: FirebaseAuth;
   publicConstructions: Array<SphericalConstruction> = [];
   privateConstructions: Array<SphericalConstruction> = [];
+  shareURL = "";
 
+  $refs!: {
+    constructionShareDialog: VueComponent & DialogAction;
+    docURL: HTMLSpanElement;
+  };
   get firebaseUid(): string | undefined {
     return this.$appAuth.currentUser?.uid;
   }
@@ -191,8 +228,15 @@ export default class ConstructionLoader extends Vue {
     this.$store.direct.commit.rotateSphere(rotationMatrix);
     run(script);
   }
+
+  doShareURL(docId: string): void {
+    this.shareURL = `${location.host}/construction/${docId}`;
+    this.$refs.constructionShareDialog.show();
+  }
+  doCopyURL(): void {
+    (this.$refs.docURL as HTMLTextAreaElement).select();
+    document.execCommand("copy");
+    this.$refs.constructionShareDialog.hide();
+  }
 }
 </script>
-
-<style scoped>
-</style>
