@@ -73,12 +73,14 @@ import { run, ConstructionScript } from "@/commands/CommandInterpreter";
 import EventBus from "@/eventHandlers/EventBus";
 import { SENodule } from "@/models/SENodule";
 import Nodule from "@/plottables/Nodule";
-import { FirebaseAuth } from "node_modules/@firebase/auth-types";
+import { FirebaseAuth } from "@firebase/auth-types";
+import { Matrix4 } from "three";
 
 // TODO: move the following type alias and interface elsewhere later?
 interface SphericalConstruction extends ConstructionInFirestore {
   id: string;
   parsedScript: ConstructionScript;
+  sphereRotationMatrix: Matrix4;
   objectCount: number;
 }
 
@@ -87,6 +89,7 @@ interface ConstructionInFirestore {
   dateCreated: string;
   script: string;
   description: string;
+  rotationMatrix?: string;
 }
 
 @Component
@@ -133,7 +136,11 @@ export default class ConstructionLoader extends Vue {
             typeof z === "string" ? 1 : z.length
           )
           .reduce((prev: number, curr: number) => prev + curr);
-
+        let sphereRotationMatrix = new Matrix4();
+        if (doc.rotationMatrix) {
+          const matrixData = JSON.parse(doc.rotationMatrix);
+          sphereRotationMatrix.fromArray(matrixData);
+        }
         targetArr.push({
           id: qd.id,
           script: doc.script,
@@ -141,7 +148,8 @@ export default class ConstructionLoader extends Vue {
           objectCount,
           author: doc.author,
           dateCreated: doc.dateCreated,
-          description: doc.description
+          description: doc.description,
+          sphereRotationMatrix
         });
       }
     });
@@ -153,18 +161,21 @@ export default class ConstructionLoader extends Vue {
 
   loadConstruction(docId: string): void {
     let script: ConstructionScript | null = null;
-
+    let rotationMatrix: Matrix4;
     // Search in public list
     let pos = this.publicConstructions.findIndex(
       (c: SphericalConstruction) => c.id === docId
     );
-    if (pos >= 0) script = this.publicConstructions[pos].parsedScript;
-    else {
+    if (pos >= 0) {
+      script = this.publicConstructions[pos].parsedScript;
+      rotationMatrix = this.publicConstructions[pos].sphereRotationMatrix;
+    } else {
       // Search in private list
       pos = this.privateConstructions.findIndex(
         (c: SphericalConstruction) => c.id === docId
       );
       script = this.privateConstructions[pos].parsedScript;
+      rotationMatrix = this.privateConstructions[pos].sphereRotationMatrix;
     }
 
     this.$store.direct.commit.removeAllFromLayers();
@@ -176,6 +187,8 @@ export default class ConstructionLoader extends Vue {
       keyOptions: { docId },
       type: "info"
     });
+    console.log("Applying roation: ", rotationMatrix.elements);
+    this.$store.direct.commit.rotateSphere(rotationMatrix);
     run(script);
   }
 }

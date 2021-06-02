@@ -209,9 +209,8 @@ export default class App extends Vue {
   doShare(): void {
     /* dump the command history */
     const out = Command.dumpOpcode();
-    // const outArr = JSON.parse(out) as Array<any>;
 
-    // TODO: handle public vs. private constructions differently
+    const rotationMat = this.$store.direct.state.inverseTotalRotationMatrix;
     const collectionPath = this.publicConstruction
       ? "constructions"
       : `users/${this.uid}/constructions`;
@@ -221,7 +220,8 @@ export default class App extends Vue {
         script: out,
         dateCreated: new Date().toISOString(),
         author: this.whoami,
-        description: this.description
+        description: this.description,
+        rotationMatrix: JSON.stringify(rotationMat.elements)
       })
       .then((doc: DocumentReference) => {
         // console.log("Inserted", doc.id);
