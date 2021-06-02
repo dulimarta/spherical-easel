@@ -224,9 +224,8 @@
 
 <script lang="ts">
 import VueComponent from "vue";
-import { Vue } from "vue-property-decorator";
+import { Vue, Component, Prop } from "vue-property-decorator";
 import SplitPane from "vue-splitpane";
-import Component from "vue-class-component";
 import Toolbox from "@/components/ToolBox.vue";
 import SphereFrame from "@/components/SphereFrame.vue";
 /* Import Command so we can use the command paradigm */
@@ -248,8 +247,8 @@ import { SENodule } from "@/models/SENodule";
 import { AppState } from "@/types";
 import IconBase from "@/components/IconBase.vue";
 import AngleMarker from "@/plottables/AngleMarker";
-// import { getModule } from "vuex-module-decorators";
-// import UI from "@/store/ui-styles";
+import { FirebaseFirestore, DocumentSnapshot } from "@firebase/firestore-types";
+import { run, ConstructionScript } from "@/commands/CommandInterpreter";
 
 /**
  * Split panel width distribution (percentages):
@@ -268,7 +267,8 @@ import AngleMarker from "@/plottables/AngleMarker";
   }
 })
 export default class Easel extends Vue {
-  readonly store = this.$store.direct;
+  @Prop()
+  documentId: string | undefined;
   @State((s: AppState) => s.sePoints)
   readonly points!: SENodule[];
 
@@ -281,6 +281,9 @@ export default class Easel extends Vue {
   @State((s: AppState) => s.seCircles)
   readonly circles!: SENodule[];
 
+  readonly $appDB!: FirebaseFirestore;
+
+  readonly store = this.$store.direct;
   // readonly UIModule = getModule(UI, this.$store);
   private availHeight = 0; // Both split panes are sandwiched between the app bar and footer. This variable hold the number of pixels available for canvas height
   private currentCanvasSize = 0; // Result of height calculation will be passed to <v-responsive> via this variable
@@ -360,10 +363,35 @@ export default class Easel extends Vue {
     }
   }
 
+  loadDocument(docId: string): void {
+    this.$store.direct.commit.removeAllFromLayers();
+    this.$store.direct.commit.init();
+    SENodule.resetAllCounters();
+    Nodule.resetAllCounters();
+    this.$appDB
+      .collection("constructions") // load the script from public collection
+      .doc(docId)
+      .get()
+      .then((doc: DocumentSnapshot) => {
+        if (doc.exists) {
+          const { script } = doc.data() as any;
+          run(JSON.parse(script) as ConstructionScript);
+        } else {
+          // TODO: add a new I18N entry for the following error message
+          EventBus.fire("show-alert", {
+            key: `Construction ${docId} not found`,
+            keyOptions: { docId },
+            type: "error"
+          });
+        }
+      });
+  }
   /** mounted() is part of VueJS lifecycle hooks */
   mounted(): void {
+    console.log("Load", this.documentId ?? "None");
     window.addEventListener("resize", this.onWindowResized);
     this.adjustSize(); // Why do we need this?  this.onWindowResized just calls this.adjustSize() but if you remove it the app doesn't work -- strange!
+    if (this.documentId) this.loadDocument(this.documentId);
   }
 
   /** Split Pane resize handler

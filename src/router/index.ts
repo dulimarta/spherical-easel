@@ -16,11 +16,13 @@ const routes: Array<RouteConfig> = [
     name: "Account",
     component: Login
   },
-  // {
-  //   path: "/construction",
-  //   name: "Construction",
-  //   component: ConstructionLoader
-  // },
+  {
+    /* Use this path to automatically load a saved construction */
+    path: "/construction/:documentId",
+    name: "",
+    component: Easel,
+    props: true
+  },
   {
     path: "/settings",
     name: "Settings",
