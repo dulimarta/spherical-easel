@@ -130,6 +130,11 @@
     "showLabels": "Show Label(s)",
     "showObjects": "Show Object(s)",
 
+    "noFill":"No Fill",
+    "noStroke": "No Stroke",
+
+    "noFillLabelTip":"If you want to make the labels only appear on the front of the sphere, check 'No Fill' on the Label Back Fill Color. Similarly, to make the labels only appear on the back of the sphere, check 'No Fill' on the Label Front Fill Color.",
+
     "NOSELECTION": " No Selection",
     "selectAnObject": "Select Object(s) To Style",
     "closeOrSelect": "Close the styling panel or select object(s).",
@@ -139,25 +144,33 @@
     "selectionDirection3": "Hold a number key to select an object at that depth.",
     "selectionDirection4":"Hold the p key and click in any empty location to add all points. Similar for lines (l), line segment (s), and circles (c)",
     "closeStylingPanel": "Close Styling Panel",
+    "noSelectionToolTip": "No objects are currently selected. Either select objects with the selection tool or click this button to close the style panel.",
 
     "LABELISSUE": "LABEL ISSUE",
     "labelNotVisible": "Label(s) not visible.",
     "clickToMakeLabelsVisible": "Click the button below to make all labels visible and then to style them.",
     "makeLabelsVisible": "Make Label(s) Visible",
+    "labelsNotShowingToolTip": "Not all labels in the current selection are visible. Click this button to make them visible and then they will be styleable.",
 
     "DIFFERINGSTYLESDETECTED": "DIFFERING STYLES DETECTED",
     "styleDisagreement":" Style Disagreement",
-    "differentValues": "The selected objects have different values for at least of these style options. Click the button below and edit a style to make all selected objects have that style value in common.",
+    "differentValues": "The selected objects have different values for at least one of these style options. Click the button and edit a style to make all selected objects have that style value in common.",
     "enableCommonStyle": "Enable Common Style",
+    "differentValuesToolTip": "The selected objects have different values for at least one style options. Click the button and edit a style to make all selected objects have that style value in common.",
+    
+    "dynamicBackStyleHeader":"Back Styling Override",
+    "disableDynamicBackStyle": "Disable Automatic Styling",
+    "disableDynamicBackStyleToolTip": "The styling of objects on the back of the sphere is handled automatically unless disabled. The automatic style depends on a Back Styling Contrast number and the front styling. If the contrast number is one, then there is no difference between the styling of objects on the front and the back of the sphere. If the contrast is zero, then nothing appears on back of sphere for colors and size reduction is maximized for points and thicknesses. The contrast number may be set in the Background Style panel.Click the button to disable automatic styling of objects on the back of the sphere.",
+
 
     "clearChanges": "Undo",
-    "clearChangesToolTip": "Revert the selected objects back to the style they had when they were *first* selected.",
+    "clearChangesToolTip": "Revert the selected object(s) back to the style they had when they were *first* selected.",
 
     "restoreDefaults": "Apply Defaults",
-    "restoreDefaultsToolTip": "Revert the selected objects back to their default ",
+    "restoreDefaultsToolTip": "Revert the selected object(s) back to their default(s).",
 
-    "showColorPresets": "Color Presets",
-    "showColorPresetsToolTip": "Click this toggle button to enter HSLA values directly or to select a color preset.",
+    "showColorInputs": "Color Inputs",
+    "showColorInputsToolTip": "Click this to enter color code values directly.",
 
     "enableDashPatternSlider": "Set A Dash Pattern",
     "enableDashPatternSliderToolTip": "The selected object(s) have no dash pattern. Click this button to set a pattern.",
@@ -172,16 +185,17 @@
     "enableBackStyleContrastSlider": "Click To Enable Dynamic Back Style For Selected Object(s)",
     "enableBackStyleContrastSliderToolTip": "The selected objects do not have dynamic back style enabled. Click this button enable it and adjust the Back Contrast Slider.",
 
-    "toggleStyleOptions":"Options",
-    "showLessStyleOptions":"Less Options",
+    "moreStyleOptions":"More",
+    "lessStyleOptions":"Less",
     "toggleStyleOptionsToolTip":"More/Less label styling options.",
-    "showLessLabelStyleOptionsToolTip":"Show fewer label styling options.",
 
     "convertSelectionToLabels":"A mix of label and non-label objects were selected when all label displays were changed. In order to do this the current selection was converted to all the labels of those objects.",
     
     "opacity": "Overall Opacity",
     "dashPattern": "Dash Pattern",
     "fillColor": "Fill Color",
+    "labelFrontFillColor": "Label Front Fill Color",
+    "labelBackFillColor": "Label Back Fill Color",
     "pointRadiusPercent": "Point Radius",
     "strokeColor": "Stroke Color",
     "strokeWidthPercent": "Stroke Width",

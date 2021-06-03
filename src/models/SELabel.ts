@@ -24,8 +24,6 @@ import { SEAngleMarker } from "./SEAngleMarker";
 import { SESegmentLength } from "./SESegmentLength";
 
 const styleSet = new Set([
-  Styles.fillColor,
-  Styles.opacity,
   Styles.labelTextScalePercent,
   Styles.dynamicBackStyle,
   Styles.labelTextStyle,
@@ -35,8 +33,8 @@ const styleSet = new Set([
   Styles.labelDisplayCaption,
   Styles.labelDisplayText,
   Styles.labelDisplayMode,
-  Styles.labelVisibility,
-  Styles.objectVisibility
+  Styles.labelFrontFillColor,
+  Styles.labelBackFillColor
 ]);
 
 export class SELabel extends SENodule implements Visitable {

@@ -83,12 +83,6 @@ export default class Label extends Nodule {
   //protected defaultSize = SETTINGS.label.fontSize;
 
   /**
-   * A number between 0 and 1 that is the opacity of the text.
-   * Set with text.opacity= this.front/back opacity
-   */
-  protected frontOpacity = SETTINGS.label.opacity.front;
-  protected backOpacity = SETTINGS.label.opacity.back;
-  /**
    *  A string representing the color for the text area to be filled. All valid css representations
    * of color are accepted. text.noFill(); Removes the fill.
    * Set with text.fill= this.front/back FillColor
@@ -191,8 +185,11 @@ export default class Label extends Nodule {
    */
   set initialNames(name: string) {
     this.initialName = name;
-    // shortName is the first 6 characters of name
-    this.shortUserName = name.slice(0, 6);
+    // shortName is the first characters of name
+    this.shortUserName = name.slice(
+      0,
+      SETTINGS.label.maxLabelDisplayTextLength
+    );
     this.stylize(DisplayStyle.ApplyCurrentVariables);
   }
 
@@ -387,31 +384,40 @@ export default class Label extends Nodule {
     if (options.labelTextScalePercent !== undefined) {
       this.textScalePercent = options.labelTextScalePercent;
     }
-    if (options.panel === StyleEditPanels.Front) {
-      // Set the front options
-      if (options.fillColor !== undefined) {
-        this.frontFillColor = options.fillColor;
-      }
-      if (options.opacity !== undefined) {
-        this.frontOpacity = options.opacity;
-      }
-    } else if (options.panel === StyleEditPanels.Back) {
-      // Set the back options
-      // options.dynamicBackStyle is boolean, so we need to explicitly check for undefined otherwise
-      // when it is false, this doesn't execute and this.dynamicBackStyle is not set
-      if (options.dynamicBackStyle !== undefined) {
-        this.dynamicBackStyle = options.dynamicBackStyle;
-      }
-      // overwrite the back options only in the case the dynamic style is not enabled
-      if (!this.dynamicBackStyle) {
-        if (options.fillColor !== undefined) {
-          this.backFillColor = options.fillColor;
-        }
-        if (options.opacity !== undefined) {
-          this.backOpacity = options.opacity;
-        }
-      }
+
+    if (options.labelFrontFillColor !== undefined) {
+      this.frontFillColor = options.labelFrontFillColor;
     }
+
+    if (options.labelBackFillColor !== undefined) {
+      this.backFillColor = options.labelBackFillColor;
+    }
+
+    if (options.dynamicBackStyle !== undefined) {
+      this.dynamicBackStyle = options.dynamicBackStyle;
+    }
+
+    // if (options.panel === StyleEditPanels.Front) {
+    //   // Set the front options
+    //   if (options.fillColor !== undefined) {
+    //     this.frontFillColor = options.fillColor;
+    //   }
+
+    // } else if (options.panel === StyleEditPanels.Back) {
+    //   // Set the back options
+    //   // options.dynamicBackStyle is boolean, so we need to explicitly check for undefined otherwise
+    //   // when it is false, this doesn't execute and this.dynamicBackStyle is not set
+    //   if (options.dynamicBackStyle !== undefined) {
+    //     this.dynamicBackStyle = options.dynamicBackStyle;
+    //   }
+    //   // overwrite the back options only in the case the dynamic style is not enabled
+    //   if (!this.dynamicBackStyle) {
+    //     if (options.fillColor !== undefined) {
+    //       this.backFillColor = options.fillColor;
+    //     }
+
+    //   }
+    // }
     // Now apply the style and size
     this.stylize(DisplayStyle.ApplyCurrentVariables);
     this.adjustSize();
@@ -422,27 +428,27 @@ export default class Label extends Nodule {
   currentStyleState(panel: StyleEditPanels): StyleOptions {
     switch (panel) {
       case StyleEditPanels.Front: {
+        // This should *never* be called
         return {
           panel: panel,
           fillColor: this.frontFillColor,
-          opacity: this.frontOpacity,
           dynamicBackStyle: this.dynamicBackStyle
         };
       }
       case StyleEditPanels.Back: {
+        // This should *never* be called
         return {
           panel: panel,
           fillColor: this.backFillColor,
-          opacity: this.backOpacity,
           dynamicBackStyle: this.dynamicBackStyle
         };
       }
       default:
       case StyleEditPanels.Label: {
-        let objectVisibility: boolean | undefined = undefined;
-        if (this.seLabel !== undefined) {
-          objectVisibility = this.seLabel.parent.showing;
-        }
+        // let objectVisibility: boolean | undefined = undefined;
+        // if (this.seLabel !== undefined) {
+        //   objectVisibility = this.seLabel!.parent.showing;
+        // }
         return {
           panel: panel,
           labelDisplayText: this.shortUserName,
@@ -453,8 +459,11 @@ export default class Label extends Nodule {
           labelTextDecoration: this.textDecoration,
           labelTextRotation: this.textRotation,
           labelVisibility: this.frontText.visible || this.backText.visible,
-          objectVisibility: objectVisibility,
-          labelTextScalePercent: this.textScalePercent
+          objectVisibility: this.seLabel!.parent.showing,
+          labelTextScalePercent: this.textScalePercent,
+          labelFrontFillColor: this.frontFillColor,
+          labelBackFillColor: this.backFillColor,
+          dynamicBackStyle: this.dynamicBackStyle
         };
       }
     }
@@ -465,22 +474,20 @@ export default class Label extends Nodule {
   defaultStyleState(panel: StyleEditPanels): StyleOptions {
     switch (panel) {
       case StyleEditPanels.Front: {
+        //Should never be called
         return {
           panel: panel,
           fillColor: SETTINGS.label.fillColor.front,
-          opacity: SETTINGS.label.opacity.front,
           dynamicBackStyle: SETTINGS.label.dynamicBackStyle
         };
       }
       case StyleEditPanels.Back: {
+        //Should never be called
         return {
           panel: panel,
           fillColor: SETTINGS.label.dynamicBackStyle
             ? Nodule.contrastFillColor(SETTINGS.label.fillColor.front)
             : SETTINGS.label.fillColor.back,
-          opacity: SETTINGS.label.dynamicBackStyle
-            ? Nodule.contrastOpacity(SETTINGS.label.opacity.front)
-            : SETTINGS.label.opacity.back,
           dynamicBackStyle: SETTINGS.label.dynamicBackStyle
         };
       }
@@ -522,7 +529,10 @@ export default class Label extends Nodule {
           labelTextRotation: SETTINGS.label.rotation,
           labelVisibility: labelVisibility,
           objectVisibility: true,
-          labelTextScalePercent: SETTINGS.label.textScalePercent
+          labelTextScalePercent: SETTINGS.label.textScalePercent,
+          labelFrontFillColor: SETTINGS.label.fillColor.front,
+          labelBackFillColor: SETTINGS.label.fillColor.back,
+          dynamicBackStyle: SETTINGS.label.dynamicBackStyle
         };
       }
     }
@@ -702,30 +712,28 @@ export default class Label extends Nodule {
         this.glowingBackText.rotation = this.textRotation;
 
         // FRONT
-        if (this.frontFillColor === "noFill") {
+        if (this.frontFillColor === "noLabelFrontFill") {
           this.frontText.noFill();
         } else {
           this.frontText.fill = this.frontFillColor;
         }
-        this.frontText.opacity = this.frontOpacity;
 
         // BACK
         if (this.dynamicBackStyle) {
-          if (Nodule.contrastFillColor(this.frontFillColor) === "noFill") {
+          if (
+            Nodule.contrastFillColor(this.frontFillColor) === "noLabelBackFill"
+          ) {
             this.backText.noFill();
           } else {
             this.backText.fill = Nodule.contrastFillColor(this.frontFillColor);
           }
         } else {
-          if (this.backFillColor === "noFill") {
+          if (this.backFillColor === "noLabelBackFill") {
             this.backText.noFill();
           } else {
             this.backText.fill = this.backFillColor;
           }
         }
-        this.backText.opacity = this.dynamicBackStyle
-          ? Nodule.contrastOpacity(this.frontOpacity)
-          : this.backOpacity;
 
         break;
       }

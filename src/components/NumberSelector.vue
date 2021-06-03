@@ -17,16 +17,35 @@
       <v-card class="mx-auto"
         max-width="344"
         outlined>
-
+        <v-list-item single-line
+          class="pb-0">
+          <v-list-item-content>
+            <v-list-item-title class="headline mb-1">
+              {{$t('style.styleDisagreement')}}
+            </v-list-item-title>
+          </v-list-item-content>
+        </v-list-item>
         <v-card-actions>
-          <v-btn color="info"
-            v-on:click="setStyleDataAgreement">
-            {{$t('style.enableCommonStyle')}}
-          </v-btn>
+
+          <v-tooltip bottom
+            :open-delay="toolTipOpenDelay"
+            :close-delay="toolTipCloseDelay"
+            max-width="400px">
+            <template v-slot:activator="{ on }">
+              <v-btn color="info"
+                v-on="on"
+                v-on:click="setStyleDataAgreement">
+                {{$t('style.enableCommonStyle')}}
+              </v-btn>
+            </template>
+            {{$t('style.differentValuesToolTip')}}
+          </v-tooltip>
+
         </v-card-actions>
       </v-card>
     </v-overlay>
 
+    <!-- The number selector slider -->
     <v-slider v-model.number="styleData"
       :min="minValue"
       @change="onDataChanged"
@@ -46,16 +65,29 @@
       </template>
     </v-slider>
 
-    <HintButton @click="clearChanges"
-      :disabled="disableUndoButton || disabledValue"
-      i18n-label="style.clearChanges"
-      i18n-tooltip="style.clearChangesToolTip"></HintButton>
+    <!-- Undo and Reset to Defaults buttons -->
+    <v-container class="pa-0 ma-0">
+      <v-row justify="end"
+        no-gutters>
+        <v-col cols="2"
+          class="ma-0 pl-0 pr-0 pt-0 pb-2">
+          <HintButton @click="clearChanges"
+            :disabled="disableUndoButton || disabledValue"
+            type="undo"
+            i18n-label="style.clearChanges"
+            i18n-tooltip="style.clearChangesToolTip"></HintButton>
+        </v-col>
 
-    <HintButton @click="resetToDefaults"
-      :disabled="disabledValue"
-      i18n-label="style.restoreDefaults"
-      i18n-tooltip="style.restoreDefaultsToolTip"></HintButton>
-
+        <v-col cols="2"
+          class="ma-0 pl-0 pr-0 pt-0 pb-2">
+          <HintButton @click="resetToDefaults"
+            :disabled="disabledValue"
+            type="default"
+            i18n-label="style.restoreDefaults"
+            i18n-tooltip="style.restoreDefaultsToolTip"></HintButton>
+        </v-col>
+      </v-row>
+    </v-container>
   </div>
 </template>
 

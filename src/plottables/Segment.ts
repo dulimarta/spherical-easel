@@ -55,12 +55,11 @@ export default class Segment extends Nodule {
   // Front
   private strokeColorFront = SETTINGS.segment.drawn.strokeColor.front;
   private strokeWidthPercentFront = 100;
-  private opacityFront = SETTINGS.segment.drawn.opacity.front;
   private dashArrayFront = [] as number[]; // Initialize in constructor
   // Back-- use the default non-dynamic back style options so that when the user disables the dynamic back style these options are displayed
   private strokeColorBack = SETTINGS.segment.drawn.strokeColor.back;
   private strokeWidthPercentBack = 100;
-  private opacityBack = SETTINGS.segment.drawn.opacity.back;
+
   private dashArrayBack = [] as number[]; // Initialize in constructor
   private dynamicBackStyle = SETTINGS.segment.dynamicBackStyle;
 
@@ -454,9 +453,7 @@ export default class Segment extends Nodule {
       if (options.strokeColor !== undefined) {
         this.strokeColorFront = options.strokeColor;
       }
-      if (options.opacity !== undefined) {
-        this.opacityFront = options.opacity;
-      }
+
       if (options.dashArray !== undefined) {
         // clear the dashArray
         this.dashArrayFront.clear();
@@ -478,9 +475,7 @@ export default class Segment extends Nodule {
         if (options.strokeColor !== undefined) {
           this.strokeColorBack = options.strokeColor;
         }
-        if (options.opacity !== undefined) {
-          this.opacityBack = options.opacity;
-        }
+
         if (options.dashArray !== undefined) {
           // clear the dashArray
           this.dashArrayBack.clear();
@@ -508,8 +503,7 @@ export default class Segment extends Nodule {
           panel: panel,
           strokeWidthPercent: this.strokeWidthPercentFront,
           strokeColor: this.strokeColorFront,
-          dashArray: dashArrayFront,
-          opacity: this.opacityFront
+          dashArray: dashArrayFront
         };
       }
       case StyleEditPanels.Back: {
@@ -522,7 +516,6 @@ export default class Segment extends Nodule {
           strokeWidthPercent: this.strokeWidthPercentBack,
           strokeColor: this.strokeColorBack,
           dashArray: dashArrayBack,
-          opacity: this.opacityBack,
           dynamicBackStyle: this.dynamicBackStyle
         };
       }
@@ -550,8 +543,7 @@ export default class Segment extends Nodule {
           panel: panel,
           strokeWidthPercent: 100,
           strokeColor: SETTINGS.segment.drawn.strokeColor.front,
-          dashArray: dashArrayFront,
-          opacity: SETTINGS.segment.drawn.opacity.front
+          dashArray: dashArrayFront
         };
       }
       case StyleEditPanels.Back: {
@@ -576,11 +568,6 @@ export default class Segment extends Nodule {
             : SETTINGS.segment.drawn.strokeColor.back,
 
           dashArray: dashArrayBack,
-
-          opacity: SETTINGS.segment.dynamicBackStyle
-            ? Nodule.contrastOpacity(SETTINGS.segment.drawn.opacity.front)
-            : SETTINGS.segment.drawn.opacity.back,
-
           dynamicBackStyle: SETTINGS.segment.dynamicBackStyle
         };
       }
@@ -656,7 +643,7 @@ export default class Segment extends Nodule {
         this.frontPart.stroke = SETTINGS.segment.temp.strokeColor.front;
         // strokeWidthPercent -- The line width is set to the current line width (which is updated for zoom magnification)
         //this.frontPart.linewidth = Segment.currentSegmentStrokeWidthFront;
-        this.frontPart.opacity = SETTINGS.segment.temp.opacity.front;
+
         // Copy the front dash properties from the front default drawn dash properties
         if (SETTINGS.segment.drawn.dashArray.front.length > 0) {
           this.frontPart.dashes.clear();
@@ -670,7 +657,7 @@ export default class Segment extends Nodule {
         this.frontExtra.stroke = SETTINGS.segment.temp.strokeColor.front;
         // strokeWidthPercent -- The line width is set to the current line width (which is updated for zoom magnification)
         //this.frontExtra.linewidth = Segment.currentSegmentStrokeWidthFront;
-        this.frontExtra.opacity = SETTINGS.segment.temp.opacity.front;
+
         // Copy the front dash properties from the front default drawn dash properties
         if (SETTINGS.segment.drawn.dashArray.front.length > 0) {
           this.frontExtra.dashes.clear();
@@ -683,7 +670,7 @@ export default class Segment extends Nodule {
         this.backPart.stroke = SETTINGS.segment.temp.strokeColor.back;
         // strokeWidthPercent -- The line width is set to the current line width (which is updated for zoom magnification)
         //this.backPart.linewidth = Segment.currentSegmentStrokeWidthBack;
-        this.backPart.opacity = SETTINGS.segment.temp.opacity.back;
+
         // Copy the back dash properties from the back default drawn dash properties
         if (SETTINGS.segment.drawn.dashArray.back.length > 0) {
           this.backPart.dashes.clear();
@@ -696,7 +683,7 @@ export default class Segment extends Nodule {
         this.backExtra.stroke = SETTINGS.segment.temp.strokeColor.back;
         // strokeWidthPercent -- The line width is set to the current line width (which is updated for zoom magnification)
         //this.backExtra.linewidth = Segment.currentSegmentStrokeWidthBack;
-        this.backExtra.opacity = SETTINGS.segment.temp.opacity.back;
+
         // Copy the back dash properties from the back default drawn dash properties
         if (SETTINGS.segment.drawn.dashArray.back.length > 0) {
           this.backExtra.dashes.clear();
@@ -724,7 +711,7 @@ export default class Segment extends Nodule {
           this.frontPart.stroke = this.strokeColorFront;
         }
         // strokeWidthPercent applied by adjustSize()
-        this.frontPart.opacity = this.opacityFront;
+
         if (this.dashArrayFront.length > 0) {
           this.frontPart.dashes.clear();
           this.dashArrayFront.forEach(v => {
@@ -743,7 +730,7 @@ export default class Segment extends Nodule {
           this.frontExtra.stroke = this.strokeColorFront;
         }
         // strokeWidthPercent applied by adjustSize()
-        this.frontExtra.opacity = this.opacityFront;
+
         if (this.dashArrayFront.length > 0) {
           this.frontExtra.dashes.clear();
           this.dashArrayFront.forEach(v => {
@@ -774,9 +761,7 @@ export default class Segment extends Nodule {
           }
         }
         // strokeWidthPercent applied by adjustSize()
-        this.backPart.opacity = this.dynamicBackStyle
-          ? Nodule.contrastOpacity(this.opacityFront)
-          : this.opacityBack;
+
         if (this.dashArrayBack.length > 0) {
           this.backPart.dashes.clear();
           this.dashArrayBack.forEach(v => {
@@ -805,9 +790,7 @@ export default class Segment extends Nodule {
           }
         }
         // strokeWidthPercent applied by adjustSize()
-        this.backExtra.opacity = this.dynamicBackStyle
-          ? Nodule.contrastOpacity(this.opacityFront)
-          : this.opacityBack;
+
         if (this.dashArrayBack.length > 0) {
           this.backExtra.dashes.clear();
           this.dashArrayBack.forEach(v => {
@@ -825,7 +808,7 @@ export default class Segment extends Nodule {
         this.glowingFrontPart.stroke =
           SETTINGS.segment.glowing.strokeColor.front;
         // strokeWidthPercent applied by adjustSize()
-        this.glowingFrontPart.opacity = SETTINGS.segment.glowing.opacity.front;
+
         // Copy the front dash properties to the glowing object
         if (this.dashArrayFront.length > 0) {
           this.glowingFrontPart.dashes.clear();
@@ -843,7 +826,7 @@ export default class Segment extends Nodule {
         this.glowingFrontExtra.stroke =
           SETTINGS.segment.glowing.strokeColor.front;
         // strokeWidthPercent applied by adjustSize()
-        this.glowingFrontExtra.opacity = SETTINGS.segment.glowing.opacity.front;
+
         // Copy the front dash properties to the glowing object
         if (this.dashArrayFront.length > 0) {
           this.glowingFrontExtra.dashes.clear();
@@ -860,7 +843,7 @@ export default class Segment extends Nodule {
         // no fillColor
         this.glowingBackPart.stroke = SETTINGS.segment.glowing.strokeColor.back;
         // strokeWidthPercent applied by adjustSize()
-        this.glowingBackPart.opacity = SETTINGS.segment.glowing.opacity.back;
+
         // Copy the back dash properties to the glowing object
         if (this.dashArrayBack.length > 0) {
           this.glowingBackPart.dashes.clear();
@@ -878,7 +861,7 @@ export default class Segment extends Nodule {
         this.glowingBackExtra.stroke =
           SETTINGS.segment.glowing.strokeColor.back;
         // strokeWidthPercent applied by adjustSize()
-        this.glowingBackExtra.opacity = SETTINGS.segment.glowing.opacity.back;
+
         // Copy the back dash properties to the glowing object
         if (this.dashArrayBack.length > 0) {
           this.glowingBackExtra.dashes.clear();

@@ -146,24 +146,6 @@
         :active-panel="activePanel"></NumberSelector>
     </fade-in-card>
 
-    <!-- Front/Back Opacity Number Selector -->
-    <fade-in-card :showWhen="
-        (editModeIsFront() && hasOpacity) ||
-          (editModeIsBack() && !dynamicBackStyle && hasOpacity)
-      ">
-      <NumberSelector title-key="style.opacity"
-        panel-front-key="style.front"
-        panel-back-key="style.back"
-        :data.sync="opacity"
-        style-name="opacity"
-        :min-value="0"
-        :max-value="1"
-        :step="0.1"
-        :temp-style-states="tempStyleStates"
-        :panel="panel"
-        :active-panel="activePanel"></NumberSelector>
-    </fade-in-card>
-
     <!-- Front/Back Dash array card is displayed for front and back so long as there is a dash array property common to all selected objects-->
     <fade-in-card
       :showWhen="(hasDashPattern ) && (editModeIsFront() || editModeIsBack())">
@@ -243,17 +225,63 @@
       </v-range-slider>
     </fade-in-card>
 
-    <!-- Scope of the Label Not Visible Overlay-->
-    <v-card color="grey lighten-2"
-      align="center"
-      justify="center"
-      flat>
+    <!-- Label(s) not showing overlay -- higher z-index rendered on top -- covers entire panel including the header-->
+    <v-overlay absolute
+      z-index="10"
+      v-bind:value="editModeIsLabel() && !allLabelsShowing && !totalyDisableStyleDataSelector"
+      :opacity="0.8">
+      <v-card class="mx-auto"
+        max-width="344"
+        outlined>
+        <v-list-item three-line
+          class="pb-0">
+          <v-list-item-content class="pb-1">
+            <div class="overline mb-2">
+              {{$t('style.LABELISSUE')}}
+            </div>
+            <v-list-item-title class="headline mb-1">
+              {{$t('style.labelNotVisible')}}
+            </v-list-item-title>
+            <v-list-item-subtitle>
+              {{$t('style.clickToMakeLabelsVisible')}}
+            </v-list-item-subtitle>
+          </v-list-item-content>
+        </v-list-item>
 
-      <!-- Label(s) not showing overlay -- higher z-index rendered on top-->
+        <v-card-actions>
+          <v-tooltip bottom
+            :open-delay="toolTipOpenDelay"
+            :close-delay="toolTipCloseDelay"
+            max-width="400px">
+            <template v-slot:activator="{ on }">
+              <v-btn color="info"
+                v-on="on"
+                v-on:click="toggleAllLabelsVisibility">
+                {{$t('style.makeLabelsVisible')}}
+              </v-btn>
+            </template>
+            {{$t('style.labelsNotShowingToolTip')}}
+          </v-tooltip>
+        </v-card-actions>
+      </v-card>
+    </v-overlay>
+
+    <!-- Label Text Options -->
+    <fade-in-card :showWhen="editModeIsLabel() && hasLabelStyle">
+      <span
+        class="text-subtitle-2">{{ $t("style.labelStyleOptions") }}</span>
+      <span v-if="selections.length > 1"
+        class="text-subtitle-2"
+        style="color:red">{{" "+ $t("style.labelStyleOptionsMultiple") }}</span>
+      <div style="line-height:15%;">
+        <br />
+      </div>
+
+      <!-- Differing data styles detected Overlay --higher z-index rendered on top-->
       <v-overlay absolute
-        z-index="10"
-        v-bind:value="editModeIsLabel() && !allLabelsShowing && !totalyDisableStyleDataSelector"
-        :opacity="0.8">
+        v-bind:value="editModeIsLabel() && !styleDataAgreement && !totalyDisableStyleDataSelector"
+        :opacity="0.8"
+        z-index="1">
         <v-card class="mx-auto"
           max-width="344"
           outlined>
@@ -261,211 +289,209 @@
             class="pb-0">
             <v-list-item-content class="pb-1">
               <div class="overline mb-2">
-                {{$t('style.LABELISSUE')}}
+                {{$t('style.DIFFERINGSTYLESDETECTED')}}
               </div>
               <v-list-item-title class="headline mb-1">
-                {{$t('style.labelNotVisible')}}
+                {{$t('style.styleDisagreement')}}
               </v-list-item-title>
-              <v-list-item-subtitle>
-                {{$t('style.clickToMakeLabelsVisible')}}
+              <v-list-item-subtitle> {{$t('style.differentValues')}}
               </v-list-item-subtitle>
             </v-list-item-content>
           </v-list-item>
 
           <v-card-actions>
-            <v-btn color="info"
-              v-on:click="toggleAllLabelsVisibility">
-              {{$t('style.makeLabelsVisible')}}
-            </v-btn>
+            <v-tooltip bottom
+              :open-delay="toolTipOpenDelay"
+              :close-delay="toolTipCloseDelay"
+              max-width="400px">
+              <template v-slot:activator="{ on }">
+                <v-btn color="info"
+                  v-on="on"
+                  v-on:click="setStyleDataAgreement">
+                  {{$t('style.enableCommonStyle')}}
+                </v-btn>
+              </template>
+              {{$t('style.differentValuesToolTip')}}
+            </v-tooltip>
           </v-card-actions>
         </v-card>
       </v-overlay>
 
-      <!-- Scope of the Label Text Options Different Style Detected Overlays -->
-      <v-card flat
-        color="grey lighten-2"
-        align="center"
-        justify="center">
-        <!-- Differing data styles detected Overlay --higher z-index rendered on top-->
-        <v-overlay absolute
-          v-bind:value="editModeIsLabel() && !styleDataAgreement && !totalyDisableStyleDataSelector"
-          :opacity="0.8"
-          z-index="1">
-          <v-card class="mx-auto"
-            max-width="344"
-            outlined>
-            <v-list-item three-line
-              class="pb-0">
-              <v-list-item-content class="pb-1">
-                <div class="overline mb-2">
-                  {{$t('style.DIFFERINGSTYLESDETECTED')}}
-                </div>
-                <v-list-item-title class="headline mb-1">
-                  {{$t('style.styleDisagreement')}}
-                </v-list-item-title>
-                <v-list-item-subtitle> {{$t('style.differentValues')}}
-                </v-list-item-subtitle>
-              </v-list-item-content>
-            </v-list-item>
+      <!-- Label Text Selections -->
+      <v-text-field v-model="labelDisplayText"
+        v-bind:label="$t('style.labelText')"
+        :counter="maxLabelDisplayTextLength"
+        filled
+        outlined
+        dense
+        v-bind:error-messages="$t(labelDisplayTextErrorMessageKey, { max: maxLabelDisplayTextLength })"
+        :rules="[labelDisplayTextCheck]"
+        @keyup="setlabelDisplayTextChange(); onLabelStyleDataChanged()"
+        @blur="setlabelDisplayTextChange(); onLabelStyleDataChanged()"
+        @change="setlabelDisplayTextChange(); onLabelStyleDataChanged()">
+      </v-text-field>
 
-            <v-card-actions>
-              <v-btn color="info"
-                v-on:click="setStyleDataAgreement">
-                {{$t('style.enableCommonStyle')}}
-              </v-btn>
-            </v-card-actions>
-          </v-card>
-        </v-overlay>
+      <!-- Label Caption Selections (only if more label style selected) -->
+      <div v-show="showMoreLabelStyles">
+        <v-text-field v-model="labelDisplayCaption"
+          v-bind:label="$t('style.labelCaption')"
+          :counter="maxLabelDisplayCaptionLength"
+          filled
+          outlined
+          dense
+          v-bind:error-messages="$t(labelDisplayCaptionErrorMessageKey, { max: maxLabelDisplayCaptionLength })"
+          :rules="[labelDisplayCaptionCheck]"
+          @keyup="setlabelDisplayCaptionChange(); onLabelStyleDataChanged()"
+          @blur="setlabelDisplayCaptionChange(); onLabelStyleDataChanged()"
+          @change="setlabelDisplayCaptionChange(); onLabelStyleDataChanged()">
+        </v-text-field>
+      </div>
 
-        <!-- Label Text Options -->
-        <fade-in-card :showWhen="editModeIsLabel()">
-          <span
-            class="text-subtitle-2">{{ $t("style.labelStyleOptions") }}</span>
-          <span v-if="selections.length > 1"
-            class="text-subtitle-2"
-            style="color:red">{{" "+ $t("style.labelStyleOptionsMultiple") }}</span>
-          <div style="line-height:15%;">
-            <br />
-          </div>
+      <!-- Label Diplay Mode Selections -->
+      <v-select v-model="labelDisplayMode"
+        :class="showMoreLabelStyles ? '' : 'pa-0'"
+        v-bind:label="$t('style.labelDisplayMode')"
+        :items="labelDisplayModeValueFilter(labelDisplayModeItems)"
+        filled
+        outlined
+        dense
+        @blur="setlabelDisplayModeChange(); onLabelStyleDataChanged()"
+        @change="setlabelDisplayModeChange(); onLabelStyleDataChanged()">
+      </v-select>
 
-          <!-- Label Text Selections -->
-          <v-text-field v-model="labelDisplayText"
-            v-bind:label="$t('style.labelText')"
-            :counter="maxLabelDisplayTextLength"
-            filled
-            outlined
-            dense
-            v-bind:error-messages="$t(labelDisplayTextErrorMessageKey, { max: maxLabelDisplayTextLength })"
-            :rules="[labelDisplayTextCheck]"
-            @keyup="setlabelDisplayTextChange(); onLabelStyleDataChanged()"
-            @blur="setlabelDisplayTextChange(); onLabelStyleDataChanged()"
-            @change="setlabelDisplayTextChange(); onLabelStyleDataChanged()">
-          </v-text-field>
+      <!-- Label Text Family Selections (only if more label style selected) -->
+      <div v-show="showMoreLabelStyles">
+        <v-select v-model="labelTextFamily"
+          v-bind:label="$t('style.labelTextFamily')"
+          :items="labelTextFamilyItems"
+          filled
+          outlined
+          dense
+          @blur="setlabelTextFamilyChange(); onLabelStyleDataChanged()"
+          @change="setlabelTextFamilyChange(); onLabelStyleDataChanged()">
+        </v-select>
+      </div>
 
-          <!-- Label Caption Selections (only if more label style selected) -->
-          <div v-show="showMoreLabelStyles">
-            <v-text-field v-model="labelDisplayCaption"
-              v-bind:label="$t('style.labelCaption')"
-              :counter="maxLabelDisplayCaptionLength"
-              filled
-              outlined
-              dense
-              v-bind:error-messages="$t(labelDisplayCaptionErrorMessageKey, { max: maxLabelDisplayCaptionLength })"
-              :rules="[labelDisplayCaptionCheck]"
-              @keyup="setlabelDisplayCaptionChange(); onLabelStyleDataChanged()"
-              @blur="setlabelDisplayCaptionChange(); onLabelStyleDataChanged()"
-              @change="setlabelDisplayCaptionChange(); onLabelStyleDataChanged()">
-            </v-text-field>
-          </div>
+      <!-- Label Text Style Selections (only if more label style selected) -->
+      <div v-show="showMoreLabelStyles">
+        <v-select v-model="labelTextStyle"
+          v-bind:label="$t('style.labelTextStyle')"
+          :items="labelTextStyleItems"
+          filled
+          outlined
+          dense
+          @blur="setlabelTextStyleChange(); onLabelStyleDataChanged()"
+          @change="setlabelTextStyleChange(); onLabelStyleDataChanged()">
+        </v-select>
+      </div>
 
-          <!-- Label Diplay Mode Selections -->
-          <v-select v-model="labelDisplayMode"
-            v-bind:label="$t('style.labelDisplayMode')"
-            :items="labelDisplayModeValueFilter(labelDisplayModeItems)"
-            filled
-            outlined
-            dense
-            @blur="setlabelDisplayModeChange(); onLabelStyleDataChanged()"
-            @change="setlabelDisplayModeChange(); onLabelStyleDataChanged()">
-          </v-select>
+      <!-- Label Text Decoration Selections (only if more label style selected) -->
+      <div v-show="showMoreLabelStyles">
+        <v-select v-model="labelTextDecoration"
+          v-bind:label="$t('style.labelTextDecoration')"
+          :items="labelTextDecorationItems"
+          filled
+          outlined
+          dense
+          @blur="setlabelTextDecorationChange(); onLabelStyleDataChanged()"
+          @change="setlabelTextDecorationChange(); onLabelStyleDataChanged()">
+        </v-select>
+      </div>
 
-          <!-- Label Text Family Selections (only if more label style selected) -->
-          <div v-show="showMoreLabelStyles">
-            <v-select v-model="labelTextFamily"
-              v-bind:label="$t('style.labelTextFamily')"
-              :items="labelTextFamilyItems"
-              filled
-              outlined
-              dense
-              @blur="setlabelTextFamilyChange(); onLabelStyleDataChanged()"
-              @change="setlabelTextFamilyChange(); onLabelStyleDataChanged()">
-            </v-select>
-          </div>
+      <!-- Undo and Reset to Defaults buttons -->
+      <v-container class="pa-0 ma-0">
+        <v-row justify="end"
+          no-gutters>
+          <v-col cols="2"
+            class="ma-0 pl-0 pr-0 pt-0 pb-2">
+            <HintButton @click="clearStyleData"
+              :disabled="disableStyleSelectorUndoButton"
+              type="undo"
+              i18n-label="style.clearChanges"
+              i18n-tooltip="style.clearChangesToolTip">
+            </HintButton>
+          </v-col>
 
-          <!-- Label Text Style Selections (only if more label style selected) -->
-          <div v-show="showMoreLabelStyles">
-            <v-select v-model="labelTextStyle"
-              v-bind:label="$t('style.labelTextStyle')"
-              :items="labelTextStyleItems"
-              filled
-              outlined
-              dense
-              @blur="setlabelTextStyleChange(); onLabelStyleDataChanged()"
-              @change="setlabelTextStyleChange(); onLabelStyleDataChanged()">
-            </v-select>
-          </div>
+          <v-col cols="2"
+            class="ma-0 pl-0 pr-0 pt-0 pb-2">
+            <HintButton @click="resetStyleDataToDefaults"
+              type="default"
+              i18n-label="style.restoreDefaults"
+              i18n-tooltip="style.restoreDefaultsToolTip">
+            </HintButton>
+          </v-col>
+        </v-row>
+      </v-container>
 
-          <!-- Label Text Decoration Selections (only if more label style selected) -->
-          <div v-show="showMoreLabelStyles">
-            <v-select v-model="labelTextDecoration"
-              v-bind:label="$t('style.labelTextDecoration')"
-              :items="labelTextDecorationItems"
-              filled
-              outlined
-              dense
-              @blur="setlabelTextDecorationChange(); onLabelStyleDataChanged()"
-              @change="setlabelTextDecorationChange(); onLabelStyleDataChanged()">
-            </v-select>
-          </div>
+    </fade-in-card>
 
-          <HintButton @click="clearStyleData"
-            :disabled="disableStyleSelectorUndoButton"
-            i18n-label="style.clearChanges"
-            i18n-tooltip="style.clearChangesToolTip"></HintButton>
-
-          <HintButton @click="resetStyleDataToDefaults"
-            i18n-label="style.restoreDefaults"
-            i18n-tooltip="style.restoreDefaultsToolTip"
-            :disabled="!allLabelsShowing"></HintButton>
-
-        </fade-in-card>
-      </v-card>
-      <!-- Scope of the Number Selector Overlays-->
-      <v-card color="grey lighten-2"
-        flat>
-        <!-- Label Text Scale Number Selector-->
-        <fade-in-card
-          :showWhen="
+    <!-- Label Text Scale Number Selector-->
+    <fade-in-card
+      :showWhen="
         editModeIsLabel() && hasLabelTextScalePercent && showMoreLabelStyles">
-          <NumberSelector id="textScalePercentSlider"
-            v-bind:data.sync="labelTextScalePercent"
-            style-name="labelTextScalePercent"
-            title-key="style.labelTextScalePercent"
-            panel-front-key="style.front"
-            panel-back-key="style.back"
-            v-bind:min-value="minLabelTextScalePercent"
-            v-bind:max-value="maxLabelTextScalePercent"
-            v-bind:step="20"
-            :temp-style-states="tempStyleStates"
-            :panel="panel"
-            :active-panel="activePanel"
-            :thumb-string-values="textScaleSelectorThumbStrings">
-          </NumberSelector>
-        </fade-in-card>
-      </v-card>
+      <NumberSelector id="textScalePercentSlider"
+        v-bind:data.sync="labelTextScalePercent"
+        style-name="labelTextScalePercent"
+        title-key="style.labelTextScalePercent"
+        panel-front-key="style.front"
+        panel-back-key="style.back"
+        v-bind:min-value="minLabelTextScalePercent"
+        v-bind:max-value="maxLabelTextScalePercent"
+        v-bind:step="20"
+        :temp-style-states="tempStyleStates"
+        :panel="panel"
+        :active-panel="activePanel"
+        :thumb-string-values="textScaleSelectorThumbStrings">
+      </NumberSelector>
+    </fade-in-card>
 
-      <!-- Scope of the Number Selector Overlays-->
-      <v-card color="grey lighten-2"
-        flat>
-        <!-- Label Text Rotation Number Selector-->
-        <fade-in-card
-          :showWhen="(editModeIsLabel() && hasLabelTextRotation && showMoreLabelStyles)">
-          <NumberSelector id="labelTextRotationSlider"
-            v-bind:data.sync="labelTextRotation"
-            style-name="labelTextRotation"
-            title-key="style.labelTextRotation"
-            v-bind:min-value="-3.14159"
-            v-bind:max-value="3.14159"
-            v-bind:step="0.39269875"
-            :temp-style-states="tempStyleStates"
-            :panel="panel"
-            :active-panel="activePanel"
-            :thumb-string-values="textRotationSelectorThumbStrings">
-          </NumberSelector>
-        </fade-in-card>
-      </v-card>
-    </v-card>
+    <!-- Label Text Rotation Number Selector-->
+    <fade-in-card
+      :showWhen="(editModeIsLabel() && hasLabelTextRotation && showMoreLabelStyles)">
+      <NumberSelector id="labelTextRotationSlider"
+        v-bind:data.sync="labelTextRotation"
+        style-name="labelTextRotation"
+        title-key="style.labelTextRotation"
+        v-bind:min-value="-3.14159"
+        v-bind:max-value="3.14159"
+        v-bind:step="0.39269875"
+        :temp-style-states="tempStyleStates"
+        :panel="panel"
+        :active-panel="activePanel"
+        :thumb-string-values="textRotationSelectorThumbStrings">
+      </NumberSelector>
+    </fade-in-card>
 
+    <!-- Label Front Fill Color Selector -->
+    <fade-in-card
+      :showWhen="editModeIsLabel() && hasLabelFrontFillColor && showMoreLabelStyles">
+
+      <ColorSelector title-key="style.labelFrontFillColor"
+        panel-front-key="style.front"
+        panel-back-key="style.back"
+        style-name="labelFrontFillColor"
+        :data.sync="hslaLabelFrontFillColorObject"
+        :temp-style-states="tempStyleStates"
+        :panel="panel"
+        :active-panel="activePanel"
+        :use-dynamic-back-style-from-selector="false"></ColorSelector>
+    </fade-in-card>
+
+    <!-- Label Back Fill Color Selector : -->
+    <fade-in-card
+      :showWhen="editModeIsLabel() && hasLabelBackFillColor&& showMoreLabelStyles">
+      <ColorSelector title-key="style.labelBackFillColor"
+        panel-front-key="style.front"
+        panel-back-key="style.back"
+        style-name="labelBackFillColor"
+        :data.sync="hslaLabelBackFillColorObject"
+        :temp-style-states="tempStyleStates"
+        :panel="panel"
+        :active-panel="activePanel"
+        :use-dynamic-back-style-from-selector="true"></ColorSelector>
+    </fade-in-card>
+
+    <!-- Show more or less styling options -->
     <v-tooltip bottom
       :open-delay="toolTipOpenDelay"
       :close-delay="toolTipCloseDelay"
@@ -478,23 +504,14 @@
           text
           plain
           ripple
-          x-small>{{$t('style.toggleStyleOptions')}}
+          x-small>
+          <v-icon v-if="showMoreLabelStyles">mdi-chevron-up
+          </v-icon>
+          <v-icon v-else>mdi-chevron-down </v-icon>
         </v-btn>
       </template>
       {{$t('style.toggleStyleOptionsToolTip')}}
     </v-tooltip>
-
-    <!--  <HintButton v-if="!showMoreLabelStyles"
-      @click="toggleShowMoreLabelStyles"
-      i18n-label="style.showMoreStyleOptions"
-      i18n-tooltip="style.showMoreLabelStyleOptionsToolTip">
-    </HintButton>
-
-    <HintButton v-if="showMoreLabelStyles"
-      @click="toggleShowMoreLabelStyles"
-      i18n-label="style.showLessStyleOptions"
-      i18n-tooltip="style.showLessLabelStyleOptionsToolTip">
-    </HintButton> -->
 
   </div>
 
@@ -621,6 +638,7 @@ export default class BasicFrontBackStyle extends Vue {
   //Many of the label style will not be commonly modified so create a button/variable for
   // the user to click to show more of the Label Styling options
   private showMoreLabelStyles = false;
+  private moreOrLessText = i18n.t("style.moreStyleOptions"); // The text for the button to toggle between less/more options
 
   private labelVisible: boolean | undefined = false;
   private objectVisible: boolean | undefined = true;
@@ -769,6 +787,18 @@ export default class BasicFrontBackStyle extends Vue {
   // create a circle, open the style panel, select the circle when the basic panel is open, switch to the foreground panel, the selected circle has a displayed opacity of 0 --
   // that is the blinking is between nothing and a red circle glowing circle) The color picker display is correct though... strange!
   private hslaFillColorObject: hslaColorType = { h: 0, s: 1, l: 1, a: 0.001 }; // Color for Vuetify Color picker
+  private hslaLabelFrontFillColorObject: hslaColorType = {
+    h: 0,
+    s: 1,
+    l: 1,
+    a: 0.001
+  };
+  private hslaLabelBackFillColorObject: hslaColorType = {
+    h: 0,
+    s: 1,
+    l: 1,
+    a: 0.001
+  }; // Color for Vuetify Color picker
 
   /** gapLength = sliderArray[0] */
   private gapLength = 5;
@@ -782,8 +812,6 @@ export default class BasicFrontBackStyle extends Vue {
   private emptyDashPattern = false;
   private maxGapLengthPlusDashLength =
     SETTINGS.style.maxGapLengthPlusDashLength;
-
-  private opacity: number | undefined = 1;
 
   private dynamicBackStyle: boolean | undefined = true;
   private dynamicBackStyleAgreement = true;
@@ -921,9 +949,7 @@ export default class BasicFrontBackStyle extends Vue {
     EventBus.fire("update-all-labels-showing", {});
     EventBus.fire("update-all-objects-showing", {});
   }
-  enableCommonStyle(): void {
-    console.log("moo3");
-  }
+
   resetStyleDataToDefaults(): void {
     const selected: SENodule[] = [];
     // If this number selector is on the label panel, then all changes are directed at the label(s).
@@ -1158,6 +1184,11 @@ export default class BasicFrontBackStyle extends Vue {
   }
   toggleShowMoreLabelStyles(): void {
     this.showMoreLabelStyles = !this.showMoreLabelStyles;
+    if (!this.showMoreLabelStyles) {
+      this.moreOrLessText = i18n.t("style.moreStyleOptions");
+    } else {
+      this.moreOrLessText = i18n.t("style.lessStyleOptions");
+    }
   }
 
   // These methods are linked to the dashPattern fade-in-card
@@ -1534,9 +1565,6 @@ export default class BasicFrontBackStyle extends Vue {
   get hasPointRadiusPercent(): boolean {
     return this.hasStyle(Styles.pointRadiusPercent);
   }
-  get hasOpacity(): boolean {
-    return this.hasStyle(Styles.opacity);
-  }
   get hasDashPattern(): boolean {
     return this.hasStyle(Styles.dashArray);
   }
@@ -1558,6 +1586,12 @@ export default class BasicFrontBackStyle extends Vue {
   }
   get hasLabelTextScalePercent(): boolean {
     return this.hasStyle(Styles.labelTextScalePercent);
+  }
+  get hasLabelFrontFillColor(): boolean {
+    return this.hasStyle(Styles.labelFrontFillColor);
+  }
+  get hasLabelBackFillColor(): boolean {
+    return this.hasStyle(Styles.labelBackFillColor);
   }
   //check the label visiblity and values of the labels
   // If all object's labels in the selection have a defined value this is true
@@ -1734,7 +1768,6 @@ export default class BasicFrontBackStyle extends Vue {
         a.strokeWidthPercent === b.strokeWidthPercent &&
         a.strokeColor === b.strokeColor &&
         a.fillColor === b.fillColor &&
-        a.opacity === b.opacity &&
         a.dynamicBackStyle === b.dynamicBackStyle &&
         a.pointRadiusPercent === b.pointRadiusPercent &&
         a.labelDisplayText === b.labelDisplayText &&
@@ -1796,9 +1829,6 @@ export default class BasicFrontBackStyle extends Vue {
         //   a.fillColor === b.fillColor,
         //   "\n",
         //   "o",
-        //   a.opacity,
-        //   b.opacity,
-        //   a.opacity === b.opacity,
         //   "\n",
         //   "dbs",
         //   a.dynamicBackStyle,

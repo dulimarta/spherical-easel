@@ -32,7 +32,6 @@ const styleSet = new Set([
   Styles.strokeWidthPercent,
   Styles.dashArray,
   Styles.fillColor,
-  Styles.opacity,
   Styles.dynamicBackStyle,
   Styles.angleMarkerRadiusPercent
 ]);

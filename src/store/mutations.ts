@@ -338,7 +338,6 @@ export default {
       strokeColor: payload.strokeColor,
       fillColor: payload.fillColor,
       dashArray: payload.dashArray,
-      opacity: payload.opacity,
       dynamicBackStyle: payload.dynamicBackStyle,
       pointRadiusPercent: payload.pointRadiusPercent,
       labelTextStyle: payload.labelTextStyle,
@@ -350,6 +349,8 @@ export default {
       labelDisplayCaption: payload.labelDisplayCaption,
       labelDisplayMode: payload.labelDisplayMode,
       labelVisibility: payload.labelVisibility,
+      labelFrontFillColor: payload.labelFrontFillColor,
+      labelBackFillColor: payload.labelBackFillColor,
       objectVisibility: payload.objectVisibility
     };
     if (

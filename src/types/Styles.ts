@@ -20,7 +20,6 @@ export enum Styles {
   strokeColor,
   fillColor,
   dashArray,
-  opacity,
   dynamicBackStyle,
   pointRadiusPercent,
   labelDisplayText,
@@ -32,6 +31,8 @@ export enum Styles {
   labelTextScalePercent,
   labelDisplayMode,
   labelVisibility,
+  labelFrontFillColor,
+  labelBackFillColor,
   objectVisibility,
   angleMarkerRadiusPercent
 }
@@ -42,7 +43,6 @@ export type StyleOptions = {
   strokeColor?: string;
   fillColor?: string;
   dashArray?: number[];
-  opacity?: number;
   dynamicBackStyle?: boolean;
   pointRadiusPercent?: number;
   backStyleContrast?: number;
@@ -56,5 +56,7 @@ export type StyleOptions = {
   labelDisplayMode?: LabelDisplayMode;
   labelVisibility?: boolean;
   objectVisibility?: boolean;
+  labelFrontFillColor?: string;
+  labelBackFillColor?: string;
   angleMarkerRadiusPercent?: number;
 };

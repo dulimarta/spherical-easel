@@ -30,7 +30,6 @@ export default class NonFreePoint extends Point {
     this.fillColorFront = SETTINGS.point.nonFree.fillColor.front;
     this.strokeColorFront = SETTINGS.point.nonFree.strokeColor.front;
     this.pointRadiusPercentFront = 100;
-    this.opacityFront = SETTINGS.point.nonFree.opacity.front;
     // Back
     this.fillColorBack = SETTINGS.point.dynamicBackStyle
       ? Nodule.contrastFillColor(SETTINGS.point.nonFree.fillColor.front)
@@ -43,9 +42,7 @@ export default class NonFreePoint extends Point {
           SETTINGS.point.nonFree.pointStrokeWidth.front
         )
       : 100;
-    this.opacityBack = SETTINGS.point.dynamicBackStyle
-      ? Nodule.contrastOpacity(SETTINGS.point.nonFree.opacity.front)
-      : SETTINGS.point.nonFree.opacity.back;
+
     this.dynamicBackStyle = SETTINGS.point.dynamicBackStyle;
 
     // Now apply the new style and size
@@ -63,8 +60,7 @@ export default class NonFreePoint extends Point {
           panel: panel,
           pointRadiusPercent: 100,
           strokeColor: SETTINGS.point.nonFree.strokeColor.front,
-          fillColor: SETTINGS.point.nonFree.fillColor.front,
-          opacity: SETTINGS.point.nonFree.opacity.front
+          fillColor: SETTINGS.point.nonFree.fillColor.front
         };
         // Back
       }
@@ -85,10 +81,6 @@ export default class NonFreePoint extends Point {
           fillColor: SETTINGS.point.dynamicBackStyle
             ? Nodule.contrastFillColor(SETTINGS.point.nonFree.fillColor.front)
             : SETTINGS.point.nonFree.fillColor.back,
-
-          opacity: SETTINGS.point.dynamicBackStyle
-            ? Nodule.contrastOpacity(SETTINGS.point.nonFree.opacity.front)
-            : SETTINGS.point.nonFree.opacity.back,
 
           dynamicBackStyle: SETTINGS.point.dynamicBackStyle
         };

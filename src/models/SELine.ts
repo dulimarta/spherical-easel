@@ -18,7 +18,6 @@ const styleSet = new Set([
   Styles.strokeWidthPercent,
   Styles.strokeColor,
   Styles.dashArray,
-  Styles.opacity,
   Styles.dynamicBackStyle
 ]);
 

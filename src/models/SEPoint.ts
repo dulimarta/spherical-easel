@@ -20,7 +20,6 @@ const styleSet = new Set([
   Styles.fillColor,
   Styles.strokeColor,
   Styles.pointRadiusPercent,
-  Styles.opacity,
   Styles.dynamicBackStyle
 ]);
 

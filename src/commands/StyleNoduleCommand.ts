@@ -37,7 +37,6 @@ export class StyleNoduleCommand extends Command {
       } else {
         newObj.dashArray = undefined;
       }
-      newObj.opacity = obj.opacity;
       newObj.dynamicBackStyle = obj.dynamicBackStyle;
       newObj.pointRadiusPercent = obj.pointRadiusPercent;
       newObj.labelTextStyle = obj.labelTextStyle;
@@ -48,6 +47,8 @@ export class StyleNoduleCommand extends Command {
       newObj.labelDisplayText = obj.labelDisplayText;
       newObj.labelDisplayCaption = obj.labelDisplayCaption;
       newObj.labelDisplayMode = obj.labelDisplayMode;
+      newObj.labelFrontFillColor = obj.labelFrontFillColor;
+      newObj.labelBackFillColor = obj.labelBackFillColor;
       newObj.labelVisibility = obj.labelVisibility;
       newObj.objectVisibility = obj.objectVisibility;
       this.currentStyles.push(newObj);
@@ -67,7 +68,6 @@ export class StyleNoduleCommand extends Command {
       } else {
         newObj.dashArray = undefined;
       }
-      newObj.opacity = obj.opacity;
       newObj.dynamicBackStyle = obj.dynamicBackStyle;
       newObj.pointRadiusPercent = obj.pointRadiusPercent;
       newObj.labelTextStyle = obj.labelTextStyle;
@@ -79,6 +79,8 @@ export class StyleNoduleCommand extends Command {
       newObj.labelDisplayCaption = obj.labelDisplayCaption;
       newObj.labelDisplayMode = obj.labelDisplayMode;
       newObj.labelVisibility = obj.labelVisibility;
+      newObj.labelFrontFillColor = obj.labelFrontFillColor;
+      newObj.labelBackFillColor = obj.labelBackFillColor;
       newObj.objectVisibility = obj.objectVisibility;
       this.pastStyles.push(newObj);
     });
@@ -96,7 +98,6 @@ export class StyleNoduleCommand extends Command {
           strokeColor: this.currentStyles[i].strokeColor,
           fillColor: this.currentStyles[i].fillColor,
           dashArray: this.currentStyles[i].dashArray,
-          opacity: this.currentStyles[i].opacity,
           dynamicBackStyle: this.currentStyles[i].dynamicBackStyle,
           pointRadiusPercent: this.currentStyles[i].pointRadiusPercent,
           labelTextStyle: this.currentStyles[i].labelTextStyle,
@@ -108,6 +109,8 @@ export class StyleNoduleCommand extends Command {
           labelDisplayCaption: this.currentStyles[i].labelDisplayCaption,
           labelDisplayMode: this.currentStyles[i].labelDisplayMode,
           labelVisibility: this.currentStyles[i].labelVisibility,
+          labelFrontFillColor: this.currentStyles[i].labelFrontFillColor,
+          labelBackFillColor: this.currentStyles[i].labelBackFillColor,
           objectVisibility: this.currentStyles[i].objectVisibility,
           backStyleContrast: this.currentBackStyleContrast
         }
@@ -129,7 +132,6 @@ export class StyleNoduleCommand extends Command {
           strokeColor: this.pastStyles[i].strokeColor,
           fillColor: this.pastStyles[i].fillColor,
           dashArray: this.pastStyles[i].dashArray,
-          opacity: this.pastStyles[i].opacity,
           dynamicBackStyle: this.pastStyles[i].dynamicBackStyle,
           pointRadiusPercent: this.pastStyles[i].pointRadiusPercent,
           labelTextStyle: this.pastStyles[i].labelTextStyle,
@@ -141,6 +143,8 @@ export class StyleNoduleCommand extends Command {
           labelDisplayCaption: this.pastStyles[i].labelDisplayCaption,
           labelDisplayMode: this.pastStyles[i].labelDisplayMode,
           labelVisibility: this.pastStyles[i].labelVisibility,
+          labelFrontFillColor: this.pastStyles[i].labelFrontFillColor,
+          labelBackFillColor: this.pastStyles[i].labelBackFillColor,
           objectVisibility: this.pastStyles[i].objectVisibility,
           backStyleContrast: this.pastBackStyleContrast
         }

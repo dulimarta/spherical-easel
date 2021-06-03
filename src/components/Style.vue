@@ -86,10 +86,21 @@
             </ul>
           </v-card-text>
           <v-card-actions>
-            <v-btn color="info"
-              v-on:click="$emit('toggle-style-panel')">
-              {{$t('style.closeStylingPanel')}}
-            </v-btn>
+            <template>
+              <v-tooltip bottom
+                :open-delay="toolTipOpenDelay"
+                :close-delay="toolTipCloseDelay"
+                max-width="400px">
+                <template v-slot:activator="{ on }">
+                  <v-btn v-on="on"
+                    color="info"
+                    v-on:click="$emit('toggle-style-panel')">
+                    {{$t('style.closeStylingPanel')}}
+                  </v-btn>
+                </template>
+                {{$t('style.noSelectionToolTip')}}
+              </v-tooltip>
+            </template>
           </v-card-actions>
         </v-card>
 
@@ -148,6 +159,9 @@ export default class Style extends Vue {
   readonly selections!: SENodule[];
 
   readonly store = this.$store.direct;
+
+  readonly toolTipOpenDelay = SETTINGS.toolTip.openDelay;
+  readonly toolTipCloseDelay = SETTINGS.toolTip.closeDelay;
 
   private activePanel: number | undefined = 0; // Default selection is the Label panel
 
