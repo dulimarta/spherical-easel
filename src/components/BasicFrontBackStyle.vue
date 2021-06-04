@@ -1,234 +1,430 @@
 <template>
   <div>
+    <!-- objects(s) not showing overlay --  && !allObjectsShowing && !totalyDisableStyleDataSelector---higher z-index rendered on top -- covers entire panel including the header-->
+    <v-overlay absolute
+      z-index="10"
+      v-bind:value="( editModeIsFront() || editModeIsBack() ) && !allObjectsShowing()"
+      :opacity="0.8">
+      <v-card class="mx-auto"
+        max-width="344"
+        outlined>
+        <v-list-item three-line
+          class="pb-0">
+          <v-list-item-content class="pb-1">
+            <div class="overline mb-2">
+              {{$t('style.OBJECTISSUE')}}
+            </div>
+            <v-list-item-title class="headline mb-1">
+              {{$t('style.objectNotVisible')}}
+            </v-list-item-title>
+            <v-list-item-subtitle>
+              {{$t('style.clickToMakeObjectsVisible')}}
+            </v-list-item-subtitle>
+          </v-list-item-content>
+        </v-list-item>
+
+        <v-card-actions>
+          <v-tooltip bottom
+            :open-delay="toolTipOpenDelay"
+            :close-delay="toolTipCloseDelay"
+            max-width="400px">
+            <template v-slot:activator="{ on }">
+              <v-btn color="info"
+                v-on="on"
+                v-on:click="toggleAllObjectsVisibility">
+                {{$t('style.makeObjectsVisible')}}
+              </v-btn>
+            </template>
+            {{$t('style.objectsNotShowingToolTip')}}
+          </v-tooltip>
+        </v-card-actions>
+      </v-card>
+    </v-overlay>
+
     <!-- Back Style Contrast Slider -->
     <fade-in-card :showWhen="editModeIsBack()"
       color="red">
+      <span
+        class="text-subtitle-2">{{ $t('style.backStyleContrast') }}</span>
+      <span>
+        {{" ("+ Math.floor(backStyleContrast*100)+"%)" }}
+      </span>
+      <br />
+
+      <!-- Enable the Dynamic Back Style Overlay -->
+      <v-overlay absolute
+        v-if="editModeIsBack() && hasDynamicBackStyle && usingDynamicBackStyleAgreement"
+        v-bind:value="!(usingDynamicBackStyle || usingDynamicBackStyleCommonValue)"
+        :opacity="0.8"
+        z-index="5">
+        <v-card max-width="344"
+          outlined>
+          <v-list-item single-line
+            class="pb-0">
+            <v-list-item-content class="justify-center">
+              <v-list-item-title class="mb-1">
+                {{$t('style.dynamicBackStyleHeader')}}
+              </v-list-item-title>
+            </v-list-item-content>
+          </v-list-item>
+          <v-card-actions class="justify-center">
+
+            <v-tooltip bottom
+              :open-delay="toolTipOpenDelay"
+              :close-delay="toolTipCloseDelay"
+              max-width="400px">
+              <template v-slot:activator="{ on }">
+                <v-btn color="info"
+                  v-on="on"
+                  v-on:click="toggleBackStyleOptionsAvailability">
+                  {{$t('style.enableDynamicBackStyle')}}
+                </v-btn>
+              </template>
+              {{$t('style.disableDynamicBackStyleToolTip')}}
+            </v-tooltip>
+
+          </v-card-actions>
+        </v-card>
+      </v-overlay>
+
       <v-tooltip bottom
         :open-delay="toolTipOpenDelay"
         :close-delay="toolTipCloseDelay"
         max-width="400px">
         <template v-slot:activator="{ on }">
-          <span v-on="on"
-            class="text-subtitle-2">{{ $t("style.backStyleContrast") }}</span>
+          <v-slider v-model.number="backStyleContrast"
+            :min="0"
+            v-on="on"
+            step="0.1"
+            @change="onBackStyleContrastChange"
+            :max="1"
+            type="range"
+            :disabled="!usingDynamicBackStyle"
+            dense>
+            <template v-slot:prepend>
+              <v-icon @click="decrementBackStyleContrast">mdi-minus
+              </v-icon>
+            </template>
+            <template v-slot:thumb-label="{ value }">
+              {{ backStyleContrastSelectorThumbStrings[Math.floor(value*10)] }}
+            </template>
+            <template v-slot:append>
+              <v-icon @click="incrementBackStyleContrast">mdi-plus
+              </v-icon>
+            </template>
+          </v-slider>
         </template>
         <span>{{ $t("style.backStyleContrastToolTip") }}</span>
       </v-tooltip>
-      <span>
-        ({{ $t("style.value") }}:
-        {{ this.backStyleContrast }})
-      </span>
-      <br />
-      <HintButton @click="clearRecentDynamicBackStyleChanges"
-        :disabled="disableBackStyleContrastUndoButton"
-        i18n-label="style.clearChanges"
-        i18n-tooltip="style.clearChangesToolTip"></HintButton>
 
-      <HintButton @click="resetDynamicBackStyleToDefaults"
-        i18n-label="style.restoreDefaults"
-        i18n-tooltip="style.restoreDefaultsToolTip"></HintButton>
+      <!-- Undo and Reset to Defaults buttons -->
+      <v-container class="pa-0 ma-0">
+        <v-row justify="end"
+          no-gutters>
 
-      <v-slider v-model.number="backStyleContrast"
-        :min="0"
-        step="0.1"
-        @change="onBackStyleContrastChange"
-        :max="1"
-        type="range"
-        dense>
-        <template v-slot:prepend>
-          <v-icon @click="decrementBackStyleContrast">mdi-minus</v-icon>
-        </template>
+          <v-col cols="2"
+            class="ma-0 pl-0 pr-0 pt-0 pb-2">
+            <HintButton @click="clearRecentDynamicBackStyleChanges"
+              :disabled="disableBackStyleContrastUndoButton"
+              i18n-label="style.clearChanges"
+              i18n-tooltip="style.clearChangesToolTip"
+              type="undo"></HintButton>
+          </v-col>
 
-        <template v-slot:append>
-          <v-icon @click="incrementBackStyleContrast">mdi-plus</v-icon>
-        </template>
-      </v-slider>
+          <v-col cols="2"
+            class="ma-0 pl-0 pr-0 pt-0 pb-2">
+            <HintButton @click="resetDynamicBackStyleToDefaults"
+              i18n-label="style.restoreDefaults"
+              i18n-tooltip="style.restoreDefaultsToolTip"
+              type="default"></HintButton>
+          </v-col>
+        </v-row>
+      </v-container>
     </fade-in-card>
+    <!-- Scope of the Disable Dynamic Back Style Overlay and the BackStyle Disagreemnt overlay-->
+    <v-card color="grey lighten-2">
 
-    <!-- Back Buttons to Enable/Disable Dynamic Back Style -->
-    <fade-in-card :showWhen="editModeIsBack() && hasDynamicBackStyle ">
-      <span
-        class="text-subtitle-2">{{ $t("style.dynamicBackStyle") }}</span>
+      <!-- Disable the Dynamic Back Style Overlay -->
+      <v-overlay absolute
+        v-if="editModeIsBack() && hasDynamicBackStyle && usingDynamicBackStyleAgreement"
+        v-bind:value="usingDynamicBackStyle || usingDynamicBackStyleCommonValue"
+        :opacity="0.8"
+        z-index="50">
+        <v-card max-width="344"
+          outlined>
+          <v-list-item single-line
+            class="pb-0">
+            <v-list-item-content class="justify-center">
+              <v-list-item-title class="mb-1">
+                {{$t('style.dynamicBackStyleHeader')}}
+              </v-list-item-title>
+            </v-list-item-content>
+          </v-list-item>
+          <v-card-actions class="justify-center">
 
-      <br />
-      <span v-show="totallyDisableDynamicBackStyleSelector"
-        class="select-an-object-text">{{ $t("style.selectAnObject") }}</span>
+            <v-tooltip bottom
+              :open-delay="toolTipOpenDelay"
+              :close-delay="toolTipCloseDelay"
+              max-width="400px">
+              <template v-slot:activator="{ on }">
+                <v-btn color="info"
+                  v-on="on"
+                  v-on:click="toggleBackStyleOptionsAvailability">
+                  {{$t('style.disableDynamicBackStyle')}}
+                </v-btn>
+              </template>
+              {{$t('style.disableDynamicBackStyleToolTip')}}
+            </v-tooltip>
 
-      <HintButton v-if="!dynamicBackStyleAgreement"
-        color="error"
-        v-show="!totallyDisableDynamicBackStyleSelector"
-        @click="setCommonDynamicBackStyleAgreement"
-        i18n-label="style.differingStylesDetected"
-        i18n-tooltip="style.differingStylesDetectedToolTip"
-        long-label></HintButton>
+          </v-card-actions>
+        </v-card>
+      </v-overlay>
 
-      <template v-show="!totallyDisableDynamicBackStyleSelector &&
-                dynamicBackStyleAgreement">
-        <HintButton v-if="!dynamicBackStyle"
-          color="error"
-          @click="toggleBackStyleOptionsAvailability"
-          i18n-label="style.enableBackStyleContrastSlider"
-          long-label
-          i18n-tooltip="style.enableBackStyleContrastSliderToolTip">
-        </HintButton>
-        <HintButton v-else
-          color="error"
-          @click="toggleBackStyleOptionsAvailability"
-          long-label
-          i18n-label="style.disableBackStyleContrastSlider"
-          i18n-tooltip="style.disableBackStyleContrastSliderToolTip">
-        </HintButton>
-      </template>
-    </fade-in-card>
+      <!-- usingDynamicBackStyle disagreemnt  -->
+      <v-overlay absolute
+        v-bind:value="editModeIsBack()&& hasDynamicBackStyle && !usingDynamicBackStyleAgreement"
+        :opacity="0.8"
+        z-index="40">
+        <v-card class="mx-auto"
+          max-width="344"
+          outlined>
+          <v-list-item three-line
+            class="pb-0">
+            <v-list-item-content class="pb-1">
+              <v-list-item-title class="mb-1">
+                {{$t('style.styleDisagreement')}}
+              </v-list-item-title>
+            </v-list-item-content>
+          </v-list-item>
 
-    <!-- Front/Back Stoke Color Selector-->
-    <fade-in-card :showWhen="
-        (editModeIsFront() && hasStrokeColor) ||
-          (editModeIsBack() && !dynamicBackStyle && hasStrokeColor)
+          <v-card-actions>
+            <v-tooltip bottom
+              :open-delay="toolTipOpenDelay"
+              :close-delay="toolTipCloseDelay"
+              max-width="400px">
+              <template v-slot:activator="{ on }">
+                <v-btn color="info"
+                  v-on="on"
+                  v-on:click="setCommonDynamicBackStyleAgreement">
+                  {{$t('style.enableCommonStyle')}}
+                </v-btn>
+              </template>
+              {{$t('style.differentValuesToolTip')}}
+            </v-tooltip>
+          </v-card-actions>
+        </v-card>
+      </v-overlay>
+
+      <!-- Front/Back Stroke Color Selector-->
+      <fade-in-card :showWhen="
+        (editModeIsFront() ||editModeIsBack() ) && hasStrokeColor
       ">
-      <ColorSelector title-key="style.strokeColor"
-        panel-front-key="style.front"
-        panel-back-key="style.back"
-        style-name="strokeColor"
-        :data.sync="hslaStrokeColorObject"
-        :temp-style-states="tempStyleStates"
-        :panel="panel"
-        :active-panel="activePanel"></ColorSelector>
-    </fade-in-card>
+        <ColorSelector title-key="style.strokeColor"
+          panel-front-key="style.front"
+          panel-back-key="style.back"
+          style-name="strokeColor"
+          :data.sync="hslaStrokeColorObject"
+          :temp-style-states="tempStyleStates"
+          :panel="panel"
+          :active-panel="activePanel"
+          :use-dynamic-back-style-from-selector="false">
+        </ColorSelector>
+      </fade-in-card>
 
-    <!-- Front/Back Fill Color Selector-->
-    <fade-in-card :showWhen="
-        (editModeIsFront() && hasFillColor) ||
-          (editModeIsBack() && !dynamicBackStyle && hasFillColor)
+      <!-- Front/Back Fill Color Selector-->
+      <fade-in-card :showWhen="
+        (editModeIsFront() || editModeIsBack()) && hasFillColor
       ">
-      <ColorSelector title-key="style.fillColor"
-        panel-front-key="style.front"
-        panel-back-key="style.back"
-        style-name="fillColor"
-        :data.sync="hslaFillColorObject"
-        :temp-style-states="tempStyleStates"
-        :panel="panel"
-        :active-panel="activePanel"></ColorSelector>
-    </fade-in-card>
+        <ColorSelector title-key="style.fillColor"
+          panel-front-key="style.front"
+          panel-back-key="style.back"
+          style-name="fillColor"
+          :data.sync="hslaFillColorObject"
+          :temp-style-states="tempStyleStates"
+          :panel="panel"
+          :active-panel="activePanel"
+          :use-dynamic-back-style-from-selector="false">
+        </ColorSelector>
+      </fade-in-card>
 
-    <!-- Front/Back Stokewidth Number Selector -->
-    <fade-in-card :showWhen="
-        (editModeIsFront() && hasStrokeWidthPercent) ||
-          (editModeIsBack() && !dynamicBackStyle && hasStrokeWidthPercent)
+      <!-- Front/Back Stokewidth Number Selector -->
+      <fade-in-card :showWhen="
+        (editModeIsFront() || editModeIsBack()) && hasStrokeWidthPercent && showMoreLabelStyles 
       ">
-      <NumberSelector id="strokeWidthPercentSlider"
-        v-bind:data.sync="strokeWidthPercent"
-        style-name="strokeWidthPercent"
-        title-key="style.strokeWidthPercent"
-        panel-front-key="style.front"
-        panel-back-key="style.back"
-        v-bind:min-value="minStrokeWidthPercent"
-        v-bind:max-value="maxStrokeWidthPercent"
-        v-bind:step="10"
-        :temp-style-states="tempStyleStates"
-        :panel="panel"
-        :active-panel="activePanel"></NumberSelector>
-    </fade-in-card>
+        <NumberSelector id="strokeWidthPercentSlider"
+          v-bind:data.sync="strokeWidthPercent"
+          style-name="strokeWidthPercent"
+          title-key="style.strokeWidthPercent"
+          panel-front-key="style.front"
+          panel-back-key="style.back"
+          v-bind:min-value="minStrokeWidthPercent"
+          v-bind:max-value="maxStrokeWidthPercent"
+          v-bind:step="20"
+          :temp-style-states="tempStyleStates"
+          :panel="panel"
+          :active-panel="activePanel"
+          :thumb-string-values="strokeWidthScaleSelectorThumbStrings"
+          :use-dynamic-back-style-from-selector="false">
+        </NumberSelector>
+      </fade-in-card>
 
-    <!-- Front/Back Point Radius Number Selector -->
-    <fade-in-card :showWhen="
-        (editModeIsFront() && hasPointRadiusPercent) ||
-          (editModeIsBack() && !dynamicBackStyle && hasPointRadiusPercent)
+      <!-- Front/Back Point Radius Number Selector -->
+      <fade-in-card :showWhen="
+        (editModeIsFront() || editModeIsBack()) && hasPointRadiusPercent && showMoreLabelStyles
       ">
-      <NumberSelector :data.sync="pointRadiusPercent"
-        title-key="style.pointRadiusPercent"
-        panel-front-key="style.front"
-        panel-back-key="style.back"
-        style-name="pointRadiusPercent"
-        :min-value="minPointRadiusPercent"
-        :max-value="maxPointRadiusPercent"
-        :temp-style-states="tempStyleStates"
-        :panel="panel"
-        :active-panel="activePanel"></NumberSelector>
-    </fade-in-card>
+        <NumberSelector :data.sync="pointRadiusPercent"
+          title-key="style.pointRadiusPercent"
+          panel-front-key="style.front"
+          panel-back-key="style.back"
+          style-name="pointRadiusPercent"
+          :min-value="minPointRadiusPercent"
+          :max-value="maxPointRadiusPercent"
+          :temp-style-states="tempStyleStates"
+          :step="20"
+          :panel="panel"
+          :active-panel="activePanel"
+          :thumb-string-values="pointRadiusSelectorThumbStrings"
+          :use-dynamic-back-style-from-selector="false">
+        </NumberSelector>
+      </fade-in-card>
 
-    <!-- Front/Back Dash array card is displayed for front and back so long as there is a dash array property common to all selected objects-->
-    <fade-in-card
-      :showWhen="(hasDashPattern ) && (editModeIsFront() || editModeIsBack())">
-      <span v-show="editModeIsFront()"
-        class="text-subtitle-2">{{ $t("style.front") }}</span>
-      <span v-show="editModeIsBack()"
-        class="text-subtitle-2">{{ $t("style.back") }}</span>
-      <span class="text-subtitle-2">{{ $t("style.dashPattern") }}</span>
-      <span v-show="
+      <!-- Front/Back Dash array card is displayed for front and back so long as there is a dash array property common to all selected objects-->
+      <fade-in-card
+        :showWhen="(hasDashPattern) && (editModeIsFront() || editModeIsBack()) && showMoreLabelStyles">
+        <span v-show="editModeIsFront()"
+          class="text-subtitle-2">{{ $t("style.front") }}</span>
+        <span v-show="editModeIsBack()"
+          class="text-subtitle-2">{{ $t("style.back") }}</span>
+        <span
+          class="text-subtitle-2">{{" "+ $t("style.dashPattern") }}</span>
+        <span v-if="selections.length > 1"
+          class="text-subtitle-2"
+          style="color:red">{{" "+ $t("style.labelStyleOptionsMultiple") }}</span>
+        <span v-show="
           !emptyDashPattern &&
             !totallyDisableDashPatternSelector &&
             dashPatternAgreement
         ">
-        ({{$t("style.gapDashPattern")}}: {{ gapLength.toFixed(1) }}/{{
-        dashLength.toFixed(1)
+          ({{ gapLength.toFixed(0) }}/{{
+        dashLength.toFixed(0)
         }})
-      </span>
-      <br />
-      <span v-show="totallyDisableDashPatternSelector"
-        class="select-an-object-text">{{ $t("style.selectAnObject") }}</span>
-      <HintButton v-if="!dashPatternAgreement"
-        v-show="!totallyDisableDashPatternSelector"
-        @click="setCommonDashPatternAgreement"
-        i18n-label="style.differingStylesDetected"
-        long-label
-        i18n-tooltip="style.differingStylesDetectedToolTip">
-      </HintButton>
+        </span>
+        <br />
 
-      <template
-        v-show="!totallyDisableDashPatternSelector && dashPatternAgreement">
-        <HintButton v-if="emptyDashPattern"
-          color="error"
-          @click="toggleDashPatternSliderAvailibity"
-          i18n-label="style.enableDashPatternSlider"
-          i18n-tooltip="style.enableDashPatternSliderToolTip"></HintButton>
-        <HintButton v-else
-          @click="toggleDashPatternSliderAvailibity"
-          i18n-label="style.disableDashPatternSlider"
-          i18n-tooltip="style.disableDashPatternSliderToolTip">
-        </HintButton>
-      </template>
+        <!-- Differing data styles detected Overlay --higher z-index rendered on top-->
+        <v-overlay absolute
+          v-bind:value="(editModeIsFront() || editModeIsBack()) && !dashPatternAgreement"
+          :opacity="0.8"
+          z-index="1">
+          <v-card class="mx-auto"
+            max-width="344"
+            outlined>
+            <v-list-item three-line
+              class="pb-0">
+              <v-list-item-content class="pb-1">
+                <v-list-item-title class="mb-1">
+                  {{$t('style.styleDisagreement')}}
+                </v-list-item-title>
+              </v-list-item-content>
+            </v-list-item>
 
-      <HintButton v-show="dashPatternAgreement &&
-                !totallyDisableDashPatternSelector &&
-                !emptyDashPattern"
-        :disabled="disableDashPatternUndoButton"
-        @click="clearRecentDashPatternChanges"
-        i18n-label="style.clearChanges"
-        i18n-tooltip="style.clearChangesToolTip"></HintButton>
+            <v-card-actions>
+              <v-tooltip bottom
+                :open-delay="toolTipOpenDelay"
+                :close-delay="toolTipCloseDelay"
+                max-width="400px">
+                <template v-slot:activator="{ on }">
+                  <v-btn color="info"
+                    v-on="on"
+                    v-on:click="setCommonDashPatternAgreement">
+                    {{$t('style.enableCommonStyle')}}
+                  </v-btn>
+                </template>
+                {{$t('style.differentValuesToolTip')}}
+              </v-tooltip>
+            </v-card-actions>
+          </v-card>
+        </v-overlay>
 
-      <HintButton v-show="dashPatternAgreement &&
-                !totallyDisableDashPatternSelector &&
-                !emptyDashPattern"
-        @click="resetDashPatternToDefaults"
-        i18n-label="style.restoreDefaults"
-        i18n-tooltip="style.restoreDefaultsToolTip"></HintButton>
-
-      <v-range-slider v-model="sliderDashArray"
-        :min="0"
-        step="1"
-        :disabled="
+        <v-range-slider v-model="sliderDashArray"
+          :min="0"
+          step="2"
+          :disabled="
           !dashPatternAgreement ||
             totallyDisableDashPatternSelector ||
             emptyDashPattern
         "
-        @change="onDashPatternChange"
-        :max="maxGapLengthPlusDashLength"
-        type="range"
-        dense>
-        <template v-slot:prepend>
-          <v-icon @click="decrementDashPattern">mdi-minus</v-icon>
-        </template>
+          @change="onDashPatternChange"
+          :max="maxGapLengthPlusDashLength"
+          type="range"
+          dense>
+          <template v-slot:prepend>
+            <v-icon @click="decrementDashPattern">mdi-minus</v-icon>
+          </template>
 
-        <template v-slot:append>
-          <v-icon @click="incrementDashPattern">mdi-plus</v-icon>
-        </template>
-      </v-range-slider>
-    </fade-in-card>
+          <template v-slot:append>
+            <v-icon @click="incrementDashPattern">mdi-plus</v-icon>
+          </template>
+        </v-range-slider>
 
+        <!-- Dis/enable Dash Pattern, Undo and Reset to Defaults buttons -->
+        <v-container class="pa-0 ma-0">
+          <v-row justify="end"
+            no-gutters>
+            <v-col cols="8">
+              <v-tooltip bottom
+                :open-delay="toolTipOpenDelay"
+                :close-delay="toolTipCloseDelay"
+                max-width="400px">
+                <template v-slot:activator="{ on }">
+                  <span v-on="on">
+                    <v-checkbox v-model="emptyDashPattern"
+                      :false-value="true"
+                      :true-value="false"
+                      :label="$t('style.dashPattern')"
+                      color="indigo darken-3"
+                      @change="toggleDashPatternSliderAvailibity"
+                      hide-details
+                      x-small
+                      dense></v-checkbox>
+                  </span>
+                </template>
+                {{$t('style.dashPatternCheckBoxToolTip')}}
+              </v-tooltip>
+            </v-col>
+
+            <v-col cols="2"
+              class="ma-0 pl-0 pr-0 pt-0 pb-2">
+              <HintButton v-show="dashPatternAgreement &&
+                !totallyDisableDashPatternSelector &&
+                !emptyDashPattern"
+                :disabled="disableDashPatternUndoButton||emptyDashPattern"
+                @click="clearRecentDashPatternChanges"
+                i18n-label="style.clearChanges"
+                i18n-tooltip="style.clearChangesToolTip"
+                type="undo"></HintButton>
+            </v-col>
+
+            <v-col cols="2"
+              class="ma-0 pl-0 pr-0 pt-0 pb-2">
+              <HintButton v-show="dashPatternAgreement &&
+                !totallyDisableDashPatternSelector &&
+                !emptyDashPattern"
+                :disabled="emptyDashPattern"
+                @click="resetDashPatternToDefaults"
+                i18n-label="style.restoreDefaults"
+                i18n-tooltip="style.restoreDefaultsToolTip"
+                type="default"></HintButton>
+            </v-col>
+          </v-row>
+        </v-container>
+
+      </fade-in-card>
+    </v-card>
     <!-- Label(s) not showing overlay -- higher z-index rendered on top -- covers entire panel including the header-->
     <v-overlay absolute
       z-index="10"
-      v-bind:value="editModeIsLabel() && !allLabelsShowing && !totalyDisableStyleDataSelector"
+      v-bind:value="editModeIsLabel() && !allLabelsShowing()"
       :opacity="0.8">
       <v-card class="mx-auto"
         max-width="344"
@@ -279,7 +475,7 @@
 
       <!-- Differing data styles detected Overlay --higher z-index rendered on top-->
       <v-overlay absolute
-        v-bind:value="editModeIsLabel() && !styleDataAgreement && !totalyDisableStyleDataSelector"
+        v-bind:value="editModeIsLabel() && !styleDataAgreement"
         :opacity="0.8"
         z-index="1">
         <v-card class="mx-auto"
@@ -288,10 +484,7 @@
           <v-list-item three-line
             class="pb-0">
             <v-list-item-content class="pb-1">
-              <div class="overline mb-2">
-                {{$t('style.DIFFERINGSTYLESDETECTED')}}
-              </div>
-              <v-list-item-title class="headline mb-1">
+              <v-list-item-title class="mb-1">
                 {{$t('style.styleDisagreement')}}
               </v-list-item-title>
               <v-list-item-subtitle> {{$t('style.differentValues')}}
@@ -441,7 +634,8 @@
         :temp-style-states="tempStyleStates"
         :panel="panel"
         :active-panel="activePanel"
-        :thumb-string-values="textScaleSelectorThumbStrings">
+        :thumb-string-values="textScaleSelectorThumbStrings"
+        :use-dynamic-back-style-from-selector="false">
       </NumberSelector>
     </fade-in-card>
 
@@ -458,7 +652,8 @@
         :temp-style-states="tempStyleStates"
         :panel="panel"
         :active-panel="activePanel"
-        :thumb-string-values="textRotationSelectorThumbStrings">
+        :thumb-string-values="textRotationSelectorThumbStrings"
+        :use-dynamic-back-style-from-selector="false">
       </NumberSelector>
     </fade-in-card>
 
@@ -467,8 +662,8 @@
       :showWhen="editModeIsLabel() && hasLabelFrontFillColor && showMoreLabelStyles">
 
       <ColorSelector title-key="style.labelFrontFillColor"
-        panel-front-key="style.front"
-        panel-back-key="style.back"
+        panel-front-key=""
+        panel-back-key=""
         style-name="labelFrontFillColor"
         :data.sync="hslaLabelFrontFillColorObject"
         :temp-style-states="tempStyleStates"
@@ -615,6 +810,17 @@ export default class BasicFrontBackStyle extends Vue {
   private strokeWidthPercent: number | undefined = 100;
   private maxStrokeWidthPercent = SETTINGS.style.maxStrokeWidthPercent;
   private minStrokeWidthPercent = SETTINGS.style.minStrokeWidthPercent;
+  //step is 20 from 60 to 200 is 8 steps
+  private strokeWidthScaleSelectorThumbStrings = [
+    "-40%",
+    "-20%",
+    "0%",
+    "20%",
+    "40%",
+    "60%",
+    "80%",
+    "100%"
+  ];
 
   private labelTextScalePercent: number | undefined = 100;
   private maxLabelTextScalePercent = SETTINGS.style.maxLabelTextScalePercent;
@@ -640,8 +846,10 @@ export default class BasicFrontBackStyle extends Vue {
   private showMoreLabelStyles = false;
   private moreOrLessText = i18n.t("style.moreStyleOptions"); // The text for the button to toggle between less/more options
 
-  private labelVisible: boolean | undefined = false;
-  private objectVisible: boolean | undefined = true;
+  // allLablesVisible is true if all labels are visibily. If at least on label is not visibile, then allLablesVisible = false
+  private allLabelsVisible: boolean | undefined = false;
+  // allObjectsVisible is true if all objects are visibily. If at least on object is not visibile, then allObjectsVisible = false
+  private allObjectsVisible: boolean | undefined = true;
   private labelVisibilityChange = false;
   private objectVisibilityChange = false;
 
@@ -782,6 +990,17 @@ export default class BasicFrontBackStyle extends Vue {
   private pointRadiusPercent: number | undefined = 100;
   private maxPointRadiusPercent = SETTINGS.style.maxPointRadiusPercent;
   private minPointRadiusPercent = SETTINGS.style.minPointRadiusPercent;
+  //step is 20 from 60 to 200 is 8 steps
+  private pointRadiusSelectorThumbStrings = [
+    "-40%",
+    "-20%",
+    "0%",
+    "20%",
+    "40%",
+    "60%",
+    "80%",
+    "100%"
+  ];
 
   private hslaStrokeColorObject: hslaColorType = { h: 0, s: 1, l: 1, a: 0.001 }; // Color for Vuetify Color picker NOTE: setting a=0 creates the following error:
   // create a circle, open the style panel, select the circle when the basic panel is open, switch to the foreground panel, the selected circle has a displayed opacity of 0 --
@@ -813,10 +1032,35 @@ export default class BasicFrontBackStyle extends Vue {
   private maxGapLengthPlusDashLength =
     SETTINGS.style.maxGapLengthPlusDashLength;
 
-  private dynamicBackStyle: boolean | undefined = true;
-  private dynamicBackStyleAgreement = true;
   private totallyDisableDynamicBackStyleSelector = false;
+  // usingDynamicBackStyleAgreement indicates if all the usingDynamicBackStyle booleans are the same (either T or F)
+  private usingDynamicBackStyleAgreement = true;
+  // usingDynamicBackStyleCommonValue = true indicates ( when usingDynamicBackStyleAgreement = true ) that
+  // all selected objects have the dynamicBackstyle = true
+  // usingDynamicBackStyleCommonValue = false indicates ( when usingDynamicBackStyleAgreement = true ) that
+  // all selected objects have the dynamicBackstyle = false
+  // if usingDynamicBackStyleAgreement = false then usingDynamicBackStyleCommonValue is meaningless
+  // if usingDynamicBackStyleAgreement = true and usingDynamicBackStyleCommonValue is undefined, then something went horribly wrong!
+  private usingDynamicBackStyleCommonValue: boolean | undefined = true;
+  // usingDynamicBackStyle = false means that the user is setting the color for the back on their own and is
+  // *not* using the contrast (i.e. not using the dynamic back styling)
+  // usingDynamicBackStyle = true means the program is setting the style of the back objects
+  private usingDynamicBackStyle: boolean | undefined = true;
+
   private backStyleContrast = Nodule.getBackStyleContrast();
+  private backStyleContrastSelectorThumbStrings = [
+    "Min",
+    "10%",
+    "20%",
+    "30%",
+    "40%",
+    "50%",
+    "60%",
+    "70%",
+    "80%",
+    "90%",
+    "Same"
+  ];
 
   private disableDashPatternUndoButton = false;
   private disableBackStyleContrastUndoButton = false;
@@ -841,10 +1085,13 @@ export default class BasicFrontBackStyle extends Vue {
     //  Mount a save listener
     EventBus.listen("save-style-state", this.saveStyleState);
 
-    EventBus.listen("toggle-label-visibility", this.toggleAllLabelsVisibility);
+    EventBus.listen(
+      "toggle-label-visibility",
+      this.toggleAllLabelsVisibility.bind(this)
+    );
     EventBus.listen(
       "toggle-object-visibility",
-      this.toggleAllObjectsVisibility
+      this.toggleAllObjectsVisibility.bind(this)
     );
     // EventBus.listen("set-active-style-panel", this.setActivePanel);
   }
@@ -857,8 +1104,35 @@ export default class BasicFrontBackStyle extends Vue {
   editModeIsLabel(): boolean {
     return this.panel === StyleEditPanels.Label;
   }
+  allLabelsShowing(): boolean {
+    this.allLabelsVisible = (this.$store.getters.selectedSENodules() as SENodule[]).every(
+      node => {
+        if (node.isLabelable()) {
+          return ((node as unknown) as Labelable).label!.showing;
+        } else {
+          return true;
+        }
+      }
+    );
+    return this.allLabelsVisible;
+  }
+  allObjectsShowing(): boolean {
+    this.allObjectsVisible = (this.$store.getters.selectedSENodules() as SENodule[]).every(
+      node => node.showing
+    );
+    return this.allObjectsVisible;
+  }
+  toggleShowMoreLabelStyles(): void {
+    this.showMoreLabelStyles = !this.showMoreLabelStyles;
+    if (!this.showMoreLabelStyles) {
+      this.moreOrLessText = i18n.t("style.moreStyleOptions");
+    } else {
+      this.moreOrLessText = i18n.t("style.lessStyleOptions");
+    }
+  }
+
   // These methods are linked to the Style Data fade-in-card
-  labelDisplayTextCheck() {
+  labelDisplayTextCheck(): boolean {
     this.labelDisplayTestResults[0] = this.labelDisplayTestResults[1];
     this.labelDisplayTestResults[1] =
       this.labelDisplayText !== undefined &&
@@ -884,7 +1158,7 @@ export default class BasicFrontBackStyle extends Vue {
         : "";
     return this.labelDisplayTestResults[1]; // || translation;
   }
-  labelDisplayCaptionCheck() {
+  labelDisplayCaptionCheck(): boolean {
     this.labelDisplayCaptionTestResults[0] = this.labelDisplayCaptionTestResults[1];
     this.labelDisplayCaptionTestResults[1] =
       this.labelDisplayCaption !== undefined &&
@@ -909,16 +1183,34 @@ export default class BasicFrontBackStyle extends Vue {
         : "";
     return this.labelDisplayCaptionTestResults[1];
   }
-  toggleAllLabelsVisibility(): void {
-    //only execute this if the panel is the label panel (only methods from the label panel should call this method)
-    if (this.panel !== StyleEditPanels.Label) return;
-    console.log("toggle All Labels Visbility from panel", this.panel);
-    if (!this.labelVisible && !this.objectVisible) {
-      this.objectVisible = true;
+  toggleAllLabelsVisibility(fromPanel: unknown): void {
+    // console.log(
+    //   "toggleAllLabelsVisibity and this.allLabelsVisible",
+    //   (fromPanel as any).mounted,
+    //   " allLabelsVisible ",
+    //   this.allLabelsVisible,
+    //   "from panel ",
+    //   this.panel
+    // );
+    // If any panel calles this method it should execute, but if the Style.vue
+    // calls this with EventBus.fire("toggle-label-visibility", { fromStyleComponent: true });
+    // only execute this if the panel is the label panel (if we didn't do this then
+    // *all* copies (upto three) EventBus.listen("toggle-label-visibility",{...}) would execute this
+    // and that is no the desired outcome, we want this to execut only once if called from Style.vue
+    if (
+      this.panel !== (fromPanel as any).mounted &&
+      (fromPanel as any).mounted !== undefined
+    ) {
+      return;
+    }
+    // console.log("toggle All Labels Visbility from panel", this.panel);
+    if (!this.allLabelsVisible && !this.allObjectsVisible) {
+      console.log("her");
+      this.allObjectsVisible = true;
       this.setObjectVisibilityChange();
     }
 
-    this.labelVisible = !this.labelVisible;
+    this.allLabelsVisible = !this.allLabelsVisible;
 
     this.setLabelVisibilityChange();
     this.onLabelStyleDataChanged();
@@ -926,21 +1218,42 @@ export default class BasicFrontBackStyle extends Vue {
     //finally update the labels in the style.vue component
     EventBus.fire("update-all-labels-showing", {});
     EventBus.fire("update-all-objects-showing", {});
+    // now update the all object/labels showing for this component
+    this.allLabelsShowing();
+    this.allObjectsShowing();
   }
-  toggleAllObjectsVisibility(): void {
-    if (this.panel !== StyleEditPanels.Label) return;
-    console.log("toggle All Objects Visbility from panel", this.panel);
+  toggleAllObjectsVisibility(fromPanel: unknown): void {
+    // console.log(
+    //   "toggleAllObjectsVisibity and allObjectsVisible before",
+    //   (fromPanel as any).mounted,
+    //   " object Visible ",
+    //   this.allObjectsVisible,
+    //   "from panel ",
+    //   this.panel
+    // );
+    // If any panel calles this method it should execute, but if the Style.vue
+    // calls this with EventBus.fire("toggle-label-visibility", { fromStyleComponent: true });
+    // only execute this if the panel is the label panel (if we didn't do this then
+    // *all* copies (upto three) EventBus.listen("toggle-label-visibility",{...}) would execute this
+    // and that is no the desired outcome, we want this to execut only once if called from Style.vue
+    if (
+      this.panel !== (fromPanel as any).mounted &&
+      (fromPanel as any).mounted !== undefined
+    ) {
+      return;
+    }
+    // console.log("toggle All Objects Visbility from panel after");
 
     if (
-      this.objectVisible &&
-      this.labelVisible &&
+      this.allObjectsVisible &&
+      this.allLabelsVisible &&
       SETTINGS.hideObjectHidesLabel
     ) {
-      this.labelVisible = false;
+      this.allLabelsVisible = false;
       this.setLabelVisibilityChange();
     }
 
-    this.objectVisible = !this.objectVisible;
+    this.allObjectsVisible = !this.allObjectsVisible;
 
     this.setObjectVisibilityChange();
     this.onLabelStyleDataChanged();
@@ -948,8 +1261,12 @@ export default class BasicFrontBackStyle extends Vue {
     //finally update the style.vue component
     EventBus.fire("update-all-labels-showing", {});
     EventBus.fire("update-all-objects-showing", {});
+    // now set the all object/labels showing for this component
+    this.allObjectsShowing();
+    // console.log("End All Objects Visbility is ", this.allObjectsVisible);
+    this.allLabelsShowing();
+    // console.log("End All Labels Visbility is ", this.allLabelsVisible);
   }
-
   resetStyleDataToDefaults(): void {
     const selected: SENodule[] = [];
     // If this number selector is on the label panel, then all changes are directed at the label(s).
@@ -1013,6 +1330,89 @@ export default class BasicFrontBackStyle extends Vue {
     }
     this.setStyleDataSelectorState(initialStyleStates);
   }
+  onLabelStyleDataChanged(): void {
+    this.disableStyleSelectorUndoButton = false;
+
+    const selected: SENodule[] = [];
+    // This is always directed at labels!
+    (this.$store.getters.selectedSENodules() as SENodule[]).forEach(node => {
+      selected.push(((node as unknown) as Labelable).label!);
+    });
+
+    if (
+      this.labelDisplayText !== undefined &&
+      this.labelDisplayText.trim().length === 0
+    ) {
+      const defaultStyleStates = this.$store.getters.getDefaultStyleState(
+        this.panel
+      );
+      const translation = i18n.t("style.renameLabels");
+      this.labelDisplayText =
+        selected.length <= 1
+          ? defaultStyleStates[0].labelDisplayText
+          : translation;
+      for (let i = 0; i < selected.length; i++) {
+        this.$store.direct.commit.changeStyle({
+          selected: [selected[i]],
+          payload: {
+            panel: this.panel,
+            labelDisplayText: defaultStyleStates[i].labelDisplayText
+          }
+        });
+      }
+    }
+
+    // if there has been some change then change the style
+    if (
+      this.labelDisplayTextChange ||
+      this.labelDisplayCaptionChange ||
+      this.labelDisplayModeChange ||
+      this.labelTextFamilyChange ||
+      this.labelTextStyleChange ||
+      this.labelTextDecorationChange ||
+      this.labelVisibilityChange ||
+      this.objectVisibilityChange
+    ) {
+      this.$store.direct.commit.changeStyle({
+        selected: selected,
+        payload: {
+          panel: this.panel,
+          labelTextStyle: this.labelTextStyleChange
+            ? this.labelTextStyle
+            : undefined,
+          labelTextFamily: this.labelTextFamilyChange
+            ? this.labelTextFamily
+            : undefined,
+          labelTextDecoration: this.labelTextDecorationChange
+            ? this.labelTextDecoration
+            : undefined,
+          labelDisplayText: this.labelDisplayTextChange
+            ? this.labelDisplayText
+            : undefined,
+          labelDisplayCaption: this.labelDisplayCaptionChange
+            ? this.labelDisplayCaption
+            : undefined,
+          labelDisplayMode: this.labelDisplayModeChange
+            ? this.labelDisplayMode
+            : undefined,
+          labelVisibility: this.labelVisibilityChange
+            ? this.allLabelsVisible
+            : undefined,
+          objectVisibility: this.objectVisibilityChange
+            ? this.allObjectsVisible
+            : undefined
+        }
+      });
+    }
+    this.labelDisplayTextChange = false;
+    this.labelDisplayCaptionChange = false;
+    this.labelDisplayModeChange = false;
+    this.labelTextFamilyChange = false;
+    this.labelTextStyleChange = false;
+    this.labelTextDecorationChange = false;
+    this.labelVisibilityChange = false;
+    this.objectVisibilityChange = false;
+  }
   setStyleDataSelectorState(styleState: StyleOptions[]): void {
     this.disableStyleSelectorUndoButton = true;
     this.styleDataAgreement = true;
@@ -1027,9 +1427,7 @@ export default class BasicFrontBackStyle extends Vue {
       "labelDisplayMode",
       "labelTextFamily",
       "labelTextStyle",
-      "labelTextDecoration",
-      "labelVisibility",
-      "objectVisibility"
+      "labelTextDecoration"
     ]) {
       // Record the value of the style on the first style state
       let value = (styleState[0] as any)[style];
@@ -1062,9 +1460,10 @@ export default class BasicFrontBackStyle extends Vue {
       this.labelTextFamily = (styleState[0] as StyleOptions).labelTextFamily;
       this.labelTextStyle = (styleState[0] as StyleOptions).labelTextStyle;
       this.labelTextDecoration = (styleState[0] as StyleOptions).labelTextDecoration;
-      this.labelVisible = (styleState[0] as StyleOptions).labelVisibility;
-      this.objectVisible = (styleState[0] as StyleOptions).objectVisibility;
     }
+    // now set the all object/labels showing
+    this.allObjectsShowing();
+    this.allLabelsShowing();
   }
   disableStyleDataSelector(totally: boolean): void {
     this.styleDataAgreement = false;
@@ -1077,8 +1476,8 @@ export default class BasicFrontBackStyle extends Vue {
     this.labelTextFamily = "";
     this.labelTextStyle = "";
     this.labelTextDecoration = "";
-    this.labelVisible = undefined;
-    this.objectVisible = undefined;
+    this.allLabelsVisible = undefined;
+    this.allObjectsVisible = undefined;
   }
   setlabelDisplayTextChange(): void {
     this.labelDisplayTextChange = true;
@@ -1104,91 +1503,8 @@ export default class BasicFrontBackStyle extends Vue {
   setObjectVisibilityChange(): void {
     this.objectVisibilityChange = true;
   }
-  onLabelStyleDataChanged(): void {
-    this.disableStyleSelectorUndoButton = false;
-
-    const selected: SENodule[] = [];
-    // If this number selector is on the label panel, then all changes are directed at the label(s).
-    if (this.panel === StyleEditPanels.Label) {
-      (this.$store.getters.selectedSENodules() as SENodule[]).forEach(node => {
-        selected.push(((node as unknown) as Labelable).label!);
-      });
-    } else {
-      selected.push(...this.$store.getters.selectedSENodules());
-    }
-    // If the label text is empty sring or all spaces reset it to the default
-    if (
-      this.labelDisplayText !== undefined &&
-      this.labelDisplayText.trim().length === 0
-    ) {
-      const defaultStyleStates = this.$store.getters.getDefaultStyleState(
-        this.panel
-      );
-      const translation = i18n.t("style.renameLabels");
-      this.labelDisplayText =
-        selected.length <= 1
-          ? defaultStyleStates[0].labelDisplayText
-          : translation;
-      for (let i = 0; i < selected.length; i++) {
-        this.$store.direct.commit.changeStyle({
-          selected: [selected[i]],
-          payload: {
-            panel: this.panel,
-            labelDisplayText: defaultStyleStates[i].labelDisplayText
-          }
-        });
-      }
-    }
-
-    this.$store.direct.commit.changeStyle({
-      selected: selected,
-      payload: {
-        panel: this.panel,
-        labelTextStyle: this.labelTextStyleChange
-          ? this.labelTextStyle
-          : undefined,
-        labelTextFamily: this.labelTextFamilyChange
-          ? this.labelTextFamily
-          : undefined,
-        labelTextDecoration: this.labelTextDecorationChange
-          ? this.labelTextDecoration
-          : undefined,
-        labelDisplayText: this.labelDisplayTextChange
-          ? this.labelDisplayText
-          : undefined,
-        labelDisplayCaption: this.labelDisplayCaptionChange
-          ? this.labelDisplayCaption
-          : undefined,
-        labelDisplayMode: this.labelDisplayModeChange
-          ? this.labelDisplayMode
-          : undefined,
-        labelVisibility: this.labelVisibilityChange
-          ? this.labelVisible
-          : undefined,
-        objectVisibility: this.objectVisibilityChange
-          ? this.objectVisible
-          : undefined
-      }
-    });
-    this.labelDisplayTextChange = false;
-    this.labelDisplayCaptionChange = false;
-    this.labelDisplayModeChange = false;
-    this.labelTextFamilyChange = false;
-    this.labelTextStyleChange = false;
-    this.labelTextDecorationChange = false;
-    this.labelVisibilityChange = false;
-    this.objectVisibilityChange = false;
-  }
   setStyleDataAgreement(): void {
     this.styleDataAgreement = true;
-  }
-  toggleShowMoreLabelStyles(): void {
-    this.showMoreLabelStyles = !this.showMoreLabelStyles;
-    if (!this.showMoreLabelStyles) {
-      this.moreOrLessText = i18n.t("style.moreStyleOptions");
-    } else {
-      this.moreOrLessText = i18n.t("style.lessStyleOptions");
-    }
   }
 
   // These methods are linked to the dashPattern fade-in-card
@@ -1277,7 +1593,7 @@ export default class BasicFrontBackStyle extends Vue {
     this.setDashPatternSelectorState(defaultStyleStates);
   }
   toggleDashPatternSliderAvailibity(): void {
-    if (this.emptyDashPattern) {
+    if (!this.emptyDashPattern) {
       this.sliderDashArray.clear();
       this.sliderDashArray.push(this.gapLength as number);
       this.sliderDashArray.push(
@@ -1300,10 +1616,10 @@ export default class BasicFrontBackStyle extends Vue {
         }
       });
       this.sliderDashArray.clear();
-      this.sliderDashArray.push(5);
-      this.sliderDashArray.push(15);
+      this.sliderDashArray.push(4);
+      this.sliderDashArray.push(16);
     }
-    this.emptyDashPattern = !this.emptyDashPattern;
+    // this.emptyDashPattern = !this.emptyDashPattern;
   }
   incrementDashPattern(): void {
     // increasing the value of the sliderDashArray[1] increases the length of the dash
@@ -1355,8 +1671,8 @@ export default class BasicFrontBackStyle extends Vue {
     // reset to the default which are overwritten as necessary
     this.emptyDashPattern = true;
     this.dashPatternAgreement = true;
-    this.gapLength = 5;
-    this.dashLength = 10;
+    this.gapLength = 4;
+    this.dashLength = 12;
     this.totallyDisableDashPatternSelector = false;
     if (styleState[0].dashArray !== undefined) {
       if (styleState[0].dashArray.length > 0) {
@@ -1413,7 +1729,7 @@ export default class BasicFrontBackStyle extends Vue {
     this.totallyDisableDashPatternSelector = totally;
   }
 
-  // These methods are linked to the dynamicBackStyle fade-in-card
+  // These methods are linked to the usingDynamicBackStyle fade-in-card
   onBackStyleContrastChange(): void {
     this.disableBackStyleContrastUndoButton = false;
     this.$store.direct.commit.changeStyle({
@@ -1425,7 +1741,8 @@ export default class BasicFrontBackStyle extends Vue {
     });
   }
   setCommonDynamicBackStyleAgreement(): void {
-    this.dynamicBackStyleAgreement = true;
+    this.usingDynamicBackStyleAgreement = true;
+    this.usingDynamicBackStyleCommonValue = true;
   }
   clearRecentDynamicBackStyleChanges(): void {
     this.disableBackStyleContrastUndoButton = true;
@@ -1464,17 +1781,19 @@ export default class BasicFrontBackStyle extends Vue {
     this.setDynamicBackStyleSelectorState(defaultStyleStates);
   }
   toggleBackStyleOptionsAvailability(): void {
-    this.dynamicBackStyle = !this.dynamicBackStyle;
+    this.usingDynamicBackStyle = !this.usingDynamicBackStyle;
+    this.usingDynamicBackStyleAgreement = true;
+    this.usingDynamicBackStyleCommonValue = this.usingDynamicBackStyle;
 
     this.$store.direct.commit.changeStyle({
       selected: this.$store.getters.selectedSENodules(),
       payload: {
         panel: this.panel,
-        dynamicBackStyle: this.dynamicBackStyle
+        dynamicBackStyle: this.usingDynamicBackStyle
       }
     });
 
-    if (!this.dynamicBackStyle) {
+    if (!this.usingDynamicBackStyle) {
       const selectedSENodules = this.$store.getters.selectedSENodules() as SENodule[];
       this.tempStyleStates.clear();
       selectedSENodules.forEach(seNodule => {
@@ -1486,7 +1805,7 @@ export default class BasicFrontBackStyle extends Vue {
   }
   incrementBackStyleContrast(): void {
     if (
-      this.dynamicBackStyle !== undefined &&
+      this.usingDynamicBackStyle !== undefined &&
       this.backStyleContrast + 0.1 <= 1
     ) {
       this.disableBackStyleContrastUndoButton = false;
@@ -1502,7 +1821,7 @@ export default class BasicFrontBackStyle extends Vue {
   }
   decrementBackStyleContrast(): void {
     if (
-      this.dynamicBackStyle !== undefined &&
+      this.usingDynamicBackStyle !== undefined &&
       this.backStyleContrast - 0.1 >= 0
     ) {
       this.disableBackStyleContrastUndoButton = false;
@@ -1517,27 +1836,51 @@ export default class BasicFrontBackStyle extends Vue {
     }
   }
   setDynamicBackStyleSelectorState(styleState: StyleOptions[]): void {
-    this.dynamicBackStyleAgreement = true;
+    this.usingDynamicBackStyleAgreement = true;
     this.totallyDisableDynamicBackStyleSelector = false;
-    this.dynamicBackStyle = styleState[0].dynamicBackStyle;
+
+    this.usingDynamicBackStyle = styleState[0].dynamicBackStyle;
+    this.usingDynamicBackStyleCommonValue =
+      "dynamicBackStyle" in styleState[0]
+        ? (styleState[0] as any).dynamicBackStyle
+        : undefined;
+
     // screen for undefined - if undefined then this is not a property that is going to be set by the style panel for this selection of objects
-    if (this.dynamicBackStyle !== undefined) {
-      if (
-        !styleState.every(
-          styleObject => styleObject.dynamicBackStyle == this.dynamicBackStyle
-        )
-      ) {
-        // The dynamic backstyle property exists on the selected objects but the dynamicBackStyle doesn't agree (so don't totally disable the selector)
-        this.disableDynamicBackStyleSelector(false);
-      }
-    } else {
-      // The dynamicBackStyle property doesn't exists on the selected objects so totally disable the selector
-      this.disableDynamicBackStyleSelector(true);
+    if (
+      this.usingDynamicBackStyleCommonValue === undefined ||
+      !styleState.every(
+        styleObject =>
+          (styleObject as any).dynamicBackStyle ==
+          this.usingDynamicBackStyleCommonValue
+      )
+    ) {
+      // The dynamicBackStyle exists on the selected objects but the
+      // doesn't agree
+      this.usingDynamicBackStyleAgreement = false;
     }
+
+    if (
+      this.usingDynamicBackStyleAgreement &&
+      !this.usingDynamicBackStyleCommonValue
+    ) {
+      this.usingDynamicBackStyle = false;
+    }
+
+    // console.log("useDBS from user input", this.usingDynamicBackStyle);
+    // console.log("DBS Agree", this.usingDynamicBackStyleAgreement);
+    // console.log("DBS common Value", this.usingDynamicBackStyleCommonValue);
+    // console.log(
+    //   "logic useDBS from user input || (DBS Agre && ! DBS common Value)",
+    //   this.usingDynamicBackStyle ||
+    //     (this.usingDynamicBackStyleAgreement &&
+    //       (this.usingDynamicBackStyleAgreement === true
+    //         ? !this.usingDynamicBackStyleCommonValue
+    //         : true))
+    // );
   }
   disableDynamicBackStyleSelector(totally: boolean): void {
-    this.dynamicBackStyleAgreement = false;
-    this.dynamicBackStyle = true;
+    this.usingDynamicBackStyleAgreement = false;
+    this.usingDynamicBackStyle = true;
     this.totallyDisableDynamicBackStyleSelector = totally;
   }
 
@@ -1592,19 +1935,6 @@ export default class BasicFrontBackStyle extends Vue {
   }
   get hasLabelBackFillColor(): boolean {
     return this.hasStyle(Styles.labelBackFillColor);
-  }
-  //check the label visiblity and values of the labels
-  // If all object's labels in the selection have a defined value this is true
-  get allLabelsShowing(): boolean {
-    return (this.$store.getters.selectedSENodules() as SENodule[]).every(
-      node => {
-        if (node.isLabelable()) {
-          return ((node as unknown) as Labelable).label!.showing;
-        } else {
-          return true;
-        }
-      }
-    );
   }
   //This controls if the labelDisplayModeItems include ValueOnly and NameAndValue (When no value in the Label)\
   // and if the caption is empty, NameAndCaption and Caption Only are not options
@@ -1831,9 +2161,9 @@ export default class BasicFrontBackStyle extends Vue {
         //   "o",
         //   "\n",
         //   "dbs",
-        //   a.dynamicBackStyle,
-        //   b.dynamicBackStyle,
-        //   a.dynamicBackStyle === b.dynamicBackStyle,
+        //   a.usingDynamicBackStyle,
+        //   b.usingDynamicBackStyle,
+        //   a.usingDynamicBackStyle === b.usingDynamicBackStyle,
         //   "\n",
         //   "prp",
         //   a.pointRadiusPercent,

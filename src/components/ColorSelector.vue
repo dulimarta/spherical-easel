@@ -1,11 +1,13 @@
 <template>
   <div>
     <div>
-      <span v-show="panel"
-        class="text-subtitle-2">{{ $t(sideFrontKey) }} </span>
-      <span v-show="!panel"
-        class="text-subtitle-2">{{ $t(sideBackKey) }} </span>
-      <span class="text-subtitle-2">{{ $t(titleKey) }}</span>
+      <span v-show="editModeIsFront()"
+        class="text-subtitle-2">{{ $t(panelFrontKey) }} </span>
+      <span v-show="editModeIsBack()"
+        class="text-subtitle-2">{{ $t(panelBackKey) }} </span>
+      <span class="text-subtitle-2">{{ $t(titleKey)+" " }}</span>
+      <v-icon :color="convertColorToRGBAString(colorData)"
+        small>mdi-checkbox-blank</v-icon>
       <span v-if="selections.length > 1"
         class="text-subtitle-2"
         style="color:red">{{" "+ $t("style.labelStyleOptionsMultiple") }}</span>
@@ -15,19 +17,18 @@
       v-if="useDynamicBackStyleFromSelector && !totallyDisableColorSelector && this.usingDynamicBackStyleAgreement"
       v-bind:value="usingDynamicBackStyle || this.usingDynamicBackStyleCommonValue"
       :opacity="0.8"
-      z-index="5">
-      <v-card class="mx-auto"
-        max-width="344"
+      z-index="10">
+      <v-card max-width="344"
         outlined>
         <v-list-item single-line
           class="pb-0">
-          <v-list-item-content>
-            <v-list-item-title class="headline mb-1">
+          <v-list-item-content class="justify-center">
+            <v-list-item-title class="mb-1">
               {{$t('style.dynamicBackStyleHeader')}}
             </v-list-item-title>
           </v-list-item-content>
         </v-list-item>
-        <v-card-actions>
+        <v-card-actions class="justify-center">
 
           <v-tooltip bottom
             :open-delay="toolTipOpenDelay"
@@ -52,20 +53,19 @@
       v-bind:value="(!colorAgreement || (useDynamicBackStyleFromSelector && !usingDynamicBackStyleAgreement) ) 
       && !totallyDisableColorSelector"
       :opacity="0.8"
-      z-index="2">
+      z-index="1">
 
-      <v-card class="mx-auto"
-        max-width="344"
+      <v-card max-width="344"
         outlined>
         <v-list-item single-line
           class="pb-0">
-          <v-list-item-content>
-            <v-list-item-title class="headline mb-1">
+          <v-list-item-content class="justify-center">
+            <v-list-item-title class="justify-center mb-1">
               {{$t('style.styleDisagreement')}}
             </v-list-item-title>
           </v-list-item-content>
         </v-list-item>
-        <v-card-actions>
+        <v-card-actions class="justify-center">
 
           <v-tooltip bottom
             :open-delay="toolTipOpenDelay"
@@ -175,8 +175,8 @@ import i18n from "../i18n";
 @Component({ components: { HintButton } })
 export default class ColorSelector extends Vue {
   @Prop() readonly titleKey!: string;
-  @Prop() readonly sideFrontKey!: string;
-  @Prop() readonly sideBackKey!: string;
+  @Prop() readonly panelFrontKey!: string;
+  @Prop() readonly panelBackKey!: string;
   @PropSync("data") colorData?: hslaColorType;
   @Prop() readonly defaultStyleStates?: StyleOptions[];
   @Prop() readonly panel!: StyleEditPanels;
@@ -236,13 +236,41 @@ export default class ColorSelector extends Vue {
         ? i18n.t("style.noStroke")
         : i18n.t("style.noFill"); // the noStroke/noFill option
     //this.noDataUILabel = `No ${inTitleCase}`;
-    console.log("style name", this.styleName);
-    console.log("noStrData", this.noDataStr);
+    // console.log("style name", this.styleName);
+    // console.log("noStrData", this.noDataStr);
   }
 
   @Watch("tempStyleStates")
   setTempStyleState(tempStyleStates: StyleOptions[]): void {
     this.setColorSelectorState(tempStyleStates);
+  }
+  convertColorToRGBAString(colorObject: any) {
+    // THANK YOU INTERNET!
+    const h = colorObject.h;
+    const s = colorObject.s * 100;
+    let l = colorObject.l * 100;
+    // console.log("h ", h, " s ", s, " l ", l);
+    l /= 100;
+    const a = (s * Math.min(l, 1 - l)) / 100;
+    const f = (n: number) => {
+      const k = (n + h / 30) % 12;
+      const color = l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
+      return Math.round(255 * color)
+        .toString(16)
+        .padStart(2, "0"); // convert to Hex and prefix "0" if needed
+    };
+    // console.log(`#${f(0)}${f(8)}${f(4)}`);
+    return `#${f(0)}${f(8)}${f(4)}`;
+  }
+
+  editModeIsBack(): boolean {
+    return this.panel === StyleEditPanels.Back;
+  }
+  editModeIsFront(): boolean {
+    return this.panel === StyleEditPanels.Front;
+  }
+  editModeIsLabel(): boolean {
+    return this.panel === StyleEditPanels.Label;
   }
 
   toggleColorInputs(): void {
@@ -273,7 +301,7 @@ export default class ColorSelector extends Vue {
         selected: selected,
         payload: {
           panel: this.panel,
-          ["dynamicBackStyle"]: false
+          dynamicBackStyle: false
         }
       });
     }
@@ -309,7 +337,7 @@ export default class ColorSelector extends Vue {
       selected: selected,
       payload: {
         panel: this.panel,
-        ["dynamicBackStyle"]: false
+        dynamicBackStyle: false
       }
     });
   }
@@ -332,9 +360,7 @@ export default class ColorSelector extends Vue {
         payload: {
           panel: this.panel,
           [this.styleName]: (initialStyleStates[i] as any)[this.styleName],
-          ["dynamicBackStyle"]: (initialStyleStates[i] as any)[
-            "dynamicBackStyle"
-          ]
+          dynamicBackStyle: (initialStyleStates[i] as any)["dynamicBackStyle"]
         }
       });
     }
@@ -362,23 +388,10 @@ export default class ColorSelector extends Vue {
         payload: {
           panel: this.panel,
           [this.styleName]: (defaultStyleStates[i] as any)[this.styleName],
-          ["dynamicBackStyle"]: (defaultStyleStates[i] as any)[
-            "dynamicBackStyle"
-          ]
+          dynamicBackStyle: (defaultStyleStates[i] as any)["dynamicBackStyle"]
         }
       });
     }
-
-    // Set the usingDynamicBackStyleAgreement varaible
-    // if (this.useDynamicBackStyleFromSelector !== undefined && this.useDynamicBackStyleFromSelector) {
-    //   this.$store.direct.commit.changeStyle({
-    //     selected: [selected[i]],
-    //     payload: {
-    //       panel: this.panel,
-    //       ["dynamicBackStyle"]: (defaultStyleStates[i] as any)["dynamicBackStyle"]
-    //     }
-    //   });
-    // }
 
     this.setColorSelectorState(defaultStyleStates);
   }
@@ -426,7 +439,7 @@ export default class ColorSelector extends Vue {
 
       this.usingDynamicBackStyleCommonValue =
         "dynamicBackStyle" in styleState[0]
-          ? (styleState[0] as any)["dynamicBackStyle"]
+          ? (styleState[0] as any).dynamicBackStyle
           : undefined;
 
       this.disableUndoButton = true;
@@ -435,7 +448,7 @@ export default class ColorSelector extends Vue {
         this.usingDynamicBackStyleCommonValue === undefined ||
         !styleState.every(
           styleObject =>
-            (styleObject as any)["dynamicBackStyle"] ==
+            (styleObject as any).dynamicBackStyle ==
             this.usingDynamicBackStyleCommonValue
         )
       ) {
@@ -451,9 +464,9 @@ export default class ColorSelector extends Vue {
         this.usingDynamicBackStyle = false;
       }
 
-      console.log("useDBS from user input", this.usingDynamicBackStyle);
-      console.log("DBS Agree", this.usingDynamicBackStyleAgreement);
-      console.log("DBS common Value", this.usingDynamicBackStyleCommonValue);
+      // console.log("useDBS from user input", this.usingDynamicBackStyle);
+      // console.log("DBS Agree", this.usingDynamicBackStyleAgreement);
+      // console.log("DBS common Value", this.usingDynamicBackStyleCommonValue);
       // console.log(
       //   "logic useDBS from user input || (DBS Agre && ! DBS common Value)",
       //   this.usingDynamicBackStyle ||

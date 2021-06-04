@@ -8,10 +8,10 @@ export default {
   decimalPrecision: 3, // The number decimal places to display when numerically measuring or computing a value
   style: {
     backStyleContrast: 0.5, //The number that controls the automatic setting of the back styling for objects that have dynamicBackStyle set to true.
-    maxStrokeWidthPercent: 500, // The maximum percent stroke width different from the scaled for zoom size
-    minStrokeWidthPercent: 20, // The minimum percent stroke width different from the scaled for zoom size
-    maxPointRadiusPercent: 500, // The maximum percent point radius different from the scaled for zoom size
-    minPointRadiusPercent: 20, // The minimum percent point radius different from the scaled for zoom size
+    maxStrokeWidthPercent: 200, // The maximum percent stroke width different from the scaled for zoom size
+    minStrokeWidthPercent: 60, // The minimum percent stroke width different from the scaled for zoom size
+    maxPointRadiusPercent: 200, // The maximum percent point radius different from the scaled for zoom size
+    minPointRadiusPercent: 60, // The minimum percent point radius different from the scaled for zoom size
     maxGapLengthPlusDashLength: 20, // the maximum of the sum of the gap and dash and the endpoint (max value) of the dash range slider
     maxLabelTextScalePercent: 200, // The maximum percent text scale different from the scaled for zoom size
     minLabelTextScalePercent: 60, // The minimum percent text scale different from the scaled for zoom size

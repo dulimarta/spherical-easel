@@ -290,8 +290,9 @@ export default class Style extends Vue {
     // then EventBus.fire("toggle-label-visibility", {}); does nothing,
     // so we have to check to see if the label panel is mounted and use either SetNoduleDisplayCommand or StyleNoduleCommand (used in toggle-label-visibility )
 
-    if (this.mountedPanels.findIndex(i => i === 0) === -1) {
-      // the label panel is not mounted
+    //if (this.mountedPanels.findIndex(i => i === 0) === -1) {
+    if (this.mountedPanels.length === 0) {
+      // no panels are mounted
       const toggleLabelDisplayCommandGroup = new CommandGroup();
       this.selections.forEach(node => {
         if (node.isLabelable()) {
@@ -306,14 +307,17 @@ export default class Style extends Vue {
       toggleLabelDisplayCommandGroup.execute();
     } else {
       console.log("toggle label from style.vue - label panel mounted");
-      // the label panel is mounted
-      EventBus.fire("toggle-label-visibility", {});
+      // at least one panel is mounted
+      EventBus.fire("toggle-label-visibility", {
+        mountedPanel: this.mountedPanels[0]
+      });
     }
   }
 
   toggleObjectsShowing(): void {
-    if (this.mountedPanels.findIndex(i => i === 0) === -1) {
-      // the label panel is not mounted
+    //if (this.mountedPanels.findIndex(i => i === 0) === -1) {
+    if (this.mountedPanels.length === 0) {
+      // no panels are mounted
       const toggleObjectDisplayCommandGroup = new CommandGroup();
       this.selections.forEach(node => {
         toggleObjectDisplayCommandGroup.addCommand(
@@ -323,8 +327,10 @@ export default class Style extends Vue {
       toggleObjectDisplayCommandGroup.execute();
     } else {
       console.log("toggle objects from style.vue - label panel mounted");
-      // the label panel is mounted
-      EventBus.fire("toggle-object-visibility", {});
+      // at least one panel is mounted
+      EventBus.fire("toggle-object-visibility", {
+        mountedPanel: this.mountedPanels[0]
+      });
     }
     // update the this.allLabelsShowing varaible, because hiding an object hide the label (depending on
     //  SETTINGS.hideObjectHidesLabel) and similarly showing an object shows the label (depending
