@@ -234,23 +234,11 @@ export default class App extends Vue {
 
     // Make a duplicate of the SVG tree
     const svgElement = this.svgRoot.cloneNode(true) as SVGElement;
-    // const transformMatrix = svgElement.style.transform
-    //   .replace("matrix(", "") // remove the "matrix(" prefix
-    //   .replace(")", "") // remove the ")" suffix
-    //   .split(",")
-    //   .map(Number); // convert the list into an array of numbers
-    // // Reset the 2x3 2D transformation matrix to its "natural" pose
-    // transformMatrix[0] = 1; // Undo any zooming effect
-    // transformMatrix[3] = 1;
-    // transformMatrix[4] = 0; // Undo any panning effect
-    // transformMatrix[5] = 0;
-    // // Add the missing XML namespace
-    // svgElement.setAttribute("xmlns", "http://www.w3.org/2000/svg");
-    // // reinsert the transformation matrix
-    // svgElement.style.transform = `matrix(${transformMatrix.join(",")})`;
-    svgElement.style.removeProperty("transform");
+    svgElement.setAttribute("xmlns", "http://www.w3.org/2000/svg");
 
-    // console.log("SVG outer HTML", transformMatrix, svgElement.outerHTML);
+    // Remove the top-level transformation matrix
+    // We have to save the preview in its "natural" pose
+    svgElement.style.removeProperty("transform");
 
     const svgBlob = new Blob([svgElement.outerHTML], {
       type: "image/svg+xml;charset=utf-8"
