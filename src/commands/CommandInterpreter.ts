@@ -15,8 +15,7 @@ import { AddCalculationCommand } from "./AddCalculationCommand";
 import { AddLocationMeasurementCommand } from "./AddLocationMeasurementCommand";
 import { AddDistanceMeasurementCommand } from "./AddDistanceMeasurementCommand";
 import { AddLengthMeasurementCommand } from "./AddLengthMeasurementCommand";
-export type ConstructionScript = Array<string | Array<string>>;
-
+import { ConstructionScript } from "@/types";
 const noduleDictionary = new Map<string, SENodule>();
 
 function executeIndividual(command: string): Command {

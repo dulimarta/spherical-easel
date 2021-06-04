@@ -214,3 +214,22 @@ export interface CircleState {
 export function isCircleState(entry: ObjectState): entry is CircleState {
   return entry.kind === "circle";
 }
+
+export type ConstructionScript = Array<string | Array<string>>;
+
+export interface SphericalConstruction extends ConstructionInFirestore {
+  id: string;
+  parsedScript: ConstructionScript;
+  sphereRotationMatrix: Matrix4;
+  objectCount: number;
+  previewData: string;
+}
+
+export interface ConstructionInFirestore {
+  author: string;
+  dateCreated: string;
+  script: string;
+  description: string;
+  rotationMatrix?: string;
+  preview?: string;
+}

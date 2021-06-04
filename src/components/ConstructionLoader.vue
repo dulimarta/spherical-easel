@@ -2,106 +2,22 @@
   <div>
     <div class="text-h6"
       v-if="firebaseUid.length > 0">Private Constructions</div>
-    <v-list three-line>
-      <template v-for="(r,pos) in privateConstructions">
-        <v-hover v-slot:default="{hover}"
-          :key="pos">
-          <v-list-item>
-            <v-list-item-avatar size="64">
-              <img :src="previewOrDefault(r.previewData)"
-                alt="preview">
-            </v-list-item-avatar>
-            <v-list-item-content>
-              <v-list-item-title class="text-truncate">
-                {{r.description || "N/A"}}
-              </v-list-item-title>
-              <v-list-item-subtitle><code>{{r.id.substring(0,5)}}</code>
-                <span class="text-truncate">
-                  {{r.objectCount}} objects,
-                  {{r.dateCreated.substring(0,10)}}
-                  {{r.author}}</span>
-              </v-list-item-subtitle>
-              <v-divider />
-            </v-list-item-content>
-            <!--- show a Load button as an overlay when the mouse hovers -->
-            <v-overlay absolute
-              :value="hover">
-              <v-btn rounded
-                small
-                color="secondary"
-                @click="loadConstruction(r.id)">
-                <v-icon left
-                  small>mdi-folder-open-outline</v-icon>Load
-              </v-btn>
-            </v-overlay>
-          </v-list-item>
-        </v-hover>
-      </template>
-    </v-list>
+    <ConstructionList :items="privateConstructions"
+      v-on:load-requested="doLoadConstruction" />
     <div class="text-h6">Public Constructions</div>
-    <v-list three-line>
-      <template v-for="(r,pos) in publicConstructions">
-        <v-hover v-slot:default="{hover}"
-          :key="pos">
-          <v-list-item>
-            <v-list-item-avatar size="64">
-              <img :src="previewOrDefault(r.previewData)"
-                alt="preview">
-            </v-list-item-avatar>
-            <v-list-item-content>
-              <v-list-item-title class="text-truncated">{{r.description ||
-                "N/A"}}
-              </v-list-item-title>
-              <v-list-item-subtitle>
-                <code>{{r.id.substring(0,5)}}</code><span
-                  class="text-truncate">
-                  {{r.objectCount}} objects,
-                  {{r.dateCreated.substring(0,10)}}
-                  {{r.author}}</span>
-              </v-list-item-subtitle>
-              <v-divider />
-            </v-list-item-content>
-            <!--- show a Load button as an overlay when the mouse hovers -->
-            <v-overlay absolute
-              color="accent"
-              :value="hover">
-              <v-row align="center">
-                <!--v-col>
-                  <img :src="previewOrDefault(r.previewData)"
-                    height="80"
-                    alt="preview" />
-                </v-col-->
-                <v-col>
-                  <v-btn rounded
-                    small
-                    color="secondary"
-                    @click="loadConstruction(r.id)">
-                    <v-icon left
-                      small>mdi-folder-open-outline</v-icon>Load
-                  </v-btn>
-                </v-col>
-                <v-col>
-                  <v-btn rounded
-                    small
-                    color="secondary"
-                    @click="doShareURL(r.id)">
-                    <v-icon small
-                      left>mdi-share-variant</v-icon>Share
-                  </v-btn>
-                </v-col>
-              </v-row>
-            </v-overlay>
-          </v-list-item>
-        </v-hover>
-      </template>
-    </v-list>
+    <ConstructionList :items="publicConstructions"
+      :allow-sharing="true"
+      v-on:load-requested="doLoadConstruction"
+      v-on:share-requested="doShareConstruction" />
+
     <Dialog ref="constructionShareDialog"
       title="Share Construction"
       :yes-text="`Copy URL`"
       :yes-action="doCopyURL"
       max-width="50%">
-      <p>Use this URL</p>
+      <p>Share this URL</p>
       <textarea :cols="shareURL.length"
+        id="shareTextArea"
         rows="1"
         readonly
         ref="docURL"
@@ -110,7 +26,11 @@
     </Dialog>
   </div>
 </template>
-
+<style scoped>
+#shareTextArea {
+  font-family: "Courier New", Courier, monospace;
+}
+</style>
 <script lang="ts">
 import VueComponent from "vue";
 import { Component, Vue } from "vue-property-decorator";
@@ -119,34 +39,21 @@ import {
   QuerySnapshot,
   QueryDocumentSnapshot
 } from "@firebase/firestore-types";
-import { run, ConstructionScript } from "@/commands/CommandInterpreter";
+import { run } from "@/commands/CommandInterpreter";
+import {
+  ConstructionScript,
+  SphericalConstruction,
+  ConstructionInFirestore
+} from "@/types";
 import EventBus from "@/eventHandlers/EventBus";
 import { SENodule } from "@/models/SENodule";
 import Nodule from "@/plottables/Nodule";
 import { FirebaseAuth } from "@firebase/auth-types";
 import Dialog, { DialogAction } from "@/components/Dialog.vue";
+import ConstructionList from "@/components/ConstructionList.vue";
 import { Matrix4 } from "three";
 
-const LOGO = "@/assets/logo.png";
-// TODO: move the following type alias and interface elsewhere later?
-interface SphericalConstruction extends ConstructionInFirestore {
-  id: string;
-  parsedScript: ConstructionScript;
-  sphereRotationMatrix: Matrix4;
-  objectCount: number;
-  previewData: string;
-}
-
-interface ConstructionInFirestore {
-  author: string;
-  dateCreated: string;
-  script: string;
-  description: string;
-  rotationMatrix?: string;
-  preview?: string;
-}
-
-@Component({ components: { Dialog } })
+@Component({ components: { Dialog, ConstructionList } })
 export default class ConstructionLoader extends Vue {
   readonly $appDB!: FirebaseFirestore;
   readonly $appAuth!: FirebaseAuth;
@@ -163,7 +70,6 @@ export default class ConstructionLoader extends Vue {
   }
 
   mounted(): void {
-    console.log("Logo path", LOGO);
     if (this.firebaseUid) {
       this.$appDB
         .collection("users")
@@ -201,7 +107,6 @@ export default class ConstructionLoader extends Vue {
           const matrixData = JSON.parse(doc.rotationMatrix);
           sphereRotationMatrix.fromArray(matrixData);
         }
-        console.log("Populate", qd.id, doc.preview);
         targetArr.push({
           id: qd.id,
           script: doc.script,
@@ -221,7 +126,9 @@ export default class ConstructionLoader extends Vue {
     );
   }
 
-  loadConstruction(docId: string): void {
+  doLoadConstruction(event: { docId: string }): void {
+    // console.log("Load event", ev);
+    const docId = event.docId;
     let script: ConstructionScript | null = null;
     let rotationMatrix: Matrix4;
     // Search in public list
@@ -255,10 +162,11 @@ export default class ConstructionLoader extends Vue {
     run(script);
   }
 
-  doShareURL(docId: string): void {
-    this.shareURL = `${location.host}/construction/${docId}`;
+  doShareConstruction(event: { docId: string }): void {
+    this.shareURL = `${location.host}/construction/${event.docId}`;
     this.$refs.constructionShareDialog.show();
   }
+
   doCopyURL(): void {
     (this.$refs.docURL as HTMLTextAreaElement).select();
     document.execCommand("copy");

@@ -248,8 +248,8 @@ import { AppState } from "@/types";
 import IconBase from "@/components/IconBase.vue";
 import AngleMarker from "@/plottables/AngleMarker";
 import { FirebaseFirestore, DocumentSnapshot } from "@firebase/firestore-types";
-import { run, ConstructionScript } from "@/commands/CommandInterpreter";
-
+import { run } from "@/commands/CommandInterpreter";
+import { ConstructionScript } from "@/types";
 /**
  * Split panel width distribution (percentages):
  * When both side panels open: 20:60:20 (proportions 1:3:1)
