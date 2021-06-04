@@ -122,6 +122,7 @@ export default class Toolbox extends Vue {
 #loader {
   /* It is important to set the height otherwise the "overflow' option in <ObjectTree> won't work correctly */
   height: calc(100vh - 200px);
+  max-width: 360px;
   overflow: auto;
 }
 .slide-out-enter-active,

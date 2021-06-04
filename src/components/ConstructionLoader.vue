@@ -1,18 +1,25 @@
 <template>
   <div>
-    <div class="text-h6">Private Constructions</div>
-    <v-list two-line>
+    <div class="text-h6"
+      v-if="firebaseUid.length > 0">Private Constructions</div>
+    <v-list three-line>
       <template v-for="(r,pos) in privateConstructions">
         <v-hover v-slot:default="{hover}"
           :key="pos">
           <v-list-item>
+            <v-list-item-avatar size="64">
+              <img :src="previewOrDefault(r.previewData)"
+                alt="preview">
+            </v-list-item-avatar>
             <v-list-item-content>
-              <v-list-item-title>{{r.description.substring(0,25) || "N/A"}}
+              <v-list-item-title class="text-truncate">
+                {{r.description || "N/A"}}
               </v-list-item-title>
               <v-list-item-subtitle><code>{{r.id.substring(0,5)}}</code>
-                {{r.objectCount}} objects,
-                {{r.author}}
-                {{r.dateCreated.substring(0,10)}}
+                <span class="text-truncate">
+                  {{r.objectCount}} objects,
+                  {{r.dateCreated.substring(0,10)}}
+                  {{r.author}}</span>
               </v-list-item-subtitle>
               <v-divider />
             </v-list-item-content>
@@ -32,26 +39,38 @@
       </template>
     </v-list>
     <div class="text-h6">Public Constructions</div>
-    <v-list two-line>
+    <v-list three-line>
       <template v-for="(r,pos) in publicConstructions">
         <v-hover v-slot:default="{hover}"
           :key="pos">
           <v-list-item>
+            <v-list-item-avatar size="64">
+              <img :src="previewOrDefault(r.previewData)"
+                alt="preview">
+            </v-list-item-avatar>
             <v-list-item-content>
               <v-list-item-title class="text-truncated">{{r.description ||
                 "N/A"}}
               </v-list-item-title>
-              <v-list-item-subtitle><code>{{r.id.substring(0,5)}}</code>
-                {{r.objectCount}} objects, {{r.author}}
-
-                {{r.dateCreated.substring(0,10)}}
+              <v-list-item-subtitle>
+                <code>{{r.id.substring(0,5)}}</code><span
+                  class="text-truncate">
+                  {{r.objectCount}} objects,
+                  {{r.dateCreated.substring(0,10)}}
+                  {{r.author}}</span>
               </v-list-item-subtitle>
               <v-divider />
             </v-list-item-content>
             <!--- show a Load button as an overlay when the mouse hovers -->
             <v-overlay absolute
+              color="accent"
               :value="hover">
-              <v-row>
+              <v-row align="center">
+                <!--v-col>
+                  <img :src="previewOrDefault(r.previewData)"
+                    height="80"
+                    alt="preview" />
+                </v-col-->
                 <v-col>
                   <v-btn rounded
                     small
@@ -108,12 +127,14 @@ import { FirebaseAuth } from "@firebase/auth-types";
 import Dialog, { DialogAction } from "@/components/Dialog.vue";
 import { Matrix4 } from "three";
 
+const LOGO = "@/assets/logo.png";
 // TODO: move the following type alias and interface elsewhere later?
 interface SphericalConstruction extends ConstructionInFirestore {
   id: string;
   parsedScript: ConstructionScript;
   sphereRotationMatrix: Matrix4;
   objectCount: number;
+  previewData: string;
 }
 
 interface ConstructionInFirestore {
@@ -122,6 +143,7 @@ interface ConstructionInFirestore {
   script: string;
   description: string;
   rotationMatrix?: string;
+  preview?: string;
 }
 
 @Component({ components: { Dialog } })
@@ -136,11 +158,12 @@ export default class ConstructionLoader extends Vue {
     constructionShareDialog: VueComponent & DialogAction;
     docURL: HTMLSpanElement;
   };
-  get firebaseUid(): string | undefined {
-    return this.$appAuth.currentUser?.uid;
+  get firebaseUid(): string {
+    return this.$appAuth.currentUser?.uid ?? "";
   }
 
   mounted(): void {
+    console.log("Logo path", LOGO);
     if (this.firebaseUid) {
       this.$appDB
         .collection("users")
@@ -178,6 +201,7 @@ export default class ConstructionLoader extends Vue {
           const matrixData = JSON.parse(doc.rotationMatrix);
           sphereRotationMatrix.fromArray(matrixData);
         }
+        console.log("Populate", qd.id, doc.preview);
         targetArr.push({
           id: qd.id,
           script: doc.script,
@@ -186,7 +210,8 @@ export default class ConstructionLoader extends Vue {
           author: doc.author,
           dateCreated: doc.dateCreated,
           description: doc.description,
-          sphereRotationMatrix
+          sphereRotationMatrix,
+          previewData: doc.preview ?? ""
         });
       }
     });
@@ -224,7 +249,8 @@ export default class ConstructionLoader extends Vue {
       keyOptions: { docId },
       type: "info"
     });
-    console.log("Applying roation: ", rotationMatrix.elements);
+    // It looks like we have to apply the rotation matrix
+    // before running the script
     this.$store.direct.commit.rotateSphere(rotationMatrix);
     run(script);
   }
@@ -237,6 +263,9 @@ export default class ConstructionLoader extends Vue {
     (this.$refs.docURL as HTMLTextAreaElement).select();
     document.execCommand("copy");
     this.$refs.constructionShareDialog.hide();
+  }
+  previewOrDefault(dataUrl: string | undefined): string {
+    return dataUrl ? dataUrl : require("@/assets/SphericalEaselLogo.gif");
   }
 }
 </script>

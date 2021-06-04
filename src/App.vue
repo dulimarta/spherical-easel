@@ -49,7 +49,7 @@
 
       <!-- This will open up the global settings view setting the language, decimals 
       display and other global options-->
-      <span>{{whoami}} {{uid}}</span>
+      <span>{{whoami}} {{uid.substring(0,8)}}</span>
 
       <v-icon class="mx-2"
         @click="doLoginOrCheck">mdi-account</v-icon>
@@ -143,7 +143,6 @@ import {
   DocumentReference
 } from "@firebase/firestore-types";
 import { Command } from "./commands/Command";
-
 /* This allows for the State of the app to be initialized with in vuex store */
 @Component({ components: { MessageBox, Dialog, ConstructionLoader } })
 export default class App extends Vue {
@@ -162,6 +161,7 @@ export default class App extends Vue {
   authSubscription: any;
   whoami = "";
   uid = "";
+  svgRoot!: SVGElement;
 
   get hasObjects(): boolean {
     // Any objects must include at least one pointd
@@ -182,6 +182,10 @@ export default class App extends Vue {
         } else this.whoami = "";
       }
     );
+    // Get the top-level SVG element
+    this.svgRoot = this.$store.direct.state.svgCanvas?.querySelector(
+      "svg"
+    ) as SVGElement;
   }
 
   beforeDestroy(): void {
@@ -196,6 +200,8 @@ export default class App extends Vue {
   doLogout(): void {
     this.$appAuth.signOut();
     this.$refs.logoutDialog.hide();
+    this.uid = "";
+    this.whoami = "";
   }
 
   doLoginOrCheck(): void {
@@ -206,7 +212,18 @@ export default class App extends Vue {
     }
   }
 
-  doShare(): void {
+  async doShare(): Promise<void> {
+    // A local function to convert a blob to base64 representation
+    const toBase64 = (inputBlob: Blob): Promise<string> =>
+      new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onerror = reject;
+        reader.onload = () => {
+          resolve(reader.result as string);
+        };
+        reader.readAsDataURL(inputBlob);
+      });
+
     /* dump the command history */
     const out = Command.dumpOpcode();
 
@@ -214,6 +231,34 @@ export default class App extends Vue {
     const collectionPath = this.publicConstruction
       ? "constructions"
       : `users/${this.uid}/constructions`;
+
+    // Make a duplicate of the SVG tree
+    const svgElement = this.svgRoot.cloneNode(true) as SVGElement;
+    // const transformMatrix = svgElement.style.transform
+    //   .replace("matrix(", "") // remove the "matrix(" prefix
+    //   .replace(")", "") // remove the ")" suffix
+    //   .split(",")
+    //   .map(Number); // convert the list into an array of numbers
+    // // Reset the 2x3 2D transformation matrix to its "natural" pose
+    // transformMatrix[0] = 1; // Undo any zooming effect
+    // transformMatrix[3] = 1;
+    // transformMatrix[4] = 0; // Undo any panning effect
+    // transformMatrix[5] = 0;
+    // // Add the missing XML namespace
+    // svgElement.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+    // // reinsert the transformation matrix
+    // svgElement.style.transform = `matrix(${transformMatrix.join(",")})`;
+    svgElement.style.removeProperty("transform");
+
+    // console.log("SVG outer HTML", transformMatrix, svgElement.outerHTML);
+
+    const svgBlob = new Blob([svgElement.outerHTML], {
+      type: "image/svg+xml;charset=utf-8"
+    });
+    const svgPreviewData = await toBase64(svgBlob);
+
+    // const svgURL = URL.createObjectURL(svgBlob);
+    // FileSaver.saveAs(svgURL, "hans.svg");
     this.$appDB
       .collection(collectionPath)
       .add({
@@ -221,7 +266,8 @@ export default class App extends Vue {
         dateCreated: new Date().toISOString(),
         author: this.whoami,
         description: this.description,
-        rotationMatrix: JSON.stringify(rotationMat.elements)
+        rotationMatrix: JSON.stringify(rotationMat.elements),
+        preview: svgPreviewData
       })
       .then((doc: DocumentReference) => {
         // console.log("Inserted", doc.id);

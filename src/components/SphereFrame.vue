@@ -40,7 +40,6 @@ import EventBus from "@/eventHandlers/EventBus";
 import MoveHandler from "../eventHandlers/MoveHandler";
 import { AppState, UpdateMode } from "@/types";
 import colors from "vuetify/es5/util/colors";
-import { SEPoint } from "@/models/SEPoint";
 import { SELabel } from "@/models/SELabel";
 
 @Component({})
@@ -236,6 +235,9 @@ export default class SphereFrame extends VueComponent {
     this.perpendicularLineThruPointTool = new PerpendicularLineThruPointHandler(
       this.layers
     );
+    // Make the canvas accessible to other components which need
+    // to grab the SVG contents of the sphere
+    this.$store.direct.commit.setCanvas(this.$refs.canvas);
   }
 
   beforeDestroy(): void {

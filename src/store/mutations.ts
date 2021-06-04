@@ -51,7 +51,8 @@ export const initialState: AppState = {
   defaultStyleStates: [],
   initialBackStyleContrast: SETTINGS.style.backStyleContrast,
   useLabelMode: false,
-  inverseTotalRotationMatrix: new Matrix4() //initially the identity. The composition of all the inverses of the rotation matrices applied to the sphere
+  inverseTotalRotationMatrix: new Matrix4(), //initially the identity. The composition of all the inverses of the rotation matrices applied to the sphere
+  svgCanvas: null
 };
 //#endregion appState
 
@@ -83,6 +84,9 @@ export default {
     //state.temporaryNodules.clear(); // Do not clear the temporaryNodules array
     // because the constructors of the tools (handlers) place the temporary Nodules
     // in this array *before* the this.init is called in App.vue mount.
+  },
+  setCanvas(state: AppState, c: HTMLDivElement): void {
+    state.svgCanvas = c;
   },
   setLayers(state: AppState, layers: Two.Group[]): void {
     state.layers = layers;

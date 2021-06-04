@@ -48,6 +48,7 @@ export interface AppState {
   useLabelMode: boolean; // In the case of one non-labe object being selected, the label panel should edit that object's label and the fore/back ground should edit
   // that selectedObject fore and back properties: useLabelMode indicates that we are doing this.
   inverseTotalRotationMatrix: Matrix4; // Initially the identity. This is the composition of all the inverses of the rotation matrices applied to the sphere.
+  svgCanvas: HTMLDivElement | null;
 }
 /* This interface lists all the properties that each tool/button must have. */
 export interface ToolButtonType {

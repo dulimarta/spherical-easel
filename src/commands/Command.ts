@@ -95,7 +95,6 @@ export abstract class Command {
     const out = Command.commandHistory
       .map(c => c.toOpcode()) // convert each command in the history to its string representation
       .filter(z => z !== null); // but include only non-null output
-    console.log("Script is ", out);
     return JSON.stringify(out);
   }
 
