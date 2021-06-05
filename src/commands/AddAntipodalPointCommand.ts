@@ -17,7 +17,6 @@ export class AddAntipodalPointCommand extends Command {
   }
 
   do(): void {
-    console.log("AddAntipodalPointCommand do()", this.sePoint.name);
     this.parentSEPoint.registerChild(this.sePoint);
     this.sePoint.registerChild(this.seLabel);
     Command.store.commit.addPoint(this.sePoint);

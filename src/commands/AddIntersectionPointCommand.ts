@@ -1,18 +1,20 @@
 import { Command } from "./Command";
-import { SEPoint } from "@/models/SEPoint";
-import { SEOneDimensional } from "@/types";
+import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
+import { SEOneDimensional, UpdateMode } from "@/types";
 import { SELabel } from "@/models/SELabel";
 import { SENodule } from "@/models/SENodule";
 import { Vector3 } from "three";
-
+import Point from "@/plottables/Point";
+import Label from "@/plottables/Label";
+import SETTINGS from "@/global-settings";
 export class AddIntersectionPointCommand extends Command {
-  private sePoint: SEPoint;
+  private sePoint: SEIntersectionPoint;
   private parent1: SEOneDimensional;
   private parent2: SEOneDimensional;
   private seLabel: SELabel;
 
   constructor(
-    sePoint: SEPoint,
+    sePoint: SEIntersectionPoint,
     parent1: SEOneDimensional,
     parent2: SEOneDimensional,
     seLabel: SELabel
@@ -25,12 +27,16 @@ export class AddIntersectionPointCommand extends Command {
   }
 
   do(): void {
-    //console.log("Add intersection point command do");
+    console.log("AddIntersectionPointCommand do()", this.sePoint.name);
     this.parent1.registerChild(this.sePoint);
     this.parent2.registerChild(this.sePoint);
     this.sePoint.registerChild(this.seLabel);
     Command.store.commit.addPoint(this.sePoint);
     Command.store.commit.addLabel(this.seLabel);
+    this.sePoint.update({
+      mode: UpdateMode.DisplayOnly,
+      stateArray: []
+    });
   }
 
   saveState(): void {
@@ -51,9 +57,10 @@ export class AddIntersectionPointCommand extends Command {
       /* arg-1 */ this.sePoint.name,
       /* arg-2 */ this.sePoint.locationVector.toFixed(7),
       /* arg-3 */ this.sePoint.showing,
-      /* arg-4 */ this.parent1.name,
-      /* arg-5 */ this.parent2.name,
-      /* arg-6 */ this.seLabel.name
+      /* arg-4 */ this.sePoint.isUserCreated,
+      /* arg-5 */ this.parent1.name,
+      /* arg-6 */ this.parent2.name,
+      /* arg-7 */ this.seLabel.name
     ].join("/");
     // We assume that "/" is not used anywhere in the object name
   }
@@ -61,15 +68,32 @@ export class AddIntersectionPointCommand extends Command {
   static parse(cmd: string, objMap: Map<string, SENodule>): Command {
     // console.log("Parsing", cmd);
     const tokens = cmd.split("/");
-    const parent1 = objMap.get(tokens[4]) as SEOneDimensional;
-    const parent2 = objMap.get(tokens[5]) as SEOneDimensional;
+    const parent1 = objMap.get(tokens[5]) as SEOneDimensional;
+    const parent2 = objMap.get(tokens[6]) as SEOneDimensional;
     if (parent1 && parent2) {
       const location = new Vector3();
       location.from(tokens[2]);
-
-      const { point, label } = this.makePointAndLabel(location);
+      const nameTokens = tokens[1].split(",");
+      const order = Number(nameTokens[2]); // Extra the intersection point order from the name
+      const point = new SEIntersectionPoint(
+        new Point(),
+        parent1,
+        parent2,
+        order,
+        tokens[4] === "true"
+      );
       point.showing = tokens[3] === "true";
+      point.name = tokens[1];
+      const label = new SELabel(new Label(), point);
+      label.locationVector.copy(location);
+
+      const offset = SETTINGS.point.initialLabelOffset;
+      label.locationVector.add(new Vector3(2 * offset, offset, 0)).normalize();
+
       label.showing = tokens[3] === "true";
+      label.name = tokens[7];
+      objMap.set(tokens[1], point);
+      objMap.set(tokens[7], label);
       return new AddIntersectionPointCommand(point, parent1, parent2, label);
     } else
       throw new Error(
