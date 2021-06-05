@@ -32,7 +32,9 @@ export class AddCalculationCommand extends Command {
     return [
       "AddExpression",
       /* arg-1 */ this.seExpression.name,
-      /* arg-2 */ this.arithmeticExpression
+      /* arg-2 */ this.arithmeticExpression,
+      /* arg-3 */ this.seExpression.showing,
+      /* arg-4 */ this.seExpression.exists
     ].join(";"); // Can't use "/" may get mixed up with division
   }
 
@@ -40,6 +42,8 @@ export class AddCalculationCommand extends Command {
     const tokens = command.split(";");
     const calc = new SECalculation(tokens[2]);
     calc.name = tokens[1];
+    calc.showing = tokens[3] === "true";
+    calc.exists = tokens[4] === "true";
     objMap.set(tokens[1], calc);
     return new AddCalculationCommand(calc, tokens[2]);
   }

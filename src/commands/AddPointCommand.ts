@@ -43,8 +43,9 @@ export class AddPointCommand extends Command {
         "AddPoint",
         /* arg-1 */ this.sePoint.name,
         /* arg-2 */ this.sePoint.locationVector.toFixed(7),
-        /* arg-3 */ this.sePoint.showing,
-        /* arg-4 */ this.seLabel.name
+        /* arg-3 */ this.seLabel.name,
+        /* arg-4 */ this.sePoint.showing,
+        /* arg-5 */ this.sePoint.exists
       ].join("/");
     else return "None";
   }
@@ -56,10 +57,12 @@ export class AddPointCommand extends Command {
     location.from(tokens[2]); // convert to Number
     const { point, label } = Command.makePointAndLabel(location);
     point.name = tokens[1];
-    point.showing = tokens[3] === "true";
+    point.showing = tokens[4] === "true";
+    point.exists = tokens[5] === "true";
     objMap.set(tokens[1], point);
-    label.name = tokens[4];
-    label.showing = tokens[3] === "true";
+    label.name = tokens[3];
+    label.showing = tokens[4] === "true";
+    label.exists = tokens[5] === "true";
     objMap.set(tokens[4], label);
     return new AddPointCommand(point, label);
   }

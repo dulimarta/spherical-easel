@@ -26,17 +26,22 @@ export class AddDistanceMeasurementCommand extends AddMeasurementCommand {
     return [
       "AddDistanceMeasurement",
       /* arg-1 */ this.seMeasurement.name,
-      /* arg-2 */ this.parents.map((n: SENodule) => n.name).join("/")
+      /* arg-2 */ this.parents.map((n: SENodule) => n.name).join("/"),
+      /* arg-N-2 */ this.seMeasurement.showing,
+      /* arg-N-1 */ this.seMeasurement.exists
     ].join("/");
   }
 
   static parse(command: string, objMap: Map<string, SENodule>): Command {
     const tokens = command.split("/");
+    const numTokens = tokens.length;
     const point1 = objMap.get(tokens[2]) as SEPoint | undefined;
     const point2 = objMap.get(tokens[3]) as SEPoint | undefined;
     if (point1 && point2) {
       const distanceMeasure = new SESegmentDistance(point1, point2);
       distanceMeasure.name = tokens[1];
+      distanceMeasure.showing = tokens[numTokens - 2] === "true";
+      distanceMeasure.exists = tokens[numTokens - 1] === "true";
       objMap.set(tokens[1], distanceMeasure);
       return new AddDistanceMeasurementCommand(distanceMeasure, [
         point1,

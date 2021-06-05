@@ -4,7 +4,7 @@ import { SEPoint } from "@/models/SEPoint";
 import { SELabel } from "@/models/SELabel";
 import { SENodule } from "@/models/SENodule";
 import Circle from "@/plottables/Circle";
-import { Matrix4, Vector3 } from "three";
+import { Matrix4, Skeleton, Vector3 } from "three";
 import { DisplayStyle } from "@/plottables/Nodule";
 import Label from "@/plottables/Label";
 import SETTINGS from "@/global-settings";
@@ -55,7 +55,8 @@ export class AddCircleCommand extends Command {
       /* arg-3 */ this.centerSEPoint.name,
       /* arg-4 */ this.circleSEPoint.name,
       /* arg-5 */ this.seLabel.name,
-      /* arg-6 */ this.seCircle.showing
+      /* arg-6 */ this.seCircle.showing,
+      /* arg-7 */ this.seCircle.exists
     ].join("/");
   }
 
@@ -74,6 +75,7 @@ export class AddCircleCommand extends Command {
       seCircle.name = tokens[1];
       objMap.set(tokens[1], seCircle);
       seCircle.showing = tokens[6] === "true";
+      seCircle.exists = tokens[7] === "true";
       const seLabel = new SELabel(new Label(), seCircle);
       const rotationMatrix = new Matrix4();
       rotationMatrix.makeRotationAxis(centerPoint.locationVector, Math.PI / 2);
@@ -86,6 +88,7 @@ export class AddCircleCommand extends Command {
         .normalize();
       seLabel.locationVector = labelPosition;
       seLabel.showing = tokens[6] === "true";
+      seLabel.exists = tokens[7] === "true";
       seLabel.name = tokens[5];
       objMap.set(tokens[5], seLabel);
       return new AddCircleCommand(seCircle, centerPoint, circlePoint, seLabel);

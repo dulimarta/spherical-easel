@@ -51,7 +51,8 @@ export class AddPointOnOneDimensionalCommand extends Command {
       /* arg-2 */ this.sePoint.locationVector.toFixed(7),
       /* arg-3 */ this.parent.name,
       /* arg-4 */ this.seLabel.name,
-      /* arg-5 */ this.sePoint.showing
+      /* arg-5 */ this.sePoint.showing,
+      /* arg-6 */ this.sePoint.exists
     ].join("/");
   }
 
@@ -63,9 +64,11 @@ export class AddPointOnOneDimensionalCommand extends Command {
       pointPosition.from(tokens[2]);
       const { point, label } = Command.makePointAndLabel(pointPosition);
       point.showing = tokens[5] === "true";
+      point.exists = tokens[6] === "true";
       point.name = tokens[1];
       objMap.set(tokens[1], point);
       label.showing = tokens[5] === "true";
+      label.exists = tokens[6] === "true";
       label.name = tokens[4];
       objMap.set(tokens[4], label);
       return new AddPointOnOneDimensionalCommand(point, parentLine, label);

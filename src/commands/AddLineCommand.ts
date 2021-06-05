@@ -54,7 +54,9 @@ export class AddLineCommand extends Command {
       /* arg-2 */ this.seLine.normalVector.toFixed(7),
       /* arg-3 */ this.startSEPoint.name,
       /* arg-4 */ this.endSEPoint.name,
-      /* arg-5 */ this.seLabel.name
+      /* arg-5 */ this.seLabel.name,
+      /* arg-6 */ this.seLine.showing,
+      /* arg-7 */ this.seLine.exists
     ].join("/");
   }
 
@@ -74,6 +76,8 @@ export class AddLineCommand extends Command {
       // The line highlighted by default?
       seLine.glowing = false;
       seLine.name = tokens[1];
+      seLine.showing = tokens[6] === "true";
+      seLine.exists = tokens[7] === "true";
       objMap.set(tokens[1], seLine);
 
       const seLabel = new SELabel(new Label(), seLine);
@@ -85,6 +89,8 @@ export class AddLineCommand extends Command {
         .normalize();
       seLabel.locationVector = labelPosition;
       seLabel.name = tokens[5];
+      seLabel.showing = tokens[6] === "true";
+      seLabel.exists = tokens[7] === "true";
       objMap.set(tokens[5], seLabel);
       return new AddLineCommand(seLine, startPoint, endPoint, seLabel);
     } else {

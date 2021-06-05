@@ -56,11 +56,12 @@ export class AddIntersectionPointCommand extends Command {
       "AddIntersectionPoint",
       /* arg-1 */ this.sePoint.name,
       /* arg-2 */ this.sePoint.locationVector.toFixed(7),
-      /* arg-3 */ this.sePoint.showing,
-      /* arg-4 */ this.sePoint.isUserCreated,
-      /* arg-5 */ this.parent1.name,
-      /* arg-6 */ this.parent2.name,
-      /* arg-7 */ this.seLabel.name
+      /* arg-3 */ this.parent1.name,
+      /* arg-4 */ this.parent2.name,
+      /* arg-5 */ this.seLabel.name,
+      /* arg-6 */ this.sePoint.isUserCreated,
+      /* arg-7 */ this.sePoint.showing,
+      /* arg-8 */ this.sePoint.exists
     ].join("/");
     // We assume that "/" is not used anywhere in the object name
   }
@@ -68,31 +69,36 @@ export class AddIntersectionPointCommand extends Command {
   static parse(cmd: string, objMap: Map<string, SENodule>): Command {
     // console.log("Parsing", cmd);
     const tokens = cmd.split("/");
-    const parent1 = objMap.get(tokens[5]) as SEOneDimensional;
-    const parent2 = objMap.get(tokens[6]) as SEOneDimensional;
+    const parent1 = objMap.get(tokens[3]) as SEOneDimensional;
+    const parent2 = objMap.get(tokens[4]) as SEOneDimensional;
     if (parent1 && parent2) {
       const location = new Vector3();
       location.from(tokens[2]);
+
+      // Extra the intersection point order from the name
       const nameTokens = tokens[1].split(",");
-      const order = Number(nameTokens[2]); // Extra the intersection point order from the name
+      const order = Number(nameTokens[2]);
       const point = new SEIntersectionPoint(
         new Point(),
         parent1,
         parent2,
         order,
-        tokens[4] === "true"
+        tokens[6] === "true" // isUserCreated
       );
-      point.showing = tokens[3] === "true";
+      point.showing = tokens[7] === "true";
+      point.exists = tokens[8] === "true";
       point.name = tokens[1];
+      objMap.set(tokens[1], point);
+
       const label = new SELabel(new Label(), point);
       label.locationVector.copy(location);
 
       const offset = SETTINGS.point.initialLabelOffset;
       label.locationVector.add(new Vector3(2 * offset, offset, 0)).normalize();
 
-      label.showing = tokens[3] === "true";
-      label.name = tokens[7];
-      objMap.set(tokens[1], point);
+      label.showing = tokens[7] === "true";
+      label.exists = tokens[8] === "true";
+      label.name = tokens[5];
       objMap.set(tokens[7], label);
       return new AddIntersectionPointCommand(point, parent1, parent2, label);
     } else

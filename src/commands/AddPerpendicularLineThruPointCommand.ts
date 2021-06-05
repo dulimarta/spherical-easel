@@ -61,7 +61,9 @@ export class AddPerpendicularLineThruPointCommand extends Command {
       /* arg-4 */ targetPoint.endSEPoint.name,
       /* arg-5 */ targetPoint.endSEPoint.locationVector.toFixed(7),
       /* arg-6 */ this.parentOneDimensional.name,
-      /* arg-7 */ this.seLabel.name
+      /* arg-7 */ this.seLabel.name,
+      /* arg-8 */ targetPoint.showing,
+      /* arg-9 */ targetPoint.exists
     ].join("/");
   }
 
@@ -91,6 +93,8 @@ export class AddPerpendicularLineThruPointCommand extends Command {
       );
       seLine.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
       seLine.name = tokens[1];
+      seLine.showing = tokens[8] === "true";
+      seLine.exists = tokens[9] === "true";
       objMap.set(tokens[1], seLine);
 
       const seLabel = new SELabel(new Label(), perpToLine);
@@ -106,6 +110,8 @@ export class AddPerpendicularLineThruPointCommand extends Command {
         .normalize();
       seLabel.locationVector = labelPosition;
       seLabel.name = tokens[7];
+      seLabel.showing = tokens[8] === "true";
+      seLabel.exists = tokens[9] === "true";
       objMap.set(tokens[7], seLabel);
       return new AddPerpendicularLineThruPointCommand(
         seLine,
