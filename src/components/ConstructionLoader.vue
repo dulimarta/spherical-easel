@@ -8,7 +8,8 @@
     <ConstructionList :items="publicConstructions"
       :allow-sharing="true"
       v-on:load-requested="doLoadConstruction"
-      v-on:share-requested="doShareConstruction" />
+      v-on:share-requested="doShareConstruction"
+      v-on:delete-requested="doDeleteConstruction" />
 
     <Dialog ref="constructionShareDialog"
       title="Share Construction"
@@ -26,11 +27,13 @@
     </Dialog>
   </div>
 </template>
+
 <style scoped>
 #shareTextArea {
   font-family: "Courier New", Courier, monospace;
 }
 </style>
+
 <script lang="ts">
 import VueComponent from "vue";
 import { Component, Vue } from "vue-property-decorator";
@@ -65,6 +68,7 @@ export default class ConstructionLoader extends Vue {
     constructionShareDialog: VueComponent & DialogAction;
     docURL: HTMLSpanElement;
   };
+
   get firebaseUid(): string {
     return this.$appAuth.currentUser?.uid ?? "";
   }
@@ -172,8 +176,20 @@ export default class ConstructionLoader extends Vue {
     document.execCommand("copy");
     this.$refs.constructionShareDialog.hide();
   }
-  previewOrDefault(dataUrl: string | undefined): string {
-    return dataUrl ? dataUrl : require("@/assets/SphericalEaselLogo.gif");
+
+  doDeleteConstruction(event: { docId: string }): void {
+    console.log("About to delete", event.docId);
+    this.$appDB
+      .collection("constructions")
+      .doc(event.docId)
+      .delete()
+      .then(() => {
+        EventBus.fire("show-alert", {
+          key: "objectTree.firestoreConstructionDeleted",
+          keyOptions: { docId: event.docId },
+          type: "info"
+        });
+      });
   }
 }
 </script>

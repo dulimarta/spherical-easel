@@ -25,23 +25,34 @@
             <!--- show a Load button as an overlay when the mouse hovers -->
             <v-overlay absolute
               :value="hover">
-              <v-row>
+              <v-row align="center">
                 <v-col>
                   <v-btn rounded
+                    fab
                     small
-                    color="secondary"
-                    @click="$emit('load-requested', {docId: r.id})">
-                    <v-icon left
-                      small>mdi-folder-open-outline</v-icon>Load
+                    color="secondary">
+                    <v-icon
+                      @click="$emit('load-requested', {docId: r.id})">
+                      mdi-download</v-icon>
                   </v-btn>
                 </v-col>
                 <v-col v-if="allowSharing">
                   <v-btn rounded
+                    fab
                     small
                     color="secondary"
                     @click="$emit('share-requested', {docId: r.id})">
-                    <v-icon small
-                      left>mdi-share-variant</v-icon>Share
+                    <v-icon>mdi-share-variant</v-icon>
+                  </v-btn>
+                </v-col>
+                <!-- show delete button only for its owner -->
+                <v-col v-if="r.author === userEmail">
+                  <v-btn rounded
+                    fab
+                    small
+                    color="red"
+                    @click="$emit('delete-requested', {docId: r.id})">
+                    <v-icon>mdi-trash-can</v-icon>
                   </v-btn>
                 </v-col>
 
@@ -57,14 +68,20 @@
 <script lang="ts">
 import { Component, Vue, Prop } from "vue-property-decorator";
 import { SphericalConstruction } from "@/types";
+import { FirebaseAuth } from "node_modules/@firebase/auth-types";
 
 @Component
 export default class extends Vue {
+  readonly $appAuth!: FirebaseAuth;
   @Prop()
   items!: Array<SphericalConstruction>;
 
   @Prop({ default: false })
   allowSharing!: boolean;
+
+  get userEmail(): string {
+    return this.$appAuth.currentUser?.email ?? "";
+  }
 
   previewOrDefault(dataUrl: string | undefined): string {
     return dataUrl ? dataUrl : require("@/assets/SphericalEaselLogo.gif");

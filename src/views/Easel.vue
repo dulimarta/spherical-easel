@@ -388,7 +388,6 @@ export default class Easel extends Vue {
   }
   /** mounted() is part of VueJS lifecycle hooks */
   mounted(): void {
-    console.log("Load", this.documentId ?? "None");
     window.addEventListener("resize", this.onWindowResized);
     this.adjustSize(); // Why do we need this?  this.onWindowResized just calls this.adjustSize() but if you remove it the app doesn't work -- strange!
     if (this.documentId) this.loadDocument(this.documentId);
