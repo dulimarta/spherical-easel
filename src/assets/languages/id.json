@@ -203,19 +203,20 @@
     "antipodeDuplicate": "The antipode of this point has already been created."
   },
   "objectTree": {
-    "expression": "Expression",
-    "slider": "Slider",
-    "noObjectsInDatabase": "No objects in database",
-    "result": "Result",
+    "expression": "Ekspresi",
+    "slider": "Tombol Geser",
+    "noObjectsInDatabase": "Database kosong",
+    "result": "Hasil",
     "calculationExpression": "Calculation Expression",
     "min": "Min",
     "max": "Max",
     "step": "Step",
     "create": "Create",
-    "firestoreConstructionSaved": "Construction saved to Firestore {docId}",
-    "firestoreConstructionLoaded": "Construction {docId} loaded from Firestore",
-    "firestoreSaveError": "Unable to save construction to Firestore",
-    "firestoreLoadError": "Unable to load construction {docId}"
+    "firestoreConstructionDeleted": "Konstruksi {docId} dihapus Firestore",
+    "firestoreConstructionSaved": "Konstruksi disimpan ke Firestore {docId}",
+    "firestoreConstructionLoaded": "Konstrksi {docId} dimuat dari Firestore",
+    "firestoreSaveError": "Gagal menyimpan data ke Firestore",
+    "firestoreLoadError": "Gagal memuat data {docId} dari Firestore"
   },
   "account": {
     "emailVerification": "Email untuk verifikasi akun telah dikirim ke {emailAddr}",

@@ -55,10 +55,12 @@ export class AddPointCommand extends Command {
     const location = new Vector3();
     location.from(tokens[2]); // convert to Number
     const { point, label } = Command.makePointAndLabel(location);
-    objMap.set(tokens[1], point);
-    objMap.set(tokens[4], label);
+    point.name = tokens[1];
     point.showing = tokens[3] === "true";
+    objMap.set(tokens[1], point);
+    label.name = tokens[4];
     label.showing = tokens[3] === "true";
+    objMap.set(tokens[4], label);
     return new AddPointCommand(point, label);
   }
 }

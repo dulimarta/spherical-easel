@@ -28,6 +28,7 @@ export class AddLengthMeasurementCommand extends AddMeasurementCommand {
     const segment = objMap.get(tokens[2]) as SESegment | undefined;
     if (segment) {
       const lengthMeasure = new SESegmentLength(segment);
+      lengthMeasure.name = tokens[1];
       objMap.set(tokens[1], lengthMeasure);
       return new AddLengthMeasurementCommand(lengthMeasure, segment);
     } else

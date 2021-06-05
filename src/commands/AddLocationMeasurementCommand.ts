@@ -42,6 +42,7 @@ export class AddLocationMeasurementCommand extends AddMeasurementCommand {
     if (point) {
       const selector = Number(tokens[3]);
       const coordMeasure = new SEPointCoordinate(point, selector);
+      coordMeasure.name = tokens[1];
       objMap.set(tokens[1], coordMeasure);
       return new AddLocationMeasurementCommand(coordMeasure, point, selector);
     } else

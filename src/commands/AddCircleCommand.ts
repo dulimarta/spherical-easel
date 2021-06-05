@@ -71,6 +71,7 @@ export class AddCircleCommand extends Command {
       circle.stylize(DisplayStyle.ApplyCurrentVariables);
       circle.adjustSize();
       const seCircle = new SECircle(circle, centerPoint, circlePoint);
+      seCircle.name = tokens[1];
       objMap.set(tokens[1], seCircle);
       seCircle.showing = tokens[6] === "true";
       const seLabel = new SELabel(new Label(), seCircle);
@@ -85,6 +86,7 @@ export class AddCircleCommand extends Command {
         .normalize();
       seLabel.locationVector = labelPosition;
       seLabel.showing = tokens[6] === "true";
+      seLabel.name = tokens[5];
       objMap.set(tokens[5], seLabel);
       return new AddCircleCommand(seCircle, centerPoint, circlePoint, seLabel);
     } else {

@@ -39,6 +39,7 @@ export class AddCalculationCommand extends Command {
   static parse(command: string, objMap: Map<string, SENodule>): Command {
     const tokens = command.split(";");
     const calc = new SECalculation(tokens[2]);
+    calc.name = tokens[1];
     objMap.set(tokens[1], calc);
     return new AddCalculationCommand(calc, tokens[2]);
   }

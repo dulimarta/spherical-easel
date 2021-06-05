@@ -90,6 +90,7 @@ export class AddSegmentCommand extends Command {
         arcLength,
         endSEPoint
       );
+      newSESegment.name = tokens[1];
       objMap.set(tokens[1], newSESegment);
 
       // check if the label already existed from previous command execution
@@ -102,6 +103,7 @@ export class AddSegmentCommand extends Command {
         .normalize();
       if (arcLength > Math.PI) labelPosition.multiplyScalar(-1);
       newSELabel.locationVector = labelPosition;
+      newSELabel.name = tokens[8];
       objMap.set(tokens[8], newSELabel);
       return new AddSegmentCommand(
         newSESegment,

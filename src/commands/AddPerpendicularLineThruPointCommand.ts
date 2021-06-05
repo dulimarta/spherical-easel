@@ -90,6 +90,7 @@ export class AddPerpendicularLineThruPointCommand extends Command {
         endPoint
       );
       seLine.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
+      seLine.name = tokens[1];
       objMap.set(tokens[1], seLine);
 
       const seLabel = new SELabel(new Label(), perpToLine);
@@ -104,6 +105,7 @@ export class AddPerpendicularLineThruPointCommand extends Command {
         )
         .normalize();
       seLabel.locationVector = labelPosition;
+      seLabel.name = tokens[7];
       objMap.set(tokens[7], seLabel);
       return new AddPerpendicularLineThruPointCommand(
         seLine,

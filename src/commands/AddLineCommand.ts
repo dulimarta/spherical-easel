@@ -73,6 +73,7 @@ export class AddLineCommand extends Command {
 
       // The line highlighted by default?
       seLine.glowing = false;
+      seLine.name = tokens[1];
       objMap.set(tokens[1], seLine);
 
       const seLabel = new SELabel(new Label(), seLine);
@@ -83,6 +84,7 @@ export class AddLineCommand extends Command {
         .add(new Vector3(0, SETTINGS.line.initialLabelOffset, 0))
         .normalize();
       seLabel.locationVector = labelPosition;
+      seLabel.name = tokens[5];
       objMap.set(tokens[5], seLabel);
       return new AddLineCommand(seLine, startPoint, endPoint, seLabel);
     } else {

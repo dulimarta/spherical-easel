@@ -17,6 +17,7 @@ export class AddAntipodalPointCommand extends Command {
   }
 
   do(): void {
+    console.log("AddAntipodalPointCommand do()", this.sePoint.name);
     this.parentSEPoint.registerChild(this.sePoint);
     this.sePoint.registerChild(this.seLabel);
     Command.store.commit.addPoint(this.sePoint);
@@ -43,8 +44,9 @@ export class AddAntipodalPointCommand extends Command {
       "AddAntipodalPoint",
       /* arg-1 */ this.sePoint.name,
       /* arg-2 */ this.sePoint.locationVector.toFixed(7),
-      /* arg-3 */ this.parentSEPoint.name,
-      /* arg-4 */ this.seLabel.name
+      /* arg-3 */ this.sePoint.showing,
+      /* arg-4 */ this.parentSEPoint.name,
+      /* arg-5 */ this.seLabel.name
     ].join("/");
   }
 
@@ -55,12 +57,16 @@ export class AddAntipodalPointCommand extends Command {
       const location = new Vector3();
       location.from(tokens[2]);
       const { point, label } = Command.makePointAndLabel(location);
+      point.showing = tokens[3] === "true";
+      point.name = tokens[1];
+      label.showing = tokens[3] === "true";
+      label.name = tokens[5];
       objMap.set(tokens[1], point);
-      objMap.set(tokens[4], label);
+      objMap.set(tokens[5], label);
       return new AddAntipodalPointCommand(point, parentPoint, label);
     } else {
       throw new Error(
-        `AddAntipodalPoint: parent point ${tokens[3]} is undefined`
+        `AddAntipodalPoint: parent point ${tokens[4]} is undefined`
       );
     }
   }

@@ -36,6 +36,7 @@ export class AddDistanceMeasurementCommand extends AddMeasurementCommand {
     const point2 = objMap.get(tokens[3]) as SEPoint | undefined;
     if (point1 && point2) {
       const distanceMeasure = new SESegmentDistance(point1, point2);
+      distanceMeasure.name = tokens[1];
       objMap.set(tokens[1], distanceMeasure);
       return new AddDistanceMeasurementCommand(distanceMeasure, [
         point1,

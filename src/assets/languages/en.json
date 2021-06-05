@@ -213,6 +213,7 @@
     "max": "Max",
     "step": "Step",
     "create": "Create",
+    "firestoreConstructionDeleted": "Construction {docId} removed from Firestore",
     "firestoreConstructionSaved": "Construction saved to Firestore with ID {docId}",
     "firestoreConstructionLoaded": "Construction {docId} loaded from Firestore",
     "firestoreSaveError": "Unable to save construction to Firestore",

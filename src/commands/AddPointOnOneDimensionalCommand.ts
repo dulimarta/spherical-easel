@@ -63,7 +63,10 @@ export class AddPointOnOneDimensionalCommand extends Command {
       pointPosition.from(tokens[2]);
       const { point, label } = Command.makePointAndLabel(pointPosition);
       point.showing = tokens[5] === "true";
+      point.name = tokens[1];
       objMap.set(tokens[1], point);
+      label.showing = tokens[5] === "true";
+      label.name = tokens[4];
       objMap.set(tokens[4], label);
       return new AddPointOnOneDimensionalCommand(point, parentLine, label);
     } else {

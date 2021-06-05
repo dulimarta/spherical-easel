@@ -31,6 +31,7 @@ export class AddSliderMeasurementCommand extends AddMeasurementCommand {
     const step = Number(tokens[4]);
     const value = Number(tokens[5]);
     const seSlider = new SESlider({ min, max, step, value });
+    seSlider.name = tokens[1];
     objMap.set(tokens[1], seSlider);
     return new AddSliderMeasurementCommand(seSlider);
   }
