@@ -54,10 +54,12 @@ export default class Segment extends Nodule {
    */
   // Front
   private strokeColorFront = SETTINGS.segment.drawn.strokeColor.front;
+  private glowingStrokeColorFront = SETTINGS.segment.glowing.strokeColor.front;
   private strokeWidthPercentFront = 100;
   private dashArrayFront = [] as number[]; // Initialize in constructor
   // Back-- use the default non-dynamic back style options so that when the user disables the dynamic back style these options are displayed
   private strokeColorBack = SETTINGS.segment.drawn.strokeColor.back;
+  private glowingStrokeColorBack = SETTINGS.segment.glowing.strokeColor.back;
   private strokeWidthPercentBack = 100;
 
   private dashArrayBack = [] as number[]; // Initialize in constructor
@@ -353,6 +355,19 @@ export default class Segment extends Nodule {
     } else {
       this.normalDisplay();
     }
+  }
+
+  setSelectedColoring(flag: boolean): void {
+    //set the new colors into the variables
+    if (flag) {
+      this.glowingStrokeColorFront = SETTINGS.style.selectedColor.front;
+      this.glowingStrokeColorBack = SETTINGS.style.selectedColor.back;
+    } else {
+      this.glowingStrokeColorFront = SETTINGS.segment.glowing.strokeColor.front;
+      this.glowingStrokeColorBack = SETTINGS.segment.glowing.strokeColor.back;
+    }
+    // apply the new color variables to the object
+    this.stylize(DisplayStyle.ApplyCurrentVariables);
   }
 
   /**
@@ -805,8 +820,7 @@ export default class Segment extends Nodule {
         // UPDATE the glowing width so it is always bigger than the drawn width
         // Glowing Front
         // no fillColor
-        this.glowingFrontPart.stroke =
-          SETTINGS.segment.glowing.strokeColor.front;
+        this.glowingFrontPart.stroke = this.glowingStrokeColorFront;
         // strokeWidthPercent applied by adjustSize()
 
         // Copy the front dash properties to the glowing object
@@ -823,8 +837,7 @@ export default class Segment extends Nodule {
 
         // Glowing Front Extra
         // no fillColor
-        this.glowingFrontExtra.stroke =
-          SETTINGS.segment.glowing.strokeColor.front;
+        this.glowingFrontExtra.stroke = this.glowingStrokeColorFront;
         // strokeWidthPercent applied by adjustSize()
 
         // Copy the front dash properties to the glowing object
@@ -841,7 +854,7 @@ export default class Segment extends Nodule {
 
         // Glowing Back
         // no fillColor
-        this.glowingBackPart.stroke = SETTINGS.segment.glowing.strokeColor.back;
+        this.glowingBackPart.stroke = this.glowingStrokeColorBack;
         // strokeWidthPercent applied by adjustSize()
 
         // Copy the back dash properties to the glowing object
@@ -858,8 +871,7 @@ export default class Segment extends Nodule {
 
         // Glowing Back Extra
         // no fillColor
-        this.glowingBackExtra.stroke =
-          SETTINGS.segment.glowing.strokeColor.back;
+        this.glowingBackExtra.stroke = this.glowingStrokeColorBack;
         // strokeWidthPercent applied by adjustSize()
 
         // Copy the back dash properties to the glowing object

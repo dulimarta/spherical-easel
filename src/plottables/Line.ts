@@ -51,12 +51,14 @@ export default class Line extends Nodule {
    */
   // Front
   private strokeColorFront = SETTINGS.line.drawn.strokeColor.front;
+  private glowingStrokeColorFront = SETTINGS.line.glowing.strokeColor.front;
   private dashArrayFront = [] as number[]; // Initialize in constructor
   private strokeWidthPercentFront = 100;
 
   // Back use the default non-dynamic back style options so that when the user disables the dynamic back style these options are displayed
   private dynamicBackStyle = SETTINGS.line.dynamicBackStyle;
   private strokeColorBack = SETTINGS.line.drawn.strokeColor.back;
+  private glowingStrokeColorBack = SETTINGS.line.glowing.strokeColor.back;
   private dashArrayBack = [] as number[]; // Initialize in constructor
   private strokeWidthPercentBack = 100;
 
@@ -269,6 +271,20 @@ export default class Line extends Nodule {
       this.normalDisplay();
     }
   }
+
+  setSelectedColoring(flag: boolean): void {
+    //set the new colors into the variables
+    if (flag) {
+      this.glowingStrokeColorFront = SETTINGS.style.selectedColor.front;
+      this.glowingStrokeColorBack = SETTINGS.style.selectedColor.back;
+    } else {
+      this.glowingStrokeColorFront = SETTINGS.line.glowing.strokeColor.front;
+      this.glowingStrokeColorBack = SETTINGS.line.glowing.strokeColor.back;
+    }
+    // apply the new color variables to the object
+    this.stylize(DisplayStyle.ApplyCurrentVariables);
+  }
+
   // It looks like we have to define our own clone() function
   // The builtin clone() does not seem to work correctly
   clone(): this {
@@ -579,7 +595,7 @@ export default class Line extends Nodule {
 
         // Glowing Front
         // no fillColor
-        this.glowingFrontHalf.stroke = SETTINGS.line.glowing.strokeColor.front;
+        this.glowingFrontHalf.stroke = this.glowingStrokeColorFront;
         // strokeWidthPercent applied by adjustSize()
 
         // Copy the front dash properties to the glowing object
@@ -596,7 +612,7 @@ export default class Line extends Nodule {
 
         // Glowing Back
         // no fillColor
-        this.glowingBackHalf.stroke = SETTINGS.line.glowing.strokeColor.back;
+        this.glowingBackHalf.stroke = this.glowingStrokeColorBack;
         // strokeWidthPercent applied by adjustSize()
 
         // Copy the back dash properties to the glowing object

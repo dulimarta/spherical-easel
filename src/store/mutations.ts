@@ -304,8 +304,16 @@ export default {
     if (pos >= 0) state.seSegments[pos].accept(segmentNormalArcLengthVisitor);
   },
   setSelectedSENodules(state: AppState, payload: SENodule[]): void {
+    //reset the glowing color to usual
+    state.selections.forEach(n => {
+      n.ref?.setSelectedColoring(false);
+    });
     state.selections.splice(0);
     state.selections.push(...payload);
+    //set the glowing color to selected
+    state.selections.forEach(n => {
+      n.ref?.setSelectedColoring(true);
+    });
   },
   // Update the display of all free SEPoints to update the entire display
   updateDisplay(state: AppState): void {
@@ -319,7 +327,9 @@ export default {
   },
   unglowAllSENodules(state: AppState): void {
     state.seNodules.forEach((p: SENodule) => {
-      p.glowing = false;
+      if (!p.selected) {
+        p.glowing = false;
+      }
     });
   },
   changeStyle(

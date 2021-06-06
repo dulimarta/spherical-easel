@@ -4,7 +4,11 @@
     <div v-if="!minified"
       key="full"
       style="height: 100%; overflow:auto"
-      @mouseenter="setSelectTool">
+      @mouseenter="setSelectTool"
+      @mouseleave="saveStyleState">
+
+      <v-divider></v-divider>
+
       <!-- Switches for show/hide label(s) and object(s)-->
       <v-card flat
         class="ma-0 pa-0">
@@ -43,6 +47,9 @@
         </v-card-text>
       </v-card>
 
+      <v-divider></v-divider>
+
+      <!-- Type and number list of objects that are selected-->
       <div class="text-center">
         <v-chip v-for="item in
           selectedItemArray"
@@ -51,6 +58,7 @@
           {{item}}
         </v-chip>
       </div>
+
       <!-- Nothing Selected Overlay-->
       <v-overlay absolute
         v-bind:value="!(this.selections.length > 0)"
@@ -85,6 +93,7 @@
               <li>{{$t('style.selectionDirection4')}} </li>
             </ul>
           </v-card-text>
+
           <v-card-actions>
             <template>
               <v-tooltip bottom
@@ -102,6 +111,7 @@
               </v-tooltip>
             </template>
           </v-card-actions>
+
         </v-card>
 
       </v-overlay>
@@ -266,8 +276,15 @@ export default class Style extends Vue {
     }
   ];
 
+  //When ever the mouse enters the style panel, set the active tool to select because it is like that the
+  // user is going to style objects.
   private setSelectTool(): void {
     EventBus.fire("set-action-mode-to-select-tool", {});
+  }
+
+  //When ever the mouse leaves the style panel, save the state because it is likly that the user is done styling
+  private saveStyleState(): void {
+    EventBus.fire("save-style-state", {});
   }
 
   addPanelMounted(panelNum: number): void {

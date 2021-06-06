@@ -73,11 +73,13 @@ export default class Circle extends Nodule {
   // Front
   private fillColorFront = SETTINGS.circle.drawn.fillColor.front;
   private strokeColorFront = SETTINGS.circle.drawn.strokeColor.front;
+  private glowingStrokeColorFront = SETTINGS.circle.glowing.strokeColor.front;
   private strokeWidthPercentFront = 100;
   private dashArrayFront = [] as number[]; // Initialize in constructor
   // Back -- use the default non-dynamic back style options so that when the user disables the dynamic back style these options are displayed
   private fillColorBack = SETTINGS.circle.drawn.fillColor.back;
   private strokeColorBack = SETTINGS.circle.drawn.strokeColor.back;
+  private glowingStrokeColorBack = SETTINGS.circle.glowing.strokeColor.back;
   private strokeWidthPercentBack = 100;
   private dashArrayBack = [] as number[]; // Initialize in constructor
   private dynamicBackStyle = SETTINGS.circle.dynamicBackStyle;
@@ -630,6 +632,18 @@ export default class Circle extends Nodule {
     }
   }
 
+  setSelectedColoring(flag: boolean): void {
+    //set the new colors into the variables
+    if (flag) {
+      this.glowingStrokeColorFront = SETTINGS.style.selectedColor.front;
+      this.glowingStrokeColorBack = SETTINGS.style.selectedColor.back;
+    } else {
+      this.glowingStrokeColorFront = SETTINGS.circle.glowing.strokeColor.front;
+      this.glowingStrokeColorBack = SETTINGS.circle.glowing.strokeColor.back;
+    }
+    // apply the new color variables to the object
+    this.stylize(DisplayStyle.ApplyCurrentVariables);
+  }
   /**
    * This method is used to copy the temporary circle created with the Circle Tool (in the midground) into a
    * permanent one in the scene (in the foreground).
@@ -807,7 +821,7 @@ export default class Circle extends Nodule {
           strokeWidthPercent: this.strokeWidthPercentFront,
           strokeColor: this.strokeColorFront,
           fillColor: this.fillColorFront,
-          dashArray: dashArrayFront,
+          dashArray: dashArrayFront
         };
         break;
       }
@@ -982,7 +996,7 @@ export default class Circle extends Nodule {
 
       case DisplayStyle.ApplyCurrentVariables: {
         // Use the current variables to directly modify the Two.js objects.
-
+        console.log("stylize circle -- apply current variables");
         // FRONT
         if (this.fillColorFront === "noFill") {
           this.frontFill.noFill();
@@ -1062,8 +1076,7 @@ export default class Circle extends Nodule {
 
         // Glowing Front
         // no fillColor for glowing circles
-        this.glowingFrontPart.stroke =
-          SETTINGS.circle.glowing.strokeColor.front;
+        this.glowingFrontPart.stroke = this.glowingStrokeColorFront;
         // strokeWidthPercent applied by adjustSize()
 
         // Copy the front dash properties to the glowing object
@@ -1080,7 +1093,7 @@ export default class Circle extends Nodule {
 
         // Glowing Back
         // no fillColor for glowing circles
-        this.glowingBackPart.stroke = SETTINGS.circle.glowing.strokeColor.back;
+        this.glowingBackPart.stroke = this.glowingStrokeColorBack;
         // strokeWidthPercent applied by adjustSize()
 
         // Copy the back dash properties to the glowing object

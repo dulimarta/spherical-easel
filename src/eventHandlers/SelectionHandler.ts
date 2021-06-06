@@ -4,6 +4,7 @@ import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import EventBus from "@/eventHandlers/EventBus";
 import { SEPoint } from "@/models/SEPoint";
 import Highlighter from "./Highlighter";
+import SETTINGS from "@/global-settings";
 
 // import { SEPoint } from "@/models/SEPoint";
 // import { SELine } from "@/models/SELine";
@@ -18,10 +19,10 @@ export default class SelectionHandler extends Highlighter {
   private currentSelection: SENodule[] = [];
 
   // To make the objects appear normal for M ms and then glow for N ms we need two timers
-  private highlightTimer: NodeJS.Timeout | null = null;
-  private highlightTimer2: NodeJS.Timeout | null = null;
-  private delayedStart: NodeJS.Timeout | null = null;
-  private highlightOn = false;
+  // private highlightTimer: NodeJS.Timeout | null = null;
+  // private highlightTimer2: NodeJS.Timeout | null = null;
+  // private delayedStart: NodeJS.Timeout | null = null;
+  // private highlightOn = false;
   /**
    * An array to store the object selected by the key press handler
    */
@@ -91,7 +92,7 @@ export default class SelectionHandler extends Highlighter {
     // Now process the hitSENodules so the user can select by number
     // If there is nothing or only one nearby ignore this key event
     if (this.hitSENodules?.length <= 1) return;
-
+    console.log(keyEvent.key);
     if (keyEvent.key.match(/[0-9]/)) {
       // is it a digit?
       const val = Number(keyEvent.key) - 1;
@@ -104,7 +105,7 @@ export default class SelectionHandler extends Highlighter {
             (n as any).ref.glowingDisplay();
             // Show the name of the selected item
             this.infoText.text = n.name;
-          } else {
+          } else if (!n.selected) {
             (n as any).ref.normalDisplay();
           }
         });
@@ -114,9 +115,12 @@ export default class SelectionHandler extends Highlighter {
   mousePressed(event: MouseEvent): void {
     if (!this.isOnSphere) return;
 
+    //If you select an object (like a line), then add to that selection with a key press and a mouse press at
+    // a empty location (like p -adding all point to the selection ), then *without* moving the mouse, a mouse press doesn't
+    // clear the current selections like it should -- is this even worth worrying about?
+
     // event.preventDefault();
-    if (this.keyPressSelection.length != 0) {
-      //console.log("before filter length", this.keyPressSelection.length);
+    if (this.keyPressSelection.length !== 0) {
       // remove any items from the keyPressSelection if they are already selected
       const newKeyPressSelections = this.keyPressSelection.filter(
         (n: SENodule) => {
@@ -136,7 +140,7 @@ export default class SelectionHandler extends Highlighter {
 
       // Add the key press selection to the selected list.
       this.currentSelection.push(...newKeyPressSelections);
-      this.keyPressSelection.clear();
+      this.keyPressSelection.splice(0);
     } else {
       // Remove labels and non-selectable intersection points
       const possibleAdditions = this.hitSENodules.filter((p: SENodule) => {
@@ -175,10 +179,10 @@ export default class SelectionHandler extends Highlighter {
       }
     }
     this.store.commit.setSelectedSENodules(this.currentSelection);
-    // console.log(
-    //   "number selected",
-    //   this.store.getters.selectedSENodules().length
-    // );
+    console.log(
+      "number selected",
+      this.store.getters.selectedSENodules().length
+    );
     /** 
     console.log("----selected---- objects------");
     this.currentSelection.forEach(n =>
@@ -201,42 +205,43 @@ export default class SelectionHandler extends Highlighter {
       });
     }
 
-    if (this.currentSelection.length > 0 && this.highlightTimer === null) {
-      // We have selections and interval timer is not running, then start timer and offset timer
-      this.highlightTimer = setInterval(this.blinkSelections.bind(this), 1500);
-      this.delayedStart = setTimeout(() => {
-        this.highlightTimer2 = setInterval(
-          this.blinkSelections.bind(this),
-          1500
-        );
-      }, 300);
-    } else if (
-      this.currentSelection.length === 0 &&
-      this.highlightTimer !== null
-    ) {
-      // interval timer is running and we have no selections, then stop timer
-      clearInterval(this.highlightTimer);
-      if (this.highlightTimer2) clearInterval(this.highlightTimer2);
-      if (this.delayedStart) clearInterval(this.delayedStart);
-      this.delayedStart = null;
-      this.highlightTimer = null;
-      this.highlightTimer2 = null;
-    }
+    // if (this.currentSelection.length > 0 && this.highlightTimer === null) {
+    //   // We have selections and interval timer is not running, then start timer and offset timer
+    //   this.highlightTimer = setInterval(this.blinkSelections.bind(this), 1500);
+    //   this.delayedStart = setTimeout(() => {
+    //     this.highlightTimer2 = setInterval(
+    //       this.blinkSelections.bind(this),
+    //       1500
+    //     );
+    //   }, 300);
+    // } else if (
+    //   this.currentSelection.length === 0 &&
+    //   this.highlightTimer !== null
+    // ) {
+    //   // interval timer is running and we have no selections, then stop timer
+    //   clearInterval(this.highlightTimer);
+    //   if (this.highlightTimer2) clearInterval(this.highlightTimer2);
+    //   if (this.delayedStart) clearInterval(this.delayedStart);
+    //   this.delayedStart = null;
+    //   this.highlightTimer = null;
+    //   this.highlightTimer2 = null;
+    // }
   }
 
-  private blinkSelections(): void {
-    this.highlightOn = !this.highlightOn;
-    this.currentSelection.forEach((n: SENodule) => {
-      n.glowing = this.highlightOn;
-    });
-  }
+  // private blinkSelections(): void {
+  //   this.highlightOn = !this.highlightOn;
+  //   this.currentSelection.forEach((n: SENodule) => {
+  //     n.glowing = this.highlightOn;
+  //   });
+  // }
 
   mouseMoved(event: MouseEvent): void {
     // UnGlow and clear any objects in the keyPressSelection
     if (this.keyPressSelection.length != 0) {
       this.keyPressSelection.forEach(n => (n as any).ref.normalDisplay());
-      this.keyPressSelection.clear();
+      this.keyPressSelection.splice(0);
     }
+
     super.mouseMoved(event);
 
     // Glow the appropriate object, only the top one should glow because the user can only add one at a time with a mouse press
@@ -252,7 +257,7 @@ export default class SelectionHandler extends Highlighter {
         }
       })
       .forEach((n: SENodule, index) => {
-        if (index === 0) {
+        if (index === 0 || n.selected) {
           n.glowing = true;
         } else {
           n.glowing = false;
@@ -272,18 +277,18 @@ export default class SelectionHandler extends Highlighter {
 
   deactivate(): void {
     // Clear the timers
-    if (this.highlightTimer !== null) {
-      clearInterval(this.highlightTimer);
-      this.highlightTimer = null;
-      if (this.highlightTimer2) clearInterval(this.highlightTimer2);
-      this.highlightTimer2 = null;
-      if (this.delayedStart) clearInterval(this.delayedStart);
-      this.delayedStart = null;
-    }
+    // if (this.highlightTimer !== null) {
+    //   clearInterval(this.highlightTimer);
+    //   this.highlightTimer = null;
+    //   if (this.highlightTimer2) clearInterval(this.highlightTimer2);
+    //   this.highlightTimer2 = null;
+    //   if (this.delayedStart) clearInterval(this.delayedStart);
+    //   this.delayedStart = null;
+    // }
     // Unselect all selected objects (this unglows them and sets the selected flag to false for them)
-    this.store.getters.selectedSENodules().forEach((obj: SENodule) => {
-      obj.selected = false;
-    });
+    // this.store.getters.selectedSENodules().forEach((obj: SENodule) => {
+    //   obj.selected = false;
+    // });
 
     // Do not clear the selections array here! If the right items are selected, then other tools automatically do their thing!
     //  For example, if a point is selected with the selection tool, then when the antipode tool is

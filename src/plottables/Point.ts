@@ -40,10 +40,14 @@ export default class Point extends Nodule {
   // Front
   protected fillColorFront = SETTINGS.point.drawn.fillColor.front;
   protected strokeColorFront = SETTINGS.point.drawn.strokeColor.front;
+  protected glowingFillColorFront = SETTINGS.point.glowing.fillColor.front;
+  protected glowingStrokeColorFront = SETTINGS.point.glowing.strokeColor.front;
   protected pointRadiusPercentFront = SETTINGS.point.radiusPercent.front;
   // Back - use the default non-dynamic back style options so that when the user disables the dynamic back style these options are displayed
   protected fillColorBack = SETTINGS.point.drawn.fillColor.back;
   protected strokeColorBack = SETTINGS.point.drawn.strokeColor.back;
+  protected glowingFillColorBack = SETTINGS.point.glowing.fillColor.back;
+  protected glowingStrokeColorBack = SETTINGS.point.glowing.strokeColor.back;
   protected pointRadiusPercentBack = SETTINGS.point.radiusPercent.back;
 
   protected dynamicBackStyle = SETTINGS.point.dynamicBackStyle;
@@ -104,34 +108,6 @@ export default class Point extends Nodule {
       SETTINGS.point.drawn.pointStrokeWidth.front;
     this.glowingBackPoint.linewidth =
       SETTINGS.point.drawn.pointStrokeWidth.back;
-
-    // FRONT Glowing
-    if (SETTINGS.point.glowing.fillColor.front === "noFill") {
-      this.glowingFrontPoint.noFill();
-    } else {
-      this.glowingFrontPoint.fill = SETTINGS.point.glowing.fillColor.front;
-    }
-    if (SETTINGS.point.glowing.strokeColor.front === "noStroke") {
-      this.glowingFrontPoint.noStroke();
-    } else {
-      this.glowingFrontPoint.stroke = SETTINGS.point.glowing.strokeColor.front;
-    }
-
-    // points have no dashing
-
-    // Back Glowing
-    if (SETTINGS.point.glowing.fillColor.back === "noFill") {
-      this.glowingBackPoint.noFill();
-    } else {
-      this.glowingBackPoint.fill = SETTINGS.point.glowing.fillColor.back;
-    }
-    if (SETTINGS.point.glowing.strokeColor.back === "noStroke") {
-      this.glowingBackPoint.noStroke();
-    } else {
-      this.glowingBackPoint.stroke = SETTINGS.point.glowing.strokeColor.back;
-    }
-
-    // points have no dashing
   }
 
   /**
@@ -234,6 +210,23 @@ export default class Point extends Nodule {
     } else {
       this.normalDisplay();
     }
+  }
+
+  setSelectedColoring(flag: boolean): void {
+    //set the new colors into the variables
+    if (flag) {
+      this.glowingFillColorFront = SETTINGS.style.selectedColor.front;
+      this.glowingFillColorBack = SETTINGS.style.selectedColor.back;
+      this.glowingStrokeColorFront = SETTINGS.style.selectedColor.front;
+      this.glowingStrokeColorBack = SETTINGS.style.selectedColor.back;
+    } else {
+      this.glowingFillColorFront = SETTINGS.point.glowing.fillColor.front;
+      this.glowingFillColorBack = SETTINGS.point.glowing.fillColor.back;
+      this.glowingStrokeColorFront = SETTINGS.point.glowing.strokeColor.front;
+      this.glowingStrokeColorBack = SETTINGS.point.glowing.strokeColor.back;
+    }
+    // apply the new color variables to the object
+    this.stylize(DisplayStyle.ApplyCurrentVariables);
   }
   /**
    * Copies the style options set by the Style Panel into the style variables and then updates the
@@ -463,6 +456,34 @@ export default class Point extends Nodule {
         }
         //stroke width is not user modifiable - set in the constructor
         // pointRadiusPercent applied by adjustSize();
+
+        // FRONT Glowing
+        if (this.glowingFillColorFront === "noFill") {
+          this.glowingFrontPoint.noFill();
+        } else {
+          this.glowingFrontPoint.fill = this.glowingFillColorFront;
+        }
+        if (this.glowingStrokeColorBack === "noStroke") {
+          this.glowingFrontPoint.noStroke();
+        } else {
+          this.glowingFrontPoint.stroke = this.glowingStrokeColorBack;
+        }
+
+        // points have no dashing
+
+        // Back Glowing
+        if (SETTINGS.point.glowing.fillColor.back === "noFill") {
+          this.glowingBackPoint.noFill();
+        } else {
+          this.glowingBackPoint.fill = this.glowingFillColorBack;
+        }
+        if (this.glowingStrokeColorBack === "noStroke") {
+          this.glowingBackPoint.noStroke();
+        } else {
+          this.glowingBackPoint.stroke = this.glowingStrokeColorBack;
+        }
+
+        // points have no dashing
 
         break;
       }

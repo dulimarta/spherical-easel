@@ -1,6 +1,9 @@
 <template>
   <transition name="fade">
-    <v-card v-show="showWhen" color="color" elevation="8" class="content">
+    <v-card v-show="showWhen"
+      color="color"
+      elevation="8"
+      class="content">
       <slot></slot>
     </v-card>
   </transition>
@@ -24,7 +27,7 @@ export default class FadeInCard extends Vue {
   border: 1px solid black;
   border-radius: 4px;
   padding: 0.25em;
-  margin: 0.5em;
+  margin-top: 0.5em;
 }
 .fade-enter-active,
 .fade-leave-active {

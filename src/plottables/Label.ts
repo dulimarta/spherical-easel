@@ -54,6 +54,8 @@ export default class Label extends Nodule {
   protected glowingBackText: Two.Text = new Two.Text("Test", 1, 0, {
     size: SETTINGS.label.fontSize
   });
+  private glowingStrokeColorFront = SETTINGS.label.glowingStrokeColor.front;
+  private glowingStrokeColorBack = SETTINGS.label.glowingStrokeColor.back;
 
   /**
    * A string representing the text that will be rendered to the screen. Set with text.value = this.shortUserName
@@ -172,13 +174,13 @@ export default class Label extends Nodule {
     this.backText.visible = false;
     this.glowingBackText.visible = false;
 
-    // Set the properties of the points that never change - stroke width and glowing options
+    // Set the properties of the points that never change - stroke width and some glowing options
     this.frontText.noStroke();
     this.backText.noStroke();
     this.glowingFrontText.linewidth = SETTINGS.label.glowingStrokeWidth.front;
-    this.glowingFrontText.stroke = SETTINGS.label.glowingStrokeColor.front;
+    // this.glowingFrontText.stroke = SETTINGS.label.glowingStrokeColor.front;
     this.glowingBackText.linewidth = SETTINGS.label.glowingStrokeWidth.back;
-    this.glowingBackText.stroke = SETTINGS.label.glowingStrokeColor.back;
+    // this.glowingBackText.stroke = SETTINGS.label.glowingStrokeColor.back;
   }
   /**
    * Set the initial names, initialName is not modifiable by the user but shortUserName and caption are
@@ -342,6 +344,18 @@ export default class Label extends Nodule {
     }
   }
 
+  setSelectedColoring(flag: boolean): void {
+    //set the new colors into the variables
+    if (flag) {
+      this.glowingStrokeColorFront = SETTINGS.style.selectedColor.front;
+      this.glowingStrokeColorBack = SETTINGS.style.selectedColor.back;
+    } else {
+      this.glowingStrokeColorFront = SETTINGS.label.glowingStrokeColor.front;
+      this.glowingStrokeColorBack = SETTINGS.label.glowingStrokeColor.back;
+    }
+    // apply the new color variables to the object
+    this.stylize(DisplayStyle.ApplyCurrentVariables);
+  }
   /**
    * Copies the style options set by the Style Panel into the style variables and then updates the
    * Two.js objects (with adjustSize and stylize(ApplyVariables))
@@ -717,6 +731,7 @@ export default class Label extends Nodule {
         } else {
           this.frontText.fill = this.frontFillColor;
         }
+        this.glowingFrontText.stroke = this.glowingStrokeColorFront;
 
         // BACK
         if (this.dynamicBackStyle) {
@@ -734,6 +749,7 @@ export default class Label extends Nodule {
             this.backText.fill = this.backFillColor;
           }
         }
+        this.glowingBackText.stroke = this.glowingStrokeColorBack;
 
         break;
       }

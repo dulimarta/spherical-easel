@@ -2266,7 +2266,6 @@ export default class BasicFrontBackStyle extends Vue {
       }
       // clear the old selection so that this save style state will not be executed again until changes are made.
       BasicFrontBackStyle.oldSelection.splice(0);
-      //break; // only one panel can have made changes
     }
     // }
     //}

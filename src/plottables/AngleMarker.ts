@@ -94,11 +94,15 @@ export default class AngleMarker extends Nodule {
   // Front
   private fillColorFront = SETTINGS.angleMarker.drawn.fillColor.front;
   private strokeColorFront = SETTINGS.angleMarker.drawn.strokeColor.front;
+  private glowingStrokeColorFront =
+    SETTINGS.angleMarker.glowing.strokeColor.front;
   private strokeWidthPercentFront = 100;
   private dashArrayFront = [] as number[]; // Initialize in constructor
   // Back -- use the default non-dynamic back style options so that when the user disables the dynamic back style these options are displayed
   private fillColorBack = SETTINGS.angleMarker.drawn.fillColor.back;
   private strokeColorBack = SETTINGS.angleMarker.drawn.strokeColor.back;
+  private glowingStrokeColorBack =
+    SETTINGS.angleMarker.glowing.strokeColor.back;
   private strokeWidthPercentBack = 100;
   private dashArrayBack = [] as number[]; // Initialize in constructor
   private dynamicBackStyle = SETTINGS.angleMarker.dynamicBackStyle;
@@ -830,6 +834,20 @@ export default class AngleMarker extends Nodule {
     }
   }
 
+  setSelectedColoring(flag: boolean): void {
+    //set the new colors into the variables
+    if (flag) {
+      this.glowingStrokeColorFront = SETTINGS.style.selectedColor.front;
+      this.glowingStrokeColorBack = SETTINGS.style.selectedColor.back;
+    } else {
+      this.glowingStrokeColorFront =
+        SETTINGS.angleMarker.glowing.strokeColor.front;
+      this.glowingStrokeColorBack =
+        SETTINGS.angleMarker.glowing.strokeColor.back;
+    }
+    // apply the new color variables to the object
+    this.stylize(DisplayStyle.ApplyCurrentVariables);
+  }
   /**
    * This method is used to copy the temporary angleMarker created with the Angle Tool (in the midground) into a
    * permanent one in the scene (in the the correct layer).
@@ -1195,7 +1213,7 @@ export default class AngleMarker extends Nodule {
         // The circle width is set to the current circle width (which is updated for zoom magnification)
         this.frontCirclePath.linewidth =
           AngleMarker.currentAngleMarkerStrokeWidthFront;
-           // Copy the front dash properties from the front default drawn dash properties
+        // Copy the front dash properties from the front default drawn dash properties
         if (SETTINGS.angleMarker.drawn.dashArray.front.length > 0) {
           this.frontCirclePath.dashes.clear();
           SETTINGS.angleMarker.drawn.dashArray.front.forEach(v => {
@@ -1311,8 +1329,7 @@ export default class AngleMarker extends Nodule {
 
         // Glowing Front
         // no fillColor for glowing circles
-        this.glowingFrontCirclePath.stroke =
-          SETTINGS.angleMarker.glowing.strokeColor.front;
+        this.glowingFrontCirclePath.stroke = this.glowingStrokeColorFront;
         // strokeWidthPercent applied by adjustSize()
         // Copy the front dash properties to the glowing object
         if (this.dashArrayFront.length > 0) {
@@ -1328,8 +1345,7 @@ export default class AngleMarker extends Nodule {
 
         // Glowing Back
         // no fillColor for glowing circles
-        this.glowingBackCirclePath.stroke =
-          SETTINGS.angleMarker.glowing.strokeColor.back;
+        this.glowingBackCirclePath.stroke = this.glowingStrokeColorBack;
         // strokeWidthPercent applied by adjustSize()
         // Copy the back dash properties to the glowing object
         if (this.dashArrayBack.length > 0) {

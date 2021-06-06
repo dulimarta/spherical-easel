@@ -53,7 +53,7 @@ export abstract class SENodule {
   /* If the object is not visible then showing = true (The user can hide objects)*/
   protected _showing = true;
 
-  /* If the object is selected, it is glowing until it is unselected*/
+  /* If the object is selected, it is either being used by an event tool or is in the setSelectedSENodules sin mutations*/
   protected _selected = false;
 
   /* This boolean is set to indicate that the object is out of date and needs to be updated. */
@@ -312,6 +312,7 @@ export abstract class SENodule {
     }
   }
 
+  /** Careful n.selected is not the same as being on the setSelectedSENodules list */
   set selected(b: boolean) {
     // selecting has no effect on hidden objects
     if (!this._showing) return;

@@ -384,8 +384,6 @@ export default class Easel extends Vue {
     // if (!this.toolboxMinified && !this.stylePanelMinified) {
     //   this.stylePanelMinified = true;
     // }
-    // If the user has been styling objects and then, without selecting new objects, or deactivating selection the style state should be saved.
-    EventBus.fire("save-style-state", {});
   }
 
   minifyStylePanel(): void {

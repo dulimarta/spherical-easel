@@ -67,7 +67,11 @@ export default {
         "#E1BEE7",
         "#D1C4E9"
       ]
-    ]
+    ],
+    selectedColor: {
+      front: "hsla(0, 0%, 85%, 1)",
+      back: "hsla(0, 0%, 95%, 1)"
+    }
   },
   zoom: {
     maxMagnification: 10, // The greatest zoom in magnification factor
@@ -138,6 +142,7 @@ export default {
         back: "hsla(0, 100%, 75%, 0.7)"
       },
       strokeColor: {
+        // is this ever used?
         front: "hsla(0, 100%, 35%, 1)",
         back: "hsla(0, 100%, 45%, 0.7)"
       }
@@ -207,7 +212,7 @@ export default {
         front: "hsla(0, 100%, 50%, 1)",
         back: "hsla(0, 100%, 75%, 0.7)"
       },
-      edgeWidth: 4 // edgeWidth/2 is the width of the region around the segment that shows the glow
+      edgeWidth: 5 // edgeWidth/2 is the width of the region around the segment that shows the glow
       // the dashing pattern is copied from the drawn version
     },
     //The properties of the circle when it is temporarily shown by the segment tool while drawing
@@ -255,7 +260,7 @@ export default {
         front: "hsla(0, 100%, 50%, 1)",
         back: "hsla(0, 100%, 75%, 0.7)"
       },
-      edgeWidth: 4 // edgeWidth/2 is the width of the region around the line that shows the glow
+      edgeWidth: 5 // edgeWidth/2 is the width of the region around the line that shows the glow
       // Dashing is the same as the drawn version
     },
     //The properties of the line when it is temporarily shown by the line tool while drawing
@@ -307,7 +312,7 @@ export default {
         front: "hsla(0, 100%, 50%, 1)",
         back: "hsla(0, 100%, 75%, 0.7)"
       },
-      edgeWidth: 4 // edgeWidth/2 is the width of the region around the circle (on each side) that shows the glow
+      edgeWidth: 5 // edgeWidth/2 is the width of the region around the circle (on each side) that shows the glow
       // The dash pattern will always be the same as the drawn version
     },
     //The properties of the circle when it is temporarily shown by the circle tool while drawing
@@ -389,7 +394,7 @@ export default {
         front: "hsla(0, 100%, 50%, 1)",
         back: "hsla(0, 100%, 75%, 0.7)"
       },
-      edgeWidth: 3 // edgeWidth/2 is the width of the region around the angle (on all sides) that shows the glow
+      edgeWidth: 5 // edgeWidth/2 is the width of the region around the angle (on all sides) that shows the glow
       // The dash pattern will always be the same as the drawn version
     },
     //The properties of the angle marker when it is temporarily shown by the angle measuring tool while drawing

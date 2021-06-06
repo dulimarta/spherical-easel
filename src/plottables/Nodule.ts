@@ -39,6 +39,8 @@ export default abstract class Nodule implements Stylable, Resizeable {
   abstract normalDisplay(): void;
   abstract glowingDisplay(): void;
   abstract updateStyle(options: StyleOptions): void;
+  /** set the glowing visual style differently depending on if selected or not */
+  abstract setSelectedColoring(flag: boolean): void;
 
   /** Get the current style state of the Nodule */
   abstract currentStyleState(mode: StyleEditPanels): StyleOptions;
