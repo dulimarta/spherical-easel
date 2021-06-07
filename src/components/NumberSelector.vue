@@ -11,6 +11,15 @@
       style="color:red">{{" "+ $t("style.labelStyleOptionsMultiple") }}</span>
     <br />
     <!-- Disable the Dynamic Back Style Overlay -->
+    <OverlayWithFixButton v-if="useDynamicBackStyleFromSelector && !totalyDisableSelector && this.usingDynamicBackStyleAgreement &&
+        (usingDynamicBackStyle || this.usingDynamicBackStyleCommonValue)"
+      z-index="50"
+      i18n-title-line="style.dynamicBackStyleHeader"
+      i18n-button-label="style.disableDynamicBackStyle"
+      i18n-button-tool-tip="style.disableDynamicBackStyleToolTip"
+      @click="turnOffUsingDynamicBackStyling">
+    </OverlayWithFixButton>
+    <!--
     <v-overlay absolute
       v-if="useDynamicBackStyleFromSelector && !totalyDisableSelector && this.usingDynamicBackStyleAgreement"
       v-bind:value="usingDynamicBackStyle || this.usingDynamicBackStyleCommonValue"
@@ -45,8 +54,18 @@
         </v-card-actions>
       </v-card>
     </v-overlay>
+    -->
 
     <!-- Differing data styles detected Overlay -->
+    <OverlayWithFixButton
+      v-if="!styleDataAgreement && !totalyDisableSelector"
+      z-index="5"
+      i18n-title-line="style.styleDisagreement"
+      i18n-button-label="style.enableCommonStyle"
+      i18n-button-tool-tip="style.differentValuesToolTip"
+      @click="setStyleDataAgreement">
+    </OverlayWithFixButton>
+    <!--
     <v-overlay absolute
       v-bind:value="!styleDataAgreement && !totalyDisableSelector"
       :opacity="0.8">
@@ -80,6 +99,7 @@
         </v-card-actions>
       </v-card>
     </v-overlay>
+    -->
 
     <!-- The number selector slider -->
     <v-slider v-model.number="styleData"
@@ -137,9 +157,10 @@ import { State } from "vuex-class";
 import { SENodule } from "@/models/SENodule";
 import { AppState, Labelable, UpdateMode } from "@/types";
 import HintButton from "@/components/HintButton.vue";
+import OverlayWithFixButton from "@/components/OverlayWithFixButton.vue";
 import Style from "./Style.vue";
 
-@Component({ components: { HintButton } })
+@Component({ components: { HintButton, OverlayWithFixButton } })
 export default class NumberSelector extends Vue {
   @Prop() readonly panel!: StyleEditPanels;
   @Prop() readonly activePanel!: StyleEditPanels;

@@ -1,8 +1,17 @@
 <template>
   <div>
-    <!-- objects(s) not showing overlay --  && !allObjectsShowing && !totalyDisableStyleDataSelector---higher z-index rendered on top -- covers entire panel including the header-->
-    <v-overlay absolute
-      z-index="10"
+    <!-- objects(s) not showing overlay ---higher z-index rendered on top -- covers entire panel including the header-->
+    <OverlayWithFixButton
+      v-if="( editModeIsFront() || editModeIsBack() ) && !allObjectsShowing()"
+      z-index="100"
+      i18n-title-line="style.objectNotVisible"
+      i18n-subtitle-line="style.clickToMakeObjectsVisible"
+      i18n-button-label="style.makeObjectsVisible"
+      i18n-button-tool-tip="style.objectsNotShowingToolTip"
+      @click="toggleAllObjectsVisibility">
+    </OverlayWithFixButton>
+    <!-- <v-overlay absolute
+      z-index="100"
       v-bind:value="( editModeIsFront() || editModeIsBack() ) && !allObjectsShowing()"
       :opacity="0.8">
       <v-card class="mx-auto"
@@ -39,7 +48,7 @@
           </v-tooltip>
         </v-card-actions>
       </v-card>
-    </v-overlay>
+    </v-overlay>-->
 
     <!-- Back Style Contrast Slider -->
     <fade-in-card :showWhen="editModeIsBack()"
@@ -52,7 +61,16 @@
       <br />
 
       <!-- Enable the Dynamic Back Style Overlay -->
-      <v-overlay absolute
+      <OverlayWithFixButton v-if="editModeIsBack() && hasDynamicBackStyle && usingDynamicBackStyleAgreement 
+        && !(usingDynamicBackStyle || usingDynamicBackStyleCommonValue)"
+        z-index="5"
+        i18n-title-line="style.dynamicBackStyleHeader"
+        i18n-button-label="style.enableDynamicBackStyle"
+        i18n-button-tool-tip="style.disableDynamicBackStyleToolTip"
+        @click="toggleBackStyleOptionsAvailability">
+      </OverlayWithFixButton>
+
+      <!-- <v-overlay absolute
         v-if="editModeIsBack() && hasDynamicBackStyle && usingDynamicBackStyleAgreement"
         v-bind:value="!(usingDynamicBackStyle || usingDynamicBackStyleCommonValue)"
         :opacity="0.8"
@@ -85,8 +103,9 @@
 
           </v-card-actions>
         </v-card>
-      </v-overlay>
+      </v-overlay> -->
 
+      <!-- The contrast slider -->
       <v-tooltip bottom
         :open-delay="toolTipOpenDelay"
         :close-delay="toolTipCloseDelay"
@@ -141,10 +160,20 @@
         </v-row>
       </v-container>
     </fade-in-card>
+
     <!-- Scope of the Disable Dynamic Back Style Overlay and the BackStyle Disagreemnt overlay-->
     <v-card color="grey lighten-2">
 
       <!-- Disable the Dynamic Back Style Overlay -->
+      <OverlayWithFixButton v-if="editModeIsBack() && hasDynamicBackStyle && usingDynamicBackStyleAgreement &&
+        (usingDynamicBackStyle || usingDynamicBackStyleCommonValue)"
+        z-index="50"
+        i18n-title-line="style.dynamicBackStyleHeader"
+        i18n-button-label="style.disableDynamicBackStyle"
+        i18n-button-tool-tip="style.disableDynamicBackStyleToolTip"
+        @click="toggleBackStyleOptionsAvailability">
+      </OverlayWithFixButton>
+      <!--
       <v-overlay absolute
         v-if="editModeIsBack() && hasDynamicBackStyle && usingDynamicBackStyleAgreement"
         v-bind:value="usingDynamicBackStyle || usingDynamicBackStyleCommonValue"
@@ -178,9 +207,18 @@
 
           </v-card-actions>
         </v-card>
-      </v-overlay>
+      </v-overlay>-->
 
       <!-- usingDynamicBackStyle disagreemnt  -->
+      <OverlayWithFixButton
+        v-if="editModeIsBack()&& hasDynamicBackStyle && !usingDynamicBackStyleAgreement"
+        z-index="40"
+        i18n-title-line="style.backStyleDisagreement"
+        i18n-button-label="style.enableCommonStyle"
+        i18n-button-tool-tip="style.differentValuesToolTip"
+        @click="setCommonDynamicBackStyleAgreement">
+      </OverlayWithFixButton>
+      <!--
       <v-overlay absolute
         v-bind:value="editModeIsBack()&& hasDynamicBackStyle && !usingDynamicBackStyleAgreement"
         :opacity="0.8"
@@ -192,7 +230,7 @@
             class="pb-0">
             <v-list-item-content class="pb-1">
               <v-list-item-title class="mb-1">
-                {{$t('style.styleDisagreement')}}
+                {{$t('style.backStyleDisagreement')}}
               </v-list-item-title>
             </v-list-item-content>
           </v-list-item>
@@ -214,11 +252,11 @@
           </v-card-actions>
         </v-card>
       </v-overlay>
+      -->
 
       <!-- Front/Back Stroke Color Selector-->
-      <fade-in-card :showWhen="
-        (editModeIsFront() ||editModeIsBack() ) && hasStrokeColor
-      ">
+      <fade-in-card
+        :showWhen="(editModeIsFront() ||editModeIsBack() ) && hasStrokeColor">
         <ColorSelector title-key="style.strokeColor"
           panel-front-key="style.front"
           panel-back-key="style.back"
@@ -232,9 +270,8 @@
       </fade-in-card>
 
       <!-- Front/Back Fill Color Selector-->
-      <fade-in-card :showWhen="
-        (editModeIsFront() || editModeIsBack()) && hasFillColor
-      ">
+      <fade-in-card
+        :showWhen="(editModeIsFront() || editModeIsBack()) && hasFillColor">
         <ColorSelector title-key="style.fillColor"
           panel-front-key="style.front"
           panel-back-key="style.back"
@@ -312,6 +349,16 @@
         <br />
 
         <!-- Differing data styles detected Overlay --higher z-index rendered on top-->
+        <OverlayWithFixButton
+          v-if="(editModeIsFront() || editModeIsBack()) && !dashPatternAgreement"
+          z-index="1"
+          i18n-title-line="style.styleDisagreement"
+          i18n-button-label="style.enableCommonStyle"
+          i18n-button-tool-tip="style.differentValuesToolTip"
+          @click="setCommonDashPatternAgreement">
+        </OverlayWithFixButton>
+
+        <!--
         <v-overlay absolute
           v-bind:value="(editModeIsFront() || editModeIsBack()) && !dashPatternAgreement"
           :opacity="0.8"
@@ -345,7 +392,9 @@
             </v-card-actions>
           </v-card>
         </v-overlay>
+        -->
 
+        <!-- The dash property slider -->
         <v-range-slider v-model="sliderDashArray"
           :min="0"
           step="2"
@@ -422,8 +471,18 @@
       </fade-in-card>
     </v-card>
     <!-- Label(s) not showing overlay -- higher z-index rendered on top -- covers entire panel including the header-->
+    <OverlayWithFixButton v-if="editModeIsLabel() && !allLabelsShowing()"
+      z-index="100"
+      i18n-title-line="style.labelNotVisible"
+      i18n-subtitle-line="style.clickToMakeLabelsVisible"
+      i18n-button-label="style.makeLabelsVisible"
+      i18n-button-tool-tip="style.labelsNotShowingToolTip"
+      @click="toggleAllLabelsVisibility">
+    </OverlayWithFixButton>
+
+    <!--
     <v-overlay absolute
-      z-index="10"
+      z-index="100"
       v-bind:value="editModeIsLabel() && !allLabelsShowing()"
       :opacity="0.8">
       <v-card class="mx-auto"
@@ -461,6 +520,7 @@
         </v-card-actions>
       </v-card>
     </v-overlay>
+    -->
 
     <!-- Label Text Options -->
     <fade-in-card :showWhen="editModeIsLabel() && hasLabelStyle">
@@ -474,6 +534,15 @@
       </div>
 
       <!-- Differing data styles detected Overlay --higher z-index rendered on top-->
+      <OverlayWithFixButton v-if="editModeIsLabel() && !styleDataAgreement"
+        z-index="1"
+        i18n-title-line="style.styleDisagreement"
+        i18n-button-label="style.enableCommonStyle"
+        i18n-button-tool-tip="style.differentValuesToolTip"
+        @click="setStyleDataAgreement">
+      </OverlayWithFixButton>
+
+      <!--
       <v-overlay absolute
         v-bind:value="editModeIsLabel() && !styleDataAgreement"
         :opacity="0.8"
@@ -509,7 +578,7 @@
           </v-card-actions>
         </v-card>
       </v-overlay>
-
+      -->
       <!-- Label Text Selections -->
       <v-text-field v-model="labelDisplayText"
         v-bind:label="$t('style.labelText')"
@@ -739,6 +808,7 @@ import TranslateResult from "../i18n";
 import { SELabel } from "@/models/SELabel";
 import Style from "./Style.vue";
 import HintButton from "@/components/HintButton.vue";
+import OverlayWithFixButton from "@/components/OverlayWithFixButton.vue";
 
 // import { getModule } from "vuex-module-decorators";
 // import UI from "@/store/ui-styles";
@@ -766,7 +836,13 @@ const keys = values.map(e => {
 });
 
 @Component({
-  components: { FadeInCard, NumberSelector, ColorSelector, HintButton }
+  components: {
+    FadeInCard,
+    NumberSelector,
+    ColorSelector,
+    HintButton,
+    OverlayWithFixButton
+  }
 })
 export default class BasicFrontBackStyle extends Vue {
   @Prop()

@@ -60,12 +60,27 @@
       </div>
 
       <!-- Nothing Selected Overlay-->
-      <v-overlay absolute
+      <OverlayWithFixButton v-if="!(this.selections.length > 0)"
+        z-index="100"
+        i18n-title-line="style.selectAnObject"
+        i18n-subtitle-line="style.closeOrSelect"
+        i18n-list-title="style.toSelectObjects"
+        i18n-list-item-one="style.selectionDirection1"
+        i18n-list-item-two="style.selectionDirection2"
+        i18n-list-item-three="style.selectionDirection3"
+        i18n-list-item-four="style.selectionDirection4"
+        i18n-button-label="style.closeStylingPanel"
+        i18n-button-tool-tip="style.noSelectionToolTip"
+        @click="$emit('toggle-style-panel')">
+      </OverlayWithFixButton>
+      <!--<v-overlay absolute
         v-bind:value="!(this.selections.length > 0)"
-        :opacity="0.8">
+        :opacity="0.8"
+        z-index="100">
         <v-card class="mx-auto"
           max-width="344"
-          outlined>
+          outlined
+          z-index="100">
           <v-list-item three-line
             class="pb-0">
             <v-list-item-content class="pb-1">
@@ -111,16 +126,15 @@
               </v-tooltip>
             </template>
           </v-card-actions>
-
         </v-card>
+      </v-overlay>-->
 
-      </v-overlay>
       <v-expansion-panels v-model="activePanel">
         <v-expansion-panel v-for="(p, idx) in panels"
           :key="idx">
           <v-expansion-panel-header color="blue lighten-3"
             :key="`header${idx}`"
-            class="body-1 font-weight-bold ps-6 pe-0 pt-n4 pb-n4 pm-0">
+            class="body-1 text-h6 ps-6 pe-0 pt-n4 pb-n4 pm-0">
 
             {{ $t(p.i18n_key) }}
 
@@ -148,6 +162,7 @@
 import Vue from "vue";
 import Component from "vue-class-component";
 import BasicFrontBackStyle from "@/components/BasicFrontBackStyle.vue";
+import OverlayWithFixButton from "@/components/OverlayWithFixButton.vue";
 import { Watch, Prop } from "vue-property-decorator";
 import EventBus from "../eventHandlers/EventBus";
 import SETTINGS from "@/global-settings";
@@ -160,7 +175,7 @@ import { SetNoduleDisplayCommand } from "@/commands/SetNoduleDisplayCommand";
 import Label from "@/plottables/Label";
 import { SELabel } from "@/models/SELabel";
 
-@Component({ components: { BasicFrontBackStyle } })
+@Component({ components: { BasicFrontBackStyle, OverlayWithFixButton } })
 export default class Style extends Vue {
   @Prop()
   readonly minified!: boolean;
