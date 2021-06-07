@@ -49,6 +49,7 @@ export interface AppState {
   // that selectedObject fore and back properties: useLabelMode indicates that we are doing this.
   inverseTotalRotationMatrix: Matrix4; // Initially the identity. This is the composition of all the inverses of the rotation matrices applied to the sphere.
   svgCanvas: HTMLDivElement | null;
+  hasUnsavedNodules: boolean;
 }
 /* This interface lists all the properties that each tool/button must have. */
 export interface ToolButtonType {

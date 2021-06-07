@@ -3,11 +3,11 @@
     <div class="text-h6"
       v-if="firebaseUid.length > 0">Private Constructions</div>
     <ConstructionList :items="privateConstructions"
-      v-on:load-requested="doLoadConstruction" />
+      v-on:load-requested="shouldLoadConstruction" />
     <div class="text-h6">Public Constructions</div>
     <ConstructionList :items="publicConstructions"
       :allow-sharing="true"
-      v-on:load-requested="doLoadConstruction"
+      v-on:load-requested="shouldLoadConstruction"
       v-on:share-requested="doShareConstruction"
       v-on:delete-requested="doDeleteConstruction" />
 
@@ -24,6 +24,15 @@
         ref="docURL"
         v-html="shareURL" />
 
+    </Dialog>
+    <Dialog ref="constructionLoadDialog"
+      title="Confirmation Required"
+      yes-text="Proceed"
+      :yesAction="doLoadConstruction"
+      no-text="Cancel"
+      max-width="50%">
+      You have unsaved objects. Loading a new construction will remove
+      all the current ones. Do you want to proceed or cancel?
     </Dialog>
   </div>
 </template>
@@ -63,9 +72,11 @@ export default class ConstructionLoader extends Vue {
   publicConstructions: Array<SphericalConstruction> = [];
   privateConstructions: Array<SphericalConstruction> = [];
   shareURL = "";
+  selectedDocId = "";
 
   $refs!: {
     constructionShareDialog: VueComponent & DialogAction;
+    constructionLoadDialog: VueComponent & DialogAction;
     docURL: HTMLSpanElement;
   };
 
@@ -130,14 +141,22 @@ export default class ConstructionLoader extends Vue {
     );
   }
 
-  doLoadConstruction(event: { docId: string }): void {
-    // console.log("Load event", ev);
-    const docId = event.docId;
+  shouldLoadConstruction(event: { docId: string }): void {
+    this.selectedDocId = event.docId;
+    if (this.$store.direct.state.hasUnsavedNodules)
+      this.$refs.constructionLoadDialog.show();
+    else {
+      this.doLoadConstruction();
+    }
+  }
+
+  doLoadConstruction(/*event: { docId: string }*/): void {
+    this.$refs.constructionLoadDialog.hide();
     let script: ConstructionScript | null = null;
     let rotationMatrix: Matrix4;
     // Search in public list
     let pos = this.publicConstructions.findIndex(
-      (c: SphericalConstruction) => c.id === docId
+      (c: SphericalConstruction) => c.id === this.selectedDocId
     );
     if (pos >= 0) {
       script = this.publicConstructions[pos].parsedScript;
@@ -145,7 +164,7 @@ export default class ConstructionLoader extends Vue {
     } else {
       // Search in private list
       pos = this.privateConstructions.findIndex(
-        (c: SphericalConstruction) => c.id === docId
+        (c: SphericalConstruction) => c.id === this.selectedDocId
       );
       script = this.privateConstructions[pos].parsedScript;
       rotationMatrix = this.privateConstructions[pos].sphereRotationMatrix;
@@ -157,13 +176,14 @@ export default class ConstructionLoader extends Vue {
     Nodule.resetAllCounters();
     EventBus.fire("show-alert", {
       key: "objectTree.firestoreConstructionLoaded",
-      keyOptions: { docId },
+      keyOptions: { docId: this.selectedDocId },
       type: "info"
     });
     // It looks like we have to apply the rotation matrix
     // before running the script
     this.$store.direct.commit.rotateSphere(rotationMatrix);
     run(script);
+    this.$store.direct.commit.clearUnsavedFlag();
   }
 
   doShareConstruction(event: { docId: string }): void {

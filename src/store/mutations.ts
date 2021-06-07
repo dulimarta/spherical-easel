@@ -52,7 +52,8 @@ export const initialState: AppState = {
   initialBackStyleContrast: SETTINGS.style.backStyleContrast,
   useLabelMode: false,
   inverseTotalRotationMatrix: new Matrix4(), //initially the identity. The composition of all the inverses of the rotation matrices applied to the sphere
-  svgCanvas: null
+  svgCanvas: null,
+  hasUnsavedNodules: false
 };
 //#endregion appState
 
@@ -81,6 +82,7 @@ export default {
     state.expressions.splice(0);
     state.initialStyleStates.splice(0);
     state.defaultStyleStates.splice(0);
+    state.hasUnsavedNodules = false;
     //state.temporaryNodules.clear(); // Do not clear the temporaryNodules array
     // because the constructors of the tools (handlers) place the temporary Nodules
     // in this array *before* the this.init is called in App.vue mount.
@@ -127,6 +129,7 @@ export default {
     state.sePoints.push(point);
     state.seNodules.push(point);
     point.ref.addToLayers(state.layers);
+    state.hasUnsavedNodules = true;
   },
   //#endregion addPoint
   removeAllFromLayers(state: AppState): void {
@@ -150,12 +153,14 @@ export default {
       state.seNodules.splice(pos2, 1);
       // Remove the associated plottable (Nodule) object from being rendered
       victimPoint.ref.removeFromLayers();
+      state.hasUnsavedNodules = true;
     }
   },
   addLabel(state: AppState, label: SELabel): void {
     state.seLabels.push(label);
     state.seNodules.push(label);
     label.ref.addToLayers(state.layers);
+    state.hasUnsavedNodules = true;
   },
   removeLabel(state: AppState, labelId: number): void {
     const pos = state.seLabels.findIndex(x => x.id === labelId);
@@ -166,12 +171,14 @@ export default {
       state.seNodules.splice(pos2, 1);
       // Remove the associated plottable (Nodule) object from being rendered
       victimLabel.ref.removeFromLayers(state.layers);
+      state.hasUnsavedNodules = true;
     }
   },
   addLine(state: AppState, line: SELine): void {
     state.seLines.push(line);
     state.seNodules.push(line);
     line.ref.addToLayers(state.layers);
+    state.hasUnsavedNodules = true;
   },
   removeLine(state: AppState, lineId: number): void {
     const pos = state.seLines.findIndex(x => x.id === lineId);
@@ -182,12 +189,14 @@ export default {
       victimLine.ref.removeFromLayers();
       state.seLines.splice(pos, 1); // Remove the line from the list
       state.seNodules.splice(pos2, 1);
+      state.hasUnsavedNodules = true;
     }
   },
   addSegment(state: AppState, segment: SESegment): void {
     state.seSegments.push(segment);
     state.seNodules.push(segment);
     segment.ref.addToLayers(state.layers);
+    state.hasUnsavedNodules = true;
   },
   removeSegment(state: AppState, segId: number): void {
     const pos = state.seSegments.findIndex(x => x.id === segId);
@@ -197,12 +206,14 @@ export default {
       victimSegment.ref.removeFromLayers();
       state.seSegments.splice(pos, 1);
       state.seNodules.splice(pos2, 1);
+      state.hasUnsavedNodules = true;
     }
   },
   addCircle(state: AppState, circle: SECircle): void {
     state.seCircles.push(circle);
     state.seNodules.push(circle);
     circle.ref.addToLayers(state.layers);
+    state.hasUnsavedNodules = true;
   },
   removeCircle(state: AppState, circleId: number): void {
     const circlePos = state.seCircles.findIndex(x => x.id === circleId);
@@ -214,6 +225,7 @@ export default {
       // victimCircle.removeSelfSafely();
       state.seCircles.splice(circlePos, 1); // Remove the circle from the list
       state.seNodules.splice(pos2, 1);
+      state.hasUnsavedNodules = true;
     }
   },
   addAngleMarkerAndExpression(
@@ -224,6 +236,7 @@ export default {
     state.seAngleMarkers.push(angleMarker);
     state.seNodules.push(angleMarker);
     angleMarker.ref.addToLayers(state.layers);
+    state.hasUnsavedNodules = true;
   },
   removeAngleMarkerAndExpression(state: AppState, angleMarkerId: number): void {
     const angleMarkerPos = state.seAngleMarkers.findIndex(
@@ -240,11 +253,13 @@ export default {
       state.seAngleMarkers.splice(angleMarkerPos, 1); // Remove the angleMarker from the list
       state.seNodules.splice(pos2, 1);
       state.expressions.splice(pos3, 1);
+      state.hasUnsavedNodules = true;
     }
   },
   addExpression(state: AppState, measurement: SEExpression): void {
     state.expressions.push(measurement);
     state.seNodules.push(measurement);
+    state.hasUnsavedNodules = true;
   },
   removeExpression(state: AppState, measId: number): void {
     const pos = state.expressions.findIndex(x => x.id === measId);
@@ -253,6 +268,7 @@ export default {
       // const victimSegment = state.measurements[pos];
       state.expressions.splice(pos, 1);
       state.seNodules.splice(pos2, 1);
+      state.hasUnsavedNodules = true;
     }
   },
   // These are added to the store so that I can update the size of the temporary objects when there is a resize event.
@@ -463,5 +479,8 @@ export default {
   },
   setCanvasWidth(state: AppState, canvasWidth: number): void {
     state.canvasWidth = canvasWidth;
+  },
+  clearUnsavedFlag(state: AppState): void {
+    state.hasUnsavedNodules = false;
   }
 };

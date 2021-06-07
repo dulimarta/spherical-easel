@@ -9,7 +9,7 @@
     </div>
     <span v-show="totallyDisableColorSelector"
       class="select-an-object-text">{{ $t("style.selectAnObject") }}</span>
-    <template v-show="!totallyDisableColorSelector">
+    <template v-if="!totallyDisableColorSelector">
       <HintButton v-if="!colorAgreement"
         @click="setCommonColorArgreement"
         i18n-label="style.differingStylesDetected"

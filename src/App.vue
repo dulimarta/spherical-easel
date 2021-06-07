@@ -264,6 +264,7 @@ export default class App extends Vue {
           keyOptions: { docId: doc.id },
           type: "info"
         });
+        this.$store.direct.commit.clearUnsavedFlag();
       })
       .catch((err: Error) => {
         console.log("Can't save document", err);
