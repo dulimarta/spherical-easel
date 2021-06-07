@@ -184,6 +184,7 @@ export default class ConstructionLoader extends Vue {
     this.$store.direct.commit.rotateSphere(rotationMatrix);
     run(script);
     this.$store.direct.commit.clearUnsavedFlag();
+    EventBus.fire("construction-loaded", {});
   }
 
   doShareConstruction(event: { docId: string }): void {

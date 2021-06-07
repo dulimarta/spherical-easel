@@ -194,6 +194,7 @@ export default class SphereFrame extends VueComponent {
     EventBus.listen("sphere-rotate", this.handleSphereRotation);
     EventBus.listen("zoom-updated", this.updateView);
     EventBus.listen("export-current-svg", this.getCurrentSVGForIcon);
+    EventBus.listen("construction-loaded", this.animateCanvas);
   }
 
   mounted(): void {
@@ -607,6 +608,13 @@ export default class SphereFrame extends VueComponent {
     // // const nextSVG8 = nextSVG7.replace(regEx8, "");
     // console.log(nextSVG8);
   }
+
+  animateCanvas(): void {
+    this.$refs.canvas.classList.add("spin");
+    setTimeout(() => {
+      this.$refs.canvas.classList.remove("spin");
+    }, 1200);
+  }
   /**
    * Watch the actionMode in the store. This is the two-way binding of variables in the Vuex Store.  Notice that this
    * is a vue component so we are able to Watch for changes in variables in the store. If this was not a vue component
@@ -715,4 +723,14 @@ export default class SphereFrame extends VueComponent {
 </script>
 
 <style lang="scss" scoped>
+.spin {
+  animation-name: spinCCW;
+  animation-duration: 600ms;
+  animation-direction: normal;
+}
+@keyframes spinCCW {
+  50% {
+    transform: rotate(180deg);
+  }
+}
 </style>
