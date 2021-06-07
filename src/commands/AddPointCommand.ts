@@ -38,16 +38,14 @@ export class AddPointCommand extends Command {
   }
 
   toOpcode(): null | string | Array<string> {
-    if (this.sePoint.showing)
-      return [
-        "AddPoint",
-        /* arg-1 */ this.sePoint.name,
-        /* arg-2 */ this.sePoint.locationVector.toFixed(7),
-        /* arg-3 */ this.seLabel.name,
-        /* arg-4 */ this.sePoint.showing,
-        /* arg-5 */ this.sePoint.exists
-      ].join("/");
-    else return "None";
+    return [
+      "AddPoint",
+      /* arg-1 */ this.sePoint.name,
+      /* arg-2 */ this.sePoint.locationVector.toFixed(7),
+      /* arg-3 */ this.seLabel.name,
+      /* arg-4 */ this.sePoint.showing,
+      /* arg-5 */ this.sePoint.exists
+    ].join("/");
   }
 
   static parse(command: string, objMap: Map<string, SENodule>): Command {

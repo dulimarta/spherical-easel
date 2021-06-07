@@ -27,7 +27,6 @@ export class AddIntersectionPointCommand extends Command {
   }
 
   do(): void {
-    console.log("AddIntersectionPointCommand do()", this.sePoint.name);
     this.parent1.registerChild(this.sePoint);
     this.parent2.registerChild(this.sePoint);
     this.sePoint.registerChild(this.seLabel);
@@ -76,7 +75,10 @@ export class AddIntersectionPointCommand extends Command {
       location.from(tokens[2]);
 
       // Extra the intersection point order from the name
-      const nameTokens = tokens[1].split(",");
+      const nameTokens = tokens[1]
+        .replace(/^.+\(/, "")
+        .replace(/\)$/, "")
+        .split(",");
       const order = Number(nameTokens[2]);
       const point = new SEIntersectionPoint(
         new Point(),
