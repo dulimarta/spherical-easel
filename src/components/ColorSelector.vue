@@ -22,41 +22,6 @@
       @click="turnOffUsingDynamicBackStyling">
     </OverlayWithFixButton>
 
-    <!-- <v-overlay absolute
-      v-if="useDynamicBackStyleFromSelector && !totallyDisableColorSelector && this.usingDynamicBackStyleAgreement"
-      v-bind:value="usingDynamicBackStyle || this.usingDynamicBackStyleCommonValue"
-      :opacity="0.8"
-      z-index="10">
-      <v-card max-width="344"
-        outlined>
-        <v-list-item single-line
-          class="pb-0">
-          <v-list-item-content class="justify-center">
-            <v-list-item-title class="mb-1">
-              {{$t('style.dynamicBackStyleHeader')}}
-            </v-list-item-title>
-          </v-list-item-content>
-        </v-list-item>
-        <v-card-actions class="justify-center">
-
-          <v-tooltip bottom
-            :open-delay="toolTipOpenDelay"
-            :close-delay="toolTipCloseDelay"
-            max-width="400px">
-            <template v-slot:activator="{ on }">
-              <v-btn color="info"
-                v-on="on"
-                v-on:click="turnOffUsingDynamicBackStyling">
-                {{$t('style.disableDynamicBackStyle')}}
-              </v-btn>
-            </template>
-            {{$t('style.disableDynamicBackStyleToolTip')}}
-          </v-tooltip>
-
-        </v-card-actions>
-      </v-card>
-    </v-overlay>-->
-
     <!-- Differing data styles detected Overlay -->
     <OverlayWithFixButton v-if="(!colorAgreement || (useDynamicBackStyleFromSelector && !usingDynamicBackStyleAgreement) ) 
       && !totallyDisableColorSelector"
@@ -66,41 +31,6 @@
       i18n-button-tool-tip="style.differentValuesToolTip"
       @click="setCommonDataAgreement">
     </OverlayWithFixButton>
-    <!--<v-overlay absolute
-      v-bind:value="(!colorAgreement || (useDynamicBackStyleFromSelector && !usingDynamicBackStyleAgreement) ) 
-      && !totallyDisableColorSelector"
-      :opacity="0.8"
-      z-index="5">
-
-      <v-card max-width="344"
-        outlined>
-        <v-list-item single-line
-          class="pb-0">
-          <v-list-item-content class="justify-center">
-            <v-list-item-title class="justify-center mb-1">
-              {{$t('style.styleDisagreement')}}
-            </v-list-item-title>
-          </v-list-item-content>
-        </v-list-item>
-        <v-card-actions class="justify-center">
-
-          <v-tooltip bottom
-            :open-delay="toolTipOpenDelay"
-            :close-delay="toolTipCloseDelay"
-            max-width="400px">
-            <template v-slot:activator="{ on }">
-              <v-btn color="info"
-                v-on="on"
-                v-on:click="setCommonDataAgreement">
-                {{$t('style.enableCommonStyle')}}
-              </v-btn>
-            </template>
-            {{$t('style.differentValuesToolTip')}}
-          </v-tooltip>
-
-        </v-card-actions>
-      </v-card>
-    </v-overlay>-->
 
     <!-- The color picker -->
     <v-color-picker @update:color="onColorChange"

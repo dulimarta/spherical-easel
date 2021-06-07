@@ -73,61 +73,6 @@
         i18n-button-tool-tip="style.noSelectionToolTip"
         @click="$emit('toggle-style-panel')">
       </OverlayWithFixButton>
-      <!--<v-overlay absolute
-        v-bind:value="!(this.selections.length > 0)"
-        :opacity="0.8"
-        z-index="100">
-        <v-card class="mx-auto"
-          max-width="344"
-          outlined
-          z-index="100">
-          <v-list-item three-line
-            class="pb-0">
-            <v-list-item-content class="pb-1">
-              <div class="overline mb-2">
-                {{ $t('style.NOSELECTION') }}
-              </div>
-              <v-list-item-title class="headline mb-1">
-                {{$t('style.selectAnObject')}}
-              </v-list-item-title>
-              <v-list-item-subtitle>
-                {{$t('style.closeOrSelect')}}
-              </v-list-item-subtitle>
-            </v-list-item-content>
-          </v-list-item>
-
-          <v-card-text class="pt-0">
-            {{$t('style.toSelectObjects')}}
-            <ul>
-              <li>{{$t('style.selectionDirection1')}}
-              </li>
-              <li>{{$t('style.selectionDirection2')}}
-              </li>
-              <li> {{$t('style.selectionDirection3')}}
-              </li>
-              <li>{{$t('style.selectionDirection4')}} </li>
-            </ul>
-          </v-card-text>
-
-          <v-card-actions>
-            <template>
-              <v-tooltip bottom
-                :open-delay="toolTipOpenDelay"
-                :close-delay="toolTipCloseDelay"
-                max-width="400px">
-                <template v-slot:activator="{ on }">
-                  <v-btn v-on="on"
-                    color="info"
-                    v-on:click="$emit('toggle-style-panel')">
-                    {{$t('style.closeStylingPanel')}}
-                  </v-btn>
-                </template>
-                {{$t('style.noSelectionToolTip')}}
-              </v-tooltip>
-            </template>
-          </v-card-actions>
-        </v-card>
-      </v-overlay>-->
 
       <v-expansion-panels v-model="activePanel">
         <v-expansion-panel v-for="(p, idx) in panels"
@@ -271,7 +216,7 @@ export default class Style extends Vue {
   private readonly panels = [
     {
       i18n_key: "style.labelStyle",
-      component: () => import("@/components/BasicFrontBackStyle.vue"),
+      component: () => import("@/components/LabelStyle.vue"),
       panel: StyleEditPanels.Label
     },
     {
