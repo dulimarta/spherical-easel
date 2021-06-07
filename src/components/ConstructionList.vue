@@ -1,11 +1,12 @@
 <template>
-  <div>
-    Share flag {{allowSharing}}
+  <div @mouseenter="onListEnter"
+    @mouseleave="onListLeave">
     <v-list three-line>
       <template v-for="(r,pos) in items">
         <v-hover v-slot:default="{hover}"
           :key="pos">
-          <v-list-item>
+          <v-list-item @mouseover.capture="onItemHover(r)"
+            @mouseleave="onItemLeave">
             <v-list-item-avatar size="64">
               <img :src="previewOrDefault(r.previewData)"
                 alt="preview">
@@ -24,6 +25,7 @@
             </v-list-item-content>
             <!--- show a Load button as an overlay when the mouse hovers -->
             <v-overlay absolute
+              opacity="0.3"
               :value="hover">
               <v-row align="center">
                 <v-col>
@@ -69,6 +71,7 @@
 import { Component, Vue, Prop } from "vue-property-decorator";
 import { SphericalConstruction } from "@/types";
 import { FirebaseAuth } from "node_modules/@firebase/auth-types";
+import { Matrix4 } from "three";
 
 @Component
 export default class extends Vue {
@@ -79,12 +82,75 @@ export default class extends Vue {
   @Prop({ default: false })
   allowSharing!: boolean;
 
+  svgParent!: HTMLDivElement;
+  svgRoot!: SVGElement;
+  // svgRootClone: SVGElement | null = null;
+  originalSphereMatrix!: Matrix4;
+  domParser!: DOMParser;
+  lastDocId: string | null = null;
+
+  created(): void {
+    this.domParser = new DOMParser();
+    this.originalSphereMatrix = new Matrix4();
+  }
   get userEmail(): string {
     return this.$appAuth.currentUser?.email ?? "";
   }
 
+  mounted(): void {
+    // To use `innerHTML` we have to get a reference to the parent of
+    // the <svg> tree
+    this.svgParent = this.$store.direct.state.svgCanvas as HTMLDivElement;
+    this.svgRoot = this.$store.direct.state.svgCanvas?.querySelector(
+      "svg"
+    ) as SVGElement;
+  }
+
   previewOrDefault(dataUrl: string | undefined): string {
     return dataUrl ? dataUrl : require("@/assets/SphericalEaselLogo.gif");
+  }
+
+  onListEnter(/*ev:MouseEvent*/): void {
+    this.originalSphereMatrix.copy(
+      this.$store.direct.state.inverseTotalRotationMatrix
+    );
+  }
+
+  onItemHover(s: SphericalConstruction): void {
+    if (this.lastDocId === s.id) return; // Prevent double hovers?
+    this.lastDocId = s.id;
+    fetch(s.previewData)
+      .then((r: Response) => r.blob())
+      .then((b: Blob) => b.text())
+      .then((svgString: string) => {
+        const newSvg = this.domParser.parseFromString(
+          svgString,
+          "image/svg+xml"
+        );
+        // this.$store.direct.commit.rotateSphere(s.sphereRotationMatrix);
+        // We assume the SVG tree is always the first child
+        this.svgParent.replaceChild(
+          newSvg.activeElement as SVGElement,
+          this.svgParent.firstChild as SVGElement
+        );
+      });
+  }
+
+  onItemLeave(/*_ev: MouseEvent*/): void {
+    this.lastDocId = null;
+  }
+
+  onListLeave(/*_ev: MouseEvent*/): void {
+    // Restore the canvas
+    this.svgParent.replaceChild(
+      this.svgRoot,
+      this.svgParent.firstChild as SVGElement
+    );
+
+    // Restore the rotation matrix
+    this.$store.direct.state.inverseTotalRotationMatrix.copy(
+      this.originalSphereMatrix
+    );
   }
 }
 </script>
