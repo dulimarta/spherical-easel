@@ -106,7 +106,7 @@
 <script lang="ts">
 import Vue from "vue";
 import Component from "vue-class-component";
-import BasicFrontBackStyle from "@/components/BasicFrontBackStyle.vue";
+import BasicFrontBackStyle from "@/components/FrontBackStyle.vue";
 import OverlayWithFixButton from "@/components/OverlayWithFixButton.vue";
 import { Watch, Prop } from "vue-property-decorator";
 import EventBus from "../eventHandlers/EventBus";
@@ -147,6 +147,14 @@ export default class Style extends Vue {
   mounted(): void {
     EventBus.listen("update-all-labels-showing", this.allLabelsShowingCheck);
     EventBus.listen("update-all-objects-showing", this.allObjectsShowingCheck);
+    EventBus.listen(
+      "toggle-object-visibility",
+      this.toggleObjectsShowing.bind(this)
+    );
+    EventBus.listen(
+      "toggle-label-visibility",
+      this.toggleLabelsShowing.bind(this)
+    );
   }
 
   @Watch("minified")
@@ -221,12 +229,12 @@ export default class Style extends Vue {
     },
     {
       i18n_key: "style.foregroundStyle",
-      component: () => import("@/components/BasicFrontBackStyle.vue"),
+      component: () => import("@/components/FrontBackStyle.vue"),
       panel: StyleEditPanels.Front
     },
     {
       i18n_key: "style.backgroundStyle",
-      component: () => import("@/components/BasicFrontBackStyle.vue"),
+      component: () => import("@/components/FrontBackStyle.vue"),
       panel: StyleEditPanels.Back
     },
     {
@@ -262,53 +270,48 @@ export default class Style extends Vue {
     }
   }
 
-  toggleLabelsShowing(): void {
-    //If we toggle-label-visbility with out opening the label panel (i.e. the mount method won't have run)
-    // then EventBus.fire("toggle-label-visibility", {}); does nothing,
-    // so we have to check to see if the label panel is mounted and use either SetNoduleDisplayCommand or StyleNoduleCommand (used in toggle-label-visibility )
+  toggleLabelsShowing(fromPanel: unknown): void {
+    // if this method is being called from a panel, then we need to toogle allLabelsShowing
+    // if this method is being called from the html (i.e. from the switch) then all LabelsShowing is
+    //  automatically toggled
+    if ((fromPanel as any).fromPanel !== undefined) {
+      this.allLabelsShowing = !this.allLabelsShowing;
+    }
+    const toggleLabelDisplayCommandGroup = new CommandGroup();
+    this.selections.forEach(node => {
+      if (node.isLabelable()) {
+        toggleLabelDisplayCommandGroup.addCommand(
+          new SetNoduleDisplayCommand(
+            ((node as unknown) as Labelable).label!,
+            this.allLabelsShowing
+          )
+        );
+      }
+    });
+    toggleLabelDisplayCommandGroup.execute();
 
-    //if (this.mountedPanels.findIndex(i => i === 0) === -1) {
-    if (this.mountedPanels.length === 0) {
-      // no panels are mounted
-      const toggleLabelDisplayCommandGroup = new CommandGroup();
-      this.selections.forEach(node => {
-        if (node.isLabelable()) {
-          toggleLabelDisplayCommandGroup.addCommand(
-            new SetNoduleDisplayCommand(
-              ((node as unknown) as Labelable).label!,
-              this.allLabelsShowing
-            )
-          );
-        }
-      });
-      toggleLabelDisplayCommandGroup.execute();
-    } else {
-      console.log("toggle label from style.vue - label panel mounted");
-      // at least one panel is mounted
-      EventBus.fire("toggle-label-visibility", {
-        mountedPanel: this.mountedPanels[0]
-      });
+    // Showing the labels when the objects are not showing, shows the objects
+    if (!this.allObjectsShowing && this.allLabelsShowing) {
+      this.toggleObjectsShowing({ fromPanel: true });
     }
   }
 
-  toggleObjectsShowing(): void {
-    //if (this.mountedPanels.findIndex(i => i === 0) === -1) {
-    if (this.mountedPanels.length === 0) {
-      // no panels are mounted
-      const toggleObjectDisplayCommandGroup = new CommandGroup();
-      this.selections.forEach(node => {
-        toggleObjectDisplayCommandGroup.addCommand(
-          new SetNoduleDisplayCommand(node, this.allObjectsShowing)
-        );
-      });
-      toggleObjectDisplayCommandGroup.execute();
-    } else {
-      console.log("toggle objects from style.vue - label panel mounted");
-      // at least one panel is mounted
-      EventBus.fire("toggle-object-visibility", {
-        mountedPanel: this.mountedPanels[0]
-      });
+  toggleObjectsShowing(fromPanel: unknown): void {
+    // if this method is being called from a panel, then we need to toogle allObjectssShowing
+    // if this method is being called from the html (i.e. from the switch) then allObjectsShowing is
+    //  automatically toggled
+    if ((fromPanel as any).fromPanel !== undefined) {
+      this.allObjectsShowing = !this.allObjectsShowing;
     }
+
+    const toggleObjectDisplayCommandGroup = new CommandGroup();
+    this.selections.forEach(node => {
+      toggleObjectDisplayCommandGroup.addCommand(
+        new SetNoduleDisplayCommand(node, this.allObjectsShowing)
+      );
+    });
+    toggleObjectDisplayCommandGroup.execute();
+
     // update the this.allLabelsShowing varaible, because hiding an object hide the label (depending on
     //  SETTINGS.hideObjectHidesLabel) and similarly showing an object shows the label (depending
     //  SETTIGNS.showObjectShowsLabel)

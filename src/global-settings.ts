@@ -69,8 +69,8 @@ export default {
       ]
     ],
     selectedColor: {
-      front: "hsla(0, 100%, 50%, 1)",
-      back: "hsla(0, 100%, 75%, 0.7)"
+      front: "hsla(0, 100%, 50%, 0.5)",
+      back: "hsla(0, 100%, 75%, 0.2)"
     }
   },
   zoom: {

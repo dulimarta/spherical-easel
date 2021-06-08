@@ -2,7 +2,7 @@
   <div>
 
     <!-- Label(s) not showing overlay -- higher z-index rendered on top -- covers entire panel including the header-->
-    <OverlayWithFixButton v-if="editModeIsLabel() && !allLabelsShowing()"
+    <OverlayWithFixButton v-if="!allLabelsShowing()"
       z-index="100"
       i18n-title-line="style.labelNotVisible"
       i18n-subtitle-line="style.clickToMakeLabelsVisible"
@@ -12,7 +12,7 @@
     </OverlayWithFixButton>
 
     <!-- Label Text Options -->
-    <fade-in-card :showWhen="editModeIsLabel() && hasLabelStyle">
+    <fade-in-card :showWhen="hasLabelStyle">
       <span
         class="text-subtitle-2">{{ $t("style.labelStyleOptions") }}</span>
       <span v-if="selections.length > 1"
@@ -23,7 +23,7 @@
       </div>
 
       <!-- Differing data styles detected Overlay --higher z-index rendered on top-->
-      <OverlayWithFixButton v-if="editModeIsLabel() && !styleDataAgreement"
+      <OverlayWithFixButton v-if="!styleDataAgreement"
         z-index="1"
         i18n-title-line="style.styleDisagreement"
         i18n-button-label="style.enableCommonStyle"
@@ -141,8 +141,7 @@
 
     <!-- Label Text Scale Number Selector-->
     <fade-in-card
-      :showWhen="
-        editModeIsLabel() && hasLabelTextScalePercent && showMoreLabelStyles">
+      :showWhen="hasLabelTextScalePercent && showMoreLabelStyles">
       <NumberSelector id="textScalePercentSlider"
         v-bind:data.sync="labelTextScalePercent"
         style-name="labelTextScalePercent"
@@ -161,8 +160,7 @@
     </fade-in-card>
 
     <!-- Label Text Rotation Number Selector-->
-    <fade-in-card
-      :showWhen="(editModeIsLabel() && hasLabelTextRotation && showMoreLabelStyles)">
+    <fade-in-card :showWhen="hasLabelTextRotation && showMoreLabelStyles">
       <NumberSelector id="labelTextRotationSlider"
         v-bind:data.sync="labelTextRotation"
         style-name="labelTextRotation"
@@ -180,7 +178,7 @@
 
     <!-- Label Front Fill Color Selector -->
     <fade-in-card
-      :showWhen="editModeIsLabel() && hasLabelFrontFillColor && showMoreLabelStyles">
+      :showWhen="hasLabelFrontFillColor && showMoreLabelStyles">
 
       <ColorSelector title-key="style.labelFrontFillColor"
         panel-front-key=""
@@ -194,8 +192,7 @@
     </fade-in-card>
 
     <!-- Label Back Fill Color Selector : -->
-    <fade-in-card
-      :showWhen="editModeIsLabel() && hasLabelBackFillColor&& showMoreLabelStyles">
+    <fade-in-card :showWhen="hasLabelBackFillColor&& showMoreLabelStyles">
       <ColorSelector title-key="style.labelBackFillColor"
         panel-front-key="style.front"
         panel-back-key="style.back"
@@ -261,7 +258,6 @@ import { SELabel } from "@/models/SELabel";
 import Style from "./Style.vue";
 import HintButton from "@/components/HintButton.vue";
 import OverlayWithFixButton from "@/components/OverlayWithFixButton.vue";
-import CommonStyle from "./CommonStyle.vue";
 
 // import { getModule } from "vuex-module-decorators";
 // import UI from "@/store/ui-styles";
@@ -297,11 +293,9 @@ const keys = values.map(e => {
     OverlayWithFixButton
   }
 })
-export default class LabelStyle extends CommonStyle {
+export default class LabelStyle extends Vue {
   @Prop()
-  readonly panel!: StyleEditPanels; // This is a constant in each copy of the BasicFrontBackStyle
-  static savedFromThisPanel: StyleEditPanels = StyleEditPanels.Label;
-
+  readonly panel!: StyleEditPanels;
   @Prop()
   readonly activePanel!: StyleEditPanels;
 
@@ -352,13 +346,6 @@ export default class LabelStyle extends CommonStyle {
   // the user to click to show more of the Label Styling options
   private showMoreLabelStyles = false;
   private moreOrLessText = i18n.t("style.moreStyleOptions"); // The text for the button to toggle between less/more options
-
-  // allLablesVisible is true if all labels are visibily. If at least on label is not visibile, then allLablesVisible = false
-  private allLabelsVisible: boolean | undefined = false;
-  // allObjectsVisible is true if all objects are visibily. If at least on object is not visibile, then allObjectsVisible = false
-  private allObjectsVisible: boolean | undefined = true;
-  private labelVisibilityChange = false;
-  private objectVisibilityChange = false;
 
   private labelDisplayText: string | undefined = "";
   private labelDisplayTextChange = false;
@@ -523,37 +510,7 @@ export default class LabelStyle extends CommonStyle {
     //this.onSelectionChanged(this.$store.getters.selectedSENodules());
     //  Mount a save listener
     EventBus.listen("save-style-state", this.saveStyleState);
-
-    EventBus.listen(
-      "toggle-label-visibility",
-      this.toggleAllLabelsVisibility.bind(this)
-    );
-    EventBus.listen(
-      "toggle-object-visibility",
-      this.toggleAllObjectsVisibility.bind(this)
-    );
     // EventBus.listen("set-active-style-panel", this.setActivePanel);
-  }
-  editModeIsLabel(): boolean {
-    return this.panel === StyleEditPanels.Label;
-  }
-  allLabelsShowing(): boolean {
-    this.allLabelsVisible = (this.$store.getters.selectedSENodules() as SENodule[]).every(
-      node => {
-        if (node.isLabelable()) {
-          return ((node as unknown) as Labelable).label!.showing;
-        } else {
-          return true;
-        }
-      }
-    );
-    return this.allLabelsVisible;
-  }
-  allObjectsShowing(): boolean {
-    this.allObjectsVisible = (this.$store.getters.selectedSENodules() as SENodule[]).every(
-      node => node.showing
-    );
-    return this.allObjectsVisible;
   }
   toggleShowMoreLabelStyles(): void {
     this.showMoreLabelStyles = !this.showMoreLabelStyles;
@@ -562,6 +519,20 @@ export default class LabelStyle extends CommonStyle {
     } else {
       this.moreOrLessText = i18n.t("style.lessStyleOptions");
     }
+  }
+  allLabelsShowing(): boolean {
+    return (this.$store.getters.selectedSENodules() as SENodule[]).every(
+      node => {
+        if (node.isLabelable()) {
+          return ((node as unknown) as Labelable).label!.showing;
+        } else {
+          return true;
+        }
+      }
+    );
+  }
+  toggleAllLabelsVisibility(): void {
+    EventBus.fire("toggle-label-visibility", { fromPanel: true });
   }
 
   // These methods are linked to the Style Data fade-in-card
@@ -616,101 +587,29 @@ export default class LabelStyle extends CommonStyle {
         : "";
     return this.labelDisplayCaptionTestResults[1];
   }
-  toggleAllLabelsVisibility(fromPanel: unknown): void {
-    // If any panel calles this method it should execute, but if the Style.vue
-    // calls this with EventBus.fire("toggle-label-visibility", { fromStyleComponent: true });
-    // only execute this if the panel is the label panel (if we didn't do this then
-    // *all* copies (upto three) EventBus.listen("toggle-label-visibility",{...}) would execute this
-    // and that is no the desired outcome, we want this to execut only once if called from Style.vue
-    if (
-      this.panel !== (fromPanel as any).mounted &&
-      (fromPanel as any).mounted !== undefined
-    ) {
-      return;
-    }
-    // console.log("toggle All Labels Visbility from panel", this.panel);
-    if (!this.allLabelsVisible && !this.allObjectsVisible) {
-      console.log("her");
-      this.allObjectsVisible = true;
-      this.setObjectVisibilityChange();
-    }
-
-    this.allLabelsVisible = !this.allLabelsVisible;
-
-    this.setLabelVisibilityChange();
-    this.onLabelStyleDataChanged();
-
-    //finally update the labels in the style.vue component
-    EventBus.fire("update-all-labels-showing", {});
-    EventBus.fire("update-all-objects-showing", {});
-    // now update the all object/labels showing for this component
-    this.allLabelsShowing();
-    this.allObjectsShowing();
-  }
-  toggleAllObjectsVisibility(fromPanel: unknown): void {
-    // If any panel calles this method it should execute, but if the Style.vue
-    // calls this with EventBus.fire("toggle-label-visibility", { fromStyleComponent: true });
-    // only execute this if the panel is the label panel (if we didn't do this then
-    // *all* copies (upto three) EventBus.listen("toggle-label-visibility",{...}) would execute this
-    // and that is no the desired outcome, we want this to execut only once if called from Style.vue
-    if (
-      this.panel !== (fromPanel as any).mounted &&
-      (fromPanel as any).mounted !== undefined
-    ) {
-      return;
-    }
-    // console.log("toggle All Objects Visbility from panel after");
-
-    if (
-      this.allObjectsVisible &&
-      this.allLabelsVisible &&
-      SETTINGS.hideObjectHidesLabel
-    ) {
-      this.allLabelsVisible = false;
-      this.setLabelVisibilityChange();
-    }
-
-    this.allObjectsVisible = !this.allObjectsVisible;
-
-    this.setObjectVisibilityChange();
-    this.onLabelStyleDataChanged();
-
-    //finally update the style.vue component
-    EventBus.fire("update-all-labels-showing", {});
-    EventBus.fire("update-all-objects-showing", {});
-    // now set the all object/labels showing for this component
-    this.allObjectsShowing();
-    // console.log("End All Objects Visbility is ", this.allObjectsVisible);
-    this.allLabelsShowing();
-    // console.log("End All Labels Visbility is ", this.allLabelsVisible);
-  }
   resetStyleDataToDefaults(): void {
     const selected: SENodule[] = [];
-    // If this number selector is on the label panel, then all changes are directed at the label(s).
-    if (this.panel === StyleEditPanels.Label) {
-      (this.$store.getters.selectedSENodules() as SENodule[]).forEach(node => {
-        selected.push(((node as unknown) as Labelable).label!);
-      });
-    } else {
-      selected.push(...this.$store.getters.selectedSENodules());
-    }
+    // This number selector is on the label panel, so all changes are directed at the label(s).
+
+    (this.$store.getters.selectedSENodules() as SENodule[]).forEach(node => {
+      selected.push(((node as unknown) as Labelable).label!);
+    });
+
     const defaultStyleStates = this.$store.getters.getDefaultStyleState(
-      this.panel
+      StyleEditPanels.Label
     );
 
     for (let i = 0; i < selected.length; i++) {
       this.$store.direct.commit.changeStyle({
         selected: [selected[i]],
         payload: {
-          panel: this.panel,
+          panel: StyleEditPanels.Label,
           labelDisplayText: defaultStyleStates[i].labelDisplayText,
           labelDisplayCaption: defaultStyleStates[i].labelDisplayCaption,
           labelTextStyle: defaultStyleStates[i].labelTextStyle,
           labelTextFamily: defaultStyleStates[i].labelTextFamily,
           labelTextDecoration: defaultStyleStates[i].labelTextDecoration,
-          labelDisplayMode: defaultStyleStates[i].labelDisplayMode,
-          labelVisibility: defaultStyleStates[i].labelVisibility,
-          objectVisibility: defaultStyleStates[i].objectVisibility
+          labelDisplayMode: defaultStyleStates[i].labelDisplayMode
         }
       });
     }
@@ -718,30 +617,26 @@ export default class LabelStyle extends CommonStyle {
   }
   clearStyleData(): void {
     const selected: SENodule[] = [];
-    // If this number selector is on the label panel, then all changes are directed at the label(s).
-    if (this.panel === StyleEditPanels.Label) {
-      (this.$store.getters.selectedSENodules() as SENodule[]).forEach(node => {
-        selected.push(((node as unknown) as Labelable).label!);
-      });
-    } else {
-      selected.push(...this.$store.getters.selectedSENodules());
-    }
+    // This number selector is on the label panel, so all changes are directed at the label(s).
+
+    (this.$store.getters.selectedSENodules() as SENodule[]).forEach(node => {
+      selected.push(((node as unknown) as Labelable).label!);
+    });
+
     const initialStyleStates = this.$store.getters.getInitialStyleState(
-      this.panel
+      StyleEditPanels.Label
     );
     for (let i = 0; i < selected.length; i++) {
       this.$store.direct.commit.changeStyle({
         selected: [selected[i]],
         payload: {
-          panel: this.panel,
+          panel: StyleEditPanels.Label,
           labelDisplayText: initialStyleStates[i].labelDisplayText,
           labelDisplayCaption: initialStyleStates[i].labelDisplayCaption,
           labelTextStyle: initialStyleStates[i].labelTextStyle,
           labelTextFamily: initialStyleStates[i].labelTextFamily,
           labelTextDecoration: initialStyleStates[i].labelTextDecoration,
-          labelDisplayMode: initialStyleStates[i].labelDisplayMode,
-          labelVisibility: initialStyleStates[i].labelVisibility,
-          objectVisibility: initialStyleStates[i].objectVisibility
+          labelDisplayMode: initialStyleStates[i].labelDisplayMode
         }
       });
     }
@@ -761,7 +656,7 @@ export default class LabelStyle extends CommonStyle {
       this.labelDisplayText.trim().length === 0
     ) {
       const defaultStyleStates = this.$store.getters.getDefaultStyleState(
-        this.panel
+        StyleEditPanels.Label
       );
       const translation = i18n.t("style.renameLabels");
       this.labelDisplayText =
@@ -772,7 +667,7 @@ export default class LabelStyle extends CommonStyle {
         this.$store.direct.commit.changeStyle({
           selected: [selected[i]],
           payload: {
-            panel: this.panel,
+            panel: StyleEditPanels.Label,
             labelDisplayText: defaultStyleStates[i].labelDisplayText
           }
         });
@@ -786,14 +681,12 @@ export default class LabelStyle extends CommonStyle {
       this.labelDisplayModeChange ||
       this.labelTextFamilyChange ||
       this.labelTextStyleChange ||
-      this.labelTextDecorationChange ||
-      this.labelVisibilityChange ||
-      this.objectVisibilityChange
+      this.labelTextDecorationChange
     ) {
       this.$store.direct.commit.changeStyle({
         selected: selected,
         payload: {
-          panel: this.panel,
+          panel: StyleEditPanels.Label,
           labelTextStyle: this.labelTextStyleChange
             ? this.labelTextStyle
             : undefined,
@@ -811,12 +704,6 @@ export default class LabelStyle extends CommonStyle {
             : undefined,
           labelDisplayMode: this.labelDisplayModeChange
             ? this.labelDisplayMode
-            : undefined,
-          labelVisibility: this.labelVisibilityChange
-            ? this.allLabelsVisible
-            : undefined,
-          objectVisibility: this.objectVisibilityChange
-            ? this.allObjectsVisible
             : undefined
         }
       });
@@ -827,8 +714,6 @@ export default class LabelStyle extends CommonStyle {
     this.labelTextFamilyChange = false;
     this.labelTextStyleChange = false;
     this.labelTextDecorationChange = false;
-    this.labelVisibilityChange = false;
-    this.objectVisibilityChange = false;
   }
   setStyleDataSelectorState(styleState: StyleOptions[]): void {
     this.disableStyleSelectorUndoButton = true;
@@ -878,9 +763,6 @@ export default class LabelStyle extends CommonStyle {
       this.labelTextStyle = (styleState[0] as StyleOptions).labelTextStyle;
       this.labelTextDecoration = (styleState[0] as StyleOptions).labelTextDecoration;
     }
-    // now set the all object/labels showing
-    this.allObjectsShowing();
-    this.allLabelsShowing();
   }
   disableStyleDataSelector(totally: boolean): void {
     this.styleDataAgreement = false;
@@ -893,8 +775,6 @@ export default class LabelStyle extends CommonStyle {
     this.labelTextFamily = "";
     this.labelTextStyle = "";
     this.labelTextDecoration = "";
-    this.allLabelsVisible = undefined;
-    this.allObjectsVisible = undefined;
   }
   setlabelDisplayTextChange(): void {
     this.labelDisplayTextChange = true;
@@ -913,12 +793,6 @@ export default class LabelStyle extends CommonStyle {
   }
   setlabelTextDecorationChange(): void {
     this.labelTextDecorationChange = true;
-  }
-  setLabelVisibilityChange(): void {
-    this.labelVisibilityChange = true;
-  }
-  setObjectVisibilityChange(): void {
-    this.objectVisibilityChange = true;
   }
   setStyleDataAgreement(): void {
     this.styleDataAgreement = true;
@@ -1013,7 +887,10 @@ export default class LabelStyle extends CommonStyle {
 
   @Watch("activePanel")
   private activePanelChange(): void {
-    if (this.activePanel !== undefined && this.panel === this.activePanel) {
+    if (
+      this.activePanel !== undefined &&
+      StyleEditPanels.Label === this.activePanel
+    ) {
       this.onSelectionChanged(this.$store.getters.selectedSENodules());
     }
   }
@@ -1030,78 +907,64 @@ export default class LabelStyle extends CommonStyle {
     if (newSelection.length === 0) {
       //totally disable the selectors in this component
       this.disableStyleDataSelector(true);
-      CommonStyle.oldSelection.clear();
+      this.store.commit.setOldStyleSelection([]);
       return;
     }
 
     // record the new selections in the old
-    CommonStyle.oldSelection.splice(0);
-    // If we are on the label panel then push the labels onto the oldSelections
-    if (this.panel === StyleEditPanels.Label) {
-      newSelection.forEach(obj =>
-        CommonStyle.oldSelection.push(((obj as unknown) as Labelable).label!)
-      );
-    } else {
-      newSelection.forEach(obj => CommonStyle.oldSelection.push(obj));
-    }
+    this.store.commit.setOldStyleSelection([]);
+    // We are on the label panel so push the labels onto the oldSelections
+    const oldSelection: SENodule[] = [];
+    newSelection.forEach(obj =>
+      oldSelection.push(((obj as unknown) as Labelable).label!)
+    );
+    this.store.commit.setOldStyleSelection(oldSelection);
 
     // Create a list of the common properties that the objects in the selection have.
     // commonStyleProperties is a number (corresponding to an enum) array
     // The customStyles method returns a list of the styles the are adjustable for that object
     for (let k = 0; k < values.length; k++) {
-      if (this.panel === StyleEditPanels.Label) {
-        if (
-          newSelection.every(s =>
-            ((s as unknown) as Labelable).label!.customStyles().has(k)
-          )
-        ) {
-          this.commonStyleProperties.push(k);
-        }
-      } else {
-        if (newSelection.every(s => s.customStyles().has(k))) {
-          this.commonStyleProperties.push(k);
-        }
+      if (
+        newSelection.every(s =>
+          ((s as unknown) as Labelable).label!.customStyles().has(k)
+        )
+      ) {
+        this.commonStyleProperties.push(k);
       }
     }
 
     // Get the initial and default style state of the object for undo/redo and buttons to revert to initial style.
     // Put this in the store so that it is availble to *all* panels. Get the front and back information at the same time.
-    if (this.panel === StyleEditPanels.Label) {
-      this.$store.direct.commit.recordStyleState({
-        selected: newSelection.map(
-          obj => ((obj as unknown) as Labelable).label!
-        ),
-        backContrast: Nodule.getBackStyleContrast()
-      });
-    } else {
-      //#region setStyle
-      this.$store.direct.commit.recordStyleState({
-        selected: newSelection,
-        backContrast: Nodule.getBackStyleContrast()
-      });
-      //#endregion setStyle
-    }
-    CommonStyle.savedFromThisPanel = this.panel;
+
+    this.$store.direct.commit.recordStyleState({
+      selected: newSelection.map(obj => ((obj as unknown) as Labelable).label!),
+      backContrast: Nodule.getBackStyleContrast()
+    });
+
+    this.store.commit.setSavedFromPanel(StyleEditPanels.Label);
     //Set the initial state of the fade-in-card/selectors (checking to see if the property is the same across all selected objects)
     this.setStyleDataSelectorState(
-      this.$store.getters.getInitialStyleState(this.panel)
+      this.$store.getters.getInitialStyleState(StyleEditPanels.Label)
     );
   }
 
   saveStyleState(): void {
     // There must be an old selection in order for there to be a change to save
-    if (CommonStyle.oldSelection.length > 0) {
+    const oldSelection = this.$store.getters.getOldStyleSelection();
+    if (oldSelection.length > 0) {
       //Record the current state of each Nodule
       this.currentStyleStates.splice(0);
 
-      CommonStyle.oldSelection.forEach(seNodule => {
+      oldSelection.forEach((seNodule: SENodule) => {
         if (seNodule.ref !== undefined)
           this.currentStyleStates.push(
-            seNodule.ref.currentStyleState(CommonStyle.savedFromThisPanel)
+            seNodule.ref.currentStyleState(
+              this.$store.getters.getSavedFromPanel()
+            )
           );
       });
       const initialStyleStates = this.$store.getters.getInitialStyleState(
-        CommonStyle.savedFromThisPanel
+        this.$store.getters.getSavedFromPanel()
       );
       const initialBackStyleContrast = this.$store.getters.getInitialBackStyleContrast();
       if (
@@ -1114,8 +977,8 @@ export default class LabelStyle extends CommonStyle {
         console.log("Issued style save command");
         // Add the label of the
         new StyleNoduleCommand(
-          CommonStyle.oldSelection,
-          CommonStyle.savedFromThisPanel,
+          oldSelection,
+          this.$store.getters.getSavedFromPanel(),
           this.currentStyleStates,
           initialStyleStates,
           Nodule.getBackStyleContrast(),
@@ -1123,10 +986,74 @@ export default class LabelStyle extends CommonStyle {
         ).push();
       }
       // clear the old selection so that this save style state will not be executed again until changes are made.
-      CommonStyle.oldSelection.splice(0);
+      this.store.commit.setOldStyleSelection([]);
     }
-    // }
-    //}
+  }
+
+  areEquivalentStyles(
+    styleStates1: StyleOptions[],
+    styleStates2: StyleOptions[]
+  ): boolean {
+    if (styleStates1.length !== styleStates2.length) {
+      throw "Attempted to compare two different length styles in areEquivalentStyles";
+      //return false;
+    }
+    for (let i = 0; i < styleStates1.length; i++) {
+      const a = styleStates1[i];
+      const b = styleStates2[i];
+      if (
+        a.strokeWidthPercent === b.strokeWidthPercent &&
+        a.strokeColor === b.strokeColor &&
+        a.fillColor === b.fillColor &&
+        a.dynamicBackStyle === b.dynamicBackStyle &&
+        a.pointRadiusPercent === b.pointRadiusPercent &&
+        a.labelDisplayText === b.labelDisplayText &&
+        a.labelDisplayCaption === b.labelDisplayCaption &&
+        a.labelTextStyle === b.labelTextStyle &&
+        a.labelTextFamily === b.labelTextFamily &&
+        a.labelTextDecoration === b.labelTextDecoration &&
+        a.labelTextRotation === b.labelTextRotation &&
+        a.labelTextScalePercent === b.labelTextScalePercent &&
+        a.labelDisplayMode === b.labelDisplayMode &&
+        a.labelFrontFillColor === b.labelFrontFillColor &&
+        a.labelBackFillColor === b.labelBackFillColor
+      ) {
+        //now check the dash array which can be undefined, an empty array,length one array or a length two array.
+        if (a.dashArray === undefined && b.dashArray === undefined) {
+          break; // stop checking this pair in the array because we can conclude they are equal.
+        }
+        if (a.dashArray !== undefined && b.dashArray !== undefined) {
+          if (a.dashArray.length === b.dashArray.length) {
+            if (a.dashArray.length === 0 && b.dashArray.length === 0) {
+              break; // stop checking this pair in the array because we can conclude they are equal.
+            } else if (
+              a.dashArray.length === 1 &&
+              b.dashArray.length === 1 &&
+              a.dashArray[0] === b.dashArray[0]
+            ) {
+              break; // stop checking this pair in the array because we can conclude they are equal.
+            } else if (
+              a.dashArray.length === 2 &&
+              b.dashArray.length === 2 &&
+              a.dashArray[0] === b.dashArray[0] &&
+              a.dashArray[1] === b.dashArray[1]
+            ) {
+              break; // stop checking this pair in the array because we can conclude they are equal.
+            } else {
+              return false;
+            }
+          } else {
+            return false;
+          }
+        } else {
+          return false;
+        }
+      } else {
+        return false;
+      }
+    }
+    // If we reach here the arrays of style states are equal
+    return true;
   }
 }
 </script>

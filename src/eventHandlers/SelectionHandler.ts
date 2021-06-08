@@ -19,10 +19,10 @@ export default class SelectionHandler extends Highlighter {
   private currentSelection: SENodule[] = [];
 
   // To make the objects appear normal for M ms and then glow for N ms we need two timers
-  // private highlightTimer: NodeJS.Timeout | null = null;
-  // private highlightTimer2: NodeJS.Timeout | null = null;
-  // private delayedStart: NodeJS.Timeout | null = null;
-  // private highlightOn = false;
+  private highlightTimer: NodeJS.Timeout | null = null;
+  private highlightTimer2: NodeJS.Timeout | null = null;
+  private delayedStart: NodeJS.Timeout | null = null;
+  private highlightOn = false;
   /**
    * An array to store the object selected by the key press handler
    */
@@ -205,35 +205,35 @@ export default class SelectionHandler extends Highlighter {
       });
     }
 
-    // if (this.currentSelection.length > 0 && this.highlightTimer === null) {
-    //   // We have selections and interval timer is not running, then start timer and offset timer
-    //   this.highlightTimer = setInterval(this.blinkSelections.bind(this), 1500);
-    //   this.delayedStart = setTimeout(() => {
-    //     this.highlightTimer2 = setInterval(
-    //       this.blinkSelections.bind(this),
-    //       1500
-    //     );
-    //   }, 300);
-    // } else if (
-    //   this.currentSelection.length === 0 &&
-    //   this.highlightTimer !== null
-    // ) {
-    //   // interval timer is running and we have no selections, then stop timer
-    //   clearInterval(this.highlightTimer);
-    //   if (this.highlightTimer2) clearInterval(this.highlightTimer2);
-    //   if (this.delayedStart) clearInterval(this.delayedStart);
-    //   this.delayedStart = null;
-    //   this.highlightTimer = null;
-    //   this.highlightTimer2 = null;
-    // }
+    if (this.currentSelection.length > 0 && this.highlightTimer === null) {
+      // We have selections and interval timer is not running, then start timer and offset timer
+      this.highlightTimer = setInterval(this.blinkSelections.bind(this), 1500);
+      this.delayedStart = setTimeout(() => {
+        this.highlightTimer2 = setInterval(
+          this.blinkSelections.bind(this),
+          1500
+        );
+      }, 300);
+    } else if (
+      this.currentSelection.length === 0 &&
+      this.highlightTimer !== null
+    ) {
+      // interval timer is running and we have no selections, then stop timer
+      clearInterval(this.highlightTimer);
+      if (this.highlightTimer2) clearInterval(this.highlightTimer2);
+      if (this.delayedStart) clearInterval(this.delayedStart);
+      this.delayedStart = null;
+      this.highlightTimer = null;
+      this.highlightTimer2 = null;
+    }
   }
 
-  // private blinkSelections(): void {
-  //   this.highlightOn = !this.highlightOn;
-  //   this.currentSelection.forEach((n: SENodule) => {
-  //     n.glowing = this.highlightOn;
-  //   });
-  // }
+  private blinkSelections(): void {
+    this.highlightOn = !this.highlightOn;
+    this.currentSelection.forEach((n: SENodule) => {
+      n.glowing = this.highlightOn;
+    });
+  }
 
   mouseMoved(event: MouseEvent): void {
     // UnGlow and clear any objects in the keyPressSelection
@@ -277,14 +277,14 @@ export default class SelectionHandler extends Highlighter {
 
   deactivate(): void {
     // Clear the timers
-    // if (this.highlightTimer !== null) {
-    //   clearInterval(this.highlightTimer);
-    //   this.highlightTimer = null;
-    //   if (this.highlightTimer2) clearInterval(this.highlightTimer2);
-    //   this.highlightTimer2 = null;
-    //   if (this.delayedStart) clearInterval(this.delayedStart);
-    //   this.delayedStart = null;
-    // }
+    if (this.highlightTimer !== null) {
+      clearInterval(this.highlightTimer);
+      this.highlightTimer = null;
+      if (this.highlightTimer2) clearInterval(this.highlightTimer2);
+      this.highlightTimer2 = null;
+      if (this.delayedStart) clearInterval(this.delayedStart);
+      this.delayedStart = null;
+    }
     // Unselect all selected objects (this unglows them and sets the selected flag to false for them)
     // this.store.getters.selectedSENodules().forEach((obj: SENodule) => {
     //   obj.selected = false;

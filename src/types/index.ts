@@ -12,7 +12,7 @@ import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import { Matrix4, Vector3 } from "three";
 import { SEMeasurement } from "@/models/SEMeasurement";
 import { SECalculation } from "@/models/SECalculation";
-import { StyleOptions } from "@/types/Styles";
+import { StyleEditPanels, StyleOptions } from "@/types/Styles";
 import { SEExpression } from "@/models/SEExpression";
 import { SEAngleMarker } from "@/models/SEAngleMarker";
 import { SEPerpendicularLineThruPoint } from "@/models/SEPerpendicularLineThruPoint";
@@ -40,12 +40,15 @@ export interface AppState {
   seLabels: SELabel[];
   seNodules: SENodule[];
   selections: SENodule[];
+
   intersections: SEIntersectionPoint[];
   // measurements: SEMeasurement[];
   expressions: SEExpression[];
   temporaryNodules: Nodule[];
   initialStyleStates: StyleOptions[];
   defaultStyleStates: StyleOptions[];
+  oldStyleSelections: SENodule[];
+  styleSavedFromPanel: StyleEditPanels;
   initialBackStyleContrast: number;
   inverseTotalRotationMatrix: Matrix4; // Initially the identity. This is the composition of all the inverses of the rotation matrices applied to the sphere.
 }

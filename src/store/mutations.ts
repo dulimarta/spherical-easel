@@ -38,6 +38,7 @@ export const initialState: AppState = {
   canvasWidth: 0, //A temporary canvas width;
   seNodules: [], // An array of all SENodules
   selections: [], // An array of selected SENodules
+  oldStyleSelections: [], // An array of previous selected SENodules
   layers: [], // An array of Two.Group pointer to the layers in the twoInstance
   sePoints: [], // An array of all SEPoints
   seLines: [], // An array of all SELines
@@ -51,6 +52,7 @@ export const initialState: AppState = {
   expressions: [],
   initialStyleStates: [],
   defaultStyleStates: [],
+  styleSavedFromPanel: StyleEditPanels.Label,
   initialBackStyleContrast: SETTINGS.style.backStyleContrast,
   inverseTotalRotationMatrix: new Matrix4() //initially the identity. The composition of all the inverses of the rotation matrices applied to the sphere
 };
@@ -75,6 +77,7 @@ export default {
     state.seAngleMarkers.clear();
     state.seLabels.clear();
     state.selections.clear();
+    state.oldStyleSelections.splice(0);
     state.intersections.clear();
     state.expressions.clear();
     state.initialStyleStates.clear();
@@ -315,6 +318,7 @@ export default {
       n.ref?.setSelectedColoring(true);
     });
   },
+
   // Update the display of all free SEPoints to update the entire display
   updateDisplay(state: AppState): void {
     state.seNodules
@@ -332,6 +336,17 @@ export default {
       }
     });
   },
+  // This is the previous set of nodes that was selected
+  // If created from the LabelPanel they are all SSELabels (So we can't justs copy selections before updating it)
+  setOldStyleSelection(state: AppState, payload: SENodule[]): void {
+    state.oldStyleSelections.splice(0);
+    state.oldStyleSelections.push(...payload);
+  },
+
+  setSavedFromPanel(state: AppState, panel: StyleEditPanels): void {
+    state.styleSavedFromPanel = panel;
+  },
+
   changeStyle(
     state: AppState,
     {

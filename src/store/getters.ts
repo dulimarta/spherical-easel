@@ -839,6 +839,12 @@ export default {
     //console.log("All Nodule", state.nodules.length);
     return state.seNodules.find((z: SENodule) => z.id === id);
   },
+  getOldStyleSelection: (state: AppState) => (): SENodule[] => {
+    return state.oldStyleSelections;
+  },
+  getSavedFromPanel: (state: AppState) => (): StyleEditPanels => {
+    return state.styleSavedFromPanel;
+  },
   getInitialStyleState: (state: AppState) => (
     panel: StyleEditPanels
   ): StyleOptions[] => {

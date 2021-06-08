@@ -49,8 +49,8 @@ export class StyleNoduleCommand extends Command {
       newObj.labelDisplayMode = obj.labelDisplayMode;
       newObj.labelFrontFillColor = obj.labelFrontFillColor;
       newObj.labelBackFillColor = obj.labelBackFillColor;
-      newObj.labelVisibility = obj.labelVisibility;
-      newObj.objectVisibility = obj.objectVisibility;
+      // newObj.labelVisibility = obj.labelVisibility;
+      // newObj.objectVisibility = obj.objectVisibility;
       this.currentStyles.push(newObj);
     });
     pastStyles.forEach(obj => {
@@ -78,10 +78,10 @@ export class StyleNoduleCommand extends Command {
       newObj.labelDisplayText = obj.labelDisplayText;
       newObj.labelDisplayCaption = obj.labelDisplayCaption;
       newObj.labelDisplayMode = obj.labelDisplayMode;
-      newObj.labelVisibility = obj.labelVisibility;
+      // newObj.labelVisibility = obj.labelVisibility;
       newObj.labelFrontFillColor = obj.labelFrontFillColor;
       newObj.labelBackFillColor = obj.labelBackFillColor;
-      newObj.objectVisibility = obj.objectVisibility;
+      // newObj.objectVisibility = obj.objectVisibility;
       this.pastStyles.push(newObj);
     });
     this.currentBackStyleContrast = currentBackStyleContrast;
@@ -108,10 +108,10 @@ export class StyleNoduleCommand extends Command {
           labelDisplayText: this.currentStyles[i].labelDisplayText,
           labelDisplayCaption: this.currentStyles[i].labelDisplayCaption,
           labelDisplayMode: this.currentStyles[i].labelDisplayMode,
-          labelVisibility: this.currentStyles[i].labelVisibility,
+          // labelVisibility: this.currentStyles[i].labelVisibility,
           labelFrontFillColor: this.currentStyles[i].labelFrontFillColor,
           labelBackFillColor: this.currentStyles[i].labelBackFillColor,
-          objectVisibility: this.currentStyles[i].objectVisibility,
+          // objectVisibility: this.currentStyles[i].objectVisibility,
           backStyleContrast: this.currentBackStyleContrast
         }
       });
@@ -142,10 +142,10 @@ export class StyleNoduleCommand extends Command {
           labelDisplayText: this.pastStyles[i].labelDisplayText,
           labelDisplayCaption: this.pastStyles[i].labelDisplayCaption,
           labelDisplayMode: this.pastStyles[i].labelDisplayMode,
-          labelVisibility: this.pastStyles[i].labelVisibility,
+          // labelVisibility: this.pastStyles[i].labelVisibility,
           labelFrontFillColor: this.pastStyles[i].labelFrontFillColor,
           labelBackFillColor: this.pastStyles[i].labelBackFillColor,
-          objectVisibility: this.pastStyles[i].objectVisibility,
+          // objectVisibility: this.pastStyles[i].objectVisibility,
           backStyleContrast: this.pastBackStyleContrast
         }
       });
