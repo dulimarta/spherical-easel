@@ -25,4 +25,8 @@ export class SetExpressionMultiplesOfPiCommand extends Command {
   restoreState(): void {
     this.seExpression.displayInMultiplesOfPi = !this.displayInMultiplesOfPi;
   }
+
+  toOpcode(): null | string | Array<string> {
+    return null; // Exclude this command from interpretation
+  }
 }

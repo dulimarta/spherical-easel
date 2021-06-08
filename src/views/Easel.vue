@@ -243,7 +243,7 @@ import Segment from "@/plottables/Segment";
 import Nodule from "@/plottables/Nodule";
 import { State } from "vuex-class";
 import { SENodule } from "@/models/SENodule";
-import { AppState } from "@/types";
+import { AppState, ConstructionInFirestore } from "@/types";
 import IconBase from "@/components/IconBase.vue";
 import AngleMarker from "@/plottables/AngleMarker";
 import { FirebaseFirestore, DocumentSnapshot } from "@firebase/firestore-types";
@@ -327,11 +327,11 @@ export default class Easel extends Vue {
     );
   }
 
-  private setUndoEnabled(e: unknown): void {
-    this.undoEnabled = (e as any).value;
+  private setUndoEnabled(e: { value: boolean }): void {
+    this.undoEnabled = e.value;
   }
-  private setRedoEnabled(e: unknown): void {
-    this.redoEnabled = (e as any).value;
+  private setRedoEnabled(e: { value: boolean }): void {
+    this.redoEnabled = e.value;
   }
 
   private enableZoomIn(): void {
@@ -380,7 +380,7 @@ export default class Easel extends Vue {
       .get()
       .then((doc: DocumentSnapshot) => {
         if (doc.exists) {
-          const { script } = doc.data() as any;
+          const { script } = doc.data() as ConstructionInFirestore;
           run(JSON.parse(script) as ConstructionScript);
         } else {
           // TODO: add a new I18N entry for the following error message
@@ -407,7 +407,7 @@ export default class Easel extends Vue {
    * Split pane resize handler
    * @param event an array of numeric triplets {min: ____, max: ____, size: ____}
    */
-  dividerMoved(event: any): void {
+  dividerMoved(event: Array<{ min: number; max: number; size: number }>): void {
     const availableWidth =
       ((100 - event[0].size - event[2].size) / 100) *
       (window.innerWidth -
@@ -440,7 +440,7 @@ export default class Easel extends Vue {
     }
   }
 
-  setActionModeToSelectTool() {
+  setActionModeToSelectTool(): void {
     this.store.commit.setActionMode({
       id: "select",
       name: "SelectDisplayedName"
@@ -472,7 +472,7 @@ export default class Easel extends Vue {
   }
 
   //#region resizePlottables
-  resizePlottables(e: any): void {
+  resizePlottables(e: { factor: number }): void {
     const oldFactor = this.store.state.previousZoomMagnificationFactor;
     // Update the current stroke widths in each plottable class
     Line.updateCurrentStrokeWidthForZoom(oldFactor / e.factor);
