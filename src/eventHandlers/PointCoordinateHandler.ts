@@ -3,7 +3,7 @@ import Highlighter from "./Highlighter";
 import { SEPoint } from "@/models/SEPoint";
 import { SENodule } from "@/models/SENodule";
 import { AddLocationMeasurementCommand } from "@/commands/AddLocationMeasurementCommand";
-
+import SETTINGS from "@/global-settings";
 import EventBus from "@/eventHandlers/EventBus";
 import {
   SEPointCoordinate,
@@ -11,6 +11,9 @@ import {
 } from "@/models/SEPointCoordinate";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import { CommandGroup } from "@/commands/CommandGroup";
+import { StyleNoduleCommand } from "@/commands/StyleNoduleCommand";
+import { StyleEditPanels } from "@/types/Styles";
+import { UpdateMode } from "@/types";
 
 export default class PointCoordinateHandler extends Highlighter {
   /**
@@ -73,7 +76,34 @@ export default class PointCoordinateHandler extends Highlighter {
             CoordinateSelection.Z_VALUE
           )
         );
+        // Set the selected segment's Label to display and to show NameAndValue in an undoable way
+        coordinatizeCommandGroup.addCommand(
+          new StyleNoduleCommand(
+            [this.targetPoint.label!],
+            StyleEditPanels.Front,
+            [
+              {
+                panel: StyleEditPanels.Front,
+                labelVisibility: true,
+                labelDisplayMode:
+                  SETTINGS.point.readingCoordinatesChangesLabelModeTo
+              }
+            ],
+            [
+              {
+                panel: StyleEditPanels.Front,
+                labelVisibility: this.targetPoint.label!.showing,
+                labelDisplayMode: this.targetPoint.label!.ref.labelDisplayMode
+              }
+            ]
+          )
+        );
         coordinatizeCommandGroup.execute();
+        // Update the display so the changes become apparent
+        this.targetPoint.update({
+          mode: UpdateMode.DisplayOnly,
+          stateArray: []
+        });
         this.targetPoint = null;
       }
     }

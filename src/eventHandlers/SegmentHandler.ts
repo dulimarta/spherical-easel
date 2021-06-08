@@ -289,7 +289,11 @@ export default class SegmentHandler extends Highlighter {
           this.temporaryStartMarker.positionVector = this.currentSphereVector;
         }
       } else {
-        // If the temporary endMarker has *not* been added to the scene do so now
+        // If the temporary end/StartMarker has *not* been added to the scene do so now
+        if (!this.isTemporaryStartMarkerAdded && this.startSEPoint === null) {
+          this.isTemporaryStartMarkerAdded = true;
+          this.temporaryStartMarker.addToLayers(this.layers);
+        }
         if (!this.isTemporaryEndMarkerAdded) {
           this.isTemporaryEndMarkerAdded = true;
           this.temporaryEndMarker.addToLayers(this.layers);
@@ -480,8 +484,8 @@ export default class SegmentHandler extends Highlighter {
         .copy(vtx.locationVector)
         .add(
           new Vector3(
-            2 * SETTINGS.point.initialLabelOffset,
-            SETTINGS.point.initialLabelOffset,
+            2 * SETTINGS.segment.initialLabelOffset,
+            SETTINGS.segment.initialLabelOffset,
             0
           )
         )
@@ -599,8 +603,8 @@ export default class SegmentHandler extends Highlighter {
         .copy(vtx.locationVector)
         .add(
           new Vector3(
-            2 * SETTINGS.point.initialLabelOffset,
-            SETTINGS.point.initialLabelOffset,
+            2 * SETTINGS.segment.initialLabelOffset,
+            SETTINGS.segment.initialLabelOffset,
             0
           )
         )
@@ -644,7 +648,7 @@ export default class SegmentHandler extends Highlighter {
         this.endSEPoint.locationVector
       )
       .normalize()
-      .add(new Vector3(0, SETTINGS.line.initialLabelOffset, 0))
+      .add(new Vector3(0, SETTINGS.segment.initialLabelOffset, 0))
       .normalize();
     if (this.arcLength > Math.PI) {
       this.tmpVector.multiplyScalar(-1);
@@ -670,8 +674,8 @@ export default class SegmentHandler extends Highlighter {
           .copy(item.SEIntersectionPoint.locationVector)
           .add(
             new Vector3(
-              2 * SETTINGS.point.initialLabelOffset,
-              SETTINGS.point.initialLabelOffset,
+              2 * SETTINGS.segment.initialLabelOffset,
+              SETTINGS.segment.initialLabelOffset,
               0
             )
           )
@@ -810,7 +814,7 @@ export default class SegmentHandler extends Highlighter {
         this.tmpVector
           .addVectors(object1.locationVector, object2.locationVector)
           .normalize()
-          .add(new Vector3(0, SETTINGS.line.initialLabelOffset, 0))
+          .add(new Vector3(0, SETTINGS.segment.initialLabelOffset, 0))
           .normalize();
         newSELabel.locationVector = this.tmpVector;
 
@@ -832,8 +836,8 @@ export default class SegmentHandler extends Highlighter {
               .copy(item.SEIntersectionPoint.locationVector)
               .add(
                 new Vector3(
-                  2 * SETTINGS.point.initialLabelOffset,
-                  SETTINGS.point.initialLabelOffset,
+                  2 * SETTINGS.segment.initialLabelOffset,
+                  SETTINGS.segment.initialLabelOffset,
                   0
                 )
               )

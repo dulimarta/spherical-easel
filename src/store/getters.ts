@@ -840,6 +840,12 @@ export default {
     //console.log("All Nodule", state.nodules.length);
     return state.seNodules.find((z: SENodule) => z.id === id);
   },
+  getOldStyleSelection: (state: AppState) => (): SENodule[] => {
+    return state.oldStyleSelections;
+  },
+  getSavedFromPanel: (state: AppState) => (): StyleEditPanels => {
+    return state.styleSavedFromPanel;
+  },
   getInitialStyleState: (state: AppState) => (
     panel: StyleEditPanels
   ): StyleOptions[] => {
@@ -857,7 +863,7 @@ export default {
         );
       }
       default:
-      case StyleEditPanels.Basic: {
+      case StyleEditPanels.Label: {
         return state.initialStyleStates.slice(
           (2 * state.initialStyleStates.length) / 3,
           state.initialStyleStates.length
@@ -883,7 +889,7 @@ export default {
         );
       }
       default:
-      case StyleEditPanels.Basic: {
+      case StyleEditPanels.Label: {
         return state.defaultStyleStates.slice(
           (2 * state.defaultStyleStates.length) / 3,
           state.defaultStyleStates.length
@@ -897,11 +903,7 @@ export default {
   getCanvasWidth: (state: AppState) => (): number => {
     return state.canvasWidth;
   },
-  // In the case of one non-labe object being selected, the label panel should edit that object's label and the fore/back ground should edit
-  // that selectedObject fore and back properties: useLabelMode indicates that we are doing this.
-  getUseLabelMode: (state: AppState) => (): boolean => {
-    return state.useLabelMode;
-  },
+
   getInverseTotalRotationMatrix: (state: AppState) => (): Matrix4 => {
     return state.inverseTotalRotationMatrix;
   },

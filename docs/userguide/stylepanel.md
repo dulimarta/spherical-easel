@@ -12,9 +12,9 @@ The Style Panel allows the user to adjust the visual style and feel of objects d
 
 The user can select a Transformation, Measurement, Calculation, or object by clicking on it in the Objects Tab.
 
-## Basic Tab
+## Label Tab
 
-This tab displays the adjustable features of the selected object(s) including the following:
+This tab displays the adjustable features of the selected object(s) label including the following:
 
 ### Definition Text
 
@@ -59,7 +59,7 @@ This is automatically generated when the object was created, but the user can ch
 - Tx - [Text](/tools/basic.html#text)
 - Am - Angle Marker
 
-Maximum length is ?5? characters. TODO: Update? Is a limit even needed?
+Maximum length is ?15? characters. TODO: Update? Is a limit even needed?
 
 ### Caption
 
@@ -69,7 +69,7 @@ Maximum length is ?30? characters. TODO: Update? Is a limit even needed?
 
 ### Label Styling Options
 
-This allows the user to select the attributes of how the text of the name and caption are rendered on the front and back of the sphere. The options are
+This allows the user to select the attributes of how the text of the name, value, and caption of labels are rendered on the front and back of the sphere. The options are
 
 - Font Family
 - Font Size
@@ -78,18 +78,19 @@ This allows the user to select the attributes of how the text of the name and ca
 - Decorations
 - Front Color
 - Back Color
-- Front Opacity
-- Back Opacity
 
-The front color is the color used when rendering the text on the front of the sphere. The back color option is both a check box (labelled "Auto") and a color picker. If the box is unchecked the selected color is used. If the box is checked the color is automatically computed based on a contrast constant and the front color (and the color picker value is ignored). To adjust the contrast use the [Global Settings](/userguide/titlebar.html#global-settings).
+The front color is the color used when rendering the text on the front of the sphere. The back color option is both a check box (labelled "Auto") and a color picker. If the box is unchecked the selected color is used. If the box is checked the color is automatically computed based on a contrast constant and the front color (and the color picker value is ignored). To adjust the contrast use the [Global Settings](/userguide/titlebar.html#global-settings). contrast = 1 => no difference between front and back
+Contrast = 0 => Nothing appears on back of sphere for colors and size reduction is maximized
 
 ### Label Display Options
 
 This is a check box followed by a pull down menu so the user can select which attributes to display in the label location associated to the object. The options in the pull down menu are:
 
 - Name - Only the name is displayed
-- Caption - Only the caption is displayed
-- Name & Caption - Only the name and caption are displayed
+- Caption - Only the caption is displayed (unavailable if the caption is not defined)
+- Value - Only the value is displayed (unavailable if the value is not defined). For example, if the length of a line segment has been measured, then the label for that line segment will include this option and the value is the length of the line segment.
+- Name & Caption - Only the name and caption are displayed (unavailable if the caption is not defined)
+- Name & Value - Only the name and value are displayed (unavailable if the value is not defined).
 
 If the box is unchecked nothing is displayed at the label location, the label is hidden, and the options in the pull down menu are ignored. If the box is checked the pull down menu indicates what is displayed at the label location.
 
@@ -114,7 +115,6 @@ This tab allows the user to adjust the style features of the selected object(s) 
 - Stroke Width
 - Radius
 - Dashing Pattern
-- Overall Opacity
 
 Which options are displayed depends on the objects selected. For example, the Fill Color is only available for points, circles, conic, and polygons. Radius is only available for points and angle markers and Dashing pattern is only available for one-dimensional objects.
 
@@ -122,7 +122,9 @@ Which options are displayed depends on the objects selected. For example, the Fi
 
 This tab allows the user to adjust the style features of the selected object(s) that pertain to their rendering on the back of the sphere. At the top of this tab is a check box (labelled "Auto").
 If the box is unchecked the selected styles are used to render the object on the back of the sphere. If the box is checked the styles are automatically computed based on a contrast constant and the front style (and the style choices are ignored). To adjust the contrast use the [Global Settings](/userguide/titlebar.html#global-settings).
-
+contrast = 1 => no difference between front and back
+Contrast = 0 => Nothing appears on back of sphere for colors and size reduction is maximized
+  
 They include pickers for the following attributes:
 
 - Fill Color And No Fill Option
@@ -130,7 +132,6 @@ They include pickers for the following attributes:
 - Stroke Width
 - Radius
 - Dashing Pattern
-- Overall Opacity
 
 Which options are displayed depends on the objects selected. For example, the Fill Color is only available for points, circles, conic, and polygons. Radius is only available for points and angle markers and Dashing pattern is only available for one-dimensional objects.
 

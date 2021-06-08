@@ -463,12 +463,7 @@ export default class MoveHandler extends Highlighter {
               (this.afterMoveState.stateArray[index] as SegmentState)
                 .arcLength < Math.PI)
           ) {
-            // console.log(
-            //   "Move seg Com",
-            //   entry.object.name,
-            //   beforeNormalVector.toFixed(2),
-            //   afterNormalVector.toFixed(2)
-            // );
+            
             moveCommandGroup.addCommand(
               new MoveSegmentCommand(
                 entry.object as SESegment,

@@ -15,7 +15,6 @@ const styleSet = new Set([
   Styles.strokeColor,
   Styles.dashArray,
   Styles.dynamicBackStyle,
-  Styles.opacity
 ]);
 
 export class SESegment extends SENodule

@@ -4,6 +4,8 @@ import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import EventBus from "@/eventHandlers/EventBus";
 import { SEPoint } from "@/models/SEPoint";
 import Highlighter from "./Highlighter";
+import SETTINGS from "@/global-settings";
+
 // import { SEPoint } from "@/models/SEPoint";
 // import { SELine } from "@/models/SELine";
 // import { SESegment } from "@/models/SESegment";
@@ -25,6 +27,7 @@ export default class SelectionHandler extends Highlighter {
    * An array to store the object selected by the key press handler
    */
   private keyPressSelection: SENodule[] = [];
+
   /**
    * This handles the keyboard events and when multiple objects are under
    * the mouse, the user can specify which one to select.
@@ -76,20 +79,20 @@ export default class SelectionHandler extends Highlighter {
           (n as any).ref.glowingDisplay();
         });
     }
-    // Get all SELabels
-    if (keyEvent.key.match("L")) {
-      this.store.getters
-        .allSELabels()
-        .filter((n: any) => n.showing) //no hidden labels allowed
-        .forEach((n: any) => {
-          this.keyPressSelection.push(n);
-          (n as any).ref.glowingDisplay();
-        });
-    }
+    // // Get all SELabels
+    // if (keyEvent.key.match("L")) {
+    //   this.store.getters
+    //     .allSELabels()
+    //     .filter((n: any) => n.showing) //no hidden labels allowed
+    //     .forEach((n: any) => {
+    //       this.keyPressSelection.push(n);
+    //       (n as any).ref.glowingDisplay();
+    //     });
+    // }
     // Now process the hitSENodules so the user can select by number
     // If there is nothing or only one nearby ignore this key event
     if (this.hitSENodules?.length <= 1) return;
-
+    console.log(keyEvent.key);
     if (keyEvent.key.match(/[0-9]/)) {
       // is it a digit?
       const val = Number(keyEvent.key) - 1;
@@ -102,7 +105,7 @@ export default class SelectionHandler extends Highlighter {
             (n as any).ref.glowingDisplay();
             // Show the name of the selected item
             this.infoText.text = n.name;
-          } else {
+          } else if (!n.selected) {
             (n as any).ref.normalDisplay();
           }
         });
@@ -112,9 +115,12 @@ export default class SelectionHandler extends Highlighter {
   mousePressed(event: MouseEvent): void {
     if (!this.isOnSphere) return;
 
+    //If you select an object (like a line), then add to that selection with a key press and a mouse press at
+    // a empty location (like p -adding all point to the selection ), then *without* moving the mouse, a mouse press doesn't
+    // clear the current selections like it should -- is this even worth worrying about?
+
     // event.preventDefault();
-    if (this.keyPressSelection.length != 0) {
-      //console.log("before filter length", this.keyPressSelection.length);
+    if (this.keyPressSelection.length !== 0) {
       // remove any items from the keyPressSelection if they are already selected
       const newKeyPressSelections = this.keyPressSelection.filter(
         (n: SENodule) => {
@@ -134,41 +140,49 @@ export default class SelectionHandler extends Highlighter {
 
       // Add the key press selection to the selected list.
       this.currentSelection.push(...newKeyPressSelections);
-      this.keyPressSelection.clear();
+      this.keyPressSelection.splice(0);
     } else {
+      // Remove labels and non-selectable intersection points
+      const possibleAdditions = this.hitSENodules.filter((p: SENodule) => {
+        if (
+          (p instanceof SEIntersectionPoint && !p.isUserCreated) ||
+          p.isLabel()
+        ) {
+          return false;
+        } else {
+          return true;
+        }
+      });
       if (event.altKey) {
-        // Add current hit list to the current selection
-        this.hitSENodules.forEach(h => {
-          h.selected = !h.selected;
-          if (h.selected) {
-            this.currentSelection.push(h);
-          } else {
-            // Remove hit object from current selection
-            const idx = this.currentSelection.findIndex(c => c.id === h.id);
-            if (idx >= 0) this.currentSelection.splice(idx, 1);
-          }
-        });
+        // Add current hit object list to the current selection
+        possibleAdditions[0].selected = !possibleAdditions[0].selected;
+        if (possibleAdditions[0].selected) {
+          this.currentSelection.push(possibleAdditions[0]);
+        } else {
+          // Remove hit object from current selection
+          const idx = this.currentSelection.findIndex(
+            c => c.id === possibleAdditions[0].id
+          );
+          if (idx >= 0) this.currentSelection.splice(idx, 1);
+        }
       } else {
-        // Replace the current selection with the hit list
+        // Replace the current selection with the hit object (if any)
         this.currentSelection.forEach(s => {
-          // Toggle the current selection if it is not in the hit list
-          if (this.hitSENodules.findIndex(h => h.id === s.id) < 0)
-            s.selected = !s.selected;
+          s.selected = false;
         });
-        this.hitSENodules.forEach(h => {
-          h.selected = !h.selected;
-          //console.log("toggle select", h.name, h.selected);
-        });
-
-        // Add/Filter only selected items
-        this.currentSelection = this.hitSENodules.filter(n => n.selected);
+        if (possibleAdditions[0] !== undefined) {
+          possibleAdditions[0].selected = true;
+          this.currentSelection = [possibleAdditions[0]];
+        } else {
+          this.currentSelection = [];
+        }
       }
     }
     this.store.commit.setSelectedSENodules(this.currentSelection);
-    // console.log(
-    //   "number selected",
-    //   this.store.getters.selectedSENodules().length
-    // );
+    console.log(
+      "number selected",
+      this.store.getters.selectedSENodules().length
+    );
     /** 
     console.log("----selected---- objects------");
     this.currentSelection.forEach(n =>
@@ -190,7 +204,6 @@ export default class SelectionHandler extends Highlighter {
         type: "success"
       });
     }
-    /* Enable/disable interval timer to flash selected objects */
 
     if (this.currentSelection.length > 0 && this.highlightTimer === null) {
       // We have selections and interval timer is not running, then start timer and offset timer
@@ -223,47 +236,28 @@ export default class SelectionHandler extends Highlighter {
   }
 
   mouseMoved(event: MouseEvent): void {
-    // console.log("mouse move event");
     // UnGlow and clear any objects in the keyPressSelection
     if (this.keyPressSelection.length != 0) {
       this.keyPressSelection.forEach(n => (n as any).ref.normalDisplay());
-      this.keyPressSelection.clear();
+      this.keyPressSelection.splice(0);
     }
+
     super.mouseMoved(event);
-    // this.hitSENodules = this.store.getters.findNearbySENodules(
-    //   this.currentSphereVector,
-    //   this.currentScreenVector
-    // );
-    // console.log("----------------------------");
-    // this.hitSENodules.forEach(n =>
-    //   console.log("hit object", n.name, n.selected)
-    // );
-    // Create an array of SENodules of all nearby objects by querying the store
-    // this.hitSENodules = this.store.getters
-    //   .findNearbySENodules(this.currentSphereVector, this.currentScreenVector)
-    //   .filter((n: SENodule) => {
-    //     if (n instanceof SEIntersectionPoint) {
-    //       if (!n.isUserCreated) {
-    //         return n.exists; //You always select automatically created intersection points if it exists
-    //       } else {
-    //         return n.showing && n.exists; //You can't select hidden objects or items that don't exist
-    //       }
-    //     } else {
-    //       return n.showing && n.exists; //You can't select hidden objects or items that don't exist
-    //     }
-    //   });
 
     // Glow the appropriate object, only the top one should glow because the user can only add one at a time with a mouse press
     this.hitSENodules
       .filter((p: SENodule) => {
-        if (p instanceof SEIntersectionPoint && !p.isUserCreated) {
+        if (
+          (p instanceof SEIntersectionPoint && !p.isUserCreated) ||
+          p.isLabel()
+        ) {
           return false;
         } else {
           return true;
         }
       })
       .forEach((n: SENodule, index) => {
-        if (index === 0) {
+        if (index === 0 || n.selected) {
           n.glowing = true;
         } else {
           n.glowing = false;
@@ -291,10 +285,10 @@ export default class SelectionHandler extends Highlighter {
       if (this.delayedStart) clearInterval(this.delayedStart);
       this.delayedStart = null;
     }
-    // Unselect all selected objects
-    this.store.getters.selectedSENodules().forEach((obj: SENodule) => {
-      obj.selected = false;
-    });
+    // Unselect all selected objects (this unglows them and sets the selected flag to false for them)
+    // this.store.getters.selectedSENodules().forEach((obj: SENodule) => {
+    //   obj.selected = false;
+    // });
 
     // Do not clear the selections array here! If the right items are selected, then other tools automatically do their thing!
     //  For example, if a point is selected with the selection tool, then when the antipode tool is
@@ -305,6 +299,7 @@ export default class SelectionHandler extends Highlighter {
 
     // Remove the listener
     window.removeEventListener("keypress", this.keyPressHandler);
+
     // If the user has been styling objects and then, without selecting new objects, activates
     //  another tool, the style state should be saved.
     EventBus.fire("save-style-state", {});

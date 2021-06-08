@@ -1,5 +1,5 @@
 export enum StyleEditPanels { // The order of these *must* match the order of the panels in Style.vue
-  Basic,
+  Label,
   Front,
   Back,
   Advanced
@@ -8,7 +8,9 @@ export enum StyleEditPanels { // The order of these *must* match the order of th
 export enum LabelDisplayMode {
   NameOnly, // display only the name
   CaptionOnly, // display the caption only
-  NameAndCaption // display the name and caption
+  ValueOnly, // display the value only (if any)
+  NameAndCaption, // display the name and caption
+  NameAndValue // display the name and value (if any)
 }
 
 export enum Styles {
@@ -18,7 +20,6 @@ export enum Styles {
   strokeColor,
   fillColor,
   dashArray,
-  opacity,
   dynamicBackStyle,
   pointRadiusPercent,
   labelDisplayText,
@@ -30,6 +31,8 @@ export enum Styles {
   labelTextScalePercent,
   labelDisplayMode,
   labelVisibility,
+  labelFrontFillColor,
+  labelBackFillColor,
   objectVisibility,
   angleMarkerRadiusPercent
 }
@@ -40,7 +43,6 @@ export type StyleOptions = {
   strokeColor?: string;
   fillColor?: string;
   dashArray?: number[];
-  opacity?: number;
   dynamicBackStyle?: boolean;
   pointRadiusPercent?: number;
   backStyleContrast?: number;
@@ -54,5 +56,7 @@ export type StyleOptions = {
   labelDisplayMode?: LabelDisplayMode;
   labelVisibility?: boolean;
   objectVisibility?: boolean;
+  labelFrontFillColor?: string;
+  labelBackFillColor?: string;
   angleMarkerRadiusPercent?: number;
 };

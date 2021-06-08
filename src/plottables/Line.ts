@@ -50,14 +50,14 @@ export default class Line extends Nodule {
    */
   // Front
   private strokeColorFront = SETTINGS.line.drawn.strokeColor.front;
-  private opacityFront = SETTINGS.line.drawn.opacity.front;
+  private glowingStrokeColorFront = SETTINGS.line.glowing.strokeColor.front;
   private dashArrayFront = [] as number[]; // Initialize in constructor
   private strokeWidthPercentFront = 100;
 
   // Back use the default non-dynamic back style options so that when the user disables the dynamic back style these options are displayed
   private dynamicBackStyle = SETTINGS.line.dynamicBackStyle;
   private strokeColorBack = SETTINGS.line.drawn.strokeColor.back;
-  private opacityBack = SETTINGS.line.drawn.opacity.back;
+  private glowingStrokeColorBack = SETTINGS.line.glowing.strokeColor.back;
   private dashArrayBack = [] as number[]; // Initialize in constructor
   private strokeWidthPercentBack = 100;
 
@@ -270,6 +270,20 @@ export default class Line extends Nodule {
       this.normalDisplay();
     }
   }
+
+  setSelectedColoring(flag: boolean): void {
+    //set the new colors into the variables
+    if (flag) {
+      this.glowingStrokeColorFront = SETTINGS.style.selectedColor.front;
+      this.glowingStrokeColorBack = SETTINGS.style.selectedColor.back;
+    } else {
+      this.glowingStrokeColorFront = SETTINGS.line.glowing.strokeColor.front;
+      this.glowingStrokeColorBack = SETTINGS.line.glowing.strokeColor.back;
+    }
+    // apply the new color variables to the object
+    this.stylize(DisplayStyle.ApplyCurrentVariables);
+  }
+
   // It looks like we have to define our own clone() function
   // The builtin clone() does not seem to work correctly
   clone(): this {
@@ -323,9 +337,6 @@ export default class Line extends Nodule {
       if (options.strokeColor !== undefined) {
         this.strokeColorFront = options.strokeColor;
       }
-      if (options.opacity !== undefined) {
-        this.opacityFront = options.opacity;
-      }
       if (options.dashArray !== undefined) {
         // clear the dashArray
         this.dashArrayFront.clear();
@@ -347,9 +358,6 @@ export default class Line extends Nodule {
         }
         if (options.strokeColor !== undefined) {
           this.strokeColorBack = options.strokeColor;
-        }
-        if (options.opacity !== undefined) {
-          this.opacityBack = options.opacity;
         }
         if (options.dashArray !== undefined) {
           // clear the dashArray
@@ -378,8 +386,7 @@ export default class Line extends Nodule {
           panel: panel,
           strokeWidthPercent: this.strokeWidthPercentFront,
           strokeColor: this.strokeColorFront,
-          dashArray: dashArrayFront,
-          opacity: this.opacityFront
+          dashArray: dashArrayFront
         };
       }
       case StyleEditPanels.Back: {
@@ -392,12 +399,11 @@ export default class Line extends Nodule {
           strokeWidthPercent: this.strokeWidthPercentBack,
           strokeColor: this.strokeColorBack,
           dashArray: dashArrayBack,
-          opacity: this.opacityBack,
           dynamicBackStyle: this.dynamicBackStyle
         };
       }
       default:
-      case StyleEditPanels.Basic: {
+      case StyleEditPanels.Label: {
         return {
           panel: panel
         };
@@ -420,8 +426,7 @@ export default class Line extends Nodule {
           panel: panel,
           strokeWidthPercent: 100,
           strokeColor: SETTINGS.line.drawn.strokeColor.front,
-          dashArray: dashArrayFront,
-          opacity: SETTINGS.line.drawn.opacity.front
+          dashArray: dashArrayFront
         };
       }
       case StyleEditPanels.Back: {
@@ -445,15 +450,11 @@ export default class Line extends Nodule {
 
           dashArray: dashArrayBack,
 
-          opacity: SETTINGS.line.dynamicBackStyle
-            ? Nodule.contrastOpacity(SETTINGS.line.drawn.opacity.front)
-            : SETTINGS.line.drawn.opacity.back,
-
           dynamicBackStyle: SETTINGS.line.dynamicBackStyle
         };
       }
       default:
-      case StyleEditPanels.Basic: {
+      case StyleEditPanels.Label: {
         return {
           panel: panel
         };
@@ -484,16 +485,13 @@ export default class Line extends Nodule {
   }
 
   /**
-   * Set the rendering style (flags: ApplyTemporaryVariables, ApplyCurrentVariables, ResetVariablesToDefaults) of the line
+   * Set the rendering style (flags: ApplyTemporaryVariables, ApplyCurrentVariables) of the line
    *
    * ApplyTemporaryVariables means that
-   *    1) The temporary variables from SETTINGS.line.temp are copied into the actual Two.js objects
-   *    2) Dash pattern for temporary is copied  from the SETTINGS.line.drawn into the actual Two.js objects
-   *    3) The line width is copied from the currentLineStrokeWidth (which accounts for the Zoom magnification) into the actual Two.js objects
+   *    1) The temporary variables from SETTINGS.point.temp are copied into the actual Two.js objects
+   *    2) The pointScaleFactor is copied from the Point.pointScaleFactor (which accounts for the Zoom magnification) into the actual Two.js objects
    *
    * Apply CurrentVariables means that all current values of the private style variables are copied into the actual Two.js objects
-   *
-   * ResetVariablesToDefaults means that all the private style variables are set to their defaults from SETTINGS.
    */
   stylize(flag: DisplayStyle): void {
     switch (flag) {
@@ -509,7 +507,6 @@ export default class Line extends Nodule {
         }
         // strokeWidthPercent -- The line width is set to the current line width (which is updated for zoom magnification)
         this.frontHalf.linewidth = Line.currentLineStrokeWidthFront;
-        this.frontHalf.opacity = SETTINGS.line.temp.opacity.front;
         // Copy the front dash properties from the front default drawn dash properties
         if (SETTINGS.line.drawn.dashArray.front.length > 0) {
           this.frontHalf.dashes.clear();
@@ -527,7 +524,7 @@ export default class Line extends Nodule {
         }
         // strokeWidthPercent -- The line width is set to the current line width (which is updated for zoom magnification)
         this.backHalf.linewidth = Line.currentLineStrokeWidthBack;
-        this.backHalf.opacity = SETTINGS.line.temp.opacity.back;
+
         // Copy the back dash properties from the back default drawn dash properties
         if (SETTINGS.line.drawn.dashArray.back.length > 0) {
           this.backHalf.dashes.clear();
@@ -553,7 +550,7 @@ export default class Line extends Nodule {
           this.frontHalf.stroke = this.strokeColorFront;
         }
         // strokeWidthPercent applied by adjustSize()
-        this.frontHalf.opacity = this.opacityFront;
+
         if (this.dashArrayFront.length > 0) {
           this.frontHalf.dashes.clear();
           this.dashArrayFront.forEach(v => {
@@ -583,9 +580,7 @@ export default class Line extends Nodule {
           }
         }
         // strokeWidthPercent applied by adjustSize()
-        this.backHalf.opacity = this.dynamicBackStyle
-          ? Nodule.contrastOpacity(this.opacityFront)
-          : this.opacityBack;
+
         if (this.dashArrayBack.length > 0) {
           this.backHalf.dashes.clear();
           this.dashArrayBack.forEach(v => {
@@ -599,9 +594,9 @@ export default class Line extends Nodule {
 
         // Glowing Front
         // no fillColor
-        this.glowingFrontHalf.stroke = SETTINGS.line.glowing.strokeColor.front;
+        this.glowingFrontHalf.stroke = this.glowingStrokeColorFront;
         // strokeWidthPercent applied by adjustSize()
-        this.glowingFrontHalf.opacity = SETTINGS.line.glowing.opacity.front;
+
         // Copy the front dash properties to the glowing object
         if (this.dashArrayFront.length > 0) {
           this.glowingFrontHalf.dashes.clear();
@@ -616,9 +611,9 @@ export default class Line extends Nodule {
 
         // Glowing Back
         // no fillColor
-        this.glowingBackHalf.stroke = SETTINGS.line.glowing.strokeColor.back;
+        this.glowingBackHalf.stroke = this.glowingStrokeColorBack;
         // strokeWidthPercent applied by adjustSize()
-        this.glowingBackHalf.opacity = SETTINGS.line.glowing.opacity.back;
+
         // Copy the back dash properties to the glowing object
         if (this.dashArrayBack.length > 0) {
           this.glowingBackHalf.dashes.clear();

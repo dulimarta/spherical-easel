@@ -33,7 +33,8 @@ const vuetify = new Vuetify({
         error: colors.red.base,
         warning: colors.orange.base,
         info: colors.blue.base,
-        success: colors.orange.base
+        success: colors.orange.base,
+        background: "#FFFFFF"
       },
       dark: {
         primary: colors.blue.lighten3

@@ -28,7 +28,6 @@ const styleSet = new Set([
   Styles.strokeWidthPercent,
   Styles.dashArray,
   Styles.fillColor,
-  Styles.opacity,
   Styles.dynamicBackStyle,
   Styles.angleMarkerRadiusPercent
 ]);
@@ -111,10 +110,16 @@ export class SEAngleMarker extends SEMeasurement
   private measureTmpVector1 = new Vector3();
   private measureTmpVector2 = new Vector3();
   private measureTmpVector3 = new Vector3();
+
   /**
    * Vuex global state
    */
   protected store = AppStore; //
+
+  /**
+   * The number of this angle marker when it was created (i.e. this number of angle markers have been created so far)
+   */
+  private _angleMarkerNumber = 0;
 
   /**
    * Create a model SEAngleMarker using:
@@ -147,10 +152,23 @@ export class SEAngleMarker extends SEMeasurement
         this.name +
         `-Angle(${firstSEParent.name},${secondSEParent.name}):${this.prettyValue}`;
     }
+
+    this._displayInMultiplesOfPi =
+      SETTINGS.angleMarker.displayInMultiplesOfPiInitially;
+    // SEAngleMarker is both an expression and a plottable (the only one?)
+    // As an expression to be used in the calculation it must begin with "M###" so that it
+    // can be referenced by the user and found by the parser
+    // however we don't want the initial name and initial shortName of the angle marker to be displayed with a "M###" at the start
+    //  so this is how we get around this
+    this._angleMarkerNumber = SEAngleMarker.ANGLEMARKER_COUNT;
   }
 
   customStyles(): Set<Styles> {
     return styleSet;
+  }
+
+  get angleMarkerNumber(): number {
+    return this._angleMarkerNumber;
   }
 
   get angleMode(): AngleMode {
@@ -166,9 +184,41 @@ export class SEAngleMarker extends SEMeasurement
   }
 
   public get prettyValue(): string {
-    return (this.value / Math.PI).toFixed(2) + "\u{1D7B9}";
+    if (this._displayInMultiplesOfPi) {
+      return (
+        (this.value / Math.PI).toFixed(SETTINGS.decimalPrecision) + "\u{1D7B9}"
+      );
+    } else {
+      return this.value.toFixed(SETTINGS.decimalPrecision);
+    }
   }
 
+  public get longName(): string {
+    if (this._thirdSEParent !== undefined) {
+      return (
+        this.label!.ref.shortName +
+        `-Angle(${this._firstSEParent.label!.ref.shortName},${
+          this._secondSEParent.label!.ref.shortName
+        },${this._thirdSEParent.label!.ref.shortName}):${this.prettyValue}`
+      );
+    } else {
+      return (
+        this.label!.ref.shortName +
+        `-Angle(${this._firstSEParent.label!.ref.shortName},${
+          this._secondSEParent.label!.ref.shortName
+        }):${this.prettyValue}`
+      );
+    }
+  }
+
+  public get shortName(): string {
+    return (
+      this.name +
+      ` - Ang(` +
+      this.label!.ref.shortName +
+      `):${this.prettyValue}`
+    );
+  }
   public isHitAt(
     unitIdealVector: Vector3,
     currentMagnificationFactor: number
@@ -565,29 +615,43 @@ export class SEAngleMarker extends SEMeasurement
         // endpoint of the segment is a point on the line or a point defining the line
         if (this._secondSEParent instanceof SESegment) {
           if (
-            this._secondSEParent.startSEPoint.locationVector.dot(
-              this._firstSEParent.normalVector
+            Math.abs(
+              this._secondSEParent.startSEPoint.locationVector.dot(
+                this._firstSEParent.normalVector
+              )
             ) < SETTINGS.tolerance
           ) {
             this._vertexVector.copy(
               this._secondSEParent.startSEPoint.locationVector
             );
+            // set the _endVector *direction* to pointing in the same direction as the segment is drawn
+            // To this see is correct check out the updateDisplay method in Segment.ts and the desiredYAxis vector
+            this.tmpVector1
+              .crossVectors(
+                this._secondSEParent.normalVector,
+                this._vertexVector
+              )
+              .multiplyScalar(this._secondSEParent.arcLength > Math.PI ? -1 : 1)
+              .normalize(); // tmpVector1 is perpendicular to vertexVector in the plane of the segment
           } else if (
-            this._secondSEParent.endSEPoint.locationVector.dot(
-              this._firstSEParent.normalVector
+            Math.abs(
+              this._secondSEParent.endSEPoint.locationVector.dot(
+                this._firstSEParent.normalVector
+              )
             ) < SETTINGS.tolerance
           ) {
             this._vertexVector.copy(
               this._secondSEParent.endSEPoint.locationVector
             );
-          }
-          // set the _endVector direction to pointing in the same direction as the segment is drawn
-          this.tmpVector1
-            .crossVectors(this._vertexVector, this._secondSEParent.normalVector)
-            .normalize(); // tmpVector1 is perpendicular to vertexVector in the plane of the segment
-          if (this._secondSEParent.arcLength < Math.PI) {
-            // Make sure that this.tmpVector1 is points in the direction that the segment is drawn
-            this.tmpVector1.multiplyScalar(-1);
+            // set the _endVector *direction* to pointing in the same direction as the segment is drawn
+            // To this see is correct check out the updateDisplay method in Segment.ts and the desiredYAxis vector
+            this.tmpVector1
+              .crossVectors(
+                this._vertexVector,
+                this._secondSEParent.normalVector
+              )
+              .multiplyScalar(this._secondSEParent.arcLength > Math.PI ? -1 : 1)
+              .normalize(); // tmpVector1 is perpendicular to vertexVector in the plane of the segment
           }
 
           this._endVector.set(0, 0, 0);
@@ -633,29 +697,44 @@ export class SEAngleMarker extends SEMeasurement
             .normalize();
         } else if (this._firstSEParent instanceof SESegment) {
           if (
-            this._firstSEParent.startSEPoint.locationVector.dot(
-              this._firstSEParent.normalVector
+            Math.abs(
+              this._firstSEParent.startSEPoint.locationVector.dot(
+                this._secondSEParent.normalVector
+              )
             ) < SETTINGS.nearlyAntipodalIdeal
           ) {
+            // set the vertex vector
             this._vertexVector.copy(
               this._firstSEParent.startSEPoint.locationVector
             );
+            // set the _startVector *direction* to pointing in the same direction as the segment is drawn
+            // To this see is correct check out the updateDisplay method in Segment.ts and the desiredYAxis vector
+            this.tmpVector1
+              .crossVectors(
+                this._firstSEParent.normalVector,
+                this._vertexVector
+              )
+              .multiplyScalar(this._firstSEParent.arcLength > Math.PI ? -1 : 1)
+              .normalize(); // tmpVector1 is perpendicular to vertexVector in the plane of the segment
           } else if (
-            this._firstSEParent.endSEPoint.locationVector.dot(
-              this._firstSEParent.normalVector
+            Math.abs(
+              this._firstSEParent.endSEPoint.locationVector.dot(
+                this._secondSEParent.normalVector
+              )
             ) < SETTINGS.nearlyAntipodalIdeal
           ) {
             this._vertexVector.copy(
               this._firstSEParent.endSEPoint.locationVector
             );
-          }
-          // set the _startVector direction to pointing in the same direction as the segment is drawn
-          this.tmpVector1
-            .crossVectors(this._vertexVector, this._firstSEParent.normalVector)
-            .normalize(); // tmpVector1 is perpendicular to vertexVector in the plane of the segment
-          if (this._firstSEParent.arcLength < Math.PI) {
-            // Make sure that this.tmpVector1 is points in the direction that the segment is drawn
-            this.tmpVector1.multiplyScalar(-1);
+            // set the _startVector *direction* to pointing in the same direction as the segment is drawn
+            // To this see is correct check out the updateDisplay method in Segment.ts and the desiredYAxis vector
+            this.tmpVector1
+              .crossVectors(
+                this._vertexVector,
+                this._firstSEParent.normalVector
+              )
+              .multiplyScalar(this._firstSEParent.arcLength > Math.PI ? -1 : 1)
+              .normalize(); // tmpVector1 is perpendicular to vertexVector in the plane of the segment
           }
 
           this._startVector.set(0, 0, 0);
@@ -736,9 +815,13 @@ export class SEAngleMarker extends SEMeasurement
       state.stateArray.push(angleMarkerState);
     }
     //update the name to include the new value
-    const pos = this.name.lastIndexOf("):");
-    this.name = this.name.substring(0, pos + 2) + this.prettyValue;
+    //const pos = this.name.lastIndexOf("):");
+    //this.name = this.name.substring(0, pos + 2) + this.prettyValue;
 
+    // When this updates send its value to the label of the angleMarker
+    this.label!.ref.value = [this.value];
+
+    this.setOutOfDate(false);
     this.updateKids(state);
   }
 

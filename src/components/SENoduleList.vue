@@ -18,10 +18,12 @@
           <!-- content goes here -->
           <SENoduleItem :node="n"
             v-if="!isSlider(n)"
-            :key="n.id"></SENoduleItem>
+            :key="n.id"
+            v-on:object-select="onExpressionSelect"></SENoduleItem>
           <SESliderItem v-else
             :node="n"
-            :key="`${n.id}-slider`"></SESliderItem>
+            :key="`${n.id}-slider`"
+            v-on:object-select="onExpressionSelect"></SESliderItem>
           <v-divider :key="`${n.id}-divider`"></v-divider>
         </template>
       </div>
@@ -39,6 +41,7 @@ import { SEIntersectionPoint } from "../models/SEIntersectionPoint";
 import SENoduleItem from "@/components/SENoduleItem.vue";
 import SESliderItem from "@/components/SESliderItem.vue";
 import { SESlider } from "@/models/SESlider";
+import EventBus from "@/eventHandlers/EventBus";
 
 @Component({ components: { SENoduleItem, SESliderItem } })
 export default class SENoduleTree extends Vue {
@@ -65,6 +68,15 @@ export default class SENoduleTree extends Vue {
     });
   }
 
+  //When a user clicks on an expression this sends the token name to the expression builder (ExpressionForm.vue)
+  onExpressionSelect(x: any): void {
+    console.log("bob");
+    const pos = this.children.findIndex(n => n.id === x.id);
+    console.debug("****Selection", x, "at", pos);
+    if (pos >= 0) {
+      EventBus.fire("measurement-selected", this.children[pos].name);
+    }
+  }
   isSlider(n: SENodule): boolean {
     return n instanceof SESlider;
   }

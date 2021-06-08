@@ -15,8 +15,8 @@
           </v-btn>
           <Toolbox id="toolbox"
             ref="toolbox"
-            :minified="toolboxMinified">
-          </Toolbox>
+            :minified="toolboxMinified" />
+
         </div>
       </v-container>
     </Pane>
@@ -39,8 +39,7 @@
                 ref="responsiveBox"
                 id="responsiveBox"
                 class="pa-0">
-                <sphere-frame :canvas-size="currentCanvasSize">
-                </sphere-frame>
+                <SphereFrame :canvas-size="currentCanvasSize" />
                 <div class="anchored top left">
                   <!-- <v-btn-toggle
                     v-model="actionMode"
@@ -213,7 +212,8 @@
             <v-icon v-else>mdi-arrow-right</v-icon>
           </v-btn>
         </div>
-        <style-panel :minified="stylePanelMinified"></style-panel>
+        <StylePanel :minified="stylePanelMinified"
+          v-on:toggle-style-panel="minifyStylePanel" />
       </div>
     </Pane>
 
@@ -397,6 +397,10 @@ export default class Easel extends Vue {
     window.addEventListener("resize", this.onWindowResized);
     this.adjustSize(); // Why do we need this?  this.onWindowResized just calls this.adjustSize() but if you remove it the app doesn't work -- strange!
     if (this.documentId) this.loadDocument(this.documentId);
+    EventBus.listen(
+      "set-action-mode-to-select-tool",
+      this.setActionModeToSelectTool
+    );
   }
 
   /**
@@ -419,26 +423,28 @@ export default class Easel extends Vue {
   minifyToolbox(): void {
     this.toolboxMinified = !this.toolboxMinified;
     // Minify the other panel when this one is expanded
-    if (!this.toolboxMinified && !this.stylePanelMinified) {
-      this.stylePanelMinified = true;
-    }
-    // If the user has been styling objects and then, without selecting new objects, or deactivating selection the style state should be saved.
-    EventBus.fire("save-style-state", {});
+    // if (!this.toolboxMinified && !this.stylePanelMinified) {
+    //   this.stylePanelMinified = true;
+    // }
   }
 
   minifyStylePanel(): void {
     this.stylePanelMinified = !this.stylePanelMinified;
     // Minify the other panel when this one is expanded
-    if (!this.toolboxMinified && !this.stylePanelMinified) {
-      this.toolboxMinified = true;
-    }
+    // if (!this.toolboxMinified && !this.stylePanelMinified) {
+    //   this.toolboxMinified = true;
+    // }
     // Set the selection tool to be active when opening the style panel.
     if (!this.stylePanelMinified) {
-      this.store.commit.setActionMode({
-        id: "select",
-        name: "SelectDisplayedName"
-      });
+      this.setActionModeToSelectTool();
     }
+  }
+
+  setActionModeToSelectTool() {
+    this.store.commit.setActionMode({
+      id: "select",
+      name: "SelectDisplayedName"
+    });
   }
 
   switchActionMode(): void {

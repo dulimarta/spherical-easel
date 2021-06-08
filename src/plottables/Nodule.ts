@@ -54,6 +54,8 @@ export default abstract class Nodule implements Stylable, Resizeable {
   abstract normalDisplay(): void;
   abstract glowingDisplay(): void;
   abstract updateStyle(options: StyleOptions): void;
+  /** set the glowing visual style differently depending on if selected or not */
+  abstract setSelectedColoring(flag: boolean): void;
 
   /** Get the current style state of the Nodule */
   abstract currentStyleState(mode: StyleEditPanels): StyleOptions;
@@ -90,10 +92,14 @@ export default abstract class Nodule implements Stylable, Resizeable {
     if (frontColor == "noFill") {
       return "noFill";
     }
+    if (frontColor == "noLabelFrontFill") {
+      return "noLabelBackFill";
+    }
     const hslaColor = Nodule.convertStringToHSLAObject(frontColor);
     hslaColor.l = 1 - (1 - hslaColor.l) * Nodule.backStyleContrast;
     return Nodule.convertHSLAObjectToString(hslaColor);
   }
+
   static contrastStrokeColor(frontColor: string): string {
     if (frontColor == "noStroke") {
       return "noStroke";
@@ -101,10 +107,6 @@ export default abstract class Nodule implements Stylable, Resizeable {
     const hslaColor = Nodule.convertStringToHSLAObject(frontColor);
     hslaColor.l = 1 - (1 - hslaColor.l) * Nodule.backStyleContrast;
     return Nodule.convertHSLAObjectToString(hslaColor);
-  }
-
-  static contrastOpacity(frontOpacity: number): number {
-    return Nodule.backStyleContrast * frontOpacity;
   }
 
   // The back linewidth can be up to 20% smaller than their front counterparts.

@@ -93,14 +93,16 @@ export default class AngleMarker extends Nodule {
   // Front
   private fillColorFront = SETTINGS.angleMarker.drawn.fillColor.front;
   private strokeColorFront = SETTINGS.angleMarker.drawn.strokeColor.front;
+  private glowingStrokeColorFront =
+    SETTINGS.angleMarker.glowing.strokeColor.front;
   private strokeWidthPercentFront = 100;
-  private opacityFront = SETTINGS.angleMarker.drawn.opacity.front;
   private dashArrayFront = [] as number[]; // Initialize in constructor
   // Back -- use the default non-dynamic back style options so that when the user disables the dynamic back style these options are displayed
   private fillColorBack = SETTINGS.angleMarker.drawn.fillColor.back;
   private strokeColorBack = SETTINGS.angleMarker.drawn.strokeColor.back;
+  private glowingStrokeColorBack =
+    SETTINGS.angleMarker.glowing.strokeColor.back;
   private strokeWidthPercentBack = 100;
-  private opacityBack = SETTINGS.angleMarker.drawn.opacity.back;
   private dashArrayBack = [] as number[]; // Initialize in constructor
   private dynamicBackStyle = SETTINGS.angleMarker.dynamicBackStyle;
   //Applies to both sides
@@ -831,6 +833,20 @@ export default class AngleMarker extends Nodule {
     }
   }
 
+  setSelectedColoring(flag: boolean): void {
+    //set the new colors into the variables
+    if (flag) {
+      this.glowingStrokeColorFront = SETTINGS.style.selectedColor.front;
+      this.glowingStrokeColorBack = SETTINGS.style.selectedColor.back;
+    } else {
+      this.glowingStrokeColorFront =
+        SETTINGS.angleMarker.glowing.strokeColor.front;
+      this.glowingStrokeColorBack =
+        SETTINGS.angleMarker.glowing.strokeColor.back;
+    }
+    // apply the new color variables to the object
+    this.stylize(DisplayStyle.ApplyCurrentVariables);
+  }
   /**
    * This method is used to copy the temporary angleMarker created with the Angle Tool (in the midground) into a
    * permanent one in the scene (in the the correct layer).
@@ -976,9 +992,6 @@ export default class AngleMarker extends Nodule {
       if (options.strokeColor !== undefined) {
         this.strokeColorFront = options.strokeColor;
       }
-      if (options.opacity !== undefined) {
-        this.opacityFront = options.opacity;
-      }
       if (options.dashArray !== undefined) {
         this.dashArrayFront.clear();
         for (let i = 0; i < options.dashArray.length; i++) {
@@ -1005,9 +1018,6 @@ export default class AngleMarker extends Nodule {
         }
         if (options.strokeColor !== undefined) {
           this.strokeColorBack = options.strokeColor;
-        }
-        if (options.opacity !== undefined) {
-          this.opacityBack = options.opacity;
         }
         if (options.dashArray !== undefined) {
           // clear the dashArray
@@ -1042,7 +1052,6 @@ export default class AngleMarker extends Nodule {
           strokeColor: this.strokeColorFront,
           fillColor: this.fillColorFront,
           dashArray: dashArrayFront,
-          opacity: this.opacityFront,
           angleMarkerRadiusPercent: this.angleMarkerRadiusPercent
         };
         break;
@@ -1058,13 +1067,12 @@ export default class AngleMarker extends Nodule {
           strokeColor: this.strokeColorBack,
           fillColor: this.fillColorBack,
           dashArray: dashArrayBack,
-          opacity: this.opacityBack,
           dynamicBackStyle: this.dynamicBackStyle,
           angleMarkerRadiusPercent: this.angleMarkerRadiusPercent
         };
       }
       default:
-      case StyleEditPanels.Basic: {
+      case StyleEditPanels.Label: {
         return {
           panel: panel
         };
@@ -1088,7 +1096,6 @@ export default class AngleMarker extends Nodule {
           strokeWidthPercent: 100,
           fillColor: SETTINGS.angleMarker.drawn.fillColor.front,
           strokeColor: SETTINGS.angleMarker.drawn.strokeColor.front,
-          opacity: SETTINGS.angleMarker.drawn.opacity.front,
           dashArray: dashArrayFront,
           angleMarkerRadiusPercent: 100
         };
@@ -1122,16 +1129,12 @@ export default class AngleMarker extends Nodule {
 
           dashArray: dashArrayBack,
 
-          opacity: SETTINGS.angleMarker.dynamicBackStyle
-            ? Nodule.contrastOpacity(SETTINGS.angleMarker.drawn.opacity.front)
-            : SETTINGS.angleMarker.drawn.opacity.back,
-
           dynamicBackStyle: SETTINGS.angleMarker.dynamicBackStyle,
           angleMarkerRadiusPercent: 100
         };
       }
       default:
-      case StyleEditPanels.Basic: {
+      case StyleEditPanels.Label: {
         return {
           panel: panel
         };
@@ -1180,16 +1183,13 @@ export default class AngleMarker extends Nodule {
   }
 
   /**
-   * Set the rendering style (flags: ApplyTemporaryVariables, ApplyCurrentVariables, ResetVariablesToDefaults) of the angleMarker
+   * Set the rendering style (flags: ApplyTemporaryVariables, ApplyCurrentVariables) of the angle marker
    *
    * ApplyTemporaryVariables means that
-   *    1) The temporary variables from SETTINGS.angleMarker.temp are copied into the actual Two.js objects
-   *    2) Dash pattern for temporary is copied  from the SETTINGS.angleMarker.drawn into the actual Two.js objects
-   *    3) The line width is copied from the currentAngleMarkerStrokeWidth (which accounts for the Zoom magnification) into the actual Two.js objects
+   *    1) The temporary variables from SETTINGS.point.temp are copied into the actual Two.js objects
+   *    2) The pointScaleFactor is copied from the Point.pointScaleFactor (which accounts for the Zoom magnification) into the actual Two.js objects
    *
    * Apply CurrentVariables means that all current values of the private style variables are copied into the actual Two.js objects
-   *
-   * ResetVariablesToDefaults means that all the private style variables are set to their defaults from SETTINGS.
    */
   stylize(flag: DisplayStyle): void {
     switch (flag) {
@@ -1212,7 +1212,6 @@ export default class AngleMarker extends Nodule {
         // The circle width is set to the current circle width (which is updated for zoom magnification)
         this.frontCirclePath.linewidth =
           AngleMarker.currentAngleMarkerStrokeWidthFront;
-        this.frontCirclePath.opacity = SETTINGS.angleMarker.temp.opacity.front;
         // Copy the front dash properties from the front default drawn dash properties
         if (SETTINGS.angleMarker.drawn.dashArray.front.length > 0) {
           this.frontCirclePath.dashes.clear();
@@ -1236,7 +1235,6 @@ export default class AngleMarker extends Nodule {
         // The circle width is set to the current circle width (which is updated for zoom magnification)
         this.backCirclePath.linewidth =
           AngleMarker.currentAngleMarkerStrokeWidthBack;
-        this.backCirclePath.opacity = SETTINGS.angleMarker.temp.opacity.back;
         // Copy the front dash properties from the front default drawn dash properties
         if (SETTINGS.angleMarker.drawn.dashArray.back.length > 0) {
           this.backCirclePath.dashes.clear();
@@ -1267,8 +1265,6 @@ export default class AngleMarker extends Nodule {
           this.frontCirclePath.stroke = this.strokeColorFront;
         }
         // strokeWidthPercent is applied by adjustSize()
-        this.frontCirclePath.opacity = this.opacityFront;
-        //this.frontFill.opacity = this.opacityFront;
         if (this.dashArrayFront.length > 0) {
           this.frontCirclePath.dashes.clear();
           this.dashArrayFront.forEach(v => {
@@ -1317,9 +1313,6 @@ export default class AngleMarker extends Nodule {
         }
 
         // strokeWidthPercent applied by adjustSizer()
-        this.backCirclePath.opacity = this.dynamicBackStyle
-          ? Nodule.contrastOpacity(this.opacityFront)
-          : this.opacityBack;
         if (this.dashArrayBack.length > 0) {
           this.backCirclePath.dashes.clear();
           this.dashArrayBack.forEach(v => {
@@ -1335,11 +1328,8 @@ export default class AngleMarker extends Nodule {
 
         // Glowing Front
         // no fillColor for glowing circles
-        this.glowingFrontCirclePath.stroke =
-          SETTINGS.angleMarker.glowing.strokeColor.front;
+        this.glowingFrontCirclePath.stroke = this.glowingStrokeColorFront;
         // strokeWidthPercent applied by adjustSize()
-        this.glowingFrontCirclePath.opacity =
-          SETTINGS.angleMarker.glowing.opacity.front;
         // Copy the front dash properties to the glowing object
         if (this.dashArrayFront.length > 0) {
           this.glowingFrontCirclePath.dashes.clear();
@@ -1354,11 +1344,8 @@ export default class AngleMarker extends Nodule {
 
         // Glowing Back
         // no fillColor for glowing circles
-        this.glowingBackCirclePath.stroke =
-          SETTINGS.angleMarker.glowing.strokeColor.back;
+        this.glowingBackCirclePath.stroke = this.glowingStrokeColorBack;
         // strokeWidthPercent applied by adjustSize()
-        this.glowingBackCirclePath.opacity =
-          SETTINGS.angleMarker.glowing.opacity.back;
         // Copy the back dash properties to the glowing object
         if (this.dashArrayBack.length > 0) {
           this.glowingBackCirclePath.dashes.clear();

@@ -62,8 +62,7 @@
           class="my-3"
           v-show="expressionss.length > 0">
           <SENoduleList i18LabelKey="objects.measurements"
-            :children="expressionss"
-            v-on:object-select="onExpressionSelect"></SENoduleList>
+            :children="expressionss"></SENoduleList>
         </v-sheet>
         <!-- <v-sheet rounded
           color="accent"
@@ -134,18 +133,20 @@ export default class ObjectTree extends Vue {
   //   this.parsingError = err.message;
   // }
   // }
-
-  onExpressionSelect(x: any): void {
-    const pos = this.nodules.findIndex(n => n.id === x.id);
-    console.debug("****Selection", x, "at", pos);
-    if (pos >= 0) {
-      const pos1 = this.nodules[pos].name.indexOf("-");
-      const varName = this.nodules[pos].name.substring(0, pos1);
-      EventBus.fire("measurement-selected", varName);
-      // this.calcExpression += varName;
-      // this.onKeyPressed(); // emulate a key prress
-    }
-  }
+  // when the user clicks on an expression, this event is triggered
+  // It enables the user to add measurement references to the calculation/expression builder
+  // onExpressionSelect(x: any): void {
+  //   console.log("bob");
+  //   const pos = this.nodules.findIndex(n => n.id === x.id);
+  //   console.debug("****Selection", x, "at", pos);
+  //   if (pos >= 0) {
+  //     const pos1 = this.nodules[pos].name.indexOf("-");
+  //     const varName = this.nodules[pos].name.substring(0, pos1);
+  //     EventBus.fire("measurement-selected", varName);
+  //     // this.calcExpression += varName;
+  //     // this.onKeyPressed(); // emulate a key prress
+  //   }
+  // }
 }
 </script>
 

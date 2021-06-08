@@ -72,14 +72,14 @@ export default class Circle extends Nodule {
   // Front
   private fillColorFront = SETTINGS.circle.drawn.fillColor.front;
   private strokeColorFront = SETTINGS.circle.drawn.strokeColor.front;
+  private glowingStrokeColorFront = SETTINGS.circle.glowing.strokeColor.front;
   private strokeWidthPercentFront = 100;
-  private opacityFront = SETTINGS.circle.drawn.opacity.front;
   private dashArrayFront = [] as number[]; // Initialize in constructor
   // Back -- use the default non-dynamic back style options so that when the user disables the dynamic back style these options are displayed
   private fillColorBack = SETTINGS.circle.drawn.fillColor.back;
   private strokeColorBack = SETTINGS.circle.drawn.strokeColor.back;
+  private glowingStrokeColorBack = SETTINGS.circle.glowing.strokeColor.back;
   private strokeWidthPercentBack = 100;
-  private opacityBack = SETTINGS.circle.drawn.opacity.back;
   private dashArrayBack = [] as number[]; // Initialize in constructor
   private dynamicBackStyle = SETTINGS.circle.dynamicBackStyle;
 
@@ -635,6 +635,18 @@ export default class Circle extends Nodule {
     }
   }
 
+  setSelectedColoring(flag: boolean): void {
+    //set the new colors into the variables
+    if (flag) {
+      this.glowingStrokeColorFront = SETTINGS.style.selectedColor.front;
+      this.glowingStrokeColorBack = SETTINGS.style.selectedColor.back;
+    } else {
+      this.glowingStrokeColorFront = SETTINGS.circle.glowing.strokeColor.front;
+      this.glowingStrokeColorBack = SETTINGS.circle.glowing.strokeColor.back;
+    }
+    // apply the new color variables to the object
+    this.stylize(DisplayStyle.ApplyCurrentVariables);
+  }
   /**
    * This method is used to copy the temporary circle created with the Circle Tool (in the midground) into a
    * permanent one in the scene (in the foreground).
@@ -763,9 +775,6 @@ export default class Circle extends Nodule {
       if (options.strokeColor !== undefined) {
         this.strokeColorFront = options.strokeColor;
       }
-      if (options.opacity !== undefined) {
-        this.opacityFront = options.opacity;
-      }
       if (options.dashArray !== undefined) {
         this.dashArrayFront.clear();
         for (let i = 0; i < options.dashArray.length; i++) {
@@ -789,9 +798,6 @@ export default class Circle extends Nodule {
         }
         if (options.strokeColor !== undefined) {
           this.strokeColorBack = options.strokeColor;
-        }
-        if (options.opacity !== undefined) {
-          this.opacityBack = options.opacity;
         }
         if (options.dashArray !== undefined) {
           // clear the dashArray
@@ -822,8 +828,7 @@ export default class Circle extends Nodule {
           strokeWidthPercent: this.strokeWidthPercentFront,
           strokeColor: this.strokeColorFront,
           fillColor: this.fillColorFront,
-          dashArray: dashArrayFront,
-          opacity: this.opacityFront
+          dashArray: dashArrayFront
         };
         break;
       }
@@ -838,12 +843,11 @@ export default class Circle extends Nodule {
           strokeColor: this.strokeColorBack,
           fillColor: this.fillColorBack,
           dashArray: dashArrayBack,
-          opacity: this.opacityBack,
           dynamicBackStyle: this.dynamicBackStyle
         };
       }
       default:
-      case StyleEditPanels.Basic: {
+      case StyleEditPanels.Label: {
         return {
           panel: panel
         };
@@ -867,7 +871,6 @@ export default class Circle extends Nodule {
           strokeWidthPercent: 100,
           fillColor: SETTINGS.circle.drawn.fillColor.front,
           strokeColor: SETTINGS.circle.drawn.strokeColor.front,
-          opacity: SETTINGS.circle.drawn.opacity.front,
           dashArray: dashArrayFront
         };
       }
@@ -898,15 +901,11 @@ export default class Circle extends Nodule {
 
           dashArray: dashArrayBack,
 
-          opacity: SETTINGS.circle.dynamicBackStyle
-            ? Nodule.contrastOpacity(SETTINGS.circle.drawn.opacity.front)
-            : SETTINGS.circle.drawn.opacity.back,
-
           dynamicBackStyle: SETTINGS.circle.dynamicBackStyle
         };
       }
       default:
-      case StyleEditPanels.Basic: {
+      case StyleEditPanels.Label: {
         return {
           panel: panel
         };
@@ -940,16 +939,13 @@ export default class Circle extends Nodule {
   }
 
   /**
-   * Set the rendering style (flags: ApplyTemporaryVariables, ApplyCurrentVariables, ResetVariablesToDefaults) of the line
+   * Set the rendering style (flags: ApplyTemporaryVariables, ApplyCurrentVariables) of the circle
    *
    * ApplyTemporaryVariables means that
-   *    1) The temporary variables from SETTINGS.circle.temp are copied into the actual Two.js objects
-   *    2) Dash pattern for temporary is copied  from the SETTINGS.circle.drawn into the actual Two.js objects
-   *    3) The line width is copied from the currentCircleStrokeWidth (which accounts for the Zoom magnification) into the actual Two.js objects
+   *    1) The temporary variables from SETTINGS.point.temp are copied into the actual Two.js objects
+   *    2) The pointScaleFactor is copied from the Point.pointScaleFactor (which accounts for the Zoom magnification) into the actual Two.js objects
    *
    * Apply CurrentVariables means that all current values of the private style variables are copied into the actual Two.js objects
-   *
-   * ResetVariablesToDefaults means that all the private style variables are set to their defaults from SETTINGS.
    */
   stylize(flag: DisplayStyle): void {
     switch (flag) {
@@ -970,7 +966,6 @@ export default class Circle extends Nodule {
         }
         // The circle width is set to the current circle width (which is updated for zoom magnification)
         this.frontPart.linewidth = Circle.currentCircleStrokeWidthFront;
-        this.frontPart.opacity = SETTINGS.circle.temp.opacity.front;
         // Copy the front dash properties from the front default drawn dash properties
         if (SETTINGS.circle.drawn.dashArray.front.length > 0) {
           this.frontPart.dashes.clear();
@@ -992,7 +987,6 @@ export default class Circle extends Nodule {
         }
         // The circle width is set to the current circle width (which is updated for zoom magnification)
         this.backPart.linewidth = Circle.currentCircleStrokeWidthBack;
-        this.backPart.opacity = SETTINGS.circle.temp.opacity.back;
         // Copy the front dash properties from the front default drawn dash properties
         if (SETTINGS.circle.drawn.dashArray.back.length > 0) {
           this.backPart.dashes.clear();
@@ -1009,7 +1003,7 @@ export default class Circle extends Nodule {
 
       case DisplayStyle.ApplyCurrentVariables: {
         // Use the current variables to directly modify the Two.js objects.
-
+        console.log("stylize circle -- apply current variables");
         // FRONT
         if (this.fillColorFront === "noFill") {
           this.frontFill.noFill();
@@ -1024,8 +1018,7 @@ export default class Circle extends Nodule {
           this.frontPart.stroke = this.strokeColorFront;
         }
         // strokeWidthPercent is applied by adjustSize()
-        this.frontPart.opacity = this.opacityFront;
-        this.frontFill.opacity = this.opacityFront;
+
         if (this.dashArrayFront.length > 0) {
           this.frontPart.dashes.clear();
           this.dashArrayFront.forEach(v => {
@@ -1074,9 +1067,7 @@ export default class Circle extends Nodule {
         }
 
         // strokeWidthPercent applied by adjustSizer()
-        this.backPart.opacity = this.dynamicBackStyle
-          ? Nodule.contrastOpacity(this.opacityFront)
-          : this.opacityBack;
+
         if (this.dashArrayBack.length > 0) {
           this.backPart.dashes.clear();
           this.dashArrayBack.forEach(v => {
@@ -1092,10 +1083,9 @@ export default class Circle extends Nodule {
 
         // Glowing Front
         // no fillColor for glowing circles
-        this.glowingFrontPart.stroke =
-          SETTINGS.circle.glowing.strokeColor.front;
+        this.glowingFrontPart.stroke = this.glowingStrokeColorFront;
         // strokeWidthPercent applied by adjustSize()
-        this.glowingFrontPart.opacity = SETTINGS.circle.glowing.opacity.front;
+
         // Copy the front dash properties to the glowing object
         if (this.dashArrayFront.length > 0) {
           this.glowingFrontPart.dashes.clear();
@@ -1110,9 +1100,9 @@ export default class Circle extends Nodule {
 
         // Glowing Back
         // no fillColor for glowing circles
-        this.glowingBackPart.stroke = SETTINGS.circle.glowing.strokeColor.back;
+        this.glowingBackPart.stroke = this.glowingStrokeColorBack;
         // strokeWidthPercent applied by adjustSize()
-        this.glowingBackPart.opacity = SETTINGS.circle.glowing.opacity.back;
+
         // Copy the back dash properties to the glowing object
         if (this.dashArrayBack.length > 0) {
           this.glowingBackPart.dashes.clear();

@@ -19,6 +19,8 @@ import { CommandGroup } from "@/commands/CommandGroup";
 import { SEPointOnOneDimensional } from "@/models/SEPointOnOneDimensional";
 import { AddPointOnOneDimensionalCommand } from "@/commands/AddPointOnOneDimensionalCommand";
 import { AddPointCommand } from "@/commands/AddPointCommand";
+import { StyleNoduleCommand } from "@/commands/StyleNoduleCommand";
+import { LabelDisplayMode, StyleEditPanels } from "@/types/Styles";
 enum AngleMode {
   NONE,
   LINES,
@@ -456,7 +458,6 @@ export default class AngleHandler extends Highlighter {
           }
           break;
       }
-
       // Check to see if we are ready to make the angle
       if (this.targetPoints.length === 3) {
         this.makeAngleMarkerFromThreePoints();
@@ -950,6 +951,7 @@ export default class AngleHandler extends Highlighter {
         this.targetPoints[2] as SEPoint
       )
     );
+
     // execute the command to do all the creating
     angleMarkerCommandGroup.execute();
 
@@ -996,7 +998,6 @@ export default class AngleHandler extends Highlighter {
       this.targetLines[0],
       this.targetLines[1]
     ).execute();
-
     // Update the display of the new angle marker
     newSEAngleMarker.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
   }
@@ -1048,7 +1049,6 @@ export default class AngleHandler extends Highlighter {
       .normalize();
     newSELabel.locationVector = this.tmpVector;
 
-    // execute the command to do all the creating
     new AddAngleMarkerAndExpressionCommand(
       AngleMode.SEGMENTS,
       newSEAngleMarker,
@@ -1124,7 +1124,6 @@ export default class AngleHandler extends Highlighter {
       .normalize();
     newSELabel.locationVector = this.tmpVector;
     // execute the command to do all the creating
-
     new AddAngleMarkerAndExpressionCommand(
       AngleMode.LINEANDSEGMENT,
       newSEAngleMarker,

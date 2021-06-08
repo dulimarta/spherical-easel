@@ -40,13 +40,16 @@ export default class Point extends Nodule {
   // Front
   protected fillColorFront = SETTINGS.point.drawn.fillColor.front;
   protected strokeColorFront = SETTINGS.point.drawn.strokeColor.front;
+  protected glowingFillColorFront = SETTINGS.point.glowing.fillColor.front;
+  protected glowingStrokeColorFront = SETTINGS.point.glowing.strokeColor.front;
   protected pointRadiusPercentFront = SETTINGS.point.radiusPercent.front;
-  protected opacityFront = SETTINGS.point.drawn.opacity.front;
   // Back - use the default non-dynamic back style options so that when the user disables the dynamic back style these options are displayed
   protected fillColorBack = SETTINGS.point.drawn.fillColor.back;
   protected strokeColorBack = SETTINGS.point.drawn.strokeColor.back;
+  protected glowingFillColorBack = SETTINGS.point.glowing.fillColor.back;
+  protected glowingStrokeColorBack = SETTINGS.point.glowing.strokeColor.back;
   protected pointRadiusPercentBack = SETTINGS.point.radiusPercent.back;
-  protected opacityBack = SETTINGS.point.drawn.opacity.back;
+
   protected dynamicBackStyle = SETTINGS.point.dynamicBackStyle;
 
   /**
@@ -105,34 +108,6 @@ export default class Point extends Nodule {
       SETTINGS.point.drawn.pointStrokeWidth.front;
     this.glowingBackPoint.linewidth =
       SETTINGS.point.drawn.pointStrokeWidth.back;
-
-    // FRONT Glowing
-    if (SETTINGS.point.glowing.fillColor.front === "noFill") {
-      this.glowingFrontPoint.noFill();
-    } else {
-      this.glowingFrontPoint.fill = SETTINGS.point.glowing.fillColor.front;
-    }
-    if (SETTINGS.point.glowing.strokeColor.front === "noStroke") {
-      this.glowingFrontPoint.noStroke();
-    } else {
-      this.glowingFrontPoint.stroke = SETTINGS.point.glowing.strokeColor.front;
-    }
-    this.glowingFrontPoint.opacity = SETTINGS.point.glowing.opacity.front;
-    // points have no dashing
-
-    // Back Glowing
-    if (SETTINGS.point.glowing.fillColor.back === "noFill") {
-      this.glowingBackPoint.noFill();
-    } else {
-      this.glowingBackPoint.fill = SETTINGS.point.glowing.fillColor.back;
-    }
-    if (SETTINGS.point.glowing.strokeColor.back === "noStroke") {
-      this.glowingBackPoint.noStroke();
-    } else {
-      this.glowingBackPoint.stroke = SETTINGS.point.glowing.strokeColor.back;
-    }
-    this.glowingBackPoint.opacity = SETTINGS.point.glowing.opacity.back;
-    // points have no dashing
   }
 
   /**
@@ -151,6 +126,17 @@ export default class Point extends Nodule {
   }
   get positionVector(): Vector3 {
     return this._locationVector;
+  }
+
+  /**
+   * The percent that the default radius point is scaled relative to the current magnification factor
+   */
+  get pointRadiusPercent(): number {
+    if (this._locationVector.z < 0) {
+      return this.pointRadiusPercentBack;
+    } else {
+      return this.pointRadiusPercentFront;
+    }
   }
 
   frontGlowingDisplay(): void {
@@ -225,6 +211,23 @@ export default class Point extends Nodule {
       this.normalDisplay();
     }
   }
+
+  setSelectedColoring(flag: boolean): void {
+    //set the new colors into the variables
+    if (flag) {
+      this.glowingFillColorFront = SETTINGS.style.selectedColor.front;
+      this.glowingFillColorBack = SETTINGS.style.selectedColor.back;
+      this.glowingStrokeColorFront = SETTINGS.style.selectedColor.front;
+      this.glowingStrokeColorBack = SETTINGS.style.selectedColor.back;
+    } else {
+      this.glowingFillColorFront = SETTINGS.point.glowing.fillColor.front;
+      this.glowingFillColorBack = SETTINGS.point.glowing.fillColor.back;
+      this.glowingStrokeColorFront = SETTINGS.point.glowing.strokeColor.front;
+      this.glowingStrokeColorBack = SETTINGS.point.glowing.strokeColor.back;
+    }
+    // apply the new color variables to the object
+    this.stylize(DisplayStyle.ApplyCurrentVariables);
+  }
   /**
    * Copies the style options set by the Style Panel into the style variables and then updates the
    * Two.js objects (with adjustSize and stylize(ApplyVariables))
@@ -235,6 +238,7 @@ export default class Point extends Nodule {
     if (options.panel === StyleEditPanels.Front) {
       // Set the front options
       if (options.pointRadiusPercent !== undefined) {
+        // if the percent radius changes then the mutations changeStyle commit updates the object which can effect the location of the point's label
         this.pointRadiusPercentFront = options.pointRadiusPercent;
       }
       if (options.fillColor !== undefined) {
@@ -242,9 +246,6 @@ export default class Point extends Nodule {
       }
       if (options.strokeColor !== undefined) {
         this.strokeColorFront = options.strokeColor;
-      }
-      if (options.opacity !== undefined) {
-        this.opacityFront = options.opacity;
       }
     } else if (options.panel === StyleEditPanels.Back) {
       // Set the back options
@@ -256,6 +257,7 @@ export default class Point extends Nodule {
       // overwrite the back options only in the case the dynamic style is not enabled
       if (!this.dynamicBackStyle !== undefined) {
         if (options.pointRadiusPercent) {
+          // if the percent radius changes then the mutations changeStyle commit updates the object which can effect the location of the point's label
           this.pointRadiusPercentBack = options.pointRadiusPercent;
         }
         if (options.fillColor !== undefined) {
@@ -263,9 +265,6 @@ export default class Point extends Nodule {
         }
         if (options.strokeColor !== undefined) {
           this.strokeColorBack = options.strokeColor;
-        }
-        if (options.opacity !== undefined) {
-          this.opacityBack = options.opacity;
         }
       }
     }
@@ -283,8 +282,7 @@ export default class Point extends Nodule {
           panel: panel,
           pointRadiusPercent: this.pointRadiusPercentFront,
           strokeColor: this.strokeColorFront,
-          fillColor: this.fillColorFront,
-          opacity: this.opacityFront
+          fillColor: this.fillColorFront
         };
       }
       case StyleEditPanels.Back: {
@@ -293,12 +291,11 @@ export default class Point extends Nodule {
           pointRadiusPercent: this.pointRadiusPercentBack,
           strokeColor: this.strokeColorBack,
           fillColor: this.fillColorBack,
-          opacity: this.opacityBack,
           dynamicBackStyle: this.dynamicBackStyle
         };
       }
       default:
-      case StyleEditPanels.Basic: {
+      case StyleEditPanels.Label: {
         return {
           panel: panel
         };
@@ -315,8 +312,7 @@ export default class Point extends Nodule {
           panel: panel,
           pointRadiusPercent: SETTINGS.point.radiusPercent.front,
           strokeColor: SETTINGS.point.drawn.strokeColor.front,
-          fillColor: SETTINGS.point.drawn.fillColor.front,
-          opacity: SETTINGS.point.drawn.opacity.front
+          fillColor: SETTINGS.point.drawn.fillColor.front
         };
         // Back
       }
@@ -339,15 +335,11 @@ export default class Point extends Nodule {
             ? Nodule.contrastFillColor(SETTINGS.point.drawn.fillColor.front)
             : SETTINGS.point.drawn.fillColor.back,
 
-          opacity: SETTINGS.point.dynamicBackStyle
-            ? Nodule.contrastOpacity(SETTINGS.point.drawn.opacity.front)
-            : SETTINGS.point.drawn.opacity.back,
-
           dynamicBackStyle: SETTINGS.point.dynamicBackStyle
         };
       }
       default:
-      case StyleEditPanels.Basic: {
+      case StyleEditPanels.Label: {
         return {
           panel: panel
         };
@@ -380,15 +372,13 @@ export default class Point extends Nodule {
   }
 
   /**
-   * Set the rendering style (flags: ApplyTemporaryVariables, ApplyCurrentVariables, ResetVariablesToDefaults) of the line
+   * Set the rendering style (flags: ApplyTemporaryVariables, ApplyCurrentVariables) of the point
    *
    * ApplyTemporaryVariables means that
    *    1) The temporary variables from SETTINGS.point.temp are copied into the actual Two.js objects
    *    2) The pointScaleFactor is copied from the Point.pointScaleFactor (which accounts for the Zoom magnification) into the actual Two.js objects
    *
    * Apply CurrentVariables means that all current values of the private style variables are copied into the actual Two.js objects
-   *
-   * ResetVariablesToDefaults means that all the private style variables are set to their defaults from SETTINGS.
    */
   stylize(flag: DisplayStyle): void {
     switch (flag) {
@@ -403,7 +393,6 @@ export default class Point extends Nodule {
         this.frontPoint.stroke = SETTINGS.point.temp.strokeColor.front;
         // strokeWidth is not user modifiable, strokeWidth is always the default drawn one
         // front pointRadiusPercent applied by adjustSize(); (accounts for zoom)
-        this.frontPoint.opacity = SETTINGS.point.temp.opacity.front;
 
         // BACK
         if (SETTINGS.point.temp.fillColor.back === "noFill") {
@@ -414,7 +403,6 @@ export default class Point extends Nodule {
         this.backPoint.stroke = SETTINGS.point.temp.strokeColor.back;
         // strokeWidth is not user modifiable, strokeWidth is always the default drawn one
         // back pointRadiusPercent applied by adjustSize(); (accounts for zoom)
-        this.backPoint.opacity = SETTINGS.point.temp.opacity.back;
 
         break;
       }
@@ -434,7 +422,6 @@ export default class Point extends Nodule {
         }
         //stroke width is not user modifiable - set in the constructor
         // pointRadiusPercent applied by adjustSize();
-        this.frontPoint.opacity = this.opacityFront;
 
         // BACK
         if (this.dynamicBackStyle) {
@@ -469,9 +456,34 @@ export default class Point extends Nodule {
         }
         //stroke width is not user modifiable - set in the constructor
         // pointRadiusPercent applied by adjustSize();
-        this.backPoint.opacity = this.dynamicBackStyle
-          ? Nodule.contrastOpacity(this.opacityFront)
-          : this.opacityBack;
+
+        // FRONT Glowing
+        if (this.glowingFillColorFront === "noFill") {
+          this.glowingFrontPoint.noFill();
+        } else {
+          this.glowingFrontPoint.fill = this.glowingFillColorFront;
+        }
+        if (this.glowingStrokeColorBack === "noStroke") {
+          this.glowingFrontPoint.noStroke();
+        } else {
+          this.glowingFrontPoint.stroke = this.glowingStrokeColorBack;
+        }
+
+        // points have no dashing
+
+        // Back Glowing
+        if (SETTINGS.point.glowing.fillColor.back === "noFill") {
+          this.glowingBackPoint.noFill();
+        } else {
+          this.glowingBackPoint.fill = this.glowingFillColorBack;
+        }
+        if (this.glowingStrokeColorBack === "noStroke") {
+          this.glowingBackPoint.noStroke();
+        } else {
+          this.glowingBackPoint.stroke = this.glowingStrokeColorBack;
+        }
+
+        // points have no dashing
 
         break;
       }

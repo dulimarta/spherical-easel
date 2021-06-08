@@ -36,6 +36,7 @@ export const initialState: AppState = {
   canvasWidth: 0, //A temporary canvas width;
   seNodules: [], // An array of all SENodules
   selections: [], // An array of selected SENodules
+  oldStyleSelections: [], // An array of previous selected SENodules
   layers: [], // An array of Two.Group pointer to the layers in the twoInstance
   sePoints: [], // An array of all SEPoints
   seLines: [], // An array of all SELines
@@ -49,8 +50,8 @@ export const initialState: AppState = {
   expressions: [],
   initialStyleStates: [],
   defaultStyleStates: [],
+  styleSavedFromPanel: StyleEditPanels.Label,
   initialBackStyleContrast: SETTINGS.style.backStyleContrast,
-  useLabelMode: false,
   inverseTotalRotationMatrix: new Matrix4(), //initially the identity. The composition of all the inverses of the rotation matrices applied to the sphere
   svgCanvas: null,
   hasUnsavedNodules: false
@@ -119,11 +120,7 @@ export default {
       state.zoomTranslation[i] = vec[i];
     }
   },
-  // In the case of one non-labe object being selected, the label panel should edit that object's label and the fore/back ground should edit
-  // that selectedObject fore and back properties: useLabelMode indicates that we are doing this.
-  setUseLabelMode(state: AppState, value: boolean): void {
-    state.useLabelMode = value;
-  },
+
   //#region addPoint
   addPoint(state: AppState, point: SEPoint): void {
     state.sePoints.push(point);
@@ -341,9 +338,18 @@ export default {
     if (pos >= 0) state.seSegments[pos].accept(segmentNormalArcLengthVisitor);
   },
   setSelectedSENodules(state: AppState, payload: SENodule[]): void {
+    //reset the glowing color to usual
+    state.selections.forEach(n => {
+      n.ref?.setSelectedColoring(false);
+    });
     state.selections.splice(0);
     state.selections.push(...payload);
+    //set the glowing color to selected
+    state.selections.forEach(n => {
+      n.ref?.setSelectedColoring(true);
+    });
   },
+
   // Update the display of all free SEPoints to update the entire display
   updateDisplay(state: AppState): void {
     state.seNodules
@@ -356,9 +362,22 @@ export default {
   },
   unglowAllSENodules(state: AppState): void {
     state.seNodules.forEach((p: SENodule) => {
-      p.glowing = false;
+      if (!p.selected) {
+        p.glowing = false;
+      }
     });
   },
+  // This is the previous set of nodes that was selected
+  // If created from the LabelPanel they are all SSELabels (So we can't justs copy selections before updating it)
+  setOldStyleSelection(state: AppState, payload: SENodule[]): void {
+    state.oldStyleSelections.splice(0);
+    state.oldStyleSelections.push(...payload);
+  },
+
+  setSavedFromPanel(state: AppState, panel: StyleEditPanels): void {
+    state.styleSavedFromPanel = panel;
+  },
+
   changeStyle(
     state: AppState,
     {
@@ -375,7 +394,6 @@ export default {
       strokeColor: payload.strokeColor,
       fillColor: payload.fillColor,
       dashArray: payload.dashArray,
-      opacity: payload.opacity,
       dynamicBackStyle: payload.dynamicBackStyle,
       pointRadiusPercent: payload.pointRadiusPercent,
       labelTextStyle: payload.labelTextStyle,
@@ -387,6 +405,8 @@ export default {
       labelDisplayCaption: payload.labelDisplayCaption,
       labelDisplayMode: payload.labelDisplayMode,
       labelVisibility: payload.labelVisibility,
+      labelFrontFillColor: payload.labelFrontFillColor,
+      labelBackFillColor: payload.labelBackFillColor,
       objectVisibility: payload.objectVisibility
     };
     if (
@@ -401,6 +421,10 @@ export default {
     }
     selected.forEach((n: SENodule) => {
       n.ref?.updateStyle(opt);
+      if (opt.pointRadiusPercent !== undefined) {
+        // if the point radius Percent changes then this can effects the label location so run update
+        n.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
+      }
     });
   },
 
@@ -456,19 +480,19 @@ export default {
       // The first third is the front style settings, the second third is the back, the final third are the corresponding labels
       if (seNodule instanceof SELabel && seNodule.ref !== undefined) {
         state.initialStyleStates.push(
-          seNodule.ref.currentStyleState(StyleEditPanels.Basic)
+          seNodule.ref.currentStyleState(StyleEditPanels.Label)
         );
         state.defaultStyleStates.push(
-          seNodule.ref.defaultStyleState(StyleEditPanels.Basic)
+          seNodule.ref.defaultStyleState(StyleEditPanels.Label)
         );
       } else {
         const label = ((seNodule as unknown) as Labelable).label;
         if (label !== undefined) {
           state.initialStyleStates.push(
-            label.ref.currentStyleState(StyleEditPanels.Basic)
+            label.ref.currentStyleState(StyleEditPanels.Label)
           );
           state.defaultStyleStates.push(
-            label.ref.defaultStyleState(StyleEditPanels.Basic)
+            label.ref.defaultStyleState(StyleEditPanels.Label)
           );
         } else {
           throw "Attempted to use the label of an unlabelable SENodule in recordStyleState in mutations.ts";
