@@ -1,5 +1,5 @@
 import { SEMeasurement } from "./SEMeasurement";
-import { UpdateMode } from "@/types";
+import { UpdateMode, UpdateStateType } from "@/types";
 import { Styles } from "@/types/Styles";
 const emptySet = new Set<Styles>();
 export class SESlider extends SEMeasurement /*implements Visitable*/ {

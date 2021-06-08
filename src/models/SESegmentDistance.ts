@@ -1,6 +1,6 @@
 import { SEMeasurement } from "./SEMeasurement";
 import { SEPoint } from "./SEPoint";
-// import { UpdateStateType, UpdateMode } from "@/types";
+import { UpdateStateType, UpdateMode } from "@/types";
 import { Styles } from "@/types/Styles";
 import SETTINGS from "@/global-settings";
 

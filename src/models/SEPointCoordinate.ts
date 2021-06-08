@@ -3,6 +3,7 @@ import { SEPoint } from "./SEPoint";
 import AppStore from "@/store";
 import { Matrix4, Vector3 } from "three";
 import { Styles } from "@/types/Styles";
+import { UpdateMode, UpdateStateType } from "@/types";
 
 export enum CoordinateSelection {
   X_VALUE,
