@@ -4,7 +4,7 @@ module.exports = {
     i18n: {
       locale: "en",
       fallbackLocale: "en",
-      localeDir: "languages",
+      localeDir: "assets/languages",
       enableInSFC: true
     }
   }

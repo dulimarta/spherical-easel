@@ -12,7 +12,7 @@
     "check:links": "vuepress check-md ./docs",
     "docs:build": "vuepress build docs",
     "docs:serve": "vuepress dev docs --debug --open",
-    "i18n:report": "vue-cli-service i18n:report --src './src/**/*.?(ts|vue)' --locales './src/languages/**/*.json'"
+    "i18n:report": "vue-cli-service i18n:report --src './src/**/*.?(ts|vue)' --locales './src/assets/languages/**/*.json'"
   },
   "dependencies": {
     "@firebase/auth-types": "^0.10.3",
@@ -23,6 +23,7 @@
     "firebase": "^8.6.2",
     "markdown-it-texmath": "^0.7.2",
     "moment": "^2.26.0",
+    "splitpanes": "^2.3.6",
     "three": "^0.118.3",
     "two.js": "^0.7.0-stable.1",
     "vue": "^2.6.11",
@@ -30,7 +31,6 @@
     "vue-i18n": "^8.20.0",
     "vue-property-decorator": "^9.0.0",
     "vue-router": "^3.3.4",
-    "vue-splitpane": "^1.0.6",
     "vuetify": "^2.3.8",
     "vuex": "^3.5.1",
     "vuex-class": "^0.3.2",
