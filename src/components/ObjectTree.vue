@@ -91,7 +91,6 @@ import { SENodule } from "@/models/SENodule";
 import ExpressionForm from "@/components/ExpressionForm.vue";
 import SliderForm from "@/components/SliderForm.vue";
 import { AppState } from "@/types";
-import EventBus from "@/eventHandlers/EventBus";
 import { SEExpression } from "@/models/SEExpression";
 
 @Component({ components: { SENoduleList, ExpressionForm, SliderForm } })

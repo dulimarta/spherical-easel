@@ -142,6 +142,7 @@ import {
   FirebaseFirestore,
   DocumentReference
 } from "@firebase/firestore-types";
+import { Unsubscribe } from "@firebase/util";
 import { Command } from "./commands/Command";
 /* This allows for the State of the app to be initialized with in vuex store */
 @Component({ components: { MessageBox, Dialog, ConstructionLoader } })
@@ -158,7 +159,7 @@ export default class App extends Vue {
     saveConstructionDialog: VueComponent & DialogAction;
   };
   footerColor = "accent";
-  authSubscription: any;
+  authSubscription!: Unsubscribe;
   whoami = "";
   uid = "";
   svgRoot!: SVGElement;
@@ -193,8 +194,8 @@ export default class App extends Vue {
     this.whoami = "";
     this.uid = "";
   }
-  setFooterColor(e: unknown): void {
-    this.footerColor = (e as any).color;
+  setFooterColor(e: { color: string }): void {
+    this.footerColor = e.color;
   }
 
   doLogout(): void {

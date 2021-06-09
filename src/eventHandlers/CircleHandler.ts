@@ -88,7 +88,7 @@ export default class CircleHandler extends Highlighter {
     this.store.commit.addTemporaryNodule(this.temporaryEndMarker);
   }
 
-  mousePressed(event: MouseEvent): void {
+  mousePressed(_event: MouseEvent): void {
     // Do the mouse moved event of the Highlighter so that a new hitSEPoints array will be generated
     // otherwise if the user has finished making an new point, then *without* triggering a mouse move
     // event, mouse press will *not* select the newly created point. This is not what we want so we call super.mouseMove
@@ -321,7 +321,7 @@ export default class CircleHandler extends Highlighter {
     }
   }
 
-  mouseReleased(event: MouseEvent): void {
+  mouseReleased(_event: MouseEvent): void {
     if (this.isOnSphere) {
       // Make sure the user didn't trigger the mouse leave event and is actually making a circle
       if (this.makingACircle) {

@@ -1,7 +1,6 @@
 import { Command } from "./Command";
 import { SENodule } from "@/models/SENodule";
 import { SEMeasurement } from "@/models/SEMeasurement";
-import { CommandGroup } from "./CommandGroup";
 import { AddMeasurementCommand } from "./AddMeasurementCommand";
 import { SEPoint } from "@/models/SEPoint";
 import {

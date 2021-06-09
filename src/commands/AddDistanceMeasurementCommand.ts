@@ -2,10 +2,6 @@ import { Command } from "./Command";
 import { SENodule } from "@/models/SENodule";
 import { AddMeasurementCommand } from "./AddMeasurementCommand";
 import { SEPoint } from "@/models/SEPoint";
-import {
-  CoordinateSelection,
-  SEPointCoordinate
-} from "@/models/SEPointCoordinate";
 import { SESegmentDistance } from "@/models/SESegmentDistance";
 
 export class AddDistanceMeasurementCommand extends AddMeasurementCommand {

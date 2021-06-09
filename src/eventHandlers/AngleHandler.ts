@@ -19,8 +19,6 @@ import { CommandGroup } from "@/commands/CommandGroup";
 import { SEPointOnOneDimensional } from "@/models/SEPointOnOneDimensional";
 import { AddPointOnOneDimensionalCommand } from "@/commands/AddPointOnOneDimensionalCommand";
 import { AddPointCommand } from "@/commands/AddPointCommand";
-import { StyleNoduleCommand } from "@/commands/StyleNoduleCommand";
-import { LabelDisplayMode, StyleEditPanels } from "@/types/Styles";
 enum AngleMode {
   NONE,
   LINES,

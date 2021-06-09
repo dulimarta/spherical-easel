@@ -12,7 +12,6 @@ import { SESegment } from "./SESegment";
 import { SELine } from "./SELine";
 import { SECircle } from "./SECircle";
 import { SEAngleMarker } from "./SEAngleMarker";
-import { SESegmentLength } from "./SESegmentLength";
 
 const styleSet = new Set([
   Styles.labelTextScalePercent,
