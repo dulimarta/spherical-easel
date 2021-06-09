@@ -427,7 +427,7 @@ export default class Easel extends Vue {
     Line.updateCurrentStrokeWidthForZoom(oldFactor / e.factor);
     Segment.updateCurrentStrokeWidthForZoom(oldFactor / e.factor);
     Circle.updateCurrentStrokeWidthForZoom(oldFactor / e.factor);
-    AngleMarker.updateCurrentStrokeWidthForZoom(oldFactor / e.factor);
+    AngleMarker.updateCurrentStrokeWidthAndRadiusForZoom(oldFactor / e.factor);
     Point.updatePointScaleFactorForZoom(oldFactor / e.factor);
     Label.updateTextScaleFactorForZoom(oldFactor / e.factor);
 

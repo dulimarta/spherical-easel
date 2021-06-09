@@ -135,7 +135,6 @@
 
     "noFillLabelTip":"If you want to make the labels only appear on the front of the sphere disable automatic back styling and check 'No Fill' on the Label Back Fill Color. Similarly, to make the labels only appear on the back of the sphere disable automatic back styling and check 'No Fill' on the Label Front Fill Color.",
 
-    "NOSELECTION": " No Selection",
     "selectAnObject": "Select Object(s) To Style",
     "closeOrSelect": "Close the styling panel or select object(s).",
     "toSelectObjects": "To select objects:",
@@ -146,20 +145,16 @@
     "closeStylingPanel": "Close Styling Panel",
     "noSelectionToolTip": "No objects are currently selected. Either select objects with the selection tool or click this button to close the style panel.",
 
-    "LABELISSUE": "LABEL ISSUE",
     "labelNotVisible": "Label(s) not visible.",
     "clickToMakeLabelsVisible": "Click the button below to make all labels visible and then to style them.",
     "makeLabelsVisible": "Make Label(s) Visible",
     "labelsNotShowingToolTip": "Not all labels in the current selection are visible. Click this button to make them visible and then they will be styleable.",
 
-    "OBJECTISSUE": "OBJECT ISSUE",
     "objectNotVisible": "Object(s) not visible.",
     "clickToMakeObjectsVisible": "Click the button below to make all objects visible and then to style them.",
     "makeObjectsVisible": "Make Object(s) Visible",
     "objectsNotShowingToolTip": "Not all objects in the current selection are visible. Click this button to make them visible and then they will be styleable.",
 
-
-    "DIFFERINGSTYLESDETECTED": "DIFFERING STYLES DETECTED",
     "backStyleDisagreement":"Back Styling Disagreement",
     "styleDisagreement":"Common Style Disagreement",
     "differentValues": "The selected objects have different values for at least one of these style options. Click the button and edit a style to make all selected objects have that style value in common.",
@@ -203,6 +198,7 @@
     "labelFrontFillColor": "Label Front Fill Color",
     "labelBackFillColor": "Label Back Fill Color",
     "pointRadiusPercent": "Point Radius",
+    "angleMarkerRadiusPercent": "Angle Marker Radius",
     "strokeColor": "Stroke Color",
     "strokeWidthPercent": "Stroke Width",
     "dynamicBackStyle": "Dynamic Back Style",
@@ -271,6 +267,7 @@
     "intersectionOneDimensionalAlreadyExists": "Intersection point already exists.",
     "intersectionOneDimensionalPointCreated":"One intersection point successfully created.",
     "moveHandlerNothingSelected": "No object selected. Rotating Sphere.",
+    "moveHandlerObjectOnBackOfSphere": "Were you trying to move an object on the back of the sphere?  If so, press and hold the shift key to select objects on the back of the sphere.",
     "panZoomHandlerZoomInLimitReached": "Zoom in limit reached.",
     "panZoomHandlerZoomOutLimitReached": "Zoom out limit reached.",
     "selectionUpdate": "Selection Update: {number} objects selected. Hold the Alt/Option key to add or subtract from the current selection.",

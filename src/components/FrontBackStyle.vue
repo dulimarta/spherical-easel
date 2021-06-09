@@ -181,6 +181,26 @@
         </NumberSelector>
       </fade-in-card>
 
+      <!-- Front/Back Angle Marker Radius Number Selector -->
+      <fade-in-card :showWhen="
+        editModeIsFront() && hasAngleMarkerRadiusPercent && showMoreLabelStyles
+      ">
+        <NumberSelector :data.sync="angleMarkerRadiusPercent"
+          title-key="style.angleMarkerRadiusPercent"
+          panel-front-key="style.front"
+          panel-back-key="style.back"
+          style-name="angleMarkerRadiusPercent"
+          :min-value="minAngleMarkerRadiusPercent"
+          :max-value="maxAngleMarkerRadiusPercent"
+          :temp-style-states="tempStyleStates"
+          :step="20"
+          :panel="panel"
+          :active-panel="activePanel"
+          :thumb-string-values="angleMarkerRadiusSelectorThumbStrings"
+          :use-dynamic-back-style-from-selector="false">
+        </NumberSelector>
+      </fade-in-card>
+
       <!-- Front/Back Dash array card is displayed for front and back so long as there is a dash array property common to all selected objects-->
       <fade-in-card
         :showWhen="(hasDashPattern) && (editModeIsFront() || editModeIsBack()) && showMoreLabelStyles">
@@ -459,6 +479,23 @@ export default class FrontBackStyle extends Vue {
   private minPointRadiusPercent = SETTINGS.style.minPointRadiusPercent;
   //step is 20 from 60 to 200 is 8 steps
   private pointRadiusSelectorThumbStrings = [
+    "-40%",
+    "-20%",
+    "0%",
+    "20%",
+    "40%",
+    "60%",
+    "80%",
+    "100%"
+  ];
+
+  private angleMarkerRadiusPercent: number | undefined = 100;
+  private maxAngleMarkerRadiusPercent =
+    SETTINGS.style.maxAngleMarkerRadiusPercent;
+  private minAngleMarkerRadiusPercent =
+    SETTINGS.style.minAngleMarkerRadiusPercent;
+  //step is 20 from 60 to 200 is 8 steps
+  private angleMarkerRadiusSelectorThumbStrings = [
     "-40%",
     "-20%",
     "0%",
@@ -976,6 +1013,15 @@ export default class FrontBackStyle extends Vue {
   get hasDynamicBackStyle(): boolean {
     return this.hasStyle(Styles.dynamicBackStyle);
   }
+  get hasAngleMarkerRadiusPercent(): boolean {
+    return this.hasStyle(Styles.angleMarkerRadiusPercent);
+  }
+  get hasAngleMarkerTickMark(): boolean {
+    return this.hasStyle(Styles.angleMarkerTickMark);
+  }
+  get hasAngleMarkerDoubleArc(): boolean {
+    return this.hasStyle(Styles.angleMarkerDoubleArc);
+  }
 
   @Watch("activePanel")
   private activePanelChange(): void {
@@ -1039,6 +1085,7 @@ export default class FrontBackStyle extends Vue {
     const oldSelection = this.$store.getters.getOldStyleSelection();
     // There must be an old selection in order for there to be a change to save
     if (oldSelection.length > 0) {
+      console.log("Attempt style save command");
       //Record the current state of each Nodule
       this.currentStyleStates.splice(0);
 
@@ -1093,7 +1140,8 @@ export default class FrontBackStyle extends Vue {
         a.strokeColor === b.strokeColor &&
         a.fillColor === b.fillColor &&
         a.dynamicBackStyle === b.dynamicBackStyle &&
-        a.pointRadiusPercent === b.pointRadiusPercent
+        a.pointRadiusPercent === b.pointRadiusPercent &&
+        a.angleMarkerRadiusPercent === b.angleMarkerRadiusPercent
       ) {
         //now check the dash array which can be undefined, an empty array,length one array or a length two array.
         if (a.dashArray === undefined && b.dashArray === undefined) {

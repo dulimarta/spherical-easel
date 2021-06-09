@@ -5,6 +5,7 @@ import EventBus from "@/eventHandlers/EventBus";
 import { SEPoint } from "@/models/SEPoint";
 import Highlighter from "./Highlighter";
 import SETTINGS from "@/global-settings";
+import { Vector3 } from "three";
 
 // import { SEPoint } from "@/models/SEPoint";
 // import { SELine } from "@/models/SELine";
@@ -79,16 +80,16 @@ export default class SelectionHandler extends Highlighter {
           (n as any).ref.glowingDisplay();
         });
     }
-    // // Get all SELabels
-    // if (keyEvent.key.match("L")) {
-    //   this.store.getters
-    //     .allSELabels()
-    //     .filter((n: any) => n.showing) //no hidden labels allowed
-    //     .forEach((n: any) => {
-    //       this.keyPressSelection.push(n);
-    //       (n as any).ref.glowingDisplay();
-    //     });
-    // }
+    // Get all SEAnlgeMarkers
+    if (keyEvent.key.match("a")) {
+      this.store.getters
+        .allSEAngleMarkers()
+        .filter((n: any) => n.showing) //no hidden labels allowed
+        .forEach((n: any) => {
+          this.keyPressSelection.push(n);
+          (n as any).ref.glowingDisplay();
+        });
+    }
     // Now process the hitSENodules so the user can select by number
     // If there is nothing or only one nearby ignore this key event
     if (this.hitSENodules?.length <= 1) return;
@@ -175,6 +176,35 @@ export default class SelectionHandler extends Highlighter {
           this.currentSelection = [possibleAdditions[0]];
         } else {
           this.currentSelection = [];
+
+          // Check to see if there was an object on the back of the sphere that he was trying to
+          // select but doesn't know about the shift key.  Send an alert in this case
+          const sphereVec = new Vector3(
+            this.currentSphereVector.x,
+            this.currentSphereVector.y,
+            -1 * this.currentSphereVector.z
+          );
+          const hitSENodules = this.store.getters
+            .findNearbySENodules(sphereVec, this.currentScreenVector)
+            .filter((n: SENodule) => {
+              if (n instanceof SEIntersectionPoint) {
+                if (!n.isUserCreated) {
+                  return n.exists; //You always hit automatically created intersection points if it exists
+                } else {
+                  return n.showing && n.exists; //You can't hit hidden objects or items that don't exist
+                }
+              } else {
+                return n.showing && n.exists; //You can't hit hidden objects or items that don't exist
+              }
+            });
+          // if the user is not pressing the shift key and there is a nearby object on the back of the sphere, send alert
+          if (!event.shiftKey && hitSENodules.length > 0) {
+            EventBus.fire("show-alert", {
+              key: `handlers.moveHandlerObjectOnBackOfSphere`,
+              keyOptions: {},
+              type: "info"
+            });
+          }
         }
       }
     }

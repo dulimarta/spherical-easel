@@ -370,7 +370,6 @@ export default class Point extends Nodule {
           : this.pointRadiusPercentBack)) /
       100;
   }
-
   /**
    * Set the rendering style (flags: ApplyTemporaryVariables, ApplyCurrentVariables) of the point
    *

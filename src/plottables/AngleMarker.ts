@@ -1,6 +1,12 @@
 /** @format */
 
-import { Vector3, Vector2, Matrix4, UnsignedShort4444Type } from "three";
+import {
+  Vector3,
+  Vector2,
+  Matrix4,
+  UnsignedShort4444Type,
+  ShortType
+} from "three";
 import Two from "two.js";
 import SETTINGS, { LAYER } from "@/global-settings";
 import Nodule, { DisplayStyle } from "./Nodule";
@@ -53,6 +59,12 @@ export default class AngleMarker extends Nodule {
    * The radius of the angle marker. This get scaled by angleMarkerRadiusPercent
    */
   private _angleMarkerRadius = SETTINGS.angleMarker.defaultRadius;
+
+  /**
+   * The angleMarkerDecorations
+   */
+  private _angleMarkerTickMark = SETTINGS.angleMarker.defaultTickMark;
+  private _angleMarkerDoubleArc = SETTINGS.angleMarker.defaultDoubleArc;
   /**
    * Vuex global state
    */
@@ -106,8 +118,9 @@ export default class AngleMarker extends Nodule {
   private strokeWidthPercentBack = 100;
   private dashArrayBack = [] as number[]; // Initialize in constructor
   private dynamicBackStyle = SETTINGS.angleMarker.dynamicBackStyle;
-  //Applies to both sides
-  private angleMarkerRadiusPercent = 100;
+
+  // Applies to both sides
+  private _angleMarkerRadiusPercent = 100;
 
   /**
    * The stops and gradient for front/back fill
@@ -154,14 +167,21 @@ export default class AngleMarker extends Nodule {
     SETTINGS.angleMarker.glowing.edgeWidth;
 
   /**
+   * Initialize the current radius scale factor that is adjusted by the zoom level and the user angleMarkerRadiusPercent
+   * The initial radius of the angle marker is set by the defaults in SETTINGS
+   */
+  static currentAngleMarkerRadius = SETTINGS.angleMarker.defaultRadius;
+
+  /**
    * Update all the current stroke widths
    * @param factor The ratio of the current magnification factor over the old magnification factor
    */
-  static updateCurrentStrokeWidthForZoom(factor: number): void {
+  static updateCurrentStrokeWidthAndRadiusForZoom(factor: number): void {
     AngleMarker.currentAngleMarkerStrokeWidthFront *= factor;
     AngleMarker.currentAngleMarkerStrokeWidthBack *= factor;
     AngleMarker.currentGlowingAngleMarkerStrokeWidthFront *= factor;
     AngleMarker.currentGlowingAngleMarkerStrokeWidthBack *= factor;
+    AngleMarker.currentAngleMarkerRadius *= factor;
   }
 
   /**
@@ -187,6 +207,9 @@ export default class AngleMarker extends Nodule {
     const frontCircleVertices: Two.Vector[] = [];
     const backCircleVertices: Two.Vector[] = [];
     const storageVertices: Two.Vector[] = [];
+    const frontCircleVerticesDoubleArc: Two.Vector[] = [];
+    const backCircleVerticesDoubleArc: Two.Vector[] = [];
+    const storageVerticesDoubleArc: Two.Vector[] = [];
     // const glowingFrontStartVertices: Two.Vector[] = [];
     // const glowingBackStartVertices: Two.Vector[] = [];
     // const glowingFrontEndVertices: Two.Vector[] = [];
@@ -194,6 +217,9 @@ export default class AngleMarker extends Nodule {
     const glowingFrontCircleVertices: Two.Vector[] = [];
     const glowingBackCircleVertices: Two.Vector[] = [];
     const glowingStorageVertices: Two.Vector[] = [];
+    const glowingFrontCircleVerticesDoubleArc: Two.Vector[] = [];
+    const glowingBackCircleVerticesDoubleArc: Two.Vector[] = [];
+    const glowingStorageVerticesDoubleArc: Two.Vector[] = [];
     // const frontFill1Vertices: Two.Vector[] = [];
     // const backFill1Vertices: Two.Vector[] = [];
     // const frontFill2Vertices: Two.Vector[] = [];
@@ -328,6 +354,8 @@ export default class AngleMarker extends Nodule {
 
     //Compute the angular/intrinsic radius of the circle
     const angleMarkerRadius = this._vertexVector.angleTo(this._startVector);
+
+    // console.log("AM Radius inside update display ", angleMarkerRadius);
 
     // translate along the Z of the local coordinate frame
     // The standard circle plane (z=0) is below the plane of the target circle so translate the plane z=0 to the
@@ -733,13 +761,27 @@ export default class AngleMarker extends Nodule {
   set vertexVector(newVertex: Vector3) {
     this._vertexVector.copy(newVertex);
   }
+  get vertexVector(): Vector3 {
+    return this._vertexVector;
+  }
   set startVector(newStartVector: Vector3) {
     this._startVector.copy(newStartVector);
+  }
+  get startVector(): Vector3 {
+    return this._startVector;
   }
   set endVector(newEndVector: Vector3) {
     this._endVector.copy(newEndVector);
   }
-
+  get endVector(): Vector3 {
+    return this._endVector;
+  }
+  get angleMarkerRadius(): number {
+    return this._angleMarkerRadius;
+  }
+  get angleMarkerRadiusPercent(): number {
+    return this._angleMarkerRadiusPercent;
+  }
   /**
    * Use this method to set the display of the angle marker using three vectors. The angle from vertex to start is *not* necessary the
    * the same aa the angle form vertex to end. This method sets the _vertex, _start, _end vectors (all non-zero and unit) so that
@@ -800,27 +842,22 @@ export default class AngleMarker extends Nodule {
     this.backCirclePath.visible = true;
     this.glowingBackCirclePath.visible = true;
   }
-
   glowingDisplay(): void {
     this.frontGlowingDisplay();
     this.backGlowingDisplay();
   }
-
   frontNormalDisplay(): void {
     this.frontCirclePath.visible = true;
     this.glowingFrontCirclePath.visible = false;
   }
-
   backNormalDisplay(): void {
     this.backCirclePath.visible = true;
     this.glowingBackCirclePath.visible = false;
   }
-
   normalDisplay(): void {
     this.frontNormalDisplay();
     this.backNormalDisplay();
   }
-
   setVisible(flag: boolean): void {
     if (!flag) {
       this.frontCirclePath.visible = false;
@@ -833,7 +870,6 @@ export default class AngleMarker extends Nodule {
       this.normalDisplay();
     }
   }
-
   setSelectedColoring(flag: boolean): void {
     //set the new colors into the variables
     if (flag) {
@@ -946,7 +982,6 @@ export default class AngleMarker extends Nodule {
 
     return dup as this;
   }
-
   /**
    * Adds the front/back/glowing/not parts to the correct layers
    * @param layers
@@ -965,7 +1000,6 @@ export default class AngleMarker extends Nodule {
       layers[LAYER.backgroundAngleMarkersGlowing]
     );
   }
-
   removeFromLayers(/*layers: Two.Group[]*/): void {
     this.frontCirclePath.remove();
     // this.frontFill.remove();
@@ -974,7 +1008,6 @@ export default class AngleMarker extends Nodule {
     // this.backFill.remove();
     this.glowingBackCirclePath.remove();
   }
-
   /**
    * Copies the style options set by the Style Panel into the style variables and then updates the
    * Two.js objects (with adjustSize and stylize(ApplyVariables))
@@ -982,6 +1015,18 @@ export default class AngleMarker extends Nodule {
    */
   updateStyle(options: StyleOptions): void {
     console.debug("Angle Marker Update style of", this.name, "using", options);
+    if (options.angleMarkerRadiusPercent !== undefined) {
+      this._angleMarkerRadiusPercent = options.angleMarkerRadiusPercent;
+    }
+
+    if (options.angleMarkerTickMark !== undefined) {
+      this._angleMarkerTickMark = options.angleMarkerTickMark;
+    }
+
+    if (options.angleMarkerDoubleArc !== undefined) {
+      this._angleMarkerDoubleArc = options.angleMarkerDoubleArc;
+    }
+
     if (options.panel === StyleEditPanels.Front) {
       // Set the front options
       if (options.strokeWidthPercent !== undefined) {
@@ -998,9 +1043,6 @@ export default class AngleMarker extends Nodule {
         for (let i = 0; i < options.dashArray.length; i++) {
           this.dashArrayFront.push(options.dashArray[i]);
         }
-      }
-      if (options.angleMarkerRadiusPercent !== undefined) {
-        this.angleMarkerRadiusPercent = options.angleMarkerRadiusPercent;
       }
     } else if (options.panel == StyleEditPanels.Back) {
       // Set the back options
@@ -1027,16 +1069,12 @@ export default class AngleMarker extends Nodule {
             this.dashArrayBack.push(options.dashArray[i]);
           }
         }
-        if (options.angleMarkerRadiusPercent !== undefined) {
-          this.angleMarkerRadiusPercent = options.angleMarkerRadiusPercent;
-        }
       }
     }
     // Now apply the style and size
     this.stylize(DisplayStyle.ApplyCurrentVariables);
     this.adjustSize();
   }
-
   /**
    * Return the current style state
    */
@@ -1053,7 +1091,9 @@ export default class AngleMarker extends Nodule {
           strokeColor: this.strokeColorFront,
           fillColor: this.fillColorFront,
           dashArray: dashArrayFront,
-          angleMarkerRadiusPercent: this.angleMarkerRadiusPercent
+          angleMarkerRadiusPercent: this._angleMarkerRadiusPercent,
+          angleMarkerTickMark: this._angleMarkerTickMark,
+          angleMarkerDoubleArc: this._angleMarkerDoubleArc
         };
         break;
       }
@@ -1069,7 +1109,9 @@ export default class AngleMarker extends Nodule {
           fillColor: this.fillColorBack,
           dashArray: dashArrayBack,
           dynamicBackStyle: this.dynamicBackStyle,
-          angleMarkerRadiusPercent: this.angleMarkerRadiusPercent
+          angleMarkerRadiusPercent: this._angleMarkerRadiusPercent,
+          angleMarkerTickMark: this._angleMarkerTickMark,
+          angleMarkerDoubleArc: this._angleMarkerDoubleArc
         };
       }
       default:
@@ -1098,7 +1140,9 @@ export default class AngleMarker extends Nodule {
           fillColor: SETTINGS.angleMarker.drawn.fillColor.front,
           strokeColor: SETTINGS.angleMarker.drawn.strokeColor.front,
           dashArray: dashArrayFront,
-          angleMarkerRadiusPercent: 100
+          angleMarkerRadiusPercent: 100,
+          angleMarkerTickMark: SETTINGS.angleMarker.defaultTickMark,
+          angleMarkerDoubleArc: SETTINGS.angleMarker.defaultDoubleArc
         };
       }
       case StyleEditPanels.Back: {
@@ -1130,8 +1174,7 @@ export default class AngleMarker extends Nodule {
 
           dashArray: dashArrayBack,
 
-          dynamicBackStyle: SETTINGS.angleMarker.dynamicBackStyle,
-          angleMarkerRadiusPercent: 100
+          dynamicBackStyle: SETTINGS.angleMarker.dynamicBackStyle
         };
       }
       default:
@@ -1142,7 +1185,6 @@ export default class AngleMarker extends Nodule {
       }
     }
   }
-
   /**
    * Sets the variables for stroke width glowing/not
    */
@@ -1171,16 +1213,20 @@ export default class AngleMarker extends Nodule {
           : this.strokeWidthPercentBack)) /
       100;
 
-    // adjust the radius of the angle marker by setting the
+    // adjust the radius of the angle marker
     this._angleMarkerRadius =
-      (this._angleMarkerRadius * this.angleMarkerRadiusPercent) / 100;
-
+      (AngleMarker.currentAngleMarkerRadius * this.angleMarkerRadiusPercent) /
+      100;
+    // console.log("AM Radius", this._angleMarkerRadius);
+    // recompute the three vectors that determine the angle marker with the new angle marker radius
     this.setAngleMarkerFromThreeVectors(
       this._startVector,
       this._vertexVector,
       this._endVector,
       this._angleMarkerRadius
     );
+    // finally update the display
+    this.updateDisplay();
   }
 
   /**

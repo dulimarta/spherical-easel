@@ -384,17 +384,17 @@ export default class Label extends Nodule {
     if (options.labelTextRotation !== undefined) {
       this.textRotation = options.labelTextRotation;
     }
-    if (options.labelVisibility !== undefined) {
-      if (this.seLabel !== undefined) {
-        this.seLabel.showing = options.labelVisibility; //Applied immediately
-      }
-    }
+    // if (options.labelVisibility !== undefined) {
+    //   if (this.seLabel !== undefined) {
+    //     this.seLabel.showing = options.labelVisibility; //Applied immediately
+    //   }
+    // }
     // The object of a label refers to the parent
-    if (options.objectVisibility !== undefined) {
-      if (this.seLabel !== undefined) {
-        this.seLabel.parent.showing = options.objectVisibility; //Applied immediately
-      }
-    }
+    // if (options.objectVisibility !== undefined) {
+    //   if (this.seLabel !== undefined) {
+    //     this.seLabel.parent.showing = options.objectVisibility; //Applied immediately
+    //   }
+    // }
     if (options.labelTextScalePercent !== undefined) {
       this.textScalePercent = options.labelTextScalePercent;
     }
@@ -472,8 +472,8 @@ export default class Label extends Nodule {
           labelTextStyle: this.textStyle,
           labelTextDecoration: this.textDecoration,
           labelTextRotation: this.textRotation,
-          labelVisibility: this.frontText.visible || this.backText.visible,
-          objectVisibility: this.seLabel!.parent.showing,
+          // labelVisibility: this.frontText.visible || this.backText.visible,
+          // objectVisibility: this.seLabel!.parent.showing,
           labelTextScalePercent: this.textScalePercent,
           labelFrontFillColor: this.frontFillColor,
           labelBackFillColor: this.backFillColor,
@@ -541,8 +541,8 @@ export default class Label extends Nodule {
           labelTextStyle: SETTINGS.label.style,
           labelTextDecoration: SETTINGS.label.decoration,
           labelTextRotation: SETTINGS.label.rotation,
-          labelVisibility: labelVisibility,
-          objectVisibility: true,
+          // labelVisibility: labelVisibility,
+          // objectVisibility: true,
           labelTextScalePercent: SETTINGS.label.textScalePercent,
           labelFrontFillColor: SETTINGS.label.fillColor.front,
           labelBackFillColor: SETTINGS.label.fillColor.back,

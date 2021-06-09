@@ -30,11 +30,11 @@ export enum Styles {
   labelTextRotation,
   labelTextScalePercent,
   labelDisplayMode,
-  labelVisibility,
   labelFrontFillColor,
   labelBackFillColor,
-  objectVisibility,
-  angleMarkerRadiusPercent
+  angleMarkerRadiusPercent,
+  angleMarkerTickMark,
+  angleMarkerDoubleArc
 }
 
 export type StyleOptions = {
@@ -59,4 +59,6 @@ export type StyleOptions = {
   labelFrontFillColor?: string;
   labelBackFillColor?: string;
   angleMarkerRadiusPercent?: number;
+  angleMarkerTickMark?: boolean;
+  angleMarkerDoubleArc?: boolean;
 };
