@@ -786,13 +786,6 @@ export class SEAngleMarker extends SEMeasurement
       }
       // display the new angleMarker
       this.ref.updateDisplay();
-
-      // update the radius and the three vectors that define the angleMarker. Notice that different radius means different _end/_start Vectors
-      // this eventually calls updateDisplay, but first takes into account the angleMarkerRadiusPercent (which updateDisplay by itself doesn't) Important for undo!
-      //Update the local copies of the three vectors that define the angleMarker
-      // this._vertexVector.copy(this.ref.vertexVector);
-      // this._endVector.copy(this.ref.endVector);
-      // this._startVector.copy(this.ref.startVector);
     }
 
     if (this.showing && this._exists) {

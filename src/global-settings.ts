@@ -360,8 +360,8 @@ export default {
     defaultLabelMode: LabelDisplayMode.ValueOnly, // The default way of displaying this objects label
 
     defaultTickMark: false,
-    defaultDoubleArc: false,
-    defaultRadius: 0.15, // The default radius for angleMarkers
+    defaultDoubleArc: true,
+    defaultRadius: 0.2, // The default radius for angleMarkers
     numCirclePoints: 100, // The number of vertices used to render the circle part of the angleMarker. These are spread over the front and back parts. MAKE THIS EVEN!
     numEdgePoints: 50, // The number of vertices used to render each of the start and end vector edge of the angleMarker. These are spread over the front and back parts. MAKE THIS EVEN!
     hitIdealDistance: 0.03, // The user has to be within this distance on the ideal unit sphere to select the angleMarker.
