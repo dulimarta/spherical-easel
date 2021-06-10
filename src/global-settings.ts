@@ -362,8 +362,8 @@ export default {
     defaultTickMark: false,
     defaultDoubleArc: true,
     defaultRadius: 0.5, // The default radius for angleMarkers
-    numCirclePoints: 100, // The number of vertices used to render the circle part of the angleMarker. These are spread over the front and back parts. MAKE THIS EVEN!
-    numEdgePoints: 50, // The number of vertices used to render each of the start and end vector edge of the angleMarker. These are spread over the front and back parts. MAKE THIS EVEN!
+    numCirclePoints: 50, // The number of vertices used to render the circle part of the angleMarker. These are spread over the front and back parts. MAKE THIS EVEN!
+    numEdgePoints: 26, // The number of vertices used to render each of the start and end vector edge of the angleMarker. These are spread over the front and back parts. MAKE THIS EVEN!
     hitIdealDistance: 0.03, // The user has to be within this distance on the ideal unit sphere to select the angleMarker.
     //dynamicBackStyle is a flag that means the fill, linewidth, and strokeColor of the angleMarkers drawn on the back are automatically calculated based on the value of SETTINGS.contrast and their front counterparts
     dynamicBackStyle: true,
@@ -382,8 +382,14 @@ export default {
         back: "hsla(0, 0%, 0%, 0.3)"
       },
       strokeWidth: {
-        front: 4,
-        back: 3
+        circular: {
+          front: 4,
+          back: 3
+        },
+        straight: {
+          front: 2,
+          back: 1
+        }
       }, // The thickness of the edge of the angleMarker when drawn front/back,
       dashArray: {
         offset: { front: 0, back: 0 },
@@ -398,7 +404,8 @@ export default {
         front: "hsla(0, 100%, 50%, 1)",
         back: "hsla(0, 100%, 75%, 0.7)"
       },
-      edgeWidth: 5 // edgeWidth/2 is the width of the region around the angle (on all sides) that shows the glow
+      circular: { edgeWidth: 5 }, // edgeWidth/2 is the width of the region around the angle (on all sides) that shows the glow
+      straight: { edgeWidth: 2 }
       // The dash pattern will always be the same as the drawn version
     },
     //The properties of the angle marker when it is temporarily shown by the angle measuring tool while drawing

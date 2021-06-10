@@ -16,11 +16,13 @@ import AppStore from "@/store";
 const desiredXAxis = new Vector3();
 const desiredYAxis = new Vector3();
 const desiredZAxis = new Vector3();
-const Z_AXIS = new Vector3(0, 0, 1);
-const transformMatrix = new Matrix4();
-const transformMatrixDoubleArc = new Matrix4();
+const transformMatrixCircular = new Matrix4();
+const transformMatrixCircularDA = new Matrix4();
+const transformMatrixStraightStart = new Matrix4();
+const transformMatrixStraightEnd = new Matrix4();
 const CIRCLEEDGESUBDIVISIONS = SETTINGS.angleMarker.numCirclePoints;
-//const EDGESUBDIVISIONS = SETTINGS.angleMarker.numEdgePoints;
+const STRIAGHTEDGESUBDIVISIONS = SETTINGS.angleMarker.numEdgePoints;
+
 let ANGLEMARKER_COUNT = 0;
 
 /**
@@ -74,29 +76,38 @@ export default class AngleMarker extends Nodule {
   protected store = AppStore; //
 
   /**
-   * The TwoJS objects to display the front/back parts and their glowing counterparts.
+   * The TwoJS objects to display the *circular* front/back start/tail single/double parts and their glowing counterparts.
    */
-  // private frontStartPath: Two.Path;
-  // private backStartPath: Two.Path;
-  // private frontEndPath: Two.Path;
-  // private backEndPath: Two.Path;
-  private frontCirclePath: Two.Path;
-  private backCirclePath: Two.Path;
-  private storageCirclePath: Two.Path; // a non-displayed path that hold un-used vertices from front/backCirclePath so that the sum of the number of vertices in storage + front + back is constant
-  private frontCirclePathDoubleArc: Two.Path;
-  private backCirclePathDoubleArc: Two.Path;
-  private storageCirclePathDoubleArc: Two.Path; // a non-displayed path that hold un-used vertices from front/backCirclePath so that the sum of the number of vertices in storage + front + back is constant
+  private frontCirclePathStart: Two.Path;
+  private frontCirclePathTail: Two.Path;
+  private backCirclePathStart: Two.Path;
+  private backCirclePathTail: Two.Path;
+  private frontCirclePathDoubleArcStart: Two.Path;
+  private frontCirclePathDoubleArcTail: Two.Path;
+  private backCirclePathDoubleArcStart: Two.Path;
+  private backCirclePathDoubleArcTail: Two.Path;
 
-  // private glowingFrontStartPath: Two.Path;
-  // private glowingBackStartPath: Two.Path;
-  // private glowingFrontEndPath: Two.Path;
-  // private glowingBackEndPath: Two.Path;
-  private glowingFrontCirclePath: Two.Path;
-  private glowingBackCirclePath: Two.Path;
-  private glowingStorageCirclePath: Two.Path;
-  private glowingFrontCirclePathDoubleArc: Two.Path;
-  private glowingBackCirclePathDoubleArc: Two.Path;
-  private glowingStorageCirclePathDoubleArc: Two.Path;
+  private glowingFrontCirclePathStart: Two.Path;
+  private glowingFrontCirclePathTail: Two.Path;
+  private glowingBackCirclePathStart: Two.Path;
+  private glowingBackCirclePathTail: Two.Path;
+  private glowingFrontCirclePathDoubleArcStart: Two.Path;
+  private glowingFrontCirclePathDoubleArcTail: Two.Path;
+  private glowingBackCirclePathDoubleArcStart: Two.Path;
+  private glowingBackCirclePathDoubleArcTail: Two.Path;
+
+  /**
+   * The TwoJS objects to display the straight front/back start (from vertex to start)/end (from vertex end) parts and their glowing counterparts.
+   */
+
+  private frontStraightStart: Two.Path;
+  private backStraightStart: Two.Path;
+  private frontStraightEnd: Two.Path;
+  private backStraightEnd: Two.Path;
+  private glowingFrontStraightStart: Two.Path;
+  private glowingBackStraightStart: Two.Path;
+  private glowingFrontStraightEnd: Two.Path;
+  private glowingBackStraightEnd: Two.Path;
 
   /**
    * The TwoJS objects to display the front/back fill. These are different than the front/back parts
@@ -164,17 +175,29 @@ export default class AngleMarker extends Nodule {
     [this.backGradientColorCenter, this.backGradientColor]
   );
 
+  /** Initialize the current line width that is *NOT* user adjustable (but does scale for zoom) */
+  static currentAngleMarkerStraightStrokeWidthFront =
+    SETTINGS.angleMarker.drawn.strokeWidth.straight.front;
+  static currentAngleMarkerStraightStrokeWidthBack =
+    SETTINGS.angleMarker.drawn.strokeWidth.straight.back;
+  static currentGlowingAngleMarkerStraightStrokeWidthFront =
+    SETTINGS.angleMarker.drawn.strokeWidth.straight.front +
+    SETTINGS.angleMarker.glowing.straight.edgeWidth;
+  static currentGlowingAngleMarkerStraightStrokeWidthBack =
+    SETTINGS.angleMarker.drawn.strokeWidth.straight.back +
+    SETTINGS.angleMarker.glowing.straight.edgeWidth;
+
   /** Initialize the current line width that is adjust by the zoom level and the user widthPercent */
-  static currentAngleMarkerStrokeWidthFront =
-    SETTINGS.angleMarker.drawn.strokeWidth.front;
-  static currentAngleMarkerStrokeWidthBack =
-    SETTINGS.angleMarker.drawn.strokeWidth.back;
-  static currentGlowingAngleMarkerStrokeWidthFront =
-    SETTINGS.angleMarker.drawn.strokeWidth.front +
-    SETTINGS.angleMarker.glowing.edgeWidth;
-  static currentGlowingAngleMarkerStrokeWidthBack =
-    SETTINGS.angleMarker.drawn.strokeWidth.back +
-    SETTINGS.angleMarker.glowing.edgeWidth;
+  static currentAngleMarkerCircularStrokeWidthFront =
+    SETTINGS.angleMarker.drawn.strokeWidth.circular.front;
+  static currentAngleMarkerCircularStrokeWidthBack =
+    SETTINGS.angleMarker.drawn.strokeWidth.circular.back;
+  static currentGlowingAngleMarkerCircularStrokeWidthFront =
+    SETTINGS.angleMarker.drawn.strokeWidth.circular.front +
+    SETTINGS.angleMarker.glowing.circular.edgeWidth;
+  static currentGlowingAngleMarkerCircularStrokeWidthBack =
+    SETTINGS.angleMarker.drawn.strokeWidth.circular.back +
+    SETTINGS.angleMarker.glowing.circular.edgeWidth;
 
   /**
    * Initialize the current radius scale factor that is adjusted by the zoom level and the user angleMarkerRadiusPercent
@@ -189,168 +212,123 @@ export default class AngleMarker extends Nodule {
    * @param factor The ratio of the current magnification factor over the old magnification factor
    */
   static updateCurrentStrokeWidthAndRadiusForZoom(factor: number): void {
-    AngleMarker.currentAngleMarkerStrokeWidthFront *= factor;
-    AngleMarker.currentAngleMarkerStrokeWidthBack *= factor;
-    AngleMarker.currentGlowingAngleMarkerStrokeWidthFront *= factor;
-    AngleMarker.currentGlowingAngleMarkerStrokeWidthBack *= factor;
+    AngleMarker.currentAngleMarkerCircularStrokeWidthFront *= factor;
+    AngleMarker.currentAngleMarkerCircularStrokeWidthBack *= factor;
+    AngleMarker.currentGlowingAngleMarkerCircularStrokeWidthFront *= factor;
+    AngleMarker.currentGlowingAngleMarkerCircularStrokeWidthBack *= factor;
+
+    AngleMarker.currentAngleMarkerStraightStrokeWidthFront *= factor;
+    AngleMarker.currentAngleMarkerStraightStrokeWidthBack *= factor;
+    AngleMarker.currentGlowingAngleMarkerStraightStrokeWidthFront *= factor;
+    AngleMarker.currentGlowingAngleMarkerStraightStrokeWidthBack *= factor;
+
     AngleMarker.currentAngleMarkerRadius *= factor;
     AngleMarker.currentAngleMarkerRadiusDoubleArc *= factor;
   }
-
-  /**
-   * This is the list of original vertices of a circle in the XY plane of radius
-   * SETTINGS.boundaryCircle.radius. There are SETTINGS.angleMarker.subdivisions of these vertices
-   */
-  private originalVertices: Vector2[];
 
   /**
    * For temporary calculation with ThreeJS objects
    */
   private tmpVector = new Vector3();
   private tmpMatrix = new Matrix4();
-  private tmpVectorDoubleArc = new Vector3();
-  private tmpMatrixDoubleArc = new Matrix4();
+  private tmpVectorDA = new Vector3();
+  private tmpMatrixDA = new Matrix4();
+  private tmpVectorStraight = new Vector3();
+  private tmpMatrixStraight = new Matrix4();
 
   constructor() {
     super();
     this.name = "AngleMarker-" + ANGLEMARKER_COUNT++;
-    // Create the initial front and back vertices (glowing/not/fill)
-    // const frontStartVertices: Two.Vector[] = [];
-    // const backStartVertices: Two.Vector[] = [];
-    // const frontEndVertices: Two.Vector[] = [];
-    // const backEndVertices: Two.Vector[] = [];
-    const frontCircleVertices: Two.Vector[] = [];
-    const backCircleVertices: Two.Vector[] = [];
-    const storageVertices: Two.Vector[] = [];
-    const frontCircleVerticesDoubleArc: Two.Vector[] = [];
-    const backCircleVerticesDoubleArc: Two.Vector[] = [];
-    const storageVerticesDoubleArc: Two.Vector[] = [];
-    // const glowingFrontStartVertices: Two.Vector[] = [];
-    // const glowingBackStartVertices: Two.Vector[] = [];
-    // const glowingFrontEndVertices: Two.Vector[] = [];
-    // const glowingBackEndVertices: Two.Vector[] = [];
-    const glowingFrontCircleVertices: Two.Vector[] = [];
-    const glowingBackCircleVertices: Two.Vector[] = [];
-    const glowingStorageVertices: Two.Vector[] = [];
-    const glowingFrontCircleVerticesDoubleArc: Two.Vector[] = [];
-    const glowingBackCircleVerticesDoubleArc: Two.Vector[] = [];
-    const glowingStorageVerticesDoubleArc: Two.Vector[] = [];
-    // const frontFill1Vertices: Two.Vector[] = [];
-    // const backFill1Vertices: Two.Vector[] = [];
-    // const frontFill2Vertices: Two.Vector[] = [];
-    // const backFill2Vertices: Two.Vector[] = [];
 
-    // As the angle marker is moved around the vertices on the circle edge part are passed between the front, back and storage parts, but it
-    //  is always true that
-    //   frontCirclePath.vertices.length + backCirclePath.vertices.length + storageCirclePath.vertices.length = 2*CIRCLEEDGESUBDIVISIONS
-    //  ??As the angle marker is moved around the some of the frontVertices are the same as the ones on the
-    //  ?? frontFillVertices, but it is always true that frontVertices.length + number of non-front Vertices in
-    //  ?? frontFillVertices = SUBDIVISIONS
-    //  ??  The non-frontVertices are ones on the boundary circle.
-    //   Similar for the back vertices. Initially the length of back/front circle vertices is CIRCLEEDGESUBDIVISIONS.
-    for (let k = 0; k < Math.ceil(CIRCLEEDGESUBDIVISIONS / 2); k++) {
-      const angle = (k * Math.PI) / Math.ceil(CIRCLEEDGESUBDIVISIONS / 2); // [0, pi)
-      const x = SETTINGS.boundaryCircle.radius * Math.cos(angle);
-      const x1 = SETTINGS.boundaryCircle.radius * Math.cos(angle + Math.PI);
-      const y = SETTINGS.boundaryCircle.radius * Math.sin(angle);
-      const y1 = SETTINGS.boundaryCircle.radius * Math.sin(angle + Math.PI);
+    // Circular Part Initialize
+    // Create the initial front and back vertices (glowing/not doubleArc/not start/tail)
 
-      frontCircleVertices.push(new Two.Vector(x, y));
-      frontCircleVerticesDoubleArc.push(new Two.Vector(x, y));
-      //frontFillVertices.push(new Two.Vector(x, y), new Two.Vector(x1, y1));
-
-      backCircleVertices.push(new Two.Vector(x1, y1));
-      backCircleVerticesDoubleArc.push(new Two.Vector(x1, y1));
-      //backFillVertices.push(new Two.Vector(x, y), new Two.Vector(x1, y1));
-
-      glowingFrontCircleVertices.push(new Two.Vector(x, y));
-      glowingFrontCircleVerticesDoubleArc.push(new Two.Vector(x, y));
-
-      glowingBackCircleVertices.push(new Two.Vector(x1, y1));
-      glowingBackCircleVerticesDoubleArc.push(new Two.Vector(x1, y1));
+    const vertices: Two.Vector[] = [];
+    for (let k = 0; k < CIRCLEEDGESUBDIVISIONS; k++) {
+      vertices.push(new Two.Vector(0, 0));
     }
-    this.frontCirclePath = new Two.Path(
-      frontCircleVertices,
-      /*closed*/ false,
-      /*curve*/ false
-    );
-    this.frontCirclePathDoubleArc = new Two.Path(
-      frontCircleVerticesDoubleArc,
-      /*closed*/ false,
-      /*curve*/ false
-    );
-    // this.frontFill = new Two.Path(
-    //   frontFillVertices,
-    //   /*closed*/ true,
-    //   /*curve*/ false
-    // );
-
-    this.glowingFrontCirclePath = new Two.Path(
-      glowingFrontCircleVertices,
-      /*closed*/ false,
-      /*curve*/ false
-    );
-    this.glowingFrontCirclePathDoubleArc = new Two.Path(
-      glowingFrontCircleVerticesDoubleArc,
-      /*closed*/ false,
-      /*curve*/ false
+    this.frontCirclePathStart = new Two.Path(
+      vertices,
+      /* closed */ false,
+      /* curve */ false
     );
 
-    this.backCirclePath = new Two.Path(
-      backCircleVertices,
-      /*closed*/ false,
-      /*curve*/ false
-    );
-    this.backCirclePathDoubleArc = new Two.Path(
-      backCircleVerticesDoubleArc,
-      /*closed*/ false,
-      /*curve*/ false
-    );
-    // this.backFill = new Two.Path(
-    //   backFillVertices,
-    //   /*closed*/ true,
-    //   /*curve*/ false
-    // );
+    // Create the other parts cloning the front circle path start
+    this.frontCirclePathDoubleArcStart = this.frontCirclePathStart.clone();
+    this.frontCirclePathTail = this.frontCirclePathStart.clone();
+    this.frontCirclePathDoubleArcTail = this.frontCirclePathStart.clone();
 
-    this.glowingBackCirclePath = new Two.Path(
-      glowingBackCircleVertices,
-      /*closed*/ false,
-      /*curve*/ false
-    );
-    this.glowingBackCirclePathDoubleArc = new Two.Path(
-      glowingBackCircleVerticesDoubleArc,
-      /*closed*/ false,
-      /*curve*/ false
-    );
+    this.backCirclePathStart = this.frontCirclePathStart.clone();
+    this.backCirclePathDoubleArcStart = this.frontCirclePathStart.clone();
+    this.backCirclePathTail = this.frontCirclePathStart.clone();
+    this.backCirclePathDoubleArcTail = this.frontCirclePathStart.clone();
 
-    this.originalVertices = [];
+    this.glowingFrontCirclePathStart = this.frontCirclePathStart.clone();
+    this.glowingFrontCirclePathDoubleArcStart = this.frontCirclePathStart.clone();
+    this.glowingFrontCirclePathTail = this.frontCirclePathStart.clone();
+    this.glowingFrontCirclePathDoubleArcTail = this.frontCirclePathStart.clone();
 
-    frontCircleVertices.forEach(v => {
-      this.originalVertices.push(new Vector2(v.x, v.y));
-    });
-    // frontCircleVerticesDoubleArc.forEach(v => {
-    //   this.originalVertices.push(new Vector2(v.x, v.y));
-    // });
-    backCircleVertices.forEach(v => {
-      this.originalVertices.push(new Vector2(v.x, v.y));
-    });
-    // backCircleVerticesDoubleArc.forEach(v => {
-    //   this.originalVertices.push(new Vector2(v.x, v.y));
-    // });
+    this.glowingBackCirclePathStart = this.frontCirclePathStart.clone();
+    this.glowingBackCirclePathDoubleArcStart = this.frontCirclePathStart.clone();
+    this.glowingBackCirclePathTail = this.frontCirclePathStart.clone();
+    this.glowingBackCirclePathDoubleArcTail = this.frontCirclePathStart.clone();
 
-    // Set the styles that are always true
-    // The front/back parts have no fill because that is handled by the front/back fill
-    // The front/back fill have no stroke because that is handled by the front/back part
-    this.frontCirclePath.noFill();
-    this.backCirclePath.noFill();
-    this.frontCirclePathDoubleArc.noFill();
-    this.backCirclePathDoubleArc.noFill();
-    //this.frontFill.noStroke();
-    //this.backFill.noStroke();
-    this.glowingFrontCirclePath.noFill();
-    this.glowingBackCirclePath.noFill();
-    this.glowingFrontCirclePathDoubleArc.noFill();
-    this.glowingBackCirclePathDoubleArc.noFill();
+    // The clear() extension function works only on JS Array, but
+    // not on Two.JS Collection class. Use splice() instead. Clear only tails
+
+    this.frontCirclePathTail.vertices.splice(0);
+    this.frontCirclePathDoubleArcTail.vertices.splice(0);
+
+    this.backCirclePathTail.vertices.splice(0);
+    this.backCirclePathDoubleArcTail.vertices.splice(0);
+
+    this.glowingFrontCirclePathTail.vertices.splice(0);
+    this.glowingFrontCirclePathDoubleArcTail.vertices.splice(0);
+
+    this.glowingBackCirclePathTail.vertices.splice(0);
+    this.glowingBackCirclePathDoubleArcTail.vertices.splice(0);
+
+    // Set the style that never changes -- Fill
+    this.frontCirclePathStart.noFill();
+    this.frontCirclePathDoubleArcStart.noFill();
+    this.frontCirclePathTail.noFill();
+    this.frontCirclePathDoubleArcTail.noFill();
+
+    this.backCirclePathStart.noFill();
+    this.backCirclePathDoubleArcStart.noFill();
+    this.backCirclePathTail.noFill();
+    this.backCirclePathDoubleArcTail.noFill();
+
+    this.glowingFrontCirclePathStart.noFill();
+    this.glowingFrontCirclePathDoubleArcStart.noFill();
+    this.glowingFrontCirclePathTail.noFill();
+    this.glowingFrontCirclePathDoubleArcTail.noFill();
+
+    this.glowingBackCirclePathStart.noFill();
+    this.glowingBackCirclePathDoubleArcStart.noFill();
+    this.glowingBackCirclePathTail.noFill();
+    this.glowingBackCirclePathDoubleArcTail.noFill();
+
+    // The segment is not initially glowing
+    this.frontCirclePathStart.visible = true;
+    this.frontCirclePathDoubleArcStart.visible = true;
+    this.frontCirclePathTail.visible = true;
+    this.frontCirclePathDoubleArcTail.visible = true;
+
+    this.backCirclePathStart.visible = true;
+    this.backCirclePathDoubleArcStart.visible = true;
+    this.backCirclePathTail.visible = true;
+    this.backCirclePathDoubleArcTail.visible = true;
+
+    this.glowingFrontCirclePathStart.visible = false;
+    this.glowingFrontCirclePathDoubleArcStart.visible = false;
+    this.glowingFrontCirclePathTail.visible = false;
+    this.glowingFrontCirclePathDoubleArcTail.visible = false;
+
+    this.glowingBackCirclePathStart.visible = false;
+    this.glowingBackCirclePathDoubleArcStart.visible = false;
+    this.glowingBackCirclePathTail.visible = false;
+    this.glowingBackCirclePathDoubleArcTail.visible = false;
 
     if (SETTINGS.angleMarker.drawn.dashArray.front.length > 0) {
       SETTINGS.angleMarker.drawn.dashArray.front.forEach(v =>
@@ -363,34 +341,48 @@ export default class AngleMarker extends Nodule {
       );
     }
 
-    //initialize the storage pool path for the circle path vertices and turn off the display
-    this.storageCirclePath = new Two.Path(
-      storageVertices,
-      /*closed*/ false,
-      /*curve*/ false
+    //Straight part initialize
+    const verticesStraight: Two.Vector[] = [];
+    for (let k = 0; k < STRIAGHTEDGESUBDIVISIONS; k++) {
+      vertices.push(new Two.Vector(0, 0));
+    }
+    this.frontStraightStart = new Two.Path(
+      verticesStraight,
+      /* closed */ false,
+      /* curve */ false
     );
-    this.storageCirclePath.remove();
 
-    this.glowingStorageCirclePath = new Two.Path(
-      glowingStorageVertices,
-      /*closed*/ false,
-      /*curve*/ false
-    );
-    this.glowingStorageCirclePath.remove();
+    // Create the other parts cloning the front straight path start
+    this.backStraightStart = this.frontStraightStart.clone();
+    this.frontStraightEnd = this.frontStraightStart.clone();
+    this.backStraightEnd = this.frontStraightStart.clone();
 
-    this.storageCirclePathDoubleArc = new Two.Path(
-      storageVerticesDoubleArc,
-      /*closed*/ false,
-      /*curve*/ false
-    );
-    this.storageCirclePathDoubleArc.remove();
+    this.glowingFrontStraightStart = this.frontStraightStart.clone();
+    this.glowingBackStraightStart = this.frontStraightStart.clone();
+    this.glowingFrontStraightEnd = this.frontStraightStart.clone();
+    this.glowingBackStraightEnd = this.frontStraightStart.clone();
 
-    this.glowingStorageCirclePathDoubleArc = new Two.Path(
-      glowingStorageVerticesDoubleArc,
-      /*closed*/ false,
-      /*curve*/ false
-    );
-    this.glowingStorageCirclePathDoubleArc.remove();
+    // Set the style that never changes -- Fill
+    this.frontStraightStart.noFill();
+    this.backStraightStart.noFill();
+    this.frontStraightEnd.noFill();
+    this.backStraightEnd.noFill();
+
+    this.glowingFrontStraightStart.noFill();
+    this.glowingBackStraightStart.noFill();
+    this.glowingFrontStraightEnd.noFill();
+    this.glowingBackStraightEnd.noFill();
+
+    // The segment is not initially glowing
+    this.frontStraightStart.visible = true;
+    this.backStraightStart.visible = true;
+    this.frontStraightEnd.visible = true;
+    this.backStraightEnd.visible = true;
+
+    this.glowingFrontStraightStart.visible = false;
+    this.glowingBackStraightStart.visible = false;
+    this.glowingFrontStraightEnd.visible = false;
+    this.glowingBackStraightEnd.visible = false;
   }
   /**
    * Map part of a circle in standard position to the location and orientation of the angleMarker
@@ -419,8 +411,8 @@ export default class AngleMarker extends Nodule {
 
     // Set up the local coordinates from for the circle,
     //  transformMatrix will now map (1,0,0) to the point on the desired x axis a unit from the origin in the positive direction.
-    transformMatrix.makeBasis(desiredXAxis, desiredYAxis, desiredZAxis);
-    transformMatrixDoubleArc.makeBasis(
+    transformMatrixCircular.makeBasis(desiredXAxis, desiredYAxis, desiredZAxis);
+    transformMatrixCircularDA.makeBasis(
       desiredXAxis,
       desiredYAxis,
       desiredZAxis
@@ -445,13 +437,13 @@ export default class AngleMarker extends Nodule {
       0,
       distanceFromOrigin * SETTINGS.boundaryCircle.radius
     );
-    this.tmpMatrixDoubleArc.makeTranslation(
+    this.tmpMatrixDA.makeTranslation(
       0,
       0,
       distanceFromOriginDoubleArc * SETTINGS.boundaryCircle.radius
     );
-    transformMatrix.multiply(this.tmpMatrix);
-    transformMatrixDoubleArc.multiply(this.tmpMatrixDoubleArc);
+    transformMatrixCircular.multiply(this.tmpMatrix);
+    transformMatrixCircularDA.multiply(this.tmpMatrixDA);
     // The target circle is scaled version of the original circle (but now in the plane of the target circle)
     // so scale XYZ space in the XY directions by the projected radius (z direction by 1)
     // this will make the original circle (in the plane of the target circle) finally coincide with the target circle
@@ -460,13 +452,13 @@ export default class AngleMarker extends Nodule {
       Math.sin(this._angleMarkerRadius),
       1
     );
-    this.tmpMatrixDoubleArc.makeScale(
+    this.tmpMatrixDA.makeScale(
       Math.sin(this._angleMarkerRadiusDoubleArc),
       Math.sin(this._angleMarkerRadiusDoubleArc),
       1
     );
-    transformMatrix.multiply(this.tmpMatrix); // transformMatrix now maps the original circle to the target circle
-    transformMatrixDoubleArc.multiply(this.tmpMatrixDoubleArc);
+    transformMatrixCircular.multiply(this.tmpMatrix); // transformMatrix now maps the original circle to the target circle
+    transformMatrixCircularDA.multiply(this.tmpMatrixDA);
     // Now figure out the angular length of the angle marker using the endVector
     // First project endVector on the plane perpendicular to the vertexVector
     this.tmpVector.copy(this._endVector);
@@ -489,316 +481,198 @@ export default class AngleMarker extends Nodule {
       desiredXAxis.dot(this.tmpVector)
     ).modTwoPi();
     // console.log("angularLength", angularLengthOfMarker);
-    // Recalculate the 2D coordinate of the TwoJS path (From the originalVertices array)
-    // As we drag the mouse, the number of vertices in the front half
-    // and back half are dynamically changing and to avoid
-    // allocating and de-allocating arrays, we dynamically transfers
-    // elements between the three (front/back/storage paths)
 
-    let frontCircleIndex = 0; // the number added to the front path
-    let backCircleIndex = 0; // the number added to the back path
-    let frontCircleLen = this.frontCirclePath.vertices.length;
-    let backCircleLen = this.backCirclePath.vertices.length;
-    let firstFrontCircleIndexInOriginal = -1; // the index (in original vertices) of the first vertex added to the front
-    let firstBackCircleIndexInOriginal = -1; // the index (in original vertices) of the first vertex added to the back
+    // Bring all the anchor points to a common pool
+    // Each half (and extra) path will pull anchor points from
+    // this pool as needed
+    const pool: Two.Anchor[] = [];
+    pool.push(...this.frontCirclePathStart.vertices.splice(0));
+    pool.push(...this.frontCirclePathTail.vertices.splice(0));
+    pool.push(...this.backCirclePathStart.vertices.splice(0));
+    pool.push(...this.backCirclePathTail.vertices.splice(0));
+    const glowingPool: Two.Anchor[] = [];
+    glowingPool.push(...this.glowingFrontCirclePathStart.vertices.splice(0));
+    glowingPool.push(...this.glowingFrontCirclePathTail.vertices.splice(0));
+    glowingPool.push(...this.glowingBackCirclePathStart.vertices.splice(0));
+    glowingPool.push(...this.glowingBackCirclePathTail.vertices.splice(0));
 
-    let frontCircleIndexDoubleArc = 0; // the number added to the front path
-    let backCircleIndexDoubleArc = 0; // the number added to the back path
-    let frontCircleLenDoubleArc = this.frontCirclePathDoubleArc.vertices.length;
-    let backCircleLenDoubleArc = this.backCirclePathDoubleArc.vertices.length;
-    let firstFrontCircleIndexInOriginalDoubleArc = -1; // the index (in original vertices) of the first vertex added to the front
-    let firstBackCircleIndexInOriginalDoubleArc = -1; // the index (in original vertices) of the first vertex added to the back
+    // Variables to keep track of when the z coordinate of the transformed vector changes sign
+    const toPos = []; // Remember the indices of neg-to-pos crossing
+    const toNeg = []; // Remember the indices of pos-to-neg crossing
+    let posIndex = 0;
+    let negIndex = 0;
+    let lastSign = 0;
 
-    this.originalVertices.forEach((v: Vector2, pos: number) => {
-      // Only add a transformed vertex if the angle it makes with the positive x axis in the original circle
-      // (the one with radius SETTINGS.boundaryCircle.radius in the plane z=0) is less than angularLengthOfMarker.
-      // store the remaining vertices in the storageCirclePath
-      //NOTE: the syntax for atan2 is atan2(y,x) and returns a value in (-pi,pi]!!!!!
-      if (Math.atan2(v.y, v.x).modTwoPi() <= angularLengthOfMarker) {
-        this.tmpVector.set(v.x, v.y, 0);
-        this.tmpVector.applyMatrix4(transformMatrix);
-        // When the Z-coordinate is negative, the vertex belongs the
-        // the back side of the sphere
-        if (this.tmpVector.z > 0) {
-          if (firstFrontCircleIndexInOriginal === -1)
-            firstFrontCircleIndexInOriginal = pos;
-          if (frontCircleIndex >= frontCircleLen) {
-            // Steal one element from the backPath or storage
-            let extra;
-            if (this.backCirclePath.vertices.length !== 0) {
-              extra = this.backCirclePath.vertices.pop();
-              backCircleLen--;
-            } else {
-              extra = this.storageCirclePath.vertices.pop();
-            }
-            this.frontCirclePath.vertices.push(extra!);
+    // We begin with the "main" paths as the current active paths
+    // As we find additional zero-crossing, we then switch to the
+    // "extra" paths
+    let activeFront = this.frontCirclePathStart.vertices;
+    let activeBack = this.backCirclePathStart.vertices;
+    let glowingActiveFront = this.glowingFrontCirclePathStart.vertices;
+    let glowingActiveBack = this.glowingBackCirclePathStart.vertices;
+    for (let pos = 0; pos < 2 * CIRCLEEDGESUBDIVISIONS; pos++) {
+      // Generate a vector point on the equator of the Default Sphere
+      const angle =
+        (pos / (2 * CIRCLEEDGESUBDIVISIONS - 1)) *
+        Math.abs(angularLengthOfMarker);
+      this.tmpVector
+        .set(Math.cos(angle), Math.sin(angle), 0)
+        .multiplyScalar(SETTINGS.boundaryCircle.radius);
 
-            let glowExtra;
-            if (this.glowingBackCirclePath.vertices.length !== 0) {
-              glowExtra = this.glowingBackCirclePath.vertices.pop();
-            } else {
-              glowExtra = this.glowingStorageCirclePath.vertices.pop();
-            }
-            this.glowingFrontCirclePath.vertices.push(glowExtra!);
-            frontCircleLen++;
+      // Transform that vector/point to one on the current segment
+      this.tmpVector.applyMatrix4(transformMatrixCircular);
+      const thisSign = Math.sign(this.tmpVector.z);
+
+      // CHeck for zero-crossing
+      if (lastSign !== thisSign) {
+        // We have a zero crossing
+        if (thisSign > 0) {
+          // If we already had a positive crossing
+          // The next chunk is a split front part
+          if (toPos.length > 0) {
+            activeFront = this.frontCirclePathTail.vertices;
+            glowingActiveFront = this.glowingFrontCirclePathTail.vertices;
+            posIndex = 0;
           }
-          this.frontCirclePath.vertices[frontCircleIndex].x = this.tmpVector.x;
-          this.frontCirclePath.vertices[frontCircleIndex].y = this.tmpVector.y;
-
-          this.glowingFrontCirclePath.vertices[
-            frontCircleIndex
-          ].x = this.tmpVector.x;
-          this.glowingFrontCirclePath.vertices[
-            frontCircleIndex
-          ].y = this.tmpVector.y;
-          frontCircleIndex++;
-        } else {
-          if (firstBackCircleIndexInOriginal === -1)
-            firstBackCircleIndexInOriginal = pos;
-          if (backCircleIndex >= backCircleLen) {
-            // Steal one element from the frontPath or storage
-            let extra;
-            if (this.frontCirclePath.vertices.length !== 0) {
-              extra = this.frontCirclePath.vertices.pop();
-              frontCircleLen--;
-            } else {
-              extra = this.storageCirclePath.vertices.pop();
-            }
-            this.backCirclePath.vertices.push(extra!);
-
-            let glowingExtra;
-            if (this.glowingFrontCirclePath.vertices.length !== 0) {
-              glowingExtra = this.glowingFrontCirclePath.vertices.pop();
-            } else {
-              glowingExtra = this.glowingStorageCirclePath.vertices.pop();
-            }
-            this.glowingBackCirclePath.vertices.push(glowingExtra!);
-            backCircleLen++;
+          toPos.push(pos);
+        }
+        // If we already had a negative crossing
+        // The next chunk is a split back part
+        if (thisSign < 0) {
+          if (toNeg.length > 0) {
+            activeBack = this.backCirclePathTail.vertices;
+            glowingActiveBack = this.glowingBackCirclePathTail.vertices;
+            negIndex = 0;
           }
-          this.backCirclePath.vertices[backCircleIndex].x = this.tmpVector.x;
-          this.backCirclePath.vertices[backCircleIndex].y = this.tmpVector.y;
-
-          this.glowingBackCirclePath.vertices[
-            backCircleIndex
-          ].x = this.tmpVector.x;
-          this.glowingBackCirclePath.vertices[
-            backCircleIndex
-          ].y = this.tmpVector.y;
-          backCircleIndex++;
+          toNeg.push(pos);
         }
       }
-    });
-    this.originalVertices.forEach((v: Vector2, pos: number) => {
-      // Only add a transformed vertex if the angle it makes with the positive x axis in the original circle
-      // (the one with radius SETTINGS.boundaryCircle.radius in the plane z=0) is less than angularLengthOfMarker.
-      // store the remaining vertices in the storageCirclePath
-      //NOTE: the syntax for atan2 is atan2(y,x) and returns a value in (-pi,pi]!!!!!
-      if (Math.atan2(v.y, v.x).modTwoPi() <= angularLengthOfMarker) {
-        this.tmpVectorDoubleArc.set(v.x, v.y, 0);
-        this.tmpVectorDoubleArc.applyMatrix4(transformMatrixDoubleArc);
-        // When the Z-coordinate is negative, the vertex belongs the
-        // the back side of the sphere
-        if (this.tmpVectorDoubleArc.z > 0) {
-          if (firstFrontCircleIndexInOriginalDoubleArc === -1)
-            firstFrontCircleIndexInOriginalDoubleArc = pos;
-          if (frontCircleIndexDoubleArc >= frontCircleLenDoubleArc) {
-            // console.log("steal from double arc back p1");
-            // Steal one element from the backPath or storage
-            let extraDoubleArc;
-            if (this.backCirclePathDoubleArc.vertices.length !== 0) {
-              extraDoubleArc = this.backCirclePathDoubleArc.vertices.pop();
-              backCircleLenDoubleArc--;
-            } else {
-              extraDoubleArc = this.storageCirclePathDoubleArc.vertices.pop();
-            }
-            // console.log("steal from double arc back p2");
-            this.frontCirclePathDoubleArc.vertices.push(extraDoubleArc!);
+      lastSign = thisSign;
+      if (this.tmpVector.z > 0) {
+        if (posIndex === activeFront.length) {
+          // transfer one cell from the common pool
+          activeFront.push(pool.pop()!);
+          glowingActiveFront.push(glowingPool.pop()!);
+        }
+        activeFront[posIndex].x = this.tmpVector.x;
+        activeFront[posIndex].y = this.tmpVector.y;
+        glowingActiveFront[posIndex].x = this.tmpVector.x;
+        glowingActiveFront[posIndex].y = this.tmpVector.y;
+        posIndex++;
+      } else {
+        if (negIndex === activeBack.length) {
+          // transfer one cell from the common pool
+          activeBack.push(pool.pop()!);
+          glowingActiveBack.push(glowingPool.pop()!);
+        }
+        activeBack[negIndex].x = this.tmpVector.x;
+        activeBack[negIndex].y = this.tmpVector.y;
+        glowingActiveBack[negIndex].x = this.tmpVector.x;
+        glowingActiveBack[negIndex].y = this.tmpVector.y;
+        negIndex++;
+      }
+    }
 
-            let glowExtraDoubleArc;
-            if (this.glowingBackCirclePathDoubleArc.vertices.length !== 0) {
-              glowExtraDoubleArc = this.glowingBackCirclePathDoubleArc.vertices.pop();
-            } else {
-              glowExtraDoubleArc = this.glowingStorageCirclePathDoubleArc.vertices.pop();
-            }
-            // console.log("steal from double arc back p3");
-            this.glowingFrontCirclePathDoubleArc.vertices.push(
-              glowExtraDoubleArc!
-            );
-            frontCircleLenDoubleArc++;
-            // console.log(
-            //   this.frontCirclePathDoubleArc.vertices.length,
-            //   frontCircleLenDoubleArc
-            // );
+    // Now do the same thing for the DoubleArc(DA) Paths
+
+    const poolDA: Two.Anchor[] = [];
+    poolDA.push(...this.frontCirclePathDoubleArcStart.vertices.splice(0));
+    poolDA.push(...this.frontCirclePathDoubleArcTail.vertices.splice(0));
+    poolDA.push(...this.backCirclePathDoubleArcStart.vertices.splice(0));
+    poolDA.push(...this.backCirclePathDoubleArcTail.vertices.splice(0));
+    const glowingPoolDA: Two.Anchor[] = [];
+    glowingPoolDA.push(
+      ...this.glowingFrontCirclePathDoubleArcStart.vertices.splice(0)
+    );
+    glowingPoolDA.push(
+      ...this.glowingFrontCirclePathDoubleArcTail.vertices.splice(0)
+    );
+    glowingPoolDA.push(
+      ...this.glowingBackCirclePathDoubleArcStart.vertices.splice(0)
+    );
+    glowingPoolDA.push(
+      ...this.glowingBackCirclePathDoubleArcTail.vertices.splice(0)
+    );
+
+    // Variables to keep track of when the z coordinate of the transformed vector changes sign
+    const toPosDA = []; // Remember the indices of neg-to-pos crossing
+    const toNegDA = []; // Remember the indices of pos-to-neg crossing
+    let posIndexDA = 0;
+    let negIndexDA = 0;
+    let lastSignDA = 0;
+
+    // We begin with the "main" paths as the current active paths
+    // As we find additional zero-crossing, we then switch to the
+    // "extra" paths
+    let activeFrontDA = this.frontCirclePathDoubleArcStart.vertices;
+    let activeBackDA = this.backCirclePathDoubleArcStart.vertices;
+    let glowingActiveFrontDA = this.glowingFrontCirclePathDoubleArcStart
+      .vertices;
+    let glowingActiveBackDA = this.glowingBackCirclePathDoubleArcStart.vertices;
+    for (let pos = 0; pos < 2 * CIRCLEEDGESUBDIVISIONS; pos++) {
+      // Generate a vector point on the equator of the Default Sphere
+      const angle =
+        (pos / (2 * CIRCLEEDGESUBDIVISIONS - 1)) *
+        Math.abs(angularLengthOfMarker);
+      this.tmpVectorDA
+        .set(Math.cos(angle), Math.sin(angle), 0)
+        .multiplyScalar(SETTINGS.boundaryCircle.radius);
+
+      // Transform that vector/point to one on the current segment
+      this.tmpVectorDA.applyMatrix4(transformMatrixCircularDA);
+      const thisSignDA = Math.sign(this.tmpVectorDA.z);
+
+      // CHeck for zero-crossing
+      if (lastSignDA !== thisSignDA) {
+        // We have a zero crossing
+        if (thisSignDA > 0) {
+          // If we already had a positive crossing
+          // The next chunk is a split front part
+          if (toPosDA.length > 0) {
+            activeFrontDA = this.frontCirclePathDoubleArcTail.vertices;
+            glowingActiveFrontDA = this.glowingFrontCirclePathDoubleArcTail
+              .vertices;
+            posIndexDA = 0;
           }
-          // if (
-          //   this.frontCirclePathDoubleArc.vertices[
-          //     frontCircleIndexDoubleArc
-          //   ] === undefined
-          // ) {
-          //   console.log(
-          //     "FCIDA",
-          //     frontCircleIndexDoubleArc,
-          //     "FCPDALen",
-          //     this.frontCirclePathDoubleArc.vertices.length,
-          //     frontCircleLenDoubleArc
-          //   );
-          // }
-          this.frontCirclePathDoubleArc.vertices[
-            frontCircleIndexDoubleArc
-          ].x = this.tmpVectorDoubleArc.x;
-          this.frontCirclePathDoubleArc.vertices[
-            frontCircleIndexDoubleArc
-          ].y = this.tmpVectorDoubleArc.y;
-
-          this.glowingFrontCirclePathDoubleArc.vertices[
-            frontCircleIndexDoubleArc
-          ].x = this.tmpVectorDoubleArc.x;
-          this.glowingFrontCirclePathDoubleArc.vertices[
-            frontCircleIndexDoubleArc
-          ].y = this.tmpVectorDoubleArc.y;
-          frontCircleIndexDoubleArc++;
-        } else {
-          if (firstBackCircleIndexInOriginalDoubleArc === -1)
-            firstBackCircleIndexInOriginalDoubleArc = pos;
-          if (backCircleIndexDoubleArc >= backCircleLenDoubleArc) {
-            // Steal one element from the frontPath or storage
-            // console.log("steal from double arc front");
-            let extraDoubleArc;
-            if (this.frontCirclePathDoubleArc.vertices.length !== 0) {
-              extraDoubleArc = this.frontCirclePathDoubleArc.vertices.pop();
-              frontCircleLenDoubleArc--;
-            } else {
-              extraDoubleArc = this.storageCirclePathDoubleArc.vertices.pop();
-            }
-            this.backCirclePathDoubleArc.vertices.push(extraDoubleArc!);
-
-            let glowingExtraDoubleArc;
-            if (this.glowingFrontCirclePathDoubleArc.vertices.length !== 0) {
-              glowingExtraDoubleArc = this.glowingFrontCirclePathDoubleArc.vertices.pop();
-            } else {
-              glowingExtraDoubleArc = this.glowingStorageCirclePathDoubleArc.vertices.pop();
-            }
-            this.glowingBackCirclePathDoubleArc.vertices.push(
-              glowingExtraDoubleArc!
-            );
-            backCircleLenDoubleArc++;
+          toPosDA.push(pos);
+        }
+        // If we already had a negative crossing
+        // The next chunk is a split back part
+        if (thisSignDA < 0) {
+          if (toNegDA.length > 0) {
+            activeBackDA = this.backCirclePathDoubleArcTail.vertices;
+            glowingActiveBackDA = this.glowingBackCirclePathDoubleArcTail
+              .vertices;
+            negIndexDA = 0;
           }
-          this.backCirclePathDoubleArc.vertices[
-            backCircleIndexDoubleArc
-          ].x = this.tmpVectorDoubleArc.x;
-          this.backCirclePathDoubleArc.vertices[
-            backCircleIndexDoubleArc
-          ].y = this.tmpVectorDoubleArc.y;
-
-          this.glowingBackCirclePathDoubleArc.vertices[
-            backCircleIndexDoubleArc
-          ].x = this.tmpVectorDoubleArc.x;
-          this.glowingBackCirclePathDoubleArc.vertices[
-            backCircleIndexDoubleArc
-          ].y = this.tmpVectorDoubleArc.y;
-          backCircleIndexDoubleArc++;
+          toNegDA.push(pos);
         }
       }
-    });
-    // Collect (into the storage pool) any vertices that are
-    //  1) extra (i.e. leftover -- not overwritten -- from previous renderings of) front vertices
-    //  2) extra (i.e. leftover -- not overwritten -- from previous renderings of) back vertices
-
-    //Handle case 1
-    for (let i = frontCircleIndex; i < frontCircleLen; i++) {
-      this.storageCirclePath.vertices.push(
-        this.frontCirclePath.vertices.pop()!
-      );
-
-      this.glowingStorageCirclePath.vertices.push(
-        this.glowingFrontCirclePath.vertices.pop()!
-      );
+      lastSignDA = thisSignDA;
+      if (this.tmpVectorDA.z > 0) {
+        if (posIndexDA === activeFrontDA.length) {
+          // transfer one cell from the common pool
+          activeFrontDA.push(poolDA.pop()!);
+          glowingActiveFrontDA.push(glowingPoolDA.pop()!);
+        }
+        activeFrontDA[posIndexDA].x = this.tmpVectorDA.x;
+        activeFrontDA[posIndexDA].y = this.tmpVectorDA.y;
+        glowingActiveFrontDA[posIndexDA].x = this.tmpVectorDA.x;
+        glowingActiveFrontDA[posIndexDA].y = this.tmpVectorDA.y;
+        posIndexDA++;
+      } else {
+        if (negIndexDA === activeBackDA.length) {
+          // transfer one cell from the common pool
+          activeBackDA.push(poolDA.pop()!);
+          glowingActiveBackDA.push(glowingPoolDA.pop()!);
+        }
+        activeBackDA[negIndexDA].x = this.tmpVectorDA.x;
+        activeBackDA[negIndexDA].y = this.tmpVectorDA.y;
+        glowingActiveBackDA[negIndexDA].x = this.tmpVectorDA.x;
+        glowingActiveBackDA[negIndexDA].y = this.tmpVectorDA.y;
+        negIndexDA++;
+      }
     }
-    for (let i = frontCircleIndexDoubleArc; i < frontCircleLenDoubleArc; i++) {
-      this.storageCirclePathDoubleArc.vertices.push(
-        this.frontCirclePathDoubleArc.vertices.pop()!
-      );
-
-      this.glowingStorageCirclePathDoubleArc.vertices.push(
-        this.glowingFrontCirclePathDoubleArc.vertices.pop()!
-      );
-    }
-
-    // Handle case 2
-    for (let i = backCircleIndex; i < backCircleLen; i++) {
-      this.storageCirclePath.vertices.push(this.backCirclePath.vertices.pop()!);
-
-      this.glowingStorageCirclePath.vertices.push(
-        this.glowingBackCirclePath.vertices.pop()!
-      );
-    }
-    for (let i = backCircleIndexDoubleArc; i < backCircleLenDoubleArc; i++) {
-      this.storageCirclePathDoubleArc.vertices.push(
-        this.backCirclePathDoubleArc.vertices.pop()!
-      );
-
-      this.glowingStorageCirclePathDoubleArc.vertices.push(
-        this.glowingBackCirclePathDoubleArc.vertices.pop()!
-      );
-    }
-
-    // update the lengths of the front/back paths
-    backCircleLen = this.backCirclePath.vertices.length;
-    frontCircleLen = this.frontCirclePath.vertices.length;
-    backCircleLenDoubleArc = this.backCirclePathDoubleArc.vertices.length;
-    frontCircleLenDoubleArc = this.frontCirclePathDoubleArc.vertices.length;
-
-    // Rotate the array elements to remove gap
-    if (
-      firstBackCircleIndexInOriginal < firstFrontCircleIndexInOriginal &&
-      firstFrontCircleIndexInOriginal <=
-        firstBackCircleIndexInOriginal + backCircleLen
-    ) {
-      // There is a gap in the back path
-      this.backCirclePath.vertices.rotate(firstFrontCircleIndexInOriginal);
-      this.glowingBackCirclePath.vertices.rotate(
-        firstFrontCircleIndexInOriginal
-      );
-    } else if (
-      firstFrontCircleIndexInOriginal < firstBackCircleIndexInOriginal &&
-      firstBackCircleIndexInOriginal <=
-        firstFrontCircleIndexInOriginal + frontCircleLen
-    ) {
-      // There is a gap in the front path
-      this.frontCirclePath.vertices.rotate(firstBackCircleIndexInOriginal); // element at index firstBackCircleIndexInOriginal becomes the index 0 element in this array
-      this.glowingFrontCirclePath.vertices.rotate(
-        firstBackCircleIndexInOriginal
-      );
-    }
-
-    if (
-      firstBackCircleIndexInOriginalDoubleArc <
-        firstFrontCircleIndexInOriginalDoubleArc &&
-      firstFrontCircleIndexInOriginalDoubleArc <=
-        firstBackCircleIndexInOriginalDoubleArc + backCircleLenDoubleArc
-    ) {
-      // There is a gap in the back path
-      this.backCirclePathDoubleArc.vertices.rotate(
-        firstFrontCircleIndexInOriginalDoubleArc
-      );
-      this.glowingBackCirclePathDoubleArc.vertices.rotate(
-        firstFrontCircleIndexInOriginalDoubleArc
-      );
-    } else if (
-      firstFrontCircleIndexInOriginalDoubleArc <
-        firstBackCircleIndexInOriginalDoubleArc &&
-      firstBackCircleIndexInOriginalDoubleArc <=
-        firstFrontCircleIndexInOriginalDoubleArc + frontCircleLenDoubleArc
-    ) {
-      // There is a gap in the front path
-      this.frontCirclePathDoubleArc.vertices.rotate(
-        firstBackCircleIndexInOriginalDoubleArc
-      ); // element at index firstBackCircleIndexInOriginal becomes the index 0 element in this array
-      this.glowingFrontCirclePathDoubleArc.vertices.rotate(
-        firstBackCircleIndexInOriginalDoubleArc
-      );
-    }
-
     //Now build the front/back fill objects based on the front/back parts
 
     // // The circle interior is only on the front of the sphere
@@ -1091,25 +965,37 @@ export default class AngleMarker extends Nodule {
   }
 
   frontGlowingDisplay(): void {
-    this.frontCirclePath.visible = true;
-    this.glowingFrontCirclePath.visible = true;
+    this.frontCirclePathStart.visible = true;
+    this.frontCirclePathTail.visible = true;
+    this.glowingFrontCirclePathStart.visible = true;
+    this.glowingFrontCirclePathTail.visible = true;
     if (this._angleMarkerDoubleArc) {
-      this.frontCirclePathDoubleArc.visible = true;
-      this.glowingFrontCirclePathDoubleArc.visible = true;
+      this.frontCirclePathDoubleArcStart.visible = true;
+      this.frontCirclePathDoubleArcTail.visible = true;
+      this.glowingFrontCirclePathDoubleArcStart.visible = true;
+      this.glowingFrontCirclePathDoubleArcTail.visible = true;
     } else {
-      this.frontCirclePathDoubleArc.visible = false;
-      this.glowingFrontCirclePathDoubleArc.visible = false;
+      this.frontCirclePathDoubleArcStart.visible = false;
+      this.frontCirclePathDoubleArcTail.visible = false;
+      this.glowingFrontCirclePathDoubleArcStart.visible = false;
+      this.glowingFrontCirclePathDoubleArcTail.visible = false;
     }
   }
   backGlowingDisplay(): void {
-    this.backCirclePath.visible = true;
-    this.glowingBackCirclePath.visible = true;
+    this.backCirclePathStart.visible = true;
+    this.backCirclePathTail.visible = true;
+    this.glowingBackCirclePathStart.visible = true;
+    this.glowingBackCirclePathTail.visible = true;
     if (this._angleMarkerDoubleArc) {
-      this.backCirclePathDoubleArc.visible = true;
-      this.glowingBackCirclePathDoubleArc.visible = true;
+      this.backCirclePathDoubleArcStart.visible = true;
+      this.backCirclePathDoubleArcTail.visible = true;
+      this.glowingBackCirclePathDoubleArcStart.visible = true;
+      this.glowingBackCirclePathDoubleArcTail.visible = true;
     } else {
-      this.backCirclePathDoubleArc.visible = false;
-      this.glowingBackCirclePathDoubleArc.visible = false;
+      this.backCirclePathDoubleArcStart.visible = false;
+      this.backCirclePathDoubleArcTail.visible = false;
+      this.glowingBackCirclePathDoubleArcStart.visible = false;
+      this.glowingBackCirclePathDoubleArcTail.visible = false;
     }
   }
   glowingDisplay(): void {
@@ -1117,25 +1003,37 @@ export default class AngleMarker extends Nodule {
     this.backGlowingDisplay();
   }
   frontNormalDisplay(): void {
-    this.frontCirclePath.visible = true;
-    this.glowingFrontCirclePath.visible = false;
-    if (this._angleMarkerDoubleArc === true) {
-      this.frontCirclePathDoubleArc.visible = true;
-      this.glowingFrontCirclePathDoubleArc.visible = false;
+    this.frontCirclePathStart.visible = true;
+    this.frontCirclePathTail.visible = true;
+    this.glowingFrontCirclePathStart.visible = false;
+    this.glowingFrontCirclePathTail.visible = false;
+    if (this._angleMarkerDoubleArc) {
+      this.frontCirclePathDoubleArcStart.visible = true;
+      this.frontCirclePathDoubleArcTail.visible = true;
+      this.glowingFrontCirclePathDoubleArcStart.visible = false;
+      this.glowingFrontCirclePathDoubleArcTail.visible = false;
     } else {
-      this.frontCirclePathDoubleArc.visible = false;
-      this.glowingFrontCirclePathDoubleArc.visible = false;
+      this.frontCirclePathDoubleArcStart.visible = false;
+      this.frontCirclePathDoubleArcTail.visible = false;
+      this.glowingFrontCirclePathDoubleArcStart.visible = false;
+      this.glowingFrontCirclePathDoubleArcTail.visible = false;
     }
   }
   backNormalDisplay(): void {
-    this.backCirclePath.visible = true;
-    this.glowingBackCirclePath.visible = false;
+    this.backCirclePathStart.visible = true;
+    this.backCirclePathTail.visible = true;
+    this.glowingBackCirclePathStart.visible = false;
+    this.glowingBackCirclePathTail.visible = false;
     if (this._angleMarkerDoubleArc) {
-      this.backCirclePathDoubleArc.visible = true;
-      this.glowingBackCirclePathDoubleArc.visible = false;
+      this.backCirclePathDoubleArcStart.visible = true;
+      this.backCirclePathDoubleArcTail.visible = true;
+      this.glowingBackCirclePathDoubleArcStart.visible = false;
+      this.glowingBackCirclePathDoubleArcTail.visible = false;
     } else {
-      this.backCirclePathDoubleArc.visible = false;
-      this.glowingBackCirclePathDoubleArc.visible = false;
+      this.backCirclePathDoubleArcStart.visible = false;
+      this.backCirclePathDoubleArcTail.visible = false;
+      this.glowingBackCirclePathDoubleArcStart.visible = false;
+      this.glowingBackCirclePathDoubleArcTail.visible = false;
     }
   }
   normalDisplay(): void {
@@ -1144,16 +1042,25 @@ export default class AngleMarker extends Nodule {
   }
   setVisible(flag: boolean): void {
     if (!flag) {
-      this.frontCirclePath.visible = false;
-      this.backCirclePath.visible = false;
-      this.frontCirclePathDoubleArc.visible = false;
-      this.backCirclePathDoubleArc.visible = false;
-      // this.frontFill.visible = false;
-      // this.backFill.visible = false;
-      this.glowingBackCirclePath.visible = false;
-      this.glowingFrontCirclePath.visible = false;
-      this.glowingBackCirclePathDoubleArc.visible = false;
-      this.glowingFrontCirclePathDoubleArc.visible = false;
+      this.frontCirclePathStart.visible = false;
+      this.frontCirclePathTail.visible = false;
+      this.backCirclePathStart.visible = false;
+      this.backCirclePathTail.visible = false;
+
+      this.frontCirclePathDoubleArcStart.visible = false;
+      this.frontCirclePathDoubleArcTail.visible = false;
+      this.backCirclePathDoubleArcStart.visible = false;
+      this.backCirclePathDoubleArcTail.visible = false;
+
+      this.glowingFrontCirclePathStart.visible = false;
+      this.glowingFrontCirclePathTail.visible = false;
+      this.glowingBackCirclePathStart.visible = false;
+      this.glowingBackCirclePathTail.visible = false;
+
+      this.glowingFrontCirclePathDoubleArcStart.visible = false;
+      this.glowingFrontCirclePathDoubleArcTail.visible = false;
+      this.glowingBackCirclePathDoubleArcStart.visible = false;
+      this.glowingBackCirclePathDoubleArcTail.visible = false;
     } else {
       this.normalDisplay();
     }
@@ -1185,152 +1092,263 @@ export default class AngleMarker extends Nodule {
     dup._endVector.copy(this._endVector);
 
     // Duplicate the important non-glowing path properties
-    dup.frontCirclePath.rotation = this.frontCirclePath.rotation;
-    dup.frontCirclePath.translation.copy(this.frontCirclePath.translation);
-    dup.backCirclePath.rotation = this.backCirclePath.rotation;
-    dup.backCirclePath.translation.copy(this.backCirclePath.translation);
-    dup.glowingFrontCirclePath.rotation = this.glowingFrontCirclePath.rotation;
-    dup.glowingFrontCirclePath.translation.copy(
-      this.glowingFrontCirclePath.translation
+    dup.frontCirclePathStart.rotation = this.frontCirclePathStart.rotation;
+    dup.frontCirclePathStart.translation.copy(
+      this.frontCirclePathStart.translation
     );
-    dup.glowingBackCirclePath.rotation = this.glowingBackCirclePath.rotation;
-    dup.glowingBackCirclePath.translation.copy(
-      this.glowingBackCirclePath.translation
+    dup.backCirclePathStart.rotation = this.backCirclePathStart.rotation;
+    dup.backCirclePathStart.translation.copy(
+      this.backCirclePathStart.translation
+    );
+    dup.glowingFrontCirclePathStart.rotation = this.glowingFrontCirclePathStart.rotation;
+    dup.glowingFrontCirclePathStart.translation.copy(
+      this.glowingFrontCirclePathStart.translation
+    );
+    dup.glowingBackCirclePathStart.rotation = this.glowingBackCirclePathStart.rotation;
+    dup.glowingBackCirclePathStart.translation.copy(
+      this.glowingBackCirclePathStart.translation
     );
 
-    dup.frontCirclePathDoubleArc.rotation = this.frontCirclePathDoubleArc.rotation;
-    dup.frontCirclePathDoubleArc.translation.copy(
-      this.frontCirclePathDoubleArc.translation
+    dup.frontCirclePathDoubleArcStart.rotation = this.frontCirclePathDoubleArcStart.rotation;
+    dup.frontCirclePathDoubleArcStart.translation.copy(
+      this.frontCirclePathDoubleArcStart.translation
     );
-    dup.backCirclePathDoubleArc.rotation = this.backCirclePathDoubleArc.rotation;
-    dup.backCirclePathDoubleArc.translation.copy(
-      this.backCirclePathDoubleArc.translation
+    dup.backCirclePathDoubleArcStart.rotation = this.backCirclePathDoubleArcStart.rotation;
+    dup.backCirclePathDoubleArcStart.translation.copy(
+      this.backCirclePathDoubleArcStart.translation
     );
-    dup.glowingFrontCirclePathDoubleArc.rotation = this.glowingFrontCirclePathDoubleArc.rotation;
-    dup.glowingFrontCirclePathDoubleArc.translation.copy(
-      this.glowingFrontCirclePathDoubleArc.translation
+    dup.glowingFrontCirclePathDoubleArcStart.rotation = this.glowingFrontCirclePathDoubleArcStart.rotation;
+    dup.glowingFrontCirclePathDoubleArcStart.translation.copy(
+      this.glowingFrontCirclePathDoubleArcStart.translation
     );
-    dup.glowingBackCirclePathDoubleArc.rotation = this.glowingBackCirclePathDoubleArc.rotation;
-    dup.glowingBackCirclePathDoubleArc.translation.copy(
-      this.glowingBackCirclePathDoubleArc.translation
+    dup.glowingBackCirclePathDoubleArcStart.rotation = this.glowingBackCirclePathDoubleArcStart.rotation;
+    dup.glowingBackCirclePathDoubleArcStart.translation.copy(
+      this.glowingBackCirclePathDoubleArcStart.translation
+    );
+
+    dup.frontCirclePathTail.rotation = this.frontCirclePathTail.rotation;
+    dup.frontCirclePathTail.translation.copy(
+      this.frontCirclePathTail.translation
+    );
+    dup.backCirclePathTail.rotation = this.backCirclePathTail.rotation;
+    dup.backCirclePathTail.translation.copy(
+      this.backCirclePathTail.translation
+    );
+    dup.glowingFrontCirclePathTail.rotation = this.glowingFrontCirclePathTail.rotation;
+    dup.glowingFrontCirclePathTail.translation.copy(
+      this.glowingFrontCirclePathTail.translation
+    );
+    dup.glowingBackCirclePathTail.rotation = this.glowingBackCirclePathTail.rotation;
+    dup.glowingBackCirclePathTail.translation.copy(
+      this.glowingBackCirclePathTail.translation
+    );
+
+    dup.frontCirclePathDoubleArcTail.rotation = this.frontCirclePathDoubleArcTail.rotation;
+    dup.frontCirclePathDoubleArcTail.translation.copy(
+      this.frontCirclePathDoubleArcTail.translation
+    );
+    dup.backCirclePathDoubleArcTail.rotation = this.backCirclePathDoubleArcTail.rotation;
+    dup.backCirclePathDoubleArcTail.translation.copy(
+      this.backCirclePathDoubleArcTail.translation
+    );
+    dup.glowingFrontCirclePathDoubleArcTail.rotation = this.glowingFrontCirclePathDoubleArcTail.rotation;
+    dup.glowingFrontCirclePathDoubleArcTail.translation.copy(
+      this.glowingFrontCirclePathDoubleArcTail.translation
+    );
+    dup.glowingBackCirclePathDoubleArcTail.rotation = this.glowingBackCirclePathDoubleArcTail.rotation;
+    dup.glowingBackCirclePathDoubleArcTail.translation.copy(
+      this.glowingBackCirclePathDoubleArcTail.translation
     );
 
     // The clone (i.e. dup) initially has equal number of vertices for the front and back path
     //  so adjust to match `this`. If one of the this.front or this.back has more vertices then
     //  the corresponding dup part, then remove the excess vertices from the one with more and
-    //  move them to the other. Push the remaining vertices into dup.storageCirclePath
-    // First Move any extra vertices (ones beyond
-    //   this.frontCirclePath.vertices.length+ this.backCirclePath.vertices.length) in the dup.front/back to the dup.storage
+    //  move them to the other.
 
     // First add (if necessary) vertices to the frontCirclePath from the backCirclePath
     while (
-      dup.frontCirclePath.vertices.length > this.frontCirclePath.vertices.length
+      dup.frontCirclePathStart.vertices.length >
+      this.frontCirclePathStart.vertices.length
     ) {
       // Transfer from frontPath to backPath
-      dup.backCirclePath.vertices.push(dup.frontCirclePath.vertices.pop()!);
-      dup.glowingBackCirclePath.vertices.push(
-        dup.glowingFrontCirclePath.vertices.pop()!
+      dup.backCirclePathStart.vertices.push(
+        dup.frontCirclePathStart.vertices.pop()!
+      );
+      dup.glowingBackCirclePathStart.vertices.push(
+        dup.glowingFrontCirclePathStart.vertices.pop()!
       );
     }
 
     while (
-      dup.frontCirclePathDoubleArc.vertices.length >
-      this.frontCirclePathDoubleArc.vertices.length
+      dup.frontCirclePathDoubleArcStart.vertices.length >
+      this.frontCirclePathDoubleArcStart.vertices.length
     ) {
       // Transfer from frontPath to backPath
-      dup.backCirclePathDoubleArc.vertices.push(
-        dup.frontCirclePathDoubleArc.vertices.pop()!
+      dup.backCirclePathDoubleArcStart.vertices.push(
+        dup.frontCirclePathDoubleArcStart.vertices.pop()!
       );
-      dup.glowingBackCirclePathDoubleArc.vertices.push(
-        dup.glowingFrontCirclePathDoubleArc.vertices.pop()!
+      dup.glowingBackCirclePathDoubleArcStart.vertices.push(
+        dup.glowingFrontCirclePathDoubleArcStart.vertices.pop()!
+      );
+    }
+
+    while (
+      dup.frontCirclePathTail.vertices.length >
+      this.frontCirclePathTail.vertices.length
+    ) {
+      // Transfer from frontPath to backPath
+      dup.backCirclePathTail.vertices.push(
+        dup.frontCirclePathTail.vertices.pop()!
+      );
+      dup.glowingBackCirclePathTail.vertices.push(
+        dup.glowingFrontCirclePathTail.vertices.pop()!
+      );
+    }
+
+    while (
+      dup.frontCirclePathDoubleArcTail.vertices.length >
+      this.frontCirclePathDoubleArcTail.vertices.length
+    ) {
+      // Transfer from frontPath to backPath
+      dup.backCirclePathDoubleArcTail.vertices.push(
+        dup.frontCirclePathDoubleArcTail.vertices.pop()!
+      );
+      dup.glowingBackCirclePathDoubleArcTail.vertices.push(
+        dup.glowingFrontCirclePathDoubleArcTail.vertices.pop()!
       );
     }
 
     // Second remove (if necessary) vertices from the frontCirclePath to backCirclePath
     while (
-      dup.frontCirclePath.vertices.length < this.frontCirclePath.vertices.length
+      dup.frontCirclePathStart.vertices.length <
+      this.frontCirclePathStart.vertices.length
     ) {
       // Transfer from backPath to frontPath
-      dup.frontCirclePath.vertices.push(dup.backCirclePath.vertices.pop()!);
-      dup.glowingFrontCirclePath.vertices.push(
-        dup.glowingBackCirclePath.vertices.pop()!
+      dup.frontCirclePathStart.vertices.push(
+        dup.backCirclePathStart.vertices.pop()!
+      );
+      dup.glowingFrontCirclePathStart.vertices.push(
+        dup.glowingBackCirclePathStart.vertices.pop()!
       );
     }
 
     while (
-      dup.frontCirclePathDoubleArc.vertices.length <
-      this.frontCirclePathDoubleArc.vertices.length
+      dup.frontCirclePathDoubleArcStart.vertices.length <
+      this.frontCirclePathDoubleArcStart.vertices.length
     ) {
       // Transfer from backPath to frontPath
-      dup.frontCirclePathDoubleArc.vertices.push(
-        dup.backCirclePathDoubleArc.vertices.pop()!
+      dup.frontCirclePathDoubleArcStart.vertices.push(
+        dup.backCirclePathDoubleArcStart.vertices.pop()!
       );
-      dup.glowingFrontCirclePathDoubleArc.vertices.push(
-        dup.glowingBackCirclePathDoubleArc.vertices.pop()!
-      );
-    }
-    // Now we know that the dup.frontCirclePath and this.frontCirclePath have the same length
-    // Further we can guarantee that dup.backCirclePath has more (or equal) vertices than this.backCirclePath
-
-    // Next move any (if necessary) vertices from backCirclePath to storageCirclePath
-    while (
-      dup.backCirclePath.vertices.length > this.backCirclePath.vertices.length
-    ) {
-      // Transfer from backPath to storagePath
-      dup.storageCirclePath.vertices.push(dup.backCirclePath.vertices.pop()!);
-      dup.glowingStorageCirclePath.vertices.push(
-        dup.glowingBackCirclePath.vertices.pop()!
+      dup.glowingFrontCirclePathDoubleArcStart.vertices.push(
+        dup.glowingBackCirclePathDoubleArcStart.vertices.pop()!
       );
     }
 
     while (
-      dup.backCirclePathDoubleArc.vertices.length >
-      this.backCirclePathDoubleArc.vertices.length
+      dup.frontCirclePathTail.vertices.length <
+      this.frontCirclePathTail.vertices.length
     ) {
-      // Transfer from backPath to storagePath
-      dup.storageCirclePathDoubleArc.vertices.push(
-        dup.backCirclePathDoubleArc.vertices.pop()!
+      // Transfer from backPath to frontPath
+      dup.frontCirclePathTail.vertices.push(
+        dup.backCirclePathTail.vertices.pop()!
       );
-      dup.glowingStorageCirclePathDoubleArc.vertices.push(
-        dup.glowingBackCirclePathDoubleArc.vertices.pop()!
+      dup.glowingFrontCirclePathTail.vertices.push(
+        dup.glowingBackCirclePathTail.vertices.pop()!
       );
     }
 
-    // After the above statements execute this.front/back/storage and dup.front/back/storage are the same length
-    // Now we can copy the vertices from the this.front/back to the dup.front/back
-    dup.frontCirclePath.vertices.forEach((v: Two.Anchor, pos: number) => {
-      v.copy(this.frontCirclePath.vertices[pos]);
-    });
-    dup.backCirclePath.vertices.forEach((v: Two.Anchor, pos: number) => {
-      v.copy(this.backCirclePath.vertices[pos]);
-    });
-    dup.glowingFrontCirclePath.vertices.forEach(
-      (v: Two.Anchor, pos: number) => {
-        v.copy(this.glowingFrontCirclePath.vertices[pos]);
-      }
-    );
-    dup.glowingBackCirclePath.vertices.forEach((v: Two.Anchor, pos: number) => {
-      v.copy(this.glowingBackCirclePath.vertices[pos]);
-    });
+    while (
+      dup.frontCirclePathDoubleArcTail.vertices.length <
+      this.frontCirclePathDoubleArcTail.vertices.length
+    ) {
+      // Transfer from backPath to frontPath
+      dup.frontCirclePathDoubleArcTail.vertices.push(
+        dup.backCirclePathDoubleArcTail.vertices.pop()!
+      );
+      dup.glowingFrontCirclePathDoubleArcTail.vertices.push(
+        dup.glowingBackCirclePathDoubleArcTail.vertices.pop()!
+      );
+    }
 
-    dup.frontCirclePathDoubleArc.vertices.forEach(
+    // Now we know that the dup.bach/front CirclePath start/tail and this.back/front CirclePath start/tail have the same length
+
+    // After the above statements execute this.front/back/start/tail and dup.front/back/start/tail are the same length
+
+    // Now we can copy the vertices from the this.front/back start/tail to the dup.front/back start/tail
+    dup.frontCirclePathStart.vertices.forEach((v: Two.Anchor, pos: number) => {
+      v.copy(this.frontCirclePathStart.vertices[pos]);
+    });
+    dup.backCirclePathStart.vertices.forEach((v: Two.Anchor, pos: number) => {
+      v.copy(this.backCirclePathStart.vertices[pos]);
+    });
+    dup.glowingFrontCirclePathStart.vertices.forEach(
       (v: Two.Anchor, pos: number) => {
-        v.copy(this.frontCirclePathDoubleArc.vertices[pos]);
+        v.copy(this.glowingFrontCirclePathStart.vertices[pos]);
       }
     );
-    dup.backCirclePathDoubleArc.vertices.forEach(
+    dup.glowingBackCirclePathStart.vertices.forEach(
       (v: Two.Anchor, pos: number) => {
-        v.copy(this.backCirclePathDoubleArc.vertices[pos]);
+        v.copy(this.glowingBackCirclePathStart.vertices[pos]);
       }
     );
-    dup.glowingFrontCirclePathDoubleArc.vertices.forEach(
+
+    dup.frontCirclePathDoubleArcStart.vertices.forEach(
       (v: Two.Anchor, pos: number) => {
-        v.copy(this.glowingFrontCirclePathDoubleArc.vertices[pos]);
+        v.copy(this.frontCirclePathDoubleArcStart.vertices[pos]);
       }
     );
-    dup.glowingBackCirclePathDoubleArc.vertices.forEach(
+    dup.backCirclePathDoubleArcStart.vertices.forEach(
       (v: Two.Anchor, pos: number) => {
-        v.copy(this.glowingBackCirclePathDoubleArc.vertices[pos]);
+        v.copy(this.backCirclePathDoubleArcStart.vertices[pos]);
+      }
+    );
+    dup.glowingFrontCirclePathDoubleArcStart.vertices.forEach(
+      (v: Two.Anchor, pos: number) => {
+        v.copy(this.glowingFrontCirclePathDoubleArcStart.vertices[pos]);
+      }
+    );
+    dup.glowingBackCirclePathDoubleArcStart.vertices.forEach(
+      (v: Two.Anchor, pos: number) => {
+        v.copy(this.glowingBackCirclePathDoubleArcStart.vertices[pos]);
+      }
+    );
+
+    dup.frontCirclePathTail.vertices.forEach((v: Two.Anchor, pos: number) => {
+      v.copy(this.frontCirclePathTail.vertices[pos]);
+    });
+    dup.backCirclePathTail.vertices.forEach((v: Two.Anchor, pos: number) => {
+      v.copy(this.backCirclePathTail.vertices[pos]);
+    });
+    dup.glowingFrontCirclePathTail.vertices.forEach(
+      (v: Two.Anchor, pos: number) => {
+        v.copy(this.glowingFrontCirclePathTail.vertices[pos]);
+      }
+    );
+    dup.glowingBackCirclePathTail.vertices.forEach(
+      (v: Two.Anchor, pos: number) => {
+        v.copy(this.glowingBackCirclePathTail.vertices[pos]);
+      }
+    );
+
+    dup.frontCirclePathDoubleArcTail.vertices.forEach(
+      (v: Two.Anchor, pos: number) => {
+        v.copy(this.frontCirclePathDoubleArcTail.vertices[pos]);
+      }
+    );
+    dup.backCirclePathDoubleArcTail.vertices.forEach(
+      (v: Two.Anchor, pos: number) => {
+        v.copy(this.backCirclePathDoubleArcTail.vertices[pos]);
+      }
+    );
+    dup.glowingFrontCirclePathDoubleArcTail.vertices.forEach(
+      (v: Two.Anchor, pos: number) => {
+        v.copy(this.glowingFrontCirclePathDoubleArcTail.vertices[pos]);
+      }
+    );
+    dup.glowingBackCirclePathDoubleArcTail.vertices.forEach(
+      (v: Two.Anchor, pos: number) => {
+        v.copy(this.glowingBackCirclePathDoubleArcTail.vertices[pos]);
       }
     );
 
@@ -1355,35 +1373,70 @@ export default class AngleMarker extends Nodule {
     // These must always be executed even if the front/back part is empty
     // Otherwise when they become non-empty they are not displayed
     // this.frontFill.addTo(layers[LAYER.foreground]);
-    this.frontCirclePath.addTo(layers[LAYER.foregroundAngleMarkers]);
-    this.glowingFrontCirclePath.addTo(
+    this.frontCirclePathStart.addTo(layers[LAYER.foregroundAngleMarkers]);
+    this.glowingFrontCirclePathStart.addTo(
       layers[LAYER.foregroundAngleMarkersGlowing]
     );
-    this.frontCirclePathDoubleArc.addTo(layers[LAYER.foregroundAngleMarkers]);
-    this.glowingFrontCirclePathDoubleArc.addTo(
+    this.frontCirclePathDoubleArcStart.addTo(
+      layers[LAYER.foregroundAngleMarkers]
+    );
+    this.glowingFrontCirclePathDoubleArcStart.addTo(
       layers[LAYER.foregroundAngleMarkersGlowing]
     );
     // this.backFill.addTo(layers[LAYER.background]);
-    this.backCirclePath.addTo(layers[LAYER.backgroundAngleMarkers]);
-    this.glowingBackCirclePath.addTo(
+    this.backCirclePathStart.addTo(layers[LAYER.backgroundAngleMarkers]);
+    this.glowingBackCirclePathStart.addTo(
       layers[LAYER.backgroundAngleMarkersGlowing]
     );
-    this.backCirclePathDoubleArc.addTo(layers[LAYER.backgroundAngleMarkers]);
-    this.glowingBackCirclePathDoubleArc.addTo(
+    this.backCirclePathDoubleArcStart.addTo(
+      layers[LAYER.backgroundAngleMarkers]
+    );
+    this.glowingBackCirclePathDoubleArcStart.addTo(
+      layers[LAYER.backgroundAngleMarkersGlowing]
+    );
+
+    this.frontCirclePathTail.addTo(layers[LAYER.foregroundAngleMarkers]);
+    this.glowingFrontCirclePathTail.addTo(
+      layers[LAYER.foregroundAngleMarkersGlowing]
+    );
+    this.frontCirclePathDoubleArcTail.addTo(
+      layers[LAYER.foregroundAngleMarkers]
+    );
+    this.glowingFrontCirclePathDoubleArcTail.addTo(
+      layers[LAYER.foregroundAngleMarkersGlowing]
+    );
+    // this.backFill.addTo(layers[LAYER.background]);
+    this.backCirclePathTail.addTo(layers[LAYER.backgroundAngleMarkers]);
+    this.glowingBackCirclePathTail.addTo(
+      layers[LAYER.backgroundAngleMarkersGlowing]
+    );
+    this.backCirclePathDoubleArcTail.addTo(
+      layers[LAYER.backgroundAngleMarkers]
+    );
+    this.glowingBackCirclePathDoubleArcTail.addTo(
       layers[LAYER.backgroundAngleMarkersGlowing]
     );
   }
   removeFromLayers(): void {
-    this.frontCirclePath.remove();
-    this.frontCirclePathDoubleArc.remove();
+    this.frontCirclePathStart.remove();
+    this.frontCirclePathDoubleArcStart.remove();
     // this.frontFill.remove();
-    this.glowingFrontCirclePath.remove();
-    this.glowingFrontCirclePathDoubleArc.remove();
-    this.backCirclePath.remove();
-    this.backCirclePathDoubleArc.remove();
+    this.glowingFrontCirclePathStart.remove();
+    this.glowingFrontCirclePathDoubleArcStart.remove();
+    this.backCirclePathStart.remove();
+    this.backCirclePathDoubleArcStart.remove();
     // this.backFill.remove();
-    this.glowingBackCirclePath.remove();
-    this.glowingBackCirclePathDoubleArc.remove();
+    this.glowingBackCirclePathStart.remove();
+    this.glowingBackCirclePathDoubleArcStart.remove();
+
+    this.frontCirclePathTail.remove();
+    this.frontCirclePathDoubleArcTail.remove();
+    this.glowingFrontCirclePathTail.remove();
+    this.glowingFrontCirclePathDoubleArcTail.remove();
+    this.backCirclePathTail.remove();
+    this.backCirclePathDoubleArcTail.remove();
+    this.glowingBackCirclePathTail.remove();
+    this.glowingBackCirclePathDoubleArcTail.remove();
   }
   /**
    * Copies the style options set by the Style Panel into the style variables and then updates the
@@ -1566,49 +1619,97 @@ export default class AngleMarker extends Nodule {
    * Sets the variables for stroke width glowing/not
    */
   adjustSize(): void {
-    this.frontCirclePath.linewidth =
-      (AngleMarker.currentAngleMarkerStrokeWidthFront *
+    this.frontCirclePathStart.linewidth =
+      (AngleMarker.currentAngleMarkerCircularStrokeWidthFront *
         this.strokeWidthPercentFront) /
       100;
 
-    this.frontCirclePathDoubleArc.linewidth =
-      (AngleMarker.currentAngleMarkerStrokeWidthFront *
+    this.frontCirclePathTail.linewidth =
+      (AngleMarker.currentAngleMarkerCircularStrokeWidthFront *
         this.strokeWidthPercentFront) /
       100;
 
-    this.backCirclePath.linewidth =
-      (AngleMarker.currentAngleMarkerStrokeWidthBack *
+    this.frontCirclePathDoubleArcStart.linewidth =
+      (AngleMarker.currentAngleMarkerCircularStrokeWidthFront *
+        this.strokeWidthPercentFront) /
+      100;
+
+    this.frontCirclePathDoubleArcTail.linewidth =
+      (AngleMarker.currentAngleMarkerCircularStrokeWidthFront *
+        this.strokeWidthPercentFront) /
+      100;
+
+    this.backCirclePathStart.linewidth =
+      (AngleMarker.currentAngleMarkerCircularStrokeWidthBack *
         (this.dynamicBackStyle
           ? Nodule.contrastStrokeWidthPercent(this.strokeWidthPercentFront)
           : this.strokeWidthPercentBack)) /
       100;
 
-    this.backCirclePathDoubleArc.linewidth =
-      (AngleMarker.currentAngleMarkerStrokeWidthBack *
+    this.backCirclePathTail.linewidth =
+      (AngleMarker.currentAngleMarkerCircularStrokeWidthBack *
         (this.dynamicBackStyle
           ? Nodule.contrastStrokeWidthPercent(this.strokeWidthPercentFront)
           : this.strokeWidthPercentBack)) /
       100;
 
-    this.glowingFrontCirclePath.linewidth =
-      (AngleMarker.currentGlowingAngleMarkerStrokeWidthFront *
-        this.strokeWidthPercentFront) /
-      100;
-
-    this.glowingFrontCirclePathDoubleArc.linewidth =
-      (AngleMarker.currentGlowingAngleMarkerStrokeWidthFront *
-        this.strokeWidthPercentFront) /
-      100;
-
-    this.glowingBackCirclePath.linewidth =
-      (AngleMarker.currentGlowingAngleMarkerStrokeWidthBack *
+    this.backCirclePathDoubleArcStart.linewidth =
+      (AngleMarker.currentAngleMarkerCircularStrokeWidthBack *
         (this.dynamicBackStyle
           ? Nodule.contrastStrokeWidthPercent(this.strokeWidthPercentFront)
           : this.strokeWidthPercentBack)) /
       100;
 
-    this.glowingBackCirclePathDoubleArc.linewidth =
-      (AngleMarker.currentGlowingAngleMarkerStrokeWidthBack *
+    this.backCirclePathDoubleArcTail.linewidth =
+      (AngleMarker.currentAngleMarkerCircularStrokeWidthBack *
+        (this.dynamicBackStyle
+          ? Nodule.contrastStrokeWidthPercent(this.strokeWidthPercentFront)
+          : this.strokeWidthPercentBack)) /
+      100;
+
+    this.glowingFrontCirclePathStart.linewidth =
+      (AngleMarker.currentGlowingAngleMarkerCircularStrokeWidthFront *
+        this.strokeWidthPercentFront) /
+      100;
+
+    this.glowingFrontCirclePathTail.linewidth =
+      (AngleMarker.currentGlowingAngleMarkerCircularStrokeWidthFront *
+        this.strokeWidthPercentFront) /
+      100;
+
+    this.glowingFrontCirclePathDoubleArcStart.linewidth =
+      (AngleMarker.currentGlowingAngleMarkerCircularStrokeWidthFront *
+        this.strokeWidthPercentFront) /
+      100;
+
+    this.glowingFrontCirclePathDoubleArcTail.linewidth =
+      (AngleMarker.currentGlowingAngleMarkerCircularStrokeWidthFront *
+        this.strokeWidthPercentFront) /
+      100;
+
+    this.glowingBackCirclePathStart.linewidth =
+      (AngleMarker.currentGlowingAngleMarkerCircularStrokeWidthBack *
+        (this.dynamicBackStyle
+          ? Nodule.contrastStrokeWidthPercent(this.strokeWidthPercentFront)
+          : this.strokeWidthPercentBack)) /
+      100;
+
+    this.glowingBackCirclePathTail.linewidth =
+      (AngleMarker.currentGlowingAngleMarkerCircularStrokeWidthBack *
+        (this.dynamicBackStyle
+          ? Nodule.contrastStrokeWidthPercent(this.strokeWidthPercentFront)
+          : this.strokeWidthPercentBack)) /
+      100;
+
+    this.glowingBackCirclePathDoubleArcStart.linewidth =
+      (AngleMarker.currentGlowingAngleMarkerCircularStrokeWidthBack *
+        (this.dynamicBackStyle
+          ? Nodule.contrastStrokeWidthPercent(this.strokeWidthPercentFront)
+          : this.strokeWidthPercentBack)) /
+      100;
+
+    this.glowingBackCirclePathDoubleArcTail.linewidth =
+      (AngleMarker.currentGlowingAngleMarkerCircularStrokeWidthBack *
         (this.dynamicBackStyle
           ? Nodule.contrastStrokeWidthPercent(this.strokeWidthPercentFront)
           : this.strokeWidthPercentBack)) /
@@ -1657,19 +1758,26 @@ export default class AngleMarker extends Nodule {
         //   this.frontFill.fill = this.frontGradient;
         // }
         if (SETTINGS.angleMarker.temp.strokeColor.front === "noStroke") {
-          this.frontCirclePath.noStroke();
+          this.frontCirclePathStart.noStroke();
+          this.frontCirclePathTail.noStroke();
         } else {
-          this.frontCirclePath.stroke =
+          this.frontCirclePathStart.stroke =
+            SETTINGS.angleMarker.temp.strokeColor.front;
+          this.frontCirclePathTail.stroke =
             SETTINGS.angleMarker.temp.strokeColor.front;
         }
         // The circle width is set to the current circle width (which is updated for zoom magnification)
-        this.frontCirclePath.linewidth =
-          AngleMarker.currentAngleMarkerStrokeWidthFront;
+        this.frontCirclePathStart.linewidth =
+          AngleMarker.currentAngleMarkerCircularStrokeWidthFront;
+        this.frontCirclePathTail.linewidth =
+          AngleMarker.currentAngleMarkerCircularStrokeWidthFront;
         // Copy the front dash properties from the front default drawn dash properties
         if (SETTINGS.angleMarker.drawn.dashArray.front.length > 0) {
-          this.frontCirclePath.dashes.clear();
+          this.frontCirclePathStart.dashes.clear();
+          this.frontCirclePathTail.dashes.clear();
           SETTINGS.angleMarker.drawn.dashArray.front.forEach(v => {
-            this.frontCirclePath.dashes.push(v);
+            this.frontCirclePathStart.dashes.push(v);
+            this.frontCirclePathTail.dashes.push(v);
           });
         }
         //BACK
@@ -1680,30 +1788,44 @@ export default class AngleMarker extends Nodule {
         //   this.backFill.fill = this.backGradient;
         // }
         if (SETTINGS.angleMarker.temp.strokeColor.back === "noStroke") {
-          this.backCirclePath.noStroke();
+          this.backCirclePathStart.noStroke();
+          this.backCirclePathTail.noStroke();
         } else {
-          this.backCirclePath.stroke =
+          this.backCirclePathStart.stroke =
+            SETTINGS.angleMarker.temp.strokeColor.back;
+          this.backCirclePathTail.stroke =
             SETTINGS.angleMarker.temp.strokeColor.back;
         }
         // The circle width is set to the current circle width (which is updated for zoom magnification)
-        this.backCirclePath.linewidth =
-          AngleMarker.currentAngleMarkerStrokeWidthBack;
+        this.backCirclePathStart.linewidth =
+          AngleMarker.currentAngleMarkerCircularStrokeWidthBack;
+        this.backCirclePathTail.linewidth =
+          AngleMarker.currentAngleMarkerCircularStrokeWidthBack;
         // Copy the front dash properties from the front default drawn dash properties
         if (SETTINGS.angleMarker.drawn.dashArray.back.length > 0) {
-          this.backCirclePath.dashes.clear();
+          this.backCirclePathStart.dashes.clear();
+          this.backCirclePathTail.dashes.clear();
           SETTINGS.angleMarker.drawn.dashArray.back.forEach(v => {
-            this.backCirclePath.dashes.push(v);
+            this.backCirclePathStart.dashes.push(v);
+            this.backCirclePathTail.dashes.push(v);
           });
         }
         // The temporary display is never highlighted
-        this.glowingFrontCirclePath.visible = false;
-        this.glowingBackCirclePath.visible = false;
-        this.glowingFrontCirclePathDoubleArc.visible = false;
-        this.glowingBackCirclePathDoubleArc.visible = false;
+        this.glowingFrontCirclePathStart.visible = false;
+        this.glowingBackCirclePathStart.visible = false;
+        this.glowingFrontCirclePathDoubleArcStart.visible = false;
+        this.glowingBackCirclePathDoubleArcStart.visible = false;
+
+        this.glowingFrontCirclePathTail.visible = false;
+        this.glowingBackCirclePathTail.visible = false;
+        this.glowingFrontCirclePathDoubleArcTail.visible = false;
+        this.glowingBackCirclePathDoubleArcTail.visible = false;
 
         //The double arc is never shown in the temporary display
-        this.backCirclePathDoubleArc.visible = false;
-        this.frontCirclePathDoubleArc.visible = false;
+        this.backCirclePathDoubleArcStart.visible = false;
+        this.frontCirclePathDoubleArcStart.visible = false;
+        this.backCirclePathDoubleArcTail.visible = false;
+        this.frontCirclePathDoubleArcTail.visible = false;
         break;
       }
 
@@ -1719,26 +1841,39 @@ export default class AngleMarker extends Nodule {
         // }
 
         if (this.strokeColorFront === "noStroke") {
-          this.frontCirclePath.noStroke();
-          this.frontCirclePathDoubleArc.noStroke();
+          this.frontCirclePathStart.noStroke();
+          this.frontCirclePathDoubleArcStart.noStroke();
+          this.frontCirclePathTail.noStroke();
+          this.frontCirclePathDoubleArcTail.noStroke();
         } else {
-          this.frontCirclePath.stroke = this.strokeColorFront;
-          this.frontCirclePathDoubleArc.stroke = this.strokeColorFront;
+          this.frontCirclePathStart.stroke = this.strokeColorFront;
+          this.frontCirclePathDoubleArcStart.stroke = this.strokeColorFront;
+          this.frontCirclePathTail.stroke = this.strokeColorFront;
+          this.frontCirclePathDoubleArcTail.stroke = this.strokeColorFront;
         }
         // strokeWidthPercent is applied by adjustSize()
         if (this.dashArrayFront.length > 0) {
-          this.frontCirclePath.dashes.clear();
-          this.frontCirclePathDoubleArc.dashes.clear();
+          this.frontCirclePathStart.dashes.clear();
+          this.frontCirclePathDoubleArcStart.dashes.clear();
+          this.frontCirclePathTail.dashes.clear();
+          this.frontCirclePathDoubleArcTail.dashes.clear();
           this.dashArrayFront.forEach(v => {
-            this.frontCirclePath.dashes.push(v);
-            this.frontCirclePathDoubleArc.dashes.push(v);
+            this.frontCirclePathStart.dashes.push(v);
+            this.frontCirclePathDoubleArcStart.dashes.push(v);
+            this.frontCirclePathTail.dashes.push(v);
+            this.frontCirclePathDoubleArcTail.dashes.push(v);
           });
         } else {
           // the array length is zero and no dash array should be set
-          this.frontCirclePath.dashes.clear();
-          this.frontCirclePath.dashes.push(0);
-          this.frontCirclePathDoubleArc.dashes.clear();
-          this.frontCirclePathDoubleArc.dashes.push(0);
+          this.frontCirclePathStart.dashes.clear();
+          this.frontCirclePathStart.dashes.push(0);
+          this.frontCirclePathDoubleArcStart.dashes.clear();
+          this.frontCirclePathDoubleArcStart.dashes.push(0);
+
+          this.frontCirclePathTail.dashes.clear();
+          this.frontCirclePathTail.dashes.push(0);
+          this.frontCirclePathDoubleArcTail.dashes.clear();
+          this.frontCirclePathDoubleArcTail.dashes.push(0);
         }
         // BACK
         // if (this.dynamicBackStyle) {
@@ -1763,84 +1898,126 @@ export default class AngleMarker extends Nodule {
           if (
             Nodule.contrastStrokeColor(this.strokeColorFront) === "noStroke"
           ) {
-            this.backCirclePath.noStroke();
-            this.backCirclePathDoubleArc.noStroke();
+            this.backCirclePathStart.noStroke();
+            this.backCirclePathDoubleArcStart.noStroke();
+            this.backCirclePathTail.noStroke();
+            this.backCirclePathDoubleArcTail.noStroke();
           } else {
-            this.backCirclePath.stroke = Nodule.contrastStrokeColor(
+            this.backCirclePathStart.stroke = Nodule.contrastStrokeColor(
               this.strokeColorFront
             );
-            this.backCirclePathDoubleArc.stroke = Nodule.contrastStrokeColor(
+            this.backCirclePathDoubleArcStart.stroke = Nodule.contrastStrokeColor(
+              this.strokeColorFront
+            );
+            this.backCirclePathTail.stroke = Nodule.contrastStrokeColor(
+              this.strokeColorFront
+            );
+            this.backCirclePathDoubleArcTail.stroke = Nodule.contrastStrokeColor(
               this.strokeColorFront
             );
           }
         } else {
           if (this.strokeColorBack === "noStroke") {
-            this.backCirclePath.noStroke();
-            this.backCirclePathDoubleArc.noStroke();
+            this.backCirclePathStart.noStroke();
+            this.backCirclePathDoubleArcStart.noStroke();
+            this.backCirclePathTail.noStroke();
+            this.backCirclePathDoubleArcTail.noStroke();
           } else {
-            this.backCirclePath.stroke = this.strokeColorBack;
-            this.backCirclePathDoubleArc.stroke = this.strokeColorBack;
+            this.backCirclePathStart.stroke = this.strokeColorBack;
+            this.backCirclePathDoubleArcStart.stroke = this.strokeColorBack;
+            this.backCirclePathTail.stroke = this.strokeColorBack;
+            this.backCirclePathDoubleArcTail.stroke = this.strokeColorBack;
           }
         }
 
         // strokeWidthPercent applied by adjustSizer()
         if (this.dashArrayBack.length > 0) {
-          this.backCirclePath.dashes.clear();
-          this.backCirclePathDoubleArc.dashes.clear();
+          this.backCirclePathStart.dashes.clear();
+          this.backCirclePathDoubleArcStart.dashes.clear();
+          this.backCirclePathTail.dashes.clear();
+          this.backCirclePathDoubleArcTail.dashes.clear();
           this.dashArrayBack.forEach(v => {
-            this.backCirclePath.dashes.push(v);
-            this.backCirclePathDoubleArc.dashes.push(v);
+            this.backCirclePathStart.dashes.push(v);
+            this.backCirclePathDoubleArcStart.dashes.push(v);
+            this.backCirclePathTail.dashes.push(v);
+            this.backCirclePathDoubleArcTail.dashes.push(v);
           });
         } else {
           // the array length is zero and no dash array should be set
-          this.backCirclePath.dashes.clear();
-          this.backCirclePath.dashes.push(0);
-          this.backCirclePathDoubleArc.dashes.clear();
-          this.backCirclePathDoubleArc.dashes.push(0);
+          this.backCirclePathStart.dashes.clear();
+          this.backCirclePathStart.dashes.push(0);
+          this.backCirclePathDoubleArcStart.dashes.clear();
+          this.backCirclePathDoubleArcStart.dashes.push(0);
+
+          this.backCirclePathTail.dashes.clear();
+          this.backCirclePathTail.dashes.push(0);
+          this.backCirclePathDoubleArcTail.dashes.clear();
+          this.backCirclePathDoubleArcTail.dashes.push(0);
         }
 
         // UPDATE the glowing object
 
         // Glowing Front
         // no fillColor for glowing circles
-        this.glowingFrontCirclePath.stroke = this.glowingStrokeColorFront;
-        this.glowingFrontCirclePathDoubleArc.stroke = this.glowingStrokeColorFront;
+        this.glowingFrontCirclePathStart.stroke = this.glowingStrokeColorFront;
+        this.glowingFrontCirclePathDoubleArcStart.stroke = this.glowingStrokeColorFront;
+        this.glowingFrontCirclePathTail.stroke = this.glowingStrokeColorFront;
+        this.glowingFrontCirclePathDoubleArcTail.stroke = this.glowingStrokeColorFront;
         // strokeWidthPercent applied by adjustSize()
         // Copy the front dash properties to the glowing object
         if (this.dashArrayFront.length > 0) {
-          this.glowingFrontCirclePath.dashes.clear();
-          this.glowingFrontCirclePathDoubleArc.dashes.clear();
+          this.glowingFrontCirclePathStart.dashes.clear();
+          this.glowingFrontCirclePathDoubleArcStart.dashes.clear();
+          this.glowingFrontCirclePathTail.dashes.clear();
+          this.glowingFrontCirclePathDoubleArcTail.dashes.clear();
           this.dashArrayFront.forEach(v => {
-            this.glowingFrontCirclePath.dashes.push(v);
-            this.glowingFrontCirclePathDoubleArc.dashes.push(v);
+            this.glowingFrontCirclePathStart.dashes.push(v);
+            this.glowingFrontCirclePathDoubleArcStart.dashes.push(v);
+            this.glowingFrontCirclePathTail.dashes.push(v);
+            this.glowingFrontCirclePathDoubleArcTail.dashes.push(v);
           });
         } else {
           // the array length is zero and no dash array should be set
-          this.glowingFrontCirclePath.dashes.clear();
-          this.glowingFrontCirclePath.dashes.push(0);
-          this.glowingFrontCirclePathDoubleArc.dashes.clear();
-          this.glowingFrontCirclePathDoubleArc.dashes.push(0);
+          this.glowingFrontCirclePathStart.dashes.clear();
+          this.glowingFrontCirclePathStart.dashes.push(0);
+          this.glowingFrontCirclePathDoubleArcStart.dashes.clear();
+          this.glowingFrontCirclePathDoubleArcStart.dashes.push(0);
+
+          this.glowingFrontCirclePathTail.dashes.clear();
+          this.glowingFrontCirclePathTail.dashes.push(0);
+          this.glowingFrontCirclePathDoubleArcTail.dashes.clear();
+          this.glowingFrontCirclePathDoubleArcTail.dashes.push(0);
         }
 
         // Glowing Back
         // no fillColor for glowing circles
-        this.glowingBackCirclePath.stroke = this.glowingStrokeColorBack;
-        this.glowingBackCirclePathDoubleArc.stroke = this.glowingStrokeColorBack;
+        this.glowingBackCirclePathStart.stroke = this.glowingStrokeColorBack;
+        this.glowingBackCirclePathDoubleArcStart.stroke = this.glowingStrokeColorBack;
+        this.glowingBackCirclePathTail.stroke = this.glowingStrokeColorBack;
+        this.glowingBackCirclePathDoubleArcTail.stroke = this.glowingStrokeColorBack;
         // strokeWidthPercent applied by adjustSize()
         // Copy the back dash properties to the glowing object
         if (this.dashArrayBack.length > 0) {
-          this.glowingBackCirclePath.dashes.clear();
-          this.glowingBackCirclePathDoubleArc.dashes.clear();
+          this.glowingBackCirclePathStart.dashes.clear();
+          this.glowingBackCirclePathDoubleArcStart.dashes.clear();
+          this.glowingBackCirclePathTail.dashes.clear();
+          this.glowingBackCirclePathDoubleArcTail.dashes.clear();
           this.dashArrayBack.forEach(v => {
-            this.glowingBackCirclePath.dashes.push(v);
-            this.glowingBackCirclePathDoubleArc.dashes.push(v);
+            this.glowingBackCirclePathStart.dashes.push(v);
+            this.glowingBackCirclePathDoubleArcStart.dashes.push(v);
+            this.glowingBackCirclePathTail.dashes.push(v);
+            this.glowingBackCirclePathDoubleArcTail.dashes.push(v);
           });
         } else {
           // the array length is zero and no dash array should be set
-          this.glowingBackCirclePath.dashes.clear();
-          this.glowingBackCirclePath.dashes.push(0);
-          this.glowingBackCirclePathDoubleArc.dashes.clear();
-          this.glowingBackCirclePathDoubleArc.dashes.push(0);
+          this.glowingBackCirclePathStart.dashes.clear();
+          this.glowingBackCirclePathStart.dashes.push(0);
+          this.glowingBackCirclePathDoubleArcStart.dashes.clear();
+          this.glowingBackCirclePathDoubleArcStart.dashes.push(0);
+          this.glowingBackCirclePathTail.dashes.clear();
+          this.glowingBackCirclePathTail.dashes.push(0);
+          this.glowingBackCirclePathDoubleArcTail.dashes.clear();
+          this.glowingBackCirclePathDoubleArcTail.dashes.push(0);
         }
         break;
       }
