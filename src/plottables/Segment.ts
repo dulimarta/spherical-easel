@@ -123,7 +123,7 @@ export default class Segment extends Nodule {
     this.glowingBackExtra = this.backPart.clone();
     // Clear the vertices from the extra parts because they will be added later as they are exchanged from other parts
 
-    // The clear() extension functio works only of JS Array, but
+    // The clear() extension function works only on JS Array, but
     // not on Two.JS Collection class. Use splice() instead.
     this.frontExtra.vertices.splice(0);
     this.glowingFrontExtra.vertices.splice(0);

@@ -586,7 +586,14 @@ export default class AngleMarker extends Nodule {
           ].y = this.tmpVector.y;
           backCircleIndex++;
         }
-
+      }
+    });
+    this.originalVertices.forEach((v: Vector2, pos: number) => {
+      // Only add a transformed vertex if the angle it makes with the positive x axis in the original circle
+      // (the one with radius SETTINGS.boundaryCircle.radius in the plane z=0) is less than angularLengthOfMarker.
+      // store the remaining vertices in the storageCirclePath
+      //NOTE: the syntax for atan2 is atan2(y,x) and returns a value in (-pi,pi]!!!!!
+      if (Math.atan2(v.y, v.x).modTwoPi() <= angularLengthOfMarker) {
         this.tmpVectorDoubleArc.set(v.x, v.y, 0);
         this.tmpVectorDoubleArc.applyMatrix4(transformMatrixDoubleArc);
         // When the Z-coordinate is negative, the vertex belongs the
@@ -595,7 +602,7 @@ export default class AngleMarker extends Nodule {
           if (firstFrontCircleIndexInOriginalDoubleArc === -1)
             firstFrontCircleIndexInOriginalDoubleArc = pos;
           if (frontCircleIndexDoubleArc >= frontCircleLenDoubleArc) {
-            console.log("steal from double arc front");
+            // console.log("steal from double arc back p1");
             // Steal one element from the backPath or storage
             let extraDoubleArc;
             if (this.backCirclePathDoubleArc.vertices.length !== 0) {
@@ -604,6 +611,7 @@ export default class AngleMarker extends Nodule {
             } else {
               extraDoubleArc = this.storageCirclePathDoubleArc.vertices.pop();
             }
+            // console.log("steal from double arc back p2");
             this.frontCirclePathDoubleArc.vertices.push(extraDoubleArc!);
 
             let glowExtraDoubleArc;
@@ -612,11 +620,29 @@ export default class AngleMarker extends Nodule {
             } else {
               glowExtraDoubleArc = this.glowingStorageCirclePathDoubleArc.vertices.pop();
             }
+            // console.log("steal from double arc back p3");
             this.glowingFrontCirclePathDoubleArc.vertices.push(
               glowExtraDoubleArc!
             );
             frontCircleLenDoubleArc++;
+            // console.log(
+            //   this.frontCirclePathDoubleArc.vertices.length,
+            //   frontCircleLenDoubleArc
+            // );
           }
+          // if (
+          //   this.frontCirclePathDoubleArc.vertices[
+          //     frontCircleIndexDoubleArc
+          //   ] === undefined
+          // ) {
+          //   console.log(
+          //     "FCIDA",
+          //     frontCircleIndexDoubleArc,
+          //     "FCPDALen",
+          //     this.frontCirclePathDoubleArc.vertices.length,
+          //     frontCircleLenDoubleArc
+          //   );
+          // }
           this.frontCirclePathDoubleArc.vertices[
             frontCircleIndexDoubleArc
           ].x = this.tmpVectorDoubleArc.x;
@@ -636,10 +662,11 @@ export default class AngleMarker extends Nodule {
             firstBackCircleIndexInOriginalDoubleArc = pos;
           if (backCircleIndexDoubleArc >= backCircleLenDoubleArc) {
             // Steal one element from the frontPath or storage
+            // console.log("steal from double arc front");
             let extraDoubleArc;
             if (this.frontCirclePathDoubleArc.vertices.length !== 0) {
               extraDoubleArc = this.frontCirclePathDoubleArc.vertices.pop();
-              frontCircleLen--;
+              frontCircleLenDoubleArc--;
             } else {
               extraDoubleArc = this.storageCirclePathDoubleArc.vertices.pop();
             }
