@@ -22,6 +22,8 @@ const transformMatrixStraightStart = new Matrix4();
 const transformMatrixStraightEnd = new Matrix4();
 const CIRCLEEDGESUBDIVISIONS = SETTINGS.angleMarker.numCirclePoints;
 const STRIAGHTEDGESUBDIVISIONS = SETTINGS.angleMarker.numEdgePoints;
+const BOUNDARYCIRCLEEDGESUBDIVISIONS =
+  SETTINGS.angleMarker.numBoundaryCirclePoints;
 
 let ANGLEMARKER_COUNT = 0;
 
@@ -116,10 +118,10 @@ export default class AngleMarker extends Nodule {
    *  the boundary circle can intersect an angle marker and one of the has a disconnected pair of regions on the
    *  same side of the front/back divide. This means that we need two of each front/back fill region.
    */
-  // private frontFill1: Two.Path;
-  // private backFill1: Two.Path;
-  // private frontFill2: Two.Path;
-  // private backFill2: Two.Path;
+  private frontFill1: Two.Path;
+  private backFill1: Two.Path;
+  private frontFill2: Two.Path;
+  private backFill2: Two.Path;
 
   /**
    * The styling variables for the drawn angle marker. The user can modify these.
@@ -382,6 +384,50 @@ export default class AngleMarker extends Nodule {
     this.glowingBackStraightStart.visible = false;
     this.glowingFrontStraightEnd.visible = false;
     this.glowingBackStraightEnd.visible = false;
+
+    // Now organize the fills
+    // In total there are 2*CIRCLEEDGESUBDIVISIONS + 4*STRIAGHTEDGESUBDIVISIONS +2*BOUNDARYCIRCLEEDGESUBDIVISIONS
+    // anchors a cross all four fill regions.
+
+    const verticesFill: Two.Vector[] = [];
+    for (
+      let k = 0;
+      k <
+      CIRCLEEDGESUBDIVISIONS +
+        2 * STRIAGHTEDGESUBDIVISIONS +
+        BOUNDARYCIRCLEEDGESUBDIVISIONS;
+      k++
+    ) {
+      verticesFill.push(new Two.Vector(0, 0));
+    }
+    this.frontFill1 = new Two.Path(
+      verticesStraight,
+      /* closed */ true,
+      /* curve */ false
+    );
+
+    // Create the other parts cloning the front straight path start
+    this.frontFill2 = this.frontFill1.clone();
+    this.backFill1 = this.frontFill1.clone();
+    this.backFill2 = this.frontFill1.clone();
+
+    // Strip out some of the anchors so that
+    // frontFill1.length + frontFill2.length + backFill1.length + backFill2.length =
+    // 2*CIRCLEEDGESUBDIVISIONS + 4*STRIAGHTEDGESUBDIVISIONS +2*BOUNDARYCIRCLEEDGESUBDIVISIONS
+    this.frontFill2.vertices.splice(0);
+    this.backFill2.vertices.splice(0);
+
+    // Set the style that never changes -- stroke
+    this.frontFill1.noStroke();
+    this.frontFill2.noStroke();
+    this.backFill1.noStroke();
+    this.backFill2.noStroke();
+
+    // The show the fill glowing
+    this.frontFill1.visible = true;
+    this.frontFill2.visible = true;
+    this.backFill1.visible = true;
+    this.backFill2.visible = true;
   }
   /**
    * Map part of a circle in standard position to the location and orientation of the angleMarker
@@ -770,12 +816,13 @@ export default class AngleMarker extends Nodule {
       }
     }
 
+    //  Now build the straight edge from end to vertex (so that the angle marker is traces vertex -> start -> end -> vertex in order)
     // First set up the coordinate system of the target straight line segment
     // The cross of the vertex and start is normal to the plane of them and is the z axis
-    desiredZAxis.crossVectors(this._vertexVector, this._endVector).normalize();
+    desiredZAxis.crossVectors(this._endVector, this._vertexVector).normalize();
 
-    // Any vector perpendicular the desired z axis can be the desired x axis, but we want one that is the vertex vector (so we start drawing from there).
-    desiredXAxis.copy(this._vertexVector);
+    // Any vector perpendicular the desired z axis can be the desired x axis, but we want one that is the end vector (so we start drawing from there).
+    desiredXAxis.copy(this._endVector);
 
     // Use the cross product to create the vector perpendicular to both the desired z and x axis
     desiredYAxis.crossVectors(desiredZAxis, desiredXAxis).normalize();
@@ -857,8 +904,180 @@ export default class AngleMarker extends Nodule {
         negIndexStraight++;
       }
     }
-    //Now build the front/back fill objects based on the front/back parts
+    //Now build the front/back fill objects based on the front/back straight and circular parts
 
+    // Bring all the anchor points to a common pool
+    // Each half  path will pull anchor points from
+    // this pool as needed
+    const poolFill: Two.Anchor[] = [];
+    poolFill.push(...this.frontFill1.vertices.splice(0));
+    poolFill.push(...this.frontFill2.vertices.splice(0));
+    poolFill.push(...this.backFill1.vertices.splice(0));
+    poolFill.push(...this.backFill2.vertices.splice(0));
+    // there should be 2*CIRCLEEDGESUBDIVISIONS + 4*STRIAGHTEDGESUBDIVISIONS
+    //                                    + 2*BOUNDARYCIRCLEEDGESUBDIVISIONS
+    // anchors in poolFill
+
+    const leg1F = this.frontStraightStart.vertices.map(node => [
+      node.x,
+      node.y
+    ]);
+    const leg1B = this.backStraightStart.vertices.map(node => [node.x, node.y]);
+    const leg2F = this.frontCirclePathStart.vertices.map(node => [
+      node.x,
+      node.y
+    ]);
+    const leg2B = this.backCirclePathStart.vertices.map(node => [
+      node.x,
+      node.y
+    ]);
+    const leg3F = this.frontCirclePathTail.vertices.map(node => [
+      node.x,
+      node.y
+    ]);
+    const leg3B = this.backCirclePathTail.vertices.map(node => [
+      node.x,
+      node.y
+    ]);
+    const leg4F = this.frontStraightEnd.vertices.map(node => [node.x, node.y]);
+    const leg4B = this.backStraightEnd.vertices.map(node => [node.x, node.y]);
+    const boundaryVertices1: Two.Anchor[] = []; // The new anchors on the boundary of the circle
+    const boundaryVertices2: Two.Anchor[] = []; // The new anchors on the boundary of the circle
+
+    const fillRegion1AnchorList = [];
+    const fillRegion2AnchorList = [];
+    const fillRegion3AnchorList = [];
+    //Check the convexity of the angle Marker
+    if (angularLengthOfMarker <= Math.PI) {
+      // This two dimensional array describes the outline of the 5 ways that a line can cross a convex
+      // angle marker. This always starts at the vertex and then along the edge to the _startVector,
+      //  then along the circular edge to the _endVector, and finally along the edge back to the _vertexVector
+      //
+      // In each row:
+      //   Entries 0 & 1 are the front or back StraightStart (SS)
+      //   Entries 2 & 3 are the front or back CirclePathStart (CPS)
+      //   Entries 4 & 5 are the front or back CirclePathTail (CPT)
+      //   Entries 6 & 7 are the front or back StraightEnd (ES)
+      //
+      // A zero means that the corresponding entry is empty
+      // +1 means that the corresponding entry is on the front side of the sphere
+      // -1 means that the corresponding entry is on the back side of the sphere
+      //
+      // See the file "Convex Angle Marker Intersection With Boundary Circle" in the Google drive folder
+      const convexOutlines = [
+        [1, 0, 1, 0, 0, 0, 1, 0],
+        [1, -1, -1, 0, 0, 0, -1, 1],
+        [1, -1, -1, 1, 0, 0, 1, 0],
+        [1, 0, 1, -1, 0, 0, -1, 1],
+        [1, 0, 1, -1, 1, 0, 1, 0]
+      ];
+      // The side the vertex is on determines if we start with the front or back
+      if (this._vertexVector.z < 0) {
+        // the vertex is on the back of the sphere so reverse all of the convexOutlines to start on the back
+        convexOutlines.forEach(arr => arr.map(num => -1 * num));
+      }
+      // Now figure out which case we are in (i.e. how the boundary circle is crossing the angle Marker - if at all)
+      const ind = convexOutlines.findIndex(arr => {
+        const returnBoolean = true;
+        if (arr[0] * arr[1] === 0) {
+          // at least one of the these two entries is zero so leg1F or/and leg1B must be an empty array depending on the non-zero value (if any)
+          if (arr[0] === 0 && arr[1] === 0) {
+            // both F and B leg1 must be empty
+            if (leg1F.length !== 0 || leg1B.length !== 0) {
+              return false; // this is not the arr you are looking for
+            }
+          } else {
+            // arr[1] must be zero because recall that in each pair (0,1) or (2,3) or (4,5) or (6,7) of entries in an array, the first is *never* zero because you *alway* start a leg of the outline on the front or back (but you may or may not return to the other side)
+            if (
+              (arr[0] === 1 && leg1B.length !== 0) ||
+              (arr[0] === -1 && leg1F.length !== 0)
+            ) {
+              return false; // this is not the arr you are looking for
+            }
+          }
+        }
+        if (arr[2] * arr[3] === 0) {
+          // at least one of the these two entries is zero so leg2F or/and leg2B must be an empty array depending on the non-zero value (if any)
+          if (arr[2] === 0 && arr[3] === 0) {
+            // both F and B leg2 must be empty
+            if (leg2F.length !== 0 || leg2B.length !== 0) {
+              return false; // this is not the arr you are looking for
+            }
+          } else {
+            // arr[3] must be zero because recall that in each pair (0,1) or (2,3) or (4,5) or (6,7) of entries in an array, the first is *never* zero because you *alway* start a leg of the outline on the front or back (but you may or may not return to the other side)
+            if (
+              (arr[2] === 1 && leg2B.length !== 0) ||
+              (arr[2] === -1 && leg2F.length !== 0)
+            ) {
+              return false; // this is not the arr you are looking for
+            }
+          }
+        }
+        if (arr[4] * arr[5] === 0) {
+          // at least one of the these two entries is zero so leg3F or/and leg3B must be an empty array depending on the non-zero value (if any)
+          if (arr[4] === 0 && arr[5] === 0) {
+            // both F and B leg3 must be empty
+            if (leg3F.length !== 0 || leg3B.length !== 0) {
+              return false; // this is not the arr you are looking for
+            }
+          } else {
+            // arr[5] must be zero because recall that in each pair (0,1) or (2,3) or (4,5) or (6,7) of entries in an array, the first is *never* zero because you *alway* start a leg of the outline on the front or back (but you may or may not return to the other side)
+            if (
+              (arr[4] === 1 && leg3B.length !== 0) ||
+              (arr[4] === -1 && leg3F.length !== 0)
+            ) {
+              return false; // this is not the arr you are looking for
+            }
+          }
+        }
+        if (arr[6] * arr[7] === 0) {
+          // at least one of the these two entries is zero so leg4F or/and leg4B must be an empty array depending on the non-zero value (if any)
+          if (arr[6] === 0 && arr[7] === 0) {
+            // both F and B leg4 must be empty
+            if (leg4F.length !== 0 || leg4B.length !== 0) {
+              return false; // this is not the arr you are looking for
+            }
+          } else {
+            // arr[7] must be zero because recall that in each pair (0,1) or (2,3) or (4,5) or (6,7) of entries in an array, the first is *never* zero because you *alway* start a leg of the outline on the front or back (but you may or may not return to the other side)
+            if (
+              (arr[6] === 1 && leg4B.length !== 0) ||
+              (arr[6] === -1 && leg4F.length !== 0)
+            ) {
+              return false; // this is not the arr you are looking for
+            }
+          }
+        }
+        return returnBoolean;
+      });
+      if (ind === -1) {
+        console.log("Angle Marker Error - Convex Pattern not found!");
+      }
+      // Now build the fillRegionVertexList(s)
+      switch (ind) {
+        case 0: {
+          if (convexOutlines[0][0] === 1) {
+            fillRegion1AnchorList.push(...leg1F);
+          } else {
+            fillRegion1AnchorList.push(...leg1B);
+          }
+          if (convexOutlines[0][2] === 1) {
+            fillRegion1AnchorList.push(...leg2F);
+          } else {
+            fillRegion1AnchorList.push(...leg2B);
+          }
+
+          if (convexOutlines[0][6] === 1) {
+            fillRegion1AnchorList.push(...leg4F);
+          } else {
+            fillRegion1AnchorList.push(...leg4B);
+          }
+          break;
+        }
+        case 1: {
+          break;
+        }
+      }
+    }
     // // The circle interior is only on the front of the sphere
     // if (backCircleLen === 0 && this._circleRadius < Math.PI / 2) {
     //   // In this case the frontFillVertices are the same as the frontVertices
@@ -1068,6 +1287,22 @@ export default class AngleMarker extends Nodule {
     //   this.backFill.visible = true;
     // }
   }
+  /**
+   * pt1 and pt2 are points on the boundary of the display circle
+   * this method returns an ordered list of numPoints points from pt1 to pt2 along the
+   * boundary circle so that that the angle subtended at the origin between
+   * any two of them is equal and equal to the angle between the first returned to pt1 and
+   * equal to the angle between the last returned and pt2
+   */
+  private boundryCircleCoordinates(
+    pt1: number[],
+    pt2: number[],
+    numPoints: number
+  ): number[] {
+    // first use atan2 to figure out the angle from pt1 to pt2
+    const angularLength = Math.atan2();
+    return [];
+  }
 
   /**
    * Set the vertex/start/end vectors of the angle marker plottable.
@@ -1093,9 +1328,7 @@ export default class AngleMarker extends Nodule {
   get angleMarkerRadius(): number {
     return this._angleMarkerRadius;
   }
-  // get angleMarkerRadiusPercent(): number {
-  //   return this._angleMarkerRadiusPercent;
-  // }
+
   /**
    * Use this method to set the display of the angle marker using three vectors. The angle from vertex to start is *not* necessary the
    * the same aa the angle form vertex to end. This method sets the _vertex, _start, _end vectors (all non-zero and unit) so that

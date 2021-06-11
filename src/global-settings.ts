@@ -364,6 +364,7 @@ export default {
     defaultRadius: 0.5, // The default radius for angleMarkers
     numCirclePoints: 50, // The number of vertices used to render the circle part of the angleMarker. These are spread over the front and back parts. MAKE THIS EVEN!
     numEdgePoints: 26, // The number of vertices used to render each of the start and end vector edge of the angleMarker. These are spread over the front and back parts. MAKE THIS EVEN!
+    numBoundaryCirclePoints: 10, // To trace *all* of the filled regions requires 2*numCirclePoints+4*numEdgePoints + 2*numBoundaryCirclePoints anchors
     hitIdealDistance: 0.03, // The user has to be within this distance on the ideal unit sphere to select the angleMarker.
     //dynamicBackStyle is a flag that means the fill, linewidth, and strokeColor of the angleMarkers drawn on the back are automatically calculated based on the value of SETTINGS.contrast and their front counterparts
     dynamicBackStyle: true,

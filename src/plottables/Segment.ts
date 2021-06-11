@@ -638,7 +638,6 @@ export default class Segment extends Nodule {
           : this.strokeWidthPercentBack)) /
       100;
   }
-
   /**
    * Set the rendering style (flags: ApplyTemporaryVariables, ApplyCurrentVariables) of the segment
    *

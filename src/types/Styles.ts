@@ -54,8 +54,6 @@ export type StyleOptions = {
   labelDisplayText?: string;
   labelDisplayCaption?: string;
   labelDisplayMode?: LabelDisplayMode;
-  labelVisibility?: boolean;
-  objectVisibility?: boolean;
   labelFrontFillColor?: string;
   labelBackFillColor?: string;
   angleMarkerRadiusPercent?: number;

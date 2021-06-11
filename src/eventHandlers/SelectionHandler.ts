@@ -80,7 +80,7 @@ export default class SelectionHandler extends Highlighter {
           (n as any).ref.glowingDisplay();
         });
     }
-    // Get all SEAnlgeMarkers
+    // Get all SEAngleMarkers
     if (keyEvent.key.match("a")) {
       this.store.getters
         .allSEAngleMarkers()

@@ -158,7 +158,6 @@ export default class Circle extends Nodule {
     const glowingBackVertices: Two.Vector[] = [];
     const frontFillVertices: Two.Vector[] = [];
     const backFillVertices: Two.Vector[] = [];
-    // TODO: Is there a way for the glowing and not vertices to be the same?  I tried and it didn't seem to work.
 
     // As the circle is moved around the vertices are passed between the front and back parts, but it
     // is always true that frontVertices.length + backVertices.length = SUBDIVISIONS
