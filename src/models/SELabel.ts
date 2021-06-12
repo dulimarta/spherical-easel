@@ -13,6 +13,7 @@ import { SELine } from "./SELine";
 import { SECircle } from "./SECircle";
 import { SEAngleMarker } from "./SEAngleMarker";
 import { SESegmentLength } from "./SESegmentLength";
+import AngleMarker from "@/plottables/AngleMarker";
 
 const styleSet = new Set([
   Styles.labelTextScalePercent,
@@ -43,6 +44,7 @@ export class SELabel extends SENodule implements Visitable {
    */
   protected _locationVector = new Vector3();
 
+  private tmpVector = new Vector3();
   /**
    * Create a label of the parent object
    * @param label the TwoJS label associated with this SELabel
@@ -120,7 +122,7 @@ export class SELabel extends SENodule implements Visitable {
   }
 
   public update(state: UpdateStateType): void {
-    //console.log("update label");
+    // console.log("update SElabel");
     // If any one parent is not up to date, don't do anything
     if (!this.canUpdateNow()) {
       return;
@@ -130,23 +132,13 @@ export class SELabel extends SENodule implements Visitable {
     //These labels don't exist when their parent doesn't exist
     this._exists = this.parent.exists;
     if (this._exists) {
+      this.tmpVector.copy(this._locationVector);
       this._locationVector = ((this
         .parent as unknown) as Labelable).closestLabelLocationVector(
-        this._locationVector
+        this.tmpVector
       );
       //Update the location of the associate plottable Label (setter also updates the display)
       this.ref.positionVector = this._locationVector;
-      // For the labels that can include a measurement and update those
-      // if (this.parent instanceof SESegment) {
-      //   const index = this.parent.kids.findIndex(
-      //     p => p instanceof SESegmentLength
-      //   );
-      //   if (index !== -1) {
-      //     this.ref. = this.parent.kids[index].name;
-      //   }
-      // } else if (this.parent instanceof SEAngleMarker) {
-      //   this.ref.name = this.parent.name;
-      // }
     }
     // Update visibility
     if (this._showing && this._exists) {

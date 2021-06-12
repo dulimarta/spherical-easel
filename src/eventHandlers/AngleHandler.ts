@@ -21,6 +21,7 @@ import { AddPointOnOneDimensionalCommand } from "@/commands/AddPointOnOneDimensi
 import { AddPointCommand } from "@/commands/AddPointCommand";
 import { StyleNoduleCommand } from "@/commands/StyleNoduleCommand";
 import { LabelDisplayMode, StyleEditPanels } from "@/types/Styles";
+import { colors } from "vuetify/lib";
 enum AngleMode {
   NONE,
   LINES,
@@ -704,7 +705,7 @@ export default class AngleHandler extends Highlighter {
             this.temporaryFirstPoint.positionVector,
             this.temporarySecondPoint.positionVector,
             this.currentSphereVector,
-            SETTINGS.angleMarker.defaultRadius
+            AngleMarker.currentAngleMarkerRadius
           );
 
           this.temporaryAngleMarker.updateDisplay();
@@ -934,11 +935,27 @@ export default class AngleHandler extends Highlighter {
     // Create the plottable and model label
     const newLabel = new Label();
     const newSELabel = new SELabel(newLabel, newSEAngleMarker);
+
+    // Update the display of the new angle marker (do it here so that the placement of the newLabel is correct)
+    newSEAngleMarker.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
+
     // Set the initial label location near the vertex vector
+    // and turn off the lable of the vertex if SETTINGS.angleMarker.turnOffVertexLabelOnCreation
     this.tmpVector
       .copy(this.pointLocations[1])
-      .add(new Vector3(0, SETTINGS.angleMarker.initialLabelOffset, 0))
+      .add(
+        new Vector3(
+          -2 * SETTINGS.angleMarker.initialLabelOffset,
+          -1 * SETTINGS.angleMarker.initialLabelOffset,
+          0
+        )
+      )
       .normalize();
+
+    if (SETTINGS.angleMarker.turnOffVertexLabelOnCreation) {
+      this.targetPoints[1]!.label!.showing = false;
+    }
+
     newSELabel.locationVector = this.tmpVector;
 
     angleMarkerCommandGroup.addCommand(
@@ -977,6 +994,10 @@ export default class AngleHandler extends Highlighter {
     // Create the plottable and model label
     const newLabel = new Label();
     const newSELabel = new SELabel(newLabel, newSEAngleMarker);
+
+    // Update the display of the new angle marker (do it here so that the placement of the newLabel is correct)
+    newSEAngleMarker.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
+
     // Set the initial label location near the intersection on the front side of the sphere
     this.tmpVector.crossVectors(
       this.targetLines[0].normalVector,
@@ -986,7 +1007,13 @@ export default class AngleHandler extends Highlighter {
       this.tmpVector.multiplyScalar(-1);
     }
     this.tmpVector
-      .add(new Vector3(0, SETTINGS.angleMarker.initialLabelOffset, 0))
+      .add(
+        new Vector3(
+          -2 * SETTINGS.angleMarker.initialLabelOffset,
+          -1 * SETTINGS.angleMarker.initialLabelOffset,
+          0
+        )
+      )
       .normalize();
     newSELabel.locationVector = this.tmpVector;
 
@@ -1020,24 +1047,41 @@ export default class AngleHandler extends Highlighter {
     // Create the plottable and model label
     const newLabel = new Label();
     const newSELabel = new SELabel(newLabel, newSEAngleMarker);
+
+    // Update the display of the new angle marker (do it here so that the placement of the newLabel is correct)
+    newSEAngleMarker.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
+
     // Set the initial label location near the common endpoint of the segments
+    // and turn off the label of the vertex point (SETTINGS.angleMarker.turnOffVertexLabelOnCreation)
     if (
       this.targetSegments[0].startSEPoint ===
       this.targetSegments[1].startSEPoint
     ) {
       this.tmpVector.copy(this.targetSegments[0].startSEPoint.locationVector);
+      if (SETTINGS.angleMarker.turnOffVertexLabelOnCreation) {
+        this.targetSegments[0].startSEPoint.label!.showing = false;
+      }
     } else if (
       this.targetSegments[0].startSEPoint === this.targetSegments[1].endSEPoint
     ) {
       this.tmpVector.copy(this.targetSegments[0].startSEPoint.locationVector);
+      if (SETTINGS.angleMarker.turnOffVertexLabelOnCreation) {
+        this.targetSegments[0].startSEPoint.label!.showing = false;
+      }
     } else if (
       this.targetSegments[0].endSEPoint === this.targetSegments[1].startSEPoint
     ) {
       this.tmpVector.copy(this.targetSegments[1].startSEPoint.locationVector);
+      if (SETTINGS.angleMarker.turnOffVertexLabelOnCreation) {
+        this.targetSegments[1].startSEPoint.label!.showing = false;
+      }
     } else if (
       this.targetSegments[0].endSEPoint === this.targetSegments[1].endSEPoint
     ) {
       this.tmpVector.copy(this.targetSegments[1].endSEPoint.locationVector);
+      if (SETTINGS.angleMarker.turnOffVertexLabelOnCreation) {
+        this.targetSegments[1].endSEPoint.label!.showing = false;
+      }
     } else {
       this.tmpVector.set(0, 0, 1);
       console.log(
@@ -1045,7 +1089,13 @@ export default class AngleHandler extends Highlighter {
       );
     }
     this.tmpVector
-      .add(new Vector3(0, SETTINGS.angleMarker.initialLabelOffset, 0))
+      .add(
+        new Vector3(
+          -2 * SETTINGS.angleMarker.initialLabelOffset,
+          -1 * SETTINGS.angleMarker.initialLabelOffset,
+          0
+        )
+      )
       .normalize();
     newSELabel.locationVector = this.tmpVector;
 
@@ -1089,30 +1139,47 @@ export default class AngleHandler extends Highlighter {
     // Create the plottable and model label
     const newLabel = new Label();
     const newSELabel = new SELabel(newLabel, newSEAngleMarker);
+
+    // Update the display of the new angle marker (do it here so that the placement of the newLabel is correct)
+    newSEAngleMarker.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
+
     // Set the initial label location near point of the segment that is on the line
+    // and turn off the label of the vertex point (SETTINGS.angleMarker.turnOffVertexLabelOnCreation)
     if (
       this.targetSegments[0].startSEPoint instanceof SEPointOnOneDimensional &&
       this.targetSegments[0].startSEPoint.parentOneDimensional ===
         this.targetLines[0]
     ) {
       this.tmpVector.copy(this.targetSegments[0].startSEPoint.locationVector);
+      if (SETTINGS.angleMarker.turnOffVertexLabelOnCreation) {
+        this.targetSegments[0].startSEPoint.label!.showing = false;
+      }
     } else if (
       this.targetSegments[0].endSEPoint instanceof SEPointOnOneDimensional &&
       this.targetSegments[0].endSEPoint.parentOneDimensional ===
         this.targetLines[0]
     ) {
       this.tmpVector.copy(this.targetSegments[0].endSEPoint.locationVector);
+      if (SETTINGS.angleMarker.turnOffVertexLabelOnCreation) {
+        this.targetSegments[0].endSEPoint.label!.showing = false;
+      }
     } else if (
       this.targetSegments[0].endSEPoint === this.targetLines[0].startSEPoint ||
       this.targetSegments[0].endSEPoint === this.targetLines[0].endSEPoint
     ) {
       this.tmpVector.copy(this.targetSegments[0].endSEPoint.locationVector);
+      if (SETTINGS.angleMarker.turnOffVertexLabelOnCreation) {
+        this.targetSegments[0].endSEPoint.label!.showing = false;
+      }
     } else if (
       this.targetSegments[0].startSEPoint ===
         this.targetLines[0].startSEPoint ||
       this.targetSegments[0].startSEPoint === this.targetLines[0].endSEPoint
     ) {
       this.tmpVector.copy(this.targetSegments[0].startSEPoint.locationVector);
+      if (SETTINGS.angleMarker.turnOffVertexLabelOnCreation) {
+        this.targetSegments[0].startSEPoint.label!.showing = false;
+      }
     } else {
       this.tmpVector.set(0, 0, 1);
       console.log(
@@ -1120,7 +1187,13 @@ export default class AngleHandler extends Highlighter {
       );
     }
     this.tmpVector
-      .add(new Vector3(0, SETTINGS.angleMarker.initialLabelOffset, 0))
+      .add(
+        new Vector3(
+          -2 * SETTINGS.angleMarker.initialLabelOffset,
+          -1 * SETTINGS.angleMarker.initialLabelOffset,
+          0
+        )
+      )
       .normalize();
     newSELabel.locationVector = this.tmpVector;
     // execute the command to do all the creating
