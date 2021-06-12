@@ -123,6 +123,9 @@ export default class AngleMarker extends Nodule {
   private frontFill2: Two.Path;
   private backFill2: Two.Path;
 
+  /**Create a storage path for unused anchors in the case that the boundary circle doesn't intersect the anglemarker*/
+  private fillStorageAnchors: Two.Anchor[] = [];
+
   /**
    * The styling variables for the drawn angle marker. The user can modify these.
    */
@@ -146,36 +149,36 @@ export default class AngleMarker extends Nodule {
   private _angleMarkerRadiusPercent = 100;
 
   /**
-   * The stops and gradient for front/back fill
+   * The stops and gradient for front/back fill shading (IF USED)
    */
-  private frontGradientColorCenter = new Two.Stop(
-    0,
-    SETTINGS.fill.frontWhite,
-    1
-  );
-  private frontGradientColor = new Two.Stop(
-    2 * SETTINGS.boundaryCircle.radius,
-    this.fillColorFront,
-    1
-  );
-  private frontGradient = new Two.RadialGradient(
-    SETTINGS.fill.lightSource.x,
-    SETTINGS.fill.lightSource.y,
-    1 * SETTINGS.boundaryCircle.radius,
-    [this.frontGradientColorCenter, this.frontGradientColor]
-  );
-  private backGradientColorCenter = new Two.Stop(0, SETTINGS.fill.backGray, 1);
-  private backGradientColor = new Two.Stop(
-    1 * SETTINGS.boundaryCircle.radius,
-    this.fillColorBack,
-    1
-  );
-  private backGradient = new Two.RadialGradient(
-    -SETTINGS.fill.lightSource.x,
-    -SETTINGS.fill.lightSource.y,
-    2 * SETTINGS.boundaryCircle.radius,
-    [this.backGradientColorCenter, this.backGradientColor]
-  );
+  // private frontGradientColorCenter = new Two.Stop(
+  //   0,
+  //   SETTINGS.fill.frontWhite,
+  //   1
+  // );
+  // private frontGradientColor = new Two.Stop(
+  //   2 * SETTINGS.boundaryCircle.radius,
+  //   this.fillColorFront,
+  //   1
+  // );
+  // private frontGradient = new Two.RadialGradient(
+  //   SETTINGS.fill.lightSource.x,
+  //   SETTINGS.fill.lightSource.y,
+  //   1 * SETTINGS.boundaryCircle.radius,
+  //   [this.frontGradientColorCenter, this.frontGradientColor]
+  // );
+  // private backGradientColorCenter = new Two.Stop(0, SETTINGS.fill.backGray, 1);
+  // private backGradientColor = new Two.Stop(
+  //   1 * SETTINGS.boundaryCircle.radius,
+  //   this.fillColorBack,
+  //   1
+  // );
+  // private backGradient = new Two.RadialGradient(
+  //   -SETTINGS.fill.lightSource.x,
+  //   -SETTINGS.fill.lightSource.y,
+  //   2 * SETTINGS.boundaryCircle.radius,
+  //   [this.backGradientColorCenter, this.backGradientColor]
+  // );
 
   /** Initialize the current line width that is *NOT* user adjustable (but does scale for zoom) */
   static currentAngleMarkerStraightStrokeWidthFront =
@@ -275,7 +278,7 @@ export default class AngleMarker extends Nodule {
     this.glowingBackCirclePathDoubleArcTail = this.frontCirclePathStart.clone();
 
     // The clear() extension function works only on JS Array, but
-    // not on Two.JS Collection class. Use splice() instead. Clear only tails so there are 2*circleSubdivions in the union of frontCirclePathStart and endCirclePathStart
+    // not on Two.JS Collection class. Use splice() instead. Clear only tails so there are 2*circleSubdivisions in the union of front/backCirclePathStart and front/backCirclePathTail
 
     this.frontCirclePathTail.vertices.splice(0);
     this.frontCirclePathDoubleArcTail.vertices.splice(0);
@@ -401,7 +404,7 @@ export default class AngleMarker extends Nodule {
       verticesFill.push(new Two.Vector(0, 0));
     }
     this.frontFill1 = new Two.Path(
-      verticesStraight,
+      verticesFill,
       /* closed */ true,
       /* curve */ false
     );
@@ -906,10 +909,16 @@ export default class AngleMarker extends Nodule {
     }
     //Now build the front/back fill objects based on the front/back straight and circular parts
 
+    // console.log("FF1", this.frontFill1.vertices.length);
+    // console.log("FF1", this.frontFill2.vertices.length);
+    // console.log("BF1", this.backFill1.vertices.length);
+    // console.log("BF1", this.backFill2.vertices.length);
+
     // Bring all the anchor points to a common pool
     // Each half  path will pull anchor points from
     // this pool as needed
     const poolFill: Two.Anchor[] = [];
+    poolFill.push(...this.fillStorageAnchors.splice(0));
     poolFill.push(...this.frontFill1.vertices.splice(0));
     poolFill.push(...this.frontFill2.vertices.splice(0));
     poolFill.push(...this.backFill1.vertices.splice(0));
@@ -917,36 +926,65 @@ export default class AngleMarker extends Nodule {
     // there should be 2*CIRCLEEDGESUBDIVISIONS + 4*STRIAGHTEDGESUBDIVISIONS
     //                                    + 2*BOUNDARYCIRCLEEDGESUBDIVISIONS
     // anchors in poolFill
+    // console.log("pool Fill #", poolFill.length);
+    // The possible legs in an outline of an angle marker cut by the boundary circle
+    const leg1F: number[][] = [];
+    this.frontStraightStart.vertices.forEach(node =>
+      leg1F.push([node.x, node.y])
+    );
 
-    const leg1F = this.frontStraightStart.vertices.map(node => [
-      node.x,
-      node.y
-    ]);
-    const leg1B = this.backStraightStart.vertices.map(node => [node.x, node.y]);
-    const leg2F = this.frontCirclePathStart.vertices.map(node => [
-      node.x,
-      node.y
-    ]);
-    const leg2B = this.backCirclePathStart.vertices.map(node => [
-      node.x,
-      node.y
-    ]);
-    const leg3F = this.frontCirclePathTail.vertices.map(node => [
-      node.x,
-      node.y
-    ]);
-    const leg3B = this.backCirclePathTail.vertices.map(node => [
-      node.x,
-      node.y
-    ]);
-    const leg4F = this.frontStraightEnd.vertices.map(node => [node.x, node.y]);
-    const leg4B = this.backStraightEnd.vertices.map(node => [node.x, node.y]);
-    const boundaryVertices1: Two.Anchor[] = []; // The new anchors on the boundary of the circle
-    const boundaryVertices2: Two.Anchor[] = []; // The new anchors on the boundary of the circle
+    const leg1B: number[][] = [];
+    this.backStraightStart.vertices.forEach(node =>
+      leg1B.push([node.x, node.y])
+    );
 
-    const fillRegion1AnchorList = [];
-    const fillRegion2AnchorList = [];
-    const fillRegion3AnchorList = [];
+    const leg2F: number[][] = [];
+    this.frontCirclePathStart.vertices.forEach(node =>
+      leg2F.push([node.x, node.y])
+    );
+
+    const leg2B: number[][] = [];
+    this.backCirclePathStart.vertices.forEach(node =>
+      leg2B.push([node.x, node.y])
+    );
+
+    const leg3F: number[][] = [];
+    this.frontCirclePathTail.vertices.forEach(node =>
+      leg3F.push([node.x, node.y])
+    );
+
+    const leg3B: number[][] = [];
+    this.backCirclePathTail.vertices.forEach(node =>
+      leg3B.push([node.x, node.y])
+    );
+
+    const leg4F: number[][] = [];
+    this.frontStraightEnd.vertices.forEach(node =>
+      leg4F.push([node.x, node.y])
+    );
+
+    const leg4B: number[][] = [];
+    this.backStraightEnd.vertices.forEach(node => leg4B.push([node.x, node.y]));
+
+    let boundaryVertices1: number[][] = []; // The new vertices on the boundary of the circle
+    let boundaryVertices2: number[][] = []; // The new vertices on the boundary of the circle
+
+    // Variables to keep track of the vertices in each region, will be used to set the anchors in poolFill
+    const fillRegion1Vertices = [];
+    const fillRegion2Vertices = [];
+    const fillRegion3Vertices = [];
+
+    // Helpful variable for creating the front/back fill region 1/2
+    let startOfBoundaryVertex1: number[] = [];
+    let endOfBoundaryVertex1: number[] = [];
+    let startOfBoundaryVertex2: number[] = [];
+    let endOfBoundaryVertex2: number[] = [];
+    let sideOfFillRegion1 = 0;
+    let sideOfFillRegion2 = 0;
+    let sideOfFillRegion3 = 0;
+    let edgeTracingPatterns: number[][] = [];
+    let intersectionCase = -1;
+
     //Check the convexity of the angle Marker
     if (angularLengthOfMarker <= Math.PI) {
       // This two dimensional array describes the outline of the 5 ways that a line can cross a convex
@@ -964,7 +1002,7 @@ export default class AngleMarker extends Nodule {
       // -1 means that the corresponding entry is on the back side of the sphere
       //
       // See the file "Convex Angle Marker Intersection With Boundary Circle" in the Google drive folder
-      const convexOutlines = [
+      edgeTracingPatterns = [
         [1, 0, 1, 0, 0, 0, 1, 0],
         [1, -1, -1, 0, 0, 0, -1, 1],
         [1, -1, -1, 1, 0, 0, 1, 0],
@@ -973,11 +1011,13 @@ export default class AngleMarker extends Nodule {
       ];
       // The side the vertex is on determines if we start with the front or back
       if (this._vertexVector.z < 0) {
-        // the vertex is on the back of the sphere so reverse all of the convexOutlines to start on the back
-        convexOutlines.forEach(arr => arr.map(num => -1 * num));
+        // the vertex is on the back of the sphere so reverse all of the edgeTracingPatterns to start on the back
+        edgeTracingPatterns = edgeTracingPatterns.map(arr =>
+          arr.map(num => -1 * num)
+        );
       }
       // Now figure out which case we are in (i.e. how the boundary circle is crossing the angle Marker - if at all)
-      const ind = convexOutlines.findIndex(arr => {
+      intersectionCase = edgeTracingPatterns.findIndex(arr => {
         const returnBoolean = true;
         if (arr[0] * arr[1] === 0) {
           // at least one of the these two entries is zero so leg1F or/and leg1B must be an empty array depending on the non-zero value (if any)
@@ -1049,259 +1089,583 @@ export default class AngleMarker extends Nodule {
         }
         return returnBoolean;
       });
-      if (ind === -1) {
+      if (intersectionCase === -1) {
         console.log("Angle Marker Error - Convex Pattern not found!");
       }
-      // Now build the fillRegionVertexList(s)
-      switch (ind) {
+      // console.log(intersectionCase);
+      // Now build the fillRegionVertices
+      switch (intersectionCase) {
         case 0: {
-          if (convexOutlines[0][0] === 1) {
-            fillRegion1AnchorList.push(...leg1F);
+          if (edgeTracingPatterns[intersectionCase][0] === 1) {
+            fillRegion1Vertices.push(...leg1F);
+            fillRegion1Vertices.push(...leg2F);
+            fillRegion1Vertices.push(...leg4F);
+            sideOfFillRegion1 = 1;
           } else {
-            fillRegion1AnchorList.push(...leg1B);
-          }
-          if (convexOutlines[0][2] === 1) {
-            fillRegion1AnchorList.push(...leg2F);
-          } else {
-            fillRegion1AnchorList.push(...leg2B);
-          }
-
-          if (convexOutlines[0][6] === 1) {
-            fillRegion1AnchorList.push(...leg4F);
-          } else {
-            fillRegion1AnchorList.push(...leg4B);
+            fillRegion1Vertices.push(...leg1B);
+            fillRegion1Vertices.push(...leg2B);
+            fillRegion1Vertices.push(...leg4B);
+            sideOfFillRegion1 = -1;
           }
           break;
         }
         case 1: {
+          // console.log(intersectionCase, edgeTracingPatterns[intersectionCase][0]);
+          if (edgeTracingPatterns[intersectionCase][0] === 1) {
+            //Fill Region 1
+            fillRegion1Vertices.push(...leg4F);
+            fillRegion1Vertices.push(...leg1F);
+            // console.log(
+            //   "before",
+            //   startOfBoundaryVertex1,
+            //   leg1F,
+            //   leg1F.slice(-1)[0]
+            // );
+            startOfBoundaryVertex1 = leg1F.slice(-1)[0];
+            // console.log("after", startOfBoundaryVertex1);
+            endOfBoundaryVertex1 = leg4F.slice(0, 1)[0];
+            sideOfFillRegion1 = 1;
+
+            //Fill region 2
+            fillRegion2Vertices.push(...leg1B);
+            fillRegion2Vertices.push(...leg2B);
+            fillRegion2Vertices.push(...leg4B);
+            sideOfFillRegion2 = -1;
+          } else {
+            //Fill Region 1
+            fillRegion1Vertices.push(...leg4B);
+            fillRegion1Vertices.push(...leg1B);
+            startOfBoundaryVertex1 = leg1B.slice(-1)[0];
+            endOfBoundaryVertex1 = leg4B.slice(0, 1)[0];
+            sideOfFillRegion1 = -1;
+
+            //Fill region 2
+            fillRegion2Vertices.push(...leg1F);
+            fillRegion2Vertices.push(...leg2F);
+            fillRegion2Vertices.push(...leg4F);
+            sideOfFillRegion2 = 1;
+          }
+          // console.log(startOfBoundaryVertex1);
+          boundaryVertices1 = Nodule.boundaryCircleCoordinates(
+            startOfBoundaryVertex1,
+            endOfBoundaryVertex1,
+            BOUNDARYCIRCLEEDGESUBDIVISIONS
+          );
+          fillRegion1Vertices.push(...boundaryVertices1);
+          fillRegion2Vertices.push(...boundaryVertices1.reverse());
+          break;
+        }
+        case 2: {
+          if (edgeTracingPatterns[intersectionCase][0] === 1) {
+            //Fill Region 1
+            fillRegion1Vertices.push(...leg2F);
+            fillRegion1Vertices.push(...leg4F);
+            fillRegion1Vertices.push(...leg1F);
+            startOfBoundaryVertex1 = leg1F.slice(-1)[0];
+            endOfBoundaryVertex1 = leg2F.slice(0, 1)[0];
+            sideOfFillRegion1 = 1;
+
+            //Fill region 2
+            fillRegion2Vertices.push(...leg1B);
+            fillRegion2Vertices.push(...leg2B);
+            sideOfFillRegion2 = -1;
+          } else {
+            //Fill Region 1
+            fillRegion1Vertices.push(...leg2B);
+            fillRegion1Vertices.push(...leg4B);
+            fillRegion1Vertices.push(...leg1B);
+            startOfBoundaryVertex1 = leg1B.slice(-1)[0];
+            endOfBoundaryVertex1 = leg2B.slice(0, 1)[0];
+            sideOfFillRegion1 = -1;
+
+            //Fill region 2
+            fillRegion2Vertices.push(...leg1F);
+            fillRegion2Vertices.push(...leg2F);
+            sideOfFillRegion2 = 1;
+          }
+          boundaryVertices1 = Nodule.boundaryCircleCoordinates(
+            startOfBoundaryVertex1,
+            endOfBoundaryVertex1,
+            BOUNDARYCIRCLEEDGESUBDIVISIONS
+          );
+          fillRegion1Vertices.push(...boundaryVertices1);
+          fillRegion2Vertices.push(...boundaryVertices1.reverse());
+          break;
+        }
+        case 3: {
+          if (edgeTracingPatterns[intersectionCase][0] === 1) {
+            //Fill Region 1
+            fillRegion1Vertices.push(...leg4F);
+            fillRegion1Vertices.push(...leg1F);
+            fillRegion1Vertices.push(...leg2F);
+            startOfBoundaryVertex1 = leg2F.slice(-1)[0];
+            endOfBoundaryVertex1 = leg4F.slice(0, 1)[0];
+            sideOfFillRegion1 = 1;
+
+            //Fill region 2
+            fillRegion2Vertices.push(...leg2B);
+            fillRegion2Vertices.push(...leg4B);
+            sideOfFillRegion2 = -1;
+          } else {
+            //Fill Region 1
+            fillRegion1Vertices.push(...leg4B);
+            fillRegion1Vertices.push(...leg1B);
+            fillRegion1Vertices.push(...leg2B);
+            startOfBoundaryVertex1 = leg2B.slice(-1)[0];
+            endOfBoundaryVertex1 = leg4B.slice(0, 1)[0];
+            sideOfFillRegion1 = -1;
+
+            //Fill region 2
+            fillRegion2Vertices.push(...leg2F);
+            fillRegion2Vertices.push(...leg4F);
+            sideOfFillRegion2 = 1;
+          }
+          boundaryVertices1 = Nodule.boundaryCircleCoordinates(
+            startOfBoundaryVertex1,
+            endOfBoundaryVertex1,
+            BOUNDARYCIRCLEEDGESUBDIVISIONS
+          );
+          fillRegion1Vertices.push(...boundaryVertices1);
+          fillRegion2Vertices.push(...boundaryVertices1.reverse());
+          break;
+        }
+        case 4: {
+          if (edgeTracingPatterns[intersectionCase][0] === 1) {
+            //Fill Region 1
+            fillRegion1Vertices.push(...leg3F);
+            fillRegion1Vertices.push(...leg4F);
+            fillRegion1Vertices.push(...leg1F);
+            fillRegion1Vertices.push(...leg2F);
+            startOfBoundaryVertex1 = leg2F.slice(-1)[0];
+            endOfBoundaryVertex1 = leg3F.slice(0, 1)[0];
+            sideOfFillRegion1 = 1;
+
+            //Fill region 2
+            fillRegion2Vertices.push(...leg2B);
+            sideOfFillRegion2 = -1;
+          } else {
+            //Fill Region 1
+            fillRegion1Vertices.push(...leg3B);
+            fillRegion1Vertices.push(...leg4B);
+            fillRegion1Vertices.push(...leg1B);
+            fillRegion1Vertices.push(...leg2B);
+            startOfBoundaryVertex1 = leg2B.slice(-1)[0];
+            endOfBoundaryVertex1 = leg3B.slice(0, 1)[0];
+            sideOfFillRegion1 = -1;
+
+            //Fill region 2
+            fillRegion2Vertices.push(...leg2F);
+            sideOfFillRegion2 = 1;
+          }
+          boundaryVertices1 = Nodule.boundaryCircleCoordinates(
+            startOfBoundaryVertex1,
+            endOfBoundaryVertex1,
+            BOUNDARYCIRCLEEDGESUBDIVISIONS
+          );
+          fillRegion1Vertices.push(...boundaryVertices1);
+          fillRegion2Vertices.push(...boundaryVertices1.reverse());
+          break;
+        }
+      }
+    } else {
+      // non-convex case
+      // This two dimensional array describes the outline of the 5 ways that a line can cross a convex
+      // angle marker. This always starts at the vertex and then along the edge to the _startVector,
+      //  then along the circular edge to the _endVector, and finally along the edge back to the _vertexVector
+      //
+      // In each row:
+      //   Entries 0 & 1 are the front or back StraightStart (SS)
+      //   Entries 2 & 3 are the front or back CirclePathStart (CPS)
+      //   Entries 4 & 5 are the front or back CirclePathTail (CPT)
+      //   Entries 6 & 7 are the front or back StraightEnd (ES)
+      //
+      // A zero means that the corresponding entry is empty
+      // +1 means that the corresponding entry is on the front side of the sphere
+      // -1 means that the corresponding entry is on the back side of the sphere
+      //
+      // See the file "Convex Angle Marker Intersection With Boundary Circle" in the Google drive folder
+      edgeTracingPatterns = [
+        [1, 0, 1, 0, 0, 0, 1, 0],
+        [1, 0, 1, -1, 0, 0, -1, 1],
+        [1, -1, -1, 1, 0, 0, 1, 0],
+        [1, 0, 1, -1, 1, 0, 1, 0],
+        [1, -1, -1, 1, -1, 0, -1, 1]
+      ];
+      // The side the vertex is on determines if we start with the front or back
+      if (this._vertexVector.z < 0) {
+        // the vertex is on the back of the sphere so reverse all of the edgeTracingPatterns to start on the back
+        edgeTracingPatterns = edgeTracingPatterns.map(arr =>
+          arr.map(num => -1 * num)
+        );
+      }
+      // Now figure out which case we are in (i.e. how the boundary circle is crossing the angle Marker - if at all)
+      intersectionCase = edgeTracingPatterns.findIndex(arr => {
+        const returnBoolean = true;
+        if (arr[0] * arr[1] === 0) {
+          // at least one of the these two entries is zero so leg1F or/and leg1B must be an empty array depending on the non-zero value (if any)
+          if (arr[0] === 0 && arr[1] === 0) {
+            // both F and B leg1 must be empty
+            if (leg1F.length !== 0 || leg1B.length !== 0) {
+              return false; // this is not the arr you are looking for
+            }
+          } else {
+            // arr[1] must be zero because recall that in each pair (0,1) or (2,3) or (4,5) or (6,7) of entries in an array, the first is *never* zero because you *alway* start a leg of the outline on the front or back (but you may or may not return to the other side)
+            if (
+              (arr[0] === 1 && leg1B.length !== 0) ||
+              (arr[0] === -1 && leg1F.length !== 0)
+            ) {
+              return false; // this is not the arr you are looking for
+            }
+          }
+        }
+        if (arr[2] * arr[3] === 0) {
+          // at least one of the these two entries is zero so leg2F or/and leg2B must be an empty array depending on the non-zero value (if any)
+          if (arr[2] === 0 && arr[3] === 0) {
+            // both F and B leg2 must be empty
+            if (leg2F.length !== 0 || leg2B.length !== 0) {
+              return false; // this is not the arr you are looking for
+            }
+          } else {
+            // arr[3] must be zero because recall that in each pair (0,1) or (2,3) or (4,5) or (6,7) of entries in an array, the first is *never* zero because you *alway* start a leg of the outline on the front or back (but you may or may not return to the other side)
+            if (
+              (arr[2] === 1 && leg2B.length !== 0) ||
+              (arr[2] === -1 && leg2F.length !== 0)
+            ) {
+              return false; // this is not the arr you are looking for
+            }
+          }
+        }
+        if (arr[4] * arr[5] === 0) {
+          // at least one of the these two entries is zero so leg3F or/and leg3B must be an empty array depending on the non-zero value (if any)
+          if (arr[4] === 0 && arr[5] === 0) {
+            // both F and B leg3 must be empty
+            if (leg3F.length !== 0 || leg3B.length !== 0) {
+              return false; // this is not the arr you are looking for
+            }
+          } else {
+            // arr[5] must be zero because recall that in each pair (0,1) or (2,3) or (4,5) or (6,7) of entries in an array, the first is *never* zero because you *alway* start a leg of the outline on the front or back (but you may or may not return to the other side)
+            if (
+              (arr[4] === 1 && leg3B.length !== 0) ||
+              (arr[4] === -1 && leg3F.length !== 0)
+            ) {
+              return false; // this is not the arr you are looking for
+            }
+          }
+        }
+        if (arr[6] * arr[7] === 0) {
+          // at least one of the these two entries is zero so leg4F or/and leg4B must be an empty array depending on the non-zero value (if any)
+          if (arr[6] === 0 && arr[7] === 0) {
+            // both F and B leg4 must be empty
+            if (leg4F.length !== 0 || leg4B.length !== 0) {
+              return false; // this is not the arr you are looking for
+            }
+          } else {
+            // arr[7] must be zero because recall that in each pair (0,1) or (2,3) or (4,5) or (6,7) of entries in an array, the first is *never* zero because you *alway* start a leg of the outline on the front or back (but you may or may not return to the other side)
+            if (
+              (arr[6] === 1 && leg4B.length !== 0) ||
+              (arr[6] === -1 && leg4F.length !== 0)
+            ) {
+              return false; // this is not the arr you are looking for
+            }
+          }
+        }
+        return returnBoolean;
+      });
+      console.log("edge tracing pattern", intersectionCase);
+      if (intersectionCase === -1) {
+        console.log("Angle Marker Error - Non-Convex Pattern not found!");
+      }
+      // Now build the fillRegionVertices
+      switch (intersectionCase) {
+        case 0: {
+          if (edgeTracingPatterns[intersectionCase][0] === 1) {
+            fillRegion1Vertices.push(...leg1F);
+            fillRegion1Vertices.push(...leg2F);
+            fillRegion1Vertices.push(...leg4F);
+            sideOfFillRegion1 = 1;
+          } else {
+            fillRegion1Vertices.push(...leg1B);
+            fillRegion1Vertices.push(...leg2B);
+            fillRegion1Vertices.push(...leg4B);
+            sideOfFillRegion1 = -1;
+          }
+          break;
+        }
+        case 1: {
+          if (edgeTracingPatterns[intersectionCase][0] === 1) {
+            //Fill Region 1
+            fillRegion1Vertices.push(...leg4F);
+            fillRegion1Vertices.push(...leg1F);
+            fillRegion1Vertices.push(...leg2F);
+            startOfBoundaryVertex1 = leg2F.slice(-1)[0];
+            endOfBoundaryVertex1 = leg4F.slice(0, 1)[0];
+            sideOfFillRegion1 = 1;
+
+            //Fill region 2
+            fillRegion2Vertices.push(...leg2B);
+            fillRegion2Vertices.push(...leg4B);
+            sideOfFillRegion2 = -1;
+          } else {
+            //Fill Region 1
+            fillRegion1Vertices.push(...leg4B);
+            fillRegion1Vertices.push(...leg1B);
+            fillRegion1Vertices.push(...leg2B);
+            startOfBoundaryVertex1 = leg2B.slice(-1)[0];
+            endOfBoundaryVertex1 = leg4B.slice(0, 1)[0];
+            sideOfFillRegion1 = -1;
+
+            //Fill region 2
+            fillRegion2Vertices.push(...leg2F);
+            fillRegion2Vertices.push(...leg4F);
+            sideOfFillRegion2 = 1;
+          }
+          boundaryVertices1 = Nodule.boundaryCircleCoordinates(
+            startOfBoundaryVertex1,
+            endOfBoundaryVertex1,
+            BOUNDARYCIRCLEEDGESUBDIVISIONS
+          );
+          fillRegion1Vertices.push(...boundaryVertices1);
+          fillRegion2Vertices.push(...boundaryVertices1.reverse());
+          break;
+        }
+        case 2: {
+          if (edgeTracingPatterns[intersectionCase][0] === 1) {
+            //Fill Region 1
+            fillRegion1Vertices.push(...leg2F);
+            fillRegion1Vertices.push(...leg4F);
+            fillRegion1Vertices.push(...leg1F);
+            startOfBoundaryVertex1 = leg1F.slice(-1)[0];
+            endOfBoundaryVertex1 = leg2F.slice(0, 1)[0];
+            sideOfFillRegion1 = 1;
+
+            //Fill region 2
+            fillRegion2Vertices.push(...leg1B);
+            fillRegion2Vertices.push(...leg2B);
+            sideOfFillRegion2 = -1;
+          } else {
+            //Fill Region 1
+            fillRegion1Vertices.push(...leg2B);
+            fillRegion1Vertices.push(...leg4B);
+            fillRegion1Vertices.push(...leg1B);
+            startOfBoundaryVertex1 = leg1B.slice(-1)[0];
+            endOfBoundaryVertex1 = leg2B.slice(0, 1)[0];
+            sideOfFillRegion1 = -1;
+
+            //Fill region 2
+            fillRegion2Vertices.push(...leg1F);
+            fillRegion2Vertices.push(...leg2F);
+            sideOfFillRegion2 = 1;
+          }
+          boundaryVertices1 = Nodule.boundaryCircleCoordinates(
+            startOfBoundaryVertex1,
+            endOfBoundaryVertex1,
+            BOUNDARYCIRCLEEDGESUBDIVISIONS
+          );
+          fillRegion1Vertices.push(...boundaryVertices1);
+          fillRegion2Vertices.push(...boundaryVertices1.reverse());
+          break;
+        }
+        case 3: {
+          if (edgeTracingPatterns[intersectionCase][0] === 1) {
+            //Fill Region 1
+            fillRegion1Vertices.push(...leg3F);
+            fillRegion1Vertices.push(...leg4F);
+            fillRegion1Vertices.push(...leg1F);
+            fillRegion1Vertices.push(...leg2F);
+            startOfBoundaryVertex1 = leg2F.slice(-1)[0];
+            endOfBoundaryVertex1 = leg3F.slice(0, 1)[0];
+            sideOfFillRegion1 = 1;
+
+            //Fill region 2
+            fillRegion2Vertices.push(...leg2B);
+            sideOfFillRegion2 = -1;
+          } else {
+            //Fill Region 1
+            fillRegion1Vertices.push(...leg3B);
+            fillRegion1Vertices.push(...leg4B);
+            fillRegion1Vertices.push(...leg1B);
+            fillRegion1Vertices.push(...leg2B);
+            startOfBoundaryVertex1 = leg2B.slice(-1)[0];
+            endOfBoundaryVertex1 = leg3B.slice(0, 1)[0];
+            sideOfFillRegion1 = -1;
+
+            //Fill region 2
+            fillRegion2Vertices.push(...leg2F);
+            sideOfFillRegion2 = 1;
+          }
+          boundaryVertices1 = Nodule.boundaryCircleCoordinates(
+            startOfBoundaryVertex1,
+            endOfBoundaryVertex1,
+            BOUNDARYCIRCLEEDGESUBDIVISIONS
+          );
+          fillRegion1Vertices.push(...boundaryVertices1);
+          fillRegion2Vertices.push(...boundaryVertices1.reverse());
+          break;
+        }
+        case 4: {
+          if (edgeTracingPatterns[intersectionCase][0] === 1) {
+            //Fill Region 1
+            fillRegion1Vertices.push(...leg1B);
+            fillRegion1Vertices.push(...leg2B);
+            startOfBoundaryVertex1 = leg2B.slice(-1)[0];
+            endOfBoundaryVertex1 = leg1B.slice(0, 1)[0];
+            sideOfFillRegion1 = -1;
+
+            //Fill Region 2
+            fillRegion2Vertices.push(...leg3B);
+            fillRegion2Vertices.push(...leg4B);
+            startOfBoundaryVertex2 = leg4B.slice(-1)[0];
+            endOfBoundaryVertex2 = leg3B.slice(0, 1)[0];
+            sideOfFillRegion2 = -1;
+          } else {
+            //Fill Region 1
+            fillRegion1Vertices.push(...leg1F);
+            fillRegion1Vertices.push(...leg2F);
+            startOfBoundaryVertex1 = leg2F.slice(-1)[0];
+            endOfBoundaryVertex1 = leg1F.slice(0, 1)[0];
+            sideOfFillRegion1 = 1;
+
+            //Fill Region 2
+            fillRegion2Vertices.push(...leg3F);
+            fillRegion2Vertices.push(...leg4F);
+            startOfBoundaryVertex2 = leg4F.slice(-1)[0];
+            endOfBoundaryVertex2 = leg3F.slice(0, 1)[0];
+            sideOfFillRegion2 = 1;
+          }
+          boundaryVertices1 = Nodule.boundaryCircleCoordinates(
+            startOfBoundaryVertex1,
+            endOfBoundaryVertex1,
+            BOUNDARYCIRCLEEDGESUBDIVISIONS / 2
+          );
+          boundaryVertices2 = Nodule.boundaryCircleCoordinates(
+            startOfBoundaryVertex2,
+            endOfBoundaryVertex2,
+            BOUNDARYCIRCLEEDGESUBDIVISIONS / 2
+          );
+          fillRegion1Vertices.push(...boundaryVertices1);
+          fillRegion2Vertices.push(...boundaryVertices2);
+          if (edgeTracingPatterns[intersectionCase][0] === 1) {
+            //Fill Region 3
+            fillRegion3Vertices.push(...leg1F);
+            fillRegion3Vertices.push(...boundaryVertices1.reverse());
+            fillRegion3Vertices.push(...leg2F);
+            fillRegion3Vertices.push(...boundaryVertices2.reverse());
+            fillRegion3Vertices.push(...leg4F);
+            sideOfFillRegion3 = 1;
+          } else {
+            //Fill Region 3
+            fillRegion3Vertices.push(...leg1B);
+            fillRegion3Vertices.push(...boundaryVertices1.reverse());
+            fillRegion3Vertices.push(...leg2B);
+            fillRegion3Vertices.push(...boundaryVertices2.reverse());
+            fillRegion3Vertices.push(...leg4B);
+            sideOfFillRegion3 = -1;
+          }
           break;
         }
       }
     }
-    // // The circle interior is only on the front of the sphere
-    // if (backCircleLen === 0 && this._circleRadius < Math.PI / 2) {
-    //   // In this case the frontFillVertices are the same as the frontVertices
-    //   this.frontFill.vertices.forEach((v: Two.Anchor, index: number) => {
-    //     v.x = this.frontPart.vertices[index].x;
-    //     v.y = this.frontPart.vertices[index].y;
-    //   });
-    //   // Only the front fill is displayed
-    //   this.frontFill.visible = true;
-    //   this.backFill.visible = false;
-    // }
+    // console.log(
+    //   "leg sum",
+    //   leg1F.length +
+    //     leg1B.length +
+    //     leg2F.length +
+    //     leg2B.length +
+    //     leg3F.length +
+    //     leg3B.length +
+    //     leg4F.length +
+    //     leg4B.length,
+    //   2 * CIRCLEEDGESUBDIVISIONS + 4 * STRIAGHTEDGESUBDIVISIONS
+    // );
+    // console.log(
+    //   "sum",
+    //   fillRegion1Vertices.length +
+    //     fillRegion2Vertices.length +
+    //     fillRegion3Vertices.length +
+    //     poolFill.length
+    // );
+    // console.log(
+    //   "alt sum",
+    //   2 * CIRCLEEDGESUBDIVISIONS +
+    //     4 * STRIAGHTEDGESUBDIVISIONS +
+    //     2 * BOUNDARYCIRCLEEDGESUBDIVISIONS
+    // );
 
-    // // The circle interior is split between front and back
-    // if (backCircleLen !== 0 && frontCircleLen !== 0) {
-    //   //} && this.arcRadius < Math.PI / 2) {
-    //   //find the angular width of the part of the boundary circle to be copied
-    //   // Compute the angle from the positive x axis to the last frontPartVertex
-    //   const startAngle = Math.atan2(
-    //     this.frontPart.vertices[frontCircleLen - 1].y,
-    //     this.frontPart.vertices[frontCircleLen - 1].x
-    //   );
+    let anchorsAddedToRegion1 = 0;
+    if (fillRegion1Vertices.length !== 0) {
+      if (sideOfFillRegion1 === 1) {
+        fillRegion1Vertices.forEach(pt => {
+          if (anchorsAddedToRegion1 === this.frontFill1.vertices.length) {
+            // transfer one cell from the common pool
+            this.frontFill1.vertices.push(poolFill.pop()!);
+          }
+          this.frontFill1.vertices[anchorsAddedToRegion1].x = pt[0];
+          this.frontFill1.vertices[anchorsAddedToRegion1].y = pt[1];
+          anchorsAddedToRegion1++;
+        });
+      } else {
+        fillRegion1Vertices.forEach(pt => {
+          if (anchorsAddedToRegion1 === this.backFill1.vertices.length) {
+            // transfer one cell from the common pool
+            this.backFill1.vertices.push(poolFill.pop()!);
+          }
+          this.backFill1.vertices[anchorsAddedToRegion1].x = pt[0];
+          this.backFill1.vertices[anchorsAddedToRegion1].y = pt[1];
+          anchorsAddedToRegion1++;
+        });
+      }
+    }
+    let anchorsAddedToRegion2 = 0;
+    if (fillRegion2Vertices.length !== 0) {
+      if (sideOfFillRegion2 === 1) {
+        fillRegion2Vertices.forEach(pt => {
+          if (anchorsAddedToRegion2 === this.frontFill2.vertices.length) {
+            // transfer one cell from the common pool
+            this.frontFill2.vertices.push(poolFill.pop()!);
+          }
+          this.frontFill2.vertices[anchorsAddedToRegion2].x = pt[0];
+          this.frontFill2.vertices[anchorsAddedToRegion2].y = pt[1];
+          anchorsAddedToRegion2++;
+        });
+      } else {
+        fillRegion2Vertices.forEach(pt => {
+          if (anchorsAddedToRegion2 === this.backFill2.vertices.length) {
+            // transfer one cell from the common pool
+            this.backFill2.vertices.push(poolFill.pop()!);
+          }
+          this.backFill2.vertices[anchorsAddedToRegion2].x = pt[0];
+          this.backFill2.vertices[anchorsAddedToRegion2].y = pt[1];
+          anchorsAddedToRegion2++;
+        });
+      }
+    }
+    let anchorsAddedToRegion3 = 0;
+    if (fillRegion3Vertices.length !== 0) {
+      if (sideOfFillRegion3 === 1) {
+        fillRegion3Vertices.forEach(pt => {
+          if (anchorsAddedToRegion3 === this.frontFill2.vertices.length) {
+            // transfer one cell from the common pool
+            this.frontFill2.vertices.push(poolFill.pop()!);
+          }
+          this.frontFill2.vertices[anchorsAddedToRegion3].x = pt[0];
+          this.frontFill2.vertices[anchorsAddedToRegion3].y = pt[1];
+          anchorsAddedToRegion3++;
+        });
+      } else {
+        fillRegion3Vertices.forEach(pt => {
+          if (anchorsAddedToRegion3 === this.backFill2.vertices.length) {
+            // transfer one cell from the common pool
+            this.backFill2.vertices.push(poolFill.pop()!);
+          }
+          this.backFill2.vertices[anchorsAddedToRegion3].x = pt[0];
+          this.backFill2.vertices[anchorsAddedToRegion3].y = pt[1];
+          anchorsAddedToRegion3++;
+        });
+      }
+    }
 
-    //   // Compute the angle from the positive x axis to the first frontPartVertex
-    //   const endAngle = Math.atan2(
-    //     this.frontPart.vertices[0].y,
-    //     this.frontPart.vertices[0].x
-    //   );
-
-    //   // Compute the angular width of the section of the boundary circle to add to the front/back fill
-    //   // This can be positive if traced counterclockwise or negative if traced clockwise( add 2 Pi to make positive)
-    //   let angularWidth = endAngle - startAngle;
-    //   if (angularWidth < 0) {
-    //     angularWidth += 2 * Math.PI;
-    //   }
-    //   //console.log(angularWidth);
-    //   // When tracing the boundary circle we start from fromVector = this.frontPart.vertices[frontCircleLen - 1]
-    //   const fromVector = new Two.Vector(
-    //     this.frontPart.vertices[frontCircleLen - 1].x,
-    //     this.frontPart.vertices[frontCircleLen - 1].y
-    //   );
-    //   // then
-    //   // trace in the direction of a toVector that is perpendicular to this.frontPart.vertices[frontCircleLen - 1]
-    //   // and points in the same direction as this.frontPart.vertices[0]
-    //   const toVector = new Two.Vector(
-    //     -this.frontPart.vertices[frontCircleLen - 1].y,
-    //     this.frontPart.vertices[frontCircleLen - 1].x
-    //   );
-    //   if (toVector.dot(this.frontPart.vertices[0]) < 0) {
-    //     toVector.multiplyScalar(-1);
-    //   }
-
-    //   // If the arcRadius is bigger than Pi/2 then reverse the toVector
-    //   if (this._circleRadius > Math.PI / 2) {
-    //     toVector.multiplyScalar(-1);
-    //   }
-
-    //   // Build the frontFill
-    //   // First copy the frontPart into the first part of the frontFill
-    //   this.frontFill.vertices.forEach((v: Two.Anchor, index: number) => {
-    //     if (index < frontCircleLen) {
-    //       v.x = this.frontPart.vertices[index].x;
-    //       v.y = this.frontPart.vertices[index].y;
-    //     } else {
-    //       const angle =
-    //         (angularWidth / (SUBDIVISIONS - 1 - frontCircleLen)) *
-    //         (index - frontCircleLen);
-    //       v.x = Math.cos(angle) * fromVector.x + Math.sin(angle) * toVector.x;
-    //       v.y = Math.cos(angle) * fromVector.y + Math.sin(angle) * toVector.y;
-    //     }
-    //   });
-
-    //   // Build the backFill
-    //   // First copy the backPart into the first part of the backFill
-    //   this.backFill.vertices.forEach((v: Two.Anchor, index: number) => {
-    //     if (index < backCircleLen) {
-    //       v.x = this.backPart.vertices[backCircleLen - 1 - index].x;
-    //       v.y = this.backPart.vertices[backCircleLen - 1 - index].y;
-    //     } else {
-    //       const angle =
-    //         (angularWidth / (SUBDIVISIONS - 1 - backCircleLen)) *
-    //         (index - backCircleLen);
-    //       v.x = Math.cos(angle) * fromVector.x + Math.sin(angle) * toVector.x;
-    //       v.y = Math.cos(angle) * fromVector.y + Math.sin(angle) * toVector.y;
-    //     }
-    //   });
-    //   // console.log("front", frontCircleLen, "back", backCircleLen);
-
-    //   // Display front and back
-    //   this.frontFill.visible = true;
-    //   this.backFill.visible = true;
-    // }
-
-    // // The circle interior is only on the back of the sphere
-    // if (frontCircleLen === 0 && this._circleRadius < Math.PI / 2) {
-    //   // The circle interior is only on the back of the sphere
-    //   // In this case the backFillVertices are the same as the backVertices
-    //   this.backFill.vertices.forEach((v: Two.Anchor, index: number) => {
-    //     v.x = this.backPart.vertices[index].x;
-    //     v.y = this.backPart.vertices[index].y;
-    //   });
-    //   // Only the back fill is displayed
-    //   this.frontFill.visible = false;
-    //   this.backFill.visible = true;
-    // }
-
-    // // The circle interior covers the entire front half of the sphere and is a 'hole' on the back
-    // if (frontCircleLen === 0 && this._circleRadius > Math.PI / 2) {
-    //   // In this case set the frontFillVertices to the entire front of the sphere
-    //   this.frontFill.vertices.forEach((v: Two.Anchor, index: number) => {
-    //     const angle = (index / SUBDIVISIONS) * 2 * Math.PI;
-    //     v.x = SETTINGS.boundaryCircle.radius * Math.cos(angle);
-    //     v.y = SETTINGS.boundaryCircle.radius * Math.sin(angle);
-    //   });
-
-    //   // In this case the backFillVertices must trace out first the boundary circle and then
-    //   //  the circle, to trace an annular region.  To help with the rendering, start tracing
-    //   //  the boundary circle directly across from the vertex on the circle at index zero
-    //   const backStartTrace = Math.atan2(
-    //     this.backPart.vertices[0].y,
-    //     this.backPart.vertices[0].x
-    //   );
-
-    //   this.backFill.vertices.forEach((v: Two.Anchor, index: number) => {
-    //     if (index <= Math.floor(SUBDIVISIONS / 2) - 2) {
-    //       const angle = -((2 * index) / SUBDIVISIONS) * 2 * Math.PI; //must trace in the opposite direction on the back to render the annular region
-    //       v.x =
-    //         SETTINGS.boundaryCircle.radius * Math.cos(angle + backStartTrace);
-    //       v.y =
-    //         SETTINGS.boundaryCircle.radius * Math.sin(angle + backStartTrace);
-    //       //console.log(index, angle);
-    //     } else if (index == Math.floor(SUBDIVISIONS / 2) - 1) {
-    //       //make sure the last point on the boundary is the same as the first
-    //       v.x = SETTINGS.boundaryCircle.radius * Math.cos(0 + backStartTrace);
-    //       v.y = SETTINGS.boundaryCircle.radius * Math.sin(0 + backStartTrace);
-    //       //console.log(index, 0);
-    //     } else if (
-    //       Math.floor(SUBDIVISIONS / 2) <= index &&
-    //       index <= SUBDIVISIONS - 2
-    //     ) {
-    //       v.x = this.backPart.vertices[
-    //         2 * (index - Math.floor(SUBDIVISIONS / 2))
-    //       ].x;
-    //       v.y = this.backPart.vertices[
-    //         2 * (index - Math.floor(SUBDIVISIONS / 2))
-    //       ].y;
-    //       //console.log(index, Math.atan2(v.y, v.x));
-    //     } else if (index == SUBDIVISIONS - 1) {
-    //       // make sure the last point on the (inner) circle is the same as the first
-    //       v.x = this.backPart.vertices[0].x;
-    //       v.y = this.backPart.vertices[0].y;
-    //       //console.log(index, Math.atan2(v.y, v.x));
-    //     }
-    //   });
-
-    //   // Both front/back fill are displayed
-    //   this.frontFill.visible = true;
-    //   this.backFill.visible = true;
-    // }
-
-    // // The circle interior covers the entire back half of the sphere and is a 'hole' on the front
-    // if (backCircleLen === 0 && this._circleRadius > Math.PI / 2) {
-    //   // In this case set the frontFillVertices to the entire front of the sphere
-    //   this.backFill.vertices.forEach((v: Two.Anchor, index: number) => {
-    //     const angle = (index / SUBDIVISIONS) * 2 * Math.PI;
-    //     v.x = SETTINGS.boundaryCircle.radius * Math.cos(angle);
-    //     v.y = SETTINGS.boundaryCircle.radius * Math.sin(angle);
-    //   });
-
-    //   // In this case the backFillVertices must trace out first the boundary circle and then
-    //   //  the circle, to trace an annular region.  To help with the rendering, start tracing
-    //   //  the boundary circle directly across from the vertex on the circle at index zero
-    //   const frontStartTrace = Math.atan2(
-    //     this.frontPart.vertices[0].y,
-    //     this.frontPart.vertices[0].x
-    //   );
-
-    //   this.frontFill.vertices.forEach((v: Two.Anchor, index: number) => {
-    //     if (index <= Math.floor(SUBDIVISIONS / 2) - 2) {
-    //       const angle = ((2 * index) / SUBDIVISIONS) * 2 * Math.PI;
-    //       v.x =
-    //         SETTINGS.boundaryCircle.radius * Math.cos(angle + frontStartTrace);
-    //       v.y =
-    //         SETTINGS.boundaryCircle.radius * Math.sin(angle + frontStartTrace);
-    //     } else if (index == Math.floor(SUBDIVISIONS / 2) - 1) {
-    //       //make sure the last point on the boundary is the same as the first
-    //       v.x = SETTINGS.boundaryCircle.radius * Math.cos(0 + frontStartTrace);
-    //       v.y = SETTINGS.boundaryCircle.radius * Math.sin(0 + frontStartTrace);
-    //     } else if (
-    //       Math.floor(SUBDIVISIONS / 2) <= index &&
-    //       index <= SUBDIVISIONS - 2
-    //     ) {
-    //       v.x = this.frontPart.vertices[
-    //         2 * (index - Math.floor(SUBDIVISIONS / 2))
-    //       ].x;
-    //       v.y = this.frontPart.vertices[
-    //         2 * (index - Math.floor(SUBDIVISIONS / 2))
-    //       ].y;
-    //     } else if (index == SUBDIVISIONS - 1) {
-    //       // make sure the last point on the (inner) circle is the same as the first
-    //       v.x = this.frontPart.vertices[0].x;
-    //       v.y = this.frontPart.vertices[0].y;
-    //     }
-    //   });
-
-    //   // Both front/back fill are displayed
-    //   this.frontFill.visible = true;
-    //   this.backFill.visible = true;
-    // }
-  }
-  /**
-   * pt1 and pt2 are points on the boundary of the display circle
-   * this method returns an ordered list of numPoints points from pt1 to pt2 along the
-   * boundary circle so that that the angle subtended at the origin between
-   * any two of them is equal and equal to the angle between the first returned to pt1 and
-   * equal to the angle between the last returned and pt2
-   */
-  private boundryCircleCoordinates(
-    pt1: number[],
-    pt2: number[],
-    numPoints: number
-  ): number[] {
-    // first use atan2 to figure out the angle from pt1 to pt2
-    const angularLength = Math.atan2();
-    return [];
+    // if there are leftover anchors in the poolFill store them in fillStorageAnchors
+    this.fillStorageAnchors.push(...poolFill.splice(0));
   }
 
   /**
@@ -1386,10 +1750,17 @@ export default class AngleMarker extends Nodule {
     this.frontCirclePathTail.visible = true;
     this.frontStraightStart.visible = true;
     this.frontStraightEnd.visible = true;
+
+    this.frontFill1.visible =
+      this.frontFill1.vertices.length > 0 ? true : false;
+    this.frontFill2.visible =
+      this.frontFill2.vertices.length > 0 ? true : false;
+
     this.glowingFrontCirclePathStart.visible = true;
     this.glowingFrontCirclePathTail.visible = true;
     this.glowingFrontStraightStart.visible = true;
     this.glowingFrontStraightEnd.visible = true;
+
     if (this._angleMarkerDoubleArc) {
       this.frontCirclePathDoubleArcStart.visible = true;
       this.frontCirclePathDoubleArcTail.visible = true;
@@ -1407,10 +1778,15 @@ export default class AngleMarker extends Nodule {
     this.backCirclePathTail.visible = true;
     this.backStraightStart.visible = true;
     this.backStraightEnd.visible = true;
+
+    this.backFill1.visible = this.backFill1.vertices.length > 0 ? true : false;
+    this.backFill2.visible = this.backFill2.vertices.length > 0 ? true : false;
+
     this.glowingBackCirclePathStart.visible = true;
     this.glowingBackCirclePathTail.visible = true;
     this.glowingBackStraightStart.visible = true;
     this.glowingBackStraightEnd.visible = true;
+
     if (this._angleMarkerDoubleArc) {
       this.backCirclePathDoubleArcStart.visible = true;
       this.backCirclePathDoubleArcTail.visible = true;
@@ -1432,10 +1808,17 @@ export default class AngleMarker extends Nodule {
     this.frontCirclePathTail.visible = true;
     this.frontStraightStart.visible = true;
     this.frontStraightEnd.visible = true;
+
+    this.frontFill1.visible =
+      this.frontFill1.vertices.length > 0 ? true : false;
+    this.frontFill2.visible =
+      this.frontFill2.vertices.length > 0 ? true : false;
+
     this.glowingFrontCirclePathStart.visible = false;
     this.glowingFrontCirclePathTail.visible = false;
     this.glowingFrontStraightStart.visible = false;
     this.glowingFrontStraightEnd.visible = false;
+
     if (this._angleMarkerDoubleArc) {
       this.frontCirclePathDoubleArcStart.visible = true;
       this.frontCirclePathDoubleArcTail.visible = true;
@@ -1453,10 +1836,15 @@ export default class AngleMarker extends Nodule {
     this.backCirclePathTail.visible = true;
     this.backStraightStart.visible = true;
     this.backStraightEnd.visible = true;
+
+    this.backFill1.visible = this.backFill1.vertices.length > 0 ? true : false;
+    this.backFill2.visible = this.backFill2.vertices.length > 0 ? true : false;
+
     this.glowingBackCirclePathStart.visible = false;
     this.glowingBackCirclePathTail.visible = false;
     this.glowingBackStraightStart.visible = false;
     this.glowingBackStraightEnd.visible = false;
+
     if (this._angleMarkerDoubleArc) {
       this.backCirclePathDoubleArcStart.visible = true;
       this.backCirclePathDoubleArcTail.visible = true;
@@ -1484,6 +1872,11 @@ export default class AngleMarker extends Nodule {
       this.frontStraightEnd.visible = false;
       this.backStraightStart.visible = false;
       this.backStraightEnd.visible = false;
+
+      this.frontFill1.visible = false;
+      this.frontFill2.visible = false;
+      this.backFill1.visible = false;
+      this.backFill2.visible = false;
 
       this.frontCirclePathDoubleArcStart.visible = false;
       this.frontCirclePathDoubleArcTail.visible = false;
@@ -1713,6 +2106,27 @@ export default class AngleMarker extends Nodule {
       );
     }
 
+    // #frontFill1 + #frontFill2 + #backFill1 + #backFill2 + #storage = constant at all times
+    const poolFill = [];
+    poolFill.push(...dup.frontFill1.vertices.splice(0));
+    poolFill.push(...dup.frontFill2.vertices.splice(0));
+    poolFill.push(...dup.backFill1.vertices.splice(0));
+    poolFill.push(...dup.backFill2.vertices.splice(0));
+    poolFill.push(...dup.fillStorageAnchors.splice(0));
+    while (dup.frontFill1.vertices.length < this.frontFill1.vertices.length) {
+      dup.frontFill1.vertices.push(poolFill.pop()!);
+    }
+    while (dup.frontFill2.vertices.length < this.frontFill2.vertices.length) {
+      dup.frontFill2.vertices.push(poolFill.pop()!);
+    }
+    while (dup.backFill1.vertices.length < this.backFill1.vertices.length) {
+      dup.backFill1.vertices.push(poolFill.pop()!);
+    }
+    while (dup.backFill2.vertices.length < this.backFill2.vertices.length) {
+      dup.backFill2.vertices.push(poolFill.pop()!);
+    }
+    dup.fillStorageAnchors.push(...poolFill.splice(0));
+
     // Second remove (if necessary) vertices from the frontCirclePath to backCirclePath
     while (
       dup.frontCirclePathStart.vertices.length <
@@ -1905,16 +2319,18 @@ export default class AngleMarker extends Nodule {
       }
     );
 
-    // //Clone the front/back fill
-    // dup.frontFill.vertices.forEach((v: Two.Anchor, pos: number) => {
-    //   v.copy(this.frontFill.vertices[pos]);
-    // });
-    // dup.backFill.vertices.forEach((v: Two.Anchor, pos: number) => {
-    //   v.copy(this.backFill.vertices[pos]);
-    // });
-    // // Clone the visibility of the front/back fill
-    // dup.frontFill.visible = this.frontFill.visible;
-    // dup.backFill.visible = this.backFill.visible;
+    dup.frontFill1.vertices.forEach((v: Two.Anchor, pos: number) => {
+      v.copy(this.frontFill1.vertices[pos]);
+    });
+    dup.frontFill2.vertices.forEach((v: Two.Anchor, pos: number) => {
+      v.copy(this.frontFill2.vertices[pos]);
+    });
+    dup.backFill1.vertices.forEach((v: Two.Anchor, pos: number) => {
+      v.copy(this.backFill1.vertices[pos]);
+    });
+    dup.backFill2.vertices.forEach((v: Two.Anchor, pos: number) => {
+      v.copy(this.backFill2.vertices[pos]);
+    });
 
     return dup as this;
   }
@@ -1940,6 +2356,9 @@ export default class AngleMarker extends Nodule {
     this.glowingFrontCirclePathDoubleArcStart.addTo(
       layers[LAYER.foregroundAngleMarkersGlowing]
     );
+    this.frontFill1.addTo(layers[LAYER.foregroundAngleMarkers]);
+    this.frontFill2.addTo(layers[LAYER.foregroundAngleMarkers]);
+
     // this.backFill.addTo(layers[LAYER.background]);
     this.backCirclePathStart.addTo(layers[LAYER.backgroundAngleMarkers]);
     this.glowingBackCirclePathStart.addTo(
@@ -1985,6 +2404,8 @@ export default class AngleMarker extends Nodule {
     this.glowingBackCirclePathDoubleArcTail.addTo(
       layers[LAYER.backgroundAngleMarkersGlowing]
     );
+    this.backFill1.addTo(layers[LAYER.backgroundAngleMarkers]);
+    this.backFill2.addTo(layers[LAYER.backgroundAngleMarkers]);
   }
   removeFromLayers(): void {
     this.frontCirclePathStart.remove();
@@ -2016,6 +2437,11 @@ export default class AngleMarker extends Nodule {
     this.glowingFrontStraightEnd.remove();
     this.backStraightEnd.remove();
     this.glowingBackStraightEnd.remove();
+
+    this.frontFill1.remove();
+    this.frontFill2.remove();
+    this.backFill1.remove();
+    this.backFill2.remove();
   }
   /**
    * Copies the style options set by the Style Panel into the style variables and then updates the
@@ -2330,12 +2756,20 @@ export default class AngleMarker extends Nodule {
         // Use the SETTINGS temporary options to directly modify the Two.js objects.
 
         //FRONT
-        // if (SETTINGS.angleMarker.temp.fillColor.front === "noFill") {
-        //   this.frontFill.noFill();
-        // } else {
-        //   this.frontGradientColor.color = SETTINGS.angleMarker.temp.fillColor.front;
-        //   this.frontFill.fill = this.frontGradient;
-        // }
+        if (SETTINGS.angleMarker.temp.fillColor.front === "noFill") {
+          this.frontFill1.noFill();
+          this.frontFill2.noFill();
+        } else {
+          // If shading is used
+          // this.frontGradientColor.color =
+          //   SETTINGS.angleMarker.temp.fillColor.front;
+          // this.frontFill1.fill = this.frontGradient;
+          // this.frontFill2.fill = this.frontGradient;
+
+          //If shading is not used
+          this.frontFill1.fill = SETTINGS.angleMarker.temp.fillColor.front;
+          this.frontFill2.fill = SETTINGS.angleMarker.temp.fillColor.front;
+        }
         if (SETTINGS.angleMarker.temp.strokeColor.front === "noStroke") {
           this.frontCirclePathStart.noStroke();
           this.frontCirclePathTail.noStroke();
@@ -2370,12 +2804,20 @@ export default class AngleMarker extends Nodule {
           });
         }
         //BACK
-        // if (SETTINGS.angleMarker.temp.fillColor.back === "noFill") {
-        //   this.backFill.noFill();
-        // } else {
-        //   this.backGradientColor.color = SETTINGS.angleMarker.temp.fillColor.back;
-        //   this.backFill.fill = this.backGradient;
-        // }
+        if (SETTINGS.angleMarker.temp.fillColor.back === "noFill") {
+          this.backFill1.noFill();
+          this.backFill2.noFill();
+        } else {
+          // If shading is used
+          // this.backGradientColor.color =
+          //   SETTINGS.angleMarker.temp.fillColor.back;
+          // this.backFill1.fill = this.backGradient;
+          // this.backFill2.fill = this.backGradient;
+
+          //If shading is not used
+          this.backFill1.fill = SETTINGS.angleMarker.temp.fillColor.back;
+          this.backFill2.fill = SETTINGS.angleMarker.temp.fillColor.back;
+        }
         if (SETTINGS.angleMarker.temp.strokeColor.back === "noStroke") {
           this.backCirclePathStart.noStroke();
           this.backCirclePathTail.noStroke();
@@ -2436,12 +2878,19 @@ export default class AngleMarker extends Nodule {
         // Use the current variables to directly modify the Two.js objects.
 
         // FRONT
-        // if (this.fillColorFront === "noFill") {
-        //   this.frontFill.noFill();
-        // } else {
-        //   this.frontGradientColor.color = this.fillColorFront;
-        //   this.frontFill.fill = this.frontGradient;
-        // }
+        if (this.fillColorFront === "noFill") {
+          this.frontFill1.noFill();
+          this.frontFill2.noFill();
+        } else {
+          // If the angle markers are shaded like circles
+          //this.frontGradientColor.color = this.fillColorFront;
+          // this.frontFill1.fill = this.frontGradient;
+          // this.frontFill2.fill = this.frontGradient;
+
+          // If the angle markers are not shaded
+          this.frontFill1.fill = this.fillColorFront;
+          this.frontFill2.fill = this.fillColorFront;
+        }
 
         if (this.strokeColorFront === "noStroke") {
           this.frontCirclePathStart.noStroke();
@@ -2483,23 +2932,37 @@ export default class AngleMarker extends Nodule {
           this.frontCirclePathDoubleArcTail.dashes.push(0);
         }
         // BACK
-        // if (this.dynamicBackStyle) {
-        //   if (Nodule.contrastFillColor(this.fillColorFront) === "noFill") {
-        //     this.backFill.noFill();
-        //   } else {
-        //     this.backGradientColor.color = Nodule.contrastFillColor(
-        //       this.fillColorFront
-        //     );
-        //     this.backFill.fill = this.backGradient;
-        //   }
-        // } else {
-        //   if (this.fillColorBack === "noFill") {
-        //     this.backFill.noFill();
-        //   } else {
-        //     this.backGradientColor.color = this.fillColorBack;
-        //     this.backFill.fill = this.backGradient;
-        //   }
-        // }
+        if (this.dynamicBackStyle) {
+          if (Nodule.contrastFillColor(this.fillColorFront) === "noFill") {
+            this.backFill1.noFill();
+            this.backFill2.noFill();
+          } else {
+            // If the anglemarkers are shaded
+            // this.backGradientColor.color = Nodule.contrastFillColor(
+            //   this.fillColorFront
+            // );
+            // this.backFill1.fill = this.backGradient;
+            // this.backFill2.fill = this.backGradient;
+
+            // If the angle markers are not shaded
+            this.backFill1.fill = Nodule.contrastFillColor(this.fillColorFront);
+            this.backFill2.fill = Nodule.contrastFillColor(this.fillColorFront);
+          }
+        } else {
+          if (this.fillColorBack === "noFill") {
+            this.backFill1.noFill();
+            this.backFill2.noFill();
+          } else {
+            // If the angle markers are shaded
+            // this.backGradientColor.color = this.fillColorBack;
+            // this.backFill1.fill = this.backGradient;
+            // this.backFill2.fill = this.backGradient;
+
+            // If the angle markers are not shaded
+            this.backFill1.fill = this.fillColorBack;
+            this.backFill2.fill = this.fillColorBack;
+          }
+        }
 
         if (this.dynamicBackStyle) {
           if (

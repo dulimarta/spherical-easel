@@ -4,11 +4,14 @@ import { Resizeable } from "./Resizeable";
 import SETTINGS from "@/global-settings";
 import { StyleOptions, StyleEditPanels } from "@/types/Styles";
 import { hslaColorType } from "@/types";
+import { Vector3 } from "three";
 
 export enum DisplayStyle {
   ApplyTemporaryVariables,
   ApplyCurrentVariables
 }
+
+const tmpVector = new Vector3();
 
 /**
  * A Nodule consists of one or more TwoJS(SVG) elements
@@ -58,6 +61,51 @@ export default abstract class Nodule implements Stylable, Resizeable {
    * an updated object will be rendered correctly
    */
   abstract updateDisplay(): void;
+
+  /**
+   * pt1 and pt2 are different points on the boundary of the display circle,
+   * this method returns an ordered list of numPoints points from pt1 to pt2 along the
+   * boundary circle so that that the angle subtended at the origin between
+   * any two of them is equal and equal to the angle between the first returned to pt1 and
+   * equal to the angle between the last returned and pt2. pt1 and pt2 are always assumed to be less than Pi angle apart
+   */
+  static boundaryCircleCoordinates(
+    pt1: number[],
+    pt2: number[],
+    numPoints: number
+  ): number[][] {
+    if (pt1 === undefined || pt2 === undefined) {
+      return [];
+    }
+    // first figure out the angle from pt1 to pt2
+    const vec1 = new Vector3(pt1[0], pt1[1], 0).normalize();
+    const vec2 = new Vector3(pt2[0], pt2[1], 0).normalize();
+    const angularLength = vec1.angleTo(vec2);
+
+    // now set up a coordinate frame where the x-axis is vec1 and the y-axis is perpendicular to vec but in the same direction as vec2 (i.e. vec2.yAxis > 0)
+    const yAxis = new Vector3(-vec1.y, vec1.x, 0);
+    if (yAxis.dot(vec2) < 0) {
+      yAxis.multiplyScalar(-1);
+    }
+    const returnArray = [];
+
+    for (let i = 0; i < numPoints; i++) {
+      tmpVector.set(0, 0, 0);
+      tmpVector.addScaledVector(
+        vec1,
+        Math.cos((i + 1) * (angularLength / (numPoints + 1)))
+      );
+      tmpVector.addScaledVector(
+        yAxis,
+        Math.sin((i + 1) * (angularLength / (numPoints + 1)))
+      );
+      // now scale to the radius of the boundary circle
+      tmpVector.normalize().multiplyScalar(SETTINGS.boundaryCircle.radius);
+
+      returnArray.push([tmpVector.x, tmpVector.y]);
+    }
+    return returnArray;
+  }
 
   static setBackStyleContrast(contrast: number): void {
     this.backStyleContrast = contrast;
