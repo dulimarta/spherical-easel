@@ -199,6 +199,10 @@
     "labelBackFillColor": "Label Back Fill Color",
     "pointRadiusPercent": "Point Radius",
     "angleMarkerRadiusPercent": "Angle Marker Radius",
+    "angleMarkerDecorations": "Angle Marker Decorations",
+    "angleMarkerDoubleArc": "Double Arc",
+    "angleMarkerTickMark": "Tick Mark",
+
     "strokeColor": "Stroke Color",
     "strokeWidthPercent": "Stroke Width",
     "dynamicBackStyle": "Dynamic Back Style",

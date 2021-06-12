@@ -1818,7 +1818,6 @@ export default class AngleMarker extends Nodule {
     this.glowingFrontCirclePathTail.visible = false;
     this.glowingFrontStraightStart.visible = false;
     this.glowingFrontStraightEnd.visible = false;
-
     if (this._angleMarkerDoubleArc) {
       this.frontCirclePathDoubleArcStart.visible = true;
       this.frontCirclePathDoubleArcTail.visible = true;
@@ -2456,6 +2455,7 @@ export default class AngleMarker extends Nodule {
 
     if (options.angleMarkerTickMark !== undefined) {
       this._angleMarkerTickMark = options.angleMarkerTickMark;
+      console.log("Angle Marker Tick Marks Not Implemented Yet!");
     }
 
     if (options.angleMarkerDoubleArc !== undefined) {
@@ -2506,9 +2506,10 @@ export default class AngleMarker extends Nodule {
         }
       }
     }
-    // Now apply the style and size
-    this.stylize(DisplayStyle.ApplyCurrentVariables);
-    this.adjustSize();
+    // Now apply the style and size and decoration display
+    this.stylize(DisplayStyle.ApplyCurrentVariables); // applies the colors and stroke size changes
+    this.adjustSize(); // applies the radius changes
+    this.setVisible(true); // applies the decoration changes (we know that the angle marker is visible because the style panel won't let you edit hidden objects)
   }
   /**
    * Return the current style state

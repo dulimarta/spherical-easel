@@ -201,6 +201,49 @@
         </NumberSelector>
       </fade-in-card>
 
+      <!-- Angle Marker Decoration Selector -->
+      <fade-in-card :showWhen="
+        editModeIsFront() && hasAngleMarkerDecoration && showMoreLabelStyles
+      ">
+        <v-select v-model="angleMarkerDecorations"
+          v-bind:label="$t('style.angleMarkerDecorations')"
+          :items="angleMarkerDecorationItems"
+          filled
+          outlined
+          small-chips
+          dense
+          multiple
+          @blur="setAngleMarkerDecorationChange(); onAngleMarkerDecorationChanged()"
+          @change="setAngleMarkerDecorationChange(); onAngleMarkerDecorationChanged()">
+        </v-select>
+
+        <!-- Undo and Reset to Defaults buttons -->
+        <v-container class="pa-0 ma-0">
+          <v-row justify="end"
+            no-gutters>
+            <v-col cols="2"
+              class="ma-0 pl-0 pr-0 pt-0 pb-2">
+              <HintButton @click="clearAngleMarkerDecorations"
+                :disabled="disableAngleMarkerDecorationsUndoButton"
+                type="undo"
+                i18n-label="style.clearChanges"
+                i18n-tooltip="style.clearChangesToolTip">
+              </HintButton>
+            </v-col>
+
+            <v-col cols="2"
+              class="ma-0 pl-0 pr-0 pt-0 pb-2">
+              <HintButton @click="resetAngleMarkerDecorationsToDefaults"
+                type="default"
+                i18n-label="style.restoreDefaults"
+                i18n-tooltip="style.restoreDefaultsToolTip">
+              </HintButton>
+            </v-col>
+          </v-row>
+        </v-container>
+
+      </fade-in-card>
+
       <!-- Front/Back Dash array card is displayed for front and back so long as there is a dash array property common to all selected objects-->
       <fade-in-card
         :showWhen="(hasDashPattern) && (editModeIsFront() || editModeIsBack()) && showMoreLabelStyles">
@@ -505,6 +548,22 @@ export default class FrontBackStyle extends Vue {
     "80%",
     "100%"
   ];
+
+  private angleMarkerDecorations: string[] | undefined = [];
+  private angleMarkerDecorationItems = [
+    {
+      text: i18n.t("style.angleMarkerTickMark"),
+      value: "tickMark"
+    },
+    {
+      text: i18n.t("style.angleMarkerDoubleArc"),
+      value: "doubleArc"
+    }
+  ];
+  private angleMarkerDecorationChange = false;
+  private angleMarkerDecorationsAgreement = true;
+  private disableAngleMarkerDecorationsUndoButton = true;
+  private totalyDisableAngleMarkerDecorationsSelector = false;
 
   private hslaStrokeColorObject: hslaColorType = { h: 0, s: 1, l: 1, a: 0.001 }; // Color for Vuetify Color picker NOTE: setting a=0 creates the following error:
   // create a circle, open the style panel, select the circle when the basic panel is open, switch to the foreground panel, the selected circle has a displayed opacity of 0 --
@@ -964,23 +1023,133 @@ export default class FrontBackStyle extends Vue {
     ) {
       this.usingDynamicBackStyle = false;
     }
-
-    // console.log("useDBS from user input", this.usingDynamicBackStyle);
-    // console.log("DBS Agree", this.usingDynamicBackStyleAgreement);
-    // console.log("DBS common Value", this.usingDynamicBackStyleCommonValue);
-    // console.log(
-    //   "logic useDBS from user input || (DBS Agre && ! DBS common Value)",
-    //   this.usingDynamicBackStyle ||
-    //     (this.usingDynamicBackStyleAgreement &&
-    //       (this.usingDynamicBackStyleAgreement === true
-    //         ? !this.usingDynamicBackStyleCommonValue
-    //         : true))
-    // );
   }
   disableDynamicBackStyleSelector(totally: boolean): void {
     this.usingDynamicBackStyleAgreement = false;
     this.usingDynamicBackStyle = true;
     this.totallyDisableDynamicBackStyleSelector = totally;
+  }
+
+  // These methods are linked to the angle marker decoration fade-in-card
+  resetAngleMarkerDecorationsToDefaults(): void {
+    const selected = this.$store.getters.selectedSENodules() as SENodule[];
+    const defaultStyleStates = this.$store.getters.getDefaultStyleState(
+      StyleEditPanels.Front
+    );
+
+    for (let i = 0; i < selected.length; i++) {
+      this.$store.direct.commit.changeStyle({
+        selected: [selected[i]],
+        payload: {
+          panel: StyleEditPanels.Front,
+          angleMarkerTickMark: defaultStyleStates[i].angleMarkerTickMark,
+          angleMarkerDoubleArc: defaultStyleStates[i].angleMarkerDoubleArc
+        }
+      });
+    }
+    this.setAngleMarkerDecorationSelectorState(defaultStyleStates);
+  }
+  clearAngleMarkerDecorations(): void {
+    const selected = this.$store.getters.selectedSENodules() as SENodule[];
+
+    const initialStyleStates = this.$store.getters.getInitialStyleState(
+      StyleEditPanels.Label
+    );
+    for (let i = 0; i < selected.length; i++) {
+      this.$store.direct.commit.changeStyle({
+        selected: [selected[i]],
+        payload: {
+          panel: StyleEditPanels.Front,
+          angleMarkerTickMark: initialStyleStates[i].angleMarkerTickMark,
+          angleMarkerDoubleArc: initialStyleStates[i].angleMarkerDoubleArc
+        }
+      });
+    }
+    this.setAngleMarkerDecorationSelectorState(initialStyleStates);
+  }
+  onAngleMarkerDecorationChanged(): void {
+    this.disableAngleMarkerDecorationsUndoButton = false;
+
+    const selected = this.$store.getters.selectedSENodules() as SENodule[];
+
+    const angleMarkerDoubleArcDisplay =
+      this.angleMarkerDecorations?.findIndex(x => x === "doubleArc") === -1
+        ? false
+        : true;
+    const angleMarkerTickMarkDisplay =
+      this.angleMarkerDecorations?.findIndex(x => x === "tickMark") === -1
+        ? false
+        : true;
+
+    // if there has been some change then change the style
+    if (this.angleMarkerDecorationChange) {
+      this.$store.direct.commit.changeStyle({
+        selected: selected,
+        payload: {
+          panel: StyleEditPanels.Front,
+          angleMarkerTickMark: angleMarkerTickMarkDisplay,
+          angleMarkerDoubleArc: angleMarkerDoubleArcDisplay
+        }
+      });
+    }
+    this.angleMarkerDecorationChange = false;
+  }
+  setAngleMarkerDecorationSelectorState(styleState: StyleOptions[]): void {
+    this.disableAngleMarkerDecorationsUndoButton = true;
+    this.angleMarkerDecorationsAgreement = true;
+    this.totalyDisableAngleMarkerDecorationsSelector = false;
+    // Make sure that across the selected objects all 8 properties are defined and agree
+    //   If one property on one selected is undefined, then set styleDataAgreement=false, and totalyDisableStyleDataSelector = true
+    //   If all properties are defined,but one property doesn't agree across all selected then set styleDataAgreement=false, and totalyDisableStyleDataSelector = false
+    // start at 1 because the first styleState always agress with itself -- in the case of only one object selected, this shouldn't execute
+    for (var style of ["angleMarkerTickMark", "angleMarkerDoubleArc"]) {
+      // Record the value of the style on the first style state
+      let value = (styleState[0] as any)[style];
+      // screen for undefined - if undefined then this is not a property that is going to be set by the style panel for this selection of objects
+      if (value !== undefined) {
+        if (
+          styleState.length > 1 &&
+          !styleState.every(
+            styleObject => (styleObject as any)[style] === value
+          )
+        ) {
+          // The style property exists on the selected objects but value
+          // doesn't agree (so don't totally disable the selector)
+          this.disableAnglerMarkerDecorationsSelector(false);
+          break;
+        }
+        // If the execution reaches here, the style exists on all style states and is the same in all style states
+      } else {
+        // The style property doesn't exists on the selected objects so totally disable the selector
+        this.disableAnglerMarkerDecorationsSelector(true);
+        break;
+      }
+    }
+    // Now set the displays of the angle Marker Decorations array)
+    if (
+      !this.totalyDisableAngleMarkerDecorationsSelector &&
+      this.angleMarkerDecorationsAgreement
+    ) {
+      if ((styleState[0] as StyleOptions).angleMarkerTickMark) {
+        this.angleMarkerDecorations!.push("tickMark");
+      }
+      if ((styleState[0] as StyleOptions).angleMarkerDoubleArc) {
+        this.angleMarkerDecorations!.push("doubleArc");
+      }
+    }
+  }
+  disableAnglerMarkerDecorationsSelector(totally: boolean): void {
+    this.angleMarkerDecorationsAgreement = false;
+    this.disableAngleMarkerDecorationsUndoButton = true;
+    this.totalyDisableAngleMarkerDecorationsSelector = totally;
+    // Set the angle marker disabled values
+    this.angleMarkerDecorations = undefined;
+  }
+  setAngleMarkerDecorationChange(): void {
+    this.angleMarkerDecorationChange = true;
+  }
+  setStyleDataAgreement(): void {
+    this.angleMarkerDecorationsAgreement = true;
   }
 
   /**
@@ -1016,11 +1185,11 @@ export default class FrontBackStyle extends Vue {
   get hasAngleMarkerRadiusPercent(): boolean {
     return this.hasStyle(Styles.angleMarkerRadiusPercent);
   }
-  get hasAngleMarkerTickMark(): boolean {
-    return this.hasStyle(Styles.angleMarkerTickMark);
-  }
-  get hasAngleMarkerDoubleArc(): boolean {
-    return this.hasStyle(Styles.angleMarkerDoubleArc);
+  get hasAngleMarkerDecoration(): boolean {
+    return (
+      this.hasStyle(Styles.angleMarkerTickMark) &&
+      this.hasStyle(Styles.angleMarkerDoubleArc)
+    );
   }
 
   @Watch("activePanel")

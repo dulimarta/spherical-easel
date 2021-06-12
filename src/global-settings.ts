@@ -360,14 +360,14 @@ export default {
     defaultLabelMode: LabelDisplayMode.ValueOnly, // The default way of displaying this objects label
 
     defaultTickMark: false,
-    defaultDoubleArc: true,
-    defaultRadius: 1.5, // The default radius for angleMarkers
+    defaultDoubleArc: false,
+    defaultRadius: 0.08, // The default radius for angleMarkers
     numCirclePoints: 50, // The number of vertices used to render the circle part of the angleMarker. These are spread over the front and back parts. MAKE THIS EVEN!
     numEdgePoints: 26, // The number of vertices used to render each of the start and end vector edge of the angleMarker. These are spread over the front and back parts. MAKE THIS EVEN!
     numBoundaryCirclePoints: 10, // To trace *all* of the filled regions requires 2*numCirclePoints+4*numEdgePoints + 2*numBoundaryCirclePoints anchors. MAKE THIS EVEN!!!!
     hitIdealDistance: 0.03, // The user has to be within this distance on the ideal unit sphere to select the angleMarker.
     //dynamicBackStyle is a flag that means the fill, linewidth, and strokeColor of the angleMarkers drawn on the back are automatically calculated based on the value of SETTINGS.contrast and their front counterparts
-    dynamicBackStyle: false,
+    dynamicBackStyle: true,
     //The scaling of the angle marker relative to the scaled for zoom default size
     radiusScalePercent: 100,
     //The angular distance from the first angle marker arc to the second
@@ -375,11 +375,11 @@ export default {
     //The properties of the angleMarker when it is drawn on the sphereCanvas and is not glowing
     drawn: {
       fillColor: {
-        front: "hsla(0, 100%, 50%, 1)", //"noFill",0.001
+        front: "hsla(254, 100%, 90%, 1)", //"noFill",0.001
         back: "hsla(100, 100%, 50%, 1)" //"hsla(0, 0%, 0%, 1)" //"noFill"
       },
       strokeColor: {
-        front: "hsla(0, 0%, 0%, 0.5)",
+        front: "hsla(0, 0%, 0%, 1)",
         back: "hsla(0, 0%, 0%, 0.3)"
       },
       strokeWidth: {
