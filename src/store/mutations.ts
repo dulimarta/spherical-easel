@@ -404,10 +404,10 @@ export default {
       labelDisplayText: payload.labelDisplayText,
       labelDisplayCaption: payload.labelDisplayCaption,
       labelDisplayMode: payload.labelDisplayMode,
-      labelVisibility: payload.labelVisibility,
+      // labelVisibility: payload.labelVisibility,
       labelFrontFillColor: payload.labelFrontFillColor,
       labelBackFillColor: payload.labelBackFillColor,
-      objectVisibility: payload.objectVisibility,
+      // objectVisibility: payload.objectVisibility,
       angleMarkerRadiusPercent: payload.angleMarkerRadiusPercent,
       angleMarkerTickMark: payload.angleMarkerTickMark,
       angleMarkerDoubleArc: payload.angleMarkerDoubleArc

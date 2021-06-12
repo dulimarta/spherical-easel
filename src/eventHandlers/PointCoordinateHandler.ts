@@ -84,7 +84,7 @@ export default class PointCoordinateHandler extends Highlighter {
             [
               {
                 panel: StyleEditPanels.Front,
-                labelVisibility: true,
+                // labelVisibility: true,
                 labelDisplayMode:
                   SETTINGS.point.readingCoordinatesChangesLabelModeTo
               }
@@ -92,7 +92,7 @@ export default class PointCoordinateHandler extends Highlighter {
             [
               {
                 panel: StyleEditPanels.Front,
-                labelVisibility: this.targetPoint.label!.showing,
+                // labelVisibility: this.targetPoint.label!.showing,
                 labelDisplayMode: this.targetPoint.label!.ref.labelDisplayMode
               }
             ]
