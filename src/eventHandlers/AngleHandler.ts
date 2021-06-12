@@ -907,6 +907,7 @@ export default class AngleHandler extends Highlighter {
     newSEAngleMarker.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
 
     // Set the initial label location near the vertex vector
+    // and turn off the lable of the vertex if SETTINGS.angleMarker.turnOffVertexLabelOnCreation
     this.tmpVector
       .copy(this.pointLocations[1])
       .add(
@@ -917,6 +918,10 @@ export default class AngleHandler extends Highlighter {
         )
       )
       .normalize();
+
+    if (SETTINGS.angleMarker.turnOffVertexLabelOnCreation) {
+      this.targetPoints[1]!.label!.showing = false;
+    }
 
     newSELabel.locationVector = this.tmpVector;
 
@@ -1014,23 +1019,36 @@ export default class AngleHandler extends Highlighter {
     newSEAngleMarker.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
 
     // Set the initial label location near the common endpoint of the segments
+    // and turn off the label of the vertex point (SETTINGS.angleMarker.turnOffVertexLabelOnCreation)
     if (
       this.targetSegments[0].startSEPoint ===
       this.targetSegments[1].startSEPoint
     ) {
       this.tmpVector.copy(this.targetSegments[0].startSEPoint.locationVector);
+      if (SETTINGS.angleMarker.turnOffVertexLabelOnCreation) {
+        this.targetSegments[0].startSEPoint.label!.showing = false;
+      }
     } else if (
       this.targetSegments[0].startSEPoint === this.targetSegments[1].endSEPoint
     ) {
       this.tmpVector.copy(this.targetSegments[0].startSEPoint.locationVector);
+      if (SETTINGS.angleMarker.turnOffVertexLabelOnCreation) {
+        this.targetSegments[0].startSEPoint.label!.showing = false;
+      }
     } else if (
       this.targetSegments[0].endSEPoint === this.targetSegments[1].startSEPoint
     ) {
       this.tmpVector.copy(this.targetSegments[1].startSEPoint.locationVector);
+      if (SETTINGS.angleMarker.turnOffVertexLabelOnCreation) {
+        this.targetSegments[1].startSEPoint.label!.showing = false;
+      }
     } else if (
       this.targetSegments[0].endSEPoint === this.targetSegments[1].endSEPoint
     ) {
       this.tmpVector.copy(this.targetSegments[1].endSEPoint.locationVector);
+      if (SETTINGS.angleMarker.turnOffVertexLabelOnCreation) {
+        this.targetSegments[1].endSEPoint.label!.showing = false;
+      }
     } else {
       this.tmpVector.set(0, 0, 1);
       console.log(
@@ -1093,29 +1111,42 @@ export default class AngleHandler extends Highlighter {
     newSEAngleMarker.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
 
     // Set the initial label location near point of the segment that is on the line
+    // and turn off the label of the vertex point (SETTINGS.angleMarker.turnOffVertexLabelOnCreation)
     if (
       this.targetSegments[0].startSEPoint instanceof SEPointOnOneDimensional &&
       this.targetSegments[0].startSEPoint.parentOneDimensional ===
         this.targetLines[0]
     ) {
       this.tmpVector.copy(this.targetSegments[0].startSEPoint.locationVector);
+      if (SETTINGS.angleMarker.turnOffVertexLabelOnCreation) {
+        this.targetSegments[0].startSEPoint.label!.showing = false;
+      }
     } else if (
       this.targetSegments[0].endSEPoint instanceof SEPointOnOneDimensional &&
       this.targetSegments[0].endSEPoint.parentOneDimensional ===
         this.targetLines[0]
     ) {
       this.tmpVector.copy(this.targetSegments[0].endSEPoint.locationVector);
+      if (SETTINGS.angleMarker.turnOffVertexLabelOnCreation) {
+        this.targetSegments[0].endSEPoint.label!.showing = false;
+      }
     } else if (
       this.targetSegments[0].endSEPoint === this.targetLines[0].startSEPoint ||
       this.targetSegments[0].endSEPoint === this.targetLines[0].endSEPoint
     ) {
       this.tmpVector.copy(this.targetSegments[0].endSEPoint.locationVector);
+      if (SETTINGS.angleMarker.turnOffVertexLabelOnCreation) {
+        this.targetSegments[0].endSEPoint.label!.showing = false;
+      }
     } else if (
       this.targetSegments[0].startSEPoint ===
         this.targetLines[0].startSEPoint ||
       this.targetSegments[0].startSEPoint === this.targetLines[0].endSEPoint
     ) {
       this.tmpVector.copy(this.targetSegments[0].startSEPoint.locationVector);
+      if (SETTINGS.angleMarker.turnOffVertexLabelOnCreation) {
+        this.targetSegments[0].startSEPoint.label!.showing = false;
+      }
     } else {
       this.tmpVector.set(0, 0, 1);
       console.log(

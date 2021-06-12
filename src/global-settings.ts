@@ -358,6 +358,7 @@ export default {
     maxLabelDistance: 0.15, // The maximum distance that a label is allowed to get away from the angleMarker
     initialLabelOffset: 0.2, // When making point labels this is initially how far (roughly) they are from the angleMarker
     defaultLabelMode: LabelDisplayMode.ValueOnly, // The default way of displaying this objects label
+    turnOffVertexLabelOnCreation: true, // When an angle marker is created with a label at the vertex, that label is turned off if this is set.
 
     defaultTickMark: false,
     defaultDoubleArc: false,
@@ -371,7 +372,7 @@ export default {
     //The scaling of the angle marker relative to the scaled for zoom default size
     radiusScalePercent: 100,
     //The angular distance from the first angle marker arc to the second
-    doubleArcGap: 0.03,
+    doubleArcGap: 0.05,
     //The properties of the angleMarker when it is drawn on the sphereCanvas and is not glowing
     drawn: {
       fillColor: {
