@@ -282,15 +282,15 @@ export default {
     initialLabelOffset: 0.02, // When making point labels this is initially how far (roughly) they are from the circle
     defaultLabelMode: LabelDisplayMode.NameOnly, // The default way of displaying this objects label
     minimumRadius: 0.045, // Don't create circles with a radius smaller than this or bigger than Pi-this (must be bigger than point.hitIdealDistance to prevent almost zero radius circles at intersection points)
-    numPoints: 100, // The number of vertices used to render the circle. These are spread over the front and back parts. MAKE THIS EVEN!
+    numPoints: 60, // Twice this number are used to draw the edge of the circle and 4 times this many are used to to draw the fill of the circle. These are spread over the front and back parts. MAKE THIS EVEN!
     hitIdealDistance: 0.03, // The user has to be within this distance on the ideal unit sphere to select the circle.
     //dynamicBackStyle is a flag that means the fill, linewidth, and strokeColor of the circles drawn on the back are automatically calculated based on the value of SETTINGS.contrast and their front counterparts
-    dynamicBackStyle: true,
+    dynamicBackStyle: false,
     //The properties of the circle when it is drawn on the sphereCanvas and is not glowing
     drawn: {
       fillColor: {
-        front: "hsla(217, 100%, 80%, 0.0005)", //"noFill",
-        back: "hsla(217, 100%, 80%, 0.0002)" //"noFill"
+        front: "hsla(254, 100%, 90%, 1)", //"hsla(217, 100%, 80%, 0.0005)", //"noFill",
+        back: "hsla(100, 100%, 50%, 1)" //"hsla(217, 100%, 80%, 0.0002)" //"noFill"
       },
       strokeColor: {
         front: "hsla(217, 90%, 61%, 1)",

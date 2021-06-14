@@ -1123,7 +1123,7 @@ export default class AngleMarker extends Nodule {
             // );
             startOfBoundaryVertex1 = leg1F.slice(-1)[0];
             // console.log("after", startOfBoundaryVertex1);
-            endOfBoundaryVertex1 = leg4F.slice(0, 1)[0];
+            endOfBoundaryVertex1 = leg4F[0];
             sideOfFillRegion1 = 1;
 
             //Fill region 2
@@ -1136,7 +1136,7 @@ export default class AngleMarker extends Nodule {
             fillRegion1Vertices.push(...leg4B);
             fillRegion1Vertices.push(...leg1B);
             startOfBoundaryVertex1 = leg1B.slice(-1)[0];
-            endOfBoundaryVertex1 = leg4B.slice(0, 1)[0];
+            endOfBoundaryVertex1 = leg4B[0];
             sideOfFillRegion1 = -1;
 
             //Fill region 2
@@ -1146,7 +1146,7 @@ export default class AngleMarker extends Nodule {
             sideOfFillRegion2 = 1;
           }
           // console.log(startOfBoundaryVertex1);
-          boundaryVertices1 = Nodule.boundaryCircleCoordinates(
+          boundaryVertices1 = this.boundaryCircleCoordinates(
             startOfBoundaryVertex1,
             endOfBoundaryVertex1,
             BOUNDARYCIRCLEEDGESUBDIVISIONS
@@ -1162,7 +1162,7 @@ export default class AngleMarker extends Nodule {
             fillRegion1Vertices.push(...leg4F);
             fillRegion1Vertices.push(...leg1F);
             startOfBoundaryVertex1 = leg1F.slice(-1)[0];
-            endOfBoundaryVertex1 = leg2F.slice(0, 1)[0];
+            endOfBoundaryVertex1 = leg2F[0];
             sideOfFillRegion1 = 1;
 
             //Fill region 2
@@ -1175,7 +1175,7 @@ export default class AngleMarker extends Nodule {
             fillRegion1Vertices.push(...leg4B);
             fillRegion1Vertices.push(...leg1B);
             startOfBoundaryVertex1 = leg1B.slice(-1)[0];
-            endOfBoundaryVertex1 = leg2B.slice(0, 1)[0];
+            endOfBoundaryVertex1 = leg2B[0];
             sideOfFillRegion1 = -1;
 
             //Fill region 2
@@ -1183,7 +1183,7 @@ export default class AngleMarker extends Nodule {
             fillRegion2Vertices.push(...leg2F);
             sideOfFillRegion2 = 1;
           }
-          boundaryVertices1 = Nodule.boundaryCircleCoordinates(
+          boundaryVertices1 = this.boundaryCircleCoordinates(
             startOfBoundaryVertex1,
             endOfBoundaryVertex1,
             BOUNDARYCIRCLEEDGESUBDIVISIONS
@@ -1199,7 +1199,7 @@ export default class AngleMarker extends Nodule {
             fillRegion1Vertices.push(...leg1F);
             fillRegion1Vertices.push(...leg2F);
             startOfBoundaryVertex1 = leg2F.slice(-1)[0];
-            endOfBoundaryVertex1 = leg4F.slice(0, 1)[0];
+            endOfBoundaryVertex1 = leg4F[0];
             sideOfFillRegion1 = 1;
 
             //Fill region 2
@@ -1212,7 +1212,7 @@ export default class AngleMarker extends Nodule {
             fillRegion1Vertices.push(...leg1B);
             fillRegion1Vertices.push(...leg2B);
             startOfBoundaryVertex1 = leg2B.slice(-1)[0];
-            endOfBoundaryVertex1 = leg4B.slice(0, 1)[0];
+            endOfBoundaryVertex1 = leg4B[0];
             sideOfFillRegion1 = -1;
 
             //Fill region 2
@@ -1220,7 +1220,7 @@ export default class AngleMarker extends Nodule {
             fillRegion2Vertices.push(...leg4F);
             sideOfFillRegion2 = 1;
           }
-          boundaryVertices1 = Nodule.boundaryCircleCoordinates(
+          boundaryVertices1 = this.boundaryCircleCoordinates(
             startOfBoundaryVertex1,
             endOfBoundaryVertex1,
             BOUNDARYCIRCLEEDGESUBDIVISIONS
@@ -1237,7 +1237,7 @@ export default class AngleMarker extends Nodule {
             fillRegion1Vertices.push(...leg1F);
             fillRegion1Vertices.push(...leg2F);
             startOfBoundaryVertex1 = leg2F.slice(-1)[0];
-            endOfBoundaryVertex1 = leg3F.slice(0, 1)[0];
+            endOfBoundaryVertex1 = leg3F[0];
             sideOfFillRegion1 = 1;
 
             //Fill region 2
@@ -1250,14 +1250,14 @@ export default class AngleMarker extends Nodule {
             fillRegion1Vertices.push(...leg1B);
             fillRegion1Vertices.push(...leg2B);
             startOfBoundaryVertex1 = leg2B.slice(-1)[0];
-            endOfBoundaryVertex1 = leg3B.slice(0, 1)[0];
+            endOfBoundaryVertex1 = leg3B[0];
             sideOfFillRegion1 = -1;
 
             //Fill region 2
             fillRegion2Vertices.push(...leg2F);
             sideOfFillRegion2 = 1;
           }
-          boundaryVertices1 = Nodule.boundaryCircleCoordinates(
+          boundaryVertices1 = this.boundaryCircleCoordinates(
             startOfBoundaryVertex1,
             endOfBoundaryVertex1,
             BOUNDARYCIRCLEEDGESUBDIVISIONS
@@ -1371,7 +1371,7 @@ export default class AngleMarker extends Nodule {
         }
         return returnBoolean;
       });
-      console.log("edge tracing pattern", intersectionCase);
+      // console.log("edge tracing pattern", intersectionCase);
       if (intersectionCase === -1) {
         console.log("Angle Marker Error - Non-Convex Pattern not found!");
       }
@@ -1398,7 +1398,7 @@ export default class AngleMarker extends Nodule {
             fillRegion1Vertices.push(...leg1F);
             fillRegion1Vertices.push(...leg2F);
             startOfBoundaryVertex1 = leg2F.slice(-1)[0];
-            endOfBoundaryVertex1 = leg4F.slice(0, 1)[0];
+            endOfBoundaryVertex1 = leg4F[0];
             sideOfFillRegion1 = 1;
 
             //Fill region 2
@@ -1411,7 +1411,7 @@ export default class AngleMarker extends Nodule {
             fillRegion1Vertices.push(...leg1B);
             fillRegion1Vertices.push(...leg2B);
             startOfBoundaryVertex1 = leg2B.slice(-1)[0];
-            endOfBoundaryVertex1 = leg4B.slice(0, 1)[0];
+            endOfBoundaryVertex1 = leg4B[0];
             sideOfFillRegion1 = -1;
 
             //Fill region 2
@@ -1419,7 +1419,7 @@ export default class AngleMarker extends Nodule {
             fillRegion2Vertices.push(...leg4F);
             sideOfFillRegion2 = 1;
           }
-          boundaryVertices1 = Nodule.boundaryCircleCoordinates(
+          boundaryVertices1 = this.boundaryCircleCoordinates(
             startOfBoundaryVertex1,
             endOfBoundaryVertex1,
             BOUNDARYCIRCLEEDGESUBDIVISIONS
@@ -1435,7 +1435,7 @@ export default class AngleMarker extends Nodule {
             fillRegion1Vertices.push(...leg4F);
             fillRegion1Vertices.push(...leg1F);
             startOfBoundaryVertex1 = leg1F.slice(-1)[0];
-            endOfBoundaryVertex1 = leg2F.slice(0, 1)[0];
+            endOfBoundaryVertex1 = leg2F[0];
             sideOfFillRegion1 = 1;
 
             //Fill region 2
@@ -1448,7 +1448,7 @@ export default class AngleMarker extends Nodule {
             fillRegion1Vertices.push(...leg4B);
             fillRegion1Vertices.push(...leg1B);
             startOfBoundaryVertex1 = leg1B.slice(-1)[0];
-            endOfBoundaryVertex1 = leg2B.slice(0, 1)[0];
+            endOfBoundaryVertex1 = leg2B[0];
             sideOfFillRegion1 = -1;
 
             //Fill region 2
@@ -1456,7 +1456,7 @@ export default class AngleMarker extends Nodule {
             fillRegion2Vertices.push(...leg2F);
             sideOfFillRegion2 = 1;
           }
-          boundaryVertices1 = Nodule.boundaryCircleCoordinates(
+          boundaryVertices1 = this.boundaryCircleCoordinates(
             startOfBoundaryVertex1,
             endOfBoundaryVertex1,
             BOUNDARYCIRCLEEDGESUBDIVISIONS
@@ -1473,7 +1473,7 @@ export default class AngleMarker extends Nodule {
             fillRegion1Vertices.push(...leg1F);
             fillRegion1Vertices.push(...leg2F);
             startOfBoundaryVertex1 = leg2F.slice(-1)[0];
-            endOfBoundaryVertex1 = leg3F.slice(0, 1)[0];
+            endOfBoundaryVertex1 = leg3F[0];
             sideOfFillRegion1 = 1;
 
             //Fill region 2
@@ -1486,14 +1486,14 @@ export default class AngleMarker extends Nodule {
             fillRegion1Vertices.push(...leg1B);
             fillRegion1Vertices.push(...leg2B);
             startOfBoundaryVertex1 = leg2B.slice(-1)[0];
-            endOfBoundaryVertex1 = leg3B.slice(0, 1)[0];
+            endOfBoundaryVertex1 = leg3B[0];
             sideOfFillRegion1 = -1;
 
             //Fill region 2
             fillRegion2Vertices.push(...leg2F);
             sideOfFillRegion2 = 1;
           }
-          boundaryVertices1 = Nodule.boundaryCircleCoordinates(
+          boundaryVertices1 = this.boundaryCircleCoordinates(
             startOfBoundaryVertex1,
             endOfBoundaryVertex1,
             BOUNDARYCIRCLEEDGESUBDIVISIONS
@@ -1508,36 +1508,36 @@ export default class AngleMarker extends Nodule {
             fillRegion1Vertices.push(...leg1B);
             fillRegion1Vertices.push(...leg2B);
             startOfBoundaryVertex1 = leg2B.slice(-1)[0];
-            endOfBoundaryVertex1 = leg1B.slice(0, 1)[0];
+            endOfBoundaryVertex1 = leg1B[0];
             sideOfFillRegion1 = -1;
 
             //Fill Region 2
             fillRegion2Vertices.push(...leg3B);
             fillRegion2Vertices.push(...leg4B);
             startOfBoundaryVertex2 = leg4B.slice(-1)[0];
-            endOfBoundaryVertex2 = leg3B.slice(0, 1)[0];
+            endOfBoundaryVertex2 = leg3B[0];
             sideOfFillRegion2 = -1;
           } else {
             //Fill Region 1
             fillRegion1Vertices.push(...leg1F);
             fillRegion1Vertices.push(...leg2F);
             startOfBoundaryVertex1 = leg2F.slice(-1)[0];
-            endOfBoundaryVertex1 = leg1F.slice(0, 1)[0];
+            endOfBoundaryVertex1 = leg1F[0];
             sideOfFillRegion1 = 1;
 
             //Fill Region 2
             fillRegion2Vertices.push(...leg3F);
             fillRegion2Vertices.push(...leg4F);
             startOfBoundaryVertex2 = leg4F.slice(-1)[0];
-            endOfBoundaryVertex2 = leg3F.slice(0, 1)[0];
+            endOfBoundaryVertex2 = leg3F[0];
             sideOfFillRegion2 = 1;
           }
-          boundaryVertices1 = Nodule.boundaryCircleCoordinates(
+          boundaryVertices1 = this.boundaryCircleCoordinates(
             startOfBoundaryVertex1,
             endOfBoundaryVertex1,
             BOUNDARYCIRCLEEDGESUBDIVISIONS / 2
           );
-          boundaryVertices2 = Nodule.boundaryCircleCoordinates(
+          boundaryVertices2 = this.boundaryCircleCoordinates(
             startOfBoundaryVertex2,
             endOfBoundaryVertex2,
             BOUNDARYCIRCLEEDGESUBDIVISIONS / 2
@@ -1666,6 +1666,51 @@ export default class AngleMarker extends Nodule {
 
     // if there are leftover anchors in the poolFill store them in fillStorageAnchors
     this.fillStorageAnchors.push(...poolFill.splice(0));
+  }
+
+  /**
+   * pt1 and pt2 are different points on the boundary of the display circle,
+   * this method returns an ordered list of numPoints points from pt1 to pt2 along the
+   * boundary circle so that that the angle subtended at the origin between
+   * any two of them is equal and equal to the angle between the first returned to pt1 and
+   * equal to the angle between the last returned and pt2. pt1 and pt2 are always assumed to be less than Pi angle apart
+   */
+  boundaryCircleCoordinates(
+    pt1: number[],
+    pt2: number[],
+    numPoints: number
+  ): number[][] {
+    if (pt1 === undefined || pt2 === undefined) {
+      return [];
+    }
+    // first figure out the angle from pt1 to pt2
+    const vec1 = new Vector3(pt1[0], pt1[1], 0).normalize();
+    const vec2 = new Vector3(pt2[0], pt2[1], 0).normalize();
+    const angularLength = vec1.angleTo(vec2);
+
+    // now set up a coordinate frame where the x-axis is vec1 and the y-axis is perpendicular to vec but in the same direction as vec2 (i.e. vec2.yAxis > 0)
+    const yAxis = new Vector3(-vec1.y, vec1.x, 0);
+    if (yAxis.dot(vec2) < 0) {
+      yAxis.multiplyScalar(-1);
+    }
+    const returnArray = [];
+
+    for (let i = 0; i < numPoints; i++) {
+      this.tmpVector.set(0, 0, 0);
+      this.tmpVector.addScaledVector(
+        vec1,
+        Math.cos((i + 1) * (angularLength / (numPoints + 1)))
+      );
+      this.tmpVector.addScaledVector(
+        yAxis,
+        Math.sin((i + 1) * (angularLength / (numPoints + 1)))
+      );
+      // now scale to the radius of the boundary circle
+      this.tmpVector.normalize().multiplyScalar(SETTINGS.boundaryCircle.radius);
+
+      returnArray.push([this.tmpVector.x, this.tmpVector.y]);
+    }
+    return returnArray;
   }
 
   /**
