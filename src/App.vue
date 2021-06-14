@@ -165,13 +165,10 @@ export default class App extends Vue {
   svgRoot!: SVGElement;
 
   get hasObjects(): boolean {
-    // Any objects must include at least one pointd
+    // Any objects must include at least one point
     return this.$store.direct.getters.allSEPoints().length > 0;
   }
 
-  // get firebaseUid(): string | undefined {d
-  //   return this.$appAuth.currentUser?.udddid;
-  // }
   mounted(): void {
     this.$store.direct.commit.init();
     EventBus.listen("set-footer-color", this.setFooterColor);

@@ -9,7 +9,8 @@
           <div id="profile"
             class="text-body-2">
             <label>Profile image</label>
-            <span>Image goes here</span>
+
+            <PhotoCapture />
             <label>Display name</label>
             <span>Don Knuth</span>
             <label>Email</label>
@@ -80,9 +81,10 @@
 
 <script lang="ts">
 import { Vue, Component } from "vue-property-decorator";
+import PhotoCapture from "@/components/PhotoCapture.vue";
 import SETTINGS from "@/global-settings";
 
-@Component
+@Component({ components: { PhotoCapture } })
 export default class Settings extends Vue {
   selectedLanguage: unknown = {};
   languages = SETTINGS.supportedLanguages;

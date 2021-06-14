@@ -8,6 +8,7 @@ import store from "./store";
 import vuetify from "./plugins/vuetify";
 import VueI18n from "vue-i18n";
 import i18n from "./i18n";
+import WebCam from "vue-web-cam";
 import firebase from "firebase/app";
 import "firebase/auth";
 import "firebase/firestore";
@@ -15,6 +16,7 @@ import "@/extensions/three.extensions";
 import "@/extensions/number.extensions";
 
 Vue.use(VueI18n);
+// Vue.use(WebCam);
 
 const firebaseConfig = {
   apiKey: "AIzaSyDNA-9m5KvjcxAeTE6ixr_bhXr2Hs2zNys",
