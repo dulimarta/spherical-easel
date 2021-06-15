@@ -56,6 +56,8 @@
           <!-- <img :src="croppedImage"> -->
           <ImageCropper v-if="imageData.length > 0"
             :src="imageData"
+            :stencil-size="{width: 160, height: 160}"
+            :stencil-component="$options.components.CircleStencil"
             @change="onCropChanged">
           </ImageCropper>
           <v-row justify="end">
@@ -83,7 +85,7 @@
 // Reference: https://webrtc.github.io/samples/
 // import VueComponent from "vue";
 import { Component, Vue } from "vue-property-decorator";
-import { Cropper as ImageCropper } from "vue-advanced-cropper";
+import { Cropper as ImageCropper, CircleStencil } from "vue-advanced-cropper";
 import "vue-advanced-cropper/dist/style.css";
 import { FirebaseStorage, UploadTaskSnapshot } from "@firebase/storage-types";
 import { FirebaseFirestore } from "@firebase/firestore-types";
@@ -99,7 +101,7 @@ type CropDetails = {
     height: number;
   };
 };
-@Component({ components: { ImageCropper } })
+@Component({ components: { ImageCropper, CircleStencil } })
 export default class PhotoCapture extends Vue {
   $refs!: {
     video: HTMLVideoElement;

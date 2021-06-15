@@ -14,11 +14,10 @@
                 style="position:relative">
                 <v-hover v-if="!takingPicture"
                   v-slot:default="{hover}">
-                  <span>
+                  <span id="profileImage">
                     <img v-if="profileImage"
                       :src="profileImage">
-                    <v-icon id="profileImage"
-                      v-else
+                    <v-icon v-else
                       :color="hover ? 'primary' : 'secondary' "
                       size="128">mdi-account
                     </v-icon>
@@ -117,7 +116,8 @@ div#appSetting {
 }
 
 #profilePicture {
-  #profileImage {
+  #profileImage,
+  img {
     border-radius: 50%;
   }
 }
