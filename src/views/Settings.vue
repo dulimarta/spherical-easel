@@ -23,8 +23,20 @@
                     </v-icon>
                     <v-overlay absolute
                       :value="hover">
-                      <v-icon @click="takingPicture = true">
-                        mdi-camera</v-icon>
+                      <v-row>
+                        <v-col cols="auto">
+                          <v-icon @click="takingPicture = true">
+                            mdi-camera</v-icon>
+                        </v-col>
+                        <v-col cols="auto">
+                          <v-icon @click="$refs.imageUpload.click()">
+                            mdi-upload</v-icon>
+                          <input ref="imageUpload"
+                            type="file"
+                            accept="image/*"
+                            @change="onImageUploaded" />
+                        </v-col>
+                      </v-row>
                     </v-overlay>
                   </span>
                 </v-hover>
@@ -121,6 +133,10 @@ div#appSetting {
     border-radius: 50%;
   }
 }
+
+input[type="file"] {
+  display: none;
+}
 </style>
 <script lang="ts">
 import { Vue, Component } from "vue-property-decorator";
@@ -133,11 +149,16 @@ import { FirebaseStorage } from "@firebase/storage-types";
 type UserProfile = {
   profilePictureURL: string;
 };
+type FileEvent = EventTarget & { files: FileList | undefined };
 @Component({ components: { PhotoCapture } })
 export default class Settings extends Vue {
   $appAuth!: FirebaseAuth;
   $appDB!: FirebaseFirestore;
   $appStorage!: FirebaseStorage;
+
+  $refs!: {
+    imageUpload: HTMLInputElement;
+  };
   selectedLanguage: unknown = {};
   profileImage: string | null = null;
   takingPicture = false;
@@ -167,6 +188,20 @@ export default class Settings extends Vue {
     // console.log("Got an image", event.image);
     this.takingPicture = false;
     this.profileImage = event.image;
+  }
+
+  onImageUploaded(event: Event): void {
+    const files = (event.target as FileEvent).files;
+    if (files && files.length > 0) {
+      const reader = new FileReader();
+      reader.onload = (ev: ProgressEvent) => {
+        const out = (ev.target as any).result;
+        console.log("What is", out);
+        // const url = URL.createObjectURL(out);
+        this.profileImage = out;
+      };
+      reader.readAsDataURL(files[0]);
+    }
   }
 }
 </script>
