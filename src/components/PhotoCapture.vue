@@ -18,16 +18,21 @@
         <v-btn @click="done">Cancel</v-btn>
       </div>
       <v-select v-model="selectedDeviceId"
+        label="Select Camera"
         :items="availableDevices"
         item-text="label"
         item-value="deviceId"></v-select>
     </template>
+    <img :src="croppedImage">
+    <ImageCropper v-if="imageData.length > 0"
+      :src="imageData"
+      @change="onCropChanged"></ImageCropper>
   </div>
 </template>
 
 <style scoped>
 #canvas {
-  display: none;
+  /* display: none; */
 }
 </style>
 
@@ -35,8 +40,21 @@
 // Reference: https://webrtc.github.io/samples/
 // import VueComponent from "vue";
 import { Component, Vue } from "vue-property-decorator";
+import { Cropper as ImageCropper } from "vue-advanced-cropper";
+import "vue-advanced-cropper/dist/style.css";
 
-@Component
+type CropDetails = {
+  canvas: HTMLCanvasElement;
+  imageTransforms: any;
+  visibleArea: any;
+  coordinates: {
+    left: number;
+    top: number;
+    width: number;
+    height: number;
+  };
+};
+@Component({ components: { ImageCropper } })
 export default class PhotoCapture extends Vue {
   $refs!: {
     video: HTMLVideoElement;
@@ -48,7 +66,8 @@ export default class PhotoCapture extends Vue {
   videoTrack: MediaStreamTrack | null = null;
   availableDevices: Array<MediaDeviceInfo> = [];
   selectedDeviceId = "";
-  // imageData = "";
+  imageData = "";
+  croppedImage = "";
   streaming = false;
   previewing = false;
   width = 320;
@@ -59,7 +78,7 @@ export default class PhotoCapture extends Vue {
       t.stop();
     });
     navigator.mediaDevices
-      .getUserMedia({ video: true })
+      .getUserMedia({ video: true, audio: false })
       .then((stream: MediaStream) => {
         this.stream = stream;
         this.$refs.video.srcObject = stream;
@@ -107,9 +126,9 @@ export default class PhotoCapture extends Vue {
     const context = this.$refs.canvas.getContext("2d");
     context?.drawImage(this.$refs.video, 0, 0, this.width, this.height);
     this.videoTrack?.stop();
-    const image = this.$refs.canvas.toDataURL("image/png");
+    this.imageData = this.$refs.canvas.toDataURL("image/png");
     this.stopCamera();
-    this.$emit("captured", { image });
+    // this.$emit("captured", { image: this.imageData });
   }
   freezeCamera(): void {
     // this.videoTrack?.stop();
@@ -123,6 +142,19 @@ export default class PhotoCapture extends Vue {
   done(): void {
     this.stopCamera();
     this.$emit("no-capture", {});
+  }
+
+  onCropChanged(z: CropDetails): void {
+    console.log("On cropping update", z);
+    const context = z.canvas.getContext("2d");
+    context?.drawImage(
+      this.$refs.video,
+      z.coordinates.left,
+      z.coordinates.top,
+      z.coordinates.width,
+      z.coordinates.height
+    );
+    this.croppedImage = z.canvas.toDataURL("image/png");
   }
 }
 </script>
