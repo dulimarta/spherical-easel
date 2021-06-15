@@ -126,19 +126,44 @@ div#appSetting {
 import { Vue, Component } from "vue-property-decorator";
 import PhotoCapture from "@/components/PhotoCapture.vue";
 import SETTINGS from "@/global-settings";
+import { FirebaseAuth } from "@firebase/auth-types";
+import { FirebaseFirestore, DocumentSnapshot } from "@firebase/firestore-types";
+import { FirebaseStorage } from "@firebase/storage-types";
 
+type UserProfile = {
+  profilePictureURL: string;
+};
 @Component({ components: { PhotoCapture } })
 export default class Settings extends Vue {
+  $appAuth!: FirebaseAuth;
+  $appDB!: FirebaseFirestore;
+  $appStorage!: FirebaseStorage;
   selectedLanguage: unknown = {};
   profileImage: string | null = null;
   takingPicture = false;
   languages = SETTINGS.supportedLanguages;
   decimalPrecision = 3;
+
+  mounted(): void {
+    const uid = this.$appAuth.currentUser?.uid;
+    if (!uid) return;
+    this.$appDB
+      .collection("users")
+      .doc(uid)
+      .get()
+      .then((ds: DocumentSnapshot) => {
+        if (ds.exists) {
+          const userDetails = ds.data() as UserProfile;
+          this.profileImage = userDetails.profilePictureURL;
+        }
+      });
+  }
+
   switchLocale(): void {
     this.$i18n.locale = (this.selectedLanguage as any).locale;
   }
 
-  profilePicCaptured(event: { image: string }): void {
+  profilePicCaptured(event: { image: string; url: string }): void {
     // console.log("Got an image", event.image);
     this.takingPicture = false;
     this.profileImage = event.image;
