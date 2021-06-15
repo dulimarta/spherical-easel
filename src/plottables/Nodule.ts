@@ -4,11 +4,14 @@ import { Resizeable } from "./Resizeable";
 import SETTINGS from "@/global-settings";
 import { StyleOptions, StyleEditPanels } from "@/types/Styles";
 import { hslaColorType } from "@/types";
+import { Vector3 } from "three";
 
 export enum DisplayStyle {
   ApplyTemporaryVariables,
   ApplyCurrentVariables
 }
+
+const tmpVector = new Vector3();
 
 /**
  * A Nodule consists of one or more TwoJS(SVG) elements

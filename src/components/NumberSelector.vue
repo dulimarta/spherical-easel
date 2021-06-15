@@ -186,6 +186,8 @@ export default class NumberSelector extends Vue {
       });
     }
 
+    console.log("styleName", this.styleName, "val", newData);
+
     this.$store.direct.commit.changeStyle({
       selected: selected,
       payload: {

@@ -192,10 +192,18 @@ export default class Style extends Vue {
       "Lines",
       "Segments",
       "Circles",
-      "Labels"
+      "Labels",
+      "Angle Markers"
     ];
-    const elementListSingular = ["Point", "Line", "Segment", "Circle", "Label"];
-    const firstPartList = ["P", "Li", "Ls", "C", "La"];
+    const elementListSingular = [
+      "Point",
+      "Line",
+      "Segment",
+      "Circle",
+      "Label",
+      "Angle Marker"
+    ];
+    const firstPartList = ["P", "Li", "Ls", "C", "La", "M"]; // The *internal* names of the objects start with these strings
     const countList: any[] = [];
     firstPartList.forEach((str, index) => {
       let count = 0;

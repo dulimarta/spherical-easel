@@ -31,6 +31,7 @@ import {
   PointState
 } from "@/types";
 import { CommandGroup } from "@/commands/CommandGroup";
+import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 
 const tmpVector1 = new Vector3();
 // const tmpVector2 = new Vector3();
@@ -123,7 +124,6 @@ export default class MoveHandler extends Highlighter {
         this.moveTarget.update(this.beforeMoveState);
         return;
       }
-
       const labels = this.hitSELabels.filter(
         n => n.isFreeToMove() && n.showing
       );
@@ -190,6 +190,36 @@ export default class MoveHandler extends Highlighter {
       }
     } else {
       // In this case the user mouse pressed in a location with *no* nodules (nothing was highlighted when she mouse pressed)
+
+      // Check to see if there was an object on the back of the sphere that he was trying to
+      // select but doesn't know about the shift key.  Send an alert in this case
+      const sphereVec = new Vector3(
+        this.currentSphereVector.x,
+        this.currentSphereVector.y,
+        -1 * this.currentSphereVector.z
+      );
+      const hitSENodules = this.store.getters
+        .findNearbySENodules(sphereVec, this.currentScreenVector)
+        .filter((n: SENodule) => {
+          if (n instanceof SEIntersectionPoint) {
+            if (!n.isUserCreated) {
+              return n.exists; //You always hit automatically created intersection points if it exists
+            } else {
+              return n.showing && n.exists; //You can't hit hidden objects or items that don't exist
+            }
+          } else {
+            return n.showing && n.exists; //You can't hit hidden objects or items that don't exist
+          }
+        });
+      // if the user is not pressing the shift key and there is a nearby object on the back of the sphere, send alert
+      if (!event.shiftKey && hitSENodules.length > 0) {
+        EventBus.fire("show-alert", {
+          key: `handlers.moveHandlerObjectOnBackOfSphere`,
+          keyOptions: {},
+          type: "info"
+        });
+      }
+
       this.rotateSphere = true;
       this.beforeMoveVector1.copy(this.currentSphereVector);
       EventBus.fire("show-alert", {
@@ -227,7 +257,7 @@ export default class MoveHandler extends Highlighter {
       if (this.moveTarget instanceof SEPoint) {
         // Move the selected SEPoint
         this.moveTarget.locationVector = this.currentSphereVector;
-        // Update the display based on the new location of the point
+        // Update the display of the objects depending on this SEPoint based on the new location of the point
         //#region displayOnlyUpdate
         this.moveTarget.update({
           mode: UpdateMode.DisplayOnly,
@@ -237,11 +267,11 @@ export default class MoveHandler extends Highlighter {
       } else if (this.moveTarget instanceof SELabel) {
         // Move the selected SELabel
         this.moveTarget.locationVector = this.currentSphereVector;
-        // Update the display based on the new location of the label
-        this.moveTarget.update({
-          mode: UpdateMode.DisplayOnly,
-          stateArray: []
-        });
+        // Update the display based on the new location of the label (No need to update display because SELabels have no children.)
+        // this.moveTarget.update({
+        //   mode: UpdateMode.DisplayOnly,
+        //   stateArray: []
+        // });
       } else if (
         this.moveTarget instanceof SELine ||
         this.moveTarget instanceof SESegment
@@ -463,7 +493,6 @@ export default class MoveHandler extends Highlighter {
               (this.afterMoveState.stateArray[index] as SegmentState)
                 .arcLength < Math.PI)
           ) {
-            
             moveCommandGroup.addCommand(
               new MoveSegmentCommand(
                 entry.object as SESegment,

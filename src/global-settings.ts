@@ -12,6 +12,8 @@ export default {
     minStrokeWidthPercent: 60, // The minimum percent stroke width different from the scaled for zoom size
     maxPointRadiusPercent: 200, // The maximum percent point radius different from the scaled for zoom size
     minPointRadiusPercent: 60, // The minimum percent point radius different from the scaled for zoom size
+    maxAngleMarkerRadiusPercent: 200, // The maximum percent angle marker different from the scaled for zoom size
+    minAngleMarkerRadiusPercent: 60, // The minimum percent angle marker different from the scaled for zoom size
     maxGapLengthPlusDashLength: 20, // the maximum of the sum of the gap and dash and the endpoint (max value) of the dash range slider
     maxLabelTextScalePercent: 200, // The maximum percent text scale different from the scaled for zoom size
     minLabelTextScalePercent: 60, // The minimum percent text scale different from the scaled for zoom size
@@ -109,7 +111,7 @@ export default {
     showLabelsOfNonFreePointsInitially: false, // Should the labels of non-free points be shown upon creating the point
     showLabelsOfPointOnObjectInitially: false, // Should the labels of points on objects be shown upon creating the point
     readingCoordinatesChangesLabelModeTo: LabelDisplayMode.NameAndValue,
-    maxLabelDistance: 0.08, // The maximum distance that a label is allowed to get away from the point
+    maxLabelDistance: 0.1, // The maximum distance that a label is allowed to get away from the point
     initialLabelOffset: 0.2, // When making point labels this is initially how far (roughly) they are from the location of the point
     defaultLabelMode: LabelDisplayMode.NameOnly, // The default way of displaying this objects label
     hitIdealDistance: 0.04, // The user has to be within this distance on the ideal unit sphere to select the point. (must be smaller than line/segment/circle.minArcLength.minimumLength.minRadius)
@@ -280,15 +282,15 @@ export default {
     initialLabelOffset: 0.02, // When making point labels this is initially how far (roughly) they are from the circle
     defaultLabelMode: LabelDisplayMode.NameOnly, // The default way of displaying this objects label
     minimumRadius: 0.045, // Don't create circles with a radius smaller than this or bigger than Pi-this (must be bigger than point.hitIdealDistance to prevent almost zero radius circles at intersection points)
-    numPoints: 100, // The number of vertices used to render the circle. These are spread over the front and back parts. MAKE THIS EVEN!
+    numPoints: 60, // Twice this number are used to draw the edge of the circle and 4 times this many are used to to draw the fill of the circle. These are spread over the front and back parts. MAKE THIS EVEN!
     hitIdealDistance: 0.03, // The user has to be within this distance on the ideal unit sphere to select the circle.
     //dynamicBackStyle is a flag that means the fill, linewidth, and strokeColor of the circles drawn on the back are automatically calculated based on the value of SETTINGS.contrast and their front counterparts
-    dynamicBackStyle: true,
+    dynamicBackStyle: false,
     //The properties of the circle when it is drawn on the sphereCanvas and is not glowing
     drawn: {
       fillColor: {
-        front: "hsla(217, 100%, 80%, 0.0005)", //"noFill",
-        back: "hsla(217, 100%, 80%, 0.0002)" //"noFill"
+        front: "hsla(254, 100%, 90%, 1)", //"hsla(217, 100%, 80%, 0.0005)", //"noFill",
+        back: "hsla(100, 100%, 50%, 1)" //"hsla(217, 100%, 80%, 0.0002)" //"noFill"
       },
       strokeColor: {
         front: "hsla(217, 90%, 61%, 1)",
@@ -353,33 +355,43 @@ export default {
   angleMarker: {
     displayInMultiplesOfPiInitially: true, // Should the measure of the angle be in multiples of pi
     showLabelsInitially: true, // Should the labels be show upon creating the angleMarker
-    maxLabelDistance: 0.2, // The maximum distance that a label is allowed to get away from the angleMarker
-    initialLabelOffset: 0.1, // When making point labels this is initially how far (roughly) they are from the angleMarker
+    maxLabelDistance: 0.15, // The maximum distance that a label is allowed to get away from the angleMarker
+    initialLabelOffset: 0.2, // When making point labels this is initially how far (roughly) they are from the angleMarker
     defaultLabelMode: LabelDisplayMode.ValueOnly, // The default way of displaying this objects label
+    turnOffVertexLabelOnCreation: true, // When an angle marker is created with a label at the vertex, that label is turned off if this is set.
 
-    minimumRadius: 0.02, // Don't scale angleMarkers to have a radius smaller than this
-    defaultRadius: 0.04, // The default radius for angleMarkers
-    maximumRadius: 0.1, // Don't scale angleMarkers to have a radius larger than this (This can't be bigger than Pi/2 or else some of the algortihms break down)
-    numCirclePoints: 100, // The number of vertices used to render the circle part of the angleMarker. These are spread over the front and back parts. MAKE THIS EVEN!
-    numEdgePoints: 50, // The number of vertices used to render each of the start and end vector edge of the angleMarker. These are spread over the front and back parts. MAKE THIS EVEN!
+    defaultTickMark: false,
+    defaultDoubleArc: false,
+    defaultRadius: 0.08, // The default radius for angleMarkers
+    numCirclePoints: 50, // The number of vertices used to render the circle part of the angleMarker. These are spread over the front and back parts. MAKE THIS EVEN!
+    numEdgePoints: 26, // The number of vertices used to render each of the start and end vector edge of the angleMarker. These are spread over the front and back parts. MAKE THIS EVEN!
+    numBoundaryCirclePoints: 10, // To trace *all* of the filled regions requires 2*numCirclePoints+4*numEdgePoints + 2*numBoundaryCirclePoints anchors. MAKE THIS EVEN!!!!
     hitIdealDistance: 0.03, // The user has to be within this distance on the ideal unit sphere to select the angleMarker.
     //dynamicBackStyle is a flag that means the fill, linewidth, and strokeColor of the angleMarkers drawn on the back are automatically calculated based on the value of SETTINGS.contrast and their front counterparts
     dynamicBackStyle: true,
     //The scaling of the angle marker relative to the scaled for zoom default size
     radiusScalePercent: 100,
+    //The angular distance from the first angle marker arc to the second
+    doubleArcGap: 0.05,
     //The properties of the angleMarker when it is drawn on the sphereCanvas and is not glowing
     drawn: {
       fillColor: {
-        front: "hsla(0, 0%, 0%, 0.001)", //"noFill",
-        back: "hsla(0, 0%, 0%, 0.0001)" //"noFill"
+        front: "hsla(254, 100%, 90%, 1)", //"noFill",0.001
+        back: "hsla(100, 100%, 50%, 1)" //"hsla(0, 0%, 0%, 1)" //"noFill"
       },
       strokeColor: {
-        front: "hsla(0, 0%, 0%, 0.5)",
+        front: "hsla(0, 0%, 0%, 1)",
         back: "hsla(0, 0%, 0%, 0.3)"
       },
       strokeWidth: {
-        front: 4,
-        back: 3
+        circular: {
+          front: 4,
+          back: 3
+        },
+        straight: {
+          front: 2,
+          back: 1
+        }
       }, // The thickness of the edge of the angleMarker when drawn front/back,
       dashArray: {
         offset: { front: 0, back: 0 },
@@ -394,7 +406,8 @@ export default {
         front: "hsla(0, 100%, 50%, 1)",
         back: "hsla(0, 100%, 75%, 0.7)"
       },
-      edgeWidth: 5 // edgeWidth/2 is the width of the region around the angle (on all sides) that shows the glow
+      circular: { edgeWidth: 5 }, // edgeWidth/2 is the width of the region around the angle (on all sides) that shows the glow
+      straight: { edgeWidth: 2 }
       // The dash pattern will always be the same as the drawn version
     },
     //The properties of the angle marker when it is temporarily shown by the angle measuring tool while drawing
