@@ -9,43 +9,9 @@
           <div id="profile"
             class="text-body-2">
             <label>Profile image</label>
-            <v-row id="profilePicture">
-              <v-col cols="auto"
-                style="position:relative">
-                <v-hover v-if="!takingPicture"
-                  v-slot:default="{hover}">
-                  <span id="profileImage">
-                    <img v-if="profileImage"
-                      :src="profileImage">
-                    <v-icon v-else
-                      :color="hover ? 'primary' : 'secondary' "
-                      size="128">mdi-account
-                    </v-icon>
-                    <v-overlay absolute
-                      :value="hover">
-                      <v-row>
-                        <v-col cols="auto">
-                          <v-icon @click="takingPicture = true">
-                            mdi-camera</v-icon>
-                        </v-col>
-                        <v-col cols="auto">
-                          <v-icon @click="$refs.imageUpload.click()">
-                            mdi-upload</v-icon>
-                          <input ref="imageUpload"
-                            type="file"
-                            accept="image/*"
-                            @change="onImageUploaded" />
-                        </v-col>
-                      </v-row>
-                    </v-overlay>
-                  </span>
-                </v-hover>
-
-                <PhotoCapture v-if="takingPicture"
-                  @captured="profilePicCaptured"
-                  @no-capture="takingPicture = false" />
-              </v-col>
-            </v-row>
+            <transition>
+              <router-view></router-view>
+            </transition>
             <label>Display name</label>
             <span>Don Knuth</span>
             <label>Email</label>
@@ -126,30 +92,15 @@ div#appSetting {
   display: grid;
   grid-template-columns: 1fr 3fr;
 }
-
-#profilePicture {
-  #profileImage,
-  img {
-    border-radius: 50%;
-  }
-}
-
-input[type="file"] {
-  display: none;
-}
 </style>
 <script lang="ts">
 import { Vue, Component } from "vue-property-decorator";
-import PhotoCapture from "@/components/PhotoCapture.vue";
+import PhotoCapture from "@/views/PhotoCapture.vue";
 import SETTINGS from "@/global-settings";
 import { FirebaseAuth } from "@firebase/auth-types";
-import { FirebaseFirestore, DocumentSnapshot } from "@firebase/firestore-types";
+import { FirebaseFirestore } from "@firebase/firestore-types";
 import { FirebaseStorage } from "@firebase/storage-types";
 
-type UserProfile = {
-  profilePictureURL: string;
-};
-type FileEvent = EventTarget & { files: FileList | undefined };
 @Component({ components: { PhotoCapture } })
 export default class Settings extends Vue {
   $appAuth!: FirebaseAuth;
@@ -161,24 +112,8 @@ export default class Settings extends Vue {
   };
   selectedLanguage: unknown = {};
   profileImage: string | null = null;
-  takingPicture = false;
   languages = SETTINGS.supportedLanguages;
   decimalPrecision = 3;
-
-  mounted(): void {
-    const uid = this.$appAuth.currentUser?.uid;
-    if (!uid) return;
-    this.$appDB
-      .collection("users")
-      .doc(uid)
-      .get()
-      .then((ds: DocumentSnapshot) => {
-        if (ds.exists) {
-          const userDetails = ds.data() as UserProfile;
-          this.profileImage = userDetails.profilePictureURL;
-        }
-      });
-  }
 
   switchLocale(): void {
     this.$i18n.locale = (this.selectedLanguage as any).locale;
@@ -186,22 +121,7 @@ export default class Settings extends Vue {
 
   profilePicCaptured(event: { image: string; url: string }): void {
     // console.log("Got an image", event.image);
-    this.takingPicture = false;
     this.profileImage = event.image;
-  }
-
-  onImageUploaded(event: Event): void {
-    const files = (event.target as FileEvent).files;
-    if (files && files.length > 0) {
-      const reader = new FileReader();
-      reader.onload = (ev: ProgressEvent) => {
-        const out = (ev.target as any).result;
-        console.log("What is", out);
-        // const url = URL.createObjectURL(out);
-        this.profileImage = out;
-      };
-      reader.readAsDataURL(files[0]);
-    }
   }
 }
 </script>

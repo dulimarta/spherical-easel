@@ -57,7 +57,7 @@
         :disabled="!hasObjects"
         class="mr-2"
         @click="$refs.saveConstructionDialog.show()">mdi-share</v-icon>
-      <router-link to="/settings">
+      <router-link to="/settings/">
         <v-icon>mdi-cog</v-icon>
       </router-link>
     </v-app-bar>
@@ -144,6 +144,13 @@ import {
 } from "@firebase/firestore-types";
 import { Unsubscribe } from "@firebase/util";
 import { Command } from "./commands/Command";
+
+// Register vue router in-component navigation guard functions
+Component.registerHooks([
+  "beforeRouteEnter",
+  "beforeRouteLeave",
+  "beforeRouteUpdate"
+]);
 /* This allows for the State of the app to be initialized with in vuex store */
 @Component({ components: { MessageBox, Dialog, ConstructionLoader } })
 export default class App extends Vue {

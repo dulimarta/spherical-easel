@@ -2,6 +2,7 @@ import Vue from "vue";
 import VueRouter, { RouteConfig } from "vue-router";
 import Easel from "@/views/Easel.vue";
 import Login from "@/views/Login.vue";
+import ProfilePicture from "@/views/ProfilePicture.vue";
 // import ConstructionLoader from "@/components/ConstructionLoader.vue";
 Vue.use(VueRouter);
 
@@ -30,7 +31,23 @@ const routes: Array<RouteConfig> = [
     // this generates a separate chunk (about.[hash].js) for this route
     // which is lazy-loaded when the route is visited.
     component: () =>
-      import(/* webpackChunkName: "about" */ "../views/Settings.vue")
+      import(/* webpackChunkName: "about" */ "../views/Settings.vue"),
+    children: [
+      {
+        path: "/",
+        component: () => import("@/views/ProfilePicture.vue")
+      },
+      {
+        name: "PhotoCapture",
+        path: "photocapture",
+        component: () => import("@/views/PhotoCapture.vue")
+      },
+      {
+        name: "PhotoCropper",
+        path: "photocropper",
+        component: () => import("@/views/PhotoCropper.vue")
+      }
+    ]
   }
 ];
 
