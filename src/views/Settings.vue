@@ -9,8 +9,32 @@
           <div id="profile"
             class="text-body-2">
             <label>Profile image</label>
+            <v-row id="profilePicture">
+              <v-col cols="auto"
+                style="position:relative">
+                <v-hover v-if="!takingPicture"
+                  v-slot:default="{hover}">
+                  <span>
+                    <img v-if="profileImage"
+                      :src="profileImage">
+                    <v-icon id="profileImage"
+                      v-else
+                      :color="hover ? 'primary' : 'secondary' "
+                      size="128">mdi-account
+                    </v-icon>
+                    <v-overlay absolute
+                      :value="hover">
+                      <v-icon @click="takingPicture = true">
+                        mdi-camera</v-icon>
+                    </v-overlay>
+                  </span>
+                </v-hover>
 
-            <PhotoCapture />
+                <PhotoCapture v-if="takingPicture"
+                  @captured="profilePicCaptured"
+                  @no-capture="takingPicture = false" />
+              </v-col>
+            </v-row>
             <label>Display name</label>
             <span>Don Knuth</span>
             <label>Email</label>
@@ -18,8 +42,10 @@
             <label>Location</label>
             <span>Somewhere, USA</span>
             <label>Role</label>
-            <v-select
-              :items="['Student', 'Instructor', 'Community Member']">
+            <v-select :items="
+                  ['Student', 'Instructor'
+                  , 'Community Member'
+                  ]">
             </v-select>
           </div>
           <v-btn>Change Password</v-btn>
@@ -79,22 +105,6 @@
   </v-container>
 </template>
 
-<script lang="ts">
-import { Vue, Component } from "vue-property-decorator";
-import PhotoCapture from "@/components/PhotoCapture.vue";
-import SETTINGS from "@/global-settings";
-
-@Component({ components: { PhotoCapture } })
-export default class Settings extends Vue {
-  selectedLanguage: unknown = {};
-  languages = SETTINGS.supportedLanguages;
-  decimalPrecision = 3;
-  switchLocale(): void {
-    this.$i18n.locale = (this.selectedLanguage as any).locale;
-  }
-}
-</script>
-
 <style lang="scss" scoped>
 div#container {
   padding: 1rem;
@@ -105,4 +115,33 @@ div#appSetting {
   display: grid;
   grid-template-columns: 1fr 3fr;
 }
+
+#profilePicture {
+  #profileImage {
+    border-radius: 50%;
+  }
+}
 </style>
+<script lang="ts">
+import { Vue, Component } from "vue-property-decorator";
+import PhotoCapture from "@/components/PhotoCapture.vue";
+import SETTINGS from "@/global-settings";
+
+@Component({ components: { PhotoCapture } })
+export default class Settings extends Vue {
+  selectedLanguage: unknown = {};
+  profileImage: string | null = null;
+  takingPicture = false;
+  languages = SETTINGS.supportedLanguages;
+  decimalPrecision = 3;
+  switchLocale(): void {
+    this.$i18n.locale = (this.selectedLanguage as any).locale;
+  }
+
+  profilePicCaptured(event: { image: string }): void {
+    // console.log("Got an image", event.image);
+    this.takingPicture = false;
+    this.profileImage = event.image;
+  }
+}
+</script>
