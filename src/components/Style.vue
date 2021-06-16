@@ -1,6 +1,8 @@
 <template>
+
   <transition name="slide-out"
     mode="out-in">
+
     <div v-if="!minified"
       key="full"
       style="height: 100%; overflow:auto"
@@ -94,13 +96,17 @@
           </v-expansion-panel-content>
         </v-expansion-panel>
       </v-expansion-panels>
+
     </div>
     <div v-else
       id="mini-icons"
       key="partial">
-      <v-icon v-on:click="$emit('toggle-style-panel')">mdi-palette</v-icon>
+      <v-icon v-on:click="$emit('toggle-style-panel')">mdi-palette
+      </v-icon>
     </div>
+
   </transition>
+
 </template>
 
 <script lang="ts">

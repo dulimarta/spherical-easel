@@ -24,9 +24,6 @@ const CIRCLEEDGESUBDIVISIONS = SETTINGS.angleMarker.numCirclePoints;
 const STRIAGHTEDGESUBDIVISIONS = SETTINGS.angleMarker.numEdgePoints;
 const BOUNDARYCIRCLEEDGESUBDIVISIONS =
   SETTINGS.angleMarker.numBoundaryCirclePoints;
-
-let ANGLEMARKER_COUNT = 0;
-
 /**
  * For drawing angle markers. The circular part of an angle marker consists of two paths (front and back) and a storage path
  * the total number of vertices in the front/back/storage is 2*CIRCLEEDGESUBDIVISIONS.
@@ -242,7 +239,8 @@ export default class AngleMarker extends Nodule {
 
   constructor() {
     super();
-    this.name = "AngleMarker-" + ANGLEMARKER_COUNT++;
+    Nodule.ANGLEMARKER_COUNT++;
+    this.name = "AngleMarker-" + Nodule.ANGLEMARKER_COUNT;
 
     // Circular Part Initialize
     // Create the initial front and back vertices (glowing/not doubleArc/not start/tail)
@@ -277,8 +275,24 @@ export default class AngleMarker extends Nodule {
     this.glowingBackCirclePathTail = this.frontCirclePathStart.clone();
     this.glowingBackCirclePathDoubleArcTail = this.frontCirclePathStart.clone();
 
+    //Set the path.id's for all the TwoJS objects which are not glowing. This is for exporting to Icon.
+    this.frontCirclePathStart.id =
+      10000000 + Nodule.ANGLEMARKER_COUNT * 100 + 0;
+    this.frontCirclePathTail.id = 10000000 + Nodule.ANGLEMARKER_COUNT * 100 + 1;
+    this.frontCirclePathDoubleArcStart.id =
+      10000000 + Nodule.ANGLEMARKER_COUNT * 100 + 2;
+    this.frontCirclePathDoubleArcTail.id =
+      10000000 + Nodule.ANGLEMARKER_COUNT * 100 + 3;
+
+    this.backCirclePathStart.id = 10000000 + Nodule.ANGLEMARKER_COUNT * 100 + 4;
+    this.backCirclePathTail.id = 10000000 + Nodule.ANGLEMARKER_COUNT * 100 + 5;
+    this.backCirclePathDoubleArcStart.id =
+      10000000 + Nodule.ANGLEMARKER_COUNT * 100 + 6;
+    this.backCirclePathDoubleArcTail.id =
+      10000000 + Nodule.ANGLEMARKER_COUNT * 100 + 7;
+
     // The clear() extension function works only on JS Array, but
-    // not on Two.JS Collection class. Use splice() instead. Clear only tails so there are 2*circleSubdivisions in the union of front/backCirclePathStart and front/backCirclePathTail
+    // not on Two.JS Collection class. Use splice() instead. Clear only tails so there are 2*circleSubdivisions in the union of back/backCirclePathStart and front/backCirclePathTail
 
     this.frontCirclePathTail.vertices.splice(0);
     this.frontCirclePathDoubleArcTail.vertices.splice(0);
@@ -313,7 +327,7 @@ export default class AngleMarker extends Nodule {
     this.glowingBackCirclePathTail.noFill();
     this.glowingBackCirclePathDoubleArcTail.noFill();
 
-    // The segment is not initially glowing
+    // The angle marker is not initially glowing
     this.frontCirclePathStart.visible = true;
     this.frontCirclePathDoubleArcStart.visible = true;
     this.frontCirclePathTail.visible = true;
@@ -366,6 +380,12 @@ export default class AngleMarker extends Nodule {
     this.glowingFrontStraightEnd = this.frontStraightStart.clone();
     this.glowingBackStraightEnd = this.frontStraightStart.clone();
 
+    //Set the path.id's for all the TwoJS objects which are not glowing. This is for exporting to Icon.
+    this.frontStraightStart.id = 10000000 + Nodule.ANGLEMARKER_COUNT * 100 + 8;
+    this.frontStraightEnd.id = 10000000 + Nodule.ANGLEMARKER_COUNT * 100 + 9;
+    this.backStraightStart.id = 10000000 + Nodule.ANGLEMARKER_COUNT * 100 + 10;
+    this.backStraightEnd.id = 10000000 + Nodule.ANGLEMARKER_COUNT * 100 + 11;
+
     // Set the style that never changes -- Fill
     this.frontStraightStart.noFill();
     this.backStraightStart.noFill();
@@ -377,7 +397,7 @@ export default class AngleMarker extends Nodule {
     this.glowingFrontStraightEnd.noFill();
     this.glowingBackStraightEnd.noFill();
 
-    // The segment is not initially glowing
+    // The angle marker is not initially glowing
     this.frontStraightStart.visible = true;
     this.backStraightStart.visible = true;
     this.frontStraightEnd.visible = true;
@@ -414,6 +434,12 @@ export default class AngleMarker extends Nodule {
     this.backFill1 = this.frontFill1.clone();
     this.backFill2 = this.frontFill1.clone();
 
+    //Set the path.id's for all the TwoJS objects which are not glowing. This is for exporting to Icon.
+    this.frontFill1.id = 10000000 + Nodule.ANGLEMARKER_COUNT * 100 + 12;
+    this.frontFill2.id = 10000000 + Nodule.ANGLEMARKER_COUNT * 100 + 13;
+    this.backFill1.id = 10000000 + Nodule.ANGLEMARKER_COUNT * 100 + 14;
+    this.backFill2.id = 10000000 + Nodule.ANGLEMARKER_COUNT * 100 + 15;
+
     // Strip out some of the anchors so that
     // frontFill1.length + frontFill2.length + backFill1.length + backFill2.length =
     // 2*CIRCLEEDGESUBDIVISIONS + 4*STRIAGHTEDGESUBDIVISIONS +2*BOUNDARYCIRCLEEDGESUBDIVISIONS
@@ -426,7 +452,7 @@ export default class AngleMarker extends Nodule {
     this.backFill1.noStroke();
     this.backFill2.noStroke();
 
-    // The show the fill glowing
+    // The initial fill is showing
     this.frontFill1.visible = true;
     this.frontFill2.visible = true;
     this.backFill1.visible = true;

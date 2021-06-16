@@ -87,7 +87,8 @@ export default class Line extends Nodule {
   private transformMatrix = new Matrix4();
   constructor() {
     super();
-    this.name = "Line-" + Nodule.LINE_COUNT++;
+    Nodule.LINE_COUNT++;
+    this.name = "Line-" + Nodule.LINE_COUNT;
     const radius = SETTINGS.boundaryCircle.radius;
     const vertices: Two.Vector[] = [];
     const glowingVertices: Two.Vector[] = [];
@@ -112,6 +113,16 @@ export default class Line extends Nodule {
     this.glowingBackHalf = this.frontHalf.clone();
     this.glowingFrontHalf = this.frontHalf.clone();
 
+    //Set the path.id's for all the TwoJS objects which are not glowing. This is for exporting to Icon.
+    this.frontHalf.id = 12000000 + Nodule.LINE_COUNT * 100 + 0;
+    this.backHalf.id = 12000000 + Nodule.LINE_COUNT * 100 + 1;
+
+    // The line is not initially glowing but is visible for the temporary object
+    this.frontHalf.visible = true;
+    this.backHalf.visible = true;
+    this.glowingFrontHalf.visible = false;
+    this.glowingBackHalf.visible = false;
+
     // Set the style that never changes -- Fill
     this.frontHalf.noFill();
     this.glowingFrontHalf.noFill();
@@ -123,7 +134,6 @@ export default class Line extends Nodule {
     this._normalVector = new Vector3();
     // this.normalDirection.crossVectors(this.start, this.end);
     // The back half will be dynamically added to the group
-    //this.name = "Line-" + this.id;
 
     // Generate 3D coordinates of the entire line in a standard position -- the equator of the Default Sphere
     this.points = [];

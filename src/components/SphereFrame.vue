@@ -35,12 +35,14 @@ import CoordinateHandler from "@/eventHandlers/PointCoordinateHandler";
 import SliderHandler from "@/eventHandlers/SliderHandler";
 import ToggleLabelDisplayHandler from "@/eventHandlers/ToggleLabelDisplayHandler";
 import PerpendicularLineThruPointHandler from "@/eventHandlers/PerpendicularLineThruPointHandler";
+import IconFactoryHandler from "@/eventHandlers/IconFactoryHandler";
 
 import EventBus from "@/eventHandlers/EventBus";
 import MoveHandler from "../eventHandlers/MoveHandler";
 import { AppState, UpdateMode } from "@/types";
 import colors from "vuetify/es5/util/colors";
 import { SELabel } from "@/models/SELabel";
+import FileSaver from "file-saver";
 
 @Component({})
 export default class SphereFrame extends VueComponent {
@@ -99,6 +101,7 @@ export default class SphereFrame extends VueComponent {
   private sliderTool!: SliderHandler;
   private toggleLabelDisplayTool!: ToggleLabelDisplayHandler;
   private perpendicularLineThruPointTool!: PerpendicularLineThruPointHandler;
+  private iconFactoryTool!: IconFactoryHandler;
 
   /**
    * The layers for displaying the various objects in the right way. So a point in the
@@ -153,6 +156,10 @@ export default class SphereFrame extends VueComponent {
     this.boundaryCircle.noFill();
     this.boundaryCircle.linewidth = SETTINGS.boundaryCircle.lineWidth;
     this.layers[LAYER.midground].add(this.boundaryCircle);
+
+    //Set the path.id's for all the TwoJS objects which are not glowing. This is for exporting to Icon.
+    this.boundaryCircle.id = 10000000 - 1;
+
     // const box1 = new Two.Rectangle(-100, 150, 100, 150);
     // box1.fill = "hsl(200,80%,50%)";
     // const box2 = new Two.Rectangle(100, 150, 100, 150);
@@ -219,6 +226,7 @@ export default class SphereFrame extends VueComponent {
     this.circleTool = new CircleHandler(this.layers);
     this.rotateTool = new RotateHandler(this.layers);
     this.zoomTool = new PanZoomHandler(this.$refs.canvas);
+    this.iconFactoryTool = new IconFactoryHandler();
     this.moveTool = new MoveHandler(this.layers);
     this.intersectTool = new IntersectionPointHandler(this.layers);
     this.pointOnOneDimensionalTool = new PointOnOneDimensionalHandler(
@@ -302,7 +310,7 @@ export default class SphereFrame extends VueComponent {
   }
   //#endregion updateView
 
-  handleMouseWheel(event: MouseWheelEvent): void {
+  handleMouseWheel(event: WheelEvent): void {
     console.log("Mouse Wheel Zoom!");
     // Compute (pixelX,pixelY) = the location of the mouse release in pixel coordinates relative to
     //  the top left of the sphere frame. This is a location *post* affine transformation
@@ -429,184 +437,74 @@ export default class SphereFrame extends VueComponent {
   //#endregion handleSphereRotation
 
   getCurrentSVGForIcon(): void {
-    const minimumNormForOneDimensional = 200;
-    const desiredIconSize = 32;
-    const desiredSphereOutlineRadiusSize = 28;
-    const sphereBoundaryStrokeWidth = 1;
-    const desiredPointScale = 0.3;
-    const num = this.canvasSize;
-    const searchString = String(num / 2);
-    console.log(this.$refs.canvas.innerHTML);
-    // Remove the translation to num/2, num/2 transformations
-    let originalScale = this.$refs.canvas.innerHTML.split(" ")[10];
-    originalScale = originalScale.substring(0, originalScale.length - 1);
-    let SVG = this.$refs.canvas.innerHTML.split(searchString).join("0");
-    //Remove all <text/path/g blah... visibility="hidden" blah... ></text/path/g> parts
-    while (SVG.indexOf("hidden") > -1) {
-      const hiddenIndex = SVG.indexOf("hidden");
-      const startDeletIndex = SVG.lastIndexOf("<", hiddenIndex);
-      const endOfSectionIndex = SVG.indexOf(">", hiddenIndex);
-      const endDeleteIndex = SVG.indexOf(">", endOfSectionIndex + 1);
-      let result = SVG.split("");
-      result.splice(startDeletIndex, endDeleteIndex - startDeletIndex + 1);
-      SVG = result.join("");
-    }
-    //Remove all <text blah...  ></text> parts
-    while (SVG.indexOf("<text") > -1) {
-      const hiddenIndex = SVG.indexOf("<text");
-      const endOfSectionIndex = SVG.indexOf(">", hiddenIndex);
-      const endDeleteIndex = SVG.indexOf(">", endOfSectionIndex + 1);
-      let result = SVG.split("");
-      result.splice(hiddenIndex, endDeleteIndex - hiddenIndex + 1);
-      SVG = result.join("");
-    }
-    //Remove all <text/path/g blah... d="" blah... ></text/path/g> parts
-    while (SVG.indexOf('d=""') > -1) {
-      const hiddenIndex = SVG.indexOf('d=""');
-      const startDeletIndex = SVG.lastIndexOf("<", hiddenIndex);
-      const endOfSectionIndex = SVG.indexOf(">", hiddenIndex);
-      const endDeleteIndex = SVG.indexOf(">", endOfSectionIndex + 1);
-      let result = SVG.split("");
-      result.splice(startDeletIndex, endDeleteIndex - startDeletIndex + 1);
-      SVG = result.join("");
-    }
+    const svgRoot = this.$store.direct.state.svgCanvas?.querySelector(
+      "svg"
+    ) as SVGElement;
 
-    const regEx1 = /\swidth.*\/defs>/g;
-    const regEx2 = /\B<g id="two-\d*?" transform="matrix\(\d \d \d (\d|-\d) \d+ \d+\)" opacity="\d*?"><\/g>\B/g;
-    //  Remove the id="two-126" like strings
-    const regEx3 = /\sid="two-\d*?"(\B|\s)/g;
-    const regEx4 = /\btransform="matrix\(1 0 0 1 0\s0\)"\s\b/g;
-    // // Set the width of the boundary circle
-    const regEx5 = /\sstroke-width="3"\s/g;
-
-    const nextSVG1 = SVG.replace(
-      regEx1,
-      ' viewBox=" ' +
-        -desiredIconSize / 2 +
-        " " +
-        -desiredIconSize / 2 +
-        " " +
-        desiredIconSize +
-        " " +
-        desiredIconSize +
-        '" preserveAspectRatio="xMidYMid meet" style="overflow: visible;">'
-    )
-      .replace(regEx2, "")
-      .replace(regEx3, "")
-      .replace(regEx4, "")
-      .replace(regEx5, 'stroke-width="' + sphereBoundaryStrokeWidth + '"');
-    //now scale the numerical values
-    const splitSVG2: string[] = [];
-    const pointTransformMatrixIndices: number[] = [];
-    const oneDimensionalTransformMatrixIndices: number[] = [];
-    nextSVG1.split('"').forEach((subStr, ind) => {
-      const splitSubString = subStr.split(" ");
-
+    // Make a duplicate of the SVG tree
+    const svgElement = svgRoot.cloneNode(true) as SVGElement;
+    svgElement.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+    //remove all the text items
+    const textGroups = svgElement.querySelectorAll("text");
+    for (let i = 0; i < textGroups.length; i++) {
+      textGroups[i].remove();
+    }
+    // remove all the hidden paths or paths with no anchors
+    const allElements = svgElement.querySelectorAll("path");
+    for (let i = 0; i < allElements.length; i++) {
+      const element = allElements[i];
       if (
-        splitSubString[0] === "M" &&
-        Number(splitSubString[1]) !== undefined &&
-        Number(splitSubString[2]) !== undefined
+        element.getAttribute("visibility") === "hidden" ||
+        element.getAttribute("d") === ""
       ) {
-        if (
-          Number(splitSubString[1]) * Number(splitSubString[1]) +
-            Number(splitSubString[2]) * Number(splitSubString[2]) >
-          minimumNormForOneDimensional
-        ) {
-          oneDimensionalTransformMatrixIndices.push(ind);
-          // this is a line or segment or boundary circle description
-          // so scale all the numbers in the subString
-          const scaledSplitSubstring: string[] = [];
-          splitSubString.forEach(str => {
-            if (Number(str)) {
-              scaledSplitSubstring.push(
-                String((2 * desiredSphereOutlineRadiusSize * Number(str)) / num)
-              );
-            } else {
-              scaledSplitSubstring.push(str);
-            }
-          });
-          splitSVG2.push(scaledSplitSubstring.join(" "));
-        } else {
-          // This is the point description record the location and push it onto the splitSVG2
-          pointTransformMatrixIndices.push(ind);
-          splitSVG2.push(subStr);
-        }
-      } else {
-        splitSVG2.push(subStr);
+        element.remove();
       }
+    }
+
+    // remove all SVG goups with no children (they are are result of empty layers)
+    const groups = svgElement.querySelectorAll("g");
+    for (let i = 0; i < groups.length; i++) {
+      const group = groups[i];
+      if (group.childElementCount === 0) {
+        group.remove();
+      }
+    }
+    const iconArray = [];
+    const defs = svgElement.querySelectorAll("defs");
+    for (let i = 0; i < defs.length; i++) {
+      iconArray.push(defs[i].outerHTML);
+    }
+
+    const paths = svgElement.querySelectorAll("path");
+    for (let i = 0; i < paths.length; i++) {
+      paths[i].setAttribute("vector-effect", "non-scaling-stroke");
+      iconArray.push(paths[i].outerHTML);
+    }
+    let iconOutput = "";
+    for (let i = 0; i < iconArray.length - 1; i++) {
+      iconOutput = iconOutput + iconArray[i] + "; ";
+    }
+    iconOutput = iconOutput + iconArray[iconArray.length - 1];
+    console.log(iconOutput);
+
+    var blob = new Blob([iconOutput], {
+      type: "text/plain;charset=utf-8"
     });
-
-    // Two before each of the numbers in pointTransformMatrixIndices is a string of the form
-    //   "matrix(0.649 0 0 0.649 -110.532 -112.988)"
-    // replace it with
-    //  "matrix(desiredPointScale 0 0 desiredPointScale <scaled1> <scaled2>)
-    pointTransformMatrixIndices.forEach(num => {
-      const str = splitSVG2[num - 2];
-      const splitStr = str.split(" ");
-      const transX = splitStr[4];
-      const transY = splitStr[5].slice(0, splitStr[5].length - 2);
-      const oldPointScale = splitStr[3];
-      // oldx * scale + tranx = old locx--> newLocx= old/nummm
-
-      const newStr =
-        "matrix(" +
-        desiredPointScale +
-        " 0 0 " +
-        desiredPointScale +
-        " " +
-        (desiredSphereOutlineRadiusSize * Number(transX)) /
-          (num * Number(originalScale)) +
-        " " +
-        (desiredSphereOutlineRadiusSize * Number(transY)) /
-          (num * Number(originalScale)) +
-        ")";
-      splitSVG2[num - 2] = newStr;
-    });
-    console.log(splitSVG2.join('"'));
-    console.log(originalScale);
-    // const scaledSVG = splitSVG.join("");
-    // //Divide all numbers surrounded by spaces that are not 1 or -1 by the num/(2*desiredSphereOutlineRadiusSize)
-    // // SVG.split(" ").forEach(str => {
-    // //   if (Number(str)) {
-    // //     if (str === "1" || str === "-1") {
-    // //       scaledSVG.push(str);
-    // //     } else {
-    // //       scaledSVG.push(
-    // //         String((2 * desiredSphereOutlineRadiusSize * Number(str)) / num)
-    // //       );
-    // //     }
-    // //   } else {
-    // //     scaledSVG.push(str);
-    // //   }
-    // // });
-    // console.log(scaledSVG);
-    // const regEx1 = /(\B<g\sid="two-\d*"\stransform="matrix\(1 0 0 -1 0\s0\)" opacity="1"><\/g>\B|\B<g\sid="two-\d*"\stransform="matrix\(1 0 0 1 0\s0\)" opacity="1"><\/g>\B)/g;
-    // const nextSVG1 = scaledSVG.replace(regEx1, "");
-    // const regEx2 = /\btransform="matrix\(1 0 0 1 0\s0\)"\s\b/g;
-    // const nextSVG2 = nextSVG1.replace(regEx2, "");
-
-    // // Set the width of the boundary circle
-    // const regEx4 = /\sstroke-width="3"\s/g;
-    // const nextSVG4 = nextSVG3.replace(
-    //   regEx4,
-    //   'stroke-width="' + sphereBoundaryStrokeWidth + '"'
+    FileSaver.saveAs(blob, "iconXXXPaths.svg");
+    // Make sure that when scaling the stroke width is not effected
+    // svgElement.setAttribute("vector-effect", "non-scaling-stroke");
+    // console.log(svgElement);
+    // console.log(svgElement.outerHTML);
+    // console.log(svgElement.childElementCount);
+    // console.log(svgElement.children[1].nodeType);
+    // console.log(svgElement.children[1].children[4]);
+    // console.log(svgElement.children[1].children[4].children[0]);
+    // console.log(
+    //   svgElement.children[1].children[4].children[0].getAttribute("visibility")
     // );
-    // // // remove the text
-    // // const regEx5 = /\B<text.*?<\/text>\B/g;
-    // // const nextSVG5 = nextSVG4.replace(regEx5, "");
-
-    // // Remove <g id="two-8" opacity="1"></g> like strings
-    // const regEx6 = /\B<g id="two-\d*?" opacity="\d*?"><\/g>\B/g;
-    // const nextSVG6 = nextSVG5.replace(regEx6, "");
-
-    // // Remove the id="two-126" like strings
-    // const regEx7 = /\sid="two-\d*?"(\B|\s)/g;
-    // const nextSVG7 = nextSVG6.replace(regEx7, "");
-
-    // // // Remove the hidden groups
-    // // const regEx8 = /<g.+?(?=visibility="hidden").*?<\/g>/g;
-    // // const nextSVG8 = nextSVG7.replace(regEx8, "");
-    // console.log(nextSVG8);
+    // svgElement.children[0].remove();
+    // console.log(svgElement.childElementCount);
+    //console.log(svgElement.outerHTML);
   }
 
   animateCanvas(): void {
@@ -648,6 +546,12 @@ export default class SphereFrame extends VueComponent {
       case "zoomFit":
         // This is a tool that only needs to run once and then the actionMode should be the same as the is was before the zoom fit (and the tool should be the same)
         this.zoomTool.doZoomFit(this.canvasSize);
+        this.store.commit.revertActionMode();
+        break;
+
+      case "iconFactory":
+        // This is a tool that only needs to run once and then the actionMode should be the same as the is was before the click (and the tool should be the same)
+        this.iconFactoryTool.createIconPaths();
         this.store.commit.revertActionMode();
         break;
 

@@ -23,7 +23,6 @@ export abstract class SENodule {
     SENodule.SEGMENT_COUNT = 0;
     SENodule.ANGLEMARKER_COUNT = 0;
     SENodule.CIRCLE_COUNT = 0;
-
     SENodule.EXPR_COUNT = 0;
   }
 

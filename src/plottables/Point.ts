@@ -6,6 +6,7 @@ import SETTINGS, { LAYER } from "@/global-settings";
 import Nodule, { DisplayStyle } from "./Nodule";
 import { Vector3 } from "three";
 import { StyleOptions, StyleEditPanels } from "@/types/Styles";
+import { SENodule } from "@/models/SENodule";
 
 /**
  * Each Point object is uniquely associated with a SEPoint object.
@@ -86,6 +87,11 @@ export default class Point extends Nodule {
       SETTINGS.point.drawn.radius.back + SETTINGS.point.glowing.annularWidth
     );
 
+    //Set the path.id's for all the TwoJS objects which are not glowing. This is for exporting to Icon.
+    Nodule.POINT_COUNT++;
+    this.frontPoint.id = 13000000 + Nodule.POINT_COUNT * 100 + 0;
+    this.backPoint.id = 13000000 + Nodule.POINT_COUNT * 100 + 1;
+
     // Set the location of the points front/back/glowing/drawn
     // The location of all points front/back/glowing/drawn is controlled by the
     //  Two.Group that they are all members of. To translate the group is to translate all points
@@ -95,10 +101,10 @@ export default class Point extends Nodule {
     this.glowingBackPoint.translation = this.defaultScreenVectorLocation;
     this.backPoint.translation = this.defaultScreenVectorLocation;
 
-    // The points are not initially visible
-    this.frontPoint.visible = false;
+    // The points are not initially glowing but are visible for the temporary object
+    this.frontPoint.visible = true;
     this.glowingFrontPoint.visible = false;
-    this.backPoint.visible = false;
+    this.backPoint.visible = true;
     this.glowingBackPoint.visible = false;
 
     // Set the properties of the points that never change - stroke width and glowing options

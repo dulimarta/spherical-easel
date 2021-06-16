@@ -203,18 +203,20 @@
     <Pane min-size="5"
       max-size="25"
       :size="stylePanelMinified ? 5 : 25">
-      <div ref="stylePanel"
-        id="styleContainer">
-        <div>
-          <v-btn icon
-            @click="minifyStylePanel">
-            <v-icon v-if="stylePanelMinified">mdi-arrow-left</v-icon>
-            <v-icon v-else>mdi-arrow-right</v-icon>
-          </v-btn>
+      <v-card>
+        <div ref="stylePanel"
+          id="styleContainer">
+          <div>
+            <v-btn icon
+              @click="minifyStylePanel">
+              <v-icon v-if="stylePanelMinified">mdi-arrow-left</v-icon>
+              <v-icon v-else>mdi-arrow-right</v-icon>
+            </v-btn>
+          </div>
+          <StylePanel :minified="stylePanelMinified"
+            v-on:toggle-style-panel="minifyStylePanel" />
         </div>
-        <StylePanel :minified="stylePanelMinified"
-          v-on:toggle-style-panel="minifyStylePanel" />
-      </div>
+      </v-card>
     </Pane>
 
   </Splitpanes>

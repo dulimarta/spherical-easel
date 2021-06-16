@@ -99,7 +99,9 @@ export default {
   },
   setActionMode(state: AppState, mode: { id: string; name: string }): void {
     // zoomFit is a one-off tool, so the previousActionMode should never be "zoomFit" (avoid infinite loops too!)
-    if (state.actionMode != "zoomFit") {
+    if (
+      !(state.actionMode === "zoomFit" || state.actionMode === "iconFactory")
+    ) {
       state.previousActionMode = state.actionMode;
       state.previousActiveToolName = state.activeToolName;
     }

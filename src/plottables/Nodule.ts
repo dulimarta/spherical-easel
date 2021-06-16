@@ -21,13 +21,16 @@ export default abstract class Nodule implements Stylable, Resizeable {
   protected static ANGLEMARKER_COUNT = 0;
   protected static CIRCLE_COUNT = 0;
   protected static SEGMENT_COUNT = 0;
+  protected static POINT_COUNT = 0;
+  protected static LABEL_COUNT = 0;
 
   static resetAllCounters(): void {
     Nodule.LINE_COUNT = 0;
     Nodule.ANGLEMARKER_COUNT = 0;
     Nodule.CIRCLE_COUNT = 0;
-    Nodule.LINE_COUNT = 0;
     Nodule.SEGMENT_COUNT = 0;
+    Nodule.POINT_COUNT = 0;
+    Nodule.LABEL_COUNT = 0;
   }
 
   // Declare owner, this field will be initialized by the associated owner of the plottable Nodule

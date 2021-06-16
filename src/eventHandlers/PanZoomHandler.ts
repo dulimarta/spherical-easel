@@ -268,7 +268,6 @@ export default class PanZoomHandler implements ToolStrategy {
     if (this._mode == ZoomMode.FIT) return;
     this.isDragging = false;
     this.isMousePressed = false;
-    EventBus.fire("export-current-svg", {});
   }
 
   activate(): void {

@@ -72,7 +72,7 @@ export default {
     ],
     selectedColor: {
       front: "hsla(0, 100%, 50%, 0.5)",
-      back: "hsla(0, 100%, 75%, 0.2)"
+      back: "2)"
     }
   },
   zoom: {
@@ -141,7 +141,7 @@ export default {
       annularWidth: 3, // width is the width of the annular region around the point that shows the glow it is always bigger than the drawn radius
       fillColor: {
         front: "hsla(0, 100%, 50%, 1)",
-        back: "hsla(0, 100%, 75%, 0.7)"
+        back: "hsla(0, 100%, 75%, 0.71)"
       },
       strokeColor: {
         // is this ever used?
@@ -212,7 +212,7 @@ export default {
       // No fill for line segments
       strokeColor: {
         front: "hsla(0, 100%, 50%, 1)",
-        back: "hsla(0, 100%, 75%, 0.7)"
+        back: "hsla(0, 100%, 75%, 0.72)"
       },
       edgeWidth: 5 // edgeWidth/2 is the width of the region around the segment that shows the glow
       // the dashing pattern is copied from the drawn version
@@ -260,7 +260,7 @@ export default {
       // No fill for lines
       strokeColor: {
         front: "hsla(0, 100%, 50%, 1)",
-        back: "hsla(0, 100%, 75%, 0.7)"
+        back: "hsla(0, 100%, 75%, 0.73)"
       },
       edgeWidth: 5 // edgeWidth/2 is the width of the region around the line that shows the glow
       // Dashing is the same as the drawn version
@@ -312,7 +312,7 @@ export default {
       // There is no fill for highlighting objects
       strokeColor: {
         front: "hsla(0, 100%, 50%, 1)",
-        back: "hsla(0, 100%, 75%, 0.7)"
+        back: "hsla(0, 100%, 75%, 0.74)"
       },
       edgeWidth: 5 // edgeWidth/2 is the width of the region around the circle (on each side) that shows the glow
       // The dash pattern will always be the same as the drawn version
@@ -404,7 +404,7 @@ export default {
       // There is no fill for highlighting objects
       strokeColor: {
         front: "hsla(0, 100%, 50%, 1)",
-        back: "hsla(0, 100%, 75%, 0.7)"
+        back: "hsla(0, 100%, 75%, 0.75)"
       },
       circular: { edgeWidth: 5 }, // edgeWidth/2 is the width of the region around the angle (on all sides) that shows the glow
       straight: { edgeWidth: 2 }
@@ -422,6 +422,54 @@ export default {
       }
       // The width is the same as the default drawn version
       // The dash pattern will always be the same as the default drawn version
+    }
+  },
+  icons: {
+    boundaryCircle: {
+      strokeWidth: 1.5,
+      color: "hsla(0, 0%, 0%, 1)"
+    },
+    circle: {
+      strokeWidth: {
+        front: 1,
+        back: 1
+      },
+      edgeColor: { front: "hsla(0, 0%, 0%, 1)", back: "hsla(0, 0%, 0%, 1)" }
+    },
+    point: {
+      scale: {
+        front: 7,
+        back: 7
+      },
+      strokeWidth: {
+        front: 1,
+        back: 1
+      },
+      edgeColor: { front: "hsla(0, 0%, 0%, 1)", back: "hsla(0, 0%, 0%, 1)" },
+      fillColor: {
+        front: "hsla(0, 100%, 75%, 1)",
+        back: "hsla(0, 100%, 75%, 1)"
+      }
+    },
+    line: {
+      strokeWidth: {
+        front: 1.5,
+        back: 1.5
+      },
+      edgeColor: {
+        front: "hsla(217, 90%, 61%, 1)",
+        back: "hsla(217, 90%, 80%, 1)"
+      }
+    },
+    segment: {
+      strokeWidth: {
+        front: 1.5,
+        back: 1.5
+      },
+      edgeColor: {
+        front: "hsla(217, 90%, 61%, 1)",
+        back: "hsla(217, 90%, 80%, 1)"
+      }
     }
   },
   /* Controls the length of time (in ms) the tool tip are displayed */

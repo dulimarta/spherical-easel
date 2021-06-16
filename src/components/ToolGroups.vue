@@ -63,7 +63,7 @@
     </div>
     <!-- The Construction Tool Group only shown if the user has permission to use a tool in this group.
     Note the use of the translation $t(key_value).-->
-    <div id="BasicToolGroup"
+    <div id="ConstructionToolGroup"
       v-show="nonEmptyGroup('construction')">
       <h3 class="body-1 font-weight-bold">
         {{ $t("toolGroups.ConstructionTools") }}
@@ -148,6 +148,26 @@
         </ToolButton>
       </v-btn-toggle>
     </div>
+
+    <div id="DeveloperToolGroup"
+      v-show="nonEmptyGroup('developerOnly')">
+      <h3 class="body-1 font-weight-bold">
+        {{ $t("toolGroups.DeveloperOnlyTools") }}
+      </h3>
+      <v-btn-toggle v-model="actionMode"
+        @change="switchActionMode"
+        class="mr-2 d-flex flex-wrap accent">
+        <!--- Use Array.filter to select only edit tools -->
+        <ToolButton v-for="(button, pos) in buttonList.filter(
+            b => b.toolGroup === 'developerOnly'
+          )"
+          :key="pos"
+          :button="button"
+          v-on:displayOnlyThisToolUseMessage="displayOnlyThisToolUseMessageFunc">
+        </ToolButton>
+      </v-btn-toggle>
+    </div>
+
   </div>
 </template>
 
@@ -205,7 +225,7 @@ export default class ToolGroups extends Vue {
       id: 0,
       actionModeValue: "point",
       displayedName: "CreatePointDisplayedName",
-      icon: "mdi-vector-point",
+      icon: "$vuetify.icons.value.point",
       toolTipMessage: "CreatePointToolTipMessage",
       toolUseMessage: "CreatePointToolUseMessage",
       displayToolUseMessage: false,
@@ -215,7 +235,7 @@ export default class ToolGroups extends Vue {
       id: 5,
       actionModeValue: "line",
       displayedName: "CreateLineDisplayedName",
-      icon: "$vuetify.icons.value.test",
+      icon: "$vuetify.icons.value.line",
       toolTipMessage: "CreateLineToolTipMessage",
       toolUseMessage: "CreateLineToolUseMessage",
       displayToolUseMessage: false,
@@ -225,7 +245,7 @@ export default class ToolGroups extends Vue {
       id: 10,
       actionModeValue: "segment",
       displayedName: "CreateLineSegmentDisplayedName",
-      icon: "mdi-vector-line",
+      icon: "$vuetify.icons.value.segment",
       toolTipMessage: "CreateLineSegmentToolTipMessage",
       toolUseMessage: "CreateLineSegmentToolUseMessage",
       displayToolUseMessage: false,
@@ -235,7 +255,7 @@ export default class ToolGroups extends Vue {
       id: 20,
       actionModeValue: "circle",
       displayedName: "CreateCircleDisplayedName",
-      icon: "mdi-vector-circle-variant",
+      icon: "$vuetify.icons.value.circle",
       toolTipMessage: "CreateCircleToolTipMessage",
       toolUseMessage: "CreateCircleToolUseMessage",
       displayToolUseMessage: false,
@@ -414,6 +434,16 @@ export default class ToolGroups extends Vue {
       toolUseMessage: "CreateCoordinateToolUseMessage",
       displayToolUseMessage: false,
       toolGroup: "measurement"
+    },
+    {
+      id: 0,
+      actionModeValue: "iconFactory",
+      displayedName: "CreateIconDisplayedName",
+      icon: "mdi-plus",
+      toolTipMessage: "CreateIconToolTipMessage",
+      toolUseMessage: "CreateIconToolUseMessage",
+      displayToolUseMessage: false,
+      toolGroup: "developerOnly"
     }
     // {
     //   id: 75,

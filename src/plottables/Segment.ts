@@ -101,7 +101,8 @@ export default class Segment extends Nodule {
   constructor() {
     // Initialize the Two.Group
     super();
-    this.name = "Segment-" + Nodule.SEGMENT_COUNT++;
+    Nodule.SEGMENT_COUNT++;
+    this.name = "Segment-" + Nodule.SEGMENT_COUNT;
     // Create the vertices for the segment
     const vertices: Two.Vector[] = [];
     for (let k = 0; k < SUBDIVS; k++) {
@@ -129,6 +130,12 @@ export default class Segment extends Nodule {
     this.backExtra.vertices.splice(0);
     this.glowingBackExtra.vertices.splice(0);
 
+    //Set the path.id's for all the TwoJS objects which are not glowing. This is for exporting to Icon.
+    this.frontPart.id = 14000000 + Nodule.SEGMENT_COUNT * 100 + 0;
+    this.frontExtra.id = 14000000 + Nodule.SEGMENT_COUNT * 100 + 1;
+    this.backPart.id = 14000000 + Nodule.SEGMENT_COUNT * 100 + 2;
+    this.backExtra.id = 14000000 + Nodule.SEGMENT_COUNT * 100 + 3;
+
     // Set the style that never changes -- Fill
     this.frontPart.noFill();
     this.glowingFrontPart.noFill();
@@ -139,7 +146,7 @@ export default class Segment extends Nodule {
     this.backExtra.noFill();
     this.glowingBackExtra.noFill();
 
-    // The segment is not initially glowing
+    // The segment is not initially glowing but leave the regular parts visible for the temporary objects
     this.frontPart.visible = true;
     this.glowingFrontPart.visible = false;
     this.backPart.visible = true;

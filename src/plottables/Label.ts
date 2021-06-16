@@ -159,6 +159,8 @@ export default class Label extends Nodule {
 
   constructor() {
     super();
+    Nodule.LABEL_COUNT++;
+
     // Set the location of the points front/back/glowing/drawn
     // The location of all points front/back/glowing/drawn is controlled by the
     //  Two.Group that they are all members of. To translate the group is to translate all points

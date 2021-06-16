@@ -10,6 +10,8 @@ import TestIcon2 from "../components/icons/TestIcon2.vue";
 import TestIcon3 from "../components/icons/TestIcon3.vue";
 import TestIcon4 from "../components/icons/TestIcon4.vue";
 import TestIcon5 from "../components/icons/TestIcon5.vue";
+import IconBase from "../components/IconBase.vue";
+import IconBox from "../assets/icons/IconBox.vue";
 
 /* This allows us to set the global style variables to adjust the look and feel of the 
 app from one central place. */
@@ -17,8 +19,33 @@ const vuetify = new Vuetify({
   iconfont: "mdiSvg",
   icons: {
     values: {
-      test: {
-        component: TestIcon4
+      point: {
+        component: IconBase,
+        props: {
+          iconName: "Point",
+          iconFile: "/icons/iconPointPaths.svg"
+        }
+      },
+      line: {
+        component: IconBase,
+        props: {
+          iconName: "Line",
+          iconFile: "/icons/iconLinePaths.svg"
+        }
+      },
+      segment: {
+        component: IconBase,
+        props: {
+          iconName: "Segment",
+          iconFile: "/icons/iconSegmentPaths.svg"
+        }
+      },
+      circle: {
+        component: IconBase,
+        props: {
+          iconName: "Circle",
+          iconFile: "/icons/iconCirclePaths.svg"
+        }
       }
     }
   },

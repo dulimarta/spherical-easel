@@ -152,7 +152,8 @@ export default class Circle extends Nodule {
 
   constructor() {
     super();
-    this.name = "Circle-" + Nodule.CIRCLE_COUNT++;
+    Nodule.CIRCLE_COUNT++;
+    this.name = "Circle-" + Nodule.CIRCLE_COUNT;
     // Create the array to hold the
     this.originalVertices = [];
     // As the circle is moved around the vertices are passed between the front and back parts, but it
@@ -194,6 +195,10 @@ export default class Circle extends Nodule {
     this.backPart = this.frontPart.clone();
     this.glowingBackPart = this.frontPart.clone();
 
+    //Set the path.id's for all the TwoJS objects which are not glowing. This is for exporting to Icon.
+    this.frontPart.id = 11000000 + Nodule.CIRCLE_COUNT * 100 + 0;
+    this.backPart.id = 11000000 + Nodule.CIRCLE_COUNT * 100 + 1;
+
     // Set the styles that are always true
     // The front/back parts have no fill because that is handled by the front/back fill
     // The front/back fill have no stroke because that is handled by the front/back part
@@ -212,6 +217,11 @@ export default class Circle extends Nodule {
         this.dashArrayBack.push(v)
       );
     }
+    //Turn off the glowing display initially but leave it on so that the temporary objects show up
+    this.frontPart.visible = true;
+    this.backPart.visible = true;
+    this.glowingBackPart.visible = false;
+    this.glowingFrontPart.visible = false;
 
     // Now organize the fills
     // In total there are 4*SUBDIVISIONS+2 (The +2 two for the extra vertices to close up the annular region with the radius is
@@ -231,10 +241,18 @@ export default class Circle extends Nodule {
     // create the back part
     this.backFill = this.frontFill.clone();
 
+    //Set the path.id's for all the TwoJS objects which are not glowing. This is for exporting to Icon.
+    this.frontFill.id = 11000000 + Nodule.CIRCLE_COUNT * 100 + 2;
+    this.backFill.id = 11000000 + Nodule.CIRCLE_COUNT * 100 + 3;
+
     // Set the styles that are always true
     // The front/back fill have no stroke because that is handled by the front/back part
     this.frontFill.noStroke();
     this.backFill.noStroke();
+
+    //Turn off the display initially
+    this.frontFill.visible = false;
+    this.backFill.visible = false;
   }
   /**
    * Reorient the unit circle in 3D and then project the points to 2D
@@ -724,24 +742,20 @@ export default class Circle extends Nodule {
     this.glowingBackPart.visible = true;
     this.backFill.visible = true;
   }
-
   glowingDisplay(): void {
     this.frontGlowingDisplay();
     this.backGlowingDisplay();
   }
-
   frontNormalDisplay(): void {
     this.frontPart.visible = true;
     this.glowingFrontPart.visible = false;
     this.frontFill.visible = true;
   }
-
   backNormalDisplay(): void {
     this.backPart.visible = true;
     this.glowingBackPart.visible = false;
     this.backFill.visible = true;
   }
-
   normalDisplay(): void {
     this.frontNormalDisplay();
     this.backNormalDisplay();
