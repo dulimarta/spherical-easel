@@ -51,6 +51,7 @@ export interface AppState {
   inverseTotalRotationMatrix: Matrix4; // Initially the identity. This is the composition of all the inverses of the rotation matrices applied to the sphere.
   svgCanvas: HTMLDivElement | null;
   hasUnsavedNodules: boolean;
+  temporaryProfilePicture: string;
 }
 /* This interface lists all the properties that each tool/button must have. */
 export interface ToolButtonType {
@@ -234,4 +235,11 @@ export interface ConstructionInFirestore {
   description: string;
   rotationMatrix?: string;
   preview?: string;
+}
+/* UserProfile as stored in Firestore "users" collection */
+export interface UserProfile {
+  profilePictureURL?: string;
+  displayName?: string;
+  location?: string;
+  role?: string;
 }

@@ -16,11 +16,13 @@ export default class SliderHandler extends MouseHandler {
   // super.mouseMoved(event);
   // console.debug(this.currentSphereVector);
   // }
-  mousePressed(event: MouseEvent): void {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  mousePressed(_event: MouseEvent): void {
     // No code yet
   }
 
-  mouseReleased(event: MouseEvent): void {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  mouseReleased(_event: MouseEvent): void {
     if (this.isOnSphere) EventBus.fire("new-slider-requested", {});
   }
 
@@ -34,7 +36,12 @@ export default class SliderHandler extends MouseHandler {
     EventBus.unlisten("new-slider-confirmed");
   }
 
-  createSlider(sliderParams: any): void {
+  createSlider(sliderParams: {
+    min: number;
+    max: number;
+    step: number;
+    value: number;
+  }): void {
     console.debug(
       sliderParams,
       "at",

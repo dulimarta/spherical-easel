@@ -76,5 +76,10 @@
     "unregistering",
     "untransform",
     "untransforming"
+  ],
+  "i18n-ally.localesPaths": [
+    "docs/languages",
+    "src/languages",
+    "src/assets/languages"
   ]
 }

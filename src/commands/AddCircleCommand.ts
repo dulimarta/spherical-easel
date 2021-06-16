@@ -4,7 +4,7 @@ import { SEPoint } from "@/models/SEPoint";
 import { SELabel } from "@/models/SELabel";
 import { SENodule } from "@/models/SENodule";
 import Circle from "@/plottables/Circle";
-import { Matrix4, Skeleton, Vector3 } from "three";
+import { Matrix4, Vector3 } from "three";
 import { DisplayStyle } from "@/plottables/Nodule";
 import Label from "@/plottables/Label";
 import SETTINGS from "@/global-settings";

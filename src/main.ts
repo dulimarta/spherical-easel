@@ -11,6 +11,7 @@ import i18n from "./i18n";
 import firebase from "firebase/app";
 import "firebase/auth";
 import "firebase/firestore";
+import "firebase/storage";
 import "@/extensions/three.extensions";
 import "@/extensions/number.extensions";
 
@@ -27,10 +28,11 @@ const firebaseConfig = {
 
 firebase.initializeApp(firebaseConfig);
 
-// Allow all .vue components to access Firebase Auth via
-// a new instance variable this.$appAuth
+// Allow all .vue components to access Firebase Auth, Firestore, and Storage
+// vianew instance variables this.$appAuth, this.$appDB, this.$appStorage
 Vue.prototype.$appAuth = firebase.auth();
 Vue.prototype.$appDB = firebase.firestore();
+Vue.prototype.$appStorage = firebase.storage();
 Vue.config.productionTip = false;
 
 new Vue({

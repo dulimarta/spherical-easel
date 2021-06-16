@@ -12,8 +12,6 @@ import { SESegment } from "./SESegment";
 import { SELine } from "./SELine";
 import { SECircle } from "./SECircle";
 import { SEAngleMarker } from "./SEAngleMarker";
-import { SESegmentLength } from "./SESegmentLength";
-import AngleMarker from "@/plottables/AngleMarker";
 
 const styleSet = new Set([
   Styles.labelTextScalePercent,

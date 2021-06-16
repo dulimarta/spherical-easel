@@ -1,6 +1,7 @@
 <template>
   <div @mouseenter="onListEnter"
     @mouseleave="onListLeave">
+    <span v-if="items.length === 0">No data</span>
     <v-list three-line>
       <template v-for="(r,pos) in items">
         <v-hover v-slot:default="{hover}"

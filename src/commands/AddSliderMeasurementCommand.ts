@@ -2,7 +2,6 @@ import { Command } from "./Command";
 import { SENodule } from "@/models/SENodule";
 import { SESlider } from "@/models/SESlider";
 import { AddMeasurementCommand } from "./AddMeasurementCommand";
-import { SELine } from "@/models/SELine";
 
 export class AddSliderMeasurementCommand extends AddMeasurementCommand {
   /**

@@ -165,7 +165,6 @@ export default class Style extends Vue {
 
   @Watch("minified")
   closeAllPanels(): void {
-    console.log("minified");
     this.activePanel = undefined;
     // If the user has been styling objects and then, without selecting new objects, or deactivating selection the style state should be saved.
     EventBus.fire("save-style-state", {});

@@ -51,13 +51,21 @@
       display and other global options-->
       <span>{{whoami}} {{uid.substring(0,8)}}</span>
 
-      <v-icon class="mx-2"
+      <v-img id="profilePic"
+        v-if="profilePicUrl"
+        class="mx-2"
+        contain
+        :src="profilePicUrl"
+        :aspect-ratio="1/1"
+        max-width="48"></v-img>
+      <v-icon v-else
+        class="mx-2"
         @click="doLoginOrCheck">mdi-account</v-icon>
       <v-icon v-if="whoami !== ''"
         :disabled="!hasObjects"
         class="mr-2"
         @click="$refs.saveConstructionDialog.show()">mdi-share</v-icon>
-      <router-link to="/settings">
+      <router-link to="/settings/">
         <v-icon>mdi-cog</v-icon>
       </router-link>
     </v-app-bar>
@@ -140,9 +148,18 @@ import EventBus from "@/eventHandlers/EventBus";
 import { Error, FirebaseAuth, User } from "@firebase/auth-types";
 import {
   FirebaseFirestore,
-  DocumentReference
+  DocumentReference,
+  DocumentSnapshot
 } from "@firebase/firestore-types";
+import { Unsubscribe } from "@firebase/util";
 import { Command } from "./commands/Command";
+
+// Register vue router in-component navigation guard functions
+Component.registerHooks([
+  "beforeRouteEnter",
+  "beforeRouteLeave",
+  "beforeRouteUpdate"
+]);
 /* This allows for the State of the app to be initialized with in vuex store */
 @Component({ components: { MessageBox, Dialog, ConstructionLoader } })
 export default class App extends Vue {
@@ -158,19 +175,17 @@ export default class App extends Vue {
     saveConstructionDialog: VueComponent & DialogAction;
   };
   footerColor = "accent";
-  authSubscription: any;
+  authSubscription!: Unsubscribe;
   whoami = "";
   uid = "";
+  profilePicUrl: string | null = null;
   svgRoot!: SVGElement;
 
   get hasObjects(): boolean {
-    // Any objects must include at least one pointd
+    // Any objects must include at least one point
     return this.$store.direct.getters.allSEPoints().length > 0;
   }
 
-  // get firebaseUid(): string | undefined {d
-  //   return this.$appAuth.currentUser?.udddid;
-  // }
   mounted(): void {
     this.$store.direct.commit.init();
     EventBus.listen("set-footer-color", this.setFooterColor);
@@ -179,6 +194,20 @@ export default class App extends Vue {
         if (u !== null) {
           this.whoami = u.email ?? "unknown email";
           this.uid = u.uid;
+          this.$appDB
+            .collection("users")
+            .doc(this.uid)
+            .get()
+            .then((ds: DocumentSnapshot) => {
+              console.log("Fetching profile picture?", ds);
+              if (ds.exists) {
+                const { profilePictureURL } = ds.data() as any;
+                console.log("Fetching profile picture?", ds);
+                if (profilePictureURL) {
+                  this.profilePicUrl = profilePictureURL;
+                }
+              }
+            });
         } else this.whoami = "";
       }
     );
@@ -193,8 +222,8 @@ export default class App extends Vue {
     this.whoami = "";
     this.uid = "";
   }
-  setFooterColor(e: unknown): void {
-    this.footerColor = (e as any).color;
+  setFooterColor(e: { color: string }): void {
+    this.footerColor = e.color;
   }
 
   doLogout(): void {
@@ -258,7 +287,6 @@ export default class App extends Vue {
         preview: svgPreviewData
       })
       .then((doc: DocumentReference) => {
-        // console.log("Inserted", doc.id);
         EventBus.fire("show-alert", {
           key: "objectTree.firestoreConstructionSaved",
           keyOptions: { docId: doc.id },
@@ -289,5 +317,9 @@ export default class App extends Vue {
 }
 .footer-color {
   color: "accent";
+}
+
+#profilePic {
+  border-radius: 50%;
 }
 </style>

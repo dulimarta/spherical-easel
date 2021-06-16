@@ -21,7 +21,7 @@ export default class HideObjectHandler extends Highlighter {
     super(layers);
   }
 
-  mousePressed(event: MouseEvent): void {
+  mousePressed(_event: MouseEvent): void {
     //Select an object to delete
     if (this.isOnSphere) {
       // In the case of multiple selections prioritize points > lines > segments > circles > labels
