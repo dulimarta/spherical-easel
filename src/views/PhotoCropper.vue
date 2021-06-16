@@ -3,7 +3,7 @@
     <ImageCropper class="cropper"
       v-if="inputImageBase64.length > 0"
       :src="inputImageBase64"
-      :stencil-size="{width: 160, height: 160}"
+      :stencil-props="{ aspectRation: 1/1, resizable: true}"
       :stencil-component="$options.components.CircleStencil"
       @change="onCropChanged">
     </ImageCropper>
@@ -50,9 +50,9 @@ type CropDetails = {
 };
 @Component({ components: { ImageCropper, CircleStencil } })
 export default class PhotoCropper extends Vue {
-  $appDB!: FirebaseFirestore;
-  $appAuth!: FirebaseAuth;
-  $appStorage!: FirebaseStorage;
+  readonly $appDB!: FirebaseFirestore;
+  readonly $appAuth!: FirebaseAuth;
+  readonly $appStorage!: FirebaseStorage;
   inputImageBinary: ImageBitmap | null = null;
   croppedImageBase64 = "";
   croppedImageBinary: Blob | null = null;
@@ -82,14 +82,6 @@ export default class PhotoCropper extends Vue {
 
   onCropChanged(z: CropDetails): void {
     if (this.inputImageBinary) {
-      const context = z.canvas.getContext("2d");
-      context?.drawImage(
-        this.inputImageBinary,
-        z.coordinates.left,
-        z.coordinates.top,
-        z.coordinates.width,
-        z.coordinates.height
-      );
       this.croppedImageBase64 = z.canvas.toDataURL("image/png");
       this.croppedImageBinary = this.dataURItoBlob(this.croppedImageBase64);
     }
@@ -127,10 +119,12 @@ export default class PhotoCropper extends Vue {
         .then((url: string) => {
           this.$emit("photo-captured", {});
           this.$router.go(-this.goBackSteps);
+
+          // Use {merge:true} to update or create new fields
           return this.$appDB
             .collection("users")
             .doc(uid)
-            .set({ profilePictureURL: url });
+            .set({ profilePictureURL: url }, { merge: true });
         })
         .then(() => {
           EventBus.fire("show-alert", {

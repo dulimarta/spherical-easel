@@ -60,9 +60,9 @@ export default class PhotoCapture extends Vue {
     video: HTMLVideoElement;
     canvas: HTMLCanvasElement;
   };
-  $appDB!: FirebaseFirestore;
-  $appAuth!: FirebaseAuth;
-  $appStorage!: FirebaseStorage;
+  readonly $appDB!: FirebaseFirestore;
+  readonly $appAuth!: FirebaseAuth;
+  readonly $appStorage!: FirebaseStorage;
   hasCamera = false;
   stream: MediaStream | null = null;
   videoTrack: MediaStreamTrack | null = null;

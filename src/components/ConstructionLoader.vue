@@ -69,6 +69,8 @@ import { Matrix4 } from "three";
 export default class ConstructionLoader extends Vue {
   readonly $appDB!: FirebaseFirestore;
   readonly $appAuth!: FirebaseAuth;
+
+  snapshotUnsubscribe: (() => void) | null = null;
   publicConstructions: Array<SphericalConstruction> = [];
   privateConstructions: Array<SphericalConstruction> = [];
   shareURL = "";
@@ -86,7 +88,7 @@ export default class ConstructionLoader extends Vue {
 
   mounted(): void {
     if (this.firebaseUid) {
-      this.$appDB
+      this.snapshotUnsubscribe = this.$appDB
         .collection("users")
         .doc(this.firebaseUid)
         .collection("constructions")
@@ -97,6 +99,11 @@ export default class ConstructionLoader extends Vue {
     this.$appDB.collection("constructions").onSnapshot((qs: QuerySnapshot) => {
       this.populateData(qs, this.publicConstructions);
     });
+  }
+
+  beforeDestroy(): void {
+    // Unregister the update function
+    if (this.snapshotUnsubscribe) this.snapshotUnsubscribe();
   }
 
   populateData(

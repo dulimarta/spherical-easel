@@ -13,7 +13,9 @@
 
           <div id="profileInfo"
             class="text-body-2"
-            :style="{flexDirection : updatingPicture ? 'column':'row'}">
+            :style="{
+              flexDirection : updatingPicture ? 'column':'row',
+              alignItems: updatingPicture ? 'flex-center' : 'fllex-start'}">
             <div class="mx-3">
               <!-- Nested router view for handling profile picture update -->
               <router-view @photo-change="setUpdatingPicture(true)"
@@ -122,7 +124,7 @@ div#container {
 div#profileInfo {
   display: flex;
   // flex-direction: row;
-  align-items: flex-start;
+  // align-items: flex-start;
 
   & > :nth-child(2) {
     // background-color: map-get($green, lighten-2);
@@ -148,8 +150,8 @@ export default class Settings extends Vue {
   $refs!: {
     imageUpload: HTMLInputElement;
   };
-  $appAuth!: FirebaseAuth;
-  $appDB!: FirebaseFirestore;
+  readonly $appAuth!: FirebaseAuth;
+  readonly $appDB!: FirebaseFirestore;
   updatingPicture = false;
   selectedLanguage: unknown = {};
   languages = SETTINGS.supportedLanguages;
@@ -172,6 +174,7 @@ export default class Settings extends Vue {
       .then((ds: DocumentSnapshot) => {
         if (ds.exists) {
           const uProfile = ds.data() as UserProfile;
+          console.log("From Firestore", uProfile);
           this.userDisplayName = uProfile.displayName ?? "N/A";
           this.userLocation = uProfile.location ?? "N/A";
           if (uProfile.role) this.userRole = uProfile.role;

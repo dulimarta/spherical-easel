@@ -40,8 +40,8 @@ type FileEvent = EventTarget & { files: FileList | undefined };
 
 @Component
 export default class extends Vue {
-  $appAuth!: FirebaseAuth;
-  $appDB!: FirebaseFirestore;
+  readonly $appAuth!: FirebaseAuth;
+  readonly $appDB!: FirebaseFirestore;
 
   profileImage: string | null = null;
 
@@ -55,7 +55,7 @@ export default class extends Vue {
       .then((ds: DocumentSnapshot) => {
         if (ds.exists) {
           const userDetails = ds.data() as UserProfile;
-          this.profileImage = userDetails.profilePictureURL;
+          this.profileImage = userDetails.profilePictureURL ?? null;
         }
       });
   }
