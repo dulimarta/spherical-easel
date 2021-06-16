@@ -19,7 +19,6 @@ import { ConstructionScript } from "@/types";
 const noduleDictionary = new Map<string, SENodule>();
 
 function executeIndividual(command: string): Command {
-  // console.log("Dictionary contains", noduleDictionary.size, " objects");
   const slashPos = command.indexOf("/");
   if (slashPos < 0) {
     const errMsg = `Invalid command format: ${command}`;
@@ -84,7 +83,6 @@ function executeIndividual(command: string): Command {
 function interpret(command: string | Array<string>): void {
   if (typeof command === "string") {
     /* This is an individual command */
-    // console.log("Command", command);
     executeIndividual(command).execute();
   } else {
     // This is a CommandGroup, interpret each command individually
@@ -93,7 +91,6 @@ function interpret(command: string | Array<string>): void {
       // Remove leading and training quotes
       .map((s: string) => s.replace(/^"/, "").replace(/"$/, ""))
       .forEach((c: string /*, gPos: number*/) => {
-        // console.log("Sub-command", gPos, c);
         group.addCommand(executeIndividual(c));
       });
     // Then execute as a group
@@ -102,7 +99,6 @@ function interpret(command: string | Array<string>): void {
 }
 
 export function run(script: ConstructionScript): void {
-  // console.log("Running script", script);
   // Reset the command history before interpreting a new script
   noduleDictionary.clear();
   Command.commandHistory.splice(0);

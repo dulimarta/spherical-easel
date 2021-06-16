@@ -302,7 +302,7 @@ export default class SphereFrame extends VueComponent {
   }
   //#endregion updateView
 
-  handleMouseWheel(event: MouseWheelEvent): void {
+  handleMouseWheel(event: WheelEvent): void {
     console.log("Mouse Wheel Zoom!");
     // Compute (pixelX,pixelY) = the location of the mouse release in pixel coordinates relative to
     //  the top left of the sphere frame. This is a location *post* affine transformation

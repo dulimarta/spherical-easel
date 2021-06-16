@@ -199,7 +199,6 @@ export default class ConstructionLoader extends Vue {
   }
 
   doDeleteConstruction(event: { docId: string }): void {
-    console.log("About to delete", event.docId);
     this.$appDB
       .collection("constructions")
       .doc(event.docId)

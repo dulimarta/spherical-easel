@@ -66,7 +66,6 @@ export class AddIntersectionPointCommand extends Command {
   }
 
   static parse(cmd: string, objMap: Map<string, SENodule>): Command {
-    // console.log("Parsing", cmd);
     const tokens = cmd.split("/");
     const parent1 = objMap.get(tokens[3]) as SEOneDimensional;
     const parent2 = objMap.get(tokens[4]) as SEOneDimensional;

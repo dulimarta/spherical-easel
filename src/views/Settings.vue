@@ -1,36 +1,60 @@
 <template>
-  <v-container fluid>
-    <v-row>
-      <v-col cols="12"
-        sm="6">
+  <v-container>
+    <v-tabs centered
+      v-model="selectedTab">
+      <v-tab>User Profile</v-tab>
+      <v-tab>App Preferences</v-tab>
+    </v-tabs>
+    <v-tabs-items v-model="selectedTab">
+
+      <v-tab-item>
         <v-sheet elevation="2"
           class="pa-2">
-          <h3>User Profile</h3>
-          <div id="profile"
-            class="text-body-2">
-            <label>Profile image</label>
-            <transition>
-              <router-view></router-view>
-            </transition>
-            <label>Display name</label>
-            <span>Don Knuth</span>
-            <label>Email</label>
-            <span>knuthd@mail.com</span>
-            <label>Location</label>
-            <span>Somewhere, USA</span>
-            <label>Role</label>
-            <v-select :items="
-                  ['Student', 'Instructor'
-                  , 'Community Member'
-                  ]">
-            </v-select>
+
+          <div id="profileInfo"
+            class="text-body-2"
+            :style="{flexDirection : updatingPicture ? 'column':'row'}">
+            <div class="mx-3">
+              <!-- Nested router view for handling profile picture update -->
+              <router-view @photo-change="setUpdatingPicture(true)"
+                @no-capture="setUpdatingPicture(false)"
+                @photo-captured="setUpdatingPicture(false)"></router-view>
+            </div>
+            <div class="px-2">
+              <v-text-field label="Email"
+                readonly
+                v-model="userEmail" />
+              <v-text-field v-model="userDisplayName"
+                label="Display Name" />
+              <v-text-field v-model="userLocation"
+                label="Location" />
+
+              <v-select label="Role"
+                v-model="userRole"
+                :items=" 
+                ['Student', 'Instructor'
+                , 'Community Member'
+                ]">
+              </v-select>
+              <v-row justify="center">
+                <v-col cols="auto">
+                  <v-btn @click="doSave">Save</v-btn>
+                </v-col>
+                <v-col cols="auto">
+                  <v-btn class="mx-2"
+                    :disabled="!userEmail"
+                    @click="doChangePassword">Change Password</v-btn>
+                </v-col>
+                <v-col cols="auto">
+                  <v-btn color="red lighten-2">Delete Account</v-btn>
+                </v-col>
+              </v-row>
+            </div>
           </div>
-          <v-btn>Change Password</v-btn>
-          <v-btn>Delete Account</v-btn>
         </v-sheet>
-      </v-col>
-      <v-col cols="12"
-        sm="6">
+
+      </v-tab-item>
+      <v-tab-item>Second
         <v-sheet elevation="2"
           class="pa-2">
           <h3 v-t="'settings.title'"></h3>
@@ -76,21 +100,38 @@
             <v-checkbox label="Display use messages" />
           </div>
         </v-sheet>
+
+      </v-tab-item>
+    </v-tabs-items>
+
+    <v-row>
+      <v-col cols="12"
+        sm="6">
       </v-col>
     </v-row>
-    <v-btn @click="switchLocale">Save</v-btn>
   </v-container>
 </template>
 
 <style lang="scss" scoped>
+@import "~vuetify/src/styles/styles.sass";
+
 div#container {
   padding: 1rem;
 }
 
-div#profile,
+div#profileInfo {
+  display: flex;
+  // flex-direction: row;
+  align-items: flex-start;
+
+  & > :nth-child(2) {
+    // background-color: map-get($green, lighten-2);
+    flex-grow: 1;
+  }
+}
 div#appSetting {
   display: grid;
-  grid-template-columns: 1fr 3fr;
+  grid-template-columns: 1fr 3fr; // align-items: baseline;
 }
 </style>
 <script lang="ts">
@@ -98,30 +139,77 @@ import { Vue, Component } from "vue-property-decorator";
 import PhotoCapture from "@/views/PhotoCapture.vue";
 import SETTINGS from "@/global-settings";
 import { FirebaseAuth } from "@firebase/auth-types";
-import { FirebaseFirestore } from "@firebase/firestore-types";
-import { FirebaseStorage } from "@firebase/storage-types";
+import { FirebaseFirestore, DocumentSnapshot } from "@firebase/firestore-types";
+import { UserProfile } from "@/types";
+import EventBus from "@/eventHandlers/EventBus";
 
 @Component({ components: { PhotoCapture } })
 export default class Settings extends Vue {
-  $appAuth!: FirebaseAuth;
-  $appDB!: FirebaseFirestore;
-  $appStorage!: FirebaseStorage;
-
   $refs!: {
     imageUpload: HTMLInputElement;
   };
+  $appAuth!: FirebaseAuth;
+  $appDB!: FirebaseFirestore;
+  updatingPicture = false;
   selectedLanguage: unknown = {};
-  profileImage: string | null = null;
   languages = SETTINGS.supportedLanguages;
   decimalPrecision = 3;
-
+  userDisplayName = "";
+  userLocation = "";
+  userRole = "Community Member";
+  selectedTab = null;
+  get userEmail(): string | null {
+    return this.$appAuth.currentUser?.email ?? null;
+  }
+  get userUid(): string | undefined {
+    return this.$appAuth.currentUser?.uid;
+  }
+  mounted(): void {
+    this.$appDB
+      .collection("users")
+      .doc(this.userUid)
+      .get()
+      .then((ds: DocumentSnapshot) => {
+        if (ds.exists) {
+          const uProfile = ds.data() as UserProfile;
+          this.userDisplayName = uProfile.displayName ?? "N/A";
+          this.userLocation = uProfile.location ?? "N/A";
+          if (uProfile.role) this.userRole = uProfile.role;
+        }
+      });
+  }
   switchLocale(): void {
     this.$i18n.locale = (this.selectedLanguage as any).locale;
   }
+  setUpdatingPicture(flag: boolean): void {
+    this.updatingPicture = flag;
+  }
+  doSave(): void {
+    const newProf: UserProfile = {
+      displayName: this.userDisplayName,
+      location: this.userLocation,
+      role: this.userRole
+    };
+    this.$appDB
+      .collection("users")
+      .doc(this.userUid)
+      .set(newProf, { merge: true })
+      .then(() => {
+        EventBus.fire("show-alert", {
+          key: "Your profile has been update",
+          type: "info"
+        });
+      });
+  }
 
-  profilePicCaptured(event: { image: string; url: string }): void {
-    // console.log("Got an image", event.image);
-    this.profileImage = event.image;
+  doChangePassword(): void {
+    if (this.userEmail)
+      this.$appAuth.sendPasswordResetEmail(this.userEmail).then(() => {
+        EventBus.fire("show-alert", {
+          key: "A password reset link has been delivered by email",
+          type: "info"
+        });
+      });
   }
 }
 </script>

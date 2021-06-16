@@ -51,7 +51,15 @@
       display and other global options-->
       <span>{{whoami}} {{uid.substring(0,8)}}</span>
 
-      <v-icon class="mx-2"
+      <v-img id="profilePic"
+        v-if="profilePicUrl"
+        class="mx-2"
+        contain
+        :src="profilePicUrl"
+        :aspect-ratio="1/1"
+        max-width="48"></v-img>
+      <v-icon v-else
+        class="mx-2"
         @click="doLoginOrCheck">mdi-account</v-icon>
       <v-icon v-if="whoami !== ''"
         :disabled="!hasObjects"
@@ -140,7 +148,8 @@ import EventBus from "@/eventHandlers/EventBus";
 import { Error, FirebaseAuth, User } from "@firebase/auth-types";
 import {
   FirebaseFirestore,
-  DocumentReference
+  DocumentReference,
+  DocumentSnapshot
 } from "@firebase/firestore-types";
 import { Unsubscribe } from "@firebase/util";
 import { Command } from "./commands/Command";
@@ -169,6 +178,7 @@ export default class App extends Vue {
   authSubscription!: Unsubscribe;
   whoami = "";
   uid = "";
+  profilePicUrl: string | null = null;
   svgRoot!: SVGElement;
 
   get hasObjects(): boolean {
@@ -184,6 +194,20 @@ export default class App extends Vue {
         if (u !== null) {
           this.whoami = u.email ?? "unknown email";
           this.uid = u.uid;
+          this.$appDB
+            .collection("users")
+            .doc(this.uid)
+            .get()
+            .then((ds: DocumentSnapshot) => {
+              console.log("Fetching profile picture?", ds);
+              if (ds.exists) {
+                const { profilePictureURL } = ds.data() as any;
+                console.log("Fetching profile picture?", ds);
+                if (profilePictureURL) {
+                  this.profilePicUrl = profilePictureURL;
+                }
+              }
+            });
         } else this.whoami = "";
       }
     );
@@ -263,7 +287,6 @@ export default class App extends Vue {
         preview: svgPreviewData
       })
       .then((doc: DocumentReference) => {
-        // console.log("Inserted", doc.id);
         EventBus.fire("show-alert", {
           key: "objectTree.firestoreConstructionSaved",
           keyOptions: { docId: doc.id },
@@ -294,5 +317,9 @@ export default class App extends Vue {
 }
 .footer-color {
   color: "accent";
+}
+
+#profilePic {
+  border-radius: 50%;
 }
 </style>

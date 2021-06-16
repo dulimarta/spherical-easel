@@ -2,8 +2,7 @@ import Vue from "vue";
 import VueRouter, { RouteConfig } from "vue-router";
 import Easel from "@/views/Easel.vue";
 import Login from "@/views/Login.vue";
-import ProfilePicture from "@/views/ProfilePicture.vue";
-// import ConstructionLoader from "@/components/ConstructionLoader.vue";
+import PhotoCropper from "@/views/PhotoCropper.vue";
 Vue.use(VueRouter);
 
 const routes: Array<RouteConfig> = [
@@ -44,8 +43,9 @@ const routes: Array<RouteConfig> = [
       },
       {
         name: "PhotoCropper",
-        path: "photocropper",
-        component: () => import("@/views/PhotoCropper.vue")
+        path: "photocropper/:image",
+        component: PhotoCropper,
+        props: true
       }
     ]
   }
