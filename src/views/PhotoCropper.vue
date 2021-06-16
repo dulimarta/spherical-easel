@@ -12,6 +12,11 @@
         color="secondary">mdi-upload</v-icon>
       Crop & Upload
     </v-btn>
+    <v-btn @click="cancelCrop">
+      <v-icon left
+        color="secondary">mdi-close</v-icon>
+      Cancel
+    </v-btn>
 
   </div>
 </template>
@@ -25,11 +30,12 @@
 import { Cropper as ImageCropper, CircleStencil } from "vue-advanced-cropper";
 import "vue-advanced-cropper/dist/style.css";
 
-import { Component, Vue, Watch } from "vue-property-decorator";
+import { Component, Vue, Watch, Prop } from "vue-property-decorator";
 import { Route } from "vue-router";
 import { FirebaseStorage, UploadTaskSnapshot } from "@firebase/storage-types";
 import { FirebaseFirestore } from "@firebase/firestore-types";
 import { FirebaseAuth } from "@firebase/auth-types";
+import EventBus from "@/eventHandlers/EventBus";
 
 type CropDetails = {
   canvas: HTMLCanvasElement;
@@ -47,35 +53,35 @@ export default class PhotoCropper extends Vue {
   $appDB!: FirebaseFirestore;
   $appAuth!: FirebaseAuth;
   $appStorage!: FirebaseStorage;
-  inputImageBase64 = "";
   inputImageBinary: ImageBitmap | null = null;
   croppedImageBase64 = "";
   croppedImageBinary: Blob | null = null;
+  goBackSteps = 1;
 
-  beforeRouteEnter(fromRoute: Route, toRoute: Route, next: any): void {
-    console.log("Before Route Enter Cropper", fromRoute);
+  get inputImageBase64(): string {
+    return this.$store.direct.state.temporaryProfilePicture;
+  }
+
+  beforeRouteEnter(toRoute: Route, fromRoute: Route, next: any): void {
+    // At this time the function does not have access to "this"
     next((vm: PhotoCropper) => {
-      vm.inputImageBase64 = fromRoute.params.image;
-    });
-  }
+      // If this component is pushed from PhotoCapture
+      // we have to pop 2 items from the history stack
+      // Otherwise we have to pop only 1 item
+      vm.goBackSteps = fromRoute.path.includes("photocapture") ? 2 : 1;
+      const tempProfile = vm.$store.direct.state.temporaryProfilePicture;
 
-  @Watch("inputImageBase64")
-  onInputImageChange(newHex: string, _oldHex: string): void {
-    createImageBitmap(this.dataURItoBlob(newHex)).then((bmp: ImageBitmap) => {
-      this.inputImageBinary = bmp;
+      // Convert base64 image to binary blob
+      createImageBitmap(vm.dataURItoBlob(tempProfile)).then(
+        (bmp: ImageBitmap) => {
+          vm.inputImageBinary = bmp;
+        }
+      );
     });
-  }
-  beforeRouteUpdate(fromRoute: Route, toRoute: Route, next: any): void {
-    console.log("Before Route Enter Cropper", fromRoute, this.$route);
-    next();
-  }
-  beforeUpdate(): void {
-    console.log("Cropper", this.$route);
   }
 
   onCropChanged(z: CropDetails): void {
     if (this.inputImageBinary) {
-      console.log("On cropping update", z);
       const context = z.canvas.getContext("2d");
       context?.drawImage(
         this.inputImageBinary,
@@ -89,11 +95,16 @@ export default class PhotoCropper extends Vue {
     }
   }
   dataURItoBlob(uri: string): Blob {
-    const parts = uri.split(",");
+    // The incoming string has the following header:
+    // data:image/png;base64,xxxxxxxx
+
+    const parts = uri.split(","); // separate the image bytes from the header
     let imageHexString: string;
     if (parts[0].indexOf("base64") >= 0) imageHexString = atob(parts[1]);
     else imageHexString = unescape(parts[1]);
-    const mimeType = parts[0].split(":")[1].split(";")[0];
+    const colonPos = parts[0].indexOf(":");
+    const semiColPos = parts[0].indexOf(";");
+    const mimeType = parts[0].substring(colonPos + 1, semiColPos);
     const intArray = new Uint8Array(imageHexString.length);
 
     for (let k = 0; k < imageHexString.length; k++)
@@ -111,25 +122,35 @@ export default class PhotoCropper extends Vue {
           contentType: "image/png"
         })
         .then((s: UploadTaskSnapshot) => {
-          console.log("Uploading", s.totalBytes, "bytes");
           return s.ref.getDownloadURL();
         })
         .then((url: string) => {
-          console.log("Profile picture URL", url);
-          // this.$emit("captured", { image: this.croppedImageBase64, url });
-          this.$router.go(-2);
+          this.$emit("photo-captured", {});
+          this.$router.go(-this.goBackSteps);
           return this.$appDB
             .collection("users")
             .doc(uid)
             .set({ profilePictureURL: url });
         })
         .then(() => {
-          console.log("Profile pic URL is saved to Firestore");
+          EventBus.fire("show-alert", {
+            key: "Profile picture is saved to Firebase",
+            type: "info"
+          });
+          this.$store.direct.commit.setTemporaryProfilePicture("");
         })
         .catch((err: any) => {
-          console.log("Unable to upload profile picture", err);
+          EventBus.fire("show-alert", {
+            key: "Unable to upload profile picture to Firebase" + err,
+            type: "error"
+          });
         });
     }
+  }
+  cancelCrop(): void {
+    this.$store.direct.commit.setTemporaryProfilePicture("");
+    this.$emit("no-capture", {});
+    this.$router.go(-this.goBackSteps);
   }
 }
 </script>

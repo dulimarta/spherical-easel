@@ -54,7 +54,8 @@ export const initialState: AppState = {
   initialBackStyleContrast: SETTINGS.style.backStyleContrast,
   inverseTotalRotationMatrix: new Matrix4(), //initially the identity. The composition of all the inverses of the rotation matrices applied to the sphere
   svgCanvas: null,
-  hasUnsavedNodules: false
+  hasUnsavedNodules: false,
+  temporaryProfilePicture: ""
 };
 //#endregion appState
 
@@ -506,5 +507,8 @@ export default {
   },
   clearUnsavedFlag(state: AppState): void {
     state.hasUnsavedNodules = false;
+  },
+  setTemporaryProfilePicture(state: AppState, imageHexString: string): void {
+    state.temporaryProfilePicture = imageHexString;
   }
 };

@@ -52,6 +52,7 @@ import { FirebaseStorage, UploadTaskSnapshot } from "@firebase/storage-types";
 import { FirebaseFirestore } from "@firebase/firestore-types";
 import { FirebaseAuth } from "@firebase/auth-types";
 import { Route } from "vue-router";
+import EventBus from "@/eventHandlers/EventBus";
 
 @Component
 export default class PhotoCapture extends Vue {
@@ -106,12 +107,15 @@ export default class PhotoCapture extends Vue {
         });
       })
       .catch((err: any) => {
-        console.log("MediaDevice error", err.message, err.name);
+        EventBus.fire("show-alert", {
+          key: "Media device error" + err.message,
+          type: "error"
+        });
+        // console.log("MediaDevice error", err.message, err.name);
       });
   }
 
   beforeRouteLeave(toRoute: Route, fromRoute: Route, next: any): void {
-    console.log("Before Route Leave nav guard");
     this.videoTrack?.stop();
     this.$refs.video.srcObject = null;
     next();
@@ -133,18 +137,18 @@ export default class PhotoCapture extends Vue {
     const context = this.$refs.canvas.getContext("2d");
     context?.drawImage(this.$refs.video, 0, 0, this.width, this.height);
     // this.videoTrack?.stop();
-    this.imageData = this.$refs.canvas.toDataURL("image/png");
+    const imageHex = this.$refs.canvas.toDataURL("image/png");
+    this.imageData = imageHex;
     // this.stopCamera();
-    console.log("Proceed to cropper");
+    this.$store.direct.commit.setTemporaryProfilePicture(imageHex);
     this.$router.push({
-      name: "PhotoCropper",
-      params: { image: this.imageData }
+      name: "PhotoCropper"
     });
   }
 
   done(): void {
     this.stopCamera();
-    // this.$emit("no-capture", {});
+    this.$emit("no-capture", {});
     this.$router.back();
   }
 }

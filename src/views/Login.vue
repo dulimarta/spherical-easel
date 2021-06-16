@@ -5,7 +5,7 @@
         <v-sheet elevation="4"
           class="pa-4">
           <v-form v-model="validEntries">
-            <v-row class="flex-column">
+            <v-row class="flex-column mb-2">
               <v-col cols="auto">
                 <v-text-field label="UserId/Email"
                   v-model="userEmail"
@@ -40,7 +40,7 @@
             <v-divider />
             <v-row>
               <v-col cols="auto">
-                or using
+                or use other account providers
               </v-col>
             </v-row>
             <v-row>
@@ -114,7 +114,6 @@ export default class Login extends Vue {
   }
 
   doSignup(): void {
-    console.log("Attempt to signup a new account", this.$appAuth);
     this.$appAuth
       .createUserWithEmailAndPassword(this.userEmail, this.userPassword)
       .then((cred: UserCredential) => {

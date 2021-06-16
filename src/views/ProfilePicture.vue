@@ -3,6 +3,7 @@
     <v-hover v-slot:default="{hover}">
       <div id="profileImage">
         <img v-if="profileImage"
+          width="128"
           :src="profileImage">
         <v-icon v-else
           :color="hover ? 'primary' : 'secondary' "
@@ -34,9 +35,7 @@
 import { Component, Vue } from "vue-property-decorator";
 import { FirebaseAuth } from "@firebase/auth-types";
 import { FirebaseFirestore, DocumentSnapshot } from "@firebase/firestore-types";
-type UserProfile = {
-  profilePictureURL: string;
-};
+import { UserProfile } from "@/types";
 type FileEvent = EventTarget & { files: FileList | undefined };
 
 @Component
@@ -48,7 +47,6 @@ export default class extends Vue {
 
   mounted(): void {
     const uid = this.$appAuth.currentUser?.uid;
-    console.log("I'm here", uid);
     if (!uid) return;
     this.$appDB
       .collection("users")
@@ -63,21 +61,20 @@ export default class extends Vue {
   }
 
   toPhotoCapture(): void {
-    console.log("Push router to photocapture");
     this.$router.push({ name: "PhotoCapture" });
+    this.$emit("photo-change", {});
   }
 
   onImageUploaded(event: Event): void {
     const files = (event.target as FileEvent).files;
     if (files && files.length > 0) {
+      this.$emit("photo-change", {});
       const reader = new FileReader();
       reader.onload = (ev: ProgressEvent) => {
         const imageBase64 = (ev.target as any).result;
-        // const url = URL.createObjectURL(out);
-        // this.profileImage = out;
+        this.$store.direct.commit.setTemporaryProfilePicture(imageBase64);
         this.$router.push({
-          name: "PhotoCropper",
-          params: { image: imageBase64 }
+          name: "PhotoCropper"
         });
       };
       reader.readAsDataURL(files[0]);

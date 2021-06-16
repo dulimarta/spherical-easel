@@ -49,7 +49,6 @@ export class AddPointCommand extends Command {
   }
 
   static parse(command: string, objMap: Map<string, SENodule>): Command {
-    // console.log("Parsing", command);
     const tokens = command.split("/");
     const location = new Vector3();
     location.from(tokens[2]); // convert to Number
