@@ -137,7 +137,7 @@ export default abstract class Nodule implements Stylable, Resizeable {
         .map(x => x.replace("%", "").trim()); //remove the percent symbols
       if (Number(numberArray[3]) <= 0) {
         // If the alpha/opacity value is zero the color picker slider for alpha/opacity disappears and can't be returned
-        numberArray[3] = "0.001";
+        numberArray[3] = "0";
       }
       return {
         h: Number(numberArray[0]),
@@ -156,11 +156,11 @@ export default abstract class Nodule implements Stylable, Resizeable {
     }
   }
   static convertHSLAObjectToString(colorObject: hslaColorType): string {
-    if (colorObject.a == undefined || colorObject.a == 0) {
-      // If the alpha/opacity value is zero the color picker slider for alpha/opacity disappears and can't be returned
-      colorObject.a = 0.001;
-      //this.displayOpacityZeroMessage = true;
-    }
+    // if (colorObject.a == undefined || colorObject.a == 0) {
+    //   // If the alpha/opacity value is zero the color picker slider for alpha/opacity disappears and can't be returned
+    //   colorObject.a = 0.001;
+    //   //this.displayOpacityZeroMessage = true;
+    // }
     return (
       "hsla(" +
       colorObject.h +

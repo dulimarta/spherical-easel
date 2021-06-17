@@ -22,7 +22,7 @@ const SUBDIVISIONS = SETTINGS.circle.numPoints;
  * may change: longer path will hold more subdivision points (while keeping the
  * total points 2N so we don't create/remove new points)
  */
-export default class Circle extends Nodule {
+export default class Ellipse extends Nodule {
   /**
    * The center vector of the circle in ideal unit sphere
    */

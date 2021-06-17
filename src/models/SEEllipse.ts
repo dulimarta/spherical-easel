@@ -1,6 +1,6 @@
 import { SENodule } from "./SENodule";
 import { SEPoint } from "./SEPoint";
-import Circle from "@/plottables/Circle";
+import Ellipse from "@/plottables/Ellipse";
 import { Vector3, Matrix4 } from "three";
 import { Visitable } from "@/visitors/Visitable";
 import { Visitor } from "@/visitors/Visitor";
@@ -18,12 +18,12 @@ const styleSet = new Set([
   Styles.fillColor,
   Styles.dynamicBackStyle
 ]);
-export class SECircle extends SENodule
+export class SEEllipse extends SENodule
   implements Visitable, OneDimensional, Labelable {
   /**
    * The plottable (TwoJS) segment associated with this model segment
    */
-  public ref: Circle;
+  public ref: Ellipse;
   /**
    * Pointer to the label of this SESegment
    */
