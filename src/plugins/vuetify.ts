@@ -23,28 +23,100 @@ const vuetify = new Vuetify({
         component: IconBase,
         props: {
           iconName: "Point",
-          iconFile: "/icons/iconPointPaths.svg"
+          iconFile: "/icons/iconPointPaths.svg",
+          emphasizeTypes: [["point", "front", "back"]]
         }
       },
       line: {
         component: IconBase,
         props: {
           iconName: "Line",
-          iconFile: "/icons/iconLinePaths.svg"
+          iconFile: "/icons/iconLinePaths.svg",
+          emphasizeTypes: [
+            ["line", "front", "back"],
+            ["point", "front", "back"]
+          ]
         }
       },
       segment: {
         component: IconBase,
         props: {
           iconName: "Segment",
-          iconFile: "/icons/iconSegmentPaths.svg"
+          iconFile: "/icons/iconSegmentPaths.svg",
+          emphasizeTypes: [
+            ["segment", "front", "back"],
+            ["point", "front", "back"]
+          ]
         }
       },
       circle: {
         component: IconBase,
         props: {
           iconName: "Circle",
-          iconFile: "/icons/iconCirclePaths.svg"
+          iconFile: "/icons/iconCirclePaths.svg",
+          emphasizeTypes: [
+            ["circle", "front", "back"],
+            ["point", "front", "back"]
+          ]
+        }
+      },
+      antipode: {
+        component: IconBase,
+        props: {
+          iconName: "Antipode",
+          iconFile: "/icons/iconAntipodePaths.svg",
+          emphasizeTypes: [["point", "front"]]
+        }
+      },
+      perpendicular: {
+        component: IconBase,
+        props: {
+          iconName: "Perpendicular",
+          iconFile: "/icons/iconPerpendicularPaths.svg",
+          emphasizeTypes: [
+            ["point", "front"],
+            ["line", "front", "back"]
+          ]
+        }
+      },
+      intersection: {
+        component: IconBase,
+        props: {
+          iconName: "Intersection",
+          iconFile: "/icons/iconIntersectionPaths.svg",
+          emphasizeTypes: [["point", "front"]]
+        }
+      },
+      pointOnObject: {
+        component: IconBase,
+        props: {
+          iconName: "Intersection",
+          iconFile: "/icons/iconPointOnObjectPaths.svg",
+          emphasizeTypes: [["point", "front"]]
+        }
+      },
+      angle: {
+        component: IconBase,
+        props: {
+          iconName: "Angle",
+          iconFile: "/icons/iconAngleMarkerPaths.svg",
+          emphasizeTypes: [["angleMarker", "back", "front"]]
+        }
+      },
+      segmentLength: {
+        component: IconBase,
+        props: {
+          iconName: "Segment Length",
+          iconFile: "/icons/iconSegmentLengthPaths.svg",
+          emphasizeTypes: [["segment", "back", "front"]]
+        }
+      },
+      pointDistance: {
+        component: IconBase,
+        props: {
+          iconName: "Point Distance",
+          iconFile: "/icons/iconPointDistancePaths.svg",
+          emphasizeTypes: [["point", "front", "back"]]
         }
       }
     }

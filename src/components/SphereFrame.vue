@@ -450,12 +450,16 @@ export default class SphereFrame extends VueComponent {
       textGroups[i].remove();
     }
     // remove all the hidden paths or paths with no anchors
+    // Also remove the straight edge start/end front/back for the angle markers (they look horrible in the icon)
     const allElements = svgElement.querySelectorAll("path");
     for (let i = 0; i < allElements.length; i++) {
       const element = allElements[i];
       if (
         element.getAttribute("visibility") === "hidden" ||
-        element.getAttribute("d") === ""
+        element.getAttribute("d") === "" ||
+        (element.getAttribute("id")!.slice(0, 2) === "10" &&
+          Number(element.getAttribute("id")!.slice(-2)) >= 8 &&
+          Number(element.getAttribute("id")!.slice(-2)) <= 11)
       ) {
         element.remove();
       }

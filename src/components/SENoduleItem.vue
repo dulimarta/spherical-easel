@@ -3,18 +3,27 @@
     <div class="node"
       @mouseenter="glowMe(true)"
       @mouseleave="glowMe(false)">
-      <v-icon v-if="isPoint">mdi-vector-point</v-icon>
-      <v-icon v-else-if="isLineSegment">mdi-vector-radius
+      <v-icon v-if="isPoint"
+        medium>
+        $vuetify.icons.value.point</v-icon>
+      <v-icon v-else-if="isLineSegment"
+        medium>
+        $vuetify.icons.value.segment</v-icon>
+      <v-icon v-else-if="isLine"
+        medium>
+        $vuetify.icons.value.line</v-icon>
+      <v-icon v-else-if="isCircle"
+        medium>
+        $vuetify.icons.value.circle
       </v-icon>
-      <v-icon v-else-if="isLine">mdi-vector-line</v-icon>
-      <v-icon v-else-if="isCircle">
-        mdi-vector-circle-variant
-      </v-icon>
-      <v-icon v-else-if="isIntersectionPoint">
-        mdi-vector-intersection
+      <v-icon v-else-if="isIntersectionPoint"
+        medium>
+        $vuetify.icons.value.intersectionPoint
       </v-icon>
       <v-icon v-else-if="isSlider">mdi-arrow-left-right</v-icon>
-      <v-icon v-else-if="isAngle">mdi-angle-acute</v-icon>
+      <v-icon v-else-if="isAngle"
+        medium>
+        $vuetify.icons.value.angle</v-icon>
       <v-icon v-else-if="isMeasurement">mdi-tape-measure
       </v-icon>
       <v-icon v-else-if="isCalculation">mdi-calculator</v-icon>

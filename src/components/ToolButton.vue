@@ -18,7 +18,7 @@
           "
           x-large>
           <v-flex xs12>
-            <v-icon>{{ button.icon }}</v-icon>
+            <v-icon x-large>{{ button.icon }}</v-icon>
             <p class="button-text"
               v-html="$t('buttons.' + button.displayedName )"> </p>
           </v-flex>

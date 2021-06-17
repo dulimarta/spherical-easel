@@ -118,6 +118,7 @@ export class SEPoint extends SENodule implements Visitable, Labelable {
   ): Vector3 {
     // The current magnification level
     //const mag = SENodule.store.state.zoomMagnificationFactor;
+
     const mag = 1;
     // If the idealUnitSphereVector is within the tolerance of the point, do nothing, otherwise return the vector in the plane of the ideanUnitSphereVector and the point that is at the tolerance distance away.
     if (

@@ -139,7 +139,9 @@ export default class Point extends Nodule {
    */
   get pointRadiusPercent(): number {
     if (this._locationVector.z < 0) {
-      return this.pointRadiusPercentBack;
+      return this.dynamicBackStyle
+        ? Nodule.contrastPointRadiusPercent(this.pointRadiusPercentFront)
+        : this.pointRadiusPercentBack;
     } else {
       return this.pointRadiusPercentFront;
     }

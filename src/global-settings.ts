@@ -289,8 +289,8 @@ export default {
     //The properties of the circle when it is drawn on the sphereCanvas and is not glowing
     drawn: {
       fillColor: {
-        front: "hsla(254, 100%, 90%, 1)", //"hsla(217, 100%, 80%, 0.0005)", //"noFill",
-        back: "hsla(100, 100%, 50%, 1)" //"hsla(217, 100%, 80%, 0.0002)" //"noFill"
+        front: "hsla(254, 100%, 90%, 0.0005)", //"hsla(217, 100%, 80%, 0.0005)", //"noFill",
+        back: "hsla(100, 100%, 50%, 0.0002)" //"hsla(217, 100%, 80%, 0.0002)" //"noFill"
       },
       strokeColor: {
         front: "hsla(217, 90%, 61%, 1)",
@@ -429,46 +429,123 @@ export default {
       strokeWidth: 1.5,
       color: "hsla(0, 0%, 0%, 1)"
     },
+    emphasize: {
+      angleMarker: {
+        strokeWidth: {
+          front: 3,
+          back: 3
+        },
+        edgeColor: {
+          front: "hsla(0, 0%, 0%, 1)",
+          back: "hsla(0, 0%, 0%, 0.3)"
+        },
+        fillColor: {
+          front: "hsla(254, 100%, 90%, 1)",
+          back: "hsla(100, 100%, 50%, 1)"
+        }
+      },
+      circle: {
+        strokeWidth: {
+          front: 1,
+          back: 1
+        },
+        edgeColor: { front: "hsla(0, 0%, 0%, 1)", back: "hsla(0, 0%, 0%, 1)" },
+        fillColor: {
+          front: "hsla(0, 100%, 75%, 1)",
+          back: "hsla(0, 100%, 75%, 1)"
+        }
+      },
+      point: {
+        strokeWidth: {
+          front: 0.7,
+          back: 0.7
+        },
+        edgeColor: { front: "hsla(0, 0%, 0%, 1)", back: "hsla(0, 0%, 0%, 1)" },
+        fillColor: {
+          front: "hsla(0, 100%, 75%, 1)",
+          back: "hsla(0, 100%, 75%, 1)"
+        }
+      },
+      line: {
+        strokeWidth: {
+          front: 1.5,
+          back: 1.5
+        },
+        edgeColor: {
+          front: "hsla(217, 90%, 61%, 1)",
+          back: "hsla(217, 90%, 80%, 1)"
+        }
+      },
+      segment: {
+        strokeWidth: {
+          front: 1.5,
+          back: 1.5
+        },
+        edgeColor: {
+          front: "hsla(217, 90%, 61%, 1)",
+          back: "hsla(217, 90%, 80%, 1)"
+        }
+      }
+    },
+    angleMarker: {
+      scale: {
+        front: 5,
+        back: 4
+      },
+      strokeWidth: {
+        front: 1,
+        back: 1
+      },
+      edgeColor: { front: "hsla(0, 0%, 40%, 1)", back: "hsla(0, 0%, 60%, 1)" },
+      fillColor: {
+        front: "hsla(0, 0%, 90%, 0.4)",
+        back: "hsla(0, 0%, 100%, 0.2)"
+      }
+    },
     circle: {
       strokeWidth: {
         front: 1,
         back: 1
       },
-      edgeColor: { front: "hsla(0, 0%, 0%, 1)", back: "hsla(0, 0%, 0%, 1)" }
+      edgeColor: { front: "hsla(0, 0%, 40%, 1)", back: "hsla(0, 0%, 60%, 1)" },
+      fillColor: {
+        front: "hsla(0, 0%, 90%, 0.4)",
+        back: "hsla(0, 0%, 100%, 0.2)"
+      }
     },
     point: {
       scale: {
         front: 7,
-        back: 7
+        back: 5
       },
       strokeWidth: {
-        front: 1,
-        back: 1
+        front: 0.8,
+        back: 0.7
       },
-      edgeColor: { front: "hsla(0, 0%, 0%, 1)", back: "hsla(0, 0%, 0%, 1)" },
+      edgeColor: { front: "hsla(0, 0%, 40%, 1)", back: "hsla(0, 0%, 60%, 1)" },
       fillColor: {
-        front: "hsla(0, 100%, 75%, 1)",
-        back: "hsla(0, 100%, 75%, 1)"
+        front: "hsla(0, 0%, 90%, 1)",
+        back: "hsla(0, 0%, 100%, 1)"
       }
     },
     line: {
       strokeWidth: {
-        front: 1.5,
-        back: 1.5
+        front: 1,
+        back: 1
       },
       edgeColor: {
-        front: "hsla(217, 90%, 61%, 1)",
-        back: "hsla(217, 90%, 80%, 1)"
+        front: "hsla(0, 0%, 40%, 1)",
+        back: "hsla(0, 0%, 60%, 1)"
       }
     },
     segment: {
       strokeWidth: {
-        front: 1.5,
-        back: 1.5
+        front: 1,
+        back: 1
       },
       edgeColor: {
-        front: "hsla(217, 90%, 61%, 1)",
-        back: "hsla(217, 90%, 80%, 1)"
+        front: "hsla(0, 0%, 40%, 1)",
+        back: "hsla(0, 0%, 60%, 1)"
       }
     }
   },

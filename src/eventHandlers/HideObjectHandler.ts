@@ -58,9 +58,16 @@ export default class HideObjectHandler extends Highlighter {
     super.mouseMoved(event);
     if (this.hitSEPoints.length > 0) {
       // never highlight non user created intersection points
-      const filteredPoints = this.hitSEPoints.filter(
-        (p: SEPoint) => p instanceof SEIntersectionPoint && !p.isUserCreated
-      );
+      const filteredPoints = this.hitSEPoints.filter((p: SEPoint) => {
+        if (
+          p instanceof SEIntersectionPoint &&
+          !(p as SEIntersectionPoint).isUserCreated
+        ) {
+          return false;
+        } else {
+          return true;
+        }
+      });
       if (filteredPoints.length > 0) filteredPoints[0].glowing = true;
     } else if (this.hitSESegments.length > 0) {
       this.hitSESegments[0].glowing = true;
