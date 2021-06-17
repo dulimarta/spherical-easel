@@ -23,7 +23,7 @@
 
     <!-- The Display Tool Group only shown if the user has permission to use a tool in this group.
     Note the use of the translation $t(key_value).-->
-    <div id="BasicToolGroup"
+    <div id="DisplayToolGroup"
       v-show="nonEmptyGroup('display')">
       <h3 class="body-1 font-weight-bold">
         {{ $t("toolGroups.DisplayTools") }}
@@ -163,6 +163,7 @@
           )"
           :key="pos"
           :button="button"
+          :elev="elev"
           v-on:displayOnlyThisToolUseMessage="displayOnlyThisToolUseMessageFunc">
         </ToolButton>
       </v-btn-toggle>
@@ -194,6 +195,8 @@ export default class ToolGroups extends Vue {
   /* Use the global settings to set the variables bound to the toolTipOpen/CloseDelay */
   private toolTipOpenDelay = SETTINGS.toolTip.openDelay;
   private toolTipCloseDelay = SETTINGS.toolTip.closeDelay;
+
+  private elev = 24;
 
   /* This is a variable that does NOT belong in the global settings but I don't know where else to 
   put it. This is the list of tools that should be displayed*/
@@ -376,7 +379,7 @@ export default class ToolGroups extends Vue {
       toolGroup: "construction"
     },
     {
-      id: 45,
+      id: 50,
       actionModeValue: "intersect",
       displayedName: "CreateIntersectionDisplayedName",
       icon: "$vuetify.icons.value.intersection",
@@ -386,7 +389,7 @@ export default class ToolGroups extends Vue {
       toolGroup: "construction"
     },
     {
-      id: 50,
+      id: 45,
       actionModeValue: "pointOnOneDim",
       displayedName: "CreatePointOnOneDimDisplayedName",
       icon: "$vuetify.icons.value.pointOnObject",

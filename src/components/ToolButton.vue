@@ -15,12 +15,16 @@
           @click="
             $emit('display-only-this-tool-use-message', button.id);
             displayToolUseMessage = true;
+            setElevation()
           "
-          x-large>
+          x-large
+          :elevation="elev">
           <v-flex xs12>
             <v-icon x-large>{{ button.icon }}</v-icon>
             <p class="button-text"
-              v-html="$t('buttons.' + button.displayedName )"> </p>
+              :style="'--user-font-weight: ' + weight"
+              v-html="$t('buttons.' + button.displayedName )">
+            </p>
           </v-flex>
         </v-btn>
       </template>
@@ -64,8 +68,9 @@
 <script lang="ts">
 import Vue from "vue";
 import Component from "vue-class-component";
-import { Prop } from "vue-property-decorator";
-import { ToolButtonType } from "@/types";
+import { Prop, Watch } from "vue-property-decorator";
+import { State } from "vuex-class";
+import { AppState, ToolButtonType } from "@/types";
 import SETTINGS from "@/global-settings";
 
 /* This component (i.e. ToolButton) has no sub-components so this declaration is empty */
@@ -96,6 +101,26 @@ export default class ToolButton extends Vue {
   @Prop({ default: null })
   button!: ToolButtonType;
 
+  readonly store = this.$store.direct;
+  private elev = 0;
+  private weight = "normal";
+
+  private color = "red";
+
+  @State((s: AppState) => s.actionMode)
+  readonly actionMode!: string;
+
+  @Watch("actionMode")
+  setElevation(): void {
+    if (this.actionMode === this.button.actionModeValue) {
+      this.elev = 1;
+      this.weight = "bold";
+    } else {
+      this.elev = 0;
+      this.weight = "normal";
+    }
+  }
+  // @Prop({ default: 0 }) readonly elev?: number;
   /* @Watch if button.displayToolUseMessage changes then set displayToolUseMessage to false so
       that multiple snackbars tool use messages are not displayed at the same time*/
   // @Watch("button.displayToolUseMessage")
@@ -111,14 +136,18 @@ export default class ToolButton extends Vue {
   display: flex;
   flex-direction: column;
   align-items: center;
-  font-size: 12px;
+  font-size: 11px;
   word-wrap: break-word;
   white-space: pre-wrap;
   letter-spacing: 0px;
+  font-weight: var(--user-font-weight);
 }
 .v-btn--icon.v-size--x-large {
   padding-top: 9px;
   height: 80px;
   width: 80px;
+}
+.btn-round-border-radius {
+  size: 60%;
 }
 </style>
