@@ -1,12 +1,16 @@
 <template>
   <div @mouseenter="onListEnter"
     @mouseleave="onListLeave">
-    <span v-if="items.length === 0">No data</span>
+    <!-- the class "nodata" is used for testing. Do not remove it -->
+    <span v-if="items.length === 0"
+      class="nodata">No data</span>
     <v-list three-line>
       <template v-for="(r,pos) in items">
         <v-hover v-slot:default="{hover}"
           :key="pos">
-          <v-list-item @mouseover.capture="onItemHover(r)"
+          <!-- the class "listitem" is used for testing. Do not remove it -->
+          <v-list-item class="constructionItem"
+            @mouseover.capture="onItemHover(r)"
             @mouseleave="onItemLeave">
             <v-list-item-avatar size="64">
               <img :src="previewOrDefault(r.previewData)"
@@ -26,11 +30,13 @@
             </v-list-item-content>
             <!--- show a Load button as an overlay when the mouse hovers -->
             <v-overlay absolute
+              class="constructionOverlay"
               opacity="0.3"
               :value="hover">
               <v-row align="center">
                 <v-col>
                   <v-btn rounded
+                    class="loadfab"
                     fab
                     small
                     color="secondary">
@@ -41,6 +47,7 @@
                 </v-col>
                 <v-col v-if="allowSharing">
                   <v-btn rounded
+                    class="sharefab"
                     fab
                     small
                     color="secondary"
@@ -83,7 +90,7 @@ export default class extends Vue {
   @Prop({ default: false })
   allowSharing!: boolean;
 
-  svgParent!: HTMLDivElement;
+  svgParent: HTMLDivElement | null = null;
   svgRoot!: SVGElement;
   // svgRootClone: SVGElement | null = null;
   originalSphereMatrix!: Matrix4;
@@ -130,7 +137,7 @@ export default class extends Vue {
         );
         // this.$store.direct.commit.rotateSphere(s.sphereRotationMatrix);
         // We assume the SVG tree is always the first child
-        this.svgParent.replaceChild(
+        this.svgParent?.replaceChild(
           newSvg.activeElement as SVGElement,
           this.svgParent.firstChild as SVGElement
         );
@@ -143,11 +150,10 @@ export default class extends Vue {
 
   onListLeave(/*_ev: MouseEvent*/): void {
     // Restore the canvas
-    this.svgParent.replaceChild(
+    this.svgParent?.replaceChild(
       this.svgRoot,
       this.svgParent.firstChild as SVGElement
     );
-
     // Restore the rotation matrix
     this.$store.direct.state.inverseTotalRotationMatrix.copy(
       this.originalSphereMatrix
