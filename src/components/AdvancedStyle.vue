@@ -8,7 +8,6 @@ import { Watch } from "vue-property-decorator";
 import { SENodule } from "../models/SENodule";
 import { State } from "vuex-class";
 import { Styles } from "../types/Styles";
-import SETTINGS from "@/global-settings";
 import FadeInCard from "@/components/FadeInCard.vue";
 import { AppState } from "@/types";
 // import { getModule } from "vuex-module-decorators";
@@ -16,8 +15,6 @@ import { AppState } from "@/types";
 
 @Component({ components: { FadeInCard } })
 export default class AdvancedStyle extends Vue {
-  // readonly UIModule = getModule(UI, this.$store);
-
   @State((s: AppState) => s.selections)
   readonly selections!: SENodule[];
 

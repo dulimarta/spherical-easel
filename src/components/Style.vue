@@ -128,8 +128,6 @@ export default class Style extends Vue {
   @State((s: AppState) => s.selections)
   readonly selections!: SENodule[];
 
-  readonly store = this.$store.direct;
-
   readonly toolTipOpenDelay = SETTINGS.toolTip.openDelay;
   readonly toolTipCloseDelay = SETTINGS.toolTip.closeDelay;
 

@@ -385,7 +385,7 @@ import Component from "vue-class-component";
 import { Watch, Prop } from "vue-property-decorator";
 import { SENodule } from "../models/SENodule";
 import Nodule from "../plottables/Nodule";
-import { State } from "vuex-class";
+import { State, Getter, Mutation } from "vuex-class";
 // import AppStore from "@/store";
 import {
   Styles,
@@ -453,7 +453,21 @@ export default class FrontBackStyle extends Vue {
   @State((s: AppState) => s.selections)
   readonly selections!: SENodule[];
 
-  readonly store = this.$store.direct;
+  @Getter selectedSENodules!: SENodule[];
+
+  @Getter getInitialStyleState!: (_: StyleEditPanels) => StyleOptions[];
+
+  @Getter getDefaultStyleState!: (_: StyleEditPanels) => StyleOptions[];
+
+  @Getter getInitialBackStyleContrast!: number;
+
+  @Getter getOldStyleSelection!: SENodule[];
+  @Getter getSavedFromPanel!: StyleEditPanels;
+
+  @Mutation changeStyle!: (_: any) => void;
+  @Mutation setOldStyleSelection!: (_: SENodule[]) => void;
+  @Mutation recordStyleState!: (_: any) => void;
+  @Mutation setSavedFromPanel!: (_: StyleEditPanels) => void;
 
   /**
    * These are the temp style state for the selected objects. Used to set the color/number/dash/contrast selectors when the user disables the dynamic back styling.
@@ -637,7 +651,7 @@ export default class FrontBackStyle extends Vue {
   /** mounted() is part of VueJS lifecycle hooks */
   mounted(): void {
     // Pass any selected objects when BasicFrontBackStyle is mound to the onSelection change
-    //this.onSelectionChanged(this.$store.getters.selectedSENodules());
+    //this.onSelectionChanged(this.selectedSENodules);
     //  Mount a save listener
     EventBus.listen("save-style-state", this.saveStyleState);
     // EventBus.listen("set-active-style-panel", this.setActivePanel);
@@ -660,9 +674,7 @@ export default class FrontBackStyle extends Vue {
     EventBus.fire("toggle-object-visibility", { fromPanel: true });
   }
   allObjectsShowing(): boolean {
-    return (this.$store.getters.selectedSENodules() as SENodule[]).every(
-      node => node.showing
-    );
+    return this.selectedSENodules.every(node => node.showing);
   }
 
   // These methods are linked to the dashPattern fade-in-card
@@ -670,8 +682,8 @@ export default class FrontBackStyle extends Vue {
     this.disableDashPatternUndoButton = false;
     this.gapLength = this.sliderDashArray[0];
     this.dashLength = this.sliderDashArray[1] - this.sliderDashArray[0];
-    this.$store.direct.commit.changeStyle({
-      selected: this.$store.getters.selectedSENodules(),
+    this.changeStyle({
+      selected: this.selectedSENodules,
       payload: {
         panel: this.panel,
         dashArray: [this.dashLength, this.gapLength] //correct order!!!!
@@ -683,17 +695,15 @@ export default class FrontBackStyle extends Vue {
   }
   clearRecentDashPatternChanges(): void {
     this.disableDashPatternUndoButton = true;
-    const selected = this.$store.getters.selectedSENodules();
-    const initialStyleStates = this.$store.getters.getInitialStyleState(
-      this.panel
-    );
+    const selected = this.selectedSENodules;
+    const initialStyleStates = this.getInitialStyleState(this.panel);
     for (let i = 0; i < selected.length; i++) {
       // Check see if the initialStylesStates[i] exist and has length >0
       if (
         initialStyleStates[i].dashArray &&
         (initialStyleStates[i].dashArray as number[]).length > 0
       ) {
-        this.$store.direct.commit.changeStyle({
+        this.changeStyle({
           selected: [selected[i]],
           payload: {
             panel: this.panel,
@@ -705,7 +715,7 @@ export default class FrontBackStyle extends Vue {
         });
       } else if (initialStyleStates[i].dashArray) {
         // The selected [i] exists and the array is empty
-        this.$store.direct.commit.changeStyle({
+        this.changeStyle({
           selected: [selected[i]],
           payload: {
             panel: this.panel,
@@ -717,17 +727,15 @@ export default class FrontBackStyle extends Vue {
     this.setDashPatternSelectorState(initialStyleStates);
   }
   resetDashPatternToDefaults(): void {
-    const selected = this.$store.getters.selectedSENodules();
-    const defaultStyleStates = this.$store.getters.getDefaultStyleState(
-      this.panel
-    );
+    const selected = this.selectedSENodules;
+    const defaultStyleStates = this.getDefaultStyleState(this.panel);
     for (let i = 0; i < selected.length; i++) {
       // Check see if the selected[i] exist and has length >0
       if (
         defaultStyleStates[i].dashArray &&
         (defaultStyleStates[i].dashArray as number[]).length > 0
       ) {
-        this.$store.direct.commit.changeStyle({
+        this.changeStyle({
           selected: [selected[i]],
           payload: {
             panel: this.panel,
@@ -739,7 +747,7 @@ export default class FrontBackStyle extends Vue {
         });
       } else if (defaultStyleStates[i].dashArray) {
         // The selected [i] exists and the array is empty
-        this.$store.direct.commit.changeStyle({
+        this.changeStyle({
           selected: [selected[i]],
           payload: {
             panel: this.panel,
@@ -758,16 +766,16 @@ export default class FrontBackStyle extends Vue {
         (this.dashLength as number) + (this.gapLength as number)
       );
 
-      this.$store.direct.commit.changeStyle({
-        selected: this.$store.getters.selectedSENodules(),
+      this.changeStyle({
+        selected: this.selectedSENodules,
         payload: {
           panel: this.panel,
           dashArray: [this.dashLength, this.gapLength]
         }
       });
     } else {
-      this.$store.direct.commit.changeStyle({
-        selected: this.$store.getters.selectedSENodules(),
+      this.changeStyle({
+        selected: this.selectedSENodules,
         payload: {
           panel: this.panel,
           dashArray: []
@@ -790,8 +798,8 @@ export default class FrontBackStyle extends Vue {
       this.gapLength = this.sliderDashArray[0];
       this.dashLength = this.sliderDashArray[1] - this.sliderDashArray[0];
 
-      this.$store.direct.commit.changeStyle({
-        selected: this.$store.getters.selectedSENodules(),
+      this.changeStyle({
+        selected: this.selectedSENodules,
         payload: {
           panel: this.panel,
           dashArray: [this.dashLength, this.gapLength]
@@ -811,8 +819,8 @@ export default class FrontBackStyle extends Vue {
       this.gapLength = this.sliderDashArray[0];
       this.dashLength = this.sliderDashArray[1] - this.sliderDashArray[0];
 
-      this.$store.direct.commit.changeStyle({
-        selected: this.$store.getters.selectedSENodules(),
+      this.changeStyle({
+        selected: this.selectedSENodules,
         payload: {
           panel: this.panel,
           dashArray: [this.dashLength, this.gapLength]
@@ -890,8 +898,8 @@ export default class FrontBackStyle extends Vue {
   // These methods are linked to the usingDynamicBackStyle fade-in-card
   onBackStyleContrastChange(): void {
     this.disableBackStyleContrastUndoButton = false;
-    this.$store.direct.commit.changeStyle({
-      selected: this.$store.getters.selectedSENodules(),
+    this.changeStyle({
+      selected: this.selectedSENodules,
       payload: {
         panel: this.panel,
         backStyleContrast: this.backStyleContrast
@@ -904,13 +912,11 @@ export default class FrontBackStyle extends Vue {
   }
   clearRecentDynamicBackStyleChanges(): void {
     this.disableBackStyleContrastUndoButton = true;
-    const selected = this.$store.getters.selectedSENodules();
-    const initialStyleStates = this.$store.getters.getInitialStyleState(
-      this.panel
-    );
-    const initialBackStyleContrast = this.$store.getters.getInitialBackStyleContrast();
+    const selected = this.selectedSENodules;
+    const initialStyleStates = this.getInitialStyleState(this.panel);
+    const initialBackStyleContrast = this.getInitialBackStyleContrast;
     for (let i = 0; i < selected.length; i++) {
-      this.$store.direct.commit.changeStyle({
+      this.changeStyle({
         selected: [selected[i]],
         payload: {
           panel: this.panel,
@@ -922,12 +928,10 @@ export default class FrontBackStyle extends Vue {
     this.setDynamicBackStyleSelectorState(initialStyleStates);
   }
   resetDynamicBackStyleToDefaults(): void {
-    const selected = this.$store.getters.selectedSENodules();
-    const defaultStyleStates = this.$store.getters.getDefaultStyleState(
-      this.panel
-    );
+    const selected = this.selectedSENodules;
+    const defaultStyleStates = this.getDefaultStyleState(this.panel);
     for (let i = 0; i < selected.length; i++) {
-      this.$store.direct.commit.changeStyle({
+      this.changeStyle({
         selected: [selected[i]],
         payload: {
           panel: this.panel,
@@ -943,8 +947,8 @@ export default class FrontBackStyle extends Vue {
     this.usingDynamicBackStyleAgreement = true;
     this.usingDynamicBackStyleCommonValue = this.usingDynamicBackStyle;
 
-    this.$store.direct.commit.changeStyle({
-      selected: this.$store.getters.selectedSENodules(),
+    this.changeStyle({
+      selected: this.selectedSENodules,
       payload: {
         panel: this.panel,
         dynamicBackStyle: this.usingDynamicBackStyle
@@ -952,7 +956,7 @@ export default class FrontBackStyle extends Vue {
     });
 
     if (!this.usingDynamicBackStyle) {
-      const selectedSENodules = this.$store.getters.selectedSENodules() as SENodule[];
+      const selectedSENodules = this.selectedSENodules;
       this.tempStyleStates.clear();
       selectedSENodules.forEach(seNodule => {
         if (seNodule.ref)
@@ -968,8 +972,8 @@ export default class FrontBackStyle extends Vue {
     ) {
       this.disableBackStyleContrastUndoButton = false;
       this.backStyleContrast += 0.1;
-      this.$store.direct.commit.changeStyle({
-        selected: this.$store.getters.selectedSENodules(),
+      this.changeStyle({
+        selected: this.selectedSENodules,
         payload: {
           panel: this.panel,
           backStyleContrast: this.backStyleContrast
@@ -984,8 +988,8 @@ export default class FrontBackStyle extends Vue {
     ) {
       this.disableBackStyleContrastUndoButton = false;
       this.backStyleContrast -= 0.1;
-      this.$store.direct.commit.changeStyle({
-        selected: this.$store.getters.selectedSENodules(),
+      this.changeStyle({
+        selected: this.selectedSENodules,
         payload: {
           panel: this.panel,
           backStyleContrast: this.backStyleContrast
@@ -1032,13 +1036,11 @@ export default class FrontBackStyle extends Vue {
 
   // These methods are linked to the angle marker decoration fade-in-card
   resetAngleMarkerDecorationsToDefaults(): void {
-    const selected = this.$store.getters.selectedSENodules() as SENodule[];
-    const defaultStyleStates = this.$store.getters.getDefaultStyleState(
-      StyleEditPanels.Front
-    );
+    const selected = this.selectedSENodules;
+    const defaultStyleStates = this.getDefaultStyleState(StyleEditPanels.Front);
 
     for (let i = 0; i < selected.length; i++) {
-      this.$store.direct.commit.changeStyle({
+      this.changeStyle({
         selected: [selected[i]],
         payload: {
           panel: StyleEditPanels.Front,
@@ -1050,13 +1052,11 @@ export default class FrontBackStyle extends Vue {
     this.setAngleMarkerDecorationSelectorState(defaultStyleStates);
   }
   clearAngleMarkerDecorations(): void {
-    const selected = this.$store.getters.selectedSENodules() as SENodule[];
+    const selected = this.selectedSENodules;
 
-    const initialStyleStates = this.$store.getters.getInitialStyleState(
-      StyleEditPanels.Label
-    );
+    const initialStyleStates = this.getInitialStyleState(StyleEditPanels.Label);
     for (let i = 0; i < selected.length; i++) {
-      this.$store.direct.commit.changeStyle({
+      this.changeStyle({
         selected: [selected[i]],
         payload: {
           panel: StyleEditPanels.Front,
@@ -1070,7 +1070,7 @@ export default class FrontBackStyle extends Vue {
   onAngleMarkerDecorationChanged(): void {
     this.disableAngleMarkerDecorationsUndoButton = false;
 
-    const selected = this.$store.getters.selectedSENodules() as SENodule[];
+    const selected = this.selectedSENodules;
 
     const angleMarkerDoubleArcDisplay =
       this.angleMarkerDecorations?.findIndex(x => x === "doubleArc") === -1
@@ -1083,7 +1083,7 @@ export default class FrontBackStyle extends Vue {
 
     // if there has been some change then change the style
     if (this.angleMarkerDecorationChange) {
-      this.$store.direct.commit.changeStyle({
+      this.changeStyle({
         selected: selected,
         payload: {
           panel: StyleEditPanels.Front,
@@ -1196,7 +1196,7 @@ export default class FrontBackStyle extends Vue {
   private activePanelChange(): void {
     if (this.activePanel !== undefined && this.panel === this.activePanel) {
       // activePanel = undefined means that no edit panel is open
-      this.onSelectionChanged(this.$store.getters.selectedSENodules());
+      this.onSelectionChanged(this.selectedSENodules);
     }
   }
   /**
@@ -1213,13 +1213,13 @@ export default class FrontBackStyle extends Vue {
       //totally disable the selectors in this component
       this.disableDashPatternSelector(true);
       this.disableDynamicBackStyleSelector(true);
-      this.store.commit.setOldStyleSelection([]);
+      this.setOldStyleSelection([]);
       return;
     }
 
     // record the new selections in the old
-    this.store.commit.setOldStyleSelection([]);
-    const oldSelection = this.$store.getters.getOldStyleSelection();
+    this.setOldStyleSelection([]);
+    const oldSelection = this.getOldStyleSelection;
     newSelection.forEach(obj => oldSelection.push(obj));
 
     // Create a list of the common properties that the objects in the selection have.
@@ -1235,23 +1235,21 @@ export default class FrontBackStyle extends Vue {
     // Put this in the store so that it is availble to *all* panels. Get the front and back information at the same time.
 
     //#region setStyle
-    this.$store.direct.commit.recordStyleState({
+    this.recordStyleState({
       selected: newSelection,
       backContrast: Nodule.getBackStyleContrast()
     });
     //#endregion setStyle
 
-    this.store.commit.setSavedFromPanel(this.panel);
+    this.setSavedFromPanel(this.panel);
     //Set the initial state of the fade-in-card/selectors (checking to see if the property is the same across all selected objects)
-    this.setDashPatternSelectorState(
-      this.$store.getters.getInitialStyleState(this.panel)
-    );
+    this.setDashPatternSelectorState(this.getInitialStyleState(this.panel));
     this.setDynamicBackStyleSelectorState(
-      this.$store.getters.getInitialStyleState(this.panel)
+      this.getInitialStyleState(this.panel)
     );
   }
   saveStyleState(): void {
-    const oldSelection = this.$store.getters.getOldStyleSelection();
+    const oldSelection = this.getOldStyleSelection;
     // There must be an old selection in order for there to be a change to save
     if (oldSelection.length > 0) {
       console.log("Attempt style save command");
@@ -1261,15 +1259,13 @@ export default class FrontBackStyle extends Vue {
       oldSelection.forEach((seNodule: SENodule) => {
         if (seNodule.ref !== undefined)
           this.currentStyleStates.push(
-            seNodule.ref.currentStyleState(
-              this.$store.getters.getSavedFromPanel()
-            )
+            seNodule.ref.currentStyleState(this.getSavedFromPanel)
           );
       });
-      const initialStyleStates = this.$store.getters.getInitialStyleState(
-        this.$store.getters.getSavedFromPanel()
+      const initialStyleStates = this.getInitialStyleState(
+        this.getSavedFromPanel
       );
-      const initialBackStyleContrast = this.$store.getters.getInitialBackStyleContrast();
+      const initialBackStyleContrast = this.getInitialBackStyleContrast;
       if (
         !this.areEquivalentStyles(
           this.currentStyleStates,
@@ -1281,7 +1277,7 @@ export default class FrontBackStyle extends Vue {
         // Add the label of the
         new StyleNoduleCommand(
           oldSelection,
-          this.$store.getters.getSavedFromPanel(),
+          this.getSavedFromPanel,
           this.currentStyleStates,
           initialStyleStates,
           Nodule.getBackStyleContrast(),
@@ -1289,7 +1285,7 @@ export default class FrontBackStyle extends Vue {
         ).push();
       }
       // clear the old selection so that this save style state will not be executed again until changes are made.
-      this.store.commit.setOldStyleSelection([]);
+      this.setOldStyleSelection([]);
     }
   }
 

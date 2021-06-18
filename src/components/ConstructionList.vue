@@ -77,7 +77,8 @@
 
 <script lang="ts">
 import { Component, Vue, Prop } from "vue-property-decorator";
-import { SphericalConstruction } from "@/types";
+import { State, Mutation } from "vuex-class";
+import { AppState, SphericalConstruction } from "@/types";
 import { FirebaseAuth } from "node_modules/@firebase/auth-types";
 import { Matrix4 } from "three";
 
@@ -89,6 +90,14 @@ export default class extends Vue {
 
   @Prop({ default: false })
   allowSharing!: boolean;
+
+  @State((s: AppState) => s.svgCanvas)
+  readonly svgCanvas!: HTMLDivElement | null;
+
+  @State((s: AppState) => s.inverseTotalRotationMatrix)
+  readonly inverseTotalRotationMatrix!: Matrix4;
+
+  @Mutation setInverseRotationMatrix!: (_: Matrix4) => void;
 
   svgParent: HTMLDivElement | null = null;
   svgRoot!: SVGElement;
@@ -108,10 +117,8 @@ export default class extends Vue {
   mounted(): void {
     // To use `innerHTML` we have to get a reference to the parent of
     // the <svg> tree
-    this.svgParent = this.$store.direct.state.svgCanvas as HTMLDivElement;
-    this.svgRoot = this.$store.direct.state.svgCanvas?.querySelector(
-      "svg"
-    ) as SVGElement;
+    this.svgParent = this.svgCanvas as HTMLDivElement;
+    this.svgRoot = this.svgCanvas?.querySelector("svg") as SVGElement;
   }
 
   previewOrDefault(dataUrl: string | undefined): string {
@@ -119,9 +126,7 @@ export default class extends Vue {
   }
 
   onListEnter(/*ev:MouseEvent*/): void {
-    this.originalSphereMatrix.copy(
-      this.$store.direct.state.inverseTotalRotationMatrix
-    );
+    this.originalSphereMatrix.copy(this.inverseTotalRotationMatrix);
   }
 
   onItemHover(s: SphericalConstruction): void {
@@ -135,7 +140,6 @@ export default class extends Vue {
           svgString,
           "image/svg+xml"
         );
-        // this.$store.direct.commit.rotateSphere(s.sphereRotationMatrix);
         // We assume the SVG tree is always the first child
         this.svgParent?.replaceChild(
           newSvg.activeElement as SVGElement,
@@ -155,9 +159,7 @@ export default class extends Vue {
       this.svgParent.firstChild as SVGElement
     );
     // Restore the rotation matrix
-    this.$store.direct.state.inverseTotalRotationMatrix.copy(
-      this.originalSphereMatrix
-    );
+    this.setInverseRotationMatrix(this.originalSphereMatrix);
   }
 }
 </script>

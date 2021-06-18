@@ -31,11 +31,13 @@ import { Cropper as ImageCropper, CircleStencil } from "vue-advanced-cropper";
 import "vue-advanced-cropper/dist/style.css";
 
 import { Component, Vue, Watch, Prop } from "vue-property-decorator";
+import { State, Mutation } from "vuex-class";
 import { Route } from "vue-router";
 import { FirebaseStorage, UploadTaskSnapshot } from "@firebase/storage-types";
 import { FirebaseFirestore } from "@firebase/firestore-types";
 import { FirebaseAuth } from "@firebase/auth-types";
 import EventBus from "@/eventHandlers/EventBus";
+import { AppState } from "@/types";
 
 type CropDetails = {
   canvas: HTMLCanvasElement;
@@ -53,13 +55,19 @@ export default class PhotoCropper extends Vue {
   readonly $appDB!: FirebaseFirestore;
   readonly $appAuth!: FirebaseAuth;
   readonly $appStorage!: FirebaseStorage;
+
+  @State((s: AppState) => s.temporaryProfilePicture)
+  readonly temporaryProfilePicture!: string;
+
+  @Mutation setTemporaryProfilePicture!: (_: string) => void;
+
   inputImageBinary: ImageBitmap | null = null;
   croppedImageBase64 = "";
   croppedImageBinary: Blob | null = null;
   goBackSteps = 1;
 
   get inputImageBase64(): string {
-    return this.$store.direct.state.temporaryProfilePicture;
+    return this.temporaryProfilePicture;
   }
 
   beforeRouteEnter(toRoute: Route, fromRoute: Route, next: any): void {
@@ -69,7 +77,7 @@ export default class PhotoCropper extends Vue {
       // we have to pop 2 items from the history stack
       // Otherwise we have to pop only 1 item
       vm.goBackSteps = fromRoute.path.includes("photocapture") ? 2 : 1;
-      const tempProfile = vm.$store.direct.state.temporaryProfilePicture;
+      const tempProfile = vm.temporaryProfilePicture;
 
       // Convert base64 image to binary blob
       createImageBitmap(vm.dataURItoBlob(tempProfile)).then(
@@ -131,7 +139,7 @@ export default class PhotoCropper extends Vue {
             key: "Profile picture is saved to Firebase",
             type: "info"
           });
-          this.$store.direct.commit.setTemporaryProfilePicture("");
+          this.setTemporaryProfilePicture("");
         })
         .catch((err: any) => {
           EventBus.fire("show-alert", {
@@ -142,7 +150,7 @@ export default class PhotoCropper extends Vue {
     }
   }
   cancelCrop(): void {
-    this.$store.direct.commit.setTemporaryProfilePicture("");
+    this.setTemporaryProfilePicture("");
     this.$emit("no-capture", {});
     this.$router.go(-this.goBackSteps);
   }

@@ -1144,9 +1144,9 @@ export class SEAngleMarker extends SEMeasurement
    * put your right at the vertexVector with your thumb pointing away from the origin of the sphere, align your fingers with the
    * start half-plane and then curl your finger to the unitIdealVector half-plane. The angle swept out by your fingers is the returned angle. This
    * will return an angle from 0 to 2Pi.
-   * @param startVector distinct unit vector and not the anitpode of vertexVector
+   * @param startVector distinct unit vector and not the antipode of vertexVector
    * @param vertexVector distinct unit vector
-   * @param unitIdealVector distinct unit vector and not the anitpode of vertexVector
+   * @param unitIdealVector distinct unit vector and not the antipode of vertexVector
    * @returns an angle in [0,2pi)
    */
   private measureAngle(

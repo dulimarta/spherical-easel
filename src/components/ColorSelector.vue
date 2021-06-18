@@ -110,7 +110,7 @@ import Vue from "vue";
 import Component from "vue-class-component";
 import { Watch, Prop, PropSync } from "vue-property-decorator";
 import SETTINGS from "@/global-settings";
-import { State } from "vuex-class";
+import { State, Getter, Mutation } from "vuex-class";
 import { SENodule } from "@/models/SENodule";
 import Nodule from "@/plottables/Nodule";
 import { hslaColorType, Labelable } from "@/types";
@@ -134,7 +134,14 @@ export default class ColorSelector extends Vue {
   @Prop() readonly useDynamicBackStyleFromSelector!: boolean;
 
   @State((s: AppState) => s.selections)
-  selections!: SENodule[];
+  readonly selections!: SENodule[];
+
+  @Getter selectedSENodules!: SENodule[];
+  @Getter getInitialStyleState!: (_: StyleEditPanels) => StyleOptions[];
+  @Getter getDefaultStyleState!: (_: StyleEditPanels) => StyleOptions[];
+
+  @Mutation
+  changeStyle!: (_: any) => void;
 
   //private defaultStyleStates: StyleOptions[] = [];
 
@@ -192,7 +199,8 @@ export default class ColorSelector extends Vue {
   setTempStyleState(tempStyleStates: StyleOptions[]): void {
     this.setColorSelectorState(tempStyleStates);
   }
-  convertColorToRGBAString(colorObject: any) {
+
+  convertColorToRGBAString(colorObject: any): string {
     // THANK YOU INTERNET!
     const h = colorObject.h;
     const s = colorObject.s * 100;
@@ -237,15 +245,15 @@ export default class ColorSelector extends Vue {
     const selected: SENodule[] = [];
     // If this color selector is on the label panel, then all changes are directed at the label(s).
     if (this.panel === StyleEditPanels.Label) {
-      (this.$store.getters.selectedSENodules() as SENodule[]).forEach(node => {
+      this.selectedSENodules.forEach(node => {
         selected.push(((node as unknown) as Labelable).label!);
       });
     } else {
-      selected.push(...this.$store.getters.selectedSENodules());
+      selected.push(...this.selectedSENodules);
     }
 
     if (!this.usingDynamicBackStyle && this.useDynamicBackStyleFromSelector) {
-      this.$store.direct.commit.changeStyle({
+      this.changeStyle({
         selected: selected,
         payload: {
           panel: this.panel,
@@ -253,7 +261,7 @@ export default class ColorSelector extends Vue {
         }
       });
     }
-    this.$store.direct.commit.changeStyle({
+    this.changeStyle({
       selected: selected,
       payload: {
         panel: this.panel,
@@ -275,13 +283,13 @@ export default class ColorSelector extends Vue {
     const selected: SENodule[] = [];
     // If this color selector is on the label panel, then all changes are directed at the label(s).
     if (this.panel === StyleEditPanels.Label) {
-      (this.$store.getters.selectedSENodules() as SENodule[]).forEach(node => {
+      this.selectedSENodules.forEach(node => {
         selected.push(((node as unknown) as Labelable).label!);
       });
     } else {
-      selected.push(...this.$store.getters.selectedSENodules());
+      selected.push(...this.selectedSENodules);
     }
-    this.$store.direct.commit.changeStyle({
+    this.changeStyle({
       selected: selected,
       payload: {
         panel: this.panel,
@@ -293,17 +301,15 @@ export default class ColorSelector extends Vue {
     const selected: SENodule[] = [];
     // If this color selector is on the label panel, then all changes are directed at the label(s).
     if (this.panel === StyleEditPanels.Label) {
-      (this.$store.getters.selectedSENodules() as SENodule[]).forEach(node => {
+      this.selectedSENodules.forEach(node => {
         selected.push(((node as unknown) as Labelable).label!);
       });
     } else {
-      selected.push(...this.$store.getters.selectedSENodules());
+      selected.push(...this.selectedSENodules);
     }
-    const initialStyleStates = this.$store.getters.getInitialStyleState(
-      this.panel
-    );
+    const initialStyleStates = this.getInitialStyleState(this.panel);
     for (let i = 0; i < selected.length; i++) {
-      this.$store.direct.commit.changeStyle({
+      this.changeStyle({
         selected: [selected[i]],
         payload: {
           panel: this.panel,
@@ -321,17 +327,15 @@ export default class ColorSelector extends Vue {
     const selected: SENodule[] = [];
     // If this color selector is on the label panel, then all changes are directed at the label(s).
     if (this.panel === StyleEditPanels.Label) {
-      (this.$store.getters.selectedSENodules() as SENodule[]).forEach(node => {
+      this.selectedSENodules.forEach(node => {
         selected.push(((node as unknown) as Labelable).label!);
       });
     } else {
-      selected.push(...this.$store.getters.selectedSENodules());
+      selected.push(...this.selectedSENodules);
     }
-    const defaultStyleStates = this.$store.getters.getDefaultStyleState(
-      this.panel
-    );
+    const defaultStyleStates = this.getDefaultStyleState(this.panel);
     for (let i = 0; i < selected.length; i++) {
-      this.$store.direct.commit.changeStyle({
+      this.changeStyle({
         selected: [selected[i]],
         payload: {
           panel: this.panel,
@@ -448,14 +452,14 @@ export default class ColorSelector extends Vue {
     const selected: SENodule[] = [];
     // If this color selector is on the label panel, then all changes are directed at the label(s).
     if (this.panel === StyleEditPanels.Label) {
-      (this.$store.getters.selectedSENodules() as SENodule[]).forEach(node => {
+      this.selectedSENodules.forEach(node => {
         selected.push(((node as unknown) as Labelable).label!);
       });
     } else {
-      selected.push(...this.$store.getters.selectedSENodules());
+      selected.push(...this.selectedSENodules);
     }
 
-    this.$store.direct.commit.changeStyle({
+    this.changeStyle({
       selected: selected,
       payload: {
         panel: this.panel,
@@ -468,7 +472,7 @@ export default class ColorSelector extends Vue {
   private activePanelChange(): void {
     if (this.activePanel !== undefined && this.panel === this.activePanel) {
       // activePanel = undefined means that no edit panel is open
-      this.onSelectionChanged(this.$store.getters.selectedSENodules());
+      this.onSelectionChanged(this.selectedSENodules);
     }
   }
 
@@ -479,9 +483,7 @@ export default class ColorSelector extends Vue {
       this.disableColorSelector(true);
       return;
     }
-    this.setColorSelectorState(
-      this.$store.getters.getInitialStyleState(this.panel)
-    );
+    this.setColorSelectorState(this.getInitialStyleState(this.panel));
   }
 }
 </script>

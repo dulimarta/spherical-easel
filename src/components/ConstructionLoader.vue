@@ -55,7 +55,8 @@ import { run } from "@/commands/CommandInterpreter";
 import {
   ConstructionScript,
   SphericalConstruction,
-  ConstructionInFirestore
+  ConstructionInFirestore,
+  AppState
 } from "@/types";
 import EventBus from "@/eventHandlers/EventBus";
 import { SENodule } from "@/models/SENodule";
@@ -64,11 +65,20 @@ import { FirebaseAuth } from "@firebase/auth-types";
 import Dialog, { DialogAction } from "@/components/Dialog.vue";
 import ConstructionList from "@/components/ConstructionList.vue";
 import { Matrix4 } from "three";
+import { State, Mutation } from "vuex-class";
 
 @Component({ components: { Dialog, ConstructionList } })
 export default class ConstructionLoader extends Vue {
   readonly $appDB!: FirebaseFirestore;
   readonly $appAuth!: FirebaseAuth;
+
+  @State((s: AppState) => s.hasUnsavedNodules)
+  readonly hasUnsavedNodules!: boolean;
+
+  @Mutation init!: () => void;
+  @Mutation removeAllFromLayers!: () => void;
+  @Mutation clearUnsavedFlag!: () => void;
+  @Mutation rotateSphere!: (_: Matrix4) => void;
 
   snapshotUnsubscribe: (() => void) | null = null;
   publicConstructions: Array<SphericalConstruction> = [];
@@ -150,8 +160,7 @@ export default class ConstructionLoader extends Vue {
 
   shouldLoadConstruction(event: { docId: string }): void {
     this.selectedDocId = event.docId;
-    if (this.$store.direct.state.hasUnsavedNodules)
-      this.$refs.constructionLoadDialog.show();
+    if (this.hasUnsavedNodules) this.$refs.constructionLoadDialog.show();
     else {
       this.doLoadConstruction();
     }
@@ -177,8 +186,8 @@ export default class ConstructionLoader extends Vue {
       rotationMatrix = this.privateConstructions[pos].sphereRotationMatrix;
     }
 
-    this.$store.direct.commit.removeAllFromLayers();
-    this.$store.direct.commit.init();
+    this.removeAllFromLayers();
+    this.init();
     SENodule.resetAllCounters();
     Nodule.resetAllCounters();
     EventBus.fire("show-alert", {
@@ -188,9 +197,9 @@ export default class ConstructionLoader extends Vue {
     });
     // It looks like we have to apply the rotation matrix
     // before running the script
-    this.$store.direct.commit.rotateSphere(rotationMatrix);
+    this.rotateSphere(rotationMatrix);
     run(script);
-    this.$store.direct.commit.clearUnsavedFlag();
+    this.clearUnsavedFlag();
     EventBus.fire("construction-loaded", {});
   }
 

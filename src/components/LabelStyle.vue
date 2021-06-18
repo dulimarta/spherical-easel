@@ -235,7 +235,7 @@ import Component from "vue-class-component";
 import { Watch, Prop } from "vue-property-decorator";
 import { SENodule } from "../models/SENodule";
 import Nodule from "../plottables/Nodule";
-import { State } from "vuex-class";
+import { State, Getter, Mutation } from "vuex-class";
 // import AppStore from "@/store";
 import {
   Styles,
@@ -251,10 +251,7 @@ import EventBus from "@/eventHandlers/EventBus";
 import NumberSelector from "@/components/NumberSelector.vue";
 // import TextInputSelector from "@/components/TextInputSelector.vue";
 import ColorSelector from "@/components/ColorSelector.vue";
-//import { TranslateResult } from "vue-i18n";
 import i18n from "../i18n";
-import TranslateResult from "../i18n";
-import { SELabel } from "@/models/SELabel";
 import Style from "./Style.vue";
 import HintButton from "@/components/HintButton.vue";
 import OverlayWithFixButton from "@/components/OverlayWithFixButton.vue";
@@ -302,7 +299,17 @@ export default class LabelStyle extends Vue {
   @State((s: AppState) => s.selections)
   readonly selections!: SENodule[];
 
-  readonly store = this.$store.direct;
+  @Mutation setOldStyleSelection!: (_: SENodule[]) => void;
+  @Mutation setSavedFromPanel!: (_: StyleEditPanels) => void;
+  @Mutation changeStyle!: (_: any) => void;
+  @Mutation recordStyleState!: (_: any) => void;
+
+  @Getter selectedSENodules!: SENodule[];
+  @Getter getInitialStyleState!: (_: StyleEditPanels) => StyleOptions[];
+  @Getter getDefaultStyleState!: (_: StyleEditPanels) => StyleOptions[];
+  @Getter getOldStyleSelection!: () => SENodule[];
+  @Getter getSavedFromPanel!: () => StyleEditPanels;
+  @Getter getInitialBackStyleContrast!: () => number;
 
   /**
    * These are the temp style state for the selected objects. Used to set the color/number/dash/contrast selectors when the user disables the dynamic back styling.
@@ -507,7 +514,7 @@ export default class LabelStyle extends Vue {
   /** mounted() is part of VueJS lifecycle hooks */
   mounted(): void {
     // Pass any selected objects when BasicFrontBackStyle is mound to the onSelection change
-    //this.onSelectionChanged(this.$store.getters.selectedSENodules());
+    //this.onSelectionChanged(this.selectedSENodules);
     //  Mount a save listener
     EventBus.listen("save-style-state", this.saveStyleState);
     // EventBus.listen("set-active-style-panel", this.setActivePanel);
@@ -521,15 +528,13 @@ export default class LabelStyle extends Vue {
     }
   }
   allLabelsShowing(): boolean {
-    return (this.$store.getters.selectedSENodules() as SENodule[]).every(
-      node => {
-        if (node.isLabelable()) {
-          return ((node as unknown) as Labelable).label!.showing;
-        } else {
-          return true;
-        }
+    return this.selectedSENodules.every(node => {
+      if (node.isLabelable()) {
+        return ((node as unknown) as Labelable).label!.showing;
+      } else {
+        return true;
       }
-    );
+    });
   }
   toggleAllLabelsVisibility(): void {
     EventBus.fire("toggle-label-visibility", { fromPanel: true });
@@ -591,16 +596,14 @@ export default class LabelStyle extends Vue {
     const selected: SENodule[] = [];
     // This number selector is on the label panel, so all changes are directed at the label(s).
 
-    (this.$store.getters.selectedSENodules() as SENodule[]).forEach(node => {
+    this.selectedSENodules.forEach(node => {
       selected.push(((node as unknown) as Labelable).label!);
     });
 
-    const defaultStyleStates = this.$store.getters.getDefaultStyleState(
-      StyleEditPanels.Label
-    );
+    const defaultStyleStates = this.getDefaultStyleState(StyleEditPanels.Label);
 
     for (let i = 0; i < selected.length; i++) {
-      this.$store.direct.commit.changeStyle({
+      this.changeStyle({
         selected: [selected[i]],
         payload: {
           panel: StyleEditPanels.Label,
@@ -619,15 +622,13 @@ export default class LabelStyle extends Vue {
     const selected: SENodule[] = [];
     // This number selector is on the label panel, so all changes are directed at the label(s).
 
-    (this.$store.getters.selectedSENodules() as SENodule[]).forEach(node => {
+    this.selectedSENodules.forEach(node => {
       selected.push(((node as unknown) as Labelable).label!);
     });
 
-    const initialStyleStates = this.$store.getters.getInitialStyleState(
-      StyleEditPanels.Label
-    );
+    const initialStyleStates = this.getInitialStyleState(StyleEditPanels.Label);
     for (let i = 0; i < selected.length; i++) {
-      this.$store.direct.commit.changeStyle({
+      this.changeStyle({
         selected: [selected[i]],
         payload: {
           panel: StyleEditPanels.Label,
@@ -647,7 +648,7 @@ export default class LabelStyle extends Vue {
 
     const selected: SENodule[] = [];
     // This is always directed at labels!
-    (this.$store.getters.selectedSENodules() as SENodule[]).forEach(node => {
+    this.selectedSENodules.forEach(node => {
       selected.push(((node as unknown) as Labelable).label!);
     });
 
@@ -655,16 +656,16 @@ export default class LabelStyle extends Vue {
       this.labelDisplayText !== undefined &&
       this.labelDisplayText.trim().length === 0
     ) {
-      const defaultStyleStates = this.$store.getters.getDefaultStyleState(
+      const defaultStyleStates = this.getDefaultStyleState(
         StyleEditPanels.Label
       );
-      const translation = i18n.t("style.renameLabels");
+      const translation = i18n.t("style.renameLabels") as string;
       this.labelDisplayText =
         selected.length <= 1
           ? defaultStyleStates[0].labelDisplayText
           : translation;
       for (let i = 0; i < selected.length; i++) {
-        this.$store.direct.commit.changeStyle({
+        this.changeStyle({
           selected: [selected[i]],
           payload: {
             panel: StyleEditPanels.Label,
@@ -683,7 +684,7 @@ export default class LabelStyle extends Vue {
       this.labelTextStyleChange ||
       this.labelTextDecorationChange
     ) {
-      this.$store.direct.commit.changeStyle({
+      this.changeStyle({
         selected: selected,
         payload: {
           panel: StyleEditPanels.Label,
@@ -848,7 +849,7 @@ export default class LabelStyle extends Vue {
   ): labelDisplayModeItem[] {
     const returnItems: labelDisplayModeItem[] = [];
     if (
-      (this.$store.getters.selectedSENodules() as SENodule[]).every(node => {
+      this.selectedSENodules.every(node => {
         if (node.isLabelable()) {
           return ((node as unknown) as Labelable).label!.ref.value.length !== 0;
         } else {
@@ -866,7 +867,7 @@ export default class LabelStyle extends Vue {
     }
 
     if (
-      (this.$store.getters.selectedSENodules() as SENodule[]).every(node => {
+      (this.selectedSENodules as SENodule[]).every(node => {
         if (node.isLabelable()) {
           return (
             ((node as unknown) as Labelable).label!.ref.caption.trim()
@@ -891,7 +892,7 @@ export default class LabelStyle extends Vue {
       this.activePanel !== undefined &&
       StyleEditPanels.Label === this.activePanel
     ) {
-      this.onSelectionChanged(this.$store.getters.selectedSENodules());
+      this.onSelectionChanged(this.selectedSENodules);
     }
   }
   /**
@@ -907,18 +908,18 @@ export default class LabelStyle extends Vue {
     if (newSelection.length === 0) {
       //totally disable the selectors in this component
       this.disableStyleDataSelector(true);
-      this.store.commit.setOldStyleSelection([]);
+      this.setOldStyleSelection([]);
       return;
     }
 
     // record the new selections in the old
-    this.store.commit.setOldStyleSelection([]);
+    this.setOldStyleSelection([]);
     // We are on the label panel so push the labels onto the oldSelections
     const oldSelection: SENodule[] = [];
     newSelection.forEach(obj =>
       oldSelection.push(((obj as unknown) as Labelable).label!)
     );
-    this.store.commit.setOldStyleSelection(oldSelection);
+    this.setOldStyleSelection(oldSelection);
 
     // Create a list of the common properties that the objects in the selection have.
     // commonStyleProperties is a number (corresponding to an enum) array
@@ -936,21 +937,21 @@ export default class LabelStyle extends Vue {
     // Get the initial and default style state of the object for undo/redo and buttons to revert to initial style.
     // Put this in the store so that it is availble to *all* panels. Get the front and back information at the same time.
 
-    this.$store.direct.commit.recordStyleState({
+    this.recordStyleState({
       selected: newSelection.map(obj => ((obj as unknown) as Labelable).label!),
       backContrast: Nodule.getBackStyleContrast()
     });
 
-    this.store.commit.setSavedFromPanel(StyleEditPanels.Label);
+    this.setSavedFromPanel(StyleEditPanels.Label);
     //Set the initial state of the fade-in-card/selectors (checking to see if the property is the same across all selected objects)
     this.setStyleDataSelectorState(
-      this.$store.getters.getInitialStyleState(StyleEditPanels.Label)
+      this.getInitialStyleState(StyleEditPanels.Label)
     );
   }
 
   saveStyleState(): void {
     // There must be an old selection in order for there to be a change to save
-    const oldSelection = this.$store.getters.getOldStyleSelection();
+    const oldSelection = this.getOldStyleSelection();
     if (oldSelection.length > 0) {
       //Record the current state of each Nodule
       this.currentStyleStates.splice(0);
@@ -958,15 +959,13 @@ export default class LabelStyle extends Vue {
       oldSelection.forEach((seNodule: SENodule) => {
         if (seNodule.ref !== undefined)
           this.currentStyleStates.push(
-            seNodule.ref.currentStyleState(
-              this.$store.getters.getSavedFromPanel()
-            )
+            seNodule.ref.currentStyleState(this.getSavedFromPanel())
           );
       });
-      const initialStyleStates = this.$store.getters.getInitialStyleState(
-        this.$store.getters.getSavedFromPanel()
+      const initialStyleStates = this.getInitialStyleState(
+        this.getSavedFromPanel()
       );
-      const initialBackStyleContrast = this.$store.getters.getInitialBackStyleContrast();
+      const initialBackStyleContrast = this.getInitialBackStyleContrast();
       if (
         !this.areEquivalentStyles(
           this.currentStyleStates,
@@ -978,7 +977,7 @@ export default class LabelStyle extends Vue {
         // Add the label of the
         new StyleNoduleCommand(
           oldSelection,
-          this.$store.getters.getSavedFromPanel(),
+          this.getSavedFromPanel(),
           this.currentStyleStates,
           initialStyleStates,
           Nodule.getBackStyleContrast(),
@@ -986,7 +985,7 @@ export default class LabelStyle extends Vue {
         ).push();
       }
       // clear the old selection so that this save style state will not be executed again until changes are made.
-      this.store.commit.setOldStyleSelection([]);
+      this.setOldStyleSelection([]);
     }
   }
 

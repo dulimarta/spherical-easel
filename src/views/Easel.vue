@@ -241,7 +241,7 @@ import Line from "@/plottables/Line";
 import Label from "@/plottables/Label";
 import Segment from "@/plottables/Segment";
 import Nodule from "@/plottables/Nodule";
-import { State } from "vuex-class";
+import { State, Mutation } from "vuex-class";
 import { SENodule } from "@/models/SENodule";
 import { AppState, ConstructionInFirestore } from "@/types";
 import IconBase from "@/components/IconBase.vue";
@@ -281,9 +281,24 @@ export default class Easel extends Vue {
   @State((s: AppState) => s.seCircles)
   readonly circles!: SENodule[];
 
+  @State((s: AppState) => s.seNodules)
+  readonly seNodules!: SENodule[];
+
+  @State((s: AppState) => s.temporaryNodules)
+  readonly temporaryNodules!: Nodule[];
+
+  @State((s: AppState) => s.previousZoomMagnificationFactor)
+  readonly previousZoomMagnificationFactor!: number;
+
+  @Mutation init!: () => void;
+
+  @Mutation removeAllFromLayers!: () => void;
+
+  @Mutation setActionMode!: (_: any) => void;
+
   readonly $appDB!: FirebaseFirestore;
 
-  readonly store = this.$store.direct;
+  // readonly store = this.$store.direct;
   // readonly UIModule = getModule(UI, this.$store);
   private availHeight = 0; // Both split panes are sandwiched between the app bar and footer. This variable hold the number of pixels available for canvas height
   private currentCanvasSize = 0; // Result of height calculation will be passed to <v-responsive> via this variable
@@ -336,21 +351,21 @@ export default class Easel extends Vue {
 
   private enableZoomIn(): void {
     this.displayZoomInToolUseMessage = true;
-    this.store.commit.setActionMode({
+    this.setActionMode({
       id: "zoomIn",
       name: "PanZoomInDisplayedName"
     });
   }
   private enableZoomOut(): void {
     this.displayZoomOutToolUseMessage = true;
-    this.store.commit.setActionMode({
+    this.setActionMode({
       id: "zoomOut",
       name: "PanZoomOutDisplayedName"
     });
   }
   private enableZoomFit(): void {
     this.displayZoomFitToolUseMessage = true;
-    this.store.commit.setActionMode({
+    this.setActionMode({
       id: "zoomFit",
       name: "ZoomFitDisplayedName"
     });
@@ -370,8 +385,8 @@ export default class Easel extends Vue {
   }
 
   loadDocument(docId: string): void {
-    this.$store.direct.commit.removeAllFromLayers();
-    this.$store.direct.commit.init();
+    this.removeAllFromLayers();
+    this.init();
     SENodule.resetAllCounters();
     Nodule.resetAllCounters();
     this.$appDB
@@ -441,14 +456,14 @@ export default class Easel extends Vue {
   }
 
   setActionModeToSelectTool(): void {
-    this.store.commit.setActionMode({
+    this.setActionMode({
       id: "select",
       name: "SelectDisplayedName"
     });
   }
 
   switchActionMode(): void {
-    this.store.commit.setActionMode(this.actionMode);
+    this.setActionMode(this.actionMode);
   }
   onWindowResized(): void {
     this.adjustSize();
@@ -463,8 +478,8 @@ export default class Easel extends Vue {
   }
 
   resetSphere(): void {
-    this.$store.direct.commit.removeAllFromLayers();
-    this.$store.direct.commit.init();
+    this.removeAllFromLayers();
+    this.init();
     Command.commandHistory.splice(0);
     Command.redoHistory.splice(0);
     SENodule.resetAllCounters();
@@ -473,7 +488,7 @@ export default class Easel extends Vue {
 
   //#region resizePlottables
   resizePlottables(e: { factor: number }): void {
-    const oldFactor = this.store.state.previousZoomMagnificationFactor;
+    const oldFactor = this.previousZoomMagnificationFactor;
     // Update the current stroke widths in each plottable class
     Line.updateCurrentStrokeWidthForZoom(oldFactor / e.factor);
     Segment.updateCurrentStrokeWidthForZoom(oldFactor / e.factor);
@@ -483,11 +498,11 @@ export default class Easel extends Vue {
     Label.updateTextScaleFactorForZoom(oldFactor / e.factor);
 
     // Update the size of each nodule in the store
-    this.$store.state.seNodules.forEach((p: SENodule) => {
+    this.seNodules.forEach((p: SENodule) => {
       p.ref?.adjustSize();
     });
     // The temporary plottables need to be resized too
-    this.$store.state.temporaryNodules.forEach((p: Nodule) => {
+    this.temporaryNodules.forEach((p: Nodule) => {
       p.adjustSize();
     });
   }

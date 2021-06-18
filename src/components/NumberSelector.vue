@@ -82,7 +82,7 @@ import Component from "vue-class-component";
 import SETTINGS from "@/global-settings";
 import { Watch, Prop, PropSync } from "vue-property-decorator";
 import { StyleOptions, Styles, StyleEditPanels } from "@/types/Styles";
-import { State } from "vuex-class";
+import { State, Getter, Mutation } from "vuex-class";
 import { SENodule } from "@/models/SENodule";
 import { AppState, Labelable, UpdateMode } from "@/types";
 import HintButton from "@/components/HintButton.vue";
@@ -109,6 +109,12 @@ export default class NumberSelector extends Vue {
   @State((s: AppState) => s.selections)
   readonly selections!: SENodule[];
 
+  @Getter magnificationLevel!: number;
+  @Getter selectedSENodules!: SENodule[];
+  @Getter getDefaultStyleState!: (_: StyleEditPanels) => StyleOptions[];
+  @Getter getInitialStyleState!: (_: StyleEditPanels) => StyleOptions[];
+
+  @Mutation changeStyle!: (_: any) => void;
   readonly toolTipOpenDelay = SETTINGS.toolTip.openDelay;
   readonly toolTipCloseDelay = SETTINGS.toolTip.closeDelay;
 
@@ -131,7 +137,7 @@ export default class NumberSelector extends Vue {
   private usingDynamicBackStyle = true;
 
   mounted(): void {
-    // this.onSelectionChanged(this.$store.getters.selectedSENodules());
+    // this.onSelectionChanged(this.selectedSENodules);
   }
   @Watch("tempStyleStates")
   setTempStyleState(tempStyleStates: StyleOptions[]): void {
@@ -169,15 +175,15 @@ export default class NumberSelector extends Vue {
     const selected: SENodule[] = [];
     // If this number selector is on the label panel, then all changes are directed at the label(s).
     if (this.panel === StyleEditPanels.Label) {
-      (this.$store.getters.selectedSENodules() as SENodule[]).forEach(node => {
+      this.selectedSENodules.forEach(node => {
         selected.push(((node as unknown) as Labelable).label!);
       });
     } else {
-      selected.push(...this.$store.getters.selectedSENodules());
+      selected.push(...this.selectedSENodules);
     }
 
     if (!this.usingDynamicBackStyle && this.useDynamicBackStyleFromSelector) {
-      this.$store.direct.commit.changeStyle({
+      this.changeStyle({
         selected: selected,
         payload: {
           panel: this.panel,
@@ -188,7 +194,7 @@ export default class NumberSelector extends Vue {
 
     console.log("styleName", this.styleName, "val", newData);
 
-    this.$store.direct.commit.changeStyle({
+    this.changeStyle({
       selected: selected,
       payload: {
         panel: this.panel,
@@ -201,17 +207,15 @@ export default class NumberSelector extends Vue {
     const selected: SENodule[] = [];
     // If this number selector is on the label panel, then all changes are directed at the label(s).
     if (this.panel === StyleEditPanels.Label) {
-      (this.$store.getters.selectedSENodules() as SENodule[]).forEach(node => {
+      this.selectedSENodules.forEach(node => {
         selected.push(((node as unknown) as Labelable).label!);
       });
     } else {
-      selected.push(...this.$store.getters.selectedSENodules());
+      selected.push(...this.selectedSENodules);
     }
-    const defaultStyleStates = this.$store.getters.getDefaultStyleState(
-      this.panel
-    );
+    const defaultStyleStates = this.getDefaultStyleState(this.panel);
     for (let i = 0; i < selected.length; i++) {
-      this.$store.direct.commit.changeStyle({
+      this.changeStyle({
         selected: [selected[i]],
         payload: {
           panel: this.panel,
@@ -306,17 +310,15 @@ export default class NumberSelector extends Vue {
     const selected: SENodule[] = [];
     // If this number selector is on the label panel, then all changes are directed at the label(s).
     if (this.panel === StyleEditPanels.Label) {
-      (this.$store.getters.selectedSENodules() as SENodule[]).forEach(node => {
+      this.selectedSENodules.forEach(node => {
         selected.push(((node as unknown) as Labelable).label!);
       });
     } else {
-      selected.push(...this.$store.getters.selectedSENodules());
+      selected.push(...this.selectedSENodules);
     }
-    const initialStyleStates = this.$store.getters.getInitialStyleState(
-      this.panel
-    );
+    const initialStyleStates = this.getInitialStyleState(this.panel);
     for (let i = 0; i < selected.length; i++) {
-      this.$store.direct.commit.changeStyle({
+      this.changeStyle({
         selected: [selected[i]],
         payload: {
           panel: this.panel,
@@ -356,13 +358,13 @@ export default class NumberSelector extends Vue {
     const selected: SENodule[] = [];
     // If this color selector is on the label panel, then all changes are directed at the label(s).
     if (this.panel === StyleEditPanels.Label) {
-      (this.$store.getters.selectedSENodules() as SENodule[]).forEach(node => {
+      this.selectedSENodules.forEach(node => {
         selected.push(((node as unknown) as Labelable).label!);
       });
     } else {
-      selected.push(...this.$store.getters.selectedSENodules());
+      selected.push(...this.selectedSENodules);
     }
-    this.$store.direct.commit.changeStyle({
+    this.changeStyle({
       selected: selected,
       payload: {
         panel: this.panel,
@@ -374,7 +376,7 @@ export default class NumberSelector extends Vue {
   private activePanelChange(): void {
     if (this.activePanel !== undefined && this.panel === this.activePanel) {
       // activePanel = undefined means that no edit panel is open
-      this.onSelectionChanged(this.$store.getters.selectedSENodules());
+      this.onSelectionChanged(this.selectedSENodules);
     }
   }
 
@@ -384,7 +386,7 @@ export default class NumberSelector extends Vue {
       this.disableSelector(true);
       return;
     }
-    this.setSelectorState(this.$store.getters.getInitialStyleState(this.panel));
+    this.setSelectorState(this.getInitialStyleState(this.panel));
   }
 }
 </script>

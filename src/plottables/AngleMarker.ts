@@ -1,12 +1,6 @@
 /** @format */
 
-import {
-  Vector3,
-  Vector2,
-  Matrix4,
-  UnsignedShort4444Type,
-  ShortType
-} from "three";
+import { Vector3, Matrix4 } from "three";
 import Two from "two.js";
 import SETTINGS, { LAYER } from "@/global-settings";
 import Nodule, { DisplayStyle } from "./Nodule";
@@ -599,8 +593,10 @@ export default class AngleMarker extends Nodule {
       if (this.tmpVector.z > 0) {
         if (posIndex === activeFront.length) {
           // transfer one cell from the common pool
-          activeFront.push(pool.pop()!);
-          glowingActiveFront.push(glowingPool.pop()!);
+          const cell1 = pool.pop();
+          if (cell1) activeFront.push(cell1);
+          const cell2 = glowingPool.pop();
+          if (cell2) glowingActiveFront.push(cell2);
         }
         activeFront[posIndex].x = this.tmpVector.x;
         activeFront[posIndex].y = this.tmpVector.y;
@@ -610,8 +606,10 @@ export default class AngleMarker extends Nodule {
       } else {
         if (negIndex === activeBack.length) {
           // transfer one cell from the common pool
-          activeBack.push(pool.pop()!);
-          glowingActiveBack.push(glowingPool.pop()!);
+          const cell1 = pool.pop();
+          if (cell1) activeBack.push(cell1);
+          const cell2 = glowingPool.pop();
+          if (cell2) glowingActiveBack.push(cell2);
         }
         activeBack[negIndex].x = this.tmpVector.x;
         activeBack[negIndex].y = this.tmpVector.y;
@@ -700,8 +698,10 @@ export default class AngleMarker extends Nodule {
       if (this.tmpVectorDA.z > 0) {
         if (posIndexDA === activeFrontDA.length) {
           // transfer one cell from the common pool
-          activeFrontDA.push(poolDA.pop()!);
-          glowingActiveFrontDA.push(glowingPoolDA.pop()!);
+          const dArc = poolDA.pop();
+          if (dArc) activeFrontDA.push(dArc);
+          const dArcGlow = glowingPoolDA.pop();
+          if (dArcGlow) glowingActiveFrontDA.push(dArcGlow);
         }
         activeFrontDA[posIndexDA].x = this.tmpVectorDA.x;
         activeFrontDA[posIndexDA].y = this.tmpVectorDA.y;
@@ -711,8 +711,10 @@ export default class AngleMarker extends Nodule {
       } else {
         if (negIndexDA === activeBackDA.length) {
           // transfer one cell from the common pool
-          activeBackDA.push(poolDA.pop()!);
-          glowingActiveBackDA.push(glowingPoolDA.pop()!);
+          const dArc = poolDA.pop();
+          if (dArc) activeBackDA.push(dArc);
+          const dArcGlow = glowingPoolDA.pop();
+          if (dArcGlow) glowingActiveBackDA.push(dArcGlow);
         }
         activeBackDA[negIndexDA].x = this.tmpVectorDA.x;
         activeBackDA[negIndexDA].y = this.tmpVectorDA.y;
@@ -781,8 +783,10 @@ export default class AngleMarker extends Nodule {
       if (this.tmpVectorStraight.z > 0) {
         if (posIndexStraight === this.frontStraightStart.vertices.length) {
           // transfer one cell from the common pool
-          this.frontStraightStart.vertices.push(poolStart.pop()!);
-          this.glowingFrontStraightStart.vertices.push(glowingPoolStart.pop()!);
+          const cell1 = poolStart.pop();
+          if (cell1) this.frontStraightStart.vertices.push(cell1);
+          const cell2 = glowingPoolStart.pop();
+          if (cell2) this.glowingFrontStraightStart.vertices.push(cell2);
         }
         this.frontStraightStart.vertices[
           posIndexStraight
@@ -800,8 +804,10 @@ export default class AngleMarker extends Nodule {
       } else {
         if (negIndexStraight === this.backStraightStart.vertices.length) {
           // transfer one cell from the common pool
-          this.backStraightStart.vertices.push(poolStart.pop()!);
-          this.glowingBackStraightStart.vertices.push(glowingPoolStart.pop()!);
+          const cell1 = poolStart.pop();
+          if (cell1) this.backStraightStart.vertices.push(cell1);
+          const cell2 = glowingPoolStart.pop();
+          if (cell2) this.glowingBackStraightStart.vertices.push(cell2);
         }
         this.backStraightStart.vertices[
           negIndexStraight
@@ -870,8 +876,10 @@ export default class AngleMarker extends Nodule {
       if (this.tmpVectorStraight.z > 0) {
         if (posIndexStraight === this.frontStraightEnd.vertices.length) {
           // transfer one cell from the common pool
-          this.frontStraightEnd.vertices.push(poolEnd.pop()!);
-          this.glowingFrontStraightEnd.vertices.push(glowingPoolEnd.pop()!);
+          const cell1 = poolEnd.pop();
+          if (cell1) this.frontStraightEnd.vertices.push(cell1);
+          const cell2 = glowingPoolEnd.pop();
+          if (cell2) this.glowingFrontStraightEnd.vertices.push(cell2);
         }
         this.frontStraightEnd.vertices[
           posIndexStraight
@@ -889,8 +897,10 @@ export default class AngleMarker extends Nodule {
       } else {
         if (negIndexStraight === this.backStraightEnd.vertices.length) {
           // transfer one cell from the common pool
-          this.backStraightEnd.vertices.push(poolEnd.pop()!);
-          this.glowingBackStraightEnd.vertices.push(glowingPoolEnd.pop()!);
+          const vEnd = poolEnd.pop();
+          if (vEnd) this.backStraightEnd.vertices.push(vEnd);
+          const vEndGlow = glowingPoolEnd.pop();
+          if (vEndGlow) this.glowingBackStraightEnd.vertices.push(vEndGlow);
         }
         this.backStraightEnd.vertices[
           negIndexStraight
@@ -1597,7 +1607,8 @@ export default class AngleMarker extends Nodule {
         fillRegion1Vertices.forEach(pt => {
           if (anchorsAddedToRegion1 === this.frontFill1.vertices.length) {
             // transfer one cell from the common pool
-            this.frontFill1.vertices.push(poolFill.pop()!);
+            const cell = poolFill.pop();
+            if (cell) this.frontFill1.vertices.push(cell);
           }
           this.frontFill1.vertices[anchorsAddedToRegion1].x = pt[0];
           this.frontFill1.vertices[anchorsAddedToRegion1].y = pt[1];
@@ -1607,7 +1618,8 @@ export default class AngleMarker extends Nodule {
         fillRegion1Vertices.forEach(pt => {
           if (anchorsAddedToRegion1 === this.backFill1.vertices.length) {
             // transfer one cell from the common pool
-            this.backFill1.vertices.push(poolFill.pop()!);
+            const cell = poolFill.pop();
+            if (cell) this.backFill1.vertices.push(cell);
           }
           this.backFill1.vertices[anchorsAddedToRegion1].x = pt[0];
           this.backFill1.vertices[anchorsAddedToRegion1].y = pt[1];
@@ -1621,7 +1633,8 @@ export default class AngleMarker extends Nodule {
         fillRegion2Vertices.forEach(pt => {
           if (anchorsAddedToRegion2 === this.frontFill2.vertices.length) {
             // transfer one cell from the common pool
-            this.frontFill2.vertices.push(poolFill.pop()!);
+            const vPool = poolFill.pop();
+            if (vPool) this.frontFill2.vertices.push(vPool);
           }
           this.frontFill2.vertices[anchorsAddedToRegion2].x = pt[0];
           this.frontFill2.vertices[anchorsAddedToRegion2].y = pt[1];
@@ -1631,7 +1644,8 @@ export default class AngleMarker extends Nodule {
         fillRegion2Vertices.forEach(pt => {
           if (anchorsAddedToRegion2 === this.backFill2.vertices.length) {
             // transfer one cell from the common pool
-            this.backFill2.vertices.push(poolFill.pop()!);
+            const vPool = poolFill.pop();
+            if (vPool) this.backFill2.vertices.push(vPool);
           }
           this.backFill2.vertices[anchorsAddedToRegion2].x = pt[0];
           this.backFill2.vertices[anchorsAddedToRegion2].y = pt[1];
@@ -1645,7 +1659,8 @@ export default class AngleMarker extends Nodule {
         fillRegion3Vertices.forEach(pt => {
           if (anchorsAddedToRegion3 === this.frontFill2.vertices.length) {
             // transfer one cell from the common pool
-            this.frontFill2.vertices.push(poolFill.pop()!);
+            const cell = poolFill.pop();
+            if (cell) this.frontFill2.vertices.push(cell);
           }
           this.frontFill2.vertices[anchorsAddedToRegion3].x = pt[0];
           this.frontFill2.vertices[anchorsAddedToRegion3].y = pt[1];
@@ -1655,7 +1670,8 @@ export default class AngleMarker extends Nodule {
         fillRegion3Vertices.forEach(pt => {
           if (anchorsAddedToRegion3 === this.backFill2.vertices.length) {
             // transfer one cell from the common pool
-            this.backFill2.vertices.push(poolFill.pop()!);
+            const cell = poolFill.pop();
+            if (cell) this.backFill2.vertices.push(cell);
           }
           this.backFill2.vertices[anchorsAddedToRegion3].x = pt[0];
           this.backFill2.vertices[anchorsAddedToRegion3].y = pt[1];
@@ -2079,12 +2095,10 @@ export default class AngleMarker extends Nodule {
       this.frontCirclePathStart.vertices.length
     ) {
       // Transfer from frontPath to backPath
-      dup.backCirclePathStart.vertices.push(
-        dup.frontCirclePathStart.vertices.pop()!
-      );
-      dup.glowingBackCirclePathStart.vertices.push(
-        dup.glowingFrontCirclePathStart.vertices.pop()!
-      );
+      const vFront = dup.frontCirclePathStart.vertices.pop();
+      if (vFront) dup.backCirclePathStart.vertices.push(vFront);
+      const vFrontGlow = dup.glowingFrontCirclePathStart.vertices.pop();
+      if (vFrontGlow) dup.glowingBackCirclePathStart.vertices.push(vFrontGlow);
     }
 
     while (
@@ -2092,12 +2106,10 @@ export default class AngleMarker extends Nodule {
       this.frontStraightStart.vertices.length
     ) {
       // Transfer from frontPath to backPath
-      dup.backStraightStart.vertices.push(
-        dup.frontStraightStart.vertices.pop()!
-      );
-      dup.glowingBackStraightStart.vertices.push(
-        dup.glowingFrontStraightStart.vertices.pop()!
-      );
+      const vFront = dup.frontStraightStart.vertices.pop();
+      if (vFront) dup.backStraightStart.vertices.push(vFront);
+      const vFrontGlow = dup.glowingFrontStraightStart.vertices.pop();
+      if (vFrontGlow) dup.glowingBackStraightStart.vertices.push(vFrontGlow);
     }
 
     while (
@@ -2105,12 +2117,11 @@ export default class AngleMarker extends Nodule {
       this.frontCirclePathDoubleArcStart.vertices.length
     ) {
       // Transfer from frontPath to backPath
-      dup.backCirclePathDoubleArcStart.vertices.push(
-        dup.frontCirclePathDoubleArcStart.vertices.pop()!
-      );
-      dup.glowingBackCirclePathDoubleArcStart.vertices.push(
-        dup.glowingFrontCirclePathDoubleArcStart.vertices.pop()!
-      );
+      const vFront = dup.frontCirclePathDoubleArcStart.vertices.pop();
+      if (vFront) dup.backCirclePathDoubleArcStart.vertices.push(vFront);
+      const vFrontGlow = dup.glowingFrontCirclePathDoubleArcStart.vertices.pop();
+      if (vFrontGlow)
+        dup.glowingBackCirclePathDoubleArcStart.vertices.push(vFrontGlow);
     }
 
     while (
@@ -2118,12 +2129,10 @@ export default class AngleMarker extends Nodule {
       this.frontCirclePathTail.vertices.length
     ) {
       // Transfer from frontPath to backPath
-      dup.backCirclePathTail.vertices.push(
-        dup.frontCirclePathTail.vertices.pop()!
-      );
-      dup.glowingBackCirclePathTail.vertices.push(
-        dup.glowingFrontCirclePathTail.vertices.pop()!
-      );
+      const vFront = dup.frontCirclePathTail.vertices.pop();
+      if (vFront) dup.backCirclePathTail.vertices.push(vFront);
+      const vFrontGlow = dup.glowingFrontCirclePathTail.vertices.pop();
+      if (vFrontGlow) dup.glowingBackCirclePathTail.vertices.push(vFrontGlow);
     }
 
     while (
@@ -2131,10 +2140,10 @@ export default class AngleMarker extends Nodule {
       this.frontStraightEnd.vertices.length
     ) {
       // Transfer from frontPath to backPath
-      dup.backStraightEnd.vertices.push(dup.frontStraightEnd.vertices.pop()!);
-      dup.glowingBackStraightEnd.vertices.push(
-        dup.glowingFrontStraightEnd.vertices.pop()!
-      );
+      const vFront = dup.frontStraightEnd.vertices.pop();
+      if (vFront) dup.backStraightEnd.vertices.push(vFront);
+      const vFrontGlow = dup.glowingFrontStraightEnd.vertices.pop();
+      if (vFrontGlow) dup.glowingBackStraightEnd.vertices.push(vFrontGlow);
     }
 
     while (
@@ -2142,12 +2151,11 @@ export default class AngleMarker extends Nodule {
       this.frontCirclePathDoubleArcTail.vertices.length
     ) {
       // Transfer from frontPath to backPath
-      dup.backCirclePathDoubleArcTail.vertices.push(
-        dup.frontCirclePathDoubleArcTail.vertices.pop()!
-      );
-      dup.glowingBackCirclePathDoubleArcTail.vertices.push(
-        dup.glowingFrontCirclePathDoubleArcTail.vertices.pop()!
-      );
+      const vFront = dup.frontCirclePathDoubleArcTail.vertices.pop();
+      if (vFront) dup.backCirclePathDoubleArcTail.vertices.push(vFront);
+      const vFrontGlow = dup.glowingFrontCirclePathDoubleArcTail.vertices.pop();
+      if (vFrontGlow)
+        dup.glowingBackCirclePathDoubleArcTail.vertices.push(vFrontGlow);
     }
 
     // #frontFill1 + #frontFill2 + #backFill1 + #backFill2 + #storage = constant at all times
@@ -2158,16 +2166,20 @@ export default class AngleMarker extends Nodule {
     poolFill.push(...dup.backFill2.vertices.splice(0));
     poolFill.push(...dup.fillStorageAnchors.splice(0));
     while (dup.frontFill1.vertices.length < this.frontFill1.vertices.length) {
-      dup.frontFill1.vertices.push(poolFill.pop()!);
+      const vPool = poolFill.pop();
+      if (vPool) dup.frontFill1.vertices.push(vPool);
     }
     while (dup.frontFill2.vertices.length < this.frontFill2.vertices.length) {
-      dup.frontFill2.vertices.push(poolFill.pop()!);
+      const vPool = poolFill.pop();
+      if (vPool) dup.frontFill2.vertices.push(vPool);
     }
     while (dup.backFill1.vertices.length < this.backFill1.vertices.length) {
-      dup.backFill1.vertices.push(poolFill.pop()!);
+      const vPool = poolFill.pop();
+      if (vPool) dup.backFill1.vertices.push(vPool);
     }
     while (dup.backFill2.vertices.length < this.backFill2.vertices.length) {
-      dup.backFill2.vertices.push(poolFill.pop()!);
+      const vPool = poolFill.pop();
+      if (vPool) dup.backFill2.vertices.push(vPool);
     }
     dup.fillStorageAnchors.push(...poolFill.splice(0));
 
@@ -2177,12 +2189,10 @@ export default class AngleMarker extends Nodule {
       this.frontCirclePathStart.vertices.length
     ) {
       // Transfer from backPath to frontPath
-      dup.frontCirclePathStart.vertices.push(
-        dup.backCirclePathStart.vertices.pop()!
-      );
-      dup.glowingFrontCirclePathStart.vertices.push(
-        dup.glowingBackCirclePathStart.vertices.pop()!
-      );
+      const vBack = dup.backCirclePathStart.vertices.pop();
+      if (vBack) dup.frontCirclePathStart.vertices.push(vBack);
+      const vBackGlow = dup.glowingBackCirclePathStart.vertices.pop();
+      if (vBackGlow) dup.glowingFrontCirclePathStart.vertices.push(vBackGlow);
     }
 
     while (
@@ -2190,12 +2200,10 @@ export default class AngleMarker extends Nodule {
       this.frontStraightStart.vertices.length
     ) {
       // Transfer from backPath to frontPath
-      dup.frontStraightStart.vertices.push(
-        dup.backStraightStart.vertices.pop()!
-      );
-      dup.glowingFrontStraightStart.vertices.push(
-        dup.glowingBackStraightStart.vertices.pop()!
-      );
+      const vBack = dup.backStraightStart.vertices.pop();
+      if (vBack) dup.frontStraightStart.vertices.push(vBack);
+      const vBackGlow = dup.glowingBackStraightStart.vertices.pop();
+      if (vBackGlow) dup.glowingFrontStraightStart.vertices.push(vBackGlow);
     }
 
     while (
@@ -2203,12 +2211,11 @@ export default class AngleMarker extends Nodule {
       this.frontCirclePathDoubleArcStart.vertices.length
     ) {
       // Transfer from backPath to frontPath
-      dup.frontCirclePathDoubleArcStart.vertices.push(
-        dup.backCirclePathDoubleArcStart.vertices.pop()!
-      );
-      dup.glowingFrontCirclePathDoubleArcStart.vertices.push(
-        dup.glowingBackCirclePathDoubleArcStart.vertices.pop()!
-      );
+      const vBack = dup.backCirclePathDoubleArcStart.vertices.pop();
+      if (vBack) dup.frontCirclePathDoubleArcStart.vertices.push(vBack);
+      const vBackGlow = dup.glowingBackCirclePathDoubleArcStart.vertices.pop();
+      if (vBackGlow)
+        dup.glowingFrontCirclePathDoubleArcStart.vertices.push(vBackGlow);
     }
 
     while (
@@ -2216,12 +2223,10 @@ export default class AngleMarker extends Nodule {
       this.frontCirclePathTail.vertices.length
     ) {
       // Transfer from backPath to frontPath
-      dup.frontCirclePathTail.vertices.push(
-        dup.backCirclePathTail.vertices.pop()!
-      );
-      dup.glowingFrontCirclePathTail.vertices.push(
-        dup.glowingBackCirclePathTail.vertices.pop()!
-      );
+      const vBack = dup.backCirclePathTail.vertices.pop();
+      if (vBack) dup.frontCirclePathTail.vertices.push(vBack);
+      const vBackGlow = dup.glowingBackCirclePathTail.vertices.pop();
+      if (vBackGlow) dup.glowingFrontCirclePathTail.vertices.push(vBackGlow);
     }
 
     while (
@@ -2229,10 +2234,10 @@ export default class AngleMarker extends Nodule {
       this.frontStraightEnd.vertices.length
     ) {
       // Transfer from backPath to frontPath
-      dup.frontStraightEnd.vertices.push(dup.backStraightEnd.vertices.pop()!);
-      dup.glowingFrontStraightEnd.vertices.push(
-        dup.glowingBackStraightEnd.vertices.pop()!
-      );
+      const vBack = dup.backStraightEnd.vertices.pop();
+      if (vBack) dup.frontStraightEnd.vertices.push(vBack);
+      const vBackGlow = dup.glowingBackStraightEnd.vertices.pop();
+      if (vBackGlow) dup.glowingFrontStraightEnd.vertices.push(vBackGlow);
     }
 
     while (
@@ -2240,12 +2245,11 @@ export default class AngleMarker extends Nodule {
       this.frontCirclePathDoubleArcTail.vertices.length
     ) {
       // Transfer from backPath to frontPath
-      dup.frontCirclePathDoubleArcTail.vertices.push(
-        dup.backCirclePathDoubleArcTail.vertices.pop()!
-      );
-      dup.glowingFrontCirclePathDoubleArcTail.vertices.push(
-        dup.glowingBackCirclePathDoubleArcTail.vertices.pop()!
-      );
+      const vBack = dup.backCirclePathDoubleArcTail.vertices.pop();
+      if (vBack) dup.frontCirclePathDoubleArcTail.vertices.push(vBack);
+      const vBackGlow = dup.glowingBackCirclePathDoubleArcTail.vertices.pop();
+      if (vBackGlow)
+        dup.glowingFrontCirclePathDoubleArcTail.vertices.push(vBackGlow);
     }
 
     // Now we know that the dup.bach/front CirclePath start/tail and this.back/front CirclePath start/tail have the same length
@@ -2983,7 +2987,7 @@ export default class AngleMarker extends Nodule {
             this.backFill1.noFill();
             this.backFill2.noFill();
           } else {
-            // If the anglemarkers are shaded
+            // If the angle markers are shaded
             // this.backGradientColor.color = Nodule.contrastFillColor(
             //   this.fillColorFront
             // );
