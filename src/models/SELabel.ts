@@ -203,7 +203,7 @@ export class SELabel extends SENodule implements Visitable {
     const boundingBox = this.ref.boundingRectangle;
     // Get the canvas size so the bounding box can be corrected
     // console.log("SELabel.store.getters", this.store);
-    const canvasSize = this.store.getters.getCanvasWidth();
+    const canvasSize = this.store.state.canvasWidth;
 
     return (
       boundingBox.left - canvasSize / 2 <

@@ -298,8 +298,6 @@ export default class Easel extends Vue {
 
   readonly $appDB!: FirebaseFirestore;
 
-  // readonly store = this.$store.direct;
-  // readonly UIModule = getModule(UI, this.$store);
   private availHeight = 0; // Both split panes are sandwiched between the app bar and footer. This variable hold the number of pixels available for canvas height
   private currentCanvasSize = 0; // Result of height calculation will be passed to <v-responsive> via this variable
 

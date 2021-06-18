@@ -10,13 +10,7 @@ import EventBus from "@/eventHandlers/EventBus";
 import { createDirectStore } from "direct-vuex";
 Vue.use(Vuex);
 
-const {
-  store,
-  rootActionContext,
-  moduleActionContext,
-  rootGetterContext,
-  moduleGetterContext
-} = createDirectStore({
+const { store } = createDirectStore({
   state: initialState,
   mutations,
   actions: {
@@ -35,12 +29,6 @@ const {
   }
 });
 export default store;
-export {
-  rootActionContext,
-  moduleActionContext,
-  rootGetterContext,
-  moduleGetterContext
-};
 
 export type AppStore = typeof store;
 

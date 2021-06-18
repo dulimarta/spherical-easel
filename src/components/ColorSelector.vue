@@ -8,7 +8,7 @@
       <span class="text-subtitle-2">{{ $t(titleKey)+" " }}</span>
       <v-icon :color="convertColorToRGBAString(colorData)"
         small>mdi-checkbox-blank</v-icon>
-      <span v-if="selections.length > 1"
+      <span v-if="selectedSENodules.length > 1"
         class="text-subtitle-2"
         style="color:red">{{" "+ $t("style.labelStyleOptionsMultiple") }}</span>
     </div>
@@ -133,10 +133,9 @@ export default class ColorSelector extends Vue {
   @Prop() readonly tempStyleStates!: StyleOptions[];
   @Prop() readonly useDynamicBackStyleFromSelector!: boolean;
 
-  @State((s: AppState) => s.selections)
-  readonly selections!: SENodule[];
+  @State((s: AppState) => s.selectedSENodules)
+  readonly selectedSENodules!: SENodule[];
 
-  @Getter selectedSENodules!: SENodule[];
   @Getter getInitialStyleState!: (_: StyleEditPanels) => StyleOptions[];
   @Getter getDefaultStyleState!: (_: StyleEditPanels) => StyleOptions[];
 
@@ -476,8 +475,9 @@ export default class ColorSelector extends Vue {
     }
   }
 
-  @Watch("selections")
+  @Watch("selectedSENodules")
   onSelectionChanged(newSelection: SENodule[]): void {
+    console.log("ColorSelector: onSelectionChanged");
     if (newSelection.length === 0) {
       //totally disable the selectors
       this.disableColorSelector(true);

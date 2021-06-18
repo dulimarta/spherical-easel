@@ -253,7 +253,7 @@
           class="text-subtitle-2">{{ $t("style.back") }}</span>
         <span
           class="text-subtitle-2">{{" "+ $t("style.dashPattern") }}</span>
-        <span v-if="selections.length > 1"
+        <span v-if="selectedSENodules.length > 1"
           class="text-subtitle-2"
           style="color:red">{{" "+ $t("style.labelStyleOptionsMultiple") }}</span>
         <span v-show="
@@ -450,19 +450,21 @@ export default class FrontBackStyle extends Vue {
   @Prop()
   readonly activePanel!: StyleEditPanels;
 
-  @State((s: AppState) => s.selections)
-  readonly selections!: SENodule[];
+  @State((s: AppState) => s.selectedSENodules)
+  readonly selectedSENodules!: SENodule[];
 
-  @Getter selectedSENodules!: SENodule[];
+  @State((s: AppState) => s.initialBackStyleContrast)
+  readonly initialBackStyleContrast!: number;
+
+  @State((s: AppState) => s.oldStyleSelections)
+  readonly oldStyleSelection!: SENodule[];
+
+  @State((s: AppState) => s.styleSavedFromPanel)
+  readonly styleSavedFromPanel!: StyleEditPanels;
 
   @Getter getInitialStyleState!: (_: StyleEditPanels) => StyleOptions[];
 
   @Getter getDefaultStyleState!: (_: StyleEditPanels) => StyleOptions[];
-
-  @Getter getInitialBackStyleContrast!: number;
-
-  @Getter getOldStyleSelection!: SENodule[];
-  @Getter getSavedFromPanel!: StyleEditPanels;
 
   @Mutation changeStyle!: (_: any) => void;
   @Mutation setOldStyleSelection!: (_: SENodule[]) => void;
@@ -914,7 +916,7 @@ export default class FrontBackStyle extends Vue {
     this.disableBackStyleContrastUndoButton = true;
     const selected = this.selectedSENodules;
     const initialStyleStates = this.getInitialStyleState(this.panel);
-    const initialBackStyleContrast = this.getInitialBackStyleContrast;
+    const initialBackStyleContrast = this.initialBackStyleContrast;
     for (let i = 0; i < selected.length; i++) {
       this.changeStyle({
         selected: [selected[i]],
@@ -1203,8 +1205,10 @@ export default class FrontBackStyle extends Vue {
    * This is an example of the two-way binding that is provided by the Vuex store. As this is a Vue component we can Watch variables, and
    * when they change, this method will execute in response to that change.
    */
-  @Watch("selections")
+  @Watch("selectedSENodules")
   onSelectionChanged(newSelection: SENodule[]): void {
+    console.log("FrontBackStyle: onSelectionChanged");
+
     // Before changing the selections save the state for an undo/redo command (if necessary)
     this.saveStyleState();
 
@@ -1219,7 +1223,7 @@ export default class FrontBackStyle extends Vue {
 
     // record the new selections in the old
     this.setOldStyleSelection([]);
-    const oldSelection = this.getOldStyleSelection;
+    const oldSelection = this.oldStyleSelection;
     newSelection.forEach(obj => oldSelection.push(obj));
 
     // Create a list of the common properties that the objects in the selection have.
@@ -1249,7 +1253,7 @@ export default class FrontBackStyle extends Vue {
     );
   }
   saveStyleState(): void {
-    const oldSelection = this.getOldStyleSelection;
+    const oldSelection = this.oldStyleSelection;
     // There must be an old selection in order for there to be a change to save
     if (oldSelection.length > 0) {
       console.log("Attempt style save command");
@@ -1259,13 +1263,13 @@ export default class FrontBackStyle extends Vue {
       oldSelection.forEach((seNodule: SENodule) => {
         if (seNodule.ref !== undefined)
           this.currentStyleStates.push(
-            seNodule.ref.currentStyleState(this.getSavedFromPanel)
+            seNodule.ref.currentStyleState(this.styleSavedFromPanel)
           );
       });
       const initialStyleStates = this.getInitialStyleState(
-        this.getSavedFromPanel
+        this.styleSavedFromPanel
       );
-      const initialBackStyleContrast = this.getInitialBackStyleContrast;
+      const initialBackStyleContrast = this.initialBackStyleContrast;
       if (
         !this.areEquivalentStyles(
           this.currentStyleStates,
@@ -1277,7 +1281,7 @@ export default class FrontBackStyle extends Vue {
         // Add the label of the
         new StyleNoduleCommand(
           oldSelection,
-          this.getSavedFromPanel,
+          this.styleSavedFromPanel,
           this.currentStyleStates,
           initialStyleStates,
           Nodule.getBackStyleContrast(),

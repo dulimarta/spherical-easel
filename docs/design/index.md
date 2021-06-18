@@ -404,7 +404,7 @@ When the user opens the [Style Panel](/userguide/stylepanel.html) a set of optio
 The user can select items to style before entering the Styling Mode (the mode where the Style Panel is open and the others are minimizied). The selected items are imported in the <span class="method">mount()</span> and passed to the <span class="method">OnSelectionChange()</span> method. This method is run when ever there is a change in the selection
 
 ```ts
-@Watch("selections")
+@Watch("selectedSENodules")
   onSelectionChanged (newSelection: SENodule[]): void {
 ```
 

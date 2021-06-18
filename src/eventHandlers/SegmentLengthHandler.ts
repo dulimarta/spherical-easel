@@ -94,8 +94,8 @@ export default class SegmentLengthHandler extends Highlighter {
     this.targetSegment = null;
   }
   activate(): void {
-    if (this.store.getters.selectedSENodules().length == 1) {
-      const object1 = this.store.getters.selectedSENodules()[0];
+    if (this.store.state.selectedSENodules.length == 1) {
+      const object1 = this.store.state.selectedSENodules[0];
 
       if (object1 instanceof SESegment) {
         const lenMeasure = new SESegmentLength(object1);

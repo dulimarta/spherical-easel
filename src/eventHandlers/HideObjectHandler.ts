@@ -86,8 +86,7 @@ export default class HideObjectHandler extends Highlighter {
   activate(): void {
     // Hide all selected objects
     const hideCommandGroup = new CommandGroup();
-    this.store.getters
-      .selectedSENodules()
+    this.store.state.selectedSENodules
       .filter(
         (object: SENodule) =>
           !(object instanceof SEIntersectionPoint) ||

@@ -141,7 +141,7 @@ import VueComponent from "vue";
 import { Vue, Component } from "vue-property-decorator";
 import { Getter, Mutation, State } from "vuex-class";
 import MessageBox from "@/components/MessageBox.vue";
-import ConstructionLoader from "@/components/ConstructionLoader.vue";
+// import ConstructionLoader from "@/components/ConstructionLoader.vue";
 import Dialog, { DialogAction } from "@/components/Dialog.vue";
 import { AppState } from "./types";
 import EventBus from "@/eventHandlers/EventBus";
@@ -163,7 +163,7 @@ Component.registerHooks([
   "beforeRouteUpdate"
 ]);
 /* This allows for the State of the app to be initialized with in vuex store */
-@Component({ components: { MessageBox, Dialog, ConstructionLoader } })
+@Component({ components: { MessageBox, Dialog } })
 export default class App extends Vue {
   @State((s: AppState) => s.activeToolName)
   readonly activeToolName!: string;
@@ -174,7 +174,8 @@ export default class App extends Vue {
   @State((s: AppState) => s.inverseTotalRotationMatrix)
   readonly inverseTotalRotationMatrix!: Matrix4;
 
-  @Getter allSEPoints!: SEPoint[];
+  @State((s: AppState) => s.sePoints)
+  readonly sePoints!: SEPoint[];
 
   @Mutation init!: () => void;
   @Mutation clearUnsavedFlag!: () => void;
@@ -196,7 +197,7 @@ export default class App extends Vue {
 
   get hasObjects(): boolean {
     // Any objects must include at least one point
-    return this.allSEPoints.length > 0;
+    return this.sePoints.length > 0;
   }
 
   mounted(): void {

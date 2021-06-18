@@ -53,7 +53,7 @@ export class SEPointCoordinate extends SEMeasurement {
   }
   public get value(): number {
     // apply the inverse of the total rotation matrix to compute the location of the point without all the sphere rotations.
-    this.invMatrix = SEPointCoordinate.store.getters.getInverseTotalRotationMatrix();
+    this.invMatrix = SEPointCoordinate.store.state.inverseTotalRotationMatrix;
     this.tmpVector.copy(this.point.locationVector);
     switch (this.selector) {
       case CoordinateSelection.X_VALUE:

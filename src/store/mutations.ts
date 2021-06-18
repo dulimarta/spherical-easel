@@ -35,7 +35,7 @@ export const initialState: AppState = {
   zoomTranslation: [0, 0], // The CSSTransform translation vector
   canvasWidth: 0, //A temporary canvas width;
   seNodules: [], // An array of all SENodules
-  selections: [], // An array of selected SENodules
+  selectedSENodules: [], // An array of selected SENodules
   oldStyleSelections: [], // An array of previous selected SENodules
   layers: [], // An array of Two.Group pointer to the layers in the twoInstance
   sePoints: [], // An array of all SEPoints
@@ -79,7 +79,7 @@ export default {
     state.seCircles.splice(0);
     state.seAngleMarkers.splice(0);
     state.seLabels.splice(0);
-    state.selections.splice(0);
+    state.selectedSENodules.splice(0);
     state.intersections.splice(0);
     state.expressions.splice(0);
     state.initialStyleStates.splice(0);
@@ -340,13 +340,13 @@ export default {
   },
   setSelectedSENodules(state: AppState, payload: SENodule[]): void {
     //reset the glowing color to usual
-    state.selections.forEach(n => {
+    state.selectedSENodules.forEach(n => {
       n.ref?.setSelectedColoring(false);
     });
-    state.selections.splice(0);
-    state.selections.push(...payload);
+    state.selectedSENodules.splice(0);
+    state.selectedSENodules.push(...payload);
     //set the glowing color to selected
-    state.selections.forEach(n => {
+    state.selectedSENodules.forEach(n => {
       n.ref?.setSelectedColoring(true);
     });
   },

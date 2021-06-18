@@ -15,8 +15,8 @@ import { AppState } from "@/types";
 
 @Component({ components: { FadeInCard } })
 export default class AdvancedStyle extends Vue {
-  @State((s: AppState) => s.selections)
-  readonly selections!: SENodule[];
+  @State((s: AppState) => s.selectedSENodules)
+  readonly selectedSENodules!: SENodule[];
 
   commonStyleProperties: number[] = [];
 
@@ -43,7 +43,7 @@ export default class AdvancedStyle extends Vue {
     return this.hasStyles(Styles.strokeWidthPercent);
   }
 
-  @Watch("selections")
+  @Watch("selectedSENodules")
   onSelectionChanged(newSelection: SENodule[]): void {
     // newSelection.forEach(s => {
     // console.debug("Set ", s.customStyles());

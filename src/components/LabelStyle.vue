@@ -15,7 +15,7 @@
     <fade-in-card :showWhen="hasLabelStyle">
       <span
         class="text-subtitle-2">{{ $t("style.labelStyleOptions") }}</span>
-      <span v-if="selections.length > 1"
+      <span v-if="selectedSENodules.length > 1"
         class="text-subtitle-2"
         style="color:red">{{" "+ $t("style.labelStyleOptionsMultiple") }}</span>
       <div style="line-height:15%;">
@@ -296,20 +296,25 @@ export default class LabelStyle extends Vue {
   @Prop()
   readonly activePanel!: StyleEditPanels;
 
-  @State((s: AppState) => s.selections)
-  readonly selections!: SENodule[];
+  @State((s: AppState) => s.selectedSENodules)
+  readonly selectedSENodules!: SENodule[];
+
+  @State((s: AppState) => s.oldStyleSelections)
+  readonly oldStyleSelection!: SENodule[];
+
+  @State((s: AppState) => s.styleSavedFromPanel)
+  readonly styleSavedFromPanel!: StyleEditPanels;
+
+  @State((s: AppState) => s.initialBackStyleContrast)
+  readonly initialBackStyleContrast!: number;
 
   @Mutation setOldStyleSelection!: (_: SENodule[]) => void;
   @Mutation setSavedFromPanel!: (_: StyleEditPanels) => void;
   @Mutation changeStyle!: (_: any) => void;
   @Mutation recordStyleState!: (_: any) => void;
 
-  @Getter selectedSENodules!: SENodule[];
   @Getter getInitialStyleState!: (_: StyleEditPanels) => StyleOptions[];
   @Getter getDefaultStyleState!: (_: StyleEditPanels) => StyleOptions[];
-  @Getter getOldStyleSelection!: () => SENodule[];
-  @Getter getSavedFromPanel!: () => StyleEditPanels;
-  @Getter getInitialBackStyleContrast!: () => number;
 
   /**
    * These are the temp style state for the selected objects. Used to set the color/number/dash/contrast selectors when the user disables the dynamic back styling.
@@ -899,8 +904,10 @@ export default class LabelStyle extends Vue {
    * This is an example of the two-way binding that is provided by the Vuex store. As this is a Vue component we can Watch variables, and
    * when they change, this method will execute in response to that change.
    */
-  @Watch("selections")
+  @Watch("selectedSENodules")
   onSelectionChanged(newSelection: SENodule[]): void {
+    console.log("LabelStyle: onSelectionChanged");
+
     // Before changing the selections save the state for an undo/redo command (if necessary)
     this.saveStyleState();
 
@@ -951,7 +958,7 @@ export default class LabelStyle extends Vue {
 
   saveStyleState(): void {
     // There must be an old selection in order for there to be a change to save
-    const oldSelection = this.getOldStyleSelection();
+    const oldSelection = this.oldStyleSelection;
     if (oldSelection.length > 0) {
       //Record the current state of each Nodule
       this.currentStyleStates.splice(0);
@@ -959,13 +966,13 @@ export default class LabelStyle extends Vue {
       oldSelection.forEach((seNodule: SENodule) => {
         if (seNodule.ref !== undefined)
           this.currentStyleStates.push(
-            seNodule.ref.currentStyleState(this.getSavedFromPanel())
+            seNodule.ref.currentStyleState(this.styleSavedFromPanel)
           );
       });
       const initialStyleStates = this.getInitialStyleState(
-        this.getSavedFromPanel()
+        this.styleSavedFromPanel
       );
-      const initialBackStyleContrast = this.getInitialBackStyleContrast();
+      const initialBackStyleContrast = this.initialBackStyleContrast;
       if (
         !this.areEquivalentStyles(
           this.currentStyleStates,
@@ -977,7 +984,7 @@ export default class LabelStyle extends Vue {
         // Add the label of the
         new StyleNoduleCommand(
           oldSelection,
-          this.getSavedFromPanel(),
+          this.styleSavedFromPanel,
           this.currentStyleStates,
           initialStyleStates,
           Nodule.getBackStyleContrast(),

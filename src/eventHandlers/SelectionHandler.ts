@@ -39,8 +39,7 @@ export default class SelectionHandler extends Highlighter {
     this.keyPressSelection.clear();
     // Get all SEPoints
     if (keyEvent.key.match("p")) {
-      this.store.getters
-        .allSEPoints()
+      this.store.state.sePoints
         .filter(
           (n: any) =>
             !(n instanceof SEIntersectionPoint && !n.isUserCreated) && n.showing
@@ -52,8 +51,7 @@ export default class SelectionHandler extends Highlighter {
     }
     // Get all SECircles
     if (keyEvent.key.match("c")) {
-      this.store.getters
-        .allSECircles()
+      this.store.state.seCircles
         .filter((n: any) => n.showing) //no hidden circles allowed
         .forEach((n: any) => {
           this.keyPressSelection.push(n);
@@ -62,8 +60,7 @@ export default class SelectionHandler extends Highlighter {
     }
     // Get all SELines
     if (keyEvent.key.match("l")) {
-      this.store.getters
-        .allSELines()
+      this.store.state.seLines
         .filter((n: any) => n.showing) //no hidden lines allowed
         .forEach((n: any) => {
           this.keyPressSelection.push(n);
@@ -72,8 +69,7 @@ export default class SelectionHandler extends Highlighter {
     }
     // Get all SESegments
     if (keyEvent.key.match("s")) {
-      this.store.getters
-        .allSESegments()
+      this.store.state.seSegments
         .filter((n: any) => n.showing) //no hidden segments allowed
         .forEach((n: any) => {
           this.keyPressSelection.push(n);
@@ -82,8 +78,7 @@ export default class SelectionHandler extends Highlighter {
     }
     // Get all SEAngleMarkers
     if (keyEvent.key.match("a")) {
-      this.store.getters
-        .allSEAngleMarkers()
+      this.store.state.seAngleMarkers
         .filter((n: any) => n.showing) //no hidden labels allowed
         .forEach((n: any) => {
           this.keyPressSelection.push(n);
@@ -209,17 +204,14 @@ export default class SelectionHandler extends Highlighter {
       }
     }
     this.store.commit.setSelectedSENodules(this.currentSelection);
-    console.log(
-      "number selected",
-      this.store.getters.selectedSENodules().length
-    );
+    console.log("number selected", this.store.state.selectedSENodules.length);
     /** 
     console.log("----selected---- objects------");
     this.currentSelection.forEach(n =>
       console.log("hit object", n.name, n.selected)
     );
     **/
-    if (this.store.getters.selectedSENodules().length === 0) {
+    if (this.store.state.selectedSENodules.length === 0) {
       EventBus.fire("show-alert", {
         key: `handlers.selectionUpdateNothingSelected`,
         keyOptions: {},
@@ -229,7 +221,7 @@ export default class SelectionHandler extends Highlighter {
       EventBus.fire("show-alert", {
         key: `handlers.selectionUpdate`,
         keyOptions: {
-          number: `${this.store.getters.selectedSENodules().length}`
+          number: `${this.store.state.selectedSENodules.length}`
         },
         type: "success"
       });
@@ -316,7 +308,7 @@ export default class SelectionHandler extends Highlighter {
       this.delayedStart = null;
     }
     // Unselect all selected objects (this unglows them and sets the selected flag to false for them)
-    // this.store.getters.selectedSENodules().forEach((obj: SENodule) => {
+    // this.store.state.selectedSENodules.forEach((obj: SENodule) => {
     //   obj.selected = false;
     // });
 

@@ -11,7 +11,7 @@ import VueComponent from "vue";
 import { Prop, Component, Watch } from "vue-property-decorator";
 import Two from "two.js";
 import SETTINGS, { LAYER } from "@/global-settings";
-import { State } from "vuex-class";
+import { State, Mutation } from "vuex-class";
 import AppStore from "@/store";
 import { ZoomSphereCommand } from "@/commands/ZoomSphereCommand";
 import { Command } from "@/commands/Command";
@@ -55,6 +55,8 @@ export default class SphereFrame extends VueComponent {
 
   @State((s: AppState) => s.zoomTranslation)
   readonly zoomTranslation!: number[];
+
+  @Mutation setCanvas!: (_: HTMLDivElement) => void;
 
   $refs!: {
     canvas: HTMLDivElement;
@@ -238,7 +240,7 @@ export default class SphereFrame extends VueComponent {
     );
     // Make the canvas accessible to other components which need
     // to grab the SVG contents of the sphere
-    this.$store.direct.commit.setCanvas(this.$refs.canvas);
+    this.setCanvas(this.$refs.canvas);
   }
 
   beforeDestroy(): void {

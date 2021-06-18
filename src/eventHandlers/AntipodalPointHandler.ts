@@ -381,8 +381,8 @@ export default class AntipodalPointHandler extends Highlighter {
   }
   activate(): void {
     // If there is exactly one point selected, create its anitpode
-    if (this.store.getters.selectedSENodules().length == 1) {
-      const object = this.store.getters.selectedSENodules()[0];
+    if (this.store.state.selectedSENodules.length == 1) {
+      const object = this.store.state.selectedSENodules[0];
       if (object instanceof SEPoint) {
         const newPoint = new NonFreePoint();
         // Set the display to the default values

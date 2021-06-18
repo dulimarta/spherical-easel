@@ -6,7 +6,7 @@
       class="text-subtitle-2">{{ $t(panelBackKey) }} </span>
     <span
       class="text-subtitle-2">{{ $t(titleKey) + " ("+thumbMap(styleData)+")" }}</span>
-    <span v-if="selections.length > 1"
+    <span v-if="selectedSENodules.length > 1"
       class="text-subtitle-2"
       style="color:red">{{" "+ $t("style.labelStyleOptionsMultiple") }}</span>
     <br />
@@ -106,11 +106,12 @@ export default class NumberSelector extends Vue {
   @Prop() readonly disabledValue?: boolean;
   @Prop() readonly useDynamicBackStyleFromSelector!: boolean;
 
-  @State((s: AppState) => s.selections)
-  readonly selections!: SENodule[];
+  @State((s: AppState) => s.selectedSENodules)
+  readonly selectedSENodules!: SENodule[];
 
-  @Getter magnificationLevel!: number;
-  @Getter selectedSENodules!: SENodule[];
+  @State((s: AppState) => s.zoomMagnificationFactor)
+  readonly zoomMagnificationFactor!: number;
+
   @Getter getDefaultStyleState!: (_: StyleEditPanels) => StyleOptions[];
   @Getter getInitialStyleState!: (_: StyleEditPanels) => StyleOptions[];
 
@@ -380,8 +381,9 @@ export default class NumberSelector extends Vue {
     }
   }
 
-  @Watch("selections")
+  @Watch("selectedSENodules")
   onSelectionChanged(newSelection: SENodule[]): void {
+    console.log("NumberSelector: onSelectionChanged");
     if (newSelection.length === 0) {
       this.disableSelector(true);
       return;

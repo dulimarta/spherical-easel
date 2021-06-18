@@ -803,48 +803,12 @@ export default {
       )
       .map(obj => obj as SEIntersectionPoint);
   },
-  selectedSENodules: (state: AppState) => (): SENodule[] => {
-    return state.selections;
-  },
-  allSEPoints: (state: AppState) => (): SEPoint[] => {
-    return state.sePoints;
-  },
-  allSECircles: (state: AppState) => (): SECircle[] => {
-    return state.seCircles;
-  },
-  allSESegments: (state: AppState) => (): SESegment[] => {
-    return state.seSegments;
-  },
-  allSELines: (state: AppState) => (): SELine[] => {
-    return state.seLines;
-  },
-  allSELabels: (state: AppState) => (): SELabel[] => {
-    return state.seLabels;
-  },
-  allSEAngleMarkers: (state: AppState) => (): SEAngleMarker[] => {
-    return state.seAngleMarkers;
-  },
   previousActionMode: (state: AppState) => (): { id: string; name: string } => {
     return { id: state.actionMode, name: state.activeToolName };
-  },
-  previousZoomMagnificationFactor: (state: AppState) => (): number => {
-    return state.previousZoomMagnificationFactor;
-  },
-  zoomMagnificationFactor: (state: AppState) => (): number => {
-    return state.zoomMagnificationFactor;
-  },
-  translationVector: (state: AppState) => (): number[] => {
-    return state.zoomTranslation;
   },
   getSENoduleById: (state: AppState) => (id: number): SENodule | undefined => {
     //console.log("All Nodule", state.nodules.length);
     return state.seNodules.find((z: SENodule) => z.id === id);
-  },
-  getOldStyleSelection: (state: AppState) => (): SENodule[] => {
-    return state.oldStyleSelections;
-  },
-  getSavedFromPanel: (state: AppState) => (): StyleEditPanels => {
-    return state.styleSavedFromPanel;
   },
   getInitialStyleState: (state: AppState) => (
     panel: StyleEditPanels
@@ -897,16 +861,7 @@ export default {
       }
     }
   },
-  getInitialBackStyleContrast: (state: AppState) => (): number => {
-    return state.initialBackStyleContrast;
-  },
-  getCanvasWidth: (state: AppState) => (): number => {
-    return state.canvasWidth;
-  },
 
-  getInverseTotalRotationMatrix: (state: AppState) => (): Matrix4 => {
-    return state.inverseTotalRotationMatrix;
-  },
   //Given a test point, does there exist an *exact* antipode of it?
   hasNoAntipode: (state: AppState) => (testPoint: SEPoint): boolean => {
     // create the antipode location vector

@@ -673,9 +673,9 @@ export default class LineHandler extends Highlighter {
   activate(): void {
     // If there are exactly two (non-antipodal and not to near each other) SEPoints selected,
     // create a line with the two points
-    if (this.store.getters.selectedSENodules().length == 2) {
-      const object1 = this.store.getters.selectedSENodules()[0];
-      const object2 = this.store.getters.selectedSENodules()[1];
+    if (this.store.state.selectedSENodules.length == 2) {
+      const object1 = this.store.state.selectedSENodules[0];
+      const object2 = this.store.state.selectedSENodules[1];
 
       if (object1 instanceof SEPoint && object2 instanceof SEPoint) {
         // Create a new plottable Line
