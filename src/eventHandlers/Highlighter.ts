@@ -7,14 +7,13 @@ import { SELine } from "@/models/SELine";
 import { SELabel } from "@/models/SELabel";
 import { SESegment } from "@/models/SESegment";
 import { SECircle } from "@/models/SECircle";
-import AppStore from "@/store";
+import { StoreModule } from "@/store";
 import { SEAngleMarker } from "@/models/SEAngleMarker";
-
 export default abstract class Highlighter extends MouseHandler {
   /**
    * The Vuex store
    */
-  protected static store = AppStore;
+  // protected static store = AppStore;
 
   abstract mousePressed(event: MouseEvent): void;
 
@@ -23,7 +22,7 @@ export default abstract class Highlighter extends MouseHandler {
   mouseLeave(event: MouseEvent): void {
     super.mouseLeave(event);
     // call an unglow all command
-    Highlighter.store.commit.unglowAllSENodules();
+    StoreModule.unglowAllSENodules();
     this.infoText.hide();
   }
 
@@ -123,10 +122,10 @@ export default abstract class Highlighter extends MouseHandler {
       obj.selected = false;
     });
     // Clear the selected objects array
-    this.store.commit.setSelectedSENodules([]);
+    StoreModule.setSelectedSENodules([]);
 
     // call an unglow all command
-    Highlighter.store.commit.unglowAllSENodules();
+    StoreModule.unglowAllSENodules();
     this.infoText.hide();
   }
 }

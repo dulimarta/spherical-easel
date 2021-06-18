@@ -36,8 +36,7 @@
     "vue-web-cam": "^1.9.0",
     "vuetify": "^2.4.0",
     "vuex": "^3.5.1",
-    "vuex-class": "^0.3.2",
-    "vuex-module-decorators": "^1.0.1"
+    "vuex-class": "^0.3.2"
   },
   "devDependencies": {
     "@cypress/vue": "^2.2.3",
@@ -76,7 +75,8 @@
     "vuepress": "^1.5.3",
     "vuepress-plugin-check-md": "^0.0.2",
     "vuepress-plugin-mathjax": "^1.2.8",
-    "vuetify-loader": "^1.6.0"
+    "vuetify-loader": "^1.6.0",
+    "vuex-module-decorators": "^1.0.1"
   },
   "eslintConfig": {
     "root": true,

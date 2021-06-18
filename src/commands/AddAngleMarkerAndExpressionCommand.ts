@@ -70,8 +70,8 @@ export class AddAngleMarkerCommand extends Command {
       this._thirdSEParent.registerChild(this.seAngleMarker);
     }
     this.seAngleMarker.registerChild(this.seLabel);
-    Command.store.commit.addAngleMarkerAndExpression(this.seAngleMarker);
-    Command.store.commit.addLabel(this.seLabel);
+    Command.store.addAngleMarkerAndExpression(this.seAngleMarker);
+    Command.store.addLabel(this.seLabel);
     this.seAngleMarker.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
   }
 
@@ -80,8 +80,8 @@ export class AddAngleMarkerCommand extends Command {
   }
 
   restoreState(): void {
-    Command.store.commit.removeLabel(this.seLabel.id);
-    Command.store.commit.removeAngleMarkerAndExpression(this.lastState);
+    Command.store.removeLabel(this.seLabel.id);
+    Command.store.removeAngleMarkerAndExpression(this.lastState);
     this.seAngleMarker.unregisterChild(this.seLabel);
     if (this._thirdSEParent !== undefined) {
       this._thirdSEParent.unregisterChild(this.seAngleMarker);

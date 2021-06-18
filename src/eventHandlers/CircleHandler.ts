@@ -21,7 +21,7 @@ import { SEOneDimensional, SEIntersectionReturnType } from "@/types";
 import { UpdateMode } from "@/types";
 import Label from "@/plottables/Label";
 import { SELabel } from "@/models/SELabel";
-
+import { StoreModule } from "@/store";
 const tmpVector = new Vector3();
 
 export default class CircleHandler extends Highlighter {
@@ -78,14 +78,14 @@ export default class CircleHandler extends Highlighter {
     this.temporaryCircle = new Circle();
     // Set the style using the temporary defaults
     this.temporaryCircle.stylize(DisplayStyle.ApplyTemporaryVariables);
-    this.store.commit.addTemporaryNodule(this.temporaryCircle);
+    StoreModule.addTemporaryNodule(this.temporaryCircle);
     // Create and style the temporary points marking the start/end of an object being created
     this.temporaryStartMarker = new Point();
     this.temporaryStartMarker.stylize(DisplayStyle.ApplyTemporaryVariables);
-    this.store.commit.addTemporaryNodule(this.temporaryStartMarker);
+    StoreModule.addTemporaryNodule(this.temporaryStartMarker);
     this.temporaryEndMarker = new Point();
     this.temporaryEndMarker.stylize(DisplayStyle.ApplyTemporaryVariables);
-    this.store.commit.addTemporaryNodule(this.temporaryEndMarker);
+    StoreModule.addTemporaryNodule(this.temporaryEndMarker);
   }
 
   mousePressed(_event: MouseEvent): void {
@@ -359,7 +359,7 @@ export default class CircleHandler extends Highlighter {
           this.snapStartMarkerToTemporaryPoint = null;
           this.snapEndMarkerToTemporaryPoint = null;
           // call an unglow all command
-          Highlighter.store.commit.unglowAllSENodules();
+          StoreModule.unglowAllSENodules();
         }
       } else {
         // Remove the temporary objects from the scene and mark the temporary object
@@ -406,7 +406,7 @@ export default class CircleHandler extends Highlighter {
     this.centerSEPointOneDimensionalParent = null;
     this.makingACircle = false;
     // call an unglow all command
-    Highlighter.store.commit.unglowAllSENodules();
+    StoreModule.unglowAllSENodules();
   }
   /**
    * Add a new circle the user has moved the mouse far enough (but not a radius of PI)

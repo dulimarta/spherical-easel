@@ -31,8 +31,8 @@ export class AddCircleCommand extends Command {
     this.centerSEPoint.registerChild(this.seCircle);
     this.circleSEPoint.registerChild(this.seCircle);
     this.seCircle.registerChild(this.seLabel);
-    Command.store.commit.addCircle(this.seCircle);
-    Command.store.commit.addLabel(this.seLabel);
+    Command.store.addCircle(this.seCircle);
+    Command.store.addLabel(this.seLabel);
   }
 
   saveState(): void {
@@ -40,8 +40,8 @@ export class AddCircleCommand extends Command {
   }
 
   restoreState(): void {
-    Command.store.commit.removeLabel(this.seLabel.id);
-    Command.store.commit.removeCircle(this.lastState);
+    Command.store.removeLabel(this.seLabel.id);
+    Command.store.removeCircle(this.lastState);
     this.seCircle.unregisterChild(this.seLabel);
     this.centerSEPoint.unregisterChild(this.seCircle);
     this.circleSEPoint.unregisterChild(this.seCircle);

@@ -11,7 +11,7 @@
 
 // import { Store } from "vuex";
 // import { AppState } from "@/types";
-import AppStore from "@/store";
+import { StoreModule } from "@/store";
 import EventBus from "@/eventHandlers/EventBus";
 import { SEPoint } from "@/models/SEPoint";
 import { SELabel } from "@/models/SELabel";
@@ -21,7 +21,7 @@ import Label from "@/plottables/Label";
 import SETTINGS from "@/global-settings";
 import { Vector3 } from "three";
 export abstract class Command {
-  protected static store = AppStore;
+  protected static store = StoreModule;
 
   //#region commmandArrays
   static commandHistory: Command[] = []; // stack of executed commands
@@ -44,7 +44,7 @@ export abstract class Command {
     // Update the free points to update the display so that individual command and visitors do
     // not have to update the display in the middle of undoing or redoing a command (this middle stuff causes
     // problems with the move *redo*)
-    Command.store.commit.updateDisplay();
+    Command.store.updateDisplay();
     EventBus.fire("undo-enabled", { value: Command.commandHistory.length > 0 });
     EventBus.fire("redo-enabled", { value: Command.redoHistory.length > 0 });
   }
@@ -64,7 +64,7 @@ export abstract class Command {
     // Update the free points to update the display so that individual command and visitors do
     // not have to update the display in the middle of undoing or redoing a command (this middle stuff causes
     // problems with the move *redo*)
-    Command.store.commit.updateDisplay();
+    Command.store.updateDisplay();
   }
   //#endregion redo
 

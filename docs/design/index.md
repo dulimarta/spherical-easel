@@ -182,7 +182,7 @@ Whenever a new magnification factor is computed the value is written to the [Sto
 
 <<< @/src/eventHandlers/PanZoomHandler.ts#writeFactorVectorToStore{2}
 
-The <span class="string">"changeZoomFactor"</span> <span class="method">dispatch(...)</span> method results in a <span class="method">commit(...)</span> of the magnification factor to the store and fires a <span class="string">"magnification-updated"</span> [Event Bus](/design/#event-bus) action.
+The <span class="string">"setZoomMagnificationFactor"</span> <span class="method">dispatch(...)</span> method results in a <span class="method">commit(...)</span> of the magnification factor to the store and fires a <span class="string">"magnification-updated"</span> [Event Bus](/design/#event-bus) action.
 
 <<< @/src/store/index.ts#magnificationUpdate
 

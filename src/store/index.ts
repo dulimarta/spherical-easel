@@ -1,39 +1,15 @@
-/** @format */
-
 import Vue from "vue";
 import Vuex from "vuex";
-import mutations, { initialState } from "./mutations";
-import getters from "./getters";
-import EventBus from "@/eventHandlers/EventBus";
-// import StylesModule from "./ui-styles";
-// import AuthModule from "./auth";
-import { createDirectStore } from "direct-vuex";
+import { AppState } from "@/types";
+import Easel from "./mutations";
+import { getModule } from "vuex-module-decorators";
+// export interface IRootState {
+//   ez: IEaselState;
+// }
 Vue.use(Vuex);
 
-const { store } = createDirectStore({
-  state: initialState,
-  mutations,
-  actions: {
-    /* Define async work in this block */
-    //#region magnificationUpdate
-    changeZoomFactor({ commit }, mag: number): void {
-      commit("setZoomMagnificationFactor", mag);
-      EventBus.fire("magnification-updated", { factor: mag });
-    }
-    //#endregion magnificationUpdate
-  },
-  getters,
-  modules: {
-    // auth: AuthModule
-    // ui: StylesModule
-  }
+const Ez = new Vuex.Store<AppState>({
+  ...Easel
 });
-export default store;
-
-export type AppStore = typeof store;
-
-declare module "vuex" {
-  interface Store<S> {
-    direct: AppStore;
-  }
-}
+export default Ez;
+export const StoreModule: Easel = getModule(Easel, Ez);

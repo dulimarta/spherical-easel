@@ -18,7 +18,7 @@ import { SEPointOnOneDimensional } from "@/models/SEPointOnOneDimensional";
 import { AddPointOnOneDimensionalCommand } from "@/commands/AddPointOnOneDimensionalCommand";
 import { AddPointCommand } from "@/commands/AddPointCommand";
 import EventBus from "./EventBus";
-
+import { StoreModule } from "@/store";
 export default class AntipodalPointHandler extends Highlighter {
   /**
    * The parent of this point
@@ -59,10 +59,10 @@ export default class AntipodalPointHandler extends Highlighter {
     // Create and style the temporary antipode/point marking the antipode/point being created
     this.temporaryAntipodeMarker = new Point();
     this.temporaryAntipodeMarker.stylize(DisplayStyle.ApplyTemporaryVariables);
-    this.store.commit.addTemporaryNodule(this.temporaryAntipodeMarker);
+    StoreModule.addTemporaryNodule(this.temporaryAntipodeMarker);
     this.temporaryPointMarker = new Point();
     this.temporaryPointMarker.stylize(DisplayStyle.ApplyTemporaryVariables);
-    this.store.commit.addTemporaryNodule(this.temporaryPointMarker);
+    StoreModule.addTemporaryNodule(this.temporaryPointMarker);
   }
 
   mousePressed(event: MouseEvent): void {

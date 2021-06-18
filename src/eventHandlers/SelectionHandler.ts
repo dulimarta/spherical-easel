@@ -6,7 +6,7 @@ import { SEPoint } from "@/models/SEPoint";
 import Highlighter from "./Highlighter";
 import SETTINGS from "@/global-settings";
 import { Vector3 } from "three";
-
+import { StoreModule } from "@/store";
 // import { SEPoint } from "@/models/SEPoint";
 // import { SELine } from "@/models/SELine";
 // import { SESegment } from "@/models/SESegment";
@@ -203,8 +203,8 @@ export default class SelectionHandler extends Highlighter {
         }
       }
     }
-    this.store.commit.setSelectedSENodules(this.currentSelection);
-    console.log("number selected", this.store.state.selectedSENodules.length);
+    StoreModule.setSelectedSENodules(this.currentSelection);
+    console.log("number selected", StoreModule.selectedSENodules.length);
     /** 
     console.log("----selected---- objects------");
     this.currentSelection.forEach(n =>

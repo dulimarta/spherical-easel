@@ -42,7 +42,7 @@ new Vue({
     // renderer
   },
   router,
-  store: store.original,
+  store,
   vuetify,
   render: (h: any) => h(App)
 }).$mount("#app");

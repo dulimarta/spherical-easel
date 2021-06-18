@@ -35,7 +35,7 @@ export class DeleteNoduleCommand extends Command {
     //
     //This command is always called when there are no children of the
     for (let i = 0; i < this.parentIds.length; i++) {
-      const nodule = Command.store.getters.getSENoduleById(this.parentIds[i]);
+      const nodule = Command.store.getSENoduleById(this.parentIds[i]);
       if (nodule) {
         nodule.unregisterChild(this.seNodule);
       } else {
@@ -44,15 +44,15 @@ export class DeleteNoduleCommand extends Command {
     }
     // Remove from the store and turn off the display
     if (this.seNodule instanceof SEPoint) {
-      Command.store.commit.removePoint(this.seNodule.id);
+      Command.store.removePoint(this.seNodule.id);
     } else if (this.seNodule instanceof SELine) {
-      Command.store.commit.removeLine(this.seNodule.id);
+      Command.store.removeLine(this.seNodule.id);
     } else if (this.seNodule instanceof SECircle) {
-      Command.store.commit.removeCircle(this.seNodule.id);
+      Command.store.removeCircle(this.seNodule.id);
     } else if (this.seNodule instanceof SESegment) {
-      Command.store.commit.removeSegment(this.seNodule.id);
+      Command.store.removeSegment(this.seNodule.id);
     } else if (this.seNodule instanceof SELabel) {
-      Command.store.commit.removeLabel(this.seNodule.id);
+      Command.store.removeLabel(this.seNodule.id);
     }
   }
 
@@ -72,19 +72,19 @@ export class DeleteNoduleCommand extends Command {
     // }
     // Add the point to the store and turn on display
     if (this.seNodule instanceof SEPoint) {
-      Command.store.commit.addPoint(this.seNodule);
+      Command.store.addPoint(this.seNodule);
     } else if (this.seNodule instanceof SELine) {
-      Command.store.commit.addLine(this.seNodule);
+      Command.store.addLine(this.seNodule);
     } else if (this.seNodule instanceof SECircle) {
-      Command.store.commit.addCircle(this.seNodule);
+      Command.store.addCircle(this.seNodule);
     } else if (this.seNodule instanceof SESegment) {
-      Command.store.commit.addSegment(this.seNodule);
+      Command.store.addSegment(this.seNodule);
     } else if (this.seNodule instanceof SELabel) {
-      Command.store.commit.addLabel(this.seNodule);
+      Command.store.addLabel(this.seNodule);
     }
     // The parent array of this.seNodule is empty prior to the execution of this loop
     for (let i = 0; i < this.parentIds.length; i++) {
-      const nodule = Command.store.getters.getSENoduleById(this.parentIds[i]);
+      const nodule = Command.store.getSENoduleById(this.parentIds[i]);
       if (nodule) {
         nodule.registerChild(this.seNodule);
       } else {

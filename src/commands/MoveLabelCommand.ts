@@ -19,7 +19,7 @@ export class MoveLabelCommand extends Command {
   }
 
   do(): void {
-    Command.store.commit.moveLabel({
+    Command.store.moveLabel({
       labelId: this.seLabel.id,
       location: this.newLocationVector
     });
@@ -30,7 +30,7 @@ export class MoveLabelCommand extends Command {
   }
 
   restoreState(): void {
-    Command.store.commit.moveLabel({
+    Command.store.moveLabel({
       labelId: this.lastState,
       location: this.oldLocationVector
     });

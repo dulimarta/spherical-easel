@@ -21,7 +21,7 @@ import { SEPointOnOneDimensional } from "@/models/SEPointOnOneDimensional";
 import { UpdateMode } from "@/types";
 import Label from "@/plottables/Label";
 import { SELabel } from "@/models/SELabel";
-
+import { StoreModule } from "@/store";
 export default class SegmentHandler extends Highlighter {
   /**
    * The starting unit vector location of the segment
@@ -99,16 +99,16 @@ export default class SegmentHandler extends Highlighter {
     super(layers);
     this.temporarySegment = new Segment();
     this.temporarySegment.stylize(DisplayStyle.ApplyTemporaryVariables);
-    this.store.commit.addTemporaryNodule(this.temporarySegment);
+    StoreModule.addTemporaryNodule(this.temporarySegment);
     this.isTemporarySegmentAdded = false;
 
     // Create and style the temporary points marking the start/end of an object being created
     this.temporaryStartMarker = new Point();
     this.temporaryStartMarker.stylize(DisplayStyle.ApplyTemporaryVariables);
-    this.store.commit.addTemporaryNodule(this.temporaryStartMarker);
+    StoreModule.addTemporaryNodule(this.temporaryStartMarker);
     this.temporaryEndMarker = new Point();
     this.temporaryEndMarker.stylize(DisplayStyle.ApplyTemporaryVariables);
-    this.store.commit.addTemporaryNodule(this.temporaryEndMarker);
+    StoreModule.addTemporaryNodule(this.temporaryEndMarker);
   }
 
   mousePressed(event: MouseEvent): void {
@@ -390,7 +390,7 @@ export default class SegmentHandler extends Highlighter {
           this.startSEPointOneDimensionalParent = null;
 
           // call an unglow all command
-          Highlighter.store.commit.unglowAllSENodules();
+          StoreModule.unglowAllSENodules();
         }
       } else {
         // Remove the temporary objects from the display.
@@ -438,7 +438,7 @@ export default class SegmentHandler extends Highlighter {
     this.arcLength = 0;
 
     // call an unglow all command
-    Highlighter.store.commit.unglowAllSENodules();
+    StoreModule.unglowAllSENodules();
   }
 
   private makeSegment(event: MouseEvent): void {

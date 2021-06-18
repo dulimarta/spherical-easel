@@ -25,8 +25,8 @@ export class AddPointOnOneDimensionalCommand extends Command {
     } else {
       this.seLabel.showing = false;
     }
-    Command.store.commit.addPoint(this.sePoint);
-    Command.store.commit.addLabel(this.seLabel);
+    Command.store.addPoint(this.sePoint);
+    Command.store.addLabel(this.seLabel);
     this.sePoint.update({
       mode: UpdateMode.DisplayOnly,
       stateArray: []
@@ -38,8 +38,8 @@ export class AddPointOnOneDimensionalCommand extends Command {
   }
 
   restoreState(): void {
-    Command.store.commit.removeLabel(this.seLabel.id);
-    Command.store.commit.removePoint(this.lastState);
+    Command.store.removeLabel(this.seLabel.id);
+    Command.store.removePoint(this.lastState);
     this.sePoint.unregisterChild(this.seLabel);
     this.parent.unregisterChild(this.sePoint);
   }

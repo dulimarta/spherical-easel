@@ -31,8 +31,8 @@ export class AddLineCommand extends Command {
     this.startSEPoint.registerChild(this.seLine);
     this.endSEPoint.registerChild(this.seLine);
     this.seLine.registerChild(this.seLabel);
-    Command.store.commit.addLine(this.seLine);
-    Command.store.commit.addLabel(this.seLabel);
+    Command.store.addLine(this.seLine);
+    Command.store.addLabel(this.seLabel);
   }
 
   saveState(): void {
@@ -40,8 +40,8 @@ export class AddLineCommand extends Command {
   }
 
   restoreState(): void {
-    Command.store.commit.removeLabel(this.seLabel.id);
-    Command.store.commit.removeLine(this.lastState);
+    Command.store.removeLabel(this.seLabel.id);
+    Command.store.removeLine(this.lastState);
     this.seLabel.unregisterChild(this.seLabel);
     this.startSEPoint.unregisterChild(this.seLine);
     this.endSEPoint.unregisterChild(this.seLine);

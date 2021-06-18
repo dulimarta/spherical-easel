@@ -27,6 +27,7 @@ import { SEPointOnOneDimensional } from "@/models/SEPointOnOneDimensional";
 import { AddPointCommand } from "@/commands/AddPointCommand";
 import { ConvertInterPtToUserCreatedCommand } from "@/commands/ConvertInterPtToUserCreatedCommand";
 import EventBus from "./EventBus";
+import { StoreModule } from "@/store";
 
 export default class PerpendicularLineThruPointHandler extends Highlighter {
   /**
@@ -76,13 +77,13 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
     // Create and style the temporary line
     this.tempLine = new Line();
     this.tempLine.stylize(DisplayStyle.ApplyTemporaryVariables);
-    this.store.commit.addTemporaryNodule(this.tempLine);
+    StoreModule.addTemporaryNodule(this.tempLine);
     this.temporaryLineAdded = false;
 
     // Create and style the temporary point marking the point on the perpendicular being created
     this.temporaryPointMarker = new Point();
     this.temporaryPointMarker.stylize(DisplayStyle.ApplyTemporaryVariables);
-    this.store.commit.addTemporaryNodule(this.temporaryPointMarker);
+    StoreModule.addTemporaryNodule(this.temporaryPointMarker);
     this.temporaryPointAdded = false;
   }
 
@@ -578,7 +579,7 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
     // Create the endSEPoint for the line
     // First we have to create a plottable point because we can't create a SEPoint with out a plottable one
     const plottableEndPoint = new NonFreePoint();
-    // The endSEPoint is never shown and can never be selected (so it is never added to the store via Command.store.commit.addPoint).
+    // The endSEPoint is never shown and can never be selected (so it is never added to the store via Command.store.addPoint).
     // The endSEPoint is also never added to the object tree structure (via un/registrerChild) because it is
     // updated when the the new SEPerpendicularLineThruPoint is updated.
     const endSEPoint = new SEPoint(plottableEndPoint);

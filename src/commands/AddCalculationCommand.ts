@@ -17,7 +17,7 @@ export class AddCalculationCommand extends Command {
   }
 
   do(): void {
-    Command.store.commit.addExpression(this.seExpression);
+    Command.store.addExpression(this.seExpression);
   }
 
   saveState(): void {
@@ -25,7 +25,7 @@ export class AddCalculationCommand extends Command {
   }
 
   restoreState(): void {
-    Command.store.commit.removeExpression(this.lastState);
+    Command.store.removeExpression(this.lastState);
   }
 
   toOpcode(): null | string | Array<string> {

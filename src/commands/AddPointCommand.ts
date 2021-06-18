@@ -16,9 +16,9 @@ export class AddPointCommand extends Command {
   }
 
   do(): void {
-    Command.store.commit.addLabel(this.seLabel);
+    Command.store.addLabel(this.seLabel);
     this.sePoint.registerChild(this.seLabel);
-    Command.store.commit.addPoint(this.sePoint);
+    Command.store.addPoint(this.sePoint);
     // Thanks to Will for suggesting the following magic line
     // that makes the objects show up correctly on the canvas
     this.sePoint.update({
@@ -32,9 +32,9 @@ export class AddPointCommand extends Command {
   }
 
   restoreState(): void {
-    Command.store.commit.removeLabel(this.seLabel.id);
+    Command.store.removeLabel(this.seLabel.id);
     this.sePoint.unregisterChild(this.seLabel);
-    Command.store.commit.removePoint(this.lastState);
+    Command.store.removePoint(this.lastState);
   }
 
   toOpcode(): null | string | Array<string> {
