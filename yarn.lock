@@ -9501,6 +9501,11 @@ neo-async@^2.5.0, neo-async@^2.6.0, neo-async@^2.6.1:
   resolved "https://registry.yarnpkg.com/neo-async/-/neo-async-2.6.1.tgz#ac27ada66167fa8849a6addd837f6b189ad2081c"
   integrity sha512-iyam8fBuCUpWeKPGpaNMetEocMt364qkCsfL9JuhjXX6dRnguRVOfk2GZaDpPjcOKiiXCPINZC1GczQ7iTq3Zw==
 
+newton-raphson-method@^1.0.2:
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/newton-raphson-method/-/newton-raphson-method-1.0.2.tgz#0a95c6ad86edc696aca7e1787cd8da034a4262b0"
+  integrity sha512-UoBJJxNVVQhviRvled1bL76IjmPls4dNLPeF661FW2eNrv/pKKfRDpOdlN+vo9XamZvj8OMt/KtjOBTFN6I0gw==
+
 nice-try@^1.0.4:
   version "1.0.5"
   resolved "https://registry.yarnpkg.com/nice-try/-/nice-try-1.0.5.tgz#a3378a7696ce7d223e88fc9b764bd7ef1089e366"

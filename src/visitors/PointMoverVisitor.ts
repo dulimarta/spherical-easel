@@ -6,6 +6,8 @@ import { Vector3 } from "three";
 import { SECircle } from "@/models/SECircle";
 import { SESegment } from "@/models/SESegment";
 import { SEPointOnOneDimensional } from "@/models/SEPointOnOneDimensional";
+import { SEEllipse } from "@/models/SEEllipse";
+import { SEAngleMarker } from "@/models/SEAngleMarker";
 
 export class PointMoverVisitor implements Visitor {
   private locationVector: Vector3 = new Vector3();
@@ -47,5 +49,14 @@ export class PointMoverVisitor implements Visitor {
   // eslint-disable-next-line
   actionOnLabel(l: SELabel): void {
     // l.update();
+  }
+  // eslint-disable-next-line
+  actionOnEllipse(e: SEEllipse): void {
+    // e.update();
+  }
+
+  // eslint-disable-next-line
+  actionOnAngleMarker(a: SEAngleMarker): void {
+    //a.update()
   }
 }

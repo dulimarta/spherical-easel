@@ -336,7 +336,7 @@ export default {
     maxLabelDistance: 0.08, // The maximum distance that a label is allowed to get away from the circle
     initialLabelOffset: 0.02, // When making point labels this is initially how far (roughly) they are from the circle
     defaultLabelMode: LabelDisplayMode.NameOnly, // The default way of displaying this objects label
-    minimumAngleSum: 0.045, // Don't create ellipses with an angle sum smaller than this or bigger than Pi-this (must be bigger than point.hitIdealDistance to prevent almost zero radius circles at intersection points)
+    minimumAngleSumDifference: 0.045, // Don't create ellipses (and ellipse don't exist) when an angle sum to the foci minus the angle between the foci is smaller than this
     numPoints: 60, // Twice this number are used to draw the edge of the circle and 4 times this many are used to to draw the fill of the circle. These are spread over the front and back parts. MAKE THIS EVEN!
     hitIdealDistance: 0.03, // The user has to be within this distance on the ideal unit sphere to select the circle.
     //dynamicBackStyle is a flag that means the fill, linewidth, and strokeColor of the circles drawn on the back are automatically calculated based on the value of SETTINGS.contrast and their front counterparts
@@ -614,6 +614,9 @@ export default {
   toolUse: {
     delay: 2000,
     display: true // controls if they should be displayed
+  },
+  parameterization: {
+    subdivisions: 50 // When searching function on a parametrized curve for a change in sign, use this many subdivisions
   },
   /*A list of which buttons to display - adjusted by the users settings.
   This does NOT belong here but I don't know where else to put it at the moment*/

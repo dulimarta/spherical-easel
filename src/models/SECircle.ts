@@ -125,11 +125,11 @@ export class SECircle extends SENodule
     // store it in the stateArray for undo move. Only store for delete
 
     if (state.mode == UpdateMode.RecordStateForDelete) {
-      const pointState: CircleState = {
+      const circleState: CircleState = {
         kind: "circle",
         object: this
       };
-      state.stateArray.push(pointState);
+      state.stateArray.push(circleState);
     }
 
     this.updateKids(state);
@@ -213,10 +213,10 @@ export class SECircle extends SENodule
    * use the oldNormal to help compute a new normal (which is returned)
    * @param sePoint A point on the line normal to this circle
    */
-  public getNormalToLineThru(
+  public getNormalsToLineThru(
     sePointVector: Vector3,
     oldNormal: Vector3
-  ): Vector3 {
+  ): Vector3[] {
     this.tmpVector.crossVectors(
       sePointVector,
       this._centerSEPoint.locationVector
@@ -231,7 +231,7 @@ export class SECircle extends SENodule
         .copy(oldNormal)
         .addScaledVector(sePointVector, -1 * oldNormal.dot(sePointVector));
     }
-    return this.tmpVector.normalize();
+    return [this.tmpVector.normalize()];
   }
 
   /**

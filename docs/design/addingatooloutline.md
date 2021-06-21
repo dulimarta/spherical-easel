@@ -4,11 +4,11 @@ title: Adding A Tool
 
 # Adding A Tool
 
-There are two different type of tools in Sphere Easel: those that create new geometric objects based on user mouse input and those that use existing geometric and measurement objects to control the location of an existing kind of object object (i.e. point, line segment, line, circle, or ellipse). The former tools are called New Object Tools and the later are called Control Tools
+There are two different types of tools in Sphere Easel: those that create new geometric on dimensional objects based on user mouse input and those that use existing geometric and measurement objects to control the location of an existing kind of object object (i.e. point, line segment, line, circle, or ellipse). The former tools are called New Object Tools and the later are called Control Tools
 
 ## Adding a Control Tool
 
-This section is an outline of the steps need to add a tool that takes a collection of objects (geometric and measurement) and produces the parameters to locate and size a non-custom existing <span class="class">Nodule</span> object (i.e. <span class="class">Point</span>,<span class="class">Segment</span>,<span class="class">Line</span>, <span class="class">Circle</span>, <span class="class">Ellipse</span>) based on the selection collection of objects. This will involve creating a new <span class="class">SENodule</span> object and a new eventHandler to construct the <span class="class">SENodule</span> object and associated it to an exist <span class="class">Nodule</span> object. In all cases attempt to follow the naming conventions outlined by the other variables and files.
+This section is an outline of the steps need to add a tool that takes a collection of objects (geometric and measurement) and produces the parameters to locate and size a non-custom existing <span class="class">Nodule</span> object (i.e. <span class="class">Point</span>,<span class="class">Segment</span>,<span class="class">Line</span>, <span class="class">Circle</span>, <span class="class">Ellipse</span>) based on the selected collection of objects. This will involve creating a new <span class="class">SENodule</span> object and a new eventHandler to construct the <span class="class">SENodule</span> object and associated it to an exist <span class="class">Nodule</span> object. In all cases attempt to follow the naming conventions outlined by the other variables and files.
 
 1. Create a new entry in the <span class="variable">buttonList</span> found in the <span class="file">ToolGroups.vue</span> file. Decide on
    - <span class="variable">id</span>: This is a number that controls the order that the tools within this group are listed.
@@ -95,11 +95,38 @@ This section is an outline of the steps need to add a tool that takes a collecti
    - In the <span class="method">switchActionMode(mode: string)</span> add a new case using the <span class="variable">actionMode</span> string and tool reference
 6. Debug your tool. Play with it and make sure it behaves in many situations.
    - What is the behavior under all the edge condition list in step 4? How does undo and redo work in each of those edge cases?
-7. Add at least three new tests in the <span class="file">???</span> file in the <span class="directory">test</span> directory.
+7. Add at least ten new tests in the <span class="file">???</span> file in the <span class="directory">test</span> directory.
 8. Update the documentation. Create a new description of the use of the tool in the
    - [Tools Documents](/tools/edit.html)
    - [Event Handlers](/design/#event-handlers)
 
 ## Adding a New Object Tool
 
-This section is an outline of the steps needed to add a tool that takes user mouse information and creates a new one-dimensional object based on the user information. This is a much more involved task and requires an intimate knowledge of how Sphere Easel work. This will involving creating both a new <span class="class">SENodule</span> object and a corresponding <span class="class">Nodule</span> object. It will involve modifying many of the existing class to take into account this new object.
+This section is an outline of the steps needed to add a tool that takes user mouse information and creates a new one-dimensional object based on the user information. This is a much more involved task and requires an intimate knowledge of how Spherical Easel works. This will involving creating both a new <span class="class">SENodule</span> object and a corresponding <span class="class">Nodule</span> object. It will involve modifying many of the existing class to take into account this new object. Here is a rough outline for creating object called `Aaa`
+
+1.  Create new <span class="class">SEAaa</span> (extending <span class="class">SENodule</span>) and <span class="class">Aaa</span> (extending <span class="class">Nodule</span>) classes. This means
+
+    - Adding new <span class="variable">AAA_COUNT</span> variables to <span class="class">SENodule</span> and <span class="class">Nodule</span>
+    - Adding a new <span class="interface">AaaState</span> interface and <span class="method">isAaaState</span> method to <span class="file">index.ts</span> and updating the <span class="type">ObjectState</span> type.
+    - Adding a new method <span class="method">actionOnAaa</span> in all the <span class="folder">Vistor</span> classes in the <span class="folder">visitor</span> folder and updating the <span class="interface">Visitor</span> interface in <span class="file">visitor.ts</span>.
+    - Creating the static (in class <span class="class">Aaa</span>) method <span class="method">updateCurrentStrokeWidthForZoom</span> and calling it from <span class="file">Easel.vue</span> file to adjust the linewidth for zoom.
+    - To make the icon SVG (or part of the icon SVG) for `Aaa` you will have to update the <span class="field">id</span> field of all the <span class="package">Two.js</span> objects to distinguish them from others (unique first two digits) and between front and back (last two digits) paths.
+
+2.  Create a new <span class="class">AaaHandler</span> class (extending <span class="class">Highlighter</span>). This means
+
+    - Modifying <span class="class">Highlighter</span> and <span class="class">MouseHandler</span> classes to record "hits" on `Aaa` objects to be returned in <span class="field">hitSEAaas</span> array.
+    - Modifying the <span class="type">SEOneDimensional</span> type and adding <span class="class">SEAaa</span> class in the <span class="file">index.ts</span> file.
+
+3.  Creating an new <span class="class">AddAaaCommand</span> class (extending <span class="class">Command</span>). This means
+
+    - Modifying <span class="field">initialState</span> constant to include the <span class="field">SEAaas</span> array and modifying the <span class="method">init</span> method in <span class="file">mutations.ts</span> to clear it.
+    - Modifying the <span class="interface">Appstate</span> interface in the <span class="file">index.ts</span> file to include the <span class="field">SEAaas</span> array
+    - Adding the <span class="method">AddAaa</span> and <span class="method">RemoveAaa</span> methods <span class="file">mutations.ts</span> to clear it.
+
+4.  Adding a <span class="method">createAllIntersectionsWithAaa</span> in <span class="file">getters.ts</span>.
+
+    - Modifying all the <span class="method">createAllIntersectionsWithXxx</span> methods (where `Xxx` is any existing type) to account for all the intersections with existing objects.
+
+5.  Update all event handlers to allow all other tools to appropriatly highlight and select the `Aaa` objects
+
+6.  Follow step 1, 2, 5, 6, 7, and 8 of [Adding a Control Tool](#adding-a-control-tool)

@@ -10,6 +10,7 @@
     "EditTools": "Edit Tools",
     "DisplayTools": "Display Tools",
     "BasicTools": "Basic Tools",
+    "ConicTools": "Conic Tools",
     "ConstructionTools": "Construction Tools",
     "AdvancedTools": "Advanced Tools",
     "TransformationalTools": "Transformational Tools",
@@ -35,6 +36,10 @@
     "CreateCoordinateDisplayedName": "Coordinates<br>&nbsp;",
     "CreateCoordinateToolTipMessage": "Measure x,y,z coordinates",
     "CreateCoordinateToolUseMessage": "Select a point to measure its x,y,z coordinates on the sphere",
+
+    "CreateEllipseDisplayedName": "Ellipse<br>&nbsp;",
+    "CreateEllipseToolTipMessage": "Insert ellipse",
+    "CreateEllipseToolUseMessage": "Select two distinct non-antipodal points and another point on the ellipse",
 
     "CreateIntersectionDisplayedName": "Intersection<br>Point(s)",
     "CreateIntersectionToolTipMessage": "Intersect two one-dimensional objects",
@@ -262,6 +267,11 @@
     "objectVisible": "Object Visible"
   },
   "handlers": {
+    "ellipseAntipodalSelected": "The foci of an ellipse are not allowed to be antipodal or identical. Select another location.",
+    "ellipseFocus2Selected": "All foci of the ellipse selected. Now select a point on the ellipse.",
+    "ellipseFocus1Selected": "One focus of the ellipse selected. Now select a second non-antipodal focus.",
+
+    "circleCenterSelected": "Center of circle selected. Now select a point on the circle.",
     "duplicatePointMessage": "Duplicate point. Select another.",
     "newMeasurementAdded": "New measurement {name} added.",
     "selectAnotherPoint": "Select the next point.",
@@ -294,6 +304,7 @@
     "perpendicularLineThruPointLineSelected":"Line {name} selected. Now select a location to create a new point or to create a point on an object.",
     "perpendicularLineThruPointSegmentSelected":"Segment {name} selected. Now select a location to create a new point or to create a point on an object.",
     "perpendicularLineThruPointCircleSelected":"Circle {name} selected. Now select a location to create a new point or to create a point on an object.",
+    "perpendicularLineThruPointEllipseSelected":"Ellipse {name} selected. Now select a location to create a new point or to create a point on an object.",
     "antipodeDuplicate":"The antipode of this point has already been created."
   },
 

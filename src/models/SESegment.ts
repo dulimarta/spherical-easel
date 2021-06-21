@@ -14,7 +14,7 @@ const styleSet = new Set([
   Styles.strokeWidthPercent,
   Styles.strokeColor,
   Styles.dashArray,
-  Styles.dynamicBackStyle,
+  Styles.dynamicBackStyle
 ]);
 
 export class SESegment extends SENodule
@@ -247,10 +247,10 @@ export class SESegment extends SENodule
    * use the oldNormal to help compute a new normal (which is returned)
    * @param sePoint A point on the line normal to this circle
    */
-  public getNormalToLineThru(
+  public getNormalsToLineThru(
     sePointVector: Vector3,
     oldNormal: Vector3
-  ): Vector3 {
+  ): Vector3[] {
     this.tmpVector.crossVectors(sePointVector, this._normalVector);
     // Check to see if the tmpVector is zero (i.e the center point and given point are parallel -- ether
     // nearly antipodal or in the same direction)
@@ -259,7 +259,7 @@ export class SESegment extends SENodule
       //  we want to choose one line whose normal is near the oldNormal
       this.tmpVector.copy(oldNormal);
     }
-    return this.tmpVector.normalize();
+    return [this.tmpVector.normalize()];
   }
 
   public update(state: UpdateStateType): void {

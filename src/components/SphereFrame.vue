@@ -36,6 +36,7 @@ import SliderHandler from "@/eventHandlers/SliderHandler";
 import ToggleLabelDisplayHandler from "@/eventHandlers/ToggleLabelDisplayHandler";
 import PerpendicularLineThruPointHandler from "@/eventHandlers/PerpendicularLineThruPointHandler";
 import IconFactoryHandler from "@/eventHandlers/IconFactoryHandler";
+import EllipseHandler from "@/eventHandlers/EllipseHandler";
 
 import EventBus from "@/eventHandlers/EventBus";
 import MoveHandler from "../eventHandlers/MoveHandler";
@@ -86,6 +87,7 @@ export default class SphereFrame extends VueComponent {
   private lineTool!: LineHandler;
   private segmentTool!: SegmentHandler;
   private circleTool!: CircleHandler;
+  private ellipseTool!: EllipseHandler;
   private rotateTool!: RotateHandler;
   private zoomTool!: PanZoomHandler;
   private moveTool!: MoveHandler;
@@ -224,6 +226,7 @@ export default class SphereFrame extends VueComponent {
     this.lineTool = new LineHandler(this.layers);
     this.segmentTool = new SegmentHandler(this.layers);
     this.circleTool = new CircleHandler(this.layers);
+    this.ellipseTool = new EllipseHandler(this.layers);
     this.rotateTool = new RotateHandler(this.layers);
     this.zoomTool = new PanZoomHandler(this.$refs.canvas);
     this.iconFactoryTool = new IconFactoryHandler();
@@ -586,7 +589,10 @@ export default class SphereFrame extends VueComponent {
         this.currentTool = this.circleTool;
         EventBus.fire("set-footer-color", { color: colors.blue.lighten2 });
         break;
-
+      case "ellipse":
+        this.currentTool = this.ellipseTool;
+        EventBus.fire("set-footer-color", { color: colors.blue.lighten2 });
+        break;
       case "antipodalPoint":
         this.currentTool = this.antipodalPointTool;
         break;

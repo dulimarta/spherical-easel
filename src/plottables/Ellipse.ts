@@ -12,38 +12,92 @@ const desiredYAxis = new Vector3();
 const desiredZAxis = new Vector3();
 // const Z_AXIS = new Vector3(0, 0, 1);
 const transformMatrix = new Matrix4();
-const SUBDIVISIONS = SETTINGS.circle.numPoints;
+const SUBDIVISIONS = SETTINGS.ellipse.numPoints;
 
 /**
- * For drawing surface circle. A circle consists of two paths (front and back)
+ * For drawing surface ellipse. A ellipse consists of two paths (front and back)
  * for a total of 2N subdivisions.
  * We initially assign the same number of segments/subdivisions to each path,
- * but as the circle is being deformed the number of subdivisions on each path
+ * but as the ellipse is being deformed the number of subdivisions on each path
  * may change: longer path will hold more subdivision points (while keeping the
  * total points 2N so we don't create/remove new points)
  */
 export default class Ellipse extends Nodule {
   /**
-   * The center vector of the circle in ideal unit sphere
+   * The foci of the ellipse
    */
-  private _centerVector = new Vector3();
+  private _focus1Vector: Vector3 = new Vector3();
+  private _focus2Vector: Vector3 = new Vector3();
 
   /**
-   * The radius (in radians) of the circle on the ideal unit sphere
+   * The parameters a,b that define the the ellipse in standard position (foci in the x-z plane, at (-sin(d),0,cos(d)) and (sin(d),0,cos(d)), so
+   * the center is at (0,0,1), d = 1/2 angle(F1,F2)), half the length of axis (of the ellipse) that projects onto the  x-axis is a,
+   * half the length of the axis (of the ellipse) that projects on the y-axis is b, using the spherical Pythagorean Theorem cos(d)*cos(b)=cos(a)
    */
-  private _circleRadius = 0;
-
+  private _a = 0;
+  private _b = 0;
+  /**
   /**
    *
-   * NOTE: Once the above two variables are set, the updateDisplay() will correctly render the circle.
+   * NOTE: Once the above variables are set, the updateDisplay() will correctly render the ellipse,
    * These are the only pieces of information that are need to do the rendering. All other
-   * calculations in this class are only for the purpose of rendering the segment.
+   * calculations in this class are only for the purpose of rendering the ellipse.
    */
 
   /**
-   *  This the radius projected to the plane of the circle. It is always Math.sin(this.radius).
+   * The vector E(t), tMin and tMax for tMin <= t <= tMax E(t)= parameterization traces out the ellipse
+   * And the vector E'(t) = parameterizationPrime of the ellipse.
    */
-  private projectedRadius = 0;
+  private parameterization = new Vector3();
+  private parameterizationPrime = new Vector3();
+  private _tMin: number;
+  private _tMax: number;
+  private _closed: boolean; // true if E(tMin)=E(tMax)
+  private _periodic: boolean; // true if E(t) = E(t + (tMax-tMin)) for all t
+
+  /**
+   * The parameterization of the ellipse on the sphere.
+   * @param t the parameter between 0 and 2 PI
+   * @returns
+   */
+  public E(t: number): Vector3 {
+    return this.parameterization.set(
+      Math.sin(this._a) * Math.cos(t),
+      Math.sin(this._b) * Math.sin(t),
+      (this._a > Math.PI / 2 ? -1 : 1) *
+        Math.sqrt(
+          Math.cos(this._a) * Math.cos(this._a) +
+            Math.sin(this._a - this._b) *
+              Math.sin(this._a + this._b) *
+              Math.sin(t) *
+              Math.sin(t)
+        )
+    );
+  }
+  /**
+   * The parameterization of the derivative of the ellipse on the sphere.
+   * Note: This is not a unit parameterization
+   * @param t the parameter between 0 and 2 PI
+   * @returns
+   */
+  public Ep(t: number): Vector3 {
+    return this.parameterizationPrime.set(
+      -Math.sin(this._a) * Math.sin(t),
+      Math.sin(this._b) * Math.cos(t),
+      ((this._a > Math.PI / 2 ? -1 : 1) /
+        (2 *
+          Math.sqrt(
+            Math.cos(this._a) * Math.cos(this._a) +
+              Math.sin(this._a - this._b) *
+                Math.sin(this._a + this._b) *
+                Math.sin(t) *
+                Math.sin(t)
+          ))) *
+        Math.sin(this._a - this._b) *
+        Math.sin(this._a + this._b) *
+        Math.sin(2 * t)
+    );
+  }
 
   /**
    * Vuex global state
@@ -73,16 +127,16 @@ export default class Ellipse extends Nodule {
    * The styling variables for the drawn circle. The user can modify these.
    */
   // Front
-  private fillColorFront = SETTINGS.circle.drawn.fillColor.front;
-  private strokeColorFront = SETTINGS.circle.drawn.strokeColor.front;
-  private glowingStrokeColorFront = SETTINGS.circle.glowing.strokeColor.front;
+  private fillColorFront = SETTINGS.ellipse.drawn.fillColor.front;
+  private strokeColorFront = SETTINGS.ellipse.drawn.strokeColor.front;
+  private glowingStrokeColorFront = SETTINGS.ellipse.glowing.strokeColor.front;
   private strokeWidthPercentFront = 100;
   private dashArrayFront = [] as number[]; // Initialize in constructor
   // Back -- use the default non-dynamic back style options so that when the user disables the dynamic back style these options are displayed
-  private dynamicBackStyle = SETTINGS.circle.dynamicBackStyle;
-  private fillColorBack = SETTINGS.circle.drawn.fillColor.back;
-  private strokeColorBack = SETTINGS.circle.drawn.strokeColor.back;
-  private glowingStrokeColorBack = SETTINGS.circle.glowing.strokeColor.back;
+  private dynamicBackStyle = SETTINGS.ellipse.dynamicBackStyle;
+  private fillColorBack = SETTINGS.ellipse.drawn.fillColor.back;
+  private strokeColorBack = SETTINGS.ellipse.drawn.strokeColor.back;
+  private glowingStrokeColorBack = SETTINGS.ellipse.glowing.strokeColor.back;
   private strokeWidthPercentBack = 100;
   private dashArrayBack = [] as number[]; // Initialize in constructor
 
@@ -121,28 +175,31 @@ export default class Ellipse extends Nodule {
   );
 
   /** Initialize the current line width that is adjust by the zoom level and the user widthPercent */
-  static currentCircleStrokeWidthFront =
-    SETTINGS.circle.drawn.strokeWidth.front;
-  static currentCircleStrokeWidthBack = SETTINGS.circle.drawn.strokeWidth.back;
-  static currentGlowingCircleStrokeWidthFront =
-    SETTINGS.circle.drawn.strokeWidth.front + SETTINGS.circle.glowing.edgeWidth;
-  static currentGlowingCircleStrokeWidthBack =
-    SETTINGS.circle.drawn.strokeWidth.back + SETTINGS.circle.glowing.edgeWidth;
+  static currentEllipseStrokeWidthFront =
+    SETTINGS.ellipse.drawn.strokeWidth.front;
+  static currentEllipseStrokeWidthBack =
+    SETTINGS.ellipse.drawn.strokeWidth.back;
+  static currentGlowingEllipseStrokeWidthFront =
+    SETTINGS.ellipse.drawn.strokeWidth.front +
+    SETTINGS.ellipse.glowing.edgeWidth;
+  static currentGlowingEllipseStrokeWidthBack =
+    SETTINGS.ellipse.drawn.strokeWidth.back +
+    SETTINGS.ellipse.glowing.edgeWidth;
 
   /**
    * Update all the current stroke widths
    * @param factor The ratio of the current magnification factor over the old magnification factor
    */
   static updateCurrentStrokeWidthForZoom(factor: number): void {
-    Circle.currentCircleStrokeWidthFront *= factor;
-    Circle.currentCircleStrokeWidthBack *= factor;
-    Circle.currentGlowingCircleStrokeWidthFront *= factor;
-    Circle.currentGlowingCircleStrokeWidthBack *= factor;
+    Ellipse.currentEllipseStrokeWidthFront *= factor;
+    Ellipse.currentEllipseStrokeWidthBack *= factor;
+    Ellipse.currentGlowingEllipseStrokeWidthFront *= factor;
+    Ellipse.currentGlowingEllipseStrokeWidthBack *= factor;
   }
 
   /**
-   * This is the list of original vertices of a circle in the XY plane of radius
-   * SETTINGS.boundaryCircle.radius. There are SETTINGS.circle.subdivisions of these vertices
+   * This is the list of vertices of the boundary circle in the XY plane of radius
+   * SETTINGS.boundaryCircle.radius. There are 2*SETTINGS.ellipse.subdivisions of these vertices
    */
   private originalVertices: Vector2[];
 
@@ -154,24 +211,19 @@ export default class Ellipse extends Nodule {
 
   constructor() {
     super();
-    Nodule.CIRCLE_COUNT++;
-    this.name = "Circle-" + Nodule.CIRCLE_COUNT;
+    Nodule.ELLIPSE_COUNT++;
+    this.name = "Ellipse-" + Nodule.ELLIPSE_COUNT;
+
+    this._tMax = 2 * Math.PI;
+    this._tMin = 0;
+    this._closed = true;
+    this._periodic = true;
 
     // Create the array to hold the points that make up the boundary circle
     this.originalVertices = [];
-    // As the circle is moved around the vertices are passed between the front and back parts, but it
-    // is always true that frontVertices.length + backVertices.length = 2*SUBDIVISIONS
-    // As the circle is moved around the some of the frontVertices are the same as the ones on the
-    // frontFillVertices, but it is always true that frontVertices.length + number of non-front Vertices in
-    // frontFillVertices = SUBDIVISIONS
-    // The non-frontVertices are ones on the boundary circle.
-    // Similar for the back vertices. Initially the length of back/front FillVertices must be SUBDIVISIONS.
-    const frontVertices: Two.Vector[] = [];
     for (let k = 0; k < SUBDIVISIONS; k++) {
-      // Create Two.Vectors for the paths that will be cloned later
-      frontVertices.push(new Two.Vector(0, 0));
-
-      //create the original vertices (the ones that are on the boundary of the circle) and will be transformed to the target circle
+      //create the original vertices (the ones that are on the boundary of the circle) and will be
+      //used when the ellipse is a 'hole' on the front/back to properly fill
       const angle1 = ((2 * k) / SUBDIVISIONS) * Math.PI;
       const angle2 = ((2 * k + 1) / SUBDIVISIONS) * Math.PI;
       this.originalVertices.push(
@@ -187,6 +239,18 @@ export default class Ellipse extends Nodule {
         )
       );
     }
+
+    // As the ellipse is moved around the vertices are passed between the front and back parts, but it
+    // is always true that frontVertices.length + backVertices.length = 2*SUBDIVISIONS
+    // As the ellipse is moved around the some of the frontVertices are the same as the ones on the
+    // frontFillVertices, but it is always true that frontVertices.length + number of non-front/back Vertices + backVertics.length in
+    // front|back FillVertices = 4*SUBDIVISIONS+2
+    // The non-front|back Vertices are ones on the boundary circle.
+    const frontVertices: Two.Vector[] = [];
+    for (let k = 0; k < SUBDIVISIONS; k++) {
+      // Create Two.Vectors for the paths that will be cloned later
+      frontVertices.push(new Two.Vector(0, 0));
+    }
     this.frontPart = new Two.Path(
       frontVertices,
       /*closed*/ false,
@@ -199,8 +263,8 @@ export default class Ellipse extends Nodule {
     this.glowingBackPart = this.frontPart.clone();
 
     //Set the path.id's for all the TwoJS objects which are not glowing. This is for exporting to Icon.
-    this.frontPart.id = 11000000 + Nodule.CIRCLE_COUNT * 100 + 0;
-    this.backPart.id = 11000000 + Nodule.CIRCLE_COUNT * 100 + 1;
+    this.frontPart.id = 15000000 + Nodule.ELLIPSE_COUNT * 100 + 0;
+    this.backPart.id = 15000000 + Nodule.ELLIPSE_COUNT * 100 + 1;
 
     // Set the styles that are always true
     // The front/back parts have no fill because that is handled by the front/back fill
@@ -210,13 +274,13 @@ export default class Ellipse extends Nodule {
     this.glowingFrontPart.noFill();
     this.glowingBackPart.noFill();
 
-    if (SETTINGS.circle.drawn.dashArray.front.length > 0) {
-      SETTINGS.circle.drawn.dashArray.front.forEach(v =>
+    if (SETTINGS.ellipse.drawn.dashArray.front.length > 0) {
+      SETTINGS.ellipse.drawn.dashArray.front.forEach(v =>
         this.dashArrayFront.push(v)
       );
     }
-    if (SETTINGS.circle.drawn.dashArray.back.length > 0) {
-      SETTINGS.circle.drawn.dashArray.back.forEach(v =>
+    if (SETTINGS.ellipse.drawn.dashArray.back.length > 0) {
+      SETTINGS.ellipse.drawn.dashArray.back.forEach(v =>
         this.dashArrayBack.push(v)
       );
     }
@@ -227,9 +291,9 @@ export default class Ellipse extends Nodule {
     this.glowingFrontPart.visible = false;
 
     // Now organize the fills
-    // In total there are 4*SUBDIVISIONS+2 (The +2 two for the extra vertices to close up the annular region with the radius is
-    // bigger than Pi/2 and there is no front/back part and the circle is a 'hole')
-    // anchors across both fill regions and the anchorStorage (storage is used when the circle doesn't cross a boundary).
+    // In total there are 4*SUBDIVISIONS+2 (The +2 two for the extra vertices to close up the annular region with the a and b values are
+    // bigger than Pi/2 and there is no front/back part and the ellipse is a 'hole')
+    // anchors across both fill regions and the anchorStorage (storage is used when the ellipse doesn't cross a boundary).
 
     const verticesFill: Two.Vector[] = [];
     for (let k = 0; k < 2 * SUBDIVISIONS + 1; k++) {
@@ -245,71 +309,73 @@ export default class Ellipse extends Nodule {
     this.backFill = this.frontFill.clone();
 
     //Set the path.id's for all the TwoJS objects which are not glowing. This is for exporting to Icon.
-    this.frontFill.id = 11000000 + Nodule.CIRCLE_COUNT * 100 + 2;
-    this.backFill.id = 11000000 + Nodule.CIRCLE_COUNT * 100 + 3;
+    this.frontFill.id = 15000000 + Nodule.ELLIPSE_COUNT * 100 + 2;
+    this.backFill.id = 15000000 + Nodule.ELLIPSE_COUNT * 100 + 3;
 
     // Set the styles that are always true
     // The front/back fill have no stroke because that is handled by the front/back part
     this.frontFill.noStroke();
     this.backFill.noStroke();
 
-    //Turn on the display initially so it shows up for the temporary circle
+    //Turn on the display initially so it shows up for the temporary ellipse
     this.frontFill.visible = true;
     this.backFill.visible = true;
 
     //set the fill gradient color correctly (especially the opacity which is set separately than the color -- not set by the opacity of the fillColor)
     this.frontGradientColor.color = this.fillColorFront;
-    this.backGradientColor.color = SETTINGS.circle.dynamicBackStyle
+    this.backGradientColor.color = SETTINGS.ellipse.dynamicBackStyle
       ? Nodule.contrastFillColor(this.fillColorFront)
       : this.fillColorBack;
   }
   /**
-   * Reorient the unit circle in 3D and then project the points to 2D
+   * Reorient the ellipse in standard position on the unit sphere in 3D to the target ellipse (the one being drawn)
+   * and then project the points to 2D (assigning to front/back depending on the sign of the z coordinate)
    * This method updates the TwoJS objects (frontPart, frontExtra, ...) for display
-   * This is only accurate if the centerVector and radius are correct so only
+   * This is only accurate if the a, b, and foci(1|2)Vector are correct so only
    * call this method once those variables are updated.
    */
   public updateDisplay(): void {
-    //#region circleDisplay
-    // Create a matrix4 in the three.js package (called transformMatrix) that maps a circle in standard position (i.e. the
-    //  original circle with vertices forming a circle in the plane z=0 of radius SETTINGS.boundaryCircle.radius) onto
-    //  the one in the target desired (updated) position (i.e. the target circle).
+    // Standard Position for an ellipse with given a and b values
+    //
+    //  the foci in the x-z plane, at (-sin(d),0,cos(d)) and (sin(d),0,cos(d)), so
+    // the center is at (0,0,1), d = 1/2 angle(F1,F2)), half the length of axis (of the ellipse) that projects onto the  x-axis is a,
+    // half the length of the axis (of the ellipse) that projects on the y-axis is b, using the spherical Pythagorean Theorem cos(d)*cos(b)=cos(a)
+    //
+    // Create a matrix4 in the three.js package (called transformMatrix) that maps an ellipse (with the right a and b values) in standard position to
+    // the one in the target desired (updated) position (i.e. the target ellipse).
 
-    // First set up the coordinate system of the target circle
-    // The vector to the circle center is ALSO the normal direction of the circle
-    desiredZAxis.copy(this._centerVector).normalize();
-    // Any vector perpendicular the desired z axis can be the desired x axis
-    desiredXAxis
-      .set(-this._centerVector.y, this._centerVector.x, 0)
+    // First set up the coordinate system of the target ellipse
+    // The vector to the center of the ellipse is the z axis
+    this.tmpVector
+      .addVectors(this._focus1Vector, this._focus2Vector)
       .normalize();
-    // Use the cross product to create the vector perpendicular to both the desired z and x axis
-    desiredYAxis.crossVectors(desiredZAxis, desiredXAxis);
+    desiredZAxis.copy(this.tmpVector);
 
-    // Set up the local coordinates from for the circle,
+    // The vector perpendicular the plane containing the foci is the y axis
+    this.tmpVector
+      .crossVectors(this._focus1Vector, this._focus2Vector)
+      .normalize();
+    desiredYAxis.copy(this.tmpVector);
+
+    // Use the cross product to create the vector perpendicular to both the desired z and x axis
+    desiredXAxis.crossVectors(desiredYAxis, desiredZAxis);
+
+    // Set up the local coordinates from for the ellipse,
     //  transformMatrix will now map (1,0,0) to the point on the desired x axis a unit from the origin in the positive direction.
     transformMatrix.makeBasis(desiredXAxis, desiredYAxis, desiredZAxis);
 
-    //Now appropriately translate and scale the circle in standard position to the one in the desired location
-
-    // translate along the Z of the local coordinate frame
-    // The standard circle plane (z=0) is below the plane of the target circle so translate the plane z=0 to the
-    // the target circle plane
-    const distanceFromOrigin = Math.cos(this._circleRadius);
-    this.tmpMatrix.makeTranslation(
-      0,
-      0,
-      distanceFromOrigin * SETTINGS.boundaryCircle.radius
+    // The target ellipse (on the sphere of radius SETTINGS.boundaryCircle.radius) is scaled version of the
+    // original ellipse (which is on the unit sphere)
+    // so scale XYZ space
+    // this will make the original ellipse (in stardar position on the sphere) finally coincide with the target ellipse
+    this.tmpMatrix.makeScale(
+      SETTINGS.boundaryCircle.radius,
+      SETTINGS.boundaryCircle.radius,
+      SETTINGS.boundaryCircle.radius
     );
-    transformMatrix.multiply(this.tmpMatrix);
+    transformMatrix.multiply(this.tmpMatrix); // transformMatrix now maps the original ellipse to the target ellipse
 
-    // The target circle is scaled version of the original circle (but now in the plane of the target circle)
-    // so scale XYZ space in the XY directions by the projected radius (z direction by 1)
-    // this will make the original circle (in the plane of the target circle) finally coincide with the target circle
-    this.tmpMatrix.makeScale(this.projectedRadius, this.projectedRadius, 1);
-    transformMatrix.multiply(this.tmpMatrix); // transformMatrix now maps the original circle to the target circle
-    //#endregion circleDisplay
-
-    // Recalculate the 2D coordinate of the TwoJS path (From the originalVertices array)
+    // Recalculate the 3D coordinates of the ellipse and record the projection in the TwoJS paths
     // As we drag the mouse, the number of vertices in the front half
     // and back half are dynamically changing and to avoid
     // allocating and de-allocating arrays, we dynamically transfers
@@ -321,8 +387,14 @@ export default class Ellipse extends Nodule {
     let backLen = this.backPart.vertices.length;
     let firstNeg = -1;
     let firstPos = -1;
-    this.originalVertices.forEach((v: Vector2, pos: number) => {
-      this.tmpVector.set(v.x, v.y, 0);
+    let tVal = 0;
+    for (let pos = 0; pos < 2 * SUBDIVISIONS; pos++) {
+      // The t value
+      tVal = this._tMin + (pos / SUBDIVISIONS) * (this._tMax - this._tMin);
+
+      // E(tval) is the location on the unit sphere of the ellipse in standard position
+      this.tmpVector.copy(this.E(tVal));
+      // Set tmpVector equal to location on the target ellipse
       this.tmpVector.applyMatrix4(transformMatrix);
 
       // When the Z-coordinate is negative, the vertex belongs the
@@ -364,7 +436,7 @@ export default class Ellipse extends Nodule {
         this.glowingBackPart.vertices[negIndex].y = this.tmpVector.y;
         negIndex++;
       }
-    });
+    }
     // Rotate the array elements to remove gap
     if (firstNeg < firstPos && firstPos <= firstNeg + backLen) {
       // There is a gap in the back path
@@ -401,8 +473,8 @@ export default class Ellipse extends Nodule {
     let posIndexFill = 0;
     let negIndexFill = 0;
     let boundaryPoints: number[][] = [];
-    // The circle interior is only on the front of the sphere
-    if (backLen === 0 && this._circleRadius < Math.PI / 2) {
+    // The ellipse interior is only on the front of the sphere (recall that  a and b are both either bigger than Pi/2 or both less, no mixing)
+    if (backLen === 0 && this._a < Math.PI / 2) {
       // In this case the frontFillVertices are the same as the frontVertices
       this.frontPart.vertices.forEach((v: Two.Anchor, index: number) => {
         if (posIndexFill === this.frontFill.vertices.length) {
@@ -415,9 +487,9 @@ export default class Ellipse extends Nodule {
       });
       // put remaining vertices in the storage
       this.fillStorageAnchors.push(...pool.splice(0));
-    } // The circle interior is split between front and back
+    } // The ellipse interior is split between front and back
     else if (backLen !== 0 && frontLen !== 0) {
-      //find the angular width of the part of the boundary circle to be copied
+      //find the angular width of the part of the boundary ellipse to be copied
       // Compute the angle from the positive x axis to the last frontPartVertex
       //NOTE: the syntax for atan2 is atan2(y,x)!!!!!
       const startAngle = Math.atan2(
@@ -432,14 +504,14 @@ export default class Ellipse extends Nodule {
         this.frontPart.vertices[0].x
       );
 
-      // Compute the angular width of the section of the boundary circle to add to the front/back fill
+      // Compute the angular width of the section of the boundary ellipse to add to the front/back fill
       // This can be positive if traced counterclockwise or negative if traced clockwise( add 2 Pi to make positive)
       let angularWidth = endAngle - startAngle;
       if (angularWidth < 0) {
         angularWidth += 2 * Math.PI;
       }
       //console.log(angularWidth);
-      // When tracing the boundary circle we start from fromVector = this.frontPart.vertices[frontLen - 1]
+      // When tracing the boundary ellipse we start from fromVector = this.frontPart.vertices[frontLen - 1]
       const fromVector = [
         this.frontPart.vertices[frontLen - 1].x,
         this.frontPart.vertices[frontLen - 1].y
@@ -458,8 +530,8 @@ export default class Ellipse extends Nodule {
         toVector = [-toVector[0], -toVector[1]];
       }
 
-      // If the arcRadius is bigger than Pi/2 then reverse the toVector
-      if (this._circleRadius > Math.PI / 2) {
+      // If the a,b are bigger than Pi/2 then reverse the toVector
+      if (this._a > Math.PI / 2) {
         toVector = [-toVector[0], -toVector[1]];
       }
       // Create the boundary points
@@ -518,8 +590,8 @@ export default class Ellipse extends Nodule {
       // put remaining vertices in the storage (there shouldn't be any in this case)
       this.fillStorageAnchors.push(...pool.splice(0));
     }
-    // The circle interior is only on the back of the sphere
-    else if (frontLen === 0 && this._circleRadius < Math.PI / 2) {
+    // The ellipse interior is only on the back of the sphere
+    else if (frontLen === 0 && this._a < Math.PI / 2) {
       //
       // In this case the backFillVertices are the same as the backVertices
       this.backPart.vertices.forEach((v: Two.Anchor, index: number) => {
@@ -534,8 +606,8 @@ export default class Ellipse extends Nodule {
       // put remaining vertices in the storage
       this.fillStorageAnchors.push(...pool.splice(0));
     }
-    // The circle interior covers the entire front half of the sphere and is a 'hole' on the back
-    else if (frontLen === 0 && this._circleRadius > Math.PI / 2) {
+    // The ellipse interior covers the entire front half of the sphere and is a 'hole' on the back
+    else if (frontLen === 0 && this._a > Math.PI / 2) {
       // In this case set the frontFillVertices to the entire boundary circle which are the originalVertices, but only add half of them
       // so that only SUBDIVISION number of vectors are used. (We need 3*SUBDIVISION +2 for the annular region on the back)
       this.originalVertices.reverse().forEach((v, ind) => {
@@ -551,7 +623,7 @@ export default class Ellipse extends Nodule {
       });
 
       // In this case the backFillVertices must trace out first the boundary circle (originalVertices) and then
-      //  the circle, to trace an annular region.  To help with the rendering, start tracing
+      //  the ellipse, to trace an annular region.  To help with the rendering, start tracing
       //  the boundary circle directly across from the vertex on the circle at index zero
       const backStartTraceIndex = Math.floor(
         Math.atan2(
@@ -607,8 +679,8 @@ export default class Ellipse extends Nodule {
       // put remaining vertices in the storage (There shouldn't be any in this case)
       this.fillStorageAnchors.push(...pool.splice(0));
     }
-    // The circle interior covers the entire back half of the sphere and is a 'hole' on the front
-    else if (backLen === 0 && this._circleRadius > Math.PI / 2) {
+    // The ellipse interior covers the entire back half of the sphere and is a 'hole' on the front
+    else if (backLen === 0 && this._a > Math.PI / 2) {
       // In this case set the backFillVertices to the entire boundary circle of the sphere which are the originalVertices, but only add half of them
       // so that only SUBDIVISION number of vectors are used. (We need 3*SUBDIVISION +2 for the annular region on the front)
       this.originalVertices.reverse().forEach((v, ind) => {
@@ -624,8 +696,8 @@ export default class Ellipse extends Nodule {
       });
 
       // In this case the frontFillVertices must trace out first the boundary circle (originalVertices) and then
-      //  the circle, to trace an annular region.  To help with the rendering, start tracing
-      //  the boundary circle directly across from the vertex on the circle at index zero
+      //  the ellipse, to trace an annular region.  To help with the rendering, start tracing
+      //  the boundary circle directly across from the vertex on the ellipse at index zero
       const frontStartTraceIndex = Math.floor(
         Math.atan2(
           this.frontPart.vertices[0].y,
@@ -720,25 +792,45 @@ export default class Ellipse extends Nodule {
   }
 
   /**
-   * Set or Get the center of the circle vector. Setting it updates the display.
+   * Set the foci vectors. (Used by ellipse handler to set these values for the temporary ellipse)
    */
-  set centerVector(position: Vector3) {
-    this._centerVector.copy(position);
+  set focus1Vector(position: Vector3) {
+    this._focus1Vector.copy(position);
   }
-
-  get centerVector(): Vector3 {
-    return this._centerVector;
+  get focus1Vector(): Vector3 {
+    return this._focus1Vector;
+  }
+  set focus2Vector(position: Vector3) {
+    this._focus2Vector.copy(position);
+  }
+  get focus2Vector(): Vector3 {
+    return this._focus2Vector;
   }
 
   /**
-   * Set or Get the radius of the circle. Setting it updates the display.
+   * Set the a and b parameters (Used by ellipse handler to set these values for the temporary ellipse)
    */
-  set circleRadius(arcLengthRadius: number) {
-    this._circleRadius = arcLengthRadius;
-    this.projectedRadius = Math.sin(arcLengthRadius);
+  set a(newA: number) {
+    this._a = newA;
   }
-  get circleRadius(): number {
-    return this._circleRadius;
+  set b(newB: number) {
+    this._b = newB;
+  }
+
+  /**
+   * Get the parameters for the curve
+   */
+  get tMin(): number {
+    return this._tMin;
+  }
+  get tMax(): number {
+    return this._tMax;
+  }
+  get closed(): boolean {
+    return this._closed;
+  }
+  get periodic(): boolean {
+    return this._periodic;
   }
 
   frontGlowingDisplay(): void {
@@ -789,22 +881,24 @@ export default class Ellipse extends Nodule {
       this.glowingStrokeColorFront = SETTINGS.style.selectedColor.front;
       this.glowingStrokeColorBack = SETTINGS.style.selectedColor.back;
     } else {
-      this.glowingStrokeColorFront = SETTINGS.circle.glowing.strokeColor.front;
-      this.glowingStrokeColorBack = SETTINGS.circle.glowing.strokeColor.back;
+      this.glowingStrokeColorFront = SETTINGS.ellipse.glowing.strokeColor.front;
+      this.glowingStrokeColorBack = SETTINGS.ellipse.glowing.strokeColor.back;
     }
     // apply the new color variables to the object
     this.stylize(DisplayStyle.ApplyCurrentVariables);
   }
   /**
-   * This method is used to copy the temporary circle created with the Circle Tool (in the midground) into a
+   * This method is used to copy the temporary ellipse created with the Ellipse Tool (in the midground) into a
    * permanent one in the scene (in the foreground).
    */
   clone(): this {
     // Use the constructor for this class to create a template to copy over the
     // values from the current (the `this`) Circle object
-    const dup = new Circle();
-    dup._centerVector.copy(this._centerVector);
-    dup._circleRadius = this._circleRadius;
+    const dup = new Ellipse();
+    dup._focus1Vector.copy(this._focus1Vector);
+    dup._focus2Vector.copy(this._focus2Vector);
+    dup._a = this._a;
+    dup._b = this._b;
 
     // Duplicate the non-glowing parts
     dup.frontPart.closed = this.frontPart.closed;
@@ -814,8 +908,6 @@ export default class Ellipse extends Nodule {
     dup.backPart.rotation = this.backPart.rotation;
     dup.backPart.translation.copy(this.backPart.translation);
     dup.dynamicBackStyle = this.dynamicBackStyle;
-
-    console.log("DBS at clone", this.dynamicBackStyle);
 
     // Duplicate the glowing parts
     dup.glowingFrontPart.closed = this.glowingFrontPart.closed;
@@ -1008,47 +1100,47 @@ export default class Ellipse extends Nodule {
     switch (panel) {
       case StyleEditPanels.Front: {
         const dashArrayFront = [] as number[];
-        if (SETTINGS.circle.drawn.dashArray.front.length > 0) {
-          SETTINGS.circle.drawn.dashArray.front.forEach(v =>
+        if (SETTINGS.ellipse.drawn.dashArray.front.length > 0) {
+          SETTINGS.ellipse.drawn.dashArray.front.forEach(v =>
             dashArrayFront.push(v)
           );
         }
         return {
           panel: panel,
           strokeWidthPercent: 100,
-          fillColor: SETTINGS.circle.drawn.fillColor.front,
-          strokeColor: SETTINGS.circle.drawn.strokeColor.front,
+          fillColor: SETTINGS.ellipse.drawn.fillColor.front,
+          strokeColor: SETTINGS.ellipse.drawn.strokeColor.front,
           dashArray: dashArrayFront
         };
       }
       case StyleEditPanels.Back: {
         const dashArrayBack = [] as number[];
 
-        if (SETTINGS.circle.drawn.dashArray.back.length > 0) {
-          SETTINGS.circle.drawn.dashArray.back.forEach(v =>
+        if (SETTINGS.ellipse.drawn.dashArray.back.length > 0) {
+          SETTINGS.ellipse.drawn.dashArray.back.forEach(v =>
             dashArrayBack.push(v)
           );
         }
         return {
           panel: panel,
 
-          strokeWidthPercent: SETTINGS.circle.dynamicBackStyle
+          strokeWidthPercent: SETTINGS.ellipse.dynamicBackStyle
             ? Nodule.contrastStrokeWidthPercent(100)
             : 100,
 
-          strokeColor: SETTINGS.circle.dynamicBackStyle
+          strokeColor: SETTINGS.ellipse.dynamicBackStyle
             ? Nodule.contrastStrokeColor(
-                SETTINGS.circle.drawn.strokeColor.front
+                SETTINGS.ellipse.drawn.strokeColor.front
               )
-            : SETTINGS.circle.drawn.strokeColor.back,
+            : SETTINGS.ellipse.drawn.strokeColor.back,
 
-          fillColor: SETTINGS.circle.dynamicBackStyle
-            ? Nodule.contrastFillColor(SETTINGS.circle.drawn.fillColor.front)
-            : SETTINGS.circle.drawn.fillColor.back,
+          fillColor: SETTINGS.ellipse.dynamicBackStyle
+            ? Nodule.contrastFillColor(SETTINGS.ellipse.drawn.fillColor.front)
+            : SETTINGS.ellipse.drawn.fillColor.back,
 
           dashArray: dashArrayBack,
 
-          dynamicBackStyle: SETTINGS.circle.dynamicBackStyle
+          dynamicBackStyle: SETTINGS.ellipse.dynamicBackStyle
         };
       }
       default:
@@ -1065,20 +1157,20 @@ export default class Ellipse extends Nodule {
    */
   adjustSize(): void {
     this.frontPart.linewidth =
-      (Circle.currentCircleStrokeWidthFront * this.strokeWidthPercentFront) /
+      (Ellipse.currentEllipseStrokeWidthFront * this.strokeWidthPercentFront) /
       100;
     this.backPart.linewidth =
-      (Circle.currentCircleStrokeWidthBack *
+      (Ellipse.currentEllipseStrokeWidthBack *
         (this.dynamicBackStyle
           ? Nodule.contrastStrokeWidthPercent(this.strokeWidthPercentFront)
           : this.strokeWidthPercentBack)) /
       100;
     this.glowingFrontPart.linewidth =
-      (Circle.currentGlowingCircleStrokeWidthFront *
+      (Ellipse.currentGlowingEllipseStrokeWidthFront *
         this.strokeWidthPercentFront) /
       100;
     this.glowingBackPart.linewidth =
-      (Circle.currentGlowingCircleStrokeWidthBack *
+      (Ellipse.currentGlowingEllipseStrokeWidthBack *
         (this.dynamicBackStyle
           ? Nodule.contrastStrokeWidthPercent(this.strokeWidthPercentFront)
           : this.strokeWidthPercentBack)) /
@@ -1086,7 +1178,7 @@ export default class Ellipse extends Nodule {
   }
 
   /**
-   * Set the rendering style (flags: ApplyTemporaryVariables, ApplyCurrentVariables) of the circle
+   * Set the rendering style (flags: ApplyTemporaryVariables, ApplyCurrentVariables) of the ellipse
    *
    * ApplyTemporaryVariables means that
    *    1) The temporary variables from SETTINGS.point.temp are copied into the actual Two.js objects
@@ -1095,50 +1187,49 @@ export default class Ellipse extends Nodule {
    * Apply CurrentVariables means that all current values of the private style variables are copied into the actual Two.js objects
    */
   stylize(flag: DisplayStyle): void {
-    console.log("DBS at stylize", this.dynamicBackStyle);
     switch (flag) {
       case DisplayStyle.ApplyTemporaryVariables: {
         // Use the SETTINGS temporary options to directly modify the Two.js objects.
 
         //FRONT
-        if (SETTINGS.circle.temp.fillColor.front === "noFill") {
+        if (SETTINGS.ellipse.temp.fillColor.front === "noFill") {
           this.frontFill.noFill();
         } else {
-          this.frontGradientColor.color = SETTINGS.circle.temp.fillColor.front;
+          this.frontGradientColor.color = SETTINGS.ellipse.temp.fillColor.front;
           this.frontFill.fill = this.frontGradient;
         }
-        if (SETTINGS.circle.temp.strokeColor.front === "noStroke") {
+        if (SETTINGS.ellipse.temp.strokeColor.front === "noStroke") {
           this.frontPart.noStroke();
         } else {
-          this.frontPart.stroke = SETTINGS.circle.temp.strokeColor.front;
+          this.frontPart.stroke = SETTINGS.ellipse.temp.strokeColor.front;
         }
-        // The circle width is set to the current circle width (which is updated for zoom magnification)
-        this.frontPart.linewidth = Circle.currentCircleStrokeWidthFront;
+        // The ellipse width is set to the current ellipse width (which is updated for zoom magnification)
+        this.frontPart.linewidth = Ellipse.currentEllipseStrokeWidthFront;
         // Copy the front dash properties from the front default drawn dash properties
-        if (SETTINGS.circle.drawn.dashArray.front.length > 0) {
+        if (SETTINGS.ellipse.drawn.dashArray.front.length > 0) {
           this.frontPart.dashes.clear();
-          SETTINGS.circle.drawn.dashArray.front.forEach(v => {
+          SETTINGS.ellipse.drawn.dashArray.front.forEach(v => {
             this.frontPart.dashes.push(v);
           });
         }
         //BACK
-        if (SETTINGS.circle.temp.fillColor.back === "noFill") {
+        if (SETTINGS.ellipse.temp.fillColor.back === "noFill") {
           this.backFill.noFill();
         } else {
-          this.backGradientColor.color = SETTINGS.circle.temp.fillColor.back;
+          this.backGradientColor.color = SETTINGS.ellipse.temp.fillColor.back;
           this.backFill.fill = this.backGradient;
         }
-        if (SETTINGS.circle.temp.strokeColor.back === "noStroke") {
+        if (SETTINGS.ellipse.temp.strokeColor.back === "noStroke") {
           this.backPart.noStroke();
         } else {
-          this.backPart.stroke = SETTINGS.circle.temp.strokeColor.back;
+          this.backPart.stroke = SETTINGS.ellipse.temp.strokeColor.back;
         }
-        // The circle width is set to the current circle width (which is updated for zoom magnification)
-        this.backPart.linewidth = Circle.currentCircleStrokeWidthBack;
+        // The ellipse width is set to the current ellipse width (which is updated for zoom magnification)
+        this.backPart.linewidth = Ellipse.currentEllipseStrokeWidthBack;
         // Copy the front dash properties from the front default drawn dash properties
-        if (SETTINGS.circle.drawn.dashArray.back.length > 0) {
+        if (SETTINGS.ellipse.drawn.dashArray.back.length > 0) {
           this.backPart.dashes.clear();
-          SETTINGS.circle.drawn.dashArray.back.forEach(v => {
+          SETTINGS.ellipse.drawn.dashArray.back.forEach(v => {
             this.backPart.dashes.push(v);
           });
         }
@@ -1241,7 +1332,7 @@ export default class Ellipse extends Nodule {
         // UPDATE the glowing object
 
         // Glowing Front
-        // no fillColor for glowing circles
+        // no fillColor for glowing ellipses
         this.glowingFrontPart.stroke = this.glowingStrokeColorFront;
         // strokeWidthPercent applied by adjustSize()
 
@@ -1258,7 +1349,7 @@ export default class Ellipse extends Nodule {
         }
 
         // Glowing Back
-        // no fillColor for glowing circles
+        // no fillColor for glowing ellipses
         this.glowingBackPart.stroke = this.glowingStrokeColorBack;
         // strokeWidthPercent applied by adjustSize()
 

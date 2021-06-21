@@ -149,6 +149,28 @@
       </v-btn-toggle>
     </div>
 
+    <!-- 
+      The Conice Tool Group only shown if the user has permission to use a tool in this 
+      group. Note the use of the translation $t(key_value).
+    -->
+    <div id="ConicToolGroup"
+      v-show="nonEmptyGroup('conic')">
+      <h3 class="body-1 font-weight-bold">
+        {{ $t("toolGroups.ConicTools") }}
+      </h3>
+      <v-btn-toggle v-model="actionMode"
+        @change="switchActionMode"
+        class="mr-2 d-flex flex-wrap accent">
+        <ToolButton v-for="(button, pos) in buttonList.filter(
+            b => b.toolGroup === 'conic'
+          )"
+          :key="pos"
+          :button="button"
+          v-on:displayOnlyThisToolUseMessage="displayOnlyThisToolUseMessageFunc">
+        </ToolButton>
+      </v-btn-toggle>
+    </div>
+
     <div id="DeveloperToolGroup"
       v-show="nonEmptyGroup('developerOnly')">
       <h3 class="body-1 font-weight-bold">
@@ -437,6 +459,16 @@ export default class ToolGroups extends Vue {
       toolUseMessage: "CreateCoordinateToolUseMessage",
       displayToolUseMessage: false,
       toolGroup: "measurement"
+    },
+    {
+      id: 0,
+      actionModeValue: "ellipse",
+      displayedName: "CreateEllipseDisplayedName",
+      icon: "mdi-ellipse-outline",
+      toolTipMessage: "CreateEllipseToolTipMessage",
+      toolUseMessage: "CreateEllipseToolUseMessage",
+      displayToolUseMessage: false,
+      toolGroup: "conic"
     },
     {
       id: 0,

@@ -243,6 +243,7 @@ import Line from "@/plottables/Line";
 import Label from "@/plottables/Label";
 import Segment from "@/plottables/Segment";
 import Nodule from "@/plottables/Nodule";
+import Ellipse from "@/plottables/Ellipse";
 import { State } from "vuex-class";
 import { SENodule } from "@/models/SENodule";
 import { AppState, ConstructionInFirestore } from "@/types";
@@ -251,6 +252,7 @@ import AngleMarker from "@/plottables/AngleMarker";
 import { FirebaseFirestore, DocumentSnapshot } from "@firebase/firestore-types";
 import { run } from "@/commands/CommandInterpreter";
 import { ConstructionScript } from "@/types";
+
 /**
  * Split panel width distribution (percentages):
  * When both side panels open: 20:60:20 (proportions 1:3:1)
@@ -483,6 +485,7 @@ export default class Easel extends Vue {
     AngleMarker.updateCurrentStrokeWidthAndRadiusForZoom(oldFactor / e.factor);
     Point.updatePointScaleFactorForZoom(oldFactor / e.factor);
     Label.updateTextScaleFactorForZoom(oldFactor / e.factor);
+    Ellipse.updateCurrentStrokeWidthForZoom(oldFactor / e.factor);
 
     // Update the size of each nodule in the store
     this.$store.state.seNodules.forEach((p: SENodule) => {

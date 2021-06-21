@@ -37,7 +37,7 @@ export default class Circle extends Nodule {
    *
    * NOTE: Once the above two variables are set, the updateDisplay() will correctly render the circle.
    * These are the only pieces of information that are need to do the rendering. All other
-   * calculations in this class are only for the purpose of rendering the segment.
+   * calculations in this class are only for the purpose of rendering the circle.
    */
 
   /**
@@ -142,7 +142,7 @@ export default class Circle extends Nodule {
 
   /**
    * This is the list of original vertices of a circle in the XY plane of radius
-   * SETTINGS.boundaryCircle.radius. There are SETTINGS.circle.subdivisions of these vertices
+   * SETTINGS.boundaryCircle.radius. There are 2*SETTINGS.circle.subdivisions of these vertices
    */
   private originalVertices: Vector2[];
 
@@ -720,18 +720,17 @@ export default class Circle extends Nodule {
   }
 
   /**
-   * Set or Get the center of the circle vector. Setting it updates the display.
+   * Set or Get the center of the circle vector. (Used by circle handler to set these values for the temporary circle)
    */
   set centerVector(position: Vector3) {
     this._centerVector.copy(position);
   }
-
   get centerVector(): Vector3 {
     return this._centerVector;
   }
 
   /**
-   * Set or Get the radius of the circle. Setting it updates the display.
+   * Set or Get the radius of the circle. (Used by circle handler to set these values for the temporary circle)
    */
   set circleRadius(arcLengthRadius: number) {
     this._circleRadius = arcLengthRadius;
@@ -814,8 +813,6 @@ export default class Circle extends Nodule {
     dup.backPart.rotation = this.backPart.rotation;
     dup.backPart.translation.copy(this.backPart.translation);
     dup.dynamicBackStyle = this.dynamicBackStyle;
-
-    console.log("DBS at clone", this.dynamicBackStyle);
 
     // Duplicate the glowing parts
     dup.glowingFrontPart.closed = this.glowingFrontPart.closed;
@@ -1095,7 +1092,6 @@ export default class Circle extends Nodule {
    * Apply CurrentVariables means that all current values of the private style variables are copied into the actual Two.js objects
    */
   stylize(flag: DisplayStyle): void {
-    console.log("DBS at stylize", this.dynamicBackStyle);
     switch (flag) {
       case DisplayStyle.ApplyTemporaryVariables: {
         // Use the SETTINGS temporary options to directly modify the Two.js objects.

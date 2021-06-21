@@ -398,46 +398,16 @@ export default {
       obj.isHitAt(unitIdealVector, state.zoomMagnificationFactor)
     );
   },
-  /** Find nearby points by checking the distance in the ideal sphere
-   * or screen distance (in pixels)
+  /**
+   * Create the intersection of two one-dimensional objects
+   * Make sure the SENodules are in the correct order: SELines, SESegments, SECircles then SEEllipses.
+   * That the (one,two) pair is one of:
+   *  (SELine,SELine), (SELine,SESegment), (SELine,SECircle), (SELine,SEEllipseHERERERERERERERE), (SESegment, SESegment),
+   *      (SESegment, SECircle), (SECircle, SECircle)
+   * If they have the same type put them in alphabetical order.
+   * The creation of the intersection objects automatically follows this convention in assigning parents.
    */
-  // findNearbySEPoints: (state: AppState) => (
-  //   unitIdealVector: Vector3,
-  //   screenPosition: Two.Vector
-  // ): SEPoint[] => {
-  //   return state.sePoints.filter(
-  //     p =>
-  //       p.isHitAt(unitIdealVector, state.zoomMagnificationFactor) &&
-  //       p.ref.defaultScreenVectorLocation.distanceTo(screenPosition) <
-  //         PIXEL_CLOSE_ENOUGH
-  //   );
-  // },
-  // /** When a point is on a geodesic circle, it has to be perpendicular to
-  //  * the normal direction of that circle */
-  // findNearbySELines: (state: AppState) => (
-  //   unitIdealVector: Vector3,
-  //   screenPosition: Two.Vector
-  // ): SELine[] => {
-  //   return state.seLines.filter((z: SELine) =>
-  //     z.isHitAt(unitIdealVector, state.zoomMagnificationFactor)
-  //   );
-  // },
-  // findNearbySESegments: (state: AppState) => (
-  //   unitIdealVector: Vector3,
-  //   screenPosition: Two.Vector
-  // ): SESegment[] => {
-  //   return state.seSegments.filter((z: SESegment) =>
-  //     z.isHitAt(unitIdealVector, state.zoomMagnificationFactor)
-  //   );
-  // },
-  // findNearbySECircles: (state: AppState) => (
-  //   unitIdealVector: Vector3,
-  //   screenPosition: Two.Vector
-  // ): SECircle[] => {
-  //   return state.seCircles.filter((z: SECircle) =>
-  //     z.isHitAt(unitIdealVector, state.zoomMagnificationFactor)
-  //   );
-  // },
+
   createAllIntersectionsWithLine: (state: AppState) => (
     newLine: SELine
   ): SEIntersectionReturnType[] => {
@@ -759,15 +729,114 @@ export default {
       });
     return intersectionPointList;
   },
-  /**
-   * Create the intersection of two one-dimensional objects
-   * Make sure the SENodules are in the correct order: SELines, SESegments, then SECircles.
-   * That the (one,two) pair is one of:
-   *  (SELine,SELine), (SELine,SESegment), (SELine,SECircle), (SESegment, SESegment),
-   *      (SESegment, SECircle), (SECircle, SECircle)
-   * If they have the same type put them in alphabetical order.
-   * The creation of the intersection objects automatically follows this convention in assigning parents.
-   */
+  // createAllIntersectionsWithCircle: (state: AppState) => (
+  //   newCircle: SECircle
+  // ): SEIntersectionReturnType[] => {
+  //   // Avoid creating an intersection where any SEPoint already exists
+  //   const avoidVectors: Vector3[] = [];
+  //   // First add the two parent points of the newLine, if they are new, then
+  //   //  they won't have been added to the state.points array yet so add them first
+  //   avoidVectors.push(newCircle.centerSEPoint.locationVector);
+  //   avoidVectors.push(newCircle.circleSEPoint.locationVector);
+  //   state.sePoints.forEach(pt => avoidVectors.push(pt.locationVector));
+  //   // The intersectionPointList to return
+  //   const intersectionPointList: SEIntersectionReturnType[] = [];
+  //   // Intersect this new circle with all old lines
+  //   state.seLines.forEach((oldLine: SELine) => {
+  //     const intersectionInfo = intersectLineWithCircle(oldLine, newCircle);
+  //     intersectionInfo.forEach((info, index) => {
+  //       if (
+  //         !avoidVectors.some(v => tempVec.subVectors(info.vector, v).isZero())
+  //       ) {
+  //         // info.vector is not on the avoidVectors array, so create an intersection
+  //         const newPt = new NonFreePoint();
+  //         newPt.stylize(DisplayStyle.ApplyTemporaryVariables);
+  //         newPt.adjustSize();
+  //         const newSEIntersectionPt = new SEIntersectionPoint(
+  //           newPt,
+  //           oldLine,
+  //           newCircle,
+  //           index,
+  //           false
+  //         );
+  //         newSEIntersectionPt.locationVector = info.vector;
+  //         newSEIntersectionPt.exists = info.exists;
+  //         intersectionPointList.push({
+  //           SEIntersectionPoint: newSEIntersectionPt,
+  //           parent1: oldLine,
+  //           parent2: newCircle
+  //         });
+  //       }
+  //     });
+  //   });
+  //   //Intersect this new circle with all old segments
+  //   state.seSegments.forEach((oldSegment: SESegment) => {
+  //     const intersectionInfo = intersectSegmentWithCircle(
+  //       oldSegment,
+  //       newCircle
+  //     );
+  //     intersectionInfo.forEach((info, index) => {
+  //       if (
+  //         !avoidVectors.some(v => tempVec.subVectors(info.vector, v).isZero())
+  //       ) {
+  //         // info.vector is not on the avoidVectors array, so create an intersection
+  //         const newPt = new NonFreePoint();
+  //         newPt.stylize(DisplayStyle.ApplyTemporaryVariables);
+  //         newPt.adjustSize();
+  //         const newSEIntersectionPt = new SEIntersectionPoint(
+  //           newPt,
+  //           oldSegment,
+  //           newCircle,
+  //           index,
+  //           false
+  //         );
+  //         newSEIntersectionPt.locationVector = info.vector;
+  //         newSEIntersectionPt.exists = info.exists;
+  //         intersectionPointList.push({
+  //           SEIntersectionPoint: newSEIntersectionPt,
+  //           parent1: oldSegment,
+  //           parent2: newCircle
+  //         });
+  //       }
+  //     });
+  //   });
+  //   //Intersect this new circle with all old circles
+  //   state.seCircles
+  //     .filter((circle: SECircle) => circle.id !== newCircle.id) // ignore self
+  //     .forEach((oldCircle: SECircle) => {
+  //       const intersectionInfo = intersectCircles(
+  //         oldCircle.centerSEPoint.locationVector,
+  //         oldCircle.circleRadius,
+  //         newCircle.centerSEPoint.locationVector,
+  //         newCircle.circleRadius
+  //       );
+  //       intersectionInfo.forEach((info, index) => {
+  //         if (
+  //           !avoidVectors.some(v => tempVec.subVectors(info.vector, v).isZero())
+  //         ) {
+  //           // info.vector is not on the avoidVectors array, so create an intersection
+  //           const newPt = new NonFreePoint();
+  //           newPt.stylize(DisplayStyle.ApplyTemporaryVariables);
+  //           newPt.adjustSize();
+  //           const newSEIntersectionPt = new SEIntersectionPoint(
+  //             newPt,
+  //             oldCircle,
+  //             newCircle,
+  //             index,
+  //             false
+  //           );
+  //           newSEIntersectionPt.locationVector = info.vector;
+  //           newSEIntersectionPt.exists = info.exists;
+  //           intersectionPointList.push({
+  //             SEIntersectionPoint: newSEIntersectionPt,
+  //             parent1: oldCircle,
+  //             parent2: newCircle
+  //           });
+  //         }
+  //       });
+  //     });
+  //   return intersectionPointList;
+  // },
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   intersectTwoObjects: (_state: AppState) => (

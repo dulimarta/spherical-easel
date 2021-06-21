@@ -2,6 +2,9 @@ import { Vector3 } from "three";
 import Nodule from "@/plottables/Nodule";
 import { Styles } from "@/types/Styles";
 import { UpdateStateType } from "@/types";
+import newton from "newton-raphson-method";
+import SETTINGS from "@/global-settings";
+
 //import AppStore from "@/store";
 
 //import { magnificationLevel } from "@/components/SENoduleItem.vue";
@@ -15,6 +18,7 @@ export abstract class SENodule {
   protected static CIRCLE_COUNT = 0;
   protected static ANGLEMARKER_COUNT = 0;
   protected static EXPR_COUNT = 0;
+  protected static ELLIPSE_COUNT = 0;
 
   static resetAllCounters(): void {
     NODE_COUNT = 0;
@@ -24,6 +28,7 @@ export abstract class SENodule {
     SENodule.ANGLEMARKER_COUNT = 0;
     SENodule.CIRCLE_COUNT = 0;
     SENodule.EXPR_COUNT = 0;
+    SENodule.ELLIPSE_COUNT = 0;
   }
 
   /**
@@ -44,7 +49,6 @@ export abstract class SENodule {
   /**
    * A pointer to the corresponding plottable object
    */
-  // TODO: SEExpression and it subclasses have no associated plottables
   public ref?: Nodule;
 
   /* A unique identification number and name for each node */
@@ -342,5 +346,151 @@ export abstract class SENodule {
 
   get selected(): boolean {
     return this._selected;
+  }
+
+  /**
+   * Find the closest vector to unitVec on the curve P(t) where tMin<= t <= tMax using subdivisions and Newton's method
+   * @param P P(t) is the parameterization of a curve on the sphere (must be unit for all t)
+   * @param PPrime P'(t) is the parameterization of the derivative of P(t) (NOT NECESSARILY UNIT)
+   * @param unitVec a unit vector
+   * @param tMin
+   * @param tMax
+   * @param closed if true, implies P(tMin)=P(tMax)
+   * @param periodic if true, implies P(t) = P(t + (tMax-tMin)) for all t
+   */
+  protected static closestVectorParametrically(
+    P: (t: number) => Vector3,
+    PPrime: (t: number) => Vector3,
+    unitVec: Vector3,
+    tMin: number,
+    tMax: number
+  ): Vector3 {
+    // First form the objective function, this is the function that we want to find the zeros.
+    // The (angular) distance from P(t) to unitVec is d(t) = acos(P(t) /dot unitVec) because P(t) and unitVec are both unit
+    // The derivative of d(t) is zero at a minimum or max, so we want to find the zero of d'(t)
+    //  d'(t) = -1/ sqrt(1- P(t) /dot unitVec) * (P'(t) /dot unitVec)
+    //  d''(t) = a bit awful and involves P''(t), so lets see how this method does with out this derivative
+    const d: (t: number) => number = function (t: number): number {
+      return Math.acos(P(t).dot(unitVec));
+    };
+
+    const dp: (t: number) => number = function (t: number): number {
+      return (-1 * PPrime(t).dot(unitVec)) / Math.sqrt(1 - P(t).dot(unitVec));
+    };
+
+    // now we need to find all the places that dp changes sign so we know where to start Newton's method
+    const signChanges = [];
+    let tVal: number;
+    let lastTVal = tMin;
+    for (let i = 1; i < SETTINGS.parameterization.subdivisions + 1; i++) {
+      tVal =
+        tMin + (i / SETTINGS.parameterization.subdivisions) * (tMax - tMin);
+      if (dp(tVal) * dp(lastTVal) < 0) {
+        signChanges.push([lastTVal, tVal]);
+      }
+      lastTVal = tVal;
+    }
+    if (signChanges.length === 0) {
+      console.log(
+        "No minimum distance found - ERROR in closestVectorParametrically"
+      );
+      return new Vector3();
+    }
+    const zeros: number[] = [];
+    signChanges.forEach(interval => {
+      const zeroTVal: number | boolean = newton(
+        dp,
+        (interval[0] + interval[1]) / 2
+      );
+      if (zeroTVal !== false) {
+        zeros.push(zeroTVal as number);
+      }
+    });
+    // The zeros of dp are either minimums or maximums (or neither, but this is very unlikely so we assume it doesn't happen)
+    const iterator = zeros.values();
+    let minTVal: number = zeros[0]; // The t value that maximumizes d
+    for (const value of iterator) {
+      if (d(value) > d(minTVal)) {
+        minTVal = value;
+      }
+    }
+    return P(minTVal);
+  }
+
+  /**
+   * Find all the unit normal vector lines that are perpendicular to the curve P(t) where tMin<= t <= tMax using subdivisions and Newton's method that
+   * pass though unitVec
+   * @param P P(t) is the parameterization of a curve on the sphere (must be unit for all t)
+   * @param PPrime P'(t) is the parameterization of the derivative of P(t) (NOT NECESSARILY UNIT)
+   * @param unitVec a unit vector
+   * @param tMin
+   * @param tMax
+   * @param closed if true, implies P(tMin)=P(tMax)
+   * @param periodic if true, implies P(t) = P(t + (tMax-tMin)) for all t
+   */
+  protected static getNormalsToLineThruParametrically(
+    P: (t: number) => Vector3,
+    PPrime: (t: number) => Vector3,
+    unitVec: Vector3,
+    tMin: number,
+    tMax: number
+  ): Vector3[] {
+    // First form the objective function, this is the function that we want to find the zeros.
+    // We want to find the t values where the P'(t) is perpendicular to unitVec (because P'(t) is a normal to the
+    // line passing through the point P(t), so we want this line to pass through unitVec i.e. unitVec and P'(t) are perp)
+    // This means we want the dot product to be zero
+    const d: (t: number) => number = function (t: number): number {
+      return PPrime(t).dot(unitVec);
+    };
+
+    // now we need to find all the places that d changes sign so we know where to start Newton's method
+    const signChanges = [];
+    let tVal: number;
+    let lastTVal = tMin;
+    for (let i = 1; i < SETTINGS.parameterization.subdivisions + 1; i++) {
+      tVal =
+        tMin + (i / SETTINGS.parameterization.subdivisions) * (tMax - tMin);
+      if (d(tVal) * d(lastTVal) < 0) {
+        signChanges.push([lastTVal, tVal]);
+      }
+      lastTVal = tVal;
+    }
+    if (signChanges.length === 0) {
+      console.log("No perpendiculars found - ERROR in getNormalsToLineThru");
+      return [];
+    }
+    const zeros: number[] = [];
+    signChanges.forEach(interval => {
+      const zeroTVal: number | boolean = newton(
+        d,
+        (interval[0] + interval[1]) / 2
+      );
+      if (zeroTVal !== false) {
+        zeros.push(zeroTVal as number);
+      }
+    });
+    // The zeros are the tVals that we are interested in so convert them to the corresponding normal vectors
+    const vectorsFromTValues = zeros.map(tVal => PPrime(tVal).normalize());
+    // Now make sure that none of the vectors in the return set are parallel (either the same or antipodal)
+    const returnVectors: Vector3[] = [];
+    const tmpVector = new Vector3();
+    for (let i = 1; i < vectorsFromTValues.length; i++) {
+      let addToList = true;
+      for (let j = i; j < vectorsFromTValues.length; j++) {
+        if (
+          tmpVector
+            .crossVectors(vectorsFromTValues[i - 1], vectorsFromTValues[j])
+            .isZero(SETTINGS.nearlyAntipodalIdeal)
+        ) {
+          addToList = false;
+          break;
+        }
+      }
+      if (addToList) {
+        returnVectors.push(vectorsFromTValues[i - 1]);
+      }
+    }
+
+    return returnVectors;
   }
 }

@@ -47,15 +47,26 @@ export class SEPerpendicularLineThruPoint extends SELine {
     this._exists =
       this.seParentOneDimensional.exists && this.seParentPoint.exists;
     if (this._exists) {
-      // Get the normal vector to the line
-      this.tmpVector.copy(this.normalVector);
-      this.normalVector = this.seParentOneDimensional.getNormalToLineThru(
+      // Get the normal(s) vector to the line
+      const normals = this.seParentOneDimensional.getNormalsToLineThru(
         this.seParentPoint.locationVector,
         this.normalVector // the soon to be old normal vector
       );
-
+      // now find the vector is normals that is closest to this.normalVector (if there is more than one)
+      if (normals.length === 1) {
+        this.normalVector.copy(normals[0]);
+      } else {
+        // find the normal vector that is closest to this.Normal
+        const minAngle = Math.min(
+          ...(normals.map(vec => vec.angleTo(this.normalVector)) as number[])
+        );
+        const ind = normals.findIndex((vec: Vector3) => {
+          return vec.angleTo(this.normalVector) === minAngle;
+        });
+        this.normalVector.copy(normals[ind]);
+      }
       // Given this.startPoint (in SELine)=this.seParentPoint and this.normalVector compute the endSEPoint
-      // This is *never* undefined because the getNormalToLineThru *never* returns a point with
+      // This is *never* undefined because the getNormalsToLineThru *never* returns a point with
       //  location parallel to this.seParentPoint.locationVector
       this.tmpVector1.crossVectors(
         this.seParentPoint.locationVector,

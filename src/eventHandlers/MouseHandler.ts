@@ -13,6 +13,7 @@ import { TextBox } from "@/plottables/TextBox";
 import { SENodule } from "@/models/SENodule";
 import { SELabel } from "@/models/SELabel";
 import { SEAngleMarker } from "@/models/SEAngleMarker";
+import { SEEllipse } from "@/models/SEEllipse";
 
 export default abstract class MouseHandler implements ToolStrategy {
   protected readonly X_AXIS = new Vector3(1, 0, 0);
@@ -50,6 +51,7 @@ export default abstract class MouseHandler implements ToolStrategy {
   protected hitSELines: SELine[] = [];
   protected hitSESegments: SESegment[] = [];
   protected hitSECircles: SECircle[] = [];
+  protected hitSEEllipses: SEEllipse[] = [];
   protected hitSELabels: SELabel[] = [];
   protected hitSEAngleMarkers: SEAngleMarker[] = [];
 

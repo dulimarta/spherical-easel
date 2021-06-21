@@ -170,10 +170,10 @@ export class SELine extends SENodule
    * use the oldNormal to help compute a new normal (which is returned)
    * @param sePoint A point on the line normal to this circle
    */
-  public getNormalToLineThru(
+  public getNormalsToLineThru(
     sePointVector: Vector3,
     oldNormal: Vector3
-  ): Vector3 {
+  ): Vector3[] {
     this.tmpVector.crossVectors(sePointVector, this._normalVector);
     // Check to see if the tmpVector is zero (i.e the normal vector and given point are parallel -- ether
     // nearly antipodal or in the same direction)
@@ -187,12 +187,12 @@ export class SELine extends SENodule
         .normalize();
       // if (oldNormal.angleTo(this.tmpVector) > 0.0009) {
       //   console.log(
-      //     "change in normal vector in getNormalToLineThru",
+      //     "change in normal vector in getNormalsToLineThru",
       //     oldNormal.angleTo(this.tmpVector)
       //   );
       // }
     }
-    return this.tmpVector.normalize();
+    return [this.tmpVector.normalize()];
   }
 
   public update(state: UpdateStateType): void {

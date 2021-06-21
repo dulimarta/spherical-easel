@@ -14,6 +14,7 @@ import { StyleEditPanels, StyleOptions } from "@/types/Styles";
 import { SEExpression } from "@/models/SEExpression";
 import { SEAngleMarker } from "@/models/SEAngleMarker";
 import { SEPerpendicularLineThruPoint } from "@/models/SEPerpendicularLineThruPoint";
+import { SEEllipse } from "@/models/SEEllipse";
 
 export interface Selectable {
   hit(x: number, y: number, coord: unknown, who: unknown): boolean;
@@ -34,6 +35,7 @@ export interface AppState {
   seLines: SELine[];
   seSegments: SESegment[];
   seCircles: SECircle[];
+  seEllipses: SEEllipse[];
   seAngleMarkers: SEAngleMarker[];
   seLabels: SELabel[];
   seNodules: SENodule[];
@@ -102,7 +104,7 @@ export interface Labelable {
 /**
  * All the one dimensional SE Classes
  */
-export type SEOneDimensional = SELine | SESegment | SECircle;
+export type SEOneDimensional = SELine | SESegment | SECircle | SEEllipse;
 
 export type hslaColorType = {
   h: number;
@@ -130,6 +132,7 @@ export interface UpdateStateType {
  */
 export type ObjectState =
   | CircleState
+  | EllipseState
   | LineState
   | SegmentState
   | PointState
@@ -208,6 +211,7 @@ export interface LabelState {
 export function isLabelState(entry: ObjectState): entry is LabelState {
   return entry.kind === "label";
 }
+
 export interface CircleState {
   // No fields are needed for moving circles because they are completely determined by their point parents
   kind: "circle";
@@ -216,6 +220,16 @@ export interface CircleState {
 }
 export function isCircleState(entry: ObjectState): entry is CircleState {
   return entry.kind === "circle";
+}
+
+export interface EllipseState {
+  // No fields are needed for moving ellipses because they are completely determined by their point parents
+  kind: "ellipse";
+  // Fields needed for undoing delete
+  object: SEEllipse;
+}
+export function isEllipseState(entry: ObjectState): entry is EllipseState {
+  return entry.kind === "ellipse";
 }
 
 export type ConstructionScript = Array<string | Array<string>>;

@@ -18,6 +18,7 @@ import Nodule, { DisplayStyle } from "@/plottables/Nodule";
 import SETTINGS from "@/global-settings";
 import { SEExpression } from "@/models/SEExpression";
 import { SEAngleMarker } from "@/models/SEAngleMarker";
+import { SEEllipse } from "@/models/SEEllipse";
 
 const tmpMatrix = new Matrix4();
 //const tmpVector = new Vector3();
@@ -42,6 +43,7 @@ export const initialState: AppState = {
   seLines: [], // An array of all SELines
   seSegments: [], // An array of all SESegments
   seCircles: [], // An array of all SECircles
+  seEllipses: [], // An array of all SEEllipse
   seAngleMarkers: [], // An array of all SEAngleMarkers
   seLabels: [], // An array of all SELabels
   temporaryNodules: [], // An array of all Nodules that are temporary - created by the handlers.
@@ -78,6 +80,7 @@ export default {
     state.seSegments.splice(0);
     state.seCircles.splice(0);
     state.seAngleMarkers.splice(0);
+    state.seEllipses.splice(0);
     state.seLabels.splice(0);
     state.selections.splice(0);
     state.intersections.splice(0);
@@ -228,6 +231,26 @@ export default {
       state.hasUnsavedNodules = true;
     }
   },
+  addEllipse(state: AppState, ellipse: SEEllipse): void {
+    state.seEllipses.push(ellipse);
+    state.seNodules.push(ellipse);
+    ellipse.ref.addToLayers(state.layers);
+    state.hasUnsavedNodules = true;
+  },
+  removeEllipse(state: AppState, ellipseId: number): void {
+    const ellipsePos = state.seEllipses.findIndex(x => x.id === ellipseId);
+    const pos2 = state.seNodules.findIndex(x => x.id === ellipseId);
+    if (ellipsePos >= 0) {
+      /* victim line is found */
+      const victimEllipse: SEEllipse = state.seEllipses[ellipsePos];
+      victimEllipse.ref.removeFromLayers();
+      // victimEllipse.removeSelfSafely();
+      state.seEllipses.splice(ellipsePos, 1); // Remove the ellipse from the list
+      state.seNodules.splice(pos2, 1);
+      state.hasUnsavedNodules = true;
+    }
+  },
+
   addAngleMarkerAndExpression(
     state: AppState,
     angleMarker: SEAngleMarker

@@ -7,6 +7,8 @@ import { SESegment } from "@/models/SESegment";
 import { SELabel } from "@/models/SELabel";
 // import { UpdateMode } from "@/types";
 import { SEPointOnOneDimensional } from "@/models/SEPointOnOneDimensional";
+import { SEEllipse } from "@/models/SEEllipse";
+import { SEAngleMarker } from "@/models/SEAngleMarker";
 
 export class RotationVisitor implements Visitor {
   private transformMatrix: Matrix4 = new Matrix4();
@@ -60,5 +62,15 @@ export class RotationVisitor implements Visitor {
     this.tmpVector.copy(l.locationVector); // Copy the old vector location of the SEPoint
     this.tmpVector.applyMatrix4(this.transformMatrix); // Apply the matrix
     l.labelDirectLocationSetter(this.tmpVector); // Set the new position vector directly because the parent might be out of date
+  }
+
+  // eslint-disable-next-line
+  actionOnEllipse(e: SEEllipse): void {
+    //Ellipses are completely determined by three points they depend on so no need to update them
+  }
+
+  // eslint-disable-next-line
+  actionOnAngleMarker(a: SEAngleMarker): void {
+    //AngleMarekrs are completely determined by their parents so no need to update them
   }
 }

@@ -9,6 +9,7 @@ import { SESegment } from "@/models/SESegment";
 import { SECircle } from "@/models/SECircle";
 import AppStore from "@/store";
 import { SEAngleMarker } from "@/models/SEAngleMarker";
+import { SEEllipse } from "@/models/SEEllipse";
 
 export default abstract class Highlighter extends MouseHandler {
   /**
@@ -47,6 +48,7 @@ export default abstract class Highlighter extends MouseHandler {
     this.hitSELines.clear();
     this.hitSESegments.clear();
     this.hitSECircles.clear();
+    this.hitSEEllipses.clear();
     this.hitSELabels.clear();
     this.hitSEAngleMarkers.clear();
     this.infoText.hide();
@@ -87,6 +89,10 @@ export default abstract class Highlighter extends MouseHandler {
       .filter(obj => obj instanceof SECircle)
       .map(obj => obj as SECircle);
 
+    this.hitSEEllipses = this.hitSENodules
+      .filter(obj => obj instanceof SEEllipse)
+      .map(obj => obj as SEEllipse);
+
     this.hitSELabels = this.hitSENodules
       .filter(obj => obj instanceof SELabel)
       .map(obj => obj as SELabel);
@@ -101,6 +107,7 @@ export default abstract class Highlighter extends MouseHandler {
       ...this.hitSELines,
       ...this.hitSESegments,
       ...this.hitSECircles,
+      ...this.hitSEEllipses,
       ...this.hitSEAngleMarkers
     ]
       .map(n => n.name)

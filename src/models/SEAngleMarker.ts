@@ -1131,7 +1131,7 @@ export class SEAngleMarker extends SEMeasurement
   }
 
   accept(v: Visitor): void {
-    // v.actionOnAngleMarker(this);
+    v.actionOnAngleMarker(this);
   }
 
   /**
