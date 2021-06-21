@@ -77,10 +77,12 @@
 
 <script lang="ts">
 import { Component, Vue, Prop } from "vue-property-decorator";
-import { State, Mutation } from "vuex-class";
 import { AppState, SphericalConstruction } from "@/types";
 import { FirebaseAuth } from "node_modules/@firebase/auth-types";
 import { Matrix4 } from "three";
+import { namespace } from "vuex-class";
+import { SEStore } from "@/store";
+const SE = namespace("se");
 
 @Component
 export default class extends Vue {
@@ -91,13 +93,11 @@ export default class extends Vue {
   @Prop({ default: false })
   allowSharing!: boolean;
 
-  @State((s: AppState) => s.svgCanvas)
+  @SE.State((s: AppState) => s.svgCanvas)
   readonly svgCanvas!: HTMLDivElement | null;
 
-  @State((s: AppState) => s.inverseTotalRotationMatrix)
+  @SE.State((s: AppState) => s.inverseTotalRotationMatrix)
   readonly inverseTotalRotationMatrix!: Matrix4;
-
-  @Mutation setInverseRotationMatrix!: (_: Matrix4) => void;
 
   svgParent: HTMLDivElement | null = null;
   svgRoot!: SVGElement;
@@ -159,7 +159,7 @@ export default class extends Vue {
       this.svgParent.firstChild as SVGElement
     );
     // Restore the rotation matrix
-    this.setInverseRotationMatrix(this.originalSphereMatrix);
+    SEStore.setInverseRotationMatrix(this.originalSphereMatrix);
   }
 }
 </script>

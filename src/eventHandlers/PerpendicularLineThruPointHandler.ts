@@ -27,7 +27,7 @@ import { SEPointOnOneDimensional } from "@/models/SEPointOnOneDimensional";
 import { AddPointCommand } from "@/commands/AddPointCommand";
 import { ConvertInterPtToUserCreatedCommand } from "@/commands/ConvertInterPtToUserCreatedCommand";
 import EventBus from "./EventBus";
-import { StoreModule } from "@/store";
+import { SEStore } from "@/store";
 
 export default class PerpendicularLineThruPointHandler extends Highlighter {
   /**
@@ -77,13 +77,13 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
     // Create and style the temporary line
     this.tempLine = new Line();
     this.tempLine.stylize(DisplayStyle.ApplyTemporaryVariables);
-    StoreModule.addTemporaryNodule(this.tempLine);
+    SEStore.addTemporaryNodule(this.tempLine);
     this.temporaryLineAdded = false;
 
     // Create and style the temporary point marking the point on the perpendicular being created
     this.temporaryPointMarker = new Point();
     this.temporaryPointMarker.stylize(DisplayStyle.ApplyTemporaryVariables);
-    StoreModule.addTemporaryNodule(this.temporaryPointMarker);
+    SEStore.addTemporaryNodule(this.temporaryPointMarker);
     this.temporaryPointAdded = false;
   }
 
@@ -580,7 +580,7 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
     // First we have to create a plottable point because we can't create a SEPoint with out a plottable one
     const plottableEndPoint = new NonFreePoint();
     // The endSEPoint is never shown and can never be selected (so it is never added to the store via Command.store.addPoint).
-    // The endSEPoint is also never added to the object tree structure (via un/registrerChild) because it is
+    // The endSEPoint is also never added to the object tree structure (via un/registerChild) because it is
     // updated when the the new SEPerpendicularLineThruPoint is updated.
     const endSEPoint = new SEPoint(plottableEndPoint);
     endSEPoint.showing = false; // this never changes
@@ -631,9 +631,8 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
     );
 
     // Determine all new intersection points and add their creation to the command so it can be undone
-    this.store.getters
-      .createAllIntersectionsWithLine(newPerpLine)
-      .forEach((item: SEIntersectionReturnType) => {
+    SEStore.createAllIntersectionsWithLine(newPerpLine).forEach(
+      (item: SEIntersectionReturnType) => {
         // Create the plottable label
         const newLabel = new Label();
         const newSELabel = new SELabel(newLabel, item.SEIntersectionPoint);
@@ -660,13 +659,14 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
         );
         item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points
         newSELabel.showing = false;
-      });
+      }
+    );
     addPerpendicularLineGroup.execute();
   }
   activate(): void {
-    if (this.store.state.selectedSENodules.length == 2) {
-      const object1 = this.store.state.selectedSENodules[0];
-      const object2 = this.store.state.selectedSENodules[1];
+    if (SEStore.selectedSENodules.length == 2) {
+      const object1 = SEStore.selectedSENodules[0];
+      const object2 = SEStore.selectedSENodules[1];
 
       if (object1.isOneDimensional() && object2.isPoint()) {
         if (

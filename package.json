@@ -20,7 +20,6 @@
     "@types/color": "^3.0.1",
     "axios": "^0.19.2",
     "core-js": "^3.6.4",
-    "direct-vuex": "^0.12.1",
     "firebase": "^8.6.2",
     "markdown-it-texmath": "^0.7.2",
     "moment": "^2.26.0",

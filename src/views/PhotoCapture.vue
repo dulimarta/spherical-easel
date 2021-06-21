@@ -48,13 +48,12 @@
 // Reference: https://webrtc.github.io/samples/
 // import VueComponent from "vue";
 import { Component, Vue } from "vue-property-decorator";
-import { Mutation } from "vuex-class";
 import { FirebaseStorage } from "@firebase/storage-types";
 import { FirebaseFirestore } from "@firebase/firestore-types";
 import { FirebaseAuth } from "@firebase/auth-types";
 import { Route } from "vue-router";
 import EventBus from "@/eventHandlers/EventBus";
-
+import { SEStore } from "@/store";
 @Component
 export default class PhotoCapture extends Vue {
   $refs!: {
@@ -64,8 +63,6 @@ export default class PhotoCapture extends Vue {
   readonly $appDB!: FirebaseFirestore;
   readonly $appAuth!: FirebaseAuth;
   readonly $appStorage!: FirebaseStorage;
-
-  @Mutation setTemporaryProfilePicture!: (_: string) => void;
 
   hasCamera = false;
   stream: MediaStream | null = null;
@@ -144,7 +141,7 @@ export default class PhotoCapture extends Vue {
     const imageHex = this.$refs.canvas.toDataURL("image/png");
     this.imageData = imageHex;
     // this.stopCamera();
-    this.setTemporaryProfilePicture(imageHex);
+    SEStore.setTemporaryProfilePicture(imageHex);
     this.$router.push({
       name: "PhotoCropper"
     });

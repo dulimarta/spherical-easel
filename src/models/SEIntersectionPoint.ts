@@ -1,10 +1,9 @@
 import { SEPoint } from "./SEPoint";
 import Point from "@/plottables/Point";
 import { IntersectionReturnType } from "@/types";
-import store from "@/store";
 import { SEOneDimensional } from "@/types";
 import { UpdateMode, UpdateStateType, PointState } from "@/types";
-
+import { intersectTwoObjects } from "@/utils/intersections";
 export class SEIntersectionPoint extends SEPoint {
   /**
    * This flag is true if the user created this point
@@ -85,7 +84,7 @@ export class SEIntersectionPoint extends SEPoint {
     if (this._exists) {
       //console.debug("Updating SEIntersectionPoint", this.name);
       // The objects are in the correct order because the SEIntersectionPoint parents are assigned that way
-      const updatedIntersectionInfo: IntersectionReturnType[] = store.getters.intersectTwoObjects(
+      const updatedIntersectionInfo: IntersectionReturnType[] = intersectTwoObjects(
         this.seParent1,
         this.seParent2
       );

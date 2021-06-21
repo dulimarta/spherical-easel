@@ -9,9 +9,7 @@
  * the actual action of the command.
  */
 
-// import { Store } from "vuex";
-// import { AppState } from "@/types";
-import { StoreModule } from "@/store";
+import { SEStore } from "@/store";
 import EventBus from "@/eventHandlers/EventBus";
 import { SEPoint } from "@/models/SEPoint";
 import { SELabel } from "@/models/SELabel";
@@ -21,7 +19,7 @@ import Label from "@/plottables/Label";
 import SETTINGS from "@/global-settings";
 import { Vector3 } from "three";
 export abstract class Command {
-  protected static store = StoreModule;
+  protected static store = SEStore;
 
   //#region commmandArrays
   static commandHistory: Command[] = []; // stack of executed commands

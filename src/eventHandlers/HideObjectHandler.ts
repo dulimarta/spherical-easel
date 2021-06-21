@@ -5,17 +5,13 @@ import { SetNoduleDisplayCommand } from "@/commands/SetNoduleDisplayCommand";
 import { SEPoint } from "@/models/SEPoint";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import { CommandGroup } from "@/commands/CommandGroup";
-import AppStore from "@/store";
+import { SEStore } from "@/store";
 
 export default class HideObjectHandler extends Highlighter {
   /**
    * Object to hide - the victim!
    */
   private victim: SENodule | null = null;
-  /**
-   * The Global Vuex Store
-   */
-  protected static store = AppStore;
 
   constructor(layers: Two.Group[]) {
     super(layers);
@@ -86,7 +82,7 @@ export default class HideObjectHandler extends Highlighter {
   activate(): void {
     // Hide all selected objects
     const hideCommandGroup = new CommandGroup();
-    this.store.state.selectedSENodules
+    SEStore.selectedSENodules
       .filter(
         (object: SENodule) =>
           !(object instanceof SEIntersectionPoint) ||

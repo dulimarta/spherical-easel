@@ -14,7 +14,7 @@ import { CommandGroup } from "@/commands/CommandGroup";
 import { StyleNoduleCommand } from "@/commands/StyleNoduleCommand";
 import { StyleEditPanels } from "@/types/Styles";
 import { UpdateMode } from "@/types";
-
+import { SEStore } from "@/store";
 export default class PointCoordinateHandler extends Highlighter {
   /**
    * Point to inspect its coordinate
@@ -130,7 +130,7 @@ export default class PointCoordinateHandler extends Highlighter {
   }
   activate(): void {
     // only add the measurements if the ONLY type of selected objects are SEPoints that are user created
-    const onlySEPointsSelected = this.store.state.selectedSENodules.every(
+    const onlySEPointsSelected = SEStore.selectedSENodules.every(
       object =>
         object instanceof SEPoint &&
         !(
@@ -141,10 +141,10 @@ export default class PointCoordinateHandler extends Highlighter {
 
     if (
       onlySEPointsSelected &&
-      this.store.state.selectedSENodules.length > 0 // if selectedSENodules is empty then onlySEPointsSelected is true
+      SEStore.selectedSENodules.length > 0 // if selectedSENodules is empty then onlySEPointsSelected is true
     ) {
       const coordinatizeCommandGroup = new CommandGroup();
-      this.store.state.selectedSENodules
+      SEStore.selectedSENodules
         .filter(
           (object: SENodule) =>
             object instanceof SEPoint &&

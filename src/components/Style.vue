@@ -115,18 +115,17 @@ import SETTINGS from "@/global-settings";
 import { StyleEditPanels } from "@/types/Styles";
 import { hslaColorType, AppState, Labelable } from "@/types";
 import { SENodule } from "@/models/SENodule";
-import { State } from "vuex-class";
 import { CommandGroup } from "@/commands/CommandGroup";
 import { SetNoduleDisplayCommand } from "@/commands/SetNoduleDisplayCommand";
-import Label from "@/plottables/Label";
-import { SELabel } from "@/models/SELabel";
+import { namespace } from "vuex-class";
+const SE = namespace("se");
 
 @Component({ components: { BasicFrontBackStyle, OverlayWithFixButton } })
 export default class Style extends Vue {
   @Prop()
   readonly minified!: boolean;
 
-  @State((s: AppState) => s.selectedSENodules)
+  @SE.State((s: AppState) => s.selectedSENodules)
   readonly selectedSENodules!: SENodule[];
 
   readonly toolTipOpenDelay = SETTINGS.toolTip.openDelay;

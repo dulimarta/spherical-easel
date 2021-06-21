@@ -6,11 +6,10 @@ import { SEPoint } from "@/models/SEPoint";
 import Highlighter from "./Highlighter";
 import SETTINGS from "@/global-settings";
 import { Vector3 } from "three";
-import { StoreModule } from "@/store";
+import { SEStore } from "@/store";
 // import { SEPoint } from "@/models/SEPoint";
 // import { SELine } from "@/models/SELine";
 // import { SESegment } from "@/models/SESegment";
-
 export default class SelectionHandler extends Highlighter {
   /**
    * An array of the selected objects.  These objects should stay highlighted/selected until either this
@@ -39,7 +38,7 @@ export default class SelectionHandler extends Highlighter {
     this.keyPressSelection.clear();
     // Get all SEPoints
     if (keyEvent.key.match("p")) {
-      this.store.state.sePoints
+      SEStore.sePoints
         .filter(
           (n: any) =>
             !(n instanceof SEIntersectionPoint && !n.isUserCreated) && n.showing
@@ -51,7 +50,7 @@ export default class SelectionHandler extends Highlighter {
     }
     // Get all SECircles
     if (keyEvent.key.match("c")) {
-      this.store.state.seCircles
+      SEStore.seCircles
         .filter((n: any) => n.showing) //no hidden circles allowed
         .forEach((n: any) => {
           this.keyPressSelection.push(n);
@@ -60,7 +59,7 @@ export default class SelectionHandler extends Highlighter {
     }
     // Get all SELines
     if (keyEvent.key.match("l")) {
-      this.store.state.seLines
+      SEStore.seLines
         .filter((n: any) => n.showing) //no hidden lines allowed
         .forEach((n: any) => {
           this.keyPressSelection.push(n);
@@ -69,7 +68,7 @@ export default class SelectionHandler extends Highlighter {
     }
     // Get all SESegments
     if (keyEvent.key.match("s")) {
-      this.store.state.seSegments
+      SEStore.seSegments
         .filter((n: any) => n.showing) //no hidden segments allowed
         .forEach((n: any) => {
           this.keyPressSelection.push(n);
@@ -78,7 +77,7 @@ export default class SelectionHandler extends Highlighter {
     }
     // Get all SEAngleMarkers
     if (keyEvent.key.match("a")) {
-      this.store.state.seAngleMarkers
+      SEStore.seAngleMarkers
         .filter((n: any) => n.showing) //no hidden labels allowed
         .forEach((n: any) => {
           this.keyPressSelection.push(n);
@@ -179,19 +178,20 @@ export default class SelectionHandler extends Highlighter {
             this.currentSphereVector.y,
             -1 * this.currentSphereVector.z
           );
-          const hitSENodules = this.store.getters
-            .findNearbySENodules(sphereVec, this.currentScreenVector)
-            .filter((n: SENodule) => {
-              if (n instanceof SEIntersectionPoint) {
-                if (!n.isUserCreated) {
-                  return n.exists; //You always hit automatically created intersection points if it exists
-                } else {
-                  return n.showing && n.exists; //You can't hit hidden objects or items that don't exist
-                }
+          const hitSENodules = SEStore.findNearbySENodules(
+            sphereVec,
+            this.currentScreenVector
+          ).filter((n: SENodule) => {
+            if (n instanceof SEIntersectionPoint) {
+              if (!n.isUserCreated) {
+                return n.exists; //You always hit automatically created intersection points if it exists
               } else {
                 return n.showing && n.exists; //You can't hit hidden objects or items that don't exist
               }
-            });
+            } else {
+              return n.showing && n.exists; //You can't hit hidden objects or items that don't exist
+            }
+          });
           // if the user is not pressing the shift key and there is a nearby object on the back of the sphere, send alert
           if (!event.shiftKey && hitSENodules.length > 0) {
             EventBus.fire("show-alert", {
@@ -203,15 +203,15 @@ export default class SelectionHandler extends Highlighter {
         }
       }
     }
-    StoreModule.setSelectedSENodules(this.currentSelection);
-    console.log("number selected", StoreModule.selectedSENodules.length);
+    SEStore.setSelectedSENodules(this.currentSelection);
+    console.log("number selected", SEStore.selectedSENodules.length);
     /** 
     console.log("----selected---- objects------");
     this.currentSelection.forEach(n =>
       console.log("hit object", n.name, n.selected)
     );
     **/
-    if (this.store.state.selectedSENodules.length === 0) {
+    if (SEStore.selectedSENodules.length === 0) {
       EventBus.fire("show-alert", {
         key: `handlers.selectionUpdateNothingSelected`,
         keyOptions: {},
@@ -221,7 +221,7 @@ export default class SelectionHandler extends Highlighter {
       EventBus.fire("show-alert", {
         key: `handlers.selectionUpdate`,
         keyOptions: {
-          number: `${this.store.state.selectedSENodules.length}`
+          number: `${SEStore.selectedSENodules.length}`
         },
         type: "success"
       });

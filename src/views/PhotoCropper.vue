@@ -31,14 +31,15 @@ import { Cropper as ImageCropper, CircleStencil } from "vue-advanced-cropper";
 import "vue-advanced-cropper/dist/style.css";
 
 import { Component, Vue, Watch, Prop } from "vue-property-decorator";
-import { State, Mutation } from "vuex-class";
+import { namespace } from "vuex-class";
 import { Route } from "vue-router";
 import { FirebaseStorage, UploadTaskSnapshot } from "@firebase/storage-types";
 import { FirebaseFirestore } from "@firebase/firestore-types";
 import { FirebaseAuth } from "@firebase/auth-types";
 import EventBus from "@/eventHandlers/EventBus";
 import { AppState } from "@/types";
-
+import { SEStore } from "@/store";
+const SE = namespace("se");
 type CropDetails = {
   canvas: HTMLCanvasElement;
   imageTransforms: any;
@@ -56,10 +57,8 @@ export default class PhotoCropper extends Vue {
   readonly $appAuth!: FirebaseAuth;
   readonly $appStorage!: FirebaseStorage;
 
-  @State((s: AppState) => s.temporaryProfilePicture)
+  @SE.State((s: AppState) => s.temporaryProfilePicture)
   readonly temporaryProfilePicture!: string;
-
-  @Mutation setTemporaryProfilePicture!: (_: string) => void;
 
   inputImageBinary: ImageBitmap | null = null;
   croppedImageBase64 = "";
@@ -139,7 +138,7 @@ export default class PhotoCropper extends Vue {
             key: "Profile picture is saved to Firebase",
             type: "info"
           });
-          this.setTemporaryProfilePicture("");
+          SEStore.setTemporaryProfilePicture("");
         })
         .catch((err: any) => {
           EventBus.fire("show-alert", {
@@ -150,7 +149,7 @@ export default class PhotoCropper extends Vue {
     }
   }
   cancelCrop(): void {
-    this.setTemporaryProfilePicture("");
+    SEStore.setTemporaryProfilePicture("");
     this.$emit("no-capture", {});
     this.$router.go(-this.goBackSteps);
   }

@@ -50,7 +50,6 @@
 </template>
 <script lang="ts">
 import Vue from "vue";
-import { State } from "vuex-class";
 import Component from "vue-class-component";
 import { AppState, UpdateMode } from "@/types";
 import { SEMeasurement } from "@/models/SEMeasurement";
@@ -58,10 +57,12 @@ import { SECalculation } from "@/models/SECalculation";
 import { AddCalculationCommand } from "@/commands/AddCalculationCommand";
 import { ExpressionParser } from "@/expression/ExpressionParser";
 import EventBus from "@/eventHandlers/EventBus";
+import { namespace } from "vuex-class";
+const SE = namespace("se");
 
 @Component({})
 export default class ExpressionForm extends Vue {
-  @State((s: AppState) => s.expressions)
+  @SE.State((s: AppState) => s.expressions)
   readonly expressions!: SEMeasurement[];
 
   private parser = new ExpressionParser();

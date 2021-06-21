@@ -33,18 +33,16 @@
 
 <script lang="ts">
 import { Component, Vue } from "vue-property-decorator";
-import { Mutation } from "vuex-class";
 import { FirebaseAuth } from "@firebase/auth-types";
 import { FirebaseFirestore, DocumentSnapshot } from "@firebase/firestore-types";
 import { UserProfile } from "@/types";
+import { SEStore } from "@/store";
 type FileEvent = EventTarget & { files: FileList | undefined };
 
 @Component
 export default class extends Vue {
   readonly $appAuth!: FirebaseAuth;
   readonly $appDB!: FirebaseFirestore;
-
-  @Mutation setTemporaryProfilePicture!: (_: string) => void;
 
   profileImage: string | null = null;
 
@@ -75,7 +73,7 @@ export default class extends Vue {
       const reader = new FileReader();
       reader.onload = (ev: ProgressEvent) => {
         const imageBase64 = (ev.target as any).result;
-        this.setTemporaryProfilePicture(imageBase64);
+        SEStore.setTemporaryProfilePicture(imageBase64);
         this.$router.push({
           name: "PhotoCropper"
         });

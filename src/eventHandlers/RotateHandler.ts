@@ -7,6 +7,7 @@ import SETTINGS from "@/global-settings";
 import { SEPoint } from "@/models/SEPoint";
 import { SELine } from "@/models/SELine";
 import { SESegment } from "@/models/SESegment";
+import { SEStore } from "@/store";
 
 const desiredZAxis = new Vector3();
 const deltaT = 1000 / SETTINGS.rotate.momentum.framesPerSecond; // The momentum rotation is refreshed every deltaT milliseconds
@@ -279,8 +280,8 @@ export default class RotateHandler extends MouseHandler {
 
   activate(): void {
     // If there is exactly one SEPoint/SELine/SESegment object enter the rotateAboutPointMode
-    if (this.store.state.selectedSENodules.length == 1) {
-      const object = this.store.state.selectedSENodules[0];
+    if (SEStore.selectedSENodules.length == 1) {
+      const object = SEStore.selectedSENodules[0];
       if (object instanceof SEPoint) {
         this.axisOfRotation.copy(object.locationVector);
         this.rotateAboutPointMode = true;

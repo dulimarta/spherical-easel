@@ -385,7 +385,7 @@ import Component from "vue-class-component";
 import { Watch, Prop } from "vue-property-decorator";
 import { SENodule } from "../models/SENodule";
 import Nodule from "../plottables/Nodule";
-import { State, Getter, Mutation } from "vuex-class";
+import { namespace } from "vuex-class";
 // import AppStore from "@/store";
 import {
   Styles,
@@ -404,10 +404,11 @@ import ColorSelector from "@/components/ColorSelector.vue";
 //import { TranslateResult } from "vue-i18n";
 import i18n from "../i18n";
 import TranslateResult from "../i18n";
-import { SELabel } from "@/models/SELabel";
 import Style from "./Style.vue";
 import HintButton from "@/components/HintButton.vue";
 import OverlayWithFixButton from "@/components/OverlayWithFixButton.vue";
+import { SEStore } from "@/store";
+const SE = namespace("se");
 
 // import { getModule } from "vuex-module-decorators";
 // import UI from "@/store/ui-styles";
@@ -450,26 +451,17 @@ export default class FrontBackStyle extends Vue {
   @Prop()
   readonly activePanel!: StyleEditPanels;
 
-  @State((s: AppState) => s.selectedSENodules)
+  @SE.State((s: AppState) => s.selectedSENodules)
   readonly selectedSENodules!: SENodule[];
 
-  @State((s: AppState) => s.initialBackStyleContrast)
+  @SE.State((s: AppState) => s.initialBackStyleContrast)
   readonly initialBackStyleContrast!: number;
 
-  @State((s: AppState) => s.oldStyleSelections)
+  @SE.State((s: AppState) => s.oldStyleSelections)
   readonly oldStyleSelection!: SENodule[];
 
-  @State((s: AppState) => s.styleSavedFromPanel)
+  @SE.State((s: AppState) => s.styleSavedFromPanel)
   readonly styleSavedFromPanel!: StyleEditPanels;
-
-  @Getter getInitialStyleState!: (_: StyleEditPanels) => StyleOptions[];
-
-  @Getter getDefaultStyleState!: (_: StyleEditPanels) => StyleOptions[];
-
-  @Mutation changeStyle!: (_: any) => void;
-  @Mutation setOldStyleSelection!: (_: SENodule[]) => void;
-  @Mutation recordStyleState!: (_: any) => void;
-  @Mutation setSavedFromPanel!: (_: StyleEditPanels) => void;
 
   /**
    * These are the temp style state for the selected objects. Used to set the color/number/dash/contrast selectors when the user disables the dynamic back styling.
@@ -684,7 +676,7 @@ export default class FrontBackStyle extends Vue {
     this.disableDashPatternUndoButton = false;
     this.gapLength = this.sliderDashArray[0];
     this.dashLength = this.sliderDashArray[1] - this.sliderDashArray[0];
-    this.changeStyle({
+    SEStore.changeStyle({
       selected: this.selectedSENodules,
       payload: {
         panel: this.panel,
@@ -698,14 +690,14 @@ export default class FrontBackStyle extends Vue {
   clearRecentDashPatternChanges(): void {
     this.disableDashPatternUndoButton = true;
     const selected = this.selectedSENodules;
-    const initialStyleStates = this.getInitialStyleState(this.panel);
+    const initialStyleStates = SEStore.getInitialStyleState(this.panel);
     for (let i = 0; i < selected.length; i++) {
       // Check see if the initialStylesStates[i] exist and has length >0
       if (
         initialStyleStates[i].dashArray &&
         (initialStyleStates[i].dashArray as number[]).length > 0
       ) {
-        this.changeStyle({
+        SEStore.changeStyle({
           selected: [selected[i]],
           payload: {
             panel: this.panel,
@@ -717,7 +709,7 @@ export default class FrontBackStyle extends Vue {
         });
       } else if (initialStyleStates[i].dashArray) {
         // The selected [i] exists and the array is empty
-        this.changeStyle({
+        SEStore.changeStyle({
           selected: [selected[i]],
           payload: {
             panel: this.panel,
@@ -730,14 +722,14 @@ export default class FrontBackStyle extends Vue {
   }
   resetDashPatternToDefaults(): void {
     const selected = this.selectedSENodules;
-    const defaultStyleStates = this.getDefaultStyleState(this.panel);
+    const defaultStyleStates = SEStore.getDefaultStyleState(this.panel);
     for (let i = 0; i < selected.length; i++) {
       // Check see if the selected[i] exist and has length >0
       if (
         defaultStyleStates[i].dashArray &&
         (defaultStyleStates[i].dashArray as number[]).length > 0
       ) {
-        this.changeStyle({
+        SEStore.changeStyle({
           selected: [selected[i]],
           payload: {
             panel: this.panel,
@@ -749,7 +741,7 @@ export default class FrontBackStyle extends Vue {
         });
       } else if (defaultStyleStates[i].dashArray) {
         // The selected [i] exists and the array is empty
-        this.changeStyle({
+        SEStore.changeStyle({
           selected: [selected[i]],
           payload: {
             panel: this.panel,
@@ -768,7 +760,7 @@ export default class FrontBackStyle extends Vue {
         (this.dashLength as number) + (this.gapLength as number)
       );
 
-      this.changeStyle({
+      SEStore.changeStyle({
         selected: this.selectedSENodules,
         payload: {
           panel: this.panel,
@@ -776,7 +768,7 @@ export default class FrontBackStyle extends Vue {
         }
       });
     } else {
-      this.changeStyle({
+      SEStore.changeStyle({
         selected: this.selectedSENodules,
         payload: {
           panel: this.panel,
@@ -800,7 +792,7 @@ export default class FrontBackStyle extends Vue {
       this.gapLength = this.sliderDashArray[0];
       this.dashLength = this.sliderDashArray[1] - this.sliderDashArray[0];
 
-      this.changeStyle({
+      SEStore.changeStyle({
         selected: this.selectedSENodules,
         payload: {
           panel: this.panel,
@@ -821,7 +813,7 @@ export default class FrontBackStyle extends Vue {
       this.gapLength = this.sliderDashArray[0];
       this.dashLength = this.sliderDashArray[1] - this.sliderDashArray[0];
 
-      this.changeStyle({
+      SEStore.changeStyle({
         selected: this.selectedSENodules,
         payload: {
           panel: this.panel,
@@ -900,7 +892,7 @@ export default class FrontBackStyle extends Vue {
   // These methods are linked to the usingDynamicBackStyle fade-in-card
   onBackStyleContrastChange(): void {
     this.disableBackStyleContrastUndoButton = false;
-    this.changeStyle({
+    SEStore.changeStyle({
       selected: this.selectedSENodules,
       payload: {
         panel: this.panel,
@@ -915,10 +907,10 @@ export default class FrontBackStyle extends Vue {
   clearRecentDynamicBackStyleChanges(): void {
     this.disableBackStyleContrastUndoButton = true;
     const selected = this.selectedSENodules;
-    const initialStyleStates = this.getInitialStyleState(this.panel);
+    const initialStyleStates = SEStore.getInitialStyleState(this.panel);
     const initialBackStyleContrast = this.initialBackStyleContrast;
     for (let i = 0; i < selected.length; i++) {
-      this.changeStyle({
+      SEStore.changeStyle({
         selected: [selected[i]],
         payload: {
           panel: this.panel,
@@ -931,9 +923,9 @@ export default class FrontBackStyle extends Vue {
   }
   resetDynamicBackStyleToDefaults(): void {
     const selected = this.selectedSENodules;
-    const defaultStyleStates = this.getDefaultStyleState(this.panel);
+    const defaultStyleStates = SEStore.getDefaultStyleState(this.panel);
     for (let i = 0; i < selected.length; i++) {
-      this.changeStyle({
+      SEStore.changeStyle({
         selected: [selected[i]],
         payload: {
           panel: this.panel,
@@ -949,7 +941,7 @@ export default class FrontBackStyle extends Vue {
     this.usingDynamicBackStyleAgreement = true;
     this.usingDynamicBackStyleCommonValue = this.usingDynamicBackStyle;
 
-    this.changeStyle({
+    SEStore.changeStyle({
       selected: this.selectedSENodules,
       payload: {
         panel: this.panel,
@@ -974,7 +966,7 @@ export default class FrontBackStyle extends Vue {
     ) {
       this.disableBackStyleContrastUndoButton = false;
       this.backStyleContrast += 0.1;
-      this.changeStyle({
+      SEStore.changeStyle({
         selected: this.selectedSENodules,
         payload: {
           panel: this.panel,
@@ -990,7 +982,7 @@ export default class FrontBackStyle extends Vue {
     ) {
       this.disableBackStyleContrastUndoButton = false;
       this.backStyleContrast -= 0.1;
-      this.changeStyle({
+      SEStore.changeStyle({
         selected: this.selectedSENodules,
         payload: {
           panel: this.panel,
@@ -1039,10 +1031,12 @@ export default class FrontBackStyle extends Vue {
   // These methods are linked to the angle marker decoration fade-in-card
   resetAngleMarkerDecorationsToDefaults(): void {
     const selected = this.selectedSENodules;
-    const defaultStyleStates = this.getDefaultStyleState(StyleEditPanels.Front);
+    const defaultStyleStates = SEStore.getDefaultStyleState(
+      StyleEditPanels.Front
+    );
 
     for (let i = 0; i < selected.length; i++) {
-      this.changeStyle({
+      SEStore.changeStyle({
         selected: [selected[i]],
         payload: {
           panel: StyleEditPanels.Front,
@@ -1056,9 +1050,11 @@ export default class FrontBackStyle extends Vue {
   clearAngleMarkerDecorations(): void {
     const selected = this.selectedSENodules;
 
-    const initialStyleStates = this.getInitialStyleState(StyleEditPanels.Label);
+    const initialStyleStates = SEStore.getInitialStyleState(
+      StyleEditPanels.Label
+    );
     for (let i = 0; i < selected.length; i++) {
-      this.changeStyle({
+      SEStore.changeStyle({
         selected: [selected[i]],
         payload: {
           panel: StyleEditPanels.Front,
@@ -1085,7 +1081,7 @@ export default class FrontBackStyle extends Vue {
 
     // if there has been some change then change the style
     if (this.angleMarkerDecorationChange) {
-      this.changeStyle({
+      SEStore.changeStyle({
         selected: selected,
         payload: {
           panel: StyleEditPanels.Front,
@@ -1217,12 +1213,12 @@ export default class FrontBackStyle extends Vue {
       //totally disable the selectors in this component
       this.disableDashPatternSelector(true);
       this.disableDynamicBackStyleSelector(true);
-      this.setOldStyleSelection([]);
+      SEStore.setOldStyleSelection([]);
       return;
     }
 
     // record the new selections in the old
-    this.setOldStyleSelection([]);
+    SEStore.setOldStyleSelection([]);
     const oldSelection = this.oldStyleSelection;
     newSelection.forEach(obj => oldSelection.push(obj));
 
@@ -1239,17 +1235,17 @@ export default class FrontBackStyle extends Vue {
     // Put this in the store so that it is availble to *all* panels. Get the front and back information at the same time.
 
     //#region setStyle
-    this.recordStyleState({
+    SEStore.recordStyleState({
       selected: newSelection,
       backContrast: Nodule.getBackStyleContrast()
     });
     //#endregion setStyle
 
-    this.setSavedFromPanel(this.panel);
+    SEStore.setSavedFromPanel(this.panel);
     //Set the initial state of the fade-in-card/selectors (checking to see if the property is the same across all selected objects)
-    this.setDashPatternSelectorState(this.getInitialStyleState(this.panel));
+    this.setDashPatternSelectorState(SEStore.getInitialStyleState(this.panel));
     this.setDynamicBackStyleSelectorState(
-      this.getInitialStyleState(this.panel)
+      SEStore.getInitialStyleState(this.panel)
     );
   }
   saveStyleState(): void {
@@ -1266,7 +1262,7 @@ export default class FrontBackStyle extends Vue {
             seNodule.ref.currentStyleState(this.styleSavedFromPanel)
           );
       });
-      const initialStyleStates = this.getInitialStyleState(
+      const initialStyleStates = SEStore.getInitialStyleState(
         this.styleSavedFromPanel
       );
       const initialBackStyleContrast = this.initialBackStyleContrast;
@@ -1289,7 +1285,7 @@ export default class FrontBackStyle extends Vue {
         ).push();
       }
       // clear the old selection so that this save style state will not be executed again until changes are made.
-      this.setOldStyleSelection([]);
+      SEStore.setOldStyleSelection([]);
     }
   }
 

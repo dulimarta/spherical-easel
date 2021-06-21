@@ -235,8 +235,7 @@ import Component from "vue-class-component";
 import { Watch, Prop } from "vue-property-decorator";
 import { SENodule } from "../models/SENodule";
 import Nodule from "../plottables/Nodule";
-import { State, Getter, Mutation } from "vuex-class";
-// import AppStore from "@/store";
+import { namespace } from "vuex-class";
 import {
   Styles,
   StyleOptions,
@@ -255,8 +254,9 @@ import i18n from "../i18n";
 import Style from "./Style.vue";
 import HintButton from "@/components/HintButton.vue";
 import OverlayWithFixButton from "@/components/OverlayWithFixButton.vue";
+import { SEStore } from "@/store";
+const SE = namespace("se");
 
-// import { getModule } from "vuex-module-decorators";
 // import UI from "@/store/ui-styles";
 type labelDisplayModeItem = {
   text: any; //typeof VueI18n.TranslateResult
@@ -296,25 +296,17 @@ export default class LabelStyle extends Vue {
   @Prop()
   readonly activePanel!: StyleEditPanels;
 
-  @State((s: AppState) => s.selectedSENodules)
+  @SE.State((s: AppState) => s.selectedSENodules)
   readonly selectedSENodules!: SENodule[];
 
-  @State((s: AppState) => s.oldStyleSelections)
+  @SE.State((s: AppState) => s.oldStyleSelections)
   readonly oldStyleSelection!: SENodule[];
 
-  @State((s: AppState) => s.styleSavedFromPanel)
+  @SE.State((s: AppState) => s.styleSavedFromPanel)
   readonly styleSavedFromPanel!: StyleEditPanels;
 
-  @State((s: AppState) => s.initialBackStyleContrast)
+  @SE.State((s: AppState) => s.initialBackStyleContrast)
   readonly initialBackStyleContrast!: number;
-
-  @Mutation setOldStyleSelection!: (_: SENodule[]) => void;
-  @Mutation setSavedFromPanel!: (_: StyleEditPanels) => void;
-  @Mutation changeStyle!: (_: any) => void;
-  @Mutation recordStyleState!: (_: any) => void;
-
-  @Getter getInitialStyleState!: (_: StyleEditPanels) => StyleOptions[];
-  @Getter getDefaultStyleState!: (_: StyleEditPanels) => StyleOptions[];
 
   /**
    * These are the temp style state for the selected objects. Used to set the color/number/dash/contrast selectors when the user disables the dynamic back styling.
@@ -605,10 +597,12 @@ export default class LabelStyle extends Vue {
       selected.push(((node as unknown) as Labelable).label!);
     });
 
-    const defaultStyleStates = this.getDefaultStyleState(StyleEditPanels.Label);
+    const defaultStyleStates = SEStore.getDefaultStyleState(
+      StyleEditPanels.Label
+    );
 
     for (let i = 0; i < selected.length; i++) {
-      this.changeStyle({
+      SEStore.changeStyle({
         selected: [selected[i]],
         payload: {
           panel: StyleEditPanels.Label,
@@ -631,9 +625,11 @@ export default class LabelStyle extends Vue {
       selected.push(((node as unknown) as Labelable).label!);
     });
 
-    const initialStyleStates = this.getInitialStyleState(StyleEditPanels.Label);
+    const initialStyleStates = SEStore.getInitialStyleState(
+      StyleEditPanels.Label
+    );
     for (let i = 0; i < selected.length; i++) {
-      this.changeStyle({
+      SEStore.changeStyle({
         selected: [selected[i]],
         payload: {
           panel: StyleEditPanels.Label,
@@ -661,7 +657,7 @@ export default class LabelStyle extends Vue {
       this.labelDisplayText !== undefined &&
       this.labelDisplayText.trim().length === 0
     ) {
-      const defaultStyleStates = this.getDefaultStyleState(
+      const defaultStyleStates = SEStore.getDefaultStyleState(
         StyleEditPanels.Label
       );
       const translation = i18n.t("style.renameLabels") as string;
@@ -670,7 +666,7 @@ export default class LabelStyle extends Vue {
           ? defaultStyleStates[0].labelDisplayText
           : translation;
       for (let i = 0; i < selected.length; i++) {
-        this.changeStyle({
+        SEStore.changeStyle({
           selected: [selected[i]],
           payload: {
             panel: StyleEditPanels.Label,
@@ -689,7 +685,7 @@ export default class LabelStyle extends Vue {
       this.labelTextStyleChange ||
       this.labelTextDecorationChange
     ) {
-      this.changeStyle({
+      SEStore.changeStyle({
         selected: selected,
         payload: {
           panel: StyleEditPanels.Label,
@@ -915,18 +911,18 @@ export default class LabelStyle extends Vue {
     if (newSelection.length === 0) {
       //totally disable the selectors in this component
       this.disableStyleDataSelector(true);
-      this.setOldStyleSelection([]);
+      SEStore.setOldStyleSelection([]);
       return;
     }
 
     // record the new selections in the old
-    this.setOldStyleSelection([]);
+    SEStore.setOldStyleSelection([]);
     // We are on the label panel so push the labels onto the oldSelections
     const oldSelection: SENodule[] = [];
     newSelection.forEach(obj =>
       oldSelection.push(((obj as unknown) as Labelable).label!)
     );
-    this.setOldStyleSelection(oldSelection);
+    SEStore.setOldStyleSelection(oldSelection);
 
     // Create a list of the common properties that the objects in the selection have.
     // commonStyleProperties is a number (corresponding to an enum) array
@@ -944,15 +940,15 @@ export default class LabelStyle extends Vue {
     // Get the initial and default style state of the object for undo/redo and buttons to revert to initial style.
     // Put this in the store so that it is availble to *all* panels. Get the front and back information at the same time.
 
-    this.recordStyleState({
+    SEStore.recordStyleState({
       selected: newSelection.map(obj => ((obj as unknown) as Labelable).label!),
       backContrast: Nodule.getBackStyleContrast()
     });
 
-    this.setSavedFromPanel(StyleEditPanels.Label);
+    SEStore.setSavedFromPanel(StyleEditPanels.Label);
     //Set the initial state of the fade-in-card/selectors (checking to see if the property is the same across all selected objects)
     this.setStyleDataSelectorState(
-      this.getInitialStyleState(StyleEditPanels.Label)
+      SEStore.getInitialStyleState(StyleEditPanels.Label)
     );
   }
 
@@ -969,7 +965,7 @@ export default class LabelStyle extends Vue {
             seNodule.ref.currentStyleState(this.styleSavedFromPanel)
           );
       });
-      const initialStyleStates = this.getInitialStyleState(
+      const initialStyleStates = SEStore.getInitialStyleState(
         this.styleSavedFromPanel
       );
       const initialBackStyleContrast = this.initialBackStyleContrast;
@@ -992,7 +988,7 @@ export default class LabelStyle extends Vue {
         ).push();
       }
       // clear the old selection so that this save style state will not be executed again until changes are made.
-      this.setOldStyleSelection([]);
+      SEStore.setOldStyleSelection([]);
     }
   }
 

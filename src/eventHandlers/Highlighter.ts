@@ -7,14 +7,10 @@ import { SELine } from "@/models/SELine";
 import { SELabel } from "@/models/SELabel";
 import { SESegment } from "@/models/SESegment";
 import { SECircle } from "@/models/SECircle";
-import { StoreModule } from "@/store";
+import { SEStore } from "@/store";
 import { SEAngleMarker } from "@/models/SEAngleMarker";
-export default abstract class Highlighter extends MouseHandler {
-  /**
-   * The Vuex store
-   */
-  // protected static store = AppStore;
 
+export default abstract class Highlighter extends MouseHandler {
   abstract mousePressed(event: MouseEvent): void;
 
   abstract mouseReleased(event: MouseEvent): void;
@@ -22,7 +18,7 @@ export default abstract class Highlighter extends MouseHandler {
   mouseLeave(event: MouseEvent): void {
     super.mouseLeave(event);
     // call an unglow all command
-    StoreModule.unglowAllSENodules();
+    SEStore.unglowAllSENodules();
     this.infoText.hide();
   }
 
@@ -52,19 +48,20 @@ export default abstract class Highlighter extends MouseHandler {
 
     // Create an array of SENodules of all nearby objects by querying the store
     // only SENodules that exist and are showing are returned
-    this.hitSENodules = this.store.getters
-      .findNearbySENodules(this.currentSphereVector, this.currentScreenVector)
-      .filter((n: SENodule) => {
-        if (n instanceof SEIntersectionPoint) {
-          if (!n.isUserCreated) {
-            return n.exists; //You always hit automatically created intersection points if it exists
-          } else {
-            return n.showing && n.exists; //You can't hit hidden objects or items that don't exist
-          }
+    this.hitSENodules = SEStore.findNearbySENodules(
+      this.currentSphereVector,
+      this.currentScreenVector
+    ).filter((n: SENodule) => {
+      if (n instanceof SEIntersectionPoint) {
+        if (!n.isUserCreated) {
+          return n.exists; //You always hit automatically created intersection points if it exists
         } else {
           return n.showing && n.exists; //You can't hit hidden objects or items that don't exist
         }
-      });
+      } else {
+        return n.showing && n.exists; //You can't hit hidden objects or items that don't exist
+      }
+    });
 
     // Make NONE of the nearby objects by glow -- it is the job of the handler (active tool) to turn on
     // the glow of objects that the tool can interact with
@@ -118,14 +115,14 @@ export default abstract class Highlighter extends MouseHandler {
   }
 
   activate(): void {
-    this.store.state.selectedSENodules.forEach((obj: SENodule) => {
+    SEStore.selectedSENodules.forEach((obj: SENodule) => {
       obj.selected = false;
     });
     // Clear the selected objects array
-    StoreModule.setSelectedSENodules([]);
+    SEStore.setSelectedSENodules([]);
 
     // call an unglow all command
-    StoreModule.unglowAllSENodules();
+    SEStore.unglowAllSENodules();
     this.infoText.hide();
   }
 }

@@ -6,16 +6,14 @@ import Vue from "vue";
 import Component from "vue-class-component";
 import { Watch } from "vue-property-decorator";
 import { SENodule } from "../models/SENodule";
-import { State } from "vuex-class";
 import { Styles } from "../types/Styles";
 import FadeInCard from "@/components/FadeInCard.vue";
 import { AppState } from "@/types";
-// import { getModule } from "vuex-module-decorators";
-// import UI from "@/store/ui-styles";
-
+import { namespace } from "vuex-class";
+const SE = namespace("se");
 @Component({ components: { FadeInCard } })
 export default class AdvancedStyle extends Vue {
-  @State((s: AppState) => s.selectedSENodules)
+  @SE.State((s: AppState) => s.selectedSENodules)
   readonly selectedSENodules!: SENodule[];
 
   commonStyleProperties: number[] = [];

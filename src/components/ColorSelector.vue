@@ -110,7 +110,7 @@ import Vue from "vue";
 import Component from "vue-class-component";
 import { Watch, Prop, PropSync } from "vue-property-decorator";
 import SETTINGS from "@/global-settings";
-import { State, Getter, Mutation } from "vuex-class";
+import { namespace } from "vuex-class";
 import { SENodule } from "@/models/SENodule";
 import Nodule from "@/plottables/Nodule";
 import { hslaColorType, Labelable } from "@/types";
@@ -119,6 +119,8 @@ import { AppState } from "@/types";
 import HintButton from "@/components/HintButton.vue";
 import OverlayWithFixButton from "@/components/OverlayWithFixButton.vue";
 import i18n from "../i18n";
+import { SEStore } from "@/store";
+const SE = namespace("se");
 
 @Component({ components: { HintButton, OverlayWithFixButton } })
 export default class ColorSelector extends Vue {
@@ -133,14 +135,8 @@ export default class ColorSelector extends Vue {
   @Prop() readonly tempStyleStates!: StyleOptions[];
   @Prop() readonly useDynamicBackStyleFromSelector!: boolean;
 
-  @State((s: AppState) => s.selectedSENodules)
+  @SE.State((s: AppState) => s.selectedSENodules)
   readonly selectedSENodules!: SENodule[];
-
-  @Getter getInitialStyleState!: (_: StyleEditPanels) => StyleOptions[];
-  @Getter getDefaultStyleState!: (_: StyleEditPanels) => StyleOptions[];
-
-  @Mutation
-  changeStyle!: (_: any) => void;
 
   //private defaultStyleStates: StyleOptions[] = [];
 
@@ -252,7 +248,7 @@ export default class ColorSelector extends Vue {
     }
 
     if (!this.usingDynamicBackStyle && this.useDynamicBackStyleFromSelector) {
-      this.changeStyle({
+      SEStore.changeStyle({
         selected: selected,
         payload: {
           panel: this.panel,
@@ -260,7 +256,7 @@ export default class ColorSelector extends Vue {
         }
       });
     }
-    this.changeStyle({
+    SEStore.changeStyle({
       selected: selected,
       payload: {
         panel: this.panel,
@@ -288,7 +284,7 @@ export default class ColorSelector extends Vue {
     } else {
       selected.push(...this.selectedSENodules);
     }
-    this.changeStyle({
+    SEStore.changeStyle({
       selected: selected,
       payload: {
         panel: this.panel,
@@ -306,9 +302,9 @@ export default class ColorSelector extends Vue {
     } else {
       selected.push(...this.selectedSENodules);
     }
-    const initialStyleStates = this.getInitialStyleState(this.panel);
+    const initialStyleStates = SEStore.getInitialStyleState(this.panel);
     for (let i = 0; i < selected.length; i++) {
-      this.changeStyle({
+      SEStore.changeStyle({
         selected: [selected[i]],
         payload: {
           panel: this.panel,
@@ -332,9 +328,9 @@ export default class ColorSelector extends Vue {
     } else {
       selected.push(...this.selectedSENodules);
     }
-    const defaultStyleStates = this.getDefaultStyleState(this.panel);
+    const defaultStyleStates = SEStore.getDefaultStyleState(this.panel);
     for (let i = 0; i < selected.length; i++) {
-      this.changeStyle({
+      SEStore.changeStyle({
         selected: [selected[i]],
         payload: {
           panel: this.panel,
@@ -458,7 +454,7 @@ export default class ColorSelector extends Vue {
       selected.push(...this.selectedSENodules);
     }
 
-    this.changeStyle({
+    SEStore.changeStyle({
       selected: selected,
       payload: {
         panel: this.panel,
@@ -483,7 +479,7 @@ export default class ColorSelector extends Vue {
       this.disableColorSelector(true);
       return;
     }
-    this.setColorSelectorState(this.getInitialStyleState(this.panel));
+    this.setColorSelectorState(SEStore.getInitialStyleState(this.panel));
   }
 }
 </script>

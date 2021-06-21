@@ -82,12 +82,14 @@ import Component from "vue-class-component";
 import SETTINGS from "@/global-settings";
 import { Watch, Prop, PropSync } from "vue-property-decorator";
 import { StyleOptions, Styles, StyleEditPanels } from "@/types/Styles";
-import { State, Getter, Mutation } from "vuex-class";
+import { namespace } from "vuex-class";
 import { SENodule } from "@/models/SENodule";
-import { AppState, Labelable, UpdateMode } from "@/types";
+import { AppState, Labelable } from "@/types";
 import HintButton from "@/components/HintButton.vue";
 import OverlayWithFixButton from "@/components/OverlayWithFixButton.vue";
+import { SEStore } from "@/store";
 import Style from "./Style.vue";
+const SE = namespace("se");
 
 @Component({ components: { HintButton, OverlayWithFixButton } })
 export default class NumberSelector extends Vue {
@@ -106,16 +108,12 @@ export default class NumberSelector extends Vue {
   @Prop() readonly disabledValue?: boolean;
   @Prop() readonly useDynamicBackStyleFromSelector!: boolean;
 
-  @State((s: AppState) => s.selectedSENodules)
+  @SE.State((s: AppState) => s.selectedSENodules)
   readonly selectedSENodules!: SENodule[];
 
-  @State((s: AppState) => s.zoomMagnificationFactor)
+  @SE.State((s: AppState) => s.zoomMagnificationFactor)
   readonly zoomMagnificationFactor!: number;
 
-  @Getter getDefaultStyleState!: (_: StyleEditPanels) => StyleOptions[];
-  @Getter getInitialStyleState!: (_: StyleEditPanels) => StyleOptions[];
-
-  @Mutation changeStyle!: (_: any) => void;
   readonly toolTipOpenDelay = SETTINGS.toolTip.openDelay;
   readonly toolTipCloseDelay = SETTINGS.toolTip.closeDelay;
 
@@ -184,7 +182,7 @@ export default class NumberSelector extends Vue {
     }
 
     if (!this.usingDynamicBackStyle && this.useDynamicBackStyleFromSelector) {
-      this.changeStyle({
+      SEStore.changeStyle({
         selected: selected,
         payload: {
           panel: this.panel,
@@ -195,7 +193,7 @@ export default class NumberSelector extends Vue {
 
     console.log("styleName", this.styleName, "val", newData);
 
-    this.changeStyle({
+    SEStore.changeStyle({
       selected: selected,
       payload: {
         panel: this.panel,
@@ -214,9 +212,9 @@ export default class NumberSelector extends Vue {
     } else {
       selected.push(...this.selectedSENodules);
     }
-    const defaultStyleStates = this.getDefaultStyleState(this.panel);
+    const defaultStyleStates = SEStore.getDefaultStyleState(this.panel);
     for (let i = 0; i < selected.length; i++) {
-      this.changeStyle({
+      SEStore.changeStyle({
         selected: [selected[i]],
         payload: {
           panel: this.panel,
@@ -317,9 +315,9 @@ export default class NumberSelector extends Vue {
     } else {
       selected.push(...this.selectedSENodules);
     }
-    const initialStyleStates = this.getInitialStyleState(this.panel);
+    const initialStyleStates = SEStore.getInitialStyleState(this.panel);
     for (let i = 0; i < selected.length; i++) {
-      this.changeStyle({
+      SEStore.changeStyle({
         selected: [selected[i]],
         payload: {
           panel: this.panel,
@@ -365,7 +363,7 @@ export default class NumberSelector extends Vue {
     } else {
       selected.push(...this.selectedSENodules);
     }
-    this.changeStyle({
+    SEStore.changeStyle({
       selected: selected,
       payload: {
         panel: this.panel,
@@ -388,7 +386,7 @@ export default class NumberSelector extends Vue {
       this.disableSelector(true);
       return;
     }
-    this.setSelectorState(this.getInitialStyleState(this.panel));
+    this.setSelectorState(SEStore.getInitialStyleState(this.panel));
   }
 }
 </script>

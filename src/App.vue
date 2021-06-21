@@ -139,7 +139,7 @@
 /* Import the custom components */
 import VueComponent from "vue";
 import { Vue, Component } from "vue-property-decorator";
-import { Getter, Mutation, State } from "vuex-class";
+import { namespace } from "vuex-class";
 import MessageBox from "@/components/MessageBox.vue";
 // import ConstructionLoader from "@/components/ConstructionLoader.vue";
 import Dialog, { DialogAction } from "@/components/Dialog.vue";
@@ -153,9 +153,10 @@ import {
 } from "@firebase/firestore-types";
 import { Unsubscribe } from "@firebase/util";
 import { Command } from "./commands/Command";
-import { SEPoint } from "./models/SEPoint";
 import { Matrix4 } from "three";
+import { SEStore } from "./store";
 
+const SE = namespace("se");
 // Register vue router in-component navigation guard functions
 Component.registerHooks([
   "beforeRouteEnter",
@@ -165,20 +166,20 @@ Component.registerHooks([
 /* This allows for the State of the app to be initialized with in vuex store */
 @Component({ components: { MessageBox, Dialog } })
 export default class App extends Vue {
-  @State((s: AppState) => s.activeToolName)
+  @SE.State((s: AppState) => s.activeToolName)
   readonly activeToolName!: string;
 
-  @State((s: AppState) => s.svgCanvas)
+  @SE.State((s: AppState) => s.svgCanvas)
   readonly svgCanvas!: HTMLDivElement | null;
 
-  @State((s: AppState) => s.inverseTotalRotationMatrix)
+  @SE.State((s: AppState) => s.inverseTotalRotationMatrix)
   readonly inverseTotalRotationMatrix!: Matrix4;
 
-  @State((s: AppState) => s.sePoints)
-  readonly sePoints!: SEPoint[];
+  // @SE.State((s: AppState) => s.sePoints)
+  // readonly sePoints!: SEPoint[];
 
-  @Mutation init!: () => void;
-  @Mutation clearUnsavedFlag!: () => void;
+  // @SE.Mutation init!: () => void;
+  // @SE.Mutation clearUnsavedFlag!: () => void;
 
   readonly $appAuth!: FirebaseAuth;
   readonly $appDB!: FirebaseFirestore;
@@ -197,11 +198,11 @@ export default class App extends Vue {
 
   get hasObjects(): boolean {
     // Any objects must include at least one point
-    return this.sePoints.length > 0;
+    return SEStore.sePoints.length > 0;
   }
 
   mounted(): void {
-    this.init();
+    SEStore.init();
     EventBus.listen("set-footer-color", this.setFooterColor);
     this.authSubscription = this.$appAuth.onAuthStateChanged(
       (u: User | null) => {
@@ -304,7 +305,7 @@ export default class App extends Vue {
           keyOptions: { docId: doc.id },
           type: "info"
         });
-        this.clearUnsavedFlag();
+        SEStore.clearUnsavedFlag();
       })
       .catch((err: Error) => {
         console.log("Can't save document", err);

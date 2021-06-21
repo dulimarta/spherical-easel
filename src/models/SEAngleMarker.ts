@@ -12,7 +12,7 @@ import { Styles } from "@/types/Styles";
 import { UpdateMode, UpdateStateType } from "@/types";
 import { Labelable } from "@/types";
 import { SELabel } from "@/models/SELabel";
-import AppStore from "@/store";
+import { SEStore } from "@/store";
 
 enum AngleMode {
   NONE,
@@ -103,11 +103,6 @@ export class SEAngleMarker extends SEMeasurement
   private measureTmpVector1 = new Vector3();
   private measureTmpVector2 = new Vector3();
   private measureTmpVector3 = new Vector3();
-
-  /**
-   * Vuex global state
-   */
-  protected store = AppStore; //
 
   /**
    * The number of this angle marker when it was created (i.e. this number of angle markers have been created so far)
@@ -851,9 +846,7 @@ export class SEAngleMarker extends SEMeasurement
 
     // if the unitIdealVector leads to a hit then return the unitIdealVector
     // console.log("x before hit ", this._startVector.x);
-    if (
-      this.isHitAt(unitIdealVector, this.store.state.zoomMagnificationFactor)
-    ) {
+    if (this.isHitAt(unitIdealVector, SEStore.zoomMagnificationFactor)) {
       // console.log("hit");
       // console.log("x after - hit ", this._startVector.x);
       return unitIdealVector;
@@ -1098,8 +1091,7 @@ export class SEAngleMarker extends SEMeasurement
     //  of the idealUnitSphereVector and the closest point that is at the tolerance distance away.
     if (
       this.tmpVector1.angleTo(idealUnitSphereVector) <
-      SETTINGS.angleMarker.maxLabelDistance /
-        this.store.state.zoomMagnificationFactor
+      SETTINGS.angleMarker.maxLabelDistance / SEStore.zoomMagnificationFactor
     ) {
       return idealUnitSphereVector;
     } else {
@@ -1114,7 +1106,7 @@ export class SEAngleMarker extends SEMeasurement
       this.tmpVector3.multiplyScalar(
         Math.sin(
           SETTINGS.angleMarker.maxLabelDistance /
-            this.store.state.zoomMagnificationFactor
+            SEStore.zoomMagnificationFactor
         )
       );
       this.tmpVector3
@@ -1122,7 +1114,7 @@ export class SEAngleMarker extends SEMeasurement
           this.tmpVector1,
           Math.cos(
             SETTINGS.angleMarker.maxLabelDistance /
-              this.store.state.zoomMagnificationFactor
+              SEStore.zoomMagnificationFactor
           )
         )
         .normalize();

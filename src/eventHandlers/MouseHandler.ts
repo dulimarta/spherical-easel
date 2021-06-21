@@ -1,7 +1,7 @@
 /** @format */
 
 import { Vector3 } from "three";
-import AppStore from "@/store";
+import { SEStore } from "@/store";
 import { ToolStrategy } from "./ToolStrategy";
 import Two from "two.js";
 import SETTINGS, { LAYER } from "@/global-settings";
@@ -27,7 +27,7 @@ export default abstract class MouseHandler implements ToolStrategy {
   /**
    * Vuex global state
    */
-  protected store = AppStore; //
+  // protected store = AppStore; //
   /**
    * The vector location of the current and previous mouse event on the ideal unit sphere
    */
@@ -104,8 +104,8 @@ export default abstract class MouseHandler implements ToolStrategy {
     const mouseY = -(offsetY - this.canvas.translation.y);
 
     // Get the current zoom factor and vector
-    const mag = this.store.state.zoomMagnificationFactor;
-    const zoomTransVec = this.store.state.zoomTranslation;
+    const mag = SEStore.zoomMagnificationFactor;
+    const zoomTransVec = SEStore.zoomTranslation;
 
     // Transform the (mouseX, mouseY) pixel location to default screen
     // coordinates (i.e. to pre affine/css transformation)

@@ -241,7 +241,7 @@ import Line from "@/plottables/Line";
 import Label from "@/plottables/Label";
 import Segment from "@/plottables/Segment";
 import Nodule from "@/plottables/Nodule";
-import { State, Mutation } from "vuex-class";
+import { namespace } from "vuex-class";
 import { SENodule } from "@/models/SENodule";
 import { AppState, ConstructionInFirestore } from "@/types";
 import IconBase from "@/components/IconBase.vue";
@@ -249,6 +249,9 @@ import AngleMarker from "@/plottables/AngleMarker";
 import { FirebaseFirestore, DocumentSnapshot } from "@firebase/firestore-types";
 import { run } from "@/commands/CommandInterpreter";
 import { ConstructionScript } from "@/types";
+import { SEStore } from "@/store";
+const SE = namespace("se");
+
 /**
  * Split panel width distribution (percentages):
  * When both side panels open: 20:60:20 (proportions 1:3:1)
@@ -269,32 +272,26 @@ import { ConstructionScript } from "@/types";
 export default class Easel extends Vue {
   @Prop()
   documentId: string | undefined;
-  @State((s: AppState) => s.sePoints)
+  @SE.State((s: AppState) => s.sePoints)
   readonly points!: SENodule[];
 
-  @State((s: AppState) => s.seLines)
+  @SE.State((s: AppState) => s.seLines)
   readonly lines!: SENodule[];
 
-  @State((s: AppState) => s.seSegments)
+  @SE.State((s: AppState) => s.seSegments)
   readonly segments!: SENodule[];
 
-  @State((s: AppState) => s.seCircles)
+  @SE.State((s: AppState) => s.seCircles)
   readonly circles!: SENodule[];
 
-  @State((s: AppState) => s.seNodules)
+  @SE.State((s: AppState) => s.seNodules)
   readonly seNodules!: SENodule[];
 
-  @State((s: AppState) => s.temporaryNodules)
+  @SE.State((s: AppState) => s.temporaryNodules)
   readonly temporaryNodules!: Nodule[];
 
-  @State((s: AppState) => s.previousZoomMagnificationFactor)
+  @SE.State((s: AppState) => s.previousZoomMagnificationFactor)
   readonly previousZoomMagnificationFactor!: number;
-
-  @Mutation init!: () => void;
-
-  @Mutation removeAllFromLayers!: () => void;
-
-  @Mutation setActionMode!: (_: any) => void;
 
   readonly $appDB!: FirebaseFirestore;
 
@@ -349,21 +346,21 @@ export default class Easel extends Vue {
 
   private enableZoomIn(): void {
     this.displayZoomInToolUseMessage = true;
-    this.setActionMode({
+    SEStore.setActionMode({
       id: "zoomIn",
       name: "PanZoomInDisplayedName"
     });
   }
   private enableZoomOut(): void {
     this.displayZoomOutToolUseMessage = true;
-    this.setActionMode({
+    SEStore.setActionMode({
       id: "zoomOut",
       name: "PanZoomOutDisplayedName"
     });
   }
   private enableZoomFit(): void {
     this.displayZoomFitToolUseMessage = true;
-    this.setActionMode({
+    SEStore.setActionMode({
       id: "zoomFit",
       name: "ZoomFitDisplayedName"
     });
@@ -383,8 +380,8 @@ export default class Easel extends Vue {
   }
 
   loadDocument(docId: string): void {
-    this.removeAllFromLayers();
-    this.init();
+    SEStore.removeAllFromLayers();
+    SEStore.init();
     SENodule.resetAllCounters();
     Nodule.resetAllCounters();
     this.$appDB
@@ -454,14 +451,14 @@ export default class Easel extends Vue {
   }
 
   setActionModeToSelectTool(): void {
-    this.setActionMode({
+    SEStore.setActionMode({
       id: "select",
       name: "SelectDisplayedName"
     });
   }
 
   switchActionMode(): void {
-    this.setActionMode(this.actionMode);
+    SEStore.setActionMode(this.actionMode);
   }
   onWindowResized(): void {
     this.adjustSize();
@@ -476,8 +473,8 @@ export default class Easel extends Vue {
   }
 
   resetSphere(): void {
-    this.removeAllFromLayers();
-    this.init();
+    SEStore.removeAllFromLayers();
+    SEStore.init();
     Command.commandHistory.splice(0);
     Command.redoHistory.splice(0);
     SENodule.resetAllCounters();

@@ -77,14 +77,13 @@ import ToolGroups from "@/components/ToolGroups.vue";
 import ObjectTree from "@/components/ObjectTree.vue";
 import ConstructionLoader from "@/components/ConstructionLoader.vue";
 import SETTINGS from "@/global-settings";
-import { Mutation } from "vuex-class";
+import { SEStore } from "@/store";
 
 @Component({ components: { ToolGroups, ObjectTree, ConstructionLoader } })
 export default class Toolbox extends Vue {
   @Prop()
   readonly minified!: boolean;
 
-  @Mutation setActionMode!: (_: any) => void;
   // ('layers')')
   // private layers!: Two.Group[];
 
@@ -101,7 +100,7 @@ export default class Toolbox extends Vue {
 
   switchTab(): void {
     if (this.activeLeftDrawerTab === "objectListTab") {
-      this.setActionMode({
+      SEStore.setActionMode({
         id: "move",
         name: "MoveDisplayedName"
       });

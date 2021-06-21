@@ -65,20 +65,17 @@ import { FirebaseAuth } from "@firebase/auth-types";
 import Dialog, { DialogAction } from "@/components/Dialog.vue";
 import ConstructionList from "@/components/ConstructionList.vue";
 import { Matrix4 } from "three";
-import { State, Mutation } from "vuex-class";
+import { namespace } from "vuex-class";
+import { SEStore } from "@/store";
+const SE = namespace("se");
 
 @Component({ components: { Dialog, ConstructionList } })
 export default class ConstructionLoader extends Vue {
   readonly $appDB!: FirebaseFirestore;
   readonly $appAuth!: FirebaseAuth;
 
-  @State((s: AppState) => s.hasUnsavedNodules)
+  @SE.State((s: AppState) => s.hasUnsavedNodules)
   readonly hasUnsavedNodules!: boolean;
-
-  @Mutation init!: () => void;
-  @Mutation removeAllFromLayers!: () => void;
-  @Mutation clearUnsavedFlag!: () => void;
-  @Mutation rotateSphere!: (_: Matrix4) => void;
 
   snapshotUnsubscribe: (() => void) | null = null;
   publicConstructions: Array<SphericalConstruction> = [];
@@ -186,8 +183,8 @@ export default class ConstructionLoader extends Vue {
       rotationMatrix = this.privateConstructions[pos].sphereRotationMatrix;
     }
 
-    this.removeAllFromLayers();
-    this.init();
+    SEStore.removeAllFromLayers();
+    SEStore.init();
     SENodule.resetAllCounters();
     Nodule.resetAllCounters();
     EventBus.fire("show-alert", {
@@ -197,9 +194,9 @@ export default class ConstructionLoader extends Vue {
     });
     // It looks like we have to apply the rotation matrix
     // before running the script
-    this.rotateSphere(rotationMatrix);
+    SEStore.rotateSphere(rotationMatrix);
     run(script);
-    this.clearUnsavedFlag();
+    SEStore.clearUnsavedFlag();
     EventBus.fire("construction-loaded", {});
   }
 

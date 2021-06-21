@@ -1,8 +1,8 @@
 import { SEExpression } from "./SEExpression";
 import { UpdateStateType, UpdateMode } from "@/types";
 import { ExpressionParser } from "@/expression/ExpressionParser";
-import AppStore from "@/store";
-import store from "@/store";
+// import AppStore from "@/store";
+import { SEStore } from "@/store";
 import { Styles } from "@/types/Styles";
 import SETTINGS from "@/global-settings";
 import { SENodule } from "./SENodule";
@@ -12,7 +12,6 @@ const parser = new ExpressionParser();
 export class SECalculation extends SEExpression {
   // static parser = new ExpressionParser();
 
-  static store = AppStore;
   protected exprText = "";
   private computedValue = 0;
   /**
@@ -27,11 +26,11 @@ export class SECalculation extends SEExpression {
     for (const v of text.matchAll(/[Mm][0-9]+/g)) {
       // vars.push(v[0]);
       // Find the SENodule parents of this calculation
-      store.state.expressions.forEach(n => console.log(n.name));
-      const pos = store.state.expressions.findIndex(z =>
+      SEStore.expressions.forEach(n => console.log(n.name));
+      const pos = SEStore.expressions.findIndex(z =>
         z.name.startsWith(`${v[0]}`)
       );
-      if (pos > -1) this._calculationParents.push(store.state.expressions[pos]);
+      if (pos > -1) this._calculationParents.push(SEStore.expressions[pos]);
     }
 
     // This might not be necessary because all expressions have the name "M####" and should be caught by the above
