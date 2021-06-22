@@ -3,13 +3,13 @@
     @mouseleave="onListLeave">
     <!-- the class "nodata" is used for testing. Do not remove it -->
     <span v-if="items.length === 0"
-      class="nodata">No data</span>
+      class="_test_nodata">No data</span>
     <v-list three-line>
       <template v-for="(r,pos) in items">
         <v-hover v-slot:default="{hover}"
           :key="pos">
           <!-- the class "listitem" is used for testing. Do not remove it -->
-          <v-list-item class="constructionItem"
+          <v-list-item class="_test_constructionItem"
             @mouseover.capture="onItemHover(r)"
             @mouseleave="onItemLeave">
             <v-list-item-avatar size="64">
@@ -30,13 +30,13 @@
             </v-list-item-content>
             <!--- show a Load button as an overlay when the mouse hovers -->
             <v-overlay absolute
-              class="constructionOverlay"
+              class="_test_constructionOverlay"
               opacity="0.3"
               :value="hover">
               <v-row align="center">
                 <v-col>
                   <v-btn rounded
-                    class="loadfab"
+                    id="_test_loadfab"
                     fab
                     small
                     color="secondary">
@@ -47,7 +47,7 @@
                 </v-col>
                 <v-col v-if="allowSharing">
                   <v-btn rounded
-                    class="sharefab"
+                    id="_test_sharefab"
                     fab
                     small
                     color="secondary"
@@ -58,6 +58,7 @@
                 <!-- show delete button only for its owner -->
                 <v-col v-if="r.author === userEmail">
                   <v-btn rounded
+                    id="_test_deletefab"
                     fab
                     small
                     color="red"
@@ -80,6 +81,7 @@ import { Component, Vue, Prop } from "vue-property-decorator";
 import { AppState, SphericalConstruction } from "@/types";
 import { FirebaseAuth } from "node_modules/@firebase/auth-types";
 import { Matrix4 } from "three";
+import axios, { AxiosResponse } from "axios";
 import { namespace } from "vuex-class";
 import { SEStore } from "@/store";
 const SE = namespace("se");
@@ -132,9 +134,9 @@ export default class extends Vue {
   onItemHover(s: SphericalConstruction): void {
     if (this.lastDocId === s.id) return; // Prevent double hovers?
     this.lastDocId = s.id;
-    fetch(s.previewData)
-      .then((r: Response) => r.blob())
-      .then((b: Blob) => b.text())
+    axios
+      .get(s.previewData)
+      .then((r: AxiosResponse) => r.data)
       .then((svgString: string) => {
         const newSvg = this.domParser.parseFromString(
           svgString,

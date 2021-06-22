@@ -2,16 +2,21 @@
   <div>
     <div class="text-h6"
       v-if="firebaseUid.length > 0">Private Constructions</div>
-    <ConstructionList :items="privateConstructions"
+    <!--- WARNING: the "id" attribs below are needed for testing -->
+    <ConstructionList id="privateList"
+      :items="privateConstructions"
       v-on:load-requested="shouldLoadConstruction" />
     <div class="text-h6">Public Constructions</div>
-    <ConstructionList :items="publicConstructions"
+    <ConstructionList id="publicList"
+      :items="publicConstructions"
       :allow-sharing="true"
       v-on:load-requested="shouldLoadConstruction"
       v-on:share-requested="doShareConstruction"
       v-on:delete-requested="doDeleteConstruction" />
 
     <Dialog ref="constructionShareDialog"
+      id="_test_constructionShareDialog"
+      class="dialog"
       title="Share Construction"
       :yes-text="`Copy URL`"
       :yes-action="doCopyURL"
@@ -26,6 +31,7 @@
 
     </Dialog>
     <Dialog ref="constructionLoadDialog"
+      class="dialog"
       title="Confirmation Required"
       yes-text="Proceed"
       :yesAction="doLoadConstruction"
