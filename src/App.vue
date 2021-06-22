@@ -204,6 +204,9 @@ export default class App extends Vue {
     } else if (ev.key === "e" && this.acceptedKeys === 1) {
       this.acceptedKeys = 2;
       console.info("'E' is accepted", this.accountEnabled, this.acceptedKeys);
+      // Directly setting the accountEnable flag here does not trigger
+      // a UI update even after calling $forceUpdate()
+      // Firing an event seems to solve the problem
       EventBus.fire("secret-key", {});
     } else {
       this.acceptedKeys = 0;
@@ -242,7 +245,10 @@ export default class App extends Vue {
                 }
               }
             });
-        } else this.whoami = "";
+        } else {
+          this.whoami = "";
+          this.profilePicUrl = "";
+        }
       }
     );
     // Get the top-level SVG element
@@ -261,8 +267,8 @@ export default class App extends Vue {
     this.footerColor = e.color;
   }
 
-  doLogout(): void {
-    this.$appAuth.signOut();
+  async doLogout(): Promise<void> {
+    await this.$appAuth.signOut();
     this.$refs.logoutDialog.hide();
     this.uid = "";
     this.whoami = "";
