@@ -345,10 +345,6 @@ export default class App extends Vue {
       });
     this.$refs.saveConstructionDialog.hide();
   }
-
-  handleKey(): void {
-    console.log("Key is pressed");
-  }
 }
 </script>
 

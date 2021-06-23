@@ -218,7 +218,15 @@
         </div>
       </v-card>
     </Pane>
-
+    <Dialog ref="unsavedWorkDialog"
+      max-width="40%"
+      title="Confirmation Required"
+      yes-text="Keep"
+      no-text="Discard"
+      :no-action="doLeave">
+      You have unsaved work. Do you want to stay on this page and keep your
+      work or switch to another page and discard your work.
+    </Dialog>
   </Splitpanes>
 </template>
 
@@ -251,6 +259,9 @@ import AngleMarker from "@/plottables/AngleMarker";
 import { FirebaseFirestore, DocumentSnapshot } from "@firebase/firestore-types";
 import { run } from "@/commands/CommandInterpreter";
 import { ConstructionScript } from "@/types";
+import { Route } from "vue-router";
+import store from "@/store";
+import Dialog, { DialogAction } from "@/components/Dialog.vue";
 /**
  * Split panel width distribution (percentages):
  * When both side panels open: 20:60:20 (proportions 1:3:1)
@@ -265,7 +276,8 @@ import { ConstructionScript } from "@/types";
     SphereFrame,
     ToolButton,
     StylePanel,
-    IconBase
+    IconBase,
+    Dialog
   }
 })
 export default class Easel extends Vue {
@@ -306,12 +318,15 @@ export default class Easel extends Vue {
   private displayZoomOutToolUseMessage = false;
   private displayZoomFitToolUseMessage = false;
   private actionMode = { id: "", name: "" };
+  private confirmedLeaving = false;
+  private attemptedToRoute: Route | null = null;
 
   $refs!: {
     responsiveBox: VueComponent;
     toolbox: VueComponent;
     mainPanel: VueComponent;
     stylePanel: HTMLDivElement;
+    unsavedWorkDialog: VueComponent & DialogAction;
   };
 
   //#region magnificationUpdate
@@ -327,6 +342,10 @@ export default class Easel extends Vue {
     return (
       100 - (this.toolboxMinified ? 5 : 25) - (this.stylePanelMinified ? 5 : 25)
     );
+  }
+  get hasObjects(): boolean {
+    // Any objects must include at least one point
+    return this.$store.direct.getters.allSEPoints().length > 0;
   }
 
   private setUndoEnabled(e: { value: boolean }): void {
@@ -494,6 +513,24 @@ export default class Easel extends Vue {
     });
   }
   //#endregion resizePlottables
+
+  doLeave(): void {
+    this.confirmedLeaving = true;
+    if (this.attemptedToRoute)
+      this.$router.replace({ path: this.attemptedToRoute.path });
+  }
+
+  beforeRouteLeave(toRoute: Route, fromRoute: Route, next: any): void {
+    if (this.hasObjects && !this.confirmedLeaving) {
+      this.$refs.unsavedWorkDialog.show();
+      this.attemptedToRoute = toRoute;
+      next(false); // Stay on this view
+    } else {
+      /* Proceed to the next view when the canvas has no objects OR 
+      user has confirmed leaving this view */
+      next();
+    }
+  }
 }
 </script>
 <style scoped lang="scss">
