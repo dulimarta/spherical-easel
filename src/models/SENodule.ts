@@ -353,20 +353,18 @@ export abstract class SENodule {
    * Find the closest vector to unitVec on the curve P(t) where tMin<= t <= tMax using subdivisions and Newton's method
    * @param P P(t) is the parameterization of a curve on the sphere (must be unit for all t)
    * @param PPrime P'(t) is the parameterization of the derivative of P(t) (NOT NECESSARILY UNIT)
-   * @param PPPrime P''(t) is the parameterization of the second derivative of P(t) (NOT NECESSARILY UNIT)
    * @param unitVec a unit vector
    * @param tMin
    * @param tMax
-   * @param closed if true, implies P(tMin)=P(tMax)
-   * @param periodic if true, implies P(t) = P(t + (tMax-tMin)) for all t
+   * @param PPPrime (Optional) P''(t) is the parameterization of the second derivative of P(t) (NOT NECESSARILY UNIT)
    */
   protected static closestVectorParametrically(
     P: (t: number) => Vector3,
     PPrime: (t: number) => Vector3,
-    PPPrime: (t: number) => Vector3,
     unitVec: Vector3,
     tMin: number,
-    tMax: number
+    tMax: number,
+    PPPrime?: (t: number) => Vector3
   ): Vector3 {
     // First form the objective function, this is the function whose minimum we want to find.
     // The (angular) distance from P(t) to unitVec is d(t) = acos(P(t) /dot unitVec) because P(t) and unitVec are both unit
@@ -382,29 +380,15 @@ export abstract class SENodule {
       return PPrime(t).dot(unitVec);
     };
 
-    // const dp: (t: number) => number = function (t: number): number {
-    //   return (
-    //     (-1 * PPrime(t).dot(unitVec)) /
-    //     Math.sqrt(1 - P(t).dot(unitVec) * P(t).dot(unitVec))
-    //   );
-    // };
     // use (P''(t) /dot unitVec) as the second derivative if necessary
-    const dpp: (t: number) => number = function (t: number): number {
-      return PPPrime(t).dot(unitVec);
-    };
-
-    // const dpp: (t: number) => number = function (t: number): number {
-    //   return (
-    //     (-P(t).dot(unitVec) * PPrime(t).dot(unitVec) * PPrime(t).dot(unitVec) +
-    //       (-1 + P(t).dot(unitVec) * P(t).dot(unitVec)) *
-    //         PPPrime(t).dot(unitVec)) /
-    //     Math.sqrt(
-    //       (1 - P(t).dot(unitVec) * P(t).dot(unitVec)) *
-    //         (1 - P(t).dot(unitVec) * P(t).dot(unitVec)) *
-    //         (1 - P(t).dot(unitVec) * P(t).dot(unitVec))
-    //     )
-    //   );
-    // };
+    let dpp: ((t: number) => number) | undefined;
+    if (PPPrime !== undefined) {
+      dpp = function (t: number): number {
+        return PPPrime(t).dot(unitVec);
+      };
+    } else {
+      dpp = undefined;
+    }
 
     // now we need to find all the places that dp changes sign so we know where to start Newton's method
     const signChanges = [];
@@ -413,7 +397,6 @@ export abstract class SENodule {
     for (let i = 1; i < SETTINGS.parameterization.subdivisions + 1; i++) {
       tVal =
         tMin + (i / SETTINGS.parameterization.subdivisions) * (tMax - tMin);
-      // console.log("dp(t)", tVal, dp(tVal));
       if (dp(tVal) * dp(lastTVal) < 0) {
         signChanges.push([lastTVal, tVal]);
       }
@@ -431,59 +414,37 @@ export abstract class SENodule {
     // }
     const zeros: number[] = [];
     signChanges.forEach(interval => {
-      const zeroTVal = SENodule.bisection(dp, interval[0], interval[1]);
-      zeros.push(zeroTVal);
-      // const zeroTVal: number | boolean = newton(
-      //   dp,
-      //   dpp,
-      //   (interval[0] + interval[1]) / 2,
-      //   { verbose: true }
-      // );
-      // if (
-      //   zeroTVal !== false //&&
-      //   // interval[0] < zeroTVal &&
-      //   // zeroTVal < interval[1]
-      // ) {
-      //   zeros.push(zeroTVal as number);
-      // }
-      // if (
-      //   zeroTVal !== false &&
-      //   (zeroTVal > interval[1] || zeroTVal < interval[0])
-      // ) {
-      //   console.log(
-      //     "Newton method fail interval"
-      //     // interval[0],
-      //     // interval[1],
-      //     // zeroTVal,
-      //     // "dev values ",
-      //     // dp(interval[0]),
-      //     // dp(interval[1]),
-      //     // dp(zeroTVal as number),
-      //     // "values ",
-      //     // d(interval[0]),
-      //     // d((interval[0] + interval[1]) / 2),
-      //     // d(interval[1])
-      //   );
-      // }
+      // Bisection Method
+      // const zeroTVal = SENodule.bisection(dp, interval[0], interval[1]);
+      // zeros.push(zeroTVal);
+
+      // Newton's Method
+      const zeroTVal: number | boolean = newton(
+        dp,
+        dpp,
+        (interval[0] + interval[1]) / 2
+        // { verbose: true }
+      );
+      if (
+        zeroTVal !== false &&
+        interval[0] < zeroTVal &&
+        zeroTVal < interval[1]
+      ) {
+        zeros.push(zeroTVal as number);
+      } else {
+        console.log(
+          "Newton's method failed to converge in interval - closestVectorParametrically"
+        );
+      }
     });
-    // console.log("ZL", zeros.length);
-    // if (zeros.length !== 2) {
-    // console.log(
-    //   zeros,
-    //   zeros.map(val => d(val))
-    // );
-    // }
+
     // The zeros of dp are either minimums or maximums (or neither, but this is very unlikely so we assume it doesn't happen)
     let minTVal: number = zeros[0]; // The t value that minimizes d
     zeros.forEach(tVal => {
-      // if (isNaN(d(tVal))) {
-      //   console.log(NaN, P(tVal).dot(unitVec));
-      // }
       if (d(tVal) < d(minTVal)) {
         minTVal = tVal;
       }
     });
-
     return P(minTVal);
   }
 
@@ -527,7 +488,8 @@ export abstract class SENodule {
     PPrime: (t: number) => Vector3,
     unitVec: Vector3,
     tMin: number,
-    tMax: number
+    tMax: number,
+    PPPrime?: (t: number) => Vector3
   ): Vector3[] {
     // First form the objective function, this is the function that we want to find the zeros.
     // We want to find the t values where the P'(t) is perpendicular to unitVec (because P'(t) is a normal to the plane defining the perpendicular
@@ -536,6 +498,15 @@ export abstract class SENodule {
     const d: (t: number) => number = function (t: number): number {
       return PPrime(t).dot(unitVec);
     };
+    // use (P''(t) /dot unitVec) as the second derivative if necessary
+    let dp: ((t: number) => number) | undefined;
+    if (PPPrime !== undefined) {
+      dp = function (t: number): number {
+        return PPPrime(t).dot(unitVec);
+      };
+    } else {
+      dp = undefined;
+    }
 
     // now we need to find all the places that d changes sign so we know where to start Newton's method
     const signChanges = [];
@@ -556,51 +527,35 @@ export abstract class SENodule {
 
     const zeros: number[] = [];
     signChanges.forEach(interval => {
-      const zeroTVal = SENodule.bisection(d, interval[0], interval[1]);
-      // const zeroTVal: number | boolean = newton(
-      //   d,
-      //   (interval[0] + interval[1]) / 2
-      // );
-      // if (zeroTVal !== false) {
-      zeros.push(zeroTVal as number);
-      // if (interval[0] > zeroTVal || zeroTVal > interval[1]) {
-      //   console.log("Newton issue, converged outside of interval");
-      // }
-      // }
+      // Bisection Method
+      // const zeroTVal = SENodule.bisection(d, interval[0], interval[1]);
+      // zeros.push(zeroTVal as number);
+
+      // Newton's Method
+      const zeroTVal: number | boolean = newton(
+        d,
+        dp,
+        (interval[0] + interval[1]) / 2
+        // { verbose: true }
+      );
+      if (
+        zeroTVal !== false &&
+        interval[0] < zeroTVal &&
+        zeroTVal < interval[1]
+      ) {
+        zeros.push(zeroTVal as number);
+      } else {
+        console.log(
+          "Newton's method failed to converge in interval - closestVectorParametrically"
+        );
+      }
     });
-    // if (
-    //   Math.abs(PPrime(zeros[0]).x - PPrime(zeros[1]).x) +
-    //     Math.abs(PPrime(zeros[0]).y - PPrime(zeros[1]).y) +
-    //     Math.abs(PPrime(zeros[0]).z - PPrime(zeros[1]).z) <
-    //   0.000001
-    // ) {
-    //   console.log("same perp");
-    // }
-    // console.log("zeros", zeros, PPrime(zeros[0]).x, PPrime(zeros[1]).x);
+
     const returnVectors: Vector3[] = [];
     zeros.forEach(tVal => {
       const temp = new Vector3();
       returnVectors.push(temp.copy(PPrime(tVal).normalize()));
     });
     return returnVectors;
-    // // The zeros are the tVals that we are interested in so convert them to the corresponding normal vectors
-    // const vectorsFromTValues = zeros.map(tVal => PPrime(tVal).normalize());
-
-    // // Now make sure that none of the vectors in the return set are parallel (either the same or antipodal)
-    // const returnVectors: Vector3[] = [vectorsFromTValues[0]];
-    // const tmpVector = new Vector3();
-    // for (let i = 1; i < vectorsFromTValues.length; i++) {
-    //   for (let j = i; j < vectorsFromTValues.length; j++) {
-    //     if (
-    //       tmpVector
-    //         .crossVectors(vectorsFromTValues[i - 1], vectorsFromTValues[j])
-    //         .isZero(SETTINGS.nearlyAntipodalIdeal)
-    //     ) {
-    //       returnVectors.push(vectorsFromTValues[j]);
-    //     }
-    //   }
-    // }
-    // console.log("return len", returnVectors.length);
-    // return returnVectors;
   }
 }

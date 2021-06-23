@@ -103,7 +103,6 @@ export default class Ellipse extends Nodule {
         Math.sin(2 * t)
     );
   }
-
   /**
    * The parameterization of the second derivative of the ellipse on the sphere.
    * Note: This is *not* a unit parameterization

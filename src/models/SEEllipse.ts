@@ -259,11 +259,11 @@ export class SEEllipse extends SENodule
     closestStandardVector.copy(
       SENodule.closestVectorParametrically(
         this.ref.E.bind(this.ref), // bind the this.ref so that this in the this.ref.E method is this.ref
-        this.ref.Ep.bind(this.ref),
-        this.ref.Epp.bind(this.ref),
+        this.ref.Ep.bind(this.ref), // bind the this.ref so that this in the this.ref.E method is this.ref
         transformedToStandard,
         this.ref.tMin,
-        this.ref.tMax
+        this.ref.tMax,
+        this.ref.Epp.bind(this.ref) // bind the this.ref so that this in the this.ref.E method is this.ref
       )
     );
     // Finally transform the closest vector on the ellipse in standard position to the target unit sphere
@@ -369,7 +369,8 @@ export class SEEllipse extends SENodule
         this.ref.Ep.bind(this.ref), // bind the this.ref so that this in the this.ref.E method is this.ref
         transformedToStandard,
         this.ref.tMin,
-        this.ref.tMax
+        this.ref.tMax,
+        this.ref.Epp.bind(this.ref) // bind the this.ref so that this in the this.ref.E method is this.ref
       );
       // // return the normal vector that is closest to oldNormal DO NOT DO THIS FOR NOW
       // const minAngle = Math.min(
