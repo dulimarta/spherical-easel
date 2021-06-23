@@ -18,6 +18,7 @@ import { StyleOptions, StyleEditPanels } from "@/types/Styles";
 import SETTINGS from "@/global-settings";
 import { SEAngleMarker } from "@/models/SEAngleMarker";
 import { SEPerpendicularLineThruPoint } from "@/models/SEPerpendicularLineThruPoint";
+import { SEEllipse } from "@/models/SEEllipse";
 
 // const PIXEL_CLOSE_ENOUGH = 8;
 
@@ -880,6 +881,9 @@ export default {
   },
   allSECircles: (state: AppState) => (): SECircle[] => {
     return state.seCircles;
+  },
+  allSEEllipses: (state: AppState) => (): SEEllipse[] => {
+    return state.seEllipses;
   },
   allSESegments: (state: AppState) => (): SESegment[] => {
     return state.seSegments;

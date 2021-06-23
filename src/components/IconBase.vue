@@ -286,6 +286,47 @@ export default class IconBase extends Vue {
           newStrokeColor
         );
         break;
+
+      case "15": //Ellipses
+        // the fill object has an undefined stroke and shouldn't be changed (unless you want to destroy the gradient)
+        if (this.getAttribute(svgPathString, "stroke") !== "undefined") {
+          newStrokeWidth = this.getStrokeWidth(
+            "ellipse",
+            this.emphasizeTypes,
+            noduleType!.slice(-2)
+          );
+          newStrokeColor = this.getStrokeColor(
+            "ellipse",
+            this.emphasizeTypes,
+            noduleType!.slice(-2)
+          );
+          svgPathString = this.setAttribute(
+            svgPathString,
+            "stroke-width",
+            newStrokeWidth
+          );
+          svgPathString = this.setAttribute(
+            svgPathString,
+            "stroke",
+            newStrokeColor
+          );
+        } else {
+          //now consider the fill objects
+          newFillColor = this.getFillColor(
+            "ellipse",
+            this.emphasizeTypes,
+            noduleType!.slice(-2)
+          );
+          if (newFillColor !== "") {
+            // The fill object is not emphasized
+            svgPathString = this.setAttribute(
+              svgPathString,
+              "fill",
+              newFillColor
+            );
+          }
+        }
+        break;
     }
     return svgPathString;
   }
@@ -509,6 +550,34 @@ export default class IconBase extends Vue {
             }
           }
         }
+      case "ellipse":
+        ind = emph.findIndex(strArray => {
+          return strArray[0] === "ellipse";
+        });
+        if (ind === -1) {
+          // This object is not emphasized
+          if (backFront === "01") {
+            return SETTINGS.icons.ellipse.strokeWidth.back.toString();
+          } else {
+            return SETTINGS.icons.ellipse.strokeWidth.front.toString();
+          }
+        } else {
+          if (backFront === "01") {
+            if (emph[ind].indexOf("back") !== -1) {
+              // The back side of the object is emphasized
+              return SETTINGS.icons.emphasize.ellipse.strokeWidth.back.toString();
+            } else {
+              return SETTINGS.icons.ellipse.strokeWidth.back.toString();
+            }
+          } else {
+            if (emph[ind].indexOf("front") !== -1) {
+              // The front side of the object is emphasized
+              return SETTINGS.icons.emphasize.ellipse.strokeWidth.front.toString();
+            } else {
+              return SETTINGS.icons.ellipse.strokeWidth.front.toString();
+            }
+          }
+        }
     }
     return "1";
   }
@@ -670,6 +739,34 @@ export default class IconBase extends Vue {
             }
           }
         }
+      case "ellipse":
+        ind = emph.findIndex(strArray => {
+          return strArray[0] === "ellipse";
+        });
+        if (ind === -1) {
+          // This object is not emphasized
+          if (backFront === "01") {
+            return SETTINGS.icons.ellipse.edgeColor.back;
+          } else {
+            return SETTINGS.icons.ellipse.edgeColor.front;
+          }
+        } else {
+          if (backFront === "01") {
+            if (emph[ind].indexOf("back") !== -1) {
+              // The back side of the object is emphasized
+              return SETTINGS.icons.emphasize.ellipse.edgeColor.back;
+            } else {
+              return SETTINGS.icons.ellipse.edgeColor.back;
+            }
+          } else {
+            if (emph[ind].indexOf("front") !== -1) {
+              // The front side of the object is emphasized
+              return SETTINGS.icons.emphasize.ellipse.edgeColor.front;
+            } else {
+              return SETTINGS.icons.ellipse.edgeColor.front;
+            }
+          }
+        }
     }
     return "hsla(0, 0%, 0%, 1)";
   }
@@ -766,6 +863,34 @@ export default class IconBase extends Vue {
               return SETTINGS.icons.emphasize.angleMarker.fillColor.front;
             } else {
               return SETTINGS.icons.angleMarker.fillColor.front;
+            }
+          }
+        }
+      case "ellipse":
+        ind = emph.findIndex(strArray => {
+          return strArray[0] === "ellipse";
+        });
+        if (ind === -1) {
+          // This object is not emphasized
+          if (backFront === "01") {
+            return SETTINGS.icons.ellipse.fillColor.back;
+          } else {
+            return SETTINGS.icons.ellipse.fillColor.front;
+          }
+        } else {
+          if (backFront === "01") {
+            if (emph[ind].indexOf("back") !== -1) {
+              // The back side of the object is emphasized which means the gradient should remain so don't change the fill
+              return ""; //SETTINGS.icons.emphasize.ellipse.fillColor.back;
+            } else {
+              return SETTINGS.icons.ellipse.fillColor.back;
+            }
+          } else {
+            if (emph[ind].indexOf("front") !== -1) {
+              // The front side of the object is emphasized which means the gradient should remain so don't change the fill
+              return ""; //SETTINGS.icons.emphasize.ellipse.fillColor.front;
+            } else {
+              return SETTINGS.icons.ellipse.fillColor.front;
             }
           }
         }

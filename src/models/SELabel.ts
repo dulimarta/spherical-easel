@@ -12,6 +12,7 @@ import { SESegment } from "./SESegment";
 import { SELine } from "./SELine";
 import { SECircle } from "./SECircle";
 import { SEAngleMarker } from "./SEAngleMarker";
+import { SEEllipse } from "./SEEllipse";
 
 const styleSet = new Set([
   Styles.labelTextScalePercent,
@@ -93,6 +94,9 @@ export class SELabel extends SENodule implements Visitable {
     } else if (parent instanceof SEAngleMarker) {
       this.ref.initialLabelDisplayMode = SETTINGS.angleMarker.defaultLabelMode;
       this.showing = SETTINGS.angleMarker.showLabelsInitially;
+    } else if (parent instanceof SEEllipse) {
+      this.ref.initialLabelDisplayMode = SETTINGS.ellipse.defaultLabelMode;
+      this.showing = SETTINGS.ellipse.showLabelsInitially;
     } else {
       this.showing = true;
     }
@@ -131,9 +135,10 @@ export class SELabel extends SENodule implements Visitable {
     this._exists = this.parent.exists;
     if (this._exists) {
       this.tmpVector.copy(this._locationVector);
-      this._locationVector = ((this
-        .parent as unknown) as Labelable).closestLabelLocationVector(
-        this.tmpVector
+      this._locationVector.copy(
+        ((this.parent as unknown) as Labelable).closestLabelLocationVector(
+          this.tmpVector
+        )
       );
       //Update the location of the associate plottable Label (setter also updates the display)
       this.ref.positionVector = this._locationVector;
@@ -183,6 +188,7 @@ export class SELabel extends SENodule implements Visitable {
         )
         .normalize();
     } else {
+      console.log("label parent out of date");
       this._locationVector.copy(pos);
     }
     // Set the position of the associated displayed plottable Label

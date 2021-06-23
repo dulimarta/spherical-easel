@@ -57,13 +57,11 @@ export default class LineHandler extends Highlighter {
   private temporaryLine: Line;
 
   /**
-   * A temporary plottable (TwoJS) point created while the user is making the circles or segments
+   * A temporary plottable (TwoJS) points created while the user is making the lines
    */
   protected temporaryStartMarker: Point;
-  /**
-   * A temporary plottable (TwoJS) point created while the user is making the circles or segments
-   */
   protected temporaryEndMarker: Point;
+
   /**
    * If the user starts to make a line and mouse press at a location on the sphere, then moves
    * off the canvas, then back inside the sphere and mouse releases, we should get nothing. This
@@ -150,6 +148,17 @@ export default class LineHandler extends Highlighter {
         );
         this.temporaryStartMarker.positionVector = this.startVector;
         this.startSEPoint = null;
+      } else if (this.hitSEEllipses.length > 0) {
+        // The start of the line will be a point on a ellipse
+        //  Eventually, we will create a new SEPointOneDimensional and Point
+        this.startSEPointOneDimensionalParent = this.hitSEEllipses[0];
+        this.startVector.copy(
+          this.startSEPointOneDimensionalParent.closestVector(
+            this.currentSphereVector
+          )
+        );
+        this.temporaryStartMarker.positionVector = this.startVector;
+        this.startSEPoint = null;
       } else {
         // The mouse press is not near an existing point or one dimensional object.
         //  Record the location in a temporary point (startMarker found in MouseHandler).
@@ -165,7 +174,7 @@ export default class LineHandler extends Highlighter {
     // Find all the nearby (hitSE... objects) and update location vectors
     super.mouseMoved(event);
     // Only one object can be interacted with at a given time, so set the first point nearby to glowing
-    // The user can create points  on circles, segments, and lines, so
+    // The user can create points  on , ellipses, segments, and lines, so
     // highlight those as well (but only one) if they are nearby also
     // Also set the snap objects
     if (this.hitSEPoints.length > 0) {
@@ -217,6 +226,19 @@ export default class LineHandler extends Highlighter {
       } else {
         this.snapStartMarkerToTemporaryOneDimensional = null;
         this.snapEndMarkerToTemporaryOneDimensional = this.hitSECircles[0];
+        this.snapStartMarkerToTemporaryPoint = null;
+        this.snapEndMarkerToTemporaryPoint = null;
+      }
+    } else if (this.hitSEEllipses.length > 0) {
+      this.hitSEEllipses[0].glowing = true;
+      if (!this.makingALine) {
+        this.snapStartMarkerToTemporaryOneDimensional = this.hitSEEllipses[0];
+        this.snapEndMarkerToTemporaryOneDimensional = null;
+        this.snapStartMarkerToTemporaryPoint = null;
+        this.snapEndMarkerToTemporaryPoint = null;
+      } else {
+        this.snapStartMarkerToTemporaryOneDimensional = null;
+        this.snapEndMarkerToTemporaryOneDimensional = this.hitSEEllipses[0];
         this.snapStartMarkerToTemporaryPoint = null;
         this.snapEndMarkerToTemporaryPoint = null;
       }
@@ -555,6 +577,22 @@ export default class LineHandler extends Highlighter {
             newSELabel
           )
         );
+      } else if (this.hitSEEllipses.length > 0) {
+        // The end of the line will be a point on a circle
+        vtx = new SEPointOnOneDimensional(newEndPoint, this.hitSEEllipses[0]);
+        // Set the Location
+        vtx.locationVector = this.hitSEEllipses[0].closestVector(
+          this.currentSphereVector
+        );
+        newSELabel = new SELabel(newLabel, vtx);
+
+        lineGroup.addCommand(
+          new AddPointOnOneDimensionalCommand(
+            vtx,
+            this.hitSEEllipses[0],
+            newSELabel
+          )
+        );
       } else {
         // The ending mouse release landed on an open space
         vtx = new SEPoint(newEndPoint);
@@ -701,14 +739,14 @@ export default class LineHandler extends Highlighter {
           }
         }
 
-        // Add the last command to the group and then execute it (i.e. add the potentially two points and the circle to the store.)
+        // Add the last command to the group and then execute it (i.e. add the potentially two points and the line to the store.)
         const newSELine = new SELine(
           newLine,
           object1,
           this.tmpVector.normalize(),
           object2
         );
-        // Update the newSECircle so the display is correct when the command group is executed
+        // Update the newSELine so the display is correct when the command group is executed
         newSELine.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
 
         const newSELabel = new SELabel(newLabel, newSELine);

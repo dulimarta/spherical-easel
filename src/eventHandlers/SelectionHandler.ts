@@ -60,6 +60,16 @@ export default class SelectionHandler extends Highlighter {
           (n as any).ref.glowingDisplay();
         });
     }
+    // Get all SEEllipses
+    if (keyEvent.key.match("e")) {
+      this.store.getters
+        .allSEEllipses()
+        .filter((n: any) => n.showing) //no hidden Ellipses allowed
+        .forEach((n: any) => {
+          this.keyPressSelection.push(n);
+          (n as any).ref.glowingDisplay();
+        });
+    }
     // Get all SELines
     if (keyEvent.key.match("l")) {
       this.store.getters

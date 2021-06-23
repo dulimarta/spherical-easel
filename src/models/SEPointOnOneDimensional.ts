@@ -10,6 +10,7 @@ export class SEPointOnOneDimensional extends SEPoint {
    */
   private oneDimensionalParent: SEOneDimensional;
 
+  private tmpVector4 = new Vector3();
   /**
    * Create an intersection point between two one-dimensional objects
    * @param point the TwoJS point associated with this intersection
@@ -78,10 +79,15 @@ export class SEPointOnOneDimensional extends SEPoint {
     this._exists = this.oneDimensionalParent.exists;
     if (this._exists) {
       // Update the current location with the closest point on the parent to the old location
-      this.locationVector = (this
-        .oneDimensionalParent as SEOneDimensional).closestVector(
-        this._locationVector
-      );
+      this._locationVector
+        .copy(
+          (this.oneDimensionalParent as SEOneDimensional).closestVector(
+            this._locationVector
+          )
+        )
+        .normalize();
+      // Set the position of the associated displayed plottable Point
+      this.ref.positionVector = this._locationVector;
     }
     // Update visibility
     if (this._showing && this._exists) {

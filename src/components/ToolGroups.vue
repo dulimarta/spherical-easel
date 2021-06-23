@@ -464,7 +464,7 @@ export default class ToolGroups extends Vue {
       id: 0,
       actionModeValue: "ellipse",
       displayedName: "CreateEllipseDisplayedName",
-      icon: "mdi-ellipse-outline",
+      icon: "$vuetify.icons.value.ellipse",
       toolTipMessage: "CreateEllipseToolTipMessage",
       toolUseMessage: "CreateEllipseToolUseMessage",
       displayToolUseMessage: false,

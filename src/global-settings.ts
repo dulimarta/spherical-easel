@@ -336,8 +336,9 @@ export default {
     maxLabelDistance: 0.08, // The maximum distance that a label is allowed to get away from the circle
     initialLabelOffset: 0.02, // When making point labels this is initially how far (roughly) they are from the circle
     defaultLabelMode: LabelDisplayMode.NameOnly, // The default way of displaying this objects label
-    minimumAngleSumDifference: 0.045, // Don't create ellipses (and ellipse don't exist) when an angle sum to the foci minus the angle between the foci is smaller than this
-    numPoints: 60, // Twice this number are used to draw the edge of the circle and 4 times this many are used to to draw the fill of the circle. These are spread over the front and back parts. MAKE THIS EVEN!
+    minimumAngleSumDifference: 0.0001, // Don't create ellipses (and ellipse don't exist) when an angle sum to the foci minus the angle between the foci is smaller than this
+    minimumCreationDistance: 0.025, // Don't create an ellipse point unless it is more than this distance away from each focus.
+    numPoints: 100, // Twice this number are used to draw the edge of the circle and 4 times this many are used to to draw the fill of the circle. These are spread over the front and back parts. MAKE THIS EVEN!
     hitIdealDistance: 0.03, // The user has to be within this distance on the ideal unit sphere to select the circle.
     //dynamicBackStyle is a flag that means the fill, linewidth, and strokeColor of the circles drawn on the back are automatically calculated based on the value of SETTINGS.contrast and their front counterparts
     dynamicBackStyle: true,
@@ -510,6 +511,17 @@ export default {
           back: "hsla(0, 100%, 75%, 1)"
         }
       },
+      ellipse: {
+        strokeWidth: {
+          front: 1,
+          back: 1
+        },
+        edgeColor: { front: "hsla(0, 0%, 0%, 1)", back: "hsla(0, 0%, 0%, 1)" },
+        fillColor: {
+          front: "hsla(0, 100%, 75%, 1)",
+          back: "hsla(0, 100%, 75%, 1)"
+        }
+      },
       point: {
         strokeWidth: {
           front: 0.7,
@@ -568,6 +580,17 @@ export default {
         back: "hsla(0, 0%, 100%, 0.2)"
       }
     },
+    ellipse: {
+      strokeWidth: {
+        front: 1,
+        back: 1
+      },
+      edgeColor: { front: "hsla(0, 0%, 40%, 1)", back: "hsla(0, 0%, 60%, 1)" },
+      fillColor: {
+        front: "hsla(0, 0%, 90%, 0.4)",
+        back: "hsla(0, 0%, 100%, 0.2)"
+      }
+    },
     point: {
       scale: {
         front: 7,
@@ -616,7 +639,8 @@ export default {
     display: true // controls if they should be displayed
   },
   parameterization: {
-    subdivisions: 50 // When searching function on a parametrized curve for a change in sign, use this many subdivisions
+    subdivisions: 60, // When searching function on a parametrized curve for a change in sign, use this many subdivisions
+    bisectionMinSize: 0.00001 // stop running the bisection method when the interval is less than this size
   },
   /*A list of which buttons to display - adjusted by the users settings.
   This does NOT belong here but I don't know where else to put it at the moment*/

@@ -174,7 +174,7 @@ export default class CircleHandler extends Highlighter {
     // Find all the nearby (hitSE... objects) and update location vectors
     super.mouseMoved(event);
     // Only object can be interacted with at a given time, so set the first point nearby to glowing
-    // The user can create points  on circles, segments, and lines, so
+    // The user can create points  on ellipes, circles, segments, and lines, so
     // highlight those as well (but only one) if they are nearby also
     // Also set the snap objects
     if (this.hitSEPoints.length > 0) {
@@ -226,6 +226,19 @@ export default class CircleHandler extends Highlighter {
       } else {
         this.snapStartMarkerToTemporaryOneDimensional = null;
         this.snapEndMarkerToTemporaryOneDimensional = this.hitSECircles[0];
+        this.snapStartMarkerToTemporaryPoint = null;
+        this.snapEndMarkerToTemporaryPoint = null;
+      }
+    } else if (this.hitSEEllipses.length > 0) {
+      this.hitSEEllipses[0].glowing = true;
+      if (!this.makingACircle) {
+        this.snapStartMarkerToTemporaryOneDimensional = this.hitSEEllipses[0];
+        this.snapEndMarkerToTemporaryOneDimensional = null;
+        this.snapStartMarkerToTemporaryPoint = null;
+        this.snapEndMarkerToTemporaryPoint = null;
+      } else {
+        this.snapStartMarkerToTemporaryOneDimensional = null;
+        this.snapEndMarkerToTemporaryOneDimensional = this.hitSEEllipses[0];
         this.snapStartMarkerToTemporaryPoint = null;
         this.snapEndMarkerToTemporaryPoint = null;
       }
@@ -564,6 +577,24 @@ export default class CircleHandler extends Highlighter {
           new AddPointOnOneDimensionalCommand(
             vtx,
             this.hitSECircles[0],
+            newSELabel
+          )
+        );
+      } else if (this.hitSEEllipses.length > 0) {
+        // The end of the line will be a point on a ellipse
+        vtx = new SEPointOnOneDimensional(
+          newCirclePoint,
+          this.hitSEEllipses[0]
+        );
+        // Set the Location
+        vtx.locationVector = this.hitSEEllipses[0].closestVector(
+          this.currentSphereVector
+        );
+        newSELabel = new SELabel(newLabel, vtx);
+        circleCommandGroup.addCommand(
+          new AddPointOnOneDimensionalCommand(
+            vtx,
+            this.hitSEEllipses[0],
             newSELabel
           )
         );

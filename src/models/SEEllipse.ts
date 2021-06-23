@@ -57,6 +57,7 @@ export class SEEllipse extends SENodule
   private tmpVector = new Vector3();
   private tmpVector1 = new Vector3();
   private tmpVector2 = new Vector3();
+  private tmpMatrix = new Matrix4();
 
   /**
    * Create a model SEEllipse using:
@@ -75,7 +76,7 @@ export class SEEllipse extends SENodule
     this.ref = ellipse;
 
     /**
-     * Copy the SEPoint
+     * Set the SEPoints
      */
     this._focus1SEPoint = focus1Point;
     this._focus2SEPoint = focus2Point;
@@ -88,14 +89,18 @@ export class SEEllipse extends SENodule
         focus2Point.locationVector.angleTo(ellipsePoint.locationVector));
 
     this._b = Math.acos(
-      (2 * Math.cos(this._a)) /
-        focus1Point.locationVector.angleTo(focus2Point.locationVector)
+      Math.cos(this._a) /
+        Math.cos(
+          focus1Point.locationVector.angleTo(focus2Point.locationVector) / 2
+        )
     );
+
     //Set the vectors and parameters for plotting
     this.ref.focus1Vector = this._focus1SEPoint.locationVector;
     this.ref.focus2Vector = this._focus2SEPoint.locationVector;
     this.ref.a = this._a;
     this.ref.b = this._b;
+    this.ref.updateDisplay();
 
     SEEllipse.ELLIPSE_COUNT++;
     this.name = `E-${SEEllipse.ELLIPSE_COUNT}`;
@@ -105,10 +110,10 @@ export class SEEllipse extends SENodule
     return styleSet;
   }
 
-  get foci1SEPoint(): SEPoint {
+  get focus1SEPoint(): SEPoint {
     return this._focus1SEPoint;
   }
-  get foci2SEPoint(): SEPoint {
+  get focus2SEPoint(): SEPoint {
     return this._focus2SEPoint;
   }
   get ellipseSEPoint(): SEPoint {
@@ -174,11 +179,14 @@ export class SEEllipse extends SENodule
           ));
 
       this._b = Math.acos(
-        (2 * Math.cos(this._a)) /
-          this._focus2SEPoint.locationVector.angleTo(
-            this._focus2SEPoint.locationVector
+        Math.cos(this._a) /
+          Math.cos(
+            this._focus1SEPoint.locationVector.angleTo(
+              this._focus2SEPoint.locationVector
+            ) / 2
           )
       );
+
       const sumOfFocusVectors = this.tmpVector2.addVectors(
         this._focus1SEPoint.locationVector,
         this._focus2SEPoint.locationVector
@@ -186,34 +194,32 @@ export class SEEllipse extends SENodule
 
       // The foci must not be antipodal (but can be on top of each other -- but not the same exact SEPoint)
       this._exists =
-        this._exists && sumOfFocusVectors.isZero(SETTINGS.nearlyAntipodalIdeal);
-
-      // The ellipse point can't be antipodal to the center of the ellipse
-      this._exists =
         this._exists &&
-        this.tmpVector1
-          .addVectors(
-            this._ellipseSEPoint.locationVector,
-            sumOfFocusVectors.normalize()
-          )
-          .isZero(SETTINGS.nearlyAntipodalIdeal);
+        !sumOfFocusVectors.isZero(SETTINGS.nearlyAntipodalIdeal);
 
-      // The ellipse point can't be on the line segment connecting the foci (the part *inside* the ellipse?  Can the distance between the foci be larger than Pi?  I don't think so, but we'll see)
+      // The ellipse point can't be on the line segment connecting the foci or on the line segment connecting the antipodes of the foci
       this._exists =
         this._exists &&
         2 * this._a -
-          this._focus2SEPoint.locationVector.angleTo(
+          this._focus1SEPoint.locationVector.angleTo(
             this._focus2SEPoint.locationVector
-          ) <
-          SETTINGS.ellipse.minimumAngleSumDifference;
+          ) >
+          SETTINGS.ellipse.minimumAngleSumDifference &&
+        2 * this._a <
+          2 * Math.PI -
+            this._focus1SEPoint.locationVector.angleTo(
+              this._focus2SEPoint.locationVector
+            ) -
+            SETTINGS.ellipse.minimumAngleSumDifference;
     }
+
     if (this._exists) {
       //update the focus vector and the a and b radius values
       // Update the appropriate values in the plottable object Ellipse
       this.ref.a = this._a;
       this.ref.b = this._b;
       this.ref.focus1Vector = this._focus1SEPoint.locationVector;
-      this.ref.focus2Vector = this._focus1SEPoint.locationVector;
+      this.ref.focus2Vector = this._focus2SEPoint.locationVector;
       // display the new circle with the updated values
       this.ref.updateDisplay();
     }
@@ -223,7 +229,7 @@ export class SEEllipse extends SENodule
     } else {
       this.ref.setVisible(false);
     }
-    // These circles are completely determined by their point parents and an update on the parents
+    // These ellipse are completely determined by their point parents and an update on the parents
     // will cause this circle to be put into the correct location. Therefore there is no need to
     // store it in the stateArray for undo move. Only store for delete
 
@@ -243,65 +249,58 @@ export class SEEllipse extends SENodule
    * @param idealUnitSphereVector A vector on the unit sphere
    */
   public closestVector(idealUnitSphereVector: Vector3): Vector3 {
-    // first check to see if the idealUnitVector is antipodal or the same as the center of the ellipse
-    // First set tmpVector to the center of the ellipse
-    this.tmpVector
-      .addVectors(
-        this._focus1SEPoint.locationVector,
-        this._focus2SEPoint.locationVector
-      )
-      .normalize();
-    // Cross the center with the ideanUnitSphereVector
-    this.tmpVector.crossVectors(this.tmpVector, idealUnitSphereVector);
-
-    // Check to see if the tmpVector is zero (i.e the center and  idealUnit vectors are parallel -- ether
-    // nearly antipodal or in the same direction)
-    if (this.tmpVector.isZero(SETTINGS.nearlyAntipodalIdeal)) {
-      return this._ellipseSEPoint.locationVector; // An arbitrary point will do as all points are equally far away
-    } else {
-      return SENodule.closestVectorParametrically(
-        this.ref.E,
-        this.ref.Ep,
-        idealUnitSphereVector,
+    //first transform the idealUnitSphereVector from the target unit sphere to the unit sphere with the ellipse (E(t)) in standard position
+    const transformedToStandard = new Vector3();
+    transformedToStandard.copy(idealUnitSphereVector);
+    transformedToStandard.applyMatrix4(
+      this.tmpMatrix.getInverse(this.ref.ellipseFrame)
+    );
+    const closestStandardVector = new Vector3();
+    closestStandardVector.copy(
+      SENodule.closestVectorParametrically(
+        this.ref.E.bind(this.ref), // bind the this.ref so that this in the this.ref.E is this.ref
+        this.ref.Ep.bind(this.ref),
+        this.ref.Epp.bind(this.ref),
+        transformedToStandard,
         this.ref.tMin,
         this.ref.tMax
-      );
-    }
+      )
+    );
+    // Finally transform the closest vector on the ellipse in standard position to the target unit sphere
+    return closestStandardVector.applyMatrix4(this.ref.ellipseFrame);
   }
   /**
    * Return the vector near the SECircle (within SETTINGS.circle.maxLabelDistance) that is closest to the idealUnitSphereVector
    * @param idealUnitSphereVector A vector on the unit sphere
    */
   public closestLabelLocationVector(idealUnitSphereVector: Vector3): Vector3 {
-    // First find the closest point on the circle to the idealUnitSphereVector
-    this.tmpVector.copy(this.closestVector(idealUnitSphereVector));
-
+    // First find the closest point on the ellipse to the idealUnitSphereVector
+    const closest = new Vector3();
+    closest.copy(this.closestVector(idealUnitSphereVector));
     // The current magnification level
     //const mag = SENodule.store.state.zoomMagnificationFactor;
     const mag = 1;
 
     // If the idealUnitSphereVector is within the tolerance of the closest point, do nothing, otherwise return the vector in the plane of the ideanUnitSphereVector and the closest point that is at the tolerance distance away.
     if (
-      this.tmpVector.angleTo(idealUnitSphereVector) <
-      SETTINGS.circle.maxLabelDistance / mag
+      closest.angleTo(idealUnitSphereVector) <
+      SETTINGS.ellipse.maxLabelDistance / mag
     ) {
       return idealUnitSphereVector;
     } else {
       // tmpVector1 is the normal to the plane of the closest point vector and the idealUnitVector
       // This can't be zero because tmpVector can be the closest on the segment to idealUnitSphereVector and parallel with ideanUnitSphereVector
-      this.tmpVector1
-        .crossVectors(idealUnitSphereVector, this.tmpVector)
-        .normalize();
+      this.tmpVector1.crossVectors(idealUnitSphereVector, closest).normalize();
       // compute the toVector (so that tmpVector2= toVector, tmpVector= fromVector, tmpVector1 form an orthonormal frame)
-      this.tmpVector2.crossVectors(this.tmpVector, this.tmpVector1).normalize;
+      this.tmpVector2.crossVectors(closest, this.tmpVector1).normalize;
       // return cos(SETTINGS.segment.maxLabelDistance)*fromVector/tmpVec + sin(SETTINGS.segment.maxLabelDistance)*toVector/tmpVec2
       this.tmpVector2.multiplyScalar(
-        Math.sin(SETTINGS.circle.maxLabelDistance / mag)
+        Math.sin(SETTINGS.ellipse.maxLabelDistance / mag)
       );
       return this.tmpVector2
         .addScaledVector(
-          this.tmpVector,
-          Math.cos(SETTINGS.circle.maxLabelDistance / mag)
+          closest,
+          Math.cos(SETTINGS.ellipse.maxLabelDistance / mag)
         )
         .normalize();
     }
@@ -401,31 +400,31 @@ export class SEEllipse extends SENodule
         rotationAngle
       );
       this.tmpVector1
-        .copy(this.foci1SEPoint.locationVector)
+        .copy(this.focus1SEPoint.locationVector)
         .applyMatrix4(this.changeInPositionRotationMatrix);
-      this.foci1SEPoint.locationVector = this.tmpVector1;
+      this.focus1SEPoint.locationVector = this.tmpVector1;
       this.tmpVector1
-        .copy(this.foci2SEPoint.locationVector)
+        .copy(this.focus2SEPoint.locationVector)
         .applyMatrix4(this.changeInPositionRotationMatrix);
-      this.foci2SEPoint.locationVector = this.tmpVector1;
+      this.focus2SEPoint.locationVector = this.tmpVector1;
       this.tmpVector
         .copy(this.ellipseSEPoint.locationVector)
         .applyMatrix4(this.changeInPositionRotationMatrix);
       this.ellipseSEPoint.locationVector = this.tmpVector;
-      // Update both points, because we might need to update their kids!
+      // Update all points, because we might need to update their kids!
       // First mark the kids out of date so that the update method does a topological sort
       this.ellipseSEPoint.markKidsOutOfDate();
-      this.foci1SEPoint.markKidsOutOfDate();
-      this.foci2SEPoint.markKidsOutOfDate();
+      this.focus1SEPoint.markKidsOutOfDate();
+      this.focus2SEPoint.markKidsOutOfDate();
       this.ellipseSEPoint.update({
         mode: UpdateMode.DisplayOnly,
         stateArray: []
       });
-      this.foci1SEPoint.update({
+      this.focus1SEPoint.update({
         mode: UpdateMode.DisplayOnly,
         stateArray: []
       });
-      this.foci2SEPoint.update({
+      this.focus2SEPoint.update({
         mode: UpdateMode.DisplayOnly,
         stateArray: []
       });

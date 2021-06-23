@@ -270,6 +270,7 @@
     "ellipseAntipodalSelected": "The foci of an ellipse are not allowed to be antipodal or identical. Select another location.",
     "ellipseFocus2Selected": "All foci of the ellipse selected. Now select a point on the ellipse.",
     "ellipseFocus1Selected": "One focus of the ellipse selected. Now select a second non-antipodal focus.",
+    "ellipseInitiallyToSmall":"To create an ellipse initially you must select a point on the ellipse that is further away from each focus. Select a different location further from the foci.",
 
     "circleCenterSelected": "Center of circle selected. Now select a point on the circle.",
     "duplicatePointMessage": "Duplicate point. Select another.",

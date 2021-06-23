@@ -51,7 +51,7 @@ export default class EllipseHandler extends Highlighter {
   private focus1LocationSelected = false;
   private focus2LocationSelected = false;
 
-  /** The a and b values of the temporary ellipse (along the surface of the sphere) */
+  /** The a and b (semi major and semi minor axes length) values of the temporary ellipse (along the surface of the sphere) */
   private a = 0;
   private b = 0;
   /**
@@ -146,6 +146,9 @@ export default class EllipseHandler extends Highlighter {
             this.focus2SEPoint.glowing = true;
             this.focus2SEPoint.selected = true;
             this.focus2LocationSelected = true;
+            // trigger this so that temporaryEllipsePoint's location is set and
+            //that will prevent a mouse release at the same location as focus 2 from creating the ellipse
+            this.mouseMoved(event);
           } else {
             EventBus.fire("show-alert", {
               key: `handlers.ellipseAntipodalSelected`,
@@ -179,6 +182,9 @@ export default class EllipseHandler extends Highlighter {
           this.temporaryFocus2Marker.positionVector = this.focus2Vector;
           this.focus2SEPoint = null;
           this.focus2LocationSelected = true;
+          // trigger this so that temporaryEllipsePoint's location is set and
+          //that will prevent a mouse release at the same location as focus 2 from creating the ellipse
+          this.mouseMoved(event);
         }
       } else if (this.hitSELines.length > 0) {
         // one of the foci of the ellipse will be a point on a line
@@ -205,6 +211,9 @@ export default class EllipseHandler extends Highlighter {
           this.temporaryFocus2Marker.positionVector = this.focus2Vector;
           this.focus2SEPoint = null;
           this.focus2LocationSelected = true;
+          // trigger this so that temporaryEllipsePoint's location is set and
+          //that will prevent a mouse release at the same location as focus 2 from creating the ellipse
+          this.mouseMoved(event);
         }
       } else if (this.hitSECircles.length > 0) {
         // One of the foci of the ellipse will be a point on a circle
@@ -231,6 +240,9 @@ export default class EllipseHandler extends Highlighter {
           this.temporaryFocus2Marker.positionVector = this.focus2Vector;
           this.focus2SEPoint = null;
           this.focus2LocationSelected = true;
+          // trigger this so that temporaryEllipsePoint's location is set and
+          //that will prevent a mouse release at the same location as focus 2 from creating the ellipse
+          this.mouseMoved(event);
         }
       } else if (this.hitSEEllipses.length > 0) {
         // One of the foci of the ellipse will be a point on a circle
@@ -257,12 +269,15 @@ export default class EllipseHandler extends Highlighter {
           this.temporaryFocus2Marker.positionVector = this.focus2Vector;
           this.focus2SEPoint = null;
           this.focus2LocationSelected = true;
+          // trigger this so that temporaryEllipsePoint's location is set and
+          //that will prevent a mouse release at the same location as focus 2 from creating the ellipse
+          this.mouseMoved(event);
         }
       } else {
         // The mouse press is not near an existing point or one dimensional object.
         //  Eventually, we will create a new SEPoint and Point
         if (!this.focus1LocationSelected) {
-          // Set the center of the circle in the plottable object - also calls temporaryCircle.readjust()
+          // Set the center of the ellipse in the plottable object
           this.temporaryEllipse.focus1Vector = this.currentSphereVector;
           // Move the startMarker to the current mouse location
           this.temporaryFocus1Marker.positionVector = this.currentSphereVector;
@@ -272,7 +287,7 @@ export default class EllipseHandler extends Highlighter {
           this.focus1SEPoint = null;
           this.focus1LocationSelected = true;
         } else {
-          // Set the center of the circle in the plottable object - also calls temporaryCircle.readjust()
+          // Set the center of the ellipse in the plottable object
           this.temporaryEllipse.focus2Vector = this.currentSphereVector;
           // Move the startMarker to the current mouse location
           this.temporaryFocus2Marker.positionVector = this.currentSphereVector;
@@ -281,9 +296,12 @@ export default class EllipseHandler extends Highlighter {
           // Set the center of the circle to null so it can be created later
           this.focus2SEPoint = null;
           this.focus2LocationSelected = true;
+          // trigger this so that temporaryEllipsePoint's location is set and
+          //that will prevent a mouse release at the same location as focus 2 from creating the ellipse
+          this.mouseMoved(event);
         }
       }
-      if (this.focus1LocationSelected) {
+      if (this.focus1LocationSelected && !this.focus2LocationSelected) {
         this.temporaryFocus2Marker.positionVector = this.currentSphereVector;
         EventBus.fire("show-alert", {
           key: `handlers.ellipseFocus1Selected`,
@@ -319,6 +337,9 @@ export default class EllipseHandler extends Highlighter {
       possiblyGlowing = this.hitSECircles[0];
     } else if (this.hitSEEllipses.length > 0) {
       possiblyGlowing = this.hitSEEllipses[0];
+    } else {
+      this.snapTemporaryPointMarkerToOneDimensional = null;
+      this.snapTemporaryPointMarkerToPoint = null;
     }
 
     if (possiblyGlowing !== null) {
@@ -338,13 +359,16 @@ export default class EllipseHandler extends Highlighter {
           this.snapTemporaryPointMarkerToOneDimensional = null;
           this.snapTemporaryPointMarkerToPoint = possiblyGlowing;
         } else if (
-          // disallow the ellipse point to be equal to the first or second focus
-          !this.tmpVector
-            .subVectors(possiblyGlowing.locationVector, this.focus1Vector)
-            .isZero(SETTINGS.nearlyAntipodalIdeal) &&
-          !this.tmpVector1
-            .subVectors(possiblyGlowing.locationVector, this.focus2Vector)
-            .isZero(SETTINGS.nearlyAntipodalIdeal)
+          // disallow the ellipse point to be on the line segment connecting the foci or the antipodes of the foci
+          possiblyGlowing.locationVector.angleTo(this.focus1Vector) +
+            possiblyGlowing.locationVector.angleTo(this.focus2Vector) -
+            this.focus1Vector.angleTo(this.focus2Vector) >
+            SETTINGS.ellipse.minimumAngleSumDifference &&
+          possiblyGlowing.locationVector.angleTo(this.focus1Vector) +
+            possiblyGlowing.locationVector.angleTo(this.focus2Vector) <
+            2 * Math.PI -
+              this.focus1Vector.angleTo(this.focus2Vector) -
+              SETTINGS.ellipse.minimumAngleSumDifference
         ) {
           possiblyGlowing.glowing = true;
           this.snapTemporaryPointMarkerToOneDimensional = null;
@@ -465,12 +489,6 @@ export default class EllipseHandler extends Highlighter {
           this.temporaryEllipseAdded = true;
           this.temporaryEllipse.addToLayers(this.layers);
         }
-        // console.log("focus1 vec", this.temporaryEllipse.focus1Vector);
-        // console.log("focus2 vec", this.temporaryEllipse.focus2Vector);
-        // console.log(
-        //   "temp ellploint marker",
-        //   this.temporaryEllipsePointMarker.positionVector
-        // );
         //compute the a and b values of the temporary ellipse
         this.a =
           0.5 *
@@ -482,26 +500,23 @@ export default class EllipseHandler extends Highlighter {
             ));
 
         this.b = Math.acos(
-          (2 * Math.cos(this.a)) /
-            this.temporaryEllipse.focus1Vector.angleTo(
-              this.temporaryEllipse.focus2Vector
+          Math.cos(this.a) /
+            Math.cos(
+              this.temporaryEllipse.focus1Vector.angleTo(
+                this.temporaryEllipse.focus2Vector
+              ) / 2
             )
         );
 
-        //Remove the temporary ellipse from the scene if the ellipse point is antipodal to the center of the ellipse or
-        // The ellipse point is on the line segment connecting the foci
-        const centerOfEllipse = this.tmpVector
-          .addVectors(this.focus1Vector, this.focus2Vector)
-          .normalize();
+        //Remove the temporary ellipse from the scene if
+        // the ellipse point is on the line segment connecting the foci or the line segment connecting the antipodes of the foci
         if (
-          this.tmpVector1
-            .addVectors(
-              this.temporaryEllipsePointMarker.positionVector,
-              centerOfEllipse
-            )
-            .isZero(SETTINGS.nearlyAntipodalIdeal) ||
           2 * this.a - this.focus1Vector.angleTo(this.focus2Vector) <
-            SETTINGS.ellipse.minimumAngleSumDifference
+            SETTINGS.ellipse.minimumAngleSumDifference ||
+          2 * this.a >
+            2 * Math.PI -
+              this.focus1Vector.angleTo(this.focus2Vector) -
+              SETTINGS.ellipse.minimumAngleSumDifference
         ) {
           this.temporaryEllipse.removeFromLayers();
           this.temporaryEllipseAdded = false;
@@ -533,48 +548,45 @@ export default class EllipseHandler extends Highlighter {
       this.snapTemporaryPointMarkerToPoint = null;
     }
   }
+
   mouseReleased(event: MouseEvent): void {
     if (this.isOnSphere) {
       // if (this.focus1LocationSelected) {
       if (this.focus2LocationSelected) {
-        //compute the a and b values of the temporary ellipse
-        this.a =
-          0.5 *
-          (this.temporaryEllipse.focus1Vector.angleTo(
-            this.temporaryEllipsePointMarker.positionVector
-          ) +
+        if (
+          this.currentSphereVector.angleTo(this.focus1Vector) >
+            SETTINGS.ellipse.minimumCreationDistance && // There is a problem if you mouse press for focus2 location and then move *just* a bit and mouse release, the ellipse doesn't pass through the ellipse point, this helps prevent that
+          this.currentSphereVector.angleTo(this.focus2Vector) >
+            SETTINGS.ellipse.minimumCreationDistance
+        ) {
+          const angleSumToEllipsePoint =
+            this.temporaryEllipse.focus1Vector.angleTo(
+              this.temporaryEllipsePointMarker.positionVector
+            ) +
             this.temporaryEllipse.focus2Vector.angleTo(
               this.temporaryEllipsePointMarker.positionVector
-            ));
+            );
 
-        this.b = Math.acos(
-          (2 * Math.cos(this.a)) /
-            this.temporaryEllipse.focus1Vector.angleTo(
-              this.temporaryEllipse.focus2Vector
-            )
-        );
-
-        //Do not create an ellipse if the ellipse point is antipodal to the center of the ellipse or
-        // The ellipse point is on the line segment connecting the foci
-        const centerOfEllipse = this.tmpVector
-          .addVectors(this.focus1Vector, this.focus2Vector)
-          .normalize();
-
-        if (
-          !this.tmpVector1
-            .addVectors(
-              this.temporaryEllipsePointMarker.positionVector,
-              centerOfEllipse
-            )
-            .isZero(SETTINGS.nearlyAntipodalIdeal) &&
-          !(
-            2 * this.a - this.focus1Vector.angleTo(this.focus2Vector) <
-            SETTINGS.ellipse.minimumAngleSumDifference
-          )
-        ) {
-          this.makeEllipse();
-          // reset to get ready to make a new ellipse
-          this.mouseLeave(event);
+          //Do not create an ellipse if the ellipse point on the line segment connecting the foci or the line segment connecting the antipodes of the foci
+          if (
+            angleSumToEllipsePoint -
+              this.focus1Vector.angleTo(this.focus2Vector) >
+              SETTINGS.ellipse.minimumAngleSumDifference &&
+            angleSumToEllipsePoint <
+              2 * Math.PI -
+                this.focus1Vector.angleTo(this.focus2Vector) -
+                SETTINGS.ellipse.minimumAngleSumDifference
+          ) {
+            this.makeEllipse();
+            // reset to get ready to make a new ellipse
+            this.mouseLeave(event);
+          }
+        } else {
+          EventBus.fire("show-alert", {
+            key: `handlers.ellipseInitiallyToSmall`,
+            keyOptions: {},
+            type: "info"
+          });
         }
       }
     }
@@ -933,7 +945,12 @@ export default class EllipseHandler extends Highlighter {
     const newSELabel = new SELabel(newLabel, newSEEllipse);
     // Set the initial label location
     this.tmpMatrix.makeRotationAxis(
-      this.ellipseSEPoint.locationVector,
+      this.tmpVector1
+        .addVectors(
+          this.focus1SEPoint.locationVector,
+          this.focus2SEPoint.locationVector
+        )
+        .normalize(),
       Math.PI / 2
     );
     this.tmpVector

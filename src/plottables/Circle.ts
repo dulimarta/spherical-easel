@@ -1174,26 +1174,17 @@ export default class Circle extends Nodule {
           this.frontPart.dashes.push(0);
         }
         // BACK
-        console.log("dynamic back style", this.dynamicBackStyle);
         if (this.dynamicBackStyle) {
           if (Nodule.contrastFillColor(this.fillColorFront) === "noFill") {
             this.backFill.noFill();
           } else {
-            console.log("before back fill color", this.backGradientColor.color);
-            console.log(
-              "front fill color and contrast",
-              this.fillColorFront,
-              Nodule.contrastFillColor(this.fillColorFront)
-            );
             this.backGradientColor.color = Nodule.contrastFillColor(
               this.fillColorFront
             );
 
             this.backFill.fill = this.backGradient;
-            console.log("after back fill color", this.backGradientColor.color);
           }
         } else {
-          console.log("dynamic back  Style false fill");
           if (this.fillColorBack === "noFill") {
             this.backFill.noFill();
           } else {

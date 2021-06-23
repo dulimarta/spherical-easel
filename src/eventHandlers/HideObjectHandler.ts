@@ -24,7 +24,7 @@ export default class HideObjectHandler extends Highlighter {
   mousePressed(_event: MouseEvent): void {
     //Select an object to delete
     if (this.isOnSphere) {
-      // In the case of multiple selections prioritize points > lines > segments > circles > labels
+      // In the case of multiple selections prioritize points > lines > segments > circles>ellipses > labels
       if (this.hitSEPoints.length > 0) {
         // you can't hide non-user created intersection points
         if (
@@ -39,6 +39,8 @@ export default class HideObjectHandler extends Highlighter {
         this.victim = this.hitSESegments[0];
       } else if (this.hitSECircles.length > 0) {
         this.victim = this.hitSECircles[0];
+      } else if (this.hitSEEllipses.length > 0) {
+        this.victim = this.hitSEEllipses[0];
       } else if (this.hitSELabels.length > 0) {
         this.victim = this.hitSELabels[0];
       } else if (this.hitSEAngleMarkers.length > 0) {
@@ -75,6 +77,8 @@ export default class HideObjectHandler extends Highlighter {
       this.hitSELines[0].glowing = true;
     } else if (this.hitSECircles.length > 0) {
       this.hitSECircles[0].glowing = true;
+    } else if (this.hitSEEllipses.length > 0) {
+      this.hitSEEllipses[0].glowing = true;
     } else if (this.hitSELabels.length > 0) {
       this.hitSELabels[0].glowing = true;
     } else if (this.hitSEAngleMarkers.length > 0) {

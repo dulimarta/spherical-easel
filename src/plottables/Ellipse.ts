@@ -56,7 +56,12 @@ export default class Ellipse extends Nodule {
   private _periodic: boolean; // true if E(t) = E(t + (tMax-tMin)) for all t
 
   /**
-   * The parameterization of the ellipse on the sphere.
+   * A matrix that transforms the ellipse from standard position to the ellipse being plotted just before scaled to the radius of the plotting sphere (i.e. on the unit sphere)
+   */
+  private _ellipseFrame: Matrix4 = new Matrix4();
+
+  /**
+   * The parameterization of the ellipse on the sphere in standard position.
    * @param t the parameter between 0 and 2 PI
    * @returns
    */
@@ -75,8 +80,8 @@ export default class Ellipse extends Nodule {
     );
   }
   /**
-   * The parameterization of the derivative of the ellipse on the sphere.
-   * Note: This is not a unit parameterization
+   * The parameterization of the derivative of the ellipse on the sphere in standard position.
+   * Note: This is *not* a unit parameterization
    * @param t the parameter between 0 and 2 PI
    * @returns
    */
@@ -99,6 +104,45 @@ export default class Ellipse extends Nodule {
     );
   }
 
+  /**
+   * The parameterization of the second derivative of the ellipse on the sphere.
+   * Note: This is *not* a unit parameterization
+   * @param t the parameter between 0 and 2 PI
+   * @returns
+   */
+  public Epp(t: number): Vector3 {
+    return this.parameterizationPrime.set(
+      -Math.sin(this._a) * Math.cos(t),
+      -Math.sin(this._b) * Math.sin(t),
+      ((this._a > Math.PI / 2 ? -1 : 1) /
+        Math.sqrt(
+          (Math.cos(this._a) * Math.cos(this._a) +
+            Math.sin(this._a - this._b) *
+              Math.sin(this._a + this._b) *
+              Math.sin(t) *
+              Math.sin(t)) *
+            (Math.cos(this._a) * Math.cos(this._a) +
+              Math.sin(this._a - this._b) *
+                Math.sin(this._a + this._b) *
+                Math.sin(t) *
+                Math.sin(t)) *
+            (Math.cos(this._a) * Math.cos(this._a) +
+              Math.sin(this._a - this._b) *
+                Math.sin(this._a + this._b) *
+                Math.sin(t) *
+                Math.sin(t))
+        )) *
+        Math.sin(this._a - this._b) *
+        Math.sin(this._a + this._b) *
+        (Math.cos(this._a) * Math.cos(this._a) * Math.cos(2 * t) -
+          Math.sin(this._a - this._b) *
+            Math.sin(this._a + this._b) *
+            Math.sin(t) *
+            Math.sin(t) *
+            Math.sin(t) *
+            Math.sin(t))
+    );
+  }
   /**
    * Vuex global state
    */
@@ -361,19 +405,20 @@ export default class Ellipse extends Nodule {
     desiredXAxis.crossVectors(desiredYAxis, desiredZAxis);
 
     // Set up the local coordinates from for the ellipse,
-    //  transformMatrix will now map (1,0,0) to the point on the desired x axis a unit from the origin in the positive direction.
-    transformMatrix.makeBasis(desiredXAxis, desiredYAxis, desiredZAxis);
+    //  this._ellipseFrame will now map (1,0,0) to the point on the desired x axis a unit from the origin in the positive direction.
+    this._ellipseFrame.makeBasis(desiredXAxis, desiredYAxis, desiredZAxis);
 
     // The target ellipse (on the sphere of radius SETTINGS.boundaryCircle.radius) is scaled version of the
     // original ellipse (which is on the unit sphere)
     // so scale XYZ space
-    // this will make the original ellipse (in stardar position on the sphere) finally coincide with the target ellipse
+    // this will make the original ellipse (in standard position on the sphere) finally coincide with the target ellipse
     this.tmpMatrix.makeScale(
       SETTINGS.boundaryCircle.radius,
       SETTINGS.boundaryCircle.radius,
       SETTINGS.boundaryCircle.radius
     );
-    transformMatrix.multiply(this.tmpMatrix); // transformMatrix now maps the original ellipse to the target ellipse
+    transformMatrix.multiplyMatrices(this._ellipseFrame, this.tmpMatrix);
+    //transformMatrix.multiply(this.tmpMatrix); // transformMatrix now maps the original ellipse to the target ellipse
 
     // Recalculate the 3D coordinates of the ellipse and record the projection in the TwoJS paths
     // As we drag the mouse, the number of vertices in the front half
@@ -390,7 +435,8 @@ export default class Ellipse extends Nodule {
     let tVal = 0;
     for (let pos = 0; pos < 2 * SUBDIVISIONS; pos++) {
       // The t value
-      tVal = this._tMin + (pos / SUBDIVISIONS) * (this._tMax - this._tMin);
+      tVal =
+        this._tMin + (pos / (2 * SUBDIVISIONS)) * (this._tMax - this._tMin);
 
       // E(tval) is the location on the unit sphere of the ellipse in standard position
       this.tmpVector.copy(this.E(tVal));
@@ -806,7 +852,9 @@ export default class Ellipse extends Nodule {
   get focus2Vector(): Vector3 {
     return this._focus2Vector;
   }
-
+  get ellipseFrame(): Matrix4 {
+    return this._ellipseFrame;
+  }
   /**
    * Set the a and b parameters (Used by ellipse handler to set these values for the temporary ellipse)
    */
@@ -1269,26 +1317,17 @@ export default class Ellipse extends Nodule {
           this.frontPart.dashes.push(0);
         }
         // BACK
-        console.log("dynamic back style", this.dynamicBackStyle);
         if (this.dynamicBackStyle) {
           if (Nodule.contrastFillColor(this.fillColorFront) === "noFill") {
             this.backFill.noFill();
           } else {
-            console.log("before back fill color", this.backGradientColor.color);
-            console.log(
-              "front fill color and contrast",
-              this.fillColorFront,
-              Nodule.contrastFillColor(this.fillColorFront)
-            );
             this.backGradientColor.color = Nodule.contrastFillColor(
               this.fillColorFront
             );
 
             this.backFill.fill = this.backGradient;
-            console.log("after back fill color", this.backGradientColor.color);
           }
         } else {
-          console.log("dynamic back  Style false fill");
           if (this.fillColorBack === "noFill") {
             this.backFill.noFill();
           } else {

@@ -118,6 +118,14 @@ const vuetify = new Vuetify({
           iconFile: "/icons/iconPointDistancePaths.svg",
           emphasizeTypes: [["point", "front", "back"]]
         }
+      },
+      ellipse: {
+        component: IconBase,
+        props: {
+          iconName: "Ellipse",
+          iconFile: "/icons/iconEllipsePaths.svg",
+          emphasizeTypes: [["point", "front", "back"]]
+        }
       }
     }
   },

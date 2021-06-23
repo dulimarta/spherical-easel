@@ -4,6 +4,7 @@ import { Styles } from "@/types/Styles";
 import { UpdateStateType } from "@/types";
 import newton from "newton-raphson-method";
 import SETTINGS from "@/global-settings";
+import Ellipse from "@/plottables/Ellipse";
 
 //import AppStore from "@/store";
 
@@ -352,6 +353,7 @@ export abstract class SENodule {
    * Find the closest vector to unitVec on the curve P(t) where tMin<= t <= tMax using subdivisions and Newton's method
    * @param P P(t) is the parameterization of a curve on the sphere (must be unit for all t)
    * @param PPrime P'(t) is the parameterization of the derivative of P(t) (NOT NECESSARILY UNIT)
+   * @param PPPrime P''(t) is the parameterization of the second derivative of P(t) (NOT NECESSARILY UNIT)
    * @param unitVec a unit vector
    * @param tMin
    * @param tMax
@@ -361,22 +363,48 @@ export abstract class SENodule {
   protected static closestVectorParametrically(
     P: (t: number) => Vector3,
     PPrime: (t: number) => Vector3,
+    PPPrime: (t: number) => Vector3,
     unitVec: Vector3,
     tMin: number,
     tMax: number
   ): Vector3 {
-    // First form the objective function, this is the function that we want to find the zeros.
+    // First form the objective function, this is the function whose minimum we want to find.
     // The (angular) distance from P(t) to unitVec is d(t) = acos(P(t) /dot unitVec) because P(t) and unitVec are both unit
-    // The derivative of d(t) is zero at a minimum or max, so we want to find the zero of d'(t)
-    //  d'(t) = -1/ sqrt(1- P(t) /dot unitVec) * (P'(t) /dot unitVec)
-    //  d''(t) = a bit awful and involves P''(t), so lets see how this method does with out this derivative
     const d: (t: number) => number = function (t: number): number {
-      return Math.acos(P(t).dot(unitVec));
+      return Math.acos(Math.min(P(t).dot(unitVec), 1)); // if you drop the Math.min sometimes the dot product is bigger than one (just barely) but then d is undefined and that causes problems.
     };
 
+    // The derivative of d(t) is zero at a minimum or max, so we want to find the zeros of d'(t)
+    //  d'(t) = -1/ sqrt(1- (P(t) /dot unitVec)^2) * (P'(t) /dot unitVec)
+    // This means that the zeros of d'(t) are the same as the zeros of (P'(t) /dot unitVec), so find them as they are (presumably) easier to find
+
     const dp: (t: number) => number = function (t: number): number {
-      return (-1 * PPrime(t).dot(unitVec)) / Math.sqrt(1 - P(t).dot(unitVec));
+      return PPrime(t).dot(unitVec);
     };
+
+    // const dp: (t: number) => number = function (t: number): number {
+    //   return (
+    //     (-1 * PPrime(t).dot(unitVec)) /
+    //     Math.sqrt(1 - P(t).dot(unitVec) * P(t).dot(unitVec))
+    //   );
+    // };
+    // use (P''(t) /dot unitVec) as the second derivative if necessary
+    const dpp: (t: number) => number = function (t: number): number {
+      return PPPrime(t).dot(unitVec);
+    };
+
+    // const dpp: (t: number) => number = function (t: number): number {
+    //   return (
+    //     (-P(t).dot(unitVec) * PPrime(t).dot(unitVec) * PPrime(t).dot(unitVec) +
+    //       (-1 + P(t).dot(unitVec) * P(t).dot(unitVec)) *
+    //         PPPrime(t).dot(unitVec)) /
+    //     Math.sqrt(
+    //       (1 - P(t).dot(unitVec) * P(t).dot(unitVec)) *
+    //         (1 - P(t).dot(unitVec) * P(t).dot(unitVec)) *
+    //         (1 - P(t).dot(unitVec) * P(t).dot(unitVec))
+    //     )
+    //   );
+    // };
 
     // now we need to find all the places that dp changes sign so we know where to start Newton's method
     const signChanges = [];
@@ -385,38 +413,104 @@ export abstract class SENodule {
     for (let i = 1; i < SETTINGS.parameterization.subdivisions + 1; i++) {
       tVal =
         tMin + (i / SETTINGS.parameterization.subdivisions) * (tMax - tMin);
+      // console.log("dp(t)", tVal, dp(tVal));
       if (dp(tVal) * dp(lastTVal) < 0) {
         signChanges.push([lastTVal, tVal]);
       }
       lastTVal = tVal;
     }
+
     if (signChanges.length === 0) {
       console.log(
         "No minimum distance found - ERROR in closestVectorParametrically"
       );
       return new Vector3();
     }
+    // if (signChanges.length != 2) {
+    //   console.log("signChange length", signChanges.length);
+    // }
     const zeros: number[] = [];
     signChanges.forEach(interval => {
-      const zeroTVal: number | boolean = newton(
-        dp,
-        (interval[0] + interval[1]) / 2
-      );
-      if (zeroTVal !== false) {
-        zeros.push(zeroTVal as number);
+      const zeroTVal = SENodule.bisection(dp, interval[0], interval[1]);
+      zeros.push(zeroTVal);
+      // const zeroTVal: number | boolean = newton(
+      //   dp,
+      //   dpp,
+      //   (interval[0] + interval[1]) / 2,
+      //   { verbose: true }
+      // );
+      // if (
+      //   zeroTVal !== false //&&
+      //   // interval[0] < zeroTVal &&
+      //   // zeroTVal < interval[1]
+      // ) {
+      //   zeros.push(zeroTVal as number);
+      // }
+      // if (
+      //   zeroTVal !== false &&
+      //   (zeroTVal > interval[1] || zeroTVal < interval[0])
+      // ) {
+      //   console.log(
+      //     "Newton method fail interval"
+      //     // interval[0],
+      //     // interval[1],
+      //     // zeroTVal,
+      //     // "dev values ",
+      //     // dp(interval[0]),
+      //     // dp(interval[1]),
+      //     // dp(zeroTVal as number),
+      //     // "values ",
+      //     // d(interval[0]),
+      //     // d((interval[0] + interval[1]) / 2),
+      //     // d(interval[1])
+      //   );
+      // }
+    });
+    // console.log("ZL", zeros.length);
+    // if (zeros.length !== 2) {
+    // console.log(
+    //   zeros,
+    //   zeros.map(val => d(val))
+    // );
+    // }
+    // The zeros of dp are either minimums or maximums (or neither, but this is very unlikely so we assume it doesn't happen)
+    let minTVal: number = zeros[0]; // The t value that minimizes d
+    zeros.forEach(tVal => {
+      // if (isNaN(d(tVal))) {
+      //   console.log(NaN, P(tVal).dot(unitVec));
+      // }
+      if (d(tVal) < d(minTVal)) {
+        minTVal = tVal;
       }
     });
-    // The zeros of dp are either minimums or maximums (or neither, but this is very unlikely so we assume it doesn't happen)
-    const iterator = zeros.values();
-    let minTVal: number = zeros[0]; // The t value that maximumizes d
-    for (const value of iterator) {
-      if (d(value) > d(minTVal)) {
-        minTVal = value;
-      }
-    }
+
     return P(minTVal);
   }
 
+  /**
+   * A recursive method to implement the bisection method
+   * @param f The continuous function whose zero we want to compute
+   * t1< t2 and f(t1)*f(t2)<0
+   * @param t1
+   * @param t2
+   * @returns
+   */
+  protected static bisection(
+    f: (t: number) => number,
+    t1: number,
+    t2: number
+  ): number {
+    const mid = (t1 + t2) / 2;
+    if (Math.abs(t2 - t1) < SETTINGS.parameterization.bisectionMinSize) {
+      return mid;
+    } else {
+      if (f(t1) * f(mid) < 0) {
+        return SENodule.bisection(f, t1, mid);
+      } else {
+        return SENodule.bisection(f, mid, t2);
+      }
+    }
+  }
   /**
    * Find all the unit normal vector lines that are perpendicular to the curve P(t) where tMin<= t <= tMax using subdivisions and Newton's method that
    * pass though unitVec

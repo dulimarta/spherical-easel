@@ -110,6 +110,15 @@ export default class AntipodalPointHandler extends Highlighter {
           )
         );
         this.parentPoint = null;
+      } else if (this.hitSEEllipses.length > 0) {
+        // The user selected an ellipse and we will create a point on it
+        this.oneDimensionalContainingParentPoint = this.hitSEEllipses[0];
+        this.parentPointVector.copy(
+          this.oneDimensionalContainingParentPoint.closestVector(
+            this.currentSphereVector
+          )
+        );
+        this.parentPoint = null;
       } else {
         // The user selected an empty location and we will create a point there
         this.parentPointVector.copy(this.currentSphereVector);
@@ -247,7 +256,7 @@ export default class AntipodalPointHandler extends Highlighter {
     // Find all the nearby (hitSE... objects) and update location vectors
     super.mouseMoved(event);
     // Only one point can be processed at a time, so set the first point nearby to glowing
-    // The user can create points (with the antipode) on circles, segments, and lines, so
+    // The user can create points (with the antipode) on ellipses, circles, segments, and lines, so
     // highlight those as well (but only one) if they are the only nearby objects
     if (this.hitSEPoints.length > 0) {
       this.hitSEPoints[0].glowing = true;
@@ -264,6 +273,10 @@ export default class AntipodalPointHandler extends Highlighter {
     } else if (this.hitSECircles.length > 0) {
       this.hitSECircles[0].glowing = true;
       this.snapToTemporaryOneDimensional = this.hitSECircles[0];
+      this.snapToTemporaryPoint = null;
+    } else if (this.hitSEEllipses.length > 0) {
+      this.hitSEEllipses[0].glowing = true;
+      this.snapToTemporaryOneDimensional = this.hitSEEllipses[0];
       this.snapToTemporaryPoint = null;
     } else {
       this.snapToTemporaryOneDimensional = null;

@@ -116,6 +116,19 @@ export default class PointHandler extends Highlighter {
             this.hitSECircles[0],
             newSELabel
           ).execute();
+        } else if (this.hitSEEllipses.length > 0) {
+          // The new point will be a point on an ellipse
+          // Create the model object for the new point and link them
+          vtx = new SEPointOnOneDimensional(newPoint, this.hitSEEllipses[0]);
+          vtx.locationVector = this.currentSphereVector; // snaps location to the closest on the one Dimensional
+          newSELabel = new SELabel(newLabel, vtx);
+
+          // Create and execute the command to create a new point for undo/redo
+          new AddPointOnOneDimensionalCommand(
+            vtx,
+            this.hitSEEllipses[0],
+            newSELabel
+          ).execute();
         } else {
           // mouse press on empty location so create a free point
           // Create the model object for the new point and link them
@@ -151,7 +164,7 @@ export default class PointHandler extends Highlighter {
     super.mouseMoved(event);
     // glow/highlight all the nearby objects that a point might be put on
     // Only one point can be processed at a time, so set the first point that is not user created nearby to glowing
-    // The user can create points on circles, segments, and lines, so
+    // The user can create points on ellipse, circles, segments, and lines, so
     // highlight those as well (but only one) if they are nearby also
     if (this.hitSEPoints.length > 0) {
       const filteredIntersections = this.hitSEPoints.filter(
@@ -167,9 +180,9 @@ export default class PointHandler extends Highlighter {
     } else if (this.hitSELines.length > 0) {
       this.hitSELines[0].glowing = true;
       this.snapToTemporaryOneDimensional = this.hitSELines[0];
-    } else if (this.hitSECircles.length > 0) {
-      this.hitSECircles[0].glowing = true;
-      this.snapToTemporaryOneDimensional = this.hitSECircles[0];
+    } else if (this.hitSEEllipses.length > 0) {
+      this.hitSEEllipses[0].glowing = true;
+      this.snapToTemporaryOneDimensional = this.hitSEEllipses[0];
     } else {
       this.snapToTemporaryOneDimensional = null;
     }

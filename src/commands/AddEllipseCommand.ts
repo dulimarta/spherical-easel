@@ -26,7 +26,7 @@ export class AddEllipseCommand extends Command {
     super();
     this.seEllipse = seEllipse;
     this.focus1SEPoint = focus1SEPoint;
-    this.focus2SEPoint = focus1SEPoint;
+    this.focus2SEPoint = focus2SEPoint;
     this.ellipseSEPoint = ellipseSEPoint;
     this.seLabel = seLabel;
   }

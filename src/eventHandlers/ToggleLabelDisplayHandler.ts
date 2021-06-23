@@ -34,6 +34,10 @@ export default class ToggleLabelDisplayHandler extends Highlighter {
         if (this.hitSECircles[0].label != null) {
           this.label = this.hitSECircles[0].label;
         }
+      } else if (this.hitSEEllipses.length > 0) {
+        if (this.hitSEEllipses[0].label != null) {
+          this.label = this.hitSEEllipses[0].label;
+        }
       } else if (this.hitSEAngleMarkers.length > 0) {
         if (this.hitSEAngleMarkers[0].label != null) {
           this.label = this.hitSEAngleMarkers[0].label;
@@ -54,7 +58,7 @@ export default class ToggleLabelDisplayHandler extends Highlighter {
     // Find all the nearby (hitSE... objects) and update location vectors
     super.mouseMoved(event);
     // Only one point can be processed at a time, so set the first point nearby to glowing
-    // The user can create points (with the antipode) on circles, segments, and lines, so
+    // The user can create points (with the antipode) on ellipses, circles, segments, and lines, so
     // highlight those as well (but only one) if they are nearby also
     if (this.hitSEPoints.length > 0) {
       // never highlight non user created intersection points
@@ -69,6 +73,8 @@ export default class ToggleLabelDisplayHandler extends Highlighter {
       this.hitSELines[0].glowing = true;
     } else if (this.hitSECircles.length > 0) {
       this.hitSECircles[0].glowing = true;
+    } else if (this.hitSEEllipses.length > 0) {
+      this.hitSEEllipses[0].glowing = true;
     } else if (this.hitSEAngleMarkers.length > 0) {
       this.hitSEAngleMarkers[0].glowing = true;
     } else if (this.hitSELabels.length > 0) {

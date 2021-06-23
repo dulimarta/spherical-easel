@@ -32,6 +32,7 @@ import {
 } from "@/types";
 import { CommandGroup } from "@/commands/CommandGroup";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
+import { SEEllipse } from "@/models/SEEllipse";
 
 const tmpVector1 = new Vector3();
 // const tmpVector2 = new Vector3();
@@ -187,6 +188,28 @@ export default class MoveHandler extends Highlighter {
           );
           return;
         }
+
+        const freeEllipses = this.hitSEEllipses.filter(
+          n => n.isFreeToMove() && n.showing
+        );
+        if (freeEllipses.length > 0) {
+          this.moveTarget = freeEllipses[0];
+          // First mark all children of the target's point parents out of date so that the update method does a topological sort
+          (this.moveTarget as SEEllipse).focus1SEPoint.markKidsOutOfDate();
+          (this.moveTarget as SEEllipse).focus2SEPoint.markKidsOutOfDate();
+          (this.moveTarget as SEEllipse).ellipseSEPoint.markKidsOutOfDate();
+          // Store the state of the freePoints, segments and lines before the move
+          (this.moveTarget as SEEllipse).focus1SEPoint.update(
+            this.beforeMoveState
+          );
+          (this.moveTarget as SEEllipse).focus2SEPoint.update(
+            this.beforeMoveState
+          );
+          (this.moveTarget as SEEllipse).ellipseSEPoint.update(
+            this.beforeMoveState
+          );
+          return;
+        }
       }
     } else {
       // In this case the user mouse pressed in a location with *no* nodules (nothing was highlighted when she mouse pressed)
@@ -250,6 +273,10 @@ export default class MoveHandler extends Highlighter {
           this.hitSELines[0].glowing = true;
         } else if (this.hitSECircles.filter(n => n.isFreeToMove()).length > 0) {
           this.hitSECircles[0].glowing = true;
+        } else if (
+          this.hitSEEllipses.filter(n => n.isFreeToMove()).length > 0
+        ) {
+          this.hitSEEllipses[0].glowing = true;
         }
       }
     }
@@ -267,8 +294,7 @@ export default class MoveHandler extends Highlighter {
       } else if (this.moveTarget instanceof SELabel) {
         // Move the selected SELabel
         this.moveTarget.locationVector = this.currentSphereVector;
-        // Update the display based on the new location of the label (No need to update display because SELabels have no children.)
-        // this.moveTarget.update({
+        // Update the display based on the new location of the label (No need to update display because SELabels have no children/kids)
         //   mode: UpdateMode.DisplayOnly,
         //   stateArray: []
         // });
@@ -289,6 +315,14 @@ export default class MoveHandler extends Highlighter {
         // Turn off the glow of the moving object - it should not glow while moving
         this.moveTarget.ref.normalDisplay();
         // Move the selected SECircle, move also updates the display
+        this.moveTarget.move(
+          this.previousSphereVector,
+          this.currentSphereVector
+        );
+      } else if (this.moveTarget instanceof SEEllipse) {
+        // Turn off the glow of the moving object - it should not glow while moving
+        this.moveTarget.ref.normalDisplay();
+        // Move the selected SEEllipse, move also updates the display
         this.moveTarget.move(
           this.previousSphereVector,
           this.currentSphereVector
@@ -361,6 +395,14 @@ export default class MoveHandler extends Highlighter {
         this.moveTarget.circleSEPoint.markKidsOutOfDate();
         this.moveTarget.centerSEPoint.update(this.afterMoveState);
         this.moveTarget.circleSEPoint.update(this.afterMoveState);
+      } else if (this.moveTarget instanceof SEEllipse) {
+        // First mark all children of the target's point parents out of date so that the update method does a topological sort
+        this.moveTarget.focus1SEPoint.markKidsOutOfDate();
+        this.moveTarget.focus2SEPoint.markKidsOutOfDate();
+        this.moveTarget.ellipseSEPoint.markKidsOutOfDate();
+        this.moveTarget.focus1SEPoint.update(this.afterMoveState);
+        this.moveTarget.focus2SEPoint.update(this.afterMoveState);
+        this.moveTarget.ellipseSEPoint.update(this.afterMoveState);
       }
       // Store the move point/line/segment for undo/redo command
       const moveCommandGroup = new CommandGroup();

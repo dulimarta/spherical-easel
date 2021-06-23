@@ -5,6 +5,7 @@ import { SELine } from "@/models/SELine";
 import { SECircle } from "@/models/SECircle";
 import { SESegment } from "@/models/SESegment";
 import { SELabel } from "@/models/SELabel";
+import { SEEllipse } from "@/models/SEEllipse";
 
 export class DeleteNoduleCommand extends Command {
   private seNodule: SENodule;
@@ -18,15 +19,6 @@ export class DeleteNoduleCommand extends Command {
   }
 
   do(): void {
-    // if (this.seNodule instanceof SEPoint) {
-    //   console.log("Do Delete Point", this.seNodule.name);
-    // } else if (this.seNodule instanceof SELine) {
-    //   console.log("Do Delete Line", this.seNodule.name);
-    // } else if (this.seNodule instanceof SECircle) {
-    //   console.log("Do Delete Circle", this.seNodule.name);
-    // } else if (this.seNodule instanceof SESegment) {
-    //   console.log("Do Delete Segment", this.seNodule.name);
-    // }
     // Remove from the Data Structure (DAG)
     // Notice that this make the parents array empty so that is why we stored the parents ids in a separate
     // array for restore state. Also notice that we can *not* do this with
@@ -49,6 +41,8 @@ export class DeleteNoduleCommand extends Command {
       Command.store.commit.removeLine(this.seNodule.id);
     } else if (this.seNodule instanceof SECircle) {
       Command.store.commit.removeCircle(this.seNodule.id);
+    } else if (this.seNodule instanceof SEEllipse) {
+      Command.store.commit.removeEllipse(this.seNodule.id);
     } else if (this.seNodule instanceof SESegment) {
       Command.store.commit.removeSegment(this.seNodule.id);
     } else if (this.seNodule instanceof SELabel) {
@@ -61,15 +55,6 @@ export class DeleteNoduleCommand extends Command {
   }
 
   restoreState(): void {
-    // if (this.seNodule instanceof SEPoint) {
-    //   console.log("Do unDelete Point");
-    // } else if (this.seNodule instanceof SELine) {
-    //   console.log("Do unDelete Line");
-    // } else if (this.seNodule instanceof SECircle) {
-    //   console.log("Do unDelete Circle");
-    // } else if (this.seNodule instanceof SESegment) {
-    //   console.log("Do unDelete Segment");
-    // }
     // Add the point to the store and turn on display
     if (this.seNodule instanceof SEPoint) {
       Command.store.commit.addPoint(this.seNodule);
@@ -77,6 +62,8 @@ export class DeleteNoduleCommand extends Command {
       Command.store.commit.addLine(this.seNodule);
     } else if (this.seNodule instanceof SECircle) {
       Command.store.commit.addCircle(this.seNodule);
+    } else if (this.seNodule instanceof SEEllipse) {
+      Command.store.commit.addEllipse(this.seNodule);
     } else if (this.seNodule instanceof SESegment) {
       Command.store.commit.addSegment(this.seNodule);
     } else if (this.seNodule instanceof SELabel) {

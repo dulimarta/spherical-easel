@@ -19,7 +19,7 @@ This section is an outline of the steps need to add a tool that takes a collecti
      - <span class="variable">toolTipMessage</span> A short message to describe the tools use when the button is moused over.
      - <span class="variable">toolUseMessage</span> A longer message to describe more fully the use of the tool.
    - <span class="variable">displayToolUseMessage</span>: A flag to control the display of the tool use message.
-   - <span class="variable">toolGroup</span>: This is the group that the tool will appear in. Picking an existing group is the easiest way to get the tool displayed. If a new tool group is created, this section of code in <span class="variable">ToolGroups.vue</span> will have to be duplicated:
+   - <span class="variable">toolGroup</span>: This is the group that the tool will appear in. Picking an existing group is the easiest way to get the tool displayed. If a new tool group is created, this section of code in <span class="file">ToolGroups.vue</span> will have to be duplicated:
    ```vue
    <!--
       The XXXXXX Tool Group only shown if the user has permission to use a tool in this
@@ -127,6 +127,14 @@ This section is an outline of the steps needed to add a tool that takes user mou
 
     - Modifying all the <span class="method">createAllIntersectionsWithXxx</span> methods (where `Xxx` is any existing type) to account for all the intersections with existing objects.
 
-5.  Update all event handlers to allow all other tools to appropriatly highlight and select the `Aaa` objects
+5.  Updating <span class="class">SELabel</span> to control if the labels are initially display and the label display mode.
 
-6.  Follow step 1, 2, 5, 6, 7, and 8 of [Adding a Control Tool](#adding-a-control-tool)
+6.  To make an icon for this new object, update <span class="file">IconBase.vue</span> and <span class="file">Veutify.ts</span> to include code to handle `Aaa` objects.
+
+7.  Update all event handlers to allow all other tools to appropriately highlight, select, and interact with the `Aaa` objects. This also means
+
+    - Updating <span class="command">DeleteNoduleCommand</span> to handle `Aaa` objects
+    - If the `Aaa` objects are not completely determined by their parents, a <span class="command">MoveAaaCommand</span> will also need to be added and used in the <span class="handler">MoveHandler</span> class. Otherwise, a <span class="method">Move()</span> method in <span class="class">SEAaa</span> class can be used.
+    - Adding a <span class="method">allAaas</span> method in <span class="file">getters.ts</span>.
+
+8)  Follow step 1, 2, 5, 6, 7, and 8 of [Adding a Control Tool](#adding-a-control-tool)

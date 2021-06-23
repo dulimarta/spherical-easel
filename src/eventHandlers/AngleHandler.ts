@@ -19,6 +19,7 @@ import { CommandGroup } from "@/commands/CommandGroup";
 import { SEPointOnOneDimensional } from "@/models/SEPointOnOneDimensional";
 import { AddPointOnOneDimensionalCommand } from "@/commands/AddPointOnOneDimensionalCommand";
 import { AddPointCommand } from "@/commands/AddPointCommand";
+import { SEEllipse } from "@/models/SEEllipse";
 enum AngleMode {
   NONE,
   LINES,
@@ -33,7 +34,12 @@ enum HighlightMode {
   ONLYPOINTS,
   ONLYLINESANDSEGMENTS
 }
-type SEOneDimensionalPlusSEPoint = SELine | SESegment | SECircle | SEPoint;
+type SEOneDimensionalPlusSEPoint =
+  | SELine
+  | SESegment
+  | SECircle
+  | SEEllipse
+  | SEPoint;
 
 export default class AngleHandler extends Highlighter {
   /**
@@ -70,7 +76,7 @@ export default class AngleHandler extends Highlighter {
    * The first point CANNOT be created as a point on a
    * line or segment because initially we need to allow the user to select a line or segment and
    * we will assume that the user wants to create a angle from lines & segments (and not put
-   * a point on the line or segment). The first point can be a point on a SECircle.
+   * a point on the line or segment). The first point can be a point on a SECircle or SEEllipse.
    */
   private sePointOneDimensionalParents: (SEOneDimensional | null)[] = [];
   private pointLocations: Vector3[] = [];
@@ -106,6 +112,7 @@ export default class AngleHandler extends Highlighter {
 
   /* temporary vector to help with computations */
   private tmpVector = new Vector3();
+  private tmpVector1 = new Vector3();
 
   /**
    * If the user starts to make an angleMarker and mouse press at a location on the sphere (or not on the sphere), then moves
@@ -140,7 +147,7 @@ export default class AngleHandler extends Highlighter {
     // Make sure that the candidate location is NOT antipodal or equal to the second point (i.e. vertex point of the angle) on the list
     if (this.pointLocations.length === 1) {
       if (
-        this.tmpVector
+        this.tmpVector1
           .crossVectors(candidate, this.pointLocations[0])
           .isZero(SETTINGS.nearlyAntipodalIdeal)
       ) {
@@ -153,7 +160,7 @@ export default class AngleHandler extends Highlighter {
       }
     } else if (this.pointLocations.length === 2) {
       if (
-        this.tmpVector
+        this.tmpVector1
           .crossVectors(candidate, this.pointLocations[1])
           .isZero(SETTINGS.nearlyAntipodalIdeal)
       ) {
@@ -309,6 +316,23 @@ export default class AngleHandler extends Highlighter {
             this.temporaryFirstPoint.positionVector = this.hitSECircles[0].closestVector(
               this.currentSphereVector
             );
+          } else if (this.hitSEEllipses.length > 0) {
+            // The user clicked on a ellipse, assume they want to create an
+            // from three points, the first of which is on a ellipse.
+            this.angleMode = AngleMode.POINTS;
+            this.targetPoints.push(null);
+            this.sePointOneDimensionalParents.push(this.hitSEEllipses[0]);
+            this.pointLocations.push(
+              this.tmpPointVector1.copy(
+                this.hitSEEllipses[0].closestVector(this.currentSphereVector)
+              )
+            );
+            this.temporaryAngleMarker.startVector = this.hitSEEllipses[0].closestVector(
+              this.currentSphereVector
+            );
+            this.temporaryFirstPoint.positionVector = this.hitSEEllipses[0].closestVector(
+              this.currentSphereVector
+            );
           } else {
             // The user clicked on empty space, assume they want to create
             // an angle from three points, the first of which is a free point
@@ -400,6 +424,28 @@ export default class AngleHandler extends Highlighter {
             if (this.allowPointLocation(this.tmpVector)) {
               this.targetPoints.push(null);
               this.sePointOneDimensionalParents.push(this.hitSECircles[0]);
+              if (this.targetPoints.length == 2) {
+                this.temporaryAngleMarker.vertexVector = this.tmpVector;
+                this.temporarySecondPoint.positionVector = this.tmpVector;
+                this.pointLocations.push(
+                  this.tmpPointVector2.copy(this.tmpVector)
+                );
+              } else {
+                this.temporaryAngleMarker.endVector = this.tmpVector;
+                this.temporaryThirdPoint.positionVector = this.tmpVector;
+                this.pointLocations.push(
+                  this.tmpPointVector3.copy(this.tmpVector)
+                );
+              }
+            }
+          } else if (this.hitSEEllipses.length > 0) {
+            // the user wants to create a point on a ellipse to make an angle
+            this.tmpVector.copy(
+              this.hitSEEllipses[0].closestVector(this.currentSphereVector)
+            );
+            if (this.allowPointLocation(this.tmpVector)) {
+              this.targetPoints.push(null);
+              this.sePointOneDimensionalParents.push(this.hitSEEllipses[0]);
               if (this.targetPoints.length == 2) {
                 this.temporaryAngleMarker.vertexVector = this.tmpVector;
                 this.temporarySecondPoint.positionVector = this.tmpVector;
@@ -521,63 +567,69 @@ export default class AngleHandler extends Highlighter {
   mouseMoved(event: MouseEvent): void {
     // Find all the nearby (hitSE... objects) and update location vectors
     super.mouseMoved(event);
-    switch (this.angleMode) {
-      case AngleMode.NONE:
-        //To start off highlight one object point> segment >line >circles
-        if (this.hitSEPoints.length > 0) {
-          this.hitSEPoints[0].glowing;
-        } else if (this.hitSESegments.length > 0) {
-          this.hitSESegments[0].glowing;
-        } else if (this.hitSELines.length > 0) {
-          this.hitSELines[0].glowing;
-        }
-        break;
-      case AngleMode.POINTS:
-        if (this.hitSEPoints.length > 0) {
-          this.hitSEPoints[0].glowing;
-        }
-        break;
-      case AngleMode.LINES:
-        //Only highlight lines
-        if (this.hitSELines.length > 0) {
-          this.hitSELines[0].glowing;
-        }
-        break;
-      case AngleMode.SEGMENTS:
-        //only highlight segments
-        if (this.hitSESegments.length > 0) {
-          this.hitSESegments[0].glowing;
-        }
-        break;
-      case AngleMode.LINEANDSEGMENT:
-        // only highligh segments and lines
-        if (this.hitSESegments.length > 0) {
-          this.hitSESegments[0].glowing;
-        } else if (this.hitSELines.length > 0) {
-          this.hitSELines[0].glowing;
-        }
-        break;
-    }
+    // switch (this.angleMode) {
+    //   case AngleMode.NONE:
+    //     //To start off highlight one object point> segment >line
+    //     if (this.hitSEPoints.length > 0) {
+    //       this.hitSEPoints[0].glowing;
+    //     } else if (this.hitSESegments.length > 0) {
+    //       this.hitSESegments[0].glowing;
+    //     } else if (this.hitSELines.length > 0) {
+    //       this.hitSELines[0].glowing;
+    //     }
+    //     break;
+    //   case AngleMode.POINTS:
+    //     if (this.hitSEPoints.length > 0) {
+    //       this.hitSEPoints[0].glowing;
+    //     }
+    //     break;
+    //   case AngleMode.LINES:
+    //     //Only highlight lines
+    //     if (this.hitSELines.length > 0) {
+    //       this.hitSELines[0].glowing;
+    //     }
+    //     break;
+    //   case AngleMode.SEGMENTS:
+    //     //only highlight segments
+    //     if (this.hitSESegments.length > 0) {
+    //       this.hitSESegments[0].glowing;
+    //     }
+    //     break;
+    //   case AngleMode.LINEANDSEGMENT:
+    //     // only highligh segments and lines
+    //     if (this.hitSESegments.length > 0) {
+    //       this.hitSESegments[0].glowing;
+    //     } else if (this.hitSELines.length > 0) {
+    //       this.hitSELines[0].glowing;
+    //     }
+    //     break;
+    // }
 
     if (this.isOnSphere) {
       //Glow the appropriate object and set the appropriate snap objects
       switch (this.angleMode) {
         case AngleMode.NONE:
-          //Then highlight the one nearby object point> segment >line >circles -- no snapping!
+          //Then highlight the one nearby object point> segment >line >circles > ellipse -- snapping only to points, circles and lines!
           if (this.hitSEPoints.length > 0) {
             this.hitSEPoints[0].glowing = true;
-            // console.log("here glow");
+            this.snapOneDimensional = null;
+            this.snapPoint = this.hitSEPoints[0];
           } else if (this.hitSESegments.length > 0) {
             this.hitSESegments[0].glowing = true;
+            this.snapPoint = null;
           } else if (this.hitSELines.length > 0) {
             this.hitSELines[0].glowing = true;
+            this.snapPoint = null;
           } else if (this.hitSECircles.length > 0) {
             this.hitSECircles[0].glowing = true;
+            this.snapOneDimensional = this.hitSECircles[0];
+            this.snapPoint = null;
+          } else if (this.hitSEEllipses.length > 0) {
+            this.hitSEEllipses[0].glowing = true;
+            this.snapOneDimensional = this.hitSEEllipses[0];
+            this.snapPoint = null;
           }
 
-          //No Snapping in this mode
-          this.snapOneDimensional = null;
-          this.snapPoint = null;
           break;
         case AngleMode.POINTS:
           // The use has selected or created a point
@@ -598,6 +650,10 @@ export default class AngleHandler extends Highlighter {
             this.hitSECircles[0].glowing = true;
             this.snapPoint = null;
             this.snapOneDimensional = this.hitSECircles[0];
+          } else if (this.hitSEEllipses.length > 0) {
+            this.hitSEEllipses[0].glowing = true;
+            this.snapPoint = null;
+            this.snapOneDimensional = this.hitSEEllipses[0];
           } else {
             //Nothing nearby so don't snap to anything
             this.snapOneDimensional = null;
@@ -616,97 +672,94 @@ export default class AngleHandler extends Highlighter {
           this.snapPoint = null;
           break;
       }
+      if (this.angleMode !== AngleMode.SEGMENTSORLINEANDSEGMENT) {
+        //Manage the display and location of the temporary objects
+        switch (this.pointLocations.length) {
+          case 0:
+            // Add the first temporary point marker only once if we are in NONE Or POINT angle mode
+            if (!this.isTemporaryFirstPointAdded) {
+              this.isTemporaryFirstPointAdded = true;
+              this.temporaryFirstPoint.addToLayers(this.layers);
+            }
+            //Update its location to the mouse
+            this.temporaryFirstPoint.positionVector = this.currentSphereVector;
 
-      //Manage the display and location of the temporary objects (This only matters in AngleMode.POINTS)
-      switch (this.pointLocations.length) {
-        case 0:
-          // Add the first temporary point marker only once if we are in NONE Or POINT angle mode
-          if (
-            !this.isTemporaryFirstPointAdded &&
-            this.angleMode !== AngleMode.SEGMENTSORLINEANDSEGMENT
-          ) {
-            this.isTemporaryFirstPointAdded = true;
-            this.temporaryFirstPoint.addToLayers(this.layers);
-          }
-          //Update its location to the mouse
-          this.temporaryFirstPoint.positionVector = this.currentSphereVector;
+            //If there is a nearby point, line or segment turn off the temporary point marker, but leave in for circles and ellipses
+            if (
+              this.hitSENodules.filter(
+                p =>
+                  p instanceof SEPoint ||
+                  p instanceof SELine ||
+                  p instanceof SESegment
+              ).length > 0
+            ) {
+              this.temporaryFirstPoint.removeFromLayers();
+              this.isTemporaryFirstPointAdded = false;
+            }
 
-          //If there is a nearby object turn off the temporary point marker
-          if (
-            this.hitSENodules.filter(
-              p =>
-                p instanceof SEPoint ||
-                p instanceof SELine ||
-                p instanceof SESegment ||
-                p instanceof SECircle
-            ).length > 0
-          ) {
-            this.temporaryFirstPoint.removeFromLayers();
-            this.isTemporaryFirstPointAdded = false;
-          }
+            break;
+          case 1:
+            // Add the second temporary point marker only once (We MUST be in AngleMode.POINTS)
+            if (!this.isTemporarySecondPointAdded) {
+              this.isTemporarySecondPointAdded = true;
+              this.temporarySecondPoint.addToLayers(this.layers);
+            }
+            //Remove the second marker if there is a nearby point
+            if (this.snapPoint !== null) {
+              this.temporarySecondPoint.removeFromLayers();
+              this.isTemporarySecondPointAdded = false;
+            }
+            //Update its location
+            if (this.snapPoint !== null) {
+              this.temporarySecondPoint.positionVector = this.snapPoint.locationVector;
+            } else if (this.snapOneDimensional !== null) {
+              this.temporarySecondPoint.positionVector = this.snapOneDimensional.closestVector(
+                this.currentSphereVector
+              );
+            } else {
+              this.temporarySecondPoint.positionVector = this.currentSphereVector;
+            }
 
-          break;
-        case 1:
-          // Add the second temporary point marker only once (We MUST be in AngleMode.POINTS)
-          if (!this.isTemporarySecondPointAdded) {
-            this.isTemporarySecondPointAdded = true;
-            this.temporarySecondPoint.addToLayers(this.layers);
-          }
-          //Remove the second marker if there is a nearby point
-          if (this.snapPoint !== null) {
-            this.temporarySecondPoint.removeFromLayers();
-            this.isTemporarySecondPointAdded = false;
-          }
-          //Update its location
-          if (this.snapPoint !== null) {
-            this.temporarySecondPoint.positionVector = this.snapPoint.locationVector;
-          } else if (this.snapOneDimensional !== null) {
-            this.temporarySecondPoint.positionVector = this.snapOneDimensional.closestVector(
-              this.currentSphereVector
+            break;
+          case 2:
+            // Add the third temporary point marker only once (We MUST be in AngleMode.POINTS)
+            if (!this.isTemporaryThirdPointAdded) {
+              this.isTemporaryThirdPointAdded = true;
+              this.temporaryThirdPoint.addToLayers(this.layers);
+            }
+            //Remove the third marker if there is a nearby point
+            if (this.snapPoint !== null) {
+              this.temporaryThirdPoint.removeFromLayers();
+              this.isTemporaryThirdPointAdded = false;
+            }
+            //Update its location
+            if (this.snapPoint !== null) {
+              this.temporaryThirdPoint.positionVector = this.snapPoint.locationVector;
+            } else if (this.snapOneDimensional !== null) {
+              this.temporaryThirdPoint.positionVector = this.snapOneDimensional.closestVector(
+                this.currentSphereVector
+              );
+            } else {
+              this.temporaryThirdPoint.positionVector = this.currentSphereVector;
+            }
+
+            // Add the temporary angle marker only once
+            if (!this.isTemporaryAngleMarkerAdded) {
+              this.isTemporaryAngleMarkerAdded = true;
+              this.temporaryAngleMarker.addToLayers(this.layers);
+            }
+
+            // update the temporary angle marker
+            this.temporaryAngleMarker.setAngleMarkerFromThreeVectors(
+              this.temporaryFirstPoint.positionVector,
+              this.temporarySecondPoint.positionVector,
+              this.currentSphereVector,
+              AngleMarker.currentAngleMarkerRadius
             );
-          } else {
-            this.temporarySecondPoint.positionVector = this.currentSphereVector;
-          }
 
-          break;
-        case 2:
-          // Add the third temporary point marker only once (We MUST be in AngleMode.POINTS)
-          if (!this.isTemporaryThirdPointAdded) {
-            this.isTemporaryThirdPointAdded = true;
-            this.temporaryThirdPoint.addToLayers(this.layers);
-          }
-          //Remove the third marker if there is a nearby point
-          if (this.snapPoint !== null) {
-            this.temporaryThirdPoint.removeFromLayers();
-            this.isTemporaryThirdPointAdded = false;
-          }
-          //Update its location
-          if (this.snapPoint !== null) {
-            this.temporaryThirdPoint.positionVector = this.snapPoint.locationVector;
-          } else if (this.snapOneDimensional !== null) {
-            this.temporaryThirdPoint.positionVector = this.snapOneDimensional.closestVector(
-              this.currentSphereVector
-            );
-          } else {
-            this.temporaryThirdPoint.positionVector = this.currentSphereVector;
-          }
-
-          // Add the temporary angle marker only once
-          if (!this.isTemporaryAngleMarkerAdded) {
-            this.isTemporaryAngleMarkerAdded = true;
-            this.temporaryAngleMarker.addToLayers(this.layers);
-          }
-
-          // update the temporary angle marker
-          this.temporaryAngleMarker.setAngleMarkerFromThreeVectors(
-            this.temporaryFirstPoint.positionVector,
-            this.temporarySecondPoint.positionVector,
-            this.currentSphereVector,
-            AngleMarker.currentAngleMarkerRadius
-          );
-
-          this.temporaryAngleMarker.updateDisplay();
-          break;
+            this.temporaryAngleMarker.updateDisplay();
+            break;
+        }
       }
     } else {
       // Remove the temporary objects from the display depending the the number of points selected already
