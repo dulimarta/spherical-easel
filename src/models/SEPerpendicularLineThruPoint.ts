@@ -15,25 +15,35 @@ export class SEPerpendicularLineThruPoint extends SELine {
   /**
    * The point parent of this SEPerpendicularLine
    */
+
   private seParentPoint: SEPoint;
 
+  /**
+   * In the case of ellipses where there are upto four perpendiculars through a point, this is the index to use
+   */
+  private index: number;
   /**
    * Create an intersection point between two one-dimensional objects
    * @param line the TwoJS Line associated with this intersection
    * @param seParentOneDimensional The one-dimensional parent
    * @param seParentPoint The point parent
+   * @param normalVector
+   * @param seEndPoint
+   * @param index
    */
   constructor(
     line: Line,
     seParentOneDimensional: SEOneDimensional,
     seParentPoint: SEPoint,
     normalVector: Vector3,
-    seEndPoint: SEPoint
+    seEndPoint: SEPoint,
+    index: number
   ) {
     super(line, seParentPoint, normalVector, seEndPoint);
     this.ref = line;
     this.seParentOneDimensional = seParentOneDimensional;
     this.seParentPoint = seParentPoint;
+    this.index = index;
 
     this.name = `Perp(${seParentOneDimensional.name},${seParentPoint.name})`;
   }
@@ -52,31 +62,36 @@ export class SEPerpendicularLineThruPoint extends SELine {
         this.seParentPoint.locationVector,
         this.normalVector // the soon to be old normal vector
       );
-      // now find the vector is normals that is closest to this.normalVector (if there is more than one)
-      if (normals.length === 1) {
-        this.normalVector.copy(normals[0]);
-      } else {
-        // find the normal vector that is closest to this.Normal
-        const minAngle = Math.min(
-          ...(normals.map(vec => vec.angleTo(this.normalVector)) as number[])
+      if (normals[this.index] !== undefined) {
+        this.normalVector.copy(normals[this.index]);
+        // // now find the vector is normals that is closest to this.normalVector (if there is more than one)
+        // if (normals.length === 1) {
+        //   this.normalVector.copy(normals[0]);
+        // } else {
+        //   // find the normal vector that is closest to this.Normal
+        //   const minAngle = Math.min(
+        //     ...(normals.map(vec => vec.angleTo(this.normalVector)) as number[])
+        //   );
+        //   const ind = normals.findIndex((vec: Vector3) => {
+        //     return vec.angleTo(this.normalVector) === minAngle;
+        //   });
+        //   this.normalVector.copy(normals[ind]);
+        // }
+        // Given this.startPoint (in SELine)=this.seParentPoint and this.normalVector compute the endSEPoint
+        // This is *never* undefined because the getNormalsToLineThru *never* returns a point with
+        //  location parallel to this.seParentPoint.locationVector
+        this.tmpVector1.crossVectors(
+          this.seParentPoint.locationVector,
+          this.normalVector
         );
-        const ind = normals.findIndex((vec: Vector3) => {
-          return vec.angleTo(this.normalVector) === minAngle;
-        });
-        this.normalVector.copy(normals[ind]);
+
+        this.endSEPoint.locationVector = this.tmpVector1.normalize();
+
+        // Set the normal vector in the plottable object (the setter also calls the updateDisplay() method)
+        this.ref.normalVector = this.normalVector;
+      } else {
+        this._exists = false;
       }
-      // Given this.startPoint (in SELine)=this.seParentPoint and this.normalVector compute the endSEPoint
-      // This is *never* undefined because the getNormalsToLineThru *never* returns a point with
-      //  location parallel to this.seParentPoint.locationVector
-      this.tmpVector1.crossVectors(
-        this.seParentPoint.locationVector,
-        this.normalVector
-      );
-
-      this.endSEPoint.locationVector = this.tmpVector1.normalize();
-
-      // Set the normal vector in the plottable object (the setter also calls the updateDisplay() method)
-      this.ref.normalVector = this.normalVector;
     }
     // Update visibility
     if (this._exists && this._showing) {

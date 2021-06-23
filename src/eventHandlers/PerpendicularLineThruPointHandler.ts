@@ -29,19 +29,18 @@ import { ConvertInterPtToUserCreatedCommand } from "@/commands/ConvertInterPtToU
 import EventBus from "./EventBus";
 import { SEEllipse } from "@/models/SEEllipse";
 
+const MAXNUMBEROFPERPENDICULARS = 4;
+
 export default class PerpendicularLineThruPointHandler extends Highlighter {
   /**
    * A temporary lines to display while the user is creating a new line -- there needs to be as many temporary lines as there are possible normal lines
    */
-  private tempLine1: Line;
-  private temporaryLine1Added: boolean;
-  private temporaryNormal1 = new Vector3(1, 0, 0); // The normal to the plane of the temporary line
-  private tempLine2: Line;
-  private temporaryLine2Added: boolean;
-  private temporaryNormal2 = new Vector3(1, 0, 0); // The normal to the plane of the temporary line
+  private tempLines: Line[] = [];
+  private temporaryLinesAdded: boolean[] = [];
+  private temporaryNormals: Vector3[] = []; // The normal to the plane of the temporary line
 
   /**
-   * A temporary plottable (TwoJS) point created while the user is making the circles or segments
+   * A temporary plottable (TwoJS) point created while the user is making the perpendicular
    */
   protected temporaryPointMarker: Point;
   private temporaryPointAdded: boolean;
@@ -78,15 +77,13 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
   constructor(layers: Two.Group[]) {
     super(layers);
     // Create and style the temporary lines
-    this.tempLine1 = new Line();
-    this.tempLine1.stylize(DisplayStyle.ApplyTemporaryVariables);
-    this.store.commit.addTemporaryNodule(this.tempLine1);
-    this.temporaryLine1Added = false;
-
-    this.tempLine2 = new Line();
-    this.tempLine2.stylize(DisplayStyle.ApplyTemporaryVariables);
-    this.store.commit.addTemporaryNodule(this.tempLine2);
-    this.temporaryLine2Added = false;
+    for (let i = 0; i < MAXNUMBEROFPERPENDICULARS; i++) {
+      this.tempLines.push(new Line());
+      this.tempLines[i].stylize(DisplayStyle.ApplyTemporaryVariables);
+      this.store.commit.addTemporaryNodule(this.tempLines[i]);
+      this.temporaryLinesAdded.push(false);
+      this.temporaryNormals.push(new Vector3());
+    }
 
     // Create and style the temporary point marking the point on the perpendicular being created
     this.temporaryPointMarker = new Point();
@@ -164,137 +161,136 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
           this.temporaryPointMarker.addToLayers(this.layers);
           this.temporaryPointAdded = true;
           this.sePoint = null;
+        } else if (this.hitSEEllipses.length > 0) {
+          // The start of the line will be a point on a Ellipse
+          //  Eventually, we will create a new SEPointOneDimensional and Point
+          this.sePointOneDimensionalParent = this.hitSEEllipses[0];
+          this.sePointVector.copy(
+            this.sePointOneDimensionalParent.closestVector(
+              this.currentSphereVector
+            )
+          );
+          this.temporaryPointMarker.positionVector = this.sePointVector;
+          this.temporaryPointMarker.addToLayers(this.layers);
+          this.temporaryPointAdded = true;
+          this.sePoint = null;
+        } else {
+          // The mouse press is not near an existing point or one dimensional object.
+          //  Record the location in a temporary point (tempPointMarker found in MouseHandler).
+          //  Eventually, we will create a new SEPoint and Point
+          this.temporaryPointMarker.positionVector = this.currentSphereVector;
+          this.sePointVector.copy(this.currentSphereVector);
+          this.temporaryPointMarker.addToLayers(this.layers);
+          this.temporaryPointAdded = true;
+          this.sePoint = null;
         }
-      } else if (this.hitSEEllipses.length > 0) {
-        // The start of the line will be a point on a Ellipse
-        //  Eventually, we will create a new SEPointOneDimensional and Point
-        this.sePointOneDimensionalParent = this.hitSEEllipses[0];
-        this.sePointVector.copy(
-          this.sePointOneDimensionalParent.closestVector(
-            this.currentSphereVector
-          )
+        if (this.oneDimensional === null) {
+          EventBus.fire("show-alert", {
+            key: `handlers.perpendicularLineThruPointPointSelected`,
+            keyOptions: {},
+            type: "info"
+          });
+        }
+        this.selectOneObjectAtATime = false;
+      }
+
+      // Fill the oneDimensional object if there is a nearby one-dimensional object
+      if (this.oneDimensional === null && this.selectOneObjectAtATime) {
+        if (this.hitSESegments.length > 0) {
+          this.oneDimensional = this.hitSESegments[0];
+          this.oneDimensional.selected = true;
+          if (
+            this.sePoint === null &&
+            this.sePointOneDimensionalParent === null &&
+            this.sePointVector.isZero()
+          ) {
+            EventBus.fire("show-alert", {
+              key: `handlers.perpendicularLineThruPointSegmentSelected`,
+              keyOptions: { name: `${this.oneDimensional.name}` },
+              type: "info"
+            });
+          }
+        } else if (this.hitSELines.length > 0) {
+          this.oneDimensional = this.hitSELines[0];
+          this.oneDimensional.selected = true;
+          if (
+            this.sePoint === null &&
+            this.sePointOneDimensionalParent === null &&
+            this.sePointVector.isZero()
+          ) {
+            EventBus.fire("show-alert", {
+              key: `handlers.perpendicularLineThruPointLineSelected`,
+              keyOptions: { name: `${this.oneDimensional.name}` },
+              type: "info"
+            });
+          }
+        } else if (this.hitSECircles.length > 0) {
+          this.oneDimensional = this.hitSECircles[0];
+          this.oneDimensional.selected = true;
+          if (
+            this.sePoint === null &&
+            this.sePointOneDimensionalParent === null &&
+            this.sePointVector.isZero()
+          ) {
+            EventBus.fire("show-alert", {
+              key: `handlers.perpendicularLineThruPointCircleSelected`,
+              keyOptions: { name: `${this.oneDimensional.name}` },
+              type: "info"
+            });
+          }
+        } else if (this.hitSEEllipses.length > 0) {
+          this.oneDimensional = this.hitSEEllipses[0];
+          this.oneDimensional.selected = true;
+          if (
+            this.sePoint === null &&
+            this.sePointOneDimensionalParent === null &&
+            this.sePointVector.isZero()
+          ) {
+            EventBus.fire("show-alert", {
+              key: `handlers.perpendicularLineThruPointEllipseSelected`,
+              keyOptions: { name: `${this.oneDimensional.name}` },
+              type: "info"
+            });
+          }
+        }
+      }
+
+      // As soon as both oneDimensional and point objects are not null do the perpendicular
+      if (
+        this.oneDimensional !== null &&
+        (this.sePoint !== null ||
+          this.sePointOneDimensionalParent !== null ||
+          !this.sePointVector.isZero())
+      ) {
+        this.createPerpendicular(
+          this.oneDimensional,
+          this.sePointOneDimensionalParent,
+          this.sePointVector,
+          this.sePoint
         );
-        this.temporaryPointMarker.positionVector = this.sePointVector;
-        this.temporaryPointMarker.addToLayers(this.layers);
-        this.temporaryPointAdded = true;
+        // Reset the oneDimensional and point in preparation for another perpendicular.
+        this.oneDimensional.selected = false;
+        this.oneDimensional = null;
+        this.sePointOneDimensionalParent = null;
+        if (this.sePoint !== null) {
+          this.sePoint.selected = false;
+        }
         this.sePoint = null;
-      } else {
-        // The mouse press is not near an existing point or one dimensional object.
-        //  Record the location in a temporary point (tempPointMarker found in MouseHandler).
-        //  Eventually, we will create a new SEPoint and Point
-        this.temporaryPointMarker.positionVector = this.currentSphereVector;
-        this.sePointVector.copy(this.currentSphereVector);
-        this.temporaryPointMarker.addToLayers(this.layers);
-        this.temporaryPointAdded = true;
-        this.sePoint = null;
-      }
-      if (this.oneDimensional === null) {
-        EventBus.fire("show-alert", {
-          key: `handlers.perpendicularLineThruPointPointSelected`,
-          keyOptions: {},
-          type: "info"
-        });
-      }
-      this.selectOneObjectAtATime = false;
-    }
-
-    // Fill the oneDimensional object if there is a nearby one-dimensional object
-    if (this.oneDimensional === null && this.selectOneObjectAtATime) {
-      if (this.hitSESegments.length > 0) {
-        this.oneDimensional = this.hitSESegments[0];
-        this.oneDimensional.selected = true;
-        if (
-          this.sePoint === null &&
-          this.sePointOneDimensionalParent === null &&
-          this.sePointVector.isZero()
-        ) {
-          EventBus.fire("show-alert", {
-            key: `handlers.perpendicularLineThruPointSegmentSelected`,
-            keyOptions: { name: `${this.oneDimensional.name}` },
-            type: "info"
-          });
+        if (this.temporaryPointAdded) {
+          this.temporaryPointMarker.removeFromLayers();
+          this.temporaryPointAdded = false;
         }
-      } else if (this.hitSELines.length > 0) {
-        this.oneDimensional = this.hitSELines[0];
-        this.oneDimensional.selected = true;
-        if (
-          this.sePoint === null &&
-          this.sePointOneDimensionalParent === null &&
-          this.sePointVector.isZero()
-        ) {
-          EventBus.fire("show-alert", {
-            key: `handlers.perpendicularLineThruPointLineSelected`,
-            keyOptions: { name: `${this.oneDimensional.name}` },
-            type: "info"
-          });
-        }
-      } else if (this.hitSECircles.length > 0) {
-        this.oneDimensional = this.hitSECircles[0];
-        this.oneDimensional.selected = true;
-        if (
-          this.sePoint === null &&
-          this.sePointOneDimensionalParent === null &&
-          this.sePointVector.isZero()
-        ) {
-          EventBus.fire("show-alert", {
-            key: `handlers.perpendicularLineThruPointCircleSelected`,
-            keyOptions: { name: `${this.oneDimensional.name}` },
-            type: "info"
-          });
-        }
-      } else if (this.hitSEEllipses.length > 0) {
-        this.oneDimensional = this.hitSEEllipses[0];
-        this.oneDimensional.selected = true;
-        if (
-          this.sePoint === null &&
-          this.sePointOneDimensionalParent === null &&
-          this.sePointVector.isZero()
-        ) {
-          EventBus.fire("show-alert", {
-            key: `handlers.perpendicularLineThruPointEllipseSelected`,
-            keyOptions: { name: `${this.oneDimensional.name}` },
-            type: "info"
-          });
-        }
-      }
-    }
-
-    // As soon as both oneDimensional and point objects are not null do the perpendicular
-    if (
-      this.oneDimensional !== null &&
-      (this.sePoint !== null ||
-        this.sePointOneDimensionalParent !== null ||
-        !this.sePointVector.isZero())
-    ) {
-      this.createPerpendicular(
-        this.oneDimensional,
-        this.sePointOneDimensionalParent,
-        this.sePointVector,
-        this.sePoint
-      );
-      // Reset the oneDimensional and point in preparation for another perpendicular.
-      this.oneDimensional.selected = false;
-      this.oneDimensional = null;
-      this.sePointOneDimensionalParent = null;
-      if (this.sePoint !== null) {
-        this.sePoint.selected = false;
-      }
-      this.sePoint = null;
-      if (this.temporaryPointAdded) {
         this.temporaryPointMarker.removeFromLayers();
         this.temporaryPointAdded = false;
+
+        this.temporaryLinesAdded = [];
+        this.tempLines.forEach(line => {
+          line.removeFromLayers();
+          this.temporaryLinesAdded.push(false);
+        });
+
+        this.sePointVector.set(0, 0, 0);
       }
-      this.temporaryPointMarker.removeFromLayers();
-      this.temporaryPointAdded = false;
-      if (this.temporaryLine1Added) {
-        this.tempLine1.removeFromLayers();
-        this.temporaryLine1Added = false;
-      }
-      if (this.temporaryLine2Added) {
-        this.tempLine2.removeFromLayers();
-        this.temporaryLine2Added = false;
-      }
-      this.sePointVector.set(0, 0, 0);
     }
   }
 
@@ -421,28 +417,21 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
         }
         const normalList = this.oneDimensional.getNormalsToLineThru(
           vectorLocation,
-          this.temporaryNormal1
+          this.temporaryNormals[0] // In Ellipses this is ignored
         );
-        this.temporaryNormal1.copy(normalList[0]); // there is always at least one normal
-        // set the normal in the plottable object(s)
-        this.tempLine1.normalVector = this.temporaryNormal1;
-        // add the line exactly once
-        if (!this.temporaryLine1Added) {
-          this.tempLine1.addToLayers(this.layers);
-          this.temporaryLine1Added = true;
-        }
-
-        // is there a second normal?
-        if (normalList[1] !== undefined) {
-          this.temporaryNormal2.copy(normalList[0]);
-          // set the normal in the plottable object(s)
-          this.tempLine2.normalVector = this.temporaryNormal2;
-          // add the line exactly once
-          if (!this.temporaryLine2Added) {
-            this.tempLine2.addToLayers(this.layers);
-            this.temporaryLine2Added = true;
+        // console.log("number of normals", normalList);
+        //set the display of the normals and the vectors
+        this.temporaryNormals.forEach((vec, ind) => {
+          if (ind < normalList.length) {
+            this.temporaryLinesAdded[ind] = true;
+            vec.copy(normalList[ind]);
+            this.tempLines[ind].normalVector = vec;
+            this.tempLines[ind].addToLayers(this.layers);
+          } else {
+            this.temporaryLinesAdded[ind] = false;
+            this.tempLines[ind].removeFromLayers();
           }
-        }
+        });
       }
     }
   }
@@ -468,11 +457,10 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
     this.temporaryPointMarker.removeFromLayers();
     this.temporaryPointAdded = false;
 
-    this.tempLine1.removeFromLayers();
-    this.temporaryLine1Added = false;
-
-    this.tempLine2.removeFromLayers();
-    this.temporaryLine2Added = false;
+    this.temporaryNormals.forEach((vec, ind) => {
+      this.temporaryLinesAdded[ind] = false;
+      this.tempLines[ind].removeFromLayers();
+    });
 
     this.sePointVector.set(0, 0, 0);
 
@@ -581,8 +569,10 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
         // In this case any line containing the sePoint will be perpendicular to the line/segment,
         // grab the temporary normal vector if it has been added otherwise make the perpendicular pass through the
         // mid point of the start and end vector or if that fails the start vector
-        if (this.temporaryLine1Added) {
-          this.tmpVector.copy(this.temporaryNormal1);
+
+        // In the line and segment case there is always exactly one perpendicular line
+        if (this.temporaryLinesAdded[0]) {
+          this.tmpVector.copy(this.temporaryNormals[0]);
         } else if (
           !this.tmpVector1
             .crossVectors(
@@ -618,11 +608,12 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
       // nearly antipodal or in the same direction)
       if (this.tmpVector.isZero(SETTINGS.nearlyAntipodalIdeal)) {
         //console.log("parallel normal and sePointVector in handler");
-        // In this case any line containing the sePoint will be perpendicular to the line/segment,
+        // In this case any line containing the sePoint will be perpendicular to the circle,
         // grab the temporary normal vector if it has been added otherwise make the perpendicular pass through the
         // circle point
-        if (this.temporaryLine1Added) {
-          this.tmpVector.copy(this.temporaryNormal1);
+        // In the circle case there is always exactly one perpendicular line
+        if (this.temporaryLinesAdded[0]) {
+          this.tmpVector.copy(this.temporaryNormals[0]);
         } else {
           this.tmpVector.crossVectors(
             sePointVector,
@@ -637,13 +628,23 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
       normalVectors = oneDimensional
         .getNormalsToLineThru(
           sePointVector,
-          this.temporaryNormal1 // ignored in the case of SEEllipse
+          this.temporaryNormals[0] // ignored in the case of SEEllipse
         )
         .map(vec => vec.normalize());
     }
 
     // normals is the array of normal vector to the plane containing the line perpendicular to the one Dimensional through the point
-    normalVectors.forEach(vec => {
+    // create four such lines (not the number of normals in normalVector because if the user creates the perpendicular when there
+    // are only two perpendiculars, then moves the point to a place where there are four, the other two perpendiculars are not created)
+    for (let index = 0; index < 4; index++) {
+      // set the perpendicular vector
+      let vec: Vector3;
+      if (normalVectors[index] !== undefined) {
+        vec = normalVectors[index];
+      } else {
+        vec = normalVectors[0]; // there is always at least one normal
+      }
+
       // Create the endSEPoint for the line
       // First we have to create a plottable point because we can't create a SEPoint with out a plottable one
       const plottableEndPoint = new NonFreePoint();
@@ -653,6 +654,7 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
       const endSEPoint = new SEPoint(plottableEndPoint);
       endSEPoint.showing = false; // this never changes
       endSEPoint.exists = true; // this never changes
+
       endSEPoint.locationVector.crossVectors(sePointVector, vec);
 
       // Create a plottable line to display for this perpendicular
@@ -667,7 +669,8 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
         oneDimensional,
         this.sePoint! /* start point */,
         vec /* normal vector */,
-        endSEPoint /* end point */
+        endSEPoint /* end point */,
+        index /*The index of the perpendicular*/
       );
       // Update the display of the perpendicular line
       newPerpLine.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
@@ -729,7 +732,7 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
           item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points
           newSELabel.showing = false;
         });
-    });
+    }
     addPerpendicularLineGroup.execute();
   }
   activate(): void {

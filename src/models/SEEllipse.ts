@@ -258,7 +258,7 @@ export class SEEllipse extends SENodule
     const closestStandardVector = new Vector3();
     closestStandardVector.copy(
       SENodule.closestVectorParametrically(
-        this.ref.E.bind(this.ref), // bind the this.ref so that this in the this.ref.E is this.ref
+        this.ref.E.bind(this.ref), // bind the this.ref so that this in the this.ref.E method is this.ref
         this.ref.Ep.bind(this.ref),
         this.ref.Epp.bind(this.ref),
         transformedToStandard,
@@ -317,7 +317,7 @@ export class SEEllipse extends SENodule
    */
   public getNormalsToLineThru(
     sePointVector: Vector3,
-    oldNormal: Vector3 // ignored for Ellipse, but not other one-dimensional objects
+    oldNormal: Vector3 // ignored for Ellipse and Circle, but not other one-dimensional objects
   ): Vector3[] {
     // first check to see if the sePointVector is antipodal or the same as the center of the ellipse
     // First set tmpVector to the center of the ellipse
@@ -333,20 +333,21 @@ export class SEEllipse extends SENodule
     // Check to see if the tmpVector is zero (i.e the center and  idealUnit vectors are parallel -- ether
     // nearly antipodal or in the same direction)
     if (this.tmpVector.isZero(SETTINGS.nearlyAntipodalIdeal)) {
-      // In this case there are two lines containing the sePoint will be perpendicular to the ellipse, but
-      // we want to return the one closest to the oldNormal DO NOT DO THIS FOR NOW
-      this.tmpVector.crossVectors(
+      // In this case there are two lines containing the sePoint will be perpendicular to the ellipse,
+      this.tmpVector1.crossVectors(
         this._focus1SEPoint.locationVector,
         this._focus2SEPoint.locationVector
       ).normalize; // one possible normal vector
 
       // First set tmpVector1 to the center of the ellipse
-      this.tmpVector1
+      this.tmpVector2
         .addVectors(
           this._focus1SEPoint.locationVector,
           this._focus2SEPoint.locationVector
         )
         .normalize();
+
+      this.tmpVector.crossVectors(this.tmpVector1, this.tmpVector2);
       // // now set tmpVector1 to the other possible normal vector
       // this.tmpVector1.crossVectors(this.tmpVector, this.tmpVector1).normalize;
       // if (
@@ -354,13 +355,19 @@ export class SEEllipse extends SENodule
       // ) {
       //   return [this.tmpVector];
       // } else {
-      return [this.tmpVector, this.tmpVector1];
+      return [this.tmpVector1, this.tmpVector];
       // }
     } else {
+      const transformedToStandard = new Vector3();
+      transformedToStandard.copy(sePointVector);
+      transformedToStandard.applyMatrix4(
+        this.tmpMatrix.getInverse(this.ref.ellipseFrame)
+      );
+
       const normalList = SENodule.getNormalsToLineThruParametrically(
-        this.ref.E,
-        this.ref.Ep,
-        sePointVector,
+        this.ref.E.bind(this.ref), // bind the this.ref so that this in the this.ref.E method is this.ref
+        this.ref.Ep.bind(this.ref), // bind the this.ref so that this in the this.ref.E method is this.ref
+        transformedToStandard,
         this.ref.tMin,
         this.ref.tMax
       );
@@ -371,7 +378,7 @@ export class SEEllipse extends SENodule
       // const ind = normalList.findIndex((vec: Vector3) => {
       //   return vec.angleTo(oldNormal) === minAngle;
       // });
-      return normalList;
+      return normalList.map(vec => vec.applyMatrix4(this.ref.ellipseFrame));
     }
   }
 
