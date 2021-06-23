@@ -1,25 +1,5 @@
-import Vue from "vue";
-import Vuex from "vuex";
-import { mount, createLocalVue, shallowMount } from "@vue/test-utils";
 import TestedComponent from "../Dialog.vue";
-import vuetify from "@/plugins/vuetify";
-import Vuetify from "vuetify";
-
-const localVue = createLocalVue();
-// localVue.use(Vuex);
-localVue.use(Vuetify);
-// Vue.use(Vuetify);
-
-const createComponent = (extraOption: any) => {
-  return mount(TestedComponent, {
-    // vuetify: Vuetify,
-    // store,
-    localVue,
-    extensions: { plugins: [Vuetify] },
-    attachToDocument: true,
-    ...extraOption
-  });
-};
+import { createWrapper } from "../../../tests/vue-helper";
 
 describe("Dialog.vue", () => {
   beforeEach(() => {
@@ -27,12 +7,12 @@ describe("Dialog.vue", () => {
   });
 
   it("is a component", () => {
-    const wrapper = createComponent({});
+    const wrapper = createWrapper(TestedComponent);
     expect(wrapper).toBeTruthy();
   });
 
   it("shows correct title", async () => {
-    const wrapper = createComponent({
+    const wrapper = createWrapper(TestedComponent, {
       propsData: {
         title: "Dialog Title"
       }
@@ -45,7 +25,7 @@ describe("Dialog.vue", () => {
   });
 
   it("shows yes button with correct label", async () => {
-    const wrapper = createComponent({
+    const wrapper = createWrapper(TestedComponent, {
       propsData: {
         yesText: "Hello"
       }
@@ -58,7 +38,7 @@ describe("Dialog.vue", () => {
   });
 
   it("shows no button with correct label", async () => {
-    const wrapper = createComponent({
+    const wrapper = createWrapper(TestedComponent, {
       propsData: {
         noText: "No Hello",
         noAction: () => {}
@@ -73,7 +53,7 @@ describe("Dialog.vue", () => {
 
   it("calls positive button handler", async () => {
     const fakeHandler = jest.fn();
-    const wrapper = createComponent({
+    const wrapper = createWrapper(TestedComponent, {
       propsData: {
         yesAction: fakeHandler
       }
@@ -87,7 +67,7 @@ describe("Dialog.vue", () => {
 
   it("calls negative button handler", async () => {
     const fakeHandler = jest.fn();
-    const wrapper = createComponent({
+    const wrapper = createWrapper(TestedComponent, {
       propsData: {
         noText: "Don't do it",
         noAction: fakeHandler

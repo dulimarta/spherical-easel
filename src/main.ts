@@ -29,7 +29,7 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 
 // Allow all .vue components to access Firebase Auth, Firestore, and Storage
-// vianew instance variables this.$appAuth, this.$appDB, this.$appStorage
+// via new instance variables this.$appAuth, this.$appDB, this.$appStorage
 Vue.prototype.$appAuth = firebase.auth();
 Vue.prototype.$appDB = firebase.firestore();
 Vue.prototype.$appStorage = firebase.storage();

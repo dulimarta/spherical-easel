@@ -1,16 +1,16 @@
 // import Vue from "vue";
-import Vuex from "vuex";
-import { mount, createLocalVue } from "@vue/test-utils";
+// import Vuex from "vuex";
+// import { createLocalVue } from "@vue/test-utils";
 import ConstructionList from "../ConstructionList.vue";
 import { SphericalConstruction } from "@/types";
 import { Matrix4 } from "three";
-import Vuetify from "vuetify";
-import store from "@/store";
-import axios, { AxiosStatic } from "axios";
+// import Vuetify from "vuetify";
+import axios from "axios";
+import { createWrapper } from "../../../tests/vue-helper";
 
-const localVue = createLocalVue();
-localVue.use(Vuex);
-localVue.use(Vuetify);
+// const localVue = createLocalVue();
+// localVue.use(Vuex);
+// localVue.use(Vuetify);
 jest.mock("axios"); // Do this once
 
 const sampleData = () => {
@@ -31,23 +31,16 @@ const sampleData = () => {
   return arr;
 };
 
-const createComponent = (extraOption: any) => {
-  return mount(ConstructionList, {
-    // vuetify: Vuetify,
-    propsData: {
-      items: []
+const createComponent = (extraOption: any) =>
+  createWrapper(
+    ConstructionList,
+    {
+      stubs: { VIcon: true },
+      mocks: { $appAuth: { currentUser: null } },
+      ...extraOption
     },
-    store,
-    localVue,
-    mocks: {
-      $appAuth: {
-        currentUser: null
-      }
-    },
-    extensions: { plugins: [Vuetify] },
-    ...extraOption
-  });
-};
+    false // deep mount
+  );
 
 const TEST_DATA = sampleData();
 describe("Construction List", () => {
@@ -95,20 +88,23 @@ describe("Construction List", () => {
     const cList = wrapper.findAll("._test_constructionItem");
     expect(cList.length).toBeGreaterThan(0);
     const el = cList.at(0);
-    console.info("Is it a over", el.isVueInstance());
-    await el.setData({ hover: true });
-    // console.log("Before mouseover", el.html());
-    el.trigger("mouseover");
+    await el.trigger("mouseover");
     await wrapper.vm.$nextTick();
-    // TODO: the HTML output shows no differences between
-    // before and after mouseover.
-    // Ideally we should verify that the buttons in the overlay
-    // layer exists
-    // fail("Incomplete test");
+    const content1 = el.find("._test_constructionOverlay [style*=opacity]");
+    content1.element.style.setProperty("opacity", "1.0");
+    console.log("After hover", content1.element, content1.element.style);
+    await wrapper.vm.$nextTick();
+    const opaqueContent = el.find("._test_constructionOverlay");
+    console.log("Opaque?", opaqueContent.html());
+    // FIXME:
+    // From inspection of the HTML tree at runtime Vuetify initially hides
+    // the overlay by setting its opacity to 0.
+    // On a mouseover event, the opacity is set to a non-zero value
+    // However, find() is not able to locate the hidden DOM tree
   });
 
   // TODO: the following emit events can't be tested until
-  // we have a way to poke into the items on the v-overlay
+  // we have a way to poke into the hidden items on the v-overlay
   xit("emits load-requested", () => {
     fail("Incomplete test");
   });

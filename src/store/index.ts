@@ -14,3 +14,12 @@ const _store = new Vuex.Store({
 });
 export default _store;
 export const SEStore = getModule(MyStore, _store);
+
+export const createStore = () =>
+  new Vuex.Store({
+    modules: {
+      /* IMPORTANT: the module name "se" below must match exactly 
+      the "name" property declared in @Module annotation in ./se-module.tx */
+      se: MyStore
+    }
+  });

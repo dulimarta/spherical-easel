@@ -5,6 +5,8 @@ module.exports = {
     by Jest, we must provide a stub implementation of JS files imported from node_modules/examples/jsm/controls */
     // "three/examples/jsm/controls/(.*)$": "<rootDir>/tests/stub-modules/$1"
     // "^@/(.*)$": "<rootDir>/src/$1"
+    // Skip parsing CSS files
+    "\\.(css|less)$": "<rootDir>/src/assets/css/__mocks__/styleMock.js"
   },
   // moduleFileExtensions: ["js", "ts", "vue"],
   // transform: {
