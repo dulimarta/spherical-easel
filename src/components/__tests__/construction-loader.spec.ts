@@ -88,6 +88,7 @@ describe("Construction Loader", () => {
     const wrapper = createComponent({});
     expect(wrapper).toBeTruthy();
   });
+
   xit("shows the share dialog", async () => {
     const wrapper = createComponent({});
     const d1 = wrapper.find("#_test_constructionShareDialog");
