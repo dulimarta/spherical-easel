@@ -16,6 +16,10 @@
         medium>
         $vuetify.icons.value.circle
       </v-icon>
+      <v-icon v-else-if="isEllipse"
+        medium>
+        $vuetify.icons.value.ellipse
+      </v-icon>
       <v-icon v-else-if="isIntersectionPoint"
         medium>
         $vuetify.icons.value.intersectionPoint
@@ -102,6 +106,7 @@ import SETTINGS from "@/global-settings";
 import { UpdateMode } from "@/types";
 import { SEAngleMarker } from "@/models/SEAngleMarker";
 import { SEPointCoordinate } from "@/models/SEPointCoordinate";
+import { SEEllipse } from "@/models/SEEllipse";
 
 @Component
 export default class SENoduleItem extends Vue {
@@ -168,6 +173,9 @@ export default class SENoduleItem extends Vue {
   get isCircle(): boolean {
     return this.node instanceof SECircle;
   }
+  get isEllipse(): boolean {
+    return this.node instanceof SEEllipse;
+  }
   get isIntersectionPoint(): boolean {
     return this.node instanceof SEIntersectionPoint;
   }
@@ -190,6 +198,7 @@ export default class SENoduleItem extends Vue {
       this.node instanceof SELine ||
       this.node instanceof SESegment ||
       this.node instanceof SECircle ||
+      this.node instanceof SEEllipse ||
       this.node instanceof SEAngleMarker
     );
   }
@@ -203,7 +212,8 @@ export default class SENoduleItem extends Vue {
       this.node instanceof SEPoint ||
       this.node instanceof SELine ||
       this.node instanceof SESegment ||
-      this.node instanceof SECircle
+      this.node instanceof SECircle ||
+      this.node instanceof SEEllipse
     ) {
       return this.node.label!.ref.shortName;
     } else if (this.node instanceof SEExpression) {
@@ -223,7 +233,8 @@ export default class SENoduleItem extends Vue {
     } else if (
       this.node instanceof SELine ||
       this.node instanceof SESegment ||
-      this.node instanceof SECircle
+      this.node instanceof SECircle ||
+      this.node instanceof SEEllipse
     ) {
       const nameList = this.node.parents
         .map(p => p.name.toString())

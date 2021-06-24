@@ -60,6 +60,14 @@
           color="accent"
           :elevation="4"
           class="my-3"
+          v-show="ellipses.length > 0">
+          <SENoduleList i18LabelKey="objects.ellipses"
+            :children="ellipses"></SENoduleList>
+        </v-sheet>
+        <v-sheet rounded
+          color="accent"
+          :elevation="4"
+          class="my-3"
           v-show="expressionss.length > 0">
           <SENoduleList i18LabelKey="objects.measurements"
             :children="expressionss"></SENoduleList>
@@ -106,6 +114,9 @@ export default class ObjectTree extends Vue {
 
   @State((s: AppState) => s.seCircles)
   readonly circles!: SENodule[];
+
+  @State((s: AppState) => s.seEllipses)
+  readonly ellipses!: SENodule[];
 
   @State((s: AppState) => s.seNodules)
   readonly nodules!: SENodule[];

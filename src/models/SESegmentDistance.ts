@@ -25,7 +25,7 @@ export class SESegmentDistance extends SEMeasurement {
   public get shortName(): string {
     return (
       this.name +
-      `- Dist(${this.firstSEPoint.label!.ref.shortName},${
+      ` - Dist(${this.firstSEPoint.label!.ref.shortName},${
         this.secondSEPoint.label!.ref.shortName
       }):${this.prettyValue}`
     );
