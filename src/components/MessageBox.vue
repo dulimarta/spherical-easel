@@ -14,12 +14,17 @@ import Vue from "vue";
 import Component from "vue-class-component";
 import EventBus from "@/eventHandlers/EventBus";
 import i18n from "../i18n";
-import { TranslateResult } from "vue-i18n";
+// import { TranslateResult } from "vue-i18n";
 
+interface MessageType {
+  key: string;
+  keyOptions?: any;
+  type: "success" | "info" | "error" | "warning";
+}
 @Component({})
 export default class MessageBox extends Vue {
   private showMe = false;
-  private messages: any[] = [];
+  private messages: MessageType[] = [];
   private messageText: string | null = null;
   private messageType: string | null = null;
   private messageTimer: NodeJS.Timeout | null = null;
@@ -28,7 +33,7 @@ export default class MessageBox extends Vue {
     EventBus.listen("show-alert", this.addMessage);
   }
 
-  addMessage(m: any): void {
+  addMessage(m: MessageType): void {
     if (this.messageTimer) {
       // We have an active message on display
       console.debug("Queue incoming messages", m);
@@ -46,12 +51,10 @@ export default class MessageBox extends Vue {
     this.showMe = false;
     await Vue.nextTick();
     if (this.messages.length > 0) {
-      const next = this.messages.shift();
-      const translation = i18n
-        .t((next as any).key, (next as any).keyOptions)
-        .toString();
+      const next = this.messages.shift() as MessageType;
+      const translation = i18n.t(next.key, next.keyOptions).toString();
       this.messageText = translation;
-      this.messageType = (next as any).type;
+      this.messageType = next.type;
       this.showMe = true;
     } else {
       console.debug("Message queue is empty");

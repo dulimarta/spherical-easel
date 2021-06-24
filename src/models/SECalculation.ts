@@ -79,7 +79,7 @@ export class SECalculation extends SEExpression {
         varMap.set(m.name, m.value);
         // }
       });
-    console.log("recalc", varMap);
+    // console.log("recalc", varMap);
     this.computedValue = parser.evaluateWithVars(this.exprText, varMap);
   }
 

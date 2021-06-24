@@ -35,11 +35,12 @@ describe("Construction Loader", () => {
 
   it("is a component", () => {
     const wrapper = createWrapper(TestedComponent, {
-      propsData: {
-        items: []
+      mountOptions: {
+        propsData: {
+          items: []
+        }
       },
-      mocks: {
-        $t: (msg: string) => msg,
+      mockOptions: {
         $appAuth: fakeFirebase.auth(),
         $appDB: fakeFirebase.firestore()
       }
@@ -49,11 +50,12 @@ describe("Construction Loader", () => {
 
   xit("shows the share dialog", async () => {
     const wrapper = createWrapper(TestedComponent, {
-      propsData: {
-        items: []
+      mountOptions: {
+        propsData: {
+          items: []
+        }
       },
-      mocks: {
-        $t: (msg: string) => msg,
+      mockOptions: {
         $appAuth: fakeFirebase.auth(),
         $appDB: fakeFirebase.firestore()
       }

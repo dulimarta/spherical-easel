@@ -4,11 +4,10 @@ import { createWrapper } from "../../../tests/vue-helper";
 
 const createComponent = () =>
   createWrapper(TestComponent, {
-    stubs: {
-      VIcon: true
-    },
-    mocks: {
-      $t: (msg: string) => msg
+    mountOptions: {
+      stubs: {
+        VIcon: true
+      }
     }
   });
 

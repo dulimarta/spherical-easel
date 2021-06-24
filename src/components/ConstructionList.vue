@@ -88,18 +88,19 @@ const SE = namespace("se");
 
 @Component
 export default class extends Vue {
-  readonly $appAuth!: FirebaseAuth;
   @Prop()
-  items!: Array<SphericalConstruction>;
+  readonly items!: Array<SphericalConstruction>;
 
-  @Prop({ default: false })
-  allowSharing!: boolean;
+  @Prop({ type: Boolean })
+  readonly allowSharing!: boolean;
 
   @SE.State((s: AppState) => s.svgCanvas)
   readonly svgCanvas!: HTMLDivElement | null;
 
   @SE.State((s: AppState) => s.inverseTotalRotationMatrix)
   readonly inverseTotalRotationMatrix!: Matrix4;
+
+  readonly $appAuth!: FirebaseAuth;
 
   svgParent: HTMLDivElement | null = null;
   svgRoot!: SVGElement;

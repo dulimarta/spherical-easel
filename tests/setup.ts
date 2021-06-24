@@ -12,6 +12,14 @@ import { config } from "@vue/test-utils";
 // Vue.use(Vuetify);
 // Vue.use(VueI18n);
 
+// Sove Vuetify components (like VDialog) look for an ancestor element
+// with "data-app" attribute set. Missing the element, you will get
+// lots of warning messaging during testing.
+// Adding an extra div under the body solves the issue
+const app = document.createElement("div");
+app.setAttribute("data-app", "true");
+document.body.appendChild(app);
+
 // VueTestUtils.config?.mocks["$t"] = msg => translations[locale][msg];
 if (config) {
   // config.mocks["$t"] = key => key;

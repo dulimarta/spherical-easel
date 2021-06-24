@@ -20,7 +20,7 @@ export const createTester = () => {
 
 export const createWrapper = (
   component: VueClass<Vue>,
-  options = {},
+  { mountOptions = {}, mockOptions = {} } = {},
   isShallow = false
 ) => {
   const { localVue, store } = createTester();
@@ -34,14 +34,19 @@ export const createWrapper = (
   });
   const configOption = {
     store,
+    vuetify: vt,
     router,
     localVue,
     mocks: {
-      $t: (msg: string) => msg
+      $t: (msg: string) => msg,
+      $vuetify: {
+        theme: {} as any
+      },
+      ...mockOptions
     },
-
     extensions: { plugins: [Vuetify] },
-    ...options
+    // attachToDocument: true,
+    ...mountOptions
   };
   return isShallow
     ? shallowMount(component, configOption)

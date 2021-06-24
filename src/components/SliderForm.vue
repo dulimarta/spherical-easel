@@ -3,26 +3,27 @@
   <v-form v-model="isValid">
     <div id="dataEntry">
       <v-text-field v-bind:label="$t('objectTree.min')"
-        class="field"
+        class="field _test_input"
         outlined
         dense
         v-model.number="sliderMin"
         :error="sliderMin > sliderMax">
       </v-text-field>
       <v-text-field v-bind:label="$t('objectTree.step')"
-        class="field"
+        class="field _test_input"
         outlined
         dense
         v-model.number="sliderStep"
         :error="sliderStep > sliderMax - sliderMin"></v-text-field>
       <v-text-field v-bind:label="$t('objectTree.max')"
-        class="field"
+        class="field _test_input"
         outlined
         dense
         v-model.number="sliderMax"
         :error="sliderMax < sliderMin"></v-text-field>
     </div>
-    <v-slider v-model="sliderValue"
+    <v-slider id="_test_slider"
+      v-model="sliderValue"
       :min="sliderMin"
       :max="sliderMax"
       :step="sliderStep"
@@ -33,7 +34,8 @@
     <v-divider>
     </v-divider>
     <div id="action">
-      <v-btn color="primary"
+      <v-btn id="_test_add_slider"
+        color="primary"
         text
         :disabled="!isValid"
         @click="addSlider">{{$t("objectTree.create")}}</v-btn>

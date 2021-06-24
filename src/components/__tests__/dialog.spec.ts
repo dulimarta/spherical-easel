@@ -13,8 +13,10 @@ describe("Dialog.vue", () => {
 
   it("shows correct title", async () => {
     const wrapper = createWrapper(TestedComponent, {
-      propsData: {
-        title: "Dialog Title"
+      mountOptions: {
+        propsData: {
+          title: "Dialog Title"
+        }
       }
     });
     // console.log("Dialog", wrapper.html());
@@ -26,8 +28,10 @@ describe("Dialog.vue", () => {
 
   it("shows yes button with correct label", async () => {
     const wrapper = createWrapper(TestedComponent, {
-      propsData: {
-        yesText: "Hello"
+      mountOptions: {
+        propsData: {
+          yesText: "Hello"
+        }
       }
     });
     // console.log("Dialog", wrapper.html());
@@ -39,9 +43,11 @@ describe("Dialog.vue", () => {
 
   it("shows no button with correct label", async () => {
     const wrapper = createWrapper(TestedComponent, {
-      propsData: {
-        noText: "No Hello",
-        noAction: () => {}
+      mountOptions: {
+        propsData: {
+          noText: "No Hello",
+          noAction: () => {}
+        }
       }
     });
     // console.log("Dialog", wrapper.html());
@@ -54,8 +60,10 @@ describe("Dialog.vue", () => {
   it("calls positive button handler", async () => {
     const fakeHandler = jest.fn();
     const wrapper = createWrapper(TestedComponent, {
-      propsData: {
-        yesAction: fakeHandler
+      mountOptions: {
+        propsData: {
+          yesAction: fakeHandler
+        }
       }
     });
     await wrapper.setData({ visible: true });
@@ -68,9 +76,11 @@ describe("Dialog.vue", () => {
   it("calls negative button handler", async () => {
     const fakeHandler = jest.fn();
     const wrapper = createWrapper(TestedComponent, {
-      propsData: {
-        noText: "Don't do it",
-        noAction: fakeHandler
+      mountOptions: {
+        propsData: {
+          noText: "Don't do it",
+          noAction: fakeHandler
+        }
       }
     });
     await wrapper.setData({ visible: true });
