@@ -10,6 +10,7 @@ import store from "@/store";
 import { CommandGroup } from "@/commands/CommandGroup";
 import EventBus from "./EventBus";
 import { SEPoint } from "@/models/SEPoint";
+import { SEEllipse } from "@/models/SEEllipse";
 
 export default class IntersectionPointHandler extends Highlighter {
   /**
@@ -58,6 +59,8 @@ export default class IntersectionPointHandler extends Highlighter {
           this.oneDimensional1 = this.hitSELines[0];
         } else if (this.hitSECircles.length > 0) {
           this.oneDimensional1 = this.hitSECircles[0];
+        } else if (this.hitSEEllipses.length > 0) {
+          this.oneDimensional1 = this.hitSEEllipses[0];
         }
         if (this.oneDimensional1 !== null) {
           this.oneDimensional1.selected = true;
@@ -75,6 +78,8 @@ export default class IntersectionPointHandler extends Highlighter {
           this.oneDimensional2 = this.hitSELines[0];
         } else if (this.hitSECircles.length > 0) {
           this.oneDimensional2 = this.hitSECircles[0];
+        } else if (this.hitSEEllipses.length > 0) {
+          this.oneDimensional2 = this.hitSEEllipses[0];
         }
         if (this.oneDimensional2 !== null) {
           if (this.oneDimensional1.id !== this.oneDimensional2.id) {
@@ -120,6 +125,8 @@ export default class IntersectionPointHandler extends Highlighter {
       this.hitSELines[0].glowing = true;
     } else if (this.hitSECircles.length > 0) {
       this.hitSECircles[0].glowing = true;
+    } else if (this.hitSEEllipses.length > 0) {
+      this.hitSEEllipses[0].glowing = true;
     }
   }
 
@@ -151,8 +158,8 @@ export default class IntersectionPointHandler extends Highlighter {
     //
     // Make sure the SENodules are in the correct order: SELines, SESegments, then SECircles.
     //  That the argument pair to the store.getters.intersectTwoObjects() method is one of:
-    //  (SELine,SELine), (SELine,SESegment), (SELine,SECircle), (SESegment, SESegment),
-    //      (SESegment, SECircle), (SECircle, SECircle)
+    //  (SELine,SELine), (SELine,SESegment),  (SELine,SECircle),(SELine,SEEllipse), (SESegment, SESegment),
+    //      (SESegment, SECircle), (SESegment, SEEllipse),(SECircle, SECircle),(SECircle, SEEllipse)
     //  If they have the same type put them in alphabetical order.
     if (oneDimensional1 instanceof SELine) {
       // Line line intersection
@@ -181,6 +188,14 @@ export default class IntersectionPointHandler extends Highlighter {
       }
       // Line circle intersection
       if (oneDimensional2 instanceof SECircle) {
+        store.getters
+          .intersectTwoObjects(oneDimensional1, oneDimensional2)
+          .forEach((element: IntersectionReturnType) =>
+            this.updatedIntersectionInfo.push(element)
+          );
+      }
+      // Line ellipse intersection
+      if (oneDimensional2 instanceof SEEllipse) {
         store.getters
           .intersectTwoObjects(oneDimensional1, oneDimensional2)
           .forEach((element: IntersectionReturnType) =>
@@ -222,6 +237,14 @@ export default class IntersectionPointHandler extends Highlighter {
             this.updatedIntersectionInfo.push(element)
           );
       }
+      // Segment ellipse intersection
+      if (oneDimensional2 instanceof SEEllipse) {
+        store.getters
+          .intersectTwoObjects(oneDimensional1, oneDimensional2)
+          .forEach((element: IntersectionReturnType) =>
+            this.updatedIntersectionInfo.push(element)
+          );
+      }
     }
 
     if (oneDimensional1 instanceof SECircle) {
@@ -243,6 +266,59 @@ export default class IntersectionPointHandler extends Highlighter {
       }
       // Circle circle intersection
       if (oneDimensional2 instanceof SECircle) {
+        if (oneDimensional1.name < oneDimensional2.name) {
+          store.getters
+            .intersectTwoObjects(oneDimensional1, oneDimensional2)
+            .forEach((element: IntersectionReturnType) =>
+              this.updatedIntersectionInfo.push(element)
+            );
+        } else {
+          store.getters
+            .intersectTwoObjects(oneDimensional2, oneDimensional1)
+            .forEach((element: IntersectionReturnType) =>
+              this.updatedIntersectionInfo.push(element)
+            );
+        }
+      }
+
+      // Circle ellipse intersection
+      if (oneDimensional2 instanceof SEEllipse) {
+        store.getters
+          .intersectTwoObjects(oneDimensional2, oneDimensional1)
+          .forEach((element: IntersectionReturnType) =>
+            this.updatedIntersectionInfo.push(element)
+          );
+      }
+    }
+
+    if (oneDimensional1 instanceof SEEllipse) {
+      // Ellipse line intersection
+      if (oneDimensional2 instanceof SELine) {
+        store.getters
+          .intersectTwoObjects(oneDimensional2, oneDimensional1)
+          .forEach((element: IntersectionReturnType) =>
+            this.updatedIntersectionInfo.push(element)
+          );
+      }
+      // Ellipse segment intersection
+      if (oneDimensional2 instanceof SESegment) {
+        store.getters
+          .intersectTwoObjects(oneDimensional2, oneDimensional1)
+          .forEach((element: IntersectionReturnType) =>
+            this.updatedIntersectionInfo.push(element)
+          );
+      }
+      // Ellipse circle intersection
+      if (oneDimensional2 instanceof SECircle) {
+        store.getters
+          .intersectTwoObjects(oneDimensional2, oneDimensional1)
+          .forEach((element: IntersectionReturnType) =>
+            this.updatedIntersectionInfo.push(element)
+          );
+      }
+
+      // Ellipse ellipse intersection
+      if (oneDimensional2 instanceof SEEllipse) {
         if (oneDimensional1.name < oneDimensional2.name) {
           store.getters
             .intersectTwoObjects(oneDimensional1, oneDimensional2)

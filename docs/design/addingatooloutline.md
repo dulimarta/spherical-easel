@@ -123,9 +123,13 @@ This section is an outline of the steps needed to add a tool that takes user mou
     - Modifying the <span class="interface">Appstate</span> interface in the <span class="file">index.ts</span> file to include the <span class="field">SEAaas</span> array
     - Adding the <span class="method">AddAaa</span> and <span class="method">RemoveAaa</span> methods <span class="file">mutations.ts</span> to clear it.
 
-4.  Adding a <span class="method">createAllIntersectionsWithAaa</span> in <span class="file">getters.ts</span>.
+4.  Handle all the intersection of this object with itself and all other one-dimensional objects
 
-    - Modifying all the <span class="method">createAllIntersectionsWithXxx</span> methods (where `Xxx` is any existing type) to account for all the intersections with existing objects.
+    - Creating new <span class="method">intersectXxxWithAaa</span> methods (where `Xxx` is any existing one dimensional type or `Aaa`)
+    - Adding a <span class="method">createAllIntersectionsWithAaa</span> in <span class="file">getters.ts</span>.
+    - Modifying all the <span class="method">createAllIntersectionsWithXxx</span> methods (where `Xxx` is any existing one dimensional type) to account for all the intersections with existing objects.
+    - Updating the <span class="method">intersectTwoObjects</span> method to include `Aaa` objects
+    - Updating the <span class="class">IntersectionPointHandler</span> class
 
 5.  Updating <span class="class">SELabel</span> to control if the labels are initially display and the label display mode.
 

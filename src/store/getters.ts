@@ -50,6 +50,7 @@ const toVector = new Vector3();
 const tempVec = new Vector3();
 const tempVec1 = new Vector3();
 const tempVec2 = new Vector3();
+const tmpMatrix = new Matrix4();
 /**
  * Returns true if vec is on vectorList, false otherwise
  * This is used to tell if an SEIntersectionPoint is going to be created on top of an existing SEPointOnOneDimensional,
@@ -154,7 +155,7 @@ function intersectLineWithSegment(
 /**
  * Find intersection between a line and a circle, the line is always first
  * @param line An SELine
- * @param circle An SESegment
+ * @param circle An SECircle
  */
 function intersectLineWithCircle(
   line: SELine,
@@ -169,6 +170,61 @@ function intersectLineWithCircle(
     circle.circleRadius
   );
 }
+
+/**
+ * Find intersection between a line and an ellipse, the line is always first
+ * @param line An SELine
+ * @param ellipse An SEEllipse
+ */
+function intersectLineWithEllipse(
+  line: SELine,
+  ellipse: SEEllipse
+  // layer: Two.Group
+): IntersectionReturnType[] {
+  // Transform the line into the standard coordinates of the ellipse.
+  const transformedToStandard = new Vector3();
+  transformedToStandard.copy(line.normalVector);
+  transformedToStandard.applyMatrix4(
+    tmpMatrix.getInverse(ellipse.ref.ellipseFrame)
+  );
+  // The function to find the zeros of is the dot(normal to line, vector on ellipse)
+  // because this indicates which side of the plane the point on the ellipse is
+  const d: (t: number) => number = function (t: number): number {
+    return ellipse.ref.E(t).dot(transformedToStandard);
+  };
+  // use (P''(t) /dot unitVec) as the second derivative if necessary
+  const dp = function (t: number): number {
+    return ellipse.ref.Ep(t).dot(transformedToStandard);
+  };
+
+  const zeros = SENodule.findZerosParametrically(
+    d,
+    ellipse.ref.tMin,
+    ellipse.ref.tMax,
+    dp
+  );
+  const returnItems: IntersectionReturnType[] = [];
+  const intersection1: IntersectionReturnType = {
+    vector: new Vector3(),
+    exists: false
+  };
+  const intersection2: IntersectionReturnType = {
+    vector: new Vector3(),
+    exists: false
+  };
+  returnItems.push(intersection1);
+  returnItems.push(intersection2);
+  // console.log("Line Ellipse Inter", zeros);
+  zeros.forEach((z, ind) => {
+    returnItems[ind].vector.copy(
+      ellipse.ref.E(z).applyMatrix4(ellipse.ref.ellipseFrame)
+    );
+    returnItems[ind].exists = true;
+  });
+
+  return returnItems;
+}
+
 /**
  * Find intersection between a two segment. This must be called with the lines in alphabetical order in order to the
  * return type correct.
@@ -245,6 +301,67 @@ function intersectSegmentWithCircle(
     }
   });
   return temp;
+}
+
+/**
+ * Find intersection between a segment and an ellipse, the segment is always first
+ * @param segment An SESegment
+ * @param ellipse An SEEllipse
+ */
+function intersectSegmentWithEllipse(
+  segment: SESegment,
+  ellipse: SEEllipse
+  // layer: Two.Group
+): IntersectionReturnType[] {
+  // Transform the segment into the standard coordinates of the ellipse.
+  const transformedToStandard = new Vector3();
+  transformedToStandard.copy(segment.normalVector);
+  transformedToStandard.applyMatrix4(
+    tmpMatrix.getInverse(ellipse.ref.ellipseFrame)
+  );
+  // The function to find the zeros of is the dot(normal to line, vector on ellipse)
+  // because this indicates which side of the plane the point on the ellipse is
+  const d: (t: number) => number = function (t: number): number {
+    return ellipse.ref.E(t).dot(transformedToStandard);
+  };
+  // use (P''(t) /dot unitVec) as the second derivative if necessary
+  const dp = function (t: number): number {
+    return ellipse.ref.Ep(t).dot(transformedToStandard);
+  };
+
+  const zeros = SENodule.findZerosParametrically(
+    d,
+    ellipse.ref.tMin,
+    ellipse.ref.tMax,
+    dp
+  );
+  const returnItems: IntersectionReturnType[] = [];
+  const intersection1: IntersectionReturnType = {
+    vector: new Vector3(),
+    exists: false
+  };
+  const intersection2: IntersectionReturnType = {
+    vector: new Vector3(),
+    exists: false
+  };
+  returnItems.push(intersection1);
+  returnItems.push(intersection2);
+
+  zeros.forEach((z, ind) => {
+    returnItems[ind].vector.copy(
+      ellipse.ref.E(z).applyMatrix4(ellipse.ref.ellipseFrame)
+    );
+  });
+  // If the segment and the ellipse don't intersect, the return vector is the zero vector and this shouldn't be passed to the onSegment because that method expects a unit vector
+  returnItems.forEach(item => {
+    if (item.vector.isZero()) {
+      item.exists = false;
+    } else {
+      item.exists = segment.onSegment(item.vector);
+    }
+  });
+
+  return returnItems;
 }
 
 /**
@@ -390,6 +507,177 @@ function intersectCircles(
   }
 }
 
+/**
+ * Find intersection between a circle and an ellipse, the circle is always first
+ * @param circle An SECircle
+ * @param ellipse An SEEllipse
+ */
+function intersectCircleWithEllipse(
+  circle: SECircle,
+  ellipse: SEEllipse
+  // layer: Two.Group
+): IntersectionReturnType[] {
+  // Transform the circle into the standard coordinates of the ellipse.
+  const transformedToStandard = new Vector3();
+  transformedToStandard.copy(circle.centerSEPoint.locationVector);
+  transformedToStandard.applyMatrix4(
+    tmpMatrix.getInverse(ellipse.ref.ellipseFrame)
+  );
+  const radius = circle.circleRadius;
+  // The function to find the zeros of is the distance from the transformed center to the
+  // point on the ellipse minus the radius of the circle
+  const d: (t: number) => number = function (t: number): number {
+    return (
+      Math.acos(
+        Math.max(-1, Math.min(ellipse.ref.E(t).dot(transformedToStandard), 1))
+      ) - radius
+    );
+  };
+  // d'(t) = -1/ sqrt(1- (E(t) /dot vec)^2) * (E'(t) /dot vec)
+  const dp = function (t: number): number {
+    return (
+      (-1 * ellipse.ref.Ep(t).dot(transformedToStandard)) /
+      Math.sqrt(
+        1 -
+          Math.min(ellipse.ref.E(t).dot(transformedToStandard), 1) *
+            Math.min(ellipse.ref.E(t).dot(transformedToStandard), 1)
+      )
+    );
+  };
+
+  const zeros = SENodule.findZerosParametrically(
+    d,
+    ellipse.ref.tMin,
+    ellipse.ref.tMax,
+    dp
+  );
+  const returnItems: IntersectionReturnType[] = [];
+  const intersection1: IntersectionReturnType = {
+    vector: new Vector3(),
+    exists: false
+  };
+  const intersection2: IntersectionReturnType = {
+    vector: new Vector3(),
+    exists: false
+  };
+  const intersection3: IntersectionReturnType = {
+    vector: new Vector3(),
+    exists: false
+  };
+  const intersection4: IntersectionReturnType = {
+    vector: new Vector3(),
+    exists: false
+  };
+  returnItems.push(intersection1);
+  returnItems.push(intersection2);
+  returnItems.push(intersection3);
+  returnItems.push(intersection4);
+
+  zeros.forEach((z, ind) => {
+    returnItems[ind].vector.copy(
+      ellipse.ref.E(z).applyMatrix4(ellipse.ref.ellipseFrame)
+    );
+    returnItems[ind].exists = true;
+  });
+  return returnItems;
+}
+
+/**
+ * Find intersection between an ellipse and an ellipse,
+ * Always call this with the ellipses in alphabetical order
+ * @param ellipse1 An SEEllipse
+ * @param ellipse2 An SEEllipse
+ */
+function intersectEllipseWithEllipse(
+  ellipse1: SEEllipse,
+  ellipse2: SEEllipse
+): IntersectionReturnType[] {
+  // Transform ellipse1 into the standard coordinates of the ellipse2.
+  const transformedToStandardFocus1 = new Vector3();
+  const transformedToStandardFocus2 = new Vector3();
+  transformedToStandardFocus1.copy(ellipse1.focus1SEPoint.locationVector);
+  transformedToStandardFocus2.copy(ellipse1.focus2SEPoint.locationVector);
+  transformedToStandardFocus1.applyMatrix4(
+    tmpMatrix.getInverse(ellipse2.ref.ellipseFrame)
+  );
+  transformedToStandardFocus2.applyMatrix4(
+    tmpMatrix.getInverse(ellipse2.ref.ellipseFrame)
+  );
+  const angleSum = ellipse1.ellipseAngleSum;
+  // The function to find the zeros of is the sum of the distance from a
+  // point on ellipse2 to the transformed foci of ellipse1 minus the angleSum of ellipse1
+  const d: (t: number) => number = function (t: number): number {
+    return (
+      Math.acos(
+        Math.max(
+          -1,
+          Math.min(ellipse2.ref.E(t).dot(transformedToStandardFocus1), 1)
+        )
+      ) +
+      Math.acos(
+        Math.max(
+          -1,
+          Math.min(ellipse2.ref.E(t).dot(transformedToStandardFocus2), 1)
+        )
+      ) -
+      angleSum
+    );
+  };
+  // d'(t) = -1/ sqrt(1- (E(t) /dot tTSF1)^2) * (E'(t) /dot tTSF1) - 1/ sqrt(1- (E(t) /dot tTSF2)^2) * (E'(t) /dot tTSF2)
+  const dp = function (t: number): number {
+    return (
+      (-1 * ellipse2.ref.Ep(t).dot(transformedToStandardFocus1)) /
+        Math.sqrt(
+          1 -
+            Math.min(ellipse2.ref.E(t).dot(transformedToStandardFocus1), 1) *
+              Math.min(ellipse2.ref.E(t).dot(transformedToStandardFocus1), 1)
+        ) +
+      (-1 * ellipse2.ref.Ep(t).dot(transformedToStandardFocus2)) /
+        Math.sqrt(
+          1 -
+            Math.min(ellipse2.ref.E(t).dot(transformedToStandardFocus2), 1) *
+              Math.min(ellipse2.ref.E(t).dot(transformedToStandardFocus2), 1)
+        )
+    );
+  };
+
+  const zeros = SENodule.findZerosParametrically(
+    d,
+    ellipse2.ref.tMin,
+    ellipse2.ref.tMax,
+    dp
+  );
+  const returnItems: IntersectionReturnType[] = [];
+  const intersection1: IntersectionReturnType = {
+    vector: new Vector3(),
+    exists: false
+  };
+  const intersection2: IntersectionReturnType = {
+    vector: new Vector3(),
+    exists: false
+  };
+  const intersection3: IntersectionReturnType = {
+    vector: new Vector3(),
+    exists: false
+  };
+  const intersection4: IntersectionReturnType = {
+    vector: new Vector3(),
+    exists: false
+  };
+  returnItems.push(intersection1);
+  returnItems.push(intersection2);
+  returnItems.push(intersection3);
+  returnItems.push(intersection4);
+
+  zeros.forEach((z, ind) => {
+    returnItems[ind].vector.copy(
+      ellipse2.ref.E(z).applyMatrix4(ellipse2.ref.ellipseFrame)
+    );
+    returnItems[ind].exists = true;
+  });
+  return returnItems;
+}
+
 export default {
   findNearbySENodules: (state: AppState) => (
     unitIdealVector: Vector3,
@@ -403,8 +691,9 @@ export default {
    * Create the intersection of two one-dimensional objects
    * Make sure the SENodules are in the correct order: SELines, SESegments, SECircles then SEEllipses.
    * That the (one,two) pair is one of:
-   *  (SELine,SELine), (SELine,SESegment), (SELine,SECircle), (SELine,SEEllipseHERERERERERERERE), (SESegment, SESegment),
-   *      (SESegment, SECircle), (SECircle, SECircle)
+   *  (SELine,SELine), (SELine,SESegment), (SELine,SECircle), (SELine,SEEllipse), (SESegment, SESegment),
+   *      (SESegment, SECircle), (SESegment, SEEllipse),(SECircle, SECircle), (SECircle, SEEllipse)
+   *      (SEEllipse, SEEllipse)
    * If they have the same type put them in alphabetical order.
    * The creation of the intersection objects automatically follows this convention in assigning parents.
    */
@@ -417,7 +706,7 @@ export default {
     // First add the two parent points of the newLine, if they are new, then
     //  they won't have been added to the state.points array yet so add them first
     avoidVectors.push(newLine.startSEPoint.locationVector);
-    // Onle perpendiculare to line through point, the SEEndPoint is auto generated SEPoint (never added to the state)
+    // Only perpendicular to line through point, the SEEndPoint is auto generated SEPoint (never added to the state)
     // and the user cannot interact with it. So it is *not* a vector to avoid for intersections.
     if (!(newLine instanceof SEPerpendicularLineThruPoint)) {
       avoidVectors.push(newLine.endSEPoint.locationVector);
@@ -457,6 +746,7 @@ export default {
           }
         });
       });
+
     //Intersect this new line with all old segments
     state.seSegments.forEach((oldSegment: SESegment) => {
       const intersectionInfo = intersectLineWithSegment(newLine, oldSegment);
@@ -485,6 +775,7 @@ export default {
         }
       });
     });
+
     //Intersect this new line with all old circles
     state.seCircles.forEach((oldCircle: SECircle) => {
       const intersectionInfo = intersectLineWithCircle(newLine, oldCircle);
@@ -513,6 +804,36 @@ export default {
         }
       });
     });
+
+    //Intersect this new line with all old ellipses
+    state.seEllipses.forEach((oldEllipse: SEEllipse) => {
+      const intersectionInfo = intersectLineWithEllipse(newLine, oldEllipse);
+      intersectionInfo.forEach((info, index) => {
+        if (
+          !avoidVectors.some(v => tempVec.subVectors(info.vector, v).isZero())
+        ) {
+          // info.vector is not on the avoidVectors array, so create an intersection
+          const newPt = new NonFreePoint();
+          newPt.stylize(DisplayStyle.ApplyTemporaryVariables);
+          newPt.adjustSize();
+          const newSEIntersectionPt = new SEIntersectionPoint(
+            newPt,
+            newLine,
+            oldEllipse,
+            index,
+            false
+          );
+          newSEIntersectionPt.locationVector = info.vector;
+          newSEIntersectionPt.exists = info.exists;
+          intersectionPointList.push({
+            SEIntersectionPoint: newSEIntersectionPt,
+            parent1: newLine,
+            parent2: oldEllipse
+          });
+        }
+      });
+    });
+
     return intersectionPointList;
   },
   createAllIntersectionsWithSegment: (state: AppState) => (
@@ -557,6 +878,7 @@ export default {
         }
       });
     });
+
     //Intersect this new segment with all old segments
     state.seSegments
       .filter((segment: SESegment) => segment.id !== newSegment.id) // ignore self
@@ -589,6 +911,7 @@ export default {
           }
         });
       });
+
     //Intersect this new segment with all old circles
     state.seCircles.forEach((oldCircle: SECircle) => {
       const intersectionInfo = intersectSegmentWithCircle(
@@ -620,6 +943,39 @@ export default {
         }
       });
     });
+
+    //Intersect this new segment with all old ellipses
+    state.seEllipses.forEach((oldEllipse: SEEllipse) => {
+      const intersectionInfo = intersectSegmentWithEllipse(
+        newSegment,
+        oldEllipse
+      );
+      intersectionInfo.forEach((info, index) => {
+        if (
+          !avoidVectors.some(v => tempVec.subVectors(info.vector, v).isZero())
+        ) {
+          // info.vector is not on the avoidVectors array, so create an intersection
+          const newPt = new NonFreePoint();
+          newPt.stylize(DisplayStyle.ApplyTemporaryVariables);
+          newPt.adjustSize();
+          const newSEIntersectionPt = new SEIntersectionPoint(
+            newPt,
+            newSegment,
+            oldEllipse,
+            index,
+            false
+          );
+          newSEIntersectionPt.locationVector = info.vector;
+          newSEIntersectionPt.exists = info.exists;
+          intersectionPointList.push({
+            SEIntersectionPoint: newSEIntersectionPt,
+            parent1: newSegment,
+            parent2: oldEllipse
+          });
+        }
+      });
+    });
+
     return intersectionPointList;
   },
   createAllIntersectionsWithCircle: (state: AppState) => (
@@ -634,6 +990,7 @@ export default {
     state.sePoints.forEach(pt => avoidVectors.push(pt.locationVector));
     // The intersectionPointList to return
     const intersectionPointList: SEIntersectionReturnType[] = [];
+
     // Intersect this new circle with all old lines
     state.seLines.forEach((oldLine: SELine) => {
       const intersectionInfo = intersectLineWithCircle(oldLine, newCircle);
@@ -662,6 +1019,7 @@ export default {
         }
       });
     });
+
     //Intersect this new circle with all old segments
     state.seSegments.forEach((oldSegment: SESegment) => {
       const intersectionInfo = intersectSegmentWithCircle(
@@ -693,6 +1051,7 @@ export default {
         }
       });
     });
+
     //Intersect this new circle with all old circles
     state.seCircles
       .filter((circle: SECircle) => circle.id !== newCircle.id) // ignore self
@@ -728,116 +1087,184 @@ export default {
           }
         });
       });
+
+    //Intersect this new circle with all old ellipses
+    state.seEllipses.forEach((oldEllipse: SEEllipse) => {
+      const intersectionInfo = intersectCircleWithEllipse(
+        newCircle,
+        oldEllipse
+      );
+      intersectionInfo.forEach((info, index) => {
+        if (
+          !avoidVectors.some(v => tempVec.subVectors(info.vector, v).isZero())
+        ) {
+          // info.vector is not on the avoidVectors array, so create an intersection
+          const newPt = new NonFreePoint();
+          newPt.stylize(DisplayStyle.ApplyTemporaryVariables);
+          newPt.adjustSize();
+          const newSEIntersectionPt = new SEIntersectionPoint(
+            newPt,
+            newCircle,
+            oldEllipse,
+            index,
+            false
+          );
+          newSEIntersectionPt.locationVector = info.vector;
+          newSEIntersectionPt.exists = info.exists;
+          intersectionPointList.push({
+            SEIntersectionPoint: newSEIntersectionPt,
+            parent1: newCircle,
+            parent2: oldEllipse
+          });
+        }
+      });
+    });
+
     return intersectionPointList;
   },
-  // createAllIntersectionsWithCircle: (state: AppState) => (
-  //   newCircle: SECircle
-  // ): SEIntersectionReturnType[] => {
-  //   // Avoid creating an intersection where any SEPoint already exists
-  //   const avoidVectors: Vector3[] = [];
-  //   // First add the two parent points of the newLine, if they are new, then
-  //   //  they won't have been added to the state.points array yet so add them first
-  //   avoidVectors.push(newCircle.centerSEPoint.locationVector);
-  //   avoidVectors.push(newCircle.circleSEPoint.locationVector);
-  //   state.sePoints.forEach(pt => avoidVectors.push(pt.locationVector));
-  //   // The intersectionPointList to return
-  //   const intersectionPointList: SEIntersectionReturnType[] = [];
-  //   // Intersect this new circle with all old lines
-  //   state.seLines.forEach((oldLine: SELine) => {
-  //     const intersectionInfo = intersectLineWithCircle(oldLine, newCircle);
-  //     intersectionInfo.forEach((info, index) => {
-  //       if (
-  //         !avoidVectors.some(v => tempVec.subVectors(info.vector, v).isZero())
-  //       ) {
-  //         // info.vector is not on the avoidVectors array, so create an intersection
-  //         const newPt = new NonFreePoint();
-  //         newPt.stylize(DisplayStyle.ApplyTemporaryVariables);
-  //         newPt.adjustSize();
-  //         const newSEIntersectionPt = new SEIntersectionPoint(
-  //           newPt,
-  //           oldLine,
-  //           newCircle,
-  //           index,
-  //           false
-  //         );
-  //         newSEIntersectionPt.locationVector = info.vector;
-  //         newSEIntersectionPt.exists = info.exists;
-  //         intersectionPointList.push({
-  //           SEIntersectionPoint: newSEIntersectionPt,
-  //           parent1: oldLine,
-  //           parent2: newCircle
-  //         });
-  //       }
-  //     });
-  //   });
-  //   //Intersect this new circle with all old segments
-  //   state.seSegments.forEach((oldSegment: SESegment) => {
-  //     const intersectionInfo = intersectSegmentWithCircle(
-  //       oldSegment,
-  //       newCircle
-  //     );
-  //     intersectionInfo.forEach((info, index) => {
-  //       if (
-  //         !avoidVectors.some(v => tempVec.subVectors(info.vector, v).isZero())
-  //       ) {
-  //         // info.vector is not on the avoidVectors array, so create an intersection
-  //         const newPt = new NonFreePoint();
-  //         newPt.stylize(DisplayStyle.ApplyTemporaryVariables);
-  //         newPt.adjustSize();
-  //         const newSEIntersectionPt = new SEIntersectionPoint(
-  //           newPt,
-  //           oldSegment,
-  //           newCircle,
-  //           index,
-  //           false
-  //         );
-  //         newSEIntersectionPt.locationVector = info.vector;
-  //         newSEIntersectionPt.exists = info.exists;
-  //         intersectionPointList.push({
-  //           SEIntersectionPoint: newSEIntersectionPt,
-  //           parent1: oldSegment,
-  //           parent2: newCircle
-  //         });
-  //       }
-  //     });
-  //   });
-  //   //Intersect this new circle with all old circles
-  //   state.seCircles
-  //     .filter((circle: SECircle) => circle.id !== newCircle.id) // ignore self
-  //     .forEach((oldCircle: SECircle) => {
-  //       const intersectionInfo = intersectCircles(
-  //         oldCircle.centerSEPoint.locationVector,
-  //         oldCircle.circleRadius,
-  //         newCircle.centerSEPoint.locationVector,
-  //         newCircle.circleRadius
-  //       );
-  //       intersectionInfo.forEach((info, index) => {
-  //         if (
-  //           !avoidVectors.some(v => tempVec.subVectors(info.vector, v).isZero())
-  //         ) {
-  //           // info.vector is not on the avoidVectors array, so create an intersection
-  //           const newPt = new NonFreePoint();
-  //           newPt.stylize(DisplayStyle.ApplyTemporaryVariables);
-  //           newPt.adjustSize();
-  //           const newSEIntersectionPt = new SEIntersectionPoint(
-  //             newPt,
-  //             oldCircle,
-  //             newCircle,
-  //             index,
-  //             false
-  //           );
-  //           newSEIntersectionPt.locationVector = info.vector;
-  //           newSEIntersectionPt.exists = info.exists;
-  //           intersectionPointList.push({
-  //             SEIntersectionPoint: newSEIntersectionPt,
-  //             parent1: oldCircle,
-  //             parent2: newCircle
-  //           });
-  //         }
-  //       });
-  //     });
-  //   return intersectionPointList;
-  // },
+  createAllIntersectionsWithEllipse: (state: AppState) => (
+    newEllipse: SEEllipse
+  ): SEIntersectionReturnType[] => {
+    // Avoid creating an intersection where any SEPoint already exists
+    const avoidVectors: Vector3[] = [];
+    // First add the three parent points of the newEllipse, if they are new, then
+    //  they won't have been added to the state.points array yet so add them first
+    avoidVectors.push(newEllipse.focus1SEPoint.locationVector);
+    avoidVectors.push(newEllipse.focus2SEPoint.locationVector);
+    avoidVectors.push(newEllipse.ellipseSEPoint.locationVector);
+    state.sePoints.forEach(pt => avoidVectors.push(pt.locationVector));
+    // The intersectionPointList to return
+    const intersectionPointList: SEIntersectionReturnType[] = [];
+
+    // Intersect this new ellipse with all old lines
+    state.seLines.forEach((oldLine: SELine) => {
+      const intersectionInfo = intersectLineWithEllipse(oldLine, newEllipse);
+      intersectionInfo.forEach((info, index) => {
+        if (
+          !avoidVectors.some(v => tempVec.subVectors(info.vector, v).isZero())
+        ) {
+          // info.vector is not on the avoidVectors array, so create an intersection
+          const newPt = new NonFreePoint();
+          newPt.stylize(DisplayStyle.ApplyTemporaryVariables);
+          newPt.adjustSize();
+          const newSEIntersectionPt = new SEIntersectionPoint(
+            newPt,
+            oldLine,
+            newEllipse,
+            index,
+            false
+          );
+          newSEIntersectionPt.locationVector = info.vector;
+          newSEIntersectionPt.exists = info.exists;
+          intersectionPointList.push({
+            SEIntersectionPoint: newSEIntersectionPt,
+            parent1: oldLine,
+            parent2: newEllipse
+          });
+        }
+      });
+    });
+
+    //Intersect this new ellipse with all old segments
+    state.seSegments.forEach((oldSegment: SESegment) => {
+      const intersectionInfo = intersectSegmentWithEllipse(
+        oldSegment,
+        newEllipse
+      );
+      intersectionInfo.forEach((info, index) => {
+        if (
+          !avoidVectors.some(v => tempVec.subVectors(info.vector, v).isZero())
+        ) {
+          // info.vector is not on the avoidVectors array, so create an intersection
+          const newPt = new NonFreePoint();
+          newPt.stylize(DisplayStyle.ApplyTemporaryVariables);
+          newPt.adjustSize();
+          const newSEIntersectionPt = new SEIntersectionPoint(
+            newPt,
+            oldSegment,
+            newEllipse,
+            index,
+            false
+          );
+          newSEIntersectionPt.locationVector = info.vector;
+          newSEIntersectionPt.exists = info.exists;
+          intersectionPointList.push({
+            SEIntersectionPoint: newSEIntersectionPt,
+            parent1: oldSegment,
+            parent2: newEllipse
+          });
+        }
+      });
+    });
+
+    //Intersect this new ellipse with all old circles
+    state.seCircles.forEach((oldCircle: SECircle) => {
+      const intersectionInfo = intersectCircleWithEllipse(
+        oldCircle,
+        newEllipse
+      );
+      intersectionInfo.forEach((info, index) => {
+        if (
+          !avoidVectors.some(v => tempVec.subVectors(info.vector, v).isZero())
+        ) {
+          // info.vector is not on the avoidVectors array, so create an intersection
+          const newPt = new NonFreePoint();
+          newPt.stylize(DisplayStyle.ApplyTemporaryVariables);
+          newPt.adjustSize();
+          const newSEIntersectionPt = new SEIntersectionPoint(
+            newPt,
+            oldCircle,
+            newEllipse,
+            index,
+            false
+          );
+          newSEIntersectionPt.locationVector = info.vector;
+          newSEIntersectionPt.exists = info.exists;
+          intersectionPointList.push({
+            SEIntersectionPoint: newSEIntersectionPt,
+            parent1: oldCircle,
+            parent2: newEllipse
+          });
+        }
+      });
+    });
+
+    //Intersect this new ellipse with all old ellipses
+    state.seEllipses
+      .filter((ellipe: SEEllipse) => ellipe.id !== newEllipse.id) // ignore self
+      .forEach((oldEllipse: SEEllipse) => {
+        const intersectionInfo = intersectEllipseWithEllipse(
+          oldEllipse,
+          newEllipse
+        );
+        intersectionInfo.forEach((info, index) => {
+          if (
+            !avoidVectors.some(v => tempVec.subVectors(info.vector, v).isZero())
+          ) {
+            // info.vector is not on the avoidVectors array, so create an intersection
+            const newPt = new NonFreePoint();
+            newPt.stylize(DisplayStyle.ApplyTemporaryVariables);
+            newPt.adjustSize();
+            const newSEIntersectionPt = new SEIntersectionPoint(
+              newPt,
+              newEllipse,
+              oldEllipse,
+              index,
+              false
+            );
+            newSEIntersectionPt.locationVector = info.vector;
+            newSEIntersectionPt.exists = info.exists;
+            intersectionPointList.push({
+              SEIntersectionPoint: newSEIntersectionPt,
+              parent1: newEllipse,
+              parent2: oldEllipse
+            });
+          }
+        });
+      });
+
+    return intersectionPointList;
+  },
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   intersectTwoObjects: (_state: AppState) => (
@@ -850,19 +1277,30 @@ export default {
         return intersectLineWithSegment(one, two);
       else if (two instanceof SECircle)
         return intersectLineWithCircle(one, two);
+      else if (two instanceof SEEllipse)
+        return intersectLineWithEllipse(one, two);
     } else if (one instanceof SESegment) {
       if (two instanceof SESegment)
         return intersectSegmentWithSegment(one, two);
       else if (two instanceof SECircle)
         return intersectSegmentWithCircle(one, two);
-    } else if (one instanceof SECircle && two instanceof SECircle)
-      return intersectCircles(
-        one.centerSEPoint.locationVector,
-        one.circleRadius,
-        two.centerSEPoint.locationVector,
-        two.circleRadius
-      );
-    throw "Attempted to intersect a non-dimensional object";
+      else if (two instanceof SEEllipse)
+        return intersectSegmentWithEllipse(one, two);
+    } else if (one instanceof SECircle) {
+      if (two instanceof SECircle) {
+        return intersectCircles(
+          one.centerSEPoint.locationVector,
+          one.circleRadius,
+          two.centerSEPoint.locationVector,
+          two.circleRadius
+        );
+      } else if (two instanceof SEEllipse) {
+        return intersectCircleWithEllipse(one, two);
+      }
+    } else if (one instanceof SEEllipse && two instanceof SEEllipse) {
+      return intersectEllipseWithEllipse(one, two);
+    }
+    throw "Attempted to intersect a non-one-dimensional object";
   },
   findIntersectionPointsByParent: (state: AppState) => (
     parentNames: string

@@ -369,7 +369,7 @@ export abstract class SENodule {
     // First form the objective function, this is the function whose minimum we want to find.
     // The (angular) distance from P(t) to unitVec is d(t) = acos(P(t) /dot unitVec) because P(t) and unitVec are both unit
     const d: (t: number) => number = function (t: number): number {
-      return Math.acos(Math.min(P(t).dot(unitVec), 1)); // if you drop the Math.min sometimes the dot product is bigger than one (just barely) but then d is undefined and that causes problems.
+      return Math.acos(Math.max(Math.min(P(t).dot(unitVec), 1), -1)); // if you drop the Math.min sometimes the dot product is bigger than one (just barely) but then d is undefined and that causes problems.
     };
 
     // The derivative of d(t) is zero at a minimum or max, so we want to find the zeros of d'(t)
@@ -389,54 +389,7 @@ export abstract class SENodule {
     } else {
       dpp = undefined;
     }
-
-    // now we need to find all the places that dp changes sign so we know where to start Newton's method
-    const signChanges = [];
-    let tVal: number;
-    let lastTVal = tMin;
-    for (let i = 1; i < SETTINGS.parameterization.subdivisions + 1; i++) {
-      tVal =
-        tMin + (i / SETTINGS.parameterization.subdivisions) * (tMax - tMin);
-      if (dp(tVal) * dp(lastTVal) < 0) {
-        signChanges.push([lastTVal, tVal]);
-      }
-      lastTVal = tVal;
-    }
-
-    if (signChanges.length === 0) {
-      console.log(
-        "No minimum distance found - ERROR in closestVectorParametrically"
-      );
-      return new Vector3();
-    }
-    // if (signChanges.length != 2) {
-    //   console.log("signChange length", signChanges.length);
-    // }
-    const zeros: number[] = [];
-    signChanges.forEach(interval => {
-      // Bisection Method
-      // const zeroTVal = SENodule.bisection(dp, interval[0], interval[1]);
-      // zeros.push(zeroTVal);
-
-      // Newton's Method
-      const zeroTVal: number | boolean = newton(
-        dp,
-        dpp,
-        (interval[0] + interval[1]) / 2
-        // { verbose: true }
-      );
-      if (
-        zeroTVal !== false &&
-        interval[0] < zeroTVal &&
-        zeroTVal < interval[1]
-      ) {
-        zeros.push(zeroTVal as number);
-      } else {
-        console.log(
-          "Newton's method failed to converge in interval - closestVectorParametrically"
-        );
-      }
-    });
+    const zeros = this.findZerosParametrically(dp, tMin, tMax, dpp);
 
     // The zeros of dp are either minimums or maximums (or neither, but this is very unlikely so we assume it doesn't happen)
     let minTVal: number = zeros[0]; // The t value that minimizes d
@@ -508,6 +461,22 @@ export abstract class SENodule {
       dp = undefined;
     }
 
+    const zeros = this.findZerosParametrically(d, tMin, tMax, dp);
+
+    const returnVectors: Vector3[] = [];
+    zeros.forEach(tVal => {
+      const temp = new Vector3();
+      returnVectors.push(temp.copy(PPrime(tVal).normalize()));
+    });
+    return returnVectors;
+  }
+
+  public static findZerosParametrically(
+    f: (t: number) => number,
+    tMin: number,
+    tMax: number,
+    fPrime?: (t: number) => number
+  ): number[] {
     // now we need to find all the places that d changes sign so we know where to start Newton's method
     const signChanges = [];
     let tVal: number;
@@ -515,13 +484,13 @@ export abstract class SENodule {
     for (let i = 1; i < SETTINGS.parameterization.subdivisions + 1; i++) {
       tVal =
         tMin + (i / SETTINGS.parameterization.subdivisions) * (tMax - tMin);
-      if (d(tVal) * d(lastTVal) < 0) {
+      if (f(tVal) * f(lastTVal) < 0) {
         signChanges.push([lastTVal, tVal]);
       }
       lastTVal = tVal;
     }
     if (signChanges.length === 0) {
-      console.log("No perpendiculars found - ERROR in getNormalsToLineThru");
+      // console.log("No sign changes; No zeros");
       return [];
     }
 
@@ -533,8 +502,8 @@ export abstract class SENodule {
 
       // Newton's Method
       const zeroTVal: number | boolean = newton(
-        d,
-        dp,
+        f,
+        fPrime,
         (interval[0] + interval[1]) / 2
         // { verbose: true }
       );
@@ -545,17 +514,9 @@ export abstract class SENodule {
       ) {
         zeros.push(zeroTVal as number);
       } else {
-        console.log(
-          "Newton's method failed to converge in interval - closestVectorParametrically"
-        );
+        console.log("Newton's method failed to converge in interval");
       }
     });
-
-    const returnVectors: Vector3[] = [];
-    zeros.forEach(tVal => {
-      const temp = new Vector3();
-      returnVectors.push(temp.copy(PPrime(tVal).normalize()));
-    });
-    return returnVectors;
+    return zeros;
   }
 }

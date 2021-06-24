@@ -972,37 +972,37 @@ export default class EllipseHandler extends Highlighter {
 
     // Generate new intersection points. These points must be computed and created
     // in the store. Add the new created points to the circle command so they can be undone.
-    // this.store.getters
-    //   .createAllIntersectionsWithCircle(newSEEllipse)
-    //   .forEach((item: SEIntersectionReturnType) => {
-    //     // Create the plottable and model label
-    //     const newLabel = new Label();
-    //     const newSELabel = new SELabel(newLabel, item.SEIntersectionPoint);
+    this.store.getters
+      .createAllIntersectionsWithEllipse(newSEEllipse)
+      .forEach((item: SEIntersectionReturnType) => {
+        // Create the plottable and model label
+        const newLabel = new Label();
+        const newSELabel = new SELabel(newLabel, item.SEIntersectionPoint);
 
-    //     // Set the initial label location
-    //     this.tmpVector
-    //       .copy(item.SEIntersectionPoint.locationVector)
-    //       .add(
-    //         new Vector3(
-    //           2 * SETTINGS.point.initialLabelOffset,
-    //           SETTINGS.point.initialLabelOffset,
-    //           0
-    //         )
-    //       )
-    //       .normalize();
-    //     newSELabel.locationVector = this.tmpVector;
+        // Set the initial label location
+        this.tmpVector
+          .copy(item.SEIntersectionPoint.locationVector)
+          .add(
+            new Vector3(
+              2 * SETTINGS.point.initialLabelOffset,
+              SETTINGS.point.initialLabelOffset,
+              0
+            )
+          )
+          .normalize();
+        newSELabel.locationVector = this.tmpVector;
 
-    //     ellipseCommandGroup.addCommand(
-    //       new AddIntersectionPointCommand(
-    //         item.SEIntersectionPoint,
-    //         item.parent1,
-    //         item.parent2,
-    //         newSELabel
-    //       )
-    //     );
-    //     item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points or label
-    //     newSELabel.showing = false;
-    //   });
+        ellipseCommandGroup.addCommand(
+          new AddIntersectionPointCommand(
+            item.SEIntersectionPoint,
+            item.parent1,
+            item.parent2,
+            newSELabel
+          )
+        );
+        item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points or label
+        newSELabel.showing = false;
+      });
 
     ellipseCommandGroup.execute();
   }

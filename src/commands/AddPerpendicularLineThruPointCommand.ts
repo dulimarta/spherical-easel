@@ -52,18 +52,19 @@ export class AddPerpendicularLineThruPointCommand extends Command {
   }
 
   toOpcode(): null | string | Array<string> {
-    const targetPoint = this.sePerpendicularLineThruPoint;
+    const targetLine = this.sePerpendicularLineThruPoint;
     return [
       "AddPerpendicularLineThruPoint",
-      /* arg-1 */ targetPoint.name,
-      /* arg-2 */ targetPoint.normalVector.toFixed(7),
-      /* arg-3 */ targetPoint.startSEPoint.name,
-      /* arg-4 */ targetPoint.endSEPoint.name,
-      /* arg-5 */ targetPoint.endSEPoint.locationVector.toFixed(7),
+      /* arg-1 */ targetLine.name,
+      /* arg-2 */ targetLine.normalVector.toFixed(7),
+      /* arg-3 */ targetLine.startSEPoint.name,
+      /* arg-4 */ targetLine.endSEPoint.name,
+      /* arg-5 */ targetLine.endSEPoint.locationVector.toFixed(7),
       /* arg-6 */ this.parentOneDimensional.name,
       /* arg-7 */ this.seLabel.name,
-      /* arg-8 */ targetPoint.showing,
-      /* arg-9 */ targetPoint.exists
+      /* arg-8 */ targetLine.showing,
+      /* arg-9 */ targetLine.exists,
+      /* arg-10*/ targetLine.index
     ].join("/");
   }
 
@@ -84,12 +85,14 @@ export class AddPerpendicularLineThruPointCommand extends Command {
       const endLocation = new Vector3();
       endLocation.from(tokens[5]);
       endPoint.locationVector = endLocation;
+      const index = Number(tokens[10]);
       const seLine = new SEPerpendicularLineThruPoint(
         line,
         perpToLine,
         startPoint,
         normal,
-        endPoint
+        endPoint,
+        index
       );
       seLine.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
       seLine.name = tokens[1];

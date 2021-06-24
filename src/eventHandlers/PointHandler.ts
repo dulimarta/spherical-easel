@@ -180,6 +180,9 @@ export default class PointHandler extends Highlighter {
     } else if (this.hitSELines.length > 0) {
       this.hitSELines[0].glowing = true;
       this.snapToTemporaryOneDimensional = this.hitSELines[0];
+    } else if (this.hitSECircles.length > 0) {
+      this.hitSECircles[0].glowing = true;
+      this.snapToTemporaryOneDimensional = this.hitSECircles[0];
     } else if (this.hitSEEllipses.length > 0) {
       this.hitSEEllipses[0].glowing = true;
       this.snapToTemporaryOneDimensional = this.hitSEEllipses[0];
