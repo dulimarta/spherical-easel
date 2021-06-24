@@ -2,12 +2,12 @@
   <v-container>
     <v-tabs centered
       v-model="selectedTab">
-      <v-tab>User Profile</v-tab>
+      <v-tab v-if="profileEnabled">User Profile</v-tab>
       <v-tab>App Preferences</v-tab>
     </v-tabs>
     <v-tabs-items v-model="selectedTab">
 
-      <v-tab-item>
+      <v-tab-item v-if="profileEnabled">
         <v-sheet elevation="2"
           class="pa-2">
 
@@ -52,6 +52,11 @@
                 </v-col>
               </v-row>
             </div>
+            <!-- <v-overlay absolute
+              :value="!profileEnabled">
+              <span>This feature is  for authenticated
+                users</span>
+            </v-overlay> -->
           </div>
         </v-sheet>
 
@@ -140,9 +145,11 @@ div#appSetting {
 import { Vue, Component } from "vue-property-decorator";
 import PhotoCapture from "@/views/PhotoCapture.vue";
 import SETTINGS from "@/global-settings";
-import { FirebaseAuth } from "@firebase/auth-types";
+import { FirebaseAuth, User } from "@firebase/auth-types";
 import { FirebaseFirestore, DocumentSnapshot } from "@firebase/firestore-types";
 import { UserProfile } from "@/types";
+import { Unsubscribe } from "@firebase/util";
+
 import EventBus from "@/eventHandlers/EventBus";
 
 @Component({ components: { PhotoCapture } })
@@ -156,16 +163,18 @@ export default class Settings extends Vue {
   selectedLanguage: unknown = {};
   languages = SETTINGS.supportedLanguages;
   decimalPrecision = 3;
+  userEmail = "";
   userDisplayName = "";
   userLocation = "";
   userRole = "Community Member";
   selectedTab = null;
-  get userEmail(): string | null {
-    return this.$appAuth.currentUser?.email ?? null;
-  }
+  authSubscription!: Unsubscribe;
+  profileEnabled = false;
+
   get userUid(): string | undefined {
     return this.$appAuth.currentUser?.uid;
   }
+
   mounted(): void {
     this.$appDB
       .collection("users")
@@ -180,6 +189,20 @@ export default class Settings extends Vue {
           if (uProfile.role) this.userRole = uProfile.role;
         }
       });
+    this.authSubscription = this.$appAuth.onAuthStateChanged(
+      (u: User | null) => {
+        this.profileEnabled = u !== null;
+        if (u !== null) {
+          this.userEmail = u.email ?? "unknown";
+        } else {
+          this.userDisplayName = "";
+          this.userLocation = "";
+          this.userRole = "Community Member";
+        }
+
+        console.log("Auth changed", u, this.profileEnabled);
+      }
+    );
   }
   switchLocale(): void {
     this.$i18n.locale = (this.selectedLanguage as any).locale;

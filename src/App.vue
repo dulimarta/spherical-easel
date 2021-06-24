@@ -49,22 +49,25 @@
 
       <!-- This will open up the global settings view setting the language, decimals 
       display and other global options-->
-      <span>{{whoami}} {{uid.substring(0,8)}}</span>
+      <template v-if="accountEnabled">
+        <span>{{whoami}}</span>
 
-      <v-img id="profilePic"
-        v-if="profilePicUrl"
-        class="mx-2"
-        contain
-        :src="profilePicUrl"
-        :aspect-ratio="1/1"
-        max-width="48"></v-img>
-      <v-icon v-else
-        class="mx-2"
-        @click="doLoginOrCheck">mdi-account</v-icon>
-      <v-icon v-if="whoami !== ''"
-        :disabled="!hasObjects"
-        class="mr-2"
-        @click="$refs.saveConstructionDialog.show()">mdi-share</v-icon>
+        <v-img id="profilePic"
+          v-if="profilePicUrl"
+          class="mx-2"
+          contain
+          :src="profilePicUrl"
+          :aspect-ratio="1/1"
+          max-width="48"
+          @click="doLoginOrCheck"></v-img>
+        <v-icon v-else
+          class="mx-2"
+          @click="doLoginOrCheck">mdi-account</v-icon>
+        <v-icon v-if="whoami !== ''"
+          :disabled="!hasObjects"
+          class="mr-2"
+          @click="$refs.saveConstructionDialog.show()">mdi-share</v-icon>
+      </template>
       <router-link to="/settings/">
         <v-icon>mdi-cog</v-icon>
       </router-link>
@@ -181,9 +184,43 @@ export default class App extends Vue {
   profilePicUrl: string | null = null;
   svgRoot!: SVGElement;
 
+  /* User account feature is initialy disabled. To unlock this feature
+     The user must press Ctrl+Alt+S then Ctrl+Alt+E in that order */
+  acceptedKeys = 0;
+  accountEnabled = false;
+
   get hasObjects(): boolean {
     // Any objects must include at least one point
     return this.$store.direct.getters.allSEPoints().length > 0;
+  }
+
+  readonly keyHandler = (ev: KeyboardEvent): void => {
+    if (!ev.altKey) return;
+    if (!ev.ctrlKey) return;
+
+    if (ev.key === "s" && this.acceptedKeys === 0) {
+      console.info("'S' is accepted");
+      this.acceptedKeys = 1;
+    } else if (ev.key === "e" && this.acceptedKeys === 1) {
+      this.acceptedKeys = 2;
+      console.info("'E' is accepted", this.accountEnabled, this.acceptedKeys);
+      // Directly setting the accountEnable flag here does not trigger
+      // a UI update even after calling $forceUpdate()
+      // Firing an event seems to solve the problem
+      EventBus.fire("secret-key", {});
+    } else {
+      this.acceptedKeys = 0;
+    }
+  };
+
+  created(): void {
+    window.addEventListener("keyup", this.keyHandler);
+    EventBus.listen("secret-key", () => {
+      console.log("Got the secret key");
+      this.accountEnabled = true;
+      this.acceptedKeys = 0;
+      this.$forceUpdate();
+    });
   }
 
   mounted(): void {
@@ -208,7 +245,10 @@ export default class App extends Vue {
                 }
               }
             });
-        } else this.whoami = "";
+        } else {
+          this.whoami = "";
+          this.profilePicUrl = "";
+        }
       }
     );
     // Get the top-level SVG element
@@ -221,13 +261,14 @@ export default class App extends Vue {
     if (this.authSubscription) this.authSubscription();
     this.whoami = "";
     this.uid = "";
+    window.removeEventListener("keyup", this.keyHandler);
   }
   setFooterColor(e: { color: string }): void {
     this.footerColor = e.color;
   }
 
-  doLogout(): void {
-    this.$appAuth.signOut();
+  async doLogout(): Promise<void> {
+    await this.$appAuth.signOut();
     this.$refs.logoutDialog.hide();
     this.uid = "";
     this.whoami = "";
