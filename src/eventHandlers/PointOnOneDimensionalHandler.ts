@@ -10,6 +10,7 @@ import { SELabel } from "@/models/SELabel";
 import SETTINGS from "@/global-settings";
 import { Vector3 } from "three";
 import { AddPointOnOneDimensionalCommand } from "@/commands/AddPointOnOneDimensionalCommand";
+import { SEStore } from "@/store";
 
 export default class PointOnOneDimensionalHandler extends Highlighter {
   // The temporary point displayed as the user moves the pointer
@@ -36,7 +37,7 @@ export default class PointOnOneDimensionalHandler extends Highlighter {
     // Create and style the temporary points marking the object being created
     this.startMarker = new Point();
     this.startMarker.stylize(DisplayStyle.ApplyTemporaryVariables);
-    this.store.commit.addTemporaryNodule(this.startMarker);
+    SEStore.addTemporaryNodule(this.startMarker);
   }
 
   mousePressed(event: MouseEvent): void {

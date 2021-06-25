@@ -182,7 +182,7 @@ Whenever a new magnification factor is computed the value is written to the [Sto
 
 <<< @/src/eventHandlers/PanZoomHandler.ts#writeFactorVectorToStore{2}
 
-The <span class="string">"changeZoomFactor"</span> <span class="method">dispatch(...)</span> method results in a <span class="method">commit(...)</span> of the magnification factor to the store and fires a <span class="string">"magnification-updated"</span> [Event Bus](/design/#event-bus) action.
+The <span class="string">"setZoomMagnificationFactor"</span> <span class="method">dispatch(...)</span> method results in a <span class="method">commit(...)</span> of the magnification factor to the store and fires a <span class="string">"magnification-updated"</span> [Event Bus](/design/#event-bus) action.
 
 <<< @/src/store/index.ts#magnificationUpdate
 
@@ -404,7 +404,7 @@ When the user opens the [Style Panel](/userguide/stylepanel.html) a set of optio
 The user can select items to style before entering the Styling Mode (the mode where the Style Panel is open and the others are minimizied). The selected items are imported in the <span class="method">mount()</span> and passed to the <span class="method">OnSelectionChange()</span> method. This method is run when ever there is a change in the selection
 
 ```ts
-@Watch("selections")
+@Watch("selectedSENodules")
   onSelectionChanged (newSelection: SENodule[]): void {
 ```
 

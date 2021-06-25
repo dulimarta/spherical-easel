@@ -33,11 +33,6 @@ export abstract class SENodule {
   }
 
   /**
-   * The Global Vuex Store
-   */
-  //protected static store = AppStore;
-
-  /**
    * An array to store the parents of the node (i.e. the objects that this node depends on)
    */
   protected _parents: SENodule[] = [];

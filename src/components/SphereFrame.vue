@@ -11,8 +11,8 @@ import VueComponent from "vue";
 import { Prop, Component, Watch } from "vue-property-decorator";
 import Two from "two.js";
 import SETTINGS, { LAYER } from "@/global-settings";
-import { State } from "vuex-class";
-import AppStore from "@/store";
+import { namespace } from "vuex-class";
+import { SEStore } from "@/store";
 import { ZoomSphereCommand } from "@/commands/ZoomSphereCommand";
 import { Command } from "@/commands/Command";
 import { ToolStrategy } from "@/eventHandlers/ToolStrategy";
@@ -45,19 +45,26 @@ import colors from "vuetify/es5/util/colors";
 import { SELabel } from "@/models/SELabel";
 import FileSaver from "file-saver";
 
+const SE = namespace("se");
+
 @Component({})
 export default class SphereFrame extends VueComponent {
-  @Prop()
+  @Prop({ default: 240 })
   readonly canvasSize!: number;
 
-  @State((s: AppState) => s.actionMode)
+  @SE.State((s: AppState) => s.actionMode)
   readonly actionMode!: string;
 
-  @State((s: AppState) => s.zoomMagnificationFactor)
+  @SE.State((s: AppState) => s.zoomMagnificationFactor)
   readonly zoomMagnificationFactor!: number;
 
-  @State((s: AppState) => s.zoomTranslation)
+  @SE.State((s: AppState) => s.zoomTranslation)
   readonly zoomTranslation!: number[];
+
+  @SE.State((s: AppState) => s.seLabels)
+  readonly seLabels!: SELabel[];
+
+  @SE.Mutation setCanvas!: (_: HTMLDivElement) => void;
 
   $refs!: {
     canvas: HTMLDivElement;
@@ -78,7 +85,6 @@ export default class SphereFrame extends VueComponent {
   /**
    * The Global Vuex Store
    */
-  protected store = AppStore;
 
   /** Tools for handling user input */
   private currentTool: ToolStrategy | null = null;
@@ -150,7 +156,7 @@ export default class SphereFrame extends VueComponent {
     //this.sphereCanvas = this.layers[LAYER.midground];
     // console.info("Sphere canvas ID", this.sphereCanvas.id);
     // Add the layers to the store
-    this.store.commit.setLayers(this.layers);
+    SEStore.setLayers(this.layers);
 
     // Draw the boundary circle in the default radius
     // and scale it later to fit the canvas
@@ -249,7 +255,7 @@ export default class SphereFrame extends VueComponent {
     );
     // Make the canvas accessible to other components which need
     // to grab the SVG contents of the sphere
-    this.$store.direct.commit.setCanvas(this.$refs.canvas);
+    this.setCanvas(this.$refs.canvas);
   }
 
   beforeDestroy(): void {
@@ -263,7 +269,7 @@ export default class SphereFrame extends VueComponent {
 
   @Watch("canvasSize")
   onCanvasResize(size: number): void {
-    // console.debug("onCanvasResize");
+    console.debug("onCanvasResize");
     (this.twoInstance.renderer as any).setSize(size, size);
     // Move the origin of all layers to the center of the viewport
     this.layers.forEach(z => {
@@ -271,17 +277,17 @@ export default class SphereFrame extends VueComponent {
     });
 
     const radius = size / 2 - 16; // 16-pixel gap
-    this.store.commit.setSphereRadius(radius);
+    SEStore.setSphereRadius(radius);
 
     const ratio = radius / SETTINGS.boundaryCircle.radius;
-    this.store.dispatch.changeZoomFactor(ratio);
+    SEStore.setZoomMagnificationFactor(ratio);
     // Each window size gets its own zoom matrix
     // When you resize a window the zoom resets
-    this.store.commit.setZoomTranslation([0, 0]);
+    SEStore.setZoomTranslation([0, 0]);
 
     this.updateView();
     // record the canvas width for the SELabel so that the bounding box of the text can be computed correctly
-    this.store.commit.setCanvasWidth(size);
+    SEStore.setCanvasWidth(size);
   }
 
   /** Apply the affine transform (m) to the entire TwoJS SVG tree! */
@@ -292,8 +298,10 @@ export default class SphereFrame extends VueComponent {
   //#region updateView
   private updateView() {
     // Get the current maginiication factor and translation vector
-    const mag = this.store.state.zoomMagnificationFactor;
-    const transVector = this.store.state.zoomTranslation;
+    // console.log("SphereFrame updateView()", SEStore.zoomTranslation);
+    // console.log("Again", this.$store.state.zoomMagnificationFactor);
+    const mag = SEStore.zoomMagnificationFactor;
+    const transVector = SEStore.zoomTranslation;
 
     // Get the DOM element to apply the transform to
     const el = (this.twoInstance.renderer as any).domElement as HTMLElement;
@@ -307,7 +315,7 @@ export default class SphereFrame extends VueComponent {
     // What does this do?
     el.style.overflow = "visible";
     //Now update the display of the arrangment (i.e. make sure the labels are not too far from their associated objects)
-    this.store.state.seLabels.forEach((l: SELabel) => {
+    this.seLabels.forEach((l: SELabel) => {
       l.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
     });
   }
@@ -330,7 +338,7 @@ export default class SphereFrame extends VueComponent {
       scrollFraction *= -1;
     }
     // Get the current magnification factor and set a variable for the next one
-    const currentMagFactor = this.store.state.zoomMagnificationFactor;
+    const currentMagFactor = SEStore.zoomMagnificationFactor;
     let newMagFactor = currentMagFactor;
     // Set the next magnification factor. Positive scroll fraction means zoom out, negative zoom in.
     if (scrollFraction < 0) {
@@ -343,8 +351,8 @@ export default class SphereFrame extends VueComponent {
     }
     // Get the current translation vector to allow us to untransform the CSS transformation
     const currentTranslationVector = [
-      this.store.state.zoomTranslation[0],
-      this.store.state.zoomTranslation[1]
+      SEStore.zoomTranslation[0],
+      SEStore.zoomTranslation[1]
     ];
 
     // Compute (untransformedPixelX,untransformedPixelY) which is the location of the mouse
@@ -378,8 +386,8 @@ export default class SphereFrame extends VueComponent {
     }
 
     // Set the new magnifiction factor and the next translation vector in the store
-    this.store.dispatch.changeZoomFactor(newMagFactor);
-    this.store.commit.setZoomTranslation(newTranslationVector);
+    SEStore.setZoomMagnificationFactor(newMagFactor);
+    SEStore.setZoomTranslation(newTranslationVector);
     // Update the display
     this.updateView();
     // Query to see if the last command on the stack was also a zoom sphere command. If it was, simply update that command with the new
@@ -435,14 +443,12 @@ export default class SphereFrame extends VueComponent {
 
   //#region handleSphereRotation
   handleSphereRotation(e: unknown): void {
-    this.store.commit.rotateSphere((e as any).transform);
+    SEStore.rotateSphere((e as any).transform);
   }
   //#endregion handleSphereRotation
 
   getCurrentSVGForIcon(): void {
-    const svgRoot = this.$store.direct.state.svgCanvas?.querySelector(
-      "svg"
-    ) as SVGElement;
+    const svgRoot = SEStore.svgCanvas?.querySelector("svg") as SVGElement;
 
     // Make a duplicate of the SVG tree
     const svgElement = svgRoot.cloneNode(true) as SVGElement;
@@ -553,13 +559,13 @@ export default class SphereFrame extends VueComponent {
       case "zoomFit":
         // This is a tool that only needs to run once and then the actionMode should be the same as the is was before the zoom fit (and the tool should be the same)
         this.zoomTool.doZoomFit(this.canvasSize);
-        this.store.commit.revertActionMode();
+        SEStore.revertActionMode();
         break;
 
       case "iconFactory":
         // This is a tool that only needs to run once and then the actionMode should be the same as the is was before the click (and the tool should be the same)
         this.iconFactoryTool.createIconPaths();
-        this.store.commit.revertActionMode();
+        SEStore.revertActionMode();
         break;
 
       case "hide":

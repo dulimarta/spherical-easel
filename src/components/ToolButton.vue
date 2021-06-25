@@ -101,7 +101,6 @@ export default class ToolButton extends Vue {
   @Prop({ default: null })
   button!: ToolButtonType;
 
-  readonly store = this.$store.direct;
   private elev = 0;
   private weight = "normal";
 

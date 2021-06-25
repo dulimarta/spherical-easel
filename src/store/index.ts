@@ -1,51 +1,25 @@
-/** @format */
-
 import Vue from "vue";
 import Vuex from "vuex";
-import mutations, { initialState } from "./mutations";
-import getters from "./getters";
-import EventBus from "@/eventHandlers/EventBus";
-// import StylesModule from "./ui-styles";
-// import AuthModule from "./auth";
-import { createDirectStore } from "direct-vuex";
+// import { AppState } from "@/types";
+import MyStore from "./se-module";
+import { getModule } from "vuex-module-decorators";
 Vue.use(Vuex);
 
-const {
-  store,
-  rootActionContext,
-  moduleActionContext,
-  rootGetterContext,
-  moduleGetterContext
-} = createDirectStore({
-  state: initialState,
-  mutations,
-  actions: {
-    /* Define async work in this block */
-    //#region magnificationUpdate
-    changeZoomFactor({ commit }, mag: number): void {
-      commit("setZoomMagnificationFactor", mag);
-      EventBus.fire("magnification-updated", { factor: mag });
-    }
-    //#endregion magnificationUpdate
-  },
-  getters,
+const _store = new Vuex.Store({
   modules: {
-    // auth: AuthModule
-    // ui: StylesModule
+    /* IMPORTANT: the module name "se" below must match exactly 
+      the "name" property declared in @Module annotation in ./se-module.tx */
+    se: MyStore
   }
 });
-export default store;
-export {
-  rootActionContext,
-  moduleActionContext,
-  rootGetterContext,
-  moduleGetterContext
-};
+export default _store;
+export const SEStore = getModule(MyStore, _store);
 
-export type AppStore = typeof store;
-
-declare module "vuex" {
-  interface Store<S> {
-    direct: AppStore;
-  }
-}
+export const createStore = () =>
+  new Vuex.Store({
+    modules: {
+      /* IMPORTANT: the module name "se" below must match exactly 
+      the "name" property declared in @Module annotation in ./se-module.tx */
+      se: MyStore
+    }
+  });

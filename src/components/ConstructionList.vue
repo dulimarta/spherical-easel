@@ -1,12 +1,16 @@
 <template>
   <div @mouseenter="onListEnter"
     @mouseleave="onListLeave">
-    <span v-if="items.length === 0">No data</span>
+    <!-- the class "nodata" is used for testing. Do not remove it -->
+    <span v-if="items.length === 0"
+      class="_test_nodata">No data</span>
     <v-list three-line>
       <template v-for="(r,pos) in items">
         <v-hover v-slot:default="{hover}"
           :key="pos">
-          <v-list-item @mouseover.capture="onItemHover(r)"
+          <!-- the class "listitem" is used for testing. Do not remove it -->
+          <v-list-item class="_test_constructionItem"
+            @mouseover.capture="onItemHover(r)"
             @mouseleave="onItemLeave">
             <v-list-item-avatar size="64">
               <img :src="previewOrDefault(r.previewData)"
@@ -26,11 +30,13 @@
             </v-list-item-content>
             <!--- show a Load button as an overlay when the mouse hovers -->
             <v-overlay absolute
+              class="_test_constructionOverlay"
               opacity="0.3"
               :value="hover">
               <v-row align="center">
                 <v-col>
                   <v-btn rounded
+                    id="_test_loadfab"
                     fab
                     small
                     color="secondary">
@@ -41,6 +47,7 @@
                 </v-col>
                 <v-col v-if="allowSharing">
                   <v-btn rounded
+                    id="_test_sharefab"
                     fab
                     small
                     color="secondary"
@@ -51,6 +58,7 @@
                 <!-- show delete button only for its owner -->
                 <v-col v-if="r.author === userEmail">
                   <v-btn rounded
+                    id="_test_deletefab"
                     fab
                     small
                     color="red"
@@ -70,20 +78,31 @@
 
 <script lang="ts">
 import { Component, Vue, Prop } from "vue-property-decorator";
-import { SphericalConstruction } from "@/types";
+import { AppState, SphericalConstruction } from "@/types";
 import { FirebaseAuth } from "node_modules/@firebase/auth-types";
 import { Matrix4 } from "three";
+import axios, { AxiosResponse } from "axios";
+import { namespace } from "vuex-class";
+import { SEStore } from "@/store";
+const SE = namespace("se");
 
 @Component
 export default class extends Vue {
-  readonly $appAuth!: FirebaseAuth;
   @Prop()
-  items!: Array<SphericalConstruction>;
+  readonly items!: Array<SphericalConstruction>;
 
-  @Prop({ default: false })
-  allowSharing!: boolean;
+  @Prop({ type: Boolean })
+  readonly allowSharing!: boolean;
 
-  svgParent!: HTMLDivElement;
+  @SE.State((s: AppState) => s.svgCanvas)
+  readonly svgCanvas!: HTMLDivElement | null;
+
+  @SE.State((s: AppState) => s.inverseTotalRotationMatrix)
+  readonly inverseTotalRotationMatrix!: Matrix4;
+
+  readonly $appAuth!: FirebaseAuth;
+
+  svgParent: HTMLDivElement | null = null;
   svgRoot!: SVGElement;
   // svgRootClone: SVGElement | null = null;
   originalSphereMatrix!: Matrix4;
@@ -101,10 +120,8 @@ export default class extends Vue {
   mounted(): void {
     // To use `innerHTML` we have to get a reference to the parent of
     // the <svg> tree
-    this.svgParent = this.$store.direct.state.svgCanvas as HTMLDivElement;
-    this.svgRoot = this.$store.direct.state.svgCanvas?.querySelector(
-      "svg"
-    ) as SVGElement;
+    this.svgParent = this.svgCanvas as HTMLDivElement;
+    this.svgRoot = this.svgCanvas?.querySelector("svg") as SVGElement;
   }
 
   previewOrDefault(dataUrl: string | undefined): string {
@@ -112,25 +129,22 @@ export default class extends Vue {
   }
 
   onListEnter(/*ev:MouseEvent*/): void {
-    this.originalSphereMatrix.copy(
-      this.$store.direct.state.inverseTotalRotationMatrix
-    );
+    this.originalSphereMatrix.copy(this.inverseTotalRotationMatrix);
   }
 
   onItemHover(s: SphericalConstruction): void {
     if (this.lastDocId === s.id) return; // Prevent double hovers?
     this.lastDocId = s.id;
-    fetch(s.previewData)
-      .then((r: Response) => r.blob())
-      .then((b: Blob) => b.text())
+    axios
+      .get(s.previewData)
+      .then((r: AxiosResponse) => r.data)
       .then((svgString: string) => {
         const newSvg = this.domParser.parseFromString(
           svgString,
           "image/svg+xml"
         );
-        // this.$store.direct.commit.rotateSphere(s.sphereRotationMatrix);
         // We assume the SVG tree is always the first child
-        this.svgParent.replaceChild(
+        this.svgParent?.replaceChild(
           newSvg.activeElement as SVGElement,
           this.svgParent.firstChild as SVGElement
         );
@@ -143,15 +157,12 @@ export default class extends Vue {
 
   onListLeave(/*_ev: MouseEvent*/): void {
     // Restore the canvas
-    this.svgParent.replaceChild(
+    this.svgParent?.replaceChild(
       this.svgRoot,
       this.svgParent.firstChild as SVGElement
     );
-
     // Restore the rotation matrix
-    this.$store.direct.state.inverseTotalRotationMatrix.copy(
-      this.originalSphereMatrix
-    );
+    SEStore.setInverseRotationMatrix(this.originalSphereMatrix);
   }
 }
 </script>

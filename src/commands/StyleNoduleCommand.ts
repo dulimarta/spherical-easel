@@ -97,7 +97,7 @@ export class StyleNoduleCommand extends Command {
 
   do(): void {
     for (let i = 0; i < this.seNodules.length; i++) {
-      Command.store.commit.changeStyle({
+      Command.store.changeStyle({
         selected: [this.seNodules[i]],
         payload: {
           panel: this.panel,
@@ -134,7 +134,7 @@ export class StyleNoduleCommand extends Command {
 
   restoreState(): void {
     for (let i = 0; i < this.seNodules.length; i++) {
-      Command.store.commit.changeStyle({
+      Command.store.changeStyle({
         selected: [this.seNodules[i]],
         payload: {
           panel: this.panel,

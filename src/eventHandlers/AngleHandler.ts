@@ -20,14 +20,8 @@ import { SEPointOnOneDimensional } from "@/models/SEPointOnOneDimensional";
 import { AddPointOnOneDimensionalCommand } from "@/commands/AddPointOnOneDimensionalCommand";
 import { AddPointCommand } from "@/commands/AddPointCommand";
 import { SEEllipse } from "@/models/SEEllipse";
-enum AngleMode {
-  NONE,
-  LINES,
-  POINTS,
-  SEGMENTS,
-  LINEANDSEGMENT,
-  SEGMENTSORLINEANDSEGMENT
-}
+import { SEStore } from "@/store";
+import { AngleMode } from "@/types";
 
 enum HighlightMode {
   NONE,
@@ -127,20 +121,20 @@ export default class AngleHandler extends Highlighter {
     // Create and style the temporary angle marker
     this.temporaryAngleMarker = new AngleMarker();
     this.temporaryAngleMarker.stylize(DisplayStyle.ApplyTemporaryVariables);
-    this.store.commit.addTemporaryNodule(this.temporaryAngleMarker);
+    SEStore.addTemporaryNodule(this.temporaryAngleMarker);
 
     // Create and style the temporary points marking the points in the angle (if appropriate)
     this.temporaryFirstPoint = new Point();
     this.temporaryFirstPoint.stylize(DisplayStyle.ApplyTemporaryVariables);
-    this.store.commit.addTemporaryNodule(this.temporaryFirstPoint);
+    SEStore.addTemporaryNodule(this.temporaryFirstPoint);
 
     this.temporarySecondPoint = new Point();
     this.temporarySecondPoint.stylize(DisplayStyle.ApplyTemporaryVariables);
-    this.store.commit.addTemporaryNodule(this.temporarySecondPoint);
+    SEStore.addTemporaryNodule(this.temporarySecondPoint);
 
     this.temporaryThirdPoint = new Point();
     this.temporaryThirdPoint.stylize(DisplayStyle.ApplyTemporaryVariables);
-    this.store.commit.addTemporaryNodule(this.temporaryThirdPoint);
+    SEStore.addTemporaryNodule(this.temporaryThirdPoint);
   }
 
   private allowPointLocation(candidate: Vector3): boolean {
@@ -841,7 +835,7 @@ export default class AngleHandler extends Highlighter {
   deactivate(): void {
     super.deactivate();
     // call an unglow all command
-    Highlighter.store.commit.unglowAllSENodules();
+    SEStore.unglowAllSENodules();
     this.infoText.hide();
     // unselect all points, lines, segments
     this.targetLines.forEach(l => (l.selected = false));

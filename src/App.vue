@@ -142,9 +142,9 @@
 /* Import the custom components */
 import VueComponent from "vue";
 import { Vue, Component } from "vue-property-decorator";
-import { State } from "vuex-class";
+import { namespace } from "vuex-class";
 import MessageBox from "@/components/MessageBox.vue";
-import ConstructionLoader from "@/components/ConstructionLoader.vue";
+// import ConstructionLoader from "@/components/ConstructionLoader.vue";
 import Dialog, { DialogAction } from "@/components/Dialog.vue";
 import { AppState } from "./types";
 import EventBus from "@/eventHandlers/EventBus";
@@ -156,7 +156,10 @@ import {
 } from "@firebase/firestore-types";
 import { Unsubscribe } from "@firebase/util";
 import { Command } from "./commands/Command";
+import { Matrix4 } from "three";
+import { SEStore } from "./store";
 
+const SE = namespace("se");
 // Register vue router in-component navigation guard functions
 Component.registerHooks([
   "beforeRouteEnter",
@@ -164,10 +167,22 @@ Component.registerHooks([
   "beforeRouteUpdate"
 ]);
 /* This allows for the State of the app to be initialized with in vuex store */
-@Component({ components: { MessageBox, Dialog, ConstructionLoader } })
+@Component({ components: { MessageBox, Dialog } })
 export default class App extends Vue {
-  @State((s: AppState) => s.activeToolName)
-  activeToolName!: string;
+  @SE.State((s: AppState) => s.activeToolName)
+  readonly activeToolName!: string;
+
+  @SE.State((s: AppState) => s.svgCanvas)
+  readonly svgCanvas!: HTMLDivElement | null;
+
+  @SE.State((s: AppState) => s.inverseTotalRotationMatrix)
+  readonly inverseTotalRotationMatrix!: Matrix4;
+
+  // @SE.State((s: AppState) => s.sePoints)
+  // readonly sePoints!: SEPoint[];
+
+  // @SE.Mutation init!: () => void;
+  // @SE.Mutation clearUnsavedFlag!: () => void;
 
   readonly $appAuth!: FirebaseAuth;
   readonly $appDB!: FirebaseFirestore;
@@ -191,7 +206,7 @@ export default class App extends Vue {
 
   get hasObjects(): boolean {
     // Any objects must include at least one point
-    return this.$store.direct.getters.allSEPoints().length > 0;
+    return SEStore.sePoints.length > 0;
   }
 
   readonly keyHandler = (ev: KeyboardEvent): void => {
@@ -224,7 +239,7 @@ export default class App extends Vue {
   }
 
   mounted(): void {
-    this.$store.direct.commit.init();
+    SEStore.init();
     EventBus.listen("set-footer-color", this.setFooterColor);
     this.authSubscription = this.$appAuth.onAuthStateChanged(
       (u: User | null) => {
@@ -252,9 +267,7 @@ export default class App extends Vue {
       }
     );
     // Get the top-level SVG element
-    this.svgRoot = this.$store.direct.state.svgCanvas?.querySelector(
-      "svg"
-    ) as SVGElement;
+    this.svgRoot = this.svgCanvas?.querySelector("svg") as SVGElement;
   }
 
   beforeDestroy(): void {
@@ -297,7 +310,7 @@ export default class App extends Vue {
     /* dump the command history */
     const out = Command.dumpOpcode();
 
-    const rotationMat = this.$store.direct.state.inverseTotalRotationMatrix;
+    const rotationMat = this.inverseTotalRotationMatrix;
     const collectionPath = this.publicConstruction
       ? "constructions"
       : `users/${this.uid}/constructions`;
@@ -333,7 +346,7 @@ export default class App extends Vue {
           keyOptions: { docId: doc.id },
           type: "info"
         });
-        this.$store.direct.commit.clearUnsavedFlag();
+        SEStore.clearUnsavedFlag();
       })
       .catch((err: Error) => {
         console.log("Can't save document", err);

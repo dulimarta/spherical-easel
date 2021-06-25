@@ -19,7 +19,7 @@ export class MoveLineCommand extends Command {
   }
 
   do(): void {
-    Command.store.commit.changeLineNormalVector({
+    Command.store.changeLineNormalVector({
       lineId: this.seLine.id,
       normal: this.newNormalVector
     });
@@ -30,7 +30,7 @@ export class MoveLineCommand extends Command {
   }
 
   restoreState(): void {
-    Command.store.commit.changeLineNormalVector({
+    Command.store.changeLineNormalVector({
       lineId: this.lastState,
       normal: this.oldNormalVector
     });

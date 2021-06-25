@@ -14,7 +14,7 @@ import "firebase/firestore";
 import "firebase/storage";
 import "@/extensions/three.extensions";
 import "@/extensions/number.extensions";
-
+import { config } from "vuex-module-decorators";
 Vue.use(VueI18n);
 
 const firebaseConfig = {
@@ -29,11 +29,13 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 
 // Allow all .vue components to access Firebase Auth, Firestore, and Storage
-// vianew instance variables this.$appAuth, this.$appDB, this.$appStorage
+// via new instance variables this.$appAuth, this.$appDB, this.$appStorage
 Vue.prototype.$appAuth = firebase.auth();
 Vue.prototype.$appDB = firebase.firestore();
 Vue.prototype.$appStorage = firebase.storage();
 Vue.config.productionTip = false;
+
+config.rawError = true;
 
 new Vue({
   i18n,
@@ -42,7 +44,7 @@ new Vue({
     // renderer
   },
   router,
-  store: store.original,
+  store,
   vuetify,
-  render: h => h(App)
+  render: (h: any) => h(App)
 }).$mount("#app");

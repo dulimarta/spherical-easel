@@ -12,16 +12,8 @@ import { Styles } from "@/types/Styles";
 import { UpdateMode, UpdateStateType } from "@/types";
 import { Labelable } from "@/types";
 import { SELabel } from "@/models/SELabel";
-import AppStore from "@/store";
-
-enum AngleMode {
-  NONE,
-  LINES,
-  POINTS,
-  SEGMENTS,
-  LINEANDSEGMENT,
-  SEGMENTSORLINEANDSEGMENT
-}
+import { SEStore } from "@/store";
+import { AngleMode } from "@/types";
 
 const styleSet = new Set([
   Styles.strokeColor,
@@ -105,11 +97,6 @@ export class SEAngleMarker extends SEMeasurement
   private measureTmpVector3 = new Vector3();
 
   /**
-   * Vuex global state
-   */
-  protected store = AppStore; //
-
-  /**
    * The number of this angle marker when it was created (i.e. this number of angle markers have been created so far)
    */
   private _angleMarkerNumber = 0;
@@ -189,17 +176,13 @@ export class SEAngleMarker extends SEMeasurement
   public get longName(): string {
     if (this._thirdSEParent !== undefined) {
       return (
-        this.label!.ref.shortName +
-        `-Angle(${this._firstSEParent.label!.ref.shortName},${
-          this._secondSEParent.label!.ref.shortName
-        },${this._thirdSEParent.label!.ref.shortName}):${this.prettyValue}`
+        this.label?.ref.shortName +
+        `-Angle(${this._firstSEParent.label?.ref.shortName},${this._secondSEParent.label?.ref.shortName},${this._thirdSEParent.label?.ref.shortName}):${this.prettyValue}`
       );
     } else {
       return (
-        this.label!.ref.shortName +
-        `-Angle(${this._firstSEParent.label!.ref.shortName},${
-          this._secondSEParent.label!.ref.shortName
-        }):${this.prettyValue}`
+        this.label?.ref.shortName +
+        `-Angle(${this._firstSEParent.label?.ref.shortName},${this._secondSEParent.label?.ref.shortName}):${this.prettyValue}`
       );
     }
   }
@@ -851,9 +834,7 @@ export class SEAngleMarker extends SEMeasurement
 
     // if the unitIdealVector leads to a hit then return the unitIdealVector
     // console.log("x before hit ", this._startVector.x);
-    if (
-      this.isHitAt(unitIdealVector, this.store.state.zoomMagnificationFactor)
-    ) {
+    if (this.isHitAt(unitIdealVector, SEStore.zoomMagnificationFactor)) {
       // console.log("hit");
       // console.log("x after - hit ", this._startVector.x);
       return unitIdealVector;
@@ -1098,8 +1079,7 @@ export class SEAngleMarker extends SEMeasurement
     //  of the idealUnitSphereVector and the closest point that is at the tolerance distance away.
     if (
       this.tmpVector1.angleTo(idealUnitSphereVector) <
-      SETTINGS.angleMarker.maxLabelDistance /
-        this.store.state.zoomMagnificationFactor
+      SETTINGS.angleMarker.maxLabelDistance / SEStore.zoomMagnificationFactor
     ) {
       return idealUnitSphereVector;
     } else {
@@ -1114,7 +1094,7 @@ export class SEAngleMarker extends SEMeasurement
       this.tmpVector3.multiplyScalar(
         Math.sin(
           SETTINGS.angleMarker.maxLabelDistance /
-            this.store.state.zoomMagnificationFactor
+            SEStore.zoomMagnificationFactor
         )
       );
       this.tmpVector3
@@ -1122,7 +1102,7 @@ export class SEAngleMarker extends SEMeasurement
           this.tmpVector1,
           Math.cos(
             SETTINGS.angleMarker.maxLabelDistance /
-              this.store.state.zoomMagnificationFactor
+              SEStore.zoomMagnificationFactor
           )
         )
         .normalize();
@@ -1144,9 +1124,9 @@ export class SEAngleMarker extends SEMeasurement
    * put your right at the vertexVector with your thumb pointing away from the origin of the sphere, align your fingers with the
    * start half-plane and then curl your finger to the unitIdealVector half-plane. The angle swept out by your fingers is the returned angle. This
    * will return an angle from 0 to 2Pi.
-   * @param startVector distinct unit vector and not the anitpode of vertexVector
+   * @param startVector distinct unit vector and not the antipode of vertexVector
    * @param vertexVector distinct unit vector
-   * @param unitIdealVector distinct unit vector and not the anitpode of vertexVector
+   * @param unitIdealVector distinct unit vector and not the antipode of vertexVector
    * @returns an angle in [0,2pi)
    */
   private measureAngle(

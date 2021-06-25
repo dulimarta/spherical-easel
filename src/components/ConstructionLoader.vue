@@ -2,16 +2,21 @@
   <div>
     <div class="text-h6"
       v-if="firebaseUid.length > 0">Private Constructions</div>
-    <ConstructionList :items="privateConstructions"
+    <!--- WARNING: the "id" attribs below are needed for testing -->
+    <ConstructionList id="privateList"
+      :items="privateConstructions"
       v-on:load-requested="shouldLoadConstruction" />
     <div class="text-h6">Public Constructions</div>
-    <ConstructionList :items="publicConstructions"
+    <ConstructionList id="publicList"
+      :items="publicConstructions"
       :allow-sharing="true"
       v-on:load-requested="shouldLoadConstruction"
       v-on:share-requested="doShareConstruction"
       v-on:delete-requested="doDeleteConstruction" />
 
     <Dialog ref="constructionShareDialog"
+      id="_test_constructionShareDialog"
+      class="dialog"
       title="Share Construction"
       :yes-text="`Copy URL`"
       :yes-action="doCopyURL"
@@ -26,6 +31,7 @@
 
     </Dialog>
     <Dialog ref="constructionLoadDialog"
+      class="dialog"
       title="Confirmation Required"
       yes-text="Proceed"
       :yesAction="doLoadConstruction"
@@ -55,7 +61,8 @@ import { run } from "@/commands/CommandInterpreter";
 import {
   ConstructionScript,
   SphericalConstruction,
-  ConstructionInFirestore
+  ConstructionInFirestore,
+  AppState
 } from "@/types";
 import EventBus from "@/eventHandlers/EventBus";
 import { SENodule } from "@/models/SENodule";
@@ -64,11 +71,17 @@ import { FirebaseAuth } from "@firebase/auth-types";
 import Dialog, { DialogAction } from "@/components/Dialog.vue";
 import ConstructionList from "@/components/ConstructionList.vue";
 import { Matrix4 } from "three";
+import { namespace } from "vuex-class";
+import { SEStore } from "@/store";
+const SE = namespace("se");
 
 @Component({ components: { Dialog, ConstructionList } })
 export default class ConstructionLoader extends Vue {
   readonly $appDB!: FirebaseFirestore;
   readonly $appAuth!: FirebaseAuth;
+
+  @SE.State((s: AppState) => s.hasUnsavedNodules)
+  readonly hasUnsavedNodules!: boolean;
 
   snapshotUnsubscribe: (() => void) | null = null;
   publicConstructions: Array<SphericalConstruction> = [];
@@ -150,8 +163,7 @@ export default class ConstructionLoader extends Vue {
 
   shouldLoadConstruction(event: { docId: string }): void {
     this.selectedDocId = event.docId;
-    if (this.$store.direct.state.hasUnsavedNodules)
-      this.$refs.constructionLoadDialog.show();
+    if (this.hasUnsavedNodules) this.$refs.constructionLoadDialog.show();
     else {
       this.doLoadConstruction();
     }
@@ -177,8 +189,8 @@ export default class ConstructionLoader extends Vue {
       rotationMatrix = this.privateConstructions[pos].sphereRotationMatrix;
     }
 
-    this.$store.direct.commit.removeAllFromLayers();
-    this.$store.direct.commit.init();
+    SEStore.removeAllFromLayers();
+    SEStore.init();
     SENodule.resetAllCounters();
     Nodule.resetAllCounters();
     EventBus.fire("show-alert", {
@@ -188,9 +200,9 @@ export default class ConstructionLoader extends Vue {
     });
     // It looks like we have to apply the rotation matrix
     // before running the script
-    this.$store.direct.commit.rotateSphere(rotationMatrix);
+    SEStore.rotateSphere(rotationMatrix);
     run(script);
-    this.$store.direct.commit.clearUnsavedFlag();
+    SEStore.clearUnsavedFlag();
     EventBus.fire("construction-loaded", {});
   }
 

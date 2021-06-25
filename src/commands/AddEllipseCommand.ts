@@ -36,8 +36,8 @@ export class AddEllipseCommand extends Command {
     this.focus2SEPoint.registerChild(this.seEllipse);
     this.ellipseSEPoint.registerChild(this.seEllipse);
     this.seEllipse.registerChild(this.seLabel);
-    Command.store.commit.addEllipse(this.seEllipse);
-    Command.store.commit.addLabel(this.seLabel);
+    Command.store.addEllipse(this.seEllipse);
+    Command.store.addLabel(this.seLabel);
   }
 
   saveState(): void {
@@ -45,8 +45,8 @@ export class AddEllipseCommand extends Command {
   }
 
   restoreState(): void {
-    Command.store.commit.removeLabel(this.seLabel.id);
-    Command.store.commit.removeEllipse(this.lastState);
+    Command.store.removeLabel(this.seLabel.id);
+    Command.store.removeEllipse(this.lastState);
     this.seEllipse.unregisterChild(this.seLabel);
     this.ellipseSEPoint.unregisterChild(this.seEllipse);
     this.focus2SEPoint.unregisterChild(this.seEllipse);

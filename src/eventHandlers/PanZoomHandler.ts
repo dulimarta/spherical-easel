@@ -1,9 +1,11 @@
 import { ToolStrategy } from "./ToolStrategy";
 import { Vector2 } from "three";
 import { ZoomSphereCommand } from "@/commands/ZoomSphereCommand";
-import AppStore from "@/store";
+// import AppStore from "@/store";
 import EventBus from "./EventBus";
 import SETTINGS from "@/global-settings";
+
+import { SEStore } from "@/store";
 
 export enum ZoomMode {
   MAGNIFY,
@@ -14,7 +16,7 @@ export enum ZoomMode {
 // const tmpMatrix = new Matrix4();
 
 export default class PanZoomHandler implements ToolStrategy {
-  protected store = AppStore; // Vuex global state
+  // protected store = AppStore; // Vuex global state
   /**
    * The HTML element that is the target of the zoom?
    */
@@ -76,8 +78,8 @@ export default class PanZoomHandler implements ToolStrategy {
     this.isMousePressed = true;
 
     // Get the current magnification factor and translation vector so we can untransform the pixel location and issue command that can be undone.
-    this.mousePressMagnificationFactor = this.store.state.zoomMagnificationFactor;
-    const temp = this.store.state.zoomTranslation;
+    this.mousePressMagnificationFactor = SEStore.zoomMagnificationFactor;
+    const temp = SEStore.zoomTranslation;
     for (let i = 0; i < 2; i++) {
       this.mousePressTranslationVector[i] = temp[i];
     }
@@ -154,10 +156,10 @@ export default class PanZoomHandler implements ToolStrategy {
 
   doZoom(event: MouseEvent): void {
     // Get the current magnification factor and set a variable for the next one
-    const currentMagFactor = this.store.state.zoomMagnificationFactor;
+    const currentMagFactor = SEStore.zoomMagnificationFactor;
     let newMagFactor = currentMagFactor;
     // Get the current translation vector to allow us to untransform the CSS transformation
-    const currentTranslationVector = this.store.state.zoomTranslation;
+    const currentTranslationVector = SEStore.zoomTranslation;
 
     // Set the next magnification factor depending on the mode.
     if (this._mode === ZoomMode.MINIFY) {
@@ -230,8 +232,8 @@ export default class PanZoomHandler implements ToolStrategy {
 
     // #region writeFactorVectorToStore
     // Set the new magnification factor and the new translation vector in the store
-    this.store.dispatch.changeZoomFactor(newMagFactor);
-    this.store.commit.setZoomTranslation(newTranslationVector);
+    SEStore.setZoomMagnificationFactor(newMagFactor);
+    SEStore.setZoomTranslation(newTranslationVector);
     // #endregion writeFactorVectorToStore
 
     // Update the display
@@ -249,7 +251,7 @@ export default class PanZoomHandler implements ToolStrategy {
   }
 
   doPan(event: MouseEvent): void {
-    const mag = this.store.state.zoomMagnificationFactor;
+    const mag = SEStore.zoomMagnificationFactor;
     // // Only allow panning if we are zoomed in
     // if (mag < 1) return;
     this.lastPanTranslationVector = [
@@ -257,7 +259,7 @@ export default class PanZoomHandler implements ToolStrategy {
       this.currentPixelPosition.y - mag * this.utStartDragPosition.y
     ];
     // Set the new translation vector in the store
-    this.store.commit.setZoomTranslation(this.lastPanTranslationVector);
+    SEStore.setZoomTranslation(this.lastPanTranslationVector);
 
     // Update the display
     EventBus.fire("zoom-updated", {});
@@ -279,20 +281,20 @@ export default class PanZoomHandler implements ToolStrategy {
   }
   doZoomFit(size: number): void {
     // Get the current magnification factor and set a variable for the next one
-    const currentMagFactor = this.store.state.zoomMagnificationFactor;
+    const currentMagFactor = SEStore.zoomMagnificationFactor;
     // Get the current translation vector to allow us to untransform the CSS transformation
-    const currentTranslationVector = this.store.state.zoomTranslation;
+    const currentTranslationVector = SEStore.zoomTranslation;
 
     const radius = size / 2 - 16; // 16-pixel gap
-    this.store.commit.setSphereRadius(radius);
+    SEStore.setSphereRadius(radius);
 
     // The radius over the default radius is the magnification factor
     const newMagFactor = radius / SETTINGS.boundaryCircle.radius;
 
     // Set the new magnification factor and the new translation vector in the store
     // The origin of the screen is the zoom translation vector
-    this.store.dispatch.changeZoomFactor(newMagFactor);
-    this.store.commit.setZoomTranslation([0, 0]);
+    SEStore.setZoomMagnificationFactor(newMagFactor);
+    SEStore.setZoomTranslation([0, 0]);
 
     // Update the display
     EventBus.fire("zoom-updated", {});

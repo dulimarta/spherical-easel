@@ -23,4 +23,5 @@ const shadowStore = {
 };
 
 const { store } = createDirectStore(shadowStore);
+
 export default store;

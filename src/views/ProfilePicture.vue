@@ -36,6 +36,7 @@ import { Component, Vue } from "vue-property-decorator";
 import { FirebaseAuth } from "@firebase/auth-types";
 import { FirebaseFirestore, DocumentSnapshot } from "@firebase/firestore-types";
 import { UserProfile } from "@/types";
+import { SEStore } from "@/store";
 type FileEvent = EventTarget & { files: FileList | undefined };
 
 @Component
@@ -72,7 +73,7 @@ export default class extends Vue {
       const reader = new FileReader();
       reader.onload = (ev: ProgressEvent) => {
         const imageBase64 = (ev.target as any).result;
-        this.$store.direct.commit.setTemporaryProfilePicture(imageBase64);
+        SEStore.setTemporaryProfilePicture(imageBase64);
         this.$router.push({
           name: "PhotoCropper"
         });

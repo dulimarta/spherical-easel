@@ -252,7 +252,7 @@ import Label from "@/plottables/Label";
 import Segment from "@/plottables/Segment";
 import Nodule from "@/plottables/Nodule";
 import Ellipse from "@/plottables/Ellipse";
-import { State } from "vuex-class";
+import { namespace } from "vuex-class";
 import { SENodule } from "@/models/SENodule";
 import { AppState, ConstructionInFirestore } from "@/types";
 import IconBase from "@/components/IconBase.vue";
@@ -263,6 +263,9 @@ import { ConstructionScript } from "@/types";
 import { Route } from "vue-router";
 import store from "@/store";
 import Dialog, { DialogAction } from "@/components/Dialog.vue";
+import { SEStore } from "@/store";
+const SE = namespace("se");
+
 /**
  * Split panel width distribution (percentages):
  * When both side panels open: 20:60:20 (proportions 1:3:1)
@@ -284,22 +287,29 @@ import Dialog, { DialogAction } from "@/components/Dialog.vue";
 export default class Easel extends Vue {
   @Prop()
   documentId: string | undefined;
-  @State((s: AppState) => s.sePoints)
+  @SE.State((s: AppState) => s.sePoints)
   readonly points!: SENodule[];
 
-  @State((s: AppState) => s.seLines)
+  @SE.State((s: AppState) => s.seLines)
   readonly lines!: SENodule[];
 
-  @State((s: AppState) => s.seSegments)
+  @SE.State((s: AppState) => s.seSegments)
   readonly segments!: SENodule[];
 
-  @State((s: AppState) => s.seCircles)
+  @SE.State((s: AppState) => s.seCircles)
   readonly circles!: SENodule[];
+
+  @SE.State((s: AppState) => s.seNodules)
+  readonly seNodules!: SENodule[];
+
+  @SE.State((s: AppState) => s.temporaryNodules)
+  readonly temporaryNodules!: Nodule[];
+
+  @SE.State((s: AppState) => s.previousZoomMagnificationFactor)
+  readonly previousZoomMagnificationFactor!: number;
 
   readonly $appDB!: FirebaseFirestore;
 
-  readonly store = this.$store.direct;
-  // readonly UIModule = getModule(UI, this.$store);
   private availHeight = 0; // Both split panes are sandwiched between the app bar and footer. This variable hold the number of pixels available for canvas height
   private currentCanvasSize = 0; // Result of height calculation will be passed to <v-responsive> via this variable
 
@@ -346,7 +356,7 @@ export default class Easel extends Vue {
   }
   get hasObjects(): boolean {
     // Any objects must include at least one point
-    return this.$store.direct.getters.allSEPoints().length > 0;
+    return SEStore.sePoints.length > 0;
   }
 
   private setUndoEnabled(e: { value: boolean }): void {
@@ -358,21 +368,21 @@ export default class Easel extends Vue {
 
   private enableZoomIn(): void {
     this.displayZoomInToolUseMessage = true;
-    this.store.commit.setActionMode({
+    SEStore.setActionMode({
       id: "zoomIn",
       name: "PanZoomInDisplayedName"
     });
   }
   private enableZoomOut(): void {
     this.displayZoomOutToolUseMessage = true;
-    this.store.commit.setActionMode({
+    SEStore.setActionMode({
       id: "zoomOut",
       name: "PanZoomOutDisplayedName"
     });
   }
   private enableZoomFit(): void {
     this.displayZoomFitToolUseMessage = true;
-    this.store.commit.setActionMode({
+    SEStore.setActionMode({
       id: "zoomFit",
       name: "ZoomFitDisplayedName"
     });
@@ -392,8 +402,8 @@ export default class Easel extends Vue {
   }
 
   loadDocument(docId: string): void {
-    this.$store.direct.commit.removeAllFromLayers();
-    this.$store.direct.commit.init();
+    SEStore.removeAllFromLayers();
+    SEStore.init();
     SENodule.resetAllCounters();
     Nodule.resetAllCounters();
     this.$appDB
@@ -463,14 +473,14 @@ export default class Easel extends Vue {
   }
 
   setActionModeToSelectTool(): void {
-    this.store.commit.setActionMode({
+    SEStore.setActionMode({
       id: "select",
       name: "SelectDisplayedName"
     });
   }
 
   switchActionMode(): void {
-    this.store.commit.setActionMode(this.actionMode);
+    SEStore.setActionMode(this.actionMode);
   }
   onWindowResized(): void {
     this.adjustSize();
@@ -485,8 +495,8 @@ export default class Easel extends Vue {
   }
 
   resetSphere(): void {
-    this.$store.direct.commit.removeAllFromLayers();
-    this.$store.direct.commit.init();
+    SEStore.removeAllFromLayers();
+    SEStore.init();
     Command.commandHistory.splice(0);
     Command.redoHistory.splice(0);
     SENodule.resetAllCounters();
@@ -495,7 +505,7 @@ export default class Easel extends Vue {
 
   //#region resizePlottables
   resizePlottables(e: { factor: number }): void {
-    const oldFactor = this.store.state.previousZoomMagnificationFactor;
+    const oldFactor = this.previousZoomMagnificationFactor;
     // Update the current stroke widths in each plottable class
     Line.updateCurrentStrokeWidthForZoom(oldFactor / e.factor);
     Segment.updateCurrentStrokeWidthForZoom(oldFactor / e.factor);
@@ -506,11 +516,11 @@ export default class Easel extends Vue {
     Ellipse.updateCurrentStrokeWidthForZoom(oldFactor / e.factor);
 
     // Update the size of each nodule in the store
-    this.$store.state.seNodules.forEach((p: SENodule) => {
+    this.seNodules.forEach((p: SENodule) => {
       p.ref?.adjustSize();
     });
     // The temporary plottables need to be resized too
-    this.$store.state.temporaryNodules.forEach((p: Nodule) => {
+    this.temporaryNodules.forEach((p: Nodule) => {
       p.adjustSize();
     });
   }

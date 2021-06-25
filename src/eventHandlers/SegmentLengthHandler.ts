@@ -9,7 +9,7 @@ import { CommandGroup } from "@/commands/CommandGroup";
 import { StyleNoduleCommand } from "@/commands/StyleNoduleCommand";
 import { LabelDisplayMode, StyleEditPanels } from "@/types/Styles";
 import { UpdateMode } from "@/types";
-
+import { SEStore } from "@/store";
 export default class SegmentLengthHandler extends Highlighter {
   /**
    * Segment to measure
@@ -94,8 +94,8 @@ export default class SegmentLengthHandler extends Highlighter {
     this.targetSegment = null;
   }
   activate(): void {
-    if (this.store.getters.selectedSENodules().length == 1) {
-      const object1 = this.store.getters.selectedSENodules()[0];
+    if (SEStore.selectedSENodules.length == 1) {
+      const object1 = SEStore.selectedSENodules[0];
 
       if (object1 instanceof SESegment) {
         const lenMeasure = new SESegmentLength(object1);

@@ -39,7 +39,7 @@ export interface AppState {
   seAngleMarkers: SEAngleMarker[];
   seLabels: SELabel[];
   seNodules: SENodule[];
-  selections: SENodule[];
+  selectedSENodules: SENodule[];
 
   intersections: SEIntersectionPoint[];
   // measurements: SEMeasurement[];
@@ -256,4 +256,13 @@ export interface UserProfile {
   displayName?: string;
   location?: string;
   role?: string;
+}
+
+export enum AngleMode {
+  NONE,
+  LINES,
+  POINTS,
+  SEGMENTS,
+  LINEANDSEGMENT,
+  SEGMENTSORLINEANDSEGMENT
 }

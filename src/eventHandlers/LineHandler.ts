@@ -21,7 +21,7 @@ import { SEOneDimensional, SEIntersectionReturnType } from "@/types";
 import { UpdateMode } from "@/types";
 import Label from "@/plottables/Label";
 import { SELabel } from "@/models/SELabel";
-
+import { SEStore } from "@/store";
 export default class LineHandler extends Highlighter {
   /**
    * The starting vector location of the line
@@ -84,16 +84,16 @@ export default class LineHandler extends Highlighter {
     // Create and style the temporary line
     this.temporaryLine = new Line();
     this.temporaryLine.stylize(DisplayStyle.ApplyTemporaryVariables);
-    this.store.commit.addTemporaryNodule(this.temporaryLine);
+    SEStore.addTemporaryNodule(this.temporaryLine);
     this.isTemporaryLineAdded = false;
 
     // Create and style the temporary points marking the start/end of an object being created
     this.temporaryStartMarker = new Point();
     this.temporaryStartMarker.stylize(DisplayStyle.ApplyTemporaryVariables);
-    this.store.commit.addTemporaryNodule(this.temporaryStartMarker);
+    SEStore.addTemporaryNodule(this.temporaryStartMarker);
     this.temporaryEndMarker = new Point();
     this.temporaryEndMarker.stylize(DisplayStyle.ApplyTemporaryVariables);
-    this.store.commit.addTemporaryNodule(this.temporaryEndMarker);
+    SEStore.addTemporaryNodule(this.temporaryEndMarker);
   }
   //eslint-disable-next-line
   mousePressed(event: MouseEvent): void {
@@ -393,7 +393,7 @@ export default class LineHandler extends Highlighter {
           this.snapStartMarkerToTemporaryPoint = null;
           this.snapEndMarkerToTemporaryPoint = null;
           // call an unglow all command
-          Highlighter.store.commit.unglowAllSENodules();
+          SEStore.unglowAllSENodules();
         }
       } else {
         this.temporaryLine.removeFromLayers();
@@ -438,7 +438,7 @@ export default class LineHandler extends Highlighter {
     this.makingALine = false;
 
     // call an unglow all command
-    Highlighter.store.commit.unglowAllSENodules();
+    SEStore.unglowAllSENodules();
   }
 
   // Create a new line from the mouse event information
@@ -675,9 +675,8 @@ export default class LineHandler extends Highlighter {
     );
 
     // Determine all new intersection points and add their creation to the command so it can be undone
-    this.store.getters
-      .createAllIntersectionsWithLine(newSELine)
-      .forEach((item: SEIntersectionReturnType) => {
+    SEStore.createAllIntersectionsWithLine(newSELine).forEach(
+      (item: SEIntersectionReturnType) => {
         // Create the plottable label
         const newLabel = new Label();
         const newSELabel = new SELabel(newLabel, item.SEIntersectionPoint);
@@ -704,16 +703,17 @@ export default class LineHandler extends Highlighter {
         );
         item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points
         newSELabel.showing = false;
-      });
+      }
+    );
     lineGroup.execute();
   }
 
   activate(): void {
     // If there are exactly two (non-antipodal and not to near each other) SEPoints selected,
     // create a line with the two points
-    if (this.store.getters.selectedSENodules().length == 2) {
-      const object1 = this.store.getters.selectedSENodules()[0];
-      const object2 = this.store.getters.selectedSENodules()[1];
+    if (SEStore.selectedSENodules.length == 2) {
+      const object1 = SEStore.selectedSENodules[0];
+      const object2 = SEStore.selectedSENodules[1];
 
       if (object1 instanceof SEPoint && object2 instanceof SEPoint) {
         // Create a new plottable Line
@@ -764,9 +764,8 @@ export default class LineHandler extends Highlighter {
 
         // Generate new intersection points. These points must be computed and created
         // in the store. Add the new created points to the circle command so they can be undone.
-        this.store.getters
-          .createAllIntersectionsWithLine(newSELine)
-          .forEach((item: SEIntersectionReturnType) => {
+        SEStore.createAllIntersectionsWithLine(newSELine).forEach(
+          (item: SEIntersectionReturnType) => {
             // Create the plottable label
             const newLabel = new Label();
             const newSELabel = new SELabel(newLabel, item.SEIntersectionPoint);
@@ -793,7 +792,8 @@ export default class LineHandler extends Highlighter {
             );
             item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points
             newSELabel.showing = false;
-          });
+          }
+        );
 
         lineCommandGroup.execute();
       }

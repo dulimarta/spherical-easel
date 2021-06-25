@@ -26,7 +26,7 @@ import { SESegment } from "@/models/SESegment";
 import { SELine } from "@/models/SELine";
 import { SEEllipse } from "@/models/SEEllipse";
 import { AddEllipseCommand } from "@/commands/AddEllipseCommand";
-
+import { SEStore } from "@/store";
 const tmpVector = new Vector3();
 
 export default class EllipseHandler extends Highlighter {
@@ -86,21 +86,21 @@ export default class EllipseHandler extends Highlighter {
     this.temporaryEllipse = new Ellipse();
     // Set the style using the temporary defaults
     this.temporaryEllipse.stylize(DisplayStyle.ApplyTemporaryVariables);
-    this.store.commit.addTemporaryNodule(this.temporaryEllipse);
+    SEStore.addTemporaryNodule(this.temporaryEllipse);
     // Create and style the temporary points marking the start/end of an object being created
     this.temporaryFocus1Marker = new Point();
     this.temporaryFocus1Marker.stylize(DisplayStyle.ApplyTemporaryVariables);
-    this.store.commit.addTemporaryNodule(this.temporaryFocus1Marker);
+    SEStore.addTemporaryNodule(this.temporaryFocus1Marker);
 
     this.temporaryFocus2Marker = new Point();
     this.temporaryFocus2Marker.stylize(DisplayStyle.ApplyTemporaryVariables);
-    this.store.commit.addTemporaryNodule(this.temporaryFocus2Marker);
+    SEStore.addTemporaryNodule(this.temporaryFocus2Marker);
 
     this.temporaryEllipsePointMarker = new Point();
     this.temporaryEllipsePointMarker.stylize(
       DisplayStyle.ApplyTemporaryVariables
     );
-    this.store.commit.addTemporaryNodule(this.temporaryEllipsePointMarker);
+    SEStore.addTemporaryNodule(this.temporaryEllipsePointMarker);
   }
 
   mousePressed(event: MouseEvent): void {
@@ -651,7 +651,7 @@ export default class EllipseHandler extends Highlighter {
     this.ellipseSEPoint = null;
 
     // call an unglow all command
-    Highlighter.store.commit.unglowAllSENodules();
+    SEStore.unglowAllSENodules();
   }
   /**
    * Add a new circle the user has moved the mouse far enough (but not a radius of PI)
@@ -972,9 +972,8 @@ export default class EllipseHandler extends Highlighter {
 
     // Generate new intersection points. These points must be computed and created
     // in the store. Add the new created points to the circle command so they can be undone.
-    this.store.getters
-      .createAllIntersectionsWithEllipse(newSEEllipse)
-      .forEach((item: SEIntersectionReturnType) => {
+    SEStore.createAllIntersectionsWithEllipse(newSEEllipse).forEach(
+      (item: SEIntersectionReturnType) => {
         // Create the plottable and model label
         const newLabel = new Label();
         const newSELabel = new SELabel(newLabel, item.SEIntersectionPoint);
@@ -1002,7 +1001,8 @@ export default class EllipseHandler extends Highlighter {
         );
         item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points or label
         newSELabel.showing = false;
-      });
+      }
+    );
 
     ellipseCommandGroup.execute();
   }
@@ -1010,10 +1010,10 @@ export default class EllipseHandler extends Highlighter {
   activate(): void {
     // If there are exactly two SEPoints selected, create a circle with the first as the center
     // and the second as the circle point
-    if (this.store.getters.selectedSENodules().length == 3) {
-      const object1 = this.store.getters.selectedSENodules()[0];
-      const object2 = this.store.getters.selectedSENodules()[1];
-      const object3 = this.store.getters.selectedSENodules()[2];
+    if (SEStore.selectedSENodules.length == 3) {
+      const object1 = SEStore.selectedSENodules[0];
+      const object2 = SEStore.selectedSENodules[1];
+      const object3 = SEStore.selectedSENodules[2];
       if (
         object1 instanceof SEPoint &&
         object2 instanceof SEPoint &&
