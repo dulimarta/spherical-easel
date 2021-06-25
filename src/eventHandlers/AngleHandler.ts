@@ -20,15 +20,7 @@ import { SEPointOnOneDimensional } from "@/models/SEPointOnOneDimensional";
 import { AddPointOnOneDimensionalCommand } from "@/commands/AddPointOnOneDimensionalCommand";
 import { AddPointCommand } from "@/commands/AddPointCommand";
 import { SEStore } from "@/store";
-
-enum AngleMode {
-  NONE,
-  LINES,
-  POINTS,
-  SEGMENTS,
-  LINEANDSEGMENT,
-  SEGMENTSORLINEANDSEGMENT
-}
+import { AngleMode } from "@/types";
 
 enum HighlightMode {
   NONE,

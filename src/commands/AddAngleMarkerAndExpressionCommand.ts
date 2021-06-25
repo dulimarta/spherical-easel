@@ -9,16 +9,7 @@ import AngleMarker from "@/plottables/AngleMarker";
 import { DisplayStyle } from "@/plottables/Nodule";
 import Label from "@/plottables/Label";
 import { Vector3 } from "three";
-import { UpdateMode } from "@/types";
-
-enum AngleMode {
-  NONE,
-  LINES,
-  POINTS,
-  SEGMENTS,
-  LINEANDSEGMENT,
-  SEGMENTSORLINEANDSEGMENT
-}
+import { UpdateMode, AngleMode } from "@/types";
 
 export class AddAngleMarkerCommand extends Command {
   /**

@@ -29,8 +29,8 @@
     "src/**/*.ts",
     "src/**/*.tsx",
     "src/**/*.vue",
-    "src/types/two.js/index.d.ts"
-    // "tests/*.d.ts"
+    "src/types/two.js/index.d.ts",
+    "tests/*.d.ts"
   ],
   "exclude": ["node_modules", /* FIXME: remove __tests__ later */ "__tests__"],
   "verbose": true

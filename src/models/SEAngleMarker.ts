@@ -13,15 +13,7 @@ import { UpdateMode, UpdateStateType } from "@/types";
 import { Labelable } from "@/types";
 import { SELabel } from "@/models/SELabel";
 import { SEStore } from "@/store";
-
-enum AngleMode {
-  NONE,
-  LINES,
-  POINTS,
-  SEGMENTS,
-  LINEANDSEGMENT,
-  SEGMENTSORLINEANDSEGMENT
-}
+import { AngleMode } from "@/types";
 
 const styleSet = new Set([
   Styles.strokeColor,
@@ -184,17 +176,13 @@ export class SEAngleMarker extends SEMeasurement
   public get longName(): string {
     if (this._thirdSEParent !== undefined) {
       return (
-        this.label!.ref.shortName +
-        `-Angle(${this._firstSEParent.label!.ref.shortName},${
-          this._secondSEParent.label!.ref.shortName
-        },${this._thirdSEParent.label!.ref.shortName}):${this.prettyValue}`
+        this.label?.ref.shortName +
+        `-Angle(${this._firstSEParent.label?.ref.shortName},${this._secondSEParent.label?.ref.shortName},${this._thirdSEParent.label?.ref.shortName}):${this.prettyValue}`
       );
     } else {
       return (
-        this.label!.ref.shortName +
-        `-Angle(${this._firstSEParent.label!.ref.shortName},${
-          this._secondSEParent.label!.ref.shortName
-        }):${this.prettyValue}`
+        this.label?.ref.shortName +
+        `-Angle(${this._firstSEParent.label?.ref.shortName},${this._secondSEParent.label?.ref.shortName}):${this.prettyValue}`
       );
     }
   }

@@ -243,3 +243,12 @@ export interface UserProfile {
   location?: string;
   role?: string;
 }
+
+export enum AngleMode {
+  NONE,
+  LINES,
+  POINTS,
+  SEGMENTS,
+  LINEANDSEGMENT,
+  SEGMENTSORLINEANDSEGMENT
+}

@@ -2,20 +2,23 @@
 
   <v-form v-model="isValid">
     <div id="dataEntry">
-      <v-text-field v-bind:label="$t('objectTree.min')"
+      <v-text-field id="_test_input_min"
+        v-bind:label="$t('objectTree.min')"
         class="field _test_input"
         outlined
         dense
         v-model.number="sliderMin"
         :error="sliderMin > sliderMax">
       </v-text-field>
-      <v-text-field v-bind:label="$t('objectTree.step')"
+      <v-text-field id="_test_input_step"
+        v-bind:label="$t('objectTree.step')"
         class="field _test_input"
         outlined
         dense
         v-model.number="sliderStep"
         :error="sliderStep > sliderMax - sliderMin"></v-text-field>
-      <v-text-field v-bind:label="$t('objectTree.max')"
+      <v-text-field id="_test_input_max"
+        v-bind:label="$t('objectTree.max')"
         class="field _test_input"
         outlined
         dense
@@ -89,9 +92,9 @@ export default class SliderForm extends Vue {
 
   private adjustSlidertep() {
     const numTicks = (this.sliderMax - this.sliderMin) / this.sliderStep;
-    console.debug(
-      `Min:${this.sliderMin}, Max=${this.sliderMax}, Step=${this.sliderStep}`
-    );
+    // console.debug(
+    //   `Min:${this.sliderMin}, Max=${this.sliderMax}, Step=${this.sliderStep}`
+    // );
     if (numTicks > 25) {
       this.sliderStep = (this.sliderMax - this.sliderMin) / 25;
     }
