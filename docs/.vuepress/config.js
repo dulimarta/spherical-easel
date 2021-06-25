@@ -229,7 +229,6 @@ module.exports = {
             "/tools/measuredobject",
             "/tools/"
           ],
-          
           //   The root Or default sidebar (matches all directories so must be listed last)
           "/": [
             {
@@ -289,7 +288,7 @@ module.exports = {
               title: "Design Documents", // required
               //path: "/design/", // optional, link of the title, which should be an absolute path and must exist
               //collapsable: false, // optional, defaults to true
-              sidebarDepth: 0, // optional, defaults to 1
+              sidebarDepth: 1, // optional, defaults to 1
               children: ["/design/",
                          "/design/addingatooloutline"]
             },

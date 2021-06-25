@@ -131,8 +131,6 @@ The complete list of values for enum <span class="variable">LAYER</span> each de
 
 Each enum value correspond to a <span class="class">Two.Group</span> (i.e. layer) inside the main <span class="variable">twoInstance</span> which is created in <span class="file">SphereFrame.vue</span>. Pointers to these layers are stored in the private <span class="variable">layers</span> variable in <span class="file">SphereFrame.vue</span>. In turn the <span class="variable">layers</span> variable is passed to all [Event Handlers](/design/#event-handlers) so that the objects they create can be placed in the appropriate layers. In the following code we can see that after creating the group in the <span class="variable">twoInstance</span>, the pointer is stored in the <span class="variable">layers</span> variable, and the $y$ axis is flipped on all layers except the text layers.
 
-<!-- @[code lang=ts linenumbers highlight={12-13} transcludeWith=:::](@/src/components/SphereFrame.vue) -->
-
 <<< @/src/components/SphereFrame.vue#addlayers
 
 ## Rendering Objects
@@ -170,8 +168,6 @@ Zooming and panning are accomplished using a CSS (affine) transform applied to t
 2. Using the [Zooming and Panning Tools](/tools/display.html#zoom-pan-and-standard-view). This fires a <span class="string">"zoom-update"</span> [EventBus](/design/#event-bus) action.
 
 In both cases the new Zoom Magnification Factor and Translation Vector are written to the [Store](/design/#store) (triggering a resize of the plottables - outlined below) and the <span class="method">updateView()</span> method in the <span class="file">SphereFrame.vue</span> file (see below) is eventually executed which sets the new CSS Affine Transformation -- which is alway a uniform scaling and translation and never a shear.
-
-<!-- @[code lang=ts highlight={9} transcludeWith="::::"](@/src/components/SphereFrame.vue) -->
 
 <<< @/src/components/SphereFrame.vue#updateView{9}
 
@@ -217,7 +213,7 @@ Notice that this DAG depends on the location of the objects. So for example, if 
 
 The arrows in the the DAG are programmatically declared and organized using the <span class="variable">parents</span> and <span class="variable">kids</span> array found in the <span class="class">SENodule</span> class. For example, the <span class="variable">parents</span> array of $P_6$ would contain pointers to circles $C_1$ and $C_2$ and its <span class="variable">kids</span> array would be empty. The only pointer in the both $C_1$ and $C_2$ <span class="variable">kids</span> array would be one to $P_6$. See the discussion in the [Models Directory](/design/#models-directory) for more information about how this structure is used and handled programmatically.
 
-<!-- [Note that all directed acyclic graph can be layered.](https://link.springer.com/content/pdf/10.1007/3-540-45848-4_2.pdf) -->
+[Note that all directed acyclic graph can be layered.](https://link.springer.com/content/pdf/10.1007/3-540-45848-4_2.pdf)
 
 ## User Interface (Vue Components and Views)
 
@@ -314,7 +310,7 @@ For example, to add a point to the state of the application, the [PointHandler](
 
 The <span class="method">do()</span> and <span class="method">restoreState()</span> methods uses the <span class="string">"addPoint"</span> and <span class="string">"removePoint"</span> mutations of the application state found in the [Store](/design/#store). The <span class="string">"addPoint"</span> mutation is implemented in the [Store](/design/#store) as follows.
 
-<<< @/src/store/mutations.ts#addPoint
+<<< @/src/store/se-module.ts#addPoint
 
 This simply pushes the <span class="class">SEPoint</span> into the appropriate arrays in the store and then adds the corresponding plottables objects to the layers in the store. (TODO: Why does it do this?)
 
@@ -360,9 +356,9 @@ circleGroup.execute();
 
 ## Store
 
-This application uses a [Vuex Store](https://vuex.vuejs.org/) to implement a [State Management Pattern](https://en.wikipedia.org/wiki/State_management). This serves as single place to record the state of the app and to change (mutate) that state in predictable ways. It is a repository for all the important variables in the application that can be accessed (<span class="file">getters.ts</span>) and mutated (<span class="file">mutations.ts</span>) by all components of the app. The Store keeps a list of those variables and the initial state is
+This application uses a [Vuex Store](https://vuex.vuejs.org/) to implement a [State Management Pattern](https://en.wikipedia.org/wiki/State_management). This serves as single place to record the state of the app and to change (mutate) that state in predictable ways. It is a repository for all the important variables in the application that can be accessed (<span class="file">getters.ts</span>) and mutated (<span class="file">se-module.ts</span>) by all components of the app. The Store keeps a list of those variables and the initial state is
 
-<<< @/src/store/mutations.ts#appState
+<<< @/src/store/se-module.ts#appState
 
 In the [Zooming and Panning](/design/#zooming-and-panning) section, the reader might have noticed that the Zoom Translation Vector is written to the [Store](/design/#store) with a <span class="method">commit(...)</span> method and the Zoom Magnification Factor is written with a <span class="method">dispatch(...)</span> method. This is because the the <span class="method">commit(...)</span> operation is a synchronous one and the <span class="method">dispatch</span> operation is an asynchronous one. The setting of the translation vector is immediately completed as a mutation of the store, but updating the magnification factor triggers an [update of all the plottable objects](/design/#zooming-and-panning) which shouldn't interrupt the programmatic control flow and can happen asynchronously.
 
@@ -380,7 +376,7 @@ The <span class="string">"sphere-rotate"</span> [EventBus](/design/#event-bus) l
 
 The <span class="string">"rotateSphere"</span> mutation of the application state is as follows
 
-<<< @/src/store/mutations.ts#rotateSphere
+<<< @/src/store/se-module.ts#rotateSphere
 
 Notice that this creates a <span class="class">RotationVisitor</span> based on the Change In Position Rotation Matrix and that is applied to all SEPoint via this snippet from <span class="file">RotationVisitor.ts</span>:
 
