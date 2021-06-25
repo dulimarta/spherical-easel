@@ -18,7 +18,7 @@ import { SEPointOnOneDimensional } from "@/models/SEPointOnOneDimensional";
 import { AddPointOnOneDimensionalCommand } from "@/commands/AddPointOnOneDimensionalCommand";
 import { AddPointCommand } from "@/commands/AddPointCommand";
 import EventBus from "./EventBus";
-
+import { SEStore } from "@/store";
 export default class AntipodalPointHandler extends Highlighter {
   /**
    * The parent of this point
@@ -59,10 +59,10 @@ export default class AntipodalPointHandler extends Highlighter {
     // Create and style the temporary antipode/point marking the antipode/point being created
     this.temporaryAntipodeMarker = new Point();
     this.temporaryAntipodeMarker.stylize(DisplayStyle.ApplyTemporaryVariables);
-    this.store.commit.addTemporaryNodule(this.temporaryAntipodeMarker);
+    SEStore.addTemporaryNodule(this.temporaryAntipodeMarker);
     this.temporaryPointMarker = new Point();
     this.temporaryPointMarker.stylize(DisplayStyle.ApplyTemporaryVariables);
-    this.store.commit.addTemporaryNodule(this.temporaryPointMarker);
+    SEStore.addTemporaryNodule(this.temporaryPointMarker);
   }
 
   mousePressed(event: MouseEvent): void {
@@ -73,7 +73,7 @@ export default class AntipodalPointHandler extends Highlighter {
         // The user selected an existing point
         this.parentPoint = this.hitSEPoints[0];
         // check to see if there is already an antipode
-        if (this.store.getters.hasNoAntipode(this.parentPoint)) {
+        if (SEStore.hasNoAntipode(this.parentPoint)) {
           this.parentPointVector.copy(this.parentPoint.locationVector);
           this.oneDimensionalContainingParentPoint = null;
         } else {
@@ -394,8 +394,8 @@ export default class AntipodalPointHandler extends Highlighter {
   }
   activate(): void {
     // If there is exactly one point selected, create its anitpode
-    if (this.store.getters.selectedSENodules().length == 1) {
-      const object = this.store.getters.selectedSENodules()[0];
+    if (SEStore.selectedSENodules.length == 1) {
+      const object = SEStore.selectedSENodules[0];
       if (object instanceof SEPoint) {
         const newPoint = new NonFreePoint();
         // Set the display to the default values

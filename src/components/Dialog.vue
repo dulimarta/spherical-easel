@@ -3,7 +3,7 @@
     transition="dialog-transition"
     v-bind="$attrs">
     <v-card elevation="2">
-      <v-card-title>{{title}}</v-card-title>
+      <v-card-title id="_test_title">{{title}}</v-card-title>
       <v-divider />
       <v-card-text>
         <slot />
@@ -11,16 +11,20 @@
       <v-divider />
       <v-card-actions>
         <v-spacer />
-        <v-btn v-if="yesAction"
+        <v-btn id="_test_posButton"
+          v-if="yesAction"
           color="primary"
           @click="yesAction()">{{yesLabel}}</v-btn>
-        <v-btn v-else
+        <v-btn id="_test_posButton"
+          v-else
           color="primary"
           @click="hide()">{{yesLabel}}</v-btn>
-        <v-btn v-if="noAction && noText"
+        <v-btn id="_test_negButton"
+          v-if="noAction && noText"
           color="secondary"
           @click="noAction()">{{noText}}</v-btn>
-        <v-btn v-else-if="noText"
+        <v-btn id="_test_negButton"
+          v-else-if="noText"
           color="secondary"
           @click="hide()">{{noText}}</v-btn>
       </v-card-actions>

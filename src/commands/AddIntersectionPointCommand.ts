@@ -30,8 +30,8 @@ export class AddIntersectionPointCommand extends Command {
     this.parent1.registerChild(this.sePoint);
     this.parent2.registerChild(this.sePoint);
     this.sePoint.registerChild(this.seLabel);
-    Command.store.commit.addPoint(this.sePoint);
-    Command.store.commit.addLabel(this.seLabel);
+    Command.store.addPoint(this.sePoint);
+    Command.store.addLabel(this.seLabel);
     this.sePoint.update({
       mode: UpdateMode.DisplayOnly,
       stateArray: []
@@ -43,8 +43,8 @@ export class AddIntersectionPointCommand extends Command {
   }
 
   restoreState(): void {
-    Command.store.commit.removeLabel(this.seLabel.id);
-    Command.store.commit.removePoint(this.lastState);
+    Command.store.removeLabel(this.seLabel.id);
+    Command.store.removePoint(this.lastState);
     this.sePoint.unregisterChild(this.seLabel);
     this.parent1.unregisterChild(this.sePoint);
     this.parent2.unregisterChild(this.sePoint);

@@ -1,6 +1,6 @@
 import { SEMeasurement } from "./SEMeasurement";
 import { SEPoint } from "./SEPoint";
-import AppStore from "@/store";
+import { SEStore } from "@/store";
 import { Matrix4, Vector3 } from "three";
 import { Styles } from "@/types/Styles";
 import { UpdateMode, UpdateStateType } from "@/types";
@@ -14,10 +14,6 @@ const emptySet = new Set<Styles>();
 export class SEPointCoordinate extends SEMeasurement {
   private selector = CoordinateSelection.X_VALUE;
   private point: SEPoint;
-  /**
-   * The Global Vuex Store
-   */
-  private static store = AppStore;
 
   /**
    * Temporary matrix and vector so that can compute the location of the point with out all the rotations
@@ -53,7 +49,7 @@ export class SEPointCoordinate extends SEMeasurement {
   }
   public get value(): number {
     // apply the inverse of the total rotation matrix to compute the location of the point without all the sphere rotations.
-    this.invMatrix = SEPointCoordinate.store.getters.getInverseTotalRotationMatrix();
+    this.invMatrix = SEStore.inverseTotalRotationMatrix;
     this.tmpVector.copy(this.point.locationVector);
     switch (this.selector) {
       case CoordinateSelection.X_VALUE:

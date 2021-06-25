@@ -196,12 +196,11 @@
 
 <script lang="ts">
 import Vue from "vue";
-
 /* Import the components so we can use the class-style vue components in TypeScript. */
 import Component from "vue-class-component";
 import ToolButton from "@/components/ToolButton.vue";
 import { ToolButtonType } from "@/types";
-
+import { SEStore } from "@/store";
 /* Import the global settings. */
 import SETTINGS from "@/global-settings";
 
@@ -210,7 +209,6 @@ import SETTINGS from "@/global-settings";
   components: { ToolButton }
 })
 export default class ToolGroups extends Vue {
-  readonly store = this.$store.direct;
   /* Controls the selection of the actionMode using the buttons. The default is segment. */
   private actionMode = { id: "", name: "" };
 
@@ -225,7 +223,7 @@ export default class ToolGroups extends Vue {
   private buttonDisplayList = SETTINGS.userButtonDisplayList;
   /* Writes the current state/edit mode to the store, where the Easel view can read it. */
   switchActionMode(): void {
-    this.store.commit.setActionMode(this.actionMode);
+    SEStore.setActionMode(this.actionMode);
   }
 
   /* This returns true only if there is at least one tool that needs to be displayed in the group. */

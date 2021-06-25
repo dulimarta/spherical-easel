@@ -92,7 +92,6 @@
 <script lang="ts">
 import Vue from "vue";
 import Component from "vue-class-component";
-import { State } from "vuex-class";
 
 import SENoduleList from "@/components/SENoduleList.vue";
 import { SENodule } from "@/models/SENodule";
@@ -100,28 +99,30 @@ import ExpressionForm from "@/components/ExpressionForm.vue";
 import SliderForm from "@/components/SliderForm.vue";
 import { AppState } from "@/types";
 import { SEExpression } from "@/models/SEExpression";
+import { namespace } from "vuex-class";
+const SE = namespace("se");
 
 @Component({ components: { SENoduleList, ExpressionForm, SliderForm } })
 export default class ObjectTree extends Vue {
-  @State((s: AppState) => s.sePoints)
+  @SE.State((s: AppState) => s.sePoints)
   readonly points!: SENodule[];
 
-  @State((s: AppState) => s.seLines)
+  @SE.State((s: AppState) => s.seLines)
   readonly lines!: SENodule[];
 
-  @State((s: AppState) => s.seSegments)
+  @SE.State((s: AppState) => s.seSegments)
   readonly segments!: SENodule[];
 
-  @State((s: AppState) => s.seCircles)
+  @SE.State((s: AppState) => s.seCircles)
   readonly circles!: SENodule[];
 
-  @State((s: AppState) => s.seEllipses)
+  @SE.State((s: AppState) => s.seEllipses)
   readonly ellipses!: SENodule[];
 
-  @State((s: AppState) => s.seNodules)
+  @SE.State((s: AppState) => s.seNodules)
   readonly nodules!: SENodule[];
 
-  @State((s: AppState) => s.expressions)
+  @SE.State((s: AppState) => s.expressions)
   readonly expressionss!: SEExpression[];
 
   get zeroObjects(): boolean {

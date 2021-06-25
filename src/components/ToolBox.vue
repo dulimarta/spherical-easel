@@ -77,6 +77,7 @@ import ToolGroups from "@/components/ToolGroups.vue";
 import ObjectTree from "@/components/ObjectTree.vue";
 import ConstructionLoader from "@/components/ConstructionLoader.vue";
 import SETTINGS from "@/global-settings";
+import { SEStore } from "@/store";
 
 @Component({ components: { ToolGroups, ObjectTree, ConstructionLoader } })
 export default class Toolbox extends Vue {
@@ -99,7 +100,7 @@ export default class Toolbox extends Vue {
 
   switchTab(): void {
     if (this.activeLeftDrawerTab === "objectListTab") {
-      this.$store.direct.commit.setActionMode({
+      SEStore.setActionMode({
         id: "move",
         name: "MoveDisplayedName"
       });

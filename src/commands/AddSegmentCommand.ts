@@ -31,8 +31,8 @@ export class AddSegmentCommand extends Command {
     this.startSEPoint.registerChild(this.seSegment);
     this.endSEPoint.registerChild(this.seSegment);
     this.seSegment.registerChild(this.seLabel);
-    Command.store.commit.addSegment(this.seSegment);
-    Command.store.commit.addLabel(this.seLabel);
+    Command.store.addSegment(this.seSegment);
+    Command.store.addLabel(this.seLabel);
   }
 
   saveState(): void {
@@ -40,8 +40,8 @@ export class AddSegmentCommand extends Command {
   }
 
   restoreState(): void {
-    Command.store.commit.removeLabel(this.seLabel.id);
-    Command.store.commit.removeSegment(this.lastState);
+    Command.store.removeLabel(this.seLabel.id);
+    Command.store.removeSegment(this.lastState);
     this.seSegment.unregisterChild(this.seLabel);
     this.startSEPoint.unregisterChild(this.seSegment);
     this.endSEPoint.unregisterChild(this.seSegment);

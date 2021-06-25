@@ -4,10 +4,11 @@
     :close-delay="toolTipCloseDelay"
     max-width="400px">
     <template v-slot:activator="{on}">
+      <!-- Use v-bind="$attrs" to pass thru incoming attributes to v-btn.
+      Be sure NOT to place it as the last attr -->
       <v-btn v-on="on"
+        v-bind="$attrs"
         @click="$listeners.click"
-        :disabled="disabled"
-        :color="color"
         class="text-subtitle-2"
         ripple
         right
@@ -40,8 +41,6 @@ export default class HintButton extends Vue {
   @Prop() readonly i18nTooltip!: string;
   @Prop() readonly i18nLabel!: string;
   @Prop() readonly type?: string; //undo or defaults or show color inputs
-  @Prop() readonly disabled?: boolean;
-  @Prop() readonly color?: string;
   @Prop() readonly longLabel?: boolean;
 
   private fabOpen = false;

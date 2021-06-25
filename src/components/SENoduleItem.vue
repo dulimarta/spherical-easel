@@ -37,7 +37,7 @@
             @click="selectMe"
             v-on="on"
             :class="showClass">
-            {{ shortDisplayText }}
+            <span class="text-truncate">{{ shortDisplayText }}</span>
           </div>
         </template>
         <span>{{ definitionText }}</span>
@@ -68,13 +68,7 @@
             @click="toggleMultplesOfPi"
             class="mr-2">
             <v-icon small
-              v-if="isMultipleOfPi"
-              style="color:black">
-              mdi-pi
-            </v-icon>
-            <v-icon small
-              v-else
-              style="color:gray">
+              style="{color: isMultipleOfPi ? 'black' : 'gray'}">
               mdi-pi
             </v-icon>
           </div>
@@ -215,7 +209,7 @@ export default class SENoduleItem extends Vue {
       this.node instanceof SECircle ||
       this.node instanceof SEEllipse
     ) {
-      return this.node.label!.ref.shortName;
+      return this.node.label?.ref.shortName ?? "Unknown label";
     } else if (this.node instanceof SEExpression) {
       {
         return this.node.shortName;
@@ -227,7 +221,7 @@ export default class SENoduleItem extends Vue {
   get definitionText(): string {
     if (this.node instanceof SEPoint) {
       return (
-        this.node.label!.ref.shortName +
+        this.node.label?.ref.shortName +
         this.node.locationVector.toFixed(SETTINGS.decimalPrecision)
       );
     } else if (
@@ -240,7 +234,7 @@ export default class SENoduleItem extends Vue {
         .map(p => p.name.toString())
         //.map(p => ((p as unknown) as Labelable).label!.ref.shortName)
         .join(",");
-      return this.node.label!.ref.shortName + "(" + nameList + ")";
+      return this.node.label?.ref.shortName + "(" + nameList + ")";
     } else if (this.node instanceof SEExpression) {
       {
         return this.node.longName;
@@ -251,7 +245,7 @@ export default class SENoduleItem extends Vue {
   }
 
   get magnificationLevel(): number {
-    return this.$store.getters.magnificationLevel() as number;
+    return this.magnificationLevel;
   }
 }
 </script>

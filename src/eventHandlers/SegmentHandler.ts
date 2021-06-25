@@ -21,7 +21,7 @@ import { SEPointOnOneDimensional } from "@/models/SEPointOnOneDimensional";
 import { UpdateMode } from "@/types";
 import Label from "@/plottables/Label";
 import { SELabel } from "@/models/SELabel";
-
+import { SEStore } from "@/store";
 export default class SegmentHandler extends Highlighter {
   /**
    * The starting unit vector location of the segment
@@ -99,16 +99,16 @@ export default class SegmentHandler extends Highlighter {
     super(layers);
     this.temporarySegment = new Segment();
     this.temporarySegment.stylize(DisplayStyle.ApplyTemporaryVariables);
-    this.store.commit.addTemporaryNodule(this.temporarySegment);
+    SEStore.addTemporaryNodule(this.temporarySegment);
     this.isTemporarySegmentAdded = false;
 
     // Create and style the temporary points marking the start/end of an object being created
     this.temporaryStartMarker = new Point();
     this.temporaryStartMarker.stylize(DisplayStyle.ApplyTemporaryVariables);
-    this.store.commit.addTemporaryNodule(this.temporaryStartMarker);
+    SEStore.addTemporaryNodule(this.temporaryStartMarker);
     this.temporaryEndMarker = new Point();
     this.temporaryEndMarker.stylize(DisplayStyle.ApplyTemporaryVariables);
-    this.store.commit.addTemporaryNodule(this.temporaryEndMarker);
+    SEStore.addTemporaryNodule(this.temporaryEndMarker);
   }
 
   mousePressed(event: MouseEvent): void {
@@ -415,7 +415,7 @@ export default class SegmentHandler extends Highlighter {
           this.startSEPointOneDimensionalParent = null;
 
           // call an unglow all command
-          Highlighter.store.commit.unglowAllSENodules();
+          SEStore.unglowAllSENodules();
         }
       } else {
         // Remove the temporary objects from the display.
@@ -463,7 +463,7 @@ export default class SegmentHandler extends Highlighter {
     this.arcLength = 0;
 
     // call an unglow all command
-    Highlighter.store.commit.unglowAllSENodules();
+    SEStore.unglowAllSENodules();
   }
 
   private makeSegment(event: MouseEvent): void {
@@ -704,9 +704,8 @@ export default class SegmentHandler extends Highlighter {
         newSELabel
       )
     );
-    this.store.getters
-      .createAllIntersectionsWithSegment(newSESegment)
-      .forEach((item: SEIntersectionReturnType) => {
+    SEStore.createAllIntersectionsWithSegment(newSESegment).forEach(
+      (item: SEIntersectionReturnType) => {
         // Create the plottable label
         const newLabel = new Label();
         const newSELabel = new SELabel(newLabel, item.SEIntersectionPoint);
@@ -733,7 +732,8 @@ export default class SegmentHandler extends Highlighter {
         );
         item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points
         newSELabel.showing = false;
-      });
+      }
+    );
     segmentGroup.execute();
   }
 
@@ -809,9 +809,9 @@ export default class SegmentHandler extends Highlighter {
   activate(): void {
     // If there are exactly two SEPoints selected,
     // create a segment with the two points as the endpoints of length less than Pi
-    if (this.store.getters.selectedSENodules().length == 2) {
-      const object1 = this.store.getters.selectedSENodules()[0];
-      const object2 = this.store.getters.selectedSENodules()[1];
+    if (SEStore.selectedSENodules.length == 2) {
+      const object1 = SEStore.selectedSENodules[0];
+      const object2 = SEStore.selectedSENodules[1];
 
       if (object1 instanceof SEPoint && object2 instanceof SEPoint) {
         // Create a new plottable Line
@@ -865,10 +865,9 @@ export default class SegmentHandler extends Highlighter {
         );
 
         // Generate new intersection points. These points must be computed and created
-        // in the store. Add the new created points to the segment command so they can be undone.
-        this.store.getters
-          .createAllIntersectionsWithSegment(newSESegment)
-          .forEach((item: SEIntersectionReturnType) => {
+        // in the store. Add the new created points to the circle command so they can be undone.
+        SEStore.createAllIntersectionsWithSegment(newSESegment).forEach(
+          (item: SEIntersectionReturnType) => {
             // Create the plottable label
             const newLabel = new Label();
             const newSELabel = new SELabel(newLabel, item.SEIntersectionPoint);
@@ -895,7 +894,8 @@ export default class SegmentHandler extends Highlighter {
             );
             item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points
             newSELabel.showing = false;
-          });
+          }
+        );
 
         segmentCommandGroup.execute();
       }

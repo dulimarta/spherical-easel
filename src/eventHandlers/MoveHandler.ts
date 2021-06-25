@@ -34,6 +34,7 @@ import { CommandGroup } from "@/commands/CommandGroup";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import { SEEllipse } from "@/models/SEEllipse";
 
+import { SEStore } from "@/store";
 const tmpVector1 = new Vector3();
 // const tmpVector2 = new Vector3();
 const desiredZAxis = new Vector3();
@@ -221,19 +222,20 @@ export default class MoveHandler extends Highlighter {
         this.currentSphereVector.y,
         -1 * this.currentSphereVector.z
       );
-      const hitSENodules = this.store.getters
-        .findNearbySENodules(sphereVec, this.currentScreenVector)
-        .filter((n: SENodule) => {
-          if (n instanceof SEIntersectionPoint) {
-            if (!n.isUserCreated) {
-              return n.exists; //You always hit automatically created intersection points if it exists
-            } else {
-              return n.showing && n.exists; //You can't hit hidden objects or items that don't exist
-            }
+      const hitSENodules = SEStore.findNearbySENodules(
+        sphereVec,
+        this.currentScreenVector
+      ).filter((n: SENodule) => {
+        if (n instanceof SEIntersectionPoint) {
+          if (!n.isUserCreated) {
+            return n.exists; //You always hit automatically created intersection points if it exists
           } else {
             return n.showing && n.exists; //You can't hit hidden objects or items that don't exist
           }
-        });
+        } else {
+          return n.showing && n.exists; //You can't hit hidden objects or items that don't exist
+        }
+      });
       // if the user is not pressing the shift key and there is a nearby object on the back of the sphere, send alert
       if (!event.shiftKey && hitSENodules.length > 0) {
         EventBus.fire("show-alert", {

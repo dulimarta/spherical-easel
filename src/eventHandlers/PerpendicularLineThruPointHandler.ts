@@ -30,6 +30,7 @@ import EventBus from "./EventBus";
 import { SEEllipse } from "@/models/SEEllipse";
 
 const MAXNUMBEROFPERPENDICULARS = 4;
+import { SEStore } from "@/store";
 
 export default class PerpendicularLineThruPointHandler extends Highlighter {
   /**
@@ -80,7 +81,7 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
     for (let i = 0; i < MAXNUMBEROFPERPENDICULARS; i++) {
       this.tempLines.push(new Line());
       this.tempLines[i].stylize(DisplayStyle.ApplyTemporaryVariables);
-      this.store.commit.addTemporaryNodule(this.tempLines[i]);
+      SEStore.addTemporaryNodule(this.tempLines[i]);
       this.temporaryLinesAdded.push(false);
       this.temporaryNormals.push(new Vector3());
     }
@@ -88,7 +89,7 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
     // Create and style the temporary point marking the point on the perpendicular being created
     this.temporaryPointMarker = new Point();
     this.temporaryPointMarker.stylize(DisplayStyle.ApplyTemporaryVariables);
-    this.store.commit.addTemporaryNodule(this.temporaryPointMarker);
+    SEStore.addTemporaryNodule(this.temporaryPointMarker);
     this.temporaryPointAdded = false;
   }
 
@@ -702,9 +703,8 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
       );
 
       // Determine all new intersection points and add their creation to the command so it can be undone
-      this.store.getters
-        .createAllIntersectionsWithLine(newPerpLine)
-        .forEach((item: SEIntersectionReturnType) => {
+      SEStore.createAllIntersectionsWithLine(newPerpLine).forEach(
+        (item: SEIntersectionReturnType) => {
           // Create the plottable label
           const newLabel = new Label();
           const newSELabel = new SELabel(newLabel, item.SEIntersectionPoint);
@@ -731,14 +731,15 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
           );
           item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points
           newSELabel.showing = false;
-        });
+        }
+      );
     }
     addPerpendicularLineGroup.execute();
   }
   activate(): void {
-    if (this.store.getters.selectedSENodules().length == 2) {
-      const object1 = this.store.getters.selectedSENodules()[0];
-      const object2 = this.store.getters.selectedSENodules()[1];
+    if (SEStore.selectedSENodules.length == 2) {
+      const object1 = SEStore.selectedSENodules[0];
+      const object2 = SEStore.selectedSENodules[1];
 
       if (object1.isOneDimensional() && object2.isPoint()) {
         if (

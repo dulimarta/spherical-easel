@@ -1,0 +1,9 @@
+{
+	"component": {
+		"componentFolder": "src/components",
+		"testFiles": "**/*.cyp.ts",
+		"viewportWidth": 450,
+		"viewportHeight": 300,
+		"video": false
+	}
+}

@@ -29,7 +29,7 @@
                   color="primary"
                   hide-details
                   class="ma-0 pl-0 pb-0 pt-0 pr-0"
-                  :disabled="!(this.selections.length > 0) || !allObjectsShowing">
+                  :disabled="!(this.selectedSENodules.length > 0) || !allObjectsShowing">
                 </v-switch>
               </v-col>
               <v-col cols="12"
@@ -42,7 +42,8 @@
                   color="primary"
                   hide-details
                   class="ma-0 pl-0 pb-0 pt-0 pr-0"
-                  :disabled="!(this.selections.length > 0)"></v-switch>
+                  :disabled="!(this.selectedSENodules.length > 0)">
+                </v-switch>
               </v-col>
             </v-row>
           </v-container>
@@ -62,7 +63,7 @@
       </div>
 
       <!-- Nothing Selected Overlay-->
-      <OverlayWithFixButton v-if="!(this.selections.length > 0)"
+      <OverlayWithFixButton v-if="!(this.selectedSENodules.length > 0)"
         z-index="100"
         i18n-title-line="style.selectAnObject"
         i18n-subtitle-line="style.closeOrSelect"
@@ -120,21 +121,18 @@ import SETTINGS from "@/global-settings";
 import { StyleEditPanels } from "@/types/Styles";
 import { hslaColorType, AppState, Labelable } from "@/types";
 import { SENodule } from "@/models/SENodule";
-import { State } from "vuex-class";
 import { CommandGroup } from "@/commands/CommandGroup";
 import { SetNoduleDisplayCommand } from "@/commands/SetNoduleDisplayCommand";
-import Label from "@/plottables/Label";
-import { SELabel } from "@/models/SELabel";
+import { namespace } from "vuex-class";
+const SE = namespace("se");
 
 @Component({ components: { BasicFrontBackStyle, OverlayWithFixButton } })
 export default class Style extends Vue {
   @Prop()
   readonly minified!: boolean;
 
-  @State((s: AppState) => s.selections)
-  readonly selections!: SENodule[];
-
-  readonly store = this.$store.direct;
+  @SE.State((s: AppState) => s.selectedSENodules)
+  readonly selectedSENodules!: SENodule[];
 
   readonly toolTipOpenDelay = SETTINGS.toolTip.openDelay;
   readonly toolTipCloseDelay = SETTINGS.toolTip.closeDelay;
@@ -170,9 +168,11 @@ export default class Style extends Vue {
     EventBus.fire("save-style-state", {});
   }
 
-  @Watch("selections")
+  @Watch("selectedSENodules")
   private allLabelsShowingCheck(): void {
-    this.allLabelsShowing = this.selections.every(node => {
+    console.log("Style All Labels: onSelectionChanged");
+
+    this.allLabelsShowing = this.selectedSENodules.every(node => {
       if (node.isLabelable()) {
         return ((node as unknown) as Labelable).label!.showing;
       } else {
@@ -180,18 +180,21 @@ export default class Style extends Vue {
       }
     });
   }
-  @Watch("selections")
+  @Watch("selectedSENodules")
   private allObjectsShowingCheck(): void {
-    this.allObjectsShowing = this.selections.every(node => {
+    console.log("Style All Objects: onSelectionChanged");
+    this.allObjectsShowing = this.selectedSENodules.every(node => {
       return node.showing === true;
     });
   }
 
   //Convert the selections into a short list of the type (and number) of the objects in the selection
-  @Watch("selections")
+  @Watch("selectedSENodules")
   private updateSelectedItemArray(): void {
+    console.log("Style update selected item array: onSelectionChanged");
+
     const tempArray: string[] = [];
-    this.selections.forEach(node => tempArray.push(node.name));
+    this.selectedSENodules.forEach(node => tempArray.push(node.name));
     const elementListPural = [
       "Points",
       "Lines",
@@ -291,7 +294,7 @@ export default class Style extends Vue {
       this.allLabelsShowing = !this.allLabelsShowing;
     }
     const toggleLabelDisplayCommandGroup = new CommandGroup();
-    this.selections.forEach(node => {
+    this.selectedSENodules.forEach(node => {
       if (node.isLabelable()) {
         toggleLabelDisplayCommandGroup.addCommand(
           new SetNoduleDisplayCommand(
@@ -318,7 +321,7 @@ export default class Style extends Vue {
     }
 
     const toggleObjectDisplayCommandGroup = new CommandGroup();
-    this.selections.forEach(node => {
+    this.selectedSENodules.forEach(node => {
       toggleObjectDisplayCommandGroup.addCommand(
         new SetNoduleDisplayCommand(node, this.allObjectsShowing)
       );

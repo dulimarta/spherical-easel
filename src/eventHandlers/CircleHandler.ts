@@ -23,6 +23,7 @@ import Label from "@/plottables/Label";
 import { SELabel } from "@/models/SELabel";
 import EventBus from "./EventBus";
 
+import { SEStore } from "@/store";
 const tmpVector = new Vector3();
 
 export default class CircleHandler extends Highlighter {
@@ -79,14 +80,14 @@ export default class CircleHandler extends Highlighter {
     this.temporaryCircle = new Circle();
     // Set the style using the temporary defaults
     this.temporaryCircle.stylize(DisplayStyle.ApplyTemporaryVariables);
-    this.store.commit.addTemporaryNodule(this.temporaryCircle);
+    SEStore.addTemporaryNodule(this.temporaryCircle);
     // Create and style the temporary points marking the start/end of an object being created
     this.temporaryStartMarker = new Point();
     this.temporaryStartMarker.stylize(DisplayStyle.ApplyTemporaryVariables);
-    this.store.commit.addTemporaryNodule(this.temporaryStartMarker);
+    SEStore.addTemporaryNodule(this.temporaryStartMarker);
     this.temporaryEndMarker = new Point();
     this.temporaryEndMarker.stylize(DisplayStyle.ApplyTemporaryVariables);
-    this.store.commit.addTemporaryNodule(this.temporaryEndMarker);
+    SEStore.addTemporaryNodule(this.temporaryEndMarker);
   }
 
   mousePressed(_event: MouseEvent): void {
@@ -378,7 +379,7 @@ export default class CircleHandler extends Highlighter {
           this.snapStartMarkerToTemporaryPoint = null;
           this.snapEndMarkerToTemporaryPoint = null;
           // call an unglow all command
-          Highlighter.store.commit.unglowAllSENodules();
+          SEStore.unglowAllSENodules();
         }
       }
       // else {
@@ -426,7 +427,7 @@ export default class CircleHandler extends Highlighter {
     this.centerSEPointOneDimensionalParent = null;
     this.makingACircle = false;
     // call an unglow all command
-    Highlighter.store.commit.unglowAllSENodules();
+    SEStore.unglowAllSENodules();
   }
   /**
    * Add a new circle the user has moved the mouse far enough (but not a radius of PI)
@@ -670,9 +671,8 @@ export default class CircleHandler extends Highlighter {
     );
     // Generate new intersection points. These points must be computed and created
     // in the store. Add the new created points to the circle command so they can be undone.
-    this.store.getters
-      .createAllIntersectionsWithCircle(newSECircle)
-      .forEach((item: SEIntersectionReturnType) => {
+    SEStore.createAllIntersectionsWithCircle(newSECircle).forEach(
+      (item: SEIntersectionReturnType) => {
         // Create the plottable and model label
         const newLabel = new Label();
         const newSELabel = new SELabel(newLabel, item.SEIntersectionPoint);
@@ -700,7 +700,8 @@ export default class CircleHandler extends Highlighter {
         );
         item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points or label
         newSELabel.showing = false;
-      });
+      }
+    );
 
     circleCommandGroup.execute();
   }
@@ -708,9 +709,9 @@ export default class CircleHandler extends Highlighter {
   activate(): void {
     // If there are exactly two SEPoints selected, create a circle with the first as the center
     // and the second as the circle point
-    if (this.store.getters.selectedSENodules().length == 2) {
-      const object1 = this.store.getters.selectedSENodules()[0];
-      const object2 = this.store.getters.selectedSENodules()[1];
+    if (SEStore.selectedSENodules.length == 2) {
+      const object1 = SEStore.selectedSENodules[0];
+      const object2 = SEStore.selectedSENodules[1];
       if (
         object1 instanceof SEPoint &&
         object2 instanceof SEPoint &&
@@ -746,9 +747,8 @@ export default class CircleHandler extends Highlighter {
 
         // Generate new intersection points. These points must be computed and created
         // in the store. Add the new created points to the circle command so they can be undone.
-        this.store.getters
-          .createAllIntersectionsWithCircle(newSECircle)
-          .forEach((item: SEIntersectionReturnType) => {
+        SEStore.createAllIntersectionsWithCircle(newSECircle).forEach(
+          (item: SEIntersectionReturnType) => {
             const newLabel = new Label();
             const newSELabel = new SELabel(newLabel, item.SEIntersectionPoint);
 
@@ -774,7 +774,8 @@ export default class CircleHandler extends Highlighter {
             );
             item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points
             newSELabel.showing = false;
-          });
+          }
+        );
 
         circleCommandGroup.execute();
       }

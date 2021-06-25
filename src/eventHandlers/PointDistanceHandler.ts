@@ -5,7 +5,7 @@ import { AddDistanceMeasurementCommand } from "@/commands/AddDistanceMeasurement
 import { SESegmentDistance } from "@/models/SESegmentDistance";
 import EventBus from "@/eventHandlers/EventBus";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
-
+import { SEStore } from "@/store";
 export default class PointDistantHandler extends Highlighter {
   /**
    * Points to measure distance
@@ -90,9 +90,9 @@ export default class PointDistantHandler extends Highlighter {
   }
 
   activate(): void {
-    if (this.store.getters.selectedSENodules().length == 2) {
-      const object1 = this.store.getters.selectedSENodules()[0];
-      const object2 = this.store.getters.selectedSENodules()[1];
+    if (SEStore.selectedSENodules.length == 2) {
+      const object1 = SEStore.selectedSENodules[0];
+      const object2 = SEStore.selectedSENodules[1];
 
       if (
         object1 instanceof SEPoint &&

@@ -19,7 +19,7 @@ export abstract class AddMeasurementCommand extends Command {
 
   do(): void {
     this.parents.forEach(nodule => nodule.registerChild(this.seMeasurement));
-    Command.store.commit.addExpression(this.seMeasurement);
+    Command.store.addExpression(this.seMeasurement);
   }
 
   saveState(): void {
@@ -27,7 +27,7 @@ export abstract class AddMeasurementCommand extends Command {
   }
 
   restoreState(): void {
-    Command.store.commit.removeExpression(this.lastState);
+    Command.store.removeExpression(this.lastState);
     this.parents.forEach(nodule => nodule.unregisterChild(this.seMeasurement));
   }
 }

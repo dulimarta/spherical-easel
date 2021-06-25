@@ -14,7 +14,7 @@
     "sourceMap": true,
     "baseUrl": ".",
     "outDir": "ts-out",
-    "types": ["webpack-env", "vuetify", "jest", "webpack", "webpack-env"],
+    "types": ["vuetify", "webpack", "webpack-env", "jest" /*"cypress" */],
     "typeRoots": [
       "./node_modules/@types",
       "./node_modules/vuetify/types",
@@ -29,9 +29,10 @@
     "src/**/*.ts",
     "src/**/*.tsx",
     "src/**/*.vue",
-    "src/types/two.js/index.d.ts"
+    "src/types/two.js/index.d.ts",
+    "tests/*.d.ts"
   ],
-  "exclude": ["node_modules"],
+  "exclude": ["node_modules", /* FIXME: remove __tests__ later */ "__tests__"],
   "verbose": true
   // "globals": {
   //   "ts-jest": {

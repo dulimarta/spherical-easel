@@ -6,7 +6,7 @@ import { Vector3 } from "three";
 import SETTINGS from "@/global-settings";
 import { Styles } from "@/types/Styles";
 import { UpdateMode, UpdateStateType, LabelState, Labelable } from "@/types";
-import AppStore from "@/store";
+import { SEStore } from "@/store";
 import { SEPoint } from "./SEPoint";
 import { SESegment } from "./SESegment";
 import { SELine } from "./SELine";
@@ -30,7 +30,7 @@ const styleSet = new Set([
 
 export class SELabel extends SENodule implements Visitable {
   /* Access to the store to retrieve the canvas size so that the bounding rectangle for the text can be computed properly*/
-  protected store = AppStore;
+  // protected store = AppStore;
 
   /* This should be the only reference to the plotted version of this SELabel */
   public ref: Label;
@@ -209,7 +209,7 @@ export class SELabel extends SENodule implements Visitable {
     const boundingBox = this.ref.boundingRectangle;
     // Get the canvas size so the bounding box can be corrected
     // console.log("SELabel.store.getters", this.store);
-    const canvasSize = this.store.getters.getCanvasWidth();
+    const canvasSize = SEStore.canvasWidth;
 
     return (
       boundingBox.left - canvasSize / 2 <
