@@ -1,6 +1,5 @@
 ---
 title: Design Document
-next: /design/handlers/
 prev: /tools/edit.md
 ---
 
@@ -276,12 +275,6 @@ This stores the location of the point and not a pointer to the location which wo
 
 Hence nothing is stored in the <span class="variable">stateArray</span> for <span class="class">SECircle</span> or <span class="class">SEIntersectionPoint</span> classes. Once the before and after <span class="variable">stateArray</span> has been created, the <span class="class">MoveHandler</span> creates a command group to store all the move points, lines and segments commands. The <span class="command">MovePointCommand</span>, <span class="command">MoveLineCommand</span>, and <span class="command">MoveSegmentCommand</span> classes issue mutations
 to the store which then uses [Visitors](/design/#visitor-and-event-bus-actions) to actually change the location of points, normal vectors of lines and line segments, and arc length of line segments. The <span class="type">ObjectSaveState</span> type and the interfaces like <span class="interface">LineSaveState</span>, <span class="interface">SegmentSaveState</span>, <span class="interface">PointSaveState</span> in the <span class="directory">types</span> directory give an idea of the information that must be stored in order to undo a <span class="method">move</span>
-
-### Delete Handler
-
-### Other Handlers
-
-[Here are details about the implementation of some of the Handlers](./handlers/edit.md)
 
 ## Commands
 

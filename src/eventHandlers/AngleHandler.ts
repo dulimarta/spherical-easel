@@ -567,43 +567,6 @@ export default class AngleHandler extends Highlighter {
   mouseMoved(event: MouseEvent): void {
     // Find all the nearby (hitSE... objects) and update location vectors
     super.mouseMoved(event);
-    // switch (this.angleMode) {
-    //   case AngleMode.NONE:
-    //     //To start off highlight one object point> segment >line
-    //     if (this.hitSEPoints.length > 0) {
-    //       this.hitSEPoints[0].glowing;
-    //     } else if (this.hitSESegments.length > 0) {
-    //       this.hitSESegments[0].glowing;
-    //     } else if (this.hitSELines.length > 0) {
-    //       this.hitSELines[0].glowing;
-    //     }
-    //     break;
-    //   case AngleMode.POINTS:
-    //     if (this.hitSEPoints.length > 0) {
-    //       this.hitSEPoints[0].glowing;
-    //     }
-    //     break;
-    //   case AngleMode.LINES:
-    //     //Only highlight lines
-    //     if (this.hitSELines.length > 0) {
-    //       this.hitSELines[0].glowing;
-    //     }
-    //     break;
-    //   case AngleMode.SEGMENTS:
-    //     //only highlight segments
-    //     if (this.hitSESegments.length > 0) {
-    //       this.hitSESegments[0].glowing;
-    //     }
-    //     break;
-    //   case AngleMode.LINEANDSEGMENT:
-    //     // only highligh segments and lines
-    //     if (this.hitSESegments.length > 0) {
-    //       this.hitSESegments[0].glowing;
-    //     } else if (this.hitSELines.length > 0) {
-    //       this.hitSELines[0].glowing;
-    //     }
-    //     break;
-    // }
 
     if (this.isOnSphere) {
       //Glow the appropriate object and set the appropriate snap objects

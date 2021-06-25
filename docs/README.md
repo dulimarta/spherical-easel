@@ -12,7 +12,7 @@ features:
     details: Numerically measure lengths, distances, angles, and areas. Create user defined calculations to explore spherical geometry conjectures.
   - title: Explore & Export
     details: Rotate arrangements, customize the style of display, and then save, load, and export your creations.
-footer: David Austin, William Dickinson, and Hans Dulimarta (HANS -- We should talk about author order conventions in CS and Math - and license agreements ?MIT Licensed? | Copyright ©  2002 - present. Do we even need a copyright?
+footer: David Austin, William Dickinson, and Hans Dulimarta MIT Licensed | Copyright ©  2002 - present.
 prev: false
 next: /quickstart/construct.md
 lang: en-US

@@ -59,7 +59,7 @@ export class SELabel extends SENodule implements Visitable {
 
     if (this.parent instanceof SEAngleMarker) {
       // SEAngleMarker is both an expression and a plottable (the only one?)
-      // As an expression to be used in the calculation parent.name must be with "M###" so that it
+      // As an expression to be used in the calculation parent.name must begin with "M###" so that it
       // can be referenced by the user and found by the parser when doing a calculation
       // however we don't want the initial name and initial shortName of the angle marker to be displayed with a "M###" at the start
       //  so this is how we get around this

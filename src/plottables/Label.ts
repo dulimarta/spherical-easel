@@ -61,8 +61,9 @@ export default class Label extends Nodule {
    * A string representing the text that will be rendered to the screen. Set with text.value = this.shortUserName
    * shortName is at most ??? characters long
    * caption is a longer, 60 characters long
-   * initialName is not user modifiable and is used until the user changes the name and this is the name that is restored when defaults are restored.
-   * value is the associated number array, if any, that describes the object being labeled. Typically this is just one number, but for points is an array of
+   * Note that initialName is not user modifiable and is used (in shortUserName) until the user changes the name field in the styling panel
+   * This is the name that is restored when defaults are restored.
+   * _value is the associated number array, if any, that describes the object being labeled. Typically this is just one number, but for points is an array of
    * the three coordinate values.
    */
   protected initialName = "";
