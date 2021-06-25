@@ -467,17 +467,18 @@ export default class ToolGroups extends Vue {
       toolUseMessage: "CreateEllipseToolUseMessage",
       displayToolUseMessage: false,
       toolGroup: "conic"
-    },
-    {
-      id: 0,
-      actionModeValue: "iconFactory",
-      displayedName: "CreateIconDisplayedName",
-      icon: "mdi-plus",
-      toolTipMessage: "CreateIconToolTipMessage",
-      toolUseMessage: "CreateIconToolUseMessage",
-      displayToolUseMessage: false,
-      toolGroup: "developerOnly"
     }
+    // Disable the icon factory for deployment - this for developers only
+    // {
+    //   id: 0,
+    //   actionModeValue: "iconFactory",
+    //   displayedName: "CreateIconDisplayedName",
+    //   icon: "mdi-plus",
+    //   toolTipMessage: "CreateIconToolTipMessage",
+    //   toolUseMessage: "CreateIconToolUseMessage",
+    //   displayToolUseMessage: false,
+    //   toolGroup: "developerOnly"
+    // }
     // {
     //   id: 75,
     //   actionModeValue: "slider",
