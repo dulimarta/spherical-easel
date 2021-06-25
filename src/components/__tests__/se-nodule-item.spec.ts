@@ -1,5 +1,4 @@
 import TestComponent from "../SENoduleItem.vue";
-import store from "@/store";
 import { Vector3 } from "three";
 import { Wrapper } from "@vue/test-utils";
 import { createWrapper } from "@/../tests/vue-helper";
@@ -23,7 +22,7 @@ describe("SENoduleItem.vue", () => {
   let glowingSpy: jest.SpyInstance;
 
   // Common routine for testing label and glowing behavior
-  const runTest = async (w: Wrapper<TestComponent>, se: SENodule) => {
+  const runTest = async (w: Wrapper<Vue>, se: SENodule) => {
     expect(w).toBeDefined();
     expect(w.text()).toContain(se.name);
     const n = w.find(".node");

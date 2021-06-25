@@ -44,7 +44,6 @@ import { AppState, UpdateMode } from "@/types";
 import colors from "vuetify/es5/util/colors";
 import { SELabel } from "@/models/SELabel";
 import FileSaver from "file-saver";
-
 const SE = namespace("se");
 
 @Component({})
@@ -256,7 +255,6 @@ export default class SphereFrame extends VueComponent {
 
     // Make the canvas accessible to other components which need
     // to grab the SVG contents of the sphere
-    //this.setCanvas(this.$refs.canvas);
     SEStore.setCanvas(this.$refs.canvas);
   }
 
