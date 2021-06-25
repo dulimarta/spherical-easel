@@ -64,7 +64,7 @@ export default class SphereFrame extends VueComponent {
   @SE.State((s: AppState) => s.seLabels)
   readonly seLabels!: SELabel[];
 
-  @SE.Mutation setCanvas!: (_: HTMLDivElement) => void;
+  // @SE.Mutation setCanvas!: (_: HTMLDivElement) => void;
 
   $refs!: {
     canvas: HTMLDivElement;
@@ -253,9 +253,11 @@ export default class SphereFrame extends VueComponent {
     this.perpendicularLineThruPointTool = new PerpendicularLineThruPointHandler(
       this.layers
     );
+
     // Make the canvas accessible to other components which need
     // to grab the SVG contents of the sphere
-    this.setCanvas(this.$refs.canvas);
+    //this.setCanvas(this.$refs.canvas);
+    SEStore.setCanvas(this.$refs.canvas);
   }
 
   beforeDestroy(): void {
