@@ -39,3 +39,6 @@ screenshots/*
 *.fdb_latexmk
 *.log
 latex-notes/*.pdf
+
+# Generated files
+docs/.vuepress/dist

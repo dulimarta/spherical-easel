@@ -12,10 +12,17 @@ import Label from "@/plottables/Label";
 import { SELabel } from "@/models/SELabel";
 import { Vector3 } from "three";
 import SETTINGS from "@/global-settings";
+import EventBus from "./EventBus";
+import { SEOneDimensional } from "@/types";
+import { SEStore } from "@/store";
 
 export default class PointHandler extends Highlighter {
-  // The temporary point displayed as the user drags
+  // The temporary point displayed as the user moves the pointer
   private isTemporaryPointAdded = false;
+  /**
+   * As the user moves the pointer around snap the temporary marker to this object temporarily
+   */
+  protected snapToTemporaryOneDimensional: SEOneDimensional | null = null;
   /**
    * A temporary plottable (TwoJS) point created while the user is making a point
    */
@@ -28,7 +35,7 @@ export default class PointHandler extends Highlighter {
     // Create and style the temporary points marking the object being created
     this.startMarker = new Point();
     this.startMarker.stylize(DisplayStyle.ApplyTemporaryVariables);
-    this.store.commit.addTemporaryNodule(this.startMarker);
+    SEStore.addTemporaryNodule(this.startMarker);
   }
 
   mousePressed(event: MouseEvent): void {
@@ -51,6 +58,11 @@ export default class PointHandler extends Highlighter {
           ).execute();
           return;
         }
+        EventBus.fire("show-alert", {
+          key: `handlers.pointCreationAttemptDuplicate`,
+          keyOptions: {},
+          type: "warning"
+        });
         return;
       } else {
         //#region linkNoduleSENodule
@@ -105,6 +117,19 @@ export default class PointHandler extends Highlighter {
             this.hitSECircles[0],
             newSELabel
           ).execute();
+        } else if (this.hitSEEllipses.length > 0) {
+          // The new point will be a point on an ellipse
+          // Create the model object for the new point and link them
+          vtx = new SEPointOnOneDimensional(newPoint, this.hitSEEllipses[0]);
+          vtx.locationVector = this.currentSphereVector; // snaps location to the closest on the one Dimensional
+          newSELabel = new SELabel(newLabel, vtx);
+
+          // Create and execute the command to create a new point for undo/redo
+          new AddPointOnOneDimensionalCommand(
+            vtx,
+            this.hitSEEllipses[0],
+            newSELabel
+          ).execute();
         } else {
           // mouse press on empty location so create a free point
           // Create the model object for the new point and link them
@@ -136,20 +161,64 @@ export default class PointHandler extends Highlighter {
   }
 
   mouseMoved(event: MouseEvent): void {
-    // Highlight all nearby objects and update location vectors
+    // Find all the nearby (hitSE... objects) and update location vectors
     super.mouseMoved(event);
+    // glow/highlight all the nearby objects that a point might be put on
+    // Only one point can be processed at a time, so set the first point that is not user created nearby to glowing
+    // The user can create points on ellipse, circles, segments, and lines, so
+    // highlight those as well (but only one) if they are nearby also
+    if (this.hitSEPoints.length > 0) {
+      const filteredIntersections = this.hitSEPoints.filter(
+        p => p instanceof SEIntersectionPoint && !p.isUserCreated
+      );
+      if (filteredIntersections.length > 0) {
+        filteredIntersections[0].glowing = true;
+        this.snapToTemporaryOneDimensional = null;
+      }
+    } else if (this.hitSESegments.length > 0) {
+      this.hitSESegments[0].glowing = true;
+      this.snapToTemporaryOneDimensional = this.hitSESegments[0];
+    } else if (this.hitSELines.length > 0) {
+      this.hitSELines[0].glowing = true;
+      this.snapToTemporaryOneDimensional = this.hitSELines[0];
+    } else if (this.hitSECircles.length > 0) {
+      this.hitSECircles[0].glowing = true;
+      this.snapToTemporaryOneDimensional = this.hitSECircles[0];
+    } else if (this.hitSEEllipses.length > 0) {
+      this.hitSEEllipses[0].glowing = true;
+      this.snapToTemporaryOneDimensional = this.hitSEEllipses[0];
+    } else {
+      this.snapToTemporaryOneDimensional = null;
+    }
     if (this.isOnSphere) {
       if (!this.isTemporaryPointAdded) {
         this.isTemporaryPointAdded = true;
         // Add the temporary point to the appropriate layers
         this.startMarker.addToLayers(this.layers);
       }
-      // Move the temporary point to the location of the mouse event, and update the display
-      this.startMarker.positionVector = this.currentSphereVector;
+      // Move the temporary point to the location of the mouse event, and update the display, snap to a nearby one dimensional object (if there is one)
+      if (this.snapToTemporaryOneDimensional === null) {
+        this.startMarker.positionVector = this.currentSphereVector;
+      } else {
+        this.startMarker.positionVector = this.snapToTemporaryOneDimensional.closestVector(
+          this.currentSphereVector
+        );
+      }
+
+      // If there is a nearby (possibly user created or not) point turn off the temporary marker
+      if (this.hitSEPoints.length > 0) {
+        if (this.isTemporaryPointAdded) {
+          // Remove the temporary object
+          this.startMarker.removeFromLayers();
+          this.isTemporaryPointAdded = false;
+          this.snapToTemporaryOneDimensional = null;
+        }
+      }
     } else if (this.isTemporaryPointAdded) {
       //if not on the sphere and the temporary segment has been added remove the temporary objects
       this.startMarker.removeFromLayers();
       this.isTemporaryPointAdded = false;
+      this.snapToTemporaryOneDimensional = null;
     }
   }
 
@@ -165,11 +234,11 @@ export default class PointHandler extends Highlighter {
       this.startMarker.removeFromLayers();
       this.isTemporaryPointAdded = false;
     }
+    this.snapToTemporaryOneDimensional = null;
   }
   activate(): void {
     super.activate();
   }
-
   deactivate(): void {
     super.deactivate();
   }

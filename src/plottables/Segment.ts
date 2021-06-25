@@ -6,7 +6,6 @@ import { StyleOptions, StyleEditPanels } from "@/types/Styles";
 
 // The number of vectors used to render the one part of the segment (like the frontPart, frontExtra, etc.)
 const SUBDIVS = SETTINGS.segment.numPoints;
-let SEGMENT_COUNT = 0;
 /**
  * A line segment
  *
@@ -54,13 +53,14 @@ export default class Segment extends Nodule {
    */
   // Front
   private strokeColorFront = SETTINGS.segment.drawn.strokeColor.front;
+  private glowingStrokeColorFront = SETTINGS.segment.glowing.strokeColor.front;
   private strokeWidthPercentFront = 100;
-  private opacityFront = SETTINGS.segment.drawn.opacity.front;
   private dashArrayFront = [] as number[]; // Initialize in constructor
   // Back-- use the default non-dynamic back style options so that when the user disables the dynamic back style these options are displayed
   private strokeColorBack = SETTINGS.segment.drawn.strokeColor.back;
+  private glowingStrokeColorBack = SETTINGS.segment.glowing.strokeColor.back;
   private strokeWidthPercentBack = 100;
-  private opacityBack = SETTINGS.segment.drawn.opacity.back;
+
   private dashArrayBack = [] as number[]; // Initialize in constructor
   private dynamicBackStyle = SETTINGS.segment.dynamicBackStyle;
 
@@ -101,7 +101,8 @@ export default class Segment extends Nodule {
   constructor() {
     // Initialize the Two.Group
     super();
-    this.name = "Segment-" + SEGMENT_COUNT++;
+    Nodule.SEGMENT_COUNT++;
+    this.name = "Segment-" + Nodule.SEGMENT_COUNT;
     // Create the vertices for the segment
     const vertices: Two.Vector[] = [];
     for (let k = 0; k < SUBDIVS; k++) {
@@ -122,12 +123,18 @@ export default class Segment extends Nodule {
     this.glowingBackExtra = this.backPart.clone();
     // Clear the vertices from the extra parts because they will be added later as they are exchanged from other parts
 
-    // The clear() extension functio works only of JS Array, but
+    // The clear() extension function works only on JS Array, but
     // not on Two.JS Collection class. Use splice() instead.
     this.frontExtra.vertices.splice(0);
     this.glowingFrontExtra.vertices.splice(0);
     this.backExtra.vertices.splice(0);
     this.glowingBackExtra.vertices.splice(0);
+
+    //Set the path.id's for all the TwoJS objects which are not glowing. This is for exporting to Icon.
+    this.frontPart.id = 14000000 + Nodule.SEGMENT_COUNT * 100 + 0;
+    this.frontExtra.id = 14000000 + Nodule.SEGMENT_COUNT * 100 + 1;
+    this.backPart.id = 14000000 + Nodule.SEGMENT_COUNT * 100 + 2;
+    this.backExtra.id = 14000000 + Nodule.SEGMENT_COUNT * 100 + 3;
 
     // Set the style that never changes -- Fill
     this.frontPart.noFill();
@@ -139,7 +146,7 @@ export default class Segment extends Nodule {
     this.backExtra.noFill();
     this.glowingBackExtra.noFill();
 
-    // The segment is not initially glowing
+    // The segment is not initially glowing but leave the regular parts visible for the temporary objects
     this.frontPart.visible = true;
     this.glowingFrontPart.visible = false;
     this.backPart.visible = true;
@@ -212,7 +219,8 @@ export default class Segment extends Nodule {
     // Form the Y axis perpendicular to the normal vector and the XAxis
     this.desiredYAxis
       .crossVectors(this._normalVector, this.desiredXAxis)
-      .multiplyScalar(this._arcLength > Math.PI ? -1 : 1).normalize;
+      .multiplyScalar(this._arcLength > Math.PI ? -1 : 1)
+      .normalize();
 
     // Create the rotation matrix that maps the tilted circle to the unit
     // circle on the XY-plane
@@ -288,8 +296,10 @@ export default class Segment extends Nodule {
       if (this.tmpVector1.z > 0) {
         if (posIndex === activeFront.length) {
           // transfer one cell from the common pool
-          activeFront.push(pool.pop()!);
-          glowingActiveFront.push(glowingPool.pop()!);
+          const v1 = pool.pop();
+          if (v1) activeFront.push(v1);
+          const v2 = glowingPool.pop();
+          if (v2) glowingActiveFront.push(v2);
         }
         activeFront[posIndex].x = this.tmpVector1.x;
         activeFront[posIndex].y = this.tmpVector1.y;
@@ -299,8 +309,10 @@ export default class Segment extends Nodule {
       } else {
         if (negIndex === activeBack.length) {
           // transfer one cell from the common pool
-          activeBack.push(pool.pop()!);
-          glowingActiveBack.push(glowingPool.pop()!);
+          const v1 = pool.pop();
+          if (v1) activeBack.push(v1);
+          const v2 = glowingPool.pop();
+          if (v2) glowingActiveBack.push(v2);
         }
         activeBack[negIndex].x = this.tmpVector1.x;
         activeBack[negIndex].y = this.tmpVector1.y;
@@ -355,6 +367,19 @@ export default class Segment extends Nodule {
     }
   }
 
+  setSelectedColoring(flag: boolean): void {
+    //set the new colors into the variables
+    if (flag) {
+      this.glowingStrokeColorFront = SETTINGS.style.selectedColor.front;
+      this.glowingStrokeColorBack = SETTINGS.style.selectedColor.back;
+    } else {
+      this.glowingStrokeColorFront = SETTINGS.segment.glowing.strokeColor.front;
+      this.glowingStrokeColorBack = SETTINGS.segment.glowing.strokeColor.back;
+    }
+    // apply the new color variables to the object
+    this.stylize(DisplayStyle.ApplyCurrentVariables);
+  }
+
   /**
    * Clone the segment - We have to define our own clone() function
    * The builtin clone() does not seem to work correctly
@@ -375,21 +400,25 @@ export default class Segment extends Nodule {
     // The length of the Pool array is 2*SUBDIVISIONS = this.frontPart.length + this.frontExtra.length + this.backPart.length + this.backExtra.length because dup.frontPart and dup.backPart initially contains all the vertices and frontExtra and backExtra are empty.
     this.frontPart.vertices.forEach((v: Two.Anchor, pos: number) => {
       // Add a vertex in the frontPart (while taking one away from the pool)
-      dup.frontPart.vertices.push(pool.pop()!); // Exclamation point means that the linter assumes that the popped object is non-null
+      const v1 = pool.pop();
+      if (v1) dup.frontPart.vertices.push(v1); // Exclamation point means that the linter assumes that the popped object is non-null
       // Copy the this.frontPart vertex v into the newly added vertex in frontPart
       dup.frontPart.vertices[pos].copy(v); //
     });
     // Repeat for the frontExtra/backPart/backExtra
     this.frontExtra.vertices.forEach((v: Two.Anchor, pos: number) => {
-      dup.frontExtra.vertices.push(pool.pop()!);
+      const v1 = pool.pop();
+      if (v1) dup.frontExtra.vertices.push(v1);
       dup.frontExtra.vertices[pos].copy(v);
     });
     this.backPart.vertices.forEach((v: Two.Anchor, pos: number) => {
-      dup.backPart.vertices.push(pool.pop()!);
+      const v1 = pool.pop();
+      if (v1) dup.backPart.vertices.push(v1);
       dup.backPart.vertices[pos].copy(v);
     });
     this.backExtra.vertices.forEach((v: Two.Anchor, pos: number) => {
-      dup.backExtra.vertices.push(pool.pop()!);
+      const v1 = pool.pop();
+      if (v1) dup.backExtra.vertices.push(v1);
       dup.backExtra.vertices[pos].copy(v);
     });
 
@@ -398,19 +427,23 @@ export default class Segment extends Nodule {
     glowingPool.push(...dup.glowingFrontPart.vertices.splice(0));
     glowingPool.push(...dup.glowingBackPart.vertices.splice(0));
     this.glowingFrontPart.vertices.forEach((v: Two.Anchor, pos: number) => {
-      dup.glowingFrontPart.vertices.push(glowingPool.pop()!);
+      const v1 = glowingPool.pop();
+      if (v1) dup.glowingFrontPart.vertices.push(v1);
       dup.glowingFrontPart.vertices[pos].copy(v);
     });
     this.glowingFrontExtra.vertices.forEach((v: Two.Anchor, pos: number) => {
-      dup.glowingFrontExtra.vertices.push(glowingPool.pop()!);
+      const v1 = glowingPool.pop();
+      if (v1) dup.glowingFrontExtra.vertices.push(v1);
       dup.glowingFrontExtra.vertices[pos].copy(v);
     });
     this.glowingBackPart.vertices.forEach((v: Two.Anchor, pos: number) => {
-      dup.glowingBackPart.vertices.push(glowingPool.pop()!);
+      const v1 = glowingPool.pop();
+      if (v1) dup.glowingBackPart.vertices.push(v1);
       dup.glowingBackPart.vertices[pos].copy(v);
     });
     this.backExtra.vertices.forEach((v: Two.Anchor, pos: number) => {
-      dup.glowingBackExtra.vertices.push(glowingPool.pop()!);
+      const v1 = glowingPool.pop();
+      if (v1) dup.glowingBackExtra.vertices.push(v1);
       dup.glowingBackExtra.vertices[pos].copy(v);
     });
     return dup as this;
@@ -453,9 +486,7 @@ export default class Segment extends Nodule {
       if (options.strokeColor !== undefined) {
         this.strokeColorFront = options.strokeColor;
       }
-      if (options.opacity !== undefined) {
-        this.opacityFront = options.opacity;
-      }
+
       if (options.dashArray !== undefined) {
         // clear the dashArray
         this.dashArrayFront.clear();
@@ -477,9 +508,7 @@ export default class Segment extends Nodule {
         if (options.strokeColor !== undefined) {
           this.strokeColorBack = options.strokeColor;
         }
-        if (options.opacity !== undefined) {
-          this.opacityBack = options.opacity;
-        }
+
         if (options.dashArray !== undefined) {
           // clear the dashArray
           this.dashArrayBack.clear();
@@ -507,8 +536,7 @@ export default class Segment extends Nodule {
           panel: panel,
           strokeWidthPercent: this.strokeWidthPercentFront,
           strokeColor: this.strokeColorFront,
-          dashArray: dashArrayFront,
-          opacity: this.opacityFront
+          dashArray: dashArrayFront
         };
       }
       case StyleEditPanels.Back: {
@@ -521,12 +549,11 @@ export default class Segment extends Nodule {
           strokeWidthPercent: this.strokeWidthPercentBack,
           strokeColor: this.strokeColorBack,
           dashArray: dashArrayBack,
-          opacity: this.opacityBack,
           dynamicBackStyle: this.dynamicBackStyle
         };
       }
       default:
-      case StyleEditPanels.Basic: {
+      case StyleEditPanels.Label: {
         return {
           panel: panel
         };
@@ -549,8 +576,7 @@ export default class Segment extends Nodule {
           panel: panel,
           strokeWidthPercent: 100,
           strokeColor: SETTINGS.segment.drawn.strokeColor.front,
-          dashArray: dashArrayFront,
-          opacity: SETTINGS.segment.drawn.opacity.front
+          dashArray: dashArrayFront
         };
       }
       case StyleEditPanels.Back: {
@@ -575,16 +601,11 @@ export default class Segment extends Nodule {
             : SETTINGS.segment.drawn.strokeColor.back,
 
           dashArray: dashArrayBack,
-
-          opacity: SETTINGS.segment.dynamicBackStyle
-            ? Nodule.contrastOpacity(SETTINGS.segment.drawn.opacity.front)
-            : SETTINGS.segment.drawn.opacity.back,
-
           dynamicBackStyle: SETTINGS.segment.dynamicBackStyle
         };
       }
       default:
-      case StyleEditPanels.Basic: {
+      case StyleEditPanels.Label: {
         return {
           panel: panel
         };
@@ -635,18 +656,14 @@ export default class Segment extends Nodule {
           : this.strokeWidthPercentBack)) /
       100;
   }
-
   /**
-   * Set the rendering style (flags: ApplyTemporaryVariables, ApplyCurrentVariables, ResetVariablesToDefaults) of the line
+   * Set the rendering style (flags: ApplyTemporaryVariables, ApplyCurrentVariables) of the segment
    *
    * ApplyTemporaryVariables means that
-   *    1) The temporary variables from SETTINGS.segment.temp are copied into the actual Two.js objects
-   *    2) Dash pattern for temporary is copied  from the SETTINGS.segment.drawn into the actual Two.js objects
-   *    3) The line width is copied from the currentSegmentStrokeWidth (which accounts for the Zoom magnification) into the actual Two.js objects
+   *    1) The temporary variables from SETTINGS.point.temp are copied into the actual Two.js objects
+   *    2) The pointScaleFactor is copied from the Point.pointScaleFactor (which accounts for the Zoom magnification) into the actual Two.js objects
    *
    * Apply CurrentVariables means that all current values of the private style variables are copied into the actual Two.js objects
-   *
-   * ResetVariablesToDefaults means that all the private style variables are set to their defaults from SETTINGS.
    */
   stylize(flag: DisplayStyle): void {
     switch (flag) {
@@ -658,7 +675,7 @@ export default class Segment extends Nodule {
         this.frontPart.stroke = SETTINGS.segment.temp.strokeColor.front;
         // strokeWidthPercent -- The line width is set to the current line width (which is updated for zoom magnification)
         //this.frontPart.linewidth = Segment.currentSegmentStrokeWidthFront;
-        this.frontPart.opacity = SETTINGS.segment.temp.opacity.front;
+
         // Copy the front dash properties from the front default drawn dash properties
         if (SETTINGS.segment.drawn.dashArray.front.length > 0) {
           this.frontPart.dashes.clear();
@@ -672,7 +689,7 @@ export default class Segment extends Nodule {
         this.frontExtra.stroke = SETTINGS.segment.temp.strokeColor.front;
         // strokeWidthPercent -- The line width is set to the current line width (which is updated for zoom magnification)
         //this.frontExtra.linewidth = Segment.currentSegmentStrokeWidthFront;
-        this.frontExtra.opacity = SETTINGS.segment.temp.opacity.front;
+
         // Copy the front dash properties from the front default drawn dash properties
         if (SETTINGS.segment.drawn.dashArray.front.length > 0) {
           this.frontExtra.dashes.clear();
@@ -685,7 +702,7 @@ export default class Segment extends Nodule {
         this.backPart.stroke = SETTINGS.segment.temp.strokeColor.back;
         // strokeWidthPercent -- The line width is set to the current line width (which is updated for zoom magnification)
         //this.backPart.linewidth = Segment.currentSegmentStrokeWidthBack;
-        this.backPart.opacity = SETTINGS.segment.temp.opacity.back;
+
         // Copy the back dash properties from the back default drawn dash properties
         if (SETTINGS.segment.drawn.dashArray.back.length > 0) {
           this.backPart.dashes.clear();
@@ -698,7 +715,7 @@ export default class Segment extends Nodule {
         this.backExtra.stroke = SETTINGS.segment.temp.strokeColor.back;
         // strokeWidthPercent -- The line width is set to the current line width (which is updated for zoom magnification)
         //this.backExtra.linewidth = Segment.currentSegmentStrokeWidthBack;
-        this.backExtra.opacity = SETTINGS.segment.temp.opacity.back;
+
         // Copy the back dash properties from the back default drawn dash properties
         if (SETTINGS.segment.drawn.dashArray.back.length > 0) {
           this.backExtra.dashes.clear();
@@ -726,7 +743,7 @@ export default class Segment extends Nodule {
           this.frontPart.stroke = this.strokeColorFront;
         }
         // strokeWidthPercent applied by adjustSize()
-        this.frontPart.opacity = this.opacityFront;
+
         if (this.dashArrayFront.length > 0) {
           this.frontPart.dashes.clear();
           this.dashArrayFront.forEach(v => {
@@ -745,7 +762,7 @@ export default class Segment extends Nodule {
           this.frontExtra.stroke = this.strokeColorFront;
         }
         // strokeWidthPercent applied by adjustSize()
-        this.frontExtra.opacity = this.opacityFront;
+
         if (this.dashArrayFront.length > 0) {
           this.frontExtra.dashes.clear();
           this.dashArrayFront.forEach(v => {
@@ -776,9 +793,7 @@ export default class Segment extends Nodule {
           }
         }
         // strokeWidthPercent applied by adjustSize()
-        this.backPart.opacity = this.dynamicBackStyle
-          ? Nodule.contrastOpacity(this.opacityFront)
-          : this.opacityBack;
+
         if (this.dashArrayBack.length > 0) {
           this.backPart.dashes.clear();
           this.dashArrayBack.forEach(v => {
@@ -807,9 +822,7 @@ export default class Segment extends Nodule {
           }
         }
         // strokeWidthPercent applied by adjustSize()
-        this.backExtra.opacity = this.dynamicBackStyle
-          ? Nodule.contrastOpacity(this.opacityFront)
-          : this.opacityBack;
+
         if (this.dashArrayBack.length > 0) {
           this.backExtra.dashes.clear();
           this.dashArrayBack.forEach(v => {
@@ -824,10 +837,9 @@ export default class Segment extends Nodule {
         // UPDATE the glowing width so it is always bigger than the drawn width
         // Glowing Front
         // no fillColor
-        this.glowingFrontPart.stroke =
-          SETTINGS.segment.glowing.strokeColor.front;
+        this.glowingFrontPart.stroke = this.glowingStrokeColorFront;
         // strokeWidthPercent applied by adjustSize()
-        this.glowingFrontPart.opacity = SETTINGS.segment.glowing.opacity.front;
+
         // Copy the front dash properties to the glowing object
         if (this.dashArrayFront.length > 0) {
           this.glowingFrontPart.dashes.clear();
@@ -842,10 +854,9 @@ export default class Segment extends Nodule {
 
         // Glowing Front Extra
         // no fillColor
-        this.glowingFrontExtra.stroke =
-          SETTINGS.segment.glowing.strokeColor.front;
+        this.glowingFrontExtra.stroke = this.glowingStrokeColorFront;
         // strokeWidthPercent applied by adjustSize()
-        this.glowingFrontExtra.opacity = SETTINGS.segment.glowing.opacity.front;
+
         // Copy the front dash properties to the glowing object
         if (this.dashArrayFront.length > 0) {
           this.glowingFrontExtra.dashes.clear();
@@ -860,9 +871,9 @@ export default class Segment extends Nodule {
 
         // Glowing Back
         // no fillColor
-        this.glowingBackPart.stroke = SETTINGS.segment.glowing.strokeColor.back;
+        this.glowingBackPart.stroke = this.glowingStrokeColorBack;
         // strokeWidthPercent applied by adjustSize()
-        this.glowingBackPart.opacity = SETTINGS.segment.glowing.opacity.back;
+
         // Copy the back dash properties to the glowing object
         if (this.dashArrayBack.length > 0) {
           this.glowingBackPart.dashes.clear();
@@ -877,10 +888,9 @@ export default class Segment extends Nodule {
 
         // Glowing Back Extra
         // no fillColor
-        this.glowingBackExtra.stroke =
-          SETTINGS.segment.glowing.strokeColor.back;
+        this.glowingBackExtra.stroke = this.glowingStrokeColorBack;
         // strokeWidthPercent applied by adjustSize()
-        this.glowingBackExtra.opacity = SETTINGS.segment.glowing.opacity.back;
+
         // Copy the back dash properties to the glowing object
         if (this.dashArrayBack.length > 0) {
           this.glowingBackExtra.dashes.clear();

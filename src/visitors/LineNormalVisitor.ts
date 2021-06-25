@@ -5,6 +5,8 @@ import { Vector3 } from "three";
 import { SECircle } from "@/models/SECircle";
 import { SESegment } from "@/models/SESegment";
 import { SELabel } from "@/models/SELabel";
+import { SEEllipse } from "@/models/SEEllipse";
+import { SEAngleMarker } from "@/models/SEAngleMarker";
 
 export class LineNormalVisitor implements Visitor {
   private normalVector: Vector3 = new Vector3();
@@ -13,6 +15,7 @@ export class LineNormalVisitor implements Visitor {
     this.normalVector.copy(vec);
   }
 
+  // eslint-disable-next-line
   actionOnPoint(p: SEPoint): void {
     // p.update();
   }
@@ -26,14 +29,26 @@ export class LineNormalVisitor implements Visitor {
     // m.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
   }
 
+  // eslint-disable-next-line
   actionOnSegment(s: SESegment): void {
     // s.update();
   }
 
+  // eslint-disable-next-line
   actionOnCircle(c: SECircle): void {
     // c.update();
   }
+  // eslint-disable-next-line
   actionOnLabel(l: SELabel): void {
     // l.update();
+  }
+  // eslint-disable-next-line
+  actionOnEllipse(e: SEEllipse): void {
+    // e.update();
+  }
+
+  // eslint-disable-next-line
+  actionOnAngleMarker(a: SEAngleMarker): void {
+    //a.update()
   }
 }

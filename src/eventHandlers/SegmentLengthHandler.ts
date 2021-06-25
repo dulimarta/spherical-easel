@@ -1,13 +1,15 @@
 import Two from "two.js";
 import Highlighter from "./Highlighter";
 import { SESegment } from "@/models/SESegment";
-import { SENodule } from "@/models/SENodule";
-import { AddExpressionCommand } from "@/commands/AddExpressionCommand";
-import { SEMeasurement } from "@/models/SEMeasurement";
-import { SELength } from "@/models/SELength";
+import { AddLengthMeasurementCommand } from "@/commands/AddLengthMeasurementCommand";
+import { SESegmentLength } from "@/models/SESegmentLength";
 import EventBus from "@/eventHandlers/EventBus";
-import { SetNoduleDisplayCommand } from "@/commands/SetNoduleDisplayCommand";
-
+import SETTINGS from "@/global-settings";
+import { CommandGroup } from "@/commands/CommandGroup";
+import { StyleNoduleCommand } from "@/commands/StyleNoduleCommand";
+import { LabelDisplayMode, StyleEditPanels } from "@/types/Styles";
+import { UpdateMode } from "@/types";
+import { SEStore } from "@/store";
 export default class SegmentLengthHandler extends Highlighter {
   /**
    * Segment to measure
@@ -21,38 +23,65 @@ export default class SegmentLengthHandler extends Highlighter {
   mousePressed(event: MouseEvent): void {
     //Select an object to measure
     if (this.isOnSphere) {
-      // In the case of multiple selections prioritize points > lines > segments > circles
-      if (this.hitSESegments.length > 0)
+      if (this.hitSESegments.length > 0) {
         this.targetSegment = this.hitSESegments[0];
+      }
 
       if (this.targetSegment != null) {
-        // Do the hiding via command so it will be undoable
-        const lenMeasure = new SELength(this.targetSegment);
+        const lenMeasure = new SESegmentLength(this.targetSegment);
         EventBus.fire("show-alert", {
           key: `handlers.newSegmentMeasurementAdded`,
           keyOptions: { name: `${lenMeasure.name}` },
           type: "success"
         });
-        new AddExpressionCommand(lenMeasure).execute();
-        // this.targetSegment = null;
+        const segmentCommandGroup = new CommandGroup();
+        segmentCommandGroup.addCommand(
+          new AddLengthMeasurementCommand(lenMeasure, this.targetSegment)
+        );
+        // Set the selected segment's Label to display and to show NameAndValue in an undoable way
+        segmentCommandGroup.addCommand(
+          new StyleNoduleCommand(
+            [this.targetSegment.label!],
+            StyleEditPanels.Front,
+            [
+              {
+                panel: StyleEditPanels.Front,
+                // labelVisibility: true,
+                labelDisplayMode: SETTINGS.segment.measuringChangesLabelModeTo
+              }
+            ],
+            [
+              {
+                panel: StyleEditPanels.Front,
+                // labelVisibility: this.targetSegment.label!.showing,
+                labelDisplayMode: this.targetSegment.label!.ref.labelDisplayMode
+              }
+            ]
+          )
+        );
+        segmentCommandGroup.execute();
+        // Update the display so the changes become apparent
+        this.targetSegment.update({
+          mode: UpdateMode.DisplayOnly,
+          stateArray: []
+        });
+        this.targetSegment = null;
       }
     }
   }
 
   mouseMoved(event: MouseEvent): void {
-    // Highlight all nearby objects and update location vectors
+    // Find all the nearby (hitSE... objects) and update location vectors
     super.mouseMoved(event);
 
-    // Do not highlight non SESegment objects
-    this.hitSENodules
-      .filter((n: SENodule) => !(n instanceof SESegment))
-      .forEach((p: SENodule) => {
-        p.glowing = false;
-      });
     if (this.hitSESegments.length > 0) {
+      // Glow the first SESegment
+      this.hitSESegments[0].glowing = true;
       this.targetSegment = this.hitSESegments[0];
       const len = this.targetSegment.arcLength;
-      this.infoText.text = `Arc length ${(len / Math.PI).toFixed(2)}\u{1D7B9}`;
+      this.infoText.text = `Arc length ${(len / Math.PI).toFixed(
+        SETTINGS.decimalPrecision
+      )}\u{1D7B9}`;
     }
   }
 
@@ -65,17 +94,45 @@ export default class SegmentLengthHandler extends Highlighter {
     this.targetSegment = null;
   }
   activate(): void {
-    if (this.store.getters.selectedSENodules().length == 1) {
-      const object1 = this.store.getters.selectedSENodules()[0];
+    if (SEStore.selectedSENodules.length == 1) {
+      const object1 = SEStore.selectedSENodules[0];
 
       if (object1 instanceof SESegment) {
-        const lenMeasure = new SELength(object1);
+        const lenMeasure = new SESegmentLength(object1);
         EventBus.fire("show-alert", {
           key: `handlers.newSegmentMeasurementAdded`,
           keyOptions: { name: `${lenMeasure.name}` },
           type: "success"
         });
-        new AddExpressionCommand(lenMeasure).execute();
+
+        const segmentCommandGroup = new CommandGroup();
+        segmentCommandGroup.addCommand(
+          new AddLengthMeasurementCommand(lenMeasure, object1)
+        );
+        // Set the selected segment's Label to display and to show NameAndValue in an undoable way
+        segmentCommandGroup.addCommand(
+          new StyleNoduleCommand(
+            [object1.label!],
+            StyleEditPanels.Front,
+            [
+              {
+                panel: StyleEditPanels.Front,
+                // labelVisibility: true,
+                labelDisplayMode: LabelDisplayMode.NameAndValue
+              }
+            ],
+            [
+              {
+                panel: StyleEditPanels.Front,
+                // labelVisibility: object1.label!.showing,
+                labelDisplayMode: object1.label!.ref.labelDisplayMode
+              }
+            ]
+          )
+        );
+        segmentCommandGroup.execute();
+        // make the change show up in the sphere
+        object1.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
       }
     }
     // Unselect the selected objects and clear the selectedObject array

@@ -166,11 +166,11 @@ describe("SEExpression", () => {
     });
 
     it("computes atan()", () => {
-      const synTree1 = ExpressionParser.parse("atan(0)");
+      ExpressionParser.parse("atan(0)");
       expect(parser.evaluate("atan(0)")).toBeCloseTo(0, 1);
-      const synTree2 = ExpressionParser.parse("atan(1)");
+      ExpressionParser.parse("atan(1)");
       expect(parser.evaluate("atan(1)")).toBeCloseTo(Math.PI / 4, 3);
-      const synTree3 = ExpressionParser.parse("tan(atan(-2.34))");
+      ExpressionParser.parse("tan(atan(-2.34))");
       expect(parser.evaluate("tan(atan(-2.34))")).toBeCloseTo(-2.34, 2);
     });
 

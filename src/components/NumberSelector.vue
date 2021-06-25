@@ -1,45 +1,78 @@
 <template>
   <div>
     <span v-show="editModeIsFront()"
-      class="text-subtitle-2">{{ $t(sideFrontKey) }} </span>
+      class="text-subtitle-2">{{ $t(panelFrontKey) }} </span>
     <span v-show="editModeIsBack()"
-      class="text-subtitle-2">{{ $t(sideBackKey) }} </span>
-    <span class="text-subtitle-2">{{ $t(titleKey) }}</span>
+      class="text-subtitle-2">{{ $t(panelBackKey) }} </span>
+    <span
+      class="text-subtitle-2">{{ $t(titleKey) + " ("+thumbMap(styleData)+")" }}</span>
+    <span v-if="selectedSENodules.length > 1"
+      class="text-subtitle-2"
+      style="color:red">{{" "+ $t("style.labelStyleOptionsMultiple") }}</span>
     <br />
-    <div v-show="totalyDisableSelector"
-      class="select-an-object-text">{{ $t("style.selectAnObject") }}</div>
-    <HintButton v-show="!totalyDisableSelector"
-      @click="setStyleDataAgreement"
-      long-label
-      i18n-label="style.differingStylesDetected"
-      i18n-tooltip="style.differingStylesDetectedToolTip"></HintButton>
-    <HintButton v-show="styleDataAgreement && !totalyDisableSelector"
-      @click="clearChanges"
-      :disabled="disableUndoButton"
-      i18n-label="style.clearChanges"
-      i18n-tooltip="style.clearChangesToolTip"></HintButton>
-    <HintButton v-show="styleDataAgreement && !totalyDisableSelector"
-      @click="resetToDefaults"
-      i18n-label="style.restoreDefaults"
-      i18n-tooltip="style.restoreDefaultsToolTip"></HintButton>
+    <!-- Disable the Dynamic Back Style Overlay -->
+    <OverlayWithFixButton v-if="useDynamicBackStyleFromSelector && !totalyDisableSelector && this.usingDynamicBackStyleAgreement &&
+        (usingDynamicBackStyle || this.usingDynamicBackStyleCommonValue)"
+      z-index="50"
+      i18n-title-line="style.dynamicBackStyleHeader"
+      i18n-button-label="style.disableDynamicBackStyle"
+      i18n-button-tool-tip="style.disableDynamicBackStyleToolTip"
+      @click="turnOffUsingDynamicBackStyling">
+    </OverlayWithFixButton>
 
-    <br />
+    <!-- Differing data styles detected Overlay -->
+    <OverlayWithFixButton
+      v-if="!styleDataAgreement && !totalyDisableSelector"
+      z-index="5"
+      i18n-title-line="style.styleDisagreement"
+      i18n-button-label="style.enableCommonStyle"
+      i18n-button-tool-tip="style.differentValuesToolTip"
+      @click="setStyleDataAgreement">
+    </OverlayWithFixButton>
 
+    <!-- The number selector slider -->
     <v-slider v-model.number="styleData"
       :min="minValue"
-      :disabled="!styleDataAgreement ||totalyDisableSelector"
       @change="onDataChanged"
       :max="maxValue"
       :step="step"
-      type="range">
+      :disabled="disabledValue"
+      type="range"
+      class="mb-n4 pa-n4">
       <template v-slot:prepend>
         <v-icon @click="decrementDataValue">mdi-minus</v-icon>
       </template>
-
+      <template v-slot:thumb-label="{ value }">
+        {{ thumbMap(value) }}
+      </template>
       <template v-slot:append>
         <v-icon @click="incrementDataValue">mdi-plus</v-icon>
       </template>
     </v-slider>
+
+    <!-- Undo and Reset to Defaults buttons -->
+    <v-container class="pa-0 ma-0">
+      <v-row justify="end"
+        no-gutters>
+        <v-col cols="2"
+          class="ma-0 pl-0 pr-0 pt-0 pb-2">
+          <HintButton @click="clearChanges"
+            :disabled="disableUndoButton || disabledValue"
+            type="undo"
+            i18n-label="style.clearChanges"
+            i18n-tooltip="style.clearChangesToolTip"></HintButton>
+        </v-col>
+
+        <v-col cols="2"
+          class="ma-0 pl-0 pr-0 pt-0 pb-2">
+          <HintButton @click="resetToDefaults"
+            :disabled="disabledValue"
+            type="default"
+            i18n-label="style.restoreDefaults"
+            i18n-tooltip="style.restoreDefaultsToolTip"></HintButton>
+        </v-col>
+      </v-row>
+    </v-container>
   </div>
 </template>
 
@@ -49,38 +82,61 @@ import Component from "vue-class-component";
 import SETTINGS from "@/global-settings";
 import { Watch, Prop, PropSync } from "vue-property-decorator";
 import { StyleOptions, Styles, StyleEditPanels } from "@/types/Styles";
-import { State } from "vuex-class";
+import { namespace } from "vuex-class";
 import { SENodule } from "@/models/SENodule";
 import { AppState, Labelable } from "@/types";
 import HintButton from "@/components/HintButton.vue";
+import OverlayWithFixButton from "@/components/OverlayWithFixButton.vue";
+import { SEStore } from "@/store";
+import Style from "./Style.vue";
+const SE = namespace("se");
 
-@Component({ components: { HintButton } })
+@Component({ components: { HintButton, OverlayWithFixButton } })
 export default class NumberSelector extends Vue {
   @Prop() readonly panel!: StyleEditPanels;
   @Prop() readonly activePanel!: StyleEditPanels;
   @Prop() readonly titleKey!: string;
-  @Prop() readonly sideFrontKey!: string;
-  @Prop() readonly sideBackKey!: string;
+  @Prop() readonly panelFrontKey!: string;
+  @Prop() readonly panelBackKey!: string;
   @Prop({ required: true }) readonly styleName!: string;
   @PropSync("data", { type: Number }) styleData?: number | undefined;
   @Prop({ required: true }) readonly minValue!: number;
   @Prop({ required: true }) readonly maxValue!: number;
   @Prop() readonly step?: number;
   @Prop() readonly tempStyleStates!: StyleOptions[];
+  @Prop() readonly thumbStringValues?: string[];
+  @Prop() readonly disabledValue?: boolean;
+  @Prop() readonly useDynamicBackStyleFromSelector!: boolean;
 
-  @State((s: AppState) => s.selections)
-  readonly selections!: SENodule[];
+  @SE.State((s: AppState) => s.selectedSENodules)
+  readonly selectedSENodules!: SENodule[];
 
-  private disableUndoButton = true;
+  @SE.State((s: AppState) => s.zoomMagnificationFactor)
+  readonly zoomMagnificationFactor!: number;
 
   readonly toolTipOpenDelay = SETTINGS.toolTip.openDelay;
   readonly toolTipCloseDelay = SETTINGS.toolTip.closeDelay;
 
+  private disableUndoButton = true;
   private styleDataAgreement = true;
-  private totalyDisableSelector = true;
+  private totalyDisableSelector = false;
+
+  // usingDynamicBackStyleAgreement indicates if all the dynamicBackStyle booleans are the same (either T or F)
+  private usingDynamicBackStyleAgreement = true;
+  // usingDynamicBackStyleCommonValue = true indicates ( when usingDynamicBackStyleAgreement = true ) that
+  // all selected objects have the dynamicBackstyle = true
+  // usingDynamicBackStyleCommonValue = false indicates ( when usingDynamicBackStyleAgreement = true ) that
+  // all selected objects have the dynamicBackstyle = false
+  // if usingDynamicBackStyleAgreement = false then usingDynamicBackStyleCommonValue is meaningless
+  // if usingDynamicBackStyleAgreement = true and usingDynamicBackStyleCommonValue is undefined, then something went horribly wrong!
+  private usingDynamicBackStyleCommonValue: boolean | undefined = true;
+  // usingDynamicBackStyle = false means that the user is setting the color for the back on their own and is
+  // *not* using the contrast (i.e. not using the dynamic back styling)
+  // usingDynamicBackStyle = true means the program is setting the style of the back objects
+  private usingDynamicBackStyle = true;
 
   mounted(): void {
-    // this.onSelectionChanged(this.$store.getters.selectedSENodules());
+    // this.onSelectionChanged(this.selectedSENodules);
   }
   @Watch("tempStyleStates")
   setTempStyleState(tempStyleStates: StyleOptions[]): void {
@@ -94,11 +150,20 @@ export default class NumberSelector extends Vue {
     return this.panel === StyleEditPanels.Front;
   }
   editModeIsLabel(): boolean {
-    return this.panel === StyleEditPanels.Basic;
+    return this.panel === StyleEditPanels.Label;
   }
 
+  //converts the value of the slider to the text message displayed in the thumb marker
+  thumbMap(val: number): string {
+    if (this.thumbStringValues === undefined) {
+      return String(val);
+    } else {
+      return this.thumbStringValues[
+        Math.floor((val - this.minValue) / this.step!)
+      ];
+    }
+  }
   beforeUpdate(): void {
-    // console.debug("beforeUpdate", this.styleData);
     // Make a copy of the initial state
     // if (this.defaultStyleStates.length !== this.initialStyleStates.length)
     // this.defaultStyleStates = this.initialStyleStates.slice();
@@ -106,14 +171,29 @@ export default class NumberSelector extends Vue {
   // These methods are linked to the styleData fade-in-card
   onDataChanged(newData: number): void {
     this.disableUndoButton = false;
-    const selected = [];
-    selected.push(...this.$store.getters.selectedSENodules());
-    if (this.$store.getters.getUseLabelMode()) {
-      const label = ((selected[0] as unknown) as Labelable).label;
-      selected.clear();
-      selected.push(label);
+    const selected: SENodule[] = [];
+    // If this number selector is on the label panel, then all changes are directed at the label(s).
+    if (this.panel === StyleEditPanels.Label) {
+      this.selectedSENodules.forEach(node => {
+        selected.push(((node as unknown) as Labelable).label!);
+      });
+    } else {
+      selected.push(...this.selectedSENodules);
     }
-    this.$store.direct.commit.changeStyle({
+
+    if (!this.usingDynamicBackStyle && this.useDynamicBackStyleFromSelector) {
+      SEStore.changeStyle({
+        selected: selected,
+        payload: {
+          panel: this.panel,
+          dynamicBackStyle: false
+        }
+      });
+    }
+
+    console.log("styleName", this.styleName, "val", newData);
+
+    SEStore.changeStyle({
       selected: selected,
       payload: {
         panel: this.panel,
@@ -123,22 +203,23 @@ export default class NumberSelector extends Vue {
   }
 
   resetToDefaults(): void {
-    const selected = [];
-    selected.push(...this.$store.getters.selectedSENodules());
-    if (this.$store.getters.getUseLabelMode()) {
-      const label = ((selected[0] as unknown) as Labelable).label;
-      selected.clear();
-      selected.push(label);
+    const selected: SENodule[] = [];
+    // If this number selector is on the label panel, then all changes are directed at the label(s).
+    if (this.panel === StyleEditPanels.Label) {
+      this.selectedSENodules.forEach(node => {
+        selected.push(((node as unknown) as Labelable).label!);
+      });
+    } else {
+      selected.push(...this.selectedSENodules);
     }
-    const defaultStyleStates = this.$store.getters.getDefaultStyleState(
-      this.panel
-    );
+    const defaultStyleStates = SEStore.getDefaultStyleState(this.panel);
     for (let i = 0; i < selected.length; i++) {
-      this.$store.direct.commit.changeStyle({
+      SEStore.changeStyle({
         selected: [selected[i]],
         payload: {
           panel: this.panel,
-          [this.styleName]: (defaultStyleStates[i] as any)[this.styleName]
+          [this.styleName]: (defaultStyleStates[i] as any)[this.styleName],
+          dynamicBackStyle: (defaultStyleStates[i] as any)["dynamicBackStyle"]
         }
       });
     }
@@ -149,27 +230,12 @@ export default class NumberSelector extends Vue {
     this.styleDataAgreement = true;
     this.totalyDisableSelector = false;
 
-    // console.log(
-    //   "Style Name:",
-    //   this.styleName,
-    //   "Before RHS computed:",
-    //   (styleState[0] as any)[this.styleName],
-    //   "Before Style Data",
-    //   this.styleData
-    // );
     this.styleData =
       this.styleName in styleState[0]
         ? (styleState[0] as any)[this.styleName]
         : undefined;
 
-    // console.log(
-    //   "After RHS computed:",
-    //   (styleState[0] as any)[this.styleName],
-    //   "After Style Data",
-    //   this.styleData,
-    //   "These two values should be the same!"
-    // );
-    // screen for undefined - if undefined then this is not a property that is going to be set by the style panel for this selection of objects
+    // check for undefined - if undefined then this is not a property that is going to be set by the style panel for this selection of objects
     if (this.styleData !== undefined) {
       if (
         styleState.length > 1 &&
@@ -185,6 +251,50 @@ export default class NumberSelector extends Vue {
       // The style property doesn't exists on the selected objects so totally disable the selector
       this.disableSelector(true);
     }
+
+    // Set the usingDynamicBackStyleAgreement and usingDynamicBackStyleCommonValue varaibles
+    if (this.useDynamicBackStyleFromSelector) {
+      this.usingDynamicBackStyleAgreement = true;
+
+      this.usingDynamicBackStyleCommonValue =
+        "dynamicBackStyle" in styleState[0]
+          ? (styleState[0] as any).dynamicBackStyle
+          : undefined;
+
+      this.disableUndoButton = true;
+      // screen for undefined - if undefined then this is not a property that is going to be set by the style panel for this selection of objects
+      if (
+        this.usingDynamicBackStyleCommonValue === undefined ||
+        !styleState.every(
+          styleObject =>
+            (styleObject as any).dynamicBackStyle ==
+            this.usingDynamicBackStyleCommonValue
+        )
+      ) {
+        // The dynamicBackStyle exists on the selected objects but the
+        // doesn't agree
+        this.usingDynamicBackStyleAgreement = false;
+      }
+
+      if (
+        this.usingDynamicBackStyleAgreement &&
+        !this.usingDynamicBackStyleCommonValue
+      ) {
+        this.usingDynamicBackStyle = false;
+      }
+
+      // console.log("useDBS from user input", this.usingDynamicBackStyle);
+      // console.log("DBS Agree", this.usingDynamicBackStyleAgreement);
+      // console.log("DBS common Value", this.usingDynamicBackStyleCommonValue);
+      // console.log(
+      //   "logic useDBS from user input || (DBS Agre && ! DBS common Value)",
+      //   this.usingDynamicBackStyle ||
+      //     (this.usingDynamicBackStyleAgreement &&
+      //       (this.usingDynamicBackStyleAgreement === true
+      //         ? !this.usingDynamicBackStyleCommonValue
+      //         : true))
+      // );
+    }
   }
   disableSelector(totally: boolean): void {
     this.styleDataAgreement = false;
@@ -196,22 +306,23 @@ export default class NumberSelector extends Vue {
   }
   clearChanges(): void {
     this.disableUndoButton = true;
-    const selected = [];
-    selected.push(...this.$store.getters.selectedSENodules());
-    if (this.$store.getters.getUseLabelMode()) {
-      const label = ((selected[0] as unknown) as Labelable).label;
-      selected.clear();
-      selected.push(label);
+    const selected: SENodule[] = [];
+    // If this number selector is on the label panel, then all changes are directed at the label(s).
+    if (this.panel === StyleEditPanels.Label) {
+      this.selectedSENodules.forEach(node => {
+        selected.push(((node as unknown) as Labelable).label!);
+      });
+    } else {
+      selected.push(...this.selectedSENodules);
     }
-    const initialStyleStates = this.$store.getters.getInitialStyleState(
-      this.panel
-    );
+    const initialStyleStates = SEStore.getInitialStyleState(this.panel);
     for (let i = 0; i < selected.length; i++) {
-      this.$store.direct.commit.changeStyle({
+      SEStore.changeStyle({
         selected: [selected[i]],
         payload: {
           panel: this.panel,
-          [this.styleName]: (initialStyleStates[i] as any)[this.styleName]
+          [this.styleName]: (initialStyleStates[i] as any)[this.styleName],
+          dynamicBackStyle: (initialStyleStates[i] as any)["dynamicBackStyle"]
         }
       });
     }
@@ -223,15 +334,8 @@ export default class NumberSelector extends Vue {
       this.styleData !== undefined &&
       this.styleData + (this.step ?? 1) <= this.maxValue
     ) {
-      this.disableUndoButton = false;
       this.styleData += this.step ?? 1;
-      this.$store.direct.commit.changeStyle({
-        selected: this.$store.getters.selectedSENodules(),
-        payload: {
-          panel: this.panel,
-          [this.styleName]: this.styleData
-        }
-      });
+      this.onDataChanged(this.styleData);
     }
   }
   decrementDataValue(): void {
@@ -239,32 +343,50 @@ export default class NumberSelector extends Vue {
       this.styleData !== undefined &&
       this.styleData - (this.step ?? 1) >= this.minValue
     ) {
-      this.disableUndoButton = false;
       this.styleData -= this.step ?? 1;
-      this.$store.direct.commit.changeStyle({
-        selected: this.$store.getters.selectedSENodules(),
-        payload: {
-          panel: this.panel,
-          [this.styleName]: this.styleData
-        }
-      });
+      this.onDataChanged(this.styleData);
     }
+  }
+
+  turnOffUsingDynamicBackStyling(): void {
+    this.usingDynamicBackStyle = false;
+    this.usingDynamicBackStyleAgreement = true;
+    this.usingDynamicBackStyleCommonValue = false;
+
+    //Write this to the objects
+    const selected: SENodule[] = [];
+    // If this color selector is on the label panel, then all changes are directed at the label(s).
+    if (this.panel === StyleEditPanels.Label) {
+      this.selectedSENodules.forEach(node => {
+        selected.push(((node as unknown) as Labelable).label!);
+      });
+    } else {
+      selected.push(...this.selectedSENodules);
+    }
+    SEStore.changeStyle({
+      selected: selected,
+      payload: {
+        panel: this.panel,
+        dynamicBackStyle: false
+      }
+    });
   }
   @Watch("activePanel")
   private activePanelChange(): void {
     if (this.activePanel !== undefined && this.panel === this.activePanel) {
       // activePanel = undefined means that no edit panel is open
-      this.onSelectionChanged(this.$store.getters.selectedSENodules());
+      this.onSelectionChanged(this.selectedSENodules);
     }
   }
 
-  @Watch("selections")
+  @Watch("selectedSENodules")
   onSelectionChanged(newSelection: SENodule[]): void {
+    console.log("NumberSelector: onSelectionChanged");
     if (newSelection.length === 0) {
       this.disableSelector(true);
       return;
     }
-    this.setSelectorState(this.$store.getters.getInitialStyleState(this.panel));
+    this.setSelectorState(SEStore.getInitialStyleState(this.panel));
   }
 }
 </script>

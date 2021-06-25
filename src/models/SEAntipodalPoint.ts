@@ -32,11 +32,6 @@ export class SEAntipodalPoint extends SEPoint {
       this._locationVector
         .copy(this._antipodalPointParent.locationVector)
         .multiplyScalar(-1);
-      // console.log(
-      //   "update the antipodal",
-      //   this._locationVector.toFixed(2),
-      //   this._antipodalPointParent.locationVector.toFixed(2)
-      // );
       this.ref.positionVector = this._locationVector;
     }
 

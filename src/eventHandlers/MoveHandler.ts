@@ -31,7 +31,10 @@ import {
   PointState
 } from "@/types";
 import { CommandGroup } from "@/commands/CommandGroup";
+import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
+import { SEEllipse } from "@/models/SEEllipse";
 
+import { SEStore } from "@/store";
 const tmpVector1 = new Vector3();
 // const tmpVector2 = new Vector3();
 const desiredZAxis = new Vector3();
@@ -62,8 +65,9 @@ export default class MoveHandler extends Highlighter {
   /**
    * Objects that define the moved objects (and all descendants) states before and after moving (for undoing moving)
    * Issuing a update(this.beforeMoveState) creates an array of SENodules that is a Topological Sort and
-   * records the state of certain key variables (*not* pointers to the variables) so that they can be
-   * compared to the after the move. If they are different we issue a MoveXXXCommand to change the value
+   * records the state of certain key variables (*not* pointers to the variables) before the move so that they can be
+   * compared to them after the move. If they are different we issue a MoveXXXCommand (but not executed only
+   * pushed onto the undo/redo stack) to change the value.
    */
   //#region beforeSaveState
   private beforeMoveState: UpdateStateType = {
@@ -125,7 +129,6 @@ export default class MoveHandler extends Highlighter {
       const labels = this.hitSELabels.filter(
         n => n.isFreeToMove() && n.showing
       );
-
       if (labels.length > 0) {
         this.moveTarget = labels[0];
         // First mark all children of the target out of date so that the update method does a topological sort
@@ -134,21 +137,9 @@ export default class MoveHandler extends Highlighter {
         this.moveTarget.update(this.beforeMoveState);
         return;
       }
-      //If the user tries to move a nonFree point, nothing should happen
+      //If the user tries to move a nonFree point or object, nothing should happen -- this communicates
+      //to the user they are trying to move something that can't be moved
       if (this.hitSEPoints.length == 0) {
-        const freeLines = this.hitSELines.filter(
-          n => n.isFreeToMove() && n.showing
-        );
-        if (freeLines.length > 0) {
-          this.moveTarget = freeLines[0];
-          // First mark all children of the target's point parents out of date so that the update method does a topological sort
-          (this.moveTarget as SELine).startSEPoint.markKidsOutOfDate();
-          (this.moveTarget as SELine).endSEPoint.markKidsOutOfDate();
-          // Store the state of the freePoints, segments and lines before the move
-          (this.moveTarget as SELine).startSEPoint.update(this.beforeMoveState);
-          (this.moveTarget as SELine).endSEPoint.update(this.beforeMoveState);
-          return;
-        }
         const freeSegments = this.hitSESegments.filter(
           n => n.isFreeToMove() && n.showing
         );
@@ -164,6 +155,20 @@ export default class MoveHandler extends Highlighter {
           (this.moveTarget as SESegment).endSEPoint.update(
             this.beforeMoveState
           );
+          return;
+        }
+
+        const freeLines = this.hitSELines.filter(
+          n => n.isFreeToMove() && n.showing
+        );
+        if (freeLines.length > 0) {
+          this.moveTarget = freeLines[0];
+          // First mark all children of the target's point parents out of date so that the update method does a topological sort
+          (this.moveTarget as SELine).startSEPoint.markKidsOutOfDate();
+          (this.moveTarget as SELine).endSEPoint.markKidsOutOfDate();
+          // Store the state of the freePoints, segments and lines before the move
+          (this.moveTarget as SELine).startSEPoint.update(this.beforeMoveState);
+          (this.moveTarget as SELine).endSEPoint.update(this.beforeMoveState);
           return;
         }
 
@@ -184,11 +189,69 @@ export default class MoveHandler extends Highlighter {
           );
           return;
         }
+
+        const freeEllipses = this.hitSEEllipses.filter(
+          n => n.isFreeToMove() && n.showing
+        );
+        if (freeEllipses.length > 0) {
+          this.moveTarget = freeEllipses[0];
+          // First mark all children of the target's point parents out of date so that the update method does a topological sort
+          (this.moveTarget as SEEllipse).focus1SEPoint.markKidsOutOfDate();
+          (this.moveTarget as SEEllipse).focus2SEPoint.markKidsOutOfDate();
+          (this.moveTarget as SEEllipse).ellipseSEPoint.markKidsOutOfDate();
+          // Store the state of the freePoints, segments and lines before the move
+          (this.moveTarget as SEEllipse).focus1SEPoint.update(
+            this.beforeMoveState
+          );
+          (this.moveTarget as SEEllipse).focus2SEPoint.update(
+            this.beforeMoveState
+          );
+          (this.moveTarget as SEEllipse).ellipseSEPoint.update(
+            this.beforeMoveState
+          );
+          return;
+        }
       }
     } else {
       // In this case the user mouse pressed in a location with *no* nodules (nothing was highlighted when she mouse pressed)
+
+      // Check to see if there was an object on the back of the sphere that he was trying to
+      // select but doesn't know about the shift key.  Send an alert in this case
+      const sphereVec = new Vector3(
+        this.currentSphereVector.x,
+        this.currentSphereVector.y,
+        -1 * this.currentSphereVector.z
+      );
+      const hitSENodules = SEStore.findNearbySENodules(
+        sphereVec,
+        this.currentScreenVector
+      ).filter((n: SENodule) => {
+        if (n instanceof SEIntersectionPoint) {
+          if (!n.isUserCreated) {
+            return n.exists; //You always hit automatically created intersection points if it exists
+          } else {
+            return n.showing && n.exists; //You can't hit hidden objects or items that don't exist
+          }
+        } else {
+          return n.showing && n.exists; //You can't hit hidden objects or items that don't exist
+        }
+      });
+      // if the user is not pressing the shift key and there is a nearby object on the back of the sphere, send alert
+      if (!event.shiftKey && hitSENodules.length > 0) {
+        EventBus.fire("show-alert", {
+          key: `handlers.moveHandlerObjectOnBackOfSphere`,
+          keyOptions: {},
+          type: "info"
+        });
+      }
+
       this.rotateSphere = true;
       this.beforeMoveVector1.copy(this.currentSphereVector);
+      EventBus.fire("show-alert", {
+        key: `handlers.moveHandlerNothingSelected`,
+        keyOptions: {},
+        type: "warning"
+      });
     }
   }
 
@@ -198,12 +261,32 @@ export default class MoveHandler extends Highlighter {
       return;
     }
     event.preventDefault();
-
+    // highlight the objects that can be moved
+    // and only the highlight the object that will be moved when the user clicks and drags
+    if (!this.isDragging) {
+      if (this.hitSEPoints.filter(n => n.isFreeToMove()).length > 0) {
+        this.hitSEPoints[0].glowing = true;
+      } else if (this.hitSELabels.filter(n => n.isFreeToMove()).length > 0) {
+        this.hitSELabels[0].glowing = true;
+      } else if (this.hitSEPoints.length == 0) {
+        if (this.hitSESegments.filter(n => n.isFreeToMove()).length > 0) {
+          this.hitSESegments[0].glowing = true;
+        } else if (this.hitSELines.filter(n => n.isFreeToMove()).length > 0) {
+          this.hitSELines[0].glowing = true;
+        } else if (this.hitSECircles.filter(n => n.isFreeToMove()).length > 0) {
+          this.hitSECircles[0].glowing = true;
+        } else if (
+          this.hitSEEllipses.filter(n => n.isFreeToMove()).length > 0
+        ) {
+          this.hitSEEllipses[0].glowing = true;
+        }
+      }
+    }
     if (this.isDragging && this.movingSomething) {
       if (this.moveTarget instanceof SEPoint) {
         // Move the selected SEPoint
         this.moveTarget.locationVector = this.currentSphereVector;
-        // Update the display based on the new location of the point
+        // Update the display of the objects depending on this SEPoint based on the new location of the point
         //#region displayOnlyUpdate
         this.moveTarget.update({
           mode: UpdateMode.DisplayOnly,
@@ -213,11 +296,10 @@ export default class MoveHandler extends Highlighter {
       } else if (this.moveTarget instanceof SELabel) {
         // Move the selected SELabel
         this.moveTarget.locationVector = this.currentSphereVector;
-        // Update the display based on the new location of the label
-        this.moveTarget.update({
-          mode: UpdateMode.DisplayOnly,
-          stateArray: []
-        });
+        // Update the display based on the new location of the label (No need to update display because SELabels have no children/kids)
+        //   mode: UpdateMode.DisplayOnly,
+        //   stateArray: []
+        // });
       } else if (
         this.moveTarget instanceof SELine ||
         this.moveTarget instanceof SESegment
@@ -235,6 +317,14 @@ export default class MoveHandler extends Highlighter {
         // Turn off the glow of the moving object - it should not glow while moving
         this.moveTarget.ref.normalDisplay();
         // Move the selected SECircle, move also updates the display
+        this.moveTarget.move(
+          this.previousSphereVector,
+          this.currentSphereVector
+        );
+      } else if (this.moveTarget instanceof SEEllipse) {
+        // Turn off the glow of the moving object - it should not glow while moving
+        this.moveTarget.ref.normalDisplay();
+        // Move the selected SEEllipse, move also updates the display
         this.moveTarget.move(
           this.previousSphereVector,
           this.currentSphereVector
@@ -257,7 +347,7 @@ export default class MoveHandler extends Highlighter {
         this.afterMoveVector1
       );
       desiredZAxis.crossVectors(this.beforeMoveVector1, this.afterMoveVector1);
-      if (desiredZAxis.isZero()) {
+      if (desiredZAxis.isZero(SETTINGS.nearlyAntipodalIdeal)) {
         if (rotationAngle == 0) {
           // The vectors are identical
           this.changeInPositionRotationMatrix.identity();
@@ -307,6 +397,14 @@ export default class MoveHandler extends Highlighter {
         this.moveTarget.circleSEPoint.markKidsOutOfDate();
         this.moveTarget.centerSEPoint.update(this.afterMoveState);
         this.moveTarget.circleSEPoint.update(this.afterMoveState);
+      } else if (this.moveTarget instanceof SEEllipse) {
+        // First mark all children of the target's point parents out of date so that the update method does a topological sort
+        this.moveTarget.focus1SEPoint.markKidsOutOfDate();
+        this.moveTarget.focus2SEPoint.markKidsOutOfDate();
+        this.moveTarget.ellipseSEPoint.markKidsOutOfDate();
+        this.moveTarget.focus1SEPoint.update(this.afterMoveState);
+        this.moveTarget.focus2SEPoint.update(this.afterMoveState);
+        this.moveTarget.ellipseSEPoint.update(this.afterMoveState);
       }
       // Store the move point/line/segment for undo/redo command
       const moveCommandGroup = new CommandGroup();
@@ -344,7 +442,7 @@ export default class MoveHandler extends Highlighter {
           if (
             !tmpVector1
               .subVectors(beforeLocationVector, afterLocationVector)
-              .isZero()
+              .isZero(SETTINGS.nearlyAntipodalIdeal)
           ) {
             moveCommandGroup.addCommand(
               new MovePointCommand(
@@ -375,7 +473,7 @@ export default class MoveHandler extends Highlighter {
           if (
             !tmpVector1
               .subVectors(beforeLocationVector, afterLocationVector)
-              .isZero()
+              .isZero(SETTINGS.nearlyAntipodalIdeal)
           ) {
             moveCommandGroup.addCommand(
               new MoveLabelCommand(
@@ -400,7 +498,7 @@ export default class MoveHandler extends Highlighter {
           if (
             !tmpVector1
               .subVectors(beforeNormalVector, afterNormalVector)
-              .isZero()
+              .isZero(SETTINGS.nearlyAntipodalIdeal)
           ) {
             moveCommandGroup.addCommand(
               new MoveLineCommand(
@@ -431,7 +529,7 @@ export default class MoveHandler extends Highlighter {
           if (
             !tmpVector1
               .subVectors(beforeNormalVector, afterNormalVector)
-              .isZero() ||
+              .isZero(SETTINGS.nearlyAntipodalIdeal) ||
             (entry.arcLength < Math.PI &&
               (this.afterMoveState.stateArray[index] as SegmentState)
                 .arcLength > Math.PI) ||
@@ -439,12 +537,6 @@ export default class MoveHandler extends Highlighter {
               (this.afterMoveState.stateArray[index] as SegmentState)
                 .arcLength < Math.PI)
           ) {
-            // console.log(
-            //   "Move seg Com",
-            //   entry.object.name,
-            //   beforeNormalVector.toFixed(2),
-            //   afterNormalVector.toFixed(2)
-            // );
             moveCommandGroup.addCommand(
               new MoveSegmentCommand(
                 entry.object as SESegment,
@@ -479,6 +571,7 @@ export default class MoveHandler extends Highlighter {
   }
 
   mouseLeave(event: MouseEvent): void {
+    super.mouseLeave(event);
     // Make sure that the last move gets recorded in the command structure so it can be undone/redone
     this.mouseReleased(event);
   }

@@ -20,7 +20,7 @@ Select object(s) to change their visual style or to perform actions on them with
 
 ::: tool-details Selecting Objects:
 
-- All selected objects will glow (i.e. have a highlight color displayed in the background of the object).
+- All selected objects will glow (i.e. have a highlight color displayed in the background of the object) and slowly blink.
 - Not Implemented? To select multiple objects, mouse drag and create a rectangle. Anything (TODO: entirely? partially?) with in that region will be selected when the mouse is released.
 - To clear your selection, mouse press and release at a location with no objects nearby.
 - To add or subtract to your current selection, press and hold the <kbd>Alt/Option</kbd> key when mouse pressing. A mouse press will add the objects to the current selection or, if the mouse press is on already selected objects, those objects will be removed from the current selection.
@@ -30,12 +30,11 @@ Select object(s) to change their visual style or to perform actions on them with
   2. Mouse press and release (without moving the mouse) - the first object should be selected
   3. Mouse over a location near the second object and key press a number to highlight the desired object
   4. Mouse press and release (without moving the mouse) - the first and second objects should be selected
-- To select all points, move the mouse into the sphere and press and hold the <kbd>p</kbd> key. All points should be highlighted. To move them into the current selection, mouse press and release once. Similarly to select...
+- To select all points, move the mouse into the sphere and press and hold the <kbd>p</kbd> key. All points should be highlighted. To move them into the current selection, mouse press at an empty location on the sphere and release once. Similarly to select...
   - All circles use the <kbd>c</kbd> key
   - All lines use the <kbd>l</kbd> key
   - All segments use the <kbd>s</kbd> key
   - All ellipses use the <kbd>e</kbd> key
-  - All labels use the <kbd>L</kbd> key
 
 **Changing Visual Style:**
 

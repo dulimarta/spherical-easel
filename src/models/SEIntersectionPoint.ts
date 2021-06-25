@@ -1,10 +1,9 @@
 import { SEPoint } from "./SEPoint";
 import Point from "@/plottables/Point";
 import { IntersectionReturnType } from "@/types";
-import store from "@/store";
 import { SEOneDimensional } from "@/types";
 import { UpdateMode, UpdateStateType, PointState } from "@/types";
-
+import { intersectTwoObjects } from "@/utils/intersections";
 export class SEIntersectionPoint extends SEPoint {
   /**
    * This flag is true if the user created this point
@@ -85,7 +84,7 @@ export class SEIntersectionPoint extends SEPoint {
     if (this._exists) {
       //console.debug("Updating SEIntersectionPoint", this.name);
       // The objects are in the correct order because the SEIntersectionPoint parents are assigned that way
-      const updatedIntersectionInfo: IntersectionReturnType[] = store.getters.intersectTwoObjects(
+      const updatedIntersectionInfo: IntersectionReturnType[] = intersectTwoObjects(
         this.seParent1,
         this.seParent2
       );
@@ -125,17 +124,9 @@ export class SEIntersectionPoint extends SEPoint {
     }
   }
   // I wish the SENodule methods would work but I couldn't figure out how
-  // See the attempts in SENodule
-  public isFreePoint() {
-    return false;
-  }
-  public isOneDimensional() {
-    return false;
-  }
-  public isPoint() {
-    return false;
-  }
-  public isLabel(): boolean {
+  // See the attempts in SENodule around line 218
+  //override the method from SEPoint
+  public isFreePoint(): boolean {
     return false;
   }
 }

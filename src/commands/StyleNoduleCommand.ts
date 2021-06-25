@@ -1,6 +1,6 @@
 import { Command } from "./Command";
 import { SENodule } from "@/models/SENodule";
-import { Styles, StyleOptions, StyleEditPanels } from "../types/Styles";
+import { StyleOptions, StyleEditPanels } from "../types/Styles";
 
 export class StyleNoduleCommand extends Command {
   private seNodules: SENodule[] = [];
@@ -37,9 +37,12 @@ export class StyleNoduleCommand extends Command {
       } else {
         newObj.dashArray = undefined;
       }
-      newObj.opacity = obj.opacity;
       newObj.dynamicBackStyle = obj.dynamicBackStyle;
       newObj.pointRadiusPercent = obj.pointRadiusPercent;
+      newObj.angleMarkerRadiusPercent = obj.angleMarkerRadiusPercent;
+      newObj.angleMarkerTickMark = obj.angleMarkerTickMark;
+      newObj.angleMarkerDoubleArc = obj.angleMarkerDoubleArc;
+
       newObj.labelTextStyle = obj.labelTextStyle;
       newObj.labelTextFamily = obj.labelTextFamily;
       newObj.labelTextDecoration = obj.labelTextDecoration;
@@ -48,8 +51,9 @@ export class StyleNoduleCommand extends Command {
       newObj.labelDisplayText = obj.labelDisplayText;
       newObj.labelDisplayCaption = obj.labelDisplayCaption;
       newObj.labelDisplayMode = obj.labelDisplayMode;
-      newObj.labelVisibility = obj.labelVisibility;
-      newObj.objectVisibility = obj.objectVisibility;
+      newObj.labelFrontFillColor = obj.labelFrontFillColor;
+      newObj.labelBackFillColor = obj.labelBackFillColor;
+
       this.currentStyles.push(newObj);
     });
     pastStyles.forEach(obj => {
@@ -67,9 +71,12 @@ export class StyleNoduleCommand extends Command {
       } else {
         newObj.dashArray = undefined;
       }
-      newObj.opacity = obj.opacity;
       newObj.dynamicBackStyle = obj.dynamicBackStyle;
       newObj.pointRadiusPercent = obj.pointRadiusPercent;
+      newObj.angleMarkerRadiusPercent = obj.angleMarkerRadiusPercent;
+      newObj.angleMarkerTickMark = obj.angleMarkerTickMark;
+      newObj.angleMarkerDoubleArc = obj.angleMarkerDoubleArc;
+
       newObj.labelTextStyle = obj.labelTextStyle;
       newObj.labelTextFamily = obj.labelTextFamily;
       newObj.labelTextDecoration = obj.labelTextDecoration;
@@ -78,8 +85,10 @@ export class StyleNoduleCommand extends Command {
       newObj.labelDisplayText = obj.labelDisplayText;
       newObj.labelDisplayCaption = obj.labelDisplayCaption;
       newObj.labelDisplayMode = obj.labelDisplayMode;
-      newObj.labelVisibility = obj.labelVisibility;
-      newObj.objectVisibility = obj.objectVisibility;
+      newObj.labelFrontFillColor = obj.labelFrontFillColor;
+      newObj.labelBackFillColor = obj.labelBackFillColor;
+
+      // newObj.objectVisibility = obj.objectVisibility;
       this.pastStyles.push(newObj);
     });
     this.currentBackStyleContrast = currentBackStyleContrast;
@@ -88,7 +97,7 @@ export class StyleNoduleCommand extends Command {
 
   do(): void {
     for (let i = 0; i < this.seNodules.length; i++) {
-      Command.store.commit.changeStyle({
+      Command.store.changeStyle({
         selected: [this.seNodules[i]],
         payload: {
           panel: this.panel,
@@ -96,7 +105,6 @@ export class StyleNoduleCommand extends Command {
           strokeColor: this.currentStyles[i].strokeColor,
           fillColor: this.currentStyles[i].fillColor,
           dashArray: this.currentStyles[i].dashArray,
-          opacity: this.currentStyles[i].opacity,
           dynamicBackStyle: this.currentStyles[i].dynamicBackStyle,
           pointRadiusPercent: this.currentStyles[i].pointRadiusPercent,
           labelTextStyle: this.currentStyles[i].labelTextStyle,
@@ -107,8 +115,13 @@ export class StyleNoduleCommand extends Command {
           labelDisplayText: this.currentStyles[i].labelDisplayText,
           labelDisplayCaption: this.currentStyles[i].labelDisplayCaption,
           labelDisplayMode: this.currentStyles[i].labelDisplayMode,
-          labelVisibility: this.currentStyles[i].labelVisibility,
-          objectVisibility: this.currentStyles[i].objectVisibility,
+          angleMarkerRadiusPercent: this.currentStyles[i]
+            .angleMarkerRadiusPercent,
+          angleMarkerTickMark: this.currentStyles[i].angleMarkerTickMark,
+          angleMarkerDoubleArc: this.currentStyles[i].angleMarkerDoubleArc,
+          labelFrontFillColor: this.currentStyles[i].labelFrontFillColor,
+          labelBackFillColor: this.currentStyles[i].labelBackFillColor,
+          // objectVisibility: this.currentStyles[i].objectVisibility,
           backStyleContrast: this.currentBackStyleContrast
         }
       });
@@ -121,7 +134,7 @@ export class StyleNoduleCommand extends Command {
 
   restoreState(): void {
     for (let i = 0; i < this.seNodules.length; i++) {
-      Command.store.commit.changeStyle({
+      Command.store.changeStyle({
         selected: [this.seNodules[i]],
         payload: {
           panel: this.panel,
@@ -129,7 +142,6 @@ export class StyleNoduleCommand extends Command {
           strokeColor: this.pastStyles[i].strokeColor,
           fillColor: this.pastStyles[i].fillColor,
           dashArray: this.pastStyles[i].dashArray,
-          opacity: this.pastStyles[i].opacity,
           dynamicBackStyle: this.pastStyles[i].dynamicBackStyle,
           pointRadiusPercent: this.pastStyles[i].pointRadiusPercent,
           labelTextStyle: this.pastStyles[i].labelTextStyle,
@@ -140,11 +152,18 @@ export class StyleNoduleCommand extends Command {
           labelDisplayText: this.pastStyles[i].labelDisplayText,
           labelDisplayCaption: this.pastStyles[i].labelDisplayCaption,
           labelDisplayMode: this.pastStyles[i].labelDisplayMode,
-          labelVisibility: this.pastStyles[i].labelVisibility,
-          objectVisibility: this.pastStyles[i].objectVisibility,
+          angleMarkerRadiusPercent: this.pastStyles[i].angleMarkerRadiusPercent,
+          angleMarkerTickMark: this.pastStyles[i].angleMarkerTickMark,
+          angleMarkerDoubleArc: this.pastStyles[i].angleMarkerDoubleArc,
+          labelFrontFillColor: this.pastStyles[i].labelFrontFillColor,
+          labelBackFillColor: this.pastStyles[i].labelBackFillColor,
           backStyleContrast: this.pastBackStyleContrast
         }
       });
     }
+  }
+
+  toOpcode(): null | string | Array<string> {
+    return null; // Exclude this command from interpretation
   }
 }

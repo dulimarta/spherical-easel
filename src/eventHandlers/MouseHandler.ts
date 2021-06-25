@@ -1,10 +1,9 @@
 /** @format */
 
-import { Vector3, Matrix4 } from "three";
-import AppStore from "@/store";
+import { Vector3 } from "three";
+import { SEStore } from "@/store";
 import { ToolStrategy } from "./ToolStrategy";
 import Two from "two.js";
-import Point from "@/plottables/Point";
 import SETTINGS, { LAYER } from "@/global-settings";
 import { SEPoint } from "@/models/SEPoint";
 import { SELine } from "@/models/SELine";
@@ -12,8 +11,9 @@ import { SECircle } from "@/models/SECircle";
 import { SESegment } from "@/models/SESegment";
 import { TextBox } from "@/plottables/TextBox";
 import { SENodule } from "@/models/SENodule";
-import { DisplayStyle } from "@/plottables/Nodule";
 import { SELabel } from "@/models/SELabel";
+import { SEAngleMarker } from "@/models/SEAngleMarker";
+import { SEEllipse } from "@/models/SEEllipse";
 
 export default abstract class MouseHandler implements ToolStrategy {
   protected readonly X_AXIS = new Vector3(1, 0, 0);
@@ -28,7 +28,7 @@ export default abstract class MouseHandler implements ToolStrategy {
   /**
    * Vuex global state
    */
-  protected store = AppStore; //
+  // protected store = AppStore; //
   /**
    * The vector location of the current and previous mouse event on the ideal unit sphere
    */
@@ -51,7 +51,9 @@ export default abstract class MouseHandler implements ToolStrategy {
   protected hitSELines: SELine[] = [];
   protected hitSESegments: SESegment[] = [];
   protected hitSECircles: SECircle[] = [];
+  protected hitSEEllipses: SEEllipse[] = [];
   protected hitSELabels: SELabel[] = [];
+  protected hitSEAngleMarkers: SEAngleMarker[] = [];
 
   /**
    * Holds the layers for each type of object, background, glowing background, etc..
@@ -104,8 +106,8 @@ export default abstract class MouseHandler implements ToolStrategy {
     const mouseY = -(offsetY - this.canvas.translation.y);
 
     // Get the current zoom factor and vector
-    const mag = this.store.state.zoomMagnificationFactor;
-    const zoomTransVec = this.store.state.zoomTranslation;
+    const mag = SEStore.zoomMagnificationFactor;
+    const zoomTransVec = SEStore.zoomTranslation;
 
     // Transform the (mouseX, mouseY) pixel location to default screen
     // coordinates (i.e. to pre affine/css transformation)

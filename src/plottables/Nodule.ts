@@ -4,16 +4,37 @@ import { Resizeable } from "./Resizeable";
 import SETTINGS from "@/global-settings";
 import { StyleOptions, StyleEditPanels } from "@/types/Styles";
 import { hslaColorType } from "@/types";
+import { Vector3 } from "three";
 
 export enum DisplayStyle {
   ApplyTemporaryVariables,
   ApplyCurrentVariables
 }
 
+const tmpVector = new Vector3();
+
 /**
  * A Nodule consists of one or more TwoJS(SVG) elements
  */
 export default abstract class Nodule implements Stylable, Resizeable {
+  protected static LINE_COUNT = 0;
+  protected static ANGLEMARKER_COUNT = 0;
+  protected static CIRCLE_COUNT = 0;
+  protected static SEGMENT_COUNT = 0;
+  protected static POINT_COUNT = 0;
+  protected static LABEL_COUNT = 0;
+  protected static ELLIPSE_COUNT = 0;
+
+  static resetAllCounters(): void {
+    Nodule.LINE_COUNT = 0;
+    Nodule.ANGLEMARKER_COUNT = 0;
+    Nodule.CIRCLE_COUNT = 0;
+    Nodule.SEGMENT_COUNT = 0;
+    Nodule.POINT_COUNT = 0;
+    Nodule.LABEL_COUNT = 0;
+    Nodule.ELLIPSE_COUNT = 0;
+  }
+
   // Declare owner, this field will be initialized by the associated owner of the plottable Nodule
   // public owner!: SENodule;
   public name!: string;
@@ -41,6 +62,8 @@ export default abstract class Nodule implements Stylable, Resizeable {
   abstract normalDisplay(): void;
   abstract glowingDisplay(): void;
   abstract updateStyle(options: StyleOptions): void;
+  /** set the glowing visual style differently depending on if selected or not */
+  abstract setSelectedColoring(flag: boolean): void;
 
   /** Get the current style state of the Nodule */
   abstract currentStyleState(mode: StyleEditPanels): StyleOptions;
@@ -77,10 +100,14 @@ export default abstract class Nodule implements Stylable, Resizeable {
     if (frontColor == "noFill") {
       return "noFill";
     }
+    if (frontColor == "noLabelFrontFill") {
+      return "noLabelBackFill";
+    }
     const hslaColor = Nodule.convertStringToHSLAObject(frontColor);
     hslaColor.l = 1 - (1 - hslaColor.l) * Nodule.backStyleContrast;
     return Nodule.convertHSLAObjectToString(hslaColor);
   }
+
   static contrastStrokeColor(frontColor: string): string {
     if (frontColor == "noStroke") {
       return "noStroke";
@@ -88,10 +115,6 @@ export default abstract class Nodule implements Stylable, Resizeable {
     const hslaColor = Nodule.convertStringToHSLAObject(frontColor);
     hslaColor.l = 1 - (1 - hslaColor.l) * Nodule.backStyleContrast;
     return Nodule.convertHSLAObjectToString(hslaColor);
-  }
-
-  static contrastOpacity(frontOpacity: number): number {
-    return Nodule.backStyleContrast * frontOpacity;
   }
 
   // The back linewidth can be up to 20% smaller than their front counterparts.
@@ -116,7 +139,7 @@ export default abstract class Nodule implements Stylable, Resizeable {
         .map(x => x.replace("%", "").trim()); //remove the percent symbols
       if (Number(numberArray[3]) <= 0) {
         // If the alpha/opacity value is zero the color picker slider for alpha/opacity disappears and can't be returned
-        numberArray[3] = "0.001";
+        numberArray[3] = "0";
       }
       return {
         h: Number(numberArray[0]),
@@ -135,11 +158,11 @@ export default abstract class Nodule implements Stylable, Resizeable {
     }
   }
   static convertHSLAObjectToString(colorObject: hslaColorType): string {
-    if (colorObject.a == undefined || colorObject.a == 0) {
-      // If the alpha/opacity value is zero the color picker slider for alpha/opacity disappears and can't be returned
-      colorObject.a = 0.001;
-      //this.displayOpacityZeroMessage = true;
-    }
+    // if (colorObject.a == undefined || colorObject.a == 0) {
+    //   // If the alpha/opacity value is zero the color picker slider for alpha/opacity disappears and can't be returned
+    //   colorObject.a = 0.001;
+    //   //this.displayOpacityZeroMessage = true;
+    // }
     return (
       "hsla(" +
       colorObject.h +

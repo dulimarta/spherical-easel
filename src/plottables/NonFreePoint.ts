@@ -1,10 +1,8 @@
 /** @format */
 
 // import SETTINGS from "@/global-settings";
-import Two from "two.js";
-import SETTINGS, { LAYER } from "@/global-settings";
+import SETTINGS from "@/global-settings";
 import Nodule, { DisplayStyle } from "./Nodule";
-import { Vector3 } from "three";
 import { StyleOptions, StyleEditPanels } from "@/types/Styles";
 import Point from "@/plottables/Point";
 
@@ -30,7 +28,6 @@ export default class NonFreePoint extends Point {
     this.fillColorFront = SETTINGS.point.nonFree.fillColor.front;
     this.strokeColorFront = SETTINGS.point.nonFree.strokeColor.front;
     this.pointRadiusPercentFront = 100;
-    this.opacityFront = SETTINGS.point.nonFree.opacity.front;
     // Back
     this.fillColorBack = SETTINGS.point.dynamicBackStyle
       ? Nodule.contrastFillColor(SETTINGS.point.nonFree.fillColor.front)
@@ -43,9 +40,7 @@ export default class NonFreePoint extends Point {
           SETTINGS.point.nonFree.pointStrokeWidth.front
         )
       : 100;
-    this.opacityBack = SETTINGS.point.dynamicBackStyle
-      ? Nodule.contrastOpacity(SETTINGS.point.nonFree.opacity.front)
-      : SETTINGS.point.nonFree.opacity.back;
+
     this.dynamicBackStyle = SETTINGS.point.dynamicBackStyle;
 
     // Now apply the new style and size
@@ -63,8 +58,7 @@ export default class NonFreePoint extends Point {
           panel: panel,
           pointRadiusPercent: 100,
           strokeColor: SETTINGS.point.nonFree.strokeColor.front,
-          fillColor: SETTINGS.point.nonFree.fillColor.front,
-          opacity: SETTINGS.point.nonFree.opacity.front
+          fillColor: SETTINGS.point.nonFree.fillColor.front
         };
         // Back
       }
@@ -86,15 +80,11 @@ export default class NonFreePoint extends Point {
             ? Nodule.contrastFillColor(SETTINGS.point.nonFree.fillColor.front)
             : SETTINGS.point.nonFree.fillColor.back,
 
-          opacity: SETTINGS.point.dynamicBackStyle
-            ? Nodule.contrastOpacity(SETTINGS.point.nonFree.opacity.front)
-            : SETTINGS.point.nonFree.opacity.back,
-
           dynamicBackStyle: SETTINGS.point.dynamicBackStyle
         };
       }
       default:
-      case StyleEditPanels.Basic: {
+      case StyleEditPanels.Label: {
         return {
           panel: panel
         };

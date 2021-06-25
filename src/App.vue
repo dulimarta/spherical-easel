@@ -49,7 +49,26 @@
 
       <!-- This will open up the global settings view setting the language, decimals 
       display and other global options-->
-      <router-link to="/settings">
+      <template v-if="accountEnabled">
+        <span>{{whoami}}</span>
+
+        <v-img id="profilePic"
+          v-if="profilePicUrl"
+          class="mx-2"
+          contain
+          :src="profilePicUrl"
+          :aspect-ratio="1/1"
+          max-width="48"
+          @click="doLoginOrCheck"></v-img>
+        <v-icon v-else
+          class="mx-2"
+          @click="doLoginOrCheck">mdi-account</v-icon>
+        <v-icon v-if="whoami !== ''"
+          :disabled="!hasObjects"
+          class="mr-2"
+          @click="$refs.saveConstructionDialog.show()">mdi-share</v-icon>
+      </template>
+      <router-link to="/settings/">
         <v-icon>mdi-cog</v-icon>
       </router-link>
     </v-app-bar>
@@ -68,14 +87,50 @@
       :color="footerColor"
       padless>
       <v-col class="text-center">
-        <span v-if="activeToolName"
+        <span
+          v-if="activeToolName==='PanZoomInDisplayedName' || activeToolName==='PanZoomOutDisplayedName'"
           class="footer-text"
-          v-html="$t('buttons.CurrentTool')+ ': ' + $t('buttons.' + activeToolName).split('<br>').join(' ').trim()">
+          v-html="$t('buttons.CurrentTool')+ ': ' + $t('buttons.' + activeToolName).split('<br>').join('/').trim()">
+        </span>
+        <span v-else-if="activeToolName!== ''"
+          class="footer-text"
+          v-html="$t('buttons.CurrentTool')+ ': '  + $t('buttons.' + activeToolName).split('<br>').join(' ').trim()">
         </span>
         <span v-else
           class="footer-text">{{ $t(`buttons.NoToolSelected`) }}</span>
       </v-col>
     </v-footer>
+    <Dialog ref="logoutDialog"
+      title="Confirm Logout"
+      yes-text="Proceed"
+      :yes-action="() => doLogout()"
+      no-text="Cancel"
+      max-width="40%">
+      <p>You are about to logout, any unsaved constructions will be
+        discarded.</p>
+      <p><em>Proceed</em> or <em>cancel?</em></p>
+    </Dialog>
+    <Dialog ref="saveConstructionDialog"
+      title="Save Construction"
+      yes-text="Save"
+      no-text="Cancel"
+      :yes-action="() => doShare()"
+      max-width="40%">
+      <p>Please provide a short description for your construction
+      </p>
+
+      <v-text-field type="text"
+        dense
+        clearable
+        counter
+        persistent-hint
+        label="Description"
+        required
+        v-model="description"></v-text-field>
+      <v-switch v-model="publicConstruction"
+        :disabled="uid.length === 0"
+        label="Available to public"></v-switch>
+    </Dialog>
   </v-app>
 </template>
 
@@ -84,32 +139,228 @@
   actions to desired changes in the display and the rest of the app. 
 -->
 <script lang="ts">
-import Vue from "vue";
 /* Import the custom components */
-import Component from "vue-class-component";
-import { State } from "vuex-class";
+import VueComponent from "vue";
+import { Vue, Component } from "vue-property-decorator";
+import { namespace } from "vuex-class";
 import MessageBox from "@/components/MessageBox.vue";
+// import ConstructionLoader from "@/components/ConstructionLoader.vue";
+import Dialog, { DialogAction } from "@/components/Dialog.vue";
 import { AppState } from "./types";
-import { Watch } from "vue-property-decorator";
 import EventBus from "@/eventHandlers/EventBus";
+import { Error, FirebaseAuth, User } from "@firebase/auth-types";
+import {
+  FirebaseFirestore,
+  DocumentReference,
+  DocumentSnapshot
+} from "@firebase/firestore-types";
+import { Unsubscribe } from "@firebase/util";
+import { Command } from "./commands/Command";
+import { Matrix4 } from "three";
+import { SEStore } from "./store";
 
+const SE = namespace("se");
+// Register vue router in-component navigation guard functions
+Component.registerHooks([
+  "beforeRouteEnter",
+  "beforeRouteLeave",
+  "beforeRouteUpdate"
+]);
 /* This allows for the State of the app to be initialized with in vuex store */
-/* TODO: What does this do? */
-/* This view has no (sub)components (but the Easel view does) so this is empty*/
-@Component({ components: { MessageBox } })
+@Component({ components: { MessageBox, Dialog } })
 export default class App extends Vue {
-  @State((s: AppState) => s.activeToolName)
-  activeToolName!: string;
+  @SE.State((s: AppState) => s.activeToolName)
+  readonly activeToolName!: string;
 
+  @SE.State((s: AppState) => s.svgCanvas)
+  readonly svgCanvas!: HTMLDivElement | null;
+
+  @SE.State((s: AppState) => s.inverseTotalRotationMatrix)
+  readonly inverseTotalRotationMatrix!: Matrix4;
+
+  // @SE.State((s: AppState) => s.sePoints)
+  // readonly sePoints!: SEPoint[];
+
+  // @SE.Mutation init!: () => void;
+  // @SE.Mutation clearUnsavedFlag!: () => void;
+
+  readonly $appAuth!: FirebaseAuth;
+  readonly $appDB!: FirebaseFirestore;
+  description = "";
+  publicConstruction = false;
+  $refs!: {
+    logoutDialog: VueComponent & DialogAction;
+    saveConstructionDialog: VueComponent & DialogAction;
+  };
   footerColor = "accent";
+  authSubscription!: Unsubscribe;
+  whoami = "";
+  uid = "";
+  profilePicUrl: string | null = null;
+  svgRoot!: SVGElement;
 
-  mounted(): void {
-    this.$store.direct.commit.init();
-    EventBus.listen("set-footer-color", this.setFooterColor);
+  /* User account feature is initialy disabled. To unlock this feature
+     The user must press Ctrl+Alt+S then Ctrl+Alt+E in that order */
+  acceptedKeys = 0;
+  accountEnabled = false;
+
+  get hasObjects(): boolean {
+    // Any objects must include at least one point
+    return SEStore.sePoints.length > 0;
   }
 
-  setFooterColor(e: unknown): void {
-    this.footerColor = (e as any).color;
+  readonly keyHandler = (ev: KeyboardEvent): void => {
+    //console.log("here b");
+    if (!ev.altKey) return;
+    if (!ev.ctrlKey) return;
+    console.log("here a", this.acceptedKeys, ev.key);
+
+    if (ev.key === "ß" && this.acceptedKeys === 0) {
+      // ctrl + alt + s = ß
+      console.info("'S' is accepted");
+      this.acceptedKeys = 1;
+    } else if (ev.key === "Dead" && this.acceptedKeys === 1) {
+      // ctrl + alt + e = Dead
+      this.acceptedKeys = 2;
+      console.info("'E' is accepted", this.accountEnabled, this.acceptedKeys);
+      // Directly setting the accountEnable flag here does not trigger
+      // a UI update even after calling $forceUpdate()
+      // Firing an event seems to solve the problem
+      EventBus.fire("secret-key", {});
+    } else {
+      this.acceptedKeys = 0;
+    }
+  };
+
+  created(): void {
+    window.addEventListener("keyup", this.keyHandler);
+    EventBus.listen("secret-key", () => {
+      console.log("Got the secret key");
+      this.accountEnabled = true;
+      this.acceptedKeys = 0;
+      this.$forceUpdate();
+    });
+  }
+
+  mounted(): void {
+    SEStore.init();
+    EventBus.listen("set-footer-color", this.setFooterColor);
+    this.authSubscription = this.$appAuth.onAuthStateChanged(
+      (u: User | null) => {
+        if (u !== null) {
+          this.whoami = u.email ?? "unknown email";
+          this.uid = u.uid;
+          this.$appDB
+            .collection("users")
+            .doc(this.uid)
+            .get()
+            .then((ds: DocumentSnapshot) => {
+              console.log("Fetching profile picture?", ds);
+              if (ds.exists) {
+                const { profilePictureURL } = ds.data() as any;
+                console.log("Fetching profile picture?", ds);
+                if (profilePictureURL) {
+                  this.profilePicUrl = profilePictureURL;
+                }
+              }
+            });
+        } else {
+          this.whoami = "";
+          this.profilePicUrl = "";
+        }
+      }
+    );
+    // Get the top-level SVG element
+    this.svgRoot = this.svgCanvas?.querySelector("svg") as SVGElement;
+  }
+
+  beforeDestroy(): void {
+    if (this.authSubscription) this.authSubscription();
+    this.whoami = "";
+    this.uid = "";
+    window.removeEventListener("keyup", this.keyHandler);
+  }
+  setFooterColor(e: { color: string }): void {
+    this.footerColor = e.color;
+  }
+
+  async doLogout(): Promise<void> {
+    await this.$appAuth.signOut();
+    this.$refs.logoutDialog.hide();
+    this.uid = "";
+    this.whoami = "";
+  }
+
+  doLoginOrCheck(): void {
+    if (this.$appAuth.currentUser !== null) {
+      this.$refs.logoutDialog.show();
+    } else {
+      this.$router.replace({ path: "/account" });
+    }
+  }
+
+  async doShare(): Promise<void> {
+    // A local function to convert a blob to base64 representation
+    const toBase64 = (inputBlob: Blob): Promise<string> =>
+      new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onerror = reject;
+        reader.onload = () => {
+          resolve(reader.result as string);
+        };
+        reader.readAsDataURL(inputBlob);
+      });
+
+    /* dump the command history */
+    const out = Command.dumpOpcode();
+
+    const rotationMat = this.inverseTotalRotationMatrix;
+    const collectionPath = this.publicConstruction
+      ? "constructions"
+      : `users/${this.uid}/constructions`;
+
+    // Make a duplicate of the SVG tree
+    const svgElement = this.svgRoot.cloneNode(true) as SVGElement;
+    svgElement.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+
+    // Remove the top-level transformation matrix
+    // We have to save the preview in its "natural" pose
+    svgElement.style.removeProperty("transform");
+
+    const svgBlob = new Blob([svgElement.outerHTML], {
+      type: "image/svg+xml;charset=utf-8"
+    });
+    const svgPreviewData = await toBase64(svgBlob);
+
+    // const svgURL = URL.createObjectURL(svgBlob);
+    // FileSaver.saveAs(svgURL, "hans.svg");
+    this.$appDB
+      .collection(collectionPath)
+      .add({
+        script: out,
+        dateCreated: new Date().toISOString(),
+        author: this.whoami,
+        description: this.description,
+        rotationMatrix: JSON.stringify(rotationMat.elements),
+        preview: svgPreviewData
+      })
+      .then((doc: DocumentReference) => {
+        EventBus.fire("show-alert", {
+          key: "objectTree.firestoreConstructionSaved",
+          keyOptions: { docId: doc.id },
+          type: "info"
+        });
+        SEStore.clearUnsavedFlag();
+      })
+      .catch((err: Error) => {
+        console.log("Can't save document", err);
+        EventBus.fire("show-alert", {
+          key: "objectTree.firestoreSaveError",
+          keyOptions: {},
+          type: "error"
+        });
+      });
+    this.$refs.saveConstructionDialog.hide();
   }
 }
 </script>
@@ -124,5 +375,9 @@ export default class App extends Vue {
 }
 .footer-color {
   color: "accent";
+}
+
+#profilePic {
+  border-radius: 50%;
 }
 </style>

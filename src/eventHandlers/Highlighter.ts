@@ -7,68 +7,72 @@ import { SELine } from "@/models/SELine";
 import { SELabel } from "@/models/SELabel";
 import { SESegment } from "@/models/SESegment";
 import { SECircle } from "@/models/SECircle";
+import { SEStore } from "@/store";
+import { SEAngleMarker } from "@/models/SEAngleMarker";
+import { SEEllipse } from "@/models/SEEllipse";
 
 export default abstract class Highlighter extends MouseHandler {
   abstract mousePressed(event: MouseEvent): void;
+
   abstract mouseReleased(event: MouseEvent): void;
 
+  mouseLeave(event: MouseEvent): void {
+    super.mouseLeave(event);
+    // call an unglow all command
+    SEStore.unglowAllSENodules();
+    this.infoText.hide();
+  }
+
   /**
-   * Provides an array of nearby objects (in hitPoints, hitLines,... ) and highlights them
+   * Provides an array of nearby objects (in hitPoints, hitLines,... )
    * @param event Mouse Event
    */
   mouseMoved(event: MouseEvent): void {
+    // Set the isOnSphere boolean and location vectors correctly
     super.mouseMoved(event);
+
     if (!this.isOnSphere) return;
+
     // Set the display to normal for all previously nearby objects
     this.hitSENodules.forEach((n: SENodule) => {
       if (!n.selected) n.glowing = false;
     });
-    // this.hitSEPoints.forEach((p: SEPoint) => {
-    //   p.glowing = false;
-    // });
-    // this.hitSELines.forEach((p: SELine) => {
-    //   p.glowing = false;
-    // });
-    // this.hitSESegments.forEach((s: SESegment) => {
-    //   s.glowing = false;
-    // });
 
-    // this.hitSECircles.forEach((c: SECircle) => {
-    //   c.glowing = false;
-    // });
     // Clear the arrays of previously nearby nodules and hide any displayed info boxes
     this.hitSEPoints.clear();
     this.hitSELines.clear();
     this.hitSESegments.clear();
     this.hitSECircles.clear();
+    this.hitSEEllipses.clear();
     this.hitSELabels.clear();
+    this.hitSEAngleMarkers.clear();
     this.infoText.hide();
 
     // Create an array of SENodules of all nearby objects by querying the store
-    this.hitSENodules = this.store.getters
-      .findNearbySENodules(this.currentSphereVector, this.currentScreenVector)
-      .filter((n: SENodule) => {
-        if (n instanceof SEIntersectionPoint) {
-          if (!n.isUserCreated) {
-            return n.exists; //You always select automatically created intersection points if it exists
-          } else {
-            return n.showing && n.exists; //You can't select hidden objects or items that don't exist
-          }
+    // only SENodules that exist and are showing are returned
+    this.hitSENodules = SEStore.findNearbySENodules(
+      this.currentSphereVector,
+      this.currentScreenVector
+    ).filter((n: SENodule) => {
+      if (n instanceof SEIntersectionPoint) {
+        if (!n.isUserCreated) {
+          return n.exists; //You always hit automatically created intersection points if it exists
         } else {
-          return n.showing && n.exists; //You can't select hidden objects or items that don't exist
+          return n.showing && n.exists; //You can't hit hidden objects or items that don't exist
         }
-      });
-    // From the array of SENodules pull out the SEPoints
+      } else {
+        return n.showing && n.exists; //You can't hit hidden objects or items that don't exist
+      }
+    });
+
+    // Make NONE of the nearby objects by glow -- it is the job of the handler (active tool) to turn on
+    // the glow of objects that the tool can interact with
+
+    // From the array of SENodules pull out the different types
     this.hitSEPoints = this.hitSENodules
       .filter((obj: SENodule) => obj instanceof SEPoint)
       .map(obj => obj as SEPoint);
 
-    // Of the nearby SEPoints make the intersection points display, and the others glow
-    this.hitSEPoints.forEach((obj: SEPoint) => {
-      obj.glowing = true;
-    });
-
-    // Sort the nearby SENodules list into their more specific SE classes
     this.hitSELines = this.hitSENodules
       .filter(obj => obj instanceof SELine)
       .map(obj => obj as SELine);
@@ -81,51 +85,35 @@ export default abstract class Highlighter extends MouseHandler {
       .filter(obj => obj instanceof SECircle)
       .map(obj => obj as SECircle);
 
+    this.hitSEEllipses = this.hitSENodules
+      .filter(obj => obj instanceof SEEllipse)
+      .map(obj => obj as SEEllipse);
+
     this.hitSELabels = this.hitSENodules
       .filter(obj => obj instanceof SELabel)
       .map(obj => obj as SELabel);
 
-    // Prioritize the SEPoints, the above code makes the nearby SEPoints glow but if there
-    // are no nearby SEPoints, make the other nearby SENodules glow and display their names
-    if (this.hitSEPoints.length == 0) {
-      this.hitSELines.forEach((obj: SELine) => {
-        obj.glowing = true;
-      });
-      this.hitSESegments.forEach((obj: SESegment) => {
-        obj.glowing = true;
-      });
-      this.hitSECircles.forEach((obj: SECircle) => {
-        obj.glowing = true;
-      });
-      this.hitSELabels.forEach((obj: SELabel) => {
-        obj.glowing = true;
-      });
+    this.hitSEAngleMarkers = this.hitSENodules
+      .filter(obj => obj instanceof SEAngleMarker)
+      .map(obj => obj as SEAngleMarker);
 
-      // Pull the name field from all these objects into one array of strings
-      const text = [
-        ...this.hitSELines,
-        ...this.hitSESegments,
-        ...this.hitSECircles
-      ]
-        .map(n => n.name)
-        .join(", ");
+    // Pull the name field from all these objects into one array of strings
+    const text = [
+      ...this.hitSEPoints,
+      ...this.hitSELines,
+      ...this.hitSESegments,
+      ...this.hitSECircles,
+      ...this.hitSEEllipses,
+      ...this.hitSEAngleMarkers
+    ]
+      .map(n => n.name)
+      .join(", ");
 
-      if (text.length > 0) {
-        // Show the names temporarily
-        this.infoText.showWithDelay(this.layers[LAYER.foregroundText], 300);
-        // Textbox is set to handle a ???? How does this work????
-        this.infoText.text = text;
-        this.infoText.translation.set(
-          this.currentScreenVector.x,
-          -this.currentScreenVector.y + 16
-        );
-      }
-    } else {
-      // There are nearby points, so display there names on the screen in textboxes
+    if (text.length > 0) {
+      // Show the names temporarily
       this.infoText.showWithDelay(this.layers[LAYER.foregroundText], 300);
-      this.infoText.text =
-        this.hitSEPoints[0].name +
-        (this.hitSEPoints[0] as SEPoint).locationVector.toFixed(2);
+      // Textbox is set to handle a ???? How does this work????
+      this.infoText.text = text;
       this.infoText.translation.set(
         this.currentScreenVector.x,
         -this.currentScreenVector.y + 16
@@ -134,10 +122,14 @@ export default abstract class Highlighter extends MouseHandler {
   }
 
   activate(): void {
-    this.store.getters.selectedSENodules().forEach((obj: SENodule) => {
+    SEStore.selectedSENodules.forEach((obj: SENodule) => {
       obj.selected = false;
     });
     // Clear the selected objects array
-    this.store.commit.setSelectedSENodules([]);
+    SEStore.setSelectedSENodules([]);
+
+    // call an unglow all command
+    SEStore.unglowAllSENodules();
+    this.infoText.hide();
   }
 }

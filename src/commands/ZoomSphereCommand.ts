@@ -32,8 +32,8 @@ export class ZoomSphereCommand extends Command {
     }
   }
   do(): void {
-    Command.store.dispatch.changeZoomFactor(this.magnificationFactor);
-    Command.store.commit.setZoomTranslation(this.translationVector);
+    Command.store.setZoomMagnificationFactor(this.magnificationFactor);
+    Command.store.setZoomTranslation(this.translationVector);
     EventBus.fire("zoom-updated", {});
   }
 
@@ -42,9 +42,13 @@ export class ZoomSphereCommand extends Command {
   }
 
   restoreState(): void {
-    Command.store.dispatch.changeZoomFactor(this.previousMagnificationFactor);
-    Command.store.commit.setZoomTranslation(this.previousTranslationVector);
+    Command.store.setZoomMagnificationFactor(this.previousMagnificationFactor);
+    Command.store.setZoomTranslation(this.previousTranslationVector);
     EventBus.fire("zoom-updated", {});
-    //Command.store.commit("zoomSphere");
+    //Command.store("zoomSphere");
+  }
+
+  toOpcode(): null | string | Array<string> {
+    return null; // Exclude this command from interpretation
   }
 }

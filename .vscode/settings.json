@@ -57,14 +57,18 @@
     "**/*.wasm": true
   },
   "cSpell.words": [
+    "LINEANDSEGMENT",
     "Labelable",
     "Monospace",
+    "ONLYPOINTS",
     "Resizeable",
+    "SEGMENTSORLINEANDSEGMENT",
     "Strikethrough",
     "Styleable",
     "linewidth",
     "midground",
     "noglow",
+    "perp",
     "plottable",
     "plottables",
     "renderable",
@@ -72,5 +76,10 @@
     "unregistering",
     "untransform",
     "untransforming"
+  ],
+  "i18n-ally.localesPaths": [
+    "docs/languages",
+    "src/languages",
+    "src/assets/languages"
   ]
 }

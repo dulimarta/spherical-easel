@@ -1,6 +1,6 @@
 import { SENodule } from "./SENodule";
 import Segment from "@/plottables/Segment";
-import { Vector3, StaticCopyUsage } from "three";
+import { Vector3 } from "three";
 import { Visitable } from "@/visitors/Visitable";
 import { Visitor } from "@/visitors/Visitor";
 import { SEPoint } from "./SEPoint";
@@ -10,13 +10,11 @@ import { UpdateMode, UpdateStateType } from "@/types";
 import { SELabel } from "@/models/SELabel";
 import { Styles } from "@/types/Styles";
 
-let SEGMENT_COUNT = 0;
 const styleSet = new Set([
   Styles.strokeWidthPercent,
   Styles.strokeColor,
   Styles.dashArray,
-  Styles.dynamicBackStyle,
-  Styles.opacity
+  Styles.dynamicBackStyle
 ]);
 
 export class SESegment extends SENodule
@@ -85,8 +83,8 @@ export class SESegment extends SENodule
     this._arcLength = segmentArcLength;
     this._endSEPoint = segmentEndSEPoint;
 
-    SEGMENT_COUNT++;
-    this.name = `Ls-${SEGMENT_COUNT}`;
+    SENodule.SEGMENT_COUNT++;
+    this.name = `Ls-${SENodule.SEGMENT_COUNT}`;
   }
 
   customStyles(): Set<Styles> {
@@ -159,13 +157,48 @@ export class SESegment extends SENodule
    * @param unitIdealVector A vector *on* the line containing the segment
    */
   public onSegment(unitIdealVector: Vector3): boolean {
-    // Is the unitIdealVector inside the radius arcLength/2 circle about the midVector?
-    // NOTE: normalVector x startVector * (this.arcLength > Math.PI ? -1 : 1)
-    // gives the direction in which the segment is drawn
+    // check the endpoints
+    if (
+      this.tmpVector
+        .subVectors(this.startSEPoint.locationVector, unitIdealVector)
+        .isZero(SETTINGS.tolerance) ||
+      this.tmpVector
+        .subVectors(this.endSEPoint.locationVector, unitIdealVector)
+        .isZero(SETTINGS.tolerance)
+    ) {
+      return true;
+    }
 
-    this.toVector
-      .crossVectors(this._normalVector, this._startSEPoint.locationVector)
-      .multiplyScalar(this._arcLength > Math.PI ? -1 : 1);
+    // Is the unitIdealVector inside the radius arcLength/2 circle about the midVector?
+    // this.tmpVector is the midPoint vector
+
+    // I think that this is the David Austin way, but I don't know why it is this way
+    // this.toVector
+    //   .crossVectors(this._normalVector, this._startSEPoint.locationVector)
+    //   .multiplyScalar(this._arcLength > Math.PI ? -1 : 1)
+    //   .normalize();
+
+    this.toVector.crossVectors(
+      this._normalVector,
+      this._startSEPoint.locationVector
+    );
+
+    // There are two cases depending on the arcLength
+    // Case 1 ArcLength < PI
+    //  In this case we want dot(toVector, end) > 0
+    // Case 2 ArcLength > PI
+    //  In this case we want dot(toVector, end) < 0
+    // Case 3 Arclength = Pi
+
+    if (this._arcLength > Math.PI) {
+      if (this.toVector.dot(this._endSEPoint.locationVector) > 0) {
+        this.toVector.multiplyScalar(-1);
+      }
+    } else if (this._arcLength < Math.PI) {
+      if (this.toVector.dot(this._endSEPoint.locationVector) < 0) {
+        this.toVector.multiplyScalar(-1);
+      }
+    }
     // midVector = tmpVector = cos(arcLength/2)*start + sin(arcLength/2)*this.toVector
     this.tmpVector
       .copy(this._startSEPoint.locationVector)
@@ -187,10 +220,10 @@ export class SESegment extends SENodule
     this.tmpVector1.crossVectors(this._normalVector, idealUnitSphereVector);
     // Check to see if the tmpVector is zero (i.e the normal and  idealUnit vectors are parallel -- ether
     // nearly antipodal or in the same direction)
-    if (this.tmpVector1.isZero()) {
+    if (this.tmpVector1.isZero(SETTINGS.nearlyAntipodalIdeal)) {
       return this._endSEPoint.locationVector; // An arbitrary point will do as all points are equally far away
     } else {
-      // Make the tmpVector (soon to be the toVector) unit
+      // Make the tmpVector unit
       this.tmpVector1.normalize();
       // The vector that is closest to the idealUnitSphereVector in the plane of the segment
       this.tmpVector1.cross(this._normalVector).normalize();
@@ -214,19 +247,19 @@ export class SESegment extends SENodule
    * use the oldNormal to help compute a new normal (which is returned)
    * @param sePoint A point on the line normal to this circle
    */
-  public getNormalToLineThru(
+  public getNormalsToLineThru(
     sePointVector: Vector3,
     oldNormal: Vector3
-  ): Vector3 {
+  ): Vector3[] {
     this.tmpVector.crossVectors(sePointVector, this._normalVector);
     // Check to see if the tmpVector is zero (i.e the center point and given point are parallel -- ether
     // nearly antipodal or in the same direction)
-    if (this.tmpVector.isZero()) {
+    if (this.tmpVector.isZero(SETTINGS.nearlyAntipodalIdeal)) {
       // In this case any line containing the sePoint will be perpendicular to the segment, but
       //  we want to choose one line whose normal is near the oldNormal
       this.tmpVector.copy(oldNormal);
     }
-    return this.tmpVector.normalize();
+    return [this.tmpVector.normalize()];
   }
 
   public update(state: UpdateStateType): void {
@@ -247,9 +280,14 @@ export class SESegment extends SENodule
       );
       // Check to see if the temporary normal is zero (i.e the start and end vectors are parallel -- ether
       // nearly antipodal or in the same direction)
-      if (this.tmpVector.isZero()) {
-        // Make the tmpVector (soon to be the to vector) unit
-        this.tmpVector.normalize();
+      if (
+        this.tmpVector1
+          .crossVectors(
+            this._startSEPoint.locationVector,
+            this._endSEPoint.locationVector
+          )
+          .isZero(SETTINGS.nearlyAntipodalIdeal)
+      ) {
         if (this._normalVector.length() == 0) {
           // The normal vector is still at its initial value so can't be used to compute the next normal, so set the
           // the normal vector to an arbitrarily chosen vector perpendicular to the start vector
@@ -260,7 +298,7 @@ export class SESegment extends SENodule
           );
           if (this.tmpVector.isZero()) {
             this.tmpVector.set(0, 1, 0);
-            // The cross or startVector and (1,0,0) and (0,1,0) can't *both* be zero
+            // The cross of startVector and (1,0,0) and (0,1,0) can't *both* be zero
             this.tmpVector.crossVectors(
               this._startSEPoint.locationVector,
               this.tmpVector
@@ -279,7 +317,7 @@ export class SESegment extends SENodule
         }
       }
       // The normal vector is now set
-      this._normalVector.copy(this.tmpVector).normalize();
+      this._normalVector.copy(this.tmpVector.normalize());
 
       // Record if the previous segment was longThanPi
       let longerThanPi = this._arcLength > Math.PI;
@@ -296,16 +334,25 @@ export class SESegment extends SENodule
           this._endSEPoint.locationVector
         ) > 2
       ) {
-        // The startVector and endVector might be antipodal proceed with caution,
-        // Set tmpVector to the antipode of the start Vector
-        this.tmpVector
-          .copy(this._startSEPoint.locationVector)
-          .multiplyScalar(-1);
-        // Check to see if the pixel distance (in the default screen plane)
+        // // The startVector and endVector might be antipodal proceed with caution,
+
+        // // Set tmpVector to the antipode of the start Vector
+        // this.tmpVector
+        //   .copy(this._startSEPoint.locationVector)
+        //   .multiplyScalar(-1);
+        // // Check to see if the pixel distance (in the default screen plane)
+        // if (
+        //   this.tmpVector.angleTo(this._endSEPoint.locationVector) *
+        //     SETTINGS.boundaryCircle.radius <
+        //   SETTINGS.nearlyAntipodalPixel
+
         if (
-          this.tmpVector.angleTo(this._endSEPoint.locationVector) *
-            SETTINGS.boundaryCircle.radius <
-          SETTINGS.nearlyAntipodalPixel
+          this.tmpVector
+            .crossVectors(
+              this._endSEPoint.locationVector,
+              this._startSEPoint.locationVector
+            )
+            .isZero(SETTINGS.nearlyAntipodalIdeal)
         ) {
           // The points are antipodal on the screen
           this.nearlyAntipodal = true;
@@ -366,10 +413,14 @@ export class SESegment extends SENodule
     // First find the closest point on the segment to the idealUnitSphereVector
     this.tmpVector.copy(this.closestVector(idealUnitSphereVector));
 
+    // The current magnification level
+    //const mag = SENodule.store.state.zoomMagnificationFactor;
+    const mag = 1;
+
     // If the idealUnitSphereVector is within the tolerance of the closest point, do nothing, otherwise return the vector in the plane of the ideanUnitSphereVector and the closest point that is at the tolerance distance away.
     if (
       this.tmpVector.angleTo(idealUnitSphereVector) <
-      SETTINGS.segment.maxLabelDistance
+      SETTINGS.segment.maxLabelDistance / mag
     ) {
       return idealUnitSphereVector;
     } else {
@@ -382,13 +433,13 @@ export class SESegment extends SENodule
       this.tmpVector2.crossVectors(this.tmpVector, this.tmpVector1).normalize;
       // return cos(SETTINGS.segment.maxLabelDistance)*fromVector/tmpVec + sin(SETTINGS.segment.maxLabelDistance)*toVector/tmpVec2
       this.tmpVector2.multiplyScalar(
-        Math.sin(SETTINGS.segment.maxLabelDistance)
+        Math.sin(SETTINGS.segment.maxLabelDistance / mag)
       );
 
       return this.tmpVector2
         .addScaledVector(
           this.tmpVector,
-          Math.cos(SETTINGS.segment.maxLabelDistance)
+          Math.cos(SETTINGS.segment.maxLabelDistance / mag)
         )
         .normalize();
     }
@@ -477,24 +528,36 @@ export class SESegment extends SENodule
         rotationAngle *= -1;
       }
 
+      // If the pivot and currentSphereVector are on opposite side of the sphere, reverse the direction
+      if (currentSphereVector.z * pivot.locationVector.z < 0) {
+        rotationAngle *= -1;
+      }
+
+      //console.log("rotate angle", rotationAngle);
       // Rotate the freeEnd by the rotation angle around the axisOfRotation
       const axisOfRotation = pivot.locationVector;
       // Test for antipodal endpoints
       if (
         this.tmpVector1
-          .addVectors(freeEnd.locationVector, pivot.locationVector)
-          .isZero()
+          .crossVectors(freeEnd.locationVector, pivot.locationVector)
+          .isZero(SETTINGS.nearlyAntipodalIdeal)
       ) {
+        //console.log("parallel free and pivot");
         // Set the direction of the rotation correctly for moving the normalvector
         rotationAngle *= currentSphereVector.z < 0 ? -1 : 1;
         // If the end points are antipodal move the normal vector
         this.tmpVector1.copy(this.normalVector);
         this.tmpVector1.applyAxisAngle(axisOfRotation, rotationAngle);
+        // console.log(
+        //   "normal rotated",
+        //   this.tmpVector1.angleTo(this.normalVector)
+        // );
         this.normalVector = this.tmpVector1;
         //Mark kids out of date so that the update method does a topological sort
         this.markKidsOutOfDate();
         this.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
       } else {
+        //console.log("not parallel free and pivot");
         // For non-antipodal points move the freeEnd
         this.tmpVector1.copy(freeEnd.locationVector);
         this.tmpVector1.applyAxisAngle(axisOfRotation, rotationAngle);
@@ -509,20 +572,28 @@ export class SESegment extends SENodule
   }
 
   // I wish the SENodule methods would work but I couldn't figure out how
-  // See the attempts in SENodule
-  public isFreePoint() {
+  // See the attempts in SENodule around line 218
+  public isFreePoint(): boolean {
     return false;
   }
-  public isOneDimensional() {
+  public isOneDimensional(): boolean {
     return true;
   }
-  public isPoint() {
+  public isPoint(): boolean {
     return false;
   }
-  public isPointOnOneDimensional() {
+  public isPointOnOneDimensional(): boolean {
     return false;
   }
   public isLabel(): boolean {
     return false;
+  }
+  public isSegmentOfLengthPi(): boolean {
+    return (
+      Math.abs(this._arcLength - Math.PI) < SETTINGS.segment.closeEnoughToPi
+    );
+  }
+  public isLabelable(): boolean {
+    return true;
   }
 }

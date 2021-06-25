@@ -25,7 +25,7 @@ export class MoveSegmentCommand extends Command {
   }
 
   do(): void {
-    Command.store.commit.changeSegmentNormalVectorArcLength({
+    Command.store.changeSegmentNormalVectorArcLength({
       segmentId: this.seSegment.id,
       normal: this.newNormalVector,
       arcLength: this.newArcLength
@@ -37,10 +37,14 @@ export class MoveSegmentCommand extends Command {
   }
 
   restoreState(): void {
-    Command.store.commit.changeSegmentNormalVectorArcLength({
+    Command.store.changeSegmentNormalVectorArcLength({
       segmentId: this.lastState,
       normal: this.oldNormalVector,
       arcLength: this.oldArcLength
     });
+  }
+
+  toOpcode(): null | string | Array<string> {
+    return null; // Exclude this command from interpretation
   }
 }

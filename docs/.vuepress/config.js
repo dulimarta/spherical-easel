@@ -1,7 +1,7 @@
 module.exports = {
   //Specify the output directory for vuepress build. If a relative path is specified, it will be resolved based on process.cwd().
-  dest: "./dist/docs",
-  base: "/docs/",
+  // dest: "./dist/docs",
+  // base: "/docs/",
   // To use the http://tikzjax.com/ these must be included in the header.
   head: [
     [
@@ -19,16 +19,16 @@ module.exports = {
     // references to the local directory.
     ["script", { src: "/tikzjax.js" }]
   ],
-
-  // markdown: {
-  //   extendMarkdown: md => {
-  //     // use more markdown-it plugins!
-  //     md.use(require("markdown-it-texmath"));
-  //   },
-  //   extendMarkdown: md => {
-  //     md.use(require("markdown-it-vuepress-code-snippet-enhanced"));
-  //   }
-  // },
+  // This section is needed so that the plugin containers work (i.e. the :::tool-title etc in the markdown)
+  markdown: {
+    extendMarkdown: md => {
+      // use more markdown-it plugins!
+      md.use(require("markdown-it-texmath"));
+    },
+    extendMarkdown: md => {
+      md.use(require("markdown-it-vuepress-code-snippet-enhanced"));
+    }
+  },
   //Plugins to enable specialized behavior (for example, LaTeX/MathJax )
   plugins: [
     [
@@ -50,27 +50,7 @@ module.exports = {
     // ],
     //Adds the arrow that returns the user to the top of long pages
     ["@vuepress/back-to-top"],
-
-    // Uncomment this script container and use
-    //
-    // ::: script
-    // :::
-    //
-    // in a markdown-it file to get the <script> tag and TikZ drawing into the markdown.
-    // Be sure to refresh/reload the page twice!
-    // [
-    //   "vuepress-plugin-container",
-    //   {
-    //     type: "script",
-    //     before: info => `<script type="text/tikz">
-    //     \\begin{tikzpicture}
-    //       \\draw (0,0) circle (1in);
-    //     \\end{tikzpicture}`,
-    //     after: "</script>",
-    //     defaultTitle: ""
-    //   }
-    // ],
-
+    
     // display the title and icons of the tools
     [
       "vuepress-plugin-container",
@@ -81,6 +61,7 @@ module.exports = {
         defaultTitle: ""
       }
     ],
+
     //display the short description of the tool
     [
       "vuepress-plugin-container",
@@ -95,6 +76,7 @@ module.exports = {
         }
       }
     ],
+
     // Display the details of the tool
     [
       "vuepress-plugin-container",
@@ -109,45 +91,26 @@ module.exports = {
         }
       }
     ],
-    // display the title and icons of the handlers
+
+    // Uncomment this script container and use
+    //
+    // ::: script
+    // :::
+    //
+    // in a markdown-it file to get the <script> tag and TikZ drawing into the markdown.
+    // Be sure to refresh/reload the page twice!
     [
       "vuepress-plugin-container",
       {
-        type: "handler-title",
-        before: info => "",
-        after: "",
+        type: "script",
+        before: info => `<script type="text/tikz">
+      \\begin{tikzpicture}
+        \\draw (0,0) circle (1in);
+      \\end{tikzpicture}`,
+        after: "</script>",
         defaultTitle: ""
       }
     ],
-    //display the short description of the handler
-    [
-      "vuepress-plugin-container",
-      {
-        type: "handler-description",
-        before: info =>
-          `<div class="handler-description"><p class="handler-description-title">${info}</p>`,
-        after: "</div>",
-        defaultTitle: {
-          "/": "Tool Description and Link:",
-          "/id/": "IDDescription:"
-        }
-      }
-    ],
-    // Display the details of the tool handlers
-    [
-      "vuepress-plugin-container",
-      {
-        type: "handler-details",
-        before: info =>
-          `<div class="handler-details"><p class="handler-details-title">${info}</p>`,
-        after: "</div>",
-        defaultTitle: {
-          "/": "Some Implementation Details:",
-          "/id/": "IDDetails:"
-        }
-      }
-    ]
-
     // [
     //   // This plug in is not used unless we use a custom theme
     //   //  see https://vuepress.vuejs.org/plugin/official/plugin-last-updated.html
@@ -184,12 +147,14 @@ module.exports = {
         "ID:Explore Spherical Geometry: A user guide and design guide for Spherical Easel"
     }
   },
-  //Settting for the theme -- each locale gets it own theme
+  //Setting for the theme -- each locale gets it own theme
   themeConfig: {
     //enable smooth scrolling so keyboard scrolling won't jump
     smoothScroll: true,
+
     //All locales use this logo, appears in the upper left on each page
     logo: "/SphericalEaselLogo.png",
+
     locales: {
       //The US-English theme
       "/": {
@@ -202,28 +167,27 @@ module.exports = {
         label: "English",
         // Aria Label for locale in the dropdown (this is an assistive technology item)
         ariaLabel: "Languages",
-
         // Settings to enable the user to edit this pages in GitLab
         // full GitLab url. TODO: This doesn't work the link in the nav doesn't show
         repo: "https://gitlab.com/hans.dulimarta/sphericalgeometryvue/",
         // Customizing the header label
         // Defaults to "GitHub"/"GitLab"/"Bitbucket" depending on `themeConfig.repo`
-        //repoLabel: "Contribute!",
+        repoLabel: "Contribute!",
         // Invite user to edit these pages via GitLab(?), defaults to false, set to true to enable
         // TODO: This doesn't enable the "edit me" links on each page
         editLinks: true,
         // text for the edit-on-gitlab link
         editLinkText: "Help us by editing this page on GitLab",
-
         //Enable searching on the the documentation using the third party aloglia https://www.algolia.com/
-        //algolia docsearch options for current locale
-        algolia: {
-          apiKey: "<API_KEY>",
-          indexName: "<INDEX_NAME>"
-        },
+        //   algolia docsearch options for current locale THIS NEEDS TO BE CONFIGURED TO WORK
+        //   algolia: {
+        //     apiKey: "<API_KEY>",
+        //     indexName: "<INDEX_NAME>"
+        //   },
         searchPlaceholder: "Search...",
         search: true,
         searchMaxSuggestions: 10,
+
         //Settings for the navigation bar at the top of each page
         nav: [
           //{
@@ -248,6 +212,7 @@ module.exports = {
           }
           //{ text: "External", link: "https://google.com" },
         ],
+
         //Settings for the sidebar, this is done in groups so that
         // quick start, user guide, and design documents each have their own sidebar
         sidebar: {
@@ -264,20 +229,7 @@ module.exports = {
             "/tools/measuredobject",
             "/tools/"
           ],
-          //The  Handler Documentation sidebar file list
-          "/design/handlers/": [
-            "/design/handlers/edit",
-            "/design/handlers/display",
-            "/design/handlers/basic",
-            "/design/handlers/construction",
-            "/design/handlers/measurement",
-            "/design/handlers/conic",
-            "/design/handlers/advanced",
-            "/design/handlers/transformation",
-            "/design/handlers/measuredobject"
-          ],
-
-          //The root Or default sidebar (matches all directories so must be listed last)
+          //   The root Or default sidebar (matches all directories so must be listed last)
           "/": [
             {
               title: "Quick Start Guide", // required
@@ -337,10 +289,11 @@ module.exports = {
               //path: "/design/", // optional, link of the title, which should be an absolute path and must exist
               //collapsable: false, // optional, defaults to true
               sidebarDepth: 1, // optional, defaults to 1
-              children: ["/design/"]
+              children: ["/design/",
+                         "/design/addingatooloutline"]
             },
             {
-              //The lesson plans idebar file list
+              //The lesson plans sidebar file list
               title: "Lesson Plans", // required
               //path: "/design/", // optional, link of the title, which should be an absolute path and must exist
               //collapsable: false, // optional, defaults to true
@@ -359,10 +312,11 @@ module.exports = {
                 "contact" /* /contact.html */
               ]
             }
-          ]
-        },
-        //display the header in the sidebar from *all* pages not just the active one
-        displayAllHeaders: true
+          ],
+
+          //   display the header in the sidebar from *all* pages not just the active one
+          displayAllHeaders: true
+        }
       },
       //The Bahasa Indonesian theme (Not complete yet)
       "/languages/id/": {

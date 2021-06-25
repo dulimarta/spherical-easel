@@ -1,14 +1,37 @@
 import { Vector3 } from "three";
-import { SEPoint } from "./SEPoint";
-import SETTINGS from "@/global-settings";
 import Nodule from "@/plottables/Nodule";
-import { SEPointOnOneDimensional } from "./SEPointOnOneDimensional";
 import { Styles } from "@/types/Styles";
-import { SEOneDimensional, OneDimensional } from "@/types";
-import { UpdateMode, UpdateStateType } from "@/types";
+import { UpdateStateType } from "@/types";
+import newton from "newton-raphson-method";
+import SETTINGS from "@/global-settings";
+import Ellipse from "@/plottables/Ellipse";
+
+//import AppStore from "@/store";
+
+//import { magnificationLevel } from "@/components/SENoduleItem.vue";
 
 let NODE_COUNT = 0;
+
 export abstract class SENodule {
+  protected static POINT_COUNT = 0;
+  protected static SEGMENT_COUNT = 0;
+  protected static LINE_COUNT = 0;
+  protected static CIRCLE_COUNT = 0;
+  protected static ANGLEMARKER_COUNT = 0;
+  protected static EXPR_COUNT = 0;
+  protected static ELLIPSE_COUNT = 0;
+
+  static resetAllCounters(): void {
+    NODE_COUNT = 0;
+    SENodule.POINT_COUNT = 0;
+    SENodule.LINE_COUNT = 0;
+    SENodule.SEGMENT_COUNT = 0;
+    SENodule.ANGLEMARKER_COUNT = 0;
+    SENodule.CIRCLE_COUNT = 0;
+    SENodule.EXPR_COUNT = 0;
+    SENodule.ELLIPSE_COUNT = 0;
+  }
+
   /**
    * An array to store the parents of the node (i.e. the objects that this node depends on)
    */
@@ -22,7 +45,6 @@ export abstract class SENodule {
   /**
    * A pointer to the corresponding plottable object
    */
-  // TODO: SEExpression and it subclasses have no associated plottables
   public ref?: Nodule;
 
   /* A unique identification number and name for each node */
@@ -44,7 +66,7 @@ export abstract class SENodule {
   /* If the object is not visible then showing = true (The user can hide objects)*/
   protected _showing = true;
 
-  /* If the object is selected, it is glowing until it is unselected*/
+  /* If the object is selected, it is either being used by an event tool or is in the setSelectedSENodules sin mutations*/
   protected _selected = false;
 
   /* This boolean is set to indicate that the object is out of date and needs to be updated. */
@@ -149,7 +171,7 @@ export abstract class SENodule {
     this would make the kids array of C1 (and C2) contain P and the parent array of P
     contain both C1 and C2.*/
   public registerChild(n: SENodule): void {
-    // console.debug(`Register ${n.name} as child of ${this.name}`);
+    //console.debug(`Register ${n.name} as child of ${this.name}`);
     this.addKid(n);
     n.addParent(this);
   }
@@ -207,6 +229,7 @@ export abstract class SENodule {
     return this._outOfDate;
   }
 
+  //Hans -  why doesn't this testing for class work?
   //Should return true only if this is an instance of SEPointOnOneDimensional
   public abstract isPointOnOneDimensional(): boolean;
   // This doesn't work
@@ -216,7 +239,6 @@ export abstract class SENodule {
 
   // Only returns true if this is an SEPoint and this has no parents
   public abstract isFreePoint(): boolean;
-
   // This doesn't work
   // public isFreePoint(): this is SEPoint {
   //   return this._parents.length == 0;
@@ -231,22 +253,35 @@ export abstract class SENodule {
 
   // Only returns true if this is an SELabel
   public abstract isLabel(): boolean;
+  // This doesn't work
+  // public isLabel(): this is SELabel {
+  //   return true;
+  // }
+
+  // Only returns true if this is an SEOneDimensional
+  public abstract isOneDimensional(): boolean;
+  // This doesn't work
+  // public isOneDimensional(): this is SEOneDimensional {
+  //   return true;
+  // }
+  // Only returns true if this is an Labelable
+  public abstract isLabelable(): boolean;
+
+  // Only returns true if this is an SESegment of length pi
+  public abstract isSegmentOfLengthPi(): boolean;
 
   public isFreeToMove(): boolean {
     if (this.isFreePoint() || this.isPointOnOneDimensional() || this.isLabel())
       return true;
     if (this.isPoint()) {
-      // don't let this fall through because if a point has an empty parents array the .every method returns true
+      // don't let this fall through because if a point has an empty parents array the .every method returns true even for non-free points
       return false;
+    }
+    if (this.isSegmentOfLengthPi()) {
+      return true;
     }
     return this._parents.every(n => n.isFreePoint());
   }
-
-  public abstract isOneDimensional(): boolean;
-  // This doesn't work return true for SEPoint
-  // public isOneDimensional(): this is SEOneDimensional {
-  //   return true;
-  // }
 
   //Getters and Setters
   set exists(b: boolean) {
@@ -290,6 +325,7 @@ export abstract class SENodule {
     }
   }
 
+  /** Careful n.selected is not the same as being on the setSelectedSENodules list */
   set selected(b: boolean) {
     // selecting has no effect on hidden objects
     if (!this._showing) return;
@@ -306,5 +342,176 @@ export abstract class SENodule {
 
   get selected(): boolean {
     return this._selected;
+  }
+
+  /**
+   * Find the closest vector to unitVec on the curve P(t) where tMin<= t <= tMax using subdivisions and Newton's method
+   * @param P P(t) is the parameterization of a curve on the sphere (must be unit for all t)
+   * @param PPrime P'(t) is the parameterization of the derivative of P(t) (NOT NECESSARILY UNIT)
+   * @param unitVec a unit vector
+   * @param tMin
+   * @param tMax
+   * @param PPPrime (Optional) P''(t) is the parameterization of the second derivative of P(t) (NOT NECESSARILY UNIT)
+   */
+  protected static closestVectorParametrically(
+    P: (t: number) => Vector3,
+    PPrime: (t: number) => Vector3,
+    unitVec: Vector3,
+    tMin: number,
+    tMax: number,
+    PPPrime?: (t: number) => Vector3
+  ): Vector3 {
+    // First form the objective function, this is the function whose minimum we want to find.
+    // The (angular) distance from P(t) to unitVec is d(t) = acos(P(t) /dot unitVec) because P(t) and unitVec are both unit
+    const d: (t: number) => number = function (t: number): number {
+      return Math.acos(Math.max(Math.min(P(t).dot(unitVec), 1), -1)); // if you drop the Math.min sometimes the dot product is bigger than one (just barely) but then d is undefined and that causes problems.
+    };
+
+    // The derivative of d(t) is zero at a minimum or max, so we want to find the zeros of d'(t)
+    //  d'(t) = -1/ sqrt(1- (P(t) /dot unitVec)^2) * (P'(t) /dot unitVec)
+    // This means that the zeros of d'(t) are the same as the zeros of (P'(t) /dot unitVec), so find them as they are (presumably) easier to find
+
+    const dp: (t: number) => number = function (t: number): number {
+      return PPrime(t).dot(unitVec);
+    };
+
+    // use (P''(t) /dot unitVec) as the second derivative if necessary
+    let dpp: ((t: number) => number) | undefined;
+    if (PPPrime !== undefined) {
+      dpp = function (t: number): number {
+        return PPPrime(t).dot(unitVec);
+      };
+    } else {
+      dpp = undefined;
+    }
+    const zeros = this.findZerosParametrically(dp, tMin, tMax, dpp);
+
+    // The zeros of dp are either minimums or maximums (or neither, but this is very unlikely so we assume it doesn't happen)
+    let minTVal: number = zeros[0]; // The t value that minimizes d
+    zeros.forEach(tVal => {
+      if (d(tVal) < d(minTVal)) {
+        minTVal = tVal;
+      }
+    });
+    return P(minTVal);
+  }
+
+  /**
+   * A recursive method to implement the bisection method
+   * @param f The continuous function whose zero we want to compute
+   * t1< t2 and f(t1)*f(t2)<0
+   * @param t1
+   * @param t2
+   * @returns
+   */
+  protected static bisection(
+    f: (t: number) => number,
+    t1: number,
+    t2: number
+  ): number {
+    const mid = (t1 + t2) / 2;
+    if (Math.abs(t2 - t1) < SETTINGS.parameterization.bisectionMinSize) {
+      return mid;
+    } else {
+      if (f(t1) * f(mid) < 0) {
+        return SENodule.bisection(f, t1, mid);
+      } else {
+        return SENodule.bisection(f, mid, t2);
+      }
+    }
+  }
+  /**
+   * Find all the unit normal vector lines that are perpendicular to the curve P(t) where tMin<= t <= tMax using subdivisions and Newton's method that
+   * pass though unitVec
+   * @param P P(t) is the parameterization of a curve on the sphere (must be unit for all t)
+   * @param PPrime P'(t) is the parameterization of the derivative of P(t) (NOT NECESSARILY UNIT)
+   * @param unitVec a unit vector
+   * @param tMin
+   * @param tMax
+   * @param closed if true, implies P(tMin)=P(tMax)
+   * @param periodic if true, implies P(t) = P(t + (tMax-tMin)) for all t
+   */
+  protected static getNormalsToLineThruParametrically(
+    P: (t: number) => Vector3,
+    PPrime: (t: number) => Vector3,
+    unitVec: Vector3,
+    tMin: number,
+    tMax: number,
+    PPPrime?: (t: number) => Vector3
+  ): Vector3[] {
+    // First form the objective function, this is the function that we want to find the zeros.
+    // We want to find the t values where the P'(t) is perpendicular to unitVec (because P'(t) is a normal to the plane defining the perpendicular
+    // line to P(t) passing through the point P(t), so we want this line to pass through unitVec i.e. unitVec and P'(t) are perp)
+    // This means we want the dot product to be zero
+    const d: (t: number) => number = function (t: number): number {
+      return PPrime(t).dot(unitVec);
+    };
+    // use (P''(t) /dot unitVec) as the second derivative if necessary
+    let dp: ((t: number) => number) | undefined;
+    if (PPPrime !== undefined) {
+      dp = function (t: number): number {
+        return PPPrime(t).dot(unitVec);
+      };
+    } else {
+      dp = undefined;
+    }
+
+    const zeros = this.findZerosParametrically(d, tMin, tMax, dp);
+
+    const returnVectors: Vector3[] = [];
+    zeros.forEach(tVal => {
+      const temp = new Vector3();
+      returnVectors.push(temp.copy(PPrime(tVal).normalize()));
+    });
+    return returnVectors;
+  }
+
+  public static findZerosParametrically(
+    f: (t: number) => number,
+    tMin: number,
+    tMax: number,
+    fPrime?: (t: number) => number
+  ): number[] {
+    // now we need to find all the places that d changes sign so we know where to start Newton's method
+    const signChanges = [];
+    let tVal: number;
+    let lastTVal = tMin;
+    for (let i = 1; i < SETTINGS.parameterization.subdivisions + 1; i++) {
+      tVal =
+        tMin + (i / SETTINGS.parameterization.subdivisions) * (tMax - tMin);
+      if (f(tVal) * f(lastTVal) < 0) {
+        signChanges.push([lastTVal, tVal]);
+      }
+      lastTVal = tVal;
+    }
+    if (signChanges.length === 0) {
+      // console.log("No sign changes; No zeros");
+      return [];
+    }
+
+    const zeros: number[] = [];
+    signChanges.forEach(interval => {
+      // Bisection Method
+      // const zeroTVal = SENodule.bisection(d, interval[0], interval[1]);
+      // zeros.push(zeroTVal as number);
+
+      // Newton's Method
+      const zeroTVal: number | boolean = newton(
+        f,
+        fPrime,
+        (interval[0] + interval[1]) / 2
+        // { verbose: true }
+      );
+      if (
+        zeroTVal !== false &&
+        interval[0] < zeroTVal &&
+        zeroTVal < interval[1]
+      ) {
+        zeros.push(zeroTVal as number);
+      } else {
+        console.log("Newton's method failed to converge in interval");
+      }
+    });
+    return zeros;
   }
 }

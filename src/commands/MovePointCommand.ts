@@ -19,7 +19,7 @@ export class MovePointCommand extends Command {
   }
 
   do(): void {
-    Command.store.commit.movePoint({
+    Command.store.movePoint({
       pointId: this.sePoint.id,
       location: this.newLocationVector
     });
@@ -30,9 +30,13 @@ export class MovePointCommand extends Command {
   }
 
   restoreState(): void {
-    Command.store.commit.movePoint({
+    Command.store.movePoint({
       pointId: this.lastState,
       location: this.oldLocationVector
     });
+  }
+
+  toOpcode(): null | string | Array<string> {
+    return null; // Exclude this command from interpretation
   }
 }

@@ -5,6 +5,8 @@ import { Vector3 } from "three";
 import { SECircle } from "@/models/SECircle";
 import { SESegment } from "@/models/SESegment";
 import { SELabel } from "@/models/SELabel";
+import { SEEllipse } from "@/models/SEEllipse";
+import { SEAngleMarker } from "@/models/SEAngleMarker";
 // import { UpdateMode, UpdateStateType } from "@/types";
 
 export class SegmentNormalArcLengthVisitor implements Visitor {
@@ -18,10 +20,12 @@ export class SegmentNormalArcLengthVisitor implements Visitor {
     this.arcLength = num;
   }
 
+  // eslint-disable-next-line
   actionOnPoint(p: SEPoint): void {
     // p.update();
   }
 
+  // eslint-disable-next-line
   actionOnLine(m: SELine): void {
     // m.update();
   }
@@ -36,10 +40,21 @@ export class SegmentNormalArcLengthVisitor implements Visitor {
     //s.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
   }
 
+  // eslint-disable-next-line
   actionOnCircle(c: SECircle): void {
     // c.update();
   }
+  // eslint-disable-next-line
   actionOnLabel(l: SELabel): void {
     // l.update();
+  }
+  // eslint-disable-next-line
+  actionOnEllipse(e: SEEllipse): void {
+    //Ellipses are completely determined by three points they depend on so no need to update them
+  }
+
+  // eslint-disable-next-line
+  actionOnAngleMarker(a: SEAngleMarker): void {
+    //AngleMarekrs are completely determined by their parents so no need to update them
   }
 }

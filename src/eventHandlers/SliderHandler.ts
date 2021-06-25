@@ -1,10 +1,11 @@
 import Two from "two.js";
 import MouseHandler from "./MouseHandler";
 import EventBus from "./EventBus";
-import Label from "@/plottables/Label";
 import { SESlider } from "@/models/SESlider";
-import { AddExpressionCommand } from "@/commands/AddExpressionCommand";
+import { AddSliderMeasurementCommand } from "@/commands/AddSliderMeasurementCommand";
 import AppStore from "@/store";
+import SETTINGS from "@/global-settings";
+
 export default class SliderHandler extends MouseHandler {
   readonly store = AppStore;
   constructor(layers: Two.Group[]) {
@@ -15,11 +16,13 @@ export default class SliderHandler extends MouseHandler {
   // super.mouseMoved(event);
   // console.debug(this.currentSphereVector);
   // }
-  mousePressed(event: MouseEvent): void {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  mousePressed(_event: MouseEvent): void {
     // No code yet
   }
 
-  mouseReleased(event: MouseEvent): void {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  mouseReleased(_event: MouseEvent): void {
     if (this.isOnSphere) EventBus.fire("new-slider-requested", {});
   }
 
@@ -33,10 +36,19 @@ export default class SliderHandler extends MouseHandler {
     EventBus.unlisten("new-slider-confirmed");
   }
 
-  createSlider(sliderParams: any): void {
-    console.debug(sliderParams, "at", this.currentSphereVector.toFixed(3));
+  createSlider(sliderParams: {
+    min: number;
+    max: number;
+    step: number;
+    value: number;
+  }): void {
+    console.debug(
+      sliderParams,
+      "at",
+      this.currentSphereVector.toFixed(SETTINGS.decimalPrecision)
+    );
 
     const slider = new SESlider(sliderParams);
-    new AddExpressionCommand(slider).execute();
+    new AddSliderMeasurementCommand(slider).execute();
   }
 }

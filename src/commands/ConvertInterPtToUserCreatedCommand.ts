@@ -1,8 +1,8 @@
 import { Command } from "./Command";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import { DisplayStyle } from "@/plottables/Nodule";
-import { Labelable } from "@/types";
-import { SEPoint } from "@/models/SEPoint";
+// import { Labelable } from "@/types";
+// import { SEPoint } from "@/models/SEPoint";
 import SETTINGS from "@/global-settings";
 
 /**
@@ -48,5 +48,9 @@ export class ConvertInterPtToUserCreatedCommand extends Command {
     this.seIntersectionPoint.ref.stylize(DisplayStyle.ApplyTemporaryVariables);
     // set back to automatically created
     this.seIntersectionPoint.isUserCreated = false;
+  }
+
+  toOpcode(): null | string | Array<string> {
+    return null; // Exclude this command from interpretation
   }
 }

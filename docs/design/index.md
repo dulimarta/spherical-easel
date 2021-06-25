@@ -1,6 +1,5 @@
 ---
 title: Design Document
-next: /design/handlers/
 prev: /tools/edit.md
 ---
 
@@ -62,7 +61,7 @@ Every <span class="class">SENodule</span> object has the following boolean prope
 
 - <span class="variable">\_selected</span>: If an object is selected it remains glowing until it is unselected. This property is used to indicate to the user which objects have already been selected when multiple objects need to be selected for an operation.
 
-- <span class="variable">\_isUserCreated</span>: (This property applies to only <span class="class">SEIntersectionPoint</span> objects.) Every time you add a one dimensional object all intersections with all other one dimensional objects are created as <span class="class">SEIntersectionPoint</span> objects. See <span class="class">intersectTwoObjects()</span> method in the span class="class">getters.ts</span> in the [Store](/design/#store). When they are created in this way, the value of <span class="variable">\_isUserCreated</span> is false. When this value is false, mousing over an intersection will make it display in the temporary style instead of glowing. If the user actually uses the point in a construction, <span class="variable">\_isUserCreated</span> is true and mousing over it will make it glow as usual. See <span class="command">ConvertInterPtToUserCreatedCommand</span>.
+- <span class="variable">\_isUserCreated</span>: (This property applies to only <span class="class">SEIntersectionPoint</span> objects.) Every time you add a one dimensional object all intersections with all other one dimensional objects are created as <span class="class">SEIntersectionPoint</span> objects. See <span class="class">intersectTwoObjects()</span> method in the <span class="class">getters.ts</span> in the [Store](/design/#store). When they are created in this way, the value of <span class="variable">\_isUserCreated</span> is false. When this value is false, mousing over an intersection will make it display in the temporary style instead of glowing. If the user actually uses the point in a construction, <span class="variable">\_isUserCreated</span> is true and mousing over it will make it glow as usual. See <span class="command">ConvertInterPtToUserCreatedCommand</span>.
 
 ## Plottables Directory
 
@@ -90,7 +89,7 @@ Each of these classes extends the <span class="class">Nodule</span> class and th
 
 - <span class="method">addToLayers(layers:Two.Group[])</span>: This method places all of the graphical objects of this object into the appropriate layers so that the display is rendered appropriately. For example, a point on the back of the sphere is not drawn on top of a circle that is on the front of the sphere.
 - <span class="method">removeFromLayers()</span>: This reverses the operation of <span class="method">addToLayers()</span>.
-- <span class="method">adjustSizeForZoom(factor: number)</span>: This method is called every time the Zoom Magnification Factor is changed ([see Zooming And Panning for details](/design/#zooming-and-panning)) and allows us to set the display size of points and linewidth of one-dimensional objects so that more detailed views are possible. That is, zooming the view doesn't result in a very large point that obscures other details.
+- <span class="method">adjustSize(factor: number)</span>: This method is called every time the Zoom Magnification Factor is changed ([see Zooming And Panning for details](/design/#zooming-and-panning)) and allows us to set the display size of points and linewidth of one-dimensional objects so that more detailed views are possible. That is, zooming the view doesn't result in a very large point that obscures other details.
 - <span class="method">normalDisplay()</span>: Running this method sets the rendering (i.e. actual view) style of the actually displayed object to the style where the object is not selected or highlighted. It doesn't change the style of the object (that is the method <span class="method">stylize(UPDATE)</span>), but is merely a unidirectional switch to set the display to normal. This method will be called many times during a construction.
 - <span class="method">glowingDisplay()</span>: This method is like <span class="method">normalDisplay()</span> except it sets the actual display to a glowing style to indicate that the user has moused over or selected an object. This method will be called many times during a construction. Note: To make an object glow, a second identically-located object is displayed under the original object ([see Layers](/design/#layers)), but with a slightly larger size or line width but colored differently. This is why all the graphical variables in each <span class="class">Nodule</span> class have two versions: a glowing version and a regular one. For example, in the <span class="class">Circle</span> the variable <span class="variable">backVertices</span> has an identically located <span class="variable">glowingBackVertices</span> version. The prefix glowing indicates this.
 - <span class="method">stylize(flag: DisplayStyle)</span>: This method allows the application to two things:
@@ -132,8 +131,6 @@ The complete list of values for enum <span class="variable">LAYER</span> each de
 
 Each enum value correspond to a <span class="class">Two.Group</span> (i.e. layer) inside the main <span class="variable">twoInstance</span> which is created in <span class="file">SphereFrame.vue</span>. Pointers to these layers are stored in the private <span class="variable">layers</span> variable in <span class="file">SphereFrame.vue</span>. In turn the <span class="variable">layers</span> variable is passed to all [Event Handlers](/design/#event-handlers) so that the objects they create can be placed in the appropriate layers. In the following code we can see that after creating the group in the <span class="variable">twoInstance</span>, the pointer is stored in the <span class="variable">layers</span> variable, and the $y$ axis is flipped on all layers except the text layers.
 
-<!-- @[code lang=ts linenumbers highlight={12-13} transcludeWith=:::](@/src/components/SphereFrame.vue) -->
-
 <<< @/src/components/SphereFrame.vue#addlayers
 
 ## Rendering Objects
@@ -152,7 +149,10 @@ First the unit sphere information is scaled to be on the Default Sphere. The def
 
 To determine the location of a point on the ideal unit sphere in the Default Screen Plane, we first scale its position vector by the default radius, and then orthographically project by simply dropping the $z$ coordinate. The sign of the $z$ coordinate indicates if the point is rendered in a style that indicates that it is on the back of the sphere or the front. This process is used repeatedly to draw one-dimensional geometric objects. In general, the rendering follows this outline:
 
-1. Create a transformation matrix (<span class="class">Matrix4</span>) that maps the object of the correct size in a standard position (say centered at the North Pole) to the current view of the object on the unit ideal sphere.
+1. Create a transformation matrix (<span class="class">Matrix4</span>) that maps the object of the correct size in a standard position (say centered at the North Pole) to the current view of the object on the unit ideal sphere. For example, this is how it is done for circles:
+
+<<< @/src/plottables/Circle.ts#circleDisplay
+
 2. Transform a sampling of points on the object in standard position to the current view.
 3. Using the steps above, transform the current view points to the Default Screen Plane, keeping track of if they should be rendered in a style for the front or back.
 4. Group the points that should be rendered on the front of the sphere into a front path and similarity for the back.
@@ -162,24 +162,22 @@ In general the rendering process is more complex than this. For example, conside
 
 ## Zooming and Panning
 
-Zooming and panning are accomplished using a CSS (affine) transform applied to the **root** SVG object that the renderer produces. Once an object has been [rendered on the Default Screen Plane](/design/#rendering-objects), the CSS transform displays it in the Viewport (see the illustration in the [Rendering Objects](/design/#rendering-objects) section) using a Zoom Magnification Factor and a Zoom Translation Vector. (Note: in the case that Zoom Magnification Factor is 1 and the Zoom Translation Vector is $\langle 0, 0 \rangle$, the Viewport is the same as the Default Screen Plane.) There are two ways that the user can zoom and pan.
+Zooming and panning are accomplished using a CSS (affine) transform applied to the **root** SVG object that the renderer produces. Once an object has been [rendered on the Default Screen Plane](/design/#rendering-objects), the CSS transform displays it in the Viewport (see the illustration in the [Rendering Objects](/design/#rendering-objects) section) using a Zoom Magnification Factor and a Zoom Translation Vector. (Note: In the case that Zoom Magnification Factor is 1 and the Zoom Translation Vector is $\langle 0, 0 \rangle$ the Viewport is the same as the Default Screen Plane.) There are two ways that the user can zoom and pan.
 
 1. Using a track pad or mouse wheel. These trigger the <span class="method">handleMouseWheelEvent(MouseEvent)</span> method in the <span class="file">SphereFrame.vue</span> file.
 2. Using the [Zooming and Panning Tools](/tools/display.html#zoom-pan-and-standard-view). This fires a <span class="string">"zoom-update"</span> [EventBus](/design/#event-bus) action.
 
 In both cases the new Zoom Magnification Factor and Translation Vector are written to the [Store](/design/#store) (triggering a resize of the plottables - outlined below) and the <span class="method">updateView()</span> method in the <span class="file">SphereFrame.vue</span> file (see below) is eventually executed which sets the new CSS Affine Transformation -- which is alway a uniform scaling and translation and never a shear.
 
-<!-- @[code lang=ts highlight={9} transcludeWith="::::"](@/src/components/SphereFrame.vue) -->
-
 <<< @/src/components/SphereFrame.vue#updateView{9}
 
-When we zoom we control the size of the displayed geometric objects so that the text size, stroke width, point size, etc. do not become so large as to obscure other details in the arrangement. To account for the magnification factor in the display, every class in the [Plottables Directory](/design/#plottables-directory) (i.e. all <span class="class">Nodule</span> classes) has a method called <span class="method">adjustSizeForZoom()</span>. This method is called on all plottables through a chain of events that are outlined here.
+When we zoom we control the size of the displayed geometric objects so that the text size, stroke width, point size, etc. do not become so large as to obscure other details in the arrangement. To account for the magnification factor in the display, every class in the [Plottables Directory](/design/#plottables-directory) (i.e. all <span class="class">Nodule</span> classes) has a method called <span class="method">adjustSize()</span>. This method is called on all plottables through a chain of events that are outlined here.
 
 Whenever a new magnification factor is computed the value is written to the [Store](/design/#store) with a dispatch command like the one highlighted in this code snippet from <span class="file">PanZoomHandler.ts</span>:
 
 <<< @/src/eventHandlers/PanZoomHandler.ts#writeFactorVectorToStore{2}
 
-The <span class="string">"changeZoomFactor"</span> <span class="method">dispatch(...)</span> method results in a <span class="method">commit(...)</span> of the magnification factor to the store and fires an <span class="string">"magnification-updated"</span> [Event Bus](/design/#event-bus) action.
+The <span class="string">"setZoomMagnificationFactor"</span> <span class="method">dispatch(...)</span> method results in a <span class="method">commit(...)</span> of the magnification factor to the store and fires a <span class="string">"magnification-updated"</span> [Event Bus](/design/#event-bus) action.
 
 <<< @/src/store/index.ts#magnificationUpdate
 
@@ -191,7 +189,7 @@ this action calls
 
 <<< @/src/views/Easel.vue#resizePlottables{3,6}
 
-which calls <span class="method">adjustSizeForZoom()</span> on all plottable retrieved from the from the [Store](/design/#store).
+which calls <span class="method">adjustSize()</span> on all plottable retrieved from the from the [Store](/design/#store).
 
 ## Data Structure
 
@@ -203,7 +201,7 @@ The geometric objects in any arrangement are associated to an abstract data stru
 - A line segment, $S_1$, from point $P_1$ to new point $P_5$ that is constrained to be on $C_2$.
 - One of the intersection points, $P_6$, of $C_1$ and $C_2$.
 
-As the location of first four points created are not constrained by any other geometric objects (except the surface of the sphere, of course), the vertices in the DAG corresponding to these points have no incoming arrows and are called **free points**. Point $P_5$, and any point that is constrained to be located on any one-dimensional object, is also considered to free. Any object that is free or only depends on free points is considered to be a **free object**. Free objects are individually movable with the [Move Tool](/tools/display.html#move).
+As the location of first four points created are not constrained by any other geometric objects (except the surface of the sphere, of course), the vertices in the DAG corresponding to these points have no incoming arrows and are called **free points**. Point $P_5$, and any point that is only constrained to be located on any one-dimensional object, is also considered to free. Any object that is free or only depends on free points is considered to be a **free object**. Free objects are individually movable with the [Move Tool](/tools/display.html#move).
 
 To determine the rest of the DAG, consider what changes as we move these points. If the user moves $P_1$ then $C_1$ also moves, so there is an arrow in the DAG from the vertex corresponding to $P_1$ to the vertex corresponding to $C_1$. Similarly segment $S_1$ also moves so there is an arrow between the vertices corresponding to those objects. Continuing in this way we obtain the following DAG where the round green circles correspond to free objects (i.e. individually moveable with the [Move Tool](/tools/display.html#move)) and the red rectangles correspond to fixed objects (i.e. unmovable with the [Move Tool](/tools/display.html#move)):
 
@@ -215,7 +213,7 @@ Notice that this DAG depends on the location of the objects. So for example, if 
 
 The arrows in the the DAG are programmatically declared and organized using the <span class="variable">parents</span> and <span class="variable">kids</span> array found in the <span class="class">SENodule</span> class. For example, the <span class="variable">parents</span> array of $P_6$ would contain pointers to circles $C_1$ and $C_2$ and its <span class="variable">kids</span> array would be empty. The only pointer in the both $C_1$ and $C_2$ <span class="variable">kids</span> array would be one to $P_6$. See the discussion in the [Models Directory](/design/#models-directory) for more information about how this structure is used and handled programmatically.
 
-<!-- [Note that all directed acyclic graph can be layered.](https://link.springer.com/content/pdf/10.1007/3-540-45848-4_2.pdf) -->
+[Note that all directed acyclic graph can be layered.](https://link.springer.com/content/pdf/10.1007/3-540-45848-4_2.pdf)
 
 ## User Interface (Vue Components and Views)
 
@@ -235,15 +233,15 @@ All handlers implement the interface <span class="interface">ToolStrategy</span>
 
 The <span class="method">activate()</span> and <span class="method">deactivate()</span> methods are run at the eponymous times during the life cycle of the tool. The <span class="method">activate()</span> method processes all the [selected objects](/tools/edit.html#selection) and decides whether or not to execute the appropriate tool routines. The <span class="method">deactivate()</span> method clears the appropriate variable in the tool so that they don't interfere with the execution of other tools.
 
-Almost all handlers extend <span class="class">MouseHandler</span> (the exception is <span class="class">PanZoomHandler</span>). This means that almost all handlers have access to the following variables that are computed in the <span class="method">mouseMoved()</span> method.
+Almost all handlers extend <span class="class">Highlighter</span> which itself extends <span class="class">MouseHandler</span> (the exception is <span class="class">PanZoomHandler</span>). This means that almost all handlers have access to the following variables that are computed in the <span class="method">mouseMoved()</span> method.
 
-- <span class="variable">currentSphereVector</span>: This the <span class="class">Vector3</span> location on the ideal unit sphere corresponding to the current mouse location.
-- <span class="variable">previousSphereVector</span>: This the <span class="class">Vector3</span> location on the ideal unit sphere of corresponding to the previous mouse location.
-- <span class="variable">currentScreenVector</span>: This the <span class="class">Two.Vector</span> location in the Default Screen Plane of the current mouse location.
-- <span class="variable">previousScreenVector</span>: This the <span class="class">Two.Vector</span> location in the Default Screen Plane of the previous mouse location.
-- <span class="variable">isOnSphere</span>: This boolean variable indicates if the current mouse location is inside the boundary circle in the Default Screen Plane
+- <span class="variable">currentSphereVector</span>: This the <span class="class">Vector3</span> location on the ideal unit sphere corresponding to the current mouse location. (Set in <span class="class">MouseHandler</span>)
+- <span class="variable">previousSphereVector</span>: This the <span class="class">Vector3</span> location on the ideal unit sphere of corresponding to the previous mouse location. (Set in <span class="class">MouseHandler</span>)
+- <span class="variable">currentScreenVector</span>: This the <span class="class">Two.Vector</span> location in the Default Screen Plane of the current mouse location. (Set in <span class="class">MouseHandler</span>)
+- <span class="variable">previousScreenVector</span>: This the <span class="class">Two.Vector</span> location in the Default Screen Plane of the previous mouse location. (Set in <span class="class">MouseHandler</span>)
+- <span class="variable">isOnSphere</span>: This boolean variable indicates if the current mouse location is inside the boundary circle in the Default Screen Plane (Set in <span class="class">MouseHandler</span>)
 
-In addition, the <span class="method">mouseMoved()</span> method queries (via the getters) the [Store](/design/#store) to find and highlight all the nearby objects. The variable <span class="variable">hitNodules</span> is an array of nearby SEObjects that is sorted into the different class like <span class="variable">hitPoints</span>, <span class="variable">hitSegments</span>, <span class="variable">hitLines</span>, etc. all of which are available to the children of <span class="class">MouseHandler</span>.
+In addition, the <span class="method">mouseMoved()</span> method (in <span class="class">Highlighter</span>) queries (via the getters) the [Store](/design/#store) to find all the nearby objects. The variable <span class="variable">hitNodules</span> is an array of nearby SEObjects that is sorted into the different class like <span class="variable">hitPoints</span>, <span class="variable">hitSegments</span>, <span class="variable">hitLines</span>, etc. all of which are available to the children of <span class="class">Highlighter</span>. It is the job of each handle to highlight/glow all the objects that it can properly interact with.
 
 ### Move Handler
 
@@ -273,12 +271,6 @@ This stores the location of the point and not a pointer to the location which wo
 
 Hence nothing is stored in the <span class="variable">stateArray</span> for <span class="class">SECircle</span> or <span class="class">SEIntersectionPoint</span> classes. Once the before and after <span class="variable">stateArray</span> has been created, the <span class="class">MoveHandler</span> creates a command group to store all the move points, lines and segments commands. The <span class="command">MovePointCommand</span>, <span class="command">MoveLineCommand</span>, and <span class="command">MoveSegmentCommand</span> classes issue mutations
 to the store which then uses [Visitors](/design/#visitor-and-event-bus-actions) to actually change the location of points, normal vectors of lines and line segments, and arc length of line segments. The <span class="type">ObjectSaveState</span> type and the interfaces like <span class="interface">LineSaveState</span>, <span class="interface">SegmentSaveState</span>, <span class="interface">PointSaveState</span> in the <span class="directory">types</span> directory give an idea of the information that must be stored in order to undo a <span class="method">move</span>
-
-### Delete Handler
-
-### Other Handlers
-
-[Here are details about the implementation of some of the Handlers](./handlers/edit.md)
 
 ## Commands
 
@@ -318,7 +310,7 @@ For example, to add a point to the state of the application, the [PointHandler](
 
 The <span class="method">do()</span> and <span class="method">restoreState()</span> methods uses the <span class="string">"addPoint"</span> and <span class="string">"removePoint"</span> mutations of the application state found in the [Store](/design/#store). The <span class="string">"addPoint"</span> mutation is implemented in the [Store](/design/#store) as follows.
 
-<<< @/src/store/mutations.ts#addPoint
+<<< @/src/store/se-module.ts#addPoint
 
 This simply pushes the <span class="class">SEPoint</span> into the appropriate arrays in the store and then adds the corresponding plottables objects to the layers in the store. (TODO: Why does it do this?)
 
@@ -364,9 +356,9 @@ circleGroup.execute();
 
 ## Store
 
-This application uses a [Vuex Store](https://vuex.vuejs.org/) to implement a [State Management Pattern](https://en.wikipedia.org/wiki/State_management). This serves as single place to record the state of the app and to change (mutate) that state in predictable ways. It is a repository for all the important variables in the application that can be accessed (<span class="file">getters.ts</span>) and mutated (<span class="file">mutations.ts</span>) by all components of the app. The Store keeps a list of those variables and the initial state is
+This application uses a [Vuex Store](https://vuex.vuejs.org/) to implement a [State Management Pattern](https://en.wikipedia.org/wiki/State_management). This serves as single place to record the state of the app and to change (mutate) that state in predictable ways. It is a repository for all the important variables in the application that can be accessed (<span class="file">getters.ts</span>) and mutated (<span class="file">se-module.ts</span>) by all components of the app. The Store keeps a list of those variables and the initial state is
 
-<<< @/src/store/mutations.ts#appState
+<<< @/src/store/se-module.ts#appState
 
 In the [Zooming and Panning](/design/#zooming-and-panning) section, the reader might have noticed that the Zoom Translation Vector is written to the [Store](/design/#store) with a <span class="method">commit(...)</span> method and the Zoom Magnification Factor is written with a <span class="method">dispatch(...)</span> method. This is because the the <span class="method">commit(...)</span> operation is a synchronous one and the <span class="method">dispatch</span> operation is an asynchronous one. The setting of the translation vector is immediately completed as a mutation of the store, but updating the magnification factor triggers an [update of all the plottable objects](/design/#zooming-and-panning) which shouldn't interrupt the programmatic control flow and can happen asynchronously.
 
@@ -378,13 +370,13 @@ The [Rotation Handler](/design/handlers/display.html#rotation) uses the user mou
 
 <<< @/src/eventHandlers/RotateHandler.ts#sphereRotate
 
-The <span class="string">"sphere-rotate"</span> [EventBus](/design/#event-bus) listener is in <span class="file">SphereFrame.vue</span>. Notice how an events outside of the Vue Component (in the handler) is no triggering event in a Vue Component. This listener calls
+The <span class="string">"sphere-rotate"</span> [EventBus](/design/#event-bus) listener is in <span class="file">SphereFrame.vue</span>. Notice how an events outside of the Vue Component (in the handler) is now triggering an event in a Vue Component. This listener calls
 
 <<< @/src/components/SphereFrame.vue#handleSphereRotation
 
 The <span class="string">"rotateSphere"</span> mutation of the application state is as follows
 
-<<< @/src/store/mutations.ts#rotateSphere
+<<< @/src/store/se-module.ts#rotateSphere
 
 Notice that this creates a <span class="class">RotationVisitor</span> based on the Change In Position Rotation Matrix and that is applied to all SEPoint via this snippet from <span class="file">RotationVisitor.ts</span>:
 
@@ -401,13 +393,13 @@ When the user opens the [Style Panel](/userguide/stylepanel.html) a set of optio
 The user can select items to style before entering the Styling Mode (the mode where the Style Panel is open and the others are minimizied). The selected items are imported in the <span class="method">mount()</span> and passed to the <span class="method">OnSelectionChange()</span> method. This method is run when ever there is a change in the selection
 
 ```ts
-@Watch("selections")
+@Watch("selectedSENodules")
   onSelectionChanged (newSelection: SENodule[]): void {
 ```
 
 This method then checks to see if there are any style changes that need to be stored in the command stack so they can be undone later. If there is a non-empty selection, the `initialStyleState` and `defaultStyleState` of the selected objects (for front and back) is recorded in these variables in the Vuex store. These are keep in the store because there are Vue <span class="component">ColorSelector</span> and <span class="component">NumberSelector</span> components across _two_ expansion panels that need access these variables to set the state of their selectors.
 
-<<@/scr/components/FrontAndBackStyle.vue#setStyle
+<<< @/src/components/FrontBackStyle.vue#setStyle
 
 Upon <span class="method">setXXXSelectorState()</span> method being executed, the program first determines if all the selected objects have style XXX (via the <span class="method">hasXXX()</span>). If they, do the <span class="component">fade-in-card</span> is display for that style, if not it is not displayed. If the style is common to all selected objects, the program then check to see if the value of that style is the same across all selected objects. If it is not, the <span class="variable">XXXAgreement</span> variable is set to <span class="component">false</span> and a button saying "Differing Styles Detected -- Override" is displayed. If the user clicks that button, the <span class="variable">XXXAgreement</span> variable is set to <span class="component">true</span> and any style selection will set that one style property of all selected objects to be the same. Once a selection is made the <span class="button">Undo</span> button is activative, and by clicking it all selected objects will revert that style property back to the style they had when they were _selected_. Clicking the <span class="button">Apply Defaults</span> button will revert the selected objects back to their default style.
 

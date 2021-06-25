@@ -1,10 +1,17 @@
 import Two from "two.js";
 import Highlighter from "./Highlighter";
 import { SENodule } from "@/models/SENodule";
-import { UpdateMode, UpdateStateType } from "@/types";
+import {
+  // isPerpendicularLineThruPointState,
+  UpdateMode,
+  UpdateStateType
+} from "@/types";
 import { CommandGroup } from "@/commands/CommandGroup";
 import { DeleteNoduleCommand } from "@/commands/DeleteNoduleCommand";
 import { SetNoduleDisplayCommand } from "@/commands/SetNoduleDisplayCommand";
+import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
+import { SECircle } from "@/models/SECircle";
+import { SEPoint } from "@/models/SEPoint";
 
 export default class DeleteHandler extends Highlighter {
   /**
@@ -30,16 +37,25 @@ export default class DeleteHandler extends Highlighter {
       // In the case of multiple selections prioritize points > lines > segments > circles > labels
       // Deleting an object deletes all objects that depend on that object including the label
       if (this.hitSEPoints.length > 0) {
-        this.victim = this.hitSEPoints[0];
+        if (
+          !(this.hitSEPoints[0] instanceof SEIntersectionPoint) ||
+          (this.hitSEPoints[0] as SEIntersectionPoint).isUserCreated
+        ) {
+          this.victim = this.hitSEPoints[0];
+        }
       } else if (this.hitSELines.length > 0) {
         this.victim = this.hitSELines[0];
       } else if (this.hitSESegments.length > 0) {
         this.victim = this.hitSESegments[0];
       } else if (this.hitSECircles.length > 0) {
         this.victim = this.hitSECircles[0];
+      } else if (this.hitSEEllipses.length > 0) {
+        this.victim = this.hitSEEllipses[0];
       } else if (this.hitSELabels.length > 0) {
         // Do not allow deletion of labels - if a user selects a label with this tool, merely hide the label.
         new SetNoduleDisplayCommand(this.hitSELabels[0], false).execute();
+      } else if (this.hitSEAngleMarkers.length > 0) {
+        this.victim = this.hitSEAngleMarkers[0];
       }
 
       if (this.victim != null) {
@@ -56,8 +72,33 @@ export default class DeleteHandler extends Highlighter {
   }
 
   mouseMoved(event: MouseEvent): void {
-    // Highlight all nearby objects and update location vectors
+    // Find all the nearby (hitSE... objects) and update location vectors
     super.mouseMoved(event);
+    // only one object at a time can be deleted so only glow the potential victim
+    // prioritize points, if there is a point nearby, assume the user wants it to be the selection to delete
+    if (this.hitSEPoints.length > 0) {
+      // never highlight non user created intersection points
+      const filteredPoints = this.hitSEPoints.filter((p: SEPoint) => {
+        if (p instanceof SEIntersectionPoint && !p.isUserCreated) {
+          return false;
+        } else {
+          return true;
+        }
+      });
+      if (filteredPoints.length > 0) filteredPoints[0].glowing = true;
+    } else if (this.hitSESegments.length > 0) {
+      this.hitSESegments[0].glowing = true;
+    } else if (this.hitSELines.length > 0) {
+      this.hitSELines[0].glowing = true;
+    } else if (this.hitSECircles.length > 0) {
+      this.hitSECircles[0].glowing = true;
+    } else if (this.hitSEEllipses.length > 0) {
+      this.hitSEEllipses[0].glowing = true;
+    } else if (this.hitSELabels.length > 0) {
+      this.hitSELabels[0].glowing = true;
+    } else if (this.hitSEAngleMarkers.length > 0) {
+      this.hitSEAngleMarkers[0].glowing = true;
+    }
   }
 
   // eslint-disable-next-line

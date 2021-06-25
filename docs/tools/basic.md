@@ -106,7 +106,7 @@ Create a circle.
 
 ::: tool-title
 
-## Polygon (too hard?)
+## Polygon
 
 :::
 

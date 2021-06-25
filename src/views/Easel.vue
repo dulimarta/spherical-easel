@@ -1,11 +1,11 @@
 <template>
-  <split-pane split="vertical"
-    :min-percent="15"
-    :max-percent="35"
-    :default-percent="toolboxMinified ? 5 : 20"
-    @resize="leftDividerMoved">
+  <Splitpanes class="default-theme"
+    @resize="dividerMoved"
+    :push-other-panes="false">
     <!-- Use the left page for the toolbox -->
-    <template slot="paneL">
+    <Pane min-size="5"
+      max-size="35"
+      :size="toolboxMinified ? 5 : 25">
       <v-container fill-height>
         <div id="container">
           <v-btn icon
@@ -13,205 +13,228 @@
             <v-icon v-if="toolboxMinified">mdi-arrow-right</v-icon>
             <v-icon v-else>mdi-arrow-left</v-icon>
           </v-btn>
-          <toolbox id="toolbox"
+          <Toolbox id="toolbox"
             ref="toolbox"
-            :minified="toolboxMinified">
-          </toolbox>
+            :minified="toolboxMinified" />
+
         </div>
       </v-container>
-    </template>
+    </Pane>
+    <Pane :size="centerWidth">
 
-    <!-- Use the right pane mainly for the canvas and style panel -->
-    <template slot="paneR">
+      <!-- Use the right pane mainly for the canvas and style panel -->
       <!-- 
         When minified, the style panel takes only 5% of the remaining width
         When expanded, it takes 30% of the remaining width
       -->
-      <split-pane split="vertical"
-        @resize="rightDividerMoved"
-        :default-percent="stylePanelMinified ? 95 : 70">
-        <template slot="paneL">
-          <v-container fluid
-            ref="mainPanel">
-            <v-row>
-              <v-col cols="12">
-                <v-row justify="center"
-                  class="pb-1">
-                  <v-responsive :aspect-ratio="1"
-                    :max-height="currentCanvasSize"
-                    :max-width="currentCanvasSize"
-                    ref="responsiveBox"
-                    id="responsiveBox"
-                    class="pa-0">
-                    <sphere-frame :canvas-size="currentCanvasSize">
-                    </sphere-frame>
-                    <div class="anchored top left">
-                      <!-- <v-btn-toggle
+      <v-container fluid
+        ref="mainPanel">
+        <v-row>
+          <v-col cols="12">
+            <v-row justify="center"
+              class="pb-1">
+              <v-responsive :aspect-ratio="1"
+                :max-height="currentCanvasSize"
+                :max-width="currentCanvasSize"
+                ref="responsiveBox"
+                id="responsiveBox"
+                class="pa-0">
+                <SphereFrame :canvas-size="currentCanvasSize" />
+                <div class="anchored top left">
+                  <!-- <v-btn-toggle
                     v-model="actionMode"
                     @change="switchActionMode"
                     class="mr-2 d-flex flex-wrap accent"
                   >
                     <ToolButton :key="80" :button="buttonList[8]"></ToolButton>
                       </v-btn-toggle>-->
-                      <v-tooltip bottom
-                        :open-delay="toolTipOpenDelay"
-                        :close-delay="toolTipCloseDelay">
-                        <!-- TODO:   
+                  <v-tooltip bottom
+                    :open-delay="toolTipOpenDelay"
+                    :close-delay="toolTipCloseDelay">
+                    <!-- TODO:   
                         When not available they should be greyed out (i.e. disabled).-->
-                        <template v-slot:activator="{ on }">
-                          <v-btn
-                            :disabled="!stylePanelMinified || !undoEnabled"
-                            icon
-                            @click="undoEdit"
-                            v-on="on">
-                            <v-icon color="blue"
-                              :disabled="!stylePanelMinified || !undoEnabled">
-                              mdi-undo</v-icon>
-                          </v-btn>
-                        </template>
-                        <span>{{ $t("main.UndoLastAction") }}</span>
-                      </v-tooltip>
-                      <v-tooltip bottom
-                        :open-delay="toolTipOpenDelay"
-                        :close-delay="toolTipCloseDelay">
-                        <template v-slot:activator="{ on }">
-                          <v-btn
-                            :disabled="!stylePanelMinified || !redoEnabled"
-                            icon
-                            @click="redoAction"
-                            v-on="on">
-                            <v-icon color="blue"
-                              :disabled="!stylePanelMinified || !redoEnabled">
-                              mdi-redo</v-icon>
-                          </v-btn>
-                        </template>
-                        <span>{{ $t("main.RedoLastAction") }}</span>
-                      </v-tooltip>
-                    </div>
-                    <div class="anchored bottom right">
-                      <v-tooltip bottom
-                        :open-delay="toolTipOpenDelay"
-                        :close-delay="toolTipCloseDelay">
-                        <template v-slot:activator="{ on }">
-                          <v-btn color="primary"
-                            icon
-                            tile
-                            @click="enableZoomIn"
-                            v-on="on">
-                            <v-icon>mdi-magnify-plus-outline</v-icon>
-                          </v-btn>
-                        </template>
-                        <span>{{ $t("buttons.PanZoomInToolTipMessage") }}</span>
-                      </v-tooltip>
-                      <v-tooltip bottom
-                        :open-delay="toolTipOpenDelay"
-                        :close-delay="toolTipCloseDelay">
-                        <template v-slot:activator="{ on }">
-                          <v-btn color="primary"
-                            icon
-                            tile
-                            @click="enableZoomOut"
-                            v-on="on">
-                            <v-icon>mdi-magnify-minus-outline</v-icon>
-                          </v-btn>
-                        </template>
-                        <span>{{ $t("buttons.PanZoomOutToolTipMessage") }}</span>
-                      </v-tooltip>
-                      <v-tooltip bottom
-                        :open-delay="toolTipOpenDelay"
-                        :close-delay="toolTipCloseDelay">
-                        <template v-slot:activator="{ on }">
-                          <v-btn color="primary"
-                            icon
-                            tile
-                            @click="enableZoomFit"
-                            v-on="on">
-                            <v-icon>mdi-magnify-scan
-                            </v-icon>
-                          </v-btn>
-                        </template>
-                        <span>{{ $t("buttons.ZoomFitToolTipMessage") }}</span>
-                      </v-tooltip>
-                    </div>
-                  </v-responsive>
-                </v-row>
-              </v-col>
+                    <template v-slot:activator="{ on }">
+                      <v-btn
+                        :disabled="!stylePanelMinified || !undoEnabled"
+                        icon
+                        @click="undoEdit"
+                        v-on="on">
+                        <v-icon color="blue"
+                          :disabled="!stylePanelMinified || !undoEnabled">
+                          mdi-undo</v-icon>
+                      </v-btn>
+                    </template>
+                    <span>{{ $t("main.UndoLastAction") }}</span>
+                  </v-tooltip>
+                  <v-tooltip bottom
+                    :open-delay="toolTipOpenDelay"
+                    :close-delay="toolTipCloseDelay">
+                    <template v-slot:activator="{ on }">
+                      <v-btn
+                        :disabled="!stylePanelMinified || !redoEnabled"
+                        icon
+                        @click="redoAction"
+                        v-on="on">
+                        <v-icon color="blue"
+                          :disabled="!stylePanelMinified || !redoEnabled">
+                          mdi-redo</v-icon>
+                      </v-btn>
+                    </template>
+                    <span>{{ $t("main.RedoLastAction") }}</span>
+                  </v-tooltip>
+                </div>
+                <div class="anchored top right">
+                  <v-tooltip bottom
+                    :open-delay="toolTipOpenDelay"
+                    :close-delay="toolTipCloseDelay">
+                    <template v-slot:activator="{ on }">
+                      <v-btn icon
+                        tile
+                        @click="resetSphere"
+                        v-on="on">
+                        <v-icon>mdi-broom</v-icon>
+                      </v-btn>
+                    </template>
+                    <span>Reset sphere</span>
+                  </v-tooltip>
+                </div>
+                <div class="anchored bottom right">
+                  <v-tooltip bottom
+                    :open-delay="toolTipOpenDelay"
+                    :close-delay="toolTipCloseDelay">
+                    <template v-slot:activator="{ on }">
+                      <v-btn color="primary"
+                        icon
+                        tile
+                        @click="enableZoomIn"
+                        v-on="on">
+                        <v-icon>mdi-magnify-plus-outline</v-icon>
+                      </v-btn>
+                    </template>
+                    <span>{{ $t("buttons.PanZoomInToolTipMessage") }}</span>
+                  </v-tooltip>
+                  <v-tooltip bottom
+                    :open-delay="toolTipOpenDelay"
+                    :close-delay="toolTipCloseDelay">
+                    <template v-slot:activator="{ on }">
+                      <v-btn color="primary"
+                        icon
+                        tile
+                        @click="enableZoomOut"
+                        v-on="on">
+                        <v-icon>mdi-magnify-minus-outline</v-icon>
+                      </v-btn>
+                    </template>
+                    <span>{{ $t("buttons.PanZoomOutToolTipMessage") }}</span>
+                  </v-tooltip>
+                  <v-tooltip bottom
+                    :open-delay="toolTipOpenDelay"
+                    :close-delay="toolTipCloseDelay">
+                    <template v-slot:activator="{ on }">
+                      <v-btn color="primary"
+                        icon
+                        tile
+                        @click="enableZoomFit"
+                        v-on="on">
+                        <v-icon>mdi-magnify-scan
+                        </v-icon>
+                      </v-btn>
+                    </template>
+                    <span>{{ $t("buttons.ZoomFitToolTipMessage") }}</span>
+                  </v-tooltip>
+                </div>
+              </v-responsive>
             </v-row>
-            <v-snackbar v-model="displayZoomInToolUseMessage"
-              bottom
-              left
-              :timeout="toolUseMessageDelay"
-              :value="displayToolUseMessage"
-              multi-line>
-              <span>
-                <strong class="warning--text"
-                  v-html="$t('buttons.PanZoomInDisplayedName').split('<br>').join('').trim() + ': '"></strong>
-                {{ $t("buttons.PanZoomInToolUseMessage") }}
-              </span>
-              <v-btn @click="displayToolUseMessage = false"
-                icon>
-                <v-icon color="success">mdi-close</v-icon>
-              </v-btn>
-            </v-snackbar>
+          </v-col>
+        </v-row>
+        <v-snackbar v-model="displayZoomInToolUseMessage"
+          bottom
+          left
+          :timeout="toolUseMessageDelay"
+          :value="displayToolUseMessage"
+          multi-line>
+          <span>
+            <strong class="warning--text"
+              v-html="$t('buttons.PanZoomInDisplayedName').split('<br>').join('/').trim() + ': '"></strong>
+            {{ $t("buttons.PanZoomInToolUseMessage") }}
+          </span>
+          <v-btn @click="displayToolUseMessage = false"
+            icon>
+            <v-icon color="success">mdi-close</v-icon>
+          </v-btn>
+        </v-snackbar>
 
-            <v-snackbar v-model="displayZoomFitToolUseMessage"
-              bottom
-              left
-              :timeout="toolUseMessageDelay"
-              :value="displayToolUseMessage"
-              multi-line>
-              <span>
-                <strong class="warning--text"
-                  v-html="$t('buttons.ZoomFitDisplayedName').split('<br>').join('').trim() + ': '"></strong>
-                {{ $t("buttons.ZoomFitToolUseMessage") }}
-              </span>
-              <v-btn @click="displayToolUseMessage = false"
-                icon>
-                <v-icon color="success">mdi-close</v-icon>
-              </v-btn>
-            </v-snackbar>
+        <v-snackbar v-model="displayZoomFitToolUseMessage"
+          bottom
+          left
+          :timeout="toolUseMessageDelay"
+          :value="displayToolUseMessage"
+          multi-line>
+          <span>
+            <strong class="warning--text"
+              v-html="$t('buttons.ZoomFitDisplayedName').split('<br>').join('').slice(0,-6) + ': '"></strong>
+            {{ $t("buttons.ZoomFitToolUseMessage") }}
+          </span>
+          <v-btn @click="displayToolUseMessage = false"
+            icon>
+            <v-icon color="success">mdi-close</v-icon>
+          </v-btn>
+        </v-snackbar>
 
-            <v-snackbar v-model="displayZoomOutToolUseMessage"
-              bottom
-              left
-              :timeout="toolUseMessageDelay"
-              :value="displayToolUseMessage"
-              multi-line>
-              <span>
-                <strong class="warning--text"
-                  v-html="$t('buttons.PanZoomOutDisplayedName').split('<br>').join('').trim() + ': '"></strong>
-                {{ $t("buttons.PanZoomOutToolUseMessage") }}
-              </span>
-              <v-btn @click="displayToolUseMessage = false"
-                icon>
-                <v-icon color="success">mdi-close</v-icon>
-              </v-btn>
-            </v-snackbar>
-          </v-container>
-        </template>
-        <template slot="paneR">
-          <div ref="stylePanel"
-            id="styleContainer">
-            <div>
-              <v-btn icon
-                @click="minifyStylePanel">
-                <v-icon v-if="stylePanelMinified">mdi-arrow-left</v-icon>
-                <v-icon v-else>mdi-arrow-right</v-icon>
-              </v-btn>
-            </div>
-            <style-panel :minified="stylePanelMinified"></style-panel>
+        <v-snackbar v-model="displayZoomOutToolUseMessage"
+          bottom
+          left
+          :timeout="toolUseMessageDelay"
+          :value="displayToolUseMessage"
+          multi-line>
+          <span>
+            <strong class="warning--text"
+              v-html="$t('buttons.PanZoomOutDisplayedName').split('<br>').join('/').trim() + ': '"></strong>
+            {{ $t("buttons.PanZoomOutToolUseMessage") }}
+          </span>
+          <v-btn @click="displayToolUseMessage = false"
+            icon>
+            <v-icon color="success">mdi-close</v-icon>
+          </v-btn>
+        </v-snackbar>
+      </v-container>
+    </Pane>
+
+    <Pane min-size="5"
+      max-size="25"
+      :size="stylePanelMinified ? 5 : 25">
+      <v-card>
+        <div ref="stylePanel"
+          id="styleContainer">
+          <div>
+            <v-btn icon
+              @click="minifyStylePanel">
+              <v-icon v-if="stylePanelMinified">mdi-arrow-left</v-icon>
+              <v-icon v-else>mdi-arrow-right</v-icon>
+            </v-btn>
           </div>
-        </template>
-      </split-pane>
-    </template>
-  </split-pane>
+          <StylePanel :minified="stylePanelMinified"
+            v-on:toggle-style-panel="minifyStylePanel" />
+        </div>
+      </v-card>
+    </Pane>
+    <Dialog ref="unsavedWorkDialog"
+      max-width="40%"
+      title="Confirmation Required"
+      yes-text="Keep"
+      no-text="Discard"
+      :no-action="doLeave">
+      You have unsaved work. Do you want to stay on this page and keep your
+      work or switch to another page and discard your work.
+    </Dialog>
+  </Splitpanes>
 </template>
 
 <script lang="ts">
 import VueComponent from "vue";
-import { Vue } from "vue-property-decorator";
-import SplitPane from "vue-splitpane";
-import Component from "vue-class-component";
+import { Vue, Component, Prop } from "vue-property-decorator";
+import { Splitpanes, Pane } from "splitpanes";
+import "splitpanes/dist/splitpanes.css";
 import Toolbox from "@/components/ToolBox.vue";
 import SphereFrame from "@/components/SphereFrame.vue";
 /* Import Command so we can use the command paradigm */
@@ -228,12 +251,20 @@ import Line from "@/plottables/Line";
 import Label from "@/plottables/Label";
 import Segment from "@/plottables/Segment";
 import Nodule from "@/plottables/Nodule";
-import { State } from "vuex-class";
+import Ellipse from "@/plottables/Ellipse";
+import { namespace } from "vuex-class";
 import { SENodule } from "@/models/SENodule";
-import { AppState } from "@/types";
+import { AppState, ConstructionInFirestore } from "@/types";
 import IconBase from "@/components/IconBase.vue";
-// import { getModule } from "vuex-module-decorators";
-// import UI from "@/store/ui-styles";
+import AngleMarker from "@/plottables/AngleMarker";
+import { FirebaseFirestore, DocumentSnapshot } from "@firebase/firestore-types";
+import { run } from "@/commands/CommandInterpreter";
+import { ConstructionScript } from "@/types";
+import { Route } from "vue-router";
+import store from "@/store";
+import Dialog, { DialogAction } from "@/components/Dialog.vue";
+import { SEStore } from "@/store";
+const SE = namespace("se");
 
 /**
  * Split panel width distribution (percentages):
@@ -243,29 +274,42 @@ import IconBase from "@/components/IconBase.vue";
  */
 @Component({
   components: {
-    SplitPane,
+    Splitpanes,
+    Pane,
     Toolbox,
     SphereFrame,
     ToolButton,
     StylePanel,
-    IconBase
+    IconBase,
+    Dialog
   }
 })
 export default class Easel extends Vue {
-  readonly store = this.$store.direct;
-  @State((s: AppState) => s.sePoints)
+  @Prop()
+  documentId: string | undefined;
+  @SE.State((s: AppState) => s.sePoints)
   readonly points!: SENodule[];
 
-  @State((s: AppState) => s.seLines)
+  @SE.State((s: AppState) => s.seLines)
   readonly lines!: SENodule[];
 
-  @State((s: AppState) => s.seSegments)
+  @SE.State((s: AppState) => s.seSegments)
   readonly segments!: SENodule[];
 
-  @State((s: AppState) => s.seCircles)
+  @SE.State((s: AppState) => s.seCircles)
   readonly circles!: SENodule[];
 
-  // readonly UIModule = getModule(UI, this.$store);
+  @SE.State((s: AppState) => s.seNodules)
+  readonly seNodules!: SENodule[];
+
+  @SE.State((s: AppState) => s.temporaryNodules)
+  readonly temporaryNodules!: Nodule[];
+
+  @SE.State((s: AppState) => s.previousZoomMagnificationFactor)
+  readonly previousZoomMagnificationFactor!: number;
+
+  readonly $appDB!: FirebaseFirestore;
+
   private availHeight = 0; // Both split panes are sandwiched between the app bar and footer. This variable hold the number of pixels available for canvas height
   private currentCanvasSize = 0; // Result of height calculation will be passed to <v-responsive> via this variable
 
@@ -285,12 +329,15 @@ export default class Easel extends Vue {
   private displayZoomOutToolUseMessage = false;
   private displayZoomFitToolUseMessage = false;
   private actionMode = { id: "", name: "" };
+  private confirmedLeaving = false;
+  private attemptedToRoute: Route | null = null;
 
   $refs!: {
     responsiveBox: VueComponent;
     toolbox: VueComponent;
     mainPanel: VueComponent;
     stylePanel: HTMLDivElement;
+    unsavedWorkDialog: VueComponent & DialogAction;
   };
 
   //#region magnificationUpdate
@@ -302,30 +349,40 @@ export default class Easel extends Vue {
   }
   //#endregion magnificationUpdate
 
-  private setUndoEnabled(e: unknown): void {
-    this.undoEnabled = (e as any).value;
+  get centerWidth(): number {
+    return (
+      100 - (this.toolboxMinified ? 5 : 25) - (this.stylePanelMinified ? 5 : 25)
+    );
   }
-  private setRedoEnabled(e: unknown): void {
-    this.redoEnabled = (e as any).value;
+  get hasObjects(): boolean {
+    // Any objects must include at least one point
+    return SEStore.sePoints.length > 0;
+  }
+
+  private setUndoEnabled(e: { value: boolean }): void {
+    this.undoEnabled = e.value;
+  }
+  private setRedoEnabled(e: { value: boolean }): void {
+    this.redoEnabled = e.value;
   }
 
   private enableZoomIn(): void {
     this.displayZoomInToolUseMessage = true;
-    this.store.commit.setActionMode({
+    SEStore.setActionMode({
       id: "zoomIn",
       name: "PanZoomInDisplayedName"
     });
   }
   private enableZoomOut(): void {
     this.displayZoomOutToolUseMessage = true;
-    this.store.commit.setActionMode({
+    SEStore.setActionMode({
       id: "zoomOut",
       name: "PanZoomOutDisplayedName"
     });
   }
   private enableZoomFit(): void {
     this.displayZoomFitToolUseMessage = true;
-    this.store.commit.setActionMode({
+    SEStore.setActionMode({
       id: "zoomFit",
       name: "ZoomFitDisplayedName"
     });
@@ -344,61 +401,86 @@ export default class Easel extends Vue {
     }
   }
 
+  loadDocument(docId: string): void {
+    SEStore.removeAllFromLayers();
+    SEStore.init();
+    SENodule.resetAllCounters();
+    Nodule.resetAllCounters();
+    this.$appDB
+      .collection("constructions") // load the script from public collection
+      .doc(docId)
+      .get()
+      .then((doc: DocumentSnapshot) => {
+        if (doc.exists) {
+          const { script } = doc.data() as ConstructionInFirestore;
+          run(JSON.parse(script) as ConstructionScript);
+        } else {
+          // TODO: add a new I18N entry for the following error message
+          EventBus.fire("show-alert", {
+            key: `Construction ${docId} not found`,
+            keyOptions: { docId },
+            type: "error"
+          });
+        }
+      });
+  }
   /** mounted() is part of VueJS lifecycle hooks */
   mounted(): void {
     window.addEventListener("resize", this.onWindowResized);
     this.adjustSize(); // Why do we need this?  this.onWindowResized just calls this.adjustSize() but if you remove it the app doesn't work -- strange!
+    if (this.documentId) this.loadDocument(this.documentId);
+    EventBus.listen(
+      "set-action-mode-to-select-tool",
+      this.setActionModeToSelectTool
+    );
   }
 
-  /** Split Pane resize handler
-   * @param leftPercentage the percentage of the left pane width relative to the entire pane
+  /**
+   * Split pane resize handler
+   * @param event an array of numeric triplets {min: ____, max: ____, size: ____}
    */
-  leftDividerMoved(leftPercentage: number): void {
-    // console.debug("Left divider percentage", leftPercentage);
-
-    const rightBox = this.$refs.stylePanel.getBoundingClientRect();
-    // Calculate the available width of the main panel
+  dividerMoved(event: Array<{ min: number; max: number; size: number }>): void {
     const availableWidth =
-      (1 - leftPercentage / 100) * (window.innerWidth - rightBox.width) - 24;
-    this.currentCanvasSize = Math.min(availableWidth, this.availHeight);
-  }
-
-  rightDividerMoved(rightPercentage: number): void {
-    // console.debug("Right divider percentage", rightPercentage);
-    const leftBox = this.$refs.toolbox.$el.getBoundingClientRect();
-    // Calculate the available width for the main panel
-    const availableWidth =
-      (rightPercentage / 100) * (window.innerWidth - leftBox.width) - 24;
+      ((100 - event[0].size - event[2].size) / 100) *
+      (window.innerWidth -
+        this.$vuetify.application.left -
+        this.$vuetify.application.right);
+    this.availHeight =
+      window.innerHeight -
+      this.$vuetify.application.top -
+      this.$vuetify.application.footer;
     this.currentCanvasSize = Math.min(availableWidth, this.availHeight);
   }
 
   minifyToolbox(): void {
     this.toolboxMinified = !this.toolboxMinified;
     // Minify the other panel when this one is expanded
-    if (!this.toolboxMinified && !this.stylePanelMinified) {
-      this.stylePanelMinified = true;
-    }
-    // If the user has been styling objects and then, without selecting new objects, or deactivating selection the style state should be saved.
-    EventBus.fire("save-style-state", {});
+    // if (!this.toolboxMinified && !this.stylePanelMinified) {
+    //   this.stylePanelMinified = true;
+    // }
   }
 
   minifyStylePanel(): void {
     this.stylePanelMinified = !this.stylePanelMinified;
     // Minify the other panel when this one is expanded
-    if (!this.toolboxMinified && !this.stylePanelMinified) {
-      this.toolboxMinified = true;
-    }
+    // if (!this.toolboxMinified && !this.stylePanelMinified) {
+    //   this.toolboxMinified = true;
+    // }
     // Set the selection tool to be active when opening the style panel.
     if (!this.stylePanelMinified) {
-      this.store.commit.setActionMode({
-        id: "select",
-        name: "SelectDisplayedName"
-      });
+      this.setActionModeToSelectTool();
     }
   }
 
+  setActionModeToSelectTool(): void {
+    SEStore.setActionMode({
+      id: "select",
+      name: "SelectDisplayedName"
+    });
+  }
+
   switchActionMode(): void {
-    this.store.commit.setActionMode(this.actionMode);
+    SEStore.setActionMode(this.actionMode);
   }
   onWindowResized(): void {
     this.adjustSize();
@@ -412,26 +494,55 @@ export default class Easel extends Vue {
     Command.redo();
   }
 
+  resetSphere(): void {
+    SEStore.removeAllFromLayers();
+    SEStore.init();
+    Command.commandHistory.splice(0);
+    Command.redoHistory.splice(0);
+    SENodule.resetAllCounters();
+    Nodule.resetAllCounters();
+  }
+
   //#region resizePlottables
-  resizePlottables(e: any): void {
-    const oldFactor = this.store.state.previousZoomMagnificationFactor;
+  resizePlottables(e: { factor: number }): void {
+    const oldFactor = this.previousZoomMagnificationFactor;
     // Update the current stroke widths in each plottable class
     Line.updateCurrentStrokeWidthForZoom(oldFactor / e.factor);
     Segment.updateCurrentStrokeWidthForZoom(oldFactor / e.factor);
     Circle.updateCurrentStrokeWidthForZoom(oldFactor / e.factor);
+    AngleMarker.updateCurrentStrokeWidthAndRadiusForZoom(oldFactor / e.factor);
     Point.updatePointScaleFactorForZoom(oldFactor / e.factor);
     Label.updateTextScaleFactorForZoom(oldFactor / e.factor);
+    Ellipse.updateCurrentStrokeWidthForZoom(oldFactor / e.factor);
 
     // Update the size of each nodule in the store
-    this.$store.state.seNodules.forEach((p: SENodule) => {
+    this.seNodules.forEach((p: SENodule) => {
       p.ref?.adjustSize();
     });
     // The temporary plottables need to be resized too
-    this.$store.state.temporaryNodules.forEach((p: Nodule) => {
+    this.temporaryNodules.forEach((p: Nodule) => {
       p.adjustSize();
     });
   }
   //#endregion resizePlottables
+
+  doLeave(): void {
+    this.confirmedLeaving = true;
+    if (this.attemptedToRoute)
+      this.$router.replace({ path: this.attemptedToRoute.path });
+  }
+
+  beforeRouteLeave(toRoute: Route, fromRoute: Route, next: any): void {
+    if (this.hasObjects && !this.confirmedLeaving) {
+      this.$refs.unsavedWorkDialog.show();
+      this.attemptedToRoute = toRoute;
+      next(false); // Stay on this view
+    } else {
+      /* Proceed to the next view when the canvas has no objects OR 
+      user has confirmed leaving this view */
+      next();
+    }
+  }
 }
 </script>
 <style scoped lang="scss">

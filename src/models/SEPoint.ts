@@ -13,14 +13,11 @@ import {
   Labelable
 } from "@/types";
 import { SELabel } from "./SELabel";
-import Label from "@/plottables/Label";
 
-let POINT_COUNT = 0;
 const styleSet = new Set([
   Styles.fillColor,
   Styles.strokeColor,
   Styles.pointRadiusPercent,
-  Styles.opacity,
   Styles.dynamicBackStyle
 ]);
 
@@ -50,8 +47,8 @@ export class SEPoint extends SENodule implements Visitable, Labelable {
     /* Establish the link between this abstract object on the fixed unit sphere
     and the object that helps create the corresponding renderable object  */
     this.ref = point;
-    POINT_COUNT++;
-    this.name = `P-${POINT_COUNT}`;
+    SENodule.POINT_COUNT++;
+    this.name = `P-${SENodule.POINT_COUNT}`;
   }
   customStyles(): Set<Styles> {
     return styleSet;
@@ -119,10 +116,15 @@ export class SEPoint extends SENodule implements Visitable, Labelable {
   public closestLabelLocationVector(
     currentLabelLocationVector: Vector3
   ): Vector3 {
+    // The current magnification level
+    //const mag = SENodule.store.state.zoomMagnificationFactor;
+
+    const mag = 1;
     // If the idealUnitSphereVector is within the tolerance of the point, do nothing, otherwise return the vector in the plane of the ideanUnitSphereVector and the point that is at the tolerance distance away.
     if (
       this._locationVector.angleTo(currentLabelLocationVector) <
-      SETTINGS.point.maxLabelDistance
+      ((SETTINGS.point.maxLabelDistance / mag) * this.ref.pointRadiusPercent) /
+        100
     ) {
       return currentLabelLocationVector;
     } else {
@@ -132,7 +134,7 @@ export class SEPoint extends SENodule implements Visitable, Labelable {
         this._locationVector
       );
 
-      if (this.tmpVector1.isZero()) {
+      if (this.tmpVector1.isZero(SETTINGS.nearlyAntipodalIdeal)) {
         // The idealUnitSphereVector and location of the point are parallel (well antipodal because the case of being on top of each other is covered)
         // Use the north pole because any point will do as long at the crossproduct with the _locationVector is not zero.
         this.tmpVector1.set(0, 0, 1);
@@ -140,7 +142,7 @@ export class SEPoint extends SENodule implements Visitable, Labelable {
         if (
           this.tmpVector2
             .crossVectors(this._locationVector, this.tmpVector1)
-            .isZero()
+            .isZero(SETTINGS.nearlyAntipodalIdeal)
         ) {
           this.tmpVector1.set(0, 1, 0);
         }
@@ -153,11 +155,21 @@ export class SEPoint extends SENodule implements Visitable, Labelable {
         .crossVectors(this._locationVector, this.tmpVector1)
         .normalize();
       // return cos(SETTINGS.segment.maxLabelDistance)*fromVector/tmpVec + sin(SETTINGS.segment.maxLabelDistance)*toVector/tmpVec2
-      this.tmpVector2.multiplyScalar(Math.sin(SETTINGS.point.maxLabelDistance));
+      this.tmpVector2.multiplyScalar(
+        Math.sin(
+          ((SETTINGS.point.maxLabelDistance / mag) *
+            this.ref.pointRadiusPercent) /
+            100
+        )
+      );
       this.tmpVector2
         .addScaledVector(
           this._locationVector,
-          Math.cos(SETTINGS.point.maxLabelDistance)
+          Math.cos(
+            ((SETTINGS.point.maxLabelDistance / mag) *
+              this.ref.pointRadiusPercent) /
+              100
+          )
         )
         .normalize();
       return this.tmpVector2;
@@ -170,12 +182,14 @@ export class SEPoint extends SENodule implements Visitable, Labelable {
   ): boolean {
     return (
       this._locationVector.distanceTo(unitIdealVector) <
-      SETTINGS.point.hitIdealDistance / currentMagnificationFactor
+      ((SETTINGS.point.hitIdealDistance / currentMagnificationFactor) *
+        this.ref.pointRadiusPercent) /
+        100
     );
   }
 
   // I wish the SENodule methods would work but I couldn't figure out how
-  // See the attempts in SENodule
+  // See the attempts in SENodule around line 218
   public isFreePoint(): boolean {
     return this._parents.length === 0;
   }
@@ -190,5 +204,11 @@ export class SEPoint extends SENodule implements Visitable, Labelable {
   }
   public isLabel(): boolean {
     return false;
+  }
+  public isSegmentOfLengthPi(): boolean {
+    return false;
+  }
+  public isLabelable(): boolean {
+    return true;
   }
 }

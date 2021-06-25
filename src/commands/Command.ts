@@ -1,5 +1,5 @@
 /** This class uses the Command Design Pattern to
- * wraps actions into objects.
+ * wrap actions into objects.
  * The most important abstract method of this class is the `do()`
  * method, it performs the action wrapped by the object
  *
@@ -9,12 +9,17 @@
  * the actual action of the command.
  */
 
-import { Store } from "vuex";
-import { AppState } from "@/types";
-import AppStore from "@/store";
+import { SEStore } from "@/store";
 import EventBus from "@/eventHandlers/EventBus";
+import { SEPoint } from "@/models/SEPoint";
+import { SELabel } from "@/models/SELabel";
+import Point from "@/plottables/Point";
+import { DisplayStyle } from "@/plottables/Nodule";
+import Label from "@/plottables/Label";
+import SETTINGS from "@/global-settings";
+import { Vector3 } from "three";
 export abstract class Command {
-  protected static store = AppStore;
+  protected static store = SEStore;
 
   //#region commmandArrays
   static commandHistory: Command[] = []; // stack of executed commands
@@ -37,7 +42,7 @@ export abstract class Command {
     // Update the free points to update the display so that individual command and visitors do
     // not have to update the display in the middle of undoing or redoing a command (this middle stuff causes
     // problems with the move *redo*)
-    Command.store.commit.updateDisplay();
+    Command.store.updateDisplay();
     EventBus.fire("undo-enabled", { value: Command.commandHistory.length > 0 });
     EventBus.fire("redo-enabled", { value: Command.redoHistory.length > 0 });
   }
@@ -57,7 +62,7 @@ export abstract class Command {
     // Update the free points to update the display so that individual command and visitors do
     // not have to update the display in the middle of undoing or redoing a command (this middle stuff causes
     // problems with the move *redo*)
-    Command.store.commit.updateDisplay();
+    Command.store.updateDisplay();
   }
   //#endregion redo
 
@@ -80,6 +85,32 @@ export abstract class Command {
     EventBus.fire("redo-enabled", { value: Command.redoHistory.length > 0 });
   }
 
+  /**
+   * Convert all the commands in the history to textual operation code
+   * @returns
+   */
+  static dumpOpcode(): string {
+    const out = Command.commandHistory
+      .map(c => c.toOpcode()) // convert each command in the history to its string representation
+      .filter(z => z !== null); // but include only non-null output
+    return JSON.stringify(out);
+  }
+
+  static makePointAndLabel(at: Vector3): { point: SEPoint; label: SELabel } {
+    const newPoint = new Point();
+    newPoint.stylize(DisplayStyle.ApplyCurrentVariables);
+    newPoint.adjustSize();
+    const point = new SEPoint(newPoint);
+    point.locationVector.copy(at);
+
+    const newLabel = new Label();
+    const label = new SELabel(newLabel, point);
+    label.locationVector.copy(at);
+    const offset = SETTINGS.point.initialLabelOffset;
+    label.locationVector.add(new Vector3(2 * offset, offset, 0)).normalize();
+    return { point, label };
+  }
+
   // Child classes of Command must implement the following abstract methods
   /**
    * restoreState: Perform necessary action to restore the app state.
@@ -97,4 +128,18 @@ export abstract class Command {
 
   /**  do: Perform necessary action to alter the app state*/
   abstract do(): void;
+
+  /** Generate an opcode ("assembly code") that can be saved as an executable script
+   * and interpreted at runtime by calling the constructor of Command subclasses. 
+   * The generated opcode shall include sufficient details for invoking the constructor.
+   * 
+   * @returns Several possible return values:
+
+   * - A simple command shall return a string
+   * - A command group shall return an array of string (one string per command in the group)
+   * - A command that should be excluded/ignored during interpretation at runtime
+   *   shall return null
+   */
+
+  abstract toOpcode(): null | string | Array<string>;
 }

@@ -6,7 +6,8 @@
         <v-container>
           <v-row>
             <v-col cols="12">
-              <v-textarea auto-grow
+              <v-textarea id="_test_input_expr"
+                auto-grow
                 dense
                 full-width
                 outlined
@@ -17,18 +18,19 @@
                 class="ma-0"
                 v-model="calcExpression"
                 :error-messages="parsingError"
-                @keypress="onKeyPressed"
-                @click:clear="calcResult = 0">
+                @keydown="onKeyPressed"
+                @click:clear="reset">
               </v-textarea>
 
             </v-col>
           </v-row>
-          <v-text-field dense
+          <v-text-field id="_test_output_result"
+            dense
             outlined
             readonly
             v-bind:label="$t('objectTree.result')"
             placeholder="0"
-            v-model.number="calcResult">
+            v-model="calcResult">
           </v-text-field>
         </v-container>
       </v-card-text>
@@ -36,7 +38,8 @@
         <v-spacer></v-spacer>
         <!--- Disable the FAB when either the expression text is empty or
           there is a syntax error -->
-        <v-btn small
+        <v-btn id="_test_add_expr"
+          small
           fab
           right
           color="accent"
@@ -50,18 +53,19 @@
 </template>
 <script lang="ts">
 import Vue from "vue";
-import { State } from "vuex-class";
 import Component from "vue-class-component";
-import { AppState } from "@/types";
+import { AppState, UpdateMode } from "@/types";
 import { SEMeasurement } from "@/models/SEMeasurement";
 import { SECalculation } from "@/models/SECalculation";
-import { AddExpressionCommand } from "@/commands/AddExpressionCommand";
+import { AddCalculationCommand } from "@/commands/AddCalculationCommand";
 import { ExpressionParser } from "@/expression/ExpressionParser";
 import EventBus from "@/eventHandlers/EventBus";
+import { namespace } from "vuex-class";
+const SE = namespace("se");
 
 @Component({})
 export default class ExpressionForm extends Vue {
-  @State((s: AppState) => s.expressions)
+  @SE.State((s: AppState) => s.expressions)
   readonly expressions!: SEMeasurement[];
 
   private parser = new ExpressionParser();
@@ -74,33 +78,37 @@ export default class ExpressionForm extends Vue {
   readonly varMap = new Map<string, number>();
 
   mounted(): void {
-    console.debug("Setting up listener for measuremeent-selected");
     EventBus.listen("measurement-selected", this.addVarToExpr.bind(this));
+  }
+
+  reset(): void {
+    this.calcExpression = "";
+    this.calcResult = 0;
   }
 
   addVarToExpr(param: any): void {
     console.debug("Variable selected", param);
     this.calcExpression += param;
+    this.onKeyPressed();
   }
+
   onKeyPressed(): void {
-    console.debug("Key press");
+    // console.debug("Key press");
     this.parsingError = "";
     if (this.timerInstance) clearTimeout(this.timerInstance);
     this.timerInstance = setTimeout(() => {
       try {
-        this.varMap.clear();
-        console.debug("Calc me!");
-        this.expressions.forEach((m: SEMeasurement) => {
-          const measurementName = m.name;
-          console.debug("Measurement", m, measurementName);
-          this.varMap.set(measurementName.replace(/-.+/, ""), m.value);
-        });
-        console.debug("Variable map", this.varMap);
-        // no code
+        // console.debug(
+        //   "Calc ",
+        //   this.calcExpression,
+        //   "using parser",
+        //   this.parser
+        // );
         this.calcResult =
           this.calcExpression.length > 0
             ? this.parser.evaluateWithVars(this.calcExpression, this.varMap)
             : 0;
+        // console.debug("Calculation result is", this.calcResult);
       } catch (err) {
         // no code
         // console.debug("Got an error", err);
@@ -110,9 +118,17 @@ export default class ExpressionForm extends Vue {
   }
 
   addExpression(): void {
-    console.debug("Adding experssion", this.calcExpression);
+    // console.debug("Adding expression", this.calcExpression);
     const calc = new SECalculation(this.calcExpression);
-    new AddExpressionCommand(calc).execute();
+    new AddCalculationCommand(calc, this.calcExpression).execute();
+    calc.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
+    this.reset();
+    this.varMap.clear();
+    this.expressions.forEach((m: SEMeasurement) => {
+      const measurementName = m.name;
+      // console.debug("Measurement", m, measurementName);
+      this.varMap.set(measurementName.replace(/-.+/, ""), m.value);
+    });
   }
 }
 </script>

@@ -10,6 +10,7 @@ export class SEPointOnOneDimensional extends SEPoint {
    */
   private oneDimensionalParent: SEOneDimensional;
 
+  private tmpVector4 = new Vector3();
   /**
    * Create an intersection point between two one-dimensional objects
    * @param point the TwoJS point associated with this intersection
@@ -52,6 +53,10 @@ export class SEPointOnOneDimensional extends SEPoint {
    * When undoing or redoing a move, we do *not* want to use the "set locationVector" method because
    * that will set the position on a potentially out of date object. We will trust that we do not need to
    * use the closest point method and that the object that this point depends on will be move under this point (if necessary)
+   *
+   * Without this method being called from rotationVisitor and pointMoverVisitor, if you create a line segment, a point on that line segment.
+   * Then if you move one endpoint of the line segment (causing the point on it to move maybe by shrinking the original line segment) and then you undo the movement of the
+   * endpoint of the line segment, the point on the segment doesn’t return to its proper (original) location.
    * @param pos The new position of the point
    */
   public pointDirectLocationSetter(pos: Vector3): void {
@@ -74,10 +79,15 @@ export class SEPointOnOneDimensional extends SEPoint {
     this._exists = this.oneDimensionalParent.exists;
     if (this._exists) {
       // Update the current location with the closest point on the parent to the old location
-      this.locationVector = (this
-        .oneDimensionalParent as SEOneDimensional).closestVector(
-        this._locationVector
-      );
+      this._locationVector
+        .copy(
+          (this.oneDimensionalParent as SEOneDimensional).closestVector(
+            this._locationVector
+          )
+        )
+        .normalize();
+      // Set the position of the associated displayed plottable Point
+      this.ref.positionVector = this._locationVector;
     }
     // Update visibility
     if (this._showing && this._exists) {

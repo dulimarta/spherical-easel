@@ -19,7 +19,7 @@ Create a ellipse.
 ::: tool-details
 
 - Click to declare two points (these might be new free points or ones that snap to an existing point, object or intersection) the foci of the ellipse. Then click to decare a point (this might be new free point or one that snaps to an existing point, object or intersection) on the ellipse.
-- Given two non-antipodal points (called foci, $F_1$ and $F_2$) and a point $P$. If we let $C = d(F_1,P) +d(F_1,P)$, a ellipse containing the point $P$ with foci $F_1$ and $F_2$ is the collection of points $Q$ so that $C = d(F_1,Q)+ d(F_1,Q)$. (Note that $d(A,B) is the [distance](/tools/measurement.html#distance) between points $A$ and $B\$).
+- Given two non-antipodal points (called foci, $F_1$ and $F_2$) and a point $P$. If we let $C = d(F_1,P) +d(F_1,P)$, a ellipse containing the point $P$ with foci $F_1$ and $F_2$ is the collection of points $Q$ so that $C = d(F_1,Q)+ d(F_1,Q)$. (Note that $d(A,B)$ is the [distance](/tools/measurement.html#distance) between points $A$ and $B$).
 - The [Midpoint Tool](/tools/construction.html#midpoint) can be used to create the center of the ellipse which is the midpoint of the two foci.
 - When an ellipse is created, a row describing some of its properties will appear in the Conics Section of the [Objects Tab](/userguide/#objects-tab).
 - If this tool is activated with three points selected, the above action is performed automatically where the first two points are the foci of the ellipse and the third is the point on the ellipse.

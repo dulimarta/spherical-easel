@@ -1,11 +1,13 @@
+// eslint-disable-file @typescript-eslint/no-unused-vars
 import { Visitor } from "./Visitor";
 import { SEPoint } from "@/models/SEPoint";
 import { SELine } from "@/models/SELine";
 import { Vector3 } from "three";
 import { SECircle } from "@/models/SECircle";
 import { SESegment } from "@/models/SESegment";
-import { SEPointOnOneDimensional } from "@/models/SEPointOnOneDimensional";
 import { SELabel } from "@/models/SELabel";
+import { SEEllipse } from "@/models/SEEllipse";
+import { SEAngleMarker } from "@/models/SEAngleMarker";
 
 export class LabelMoverVisitor implements Visitor {
   private locationVector: Vector3 = new Vector3();
@@ -23,19 +25,33 @@ export class LabelMoverVisitor implements Visitor {
     // }
   }
 
+  // eslint-disable-next-line
   actionOnPoint(p: SEPoint): void {
     //p.update();
   }
 
+  // eslint-disable-next-line
   actionOnLine(m: SELine): void {
     //m.update();
   }
 
+  // eslint-disable-next-line
   actionOnSegment(s: SESegment): void {
     // s.update();
   }
 
+  // eslint-disable-next-line
   actionOnCircle(c: SECircle): void {
     // c.update();
+  }
+
+  // eslint-disable-next-line
+  actionOnEllipse(e: SEEllipse): void {
+    // e.update();
+  }
+
+  // eslint-disable-next-line
+  actionOnAngleMarker(a: SEAngleMarker): void {
+    //a.update()
   }
 }

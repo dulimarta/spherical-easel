@@ -2,6 +2,10 @@ import Two from "two.js";
 import Highlighter from "./Highlighter";
 import { SENodule } from "@/models/SENodule";
 import { SetNoduleDisplayCommand } from "@/commands/SetNoduleDisplayCommand";
+import { SEPoint } from "@/models/SEPoint";
+import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
+import { CommandGroup } from "@/commands/CommandGroup";
+import { SEStore } from "@/store";
 
 export default class HideObjectHandler extends Highlighter {
   /**
@@ -13,20 +17,30 @@ export default class HideObjectHandler extends Highlighter {
     super(layers);
   }
 
-  mousePressed(event: MouseEvent): void {
+  mousePressed(_event: MouseEvent): void {
     //Select an object to delete
     if (this.isOnSphere) {
-      // In the case of multiple selections prioritize points > lines > segments > circles
+      // In the case of multiple selections prioritize points > lines > segments > circles>ellipses > labels
       if (this.hitSEPoints.length > 0) {
-        this.victim = this.hitSEPoints[0];
+        // you can't hide non-user created intersection points
+        if (
+          !(this.hitSEPoints[0] instanceof SEIntersectionPoint) ||
+          (this.hitSEPoints[0] as SEIntersectionPoint).isUserCreated
+        ) {
+          this.victim = this.hitSEPoints[0];
+        }
       } else if (this.hitSELines.length > 0) {
         this.victim = this.hitSELines[0];
       } else if (this.hitSESegments.length > 0) {
         this.victim = this.hitSESegments[0];
       } else if (this.hitSECircles.length > 0) {
         this.victim = this.hitSECircles[0];
+      } else if (this.hitSEEllipses.length > 0) {
+        this.victim = this.hitSEEllipses[0];
       } else if (this.hitSELabels.length > 0) {
         this.victim = this.hitSELabels[0];
+      } else if (this.hitSEAngleMarkers.length > 0) {
+        this.victim = this.hitSEAngleMarkers[0];
       }
 
       if (this.victim != null) {
@@ -38,8 +52,34 @@ export default class HideObjectHandler extends Highlighter {
   }
 
   mouseMoved(event: MouseEvent): void {
-    // Highlight all nearby objects and update location vectors
+    // Highlight only one object, the one that will be hidden if the user mouse presses
     super.mouseMoved(event);
+    if (this.hitSEPoints.length > 0) {
+      // never highlight non user created intersection points
+      const filteredPoints = this.hitSEPoints.filter((p: SEPoint) => {
+        if (
+          p instanceof SEIntersectionPoint &&
+          !(p as SEIntersectionPoint).isUserCreated
+        ) {
+          return false;
+        } else {
+          return true;
+        }
+      });
+      if (filteredPoints.length > 0) filteredPoints[0].glowing = true;
+    } else if (this.hitSESegments.length > 0) {
+      this.hitSESegments[0].glowing = true;
+    } else if (this.hitSELines.length > 0) {
+      this.hitSELines[0].glowing = true;
+    } else if (this.hitSECircles.length > 0) {
+      this.hitSECircles[0].glowing = true;
+    } else if (this.hitSEEllipses.length > 0) {
+      this.hitSEEllipses[0].glowing = true;
+    } else if (this.hitSELabels.length > 0) {
+      this.hitSELabels[0].glowing = true;
+    } else if (this.hitSEAngleMarkers.length > 0) {
+      this.hitSEAngleMarkers[0].glowing = true;
+    }
   }
 
   // eslint-disable-next-line
@@ -52,9 +92,18 @@ export default class HideObjectHandler extends Highlighter {
   }
   activate(): void {
     // Hide all selected objects
-    this.hitSENodules.forEach(object =>
-      new SetNoduleDisplayCommand(object, false).execute()
-    );
+    const hideCommandGroup = new CommandGroup();
+    SEStore.selectedSENodules
+      .filter(
+        (object: SENodule) =>
+          !(object instanceof SEIntersectionPoint) ||
+          (object as SEIntersectionPoint).isUserCreated
+      )
+      .forEach((object: SENodule) =>
+        hideCommandGroup.addCommand(new SetNoduleDisplayCommand(object, false))
+      );
+
+    hideCommandGroup.execute();
     // Unselect the selected objects and clear the selectedObject array
     super.activate();
   }

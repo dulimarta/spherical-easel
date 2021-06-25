@@ -11,14 +11,11 @@ import { UpdateMode, UpdateStateType, CircleState } from "@/types";
 import { Labelable } from "@/types";
 import { SELabel } from "@/models/SELabel";
 
-let CIRCLE_COUNT = 0;
-
 const styleSet = new Set([
   Styles.strokeColor,
   Styles.strokeWidthPercent,
   Styles.dashArray,
   Styles.fillColor,
-  Styles.opacity,
   Styles.dynamicBackStyle
 ]);
 export class SECircle extends SENodule
@@ -26,7 +23,7 @@ export class SECircle extends SENodule
   /**
    * The plottable (TwoJS) segment associated with this model segment
    */
-  public ref!: Circle;
+  public ref: Circle;
   /**
    * Pointer to the label of this SESegment
    */
@@ -64,8 +61,8 @@ export class SECircle extends SENodule
     this._centerSEPoint = centerPoint;
     this._circleSEPoint = circlePoint;
 
-    CIRCLE_COUNT++;
-    this.name = `C-${CIRCLE_COUNT}`;
+    SECircle.CIRCLE_COUNT++;
+    this.name = `C-${SECircle.CIRCLE_COUNT}`;
   }
   // #endregion circleConstructor
 
@@ -128,11 +125,11 @@ export class SECircle extends SENodule
     // store it in the stateArray for undo move. Only store for delete
 
     if (state.mode == UpdateMode.RecordStateForDelete) {
-      const pointState: CircleState = {
+      const circleState: CircleState = {
         kind: "circle",
         object: this
       };
-      state.stateArray.push(pointState);
+      state.stateArray.push(circleState);
     }
 
     this.updateKids(state);
@@ -150,7 +147,7 @@ export class SECircle extends SENodule
     );
     // Check to see if the tmpVector is zero (i.e the center and  idealUnit vectors are parallel -- ether
     // nearly antipodal or in the same direction)
-    if (this.tmpVector.isZero()) {
+    if (this.tmpVector.isZero(SETTINGS.nearlyAntipodalIdeal)) {
       return this._circleSEPoint.locationVector; // An arbitrary point will do as all points are equally far away
     } else {
       // Make the tmpVector (soon to be the to vector) unit
@@ -173,13 +170,17 @@ export class SECircle extends SENodule
    * @param idealUnitSphereVector A vector on the unit sphere
    */
   public closestLabelLocationVector(idealUnitSphereVector: Vector3): Vector3 {
-    // First find the closest point on the segment to the idealUnitSphereVector
+    // First find the closest point on the circle to the idealUnitSphereVector
     this.tmpVector.copy(this.closestVector(idealUnitSphereVector));
+
+    // The current magnification level
+    //const mag = SENodule.store.state.zoomMagnificationFactor;
+    const mag = 1;
 
     // If the idealUnitSphereVector is within the tolerance of the closest point, do nothing, otherwise return the vector in the plane of the ideanUnitSphereVector and the closest point that is at the tolerance distance away.
     if (
       this.tmpVector.angleTo(idealUnitSphereVector) <
-      SETTINGS.circle.maxLabelDistance
+      SETTINGS.circle.maxLabelDistance / mag
     ) {
       return idealUnitSphereVector;
     } else {
@@ -192,12 +193,12 @@ export class SECircle extends SENodule
       this.tmpVector2.crossVectors(this.tmpVector, this.tmpVector1).normalize;
       // return cos(SETTINGS.segment.maxLabelDistance)*fromVector/tmpVec + sin(SETTINGS.segment.maxLabelDistance)*toVector/tmpVec2
       this.tmpVector2.multiplyScalar(
-        Math.sin(SETTINGS.circle.maxLabelDistance)
+        Math.sin(SETTINGS.circle.maxLabelDistance / mag)
       );
       return this.tmpVector2
         .addScaledVector(
           this.tmpVector,
-          Math.cos(SETTINGS.circle.maxLabelDistance)
+          Math.cos(SETTINGS.circle.maxLabelDistance / mag)
         )
         .normalize();
     }
@@ -212,26 +213,25 @@ export class SECircle extends SENodule
    * use the oldNormal to help compute a new normal (which is returned)
    * @param sePoint A point on the line normal to this circle
    */
-  public getNormalToLineThru(
+  public getNormalsToLineThru(
     sePointVector: Vector3,
     oldNormal: Vector3
-  ): Vector3 {
+  ): Vector3[] {
     this.tmpVector.crossVectors(
       sePointVector,
       this._centerSEPoint.locationVector
     );
     // Check to see if the tmpVector is zero (i.e the center point and given point are parallel -- ether
     // nearly antipodal or in the same direction)
-    if (this.tmpVector.isZero()) {
+    if (this.tmpVector.isZero(SETTINGS.nearlyAntipodalIdeal)) {
       // In this case any line containing the sePoint will be perpendicular to the circle, but
-      //  we want to choose one line whose normal is near the oldNormal which was choosen to be normal
-      //  to the plane of the center and circle points, so choose that again.
-      this.tmpVector.crossVectors(
-        this._centerSEPoint.locationVector,
-        this._circleSEPoint.locationVector
-      );
+      //  we want to choose one line whose normal is near the oldNormal and perpendicular to sePointVector
+      // So project the oldNormal vector onto the plane perpendicular to sePointVector
+      this.tmpVector
+        .copy(oldNormal)
+        .addScaledVector(sePointVector, -1 * oldNormal.dot(sePointVector));
     }
-    return this.tmpVector.normalize();
+    return [this.tmpVector.normalize()];
   }
 
   /**
@@ -282,20 +282,26 @@ export class SECircle extends SENodule
   }
 
   // I wish the SENodule methods would work but I couldn't figure out how
-  // See the attempts in SENodule
-  public isFreePoint() {
+  // See the attempts in SENodule around line 218
+  public isFreePoint(): boolean {
     return false;
   }
-  public isOneDimensional() {
+  public isOneDimensional(): boolean {
     return true;
   }
-  public isPoint() {
+  public isPoint(): boolean {
     return false;
   }
-  public isPointOnOneDimensional() {
+  public isPointOnOneDimensional(): boolean {
     return false;
   }
   public isLabel(): boolean {
     return false;
+  }
+  public isSegmentOfLengthPi(): boolean {
+    return false;
+  }
+  public isLabelable(): boolean {
+    return true;
   }
 }

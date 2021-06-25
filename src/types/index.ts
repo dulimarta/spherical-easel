@@ -9,11 +9,12 @@ import { SESegment } from "@/models/SESegment";
 import { SENodule } from "@/models/SENodule";
 import Nodule from "@/plottables/Nodule";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
-import { Vector3 } from "three";
-import { SEMeasurement } from "@/models/SEMeasurement";
-import { SECalculation } from "@/models/SECalculation";
-import { StyleOptions } from "@/types/Styles";
+import { Matrix4, Vector3 } from "three";
+import { StyleEditPanels, StyleOptions } from "@/types/Styles";
 import { SEExpression } from "@/models/SEExpression";
+import { SEAngleMarker } from "@/models/SEAngleMarker";
+import { SEPerpendicularLineThruPoint } from "@/models/SEPerpendicularLineThruPoint";
+import { SEEllipse } from "@/models/SEEllipse";
 
 export interface Selectable {
   hit(x: number, y: number, coord: unknown, who: unknown): boolean;
@@ -34,18 +35,25 @@ export interface AppState {
   seLines: SELine[];
   seSegments: SESegment[];
   seCircles: SECircle[];
+  seEllipses: SEEllipse[];
+  seAngleMarkers: SEAngleMarker[];
   seLabels: SELabel[];
   seNodules: SENodule[];
-  selections: SENodule[];
+  selectedSENodules: SENodule[];
+
   intersections: SEIntersectionPoint[];
   // measurements: SEMeasurement[];
   expressions: SEExpression[];
   temporaryNodules: Nodule[];
   initialStyleStates: StyleOptions[];
   defaultStyleStates: StyleOptions[];
+  oldStyleSelections: SENodule[];
+  styleSavedFromPanel: StyleEditPanels;
   initialBackStyleContrast: number;
-  useLabelMode: boolean; // In the case of one non-labe object being selected, the label panel should edit that object's label and the fore/back ground should edit
-  // that selectedObject fore and back properties: useLabelMode indicates that we are doing this.
+  inverseTotalRotationMatrix: Matrix4; // Initially the identity. This is the composition of all the inverses of the rotation matrices applied to the sphere.
+  svgCanvas: HTMLDivElement | null;
+  hasUnsavedNodules: boolean;
+  temporaryProfilePicture: string;
 }
 /* This interface lists all the properties that each tool/button must have. */
 export interface ToolButtonType {
@@ -96,7 +104,7 @@ export interface Labelable {
 /**
  * All the one dimensional SE Classes
  */
-export type SEOneDimensional = SELine | SESegment | SECircle;
+export type SEOneDimensional = SELine | SESegment | SECircle | SEEllipse;
 
 export type hslaColorType = {
   h: number;
@@ -124,10 +132,43 @@ export interface UpdateStateType {
  */
 export type ObjectState =
   | CircleState
+  | EllipseState
   | LineState
   | SegmentState
   | PointState
-  | LabelState;
+  | LabelState
+  | AngleMarkerState
+  | PerpendicularLineThruPointState;
+
+export interface PerpendicularLineThruPointState {
+  kind: "perpendicularLineThruPoint";
+  object: SEPerpendicularLineThruPoint;
+}
+
+export function isPerpendicularLineThruPointState(
+  entry: ObjectState
+): entry is PerpendicularLineThruPointState {
+  return entry.kind === "perpendicularLineThruPoint";
+}
+
+export interface AngleMarkerState {
+  kind: "angleMarker";
+  object: SEAngleMarker;
+  // vertexVectorX: number;
+  // vertexVectorY: number;
+  // vertexVectorZ: number;
+  // startVectorX: number;
+  // startVectorY: number;
+  // startVectorZ: number;
+  // endVectorX: number;
+  // endVectorY: number;
+  // endVectorZ: number;
+}
+export function isAngleMarkerState(
+  entry: ObjectState
+): entry is AngleMarkerState {
+  return entry.kind === "angleMarker";
+}
 
 export interface LineState {
   kind: "line";
@@ -170,6 +211,7 @@ export interface LabelState {
 export function isLabelState(entry: ObjectState): entry is LabelState {
   return entry.kind === "label";
 }
+
 export interface CircleState {
   // No fields are needed for moving circles because they are completely determined by their point parents
   kind: "circle";
@@ -178,4 +220,49 @@ export interface CircleState {
 }
 export function isCircleState(entry: ObjectState): entry is CircleState {
   return entry.kind === "circle";
+}
+
+export interface EllipseState {
+  // No fields are needed for moving ellipses because they are completely determined by their point parents
+  kind: "ellipse";
+  // Fields needed for undoing delete
+  object: SEEllipse;
+}
+export function isEllipseState(entry: ObjectState): entry is EllipseState {
+  return entry.kind === "ellipse";
+}
+
+export type ConstructionScript = Array<string | Array<string>>;
+
+export interface SphericalConstruction extends ConstructionInFirestore {
+  id: string;
+  parsedScript: ConstructionScript;
+  sphereRotationMatrix: Matrix4;
+  objectCount: number;
+  previewData: string;
+}
+
+export interface ConstructionInFirestore {
+  author: string;
+  dateCreated: string;
+  script: string;
+  description: string;
+  rotationMatrix?: string;
+  preview?: string;
+}
+/* UserProfile as stored in Firestore "users" collection */
+export interface UserProfile {
+  profilePictureURL?: string;
+  displayName?: string;
+  location?: string;
+  role?: string;
+}
+
+export enum AngleMode {
+  NONE,
+  LINES,
+  POINTS,
+  SEGMENTS,
+  LINEANDSEGMENT,
+  SEGMENTSORLINEANDSEGMENT
 }

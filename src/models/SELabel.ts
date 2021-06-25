@@ -5,25 +5,16 @@ import { SENodule } from "./SENodule";
 import { Vector3 } from "three";
 import SETTINGS from "@/global-settings";
 import { Styles } from "@/types/Styles";
-import {
-  UpdateMode,
-  UpdateStateType,
-  LabelState,
-  SEOneDimensional,
-  Labelable
-} from "@/types";
-import { Store } from "vuex";
-import { AppState } from "@/types";
-import AppStore from "@/store";
+import { UpdateMode, UpdateStateType, LabelState, Labelable } from "@/types";
+import { SEStore } from "@/store";
 import { SEPoint } from "./SEPoint";
 import { SESegment } from "./SESegment";
 import { SELine } from "./SELine";
 import { SECircle } from "./SECircle";
-import { SetNoduleDisplayCommand } from "@/commands/SetNoduleDisplayCommand";
+import { SEAngleMarker } from "./SEAngleMarker";
+import { SEEllipse } from "./SEEllipse";
 
 const styleSet = new Set([
-  Styles.fillColor,
-  Styles.opacity,
   Styles.labelTextScalePercent,
   Styles.dynamicBackStyle,
   Styles.labelTextStyle,
@@ -33,22 +24,13 @@ const styleSet = new Set([
   Styles.labelDisplayCaption,
   Styles.labelDisplayText,
   Styles.labelDisplayMode,
-  Styles.labelVisibility,
-  Styles.objectVisibility
+  Styles.labelFrontFillColor,
+  Styles.labelBackFillColor
 ]);
 
 export class SELabel extends SENodule implements Visitable {
   /* Access to the store to retrieve the canvas size so that the bounding rectangle for the text can be computed properly*/
-  protected store = AppStore;
-
-  /* Variables to determine which labels to show initially*/
-  // static showFreePointsLabelsInitially =
-  //   SETTINGS.point.showLabelsOfFreePointsInitially;
-  // static showNonFreePointsLabelsInitially =
-  //   SETTINGS.point.showLabelsOfFreePointsInitially;
-  // static showLineLabelsInitially = SETTINGS.line.showLabelsInitially;
-  // static showSegmentLabelsInitially = SETTINGS.segment.showLabelsInitially;
-  // static showCircleLabelsInitially = SETTINGS.circle.showLabelsInitially;
+  // protected store = AppStore;
 
   /* This should be the only reference to the plotted version of this SELabel */
   public ref: Label;
@@ -61,6 +43,7 @@ export class SELabel extends SENodule implements Visitable {
    */
   protected _locationVector = new Vector3();
 
+  private tmpVector = new Vector3();
   /**
    * Create a label of the parent object
    * @param label the TwoJS label associated with this SELabel
@@ -68,31 +51,52 @@ export class SELabel extends SENodule implements Visitable {
    */
   constructor(label: Label, parent: SENodule) {
     super();
-    // console.log("store", SELabel.store);
+
     this.ref = label;
     this.parent = parent;
     label.seLabel = this; // used so that Label (the plottable) can set the visibility of the parent
     ((this.parent as unknown) as Labelable).label = this;
-    this.name = `LabelOf(${parent.name})`;
-    // Set the initial names.
-    label.initialNames = parent.name;
+
+    if (this.parent instanceof SEAngleMarker) {
+      // SEAngleMarker is both an expression and a plottable (the only one?)
+      // As an expression to be used in the calculation parent.name must begin with "M###" so that it
+      // can be referenced by the user and found by the parser when doing a calculation
+      // however we don't want the initial name and initial shortName of the angle marker to be displayed with a "M###" at the start
+      //  so this is how we get around this
+      this.name = `LabelOf(Am-${this.parent.angleMarkerNumber})`;
+      // Set the initial names.
+      label.initialNames = `Am-${this.parent.angleMarkerNumber}`;
+    } else {
+      this.name = `LabelOf(${parent.name})`;
+      // Set the initial names.
+      label.initialNames = parent.name;
+    }
     // Set the size for zoom
     this.ref.adjustSize();
 
-    // Display the label
-
+    // Display the label initially (both showing or not or the mode)
     if (parent instanceof SEPoint) {
+      this.ref.initialLabelDisplayMode = SETTINGS.point.defaultLabelMode;
       if (parent.isFreePoint()) {
         this.showing = SETTINGS.point.showLabelsOfFreePointsInitially;
       } else {
         this.showing = SETTINGS.point.showLabelsOfNonFreePointsInitially;
       }
     } else if (parent instanceof SELine) {
+      this.ref.initialLabelDisplayMode = SETTINGS.line.defaultLabelMode;
       this.showing = SETTINGS.line.showLabelsInitially;
     } else if (parent instanceof SESegment) {
+      this.ref.initialLabelDisplayMode = SETTINGS.segment.defaultLabelMode;
       this.showing = SETTINGS.segment.showLabelsInitially;
     } else if (parent instanceof SECircle) {
+      this.ref.initialLabelDisplayMode = SETTINGS.circle.defaultLabelMode;
       this.showing = SETTINGS.circle.showLabelsInitially;
+    } else if (parent instanceof SEAngleMarker) {
+      this.ref.initialLabelDisplayMode = SETTINGS.angleMarker.defaultLabelMode;
+      this.showing = SETTINGS.angleMarker.showLabelsInitially;
+    } else if (parent instanceof SEEllipse) {
+      this.ref.initialLabelDisplayMode = SETTINGS.ellipse.defaultLabelMode;
+      this.showing = SETTINGS.ellipse.showLabelsInitially;
     } else {
       this.showing = true;
     }
@@ -120,7 +124,7 @@ export class SELabel extends SENodule implements Visitable {
   }
 
   public update(state: UpdateStateType): void {
-    console.log("update label");
+    // console.log("update SElabel");
     // If any one parent is not up to date, don't do anything
     if (!this.canUpdateNow()) {
       return;
@@ -130,9 +134,11 @@ export class SELabel extends SENodule implements Visitable {
     //These labels don't exist when their parent doesn't exist
     this._exists = this.parent.exists;
     if (this._exists) {
-      this._locationVector = ((this
-        .parent as unknown) as Labelable).closestLabelLocationVector(
-        this._locationVector
+      this.tmpVector.copy(this._locationVector);
+      this._locationVector.copy(
+        ((this.parent as unknown) as Labelable).closestLabelLocationVector(
+          this.tmpVector
+        )
       );
       //Update the location of the associate plottable Label (setter also updates the display)
       this.ref.positionVector = this._locationVector;
@@ -182,6 +188,7 @@ export class SELabel extends SENodule implements Visitable {
         )
         .normalize();
     } else {
+      console.log("label parent out of date");
       this._locationVector.copy(pos);
     }
     // Set the position of the associated displayed plottable Label
@@ -202,7 +209,7 @@ export class SELabel extends SENodule implements Visitable {
     const boundingBox = this.ref.boundingRectangle;
     // Get the canvas size so the bounding box can be corrected
     // console.log("SELabel.store.getters", this.store);
-    const canvasSize = this.store.getters.getCanvasWidth();
+    const canvasSize = SEStore.canvasWidth;
 
     return (
       boundingBox.left - canvasSize / 2 <
@@ -221,16 +228,22 @@ export class SELabel extends SENodule implements Visitable {
   public isFreePoint(): boolean {
     return false;
   }
-  public isOneDimensional(): this is SEOneDimensional {
+  public isOneDimensional(): boolean {
     return false;
   }
   public isPoint(): boolean {
     return false;
   }
-  public isPointOnOneDimensional(): false {
+  public isPointOnOneDimensional(): boolean {
     return false;
   }
   public isLabel(): boolean {
     return true;
+  }
+  public isSegmentOfLengthPi(): boolean {
+    return false;
+  }
+  public isLabelable(): boolean {
+    return false;
   }
 }

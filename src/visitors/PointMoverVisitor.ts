@@ -6,6 +6,8 @@ import { Vector3 } from "three";
 import { SECircle } from "@/models/SECircle";
 import { SESegment } from "@/models/SESegment";
 import { SEPointOnOneDimensional } from "@/models/SEPointOnOneDimensional";
+import { SEEllipse } from "@/models/SEEllipse";
+import { SEAngleMarker } from "@/models/SEAngleMarker";
 
 export class PointMoverVisitor implements Visitor {
   private locationVector: Vector3 = new Vector3();
@@ -14,6 +16,11 @@ export class PointMoverVisitor implements Visitor {
     this.locationVector.copy(vec);
   }
 
+  /**
+   * Without the pointDirectLocationSetter being called from rotationVisitor and pointMoverVisitor, if you create a line segment, a point on that line segment.
+   * Then if you move one endpoint of the line segment (causing the point on it to move maybe by shrinking the original line segment) and then you undo the movement of the
+   * endpoint of the line segment, the point on the segment doesn’t return to its proper (original) location.
+   */
   //#region actionOnPoint
   actionOnPoint(p: SEPoint): void {
     // Don't use the usual location setter for points on one dimensional because that will move the label to the location on a possibly out of date parent.
@@ -22,26 +29,34 @@ export class PointMoverVisitor implements Visitor {
     } else {
       p.pointDirectLocationSetter(this.locationVector);
     }
-
-    // Don't update here, because it may cause a point on one dimensional to update to the wrong location
-    // The undo and restore methods of command cause one update for display at the end of every command or
-    // command group
-    //p.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
   }
   //#endregion actionOnPoint
 
+  // eslint-disable-next-line
   actionOnLine(m: SELine): void {
     //m.update();
   }
 
+  // eslint-disable-next-line
   actionOnSegment(s: SESegment): void {
     // s.update();
   }
 
+  // eslint-disable-next-line
   actionOnCircle(c: SECircle): void {
     // c.update();
   }
+  // eslint-disable-next-line
   actionOnLabel(l: SELabel): void {
     // l.update();
+  }
+  // eslint-disable-next-line
+  actionOnEllipse(e: SEEllipse): void {
+    // e.update();
+  }
+
+  // eslint-disable-next-line
+  actionOnAngleMarker(a: SEAngleMarker): void {
+    //a.update()
   }
 }
