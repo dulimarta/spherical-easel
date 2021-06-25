@@ -210,13 +210,17 @@ export default class App extends Vue {
   }
 
   readonly keyHandler = (ev: KeyboardEvent): void => {
+    //console.log("here b");
     if (!ev.altKey) return;
     if (!ev.ctrlKey) return;
+    console.log("here a", this.acceptedKeys, ev.key);
 
-    if (ev.key === "s" && this.acceptedKeys === 0) {
+    if (ev.key === "ß" && this.acceptedKeys === 0) {
+      // ctrl + alt + s = ß
       console.info("'S' is accepted");
       this.acceptedKeys = 1;
-    } else if (ev.key === "e" && this.acceptedKeys === 1) {
+    } else if (ev.key === "Dead" && this.acceptedKeys === 1) {
+      // ctrl + alt + e = Dead
       this.acceptedKeys = 2;
       console.info("'E' is accepted", this.accountEnabled, this.acceptedKeys);
       // Directly setting the accountEnable flag here does not trigger

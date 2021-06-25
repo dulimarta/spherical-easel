@@ -1484,21 +1484,7 @@
     "@types/istanbul-reports" "^1.1.1"
     "@types/yargs" "^13.0.0"
 
-<<<<<<< HEAD
-"@jest/types@^25.5.0":
-  version "25.5.0"
-  resolved "https://registry.yarnpkg.com/@jest/types/-/types-25.5.0.tgz#4d6a4793f7b9599fc3680877b856a97dbccf2a9d"
-  integrity sha512-OXD0RgQ86Tu3MazKo8bnrkDRaDXXMGUqd+kTtLtK1Zb7CRzQcaSRPPPV37SvYTdevXEBVxe0HXylEjs8ibkmCw==
-  dependencies:
-    "@types/istanbul-lib-coverage" "^2.0.0"
-    "@types/istanbul-reports" "^1.1.1"
-    "@types/yargs" "^15.0.0"
-    chalk "^3.0.0"
-
-"@maginapp/vuepress-plugin-katex@^1.0.11":
-=======
 "@maginapp/vuepress-plugin-katex@^1.0.7":
->>>>>>> ad58e859b6b32aa771b94596f16070bd468df7f5
   version "1.0.11"
   resolved "https://registry.yarnpkg.com/@maginapp/vuepress-plugin-katex/-/vuepress-plugin-katex-1.0.11.tgz#da8f7d7f43c53c1f4b383e67f1e49710da9d058c"
   integrity sha512-QsO8FxU790DGkcBVIcoRxKeySqmma5PnPEmRjmsQW2nYH01bUHdQwOEB2ny1nAWL3PU8m09lMsVyGkMfue8DXw==
