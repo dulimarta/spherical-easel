@@ -5,8 +5,9 @@ pages:
     - npm ci
     - npm run app:build
     - npm run docs:build
+    - mv dist public
   artifacts:
     paths:
-      - dist
+      - public
   only:
     - main
