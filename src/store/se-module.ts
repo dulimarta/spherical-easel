@@ -34,8 +34,7 @@ import {
   intersectLineWithEllipse,
   intersectSegmentWithEllipse,
   intersectCircleWithEllipse,
-  intersectEllipseWithEllipse,
-  intersectTwoObjects
+  intersectEllipseWithEllipse
 } from "@/utils/intersections";
 const tmpMatrix = new Matrix4();
 //const tmpVector = new Vector3();
