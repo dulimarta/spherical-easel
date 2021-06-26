@@ -10,7 +10,6 @@ import { CommandGroup } from "@/commands/CommandGroup";
 import { DeleteNoduleCommand } from "@/commands/DeleteNoduleCommand";
 import { SetNoduleDisplayCommand } from "@/commands/SetNoduleDisplayCommand";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
-import { SECircle } from "@/models/SECircle";
 import { SEPoint } from "@/models/SEPoint";
 
 export default class DeleteHandler extends Highlighter {
