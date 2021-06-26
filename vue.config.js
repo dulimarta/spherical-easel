@@ -10,7 +10,7 @@ module.exports = {
   },
   publicPath:
     process.env.NODE_ENV === "production"
-      ? "/" + process.env.CI_PROJECT_NAME + "/"
+      ? "/sphericalgeometryvue/"
       : "/"
   // crossorigin: "no-cors",
   // devServer: {
