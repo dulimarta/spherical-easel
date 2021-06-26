@@ -1,0 +1,12 @@
+pages:
+  image: node:latest
+  stage: deploy
+  script:
+    - npm ci
+    - npm run app:build
+    - npm run docs:build
+  artifacts:
+    paths:
+      - dist
+  only:
+    - main

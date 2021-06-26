@@ -1,6 +1,10 @@
 module.exports = {
   //Specify the output directory for vuepress build. If a relative path is specified, it will be resolved based on process.cwd().
-  dest: "./dist/docs",
+  dest: "dist/docs",
+  // The following setting for "base" works on hosts which allow us to publish
+  // on root directory (like Vercel, Netlify).
+  // On hosts which require project name (like GitHub) set the "base" to the path
+  // below the root.
   base: "/docs/",
   // To use the http://tikzjax.com/ these must be included in the header.
   head: [

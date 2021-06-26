@@ -7,7 +7,11 @@ module.exports = {
       localeDir: "assets/languages",
       enableInSFC: true
     }
-  }
+  },
+  publicPath:
+    process.env.NODE_ENV === "production"
+      ? "/" + process.env.CI_PROJECT_NAME + "/"
+      : "/"
   // crossorigin: "no-cors",
   // devServer: {
   //   proxy: {
