@@ -3,9 +3,10 @@ module.exports = {
   dest: "dist/docs",
   // The following setting for "base" works on hosts which allow us to publish
   // on root directory (like Vercel, Netlify).
-  // On hosts which require project name (like GitHub) set the "base" to the path
+  // On hosts which require project name (like GitHub or GitLab) set the "base" to the path
   // below the root.
-  base: "/docs/",
+  // base: "/docs/",                  // For deployment to Netlify
+  base: "/sphericalgeometryvue/docs/", // For deployment to GitLab
   // To use the http://tikzjax.com/ these must be included in the header.
   head: [
     [
