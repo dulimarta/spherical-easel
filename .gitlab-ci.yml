@@ -4,6 +4,7 @@ pages:
   script:
     - npm install --progress=false
     - npm run app:build
+    - npm run docs:build
     - rm -rf public
     - mv dist public
   artifacts:
