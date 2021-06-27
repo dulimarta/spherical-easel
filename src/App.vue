@@ -36,6 +36,9 @@
         </v-toolbar-title>
         <v-tooltip left>
           <template v-slot:activator="{ on }">
+            <!--- TODO: Change the URL to match the hosting site 
+               On GitLab use href="/sphericalgeometryvue/docs"
+            --->
             <a href="/docs">
               <v-icon class="ml-2"
                 v-on="on">mdi-help-circle</v-icon>
@@ -159,7 +162,10 @@ import { Command } from "./commands/Command";
 import { Matrix4 } from "three";
 import { SEStore } from "./store";
 
+//#region vuex-module-namespace
 const SE = namespace("se");
+//#endregion vuex-module-namespace
+
 // Register vue router in-component navigation guard functions
 Component.registerHooks([
   "beforeRouteEnter",
@@ -169,8 +175,10 @@ Component.registerHooks([
 /* This allows for the State of the app to be initialized with in vuex store */
 @Component({ components: { MessageBox, Dialog } })
 export default class App extends Vue {
+  //#region activeToolName
   @SE.State((s: AppState) => s.activeToolName)
   readonly activeToolName!: string;
+  //#endregion activeToolName
 
   @SE.State((s: AppState) => s.svgCanvas)
   readonly svgCanvas!: HTMLDivElement | null;
