@@ -3,78 +3,75 @@
     <div class="node"
       @mouseenter="glowMe(true)"
       @mouseleave="glowMe(false)">
-      <v-icon v-if="isPoint"
-        medium>
-        $vuetify.icons.value.point</v-icon>
-      <v-icon v-else-if="isLineSegment"
-        medium>
-        $vuetify.icons.value.segment</v-icon>
-      <v-icon v-else-if="isLine"
-        medium>
-        $vuetify.icons.value.line</v-icon>
-      <v-icon v-else-if="isCircle"
-        medium>
-        $vuetify.icons.value.circle
-      </v-icon>
-      <v-icon v-else-if="isEllipse"
-        medium>
-        $vuetify.icons.value.ellipse
-      </v-icon>
-      <v-icon v-else-if="isIntersectionPoint"
-        medium>
-        $vuetify.icons.value.intersectionPoint
-      </v-icon>
-      <v-icon v-else-if="isSlider">mdi-arrow-left-right</v-icon>
-      <v-icon v-else-if="isAngle"
-        medium>
-        $vuetify.icons.value.angle</v-icon>
-      <v-icon v-else-if="isMeasurement">mdi-tape-measure
-      </v-icon>
-      <v-icon v-else-if="isCalculation">mdi-calculator</v-icon>
-      <v-tooltip right>
-        <template v-slot:activator="{ on }">
-          <div class="contentText ml-1"
-            @click="selectMe"
-            v-on="on"
-            :class="showClass">
-            <span class="text-truncate">{{ shortDisplayText }}</span>
-          </div>
-        </template>
-        <span>{{ definitionText }}</span>
-      </v-tooltip>
-      <v-tooltip right>
-        <template v-slot:activator="{ on }">
-          <div v-show="isPlottable"
-            v-on="on"
-            @click="toggleVisibility"
-            class="mr-2">
-            <v-icon small
-              v-if="isHidden">
-              mdi-eye
-            </v-icon>
-            <v-icon small
-              v-else
-              style="color:gray">
-              mdi-eye-off
-            </v-icon>
-          </div>
-        </template>
-        <span>{{ $t(`objectTree.toggleDisplay`) }}</span>
-      </v-tooltip>
-      <v-tooltip right>
-        <template v-slot:activator="{ on }">
-          <div v-show="isExpressionAndNotCoordinate"
-            v-on="on"
-            @click="toggleMultplesOfPi"
-            class="mr-2">
-            <v-icon small
-              style="{color: isMultipleOfPi ? 'black' : 'gray'}">
-              mdi-pi
-            </v-icon>
-          </div>
-        </template>
-        <span>{{ $t(`objectTree.multipleOfPiToggle`) }}</span>
-      </v-tooltip>
+      <v-row>
+        <v-col cols="auto">
+          <v-icon v-if="isPoint">mdi-vector-point</v-icon>
+          <v-icon v-else-if="isLineSegment">mdi-vector-radius
+          </v-icon>
+          <v-icon v-else-if="isLine">mdi-vector-line</v-icon>
+          <v-icon v-else-if="isCircle">
+            mdi-vector-circle-variant
+          </v-icon>
+          <v-icon v-else-if="isIntersectionPoint">
+            mdi-vector-intersection
+          </v-icon>
+          <v-icon v-else-if="isSlider">mdi-arrow-left-right</v-icon>
+          <v-icon v-else-if="isAngle">mdi-angle-acute</v-icon>
+          <v-icon v-else-if="isMeasurement">mdi-tape-measure
+          </v-icon>
+          <v-icon v-else-if="isCalculation">mdi-calculator</v-icon>
+        </v-col>
+        <v-col class="text-truncate">
+          <v-tooltip right>
+            <template v-slot:activator="{ on }">
+              <div class="contentText ml-1"
+                @click="selectMe"
+                v-on="on"
+                :class="showClass">
+                <span class="text-truncate">{{ shortDisplayText }}</span>
+              </div>
+            </template>
+            <span>{{ definitionText }}</span>
+          </v-tooltip>
+        </v-col>
+        <v-col cols="auto">
+          <v-tooltip right>
+            <template v-slot:activator="{ on }">
+              <div v-show="isPlottable"
+                v-on="on"
+                @click="toggleVisibility"
+                class="mr-2">
+                <v-icon small
+                  v-if="isHidden">
+                  mdi-eye
+                </v-icon>
+                <v-icon small
+                  v-else
+                  style="color:gray">
+                  mdi-eye-off
+                </v-icon>
+              </div>
+            </template>
+            <span>{{ $t(`objectTree.toggleDisplay`) }}</span>
+          </v-tooltip>
+        </v-col>
+        <v-col cols="auto">
+          <v-tooltip right>
+            <template v-slot:activator="{ on }">
+              <div v-show="isExpressionAndNotCoordinate"
+                v-on="on"
+                @click="toggleMultplesOfPi"
+                class="mr-2">
+                <v-icon small
+                  style="{color: isMultipleOfPi ? 'black' : 'gray'}">
+                  mdi-pi
+                </v-icon>
+              </div>
+            </template>
+            <span>{{ $t(`objectTree.multipleOfPiToggle`) }}</span>
+          </v-tooltip>
+        </v-col>
+      </v-row>
     </div>
   </div>
 </template>
@@ -108,6 +105,8 @@ export default class SENoduleItem extends Vue {
   readonly node!: SENodule;
 
   glowMe(flag: boolean): void {
+    /* If the highlighted object is plottable, we highlight
+       it directly. Otherwise, we highlight its parents */
     if (this.isPlottable) this.node.glowing = flag;
     else if (this.node instanceof SESegmentLength) {
       const target = this.node.parents[0] as SESegment;
@@ -244,9 +243,11 @@ export default class SENoduleItem extends Vue {
     }
   }
 
-  get magnificationLevel(): number {
-    return this.magnificationLevel;
-  }
+  // TODO: the following getter definition is recursive
+  // and is not currently used. DO we need this?
+  // get magnificationLevel(): number {
+  //   return this.magnificationLevel;
+  // }
 }
 </script>
 
