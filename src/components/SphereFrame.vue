@@ -269,7 +269,6 @@ export default class SphereFrame extends VueComponent {
 
   @Watch("canvasSize")
   onCanvasResize(size: number): void {
-    console.debug("onCanvasResize");
     (this.twoInstance.renderer as any).setSize(size, size);
     // Move the origin of all layers to the center of the viewport
     this.layers.forEach(z => {

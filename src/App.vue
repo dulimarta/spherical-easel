@@ -39,7 +39,7 @@
             <!--- TODO: Change the URL to match the hosting site 
                On GitLab use href="/sphericalgeometryvue/docs"
             --->
-            <a href="/docs">
+            <a :href="`${baseURL}/docs`">
               <v-icon class="ml-2"
                 v-on="on">mdi-help-circle</v-icon>
             </a>
@@ -212,6 +212,10 @@ export default class App extends Vue {
   acceptedKeys = 0;
   accountEnabled = false;
 
+  get baseURL(): string {
+    return process.env.BASE_URL ?? "";
+  }
+
   get hasObjects(): boolean {
     // Any objects must include at least one point
     return SEStore.sePoints.length > 0;
@@ -249,6 +253,7 @@ export default class App extends Vue {
   }
 
   mounted(): void {
+    console.log("Base URL is ", process.env.BASE_URL);
     SEStore.init();
     EventBus.listen("set-footer-color", this.setFooterColor);
     this.authSubscription = this.$appAuth.onAuthStateChanged(

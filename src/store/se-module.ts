@@ -127,26 +127,21 @@ export default class SE extends VuexModule implements AppState {
 
   @Mutation
   setCanvas(c: HTMLDivElement | null): void {
-    console.log("setCanvas");
     this.svgCanvas = c;
   }
 
   @Mutation
   setLayers(layers: Two.Group[]): void {
-    console.log("setLayers");
     this.layers = layers;
   }
 
   @Mutation
   setSphereRadius(radius: number): void {
-    console.log("setSphereRadius");
     this.sphereRadius = radius;
   }
 
   @Mutation
   setActionMode(mode: { id: string; name: string }): void {
-    console.log("setActionMode");
-
     // zoomFit is a one-off tool, so the previousActionMode should never be "zoomFit" (avoid infinite loops too!)
     if (!(this.actionMode == "zoomFit" || this.actionMode === "iconFactory")) {
       this.previousActionMode = this.actionMode;
@@ -164,8 +159,6 @@ export default class SE extends VuexModule implements AppState {
 
   @Mutation
   setZoomMagnificationFactor(mag: number): void {
-    console.log("setZoomMagFactor");
-
     this.previousZoomMagnificationFactor = this.zoomMagnificationFactor;
     this.zoomMagnificationFactor = mag;
   }
@@ -180,7 +173,6 @@ export default class SE extends VuexModule implements AppState {
   //#region addPoint
   @Mutation
   addPoint(point: SEPoint): void {
-    console.log("Add points");
     this.sePoints.push(point);
     this.seNodules.push(point);
     point.ref.addToLayers(this.layers);
@@ -568,7 +560,6 @@ export default class SE extends VuexModule implements AppState {
   }): void {
     this.initialStyleStates.splice(0);
     this.defaultStyleStates.splice(0);
-    //  console.log("record style selected", selected);
     selected.forEach(seNodule => {
       // The first third is the front style settings, the second third is the back, the final third are the corresponding labels
       if (seNodule.ref) {
@@ -1321,7 +1312,6 @@ export default class SE extends VuexModule implements AppState {
   }
 
   get getSENoduleById(): (_: number) => SENodule | undefined {
-    //console.log("All Nodule", state.nodules.length);
     return (id: number): SENodule | undefined => {
       return this.seNodules.find((z: SENodule) => z.id === id);
     };
