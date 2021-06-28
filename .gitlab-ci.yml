@@ -5,10 +5,10 @@ pages:
     - yarn install
     - yarn run app:build
     - yarn run docs:build
-    - rm -rf public
+    - mv dist/* public
   artifacts:
     expire_in: 1 day
     paths:
-      - dist
+      - public
   only:
     - main
