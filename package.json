@@ -42,8 +42,8 @@
     "vuex-module-decorators": "^1.0.1"
   },
   "devDependencies": {
-    "@intlify/vue-i18n-loader": "^2.1.0",
-    "@maginapp/vuepress-plugin-katex": "^1.0.7",
+    "@intlify/vue-i18n-loader": "~2.0.3",
+    "@maginapp/vuepress-plugin-katex": "~1.0.7",
     "@mdi/js": "^5.5.55",
     "@types/jest": "~24.0.19",
     "@types/webpack": "~4.41.18",

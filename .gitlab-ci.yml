@@ -1,5 +1,6 @@
 pages:
   image: node:latest
+  stage: deploy
   script:
     - npm install --progress=false
     - npm run app:build
