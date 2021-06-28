@@ -124,6 +124,8 @@ import { SENodule } from "@/models/SENodule";
 import { CommandGroup } from "@/commands/CommandGroup";
 import { SetNoduleDisplayCommand } from "@/commands/SetNoduleDisplayCommand";
 import { namespace } from "vuex-class";
+import i18n from "../i18n";
+
 const SE = namespace("se");
 
 @Component({ components: { BasicFrontBackStyle, OverlayWithFixButton } })
@@ -195,23 +197,25 @@ export default class Style extends Vue {
 
     const tempArray: string[] = [];
     this.selectedSENodules.forEach(node => tempArray.push(node.name));
-    const elementListPural = [
-      "Points",
-      "Lines",
-      "Segments",
-      "Circles",
-      "Labels",
-      "Angle Markers"
+    const elementListPurali18nKeys = [
+      "style.points",
+      "style.lines",
+      "style.segments",
+      "style.circles",
+      "style.labels",
+      "style.angleMarkers",
+      "style.ellipses"
     ];
-    const elementListSingular = [
-      "Point",
-      "Line",
-      "Segment",
-      "Circle",
-      "Label",
-      "Angle Marker"
+    const elementListSingulari18nKeys = [
+      "style.point",
+      "style.line",
+      "style.segment",
+      "style.circle",
+      "style.label",
+      "style.angleMarker",
+      "style.ellipse"
     ];
-    const firstPartList = ["P", "Li", "Ls", "C", "La", "M"]; // The *internal* names of the objects start with these strings
+    const firstPartList = ["P", "Li", "Ls", "C", "La", "M", "E"]; // The *internal* names of the objects start with these strings (the oder must match the order of the signular/pural i18n keys)
     const countList: any[] = [];
     firstPartList.forEach((str, index) => {
       let count = 0;
@@ -226,9 +230,14 @@ export default class Style extends Vue {
     this.selectedItemArray = countList
       .map((num, index) => {
         if (num > 1) {
-          return elementListPural[index] + " (x" + String(num) + ")";
+          return (
+            String(i18n.t(elementListPurali18nKeys[index])) +
+            " (x" +
+            String(num) +
+            ")"
+          );
         } else if (num === 1) {
-          return elementListSingular[index];
+          return String(i18n.t(elementListSingulari18nKeys[index]));
         } else {
           return "0";
         }

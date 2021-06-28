@@ -122,6 +122,7 @@ This section is an outline of the steps needed to add a tool that takes user mou
     - Modifying <span class="field">initialState</span> constant to include the <span class="field">SEAaas</span> array and modifying the <span class="method">init</span> method in <span class="file">mutations.ts</span> to clear it.
     - Modifying the <span class="interface">Appstate</span> interface in the <span class="file">index.ts</span> file to include the <span class="field">SEAaas</span> array
     - Adding the <span class="method">AddAaa</span> and <span class="method">RemoveAaa</span> methods <span class="file">mutations.ts</span> to clear it.
+    - Update <span class="file">CommandInterpreter.ts</span> to allow the sharing and saving of `Aaa` objects.
 
 4.  Handle all the intersection of this object with itself and all other one-dimensional objects
 
@@ -144,3 +145,5 @@ This section is an outline of the steps needed to add a tool that takes user mou
 8.  Follow step 1, 2, 5, 6, 7, and 8 of [Adding a Control Tool](#adding-a-control-tool)
 
 9.  Update <span class="component">SENoduleItems.vue</span> and <span class="component">ObjectTree.vue</span>to show `Aaa` items
+
+10. Update <span class="component">Style.vue</span> to list the `Aaa` items when they are selected.

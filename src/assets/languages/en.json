@@ -146,6 +146,21 @@
     "front": "Front",
     "value": "Value",
 
+    "point":"Point",
+    "points":"Points",
+    "line":"Line",
+    "lines":"Lines",
+    "segment":"Segment",
+    "segments":"Segments",
+    "circle":"Circle",
+    "circles":"Circles",
+    "label":"Label",
+    "labels":"Labels",
+    "angleMarker":"Angle Marker",
+    "angleMarkers":"Angle Markers",
+    "ellipse":"Ellipse",
+    "ellipses":"Ellipses",
+
     "showLabels": "Show Label(s)",
     "showObjects": "Show Object(s)",
 
@@ -160,7 +175,7 @@
     "selectionDirection1": "Click on glowing objects to select them.",
     "selectionDirection2": "Hold the Alt/Option key to add or subtract from your selection.",
     "selectionDirection3": "Press a number key to select an object at that depth.",
-    "selectionDirection4":"Press the p key and click in any empty location to add all points. Similar for lines (l), line segments (s), circles (c), and angle markers (a).",
+    "selectionDirection4":"Press the p key and click in any empty location to add all points. Similar for lines (l), line segments (s), circles (c), ellipses (e), and angle markers (a).",
     "closeStylingPanel": "Close Styling Panel",
     "noSelectionToolTip": "No objects are currently selected. Either select objects with the selection tool or click this button to close the style panel.",
 
