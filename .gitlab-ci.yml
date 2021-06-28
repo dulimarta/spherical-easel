@@ -1,7 +1,8 @@
 pages:
   image: node:latest
-  stage: deploy
   script:
+    - rm package-lock.json
+    - rm yarn.lock
     - npm install --progress=false
     - npm run app:build
     - npm run docs:build
