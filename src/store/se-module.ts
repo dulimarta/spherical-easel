@@ -190,6 +190,7 @@ export default class SE extends VuexModule implements AppState {
   removeAllFromLayers(): void {
     this.seAngleMarkers.forEach((x: SEAngleMarker) => x.ref.removeFromLayers());
     this.seCircles.forEach((x: SECircle) => x.ref.removeFromLayers());
+    this.seEllipses.forEach((x: SEEllipse) => x.ref.removeFromLayers());
     this.seLabels.forEach((x: SELabel) => x.ref.removeFromLayers(this.layers));
     this.seLines.forEach((x: SELine) => x.ref.removeFromLayers());
     this.sePoints.forEach((x: SEPoint) => x.ref.removeFromLayers());
@@ -386,7 +387,7 @@ export default class SE extends VuexModule implements AppState {
     tmpMatrix.copy(rotationMat);
     this.inverseTotalRotationMatrix.multiply(tmpMatrix.getInverse(tmpMatrix));
     rotationVisitor.setTransform(rotationMat);
-    // apply the rotation to the line, segments, labels, then points.
+    // apply the rotation to the line, segments, labels, then points. (Circles and ellipses are determined by their parent points so no need to update them)
     this.seLines.forEach((m: SELine) => {
       m.accept(rotationVisitor); // Does no updating of the display
     });
