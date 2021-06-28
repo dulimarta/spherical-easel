@@ -1,12 +1,10 @@
 /** @format */
 
-// import SETTINGS from "@/global-settings";
 import Two from "two.js";
 import SETTINGS, { LAYER } from "@/global-settings";
 import Nodule, { DisplayStyle } from "./Nodule";
 import { Vector3 } from "three";
 import { StyleOptions, StyleEditPanels } from "@/types/Styles";
-import { SENodule } from "@/models/SENodule";
 
 /**
  * Each Point object is uniquely associated with a SEPoint object.

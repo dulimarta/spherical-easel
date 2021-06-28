@@ -36,6 +36,9 @@
         </v-toolbar-title>
         <v-tooltip left>
           <template v-slot:activator="{ on }">
+            <!--- TODO: Change the URL to match the hosting site 
+               On GitLab use href="/sphericalgeometryvue/docs"
+            --->
             <a href="/docs">
               <v-icon class="ml-2"
                 v-on="on">mdi-help-circle</v-icon>
@@ -159,7 +162,10 @@ import { Command } from "./commands/Command";
 import { Matrix4 } from "three";
 import { SEStore } from "./store";
 
+//#region vuex-module-namespace
 const SE = namespace("se");
+//#endregion vuex-module-namespace
+
 // Register vue router in-component navigation guard functions
 Component.registerHooks([
   "beforeRouteEnter",
@@ -169,8 +175,10 @@ Component.registerHooks([
 /* This allows for the State of the app to be initialized with in vuex store */
 @Component({ components: { MessageBox, Dialog } })
 export default class App extends Vue {
+  //#region activeToolName
   @SE.State((s: AppState) => s.activeToolName)
   readonly activeToolName!: string;
+  //#endregion activeToolName
 
   @SE.State((s: AppState) => s.svgCanvas)
   readonly svgCanvas!: HTMLDivElement | null;
@@ -210,17 +218,15 @@ export default class App extends Vue {
   }
 
   readonly keyHandler = (ev: KeyboardEvent): void => {
-    //console.log("here b");
+    if (ev.repeat) return; // Ignore repeated events on the same key
     if (!ev.altKey) return;
     if (!ev.ctrlKey) return;
     console.log("here a", this.acceptedKeys, ev.key);
 
-    if (ev.key === "ß" && this.acceptedKeys === 0) {
-      // ctrl + alt + s = ß
+    if (ev.code === "KeyS" && this.acceptedKeys === 0) {
       console.info("'S' is accepted");
       this.acceptedKeys = 1;
-    } else if (ev.key === "Dead" && this.acceptedKeys === 1) {
-      // ctrl + alt + e = Dead
+    } else if (ev.code === "KeyE" && this.acceptedKeys === 1) {
       this.acceptedKeys = 2;
       console.info("'E' is accepted", this.accountEnabled, this.acceptedKeys);
       // Directly setting the accountEnable flag here does not trigger
@@ -233,7 +239,7 @@ export default class App extends Vue {
   };
 
   created(): void {
-    window.addEventListener("keyup", this.keyHandler);
+    window.addEventListener("keydown", this.keyHandler);
     EventBus.listen("secret-key", () => {
       console.log("Got the secret key");
       this.accountEnabled = true;
@@ -278,7 +284,7 @@ export default class App extends Vue {
     if (this.authSubscription) this.authSubscription();
     this.whoami = "";
     this.uid = "";
-    window.removeEventListener("keyup", this.keyHandler);
+    window.removeEventListener("keydown", this.keyHandler);
   }
   setFooterColor(e: { color: string }): void {
     this.footerColor = e.color;

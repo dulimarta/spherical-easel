@@ -7,7 +7,11 @@ module.exports = {
       localeDir: "assets/languages",
       enableInSFC: true
     }
-  }
+  },
+  // Use "/sphericalgeometryvue/" to deploy it on GitLab
+  // Use "/" to deploy it on Netlify
+  publicPath:
+    process.env.NODE_ENV === "production" ? "/sphericalgeometryvue/" : "/"
   // crossorigin: "no-cors",
   // devServer: {
   //   proxy: {

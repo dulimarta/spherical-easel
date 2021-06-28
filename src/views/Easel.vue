@@ -261,7 +261,6 @@ import { FirebaseFirestore, DocumentSnapshot } from "@firebase/firestore-types";
 import { run } from "@/commands/CommandInterpreter";
 import { ConstructionScript } from "@/types";
 import { Route } from "vue-router";
-import store from "@/store";
 import Dialog, { DialogAction } from "@/components/Dialog.vue";
 import { SEStore } from "@/store";
 const SE = namespace("se");

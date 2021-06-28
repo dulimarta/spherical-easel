@@ -34,8 +34,7 @@ import {
   intersectLineWithEllipse,
   intersectSegmentWithEllipse,
   intersectCircleWithEllipse,
-  intersectEllipseWithEllipse,
-  intersectTwoObjects
+  intersectEllipseWithEllipse
 } from "@/utils/intersections";
 const tmpMatrix = new Matrix4();
 //const tmpVector = new Vector3();
@@ -58,8 +57,11 @@ used in modules declaration of Vuex.Store:
 }
 */
 
+//#region SEModuleHeader
 @Module({ name: "se", namespaced: true })
 export default class SE extends VuexModule implements AppState {
+  //#endregion SEModuleHeader
+
   //#region appState
 
   sphereRadius = 0; // Is this needed? TODO = remove?
@@ -634,6 +636,7 @@ export default class SE extends VuexModule implements AppState {
     this.temporaryProfilePicture = imageHexString;
   }
 
+  //#region findNearbyGetter
   get findNearbySENodules(): (_p: Vector3, _s: Two.Vector) => SENodule[] {
     return (
       unitIdealVector: Vector3,
@@ -644,6 +647,7 @@ export default class SE extends VuexModule implements AppState {
       );
     };
   }
+  //#endregion findNearbyGetter
 
   /**
    * Create the intersection of two one-dimensional objects
