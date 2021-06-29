@@ -5,8 +5,8 @@ module.exports = {
   // on root directory (like Vercel, Netlify).
   // On hosts which require project name (like GitHub or GitLab) set the "base" to the path
   // below the root.
-  // base: "/docs/",                  // For deployment to Netlify
-  //base: "docs/",
+  // base: "/docs/",                  // For deployment on Netlify
+  base: "/sphericalgeometryvue/docs/", // For deployment on GitLab
   // To use the http://tikzjax.com/ these must be included in the header.
   head: [
     [
