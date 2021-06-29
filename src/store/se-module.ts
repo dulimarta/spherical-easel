@@ -36,6 +36,7 @@ import {
   intersectCircleWithEllipse,
   intersectEllipseWithEllipse
 } from "@/utils/intersections";
+import EventBus from "@/eventHandlers/EventBus";
 const tmpMatrix = new Matrix4();
 //const tmpVector = new Vector3();
 
@@ -70,7 +71,7 @@ export default class SE extends VuexModule implements AppState {
   activeToolName = ""; // The active tool for handling user mouse input
   previousActiveToolName = ""; // The active tool for handling user mouse input
   zoomMagnificationFactor = 1; // The CSSTransform magnification factor
-  previousZoomMagnificationFactor = 1; // The previous CSSTransform magnification factor
+  // previousZoomMagnificationFactor = 1; // The previous CSSTransform magnification factor
   zoomTranslation = [0, 0]; // The CSSTransform translation vector
   canvasWidth = 0; //A temporary canvas width;
   seNodules: SENodule[] = []; // An array of all SENodules
@@ -165,7 +166,10 @@ export default class SE extends VuexModule implements AppState {
   @Mutation
   setZoomMagnificationFactor(mag: number): void {
     console.log("setZoomMagFactor");
-    this.previousZoomMagnificationFactor = this.zoomMagnificationFactor;
+    EventBus.fire("magnification-updated", {
+      factor: this.zoomMagnificationFactor / mag
+    });
+    // this.previousZoomMagnificationFactor = ;
     this.zoomMagnificationFactor = mag;
   }
 

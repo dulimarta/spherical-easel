@@ -304,8 +304,8 @@ export default class Easel extends Vue {
   @SE.State((s: AppState) => s.temporaryNodules)
   readonly temporaryNodules!: Nodule[];
 
-  @SE.State((s: AppState) => s.previousZoomMagnificationFactor)
-  readonly previousZoomMagnificationFactor!: number;
+  // @SE.State((s: AppState) => s.previousZoomMagnificationFactor)
+  // readonly previousZoomMagnificationFactor!: number;
 
   readonly $appDB!: FirebaseFirestore;
 
@@ -504,17 +504,17 @@ export default class Easel extends Vue {
 
   //#region resizePlottables
   resizePlottables(e: { factor: number }): void {
-    const oldFactor = this.previousZoomMagnificationFactor;
-    // Update the current stroke widths in each plottable class
-    Line.updateCurrentStrokeWidthForZoom(oldFactor / e.factor);
-    Segment.updateCurrentStrokeWidthForZoom(oldFactor / e.factor);
-    Circle.updateCurrentStrokeWidthForZoom(oldFactor / e.factor);
-    AngleMarker.updateCurrentStrokeWidthAndRadiusForZoom(oldFactor / e.factor);
-    Point.updatePointScaleFactorForZoom(oldFactor / e.factor);
-    Label.updateTextScaleFactorForZoom(oldFactor / e.factor);
-    Ellipse.updateCurrentStrokeWidthForZoom(oldFactor / e.factor);
+    // const oldFactor = this.previousZoomMagnificationFactor;
+    // Update the current stroke widths/radius in each plottable class
+    Line.updateCurrentStrokeWidthForZoom(e.factor);
+    Segment.updateCurrentStrokeWidthForZoom(e.factor);
+    Circle.updateCurrentStrokeWidthForZoom(e.factor);
+    AngleMarker.updateCurrentStrokeWidthAndRadiusForZoom(e.factor);
+    Point.updatePointScaleFactorForZoom(e.factor);
+    Label.updateTextScaleFactorForZoom(e.factor);
+    Ellipse.updateCurrentStrokeWidthForZoom(e.factor);
 
-    // Update the size of each nodule in the store
+    // Apply the new size in each nodule in the store
     this.seNodules.forEach((p: SENodule) => {
       p.ref?.adjustSize();
     });

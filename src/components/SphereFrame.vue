@@ -298,8 +298,6 @@ export default class SphereFrame extends VueComponent {
   //#region updateView
   private updateView() {
     // Get the current maginiication factor and translation vector
-    // console.log("SphereFrame updateView()", SEStore.zoomTranslation);
-    // console.log("Again", this.$store.state.zoomMagnificationFactor);
     const mag = SEStore.zoomMagnificationFactor;
     const transVector = SEStore.zoomTranslation;
 
