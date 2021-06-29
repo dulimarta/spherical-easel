@@ -6,7 +6,7 @@ module.exports = {
   // On hosts which require project name (like GitHub or GitLab) set the "base" to the path
   // below the root.
   // base: "/docs/",                  // For deployment to Netlify
-  base: "docs/",
+  //base: "docs/",
   // To use the http://tikzjax.com/ these must be included in the header.
   head: [
     [
