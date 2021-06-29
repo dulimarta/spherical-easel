@@ -269,7 +269,6 @@ export default class SphereFrame extends VueComponent {
 
   @Watch("canvasSize")
   onCanvasResize(size: number): void {
-    console.debug("onCanvasResize");
     (this.twoInstance.renderer as any).setSize(size, size);
     // Move the origin of all layers to the center of the viewport
     this.layers.forEach(z => {
@@ -491,14 +490,11 @@ export default class SphereFrame extends VueComponent {
       paths[i].setAttribute("vector-effect", "non-scaling-stroke");
       iconArray.push(paths[i].outerHTML);
     }
-    let iconOutput = "";
-    for (let i = 0; i < iconArray.length - 1; i++) {
-      iconOutput = iconOutput + iconArray[i] + "; ";
-    }
-    iconOutput = iconOutput + iconArray[iconArray.length - 1];
-    console.log(iconOutput);
 
-    var blob = new Blob([iconOutput], {
+    // We are NOT actually saving an SVG content,
+    // but it is actually a plain text payload
+    // The ";" delimiter is required by IconBase.vue
+    var blob = new Blob([iconArray.join(";")], {
       type: "text/plain;charset=utf-8"
     });
     FileSaver.saveAs(blob, "iconXXXPaths.svg");

@@ -11,8 +11,10 @@ module.exports = {
   // Use "/sphericalgeometryvue/" to deploy it on GitLab
   // Use "/" to deploy it on Netlify
   publicPath:
-    process.env.NODE_ENV === "production" ? "/sphericalgeometryvue/" : "/"
-  // crossorigin: "no-cors",
+    // Use non-root path during development to detect potential issues
+    // the the app is deployed for production into a non-root path
+    process.env.NODE_ENV === "production" ? "/sphericalgeometryvue/" : "/dev",
+  crossorigin: "anonymous",
   // devServer: {
   //   proxy: {
   //     "^/api": {

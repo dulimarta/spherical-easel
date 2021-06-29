@@ -32,7 +32,7 @@
     "src/types/two.js/index.d.ts",
     "tests/*.d.ts"
   ],
-  "exclude": ["node_modules", "src/**/*.unit.ts"],
+  "exclude": ["node_modules", "__tests__"],
   "verbose": true
   // "globals": {
   //   "ts-jest": {

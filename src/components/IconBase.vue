@@ -28,7 +28,7 @@ export default class IconBase extends Vue {
   private doneFetching = false;
 
   mounted(): void {
-    let filePath;
+    let filePath: string;
     // Failed attempt to load from current directory
     if (this.iconFile.startsWith(".") || this.iconFile.startsWith("/")) {
       filePath = this.iconFile;
@@ -36,7 +36,9 @@ export default class IconBase extends Vue {
       filePath = "/" + this.iconFile;
     }
     this.doneFetching = false;
-    axios.get(filePath).then(r => {
+    // By default, axios assumes a JSON response and the input will be parsed as JSON.
+    // We want to override it to "text"
+    axios.get(filePath, { responseType: "text" }).then(r => {
       this.svgSnippetRaw = r.data;
       this.doneFetching = true;
       const parts = this.svgSnippetRaw.split(";");
