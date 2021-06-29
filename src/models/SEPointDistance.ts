@@ -6,7 +6,7 @@ import SETTINGS from "@/global-settings";
 
 const emptySet = new Set<Styles>();
 
-export class SESegmentDistance extends SEExpression {
+export class SEPointDistance extends SEExpression {
   readonly firstSEPoint: SEPoint;
   readonly secondSEPoint: SEPoint;
 
@@ -17,16 +17,16 @@ export class SESegmentDistance extends SEExpression {
   }
 
   public get longName(): string {
-    return `Distance(${this.firstSEPoint.label!.ref.shortName},${
-      this.secondSEPoint.label!.ref.shortName
+    return `Distance(${this.firstSEPoint.label!.ref.shortUserName},${
+      this.secondSEPoint.label!.ref.shortUserName
     }):${this.prettyValue}`;
   }
 
   public get shortName(): string {
     return (
       this.name +
-      `-Dist(${this.firstSEPoint.label!.ref.shortName},${
-        this.secondSEPoint.label!.ref.shortName
+      `-Dist(${this.firstSEPoint.label!.ref.shortUserName},${
+        this.secondSEPoint.label!.ref.shortUserName
       }):${this.prettyValue}`
     );
   }

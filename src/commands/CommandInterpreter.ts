@@ -13,7 +13,7 @@ import { Command } from "./Command";
 import { CommandGroup } from "./CommandGroup";
 import { AddCalculationCommand } from "./AddCalculationCommand";
 import { AddLocationMeasurementCommand } from "./AddLocationMeasurementCommand";
-import { AddDistanceMeasurementCommand } from "./AddDistanceMeasurementCommand";
+import { AddPointDistanceMeasurementCommand } from "./AddPointDistanceMeasurementCommand";
 import { AddLengthMeasurementCommand } from "./AddLengthMeasurementCommand";
 import { ConstructionScript } from "@/types";
 import { AddEllipseCommand } from "./AddEllipseCommand";
@@ -59,8 +59,11 @@ function executeIndividual(command: string): Command {
       return AddAngleMarkerCommand.parse(command, noduleDictionary);
     case "AddLocationMeasurement":
       return AddLocationMeasurementCommand.parse(command, noduleDictionary);
-    case "AddDistanceMeasurement":
-      return AddDistanceMeasurementCommand.parse(command, noduleDictionary);
+    case "AddPointDistanceMeasurement":
+      return AddPointDistanceMeasurementCommand.parse(
+        command,
+        noduleDictionary
+      );
     case "AddLengthMeasurement":
       return AddLengthMeasurementCommand.parse(command, noduleDictionary);
     case "AddCalculation":

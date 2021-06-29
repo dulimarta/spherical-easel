@@ -68,7 +68,7 @@ export class SEPointCoordinate extends SEExpression {
   public get longName(): string {
     return (
       this.coordinateName +
-      this.point.label!.ref.shortName +
+      this.point.label!.ref.shortUserName +
       `: ${this.prettyValue}`
     );
   }
@@ -76,7 +76,7 @@ export class SEPointCoordinate extends SEExpression {
   public get shortName(): string {
     return (
       this.coordName +
-      this.point.label!.ref.shortName +
+      this.point.label!.ref.shortUserName +
       `): ${this.prettyValue}`
     );
   }

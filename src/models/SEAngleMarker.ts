@@ -115,7 +115,7 @@ export class SEAngleMarker extends SEExpression
     secondSEParent: SELine | SESegment | SEPoint,
     thirdSEParent?: SEPoint | undefined
   ) {
-    super();
+    super(); // this.name gets a measurement token M### in the super constructor
     this.ref = angMar;
     this._firstSEParent = firstSEParent;
     this._secondSEParent = secondSEParent;
@@ -165,13 +165,13 @@ export class SEAngleMarker extends SEExpression
   public get longName(): string {
     if (this._thirdSEParent !== undefined) {
       return (
-        this.label?.ref.shortName +
-        `-Angle(${this._firstSEParent.label?.ref.shortName},${this._secondSEParent.label?.ref.shortName},${this._thirdSEParent.label?.ref.shortName}):${this.prettyValue}`
+        this.label?.ref.shortUserName +
+        `-Angle(${this._firstSEParent.label?.ref.shortUserName},${this._secondSEParent.label?.ref.shortUserName},${this._thirdSEParent.label?.ref.shortUserName}): ${this.prettyValue}`
       );
     } else {
       return (
-        this.label?.ref.shortName +
-        `-Angle(${this._firstSEParent.label?.ref.shortName},${this._secondSEParent.label?.ref.shortName}):${this.prettyValue}`
+        this.label?.ref.shortUserName +
+        `-Angle(${this._firstSEParent.label?.ref.shortUserName},${this._secondSEParent.label?.ref.shortUserName}): ${this.prettyValue}`
       );
     }
   }
@@ -180,8 +180,8 @@ export class SEAngleMarker extends SEExpression
     return (
       this.ref.name +
       `-Ang(` +
-      this.label!.ref.shortName +
-      `):${this.prettyValue}`
+      this.label!.ref.shortUserName +
+      `): ${this.prettyValue}`
     );
   }
   public isHitAt(

@@ -7,6 +7,7 @@ import { Vector3 } from "three";
 import Point from "@/plottables/Point";
 import Label from "@/plottables/Label";
 import SETTINGS from "@/global-settings";
+import NonFreePoint from "@/plottables/NonFreePoint";
 export class AddIntersectionPointCommand extends Command {
   private sePoint: SEIntersectionPoint;
   private parent1: SEOneDimensional;
@@ -80,7 +81,7 @@ export class AddIntersectionPointCommand extends Command {
         .split(",");
       const order = Number(nameTokens[2]);
       const point = new SEIntersectionPoint(
-        new Point(),
+        new NonFreePoint(),
         parent1,
         parent2,
         order,

@@ -330,6 +330,10 @@
     "min": "Min",
     "max": "Max",
     "step": "Step",
-    "create": "Create"
+    "create": "Create",
+    "firestoreConstructionLoaded": "Construction successfully loaded.",
+    "firestoreConstructionSaved":"Construction successfully saved.",
+    "firestoreConstructionDeleted": "Construction successfully deleted.",
+    "firestoreSaveError": "Construction was not saved."
   }
 }

@@ -109,7 +109,7 @@ import { SECircle } from "../models/SECircle";
 import { SEExpression } from "@/models/SEExpression";
 import { SESegmentLength } from "@/models/SESegmentLength";
 import { SECalculation } from "../models/SECalculation";
-import { SESegmentDistance } from "@/models/SESegmentDistance";
+import { SEPointDistance } from "@/models/SEPointDistance";
 import { SESlider } from "@/models/SESlider";
 import { SetNoduleDisplayCommand } from "@/commands/SetNoduleDisplayCommand";
 import { SetValueDisplayModeCommand } from "@/commands/SetValueDisplayModeCommand";
@@ -132,7 +132,7 @@ export default class SENoduleItem extends Vue {
     else if (this.node instanceof SESegmentLength) {
       const target = this.node.parents[0] as SESegment;
       target.glowing = flag;
-    } else if (this.node instanceof SESegmentDistance) {
+    } else if (this.node instanceof SEPointDistance) {
       this.node.parents
         .map(n => n as SEPoint)
         .forEach((p: SEPoint) => {
@@ -253,7 +253,7 @@ export default class SENoduleItem extends Vue {
       this.node instanceof SECircle ||
       this.node instanceof SEEllipse
     ) {
-      return this.node.label?.ref.shortName ?? "Unknown label";
+      return this.node.label?.ref.shortUserName ?? "Unknown label";
     } else if (this.node instanceof SEExpression) {
       {
         return this.node.shortName;
@@ -265,7 +265,7 @@ export default class SENoduleItem extends Vue {
   get definitionText(): string {
     if (this.node instanceof SEPoint) {
       return (
-        this.node.label?.ref.shortName +
+        this.node.label?.ref.shortUserName +
         this.node.locationVector.toFixed(SETTINGS.decimalPrecision)
       );
     } else if (
@@ -278,7 +278,7 @@ export default class SENoduleItem extends Vue {
         .map(p => p.name.toString())
         //.map(p => ((p as unknown) as Labelable).label!.ref.shortName)
         .join(",");
-      return this.node.label?.ref.shortName + "(" + nameList + ")";
+      return this.node.label?.ref.shortUserName + "(" + nameList + ")";
     } else if (this.node instanceof SEExpression) {
       {
         return this.node.longName;

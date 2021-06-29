@@ -60,7 +60,8 @@ export default class Label extends Nodule {
 
   /**
    * A string representing the text that will be rendered to the screen. Set with text.value = this.shortUserName
-   * shortName is at most ??? characters long
+   * shortUser
+   Name is at most ??? characters long
    * caption is a longer, 60 characters long
    * Note that initialName is not user modifiable and is used (in shortUserName) until the user changes the name field in the styling panel
    * This is the name that is restored when defaults are restored.
@@ -68,7 +69,7 @@ export default class Label extends Nodule {
    * the three coordinate values.
    */
   protected initialName = "";
-  protected shortUserName = "";
+  protected _shortUserName = "";
   protected _caption = "";
   protected _value: number[] = [];
 
@@ -191,8 +192,8 @@ export default class Label extends Nodule {
    */
   set initialNames(name: string) {
     this.initialName = name;
-    // shortName is the first characters of name
-    this.shortUserName = name /*.slice(
+    // shortUserName is the first characters of name
+    this._shortUserName = name /*.slice(
       0,
       SETTINGS.label.maxLabelDisplayTextLength
     )*/;
@@ -202,8 +203,8 @@ export default class Label extends Nodule {
   /**
    * Return the short name associated with this object
    */
-  get shortName(): string {
-    return this.shortUserName.slice(
+  get shortUserName(): string {
+    return this._shortUserName.slice(
       0,
       SETTINGS.label.maxLabelDisplayTextLength
     );
@@ -374,7 +375,7 @@ export default class Label extends Nodule {
       this.textLabelMode = options.labelDisplayMode;
     }
     if (options.labelDisplayText !== undefined) {
-      this.shortUserName = options.labelDisplayText;
+      this._shortUserName = options.labelDisplayText;
     }
     if (options.labelDisplayCaption !== undefined) {
       this._caption = options.labelDisplayCaption;
@@ -472,7 +473,7 @@ export default class Label extends Nodule {
         // }
         return {
           panel: panel,
-          labelDisplayText: this.shortUserName,
+          labelDisplayText: this._shortUserName,
           labelDisplayCaption: this._caption,
           labelDisplayMode: this.textLabelMode,
           labelTextFamily: this.textFamily,
@@ -648,7 +649,7 @@ export default class Label extends Nodule {
         }
         switch (this.textLabelMode) {
           case LabelDisplayMode.NameOnly: {
-            labelText = this.shortUserName;
+            labelText = this._shortUserName;
             break;
           }
           case LabelDisplayMode.CaptionOnly: {
@@ -658,20 +659,20 @@ export default class Label extends Nodule {
           case LabelDisplayMode.ValueOnly: {
             if (this._value.length === 0) {
               // this is the case where the label doesn't have a corresponding value (When it does have a value it is computed above)
-              labelText = this.shortName;
+              labelText = this.shortUserName;
             }
             break;
           }
           case LabelDisplayMode.NameAndCaption: {
-            labelText = this.shortName + ": " + this._caption;
+            labelText = this.shortUserName + ": " + this._caption;
             break;
           }
           case LabelDisplayMode.NameAndValue: {
             if (this._value.length > 0) {
-              labelText = this.shortName + ": " + labelText;
+              labelText = this.shortUserName + ": " + labelText;
             } else {
               // this is the case where the label doesn't have a corresponding value (When it does have a value it is computed above)
-              labelText = this.shortName;
+              labelText = this.shortUserName;
             }
             break;
           }

@@ -19,14 +19,16 @@ export class SESegmentLength extends SEExpression {
   }
 
   public get longName(): string {
-    return `Length(${this.seSegment.label!.ref.shortName}):${this.prettyValue}`;
+    return `Length(${this.seSegment.label!.ref.shortUserName}):${
+      this.prettyValue
+    }`;
   }
 
   public get shortName(): string {
     return (
       this.name +
       `-Len(` +
-      this.seSegment.label!.ref.shortName +
+      this.seSegment.label!.ref.shortUserName +
       `):${this.prettyValue}`
     );
   }

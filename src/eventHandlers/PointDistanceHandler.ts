@@ -1,8 +1,8 @@
 import Two from "two.js";
 import Highlighter from "./Highlighter";
 import { SEPoint } from "@/models/SEPoint";
-import { AddDistanceMeasurementCommand } from "@/commands/AddDistanceMeasurementCommand";
-import { SESegmentDistance } from "@/models/SESegmentDistance";
+import { AddPointDistanceMeasurementCommand } from "@/commands/AddPointDistanceMeasurementCommand";
+import { SEPointDistance } from "@/models/SEPointDistance";
 import EventBus from "@/eventHandlers/EventBus";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import { SEStore } from "@/store";
@@ -41,7 +41,7 @@ export default class PointDistantHandler extends Highlighter {
       }
 
       if (this.targetPoints.length === 2) {
-        const distanceMeasure = new SESegmentDistance(
+        const distanceMeasure = new SEPointDistance(
           this.targetPoints[0],
           this.targetPoints[1]
         );
@@ -50,7 +50,7 @@ export default class PointDistantHandler extends Highlighter {
           keyOptions: { name: `${distanceMeasure.name}` },
           type: "success"
         });
-        new AddDistanceMeasurementCommand(distanceMeasure, [
+        new AddPointDistanceMeasurementCommand(distanceMeasure, [
           this.targetPoints[0],
           this.targetPoints[1]
         ]).execute();
@@ -99,13 +99,13 @@ export default class PointDistantHandler extends Highlighter {
         object2 instanceof SEPoint &&
         object1 !== object2
       ) {
-        const distanceMeasure = new SESegmentDistance(object1, object2);
+        const distanceMeasure = new SEPointDistance(object1, object2);
 
         EventBus.fire("show-alert", {
           text: `New measurement ${distanceMeasure.name} added`,
           type: "success"
         });
-        new AddDistanceMeasurementCommand(distanceMeasure, [
+        new AddPointDistanceMeasurementCommand(distanceMeasure, [
           object1,
           object2
         ]).execute();

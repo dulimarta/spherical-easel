@@ -321,6 +321,26 @@ export default class AngleMarker extends Nodule {
     this.glowingBackCirclePathTail.noFill();
     this.glowingBackCirclePathDoubleArcTail.noFill();
 
+    this.frontCirclePathStart.cap = "butt";
+    this.frontCirclePathDoubleArcStart.cap = "butt";
+    this.frontCirclePathTail.cap = "butt";
+    this.frontCirclePathDoubleArcTail.cap = "butt";
+
+    this.backCirclePathStart.cap = "butt";
+    this.backCirclePathDoubleArcStart.cap = "butt";
+    this.backCirclePathTail.cap = "butt";
+    this.backCirclePathDoubleArcTail.cap = "butt";
+
+    this.glowingFrontCirclePathStart.cap = "butt";
+    this.glowingFrontCirclePathDoubleArcStart.cap = "butt";
+    this.glowingFrontCirclePathTail.cap = "butt";
+    this.glowingFrontCirclePathDoubleArcTail.cap = "butt";
+
+    this.glowingBackCirclePathStart.cap = "butt";
+    this.glowingBackCirclePathDoubleArcStart.cap = "butt";
+    this.glowingBackCirclePathTail.cap = "butt";
+    this.glowingBackCirclePathDoubleArcTail.cap = "butt";
+
     // The angle marker is not initially glowing
     this.frontCirclePathStart.visible = true;
     this.frontCirclePathDoubleArcStart.visible = true;
@@ -380,7 +400,7 @@ export default class AngleMarker extends Nodule {
     this.backStraightStart.id = 10000000 + Nodule.ANGLEMARKER_COUNT * 100 + 10;
     this.backStraightEnd.id = 10000000 + Nodule.ANGLEMARKER_COUNT * 100 + 11;
 
-    // Set the style that never changes -- Fill
+    // Set the style that never changes -- Fill & Cap
     this.frontStraightStart.noFill();
     this.backStraightStart.noFill();
     this.frontStraightEnd.noFill();
@@ -390,6 +410,16 @@ export default class AngleMarker extends Nodule {
     this.glowingBackStraightStart.noFill();
     this.glowingFrontStraightEnd.noFill();
     this.glowingBackStraightEnd.noFill();
+
+    this.frontStraightStart.cap = "square";
+    this.backStraightStart.cap = "square";
+    this.frontStraightEnd.cap = "square";
+    this.backStraightEnd.cap = "square";
+
+    this.glowingFrontStraightStart.cap = "square";
+    this.glowingBackStraightStart.cap = "square";
+    this.glowingFrontStraightEnd.cap = "square";
+    this.glowingBackStraightEnd.cap = "square";
 
     // The angle marker is not initially glowing
     this.frontStraightStart.visible = true;
@@ -2424,14 +2454,13 @@ export default class AngleMarker extends Nodule {
     this.glowingFrontStraightStart.addTo(
       layers[LAYER.foregroundAngleMarkersGlowing]
     );
+
     this.frontCirclePathDoubleArcStart.addTo(
       layers[LAYER.foregroundAngleMarkers]
     );
     this.glowingFrontCirclePathDoubleArcStart.addTo(
       layers[LAYER.foregroundAngleMarkersGlowing]
     );
-    this.frontFill1.addTo(layers[LAYER.foregroundAngleMarkers]);
-    this.frontFill2.addTo(layers[LAYER.foregroundAngleMarkers]);
 
     // this.backFill.addTo(layers[LAYER.background]);
     this.backCirclePathStart.addTo(layers[LAYER.backgroundAngleMarkers]);
@@ -2478,6 +2507,8 @@ export default class AngleMarker extends Nodule {
     this.glowingBackCirclePathDoubleArcTail.addTo(
       layers[LAYER.backgroundAngleMarkersGlowing]
     );
+    this.frontFill1.addTo(layers[LAYER.foregroundAngleMarkers]);
+    this.frontFill2.addTo(layers[LAYER.foregroundAngleMarkers]);
     this.backFill1.addTo(layers[LAYER.backgroundAngleMarkers]);
     this.backFill2.addTo(layers[LAYER.backgroundAngleMarkers]);
   }
@@ -2791,6 +2822,54 @@ export default class AngleMarker extends Nodule {
 
     this.glowingBackCirclePathDoubleArcTail.linewidth =
       (AngleMarker.currentGlowingAngleMarkerCircularStrokeWidthBack *
+        (this.dynamicBackStyle
+          ? Nodule.contrastStrokeWidthPercent(this.strokeWidthPercentFront)
+          : this.strokeWidthPercentBack)) /
+      100;
+
+    this.frontStraightStart.linewidth =
+      (AngleMarker.currentAngleMarkerStraightStrokeWidthFront *
+        this.strokeWidthPercentFront) /
+      100;
+
+    this.frontStraightEnd.linewidth =
+      (AngleMarker.currentAngleMarkerStraightStrokeWidthFront *
+        this.strokeWidthPercentFront) /
+      100;
+
+    this.backStraightStart.linewidth =
+      (AngleMarker.currentAngleMarkerStraightStrokeWidthBack *
+        (this.dynamicBackStyle
+          ? Nodule.contrastStrokeWidthPercent(this.strokeWidthPercentFront)
+          : this.strokeWidthPercentBack)) /
+      100;
+
+    this.backStraightEnd.linewidth =
+      (AngleMarker.currentAngleMarkerStraightStrokeWidthBack *
+        (this.dynamicBackStyle
+          ? Nodule.contrastStrokeWidthPercent(this.strokeWidthPercentFront)
+          : this.strokeWidthPercentBack)) /
+      100;
+
+    this.glowingFrontStraightStart.linewidth =
+      (AngleMarker.currentGlowingAngleMarkerStraightStrokeWidthFront *
+        this.strokeWidthPercentFront) /
+      100;
+
+    this.glowingFrontStraightEnd.linewidth =
+      (AngleMarker.currentGlowingAngleMarkerStraightStrokeWidthFront *
+        this.strokeWidthPercentFront) /
+      100;
+
+    this.glowingBackStraightStart.linewidth =
+      (AngleMarker.currentGlowingAngleMarkerStraightStrokeWidthBack *
+        (this.dynamicBackStyle
+          ? Nodule.contrastStrokeWidthPercent(this.strokeWidthPercentFront)
+          : this.strokeWidthPercentBack)) /
+      100;
+
+    this.glowingBackStraightEnd.linewidth =
+      (AngleMarker.currentGlowingAngleMarkerStraightStrokeWidthBack *
         (this.dynamicBackStyle
           ? Nodule.contrastStrokeWidthPercent(this.strokeWidthPercentFront)
           : this.strokeWidthPercentBack)) /

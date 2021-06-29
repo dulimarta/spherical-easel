@@ -207,7 +207,9 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
           ) {
             EventBus.fire("show-alert", {
               key: `handlers.perpendicularLineThruPointSegmentSelected`,
-              keyOptions: { name: `${this.oneDimensional.name}` },
+              keyOptions: {
+                name: `${this.oneDimensional.label?.ref.shortUserName}`
+              },
               type: "info"
             });
           }
@@ -221,7 +223,9 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
           ) {
             EventBus.fire("show-alert", {
               key: `handlers.perpendicularLineThruPointLineSelected`,
-              keyOptions: { name: `${this.oneDimensional.name}` },
+              keyOptions: {
+                name: `${this.oneDimensional.label?.ref.shortUserName}`
+              },
               type: "info"
             });
           }
@@ -235,7 +239,7 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
           ) {
             EventBus.fire("show-alert", {
               key: `handlers.perpendicularLineThruPointCircleSelected`,
-              keyOptions: { name: `${this.oneDimensional.name}` },
+              keyOptions: { name: `${this.oneDimensional.label?.ref.shortUserName}` },
               type: "info"
             });
           }
@@ -249,7 +253,7 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
           ) {
             EventBus.fire("show-alert", {
               key: `handlers.perpendicularLineThruPointEllipseSelected`,
-              keyOptions: { name: `${this.oneDimensional.name}` },
+              keyOptions: { name: `${this.oneDimensional.label?.ref.shortUserName}` },
               type: "info"
             });
           }
