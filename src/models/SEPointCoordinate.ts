@@ -1,4 +1,4 @@
-import { SEMeasurement } from "./SEMeasurement";
+import { SEExpression } from "./SEExpression";
 import { SEPoint } from "./SEPoint";
 import { SEStore } from "@/store";
 import { Matrix4, Vector3 } from "three";
@@ -11,7 +11,7 @@ export enum CoordinateSelection {
   Z_VALUE
 }
 const emptySet = new Set<Styles>();
-export class SEPointCoordinate extends SEMeasurement {
+export class SEPointCoordinate extends SEExpression {
   private selector = CoordinateSelection.X_VALUE;
   private point: SEPoint;
 

@@ -68,9 +68,9 @@
           color="accent"
           :elevation="4"
           class="my-3"
-          v-show="expressionss.length > 0">
+          v-show="expressions.length > 0">
           <SENoduleList i18LabelKey="objects.measurements"
-            :children="expressionss"></SENoduleList>
+            :children="expressions"></SENoduleList>
         </v-sheet>
         <!-- <v-sheet rounded
           color="accent"
@@ -123,12 +123,12 @@ export default class ObjectTree extends Vue {
   readonly nodules!: SENodule[];
 
   @SE.State((s: AppState) => s.expressions)
-  readonly expressionss!: SEExpression[];
+  readonly expressions!: SEExpression[];
 
   get zeroObjects(): boolean {
     return (
       this.nodules.filter(n => n.exists).length === 0 &&
-      this.expressionss.length === 0
+      this.expressions.length === 0
     );
   }
 

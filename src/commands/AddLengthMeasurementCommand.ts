@@ -1,6 +1,6 @@
 import { Command } from "./Command";
 import { SENodule } from "@/models/SENodule";
-import { SEMeasurement } from "@/models/SEMeasurement";
+import { SEExpression } from "@/models/SEExpression";
 import { AddMeasurementCommand } from "./AddMeasurementCommand";
 import { SESegment } from "@/models/SESegment";
 import { SESegmentLength } from "@/models/SESegmentLength";
@@ -8,20 +8,20 @@ import { SESegmentLength } from "@/models/SESegmentLength";
 export class AddLengthMeasurementCommand extends AddMeasurementCommand {
   /**
    *
-   * @param seMeasurement The measurement object being added
+   * @param seExpression The measurement object being added
    * @param parent the point whose coordinate is being measured
    */
-  constructor(seMeasurement: SEMeasurement, parent: SESegment) {
-    super(seMeasurement, [parent]);
+  constructor(seExpression: SEExpression, parent: SESegment) {
+    super(seExpression, [parent]);
   }
 
   toOpcode(): null | string | Array<string> {
     return [
       "AddLengthMeasurement",
-      /* arg-1 */ this.seMeasurement.name,
+      /* arg-1 */ this.seExpression.name,
       /* arg-2 */ this.parents[0].name,
-      /* arg-3 */ this.seMeasurement.showing,
-      /* arg-4 */ this.seMeasurement.exists
+      /* arg-3 */ this.seExpression.showing,
+      /* arg-4 */ this.seExpression.exists
     ].join("/");
   }
 

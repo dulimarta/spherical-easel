@@ -55,7 +55,7 @@
 import Vue from "vue";
 import Component from "vue-class-component";
 import { AppState, UpdateMode } from "@/types";
-import { SEMeasurement } from "@/models/SEMeasurement";
+import { SEExpression } from "@/models/SEExpression";
 import { SECalculation } from "@/models/SECalculation";
 import { AddCalculationCommand } from "@/commands/AddCalculationCommand";
 import { ExpressionParser } from "@/expression/ExpressionParser";
@@ -66,7 +66,7 @@ const SE = namespace("se");
 @Component({})
 export default class ExpressionForm extends Vue {
   @SE.State((s: AppState) => s.expressions)
-  readonly expressions!: SEMeasurement[];
+  readonly expressions!: SEExpression[];
 
   private parser = new ExpressionParser();
 
@@ -98,11 +98,18 @@ export default class ExpressionForm extends Vue {
     if (this.timerInstance) clearTimeout(this.timerInstance);
     this.timerInstance = setTimeout(() => {
       try {
+        this.expressions.forEach((m: SEExpression) => {
+          const measurementName = m.name;
+          // console.debug("Measurement", m, measurementName);
+          this.varMap.set(measurementName.replace(/-.+/, ""), m.value);
+        });
         // console.debug(
         //   "Calc ",
         //   this.calcExpression,
         //   "using parser",
-        //   this.parser
+        //   this.parser,
+        //   "var map",
+        //   this.varMap
         // );
         this.calcResult =
           this.calcExpression.length > 0
@@ -124,7 +131,7 @@ export default class ExpressionForm extends Vue {
     calc.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
     this.reset();
     this.varMap.clear();
-    this.expressions.forEach((m: SEMeasurement) => {
+    this.expressions.forEach((m: SEExpression) => {
       const measurementName = m.name;
       // console.debug("Measurement", m, measurementName);
       this.varMap.set(measurementName.replace(/-.+/, ""), m.value);

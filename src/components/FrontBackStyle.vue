@@ -644,8 +644,8 @@ export default class FrontBackStyle extends Vue {
 
   /** mounted() is part of VueJS lifecycle hooks */
   mounted(): void {
-    // Pass any selected objects when BasicFrontBackStyle is mound to the onSelection change
-    //this.onSelectionChanged(this.selectedSENodules);
+    // Pass any selected objects when FrontBackStyle Panel is mounted to the onSelection change
+    this.onSelectionChanged(this.selectedSENodules);
     //  Mount a save listener
     EventBus.listen("save-style-state", this.saveStyleState);
     // EventBus.listen("set-active-style-panel", this.setActivePanel);
@@ -1192,7 +1192,9 @@ export default class FrontBackStyle extends Vue {
 
   @Watch("activePanel")
   private activePanelChange(): void {
+    console.log("before here");
     if (this.activePanel !== undefined && this.panel === this.activePanel) {
+      console.log("before after");
       // activePanel = undefined means that no edit panel is open
       this.onSelectionChanged(this.selectedSENodules);
     }
@@ -1248,6 +1250,7 @@ export default class FrontBackStyle extends Vue {
       SEStore.getInitialStyleState(this.panel)
     );
   }
+
   saveStyleState(): void {
     const oldSelection = this.oldStyleSelection;
     // There must be an old selection in order for there to be a change to save

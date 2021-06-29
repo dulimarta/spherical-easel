@@ -54,10 +54,7 @@ export default class PointDistantHandler extends Highlighter {
           this.targetPoints[0],
           this.targetPoints[1]
         ]).execute();
-        this.targetPoints.splice(0);
         // reset for another distance measurement
-        possibleTargetPointList[0].selected = false;
-        possibleTargetPointList[1].selected = false;
         this.mouseLeave(event);
       } else
         EventBus.fire("show-alert", {
@@ -84,9 +81,12 @@ export default class PointDistantHandler extends Highlighter {
 
   mouseLeave(event: MouseEvent): void {
     super.mouseLeave(event);
-    // Reset the targetSegment in preparation for another deletion.
-    this.targetPoints.forEach(p => (p.selected = false));
-    this.targetPoints.clear();
+    // Reset the target points in preparation for another measure
+    this.targetPoints.forEach(p => {
+      p.selected = false;
+      p.glowing = false;
+    });
+    this.targetPoints.slice(0);
   }
 
   activate(): void {

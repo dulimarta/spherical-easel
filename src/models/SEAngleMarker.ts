@@ -1,4 +1,4 @@
-import { SEMeasurement } from "./SEMeasurement";
+import { SEExpression } from "./SEExpression";
 import { SEPoint } from "./SEPoint";
 import { SELine } from "./SELine";
 import { SESegment } from "./SESegment";
@@ -26,12 +26,12 @@ const styleSet = new Set([
   Styles.angleMarkerDoubleArc
 ]);
 
-export class SEAngleMarker extends SEMeasurement
+export class SEAngleMarker extends SEExpression
   implements Visitable, Labelable {
   /**
    * The plottable (TwoJS) AngleMarker associated with this model AngleMarker
    */
-  public ref!: AngleMarker;
+  public ref: AngleMarker;
   /**
    * Pointer to the label of this SEAngleMarker
    */
@@ -97,7 +97,7 @@ export class SEAngleMarker extends SEMeasurement
   private measureTmpVector3 = new Vector3();
 
   /**
-   * The number of this angle marker when it was created (i.e. this number of angle markers have been created so far)
+   * The number of this angle marker when it was created (i.e. this is the number of angle markers have created so far)
    */
   private _angleMarkerNumber = 0;
 
@@ -122,7 +122,7 @@ export class SEAngleMarker extends SEMeasurement
     this._thirdSEParent = thirdSEParent;
     this.mode = mode;
     SEAngleMarker.ANGLEMARKER_COUNT++;
-    this.name = `Am-${SEAngleMarker.ANGLEMARKER_COUNT}`;
+    this.name = this.name + `-Am-${SEAngleMarker.ANGLEMARKER_COUNT}`;
     if (thirdSEParent !== undefined) {
       this.name =
         this.name +
@@ -133,8 +133,7 @@ export class SEAngleMarker extends SEMeasurement
         `-Angle(${firstSEParent.name},${secondSEParent.name}):${this.prettyValue}`;
     }
 
-    this._displayInMultiplesOfPi =
-      SETTINGS.angleMarker.displayInMultiplesOfPiInitially;
+    this._valueDisplayMode = SETTINGS.angleMarker.initialValueDisplayMode;
     // SEAngleMarker is both an expression and a plottable (the only one?)
     // As an expression to be used in the calculation it must begin with "M###" so that it
     // can be referenced by the user and found by the parser
@@ -163,16 +162,6 @@ export class SEAngleMarker extends SEMeasurement
     );
   }
 
-  public get prettyValue(): string {
-    if (this._displayInMultiplesOfPi) {
-      return (
-        (this.value / Math.PI).toFixed(SETTINGS.decimalPrecision) + "\u{1D7B9}"
-      );
-    } else {
-      return this.value.toFixed(SETTINGS.decimalPrecision);
-    }
-  }
-
   public get longName(): string {
     if (this._thirdSEParent !== undefined) {
       return (
@@ -189,8 +178,8 @@ export class SEAngleMarker extends SEMeasurement
 
   public get shortName(): string {
     return (
-      this.name +
-      ` - Ang(` +
+      this.ref.name +
+      `-Ang(` +
       this.label!.ref.shortName +
       `):${this.prettyValue}`
     );

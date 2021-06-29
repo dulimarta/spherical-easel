@@ -65,15 +65,14 @@
         <template v-slot:activator="{ on }">
           <div v-show="isExpressionAndNotCoordinate"
             v-on="on"
-            @click="toggleMultplesOfPi"
+            @click="cycleValueDisplayMode"
             class="mr-2">
-            <v-icon small
-              style="{color: isMultipleOfPi ? 'black' : 'gray'}">
-              mdi-pi
+            <v-icon small>
+              mdi-recycle-variant
             </v-icon>
           </div>
         </template>
-        <span>{{ $t(`objectTree.multipleOfPiToggle`) }}</span>
+        <span>{{ $t(`objectTree.cycleValueDisplayMode`) }}</span>
       </v-tooltip>
     </div>
   </div>
@@ -88,19 +87,19 @@ import { SEPoint } from "../models/SEPoint";
 import { SELine } from "../models/SELine";
 import { SESegment } from "@/models/SESegment";
 import { SECircle } from "../models/SECircle";
-import { SEMeasurement } from "@/models/SEMeasurement";
+import { SEExpression } from "@/models/SEExpression";
 import { SESegmentLength } from "@/models/SESegmentLength";
 import { SECalculation } from "../models/SECalculation";
-import { SEExpression } from "@/models/SEExpression";
 import { SESegmentDistance } from "@/models/SESegmentDistance";
 import { SESlider } from "@/models/SESlider";
 import { SetNoduleDisplayCommand } from "@/commands/SetNoduleDisplayCommand";
-import { SetExpressionMultiplesOfPiCommand } from "@/commands/SetExpressionMultiplesOfPiCommand";
+import { SetValueDisplayModeCommand } from "@/commands/SetValueDisplayModeCommand";
 import SETTINGS from "@/global-settings";
-import { UpdateMode } from "@/types";
+import { UpdateMode, ValueDisplayMode } from "@/types";
 import { SEAngleMarker } from "@/models/SEAngleMarker";
 import { SEPointCoordinate } from "@/models/SEPointCoordinate";
 import { SEEllipse } from "@/models/SEEllipse";
+import ToggleLabelDisplayHandler from "@/eventHandlers/ToggleLabelDisplayHandler";
 
 @Component
 export default class SENoduleItem extends Vue {
@@ -123,7 +122,7 @@ export default class SENoduleItem extends Vue {
 
   selectMe(): void {
     if (this.node instanceof SEExpression) {
-      console.debug("Clicked", this.node.name);
+      // console.debug("Clicked", this.node.name);
       this.$emit("object-select", { id: this.node.id });
     }
   }
@@ -132,19 +131,43 @@ export default class SENoduleItem extends Vue {
     new SetNoduleDisplayCommand(this.node, !this.node.showing).execute();
   }
 
-  get isMultipleOfPi(): boolean {
-    return (this.node as SEExpression).displayInMultiplesOfPi;
-  }
-  toggleMultplesOfPi(): void {
-    new SetExpressionMultiplesOfPiCommand(
+  cycleValueDisplayMode(): void {
+    // If the user clicks this they the want to have the label showing so turn it on
+    if (this.node instanceof SEAngleMarker) {
+      if (!this.node.label?.showing) {
+        new SetNoduleDisplayCommand(this.node.label!, true).execute();
+      }
+    } else if (this.node instanceof SESegmentLength) {
+      if (!this.node.seSegment.label?.showing) {
+        new SetNoduleDisplayCommand(this.node.seSegment.label!, true).execute();
+      }
+    }
+    const oldValueDisplayMode = (this.node as SEExpression).valueDisplayMode;
+    let newValueDisplayMode: ValueDisplayMode;
+    // Compute the next valueDisplayMode so that we cycle through the different options
+    switch (oldValueDisplayMode) {
+      case ValueDisplayMode.Number:
+        newValueDisplayMode = ValueDisplayMode.MultipleOfPi;
+        break;
+      case ValueDisplayMode.MultipleOfPi:
+        newValueDisplayMode = ValueDisplayMode.DegreeDecimals;
+        break;
+      case ValueDisplayMode.DegreeDecimals:
+        newValueDisplayMode = ValueDisplayMode.Number;
+        break;
+    }
+    new SetValueDisplayModeCommand(
       this.node as SEExpression,
-      !(this.node as SEExpression).displayInMultiplesOfPi
+      oldValueDisplayMode,
+      newValueDisplayMode
     ).execute();
-    // update a parent to update the display on the sphere canvas
-    this.node.parents[0].update({
-      mode: UpdateMode.DisplayOnly,
-      stateArray: []
-    });
+    // update a parent (who is parent to both this measurement and the label) to update the display on the sphere canvas
+    if (!(this.node instanceof SECalculation)) {
+      this.node.parents[0].update({
+        mode: UpdateMode.DisplayOnly,
+        stateArray: []
+      });
+    }
   }
   get isPoint(): boolean {
     return this.node instanceof SEPoint;
@@ -177,7 +200,7 @@ export default class SENoduleItem extends Vue {
     return this.node instanceof SEAngleMarker;
   }
   get isMeasurement(): boolean {
-    return this.node instanceof SEMeasurement;
+    return this.node instanceof SEExpression;
   }
   get isCalculation(): boolean {
     return this.node instanceof SECalculation;

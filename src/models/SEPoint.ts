@@ -13,6 +13,7 @@ import {
   Labelable
 } from "@/types";
 import { SELabel } from "./SELabel";
+import { SEStore } from "@/store";
 
 const styleSet = new Set([
   Styles.fillColor,
@@ -117,9 +118,8 @@ export class SEPoint extends SENodule implements Visitable, Labelable {
     currentLabelLocationVector: Vector3
   ): Vector3 {
     // The current magnification level
-    //const mag = SENodule.store.state.zoomMagnificationFactor;
 
-    const mag = 1;
+    const mag = SEStore.zoomMagnificationFactor;
     // If the idealUnitSphereVector is within the tolerance of the point, do nothing, otherwise return the vector in the plane of the ideanUnitSphereVector and the point that is at the tolerance distance away.
     if (
       this._locationVector.angleTo(currentLabelLocationVector) <

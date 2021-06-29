@@ -42,7 +42,7 @@ export interface AppState {
   selectedSENodules: SENodule[];
 
   intersections: SEIntersectionPoint[];
-  // measurements: SEMeasurement[];
+  // measurements: SEExpression[];
   expressions: SEExpression[];
   temporaryNodules: Nodule[];
   initialStyleStates: StyleOptions[];
@@ -120,6 +120,15 @@ export enum UpdateMode {
   DisplayOnly, // Record nothing in the state Array
   RecordStateForDelete, // All visited objects must be put into the stateArray
   RecordStateForMove // Only those objects which depend on more than their point parents need to record that information
+}
+
+/**
+ * There are three modes for displaying a value of a measurement.
+ */
+export enum ValueDisplayMode {
+  Number, // just the raw number is displayed
+  MultipleOfPi, // convert to multiples of pi for display
+  DegreeDecimals // convert to degrees for display
 }
 
 export interface UpdateStateType {

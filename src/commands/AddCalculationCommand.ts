@@ -6,9 +6,10 @@ import { SECalculation } from "@/models/SECalculation";
 export class AddCalculationCommand extends Command {
   private seExpression: SEExpression;
   private arithmeticExpression: string;
+
   /**
    * @param seExpression
-   * @param parents If this is included then the seMeasurement is made a child of all the SENodules in this array
+   * @param parents If this is included then the seExpression is made a child of all the SENodules in this array
    */
   constructor(seExpression: SEExpression, text: string) {
     super();

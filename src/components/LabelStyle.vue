@@ -510,8 +510,8 @@ export default class LabelStyle extends Vue {
 
   /** mounted() is part of VueJS lifecycle hooks */
   mounted(): void {
-    // Pass any selected objects when BasicFrontBackStyle is mound to the onSelection change
-    //this.onSelectionChanged(this.selectedSENodules);
+    // Pass any selected objects when Label Panel is mounted to the onSelection change
+    this.onSelectionChanged(this.selectedSENodules);
     //  Mount a save listener
     EventBus.listen("save-style-state", this.saveStyleState);
     // EventBus.listen("set-active-style-panel", this.setActivePanel);

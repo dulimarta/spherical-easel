@@ -26,7 +26,7 @@ export class SECalculation extends SEExpression {
     for (const v of text.matchAll(/[Mm][0-9]+/g)) {
       // vars.push(v[0]);
       // Find the SENodule parents of this calculation
-      SEStore.expressions.forEach(n => console.log(n.name));
+      // SEStore.expressions.forEach(n => console.log(n.name));
       const pos = SEStore.expressions.findIndex(z =>
         z.name.startsWith(`${v[0]}`)
       );
@@ -58,27 +58,35 @@ export class SECalculation extends SEExpression {
     return this._calculationParents;
   }
 
-  public get prettyValue(): string {
-    if (this._displayInMultiplesOfPi) {
-      return (
-        (this.value / Math.PI).toFixed(SETTINGS.decimalPrecision) + "\u{1D7B9}"
-      );
-    } else {
-      return this.value.toFixed(SETTINGS.decimalPrecision);
-    }
-  }
+  // public get prettyValue(): string {
+  //   if (this._valueDisplayMode) {
+  //     return (
+  //       (this.value / Math.PI).toFixed(SETTINGS.decimalPrecision) + "\u{1D7B9}"
+  //     );
+  //   } else {
+  //     return this.value.toFixed(SETTINGS.decimalPrecision);
+  //   }
+  // }
   private recalculate() {
     const varMap = new Map<string, number>();
-    this.parents
+    this._calculationParents
       .filter(n => n instanceof SEExpression)
       .map(n => n as SEExpression)
       .forEach((m: SEExpression) => {
         // const pos = m.name.indexOf("-");
         // if (pos >= 0) {
         //   const shorttName = m.name.substring(0, pos);
-        varMap.set(m.name, m.value);
+        const measurementName = m.name;
+        varMap.set(measurementName.replace(/-.+/, ""), m.value);
         // }
       });
+    // console.log(this._calculationParents, varMap);
+    // this.expressions.forEach((m: SEExpression) => {
+    //   const measurementName = m.name;
+    //   // console.debug("Measurement", m, measurementName);
+    //   this.varMap.set(measurementName.replace(/-.+/, ""), m.value);
+    // });
+
     // console.log("recalc", varMap);
     this.computedValue = parser.evaluateWithVars(this.exprText, varMap);
   }
@@ -91,7 +99,7 @@ export class SECalculation extends SEExpression {
   public get shortName(): string {
     this.recalculate();
     return (
-      this.name + ` - Calc(${this.exprText.slice(0, 4)}...):${this.prettyValue}`
+      this.name + `-Calc(${this.exprText.slice(0, 4)}...):${this.prettyValue}`
     );
   }
 

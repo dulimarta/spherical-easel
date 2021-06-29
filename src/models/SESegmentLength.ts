@@ -1,29 +1,17 @@
-import { SEMeasurement } from "./SEMeasurement";
+import { SEExpression } from "./SEExpression";
 import { SESegment } from "./SESegment";
-import { UpdateStateType, UpdateMode } from "@/types";
+import { UpdateStateType, UpdateMode, ValueDisplayMode } from "@/types";
 import SETTINGS from "@/global-settings";
 
 import { Styles } from "@/types/Styles";
 const emptySet = new Set<Styles>();
-export class SESegmentLength extends SEMeasurement {
+export class SESegmentLength extends SEExpression {
   readonly seSegment: SESegment;
 
   constructor(parent: SESegment) {
     super();
     this.seSegment = parent;
-    this._displayInMultiplesOfPi =
-      SETTINGS.segment.displayInMultiplesOfPiInitially;
-  }
-  public get prettyValue(): string {
-    if (this._displayInMultiplesOfPi) {
-      return (
-        (this.seSegment.arcLength / Math.PI).toFixed(
-          SETTINGS.decimalPrecision
-        ) + "\u{1D7B9}"
-      );
-    } else {
-      return this.seSegment.arcLength.toFixed(SETTINGS.decimalPrecision);
-    }
+    this._valueDisplayMode = SETTINGS.segment.initialValueDisplayMode;
   }
 
   public get value(): number {
@@ -37,7 +25,7 @@ export class SESegmentLength extends SEMeasurement {
   public get shortName(): string {
     return (
       this.name +
-      ` - Len(` +
+      `-Len(` +
       this.seSegment.label!.ref.shortName +
       `):${this.prettyValue}`
     );

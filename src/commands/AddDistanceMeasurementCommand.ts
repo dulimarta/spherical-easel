@@ -7,24 +7,24 @@ import { SESegmentDistance } from "@/models/SESegmentDistance";
 export class AddDistanceMeasurementCommand extends AddMeasurementCommand {
   // /**
   //  *
-  //  * @param seMeasurement The measurement object being added
+  //  * @param seExpression The measurement object being added
   //  * @param parent the point whose coordinate is being measured
   //  */
   // constructor(
-  //   seMeasurement: SEMeasurement,
+  //   seExpression: SEExpression,
   //   parent: SEPoint[],
   //   selector: CoordinateSelection
   // ) {
-  //   super(seMeasurement, parent);
+  //   super(seExpression, parent);
   // }
 
   toOpcode(): null | string | Array<string> {
     return [
       "AddDistanceMeasurement",
-      /* arg-1 */ this.seMeasurement.name,
+      /* arg-1 */ this.seExpression.name,
       /* arg-2 */ this.parents.map((n: SENodule) => n.name).join("/"),
-      /* arg-N-2 */ this.seMeasurement.showing,
-      /* arg-N-1 */ this.seMeasurement.exists
+      /* arg-N-2 */ this.seExpression.showing,
+      /* arg-N-1 */ this.seExpression.exists
     ].join("/");
   }
 

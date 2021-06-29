@@ -165,7 +165,6 @@ export default class SE extends VuexModule implements AppState {
   @Mutation
   setZoomMagnificationFactor(mag: number): void {
     console.log("setZoomMagFactor");
-
     this.previousZoomMagnificationFactor = this.zoomMagnificationFactor;
     this.zoomMagnificationFactor = mag;
   }

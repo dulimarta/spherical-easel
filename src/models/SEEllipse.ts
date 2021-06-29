@@ -11,6 +11,7 @@ import { UpdateMode, UpdateStateType, CircleState } from "@/types";
 import { Labelable } from "@/types";
 import { SELabel } from "@/models/SELabel";
 import { Vector } from "two.js";
+import { SEStore } from "@/store";
 
 const styleSet = new Set([
   Styles.strokeColor,
@@ -278,8 +279,8 @@ export class SEEllipse extends SENodule
     const closest = new Vector3();
     closest.copy(this.closestVector(idealUnitSphereVector));
     // The current magnification level
-    //const mag = SENodule.store.state.zoomMagnificationFactor;
-    const mag = 1;
+
+    const mag = SEStore.zoomMagnificationFactor;
 
     // If the idealUnitSphereVector is within the tolerance of the closest point, do nothing, otherwise return the vector in the plane of the ideanUnitSphereVector and the closest point that is at the tolerance distance away.
     if (

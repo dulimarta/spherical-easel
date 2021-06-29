@@ -1,12 +1,12 @@
-import { SEMeasurement } from "./SEMeasurement";
+import { SEExpression } from "./SEExpression";
 import { SEPoint } from "./SEPoint";
-import { UpdateStateType, UpdateMode } from "@/types";
+import { UpdateStateType, UpdateMode, ValueDisplayMode } from "@/types";
 import { Styles } from "@/types/Styles";
 import SETTINGS from "@/global-settings";
 
 const emptySet = new Set<Styles>();
 
-export class SESegmentDistance extends SEMeasurement {
+export class SESegmentDistance extends SEExpression {
   readonly firstSEPoint: SEPoint;
   readonly secondSEPoint: SEPoint;
 
@@ -25,7 +25,7 @@ export class SESegmentDistance extends SEMeasurement {
   public get shortName(): string {
     return (
       this.name +
-      ` - Dist(${this.firstSEPoint.label!.ref.shortName},${
+      `-Dist(${this.firstSEPoint.label!.ref.shortName},${
         this.secondSEPoint.label!.ref.shortName
       }):${this.prettyValue}`
     );
@@ -39,16 +39,6 @@ export class SESegmentDistance extends SEMeasurement {
     //this.name = this.name.substring(0, pos + 2) + this.prettyValue;
     this.setOutOfDate(false);
     this.updateKids(state);
-  }
-
-  public get prettyValue(): string {
-    if (this._displayInMultiplesOfPi) {
-      return (
-        (this.value / Math.PI).toFixed(SETTINGS.decimalPrecision) + "\u{1D7B9}"
-      );
-    } else {
-      return this.value.toFixed(SETTINGS.decimalPrecision);
-    }
   }
 
   public get value(): number {

@@ -1,3 +1,4 @@
+import { ValueDisplayMode } from "./types";
 import { LabelDisplayMode } from "./types/Styles";
 
 export default {
@@ -179,11 +180,12 @@ export default {
     }
   },
   segment: {
-    displayInMultiplesOfPiInitially: true, // Should the measure of the length be in multiples of pi
+    Initially: true, // Should the measure of the length be in multiples of pi
     showLabelsInitially: false, // Should the labels be show upon creating the segment
     maxLabelDistance: 0.15, // The maximum distance that a label is allowed to get away from the segment
     defaultLabelMode: LabelDisplayMode.NameOnly, // The default way of displaying this objects label
     measuringChangesLabelModeTo: LabelDisplayMode.NameAndValue,
+    initialValueDisplayMode: ValueDisplayMode.MultipleOfPi, // Set the initial display of the values for the measurement of the angle
     initialLabelOffset: 0.02, // When making point labels this is initially how far (roughly) they are from the line
     minimumArcLength: 0.045, // Don't create segments with a length less than this (must be larger than point.hitIdealDistance because if not it is possible to create a line segment of length zero )
     numPoints: 20, // The number of vertices used to render the segment. These are spread over the front and back parts. MAKE THIS EVEN!
@@ -409,9 +411,9 @@ export default {
     }
   },
   angleMarker: {
-    displayInMultiplesOfPiInitially: true, // Should the measure of the angle be in multiples of pi
+    initialValueDisplayMode: ValueDisplayMode.DegreeDecimals, // Set the initial display of the values for the measurement of the angle
     showLabelsInitially: true, // Should the labels be show upon creating the angleMarker
-    maxLabelDistance: 0.15, // The maximum distance that a label is allowed to get away from the angleMarker
+    maxLabelDistance: 0.25, // The maximum distance that a label is allowed to get away from the angleMarker
     initialLabelOffset: 0.2, // When making point labels this is initially how far (roughly) they are from the angleMarker
     defaultLabelMode: LabelDisplayMode.ValueOnly, // The default way of displaying this objects label
     turnOffVertexLabelOnCreation: true, // When an angle marker is created with a label at the vertex, that label is turned off if this is set.

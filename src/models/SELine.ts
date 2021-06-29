@@ -12,6 +12,7 @@ import { SELabel } from "@/models/SELabel";
 // import  SENoduleItem  from "*.vue";
 // import magnificationLevel from "*.vue";
 import magnificationLevel from "@/components/SENoduleItem.vue";
+import { SEStore } from "@/store";
 
 const styleSet = new Set([
   Styles.strokeWidthPercent,
@@ -133,9 +134,8 @@ export class SELine extends SENodule
     this.tmpVector.copy(this.closestVector(idealUnitSphereVector));
 
     // The current magnification level
-    //const mag = SENodule.store.state.zoomMagnificationFactor;
-    //const mag = (magnificationLevel as unknown) as number;
-    const mag = 1;
+
+    const mag = SEStore.zoomMagnificationFactor;
 
     // If the idealUnitSphereVector is within the tolerance of the closest point, do nothing, otherwise return the vector in the plane of the ideanUnitSphereVector and the closest point that is at the tolerance distance away.
     if (

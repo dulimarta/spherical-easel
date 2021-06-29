@@ -16,9 +16,8 @@
 <script lang="ts">
 import Vue from "vue";
 import { Prop, Component } from "vue-property-decorator";
-import { SEMeasurement } from "@/models/SEMeasurement";
-import { SECalculation } from "../models/SECalculation";
 import { SEExpression } from "@/models/SEExpression";
+import { SECalculation } from "../models/SECalculation";
 import { SESlider } from "@/models/SESlider";
 
 @Component
@@ -28,13 +27,13 @@ export default class SENoduleItem extends Vue {
 
   selectMe(): void {
     if (this.node instanceof SEExpression) {
-      console.debug("Clicked", this.node.name);
+      // console.debug("Clicked", this.node.name);
       this.$emit("object-select", { id: this.node.id });
     }
   }
 
   get isMeasurement(): boolean {
-    return this.node instanceof SEMeasurement;
+    return this.node instanceof SEExpression;
   }
   get isCalculation(): boolean {
     return this.node instanceof SECalculation;

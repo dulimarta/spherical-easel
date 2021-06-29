@@ -1,8 +1,8 @@
-import { SEMeasurement } from "./SEMeasurement";
+import { SEExpression } from "./SEExpression";
 import { UpdateMode, UpdateStateType } from "@/types";
 import { Styles } from "@/types/Styles";
 const emptySet = new Set<Styles>();
-export class SESlider extends SEMeasurement /*implements Visitable*/ {
+export class SESlider extends SEExpression /*implements Visitable*/ {
   /* Access to the store to retrieve the canvas size so that the bounding rectangle for the text can be computed properly*/
   // protected store = AppStore;
 

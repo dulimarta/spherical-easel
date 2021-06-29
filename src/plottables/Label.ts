@@ -17,6 +17,7 @@ import { SESegment } from "@/models/SESegment";
 import { SECircle } from "@/models/SECircle";
 import { SEAngleMarker } from "@/models/SEAngleMarker";
 import { SESegmentLength } from "@/models/SESegmentLength";
+import { ValueDisplayMode } from "@/types";
 
 /**
  * Each Point object is uniquely associated with a SEPoint object.
@@ -202,7 +203,10 @@ export default class Label extends Nodule {
    * Return the short name associated with this object
    */
   get shortName(): string {
-    return this.shortUserName;
+    return this.shortUserName.slice(
+      0,
+      SETTINGS.label.maxLabelDisplayTextLength
+    );
   }
 
   /**
@@ -602,6 +606,46 @@ export default class Label extends Nodule {
 
         // Properties that have no sides
         let labelText = "";
+        // Compute the numerical part of the label (if any) and add it to the end of label
+        if (this.value.length > 0) {
+          if (this.seLabel!.parent instanceof SEPoint) {
+            labelText =
+              "(" +
+              `${this._value
+                .map(num => num.toFixed(SETTINGS.decimalPrecision))
+                .join(",")}$` +
+              ")";
+          } else {
+            let valueDisplayMode;
+            if (this.seLabel!.parent instanceof SEAngleMarker) {
+              valueDisplayMode = (this.seLabel!.parent as SEAngleMarker)
+                .valueDisplayMode;
+            } else if (this.seLabel!.parent instanceof SESegment) {
+              const seSegLength = this.seLabel!.parent.kids.find(
+                node => node instanceof SESegmentLength
+              );
+              valueDisplayMode = (seSegLength as SESegmentLength)
+                .valueDisplayMode;
+            }
+            switch (valueDisplayMode) {
+              case ValueDisplayMode.Number:
+                labelText = this._value[0].toFixed(SETTINGS.decimalPrecision);
+                break;
+              case ValueDisplayMode.MultipleOfPi:
+                labelText =
+                  (this._value[0] / Math.PI).toFixed(
+                    SETTINGS.decimalPrecision
+                  ) + "\u{1D7B9}";
+                break;
+              case ValueDisplayMode.DegreeDecimals:
+                labelText =
+                  this._value[0]
+                    .toDegrees()
+                    .toFixed(SETTINGS.decimalPrecision) + "\u{00B0}";
+                break;
+            }
+          }
+        }
         switch (this.textLabelMode) {
           case LabelDisplayMode.NameOnly: {
             labelText = this.shortUserName;
@@ -612,83 +656,22 @@ export default class Label extends Nodule {
             break;
           }
           case LabelDisplayMode.ValueOnly: {
-            if (this._value.length > 0) {
-              if (this.seLabel!.parent instanceof SEPoint) {
-                labelText =
-                  "(" +
-                  `${this._value
-                    .map(num => num.toFixed(SETTINGS.decimalPrecision))
-                    .join(",")}$` +
-                  ")";
-              } else {
-                let multPi = false;
-                if (this.seLabel!.parent instanceof SEAngleMarker) {
-                  multPi = (this.seLabel!.parent as SEAngleMarker)
-                    .displayInMultiplesOfPi;
-                } else if (this.seLabel!.parent instanceof SESegment) {
-                  const seSegLength = this.seLabel!.parent.kids.find(
-                    node => node instanceof SESegmentLength
-                  );
-                  multPi = (seSegLength as SESegmentLength)
-                    .displayInMultiplesOfPi;
-                }
-                if (!multPi) {
-                  labelText = this._value[0].toFixed(SETTINGS.decimalPrecision);
-                } else {
-                  labelText =
-                    (this._value[0] / Math.PI).toFixed(
-                      SETTINGS.decimalPrecision
-                    ) + "\u{1D7B9}";
-                }
-              }
-            } else {
-              labelText = this.shortUserName;
+            if (this._value.length === 0) {
+              // this is the case where the label doesn't have a corresponding value (When it does have a value it is computed above)
+              labelText = this.shortName;
             }
             break;
           }
           case LabelDisplayMode.NameAndCaption: {
-            labelText = this.shortUserName + ": " + this._caption;
+            labelText = this.shortName + ": " + this._caption;
             break;
           }
           case LabelDisplayMode.NameAndValue: {
             if (this._value.length > 0) {
-              if (this.seLabel!.parent instanceof SEPoint) {
-                labelText =
-                  this.shortName +
-                  "(" +
-                  `${this._value
-                    .map(num => num.toFixed(SETTINGS.decimalPrecision))
-                    .join(",")}` +
-                  ")";
-              } else {
-                let multPi = false;
-                if (this.seLabel!.parent instanceof SEAngleMarker) {
-                  multPi = (this.seLabel!.parent as SEAngleMarker)
-                    .displayInMultiplesOfPi;
-                } else if (this.seLabel!.parent instanceof SESegment) {
-                  const seSegLength = this.seLabel!.parent.kids.find(
-                    node => node instanceof SESegmentLength
-                  );
-                  multPi = (seSegLength as SESegmentLength)
-                    .displayInMultiplesOfPi;
-                }
-                if (!multPi) {
-                  labelText =
-                    this.shortName +
-                    ": " +
-                    this._value[0].toFixed(SETTINGS.decimalPrecision);
-                } else {
-                  labelText =
-                    this.shortName +
-                    ": " +
-                    (this._value[0] / Math.PI).toFixed(
-                      SETTINGS.decimalPrecision
-                    ) +
-                    "\u{1D7B9}";
-                }
-              }
+              labelText = this.shortName + ": " + labelText;
             } else {
-              labelText = this.shortUserName;
+              // this is the case where the label doesn't have a corresponding value (When it does have a value it is computed above)
+              labelText = this.shortName;
             }
             break;
           }
