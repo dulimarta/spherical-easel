@@ -28,6 +28,7 @@ export default class IconBase extends Vue {
   private doneFetching = false;
 
   mounted(): void {
+    console.log("App location", window.location);
     let filePath: string;
     // Failed attempt to load from current directory
     if (this.iconFile.startsWith(".") || this.iconFile.startsWith("/")) {
