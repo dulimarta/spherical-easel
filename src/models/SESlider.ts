@@ -22,7 +22,7 @@ export class SESlider extends SEMeasurement /*implements Visitable*/ {
     value: number;
   }) {
     super();
-    // console.log("store", SELabel.store);
+    // console.debug("store", SELabel.store);
     this.min = min;
     this.max = max;
     this.step = step;

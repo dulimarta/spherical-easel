@@ -126,11 +126,11 @@ export default class DeleteHandler extends Highlighter {
     //Record the state of the victim and all the SENodules that depend on it (i.e kids, grandKids, etc..).
     victim.update(this.beforeDeleteState);
 
-    // console.log("order of states before reverse");
+    // console.debug("order of states before reverse");
     // this.beforeDeleteState.stateArray.forEach(obj =>
-    //   console.log(obj.object.name)
+    //   console.debug(obj.object.name)
     // );
-    // console.log("end order");
+    // console.debug("end order");
 
     const deleteCommandGroup = new CommandGroup();
     // The update method orders the objects from the victim to the leaf (i.e objects with only in arrows)

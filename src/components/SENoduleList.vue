@@ -70,7 +70,7 @@ export default class SENoduleTree extends Vue {
 
   //When a user clicks on an expression this sends the token name to the expression builder (ExpressionForm.vue)
   onExpressionSelect(x: any): void {
-    console.log("bob");
+    console.debug("bob");
     const pos = this.children.findIndex(n => n.id === x.id);
     console.debug("****Selection", x, "at", pos);
     if (pos >= 0) {

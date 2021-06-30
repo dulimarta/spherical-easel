@@ -19,13 +19,13 @@ export class DeleteNoduleCommand extends Command {
 
   do(): void {
     // if (this.seNodule instanceof SEPoint) {
-    //   console.log("Do Delete Point", this.seNodule.name);
+    //   console.debug("Do Delete Point", this.seNodule.name);
     // } else if (this.seNodule instanceof SELine) {
-    //   console.log("Do Delete Line", this.seNodule.name);
+    //   console.debug("Do Delete Line", this.seNodule.name);
     // } else if (this.seNodule instanceof SECircle) {
-    //   console.log("Do Delete Circle", this.seNodule.name);
+    //   console.debug("Do Delete Circle", this.seNodule.name);
     // } else if (this.seNodule instanceof SESegment) {
-    //   console.log("Do Delete Segment", this.seNodule.name);
+    //   console.debug("Do Delete Segment", this.seNodule.name);
     // }
     // Remove from the Data Structure (DAG)
     // Notice that this make the parents array empty so that is why we stored the parents ids in a separate
@@ -62,13 +62,13 @@ export class DeleteNoduleCommand extends Command {
 
   restoreState(): void {
     // if (this.seNodule instanceof SEPoint) {
-    //   console.log("Do unDelete Point");
+    //   console.debug("Do unDelete Point");
     // } else if (this.seNodule instanceof SELine) {
-    //   console.log("Do unDelete Line");
+    //   console.debug("Do unDelete Line");
     // } else if (this.seNodule instanceof SECircle) {
-    //   console.log("Do unDelete Circle");
+    //   console.debug("Do unDelete Circle");
     // } else if (this.seNodule instanceof SESegment) {
-    //   console.log("Do unDelete Segment");
+    //   console.debug("Do unDelete Segment");
     // }
     // Add the point to the store and turn on display
     if (this.seNodule instanceof SEPoint) {

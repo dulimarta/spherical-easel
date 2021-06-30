@@ -182,7 +182,7 @@ export default class SphereFrame extends VueComponent {
     // t1.decoration = "strikethrough";
 
     // this.layers[LAYER.foregroundText].add(t1);
-    // console.log("bound box", t1.getBoundingClientRect());
+    // console.debug("bound box", t1.getBoundingClientRect());
     // Draw horizontal and vertical lines (just for debugging)
     // const R = SETTINGS.boundaryCircle.radius;
     // const hLine = new Two.Line(-R, 0, R, 0);
@@ -287,8 +287,8 @@ export default class SphereFrame extends VueComponent {
   //#region updateView
   private updateView() {
     // Get the current maginiication factor and translation vector
-    // console.log("SphereFrame updateView()", SEStore.zoomTranslation);
-    // console.log("Again", this.$store.state.zoomMagnificationFactor);
+    // console.debug("SphereFrame updateView()", SEStore.zoomTranslation);
+    // console.debug("Again", this.$store.state.zoomMagnificationFactor);
     const mag = SEStore.zoomMagnificationFactor;
     const transVector = SEStore.zoomTranslation;
 
@@ -311,7 +311,7 @@ export default class SphereFrame extends VueComponent {
   //#endregion updateView
 
   handleMouseWheel(event: WheelEvent): void {
-    console.log("Mouse Wheel Zoom!");
+    console.debug("Mouse Wheel Zoom!");
     // Compute (pixelX,pixelY) = the location of the mouse release in pixel coordinates relative to
     //  the top left of the sphere frame. This is a location *post* affine transformation
     const target = (event.currentTarget || event.target) as HTMLDivElement;
@@ -444,7 +444,7 @@ export default class SphereFrame extends VueComponent {
     const desiredPointScale = 0.3;
     const num = this.canvasSize;
     const searchString = String(num / 2);
-    console.log(this.$refs.canvas.innerHTML);
+    console.debug(this.$refs.canvas.innerHTML);
     // Remove the translation to num/2, num/2 transformations
     let originalScale = this.$refs.canvas.innerHTML.split(" ")[10];
     originalScale = originalScale.substring(0, originalScale.length - 1);
@@ -570,8 +570,8 @@ export default class SphereFrame extends VueComponent {
         ")";
       splitSVG2[num - 2] = newStr;
     });
-    console.log(splitSVG2.join('"'));
-    console.log(originalScale);
+    console.debug(splitSVG2.join('"'));
+    console.debug(originalScale);
     // const scaledSVG = splitSVG.join("");
     // //Divide all numbers surrounded by spaces that are not 1 or -1 by the num/(2*desiredSphereOutlineRadiusSize)
     // // SVG.split(" ").forEach(str => {
@@ -587,7 +587,7 @@ export default class SphereFrame extends VueComponent {
     // //     scaledSVG.push(str);
     // //   }
     // // });
-    // console.log(scaledSVG);
+    // console.debug(scaledSVG);
     // const regEx1 = /(\B<g\sid="two-\d*"\stransform="matrix\(1 0 0 -1 0\s0\)" opacity="1"><\/g>\B|\B<g\sid="two-\d*"\stransform="matrix\(1 0 0 1 0\s0\)" opacity="1"><\/g>\B)/g;
     // const nextSVG1 = scaledSVG.replace(regEx1, "");
     // const regEx2 = /\btransform="matrix\(1 0 0 1 0\s0\)"\s\b/g;
@@ -614,7 +614,7 @@ export default class SphereFrame extends VueComponent {
     // // // Remove the hidden groups
     // // const regEx8 = /<g.+?(?=visibility="hidden").*?<\/g>/g;
     // // const nextSVG8 = nextSVG7.replace(regEx8, "");
-    // console.log(nextSVG8);
+    // console.debug(nextSVG8);
   }
 
   animateCanvas(): void {

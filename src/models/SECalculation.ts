@@ -26,12 +26,16 @@ export class SECalculation extends SEExpression {
     for (const v of text.matchAll(/[Mm][0-9]+/g)) {
       // vars.push(v[0]);
       // Find the SENodule parents of this calculation
-      SEStore.expressions.forEach(n => console.log(n.name));
+      SEStore.expressions.forEach(n => console.debug(n.name));
       const pos = SEStore.expressions.findIndex(z =>
         z.name.startsWith(`${v[0]}`)
       );
       if (pos > -1) this._calculationParents.push(SEStore.expressions[pos]);
     }
+
+    this._calculationParents.forEach((par: SENodule) => {
+      par.registerChild(this);
+    });
 
     // This might not be necessary because all expressions have the name "M####" and should be caught by the above
     //  This appears to make ALL expressions have this as a child
@@ -79,7 +83,7 @@ export class SECalculation extends SEExpression {
         varMap.set(m.name, m.value);
         // }
       });
-    // console.log("recalc", varMap);
+    // console.debug("recalc", varMap);
     this.computedValue = parser.evaluateWithVars(this.exprText, varMap);
   }
 

@@ -214,10 +214,10 @@ export default class App extends Vue {
             .doc(this.uid)
             .get()
             .then((ds: DocumentSnapshot) => {
-              console.log("Fetching profile picture?", ds);
+              console.debug("Fetching profile picture?", ds);
               if (ds.exists) {
                 const { profilePictureURL } = ds.data() as any;
-                console.log("Fetching profile picture?", ds);
+                console.debug("Fetching profile picture?", ds);
                 if (profilePictureURL) {
                   this.profilePicUrl = profilePictureURL;
                 }
@@ -308,7 +308,7 @@ export default class App extends Vue {
         SEStore.clearUnsavedFlag();
       })
       .catch((err: Error) => {
-        console.log("Can't save document", err);
+        console.error("Can't save document", err);
         EventBus.fire("show-alert", {
           key: "objectTree.firestoreSaveError",
           keyOptions: {},

@@ -19,10 +19,10 @@ describe("Dialog.vue", () => {
         }
       }
     });
-    // console.log("Dialog", wrapper.html());
+    // console.debug("Dialog", wrapper.html());
     await wrapper.setData({ visible: true });
     const b = wrapper.find("#_test_title");
-    // console.log(wrapper.vm.$data.visible, b.html());
+    // console.debug(wrapper.vm.$data.visible, b.html());
     expect(b.text()).toMatch("Dialog Title");
   });
 
@@ -34,10 +34,10 @@ describe("Dialog.vue", () => {
         }
       }
     });
-    // console.log("Dialog", wrapper.html());
+    // console.debug("Dialog", wrapper.html());
     await wrapper.setData({ visible: true });
     const b = wrapper.find("#_test_posButton");
-    // console.log(wrapper.vm.$data.visible, b.html());
+    // console.debug(wrapper.vm.$data.visible, b.html());
     expect(b.text()).toMatch("Hello");
   });
 
@@ -50,10 +50,10 @@ describe("Dialog.vue", () => {
         }
       }
     });
-    // console.log("Dialog", wrapper.html());
+    // console.debug("Dialog", wrapper.html());
     await wrapper.setData({ visible: true });
     const b = wrapper.find("#_test_negButton");
-    // console.log(wrapper.vm.$data.visible, b.html());
+    // console.debug(wrapper.vm.$data.visible, b.html());
     expect(b.text()).toMatch("No Hello");
   });
 

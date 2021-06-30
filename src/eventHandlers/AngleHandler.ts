@@ -560,7 +560,7 @@ export default class AngleHandler extends Highlighter {
           //Then highlight the one nearby object point> segment >line >circles -- no snapping!
           if (this.hitSEPoints.length > 0) {
             this.hitSEPoints[0].glowing = true;
-            // console.log("here glow");
+            // console.debug("here glow");
           } else if (this.hitSESegments.length > 0) {
             this.hitSESegments[0].glowing = true;
           } else if (this.hitSELines.length > 0) {

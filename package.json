@@ -38,8 +38,6 @@
     "vuex-class": "^0.3.2"
   },
   "devDependencies": {
-    "@cypress/vue": "^2.2.3",
-    "@cypress/webpack-dev-server": "^1.3.1",
     "@intlify/vue-i18n-loader": "^2.1.0",
     "@maginapp/vuepress-plugin-katex": "^1.0.7",
     "@mdi/js": "~5.5.55",
@@ -60,7 +58,6 @@
     "@vuepress/plugin-back-to-top": "^1.5.2",
     "babel-plugin-transform-decorators": "^6.24.1",
     "canvas": "^2.6.1",
-    "cypress": "^7.5.0",
     "eslint": "~6.8.0",
     "eslint-plugin-vue": "^6.2.2",
     "firestore-jest-mock": "https://github.com/dulimarta/firestore-jest-mock",

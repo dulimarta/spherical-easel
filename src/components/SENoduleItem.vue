@@ -24,7 +24,8 @@
         <v-col class="text-truncate">
           <v-tooltip right>
             <template v-slot:activator="{ on }">
-              <div class="contentText ml-1"
+              <div id="_test_selection"
+                class="contentText ml-1"
                 @click="selectMe"
                 v-on="on"
                 :class="showClass">
@@ -37,7 +38,8 @@
         <v-col cols="auto">
           <v-tooltip right>
             <template v-slot:activator="{ on }">
-              <div v-show="isPlottable"
+              <div id="_test_toggle_visibility"
+                v-show="isPlottable"
                 v-on="on"
                 @click="toggleVisibility"
                 class="mr-2">
@@ -58,7 +60,8 @@
         <v-col cols="auto">
           <v-tooltip right>
             <template v-slot:activator="{ on }">
-              <div v-show="isExpressionAndNotCoordinate"
+              <div id="_test_toggle_format"
+                v-show="isExpressionAndNotCoordinate"
                 v-on="on"
                 @click="toggleMultplesOfPi"
                 class="mr-2">
@@ -139,9 +142,11 @@ export default class SENoduleItem extends Vue {
       !(this.node as SEExpression).displayInMultiplesOfPi
     ).execute();
     // update a parent to update the display on the sphere canvas
-    this.node.parents[0].update({
-      mode: UpdateMode.DisplayOnly,
-      stateArray: []
+    this.node.parents.forEach((n: SENodule) => {
+      n.update({
+        mode: UpdateMode.DisplayOnly,
+        stateArray: []
+      });
     });
   }
   get isPoint(): boolean {

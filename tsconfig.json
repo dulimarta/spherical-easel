@@ -25,6 +25,7 @@
     },
     "lib": ["esnext", "dom", "dom.iterable", "scripthost"]
   },
+  "exclude": ["node_modules", "__tests__", "**/tests/unit/**"],
   "include": [
     "src/**/*.ts",
     "src/**/*.tsx",
@@ -32,7 +33,6 @@
     "src/types/two.js/index.d.ts",
     "tests/*.d.ts"
   ],
-  "exclude": ["node_modules", "__tests__"],
   "verbose": true
   // "globals": {
   //   "ts-jest": {

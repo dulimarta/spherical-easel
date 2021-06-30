@@ -213,10 +213,10 @@ export class SEAngleMarker extends SEMeasurement
         SETTINGS.angleMarker.hitIdealDistance / currentMagnificationFactor
     ) {
       // The unitIdealVector is not in the circle with center vertexVector (plus a little tolerance)
-      // console.log("not hit");
+      // console.debug("not hit");
       // const tmp = this.closestVector(unitIdealVector);
       // const tmp2 = this.closestVector(tmp);
-      // console.log(tmp.angleTo(tmp2));
+      // console.debug(tmp.angleTo(tmp2));
       // this.closestVector(unitIdealVector);
       return false;
     } else {
@@ -236,10 +236,10 @@ export class SEAngleMarker extends SEMeasurement
         this._endVector
       );
 
-      // console.log(ang1 <= ang2 ? "hit" : "nothit");
+      // console.debug(ang1 <= ang2 ? "hit" : "nothit");
       // const tmp = this.closestVector(unitIdealVector);
       // const tmp2 = this.closestVector(tmp);
-      // console.log(tmp.angleTo(tmp2));
+      // console.debug(tmp.angleTo(tmp2));
       return ang1 <= ang2;
 
       // if ang1 is very close to 2Pi, or
@@ -833,13 +833,13 @@ export class SEAngleMarker extends SEMeasurement
     // }
 
     // if the unitIdealVector leads to a hit then return the unitIdealVector
-    // console.log("x before hit ", this._startVector.x);
+    // console.debug("x before hit ", this._startVector.x);
     if (this.isHitAt(unitIdealVector, SEStore.zoomMagnificationFactor)) {
-      // console.log("hit");
-      // console.log("x after - hit ", this._startVector.x);
+      // console.debug("hit");
+      // console.debug("x after - hit ", this._startVector.x);
       return unitIdealVector;
     }
-    // console.log("x after - nohit", this._startVector.x);
+    // console.debug("x after - nohit", this._startVector.x);
     //return this._vertexVector;
     // WHAT IS BELOW MIGHT BE USEFUL FOR A FUTURE SESEGMENTOFCIRCLE object, but is too precise because the
     // angle marker is so small
@@ -852,7 +852,7 @@ export class SEAngleMarker extends SEMeasurement
       this._vertexVector,
       this._endVector
     );
-    // console.log("ang ", angleMarkerAngle);
+    // console.debug("ang ", angleMarkerAngle);
     // the angle measure FROM startHalfPlane TO the half-plane (unitIdealHalfPlane) with edge the line containing vertexVector and
     // containing origin of sphere, unitIdealVector, vertexVector.  Result is between 0 and 2 Pi
     const unitIdealAngle = this.measureAngle(
@@ -860,15 +860,15 @@ export class SEAngleMarker extends SEMeasurement
       this._vertexVector,
       unitIdealVector
     );
-    // console.log(unitIdealAngle);
+    // console.debug(unitIdealAngle);
 
     // Divide into two cases: non-convex angle markers versus convex ones. See the picture in
     // the Google Drive folder for a break down of the closest point regions
-    //console.log("angles", unitIdealAngle, angleMarkerAngle);
+    //console.debug("angles", unitIdealAngle, angleMarkerAngle);
     // In both cases if unitIdealAngle is less than angleMarkerAngle, project onto the circular
     // part of the angleMarker
     if (unitIdealAngle <= angleMarkerAngle) {
-      // console.log("proj circ part");
+      // console.debug("proj circ part");
 
       // project onto the circular part of the angle marker
       this.tmpVector1
@@ -930,7 +930,7 @@ export class SEAngleMarker extends SEMeasurement
           unitIdealVector
         )
       ) {
-        // console.log("project onto vertex to end segment");
+        // console.debug("project onto vertex to end segment");
         return this.projectToSegment(
           this._vertexVector,
           this._endVector,
@@ -946,7 +946,7 @@ export class SEAngleMarker extends SEMeasurement
           unitIdealVector
         )
       ) {
-        // console.log("project onto vertex to start segment");
+        // console.debug("project onto vertex to start segment");
         return this.projectToSegment(
           this._vertexVector,
           this._startVector,
@@ -974,7 +974,7 @@ export class SEAngleMarker extends SEMeasurement
           unitIdealVector
         )
       ) {
-        // console.log("project onto vertex ");
+        // console.debug("project onto vertex ");
         return this._vertexVector;
       } else if (
         this.inRegion(
@@ -1000,10 +1000,10 @@ export class SEAngleMarker extends SEMeasurement
           unitIdealVector
         )
       ) {
-        // console.log("project onto end ");
+        // console.debug("project onto end ");
         return this._endVector;
       } else {
-        // console.log("project onto start ");
+        // console.debug("project onto start ");
         return this._startVector;
       }
     } else {
@@ -1140,7 +1140,7 @@ export class SEAngleMarker extends SEMeasurement
     //
     // Project the unitVector and the srtVector onto the plane, Q, perpendicular to the vrtxVector
     //  Proj_Q(vec) = vec - (vec.vrtxVector)vrtxVector (vrtxVector is unit)
-    // console.log("x before ", this._startVector.x);
+    // console.debug("x before ", this._startVector.x);
     this.measureTmpVector1.set(0, 0, 0);
     this.measureTmpVector1.copy(unitVector);
     this.measureTmpVector1.addScaledVector(
@@ -1171,7 +1171,7 @@ export class SEAngleMarker extends SEMeasurement
       this.measureTmpVector3.dot(this.measureTmpVector1),
       this.measureTmpVector2.dot(this.measureTmpVector1)
     ).modTwoPi();
-    // console.log(val, "x after ", this._startVector.x);
+    // console.debug(val, "x after ", this._startVector.x);
     return val;
   }
 
@@ -1235,7 +1235,7 @@ export class SEAngleMarker extends SEMeasurement
     }
 
     // const tmpVec2 = tmpVector.normalize().cross(perp);
-    // console.log(
+    // console.debug(
     //   "triangle inequality ",
     //   start.angleTo(end) - (tmpVec2.angleTo(start) + tmpVec2.angleTo(end))
     // );
