@@ -404,7 +404,6 @@ export default class Easel extends Vue {
     SEStore.removeAllFromLayers();
     SEStore.init();
     SENodule.resetAllCounters();
-    Nodule.resetAllCounters();
     this.$appDB
       .collection("constructions") // load the script from public collection
       .doc(docId)
@@ -499,7 +498,6 @@ export default class Easel extends Vue {
     Command.commandHistory.splice(0);
     Command.redoHistory.splice(0);
     SENodule.resetAllCounters();
-    Nodule.resetAllCounters();
   }
 
   //#region resizePlottables

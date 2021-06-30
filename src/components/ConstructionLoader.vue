@@ -192,7 +192,6 @@ export default class ConstructionLoader extends Vue {
     SEStore.removeAllFromLayers();
     SEStore.init();
     SENodule.resetAllCounters();
-    Nodule.resetAllCounters();
     EventBus.fire("show-alert", {
       key: "objectTree.firestoreConstructionLoaded",
       keyOptions: { docId: this.selectedDocId },

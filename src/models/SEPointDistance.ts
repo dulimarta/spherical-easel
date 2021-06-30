@@ -3,6 +3,7 @@ import { SEPoint } from "./SEPoint";
 import { UpdateStateType, UpdateMode, ValueDisplayMode } from "@/types";
 import { Styles } from "@/types/Styles";
 import SETTINGS from "@/global-settings";
+import i18n from "@/i18n";
 
 const emptySet = new Set<Styles>();
 
@@ -11,23 +12,26 @@ export class SEPointDistance extends SEExpression {
   readonly secondSEPoint: SEPoint;
 
   constructor(first: SEPoint, second: SEPoint) {
-    super();
+    super(); // this.name is set to a measurement token M### in the super constructor
     this.firstSEPoint = first;
     this.secondSEPoint = second;
   }
 
-  public get longName(): string {
-    return `Distance(${this.firstSEPoint.label!.ref.shortUserName},${
-      this.secondSEPoint.label!.ref.shortUserName
-    }):${this.prettyValue}`;
+  public get noduleDescription(): string {
+    return String(
+      i18n.t(`objectTree.distanceBetweenPts`, {
+        pt1: this.secondSEPoint.label?.ref.shortUserName,
+        pt2: this.firstSEPoint.label?.ref.shortUserName
+      })
+    );
   }
 
-  public get shortName(): string {
-    return (
-      this.name +
-      `-Dist(${this.firstSEPoint.label!.ref.shortUserName},${
-        this.secondSEPoint.label!.ref.shortUserName
-      }):${this.prettyValue}`
+  public get noduleItemText(): string {
+    return String(
+      i18n.t(`objectTree.distanceValue`, {
+        token: this.name,
+        val: this.prettyValue
+      })
     );
   }
 

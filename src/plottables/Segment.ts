@@ -3,6 +3,7 @@ import Two from "two.js";
 import SETTINGS, { LAYER } from "@/global-settings";
 import Nodule, { DisplayStyle } from "./Nodule";
 import { StyleOptions, StyleEditPanels } from "@/types/Styles";
+import { SENodule } from "@/models/SENodule";
 
 // The number of vectors used to render the one part of the segment (like the frontPart, frontExtra, etc.)
 const SUBDIVS = SETTINGS.segment.numPoints;
@@ -101,8 +102,7 @@ export default class Segment extends Nodule {
   constructor() {
     // Initialize the Two.Group
     super();
-    Nodule.SEGMENT_COUNT++;
-    this.name = "Segment-" + Nodule.SEGMENT_COUNT;
+
     // Create the vertices for the segment
     const vertices: Two.Vector[] = [];
     for (let k = 0; k < SUBDIVS; k++) {
@@ -131,10 +131,10 @@ export default class Segment extends Nodule {
     this.glowingBackExtra.vertices.splice(0);
 
     //Set the path.id's for all the TwoJS objects which are not glowing. This is for exporting to Icon.
-    this.frontPart.id = 14000000 + Nodule.SEGMENT_COUNT * 100 + 0;
-    this.frontExtra.id = 14000000 + Nodule.SEGMENT_COUNT * 100 + 1;
-    this.backPart.id = 14000000 + Nodule.SEGMENT_COUNT * 100 + 2;
-    this.backExtra.id = 14000000 + Nodule.SEGMENT_COUNT * 100 + 3;
+    this.frontPart.id = 14000000 + SENodule.SEGMENT_COUNT * 100 + 0;
+    this.frontExtra.id = 14000000 + SENodule.SEGMENT_COUNT * 100 + 1;
+    this.backPart.id = 14000000 + SENodule.SEGMENT_COUNT * 100 + 2;
+    this.backExtra.id = 14000000 + SENodule.SEGMENT_COUNT * 100 + 3;
 
     // Set the style that never changes -- Fill
     this.frontPart.noFill();
@@ -388,7 +388,6 @@ export default class Segment extends Nodule {
     // Create a new segment and copy all this's properties into it
     const dup = new Segment();
     //Copy name and start/end/mid/normal vectors
-    dup.name = this.name;
     dup._arcLength = this._arcLength;
     dup._startVector.copy(this._startVector);
     dup._normalVector.copy(this._normalVector);
@@ -477,7 +476,7 @@ export default class Segment extends Nodule {
    * @param options The style options
    */
   updateStyle(options: StyleOptions): void {
-    console.debug("Segment: Update style of", this.name, "using", options);
+    console.debug("Segment: Update style of segment using", options);
     if (options.panel === StyleEditPanels.Front) {
       // Set the front options
       if (options.strokeWidthPercent !== undefined) {

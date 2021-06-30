@@ -12,13 +12,14 @@ import SETTINGS from "@/global-settings";
 let NODE_COUNT = 0;
 
 export abstract class SENodule {
-  protected static POINT_COUNT = 0;
-  protected static SEGMENT_COUNT = 0;
-  protected static LINE_COUNT = 0;
-  protected static CIRCLE_COUNT = 0;
-  protected static ANGLEMARKER_COUNT = 0;
-  protected static EXPR_COUNT = 0;
-  protected static ELLIPSE_COUNT = 0;
+  public static POINT_COUNT = 0;
+  public static SEGMENT_COUNT = 0;
+  public static LINE_COUNT = 0;
+  public static CIRCLE_COUNT = 0;
+  public static ANGLEMARKER_COUNT = 0;
+  public static EXPR_COUNT = 0;
+  public static ELLIPSE_COUNT = 0;
+  public static LABEL_COUNT = 0;
 
   static resetAllCounters(): void {
     NODE_COUNT = 0;
@@ -29,6 +30,7 @@ export abstract class SENodule {
     SENodule.CIRCLE_COUNT = 0;
     SENodule.EXPR_COUNT = 0;
     SENodule.ELLIPSE_COUNT = 0;
+    SENodule.LABEL_COUNT = 0;
   }
 
   /**
@@ -48,11 +50,10 @@ export abstract class SENodule {
 
   /* A unique identification number and name for each node */
   public id: number;
-  public name: string;
+  public name = "";
 
   constructor() {
     this.id = NODE_COUNT++;
-    this.name = `SENodule ${this.id}`;
   }
 
   /* If the object doesn't exist then exists= false (For example the intersection of two circles
@@ -283,6 +284,11 @@ export abstract class SENodule {
   }
 
   //Getters and Setters
+
+  public abstract get noduleItemText(): string;
+
+  public abstract get noduleDescription(): string;
+
   set exists(b: boolean) {
     this._exists = b;
   }

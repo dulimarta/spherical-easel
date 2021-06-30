@@ -3,6 +3,11 @@ import Point from "@/plottables/Point";
 import { Vector3 } from "three";
 import { SEOneDimensional } from "@/types";
 import { UpdateMode, UpdateStateType, PointState } from "@/types";
+import i18n from "@/i18n";
+import { SESegment } from "./SESegment";
+import { SELine } from "./SELine";
+import { SECircle } from "./SECircle";
+import { SEEllipse } from "./SEEllipse";
 
 export class SEPointOnOneDimensional extends SEPoint {
   /**
@@ -20,8 +25,6 @@ export class SEPointOnOneDimensional extends SEPoint {
     super(point);
     this.ref = point;
     this.oneDimensionalParent = oneDimensionalParent;
-    // this._locationVector.copy(initialVector);
-    this.name = `PointOn(${oneDimensionalParent.name})`;
   }
 
   /**
@@ -49,6 +52,34 @@ export class SEPointOnOneDimensional extends SEPoint {
   get locationVector(): Vector3 {
     return this._locationVector;
   }
+
+  public get noduleDescription(): string {
+    let typeParent;
+    if (this.oneDimensionalParent instanceof SESegment) {
+      typeParent = i18n.tc("objects.segments", 2);
+    } else if (this.oneDimensionalParent instanceof SELine) {
+      typeParent = i18n.tc("objects.lines", 2);
+    } else if (this.oneDimensionalParent instanceof SECircle) {
+      typeParent = i18n.tc("objects.circles", 2);
+    } else if (this.oneDimensionalParent instanceof SEEllipse) {
+      typeParent = i18n.tc("objects.ellipses", 2);
+    }
+
+    return String(
+      i18n.t(`objectTree.pointOnOneDimensional`, {
+        parent: this.oneDimensionalParent.label?.ref.shortUserName,
+        typeParent: typeParent
+      })
+    );
+  }
+
+  public get noduleItemText(): string {
+    return (
+      this.label?.ref.shortUserName ??
+      "No Label Short Name In SEPointOnOneDimensional"
+    );
+  }
+
   /**
    * When undoing or redoing a move, we do *not* want to use the "set locationVector" method because
    * that will set the position on a potentially out of date object. We will trust that we do not need to

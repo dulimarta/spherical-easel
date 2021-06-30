@@ -127,7 +127,11 @@ export default class ExpressionForm extends Vue {
   addExpression(): void {
     // console.debug("Adding expression", this.calcExpression);
     const calc = new SECalculation(this.calcExpression);
-    new AddCalculationCommand(calc, this.calcExpression).execute();
+    new AddCalculationCommand(
+      calc,
+      this.calcExpression,
+      calc.calculationParents
+    ).execute();
     calc.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
     this.reset();
     this.varMap.clear();

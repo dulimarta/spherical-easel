@@ -6,6 +6,7 @@ import { SEStore } from "@/store";
 import { Styles } from "@/types/Styles";
 import SETTINGS from "@/global-settings";
 import { SENodule } from "./SENodule";
+import i18n from "@/i18n";
 
 const emptySet = new Set<Styles>();
 const parser = new ExpressionParser();
@@ -19,7 +20,7 @@ export class SECalculation extends SEExpression {
    */
   private _calculationParents: SENodule[] = [];
   constructor(text: string) {
-    super();
+    super(); // this.name is set to a measurement token M### in the super constructor
     this.exprText = text;
     //const vars = [];
     // Search the expression text for occurrences of M###
@@ -91,15 +92,20 @@ export class SECalculation extends SEExpression {
     this.computedValue = parser.evaluateWithVars(this.exprText, varMap);
   }
 
-  public get longName(): string {
-    this.recalculate();
-    return `Calculation(${this.exprText})`;
+  public get noduleDescription(): string {
+    return String(
+      i18n.t(`objectTree.calculationDescription`, {
+        str: this.exprText
+      })
+    );
   }
 
-  public get shortName(): string {
-    this.recalculate();
-    return (
-      this.name + `-Calc(${this.exprText.slice(0, 4)}...):${this.prettyValue}`
+  public get noduleItemText(): string {
+    return String(
+      i18n.t(`objectTree.calculationValue`, {
+        token: this.name,
+        val: this.prettyValue
+      })
     );
   }
 

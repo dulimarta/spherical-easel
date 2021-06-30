@@ -6,6 +6,7 @@ import SETTINGS, { LAYER } from "@/global-settings";
 import Nodule, { DisplayStyle } from "./Nodule";
 import { StyleOptions, StyleEditPanels } from "@/types/Styles";
 import AppStore from "@/store";
+import { SENodule } from "@/models/SENodule";
 
 const desiredXAxis = new Vector3();
 const desiredYAxis = new Vector3();
@@ -154,8 +155,6 @@ export default class Circle extends Nodule {
 
   constructor() {
     super();
-    Nodule.CIRCLE_COUNT++;
-    this.name = "Circle-" + Nodule.CIRCLE_COUNT;
 
     // Create the array to hold the points that make up the boundary circle
     this.originalVertices = [];
@@ -199,8 +198,8 @@ export default class Circle extends Nodule {
     this.glowingBackPart = this.frontPart.clone();
 
     //Set the path.id's for all the TwoJS objects which are not glowing. This is for exporting to Icon.
-    this.frontPart.id = 11000000 + Nodule.CIRCLE_COUNT * 100 + 0;
-    this.backPart.id = 11000000 + Nodule.CIRCLE_COUNT * 100 + 1;
+    this.frontPart.id = 11000000 + SENodule.CIRCLE_COUNT * 100 + 0;
+    this.backPart.id = 11000000 + SENodule.CIRCLE_COUNT * 100 + 1;
 
     // Set the styles that are always true
     // The front/back parts have no fill because that is handled by the front/back fill
@@ -245,8 +244,8 @@ export default class Circle extends Nodule {
     this.backFill = this.frontFill.clone();
 
     //Set the path.id's for all the TwoJS objects which are not glowing. This is for exporting to Icon.
-    this.frontFill.id = 11000000 + Nodule.CIRCLE_COUNT * 100 + 2;
-    this.backFill.id = 11000000 + Nodule.CIRCLE_COUNT * 100 + 3;
+    this.frontFill.id = 11000000 + SENodule.CIRCLE_COUNT * 100 + 2;
+    this.backFill.id = 11000000 + SENodule.CIRCLE_COUNT * 100 + 3;
 
     // Set the styles that are always true
     // The front/back fill have no stroke because that is handled by the front/back part
@@ -907,7 +906,7 @@ export default class Circle extends Nodule {
    * @param options The style options
    */
   updateStyle(options: StyleOptions): void {
-    console.debug("Circle Update style of", this.name, "using", options);
+    console.debug("Circle Update style of circle using", options);
     if (options.panel === StyleEditPanels.Front) {
       // Set the front options
       if (options.strokeWidthPercent !== undefined) {

@@ -1,6 +1,7 @@
 import { SEPoint } from "./SEPoint";
 import Point from "@/plottables/Point";
 import { UpdateMode, UpdateStateType, PointState } from "@/types";
+import i18n from "@/i18n";
 
 export class SEAntipodalPoint extends SEPoint {
   /**
@@ -17,7 +18,20 @@ export class SEAntipodalPoint extends SEPoint {
     super(point);
     this.ref = point;
     this._antipodalPointParent = antipodalPointParent;
-    this.name = `Antipodal(${antipodalPointParent.name})`;
+  }
+
+  public get noduleDescription(): string {
+    return String(
+      i18n.t(`objectTree.antipodeOf`, {
+        pt: this._antipodalPointParent.label?.ref.shortUserName
+      })
+    );
+  }
+
+  public get noduleItemText(): string {
+    return (
+      this.label?.ref.shortUserName ?? "No Label Short Name In SEAntipodePoint"
+    );
   }
 
   public update(state: UpdateStateType): void {

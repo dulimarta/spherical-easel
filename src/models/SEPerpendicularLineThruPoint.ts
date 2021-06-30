@@ -5,6 +5,11 @@ import { UpdateMode, UpdateStateType } from "@/types";
 import { SELine } from "./SELine";
 import { Vector3 } from "three";
 import Line from "@/plottables/Line";
+import i18n from "@/i18n";
+import SETTINGS from "@/global-settings";
+import { SESegment } from "./SESegment";
+import { SECircle } from "./SECircle";
+import { SEEllipse } from "./SEEllipse";
 
 export class SEPerpendicularLineThruPoint extends SELine {
   /**
@@ -44,8 +49,6 @@ export class SEPerpendicularLineThruPoint extends SELine {
     this.seParentOneDimensional = seParentOneDimensional;
     this.seParentPoint = seParentPoint;
     this._index = index;
-
-    this.name = `Perp(${seParentOneDimensional.name},${seParentPoint.name})`;
   }
 
   public update(state: UpdateStateType): void {
@@ -117,5 +120,27 @@ export class SEPerpendicularLineThruPoint extends SELine {
   }
   get index(): number {
     return this._index;
+  }
+
+  public get noduleDescription(): string {
+    let oneDimensionalParentType;
+    if (this.seParentOneDimensional instanceof SESegment) {
+      oneDimensionalParentType = i18n.tc("objects.segments", 2);
+    } else if (this.seParentOneDimensional instanceof SELine) {
+      oneDimensionalParentType = i18n.tc("objects.lines", 2);
+    } else if (this.seParentOneDimensional instanceof SECircle) {
+      oneDimensionalParentType = i18n.tc("objects.circles", 2);
+    } else if (this.seParentOneDimensional instanceof SEEllipse) {
+      oneDimensionalParentType = i18n.tc("objects.ellipses", 2);
+    }
+
+    return String(
+      i18n.t(`objectTree.perpendicularLineThru`, {
+        pt: this.seParentPoint.label?.ref.shortUserName,
+        oneDimensionalParentType: oneDimensionalParentType,
+        oneDimensionalParent: this.seParentOneDimensional.label?.ref
+          .shortUserName
+      })
+    );
   }
 }

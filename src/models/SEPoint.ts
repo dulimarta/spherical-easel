@@ -14,6 +14,7 @@ import {
 } from "@/types";
 import { SELabel } from "./SELabel";
 import { SEStore } from "@/store";
+import i18n from "@/i18n";
 
 const styleSet = new Set([
   Styles.fillColor,
@@ -49,7 +50,7 @@ export class SEPoint extends SENodule implements Visitable, Labelable {
     and the object that helps create the corresponding renderable object  */
     this.ref = point;
     SENodule.POINT_COUNT++;
-    this.name = `P-${SENodule.POINT_COUNT}`;
+    this.name = `P${SENodule.POINT_COUNT}`;
   }
   customStyles(): Set<Styles> {
     return styleSet;
@@ -105,6 +106,14 @@ export class SEPoint extends SENodule implements Visitable, Labelable {
   }
   get locationVector(): Vector3 {
     return this._locationVector;
+  }
+
+  public get noduleDescription(): string {
+    return String(i18n.t(`objectTree.freePoint`));
+  }
+
+  public get noduleItemText(): string {
+    return this.label?.ref.shortUserName ?? "No Label Short Name In SEPoint";
   }
 
   accept(v: Visitor): void {

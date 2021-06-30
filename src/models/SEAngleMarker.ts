@@ -14,6 +14,7 @@ import { Labelable } from "@/types";
 import { SELabel } from "@/models/SELabel";
 import { SEStore } from "@/store";
 import { AngleMode } from "@/types";
+import i18n from "@/i18n";
 
 const styleSet = new Set([
   Styles.strokeColor,
@@ -115,30 +116,20 @@ export class SEAngleMarker extends SEExpression
     secondSEParent: SELine | SESegment | SEPoint,
     thirdSEParent?: SEPoint | undefined
   ) {
-    super(); // this.name gets a measurement token M### in the super constructor
+    super(); // this.name is set to a measurement token M### in the super constructor
     this.ref = angMar;
     this._firstSEParent = firstSEParent;
     this._secondSEParent = secondSEParent;
     this._thirdSEParent = thirdSEParent;
     this.mode = mode;
-    SEAngleMarker.ANGLEMARKER_COUNT++;
-    this.name = this.name + `-Am-${SEAngleMarker.ANGLEMARKER_COUNT}`;
-    if (thirdSEParent !== undefined) {
-      this.name =
-        this.name +
-        `-Angle(${firstSEParent.name},${secondSEParent.name},${thirdSEParent.name}):${this.prettyValue}`;
-    } else {
-      this.name =
-        this.name +
-        `-Angle(${firstSEParent.name},${secondSEParent.name}):${this.prettyValue}`;
-    }
 
     this._valueDisplayMode = SETTINGS.angleMarker.initialValueDisplayMode;
     // SEAngleMarker is both an expression and a plottable (the only one?)
-    // As an expression to be used in the calculation it must begin with "M###" so that it
+    // As an expression to be used in the calculation this.name must be "M###" so that it
     // can be referenced by the user and found by the parser
-    // however we don't want the initial name and initial shortName of the angle marker to be displayed with a "M###" at the start
-    //  so this is how we get around this
+    // however we don't want the initial shortName of the angle marker's label to be displayed with a "M###"
+    //  so we record the angleMarkerNumber and then in SELabel, we set the short name of the Label using this field.
+    SEAngleMarker.ANGLEMARKER_COUNT++;
     this._angleMarkerNumber = SEAngleMarker.ANGLEMARKER_COUNT;
   }
 
@@ -162,28 +153,67 @@ export class SEAngleMarker extends SEExpression
     );
   }
 
-  public get longName(): string {
+  public get noduleDescription(): string {
     if (this._thirdSEParent !== undefined) {
-      return (
-        this.label?.ref.shortUserName +
-        `-Angle(${this._firstSEParent.label?.ref.shortUserName},${this._secondSEParent.label?.ref.shortUserName},${this._thirdSEParent.label?.ref.shortUserName}): ${this.prettyValue}`
+      return String(
+        i18n.t(`objectTree.anglePoints`, {
+          p1: this._firstSEParent.label?.ref.shortUserName,
+          p2: this._secondSEParent.label?.ref.shortUserName,
+          p3: this._thirdSEParent.label?.ref.shortUserName
+        })
       );
     } else {
-      return (
-        this.label?.ref.shortUserName +
-        `-Angle(${this._firstSEParent.label?.ref.shortUserName},${this._secondSEParent.label?.ref.shortUserName}): ${this.prettyValue}`
-      );
+      if (
+        this._firstSEParent instanceof SESegment &&
+        this._secondSEParent instanceof SESegment
+      ) {
+        return String(
+          i18n.t(`objectTree.angleSegments`, {
+            seg1: this._firstSEParent.label?.ref.shortUserName,
+            seg2: this._secondSEParent.label?.ref.shortUserName
+          })
+        );
+      } else if (
+        this._firstSEParent instanceof SELine &&
+        this._secondSEParent instanceof SELine
+      ) {
+        String(
+          i18n.t(`objectTree.angleLines`, {
+            line1: this._firstSEParent.label?.ref.shortUserName,
+            line2: this._secondSEParent.label?.ref.shortUserName
+          })
+        );
+      } else if (
+        this._firstSEParent instanceof SELine &&
+        this._secondSEParent instanceof SESegment
+      ) {
+        String(
+          i18n.t(`objectTree.angleLineSegment`, {
+            line1: this._firstSEParent.label?.ref.shortUserName,
+            line2: this._secondSEParent.label?.ref.shortUserName
+          })
+        );
+      } else {
+        String(
+          i18n.t(`objectTree.angleSegmentLine`, {
+            line1: this._firstSEParent.label?.ref.shortUserName,
+            line2: this._secondSEParent.label?.ref.shortUserName
+          })
+        );
+      }
     }
+    return "Error in Angle Marker Description";
   }
 
-  public get shortName(): string {
+  public get noduleItemText(): string {
     return (
-      this.ref.name +
-      `-Ang(` +
-      this.label!.ref.shortUserName +
-      `): ${this.prettyValue}`
+      this.name +
+      " - " +
+      this.label?.ref.shortUserName +
+      `: ${this.prettyValue}`
     );
   }
+
   public isHitAt(
     unitIdealVector: Vector3,
     currentMagnificationFactor: number

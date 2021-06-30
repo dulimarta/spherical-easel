@@ -390,8 +390,8 @@ export default {
     }
   },
   label: {
-    maxLabelDisplayCaptionLength: 30, // The maximum number of characters in the displayed label caption
-    maxLabelDisplayTextLength: 15, // The maximum number of characters in the displayed label name
+    maxLabelDisplayCaptionLength: 15, // The maximum number of characters in the displayed label caption
+    maxLabelDisplayTextLength: 8, // The maximum number of characters in the displayed label name
     //The scaling of the label relative to the scaled for zoom default size
     textScalePercent: 100,
     dynamicBackStyle: true,

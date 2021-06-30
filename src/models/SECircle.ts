@@ -11,6 +11,7 @@ import { UpdateMode, UpdateStateType, CircleState } from "@/types";
 import { Labelable } from "@/types";
 import { SELabel } from "@/models/SELabel";
 import { SEStore } from "@/store";
+import i18n from "@/i18n";
 
 const styleSet = new Set([
   Styles.strokeColor,
@@ -63,7 +64,7 @@ export class SECircle extends SENodule
     this._circleSEPoint = circlePoint;
 
     SECircle.CIRCLE_COUNT++;
-    this.name = `C-${SECircle.CIRCLE_COUNT}`;
+    this.name = `C${SECircle.CIRCLE_COUNT}`;
   }
   // #endregion circleConstructor
 
@@ -83,6 +84,19 @@ export class SECircle extends SENodule
     return this._circleSEPoint.locationVector.angleTo(
       this._centerSEPoint.locationVector
     );
+  }
+
+  public get noduleDescription(): string {
+    return String(
+      i18n.t(`objectTree.circleThrough`, {
+        center: this._centerSEPoint.label?.ref.shortUserName,
+        through: this._circleSEPoint.label?.ref.shortUserName
+      })
+    );
+  }
+
+  public get noduleItemText(): string {
+    return this.label?.ref.shortUserName ?? "No Label Short Name In SECircle";
   }
 
   public isHitAt(

@@ -12,6 +12,7 @@ import { Labelable } from "@/types";
 import { SELabel } from "@/models/SELabel";
 import { Vector } from "two.js";
 import { SEStore } from "@/store";
+import i18n from "@/i18n";
 
 const styleSet = new Set([
   Styles.strokeColor,
@@ -104,7 +105,7 @@ export class SEEllipse extends SENodule
     this.ref.updateDisplay();
 
     SEEllipse.ELLIPSE_COUNT++;
-    this.name = `E-${SEEllipse.ELLIPSE_COUNT}`;
+    this.name = `E${SEEllipse.ELLIPSE_COUNT}`;
   }
 
   customStyles(): Set<Styles> {
@@ -136,6 +137,20 @@ export class SEEllipse extends SENodule
   get b(): number {
     return this._b;
   }
+  public get noduleDescription(): string {
+    return String(
+      i18n.t(`objectTree.ellipseThrough`, {
+        focus1: this._focus1SEPoint.label?.ref.shortUserName,
+        focus2: this._focus2SEPoint.label?.ref.shortUserName,
+        through: this._ellipseSEPoint.label?.ref.shortUserName
+      })
+    );
+  }
+
+  public get noduleItemText(): string {
+    return this.label?.ref.shortUserName ?? "No Label Short Name In SEEllipse";
+  }
+
   public isHitAt(
     unitIdealVector: Vector3,
     currentMagnificationFactor: number

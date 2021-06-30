@@ -121,12 +121,12 @@
     "title": "Preferences"
   },
   "objects": {
-    "points": "Points",
-    "lines": "Lines",
-    "circles": "Circles",
-    "segments": "Line Segments",
-    "measurements": "Measurements",
-    "ellipses": "Ellipses"
+    "points": "Points | Point",
+    "lines": "Lines | Line",
+    "circles": "Circles | Circle",
+    "segments": "Line Segments | Line Segment",
+    "measurements": "Measurements | Measurement",
+    "ellipses": "Ellipses | Ellipse"
   },
   "main": {
 		"ConstructionsTabToolTip": "Saved Constructions",
@@ -324,6 +324,7 @@
     "cycleValueDisplayMode": "Click to cycle to the next value display mode including multiples of pi and degrees.",
     "toggleDisplay":"Toggle the display of the corresponding object.",
     "slider": "Slider",
+    "sliderValue": "{token} - Slider: {val}",
     "noObjectsInDatabase": "No objects in database",
     "result": "Result",
     "calculationExpression": "Calculation Expression",
@@ -334,6 +335,30 @@
     "firestoreConstructionLoaded": "Construction successfully loaded.",
     "firestoreConstructionSaved":"Construction successfully saved.",
     "firestoreConstructionDeleted": "Construction successfully deleted.",
-    "firestoreSaveError": "Construction was not saved."
+    "firestoreSaveError": "Construction was not saved.",
+    "anglePoints": "Angle formed by points {p1}, {p2}, and {p3}.",
+    "angleSegments": "Angle formed by lines {line1} and {line2}.",
+    "angleLines": "Angle formed by segments {seg1} and {seg2}.",
+    "angleSegmentLine": "Angle formed by segment {seg} and line {line}.",
+    "angleLineSegment": "Angle formed by line {line} and segment {seg}.",
+    "calculationDescription": "Calculation based on string {str}",
+    "calculationValue": "{token} - Calculation: {val}",
+    "coordinateOf": "{axisName} coordinate of point {pt}.",
+    "coordOf":"{token} - {axisName} Coord: {val}",
+    "x": "x", 
+    "y": "y", 
+    "z": "z", 
+    "distanceBetweenPts": "Distance between points {pt1} and {pt2}.",
+    "distanceValue": "{token} - Distance: {val}",
+    "segmentLength":"Length of segment {seg}.",
+    "antipodeOf": "Antipode of point {pt}",
+    "circleThrough": "Circle with center {center} through point {through}",
+    "ellipseThrough": "Ellipse with foci {focus1} and {focus2} through point {through}",
+    "intersectionPoint":"Intersection of {typeParent1} {parent1} and {typeParent2} {parent2}",
+    "lineThrough":"Line through points {pt1} and {pt2} with normal vector <{normalX},{normalY},{normalZ}>",
+    "segmentThrough":"Line segment with endpoints {pt1} and {pt2} and normal vector <{normalX},{normalY},{normalZ}>",
+    "pointOnOneDimensional": "Point on {typeParent} {parent}",
+    "freePoint": "Free point",
+    "perpendicularLineThru":"Perpendicular line to {oneDimensionalParentType} {oneDimensional} through point {pt}"
   }
 }

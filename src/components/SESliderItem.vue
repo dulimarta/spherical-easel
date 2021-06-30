@@ -44,7 +44,7 @@ export default class SENoduleItem extends Vue {
   }
 
   get definitionText(): string {
-    return this.node.name;
+    return this.node.noduleDescription;
   }
 }
 </script>

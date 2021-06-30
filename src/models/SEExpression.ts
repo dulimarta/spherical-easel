@@ -64,18 +64,6 @@ export abstract class SEExpression extends SENodule {
     }
   }
 
-  /**
-   * The short name used in the SENoduleItem component (in object tree) to display name and value of this
-   * expression. This get updated with the object.
-   */
-  abstract get shortName(): string;
-
-  /**
-   * The long name used in the SENoduleItem component (in object tree) when the user mouses over the
-   * item it displays more information about the item.
-   */
-  abstract get longName(): string;
-
   //public customStyles = (): Set<Styles> => emptySet;
 
   /**

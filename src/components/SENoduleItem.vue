@@ -246,46 +246,10 @@ export default class SENoduleItem extends Vue {
   }
 
   get shortDisplayText(): string {
-    if (
-      this.node instanceof SEPoint ||
-      this.node instanceof SELine ||
-      this.node instanceof SESegment ||
-      this.node instanceof SECircle ||
-      this.node instanceof SEEllipse
-    ) {
-      return this.node.label?.ref.shortUserName ?? "Unknown label";
-    } else if (this.node instanceof SEExpression) {
-      {
-        return this.node.shortName;
-      }
-    } else {
-      return "n/a";
-    }
+    return this.node.noduleItemText;
   }
   get definitionText(): string {
-    if (this.node instanceof SEPoint) {
-      return (
-        this.node.label?.ref.shortUserName +
-        this.node.locationVector.toFixed(SETTINGS.decimalPrecision)
-      );
-    } else if (
-      this.node instanceof SELine ||
-      this.node instanceof SESegment ||
-      this.node instanceof SECircle ||
-      this.node instanceof SEEllipse
-    ) {
-      const nameList = this.node.parents
-        .map(p => p.name.toString())
-        //.map(p => ((p as unknown) as Labelable).label!.ref.shortName)
-        .join(",");
-      return this.node.label?.ref.shortUserName + "(" + nameList + ")";
-    } else if (this.node instanceof SEExpression) {
-      {
-        return this.node.longName;
-      }
-    } else {
-      return "n/a";
-    }
+    return this.node.noduleDescription;
   }
 
   // TODO: the following getter definition is recursive

@@ -1,6 +1,8 @@
 import { SEExpression } from "./SEExpression";
 import { UpdateMode, UpdateStateType } from "@/types";
 import { Styles } from "@/types/Styles";
+import i18n from "@/i18n";
+
 const emptySet = new Set<Styles>();
 export class SESlider extends SEExpression /*implements Visitable*/ {
   /* Access to the store to retrieve the canvas size so that the bounding rectangle for the text can be computed properly*/
@@ -21,13 +23,11 @@ export class SESlider extends SEExpression /*implements Visitable*/ {
     step: number;
     value: number;
   }) {
-    super();
-    // console.log("store", SELabel.store);
+    super(); // this.name is set to a measurement token M### in the super constructor
     this.min = min;
     this.max = max;
     this.step = step;
     this.current = value;
-    //this.name = this.name + "-Slider";
 
     this.showing = true;
   }
@@ -39,12 +39,18 @@ export class SESlider extends SEExpression /*implements Visitable*/ {
     this.current = v;
     this.updateKids({ mode: UpdateMode.DisplayOnly, stateArray: [] });
   }
-  public get longName(): string {
-    return "Slider Value" + this.value;
+
+  public get noduleDescription(): string {
+    return String(i18n.t(`objectTree.slider`));
   }
 
-  public get shortName(): string {
-    return "Slider " + this.value;
+  public get noduleItemText(): string {
+    return String(
+      i18n.t(`objectTree.sliderValue`, {
+        token: this.name,
+        val: this.prettyValue
+      })
+    );
   }
 
   public customStyles = (): Set<Styles> => emptySet;

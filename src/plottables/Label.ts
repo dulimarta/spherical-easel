@@ -62,13 +62,12 @@ export default class Label extends Nodule {
    * A string representing the text that will be rendered to the screen. Set with text.value = this.shortUserName
    * shortUser
    Name is at most ??? characters long
-   * caption is a longer, 60 characters long
+   * caption is a longer, ?? characters long
    * Note that initialName is not user modifiable and is used (in shortUserName) until the user changes the name field in the styling panel
-   * This is the name that is restored when defaults are restored.
+   * this.seLabel.parent.name is the name that is restored when defaults are restored.
    * _value is the associated number array, if any, that describes the object being labeled. Typically this is just one number, but for points is an array of
    * the three coordinate values.
    */
-  protected initialName = "";
   protected _shortUserName = "";
   protected _caption = "";
   protected _value: number[] = [];
@@ -162,7 +161,6 @@ export default class Label extends Nodule {
 
   constructor() {
     super();
-    Nodule.LABEL_COUNT++;
 
     // Set the location of the points front/back/glowing/drawn
     // The location of all points front/back/glowing/drawn is controlled by the
@@ -188,21 +186,15 @@ export default class Label extends Nodule {
     // this.glowingBackText.stroke = SETTINGS.label.glowingStrokeColor.back;
   }
   /**
-   * Set the initial names, initialName is not modifiable by the user but shortUserName and caption are
+   * Set and get the shortUserName
    */
-  set initialNames(name: string) {
-    this.initialName = name;
-    // shortUserName is the first characters of name
-    this._shortUserName = name /*.slice(
+  set shortUserName(name: string) {
+    this._shortUserName = name.slice(
       0,
       SETTINGS.label.maxLabelDisplayTextLength
-    )*/;
+    );
     this.stylize(DisplayStyle.ApplyCurrentVariables);
   }
-
-  /**
-   * Return the short name associated with this object
-   */
   get shortUserName(): string {
     return this._shortUserName.slice(
       0,
@@ -211,10 +203,13 @@ export default class Label extends Nodule {
   }
 
   /**
-   * Return the caption associated with this object
+   * Return and set the caption associated with this object
    */
   get caption(): string {
     return this._caption;
+  }
+  set caption(cap: string) {
+    this._caption = cap;
   }
 
   /**
@@ -256,7 +251,6 @@ export default class Label extends Nodule {
     this.textLabelMode = mode;
     this.stylize(DisplayStyle.ApplyCurrentVariables);
   }
-
   get labelDisplayMode(): LabelDisplayMode {
     return this.textLabelMode;
   }
@@ -370,7 +364,12 @@ export default class Label extends Nodule {
    * @param options The style options
    */
   updateStyle(options: StyleOptions): void {
-    console.debug("Label: Update style of", this.initialName, "using", options);
+    console.debug(
+      "Label: Update style of Label of ",
+      this._shortUserName,
+      " using",
+      options
+    );
     if (options.labelDisplayMode !== undefined) {
       this.textLabelMode = options.labelDisplayMode;
     }
@@ -541,8 +540,8 @@ export default class Label extends Nodule {
           }
         }
         return {
-          panel: panel, //
-          labelDisplayText: this.initialName,
+          panel: panel,
+          labelDisplayText: this.seLabel!.parent.name,
           labelDisplayCaption: "",
           labelDisplayMode: labelDisplayMode,
           labelTextFamily: SETTINGS.label.family,

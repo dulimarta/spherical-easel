@@ -4,6 +4,7 @@ import { SEStore } from "@/store";
 import { Matrix4, Vector3 } from "three";
 import { Styles } from "@/types/Styles";
 import { UpdateMode, UpdateStateType } from "@/types";
+import i18n from "@/i18n";
 
 export enum CoordinateSelection {
   X_VALUE,
@@ -22,31 +23,11 @@ export class SEPointCoordinate extends SEExpression {
   private tmpVector = new Vector3();
 
   constructor(point: SEPoint, selector: CoordinateSelection) {
-    super();
+    super(); // this.name is set to a measurement token M### in the super constructor
     this.selector = selector;
     this.point = point;
   }
 
-  private get coordName(): string {
-    switch (this.selector) {
-      case CoordinateSelection.X_VALUE:
-        return "xCoord(";
-      case CoordinateSelection.Y_VALUE:
-        return "yCoord(";
-      case CoordinateSelection.Z_VALUE:
-        return "zCoord(";
-    }
-  }
-  private get coordinateName(): string {
-    switch (this.selector) {
-      case CoordinateSelection.X_VALUE:
-        return "x Coordinate of ";
-      case CoordinateSelection.Y_VALUE:
-        return "y Coordinate of ";
-      case CoordinateSelection.Z_VALUE:
-        return "z Coordinate of ";
-    }
-  }
   public get value(): number {
     // apply the inverse of the total rotation matrix to compute the location of the point without all the sphere rotations.
     this.invMatrix = SEStore.inverseTotalRotationMatrix;
@@ -65,20 +46,61 @@ export class SEPointCoordinate extends SEExpression {
   }
   public customStyles = (): Set<Styles> => emptySet;
 
-  public get longName(): string {
-    return (
-      this.coordinateName +
-      this.point.label!.ref.shortUserName +
-      `: ${this.prettyValue}`
-    );
+  public get noduleDescription(): string {
+    switch (this.selector) {
+      case CoordinateSelection.X_VALUE:
+        return String(
+          i18n.t(`objectTree.coordinateOf`, {
+            axesName: i18n.t(`objectTree.x`),
+            pt: this.point.label?.ref.shortUserName
+          })
+        );
+      case CoordinateSelection.Y_VALUE:
+        return String(
+          i18n.t(`objectTree.coordinateOf`, {
+            axesName: i18n.t(`objectTree.y`),
+            pt: this.point.label?.ref.shortUserName
+          })
+        );
+      case CoordinateSelection.Z_VALUE:
+        return String(
+          i18n.t(`objectTree.coordinateOf`, {
+            axesName: i18n.t(`objectTree.z`),
+            pt: this.point.label?.ref.shortUserName
+          })
+        );
+    }
   }
 
-  public get shortName(): string {
-    return (
-      this.coordName +
-      this.point.label!.ref.shortUserName +
-      `): ${this.prettyValue}`
-    );
+  public get noduleItemText(): string {
+    switch (this.selector) {
+      case CoordinateSelection.X_VALUE:
+        return String(
+          i18n.t(`objectTree.coordOf`, {
+            token: this.name,
+            axesName: i18n.t(`objectTree.x`),
+            val: this.prettyValue
+          })
+        );
+      case CoordinateSelection.Y_VALUE:
+        return String(
+          i18n.t(`objectTree.coordOf`, {
+            token: this.name,
+            axesName: i18n.t(`objectTree.y`),
+            val: this.prettyValue
+          })
+        );
+      case CoordinateSelection.Z_VALUE:
+        return String(
+          i18n.t(`objectTree.coordOf`, {
+            token: this.name,
+            axesName: i18n.t(`objectTree.z`),
+            val: this.prettyValue
+          })
+        );
+      default:
+        return this.name;
+    }
   }
 
   public update(state: UpdateStateType): void {
