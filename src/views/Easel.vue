@@ -286,17 +286,18 @@ const SE = namespace("se");
 export default class Easel extends Vue {
   @Prop()
   documentId: string | undefined;
-  @SE.State((s: AppState) => s.sePoints)
-  readonly points!: SENodule[];
 
-  @SE.State((s: AppState) => s.seLines)
-  readonly lines!: SENodule[];
+  // @SE.State((s: AppState) => s.sePoints)
+  // readonly points!: SENodule[];
 
-  @SE.State((s: AppState) => s.seSegments)
-  readonly segments!: SENodule[];
+  // @SE.State((s: AppState) => s.seLines)
+  // readonly lines!: SENodule[];
 
-  @SE.State((s: AppState) => s.seCircles)
-  readonly circles!: SENodule[];
+  // @SE.State((s: AppState) => s.seSegments)
+  // readonly segments!: SENodule[];
+
+  // @SE.State((s: AppState) => s.seCircles)
+  // readonly circles!: SENodule[];
 
   @SE.State((s: AppState) => s.seNodules)
   readonly seNodules!: SENodule[];

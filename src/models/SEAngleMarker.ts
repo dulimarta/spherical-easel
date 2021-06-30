@@ -177,7 +177,7 @@ export class SEAngleMarker extends SEExpression
         this._firstSEParent instanceof SELine &&
         this._secondSEParent instanceof SELine
       ) {
-        String(
+        return String(
           i18n.t(`objectTree.angleLines`, {
             line1: this._firstSEParent.label?.ref.shortUserName,
             line2: this._secondSEParent.label?.ref.shortUserName
@@ -187,14 +187,14 @@ export class SEAngleMarker extends SEExpression
         this._firstSEParent instanceof SELine &&
         this._secondSEParent instanceof SESegment
       ) {
-        String(
+        return String(
           i18n.t(`objectTree.angleLineSegment`, {
             line1: this._firstSEParent.label?.ref.shortUserName,
             line2: this._secondSEParent.label?.ref.shortUserName
           })
         );
       } else {
-        String(
+        return String(
           i18n.t(`objectTree.angleSegmentLine`, {
             line1: this._firstSEParent.label?.ref.shortUserName,
             line2: this._secondSEParent.label?.ref.shortUserName

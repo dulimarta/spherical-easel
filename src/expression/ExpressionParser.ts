@@ -230,7 +230,7 @@ export class ExpressionParser {
 
     function throwError(msg: string, info: Lexicon): never {
       if (info.kind === TokenType.EOF)
-        throw new SyntaxError("i18n.t(`objectTree.parserError`)");
+        throw new SyntaxError(String(i18n.t(`objectTree.parserError`)));
       else throw new SyntaxError(msg);
     }
     function atom(): SyntaxTree {

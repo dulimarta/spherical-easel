@@ -51,21 +51,21 @@ export class SEPointCoordinate extends SEExpression {
       case CoordinateSelection.X_VALUE:
         return String(
           i18n.t(`objectTree.coordinateOf`, {
-            axesName: i18n.t(`objectTree.x`),
+            axisName: String(i18n.t(`objectTree.x`)),
             pt: this.point.label?.ref.shortUserName
           })
         );
       case CoordinateSelection.Y_VALUE:
         return String(
           i18n.t(`objectTree.coordinateOf`, {
-            axesName: i18n.t(`objectTree.y`),
+            axisName: String(i18n.t(`objectTree.y`)),
             pt: this.point.label?.ref.shortUserName
           })
         );
       case CoordinateSelection.Z_VALUE:
         return String(
           i18n.t(`objectTree.coordinateOf`, {
-            axesName: i18n.t(`objectTree.z`),
+            axisName: String(i18n.t(`objectTree.z`)),
             pt: this.point.label?.ref.shortUserName
           })
         );
@@ -78,7 +78,7 @@ export class SEPointCoordinate extends SEExpression {
         return String(
           i18n.t(`objectTree.coordOf`, {
             token: this.name,
-            axesName: i18n.t(`objectTree.x`),
+            axisName: String(i18n.t(`objectTree.x`)),
             val: this.prettyValue
           })
         );
@@ -86,7 +86,7 @@ export class SEPointCoordinate extends SEExpression {
         return String(
           i18n.t(`objectTree.coordOf`, {
             token: this.name,
-            axesName: i18n.t(`objectTree.y`),
+            axisName: String(i18n.t(`objectTree.y`)),
             val: this.prettyValue
           })
         );
@@ -94,7 +94,7 @@ export class SEPointCoordinate extends SEExpression {
         return String(
           i18n.t(`objectTree.coordOf`, {
             token: this.name,
-            axesName: i18n.t(`objectTree.z`),
+            axisName: String(i18n.t(`objectTree.z`)),
             val: this.prettyValue
           })
         );

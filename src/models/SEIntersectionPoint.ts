@@ -65,30 +65,31 @@ export class SEIntersectionPoint extends SEPoint {
   public get noduleDescription(): string {
     let typeParent1;
     if (this.seParent1 instanceof SESegment) {
-      typeParent1 = i18n.tc("objects.segments", 2);
+      typeParent1 = i18n.tc("objects.segments", 3);
     } else if (this.seParent1 instanceof SELine) {
-      typeParent1 = i18n.tc("objects.lines", 2);
+      typeParent1 = i18n.tc("objects.lines", 3);
     } else if (this.seParent1 instanceof SECircle) {
-      typeParent1 = i18n.tc("objects.circles", 2);
+      typeParent1 = i18n.tc("objects.circles", 3);
     } else if (this.seParent1 instanceof SEEllipse) {
-      typeParent1 = i18n.tc("objects.ellipses", 2);
+      typeParent1 = i18n.tc("objects.ellipses", 3);
     }
     let typeParent2;
     if (this.seParent2 instanceof SESegment) {
-      typeParent2 = i18n.tc("objects.segments", 2);
+      typeParent2 = i18n.tc("objects.segments", 3);
     } else if (this.seParent2 instanceof SELine) {
-      typeParent2 = i18n.tc("objects.lines", 2);
+      typeParent2 = i18n.tc("objects.lines", 3);
     } else if (this.seParent2 instanceof SECircle) {
-      typeParent2 = i18n.tc("objects.circles", 2);
+      typeParent2 = i18n.tc("objects.circles", 3);
     } else if (this.seParent2 instanceof SEEllipse) {
-      typeParent2 = i18n.tc("objects.ellipses", 2);
+      typeParent2 = i18n.tc("objects.ellipses", 3);
     }
     return String(
       i18n.t(`objectTree.intersectionPoint`, {
         parent1: this.seParent1.label?.ref.shortUserName,
         typeParent1: typeParent1,
         parent2: this.seParent2.label?.ref.shortUserName,
-        typeParent2: typeParent2
+        typeParent2: typeParent2,
+        index: this.order
       })
     );
   }

@@ -1,11 +1,14 @@
 {
+
   "main": {
-    "SphericalEaselMainTitle": "Spherical Easel",
-    "ToolsTabToolTip": "Tools",
-    "ObjectsTabToolTip": "Objects",
-    "UndoLastAction": "Undo last action",
-    "RedoLastAction": "Redo last action"
-  },
+		"ConstructionsTabToolTip": "Saved Constructions",
+		"ObjectsTabToolTip": "Objects",
+		"RedoLastAction": "Redo last action",
+		"SphericalEaselMainTitle": "Spherical Easel",
+		"ToolsTabToolTip": "Tools",
+		"UndoLastAction": "Undo last action"
+	},
+
   "toolGroups": {
     "EditTools": "Edit Tools",
     "DisplayTools": "Display Tools",
@@ -121,21 +124,14 @@
     "title": "Preferences"
   },
   "objects": {
-    "points": "Points | Point",
-    "lines": "Lines | Line",
-    "circles": "Circles | Circle",
-    "segments": "Line Segments | Line Segment",
-    "measurements": "Measurements | Measurement",
-    "ellipses": "Ellipses | Ellipse"
+    "points": "Points | Point | point",
+    "lines": "Lines | Line | line",
+    "circles": "Circles | Circle| circle",
+    "segments": "Line Segments | Line Segment | line segment",
+    "measurements": "Measurements | Measurement | measurement",
+    "ellipses": "Ellipses | Ellipse |ellipse"
   },
-  "main": {
-		"ConstructionsTabToolTip": "Saved Constructions",
-		"ObjectsTabToolTip": "Objects",
-		"RedoLastAction": "Redo last action",
-		"SphericalEaselMainTitle": "Spherical Easel",
-		"ToolsTabToolTip": "Tools",
-		"UndoLastAction": "Undo last action"
-	},
+ 
   "style": {
     "labelStyle": "Label Style",
     "foregroundStyle": "Foreground Style",
@@ -341,9 +337,9 @@
     "angleLines": "Angle formed by segments {seg1} and {seg2}.",
     "angleSegmentLine": "Angle formed by segment {seg} and line {line}.",
     "angleLineSegment": "Angle formed by line {line} and segment {seg}.",
-    "calculationDescription": "Calculation based on string {str}",
+    "calculationDescription": "Calculation based on expression {str}",
     "calculationValue": "{token} - Calculation: {val}",
-    "coordinateOf": "{axisName} coordinate of point {pt}.",
+    "coordinateOf": "The {axisName} coordinate of point {pt}.",
     "coordOf":"{token} - {axisName} Coord: {val}",
     "x": "x", 
     "y": "y", 
@@ -354,11 +350,11 @@
     "antipodeOf": "Antipode of point {pt}",
     "circleThrough": "Circle with center {center} through point {through}",
     "ellipseThrough": "Ellipse with foci {focus1} and {focus2} through point {through}",
-    "intersectionPoint":"Intersection of {typeParent1} {parent1} and {typeParent2} {parent2}",
+    "intersectionPoint":"Intersection of {typeParent1} {parent1} and {typeParent2} {parent2} with index {index}",
     "lineThrough":"Line through points {pt1} and {pt2} with normal vector <{normalX},{normalY},{normalZ}>",
     "segmentThrough":"Line segment with endpoints {pt1} and {pt2} and normal vector <{normalX},{normalY},{normalZ}>",
     "pointOnOneDimensional": "Point on {typeParent} {parent}",
     "freePoint": "Free point",
-    "perpendicularLineThru":"Perpendicular line to {oneDimensionalParentType} {oneDimensional} through point {pt}"
+    "perpendicularLineThru":"Perpendicular line to {oneDimensionalParentType} {oneDimensional} through point {pt} with index {index}"
   }
 }

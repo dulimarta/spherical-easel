@@ -168,7 +168,7 @@ export default class Style extends Vue {
 
   @Watch("selectedSENodules")
   private allLabelsShowingCheck(): void {
-    console.log("Style All Labels: onSelectionChanged");
+    // console.log("Style All Labels: onSelectionChanged");
 
     this.allLabelsShowing = this.selectedSENodules.every(node => {
       if (node.isLabelable()) {
@@ -180,7 +180,7 @@ export default class Style extends Vue {
   }
   @Watch("selectedSENodules")
   private allObjectsShowingCheck(): void {
-    console.log("Style All Objects: onSelectionChanged");
+    // console.log("Style All Objects: onSelectionChanged");
     this.allObjectsShowing = this.selectedSENodules.every(node => {
       return node.showing === true;
     });
@@ -189,7 +189,7 @@ export default class Style extends Vue {
   //Convert the selections into a short list of the type (and number) of the objects in the selection
   @Watch("selectedSENodules")
   private updateSelectedItemArray(): void {
-    console.log("Style update selected item array: onSelectionChanged");
+    // console.log("Style update selected item array: onSelectionChanged");
 
     const tempArray: string[] = [];
     this.selectedSENodules.forEach(node => tempArray.push(node.name));
