@@ -41,7 +41,8 @@
 
           <v-tooltip right>
             <template v-slot:activator="{ on }">
-              <div class="contentText ml-1"
+              <div id="_test_selection"
+                class="contentText ml-1"
                 @click="selectMe"
                 v-on="on"
                 :class="showClass">
@@ -56,7 +57,8 @@
 
           <v-tooltip right>
             <template v-slot:activator="{ on }">
-              <div v-show="isPlottable"
+              <div id="_test_toggle_visibility"
+                v-show="isPlottable"
                 v-on="on"
                 @click="toggleVisibility"
                 class="mr-2">
@@ -79,7 +81,8 @@
 
           <v-tooltip right>
             <template v-slot:activator="{ on }">
-              <div v-show="isExpressionAndNotCoordinate"
+              <div id="_test_toggle_format"
+                v-show="isExpressionAndNotCoordinate"
                 v-on="on"
                 @click="cycleValueDisplayMode"
                 class="mr-2">

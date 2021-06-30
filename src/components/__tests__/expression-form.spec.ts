@@ -49,7 +49,7 @@ describe("ExpressionForm.vue", () => {
     await wrapper.vm.$nextTick();
     jest.advanceTimersByTime(5000);
     await wrapper.vm.$nextTick();
-    // console.log("Var", wrapper.vm.$data.calcResult);
+    // console.debug("Var", wrapper.vm.$data.calcResult);
     expect(wrapper.vm.$data.calcResult).toEqual(26);
   });
 
@@ -57,12 +57,12 @@ describe("ExpressionForm.vue", () => {
     const wrapper = createComponent();
     const addBtn = wrapper.find("#_test_add_expr");
     const expr1 = store.state.se.expressions.length;
-    // console.log("Store has", expr1, "expressions");
+    // console.debug("Store has", expr1, "expressions");
     await wrapper.setData({ calcExpression: "2 * 13" });
 
     await addBtn.trigger("click");
     const expr2 = store.state.se.expressions.length;
-    // console.log("Store has", expr2, "expressions");
+    // console.debug("Store has", expr2, "expressions");
     expect(expr2).toEqual(expr1 + 1);
   });
 });

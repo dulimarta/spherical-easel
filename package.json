@@ -42,9 +42,9 @@
     "vuex-module-decorators": "^1.0.1"
   },
   "devDependencies": {
-    "@intlify/vue-i18n-loader": "~2.0.3",
+    "@intlify/vue-i18n-loader": "~2.1.0",
     "@maginapp/vuepress-plugin-katex": "~1.0.7",
-    "@mdi/js": "^5.5.55",
+    "@mdi/js": "~5.5.55",
     "@types/jest": "~24.0.19",
     "@types/webpack": "~4.41.18",
     "@typescript-eslint/eslint-plugin": "~3.9.0",
@@ -62,7 +62,7 @@
     "@vuepress/plugin-back-to-top": "^1.5.2",
     "babel-plugin-transform-decorators": "^6.24.1",
     "canvas": "^2.6.1",
-    "eslint": "^6.8.0",
+    "eslint": "~6.8.0",
     "eslint-plugin-vue": "^6.2.2",
     "firestore-jest-mock": "https://github.com/dulimarta/firestore-jest-mock",
     "markdown-it-vuepress-code-snippet-enhanced": "^1.0.1",
