@@ -1,5 +1,4 @@
 import TestComponent from "../SENoduleItem.vue";
-import store from "@/store";
 import { Vector3 } from "three";
 import { Wrapper } from "@vue/test-utils";
 import { createWrapper } from "@/../tests/vue-helper";
@@ -300,10 +299,8 @@ describe("SENoduleItem.vue", () => {
       }
     });
     const toggle = wrapper.find("#_test_toggle_format");
-    console.debug(wrapper.text());
     expect(wrapper.text()).toContain(VALUE.toString());
     await toggle.trigger("click"); // switch display format to multiple of Pi
-    console.debug(wrapper.text());
     expect(wrapper.text()).toContain((VALUE / Math.PI).toFixed(3));
     /* TODO: add a test case for SECalculation */
   });

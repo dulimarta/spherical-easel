@@ -253,7 +253,10 @@ export default class SphereFrame extends VueComponent {
     this.$refs.canvas.removeEventListener("mouseup", this.handleMouseReleased);
     this.$refs.canvas.removeEventListener("mouseleave", this.handleMouseLeave);
     this.$refs.canvas.removeEventListener("wheel", this.handleMouseWheel);
-    EventBus.unlisten("new-slider-requested");
+    EventBus.unlisten("sphere-rotate");
+    EventBus.unlisten("zoom-updated");
+    EventBus.unlisten("export-current-svg");
+    EventBus.unlisten("construction-loaded");
   }
 
   @Watch("canvasSize")

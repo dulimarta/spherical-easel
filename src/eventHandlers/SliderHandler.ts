@@ -23,6 +23,7 @@ export default class SliderHandler extends MouseHandler {
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   mouseReleased(_event: MouseEvent): void {
+    // TODO: this event has not listener
     if (this.isOnSphere) EventBus.fire("new-slider-requested", {});
   }
 

@@ -116,7 +116,6 @@ export default class SE extends VuexModule implements AppState {
 
   @Mutation
   setCanvas(c: HTMLDivElement | null): void {
-    console.debug("setCanvas");
     this.svgCanvas = c;
   }
 
@@ -163,7 +162,6 @@ export default class SE extends VuexModule implements AppState {
   //#region addPoint
   @Mutation
   addPoint(point: SEPoint): void {
-    console.debug("Add points");
     this.sePoints.push(point);
     this.seNodules.push(point);
     point.ref.addToLayers(this.layers);
