@@ -32,20 +32,20 @@ export default class SENoduleItem extends Vue {
     }
   }
 
-  get isMeasurement(): boolean {
-    return this.node instanceof SEExpression;
-  }
-  get isCalculation(): boolean {
-    return this.node instanceof SECalculation;
-  }
+  // get isMeasurement(): boolean {
+  //   return this.node instanceof SEMeasurement;
+  // }
+  // get isCalculation(): boolean {
+  //   return this.node instanceof SECalculation;
+  // }
 
-  get showClass(): string {
-    return this.node.showing ? "visibleNode" : "invisibleNode";
-  }
+  // get showClass(): string {
+  //   return this.node.showing ? "visibleNode" : "invisibleNode";
+  // }
 
-  get definitionText(): string {
-    return this.node.noduleDescription;
-  }
+  // get definitionText(): string {
+  //   return this.node.name;
+  // }
 }
 </script>
 
