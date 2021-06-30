@@ -37,9 +37,10 @@
         <v-tooltip left>
           <template v-slot:activator="{ on }">
             <!--- TODO: Change the URL to match the hosting site 
-               On GitLab use href="/sphericalgeometryvue/docs"
+               For instance, on GitLab use href="/sphericalgeometryvue/docs"
+               Watch out for double slashes "//"
             --->
-            <a :href="`${baseURL}/docs`">
+            <a :href="`${baseURL}docs`">
               <v-icon class="ml-2"
                 v-on="on">mdi-help-circle</v-icon>
             </a>

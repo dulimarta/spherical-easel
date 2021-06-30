@@ -13,8 +13,8 @@ module.exports = {
   publicPath:
     // Use non-root path during development to detect potential issues
     // the the app is deployed for production into a non-root path
-    process.env.NODE_ENV === "production" ? "/sphericalgeometryvue/" : "/dev",
-  crossorigin: "anonymous",
+    process.env.NODE_ENV === "production" ? "/sphericalgeometryvue/" : "/dev"
+  // crossorigin: "no-cors",
   // devServer: {
   //   proxy: {
   //     "^/api": {
