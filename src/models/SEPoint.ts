@@ -13,7 +13,11 @@ import {
   Labelable
 } from "@/types";
 import { SELabel } from "./SELabel";
-import { SEStore } from "@/store";
+// The following import creates a circular dependencies when testing SENoduleItem
+// The dependency loop is:
+// SENoduleItem.vue => SEIntersectionPoint => SEPoint => store/index.ts => se-module.ts
+// => RotationVisitor => SEPointOnOneDimensional => SEPoint (again)
+// import { SEStore } from "@/store";
 import i18n from "@/i18n";
 
 const styleSet = new Set([
@@ -124,11 +128,12 @@ export class SEPoint extends SENodule implements Visitable, Labelable {
    * @param currentLabelLocationVector A vector on the unit sphere
    */
   public closestLabelLocationVector(
-    currentLabelLocationVector: Vector3
+    currentLabelLocationVector: Vector3,
+    zoomMagnificationFactor: number
   ): Vector3 {
     // The current magnification level
 
-    const mag = SEStore.zoomMagnificationFactor;
+    const mag = zoomMagnificationFactor;
     // If the idealUnitSphereVector is within the tolerance of the point, do nothing, otherwise return the vector in the plane of the ideanUnitSphereVector and the point that is at the tolerance distance away.
     if (
       this._locationVector.angleTo(currentLabelLocationVector) <

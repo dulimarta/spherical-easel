@@ -1293,7 +1293,7 @@
     "@intlify/runtime" "9.1.6"
     "@intlify/shared" "9.1.6"
 
-"@intlify/vue-i18n-loader@^2.1.0":
+"@intlify/vue-i18n-loader@~2.1.0":
   version "2.1.0"
   resolved "https://registry.yarnpkg.com/@intlify/vue-i18n-loader/-/vue-i18n-loader-2.1.0.tgz#978d7025f33e8732205419e030e685a7146e031f"
   integrity sha512-eDWpSktVmyfj7UxSYO4YWT4EKdeLsVMSoKu4MBZaX3RMcOcZeIuHaLY4hDL5bndgyaxkcqfbOo1SxJ5bPR0SKw==
@@ -1450,7 +1450,7 @@
     "@types/istanbul-reports" "^1.1.1"
     "@types/yargs" "^13.0.0"
 
-"@maginapp/vuepress-plugin-katex@^1.0.7":
+"@maginapp/vuepress-plugin-katex@~1.0.7":
   version "1.0.11"
   resolved "https://registry.yarnpkg.com/@maginapp/vuepress-plugin-katex/-/vuepress-plugin-katex-1.0.11.tgz#da8f7d7f43c53c1f4b383e67f1e49710da9d058c"
   integrity sha512-QsO8FxU790DGkcBVIcoRxKeySqmma5PnPEmRjmsQW2nYH01bUHdQwOEB2ny1nAWL3PU8m09lMsVyGkMfue8DXw==
@@ -12150,7 +12150,7 @@ vue-style-loader@^4.1.0, vue-style-loader@^4.1.2:
     hash-sum "^1.0.2"
     loader-utils "^1.0.2"
 
-vue-template-compiler@^2.6.10, vue-template-compiler@^2.6.14:
+vue-template-compiler@!2.6.14, vue-template-compiler@^2.6.10:
   version "2.6.14"
   resolved "https://registry.yarnpkg.com/vue-template-compiler/-/vue-template-compiler-2.6.14.tgz#a2f0e7d985670d42c9c9ee0d044fed7690f4f763"
   integrity sha512-ODQS1SyMbjKoO1JBJZojSw6FE4qnh9rIpUZn2EUT86FKizx9uH5z6uXiIrm4/Nb/gwxTi/o17ZDEGWAXHvtC7g==
@@ -12170,7 +12170,7 @@ vue-web-cam@^1.9.0:
   dependencies:
     vue "^2.6.10"
 
-vue@^2.6.10, vue@^2.6.11, vue@^2.6.14:
+vue@^2.6.10, vue@^2.6.11, vue@~2.6.14:
   version "2.6.14"
   resolved "https://registry.yarnpkg.com/vue/-/vue-2.6.14.tgz#e51aa5250250d569a3fbad3a8a5a687d6036e235"
   integrity sha512-x2284lgYvjOMj3Za7kqzRcUSxBboHqtgRE2zlos1qWaOye5yUmHn42LB1250NJBLRwEcdrB0JRwyPTEPhfQjiQ==

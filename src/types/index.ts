@@ -97,7 +97,10 @@ export interface Labelable {
    * Returns the closest label location vector on the parent object to the idealUnitSphereVector
    * @param idealUnitSphereVector A vector location on the sphere
    */
-  closestLabelLocationVector(idealUnitSphereVector: Vector3): Vector3;
+  closestLabelLocationVector(
+    idealUnitSphereVector: Vector3,
+    zoomMagnificationFactor: number
+  ): Vector3;
   label?: SELabel;
 }
 

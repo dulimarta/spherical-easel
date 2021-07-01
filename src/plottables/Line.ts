@@ -114,8 +114,8 @@ export default class Line extends Nodule {
     this.glowingFrontHalf = this.frontHalf.clone();
 
     //Set the path.id's for all the TwoJS objects which are not glowing. This is for exporting to Icon.
-    this.frontHalf.id = 12000000 + SENodule.LINE_COUNT * 100 + 0;
-    this.backHalf.id = 12000000 + SENodule.LINE_COUNT * 100 + 1;
+    // this.frontHalf.id = 12000000 + SENodule.LINE_COUNT * 100 + 0;
+    // this.backHalf.id = 12000000 + SENodule.LINE_COUNT * 100 + 1;
 
     // The line is not initially glowing but is visible for the temporary object
     this.frontHalf.visible = true;

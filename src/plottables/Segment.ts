@@ -131,10 +131,10 @@ export default class Segment extends Nodule {
     this.glowingBackExtra.vertices.splice(0);
 
     //Set the path.id's for all the TwoJS objects which are not glowing. This is for exporting to Icon.
-    this.frontPart.id = 14000000 + SENodule.SEGMENT_COUNT * 100 + 0;
-    this.frontExtra.id = 14000000 + SENodule.SEGMENT_COUNT * 100 + 1;
-    this.backPart.id = 14000000 + SENodule.SEGMENT_COUNT * 100 + 2;
-    this.backExtra.id = 14000000 + SENodule.SEGMENT_COUNT * 100 + 3;
+    // this.frontPart.id = 14000000 + SENodule.SEGMENT_COUNT * 100 + 0;
+    // this.frontExtra.id = 14000000 + SENodule.SEGMENT_COUNT * 100 + 1;
+    // this.backPart.id = 14000000 + SENodule.SEGMENT_COUNT * 100 + 2;
+    // this.backExtra.id = 14000000 + SENodule.SEGMENT_COUNT * 100 + 3;
 
     // Set the style that never changes -- Fill
     this.frontPart.noFill();

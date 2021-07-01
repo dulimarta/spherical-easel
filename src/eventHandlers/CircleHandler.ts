@@ -256,7 +256,7 @@ export default class CircleHandler extends Highlighter {
       if (!this.centerLocationSelected) {
         // If the temporary startMarker has *not* been added to the scene do so now
         if (!this.temporaryStartMarkerAdded) {
-          console.log("added start 1");
+          // console.log("added start 1");
           this.temporaryStartMarkerAdded = true;
           this.temporaryStartMarker.addToLayers(this.layers);
         }
@@ -288,13 +288,13 @@ export default class CircleHandler extends Highlighter {
       } else {
         // If the temporary endMarker has *not* been added to the scene do so now
         if (!this.temporaryEndMarkerAdded) {
-          console.log("added end 1");
+          // console.log("added end 1");
           this.temporaryEndMarkerAdded = true;
           this.temporaryEndMarker.addToLayers(this.layers);
         }
         // Remove the temporary endMarker if there is a nearby point (which is glowing)
         if (this.snapEndMarkerToTemporaryPoint !== null) {
-          console.log("remove end 1");
+          // console.log("remove end 1");
           this.temporaryEndMarker.removeFromLayers();
           this.temporaryEndMarkerAdded = false;
         }
@@ -334,12 +334,12 @@ export default class CircleHandler extends Highlighter {
       // add the appropriate objects back if the user returns to the sphere with out
       // triggering the mouse leave event.
       if (this.temporaryStartMarkerAdded) {
-        console.log("remove start 2");
+        // console.log("remove start 2");
         this.temporaryStartMarker.removeFromLayers();
         this.temporaryStartMarkerAdded = false;
       }
       if (this.temporaryEndMarkerAdded) {
-        console.log("remove end 2");
+        // console.log("remove end 2");
         this.temporaryEndMarker.removeFromLayers();
         this.temporaryEndMarkerAdded = false;
       }
@@ -427,12 +427,12 @@ export default class CircleHandler extends Highlighter {
     if (this.temporaryEndMarkerAdded) {
       this.temporaryEndMarker.removeFromLayers();
       this.temporaryEndMarkerAdded = false;
-      console.log("remove end 5");
+      // console.log("remove end 5");
     }
     if (this.temporaryStartMarkerAdded) {
       this.temporaryStartMarker.removeFromLayers();
       this.temporaryStartMarkerAdded = false;
-      console.log("remove start 5");
+      // console.log("remove start 5");
     }
 
     this.snapStartMarkerToTemporaryOneDimensional = null;

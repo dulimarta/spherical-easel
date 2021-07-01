@@ -3,7 +3,7 @@ import { createWrapper } from "@/../tests/vue-helper";
 import { SEStore } from "@/store";
 import Two from "two.js";
 import SETTINGS, { LAYER } from "@/global-settings";
-import PointHandler from "@/eventHandlers/PointHandler";
+// import PointHandler from "@/eventHandlers/PointHandler";
 import Vue from "vue";
 import { SEPoint } from "@/models/SEPoint";
 import { SELine } from "@/models/SELine";
@@ -13,18 +13,26 @@ import { SESegment } from "@/models/SESegment";
 import { SECircle } from "@/models/SECircle";
 import { Wrapper } from "@vue/test-utils";
 
+/*
+TODO: the test cases below create the object using newly created node.
+Should we include test cases where the tools select existing objects
+during the creation. For instance, when creating a line one of the endpoints 
+is already on the sphere
+*/
 describe("SphereFrame.vue", () => {
-  let wrapper: Wrapper<SphereFrame>;
+  let wrapper: Wrapper<Vue>;
   beforeEach(async () => {
     // It is important to reset the actionMode back to subsequent
     // mutation to actionMode will trigger a Vue Watch update
     wrapper = createWrapper(SphereFrame);
+    SEStore.init();
     SEStore.setActionMode({ id: "", name: "" });
   });
 
   afterEach(() => {
     jest.restoreAllMocks();
   });
+
   it("is an instance", () => {
     expect(wrapper.exists).toBeTruthy();
     expect(wrapper.isVueInstance).toBeTruthy();
@@ -54,54 +62,61 @@ describe("SphereFrame.vue", () => {
   const TEST_MOUSE_X = 111;
   const TEST_MOUSE_Y = 137;
 
+  async function makePoint(isBackground: boolean): Promise<SEPoint> {
+    expect(wrapper.vm.$data.currentTool.isOnSphere).toBeFalsy();
+    const target = wrapper.find("#canvas");
+    expect(target.exists).toBeTruthy();
+    await target.trigger("mousemove", {
+      clientX: TEST_MOUSE_X,
+      clientY: TEST_MOUSE_Y,
+      shiftKey: isBackground
+    });
+    expect(wrapper.vm.$data.currentTool.isOnSphere).toBeTruthy();
+    await target.trigger("mousedown", {
+      clientX: TEST_MOUSE_X,
+      clientY: TEST_MOUSE_Y,
+      shiftKey: isBackground
+    });
+    await target.trigger("mouseup", {
+      clientX: TEST_MOUSE_X,
+      clientY: TEST_MOUSE_Y,
+      shiftKey: isBackground
+    });
+    // expect(wrapper.vm.$data.currentTool.isOnSphere).toBeTruthy();
+    // expect(commitSpy).toHaveBeenCalledWith("addPoint", expect.anything());
+    await wrapper.vm.$nextTick();
+    const count = SEStore.sePoints.length;
+    // The most recent point
+    return SEStore.sePoints[count - 1] as SEPoint;
+  }
+
   describe("with PointTool", () => {
-    async function makePoint(isBackground: boolean): Promise<SEPoint> {
+    // it("switches to point tool", async () => {
+    //   SEStore.setActionMode({
+    //     id: "point",
+    //     name: "PointTool"
+    //   });
+    //   await wrapper.vm.$nextTick();
+    //   expect(wrapper.vm.$data.currentTool).toBeInstanceOf(PointHandler);
+    // });
+    beforeEach(async () => {
       SEStore.setActionMode({
         id: "point",
         name: "Tool Name does not matter"
       });
       await wrapper.vm.$nextTick();
-      expect(wrapper.vm.$data.currentTool.isOnSphere).toBeFalsy();
-      const target = wrapper.find("#canvas");
-      expect(target.exists).toBeTruthy();
-      await target.trigger("mousemove", {
-        clientX: TEST_MOUSE_X,
-        clientY: TEST_MOUSE_Y,
-        shiftKey: isBackground
-      });
-      expect(wrapper.vm.$data.currentTool.isOnSphere).toBeTruthy();
-      const prevPointCount = SEStore.sePoints.length;
-      await target.trigger("mousedown", {
-        clientX: TEST_MOUSE_X,
-        clientY: TEST_MOUSE_Y,
-        shiftKey: isBackground
-      });
-      await target.trigger("mouseup", {
-        clientX: 111,
-        clientY: 137,
-        shiftKey: isBackground
-      });
-      // expect(wrapper.vm.$data.currentTool.isOnSphere).toBeTruthy();
-      // expect(commitSpy).toHaveBeenCalledWith("addPoint", expect.anything());
-      await wrapper.vm.$nextTick();
-      const newPointCount = SEStore.sePoints.length;
-      expect(newPointCount).toBe(prevPointCount + 1);
-      return SEStore.sePoints[prevPointCount] as SEPoint;
-    }
-    it("switches to point tool", async () => {
-      SEStore.setActionMode({
-        id: "point",
-        name: "PointTool"
-      });
-      await wrapper.vm.$nextTick();
-      expect(wrapper.vm.$data.currentTool).toBeInstanceOf(PointHandler);
     });
+
     it("adds a new (foreground) point when clicking on sphere while using PointTool", async () => {
+      const prevPointCount = SEStore.sePoints.length;
       const p = await makePoint(false /* foreground point */);
+      expect(SEStore.sePoints.length).toBe(prevPointCount + 1);
       expect(p.locationVector.z).toBeGreaterThan(0);
     });
     it("adds a new (background) point when clicking on sphere while using PointTool", async () => {
+      const prevPointCount = SEStore.sePoints.length;
       const p = await makePoint(true /* back ground point */);
+      expect(SEStore.sePoints.length).toBe(prevPointCount + 1);
       expect(p.locationVector.z).toBeLessThan(0);
     });
   });
@@ -138,6 +153,7 @@ describe("SphereFrame.vue", () => {
     });
     return await wrapper.vm.$nextTick();
   }
+
   describe("with LineTool", () => {
     async function runLineTest(
       isPoint1Foreground: boolean,
@@ -338,6 +354,41 @@ describe("SphereFrame.vue", () => {
     });
   });
 
+  describe("with AntipodalPoint tool", () => {
+    async function runAntipodeTest(isForeground: boolean) {
+      const prevPointCount = SEStore.sePoints.length;
+      const p = await makePoint(isForeground);
+      expect(SEStore.sePoints.length).toBe(prevPointCount + 2);
+      const a = SEStore.sePoints[prevPointCount];
+      const b = SEStore.sePoints[prevPointCount + 1];
+      expect(a.locationVector.x).toBe(-b.locationVector.x);
+      expect(a.locationVector.y).toBe(-b.locationVector.y);
+      expect(a.locationVector.z).toBe(-b.locationVector.z);
+    }
+    beforeEach(async () => {
+      SEStore.setActionMode({
+        id: "antipodalPoint",
+        name: "Tool Name does not matter"
+      });
+      await wrapper.vm.$nextTick();
+    });
+
+    it("adds a new (foreground) point and its antipodal when clicking on sphere while using PointTool", async () => {
+      await runAntipodeTest(true);
+    });
+
+    it("adds a new (background) point and its antipodal when clicking on sphere while using PointTool", async () => {
+      // const prevPointCount = SEStore.sePoints.length;
+      // const p = await makePoint(true /* back ground point */);
+      // expect(SEStore.sePoints.length).toBe(prevPointCount + 2);
+      // const a = SEStore.sePoints[prevPointCount];
+      // const b = SEStore.sePoints[prevPointCount + 1];
+      // expect(a.locationVector.x).toBe(-b.locationVector.x);
+      // expect(a.locationVector.y).toBe(-b.locationVector.y);
+      // expect(a.locationVector.z).toBe(-b.locationVector.z);
+      await runAntipodeTest(false);
+    });
+  });
   // describe("Intersection points ", () => {
   //   // fail("Incomplete test");
   // });

@@ -87,8 +87,8 @@ export default class Point extends Nodule {
     );
 
     //Set the path.id's for all the TwoJS objects which are not glowing. This is for exporting to Icon.
-    this.frontPoint.id = 13000000 + SENodule.POINT_COUNT * 100 + 0;
-    this.backPoint.id = 13000000 + SENodule.POINT_COUNT * 100 + 1;
+    // this.frontPoint.id = 13000000 + SENodule.POINT_COUNT * 100 + 0;
+    // this.backPoint.id = 13000000 + SENodule.POINT_COUNT * 100 + 1;
 
     // Set the location of the points front/back/glowing/drawn
     // The location of all points front/back/glowing/drawn is controlled by the

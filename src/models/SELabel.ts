@@ -135,7 +135,8 @@ export class SELabel extends SENodule implements Visitable {
       this.tmpVector.copy(this._locationVector);
       this._locationVector.copy(
         ((this.parent as unknown) as Labelable).closestLabelLocationVector(
-          this.tmpVector
+          this.tmpVector,
+          SEStore.zoomMagnificationFactor
         )
       );
       //Update the location of the associate plottable Label (setter also updates the display)
@@ -181,7 +182,8 @@ export class SELabel extends SENodule implements Visitable {
       this._locationVector
         .copy(
           ((this.parent as unknown) as Labelable).closestLabelLocationVector(
-            pos
+            pos,
+            SEStore.zoomMagnificationFactor
           )
         )
         .normalize();

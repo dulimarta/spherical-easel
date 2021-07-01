@@ -269,23 +269,23 @@ export default class AngleMarker extends Nodule {
     this.glowingBackCirclePathDoubleArcTail = this.frontCirclePathStart.clone();
 
     //Set the path.id's for all the TwoJS objects which are not glowing. This is for exporting to Icon.
-    this.frontCirclePathStart.id =
-      10000000 + SENodule.ANGLEMARKER_COUNT * 100 + 0;
-    this.frontCirclePathTail.id =
-      10000000 + SENodule.ANGLEMARKER_COUNT * 100 + 1;
-    this.frontCirclePathDoubleArcStart.id =
-      10000000 + SENodule.ANGLEMARKER_COUNT * 100 + 2;
-    this.frontCirclePathDoubleArcTail.id =
-      10000000 + SENodule.ANGLEMARKER_COUNT * 100 + 3;
+    // this.frontCirclePathStart.id =
+    //   10000000 + SENodule.ANGLEMARKER_COUNT * 100 + 0;
+    // this.frontCirclePathTail.id =
+    //   10000000 + SENodule.ANGLEMARKER_COUNT * 100 + 1;
+    // this.frontCirclePathDoubleArcStart.id =
+    //   10000000 + SENodule.ANGLEMARKER_COUNT * 100 + 2;
+    // this.frontCirclePathDoubleArcTail.id =
+    //   10000000 + SENodule.ANGLEMARKER_COUNT * 100 + 3;
 
-    this.backCirclePathStart.id =
-      10000000 + SENodule.ANGLEMARKER_COUNT * 100 + 4;
-    this.backCirclePathTail.id =
-      10000000 + SENodule.ANGLEMARKER_COUNT * 100 + 5;
-    this.backCirclePathDoubleArcStart.id =
-      10000000 + SENodule.ANGLEMARKER_COUNT * 100 + 6;
-    this.backCirclePathDoubleArcTail.id =
-      10000000 + SENodule.ANGLEMARKER_COUNT * 100 + 7;
+    // this.backCirclePathStart.id =
+    //   10000000 + SENodule.ANGLEMARKER_COUNT * 100 + 4;
+    // this.backCirclePathTail.id =
+    //   10000000 + SENodule.ANGLEMARKER_COUNT * 100 + 5;
+    // this.backCirclePathDoubleArcStart.id =
+    //   10000000 + SENodule.ANGLEMARKER_COUNT * 100 + 6;
+    // this.backCirclePathDoubleArcTail.id =
+    //   10000000 + SENodule.ANGLEMARKER_COUNT * 100 + 7;
 
     // The clear() extension function works only on JS Array, but
     // not on Two.JS Collection class. Use splice() instead. Clear only tails so there are 2*circleSubdivisions in the union of back/backCirclePathStart and front/backCirclePathTail
@@ -397,12 +397,12 @@ export default class AngleMarker extends Nodule {
     this.glowingBackStraightEnd = this.frontStraightStart.clone();
 
     //Set the path.id's for all the TwoJS objects which are not glowing. This is for exporting to Icon.
-    this.frontStraightStart.id =
-      10000000 + SENodule.ANGLEMARKER_COUNT * 100 + 8;
-    this.frontStraightEnd.id = 10000000 + SENodule.ANGLEMARKER_COUNT * 100 + 9;
-    this.backStraightStart.id =
-      10000000 + SENodule.ANGLEMARKER_COUNT * 100 + 10;
-    this.backStraightEnd.id = 10000000 + SENodule.ANGLEMARKER_COUNT * 100 + 11;
+    // this.frontStraightStart.id =
+    //   10000000 + SENodule.ANGLEMARKER_COUNT * 100 + 8;
+    // this.frontStraightEnd.id = 10000000 + SENodule.ANGLEMARKER_COUNT * 100 + 9;
+    // this.backStraightStart.id =
+    //   10000000 + SENodule.ANGLEMARKER_COUNT * 100 + 10;
+    // this.backStraightEnd.id = 10000000 + SENodule.ANGLEMARKER_COUNT * 100 + 11;
 
     // Set the style that never changes -- Fill & Cap
     this.frontStraightStart.noFill();
@@ -463,10 +463,10 @@ export default class AngleMarker extends Nodule {
     this.backFill2 = this.frontFill1.clone();
 
     //Set the path.id's for all the TwoJS objects which are not glowing. This is for exporting to Icon.
-    this.frontFill1.id = 10000000 + SENodule.ANGLEMARKER_COUNT * 100 + 12;
-    this.frontFill2.id = 10000000 + SENodule.ANGLEMARKER_COUNT * 100 + 13;
-    this.backFill1.id = 10000000 + SENodule.ANGLEMARKER_COUNT * 100 + 14;
-    this.backFill2.id = 10000000 + SENodule.ANGLEMARKER_COUNT * 100 + 15;
+    // this.frontFill1.id = 10000000 + SENodule.ANGLEMARKER_COUNT * 100 + 12;
+    // this.frontFill2.id = 10000000 + SENodule.ANGLEMARKER_COUNT * 100 + 13;
+    // this.backFill1.id = 10000000 + SENodule.ANGLEMARKER_COUNT * 100 + 14;
+    // this.backFill2.id = 10000000 + SENodule.ANGLEMARKER_COUNT * 100 + 15;
 
     // Strip out some of the anchors so that
     // frontFill1.length + frontFill2.length + backFill1.length + backFill2.length =

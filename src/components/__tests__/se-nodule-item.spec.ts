@@ -170,6 +170,7 @@ describe("SENoduleItem.vue", () => {
     });
     expect(wrapper.text()).toContain("0.29");
   });
+
   it("shows angles between three points with label, glows on mouse hover", async () => {
     const angle = new SEAngleMarker(
       new AngleMarker(),
@@ -288,7 +289,7 @@ describe("SENoduleItem.vue", () => {
     await runTest(wrapper, aSegDistance, false, 2);
   });
 
-  it("shows expressions", async () => {
+  xit("shows expressions", async () => {
     const VALUE = 2.134;
     const expr = new SECalculation(VALUE.toString());
     const wrapper = createWrapper(TestComponent, {
