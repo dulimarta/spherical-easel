@@ -18,7 +18,7 @@ import { SEAngleMarker } from "@/models/SEAngleMarker";
 import AngleMarker from "@/plottables/AngleMarker";
 import { AngleMode } from "@/types";
 import { SESegmentLength } from "@/models/SESegmentLength";
-import { SESegmentDistance } from "@/models/SESegmentDistance";
+import { SEPointDistance } from "@/models/SEPointDistance";
 import { SESlider } from "@/models/SESlider";
 import { SetNoduleDisplayCommand } from "@/commands/SetNoduleDisplayCommand";
 import { SEExpression } from "@/models/SEExpression";
@@ -274,7 +274,7 @@ describe("SENoduleItem.vue", () => {
     const point2 = createPoint();
     const label2 = createLabelFor(point2);
     point2.label = label2;
-    const aSegDistance = new SESegmentDistance(point1, point2);
+    const aSegDistance = new SEPointDistance(point1, point2);
     point1.registerChild(aSegDistance);
     point2.registerChild(aSegDistance);
     const wrapper = createWrapper(TestComponent, {
