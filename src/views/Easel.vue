@@ -224,6 +224,7 @@
       yes-text="Keep"
       no-text="Discard"
       :no-action="doLeave">
+      {{$t(`constructions.unsavedConstructionMsg`)}}
       You have unsaved work. Do you want to stay on this page and keep your
       work or switch to another page and discard your work.
     </Dialog>

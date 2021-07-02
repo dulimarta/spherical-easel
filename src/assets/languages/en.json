@@ -9,6 +9,8 @@
 		"UndoLastAction": "Undo last action"
 	},
 
+ 
+
   "toolGroups": {
     "EditTools": "Edit Tools",
     "DisplayTools": "Display Tools",
@@ -328,11 +330,7 @@
     "max": "Max",
     "step": "Step",
     "create": "Create",
-    "firestoreConstructionLoaded": "Construction successfully loaded.",
-    "firestoreConstructionSaved":"Construction successfully saved.",
-    "firestoreConstructionDeleted": "Construction successfully deleted.",
-    "firestoreSaveError": "Construction was not saved.",
-    "anglePoints": "Angle formed by points {p1}, {p2}, and {p3}.",
+        "anglePoints": "Angle formed by points {p1}, {p2}, and {p3}.",
     "angleSegments": "Angle formed by lines {line1} and {line2}.",
     "angleLines": "Angle formed by segments {seg1} and {seg2}.",
     "angleSegmentLine": "Angle formed by segment {seg} and line {line}.",
@@ -356,5 +354,16 @@
     "pointOnOneDimensional": "Point on {typeParent} {parent}",
     "freePoint": "Free point",
     "perpendicularLineThru":"Perpendicular line to {oneDimensionalParentType} {oneDimensional} through point {pt} with index {index}"
+  },
+
+  "constructions":{
+    "privateConstructions":"Private Constructions",
+    "publicConstructions":"Public Constructions",
+    "unsavedConstructionMsg":"You have unsaved work. Do you want to stay on this page and keep your work or switch to another page and discard your work.",
+    "unsavedObjectsMsg":"You have unsaved objects. Loading a new construction will remove all the current ones. Do you want to proceed or cancel?",
+    "firestoreConstructionLoaded": "Construction successfully loaded.",
+    "firestoreConstructionSaved":"Construction successfully saved.",
+    "firestoreConstructionDeleted": "Construction successfully deleted.",
+    "firestoreSaveError": "Construction was not saved."
   }
 }
