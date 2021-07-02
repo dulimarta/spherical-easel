@@ -97,20 +97,20 @@ describe("SphereFrame.vue", () => {
     return SEStore.sePoints[count - 1] as SEPoint;
   }
 
-  function constructSEPoint(
-    x_screen: number,
-    y_screen: number,
-    isForeground: boolean
-  ): SEPoint {
-    const R = SETTINGS.boundaryCircle.radius;
-    const zScreen =
-      Math.sqrt(R * R - x_screen * x_screen - y_screen * y_screen) *
-      (isForeground ? +1 : -1);
-    const p = new SEPoint(new Point());
-    const pos = new Vector3(x_screen, y_screen, zScreen).normalize();
-    p.locationVector.copy(pos);
-    return p;
-  }
+  // function constructSEPoint(
+  //   x_screen: number,
+  //   y_screen: number,
+  //   isForeground: boolean
+  // ): SEPoint {
+  //   const R = SETTINGS.boundaryCircle.radius;
+  //   const zScreen =
+  //     Math.sqrt(R * R - x_screen * x_screen - y_screen * y_screen) *
+  //     (isForeground ? +1 : -1);
+  //   const p = new SEPoint(new Point());
+  //   const pos = new Vector3(x_screen, y_screen, zScreen).normalize();
+  //   p.locationVector.copy(pos);
+  //   return p;
+  // }
 
   describe("with PointTool", () => {
     // it("switches to point tool", async () => {
@@ -188,6 +188,22 @@ describe("SphereFrame.vue", () => {
   ): Promise<void> {
     SEStore.setActionMode({
       id: "line",
+      name: "Tool Name does not matter"
+    });
+    await wrapper.vm.$nextTick();
+    await dragMouse(x1, y1, !isPoint1Foreground, x2, y2, !isPoint2Foreground);
+  }
+
+  async function drawSegment(
+    x1: number,
+    y1: number,
+    isPoint1Foreground: boolean,
+    x2: number,
+    y2: number,
+    isPoint2Foreground: boolean
+  ): Promise<void> {
+    SEStore.setActionMode({
+      id: "segment",
       name: "Tool Name does not matter"
     });
     await wrapper.vm.$nextTick();
@@ -453,12 +469,13 @@ describe("SphereFrame.vue", () => {
       });
       await wrapper.vm.$nextTick();
     });
-    async function runPerpendicularToLIneTest(
+    async function runPerpendicularToLineTest(
       foregroundPoint: boolean
     ): Promise<void> {
       const lineCount = SEStore.seLines.length;
       await drawLine(150, 170, true, 113, 200, true);
       expect(SEStore.seLines.length).toBe(lineCount + 1);
+      const referenceLine = SEStore.seLines[lineCount];
 
       const pointCount = SEStore.sePoints.length;
       await drawPointAt(61, 93, !foregroundPoint);
@@ -475,16 +492,82 @@ describe("SphereFrame.vue", () => {
       await clickAt(150, 170); // select the line
 
       expect(SEStore.seLines.length).toBeGreaterThanOrEqual(lineCount + 2);
+      const newLine = SEStore.seLines[lineCount + 1];
+      const angle = referenceLine.normalVector.angleTo(newLine.normalVector);
+
+      // Verify the angle between the two lines
+      expect(angle.toDegrees()).toBeCloseTo(90, 3);
+      // console.debug("Angle between two lines", angle.toDegrees());
+    }
+
+    async function runPerpendicularToSegmentTest(
+      foregroundPoint: boolean,
+      fgSegmentPoint1: boolean,
+      fgSegmentPoint2: boolean
+    ): Promise<void> {
+      const segmentCount = SEStore.seSegments.length;
+      const lineCount = SEStore.seLines.length;
+      await drawSegment(150, 170, fgSegmentPoint1, 113, 200, fgSegmentPoint2);
+      expect(SEStore.seSegments.length).toBe(segmentCount + 1);
+      const referenceSegment = SEStore.seSegments[segmentCount];
+
+      const pointCount = SEStore.sePoints.length;
+      await drawPointAt(61, 93, !foregroundPoint);
+      const aPoint = SEStore.sePoints[pointCount];
+      console.debug("Thru point at", aPoint.locationVector.toFixed(3));
+      // SEStore.addPoint(aPoint);
+      expect(SEStore.sePoints.length).toBe(pointCount + 1);
+      SEStore.setActionMode({
+        id: "perpendicular",
+        name: "Tool Name does not matter"
+      });
+      await wrapper.vm.$nextTick();
+      await clickAt(61, 93, !foregroundPoint); // Select the point
+      await clickAt(150, 170, !fgSegmentPoint1); // select the line
+
+      expect(SEStore.seSegments.length).toBeGreaterThanOrEqual(
+        segmentCount + 1
+      );
+      const newLine = SEStore.seLines[lineCount];
+      const angle = referenceSegment.normalVector.angleTo(newLine.normalVector);
+
+      // Verify the angle between the new line and the segment
+      expect(angle.toDegrees()).toBeCloseTo(90, 3);
     }
     it("adds a line thru a foreground point perpendicular to another line", async () => {
-      await runPerpendicularToLIneTest(true);
+      await runPerpendicularToLineTest(true);
       // const names = SEStore.seLines
       //   .map((ln: SELine) => ln.noduleDescription)
       //   .join("\n");
       // console.log("Lines", names);
     });
     it("adds a line thru a background point perpendicular to another line", async () => {
-      await runPerpendicularToLIneTest(false);
+      await runPerpendicularToLineTest(false);
+    });
+
+    it("adds a line thru a foreground point perpendicular to a segment (fg/fg) line", async () => {
+      await runPerpendicularToSegmentTest(true, true, true);
+    });
+    it("adds a line thru a foreground point perpendicular to a segment (fg/bg) line", async () => {
+      await runPerpendicularToSegmentTest(true, true, false);
+    });
+    it("adds a line thru a foreground point perpendicular to a segment (bg/fg) line", async () => {
+      await runPerpendicularToSegmentTest(true, false, true);
+    });
+    it("adds a line thru a foreground point perpendicular to a segment (bg/bg) line", async () => {
+      await runPerpendicularToSegmentTest(true, false, false);
+    });
+    it("adds a line thru a background point perpendicular to a segment (fg/fg) line", async () => {
+      await runPerpendicularToSegmentTest(false, true, true);
+    });
+    it("adds a line thru a background point perpendicular to a segment (fg/bg) line", async () => {
+      await runPerpendicularToSegmentTest(false, true, false);
+    });
+    it("adds a line thru a background point perpendicular to a segment (bg/fg) line", async () => {
+      await runPerpendicularToSegmentTest(false, false, true);
+    });
+    it("adds a line thru a background point perpendicular to a segment (bg/bg) line", async () => {
+      await runPerpendicularToSegmentTest(false, false, false);
     });
   });
 });
