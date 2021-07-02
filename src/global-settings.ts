@@ -558,8 +558,8 @@ export default {
     },
     angleMarker: {
       scale: {
-        front: 5,
-        back: 4
+        front: 10,
+        back: 8
       },
       strokeWidth: {
         front: 1,
@@ -596,7 +596,7 @@ export default {
     point: {
       scale: {
         front: 7,
-        back: 5
+        back: 9
       },
       strokeWidth: {
         front: 0.8,

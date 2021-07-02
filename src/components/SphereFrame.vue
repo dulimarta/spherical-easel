@@ -40,10 +40,11 @@ import EllipseHandler from "@/eventHandlers/EllipseHandler";
 
 import EventBus from "@/eventHandlers/EventBus";
 import MoveHandler from "../eventHandlers/MoveHandler";
-import { AppState, UpdateMode } from "@/types";
+import { AppState, plottableType, UpdateMode } from "@/types";
 import colors from "vuetify/es5/util/colors";
 import { SELabel } from "@/models/SELabel";
 import FileSaver from "file-saver";
+import Nodule from "@/plottables/Nodule";
 const SE = namespace("se");
 
 @Component({})
@@ -164,8 +165,13 @@ export default class SphereFrame extends VueComponent {
     this.boundaryCircle.linewidth = SETTINGS.boundaryCircle.lineWidth;
     this.layers[LAYER.midground].add(this.boundaryCircle);
 
-    //Set the path.id's for all the TwoJS objects which are not glowing. This is for exporting to Icon.
-    this.boundaryCircle.id = 10000000 - 1;
+    //Record the path ids for all the TwoJS objects which are not glowing. This is for use in IconBase to create icons.
+    Nodule.idPlottableDescriptionMap.set(String(this.boundaryCircle.id), {
+      type: "boundaryCircle",
+      side: "mid",
+      fill: false,
+      part: ""
+    });
 
     // const box1 = new Two.Rectangle(-100, 150, 100, 150);
     // box1.fill = "hsl(200,80%,50%)";
@@ -449,6 +455,11 @@ export default class SphereFrame extends VueComponent {
 
   getCurrentSVGForIcon(): void {
     const svgRoot = SEStore.svgCanvas?.querySelector("svg") as SVGElement;
+    //Dump a copy of the Nodule.idPlottableDescriptionMap into the console to it tso.js object
+    console.log(
+      "Nodule.idPlottableDescriptionMap",
+      Nodule.idPlottableDescriptionMap
+    );
 
     // Make a duplicate of the SVG tree
     const svgElement = svgRoot.cloneNode(true) as SVGElement;
@@ -463,12 +474,14 @@ export default class SphereFrame extends VueComponent {
     const allElements = svgElement.querySelectorAll("path");
     for (let i = 0; i < allElements.length; i++) {
       const element = allElements[i];
+      const description = Nodule.idPlottableDescriptionMap.get(
+        element.getAttribute("id") ?? ""
+      );
+
       if (
         element.getAttribute("visibility") === "hidden" ||
         element.getAttribute("d") === "" ||
-        (element.getAttribute("id")!.slice(0, 2) === "10" &&
-          Number(element.getAttribute("id")!.slice(-2)) >= 8 &&
-          Number(element.getAttribute("id")!.slice(-2)) <= 11)
+        (description?.type === "angleMarker" && description.part === "edge")
       ) {
         element.remove();
       }
@@ -491,6 +504,19 @@ export default class SphereFrame extends VueComponent {
     const paths = svgElement.querySelectorAll("path");
     for (let i = 0; i < paths.length; i++) {
       paths[i].setAttribute("vector-effect", "non-scaling-stroke");
+
+      // Into each path inject four new attributes, which will be removed later
+      const description = Nodule.idPlottableDescriptionMap.get(
+        paths[i].getAttribute("id") ?? ""
+      );
+      if (description === undefined) {
+        throw new Error(`IconBase - ${paths[i]} has no id.`);
+      }
+      paths[i].setAttribute("type", description.type);
+      paths[i].setAttribute("side", description.side);
+      paths[i].setAttribute("myfill", String(description.fill));
+      paths[i].setAttribute("part", description.part);
+
       iconArray.push(paths[i].outerHTML);
     }
 
@@ -501,20 +527,6 @@ export default class SphereFrame extends VueComponent {
       type: "text/plain;charset=utf-8"
     });
     FileSaver.saveAs(blob, "iconXXXPaths.svg");
-    // Make sure that when scaling the stroke width is not effected
-    // svgElement.setAttribute("vector-effect", "non-scaling-stroke");
-    // console.log(svgElement);
-    // console.log(svgElement.outerHTML);
-    // console.log(svgElement.childElementCount);
-    // console.log(svgElement.children[1].nodeType);
-    // console.log(svgElement.children[1].children[4]);
-    // console.log(svgElement.children[1].children[4].children[0]);
-    // console.log(
-    //   svgElement.children[1].children[4].children[0].getAttribute("visibility")
-    // );
-    // svgElement.children[0].remove();
-    // console.log(svgElement.childElementCount);
-    //console.log(svgElement.outerHTML);
   }
 
   animateCanvas(): void {

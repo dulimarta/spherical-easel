@@ -3,7 +3,7 @@ import { Stylable } from "./Styleable";
 import { Resizeable } from "./Resizeable";
 import SETTINGS from "@/global-settings";
 import { StyleOptions, StyleEditPanels } from "@/types/Styles";
-import { hslaColorType } from "@/types";
+import { hslaColorType, plottableProperties } from "@/types";
 import { Vector3 } from "three";
 
 export enum DisplayStyle {
@@ -21,6 +21,24 @@ export default abstract class Nodule implements Stylable, Resizeable {
    * The number that control the styling of certain colors and opacities and size if dynamicBackStyling is true
    */
   static backStyleContrast = SETTINGS.style.backStyleContrast;
+
+  /**
+   * A map that lets use look up the properties of a plottable object
+   * using only the TwoJS id. Useful in the creation of icons when processing the SVG
+   * in IconFactorys
+   */
+  public static idPlottableDescriptionMap = new Map<
+    string,
+    plottableProperties
+  >();
+
+  /**
+   * Is this needed when we reset the sphere canvas? I'm not sure yet, so I commented out the calls to it
+   * when resetting/loading.
+   */
+  static resetIdPlottableDescriptionMap(): void {
+    Nodule.idPlottableDescriptionMap.clear();
+  }
 
   /**
    * Add various TwoJS (SVG) elements of this nodule to appropriate layers

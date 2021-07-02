@@ -75,6 +75,12 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
   /* A variable to ensure that only one object is selected with each mouse press event*/
   private selectOneObjectAtATime = true;
 
+  /**
+   * Different objects have a different maximum number of perpendicularess
+   *
+   */
+  private numberOfPerpendiculars = 1;
+
   constructor(layers: Two.Group[]) {
     super(layers);
     // Create and style the temporary lines
@@ -239,7 +245,9 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
           ) {
             EventBus.fire("show-alert", {
               key: `handlers.perpendicularLineThruPointCircleSelected`,
-              keyOptions: { name: `${this.oneDimensional.label?.ref.shortUserName}` },
+              keyOptions: {
+                name: `${this.oneDimensional.label?.ref.shortUserName}`
+              },
               type: "info"
             });
           }
@@ -253,7 +261,9 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
           ) {
             EventBus.fire("show-alert", {
               key: `handlers.perpendicularLineThruPointEllipseSelected`,
-              keyOptions: { name: `${this.oneDimensional.label?.ref.shortUserName}` },
+              keyOptions: {
+                name: `${this.oneDimensional.label?.ref.shortUserName}`
+              },
               type: "info"
             });
           }
@@ -559,12 +569,14 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
       this.sePoint = sePoint;
     }
 
-    // For each type of oneDimensional compute the normal vector and copy it into normalVectors
+    // For each type of oneDimensional compute the normal vectors and copy them into normalVectors
     let normalVectors: Vector3[] = [];
     if (
       oneDimensional instanceof SELine ||
       oneDimensional instanceof SESegment
     ) {
+      // There is only one perpendicular
+      this.numberOfPerpendiculars = 1;
       // Line/segment point perpendicular
       this.tmpVector.crossVectors(sePointVector, oneDimensional.normalVector);
       // Check to see if the tmpVector is zero (i.e the normal vector to the line and given point are parallel -- ether
@@ -604,6 +616,8 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
     }
 
     if (oneDimensional instanceof SECircle) {
+      // There is only one perpendicular
+      this.numberOfPerpendiculars = 1;
       // Circle point perpendicular
       this.tmpVector.crossVectors(
         sePointVector,
@@ -630,6 +644,8 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
     }
 
     if (oneDimensional instanceof SEEllipse) {
+      // There are upto four perpendiculars
+      this.numberOfPerpendiculars = 4;
       normalVectors = oneDimensional
         .getNormalsToLineThru(
           sePointVector,
@@ -641,7 +657,7 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
     // normals is the array of normal vector to the plane containing the line perpendicular to the one Dimensional through the point
     // create four such lines (not the number of normals in normalVector because if the user creates the perpendicular when there
     // are only two perpendiculars, then moves the point to a place where there are four, the other two perpendiculars are not created)
-    for (let index = 0; index < 4; index++) {
+    for (let index = 0; index < this.numberOfPerpendiculars; index++) {
       // set the perpendicular vector
       let vec: Vector3;
       if (normalVectors[index] !== undefined) {

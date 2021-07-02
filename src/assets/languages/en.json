@@ -29,7 +29,7 @@
     "CreateAngleToolUseMessage": "Select two lines/segments or three points to calculate an angle.",
 
     "CreateAntipodalPointDisplayedName": "Antipodal<br>Point",
-    "CreateAntipodalPointToolTipMessage": "Select a location",
+    "CreateAntipodalPointToolTipMessage": "Create Antipode",
     "CreateAntipodalPointToolUseMessage": "Select a location to create a point (if necessary) and its antipode",
 
     "CreateCircleDisplayedName": "Create<br>Circle",
