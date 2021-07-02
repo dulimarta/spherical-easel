@@ -638,9 +638,9 @@ export default class SE extends VuexModule implements AppState {
       unitIdealVector: Vector3,
       screenPosition: Two.Vector
     ): SENodule[] => {
-      return this.seNodules.filter(obj =>
-        obj.isHitAt(unitIdealVector, this.zoomMagnificationFactor)
-      );
+      return this.seNodules.filter((obj: SENodule) => {
+        return obj.isHitAt(unitIdealVector, this.zoomMagnificationFactor);
+      });
     };
   }
   //#endregion findNearbyGetter
