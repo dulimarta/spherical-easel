@@ -226,14 +226,12 @@ export default class App extends Vue {
     if (ev.repeat) return; // Ignore repeated events on the same key
     if (!ev.altKey) return;
     if (!ev.ctrlKey) return;
-    console.log("here a", this.acceptedKeys, ev.key);
 
     if (ev.code === "KeyS" && this.acceptedKeys === 0) {
       console.info("'S' is accepted");
       this.acceptedKeys = 1;
     } else if (ev.code === "KeyE" && this.acceptedKeys === 1) {
       this.acceptedKeys = 2;
-      console.info("'E' is accepted", this.accountEnabled, this.acceptedKeys);
       // Directly setting the accountEnable flag here does not trigger
       // a UI update even after calling $forceUpdate()
       // Firing an event seems to solve the problem
@@ -358,7 +356,7 @@ export default class App extends Vue {
       })
       .then((doc: DocumentReference) => {
         EventBus.fire("show-alert", {
-          key: "objectTree.firestoreConstructionSaved",
+          key: "constructions.firestoreConstructionSaved",
           keyOptions: { docId: doc.id },
           type: "info"
         });
@@ -367,7 +365,7 @@ export default class App extends Vue {
       .catch((err: Error) => {
         console.error("Can't save document", err);
         EventBus.fire("show-alert", {
-          key: "objectTree.firestoreSaveError",
+          key: "constructions.firestoreSaveError",
           keyOptions: {},
           type: "error"
         });

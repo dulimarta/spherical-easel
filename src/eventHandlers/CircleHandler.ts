@@ -325,30 +325,31 @@ export default class CircleHandler extends Highlighter {
         //update the display
         this.temporaryCircle.updateDisplay();
       }
-    } else {
-      // Remove the temporary objects from the display but don't reset for a new circle
-      // add the appropriate objects back if the user returns to the sphere with out
-      // triggering the mouse leave event.
-      if (this.temporaryEndMarkerAdded) {
-        this.temporaryEndMarker.removeFromLayers();
-        this.temporaryEndMarkerAdded = false;
-      }
-
-      if (this.temporaryStartMarkerAdded) {
-        this.temporaryStartMarker.removeFromLayers();
-        this.temporaryStartMarkerAdded = false;
-      }
-
-      if (this.temporaryCircleAdded) {
-        this.temporaryCircle.removeFromLayers();
-        this.temporaryCircleAdded = false;
-      }
-
-      this.snapStartMarkerToTemporaryOneDimensional = null;
-      this.snapEndMarkerToTemporaryOneDimensional = null;
-      this.snapStartMarkerToTemporaryPoint = null;
-      this.snapEndMarkerToTemporaryPoint = null;
     }
+    // else {
+    //   // Remove the temporary objects from the display but don't reset for a new circle
+    //   // add the appropriate objects back if the user returns to the sphere with out
+    //   // triggering the mouse leave event.
+    //   if (this.temporaryEndMarkerAdded) {
+    //     this.temporaryEndMarker.removeFromLayers();
+    //     this.temporaryEndMarkerAdded = false;
+    //   }
+
+    //   if (this.temporaryStartMarkerAdded) {
+    //     this.temporaryStartMarker.removeFromLayers();
+    //     this.temporaryStartMarkerAdded = false;
+    //   }
+
+    //   if (this.temporaryCircleAdded) {
+    //     this.temporaryCircle.removeFromLayers();
+    //     this.temporaryCircleAdded = false;
+    //   }
+
+    //   this.snapStartMarkerToTemporaryOneDimensional = null;
+    //   this.snapEndMarkerToTemporaryOneDimensional = null;
+    //   this.snapStartMarkerToTemporaryPoint = null;
+    //   this.snapEndMarkerToTemporaryPoint = null;
+    // }
   }
 
   mouseReleased(_event: MouseEvent): void {

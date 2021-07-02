@@ -1,12 +1,13 @@
 <template>
   <div>
     <div class="text-h6"
-      v-if="firebaseUid.length > 0">Private Constructions</div>
+      v-if="firebaseUid.length > 0">
+      {{$t(`constructions.privateConstructions`)}}</div>
     <!--- WARNING: the "id" attribs below are needed for testing -->
     <ConstructionList id="privateList"
       :items="privateConstructions"
       v-on:load-requested="shouldLoadConstruction" />
-    <div class="text-h6">Public Constructions</div>
+    <div class="text-h6">{{$t(`constructions.publicConstructions`)}}</div>
     <ConstructionList id="publicList"
       :items="publicConstructions"
       :allow-sharing="true"
@@ -37,8 +38,7 @@
       :yesAction="doLoadConstruction"
       no-text="Cancel"
       max-width="50%">
-      You have unsaved objects. Loading a new construction will remove
-      all the current ones. Do you want to proceed or cancel?
+      {{ $t(`constructions.unsavedObjectsMsg`)}}
     </Dialog>
   </div>
 </template>
@@ -194,7 +194,7 @@ export default class ConstructionLoader extends Vue {
     SENodule.resetAllCounters();
     // Nodule.resetIdPlottableDescriptionMap(); // Needed?
     EventBus.fire("show-alert", {
-      key: "objectTree.firestoreConstructionLoaded",
+      key: "constructions.firestoreConstructionLoaded",
       keyOptions: { docId: this.selectedDocId },
       type: "info"
     });
@@ -224,7 +224,7 @@ export default class ConstructionLoader extends Vue {
       .delete()
       .then(() => {
         EventBus.fire("show-alert", {
-          key: "objectTree.firestoreConstructionDeleted",
+          key: "constructions.firestoreConstructionDeleted",
           keyOptions: { docId: event.docId },
           type: "info"
         });
