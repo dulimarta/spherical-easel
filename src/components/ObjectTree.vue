@@ -147,7 +147,7 @@ export default class ObjectTree extends Vue {
   // when the user clicks on an expression, this event is triggered
   // It enables the user to add measurement references to the calculation/expression builder
   // onExpressionSelect(x: any): void {
-  //   console.log("bob");
+  //   console.debug("bob");
   //   const pos = this.nodules.findIndex(n => n.id === x.id);
   //   console.debug("****Selection", x, "at", pos);
   //   if (pos >= 0) {

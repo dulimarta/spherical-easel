@@ -196,7 +196,7 @@ export default class SphereFrame extends VueComponent {
     // t1.decoration = "strikethrough";
 
     // this.layers[LAYER.foregroundText].add(t1);
-    // console.log("bound box", t1.getBoundingClientRect());
+    // console.debug("bound box", t1.getBoundingClientRect());
     // Draw horizontal and vertical lines (just for debugging)
     // const R = SETTINGS.boundaryCircle.radius;
     // const hLine = new Two.Line(-R, 0, R, 0);
@@ -270,7 +270,10 @@ export default class SphereFrame extends VueComponent {
     this.$refs.canvas.removeEventListener("mouseup", this.handleMouseReleased);
     this.$refs.canvas.removeEventListener("mouseleave", this.handleMouseLeave);
     this.$refs.canvas.removeEventListener("wheel", this.handleMouseWheel);
-    EventBus.unlisten("new-slider-requested");
+    EventBus.unlisten("sphere-rotate");
+    EventBus.unlisten("zoom-updated");
+    EventBus.unlisten("export-current-svg");
+    EventBus.unlisten("construction-loaded");
   }
 
   @Watch("canvasSize")
@@ -325,7 +328,7 @@ export default class SphereFrame extends VueComponent {
   //#endregion updateView
 
   handleMouseWheel(event: WheelEvent): void {
-    console.log("Mouse Wheel Zoom!");
+    console.debug("Mouse Wheel Zoom!");
     // Compute (pixelX,pixelY) = the location of the mouse release in pixel coordinates relative to
     //  the top left of the sphere frame. This is a location *post* affine transformation
     const target = (event.currentTarget || event.target) as HTMLDivElement;

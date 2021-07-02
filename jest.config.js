@@ -13,6 +13,9 @@ module.exports = {
   //   "^.+\\.vue$": "vue-jest",
   //   "^.+\\.ts$": "ts-jest"
   // },
+  testPathIgnorePatterns: ["tests/unit/.+\\.spec\\.ts", ".+\\.cyp\\.ts"],
+  // modulePathIgnorePatterns: ["tests/unit/*.spec.ts"],
+
   verbose: true,
   // roots: ["<rootDir>/src", "<rootDir>/tests"],
   setupFilesAfterEnv: ["<rootDir>/tests/setup.ts"],

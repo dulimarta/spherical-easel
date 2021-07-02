@@ -34,6 +34,10 @@ export class SECalculation extends SEExpression {
       if (pos > -1) this._calculationParents.push(SEStore.expressions[pos]);
     }
 
+    this._calculationParents.forEach((par: SENodule) => {
+      par.registerChild(this);
+    });
+
     // This might not be necessary because all expressions have the name "M####" and should be caught by the above
     //  This appears to make ALL expressions have this as a child
     // store.state.expressions

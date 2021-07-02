@@ -20,7 +20,10 @@ expect.extend({
   },
 
   toBeNonZero(received: Vector3) {
-    const out = received.x > 0;
+    const out =
+      Math.abs(received.x) > 1e-6 ||
+      Math.abs(received.y) > 1e-6 ||
+      Math.abs(received.z) > 1e-6;
     return {
       pass: out,
       message: () => "Non Zero Expectation"

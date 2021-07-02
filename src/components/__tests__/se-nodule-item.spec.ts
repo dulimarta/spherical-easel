@@ -18,20 +18,26 @@ import { SEAngleMarker } from "@/models/SEAngleMarker";
 import AngleMarker from "@/plottables/AngleMarker";
 import { AngleMode } from "@/types";
 import { SESegmentLength } from "@/models/SESegmentLength";
-import { SESegmentDistance } from "@/models/SESegmentDistance";
+import { SEPointDistance } from "@/models/SEPointDistance";
 import { SESlider } from "@/models/SESlider";
+import { SetNoduleDisplayCommand } from "@/commands/SetNoduleDisplayCommand";
+import { SEExpression } from "@/models/SEExpression";
+import { SECalculation } from "@/models/SECalculation";
 describe("SENoduleItem.vue", () => {
   let glowingSpy: jest.SpyInstance;
+  let visibilitySpy = jest.fn();
 
   // Common routine for testing label and glowing behavior
   const runTest = async (
     w: Wrapper<Vue>,
     se: SENodule,
+    isPlottable = true,
     numberOfChildren = 1
   ) => {
     expect(w).toBeDefined();
     expect(w.text()).toContain(se.name);
     const n = w.find(".node");
+    // Hover the mouse on the selected item
     await n.trigger("mouseenter");
     await n.trigger("mouseleave");
 
@@ -39,6 +45,19 @@ describe("SENoduleItem.vue", () => {
     for (let k = 1; k <= numberOfChildren; k++) {
       expect(glowingSpy).toHaveBeenNthCalledWith(k, true);
       expect(glowingSpy).toHaveBeenNthCalledWith(numberOfChildren + k, false);
+    }
+
+    // Click on the "eye" icon to hide/show selected item
+    if (isPlottable) {
+      const showhide = n.find("#_test_toggle_visibility");
+      await showhide.trigger("click"); // hide
+      expect(SetNoduleDisplayCommand.prototype.do).toHaveBeenCalled();
+    }
+
+    if (n instanceof SEExpression) {
+      const selectIt = n.find("#_test_selection");
+      await selectIt.trigger("click");
+      expect(w.emitted()["object-select"]).toBeTruthy();
     }
   };
 
@@ -62,6 +81,10 @@ describe("SENoduleItem.vue", () => {
     glowingSpy = jest.spyOn(SENodule.prototype, "glowing", "set");
   });
 
+  beforeEach(() => {
+    SetNoduleDisplayCommand.prototype.do = jest.fn();
+  });
+
   afterEach(() => {
     jest.clearAllMocks(); // Reset all spied calls
   });
@@ -75,10 +98,10 @@ describe("SENoduleItem.vue", () => {
         propsData: { node: aPoint }
       }
     });
-    runTest(wrapper, aPoint);
+    await runTest(wrapper, aPoint);
   });
 
-  it("shows line segments with label, glows on mouseover/leave", () => {
+  it("shows line segments with label, glows on mouseover/leave", async () => {
     const aSegment = createSegment();
     const label = createLabelFor(aSegment);
     aSegment.label = label;
@@ -87,10 +110,10 @@ describe("SENoduleItem.vue", () => {
         propsData: { node: aSegment }
       }
     });
-    runTest(wrapper, aSegment);
+    await runTest(wrapper, aSegment);
   });
 
-  it("shows lines with label, glows on mouseover/leave", () => {
+  it("shows lines with label, glows on mouseover/leave", async () => {
     const aLine = createLine();
     const label = createLabelFor(aLine);
     aLine.label = label;
@@ -99,10 +122,10 @@ describe("SENoduleItem.vue", () => {
         propsData: { node: aLine }
       }
     });
-    runTest(wrapper, aLine);
+    await runTest(wrapper, aLine);
   });
 
-  it("shows circles with label, glows on mouse hover", () => {
+  it("shows circles with label, glows on mouse hover", async () => {
     const firstPoint = createPoint();
     const secondPoint = createPoint();
     const aCircle = new SECircle(new Circle(), firstPoint, secondPoint);
@@ -114,10 +137,10 @@ describe("SENoduleItem.vue", () => {
       }
     });
 
-    runTest(wrapper, aCircle);
+    await runTest(wrapper, aCircle);
   });
 
-  it("shows intersection points with label, glows on mouse hover", () => {
+  it("shows intersection points with label, glows on mouse hover", async () => {
     const iPt = new SEIntersectionPoint(
       new Point(),
       createLine(),
@@ -132,7 +155,7 @@ describe("SENoduleItem.vue", () => {
         propsData: { node: iPt }
       }
     });
-    runTest(wrapper, iPt);
+    await runTest(wrapper, iPt);
   });
 
   it("shows sliders with the current value", () => {
@@ -147,7 +170,8 @@ describe("SENoduleItem.vue", () => {
     });
     expect(wrapper.text()).toContain("0.29");
   });
-  it("shows angles between three points with label, glows on mouse hover", () => {
+
+  it("shows angles between three points with label, glows on mouse hover", async () => {
     const angle = new SEAngleMarker(
       new AngleMarker(),
       AngleMode.POINTS,
@@ -165,10 +189,10 @@ describe("SENoduleItem.vue", () => {
       }
     });
 
-    runTest(wrapper, angle);
+    await runTest(wrapper, angle);
   });
 
-  it("shows angles between two lines with label, glows on mouse hover", () => {
+  it("shows angles between two lines with label, glows on mouse hover", async () => {
     const angle = new SEAngleMarker(
       new AngleMarker(),
       AngleMode.LINES,
@@ -185,10 +209,10 @@ describe("SENoduleItem.vue", () => {
       }
     });
 
-    runTest(wrapper, angle);
+    await runTest(wrapper, angle);
   });
 
-  it("shows angles between two segments with label, glows on mouse hover", () => {
+  it("shows angles between two segments with label, glows on mouse hover", async () => {
     const angle = new SEAngleMarker(
       new AngleMarker(),
       AngleMode.SEGMENTS,
@@ -205,10 +229,10 @@ describe("SENoduleItem.vue", () => {
       }
     });
 
-    runTest(wrapper, angle);
+    await runTest(wrapper, angle);
   });
 
-  it("shows angles between a line and a segment with label, glows on mouse hover", () => {
+  it("shows angles between a line and a segment with label, glows on mouse hover", async () => {
     const angle = new SEAngleMarker(
       new AngleMarker(),
       AngleMode.LINEANDSEGMENT,
@@ -225,10 +249,10 @@ describe("SENoduleItem.vue", () => {
       }
     });
 
-    runTest(wrapper, angle);
+    await runTest(wrapper, angle);
   });
 
-  it("shows segment lengths, glows on mouse hover", () => {
+  it("shows segment lengths, glows on mouse hover", async () => {
     const aSegment = createSegment();
     const label = createLabelFor(aSegment);
     aSegment.label = label;
@@ -241,17 +265,17 @@ describe("SENoduleItem.vue", () => {
         }
       }
     });
-    runTest(wrapper, aSegLen);
+    await runTest(wrapper, aSegLen, false);
   });
 
-  it("shows segment distances, glows on mouse hover", () => {
+  it("shows segment distances, glows on mouse hover", async () => {
     const point1 = createPoint();
     const label1 = createLabelFor(point1);
     point1.label = label1;
     const point2 = createPoint();
     const label2 = createLabelFor(point2);
     point2.label = label2;
-    const aSegDistance = new SESegmentDistance(point1, point2);
+    const aSegDistance = new SEPointDistance(point1, point2);
     point1.registerChild(aSegDistance);
     point2.registerChild(aSegDistance);
     const wrapper = createWrapper(TestComponent, {
@@ -262,8 +286,23 @@ describe("SENoduleItem.vue", () => {
       }
     });
     // A segment distance has two children
-    runTest(wrapper, aSegDistance, 2);
+    await runTest(wrapper, aSegDistance, false, 2);
   });
 
-  /* TODO: add a test case for SEExpression */
+  xit("shows expressions", async () => {
+    const VALUE = 2.134;
+    const expr = new SECalculation(VALUE.toString());
+    const wrapper = createWrapper(TestComponent, {
+      mountOptions: {
+        propsData: {
+          node: expr
+        }
+      }
+    });
+    const toggle = wrapper.find("#_test_toggle_format");
+    expect(wrapper.text()).toContain(VALUE.toString());
+    await toggle.trigger("click"); // switch display format to multiple of Pi
+    expect(wrapper.text()).toContain((VALUE / Math.PI).toFixed(3));
+    /* TODO: add a test case for SECalculation */
+  });
 });
