@@ -12,6 +12,8 @@ import "@/../tests/jest-custom-matchers";
 import { SESegment } from "@/models/SESegment";
 import { SECircle } from "@/models/SECircle";
 import { Wrapper } from "@vue/test-utils";
+import Point from "@/plottables/Point";
+import Line from "@/plottables/Line";
 
 /*
 TODO: the test cases below create the object using newly created node.
@@ -62,32 +64,52 @@ describe("SphereFrame.vue", () => {
   const TEST_MOUSE_X = 111;
   const TEST_MOUSE_Y = 137;
 
-  async function makePoint(isBackground: boolean): Promise<SEPoint> {
-    expect(wrapper.vm.$data.currentTool.isOnSphere).toBeFalsy();
+  async function drawPointAt(x: number, y: number, isBackground = false) {
+    SEStore.setActionMode({
+      id: "point",
+      name: "Tool Name does not matter"
+    });
+    await wrapper.vm.$nextTick();
     const target = wrapper.find("#canvas");
     expect(target.exists).toBeTruthy();
+
     await target.trigger("mousemove", {
-      clientX: TEST_MOUSE_X,
-      clientY: TEST_MOUSE_Y,
+      clientX: x,
+      clientY: y,
       shiftKey: isBackground
     });
     expect(wrapper.vm.$data.currentTool.isOnSphere).toBeTruthy();
     await target.trigger("mousedown", {
-      clientX: TEST_MOUSE_X,
-      clientY: TEST_MOUSE_Y,
+      clientX: x,
+      clientY: y,
       shiftKey: isBackground
     });
     await target.trigger("mouseup", {
-      clientX: TEST_MOUSE_X,
-      clientY: TEST_MOUSE_Y,
+      clientX: x,
+      clientY: y,
       shiftKey: isBackground
     });
-    // expect(wrapper.vm.$data.currentTool.isOnSphere).toBeTruthy();
-    // expect(commitSpy).toHaveBeenCalledWith("addPoint", expect.anything());
-    await wrapper.vm.$nextTick();
+  }
+  async function makePoint(isBackground: boolean): Promise<SEPoint> {
+    await drawPointAt(TEST_MOUSE_X, TEST_MOUSE_Y, isBackground);
     const count = SEStore.sePoints.length;
     // The most recent point
     return SEStore.sePoints[count - 1] as SEPoint;
+  }
+
+  function constructSEPoint(
+    x_screen: number,
+    y_screen: number,
+    isForeground: boolean
+  ): SEPoint {
+    const R = SETTINGS.boundaryCircle.radius;
+    const zScreen =
+      Math.sqrt(R * R - x_screen * x_screen - y_screen * y_screen) *
+      (isForeground ? +1 : -1);
+    const p = new SEPoint(new Point());
+    const pos = new Vector3(x_screen, y_screen, zScreen).normalize();
+    p.locationVector.copy(pos);
+    return p;
   }
 
   describe("with PointTool", () => {
@@ -136,6 +158,7 @@ describe("SphereFrame.vue", () => {
       clientY: fromY,
       shiftKey: fromBg
     });
+    console.debug("Mouse pressed at", fromX, fromY);
     await target.trigger("mousedown", {
       clientX: fromX,
       clientY: fromY,
@@ -146,6 +169,7 @@ describe("SphereFrame.vue", () => {
       clientY: toY,
       shiftKey: toBg
     });
+    console.debug("Mouse release at", toX, toY);
     await target.trigger("mouseup", {
       clientX: toX,
       clientY: toY,
@@ -154,26 +178,37 @@ describe("SphereFrame.vue", () => {
     return await wrapper.vm.$nextTick();
   }
 
+  async function drawLine(
+    x1: number,
+    y1: number,
+    isPoint1Foreground: boolean,
+    x2: number,
+    y2: number,
+    isPoint2Foreground: boolean
+  ): Promise<void> {
+    SEStore.setActionMode({
+      id: "line",
+      name: "Tool Name does not matter"
+    });
+    await wrapper.vm.$nextTick();
+    await dragMouse(x1, y1, !isPoint1Foreground, x2, y2, !isPoint2Foreground);
+  }
+
   describe("with LineTool", () => {
     async function runLineTest(
       isPoint1Foreground: boolean,
       isPoint2Foreground: boolean
     ): Promise<void> {
-      SEStore.setActionMode({
-        id: "line",
-        name: "Tool Name does not matter"
-      });
-      await wrapper.vm.$nextTick();
       const endX = TEST_MOUSE_X + 10;
       const endY = TEST_MOUSE_Y - 10;
       const prevLineCount = SEStore.seLines.length;
-      await dragMouse(
+      await drawLine(
         TEST_MOUSE_X,
         TEST_MOUSE_Y,
-        !isPoint1Foreground,
+        isPoint1Foreground,
         endX,
         endY,
-        !isPoint2Foreground
+        isPoint2Foreground
       );
       const newLineCount = SEStore.seLines.length;
       expect(newLineCount).toBe(prevLineCount + 1);
@@ -189,7 +224,7 @@ describe("SphereFrame.vue", () => {
       // Start vector
       const startVector = new Vector3(
         TEST_MOUSE_X,
-        -TEST_MOUSE_Y,
+        -TEST_MOUSE_Y, // Must flip the Y coordinate
         startZCoord
       ).normalize();
       // End vector is foreground
@@ -207,16 +242,16 @@ describe("SphereFrame.vue", () => {
       );
       expect(newLine.normalVector).toBeVector3CloseTo(dir, 3);
     }
-    it("add a new line (fg/fg) while in LineTool", async () => {
+    it("adds a new line (fg/fg) while in LineTool", async () => {
       await runLineTest(true, true);
     });
-    it("add a new line (fg/bg) while in LineTool", async () => {
+    it("adds a new line (fg/bg) while in LineTool", async () => {
       await runLineTest(true, false);
     });
-    it("add a new line (bg/bg) while in LineTool", async () => {
+    it("adds a new line (bg/bg) while in LineTool", async () => {
       await runLineTest(false, false);
     });
-    it("add a new line (bg/fg) while in LineTool", async () => {
+    it("adds a new line (bg/fg) while in LineTool", async () => {
       await runLineTest(false, true);
     });
   });
@@ -276,16 +311,16 @@ describe("SphereFrame.vue", () => {
       expect(newSegment.normalVector).toBeVector3CloseTo(dir, 3);
     }
 
-    it("add a new segment (fg/fg) while in SegmentTool", async () => {
+    it("adds a new segment (fg/fg) while in SegmentTool", async () => {
       await runSegmentTest(true, true);
     });
-    it("add a new segment (fg/bg) while in SegmentTool", async () => {
+    it("adds a new segment (fg/bg) while in SegmentTool", async () => {
       await runSegmentTest(true, false);
     });
-    it("add a new segment (bg/fg) while in SegmentTool", async () => {
+    it("adds a new segment (bg/fg) while in SegmentTool", async () => {
       await runSegmentTest(false, true);
     });
-    it("add a new segment (bg/bg) while in SegmentTool", async () => {
+    it("adds a new segment (bg/bg) while in SegmentTool", async () => {
       await runSegmentTest(false, false);
     });
   });
@@ -389,7 +424,67 @@ describe("SphereFrame.vue", () => {
       await runAntipodeTest(false);
     });
   });
-  // describe("Intersection points ", () => {
-  //   // fail("Incomplete test");
-  // });
+
+  describe.only("With Perpendicular Tool", () => {
+    async function clickAt(x: number, y: number, withShift = false) {
+      const target = wrapper.find("#canvas");
+
+      await target.trigger("mousemove", {
+        clientX: x,
+        clientY: y,
+        shiftKey: withShift
+      });
+      await target.trigger("mousedown", {
+        clientX: x,
+        clientY: y,
+        shiftKey: withShift
+      });
+      await target.trigger("mouseup", {
+        clientX: x,
+        clientY: y,
+        shiftKey: withShift
+      });
+    }
+    beforeEach(async () => {
+      SEStore.init();
+      SEStore.setActionMode({
+        id: "perpendicular",
+        name: "Tool Name does not matter"
+      });
+      await wrapper.vm.$nextTick();
+    });
+    async function runPerpendicularToLIneTest(
+      foregroundPoint: boolean
+    ): Promise<void> {
+      const lineCount = SEStore.seLines.length;
+      await drawLine(150, 170, true, 113, 200, true);
+      expect(SEStore.seLines.length).toBe(lineCount + 1);
+
+      const pointCount = SEStore.sePoints.length;
+      await drawPointAt(61, 93, !foregroundPoint);
+      const aPoint = SEStore.sePoints[pointCount];
+      console.debug("Thru point at", aPoint.locationVector.toFixed(3));
+      // SEStore.addPoint(aPoint);
+      expect(SEStore.sePoints.length).toBe(pointCount + 1);
+      SEStore.setActionMode({
+        id: "perpendicular",
+        name: "Tool Name does not matter"
+      });
+      await wrapper.vm.$nextTick();
+      await clickAt(61, 93); // Select the point
+      await clickAt(150, 170); // select the line
+
+      expect(SEStore.seLines.length).toBeGreaterThanOrEqual(lineCount + 2);
+    }
+    it("adds a line thru a foreground point perpendicular to another line", async () => {
+      await runPerpendicularToLIneTest(true);
+      // const names = SEStore.seLines
+      //   .map((ln: SELine) => ln.noduleDescription)
+      //   .join("\n");
+      // console.log("Lines", names);
+    });
+    it("adds a line thru a background point perpendicular to another line", async () => {
+      await runPerpendicularToLIneTest(false);
+    });
+  });
 });
