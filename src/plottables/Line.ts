@@ -113,9 +113,19 @@ export default class Line extends Nodule {
     this.glowingBackHalf = this.frontHalf.clone();
     this.glowingFrontHalf = this.frontHalf.clone();
 
-    //Set the path.id's for all the TwoJS objects which are not glowing. This is for exporting to Icon.
-    this.frontHalf.id = 12000000 + SENodule.LINE_COUNT * 100 + 0;
-    this.backHalf.id = 12000000 + SENodule.LINE_COUNT * 100 + 1;
+     //Record the path ids for all the TwoJS objects which are not glowing. This is for use in IconBase to create icons.
+     Nodule.idPlottableDescriptionMap.set(String(this.frontHalf.id), {
+      type: "line",
+      side: "front",
+      fill: false,
+      part: ""
+    });
+    Nodule.idPlottableDescriptionMap.set(String(this.backHalf.id), {
+      type: "line",
+      side: "back",
+      fill: false,
+      part: ""
+    });
 
     // The line is not initially glowing but is visible for the temporary object
     this.frontHalf.visible = true;

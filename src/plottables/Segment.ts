@@ -130,11 +130,31 @@ export default class Segment extends Nodule {
     this.backExtra.vertices.splice(0);
     this.glowingBackExtra.vertices.splice(0);
 
-    //Set the path.id's for all the TwoJS objects which are not glowing. This is for exporting to Icon.
-    this.frontPart.id = 14000000 + SENodule.SEGMENT_COUNT * 100 + 0;
-    this.frontExtra.id = 14000000 + SENodule.SEGMENT_COUNT * 100 + 1;
-    this.backPart.id = 14000000 + SENodule.SEGMENT_COUNT * 100 + 2;
-    this.backExtra.id = 14000000 + SENodule.SEGMENT_COUNT * 100 + 3;
+    //Record the path ids for all the TwoJS objects which are not glowing. This is for use in IconBase to create icons.
+    Nodule.idPlottableDescriptionMap.set(String(this.frontPart.id), {
+      type: "segment",
+      side: "front",
+      fill: false,
+      part: ""
+    });
+    Nodule.idPlottableDescriptionMap.set(String(this.frontExtra.id), {
+      type: "segment",
+      side: "front",
+      fill: false,
+      part: ""
+    });
+    Nodule.idPlottableDescriptionMap.set(String(this.backPart.id), {
+      type: "segment",
+      side: "back",
+      fill: false,
+      part: ""
+    });
+    Nodule.idPlottableDescriptionMap.set(String(this.backExtra.id), {
+      type: "segment",
+      side: "back",
+      fill: false,
+      part: ""
+    });
 
     // Set the style that never changes -- Fill
     this.frontPart.noFill();

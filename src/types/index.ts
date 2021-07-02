@@ -101,6 +101,24 @@ export interface Labelable {
   label?: SELabel;
 }
 
+export type plottableType =
+  | "boundaryCircle"
+  | "point"
+  | "line"
+  | "segment"
+  | "circle"
+  | "angleMarker"
+  | "ellipse";
+export type sides = "front" | "back" | "mid";
+/**
+ * The properties of a plottable object needed when creating icons
+ */
+export type plottableProperties = {
+  type: plottableType;
+  side: sides;
+  fill: boolean;
+  part: string;
+};
 /**
  * All the one dimensional SE Classes
  */

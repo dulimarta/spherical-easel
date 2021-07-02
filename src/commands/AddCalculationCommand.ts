@@ -37,7 +37,7 @@ export class AddCalculationCommand extends AddMeasurementCommand {
 
   toOpcode(): null | string | Array<string> {
     return [
-      "AddExpression",
+      "AddCalculation",
       /* arg-1 */ this.seExpression.name,
       /* arg-2 */ this.arithmeticExpression,
       /* arg-3 */ this.seExpression.showing,
