@@ -40,7 +40,7 @@
                For instance, on GitLab use href="/sphericalgeometryvue/docs"
                Watch out for double slashes "//"
             --->
-            <router-link :to="`/docs`">
+            <router-link to="/docs/">
               <v-icon class="ml-2"
                 v-on="on">mdi-help-circle</v-icon>
             </router-link>
