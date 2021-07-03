@@ -3,6 +3,7 @@ import { SEExpression } from "@/models/SEExpression";
 import { SENodule } from "@/models/SENodule";
 import { SECalculation } from "@/models/SECalculation";
 import { AddMeasurementCommand } from "./AddMeasurementCommand";
+import { UpdateMode } from "@/types";
 
 export class AddCalculationCommand extends AddMeasurementCommand {
   // private seExpression: SEExpression;
@@ -23,45 +24,46 @@ export class AddCalculationCommand extends AddMeasurementCommand {
     this.arithmeticExpression = arithmeticExpression;
   }
 
-  // do(): void {
-  //   Command.store.addExpression(this.seExpression);
-  // }
-
-  // saveState(): void {
-  //   this.lastState = this.seExpression.id;
-  // }
-
-  // restoreState(): void {
-  //   Command.store.removeExpression(this.lastState);
-  // }
-
   toOpcode(): null | string | Array<string> {
-    return [
-      "AddCalculation",
-      /* arg-1 */ this.seExpression.name,
-      /* arg-2 */ this.arithmeticExpression,
-      /* arg-3 */ this.seExpression.showing,
-      /* arg-4 */ this.seExpression.exists,
-      /* arg-5 to ??? */ this.parents.map((n: SENodule) => n.name).join("@")
-    ].join(";"); // Can't use "/" may get mixed up with division
+    return (
+      [
+        "AddCalculation",
+        /* arg-0 */ this.seExpression.name,
+        /* arg-1 */ this.arithmeticExpression,
+        /* arg-2 */ this.seExpression.showing,
+        /* arg-3 */ this.seExpression.exists,
+        /* arg-4 to ??? */ this.parents.map((n: SENodule) => n.name).join("@")
+      ]
+        .join(";") // Can't use "/" may get mixed up with division
+        // Replace the first ";" with "/" so CommandInterpreter is able to identify and dispatch this command correctly
+        .replace(";", "/")
+    );
   }
 
   static parse(command: string, objMap: Map<string, SENodule>): Command {
-    const tokens = command.split(";");
-    const calc = new SECalculation(tokens[2]);
-    calc.name = tokens[1];
-    calc.showing = tokens[3] === "true";
-    calc.exists = tokens[4] === "true";
+    const slashAt = command.indexOf("/");
+    const args = command.substring(slashAt + 1);
+    console.debug("Whole command", command);
+    console.debug("Arguments", args);
+    const tokens = args.split(";");
+    console.debug("Tokens", tokens);
+    const calc = new SECalculation(tokens[1]);
+    calc.name = tokens[0];
+    calc.showing = tokens[2] === "true";
+    calc.exists = tokens[3] === "true";
     const parents: (SENodule | undefined)[] = [];
-    const parentNames = tokens[5].split("@");
+    const parentNames = tokens[4].split("@");
     parentNames.forEach(name =>
       parents.push(objMap.get(name) as SENodule | undefined)
     );
     if (parents.every(seNodule => seNodule !== undefined)) {
       objMap.set(tokens[1], calc);
+      // Invoke "update" to trigger reevaluation of the expression
+      // Otherwise, the value of the expressions is shown as ZERO
+      calc.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
       return new AddCalculationCommand(
         calc,
-        tokens[2],
+        tokens[1],
         parents.map(seNodule => seNodule as SENodule)
       );
     } else
