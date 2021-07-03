@@ -19,7 +19,12 @@ module.exports = {
   verbose: true,
   // roots: ["<rootDir>/src", "<rootDir>/tests"],
   setupFilesAfterEnv: ["<rootDir>/tests/setup.ts"],
-  snapshotSerializers: ["<rootDir>/node_modules/jest-serializer-vue"]
-  // collectCoverage: true,
-  // collectCoverageFrom: ["<rootDir>/src/expression/*.ts"]
+  snapshotSerializers: ["<rootDir>/node_modules/jest-serializer-vue"],
+  collectCoverage: true,
+  collectCoverageFrom: [
+    "<rootDir>/src/**/*.ts",
+    "!<rootDir>/src/global-settings.ts",
+    "!<rootDir>/src/i18n.ts"
+  ]
+  // coverageReporters: ["json", "lcov", "text", "clover"]
 };
