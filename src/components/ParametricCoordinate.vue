@@ -6,48 +6,24 @@
         <v-container>
           <v-row>
             <v-col cols="12">
-              <v-textarea id="_test_input_expr"
-                auto-grow
+              <v-textarea auto-grow
                 dense
                 full-width
                 outlined
                 clearable
-                rows="3"
-                v-bind:label="$t('objectTree.calculationExpression')"
-                placeholder="cos(pi/2)*M1"
+                rows="1"
+                v-bind:label="$t(i18nKey)"
+                placeholder="cos(t)*M1"
                 class="ma-0"
-                v-model="calcExpression"
+                v-model="coordinateExpression"
                 :error-messages="parsingError"
                 @keydown="onKeyPressed"
                 @click:clear="reset">
               </v-textarea>
-
             </v-col>
           </v-row>
-          <v-text-field id="_test_output_result"
-            dense
-            outlined
-            readonly
-            v-bind:label="$t('objectTree.result')"
-            placeholder="0"
-            v-model="calcResult">
-          </v-text-field>
         </v-container>
       </v-card-text>
-      <v-card-actions>
-        <v-spacer></v-spacer>
-        <!--- Disable the FAB when either the expression text is empty or
-          there is a syntax error -->
-        <v-btn id="_test_add_expr"
-          small
-          fab
-          right
-          color="accent"
-          :disabled="calcExpression.length === 0 || parsingError.length > 0"
-          @click="addExpression">
-          <v-icon>mdi-plus</v-icon>
-        </v-btn>
-      </v-card-actions>
     </v-card>
   </div>
 </template>
@@ -55,6 +31,7 @@
 import Vue from "vue";
 import Component from "vue-class-component";
 import { AppState, UpdateMode } from "@/types";
+import { Prop } from "vue-property-decorator";
 import { SEExpression } from "@/models/SEExpression";
 import { SECalculation } from "@/models/SECalculation";
 import { AddCalculationCommand } from "@/commands/AddCalculationCommand";
@@ -64,15 +41,14 @@ import { namespace } from "vuex-class";
 const SE = namespace("se");
 
 @Component({})
-export default class ExpressionForm extends Vue {
-  @SE.State((s: AppState) => s.expressions)
-  readonly expressions!: SEExpression[];
+export default class ParametricCoordinate extends Vue {
+  @Prop()
+  readonly i18nKey!: string;
 
   private parser = new ExpressionParser();
 
-  private calcExpression = "";
+  private coordinateExpression = "";
 
-  private calcResult = 0;
   private parsingError = "";
   private timerInstance: NodeJS.Timeout | null = null;
   readonly varMap = new Map<string, number>();
@@ -82,13 +58,12 @@ export default class ExpressionForm extends Vue {
   }
 
   reset(): void {
-    this.calcExpression = "";
-    this.calcResult = 0;
+    this.coordinateExpression = "";
   }
 
   addVarToExpr(param: any): void {
     console.debug("Variable selected", param);
-    this.calcExpression += param;
+    // this.calcExpression += param;
     this.onKeyPressed();
   }
 

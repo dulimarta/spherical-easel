@@ -14,6 +14,15 @@
         </v-expansion-panel>
         <v-expansion-panel>
           <v-expansion-panel-header color="accent">
+            {{ $t("objectTree.parametricCurves") }}
+          </v-expansion-panel-header>
+          <v-expansion-panel-content>
+            <ParametricForm></ParametricForm>
+
+          </v-expansion-panel-content>
+        </v-expansion-panel>
+        <v-expansion-panel>
+          <v-expansion-panel-header color="accent">
             {{ $t("objectTree.slider") }}
           </v-expansion-panel-header>
           <v-expansion-panel-content>
@@ -96,13 +105,16 @@ import Component from "vue-class-component";
 import SENoduleList from "@/components/SENoduleList.vue";
 import { SENodule } from "@/models/SENodule";
 import ExpressionForm from "@/components/ExpressionForm.vue";
+import ParametricForm from "@/components/ParametricForm.vue";
 import SliderForm from "@/components/SliderForm.vue";
 import { AppState } from "@/types";
 import { SEExpression } from "@/models/SEExpression";
 import { namespace } from "vuex-class";
 const SE = namespace("se");
 
-@Component({ components: { SENoduleList, ExpressionForm, SliderForm } })
+@Component({
+  components: { SENoduleList, ExpressionForm, ParametricForm, SliderForm }
+})
 export default class ObjectTree extends Vue {
   @SE.State((s: AppState) => s.sePoints)
   readonly points!: SENodule[];
