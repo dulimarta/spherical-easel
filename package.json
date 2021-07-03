@@ -21,6 +21,7 @@
     "@types/file-saver": "^2.0.2",
     "axios": "^0.19.2",
     "core-js": "^3.6.4",
+    "detect-browser": "^5.2.0",
     "file-saver": "^2.0.5",
     "firebase": "^8.6.2",
     "markdown-it-texmath": "^0.7.2",

@@ -87,6 +87,11 @@
       The router controls this background and it can be Easel or settings or...
     -->
     <v-main>
+      <v-alert v-show="!isSupportedBrowser"
+        type="error"
+        dismissible>
+        Please use FireFox. Some features may not work on other browsers.
+      </v-alert>
       <router-view>
         <!-- this is the spot where the views controlled by Vue Router will be rendred v-html="$t('buttons.' + button.displayedName )"-->
       </router-view>
@@ -167,6 +172,7 @@ import { Unsubscribe } from "@firebase/util";
 import { Command } from "./commands/Command";
 import { Matrix4 } from "three";
 import { SEStore } from "./store";
+import { detect } from "detect-browser";
 
 //#region vuex-module-namespace
 const SE = namespace("se");
@@ -200,6 +206,8 @@ export default class App extends Vue {
 
   readonly $appAuth!: FirebaseAuth;
   readonly $appDB!: FirebaseFirestore;
+
+  clientBrowser: any;
   description = "";
   publicConstruction = false;
   $refs!: {
@@ -225,6 +233,10 @@ export default class App extends Vue {
   get hasObjects(): boolean {
     // Any objects must include at least one point
     return SEStore.sePoints.length > 0;
+  }
+
+  get isSupportedBrowser(): boolean {
+    return this.clientBrowser.name === "firefox";
   }
 
   readonly keyHandler = (ev: KeyboardEvent): void => {
@@ -254,6 +266,7 @@ export default class App extends Vue {
       this.acceptedKeys = 0;
       this.$forceUpdate();
     });
+    this.clientBrowser = detect();
   }
 
   mounted(): void {
