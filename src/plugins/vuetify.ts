@@ -69,6 +69,17 @@ const vuetify = new Vuetify({
           emphasizeTypes: [["point", "front"]]
         }
       },
+      polar: {
+        component: IconBase,
+        props: {
+          iconName: "Polar",
+          iconFile: "/icons/iconPolarPaths.svg",
+          emphasizeTypes: [
+            ["point", "front"],
+            ["line", "front"]
+          ]
+        }
+      },
       perpendicular: {
         component: IconBase,
         props: {

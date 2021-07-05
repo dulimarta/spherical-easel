@@ -395,6 +395,16 @@ export default class ToolGroups extends Vue {
       toolGroup: "construction"
     },
     {
+      id: 20,
+      actionModeValue: "polar",
+      displayedName: "CreatePolarDisplayedName",
+      icon: "$vuetify.icons.value.polar",
+      toolTipMessage: "CreatePolarToolTipMessage",
+      toolUseMessage: "CreatePolarToolUseMessage",
+      displayToolUseMessage: false,
+      toolGroup: "construction"
+    },
+    {
       id: 30,
       actionModeValue: "perpendicular",
       displayedName: "CreatePerpendicularDisplayedName",

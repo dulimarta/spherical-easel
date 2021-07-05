@@ -34,6 +34,10 @@
     "CreateAntipodalPointToolTipMessage": "Create Antipode",
     "CreateAntipodalPointToolUseMessage": "Select a location to create a point (if necessary) and its antipode",
 
+    "CreatePolarDisplayedName": "Polar<br>&nbsp;",
+    "CreatePolarToolTipMessage": "Create polar line or polar points",
+    "CreatePolarToolUseMessage": "Select a location to create a point (if necessary) and its polar line or select a line segment or line to create both polar points",
+
     "CreateCircleDisplayedName": "Create<br>Circle",
     "CreateCircleToolTipMessage": "Insert circle",
     "CreateCircleToolUseMessage": "Click to insert a circle with a given center point and through a second point.",
@@ -313,7 +317,9 @@
     "perpendicularLineThruPointSegmentSelected":"Segment {name} selected. Now select a location to create a new point or to create a point on an object.",
     "perpendicularLineThruPointCircleSelected":"Circle {name} selected. Now select a location to create a new point or to create a point on an object.",
     "perpendicularLineThruPointEllipseSelected":"Ellipse {name} selected. Now select a location to create a new point or to create a point on an object.",
-    "antipodeDuplicate":"The antipode of this point has already been created."
+    "antipodeDuplicate":"The antipode of this point has already been created.",
+    "polarLineDuplicate": "The polar line of this point has already been created.",
+    "polarPointDuplicate": "The polar points of this {object} has already been created."
   },
 
   "objectTree": {
@@ -330,7 +336,7 @@
     "max": "Max",
     "step": "Step",
     "create": "Create",
-        "anglePoints": "Angle formed by points {p1}, {p2}, and {p3}.",
+    "anglePoints": "Angle formed by points {p1}, {p2}, and {p3}.",
     "angleSegments": "Angle formed by lines {line1} and {line2}.",
     "angleLines": "Angle formed by segments {seg1} and {seg2}.",
     "angleSegmentLine": "Angle formed by segment {seg} and line {line}.",
@@ -346,10 +352,12 @@
     "distanceValue": "{token} - Distance: {val}",
     "segmentLength":"Length of segment {seg}.",
     "antipodeOf": "Antipode of point {pt}",
+    "aPolarPointOf": "Polar point of line {line} with index {index}.",
     "circleThrough": "Circle with center {center} through point {through}",
     "ellipseThrough": "Ellipse with foci {focus1} and {focus2} through point {through}",
     "intersectionPoint":"Intersection of {typeParent1} {parent1} and {typeParent2} {parent2} with index {index}",
     "lineThrough":"Line through points {pt1} and {pt2} with normal vector <{normalX},{normalY},{normalZ}>",
+    "polarLine":"Polar line to point {pt} with normal vector <{normalX},{normalY},{normalZ}>",
     "segmentThrough":"Line segment with endpoints {pt1} and {pt2} and normal vector <{normalX},{normalY},{normalZ}>",
     "pointOnOneDimensional": "Point on {typeParent} {parent}",
     "freePoint": "Free point",

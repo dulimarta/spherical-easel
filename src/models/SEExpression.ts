@@ -33,6 +33,10 @@ export abstract class SEExpression extends SENodule {
   public isPoint(): boolean {
     return false;
   }
+  public isNonFreeLine(): boolean {
+    return false;
+  }
+
   public isOneDimensional(): this is SEOneDimensional {
     return false;
   }

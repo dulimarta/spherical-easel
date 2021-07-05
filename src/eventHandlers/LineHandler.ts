@@ -475,7 +475,7 @@ export default class LineHandler extends Highlighter {
         // Create and execute the command to create a new point for undo/redo
         lineGroup.addCommand(
           new AddPointOnOneDimensionalCommand(
-            vtx,
+            vtx as SEPointOnOneDimensional,
             this.startSEPointOneDimensionalParent,
             newSELabel
           )
@@ -546,7 +546,7 @@ export default class LineHandler extends Highlighter {
 
         lineGroup.addCommand(
           new AddPointOnOneDimensionalCommand(
-            vtx,
+            vtx as SEPointOnOneDimensional,
             this.hitSESegments[0],
             newSELabel
           )
@@ -563,7 +563,7 @@ export default class LineHandler extends Highlighter {
 
         lineGroup.addCommand(
           new AddPointOnOneDimensionalCommand(
-            vtx,
+            vtx as SEPointOnOneDimensional,
             this.hitSELines[0],
             newSELabel
           )
@@ -579,7 +579,7 @@ export default class LineHandler extends Highlighter {
 
         lineGroup.addCommand(
           new AddPointOnOneDimensionalCommand(
-            vtx,
+            vtx as SEPointOnOneDimensional,
             this.hitSECircles[0],
             newSELabel
           )
@@ -595,7 +595,7 @@ export default class LineHandler extends Highlighter {
 
         lineGroup.addCommand(
           new AddPointOnOneDimensionalCommand(
-            vtx,
+            vtx as SEPointOnOneDimensional,
             this.hitSEEllipses[0],
             newSELabel
           )

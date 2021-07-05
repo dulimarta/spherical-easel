@@ -478,4 +478,8 @@ export class SEEllipse extends SENodule
   public isLabelable(): boolean {
     return true;
   }
+  public isNonFreeLine(): boolean {
+    return false;
+  }
+ 
 }
