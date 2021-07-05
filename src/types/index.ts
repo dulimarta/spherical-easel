@@ -111,7 +111,8 @@ export type plottableType =
   | "segment"
   | "circle"
   | "angleMarker"
-  | "ellipse";
+  | "ellipse"
+  | "parametric";
 export type sides = "front" | "back" | "mid";
 /**
  * The properties of a plottable object needed when creating icons

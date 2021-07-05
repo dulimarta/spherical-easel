@@ -18,7 +18,7 @@ Create a point whose $x$, $y$, and $z$ coordinates are controlled by Measurement
 
 - Select two measurements from the Measurement Section of the [Objects Tab](/userguide/#objects-tab) to determine the $x$ and $y$ coordinates of a point.
 - It is assumed that $z = \sqrt{1-x^2 - y^2}$ unless the user holds the <kbd>Shift</kbd> key while selecting the measurements, and then it is assumed that $z = -\sqrt{1-x^2 - y^2}$
-- For any instances where $x^2 + y^2 >1 $ then the $x$ and $y$ coordinates are rescaled to $\frac{x}{\sqrt{x^2 + y^2}}$ and $\frac{y}{\sqrt{x^2 + y^2}}$ (and $z=0$).
+- For any instances where $x^2 + y^2 >1$ then the $x$ and $y$ coordinates are rescaled to $\frac{x}{\sqrt{x^2 + y^2}}$ and $\frac{y}{\sqrt{x^2 + y^2}}$ (and $z=0$).
 - When a Parametric Point is created, a row describing some of its properties will appear in the Line Section of the [Objects Tab](/userguide/#objects-tab).
 - When this tool is activated all previously selected objects are unselected and ignored.
 

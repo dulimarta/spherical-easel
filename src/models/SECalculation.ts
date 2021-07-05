@@ -82,14 +82,14 @@ export class SECalculation extends SEExpression {
         // if (pos >= 0) {
         //   const shorttName = m.name.substring(0, pos);
         const measurementName = m.name;
-        varMap.set(measurementName.replace(/-.+/, ""), m.value);
+        varMap.set(measurementName, m.value);
         // }
       });
     // console.log(this._calculationParents, varMap);
     // this.expressions.forEach((m: SEExpression) => {
     //   const measurementName = m.name;
     //   // console.debug("Measurement", m, measurementName);
-    //   this.varMap.set(measurementName.replace(/-.+/, ""), m.value);
+    //   this.varMap.set(measurementName, m.value);
     // });
 
     // console.log("recalc", varMap);

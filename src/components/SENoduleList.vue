@@ -73,10 +73,7 @@ export default class SENoduleTree extends Vue {
     const pos = this.children.findIndex(n => n.id === x.id);
     // console.debug("****Selection", x, "at", pos);
     if (pos >= 0) {
-      EventBus.fire(
-        "measurement-selected",
-        this.children[pos].name.replace(/-.+/, "")
-      );
+      EventBus.fire("measurement-selected", this.children[pos].name);
     }
   }
   isSlider(n: SENodule): boolean {

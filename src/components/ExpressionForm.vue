@@ -101,7 +101,7 @@ export default class ExpressionForm extends Vue {
         this.expressions.forEach((m: SEExpression) => {
           const measurementName = m.name;
           // console.debug("Measurement", m, measurementName);
-          this.varMap.set(measurementName.replace(/-.+/, ""), m.value);
+          this.varMap.set(measurementName, m.value);
         });
         // console.debug(
         //   "Calc ",
@@ -138,7 +138,7 @@ export default class ExpressionForm extends Vue {
     this.expressions.forEach((m: SEExpression) => {
       const measurementName = m.name;
       // console.debug("Measurement", m, measurementName);
-      this.varMap.set(measurementName.replace(/-.+/, ""), m.value);
+      this.varMap.set(measurementName, m.value);
     });
   }
 }

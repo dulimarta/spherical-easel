@@ -334,17 +334,17 @@ export default {
     }
   },
   ellipse: {
-    showLabelsInitially: false, // Should the labels be show upon creating the circle
-    maxLabelDistance: 0.08, // The maximum distance that a label is allowed to get away from the circle
-    initialLabelOffset: 0.02, // When making point labels this is initially how far (roughly) they are from the circle
+    showLabelsInitially: false, // Should the labels be show upon creating the ellipse
+    maxLabelDistance: 0.08, // The maximum distance that a label is allowed to get away from the ellipse
+    initialLabelOffset: 0.02, // When making point labels this is initially how far (roughly) they are from the ellipse
     defaultLabelMode: LabelDisplayMode.NameOnly, // The default way of displaying this objects label
     minimumAngleSumDifference: 0.0001, // Don't create ellipses (and ellipse don't exist) when an angle sum to the foci minus the angle between the foci is smaller than this
     minimumCreationDistance: 0.025, // Don't create an ellipse point unless it is more than this distance away from each focus.
-    numPoints: 100, // Twice this number are used to draw the edge of the circle and 4 times this many are used to to draw the fill of the circle. These are spread over the front and back parts. MAKE THIS EVEN!
-    hitIdealDistance: 0.03, // The user has to be within this distance on the ideal unit sphere to select the circle.
-    //dynamicBackStyle is a flag that means the fill, linewidth, and strokeColor of the circles drawn on the back are automatically calculated based on the value of SETTINGS.contrast and their front counterparts
+    numPoints: 100, // Twice this number are used to draw the edge of the ellipse and 4 times this many are used to to draw the fill of the ellipse. These are spread over the front and back parts. MAKE THIS EVEN!
+    hitIdealDistance: 0.03, // The user has to be within this distance on the ideal unit sphere to select the ellipse.
+    //dynamicBackStyle is a flag that means the fill, linewidth, and strokeColor of the ellipses drawn on the back are automatically calculated based on the value of SETTINGS.contrast and their front counterparts
     dynamicBackStyle: true,
-    //The properties of the circle when it is drawn on the sphereCanvas and is not glowing
+    //The properties of the ellipse when it is drawn on the sphereCanvas and is not glowing
     drawn: {
       fillColor: {
         front: "hsla(254, 100%, 90%, 0.2)", //"hsla(217, 100%, 80%, 0.0005)", //"noFill",
@@ -355,27 +355,83 @@ export default {
         back: "hsla(217, 90%, 80%, 1)"
       },
       strokeWidth: {
-        // The thickness of the circle when drawn front/back
+        // The thickness of the ellipse when drawn front/back
         front: 2.5,
         back: 2
-      }, // The thickness of the circle when drawn front/back,
+      }, // The thickness of the ellipse when drawn front/back,
       dashArray: {
         offset: { front: 0, back: 0 },
         front: [] as number[], // An empty array means no dashing.
         back: [10, 5] // An empty array means no dashing.
       } // An empty array means no dashing.
     },
-    //The properties of the region around a circle when it is glowing
+    //The properties of the region around a ellipse when it is glowing
     glowing: {
       // There is no fill for highlighting objects
       strokeColor: {
         front: "hsla(0, 100%, 50%, 1)",
         back: "hsla(0, 100%, 75%, 0.74)"
       },
-      edgeWidth: 5 // edgeWidth/2 is the width of the region around the circle (on each side) that shows the glow
+      edgeWidth: 5 // edgeWidth/2 is the width of the region around the ellipse (on each side) that shows the glow
       // The dash pattern will always be the same as the drawn version
     },
-    //The properties of the circle when it is temporarily shown by the circle tool while drawing
+    //The properties of the ellipse when it is temporarily shown by the ellipse tool while drawing
+    temp: {
+      fillColor: {
+        front: "hsla(0, 0%, 90%, 0.3)", //"noFill",
+        back: "hsla(0, 0%, 50%, 0.3)" //"noFill"
+      },
+      strokeColor: {
+        front: "hsla(0, 0%, 0%, 1.0)",
+        back: "hsla(0, 0%, 0%, 0.1)"
+      }
+      // The width is the same as the default drawn version
+      // The dash pattern will always be the same as the default drawn version
+    }
+  },
+  parametric: {
+    showLabelsInitially: false, // Should the labels be show upon creating the parametric curve
+    maxLabelDistance: 0.08, // The maximum distance that a label is allowed to get away from the parametric curve
+    initialLabelOffset: 0.02, // When making point labels this is initially how far (roughly) they are from the parametric curve
+    defaultLabelMode: LabelDisplayMode.NameOnly, // The default way of displaying this objects label
+    minimumAngleSumDifference: 0.0001, // Don't create ellipses (and ellipse don't exist) when an angle sum to the foci minus the angle between the foci is smaller than this
+    minimumCreationDistance: 0.025, // Don't create an ellipse point unless it is more than this distance away from each focus.
+    numPoints: 100, // Twice this number are used to draw the edge of the parametric curve and 4 times this many are used to to draw the fill of the parametric curve. These are spread over the front and back parts. MAKE THIS EVEN!
+    hitIdealDistance: 0.03, // The user has to be within this distance on the ideal unit sphere to select the parametric curve.
+    //dynamicBackStyle is a flag that means the fill, linewidth, and strokeColor of the parametric curves drawn on the back are automatically calculated based on the value of SETTINGS.contrast and their front counterparts
+    dynamicBackStyle: true,
+    //The properties of the parametric curve when it is drawn on the sphereCanvas and is not glowing
+    drawn: {
+      fillColor: {
+        front: "hsla(254, 100%, 90%, 0.2)", //"hsla(217, 100%, 80%, 0.0005)", //"noFill",
+        back: "hsla(10, 100%, 50%, 0.1)" //"hsla(217, 100%, 80%, 0.0002)" //"noFill"
+      },
+      strokeColor: {
+        front: "hsla(217, 90%, 61%, 1)",
+        back: "hsla(217, 90%, 80%, 1)"
+      },
+      strokeWidth: {
+        // The thickness of the parametric curve when drawn front/back
+        front: 2.5,
+        back: 2
+      }, // The thickness of the parametric curve when drawn front/back,
+      dashArray: {
+        offset: { front: 0, back: 0 },
+        front: [] as number[], // An empty array means no dashing.
+        back: [10, 5] // An empty array means no dashing.
+      } // An empty array means no dashing.
+    },
+    //The properties of the region around a parametric curve when it is glowing
+    glowing: {
+      // There is no fill for highlighting objects
+      strokeColor: {
+        front: "hsla(0, 100%, 50%, 1)",
+        back: "hsla(0, 100%, 75%, 0.74)"
+      },
+      edgeWidth: 5 // edgeWidth/2 is the width of the region around the parametric curve (on each side) that shows the glow
+      // The dash pattern will always be the same as the drawn version
+    },
+    //The properties of the parametric curve when it is temporarily shown by the parametric curve tool while drawing
     temp: {
       fillColor: {
         front: "hsla(0, 0%, 90%, 0.3)", //"noFill",
@@ -642,7 +698,8 @@ export default {
   },
   parameterization: {
     subdivisions: 60, // When searching function on a parametrized curve for a change in sign, use this many subdivisions
-    bisectionMinSize: 0.00001 // stop running the bisection method when the interval is less than this size
+    bisectionMinSize: 0.00001, // stop running the bisection method (if Newton's method is not used) when the interval is less than this size
+    numberOfTestTValues: 20 // When checking if a parametric curve is unit or is perpendicular to the derivative use this many points
   },
   /*A list of which buttons to display - adjusted by the users settings.
   This does NOT belong here but I don't know where else to put it at the moment*/
