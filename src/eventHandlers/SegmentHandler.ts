@@ -71,7 +71,7 @@ export default class SegmentHandler extends Highlighter {
    * variable is to help with that. Or if the user mouse press outside the canvas and mouse releases
    * on the canvas, nothing should happen.
    */
-  private makingASegment = false;
+  private startLocationSelected = false;
 
   /**
    * If the segment being made is long than pi
@@ -117,9 +117,9 @@ export default class SegmentHandler extends Highlighter {
     // event, mouse press will *not* select the newly created point. This is not what we want so we call super.mouseMove
     super.mouseMoved(event);
 
-    if (this.isOnSphere && !this.makingASegment) {
+    if (this.isOnSphere && !this.startLocationSelected) {
       // The user is making a segment
-      this.makingASegment = true;
+      this.startLocationSelected = true;
 
       // Decide if the starting location is near an already existing SEPoint or near a oneDimensional SENodule
       if (this.hitSEPoints.length > 0) {
@@ -211,7 +211,7 @@ export default class SegmentHandler extends Highlighter {
     // Also set the snap objects
     if (this.hitSEPoints.length > 0) {
       this.hitSEPoints[0].glowing = true;
-      if (!this.makingASegment) {
+      if (!this.startLocationSelected) {
         this.snapStartMarkerToTemporaryOneDimensional = null;
         this.snapEndMarkerToTemporaryOneDimensional = null;
         this.snapStartMarkerToTemporaryPoint = this.hitSEPoints[0];
@@ -224,7 +224,7 @@ export default class SegmentHandler extends Highlighter {
       }
     } else if (this.hitSESegments.length > 0) {
       this.hitSESegments[0].glowing = true;
-      if (!this.makingASegment) {
+      if (!this.startLocationSelected) {
         this.snapStartMarkerToTemporaryOneDimensional = this.hitSESegments[0];
         this.snapEndMarkerToTemporaryOneDimensional = null;
         this.snapStartMarkerToTemporaryPoint = null;
@@ -237,7 +237,7 @@ export default class SegmentHandler extends Highlighter {
       }
     } else if (this.hitSELines.length > 0) {
       this.hitSELines[0].glowing = true;
-      if (!this.makingASegment) {
+      if (!this.startLocationSelected) {
         this.snapStartMarkerToTemporaryOneDimensional = this.hitSELines[0];
         this.snapEndMarkerToTemporaryOneDimensional = null;
         this.snapStartMarkerToTemporaryPoint = null;
@@ -250,7 +250,7 @@ export default class SegmentHandler extends Highlighter {
       }
     } else if (this.hitSECircles.length > 0) {
       this.hitSECircles[0].glowing = true;
-      if (!this.makingASegment) {
+      if (!this.startLocationSelected) {
         this.snapStartMarkerToTemporaryOneDimensional = this.hitSECircles[0];
         this.snapEndMarkerToTemporaryOneDimensional = null;
         this.snapStartMarkerToTemporaryPoint = null;
@@ -263,7 +263,7 @@ export default class SegmentHandler extends Highlighter {
       }
     } else if (this.hitSEEllipses.length > 0) {
       this.hitSEEllipses[0].glowing = true;
-      if (!this.makingASegment) {
+      if (!this.startLocationSelected) {
         this.snapStartMarkerToTemporaryOneDimensional = this.hitSEEllipses[0];
         this.snapEndMarkerToTemporaryOneDimensional = null;
         this.snapStartMarkerToTemporaryPoint = null;
@@ -282,8 +282,8 @@ export default class SegmentHandler extends Highlighter {
     }
     // Make sure that the event is on the sphere
     if (this.isOnSphere) {
-      // if makingASegment is true, the user has selected a center point
-      if (!this.makingASegment) {
+      // if startLocationSelected is true, the user has selected a start location
+      if (!this.startLocationSelected) {
         // If the temporary startMarker has *not* been added to the scene do so now
         if (!this.isTemporaryStartMarkerAdded) {
           this.isTemporaryStartMarkerAdded = true;
@@ -361,26 +361,27 @@ export default class SegmentHandler extends Highlighter {
         this.temporarySegment.normalVector = this.normalVector;
         this.temporarySegment.updateDisplay();
       }
-    } else if (this.isTemporaryStartMarkerAdded) {
-      // Remove the temporary objects from the display.
-      this.temporarySegment.removeFromLayers();
-      this.temporaryStartMarker.removeFromLayers();
-      this.temporaryEndMarker.removeFromLayers();
-      this.isTemporaryStartMarkerAdded = false;
-      this.isTemporaryEndMarkerAdded = false;
-      this.isTemporarySegmentAdded = false;
-
-      this.snapStartMarkerToTemporaryOneDimensional = null;
-      this.snapEndMarkerToTemporaryOneDimensional = null;
-      this.snapStartMarkerToTemporaryPoint = null;
-      this.snapEndMarkerToTemporaryPoint = null;
     }
+    // else if (this.isTemporaryStartMarkerAdded) {
+    //   // Remove the temporary objects from the display.
+    //   this.temporarySegment.removeFromLayers();
+    //   this.temporaryStartMarker.removeFromLayers();
+    //   this.temporaryEndMarker.removeFromLayers();
+    //   this.isTemporaryStartMarkerAdded = false;
+    //   this.isTemporaryEndMarkerAdded = false;
+    //   this.isTemporarySegmentAdded = false;
+
+    //   this.snapStartMarkerToTemporaryOneDimensional = null;
+    //   this.snapEndMarkerToTemporaryOneDimensional = null;
+    //   this.snapStartMarkerToTemporaryPoint = null;
+    //   this.snapEndMarkerToTemporaryPoint = null;
+    // }
   }
 
   mouseReleased(event: MouseEvent): void {
     if (this.isOnSphere) {
       // Make sure the user didn't trigger the mouse leave event and is actually making a segment
-      if (this.makingASegment) {
+      if (this.startLocationSelected) {
         // Before making a new segment make sure that the user has dragged a non-trivial distance
         if (
           this.startVector.angleTo(this.currentSphereVector) >
@@ -410,7 +411,7 @@ export default class SegmentHandler extends Highlighter {
           this.endSEPoint = null;
           this.nearlyAntipodal = false;
           this.longerThanPi = false;
-          this.makingASegment = false;
+          this.startLocationSelected = false;
           this.arcLength = 0;
           this.startSEPointOneDimensionalParent = null;
 
@@ -459,7 +460,7 @@ export default class SegmentHandler extends Highlighter {
     this.startSEPointOneDimensionalParent = null;
     this.nearlyAntipodal = false;
     this.longerThanPi = false;
-    this.makingASegment = false;
+    this.startLocationSelected = false;
     this.arcLength = 0;
 
     // call an unglow all command

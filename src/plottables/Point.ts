@@ -1,6 +1,5 @@
 /** @format */
 
-// import SETTINGS from "@/global-settings";
 import Two from "two.js";
 import SETTINGS, { LAYER } from "@/global-settings";
 import Nodule, { DisplayStyle } from "./Nodule";
@@ -87,10 +86,19 @@ export default class Point extends Nodule {
       SETTINGS.point.drawn.radius.back + SETTINGS.point.glowing.annularWidth
     );
 
-    //Set the path.id's for all the TwoJS objects which are not glowing. This is for exporting to Icon.
-    Nodule.POINT_COUNT++;
-    this.frontPoint.id = 13000000 + Nodule.POINT_COUNT * 100 + 0;
-    this.backPoint.id = 13000000 + Nodule.POINT_COUNT * 100 + 1;
+    //Record the path ids for all the TwoJS objects which are not glowing. This is for use in IconBase to create icons.
+    Nodule.idPlottableDescriptionMap.set(String(this.frontPoint.id), {
+      type: "point",
+      side: "front",
+      fill: true,
+      part: ""
+    });
+    Nodule.idPlottableDescriptionMap.set(String(this.backPoint.id), {
+      type: "point",
+      side: "back",
+      fill: true,
+      part: ""
+    });
 
     // Set the location of the points front/back/glowing/drawn
     // The location of all points front/back/glowing/drawn is controlled by the
@@ -242,7 +250,7 @@ export default class Point extends Nodule {
    * @param options The style options
    */
   updateStyle(options: StyleOptions): void {
-    console.debug("Point: Update style of", this.name, "using", options);
+    console.debug("Point: Update style of point using", options);
     if (options.panel === StyleEditPanels.Front) {
       // Set the front options
       if (options.pointRadiusPercent !== undefined) {

@@ -23,8 +23,10 @@
     "paths": {
       "@/*": ["src/*"]
     },
-    "lib": ["esnext", "dom", "dom.iterable", "scripthost"]
+    "lib": ["esnext", "dom", "dom.iterable", "scripthost"],
+    "resolveJsonModule": true
   },
+  "exclude": ["node_modules", "__tests__", "**/tests/unit/**"],
   "include": [
     "src/**/*.ts",
     "src/**/*.tsx",
@@ -32,7 +34,6 @@
     "src/types/two.js/index.d.ts",
     "tests/*.d.ts"
   ],
-  "exclude": ["node_modules", /* FIXME: remove __tests__ later */ "__tests__"],
   "verbose": true
   // "globals": {
   //   "ts-jest": {

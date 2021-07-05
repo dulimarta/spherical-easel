@@ -54,22 +54,20 @@ export class SELabel extends SENodule implements Visitable {
 
     this.ref = label;
     this.parent = parent;
-    label.seLabel = this; // used so that Label (the plottable) can set the visibility of the parent
+    label.seLabel = this; // used so that Label (the plottable) can get the name of the parent object
     ((this.parent as unknown) as Labelable).label = this;
+    SENodule.LABEL_COUNT++;
+    this.name = "La" + SENodule.LABEL_COUNT;
 
+    // set the Label shortUserName as the name of the parent object initially
     if (this.parent instanceof SEAngleMarker) {
-      // SEAngleMarker is both an expression and a plottable (the only one?)
-      // As an expression to be used in the calculation parent.name must begin with "M###" so that it
-      // can be referenced by the user and found by the parser when doing a calculation
-      // however we don't want the initial name and initial shortName of the angle marker to be displayed with a "M###" at the start
-      //  so this is how we get around this
-      this.name = `LabelOf(Am-${this.parent.angleMarkerNumber})`;
-      // Set the initial names.
-      label.initialNames = `Am-${this.parent.angleMarkerNumber}`;
+      // Angle Markers are the exception which are both plottable and an expression.
+      // As expressions MUST have a name of a measurement token (ie. M###), we can't
+      // use the parent name for the short name, so to get around this we use  this
+      // and the angleMarkerNumber.
+      label.shortUserName = `Am${this.parent.angleMarkerNumber}`;
     } else {
-      this.name = `LabelOf(${parent.name})`;
-      // Set the initial names.
-      label.initialNames = parent.name;
+      label.shortUserName = parent.name;
     }
     // Set the size for zoom
     this.ref.adjustSize();
@@ -137,7 +135,8 @@ export class SELabel extends SENodule implements Visitable {
       this.tmpVector.copy(this._locationVector);
       this._locationVector.copy(
         ((this.parent as unknown) as Labelable).closestLabelLocationVector(
-          this.tmpVector
+          this.tmpVector,
+          SEStore.zoomMagnificationFactor
         )
       );
       //Update the location of the associate plottable Label (setter also updates the display)
@@ -183,7 +182,8 @@ export class SELabel extends SENodule implements Visitable {
       this._locationVector
         .copy(
           ((this.parent as unknown) as Labelable).closestLabelLocationVector(
-            pos
+            pos,
+            SEStore.zoomMagnificationFactor
           )
         )
         .normalize();
@@ -198,6 +198,13 @@ export class SELabel extends SENodule implements Visitable {
     return this._locationVector;
   }
 
+  public get noduleDescription(): string {
+    return "Error in SELabel noduleDescription"; // this should never be executed
+  }
+
+  public get noduleItemText(): string {
+    return "Error in SELabel noduleItemText"; // this should never be executed
+  }
   public isHitAt(
     unitIdealVector: Vector3,
     currentMagnificationFactor: number
@@ -244,6 +251,9 @@ export class SELabel extends SENodule implements Visitable {
     return false;
   }
   public isLabelable(): boolean {
+    return false;
+  }
+  public isNonFreeLine(): boolean {
     return false;
   }
 }

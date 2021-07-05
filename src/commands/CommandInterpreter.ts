@@ -13,9 +13,11 @@ import { Command } from "./Command";
 import { CommandGroup } from "./CommandGroup";
 import { AddCalculationCommand } from "./AddCalculationCommand";
 import { AddLocationMeasurementCommand } from "./AddLocationMeasurementCommand";
-import { AddDistanceMeasurementCommand } from "./AddDistanceMeasurementCommand";
+import { AddPointDistanceMeasurementCommand } from "./AddPointDistanceMeasurementCommand";
 import { AddLengthMeasurementCommand } from "./AddLengthMeasurementCommand";
 import { ConstructionScript } from "@/types";
+import { AddEllipseCommand } from "./AddEllipseCommand";
+import { AddPolarPointCommand } from "./AddPolarPointCommand";
 const noduleDictionary = new Map<string, SENodule>();
 
 function executeIndividual(command: string): Command {
@@ -45,8 +47,12 @@ function executeIndividual(command: string): Command {
       return AddLineCommand.parse(command, noduleDictionary);
     case "AddCircle":
       return AddCircleCommand.parse(command, noduleDictionary);
+    case "AddEllipse":
+      return AddEllipseCommand.parse(command, noduleDictionary);
     case "AddAntipodalPoint":
       return AddAntipodalPointCommand.parse(command, noduleDictionary);
+    case "AddPolarPoint":
+      return AddPolarPointCommand.parse(command, noduleDictionary);
     case "AddPerpendicularLineThruPoint":
       return AddPerpendicularLineThruPointCommand.parse(
         command,
@@ -56,10 +62,14 @@ function executeIndividual(command: string): Command {
       return AddAngleMarkerCommand.parse(command, noduleDictionary);
     case "AddLocationMeasurement":
       return AddLocationMeasurementCommand.parse(command, noduleDictionary);
-    case "AddDistanceMeasurement":
-      return AddDistanceMeasurementCommand.parse(command, noduleDictionary);
+    case "AddPointDistanceMeasurement":
+      return AddPointDistanceMeasurementCommand.parse(
+        command,
+        noduleDictionary
+      );
     case "AddLengthMeasurement":
       return AddLengthMeasurementCommand.parse(command, noduleDictionary);
+
     case "AddCalculation":
       return AddCalculationCommand.parse(command, noduleDictionary);
     default: {

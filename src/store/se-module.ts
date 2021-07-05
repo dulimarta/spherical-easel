@@ -34,9 +34,10 @@ import {
   intersectLineWithEllipse,
   intersectSegmentWithEllipse,
   intersectCircleWithEllipse,
-  intersectEllipseWithEllipse,
-  intersectTwoObjects
+  intersectEllipseWithEllipse
 } from "@/utils/intersections";
+import EventBus from "@/eventHandlers/EventBus";
+import { SEPolarLine } from "@/models/SEPolarLine";
 const tmpMatrix = new Matrix4();
 //const tmpVector = new Vector3();
 
@@ -58,8 +59,11 @@ used in modules declaration of Vuex.Store:
 }
 */
 
+//#region SEModuleHeader
 @Module({ name: "se", namespaced: true })
 export default class SE extends VuexModule implements AppState {
+  //#endregion SEModuleHeader
+
   //#region appState
 
   sphereRadius = 0; // Is this needed? TODO = remove?
@@ -68,7 +72,7 @@ export default class SE extends VuexModule implements AppState {
   activeToolName = ""; // The active tool for handling user mouse input
   previousActiveToolName = ""; // The active tool for handling user mouse input
   zoomMagnificationFactor = 1; // The CSSTransform magnification factor
-  previousZoomMagnificationFactor = 1; // The previous CSSTransform magnification factor
+  // previousZoomMagnificationFactor = 1; // The previous CSSTransform magnification factor
   zoomTranslation = [0, 0]; // The CSSTransform translation vector
   canvasWidth = 0; //A temporary canvas width;
   seNodules: SENodule[] = []; // An array of all SENodules
@@ -125,26 +129,21 @@ export default class SE extends VuexModule implements AppState {
 
   @Mutation
   setCanvas(c: HTMLDivElement | null): void {
-    console.log("setCanvas");
     this.svgCanvas = c;
   }
 
   @Mutation
   setLayers(layers: Two.Group[]): void {
-    console.log("setLayers");
     this.layers = layers;
   }
 
   @Mutation
   setSphereRadius(radius: number): void {
-    console.log("setSphereRadius");
     this.sphereRadius = radius;
   }
 
   @Mutation
   setActionMode(mode: { id: string; name: string }): void {
-    console.log("setActionMode");
-
     // zoomFit is a one-off tool, so the previousActionMode should never be "zoomFit" (avoid infinite loops too!)
     if (!(this.actionMode == "zoomFit" || this.actionMode === "iconFactory")) {
       this.previousActionMode = this.actionMode;
@@ -163,8 +162,10 @@ export default class SE extends VuexModule implements AppState {
   @Mutation
   setZoomMagnificationFactor(mag: number): void {
     console.log("setZoomMagFactor");
-
-    this.previousZoomMagnificationFactor = this.zoomMagnificationFactor;
+    EventBus.fire("magnification-updated", {
+      factor: this.zoomMagnificationFactor / mag
+    });
+    // this.previousZoomMagnificationFactor = ;
     this.zoomMagnificationFactor = mag;
   }
 
@@ -178,7 +179,6 @@ export default class SE extends VuexModule implements AppState {
   //#region addPoint
   @Mutation
   addPoint(point: SEPoint): void {
-    console.log("Add points");
     this.sePoints.push(point);
     this.seNodules.push(point);
     point.ref.addToLayers(this.layers);
@@ -190,6 +190,7 @@ export default class SE extends VuexModule implements AppState {
   removeAllFromLayers(): void {
     this.seAngleMarkers.forEach((x: SEAngleMarker) => x.ref.removeFromLayers());
     this.seCircles.forEach((x: SECircle) => x.ref.removeFromLayers());
+    this.seEllipses.forEach((x: SEEllipse) => x.ref.removeFromLayers());
     this.seLabels.forEach((x: SELabel) => x.ref.removeFromLayers(this.layers));
     this.seLines.forEach((x: SELine) => x.ref.removeFromLayers());
     this.sePoints.forEach((x: SEPoint) => x.ref.removeFromLayers());
@@ -386,7 +387,7 @@ export default class SE extends VuexModule implements AppState {
     tmpMatrix.copy(rotationMat);
     this.inverseTotalRotationMatrix.multiply(tmpMatrix.getInverse(tmpMatrix));
     rotationVisitor.setTransform(rotationMat);
-    // apply the rotation to the line, segments, labels, then points.
+    // apply the rotation to the line, segments, labels, then points. (Circles and ellipses are determined by their parent points so no need to update them)
     this.seLines.forEach((m: SELine) => {
       m.accept(rotationVisitor); // Does no updating of the display
     });
@@ -565,7 +566,6 @@ export default class SE extends VuexModule implements AppState {
   }): void {
     this.initialStyleStates.splice(0);
     this.defaultStyleStates.splice(0);
-    //  console.log("record style selected", selected);
     selected.forEach(seNodule => {
       // The first third is the front style settings, the second third is the back, the final third are the corresponding labels
       if (seNodule.ref) {
@@ -633,16 +633,18 @@ export default class SE extends VuexModule implements AppState {
     this.temporaryProfilePicture = imageHexString;
   }
 
+  //#region findNearbyGetter
   get findNearbySENodules(): (_p: Vector3, _s: Two.Vector) => SENodule[] {
     return (
       unitIdealVector: Vector3,
       screenPosition: Two.Vector
     ): SENodule[] => {
-      return this.seNodules.filter(obj =>
-        obj.isHitAt(unitIdealVector, this.zoomMagnificationFactor)
-      );
+      return this.seNodules.filter((obj: SENodule) => {
+        return obj.isHitAt(unitIdealVector, this.zoomMagnificationFactor);
+      });
     };
   }
+  //#endregion findNearbyGetter
 
   /**
    * Create the intersection of two one-dimensional objects
@@ -660,14 +662,21 @@ export default class SE extends VuexModule implements AppState {
       // Avoid creating an intersection where any SEPoint already exists
       const avoidVectors: Vector3[] = [];
       // First add the two parent points of the newLine, if they are new, then
-      //  they won't have been added to the state.points array yet so add them first
-      avoidVectors.push(newLine.startSEPoint.locationVector);
-      // Onle perpendiculare to line through point, the SEEndPoint is auto generated SEPoint (never added to the state)
+      //  they won't have been added to the state.points array yet so add them first, but only if this is not an SEPolar line whose defining points are never added to the state
+
+      if (!(newLine instanceof SEPolarLine)) {
+        avoidVectors.push(newLine.startSEPoint.locationVector);
+      }
+      // Only perpendicular to line through point, the SEEndPoint is auto generated SEPoint (never added to the state)
       // and the user cannot interact with it. So it is *not* a vector to avoid for intersections.
-      if (!(newLine instanceof SEPerpendicularLineThruPoint)) {
+      if (!(newLine instanceof SEPerpendicularLineThruPoint || SEPolarLine)) {
         avoidVectors.push(newLine.endSEPoint.locationVector);
       }
-      this.sePoints.forEach(pt => avoidVectors.push(pt.locationVector));
+      this.sePoints.forEach(pt => {
+        if (!pt.locationVector.isZero()) {
+          avoidVectors.push(pt.locationVector);
+        }
+      });
 
       // The intersectionPointList to return
       const intersectionPointList: SEIntersectionReturnType[] = [];
@@ -768,6 +777,7 @@ export default class SE extends VuexModule implements AppState {
       this.seEllipses.forEach((oldEllipse: SEEllipse) => {
         const intersectionInfo = intersectLineWithEllipse(newLine, oldEllipse);
         intersectionInfo.forEach((info, index) => {
+          console.log("info.vec", info.vector, avoidVectors);
           if (
             !avoidVectors.some(v =>
               this.tempVec.subVectors(info.vector, v).isZero()
@@ -808,7 +818,11 @@ export default class SE extends VuexModule implements AppState {
       //  they won't have been added to the state.points array yet so add them first
       avoidVectors.push(newSegment.startSEPoint.locationVector);
       avoidVectors.push(newSegment.endSEPoint.locationVector);
-      this.sePoints.forEach(pt => avoidVectors.push(pt.locationVector));
+      this.sePoints.forEach(pt => {
+        if (!pt.locationVector.isZero()) {
+          avoidVectors.push(pt.locationVector);
+        }
+      });
 
       // The intersectionPointList to return
       const intersectionPointList: SEIntersectionReturnType[] = [];
@@ -958,7 +972,11 @@ export default class SE extends VuexModule implements AppState {
       //  they won't have been added to the state.points array yet so add them first
       avoidVectors.push(newCircle.centerSEPoint.locationVector);
       avoidVectors.push(newCircle.circleSEPoint.locationVector);
-      this.sePoints.forEach(pt => avoidVectors.push(pt.locationVector));
+      this.sePoints.forEach(pt => {
+        if (!pt.locationVector.isZero()) {
+          avoidVectors.push(pt.locationVector);
+        }
+      });
       // The intersectionPointList to return
       const intersectionPointList: SEIntersectionReturnType[] = [];
       // Intersect this new circle with all old lines
@@ -1110,7 +1128,11 @@ export default class SE extends VuexModule implements AppState {
       avoidVectors.push(newEllipse.focus1SEPoint.locationVector);
       avoidVectors.push(newEllipse.focus2SEPoint.locationVector);
       avoidVectors.push(newEllipse.ellipseSEPoint.locationVector);
-      this.sePoints.forEach(pt => avoidVectors.push(pt.locationVector));
+      this.sePoints.forEach(pt => {
+        if (!pt.locationVector.isZero()) {
+          avoidVectors.push(pt.locationVector);
+        }
+      });
       // The intersectionPointList to return
       const intersectionPointList: SEIntersectionReturnType[] = [];
 
@@ -1316,7 +1338,6 @@ export default class SE extends VuexModule implements AppState {
   }
 
   get getSENoduleById(): (_: number) => SENodule | undefined {
-    //console.log("All Nodule", state.nodules.length);
     return (id: number): SENodule | undefined => {
       return this.seNodules.find((z: SENodule) => z.id === id);
     };

@@ -17,6 +17,7 @@ import { SESegment } from "@/models/SESegment";
 import { SECircle } from "@/models/SECircle";
 import { SEAngleMarker } from "@/models/SEAngleMarker";
 import { SESegmentLength } from "@/models/SESegmentLength";
+import { ValueDisplayMode } from "@/types";
 
 /**
  * Each Point object is uniquely associated with a SEPoint object.
@@ -59,15 +60,15 @@ export default class Label extends Nodule {
 
   /**
    * A string representing the text that will be rendered to the screen. Set with text.value = this.shortUserName
-   * shortName is at most ??? characters long
-   * caption is a longer, 60 characters long
+   * shortUser
+   Name is at most ??? characters long
+   * caption is a longer, ?? characters long
    * Note that initialName is not user modifiable and is used (in shortUserName) until the user changes the name field in the styling panel
-   * This is the name that is restored when defaults are restored.
+   * this.seLabel.parent.name is the name that is restored when defaults are restored.
    * _value is the associated number array, if any, that describes the object being labeled. Typically this is just one number, but for points is an array of
    * the three coordinate values.
    */
-  protected initialName = "";
-  protected shortUserName = "";
+  protected _shortUserName = "";
   protected _caption = "";
   protected _value: number[] = [];
 
@@ -160,7 +161,6 @@ export default class Label extends Nodule {
 
   constructor() {
     super();
-    Nodule.LABEL_COUNT++;
 
     // Set the location of the points front/back/glowing/drawn
     // The location of all points front/back/glowing/drawn is controlled by the
@@ -186,30 +186,30 @@ export default class Label extends Nodule {
     // this.glowingBackText.stroke = SETTINGS.label.glowingStrokeColor.back;
   }
   /**
-   * Set the initial names, initialName is not modifiable by the user but shortUserName and caption are
+   * Set and get the shortUserName
    */
-  set initialNames(name: string) {
-    this.initialName = name;
-    // shortName is the first characters of name
-    this.shortUserName = name /*.slice(
+  set shortUserName(name: string) {
+    this._shortUserName = name.slice(
       0,
       SETTINGS.label.maxLabelDisplayTextLength
-    )*/;
+    );
     this.stylize(DisplayStyle.ApplyCurrentVariables);
   }
-
-  /**
-   * Return the short name associated with this object
-   */
-  get shortName(): string {
-    return this.shortUserName;
+  get shortUserName(): string {
+    return this._shortUserName.slice(
+      0,
+      SETTINGS.label.maxLabelDisplayTextLength
+    );
   }
 
   /**
-   * Return the caption associated with this object
+   * Return and set the caption associated with this object
    */
   get caption(): string {
     return this._caption;
+  }
+  set caption(cap: string) {
+    this._caption = cap;
   }
 
   /**
@@ -251,7 +251,6 @@ export default class Label extends Nodule {
     this.textLabelMode = mode;
     this.stylize(DisplayStyle.ApplyCurrentVariables);
   }
-
   get labelDisplayMode(): LabelDisplayMode {
     return this.textLabelMode;
   }
@@ -365,12 +364,17 @@ export default class Label extends Nodule {
    * @param options The style options
    */
   updateStyle(options: StyleOptions): void {
-    console.debug("Label: Update style of", this.initialName, "using", options);
+    console.debug(
+      "Label: Update style of Label of ",
+      this._shortUserName,
+      " using",
+      options
+    );
     if (options.labelDisplayMode !== undefined) {
       this.textLabelMode = options.labelDisplayMode;
     }
     if (options.labelDisplayText !== undefined) {
-      this.shortUserName = options.labelDisplayText;
+      this._shortUserName = options.labelDisplayText;
     }
     if (options.labelDisplayCaption !== undefined) {
       this._caption = options.labelDisplayCaption;
@@ -468,7 +472,7 @@ export default class Label extends Nodule {
         // }
         return {
           panel: panel,
-          labelDisplayText: this.shortUserName,
+          labelDisplayText: this._shortUserName,
           labelDisplayCaption: this._caption,
           labelDisplayMode: this.textLabelMode,
           labelTextFamily: this.textFamily,
@@ -536,8 +540,8 @@ export default class Label extends Nodule {
           }
         }
         return {
-          panel: panel, //
-          labelDisplayText: this.initialName,
+          panel: panel,
+          labelDisplayText: this.seLabel!.parent.name,
           labelDisplayCaption: "",
           labelDisplayMode: labelDisplayMode,
           labelTextFamily: SETTINGS.label.family,
@@ -602,9 +606,49 @@ export default class Label extends Nodule {
 
         // Properties that have no sides
         let labelText = "";
+        // Compute the numerical part of the label (if any) and add it to the end of label
+        if (this.value.length > 0) {
+          if (this.seLabel!.parent instanceof SEPoint) {
+            labelText =
+              "(" +
+              `${this._value
+                .map(num => num.toFixed(SETTINGS.decimalPrecision))
+                .join(",")}$` +
+              ")";
+          } else {
+            let valueDisplayMode;
+            if (this.seLabel!.parent instanceof SEAngleMarker) {
+              valueDisplayMode = (this.seLabel!.parent as SEAngleMarker)
+                .valueDisplayMode;
+            } else if (this.seLabel!.parent instanceof SESegment) {
+              const seSegLength = this.seLabel!.parent.kids.find(
+                node => node instanceof SESegmentLength
+              );
+              valueDisplayMode = (seSegLength as SESegmentLength)
+                .valueDisplayMode;
+            }
+            switch (valueDisplayMode) {
+              case ValueDisplayMode.Number:
+                labelText = this._value[0].toFixed(SETTINGS.decimalPrecision);
+                break;
+              case ValueDisplayMode.MultipleOfPi:
+                labelText =
+                  (this._value[0] / Math.PI).toFixed(
+                    SETTINGS.decimalPrecision
+                  ) + "\u{1D7B9}";
+                break;
+              case ValueDisplayMode.DegreeDecimals:
+                labelText =
+                  this._value[0]
+                    .toDegrees()
+                    .toFixed(SETTINGS.decimalPrecision) + "\u{00B0}";
+                break;
+            }
+          }
+        }
         switch (this.textLabelMode) {
           case LabelDisplayMode.NameOnly: {
-            labelText = this.shortUserName;
+            labelText = this._shortUserName;
             break;
           }
           case LabelDisplayMode.CaptionOnly: {
@@ -612,36 +656,8 @@ export default class Label extends Nodule {
             break;
           }
           case LabelDisplayMode.ValueOnly: {
-            if (this._value.length > 0) {
-              if (this.seLabel!.parent instanceof SEPoint) {
-                labelText =
-                  "(" +
-                  `${this._value
-                    .map(num => num.toFixed(SETTINGS.decimalPrecision))
-                    .join(",")}$` +
-                  ")";
-              } else {
-                let multPi = false;
-                if (this.seLabel!.parent instanceof SEAngleMarker) {
-                  multPi = (this.seLabel!.parent as SEAngleMarker)
-                    .displayInMultiplesOfPi;
-                } else if (this.seLabel!.parent instanceof SESegment) {
-                  const seSegLength = this.seLabel!.parent.kids.find(
-                    node => node instanceof SESegmentLength
-                  );
-                  multPi = (seSegLength as SESegmentLength)
-                    .displayInMultiplesOfPi;
-                }
-                if (!multPi) {
-                  labelText = this._value[0].toFixed(SETTINGS.decimalPrecision);
-                } else {
-                  labelText =
-                    (this._value[0] / Math.PI).toFixed(
-                      SETTINGS.decimalPrecision
-                    ) + "\u{1D7B9}";
-                }
-              }
-            } else {
+            if (this._value.length === 0) {
+              // this is the case where the label doesn't have a corresponding value (When it does have a value it is computed above)
               labelText = this.shortUserName;
             }
             break;
@@ -652,42 +668,9 @@ export default class Label extends Nodule {
           }
           case LabelDisplayMode.NameAndValue: {
             if (this._value.length > 0) {
-              if (this.seLabel!.parent instanceof SEPoint) {
-                labelText =
-                  this.shortName +
-                  "(" +
-                  `${this._value
-                    .map(num => num.toFixed(SETTINGS.decimalPrecision))
-                    .join(",")}` +
-                  ")";
-              } else {
-                let multPi = false;
-                if (this.seLabel!.parent instanceof SEAngleMarker) {
-                  multPi = (this.seLabel!.parent as SEAngleMarker)
-                    .displayInMultiplesOfPi;
-                } else if (this.seLabel!.parent instanceof SESegment) {
-                  const seSegLength = this.seLabel!.parent.kids.find(
-                    node => node instanceof SESegmentLength
-                  );
-                  multPi = (seSegLength as SESegmentLength)
-                    .displayInMultiplesOfPi;
-                }
-                if (!multPi) {
-                  labelText =
-                    this.shortName +
-                    ": " +
-                    this._value[0].toFixed(SETTINGS.decimalPrecision);
-                } else {
-                  labelText =
-                    this.shortName +
-                    ": " +
-                    (this._value[0] / Math.PI).toFixed(
-                      SETTINGS.decimalPrecision
-                    ) +
-                    "\u{1D7B9}";
-                }
-              }
+              labelText = this.shortUserName + ": " + labelText;
             } else {
+              // this is the case where the label doesn't have a corresponding value (When it does have a value it is computed above)
               labelText = this.shortUserName;
             }
             break;

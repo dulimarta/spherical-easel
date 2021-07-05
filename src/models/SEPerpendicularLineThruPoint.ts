@@ -5,6 +5,11 @@ import { UpdateMode, UpdateStateType } from "@/types";
 import { SELine } from "./SELine";
 import { Vector3 } from "three";
 import Line from "@/plottables/Line";
+import i18n from "@/i18n";
+import SETTINGS from "@/global-settings";
+import { SESegment } from "./SESegment";
+import { SECircle } from "./SECircle";
+import { SEEllipse } from "./SEEllipse";
 
 export class SEPerpendicularLineThruPoint extends SELine {
   /**
@@ -44,8 +49,6 @@ export class SEPerpendicularLineThruPoint extends SELine {
     this.seParentOneDimensional = seParentOneDimensional;
     this.seParentPoint = seParentPoint;
     this._index = index;
-
-    this.name = `Perp(${seParentOneDimensional.name},${seParentPoint.name})`;
   }
 
   public update(state: UpdateStateType): void {
@@ -64,19 +67,7 @@ export class SEPerpendicularLineThruPoint extends SELine {
       );
       if (normals[this._index] !== undefined) {
         this.normalVector.copy(normals[this._index]);
-        // // now find the vector is normals that is closest to this.normalVector (if there is more than one)
-        // if (normals.length === 1) {
-        //   this.normalVector.copy(normals[0]);
-        // } else {
-        //   // find the normal vector that is closest to this.Normal
-        //   const minAngle = Math.min(
-        //     ...(normals.map(vec => vec.angleTo(this.normalVector)) as number[])
-        //   );
-        //   const ind = normals.findIndex((vec: Vector3) => {
-        //     return vec.angleTo(this.normalVector) === minAngle;
-        //   });
-        //   this.normalVector.copy(normals[ind]);
-        // }
+
         // Given this.startPoint (in SELine)=this.seParentPoint and this.normalVector compute the endSEPoint
         // This is *never* undefined because the getNormalsToLineThru *never* returns a point with
         //  location parallel to this.seParentPoint.locationVector
@@ -117,5 +108,31 @@ export class SEPerpendicularLineThruPoint extends SELine {
   }
   get index(): number {
     return this._index;
+  }
+
+  public get noduleDescription(): string {
+    let oneDimensionalParentType;
+    if (this.seParentOneDimensional instanceof SESegment) {
+      oneDimensionalParentType = i18n.tc("objects.segments", 3);
+    } else if (this.seParentOneDimensional instanceof SELine) {
+      oneDimensionalParentType = i18n.tc("objects.lines", 3);
+    } else if (this.seParentOneDimensional instanceof SECircle) {
+      oneDimensionalParentType = i18n.tc("objects.circles", 3);
+    } else if (this.seParentOneDimensional instanceof SEEllipse) {
+      oneDimensionalParentType = i18n.tc("objects.ellipses", 3);
+    }
+
+    return String(
+      i18n.t(`objectTree.perpendicularLineThru`, {
+        pt: this.seParentPoint.label?.ref.shortUserName,
+        oneDimensionalParentType: oneDimensionalParentType,
+        oneDimensionalParent: this.seParentOneDimensional.label?.ref
+          .shortUserName,
+        index: this._index
+      })
+    );
+  }
+  public isNonFreeLine(): boolean {
+    return true;
   }
 }

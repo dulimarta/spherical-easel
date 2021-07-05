@@ -10,6 +10,8 @@ import { Styles } from "@/types/Styles";
 import { UpdateMode, UpdateStateType, CircleState } from "@/types";
 import { Labelable } from "@/types";
 import { SELabel } from "@/models/SELabel";
+import { SEStore } from "@/store";
+import i18n from "@/i18n";
 
 const styleSet = new Set([
   Styles.strokeColor,
@@ -62,7 +64,7 @@ export class SECircle extends SENodule
     this._circleSEPoint = circlePoint;
 
     SECircle.CIRCLE_COUNT++;
-    this.name = `C-${SECircle.CIRCLE_COUNT}`;
+    this.name = `C${SECircle.CIRCLE_COUNT}`;
   }
   // #endregion circleConstructor
 
@@ -82,6 +84,19 @@ export class SECircle extends SENodule
     return this._circleSEPoint.locationVector.angleTo(
       this._centerSEPoint.locationVector
     );
+  }
+
+  public get noduleDescription(): string {
+    return String(
+      i18n.t(`objectTree.circleThrough`, {
+        center: this._centerSEPoint.label?.ref.shortUserName,
+        through: this._circleSEPoint.label?.ref.shortUserName
+      })
+    );
+  }
+
+  public get noduleItemText(): string {
+    return this.label?.ref.shortUserName ?? "No Label Short Name In SECircle";
   }
 
   public isHitAt(
@@ -174,8 +189,7 @@ export class SECircle extends SENodule
     this.tmpVector.copy(this.closestVector(idealUnitSphereVector));
 
     // The current magnification level
-    //const mag = SENodule.store.state.zoomMagnificationFactor;
-    const mag = 1;
+    const mag = SEStore.zoomMagnificationFactor;
 
     // If the idealUnitSphereVector is within the tolerance of the closest point, do nothing, otherwise return the vector in the plane of the ideanUnitSphereVector and the closest point that is at the tolerance distance away.
     if (
@@ -303,5 +317,8 @@ export class SECircle extends SENodule
   }
   public isLabelable(): boolean {
     return true;
+  }
+  public isNonFreeLine(): boolean {
+    return false;
   }
 }

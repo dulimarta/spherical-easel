@@ -6,6 +6,7 @@ import SETTINGS, { LAYER } from "@/global-settings";
 import Nodule, { DisplayStyle } from "./Nodule";
 import { StyleOptions, StyleEditPanels } from "@/types/Styles";
 import AppStore from "@/store";
+import { SENodule } from "@/models/SENodule";
 
 const desiredXAxis = new Vector3();
 const desiredYAxis = new Vector3();
@@ -254,8 +255,6 @@ export default class Ellipse extends Nodule {
 
   constructor() {
     super();
-    Nodule.ELLIPSE_COUNT++;
-    this.name = "Ellipse-" + Nodule.ELLIPSE_COUNT;
 
     this._tMax = 2 * Math.PI;
     this._tMin = 0;
@@ -305,9 +304,19 @@ export default class Ellipse extends Nodule {
     this.backPart = this.frontPart.clone();
     this.glowingBackPart = this.frontPart.clone();
 
-    //Set the path.id's for all the TwoJS objects which are not glowing. This is for exporting to Icon.
-    this.frontPart.id = 15000000 + Nodule.ELLIPSE_COUNT * 100 + 0;
-    this.backPart.id = 15000000 + Nodule.ELLIPSE_COUNT * 100 + 1;
+    //Record the path ids for all the TwoJS objects which are not glowing. This is for use in IconBase to create icons.
+    Nodule.idPlottableDescriptionMap.set(String(this.frontPart.id), {
+      type: "ellipse",
+      side: "front",
+      fill: false,
+      part: ""
+    });
+    Nodule.idPlottableDescriptionMap.set(String(this.backPart.id), {
+      type: "ellipse",
+      side: "back",
+      fill: false,
+      part: ""
+    });
 
     // Set the styles that are always true
     // The front/back parts have no fill because that is handled by the front/back fill
@@ -351,9 +360,19 @@ export default class Ellipse extends Nodule {
     // create the back part
     this.backFill = this.frontFill.clone();
 
-    //Set the path.id's for all the TwoJS objects which are not glowing. This is for exporting to Icon.
-    this.frontFill.id = 15000000 + Nodule.ELLIPSE_COUNT * 100 + 2;
-    this.backFill.id = 15000000 + Nodule.ELLIPSE_COUNT * 100 + 3;
+    //Record the path ids for all the TwoJS objects which are not glowing. This is for use in IconBase to create icons.
+    Nodule.idPlottableDescriptionMap.set(String(this.frontFill.id), {
+      type: "ellipse",
+      side: "front",
+      fill: true,
+      part: ""
+    });
+    Nodule.idPlottableDescriptionMap.set(String(this.backFill.id), {
+      type: "ellipse",
+      side: "back",
+      fill: true,
+      part: ""
+    });
 
     // Set the styles that are always true
     // The front/back fill have no stroke because that is handled by the front/back part
@@ -1049,7 +1068,7 @@ export default class Ellipse extends Nodule {
    * @param options The style options
    */
   updateStyle(options: StyleOptions): void {
-    console.debug("Circle Update style of", this.name, "using", options);
+    console.debug("Circle Update style of ellipse using", options);
     if (options.panel === StyleEditPanels.Front) {
       // Set the front options
       if (options.strokeWidthPercent !== undefined) {

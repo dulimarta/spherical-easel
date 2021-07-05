@@ -91,8 +91,7 @@
             :key="`content${idx}`">
             <component :is="p.component"
               :panel="p.panel"
-              :active-panel="activePanel"
-              @hook:mounted="addPanelMounted(idx)">
+              :active-panel="activePanel">
             </component>
           </v-expansion-panel-content>
         </v-expansion-panel>
@@ -124,6 +123,8 @@ import { SENodule } from "@/models/SENodule";
 import { CommandGroup } from "@/commands/CommandGroup";
 import { SetNoduleDisplayCommand } from "@/commands/SetNoduleDisplayCommand";
 import { namespace } from "vuex-class";
+import i18n from "../i18n";
+
 const SE = namespace("se");
 
 @Component({ components: { BasicFrontBackStyle, OverlayWithFixButton } })
@@ -144,9 +145,6 @@ export default class Style extends Vue {
 
   // A string list of the number of items and type of them in the current selection
   private selectedItemArray: string[] = [];
-
-  // A list of the mount panels
-  private mountedPanels: number[] = [];
 
   mounted(): void {
     EventBus.listen("update-all-labels-showing", this.allLabelsShowingCheck);
@@ -170,7 +168,7 @@ export default class Style extends Vue {
 
   @Watch("selectedSENodules")
   private allLabelsShowingCheck(): void {
-    console.log("Style All Labels: onSelectionChanged");
+    // console.log("Style All Labels: onSelectionChanged");
 
     this.allLabelsShowing = this.selectedSENodules.every(node => {
       if (node.isLabelable()) {
@@ -182,7 +180,7 @@ export default class Style extends Vue {
   }
   @Watch("selectedSENodules")
   private allObjectsShowingCheck(): void {
-    console.log("Style All Objects: onSelectionChanged");
+    // console.log("Style All Objects: onSelectionChanged");
     this.allObjectsShowing = this.selectedSENodules.every(node => {
       return node.showing === true;
     });
@@ -191,29 +189,22 @@ export default class Style extends Vue {
   //Convert the selections into a short list of the type (and number) of the objects in the selection
   @Watch("selectedSENodules")
   private updateSelectedItemArray(): void {
-    console.log("Style update selected item array: onSelectionChanged");
+    // console.log("Style update selected item array: onSelectionChanged");
 
     const tempArray: string[] = [];
     this.selectedSENodules.forEach(node => tempArray.push(node.name));
-    const elementListPural = [
-      "Points",
-      "Lines",
-      "Segments",
-      "Circles",
-      "Labels",
-      "Angle Markers"
+    const elementListi18nKeys = [
+      "style.point",
+      "style.line",
+      "style.segment",
+      "style.circle",
+      "style.label",
+      "style.angleMarker",
+      "style.ellipse"
     ];
-    const elementListSingular = [
-      "Point",
-      "Line",
-      "Segment",
-      "Circle",
-      "Label",
-      "Angle Marker"
-    ];
-    const firstPartList = ["P", "Li", "Ls", "C", "La", "M"]; // The *internal* names of the objects start with these strings
-    const countList: any[] = [];
-    firstPartList.forEach((str, index) => {
+    const firstPartList = ["P", "Li", "Ls", "C", "La", "M", "E"]; // The *internal* names of the objects start with these strings (the oder must match the order of the signular/pural i18n keys)
+    const countList: number[] = [];
+    firstPartList.forEach(str => {
       let count = 0;
       tempArray.forEach(name => {
         if (name.startsWith(str)) {
@@ -226,9 +217,11 @@ export default class Style extends Vue {
     this.selectedItemArray = countList
       .map((num, index) => {
         if (num > 1) {
-          return elementListPural[index] + " (x" + String(num) + ")";
+          return String(
+            i18n.tc(elementListi18nKeys[index], num, { count: num })
+          );
         } else if (num === 1) {
-          return elementListSingular[index];
+          return String(i18n.tc(elementListi18nKeys[index], 1));
         } else {
           return "0";
         }
@@ -260,22 +253,15 @@ export default class Style extends Vue {
     }
   ];
 
-  //When ever the mouse enters the style panel, set the active tool to select because it is like that the
+  //When ever the mouse enters the style panel, set the active tool to select because it is likely that the
   // user is going to style objects.
   private setSelectTool(): void {
     EventBus.fire("set-action-mode-to-select-tool", {});
   }
 
-  //When ever the mouse leaves the style panel, save the state because it is likly that the user is done styling
+  //When ever the mouse leaves the style panel, save the state because it is likely that the user is done styling
   private saveStyleState(): void {
     EventBus.fire("save-style-state", {});
-  }
-
-  addPanelMounted(panelNum: number): void {
-    console.log("mounting panel ", panelNum);
-    if (this.mountedPanels.findIndex(i => i === panelNum) === -1) {
-      this.mountedPanels.push(panelNum);
-    }
   }
 
   panelBackgroundColor(idx: number): string {

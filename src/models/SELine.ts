@@ -12,6 +12,8 @@ import { SELabel } from "@/models/SELabel";
 // import  SENoduleItem  from "*.vue";
 // import magnificationLevel from "*.vue";
 import magnificationLevel from "@/components/SENoduleItem.vue";
+import { SEStore } from "@/store";
+import i18n from "@/i18n";
 
 const styleSet = new Set([
   Styles.strokeWidthPercent,
@@ -33,15 +35,15 @@ export class SELine extends SENodule
   /**
    * The model SE object that is one point on the line
    */
-  private _startSEPoint: SEPoint;
+  protected _startSEPoint: SEPoint;
   /**
    * The model SE object that is a second point on the line
    */
-  private _endSEPoint: SEPoint;
+  protected _endSEPoint: SEPoint;
   /**
    * The Vector3 that the normal vector to the plane of the line
    */
-  private _normalVector = new Vector3();
+  protected _normalVector = new Vector3();
   /** Temporary vectors to help with calculations */
   protected tmpVector = new Vector3(); //
   protected tmpVector1 = new Vector3();
@@ -67,7 +69,7 @@ export class SELine extends SENodule
     this._endSEPoint = lineEndSEPoint;
 
     SELine.LINE_COUNT++;
-    this.name = `Li-${SELine.LINE_COUNT}`;
+    this.name = `Li${SELine.LINE_COUNT}`;
   }
 
   customStyles(): Set<Styles> {
@@ -92,6 +94,22 @@ export class SELine extends SENodule
 
   get endSEPoint(): SEPoint {
     return this._endSEPoint;
+  }
+
+  public get noduleDescription(): string {
+    return String(
+      i18n.t(`objectTree.lineThrough`, {
+        pt1: this._startSEPoint.label?.ref.shortUserName,
+        pt2: this._endSEPoint.label?.ref.shortUserName,
+        normalX: this._normalVector.x.toFixed(SETTINGS.decimalPrecision),
+        normalY: this._normalVector.y.toFixed(SETTINGS.decimalPrecision),
+        normalZ: this._normalVector.z.toFixed(SETTINGS.decimalPrecision)
+      })
+    );
+  }
+
+  public get noduleItemText(): string {
+    return this.label?.ref.shortUserName ?? "No Label Short Name In SELine";
   }
 
   public isHitAt(
@@ -133,9 +151,8 @@ export class SELine extends SENodule
     this.tmpVector.copy(this.closestVector(idealUnitSphereVector));
 
     // The current magnification level
-    //const mag = SENodule.store.state.zoomMagnificationFactor;
-    //const mag = (magnificationLevel as unknown) as number;
-    const mag = 1;
+
+    const mag = SEStore.zoomMagnificationFactor;
 
     // If the idealUnitSphereVector is within the tolerance of the closest point, do nothing, otherwise return the vector in the plane of the ideanUnitSphereVector and the closest point that is at the tolerance distance away.
     if (
@@ -394,5 +411,8 @@ export class SELine extends SENodule
   }
   public isLabelable(): boolean {
     return true;
+  }
+  public isNonFreeLine(): boolean {
+    return false;
   }
 }

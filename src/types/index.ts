@@ -25,7 +25,7 @@ export interface AppState {
   sphereRadius: /* in pixel */ number; // When the window is resized, the actual size of the sphere (in pixel may change)
   zoomTranslation: number[]; // current zoom translation vector
   zoomMagnificationFactor: number; // current zoom magnification factor
-  previousZoomMagnificationFactor: number;
+  // previousZoomMagnificationFactor: number;
   canvasWidth: number;
   actionMode: string;
   previousActionMode: string;
@@ -42,7 +42,7 @@ export interface AppState {
   selectedSENodules: SENodule[];
 
   intersections: SEIntersectionPoint[];
-  // measurements: SEMeasurement[];
+  // measurements: SEExpression[];
   expressions: SEExpression[];
   temporaryNodules: Nodule[];
   initialStyleStates: StyleOptions[];
@@ -97,10 +97,31 @@ export interface Labelable {
    * Returns the closest label location vector on the parent object to the idealUnitSphereVector
    * @param idealUnitSphereVector A vector location on the sphere
    */
-  closestLabelLocationVector(idealUnitSphereVector: Vector3): Vector3;
+  closestLabelLocationVector(
+    idealUnitSphereVector: Vector3,
+    zoomMagnificationFactor: number
+  ): Vector3;
   label?: SELabel;
 }
 
+export type plottableType =
+  | "boundaryCircle"
+  | "point"
+  | "line"
+  | "segment"
+  | "circle"
+  | "angleMarker"
+  | "ellipse";
+export type sides = "front" | "back" | "mid";
+/**
+ * The properties of a plottable object needed when creating icons
+ */
+export type plottableProperties = {
+  type: plottableType;
+  side: sides;
+  fill: boolean;
+  part: string;
+};
 /**
  * All the one dimensional SE Classes
  */
@@ -120,6 +141,15 @@ export enum UpdateMode {
   DisplayOnly, // Record nothing in the state Array
   RecordStateForDelete, // All visited objects must be put into the stateArray
   RecordStateForMove // Only those objects which depend on more than their point parents need to record that information
+}
+
+/**
+ * There are three modes for displaying a value of a measurement.
+ */
+export enum ValueDisplayMode {
+  Number, // just the raw number is displayed
+  MultipleOfPi, // convert to multiples of pi for display
+  DegreeDecimals // convert to degrees for display
 }
 
 export interface UpdateStateType {

@@ -1,4 +1,4 @@
-import { SEMeasurement } from "./SEMeasurement";
+import { SEExpression } from "./SEExpression";
 import { SEPoint } from "./SEPoint";
 import { SELine } from "./SELine";
 import { SESegment } from "./SESegment";
@@ -14,6 +14,7 @@ import { Labelable } from "@/types";
 import { SELabel } from "@/models/SELabel";
 import { SEStore } from "@/store";
 import { AngleMode } from "@/types";
+import i18n from "@/i18n";
 
 const styleSet = new Set([
   Styles.strokeColor,
@@ -26,12 +27,12 @@ const styleSet = new Set([
   Styles.angleMarkerDoubleArc
 ]);
 
-export class SEAngleMarker extends SEMeasurement
+export class SEAngleMarker extends SEExpression
   implements Visitable, Labelable {
   /**
    * The plottable (TwoJS) AngleMarker associated with this model AngleMarker
    */
-  public ref!: AngleMarker;
+  public ref: AngleMarker;
   /**
    * Pointer to the label of this SEAngleMarker
    */
@@ -97,7 +98,7 @@ export class SEAngleMarker extends SEMeasurement
   private measureTmpVector3 = new Vector3();
 
   /**
-   * The number of this angle marker when it was created (i.e. this number of angle markers have been created so far)
+   * The number of this angle marker when it was created (i.e. this is the number of angle markers have created so far)
    */
   private _angleMarkerNumber = 0;
 
@@ -115,31 +116,20 @@ export class SEAngleMarker extends SEMeasurement
     secondSEParent: SELine | SESegment | SEPoint,
     thirdSEParent?: SEPoint | undefined
   ) {
-    super();
+    super(); // this.name is set to a measurement token M### in the super constructor
     this.ref = angMar;
     this._firstSEParent = firstSEParent;
     this._secondSEParent = secondSEParent;
     this._thirdSEParent = thirdSEParent;
     this.mode = mode;
-    SEAngleMarker.ANGLEMARKER_COUNT++;
-    this.name = `Am-${SEAngleMarker.ANGLEMARKER_COUNT}`;
-    if (thirdSEParent !== undefined) {
-      this.name =
-        this.name +
-        `-Angle(${firstSEParent.name},${secondSEParent.name},${thirdSEParent.name}):${this.prettyValue}`;
-    } else {
-      this.name =
-        this.name +
-        `-Angle(${firstSEParent.name},${secondSEParent.name}):${this.prettyValue}`;
-    }
 
-    this._displayInMultiplesOfPi =
-      SETTINGS.angleMarker.displayInMultiplesOfPiInitially;
+    this._valueDisplayMode = SETTINGS.angleMarker.initialValueDisplayMode;
     // SEAngleMarker is both an expression and a plottable (the only one?)
-    // As an expression to be used in the calculation it must begin with "M###" so that it
+    // As an expression to be used in the calculation this.name must be "M###" so that it
     // can be referenced by the user and found by the parser
-    // however we don't want the initial name and initial shortName of the angle marker to be displayed with a "M###" at the start
-    //  so this is how we get around this
+    // however we don't want the initial shortName of the angle marker's label to be displayed with a "M###"
+    //  so we record the angleMarkerNumber and then in SELabel, we set the short name of the Label using this field.
+    SEAngleMarker.ANGLEMARKER_COUNT++;
     this._angleMarkerNumber = SEAngleMarker.ANGLEMARKER_COUNT;
   }
 
@@ -163,38 +153,67 @@ export class SEAngleMarker extends SEMeasurement
     );
   }
 
-  public get prettyValue(): string {
-    if (this._displayInMultiplesOfPi) {
-      return (
-        (this.value / Math.PI).toFixed(SETTINGS.decimalPrecision) + "\u{1D7B9}"
-      );
-    } else {
-      return this.value.toFixed(SETTINGS.decimalPrecision);
-    }
-  }
-
-  public get longName(): string {
+  public get noduleDescription(): string {
     if (this._thirdSEParent !== undefined) {
-      return (
-        this.label?.ref.shortName +
-        `-Angle(${this._firstSEParent.label?.ref.shortName},${this._secondSEParent.label?.ref.shortName},${this._thirdSEParent.label?.ref.shortName}):${this.prettyValue}`
+      return String(
+        i18n.t(`objectTree.anglePoints`, {
+          p1: this._firstSEParent.label?.ref.shortUserName,
+          p2: this._secondSEParent.label?.ref.shortUserName,
+          p3: this._thirdSEParent.label?.ref.shortUserName
+        })
       );
     } else {
-      return (
-        this.label?.ref.shortName +
-        `-Angle(${this._firstSEParent.label?.ref.shortName},${this._secondSEParent.label?.ref.shortName}):${this.prettyValue}`
-      );
+      if (
+        this._firstSEParent instanceof SESegment &&
+        this._secondSEParent instanceof SESegment
+      ) {
+        return String(
+          i18n.t(`objectTree.angleSegments`, {
+            seg1: this._firstSEParent.label?.ref.shortUserName,
+            seg2: this._secondSEParent.label?.ref.shortUserName
+          })
+        );
+      } else if (
+        this._firstSEParent instanceof SELine &&
+        this._secondSEParent instanceof SELine
+      ) {
+        return String(
+          i18n.t(`objectTree.angleLines`, {
+            line1: this._firstSEParent.label?.ref.shortUserName,
+            line2: this._secondSEParent.label?.ref.shortUserName
+          })
+        );
+      } else if (
+        this._firstSEParent instanceof SELine &&
+        this._secondSEParent instanceof SESegment
+      ) {
+        return String(
+          i18n.t(`objectTree.angleLineSegment`, {
+            line1: this._firstSEParent.label?.ref.shortUserName,
+            line2: this._secondSEParent.label?.ref.shortUserName
+          })
+        );
+      } else {
+        return String(
+          i18n.t(`objectTree.angleSegmentLine`, {
+            line1: this._firstSEParent.label?.ref.shortUserName,
+            line2: this._secondSEParent.label?.ref.shortUserName
+          })
+        );
+      }
     }
+    return "Error in Angle Marker Description";
   }
 
-  public get shortName(): string {
+  public get noduleItemText(): string {
     return (
       this.name +
-      ` - Ang(` +
-      this.label!.ref.shortName +
-      `):${this.prettyValue}`
+      " - " +
+      this.label?.ref.shortUserName +
+      `: ${this.prettyValue}`
     );
   }
+
   public isHitAt(
     unitIdealVector: Vector3,
     currentMagnificationFactor: number
@@ -213,10 +232,10 @@ export class SEAngleMarker extends SEMeasurement
         SETTINGS.angleMarker.hitIdealDistance / currentMagnificationFactor
     ) {
       // The unitIdealVector is not in the circle with center vertexVector (plus a little tolerance)
-      // console.log("not hit");
+      // console.debug("not hit");
       // const tmp = this.closestVector(unitIdealVector);
       // const tmp2 = this.closestVector(tmp);
-      // console.log(tmp.angleTo(tmp2));
+      // console.debug(tmp.angleTo(tmp2));
       // this.closestVector(unitIdealVector);
       return false;
     } else {
@@ -236,10 +255,10 @@ export class SEAngleMarker extends SEMeasurement
         this._endVector
       );
 
-      // console.log(ang1 <= ang2 ? "hit" : "nothit");
+      // console.debug(ang1 <= ang2 ? "hit" : "nothit");
       // const tmp = this.closestVector(unitIdealVector);
       // const tmp2 = this.closestVector(tmp);
-      // console.log(tmp.angleTo(tmp2));
+      // console.debug(tmp.angleTo(tmp2));
       return ang1 <= ang2;
 
       // if ang1 is very close to 2Pi, or
@@ -833,13 +852,13 @@ export class SEAngleMarker extends SEMeasurement
     // }
 
     // if the unitIdealVector leads to a hit then return the unitIdealVector
-    // console.log("x before hit ", this._startVector.x);
+    // console.debug("x before hit ", this._startVector.x);
     if (this.isHitAt(unitIdealVector, SEStore.zoomMagnificationFactor)) {
-      // console.log("hit");
-      // console.log("x after - hit ", this._startVector.x);
+      // console.debug("hit");
+      // console.debug("x after - hit ", this._startVector.x);
       return unitIdealVector;
     }
-    // console.log("x after - nohit", this._startVector.x);
+    // console.debug("x after - nohit", this._startVector.x);
     //return this._vertexVector;
     // WHAT IS BELOW MIGHT BE USEFUL FOR A FUTURE SESEGMENTOFCIRCLE object, but is too precise because the
     // angle marker is so small
@@ -852,7 +871,7 @@ export class SEAngleMarker extends SEMeasurement
       this._vertexVector,
       this._endVector
     );
-    // console.log("ang ", angleMarkerAngle);
+    // console.debug("ang ", angleMarkerAngle);
     // the angle measure FROM startHalfPlane TO the half-plane (unitIdealHalfPlane) with edge the line containing vertexVector and
     // containing origin of sphere, unitIdealVector, vertexVector.  Result is between 0 and 2 Pi
     const unitIdealAngle = this.measureAngle(
@@ -860,15 +879,15 @@ export class SEAngleMarker extends SEMeasurement
       this._vertexVector,
       unitIdealVector
     );
-    // console.log(unitIdealAngle);
+    // console.debug(unitIdealAngle);
 
     // Divide into two cases: non-convex angle markers versus convex ones. See the picture in
     // the Google Drive folder for a break down of the closest point regions
-    //console.log("angles", unitIdealAngle, angleMarkerAngle);
+    //console.debug("angles", unitIdealAngle, angleMarkerAngle);
     // In both cases if unitIdealAngle is less than angleMarkerAngle, project onto the circular
     // part of the angleMarker
     if (unitIdealAngle <= angleMarkerAngle) {
-      // console.log("proj circ part");
+      // console.debug("proj circ part");
 
       // project onto the circular part of the angle marker
       this.tmpVector1
@@ -930,7 +949,7 @@ export class SEAngleMarker extends SEMeasurement
           unitIdealVector
         )
       ) {
-        // console.log("project onto vertex to end segment");
+        // console.debug("project onto vertex to end segment");
         return this.projectToSegment(
           this._vertexVector,
           this._endVector,
@@ -946,7 +965,7 @@ export class SEAngleMarker extends SEMeasurement
           unitIdealVector
         )
       ) {
-        // console.log("project onto vertex to start segment");
+        // console.debug("project onto vertex to start segment");
         return this.projectToSegment(
           this._vertexVector,
           this._startVector,
@@ -974,7 +993,7 @@ export class SEAngleMarker extends SEMeasurement
           unitIdealVector
         )
       ) {
-        // console.log("project onto vertex ");
+        // console.debug("project onto vertex ");
         return this._vertexVector;
       } else if (
         this.inRegion(
@@ -1000,10 +1019,10 @@ export class SEAngleMarker extends SEMeasurement
           unitIdealVector
         )
       ) {
-        // console.log("project onto end ");
+        // console.debug("project onto end ");
         return this._endVector;
       } else {
-        // console.log("project onto start ");
+        // console.debug("project onto start ");
         return this._startVector;
       }
     } else {
@@ -1140,7 +1159,7 @@ export class SEAngleMarker extends SEMeasurement
     //
     // Project the unitVector and the srtVector onto the plane, Q, perpendicular to the vrtxVector
     //  Proj_Q(vec) = vec - (vec.vrtxVector)vrtxVector (vrtxVector is unit)
-    // console.log("x before ", this._startVector.x);
+    // console.debug("x before ", this._startVector.x);
     this.measureTmpVector1.set(0, 0, 0);
     this.measureTmpVector1.copy(unitVector);
     this.measureTmpVector1.addScaledVector(
@@ -1171,7 +1190,7 @@ export class SEAngleMarker extends SEMeasurement
       this.measureTmpVector3.dot(this.measureTmpVector1),
       this.measureTmpVector2.dot(this.measureTmpVector1)
     ).modTwoPi();
-    // console.log(val, "x after ", this._startVector.x);
+    // console.debug(val, "x after ", this._startVector.x);
     return val;
   }
 
@@ -1235,7 +1254,7 @@ export class SEAngleMarker extends SEMeasurement
     }
 
     // const tmpVec2 = tmpVector.normalize().cross(perp);
-    // console.log(
+    // console.debug(
     //   "triangle inequality ",
     //   start.angleTo(end) - (tmpVec2.angleTo(start) + tmpVec2.angleTo(end))
     // );

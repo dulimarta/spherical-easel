@@ -68,7 +68,7 @@ export default class LineHandler extends Highlighter {
    * variable is to help with that. Or if the user mouse press outside the canvas and mouse releases
    * on the canvas, nothing should happen.
    */
-  private makingALine = false;
+  private startLocationSelected = false;
 
   /**
    * A temporary vector to help with normal vector computations
@@ -101,9 +101,9 @@ export default class LineHandler extends Highlighter {
     // otherwise if the user has finished making an new point, then *without* triggering a mouse move
     // event, mouse press will *not* select the newly created point. This is not what we want so we call super.mouseMove
     super.mouseMoved(event);
-    if (this.isOnSphere && !this.makingALine) {
+    if (this.isOnSphere && !this.startLocationSelected) {
       // The user is making a line
-      this.makingALine = true;
+      this.startLocationSelected = true;
 
       // Decide if the starting location is near an already existing SEPoint or near a oneDimensional SENodule
       if (this.hitSEPoints.length > 0) {
@@ -179,7 +179,7 @@ export default class LineHandler extends Highlighter {
     // Also set the snap objects
     if (this.hitSEPoints.length > 0) {
       this.hitSEPoints[0].glowing = true;
-      if (!this.makingALine) {
+      if (!this.startLocationSelected) {
         this.snapStartMarkerToTemporaryOneDimensional = null;
         this.snapEndMarkerToTemporaryOneDimensional = null;
         this.snapStartMarkerToTemporaryPoint = this.hitSEPoints[0];
@@ -192,7 +192,7 @@ export default class LineHandler extends Highlighter {
       }
     } else if (this.hitSESegments.length > 0) {
       this.hitSESegments[0].glowing = true;
-      if (!this.makingALine) {
+      if (!this.startLocationSelected) {
         this.snapStartMarkerToTemporaryOneDimensional = this.hitSESegments[0];
         this.snapEndMarkerToTemporaryOneDimensional = null;
         this.snapStartMarkerToTemporaryPoint = null;
@@ -205,7 +205,7 @@ export default class LineHandler extends Highlighter {
       }
     } else if (this.hitSELines.length > 0) {
       this.hitSELines[0].glowing = true;
-      if (!this.makingALine) {
+      if (!this.startLocationSelected) {
         this.snapStartMarkerToTemporaryOneDimensional = this.hitSELines[0];
         this.snapEndMarkerToTemporaryOneDimensional = null;
         this.snapStartMarkerToTemporaryPoint = null;
@@ -218,7 +218,7 @@ export default class LineHandler extends Highlighter {
       }
     } else if (this.hitSECircles.length > 0) {
       this.hitSECircles[0].glowing = true;
-      if (!this.makingALine) {
+      if (!this.startLocationSelected) {
         this.snapStartMarkerToTemporaryOneDimensional = this.hitSECircles[0];
         this.snapEndMarkerToTemporaryOneDimensional = null;
         this.snapStartMarkerToTemporaryPoint = null;
@@ -231,7 +231,7 @@ export default class LineHandler extends Highlighter {
       }
     } else if (this.hitSEEllipses.length > 0) {
       this.hitSEEllipses[0].glowing = true;
-      if (!this.makingALine) {
+      if (!this.startLocationSelected) {
         this.snapStartMarkerToTemporaryOneDimensional = this.hitSEEllipses[0];
         this.snapEndMarkerToTemporaryOneDimensional = null;
         this.snapStartMarkerToTemporaryPoint = null;
@@ -250,8 +250,8 @@ export default class LineHandler extends Highlighter {
     }
     // Make sure that the event is on the sphere
     if (this.isOnSphere) {
-      // if makingALine is true, the user has selected a center point
-      if (!this.makingALine) {
+      // if makingALine is true, the user has selected a start location
+      if (!this.startLocationSelected) {
         // If the temporary startMarker has *not* been added to the scene do so now
         if (!this.isTemporaryStartMarkerAdded) {
           this.isTemporaryStartMarkerAdded = true;
@@ -282,6 +282,12 @@ export default class LineHandler extends Highlighter {
           this.temporaryStartMarker.positionVector = this.currentSphereVector;
         }
       } else {
+        // If the temporary startMarker has *not* been added to the scene do so now (it might have
+        // been removed due to leaving the sphere in mouse moved, but not triggering a mouse leave event)
+        if (!this.isTemporaryStartMarkerAdded && this.startSEPoint === null) {
+          this.isTemporaryStartMarkerAdded = true;
+          this.temporaryStartMarker.addToLayers(this.layers);
+        }
         // If the temporary endMarker has *not* been added to the scene do so now
         if (!this.isTemporaryEndMarkerAdded) {
           this.isTemporaryEndMarkerAdded = true;
@@ -346,32 +352,33 @@ export default class LineHandler extends Highlighter {
         //update the display
         this.temporaryLine.updateDisplay();
       }
-    } else if (this.isTemporaryStartMarkerAdded) {
-      // Remove the temporary objects from the display.
-      this.temporaryLine.removeFromLayers();
-      this.temporaryStartMarker.removeFromLayers();
-      this.temporaryEndMarker.removeFromLayers();
-      this.isTemporaryStartMarkerAdded = false;
-      this.isTemporaryEndMarkerAdded = false;
-      this.isTemporaryLineAdded = false;
-
-      this.snapStartMarkerToTemporaryOneDimensional = null;
-      this.snapEndMarkerToTemporaryOneDimensional = null;
-      this.snapStartMarkerToTemporaryPoint = null;
-      this.snapEndMarkerToTemporaryPoint = null;
     }
+    // else if (this.isTemporaryStartMarkerAdded) {
+    //   // Remove the temporary objects from the display.
+    //   this.temporaryLine.removeFromLayers();
+    //   this.temporaryStartMarker.removeFromLayers();
+    //   this.temporaryEndMarker.removeFromLayers();
+    //   this.isTemporaryStartMarkerAdded = false;
+    //   this.isTemporaryEndMarkerAdded = false;
+    //   this.isTemporaryLineAdded = false;
+
+    //   this.snapStartMarkerToTemporaryOneDimensional = null;
+    //   this.snapEndMarkerToTemporaryOneDimensional = null;
+    //   this.snapStartMarkerToTemporaryPoint = null;
+    //   this.snapEndMarkerToTemporaryPoint = null;
+    // }
   }
   mouseReleased(event: MouseEvent): void {
     if (this.isOnSphere) {
       // Make sure the user didn't trigger the mouse leave event and is actually making a line
-      if (this.makingALine) {
+      if (this.startLocationSelected) {
         if (
           this.startVector.angleTo(this.currentSphereVector) >
           SETTINGS.line.minimumLength
         ) {
           this.makeLine();
           // Get ready for the next line
-          this.makingALine = false;
+          this.startLocationSelected = false;
           if (this.startSEPoint) {
             this.startSEPoint.glowing = false;
             this.startSEPoint.selected = false;
@@ -435,7 +442,7 @@ export default class LineHandler extends Highlighter {
     this.endSEPoint = null;
     this.startSEPointOneDimensionalParent = null;
     this.normalVector.set(0, 0, 0);
-    this.makingALine = false;
+    this.startLocationSelected = false;
 
     // call an unglow all command
     SEStore.unglowAllSENodules();
@@ -468,7 +475,7 @@ export default class LineHandler extends Highlighter {
         // Create and execute the command to create a new point for undo/redo
         lineGroup.addCommand(
           new AddPointOnOneDimensionalCommand(
-            vtx,
+            vtx as SEPointOnOneDimensional,
             this.startSEPointOneDimensionalParent,
             newSELabel
           )
@@ -539,7 +546,7 @@ export default class LineHandler extends Highlighter {
 
         lineGroup.addCommand(
           new AddPointOnOneDimensionalCommand(
-            vtx,
+            vtx as SEPointOnOneDimensional,
             this.hitSESegments[0],
             newSELabel
           )
@@ -556,7 +563,7 @@ export default class LineHandler extends Highlighter {
 
         lineGroup.addCommand(
           new AddPointOnOneDimensionalCommand(
-            vtx,
+            vtx as SEPointOnOneDimensional,
             this.hitSELines[0],
             newSELabel
           )
@@ -572,7 +579,7 @@ export default class LineHandler extends Highlighter {
 
         lineGroup.addCommand(
           new AddPointOnOneDimensionalCommand(
-            vtx,
+            vtx as SEPointOnOneDimensional,
             this.hitSECircles[0],
             newSELabel
           )
@@ -588,7 +595,7 @@ export default class LineHandler extends Highlighter {
 
         lineGroup.addCommand(
           new AddPointOnOneDimensionalCommand(
-            vtx,
+            vtx as SEPointOnOneDimensional,
             this.hitSEEllipses[0],
             newSELabel
           )

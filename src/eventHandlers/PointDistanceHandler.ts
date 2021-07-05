@@ -1,8 +1,8 @@
 import Two from "two.js";
 import Highlighter from "./Highlighter";
 import { SEPoint } from "@/models/SEPoint";
-import { AddDistanceMeasurementCommand } from "@/commands/AddDistanceMeasurementCommand";
-import { SESegmentDistance } from "@/models/SESegmentDistance";
+import { AddPointDistanceMeasurementCommand } from "@/commands/AddPointDistanceMeasurementCommand";
+import { SEPointDistance } from "@/models/SEPointDistance";
 import EventBus from "@/eventHandlers/EventBus";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import { SEStore } from "@/store";
@@ -41,7 +41,7 @@ export default class PointDistantHandler extends Highlighter {
       }
 
       if (this.targetPoints.length === 2) {
-        const distanceMeasure = new SESegmentDistance(
+        const distanceMeasure = new SEPointDistance(
           this.targetPoints[0],
           this.targetPoints[1]
         );
@@ -50,14 +50,11 @@ export default class PointDistantHandler extends Highlighter {
           keyOptions: { name: `${distanceMeasure.name}` },
           type: "success"
         });
-        new AddDistanceMeasurementCommand(distanceMeasure, [
+        new AddPointDistanceMeasurementCommand(distanceMeasure, [
           this.targetPoints[0],
           this.targetPoints[1]
         ]).execute();
-        this.targetPoints.splice(0);
         // reset for another distance measurement
-        possibleTargetPointList[0].selected = false;
-        possibleTargetPointList[1].selected = false;
         this.mouseLeave(event);
       } else
         EventBus.fire("show-alert", {
@@ -84,9 +81,12 @@ export default class PointDistantHandler extends Highlighter {
 
   mouseLeave(event: MouseEvent): void {
     super.mouseLeave(event);
-    // Reset the targetSegment in preparation for another deletion.
-    this.targetPoints.forEach(p => (p.selected = false));
-    this.targetPoints.clear();
+    // Reset the target points in preparation for another measure
+    this.targetPoints.forEach(p => {
+      p.selected = false;
+      p.glowing = false;
+    });
+    this.targetPoints.slice(0);
   }
 
   activate(): void {
@@ -99,13 +99,13 @@ export default class PointDistantHandler extends Highlighter {
         object2 instanceof SEPoint &&
         object1 !== object2
       ) {
-        const distanceMeasure = new SESegmentDistance(object1, object2);
+        const distanceMeasure = new SEPointDistance(object1, object2);
 
         EventBus.fire("show-alert", {
           text: `New measurement ${distanceMeasure.name} added`,
           type: "success"
         });
-        new AddDistanceMeasurementCommand(distanceMeasure, [
+        new AddPointDistanceMeasurementCommand(distanceMeasure, [
           object1,
           object2
         ]).execute();

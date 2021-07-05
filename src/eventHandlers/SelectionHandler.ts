@@ -1,10 +1,7 @@
-import MouseHandler from "./MouseHandler";
 import { SENodule } from "@/models/SENodule";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import EventBus from "@/eventHandlers/EventBus";
-import { SEPoint } from "@/models/SEPoint";
 import Highlighter from "./Highlighter";
-import SETTINGS from "@/global-settings";
 import { Vector3 } from "three";
 import { SEStore } from "@/store";
 // import { SEPoint } from "@/models/SEPoint";

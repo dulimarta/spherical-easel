@@ -3,7 +3,7 @@
     <!-- <span v-for="c in points" :key="c.id">{{c.name}}</span> -->
     <div id="header"
       class="accent">
-      <span class="text-subtitle-1">{{$t(i18LabelKey)}}</span>
+      <span class="text-subtitle-1">{{$tc(i18LabelKey,1)}}</span>
       <v-btn small
         v-show="hasExistingChildren"
         @click="expanded = !expanded">
@@ -70,11 +70,13 @@ export default class SENoduleTree extends Vue {
 
   //When a user clicks on an expression this sends the token name to the expression builder (ExpressionForm.vue)
   onExpressionSelect(x: any): void {
-    console.log("bob");
     const pos = this.children.findIndex(n => n.id === x.id);
-    console.debug("****Selection", x, "at", pos);
+    // console.debug("****Selection", x, "at", pos);
     if (pos >= 0) {
-      EventBus.fire("measurement-selected", this.children[pos].name);
+      EventBus.fire(
+        "measurement-selected",
+        this.children[pos].name.replace(/-.+/, "")
+      );
     }
   }
   isSlider(n: SENodule): boolean {

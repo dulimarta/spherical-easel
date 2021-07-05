@@ -1,33 +1,37 @@
-import { SEMeasurement } from "./SEMeasurement";
+import { SEExpression } from "./SEExpression";
 import { SEPoint } from "./SEPoint";
-import { UpdateStateType, UpdateMode } from "@/types";
+import { UpdateStateType, UpdateMode, ValueDisplayMode } from "@/types";
 import { Styles } from "@/types/Styles";
 import SETTINGS from "@/global-settings";
+import i18n from "@/i18n";
 
 const emptySet = new Set<Styles>();
 
-export class SESegmentDistance extends SEMeasurement {
+export class SEPointDistance extends SEExpression {
   readonly firstSEPoint: SEPoint;
   readonly secondSEPoint: SEPoint;
 
   constructor(first: SEPoint, second: SEPoint) {
-    super();
+    super(); // this.name is set to a measurement token M### in the super constructor
     this.firstSEPoint = first;
     this.secondSEPoint = second;
   }
 
-  public get longName(): string {
-    return `Distance(${this.firstSEPoint.label!.ref.shortName},${
-      this.secondSEPoint.label!.ref.shortName
-    }):${this.prettyValue}`;
+  public get noduleDescription(): string {
+    return String(
+      i18n.t(`objectTree.distanceBetweenPts`, {
+        pt1: this.secondSEPoint.label?.ref.shortUserName,
+        pt2: this.firstSEPoint.label?.ref.shortUserName
+      })
+    );
   }
 
-  public get shortName(): string {
-    return (
-      this.name +
-      ` - Dist(${this.firstSEPoint.label!.ref.shortName},${
-        this.secondSEPoint.label!.ref.shortName
-      }):${this.prettyValue}`
+  public get noduleItemText(): string {
+    return String(
+      i18n.t(`objectTree.distanceValue`, {
+        token: this.name,
+        val: this.prettyValue
+      })
     );
   }
 
@@ -39,16 +43,6 @@ export class SESegmentDistance extends SEMeasurement {
     //this.name = this.name.substring(0, pos + 2) + this.prettyValue;
     this.setOutOfDate(false);
     this.updateKids(state);
-  }
-
-  public get prettyValue(): string {
-    if (this._displayInMultiplesOfPi) {
-      return (
-        (this.value / Math.PI).toFixed(SETTINGS.decimalPrecision) + "\u{1D7B9}"
-      );
-    } else {
-      return this.value.toFixed(SETTINGS.decimalPrecision);
-    }
   }
 
   public get value(): number {

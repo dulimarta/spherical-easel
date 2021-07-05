@@ -13,6 +13,12 @@ import {
   Labelable
 } from "@/types";
 import { SELabel } from "./SELabel";
+// The following import creates a circular dependencies when testing SENoduleItem
+// The dependency loop is:
+// SENoduleItem.vue => SEIntersectionPoint => SEPoint => store/index.ts => se-module.ts
+// => RotationVisitor => SEPointOnOneDimensional => SEPoint (again)
+// import { SEStore } from "@/store";
+import i18n from "@/i18n";
 
 const styleSet = new Set([
   Styles.fillColor,
@@ -48,7 +54,7 @@ export class SEPoint extends SENodule implements Visitable, Labelable {
     and the object that helps create the corresponding renderable object  */
     this.ref = point;
     SENodule.POINT_COUNT++;
-    this.name = `P-${SENodule.POINT_COUNT}`;
+    this.name = `P${SENodule.POINT_COUNT}`;
   }
   customStyles(): Set<Styles> {
     return styleSet;
@@ -106,6 +112,14 @@ export class SEPoint extends SENodule implements Visitable, Labelable {
     return this._locationVector;
   }
 
+  public get noduleDescription(): string {
+    return String(i18n.t(`objectTree.freePoint`));
+  }
+
+  public get noduleItemText(): string {
+    return this.label?.ref.shortUserName ?? "No Label Short Name In SEPoint";
+  }
+
   accept(v: Visitor): void {
     v.actionOnPoint(this);
   }
@@ -114,12 +128,12 @@ export class SEPoint extends SENodule implements Visitable, Labelable {
    * @param currentLabelLocationVector A vector on the unit sphere
    */
   public closestLabelLocationVector(
-    currentLabelLocationVector: Vector3
+    currentLabelLocationVector: Vector3,
+    zoomMagnificationFactor: number
   ): Vector3 {
     // The current magnification level
-    //const mag = SENodule.store.state.zoomMagnificationFactor;
 
-    const mag = 1;
+    const mag = zoomMagnificationFactor;
     // If the idealUnitSphereVector is within the tolerance of the point, do nothing, otherwise return the vector in the plane of the ideanUnitSphereVector and the point that is at the tolerance distance away.
     if (
       this._locationVector.angleTo(currentLabelLocationVector) <
@@ -191,7 +205,7 @@ export class SEPoint extends SENodule implements Visitable, Labelable {
   // I wish the SENodule methods would work but I couldn't figure out how
   // See the attempts in SENodule around line 218
   public isFreePoint(): boolean {
-    return this._parents.length === 0;
+    return true;
   }
   public isOneDimensional(): this is SEOneDimensional {
     return false;
@@ -210,5 +224,8 @@ export class SEPoint extends SENodule implements Visitable, Labelable {
   }
   public isLabelable(): boolean {
     return true;
+  }
+  public isNonFreeLine(): boolean {
+    return false;
   }
 }

@@ -27,10 +27,12 @@ export const createWrapper = (
   const vt = new Vuetify({
     icons: {
       iconfont: "mdiSvg"
-    },
-    lang: {
-      t: (msg: string) => msg
     }
+    // lang: {
+    //   locales: { en: localeEn },
+    //   current: "en"
+    //   // t: (msg: string) => msg
+    // }
   });
   const configOption = {
     store,

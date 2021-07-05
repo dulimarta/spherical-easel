@@ -6,23 +6,23 @@ import { AddMeasurementCommand } from "./AddMeasurementCommand";
 export class AddSliderMeasurementCommand extends AddMeasurementCommand {
   /**
    * @param seMeasurements
-   * @param parents If this is included then the seMeasurement is made a child of all the SENodules in this array
+   * @param parents If this is included then the seExpression is made a child of all the SENodules in this array
    */
   constructor(seSlider: SESlider) {
     super(seSlider, []);
   }
 
   toOpcode(): null | string | Array<string> {
-    const slider = this.seMeasurement as SESlider;
+    const slider = this.seExpression as SESlider;
     return [
       "AddSliderMeasurement",
-      /* arg-1 */ this.seMeasurement.name,
+      /* arg-1 */ this.seExpression.name,
       /* arg-2 */ slider.min,
       /* arg-3 */ slider.max,
       /* arg-4 */ slider.step,
       /* arg-5 */ slider.value,
-      /* arg-6 */ this.seMeasurement.showing,
-      /* arg-7 */ this.seMeasurement.exists
+      /* arg-6 */ this.seExpression.showing,
+      /* arg-7 */ this.seExpression.exists
     ].join("/");
   }
 

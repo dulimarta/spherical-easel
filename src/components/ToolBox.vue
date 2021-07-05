@@ -91,7 +91,7 @@ export default class Toolbox extends Vue {
   /* Copy global setting to local variable */
   private toolTipOpenDelay = SETTINGS.toolTip.openDelay;
   private toolTipCloseDelay = SETTINGS.toolTip.closeDelay;
-  private activeLeftDrawerTab = "toolListTab";
+  private activeLeftDrawerTab = 0;
   // private scene!: Two.Group;
 
   mounted(): void {
@@ -99,7 +99,9 @@ export default class Toolbox extends Vue {
   }
 
   switchTab(): void {
-    if (this.activeLeftDrawerTab === "objectListTab") {
+    // console.log("this.activeLeftDrawerTab", this.activeLeftDrawerTab);
+    if (this.activeLeftDrawerTab === 1) {
+      // 1 is the index of the object tree tab
       SEStore.setActionMode({
         id: "move",
         name: "MoveDisplayedName"

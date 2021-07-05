@@ -1,18 +1,20 @@
 <template>
   <div>
     <div class="text-h6"
-      v-if="firebaseUid.length > 0">Private Constructions</div>
+      v-if="firebaseUid.length > 0">
+      {{$t(`constructions.privateConstructions`)}}</div>
     <!--- WARNING: the "id" attribs below are needed for testing -->
     <ConstructionList id="privateList"
       :items="privateConstructions"
-      v-on:load-requested="shouldLoadConstruction" />
-    <div class="text-h6">Public Constructions</div>
+      v-on:load-requested="shouldLoadConstruction"
+      v-on:delete-requested="shouldDeleteConstruction" />
+    <div class="text-h6">{{$t(`constructions.publicConstructions`)}}</div>
     <ConstructionList id="publicList"
       :items="publicConstructions"
       :allow-sharing="true"
       v-on:load-requested="shouldLoadConstruction"
       v-on:share-requested="doShareConstruction"
-      v-on:delete-requested="doDeleteConstruction" />
+      v-on:delete-requested="shouldDeleteConstruction" />
 
     <Dialog ref="constructionShareDialog"
       id="_test_constructionShareDialog"
@@ -37,8 +39,16 @@
       :yesAction="doLoadConstruction"
       no-text="Cancel"
       max-width="50%">
-      You have unsaved objects. Loading a new construction will remove
-      all the current ones. Do you want to proceed or cancel?
+      {{ $t(`constructions.unsavedObjectsMsg`)}}
+    </Dialog>
+    <Dialog ref="constructionDeleteDialog"
+      title="Delete Construction"
+      max-width="50%"
+      yes-text="Remove"
+      :yes-action="() => doDeleteConstruction()"
+      no-text="Keep">
+      <p>You are about to remove constuction {{selectedDocId}}</p>.
+      <p>Do you want to keep or remove it?</p>
     </Dialog>
   </div>
 </template>
@@ -66,7 +76,6 @@ import {
 } from "@/types";
 import EventBus from "@/eventHandlers/EventBus";
 import { SENodule } from "@/models/SENodule";
-import Nodule from "@/plottables/Nodule";
 import { FirebaseAuth } from "@firebase/auth-types";
 import Dialog, { DialogAction } from "@/components/Dialog.vue";
 import ConstructionList from "@/components/ConstructionList.vue";
@@ -92,6 +101,7 @@ export default class ConstructionLoader extends Vue {
   $refs!: {
     constructionShareDialog: VueComponent & DialogAction;
     constructionLoadDialog: VueComponent & DialogAction;
+    constructionDeleteDialog: VueComponent & DialogAction;
     docURL: HTMLSpanElement;
   };
 
@@ -192,9 +202,9 @@ export default class ConstructionLoader extends Vue {
     SEStore.removeAllFromLayers();
     SEStore.init();
     SENodule.resetAllCounters();
-    Nodule.resetAllCounters();
+    // Nodule.resetIdPlottableDescriptionMap(); // Needed?
     EventBus.fire("show-alert", {
-      key: "objectTree.firestoreConstructionLoaded",
+      key: "constructions.firestoreConstructionLoaded",
       keyOptions: { docId: this.selectedDocId },
       type: "info"
     });
@@ -217,17 +227,31 @@ export default class ConstructionLoader extends Vue {
     this.$refs.constructionShareDialog.hide();
   }
 
-  doDeleteConstruction(event: { docId: string }): void {
-    this.$appDB
+  shouldDeleteConstruction(event: { docId: string }): void {
+    this.selectedDocId = event.docId;
+    this.$refs.constructionDeleteDialog.show();
+  }
+
+  doDeleteConstruction(): void {
+    this.$refs.constructionDeleteDialog.hide();
+    const task1 = this.$appDB
       .collection("constructions")
-      .doc(event.docId)
-      .delete()
+      .doc(this.selectedDocId)
+      .delete();
+    const task2 = this.$appDB
+      .collection(`users/${this.firebaseUid}/constructions`)
+      .doc(this.selectedDocId)
+      .delete();
+    Promise.any([task1, task2])
       .then(() => {
         EventBus.fire("show-alert", {
-          key: "objectTree.firestoreConstructionDeleted",
-          keyOptions: { docId: event.docId },
+          key: "constructions.firestoreConstructionDeleted",
+          keyOptions: { docId: this.selectedDocId },
           type: "info"
         });
+      })
+      .catch((err: any) => {
+        console.debug("Unable to delete", this.selectedDocId, err);
       });
   }
 }

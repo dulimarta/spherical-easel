@@ -96,10 +96,10 @@ describe("Construction List", () => {
     await wrapper.vm.$nextTick();
     const content1 = el.find("._test_constructionOverlay [style*=opacity]");
     content1.element.style.setProperty("opacity", "1.0");
-    console.log("After hover", content1.element, content1.element.style);
+    console.debug("After hover", content1.element, content1.element.style);
     await wrapper.vm.$nextTick();
     const opaqueContent = el.find("._test_constructionOverlay");
-    console.log("Opaque?", opaqueContent.html());
+    console.debug("Opaque?", opaqueContent.html());
     // FIXME:
     // From inspection of the HTML tree at runtime Vuetify initially hides
     // the overlay by setting its opacity to 0.

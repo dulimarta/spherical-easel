@@ -117,7 +117,7 @@ export default class Login extends Vue {
     this.$appAuth
       .createUserWithEmailAndPassword(this.userEmail, this.userPassword)
       .then((cred: UserCredential) => {
-        console.log("jsdf", cred);
+        console.debug("jsdf", cred);
         cred.user?.sendEmailVerification();
         EventBus.fire("show-alert", {
           key: "account.emailVerification",

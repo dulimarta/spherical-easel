@@ -9,6 +9,8 @@ import { OneDimensional, SegmentState, Labelable } from "@/types";
 import { UpdateMode, UpdateStateType } from "@/types";
 import { SELabel } from "@/models/SELabel";
 import { Styles } from "@/types/Styles";
+import { SEStore } from "@/store";
+import i18n from "@/i18n";
 
 const styleSet = new Set([
   Styles.strokeWidthPercent,
@@ -84,7 +86,7 @@ export class SESegment extends SENodule
     this._endSEPoint = segmentEndSEPoint;
 
     SENodule.SEGMENT_COUNT++;
-    this.name = `Ls-${SENodule.SEGMENT_COUNT}`;
+    this.name = `Ls${SENodule.SEGMENT_COUNT}`;
   }
 
   customStyles(): Set<Styles> {
@@ -118,7 +120,21 @@ export class SESegment extends SENodule
   set arcLength(len: number) {
     this._arcLength = len;
   }
+  public get noduleDescription(): string {
+    return String(
+      i18n.t(`objectTree.segmentThrough`, {
+        pt1: this._startSEPoint.label?.ref.shortUserName,
+        pt2: this._endSEPoint.label?.ref.shortUserName,
+        normalX: this._normalVector.x.toFixed(SETTINGS.decimalPrecision),
+        normalY: this._normalVector.y.toFixed(SETTINGS.decimalPrecision),
+        normalZ: this._normalVector.z.toFixed(SETTINGS.decimalPrecision)
+      })
+    );
+  }
 
+  public get noduleItemText(): string {
+    return this.label?.ref.shortUserName ?? "No Label Short Name In SELine";
+  }
   public isHitAt(
     unitIdealVector: Vector3,
     currentMagnificationFactor: number
@@ -414,8 +430,8 @@ export class SESegment extends SENodule
     this.tmpVector.copy(this.closestVector(idealUnitSphereVector));
 
     // The current magnification level
-    //const mag = SENodule.store.state.zoomMagnificationFactor;
-    const mag = 1;
+
+    const mag = SEStore.zoomMagnificationFactor;
 
     // If the idealUnitSphereVector is within the tolerance of the closest point, do nothing, otherwise return the vector in the plane of the ideanUnitSphereVector and the closest point that is at the tolerance distance away.
     if (
@@ -595,5 +611,8 @@ export class SESegment extends SENodule
   }
   public isLabelable(): boolean {
     return true;
+  }
+  public isNonFreeLine(): boolean {
+    return false;
   }
 }

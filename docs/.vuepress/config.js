@@ -1,7 +1,12 @@
 module.exports = {
   //Specify the output directory for vuepress build. If a relative path is specified, it will be resolved based on process.cwd().
-  // dest: "./dist/docs",
-  // base: "/docs/",
+  dest: "dist/docs",
+  // The following setting for "base" works on hosts which allow us to publish
+  // on root directory (like Vercel, Netlify).
+  // On hosts which require project name (like GitHub or GitLab) set the "base" to the path
+  // below the root.
+  base: "/docs/", // For deployment on Netlify
+  // base: "/sphericalgeometryvue/docs/", // For deployment on GitLab
   // To use the http://tikzjax.com/ these must be included in the header.
   head: [
     [
@@ -50,7 +55,7 @@ module.exports = {
     // ],
     //Adds the arrow that returns the user to the top of long pages
     ["@vuepress/back-to-top"],
-    
+
     // display the title and icons of the tools
     [
       "vuepress-plugin-container",
@@ -110,7 +115,7 @@ module.exports = {
         after: "</script>",
         defaultTitle: ""
       }
-    ],
+    ]
     // [
     //   // This plug in is not used unless we use a custom theme
     //   //  see https://vuepress.vuejs.org/plugin/official/plugin-last-updated.html
@@ -289,8 +294,7 @@ module.exports = {
               //path: "/design/", // optional, link of the title, which should be an absolute path and must exist
               //collapsable: false, // optional, defaults to true
               sidebarDepth: 1, // optional, defaults to 1
-              children: ["/design/",
-                         "/design/addingatooloutline"]
+              children: ["/design/", "/design/addingatooloutline"]
             },
             {
               //The lesson plans sidebar file list

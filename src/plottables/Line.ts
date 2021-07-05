@@ -3,6 +3,7 @@ import Two from "two.js";
 import SETTINGS, { LAYER } from "@/global-settings";
 import Nodule, { DisplayStyle } from "./Nodule";
 import { StyleOptions, StyleEditPanels } from "@/types/Styles";
+import { SENodule } from "@/models/SENodule";
 
 // The number of vectors used to render the front half (and the same number in the back half)
 const SUBDIVS = SETTINGS.line.numPoints;
@@ -28,16 +29,16 @@ export default class Line extends Nodule {
   /**
    * A line has half on the front and half on the back.There are glowing counterparts for each part.
    */
-  private frontHalf: Two.Path;
-  private backHalf: Two.Path;
-  private glowingFrontHalf: Two.Path;
-  private glowingBackHalf: Two.Path;
+  protected frontHalf: Two.Path;
+  protected backHalf: Two.Path;
+  protected glowingFrontHalf: Two.Path;
+  protected glowingBackHalf: Two.Path;
 
-  /**
-   * What are these for?
-   */
-  private backArcLen = 0;
-  private frontArcLen = 0;
+  // /**
+  //  * What are these for?
+  //  */
+  // private backArcLen = 0;
+  // private frontArcLen = 0;
 
   /**
    * A list of Vector3s that trace the the equator of the sphere
@@ -49,17 +50,17 @@ export default class Line extends Nodule {
    * The styling variables for the drawn segment. The user can modify these.
    */
   // Front
-  private strokeColorFront = SETTINGS.line.drawn.strokeColor.front;
-  private glowingStrokeColorFront = SETTINGS.line.glowing.strokeColor.front;
-  private dashArrayFront = [] as number[]; // Initialize in constructor
-  private strokeWidthPercentFront = 100;
+  protected strokeColorFront = SETTINGS.line.drawn.strokeColor.front;
+  protected glowingStrokeColorFront = SETTINGS.line.glowing.strokeColor.front;
+  protected dashArrayFront = [] as number[]; // Initialize in constructor
+  protected strokeWidthPercentFront = 100;
 
   // Back use the default non-dynamic back style options so that when the user disables the dynamic back style these options are displayed
-  private dynamicBackStyle = SETTINGS.line.dynamicBackStyle;
-  private strokeColorBack = SETTINGS.line.drawn.strokeColor.back;
-  private glowingStrokeColorBack = SETTINGS.line.glowing.strokeColor.back;
-  private dashArrayBack = [] as number[]; // Initialize in constructor
-  private strokeWidthPercentBack = 100;
+  protected dynamicBackStyle = SETTINGS.line.dynamicBackStyle;
+  protected strokeColorBack = SETTINGS.line.drawn.strokeColor.back;
+  protected glowingStrokeColorBack = SETTINGS.line.glowing.strokeColor.back;
+  protected dashArrayBack = [] as number[]; // Initialize in constructor
+  protected strokeWidthPercentBack = 100;
 
   /** Initialize the current line width that is adjust by the zoom level and the user widthPercent */
   static currentLineStrokeWidthFront = SETTINGS.line.drawn.strokeWidth.front;
@@ -87,8 +88,7 @@ export default class Line extends Nodule {
   private transformMatrix = new Matrix4();
   constructor() {
     super();
-    Nodule.LINE_COUNT++;
-    this.name = "Line-" + Nodule.LINE_COUNT;
+
     const radius = SETTINGS.boundaryCircle.radius;
     const vertices: Two.Vector[] = [];
     const glowingVertices: Two.Vector[] = [];
@@ -113,9 +113,19 @@ export default class Line extends Nodule {
     this.glowingBackHalf = this.frontHalf.clone();
     this.glowingFrontHalf = this.frontHalf.clone();
 
-    //Set the path.id's for all the TwoJS objects which are not glowing. This is for exporting to Icon.
-    this.frontHalf.id = 12000000 + Nodule.LINE_COUNT * 100 + 0;
-    this.backHalf.id = 12000000 + Nodule.LINE_COUNT * 100 + 1;
+    //Record the path ids for all the TwoJS objects which are not glowing. This is for use in IconBase to create icons.
+    Nodule.idPlottableDescriptionMap.set(String(this.frontHalf.id), {
+      type: "line",
+      side: "front",
+      fill: false,
+      part: ""
+    });
+    Nodule.idPlottableDescriptionMap.set(String(this.backHalf.id), {
+      type: "line",
+      side: "back",
+      fill: false,
+      part: ""
+    });
 
     // The line is not initially glowing but is visible for the temporary object
     this.frontHalf.visible = true;
@@ -298,12 +308,11 @@ export default class Line extends Nodule {
   // The builtin clone() does not seem to work correctly
   clone(): this {
     const dup = new Line();
-    dup.name = this.name;
     dup._normalVector.copy(this._normalVector);
     dup.frontHalf.rotation = this.frontHalf.rotation;
     dup.backHalf.rotation = this.backHalf.rotation;
-    dup.frontArcLen = this.frontArcLen;
-    dup.backArcLen = this.backArcLen;
+    // dup.frontArcLen = this.frontArcLen;
+    // dup.backArcLen = this.backArcLen;
     dup.frontHalf.vertices.forEach((v, pos) => {
       v.copy(this.frontHalf.vertices[pos]);
     });
@@ -338,7 +347,7 @@ export default class Line extends Nodule {
    * @param options The style options
    */
   updateStyle(options: StyleOptions): void {
-    console.debug("Line: Update style of", this.name, "using", options);
+    console.debug("Line: Update style of line using", options);
     if (options.panel === StyleEditPanels.Front) {
       // Set the front options
       if (options.strokeWidthPercent !== undefined) {

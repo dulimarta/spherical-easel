@@ -3,78 +3,99 @@
     <div class="node"
       @mouseenter="glowMe(true)"
       @mouseleave="glowMe(false)">
-      <v-icon v-if="isPoint"
-        medium>
-        $vuetify.icons.value.point</v-icon>
-      <v-icon v-else-if="isLineSegment"
-        medium>
-        $vuetify.icons.value.segment</v-icon>
-      <v-icon v-else-if="isLine"
-        medium>
-        $vuetify.icons.value.line</v-icon>
-      <v-icon v-else-if="isCircle"
-        medium>
-        $vuetify.icons.value.circle
-      </v-icon>
-      <v-icon v-else-if="isEllipse"
-        medium>
-        $vuetify.icons.value.ellipse
-      </v-icon>
-      <v-icon v-else-if="isIntersectionPoint"
-        medium>
-        $vuetify.icons.value.intersectionPoint
-      </v-icon>
-      <v-icon v-else-if="isSlider">mdi-arrow-left-right</v-icon>
-      <v-icon v-else-if="isAngle"
-        medium>
-        $vuetify.icons.value.angle</v-icon>
-      <v-icon v-else-if="isMeasurement">mdi-tape-measure
-      </v-icon>
-      <v-icon v-else-if="isCalculation">mdi-calculator</v-icon>
-      <v-tooltip right>
-        <template v-slot:activator="{ on }">
-          <div class="contentText ml-1"
-            @click="selectMe"
-            v-on="on"
-            :class="showClass">
-            <span class="text-truncate">{{ shortDisplayText }}</span>
-          </div>
-        </template>
-        <span>{{ definitionText }}</span>
-      </v-tooltip>
-      <v-tooltip right>
-        <template v-slot:activator="{ on }">
-          <div v-show="isPlottable"
-            v-on="on"
-            @click="toggleVisibility"
-            class="mr-2">
-            <v-icon small
-              v-if="isHidden">
-              mdi-eye
-            </v-icon>
-            <v-icon small
-              v-else
-              style="color:gray">
-              mdi-eye-off
-            </v-icon>
-          </div>
-        </template>
-        <span>{{ $t(`objectTree.toggleDisplay`) }}</span>
-      </v-tooltip>
-      <v-tooltip right>
-        <template v-slot:activator="{ on }">
-          <div v-show="isExpressionAndNotCoordinate"
-            v-on="on"
-            @click="toggleMultplesOfPi"
-            class="mr-2">
-            <v-icon small
-              style="{color: isMultipleOfPi ? 'black' : 'gray'}">
-              mdi-pi
-            </v-icon>
-          </div>
-        </template>
-        <span>{{ $t(`objectTree.multipleOfPiToggle`) }}</span>
-      </v-tooltip>
+
+      <v-row>
+        <v-col cols="auto">
+
+          <v-icon v-if="isPoint"
+            medium>
+            $vuetify.icons.value.point</v-icon>
+          <v-icon v-else-if="isLineSegment"
+            medium>
+            $vuetify.icons.value.segment</v-icon>
+          <v-icon v-else-if="isLine"
+            medium>
+            $vuetify.icons.value.line</v-icon>
+          <v-icon v-else-if="isCircle"
+            medium>
+            $vuetify.icons.value.circle
+          </v-icon>
+          <v-icon v-else-if="isEllipse"
+            medium>
+            $vuetify.icons.value.ellipse
+          </v-icon>
+          <v-icon v-else-if="isIntersectionPoint"
+            medium>
+            $vuetify.icons.value.intersectionPoint
+          </v-icon>
+          <v-icon v-else-if="isSlider">mdi-arrow-left-right</v-icon>
+          <v-icon v-else-if="isAngle"
+            medium>
+            $vuetify.icons.value.angle</v-icon>
+          <v-icon v-else-if="isMeasurement">mdi-tape-measure
+          </v-icon>
+          <v-icon v-else-if="isCalculation">mdi-calculator</v-icon>
+
+        </v-col>
+        <v-col class="text-truncate">
+
+          <v-tooltip right>
+            <template v-slot:activator="{ on }">
+              <div id="_test_selection"
+                class="contentText ml-1"
+                @click="selectMe"
+                v-on="on"
+                :class="showClass">
+                <span class="text-truncate">{{ shortDisplayText }}</span>
+              </div>
+            </template>
+            <span>{{ definitionText }}</span>
+          </v-tooltip>
+
+        </v-col>
+        <v-col cols="auto">
+
+          <v-tooltip right>
+            <template v-slot:activator="{ on }">
+              <div id="_test_toggle_visibility"
+                v-show="isPlottable"
+                v-on="on"
+                @click="toggleVisibility"
+                class="mr-2">
+                <v-icon small
+                  v-if="isHidden">
+                  mdi-eye
+                </v-icon>
+                <v-icon small
+                  v-else
+                  style="color:gray">
+                  mdi-eye-off
+                </v-icon>
+              </div>
+            </template>
+            <span>{{ $t(`objectTree.toggleDisplay`) }}</span>
+          </v-tooltip>
+
+        </v-col>
+        <v-col cols="auto">
+
+          <v-tooltip right>
+            <template v-slot:activator="{ on }">
+              <div id="_test_toggle_format"
+                v-show="isExpressionAndNotCoordinate"
+                v-on="on"
+                @click="cycleValueDisplayMode"
+                class="mr-2">
+                <v-icon small>
+                  mdi-recycle-variant
+                </v-icon>
+              </div>
+            </template>
+            <span>{{ $t(`objectTree.cycleValueDisplayMode`) }}</span>
+          </v-tooltip>
+
+        </v-col>
+      </v-row>
     </div>
   </div>
 </template>
@@ -88,19 +109,19 @@ import { SEPoint } from "../models/SEPoint";
 import { SELine } from "../models/SELine";
 import { SESegment } from "@/models/SESegment";
 import { SECircle } from "../models/SECircle";
-import { SEMeasurement } from "@/models/SEMeasurement";
+import { SEExpression } from "@/models/SEExpression";
 import { SESegmentLength } from "@/models/SESegmentLength";
 import { SECalculation } from "../models/SECalculation";
-import { SEExpression } from "@/models/SEExpression";
-import { SESegmentDistance } from "@/models/SESegmentDistance";
+import { SEPointDistance } from "@/models/SEPointDistance";
 import { SESlider } from "@/models/SESlider";
 import { SetNoduleDisplayCommand } from "@/commands/SetNoduleDisplayCommand";
-import { SetExpressionMultiplesOfPiCommand } from "@/commands/SetExpressionMultiplesOfPiCommand";
+import { SetValueDisplayModeCommand } from "@/commands/SetValueDisplayModeCommand";
 import SETTINGS from "@/global-settings";
-import { UpdateMode } from "@/types";
+import { UpdateMode, ValueDisplayMode } from "@/types";
 import { SEAngleMarker } from "@/models/SEAngleMarker";
 import { SEPointCoordinate } from "@/models/SEPointCoordinate";
 import { SEEllipse } from "@/models/SEEllipse";
+import ToggleLabelDisplayHandler from "@/eventHandlers/ToggleLabelDisplayHandler";
 
 @Component
 export default class SENoduleItem extends Vue {
@@ -108,11 +129,13 @@ export default class SENoduleItem extends Vue {
   readonly node!: SENodule;
 
   glowMe(flag: boolean): void {
+    /* If the highlighted object is plottable, we highlight
+       it directly. Otherwise, we highlight its parents */
     if (this.isPlottable) this.node.glowing = flag;
     else if (this.node instanceof SESegmentLength) {
       const target = this.node.parents[0] as SESegment;
       target.glowing = flag;
-    } else if (this.node instanceof SESegmentDistance) {
+    } else if (this.node instanceof SEPointDistance) {
       this.node.parents
         .map(n => n as SEPoint)
         .forEach((p: SEPoint) => {
@@ -123,7 +146,7 @@ export default class SENoduleItem extends Vue {
 
   selectMe(): void {
     if (this.node instanceof SEExpression) {
-      console.debug("Clicked", this.node.name);
+      // console.debug("Clicked", this.node.name);
       this.$emit("object-select", { id: this.node.id });
     }
   }
@@ -132,19 +155,43 @@ export default class SENoduleItem extends Vue {
     new SetNoduleDisplayCommand(this.node, !this.node.showing).execute();
   }
 
-  get isMultipleOfPi(): boolean {
-    return (this.node as SEExpression).displayInMultiplesOfPi;
-  }
-  toggleMultplesOfPi(): void {
-    new SetExpressionMultiplesOfPiCommand(
+  cycleValueDisplayMode(): void {
+    // If the user clicks this they the want to have the label showing so turn it on
+    if (this.node instanceof SEAngleMarker) {
+      if (!this.node.label?.showing) {
+        new SetNoduleDisplayCommand(this.node.label!, true).execute();
+      }
+    } else if (this.node instanceof SESegmentLength) {
+      if (!this.node.seSegment.label?.showing) {
+        new SetNoduleDisplayCommand(this.node.seSegment.label!, true).execute();
+      }
+    }
+    const oldValueDisplayMode = (this.node as SEExpression).valueDisplayMode;
+    let newValueDisplayMode: ValueDisplayMode;
+    // Compute the next valueDisplayMode so that we cycle through the different options
+    switch (oldValueDisplayMode) {
+      case ValueDisplayMode.Number:
+        newValueDisplayMode = ValueDisplayMode.MultipleOfPi;
+        break;
+      case ValueDisplayMode.MultipleOfPi:
+        newValueDisplayMode = ValueDisplayMode.DegreeDecimals;
+        break;
+      case ValueDisplayMode.DegreeDecimals:
+        newValueDisplayMode = ValueDisplayMode.Number;
+        break;
+    }
+    new SetValueDisplayModeCommand(
       this.node as SEExpression,
-      !(this.node as SEExpression).displayInMultiplesOfPi
+      oldValueDisplayMode,
+      newValueDisplayMode
     ).execute();
-    // update a parent to update the display on the sphere canvas
-    this.node.parents[0].update({
-      mode: UpdateMode.DisplayOnly,
-      stateArray: []
-    });
+    // update a parent (who is parent to both this measurement and the label) to update the display on the sphere canvas
+    if (!(this.node instanceof SECalculation)) {
+      this.node.parents[0].update({
+        mode: UpdateMode.DisplayOnly,
+        stateArray: []
+      });
+    }
   }
   get isPoint(): boolean {
     return this.node instanceof SEPoint;
@@ -177,7 +224,7 @@ export default class SENoduleItem extends Vue {
     return this.node instanceof SEAngleMarker;
   }
   get isMeasurement(): boolean {
-    return this.node instanceof SEMeasurement;
+    return this.node instanceof SEExpression;
   }
   get isCalculation(): boolean {
     return this.node instanceof SECalculation;
@@ -202,51 +249,17 @@ export default class SENoduleItem extends Vue {
   }
 
   get shortDisplayText(): string {
-    if (
-      this.node instanceof SEPoint ||
-      this.node instanceof SELine ||
-      this.node instanceof SESegment ||
-      this.node instanceof SECircle ||
-      this.node instanceof SEEllipse
-    ) {
-      return this.node.label?.ref.shortName ?? "Unknown label";
-    } else if (this.node instanceof SEExpression) {
-      {
-        return this.node.shortName;
-      }
-    } else {
-      return "n/a";
-    }
+    return this.node.noduleItemText;
   }
   get definitionText(): string {
-    if (this.node instanceof SEPoint) {
-      return (
-        this.node.label?.ref.shortName +
-        this.node.locationVector.toFixed(SETTINGS.decimalPrecision)
-      );
-    } else if (
-      this.node instanceof SELine ||
-      this.node instanceof SESegment ||
-      this.node instanceof SECircle ||
-      this.node instanceof SEEllipse
-    ) {
-      const nameList = this.node.parents
-        .map(p => p.name.toString())
-        //.map(p => ((p as unknown) as Labelable).label!.ref.shortName)
-        .join(",");
-      return this.node.label?.ref.shortName + "(" + nameList + ")";
-    } else if (this.node instanceof SEExpression) {
-      {
-        return this.node.longName;
-      }
-    } else {
-      return "n/a";
-    }
+    return this.node.noduleDescription;
   }
 
-  get magnificationLevel(): number {
-    return this.magnificationLevel;
-  }
+  // TODO: the following getter definition is recursive
+  // and is not currently used. DO we need this?
+  // get magnificationLevel(): number {
+  //   return this.magnificationLevel;
+  // }
 }
 </script>
 

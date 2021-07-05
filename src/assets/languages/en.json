@@ -1,11 +1,16 @@
 {
+
   "main": {
-    "SphericalEaselMainTitle": "Spherical Easel",
-    "ToolsTabToolTip": "Tools",
-    "ObjectsTabToolTip": "Objects",
-    "UndoLastAction": "Undo last action",
-    "RedoLastAction": "Redo last action"
-  },
+		"ConstructionsTabToolTip": "Saved Constructions",
+		"ObjectsTabToolTip": "Objects",
+		"RedoLastAction": "Redo last action",
+		"SphericalEaselMainTitle": "Spherical Easel",
+		"ToolsTabToolTip": "Tools",
+		"UndoLastAction": "Undo last action"
+	},
+
+ 
+
   "toolGroups": {
     "EditTools": "Edit Tools",
     "DisplayTools": "Display Tools",
@@ -26,8 +31,12 @@
     "CreateAngleToolUseMessage": "Select two lines/segments or three points to calculate an angle.",
 
     "CreateAntipodalPointDisplayedName": "Antipodal<br>Point",
-    "CreateAntipodalPointToolTipMessage": "Select a location",
+    "CreateAntipodalPointToolTipMessage": "Create Antipode",
     "CreateAntipodalPointToolUseMessage": "Select a location to create a point (if necessary) and its antipode",
+
+    "CreatePolarDisplayedName": "Polar<br>&nbsp;",
+    "CreatePolarToolTipMessage": "Create polar line or polar points",
+    "CreatePolarToolUseMessage": "Select a location to create a point (if necessary) and its polar line or select a line segment or line to create both polar points",
 
     "CreateCircleDisplayedName": "Create<br>Circle",
     "CreateCircleToolTipMessage": "Insert circle",
@@ -121,21 +130,14 @@
     "title": "Preferences"
   },
   "objects": {
-    "points": "Points",
-    "lines": "Lines",
-    "circles": "Circles",
-    "segments": "Line Segments",
-    "measurements": "Measurements",
-    "ellipses": "Ellipses"
+    "points": "Points | Point | point",
+    "lines": "Lines | Line | line",
+    "circles": "Circles | Circle| circle",
+    "segments": "Line Segments | Line Segment | line segment",
+    "measurements": "Measurements | Measurement | measurement",
+    "ellipses": "Ellipses | Ellipse |ellipse"
   },
-  "main": {
-		"ConstructionsTabToolTip": "Saved Constructions",
-		"ObjectsTabToolTip": "Objects",
-		"RedoLastAction": "Redo last action",
-		"SphericalEaselMainTitle": "Spherical Easel",
-		"ToolsTabToolTip": "Tools",
-		"UndoLastAction": "Undo last action"
-	},
+ 
   "style": {
     "labelStyle": "Label Style",
     "foregroundStyle": "Foreground Style",
@@ -145,6 +147,14 @@
     "back": "Back",
     "front": "Front",
     "value": "Value",
+
+    "point":"1 Point | {count} Points",
+    "line":"1 Line | {count} Lines",
+    "segment":"1 Segment| {count} Segments",
+    "circle":"1 Circle | {count} Circles",
+    "label":"1 Label | {count} Labels",
+    "angleMarker":"1 Angle Marker | {count} Angle Markers",
+    "ellipse":"1 Ellipse | {count} Ellipses",
 
     "showLabels": "Show Label(s)",
     "showObjects": "Show Object(s)",
@@ -160,7 +170,7 @@
     "selectionDirection1": "Click on glowing objects to select them.",
     "selectionDirection2": "Hold the Alt/Option key to add or subtract from your selection.",
     "selectionDirection3": "Press a number key to select an object at that depth.",
-    "selectionDirection4":"Press the p key and click in any empty location to add all points. Similar for lines (l), line segments (s), circles (c), and angle markers (a).",
+    "selectionDirection4":"Press the p key and click in any empty location to add all points. Similar for lines (l), line segments (s), circles (c), ellipses (e), and angle markers (a).",
     "closeStylingPanel": "Close Styling Panel",
     "noSelectionToolTip": "No objects are currently selected. Either select objects with the selection tool or click this button to close the style panel.",
 
@@ -307,21 +317,61 @@
     "perpendicularLineThruPointSegmentSelected":"Segment {name} selected. Now select a location to create a new point or to create a point on an object.",
     "perpendicularLineThruPointCircleSelected":"Circle {name} selected. Now select a location to create a new point or to create a point on an object.",
     "perpendicularLineThruPointEllipseSelected":"Ellipse {name} selected. Now select a location to create a new point or to create a point on an object.",
-    "antipodeDuplicate":"The antipode of this point has already been created."
+    "antipodeDuplicate":"The antipode of this point has already been created.",
+    "polarLineDuplicate": "The polar line of this point has already been created.",
+    "polarPointDuplicate": "The polar points of this {object} has already been created."
   },
 
   "objectTree": {
     "expression": "Expression",
     "parserError": "Reached end of input while parsing expression",
-    "multipleOfPiToggle": "Toggle the display of the expression in multiples of Pi",
+    "cycleValueDisplayMode": "Click to cycle to the next value display mode including multiples of pi and degrees.",
     "toggleDisplay":"Toggle the display of the corresponding object.",
     "slider": "Slider",
+    "sliderValue": "{token} - Slider: {val}",
     "noObjectsInDatabase": "No objects in database",
     "result": "Result",
     "calculationExpression": "Calculation Expression",
     "min": "Min",
     "max": "Max",
     "step": "Step",
-    "create": "Create"
+    "create": "Create",
+    "anglePoints": "Angle formed by points {p1}, {p2}, and {p3}.",
+    "angleSegments": "Angle formed by lines {line1} and {line2}.",
+    "angleLines": "Angle formed by segments {seg1} and {seg2}.",
+    "angleSegmentLine": "Angle formed by segment {seg} and line {line}.",
+    "angleLineSegment": "Angle formed by line {line} and segment {seg}.",
+    "calculationDescription": "Calculation based on expression {str}",
+    "calculationValue": "{token} - Calculation: {val}",
+    "coordinateOf": "The {axisName} coordinate of point {pt}.",
+    "coordOf":"{token} - {axisName} Coord: {val}",
+    "x": "x", 
+    "y": "y", 
+    "z": "z", 
+    "distanceBetweenPts": "Distance between points {pt1} and {pt2}.",
+    "distanceValue": "{token} - Distance: {val}",
+    "segmentLength":"Length of segment {seg}.",
+    "antipodeOf": "Antipode of point {pt}",
+    "aPolarPointOf": "Polar point of line {line} with index {index}.",
+    "circleThrough": "Circle with center {center} through point {through}",
+    "ellipseThrough": "Ellipse with foci {focus1} and {focus2} through point {through}",
+    "intersectionPoint":"Intersection of {typeParent1} {parent1} and {typeParent2} {parent2} with index {index}",
+    "lineThrough":"Line through points {pt1} and {pt2} with normal vector <{normalX},{normalY},{normalZ}>",
+    "polarLine":"Polar line to point {pt} with normal vector <{normalX},{normalY},{normalZ}>",
+    "segmentThrough":"Line segment with endpoints {pt1} and {pt2} and normal vector <{normalX},{normalY},{normalZ}>",
+    "pointOnOneDimensional": "Point on {typeParent} {parent}",
+    "freePoint": "Free point",
+    "perpendicularLineThru":"Perpendicular line to {oneDimensionalParentType} {oneDimensional} through point {pt} with index {index}"
+  },
+
+  "constructions":{
+    "privateConstructions":"Private Constructions",
+    "publicConstructions":"Public Constructions",
+    "unsavedConstructionMsg":"You have unsaved work. Do you want to stay on this page and keep your work or switch to another page and discard your work.",
+    "unsavedObjectsMsg":"You have unsaved objects. Loading a new construction will remove all the current ones. Do you want to proceed or cancel?",
+    "firestoreConstructionLoaded": "Construction successfully loaded.",
+    "firestoreConstructionSaved":"Construction successfully saved.",
+    "firestoreConstructionDeleted": "Construction successfully deleted.",
+    "firestoreSaveError": "Construction was not saved."
   }
 }

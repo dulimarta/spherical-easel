@@ -1,45 +1,38 @@
-import { SEMeasurement } from "./SEMeasurement";
+import { SEExpression } from "./SEExpression";
 import { SESegment } from "./SESegment";
-import { UpdateStateType, UpdateMode } from "@/types";
+import { UpdateStateType, UpdateMode, ValueDisplayMode } from "@/types";
 import SETTINGS from "@/global-settings";
+import i18n from "@/i18n";
 
 import { Styles } from "@/types/Styles";
 const emptySet = new Set<Styles>();
-export class SESegmentLength extends SEMeasurement {
+export class SESegmentLength extends SEExpression {
   readonly seSegment: SESegment;
 
   constructor(parent: SESegment) {
-    super();
+    super(); // this.name is set to a measurement token M### in the super constructor
     this.seSegment = parent;
-    this._displayInMultiplesOfPi =
-      SETTINGS.segment.displayInMultiplesOfPiInitially;
-  }
-  public get prettyValue(): string {
-    if (this._displayInMultiplesOfPi) {
-      return (
-        (this.seSegment.arcLength / Math.PI).toFixed(
-          SETTINGS.decimalPrecision
-        ) + "\u{1D7B9}"
-      );
-    } else {
-      return this.seSegment.arcLength.toFixed(SETTINGS.decimalPrecision);
-    }
+    this._valueDisplayMode = SETTINGS.segment.initialValueDisplayMode;
   }
 
   public get value(): number {
     return this.seSegment.arcLength;
   }
 
-  public get longName(): string {
-    return `Length(${this.seSegment.label!.ref.shortName}):${this.prettyValue}`;
+  public get noduleDescription(): string {
+    return String(
+      i18n.t(`objectTree.segmentLength`, {
+        seg: this.seSegment.label?.ref.shortUserName
+      })
+    );
   }
 
-  public get shortName(): string {
+  public get noduleItemText(): string {
     return (
       this.name +
-      ` - Len(` +
-      this.seSegment.label!.ref.shortName +
-      `):${this.prettyValue}`
+      " - " +
+      this.seSegment.label?.ref.shortUserName +
+      `: ${this.prettyValue}`
     );
   }
 

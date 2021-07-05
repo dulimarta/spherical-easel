@@ -47,7 +47,7 @@
       </span>
       <!---If the displayed name is only one line delete the non-breaking space --->
       <span
-        v-else-if="button.displayedName==='CreateCoordinateDisplayedName' || button.displayedName==='DeleteDisplayedName' || button.displayedName==='CreatePerpendicularDisplayedName'">
+        v-else-if="button.displayedName==='CreateCoordinateDisplayedName'|| button.displayedName==='ZoomFitDisplayedName'|| button.displayedName==='CreatePolarDisplayedName'  || button.displayedName==='CreateEllipseDisplayedName'  || button.displayedName==='DeleteDisplayedName' || button.displayedName==='CreatePerpendicularDisplayedName'">
         <strong class="warning--text"
           v-html="$t('buttons.' +button.displayedName).split('<br>').join('').slice(0,-6) + ': '"></strong>
         {{ $t("buttons." + button.toolUseMessage) }}
@@ -72,6 +72,9 @@ import { Prop, Watch } from "vue-property-decorator";
 import { State } from "vuex-class";
 import { AppState, ToolButtonType } from "@/types";
 import SETTINGS from "@/global-settings";
+import { namespace } from "vuex-class";
+
+const SE = namespace("se");
 
 /* This component (i.e. ToolButton) has no sub-components so this declaration is empty */
 @Component
@@ -106,12 +109,13 @@ export default class ToolButton extends Vue {
 
   private color = "red";
 
-  @State((s: AppState) => s.actionMode)
+  @SE.State((s: AppState) => s.actionMode)
   readonly actionMode!: string;
 
   @Watch("actionMode")
-  setElevation(): void {
+  private setElevation(): void {
     if (this.actionMode === this.button.actionModeValue) {
+      // console.log("set elevation in");
       this.elev = 1;
       this.weight = "bold";
     } else {

@@ -172,7 +172,7 @@
     </div>
 
     <div id="DeveloperToolGroup"
-      v-show="nonEmptyGroup('developerOnly')">
+      v-show="nonEmptyGroup('developerOnly') && !inProductionMode">
       <h3 class="body-1 font-weight-bold">
         {{ $t("toolGroups.DeveloperOnlyTools") }}
       </h3>
@@ -217,10 +217,16 @@ export default class ToolGroups extends Vue {
   private toolTipCloseDelay = SETTINGS.toolTip.closeDelay;
 
   private elev = 24;
+  private inProductionMode = false;
 
   /* This is a variable that does NOT belong in the global settings but I don't know where else to 
   put it. This is the list of tools that should be displayed*/
   private buttonDisplayList = SETTINGS.userButtonDisplayList;
+
+  created(): void {
+    this.inProductionMode = process.env.NODE_ENV === "production";
+  }
+
   /* Writes the current state/edit mode to the store, where the Easel view can read it. */
   switchActionMode(): void {
     SEStore.setActionMode(this.actionMode);
@@ -385,6 +391,16 @@ export default class ToolGroups extends Vue {
       icon: "$vuetify.icons.value.antipode",
       toolTipMessage: "CreateAntipodalPointToolTipMessage",
       toolUseMessage: "CreateAntipodalPointToolUseMessage",
+      displayToolUseMessage: false,
+      toolGroup: "construction"
+    },
+    {
+      id: 20,
+      actionModeValue: "polar",
+      displayedName: "CreatePolarDisplayedName",
+      icon: "$vuetify.icons.value.polar",
+      toolTipMessage: "CreatePolarToolTipMessage",
+      toolUseMessage: "CreatePolarToolUseMessage",
       displayToolUseMessage: false,
       toolGroup: "construction"
     },

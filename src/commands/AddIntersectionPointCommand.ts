@@ -7,6 +7,7 @@ import { Vector3 } from "three";
 import Point from "@/plottables/Point";
 import Label from "@/plottables/Label";
 import SETTINGS from "@/global-settings";
+import NonFreePoint from "@/plottables/NonFreePoint";
 export class AddIntersectionPointCommand extends Command {
   private sePoint: SEIntersectionPoint;
   private parent1: SEOneDimensional;
@@ -53,14 +54,15 @@ export class AddIntersectionPointCommand extends Command {
   toOpcode(): null | string | Array<string> {
     return [
       "AddIntersectionPoint",
-      /* arg-1 */ this.sePoint.name,
+      /* arg-1 */ this.sePoint,
       /* arg-2 */ this.sePoint.locationVector.toFixed(7),
       /* arg-3 */ this.parent1.name,
       /* arg-4 */ this.parent2.name,
-      /* arg-5 */ this.seLabel.name,
-      /* arg-6 */ this.sePoint.isUserCreated,
-      /* arg-7 */ this.sePoint.showing,
-      /* arg-8 */ this.sePoint.exists
+      /* arg-5 */ this.sePoint.intersectionOrder,
+      /* arg-6 */ this.seLabel.name,
+      /* arg-7 */ this.sePoint.isUserCreated,
+      /* arg-8 */ this.sePoint.showing,
+      /* arg-9 */ this.sePoint.exists
     ].join("/");
     // We assume that "/" is not used anywhere in the object name
   }
@@ -73,21 +75,16 @@ export class AddIntersectionPointCommand extends Command {
       const location = new Vector3();
       location.from(tokens[2]);
 
-      // Extra the intersection point order from the name
-      const nameTokens = tokens[1]
-        .replace(/^.+\(/, "")
-        .replace(/\)$/, "")
-        .split(",");
-      const order = Number(nameTokens[2]);
+      const order = Number(tokens[5]);
       const point = new SEIntersectionPoint(
-        new Point(),
+        new NonFreePoint(),
         parent1,
         parent2,
         order,
-        tokens[6] === "true" // isUserCreated
+        tokens[7] === "true" // isUserCreated
       );
-      point.showing = tokens[7] === "true";
-      point.exists = tokens[8] === "true";
+      point.showing = tokens[8] === "true";
+      point.exists = tokens[9] === "true";
       point.name = tokens[1];
       objMap.set(tokens[1], point);
 
@@ -97,14 +94,14 @@ export class AddIntersectionPointCommand extends Command {
       const offset = SETTINGS.point.initialLabelOffset;
       label.locationVector.add(new Vector3(2 * offset, offset, 0)).normalize();
 
-      label.showing = tokens[7] === "true";
-      label.exists = tokens[8] === "true";
-      label.name = tokens[5];
-      objMap.set(tokens[7], label);
+      label.showing = tokens[8] === "true";
+      label.exists = tokens[9] === "true";
+      label.name = tokens[6];
+      objMap.set(tokens[6], label);
       return new AddIntersectionPointCommand(point, parent1, parent2, label);
     } else
       throw new Error(
-        `AddIntersectionPoint: parent ${tokens[4]} or ${tokens[5]} is not found`
+        `AddIntersectionPoint: parent ${tokens[3]} or ${tokens[4]} is not found`
       );
   }
 }

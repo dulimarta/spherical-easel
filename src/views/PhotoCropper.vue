@@ -30,7 +30,7 @@
 import { Cropper as ImageCropper, CircleStencil } from "vue-advanced-cropper";
 import "vue-advanced-cropper/dist/style.css";
 
-import { Component, Vue, Watch, Prop } from "vue-property-decorator";
+import { Component, Vue } from "vue-property-decorator";
 import { namespace } from "vuex-class";
 import { Route } from "vue-router";
 import { FirebaseStorage, UploadTaskSnapshot } from "@firebase/storage-types";

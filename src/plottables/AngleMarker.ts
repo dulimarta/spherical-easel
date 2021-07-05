@@ -6,6 +6,7 @@ import SETTINGS, { LAYER } from "@/global-settings";
 import Nodule, { DisplayStyle } from "./Nodule";
 import { StyleOptions, StyleEditPanels } from "@/types/Styles";
 import AppStore from "@/store";
+import { SENodule } from "@/models/SENodule";
 
 const desiredXAxis = new Vector3();
 const desiredYAxis = new Vector3();
@@ -233,8 +234,6 @@ export default class AngleMarker extends Nodule {
 
   constructor() {
     super();
-    Nodule.ANGLEMARKER_COUNT++;
-    this.name = "AngleMarker-" + Nodule.ANGLEMARKER_COUNT;
 
     // Circular Part Initialize
     // Create the initial front and back vertices (glowing/not doubleArc/not start/tail)
@@ -269,21 +268,68 @@ export default class AngleMarker extends Nodule {
     this.glowingBackCirclePathTail = this.frontCirclePathStart.clone();
     this.glowingBackCirclePathDoubleArcTail = this.frontCirclePathStart.clone();
 
-    //Set the path.id's for all the TwoJS objects which are not glowing. This is for exporting to Icon.
-    this.frontCirclePathStart.id =
-      10000000 + Nodule.ANGLEMARKER_COUNT * 100 + 0;
-    this.frontCirclePathTail.id = 10000000 + Nodule.ANGLEMARKER_COUNT * 100 + 1;
-    this.frontCirclePathDoubleArcStart.id =
-      10000000 + Nodule.ANGLEMARKER_COUNT * 100 + 2;
-    this.frontCirclePathDoubleArcTail.id =
-      10000000 + Nodule.ANGLEMARKER_COUNT * 100 + 3;
+    //Record the path ids for all the TwoJS objects which are not glowing. This is for use in IconBase to create icons.
+    Nodule.idPlottableDescriptionMap.set(String(this.frontCirclePathStart.id), {
+      type: "angleMarker",
+      side: "front",
+      fill: false,
+      part: ""
+    });
+    Nodule.idPlottableDescriptionMap.set(String(this.frontCirclePathTail.id), {
+      type: "angleMarker",
+      side: "front",
+      fill: false,
+      part: ""
+    });
+    Nodule.idPlottableDescriptionMap.set(
+      String(this.frontCirclePathDoubleArcStart.id),
+      {
+        type: "angleMarker",
+        side: "front",
+        fill: false,
+        part: ""
+      }
+    );
+    Nodule.idPlottableDescriptionMap.set(
+      String(this.frontCirclePathDoubleArcTail.id),
+      {
+        type: "angleMarker",
+        side: "front",
+        fill: false,
+        part: ""
+      }
+    );
 
-    this.backCirclePathStart.id = 10000000 + Nodule.ANGLEMARKER_COUNT * 100 + 4;
-    this.backCirclePathTail.id = 10000000 + Nodule.ANGLEMARKER_COUNT * 100 + 5;
-    this.backCirclePathDoubleArcStart.id =
-      10000000 + Nodule.ANGLEMARKER_COUNT * 100 + 6;
-    this.backCirclePathDoubleArcTail.id =
-      10000000 + Nodule.ANGLEMARKER_COUNT * 100 + 7;
+    Nodule.idPlottableDescriptionMap.set(String(this.backCirclePathStart.id), {
+      type: "angleMarker",
+      side: "back",
+      fill: false,
+      part: ""
+    });
+    Nodule.idPlottableDescriptionMap.set(String(this.backCirclePathTail.id), {
+      type: "angleMarker",
+      side: "back",
+      fill: false,
+      part: ""
+    });
+    Nodule.idPlottableDescriptionMap.set(
+      String(this.backCirclePathDoubleArcStart.id),
+      {
+        type: "angleMarker",
+        side: "back",
+        fill: false,
+        part: ""
+      }
+    );
+    Nodule.idPlottableDescriptionMap.set(
+      String(this.backCirclePathDoubleArcTail.id),
+      {
+        type: "angleMarker",
+        side: "back",
+        fill: false,
+        part: ""
+      }
+    );
 
     // The clear() extension function works only on JS Array, but
     // not on Two.JS Collection class. Use splice() instead. Clear only tails so there are 2*circleSubdivisions in the union of back/backCirclePathStart and front/backCirclePathTail
@@ -320,6 +366,26 @@ export default class AngleMarker extends Nodule {
     this.glowingBackCirclePathDoubleArcStart.noFill();
     this.glowingBackCirclePathTail.noFill();
     this.glowingBackCirclePathDoubleArcTail.noFill();
+
+    this.frontCirclePathStart.cap = "butt";
+    this.frontCirclePathDoubleArcStart.cap = "butt";
+    this.frontCirclePathTail.cap = "butt";
+    this.frontCirclePathDoubleArcTail.cap = "butt";
+
+    this.backCirclePathStart.cap = "butt";
+    this.backCirclePathDoubleArcStart.cap = "butt";
+    this.backCirclePathTail.cap = "butt";
+    this.backCirclePathDoubleArcTail.cap = "butt";
+
+    this.glowingFrontCirclePathStart.cap = "butt";
+    this.glowingFrontCirclePathDoubleArcStart.cap = "butt";
+    this.glowingFrontCirclePathTail.cap = "butt";
+    this.glowingFrontCirclePathDoubleArcTail.cap = "butt";
+
+    this.glowingBackCirclePathStart.cap = "butt";
+    this.glowingBackCirclePathDoubleArcStart.cap = "butt";
+    this.glowingBackCirclePathTail.cap = "butt";
+    this.glowingBackCirclePathDoubleArcTail.cap = "butt";
 
     // The angle marker is not initially glowing
     this.frontCirclePathStart.visible = true;
@@ -374,13 +440,33 @@ export default class AngleMarker extends Nodule {
     this.glowingFrontStraightEnd = this.frontStraightStart.clone();
     this.glowingBackStraightEnd = this.frontStraightStart.clone();
 
-    //Set the path.id's for all the TwoJS objects which are not glowing. This is for exporting to Icon.
-    this.frontStraightStart.id = 10000000 + Nodule.ANGLEMARKER_COUNT * 100 + 8;
-    this.frontStraightEnd.id = 10000000 + Nodule.ANGLEMARKER_COUNT * 100 + 9;
-    this.backStraightStart.id = 10000000 + Nodule.ANGLEMARKER_COUNT * 100 + 10;
-    this.backStraightEnd.id = 10000000 + Nodule.ANGLEMARKER_COUNT * 100 + 11;
+    //Record the path ids for all the TwoJS objects which are not glowing. This is for use in IconBase to create icons.
+    Nodule.idPlottableDescriptionMap.set(String(this.frontStraightStart.id), {
+      type: "angleMarker",
+      side: "front",
+      fill: false,
+      part: "edge"
+    });
+    Nodule.idPlottableDescriptionMap.set(String(this.frontStraightEnd.id), {
+      type: "angleMarker",
+      side: "front",
+      fill: false,
+      part: "edge"
+    });
+    Nodule.idPlottableDescriptionMap.set(String(this.backStraightStart.id), {
+      type: "angleMarker",
+      side: "back",
+      fill: false,
+      part: "edge"
+    });
+    Nodule.idPlottableDescriptionMap.set(String(this.backStraightEnd.id), {
+      type: "angleMarker",
+      side: "back",
+      fill: false,
+      part: "edge"
+    });
 
-    // Set the style that never changes -- Fill
+    // Set the style that never changes -- Fill & Cap
     this.frontStraightStart.noFill();
     this.backStraightStart.noFill();
     this.frontStraightEnd.noFill();
@@ -390,6 +476,16 @@ export default class AngleMarker extends Nodule {
     this.glowingBackStraightStart.noFill();
     this.glowingFrontStraightEnd.noFill();
     this.glowingBackStraightEnd.noFill();
+
+    this.frontStraightStart.cap = "square";
+    this.backStraightStart.cap = "square";
+    this.frontStraightEnd.cap = "square";
+    this.backStraightEnd.cap = "square";
+
+    this.glowingFrontStraightStart.cap = "square";
+    this.glowingBackStraightStart.cap = "square";
+    this.glowingFrontStraightEnd.cap = "square";
+    this.glowingBackStraightEnd.cap = "square";
 
     // The angle marker is not initially glowing
     this.frontStraightStart.visible = true;
@@ -428,11 +524,31 @@ export default class AngleMarker extends Nodule {
     this.backFill1 = this.frontFill1.clone();
     this.backFill2 = this.frontFill1.clone();
 
-    //Set the path.id's for all the TwoJS objects which are not glowing. This is for exporting to Icon.
-    this.frontFill1.id = 10000000 + Nodule.ANGLEMARKER_COUNT * 100 + 12;
-    this.frontFill2.id = 10000000 + Nodule.ANGLEMARKER_COUNT * 100 + 13;
-    this.backFill1.id = 10000000 + Nodule.ANGLEMARKER_COUNT * 100 + 14;
-    this.backFill2.id = 10000000 + Nodule.ANGLEMARKER_COUNT * 100 + 15;
+    //Record the path ids for all the TwoJS objects which are not glowing. This is for use in IconBase to create icons.
+    Nodule.idPlottableDescriptionMap.set(String(this.frontFill1.id), {
+      type: "angleMarker",
+      side: "front",
+      fill: true,
+      part: ""
+    });
+    Nodule.idPlottableDescriptionMap.set(String(this.frontFill2.id), {
+      type: "angleMarker",
+      side: "front",
+      fill: true,
+      part: ""
+    });
+    Nodule.idPlottableDescriptionMap.set(String(this.backFill1.id), {
+      type: "angleMarker",
+      side: "back",
+      fill: true,
+      part: ""
+    });
+    Nodule.idPlottableDescriptionMap.set(String(this.backFill2.id), {
+      type: "angleMarker",
+      side: "back",
+      fill: true,
+      part: ""
+    });
 
     // Strip out some of the anchors so that
     // frontFill1.length + frontFill2.length + backFill1.length + backFill2.length =
@@ -2424,14 +2540,13 @@ export default class AngleMarker extends Nodule {
     this.glowingFrontStraightStart.addTo(
       layers[LAYER.foregroundAngleMarkersGlowing]
     );
+
     this.frontCirclePathDoubleArcStart.addTo(
       layers[LAYER.foregroundAngleMarkers]
     );
     this.glowingFrontCirclePathDoubleArcStart.addTo(
       layers[LAYER.foregroundAngleMarkersGlowing]
     );
-    this.frontFill1.addTo(layers[LAYER.foregroundAngleMarkers]);
-    this.frontFill2.addTo(layers[LAYER.foregroundAngleMarkers]);
 
     // this.backFill.addTo(layers[LAYER.background]);
     this.backCirclePathStart.addTo(layers[LAYER.backgroundAngleMarkers]);
@@ -2478,6 +2593,8 @@ export default class AngleMarker extends Nodule {
     this.glowingBackCirclePathDoubleArcTail.addTo(
       layers[LAYER.backgroundAngleMarkersGlowing]
     );
+    this.frontFill1.addTo(layers[LAYER.foregroundAngleMarkers]);
+    this.frontFill2.addTo(layers[LAYER.foregroundAngleMarkers]);
     this.backFill1.addTo(layers[LAYER.backgroundAngleMarkers]);
     this.backFill2.addTo(layers[LAYER.backgroundAngleMarkers]);
   }
@@ -2523,7 +2640,7 @@ export default class AngleMarker extends Nodule {
    * @param options The style options
    */
   updateStyle(options: StyleOptions): void {
-    console.debug("Angle Marker Update style of", this.name, "using", options);
+    console.debug("Angle Marker Update style of Angle Marker using", options);
     if (options.angleMarkerRadiusPercent !== undefined) {
       this._angleMarkerRadiusPercent = options.angleMarkerRadiusPercent;
     }
@@ -2791,6 +2908,54 @@ export default class AngleMarker extends Nodule {
 
     this.glowingBackCirclePathDoubleArcTail.linewidth =
       (AngleMarker.currentGlowingAngleMarkerCircularStrokeWidthBack *
+        (this.dynamicBackStyle
+          ? Nodule.contrastStrokeWidthPercent(this.strokeWidthPercentFront)
+          : this.strokeWidthPercentBack)) /
+      100;
+
+    this.frontStraightStart.linewidth =
+      (AngleMarker.currentAngleMarkerStraightStrokeWidthFront *
+        this.strokeWidthPercentFront) /
+      100;
+
+    this.frontStraightEnd.linewidth =
+      (AngleMarker.currentAngleMarkerStraightStrokeWidthFront *
+        this.strokeWidthPercentFront) /
+      100;
+
+    this.backStraightStart.linewidth =
+      (AngleMarker.currentAngleMarkerStraightStrokeWidthBack *
+        (this.dynamicBackStyle
+          ? Nodule.contrastStrokeWidthPercent(this.strokeWidthPercentFront)
+          : this.strokeWidthPercentBack)) /
+      100;
+
+    this.backStraightEnd.linewidth =
+      (AngleMarker.currentAngleMarkerStraightStrokeWidthBack *
+        (this.dynamicBackStyle
+          ? Nodule.contrastStrokeWidthPercent(this.strokeWidthPercentFront)
+          : this.strokeWidthPercentBack)) /
+      100;
+
+    this.glowingFrontStraightStart.linewidth =
+      (AngleMarker.currentGlowingAngleMarkerStraightStrokeWidthFront *
+        this.strokeWidthPercentFront) /
+      100;
+
+    this.glowingFrontStraightEnd.linewidth =
+      (AngleMarker.currentGlowingAngleMarkerStraightStrokeWidthFront *
+        this.strokeWidthPercentFront) /
+      100;
+
+    this.glowingBackStraightStart.linewidth =
+      (AngleMarker.currentGlowingAngleMarkerStraightStrokeWidthBack *
+        (this.dynamicBackStyle
+          ? Nodule.contrastStrokeWidthPercent(this.strokeWidthPercentFront)
+          : this.strokeWidthPercentBack)) /
+      100;
+
+    this.glowingBackStraightEnd.linewidth =
+      (AngleMarker.currentGlowingAngleMarkerStraightStrokeWidthBack *
         (this.dynamicBackStyle
           ? Nodule.contrastStrokeWidthPercent(this.strokeWidthPercentFront)
           : this.strokeWidthPercentBack)) /

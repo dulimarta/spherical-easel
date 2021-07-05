@@ -3,7 +3,7 @@ import { Stylable } from "./Styleable";
 import { Resizeable } from "./Resizeable";
 import SETTINGS from "@/global-settings";
 import { StyleOptions, StyleEditPanels } from "@/types/Styles";
-import { hslaColorType } from "@/types";
+import { hslaColorType, plottableProperties } from "@/types";
 import { Vector3 } from "three";
 
 export enum DisplayStyle {
@@ -17,32 +17,28 @@ const tmpVector = new Vector3();
  * A Nodule consists of one or more TwoJS(SVG) elements
  */
 export default abstract class Nodule implements Stylable, Resizeable {
-  protected static LINE_COUNT = 0;
-  protected static ANGLEMARKER_COUNT = 0;
-  protected static CIRCLE_COUNT = 0;
-  protected static SEGMENT_COUNT = 0;
-  protected static POINT_COUNT = 0;
-  protected static LABEL_COUNT = 0;
-  protected static ELLIPSE_COUNT = 0;
-
-  static resetAllCounters(): void {
-    Nodule.LINE_COUNT = 0;
-    Nodule.ANGLEMARKER_COUNT = 0;
-    Nodule.CIRCLE_COUNT = 0;
-    Nodule.SEGMENT_COUNT = 0;
-    Nodule.POINT_COUNT = 0;
-    Nodule.LABEL_COUNT = 0;
-    Nodule.ELLIPSE_COUNT = 0;
-  }
-
-  // Declare owner, this field will be initialized by the associated owner of the plottable Nodule
-  // public owner!: SENodule;
-  public name!: string;
-
   /**
    * The number that control the styling of certain colors and opacities and size if dynamicBackStyling is true
    */
   static backStyleContrast = SETTINGS.style.backStyleContrast;
+
+  /**
+   * A map that lets use look up the properties of a plottable object
+   * using only the TwoJS id. Useful in the creation of icons when processing the SVG
+   * in IconFactorys
+   */
+  public static idPlottableDescriptionMap = new Map<
+    string,
+    plottableProperties
+  >();
+
+  /**
+   * Is this needed when we reset the sphere canvas? I'm not sure yet, so I commented out the calls to it
+   * when resetting/loading.
+   */
+  static resetIdPlottableDescriptionMap(): void {
+    Nodule.idPlottableDescriptionMap.clear();
+  }
 
   /**
    * Add various TwoJS (SVG) elements of this nodule to appropriate layers

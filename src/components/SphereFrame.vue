@@ -25,6 +25,7 @@ import RotateHandler from "@/eventHandlers/RotateHandler";
 import PointOnOneDimensionalHandler from "@/eventHandlers/PointOnOneDimensionalHandler";
 import IntersectionPointHandler from "@/eventHandlers/IntersectionPointHandler";
 import AntipodalPointHandler from "@/eventHandlers/AntipodalPointHandler";
+import PolarObjectHandler from "@/eventHandlers/PolarObjectHandler";
 import PanZoomHandler, { ZoomMode } from "@/eventHandlers/PanZoomHandler";
 import DeleteHandler from "@/eventHandlers/DeleteHandler";
 import HideObjectHandler from "@/eventHandlers/HideObjectHandler";
@@ -40,11 +41,11 @@ import EllipseHandler from "@/eventHandlers/EllipseHandler";
 
 import EventBus from "@/eventHandlers/EventBus";
 import MoveHandler from "../eventHandlers/MoveHandler";
-import { AppState, UpdateMode } from "@/types";
+import { AppState, plottableType, UpdateMode } from "@/types";
 import colors from "vuetify/es5/util/colors";
 import { SELabel } from "@/models/SELabel";
 import FileSaver from "file-saver";
-
+import Nodule from "@/plottables/Nodule";
 const SE = namespace("se");
 
 @Component({})
@@ -99,6 +100,7 @@ export default class SphereFrame extends VueComponent {
   private moveTool!: MoveHandler;
   private pointOnOneDimensionalTool!: PointOnOneDimensionalHandler;
   private antipodalPointTool!: AntipodalPointHandler;
+  private polarObjectTool!: PolarObjectHandler;
   private intersectTool!: IntersectionPointHandler;
   private deleteTool!: DeleteHandler;
   private hideTool!: HideObjectHandler;
@@ -165,8 +167,13 @@ export default class SphereFrame extends VueComponent {
     this.boundaryCircle.linewidth = SETTINGS.boundaryCircle.lineWidth;
     this.layers[LAYER.midground].add(this.boundaryCircle);
 
-    //Set the path.id's for all the TwoJS objects which are not glowing. This is for exporting to Icon.
-    this.boundaryCircle.id = 10000000 - 1;
+    //Record the path ids for all the TwoJS objects which are not glowing. This is for use in IconBase to create icons.
+    Nodule.idPlottableDescriptionMap.set(String(this.boundaryCircle.id), {
+      type: "boundaryCircle",
+      side: "mid",
+      fill: false,
+      part: ""
+    });
 
     // const box1 = new Two.Rectangle(-100, 150, 100, 150);
     // box1.fill = "hsl(200,80%,50%)";
@@ -191,7 +198,7 @@ export default class SphereFrame extends VueComponent {
     // t1.decoration = "strikethrough";
 
     // this.layers[LAYER.foregroundText].add(t1);
-    // console.log("bound box", t1.getBoundingClientRect());
+    // console.debug("bound box", t1.getBoundingClientRect());
     // Draw horizontal and vertical lines (just for debugging)
     // const R = SETTINGS.boundaryCircle.radius;
     // const hLine = new Two.Line(-R, 0, R, 0);
@@ -242,6 +249,7 @@ export default class SphereFrame extends VueComponent {
       this.layers
     );
     this.antipodalPointTool = new AntipodalPointHandler(this.layers);
+    this.polarObjectTool = new PolarObjectHandler(this.layers);
     this.deleteTool = new DeleteHandler(this.layers);
     this.hideTool = new HideObjectHandler(this.layers);
     this.segmentLengthTool = new SegmentLengthHandler(this.layers);
@@ -256,7 +264,6 @@ export default class SphereFrame extends VueComponent {
 
     // Make the canvas accessible to other components which need
     // to grab the SVG contents of the sphere
-    //this.setCanvas(this.$refs.canvas);
     SEStore.setCanvas(this.$refs.canvas);
   }
 
@@ -266,12 +273,14 @@ export default class SphereFrame extends VueComponent {
     this.$refs.canvas.removeEventListener("mouseup", this.handleMouseReleased);
     this.$refs.canvas.removeEventListener("mouseleave", this.handleMouseLeave);
     this.$refs.canvas.removeEventListener("wheel", this.handleMouseWheel);
-    EventBus.unlisten("new-slider-requested");
+    EventBus.unlisten("sphere-rotate");
+    EventBus.unlisten("zoom-updated");
+    EventBus.unlisten("export-current-svg");
+    EventBus.unlisten("construction-loaded");
   }
 
   @Watch("canvasSize")
   onCanvasResize(size: number): void {
-    console.debug("onCanvasResize");
     (this.twoInstance.renderer as any).setSize(size, size);
     // Move the origin of all layers to the center of the viewport
     this.layers.forEach(z => {
@@ -300,8 +309,6 @@ export default class SphereFrame extends VueComponent {
   //#region updateView
   private updateView() {
     // Get the current maginiication factor and translation vector
-    // console.log("SphereFrame updateView()", SEStore.zoomTranslation);
-    // console.log("Again", this.$store.state.zoomMagnificationFactor);
     const mag = SEStore.zoomMagnificationFactor;
     const transVector = SEStore.zoomTranslation;
 
@@ -324,7 +331,7 @@ export default class SphereFrame extends VueComponent {
   //#endregion updateView
 
   handleMouseWheel(event: WheelEvent): void {
-    console.log("Mouse Wheel Zoom!");
+    console.debug("Mouse Wheel Zoom!");
     // Compute (pixelX,pixelY) = the location of the mouse release in pixel coordinates relative to
     //  the top left of the sphere frame. This is a location *post* affine transformation
     const target = (event.currentTarget || event.target) as HTMLDivElement;
@@ -451,6 +458,11 @@ export default class SphereFrame extends VueComponent {
 
   getCurrentSVGForIcon(): void {
     const svgRoot = SEStore.svgCanvas?.querySelector("svg") as SVGElement;
+    //Dump a copy of the Nodule.idPlottableDescriptionMap into the console to it tso.js object
+    console.log(
+      "Nodule.idPlottableDescriptionMap",
+      Nodule.idPlottableDescriptionMap
+    );
 
     // Make a duplicate of the SVG tree
     const svgElement = svgRoot.cloneNode(true) as SVGElement;
@@ -465,12 +477,14 @@ export default class SphereFrame extends VueComponent {
     const allElements = svgElement.querySelectorAll("path");
     for (let i = 0; i < allElements.length; i++) {
       const element = allElements[i];
+      const description = Nodule.idPlottableDescriptionMap.get(
+        element.getAttribute("id") ?? ""
+      );
+
       if (
         element.getAttribute("visibility") === "hidden" ||
         element.getAttribute("d") === "" ||
-        (element.getAttribute("id")!.slice(0, 2) === "10" &&
-          Number(element.getAttribute("id")!.slice(-2)) >= 8 &&
-          Number(element.getAttribute("id")!.slice(-2)) <= 11)
+        (description?.type === "angleMarker" && description.part === "edge")
       ) {
         element.remove();
       }
@@ -493,33 +507,29 @@ export default class SphereFrame extends VueComponent {
     const paths = svgElement.querySelectorAll("path");
     for (let i = 0; i < paths.length; i++) {
       paths[i].setAttribute("vector-effect", "non-scaling-stroke");
+
+      // Into each path inject four new attributes, which will be removed later
+      const description = Nodule.idPlottableDescriptionMap.get(
+        paths[i].getAttribute("id") ?? ""
+      );
+      if (description === undefined) {
+        throw new Error(`IconBase - ${paths[i]} has no id.`);
+      }
+      paths[i].setAttribute("type", description.type);
+      paths[i].setAttribute("side", description.side);
+      paths[i].setAttribute("myfill", String(description.fill));
+      paths[i].setAttribute("part", description.part);
+
       iconArray.push(paths[i].outerHTML);
     }
-    let iconOutput = "";
-    for (let i = 0; i < iconArray.length - 1; i++) {
-      iconOutput = iconOutput + iconArray[i] + "; ";
-    }
-    iconOutput = iconOutput + iconArray[iconArray.length - 1];
-    console.log(iconOutput);
 
-    var blob = new Blob([iconOutput], {
+    // We are NOT actually saving an SVG content,
+    // but it is actually a plain text payload
+    // The ";" delimiter is required by IconBase.vue
+    var blob = new Blob([iconArray.join(";")], {
       type: "text/plain;charset=utf-8"
     });
     FileSaver.saveAs(blob, "iconXXXPaths.svg");
-    // Make sure that when scaling the stroke width is not effected
-    // svgElement.setAttribute("vector-effect", "non-scaling-stroke");
-    // console.log(svgElement);
-    // console.log(svgElement.outerHTML);
-    // console.log(svgElement.childElementCount);
-    // console.log(svgElement.children[1].nodeType);
-    // console.log(svgElement.children[1].children[4]);
-    // console.log(svgElement.children[1].children[4].children[0]);
-    // console.log(
-    //   svgElement.children[1].children[4].children[0].getAttribute("visibility")
-    // );
-    // svgElement.children[0].remove();
-    // console.log(svgElement.childElementCount);
-    //console.log(svgElement.outerHTML);
   }
 
   animateCanvas(): void {
@@ -603,6 +613,9 @@ export default class SphereFrame extends VueComponent {
         break;
       case "antipodalPoint":
         this.currentTool = this.antipodalPointTool;
+        break;
+      case "polar":
+        this.currentTool = this.polarObjectTool;
         break;
       case "intersect":
         this.currentTool = this.intersectTool;

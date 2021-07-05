@@ -1,0 +1,15 @@
+pages:
+  image: node:latest
+  stage: deploy
+  script:
+    - yarn install
+    - yarn run app:build
+    - yarn run docs:build
+    - mv public public-vue
+    - mv dist public
+  artifacts:
+    expire_in: 1 day
+    paths:
+      - public
+  only:
+    - gitlab-page

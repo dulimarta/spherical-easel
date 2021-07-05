@@ -356,9 +356,108 @@ circleGroup.execute();
 
 ## Store
 
-This application uses a [Vuex Store](https://vuex.vuejs.org/) to implement a [State Management Pattern](https://en.wikipedia.org/wiki/State_management). This serves as single place to record the state of the app and to change (mutate) that state in predictable ways. It is a repository for all the important variables in the application that can be accessed (<span class="file">getters.ts</span>) and mutated (<span class="file">se-module.ts</span>) by all components of the app. The Store keeps a list of those variables and the initial state is
+This application uses a [Vuex Store](https://vuex.vuejs.org/) to implement a [State Management Pattern](https://en.wikipedia.org/wiki/State_management). This serves as single place to record the state of the app and to change (mutate) that state in predictable ways. It is a repository for all the important variables in the application that can be accessed.
+Using the builtin framework provided by the `vuex-store` package, the store is organized into the following four main components
+
+1. State variables (read-only access)
+2. Mutation functions to modify the state variable synchronously
+3. Action functions to modify the state variable asynchronously
+4. The getter functions that provide computed properties built from several state variables.
+
+The above components are declared as the following top-level object structure:
+
+
+```ts
+{
+  state: {
+    /* declaration of all the state variables */
+  },
+  mutations: {
+    /* declaration of all the synchronous mutation functions */
+  },
+  actions: {
+    /* declaration of all the asynchronous action functions */
+  },
+  getters: {
+    /* declaration of all the getter functions */
+  }
+}
+```
+
+Unfortunately, `vuex-store` does not provide a type safe syntax for invoking the mutation or action functions, since function names are passed
+as a string to the `commit` function (to invoke a mutation) or to the `dispatch` function (to invoke an action).
+A minor typo in the function name will fail to call the intended function.
+
+To avoid this issue, we added another library that wraps these functions into typesafe aliases. We first experimented with the `direct-vuex` library but encountered build warning messages related to circular references used by the `direct-vuex` function wrapper.
+To solve the issue, in commit [bccf383](https://gitlab.com/hans.dulimarta/sphericalgeometryvue/-/commit/bccf383a247ef60b0d8eebb5c4f966b43d75c72b) we migrated from `direct-vuex` to `vuex-module-decorator`. This new library requires use of (sub)modules.
+Currently, we have only one module defined in `src/store/se-module.ts`:
+
+<<< @/src/store/se-module.ts#SEModuleHeader
+
+Modules are defined under the `modules` property (in `@/store/index.ts`) as shown below:
+
+
+<<< @/src/store/index.ts#storeRoot
+
+
+:::warning IMPORTANT
+The `name` property defined at the `@Module` annotation must match the property name (`se`) defined under the `modules` property.
+:::
+
+
+The `vuex-module-decorator` library automatically convert any class properties/variables into `vuex-store` state variables.
+Currently, we have the following as the store state variables:
 
 <<< @/src/store/se-module.ts#appState
+
+Mutation functions must be annotated with `@Mutation`:
+
+<<< @/src/store/se-module.ts#addPoint
+
+Likewise, action functions must be annotated with `@Action`. Currently we use none.
+
+Any functions defined as JavaScript getter automatically become `vuex-store` getter
+
+:::tip
+TypeScript requires getter functions take no arguments. To provide a getter function that takes argument, we depend on 
+function composition and currying. Essentially, we make the getter function to return a function that takes the arguments.
+In the following snippet we have a getter function `findNearbySENodules` that takes two arguments and returns an array of `SENodule`.
+By returning a function with such signature, the getter function itself requires no parameter.
+:::
+
+<<< @/src/store/se-module.ts#findNearbyGetter
+
+The `SEStore` exported name provides a type safe syntax (as well as editor auto completion) to the state variables, mutation, action, and getter functions. Examples:
+
+```ts
+import {SEStore} from "@/store"
+
+// Later in code
+const ctr = new SEPoint(/* args here */)
+const radius = SEStore.sphereRadius;  // this accesses the state variable sphereRadius
+SEStore.addPoint(ctr);                // this invokes the `addPoint` mutation function
+SEStore.findNearbySENodule(queryPoint, scrPos); // invokes the getter function
+```
+
+As opposed to the unsafe call below:
+
+```ts
+this.$store.commit('addPoint', ctr);
+```
+
+:::tip
+`SEStore` can be used in Vue Components as well as ordinary TypeScript files, giving a consistent type safe call syntax
+throughout the app.
+:::
+
+To enforce **read-only** syntax when accessing the store state variables from Vue component we rely on the state mapping provided by `vuex-class`
+and combine it with readonly keyword in Typescript:
+
+<<< @/src/App.vue#activeToolName
+
+where the prefix `SE` is defined using the `namespace` function provided by `vuex-module-decorator`.
+
+<<< @/src/App.vue#vuex-module-namespace
 
 In the [Zooming and Panning](/design/#zooming-and-panning) section, the reader might have noticed that the Zoom Translation Vector is written to the [Store](/design/#store) with a <span class="method">commit(...)</span> method and the Zoom Magnification Factor is written with a <span class="method">dispatch(...)</span> method. This is because the the <span class="method">commit(...)</span> operation is a synchronous one and the <span class="method">dispatch</span> operation is an asynchronous one. The setting of the translation vector is immediately completed as a mutation of the store, but updating the magnification factor triggers an [update of all the plottable objects](/design/#zooming-and-panning) which shouldn't interrupt the programmatic control flow and can happen asynchronously.
 

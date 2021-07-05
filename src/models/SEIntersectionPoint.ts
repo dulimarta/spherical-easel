@@ -4,6 +4,12 @@ import { IntersectionReturnType } from "@/types";
 import { SEOneDimensional } from "@/types";
 import { UpdateMode, UpdateStateType, PointState } from "@/types";
 import { intersectTwoObjects } from "@/utils/intersections";
+import i18n from "@/i18n";
+import { SESegment } from "./SESegment";
+import { SELine } from "./SELine";
+import { SECircle } from "./SECircle";
+import { SEEllipse } from "./SEEllipse";
+
 export class SEIntersectionPoint extends SEPoint {
   /**
    * This flag is true if the user created this point
@@ -54,13 +60,49 @@ export class SEIntersectionPoint extends SEPoint {
       // Hide automatically created intersections
       this.showing = false;
     }
+  }
 
-    // Make sure parent names are in alpha order so we can consistently
-    // identify the intersection by its parents
-    if (seParent1.name < seParent2.name)
-      this.name = this.name + ` (${seParent1.name},${seParent2.name},${order})`;
-    else
-      this.name = this.name + ` (${seParent2.name},${seParent1.name},${order})`;
+  public get noduleDescription(): string {
+    let typeParent1;
+    if (this.seParent1 instanceof SESegment) {
+      typeParent1 = i18n.tc("objects.segments", 3);
+    } else if (this.seParent1 instanceof SELine) {
+      typeParent1 = i18n.tc("objects.lines", 3);
+    } else if (this.seParent1 instanceof SECircle) {
+      typeParent1 = i18n.tc("objects.circles", 3);
+    } else if (this.seParent1 instanceof SEEllipse) {
+      typeParent1 = i18n.tc("objects.ellipses", 3);
+    }
+    let typeParent2;
+    if (this.seParent2 instanceof SESegment) {
+      typeParent2 = i18n.tc("objects.segments", 3);
+    } else if (this.seParent2 instanceof SELine) {
+      typeParent2 = i18n.tc("objects.lines", 3);
+    } else if (this.seParent2 instanceof SECircle) {
+      typeParent2 = i18n.tc("objects.circles", 3);
+    } else if (this.seParent2 instanceof SEEllipse) {
+      typeParent2 = i18n.tc("objects.ellipses", 3);
+    }
+    return String(
+      i18n.t(`objectTree.intersectionPoint`, {
+        parent1: this.seParent1.label?.ref.shortUserName,
+        typeParent1: typeParent1,
+        parent2: this.seParent2.label?.ref.shortUserName,
+        typeParent2: typeParent2,
+        index: this.order
+      })
+    );
+  }
+
+  public get noduleItemText(): string {
+    return (
+      this.label?.ref.shortUserName ??
+      "No Label Short Name In SEIntersectionPoint"
+    );
+  }
+
+  public get intersectionOrder(): number {
+    return this.order;
   }
 
   /**
@@ -127,6 +169,10 @@ export class SEIntersectionPoint extends SEPoint {
   // See the attempts in SENodule around line 218
   //override the method from SEPoint
   public isFreePoint(): boolean {
+    return false;
+  }
+
+  public isNonFreePoint(): boolean {
     return false;
   }
 }

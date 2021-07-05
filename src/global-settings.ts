@@ -1,3 +1,4 @@
+import { ValueDisplayMode } from "./types";
 import { LabelDisplayMode } from "./types/Styles";
 
 export default {
@@ -107,9 +108,10 @@ export default {
   },
   // #endregion boundarycircle
   point: {
-    showLabelsOfFreePointsInitially: true, // Should the labels of free points be shown upon creating the point
-    showLabelsOfNonFreePointsInitially: false, // Should the labels of non-free points be shown upon creating the point
-    showLabelsOfPointOnObjectInitially: false, // Should the labels of points on objects be shown upon creating the point
+    showLabelsOfFreePointsInitially: true, // Should the labels of free points be shown upon creating the point?
+    showLabelsOfNonFreePointsInitially: false, // Should the labels of non-free points be shown upon creating the point?
+    showLabelsOfPointOnObjectInitially: false, // Should the labels of points on objects be shown upon creating the point?
+    showLabelsOfPolarPointInitially: false, // Should the labels of polar points be shown upon creation?
     readingCoordinatesChangesLabelModeTo: LabelDisplayMode.NameAndValue,
     maxLabelDistance: 0.1, // The maximum distance that a label is allowed to get away from the point
     initialLabelOffset: 0.2, // When making point labels this is initially how far (roughly) they are from the location of the point
@@ -179,11 +181,12 @@ export default {
     }
   },
   segment: {
-    displayInMultiplesOfPiInitially: true, // Should the measure of the length be in multiples of pi
+    Initially: true, // Should the measure of the length be in multiples of pi
     showLabelsInitially: false, // Should the labels be show upon creating the segment
     maxLabelDistance: 0.15, // The maximum distance that a label is allowed to get away from the segment
     defaultLabelMode: LabelDisplayMode.NameOnly, // The default way of displaying this objects label
     measuringChangesLabelModeTo: LabelDisplayMode.NameAndValue,
+    initialValueDisplayMode: ValueDisplayMode.MultipleOfPi, // Set the initial display of the values for the measurement of the angle
     initialLabelOffset: 0.02, // When making point labels this is initially how far (roughly) they are from the line
     minimumArcLength: 0.045, // Don't create segments with a length less than this (must be larger than point.hitIdealDistance because if not it is possible to create a line segment of length zero )
     numPoints: 20, // The number of vertices used to render the segment. These are spread over the front and back parts. MAKE THIS EVEN!
@@ -274,6 +277,20 @@ export default {
       }
       // The width is the same as the default drawn version
       // Dashing is the same as the default drawn version
+    },
+    nonFree: {
+      // No fill for lines
+      strokeColor: {
+        front: "hsla(200, 90%, 61%, 1)",
+        back: "hsla(200, 90%, 80%, 1)"
+      },
+      // The thickness reduction of the nonFree line when drawn
+      scalePercent: 85, // The percent that the size of the (free) lines are scaled by to get the thickness of the nonFreeLine
+      dashArray: {
+        offset: { front: 0, back: 0 },
+        front: [] as number[], // An empty array means no dashing.
+        back: [10, 5] // An empty array means no dashing.
+      }
     }
   },
   circle: {
@@ -388,8 +405,8 @@ export default {
     }
   },
   label: {
-    maxLabelDisplayCaptionLength: 30, // The maximum number of characters in the displayed label caption
-    maxLabelDisplayTextLength: 15, // The maximum number of characters in the displayed label name
+    maxLabelDisplayCaptionLength: 15, // The maximum number of characters in the displayed label caption
+    maxLabelDisplayTextLength: 8, // The maximum number of characters in the displayed label name
     //The scaling of the label relative to the scaled for zoom default size
     textScalePercent: 100,
     dynamicBackStyle: true,
@@ -409,9 +426,9 @@ export default {
     }
   },
   angleMarker: {
-    displayInMultiplesOfPiInitially: true, // Should the measure of the angle be in multiples of pi
+    initialValueDisplayMode: ValueDisplayMode.DegreeDecimals, // Set the initial display of the values for the measurement of the angle
     showLabelsInitially: true, // Should the labels be show upon creating the angleMarker
-    maxLabelDistance: 0.15, // The maximum distance that a label is allowed to get away from the angleMarker
+    maxLabelDistance: 0.25, // The maximum distance that a label is allowed to get away from the angleMarker
     initialLabelOffset: 0.2, // When making point labels this is initially how far (roughly) they are from the angleMarker
     defaultLabelMode: LabelDisplayMode.ValueOnly, // The default way of displaying this objects label
     turnOffVertexLabelOnCreation: true, // When an angle marker is created with a label at the vertex, that label is turned off if this is set.
@@ -556,8 +573,8 @@ export default {
     },
     angleMarker: {
       scale: {
-        front: 5,
-        back: 4
+        front: 10,
+        back: 8
       },
       strokeWidth: {
         front: 1,
@@ -594,7 +611,7 @@ export default {
     point: {
       scale: {
         front: 7,
-        back: 5
+        back: 9
       },
       strokeWidth: {
         front: 0.8,

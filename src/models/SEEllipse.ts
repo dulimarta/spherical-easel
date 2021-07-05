@@ -11,6 +11,8 @@ import { UpdateMode, UpdateStateType, CircleState } from "@/types";
 import { Labelable } from "@/types";
 import { SELabel } from "@/models/SELabel";
 import { Vector } from "two.js";
+import { SEStore } from "@/store";
+import i18n from "@/i18n";
 
 const styleSet = new Set([
   Styles.strokeColor,
@@ -103,7 +105,7 @@ export class SEEllipse extends SENodule
     this.ref.updateDisplay();
 
     SEEllipse.ELLIPSE_COUNT++;
-    this.name = `E-${SEEllipse.ELLIPSE_COUNT}`;
+    this.name = `E${SEEllipse.ELLIPSE_COUNT}`;
   }
 
   customStyles(): Set<Styles> {
@@ -135,6 +137,20 @@ export class SEEllipse extends SENodule
   get b(): number {
     return this._b;
   }
+  public get noduleDescription(): string {
+    return String(
+      i18n.t(`objectTree.ellipseThrough`, {
+        focus1: this._focus1SEPoint.label?.ref.shortUserName,
+        focus2: this._focus2SEPoint.label?.ref.shortUserName,
+        through: this._ellipseSEPoint.label?.ref.shortUserName
+      })
+    );
+  }
+
+  public get noduleItemText(): string {
+    return this.label?.ref.shortUserName ?? "No Label Short Name In SEEllipse";
+  }
+
   public isHitAt(
     unitIdealVector: Vector3,
     currentMagnificationFactor: number
@@ -278,8 +294,8 @@ export class SEEllipse extends SENodule
     const closest = new Vector3();
     closest.copy(this.closestVector(idealUnitSphereVector));
     // The current magnification level
-    //const mag = SENodule.store.state.zoomMagnificationFactor;
-    const mag = 1;
+
+    const mag = SEStore.zoomMagnificationFactor;
 
     // If the idealUnitSphereVector is within the tolerance of the closest point, do nothing, otherwise return the vector in the plane of the ideanUnitSphereVector and the closest point that is at the tolerance distance away.
     if (
@@ -462,4 +478,8 @@ export class SEEllipse extends SENodule
   public isLabelable(): boolean {
     return true;
   }
+  public isNonFreeLine(): boolean {
+    return false;
+  }
+ 
 }

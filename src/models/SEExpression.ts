@@ -1,13 +1,13 @@
 import { SENodule } from "./SENodule";
-// import { Styles } from "@/types/Styles";
+import { ValueDisplayMode } from "@/types";
 import { SEOneDimensional, UpdateStateType, UpdateMode } from "@/types";
 import { Vector3 } from "three";
 import SETTINGS from "@/global-settings";
 
 //const emptySet = new Set<Styles>();
 export abstract class SEExpression extends SENodule {
-  //Controls if the expression should be measured in multiples of pi
-  protected _displayInMultiplesOfPi = false;
+  //Controls if the expression should be measured in multiples of pi, decimal degrees or just a number
+  protected _valueDisplayMode = ValueDisplayMode.Number;
   constructor() {
     super();
     SEExpression.EXPR_COUNT++;
@@ -16,16 +16,12 @@ export abstract class SEExpression extends SENodule {
     this.name = `M${SEExpression.EXPR_COUNT}`;
   }
 
-  public toggleDisplayInMultiplesOfPi(): void {
-    this._displayInMultiplesOfPi = !this._displayInMultiplesOfPi;
+  /**Controls if the expression measurement should be displayed in multiples of pi, degrees or a number*/
+  get valueDisplayMode(): ValueDisplayMode {
+    return this._valueDisplayMode;
   }
-
-  /**Controls if the expression should be measured in multiples of pi*/
-  get displayInMultiplesOfPi(): boolean {
-    return this._displayInMultiplesOfPi;
-  }
-  set displayInMultiplesOfPi(b: boolean) {
-    this._displayInMultiplesOfPi = b;
+  set valueDisplayMode(vdm: ValueDisplayMode) {
+    this._valueDisplayMode = vdm;
   }
 
   public isPointOnOneDimensional(): boolean {
@@ -37,6 +33,10 @@ export abstract class SEExpression extends SENodule {
   public isPoint(): boolean {
     return false;
   }
+  public isNonFreeLine(): boolean {
+    return false;
+  }
+
   public isOneDimensional(): this is SEOneDimensional {
     return false;
   }
@@ -52,21 +52,21 @@ export abstract class SEExpression extends SENodule {
   /* TODO: Evaluate or get the value of the expressions */
   abstract get value(): number;
 
-  protected get prettyValue(): string {
-    return this.value.toFixed(SETTINGS.decimalPrecision);
+  public get prettyValue(): string {
+    switch (this._valueDisplayMode) {
+      case ValueDisplayMode.Number:
+        return String(this.value.toFixed(SETTINGS.decimalPrecision));
+      case ValueDisplayMode.MultipleOfPi:
+        return (
+          (this.value / Math.PI).toFixed(SETTINGS.decimalPrecision) +
+          "\u{1D7B9}"
+        );
+      case ValueDisplayMode.DegreeDecimals:
+        return (
+          this.value.toDegrees().toFixed(SETTINGS.decimalPrecision) + "\u{00B0}"
+        );
+    }
   }
-
-  /**
-   * The short name used in the SENoduleItem component (in object tree) to display name and value of this
-   * expression. This get updated with the object.
-   */
-  abstract get shortName(): string;
-
-  /**
-   * The long name used in the SENoduleItem component (in object tree) when the user mouses over the
-   * item it displays more information about the item.
-   */
-  abstract get longName(): string;
 
   //public customStyles = (): Set<Styles> => emptySet;
 

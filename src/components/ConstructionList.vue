@@ -144,9 +144,9 @@ export default class extends Vue {
           "image/svg+xml"
         );
         // We assume the SVG tree is always the first child
-        this.svgParent?.replaceChild(
-          newSvg.activeElement as SVGElement,
-          this.svgParent.firstChild as SVGElement
+        // The following code works on FireFox but not on CHrome
+        this.svgParent?.firstChild?.replaceWith(
+          newSvg.activeElement as SVGElement
         );
       });
   }

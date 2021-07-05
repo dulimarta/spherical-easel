@@ -36,10 +36,19 @@
         </v-toolbar-title>
         <v-tooltip left>
           <template v-slot:activator="{ on }">
-            <a href="/docs">
+            <!--- TODO: Change the URL to match the hosting site 
+               For instance, on GitLab use href="/sphericalgeometryvue/docs"
+               Watch out for double slashes "//"
+            --->
+            <router-link to="/docs/">
               <v-icon class="ml-2"
                 v-on="on">mdi-help-circle</v-icon>
-            </a>
+            </router-link>
+            <!-- Use <a> For GitLab -->
+            <!--a :href="`${baseURL}/docs`">
+              <v-icon class="ml-2"
+                v-on="on">mdi-help-circle</v-icon>
+            </a-->
           </template>
           <span>Open Doc</span>
         </v-tooltip>
@@ -78,6 +87,11 @@
       The router controls this background and it can be Easel or settings or...
     -->
     <v-main>
+      <v-alert v-show="!isSupportedBrowser"
+        type="error"
+        dismissible>
+        Please use FireFox. Some features may not work on other browsers.
+      </v-alert>
       <router-view>
         <!-- this is the spot where the views controlled by Vue Router will be rendred v-html="$t('buttons.' + button.displayedName )"-->
       </router-view>
@@ -158,8 +172,12 @@ import { Unsubscribe } from "@firebase/util";
 import { Command } from "./commands/Command";
 import { Matrix4 } from "three";
 import { SEStore } from "./store";
+import { detect } from "detect-browser";
 
+//#region vuex-module-namespace
 const SE = namespace("se");
+//#endregion vuex-module-namespace
+
 // Register vue router in-component navigation guard functions
 Component.registerHooks([
   "beforeRouteEnter",
@@ -169,8 +187,10 @@ Component.registerHooks([
 /* This allows for the State of the app to be initialized with in vuex store */
 @Component({ components: { MessageBox, Dialog } })
 export default class App extends Vue {
+  //#region activeToolName
   @SE.State((s: AppState) => s.activeToolName)
   readonly activeToolName!: string;
+  //#endregion activeToolName
 
   @SE.State((s: AppState) => s.svgCanvas)
   readonly svgCanvas!: HTMLDivElement | null;
@@ -186,6 +206,8 @@ export default class App extends Vue {
 
   readonly $appAuth!: FirebaseAuth;
   readonly $appDB!: FirebaseFirestore;
+
+  clientBrowser: any;
   description = "";
   publicConstruction = false;
   $refs!: {
@@ -204,25 +226,29 @@ export default class App extends Vue {
   acceptedKeys = 0;
   accountEnabled = false;
 
+  get baseURL(): string {
+    return process.env.BASE_URL ?? "";
+  }
+
   get hasObjects(): boolean {
     // Any objects must include at least one point
     return SEStore.sePoints.length > 0;
   }
 
+  get isSupportedBrowser(): boolean {
+    return this.clientBrowser.name === "firefox";
+  }
+
   readonly keyHandler = (ev: KeyboardEvent): void => {
-    //console.log("here b");
+    if (ev.repeat) return; // Ignore repeated events on the same key
     if (!ev.altKey) return;
     if (!ev.ctrlKey) return;
-    console.log("here a", this.acceptedKeys, ev.key);
 
-    if (ev.key === "ß" && this.acceptedKeys === 0) {
-      // ctrl + alt + s = ß
+    if (ev.code === "KeyS" && this.acceptedKeys === 0) {
       console.info("'S' is accepted");
       this.acceptedKeys = 1;
-    } else if (ev.key === "Dead" && this.acceptedKeys === 1) {
-      // ctrl + alt + e = Dead
+    } else if (ev.code === "KeyE" && this.acceptedKeys === 1) {
       this.acceptedKeys = 2;
-      console.info("'E' is accepted", this.accountEnabled, this.acceptedKeys);
       // Directly setting the accountEnable flag here does not trigger
       // a UI update even after calling $forceUpdate()
       // Firing an event seems to solve the problem
@@ -233,16 +259,18 @@ export default class App extends Vue {
   };
 
   created(): void {
-    window.addEventListener("keyup", this.keyHandler);
+    window.addEventListener("keydown", this.keyHandler);
     EventBus.listen("secret-key", () => {
       console.log("Got the secret key");
       this.accountEnabled = true;
       this.acceptedKeys = 0;
       this.$forceUpdate();
     });
+    this.clientBrowser = detect();
   }
 
   mounted(): void {
+    console.log("Base URL is ", process.env.BASE_URL);
     SEStore.init();
     EventBus.listen("set-footer-color", this.setFooterColor);
     this.authSubscription = this.$appAuth.onAuthStateChanged(
@@ -255,10 +283,10 @@ export default class App extends Vue {
             .doc(this.uid)
             .get()
             .then((ds: DocumentSnapshot) => {
-              console.log("Fetching profile picture?", ds);
+              console.debug("Fetching profile picture?", ds);
               if (ds.exists) {
                 const { profilePictureURL } = ds.data() as any;
-                console.log("Fetching profile picture?", ds);
+                console.debug("Fetching profile picture?", ds);
                 if (profilePictureURL) {
                   this.profilePicUrl = profilePictureURL;
                 }
@@ -278,7 +306,7 @@ export default class App extends Vue {
     if (this.authSubscription) this.authSubscription();
     this.whoami = "";
     this.uid = "";
-    window.removeEventListener("keyup", this.keyHandler);
+    window.removeEventListener("keydown", this.keyHandler);
   }
   setFooterColor(e: { color: string }): void {
     this.footerColor = e.color;
@@ -346,16 +374,16 @@ export default class App extends Vue {
       })
       .then((doc: DocumentReference) => {
         EventBus.fire("show-alert", {
-          key: "objectTree.firestoreConstructionSaved",
+          key: "constructions.firestoreConstructionSaved",
           keyOptions: { docId: doc.id },
           type: "info"
         });
         SEStore.clearUnsavedFlag();
       })
       .catch((err: Error) => {
-        console.log("Can't save document", err);
+        console.error("Can't save document", err);
         EventBus.fire("show-alert", {
-          key: "objectTree.firestoreSaveError",
+          key: "constructions.firestoreSaveError",
           keyOptions: {},
           type: "error"
         });
