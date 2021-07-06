@@ -172,7 +172,7 @@ export default class AntipodalPointHandler extends Highlighter {
           //new AddPointCommand(vtx, newSELabel).execute();
           antipodalCommandGroup.addCommand(
             new AddPointOnOneDimensionalCommand(
-              this.parentPoint,
+              this.parentPoint as SEPointOnOneDimensional,
               this.oneDimensionalContainingParentPoint,
               newSELabel
             )

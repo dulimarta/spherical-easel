@@ -101,6 +101,10 @@ export class SEIntersectionPoint extends SEPoint {
     );
   }
 
+  public get intersectionOrder(): number {
+    return this.order;
+  }
+
   /**
    * If the intersection point is changed to isUserCreated(true) then the point should be showing,
    * the default style should be displayed and the glowing background should be set up
@@ -165,6 +169,10 @@ export class SEIntersectionPoint extends SEPoint {
   // See the attempts in SENodule around line 218
   //override the method from SEPoint
   public isFreePoint(): boolean {
+    return false;
+  }
+
+  public isNonFreePoint(): boolean {
     return false;
   }
 }

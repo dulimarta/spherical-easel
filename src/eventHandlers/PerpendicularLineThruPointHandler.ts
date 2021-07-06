@@ -527,7 +527,7 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
 
         addPerpendicularLineGroup.addCommand(
           new AddPointOnOneDimensionalCommand(
-            this.sePoint,
+            this.sePoint as SEPointOnOneDimensional,
             sePointOneDimensionalParent,
             newSELabel
           )

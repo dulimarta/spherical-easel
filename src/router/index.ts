@@ -19,7 +19,7 @@ const routes: Array<RouteConfig> = [
   {
     /* Use this path to automatically load a saved construction */
     path: "/construction/:documentId",
-    name: "",
+    name: "Construction",
     component: Easel,
     props: true
   },

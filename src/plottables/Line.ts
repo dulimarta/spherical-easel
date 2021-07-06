@@ -29,16 +29,16 @@ export default class Line extends Nodule {
   /**
    * A line has half on the front and half on the back.There are glowing counterparts for each part.
    */
-  private frontHalf: Two.Path;
-  private backHalf: Two.Path;
-  private glowingFrontHalf: Two.Path;
-  private glowingBackHalf: Two.Path;
+  protected frontHalf: Two.Path;
+  protected backHalf: Two.Path;
+  protected glowingFrontHalf: Two.Path;
+  protected glowingBackHalf: Two.Path;
 
-  /**
-   * What are these for?
-   */
-  private backArcLen = 0;
-  private frontArcLen = 0;
+  // /**
+  //  * What are these for?
+  //  */
+  // private backArcLen = 0;
+  // private frontArcLen = 0;
 
   /**
    * A list of Vector3s that trace the the equator of the sphere
@@ -50,17 +50,17 @@ export default class Line extends Nodule {
    * The styling variables for the drawn segment. The user can modify these.
    */
   // Front
-  private strokeColorFront = SETTINGS.line.drawn.strokeColor.front;
-  private glowingStrokeColorFront = SETTINGS.line.glowing.strokeColor.front;
-  private dashArrayFront = [] as number[]; // Initialize in constructor
-  private strokeWidthPercentFront = 100;
+  protected strokeColorFront = SETTINGS.line.drawn.strokeColor.front;
+  protected glowingStrokeColorFront = SETTINGS.line.glowing.strokeColor.front;
+  protected dashArrayFront = [] as number[]; // Initialize in constructor
+  protected strokeWidthPercentFront = 100;
 
   // Back use the default non-dynamic back style options so that when the user disables the dynamic back style these options are displayed
-  private dynamicBackStyle = SETTINGS.line.dynamicBackStyle;
-  private strokeColorBack = SETTINGS.line.drawn.strokeColor.back;
-  private glowingStrokeColorBack = SETTINGS.line.glowing.strokeColor.back;
-  private dashArrayBack = [] as number[]; // Initialize in constructor
-  private strokeWidthPercentBack = 100;
+  protected dynamicBackStyle = SETTINGS.line.dynamicBackStyle;
+  protected strokeColorBack = SETTINGS.line.drawn.strokeColor.back;
+  protected glowingStrokeColorBack = SETTINGS.line.glowing.strokeColor.back;
+  protected dashArrayBack = [] as number[]; // Initialize in constructor
+  protected strokeWidthPercentBack = 100;
 
   /** Initialize the current line width that is adjust by the zoom level and the user widthPercent */
   static currentLineStrokeWidthFront = SETTINGS.line.drawn.strokeWidth.front;
@@ -113,8 +113,8 @@ export default class Line extends Nodule {
     this.glowingBackHalf = this.frontHalf.clone();
     this.glowingFrontHalf = this.frontHalf.clone();
 
-     //Record the path ids for all the TwoJS objects which are not glowing. This is for use in IconBase to create icons.
-     Nodule.idPlottableDescriptionMap.set(String(this.frontHalf.id), {
+    //Record the path ids for all the TwoJS objects which are not glowing. This is for use in IconBase to create icons.
+    Nodule.idPlottableDescriptionMap.set(String(this.frontHalf.id), {
       type: "line",
       side: "front",
       fill: false,
@@ -311,8 +311,8 @@ export default class Line extends Nodule {
     dup._normalVector.copy(this._normalVector);
     dup.frontHalf.rotation = this.frontHalf.rotation;
     dup.backHalf.rotation = this.backHalf.rotation;
-    dup.frontArcLen = this.frontArcLen;
-    dup.backArcLen = this.backArcLen;
+    // dup.frontArcLen = this.frontArcLen;
+    // dup.backArcLen = this.backArcLen;
     dup.frontHalf.vertices.forEach((v, pos) => {
       v.copy(this.frontHalf.vertices[pos]);
     });

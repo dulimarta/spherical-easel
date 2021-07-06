@@ -67,19 +67,7 @@ export class SEPerpendicularLineThruPoint extends SELine {
       );
       if (normals[this._index] !== undefined) {
         this.normalVector.copy(normals[this._index]);
-        // // now find the vector is normals that is closest to this.normalVector (if there is more than one)
-        // if (normals.length === 1) {
-        //   this.normalVector.copy(normals[0]);
-        // } else {
-        //   // find the normal vector that is closest to this.Normal
-        //   const minAngle = Math.min(
-        //     ...(normals.map(vec => vec.angleTo(this.normalVector)) as number[])
-        //   );
-        //   const ind = normals.findIndex((vec: Vector3) => {
-        //     return vec.angleTo(this.normalVector) === minAngle;
-        //   });
-        //   this.normalVector.copy(normals[ind]);
-        // }
+
         // Given this.startPoint (in SELine)=this.seParentPoint and this.normalVector compute the endSEPoint
         // This is *never* undefined because the getNormalsToLineThru *never* returns a point with
         //  location parallel to this.seParentPoint.locationVector
@@ -143,5 +131,8 @@ export class SEPerpendicularLineThruPoint extends SELine {
         index: this._index
       })
     );
+  }
+  public isNonFreeLine(): boolean {
+    return true;
   }
 }

@@ -86,7 +86,7 @@ export default class PointHandler extends Highlighter {
 
           // Create and execute the command to create a new point for undo/redo
           new AddPointOnOneDimensionalCommand(
-            vtx,
+            vtx as SEPointOnOneDimensional,
             this.hitSESegments[0],
             newSELabel
           ).execute();
@@ -100,7 +100,7 @@ export default class PointHandler extends Highlighter {
 
           // Create and execute the command to create a new point for undo/redo
           new AddPointOnOneDimensionalCommand(
-            vtx,
+            vtx as SEPointOnOneDimensional,
             this.hitSELines[0],
             newSELabel
           ).execute();
@@ -113,7 +113,7 @@ export default class PointHandler extends Highlighter {
 
           // Create and execute the command to create a new point for undo/redo
           new AddPointOnOneDimensionalCommand(
-            vtx,
+            vtx as SEPointOnOneDimensional,
             this.hitSECircles[0],
             newSELabel
           ).execute();
@@ -126,7 +126,7 @@ export default class PointHandler extends Highlighter {
 
           // Create and execute the command to create a new point for undo/redo
           new AddPointOnOneDimensionalCommand(
-            vtx,
+            vtx as SEPointOnOneDimensional,
             this.hitSEEllipses[0],
             newSELabel
           ).execute();

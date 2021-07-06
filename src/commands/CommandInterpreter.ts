@@ -17,6 +17,7 @@ import { AddPointDistanceMeasurementCommand } from "./AddPointDistanceMeasuremen
 import { AddLengthMeasurementCommand } from "./AddLengthMeasurementCommand";
 import { ConstructionScript } from "@/types";
 import { AddEllipseCommand } from "./AddEllipseCommand";
+import { AddPolarPointCommand } from "./AddPolarPointCommand";
 const noduleDictionary = new Map<string, SENodule>();
 
 function executeIndividual(command: string): Command {
@@ -50,6 +51,8 @@ function executeIndividual(command: string): Command {
       return AddEllipseCommand.parse(command, noduleDictionary);
     case "AddAntipodalPoint":
       return AddAntipodalPointCommand.parse(command, noduleDictionary);
+    case "AddPolarPoint":
+      return AddPolarPointCommand.parse(command, noduleDictionary);
     case "AddPerpendicularLineThruPoint":
       return AddPerpendicularLineThruPointCommand.parse(
         command,
@@ -66,6 +69,7 @@ function executeIndividual(command: string): Command {
       );
     case "AddLengthMeasurement":
       return AddLengthMeasurementCommand.parse(command, noduleDictionary);
+
     case "AddCalculation":
       return AddCalculationCommand.parse(command, noduleDictionary);
     default: {

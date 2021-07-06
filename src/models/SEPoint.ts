@@ -205,7 +205,7 @@ export class SEPoint extends SENodule implements Visitable, Labelable {
   // I wish the SENodule methods would work but I couldn't figure out how
   // See the attempts in SENodule around line 218
   public isFreePoint(): boolean {
-    return this._parents.length === 0;
+    return true;
   }
   public isOneDimensional(): this is SEOneDimensional {
     return false;
@@ -224,5 +224,8 @@ export class SEPoint extends SENodule implements Visitable, Labelable {
   }
   public isLabelable(): boolean {
     return true;
+  }
+  public isNonFreeLine(): boolean {
+    return false;
   }
 }

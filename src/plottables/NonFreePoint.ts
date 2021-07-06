@@ -14,7 +14,7 @@ import Point from "@/plottables/Point";
 
 export default class NonFreePoint extends Point {
   /**
-   * free points are smaller by nonFreePointScalePercent
+   * non free points are smaller by nonFreePointScalePercent
    */
   private nonFreePointScalePercent = SETTINGS.point.nonFree.scalePercent;
 

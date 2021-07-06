@@ -108,9 +108,10 @@ export default {
   },
   // #endregion boundarycircle
   point: {
-    showLabelsOfFreePointsInitially: true, // Should the labels of free points be shown upon creating the point
-    showLabelsOfNonFreePointsInitially: false, // Should the labels of non-free points be shown upon creating the point
-    showLabelsOfPointOnObjectInitially: false, // Should the labels of points on objects be shown upon creating the point
+    showLabelsOfFreePointsInitially: true, // Should the labels of free points be shown upon creating the point?
+    showLabelsOfNonFreePointsInitially: false, // Should the labels of non-free points be shown upon creating the point?
+    showLabelsOfPointOnObjectInitially: false, // Should the labels of points on objects be shown upon creating the point?
+    showLabelsOfPolarPointInitially: false, // Should the labels of polar points be shown upon creation?
     readingCoordinatesChangesLabelModeTo: LabelDisplayMode.NameAndValue,
     maxLabelDistance: 0.1, // The maximum distance that a label is allowed to get away from the point
     initialLabelOffset: 0.2, // When making point labels this is initially how far (roughly) they are from the location of the point
@@ -276,6 +277,20 @@ export default {
       }
       // The width is the same as the default drawn version
       // Dashing is the same as the default drawn version
+    },
+    nonFree: {
+      // No fill for lines
+      strokeColor: {
+        front: "hsla(200, 90%, 61%, 1)",
+        back: "hsla(200, 90%, 80%, 1)"
+      },
+      // The thickness reduction of the nonFree line when drawn
+      scalePercent: 85, // The percent that the size of the (free) lines are scaled by to get the thickness of the nonFreeLine
+      dashArray: {
+        offset: { front: 0, back: 0 },
+        front: [] as number[], // An empty array means no dashing.
+        back: [10, 5] // An empty array means no dashing.
+      }
     }
   },
   circle: {
