@@ -126,21 +126,6 @@ describe("SphereFrame.vue", () => {
     return SEStore.sePoints[count - 1] as SEPoint;
   }
 
-  // function constructSEPoint(
-  //   x_screen: number,
-  //   y_screen: number,
-  //   isForeground: boolean
-  // ): SEPoint {
-  //   const R = SETTINGS.boundaryCircle.radius;
-  //   const zScreen =
-  //     Math.sqrt(R * R - x_screen * x_screen - y_screen * y_screen) *
-  //     (isForeground ? +1 : -1);
-  //   const p = new SEPoint(new Point());
-  //   const pos = new Vector3(x_screen, y_screen, zScreen).normalize();
-  //   p.locationVector.copy(pos);
-  //   return p;
-  // }
-
   describe("with PointTool", () => {
     // it("switches to point tool", async () => {
     //   SEStore.setActionMode({
@@ -220,6 +205,27 @@ describe("SphereFrame.vue", () => {
     });
     await wrapper.vm.$nextTick();
     await dragMouse(x1, y1, !isPoint1Foreground, x2, y2, !isPoint2Foreground);
+  }
+
+  async function drawEllipse(
+    focus1_x: number,
+    focus1_y: number,
+    isFocus1Foreground: boolean,
+    focus2_x: number,
+    focus2_y: number,
+    isFocus2Foreground: boolean,
+    x3: number,
+    y3: number,
+    isPoint3Foreground: boolean
+  ): Promise<void> {
+    SEStore.setActionMode({
+      id: "ellipse",
+      name: "Tool Name does not matter"
+    });
+    await wrapper.vm.$nextTick();
+    await mouseClickOnSphere(focus1_x, focus1_y, !isFocus1Foreground);
+    await mouseClickOnSphere(focus2_x, focus2_y, !isFocus2Foreground);
+    await mouseClickOnSphere(x3, y3, !isPoint3Foreground);
   }
 
   describe("with Line Tool", () => {
@@ -419,9 +425,53 @@ describe("SphereFrame.vue", () => {
   });
 
   describe("with Ellipse Tool", () => {
-    it("adds a new ellipse (fg/fg) while in EllipseTool", () => {});
+    async function runEllipseTest(
+      isFocus1Foreground: boolean,
+      isFocus2Foreground: boolean,
+      isPoint3Foreground: boolean
+    ): Promise<void> {
+      const prevEllipseCount = SEStore.seEllipses.length;
+      await drawEllipse(
+        101,
+        87,
+        isFocus1Foreground,
+        200,
+        113,
+        isFocus2Foreground,
+        150,
+        190,
+        isPoint3Foreground
+      );
+      expect(SEStore.seEllipses.length).toEqual(prevEllipseCount + 1);
+    }
+
+    it("adds a new ellipse (fg/fg/fg) while in EllipseTool", async () => {
+      await runEllipseTest(true, true, true);
+    });
+    it("adds a new ellipse (fg/fg/bg) while in EllipseTool", async () => {
+      await runEllipseTest(true, true, false);
+    });
+    it("adds a new ellipse (fg/bg/fg) while in EllipseTool", async () => {
+      await runEllipseTest(true, false, true);
+    });
+    it("adds a new ellipse (fg/bg/bg) while in EllipseTool", async () => {
+      await runEllipseTest(true, false, false);
+    });
+    it("adds a new ellipse (bg/fg/fg) while in EllipseTool", async () => {
+      await runEllipseTest(false, true, true);
+    });
+    it("adds a new ellipse (bg/fg/bg) while in EllipseTool", async () => {
+      await runEllipseTest(false, true, false);
+    });
+    it("adds a new ellipse (bg/bg/fg) while in EllipseTool", async () => {
+      await runEllipseTest(false, false, true);
+    });
+    it("adds a new ellipse (bg/bg/bg) while in EllipseTool", async () => {
+      await runEllipseTest(false, false, false);
+    });
   });
-  describe.only("with AntipodalPoint tool", () => {
+
+  describe("with AntipodalPoint tool", () => {
     async function runAntipodeTest(isForeground: boolean) {
       const prevPointCount = SEStore.sePoints.length;
       await mouseClickOnSphere(TEST_MOUSE_X, TEST_MOUSE_Y, isForeground);
@@ -555,10 +605,6 @@ describe("SphereFrame.vue", () => {
 
     it("adds a line thru a foreground point perpendicular to another line", async () => {
       await runPerpendicularToLineTest(true);
-      // const names = SEStore.seLines
-      //   .map((ln: SELine) => ln.noduleDescription)
-      //   .join("\n");
-      // console.log("Lines", names);
     });
     it("adds a line thru a background point perpendicular to another line", async () => {
       await runPerpendicularToLineTest(false);
