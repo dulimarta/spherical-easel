@@ -1,0 +1,6 @@
+[build]
+command = "yarn app:build; yarn docs:build"
+publish = "dist/"
+
+[context.production.environment]
+NODE_ENV = "production"
