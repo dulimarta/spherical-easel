@@ -492,7 +492,7 @@ export default class SegmentHandler extends Highlighter {
 
         segmentGroup.addCommand(
           new AddPointOnOneDimensionalCommand(
-            vtx,
+            vtx as SEPointOnOneDimensional,
             this.startSEPointOneDimensionalParent,
             newSELabel
           )
@@ -576,7 +576,7 @@ export default class SegmentHandler extends Highlighter {
         newSELabel = new SELabel(newLabel, vtx);
         segmentGroup.addCommand(
           new AddPointOnOneDimensionalCommand(
-            vtx,
+            vtx as SEPointOnOneDimensional,
             this.hitSESegments[0],
             newSELabel
           )
@@ -593,7 +593,7 @@ export default class SegmentHandler extends Highlighter {
 
         segmentGroup.addCommand(
           new AddPointOnOneDimensionalCommand(
-            vtx,
+            vtx as SEPointOnOneDimensional,
             this.hitSELines[0],
             newSELabel
           )
@@ -609,7 +609,7 @@ export default class SegmentHandler extends Highlighter {
 
         segmentGroup.addCommand(
           new AddPointOnOneDimensionalCommand(
-            vtx,
+            vtx as SEPointOnOneDimensional,
             this.hitSECircles[0],
             newSELabel
           )
@@ -625,7 +625,7 @@ export default class SegmentHandler extends Highlighter {
 
         segmentGroup.addCommand(
           new AddPointOnOneDimensionalCommand(
-            vtx,
+            vtx as SEPointOnOneDimensional,
             this.hitSEEllipses[0],
             newSELabel
           )

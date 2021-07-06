@@ -11,11 +11,11 @@ import { DisplayStyle } from "@/plottables/Nodule";
 import Label from "@/plottables/Label";
 
 export class AddPointOnOneDimensionalCommand extends Command {
-  private sePointOnOneDimensional: SEPoint | SEPointOnOneDimensional;
+  private sePointOnOneDimensional: SEPointOnOneDimensional;
   private parent: SEOneDimensional;
   private seLabel: SELabel;
   constructor(
-    sePointOnOneDimensional: SEPoint | SEPointOnOneDimensional,
+    sePointOnOneDimensional: SEPointOnOneDimensional,
     parent: SEOneDimensional,
     seLabel: SELabel
   ) {

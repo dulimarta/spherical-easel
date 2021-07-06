@@ -480,7 +480,7 @@ export default class CircleHandler extends Highlighter {
 
         circleCommandGroup.addCommand(
           new AddPointOnOneDimensionalCommand(
-            vtx,
+            vtx as SEPointOnOneDimensional,
             this.centerSEPointOneDimensionalParent,
             newSELabel
           )
@@ -563,7 +563,7 @@ export default class CircleHandler extends Highlighter {
 
         circleCommandGroup.addCommand(
           new AddPointOnOneDimensionalCommand(
-            vtx,
+            vtx as SEPointOnOneDimensional,
             this.hitSESegments[0],
             newSELabel
           )
@@ -579,7 +579,7 @@ export default class CircleHandler extends Highlighter {
         newSELabel = new SELabel(newLabel, vtx);
         circleCommandGroup.addCommand(
           new AddPointOnOneDimensionalCommand(
-            vtx,
+            vtx as SEPointOnOneDimensional,
             this.hitSELines[0],
             newSELabel
           )
@@ -594,7 +594,7 @@ export default class CircleHandler extends Highlighter {
         newSELabel = new SELabel(newLabel, vtx);
         circleCommandGroup.addCommand(
           new AddPointOnOneDimensionalCommand(
-            vtx,
+            vtx as SEPointOnOneDimensional,
             this.hitSECircles[0],
             newSELabel
           )
@@ -612,7 +612,7 @@ export default class CircleHandler extends Highlighter {
         newSELabel = new SELabel(newLabel, vtx);
         circleCommandGroup.addCommand(
           new AddPointOnOneDimensionalCommand(
-            vtx,
+            vtx as SEPointOnOneDimensional,
             this.hitSEEllipses[0],
             newSELabel
           )
