@@ -23,6 +23,7 @@ module.exports = {
   collectCoverage: true,
   collectCoverageFrom: [
     "<rootDir>/src/**/*.ts",
+    "<rootDir>/src/components/*.vue",
     "!<rootDir>/src/global-settings.ts",
     "!<rootDir>/src/i18n.ts"
   ]
