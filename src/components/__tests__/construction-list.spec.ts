@@ -57,14 +57,14 @@ describe("Construction List", () => {
     expect(label.text()).toContain("No data");
   });
 
-  xit("shows the right number of items", () => {
+  it("shows the right number of items", () => {
     const cList = createComponent({
       propsData: { items: TEST_DATA, allowSharing: false }
     }).findAll("._test_constructionItem");
     expect(cList.length).toBe(TEST_DATA.length);
   });
 
-  xit("shows a list of constructions with author name", () => {
+  it("shows a list of constructions with author name", () => {
     const cList = createComponent({
       propsData: { items: TEST_DATA, allowSharing: false }
     }).findAll("._test_constructionItem");
@@ -74,7 +74,7 @@ describe("Construction List", () => {
     }
   });
 
-  xit("shows a list of constructions with description", () => {
+  it("shows a list of constructions with description", () => {
     const cList = createComponent({
       propsData: { items: TEST_DATA, allowSharing: false }
     }).findAll("._test_constructionItem");
@@ -84,7 +84,7 @@ describe("Construction List", () => {
     }
   });
 
-  xit("shows overlay on mouse hover", async () => {
+  it("shows overlay on mouse hover", async () => {
     (axios.get as any).mockResolvedValue({ data: "<svg></svg>" });
     const wrapper = createComponent({
       propsData: { items: TEST_DATA, allowSharing: false }
