@@ -16,8 +16,7 @@ import Component from "vue-class-component";
 import SETTINGS from "@/global-settings";
 import { Watch, Prop, PropSync } from "vue-property-decorator";
 import { StyleEditPanels } from "@/types/Styles";
-import { State } from "vuex-class";
-
+import { SEStore } from "@/store";
 @Component({})
 export default class TextInputSelector extends Vue {
   @Prop() readonly mode!: StyleEditPanels;
@@ -42,7 +41,7 @@ export default class TextInputSelector extends Vue {
   readonly toolTipCloseDelay = SETTINGS.toolTip.closeDelay;
 
   onDataChanged(newData: string): void {
-    this.$store.direct.commit.changeStyle({
+    SEStore.changeStyle({
       selected: this.$store.getters.selectedSENodules(),
       payload: {
         panel: this.mode,

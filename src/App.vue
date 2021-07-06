@@ -58,25 +58,27 @@
 
       <!-- This will open up the global settings view setting the language, decimals 
       display and other global options-->
-      <template v-if="accountEnabled">
-        <span>{{whoami}}</span>
+      <transition name="pulse">
+        <div v-if="accountEnabled">
+          <span>{{whoami}}</span>
 
-        <v-img id="profilePic"
-          v-if="profilePicUrl"
-          class="mx-2"
-          contain
-          :src="profilePicUrl"
-          :aspect-ratio="1/1"
-          max-width="48"
-          @click="doLoginOrCheck"></v-img>
-        <v-icon v-else
-          class="mx-2"
-          @click="doLoginOrCheck">mdi-account</v-icon>
-        <v-icon v-if="whoami !== ''"
-          :disabled="!hasObjects"
-          class="mr-2"
-          @click="$refs.saveConstructionDialog.show()">mdi-share</v-icon>
-      </template>
+          <v-img id="profilePic"
+            v-if="profilePicUrl"
+            class="mx-2"
+            contain
+            :src="profilePicUrl"
+            :aspect-ratio="1/1"
+            max-width="48"
+            @click="doLoginOrCheck"></v-img>
+          <v-icon v-else
+            class="mx-2"
+            @click="doLoginOrCheck">mdi-account</v-icon>
+          <v-icon v-if="whoami !== ''"
+            :disabled="!hasObjects"
+            class="mr-2"
+            @click="$refs.saveConstructionDialog.show()">mdi-share</v-icon>
+        </div>
+      </transition>
       <router-link to="/settings/">
         <v-icon>mdi-cog</v-icon>
       </router-link>
@@ -407,5 +409,26 @@ export default class App extends Vue {
 
 #profilePic {
   border-radius: 50%;
+}
+.pulse-enter-active {
+  animation-name: pulse;
+  animation-duration: 0.5s;
+}
+.pulse-leave-active {
+  animation-name: pulse;
+  animation-duration: 0.5s;
+  animation-direction: reverse;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(0);
+  }
+  50% {
+    transform: scale(2);
+  }
+  100% {
+    transform: scale(1);
+  }
 }
 </style>
