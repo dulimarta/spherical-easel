@@ -253,4 +253,7 @@ export class SELabel extends SENodule implements Visitable {
   public isLabelable(): boolean {
     return false;
   }
+  public isNonFreeLine(): boolean {
+    return false;
+  }
 }

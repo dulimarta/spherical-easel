@@ -89,14 +89,18 @@ This section is an outline of the steps need to add a tool that takes a collecti
      - The user mouse presses inside the canvas, mouse moves outside of the sphere (_with_ a mouse leave event), and then mouse releases... inside of the canvas or not... inside of the sphere or not?
      - The user presses and release in the same location.
 5. Add the tool to the <span class="file">SphereFrame.vue</span> file.
+
    - Import the handler.
    - Add a private variable (like <span class="variable">xxxxTool</span> ) for the handler.
    - In the <span class="method">mounted()</span> method add the constructor call.
    - In the <span class="method">switchActionMode(mode: string)</span> add a new case using the <span class="variable">actionMode</span> string and tool reference
-6. Debug your tool. Play with it and make sure it behaves in many situations.
+
+6. If the new object created has any hidden <span class="class">SEPoints</span> like <span class="class">SEPerpendicularThruPoint</span> or <span class="class">SEPolarLine</span> then modify the <span class="method">createAllIntersectionsWithXXX</span> in <span class="file">se-module.ts</span> file to _not_ add those hidden points to the <span class="variable">avoidVectors</span> array.
+
+7. Debug your tool. Play with it and make sure it behaves in many situations.
    - What is the behavior under all the edge condition list in step 4? How does undo and redo work in each of those edge cases?
-7. Add at least ten new tests in the <span class="file">???</span> file in the <span class="directory">test</span> directory.
-8. Update the documentation. Create a new description of the use of the tool in the
+8. Add at least ten new tests in the <span class="file">???</span> file in the <span class="directory">test</span> directory.
+9. Update the documentation. Create a new description of the use of the tool in the
    - [Tools Documents](/tools/edit.html)
    - [Event Handlers](/design/#event-handlers)
 
@@ -128,6 +132,7 @@ This section is an outline of the steps needed to add a tool that takes user mou
 
     - Creating new <span class="method">intersectXxxWithAaa</span> methods (where `Xxx` is any existing one dimensional type or `Aaa`)
     - Adding a <span class="method">createAllIntersectionsWithAaa</span> in <span class="file">getters.ts</span>.
+    - If the new object created has any hidden <span class="class">SEPoints</span> like <span class="class">SEPerpendicularThruPoint</span> or <span class="class">SEPolarLine</span> then modify the <span class="method">createAllIntersectionsWithXXX</span> in <span class="file">se-module.ts</span> file to _not_ add those hidden points to the <span class="variable">avoidVectors</span> array.
     - Modifying all the <span class="method">createAllIntersectionsWithXxx</span> methods (where `Xxx` is any existing one dimensional type) to account for all the intersections with existing objects.
     - Updating the <span class="method">intersectTwoObjects</span> method to include `Aaa` objects
     - Updating the <span class="class">IntersectionPointHandler</span> class

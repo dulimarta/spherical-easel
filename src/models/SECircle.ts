@@ -318,4 +318,7 @@ export class SECircle extends SENodule
   public isLabelable(): boolean {
     return true;
   }
+  public isNonFreeLine(): boolean {
+    return false;
+  }
 }

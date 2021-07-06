@@ -171,4 +171,8 @@ export class SEIntersectionPoint extends SEPoint {
   public isFreePoint(): boolean {
     return false;
   }
+
+  public isNonFreePoint(): boolean {
+    return false;
+  }
 }

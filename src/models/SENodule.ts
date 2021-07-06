@@ -251,6 +251,9 @@ export abstract class SENodule {
   //   return true;
   // }
 
+  // Only returns true if this is an SENonFreeLine
+  public abstract isNonFreeLine(): boolean;
+
   // Only returns true if this is an SELabel
   public abstract isLabel(): boolean;
   // This doesn't work
@@ -273,7 +276,7 @@ export abstract class SENodule {
   public isFreeToMove(): boolean {
     if (this.isFreePoint() || this.isPointOnOneDimensional() || this.isLabel())
       return true;
-    if (this.isPoint()) {
+    if (this.isNonFreeLine()) {
       // don't let this fall through because if a point has an empty parents array the .every method returns true even for non-free points
       return false;
     }

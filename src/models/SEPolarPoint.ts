@@ -2,34 +2,38 @@ import { SEPoint } from "./SEPoint";
 import Point from "@/plottables/Point";
 import { UpdateMode, UpdateStateType, PointState } from "@/types";
 import i18n from "@/i18n";
+import { SELine } from "./SELine";
+import { SESegment } from "./SESegment";
 
-export class SEAntipodalPoint extends SEPoint {
+export class SEPolarPoint extends SEPoint {
   /**
    * The point parent of this SEAntipodalPoint
    */
-  private _antipodalPointParent: SEPoint;
+  private _polarLineOrSegmentParent: SELine | SESegment;
+  private index: number;
 
   /**
-   * Create an intersection point between two one-dimensional objects
-   * @param point the TwoJS point associated with this intersection
-   * @param antipodalPointParent The parent
+   *
+   * @param point The TwoJS object associated with this SEPoint
+   * @param polarLineOrSegmentParent The SELine parent of this SEPoint
+   * @param index Which point is this?  There are two polar points associated with each line
    */
-  constructor(point: Point, antipodalPointParent: SEPoint) {
+  constructor(
+    point: Point,
+    polarLineOrSegmentParent: SELine | SESegment,
+    index: number
+  ) {
     super(point);
-    this._antipodalPointParent = antipodalPointParent;
+    this._polarLineOrSegmentParent = polarLineOrSegmentParent;
+    this.index = index;
   }
 
   public get noduleDescription(): string {
     return String(
-      i18n.t(`objectTree.antipodeOf`, {
-        pt: this._antipodalPointParent.label?.ref.shortUserName
+      i18n.t(`objectTree.aPolarPointOf`, {
+        line: this._polarLineOrSegmentParent.label?.ref.shortUserName,
+        index: this.index
       })
-    );
-  }
-
-  public get noduleItemText(): string {
-    return (
-      this.label?.ref.shortUserName ?? "No Label Short Name In SEAntipodePoint"
     );
   }
 
@@ -39,12 +43,12 @@ export class SEAntipodalPoint extends SEPoint {
       return;
     }
     this.setOutOfDate(false);
-    this._exists = this._antipodalPointParent.exists;
+    this._exists = this._polarLineOrSegmentParent.exists;
     if (this._exists) {
-      // Update the current location with the opposite of the antipodal parent vector location
+      // Update the current location normal vector of the line, multiply by -1 if index is 1
       this._locationVector
-        .copy(this._antipodalPointParent.locationVector)
-        .multiplyScalar(-1);
+        .copy(this._polarLineOrSegmentParent.normalVector)
+        .multiplyScalar(this.index === 1 ? -1 : 1);
       this.ref.positionVector = this._locationVector;
     }
 
@@ -69,6 +73,9 @@ export class SEAntipodalPoint extends SEPoint {
     }
 
     this.updateKids(state);
+  }
+  public isNonFreeLine(): boolean {
+    return false;
   }
   public isFreePoint(): boolean {
     return false;

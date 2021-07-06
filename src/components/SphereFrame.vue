@@ -25,6 +25,7 @@ import RotateHandler from "@/eventHandlers/RotateHandler";
 import PointOnOneDimensionalHandler from "@/eventHandlers/PointOnOneDimensionalHandler";
 import IntersectionPointHandler from "@/eventHandlers/IntersectionPointHandler";
 import AntipodalPointHandler from "@/eventHandlers/AntipodalPointHandler";
+import PolarObjectHandler from "@/eventHandlers/PolarObjectHandler";
 import PanZoomHandler, { ZoomMode } from "@/eventHandlers/PanZoomHandler";
 import DeleteHandler from "@/eventHandlers/DeleteHandler";
 import HideObjectHandler from "@/eventHandlers/HideObjectHandler";
@@ -99,6 +100,7 @@ export default class SphereFrame extends VueComponent {
   private moveTool!: MoveHandler;
   private pointOnOneDimensionalTool!: PointOnOneDimensionalHandler;
   private antipodalPointTool!: AntipodalPointHandler;
+  private polarObjectTool!: PolarObjectHandler;
   private intersectTool!: IntersectionPointHandler;
   private deleteTool!: DeleteHandler;
   private hideTool!: HideObjectHandler;
@@ -247,6 +249,7 @@ export default class SphereFrame extends VueComponent {
       this.layers
     );
     this.antipodalPointTool = new AntipodalPointHandler(this.layers);
+    this.polarObjectTool = new PolarObjectHandler(this.layers);
     this.deleteTool = new DeleteHandler(this.layers);
     this.hideTool = new HideObjectHandler(this.layers);
     this.segmentLengthTool = new SegmentLengthHandler(this.layers);
@@ -610,6 +613,9 @@ export default class SphereFrame extends VueComponent {
         break;
       case "antipodalPoint":
         this.currentTool = this.antipodalPointTool;
+        break;
+      case "polar":
+        this.currentTool = this.polarObjectTool;
         break;
       case "intersect":
         this.currentTool = this.intersectTool;

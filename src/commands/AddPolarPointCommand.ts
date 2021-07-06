@@ -5,77 +5,88 @@ import { SELabel } from "@/models/SELabel";
 import SETTINGS from "@/global-settings";
 import { SENodule } from "@/models/SENodule";
 import { Vector3 } from "three";
+import { SESegment } from "@/models/SESegment";
+import { SELine } from "@/models/SELine";
+import { SEPolarPoint } from "@/models/SEPolarPoint";
 import Point from "@/plottables/Point";
-import { SEPointOnOneDimensional } from "@/models/SEPointOnOneDimensional";
 import { DisplayStyle } from "@/plottables/Nodule";
+import { SEPointOnOneDimensional } from "@/models/SEPointOnOneDimensional";
 import Label from "@/plottables/Label";
 
-export class AddPointOnOneDimensionalCommand extends Command {
-  private sePointOnOneDimensional: SEPointOnOneDimensional;
-  private parent: SEOneDimensional;
+export class AddPolarPointCommand extends Command {
+  private sePolarPoint: SEPolarPoint;
+  private index: number;
+  private parent: SELine | SESegment;
   private seLabel: SELabel;
   constructor(
-    sePointOnOneDimensional: SEPointOnOneDimensional,
-    parent: SEOneDimensional,
+    sePolarPoint: SEPolarPoint,
+    index: number,
+    parent: SELine | SESegment,
     seLabel: SELabel
   ) {
     super();
-    this.sePointOnOneDimensional = sePointOnOneDimensional;
+    this.sePolarPoint = sePolarPoint;
     this.parent = parent;
     this.seLabel = seLabel;
+    this.index = index;
   }
 
   do(): void {
-    this.parent.registerChild(this.sePointOnOneDimensional);
-    this.sePointOnOneDimensional.registerChild(this.seLabel);
-    if (SETTINGS.point.showLabelsOfPointOnObjectInitially) {
+    this.parent.registerChild(this.sePolarPoint);
+    this.sePolarPoint.registerChild(this.seLabel);
+    if (SETTINGS.point.showLabelsOfPolarPointInitially) {
       this.seLabel.showing = true;
     } else {
       this.seLabel.showing = false;
     }
-    Command.store.addPoint(this.sePointOnOneDimensional);
+    Command.store.addPoint(this.sePolarPoint);
     Command.store.addLabel(this.seLabel);
-    this.sePointOnOneDimensional.update({
+    this.sePolarPoint.update({
       mode: UpdateMode.DisplayOnly,
       stateArray: []
     });
   }
 
   saveState(): void {
-    this.lastState = this.sePointOnOneDimensional.id;
+    this.lastState = this.sePolarPoint.id;
   }
 
   restoreState(): void {
     Command.store.removeLabel(this.seLabel.id);
     Command.store.removePoint(this.lastState);
-    this.sePointOnOneDimensional.unregisterChild(this.seLabel);
-    this.parent.unregisterChild(this.sePointOnOneDimensional);
+    this.sePolarPoint.unregisterChild(this.seLabel);
+    this.parent.unregisterChild(this.sePolarPoint);
   }
 
   toOpcode(): null | string | Array<string> {
     return [
-      "AddPointOnOneDimensional",
-      /* arg-1 */ this.sePointOnOneDimensional.name,
-      /* arg-2 */ this.sePointOnOneDimensional.locationVector.toFixed(7),
+      "AddPolarPoint",
+      /* arg-1 */ this.sePolarPoint.name,
+      /* arg-2 */ this.sePolarPoint.locationVector.toFixed(7),
       /* arg-3 */ this.parent.name,
       /* arg-4 */ this.seLabel.name,
-      /* arg-5 */ this.sePointOnOneDimensional.showing,
-      /* arg-6 */ this.sePointOnOneDimensional.exists
+      /* arg-5 */ this.sePolarPoint.showing,
+      /* arg-6 */ this.sePolarPoint.exists,
+      /* arg-7*/ this.index
     ].join("/");
   }
 
   static parse(command: string, objMap: Map<string, SENodule>): Command {
     const tokens = command.split("/");
-    const parentLine = objMap.get(tokens[3]) as SEOneDimensional | undefined;
-    if (parentLine) {
+    const parentLineOrSegment = objMap.get(tokens[3]) as
+      | SELine
+      | SESegment
+      | undefined;
+    if (parentLineOrSegment) {
       const pointPosition = new Vector3();
       pointPosition.from(tokens[2]);
-      // const { point, label } = Command.makePointAndLabel(pointPosition); // We can't use this because we must create a SEPointOnOneDimensional and not just an SEPoint
+      // const { point, label } = Command.makePointAndLabel(pointPosition); // We can't use this because we must create a SEPolarPoint and not just an SEPoint
 
       const newPoint = new Point();
       newPoint.stylize(DisplayStyle.ApplyCurrentVariables);
       newPoint.adjustSize();
-      const point = new SEPointOnOneDimensional(newPoint, parentLine);
+      const index = Number(tokens[7]);
+      const point = new SEPolarPoint(newPoint, parentLineOrSegment, index);
       point.locationVector.copy(pointPosition);
 
       const newLabel = new Label();
@@ -92,11 +103,9 @@ export class AddPointOnOneDimensionalCommand extends Command {
       label.exists = tokens[6] === "true";
       label.name = tokens[4];
       objMap.set(tokens[4], label);
-      return new AddPointOnOneDimensionalCommand(point, parentLine, label);
+      return new AddPolarPointCommand(point, index, parentLineOrSegment, label);
     } else {
-      throw new Error(
-        `AddPointOnOneDimensional: parent object ${tokens[3]} is undefined`
-      );
+      throw new Error(`AddPolarPoint: parent object ${tokens[3]} is undefined`);
     }
   }
 }

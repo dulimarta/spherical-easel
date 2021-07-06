@@ -37,6 +37,7 @@ import {
   intersectEllipseWithEllipse
 } from "@/utils/intersections";
 import EventBus from "@/eventHandlers/EventBus";
+import { SEPolarLine } from "@/models/SEPolarLine";
 const tmpMatrix = new Matrix4();
 //const tmpVector = new Vector3();
 
@@ -661,14 +662,21 @@ export default class SE extends VuexModule implements AppState {
       // Avoid creating an intersection where any SEPoint already exists
       const avoidVectors: Vector3[] = [];
       // First add the two parent points of the newLine, if they are new, then
-      //  they won't have been added to the state.points array yet so add them first
-      avoidVectors.push(newLine.startSEPoint.locationVector);
-      // Onle perpendiculare to line through point, the SEEndPoint is auto generated SEPoint (never added to the state)
+      //  they won't have been added to the state.points array yet so add them first, but only if this is not an SEPolar line whose defining points are never added to the state
+
+      if (!(newLine instanceof SEPolarLine)) {
+        avoidVectors.push(newLine.startSEPoint.locationVector);
+      }
+      // Only perpendicular to line through point, the SEEndPoint is auto generated SEPoint (never added to the state)
       // and the user cannot interact with it. So it is *not* a vector to avoid for intersections.
-      if (!(newLine instanceof SEPerpendicularLineThruPoint)) {
+      if (!(newLine instanceof SEPerpendicularLineThruPoint || SEPolarLine)) {
         avoidVectors.push(newLine.endSEPoint.locationVector);
       }
-      this.sePoints.forEach(pt => avoidVectors.push(pt.locationVector));
+      this.sePoints.forEach(pt => {
+        if (!pt.locationVector.isZero()) {
+          avoidVectors.push(pt.locationVector);
+        }
+      });
 
       // The intersectionPointList to return
       const intersectionPointList: SEIntersectionReturnType[] = [];
@@ -769,6 +777,7 @@ export default class SE extends VuexModule implements AppState {
       this.seEllipses.forEach((oldEllipse: SEEllipse) => {
         const intersectionInfo = intersectLineWithEllipse(newLine, oldEllipse);
         intersectionInfo.forEach((info, index) => {
+          console.log("info.vec", info.vector, avoidVectors);
           if (
             !avoidVectors.some(v =>
               this.tempVec.subVectors(info.vector, v).isZero()
@@ -809,7 +818,11 @@ export default class SE extends VuexModule implements AppState {
       //  they won't have been added to the state.points array yet so add them first
       avoidVectors.push(newSegment.startSEPoint.locationVector);
       avoidVectors.push(newSegment.endSEPoint.locationVector);
-      this.sePoints.forEach(pt => avoidVectors.push(pt.locationVector));
+      this.sePoints.forEach(pt => {
+        if (!pt.locationVector.isZero()) {
+          avoidVectors.push(pt.locationVector);
+        }
+      });
 
       // The intersectionPointList to return
       const intersectionPointList: SEIntersectionReturnType[] = [];
@@ -959,7 +972,11 @@ export default class SE extends VuexModule implements AppState {
       //  they won't have been added to the state.points array yet so add them first
       avoidVectors.push(newCircle.centerSEPoint.locationVector);
       avoidVectors.push(newCircle.circleSEPoint.locationVector);
-      this.sePoints.forEach(pt => avoidVectors.push(pt.locationVector));
+      this.sePoints.forEach(pt => {
+        if (!pt.locationVector.isZero()) {
+          avoidVectors.push(pt.locationVector);
+        }
+      });
       // The intersectionPointList to return
       const intersectionPointList: SEIntersectionReturnType[] = [];
       // Intersect this new circle with all old lines
@@ -1111,7 +1128,11 @@ export default class SE extends VuexModule implements AppState {
       avoidVectors.push(newEllipse.focus1SEPoint.locationVector);
       avoidVectors.push(newEllipse.focus2SEPoint.locationVector);
       avoidVectors.push(newEllipse.ellipseSEPoint.locationVector);
-      this.sePoints.forEach(pt => avoidVectors.push(pt.locationVector));
+      this.sePoints.forEach(pt => {
+        if (!pt.locationVector.isZero()) {
+          avoidVectors.push(pt.locationVector);
+        }
+      });
       // The intersectionPointList to return
       const intersectionPointList: SEIntersectionReturnType[] = [];
 
