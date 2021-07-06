@@ -21,8 +21,9 @@
       id="_test_constructionShareDialog"
       class="dialog"
       title="Share Construction"
-      :yes-text="`Copy URL`"
+      yes-text="Copy URL"
       :yes-action="doCopyURL"
+      no-text="OK"
       max-width="50%">
       <p>Share this URL</p>
       <textarea :cols="shareURL.length"
@@ -236,7 +237,6 @@ export default class ConstructionLoader extends Vue {
   doCopyURL(): void {
     (this.$refs.docURL as HTMLTextAreaElement).select();
     document.execCommand("copy");
-    this.$refs.constructionShareDialog.hide();
   }
 
   shouldDeleteConstruction(event: { docId: string }): void {
