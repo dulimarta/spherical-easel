@@ -87,7 +87,7 @@ export default class PointOnOneDimensionalHandler extends Highlighter {
         // Create and execute the command to create a new point for undo/redo
         //new AddPointCommand(vtx, newSELabel).execute();
         new AddPointOnOneDimensionalCommand(
-          vtx,
+          vtx as SEPointOnOneDimensional,
           this.oneDimensional,
           newSELabel
         ).execute();

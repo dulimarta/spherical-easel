@@ -862,7 +862,7 @@ export default class AngleHandler extends Highlighter {
 
         angleMarkerCommandGroup.addCommand(
           new AddPointOnOneDimensionalCommand(
-            vtx,
+            vtx as SEPointOnOneDimensional,
             this.sePointOneDimensionalParents[i]!,
             newSELabel
           )

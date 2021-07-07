@@ -684,7 +684,7 @@ export default class EllipseHandler extends Highlighter {
 
         ellipseCommandGroup.addCommand(
           new AddPointOnOneDimensionalCommand(
-            vtx,
+            vtx as SEPointOnOneDimensional,
             this.focus1SEPointOneDimensionalParent,
             newSELabel
           )
@@ -747,7 +747,7 @@ export default class EllipseHandler extends Highlighter {
 
         ellipseCommandGroup.addCommand(
           new AddPointOnOneDimensionalCommand(
-            vtx,
+            vtx as SEPointOnOneDimensional,
             this.focus2SEPointOneDimensionalParent,
             newSELabel
           )
@@ -836,7 +836,7 @@ export default class EllipseHandler extends Highlighter {
 
         ellipseCommandGroup.addCommand(
           new AddPointOnOneDimensionalCommand(
-            vtx,
+            vtx as SEPointOnOneDimensional,
             this.hitSESegments[0],
             newSELabel
           )
@@ -850,7 +850,7 @@ export default class EllipseHandler extends Highlighter {
         newSELabel = new SELabel(newLabel, vtx);
         ellipseCommandGroup.addCommand(
           new AddPointOnOneDimensionalCommand(
-            vtx,
+            vtx as SEPointOnOneDimensional,
             this.hitSELines[0],
             newSELabel
           )
@@ -866,7 +866,7 @@ export default class EllipseHandler extends Highlighter {
         newSELabel = new SELabel(newLabel, vtx);
         ellipseCommandGroup.addCommand(
           new AddPointOnOneDimensionalCommand(
-            vtx,
+            vtx as SEPointOnOneDimensional,
             this.hitSECircles[0],
             newSELabel
           )
@@ -882,7 +882,7 @@ export default class EllipseHandler extends Highlighter {
         newSELabel = new SELabel(newLabel, vtx);
         ellipseCommandGroup.addCommand(
           new AddPointOnOneDimensionalCommand(
-            vtx,
+            vtx as SEPointOnOneDimensional,
             this.hitSEEllipses[0],
             newSELabel
           )
