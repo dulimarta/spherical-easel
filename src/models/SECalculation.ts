@@ -85,14 +85,7 @@ export class SECalculation extends SEExpression {
         varMap.set(measurementName.replace(/-.+/, ""), m.value);
         // }
       });
-    // console.log(this._calculationParents, varMap);
-    // this.expressions.forEach((m: SEExpression) => {
-    //   const measurementName = m.name;
-    //   // console.debug("Measurement", m, measurementName);
-    //   this.varMap.set(measurementName.replace(/-.+/, ""), m.value);
-    // });
-
-    // console.log("recalc", varMap);
+    // console.debug("recalc", varMap);
     this.computedValue = parser.evaluateWithVars(this.exprText, varMap);
   }
 
