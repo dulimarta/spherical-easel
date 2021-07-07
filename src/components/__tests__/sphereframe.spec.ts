@@ -75,7 +75,7 @@ describe("SphereFrame.vue", () => {
       clientY: y,
       shiftKey: withShift
     });
-    expect(wrapper.vm.$data.currentTool.isOnSphere).toBeTruthy();
+    // expect(wrapper.vm.$data.currentTool.isOnSphere).toBeTruthy();
     await target.trigger("mousedown", {
       clientX: x,
       clientY: y,
@@ -126,15 +126,7 @@ describe("SphereFrame.vue", () => {
     return SEStore.sePoints[count - 1] as SEPoint;
   }
 
-  describe("with PointTool", () => {
-    // it("switches to point tool", async () => {
-    //   SEStore.setActionMode({
-    //     id: "point",
-    //     name: "PointTool"
-    //   });
-    //   await wrapper.vm.$nextTick();
-    //   expect(wrapper.vm.$data.currentTool).toBeInstanceOf(PointHandler);
-    // });
+  describe("with Point Tool", () => {
     beforeEach(async () => {
       SEStore.setActionMode({
         id: "point",
@@ -143,18 +135,21 @@ describe("SphereFrame.vue", () => {
       await wrapper.vm.$nextTick();
     });
 
-    it("adds a new (foreground) point when clicking on sphere while using PointTool", async () => {
-      const prevPointCount = SEStore.sePoints.length;
-      const p = await makePoint(false /* foreground point */);
-      expect(SEStore.sePoints.length).toBe(prevPointCount + 1);
-      expect(p.locationVector.z).toBeGreaterThan(0);
+    it("adds a new point when clicking on sphere while using PointTool", async () => {
+      for (const pt of [true, false]) {
+        const prevPointCount = SEStore.sePoints.length;
+        const p = await makePoint(pt);
+        expect(SEStore.sePoints.length).toBe(prevPointCount + 1);
+        if (!pt) expect(p.locationVector.z).toBeGreaterThan(0);
+        else expect(p.locationVector.z).toBeLessThan(0);
+      }
     });
-    it("adds a new (background) point when clicking on sphere while using PointTool", async () => {
-      const prevPointCount = SEStore.sePoints.length;
-      const p = await makePoint(true /* back ground point */);
-      expect(SEStore.sePoints.length).toBe(prevPointCount + 1);
-      expect(p.locationVector.z).toBeLessThan(0);
-    });
+    // it("adds a new (background) point when clicking on sphere while using PointTool", async () => {
+    //   const prevPointCount = SEStore.sePoints.length;
+    //   const p = await makePoint(true /* back ground point */);
+    //   expect(SEStore.sePoints.length).toBe(prevPointCount + 1);
+    //   expect(p.locationVector.z).toBeLessThan(0);
+    // });
   });
 
   async function dragMouse(
@@ -172,6 +167,7 @@ describe("SphereFrame.vue", () => {
       clientY: fromY,
       shiftKey: fromBg
     });
+    expect(wrapper.vm.$data.currentTool.isOnSphere).toBeTruthy();
     await target.trigger("mousedown", {
       clientX: fromX,
       clientY: fromY,
@@ -182,6 +178,7 @@ describe("SphereFrame.vue", () => {
       clientY: toY,
       shiftKey: toBg
     });
+    expect(wrapper.vm.$data.currentTool.isOnSphere).toBeTruthy();
     await target.trigger("mouseup", {
       clientX: toX,
       clientY: toY,
@@ -277,17 +274,12 @@ describe("SphereFrame.vue", () => {
       );
       expect(newLine.normalVector).toBeVector3CloseTo(dir, 3);
     }
-    it("adds a new line (fg/fg) while in LineTool", async () => {
-      await runLineTest(true, true);
-    });
-    it("adds a new line (fg/bg) while in LineTool", async () => {
-      await runLineTest(true, false);
-    });
-    it("adds a new line (bg/bg) while in LineTool", async () => {
-      await runLineTest(false, false);
-    });
-    it("adds a new line (bg/fg) while in LineTool", async () => {
-      await runLineTest(false, true);
+    it("adds a new line while in LineTool", async () => {
+      for (const pt1 of [true, false])
+        for (const pt2 of [true, false]) {
+          SEStore.init();
+          await runLineTest(pt1, pt2);
+        }
     });
   });
 
@@ -346,17 +338,13 @@ describe("SphereFrame.vue", () => {
       expect(newSegment.normalVector).toBeVector3CloseTo(dir, 3);
     }
 
-    it("adds a new segment (fg/fg) while in SegmentTool", async () => {
+    it("adds a new segment while in SegmentTool", async () => {
+      for (const pt1 of [true, false])
+        for (const pt2 of [true, false]) {
+          SEStore.init();
+          await runSegmentTest(pt1, pt2);
+        }
       await runSegmentTest(true, true);
-    });
-    it("adds a new segment (fg/bg) while in SegmentTool", async () => {
-      await runSegmentTest(true, false);
-    });
-    it("adds a new segment (bg/fg) while in SegmentTool", async () => {
-      await runSegmentTest(false, true);
-    });
-    it("adds a new segment (bg/bg) while in SegmentTool", async () => {
-      await runSegmentTest(false, false);
     });
   });
 
@@ -410,17 +398,12 @@ describe("SphereFrame.vue", () => {
         3
       );
     }
-    it("adds a new circle (fg/fg) while in CircleTool", async () => {
-      await runCircleTest(true, true);
-    });
-    it("adds a new circle (fg/bg) while in CircleTool", async () => {
-      await runCircleTest(true, false);
-    });
-    it("adds a new circle (bg/fg) while in CircleTool", async () => {
-      await runCircleTest(false, true);
-    });
-    it("adds a new circle (bg/bg) while in CircleTool", async () => {
-      await runCircleTest(false, false);
+    it("adds a new circle while in CircleTool", async () => {
+      for (const center of [true, false])
+        for (const boundaryPt of [true, false]) {
+          SEStore.init();
+          await runCircleTest(center, boundaryPt);
+        }
     });
   });
 
@@ -445,29 +428,13 @@ describe("SphereFrame.vue", () => {
       expect(SEStore.seEllipses.length).toEqual(prevEllipseCount + 1);
     }
 
-    it("adds a new ellipse (fg/fg/fg) while in EllipseTool", async () => {
-      await runEllipseTest(true, true, true);
-    });
-    it("adds a new ellipse (fg/fg/bg) while in EllipseTool", async () => {
-      await runEllipseTest(true, true, false);
-    });
-    it("adds a new ellipse (fg/bg/fg) while in EllipseTool", async () => {
-      await runEllipseTest(true, false, true);
-    });
-    it("adds a new ellipse (fg/bg/bg) while in EllipseTool", async () => {
-      await runEllipseTest(true, false, false);
-    });
-    it("adds a new ellipse (bg/fg/fg) while in EllipseTool", async () => {
-      await runEllipseTest(false, true, true);
-    });
-    it("adds a new ellipse (bg/fg/bg) while in EllipseTool", async () => {
-      await runEllipseTest(false, true, false);
-    });
-    it("adds a new ellipse (bg/bg/fg) while in EllipseTool", async () => {
-      await runEllipseTest(false, false, true);
-    });
-    it("adds a new ellipse (bg/bg/bg) while in EllipseTool", async () => {
-      await runEllipseTest(false, false, false);
+    it("adds a new ellipse while in EllipseTool", async () => {
+      for (const focal1 of [true, false])
+        for (const focal2 of [true, false])
+          for (const boundaryPt of [true, false]) {
+            SEStore.init();
+            await runEllipseTest(focal1, focal2, boundaryPt);
+          }
     });
   });
 
@@ -494,15 +461,46 @@ describe("SphereFrame.vue", () => {
       await wrapper.vm.$nextTick();
     });
 
-    it("adds a new (foreground) point and its antipodal when clicking on sphere while using PointTool", async () => {
-      await runAntipodeTest(true);
+    it("adds a new point and its antipodal when clicking on sphere while using PointTool", async () => {
+      for (const pt of [true, false]) await runAntipodeTest(pt);
     });
 
-    it("adds a new (background) point and its antipodal when clicking on sphere while using PointTool", async () => {
-      await runAntipodeTest(false);
-    });
+    // it("adds a new (background) point and its antipodal when clicking on sphere while using PointTool", async () => {
+    //   await runAntipodeTest(false);
+    // });
   });
 
+  describe("with Polar Tool", () => {
+    async function runPolarTest(isForeground: boolean) {
+      SEStore.setActionMode({
+        id: "polar",
+        name: "Tool Name does not matter"
+      });
+      await wrapper.vm.$nextTick();
+      const prevPointCount = SEStore.sePoints.length;
+      const prevLineCount = SEStore.seLines.length;
+      await mouseClickOnSphere(TEST_MOUSE_X, TEST_MOUSE_Y, isForeground);
+      expect(SEStore.sePoints.length).toBe(prevPointCount + 1);
+      expect(SEStore.seLines.length).toBe(prevLineCount + 1);
+
+      // The most recent two points must be antipodal pairs
+      const aPoint = SEStore.sePoints[prevPointCount];
+      const conjLine = SEStore.seLines[prevLineCount];
+
+      // Verify correct normal vector of the line
+      expect(aPoint.locationVector).toBeVector3CloseTo(
+        conjLine.normalVector,
+        5
+      );
+    }
+    beforeEach(async () => {});
+    it("adds a new point and its conjugate line when clicking on sphere while using PolarTool", async () => {
+      for (const pt of [false, true]) {
+        SEStore.init();
+        await runPolarTest(pt);
+      }
+    });
+  });
   describe("With Perpendicular Tool", () => {
     async function clickAt(x: number, y: number, withShift = false) {
       const target = wrapper.find("#canvas");
@@ -525,17 +523,27 @@ describe("SphereFrame.vue", () => {
     }
     beforeEach(async () => {
       SEStore.init();
-      SEStore.setActionMode({
-        id: "perpendicular",
-        name: "Tool Name does not matter"
-      });
-      await wrapper.vm.$nextTick();
     });
+
+    /*
+    TODO: add test cases to simulate different click sequence
+    */
+
     async function runPerpendicularToLineTest(
-      foregroundPoint: boolean
+      foregroundPoint: boolean,
+      foregroundLinePt1: boolean,
+      foregroundLinePt2: boolean
     ): Promise<void> {
       const lineCount = SEStore.seLines.length;
-      await drawOneDimensional("line", 150, 170, true, 113, 200, true);
+      await drawOneDimensional(
+        "line",
+        150,
+        170,
+        foregroundLinePt1,
+        113,
+        200,
+        foregroundLinePt2
+      );
       expect(SEStore.seLines.length).toBe(lineCount + 1);
       const referenceLine = SEStore.seLines[lineCount];
 
@@ -549,8 +557,8 @@ describe("SphereFrame.vue", () => {
         name: "Tool Name does not matter"
       });
       await wrapper.vm.$nextTick();
-      await clickAt(61, 93); // Select the point
-      await clickAt(150, 170); // select the line
+      await clickAt(61, 93, !foregroundPoint); // Select the point
+      await clickAt(150, 170, !foregroundLinePt1); // select the line
 
       expect(SEStore.seLines.length).toBeGreaterThanOrEqual(lineCount + 2);
       const newLine = SEStore.seLines[lineCount + 1];
@@ -560,6 +568,15 @@ describe("SphereFrame.vue", () => {
       expect(angle.toDegrees()).toBeCloseTo(90, 3);
       // console.debug("Angle between two lines", angle.toDegrees());
     }
+
+    it("adds a line thru a point perpendicular to another line", async () => {
+      for (const pt of [true, false])
+        for (const linePt1 of [true, false])
+          for (const linePt2 of [true, false]) {
+            SEStore.init();
+            await runPerpendicularToLineTest(pt, linePt1, linePt2);
+          }
+    });
 
     async function runPerpendicularToSegmentTest(
       foregroundPoint: boolean,
@@ -603,36 +620,14 @@ describe("SphereFrame.vue", () => {
       expect(angle.toDegrees()).toBeCloseTo(90, 3);
     }
 
-    it("adds a line thru a foreground point perpendicular to another line", async () => {
-      await runPerpendicularToLineTest(true);
-    });
-    it("adds a line thru a background point perpendicular to another line", async () => {
-      await runPerpendicularToLineTest(false);
-    });
-
-    it("adds a line thru a foreground point perpendicular to a segment (fg/fg) line", async () => {
-      await runPerpendicularToSegmentTest(true, true, true);
-    });
-    it("adds a line thru a foreground point perpendicular to a segment (fg/bg) line", async () => {
-      await runPerpendicularToSegmentTest(true, true, false);
-    });
-    it("adds a line thru a foreground point perpendicular to a segment (bg/fg) line", async () => {
-      await runPerpendicularToSegmentTest(true, false, true);
-    });
-    it("adds a line thru a foreground point perpendicular to a segment (bg/bg) line", async () => {
-      await runPerpendicularToSegmentTest(true, false, false);
-    });
-    it("adds a line thru a background point perpendicular to a segment (fg/fg) line", async () => {
-      await runPerpendicularToSegmentTest(false, true, true);
-    });
-    it("adds a line thru a background point perpendicular to a segment (fg/bg) line", async () => {
-      await runPerpendicularToSegmentTest(false, true, false);
-    });
-    it("adds a line thru a background point perpendicular to a segment (bg/fg) line", async () => {
-      await runPerpendicularToSegmentTest(false, false, true);
-    });
-    it("adds a line thru a background point perpendicular to a segment (bg/bg) line", async () => {
-      await runPerpendicularToSegmentTest(false, false, false);
+    it("adds a line thru a point perpendicular to a segment", async () => {
+      for (const pt of [true, false]) {
+        for (const segmentPt1 of [true, false])
+          for (const segmentPt2 of [true, false]) {
+            SEStore.init();
+            await runPerpendicularToSegmentTest(pt, segmentPt1, segmentPt2);
+          }
+      }
     });
 
     async function runPerpendicularToCircleTest(
@@ -677,29 +672,164 @@ describe("SphereFrame.vue", () => {
       expect(angle.toDegrees()).toBeCloseTo(90, 3);
     }
 
-    it("adds a line thru a foreground point perpendicular to a circle (fg/fg) line", async () => {
-      await runPerpendicularToCircleTest(true, true, true);
+    it("adds a line thru a point perpendicular to a circle", async () => {
+      for (const pt of [true, false]) {
+        for (const circleCtr of [true, false])
+          for (const circlePt of [true, false]) {
+            SEStore.init();
+            await runPerpendicularToCircleTest(pt, circleCtr, circlePt);
+          }
+      }
     });
-    it("adds a line thru a foreground point perpendicular to a circle (fg/bg) line", async () => {
-      await runPerpendicularToCircleTest(true, true, false);
+
+    xit("adds lines thru a point perpendicular to an ellipse", () => {
+      // incomplete test
     });
-    it("adds a line thru a foreground point perpendicular to a circle (bg/fg) line", async () => {
-      await runPerpendicularToCircleTest(true, false, true);
+  });
+
+  describe("with PointOnObject Tool", () => {
+    it("adds points on a line", async () => {
+      async function runPointOnLineTest(
+        fgLinePt1: boolean,
+        fgLinePt2: boolean
+      ) {
+        const prevLineCount = SEStore.seLines.length;
+        await drawOneDimensional(
+          "line",
+          100,
+          79,
+          fgLinePt1,
+          173,
+          157,
+          fgLinePt2
+        );
+        expect(SEStore.seLines.length).toEqual(prevLineCount + 1);
+        SEStore.setActionMode({
+          id: "pointOnOneDim",
+          name: "Tool Name does not matter"
+        });
+        const aLine = SEStore.seLines[prevLineCount];
+        expect(aLine.parents.length).toBeGreaterThanOrEqual(2);
+        const end1 = aLine.parents[0] as SEPoint;
+        const end2 = aLine.parents[1] as SEPoint;
+        const R = SETTINGS.boundaryCircle.radius;
+        const mid = new Vector3();
+        mid.addScaledVector(end1.locationVector, 0.3);
+        mid.addScaledVector(end2.locationVector, 0.7);
+        const mid2D_x = mid.x * R;
+        const mid2D_y = -mid.y * R;
+        const prevPointCount = SEStore.sePoints.length;
+        await mouseClickOnSphere(mid2D_x, mid2D_y, mid.z < 0);
+        expect(SEStore.sePoints.length).toBeGreaterThanOrEqual(
+          prevPointCount + 1
+        );
+        expect(SEStore.seLines.length).toEqual(prevLineCount + 1);
+        const angle = mid.angleTo(aLine.normalVector);
+        expect(angle.toDegrees()).toBeCloseTo(90.0, 5);
+      }
+
+      for (const pt1 of [true, false])
+        for (const pt2 of [true, false]) {
+          SEStore.init();
+          await runPointOnLineTest(pt1, pt2);
+        }
     });
-    it("adds a line thru a foreground point perpendicular to a circle (bg/bg) line", async () => {
-      await runPerpendicularToCircleTest(true, false, false);
+
+    it("adds points on a segment", async () => {
+      async function runPointOnSegmentTest(
+        fgLinePt1: boolean,
+        fgLinePt2: boolean
+      ) {
+        const prevSegmentCount = SEStore.seSegments.length;
+        await drawOneDimensional(
+          "segment",
+          100,
+          79,
+          fgLinePt1,
+          173,
+          157,
+          fgLinePt2
+        );
+        expect(SEStore.seSegments.length).toEqual(prevSegmentCount + 1);
+        SEStore.setActionMode({
+          id: "pointOnOneDim",
+          name: "Tool Name does not matter"
+        });
+        const aLineSegment = SEStore.seSegments[prevSegmentCount];
+        const end1 = aLineSegment.startSEPoint;
+        const end2 = aLineSegment.endSEPoint;
+        const R = SETTINGS.boundaryCircle.radius;
+        const mid = new Vector3();
+        mid.addScaledVector(end1.locationVector, 0.3);
+        mid.addScaledVector(end2.locationVector, 0.7);
+        const mid2D_x = mid.x * R;
+        const mid2D_y = -mid.y * R;
+        const prevPointCount = SEStore.sePoints.length;
+        await mouseClickOnSphere(mid2D_x, mid2D_y, mid.z < 0);
+        expect(SEStore.sePoints.length).toBeGreaterThanOrEqual(
+          prevPointCount + 1
+        );
+        expect(SEStore.seSegments.length).toEqual(prevSegmentCount + 1);
+        const angle = mid.angleTo(aLineSegment.normalVector);
+        expect(angle.toDegrees()).toBeCloseTo(90.0, 5);
+      }
+
+      for (const pt1 of [true, false])
+        for (const pt2 of [true, false]) {
+          SEStore.init();
+          await runPointOnSegmentTest(pt1, pt2);
+        }
     });
-    it("adds a line thru a background point perpendicular to a circle (fg/fg) line", async () => {
-      await runPerpendicularToCircleTest(false, true, true);
+
+    it("adds points on a circle", async () => {
+      async function runPointOnCircleTest(
+        fgCenterPt: boolean,
+        fgBoundaryPt: boolean
+      ) {
+        const prevCircleCount = SEStore.seCircles.length;
+        await drawOneDimensional(
+          "circle",
+          100,
+          79,
+          fgCenterPt,
+          173,
+          157,
+          fgBoundaryPt
+        );
+        expect(SEStore.seCircles.length).toEqual(prevCircleCount + 1);
+        SEStore.setActionMode({
+          id: "pointOnOneDim",
+          name: "Tool Name does not matter"
+        });
+        const aCircle = SEStore.seCircles[prevCircleCount];
+        // Calculate a different point on the circle
+        const target = new Vector3().copy(aCircle.circleSEPoint.locationVector);
+        target.applyAxisAngle(
+          aCircle.centerSEPoint.locationVector,
+          Math.PI * 0.1
+        );
+        const R = SETTINGS.boundaryCircle.radius;
+        const prevPointCount = SEStore.sePoints.length;
+        // console.debug(
+        //   "Simulate mouse press on the sphere at",
+        //   target.toFixed(3)
+        // );
+        await mouseClickOnSphere(target.x * R, -target.y * R, target.z < 0);
+        expect(SEStore.sePoints.length).toBeGreaterThanOrEqual(
+          prevPointCount + 1
+        );
+        expect(SEStore.seCircles.length).toEqual(prevCircleCount + 1);
+        // const angle = mid.angleTo(aCircle.centerSEPoint.locationVector);
+        // expect(angle.toDegrees()).toBeCloseTo(90.0, 5);
+      }
+
+      for (const pt1 of [true, false])
+        for (const pt2 of [true, false]) {
+          SEStore.init();
+          await runPointOnCircleTest(pt1, pt2);
+        }
     });
-    it("adds a line thru a background point perpendicular to a circle (fg/bg) line", async () => {
-      await runPerpendicularToCircleTest(false, true, false);
-    });
-    it("adds a line thru a background point perpendicular to a circle (bg/fg) line", async () => {
-      await runPerpendicularToCircleTest(false, false, true);
-    });
-    it("adds a line thru a background point perpendicular to a circle (bg/bg) line", async () => {
-      await runPerpendicularToCircleTest(false, false, false);
-    });
+
+    xit("adds points on an ellipse", async () => {});
   });
 });
