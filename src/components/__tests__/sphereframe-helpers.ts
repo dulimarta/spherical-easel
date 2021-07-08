@@ -43,6 +43,7 @@ export async function drawPointAt(
     id: "point",
     name: "Tool Name does not matter"
   });
+  await wrapper.vm.$nextTick();
   await mouseClickOnSphere(wrapper, x, y, isBackground);
   // const target = wrapper.find("#canvas");
   // expect(target.exists).toBeTruthy();

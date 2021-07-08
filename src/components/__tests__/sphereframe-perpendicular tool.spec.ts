@@ -161,8 +161,6 @@ describe("SphereFrame: Perpendicular Tool", () => {
 
     const pointCount = SEStore.sePoints.length;
     await drawPointAt(wrapper, 61, 93, !foregroundPoint);
-    // const aPoint = SEStore.sePoints[pointCount];
-    // SEStore.addPoint(aPoint);
     expect(SEStore.sePoints.length).toBe(pointCount + 1);
     SEStore.setActionMode({
       id: "perpendicular",
