@@ -89,7 +89,7 @@ describe("SENoduleItem.vue", () => {
     jest.clearAllMocks(); // Reset all spied calls
   });
 
-  it("shows points with label, glows on mouseover/leave", async () => {
+  it("displays points with label, glows on mouseover/leave", async () => {
     const aPoint = createPoint();
     const label = createLabelFor(aPoint);
     aPoint.label = label;
@@ -101,7 +101,7 @@ describe("SENoduleItem.vue", () => {
     await runTest(wrapper, aPoint);
   });
 
-  it("shows line segments with label, glows on mouseover/leave", async () => {
+  it("displays line segments with label, glows on mouseover/leave", async () => {
     const aSegment = createSegment();
     const label = createLabelFor(aSegment);
     aSegment.label = label;
@@ -113,7 +113,7 @@ describe("SENoduleItem.vue", () => {
     await runTest(wrapper, aSegment);
   });
 
-  it("shows lines with label, glows on mouseover/leave", async () => {
+  it("displays lines with label, glows on mouseover/leave", async () => {
     const aLine = createLine();
     const label = createLabelFor(aLine);
     aLine.label = label;
@@ -125,7 +125,7 @@ describe("SENoduleItem.vue", () => {
     await runTest(wrapper, aLine);
   });
 
-  it("shows circles with label, glows on mouse hover", async () => {
+  it("displays circles with label, glows on mouse hover", async () => {
     const firstPoint = createPoint();
     const secondPoint = createPoint();
     const aCircle = new SECircle(new Circle(), firstPoint, secondPoint);
@@ -140,7 +140,7 @@ describe("SENoduleItem.vue", () => {
     await runTest(wrapper, aCircle);
   });
 
-  it("shows intersection points with label, glows on mouse hover", async () => {
+  it("displays intersection points with label, glows on mouse hover", async () => {
     const iPt = new SEIntersectionPoint(
       new Point(),
       createLine(),
@@ -158,7 +158,7 @@ describe("SENoduleItem.vue", () => {
     await runTest(wrapper, iPt);
   });
 
-  it("shows sliders with the current value", () => {
+  it("displays sliders with the current value", () => {
     const slider = new SESlider({ min: 0, max: 1, step: 0.01, value: 0.29 });
     slider.showing = true;
     const wrapper = createWrapper(TestComponent, {
@@ -171,7 +171,7 @@ describe("SENoduleItem.vue", () => {
     expect(wrapper.text()).toContain("0.29");
   });
 
-  it("shows angles between three points with label, glows on mouse hover", async () => {
+  it("displays angles between three points with label, glows on mouse hover", async () => {
     const angle = new SEAngleMarker(
       new AngleMarker(),
       AngleMode.POINTS,
@@ -192,7 +192,7 @@ describe("SENoduleItem.vue", () => {
     await runTest(wrapper, angle);
   });
 
-  it("shows angles between two lines with label, glows on mouse hover", async () => {
+  it("displays angles between two lines with label, glows on mouse hover", async () => {
     const angle = new SEAngleMarker(
       new AngleMarker(),
       AngleMode.LINES,
@@ -212,7 +212,7 @@ describe("SENoduleItem.vue", () => {
     await runTest(wrapper, angle);
   });
 
-  it("shows angles between two segments with label, glows on mouse hover", async () => {
+  it("displays angles between two segments with label, glows on mouse hover", async () => {
     const angle = new SEAngleMarker(
       new AngleMarker(),
       AngleMode.SEGMENTS,
@@ -232,7 +232,7 @@ describe("SENoduleItem.vue", () => {
     await runTest(wrapper, angle);
   });
 
-  it("shows angles between a line and a segment with label, glows on mouse hover", async () => {
+  it("displays angles between a line and a segment with label, glows on mouse hover", async () => {
     const angle = new SEAngleMarker(
       new AngleMarker(),
       AngleMode.LINEANDSEGMENT,
@@ -252,7 +252,7 @@ describe("SENoduleItem.vue", () => {
     await runTest(wrapper, angle);
   });
 
-  it("shows segment lengths, glows on mouse hover", async () => {
+  it("displays segment lengths, glows on mouse hover", async () => {
     const aSegment = createSegment();
     const label = createLabelFor(aSegment);
     aSegment.label = label;
@@ -268,7 +268,7 @@ describe("SENoduleItem.vue", () => {
     await runTest(wrapper, aSegLen, false);
   });
 
-  it("shows segment distances, glows on mouse hover", async () => {
+  it("displays segment distances, glows on mouse hover", async () => {
     const point1 = createPoint();
     const label1 = createLabelFor(point1);
     point1.label = label1;
@@ -289,7 +289,7 @@ describe("SENoduleItem.vue", () => {
     await runTest(wrapper, aSegDistance, false, 2);
   });
 
-  xit("shows expressions", async () => {
+  xit("displays expressions", async () => {
     const VALUE = 2.134;
     const expr = new SECalculation(VALUE.toString());
     const wrapper = createWrapper(TestComponent, {

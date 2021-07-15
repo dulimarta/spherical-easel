@@ -12,6 +12,7 @@ import {
 import { SEPoint } from "@/models/SEPoint";
 import { Vector3 } from "three";
 import { SEExpression } from "@/models/SEExpression";
+const R = SETTINGS.boundaryCircle.radius;
 
 describe("SphereFrame: Segment Length Measurement Tool", () => {
   let wrapper: Wrapper<Vue>;
@@ -21,7 +22,6 @@ describe("SphereFrame: Segment Length Measurement Tool", () => {
   });
 
   it("measures length of segment", async () => {
-    const R = SETTINGS.boundaryCircle.radius;
     const v1 = new Vector3(0, 0, 1);
     const v2 = new Vector3(0, 0, 1);
     v2.applyAxisAngle(new Vector3(1, 0, 0), Math.PI / 4);
@@ -65,7 +65,6 @@ describe("SphereFrame: Segment Length Measurement Tool", () => {
   });
 
   it("measures distance of two points", async () => {
-    const R = SETTINGS.boundaryCircle.radius;
     const v1 = new Vector3(0, 0, 1);
     const v2 = new Vector3(0, 0, 1);
     v2.applyAxisAngle(new Vector3(1, 0, 0), Math.PI / 4);
@@ -88,5 +87,32 @@ describe("SphereFrame: Segment Length Measurement Tool", () => {
     const angle = p1.locationVector.angleTo(p2.locationVector);
     const distance = SEStore.expressions[prevMeasurementCount] as SEExpression;
     expect(distance.value).toBeCloseTo(angle, 5);
+  });
+
+  it("measures coordinates of a point", async () => {
+    const prevPointCount = SEStore.sePoints.length;
+    await drawPointAt(wrapper, 147, 191);
+    expect(SEStore.sePoints.length).toEqual(prevPointCount + 1);
+    const pt = SEStore.sePoints[prevPointCount];
+    const prevMeasurementCount = SEStore.expressions.length;
+    SEStore.setActionMode({
+      id: "coordinate",
+      name: "Tool Name does not matter"
+    });
+    await wrapper.vm.$nextTick();
+
+    await mouseClickOnSphere(
+      wrapper,
+      pt.locationVector.x * R,
+      pt.locationVector.y * R,
+      pt.locationVector.z < 0
+    );
+    expect(SEStore.expressions.length).toEqual(prevMeasurementCount + 3);
+    const xCoord = SEStore.expressions[prevMeasurementCount];
+    const yCoord = SEStore.expressions[prevMeasurementCount + 1];
+    const zCoord = SEStore.expressions[prevMeasurementCount + 2];
+    expect(xCoord.value).toBeCloseTo(pt.locationVector.x, 5);
+    expect(yCoord.value).toBeCloseTo(pt.locationVector.y, 5);
+    expect(zCoord.value).toBeCloseTo(pt.locationVector.z, 5);
   });
 });
