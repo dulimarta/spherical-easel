@@ -6,37 +6,54 @@ export const TEST_MOUSE_X = 111;
 export const TEST_MOUSE_Y = 137;
 import { SEPoint } from "@/models/SEPoint";
 
+/**
+ * Simulate mouse click at a specific screen position on the sphere.
+ *
+ * @param wrapper
+ * @param xScreenPos
+ * @param yScreenPos
+ * @param withShift
+ */
 export async function mouseClickOnSphere(
   wrapper: Wrapper<Vue>,
-  x: number,
-  y: number,
+  xScreenPos: number,
+  yScreenPos: number,
   withShift = false
 ): Promise<void> {
   const target = wrapper.find("#canvas");
-  //   expect(target.exists).toBeTruthy();
 
+  /** IMPORTANT: the Y-coordinate below is supplied with its sign flipped.
+   * This is needed to comply with the 2D transformation applied to the canvas
+   */
   await target.trigger("mousemove", {
-    clientX: x,
-    clientY: y,
+    clientX: xScreenPos,
+    clientY: -yScreenPos,
     shiftKey: withShift
   });
   expect(wrapper.vm.$data.currentTool.isOnSphere).toBeTruthy();
   await target.trigger("mousedown", {
-    clientX: x,
-    clientY: y,
+    clientX: xScreenPos,
+    clientY: -yScreenPos,
     shiftKey: withShift
   });
   await target.trigger("mouseup", {
-    clientX: x,
-    clientY: y,
+    clientX: xScreenPos,
+    clientY: -yScreenPos,
     shiftKey: withShift
   });
 }
 
+/**
+ * Simulate drawing a point at a specific screen location in the canvas
+ * @param wrapper
+ * @param xScreen
+ * @param yScreen
+ * @param isBackground
+ */
 export async function drawPointAt(
   wrapper: Wrapper<Vue>,
-  x: number,
-  y: number,
+  xScreen: number,
+  yScreen: number,
   isBackground = false
 ): Promise<void> {
   SEStore.setActionMode({
@@ -44,26 +61,7 @@ export async function drawPointAt(
     name: "Tool Name does not matter"
   });
   await wrapper.vm.$nextTick();
-  await mouseClickOnSphere(wrapper, x, y, isBackground);
-  // const target = wrapper.find("#canvas");
-  // expect(target.exists).toBeTruthy();
-
-  // await target.trigger("mousemove", {
-  //   clientX: x,
-  //   clientY: y,
-  //   shiftKey: isBackground
-  // });
-  // expect(wrapper.vm.$data.currentTool.isOnSphere).toBeTruthy();
-  // await target.trigger("mousedown", {
-  //   clientX: x,
-  //   clientY: y,
-  //   shiftKey: isBackground
-  // });
-  // await target.trigger("mouseup", {
-  //   clientX: x,
-  //   clientY: y,
-  //   shiftKey: isBackground
-  // });
+  await mouseClickOnSphere(wrapper, xScreen, yScreen, isBackground);
 }
 
 export async function makePoint(
@@ -76,42 +74,64 @@ export async function makePoint(
   return SEStore.sePoints[count - 1] as SEPoint;
 }
 
+/**
+ * Simulate dragging the mouse between two screen positions
+ * @param wrapper
+ * @param fromXScreen
+ * @param fromYScreen
+ * @param fromBg
+ * @param toXScreen
+ * @param toYScreen
+ * @param toBg
+ * @returns
+ */
 export async function dragMouse(
   wrapper: Wrapper<Vue>,
-  fromX: number,
-  fromY: number,
+  fromXScreen: number,
+  fromYScreen: number,
   fromBg: boolean,
-  toX: number,
-  toY: number,
+  toXScreen: number,
+  toYScreen: number,
   toBg: boolean
 ): Promise<void> {
   const target = wrapper.find("#canvas");
   expect(target.exists).toBeTruthy();
   await target.trigger("mousemove", {
-    clientX: fromX,
-    clientY: fromY,
+    clientX: fromXScreen,
+    clientY: fromYScreen,
     shiftKey: fromBg
   });
   expect(wrapper.vm.$data.currentTool.isOnSphere).toBeTruthy();
   await target.trigger("mousedown", {
-    clientX: fromX,
-    clientY: fromY,
+    clientX: fromXScreen,
+    clientY: fromYScreen,
     shiftKey: fromBg
   });
   await target.trigger("mousemove", {
-    clientX: toX,
-    clientY: toY,
+    clientX: toXScreen,
+    clientY: toYScreen,
     shiftKey: toBg
   });
   expect(wrapper.vm.$data.currentTool.isOnSphere).toBeTruthy();
   await target.trigger("mouseup", {
-    clientX: toX,
-    clientY: toY,
+    clientX: toXScreen,
+    clientY: toYScreen,
     shiftKey: toBg
   });
   return await wrapper.vm.$nextTick();
 }
 
+/**
+ *
+ * @param wrapper Draw a line, segment, or circle specified by two control points on the screen
+ * @param drawMode
+ * @param x1
+ * @param y1
+ * @param isPoint1Foreground
+ * @param x2
+ * @param y2
+ * @param isPoint2Foreground
+ */
 export async function drawOneDimensional(
   wrapper: Wrapper<Vue>,
   drawMode: string,
@@ -138,6 +158,19 @@ export async function drawOneDimensional(
   );
 }
 
+/**
+ * Simulate drawing an ellipse
+ * @param wrapper
+ * @param focus1_x
+ * @param focus1_y
+ * @param isFocus1Foreground
+ * @param focus2_x
+ * @param focus2_y
+ * @param isFocus2Foreground
+ * @param x3
+ * @param y3
+ * @param isPoint3Foreground
+ */
 export async function drawEllipse(
   wrapper: Wrapper<Vue>,
   focus1_x: number,

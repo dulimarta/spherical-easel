@@ -43,7 +43,7 @@ describe("SphereFrame: Point On Object Tool", () => {
       const mid2D_x = mid.x * R;
       const mid2D_y = mid.y * R;
       const prevPointCount = SEStore.sePoints.length;
-      await mouseClickOnSphere(wrapper, mid2D_x, -mid2D_y, mid.z < 0);
+      await mouseClickOnSphere(wrapper, mid2D_x, mid2D_y, mid.z < 0);
       expect(SEStore.sePoints.length).toBeGreaterThanOrEqual(
         prevPointCount + 1
       );
@@ -88,7 +88,7 @@ describe("SphereFrame: Point On Object Tool", () => {
       mid.addScaledVector(end1.locationVector, 0.3);
       mid.addScaledVector(end2.locationVector, 0.7);
       const mid2D_x = mid.x * R;
-      const mid2D_y = -mid.y * R;
+      const mid2D_y = mid.y * R;
       const prevPointCount = SEStore.sePoints.length;
       await mouseClickOnSphere(wrapper, mid2D_x, mid2D_y, mid.z < 0);
       expect(SEStore.sePoints.length).toBeGreaterThanOrEqual(
@@ -143,7 +143,7 @@ describe("SphereFrame: Point On Object Tool", () => {
       await mouseClickOnSphere(
         wrapper,
         target.x * R,
-        -target.y * R,
+        target.y * R,
         target.z < 0
       );
       expect(SEStore.sePoints.length).toBeGreaterThanOrEqual(

@@ -13,10 +13,11 @@ import { SEPoint } from "@/models/SEPoint";
 import { Vector3 } from "three";
 import { SEExpression } from "@/models/SEExpression";
 
-describe.only("SphereFrame: Segment Length Measurement Tool", () => {
+describe("SphereFrame: Segment Length Measurement Tool", () => {
   let wrapper: Wrapper<Vue>;
   beforeEach(async () => {
     wrapper = createWrapper(SphereFrame);
+    SEStore.init();
   });
 
   it("measures length of segment", async () => {
@@ -36,21 +37,29 @@ describe.only("SphereFrame: Segment Length Measurement Tool", () => {
       true
     );
     const newPointCount = SEStore.sePoints.length;
-    expect(newPointCount).toBeGreaterThanOrEqual(2);
-    const p1: SEPoint = SEStore.sePoints[newPointCount - 2];
-    const p2: SEPoint = SEStore.sePoints[newPointCount - 1];
+    // expect(newPointCount).toBeGreaterThanOrEqual(2);
+    // const p1: SEPoint = SEStore.sePoints[newPointCount - 2];
+    // const p2: SEPoint = SEStore.sePoints[newPointCount - 1];
     const newSegmentCount = SEStore.seSegments.length;
     expect(newSegmentCount).toEqual(prevSegmentCount + 1);
+    const aSegment = SEStore.seSegments[prevSegmentCount];
     SEStore.setActionMode({
       id: "segmentLength",
       name: "Tool Name does not matter"
     });
     await wrapper.vm.$nextTick();
     const prevMeasurementCount = SEStore.expressions.length;
-    await mouseClickOnSphere(wrapper, 0, 0.3 * v2.y * R);
+    const targetPosition = aSegment.closestVector(new Vector3(0, 0, 1));
+    await mouseClickOnSphere(
+      wrapper,
+      targetPosition.x * R,
+      targetPosition.y * R
+    );
     const newMeasurementCount = SEStore.expressions.length;
     expect(newMeasurementCount).toBe(prevMeasurementCount + 1);
-    const angle = p1.locationVector.angleTo(p2.locationVector);
+    const angle = aSegment.startSEPoint.locationVector.angleTo(
+      aSegment.endSEPoint.locationVector
+    );
     const length = SEStore.expressions[prevMeasurementCount] as SEExpression;
     expect(length.value).toBeCloseTo(angle, 5);
   });

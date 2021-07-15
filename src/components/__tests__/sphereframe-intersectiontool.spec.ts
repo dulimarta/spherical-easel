@@ -63,14 +63,14 @@ describe("SphereFrame: Intersection Tool", () => {
       await mouseClickOnSphere(
         wrapper,
         x1.locationVector.x * R,
-        -x1.locationVector.y * R,
+        x1.locationVector.y * R,
         x1.locationVector.z < 0
       );
       // click near the second intersection
       await mouseClickOnSphere(
         wrapper,
         x2.locationVector.x * R,
-        -x2.locationVector.y * R,
+        x2.locationVector.y * R,
         x2.locationVector.z < 0
       );
 
@@ -139,14 +139,14 @@ describe("SphereFrame: Intersection Tool", () => {
       await mouseClickOnSphere(
         wrapper,
         x1.locationVector.x * R,
-        -x1.locationVector.y * R,
+        x1.locationVector.y * R,
         x1.locationVector.z < 0
       );
       // click near the second intersection
       await mouseClickOnSphere(
         wrapper,
         x2.locationVector.x * R,
-        -x2.locationVector.y * R,
+        x2.locationVector.y * R,
         x2.locationVector.z < 0
       );
       const p1 = x1 as SEIntersectionPoint;
@@ -209,14 +209,14 @@ describe("SphereFrame: Intersection Tool", () => {
       await mouseClickOnSphere(
         wrapper,
         x1.locationVector.x * R,
-        -x1.locationVector.y * R,
+        x1.locationVector.y * R,
         x1.locationVector.z < 0
       );
       // click near the second intersection
       await mouseClickOnSphere(
         wrapper,
         x2.locationVector.x * R,
-        -x2.locationVector.y * R,
+        x2.locationVector.y * R,
         x2.locationVector.z < 0
       );
       const p1 = x1 as SEIntersectionPoint;
@@ -280,14 +280,14 @@ describe("SphereFrame: Intersection Tool", () => {
       await mouseClickOnSphere(
         wrapper,
         x1.locationVector.x * R,
-        -x1.locationVector.y * R,
+        x1.locationVector.y * R,
         x1.locationVector.z < 0
       );
       // click near the second intersection
       await mouseClickOnSphere(
         wrapper,
         x2.locationVector.x * R,
-        -x2.locationVector.y * R,
+        x2.locationVector.y * R,
         x2.locationVector.z < 0
       );
       const p1 = x1 as SEIntersectionPoint;
@@ -344,14 +344,14 @@ describe("SphereFrame: Intersection Tool", () => {
       await mouseClickOnSphere(
         wrapper,
         p1.locationVector.x * R,
-        -p1.locationVector.y * R,
+        p1.locationVector.y * R,
         p1.locationVector.z < 0
       );
       // click near the second intersection
       await mouseClickOnSphere(
         wrapper,
         p2.locationVector.x * R,
-        -p2.locationVector.y * R,
+        p2.locationVector.y * R,
         p2.locationVector.z < 0
       );
       expect(p1.isUserCreated && p2.isUserCreated).toBeFalsy();
@@ -410,14 +410,14 @@ describe("SphereFrame: Intersection Tool", () => {
       await mouseClickOnSphere(
         wrapper,
         p1.locationVector.x * R,
-        -p1.locationVector.y * R,
+        p1.locationVector.y * R,
         p1.locationVector.z < 0
       );
       // click near the second intersection
       await mouseClickOnSphere(
         wrapper,
         p2.locationVector.x * R,
-        -p2.locationVector.y * R,
+        p2.locationVector.y * R,
         p2.locationVector.z < 0
       );
       // One of the two candidates should be the true intersection
@@ -477,14 +477,14 @@ describe("SphereFrame: Intersection Tool", () => {
       await mouseClickOnSphere(
         wrapper,
         p1.locationVector.x * R,
-        -p1.locationVector.y * R,
+        p1.locationVector.y * R,
         p1.locationVector.z < 0
       );
       // click near the second intersection
       await mouseClickOnSphere(
         wrapper,
         p2.locationVector.x * R,
-        -p2.locationVector.y * R,
+        p2.locationVector.y * R,
         p2.locationVector.z < 0
       );
       // One of the two candidates should be the true intersection
@@ -544,14 +544,14 @@ describe("SphereFrame: Intersection Tool", () => {
       await mouseClickOnSphere(
         wrapper,
         p1.locationVector.x * R,
-        -p1.locationVector.y * R,
+        p1.locationVector.y * R,
         p1.locationVector.z < 0
       );
       // click near the second intersection
       await mouseClickOnSphere(
         wrapper,
         p2.locationVector.x * R,
-        -p2.locationVector.y * R,
+        p2.locationVector.y * R,
         p2.locationVector.z < 0
       );
       // One of the two candidates should be the true intersection
