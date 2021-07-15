@@ -10,7 +10,7 @@ import {
   TEST_MOUSE_X,
   TEST_MOUSE_Y,
   drawOneDimensional
-} from "./sphereframe-helpers";
+} from "./sphereframe-helper";
 describe("SphereFrame: Line Tool", () => {
   let wrapper: Wrapper<Vue>;
   beforeEach(async () => {

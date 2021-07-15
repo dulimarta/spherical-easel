@@ -3,7 +3,7 @@ import SphereFrame from "@/components/SphereFrame.vue";
 import { createWrapper } from "@/../tests/vue-helper";
 import { SEStore } from "@/store";
 import { Wrapper } from "@vue/test-utils";
-import { TEST_MOUSE_X, TEST_MOUSE_Y, dragMouse } from "./sphereframe-helpers";
+import { TEST_MOUSE_X, TEST_MOUSE_Y, dragMouse } from "./sphereframe-helper";
 import SETTINGS from "@/global-settings";
 import { SESegment } from "@/models/SESegment";
 import { Vector3 } from "three";

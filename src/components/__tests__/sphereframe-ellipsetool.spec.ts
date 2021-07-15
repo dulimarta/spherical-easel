@@ -3,7 +3,7 @@ import SphereFrame from "@/components/SphereFrame.vue";
 import { createWrapper } from "@/../tests/vue-helper";
 import { SEStore } from "@/store";
 import { Wrapper } from "@vue/test-utils";
-import { drawEllipse } from "./sphereframe-helpers";
+import { drawEllipse } from "./sphereframe-helper";
 
 describe("SphereFrame: Ellipse Tool", () => {
   let wrapper: Wrapper<Vue>;

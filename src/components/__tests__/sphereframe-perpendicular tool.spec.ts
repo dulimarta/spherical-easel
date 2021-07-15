@@ -3,7 +3,7 @@ import SphereFrame from "@/components/SphereFrame.vue";
 import { createWrapper } from "@/../tests/vue-helper";
 import { SEStore } from "@/store";
 import { Wrapper } from "@vue/test-utils";
-import { drawOneDimensional, drawPointAt } from "./sphereframe-helpers";
+import { drawOneDimensional, drawPointAt } from "./sphereframe-helper";
 
 describe("SphereFrame: Perpendicular Tool", () => {
   let wrapper: Wrapper<Vue>;

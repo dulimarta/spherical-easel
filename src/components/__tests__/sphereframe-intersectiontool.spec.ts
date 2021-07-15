@@ -8,7 +8,7 @@ import {
   TEST_MOUSE_Y,
   mouseClickOnSphere,
   drawOneDimensional
-} from "./sphereframe-helpers";
+} from "./sphereframe-helper";
 import SETTINGS from "@/global-settings";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 

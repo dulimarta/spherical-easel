@@ -4,7 +4,7 @@ import { createWrapper } from "@/../tests/vue-helper";
 import { SEStore } from "@/store";
 import { SEPoint } from "@/models/SEPoint";
 import { Wrapper } from "@vue/test-utils";
-import { drawOneDimensional, mouseClickOnSphere } from "./sphereframe-helpers";
+import { drawOneDimensional, mouseClickOnSphere } from "./sphereframe-helper";
 import { Vector3 } from "three";
 import SETTINGS from "@/global-settings";
 

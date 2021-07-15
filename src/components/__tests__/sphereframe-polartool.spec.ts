@@ -7,7 +7,7 @@ import {
   TEST_MOUSE_X,
   TEST_MOUSE_Y,
   mouseClickOnSphere
-} from "./sphereframe-helpers";
+} from "./sphereframe-helper";
 
 describe("SphereFrame: Polar Tool", () => {
   let wrapper: Wrapper<Vue>;

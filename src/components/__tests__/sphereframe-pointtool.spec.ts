@@ -3,7 +3,7 @@ import SphereFrame from "@/components/SphereFrame.vue";
 import { createWrapper } from "@/../tests/vue-helper";
 import { SEStore } from "@/store";
 import { Wrapper } from "@vue/test-utils";
-import { makePoint } from "./sphereframe-helpers";
+import { makePoint } from "./sphereframe-helper";
 
 describe("SphereFrame: Point Tool", () => {
   let wrapper: Wrapper<Vue>;
