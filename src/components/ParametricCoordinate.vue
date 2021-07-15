@@ -6,18 +6,27 @@
         <v-container>
           <v-row>
             <v-col cols="12">
-              <v-textarea v-bind:label="$t(i18nKey)"
-                auto-growdense
-                outlined
-                clearable
-                rows="2"
-                :placeholder="placeholder"
-                class="ma-0"
-                v-model="coordinateExpression"
-                :error-messages="parsingError"
-                @keydown="onKeyPressed"
-                @click:clear="reset">
-              </v-textarea>
+              <v-tooltip bottom
+                :open-delay="toolTipOpenDelay"
+                :close-delay="toolTipCloseDelay"
+                max-width="400px">
+                <template v-slot:activator="{on}">
+                  <v-textarea v-bind:label="$t(i18nKey)"
+                    v-on="on"
+                    auto-growdense
+                    outlined
+                    clearable
+                    rows="2"
+                    :placeholder="placeholder"
+                    class="ma-0"
+                    v-model="coordinateExpression"
+                    :error-messages="parsingError"
+                    @keydown="onKeyPressed"
+                    @click:clear="reset">
+                  </v-textarea>
+                </template>
+                {{ $t(i18nToolTip)}}
+              </v-tooltip>
             </v-col>
           </v-row>
         </v-container>
@@ -31,11 +40,10 @@ import Component from "vue-class-component";
 import { AppState, UpdateMode } from "@/types";
 import { Prop } from "vue-property-decorator";
 import { SEExpression } from "@/models/SEExpression";
-import { SECalculation } from "@/models/SECalculation";
-import { AddCalculationCommand } from "@/commands/AddCalculationCommand";
 import { ExpressionParser } from "@/expression/ExpressionParser";
 import EventBus from "@/eventHandlers/EventBus";
 import { namespace } from "vuex-class";
+import SETTINGS from "@/global-settings";
 const SE = namespace("se");
 
 interface TestTValueType {
@@ -44,8 +52,13 @@ interface TestTValueType {
 
 @Component({})
 export default class ParametricCoordinate extends Vue {
+  //v-bind:label="$t(i18nKey,{coord:$tc(i18nKeyOption1,i18nKeyOption2)})"
+
   @SE.State((s: AppState) => s.expressions)
   readonly expressions!: SEExpression[];
+
+  @Prop()
+  readonly i18nToolTip!: string;
 
   @Prop()
   readonly i18nKey!: string;
@@ -55,6 +68,9 @@ export default class ParametricCoordinate extends Vue {
 
   @Prop()
   readonly name!: string;
+
+  readonly toolTipOpenDelay = SETTINGS.toolTip.openDelay;
+  readonly toolTipCloseDelay = SETTINGS.toolTip.closeDelay;
 
   private parser = new ExpressionParser();
 

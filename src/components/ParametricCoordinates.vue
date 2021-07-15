@@ -18,6 +18,7 @@
           <ParametricCoordinate :placeholder="coordinate.placeholder"
             :key="idk"
             :i18nKey="coordinate.i18n_key"
+            :i18nToolTip="coordinate.i18nToolTip"
             :name="coordinate.name">
           </ParametricCoordinate>
         </template>
@@ -45,7 +46,7 @@ export default class SENoduleTree extends Vue {
   readonly coordinateData!: [];
 
   @Prop()
-  readonly i18LabelKey!: string; /** When defined, label takes over the node name */
+  readonly i18LabelKey!: string;
 
   private expanded = false;
 

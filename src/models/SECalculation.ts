@@ -1,5 +1,5 @@
 import { SEExpression } from "./SEExpression";
-import { UpdateStateType, UpdateMode } from "@/types";
+import { UpdateStateType, UpdateMode, ExpressionState } from "@/types";
 import { ExpressionParser } from "@/expression/ExpressionParser";
 // import AppStore from "@/store";
 import { SEStore } from "@/store";
@@ -31,12 +31,20 @@ export class SECalculation extends SEExpression {
       const pos = SEStore.expressions.findIndex(z =>
         z.name.startsWith(`${v[0]}`)
       );
-      if (pos > -1) this._calculationParents.push(SEStore.expressions[pos]);
+      // add it to the calculationParents if it is not already added
+      if (pos > -1) {
+        const pos2 = this._calculationParents.findIndex(
+          parent => parent.name === SEStore.expressions[pos].name
+        );
+        if (pos2 < 0) {
+          this._calculationParents.push(SEStore.expressions[pos]);
+        }
+      }
+
+      // if (pos > -1) this._calculationParents.push(SEStore.expressions[pos]);
     }
 
-    this._calculationParents.forEach((par: SENodule) => {
-      par.registerChild(this);
-    });
+    // DO not register parents here. That is done the in the command
 
     // This might not be necessary because all expressions have the name "M####" and should be caught by the above
     //  This appears to make ALL expressions have this as a child
@@ -99,7 +107,8 @@ export class SECalculation extends SEExpression {
   public get noduleDescription(): string {
     return String(
       i18n.t(`objectTree.calculationDescription`, {
-        str: this.exprText
+        str: this.exprText,
+        val: this.value
       })
     );
   }
@@ -113,15 +122,20 @@ export class SECalculation extends SEExpression {
     );
   }
 
-  // TODO: Move this method up to the parent class?
   public update(state: UpdateStateType): void {
-    if (state.mode !== UpdateMode.DisplayOnly) return;
+    // This object and any of its children has no presence on the sphere canvas, so update for move should
+    if (state.mode === UpdateMode.RecordStateForMove) return;
+    // This object is completely determined by its parents, so only record the object in state array
+    if (state.mode == UpdateMode.RecordStateForDelete) {
+      const expressionState: ExpressionState = {
+        kind: "expression",
+        object: this
+      };
+      state.stateArray.push(expressionState);
+    }
     if (!this.canUpdateNow()) return;
     this.recalculate();
-    // const pos = this.name.lastIndexOf("):");
-    // this.name =
-    //   this.name.substring(0, pos + 2) +
-    //   +this.value.toFixed(SETTINGS.decimalPrecision);
+
     this.setOutOfDate(false);
     this.updateKids(state);
   }

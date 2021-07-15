@@ -95,6 +95,24 @@
           </v-tooltip>
 
         </v-col>
+        <v-col cols="auto">
+
+          <v-tooltip right>
+            <template v-slot:activator="{ on }">
+              <div id="_delete_node"
+                v-on="on"
+                @click="deleteNode"
+                class="mr-2">
+                <v-icon small>
+                  mdi-trash-can-outline
+                </v-icon>
+              </div>
+            </template>
+            <span>{{ $t(`objectTree.deleteNode`) }}</span>
+          </v-tooltip>
+
+        </v-col>
+
       </v-row>
     </div>
   </div>
@@ -117,16 +135,26 @@ import { SESlider } from "@/models/SESlider";
 import { SetNoduleDisplayCommand } from "@/commands/SetNoduleDisplayCommand";
 import { SetValueDisplayModeCommand } from "@/commands/SetValueDisplayModeCommand";
 import SETTINGS from "@/global-settings";
-import { UpdateMode, ValueDisplayMode } from "@/types";
+import { UpdateMode, UpdateStateType, ValueDisplayMode } from "@/types";
 import { SEAngleMarker } from "@/models/SEAngleMarker";
 import { SEPointCoordinate } from "@/models/SEPointCoordinate";
 import { SEEllipse } from "@/models/SEEllipse";
 import ToggleLabelDisplayHandler from "@/eventHandlers/ToggleLabelDisplayHandler";
+import { DeleteNoduleCommand } from "@/commands/DeleteNoduleCommand";
+import { CommandGroup } from "@/commands/CommandGroup";
 
 @Component
 export default class SENoduleItem extends Vue {
   @Prop()
   readonly node!: SENodule;
+
+  /**
+   * Objects that define the deleted objects (and all descendants) before deleting (for undoing delete)
+   */
+  private beforeDeleteState: UpdateStateType = {
+    mode: UpdateMode.RecordStateForDelete,
+    stateArray: []
+  };
 
   glowMe(flag: boolean): void {
     /* If the highlighted object is plottable, we highlight
@@ -153,6 +181,36 @@ export default class SENoduleItem extends Vue {
 
   toggleVisibility(): void {
     new SetNoduleDisplayCommand(this.node, !this.node.showing).execute();
+  }
+
+  deleteNode(): void {
+    // if (!(this.node instanceof SECalculation)) {
+    this.beforeDeleteState = {
+      mode: UpdateMode.RecordStateForDelete,
+      stateArray: []
+    };
+    // First mark all children of the victim out of date so that the update method does a topological sort
+    this.node.markKidsOutOfDate();
+    //Record the state of the victim and all the SENodules that depend on it (i.e kids, grandKids, etc..).
+    this.node.update(this.beforeDeleteState);
+
+    // console.debug("order of states before reverse");
+    // this.beforeDeleteState.stateArray.forEach(obj =>
+    //   console.debug(obj.object.name)
+    // );
+    // console.debug("end order");
+
+    const deleteCommandGroup = new CommandGroup();
+    // The update method orders the objects from the victim to the leaf (i.e objects with only in arrows)
+    // To delete remove from the leaves to the victim (and to undo build from the victim to leaves -- accomplished
+    // by the command group reversing the order on restore()).  Therefore reverse the stateArray.
+    this.beforeDeleteState.stateArray.reverse();
+    this.beforeDeleteState.stateArray.forEach(element => {
+      deleteCommandGroup.addCommand(new DeleteNoduleCommand(element.object));
+    });
+    deleteCommandGroup.execute();
+    // } else {
+    // }
   }
 
   cycleValueDisplayMode(): void {

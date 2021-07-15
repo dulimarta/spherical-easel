@@ -2,10 +2,10 @@ import { Command } from "./Command";
 import { SEExpression } from "@/models/SEExpression";
 import { SENodule } from "@/models/SENodule";
 import { SECalculation } from "@/models/SECalculation";
-import { AddMeasurementCommand } from "./AddMeasurementCommand";
+import { AddExpressionCommand } from "./AddExpressionCommand";
 import { UpdateMode } from "@/types";
 
-export class AddCalculationCommand extends AddMeasurementCommand {
+export class AddCalculationCommand extends AddExpressionCommand {
   // private seExpression: SEExpression;
   private arithmeticExpression: string;
 
@@ -20,7 +20,6 @@ export class AddCalculationCommand extends AddMeasurementCommand {
     parents: SENodule[]
   ) {
     super(seExpression, parents);
-    // this.seExpression = seExpression;
     this.arithmeticExpression = arithmeticExpression;
   }
 

@@ -411,7 +411,7 @@ export default {
     defaultLabelMode: LabelDisplayMode.NameOnly, // The default way of displaying this objects label
     minimumAngleSumDifference: 0.0001, // Don't create ellipses (and ellipse don't exist) when an angle sum to the foci minus the angle between the foci is smaller than this
     minimumCreationDistance: 0.025, // Don't create an ellipse point unless it is more than this distance away from each focus.
-    numPoints: 100, // Twice this number are used to draw the edge of the parametric curve and 4 times this many are used to to draw the fill of the parametric curve. These are spread over the front and back parts. MAKE THIS EVEN!
+    numPoints: 100, // Twice this number are used to draw the edge of the parametric curve. MAKE THIS EVEN!
     hitIdealDistance: 0.03, // The user has to be within this distance on the ideal unit sphere to select the parametric curve.
     //dynamicBackStyle is a flag that means the fill, linewidth, and strokeColor of the parametric curves drawn on the back are automatically calculated based on the value of SETTINGS.contrast and their front counterparts
     dynamicBackStyle: true,
@@ -714,7 +714,9 @@ export default {
   parameterization: {
     subdivisions: 60, // When searching function on a parametrized curve for a change in sign, use this many subdivisions
     bisectionMinSize: 0.00001, // stop running the bisection method (if Newton's method is not used) when the interval is less than this size
-    numberOfTestTValues: 20 // When checking if a parametric curve is unit or is perpendicular to the derivative use this many points
+    numberOfTestTValues: 5, // When checking if a parametric curve is unit or is perpendicular to the derivative or the number of times the curve intersects a plane connecting two points on the curve use this many points
+    maxNumberOfIterationArcLength: 5, // maximum number of times it will iterate over the curve to find the arcLength (i.e. the curve is divided into at most subdivisions*maxNumberOfIterationArcLength subdivisions while looking for the arcLength)
+    maxChangeInArcLength: 0.00001 // If the change in arcLength is less than this, return the value
   },
   /*A list of which buttons to display - adjusted by the users settings.
   This does NOT belong here but I don't know where else to put it at the moment*/

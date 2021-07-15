@@ -1,15 +1,24 @@
 <template>
   <div>
-    <v-text-field v-model="tValueExpression"
-      dense
-      :label="$t(i18nLabelKey)"
-      :placeholder="placeholder"
-      :error-messages="parsingError"
-      @keydown="onKeyPressed"
-      outlined
-      clearable
-      :hint="currentValueString"
-      persistent-hint></v-text-field>
+    <v-tooltip bottom
+      :open-delay="toolTipOpenDelay"
+      :close-delay="toolTipCloseDelay"
+      max-width="400px">
+      <template v-slot:activator="{on}">
+        <v-text-field v-model="tValueExpression"
+          v-on="on"
+          dense
+          :label="$t(i18nLabelKey)"
+          :placeholder="placeholder"
+          :error-messages="parsingError"
+          @keydown="onKeyPressed"
+          outlined
+          clearable
+          :hint="currentValueString"
+          persistent-hint></v-text-field>
+      </template>
+      {{$t(i18nToolTip)}}
+    </v-tooltip>
   </div>
 </template>
 <script lang="ts">
@@ -18,8 +27,6 @@ import Component from "vue-class-component";
 import { AppState, UpdateMode } from "@/types";
 import { Prop } from "vue-property-decorator";
 import { SEExpression } from "@/models/SEExpression";
-import { SECalculation } from "@/models/SECalculation";
-import { AddCalculationCommand } from "@/commands/AddCalculationCommand";
 import { ExpressionParser } from "@/expression/ExpressionParser";
 import EventBus from "@/eventHandlers/EventBus";
 import SETTINGS from "@/global-settings";
@@ -28,9 +35,15 @@ import i18n from "@/i18n";
 const SE = namespace("se");
 
 @Component({})
-export default class ParametricTValue extends Vue {
+export default class ParametricTExpression extends Vue {
+  readonly toolTipOpenDelay = SETTINGS.toolTip.openDelay;
+  readonly toolTipCloseDelay = SETTINGS.toolTip.closeDelay;
+
   @SE.State((s: AppState) => s.expressions)
   readonly expressions!: SEExpression[];
+
+  @Prop()
+  readonly i18nToolTip!: string;
 
   @Prop()
   readonly i18nLabelKey!: string;
@@ -97,7 +110,6 @@ export default class ParametricTValue extends Vue {
         EventBus.fire("parametric-data-update", {
           [this.name]: this.tValueExpression
         });
-        EventBus.fire("test-t-value", { val: this.tValueResult });
 
         // console.debug("Calculation result is", this.calcResult);
       } catch (err) {

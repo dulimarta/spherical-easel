@@ -103,7 +103,28 @@ export interface Labelable {
   ): Vector3;
   label?: SELabel;
 }
+/**
+ * The varaible types for parametric objects
+ */
+export type CoordExpression = {
+  x: string;
+  y: string;
+  z: string;
+};
 
+export type MinMaxExpression = {
+  min: string;
+  max: string;
+};
+
+export type MinMaxNumber = {
+  min: number;
+  max: number;
+};
+
+/**
+ * The properties of a plottable object needed when creating icons
+ */
 export type plottableType =
   | "boundaryCircle"
   | "point"
@@ -114,9 +135,6 @@ export type plottableType =
   | "ellipse"
   | "parametric";
 export type sides = "front" | "back" | "mid";
-/**
- * The properties of a plottable object needed when creating icons
- */
 export type plottableProperties = {
   type: plottableType;
   side: sides;
@@ -169,7 +187,8 @@ export type ObjectState =
   | PointState
   | LabelState
   | AngleMarkerState
-  | PerpendicularLineThruPointState;
+  | PerpendicularLineThruPointState
+  | ExpressionState;
 
 export interface PerpendicularLineThruPointState {
   kind: "perpendicularLineThruPoint";
@@ -261,6 +280,18 @@ export interface EllipseState {
 }
 export function isEllipseState(entry: ObjectState): entry is EllipseState {
   return entry.kind === "ellipse";
+}
+
+export interface ExpressionState {
+  // No fields are needed for moving because non-angle marker expressions are not movable
+  kind: "expression";
+  // Fields needed for undoing delete
+  object: SEExpression;
+}
+export function isExpressionState(
+  entry: ObjectState
+): entry is ExpressionState {
+  return entry.kind === "expression";
 }
 
 export type ConstructionScript = Array<string | Array<string>>;

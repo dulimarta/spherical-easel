@@ -6,6 +6,10 @@ import { SECircle } from "@/models/SECircle";
 import { SESegment } from "@/models/SESegment";
 import { SELabel } from "@/models/SELabel";
 import { SEEllipse } from "@/models/SEEllipse";
+import { SEAngleMarker } from "@/models/SEAngleMarker";
+import { SEExpression } from "@/models/SEExpression";
+import { SESegmentLength } from "@/models/SESegmentLength";
+import { SEPointCoordinate } from "@/models/SEPointCoordinate";
 
 export class DeleteNoduleCommand extends Command {
   private seNodule: SENodule;
@@ -31,7 +35,11 @@ export class DeleteNoduleCommand extends Command {
       if (nodule) {
         nodule.unregisterChild(this.seNodule);
       } else {
-        throw "Attempted to unregister a child from a non-existent nodule in the DeleteNoduleCommand";
+        throw `Attempted to unregister child` +
+          `${this.seNodule}` +
+          `from a non-existent nodule with ID` +
+          `${this.parentIds[i]}` +
+          `in the DeleteNoduleCommand`;
       }
     }
     // Remove from the store and turn off the display
@@ -47,6 +55,20 @@ export class DeleteNoduleCommand extends Command {
       Command.store.removeSegment(this.seNodule.id);
     } else if (this.seNodule instanceof SELabel) {
       Command.store.removeLabel(this.seNodule.id);
+    } else if (this.seNodule instanceof SEAngleMarker) {
+      Command.store.removeAngleMarkerAndExpression(this.seNodule.id);
+    } else if (this.seNodule instanceof SEExpression) {
+      Command.store.removeExpression(this.seNodule.id);
+      // when removing expressions that have effects on the labels, we must set those label display arrays to empty
+      if (this.seNodule instanceof SESegmentLength) {
+        if (this.seNodule.seSegment.label) {
+          this.seNodule.seSegment.label.ref.value = [];
+        }
+      } else if (this.seNodule instanceof SEPointCoordinate) {
+        if (this.seNodule.point.label) {
+          this.seNodule.point.label.ref.value = [];
+        }
+      }
     }
   }
 
@@ -68,6 +90,10 @@ export class DeleteNoduleCommand extends Command {
       Command.store.addSegment(this.seNodule);
     } else if (this.seNodule instanceof SELabel) {
       Command.store.addLabel(this.seNodule);
+    } else if (this.seNodule instanceof SEAngleMarker) {
+      Command.store.addAngleMarkerAndExpression(this.seNodule);
+    } else if (this.seNodule instanceof SEExpression) {
+      Command.store.addExpression(this.seNodule);
     }
     // The parent array of this.seNodule is empty prior to the execution of this loop
     for (let i = 0; i < this.parentIds.length; i++) {
@@ -75,7 +101,11 @@ export class DeleteNoduleCommand extends Command {
       if (nodule) {
         nodule.registerChild(this.seNodule);
       } else {
-        throw "Attempted to register a child to a non-existent nodule in the DeleteNoduleCommand";
+        throw `Attempted to register child` +
+          `${this.seNodule}` +
+          `to a non-existent nodule with ID` +
+          `${this.parentIds[i]}` +
+          `in the DeleteNoduleCommand`;
       }
     }
   }

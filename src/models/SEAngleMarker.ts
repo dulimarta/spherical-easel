@@ -154,12 +154,100 @@ export class SEAngleMarker extends SEExpression
   }
 
   public get noduleDescription(): string {
+    // I want to call this method but it causes an infinite loop and I don't know why.
+    // const val = this.measureAngle(
+    //   this._startVector,
+    //   this._vertexVector,
+    //   this._endVector
+    // );
+
+    // The infinite loop can be traced to *ANY USE OF THE VECTOR3 PACKAGE METHODS* (like addScaledVector, normalize or cross)
+    // used in measureAngle so rewrite with out them.
+    // Hans: I KNOW THIS IS A TERRIBLE SOLUTION BUT I COULDN'T FIGURE IT OUT ANY OTHER WAY.
+
+    // Rewrite this with out the addScaledVector or normalize or cross
+    //
+    // this.measureTmpVector1.copy(this._endVector);
+    // this.measureTmpVector1.addScaledVector(
+    //   this._vertexVector,
+    //   -1 * this._vertexVector.dot(this._endVector)
+    // );
+    const dot1 =
+      this._vertexVector.x * this._endVector.x +
+      this._vertexVector.y * this._endVector.y +
+      this._vertexVector.z * this._endVector.z;
+    const measured1x = this._endVector.x - this._vertexVector.x * dot1;
+    const measured1y = this._endVector.y - this._vertexVector.y * dot1;
+    const measured1z = this._endVector.z - this._vertexVector.z * dot1;
+
+    // this.measureTmpVector2.copy(this._startVector);
+    // this.measureTmpVector2.addScaledVector(
+    //   this._vertexVector,
+    //   -1 * this._vertexVector.dot(this._startVector)
+    // );
+    const dot2 =
+      this._vertexVector.x * this._startVector.x +
+      this._vertexVector.y * this._startVector.y +
+      this._vertexVector.z * this._startVector.z;
+    let measured2x = this._startVector.x - this._vertexVector.x * dot2;
+    let measured2y = this._startVector.y - this._vertexVector.y * dot2;
+    let measured2z = this._startVector.z - this._vertexVector.z * dot2;
+
+    // The vector this.measureTmpVector2.normalize is the vector that is positive unit x-axis that determine the coordinates on the plane Q
+    // so that the projection of the start vector is on the positive x-axis
+    //this.measureTmpVector2.normalize();
+    const length1 = Math.sqrt(
+      measured2x * measured2x +
+        measured2y * measured2y +
+        measured2z * measured2z
+    );
+    measured2x /= length1;
+    measured2y /= length1;
+    measured2z /= length1;
+
+    // the positive unit y-axis vector is the cross product of the unit positive z axis (this._vertexVector) and the unit
+    // positive x-axis (this.measureTmpVector2)
+
+    // this.measureTmpVector3
+    //   .crossVectors(this._vertexVector, this.measureTmpVector2)
+    //   .normalize();
+
+    let measured3x =
+      this._vertexVector.y * measured2z - this._vertexVector.z * measured2y;
+    let measured3y =
+      this._vertexVector.z * measured2x - this._vertexVector.x * measured2z;
+    let measured3z =
+      this._vertexVector.x * measured2y - this._vertexVector.y * measured2x;
+    const length2 = Math.sqrt(
+      measured3x * measured3x +
+        measured3y * measured3y +
+        measured3z * measured3z
+    );
+    measured3x /= length2;
+    measured3y /= length2;
+    measured3z /= length2;
+
+    //NOTE: the syntax for atan2 is atan2(y,x) and the return is in (-pi,pi]!!!!!
+    // const val = Math.atan2(
+    //   this.measureTmpVector3.dot(this.measureTmpVector1),
+    //   this.measureTmpVector2.dot(this.measureTmpVector1)
+    // ).modTwoPi();
+    const val = Math.atan2(
+      measured3x * measured1x +
+        measured3y * measured1y +
+        measured3z * measured1z,
+      measured2x * measured1x +
+        measured2y * measured1y +
+        measured2z * measured1z
+    ).modTwoPi();
+
     if (this._thirdSEParent !== undefined) {
       return String(
         i18n.t(`objectTree.anglePoints`, {
           p1: this._firstSEParent.label?.ref.shortUserName,
           p2: this._secondSEParent.label?.ref.shortUserName,
-          p3: this._thirdSEParent.label?.ref.shortUserName
+          p3: this._thirdSEParent.label?.ref.shortUserName,
+          val: val
         })
       );
     } else {
@@ -170,7 +258,8 @@ export class SEAngleMarker extends SEExpression
         return String(
           i18n.t(`objectTree.angleSegments`, {
             seg1: this._firstSEParent.label?.ref.shortUserName,
-            seg2: this._secondSEParent.label?.ref.shortUserName
+            seg2: this._secondSEParent.label?.ref.shortUserName,
+            val: val
           })
         );
       } else if (
@@ -180,7 +269,8 @@ export class SEAngleMarker extends SEExpression
         return String(
           i18n.t(`objectTree.angleLines`, {
             line1: this._firstSEParent.label?.ref.shortUserName,
-            line2: this._secondSEParent.label?.ref.shortUserName
+            line2: this._secondSEParent.label?.ref.shortUserName,
+            val: val
           })
         );
       } else if (
@@ -190,14 +280,16 @@ export class SEAngleMarker extends SEExpression
         return String(
           i18n.t(`objectTree.angleLineSegment`, {
             line1: this._firstSEParent.label?.ref.shortUserName,
-            line2: this._secondSEParent.label?.ref.shortUserName
+            line2: this._secondSEParent.label?.ref.shortUserName,
+            val: val
           })
         );
       } else {
         return String(
           i18n.t(`objectTree.angleSegmentLine`, {
             line1: this._firstSEParent.label?.ref.shortUserName,
-            line2: this._secondSEParent.label?.ref.shortUserName
+            line2: this._secondSEParent.label?.ref.shortUserName,
+            val: val
           })
         );
       }
@@ -802,22 +894,13 @@ export class SEAngleMarker extends SEExpression
       this.ref.setVisible(false);
     }
     // These angle markers are completely determined by their line/segment/point parents and an update on the parents
-    // will cause this circle to be put into the correct location. Therefore there is no need to
+    // will cause this angleMarker to be put into the correct location. Therefore there is no need to
     // store it in the stateArray for undo move. Only store for delete
 
     if (state.mode == UpdateMode.RecordStateForDelete) {
       const angleMarkerState: AngleMarkerState = {
         kind: "angleMarker",
         object: this
-        // vertexVectorX: this._vertexVector.x,
-        // vertexVectorY: this._vertexVector.y,
-        // vertexVectorZ: this._vertexVector.z,
-        // startVectorX: this._startVector.x,
-        // startVectorY: this._startVector.y,
-        // startVectorZ: this._startVector.z,
-        // endVectorX: this._endVector.x,
-        // endVectorY: this._endVector.y,
-        // endVectorZ: this._endVector.z
       };
       state.stateArray.push(angleMarkerState);
     }
@@ -826,8 +909,9 @@ export class SEAngleMarker extends SEExpression
     //this.name = this.name.substring(0, pos + 2) + this.prettyValue;
 
     // When this updates send its value to the label of the angleMarker
-    this.label!.ref.value = [this.value];
-
+    if (this.label) {
+      this.label.ref.value = [this.value];
+    }
     this.setOutOfDate(false);
     this.updateKids(state);
   }

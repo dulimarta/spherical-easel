@@ -1,6 +1,11 @@
 import { SEExpression } from "./SEExpression";
 import { SEPoint } from "./SEPoint";
-import { UpdateStateType, UpdateMode, ValueDisplayMode } from "@/types";
+import {
+  UpdateStateType,
+  UpdateMode,
+  ValueDisplayMode,
+  ExpressionState
+} from "@/types";
 import { Styles } from "@/types/Styles";
 import SETTINGS from "@/global-settings";
 import i18n from "@/i18n";
@@ -21,7 +26,8 @@ export class SEPointDistance extends SEExpression {
     return String(
       i18n.t(`objectTree.distanceBetweenPts`, {
         pt1: this.secondSEPoint.label?.ref.shortUserName,
-        pt2: this.firstSEPoint.label?.ref.shortUserName
+        pt2: this.firstSEPoint.label?.ref.shortUserName,
+        val: this.value
       })
     );
   }
@@ -36,7 +42,16 @@ export class SEPointDistance extends SEExpression {
   }
 
   public update(state: UpdateStateType): void {
-    if (state.mode !== UpdateMode.DisplayOnly) return;
+    // This object and any of its children has no presence on the sphere canvas, so update for move should
+    if (state.mode === UpdateMode.RecordStateForMove) return;
+    // This object is completely determined by its parents, so only record the object in state array
+    if (state.mode == UpdateMode.RecordStateForDelete) {
+      const expressionState: ExpressionState = {
+        kind: "expression",
+        object: this
+      };
+      state.stateArray.push(expressionState);
+    }
     if (!this.canUpdateNow()) return;
     // When this updates send its value to the label but this has no label to update
     //const pos = this.name.lastIndexOf(":");

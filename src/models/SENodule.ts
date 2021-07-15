@@ -407,7 +407,7 @@ export abstract class SENodule {
   /**
    * A recursive method to implement the bisection method
    * @param f The continuous function whose zero we want to compute
-   * t1< t2 and f(t1)*f(t2)<0
+   * t1 < t2 and f(t1)*f(t2)<0
    * @param t1
    * @param t2
    * @returns
@@ -474,6 +474,34 @@ export abstract class SENodule {
     return returnVectors;
   }
 
+  // public static findZeros(
+  //   f: (t: number) => Vector3,
+  //   tMin: number,
+  //   tMax: number,
+  //   vecx: number,
+  //   vecy: number,
+  //   vecz: number,
+  //   fPrime?: (t: number) => Vector3
+  // ): number[] {
+  //   const vec = new Vector3();
+  //   vec.set(vecx, vecy, vecz);
+  //   const d = (t: number): number => {
+  //     return f(t).dot(vec);
+  //   };
+
+  //   console.log("f d vec", f(1).x, d(1), vec.x);
+
+  //   let dp: ((t: number) => number) | undefined;
+  //   if (fPrime !== undefined) {
+  //     dp = (t: number): number => {
+  //       return fPrime(t).dot(vec);
+  //     };
+  //   } else {
+  //     dp = undefined;
+  //   }
+  //   return SENodule.findZerosParametrically(d, tMin, tMax, dp);
+  // }
+
   public static findZerosParametrically(
     f: (t: number) => number,
     tMin: number,
@@ -487,7 +515,9 @@ export abstract class SENodule {
     for (let i = 1; i < SETTINGS.parameterization.subdivisions + 1; i++) {
       tVal =
         tMin + (i / SETTINGS.parameterization.subdivisions) * (tMax - tMin);
-      if (f(tVal) * f(lastTVal) < 0) {
+
+      if (f(tVal) * f(lastTVal) <= 0) {
+        // console.log(tVal, f(tVal));
         signChanges.push([lastTVal, tVal]);
       }
       lastTVal = tVal;
@@ -500,7 +530,7 @@ export abstract class SENodule {
     const zeros: number[] = [];
     signChanges.forEach(interval => {
       // Bisection Method
-      // const zeroTVal = SENodule.bisection(d, interval[0], interval[1]);
+      // const zeroTVal = SENodule.bisection(f, interval[0], interval[1]);
       // zeros.push(zeroTVal as number);
 
       // Newton's Method
@@ -510,10 +540,11 @@ export abstract class SENodule {
         (interval[0] + interval[1]) / 2
         // { verbose: true }
       );
+
       if (
         zeroTVal !== false &&
-        interval[0] < zeroTVal &&
-        zeroTVal < interval[1]
+        interval[0] <= zeroTVal &&
+        zeroTVal <= interval[1]
       ) {
         zeros.push(zeroTVal as number);
       } else {
