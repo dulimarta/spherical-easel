@@ -25,13 +25,14 @@ export default abstract class Nodule implements Stylable, Resizeable {
   /**
    * A map that lets use look up the properties of a plottable object
    * using only the TwoJS id. Useful in the creation of icons when processing the SVG
-   * in IconFactorys
+   * in IconFactory
    */
   public static idPlottableDescriptionMap = new Map<
     string,
     plottableProperties
   >();
 
+  protected styleOptions: Map<StyleEditPanels, StyleOptions> = new Map();
   /**
    * Is this needed when we reset the sphere canvas? I'm not sure yet, so I commented out the calls to it
    * when resetting/loading.

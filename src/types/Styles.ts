@@ -37,10 +37,10 @@ export enum Styles {
   angleMarkerDoubleArc
 }
 
-export type StyleOptions = {
-  panel: StyleEditPanels;
+export interface StyleOptions {
+  panel: StyleEditPanels; // TODO: delete the panel field
   strokeWidthPercent?: number;
-  strokeColor?: string;
+  strokeColor?: string; // TODO : replace the type to "Two.Color"
   fillColor?: string;
   dashArray?: number[];
   dynamicBackStyle?: boolean;
@@ -59,4 +59,25 @@ export type StyleOptions = {
   angleMarkerRadiusPercent?: number;
   angleMarkerTickMark?: boolean;
   angleMarkerDoubleArc?: boolean;
+}
+
+export const DEFAULT_POINT_FRONT_STYLE: StyleOptions = {
+  panel: StyleEditPanels.Front,
+  fillColor: "green",
+  pointRadiusPercent: 100,
+  strokeColor: "hsla(240, 55%, 55%, 1)"
+};
+
+export const DEFAULT_POINT_BACK_STYLE: StyleOptions = {
+  panel: StyleEditPanels.Back,
+  dynamicBackStyle: true,
+  fillColor: "hsla(0, 100%, 75%, 1)",
+  pointRadiusPercent: 90,
+  strokeColor: "hsla(240, 55%, 75%, 1)"
+};
+
+export const DEFAULT_NONFREEPOINT_FRONT_STYLE: StyleOptions = {
+  panel: StyleEditPanels.Front,
+  fillColor: "hsla(0, 50%, 75%, 1)",
+  strokeColor: "hsla(240, 30%, 55%, 1)"
 };
