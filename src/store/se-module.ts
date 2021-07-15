@@ -1,5 +1,10 @@
 import { Module, VuexModule, Mutation } from "vuex-module-decorators";
-import { AppState, Labelable, SEIntersectionReturnType } from "@/types";
+import {
+  AppState,
+  Labelable,
+  SEIntersectionReturnType,
+  ActionMode
+} from "@/types";
 import Two from "two.js";
 import { SEPoint } from "@/models/SEPoint";
 import { SESegment } from "@/models/SESegment";
@@ -67,8 +72,8 @@ export default class SE extends VuexModule implements AppState {
   //#region appState
 
   sphereRadius = 0; // Is this needed? TODO = remove?
-  actionMode = "rotate"; // The action mode of the Sphere Canvas
-  previousActionMode = "rotate"; // The previous action mode
+  actionMode: ActionMode = "rotate"; // The action mode of the Sphere Canvas
+  previousActionMode: ActionMode = "rotate"; // The previous action mode
   activeToolName = ""; // The active tool for handling user mouse input
   previousActiveToolName = ""; // The active tool for handling user mouse input
   zoomMagnificationFactor = 1; // The CSSTransform magnification factor
@@ -103,7 +108,7 @@ export default class SE extends VuexModule implements AppState {
 
   @Mutation
   init(): void {
-    this.actionMode = "";
+    this.actionMode = "rotate";
     this.activeToolName = "";
     // Do not clear the layers array!
     // Replace clear() with splice(0). Since clear() is an extension function
@@ -143,7 +148,7 @@ export default class SE extends VuexModule implements AppState {
   }
 
   @Mutation
-  setActionMode(mode: { id: string; name: string }): void {
+  setActionMode(mode: { id: ActionMode; name: string }): void {
     // zoomFit is a one-off tool, so the previousActionMode should never be "zoomFit" (avoid infinite loops too!)
     if (!(this.actionMode == "zoomFit" || this.actionMode === "iconFactory")) {
       this.previousActionMode = this.actionMode;

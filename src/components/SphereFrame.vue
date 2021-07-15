@@ -41,11 +41,12 @@ import EllipseHandler from "@/eventHandlers/EllipseHandler";
 
 import EventBus from "@/eventHandlers/EventBus";
 import MoveHandler from "../eventHandlers/MoveHandler";
-import { AppState, plottableType, UpdateMode } from "@/types";
+import { ActionMode, AppState, plottableType, UpdateMode } from "@/types";
 import colors from "vuetify/es5/util/colors";
 import { SELabel } from "@/models/SELabel";
 import FileSaver from "file-saver";
 import Nodule from "@/plottables/Nodule";
+import { SELine } from "@/models/SELine";
 const SE = namespace("se");
 
 @Component({})
@@ -54,7 +55,7 @@ export default class SphereFrame extends VueComponent {
   readonly canvasSize!: number;
 
   @SE.State((s: AppState) => s.actionMode)
-  readonly actionMode!: string;
+  readonly actionMode!: ActionMode;
 
   @SE.State((s: AppState) => s.zoomMagnificationFactor)
   readonly zoomMagnificationFactor!: number;
@@ -433,14 +434,39 @@ export default class SphereFrame extends VueComponent {
 
   handleMousePressed(e: MouseEvent): void {
     // Only process events from the left (inner) mouse button to avoid adverse interactions with any pop-up menu
+    // const bb = (e.currentTarget as HTMLElement).getBoundingClientRect();
+    // console.debug(
+    //   "Mode",
+    //   this.actionMode,
+    //   ` mouse pressed at (${e.clientX - bb.left},${e.clientY - bb.top})`
+    // );
     if (e.button === 0) this.currentTool?.mousePressed(e);
   }
 
   handleMouseReleased(e: MouseEvent): void {
     // Only process events from the left (inner) mouse button to avoid adverse interactions with any pop-up menu
-    if (e.button === 0)
+    // const bb = (e.currentTarget as HTMLElement).getBoundingClientRect();
+    // console.debug(
+    //   "Mode",
+    //   this.actionMode,
+    //   ` mouse released at (${e.clientX - bb.left},${e.clientY - bb.top})`
+    // );
+    if (e.button === 0) {
       // When currentTool is NULL, the following line does nothing
       this.currentTool?.mouseReleased(e);
+      // console.debug(
+      //   SEStore.sePoints.length,
+      //   "P  ",
+      //   SEStore.seLines.length,
+      //   "L   ",
+      //   SEStore.seSegments.length,
+      //   "S   ",
+      //   SEStore.seCircles.length,
+      //   "C   ",
+      //   SEStore.seEllipses.length,
+      //   "E"
+      // );
+    }
   }
 
   handleMouseLeave(e: MouseEvent): void {
@@ -544,7 +570,7 @@ export default class SphereFrame extends VueComponent {
    * we would not be able to do this (at least not directly).
    */
   @Watch("actionMode")
-  switchActionMode(mode: string): void {
+  switchActionMode(mode: ActionMode): void {
     this.currentTool?.deactivate();
     this.currentTool = null;
     //set the default footer color -- override as necessary

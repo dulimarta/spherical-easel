@@ -199,7 +199,7 @@ import Vue from "vue";
 /* Import the components so we can use the class-style vue components in TypeScript. */
 import Component from "vue-class-component";
 import ToolButton from "@/components/ToolButton.vue";
-import { ToolButtonType } from "@/types";
+import { ActionMode, ToolButtonType } from "@/types";
 import { SEStore } from "@/store";
 /* Import the global settings. */
 import SETTINGS from "@/global-settings";
@@ -210,7 +210,10 @@ import SETTINGS from "@/global-settings";
 })
 export default class ToolGroups extends Vue {
   /* Controls the selection of the actionMode using the buttons. The default is segment. */
-  private actionMode = { id: "", name: "" };
+  private actionMode: { id: ActionMode; name: string } = {
+    id: "rotate",
+    name: ""
+  };
 
   /* Use the global settings to set the variables bound to the toolTipOpen/CloseDelay */
   private toolTipOpenDelay = SETTINGS.toolTip.openDelay;

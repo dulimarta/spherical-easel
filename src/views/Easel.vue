@@ -255,7 +255,7 @@ import Nodule from "@/plottables/Nodule";
 import Ellipse from "@/plottables/Ellipse";
 import { namespace } from "vuex-class";
 import { SENodule } from "@/models/SENodule";
-import { AppState, ConstructionInFirestore } from "@/types";
+import { ActionMode, AppState, ConstructionInFirestore } from "@/types";
 import IconBase from "@/components/IconBase.vue";
 import AngleMarker from "@/plottables/AngleMarker";
 import { FirebaseFirestore, DocumentSnapshot } from "@firebase/firestore-types";
@@ -329,7 +329,10 @@ export default class Easel extends Vue {
   private displayZoomInToolUseMessage = false;
   private displayZoomOutToolUseMessage = false;
   private displayZoomFitToolUseMessage = false;
-  private actionMode = { id: "", name: "" };
+  private actionMode: { id: ActionMode; name: string } = {
+    id: "rotate",
+    name: ""
+  };
   private confirmedLeaving = false;
   private attemptedToRoute: Route | null = null;
 

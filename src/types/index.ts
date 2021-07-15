@@ -67,6 +67,32 @@ export interface ToolButtonType {
   toolTipMessage: string;
 }
 
+export type ActionMode =
+  | "angle"
+  | "antipodalPoint"
+  | "circle"
+  | "coordinate"
+  | "delete"
+  | "ellipse"
+  | "hide"
+  | "iconFactory"
+  | "intersect"
+  | "line"
+  | "move"
+  | "perpendicular"
+  | "point"
+  | "pointDistance"
+  | "pointOnOneDim"
+  | "polar"
+  | "rotate"
+  | "segment"
+  | "segmentLength"
+  | "select"
+  | "slider"
+  | "toggleLabelDisplay"
+  | "zoomFit"
+  | "zoomIn"
+  | "zoomOut";
 /**
  * Intersection Vector3 and if that intersection exists
  */

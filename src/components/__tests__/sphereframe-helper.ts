@@ -5,6 +5,7 @@ import { Wrapper } from "@vue/test-utils";
 export const TEST_MOUSE_X = 111;
 export const TEST_MOUSE_Y = 137;
 import { SEPoint } from "@/models/SEPoint";
+import { ActionMode } from "@/types";
 
 /**
  * Simulate mouse click at a specific screen position on the sphere.
@@ -134,7 +135,7 @@ export async function dragMouse(
  */
 export async function drawOneDimensional(
   wrapper: Wrapper<Vue>,
-  drawMode: string,
+  drawMode: ActionMode,
   x1: number,
   y1: number,
   isPoint1Foreground: boolean,
