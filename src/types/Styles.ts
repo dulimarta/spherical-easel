@@ -102,9 +102,24 @@ export const DEFAULT_NONFREE_LINE_FRONT_STYLE: StyleOptions = {
   strokeWidthPercent: 100
 };
 
-export const DEFAULT_NONFREE_LINE_BACK__STYLE: StyleOptions = {
+export const DEFAULT_NONFREE_LINE_BACK_STYLE: StyleOptions = {
   panel: StyleEditPanels.Front,
   strokeColor: "hsla(217, 90%, 81%, 1)",
   strokeWidthPercent: 100,
+  dynamicBackStyle: true
+};
+
+export const DEFAULT_SEGMENT_FRONT_STYLE: StyleOptions = {
+  panel: StyleEditPanels.Front,
+  strokeColor: "hsla(217, 90%, 61%, 1)",
+  strokeWidthPercent: 100,
+  dashArray: []
+};
+
+export const DEFAULT_SEGMENT_BACK_STYLE: StyleOptions = {
+  panel: StyleEditPanels.Front,
+  strokeColor: "hsla(217, 90%, 80%, 1)",
+  strokeWidthPercent: 100,
+  dashArray: [10, 5],
   dynamicBackStyle: true
 };

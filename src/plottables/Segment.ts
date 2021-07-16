@@ -1,9 +1,13 @@
 import { Vector3, Matrix4 } from "three";
-import Two from "two.js";
+import Two, { Color } from "two.js";
 import SETTINGS, { LAYER } from "@/global-settings";
 import Nodule, { DisplayStyle } from "./Nodule";
-import { StyleOptions, StyleEditPanels } from "@/types/Styles";
-import { SENodule } from "@/models/SENodule";
+import {
+  StyleOptions,
+  StyleEditPanels,
+  DEFAULT_SEGMENT_FRONT_STYLE,
+  DEFAULT_SEGMENT_BACK_STYLE
+} from "@/types/Styles";
 
 // The number of vectors used to render the one part of the segment (like the frontPart, frontExtra, etc.)
 const SUBDIVS = SETTINGS.segment.numPoints;
@@ -53,17 +57,17 @@ export default class Segment extends Nodule {
    * The styling variables for the drawn segment. The user can modify these.
    */
   // Front
-  private strokeColorFront = SETTINGS.segment.drawn.strokeColor.front;
+  // private strokeColorFront = SETTINGS.segment.drawn.strokeColor.front;
   private glowingStrokeColorFront = SETTINGS.segment.glowing.strokeColor.front;
-  private strokeWidthPercentFront = 100;
-  private dashArrayFront = [] as number[]; // Initialize in constructor
+  // private strokeWidthPercentFront = 100;
+  // private dashArrayFront = [] as number[]; // Initialize in constructor
   // Back-- use the default non-dynamic back style options so that when the user disables the dynamic back style these options are displayed
-  private strokeColorBack = SETTINGS.segment.drawn.strokeColor.back;
+  // private strokeColorBack = SETTINGS.segment.drawn.strokeColor.back;
   private glowingStrokeColorBack = SETTINGS.segment.glowing.strokeColor.back;
-  private strokeWidthPercentBack = 100;
+  // private strokeWidthPercentBack = 100;
 
-  private dashArrayBack = [] as number[]; // Initialize in constructor
-  private dynamicBackStyle = SETTINGS.segment.dynamicBackStyle;
+  // private dashArrayBack = [] as number[]; // Initialize in constructor
+  // private dynamicBackStyle = SETTINGS.segment.dynamicBackStyle;
 
   /** Initialize the current line width that is adjusted by the zoom level and the user widthPercent */
   static currentSegmentStrokeWidthFront =
@@ -176,16 +180,8 @@ export default class Segment extends Nodule {
     this.backExtra.visible = true;
     this.glowingBackExtra.visible = false;
 
-    if (SETTINGS.segment.drawn.dashArray.front.length > 0) {
-      SETTINGS.segment.drawn.dashArray.front.forEach(v =>
-        this.dashArrayFront.push(v)
-      );
-    }
-    if (SETTINGS.segment.drawn.dashArray.back.length > 0) {
-      SETTINGS.segment.drawn.dashArray.back.forEach(v =>
-        this.dashArrayBack.push(v)
-      );
-    }
+    this.styleOptions.set(StyleEditPanels.Front, DEFAULT_SEGMENT_FRONT_STYLE);
+    this.styleOptions.set(StyleEditPanels.Back, DEFAULT_SEGMENT_BACK_STYLE);
   }
 
   frontGlowingDisplay(): void {
@@ -498,44 +494,9 @@ export default class Segment extends Nodule {
   updateStyle(options: StyleOptions): void {
     console.debug("Segment: Update style of segment using", options);
     if (options.panel === StyleEditPanels.Front) {
-      // Set the front options
-      if (options.strokeWidthPercent !== undefined) {
-        this.strokeWidthPercentFront = options.strokeWidthPercent;
-      }
-      if (options.strokeColor !== undefined) {
-        this.strokeColorFront = options.strokeColor;
-      }
-
-      if (options.dashArray !== undefined) {
-        // clear the dashArray
-        this.dashArrayFront.clear();
-        for (let i = 0; i < options.dashArray.length; i++) {
-          this.dashArrayFront.push(options.dashArray[i]);
-        }
-      }
+      this.styleOptions.set(options.panel, options);
     } else if (options.panel === StyleEditPanels.Back) {
-      // options.dynamicBackStyle is boolean, so we need to explicitly check for undefined otherwise
-      // when it is false, this doesn't execute and this.dynamicBackStyle is not set
-      if (options.dynamicBackStyle !== undefined) {
-        this.dynamicBackStyle = options.dynamicBackStyle;
-      }
-      // overwrite the back options only in the case the dynamic style is not enabled
-      if (!this.dynamicBackStyle !== undefined) {
-        if (options.strokeWidthPercent) {
-          this.strokeWidthPercentBack = options.strokeWidthPercent;
-        }
-        if (options.strokeColor !== undefined) {
-          this.strokeColorBack = options.strokeColor;
-        }
-
-        if (options.dashArray !== undefined) {
-          // clear the dashArray
-          this.dashArrayBack.clear();
-          for (let i = 0; i < options.dashArray.length; i++) {
-            this.dashArrayBack.push(options.dashArray[i]);
-          }
-        }
-      }
+      this.styleOptions.set(options.panel, options);
     }
     // Now apply the style and size
     this.stylize(DisplayStyle.ApplyCurrentVariables);
@@ -546,37 +507,15 @@ export default class Segment extends Nodule {
    */
   currentStyleState(panel: StyleEditPanels): StyleOptions {
     switch (panel) {
-      case StyleEditPanels.Front: {
-        const dashArrayFront = [] as number[];
-        if (this.dashArrayFront.length > 0) {
-          this.dashArrayFront.forEach(v => dashArrayFront.push(v));
-        }
-        return {
-          panel: panel,
-          strokeWidthPercent: this.strokeWidthPercentFront,
-          strokeColor: this.strokeColorFront,
-          dashArray: dashArrayFront
-        };
-      }
-      case StyleEditPanels.Back: {
-        const dashArrayBack = [] as number[];
-        if (this.dashArrayBack.length > 0) {
-          this.dashArrayBack.forEach(v => dashArrayBack.push(v));
-        }
-        return {
-          panel: panel,
-          strokeWidthPercent: this.strokeWidthPercentBack,
-          strokeColor: this.strokeColorBack,
-          dashArray: dashArrayBack,
-          dynamicBackStyle: this.dynamicBackStyle
-        };
-      }
+      case StyleEditPanels.Front:
+        return this.styleOptions.get(panel)!;
+
+      case StyleEditPanels.Back:
+        return this.styleOptions.get(panel)!;
       default:
-      case StyleEditPanels.Label: {
         return {
           panel: panel
         };
-      }
     }
   }
   /**
@@ -584,45 +523,10 @@ export default class Segment extends Nodule {
    */
   defaultStyleState(panel: StyleEditPanels): StyleOptions {
     switch (panel) {
-      case StyleEditPanels.Front: {
-        const dashArrayFront = [] as number[];
-        if (SETTINGS.segment.drawn.dashArray.front.length > 0) {
-          SETTINGS.segment.drawn.dashArray.front.forEach(v =>
-            dashArrayFront.push(v)
-          );
-        }
-        return {
-          panel: panel,
-          strokeWidthPercent: 100,
-          strokeColor: SETTINGS.segment.drawn.strokeColor.front,
-          dashArray: dashArrayFront
-        };
-      }
-      case StyleEditPanels.Back: {
-        const dashArrayBack = [] as number[];
-
-        if (SETTINGS.segment.drawn.dashArray.back.length > 0) {
-          SETTINGS.segment.drawn.dashArray.back.forEach(v =>
-            dashArrayBack.push(v)
-          );
-        }
-        return {
-          panel: panel,
-
-          strokeWidthPercent: SETTINGS.segment.dynamicBackStyle
-            ? Nodule.contrastStrokeWidthPercent(100)
-            : 100,
-
-          strokeColor: SETTINGS.segment.dynamicBackStyle
-            ? Nodule.contrastStrokeColor(
-                SETTINGS.segment.drawn.strokeColor.front
-              )
-            : SETTINGS.segment.drawn.strokeColor.back,
-
-          dashArray: dashArrayBack,
-          dynamicBackStyle: SETTINGS.segment.dynamicBackStyle
-        };
-      }
+      case StyleEditPanels.Front:
+        return DEFAULT_SEGMENT_FRONT_STYLE;
+      case StyleEditPanels.Back:
+        return DEFAULT_SEGMENT_BACK_STYLE;
       default:
       case StyleEditPanels.Label: {
         return {
@@ -635,44 +539,46 @@ export default class Segment extends Nodule {
    * Sets the variables for stroke width glowing/not front/back/extra
    */
   adjustSize(): void {
+    const frontStyle = this.styleOptions.get(StyleEditPanels.Front);
+    const backStyle = this.styleOptions.get(StyleEditPanels.Back);
+    const frontStrokeWidthPercent = frontStyle?.strokeWidthPercent ?? 100;
+    const backStrokeWidthPercent = backStyle?.strokeWidthPercent ?? 100;
     this.frontPart.linewidth =
-      (Segment.currentSegmentStrokeWidthFront * this.strokeWidthPercentFront) /
-      100;
+      (Segment.currentSegmentStrokeWidthFront * frontStrokeWidthPercent) / 100;
     this.backPart.linewidth =
       (Segment.currentSegmentStrokeWidthBack *
-        (this.dynamicBackStyle
-          ? Nodule.contrastStrokeWidthPercent(this.strokeWidthPercentFront)
-          : this.strokeWidthPercentBack)) /
+        (backStyle?.dynamicBackStyle
+          ? Nodule.contrastStrokeWidthPercent(frontStrokeWidthPercent)
+          : backStrokeWidthPercent)) /
       100;
     this.glowingFrontPart.linewidth =
       (Segment.currentGlowingSegmentStrokeWidthFront *
-        this.strokeWidthPercentFront) /
+        frontStrokeWidthPercent) /
       100;
     this.glowingBackPart.linewidth =
       (Segment.currentGlowingSegmentStrokeWidthBack *
-        (this.dynamicBackStyle
-          ? Nodule.contrastStrokeWidthPercent(this.strokeWidthPercentFront)
-          : this.strokeWidthPercentBack)) /
+        (backStyle?.dynamicBackStyle
+          ? Nodule.contrastStrokeWidthPercent(frontStrokeWidthPercent)
+          : backStrokeWidthPercent)) /
       100;
 
     this.frontExtra.linewidth =
-      (Segment.currentSegmentStrokeWidthFront * this.strokeWidthPercentFront) /
-      100;
+      (Segment.currentSegmentStrokeWidthFront * frontStrokeWidthPercent) / 100;
     this.backExtra.linewidth =
       (Segment.currentSegmentStrokeWidthBack *
-        (this.dynamicBackStyle
-          ? Nodule.contrastStrokeWidthPercent(this.strokeWidthPercentFront)
-          : this.strokeWidthPercentBack)) /
+        (backStyle?.dynamicBackStyle
+          ? Nodule.contrastStrokeWidthPercent(frontStrokeWidthPercent)
+          : backStrokeWidthPercent)) /
       100;
     this.glowingFrontExtra.linewidth =
       (Segment.currentGlowingSegmentStrokeWidthFront *
-        this.strokeWidthPercentFront) /
+        frontStrokeWidthPercent) /
       100;
     this.glowingBackExtra.linewidth =
       (Segment.currentGlowingSegmentStrokeWidthBack *
-        (this.dynamicBackStyle
-          ? Nodule.contrastStrokeWidthPercent(this.strokeWidthPercentFront)
-          : this.strokeWidthPercentBack)) /
+        (backStyle?.dynamicBackStyle
+          ? Nodule.contrastStrokeWidthPercent(frontStrokeWidthPercent)
+          : backStrokeWidthPercent)) /
       100;
   }
   /**
@@ -755,19 +661,18 @@ export default class Segment extends Nodule {
         // Use the current variables to directly modify the Two.js objects.
 
         // FRONT PART
+        const frontStyle = this.styleOptions.get(StyleEditPanels.Front);
         // no fillColor
-        if (this.strokeColorFront == "noStroke") {
+        if (frontStyle?.strokeColor == "noStroke") {
           this.frontPart.noStroke();
         } else {
-          this.frontPart.stroke = this.strokeColorFront;
+          this.frontPart.stroke = frontStyle?.strokeColor as Color;
         }
         // strokeWidthPercent applied by adjustSize()
 
-        if (this.dashArrayFront.length > 0) {
+        if (frontStyle?.dashArray && frontStyle.dashArray.length > 0) {
           this.frontPart.dashes.clear();
-          this.dashArrayFront.forEach(v => {
-            this.frontPart.dashes.push(v);
-          });
+          this.frontPart.dashes.push(...frontStyle.dashArray);
         } else {
           // the array length is zero and no dash array should be set
           this.frontPart.dashes.clear();
@@ -775,18 +680,16 @@ export default class Segment extends Nodule {
         }
         // FRONT EXTRA
         // no fillColor
-        if (this.strokeColorFront == "noStroke") {
+        if (frontStyle?.strokeColor == "noStroke") {
           this.frontExtra.noStroke();
         } else {
-          this.frontExtra.stroke = this.strokeColorFront;
+          this.frontExtra.stroke = frontStyle?.strokeColor as Color;
         }
         // strokeWidthPercent applied by adjustSize()
 
-        if (this.dashArrayFront.length > 0) {
+        if (frontStyle?.dashArray && frontStyle.dashArray.length > 0) {
           this.frontExtra.dashes.clear();
-          this.dashArrayFront.forEach(v => {
-            this.frontExtra.dashes.push(v);
-          });
+          this.frontExtra.dashes.push(...frontStyle.dashArray);
         } else {
           // the array length is zero and no dash array should be set
           this.frontExtra.dashes.clear();
@@ -794,30 +697,32 @@ export default class Segment extends Nodule {
         }
 
         // BACK PART
+        const backStyle = this.styleOptions.get(StyleEditPanels.Back);
         // no fillColor
 
-        if (this.dynamicBackStyle) {
-          if (Nodule.contrastStrokeColor(this.strokeColorFront) == "noStroke") {
+        if (backStyle?.dynamicBackStyle) {
+          if (
+            Nodule.contrastStrokeColor(frontStyle?.strokeColor ?? "black") ==
+            "noStroke"
+          ) {
             this.backPart.noStroke();
           } else {
             this.backPart.stroke = Nodule.contrastStrokeColor(
-              this.strokeColorFront
+              frontStyle?.strokeColor ?? "black"
             );
           }
         } else {
-          if (this.strokeColorBack == "noStroke") {
+          if (backStyle?.strokeColor == "noStroke") {
             this.backPart.noStroke();
           } else {
-            this.backPart.stroke = this.strokeColorBack;
+            this.backPart.stroke = backStyle?.strokeColor as Color;
           }
         }
         // strokeWidthPercent applied by adjustSize()
 
-        if (this.dashArrayBack.length > 0) {
+        if (backStyle?.dashArray && backStyle.dashArray.length > 0) {
           this.backPart.dashes.clear();
-          this.dashArrayBack.forEach(v => {
-            this.backPart.dashes.push(v);
-          });
+          this.backPart.dashes.push(...backStyle.dashArray);
         } else {
           // the array length is zero and no dash array should be set
           this.backPart.dashes.clear();
@@ -825,28 +730,29 @@ export default class Segment extends Nodule {
         }
         // BACK EXTRA
         // no fillColor
-        if (this.dynamicBackStyle) {
-          if (Nodule.contrastStrokeColor(this.strokeColorFront) == "noStroke") {
+        if (backStyle?.dynamicBackStyle) {
+          if (
+            Nodule.contrastStrokeColor(frontStyle?.strokeColor ?? "black") ==
+            "noStroke"
+          ) {
             this.backExtra.noStroke();
           } else {
             this.backExtra.stroke = Nodule.contrastStrokeColor(
-              this.strokeColorFront
+              frontStyle?.strokeColor ?? "black"
             );
           }
         } else {
-          if (this.strokeColorBack == "noStroke") {
+          if (backStyle?.strokeColor == "noStroke") {
             this.backExtra.noStroke();
           } else {
-            this.backExtra.stroke = this.strokeColorBack;
+            this.backExtra.stroke = backStyle?.strokeColor as Color;
           }
         }
         // strokeWidthPercent applied by adjustSize()
 
-        if (this.dashArrayBack.length > 0) {
+        if (backStyle?.dashArray && backStyle.dashArray.length > 0) {
           this.backExtra.dashes.clear();
-          this.dashArrayBack.forEach(v => {
-            this.backExtra.dashes.push(v);
-          });
+          this.backExtra.dashes.push(...backStyle.dashArray);
         } else {
           // the array length is zero and no dash array should be set
           this.backExtra.dashes.clear();
@@ -860,11 +766,9 @@ export default class Segment extends Nodule {
         // strokeWidthPercent applied by adjustSize()
 
         // Copy the front dash properties to the glowing object
-        if (this.dashArrayFront.length > 0) {
+        if (frontStyle?.dashArray && frontStyle.dashArray.length > 0) {
           this.glowingFrontPart.dashes.clear();
-          this.dashArrayFront.forEach(v => {
-            this.glowingFrontPart.dashes.push(v);
-          });
+          this.glowingFrontPart.dashes.push(...frontStyle.dashArray);
         } else {
           // the array length is zero and no dash array should be set
           this.glowingFrontPart.dashes.clear();
@@ -877,11 +781,9 @@ export default class Segment extends Nodule {
         // strokeWidthPercent applied by adjustSize()
 
         // Copy the front dash properties to the glowing object
-        if (this.dashArrayFront.length > 0) {
+        if (frontStyle?.dashArray && frontStyle.dashArray.length > 0) {
           this.glowingFrontExtra.dashes.clear();
-          this.dashArrayFront.forEach(v => {
-            this.glowingFrontExtra.dashes.push(v);
-          });
+          this.glowingFrontExtra.dashes.push(...frontStyle.dashArray);
         } else {
           // the array length is zero and no dash array should be set
           this.glowingFrontExtra.dashes.clear();
@@ -894,11 +796,9 @@ export default class Segment extends Nodule {
         // strokeWidthPercent applied by adjustSize()
 
         // Copy the back dash properties to the glowing object
-        if (this.dashArrayBack.length > 0) {
+        if (backStyle?.dashArray && backStyle.dashArray.length > 0) {
           this.glowingBackPart.dashes.clear();
-          this.dashArrayBack.forEach(v => {
-            this.glowingBackPart.dashes.push(v);
-          });
+          this.glowingBackPart.dashes.push(...backStyle.dashArray);
         } else {
           // the array length is zero and no dash array should be set
           this.glowingBackPart.dashes.clear();
@@ -911,11 +811,9 @@ export default class Segment extends Nodule {
         // strokeWidthPercent applied by adjustSize()
 
         // Copy the back dash properties to the glowing object
-        if (this.dashArrayBack.length > 0) {
+        if (backStyle?.dashArray && backStyle.dashArray.length > 0) {
           this.glowingBackExtra.dashes.clear();
-          this.dashArrayBack.forEach(v => {
-            this.glowingBackExtra.dashes.push(v);
-          });
+          this.glowingBackExtra.dashes.push(...backStyle.dashArray);
         } else {
           // the array length is zero and no dash array should be set
           this.glowingBackExtra.dashes.clear();

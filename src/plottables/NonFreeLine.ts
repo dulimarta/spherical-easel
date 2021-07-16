@@ -4,7 +4,7 @@ import {
   StyleOptions,
   StyleEditPanels,
   DEFAULT_NONFREE_LINE_FRONT_STYLE,
-  DEFAULT_NONFREE_LINE_BACK__STYLE
+  DEFAULT_NONFREE_LINE_BACK_STYLE
 } from "@/types/Styles";
 import Line from "./Line";
 
@@ -44,7 +44,7 @@ export default class NonFreeLine extends Line {
     );
     this.styleOptions.set(
       StyleEditPanels.Back,
-      DEFAULT_NONFREE_LINE_BACK__STYLE
+      DEFAULT_NONFREE_LINE_BACK_STYLE
     );
   }
 
