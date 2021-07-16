@@ -175,3 +175,30 @@ export const DEFAULT_ANGLE_MARKER_BACK_STYLE: StyleOptions = {
   angleMarkerRadiusPercent: 100,
   dynamicBackStyle: SETTINGS.angleMarker.dynamicBackStyle
 };
+
+export const DEFAULT_LABEL_TEXT_STYLE: Partial<StyleOptions> = {
+  panel: StyleEditPanels.Label,
+  labelDisplayMode: LabelDisplayMode.NameOnly,
+  labelDisplayText: "No Label",
+  labelDisplayCaption: "No caption",
+  labelTextFamily: SETTINGS.label.family,
+  labelTextStyle: SETTINGS.label.style,
+  labelTextDecoration: SETTINGS.label.decoration,
+  labelTextScalePercent: 100,
+  labelTextRotation: 0,
+  labelFrontFillColor: SETTINGS.label.fillColor.front,
+  labelBackFillColor: SETTINGS.label.fillColor.back,
+  dynamicBackStyle: SETTINGS.label.dynamicBackStyle
+};
+
+export const DEFAULT_LABEL_FRONT_STYLE: Partial<StyleOptions> = {
+  panel: StyleEditPanels.Front,
+  fillColor: SETTINGS.label.fillColor.front,
+  dynamicBackStyle: SETTINGS.label.dynamicBackStyle
+};
+
+export const DEFAULT_LABEL_BACK_STYLE: Partial<StyleOptions> = {
+  panel: StyleEditPanels.Front,
+  fillColor: SETTINGS.label.fillColor.front,
+  dynamicBackStyle: SETTINGS.label.dynamicBackStyle
+};
