@@ -81,3 +81,30 @@ export const DEFAULT_NONFREEPOINT_FRONT_STYLE: StyleOptions = {
   fillColor: "hsla(0, 50%, 75%, 1)",
   strokeColor: "hsla(240, 30%, 55%, 1)"
 };
+
+export const DEFAULT_LINE_FRONT_STYLE: StyleOptions = {
+  panel: StyleEditPanels.Front,
+  strokeColor: "hsla(217, 90%, 61%, 1)",
+  strokeWidthPercent: 100,
+  dashArray: []
+};
+
+export const DEFAULT_LINE_BACK_STYLE: StyleOptions = {
+  panel: StyleEditPanels.Back,
+  dynamicBackStyle: true,
+  strokeColor: "hsla(217, 90%, 80%, 1)",
+  strokeWidthPercent: 100,
+  dashArray: [10, 5]
+};
+export const DEFAULT_NONFREE_LINE_FRONT_STYLE: StyleOptions = {
+  panel: StyleEditPanels.Front,
+  strokeColor: "hsla(217, 90%, 61%, 1)",
+  strokeWidthPercent: 100
+};
+
+export const DEFAULT_NONFREE_LINE_BACK__STYLE: StyleOptions = {
+  panel: StyleEditPanels.Front,
+  strokeColor: "hsla(217, 90%, 81%, 1)",
+  strokeWidthPercent: 100,
+  dynamicBackStyle: true
+};
