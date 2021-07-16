@@ -387,15 +387,10 @@ import { SENodule } from "../models/SENodule";
 import Nodule from "../plottables/Nodule";
 import { namespace } from "vuex-class";
 // import AppStore from "@/store";
-import {
-  Styles,
-  StyleOptions,
-  StyleEditPanels,
-  LabelDisplayMode
-} from "../types/Styles";
+import { Styles, StyleOptions, StyleEditPanels } from "../types/Styles";
 import SETTINGS from "@/global-settings";
 import FadeInCard from "@/components/FadeInCard.vue";
-import { hslaColorType, AppState, Labelable } from "@/types";
+import { hslaColorType, AppState, LabelDisplayMode } from "@/types";
 import { StyleNoduleCommand } from "@/commands/StyleNoduleCommand";
 import EventBus from "@/eventHandlers/EventBus";
 import NumberSelector from "@/components/NumberSelector.vue";
@@ -403,8 +398,6 @@ import NumberSelector from "@/components/NumberSelector.vue";
 import ColorSelector from "@/components/ColorSelector.vue";
 //import { TranslateResult } from "vue-i18n";
 import i18n from "../i18n";
-import TranslateResult from "../i18n";
-import Style from "./Style.vue";
 import HintButton from "@/components/HintButton.vue";
 import OverlayWithFixButton from "@/components/OverlayWithFixButton.vue";
 import { SEStore } from "@/store";

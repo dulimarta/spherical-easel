@@ -7,8 +7,8 @@ import EventBus from "@/eventHandlers/EventBus";
 import SETTINGS from "@/global-settings";
 import { CommandGroup } from "@/commands/CommandGroup";
 import { StyleNoduleCommand } from "@/commands/StyleNoduleCommand";
-import { LabelDisplayMode, StyleEditPanels } from "@/types/Styles";
-import { UpdateMode } from "@/types";
+import { StyleEditPanels } from "@/types/Styles";
+import { LabelDisplayMode, UpdateMode } from "@/types";
 import { SEStore } from "@/store";
 export default class SegmentLengthHandler extends Highlighter {
   /**

@@ -236,12 +236,8 @@ import { Watch, Prop } from "vue-property-decorator";
 import { SENodule } from "../models/SENodule";
 import Nodule from "../plottables/Nodule";
 import { namespace } from "vuex-class";
-import {
-  Styles,
-  StyleOptions,
-  StyleEditPanels,
-  LabelDisplayMode
-} from "../types/Styles";
+import { Styles, StyleOptions, StyleEditPanels } from "../types/Styles";
+import { LabelDisplayMode } from "@/types";
 import SETTINGS from "@/global-settings";
 import FadeInCard from "@/components/FadeInCard.vue";
 import { hslaColorType, AppState, Labelable } from "@/types";
@@ -251,7 +247,7 @@ import NumberSelector from "@/components/NumberSelector.vue";
 // import TextInputSelector from "@/components/TextInputSelector.vue";
 import ColorSelector from "@/components/ColorSelector.vue";
 import i18n from "../i18n";
-import Style from "./Style.vue";
+// import Style from "./Style.vue";
 import HintButton from "@/components/HintButton.vue";
 import OverlayWithFixButton from "@/components/OverlayWithFixButton.vue";
 import { SEStore } from "@/store";

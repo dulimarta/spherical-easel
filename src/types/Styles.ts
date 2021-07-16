@@ -4,15 +4,7 @@ export enum StyleEditPanels { // The order of these *must* match the order of th
   Back,
   Advanced
 }
-
-export enum LabelDisplayMode {
-  NameOnly, // display only the name
-  CaptionOnly, // display the caption only
-  ValueOnly, // display the value only (if any)
-  NameAndCaption, // display the name and caption
-  NameAndValue // display the name and value (if any)
-}
-
+import { LabelDisplayMode } from "@/types";
 export enum Styles {
   // Important: Be sure to include "Color" for enum member
   // that refers to Color property

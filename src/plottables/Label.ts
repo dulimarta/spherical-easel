@@ -5,11 +5,8 @@ import Two, { BoundingClientRect } from "two.js";
 import SETTINGS, { LAYER } from "@/global-settings";
 import Nodule, { DisplayStyle } from "./Nodule";
 import { Vector3 } from "three";
-import {
-  StyleOptions,
-  LabelDisplayMode,
-  StyleEditPanels
-} from "@/types/Styles";
+import { StyleOptions, StyleEditPanels } from "@/types/Styles";
+import { LabelDisplayMode } from "@/types";
 import { SELabel } from "@/models/SELabel";
 import { SELine } from "@/models/SELine";
 import { SEPoint } from "@/models/SEPoint";

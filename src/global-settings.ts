@@ -1,5 +1,4 @@
-import { ValueDisplayMode } from "./types";
-import { LabelDisplayMode } from "./types/Styles";
+import { ValueDisplayMode, LabelDisplayMode } from "./types";
 
 export default {
   nearlyAntipodalIdeal: 0.005, // Two unit vectors, U and V, are nearly antipodal or nearly parallel (the) if crossVectors(U,V).isZero(nearlyAntipodalIdeal) is true

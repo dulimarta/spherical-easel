@@ -203,6 +203,14 @@ export enum ValueDisplayMode {
   DegreeDecimals // convert to degrees for display
 }
 
+export enum LabelDisplayMode {
+  NameOnly, // display only the name
+  CaptionOnly, // display the caption only
+  ValueOnly, // display the value only (if any)
+  NameAndCaption, // display the name and caption
+  NameAndValue // display the name and value (if any)
+}
+
 export interface UpdateStateType {
   mode: UpdateMode;
   stateArray: ObjectState[];
