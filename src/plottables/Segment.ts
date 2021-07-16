@@ -57,17 +57,9 @@ export default class Segment extends Nodule {
    * The styling variables for the drawn segment. The user can modify these.
    */
   // Front
-  // private strokeColorFront = SETTINGS.segment.drawn.strokeColor.front;
   private glowingStrokeColorFront = SETTINGS.segment.glowing.strokeColor.front;
-  // private strokeWidthPercentFront = 100;
-  // private dashArrayFront = [] as number[]; // Initialize in constructor
   // Back-- use the default non-dynamic back style options so that when the user disables the dynamic back style these options are displayed
-  // private strokeColorBack = SETTINGS.segment.drawn.strokeColor.back;
   private glowingStrokeColorBack = SETTINGS.segment.glowing.strokeColor.back;
-  // private strokeWidthPercentBack = 100;
-
-  // private dashArrayBack = [] as number[]; // Initialize in constructor
-  // private dynamicBackStyle = SETTINGS.segment.dynamicBackStyle;
 
   /** Initialize the current line width that is adjusted by the zoom level and the user widthPercent */
   static currentSegmentStrokeWidthFront =
@@ -493,30 +485,27 @@ export default class Segment extends Nodule {
    */
   updateStyle(options: StyleOptions): void {
     console.debug("Segment: Update style of segment using", options);
-    if (options.panel === StyleEditPanels.Front) {
-      this.styleOptions.set(options.panel, options);
-    } else if (options.panel === StyleEditPanels.Back) {
-      this.styleOptions.set(options.panel, options);
+    if (
+      options.panel === StyleEditPanels.Front ||
+      options.panel === StyleEditPanels.Back
+    ) {
+      const currentOptions = this.styleOptions.get(options.panel);
+      this.styleOptions.set(options.panel, { ...currentOptions, ...options });
+      // Now apply the style and size
+      this.stylize(DisplayStyle.ApplyCurrentVariables);
+      this.adjustSize();
     }
-    // Now apply the style and size
-    this.stylize(DisplayStyle.ApplyCurrentVariables);
-    this.adjustSize();
   }
   /**
    * Return the current style state
    */
   currentStyleState(panel: StyleEditPanels): StyleOptions {
-    switch (panel) {
-      case StyleEditPanels.Front:
-        return this.styleOptions.get(panel)!;
-
-      case StyleEditPanels.Back:
-        return this.styleOptions.get(panel)!;
-      default:
-        return {
-          panel: panel
-        };
-    }
+    if (panel === StyleEditPanels.Front || panel === StyleEditPanels.Back)
+      return this.styleOptions.get(panel)!;
+    else
+      return {
+        panel: panel
+      };
   }
   /**
    * Return the default style state

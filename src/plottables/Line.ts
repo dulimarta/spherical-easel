@@ -54,17 +54,9 @@ export default class Line extends Nodule {
    * The styling variables for the drawn segment. The user can modify these.
    */
   // Front
-  // protected strokeColorFront = SETTINGS.line.drawn.strokeColor.front;
   protected glowingStrokeColorFront = SETTINGS.line.glowing.strokeColor.front;
-  // protected dashArrayFront = [] as number[]; // Initialize in constructor
-  // protected strokeWidthPercentFront = 100;
-
-  // Back use the default non-dynamic back style options so that when the user disables the dynamic back style these options are displayed
-  // protected dynamicBackStyle = SETTINGS.line.dynamicBackStyle;
-  // protected strokeColorBack = SETTINGS.line.drawn.strokeColor.back;
+  // Back
   protected glowingStrokeColorBack = SETTINGS.line.glowing.strokeColor.back;
-  // protected dashArrayBack = [] as number[]; // Initialize in constructor
-  // protected strokeWidthPercentBack = 100;
 
   /** Initialize the current line width that is adjust by the zoom level and the user widthPercent */
   static currentLineStrokeWidthFront = SETTINGS.line.drawn.strokeWidth.front;
@@ -352,80 +344,27 @@ export default class Line extends Nodule {
    */
   updateStyle(options: StyleOptions): void {
     console.debug("Line: Update style of line using", options);
-    if (options.panel === StyleEditPanels.Front) {
-      this.styleOptions.set(options.panel, options);
-      // Set the front options
-      // if (options.strokeWidthPercent !== undefined) {
-      //   this.strokeWidthPercentFront = options.strokeWidthPercent;
-      // }
-      // if (options.strokeColor !== undefined) {
-      //   this.strokeColorFront = options.strokeColor;
-      // }
-      // if (options.dashArray !== undefined) {
-      //   // clear the dashArray
-      //   this.dashArrayFront.clear();
-      //   for (let i = 0; i < options.dashArray.length; i++) {
-      //     this.dashArrayFront.push(options.dashArray[i]);
-      //   }
-      // }
-    } else if (options.panel === StyleEditPanels.Back) {
-      this.styleOptions.set(options.panel, options);
-      // Set the back options
-      // options.dynamicBackStyle is boolean, so we need to explicitly check for undefined otherwise
-      // when it is false, this doesn't execute and this.dynamicBackStyle is not set
-      // if (options.dynamicBackStyle !== undefined) {
-      //   this.dynamicBackStyle = options.dynamicBackStyle;
-      // }
-      // overwrite the back options only in the case the dynamic style is not enabled
-      // if (!this.dynamicBackStyle !== undefined) {
-      // if (options.strokeWidthPercent) {
-      //   this.strokeWidthPercentBack = options.strokeWidthPercent;
-      // }
-      // if (options.strokeColor !== undefined) {
-      //   this.strokeColorBack = options.strokeColor;
-      // }
-      // if (options.dashArray !== undefined) {
-      //   // clear the dashArray
-      //   this.dashArrayBack.clear();
-      //   for (let i = 0; i < options.dashArray.length; i++) {
-      //     this.dashArrayBack.push(options.dashArray[i]);
-      //   }
-      // }
-      // }
+    if (
+      options.panel === StyleEditPanels.Front ||
+      options.panel === StyleEditPanels.Back
+    ) {
+      const currentOptions = this.styleOptions.get(options.panel);
+      this.styleOptions.set(options.panel, { ...currentOptions, ...options });
+      // Now update the style and size
+      this.stylize(DisplayStyle.ApplyCurrentVariables);
+      this.adjustSize();
     }
-    // Now update the style and size
-    this.stylize(DisplayStyle.ApplyCurrentVariables);
-    this.adjustSize();
   }
   /**
    * Return the current style state
    */
   currentStyleState(panel: StyleEditPanels): StyleOptions {
-    switch (panel) {
-      case StyleEditPanels.Front: {
-        return this.styleOptions.get(panel)!;
-      }
-      case StyleEditPanels.Back: {
-        return this.styleOptions.get(panel)!;
-        // const dashArrayBack = [] as number[];
-        // if (this.dashArrayBack.length > 0) {
-        //   this.dashArrayBack.forEach(v => dashArrayBack.push(v));
-        // }
-        // return {
-        //   panel: panel,
-        //   strokeWidthPercent: this.strokeWidthPercentBack,
-        //   strokeColor: this.strokeColorBack,
-        //   dashArray: dashArrayBack,
-        //   dynamicBackStyle: this.dynamicBackStyle
-        // };
-      }
-      default:
-      case StyleEditPanels.Label: {
-        return {
-          panel: panel
-        };
-      }
-    }
+    if (panel === StyleEditPanels.Front || panel === StyleEditPanels.Back)
+      return this.styleOptions.get(panel)!;
+    else
+      return {
+        panel: panel
+      };
   }
   /**
    * Return the default style state

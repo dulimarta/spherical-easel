@@ -45,13 +45,8 @@ export default class Point extends Nodule {
   protected glowingFillColorFront = SETTINGS.point.glowing.fillColor.front;
   protected glowingStrokeColorFront = SETTINGS.point.glowing.strokeColor.front;
   // Back - use the default non-dynamic back style options so that when the user disables the dynamic back style these options are displayed
-  // protected fillColorBack = SETTINGS.point.drawn.fillColor.back;
-  // protected strokeColorBack = SETTINGS.point.drawn.strokeColor.back;
   protected glowingFillColorBack = SETTINGS.point.glowing.fillColor.back;
   protected glowingStrokeColorBack = SETTINGS.point.glowing.strokeColor.back;
-  // protected pointRadiusPercentBack = SETTINGS.point.radiusPercent.back;
-
-  // protected dynamicBackStyle = SETTINGS.point.dynamicBackStyle;
 
   /**
    * Initialize the current point scale factor that is adjusted by the zoom level and the user pointRadiusPercent
@@ -259,44 +254,39 @@ export default class Point extends Nodule {
    */
   updateStyle(options: StyleOptions): void {
     console.debug("Point: Update style of point using", options);
-    this.styleOptions.set(options.panel, options);
-    // Now apply the style and size
-    this.stylize(DisplayStyle.ApplyCurrentVariables);
-    this.adjustSize();
+    if (
+      options.panel === StyleEditPanels.Front ||
+      options.panel === StyleEditPanels.Back
+    ) {
+      const currentOption = this.styleOptions.get(options.panel);
+      // Use JavaScript object destructuring to combine the two options
+      // IMPORTANT: the order of the de-structure below is Important
+      // The current option must be written FIRST the the new incoming
+      // option will override current settings
+      this.styleOptions.set(options.panel, { ...currentOption, ...options });
+      // Now apply the style and size
+      this.stylize(DisplayStyle.ApplyCurrentVariables);
+      this.adjustSize();
+    }
   }
   /**
    * Return the current style state
    */
   currentStyleState(panel: StyleEditPanels): StyleOptions {
-    switch (panel) {
-      case StyleEditPanels.Front: {
-        return this.styleOptions.get(panel)!;
-      }
-      case StyleEditPanels.Back: {
-        return this.styleOptions.get(panel)!;
-      }
-      default:
-      case StyleEditPanels.Label: {
-        return {
-          panel: panel
-        };
-      }
-    }
+    if (panel === StyleEditPanels.Front || panel === StyleEditPanels.Back)
+      return this.styleOptions.get(panel)!;
+    else
+      return {
+        panel: panel
+      };
   }
   /**
    * Return the default style state
    */
   defaultStyleState(panel: StyleEditPanels): StyleOptions {
     switch (panel) {
-      case StyleEditPanels.Front: {
-        return {
-          panel: panel,
-          pointRadiusPercent: SETTINGS.point.radiusPercent.front,
-          strokeColor: SETTINGS.point.drawn.strokeColor.front,
-          fillColor: SETTINGS.point.drawn.fillColor.front
-        };
-        // Back
-      }
+      case StyleEditPanels.Front:
+        return DEFAULT_POINT_FRONT_STYLE;
 
       case StyleEditPanels.Back: {
         return {

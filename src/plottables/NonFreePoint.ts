@@ -64,15 +64,8 @@ export default class NonFreePoint extends Point {
    */
   defaultStyleState(panel: StyleEditPanels): StyleOptions {
     switch (panel) {
-      case StyleEditPanels.Front: {
-        return {
-          panel: panel,
-          pointRadiusPercent: 100,
-          strokeColor: SETTINGS.point.nonFree.strokeColor.front,
-          fillColor: SETTINGS.point.nonFree.fillColor.front
-        };
-        // Back
-      }
+      case StyleEditPanels.Front:
+        return DEFAULT_NONFREEPOINT_FRONT_STYLE;
       case StyleEditPanels.Back: {
         return {
           panel: panel,

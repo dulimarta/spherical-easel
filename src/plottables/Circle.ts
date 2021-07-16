@@ -1,12 +1,16 @@
 /** @format */
 
 import { Vector3, Vector2, Matrix4 } from "three";
-import Two from "two.js";
+import Two, { Color, RadialGradient } from "two.js";
 import SETTINGS, { LAYER } from "@/global-settings";
 import Nodule, { DisplayStyle } from "./Nodule";
-import { StyleOptions, StyleEditPanels } from "@/types/Styles";
+import {
+  StyleOptions,
+  StyleEditPanels,
+  DEFAULT_CIRCLE_FRONT_STYLE,
+  DEFAULT_CIRCLE_BACK_STYLE
+} from "@/types/Styles";
 import AppStore from "@/store";
-import { SENodule } from "@/models/SENodule";
 
 const desiredXAxis = new Vector3();
 const desiredYAxis = new Vector3();
@@ -74,18 +78,9 @@ export default class Circle extends Nodule {
    * The styling variables for the drawn circle. The user can modify these.
    */
   // Front
-  private fillColorFront = SETTINGS.circle.drawn.fillColor.front;
-  private strokeColorFront = SETTINGS.circle.drawn.strokeColor.front;
   private glowingStrokeColorFront = SETTINGS.circle.glowing.strokeColor.front;
-  private strokeWidthPercentFront = 100;
-  private dashArrayFront = [] as number[]; // Initialize in constructor
   // Back -- use the default non-dynamic back style options so that when the user disables the dynamic back style these options are displayed
-  private dynamicBackStyle = SETTINGS.circle.dynamicBackStyle;
-  private fillColorBack = SETTINGS.circle.drawn.fillColor.back;
-  private strokeColorBack = SETTINGS.circle.drawn.strokeColor.back;
   private glowingStrokeColorBack = SETTINGS.circle.glowing.strokeColor.back;
-  private strokeWidthPercentBack = 100;
-  private dashArrayBack = [] as number[]; // Initialize in constructor
 
   /**
    * The stops and gradient for front/back fill
@@ -97,7 +92,7 @@ export default class Circle extends Nodule {
   );
   private frontGradientColor = new Two.Stop(
     2 * SETTINGS.boundaryCircle.radius,
-    this.fillColorFront,
+    SETTINGS.circle.drawn.fillColor.front,
     1
   );
 
@@ -111,7 +106,7 @@ export default class Circle extends Nodule {
   private backGradientColorCenter = new Two.Stop(0, SETTINGS.fill.backGray, 1);
   private backGradientColor = new Two.Stop(
     1 * SETTINGS.boundaryCircle.radius,
-    this.fillColorBack,
+    SETTINGS.circle.drawn.fillColor.back,
     1
   );
   private backGradient = new Two.RadialGradient(
@@ -219,16 +214,6 @@ export default class Circle extends Nodule {
     this.glowingFrontPart.noFill();
     this.glowingBackPart.noFill();
 
-    if (SETTINGS.circle.drawn.dashArray.front.length > 0) {
-      SETTINGS.circle.drawn.dashArray.front.forEach(v =>
-        this.dashArrayFront.push(v)
-      );
-    }
-    if (SETTINGS.circle.drawn.dashArray.back.length > 0) {
-      SETTINGS.circle.drawn.dashArray.back.forEach(v =>
-        this.dashArrayBack.push(v)
-      );
-    }
     //Turn off the glowing display initially but leave it on so that the temporary objects show up
     this.frontPart.visible = true;
     this.backPart.visible = true;
@@ -277,10 +262,12 @@ export default class Circle extends Nodule {
     this.backFill.visible = true;
 
     //set the fill gradient color correctly (especially the opacity which is set separately than the color -- not set by the opacity of the fillColor)
-    this.frontGradientColor.color = this.fillColorFront;
+    this.frontGradientColor.color = SETTINGS.circle.drawn.fillColor.front;
     this.backGradientColor.color = SETTINGS.circle.dynamicBackStyle
-      ? Nodule.contrastFillColor(this.fillColorFront)
-      : this.fillColorBack;
+      ? Nodule.contrastFillColor(SETTINGS.circle.drawn.fillColor.front)
+      : SETTINGS.circle.drawn.fillColor.back;
+    this.styleOptions.set(StyleEditPanels.Front, DEFAULT_CIRCLE_FRONT_STYLE);
+    this.styleOptions.set(StyleEditPanels.Back, DEFAULT_CIRCLE_BACK_STYLE);
   }
   /**
    * Reorient the unit circle in 3D and then project the points to 2D
@@ -831,7 +818,7 @@ export default class Circle extends Nodule {
     dup.backPart.closed = this.backPart.closed;
     dup.backPart.rotation = this.backPart.rotation;
     dup.backPart.translation.copy(this.backPart.translation);
-    dup.dynamicBackStyle = this.dynamicBackStyle;
+    dup.styleOptions = this.styleOptions;
 
     // Duplicate the glowing parts
     dup.glowingFrontPart.closed = this.glowingFrontPart.closed;
@@ -926,117 +913,38 @@ export default class Circle extends Nodule {
    * @param options The style options
    */
   updateStyle(options: StyleOptions): void {
-    console.debug("Circle Update style of circle using", options);
-    if (options.panel === StyleEditPanels.Front) {
-      // Set the front options
-      if (options.strokeWidthPercent !== undefined) {
-        this.strokeWidthPercentFront = options.strokeWidthPercent;
-      }
-      if (options.fillColor !== undefined) {
-        this.fillColorFront = options.fillColor;
-      }
-      if (options.strokeColor !== undefined) {
-        this.strokeColorFront = options.strokeColor;
-      }
-      if (options.dashArray !== undefined) {
-        this.dashArrayFront.clear();
-        for (let i = 0; i < options.dashArray.length; i++) {
-          this.dashArrayFront.push(options.dashArray[i]);
-        }
-      }
-    } else if (options.panel == StyleEditPanels.Back) {
-      // Set the back options
-      // options.dynamicBackStyle is boolean, so we need to explicitly check for undefined otherwise
-      // when it is false, this doesn't execute and this.dynamicBackStyle is not set
-      if (options.dynamicBackStyle !== undefined) {
-        this.dynamicBackStyle = options.dynamicBackStyle;
-      }
-      // overwrite the back options only in the case the dynamic style is not enabled
-      if (!this.dynamicBackStyle) {
-        if (options.strokeWidthPercent !== undefined) {
-          this.strokeWidthPercentBack = options.strokeWidthPercent;
-        }
-        if (options.fillColor !== undefined) {
-          this.fillColorBack = options.fillColor;
-        }
-        if (options.strokeColor !== undefined) {
-          this.strokeColorBack = options.strokeColor;
-        }
-        if (options.dashArray !== undefined) {
-          // clear the dashArray
-          this.dashArrayBack.clear();
-          for (let i = 0; i < options.dashArray.length; i++) {
-            this.dashArrayBack.push(options.dashArray[i]);
-          }
-        }
-      }
+    console.debug("Circle Update style using", options);
+    if (
+      options.panel === StyleEditPanels.Front ||
+      options.panel === StyleEditPanels.Back
+    ) {
+      const currentOptions = this.styleOptions.get(options.panel);
+      this.styleOptions.set(options.panel, { ...currentOptions, ...options });
+      // Now apply the style and size
+      this.stylize(DisplayStyle.ApplyCurrentVariables);
+      this.adjustSize();
     }
-    // Now apply the style and size
-    this.stylize(DisplayStyle.ApplyCurrentVariables);
-    this.adjustSize();
   }
 
   /**
    * Return the current style state
    */
   currentStyleState(panel: StyleEditPanels): StyleOptions {
-    switch (panel) {
-      case StyleEditPanels.Front: {
-        const dashArrayFront = [] as number[];
-        if (this.dashArrayFront.length > 0) {
-          this.dashArrayFront.forEach(v => dashArrayFront.push(v));
-        }
-        return {
-          panel: panel,
-          strokeWidthPercent: this.strokeWidthPercentFront,
-          strokeColor: this.strokeColorFront,
-          fillColor: this.fillColorFront,
-          dashArray: dashArrayFront
-        };
-        break;
-      }
-      case StyleEditPanels.Back: {
-        const dashArrayBack = [] as number[];
-        if (this.dashArrayBack.length > 0) {
-          this.dashArrayBack.forEach(v => dashArrayBack.push(v));
-        }
-        return {
-          panel: panel,
-          strokeWidthPercent: this.strokeWidthPercentBack,
-          strokeColor: this.strokeColorBack,
-          fillColor: this.fillColorBack,
-          dashArray: dashArrayBack,
-          dynamicBackStyle: this.dynamicBackStyle
-        };
-      }
-      default:
-      case StyleEditPanels.Label: {
-        return {
-          panel: panel
-        };
-      }
-    }
+    if (panel === StyleEditPanels.Front || panel === StyleEditPanels.Back)
+      return this.styleOptions.get(panel)!;
+    else
+      return {
+        panel: panel
+      };
   }
   /**
    * Return the default style state
    */
   defaultStyleState(panel: StyleEditPanels): StyleOptions {
     switch (panel) {
-      case StyleEditPanels.Front: {
-        const dashArrayFront = [] as number[];
-        if (SETTINGS.circle.drawn.dashArray.front.length > 0) {
-          SETTINGS.circle.drawn.dashArray.front.forEach(v =>
-            dashArrayFront.push(v)
-          );
-        }
-        return {
-          panel: panel,
-          strokeWidthPercent: 100,
-          fillColor: SETTINGS.circle.drawn.fillColor.front,
-          strokeColor: SETTINGS.circle.drawn.strokeColor.front,
-          dashArray: dashArrayFront
-        };
-      }
+      case StyleEditPanels.Front:
+        return DEFAULT_CIRCLE_FRONT_STYLE;
+
       case StyleEditPanels.Back: {
         const dashArrayBack = [] as number[];
 
@@ -1080,24 +988,26 @@ export default class Circle extends Nodule {
    * Sets the variables for stroke width glowing/not
    */
   adjustSize(): void {
+    const frontStyle = this.styleOptions.get(StyleEditPanels.Front);
+    const backStyle = this.styleOptions.get(StyleEditPanels.Back);
+    const frontStrokeWidthPercent = frontStyle?.strokeWidthPercent ?? 100;
+    const backStrokeWidthPercent = backStyle?.strokeWidthPercent ?? 100;
     this.frontPart.linewidth =
-      (Circle.currentCircleStrokeWidthFront * this.strokeWidthPercentFront) /
-      100;
+      (Circle.currentCircleStrokeWidthFront * frontStrokeWidthPercent) / 100;
     this.backPart.linewidth =
       (Circle.currentCircleStrokeWidthBack *
-        (this.dynamicBackStyle
-          ? Nodule.contrastStrokeWidthPercent(this.strokeWidthPercentFront)
-          : this.strokeWidthPercentBack)) /
+        (backStyle?.dynamicBackStyle
+          ? Nodule.contrastStrokeWidthPercent(frontStrokeWidthPercent)
+          : backStrokeWidthPercent)) /
       100;
     this.glowingFrontPart.linewidth =
-      (Circle.currentGlowingCircleStrokeWidthFront *
-        this.strokeWidthPercentFront) /
+      (Circle.currentGlowingCircleStrokeWidthFront * frontStrokeWidthPercent) /
       100;
     this.glowingBackPart.linewidth =
       (Circle.currentGlowingCircleStrokeWidthBack *
-        (this.dynamicBackStyle
-          ? Nodule.contrastStrokeWidthPercent(this.strokeWidthPercentFront)
-          : this.strokeWidthPercentBack)) /
+        (backStyle?.dynamicBackStyle
+          ? Nodule.contrastStrokeWidthPercent(frontStrokeWidthPercent)
+          : backStrokeWidthPercent)) /
       100;
   }
 
@@ -1168,76 +1078,78 @@ export default class Circle extends Nodule {
         // Use the current variables to directly modify the Two.js objects.
 
         // FRONT
-        if (this.fillColorFront === "noFill") {
+        const frontStyle = this.styleOptions.get(StyleEditPanels.Front);
+        if (frontStyle?.fillColor === "noFill") {
           this.frontFill.noFill();
         } else {
-          this.frontGradientColor.color = this.fillColorFront;
+          this.frontGradientColor.color = frontStyle?.fillColor ?? "black";
           this.frontFill.fill = this.frontGradient;
         }
 
-        if (this.strokeColorFront === "noStroke") {
+        if (frontStyle?.strokeColor === "noStroke") {
           this.frontPart.noStroke();
         } else {
-          this.frontPart.stroke = this.strokeColorFront;
+          this.frontPart.stroke = frontStyle?.strokeColor as Color;
         }
         // strokeWidthPercent is applied by adjustSize()
 
-        if (this.dashArrayFront.length > 0) {
+        if (frontStyle?.dashArray && frontStyle.dashArray.length > 0) {
           this.frontPart.dashes.clear();
-          this.dashArrayFront.forEach(v => {
-            this.frontPart.dashes.push(v);
-          });
+          this.frontPart.dashes.push(...frontStyle.dashArray);
         } else {
           // the array length is zero and no dash array should be set
           this.frontPart.dashes.clear();
           this.frontPart.dashes.push(0);
         }
         // BACK
-        if (this.dynamicBackStyle) {
-          if (Nodule.contrastFillColor(this.fillColorFront) === "noFill") {
+        const backStyle = this.styleOptions.get(StyleEditPanels.Back);
+        if (backStyle?.dynamicBackStyle) {
+          if (
+            Nodule.contrastFillColor(frontStyle?.fillColor ?? "black") ===
+            "noFill"
+          ) {
             this.backFill.noFill();
           } else {
             this.backGradientColor.color = Nodule.contrastFillColor(
-              this.fillColorFront
+              frontStyle?.fillColor ?? "black"
             );
 
             this.backFill.fill = this.backGradient;
           }
         } else {
-          if (this.fillColorBack === "noFill") {
+          if (backStyle?.fillColor === "noFill") {
             this.backFill.noFill();
           } else {
-            this.backGradientColor.color = this.fillColorBack;
+            this.backGradientColor.color = backStyle?.fillColor ?? "black";
             console.log("here 2");
             this.backFill.fill = this.backGradient;
           }
         }
 
-        if (this.dynamicBackStyle) {
+        if (backStyle?.dynamicBackStyle) {
           if (
-            Nodule.contrastStrokeColor(this.strokeColorFront) === "noStroke"
+            Nodule.contrastStrokeColor(frontStyle?.strokeColor ?? "black") ===
+            "noStroke"
           ) {
             this.backPart.noStroke();
           } else {
             this.backPart.stroke = Nodule.contrastStrokeColor(
-              this.strokeColorFront
+              frontStyle?.strokeColor ?? "black"
             );
           }
         } else {
-          if (this.strokeColorBack === "noStroke") {
+          if (backStyle?.strokeColor === "noStroke") {
             this.backPart.noStroke();
           } else {
-            this.backPart.stroke = this.strokeColorBack;
+            this.backPart.stroke = backStyle?.strokeColor ?? "black";
           }
         }
 
         // strokeWidthPercent applied by adjustSizer()
 
-        if (this.dashArrayBack.length > 0) {
+        if (backStyle?.dashArray && backStyle.dashArray.length > 0) {
           this.backPart.dashes.clear();
-          this.dashArrayBack.forEach(v => {
-            this.backPart.dashes.push(v);
-          });
+          this.backPart.dashes.push(...backStyle.dashArray);
         } else {
           // the array length is zero and no dash array should be set
           this.backPart.dashes.clear();
@@ -1252,11 +1164,9 @@ export default class Circle extends Nodule {
         // strokeWidthPercent applied by adjustSize()
 
         // Copy the front dash properties to the glowing object
-        if (this.dashArrayFront.length > 0) {
+        if (frontStyle?.dashArray && frontStyle.dashArray.length > 0) {
           this.glowingFrontPart.dashes.clear();
-          this.dashArrayFront.forEach(v => {
-            this.glowingFrontPart.dashes.push(v);
-          });
+          this.glowingFrontPart.dashes.push(...frontStyle.dashArray);
         } else {
           // the array length is zero and no dash array should be set
           this.glowingFrontPart.dashes.clear();
@@ -1269,11 +1179,9 @@ export default class Circle extends Nodule {
         // strokeWidthPercent applied by adjustSize()
 
         // Copy the back dash properties to the glowing object
-        if (this.dashArrayBack.length > 0) {
+        if (backStyle?.dashArray && backStyle.dashArray.length > 0) {
           this.glowingBackPart.dashes.clear();
-          this.dashArrayBack.forEach(v => {
-            this.glowingBackPart.dashes.push(v);
-          });
+          this.glowingBackPart.dashes.push(...backStyle.dashArray);
         } else {
           // the array length is zero and no dash array should be set
           this.glowingBackPart.dashes.clear();

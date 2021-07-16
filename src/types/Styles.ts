@@ -123,3 +123,20 @@ export const DEFAULT_SEGMENT_BACK_STYLE: StyleOptions = {
   dashArray: [10, 5],
   dynamicBackStyle: true
 };
+
+export const DEFAULT_CIRCLE_FRONT_STYLE: StyleOptions = {
+  panel: StyleEditPanels.Front,
+  fillColor: "hsla(254, 100%, 90%, 0.2)",
+  strokeColor: "hsla(217, 90%, 61%, 1)",
+  strokeWidthPercent: 100,
+  dashArray: []
+};
+
+export const DEFAULT_CIRCLE_BACK_STYLE: StyleOptions = {
+  panel: StyleEditPanels.Front,
+  dynamicBackStyle: true,
+  fillColor: "hsla(10, 100%, 50%, 0.1)",
+  strokeColor: "hsla(217, 90%, 80%, 1)",
+  strokeWidthPercent: 100,
+  dashArray: [10, 5]
+};

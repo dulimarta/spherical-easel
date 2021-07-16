@@ -179,7 +179,7 @@ export default class SE extends VuexModule implements AppState {
 
   @Mutation
   setZoomMagnificationFactor(mag: number): void {
-    console.log("setZoomMagFactor");
+    // console.log("setZoomMagFactor");
     EventBus.fire("magnification-updated", {
       factor: this.zoomMagnificationFactor / mag
     });
@@ -546,30 +546,9 @@ export default class SE extends VuexModule implements AppState {
     selected: SENodule[];
     payload: StyleOptions;
   }): void {
-    const opt: StyleOptions = {
-      panel: payload.panel,
-      strokeWidthPercent: payload.strokeWidthPercent,
-      strokeColor: payload.strokeColor,
-      fillColor: payload.fillColor,
-      dashArray: payload.dashArray,
-      dynamicBackStyle: payload.dynamicBackStyle,
-      pointRadiusPercent: payload.pointRadiusPercent,
-      labelTextStyle: payload.labelTextStyle,
-      labelTextFamily: payload.labelTextFamily,
-      labelTextDecoration: payload.labelTextDecoration,
-      labelTextRotation: payload.labelTextRotation,
-      labelTextScalePercent: payload.labelTextScalePercent,
-      labelDisplayText: payload.labelDisplayText,
-      labelDisplayCaption: payload.labelDisplayCaption,
-      labelDisplayMode: payload.labelDisplayMode,
-      // labelVisibility: payload.labelVisibility,
-      labelFrontFillColor: payload.labelFrontFillColor,
-      labelBackFillColor: payload.labelBackFillColor,
-      // objectVisibility: payload.objectVisibility,
-      angleMarkerRadiusPercent: payload.angleMarkerRadiusPercent,
-      angleMarkerTickMark: payload.angleMarkerTickMark,
-      angleMarkerDoubleArc: payload.angleMarkerDoubleArc
-    };
+    // Important: object destructuring below seems to solve the issue
+    // of merging undefined properties in updateStyle()
+    const opt: StyleOptions = { ...payload };
     if (
       payload.backStyleContrast &&
       payload.backStyleContrast != Nodule.getBackStyleContrast()
