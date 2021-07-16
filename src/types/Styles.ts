@@ -1,4 +1,6 @@
 import { SETTINGS } from "@/global-settings";
+// We move the declaration of LabelDisplayMode from this file
+// to @/types/index.ts to solve the circular dependency issue
 import { LabelDisplayMode } from "@/types";
 export enum StyleEditPanels { // The order of these *must* match the order of the panels in Style.vue
   Label,
@@ -148,4 +150,28 @@ export const DEFAULT_ELLIPSE_BACK_STYLE: StyleOptions = {
   strokeColor: SETTINGS.ellipse.drawn.strokeColor.back,
   strokeWidthPercent: 100,
   dashArray: SETTINGS.ellipse.drawn.dashArray.back
+};
+
+export const DEFAULT_ANGLE_MARKER_FRONT_STYLE: StyleOptions = {
+  panel: StyleEditPanels.Front,
+  fillColor: SETTINGS.angleMarker.drawn.fillColor.front,
+  strokeColor: SETTINGS.angleMarker.drawn.strokeColor.front,
+  strokeWidthPercent: 100,
+  dashArray: SETTINGS.angleMarker.drawn.dashArray.front,
+  angleMarkerTickMark: SETTINGS.angleMarker.defaultTickMark,
+  angleMarkerDoubleArc: SETTINGS.angleMarker.defaultDoubleArc,
+  angleMarkerRadiusPercent: 100
+};
+
+export const DEFAULT_ANGLE_MARKER_BACK_STYLE: StyleOptions = {
+  panel: StyleEditPanels.Front,
+  fillColor: SETTINGS.angleMarker.drawn.fillColor.back,
+  strokeColor: SETTINGS.angleMarker.drawn.strokeColor.back,
+  strokeWidthPercent: 100,
+  dashArray: SETTINGS.angleMarker.drawn.dashArray.back,
+  // TODO: should we also include tickmark and doubleArc for the back style?
+  angleMarkerTickMark: SETTINGS.angleMarker.defaultTickMark,
+  angleMarkerDoubleArc: SETTINGS.angleMarker.defaultDoubleArc,
+  angleMarkerRadiusPercent: 100,
+  dynamicBackStyle: SETTINGS.angleMarker.dynamicBackStyle
 };
