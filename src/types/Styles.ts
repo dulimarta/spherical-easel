@@ -1,10 +1,12 @@
+import { SETTINGS } from "@/global-settings";
+import { LabelDisplayMode } from "@/types";
 export enum StyleEditPanels { // The order of these *must* match the order of the panels in Style.vue
   Label,
   Front,
   Back,
   Advanced
 }
-import { LabelDisplayMode } from "@/types";
+
 export enum Styles {
   // Important: Be sure to include "Color" for enum member
   // that refers to Color property
@@ -55,80 +57,95 @@ export interface StyleOptions {
 
 export const DEFAULT_POINT_FRONT_STYLE: StyleOptions = {
   panel: StyleEditPanels.Front,
-  fillColor: "green",
-  pointRadiusPercent: 100,
-  strokeColor: "hsla(240, 55%, 55%, 1)"
+  fillColor: SETTINGS.point.drawn.fillColor.front,
+  pointRadiusPercent: SETTINGS.point.radiusPercent.front,
+  strokeColor: SETTINGS.point.drawn.strokeColor.front
 };
 
 export const DEFAULT_POINT_BACK_STYLE: StyleOptions = {
   panel: StyleEditPanels.Back,
-  dynamicBackStyle: true,
-  fillColor: "hsla(0, 100%, 75%, 1)",
-  pointRadiusPercent: 90,
-  strokeColor: "hsla(240, 55%, 75%, 1)"
+  dynamicBackStyle: SETTINGS.point.dynamicBackStyle,
+  fillColor: SETTINGS.point.drawn.fillColor.back,
+  pointRadiusPercent: SETTINGS.point.radiusPercent.back,
+  strokeColor: SETTINGS.point.drawn.strokeColor.back
 };
 
 export const DEFAULT_NONFREEPOINT_FRONT_STYLE: StyleOptions = {
   panel: StyleEditPanels.Front,
-  fillColor: "hsla(0, 50%, 75%, 1)",
-  strokeColor: "hsla(240, 30%, 55%, 1)"
+  fillColor: SETTINGS.point.nonFree.fillColor.front,
+  strokeColor: SETTINGS.point.nonFree.strokeColor.front
 };
 
 export const DEFAULT_LINE_FRONT_STYLE: StyleOptions = {
   panel: StyleEditPanels.Front,
-  strokeColor: "hsla(217, 90%, 61%, 1)",
+  strokeColor: SETTINGS.line.drawn.strokeColor.front,
   strokeWidthPercent: 100,
-  dashArray: []
+  dashArray: SETTINGS.line.drawn.dashArray.front
 };
 
 export const DEFAULT_LINE_BACK_STYLE: StyleOptions = {
   panel: StyleEditPanels.Back,
-  dynamicBackStyle: true,
-  strokeColor: "hsla(217, 90%, 80%, 1)",
+  dynamicBackStyle: SETTINGS.line.dynamicBackStyle,
+  strokeColor: SETTINGS.line.drawn.strokeColor.back,
   strokeWidthPercent: 100,
-  dashArray: [10, 5]
+  dashArray: SETTINGS.line.drawn.dashArray.back
 };
 export const DEFAULT_NONFREE_LINE_FRONT_STYLE: StyleOptions = {
   panel: StyleEditPanels.Front,
-  strokeColor: "hsla(217, 90%, 61%, 1)",
+  strokeColor: SETTINGS.line.nonFree.strokeColor.front,
   strokeWidthPercent: 100
 };
 
 export const DEFAULT_NONFREE_LINE_BACK_STYLE: StyleOptions = {
   panel: StyleEditPanels.Front,
-  strokeColor: "hsla(217, 90%, 81%, 1)",
+  strokeColor: SETTINGS.line.nonFree.strokeColor.back,
   strokeWidthPercent: 100,
-  dynamicBackStyle: true
+  dynamicBackStyle: SETTINGS.line.dynamicBackStyle
 };
 
 export const DEFAULT_SEGMENT_FRONT_STYLE: StyleOptions = {
   panel: StyleEditPanels.Front,
-  strokeColor: "hsla(217, 90%, 61%, 1)",
+  strokeColor: SETTINGS.segment.drawn.strokeColor.front,
   strokeWidthPercent: 100,
-  dashArray: []
+  dashArray: SETTINGS.segment.drawn.dashArray.front
 };
 
 export const DEFAULT_SEGMENT_BACK_STYLE: StyleOptions = {
   panel: StyleEditPanels.Front,
-  strokeColor: "hsla(217, 90%, 80%, 1)",
+  strokeColor: SETTINGS.segment.drawn.strokeColor.back,
   strokeWidthPercent: 100,
-  dashArray: [10, 5],
-  dynamicBackStyle: true
+  dashArray: SETTINGS.segment.drawn.dashArray.back,
+  dynamicBackStyle: SETTINGS.segment.dynamicBackStyle
 };
 
 export const DEFAULT_CIRCLE_FRONT_STYLE: StyleOptions = {
   panel: StyleEditPanels.Front,
-  fillColor: "hsla(254, 100%, 90%, 0.2)",
-  strokeColor: "hsla(217, 90%, 61%, 1)",
+  fillColor: SETTINGS.circle.drawn.fillColor.front,
+  strokeColor: SETTINGS.circle.drawn.strokeColor.front,
   strokeWidthPercent: 100,
-  dashArray: []
+  dashArray: SETTINGS.circle.drawn.dashArray.front
 };
 
 export const DEFAULT_CIRCLE_BACK_STYLE: StyleOptions = {
   panel: StyleEditPanels.Front,
-  dynamicBackStyle: true,
-  fillColor: "hsla(10, 100%, 50%, 0.1)",
-  strokeColor: "hsla(217, 90%, 80%, 1)",
+  dynamicBackStyle: SETTINGS.circle.dynamicBackStyle,
+  fillColor: SETTINGS.circle.drawn.fillColor.back,
+  strokeColor: SETTINGS.circle.drawn.strokeColor.back,
   strokeWidthPercent: 100,
-  dashArray: [10, 5]
+  dashArray: SETTINGS.circle.drawn.dashArray.back
+};
+
+export const DEFAULT_ELLIPSE_FRONT_STYLE: StyleOptions = {
+  panel: StyleEditPanels.Front,
+  fillColor: SETTINGS.ellipse.drawn.fillColor.front,
+  strokeColor: SETTINGS.ellipse.drawn.strokeColor.front,
+  strokeWidthPercent: 100,
+  dashArray: SETTINGS.ellipse.drawn.dashArray.front
+};
+export const DEFAULT_ELLIPSE_BACK_STYLE: StyleOptions = {
+  panel: StyleEditPanels.Back,
+  fillColor: SETTINGS.ellipse.drawn.fillColor.back,
+  strokeColor: SETTINGS.ellipse.drawn.strokeColor.back,
+  strokeWidthPercent: 100,
+  dashArray: SETTINGS.ellipse.drawn.dashArray.back
 };

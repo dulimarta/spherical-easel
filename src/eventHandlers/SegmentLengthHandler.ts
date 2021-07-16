@@ -8,7 +8,8 @@ import SETTINGS from "@/global-settings";
 import { CommandGroup } from "@/commands/CommandGroup";
 import { StyleNoduleCommand } from "@/commands/StyleNoduleCommand";
 import { StyleEditPanels } from "@/types/Styles";
-import { LabelDisplayMode, UpdateMode } from "@/types";
+import { LabelDisplayMode } from "@/types";
+import { UpdateMode } from "@/types";
 import { SEStore } from "@/store";
 export default class SegmentLengthHandler extends Highlighter {
   /**

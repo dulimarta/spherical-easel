@@ -1,6 +1,6 @@
 import { ValueDisplayMode, LabelDisplayMode } from "./types";
 
-export default {
+export const SETTINGS = {
   nearlyAntipodalIdeal: 0.005, // Two unit vectors, U and V, are nearly antipodal or nearly parallel (the) if crossVectors(U,V).isZero(nearlyAntipodalIdeal) is true
   tolerance: 0.0000001, // Any number less that this tolerance is considered zero
   hideObjectHidesLabel: true, // hiding an object hide the label of that object automatically if this is true
@@ -760,3 +760,5 @@ export enum LAYER {
   foregroundText
 }
 //#endregion layers
+
+export default SETTINGS;
