@@ -3,9 +3,8 @@
     <!-- <span v-for="c in points" :key="c.id">{{c.name}}</span> -->
     <div id="header"
       class="accent">
-      <span class="text-subtitle-1">{{$tc(i18LabelKey,1)}}</span>
-      <v-btn small
-        v-show="hasExistingChildren"
+      <span class="text-subtitle-1">{{$t(i18LabelKey)}}</span>
+      <v-btn smalls
         @click="expanded = !expanded">
         <v-icon v-if="!expanded">mdi-chevron-right</v-icon>
         <v-icon v-else>mdi-chevron-down</v-icon>
@@ -14,17 +13,14 @@
 
     <transition name="slide-right">
       <div v-show="expanded">
-        <template v-for="n in existingChildren">
+        <template v-for="(coordinate,idk) in coordinateData">
           <!-- content goes here -->
-          <SENoduleItem :node="n"
-            v-if="!isSlider(n)"
-            :key="n.id"
-            v-on:object-select="onExpressionSelect"></SENoduleItem>
-          <SESliderItem v-else
-            :node="n"
-            :key="`${n.id}-slider`"
-            v-on:object-select="onExpressionSelect"></SESliderItem>
-          <v-divider :key="`${n.id}-divider`"></v-divider>
+          <ParametricCoordinate :placeholder="coordinate.placeholder"
+            :key="idk"
+            :i18nKey="coordinate.i18n_key"
+            :i18nToolTip="coordinate.i18nToolTip"
+            :name="coordinate.name">
+          </ParametricCoordinate>
         </template>
       </div>
     </transition>
@@ -42,42 +38,43 @@ import SENoduleItem from "@/components/SENoduleItem.vue";
 import SESliderItem from "@/components/SESliderItem.vue";
 import { SESlider } from "@/models/SESlider";
 import EventBus from "@/eventHandlers/EventBus";
+import ParametricCoordinate from "@/components/ParametricCoordinate.vue";
 
-@Component({ components: { SENoduleItem, SESliderItem } })
+@Component({ components: { ParametricCoordinate } })
 export default class SENoduleTree extends Vue {
   @Prop()
-  readonly children!: SENodule[];
+  readonly coordinateData!: [];
 
   @Prop()
-  readonly i18LabelKey!: string; /** When defined, label takes over the node name */
+  readonly i18LabelKey!: string;
 
   private expanded = false;
 
-  get hasExistingChildren(): boolean {
-    return this.existingChildren.length > 0;
-  }
+  // get hasExistingChildren(): boolean {
+  //   return this.existingChildren.length > 0;
+  // }
 
   // name(node: SENodule): string {
   //   return node?.name ?? "None";
   // }
 
-  get existingChildren(): SENodule[] {
-    return this.children.filter((n: SENodule) => {
-      if (n instanceof SEIntersectionPoint) return n.isUserCreated && n.exists;
-      else return n.exists;
-    });
-  }
+  // get existingChildren(): SENodule[] {
+  //   return this.children.filter((n: SENodule) => {
+  //     if (n instanceof SEIntersectionPoint) return n.isUserCreated;
+  //     else return n.exists;
+  //   });
+  // }
 
   //When a user clicks on an expression this sends the token name to the expression builder (ExpressionForm.vue)
   onExpressionSelect(x: any): void {
-    const pos = this.children.findIndex(n => n.id === x.id);
-    // console.debug("****Selection", x, "at", pos);
-    if (pos >= 0) {
-      EventBus.fire("measurement-selected", this.children[pos].name);
-    }
-  }
-  isSlider(n: SENodule): boolean {
-    return n instanceof SESlider;
+    // const pos = this.children.findIndex(n => n.id === x.id);
+    // // console.debug("****Selection", x, "at", pos);
+    // if (pos >= 0) {
+    //   EventBus.fire(
+    //     "measurement-selected",
+    //     this.children[pos].name
+    //   );
+    // }
   }
 }
 </script>

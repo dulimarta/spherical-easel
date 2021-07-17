@@ -269,6 +269,35 @@ export default class EllipseHandler extends Highlighter {
           //that will prevent a mouse release at the same location as focus 2 from creating the ellipse
           this.mouseMoved(event);
         }
+      } else if (this.hitSEParametrics.length > 0) {
+        // One of the foci of the ellipse will be a point on a circle
+        //  Eventually, we will create a new SEPointOneDimensional and Point
+        if (!this.focus1LocationSelected) {
+          this.focus1SEPointOneDimensionalParent = this.hitSEParametrics[0];
+          this.focus1Vector.copy(
+            this.focus1SEPointOneDimensionalParent.closestVector(
+              this.currentSphereVector
+            )
+          );
+          this.temporaryEllipse.focus1Vector = this.focus1Vector;
+          this.temporaryFocus1Marker.positionVector = this.focus1Vector;
+          this.focus1SEPoint = null;
+          this.focus1LocationSelected = true;
+        } else {
+          this.focus2SEPointOneDimensionalParent = this.hitSEParametrics[0];
+          this.focus2Vector.copy(
+            this.focus2SEPointOneDimensionalParent.closestVector(
+              this.currentSphereVector
+            )
+          );
+          this.temporaryEllipse.focus2Vector = this.focus2Vector;
+          this.temporaryFocus2Marker.positionVector = this.focus2Vector;
+          this.focus2SEPoint = null;
+          this.focus2LocationSelected = true;
+          // trigger this so that temporaryEllipsePoint's location is set and
+          //that will prevent a mouse release at the same location as focus 2 from creating the ellipse
+          this.mouseMoved(event);
+        }
       } else {
         // The mouse press is not near an existing point or one dimensional object.
         //  Eventually, we will create a new SEPoint and Point
@@ -333,6 +362,8 @@ export default class EllipseHandler extends Highlighter {
       possiblyGlowing = this.hitSECircles[0];
     } else if (this.hitSEEllipses.length > 0) {
       possiblyGlowing = this.hitSEEllipses[0];
+    } else if (this.hitSEParametrics.length > 0) {
+      possiblyGlowing = this.hitSEParametrics[0];
     } else {
       this.snapTemporaryPointMarkerToOneDimensional = null;
       this.snapTemporaryPointMarkerToPoint = null;
@@ -653,7 +684,7 @@ export default class EllipseHandler extends Highlighter {
    * Add a new circle the user has moved the mouse far enough (but not a radius of PI)
    */
   makeEllipse(): void {
-    // Create a command group to add the points defining the circle and the circle to the store
+    // Create a command group to add the points defining the ellipse and the ellipse to the store
     // This way a single undo click will undo all (potentially three) operations.
     const ellipseCommandGroup = new CommandGroup();
 
@@ -887,6 +918,22 @@ export default class EllipseHandler extends Highlighter {
             newSELabel
           )
         );
+      } else if (this.hitSEParametrics.length > 0) {
+        // The end of the line will be a point on a ellipse
+        vtx = new SEPointOnOneDimensional(
+          newEllipsePoint,
+          this.hitSEParametrics[0]
+        );
+        // Set the Location
+        vtx.locationVector = this.temporaryEllipsePointMarker.positionVector;
+        newSELabel = new SELabel(newLabel, vtx);
+        ellipseCommandGroup.addCommand(
+          new AddPointOnOneDimensionalCommand(
+            vtx as SEPointOnOneDimensional,
+            this.hitSEParametrics[0],
+            newSELabel
+          )
+        );
       } else {
         // The ending mouse release landed on an open space
         vtx = new SEPoint(newEllipsePoint);
@@ -967,7 +1014,7 @@ export default class EllipseHandler extends Highlighter {
     );
 
     // Generate new intersection points. These points must be computed and created
-    // in the store. Add the new created points to the circle command so they can be undone.
+    // in the store. Add the new created points to the ellipse command so they can be undone.
     SEStore.createAllIntersectionsWithEllipse(newSEEllipse).forEach(
       (item: SEIntersectionReturnType) => {
         // Create the plottable and model label

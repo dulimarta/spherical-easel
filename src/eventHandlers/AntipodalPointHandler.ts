@@ -119,6 +119,15 @@ export default class AntipodalPointHandler extends Highlighter {
           )
         );
         this.parentPoint = null;
+      } else if (this.hitSEParametrics.length > 0) {
+        // The user selected an ellipse and we will create a point on it
+        this.oneDimensionalContainingParentPoint = this.hitSEParametrics[0];
+        this.parentPointVector.copy(
+          this.oneDimensionalContainingParentPoint.closestVector(
+            this.currentSphereVector
+          )
+        );
+        this.parentPoint = null;
       } else {
         // The user selected an empty location and we will create a point there
         this.parentPointVector.copy(this.currentSphereVector);
@@ -277,6 +286,10 @@ export default class AntipodalPointHandler extends Highlighter {
     } else if (this.hitSEEllipses.length > 0) {
       this.hitSEEllipses[0].glowing = true;
       this.snapToTemporaryOneDimensional = this.hitSEEllipses[0];
+      this.snapToTemporaryPoint = null;
+    } else if (this.hitSEParametrics.length > 0) {
+      this.hitSEParametrics[0].glowing = true;
+      this.snapToTemporaryOneDimensional = this.hitSEParametrics[0];
       this.snapToTemporaryPoint = null;
     } else {
       this.snapToTemporaryOneDimensional = null;

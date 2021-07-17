@@ -150,6 +150,30 @@ export default class CircleHandler extends Highlighter {
         this.temporaryCircle.centerVector = this.centerVector;
         this.temporaryStartMarker.positionVector = this.centerVector;
         this.centerSEPoint = null;
+      } else if (this.hitSEEllipses.length > 0) {
+        // The center of the circle will be a point on a circle
+        //  Eventually, we will create a new SEPointOneDimensional and Point
+        this.centerSEPointOneDimensionalParent = this.hitSEEllipses[0];
+        this.centerVector.copy(
+          this.centerSEPointOneDimensionalParent.closestVector(
+            this.currentSphereVector
+          )
+        );
+        this.temporaryCircle.centerVector = this.centerVector;
+        this.temporaryStartMarker.positionVector = this.centerVector;
+        this.centerSEPoint = null;
+      } else if (this.hitSEParametrics.length > 0) {
+        // The center of the circle will be a point on a circle
+        //  Eventually, we will create a new SEPointOneDimensional and Point
+        this.centerSEPointOneDimensionalParent = this.hitSEParametrics[0];
+        this.centerVector.copy(
+          this.centerSEPointOneDimensionalParent.closestVector(
+            this.currentSphereVector
+          )
+        );
+        this.temporaryCircle.centerVector = this.centerVector;
+        this.temporaryStartMarker.positionVector = this.centerVector;
+        this.centerSEPoint = null;
       } else {
         // The mouse press is not near an existing point or one dimensional object.
         //  Eventually, we will create a new SEPoint and Point
@@ -240,6 +264,19 @@ export default class CircleHandler extends Highlighter {
       } else {
         this.snapStartMarkerToTemporaryOneDimensional = null;
         this.snapEndMarkerToTemporaryOneDimensional = this.hitSEEllipses[0];
+        this.snapStartMarkerToTemporaryPoint = null;
+        this.snapEndMarkerToTemporaryPoint = null;
+      }
+    } else if (this.hitSEParametrics.length > 0) {
+      this.hitSEParametrics[0].glowing = true;
+      if (!this.centerLocationSelected) {
+        this.snapStartMarkerToTemporaryOneDimensional = this.hitSEParametrics[0];
+        this.snapEndMarkerToTemporaryOneDimensional = null;
+        this.snapStartMarkerToTemporaryPoint = null;
+        this.snapEndMarkerToTemporaryPoint = null;
+      } else {
+        this.snapStartMarkerToTemporaryOneDimensional = null;
+        this.snapEndMarkerToTemporaryOneDimensional = this.hitSEParametrics[0];
         this.snapStartMarkerToTemporaryPoint = null;
         this.snapEndMarkerToTemporaryPoint = null;
       }
@@ -614,6 +651,24 @@ export default class CircleHandler extends Highlighter {
           new AddPointOnOneDimensionalCommand(
             vtx as SEPointOnOneDimensional,
             this.hitSEEllipses[0],
+            newSELabel
+          )
+        );
+      } else if (this.hitSEParametrics.length > 0) {
+        // The end of the line will be a point on a ellipse
+        vtx = new SEPointOnOneDimensional(
+          newCirclePoint,
+          this.hitSEParametrics[0]
+        );
+        // Set the Location
+        vtx.locationVector = this.hitSEParametrics[0].closestVector(
+          this.currentSphereVector
+        );
+        newSELabel = new SELabel(newLabel, vtx);
+        circleCommandGroup.addCommand(
+          new AddPointOnOneDimensionalCommand(
+            vtx as SEPointOnOneDimensional,
+            this.hitSEParametrics[0],
             newSELabel
           )
         );

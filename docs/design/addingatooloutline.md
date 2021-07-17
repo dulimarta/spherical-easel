@@ -114,7 +114,9 @@ This section is an outline of the steps needed to add a tool that takes user mou
     - Adding a new <span class="interface">AaaState</span> interface and <span class="method">isAaaState</span> method to <span class="file">index.ts</span> and updating the <span class="type">ObjectState</span> type.
     - Adding a new method <span class="method">actionOnAaa</span> in all the <span class="folder">Vistor</span> classes in the <span class="folder">visitor</span> folder and updating the <span class="interface">Visitor</span> interface in <span class="file">visitor.ts</span>.
     - Creating the static (in class <span class="class">Aaa</span>) method <span class="method">updateCurrentStrokeWidthForZoom</span> and calling it from <span class="file">Easel.vue</span> file to adjust the linewidth for zoom.
-    - To make the icon SVG (or part of the icon SVG) for `Aaa` you will have to update the <span class="field">id</span> field of all the <span class="package">Two.js</span> objects to distinguish them from others (unique first two digits) and between front and back (last two digits) paths.
+    - To make the icon SVG (or part of the icon SVG) for `Aaa` you will have to update the static method <span class="method">Nodule.idPlottableDescriptionMap</span> of all the <span class="package">Two.js</span> using the <span class="filed">id</span>
+
+    <<< @/src/plottable/Parametric.ts#updatePlottableMap
 
 2.  Create a new <span class="class">AaaHandler</span> class (extending <span class="class">Highlighter</span>). This means
 

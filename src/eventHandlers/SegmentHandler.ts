@@ -274,6 +274,19 @@ export default class SegmentHandler extends Highlighter {
         this.snapStartMarkerToTemporaryPoint = null;
         this.snapEndMarkerToTemporaryPoint = null;
       }
+    } else if (this.hitSEParametrics.length > 0) {
+      this.hitSEParametrics[0].glowing = true;
+      if (!this.startLocationSelected) {
+        this.snapStartMarkerToTemporaryOneDimensional = this.hitSEParametrics[0];
+        this.snapEndMarkerToTemporaryOneDimensional = null;
+        this.snapStartMarkerToTemporaryPoint = null;
+        this.snapEndMarkerToTemporaryPoint = null;
+      } else {
+        this.snapStartMarkerToTemporaryOneDimensional = null;
+        this.snapEndMarkerToTemporaryOneDimensional = this.hitSEParametrics[0];
+        this.snapStartMarkerToTemporaryPoint = null;
+        this.snapEndMarkerToTemporaryPoint = null;
+      }
     } else {
       this.snapStartMarkerToTemporaryOneDimensional = null;
       this.snapEndMarkerToTemporaryOneDimensional = null;
@@ -627,6 +640,25 @@ export default class SegmentHandler extends Highlighter {
           new AddPointOnOneDimensionalCommand(
             vtx as SEPointOnOneDimensional,
             this.hitSEEllipses[0],
+            newSELabel
+          )
+        );
+      } else if (this.hitSEParametrics.length > 0) {
+        // The end of the line will be a point on a Ellipse
+        vtx = new SEPointOnOneDimensional(
+          newEndPoint,
+          this.hitSEParametrics[0]
+        );
+        // Set the Location
+        vtx.locationVector = this.hitSEParametrics[0].closestVector(
+          this.currentSphereVector
+        );
+        newSELabel = new SELabel(newLabel, vtx);
+
+        segmentGroup.addCommand(
+          new AddPointOnOneDimensionalCommand(
+            vtx as SEPointOnOneDimensional,
+            this.hitSEParametrics[0],
             newSELabel
           )
         );

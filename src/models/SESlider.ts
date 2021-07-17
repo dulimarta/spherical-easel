@@ -1,5 +1,5 @@
 import { SEExpression } from "./SEExpression";
-import { UpdateMode, UpdateStateType } from "@/types";
+import { ExpressionState, UpdateMode, UpdateStateType } from "@/types";
 import { Styles } from "@/types/Styles";
 import i18n from "@/i18n";
 
@@ -56,12 +56,17 @@ export class SESlider extends SEExpression /*implements Visitable*/ {
   public customStyles = (): Set<Styles> => emptySet;
 
   public update(state: UpdateStateType): void {
-    if (state.mode !== UpdateMode.DisplayOnly) return;
+    // This object and any of its children has no presence on the sphere canvas, so update for move should
+    if (state.mode === UpdateMode.RecordStateForMove) return;
+    // This object is completely determined by its parents, so only record the object in state array
+    if (state.mode == UpdateMode.RecordStateForDelete) {
+      const expressionState: ExpressionState = {
+        kind: "expression",
+        object: this
+      };
+      state.stateArray.push(expressionState);
+    }
     if (!this.canUpdateNow()) return;
-    // When this updates send its value to the label but there is no label for sliders
-
-    //const pos = this.name.lastIndexOf(":");
-    //this.name = this.name.substring(0, pos + 2) + this.prettyValue;
     this.setOutOfDate(false);
     this.updateKids(state);
   }

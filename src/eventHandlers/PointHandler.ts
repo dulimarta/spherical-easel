@@ -130,6 +130,19 @@ export default class PointHandler extends Highlighter {
             this.hitSEEllipses[0],
             newSELabel
           ).execute();
+        } else if (this.hitSEParametrics.length > 0) {
+          // The new point will be a point on an ellipse
+          // Create the model object for the new point and link them
+          vtx = new SEPointOnOneDimensional(newPoint, this.hitSEParametrics[0]);
+          vtx.locationVector = this.currentSphereVector; // snaps location to the closest on the one Dimensional
+          newSELabel = new SELabel(newLabel, vtx);
+
+          // Create and execute the command to create a new point for undo/redo
+          new AddPointOnOneDimensionalCommand(
+            vtx as SEPointOnOneDimensional,
+            this.hitSEParametrics[0],
+            newSELabel
+          ).execute();
         } else {
           // mouse press on empty location so create a free point
           // Create the model object for the new point and link them
@@ -187,6 +200,9 @@ export default class PointHandler extends Highlighter {
     } else if (this.hitSEEllipses.length > 0) {
       this.hitSEEllipses[0].glowing = true;
       this.snapToTemporaryOneDimensional = this.hitSEEllipses[0];
+    } else if (this.hitSEParametrics.length > 0) {
+      this.hitSEParametrics[0].glowing = true;
+      this.snapToTemporaryOneDimensional = this.hitSEParametrics[0];
     } else {
       this.snapToTemporaryOneDimensional = null;
     }

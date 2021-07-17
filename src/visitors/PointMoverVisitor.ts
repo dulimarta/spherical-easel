@@ -8,6 +8,7 @@ import { SESegment } from "@/models/SESegment";
 import { SEPointOnOneDimensional } from "@/models/SEPointOnOneDimensional";
 import { SEEllipse } from "@/models/SEEllipse";
 import { SEAngleMarker } from "@/models/SEAngleMarker";
+import { SEParametric } from "@/models/SEParametric";
 
 export class PointMoverVisitor implements Visitor {
   private locationVector: Vector3 = new Vector3();
@@ -58,5 +59,9 @@ export class PointMoverVisitor implements Visitor {
   // eslint-disable-next-line
   actionOnAngleMarker(a: SEAngleMarker): void {
     //a.update()
+  }
+  // eslint-disable-next-line
+  actionOnParametric(p: SEParametric): void {
+    // e.update();
   }
 }

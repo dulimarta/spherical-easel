@@ -173,6 +173,10 @@ export class SESegment extends SENodule
    * @param unitIdealVector A vector *on* the line containing the segment
    */
   public onSegment(unitIdealVector: Vector3): boolean {
+    // if the unitIdealVector is somehow zero return false
+    if (unitIdealVector.isZero(SETTINGS.tolerance)) {
+      return false;
+    }
     // check the endpoints
     if (
       this.tmpVector

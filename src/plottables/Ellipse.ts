@@ -244,6 +244,7 @@ export default class Ellipse extends Nodule {
   /**
    * This is the list of vertices of the boundary circle in the XY plane of radius
    * SETTINGS.boundaryCircle.radius. There are 2*SETTINGS.ellipse.subdivisions of these vertices
+   * This is need for the fill because sometimes the fill vertices include these.
    */
   private originalVertices: Vector2[];
 
