@@ -7,7 +7,8 @@ import Nodule, { DisplayStyle } from "./Nodule";
 import {
   StyleOptions,
   StyleEditPanels,
-  DEFAULT_ELLIPSE_FRONT_STYLE
+  DEFAULT_PARAMETRIC_FRONT_STYLE,
+  DEFAULT_PARAMETRIC_BACK_STYLE
 } from "@/types/Styles";
 import AppStore from "@/store";
 import { SENodule } from "@/models/SENodule";
@@ -180,17 +181,10 @@ export default class Parametric extends Nodule {
    * The styling variables for the drawn curve. The user can modify these.
    */
   // Front
-  private strokeColorFront = SETTINGS.parametric.drawn.strokeColor.front;
   private glowingStrokeColorFront =
     SETTINGS.parametric.glowing.strokeColor.front;
-  private strokeWidthPercentFront = 100;
-  private dashArrayFront = [] as number[]; // Initialize in constructor
   // Back -- use the default non-dynamic back style options so that when the user disables the dynamic back style these options are displayed
-  private dynamicBackStyle = SETTINGS.parametric.dynamicBackStyle;
-  private strokeColorBack = SETTINGS.parametric.drawn.strokeColor.back;
   private glowingStrokeColorBack = SETTINGS.parametric.glowing.strokeColor.back;
-  private strokeWidthPercentBack = 100;
-  private dashArrayBack = [] as number[]; // Initialize in constructor
 
   /** Initialize the current line width that is adjust by the zoom level and the user widthPercent */
   static currentParametricStrokeWidthFront =
@@ -434,16 +428,11 @@ export default class Parametric extends Nodule {
       this.glowingFrontParts[i].visible = false;
     }
 
-    if (SETTINGS.parametric.drawn.dashArray.front.length > 0) {
-      SETTINGS.parametric.drawn.dashArray.front.forEach(v =>
-        this.dashArrayFront.push(v)
-      );
-    }
-    if (SETTINGS.parametric.drawn.dashArray.back.length > 0) {
-      SETTINGS.parametric.drawn.dashArray.back.forEach(v =>
-        this.dashArrayBack.push(v)
-      );
-    }
+    this.styleOptions.set(
+      StyleEditPanels.Front,
+      DEFAULT_PARAMETRIC_FRONT_STYLE
+    );
+    this.styleOptions.set(StyleEditPanels.Back, DEFAULT_PARAMETRIC_BACK_STYLE);
   }
   /**
    *
@@ -830,41 +819,22 @@ export default class Parametric extends Nodule {
   defaultStyleState(panel: StyleEditPanels): StyleOptions {
     switch (panel) {
       case StyleEditPanels.Front:
-        return DEFAULT_ELLIPSE_FRONT_STYLE;
-      case StyleEditPanels.Back: {
-        const dashArrayBack = [] as number[];
-
-        if (SETTINGS.parametric.drawn.dashArray.back.length > 0) {
-          SETTINGS.parametric.drawn.dashArray.back.forEach(v =>
-            dashArrayBack.push(v)
-          );
-        }
-        return {
-          strokeWidthPercent: SETTINGS.parametric.dynamicBackStyle
-            ? Nodule.contrastStrokeWidthPercent(100)
-            : 100,
-
-          strokeColor: SETTINGS.parametric.dynamicBackStyle
-            ? Nodule.contrastStrokeColor(
-                SETTINGS.parametric.drawn.strokeColor.front
-              )
-            : SETTINGS.parametric.drawn.strokeColor.back,
-
-          fillColor: SETTINGS.parametric.dynamicBackStyle
-            ? Nodule.contrastFillColor(
-                SETTINGS.parametric.drawn.fillColor.front
-              )
-            : SETTINGS.parametric.drawn.fillColor.back,
-
-          dashArray: dashArrayBack,
-
-          dynamicBackStyle: SETTINGS.parametric.dynamicBackStyle
-        };
-      }
+        return DEFAULT_PARAMETRIC_FRONT_STYLE;
+      case StyleEditPanels.Back:
+        if (SETTINGS.parametric.dynamicBackStyle)
+          return {
+            ...DEFAULT_PARAMETRIC_BACK_STYLE,
+            strokeWidthPercent: Nodule.contrastStrokeWidthPercent(100),
+            strokeColor: Nodule.contrastStrokeColor(
+              SETTINGS.parametric.drawn.strokeColor.front
+            ),
+            fillColor: Nodule.contrastFillColor(
+              SETTINGS.parametric.drawn.fillColor.front
+            )
+          };
+        else return DEFAULT_PARAMETRIC_BACK_STYLE;
       default:
-      case StyleEditPanels.Label: {
         return {};
-      }
     }
   }
 
@@ -872,36 +842,40 @@ export default class Parametric extends Nodule {
    * Sets the variables for stroke width glowing/not
    */
   adjustSize(): void {
+    const frontStyle = this.styleOptions.get(StyleEditPanels.Front);
+    const frontStrokeWidthPercent = frontStyle?.strokeWidthPercent ?? 100;
+    const backStyle = this.styleOptions.get(StyleEditPanels.Back);
+    const backStrokeWidthPercent = backStyle?.strokeWidthPercent ?? 100;
     this.frontParts.forEach(
       part =>
         (part.linewidth =
           (Parametric.currentParametricStrokeWidthFront *
-            this.strokeWidthPercentFront) /
+            frontStrokeWidthPercent) /
           100)
     );
     this.backParts.forEach(
       part =>
         (part.linewidth =
           (Parametric.currentParametricStrokeWidthBack *
-            (this.dynamicBackStyle
-              ? Nodule.contrastStrokeWidthPercent(this.strokeWidthPercentFront)
-              : this.strokeWidthPercentBack)) /
+            (backStyle?.dynamicBackStyle
+              ? Nodule.contrastStrokeWidthPercent(frontStrokeWidthPercent)
+              : backStrokeWidthPercent)) /
           100)
     );
     this.glowingFrontParts.forEach(
       part =>
         (part.linewidth =
           (Parametric.currentGlowingParametricStrokeWidthFront *
-            this.strokeWidthPercentFront) /
+            frontStrokeWidthPercent) /
           100)
     );
     this.glowingBackParts.forEach(
       part =>
         (part.linewidth =
           (Parametric.currentGlowingParametricStrokeWidthBack *
-            (this.dynamicBackStyle
-              ? Nodule.contrastStrokeWidthPercent(this.strokeWidthPercentFront)
-              : this.strokeWidthPercentBack)) /
+            (backStyle?.dynamicBackStyle
+              ? Nodule.contrastStrokeWidthPercent(frontStrokeWidthPercent)
+              : backStrokeWidthPercent)) /
           100)
     );
   }
@@ -971,19 +945,19 @@ export default class Parametric extends Nodule {
         // Use the current variables to directly modify the Two.js objects.
 
         // FRONT
+        const frontStyle = this.styleOptions.get(StyleEditPanels.Front);
+        const strokeColorFront = frontStyle?.strokeColor ?? "black";
 
-        if (this.strokeColorFront === "noStroke") {
+        if (strokeColorFront === "noStroke") {
           this.frontParts.forEach(part => part.noStroke());
         } else {
-          this.frontParts.forEach(
-            part => (part.stroke = this.strokeColorFront)
-          );
+          this.frontParts.forEach(part => (part.stroke = strokeColorFront));
         }
         // strokeWidthPercent is applied by adjustSize()
 
-        if (this.dashArrayFront.length > 0) {
+        if (frontStyle?.dashArray && frontStyle.dashArray.length > 0) {
           this.frontParts.forEach(part => part.dashes.clear());
-          this.dashArrayFront.forEach(v => {
+          frontStyle.dashArray.forEach(v => {
             this.frontParts.forEach(part => part.dashes.push(v));
           });
         } else {
@@ -992,34 +966,30 @@ export default class Parametric extends Nodule {
           this.frontParts.forEach(part => part.dashes.push(0));
         }
         // BACK
-        if (this.dynamicBackStyle) {
-          if (
-            Nodule.contrastStrokeColor(this.strokeColorFront) === "noStroke"
-          ) {
+        const backStyle = this.styleOptions.get(StyleEditPanels.Back);
+        const strokeColorBack = backStyle?.strokeColor ?? "black";
+        if (backStyle?.dynamicBackStyle) {
+          if (Nodule.contrastStrokeColor(strokeColorFront) === "noStroke") {
             this.backParts.forEach(part => part.noStroke());
           } else {
             this.backParts.forEach(
               part =>
-                (part.stroke = Nodule.contrastStrokeColor(
-                  this.strokeColorFront
-                ))
+                (part.stroke = Nodule.contrastStrokeColor(strokeColorFront))
             );
           }
         } else {
-          if (this.strokeColorBack === "noStroke") {
+          if (strokeColorBack === "noStroke") {
             this.backParts.forEach(part => part.noStroke());
           } else {
-            this.backParts.forEach(
-              part => (part.stroke = this.strokeColorBack)
-            );
+            this.backParts.forEach(part => (part.stroke = strokeColorBack));
           }
         }
 
         // strokeWidthPercent applied by adjustSizer()
 
-        if (this.dashArrayBack.length > 0) {
+        if (backStyle?.dashArray && backStyle.dashArray.length > 0) {
           this.backParts.forEach(part => part.dashes.clear());
-          this.dashArrayBack.forEach(v => {
+          backStyle.dashArray.forEach(v => {
             this.backParts.forEach(part => part.dashes.push(v));
           });
         } else {
@@ -1038,9 +1008,9 @@ export default class Parametric extends Nodule {
         // strokeWidthPercent applied by adjustSize()
 
         // Copy the front dash properties to the glowing object
-        if (this.dashArrayFront.length > 0) {
+        if (frontStyle?.dashArray && frontStyle.dashArray.length > 0) {
           this.glowingFrontParts.forEach(part => part.dashes.clear());
-          this.dashArrayFront.forEach(v => {
+          frontStyle.dashArray.forEach(v => {
             this.glowingFrontParts.forEach(part => part.dashes.push(v));
           });
         } else {
@@ -1057,9 +1027,9 @@ export default class Parametric extends Nodule {
         // strokeWidthPercent applied by adjustSize()
 
         // Copy the back dash properties to the glowing object
-        if (this.dashArrayBack.length > 0) {
+        if (backStyle?.dashArray && backStyle.dashArray.length > 0) {
           this.glowingBackParts.forEach(part => part.dashes.clear());
-          this.dashArrayBack.forEach(v => {
+          backStyle.dashArray.forEach(v => {
             this.glowingBackParts.forEach(part => part.dashes.push(v));
           });
         } else {
