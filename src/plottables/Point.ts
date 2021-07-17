@@ -252,18 +252,15 @@ export default class Point extends Nodule {
    * Two.js objects (with adjustSize and stylize(ApplyVariables))
    * @param options The style options
    */
-  updateStyle(options: StyleOptions): void {
+  updateStyle(mode: StyleEditPanels, options: StyleOptions): void {
     console.debug("Point: Update style of point using", options);
-    if (
-      options.panel === StyleEditPanels.Front ||
-      options.panel === StyleEditPanels.Back
-    ) {
-      const currentOption = this.styleOptions.get(options.panel);
+    if (mode === StyleEditPanels.Front || mode === StyleEditPanels.Back) {
+      const currentOption = this.styleOptions.get(mode);
       // Use JavaScript object destructuring to combine the two options
       // IMPORTANT: the order of the de-structure below is Important
       // The current option must be written FIRST the the new incoming
       // option will override current settings
-      this.styleOptions.set(options.panel, { ...currentOption, ...options });
+      this.styleOptions.set(mode, { ...currentOption, ...options });
       // Now apply the style and size
       this.stylize(DisplayStyle.ApplyCurrentVariables);
       this.adjustSize();

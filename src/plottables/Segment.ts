@@ -483,14 +483,11 @@ export default class Segment extends Nodule {
    * Two.js objects (with adjustSize and stylize(ApplyVariables))
    * @param options The style options
    */
-  updateStyle(options: StyleOptions): void {
+  updateStyle(mode: StyleEditPanels, options: StyleOptions): void {
     console.debug("Segment: Update style of segment using", options);
-    if (
-      options.panel === StyleEditPanels.Front ||
-      options.panel === StyleEditPanels.Back
-    ) {
-      const currentOptions = this.styleOptions.get(options.panel);
-      this.styleOptions.set(options.panel, { ...currentOptions, ...options });
+    if (mode === StyleEditPanels.Front || mode === StyleEditPanels.Back) {
+      const currentOptions = this.styleOptions.get(mode);
+      this.styleOptions.set(mode, { ...currentOptions, ...options });
       // Now apply the style and size
       this.stylize(DisplayStyle.ApplyCurrentVariables);
       this.adjustSize();

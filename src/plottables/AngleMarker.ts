@@ -2644,10 +2644,10 @@ export default class AngleMarker extends Nodule {
    * Two.js objects (with adjustSize and stylize(ApplyVariables))
    * @param options The style options
    */
-  updateStyle(options: StyleOptions): void {
+  updateStyle(mode: StyleEditPanels, options: StyleOptions): void {
     console.debug("Angle Marker Update style of Angle Marker using", options);
-    const currentOptions = this.styleOptions.get(options.panel);
-    this.styleOptions.set(options.panel, { ...currentOptions, ...options });
+    const currentOptions = this.styleOptions.get(mode);
+    this.styleOptions.set(mode, { ...currentOptions, ...options });
 
     // Now apply the style and size and decoration display
     this.stylize(DisplayStyle.ApplyCurrentVariables); // applies the colors and stroke size changes

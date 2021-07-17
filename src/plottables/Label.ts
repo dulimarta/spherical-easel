@@ -191,7 +191,7 @@ export default class Label extends Nodule {
    */
   set shortUserName(name: string) {
     const shortName = name.slice(0, SETTINGS.label.maxLabelDisplayTextLength);
-    this.updateStyle({
+    this.updateStyle(StyleEditPanels.Label, {
       panel: StyleEditPanels.Label,
       labelDisplayText: shortName
     });
@@ -214,7 +214,7 @@ export default class Label extends Nodule {
     return labelStyle?.labelDisplayCaption ?? "No Label";
   }
   set caption(cap: string) {
-    this.updateStyle({
+    this.updateStyle(StyleEditPanels.Label, {
       panel: StyleEditPanels.Label,
       labelDisplayCaption: cap
     });
@@ -256,7 +256,10 @@ export default class Label extends Nodule {
    * Set the initial label display mode and update the display
    */
   set initialLabelDisplayMode(mode: LabelDisplayMode) {
-    this.updateStyle({ panel: StyleEditPanels.Label, labelDisplayMode: mode });
+    this.updateStyle(StyleEditPanels.Label, {
+      panel: StyleEditPanels.Label,
+      labelDisplayMode: mode
+    });
     // this.textLabelMode = mode;
     this.stylize(DisplayStyle.ApplyCurrentVariables);
   }
@@ -373,15 +376,15 @@ export default class Label extends Nodule {
    * Two.js objects (with adjustSize and stylize(ApplyVariables))
    * @param options The style options
    */
-  updateStyle(options: StyleOptions): void {
+  updateStyle(mode: StyleEditPanels, options: StyleOptions): void {
     console.debug(
       "Label: Update style of Label of ",
       // this._shortUserName,
       " using",
       options
     );
-    const currentOptions = this.styleOptions.get(options.panel);
-    this.styleOptions.set(options.panel, { ...currentOptions, ...options });
+    const currentOptions = this.styleOptions.get(mode);
+    this.styleOptions.set(mode, { ...currentOptions, ...options });
 
     // Now apply the style and size
     this.stylize(DisplayStyle.ApplyCurrentVariables);
