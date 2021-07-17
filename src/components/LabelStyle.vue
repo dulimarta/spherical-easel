@@ -888,18 +888,30 @@ export default class LabelStyle extends Vue {
     // commonStyleProperties is a number (corresponding to an enum) array
     // The customStyles method returns a list of the styles the are adjustable for that object
     this.commonStyleProperties.splice(0);
-    if (newSelection.length > 0) {
-      const initialProp = newSelection[0].customStyles();
-      const commonProp = newSelection.reduce(
-        (acc: Set<string>, curr: SENodule, pos: number) => {
-          console.debug("At index", pos, acc);
-          const arr = [...curr.customStyles()].filter((prop: string) =>
-            acc.has(prop)
-          );
-          return new Set(arr);
-        },
-        initialProp
-      );
+
+    // Use Typescript utility type Required<T> to change to label from an optional
+    // property to a required one
+    const labeledSelections: Array<Required<
+      Labelable
+    >> = newSelection
+      .filter((n: SENodule) => n.isLabelable())
+      .map((n: SENodule) => (n as unknown) as Required<Labelable>);
+
+    if (labeledSelections.length > 0) {
+      // We do have objects with labels
+      const initialSet = labeledSelections[0].label.customStyles();
+
+      // Use Array::reduce to the set intersection of all the label style props
+      const commonProp = labeledSelections.reduce((
+        acc: Set<string>,
+        curr: Required<Labelable> /*, pos: number*/
+      ) => {
+        // console.debug("LabelStyle at index", pos, acc);
+        const arr = [...curr.label.customStyles()].filter((prop: string) =>
+          acc.has(prop)
+        );
+        return new Set(arr);
+      }, initialSet);
       this.commonStyleProperties.push(...commonProp);
     }
     // for (let k = 0; k < values.length; k++) {
