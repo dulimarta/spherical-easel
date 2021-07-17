@@ -34,7 +34,6 @@ export default class NonFreePoint extends Point {
     // this.pointRadiusPercentFront = 100;
     // Back
     const initialStyle: StyleOptions = {
-      panel: StyleEditPanels.Back,
       fillColor: SETTINGS.point.dynamicBackStyle
         ? Nodule.contrastFillColor(SETTINGS.point.nonFree.fillColor.front)
         : SETTINGS.point.nonFree.fillColor.back,
@@ -68,8 +67,6 @@ export default class NonFreePoint extends Point {
         return DEFAULT_NONFREEPOINT_FRONT_STYLE;
       case StyleEditPanels.Back: {
         return {
-          panel: panel,
-
           pointRadiusPercent: SETTINGS.point.dynamicBackStyle
             ? Nodule.contrastPointRadiusPercent(100)
             : 100,
@@ -89,9 +86,7 @@ export default class NonFreePoint extends Point {
       }
       default:
       case StyleEditPanels.Label: {
-        return {
-          panel: panel
-        };
+        return {};
       }
     }
   }

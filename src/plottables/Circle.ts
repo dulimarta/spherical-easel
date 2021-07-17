@@ -929,10 +929,7 @@ export default class Circle extends Nodule {
   currentStyleState(panel: StyleEditPanels): StyleOptions {
     if (panel === StyleEditPanels.Front || panel === StyleEditPanels.Back)
       return this.styleOptions.get(panel)!;
-    else
-      return {
-        panel: panel
-      };
+    else return {};
   }
   /**
    * Return the default style state
@@ -951,8 +948,6 @@ export default class Circle extends Nodule {
           );
         }
         return {
-          panel: panel,
-
           strokeWidthPercent: SETTINGS.circle.dynamicBackStyle
             ? Nodule.contrastStrokeWidthPercent(100)
             : 100,
@@ -974,9 +969,7 @@ export default class Circle extends Nodule {
       }
       default:
       case StyleEditPanels.Label: {
-        return {
-          panel: panel
-        };
+        return {};
       }
     }
   }

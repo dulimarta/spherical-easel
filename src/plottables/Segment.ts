@@ -499,10 +499,7 @@ export default class Segment extends Nodule {
   currentStyleState(panel: StyleEditPanels): StyleOptions {
     if (panel === StyleEditPanels.Front || panel === StyleEditPanels.Back)
       return this.styleOptions.get(panel)!;
-    else
-      return {
-        panel: panel
-      };
+    else return {};
   }
   /**
    * Return the default style state
@@ -515,9 +512,7 @@ export default class Segment extends Nodule {
         return DEFAULT_SEGMENT_BACK_STYLE;
       default:
       case StyleEditPanels.Label: {
-        return {
-          panel: panel
-        };
+        return {};
       }
     }
   }

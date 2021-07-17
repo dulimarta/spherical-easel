@@ -8,7 +8,11 @@ import { Visitable } from "@/visitors/Visitable";
 import { Visitor } from "@/visitors/Visitor";
 import { AngleMarkerState } from "@/types";
 import SETTINGS from "@/global-settings";
-import { Styles } from "@/types/Styles";
+import {
+  DEFAULT_ANGLE_MARKER_BACK_STYLE,
+  DEFAULT_ANGLE_MARKER_FRONT_STYLE,
+  Styles
+} from "@/types/Styles";
 import { UpdateMode, UpdateStateType } from "@/types";
 import { Labelable } from "@/types";
 import { SELabel } from "@/models/SELabel";

@@ -61,7 +61,6 @@ export default class NonFreeLine extends Line {
           );
         }
         return {
-          panel: panel,
           strokeWidthPercent: 100,
           strokeColor: SETTINGS.line.nonFree.strokeColor.front,
           dashArray: dashArrayFront
@@ -76,8 +75,6 @@ export default class NonFreeLine extends Line {
           );
         }
         return {
-          panel: panel,
-
           strokeWidthPercent: SETTINGS.line.dynamicBackStyle
             ? Nodule.contrastStrokeWidthPercent(100)
             : 100,
@@ -95,9 +92,7 @@ export default class NonFreeLine extends Line {
       }
       default:
       case StyleEditPanels.Label: {
-        return {
-          panel: panel
-        };
+        return {};
       }
     }
   }

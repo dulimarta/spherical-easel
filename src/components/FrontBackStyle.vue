@@ -671,8 +671,8 @@ export default class FrontBackStyle extends Vue {
     this.dashLength = this.sliderDashArray[1] - this.sliderDashArray[0];
     SEStore.changeStyle({
       selected: this.selectedSENodules,
+      panel: this.panel,
       payload: {
-        panel: this.panel,
         dashArray: [this.dashLength, this.gapLength] //correct order!!!!
       }
     });
@@ -692,8 +692,8 @@ export default class FrontBackStyle extends Vue {
       ) {
         SEStore.changeStyle({
           selected: [selected[i]],
+          panel: this.panel,
           payload: {
-            panel: this.panel,
             dashArray: [
               (initialStyleStates[i].dashArray as number[])[0],
               (initialStyleStates[i].dashArray as number[])[1]
@@ -704,8 +704,8 @@ export default class FrontBackStyle extends Vue {
         // The selected [i] exists and the array is empty
         SEStore.changeStyle({
           selected: [selected[i]],
+          panel: this.panel,
           payload: {
-            panel: this.panel,
             dashArray: []
           }
         });
@@ -724,8 +724,8 @@ export default class FrontBackStyle extends Vue {
       ) {
         SEStore.changeStyle({
           selected: [selected[i]],
+          panel: this.panel,
           payload: {
-            panel: this.panel,
             dashArray: [
               (defaultStyleStates[i].dashArray as number[])[0],
               (defaultStyleStates[i].dashArray as number[])[1]
@@ -736,8 +736,8 @@ export default class FrontBackStyle extends Vue {
         // The selected [i] exists and the array is empty
         SEStore.changeStyle({
           selected: [selected[i]],
+          panel: this.panel,
           payload: {
-            panel: this.panel,
             dashArray: []
           }
         });
@@ -755,16 +755,16 @@ export default class FrontBackStyle extends Vue {
 
       SEStore.changeStyle({
         selected: this.selectedSENodules,
+        panel: this.panel,
         payload: {
-          panel: this.panel,
           dashArray: [this.dashLength, this.gapLength]
         }
       });
     } else {
       SEStore.changeStyle({
         selected: this.selectedSENodules,
+        panel: this.panel,
         payload: {
-          panel: this.panel,
           dashArray: []
         }
       });
@@ -787,8 +787,8 @@ export default class FrontBackStyle extends Vue {
 
       SEStore.changeStyle({
         selected: this.selectedSENodules,
+        panel: this.panel,
         payload: {
-          panel: this.panel,
           dashArray: [this.dashLength, this.gapLength]
         }
       });
@@ -808,8 +808,8 @@ export default class FrontBackStyle extends Vue {
 
       SEStore.changeStyle({
         selected: this.selectedSENodules,
+        panel: this.panel,
         payload: {
-          panel: this.panel,
           dashArray: [this.dashLength, this.gapLength]
         }
       });
@@ -887,8 +887,8 @@ export default class FrontBackStyle extends Vue {
     this.disableBackStyleContrastUndoButton = false;
     SEStore.changeStyle({
       selected: this.selectedSENodules,
+      panel: this.panel,
       payload: {
-        panel: this.panel,
         backStyleContrast: this.backStyleContrast
       }
     });
@@ -905,8 +905,8 @@ export default class FrontBackStyle extends Vue {
     for (let i = 0; i < selected.length; i++) {
       SEStore.changeStyle({
         selected: [selected[i]],
+        panel: this.panel,
         payload: {
-          panel: this.panel,
           backStyleContrast: initialBackStyleContrast
         }
       });
@@ -920,8 +920,8 @@ export default class FrontBackStyle extends Vue {
     for (let i = 0; i < selected.length; i++) {
       SEStore.changeStyle({
         selected: [selected[i]],
+        panel: this.panel,
         payload: {
-          panel: this.panel,
           backStyleContrast: SETTINGS.style.backStyleContrast
         }
       });
@@ -936,8 +936,8 @@ export default class FrontBackStyle extends Vue {
 
     SEStore.changeStyle({
       selected: this.selectedSENodules,
+      panel: this.panel,
       payload: {
-        panel: this.panel,
         dynamicBackStyle: this.usingDynamicBackStyle
       }
     });
@@ -961,8 +961,8 @@ export default class FrontBackStyle extends Vue {
       this.backStyleContrast += 0.1;
       SEStore.changeStyle({
         selected: this.selectedSENodules,
+        panel: this.panel,
         payload: {
-          panel: this.panel,
           backStyleContrast: this.backStyleContrast
         }
       });
@@ -977,8 +977,8 @@ export default class FrontBackStyle extends Vue {
       this.backStyleContrast -= 0.1;
       SEStore.changeStyle({
         selected: this.selectedSENodules,
+        panel: this.panel,
         payload: {
-          panel: this.panel,
           backStyleContrast: this.backStyleContrast
         }
       });
@@ -1031,8 +1031,8 @@ export default class FrontBackStyle extends Vue {
     for (let i = 0; i < selected.length; i++) {
       SEStore.changeStyle({
         selected: [selected[i]],
+        panel: StyleEditPanels.Front,
         payload: {
-          panel: StyleEditPanels.Front,
           angleMarkerTickMark: defaultStyleStates[i].angleMarkerTickMark,
           angleMarkerDoubleArc: defaultStyleStates[i].angleMarkerDoubleArc
         }
@@ -1049,8 +1049,8 @@ export default class FrontBackStyle extends Vue {
     for (let i = 0; i < selected.length; i++) {
       SEStore.changeStyle({
         selected: [selected[i]],
+        panel: StyleEditPanels.Front,
         payload: {
-          panel: StyleEditPanels.Front,
           angleMarkerTickMark: initialStyleStates[i].angleMarkerTickMark,
           angleMarkerDoubleArc: initialStyleStates[i].angleMarkerDoubleArc
         }
@@ -1076,8 +1076,8 @@ export default class FrontBackStyle extends Vue {
     if (this.angleMarkerDecorationChange) {
       SEStore.changeStyle({
         selected: selected,
+        panel: StyleEditPanels.Front,
         payload: {
-          panel: StyleEditPanels.Front,
           angleMarkerTickMark: angleMarkerTickMarkDisplay,
           angleMarkerDoubleArc: angleMarkerDoubleArcDisplay
         }

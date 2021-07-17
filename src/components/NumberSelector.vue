@@ -183,9 +183,9 @@ export default class NumberSelector extends Vue {
 
     if (!this.usingDynamicBackStyle && this.useDynamicBackStyleFromSelector) {
       SEStore.changeStyle({
-        selected: selected,
+        selected,
+        panel: this.panel,
         payload: {
-          panel: this.panel,
           dynamicBackStyle: false
         }
       });
@@ -194,9 +194,9 @@ export default class NumberSelector extends Vue {
     console.log("styleName", this.styleName, "val", newData);
 
     SEStore.changeStyle({
-      selected: selected,
+      selected,
+      panel: this.panel,
       payload: {
-        panel: this.panel,
         [this.styleName]: newData
       }
     });
@@ -216,8 +216,8 @@ export default class NumberSelector extends Vue {
     for (let i = 0; i < selected.length; i++) {
       SEStore.changeStyle({
         selected: [selected[i]],
+        panel: this.panel,
         payload: {
-          panel: this.panel,
           [this.styleName]: (defaultStyleStates[i] as any)[this.styleName],
           dynamicBackStyle: (defaultStyleStates[i] as any)["dynamicBackStyle"]
         }
@@ -319,8 +319,8 @@ export default class NumberSelector extends Vue {
     for (let i = 0; i < selected.length; i++) {
       SEStore.changeStyle({
         selected: [selected[i]],
+        panel: this.panel,
         payload: {
-          panel: this.panel,
           [this.styleName]: (initialStyleStates[i] as any)[this.styleName],
           dynamicBackStyle: (initialStyleStates[i] as any)["dynamicBackStyle"]
         }
@@ -364,9 +364,9 @@ export default class NumberSelector extends Vue {
       selected.push(...this.selectedSENodules);
     }
     SEStore.changeStyle({
-      selected: selected,
+      selected,
+      panel: this.panel,
       payload: {
-        panel: this.panel,
         dynamicBackStyle: false
       }
     });

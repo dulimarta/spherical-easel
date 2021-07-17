@@ -2660,10 +2660,7 @@ export default class AngleMarker extends Nodule {
   currentStyleState(panel: StyleEditPanels): StyleOptions {
     if (panel === StyleEditPanels.Front || panel === StyleEditPanels.Back) {
       return this.styleOptions.get(panel)!;
-    } else
-      return {
-        panel: panel
-      };
+    } else return {};
   }
 
   /**
@@ -2682,8 +2679,6 @@ export default class AngleMarker extends Nodule {
           );
         }
         return {
-          panel: panel,
-
           strokeWidthPercent: SETTINGS.angleMarker.dynamicBackStyle
             ? Nodule.contrastStrokeWidthPercent(100)
             : 100,
@@ -2707,9 +2702,7 @@ export default class AngleMarker extends Nodule {
       }
       default:
       case StyleEditPanels.Label: {
-        return {
-          panel: panel
-        };
+        return {};
       }
     }
   }

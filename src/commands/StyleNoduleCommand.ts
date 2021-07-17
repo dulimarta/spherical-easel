@@ -99,31 +99,9 @@ export class StyleNoduleCommand extends Command {
     for (let i = 0; i < this.seNodules.length; i++) {
       Command.store.changeStyle({
         selected: [this.seNodules[i]],
+        panel: this.panel,
         payload: {
-          ...this.currentStyles[i],
-          panel: this.panel
-          // strokeWidthPercent: this.currentStyles[i].strokeWidthPercent,
-          // strokeColor: this.currentStyles[i].strokeColor,
-          // fillColor: this.currentStyles[i].fillColor,
-          // dashArray: this.currentStyles[i].dashArray,
-          // dynamicBackStyle: this.currentStyles[i].dynamicBackStyle,
-          // pointRadiusPercent: this.currentStyles[i].pointRadiusPercent,
-          // labelTextStyle: this.currentStyles[i].labelTextStyle,
-          // labelTextFamily: this.currentStyles[i].labelTextFamily,
-          // labelTextDecoration: this.currentStyles[i].labelTextDecoration,
-          // labelTextRotation: this.currentStyles[i].labelTextRotation,
-          // labelTextScalePercent: this.currentStyles[i].labelTextScalePercent,
-          // labelDisplayText: this.currentStyles[i].labelDisplayText,
-          // labelDisplayCaption: this.currentStyles[i].labelDisplayCaption,
-          // labelDisplayMode: this.currentStyles[i].labelDisplayMode,
-          // angleMarkerRadiusPercent: this.currentStyles[i]
-          //   .angleMarkerRadiusPercent,
-          // angleMarkerTickMark: this.currentStyles[i].angleMarkerTickMark,
-          // angleMarkerDoubleArc: this.currentStyles[i].angleMarkerDoubleArc,
-          // labelFrontFillColor: this.currentStyles[i].labelFrontFillColor,
-          // labelBackFillColor: this.currentStyles[i].labelBackFillColor,
-          // // objectVisibility: this.currentStyles[i].objectVisibility,
-          // backStyleContrast: this.currentBackStyleContrast
+          ...this.currentStyles[i]
         }
       });
     }
@@ -137,29 +115,9 @@ export class StyleNoduleCommand extends Command {
     for (let i = 0; i < this.seNodules.length; i++) {
       Command.store.changeStyle({
         selected: [this.seNodules[i]],
+        panel: this.panel,
         payload: {
-          ...this.pastStyles[i],
-          panel: this.panel
-          // strokeWidthPercent: this.pastStyles[i].strokeWidthPercent,
-          // strokeColor: this.pastStyles[i].strokeColor,
-          // fillColor: this.pastStyles[i].fillColor,
-          // dashArray: this.pastStyles[i].dashArray,
-          // dynamicBackStyle: this.pastStyles[i].dynamicBackStyle,
-          // pointRadiusPercent: this.pastStyles[i].pointRadiusPercent,
-          // labelTextStyle: this.pastStyles[i].labelTextStyle,
-          // labelTextFamily: this.pastStyles[i].labelTextFamily,
-          // labelTextDecoration: this.pastStyles[i].labelTextDecoration,
-          // labelTextRotation: this.pastStyles[i].labelTextRotation,
-          // labelTextScalePercent: this.pastStyles[i].labelTextScalePercent,
-          // labelDisplayText: this.pastStyles[i].labelDisplayText,
-          // labelDisplayCaption: this.pastStyles[i].labelDisplayCaption,
-          // labelDisplayMode: this.pastStyles[i].labelDisplayMode,
-          // angleMarkerRadiusPercent: this.pastStyles[i].angleMarkerRadiusPercent,
-          // angleMarkerTickMark: this.pastStyles[i].angleMarkerTickMark,
-          // angleMarkerDoubleArc: this.pastStyles[i].angleMarkerDoubleArc,
-          // labelFrontFillColor: this.pastStyles[i].labelFrontFillColor,
-          // labelBackFillColor: this.pastStyles[i].labelBackFillColor,
-          // backStyleContrast: this.pastBackStyleContrast
+          ...this.pastStyles[i]
         }
       });
     }

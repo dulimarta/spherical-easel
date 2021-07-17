@@ -46,14 +46,14 @@ export default class SegmentLengthHandler extends Highlighter {
             StyleEditPanels.Front,
             [
               {
-                panel: StyleEditPanels.Front,
+                // panel: StyleEditPanels.Front,
                 // labelVisibility: true,
                 labelDisplayMode: SETTINGS.segment.measuringChangesLabelModeTo
               }
             ],
             [
               {
-                panel: StyleEditPanels.Front,
+                // panel: StyleEditPanels.Front,
                 // labelVisibility: this.targetSegment.label!.showing,
                 labelDisplayMode: this.targetSegment.label!.ref.labelDisplayMode
               }
@@ -117,14 +117,14 @@ export default class SegmentLengthHandler extends Highlighter {
             StyleEditPanels.Front,
             [
               {
-                panel: StyleEditPanels.Front,
+                // panel: StyleEditPanels.Front,
                 // labelVisibility: true,
                 labelDisplayMode: LabelDisplayMode.NameAndValue
               }
             ],
             [
               {
-                panel: StyleEditPanels.Front,
+                // panel: StyleEditPanels.Front,
                 // labelVisibility: object1.label!.showing,
                 labelDisplayMode: object1.label!.ref.labelDisplayMode
               }

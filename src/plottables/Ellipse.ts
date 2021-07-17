@@ -1073,9 +1073,7 @@ export default class Ellipse extends Nodule {
     if (panel === StyleEditPanels.Front || panel === StyleEditPanels.Back) {
       return this.styleOptions.get(panel)!;
     } else {
-      return {
-        panel: panel
-      };
+      return {};
     }
   }
   /**
@@ -1094,8 +1092,6 @@ export default class Ellipse extends Nodule {
           );
         }
         return {
-          panel: panel,
-
           strokeWidthPercent: SETTINGS.ellipse.dynamicBackStyle
             ? Nodule.contrastStrokeWidthPercent(100)
             : 100,
@@ -1117,9 +1113,7 @@ export default class Ellipse extends Nodule {
       }
       default:
       case StyleEditPanels.Label: {
-        return {
-          panel: panel
-        };
+        return {};
       }
     }
   }

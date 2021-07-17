@@ -600,8 +600,8 @@ export default class LabelStyle extends Vue {
     for (let i = 0; i < selected.length; i++) {
       SEStore.changeStyle({
         selected: [selected[i]],
+        panel: StyleEditPanels.Label,
         payload: {
-          panel: StyleEditPanels.Label,
           labelDisplayText: defaultStyleStates[i].labelDisplayText,
           labelDisplayCaption: defaultStyleStates[i].labelDisplayCaption,
           labelTextStyle: defaultStyleStates[i].labelTextStyle,
@@ -627,8 +627,8 @@ export default class LabelStyle extends Vue {
     for (let i = 0; i < selected.length; i++) {
       SEStore.changeStyle({
         selected: [selected[i]],
+        panel: StyleEditPanels.Label,
         payload: {
-          panel: StyleEditPanels.Label,
           labelDisplayText: initialStyleStates[i].labelDisplayText,
           labelDisplayCaption: initialStyleStates[i].labelDisplayCaption,
           labelTextStyle: initialStyleStates[i].labelTextStyle,
@@ -664,8 +664,8 @@ export default class LabelStyle extends Vue {
       for (let i = 0; i < selected.length; i++) {
         SEStore.changeStyle({
           selected: [selected[i]],
+          panel: StyleEditPanels.Label,
           payload: {
-            panel: StyleEditPanels.Label,
             labelDisplayText: defaultStyleStates[i].labelDisplayText
           }
         });
@@ -683,8 +683,8 @@ export default class LabelStyle extends Vue {
     ) {
       SEStore.changeStyle({
         selected: selected,
+        panel: StyleEditPanels.Label,
         payload: {
-          panel: StyleEditPanels.Label,
           labelTextStyle: this.labelTextStyleChange
             ? this.labelTextStyle
             : undefined,

@@ -272,10 +272,7 @@ export default class Point extends Nodule {
   currentStyleState(panel: StyleEditPanels): StyleOptions {
     if (panel === StyleEditPanels.Front || panel === StyleEditPanels.Back)
       return this.styleOptions.get(panel)!;
-    else
-      return {
-        panel: panel
-      };
+    else return {};
   }
   /**
    * Return the default style state
@@ -287,8 +284,6 @@ export default class Point extends Nodule {
 
       case StyleEditPanels.Back: {
         return {
-          panel: panel,
-
           pointRadiusPercent: SETTINGS.point.dynamicBackStyle
             ? Nodule.contrastPointRadiusPercent(
                 SETTINGS.point.radiusPercent.front
@@ -308,9 +303,7 @@ export default class Point extends Nodule {
       }
       default:
       case StyleEditPanels.Label: {
-        return {
-          panel: panel
-        };
+        return {};
       }
     }
   }

@@ -192,7 +192,6 @@ export default class Label extends Nodule {
   set shortUserName(name: string) {
     const shortName = name.slice(0, SETTINGS.label.maxLabelDisplayTextLength);
     this.updateStyle(StyleEditPanels.Label, {
-      panel: StyleEditPanels.Label,
       labelDisplayText: shortName
     });
     this.stylize(DisplayStyle.ApplyCurrentVariables);
@@ -215,7 +214,6 @@ export default class Label extends Nodule {
   }
   set caption(cap: string) {
     this.updateStyle(StyleEditPanels.Label, {
-      panel: StyleEditPanels.Label,
       labelDisplayCaption: cap
     });
   }
@@ -257,7 +255,6 @@ export default class Label extends Nodule {
    */
   set initialLabelDisplayMode(mode: LabelDisplayMode) {
     this.updateStyle(StyleEditPanels.Label, {
-      panel: StyleEditPanels.Label,
       labelDisplayMode: mode
     });
     // this.textLabelMode = mode;
@@ -426,16 +423,13 @@ export default class Label extends Nodule {
         }
       }
       return {
-        panel,
         ...DEFAULT_LABEL_TEXT_STYLE,
         labelDisplayCaption: "",
         labelDisplayMode: labelDisplayMode
       };
     } else {
       //Should never be called
-      return {
-        panel: panel
-      };
+      return {};
     }
   }
 
