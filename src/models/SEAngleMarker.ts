@@ -10,8 +10,7 @@ import { AngleMarkerState } from "@/types";
 import SETTINGS from "@/global-settings";
 import {
   DEFAULT_ANGLE_MARKER_BACK_STYLE,
-  DEFAULT_ANGLE_MARKER_FRONT_STYLE,
-  Styles
+  DEFAULT_ANGLE_MARKER_FRONT_STYLE
 } from "@/types/Styles";
 import { UpdateMode, UpdateStateType } from "@/types";
 import { Labelable } from "@/types";
@@ -21,14 +20,8 @@ import { AngleMode } from "@/types";
 import i18n from "@/i18n";
 
 const styleSet = new Set([
-  Styles.strokeColor,
-  Styles.strokeWidthPercent,
-  Styles.dashArray,
-  Styles.fillColor,
-  Styles.dynamicBackStyle,
-  Styles.angleMarkerRadiusPercent,
-  Styles.angleMarkerTickMark,
-  Styles.angleMarkerDoubleArc
+  ...Object.getOwnPropertyNames(DEFAULT_ANGLE_MARKER_FRONT_STYLE),
+  ...Object.getOwnPropertyNames(DEFAULT_ANGLE_MARKER_BACK_STYLE)
 ]);
 
 export class SEAngleMarker extends SEExpression
@@ -137,7 +130,7 @@ export class SEAngleMarker extends SEExpression
     this._angleMarkerNumber = SEAngleMarker.ANGLEMARKER_COUNT;
   }
 
-  customStyles(): Set<Styles> {
+  customStyles(): Set<string> {
     return styleSet;
   }
 

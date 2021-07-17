@@ -4,7 +4,10 @@ import { Visitor } from "@/visitors/Visitor";
 import { SENodule } from "./SENodule";
 import { Vector3 } from "three";
 import SETTINGS from "@/global-settings";
-import { Styles } from "@/types/Styles";
+import {
+  DEFAULT_POINT_BACK_STYLE,
+  DEFAULT_POINT_FRONT_STYLE
+} from "@/types/Styles";
 import {
   UpdateMode,
   UpdateStateType,
@@ -21,10 +24,8 @@ import { SELabel } from "./SELabel";
 import i18n from "@/i18n";
 
 const styleSet = new Set([
-  Styles.fillColor,
-  Styles.strokeColor,
-  Styles.pointRadiusPercent,
-  Styles.dynamicBackStyle
+  ...Object.getOwnPropertyNames(DEFAULT_POINT_FRONT_STYLE),
+  ...Object.getOwnPropertyNames(DEFAULT_POINT_BACK_STYLE)
 ]);
 
 export class SEPoint extends SENodule implements Visitable, Labelable {
@@ -56,7 +57,7 @@ export class SEPoint extends SENodule implements Visitable, Labelable {
     SENodule.POINT_COUNT++;
     this.name = `P${SENodule.POINT_COUNT}`;
   }
-  customStyles(): Set<Styles> {
+  customStyles(): Set<string> {
     return styleSet;
   }
 

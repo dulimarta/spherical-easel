@@ -9,8 +9,7 @@ import {
 import SETTINGS from "@/global-settings";
 import i18n from "@/i18n";
 
-import { Styles } from "@/types/Styles";
-const emptySet = new Set<Styles>();
+const emptySet = new Set<string>();
 export class SESegmentLength extends SEExpression {
   readonly seSegment: SESegment;
 
@@ -65,5 +64,5 @@ export class SESegmentLength extends SEExpression {
     this.updateKids(state);
   }
 
-  public customStyles = (): Set<Styles> => emptySet;
+  public customStyles = (): Set<string> => emptySet;
 }

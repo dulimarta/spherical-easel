@@ -1,13 +1,8 @@
 import { Vector3 } from "three";
 import Nodule from "@/plottables/Nodule";
-import { Styles } from "@/types/Styles";
 import { UpdateStateType } from "@/types";
 import newton from "newton-raphson-method";
 import SETTINGS from "@/global-settings";
-
-//import AppStore from "@/store";
-
-//import { magnificationLevel } from "@/components/SENoduleItem.vue";
 
 let NODE_COUNT = 0;
 
@@ -97,7 +92,7 @@ export abstract class SENodule {
    * NOTE: Ideally we want to use an abstract static method.
    * But Typescript does not support it (yet?)
    */
-  public abstract customStyles(): Set<Styles>;
+  public abstract customStyles(): Set<string>;
 
   /* Marks all descendants (kids, grand kids, etc.) of the current SENodule out of date */
   public markKidsOutOfDate(): void {

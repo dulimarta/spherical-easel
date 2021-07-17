@@ -1,9 +1,8 @@
 import { SEExpression } from "./SEExpression";
 import { ExpressionState, UpdateMode, UpdateStateType } from "@/types";
-import { Styles } from "@/types/Styles";
 import i18n from "@/i18n";
 
-const emptySet = new Set<Styles>();
+const emptySet = new Set<string>();
 export class SESlider extends SEExpression /*implements Visitable*/ {
   /* Access to the store to retrieve the canvas size so that the bounding rectangle for the text can be computed properly*/
   // protected store = AppStore;
@@ -53,7 +52,7 @@ export class SESlider extends SEExpression /*implements Visitable*/ {
     );
   }
 
-  public customStyles = (): Set<Styles> => emptySet;
+  public customStyles = (): Set<string> => emptySet;
 
   public update(state: UpdateStateType): void {
     // This object and any of its children has no presence on the sphere canvas, so update for move should

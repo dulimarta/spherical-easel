@@ -6,7 +6,10 @@ import { Visitable } from "@/visitors/Visitable";
 import { Visitor } from "@/visitors/Visitor";
 import { OneDimensional } from "@/types";
 import SETTINGS from "@/global-settings";
-import { Styles } from "@/types/Styles";
+import {
+  DEFAULT_CIRCLE_BACK_STYLE,
+  DEFAULT_CIRCLE_FRONT_STYLE
+} from "@/types/Styles";
 import { UpdateMode, UpdateStateType, CircleState } from "@/types";
 import { Labelable } from "@/types";
 import { SELabel } from "@/models/SELabel";
@@ -14,11 +17,8 @@ import { SEStore } from "@/store";
 import i18n from "@/i18n";
 
 const styleSet = new Set([
-  Styles.strokeColor,
-  Styles.strokeWidthPercent,
-  Styles.dashArray,
-  Styles.fillColor,
-  Styles.dynamicBackStyle
+  ...Object.getOwnPropertyNames(DEFAULT_CIRCLE_FRONT_STYLE),
+  ...Object.getOwnPropertyNames(DEFAULT_CIRCLE_BACK_STYLE)
 ]);
 export class SECircle extends SENodule
   implements Visitable, OneDimensional, Labelable {
@@ -68,7 +68,7 @@ export class SECircle extends SENodule
   }
   // #endregion circleConstructor
 
-  customStyles(): Set<Styles> {
+  customStyles(): Set<string> {
     return styleSet;
   }
 

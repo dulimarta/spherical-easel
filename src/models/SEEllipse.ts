@@ -6,20 +6,19 @@ import { Visitable } from "@/visitors/Visitable";
 import { Visitor } from "@/visitors/Visitor";
 import { EllipseState, OneDimensional } from "@/types";
 import SETTINGS from "@/global-settings";
-import { Styles } from "@/types/Styles";
+import {
+  DEFAULT_ELLIPSE_BACK_STYLE,
+  DEFAULT_ELLIPSE_FRONT_STYLE
+} from "@/types/Styles";
 import { UpdateMode, UpdateStateType, CircleState } from "@/types";
 import { Labelable } from "@/types";
 import { SELabel } from "@/models/SELabel";
-import { Vector } from "two.js";
 import { SEStore } from "@/store";
 import i18n from "@/i18n";
 
 const styleSet = new Set([
-  Styles.strokeColor,
-  Styles.strokeWidthPercent,
-  Styles.dashArray,
-  Styles.fillColor,
-  Styles.dynamicBackStyle
+  ...Object.getOwnPropertyNames(DEFAULT_ELLIPSE_FRONT_STYLE),
+  ...Object.getOwnPropertyNames(DEFAULT_ELLIPSE_BACK_STYLE)
 ]);
 export class SEEllipse extends SENodule
   implements Visitable, OneDimensional, Labelable {
@@ -108,7 +107,7 @@ export class SEEllipse extends SENodule
     this.name = `E${SEEllipse.ELLIPSE_COUNT}`;
   }
 
-  customStyles(): Set<Styles> {
+  customStyles(): Set<string> {
     return styleSet;
   }
 
@@ -481,5 +480,4 @@ export class SEEllipse extends SENodule
   public isNonFreeLine(): boolean {
     return false;
   }
- 
 }

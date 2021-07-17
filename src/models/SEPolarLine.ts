@@ -1,18 +1,9 @@
-import { SENodule } from "./SENodule";
 import Line from "@/plottables/Line";
-import { Vector3 } from "three";
 import { Visitable } from "@/visitors/Visitable";
-import { Visitor } from "@/visitors/Visitor";
 import { SEPoint } from "./SEPoint";
 import SETTINGS from "@/global-settings";
 import { OneDimensional, Labelable } from "@/types";
-import { Styles } from "@/types/Styles";
 import { UpdateMode, UpdateStateType, LineState } from "@/types";
-import { SELabel } from "@/models/SELabel";
-// import  SENoduleItem  from "*.vue";
-// import magnificationLevel from "*.vue";
-import magnificationLevel from "@/components/SENoduleItem.vue";
-import { SEStore } from "@/store";
 import i18n from "@/i18n";
 import { SELine } from "./SELine";
 

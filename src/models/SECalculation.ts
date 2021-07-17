@@ -1,14 +1,11 @@
 import { SEExpression } from "./SEExpression";
 import { UpdateStateType, UpdateMode, ExpressionState } from "@/types";
 import { ExpressionParser } from "@/expression/ExpressionParser";
-// import AppStore from "@/store";
 import { SEStore } from "@/store";
-import { Styles } from "@/types/Styles";
-import SETTINGS from "@/global-settings";
 import { SENodule } from "./SENodule";
 import i18n from "@/i18n";
 
-const emptySet = new Set<Styles>();
+const emptySet = new Set<string>();
 const parser = new ExpressionParser();
 export class SECalculation extends SEExpression {
   // static parser = new ExpressionParser();
@@ -140,5 +137,5 @@ export class SECalculation extends SEExpression {
     this.updateKids(state);
   }
 
-  public customStyles = (): Set<Styles> => emptySet;
+  public customStyles = (): Set<string> => emptySet;
 }

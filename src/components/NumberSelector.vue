@@ -81,14 +81,13 @@ import Vue from "vue";
 import Component from "vue-class-component";
 import SETTINGS from "@/global-settings";
 import { Watch, Prop, PropSync } from "vue-property-decorator";
-import { StyleOptions, Styles, StyleEditPanels } from "@/types/Styles";
+import { StyleOptions, StyleEditPanels } from "@/types/Styles";
 import { namespace } from "vuex-class";
 import { SENodule } from "@/models/SENodule";
 import { AppState, Labelable } from "@/types";
 import HintButton from "@/components/HintButton.vue";
 import OverlayWithFixButton from "@/components/OverlayWithFixButton.vue";
 import { SEStore } from "@/store";
-import Style from "./Style.vue";
 const SE = namespace("se");
 
 @Component({ components: { HintButton, OverlayWithFixButton } })

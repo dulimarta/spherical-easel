@@ -387,7 +387,7 @@ import { SENodule } from "../models/SENodule";
 import Nodule from "../plottables/Nodule";
 import { namespace } from "vuex-class";
 // import AppStore from "@/store";
-import { Styles, StyleOptions, StyleEditPanels } from "../types/Styles";
+import { StyleOptions, StyleEditPanels } from "../types/Styles";
 import SETTINGS from "@/global-settings";
 import FadeInCard from "@/components/FadeInCard.vue";
 import { hslaColorType, AppState, LabelDisplayMode } from "@/types";
@@ -411,22 +411,6 @@ type labelDisplayModeItem = {
   optionRequiresMeasurementValueToExist: boolean;
   optionRequiresCaptionToExist: boolean;
 };
-
-/**
- * values is a list of Styles (found in @/types/styles.ts) that are number valued
- */
-const values = Object.entries(Styles).filter(e => {
-  const [_, b] = e;
-  return typeof b === "number";
-});
-
-/**
- * keys is a list of the keys to the number valued Styles
- */
-const keys = values.map(e => {
-  const [a, _] = e;
-  return a;
-});
 
 @Component({
   components: {
@@ -629,7 +613,7 @@ export default class FrontBackStyle extends Vue {
   private disableDashPatternUndoButton = false;
   private disableBackStyleContrastUndoButton = false;
 
-  commonStyleProperties: number[] = [];
+  commonStyleProperties: string[] = [];
 
   constructor() {
     super();
@@ -1148,38 +1132,34 @@ export default class FrontBackStyle extends Vue {
    * The input is an enum of type Styles
    * This is the key method for the hasXXX() methods which control the display of the XXX fade-in-card
    */
-  hasStyle(s: Styles): boolean {
-    const sNum = Number(s);
-    return (
-      this.commonStyleProperties.length > 0 &&
-      this.commonStyleProperties.findIndex(x => x === sNum) >= 0
-    );
+  hasStyle(prop: RegExp): boolean {
+    return this.commonStyleProperties.some((x: string) => x.match(prop));
   }
   get hasStrokeColor(): boolean {
-    return this.hasStyle(Styles.strokeColor);
+    return this.hasStyle(/strokeColor/);
   }
   get hasFillColor(): boolean {
-    return this.hasStyle(Styles.fillColor);
+    return this.hasStyle(/fillColor/);
   }
   get hasStrokeWidthPercent(): boolean {
-    return this.hasStyle(Styles.strokeWidthPercent);
+    return this.hasStyle(/strokeWidthPercent/);
   }
   get hasPointRadiusPercent(): boolean {
-    return this.hasStyle(Styles.pointRadiusPercent);
+    return this.hasStyle(/pointRadiusPercent/);
   }
   get hasDashPattern(): boolean {
-    return this.hasStyle(Styles.dashArray);
+    return this.hasStyle(/dashArray/);
   }
   get hasDynamicBackStyle(): boolean {
-    return this.hasStyle(Styles.dynamicBackStyle);
+    return this.hasStyle(/dynamicBackStyle/);
   }
   get hasAngleMarkerRadiusPercent(): boolean {
-    return this.hasStyle(Styles.angleMarkerRadiusPercent);
+    return this.hasStyle(/angleMarkerRadiusPercent/);
   }
   get hasAngleMarkerDecoration(): boolean {
     return (
-      this.hasStyle(Styles.angleMarkerTickMark) &&
-      this.hasStyle(Styles.angleMarkerDoubleArc)
+      this.hasStyle(/angleMarkerTickMark/) &&
+      this.hasStyle(/angleMarkerDoubleArc/)
     );
   }
 
@@ -1217,14 +1197,33 @@ export default class FrontBackStyle extends Vue {
     const oldSelection = this.oldStyleSelection;
     newSelection.forEach(obj => oldSelection.push(obj));
 
-    // Create a list of the common properties that the objects in the selection have.
-    // commonStyleProperties is a number (corresponding to an enum) array
-    // The customStyles method returns a list of the styles the are adjustable for that object
-    for (let k = 0; k < values.length; k++) {
-      if (newSelection.every(s => s.customStyles().has(k))) {
-        this.commonStyleProperties.push(k);
-      }
+    // Create a list of the common properties among the selected objects.
+    // Use the Array.reduce function to find the intersection of all the props
+    this.commonStyleProperties.splice(0);
+    if (newSelection.length > 0) {
+      // Use the style properties of the first selected object as our initial value
+      const initialSet = newSelection[0].customStyles();
+
+      const commonProp = newSelection.reduce(
+        (acc: Set<string>, curr: SENodule, pos: number) => {
+          console.debug("At index", pos, acc);
+          // Find the set intersection between the current set and
+          // the set of props of the current object
+          const arr = [...curr.customStyles()].filter((prop: string) =>
+            acc.has(prop)
+          );
+          return new Set(arr); // return the new intersection
+        },
+        initialSet
+      );
+      console.debug("Common props are", commonProp);
+      this.commonStyleProperties.push(...commonProp);
     }
+    // for (let k = 0; k < values.length; k++) {
+    //   if (newSelection.every(s => s.customStyles().has(k))) {
+    //     this.commonStyleProperties.push(k);
+    //   }
+    // }
 
     // Get the initial and default style state of the object for undo/redo and buttons to revert to initial style.
     // Put this in the store so that it is availble to *all* panels. Get the front and back information at the same time.

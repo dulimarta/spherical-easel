@@ -9,30 +9,6 @@ export enum StyleEditPanels { // The order of these *must* match the order of th
   Advanced
 }
 
-export enum Styles {
-  // Important: Be sure to include "Color" for enum member
-  // that refers to Color property
-  strokeWidthPercent,
-  strokeColor,
-  fillColor,
-  dashArray,
-  dynamicBackStyle,
-  pointRadiusPercent,
-  labelDisplayText,
-  labelDisplayCaption,
-  labelTextStyle,
-  labelTextFamily,
-  labelTextDecoration,
-  labelTextRotation,
-  labelTextScalePercent,
-  labelDisplayMode,
-  labelFrontFillColor,
-  labelBackFillColor,
-  angleMarkerRadiusPercent,
-  angleMarkerTickMark,
-  angleMarkerDoubleArc
-}
-
 export interface StyleOptions {
   // panel?: StyleEditPanels; // TODO: delete the panel field
   strokeWidthPercent?: number;

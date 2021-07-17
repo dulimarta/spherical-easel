@@ -4,7 +4,11 @@ import { Visitor } from "@/visitors/Visitor";
 import { SENodule } from "./SENodule";
 import { Vector3 } from "three";
 import SETTINGS from "@/global-settings";
-import { Styles } from "@/types/Styles";
+import {
+  DEFAULT_LABEL_BACK_STYLE,
+  DEFAULT_LABEL_FRONT_STYLE,
+  DEFAULT_LABEL_TEXT_STYLE
+} from "@/types/Styles";
 import { UpdateMode, UpdateStateType, LabelState, Labelable } from "@/types";
 import { SEStore } from "@/store";
 import { SEPoint } from "./SEPoint";
@@ -16,17 +20,9 @@ import { SEEllipse } from "./SEEllipse";
 import { SEParametric } from "./SEParametric";
 
 const styleSet = new Set([
-  Styles.labelTextScalePercent,
-  Styles.dynamicBackStyle,
-  Styles.labelTextStyle,
-  Styles.labelTextFamily,
-  Styles.labelTextDecoration,
-  Styles.labelTextRotation,
-  Styles.labelDisplayCaption,
-  Styles.labelDisplayText,
-  Styles.labelDisplayMode,
-  Styles.labelFrontFillColor,
-  Styles.labelBackFillColor
+  ...Object.getOwnPropertyNames(DEFAULT_LABEL_TEXT_STYLE),
+  ...Object.getOwnPropertyNames(DEFAULT_LABEL_FRONT_STYLE),
+  ...Object.getOwnPropertyNames(DEFAULT_LABEL_BACK_STYLE)
 ]);
 
 export class SELabel extends SENodule implements Visitable {
@@ -104,7 +100,7 @@ export class SELabel extends SENodule implements Visitable {
     }
   }
 
-  customStyles(): Set<Styles> {
+  customStyles(): Set<string> {
     return styleSet;
   }
 

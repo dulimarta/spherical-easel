@@ -6,20 +6,20 @@ import { Visitor } from "@/visitors/Visitor";
 import { SEPoint } from "./SEPoint";
 import SETTINGS from "@/global-settings";
 import { OneDimensional, Labelable } from "@/types";
-import { Styles } from "@/types/Styles";
 import { UpdateMode, UpdateStateType, LineState } from "@/types";
 import { SELabel } from "@/models/SELabel";
 // import  SENoduleItem  from "*.vue";
 // import magnificationLevel from "*.vue";
-import magnificationLevel from "@/components/SENoduleItem.vue";
 import { SEStore } from "@/store";
 import i18n from "@/i18n";
+import {
+  DEFAULT_LINE_BACK_STYLE,
+  DEFAULT_LINE_FRONT_STYLE
+} from "@/types/Styles";
 
 const styleSet = new Set([
-  Styles.strokeWidthPercent,
-  Styles.strokeColor,
-  Styles.dashArray,
-  Styles.dynamicBackStyle
+  ...Object.getOwnPropertyNames(DEFAULT_LINE_FRONT_STYLE),
+  ...Object.getOwnPropertyNames(DEFAULT_LINE_BACK_STYLE)
 ]);
 
 export class SELine extends SENodule
@@ -72,7 +72,7 @@ export class SELine extends SENodule
     this.name = `Li${SELine.LINE_COUNT}`;
   }
 
-  customStyles(): Set<Styles> {
+  customStyles(): Set<string> {
     return styleSet;
   }
 

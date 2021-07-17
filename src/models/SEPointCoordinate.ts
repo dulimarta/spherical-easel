@@ -2,7 +2,6 @@ import { SEExpression } from "./SEExpression";
 import { SEPoint } from "./SEPoint";
 import { SEStore } from "@/store";
 import { Matrix4, Vector3 } from "three";
-import { Styles } from "@/types/Styles";
 import { ExpressionState, UpdateMode, UpdateStateType } from "@/types";
 import i18n from "@/i18n";
 
@@ -11,7 +10,7 @@ export enum CoordinateSelection {
   Y_VALUE,
   Z_VALUE
 }
-const emptySet = new Set<Styles>();
+const emptySet = new Set<string>();
 export class SEPointCoordinate extends SEExpression {
   private selector = CoordinateSelection.X_VALUE;
   readonly point: SEPoint;
@@ -44,7 +43,7 @@ export class SEPointCoordinate extends SEExpression {
         return Number.NaN;
     }
   }
-  public customStyles = (): Set<Styles> => emptySet;
+  public customStyles = (): Set<string> => emptySet;
 
   public get noduleDescription(): string {
     switch (this.selector) {

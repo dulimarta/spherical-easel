@@ -6,11 +6,10 @@ import {
   ValueDisplayMode,
   ExpressionState
 } from "@/types";
-import { Styles } from "@/types/Styles";
 import SETTINGS from "@/global-settings";
 import i18n from "@/i18n";
 
-const emptySet = new Set<Styles>();
+const emptySet = new Set<string>();
 
 export class SEPointDistance extends SEExpression {
   readonly firstSEPoint: SEPoint;
@@ -66,5 +65,5 @@ export class SEPointDistance extends SEExpression {
     );
   }
 
-  public customStyles = (): Set<Styles> => emptySet;
+  public customStyles = (): Set<string> => emptySet;
 }

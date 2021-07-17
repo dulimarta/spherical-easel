@@ -236,7 +236,7 @@ import { Watch, Prop } from "vue-property-decorator";
 import { SENodule } from "../models/SENodule";
 import Nodule from "../plottables/Nodule";
 import { namespace } from "vuex-class";
-import { Styles, StyleOptions, StyleEditPanels } from "../types/Styles";
+import { StyleOptions, StyleEditPanels } from "../types/Styles";
 import { LabelDisplayMode } from "@/types";
 import SETTINGS from "@/global-settings";
 import FadeInCard from "@/components/FadeInCard.vue";
@@ -247,7 +247,6 @@ import NumberSelector from "@/components/NumberSelector.vue";
 // import TextInputSelector from "@/components/TextInputSelector.vue";
 import ColorSelector from "@/components/ColorSelector.vue";
 import i18n from "../i18n";
-// import Style from "./Style.vue";
 import HintButton from "@/components/HintButton.vue";
 import OverlayWithFixButton from "@/components/OverlayWithFixButton.vue";
 import { SEStore } from "@/store";
@@ -260,22 +259,6 @@ type labelDisplayModeItem = {
   optionRequiresMeasurementValueToExist: boolean;
   optionRequiresCaptionToExist: boolean;
 };
-
-/**
- * values is a list of Styles (found in @/types/styles.ts) that are number valued
- */
-const values = Object.entries(Styles).filter(e => {
-  const [_, b] = e;
-  return typeof b === "number";
-});
-
-/**
- * keys is a list of the keys to the number valued Styles
- */
-const keys = values.map(e => {
-  const [a, _] = e;
-  return a;
-});
 
 @Component({
   components: {
@@ -463,11 +446,11 @@ export default class LabelStyle extends Vue {
   //step is Pi/8 from -pi to pi is 17 steps
   private textRotationSelectorThumbStrings = [
     "-180" + "\u{00B0}",
-    "157.5" + "\u{00B0}",
+    "-157.5" + "\u{00B0}",
     "-135" + "\u{00B0}",
     "-112.5" + "\u{00B0}",
     "-90" + "\u{00B0}",
-    "67.5" + "\u{00B0}",
+    "-67.5" + "\u{00B0}",
     "-45" + "\u{00B0}",
     "-22.5" + "\u{00B0}",
     "0" + "\u{00B0}",
@@ -498,7 +481,7 @@ export default class LabelStyle extends Vue {
     a: 0.001
   }; // Color for Vuetify Color picker
 
-  commonStyleProperties: number[] = [];
+  commonStyleProperties: Array<string> = [];
 
   constructor() {
     super();
@@ -602,12 +585,7 @@ export default class LabelStyle extends Vue {
         selected: [selected[i]],
         panel: StyleEditPanels.Label,
         payload: {
-          labelDisplayText: defaultStyleStates[i].labelDisplayText,
-          labelDisplayCaption: defaultStyleStates[i].labelDisplayCaption,
-          labelTextStyle: defaultStyleStates[i].labelTextStyle,
-          labelTextFamily: defaultStyleStates[i].labelTextFamily,
-          labelTextDecoration: defaultStyleStates[i].labelTextDecoration,
-          labelDisplayMode: defaultStyleStates[i].labelDisplayMode
+          ...defaultStyleStates[i]
         }
       });
     }
@@ -629,12 +607,7 @@ export default class LabelStyle extends Vue {
         selected: [selected[i]],
         panel: StyleEditPanels.Label,
         payload: {
-          labelDisplayText: initialStyleStates[i].labelDisplayText,
-          labelDisplayCaption: initialStyleStates[i].labelDisplayCaption,
-          labelTextStyle: initialStyleStates[i].labelTextStyle,
-          labelTextFamily: initialStyleStates[i].labelTextFamily,
-          labelTextDecoration: initialStyleStates[i].labelTextDecoration,
-          labelDisplayMode: initialStyleStates[i].labelDisplayMode
+          ...initialStyleStates[i]
         }
       });
     }
@@ -801,43 +774,34 @@ export default class LabelStyle extends Vue {
    * The input is an enum of type Styles
    * This is the key method for the hasXXX() methods which control the display of the XXX fade-in-card
    */
-  hasStyle(s: Styles): boolean {
-    const sNum = Number(s);
-    return (
-      this.commonStyleProperties.length > 0 &&
-      this.commonStyleProperties.findIndex(x => x === sNum) >= 0
-    );
+  hasStyle(property: RegExp): boolean {
+    return this.commonStyleProperties.some((z: string) => z.match(property));
   }
+
   get hasStrokeColor(): boolean {
-    return this.hasStyle(Styles.strokeColor);
+    return this.hasStyle(/strokeColor/i);
   }
   get hasFillColor(): boolean {
-    return this.hasStyle(Styles.fillColor);
+    return this.hasStyle(/fillColor/i);
   }
+
   get hasStrokeWidthPercent(): boolean {
-    return this.hasStyle(Styles.strokeWidthPercent);
+    return this.hasStyle(/strokeWidthPercent/i);
   }
   get hasLabelStyle(): boolean {
-    return (
-      this.hasStyle(Styles.labelDisplayText) &&
-      this.hasStyle(Styles.labelDisplayCaption) &&
-      this.hasStyle(Styles.labelTextStyle) &&
-      this.hasStyle(Styles.labelTextFamily) &&
-      this.hasStyle(Styles.labelTextDecoration) &&
-      this.hasStyle(Styles.labelDisplayMode)
-    );
+    return this.hasStyle(/^label/);
   }
   get hasLabelTextRotation(): boolean {
-    return this.hasStyle(Styles.labelTextRotation);
+    return this.hasStyle(/labelTextRotation/i);
   }
   get hasLabelTextScalePercent(): boolean {
-    return this.hasStyle(Styles.labelTextScalePercent);
+    return this.hasStyle(/labelTextScalePercent/i);
   }
   get hasLabelFrontFillColor(): boolean {
-    return this.hasStyle(Styles.labelFrontFillColor);
+    return this.hasStyle(/labelFrontFillColor/i);
   }
   get hasLabelBackFillColor(): boolean {
-    return this.hasStyle(Styles.labelBackFillColor);
+    return this.hasStyle(/labelBackFillColor/i);
   }
   //This controls if the labelDisplayModeItems include ValueOnly and NameAndValue (When no value in the Label)\
   // and if the caption is empty, NameAndCaption and Caption Only are not options
@@ -915,7 +879,7 @@ export default class LabelStyle extends Vue {
     SEStore.setOldStyleSelection([]);
     // We are on the label panel so push the labels onto the oldSelections
     const oldSelection: SENodule[] = [];
-    newSelection.forEach(obj =>
+    newSelection.forEach((obj: SENodule) =>
       oldSelection.push(((obj as unknown) as Labelable).label!)
     );
     SEStore.setOldStyleSelection(oldSelection);
@@ -923,15 +887,30 @@ export default class LabelStyle extends Vue {
     // Create a list of the common properties that the objects in the selection have.
     // commonStyleProperties is a number (corresponding to an enum) array
     // The customStyles method returns a list of the styles the are adjustable for that object
-    for (let k = 0; k < values.length; k++) {
-      if (
-        newSelection.every(s =>
-          ((s as unknown) as Labelable).label!.customStyles().has(k)
-        )
-      ) {
-        this.commonStyleProperties.push(k);
-      }
+    this.commonStyleProperties.splice(0);
+    if (newSelection.length > 0) {
+      const initialProp = newSelection[0].customStyles();
+      const commonProp = newSelection.reduce(
+        (acc: Set<string>, curr: SENodule, pos: number) => {
+          console.debug("At index", pos, acc);
+          const arr = [...curr.customStyles()].filter((prop: string) =>
+            acc.has(prop)
+          );
+          return new Set(arr);
+        },
+        initialProp
+      );
+      this.commonStyleProperties.push(...commonProp);
     }
+    // for (let k = 0; k < values.length; k++) {
+    //   if (
+    //     newSelection.every((s:SENodule) =>
+    //       ((s as unknown) as Labelable).label!.customStyles().has(k)
+    //     )
+    //   ) {
+    //     this.commonStyleProperties.push(k);
+    //   }
+    // }
 
     // Get the initial and default style state of the object for undo/redo and buttons to revert to initial style.
     // Put this in the store so that it is availble to *all* panels. Get the front and back information at the same time.

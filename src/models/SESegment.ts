@@ -8,15 +8,16 @@ import SETTINGS from "@/global-settings";
 import { OneDimensional, SegmentState, Labelable } from "@/types";
 import { UpdateMode, UpdateStateType } from "@/types";
 import { SELabel } from "@/models/SELabel";
-import { Styles } from "@/types/Styles";
+import {
+  DEFAULT_SEGMENT_BACK_STYLE,
+  DEFAULT_SEGMENT_FRONT_STYLE
+} from "@/types/Styles";
 import { SEStore } from "@/store";
 import i18n from "@/i18n";
 
 const styleSet = new Set([
-  Styles.strokeWidthPercent,
-  Styles.strokeColor,
-  Styles.dashArray,
-  Styles.dynamicBackStyle
+  ...Object.getOwnPropertyNames(DEFAULT_SEGMENT_FRONT_STYLE),
+  ...Object.getOwnPropertyNames(DEFAULT_SEGMENT_BACK_STYLE)
 ]);
 
 export class SESegment extends SENodule
@@ -89,7 +90,7 @@ export class SESegment extends SENodule
     this.name = `Ls${SENodule.SEGMENT_COUNT}`;
   }
 
-  customStyles(): Set<Styles> {
+  customStyles(): Set<string> {
     return styleSet;
   }
 
