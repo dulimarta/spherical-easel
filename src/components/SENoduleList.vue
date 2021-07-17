@@ -63,7 +63,7 @@ export default class SENoduleTree extends Vue {
 
   get existingChildren(): SENodule[] {
     return this.children.filter((n: SENodule) => {
-      if (n instanceof SEIntersectionPoint) return n.isUserCreated;
+      if (n instanceof SEIntersectionPoint) return n.isUserCreated && n.exists;
       else return n.exists;
     });
   }

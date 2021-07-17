@@ -112,6 +112,7 @@ export default {
     showLabelsOfNonFreePointsInitially: false, // Should the labels of non-free points be shown upon creating the point?
     showLabelsOfPointOnObjectInitially: false, // Should the labels of points on objects be shown upon creating the point?
     showLabelsOfPolarPointInitially: false, // Should the labels of polar points be shown upon creation?
+    showLabelsOfParametricEndPointsInitially: true, // Should the labels of the endpoints of a parametric curve be shown upon creating the points?
     readingCoordinatesChangesLabelModeTo: LabelDisplayMode.NameAndValue,
     maxLabelDistance: 0.1, // The maximum distance that a label is allowed to get away from the point
     initialLabelOffset: 0.2, // When making point labels this is initially how far (roughly) they are from the location of the point
@@ -411,7 +412,8 @@ export default {
     defaultLabelMode: LabelDisplayMode.NameOnly, // The default way of displaying this objects label
     minimumAngleSumDifference: 0.0001, // Don't create ellipses (and ellipse don't exist) when an angle sum to the foci minus the angle between the foci is smaller than this
     minimumCreationDistance: 0.025, // Don't create an ellipse point unless it is more than this distance away from each focus.
-    numPoints: 100, // Twice this number are used to draw the edge of the parametric curve. MAKE THIS EVEN!
+    numPoints: 30, // This is the anchor density in the rendering the number of anchors is floor(numPoints*arcLength)
+    evenSphereSampleSize: 50, // This is the number of almost evenly spaced points on the sphere to sample for the number of perpendiculars and tangents
     hitIdealDistance: 0.03, // The user has to be within this distance on the ideal unit sphere to select the parametric curve.
     //dynamicBackStyle is a flag that means the fill, linewidth, and strokeColor of the parametric curves drawn on the back are automatically calculated based on the value of SETTINGS.contrast and their front counterparts
     dynamicBackStyle: true,
@@ -714,7 +716,7 @@ export default {
   parameterization: {
     subdivisions: 60, // When searching function on a parametrized curve for a change in sign, use this many subdivisions
     bisectionMinSize: 0.00001, // stop running the bisection method (if Newton's method is not used) when the interval is less than this size
-    numberOfTestTValues: 5, // When checking if a parametric curve is unit or is perpendicular to the derivative or the number of times the curve intersects a plane connecting two points on the curve use this many points
+    numberOfTestTValues: 10, // When checking if a parametric curve is unit or is perpendicular to the derivative or the number of times the curve intersects a plane connecting two points on the curve use this many points
     maxNumberOfIterationArcLength: 5, // maximum number of times it will iterate over the curve to find the arcLength (i.e. the curve is divided into at most subdivisions*maxNumberOfIterationArcLength subdivisions while looking for the arcLength)
     maxChangeInArcLength: 0.00001 // If the change in arcLength is less than this, return the value
   },

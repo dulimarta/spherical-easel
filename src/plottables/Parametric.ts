@@ -40,7 +40,11 @@ export default class Parametric extends Nodule {
    */
   private _coordinateExpressions: CoordExpression = { x: "", y: "", z: "" };
 
-  private _primeCoordinateExpression: CoordExpression = { x: "", y: "", z: "" };
+  private _primeCoordinateExpressions: CoordExpression = {
+    x: "",
+    y: "",
+    z: ""
+  };
 
   private _tExpressions: MinMaxExpression = { min: "", max: "" };
 
@@ -49,7 +53,7 @@ export default class Parametric extends Nodule {
   /**
    * The expressions that are the parents of this curve
    */
-  private seParentExpressions: SEExpression[] = [];
+  private _seParentExpressions: SEExpression[] = [];
 
   /**
    * A parser to convert from the expression to a formula/number
@@ -72,7 +76,7 @@ export default class Parametric extends Nodule {
   /**
    * The arcLength of the parametric curve from tNumber.min to tNumber.Max
    */
-  private _arcLength: number;
+  private _initialArcLength: number;
   /**
    * The tMin & tMax starting *tracing* parameter of the curve.
    */
@@ -80,16 +84,24 @@ export default class Parametric extends Nodule {
     if (this._tExpressions.min === "" || this._tExpressions.max === "")
       return null;
     // first update the map with the current values of the measurements
-    this.seParentExpressions.forEach((m: SEExpression) => {
+    this._seParentExpressions.forEach((m: SEExpression) => {
       const measurementName = m.name;
       // console.debug("Measurement", m, measurementName);
       this.varMap.set(measurementName, m.value);
     });
+    let tMin = this.parser.evaluateWithVars(
+      this._tExpressions.min,
+      this.varMap
+    );
+    let tMax = this.parser.evaluateWithVars(
+      this._tExpressions.max,
+      this.varMap
+    );
+    // restrict to the parameter interval of tNumber.min to tNumber.max
+    if (tMin < this._tNumbers.min) tMin = this._tNumbers.min;
+    if (tMax > this._tNumbers.max) tMax = this._tNumbers.max;
 
-    return [
-      this.parser.evaluateWithVars(this._tExpressions.min, this.varMap),
-      this.parser.evaluateWithVars(this._tExpressions.max, this.varMap)
-    ];
+    return [tMin, tMax];
   }
 
   /**
@@ -99,7 +111,7 @@ export default class Parametric extends Nodule {
    */
   public P(t: number): Vector3 {
     // first update the map with the current value of
-    this.seParentExpressions.forEach((m: SEExpression) => {
+    this._seParentExpressions.forEach((m: SEExpression) => {
       const measurementName = m.name;
       // console.debug("Measurement", m, measurementName);
       this.varMap.set(measurementName, m.value);
@@ -120,7 +132,7 @@ export default class Parametric extends Nodule {
    */
   public PPrime(t: number): Vector3 {
     // first update the map with the current value of
-    this.seParentExpressions.forEach((m: SEExpression) => {
+    this._seParentExpressions.forEach((m: SEExpression) => {
       const measurementName = m.name;
       // console.debug("Measurement", m, measurementName);
       this.varMap.set(measurementName, m.value);
@@ -130,26 +142,19 @@ export default class Parametric extends Nodule {
 
     return this.parameterizationPrime.set(
       this.parser.evaluateWithVars(
-        this._primeCoordinateExpression.x,
+        this._primeCoordinateExpressions.x,
         this.varMap
       ),
       this.parser.evaluateWithVars(
-        this._primeCoordinateExpression.y,
+        this._primeCoordinateExpressions.y,
         this.varMap
       ),
       this.parser.evaluateWithVars(
-        this._primeCoordinateExpression.z,
+        this._primeCoordinateExpressions.z,
         this.varMap
       )
     );
   }
-
-  public d = (t: number): number => {
-    return this.P(t).dot(this.tmpVector);
-  };
-  public dp = (t: number): number => {
-    return this.PPrime(t).dot(this.tmpVector);
-  };
 
   /**
    * Vuex global state
@@ -163,7 +168,7 @@ export default class Parametric extends Nodule {
   private backParts: Two.Path[] = [];
   private glowingFrontParts: Two.Path[] = [];
   private glowingBackParts: Two.Path[] = [];
-  private numberOfParts = 2; // we need at least two of each front and back to render the object
+  private _numberOfParts = 1; // we need at least one of each front and back to render the object
 
   private pool: Two.Anchor[] = []; //The pool of vertices
   private glowingPool: Two.Anchor[] = []; //The pool of vertices
@@ -227,9 +232,9 @@ export default class Parametric extends Nodule {
     this._coordinateExpressions.y = coordinateExpressions.y;
     this._coordinateExpressions.z = coordinateExpressions.z;
 
-    this._primeCoordinateExpression.x = primeCoordinateExpressions.x;
-    this._primeCoordinateExpression.y = primeCoordinateExpressions.y;
-    this._primeCoordinateExpression.z = primeCoordinateExpressions.z;
+    this._primeCoordinateExpressions.x = primeCoordinateExpressions.x;
+    this._primeCoordinateExpressions.y = primeCoordinateExpressions.y;
+    this._primeCoordinateExpressions.z = primeCoordinateExpressions.z;
 
     this._tExpressions.min = tExpressions.min;
     this._tExpressions.max = tExpressions.max;
@@ -237,11 +242,13 @@ export default class Parametric extends Nodule {
     this._tNumbers.min = tNumbers.min;
     this._tNumbers.max = tNumbers.max;
 
-    this.seParentExpressions.push(...measurementParents);
+    this._seParentExpressions.push(...measurementParents);
 
     this._closed = closed;
 
-    // Determine the number of front/back parts need to render the curve
+    // Determine an *ESTIMATE* of number of front/back parts need to render the curve, the curves can change length and shape depending on the
+    // the value of the M1, M2, etc.  So overestimate the actual number
+    //
     // Do this by sampling along the curve from tNumbers.min to tNumbers.max and then intersecting the curve with the plane through two points on the curve (and counting the intersections)
 
     // we know that is is not the case that tNumber.max <= tNumber.min because the ParametricForm.vue checked for this
@@ -261,49 +268,115 @@ export default class Parametric extends Nodule {
     // We want to find the t values where the P(t) is perpendicular to tmpVector
     // because tmpVector will be a normal to the plane containing P(t1) and P(t2)
     // This means we want the dot product to be zero
+    const d = (t: number): number => {
+      return this.P(t).dot(this.tmpVector);
+    };
+    const dp = (t: number): number => {
+      return this.PPrime(t).dot(this.tmpVector);
+    };
 
-    console.log("here1");
+    // console.log(
+    //   "Intersect Parametric with many planes and count the intersections"
+    // );
     tValues.forEach(t1 => {
       tValues.forEach(t2 => {
+        // avoid duplicate searches so make t1 less than t2 and avoid tangent lines so make the difference large-ish
         if (t1 < t2 && Math.abs(t2 - t1) > 0.2) {
-          // console.log("t1", t1);
-          // console.log(this.P(t1));
-          // console.log("t2", t2, this.P(t2));
-          this.tmpVector1.copy(this.P(t1));
+          // if the curves is closed do not search if t2=tMax, because this has been search already by tMin ( a t value that correspond to the same point).
+          if (this.closed && t2 === this._tNumbers.max) {
+            return;
+          }
+          // console.log("New Search", t1, t2);
+
+          // Set the tmpVector to the normal of the plane thru P(t1) and P(t2)
+          this.tmpVector1.copy(this.P(t1)); // Copy P(t1) to a new tmp vector because computing P(t2) will overwrite P(t1)
           this.tmpVector.crossVectors(this.tmpVector1, this.P(t2));
-          // console.log(this.tmpVector, this.P(1), this.P(2));
-          // const zeros = SENodule.findZeros(
-          //   this.P.bind(this),
-          //   this._tNumbers.min,
-          //   this._tNumbers.max,
-          //   this.tmpVector.x,
-          //   this.tmpVector.y,
-          //   this.tmpVector.z,
-          //   this.PPrime.bind(this)
-          // );
-          // console.log("tmpVec", this.tmpVector.x, this.d(1));
-          const zeros = SENodule.findZerosParametrically(
-            this.d.bind(this),
-            this._tNumbers.min,
-            this._tNumbers.max,
-            this.dp.bind(this)
-          );
-          console.log("zeros", zeros.length);
-          if (zeros.length > this.numberOfParts) {
-            this.numberOfParts = zeros.length;
+
+          if (this.tmpVector.isZero(SETTINGS.nearlyAntipodalIdeal)) return;
+
+          let zeros: number[];
+          if (this.closed) {
+            // if the curve is closed then we don't want both tMin and tMax (which correspond to the same point) to be different zeros
+            zeros = SENodule.findZerosParametrically(
+              d.bind(this),
+              this._tNumbers.min,
+              this._tNumbers.max -
+                (1 / SETTINGS.parameterization.subdivisions) *
+                  (this._tNumbers.max - this._tNumbers.min),
+              dp.bind(this)
+            );
+          } else {
+            zeros = SENodule.findZerosParametrically(
+              d.bind(this),
+              this._tNumbers.min,
+              this._tNumbers.max,
+              dp.bind(this)
+            );
+          }
+          // if (
+          //   -1 ===
+          //   zeros.findIndex(z => {
+          //     if (
+          //       Math.abs(z - t1) < SETTINGS.tolerance ||
+          //       Math.abs(z - t2) < SETTINGS.tolerance
+          //     ) {
+          //       return true;
+          //     } else {
+          //       return false;
+          //     }
+          //   })
+          // ) {
+          //   console.log(
+          //     "t1 or t2 doesn't appear on the list of zeros",
+          //     zeros.length,
+          //     zeros,
+          //     t1,
+          //     t2
+          //   );
+          // }
+
+          // Search for zeros that are very close to or equal to the t1 and t2 values, and don't count them (we don't have to
+          // remove them because we only care about the number of zeros)
+          const duplicateZeroTValues: number[] = [];
+          zeros.forEach((z, ind) => {
+            if (Math.abs(z - t1) < SETTINGS.tolerance) {
+              duplicateZeroTValues.push(ind);
+            } else if (Math.abs(z - t2) < SETTINGS.tolerance) {
+              duplicateZeroTValues.push(ind);
+            }
+          });
+          // if (duplicateZeroTValues.length > 2) {
+          //   console.log(zeros, t1, t2);
+          // }
+          // DuplicateZeroTValues counts t1 and t2, so add 2 back into the count
+          // Divide by two because the parts alternate between front and back and this.numberOfParts is the number of front parts (which is equal to the number of back parts)
+          if (
+            Math.ceil((zeros.length - duplicateZeroTValues.length + 2) / 2) >
+            this._numberOfParts
+          ) {
+            this._numberOfParts = Math.ceil(
+              (zeros.length - duplicateZeroTValues.length + 2) / 2
+            );
           }
         }
       });
     });
-    console.log("number of parts", this.numberOfParts);
+    console.log("number of parts", this._numberOfParts);
 
-    // to set the number of vertices need to render the parametric curve use the density of SUBDIVISIONS per unit arcLength and multiply by the arcLength
-    this._arcLength = this.arcLength(this._tNumbers.min, this._tNumbers.max);
-    console.log("arcLength", this._arcLength);
+    // to set the number of vertices need to render the parametric curve use the density of SUBDIVISIONS per unit INITIAL arcLength and multiply by the arcLength
+    this._initialArcLength = this.arcLength(
+      this._tNumbers.min,
+      this._tNumbers.max
+    );
+    // console.log("arcLength", this._initialArcLength);
     // As the Parametric is moved around the vertices are passed between the front and back parts, but it
-    // is always true that sum of the number of all frontVertices and the sum of all the backVertices = floor(2*SUBDIVISIONS*arcLength)
+    // is always true that sum of the number of all frontVertices and the sum of all the backVertices = 2*floor(SUBDIVISIONS*arcLength)+2
     const frontVertices: Two.Vector[] = [];
-    for (let k = 0; k < Math.floor(SUBDIVISIONS * this._arcLength); k++) {
+    for (
+      let k = 0;
+      k < Math.floor(SUBDIVISIONS * this._initialArcLength) + 1;
+      k++
+    ) {
       // Create Two.Vectors for the paths that will be cloned later
       frontVertices.push(new Two.Vector(0, 0));
     }
@@ -314,7 +387,7 @@ export default class Parametric extends Nodule {
     );
 
     // now create, record ids, and set nofill (and strip of their anchors so that the number of anchors is correct) the other parts that may be needed
-    for (let i = 0; i < this.numberOfParts; i++) {
+    for (let i = 0; i < this._numberOfParts; i++) {
       this.glowingFrontParts[i] = this.frontParts[0].clone();
       this.backParts[i] = this.frontParts[0].clone();
       this.glowingBackParts[i] = this.frontParts[0].clone();
@@ -333,12 +406,14 @@ export default class Parametric extends Nodule {
         fill: false,
         part: ""
       });
+      // #region updatePlottableMap
       Nodule.idPlottableDescriptionMap.set(String(this.backParts[i].id), {
         type: "parametric",
         side: "back",
         fill: false,
         part: ""
       });
+      // #endregion updatePlottableMap
 
       // Set the styles that are always true
       // The front/back parts have no fill because that is handled by the front/back fill
@@ -426,11 +501,9 @@ export default class Parametric extends Nodule {
     return newArcLength;
   }
   /**
-   * The Parametric curve is given in on the unit sphere, which might have been rotated, so we always transform from the unrotated
+   * The Parametric curve is given in on the unit sphere, which might have been rotated, so we always transform from the un-rotated
    * sphere to the rotated one and then project the points to 2D (assigning to front/back depending on the sign of the z coordinate)
-   * This method updates the TwoJS objects (frontPart, frontExtra, ...) for display
-   * This is only accurate if the a, b, and foci(1|2)Vector are correct so only
-   * call this method once those variables are updated.
+   * This method updates the TwoJS objects (frontPart,  ...) for display
    */
   public updateDisplay(): void {
     // Create a matrix4 in the three.js package (called transformMatrix) that maps the unrotated parametric curve to
@@ -439,7 +512,7 @@ export default class Parametric extends Nodule {
     // The target Parametric (on the sphere of radius SETTINGS.boundaryCircle.radius) is rotated version of the
     // original Parametric (which is on the un-rotated unit sphere)
     // so scale XYZ space
-    // this will make the original Parametric (in unrotated position on the sphere) finally coincide with the target Parametric
+    // this will make the original Parametric (in un-rotated position on the sphere) finally coincide with the target Parametric
     transformMatrix.getInverse(SEStore.inverseTotalRotationMatrix);
     this.tmpMatrix.makeScale(
       SETTINGS.boundaryCircle.radius,
@@ -447,6 +520,7 @@ export default class Parametric extends Nodule {
       SETTINGS.boundaryCircle.radius
     );
     transformMatrix.multiply(this.tmpMatrix);
+    // console.log(transformMatrix);
     // transformMatrix now maps the un-rotated parametric to the target parametric
 
     // Recalculate the 3D coordinates of the Parametric and record the projection in the TwoJS paths
@@ -461,46 +535,45 @@ export default class Parametric extends Nodule {
     // Each front/back  path will pull anchor points from
     // this pool as needed
 
-    for (let i = 0; i < this.numberOfParts; i++) {
+    for (let i = 0; i < this._numberOfParts; i++) {
       this.pool.push(...this.frontParts[i].vertices.splice(0));
       this.pool.push(...this.backParts[i].vertices.splice(0));
     }
 
-    for (let i = 0; i < this.numberOfParts; i++) {
+    for (let i = 0; i < this._numberOfParts; i++) {
       this.glowingPool.push(...this.glowingFrontParts[i].vertices.splice(0));
       this.glowingPool.push(...this.glowingBackParts[i].vertices.splice(0));
     }
 
     // find the tracing tMin and tMax
-    let [tMin, tMax] = this.tMinMaxExpressionValues() ?? [
+    const [tMin, tMax] = this.tMinMaxExpressionValues() ?? [
       this._tNumbers.min,
       this._tNumbers.max
     ];
 
-    // if the tMin/tMax values are out of order plot nothing?
+    // if the tMin/tMax values are out of order plot nothing (the object doesn't exist)
     if (tMax <= tMin) return;
 
-    // restrict to the parameter interval of tNumber.min to tNumber.max
-    if (tMin < this._tNumbers.min) tMin = this._tNumbers.min;
-    if (tMax > this._tNumbers.max) tMax = this._tNumbers.max;
+    const tempArcLength = Math.min(
+      this.arcLength(tMin, tMax),
+      this._initialArcLength
+    ); // this is always less than this._initialArcLength
 
-    const tempArcLength = this.arcLength(tMin, tMax);
-
-    let lastPositiveIndex = 0;
-    let lastNegativeIndex = 0;
+    let lastPositiveIndex = -1;
+    let lastNegativeIndex = -1;
 
     let currentFrontPartIndex = 0;
     let currentBackPartIndex = 0;
 
     for (
       let index = 0;
-      index < 2 * Math.floor(SUBDIVISIONS * tempArcLength);
+      index < 2 * Math.floor(SUBDIVISIONS * tempArcLength) + 2;
       index++
     ) {
       // The t value
       const tVal =
         tMin +
-        (index / (2 * Math.floor(SUBDIVISIONS * tempArcLength))) *
+        (index / (2 * Math.floor(SUBDIVISIONS * tempArcLength) + 1)) *
           (tMax - tMin);
 
       // P(tval) is the location on the unit sphere of the Parametric in un-rotated position
@@ -508,12 +581,19 @@ export default class Parametric extends Nodule {
       // Set tmpVector equal to location on the target Parametric in rotated position
       this.tmpVector.applyMatrix4(transformMatrix);
 
+      // console.log(
+      //   "tmp z",
+      //   this.tmpVector.z,
+      //   this.frontParts.length,
+      //   this.backParts.length,
+      //   lastPositiveIndex,
+      //   currentFrontPartIndex
+      // );
       // When the Z-coordinate is negative, the vertex belongs the
       // the back side of the sphere
-      if (this.tmpVector.z > 0) {
+      if (this.tmpVector.z < 0) {
         // Move to the next back part if necessary
         if (lastNegativeIndex !== index - 1) {
-          lastNegativeIndex = index;
           currentBackPartIndex++;
           if (currentBackPartIndex >= this.backParts.length) {
             throw new Error(
@@ -521,6 +601,13 @@ export default class Parametric extends Nodule {
             );
           }
         }
+        lastNegativeIndex = index;
+        // console.log(
+        //   "index, last neg index, currentBackPartIndex",
+        //   index,
+        //   lastNegativeIndex,
+        //   currentBackPartIndex
+        // );
 
         const vertex = this.pool.pop();
         if (vertex !== undefined) {
@@ -539,15 +626,20 @@ export default class Parametric extends Nodule {
       } else {
         // Move to the next front part if necessary
         if (lastPositiveIndex !== index - 1) {
-          lastPositiveIndex = index;
           currentFrontPartIndex++;
-          if (currentFrontPartIndex >= this.backParts.length) {
+          if (currentFrontPartIndex >= this.frontParts.length) {
             throw new Error(
               "Parametric Update: Needs more front parts than were allocated in the constructor"
             );
           }
         }
-
+        lastPositiveIndex = index;
+        // console.log(
+        //   "index, last pos index, currentFrontPartIndex",
+        //   index,
+        //   lastPositiveIndex,
+        //   currentFrontPartIndex
+        // );
         const vertex = this.pool.pop();
         if (vertex !== undefined) {
           vertex.x = this.tmpVector.x;
@@ -571,6 +663,54 @@ export default class Parametric extends Nodule {
    */
   get closed(): boolean {
     return this._closed;
+  }
+  get coordinateExpressions(): CoordExpression {
+    return this._coordinateExpressions;
+  }
+  get primeCoordinateExpressions(): CoordExpression {
+    return this._primeCoordinateExpressions;
+  }
+  get tExpressions(): MinMaxExpression {
+    return this._tExpressions;
+  }
+  get tNumbers(): MinMaxNumber {
+    return this._tNumbers;
+  }
+  get seParentExpressions(): SEExpression[] {
+    return this._seParentExpressions;
+  }
+  get numberOfParts(): number {
+    return this._numberOfParts;
+  }
+
+  endPointVector(minMax: boolean): Vector3 | undefined {
+    transformMatrix.getInverse(SEStore.inverseTotalRotationMatrix);
+    this.tmpMatrix.makeScale(
+      SETTINGS.boundaryCircle.radius,
+      SETTINGS.boundaryCircle.radius,
+      SETTINGS.boundaryCircle.radius
+    );
+    transformMatrix.multiply(this.tmpMatrix);
+
+    // find the tracing tMin and tMax
+    const [tMin, tMax] = this.tMinMaxExpressionValues() ?? [
+      this._tNumbers.min,
+      this._tNumbers.max
+    ];
+
+    // if the tMin/tMax values are out of order plot nothing (the object doesn't exist)
+    if (tMax <= tMin) return undefined;
+
+    let tVal: number;
+    if (minMax) {
+      tVal = tMin;
+    } else {
+      tVal = tMax;
+    }
+    // P(tval) is the location on the unit sphere of the Parametric in un-rotated position
+    this.tmpVector.copy(this.P(tVal));
+    // Set tmpVector equal to location on the target Parametric in rotated position
+    return this.tmpVector.applyMatrix4(transformMatrix);
   }
 
   frontGlowingDisplay(): void {

@@ -317,6 +317,7 @@
     "perpendicularLineThruPointSegmentSelected":"Segment {name} selected. Now select a location to create a new point or to create a point on an object.",
     "perpendicularLineThruPointCircleSelected":"Circle {name} selected. Now select a location to create a new point or to create a point on an object.",
     "perpendicularLineThruPointEllipseSelected":"Ellipse {name} selected. Now select a location to create a new point or to create a point on an object.",
+    "perpendicularLineThruPointParametricSelected":"Parametric {name} selected. Now select a location to create a new point or to create a point on an object.",
     "antipodeDuplicate":"The antipode of this point has already been created.",
     "polarLineDuplicate": "The polar line of this point has already been created.",
     "polarPointDuplicate": "The polar points of this {object} has already been created."
@@ -352,6 +353,8 @@
     "tMinExpressionTip":"An optional expression (depending on measurements tokens) that gives the starting t value when tracing the parametric curve. This value is always evaluated to be greater than or equal to the minimum parameter value.",
     "tMaxExpression":"Maximum Parameter Tracing Expression",
     "tMaxExpressionTip":"An optional expression (depending on measurements tokens) that gives the ending t value when tracing the parametric curve. This value is always evaluated to be less than or equal to the maximum parameter value.",
+    "exactlyOneEmptyTExpression":"Maximum and Minimum Parameter Tracing Expression must either both be empty or both be defined.",
+    
     "tMinNumber": "Minimum parameter(t) Value",
     "tMinNumberTip":"A required absolute minimum t value for tracing the parametric curve that is the lower bound for the optional tMin Tracing Expression.",
     "tMaxNumber":"Maximum parameter(t) Value",
@@ -388,8 +391,12 @@
     "polarLine":"Polar line to point {pt} with normal vector <{normalX},{normalY},{normalZ}>",
     "segmentThrough":"Line segment with endpoints {pt1} and {pt2} and normal vector <{normalX},{normalY},{normalZ}>",
     "pointOnOneDimensional": "Point on {typeParent} {parent}",
+    "endPointOfParametric":"The {end} point of parametric curve {parent}.",
     "freePoint": "Free point",
-    "perpendicularLineThru":"Perpendicular line to {oneDimensionalParentType} {oneDimensional} through point {pt} with index {index}"
+    "perpendicularLineThru":"Perpendicular line to {oneDimensionalParentType} {oneDimensional} through point {pt} with index {index}",
+    "parametricDescription":"Parametric curve with coordinates ({xExpression}, {yExpression}, {zExpression}) for t from {tMinNumber} to {tMaxNumber}.",
+    "duplicateParametricCurve":"Duplicate parametric curves are not allowed."
+    
   },
 
   "constructions":{

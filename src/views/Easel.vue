@@ -264,6 +264,7 @@ import { ConstructionScript } from "@/types";
 import { Route } from "vue-router";
 import Dialog, { DialogAction } from "@/components/Dialog.vue";
 import { SEStore } from "@/store";
+import Parametric from "@/plottables/Parametric";
 const SE = namespace("se");
 
 /**
@@ -515,6 +516,7 @@ export default class Easel extends Vue {
     Point.updatePointScaleFactorForZoom(e.factor);
     Label.updateTextScaleFactorForZoom(e.factor);
     Ellipse.updateCurrentStrokeWidthForZoom(e.factor);
+    Parametric.updateCurrentStrokeWidthForZoom(e.factor);
 
     // Apply the new size in each nodule in the store
     this.seNodules.forEach((p: SENodule) => {

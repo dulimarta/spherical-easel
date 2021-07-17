@@ -22,6 +22,7 @@ import { AddPointCommand } from "@/commands/AddPointCommand";
 import { SEEllipse } from "@/models/SEEllipse";
 import { SEStore } from "@/store";
 import { AngleMode } from "@/types";
+import { SEParametric } from "@/models/SEParametric";
 
 enum HighlightMode {
   NONE,
@@ -33,6 +34,7 @@ type SEOneDimensionalPlusSEPoint =
   | SESegment
   | SECircle
   | SEEllipse
+  | SEParametric
   | SEPoint;
 
 export default class AngleHandler extends Highlighter {
@@ -327,6 +329,23 @@ export default class AngleHandler extends Highlighter {
             this.temporaryFirstPoint.positionVector = this.hitSEEllipses[0].closestVector(
               this.currentSphereVector
             );
+          } else if (this.hitSEParametrics.length > 0) {
+            // The user clicked on a parametric, assume they want to create an
+            // from three points, the first of which is on a parametric.
+            this.angleMode = AngleMode.POINTS;
+            this.targetPoints.push(null);
+            this.sePointOneDimensionalParents.push(this.hitSEParametrics[0]);
+            this.pointLocations.push(
+              this.tmpPointVector1.copy(
+                this.hitSEParametrics[0].closestVector(this.currentSphereVector)
+              )
+            );
+            this.temporaryAngleMarker.startVector = this.hitSEParametrics[0].closestVector(
+              this.currentSphereVector
+            );
+            this.temporaryFirstPoint.positionVector = this.hitSEParametrics[0].closestVector(
+              this.currentSphereVector
+            );
           } else {
             // The user clicked on empty space, assume they want to create
             // an angle from three points, the first of which is a free point
@@ -440,6 +459,28 @@ export default class AngleHandler extends Highlighter {
             if (this.allowPointLocation(this.tmpVector)) {
               this.targetPoints.push(null);
               this.sePointOneDimensionalParents.push(this.hitSEEllipses[0]);
+              if (this.targetPoints.length == 2) {
+                this.temporaryAngleMarker.vertexVector = this.tmpVector;
+                this.temporarySecondPoint.positionVector = this.tmpVector;
+                this.pointLocations.push(
+                  this.tmpPointVector2.copy(this.tmpVector)
+                );
+              } else {
+                this.temporaryAngleMarker.endVector = this.tmpVector;
+                this.temporaryThirdPoint.positionVector = this.tmpVector;
+                this.pointLocations.push(
+                  this.tmpPointVector3.copy(this.tmpVector)
+                );
+              }
+            }
+          } else if (this.hitSEParametrics.length > 0) {
+            // the user wants to create a point on a parametric to make an angle
+            this.tmpVector.copy(
+              this.hitSEParametrics[0].closestVector(this.currentSphereVector)
+            );
+            if (this.allowPointLocation(this.tmpVector)) {
+              this.targetPoints.push(null);
+              this.sePointOneDimensionalParents.push(this.hitSEParametrics[0]);
               if (this.targetPoints.length == 2) {
                 this.temporaryAngleMarker.vertexVector = this.tmpVector;
                 this.temporarySecondPoint.positionVector = this.tmpVector;
@@ -585,6 +626,10 @@ export default class AngleHandler extends Highlighter {
             this.hitSEEllipses[0].glowing = true;
             this.snapOneDimensional = this.hitSEEllipses[0];
             this.snapPoint = null;
+          } else if (this.hitSEParametrics.length > 0) {
+            this.hitSEParametrics[0].glowing = true;
+            this.snapOneDimensional = this.hitSEParametrics[0];
+            this.snapPoint = null;
           }
 
           break;
@@ -611,7 +656,11 @@ export default class AngleHandler extends Highlighter {
             this.hitSEEllipses[0].glowing = true;
             this.snapPoint = null;
             this.snapOneDimensional = this.hitSEEllipses[0];
-          } else {
+          } else if (this.hitSEParametrics.length > 0) {
+            this.hitSEParametrics[0].glowing = true;
+            this.snapPoint = null;
+            this.snapOneDimensional = this.hitSEParametrics[0];
+          }else {
             //Nothing nearby so don't snap to anything
             this.snapOneDimensional = null;
             this.snapPoint = null;
@@ -1190,7 +1239,7 @@ export default class AngleHandler extends Highlighter {
     } else {
       this.tmpVector.set(0, 0, 1);
       console.log(
-        "In AngleHandler a selected segment doesn't have a endpoint on  selected line -- error!"
+        "In AngleHandler a selected segment doesn't have a endpoint on selected line -- error!"
       );
     }
     this.tmpVector

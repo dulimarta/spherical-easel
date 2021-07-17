@@ -56,6 +56,8 @@ export default class PointOnOneDimensionalHandler extends Highlighter {
           this.oneDimensional = this.hitSECircles[0];
         } else if (this.hitSEEllipses.length > 0) {
           this.oneDimensional = this.hitSEEllipses[0];
+        } else if (this.hitSEParametrics.length > 0) {
+          this.oneDimensional = this.hitSEParametrics[0];
         }
       }
       if (this.oneDimensional !== null) {
@@ -120,6 +122,9 @@ export default class PointOnOneDimensionalHandler extends Highlighter {
       } else if (this.hitSEEllipses.length > 0) {
         this.hitSEEllipses[0].glowing = true;
         this.snapToTemporaryOneDimensional = this.hitSEEllipses[0];
+      } else if (this.hitSEParametrics.length > 0) {
+        this.hitSEParametrics[0].glowing = true;
+        this.snapToTemporaryOneDimensional = this.hitSEParametrics[0];
       }
     }
     if (this.isOnSphere) {

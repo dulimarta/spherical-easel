@@ -77,7 +77,8 @@ import {
   UpdateMode,
   CoordExpression,
   MinMaxExpression,
-  MinMaxNumber
+  MinMaxNumber,
+  SEIntersectionReturnType
 } from "@/types";
 import { SEExpression } from "@/models/SEExpression";
 import { ExpressionParser } from "@/expression/ExpressionParser";
@@ -90,6 +91,18 @@ import SETTINGS from "@/global-settings";
 import { Vector3 } from "three";
 import Parametric from "@/plottables/Parametric";
 import { SEStore } from "@/store";
+import { DisplayStyle } from "@/plottables/Nodule";
+import Label from "@/plottables/Label";
+import { SELabel } from "@/models/SELabel";
+import { SEParametric } from "@/models/SEParametric";
+import { CommandGroup } from "@/commands/CommandGroup";
+import { AddParametricCommand } from "@/commands/AddParametricCommand";
+import { AddParametricEndPointsCommand } from "@/commands/AddParametricEndPointsCommand";
+import { Store } from "vuex";
+import Point from "@/plottables/Point";
+import { SEParametricEndPoint } from "@/models/SEParametricEndPoint";
+import NonFreePoint from "@/plottables/NonFreePoint";
+import { AddIntersectionPointCommand } from "@/commands/AddIntersectionPointCommand";
 
 const SE = namespace("se");
 
@@ -119,6 +132,9 @@ export default class ParametricForm extends Vue {
   }
   @SE.State((s: AppState) => s.expressions)
   readonly expressions!: SEExpression[];
+
+  @SE.State((s: AppState) => s.seParametrics)
+  readonly oldParametrics!: SEParametric[];
 
   /**
    * These are string expressions that once set define the Parametric curve
@@ -281,8 +297,8 @@ export default class ParametricForm extends Vue {
   }
 
   setLoxodromeExpressions(): void {
-    this.tNumbers.min = -2;
-    this.tNumbers.max = 2;
+    this.tNumbers.min = -6;
+    this.tNumbers.max = 6;
     this.tExpressions.min = "-1*abs(M1)";
     this.tExpressions.max = "abs(M1)";
     this.coordinateExpressions.x = "cos(t)/sqrt(1+4*t^2)";
@@ -302,23 +318,25 @@ export default class ParametricForm extends Vue {
     const a = "(-1*((2*1/tan(w)*1/sin(w))/q)+1/sin(w)^2+1/sin(w)^2/q^2)^(-1/2)";
 
     //hypocycloid
-    const w = "pi/3";
-    const q = "3";
+    // const w = "pi/3";
+    // const q = "3";
+    // this.tNumbers.min = 0;
+    // this.tNumbers.max = 2 * Math.PI;
 
     // epicycloid 1
     // const w = "2*pi/3";
     // const q = "3";
-
-    // epicycloid 2
-    // const w = "pi/18";
-    // const q = "0.75";
+    // this.tNumbers.min = 0;
+    // this.tNumbers.max = 2 * Math.PI;
 
     // spherical helix
-    // const w = "0.7227342478"; //acos(3/4)
-    // const q = "0.75";
-
+    const w = "0.7227342478"; //acos(3/4)
+    const q = "0.75";
     this.tNumbers.min = 0;
-    this.tNumbers.max = 2 * Math.PI;
+    this.tNumbers.max = 8 * Math.PI;
+    // this.tExpressions.min = "0";
+    // this.tExpressions.max = "M2";
+
     this.coordinateExpressions.x = "(1/q)*((q-cos(w))*cos(t)+cos(w)*cos(t)*cos(q*t)+sin(t)*sin(q*t))*a"
       .replaceAll(`a`, a)
       .replaceAll(`w`, w)
@@ -402,6 +420,39 @@ export default class ParametricForm extends Vue {
       });
       return;
     }
+
+    // Do not allow adding the same parametric twice
+    let duplicateCurve = false;
+    this.oldParametrics.forEach(para => {
+      const coords = para.ref.coordinateExpressions;
+      if (
+        this.coordinateExpressions.x === coords.x &&
+        this.coordinateExpressions.y === coords.y &&
+        this.coordinateExpressions.z === coords.z
+      ) {
+        duplicateCurve = true;
+      }
+    });
+    if (duplicateCurve) {
+      EventBus.fire("show-alert", {
+        key: "objectTree.duplicateParametricCurve",
+        type: "error"
+      });
+      return;
+    }
+    // Both tExpressions must either be empty or not empty
+    if (
+      (this.tExpressions.min.length === 0 &&
+        this.tExpressions.max.length !== 0) ||
+      (this.tExpressions.min.length !== 0 && this.tExpressions.max.length === 0)
+    ) {
+      EventBus.fire("show-alert", {
+        key: "objectTree.exactlyOneEmptyTExpression",
+        type: "error"
+      });
+      return;
+    }
+
     // Create a list of t values to test the expressions at
     const tValues: number[] = [];
     for (
@@ -518,7 +569,7 @@ export default class ParametricForm extends Vue {
       }
     }
 
-    const para = new Parametric(
+    const parametric = new Parametric(
       this.coordinateExpressions,
       this.primeCoordinateExpressions,
       this.tExpressions,
@@ -526,21 +577,112 @@ export default class ParametricForm extends Vue {
       calculationParents,
       closed
     );
+    // Set the display to the default values
+    parametric.stylize(DisplayStyle.ApplyCurrentVariables);
+    // Adjust the stroke width to the current zoom magnification factor
+    parametric.adjustSize();
+
+    // Add the last command to the group and then execute it (i.e. add the potentially two points and the circle to the store.)
+    const newSEParametric = new SEParametric(parametric);
+
+    // Create the plottable and model label
+    const newLabel = new Label();
+    const newSELabel = new SELabel(newLabel, newSEParametric);
+    // Set the initial label location at the start of the curve
+    this.tempVector
+      .copy(parametric.P(this.tNumbers.min))
+      .add(new Vector3(0, SETTINGS.parametric.initialLabelOffset, 0))
+      .normalize();
+    newSELabel.locationVector = this.tempVector;
+    // Create a command group to add the parametric to the store
+    // This way a single undo click will undo all operations.
+    const parametricCommandGroup = new CommandGroup();
+
+    parametricCommandGroup.addCommand(
+      new AddParametricCommand(newSEParametric, calculationParents, newSELabel)
+    );
+
+    // create the parametric endpoints if there are tracing expressions or the curve is not closed
+    if (this.tExpressions.min.length !== 0 || !closed) {
+      // we have to create a two points
+      const startPoint = new NonFreePoint();
+      const endPoint = new NonFreePoint();
+      // Set the display to the default values
+      startPoint.stylize(DisplayStyle.ApplyCurrentVariables);
+      endPoint.stylize(DisplayStyle.ApplyCurrentVariables);
+      // Adjust the size of the point to the current zoom magnification factor
+      startPoint.adjustSize();
+      endPoint.adjustSize();
+
+      // create the endPoints
+      const startSEEndPoint = new SEParametricEndPoint(
+        startPoint,
+        newSEParametric,
+        "min"
+      );
+
+      const endSEEndPoint = new SEParametricEndPoint(
+        endPoint,
+        newSEParametric,
+        "max"
+      );
+
+      // Create the plottable labels
+      const startLabel = new Label();
+      const endLabel = new Label();
+      const startSELabel = new SELabel(startLabel, startSEEndPoint);
+      const endSELabel = new SELabel(endLabel, endSEEndPoint);
+
+      parametricCommandGroup.addCommand(
+        new AddParametricEndPointsCommand(
+          newSEParametric,
+          startSEEndPoint,
+          startSELabel,
+          endSEEndPoint,
+          endSELabel
+        )
+      );
+      newSEParametric.endPoints = [startSEEndPoint, endSEEndPoint];
+    }
+    // Generate new intersection points. These points must be computed and created
+    // in the store. Add the new created points to the ellipse command so they can be undone.
+    SEStore.createAllIntersectionsWithParametric(newSEParametric).forEach(
+      (item: SEIntersectionReturnType) => {
+        // Create the plottable and model label
+        const newLabel = new Label();
+        const newSELabel = new SELabel(newLabel, item.SEIntersectionPoint);
+
+        // Set the initial label location
+        this.tempVector
+          .copy(item.SEIntersectionPoint.locationVector)
+          .add(
+            new Vector3(
+              2 * SETTINGS.point.initialLabelOffset,
+              SETTINGS.point.initialLabelOffset,
+              0
+            )
+          )
+          .normalize();
+        newSELabel.locationVector = this.tempVector;
+
+        parametricCommandGroup.addCommand(
+          new AddIntersectionPointCommand(
+            item.SEIntersectionPoint,
+            item.parent1,
+            item.parent2,
+            newSELabel
+          )
+        );
+        item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points or label
+        newSELabel.showing = false;
+      }
+    );
+
+    parametricCommandGroup.execute();
+
     console.log("add Parametric comands");
 
-    // check closed P(tMin)=P(tMax)
-    // sample for max number of perpendiculars from any point on the sphere
-    // sample for number of tangents from any point on the sphere
-    // sample for number of front/back plottable pieces needed
-
-    // create the new SEObject and add it with a command
-    // const para = new SEParametric(this.calcExpression);
-    // new AddParametricCommand(
-    //   calc,
-    //   this.calcExpression,
-    //   calc.calculationParents
-    // ).execute();
-    // para.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
+    newSEParametric.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
   }
 
   parametricCurveIsUnitCheck(tValues: number[]): null | number {

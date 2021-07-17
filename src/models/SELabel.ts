@@ -13,6 +13,7 @@ import { SELine } from "./SELine";
 import { SECircle } from "./SECircle";
 import { SEAngleMarker } from "./SEAngleMarker";
 import { SEEllipse } from "./SEEllipse";
+import { SEParametric } from "./SEParametric";
 
 const styleSet = new Set([
   Styles.labelTextScalePercent,
@@ -95,6 +96,9 @@ export class SELabel extends SENodule implements Visitable {
     } else if (parent instanceof SEEllipse) {
       this.ref.initialLabelDisplayMode = SETTINGS.ellipse.defaultLabelMode;
       this.showing = SETTINGS.ellipse.showLabelsInitially;
+    } else if (parent instanceof SEParametric) {
+      this.ref.initialLabelDisplayMode = SETTINGS.parametric.defaultLabelMode;
+      this.showing = SETTINGS.parametric.showLabelsInitially;
     } else {
       this.showing = true;
     }

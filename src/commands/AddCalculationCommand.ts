@@ -56,7 +56,7 @@ export class AddCalculationCommand extends AddExpressionCommand {
       parents.push(objMap.get(name) as SENodule | undefined)
     );
     if (parents.every(seNodule => seNodule !== undefined)) {
-      objMap.set(tokens[1], calc);
+      objMap.set(tokens[0], calc);
       // Invoke "update" to trigger reevaluation of the expression
       // Otherwise, the value of the expressions is shown as ZERO
       calc.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
