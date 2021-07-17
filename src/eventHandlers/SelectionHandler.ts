@@ -84,7 +84,16 @@ export default class SelectionHandler extends Highlighter {
     // Get all SEAngleMarkers
     if (keyEvent.key.match("a")) {
       SEStore.seAngleMarkers
-        .filter((n: any) => n.showing) //no hidden labels allowed
+        .filter((n: any) => n.showing) //no hidden angle markers allowed
+        .forEach((n: any) => {
+          this.keyPressSelection.push(n);
+          (n as any).ref.glowingDisplay();
+        });
+    }
+    // Get all SEParametrics
+    if (keyEvent.key.match("P")) {
+      SEStore.seParametrics
+        .filter((n: any) => n.showing) //no hidden parametrics allowed
         .forEach((n: any) => {
           this.keyPressSelection.push(n);
           (n as any).ref.glowingDisplay();

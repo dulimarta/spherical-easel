@@ -9,6 +9,7 @@ import { SELabel } from "@/models/SELabel";
 import { SEPointOnOneDimensional } from "@/models/SEPointOnOneDimensional";
 import { SEEllipse } from "@/models/SEEllipse";
 import { SEAngleMarker } from "@/models/SEAngleMarker";
+import { SEParametric } from "@/models/SEParametric";
 
 export class RotationVisitor implements Visitor {
   private transformMatrix: Matrix4 = new Matrix4();
@@ -72,5 +73,10 @@ export class RotationVisitor implements Visitor {
   // eslint-disable-next-line
   actionOnAngleMarker(a: SEAngleMarker): void {
     //AngleMarekrs are completely determined by their parents so no need to update them
+  }
+  // eslint-disable-next-line
+  actionOnParametric(e: SEParametric): void {
+    // update the display of the plottable object. update gets the new rotation matrix directly from the store.
+    e.ref.updateDisplay();
   }
 }

@@ -1,10 +1,10 @@
 import { Command } from "./Command";
 import { SENodule } from "@/models/SENodule";
-import { AddMeasurementCommand } from "./AddMeasurementCommand";
+import { AddExpressionCommand } from "./AddExpressionCommand";
 import { SEPoint } from "@/models/SEPoint";
 import { SEPointDistance } from "@/models/SEPointDistance";
 
-export class AddPointDistanceMeasurementCommand extends AddMeasurementCommand {
+export class AddPointDistanceMeasurementCommand extends AddExpressionCommand {
   // /**
   //  *
   //  * @param seExpression The measurement object being added

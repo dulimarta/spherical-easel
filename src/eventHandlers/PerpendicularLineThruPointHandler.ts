@@ -29,8 +29,9 @@ import { ConvertInterPtToUserCreatedCommand } from "@/commands/ConvertInterPtToU
 import EventBus from "./EventBus";
 import { SEEllipse } from "@/models/SEEllipse";
 
-const MAXNUMBEROFPERPENDICULARS = 4;
+const MAXNUMBEROFPERPENDICULARS = 10; // maximum number of perpendiculars to a one dimensional through a point across all objects
 import { SEStore } from "@/store";
+import { SEParametric } from "@/models/SEParametric";
 
 export default class PerpendicularLineThruPointHandler extends Highlighter {
   /**
@@ -76,7 +77,7 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
   private selectOneObjectAtATime = true;
 
   /**
-   * Different objects have a different maximum number of perpendicularess
+   * Different objects have a different maximum number of perpendiculars
    *
    */
   private numberOfPerpendiculars = 1;
@@ -181,6 +182,19 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
           this.temporaryPointMarker.addToLayers(this.layers);
           this.temporaryPointAdded = true;
           this.sePoint = null;
+        } else if (this.hitSEParametrics.length > 0) {
+          // The start of the line will be a point on a Parametric
+          //  Eventually, we will create a new SEPointOneDimensional and Point
+          this.sePointOneDimensionalParent = this.hitSEParametrics[0];
+          this.sePointVector.copy(
+            this.sePointOneDimensionalParent.closestVector(
+              this.currentSphereVector
+            )
+          );
+          this.temporaryPointMarker.positionVector = this.sePointVector;
+          this.temporaryPointMarker.addToLayers(this.layers);
+          this.temporaryPointAdded = true;
+          this.sePoint = null;
         } else {
           // The mouse press is not near an existing point or one dimensional object.
           //  Record the location in a temporary point (tempPointMarker found in MouseHandler).
@@ -267,6 +281,22 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
               type: "info"
             });
           }
+        } else if (this.hitSEParametrics.length > 0) {
+          this.oneDimensional = this.hitSEParametrics[0];
+          this.oneDimensional.selected = true;
+          if (
+            this.sePoint === null &&
+            this.sePointOneDimensionalParent === null &&
+            this.sePointVector.isZero()
+          ) {
+            EventBus.fire("show-alert", {
+              key: `handlers.perpendicularLineThruPointParametricSelected`,
+              keyOptions: {
+                name: `${this.oneDimensional.label?.ref.shortUserName}`
+              },
+              type: "info"
+            });
+          }
         }
       }
 
@@ -342,6 +372,10 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
         this.hitSEEllipses[0].glowing = true;
         this.snapToTemporaryOneDimensional = this.hitSEEllipses[0];
         this.snapToTemporaryPoint = null;
+      } else if (this.hitSEParametrics.length > 0) {
+        this.hitSEParametrics[0].glowing = true;
+        this.snapToTemporaryOneDimensional = this.hitSEParametrics[0];
+        this.snapToTemporaryPoint = null;
       } else {
         this.snapToTemporaryOneDimensional = null;
         this.snapToTemporaryPoint = null;
@@ -370,6 +404,10 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
         this.snapToTemporaryPoint = null;
       } else if (this.hitSEEllipses.length > 0) {
         this.hitSEEllipses[0].glowing = true;
+        this.snapToTemporaryOneDimensional = null;
+        this.snapToTemporaryPoint = null;
+      } else if (this.hitSEParametrics.length > 0) {
+        this.hitSEParametrics[0].glowing = true;
         this.snapToTemporaryOneDimensional = null;
         this.snapToTemporaryPoint = null;
       } else {
@@ -432,11 +470,24 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
         }
         const normalList = this.oneDimensional.getNormalsToLineThru(
           vectorLocation,
-          this.temporaryNormals[0] // In Ellipses this is ignored
+          this.temporaryNormals[0] // In Ellipses/Parametrics this is ignored
         );
-        // console.log("number of normals", normalList);
+        // console.log(
+        //   "number of normals",
+        //   normalList.length,
+        //   this.tempLines.length
+        // );
+
+        if (normalList.length > MAXNUMBEROFPERPENDICULARS) {
+          throw new Error(
+            "The number normals is bigger than the MAXNUMBEROFPERPENDICULARS temporary perpendiculars"
+          );
+        }
+
         //set the display of the normals and the vectors
         this.temporaryNormals.forEach((vec, ind) => {
+          // console.log("index", ind, normalList[ind]);
+
           if (ind < normalList.length) {
             this.temporaryLinesAdded[ind] = true;
             vec.copy(normalList[ind]);
@@ -654,8 +705,19 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
         .map(vec => vec.normalize());
     }
 
+    if (oneDimensional instanceof SEParametric) {
+      // There are upto ??? perpendiculars
+      this.numberOfPerpendiculars = oneDimensional.maxNumberOfPerpendiculars;
+      normalVectors = oneDimensional
+        .getNormalsToLineThru(
+          sePointVector,
+          this.temporaryNormals[0] // ignored in the case of SEParametric
+        )
+        .map(vec => vec.normalize());
+    }
+
     // normals is the array of normal vector to the plane containing the line perpendicular to the one Dimensional through the point
-    // create four such lines (not the number of normals in normalVector because if the user creates the perpendicular when there
+    // create a number of such lines (not the number of normals in normalVector because if the user creates the perpendicular when there
     // are only two perpendiculars, then moves the point to a place where there are four, the other two perpendiculars are not created)
     for (let index = 0; index < this.numberOfPerpendiculars; index++) {
       // set the perpendicular vector
@@ -663,7 +725,7 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
       if (normalVectors[index] !== undefined) {
         vec = normalVectors[index];
       } else {
-        vec = normalVectors[0]; // there is always at least one normal
+        vec = new Vector3(0, 0, 1); // use the north pole vector and make sure that the perpendicular doesn't exist
       }
 
       // Create the endSEPoint for the line
@@ -693,6 +755,10 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
         endSEPoint /* end point */,
         index /*The index of the perpendicular*/
       );
+      // turn off the display of perps that don't exist
+      if (Math.abs(vec.z - 1) < SETTINGS.tolerance) {
+        newPerpLine.exists = false;
+      }
       // Update the display of the perpendicular line
       newPerpLine.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
 

@@ -35,6 +35,7 @@ import NonFreeLine from "@/plottables/NonFreeLine";
 import { SEPolarLine } from "@/models/SEPolarLine";
 import { AddIntersectionPointCommand } from "@/commands/AddIntersectionPointCommand";
 import { AddPolarLineCommand } from "@/commands/AddPolarLineCommand";
+import { SEParametric } from "@/models/SEParametric";
 
 enum Create {
   NONE,
@@ -57,7 +58,11 @@ export default class PolarObjectHandler extends Highlighter {
   /**
    * As the user moves the pointer around snap the temporary marker to this object temporarily
    */
-  protected snapToTemporaryCircleOrEllipse: SECircle | SEEllipse | null = null;
+  protected snapToTemporaryCircleOrEllipseOrParametric:
+    | SECircle
+    | SEEllipse
+    | SEParametric
+    | null = null;
   protected temporaryParentLineOrSegment: SESegment | SELine | null = null;
   protected snapToTemporaryPoint: SEPoint | null = null;
 
@@ -184,6 +189,16 @@ export default class PolarObjectHandler extends Highlighter {
         );
         this.parentPoint = null;
         this.parentLineOrSegment = null;
+      } else if (this.hitSEParametrics.length > 0) {
+        // The user selected an parametric and we will create a point on it and the polar line of that point
+        this.oneDimensionalContainingParentPoint = this.hitSEParametrics[0];
+        this.parentPointVector.copy(
+          this.oneDimensionalContainingParentPoint.closestVector(
+            this.currentSphereVector
+          )
+        );
+        this.parentPoint = null;
+        this.parentLineOrSegment = null;
       } else {
         // The user selected an empty location and we will create a point there
         this.parentPointVector.copy(this.currentSphereVector);
@@ -219,7 +234,7 @@ export default class PolarObjectHandler extends Highlighter {
       if (!alreadyExists) {
         this.hitSEPoints[0].glowing = true;
         this.snapToTemporaryPoint = this.hitSEPoints[0];
-        this.snapToTemporaryCircleOrEllipse = null;
+        this.snapToTemporaryCircleOrEllipseOrParametric = null;
         this.creating = Create.POLARLINE;
         this.temporaryParentLineOrSegment = null;
       } else {
@@ -242,7 +257,7 @@ export default class PolarObjectHandler extends Highlighter {
         this.hitSESegments[0]
           ? (this.hitSESegments[0].glowing = true)
           : (this.hitSELines[0].glowing = true);
-        this.snapToTemporaryCircleOrEllipse = null;
+        this.snapToTemporaryCircleOrEllipseOrParametric = null;
         this.creating = Create.POLARPOINTS;
         this.snapToTemporaryPoint = null;
       } else {
@@ -250,18 +265,24 @@ export default class PolarObjectHandler extends Highlighter {
       }
     } else if (this.hitSECircles.length > 0) {
       this.hitSECircles[0].glowing = true;
-      this.snapToTemporaryCircleOrEllipse = this.hitSECircles[0];
+      this.snapToTemporaryCircleOrEllipseOrParametric = this.hitSECircles[0];
       this.snapToTemporaryPoint = null;
       this.creating = Create.POLARLINE;
       this.temporaryParentLineOrSegment = null;
     } else if (this.hitSEEllipses.length > 0) {
       this.hitSEEllipses[0].glowing = true;
-      this.snapToTemporaryCircleOrEllipse = this.hitSEEllipses[0];
+      this.snapToTemporaryCircleOrEllipseOrParametric = this.hitSEEllipses[0];
+      this.snapToTemporaryPoint = null;
+      this.creating = Create.POLARLINE;
+      this.temporaryParentLineOrSegment = null;
+    } else if (this.hitSEParametrics.length > 0) {
+      this.hitSEParametrics[0].glowing = true;
+      this.snapToTemporaryCircleOrEllipseOrParametric = this.hitSEParametrics[0];
       this.snapToTemporaryPoint = null;
       this.creating = Create.POLARLINE;
       this.temporaryParentLineOrSegment = null;
     } else {
-      this.snapToTemporaryCircleOrEllipse = null;
+      this.snapToTemporaryCircleOrEllipseOrParametric = null;
       this.snapToTemporaryPoint = null;
       this.creating = Create.POLARLINE;
       this.temporaryParentLineOrSegment = null;
@@ -299,8 +320,8 @@ export default class PolarObjectHandler extends Highlighter {
           }
         }
         // the user is possibly adding polar line with the point on an object
-        else if (this.snapToTemporaryCircleOrEllipse !== null) {
-          this.temporaryPoint.positionVector = this.snapToTemporaryCircleOrEllipse.closestVector(
+        else if (this.snapToTemporaryCircleOrEllipseOrParametric !== null) {
+          this.temporaryPoint.positionVector = this.snapToTemporaryCircleOrEllipseOrParametric.closestVector(
             this.currentSphereVector
           );
         }
@@ -400,7 +421,7 @@ export default class PolarObjectHandler extends Highlighter {
     }
     this.temporaryPointAdded = false;
 
-    this.snapToTemporaryCircleOrEllipse = null;
+    this.snapToTemporaryCircleOrEllipseOrParametric = null;
     this.snapToTemporaryPoint = null;
   }
   activate(): void {

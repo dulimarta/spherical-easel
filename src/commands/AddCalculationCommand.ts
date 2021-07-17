@@ -2,10 +2,10 @@ import { Command } from "./Command";
 import { SEExpression } from "@/models/SEExpression";
 import { SENodule } from "@/models/SENodule";
 import { SECalculation } from "@/models/SECalculation";
-import { AddMeasurementCommand } from "./AddMeasurementCommand";
+import { AddExpressionCommand } from "./AddExpressionCommand";
 import { UpdateMode } from "@/types";
 
-export class AddCalculationCommand extends AddMeasurementCommand {
+export class AddCalculationCommand extends AddExpressionCommand {
   // private seExpression: SEExpression;
   private arithmeticExpression: string;
 
@@ -20,7 +20,6 @@ export class AddCalculationCommand extends AddMeasurementCommand {
     parents: SENodule[]
   ) {
     super(seExpression, parents);
-    // this.seExpression = seExpression;
     this.arithmeticExpression = arithmeticExpression;
   }
 
@@ -57,7 +56,7 @@ export class AddCalculationCommand extends AddMeasurementCommand {
       parents.push(objMap.get(name) as SENodule | undefined)
     );
     if (parents.every(seNodule => seNodule !== undefined)) {
-      objMap.set(tokens[1], calc);
+      objMap.set(tokens[0], calc);
       // Invoke "update" to trigger reevaluation of the expression
       // Otherwise, the value of the expressions is shown as ZERO
       calc.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });

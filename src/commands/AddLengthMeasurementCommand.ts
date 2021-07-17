@@ -1,11 +1,11 @@
 import { Command } from "./Command";
 import { SENodule } from "@/models/SENodule";
 import { SEExpression } from "@/models/SEExpression";
-import { AddMeasurementCommand } from "./AddMeasurementCommand";
+import { AddExpressionCommand } from "./AddExpressionCommand";
 import { SESegment } from "@/models/SESegment";
 import { SESegmentLength } from "@/models/SESegmentLength";
 
-export class AddLengthMeasurementCommand extends AddMeasurementCommand {
+export class AddLengthMeasurementCommand extends AddExpressionCommand {
   /**
    *
    * @param seExpression The measurement object being added

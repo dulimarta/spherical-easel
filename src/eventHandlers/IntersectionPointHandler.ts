@@ -13,6 +13,7 @@ import { SEEllipse } from "@/models/SEEllipse";
 
 import { SEStore } from "@/store";
 import { intersectTwoObjects } from "@/utils/intersections";
+import { SEParametric } from "@/models/SEParametric";
 export default class IntersectionPointHandler extends Highlighter {
   /**
    * The two objects to intersect
@@ -62,6 +63,8 @@ export default class IntersectionPointHandler extends Highlighter {
           this.oneDimensional1 = this.hitSECircles[0];
         } else if (this.hitSEEllipses.length > 0) {
           this.oneDimensional1 = this.hitSEEllipses[0];
+        } else if (this.hitSEParametrics.length > 0) {
+          this.oneDimensional1 = this.hitSEParametrics[0];
         }
         if (this.oneDimensional1 !== null) {
           this.oneDimensional1.selected = true;
@@ -81,6 +84,8 @@ export default class IntersectionPointHandler extends Highlighter {
           this.oneDimensional2 = this.hitSECircles[0];
         } else if (this.hitSEEllipses.length > 0) {
           this.oneDimensional2 = this.hitSEEllipses[0];
+        } else if (this.hitSEParametrics.length > 0) {
+          this.oneDimensional2 = this.hitSEParametrics[0];
         }
         if (this.oneDimensional2 !== null) {
           if (this.oneDimensional1.id !== this.oneDimensional2.id) {
@@ -128,6 +133,8 @@ export default class IntersectionPointHandler extends Highlighter {
       this.hitSECircles[0].glowing = true;
     } else if (this.hitSEEllipses.length > 0) {
       this.hitSEEllipses[0].glowing = true;
+    } else if (this.hitSEParametrics.length > 0) {
+      this.hitSEParametrics[0].glowing = true;
     }
   }
 
@@ -208,6 +215,15 @@ export default class IntersectionPointHandler extends Highlighter {
           this.updatedIntersectionInfo.push(element)
         );
       }
+      // Line parametric intersection
+      if (oneDimensional2 instanceof SEParametric) {
+        intersectTwoObjects(
+          oneDimensional1,
+          oneDimensional2
+        ).forEach((element: IntersectionReturnType) =>
+          this.updatedIntersectionInfo.push(element)
+        );
+      }
     }
 
     if (oneDimensional1 instanceof SESegment) {
@@ -249,6 +265,15 @@ export default class IntersectionPointHandler extends Highlighter {
       }
       // Segment ellipse intersection
       if (oneDimensional2 instanceof SEEllipse) {
+        intersectTwoObjects(
+          oneDimensional1,
+          oneDimensional2
+        ).forEach((element: IntersectionReturnType) =>
+          this.updatedIntersectionInfo.push(element)
+        );
+      }
+      // Segment parametric intersection
+      if (oneDimensional2 instanceof SEParametric) {
         intersectTwoObjects(
           oneDimensional1,
           oneDimensional2
@@ -305,6 +330,15 @@ export default class IntersectionPointHandler extends Highlighter {
           this.updatedIntersectionInfo.push(element)
         );
       }
+      // Circle parametric intersection
+      if (oneDimensional2 instanceof SEParametric) {
+        intersectTwoObjects(
+          oneDimensional2,
+          oneDimensional1
+        ).forEach((element: IntersectionReturnType) =>
+          this.updatedIntersectionInfo.push(element)
+        );
+      }
     }
 
     if (oneDimensional1 instanceof SEEllipse) {
@@ -338,6 +372,73 @@ export default class IntersectionPointHandler extends Highlighter {
 
       // Ellipse ellipse intersection
       if (oneDimensional2 instanceof SEEllipse) {
+        if (oneDimensional1.name < oneDimensional2.name) {
+          intersectTwoObjects(
+            oneDimensional1,
+            oneDimensional2
+          ).forEach((element: IntersectionReturnType) =>
+            this.updatedIntersectionInfo.push(element)
+          );
+        } else {
+          intersectTwoObjects(
+            oneDimensional2,
+            oneDimensional1
+          ).forEach((element: IntersectionReturnType) =>
+            this.updatedIntersectionInfo.push(element)
+          );
+        }
+      }
+      // Ellipse parametric intersection
+      if (oneDimensional2 instanceof SEParametric) {
+        intersectTwoObjects(
+          oneDimensional1,
+          oneDimensional2
+        ).forEach((element: IntersectionReturnType) =>
+          this.updatedIntersectionInfo.push(element)
+        );
+      }
+    }
+
+    if (oneDimensional1 instanceof SEParametric) {
+      // Parametric line intersection
+      if (oneDimensional2 instanceof SELine) {
+        intersectTwoObjects(
+          oneDimensional2,
+          oneDimensional1
+        ).forEach((element: IntersectionReturnType) =>
+          this.updatedIntersectionInfo.push(element)
+        );
+      }
+      // Parametric segment intersection
+      if (oneDimensional2 instanceof SESegment) {
+        intersectTwoObjects(
+          oneDimensional2,
+          oneDimensional1
+        ).forEach((element: IntersectionReturnType) =>
+          this.updatedIntersectionInfo.push(element)
+        );
+      }
+      // Parametric circle intersection
+      if (oneDimensional2 instanceof SECircle) {
+        intersectTwoObjects(
+          oneDimensional2,
+          oneDimensional1
+        ).forEach((element: IntersectionReturnType) =>
+          this.updatedIntersectionInfo.push(element)
+        );
+      }
+      // Parametric ellipse intersection
+      if (oneDimensional2 instanceof SEEllipse) {
+        intersectTwoObjects(
+          oneDimensional2,
+          oneDimensional1
+        ).forEach((element: IntersectionReturnType) =>
+          this.updatedIntersectionInfo.push(element)
+        );
+      }
+
+      // Parametric parametric intersection
+      if (oneDimensional2 instanceof SEParametric) {
         if (oneDimensional1.name < oneDimensional2.name) {
           intersectTwoObjects(
             oneDimensional1,

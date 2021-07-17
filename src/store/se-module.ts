@@ -33,16 +33,27 @@ import {
   intersectLineWithLine,
   intersectLineWithSegment,
   intersectLineWithCircle,
+  intersectLineWithEllipse,
+  intersectLineWithParametric,
   intersectSegmentWithSegment,
   intersectSegmentWithCircle,
-  intersectCircles,
-  intersectLineWithEllipse,
   intersectSegmentWithEllipse,
+  //intersectSegmentWithParametric,
+  intersectCircles,
   intersectCircleWithEllipse,
-  intersectEllipseWithEllipse
+  //intersectCircleWithParametric,
+  intersectEllipseWithEllipse,
+  intersectSegmentWithParametric,
+  intersectCircleWithParametric,
+  intersectEllipseWithParametric,
+  intersectParametricWithParametric
+  //intersectEllipseWithParametric,
+  //intersectParametrics
 } from "@/utils/intersections";
 import EventBus from "@/eventHandlers/EventBus";
 import { SEPolarLine } from "@/models/SEPolarLine";
+import { SEParametric } from "@/models/SEParametric";
+import Parametric from "@/plottables/Parametric";
 const tmpMatrix = new Matrix4();
 //const tmpVector = new Vector3();
 
@@ -89,6 +100,7 @@ export default class SE extends VuexModule implements AppState {
   seSegments: SESegment[] = []; // An array of all SESegments
   seCircles: SECircle[] = []; // An array of all SECircles
   seEllipses: SEEllipse[] = []; // An array of all SEEllipse
+  seParametrics: SEParametric[] = []; // An array of all SEParametric
   seAngleMarkers: SEAngleMarker[] = []; // An array of all SEAngleMarkers
   seLabels: SELabel[] = []; // An array of all SELabels
   temporaryNodules: Nodule[] = []; // An array of all Nodules that are temporary - created by the handlers.
@@ -120,6 +132,7 @@ export default class SE extends VuexModule implements AppState {
     this.seCircles.splice(0);
     this.seAngleMarkers.splice(0);
     this.seEllipses.splice(0);
+    this.seParametrics.splice(0);
     this.seLabels.splice(0);
     this.selectedSENodules.splice(0);
     this.intersections.splice(0);
@@ -326,6 +339,32 @@ export default class SE extends VuexModule implements AppState {
       this.hasUnsavedNodules = true;
     }
   }
+
+  @Mutation
+  addParametric(parametric: SEParametric): void {
+    this.seParametrics.push(parametric);
+    this.seNodules.push(parametric);
+    parametric.ref.addToLayers(this.layers);
+    this.hasUnsavedNodules = true;
+  }
+
+  @Mutation
+  removeParametric(parametricId: number): void {
+    const parametricPos = this.seParametrics.findIndex(
+      x => x.id === parametricId
+    );
+    const pos2 = this.seNodules.findIndex(x => x.id === parametricId);
+    if (parametricPos >= 0) {
+      /* victim line is found */
+      const victimParametric: SEParametric = this.seParametrics[parametricPos];
+      victimParametric.ref.removeFromLayers();
+      // victimParametric.removeSelfSafely();
+      this.seParametrics.splice(parametricPos, 1); // Remove the parametric from the list
+      this.seNodules.splice(pos2, 1);
+      this.hasUnsavedNodules = true;
+    }
+  }
+
   @Mutation
   addAngleMarkerAndExpression(angleMarker: SEAngleMarker): void {
     this.expressions.push(angleMarker);
@@ -404,6 +443,9 @@ export default class SE extends VuexModule implements AppState {
     });
     this.sePoints.forEach((p: SEPoint) => {
       p.accept(rotationVisitor); // Does no updating of the display
+    });
+    this.seParametrics.forEach((para: SEParametric) => {
+      para.accept(rotationVisitor); //update the display because the parametric do not depend on any other geometric objects
     });
     // now do the update of the free points so that display is correct
     this.sePoints.forEach((p: SEPoint) => {
@@ -809,6 +851,39 @@ export default class SE extends VuexModule implements AppState {
           }
         });
       });
+      //Intersect this new line with all old parametrics
+      this.seParametrics.forEach((oldParametric: SEParametric) => {
+        const intersectionInfo = intersectLineWithParametric(
+          newLine,
+          oldParametric
+        );
+        intersectionInfo.forEach((info, index) => {
+          if (
+            !avoidVectors.some(v =>
+              this.tempVec.subVectors(info.vector, v).isZero()
+            )
+          ) {
+            // info.vector is not on the avoidVectors array, so create an intersection
+            const newPt = new NonFreePoint();
+            newPt.stylize(DisplayStyle.ApplyTemporaryVariables);
+            newPt.adjustSize();
+            const newSEIntersectionPt = new SEIntersectionPoint(
+              newPt,
+              newLine,
+              oldParametric,
+              index,
+              false
+            );
+            newSEIntersectionPt.locationVector = info.vector;
+            newSEIntersectionPt.exists = info.exists;
+            intersectionPointList.push({
+              SEIntersectionPoint: newSEIntersectionPt,
+              parent1: newLine,
+              parent2: oldParametric
+            });
+          }
+        });
+      });
       return intersectionPointList;
     };
   }
@@ -962,7 +1037,39 @@ export default class SE extends VuexModule implements AppState {
           }
         });
       });
-
+      //Intersect this new segment with all old parametrics
+      this.seParametrics.forEach((oldParametric: SEParametric) => {
+        const intersectionInfo = intersectSegmentWithParametric(
+          newSegment,
+          oldParametric
+        );
+        intersectionInfo.forEach((info, index) => {
+          if (
+            !avoidVectors.some(v =>
+              this.tempVec.subVectors(info.vector, v).isZero()
+            )
+          ) {
+            // info.vector is not on the avoidVectors array, so create an intersection
+            const newPt = new NonFreePoint();
+            newPt.stylize(DisplayStyle.ApplyTemporaryVariables);
+            newPt.adjustSize();
+            const newSEIntersectionPt = new SEIntersectionPoint(
+              newPt,
+              newSegment,
+              oldParametric,
+              index,
+              false
+            );
+            newSEIntersectionPt.locationVector = info.vector;
+            newSEIntersectionPt.exists = info.exists;
+            intersectionPointList.push({
+              SEIntersectionPoint: newSEIntersectionPt,
+              parent1: newSegment,
+              parent2: oldParametric
+            });
+          }
+        });
+      });
       return intersectionPointList;
     };
   }
@@ -1118,6 +1225,41 @@ export default class SE extends VuexModule implements AppState {
           }
         });
       });
+
+      //Intersect this new circle with all old parametrics
+      this.seParametrics.forEach((oldParametric: SEParametric) => {
+        const intersectionInfo = intersectCircleWithParametric(
+          newCircle,
+          oldParametric
+        );
+        intersectionInfo.forEach((info, index) => {
+          if (
+            !avoidVectors.some(v =>
+              this.tempVec.subVectors(info.vector, v).isZero()
+            )
+          ) {
+            // info.vector is not on the avoidVectors array, so create an intersection
+            const newPt = new NonFreePoint();
+            newPt.stylize(DisplayStyle.ApplyTemporaryVariables);
+            newPt.adjustSize();
+            const newSEIntersectionPt = new SEIntersectionPoint(
+              newPt,
+              newCircle,
+              oldParametric,
+              index,
+              false
+            );
+            newSEIntersectionPt.locationVector = info.vector;
+            newSEIntersectionPt.exists = info.exists;
+            intersectionPointList.push({
+              SEIntersectionPoint: newSEIntersectionPt,
+              parent1: newCircle,
+              parent2: oldParametric
+            });
+          }
+        });
+      });
+
       return intersectionPointList;
     };
   }
@@ -1260,8 +1402,8 @@ export default class SE extends VuexModule implements AppState {
               newPt.adjustSize();
               const newSEIntersectionPt = new SEIntersectionPoint(
                 newPt,
-                newEllipse,
                 oldEllipse,
+                newEllipse,
                 index,
                 false
               );
@@ -1269,8 +1411,243 @@ export default class SE extends VuexModule implements AppState {
               newSEIntersectionPt.exists = info.exists;
               intersectionPointList.push({
                 SEIntersectionPoint: newSEIntersectionPt,
-                parent1: newEllipse,
-                parent2: oldEllipse
+                parent1: oldEllipse,
+                parent2: newEllipse
+              });
+            }
+          });
+        });
+
+      //Intersect this new ellipse with all old parametrics
+      this.seParametrics.forEach((oldParametric: SEParametric) => {
+        const intersectionInfo = intersectEllipseWithParametric(
+          newEllipse,
+          oldParametric
+        );
+        intersectionInfo.forEach((info, index) => {
+          if (
+            !avoidVectors.some(v =>
+              this.tempVec.subVectors(info.vector, v).isZero()
+            )
+          ) {
+            // info.vector is not on the avoidVectors array, so create an intersection
+            const newPt = new NonFreePoint();
+            newPt.stylize(DisplayStyle.ApplyTemporaryVariables);
+            newPt.adjustSize();
+            const newSEIntersectionPt = new SEIntersectionPoint(
+              newPt,
+              newEllipse,
+              oldParametric,
+              index,
+              false
+            );
+            newSEIntersectionPt.locationVector = info.vector;
+            newSEIntersectionPt.exists = info.exists;
+            intersectionPointList.push({
+              SEIntersectionPoint: newSEIntersectionPt,
+              parent1: newEllipse,
+              parent2: oldParametric
+            });
+          }
+        });
+      });
+
+      return intersectionPointList;
+    };
+  }
+
+  get createAllIntersectionsWithParametric(): (
+    _: SEParametric
+  ) => SEIntersectionReturnType[] {
+    return (newParametric: SEParametric): SEIntersectionReturnType[] => {
+      // Avoid creating an intersection where any SEPoint already exists
+      const avoidVectors: Vector3[] = [];
+      // First add the end points of the newParametric, if they are exist, then
+      //  they won't have been added to the state.points array yet so add them first
+      // Always screen for the zero vector
+      newParametric.endPoints.forEach(pt => {
+        if (!pt.locationVector.isZero()) {
+          avoidVectors.push(pt.locationVector);
+        }
+      });
+      this.sePoints.forEach(pt => {
+        if (!pt.locationVector.isZero()) {
+          avoidVectors.push(pt.locationVector);
+        }
+      });
+
+      // The intersectionPointList to return
+      const intersectionPointList: SEIntersectionReturnType[] = [];
+
+      // Intersect this new parametric with all old lines
+      this.seLines.forEach((oldLine: SELine) => {
+        const intersectionInfo = intersectLineWithParametric(
+          oldLine,
+          newParametric
+        );
+        intersectionInfo.forEach((info, index) => {
+          if (
+            !avoidVectors.some(v =>
+              this.tempVec.subVectors(info.vector, v).isZero()
+            )
+          ) {
+            // info.vector is not on the avoidVectors array, so create an intersection
+            const newPt = new NonFreePoint();
+            newPt.stylize(DisplayStyle.ApplyTemporaryVariables);
+            newPt.adjustSize();
+            const newSEIntersectionPt = new SEIntersectionPoint(
+              newPt,
+              oldLine,
+              newParametric,
+              index,
+              false
+            );
+            newSEIntersectionPt.locationVector = info.vector;
+            newSEIntersectionPt.exists = info.exists;
+            intersectionPointList.push({
+              SEIntersectionPoint: newSEIntersectionPt,
+              parent1: oldLine,
+              parent2: newParametric
+            });
+          }
+        });
+      });
+
+      // Intersect this new parametric with all old segments
+      this.seSegments.forEach((oldSegment: SESegment) => {
+        const intersectionInfo = intersectSegmentWithParametric(
+          oldSegment,
+          newParametric
+        );
+        intersectionInfo.forEach((info, index) => {
+          if (
+            !avoidVectors.some(v =>
+              this.tempVec.subVectors(info.vector, v).isZero()
+            )
+          ) {
+            // info.vector is not on the avoidVectors array, so create an intersection
+            const newPt = new NonFreePoint();
+            newPt.stylize(DisplayStyle.ApplyTemporaryVariables);
+            newPt.adjustSize();
+            const newSEIntersectionPt = new SEIntersectionPoint(
+              newPt,
+              oldSegment,
+              newParametric,
+              index,
+              false
+            );
+            newSEIntersectionPt.locationVector = info.vector;
+            newSEIntersectionPt.exists = info.exists;
+            intersectionPointList.push({
+              SEIntersectionPoint: newSEIntersectionPt,
+              parent1: oldSegment,
+              parent2: newParametric
+            });
+          }
+        });
+      });
+
+      // Intersect this new parametric with all old circles
+      this.seCircles.forEach((oldCircle: SECircle) => {
+        const intersectionInfo = intersectCircleWithParametric(
+          oldCircle,
+          newParametric
+        );
+        intersectionInfo.forEach((info, index) => {
+          if (
+            !avoidVectors.some(v =>
+              this.tempVec.subVectors(info.vector, v).isZero()
+            )
+          ) {
+            // info.vector is not on the avoidVectors array, so create an intersection
+            const newPt = new NonFreePoint();
+            newPt.stylize(DisplayStyle.ApplyTemporaryVariables);
+            newPt.adjustSize();
+            const newSEIntersectionPt = new SEIntersectionPoint(
+              newPt,
+              oldCircle,
+              newParametric,
+              index,
+              false
+            );
+            newSEIntersectionPt.locationVector = info.vector;
+            newSEIntersectionPt.exists = info.exists;
+            intersectionPointList.push({
+              SEIntersectionPoint: newSEIntersectionPt,
+              parent1: oldCircle,
+              parent2: newParametric
+            });
+          }
+        });
+      });
+
+      //Intersect this new parametric with all old ellipses
+      this.seEllipses.forEach((oldEllipse: SEEllipse) => {
+        const intersectionInfo = intersectEllipseWithParametric(
+          oldEllipse,
+          newParametric
+        );
+        intersectionInfo.forEach((info, index) => {
+          if (
+            !avoidVectors.some(v =>
+              this.tempVec.subVectors(info.vector, v).isZero()
+            )
+          ) {
+            // info.vector is not on the avoidVectors array, so create an intersection
+            const newPt = new NonFreePoint();
+            newPt.stylize(DisplayStyle.ApplyTemporaryVariables);
+            newPt.adjustSize();
+            const newSEIntersectionPt = new SEIntersectionPoint(
+              newPt,
+              oldEllipse,
+              newParametric,
+              index,
+              false
+            );
+            newSEIntersectionPt.locationVector = info.vector;
+            newSEIntersectionPt.exists = info.exists;
+            intersectionPointList.push({
+              SEIntersectionPoint: newSEIntersectionPt,
+              parent1: oldEllipse,
+              parent2: newParametric
+            });
+          }
+        });
+      });
+
+      //Intersect this new parametric with all old parametrics
+      this.seParametrics
+        .filter(
+          (parametric: SEParametric) => parametric.id !== newParametric.id
+        ) // ignore self
+        .forEach((oldParametric: SEParametric) => {
+          const intersectionInfo = intersectParametricWithParametric(
+            oldParametric,
+            newParametric
+          );
+          intersectionInfo.forEach((info, index) => {
+            if (
+              !avoidVectors.some(v =>
+                this.tempVec.subVectors(info.vector, v).isZero()
+              )
+            ) {
+              // info.vector is not on the avoidVectors array, so create an intersection
+              const newPt = new NonFreePoint();
+              newPt.stylize(DisplayStyle.ApplyTemporaryVariables);
+              newPt.adjustSize();
+              const newSEIntersectionPt = new SEIntersectionPoint(
+                newPt,
+                oldParametric,
+                newParametric,
+                index,
+                false
+              );
+              newSEIntersectionPt.locationVector = info.vector;
+              newSEIntersectionPt.exists = info.exists;
+              intersectionPointList.push({
+                SEIntersectionPoint: newSEIntersectionPt,
+                parent1: oldParametric,
+                parent2: newParametric
               });
             }
           });

@@ -2,7 +2,7 @@ import { Command } from "./Command";
 import { SENodule } from "@/models/SENodule";
 import { SEExpression } from "@/models/SEExpression";
 
-export abstract class AddMeasurementCommand extends Command {
+export abstract class AddExpressionCommand extends Command {
   protected seExpression: SEExpression;
   protected parents: SENodule[] = [];
   /**

@@ -19,6 +19,7 @@ export abstract class SENodule {
   public static ANGLEMARKER_COUNT = 0;
   public static EXPR_COUNT = 0;
   public static ELLIPSE_COUNT = 0;
+  public static PARAMETRIC_COUNT = 0;
   public static LABEL_COUNT = 0;
 
   static resetAllCounters(): void {
@@ -30,6 +31,7 @@ export abstract class SENodule {
     SENodule.CIRCLE_COUNT = 0;
     SENodule.EXPR_COUNT = 0;
     SENodule.ELLIPSE_COUNT = 0;
+    SENodule.PARAMETRIC_COUNT = 0;
     SENodule.LABEL_COUNT = 0;
   }
 
@@ -407,7 +409,7 @@ export abstract class SENodule {
   /**
    * A recursive method to implement the bisection method
    * @param f The continuous function whose zero we want to compute
-   * t1< t2 and f(t1)*f(t2)<0
+   * t1 < t2 and f(t1)*f(t2)<0
    * @param t1
    * @param t2
    * @returns
@@ -469,56 +471,86 @@ export abstract class SENodule {
     const returnVectors: Vector3[] = [];
     zeros.forEach(tVal => {
       const temp = new Vector3();
+      // console.log(
+      //   "tval and pprime",
+      //   tVal,
+      //   temp.copy(PPrime(tVal).normalize()).x,
+      //   temp.copy(PPrime(tVal).normalize()).y,
+      //   temp.copy(PPrime(tVal).normalize()).z
+      // );
       returnVectors.push(temp.copy(PPrime(tVal).normalize()));
     });
-    return returnVectors;
+    // console.log(
+    //   "returnVectors list 0",
+    //   returnVectors.length,
+    //   returnVectors[1].x,
+    //   returnVectors[1].y,
+    //   returnVectors[1].z
+    // );
+    // don't return any zero vectors, the derivative being zero leads to a zero, but not a perpendicular
+    return returnVectors.filter(vec => !vec.isZero(SETTINGS.tolerance));
   }
 
   public static findZerosParametrically(
     f: (t: number) => number,
     tMin: number,
-    tMax: number,
+    tMax: number, // if the curve is closed, don't use tMax but tMax - (1 / SETTINGS.parameterization.subdivisions) * (tMax - tMin)
     fPrime?: (t: number) => number
   ): number[] {
     // now we need to find all the places that d changes sign so we know where to start Newton's method
     const signChanges = [];
+    const zeros: number[] = [];
+
     let tVal: number;
     let lastTVal = tMin;
+    if (Math.abs(f(tMin)) < SETTINGS.tolerance / 1000) {
+      zeros.push(tMin);
+      // console.log("Actual zero! tMin", tMin, f(tMin));
+    }
+
     for (let i = 1; i < SETTINGS.parameterization.subdivisions + 1; i++) {
       tVal =
         tMin + (i / SETTINGS.parameterization.subdivisions) * (tMax - tMin);
-      if (f(tVal) * f(lastTVal) < 0) {
+      if (Math.abs(f(tVal)) < SETTINGS.tolerance / 1000) {
+        zeros.push(tVal);
+        // console.log("Actual zero!", tVal, f(tVal));
+      } else if (f(tVal) * f(lastTVal) < 0) {
+        // console.log("sign Change", tVal, f(tVal));
         signChanges.push([lastTVal, tVal]);
       }
+
       lastTVal = tVal;
     }
-    if (signChanges.length === 0) {
+    // if (zeros.length > 0) {
+    //   console.log("number of zeros", zeros.length);
+    // }
+    if (signChanges.length === 0 && zeros.length === 0) {
       // console.log("No sign changes; No zeros");
       return [];
     }
 
-    const zeros: number[] = [];
     signChanges.forEach(interval => {
       // Bisection Method
-      // const zeroTVal = SENodule.bisection(d, interval[0], interval[1]);
-      // zeros.push(zeroTVal as number);
+      const zeroTVal = SENodule.bisection(f, interval[0], interval[1]);
+      zeros.push(zeroTVal as number);
 
       // Newton's Method
-      const zeroTVal: number | boolean = newton(
-        f,
-        fPrime,
-        (interval[0] + interval[1]) / 2
-        // { verbose: true }
-      );
-      if (
-        zeroTVal !== false &&
-        interval[0] < zeroTVal &&
-        zeroTVal < interval[1]
-      ) {
-        zeros.push(zeroTVal as number);
-      } else {
-        console.log("Newton's method failed to converge in interval");
-      }
+      // const zeroTVal: number | boolean = newton(
+      //   f,
+      //   fPrime,
+      //   (interval[0] + interval[1]) / 2
+      //   // { verbose: true }
+      // );
+
+      // if (
+      //   zeroTVal !== false &&
+      //   interval[0] <= zeroTVal &&
+      //   zeroTVal <= interval[1]
+      // ) {
+      //   zeros.push(zeroTVal as number);
+      // } else {
+      //   console.log("Newton's method failed to converge in interval");
+      // }
     });
     return zeros;
   }

@@ -3,7 +3,7 @@ import { SEPoint } from "./SEPoint";
 import { SEStore } from "@/store";
 import { Matrix4, Vector3 } from "three";
 import { Styles } from "@/types/Styles";
-import { UpdateMode, UpdateStateType } from "@/types";
+import { ExpressionState, UpdateMode, UpdateStateType } from "@/types";
 import i18n from "@/i18n";
 
 export enum CoordinateSelection {
@@ -14,7 +14,7 @@ export enum CoordinateSelection {
 const emptySet = new Set<Styles>();
 export class SEPointCoordinate extends SEExpression {
   private selector = CoordinateSelection.X_VALUE;
-  private point: SEPoint;
+  readonly point: SEPoint;
 
   /**
    * Temporary matrix and vector so that can compute the location of the point with out all the rotations
@@ -52,21 +52,24 @@ export class SEPointCoordinate extends SEExpression {
         return String(
           i18n.t(`objectTree.coordinateOf`, {
             axisName: String(i18n.t(`objectTree.x`)),
-            pt: this.point.label?.ref.shortUserName
+            pt: this.point.label?.ref.shortUserName,
+            val: this.value
           })
         );
       case CoordinateSelection.Y_VALUE:
         return String(
           i18n.t(`objectTree.coordinateOf`, {
             axisName: String(i18n.t(`objectTree.y`)),
-            pt: this.point.label?.ref.shortUserName
+            pt: this.point.label?.ref.shortUserName,
+            val: this.value
           })
         );
       case CoordinateSelection.Z_VALUE:
         return String(
           i18n.t(`objectTree.coordinateOf`, {
             axisName: String(i18n.t(`objectTree.z`)),
-            pt: this.point.label?.ref.shortUserName
+            pt: this.point.label?.ref.shortUserName,
+            val: this.value
           })
         );
     }
@@ -79,6 +82,7 @@ export class SEPointCoordinate extends SEExpression {
           i18n.t(`objectTree.coordOf`, {
             token: this.name,
             axisName: String(i18n.t(`objectTree.x`)),
+            pt: this.point.label?.ref.shortUserName,
             val: this.prettyValue
           })
         );
@@ -87,6 +91,7 @@ export class SEPointCoordinate extends SEExpression {
           i18n.t(`objectTree.coordOf`, {
             token: this.name,
             axisName: String(i18n.t(`objectTree.y`)),
+            pt: this.point.label?.ref.shortUserName,
             val: this.prettyValue
           })
         );
@@ -95,6 +100,7 @@ export class SEPointCoordinate extends SEExpression {
           i18n.t(`objectTree.coordOf`, {
             token: this.name,
             axisName: String(i18n.t(`objectTree.z`)),
+            pt: this.point.label?.ref.shortUserName,
             val: this.prettyValue
           })
         );
@@ -104,15 +110,21 @@ export class SEPointCoordinate extends SEExpression {
   }
 
   public update(state: UpdateStateType): void {
-    if (state.mode !== UpdateMode.DisplayOnly) return;
+    // This object and any of its children has no presence on the sphere canvas, so update for move should
+    if (state.mode === UpdateMode.RecordStateForMove) return;
+    // This object is completely determined by its parents, so only record the object in state array
+    if (state.mode == UpdateMode.RecordStateForDelete) {
+      const expressionState: ExpressionState = {
+        kind: "expression",
+        object: this
+      };
+      state.stateArray.push(expressionState);
+    }
     if (!this.canUpdateNow()) return;
     // When this updates send its value to the label
-    // There is only one label but three coordinate measures so for only one of them update the label value
-    if (this.selector === CoordinateSelection.X_VALUE) {
-      this.tmpVector
-        .copy(this.point.locationVector)
-        .applyMatrix4(this.invMatrix);
-      this.point.label!.ref.value = [
+    this.tmpVector.copy(this.point.locationVector).applyMatrix4(this.invMatrix);
+    if (this.point.label) {
+      this.point.label.ref.value = [
         this.tmpVector.x,
         this.tmpVector.y,
         this.tmpVector.z

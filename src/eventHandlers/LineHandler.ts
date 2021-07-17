@@ -159,6 +159,17 @@ export default class LineHandler extends Highlighter {
         );
         this.temporaryStartMarker.positionVector = this.startVector;
         this.startSEPoint = null;
+      } else if (this.hitSEParametrics.length > 0) {
+        // The start of the line will be a point on a ellipse
+        //  Eventually, we will create a new SEPointOneDimensional and Point
+        this.startSEPointOneDimensionalParent = this.hitSEParametrics[0];
+        this.startVector.copy(
+          this.startSEPointOneDimensionalParent.closestVector(
+            this.currentSphereVector
+          )
+        );
+        this.temporaryStartMarker.positionVector = this.startVector;
+        this.startSEPoint = null;
       } else {
         // The mouse press is not near an existing point or one dimensional object.
         //  Record the location in a temporary point (startMarker found in MouseHandler).
@@ -239,6 +250,19 @@ export default class LineHandler extends Highlighter {
       } else {
         this.snapStartMarkerToTemporaryOneDimensional = null;
         this.snapEndMarkerToTemporaryOneDimensional = this.hitSEEllipses[0];
+        this.snapStartMarkerToTemporaryPoint = null;
+        this.snapEndMarkerToTemporaryPoint = null;
+      }
+    } else if (this.hitSEParametrics.length > 0) {
+      this.hitSEParametrics[0].glowing = true;
+      if (!this.startLocationSelected) {
+        this.snapStartMarkerToTemporaryOneDimensional = this.hitSEParametrics[0];
+        this.snapEndMarkerToTemporaryOneDimensional = null;
+        this.snapStartMarkerToTemporaryPoint = null;
+        this.snapEndMarkerToTemporaryPoint = null;
+      } else {
+        this.snapStartMarkerToTemporaryOneDimensional = null;
+        this.snapEndMarkerToTemporaryOneDimensional = this.hitSEParametrics[0];
         this.snapStartMarkerToTemporaryPoint = null;
         this.snapEndMarkerToTemporaryPoint = null;
       }
@@ -585,7 +609,7 @@ export default class LineHandler extends Highlighter {
           )
         );
       } else if (this.hitSEEllipses.length > 0) {
-        // The end of the line will be a point on a circle
+        // The end of the line will be a point on a ellipse
         vtx = new SEPointOnOneDimensional(newEndPoint, this.hitSEEllipses[0]);
         // Set the Location
         vtx.locationVector = this.hitSEEllipses[0].closestVector(
@@ -597,6 +621,25 @@ export default class LineHandler extends Highlighter {
           new AddPointOnOneDimensionalCommand(
             vtx as SEPointOnOneDimensional,
             this.hitSEEllipses[0],
+            newSELabel
+          )
+        );
+      } else if (this.hitSEParametrics.length > 0) {
+        // The end of the line will be a point on a parametric
+        vtx = new SEPointOnOneDimensional(
+          newEndPoint,
+          this.hitSEParametrics[0]
+        );
+        // Set the Location
+        vtx.locationVector = this.hitSEParametrics[0].closestVector(
+          this.currentSphereVector
+        );
+        newSELabel = new SELabel(newLabel, vtx);
+
+        lineGroup.addCommand(
+          new AddPointOnOneDimensionalCommand(
+            vtx as SEPointOnOneDimensional,
+            this.hitSEParametrics[0],
             newSELabel
           )
         );
