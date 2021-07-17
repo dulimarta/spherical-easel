@@ -4,7 +4,11 @@ import { Vector3, Vector2, Matrix4 } from "three";
 import Two from "two.js";
 import SETTINGS, { LAYER } from "@/global-settings";
 import Nodule, { DisplayStyle } from "./Nodule";
-import { StyleOptions, StyleEditPanels } from "@/types/Styles";
+import {
+  StyleOptions,
+  StyleEditPanels,
+  DEFAULT_ELLIPSE_FRONT_STYLE
+} from "@/types/Styles";
 import AppStore from "@/store";
 import { SENodule } from "@/models/SENodule";
 import { namespace } from "vuex-class";
@@ -798,110 +802,35 @@ export default class Parametric extends Nodule {
    * Two.js objects (with adjustSize and stylize(ApplyVariables))
    * @param options The style options
    */
-  updateStyle(options: StyleOptions): void {
-    console.debug("Circle Update style of Parametric using", options);
-    if (options.panel === StyleEditPanels.Front) {
-      // Set the front options
-      if (options.strokeWidthPercent !== undefined) {
-        this.strokeWidthPercentFront = options.strokeWidthPercent;
-      }
-
-      if (options.strokeColor !== undefined) {
-        this.strokeColorFront = options.strokeColor;
-      }
-      if (options.dashArray !== undefined) {
-        this.dashArrayFront.clear();
-        for (let i = 0; i < options.dashArray.length; i++) {
-          this.dashArrayFront.push(options.dashArray[i]);
-        }
-      }
-    } else if (options.panel == StyleEditPanels.Back) {
-      // Set the back options
-      // options.dynamicBackStyle is boolean, so we need to explicitly check for undefined otherwise
-      // when it is false, this doesn't execute and this.dynamicBackStyle is not set
-      if (options.dynamicBackStyle !== undefined) {
-        this.dynamicBackStyle = options.dynamicBackStyle;
-      }
-      // overwrite the back options only in the case the dynamic style is not enabled
-      if (!this.dynamicBackStyle) {
-        if (options.strokeWidthPercent !== undefined) {
-          this.strokeWidthPercentBack = options.strokeWidthPercent;
-        }
-        if (options.strokeColor !== undefined) {
-          this.strokeColorBack = options.strokeColor;
-        }
-        if (options.dashArray !== undefined) {
-          // clear the dashArray
-          this.dashArrayBack.clear();
-          for (let i = 0; i < options.dashArray.length; i++) {
-            this.dashArrayBack.push(options.dashArray[i]);
-          }
-        }
-      }
+  updateStyle(mode: StyleEditPanels, options: StyleOptions): void {
+    console.debug("Parametric Update style of Parametric using", options);
+    if (mode === StyleEditPanels.Front || mode == StyleEditPanels.Back) {
+      const currentOptions = this.styleOptions.get(mode);
+      this.styleOptions.set(mode, { ...currentOptions, ...options });
+      // Now apply the style and size
+      this.stylize(DisplayStyle.ApplyCurrentVariables);
+      this.adjustSize();
     }
-    // Now apply the style and size
-    this.stylize(DisplayStyle.ApplyCurrentVariables);
-    this.adjustSize();
   }
 
   /**
    * Return the current style state
    */
   currentStyleState(panel: StyleEditPanels): StyleOptions {
-    switch (panel) {
-      case StyleEditPanels.Front: {
-        const dashArrayFront = [] as number[];
-        if (this.dashArrayFront.length > 0) {
-          this.dashArrayFront.forEach(v => dashArrayFront.push(v));
-        }
-        return {
-          panel: panel,
-          strokeWidthPercent: this.strokeWidthPercentFront,
-          strokeColor: this.strokeColorFront,
-          dashArray: dashArrayFront
-        };
-      }
-      case StyleEditPanels.Back: {
-        const dashArrayBack = [] as number[];
-        if (this.dashArrayBack.length > 0) {
-          this.dashArrayBack.forEach(v => dashArrayBack.push(v));
-        }
-        return {
-          panel: panel,
-          strokeWidthPercent: this.strokeWidthPercentBack,
-          strokeColor: this.strokeColorBack,
-          dashArray: dashArrayBack,
-          dynamicBackStyle: this.dynamicBackStyle
-        };
-      }
-      default:
-      case StyleEditPanels.Label: {
-        return {
-          panel: panel
-        };
-      }
+    if (panel === StyleEditPanels.Front || panel === StyleEditPanels.Back) {
+      return this.styleOptions.get(panel)!;
+    } else {
+      return {};
     }
   }
+
   /**
    * Return the default style state
    */
   defaultStyleState(panel: StyleEditPanels): StyleOptions {
     switch (panel) {
-      case StyleEditPanels.Front: {
-        const dashArrayFront = [] as number[];
-        if (SETTINGS.parametric.drawn.dashArray.front.length > 0) {
-          SETTINGS.parametric.drawn.dashArray.front.forEach(v =>
-            dashArrayFront.push(v)
-          );
-        }
-        return {
-          panel: panel,
-          strokeWidthPercent: 100,
-          fillColor: SETTINGS.parametric.drawn.fillColor.front,
-          strokeColor: SETTINGS.parametric.drawn.strokeColor.front,
-          dashArray: dashArrayFront
-        };
-      }
+      case StyleEditPanels.Front:
+        return DEFAULT_ELLIPSE_FRONT_STYLE;
       case StyleEditPanels.Back: {
         const dashArrayBack = [] as number[];
 
@@ -911,8 +840,6 @@ export default class Parametric extends Nodule {
           );
         }
         return {
-          panel: panel,
-
           strokeWidthPercent: SETTINGS.parametric.dynamicBackStyle
             ? Nodule.contrastStrokeWidthPercent(100)
             : 100,
@@ -936,9 +863,7 @@ export default class Parametric extends Nodule {
       }
       default:
       case StyleEditPanels.Label: {
-        return {
-          panel: panel
-        };
+        return {};
       }
     }
   }

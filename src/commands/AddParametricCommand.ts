@@ -1,8 +1,7 @@
 import { Command } from "./Command";
-import { SEPoint } from "@/models/SEPoint";
 import { SELabel } from "@/models/SELabel";
 import { SENodule } from "@/models/SENodule";
-import { Matrix4, Vector3 } from "three";
+import { Vector3 } from "three";
 import { DisplayStyle } from "@/plottables/Nodule";
 import Label from "@/plottables/Label";
 import SETTINGS from "@/global-settings";
@@ -10,7 +9,6 @@ import { SEParametric } from "@/models/SEParametric";
 import Parametric from "@/plottables/Parametric";
 import { SEExpression } from "@/models/SEExpression";
 import {
-  AppState,
   UpdateMode,
   CoordExpression,
   MinMaxExpression,

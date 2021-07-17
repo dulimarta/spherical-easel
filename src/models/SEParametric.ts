@@ -6,7 +6,6 @@ import { Visitable } from "@/visitors/Visitable";
 import { Visitor } from "@/visitors/Visitor";
 import { EllipseState, OneDimensional, ParametricState } from "@/types";
 import SETTINGS from "@/global-settings";
-import { Styles } from "@/types/Styles";
 import { UpdateMode, UpdateStateType, CircleState } from "@/types";
 import { Labelable } from "@/types";
 import { SELabel } from "@/models/SELabel";
@@ -15,12 +14,14 @@ import { SEStore } from "@/store";
 import i18n from "@/i18n";
 import Parametric from "@/plottables/Parametric";
 import { SEParametricEndPoint } from "./SEParametricEndPoint";
+import {
+  DEFAULT_PARAMETRIC_BACK_STYLE,
+  DEFAULT_PARAMETRIC_FRONT_STYLE
+} from "@/types/Styles";
 
 const styleSet = new Set([
-  Styles.strokeColor,
-  Styles.strokeWidthPercent,
-  Styles.dashArray,
-  Styles.dynamicBackStyle
+  ...Object.getOwnPropertyNames(DEFAULT_PARAMETRIC_FRONT_STYLE),
+  ...Object.getOwnPropertyNames(DEFAULT_PARAMETRIC_BACK_STYLE)
 ]);
 export class SEParametric extends SENodule
   implements Visitable, OneDimensional, Labelable {
@@ -83,7 +84,7 @@ export class SEParametric extends SENodule
     this.name = `Pa${SEParametric.PARAMETRIC_COUNT}`;
   }
 
-  customStyles(): Set<Styles> {
+  customStyles(): Set<string> {
     return styleSet;
   }
 

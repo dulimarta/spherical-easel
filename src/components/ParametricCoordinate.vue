@@ -37,7 +37,7 @@
 <script lang="ts">
 import Vue from "vue";
 import Component from "vue-class-component";
-import { AppState, UpdateMode } from "@/types";
+import { AppState } from "@/types";
 import { Prop } from "vue-property-decorator";
 import { SEExpression } from "@/models/SEExpression";
 import { ExpressionParser } from "@/expression/ExpressionParser";

@@ -160,3 +160,16 @@ export const DEFAULT_LABEL_BACK_STYLE: Partial<StyleOptions> = {
   fillColor: SETTINGS.label.fillColor.front,
   dynamicBackStyle: SETTINGS.label.dynamicBackStyle
 };
+
+export const DEFAULT_PARAMETRIC_FRONT_STYLE: StyleOptions = {
+  strokeColor: SETTINGS.parametric.drawn.strokeColor.front,
+  strokeWidthPercent: 100,
+  dashArray: SETTINGS.parametric.drawn.dashArray.front
+};
+
+export const DEFAULT_PARAMETRIC_BACK_STYLE: StyleOptions = {
+  dynamicBackStyle: SETTINGS.parametric.dynamicBackStyle,
+  strokeColor: SETTINGS.parametric.drawn.strokeColor.back,
+  strokeWidthPercent: 100,
+  dashArray: SETTINGS.parametric.drawn.dashArray.back
+};
