@@ -1,30 +1,30 @@
 import i18n from "@/i18n";
 import { TranslateResult } from "vue-i18n";
 
-enum TokenType {
-  PLUS,
-  MINUS,
-  // UNARY_MINUS,
-  MULT,
-  DIV,
-  POW,
-  NUMBER,
-  MEASUREMENT,
-  LEFT_PAREN,
+export enum TokenType {
+  /* 0 */ PLUS,
+  /* 1 */ MINUS,
+  /* 2 */ MULT,
+  /* 3 */ DIV,
+  /* 4 */ POW,
+  /* 5 */ NUMBER,
+  /* 6 */ MEASUREMENT,
+  /* 7 */ LEFT_PAREN,
   RIGHT_PAREN,
   MATH_BUILTIN,
   COMMA,
   UNKNOWN,
   EOF
+  // UNARY_MINUS,
 }
 
 type Lexicon = {
   kind: TokenType;
-  text: string;
+  text?: string;
   numericValue?: number;
 };
 
-type SyntaxTree = {
+export type SyntaxTree = {
   node: Lexicon;
 
   // left and right for binary operators
@@ -170,11 +170,9 @@ class Lexer {
         // intended as a binary multiplication
         if (this.nextChar.done) {
           this.curr = { kind: TokenType.MULT, text: "*" };
-          yield this.curr;
         } else if (this.nextChar.value === "*") {
           this.nextChar = this.iterator.next();
           this.curr = { kind: TokenType.POW, text: "**" };
-          yield this.curr; // Exponentiation
         } else this.curr = { kind: TokenType.MULT, text: "*" };
         yield this.curr;
       } else if (this.nextChar.value === "/") {
@@ -366,7 +364,134 @@ export class ExpressionParser {
     if (token.value.kind === TokenType.EOF) return out;
     else throw new SyntaxError(`Unexpected token at '${token.value.text}'`);
   }
+  static readonly NOT_DEFINED: SyntaxTree = {
+    node: { kind: TokenType.UNKNOWN, text: "0", numericValue: 0 }
+  };
 
+  static differentiate(
+    input: SyntaxTree | undefined,
+    varName: string
+  ): SyntaxTree {
+    if (!input) return ExpressionParser.NOT_DEFINED;
+    switch (input.node.kind) {
+      case TokenType.NUMBER: // Diff of constant is ZERO
+        return {
+          node: { kind: TokenType.NUMBER, text: "0", numericValue: 0 }
+        };
+      case TokenType.MEASUREMENT:
+        if (input.node.text === varName)
+          return {
+            node: { kind: TokenType.NUMBER, text: "1", numericValue: 1 }
+          };
+        else
+          return {
+            node: { kind: TokenType.NUMBER, text: "0", numericValue: 0 }
+          };
+
+      case TokenType.PLUS:
+      case TokenType.MINUS: {
+        const leftDiff = this.differentiate(input.leftChild, varName);
+        const rightDiff = this.differentiate(input.rightChild, varName);
+        return {
+          node: { kind: input.node.kind, text: "" },
+          leftChild: leftDiff,
+          rightChild: rightDiff
+        };
+      }
+      case TokenType.MULT: {
+        // diff(f(x) g(x)) = diff(f(x)) g(x) + f(x) diff(g(x))
+        const fDiff = this.differentiate(input.leftChild, varName);
+        const gDiff = this.differentiate(input.rightChild, varName);
+        const firstTerm: SyntaxTree = {
+          node: {
+            kind: TokenType.MULT
+          },
+          leftChild: fDiff,
+          rightChild: input.rightChild
+        };
+        const secondTerm: SyntaxTree = {
+          node: {
+            kind: TokenType.MULT
+          },
+          leftChild: input.leftChild,
+          rightChild: gDiff
+        };
+        return {
+          node: { kind: TokenType.PLUS },
+          leftChild: firstTerm,
+          rightChild: secondTerm
+        };
+      }
+      case TokenType.DIV: {
+        // diff(f(x)/ g(x)) = [diff(f(x)) g(x) - f(x) diff(g(x))] / g(x)*g(x)
+        const fDiff = this.differentiate(input.leftChild, varName);
+        const gDiff = this.differentiate(input.rightChild, varName);
+        const numerator: SyntaxTree = {
+          node: {
+            kind: TokenType.MINUS
+          },
+          leftChild: {
+            node: { kind: TokenType.MULT },
+            leftChild: fDiff,
+            rightChild: input.rightChild
+          },
+          rightChild: {
+            node: { kind: TokenType.MULT },
+            leftChild: input.leftChild,
+            rightChild: gDiff
+          }
+        };
+        const denominator: SyntaxTree = {
+          node: {
+            kind: TokenType.MULT
+          },
+          leftChild: input.rightChild,
+          rightChild: input.rightChild
+        };
+        return {
+          node: { kind: TokenType.DIV },
+          leftChild: numerator,
+          rightChild: denominator
+        };
+      }
+      case TokenType.POW: {
+        // diff (f^N) = N * f^(N-1) * diff(f)
+        if (input.rightChild?.node.kind !== TokenType.NUMBER)
+          throw new Error("Can't handle non-numeric exponents");
+        const fDiff = this.differentiate(input.leftChild, varName);
+        const expo = input.rightChild.node.numericValue ?? 1;
+        const N: SyntaxTree = {
+          node: {
+            kind: TokenType.NUMBER,
+            numericValue: input.rightChild.node.numericValue
+          }
+        };
+        const fPower: SyntaxTree = {
+          node: { kind: TokenType.POW },
+          leftChild: input.leftChild,
+          rightChild: {
+            node: { kind: TokenType.NUMBER, numericValue: expo - 1 }
+          }
+        };
+        // Return the product of the three terms above
+        return {
+          node: { kind: TokenType.MULT },
+          leftChild: N,
+          rightChild: {
+            node: { kind: TokenType.MULT },
+            leftChild: fPower,
+            rightChild: fDiff
+          }
+        };
+      }
+      default:
+        throw new Error(
+          `Unhandled token type ${TokenType[input.node.kind]} ${
+            input.node.text
+          }`
+        );
+    }
+  }
   /** Recursive evaluation of the syntax tree
    * The post order traversal of the syntax tree makes the leaves
    * the highest precedence expressions
