@@ -282,29 +282,24 @@ export default class Point extends Nodule {
       case StyleEditPanels.Front:
         return DEFAULT_POINT_FRONT_STYLE;
 
-      case StyleEditPanels.Back: {
-        return {
-          pointRadiusPercent: SETTINGS.point.dynamicBackStyle
-            ? Nodule.contrastPointRadiusPercent(
-                SETTINGS.point.radiusPercent.front
-              )
-            : SETTINGS.point.radiusPercent.back,
+      case StyleEditPanels.Back:
+        if (SETTINGS.point.dynamicBackStyle)
+          return {
+            ...DEFAULT_POINT_BACK_STYLE,
+            pointRadiusPercent: Nodule.contrastPointRadiusPercent(
+              SETTINGS.point.radiusPercent.front
+            ),
+            strokeColor: Nodule.contrastStrokeColor(
+              SETTINGS.point.drawn.strokeColor.front
+            ),
+            fillColor: Nodule.contrastFillColor(
+              SETTINGS.point.drawn.fillColor.front
+            )
+          };
+        else return DEFAULT_POINT_BACK_STYLE;
 
-          strokeColor: SETTINGS.point.dynamicBackStyle
-            ? Nodule.contrastStrokeColor(SETTINGS.point.drawn.strokeColor.front)
-            : SETTINGS.point.drawn.strokeColor.back,
-
-          fillColor: SETTINGS.point.dynamicBackStyle
-            ? Nodule.contrastFillColor(SETTINGS.point.drawn.fillColor.front)
-            : SETTINGS.point.drawn.fillColor.back,
-
-          dynamicBackStyle: SETTINGS.point.dynamicBackStyle
-        };
-      }
       default:
-      case StyleEditPanels.Label: {
         return {};
-      }
     }
   }
   /**

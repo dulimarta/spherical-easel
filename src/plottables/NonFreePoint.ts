@@ -6,7 +6,8 @@ import Nodule, { DisplayStyle } from "./Nodule";
 import {
   StyleOptions,
   StyleEditPanels,
-  DEFAULT_NONFREEPOINT_FRONT_STYLE
+  DEFAULT_NONFREEPOINT_FRONT_STYLE,
+  DEFAULT_POINT_BACK_STYLE
 } from "@/types/Styles";
 import Point from "@/plottables/Point";
 
@@ -65,29 +66,22 @@ export default class NonFreePoint extends Point {
     switch (panel) {
       case StyleEditPanels.Front:
         return DEFAULT_NONFREEPOINT_FRONT_STYLE;
-      case StyleEditPanels.Back: {
-        return {
-          pointRadiusPercent: SETTINGS.point.dynamicBackStyle
-            ? Nodule.contrastPointRadiusPercent(100)
-            : 100,
+      case StyleEditPanels.Back:
+        if (SETTINGS.point.dynamicBackStyle)
+          return {
+            ...DEFAULT_POINT_BACK_STYLE,
+            pointRadiusPercent: Nodule.contrastPointRadiusPercent(100),
+            strokeColor: Nodule.contrastStrokeColor(
+              SETTINGS.point.nonFree.strokeColor.front
+            ),
+            fillColor: Nodule.contrastFillColor(
+              SETTINGS.point.nonFree.fillColor.front
+            )
+          };
+        else return DEFAULT_POINT_BACK_STYLE;
 
-          strokeColor: SETTINGS.point.dynamicBackStyle
-            ? Nodule.contrastStrokeColor(
-                SETTINGS.point.nonFree.strokeColor.front
-              )
-            : SETTINGS.point.nonFree.strokeColor.back,
-
-          fillColor: SETTINGS.point.dynamicBackStyle
-            ? Nodule.contrastFillColor(SETTINGS.point.nonFree.fillColor.front)
-            : SETTINGS.point.nonFree.fillColor.back,
-
-          dynamicBackStyle: SETTINGS.point.dynamicBackStyle
-        };
-      }
       default:
-      case StyleEditPanels.Label: {
         return {};
-      }
     }
   }
   /**

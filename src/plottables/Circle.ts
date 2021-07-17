@@ -939,38 +939,21 @@ export default class Circle extends Nodule {
       case StyleEditPanels.Front:
         return DEFAULT_CIRCLE_FRONT_STYLE;
 
-      case StyleEditPanels.Back: {
-        const dashArrayBack = [] as number[];
-
-        if (SETTINGS.circle.drawn.dashArray.back.length > 0) {
-          SETTINGS.circle.drawn.dashArray.back.forEach(v =>
-            dashArrayBack.push(v)
-          );
-        }
-        return {
-          strokeWidthPercent: SETTINGS.circle.dynamicBackStyle
-            ? Nodule.contrastStrokeWidthPercent(100)
-            : 100,
-
-          strokeColor: SETTINGS.circle.dynamicBackStyle
-            ? Nodule.contrastStrokeColor(
-                SETTINGS.circle.drawn.strokeColor.front
-              )
-            : SETTINGS.circle.drawn.strokeColor.back,
-
-          fillColor: SETTINGS.circle.dynamicBackStyle
-            ? Nodule.contrastFillColor(SETTINGS.circle.drawn.fillColor.front)
-            : SETTINGS.circle.drawn.fillColor.back,
-
-          dashArray: dashArrayBack,
-
-          dynamicBackStyle: SETTINGS.circle.dynamicBackStyle
-        };
-      }
+      case StyleEditPanels.Back:
+        if (SETTINGS.circle.dynamicBackStyle) {
+          return {
+            ...DEFAULT_CIRCLE_BACK_STYLE,
+            strokeWidthPercent: Nodule.contrastStrokeWidthPercent(100),
+            strokeColor: Nodule.contrastStrokeColor(
+              SETTINGS.circle.drawn.strokeColor.front
+            ),
+            fillColor: Nodule.contrastFillColor(
+              SETTINGS.circle.drawn.fillColor.front
+            )
+          };
+        } else return DEFAULT_CIRCLE_BACK_STYLE;
       default:
-      case StyleEditPanels.Label: {
         return {};
-      }
     }
   }
 

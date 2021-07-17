@@ -1083,38 +1083,22 @@ export default class Ellipse extends Nodule {
     switch (panel) {
       case StyleEditPanels.Front:
         return DEFAULT_ELLIPSE_FRONT_STYLE;
-      case StyleEditPanels.Back: {
-        const dashArrayBack = [] as number[];
+      case StyleEditPanels.Back:
+        if (SETTINGS.ellipse.dynamicBackStyle)
+          return {
+            ...DEFAULT_ELLIPSE_BACK_STYLE,
+            strokeWidthPercent: Nodule.contrastStrokeWidthPercent(100),
+            strokeColor: Nodule.contrastStrokeColor(
+              SETTINGS.ellipse.drawn.strokeColor.front
+            ),
+            fillColor: Nodule.contrastFillColor(
+              SETTINGS.ellipse.drawn.fillColor.front
+            )
+          };
+        else return DEFAULT_ELLIPSE_BACK_STYLE;
 
-        if (SETTINGS.ellipse.drawn.dashArray.back.length > 0) {
-          SETTINGS.ellipse.drawn.dashArray.back.forEach(v =>
-            dashArrayBack.push(v)
-          );
-        }
-        return {
-          strokeWidthPercent: SETTINGS.ellipse.dynamicBackStyle
-            ? Nodule.contrastStrokeWidthPercent(100)
-            : 100,
-
-          strokeColor: SETTINGS.ellipse.dynamicBackStyle
-            ? Nodule.contrastStrokeColor(
-                SETTINGS.ellipse.drawn.strokeColor.front
-              )
-            : SETTINGS.ellipse.drawn.strokeColor.back,
-
-          fillColor: SETTINGS.ellipse.dynamicBackStyle
-            ? Nodule.contrastFillColor(SETTINGS.ellipse.drawn.fillColor.front)
-            : SETTINGS.ellipse.drawn.fillColor.back,
-
-          dashArray: dashArrayBack,
-
-          dynamicBackStyle: SETTINGS.ellipse.dynamicBackStyle
-        };
-      }
       default:
-      case StyleEditPanels.Label: {
         return {};
-      }
     }
   }
 

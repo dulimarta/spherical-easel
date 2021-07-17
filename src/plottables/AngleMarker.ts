@@ -2670,40 +2670,22 @@ export default class AngleMarker extends Nodule {
     switch (panel) {
       case StyleEditPanels.Front:
         return DEFAULT_ANGLE_MARKER_FRONT_STYLE;
-      case StyleEditPanels.Back: {
-        const dashArrayBack = [] as number[];
+      case StyleEditPanels.Back:
+        if (SETTINGS.angleMarker.dynamicBackStyle) {
+          return {
+            ...DEFAULT_ANGLE_MARKER_BACK_STYLE,
+            strokeWidthPercent: Nodule.contrastStrokeWidthPercent(100),
+            strokeColor: Nodule.contrastStrokeColor(
+              SETTINGS.angleMarker.drawn.strokeColor.front
+            ),
+            fillColor: Nodule.contrastStrokeColor(
+              SETTINGS.angleMarker.drawn.fillColor.front
+            )
+          };
+        } else return DEFAULT_ANGLE_MARKER_BACK_STYLE;
 
-        if (SETTINGS.angleMarker.drawn.dashArray.back.length > 0) {
-          SETTINGS.angleMarker.drawn.dashArray.back.forEach(v =>
-            dashArrayBack.push(v)
-          );
-        }
-        return {
-          strokeWidthPercent: SETTINGS.angleMarker.dynamicBackStyle
-            ? Nodule.contrastStrokeWidthPercent(100)
-            : 100,
-
-          strokeColor: SETTINGS.angleMarker.dynamicBackStyle
-            ? Nodule.contrastStrokeColor(
-                SETTINGS.angleMarker.drawn.strokeColor.front
-              )
-            : SETTINGS.angleMarker.drawn.strokeColor.back,
-
-          fillColor: SETTINGS.angleMarker.dynamicBackStyle
-            ? Nodule.contrastFillColor(
-                SETTINGS.angleMarker.drawn.fillColor.front
-              )
-            : SETTINGS.angleMarker.drawn.fillColor.back,
-
-          dashArray: dashArrayBack,
-
-          dynamicBackStyle: SETTINGS.angleMarker.dynamicBackStyle
-        };
-      }
       default:
-      case StyleEditPanels.Label: {
         return {};
-      }
     }
   }
   /**

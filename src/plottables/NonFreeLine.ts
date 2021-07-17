@@ -53,47 +53,22 @@ export default class NonFreeLine extends Line {
    */
   defaultStyleState(panel: StyleEditPanels): StyleOptions {
     switch (panel) {
-      case StyleEditPanels.Front: {
-        const dashArrayFront = [] as number[];
-        if (SETTINGS.line.nonFree.dashArray.front.length > 0) {
-          SETTINGS.line.nonFree.dashArray.front.forEach(v =>
-            dashArrayFront.push(v)
-          );
-        }
-        return {
-          strokeWidthPercent: 100,
-          strokeColor: SETTINGS.line.nonFree.strokeColor.front,
-          dashArray: dashArrayFront
-        };
-      }
-      case StyleEditPanels.Back: {
-        const dashArrayBack = [] as number[];
+      case StyleEditPanels.Front:
+        return DEFAULT_NONFREE_LINE_FRONT_STYLE;
 
-        if (SETTINGS.line.nonFree.dashArray.back.length > 0) {
-          SETTINGS.line.nonFree.dashArray.back.forEach(v =>
-            dashArrayBack.push(v)
-          );
-        }
-        return {
-          strokeWidthPercent: SETTINGS.line.dynamicBackStyle
-            ? Nodule.contrastStrokeWidthPercent(100)
-            : 100,
+      case StyleEditPanels.Back:
+        if (SETTINGS.line.dynamicBackStyle)
+          return {
+            ...DEFAULT_NONFREE_LINE_BACK_STYLE,
+            strokeWidthPercent: Nodule.contrastStrokeWidthPercent(100),
+            strokeColor: Nodule.contrastStrokeColor(
+              SETTINGS.line.nonFree.strokeColor.front
+            )
+          };
+        else return DEFAULT_NONFREE_LINE_BACK_STYLE;
 
-          strokeColor: SETTINGS.line.dynamicBackStyle
-            ? Nodule.contrastStrokeColor(
-                SETTINGS.line.nonFree.strokeColor.front
-              )
-            : SETTINGS.line.nonFree.strokeColor.back,
-
-          dashArray: dashArrayBack,
-
-          dynamicBackStyle: SETTINGS.line.dynamicBackStyle
-        };
-      }
       default:
-      case StyleEditPanels.Label: {
         return {};
-      }
     }
   }
   /**

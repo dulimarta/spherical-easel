@@ -505,7 +505,7 @@ Upon <span class="method">setXXXSelectorState()</span> method being executed, th
 The big picture idea is that to update the display of an object. The
 
 ```ts
-updateStyle(options: StyleOptions): void</span>
+updateStyle(mode: StyleEditPanels, options: StyleOptions): void</span>
 ```
 
 method records the new style choices in the variables of the plottable class. Then the
@@ -518,7 +518,7 @@ this.adjustSize();
 commands apply the newly updated variables to the actual TwoJS objects so that they are rendered to the screen. This way the current style state of the plottable is readable with the
 
 ```ts
-currentStyleState(front: boolean): StyleOptions {
+currentStyleState(mode: StyleEditPanels): StyleOptions {
 ```
 
 method which returns the current value of each style variable.

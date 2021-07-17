@@ -366,49 +366,19 @@ export default class Line extends Nodule {
   defaultStyleState(panel: StyleEditPanels): StyleOptions {
     switch (panel) {
       case StyleEditPanels.Front:
-        return DEFAULT_LINE_FRONT_STYLE; /*{
-        const dashArrayFront = [] as number[];
-        if (SETTINGS.line.drawn.dashArray.front.length > 0) {
-          SETTINGS.line.drawn.dashArray.front.forEach(v =>
-            dashArrayFront.push(v)
-          );
-        }
-        return {
-          panel: panel,
-          strokeWidthPercent: 100,
-          strokeColor: SETTINGS.line.drawn.strokeColor.front,
-          dashArray: dashArrayFront
-        };
-      }*/
+        return DEFAULT_LINE_FRONT_STYLE;
       case StyleEditPanels.Back:
-        return DEFAULT_LINE_BACK_STYLE; /*{
-        const dashArrayBack = [] as number[];
-
-        if (SETTINGS.line.drawn.dashArray.back.length > 0) {
-          SETTINGS.line.drawn.dashArray.back.forEach(v =>
-            dashArrayBack.push(v)
-          );
-        }
-        return {
-          panel: panel,
-
-          strokeWidthPercent: SETTINGS.line.dynamicBackStyle
-            ? Nodule.contrastStrokeWidthPercent(100)
-            : 100,
-
-          strokeColor: SETTINGS.line.dynamicBackStyle
-            ? Nodule.contrastStrokeColor(SETTINGS.line.drawn.strokeColor.front)
-            : SETTINGS.line.drawn.strokeColor.back,
-
-          dashArray: dashArrayBack,
-
-          dynamicBackStyle: SETTINGS.line.dynamicBackStyle
-        };
-      }*/
+        if (SETTINGS.line.dynamicBackStyle)
+          return {
+            ...DEFAULT_LINE_BACK_STYLE,
+            strokeWidthPercent: Nodule.contrastStrokeWidthPercent(100),
+            strokeColor: Nodule.contrastStrokeColor(
+              SETTINGS.line.drawn.strokeColor.front
+            )
+          };
+        else return DEFAULT_LINE_BACK_STYLE;
       default:
-      case StyleEditPanels.Label: {
         return {};
-      }
     }
   }
   /**
