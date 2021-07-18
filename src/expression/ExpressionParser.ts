@@ -456,6 +456,7 @@ export class ExpressionParser {
       }
       case TokenType.POW: {
         // diff (f^N) = N * f^(N-1) * diff(f)
+        // diff(f(x)^g(x)) = f(x)^g(x) * diff(g(x)) * ln(f(x)) + f(x)^(g(x)-1) * g(x) * diff(f(x))
         if (input.rightChild?.node.kind !== TokenType.NUMBER)
           throw new Error("Can't handle non-numeric exponents");
         const fDiff = this.differentiate(input.leftChild, varName);
@@ -483,6 +484,274 @@ export class ExpressionParser {
             rightChild: fDiff
           }
         };
+      }
+      case TokenType.MATH_BUILTIN: {
+        const args = input.args!;
+        switch (input.node.text) {
+          // Multi-arg functions
+          // case "max":
+          //   return; // TOO Ugly! https://math.stackexchange.com/questions/1237239/what-is-the-derivative-of-max-and-min-functions/1237244
+          // case "min":
+          //   return; // TOO Ugly!
+
+          // // Binary functions
+          // case "atan2":
+          //   return; // No need for this. Not doing partial derivatives
+
+          // Unary functions
+          case "abs": {
+            //We are going to ignore the fact that this derivative is undefined at various values
+            // diff(abs(f(x)))= diff(f(x))*f(x)/abs(f(x))
+            const fDiff = this.differentiate(args[0], varName);
+            //return the triple
+            return {
+              node: { kind: TokenType.MULT },
+              leftChild: fDiff,
+              rightChild: {
+                node: { kind: TokenType.DIV },
+                leftChild: args[0],
+                rightChild: input
+              }
+            };
+          }
+          case "acos": {
+            // diff(acos(f(x))) = -1*diff(f(x))/sqrt(1-f(x)*f(x))
+            const minusOne: SyntaxTree = {
+              node: {
+                kind: TokenType.NUMBER,
+                text: "-1",
+                numericValue: -1
+              }
+            };
+            const fxsquared: SyntaxTree = {
+              node: {
+                kind: TokenType.MULT
+              },
+              leftChild: args[0],
+              rightChild: args[0]
+            };
+            const oneMinusfxsquared: SyntaxTree = {
+              node: { kind: TokenType.MINUS },
+              leftChild: {
+                node: {
+                  kind: TokenType.NUMBER,
+                  text: "1",
+                  numericValue: 1
+                }
+              },
+              rightChild: fxsquared
+            };
+            const sqrtTerm: SyntaxTree = {
+              node: {
+                kind: TokenType.MATH_BUILTIN,
+                text: "sqrt"
+              },
+              args: [oneMinusfxsquared]
+            };
+            const fDiff = this.differentiate(args[0], varName);
+            //return the triple
+            return {
+              node: { kind: TokenType.MULT },
+              leftChild: minusOne,
+              rightChild: {
+                node: { kind: TokenType.DIV },
+                leftChild: fDiff,
+                rightChild: sqrtTerm
+              }
+            };
+          }
+          case "asin": {
+            // diff(asin(f(x))) = diff(f(x))/sqrt(1-f(x)*f(x))
+            const fxsquared: SyntaxTree = {
+              node: {
+                kind: TokenType.MULT
+              },
+              leftChild: args[0],
+              rightChild: args[0]
+            };
+            const oneMinusfxsquared: SyntaxTree = {
+              node: { kind: TokenType.MINUS },
+              leftChild: {
+                node: {
+                  kind: TokenType.NUMBER,
+                  text: "1",
+                  numericValue: 1
+                }
+              },
+              rightChild: fxsquared
+            };
+            const sqrtTerm: SyntaxTree = {
+              node: {
+                kind: TokenType.MATH_BUILTIN,
+                text: "sqrt"
+              },
+              args: [oneMinusfxsquared]
+            };
+            const fDiff = this.differentiate(args[0], varName);
+            //return the triple
+            return {
+              node: { kind: TokenType.DIV },
+              leftChild: fDiff,
+              rightChild: sqrtTerm
+            };
+          }
+          case "atan": {
+            // diff(atan(f(x))) = diff(f(x))/(1+f(x)*f(x))
+            const fxsquared: SyntaxTree = {
+              node: {
+                kind: TokenType.MULT
+              },
+              leftChild: args[0],
+              rightChild: args[0]
+            };
+            const onePlusfxsquared: SyntaxTree = {
+              node: { kind: TokenType.PLUS },
+              leftChild: {
+                node: {
+                  kind: TokenType.NUMBER,
+                  text: "1",
+                  numericValue: 1
+                }
+              },
+              rightChild: fxsquared
+            };
+
+            const fDiff = this.differentiate(args[0], varName);
+            //return the triple
+            return {
+              node: { kind: TokenType.DIV },
+              leftChild: fDiff,
+              rightChild: onePlusfxsquared
+            };
+          }
+          case "ceil":
+            //We are going to ignore the fact that the derivative at integer values is undefined
+            return {
+              node: {
+                kind: TokenType.NUMBER,
+                text: "0",
+                numericValue: 0
+              }
+            };
+          case "cos": {
+            // diff(cos(f(x))) = -1*sin(f(x))*diff(f(x))
+            const minusOne: SyntaxTree = {
+              node: {
+                kind: TokenType.NUMBER,
+                text: "-1",
+                numericValue: -1
+              }
+            };
+            const sinfx: SyntaxTree = {
+              node: {
+                kind: TokenType.MATH_BUILTIN,
+                text: "sin"
+              },
+              args: [args[0]]
+            };
+            const fDiff = this.differentiate(args[0], varName);
+            //return the triple product
+            return {
+              node: { kind: TokenType.MULT },
+              leftChild: minusOne,
+              rightChild: {
+                node: { kind: TokenType.MULT },
+                leftChild: sinfx,
+                rightChild: fDiff
+              }
+            };
+          }
+          case "exp": {
+            // diff(e^(f(x))) = e^(f(x))*diff(f(x))
+            const fDiff = this.differentiate(args[0], varName);
+            //return the product
+            return {
+              node: { kind: TokenType.MULT },
+              leftChild: input,
+              rightChild: fDiff
+            };
+          }
+          case "floor":
+            //We are going to ignore the fact that the derivative at integer values is undefined
+            return {
+              node: {
+                kind: TokenType.NUMBER,
+                text: "0",
+                numericValue: 0
+              }
+            };
+          case "ln": {
+            // diff(ln(f(x))) = diff(f(x))/f(x)
+            const fDiff = this.differentiate(args[0], varName);
+            //return the product
+            return {
+              node: { kind: TokenType.DIV },
+              leftChild: fDiff,
+              rightChild: args[0]
+            };
+          }
+          case "sin": {
+            // diff(sin(f(x))) = cos(f(x))*diff(f(x))
+            const cosfx: SyntaxTree = {
+              node: {
+                kind: TokenType.MATH_BUILTIN,
+                text: "cos"
+              },
+              args: [args[0]]
+            };
+            const fDiff = this.differentiate(args[0], varName);
+            //return the product
+            return {
+              node: { kind: TokenType.MULT },
+              leftChild: cosfx,
+              rightChild: fDiff
+            };
+          }
+          case "sqrt": {
+            // diff(sqrt(f(x))) = diff(f(x))/(2*sqrt(f(x)))
+            const two: SyntaxTree = {
+              node: {
+                kind: TokenType.NUMBER,
+                text: "2",
+                numericValue: 2
+              }
+            };
+            const fDiff = this.differentiate(args[0], varName);
+            //return the triple
+            return {
+              node: { kind: TokenType.DIV },
+              leftChild: fDiff,
+              rightChild: {
+                node: { kind: TokenType.MULT },
+                leftChild: two,
+                rightChild: input
+              }
+            };
+          }
+          case "tan": {
+            // diff(tan(f(x))) = sec(f(x))*sec(f(x))*diff(f(x)) = diff(f(x))/(cos(f(x))*cos(f(x)))
+            const cosfx: SyntaxTree = {
+              node: {
+                kind: TokenType.MATH_BUILTIN,
+                text: "cos"
+              },
+              args: [args[0]]
+            };
+            const fDiff = this.differentiate(args[0], varName);
+            //return the triple
+            return {
+              node: { kind: TokenType.DIV },
+              leftChild: fDiff,
+              rightChild: {
+                node: { kind: TokenType.MULT },
+                leftChild: cosfx,
+                rightChild: cosfx
+              }
+            };
+          }
+          default:
+            throw new SyntaxError(`Unknown math builtin ${input.node.text}`);
+        }
       }
       default:
         throw new Error(
@@ -541,7 +810,7 @@ export class ExpressionParser {
             case "abs":
               return Math.abs(valueOf(args[0]));
             case "acos":
-              return Math.acosh(valueOf(args[0]));
+              return Math.acos(valueOf(args[0]));
             case "asin":
               return Math.asin(valueOf(args[0]));
             case "atan":
