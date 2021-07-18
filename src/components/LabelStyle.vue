@@ -32,90 +32,99 @@
       </OverlayWithFixButton>
 
       <!-- Label Text Selections -->
-      <v-text-field v-model="labelDisplayText"
-        v-bind:label="$t('style.labelText')"
-        :counter="maxLabelDisplayTextLength"
-        filled
-        outlined
-        dense
-        v-bind:error-messages="$t(labelDisplayTextErrorMessageKey, { max: maxLabelDisplayTextLength })"
-        :rules="[labelDisplayTextCheck]"
-        @keyup="setlabelDisplayTextChange(); onLabelStyleDataChanged()"
-        @blur="setlabelDisplayTextChange(); onLabelStyleDataChanged()"
-        @change="setlabelDisplayTextChange(); onLabelStyleDataChanged()">
-      </v-text-field>
-
-      <!-- Label Caption Selections (only if more label style selected) -->
-      <div v-show="showMoreLabelStyles">
-        <v-text-field v-model="labelDisplayCaption"
-          v-bind:label="$t('style.labelCaption')"
-          :counter="maxLabelDisplayCaptionLength"
+      <div v-if="activeStyleOptions">
+        <v-text-field v-model.lazy="activeStyleOptions.labelDisplayText"
+          v-bind:label="$t('style.labelText')"
+          :counter="maxLabelDisplayTextLength"
           filled
           outlined
           dense
-          v-bind:error-messages="$t(labelDisplayCaptionErrorMessageKey, { max: maxLabelDisplayCaptionLength })"
-          :rules="[labelDisplayCaptionCheck]"
-          @keyup="setlabelDisplayCaptionChange(); onLabelStyleDataChanged()"
-          @blur="setlabelDisplayCaptionChange(); onLabelStyleDataChanged()"
-          @change="setlabelDisplayCaptionChange(); onLabelStyleDataChanged()">
+          v-bind:error-messages="$t(labelDisplayTextErrorMessageKey, { max: maxLabelDisplayTextLength })"
+          :rules="[labelDisplayTextCheck]">
         </v-text-field>
-      </div>
+        <!-- Label Caption Selections (only if more label style selected) -->
+        <div v-show="showMoreLabelStyles">
+          <v-text-field
+            v-model.lazy="activeStyleOptions.labelDisplayCaption"
+            v-bind:label="$t('style.labelCaption')"
+            :counter="maxLabelDisplayCaptionLength"
+            filled
+            outlined
+            dense
+            v-bind:error-messages="$t(labelDisplayCaptionErrorMessageKey, { max: maxLabelDisplayCaptionLength })"
+            :rules="[labelDisplayCaptionCheck]">
+          </v-text-field>
+        </div>
 
-      <!-- Label Diplay Mode Selections -->
-      <v-select v-model="labelDisplayMode"
-        :class="showMoreLabelStyles ? '' : 'pa-0'"
-        v-bind:label="$t('style.labelDisplayMode')"
-        :items="labelDisplayModeValueFilter(labelDisplayModeItems)"
-        filled
-        outlined
-        dense
-        @blur="setlabelDisplayModeChange(); onLabelStyleDataChanged()"
-        @change="setlabelDisplayModeChange(); onLabelStyleDataChanged()">
-      </v-select>
-
-      <!-- Label Text Family Selections (only if more label style selected) -->
-      <div v-show="showMoreLabelStyles">
-        <v-select v-model="labelTextFamily"
-          v-bind:label="$t('style.labelTextFamily')"
-          :items="labelTextFamilyItems"
+        <!-- Label Diplay Mode Selections -->
+        <v-select v-model.lazy="activeStyleOptions.labelDisplayMode"
+          :class="showMoreLabelStyles ? '' : 'pa-0'"
+          v-bind:label="$t('style.labelDisplayMode')"
+          :items="labelDisplayModeValueFilter(labelDisplayModeItems)"
           filled
           outlined
-          dense
-          @blur="setlabelTextFamilyChange(); onLabelStyleDataChanged()"
-          @change="setlabelTextFamilyChange(); onLabelStyleDataChanged()">
+          dense>
         </v-select>
-      </div>
 
-      <!-- Label Text Style Selections (only if more label style selected) -->
-      <div v-show="showMoreLabelStyles">
-        <v-select v-model="labelTextStyle"
-          v-bind:label="$t('style.labelTextStyle')"
-          :items="labelTextStyleItems"
-          filled
-          outlined
-          dense
-          @blur="setlabelTextStyleChange(); onLabelStyleDataChanged()"
-          @change="setlabelTextStyleChange(); onLabelStyleDataChanged()">
-        </v-select>
-      </div>
+        <!-- Label Text Family Selections (only if more label style selected) -->
+        <div v-show="showMoreLabelStyles">
+          <v-select v-model.lazy="activeStyleOptions.labelTextFamily"
+            v-bind:label="$t('style.labelTextFamily')"
+            :items="labelTextFamilyItems"
+            filled
+            outlined
+            dense>
+          </v-select>
+        </div>
 
-      <!-- Label Text Decoration Selections (only if more label style selected) -->
-      <div v-show="showMoreLabelStyles">
-        <v-select v-model="labelTextDecoration"
-          v-bind:label="$t('style.labelTextDecoration')"
-          :items="labelTextDecorationItems"
-          filled
-          outlined
-          dense
-          @blur="setlabelTextDecorationChange(); onLabelStyleDataChanged()"
-          @change="setlabelTextDecorationChange(); onLabelStyleDataChanged()">
-        </v-select>
-      </div>
+        <!-- Label Text Style Selections (only if more label style selected) -->
+        <div v-show="showMoreLabelStyles">
+          <v-select v-model.lazy="activeStyleOptions.labelTextStyle"
+            v-bind:label="$t('style.labelTextStyle')"
+            :items="labelTextStyleItems"
+            filled
+            outlined
+            dense>
+          </v-select>
+        </div>
 
-      <!-- Undo and Reset to Defaults buttons -->
+        <!-- Label Text Decoration Selections (only if more label style selected) -->
+        <div v-show="showMoreLabelStyles">
+          <v-select v-model.lazy="activeStyleOptions.labelTextDecoration"
+            v-bind:label="$t('style.labelTextDecoration')"
+            :items="labelTextDecorationItems"
+            filled
+            outlined
+            dense>
+          </v-select>
+        </div>
+      </div>
       <v-container class="pa-0 ma-0">
-        <v-row justify="end"
-          no-gutters>
+        <v-row no-gutters>
+          <v-col cols="auto">
+            <v-tooltip bottom
+              :open-delay="toolTipOpenDelay"
+              :close-delay="toolTipCloseDelay"
+              max-width="400px"
+              class="pa-0 pm-0">
+              <template v-slot:activator="{on}">
+                <v-btn v-on="on"
+                  @click="toggleShowMoreLabelStyles"
+                  class="text-subtitle-2"
+                  text
+                  plain
+                  ripple
+                  x-small>
+                  <v-icon v-if="showMoreLabelStyles">mdi-chevron-up
+                  </v-icon>
+                  <v-icon v-else>mdi-chevron-down </v-icon>
+                </v-btn>
+              </template>
+              {{$t('style.toggleStyleOptionsToolTip')}}
+            </v-tooltip>
+          </v-col>
+          <v-spacer />
+          <!-- Undo and Reset to Defaults buttons -->
           <v-col cols="2"
             class="ma-0 pl-0 pr-0 pt-0 pb-2">
             <HintButton @click="clearStyleData"
@@ -140,91 +149,70 @@
     </fade-in-card>
 
     <!-- Label Text Scale Number Selector-->
-    <fade-in-card
-      :showWhen="hasLabelTextScalePercent && showMoreLabelStyles">
-      <NumberSelector id="textScalePercentSlider"
-        v-bind:data.sync="labelTextScalePercent"
-        style-name="labelTextScalePercent"
-        title-key="style.labelTextScalePercent"
-        panel-front-key="style.front"
-        panel-back-key="style.back"
-        v-bind:min-value="minLabelTextScalePercent"
-        v-bind:max-value="maxLabelTextScalePercent"
-        v-bind:step="20"
-        :temp-style-states="tempStyleStates"
-        :panel="panel"
-        :active-panel="activePanel"
-        :thumb-string-values="textScaleSelectorThumbStrings"
-        :use-dynamic-back-style-from-selector="false">
-      </NumberSelector>
-    </fade-in-card>
+    <div v-if="activeStyleOptions && showMoreLabelStyles">
+      <fade-in-card :showWhen="hasLabelTextScalePercent">
+        <NumberSelector id="textScalePercentSlider"
+          v-bind:data.sync="activeStyleOptions.labelTextScalePercent"
+          style-name="labelTextScalePercent"
+          title-key="style.labelTextScalePercent"
+          panel-front-key="style.front"
+          panel-back-key="style.back"
+          v-bind:min-value="minLabelTextScalePercent"
+          v-bind:max-value="maxLabelTextScalePercent"
+          v-bind:step="20"
+          :temp-style-states="tempStyleStates"
+          :panel="panel"
+          :active-panel="activePanel"
+          :thumb-string-values="textScaleSelectorThumbStrings"
+          :use-dynamic-back-style-from-selector="false">
+        </NumberSelector>
+      </fade-in-card>
 
-    <!-- Label Text Rotation Number Selector-->
-    <fade-in-card :showWhen="hasLabelTextRotation && showMoreLabelStyles">
-      <NumberSelector id="labelTextRotationSlider"
-        v-bind:data.sync="labelTextRotation"
-        style-name="labelTextRotation"
-        title-key="style.labelTextRotation"
-        v-bind:min-value="-3.14159"
-        v-bind:max-value="3.14159"
-        v-bind:step="0.39269875"
-        :temp-style-states="tempStyleStates"
-        :panel="panel"
-        :active-panel="activePanel"
-        :thumb-string-values="textRotationSelectorThumbStrings"
-        :use-dynamic-back-style-from-selector="false">
-      </NumberSelector>
-    </fade-in-card>
+      <!-- Label Text Rotation Number Selector-->
+      <fade-in-card :showWhen="hasLabelTextRotation">
+        <NumberSelector id="labelTextRotationSlider"
+          v-bind:data.sync="activeStyleOptions.labelTextRotation"
+          style-name="labelTextRotation"
+          title-key="style.labelTextRotation"
+          v-bind:min-value="-3.14159"
+          v-bind:max-value="3.14159"
+          v-bind:step="0.39269875"
+          :temp-style-states="tempStyleStates"
+          :panel="panel"
+          :active-panel="activePanel"
+          :thumb-string-values="textRotationSelectorThumbStrings"
+          :use-dynamic-back-style-from-selector="false">
+        </NumberSelector>
+      </fade-in-card>
 
-    <!-- Label Front Fill Color Selector -->
-    <fade-in-card
-      :showWhen="hasLabelFrontFillColor && showMoreLabelStyles">
+      <!-- Label Front Fill Color Selector -->
+      <fade-in-card :showWhen="hasLabelFrontFillColor">
 
-      <ColorSelector title-key="style.labelFrontFillColor"
-        panel-front-key=""
-        panel-back-key=""
-        style-name="labelFrontFillColor"
-        :data.sync="hslaLabelFrontFillColorObject"
-        :temp-style-states="tempStyleStates"
-        :panel="panel"
-        :active-panel="activePanel"
-        :use-dynamic-back-style-from-selector="false"></ColorSelector>
-    </fade-in-card>
+        <ColorSelector title-key="style.labelFrontFillColor"
+          panel-front-key=""
+          panel-back-key=""
+          style-name="labelFrontFillColor"
+          :data.sync="hslaLabelFrontFillColorObject"
+          :temp-style-states="tempStyleStates"
+          :panel="panel"
+          :active-panel="activePanel"
+          :use-dynamic-back-style-from-selector="false"></ColorSelector>
+      </fade-in-card>
 
-    <!-- Label Back Fill Color Selector : -->
-    <fade-in-card :showWhen="hasLabelBackFillColor&& showMoreLabelStyles">
-      <ColorSelector title-key="style.labelBackFillColor"
-        panel-front-key="style.front"
-        panel-back-key="style.back"
-        style-name="labelBackFillColor"
-        :data.sync="hslaLabelBackFillColorObject"
-        :temp-style-states="tempStyleStates"
-        :panel="panel"
-        :active-panel="activePanel"
-        :use-dynamic-back-style-from-selector="true"></ColorSelector>
-    </fade-in-card>
-
+      <!-- Label Back Fill Color Selector : -->
+      <fade-in-card :showWhen="hasLabelBackFillColor">
+        <ColorSelector title-key="style.labelBackFillColor"
+          panel-front-key="style.front"
+          panel-back-key="style.back"
+          style-name="labelBackFillColor"
+          :data.sync="hslaLabelBackFillColorObject"
+          :temp-style-states="tempStyleStates"
+          :panel="panel"
+          :active-panel="activePanel"
+          :use-dynamic-back-style-from-selector="true"></ColorSelector>
+      </fade-in-card>
+    </div>
     <!-- Show more or less styling options -->
-    <v-tooltip bottom
-      :open-delay="toolTipOpenDelay"
-      :close-delay="toolTipCloseDelay"
-      max-width="400px"
-      class="pa-0 pm-0">
-      <template v-slot:activator="{on}">
-        <v-btn v-on="on"
-          @click="toggleShowMoreLabelStyles"
-          class="text-subtitle-2"
-          text
-          plain
-          ripple
-          x-small>
-          <v-icon v-if="showMoreLabelStyles">mdi-chevron-up
-          </v-icon>
-          <v-icon v-else>mdi-chevron-down </v-icon>
-        </v-btn>
-      </template>
-      {{$t('style.toggleStyleOptionsToolTip')}}
-    </v-tooltip>
 
   </div>
 
@@ -250,6 +238,8 @@ import i18n from "../i18n";
 import HintButton from "@/components/HintButton.vue";
 import OverlayWithFixButton from "@/components/OverlayWithFixButton.vue";
 import { SEStore } from "@/store";
+import { SELabel } from "@/models/SELabel";
+import Label from "@/plottables/Label";
 const SE = namespace("se");
 
 // import UI from "@/store/ui-styles";
@@ -296,7 +286,7 @@ export default class LabelStyle extends Vue {
    * These help with redo/redo
    */
   private currentStyleStates: StyleOptions[] = [];
-
+  private selectedLabels: Label[] = [];
   private toolTipOpenDelay = SETTINGS.toolTip.openDelay;
   private toolTipCloseDelay = SETTINGS.toolTip.closeDelay;
   /**
@@ -306,7 +296,6 @@ export default class LabelStyle extends Vue {
    * is display in a different way than the usual default.
    */
 
-  private labelTextScalePercent: number | undefined = 100;
   private maxLabelTextScalePercent = SETTINGS.style.maxLabelTextScalePercent;
   private minLabelTextScalePercent = SETTINGS.style.minLabelTextScalePercent;
   //step is 20 from 60 to 200 is 8 steps
@@ -322,7 +311,6 @@ export default class LabelStyle extends Vue {
   ];
 
   private styleDataAgreement = true;
-  private totalyDisableStyleDataSelector = false;
   private disableStyleSelectorUndoButton = true;
 
   //Many of the label style will not be commonly modified so create a button/variable for
@@ -330,21 +318,16 @@ export default class LabelStyle extends Vue {
   private showMoreLabelStyles = false;
   private moreOrLessText = i18n.t("style.moreStyleOptions"); // The text for the button to toggle between less/more options
 
-  private labelDisplayText: string | undefined = "";
-  private labelDisplayTextChange = false;
+  private activeStyleOptions: StyleOptions | null = null;
   private maxLabelDisplayTextLength = SETTINGS.label.maxLabelDisplayTextLength;
   private labelDisplayTextErrorMessageKey = "";
   private labelDisplayTestResults = [true, true];
 
-  private labelDisplayCaption: string | undefined = "";
-  private labelDisplayCaptionChange = false;
   private maxLabelDisplayCaptionLength =
     SETTINGS.label.maxLabelDisplayCaptionLength;
   private labelDisplayCaptionErrorMessageKey = "";
   private labelDisplayCaptionTestResults = [true, true];
 
-  private labelDisplayMode: LabelDisplayMode | undefined =
-    LabelDisplayMode.NameOnly;
   private labelDisplayModeItems: labelDisplayModeItem[] = [
     {
       text: i18n.t("style.labelDisplayModes.nameOnly"),
@@ -377,9 +360,7 @@ export default class LabelStyle extends Vue {
       optionRequiresCaptionToExist: false
     }
   ];
-  private labelDisplayModeChange = false;
 
-  private labelTextFamily: string | undefined = "";
   private labelTextFamilyItems = [
     {
       text: i18n.t("style.genericSanSerif"),
@@ -402,9 +383,7 @@ export default class LabelStyle extends Vue {
       value: "fantasy"
     }
   ];
-  private labelTextFamilyChange = false;
 
-  private labelTextStyle: string | undefined = "";
   private labelTextStyleItems = [
     {
       text: i18n.t("style.normal"),
@@ -419,9 +398,7 @@ export default class LabelStyle extends Vue {
       value: "bold"
     }
   ];
-  private labelTextStyleChange = false;
 
-  private labelTextDecoration: string | undefined = "";
   private labelTextDecorationItems = [
     {
       text: i18n.t("style.none"),
@@ -440,9 +417,7 @@ export default class LabelStyle extends Vue {
       value: "overline"
     }
   ];
-  private labelTextDecorationChange = false;
 
-  private labelTextRotation: number | undefined = 0;
   //step is Pi/8 from -pi to pi is 17 steps
   private textRotationSelectorThumbStrings = [
     "-180" + "\u{00B0}",
@@ -518,55 +493,57 @@ export default class LabelStyle extends Vue {
 
   // These methods are linked to the Style Data fade-in-card
   labelDisplayTextCheck(): boolean {
-    this.labelDisplayTestResults[0] = this.labelDisplayTestResults[1];
-    this.labelDisplayTestResults[1] =
-      this.labelDisplayText !== undefined &&
-      (this.labelDisplayText.length === 0 ||
-        this.labelDisplayText.length <=
-          SETTINGS.label.maxLabelDisplayTextLength);
-    // const translation = i18n.t("style.maxMinLabelDisplayTextLengthWarning", {
-    //   max: SETTINGS.label.maxLabelDisplayTextLength
-    // });
-    if (!this.labelDisplayTestResults[0]) {
-      this.labelDisplayTextErrorMessageKey =
-        "style.maxMinLabelDisplayTextLengthWarning";
-    } else {
-      this.labelDisplayTextErrorMessageKey = "";
-    }
-    // set the label text to the first 6 characters
-    this.labelDisplayText =
-      this.labelDisplayText !== undefined
-        ? this.labelDisplayText.slice(
-            0,
-            SETTINGS.label.maxLabelDisplayTextLength
-          )
-        : "";
-    return this.labelDisplayTestResults[1]; // || translation;
+    return true;
+    // this.labelDisplayTestResults[0] = this.labelDisplayTestResults[1];
+    // this.labelDisplayTestResults[1] =
+    //   this.labelDisplayText !== undefined &&
+    //   (this.labelDisplayText.length === 0 ||
+    //     this.labelDisplayText.length <=
+    //       SETTINGS.label.maxLabelDisplayTextLength);
+    // // const translation = i18n.t("style.maxMinLabelDisplayTextLengthWarning", {
+    // //   max: SETTINGS.label.maxLabelDisplayTextLength
+    // // });
+    // if (!this.labelDisplayTestResults[0]) {
+    //   this.labelDisplayTextErrorMessageKey =
+    //     "style.maxMinLabelDisplayTextLengthWarning";
+    // } else {
+    //   this.labelDisplayTextErrorMessageKey = "";
+    // }
+    // // set the label text to the first 6 characters
+    // this.labelDisplayText =
+    //   this.labelDisplayText !== undefined
+    //     ? this.labelDisplayText.slice(
+    //         0,
+    //         SETTINGS.label.maxLabelDisplayTextLength
+    //       )
+    //     : "";
+    // return this.labelDisplayTestResults[1]; // || translation;
   }
   labelDisplayCaptionCheck(): boolean {
-    this.labelDisplayCaptionTestResults[0] = this.labelDisplayCaptionTestResults[1];
-    this.labelDisplayCaptionTestResults[1] =
-      this.labelDisplayCaption !== undefined &&
-      this.labelDisplayCaption.length <=
-        SETTINGS.label.maxLabelDisplayCaptionLength;
-    // display the error message
-    if (!this.labelDisplayCaptionTestResults[0]) {
-      this.labelDisplayCaptionErrorMessageKey =
-        "style.maxMinLabelDisplayCaptionLengthWarning";
-    } else {
-      this.labelDisplayCaptionErrorMessageKey = "";
-    }
-    // const translation = i18n.t("style.maxMinLabelDisplayCaptionLengthWarning", {
-    //   max: SETTINGS.label.maxLabelDisplayCaptionLength
-    // });
-    this.labelDisplayCaption =
-      this.labelDisplayCaption !== undefined
-        ? this.labelDisplayCaption.slice(
-            0,
-            SETTINGS.label.maxLabelDisplayCaptionLength
-          )
-        : "";
-    return this.labelDisplayCaptionTestResults[1];
+    // this.labelDisplayCaptionTestResults[0] = this.labelDisplayCaptionTestResults[1];
+    // this.labelDisplayCaptionTestResults[1] =
+    //   this.labelDisplayCaption !== undefined &&
+    //   this.labelDisplayCaption.length <=
+    //     SETTINGS.label.maxLabelDisplayCaptionLength;
+    // // display the error message
+    // if (!this.labelDisplayCaptionTestResults[0]) {
+    //   this.labelDisplayCaptionErrorMessageKey =
+    //     "style.maxMinLabelDisplayCaptionLengthWarning";
+    // } else {
+    //   this.labelDisplayCaptionErrorMessageKey = "";
+    // }
+    // // const translation = i18n.t("style.maxMinLabelDisplayCaptionLengthWarning", {
+    // //   max: SETTINGS.label.maxLabelDisplayCaptionLength
+    // // });
+    // this.labelDisplayCaption =
+    //   this.labelDisplayCaption !== undefined
+    //     ? this.labelDisplayCaption.slice(
+    //         0,
+    //         SETTINGS.label.maxLabelDisplayCaptionLength
+    //       )
+    //     : "";
+    // return this.labelDisplayCaptionTestResults[1];
+    return true;
   }
   resetStyleDataToDefaults(): void {
     const selected: SENodule[] = [];
@@ -613,158 +590,47 @@ export default class LabelStyle extends Vue {
     }
     this.setStyleDataSelectorState(initialStyleStates);
   }
-  onLabelStyleDataChanged(): void {
-    this.disableStyleSelectorUndoButton = false;
 
-    const selected: SENodule[] = [];
-    // This is always directed at labels!
-    this.selectedSENodules.forEach(node => {
-      selected.push(((node as unknown) as Labelable).label!);
-    });
-
-    if (
-      this.labelDisplayText !== undefined &&
-      this.labelDisplayText.trim().length === 0
-    ) {
-      const defaultStyleStates = SEStore.getDefaultStyleState(
-        StyleEditPanels.Label
-      );
-      const translation = i18n.t("style.renameLabels") as string;
-      this.labelDisplayText =
-        selected.length <= 1
-          ? defaultStyleStates[0].labelDisplayText
-          : translation;
-      for (let i = 0; i < selected.length; i++) {
-        SEStore.changeStyle({
-          selected: [selected[i]],
-          panel: StyleEditPanels.Label,
-          payload: {
-            labelDisplayText: defaultStyleStates[i].labelDisplayText
-          }
-        });
-      }
-    }
-
-    // if there has been some change then change the style
-    if (
-      this.labelDisplayTextChange ||
-      this.labelDisplayCaptionChange ||
-      this.labelDisplayModeChange ||
-      this.labelTextFamilyChange ||
-      this.labelTextStyleChange ||
-      this.labelTextDecorationChange
-    ) {
-      SEStore.changeStyle({
-        selected: selected,
-        panel: StyleEditPanels.Label,
-        payload: {
-          labelTextStyle: this.labelTextStyleChange
-            ? this.labelTextStyle
-            : undefined,
-          labelTextFamily: this.labelTextFamilyChange
-            ? this.labelTextFamily
-            : undefined,
-          labelTextDecoration: this.labelTextDecorationChange
-            ? this.labelTextDecoration
-            : undefined,
-          labelDisplayText: this.labelDisplayTextChange
-            ? this.labelDisplayText
-            : undefined,
-          labelDisplayCaption: this.labelDisplayCaptionChange
-            ? this.labelDisplayCaption
-            : undefined,
-          labelDisplayMode: this.labelDisplayModeChange
-            ? this.labelDisplayMode
-            : undefined
-        }
-      });
-    }
-    this.labelDisplayTextChange = false;
-    this.labelDisplayCaptionChange = false;
-    this.labelDisplayModeChange = false;
-    this.labelTextFamilyChange = false;
-    this.labelTextStyleChange = false;
-    this.labelTextDecorationChange = false;
-  }
   setStyleDataSelectorState(styleState: StyleOptions[]): void {
     this.disableStyleSelectorUndoButton = true;
     this.styleDataAgreement = true;
-    this.totalyDisableStyleDataSelector = false;
-    // Make sure that across the selected objects all 8 properties are defined and agree
-    //   If one property on one selected is undefined, then set styleDataAgreement=false, and totalyDisableStyleDataSelector = true
-    //   If all properties are defined,but one property doesn't agree across all selected then set styleDataAgreement=false, and totalyDisableStyleDataSelector = false
-    // start at 1 because the first styleState always agress with itself -- in the case of only one object selected, this shouldn't execute
-    for (var style of [
-      "labelDisplayText",
-      "labelDisplayCaption",
-      "labelDisplayMode",
-      "labelTextFamily",
-      "labelTextStyle",
-      "labelTextDecoration"
-    ]) {
-      // Record the value of the style on the first style state
-      let value = (styleState[0] as any)[style];
-      // screen for undefined - if undefined then this is not a property that is going to be set by the style panel for this selection of objects
-      if (value !== undefined) {
-        if (
-          styleState.length > 1 &&
-          !styleState.every(
+    // Make sure that across the selected objects all their properties agree
+    //   If one property on one selected is undefined, then set styleDataAgreement=false
+    //   If all properties are defined,but one property doesn't agree across all selected then set styleDataAgreement=false
+    // start at 1 because the first styleState always agrees with itself -- in the case of only one object selected, this shouldn't execute
+    if (styleState.length > 1) {
+      // Use flatmap (1-to-many mapping) to collect all the property names
+      // const commonProps: Array<string> = styleState.flatMap(
+      //   (opt: StyleOptions) =>
+      //     Object.getOwnPropertyNames(opt).filter(s => !s.startsWith("__"))
+      // );
+      // // Use Set to remove duplicate property names
+      // const uniqueProps: Set<string> = new Set(commonProps);
+      // console.debug("Common props", uniqueProps);
+      this.styleDataAgreement = this.commonStyleProperties.every(
+        (style: string) => {
+          // Record the value of the style on the first style state
+          let value = (styleState[0] as any)[style];
+          // screen for undefined - if undefined then this is not a property that is going to be set by the style panel for this selection of objects
+
+          return !styleState.every(
             styleObject => (styleObject as any)[style] === value
-          )
-        ) {
+          );
+
           // The style property exists on the selected objects but value
           // doesn't agree (so don't totally disable the selector)
-          this.disableStyleDataSelector(false);
-          break;
+          // this.disableStyleDataSelector(false);
         }
-        // If the execution reaches here, the style exists on all style states and is the same in all style states
-      } else {
-        // The style property doesn't exists on the selected objects so totally disable the selector
-        this.disableStyleDataSelector(true);
-        break;
-      }
-    }
-    // Now set the displays of the text field (labelDisplayName), text area(labelDisplayCaption),
-    //  and combo-boxes (font, family, style, decoration)
-    if (!this.totalyDisableStyleDataSelector && this.styleDataAgreement) {
-      this.labelDisplayText = (styleState[0] as StyleOptions).labelDisplayText;
-      this.labelDisplayCaption = (styleState[0] as StyleOptions).labelDisplayCaption;
-      this.labelDisplayMode = (styleState[0] as StyleOptions).labelDisplayMode;
-      this.labelTextFamily = (styleState[0] as StyleOptions).labelTextFamily;
-      this.labelTextStyle = (styleState[0] as StyleOptions).labelTextStyle;
-      this.labelTextDecoration = (styleState[0] as StyleOptions).labelTextDecoration;
+      );
+      // If the execution reaches here, the style exists on all style states and is the same in all style states
     }
   }
   disableStyleDataSelector(totally: boolean): void {
     this.styleDataAgreement = false;
     this.disableStyleSelectorUndoButton = true;
-    this.totalyDisableStyleDataSelector = totally;
     // Set the display disabled values
-    this.labelDisplayText = "";
-    this.labelDisplayCaption = "";
-    this.labelDisplayMode = undefined;
-    this.labelTextFamily = "";
-    this.labelTextStyle = "";
-    this.labelTextDecoration = "";
   }
-  setlabelDisplayTextChange(): void {
-    this.labelDisplayTextChange = true;
-  }
-  setlabelDisplayCaptionChange(): void {
-    this.labelDisplayCaptionChange = true;
-  }
-  setlabelDisplayModeChange(): void {
-    this.labelDisplayModeChange = true;
-  }
-  setlabelTextFamilyChange(): void {
-    this.labelTextFamilyChange = true;
-  }
-  setlabelTextStyleChange(): void {
-    this.labelTextStyleChange = true;
-  }
-  setlabelTextDecorationChange(): void {
-    this.labelTextDecorationChange = true;
-  }
+
   setStyleDataAgreement(): void {
     this.styleDataAgreement = true;
   }
@@ -862,12 +728,17 @@ export default class LabelStyle extends Vue {
    */
   @Watch("selectedSENodules")
   onSelectionChanged(newSelection: SENodule[]): void {
-    console.log("LabelStyle: onSelectionChanged");
+    console.log(
+      "LabelStyle: onSelectionChanged",
+      newSelection.length,
+      " object selected"
+    );
 
     // Before changing the selections save the state for an undo/redo command (if necessary)
-    this.saveStyleState();
+    // this.saveStyleState();
 
-    this.commonStyleProperties.clear();
+    this.commonStyleProperties.splice(0);
+    this.activeStyleOptions = null;
     if (newSelection.length === 0) {
       //totally disable the selectors in this component
       this.disableStyleDataSelector(true);
@@ -878,51 +749,46 @@ export default class LabelStyle extends Vue {
     // record the new selections in the old
     SEStore.setOldStyleSelection([]);
     // We are on the label panel so push the labels onto the oldSelections
+
     const oldSelection: SENodule[] = [];
     newSelection.forEach((obj: SENodule) =>
       oldSelection.push(((obj as unknown) as Labelable).label!)
     );
+    this.selectedLabels.splice(0);
+    this.selectedLabels.push(
+      ...(oldSelection as SELabel[]).map((s: SELabel) => s.ref)
+    );
     SEStore.setOldStyleSelection(oldSelection);
 
-    // Create a list of the common properties that the objects in the selection have.
+    // Create a list of the common properties of the selected objects.
     // commonStyleProperties is a number (corresponding to an enum) array
     // The customStyles method returns a list of the styles the are adjustable for that object
     this.commonStyleProperties.splice(0);
 
     // Use Typescript utility type Required<T> to change to label from an optional
     // property to a required one
-    const labeledSelections: Array<Required<
-      Labelable
-    >> = newSelection
-      .filter((n: SENodule) => n.isLabelable())
-      .map((n: SENodule) => (n as unknown) as Required<Labelable>);
+    const styleOptionsOfSelected = oldSelection
+      // .filter((obj: SENodule) => {
+      //   console.debug("Is it labelable?", obj.isLabelable());
+      //   return obj.isLabelable();
+      // })
+      .map((obj: SENodule) => obj as SELabel)
+      .map((obj: SELabel) => {
+        return obj.ref.currentStyleState(this.panel);
+      });
 
-    if (labeledSelections.length > 0) {
-      // We do have objects with labels
-      const initialSet = labeledSelections[0].label.customStyles();
+    this.activeStyleOptions = { ...styleOptionsOfSelected[0] }; // Create a clone
+    console.debug("Saved as active style options", {
+      ...this.activeStyleOptions
+    });
 
-      // Use Array::reduce to the set intersection of all the label style props
-      const commonProp = labeledSelections.reduce((
-        acc: Set<string>,
-        curr: Required<Labelable> /*, pos: number*/
-      ) => {
-        // console.debug("LabelStyle at index", pos, acc);
-        const arr = [...curr.label.customStyles()].filter((prop: string) =>
-          acc.has(prop)
-        );
-        return new Set(arr);
-      }, initialSet);
-      this.commonStyleProperties.push(...commonProp);
-    }
-    // for (let k = 0; k < values.length; k++) {
-    //   if (
-    //     newSelection.every((s:SENodule) =>
-    //       ((s as unknown) as Labelable).label!.customStyles().has(k)
-    //     )
-    //   ) {
-    //     this.commonStyleProperties.push(k);
-    //   }
-    // }
+    // Use flatmap (1-to-many) to compile all the style properties of
+    // of the selected objects
+    const commonProps = styleOptionsOfSelected.flatMap((opt: StyleOptions) =>
+      Object.getOwnPropertyNames(opt).filter((s: string) => !s.startsWith("__"))
+    );
+    const uniqueProps = new Set(commonProps);
+    this.commonStyleProperties.push(...uniqueProps);
 
     // Get the initial and default style state of the object for undo/redo and buttons to revert to initial style.
     // Put this in the store so that it is availble to *all* panels. Get the front and back information at the same time.
@@ -935,8 +801,57 @@ export default class LabelStyle extends Vue {
     SEStore.setSavedFromPanel(StyleEditPanels.Label);
     //Set the initial state of the fade-in-card/selectors (checking to see if the property is the same across all selected objects)
     this.setStyleDataSelectorState(
-      SEStore.getInitialStyleState(StyleEditPanels.Label)
+      // SEStore.getInitialStyleState(StyleEditPanels.Label)
+      styleOptionsOfSelected
     );
+  }
+
+  // Use a deep wather because we are observing an object!
+  @Watch("activeStyleOptions", { deep: true, immediate: false })
+  onActiveStyleOptionsChanged(
+    newVal: StyleOptions | null,
+    oldVal: StyleOptions | null
+  ): void {
+    console.debug("onActiveStyleOptons changed to", newVal);
+    if (newVal === null) return;
+    const oldProps: Set<string> = new Set(
+      oldVal
+        ? Object.getOwnPropertyNames(oldVal).filter(
+            (s: string) => !s.startsWith("__")
+          )
+        : []
+    );
+    const newProps: Set<string> = new Set(
+      newVal
+        ? Object.getOwnPropertyNames(newVal).filter(
+            (s: string) => !s.startsWith("__")
+          )
+        : []
+    );
+    const removedProps = [...oldProps].filter((p: string) => !newProps.has(p));
+    if (removedProps.length > 0 && this.selectedLabels.length > 0)
+      throw new Error(
+        "Removing style options from selections is not currently supported"
+      );
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const addedProps = [...newProps].filter((p: string) => !oldProps.has(p));
+    if (addedProps.length > 0)
+      console.debug("Adding some new props", addedProps);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const updatedProps = [...newProps].filter((p: string) => oldProps.has(p));
+    console.debug("Updated props");
+    [...updatedProps].forEach((p: string) => {
+      const a = (oldVal as any)[p];
+      const b = (newVal as any)[p];
+      console.debug(`Property ${p} is update from ${a} to ${b}`);
+    });
+    // if (!this.areEquivalentStyleOptions(newVal, oldVal)) {
+    this.selectedLabels.forEach((z: Label) => {
+      z.updateStyle(this.panel, { ...newVal });
+    });
+    // } else {
+    //   console.info("No update necessary");
+    // }
   }
 
   saveStyleState(): void {
@@ -979,70 +894,61 @@ export default class LabelStyle extends Vue {
     }
   }
 
+  areEquivalentStyleOptions(
+    opt1: StyleOptions | undefined,
+    opt2: StyleOptions | undefined
+  ): boolean {
+    function arrayEquivalentArray(
+      arr1: Array<string | number>,
+      arr2: Array<string | number>
+    ): boolean {
+      return false;
+    }
+
+    const aProps = opt1
+      ? Object.getOwnPropertyNames(opt1).filter(
+          (s: string) => !s.startsWith("__")
+        )
+      : []; // Set to an empty array of the arg is undefined or null
+    const bProps = opt2
+      ? Object.getOwnPropertyNames(opt2).filter(
+          (s: string) => !s.startsWith("__")
+        )
+      : []; // Set to an empty array of the arg is undefined or null
+    if (aProps.length !== bProps.length)
+      throw new Error(
+        "Attempted to compare two different length StyleOptions in areEquivalentStyles"
+      );
+
+    // Verify equivalence of all the style properties
+    return [...aProps].every((p: string) => {
+      const aVal = (aProps as any)[p];
+      const bVal = (bProps as any)[p];
+      if (typeof aVal !== typeof bVal) return false;
+      if (typeof aVal == "number") return Math.abs(aVal - bVal) < 1e-8;
+      else if (Array.isArray(aVal) && Array.isArray(bVal))
+        return arrayEquivalentArray(aVal, bVal);
+      else if (typeof aVal === "object")
+        throw new Error("Object comparison is not currently supported");
+      else return aVal === bVal;
+    });
+  }
+
   areEquivalentStyles(
     styleStates1: StyleOptions[],
     styleStates2: StyleOptions[]
   ): boolean {
+    console.debug("areEquivalentStyle");
     if (styleStates1.length !== styleStates2.length) {
-      throw "Attempted to compare two different length styles in areEquivalentStyles";
-      //return false;
+      throw new Error(
+        "Attempted to compare two different length styles in areEquivalentStyles"
+      );
     }
-    for (let i = 0; i < styleStates1.length; i++) {
-      const a = styleStates1[i];
-      const b = styleStates2[i];
-      if (
-        a.strokeWidthPercent === b.strokeWidthPercent &&
-        a.strokeColor === b.strokeColor &&
-        a.fillColor === b.fillColor &&
-        a.dynamicBackStyle === b.dynamicBackStyle &&
-        a.pointRadiusPercent === b.pointRadiusPercent &&
-        a.labelDisplayText === b.labelDisplayText &&
-        a.labelDisplayCaption === b.labelDisplayCaption &&
-        a.labelTextStyle === b.labelTextStyle &&
-        a.labelTextFamily === b.labelTextFamily &&
-        a.labelTextDecoration === b.labelTextDecoration &&
-        a.labelTextRotation === b.labelTextRotation &&
-        a.labelTextScalePercent === b.labelTextScalePercent &&
-        a.labelDisplayMode === b.labelDisplayMode &&
-        a.labelFrontFillColor === b.labelFrontFillColor &&
-        a.labelBackFillColor === b.labelBackFillColor
-      ) {
-        //now check the dash array which can be undefined, an empty array,length one array or a length two array.
-        if (a.dashArray === undefined && b.dashArray === undefined) {
-          break; // stop checking this pair in the array because we can conclude they are equal.
-        }
-        if (a.dashArray !== undefined && b.dashArray !== undefined) {
-          if (a.dashArray.length === b.dashArray.length) {
-            if (a.dashArray.length === 0 && b.dashArray.length === 0) {
-              break; // stop checking this pair in the array because we can conclude they are equal.
-            } else if (
-              a.dashArray.length === 1 &&
-              b.dashArray.length === 1 &&
-              a.dashArray[0] === b.dashArray[0]
-            ) {
-              break; // stop checking this pair in the array because we can conclude they are equal.
-            } else if (
-              a.dashArray.length === 2 &&
-              b.dashArray.length === 2 &&
-              a.dashArray[0] === b.dashArray[0] &&
-              a.dashArray[1] === b.dashArray[1]
-            ) {
-              break; // stop checking this pair in the array because we can conclude they are equal.
-            } else {
-              return false;
-            }
-          } else {
-            return false;
-          }
-        } else {
-          return false;
-        }
-      } else {
-        return false;
-      }
-    }
-    // If we reach here the arrays of style states are equal
-    return true;
+
+    // The outer every runs on the two input arguments
+    return styleStates1.every((a: StyleOptions, i: number) =>
+      this.areEquivalentStyleOptions(a, styleStates2[i])
+    );
   }
 }
 </script>

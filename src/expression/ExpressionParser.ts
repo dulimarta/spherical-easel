@@ -390,6 +390,7 @@ export class ExpressionParser {
 
       case TokenType.PLUS:
       case TokenType.MINUS: {
+        // diff(f(x) + g(x)) = diff(f(x)) + diff(g(x))
         const leftDiff = this.differentiate(input.leftChild, varName);
         const rightDiff = this.differentiate(input.rightChild, varName);
         return {

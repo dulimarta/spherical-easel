@@ -2,7 +2,7 @@
   <div>
     <!-- objects(s) not showing overlay ---higher z-index rendered on top -- covers entire panel including the header-->
     <OverlayWithFixButton
-      v-if="( editModeIsFront() || editModeIsBack() ) && !allObjectsShowing()"
+      v-if="( editModeIsFront || editModeIsBack ) && !allObjectsShowing()"
       z-index="100"
       i18n-title-line="style.objectNotVisible"
       i18n-subtitle-line="style.clickToMakeObjectsVisible"
@@ -12,7 +12,7 @@
     </OverlayWithFixButton>
 
     <!-- Back Style Contrast Slider -->
-    <fade-in-card :showWhen="editModeIsBack()"
+    <fade-in-card :showWhen="editModeIsBack"
       color="red">
       <span
         class="text-subtitle-2">{{ $t('style.backStyleContrast') }}</span>
@@ -22,7 +22,7 @@
       <br />
 
       <!-- Enable the Dynamic Back Style Overlay -->
-      <OverlayWithFixButton v-if="editModeIsBack() && hasDynamicBackStyle && usingDynamicBackStyleAgreement 
+      <OverlayWithFixButton v-if="editModeIsBack && hasDynamicBackStyle && usingDynamicBackStyleAgreement 
         && !(usingDynamicBackStyle || usingDynamicBackStyleCommonValue)"
         z-index="5"
         i18n-title-line="style.dynamicBackStyleHeader"
@@ -91,7 +91,7 @@
     <v-card color="grey lighten-2">
 
       <!-- Disable the Dynamic Back Style Overlay -->
-      <OverlayWithFixButton v-if="editModeIsBack() && hasDynamicBackStyle && usingDynamicBackStyleAgreement &&
+      <OverlayWithFixButton v-if="editModeIsBack && hasDynamicBackStyle && usingDynamicBackStyleAgreement &&
         (usingDynamicBackStyle || usingDynamicBackStyleCommonValue)"
         z-index="50"
         i18n-title-line="style.dynamicBackStyleHeader"
@@ -102,7 +102,7 @@
 
       <!-- usingDynamicBackStyle disagreemnt  -->
       <OverlayWithFixButton
-        v-if="editModeIsBack()&& hasDynamicBackStyle && !usingDynamicBackStyleAgreement"
+        v-if="editModeIsBack&& hasDynamicBackStyle && !usingDynamicBackStyleAgreement"
         z-index="40"
         i18n-title-line="style.backStyleDisagreement"
         i18n-button-label="style.enableCommonStyle"
@@ -112,7 +112,7 @@
 
       <!-- Front/Back Stroke Color Selector-->
       <fade-in-card
-        :showWhen="(editModeIsFront() ||editModeIsBack() ) && hasStrokeColor">
+        :showWhen="(editModeIsFront ||editModeIsBack ) && hasStrokeColor">
         <ColorSelector title-key="style.strokeColor"
           panel-front-key="style.front"
           panel-back-key="style.back"
@@ -127,7 +127,7 @@
 
       <!-- Front/Back Fill Color Selector-->
       <fade-in-card
-        :showWhen="(editModeIsFront() || editModeIsBack()) && hasFillColor">
+        :showWhen="(editModeIsFront || editModeIsBack) && hasFillColor">
         <ColorSelector title-key="style.fillColor"
           panel-front-key="style.front"
           panel-back-key="style.back"
@@ -142,7 +142,7 @@
 
       <!-- Front/Back Stokewidth Number Selector -->
       <fade-in-card :showWhen="
-        (editModeIsFront() || editModeIsBack()) && hasStrokeWidthPercent && showMoreLabelStyles 
+        (editModeIsFront || editModeIsBack) && hasStrokeWidthPercent && showMoreLabelStyles 
       ">
         <NumberSelector id="strokeWidthPercentSlider"
           v-bind:data.sync="strokeWidthPercent"
@@ -163,7 +163,7 @@
 
       <!-- Front/Back Point Radius Number Selector -->
       <fade-in-card :showWhen="
-        (editModeIsFront() || editModeIsBack()) && hasPointRadiusPercent && showMoreLabelStyles
+        (editModeIsFront || editModeIsBack) && hasPointRadiusPercent && showMoreLabelStyles
       ">
         <NumberSelector :data.sync="pointRadiusPercent"
           title-key="style.pointRadiusPercent"
@@ -183,7 +183,7 @@
 
       <!-- Front/Back Angle Marker Radius Number Selector -->
       <fade-in-card :showWhen="
-        editModeIsFront() && hasAngleMarkerRadiusPercent && showMoreLabelStyles
+        editModeIsFront && hasAngleMarkerRadiusPercent && showMoreLabelStyles
       ">
         <NumberSelector :data.sync="angleMarkerRadiusPercent"
           title-key="style.angleMarkerRadiusPercent"
@@ -203,7 +203,7 @@
 
       <!-- Angle Marker Decoration Selector -->
       <fade-in-card :showWhen="
-        editModeIsFront() && hasAngleMarkerDecoration && showMoreLabelStyles
+        editModeIsFront && hasAngleMarkerDecoration && showMoreLabelStyles
       ">
         <v-select v-model="angleMarkerDecorations"
           v-bind:label="$t('style.angleMarkerDecorations')"
@@ -246,10 +246,10 @@
 
       <!-- Front/Back Dash array card is displayed for front and back so long as there is a dash array property common to all selected objects-->
       <fade-in-card
-        :showWhen="(hasDashPattern) && (editModeIsFront() || editModeIsBack()) && showMoreLabelStyles">
-        <span v-show="editModeIsFront()"
+        :showWhen="(hasDashPattern) && (editModeIsFront || editModeIsBack) && showMoreLabelStyles">
+        <span v-show="editModeIsFront"
           class="text-subtitle-2">{{ $t("style.front") }}</span>
-        <span v-show="editModeIsBack()"
+        <span v-show="editModeIsBack"
           class="text-subtitle-2">{{ $t("style.back") }}</span>
         <span
           class="text-subtitle-2">{{" "+ $t("style.dashPattern") }}</span>
@@ -269,7 +269,7 @@
 
         <!-- Differing data styles detected Overlay --higher z-index rendered on top-->
         <OverlayWithFixButton
-          v-if="(editModeIsFront() || editModeIsBack()) && !dashPatternAgreement"
+          v-if="(editModeIsFront || editModeIsBack) && !dashPatternAgreement"
           z-index="1"
           i18n-title-line="style.styleDisagreement"
           i18n-button-label="style.enableCommonStyle"
@@ -627,10 +627,10 @@ export default class FrontBackStyle extends Vue {
     EventBus.listen("save-style-state", this.saveStyleState);
     // EventBus.listen("set-active-style-panel", this.setActivePanel);
   }
-  editModeIsBack(): boolean {
+  get editModeIsBack(): boolean {
     return this.panel === StyleEditPanels.Back;
   }
-  editModeIsFront(): boolean {
+  get editModeIsFront(): boolean {
     return this.panel === StyleEditPanels.Front;
   }
   toggleShowMoreLabelStyles(): void {

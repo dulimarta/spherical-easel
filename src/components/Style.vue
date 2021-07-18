@@ -96,6 +96,7 @@
           </v-expansion-panel-content>
         </v-expansion-panel>
       </v-expansion-panels>
+      <v-btn>Save ???</v-btn>
 
     </div>
     <div v-else
@@ -104,7 +105,6 @@
       <v-icon v-on:click="$emit('toggle-style-panel')">mdi-palette
       </v-icon>
     </div>
-
   </transition>
 
 </template>

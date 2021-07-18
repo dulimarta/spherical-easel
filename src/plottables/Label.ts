@@ -8,7 +8,10 @@ import { Vector3 } from "three";
 import {
   StyleOptions,
   StyleEditPanels,
-  DEFAULT_LABEL_TEXT_STYLE
+  DEFAULT_LABEL_TEXT_STYLE,
+  DEFAULT_LABEL_FRONT_STYLE,
+  DEFAULT_LABEL_BACK_STYLE,
+  DEFAULT_LINE_FRONT_STYLE
 } from "@/types/Styles";
 import { LabelDisplayMode } from "@/types";
 import { SELabel } from "@/models/SELabel";
@@ -185,6 +188,10 @@ export default class Label extends Nodule {
     // this.glowingFrontText.stroke = SETTINGS.label.glowingStrokeColor.front;
     this.glowingBackText.linewidth = SETTINGS.label.glowingStrokeWidth.back;
     // this.glowingBackText.stroke = SETTINGS.label.glowingStrokeColor.back;
+
+    this.styleOptions.set(StyleEditPanels.Label, DEFAULT_LABEL_TEXT_STYLE);
+    this.styleOptions.set(StyleEditPanels.Front, DEFAULT_LINE_FRONT_STYLE);
+    this.styleOptions.set(StyleEditPanels.Back, DEFAULT_LABEL_BACK_STYLE);
   }
   /**
    * Set and get the shortUserName
@@ -374,12 +381,6 @@ export default class Label extends Nodule {
    * @param options The style options
    */
   updateStyle(mode: StyleEditPanels, options: StyleOptions): void {
-    // console.debug(
-    //   "Label: Update style of Label of ",
-    //   // this._shortUserName,
-    //   " using",
-    //   options
-    // );
     const currentOptions = this.styleOptions.get(mode);
     this.styleOptions.set(mode, { ...currentOptions, ...options });
 
