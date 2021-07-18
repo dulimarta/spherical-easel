@@ -16,6 +16,7 @@ import { SEAngleMarker } from "@/models/SEAngleMarker";
 import { SEPerpendicularLineThruPoint } from "@/models/SEPerpendicularLineThruPoint";
 import { SEEllipse } from "@/models/SEEllipse";
 import { SEParametric } from "@/models/SEParametric";
+import { SyntaxTree } from "@/expression/ExpressionParser";
 
 export interface Selectable {
   hit(x: number, y: number, coord: unknown, who: unknown): boolean;
@@ -131,7 +132,7 @@ export interface Labelable {
   label?: SELabel;
 }
 /**
- * The varaible types for parametric objects
+ * The variable types for parametric objects
  */
 export type CoordExpression = {
   x: string;
@@ -142,6 +143,17 @@ export type CoordExpression = {
 export type MinMaxExpression = {
   min: string;
   max: string;
+};
+
+export type CoordinateSyntaxTrees = {
+  x: SyntaxTree;
+  y: SyntaxTree;
+  z: SyntaxTree;
+};
+
+export type MinMaxSyntaxTrees = {
+  min: SyntaxTree;
+  max: SyntaxTree;
 };
 
 export type MinMaxNumber = {

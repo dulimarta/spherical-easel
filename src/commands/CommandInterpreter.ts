@@ -18,6 +18,8 @@ import { AddLengthMeasurementCommand } from "./AddLengthMeasurementCommand";
 import { ConstructionScript } from "@/types";
 import { AddEllipseCommand } from "./AddEllipseCommand";
 import { AddPolarPointCommand } from "./AddPolarPointCommand";
+import { AddParametricCommand } from "./AddParametricCommand";
+import { AddParametricEndPointsCommand } from "./AddParametricEndPointsCommand";
 const noduleDictionary = new Map<string, SENodule>();
 
 function executeIndividual(command: string): Command {
@@ -72,6 +74,10 @@ function executeIndividual(command: string): Command {
 
     case "AddCalculation":
       return AddCalculationCommand.parse(command, noduleDictionary);
+    case "AddParametric":
+      return AddParametricCommand.parse(command, noduleDictionary);
+    case "AddParametricEndPoint":
+      return AddParametricEndPointsCommand.parse(command, noduleDictionary);
     default: {
       const errMsg = `Not yet implemented: ${command}`;
       EventBus.fire("show-alert", {

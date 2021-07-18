@@ -77,6 +77,14 @@
           color="accent"
           :elevation="4"
           class="my-3"
+          v-show="parametrics.length > 0">
+          <SENoduleList i18LabelKey="objects.parametrics"
+            :children="parametrics"></SENoduleList>
+        </v-sheet>
+        <v-sheet rounded
+          color="accent"
+          :elevation="4"
+          class="my-3"
           v-show="expressions.length > 0">
           <SENoduleList i18LabelKey="objects.measurements"
             :children="expressions"></SENoduleList>
@@ -130,6 +138,9 @@ export default class ObjectTree extends Vue {
 
   @SE.State((s: AppState) => s.seEllipses)
   readonly ellipses!: SENodule[];
+
+  @SE.State((s: AppState) => s.seParametrics)
+  readonly parametrics!: SENodule[];
 
   @SE.State((s: AppState) => s.seNodules)
   readonly nodules!: SENodule[];

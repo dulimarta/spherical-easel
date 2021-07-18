@@ -5,14 +5,7 @@ import Vuetify from "vuetify/lib";
 Vue.use(Vuetify);
 
 import colors from "vuetify/es5/util/colors";
-// import TestIcon1 from "../components/icons/TestIcon1.vue";
-// import TestIcon2 from "../components/icons/TestIcon2.vue";
-// import TestIcon3 from "../components/icons/TestIcon3.vue";
-import TestIcon4 from "../components/icons/TestIcon4.vue";
-import TestIcon5 from "../components/icons/TestIcon5.vue";
 import IconBase from "../components/IconBase.vue";
-import IconBox from "../assets/icons/IconBox.vue";
-// import TestIcon5 from "../components/icons/TestIcon5.vue";
 
 /* This allows us to set the global style variables to adjust the look and feel of the 
 app from one central place. */
@@ -137,6 +130,17 @@ const vuetify = new Vuetify({
           iconName: "Ellipse",
           iconFile: "/icons/iconEllipsePaths.svg",
           emphasizeTypes: [["point", "front", "back"]]
+        }
+      },
+      parametric: {
+        component: IconBase,
+        props: {
+          iconName: "Parametric",
+          iconFile: "/icons/iconParametricPaths.svg",
+          emphasizeTypes: [
+            ["point", "front"],
+            ["parametric", "front"]
+          ]
         }
       }
     }

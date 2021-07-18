@@ -202,29 +202,49 @@ describe("SEExpression", () => {
       expect(parser.evaluate("abs(-3-7)")).toBeCloseTo(10, 3);
       expect(parser.evaluate("abs(-(3+7))")).toBeCloseTo(10, 3);
     });
-    xit("computes acos()", () => {
-      fail("Missing test case");
+    it("computes acos()", () => {
+      expect(parser.evaluate("acos(0.5)")).toBeCloseTo(Math.PI / 3, 1);
+      expect(parser.evaluate("acos(-0.5)")).toBeCloseTo((2 * Math.PI) / 3, 3);
+      expect(parser.evaluate("acos(cos(pi/3))")).toBeCloseTo(Math.PI / 3, 2);
+      expect(parser.evaluate("cos(acos(0.5))")).toBeCloseTo(0.5, 2);
     });
-    xit("computes asin()", () => {
-      fail("Missing test case");
+    it("computes asin()", () => {
+      expect(parser.evaluate("asin(0.5)")).toBeCloseTo(Math.PI / 6, 1);
+      expect(parser.evaluate("asin(-0.5)")).toBeCloseTo(-Math.PI / 6, 3);
+      expect(parser.evaluate("asin(sin(pi/3))")).toBeCloseTo(Math.PI / 3, 2);
+      expect(parser.evaluate("sin(asin(0.5))")).toBeCloseTo(0.5, 2);
     });
-    xit("computes ceil()", () => {
-      fail("Missing test case");
+    it("computes ceil()", () => {
+      expect(parser.evaluate("ceil(0.56)")).toBeCloseTo(1.0, 1);
+      expect(parser.evaluate("ceil(-2*0.33)")).toBeCloseTo(0, 1);
     });
-    xit("computes exp()", () => {
-      fail("Missing test case");
+    it("computes exp()", () => {
+      expect(parser.evaluate("exp(3+7)")).toBeCloseTo(22026.4657948, 3);
+      expect(parser.evaluate("ln(exp(3))")).toBeCloseTo(3, 2);
+      expect(parser.evaluate("exp(ln(3))")).toBeCloseTo(3, 2);
+      expect(parser.evaluate("exp(-3)")).toBeCloseTo(0.04978706837, 3);
     });
-    xit("computes floor()", () => {
-      fail("Missing test case");
+    it("computes floor()", () => {
+      expect(parser.evaluate("floor(0.56)")).toBeCloseTo(0.0, 1);
+      expect(parser.evaluate("floor(-2*0.33)")).toBeCloseTo(-1.0, 1);
     });
-    xit("computes ln()", () => {
-      fail("Missing test case");
+    it("computes ln()", () => {
+      expect(parser.evaluate("ln(3+7)")).toBeCloseTo(2.30258509, 3);
+      expect(parser.evaluate("ln(exp(3))")).toBeCloseTo(3, 2);
+      expect(parser.evaluate("exp(ln(3))")).toBeCloseTo(3, 2);
+      expect(parser.evaluate("ln(-3-7)")).toBeFalsy();
+      expect(parser.evaluate("ln(0)")).toBeFalsy();
     });
-    xit("computes sgn()", () => {
-      fail("Missing test case");
+    it("computes sgn()", () => {
+      expect(parser.evaluate("sgn(0.56)")).toBeCloseTo(1.0, 1);
+      expect(parser.evaluate("sgn(0)")).toBeCloseTo(0, 1);
+      expect(parser.evaluate("sgn(-2*0.33)")).toBeCloseTo(-1, 1);
     });
-    xit("computes sqrt()", () => {
-      fail("Missing test case");
+    it("computes sqrt()", () => {
+      expect(parser.evaluate("sqrt(3+7)")).toBeCloseTo(3.1622776602, 3);
+      expect(parser.evaluate("sqrt(3^2)")).toBeCloseTo(3, 2);
+      expect(parser.evaluate("sqrt(3)^2")).toBeCloseTo(3, 2);
+      expect(parser.evaluate("sqrt(-3-7)")).toBeFalsy();
     });
   });
 
@@ -293,6 +313,13 @@ describe("SEExpression", () => {
         expect(e.message).toContain("end of input");
       }
     });
+    // it("detects natural log of negative numbers", () => {
+    //   try {
+    //     parser.evaluate("ln(-pi/4)");
+    //   } catch (e) {
+    //     expect(e.message).toContain("end of input");
+    //   }
+    // });
   });
 
   describe("With variables", () => {

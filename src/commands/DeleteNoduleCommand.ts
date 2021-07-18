@@ -10,6 +10,7 @@ import { SEAngleMarker } from "@/models/SEAngleMarker";
 import { SEExpression } from "@/models/SEExpression";
 import { SESegmentLength } from "@/models/SESegmentLength";
 import { SEPointCoordinate } from "@/models/SEPointCoordinate";
+import { SEParametric } from "@/models/SEParametric";
 
 export class DeleteNoduleCommand extends Command {
   private seNodule: SENodule;
@@ -51,6 +52,8 @@ export class DeleteNoduleCommand extends Command {
       Command.store.removeCircle(this.seNodule.id);
     } else if (this.seNodule instanceof SEEllipse) {
       Command.store.removeEllipse(this.seNodule.id);
+    } else if (this.seNodule instanceof SEParametric) {
+      Command.store.removeParametric(this.seNodule.id);
     } else if (this.seNodule instanceof SESegment) {
       Command.store.removeSegment(this.seNodule.id);
     } else if (this.seNodule instanceof SELabel) {
@@ -86,6 +89,8 @@ export class DeleteNoduleCommand extends Command {
       Command.store.addCircle(this.seNodule);
     } else if (this.seNodule instanceof SEEllipse) {
       Command.store.addEllipse(this.seNodule);
+    } else if (this.seNodule instanceof SEParametric) {
+      Command.store.addParametric(this.seNodule);
     } else if (this.seNodule instanceof SESegment) {
       Command.store.addSegment(this.seNodule);
     } else if (this.seNodule instanceof SELabel) {

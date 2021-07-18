@@ -155,7 +155,8 @@ export default {
     circles: "Circles | Circle| circle",
     segments: "Line Segments | Line Segment | line segment",
     measurements: "Measurements | Measurement | measurement",
-    ellipses: "Ellipses | Ellipse |ellipse"
+    ellipses: "Ellipses | Ellipse |ellipse",
+    parametrics: "Parametrics | Parametric |parametric"
   },
 
   style: {
@@ -175,6 +176,7 @@ export default {
     label: "1 Label | {count} Labels",
     angleMarker: "1 Angle Marker | {count} Angle Markers",
     ellipse: "1 Ellipse | {count} Ellipses",
+    parametric: "1 Parametric | {count} Parametrics",
 
     showLabels: "Show Label(s)",
     showObjects: "Show Object(s)",
@@ -434,7 +436,58 @@ export default {
     pointOnOneDimensional: "Point on {typeParent} {parent}",
     freePoint: "Free point",
     perpendicularLineThru:
-      "Perpendicular line to {oneDimensionalParentType} {oneDimensional} through point {pt} with index {index}"
+      "Perpendicular line to {oneDimensionalParentType} {oneDimensional} through point {pt} with index {index}",
+    deleteNode: "Delete the selected object.",
+
+    parametricCurves: "Parametric Curves",
+
+    parametricCoordinates: "Parametric Formulas",
+    parametricDerivativeCoordinates: "Derivative Formulas",
+    xParametricCoordinate: "X(t) formula",
+    yParametricCoordinate: "Y(t) formula",
+    zParametricCoordinate: "Z(t) formula",
+    xCoordExpressionTip:
+      "An expression (depending on measurement tokens) for the x coordinate for the parametric curve.",
+    xCoordPrimeExpressionTip:
+      "The derivative of the x coordinate formula for the parametric curve.",
+    yCoordExpressionTip:
+      "An expression (depending on measurement tokens) for the y coordinate for the parametric curve.",
+    yCoordPrimeExpressionTip:
+      "The derivative of the y coordinate formula for the parametric curve.",
+    zCoordExpressionTip:
+      "An expression (depending on measurement tokens) for the z coordinate for the parametric curve.",
+    zCoordPrimeExpressionTip:
+      "The derivative of the z coordinate formula for the parametric curve.",
+    parametricXPCoordinate: "X'(t) formula",
+    parametricYPCoordinate: "Y'(t) formula",
+    parametricZPCoordinate: "Z'(t) formula",
+    tMinExpression: "Minimum Parameter Tracing Expression",
+    tMinExpressionTip:
+      "An optional expression (depending on measurements tokens) that gives the starting t value when tracing the parametric curve. This value is always evaluated to be greater than or equal to the minimum parameter value.",
+    tMaxExpression: "Maximum Parameter Tracing Expression",
+    tMaxExpressionTip:
+      "An optional expression (depending on measurements tokens) that gives the ending t value when tracing the parametric curve. This value is always evaluated to be less than or equal to the maximum parameter value.",
+    exactlyOneEmptyTExpression:
+      "Maximum and Minimum Parameter Tracing Expression must either both be empty or both be defined.",
+
+    tMinNumber: "Minimum parameter(t) Value",
+    tMinNumberTip:
+      "A required absolute minimum t value for tracing the parametric curve that is the lower bound for the optional tMin Tracing Expression.",
+    tMaxNumber: "Maximum parameter(t) Value",
+    tMaxNumberTip:
+      "A required absolute minimum t value for tracing the parametric curve that is the upper bound for the optional tMax Tracing Expression.",
+    currentTValue: "Current Value: ",
+    tMinNotLessThantMax:
+      "The minimum t value must be less than the maximum t value for at least one set of measurements. Change at least one t value expressions.",
+    notAUnitParametricCurve:
+      "Parametric curves must on the unit sphere; this curve was not unit at a t value of {tVal}. Check the coordinates of the parametric formulas.",
+    notPerpCurveAndDerivative:
+      "The parametric derivative must be perpendicular to the the unit parametric curve vector; these were not perpendicular at a t value of {tVal}.",
+
+    endPointOfParametric: "The {end} point of parametric curve {parent}.",
+    parametricDescription:
+      "Parametric curve with coordinates ({xExpression}, {yExpression}, {zExpression}) for t from {tMinNumber} to {tMaxNumber}.",
+    duplicateParametricCurve: "Duplicate parametric curves are not allowed."
   },
 
   constructions: {

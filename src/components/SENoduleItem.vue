@@ -24,6 +24,10 @@
             medium>
             $vuetify.icons.value.ellipse
           </v-icon>
+          <v-icon v-else-if="isParametric"
+            medium>
+            $vuetify.icons.value.parametric
+          </v-icon>
           <v-icon v-else-if="isIntersectionPoint"
             medium>
             $vuetify.icons.value.intersectionPoint
@@ -142,6 +146,7 @@ import { SEEllipse } from "@/models/SEEllipse";
 import ToggleLabelDisplayHandler from "@/eventHandlers/ToggleLabelDisplayHandler";
 import { DeleteNoduleCommand } from "@/commands/DeleteNoduleCommand";
 import { CommandGroup } from "@/commands/CommandGroup";
+import { SEParametric } from "@/models/SEParametric";
 
 @Component
 export default class SENoduleItem extends Vue {
@@ -291,6 +296,10 @@ export default class SENoduleItem extends Vue {
     return this.node instanceof SESlider;
   }
 
+  get isParametric(): boolean {
+    return this.node instanceof SEParametric;
+  }
+
   get isPlottable(): boolean {
     return (
       this.node instanceof SEPoint ||
@@ -298,7 +307,8 @@ export default class SENoduleItem extends Vue {
       this.node instanceof SESegment ||
       this.node instanceof SECircle ||
       this.node instanceof SEEllipse ||
-      this.node instanceof SEAngleMarker
+      this.node instanceof SEAngleMarker ||
+      this.node instanceof SEParametric
     );
   }
 
