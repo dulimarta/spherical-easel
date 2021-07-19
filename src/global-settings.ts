@@ -129,7 +129,9 @@ export const SETTINGS = {
       },
       fillColor: {
         front: "hsla(0, 100%, 75%, 1)",
-        back: "hsla(0, 100%, 75%, 1)"
+        frontHSLA: { h: 0, s: 100, l: 75, a: 1 },
+        back: "hsla(0, 100%, 75%, 1)",
+        backHSLA: { h: 0, s: 100, l: 75, a: 1 }
       },
       strokeColor: {
         front: "hsla(240, 55%, 55%, 1)",
@@ -170,6 +172,7 @@ export const SETTINGS = {
       scalePercent: 85, // The percent that the size of the (free) points are scaled by to get the size of the nonFreePoint
       fillColor: {
         front: "hsla(0, 50%, 75%, 1)",
+        frontHSLA: { h: 0, s: 50, l: 75, a: 1 },
         back: "hsla(0, 25%, 75%, 1)"
       },
       strokeColor: {
@@ -307,7 +310,9 @@ export const SETTINGS = {
     drawn: {
       fillColor: {
         front: "hsla(254, 100%, 90%, 0.2)", //"hsla(217, 100%, 80%, 0.0005)", //"noFill",
-        back: "hsla(10, 100%, 50%, 0.1)" //"hsla(217, 100%, 80%, 0.0002)" //"noFill"
+        frontHSLA: { h: 254, s: 100, l: 90, a: 0.2 },
+        back: "hsla(10, 100%, 50%, 0.1)", //"hsla(217, 100%, 80%, 0.0002)" //"noFill"
+        backHSLA: { h: 254, s: 100, l: 50, a: 0.2 }
       },
       strokeColor: {
         front: "hsla(217, 90%, 61%, 1)",
@@ -363,7 +368,9 @@ export const SETTINGS = {
     drawn: {
       fillColor: {
         front: "hsla(254, 100%, 90%, 0.2)", //"hsla(217, 100%, 80%, 0.0005)", //"noFill",
-        back: "hsla(10, 100%, 50%, 0.1)" //"hsla(217, 100%, 80%, 0.0002)" //"noFill"
+        frontHSLA: { h: 254, s: 100, l: 90, a: 0.2 },
+        back: "hsla(10, 100%, 50%, 0.1)", //"hsla(217, 100%, 80%, 0.0002)" //"noFill"
+        backHSLA: { h: 10, s: 100, l: 75, a: 0.1 }
       },
       strokeColor: {
         front: "hsla(217, 90%, 61%, 1)",
@@ -470,7 +477,9 @@ export const SETTINGS = {
     fontSize: 15,
     fillColor: {
       front: "hsla(0, 0%, 0%, 1.0)", //"noFill",
-      back: "hsla(0, 0%, 0%, 0.1)" //"noFill"
+      frontHSLA: { h: 0, s: 0, l: 0, a: 1 },
+      back: "hsla(0, 0%, 0%, 0.1)", //"noFill"
+      backHSLA: { h: 0, s: 0, l: 0, a: 1 }
     },
     style: "normal",
     family: "sans/-serif",
@@ -507,7 +516,9 @@ export const SETTINGS = {
     drawn: {
       fillColor: {
         front: "hsla(254, 100%, 90%, 1)", //"noFill",0.001
-        back: "hsla(10, 100%, 50%, 1)" //"hsla(0, 0%, 0%, 1)" //"noFill"
+        frontHSLA: { h: 254, s: 100, l: 90, a: 1 },
+        back: "hsla(10, 100%, 50%, 1)", //"hsla(0, 0%, 0%, 1)" //"noFill"
+        backHSLA: { h: 10, s: 100, l: 50, a: 1 }
       },
       strokeColor: {
         front: "hsla(0, 0%, 0%, 1)",

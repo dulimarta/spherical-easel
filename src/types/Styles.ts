@@ -1,7 +1,7 @@
 import { SETTINGS } from "@/global-settings";
 // We move the declaration of LabelDisplayMode from this file
 // to @/types/index.ts to solve the circular dependency issue
-import { LabelDisplayMode } from "@/types";
+import { hslaColorType, LabelDisplayMode } from "@/types";
 export enum StyleEditPanels { // The order of these *must* match the order of the panels in Style.vue
   Label,
   Front,
