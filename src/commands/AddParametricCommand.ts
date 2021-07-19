@@ -61,20 +61,17 @@ export class AddParametricCommand extends Command {
         /* arg-1 */ this.seParametric.ref.coordinateExpressions.x,
         /* arg-2 */ this.seParametric.ref.coordinateExpressions.y,
         /* arg-3 */ this.seParametric.ref.coordinateExpressions.z,
-        /* arg-4 */ this.seParametric.ref.primeCoordinateExpressions.x,
-        /* arg-5 */ this.seParametric.ref.primeCoordinateExpressions.y,
-        /* arg-6 */ this.seParametric.ref.primeCoordinateExpressions.z,
-        /* arg-7 */ this.seParametric.ref.tExpressions.min,
-        /* arg-8 */ this.seParametric.ref.tExpressions.max,
-        /* arg-9 */ this.seParametric.ref.tNumbers.min,
-        /* arg-10 */ this.seParametric.ref.tNumbers.max,
-        /* arg-11 */ this.seParametric.ref.closed,
-        /* arg-12 */ this.seParametric.showing,
-        /* arg-13 */ this.seParametric.exists,
-        /* arg-14 */ this.seLabel.name,
-        /* arg-15 */ this.seLabel.exists,
-        /* arg-16 */ this.seLabel.showing,
-        /* arg-17 */ this.seParametric.ref.seParentExpressions
+        /* arg-4 */ this.seParametric.ref.tExpressions.min,
+        /* arg-5 */ this.seParametric.ref.tExpressions.max,
+        /* arg-6 */ this.seParametric.ref.tNumbers.min,
+        /* arg-7 */ this.seParametric.ref.tNumbers.max,
+        /* arg-8 */ this.seParametric.ref.closed,
+        /* arg-9 */ this.seParametric.showing,
+        /* arg-10 */ this.seParametric.exists,
+        /* arg-11 */ this.seLabel.name,
+        /* arg-12 */ this.seLabel.exists,
+        /* arg-13 */ this.seLabel.showing,
+        /* arg-14 */ this.seParametric.ref.seParentExpressions
           .map((n: SEExpression) => n.name)
           .join("@")
       ]
@@ -96,30 +93,24 @@ export class AddParametricCommand extends Command {
       y: tokens[2],
       z: tokens[3]
     };
-    const primeCoordinateExpressions: CoordExpression = {
-      x: tokens[4],
-      y: tokens[5],
-      z: tokens[6]
-    };
     const tExpressions: MinMaxExpression = {
-      min: tokens[7],
-      max: tokens[8]
+      min: tokens[4],
+      max: tokens[5]
     };
     const tNumbers: MinMaxNumber = {
-      min: Number(tokens[9]),
-      max: Number(tokens[10])
+      min: Number(tokens[3]),
+      max: Number(tokens[4])
     };
-    const closed = tokens[11] === "true";
+    const closed = tokens[5] === "true";
 
     const calculationParents: (SENodule | undefined)[] = [];
-    const parentNames = tokens[17].split("@");
+    const parentNames = tokens[11].split("@");
     parentNames.forEach(name =>
       calculationParents.push(objMap.get(name) as SENodule | undefined)
     );
     if (calculationParents.every(seNodule => seNodule !== undefined)) {
       const parametric = new Parametric(
         coordinateExpressions,
-        primeCoordinateExpressions,
         tExpressions,
         tNumbers,
         calculationParents.map(par => par as SEExpression),
@@ -137,8 +128,8 @@ export class AddParametricCommand extends Command {
       objMap.set(tokens[0], newSEParametric);
       newSEParametric.glowing = false;
       newSEParametric.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
-      newSEParametric.showing = tokens[12] === "true";
-      newSEParametric.exists = tokens[13] === "true";
+      newSEParametric.showing = tokens[9] === "true";
+      newSEParametric.exists = tokens[10] === "true";
 
       // Create the plottable and model label
       const seLabel = new SELabel(new Label(), newSEParametric);
@@ -149,10 +140,10 @@ export class AddParametricCommand extends Command {
         .add(new Vector3(0, SETTINGS.parametric.initialLabelOffset, 0))
         .normalize();
       seLabel.locationVector = labelPosition;
-      seLabel.showing = tokens[16] === "true";
-      seLabel.exists = tokens[15] === "true";
-      seLabel.name = tokens[14];
-      objMap.set(tokens[14], seLabel);
+      seLabel.showing = tokens[13] === "true";
+      seLabel.exists = tokens[12] === "true";
+      seLabel.name = tokens[11];
+      objMap.set(tokens[11], seLabel);
 
       // Create a command group to add the points defining the ellipse and the ellipse to the store
       // This way a single undo click will undo all (potentially three) operations.

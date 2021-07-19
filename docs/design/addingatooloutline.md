@@ -147,7 +147,6 @@ This section is an outline of the steps needed to add a tool that takes user mou
 
     - Updating <span class="command">DeleteNoduleCommand</span> to handle `Aaa` objects
     - If the `Aaa` objects are not completely determined by their parents and/or the object is should be movable, a <span class="command">MoveAaaCommand</span> will also need to be added and used in the <span class="handler">MoveHandler</span> class. Otherwise, a <span class="method">Move()</span> method in <span class="class">SEAaa</span> class can be used.
-    - Adding a <span class="method">allAaas</span> method in <span class="file">getters.ts</span>.
 
 8.  Follow step 1, 2, 5, 6, 7, and 8 of [Adding a Control Tool](#adding-a-control-tool)
 

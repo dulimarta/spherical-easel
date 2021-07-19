@@ -17,19 +17,7 @@
               </v-sheet>
             </v-col>
           </v-row>
-          <v-row>
-            <v-col cols="12">
-              <v-sheet rounded
-                color="accent"
-                :elevation="4"
-                class="my-3">
-                <ParametricCoordinates
-                  i18LabelKey="objectTree.parametricDerivativeCoordinates"
-                  :coordinateData="parametricDerivativeData">
-                </ParametricCoordinates>
-              </v-sheet>
-            </v-col>
-          </v-row>
+
           <v-row>
             <v-col cols="12">
               <template v-for="(tVal,idk) in tNumberData">
@@ -114,9 +102,6 @@ interface ParametricDataType {
   xCoord?: string;
   yCoord?: string;
   zCoord?: string;
-  xpCoord?: string;
-  ypCoord?: string;
-  zpCoord?: string;
 }
 
 @Component({
@@ -140,7 +125,6 @@ export default class ParametricForm extends Vue {
    * These are string expressions that once set define the Parametric curve
    */
   private coordinateExpressions: CoordExpression = { x: "", y: "", z: "" };
-  private primeCoordinateExpressions: CoordExpression = { x: "", y: "", z: "" };
   private tExpressions: MinMaxExpression = { min: "", max: "" };
   private tNumbers: MinMaxNumber = { min: NaN, max: NaN };
 
@@ -200,26 +184,6 @@ export default class ParametricForm extends Vue {
     }
   ];
 
-  private readonly parametricDerivativeData = [
-    {
-      i18n_key: "objectTree.parametricXPCoordinate",
-      i18nToolTip: "objectTree.xCoordPrimeExpressionTip",
-      placeholder: "-sin(M1)*sin(t)",
-      name: "xpCoord"
-    },
-    {
-      i18n_key: "objectTree.parametricYPCoordinate",
-      i18nToolTip: "objectTree.yCoordPrimeExpressionTip",
-      placeholder: "sin(M1)cos(t)",
-      name: "ypCoord"
-    },
-    {
-      i18n_key: "objectTree.parametricZPCoordinate",
-      i18nToolTip: "objectTree.zCoordPrimeExpressionTip",
-      placeholder: "0",
-      name: "zpCoord"
-    }
-  ];
   created(): void {
     window.addEventListener("keydown", this.keyHandler);
   }
@@ -254,9 +218,9 @@ export default class ParametricForm extends Vue {
     this.coordinateExpressions.x = "sin(pi/4)*cos(t)";
     this.coordinateExpressions.y = "sin(pi/4)*sin(t)";
     this.coordinateExpressions.z = "cos(pi/4)";
-    this.primeCoordinateExpressions.x = "-sin(pi/4)*sin(t)";
-    this.primeCoordinateExpressions.y = "sin(pi/4)*cos(t)";
-    this.primeCoordinateExpressions.z = "0";
+    // this.primeCoordinateExpressions.x = "-sin(pi/4)*sin(t)";
+    // this.primeCoordinateExpressions.y = "sin(pi/4)*cos(t)";
+    // this.primeCoordinateExpressions.z = "0";
   }
   setEllipseExpressions(): void {
     this.tNumbers.min = 0;
@@ -265,10 +229,10 @@ export default class ParametricForm extends Vue {
     this.coordinateExpressions.y = "sin(M2)*sin(t)";
     this.coordinateExpressions.z =
       "sqrt(cos(M1)^2 +sin(M1-M2)*sin(M1+M2)*sin(t)^2)";
-    this.primeCoordinateExpressions.x = "-1*sin(M1)*sin(t)";
-    this.primeCoordinateExpressions.y = "sin(M2)*cos(t)";
-    this.primeCoordinateExpressions.z =
-      "(sin(M1-M2)*sin(M1+M2)*sin(2*t))/(2*sqrt(cos(M1)^2 +sin(M1-M2)*sin(M1+M2)*sin(t)^2))";
+    // this.primeCoordinateExpressions.x = "-1*sin(M1)*sin(t)";
+    // this.primeCoordinateExpressions.y = "sin(M2)*cos(t)";
+    // this.primeCoordinateExpressions.z =
+    //   "(sin(M1-M2)*sin(M1+M2)*sin(2*t))/(2*sqrt(cos(M1)^2+sin(M1-M2)*sin(M1+M2)*sin(t)^2))";
   }
   setCardioidExpressions(): void {
     this.tNumbers.min = 0;
@@ -277,11 +241,11 @@ export default class ParametricForm extends Vue {
       "sin(M1)+2*cos(M1)^2*sin(M1)*(cos(t)-cos(t)^2)";
     this.coordinateExpressions.y = "2*cos(M1)^2*sin(M1)*sin(t)*(1-cos(t))";
     this.coordinateExpressions.z = "cos(M1)-2*cos(M1)*sin(M1)^2*(1-cos(t))";
-    this.primeCoordinateExpressions.x =
-      "2*cos(M1)^2*sin(M1)*(-1*sin(t)+2*cos(t)*sin(t))";
-    this.primeCoordinateExpressions.y =
-      "2*cos(M1)^2*sin(M1)*cos(t)*(1-cos(t)) + 2*cos(M1)^2*sin(M1)*sin(t)*(sin(t))";
-    this.primeCoordinateExpressions.z = "-2*cos(M1)*sin(M1)^2*sin(t)";
+    // this.primeCoordinateExpressions.x =
+    //   "2*cos(M1)^2*sin(M1)*(-1*sin(t)+2*cos(t)*sin(t))";
+    // this.primeCoordinateExpressions.y =
+    //   "2*cos(M1)^2*sin(M1)*cos(t)*(1-cos(t)) + 2*cos(M1)^2*sin(M1)*sin(t)*(sin(t))";
+    // this.primeCoordinateExpressions.z = "-2*cos(M1)*sin(M1)^2*sin(t)";
   }
   setSprialExpressions(): void {
     this.tNumbers.min = 0;
@@ -289,11 +253,11 @@ export default class ParametricForm extends Vue {
     this.coordinateExpressions.x = "sqrt(1-t^2)*cos(4*pi*t)";
     this.coordinateExpressions.y = "sqrt(1-t^2)*sin(4*pi*t)";
     this.coordinateExpressions.z = "t";
-    this.primeCoordinateExpressions.x =
-      "-1*sqrt(1-t^2)*sin(4*pi*t)*4*pi-t*cos(4*pi*t)/sqrt(1-t^2)";
-    this.primeCoordinateExpressions.y =
-      "sqrt(1-t^2)*cos(4*pi*t)*4*pi-t*sin(4*pi*t)/sqrt(1-t^2)";
-    this.primeCoordinateExpressions.z = "1";
+    // this.primeCoordinateExpressions.x =
+    //   "-1*sqrt(1-t^2)*sin(4*pi*t)*4*pi-t*cos(4*pi*t)/sqrt(1-t^2)";
+    // this.primeCoordinateExpressions.y =
+    //   "sqrt(1-t^2)*cos(4*pi*t)*4*pi-t*sin(4*pi*t)/sqrt(1-t^2)";
+    // this.primeCoordinateExpressions.z = "1";
   }
 
   setLoxodromeExpressions(): void {
@@ -304,11 +268,11 @@ export default class ParametricForm extends Vue {
     this.coordinateExpressions.x = "cos(t)/sqrt(1+4*t^2)";
     this.coordinateExpressions.y = "sin(t)/sqrt(1+4*t^2)";
     this.coordinateExpressions.z = "-2*t/sqrt(1+4*t^2)";
-    this.primeCoordinateExpressions.x =
-      "-1*((sin(t)+4*t*(cos(t)+t*sin(t)))/(1+4*t^2)^(3/2))";
-    this.primeCoordinateExpressions.y =
-      "(cos(t)+4*t^2*cos(t)-4*t*sin(t))/(1+4*t^2)^(3/2)";
-    this.primeCoordinateExpressions.z = "-1*(2/(1+4*t^2)^(3/2))";
+    // this.primeCoordinateExpressions.x =
+    //   "-1*((sin(t)+4*t*(cos(t)+t*sin(t)))/(1+4*t^2)^(3/2))";
+    // this.primeCoordinateExpressions.y =
+    //   "(cos(t)+4*t^2*cos(t)-4*t*sin(t))/(1+4*t^2)^(3/2)";
+    // this.primeCoordinateExpressions.z = "-1*(2/(1+4*t^2)^(3/2))";
   }
 
   setCycloidExpressions(): void {
@@ -349,18 +313,18 @@ export default class ParametricForm extends Vue {
       .replaceAll(`a`, a)
       .replaceAll(`w`, w)
       .replaceAll(`q`, q);
-    this.primeCoordinateExpressions.x = "(1/q)*(2*(-q+cos(w))*sin(t)*sin((q*t)/2)^2+cos(t)*(1-q*cos(w))*sin(q*t))*a"
-      .replaceAll(`a`, a)
-      .replaceAll(`w`, w)
-      .replaceAll(`q`, q);
-    this.primeCoordinateExpressions.y = "(1/q)*(2*cos(t)*(q-cos(w))*sin((q*t)/2)^2+(1-q*cos(w))*sin(t)*sin(q*t))*a"
-      .replaceAll(`a`, a)
-      .replaceAll(`w`, w)
-      .replaceAll(`q`, q);
-    this.primeCoordinateExpressions.z = "sin(q*t)*sin(w)*a"
-      .replaceAll(`a`, a)
-      .replaceAll(`w`, w)
-      .replaceAll(`q`, q);
+    // this.primeCoordinateExpressions.x = "(1/q)*(2*(-q+cos(w))*sin(t)*sin((q*t)/2)^2+cos(t)*(1-q*cos(w))*sin(q*t))*a"
+    //   .replaceAll(`a`, a)
+    //   .replaceAll(`w`, w)
+    //   .replaceAll(`q`, q);
+    // this.primeCoordinateExpressions.y = "(1/q)*(2*cos(t)*(q-cos(w))*sin((q*t)/2)^2+(1-q*cos(w))*sin(t)*sin(q*t))*a"
+    //   .replaceAll(`a`, a)
+    //   .replaceAll(`w`, w)
+    //   .replaceAll(`q`, q);
+    // this.primeCoordinateExpressions.z = "sin(q*t)*sin(w)*a"
+    //   .replaceAll(`a`, a)
+    //   .replaceAll(`w`, w)
+    //   .replaceAll(`q`, q);
   }
   beforeDestroy(): void {
     window.removeEventListener("keydown", this.keyHandler);
@@ -388,15 +352,6 @@ export default class ParametricForm extends Vue {
     if (obj.zCoord !== undefined) {
       this.coordinateExpressions.z = obj.zCoord;
     }
-    if (obj.xpCoord !== undefined) {
-      this.primeCoordinateExpressions.x = obj.xpCoord;
-    }
-    if (obj.ypCoord !== undefined) {
-      this.primeCoordinateExpressions.y = obj.ypCoord;
-    }
-    if (obj.zpCoord !== undefined) {
-      this.primeCoordinateExpressions.z = obj.zpCoord;
-    }
   }
 
   get disableAddParametricButton(): boolean {
@@ -405,10 +360,7 @@ export default class ParametricForm extends Vue {
       isNaN(this.tNumbers.max) ||
       this.coordinateExpressions.x === "" ||
       this.coordinateExpressions.y === "" ||
-      this.coordinateExpressions.z === "" ||
-      this.primeCoordinateExpressions.x === "" ||
-      this.primeCoordinateExpressions.y === "" ||
-      this.primeCoordinateExpressions.z === ""
+      this.coordinateExpressions.z === ""
     );
   }
   addParametricCurve(): void {
@@ -484,12 +436,25 @@ export default class ParametricForm extends Vue {
       return;
     }
 
-    // verify P and P' are perpendicular
-    const notPerpAtThisTValue = this.curveAndDerivativePerpCheck(tValues);
-    if (notPerpAtThisTValue !== null) {
+    // verify we can compute P' using ExpressionParser
+    //const notPerpAtThisTValue = this.curveAndDerivativePerpCheck(tValues);
+    try {
+      ExpressionParser.differentiate(
+        ExpressionParser.parse(this.coordinateExpressions.x),
+        "t"
+      );
+      ExpressionParser.differentiate(
+        ExpressionParser.parse(this.coordinateExpressions.y),
+        "t"
+      );
+      ExpressionParser.differentiate(
+        ExpressionParser.parse(this.coordinateExpressions.z),
+        "t"
+      );
+    } catch (err) {
       EventBus.fire("show-alert", {
-        key: "objectTree.notPerpCurveAndDerivative",
-        keyOptions: { tVal: notPerpAtThisTValue.toFixed(3) },
+        key: "objectTree.unableToComputeTheDerivativeOf",
+        keyOptions: { error: err },
         type: "error"
       });
       return;
@@ -533,23 +498,6 @@ export default class ParametricForm extends Vue {
       }
     }
 
-    for (k in this.primeCoordinateExpressions) {
-      const exp = this.primeCoordinateExpressions[k];
-      for (const v of exp.matchAll(/[Mm][0-9]+/g)) {
-        const pos = SEStore.expressions.findIndex(z =>
-          z.name.startsWith(`${v[0]}`)
-        );
-        // add it to the calculationParents if it is not already added
-        if (pos > -1) {
-          const pos2 = calculationParents.findIndex(
-            parent => parent.name === SEStore.expressions[pos].name
-          );
-          if (pos2 < 0) {
-            calculationParents.push(SEStore.expressions[pos]);
-          }
-        }
-      }
-    }
     let l: keyof MinMaxExpression;
     for (l in this.tExpressions) {
       const exp = this.tExpressions[l];
@@ -571,7 +519,6 @@ export default class ParametricForm extends Vue {
 
     const parametric = new Parametric(
       this.coordinateExpressions,
-      this.primeCoordinateExpressions,
       this.tExpressions,
       this.tNumbers,
       calculationParents,
@@ -645,7 +592,7 @@ export default class ParametricForm extends Vue {
       newSEParametric.endPoints = [startSEEndPoint, endSEEndPoint];
     }
     // Generate new intersection points. These points must be computed and created
-    // in the store. Add the new created points to the ellipse command so they can be undone.
+    // in the store. Add the new created points to the parametric command so they can be undone.
     SEStore.createAllIntersectionsWithParametric(newSEParametric).forEach(
       (item: SEIntersectionReturnType) => {
         // Create the plottable and model label
@@ -680,9 +627,8 @@ export default class ParametricForm extends Vue {
 
     parametricCommandGroup.execute();
 
-    console.log("add Parametric comands");
-
     newSEParametric.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
+    console.log("add Parametric comands");
   }
 
   parametricCurveIsUnitCheck(tValues: number[]): null | number {
@@ -702,38 +648,38 @@ export default class ParametricForm extends Vue {
     }
     return null;
   }
-  curveAndDerivativePerpCheck(tValues: number[]): null | number {
-    // I'm not using tValues.forEach because once a non-unit vector is found, we return the t value and stop checking.
-    for (let i = 0; i < tValues.length; i++) {
-      this.varMap.set("t", tValues[i]);
+  // curveAndDerivativePerpCheck(tValues: number[]): null | number {
+  //   // I'm not using tValues.forEach because once a non-unit vector is found, we return the t value and stop checking.
+  //   for (let i = 0; i < tValues.length; i++) {
+  //     this.varMap.set("t", tValues[i]);
 
-      this.tempVector.set(
-        this.parser.evaluateWithVars(this.coordinateExpressions.x, this.varMap),
-        this.parser.evaluateWithVars(this.coordinateExpressions.y, this.varMap),
-        this.parser.evaluateWithVars(this.coordinateExpressions.z, this.varMap)
-      );
-      this.tempVector1.set(
-        this.parser.evaluateWithVars(
-          this.primeCoordinateExpressions.x,
-          this.varMap
-        ),
-        this.parser.evaluateWithVars(
-          this.primeCoordinateExpressions.y,
-          this.varMap
-        ),
-        this.parser.evaluateWithVars(
-          this.primeCoordinateExpressions.z,
-          this.varMap
-        )
-      );
-      if (
-        Math.abs(this.tempVector.dot(this.tempVector1)) >
-        SETTINGS.nearlyAntipodalIdeal
-      ) {
-        return tValues[i];
-      }
-    }
-    return null;
-  }
+  //     this.tempVector.set(
+  //       this.parser.evaluateWithVars(this.coordinateExpressions.x, this.varMap),
+  //       this.parser.evaluateWithVars(this.coordinateExpressions.y, this.varMap),
+  //       this.parser.evaluateWithVars(this.coordinateExpressions.z, this.varMap)
+  //     );
+  //     this.tempVector1.set(
+  //       this.parser.evaluateWithVars(
+  //         this.primeCoordinateExpressions.x,
+  //         this.varMap
+  //       ),
+  //       this.parser.evaluateWithVars(
+  //         this.primeCoordinateExpressions.y,
+  //         this.varMap
+  //       ),
+  //       this.parser.evaluateWithVars(
+  //         this.primeCoordinateExpressions.z,
+  //         this.varMap
+  //       )
+  //     );
+  //     if (
+  //       Math.abs(this.tempVector.dot(this.tempVector1)) >
+  //       SETTINGS.nearlyAntipodalIdeal
+  //     ) {
+  //       return tValues[i];
+  //     }
+  //   }
+  //   return null;
+  // }
 }
 </script>

@@ -414,6 +414,12 @@ export abstract class SENodule {
     t1: number,
     t2: number
   ): number {
+    if (Math.abs(f(t1)) < SETTINGS.tolerance / 1000) {
+      return t1;
+    }
+    if (Math.abs(f(t2)) < SETTINGS.tolerance / 1000) {
+      return t2;
+    }
     const mid = (t1 + t2) / 2;
     if (Math.abs(t2 - t1) < SETTINGS.parameterization.bisectionMinSize) {
       return mid;
@@ -473,7 +479,11 @@ export abstract class SENodule {
       //   temp.copy(PPrime(tVal).normalize()).y,
       //   temp.copy(PPrime(tVal).normalize()).z
       // );
-      returnVectors.push(temp.copy(PPrime(tVal).normalize()));
+      temp.copy(PPrime(tVal));
+      // don't return any zero vectors, the derivative being zero leads to a zero, but not a perpendicular
+      if (!temp.isZero(SETTINGS.tolerance)) {
+        returnVectors.push(temp.normalize());
+      }
     });
     // console.log(
     //   "returnVectors list 0",
@@ -482,8 +492,8 @@ export abstract class SENodule {
     //   returnVectors[1].y,
     //   returnVectors[1].z
     // );
-    // don't return any zero vectors, the derivative being zero leads to a zero, but not a perpendicular
-    return returnVectors.filter(vec => !vec.isZero(SETTINGS.tolerance));
+
+    return returnVectors;
   }
 
   public static findZerosParametrically(

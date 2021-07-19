@@ -374,12 +374,12 @@ export default class Label extends Nodule {
    * @param options The style options
    */
   updateStyle(mode: StyleEditPanels, options: StyleOptions): void {
-    console.debug(
-      "Label: Update style of Label of ",
-      // this._shortUserName,
-      " using",
-      options
-    );
+    // console.debug(
+    //   "Label: Update style of Label of ",
+    //   // this._shortUserName,
+    //   " using",
+    //   options
+    // );
     const currentOptions = this.styleOptions.get(mode);
     this.styleOptions.set(mode, { ...currentOptions, ...options });
 

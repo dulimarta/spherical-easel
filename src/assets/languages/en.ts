@@ -487,7 +487,9 @@ export default {
     endPointOfParametric: "The {end} point of parametric curve {parent}.",
     parametricDescription:
       "Parametric curve with coordinates ({xExpression}, {yExpression}, {zExpression}) for t from {tMinNumber} to {tMaxNumber}.",
-    duplicateParametricCurve: "Duplicate parametric curves are not allowed."
+    duplicateParametricCurve: "Duplicate parametric curves are not allowed.",
+    unableToComputeTheDerivativeOf:
+      "We were unable to compute the derivative of one of the coordinate expressions. Error: {error}"
   },
 
   constructions: {

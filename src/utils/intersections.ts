@@ -1032,8 +1032,8 @@ export function intersectParametricWithParametric(
   parametric1: SEParametric,
   parametric2: SEParametric
 ): IntersectionReturnType[] {
-  const maxNumberOfIntersections =
-    parametric1.ref.numberOfParts + parametric2.ref.numberOfParts;
+  const maxNumberOfIntersections = 0;
+  //  parametric1.ref.numberOfParts + parametric2.ref.numberOfParts;
 
   const returnItems: IntersectionReturnType[] = [];
   for (let i = 0; i < maxNumberOfIntersections; i++) {
@@ -1099,5 +1099,8 @@ export function intersectTwoObjects(
     if (two instanceof SEParametric)
       intersectParametricWithParametric(one, two);
   }
-  throw "Attempted to intersect a non-dimensional object";
+  throw "Attempted to intersect non-one dimensional objects " +
+    `${one.name}` +
+    " and " +
+    `${two.name}`;
 }

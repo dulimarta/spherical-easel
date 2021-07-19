@@ -124,7 +124,7 @@ export class SEIntersectionPoint extends SEPoint {
     this.setOutOfDate(false);
     this._exists = this.seParent1.exists && this.seParent2.exists;
     if (this._exists) {
-      //console.debug("Updating SEIntersectionPoint", this.name);
+      // console.debug("Updating SEIntersectionPoint", this.name);
       // The objects are in the correct order because the SEIntersectionPoint parents are assigned that way
       const updatedIntersectionInfo: IntersectionReturnType[] = intersectTwoObjects(
         this.seParent1,

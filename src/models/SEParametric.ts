@@ -270,7 +270,7 @@ export class SEParametric extends SENodule
     ];
     // It must be the case that tMax> tMin because in update we check to make sure -- if it is not true then this parametric doesn't exist
 
-    let normalList = SENodule.getNormalsToLineThruParametrically(
+    const normalList = SENodule.getNormalsToLineThruParametrically(
       this.ref.P.bind(this.ref), // bind the this.ref so that this in the this.ref.P method is this.ref
       this.ref.PPrime.bind(this.ref), // bind the this.ref so that this in the this.ref.PPrime method is this.ref
       transformedToStandard,
@@ -289,10 +289,17 @@ export class SEParametric extends SENodule
     // normalList.forEach(vec =>
     //   console.log(Math.abs(vec.dot(transformedToStandard)) < 0.00001)
     // );
+
+    normalList.forEach(vec => {
+      if (Math.abs(vec.length() - 1) > 0.00000001) {
+        console.log("BLAHHHHHHH normal len", vec.length());
+      }
+    });
+
     // check for normals that arise from curve being C0 and not C1 -- must pass through the given vector
-    normalList = normalList
-      .filter(vec => Math.abs(vec.dot(transformedToStandard)) < 0.00001)
-      .filter(vec => vec.normalize());
+    // normalList = normalList
+    //   .filter(vec => Math.abs(vec.dot(transformedToStandard)) < 0.00001)
+    //   .filter(vec => vec.normalize());
 
     // remove duplicates from the list
     const uniqueNormals: Vector3[] = [];
@@ -305,7 +312,7 @@ export class SEParametric extends SENodule
         uniqueNormals.push(vec.normalize());
       }
     });
-    console.log("un per", uniqueNormals, normalList.length);
+    // console.log("un per", uniqueNormals, normalList.length);
 
     if (uniqueNormals.length > this._maxNumberOfPerpendiculars) {
       console.debug(

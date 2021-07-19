@@ -455,34 +455,104 @@ export class ExpressionParser {
         };
       }
       case TokenType.POW: {
-        // diff (f^N) = N * f^(N-1) * diff(f)
+        // if (input.rightChild?.node.kind !== TokenType.NUMBER)
+        //   throw new Error("Can't handle non-numeric exponents");
+        // const fDiff = this.differentiate(input.leftChild, varName);
+        // const expo = input.rightChild.node.numericValue ?? 1;
+        // const N: SyntaxTree = {
+        //   node: {
+        //     kind: TokenType.NUMBER,
+        //     numericValue: input.rightChild.node.numericValue
+        //   }
+        // };
+        // const fPower: SyntaxTree = {
+        //   node: { kind: TokenType.POW },
+        //   leftChild: input.leftChild,
+        //   rightChild: {
+        //     node: { kind: TokenType.NUMBER, numericValue: expo - 1 }
+        //   }
+        // };
+        // // Return the product of the three terms above
+        // return {
+        //   node: { kind: TokenType.MULT },
+        //   leftChild: N,
+        //   rightChild: {
+        //     node: { kind: TokenType.MULT },
+        //     leftChild: fPower,
+        //     rightChild: fDiff
+        //   }
+        // };
+
+        // typical use case of diff (f^N) = N * f^(N-1) * diff(f) can't handle N = -1/2 so use more complex/general version
         // diff(f(x)^g(x)) = f(x)^g(x) * diff(g(x)) * ln(f(x)) + f(x)^(g(x)-1) * g(x) * diff(f(x))
-        if (input.rightChild?.node.kind !== TokenType.NUMBER)
-          throw new Error("Can't handle non-numeric exponents");
-        const fDiff = this.differentiate(input.leftChild, varName);
-        const expo = input.rightChild.node.numericValue ?? 1;
-        const N: SyntaxTree = {
-          node: {
-            kind: TokenType.NUMBER,
-            numericValue: input.rightChild.node.numericValue
-          }
-        };
-        const fPower: SyntaxTree = {
+
+        const gDiff = this.differentiate(input.rightChild, varName);
+        let lnf: SyntaxTree;
+        if (
+          input.rightChild?.node.kind === TokenType.NUMBER &&
+          input.rightChild?.node.numericValue === 0
+        ) {
+          return {
+            node: { kind: TokenType.NUMBER, text: "0", numericValue: 0 }
+          };
+
+          // lnf = {
+          //   node: {
+          //     kind: TokenType.MATH_BUILTIN,
+          //     text: "ln"
+          //   },
+          //   args: [input.leftChild!]
+          // };
+        } else {
+          // if f(x) is negative or zero then ln(f(x)) is undefined -- this happens for terms like sin(t)^2, this equivalent avoids this, but is undefined if g(x) =0
+          lnf = {
+            node: { kind: TokenType.DIV },
+            leftChild: {
+              node: { kind: TokenType.MATH_BUILTIN, text: "ln" },
+              args: [input]
+            },
+            rightChild: input.rightChild
+          };
+        }
+        const fTogMinusOne: SyntaxTree = {
           node: { kind: TokenType.POW },
           leftChild: input.leftChild,
           rightChild: {
-            node: { kind: TokenType.NUMBER, numericValue: expo - 1 }
+            node: { kind: TokenType.MINUS },
+            leftChild: input.rightChild,
+            rightChild: {
+              node: { kind: TokenType.NUMBER, text: "1", numericValue: 1 }
+            }
           }
         };
-        // Return the product of the three terms above
-        return {
+        const fDiff = this.differentiate(input.leftChild, varName);
+
+        // Create the left triple
+        const firstTerm: SyntaxTree = {
           node: { kind: TokenType.MULT },
-          leftChild: N,
+          leftChild: input,
           rightChild: {
             node: { kind: TokenType.MULT },
-            leftChild: fPower,
+            leftChild: gDiff,
+            rightChild: lnf
+          }
+        };
+        // Create the right triple
+        const secondTerm: SyntaxTree = {
+          node: { kind: TokenType.MULT },
+          leftChild: fTogMinusOne,
+          rightChild: {
+            node: { kind: TokenType.MULT },
+            leftChild: input.rightChild,
             rightChild: fDiff
           }
+        };
+
+        // Return the sum of the two terms above
+        return {
+          node: { kind: TokenType.PLUS },
+          leftChild: firstTerm,
+          rightChild: secondTerm
         };
       }
       case TokenType.MATH_BUILTIN: {

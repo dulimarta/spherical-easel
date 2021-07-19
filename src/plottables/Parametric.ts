@@ -53,12 +53,6 @@ export default class Parametric extends Nodule {
     z: ExpressionParser.NOT_DEFINED
   };
 
-  private _primeCoordinateExpressions: CoordExpression = {
-    x: "",
-    y: "",
-    z: ""
-  };
-
   private primeCoordinateSyntaxTrees: CoordinateSyntaxTrees = {
     x: ExpressionParser.NOT_DEFINED,
     y: ExpressionParser.NOT_DEFINED,
@@ -100,69 +94,6 @@ export default class Parametric extends Nodule {
    * The arcLength of the parametric curve from tNumber.min to tNumber.Max
    */
   private _initialArcLength: number;
-  /**
-   * The tMin & tMax starting *tracing* parameter of the curve.
-   */
-  public tMinMaxExpressionValues(): number[] | null {
-    if (this._tExpressions.min === "" || this._tExpressions.max === "")
-      return null;
-    // first update the map with the current values of the measurements
-    this._seParentExpressions.forEach((m: SEExpression) => {
-      const measurementName = m.name;
-      // console.debug("Measurement", m, measurementName);
-      this.varMap.set(measurementName, m.value);
-    });
-    let tMin = ExpressionParser.evaluate(this.tSyntaxTrees.min, this.varMap);
-    let tMax = ExpressionParser.evaluate(this.tSyntaxTrees.max, this.varMap);
-    // restrict to the parameter interval of tNumber.min to tNumber.max
-    if (tMin < this._tNumbers.min) tMin = this._tNumbers.min;
-    if (tMax > this._tNumbers.max) tMax = this._tNumbers.max;
-
-    return [tMin, tMax];
-  }
-
-  /**
-   * The parameterization of the curve.
-   * @param t the parameter
-   * @returns vector containing the location
-   */
-  public P(t: number): Vector3 {
-    // first update the map with the current value of
-    this._seParentExpressions.forEach((m: SEExpression) => {
-      const measurementName = m.name;
-      // console.debug("Measurement", m, measurementName);
-      this.varMap.set(measurementName, m.value);
-    });
-    //add the current t value
-    this.varMap.set("t", t);
-
-    return this.parameterization.set(
-      ExpressionParser.evaluate(this.coordinateSyntaxTrees.x, this.varMap),
-      ExpressionParser.evaluate(this.coordinateSyntaxTrees.y, this.varMap),
-      ExpressionParser.evaluate(this.coordinateSyntaxTrees.z, this.varMap)
-    );
-  }
-  /**
-   * The parameterization of the derivative of the curve
-   * Note: This is *not* a unit parameterization
-   * @param t the parameter
-   */
-  public PPrime(t: number): Vector3 {
-    // first update the map with the current value of
-    this._seParentExpressions.forEach((m: SEExpression) => {
-      const measurementName = m.name;
-      // console.debug("Measurement", m, measurementName);
-      this.varMap.set(measurementName, m.value);
-    });
-    //add the current t value
-    this.varMap.set("t", t);
-
-    return this.parameterizationPrime.set(
-      ExpressionParser.evaluate(this.primeCoordinateSyntaxTrees.x, this.varMap),
-      ExpressionParser.evaluate(this.primeCoordinateSyntaxTrees.y, this.varMap),
-      ExpressionParser.evaluate(this.primeCoordinateSyntaxTrees.z, this.varMap)
-    );
-  }
 
   /**
    * Vuex global state
@@ -221,7 +152,6 @@ export default class Parametric extends Nodule {
 
   constructor(
     coordinateExpressions: { x: string; y: string; z: string },
-    primeCoordinateExpressions: { x: string; y: string; z: string },
     tExpressions: { min: string; max: string },
     tNumbers: { min: number; max: number },
     measurementParents: SEExpression[],
@@ -242,10 +172,6 @@ export default class Parametric extends Nodule {
     this.coordinateSyntaxTrees.z = ExpressionParser.parse(
       coordinateExpressions.z
     );
-
-    this._primeCoordinateExpressions.x = primeCoordinateExpressions.x;
-    this._primeCoordinateExpressions.y = primeCoordinateExpressions.y;
-    this._primeCoordinateExpressions.z = primeCoordinateExpressions.z;
 
     this.primeCoordinateSyntaxTrees.x = ExpressionParser.differentiate(
       this.coordinateSyntaxTrees.x,
@@ -279,35 +205,35 @@ export default class Parametric extends Nodule {
       this.varMap.set(measurementName, m.value);
     });
     //add the current t value
-    this.varMap.set("t", 0.12317861);
+    this.varMap.set("t", 0.67213461);
 
-    console.log(
-      "test the dervaives",
-      ExpressionParser.evaluate(
-        this.primeCoordinateSyntaxTrees.x,
-        this.varMap
-      ) -
-        this.parser.evaluateWithVars(
-          this.primeCoordinateExpressions.x,
-          this.varMap
-        ),
-      ExpressionParser.evaluate(
-        this.primeCoordinateSyntaxTrees.y,
-        this.varMap
-      ) -
-        this.parser.evaluateWithVars(
-          this.primeCoordinateExpressions.y,
-          this.varMap
-        ),
-      ExpressionParser.evaluate(
-        this.primeCoordinateSyntaxTrees.z,
-        this.varMap
-      ) -
-        this.parser.evaluateWithVars(
-          this.primeCoordinateExpressions.z,
-          this.varMap
-        )
-    );
+    // console.log(
+    //   "test the derivatives",
+    //   ExpressionParser.evaluate(
+    //     this.primeCoordinateSyntaxTrees.x,
+    //     this.varMap
+    //   ) -
+    //     this.parser.evaluateWithVars(
+    //       this.primeCoordinateExpressions.x,
+    //       this.varMap
+    //     ),
+    //   ExpressionParser.evaluate(
+    //     this.primeCoordinateSyntaxTrees.y,
+    //     this.varMap
+    //   ) -
+    //     this.parser.evaluateWithVars(
+    //       this.primeCoordinateExpressions.y,
+    //       this.varMap
+    //     ),
+    //   ExpressionParser.evaluate(
+    //     this.primeCoordinateSyntaxTrees.z,
+    //     this.varMap
+    //   ) -
+    //     this.parser.evaluateWithVars(
+    //       this.primeCoordinateExpressions.z,
+    //       this.varMap
+    //     )
+    // );
 
     // Determine an *ESTIMATE* of number of front/back parts need to render the curve, the curves can change length and shape depending on the
     // the value of the M1, M2, etc.  So overestimate the actual number
@@ -431,7 +357,7 @@ export default class Parametric extends Nodule {
       this._tNumbers.min,
       this._tNumbers.max
     );
-    // console.log("arcLength", this._initialArcLength);
+    console.log("arcLength", this._initialArcLength);
     // As the Parametric is moved around the vertices are passed between the front and back parts, but it
     // is always true that sum of the number of all frontVertices and the sum of all the backVertices = 2*floor(SUBDIVISIONS*InitialArcLength)+2
     const frontVertices: Two.Vector[] = [];
@@ -499,6 +425,71 @@ export default class Parametric extends Nodule {
     );
     this.styleOptions.set(StyleEditPanels.Back, DEFAULT_PARAMETRIC_BACK_STYLE);
   }
+
+  /**
+   * The tMin & tMax starting *tracing* parameter of the curve.
+   */
+  public tMinMaxExpressionValues(): number[] | null {
+    if (this._tExpressions.min === "" || this._tExpressions.max === "")
+      return null;
+    // first update the map with the current values of the measurements
+    this._seParentExpressions.forEach((m: SEExpression) => {
+      const measurementName = m.name;
+      // console.debug("Measurement", m, measurementName);
+      this.varMap.set(measurementName, m.value);
+    });
+    let tMin = ExpressionParser.evaluate(this.tSyntaxTrees.min, this.varMap);
+    let tMax = ExpressionParser.evaluate(this.tSyntaxTrees.max, this.varMap);
+    // restrict to the parameter interval of tNumber.min to tNumber.max
+    if (tMin < this._tNumbers.min) tMin = this._tNumbers.min;
+    if (tMax > this._tNumbers.max) tMax = this._tNumbers.max;
+
+    return [tMin, tMax];
+  }
+
+  /**
+   * The parameterization of the curve.
+   * @param t the parameter
+   * @returns vector containing the location
+   */
+  public P(t: number): Vector3 {
+    // first update the map with the current value of
+    this._seParentExpressions.forEach((m: SEExpression) => {
+      const measurementName = m.name;
+      // console.debug("Measurement", m, measurementName);
+      this.varMap.set(measurementName, m.value);
+    });
+    //add the current t value
+    this.varMap.set("t", t);
+
+    return this.parameterization.set(
+      ExpressionParser.evaluate(this.coordinateSyntaxTrees.x, this.varMap),
+      ExpressionParser.evaluate(this.coordinateSyntaxTrees.y, this.varMap),
+      ExpressionParser.evaluate(this.coordinateSyntaxTrees.z, this.varMap)
+    );
+  }
+  /**
+   * The parameterization of the derivative of the curve
+   * Note: This is *not* a unit parameterization
+   * @param t the parameter
+   */
+  public PPrime(t: number): Vector3 {
+    // first update the map with the current value of
+    this._seParentExpressions.forEach((m: SEExpression) => {
+      const measurementName = m.name;
+      // console.debug("Measurement", m, measurementName);
+      this.varMap.set(measurementName, m.value);
+    });
+    //add the current t value
+    this.varMap.set("t", t);
+
+    return this.parameterizationPrime.set(
+      ExpressionParser.evaluate(this.primeCoordinateSyntaxTrees.x, this.varMap),
+      ExpressionParser.evaluate(this.primeCoordinateSyntaxTrees.y, this.varMap),
+      ExpressionParser.evaluate(this.primeCoordinateSyntaxTrees.z, this.varMap)
+    );
+  }
+
   /**
    *
    * @param tMin starting t parameter
@@ -517,21 +508,22 @@ export default class Parametric extends Nodule {
         i < SETTINGS.parameterization.subdivisions * iteration;
         i++
       ) {
-        newArcLength =
-          newArcLength +
-          this.PPrime(
-            tMin +
-              ((i + 0.5) /
-                (SETTINGS.parameterization.subdivisions * iteration)) *
-                (tMax - tMin)
-          ).length();
+        const len = this.PPrime(
+          tMin +
+            ((i + 0.5) / (SETTINGS.parameterization.subdivisions * iteration)) *
+              (tMax - tMin)
+        ).length();
+        if (!isNaN(len)) {
+          newArcLength += len;
+        }
+
         // console.log(
         //   "PPrime",
         //   this.PPrime(
         //     tMin +
         //       (i / (SETTINGS.parameterization.subdivisions * iteration)) *
         //         (tMax - tMin)
-        //   ).x,
+        //   ).z,
         //   this.PPrime(
         //     tMin +
         //       (i / (SETTINGS.parameterization.subdivisions * iteration)) *
@@ -725,9 +717,7 @@ export default class Parametric extends Nodule {
   get coordinateExpressions(): CoordExpression {
     return this._coordinateExpressions;
   }
-  get primeCoordinateExpressions(): CoordExpression {
-    return this._primeCoordinateExpressions;
-  }
+
   get tExpressions(): MinMaxExpression {
     return this._tExpressions;
   }
