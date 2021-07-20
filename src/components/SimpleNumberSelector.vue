@@ -28,7 +28,7 @@ import Vue from "vue";
 import { Prop, PropSync, Component } from "vue-property-decorator";
 
 @Component
-export default class NumberSelector extends Vue {
+export default class SimpleNumberSelector extends Vue {
   @Prop() readonly titleKey!: string;
   @PropSync("data", { type: Number }) styleData!: number;
   @Prop() readonly thumbStringValues?: string[];

@@ -424,6 +424,7 @@ export default class Label extends Nodule {
       }
       return {
         ...DEFAULT_LABEL_TEXT_STYLE,
+        labelDisplayText: this.seLabel!.parent.name,
         labelDisplayCaption: "",
         labelDisplayMode: labelDisplayMode
       };
