@@ -10,7 +10,52 @@
       i18n-button-tool-tip="style.objectsNotShowingToolTip"
       @click="toggleAllObjectsVisibility">
     </OverlayWithFixButton>
+    <v-container class="pa-0 ma-0">
+      <v-row no-gutters>
+        <v-col cols="auto">
+          <v-tooltip bottom
+            :open-delay="toolTipOpenDelay"
+            :close-delay="toolTipCloseDelay"
+            max-width="400px"
+            class="pa-0 pm-0">
+            <template v-slot:activator="{on}">
+              <v-btn v-on="on"
+                @click="toggleShowMoreLabelStyles"
+                class="text-subtitle-2"
+                text
+                plain
+                ripple
+                x-small>
+                <v-icon v-if="showMoreLabelStyles">mdi-chevron-up
+                </v-icon>
+                <v-icon v-else>mdi-chevron-down </v-icon>
+              </v-btn>
+            </template>
+            {{$t('style.toggleStyleOptionsToolTip')}}
+          </v-tooltip>
+        </v-col>
+        <v-spacer />
+        <!-- Undo and Reset to Defaults buttons -->
+        <v-col cols="2"
+          class="ma-0 pl-0 pr-0 pt-0 pb-2">
+          <HintButton @click="clearStyleData"
+            :disabled="disableStyleSelectorUndoButton"
+            type="undo"
+            i18n-label="style.clearChanges"
+            i18n-tooltip="style.clearChangesToolTip">
+          </HintButton>
+        </v-col>
 
+        <v-col cols="2"
+          class="ma-0 pl-0 pr-0 pt-0 pb-2">
+          <HintButton @click="resetStyleDataToDefaults"
+            type="default"
+            i18n-label="style.restoreDefaults"
+            i18n-tooltip="style.restoreDefaultsToolTip">
+          </HintButton>
+        </v-col>
+      </v-row>
+    </v-container>
     <!-- Back Style Contrast Slider -->
     <fade-in-card :showWhen="editModeIsBack"
       color="red">
@@ -113,16 +158,11 @@
       <!-- Front/Back Stroke Color Selector-->
       <fade-in-card
         :showWhen="(editModeIsFront ||editModeIsBack ) && hasStrokeColor">
-        <ColorSelector title-key="style.strokeColor"
-          panel-front-key="style.front"
-          panel-back-key="style.back"
+        <SimpleColorSelector titleKey="style.strokeColor"
           style-name="strokeColor"
           :data.sync="hslaStrokeColorObject"
-          :temp-style-states="tempStyleStates"
-          :panel="panel"
-          :active-panel="activePanel"
-          :use-dynamic-back-style-from-selector="false">
-        </ColorSelector>
+          :temp-style-states="tempStyleStates"></SimpleColorSelector>
+
       </fade-in-card>
 
       <!-- Front/Back Fill Color Selector-->
@@ -354,28 +394,6 @@
       </fade-in-card>
     </v-card>
 
-    <!-- Show more or less styling options -->
-    <v-tooltip bottom
-      :open-delay="toolTipOpenDelay"
-      :close-delay="toolTipCloseDelay"
-      max-width="400px"
-      class="pa-0 pm-0">
-      <template v-slot:activator="{on}">
-        <v-btn v-on="on"
-          @click="toggleShowMoreLabelStyles"
-          class="text-subtitle-2"
-          text
-          plain
-          ripple
-          x-small>
-          <v-icon v-if="showMoreLabelStyles">mdi-chevron-up
-          </v-icon>
-          <v-icon v-else>mdi-chevron-down </v-icon>
-        </v-btn>
-      </template>
-      {{$t('style.toggleStyleOptionsToolTip')}}
-    </v-tooltip>
-
   </div>
 
 </template>
@@ -394,6 +412,7 @@ import { hslaColorType, AppState, LabelDisplayMode } from "@/types";
 import { StyleNoduleCommand } from "@/commands/StyleNoduleCommand";
 import EventBus from "@/eventHandlers/EventBus";
 import NumberSelector from "@/components/NumberSelector.vue";
+import SimpleColorSelector from "@/components/SimpleColorSelector.vue";
 // import TextInputSelector from "@/components/TextInputSelector.vue";
 import ColorSelector from "@/components/ColorSelector.vue";
 //import { TranslateResult } from "vue-i18n";
@@ -417,6 +436,7 @@ type labelDisplayModeItem = {
     FadeInCard,
     NumberSelector,
     ColorSelector,
+    SimpleColorSelector,
     HintButton,
     OverlayWithFixButton
   }
@@ -612,7 +632,8 @@ export default class FrontBackStyle extends Vue {
 
   private disableDashPatternUndoButton = false;
   private disableBackStyleContrastUndoButton = false;
-
+  private activeStyleOptions: StyleOptions | null = null;
+  private pastStyleOptions: StyleOptions | null = null;
   commonStyleProperties: string[] = [];
 
   constructor() {
@@ -1172,6 +1193,17 @@ export default class FrontBackStyle extends Vue {
       this.onSelectionChanged(this.selectedSENodules);
     }
   }
+  @Watch("hslaStrokeColorObject", { deep: true })
+  onStrokeColorChanged(newVal: hslaColorType): void {
+    console.debug("New stroke color", newVal);
+    if (this.activeStyleOptions) {
+      Vue.set(
+        this.activeStyleOptions,
+        "strokeColor",
+        Nodule.convertHSLAObjectToString(newVal)
+      );
+    }
+  }
   /**
    * This is an example of the two-way binding that is provided by the Vuex store. As this is a Vue component we can Watch variables, and
    * when they change, this method will execute in response to that change.
@@ -1183,7 +1215,7 @@ export default class FrontBackStyle extends Vue {
     // Before changing the selections save the state for an undo/redo command (if necessary)
     this.saveStyleState();
 
-    this.commonStyleProperties.clear();
+    this.commonStyleProperties.splice(0);
     if (newSelection.length === 0) {
       //totally disable the selectors in this component
       this.disableDashPatternSelector(true);
@@ -1194,36 +1226,24 @@ export default class FrontBackStyle extends Vue {
 
     // record the new selections in the old
     SEStore.setOldStyleSelection([]);
-    const oldSelection = this.oldStyleSelection;
+    const oldSelection: SENodule[] = [];
     newSelection.forEach(obj => oldSelection.push(obj));
 
     // Create a list of the common properties among the selected objects.
     // Use the Array.reduce function to find the intersection of all the props
     this.commonStyleProperties.splice(0);
-    if (newSelection.length > 0) {
-      // Use the style properties of the first selected object as our initial value
-      const initialSet = newSelection[0].customStyles();
+    const styleOptionsOfSelected = oldSelection
+      .filter((obj: SENodule) => obj.ref)
+      .map((obj: SENodule) => obj.ref!.currentStyleState(this.panel));
 
-      const commonProp = newSelection.reduce(
-        (acc: Set<string>, curr: SENodule, pos: number) => {
-          console.debug("At index", pos, acc);
-          // Find the set intersection between the current set and
-          // the set of props of the current object
-          const arr = [...curr.customStyles()].filter((prop: string) =>
-            acc.has(prop)
-          );
-          return new Set(arr); // return the new intersection
-        },
-        initialSet
-      );
-      console.debug("Common props are", commonProp);
-      this.commonStyleProperties.push(...commonProp);
-    }
-    // for (let k = 0; k < values.length; k++) {
-    //   if (newSelection.every(s => s.customStyles().has(k))) {
-    //     this.commonStyleProperties.push(k);
-    //   }
-    // }
+    this.activeStyleOptions = { ...styleOptionsOfSelected[0] };
+    const commonProps = styleOptionsOfSelected.flatMap((opt: StyleOptions) =>
+      // Exclude internal JS property like __ob__
+      Object.getOwnPropertyNames(opt).filter((s: string) => !s.startsWith("__"))
+    );
+    const uniqueProps = new Set(commonProps);
+    // this.activeStyleOptions = {...styleOptionsOfSelected};
+    this.commonStyleProperties.push(...uniqueProps);
 
     // Get the initial and default style state of the object for undo/redo and buttons to revert to initial style.
     // Put this in the store so that it is availble to *all* panels. Get the front and back information at the same time.
@@ -1241,6 +1261,61 @@ export default class FrontBackStyle extends Vue {
     this.setDynamicBackStyleSelectorState(
       SEStore.getInitialStyleState(this.panel)
     );
+  }
+
+  @Watch("activeStyleOptions", { deep: true, immediate: true })
+  onActiveStyleOptionsChanged(newVal: StyleOptions | null): void {
+    if (newVal === null) return;
+    console.debug("active style options changed", newVal);
+    if (newVal === null) return;
+    const oldProps: Set<string> = new Set(
+      this.pastStyleOptions
+        ? Object.getOwnPropertyNames(this.pastStyleOptions).filter(
+            (s: string) => !s.startsWith("__")
+          )
+        : []
+    );
+    const newProps: Set<string> = new Set(
+      newVal
+        ? Object.getOwnPropertyNames(newVal).filter(
+            (s: string) => !s.startsWith("__")
+          )
+        : []
+    );
+    const removedProps = [...oldProps].filter((p: string) => !newProps.has(p));
+    if (removedProps.length > 0 && this.selectedSENodules.length > 0)
+      throw new Error(
+        "Removing style options from selections is not currently supported"
+      );
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const addedProps = [...newProps].filter((p: string) => !oldProps.has(p));
+    if (addedProps.length > 0)
+      console.debug("Adding some new props", addedProps);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const updatedProps = [...newProps].filter((p: string) => oldProps.has(p));
+    const updatePayload: StyleOptions = { ...newVal };
+    [...updatedProps].forEach((p: string) => {
+      const a = (this.pastStyleOptions as any)[p];
+      const b = (newVal as any)[p];
+
+      // Exclude the property from the payload if they do not change
+      if (a === b) {
+        // console.debug(`Excluding ${p} from payload`);
+        delete (updatePayload as any)[p];
+      } else console.debug(`Property ${p} is update from ${a} to ${b}`);
+    });
+
+    /* If multiple labels are selected, do not update the name */
+    if (this.selectedSENodules.length > 1)
+      delete updatePayload.labelDisplayText;
+
+    this.selectedSENodules
+      .filter((obj: SENodule) => obj.ref)
+      .map((obj: SENodule): Required<SENodule> => obj as Required<SENodule>)
+      .forEach((obj: Required<SENodule>) => {
+        obj.ref.updateStyle(this.panel, { ...updatePayload });
+      });
+    this.pastStyleOptions = { ...newVal };
   }
 
   saveStyleState(): void {
