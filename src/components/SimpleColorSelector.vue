@@ -74,8 +74,6 @@ import i18n from "../i18n";
 @Component({ components: { HintButton, OverlayWithFixButton } })
 export default class ColorSelector extends Vue {
   @Prop() readonly titleKey!: string;
-  @Prop() readonly panelFrontKey!: string;
-  @Prop() readonly panelBackKey!: string;
   @PropSync("data") colorData?: hslaColorType;
   @Prop({ required: true }) readonly styleName!: string;
 

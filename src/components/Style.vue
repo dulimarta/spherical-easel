@@ -96,7 +96,6 @@
           </v-expansion-panel-content>
         </v-expansion-panel>
       </v-expansion-panels>
-      <v-btn>Save ???</v-btn>
 
     </div>
     <div v-else

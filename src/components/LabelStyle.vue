@@ -2,7 +2,7 @@
   <div>
 
     <!-- Label(s) not showing overlay -- higher z-index rendered on top -- covers entire panel including the header-->
-    <OverlayWithFixButton v-if="!allLabelsShowing()"
+    <OverlayWithFixButton v-if="!allLabelsShowing"
       z-index="100"
       i18n-title-line="style.labelNotVisible"
       i18n-subtitle-line="style.clickToMakeLabelsVisible"
@@ -287,7 +287,10 @@ export default class LabelStyle extends Vue {
   private showMoreLabelStyles = false;
   private moreOrLessText = i18n.t("style.moreStyleOptions"); // The text for the button to toggle between less/more options
 
+  // Using deep watcher, VueJS does not keep track the old object
+  // We have to manage it ourself
   private activeStyleOptions: StyleOptions | null = null;
+  private pastStyleOptions: StyleOptions | null = null;
   private maxLabelDisplayTextLength = SETTINGS.label.maxLabelDisplayTextLength;
   private labelDisplayTextErrorMessageKey = "";
   private labelDisplayTestResults = [true, true];
@@ -408,10 +411,10 @@ export default class LabelStyle extends Vue {
     "+180" + "\u{00B0}"
   ];
 
-  private hslaStrokeColorObject: hslaColorType = { h: 0, s: 1, l: 1, a: 0.001 }; // Color for Vuetify Color picker NOTE: setting a=0 creates the following error:
+  // private hslaStrokeColorObject: hslaColorType = { h: 0, s: 1, l: 1, a: 0.001 }; // Color for Vuetify Color picker NOTE: setting a=0 creates the following error:
   // create a circle, open the style panel, select the circle when the basic panel is open, switch to the foreground panel, the selected circle has a displayed opacity of 0 --
   // that is the blinking is between nothing and a red circle glowing circle) The color picker display is correct though... strange!
-  private hslaFillColorObject: hslaColorType = { h: 0, s: 1, l: 1, a: 0.001 }; // Color for Vuetify Color picker
+  // private hslaFillColorObject: hslaColorType = { h: 0, s: 1, l: 1, a: 0.001 }; // Color for Vuetify Color picker
   private hslaLabelFrontFillColorObject: hslaColorType = {
     h: 0,
     s: 1,
@@ -425,7 +428,7 @@ export default class LabelStyle extends Vue {
     a: 0.001
   }; // Color for Vuetify Color picker
 
-  commonStyleProperties: Array<string> = [];
+  private commonStyleProperties: Array<string> = [];
 
   constructor() {
     super();
@@ -438,6 +441,16 @@ export default class LabelStyle extends Vue {
     //  Mount a save listener
     EventBus.listen("save-style-state", this.saveStyleState);
     // EventBus.listen("set-active-style-panel", this.setActivePanel);
+  }
+
+  get allLabelsShowing(): boolean {
+    return this.selectedSENodules.every(node => {
+      if (node.isLabelable()) {
+        return ((node as unknown) as Labelable).label!.showing;
+      } else {
+        return true;
+      }
+    });
   }
 
   @Watch("hslaLabelFrontFillColorObject", { deep: true })
@@ -468,15 +481,6 @@ export default class LabelStyle extends Vue {
     } else {
       this.moreOrLessText = i18n.t("style.lessStyleOptions");
     }
-  }
-  allLabelsShowing(): boolean {
-    return this.selectedSENodules.every(node => {
-      if (node.isLabelable()) {
-        return ((node as unknown) as Labelable).label!.showing;
-      } else {
-        return true;
-      }
-    });
   }
   toggleAllLabelsVisibility(): void {
     EventBus.fire("toggle-label-visibility", { fromPanel: true });
@@ -715,13 +719,7 @@ export default class LabelStyle extends Vue {
     // The customStyles method returns a list of the styles the are adjustable for that object
     this.commonStyleProperties.splice(0);
 
-    // Use Typescript utility type Required<T> to change to label from an optional
-    // property to a required one
     const styleOptionsOfSelected = oldSelection
-      // .filter((obj: SENodule) => {
-      //   console.debug("Is it labelable?", obj.isLabelable());
-      //   return obj.isLabelable();
-      // })
       .map((obj: SENodule) => obj as SELabel)
       .map((obj: SELabel) => {
         return obj.ref.currentStyleState(this.panel);
@@ -757,16 +755,12 @@ export default class LabelStyle extends Vue {
   }
 
   // Use a deep wather because we are observing an object!
-  @Watch("activeStyleOptions", { deep: true, immediate: false })
-  onActiveStyleOptionsChanged(
-    newVal: StyleOptions | null,
-    oldVal: StyleOptions | null
-  ): void {
-    console.debug("onActiveStyleOptons changed to", newVal);
+  @Watch("activeStyleOptions", { deep: true, immediate: true })
+  onActiveStyleOptionsChanged(newVal: StyleOptions | null): void {
     if (newVal === null) return;
     const oldProps: Set<string> = new Set(
-      oldVal
-        ? Object.getOwnPropertyNames(oldVal).filter(
+      this.pastStyleOptions
+        ? Object.getOwnPropertyNames(this.pastStyleOptions).filter(
             (s: string) => !s.startsWith("__")
           )
         : []
@@ -789,19 +783,25 @@ export default class LabelStyle extends Vue {
       console.debug("Adding some new props", addedProps);
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const updatedProps = [...newProps].filter((p: string) => oldProps.has(p));
-    console.debug("Updated props");
+    const updatePayload: StyleOptions = { ...newVal };
     [...updatedProps].forEach((p: string) => {
-      const a = (oldVal as any)[p];
+      const a = (this.pastStyleOptions as any)[p];
       const b = (newVal as any)[p];
-      console.debug(`Property ${p} is update from ${a} to ${b}`);
+
+      // Exclude the property from the payload if they do not change
+      if (a === b) {
+        // console.debug(`Excluding ${p} from payload`);
+        delete (updatePayload as any)[p];
+      } else console.debug(`Property ${p} is update from ${a} to ${b}`);
     });
-    // if (!this.areEquivalentStyleOptions(newVal, oldVal)) {
+
+    /* If multiple labels are selected, do not update the name */
+    if (this.selectedLabels.length > 1) delete updatePayload.labelDisplayText;
+
     this.selectedLabels.forEach((z: Label) => {
-      z.updateStyle(this.panel, { ...newVal });
+      z.updateStyle(this.panel, { ...updatePayload });
     });
-    // } else {
-    //   console.info("No update necessary");
-    // }
+    this.pastStyleOptions = { ...newVal };
   }
 
   saveStyleState(): void {
