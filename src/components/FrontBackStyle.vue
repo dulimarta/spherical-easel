@@ -10,52 +10,6 @@
       i18n-button-tool-tip="style.objectsNotShowingToolTip"
       @click="toggleAllObjectsVisibility">
     </OverlayWithFixButton>
-    <v-container class="pa-0 ma-0">
-      <v-row no-gutters>
-        <v-col cols="auto">
-          <v-tooltip bottom
-            :open-delay="toolTipOpenDelay"
-            :close-delay="toolTipCloseDelay"
-            max-width="400px"
-            class="pa-0 pm-0">
-            <template v-slot:activator="{on}">
-              <v-btn v-on="on"
-                @click="toggleShowMoreLabelStyles"
-                class="text-subtitle-2"
-                text
-                plain
-                ripple
-                x-small>
-                <v-icon v-if="showMoreLabelStyles">mdi-chevron-up
-                </v-icon>
-                <v-icon v-else>mdi-chevron-down </v-icon>
-              </v-btn>
-            </template>
-            {{$t('style.toggleStyleOptionsToolTip')}}
-          </v-tooltip>
-        </v-col>
-        <v-spacer />
-        <!-- Undo and Reset to Defaults buttons -->
-        <v-col cols="2"
-          class="ma-0 pl-0 pr-0 pt-0 pb-2">
-          <HintButton @click="clearStyleData"
-            :disabled="disableStyleSelectorUndoButton"
-            type="undo"
-            i18n-label="style.clearChanges"
-            i18n-tooltip="style.clearChangesToolTip">
-          </HintButton>
-        </v-col>
-
-        <v-col cols="2"
-          class="ma-0 pl-0 pr-0 pt-0 pb-2">
-          <HintButton @click="resetStyleDataToDefaults"
-            type="default"
-            i18n-label="style.restoreDefaults"
-            i18n-tooltip="style.restoreDefaultsToolTip">
-          </HintButton>
-        </v-col>
-      </v-row>
-    </v-container>
     <!-- Back Style Contrast Slider -->
     <fade-in-card :showWhen="editModeIsBack"
       color="red">
@@ -108,163 +62,128 @@
       </v-tooltip>
 
       <!-- Undo and Reset to Defaults buttons -->
-      <v-container class="pa-0 ma-0">
-        <v-row justify="end"
-          no-gutters>
-
-          <v-col cols="2"
+      <v-container>
+        <v-row justify="end">
+          <!-- Undo and Reset to Defaults buttons -->
+          <v-col cols="1"
             class="ma-0 pl-0 pr-0 pt-0 pb-2">
-            <HintButton @click="clearRecentDynamicBackStyleChanges"
-              :disabled="disableBackStyleContrastUndoButton"
+            <HintButton @click="clearStyleData('dynamicBackStyle')"
+              data-se-props="dynamicBackStyle"
+              data-se-flag="dynBackGroup"
+              :disabled="disableControl['dynBackGroup']"
+              type="undo"
               i18n-label="style.clearChanges"
-              i18n-tooltip="style.clearChangesToolTip"
-              type="undo"></HintButton>
+              i18n-tooltip="style.clearChangesToolTip">
+            </HintButton>
           </v-col>
 
           <v-col cols="2"
             class="ma-0 pl-0 pr-0 pt-0 pb-2">
-            <HintButton @click="resetDynamicBackStyleToDefaults"
+            <HintButton
+              @click="resetStyleDataToDefaults('dynamicBackStyle')"
+              type="default"
               i18n-label="style.restoreDefaults"
-              i18n-tooltip="style.restoreDefaultsToolTip"
-              type="default"></HintButton>
+              i18n-tooltip="style.restoreDefaultsToolTip">
+            </HintButton>
           </v-col>
         </v-row>
       </v-container>
     </fade-in-card>
 
     <!-- Scope of the Disable Dynamic Back Style Overlay and the BackStyle Disagreemnt overlay-->
-    <v-card color="grey lighten-2">
+    <!--v-card color="grey lighten-2"-->
 
-      <!-- Disable the Dynamic Back Style Overlay -->
-      <OverlayWithFixButton v-if="editModeIsBack && hasDynamicBackStyle && usingDynamicBackStyleAgreement &&
+    <!-- Disable the Dynamic Back Style Overlay -->
+    <OverlayWithFixButton v-if="editModeIsBack && hasDynamicBackStyle && usingDynamicBackStyleAgreement &&
         (usingDynamicBackStyle || usingDynamicBackStyleCommonValue)"
-        z-index="50"
-        i18n-title-line="style.dynamicBackStyleHeader"
-        i18n-button-label="style.disableDynamicBackStyle"
-        i18n-button-tool-tip="style.disableDynamicBackStyleToolTip"
-        @click="toggleBackStyleOptionsAvailability">
-      </OverlayWithFixButton>
+      z-index="50"
+      i18n-title-line="style.dynamicBackStyleHeader"
+      i18n-button-label="style.disableDynamicBackStyle"
+      i18n-button-tool-tip="style.disableDynamicBackStyleToolTip"
+      @click="toggleBackStyleOptionsAvailability">
+    </OverlayWithFixButton>
 
-      <!-- usingDynamicBackStyle disagreemnt  -->
-      <OverlayWithFixButton
-        v-if="editModeIsBack&& hasDynamicBackStyle && !usingDynamicBackStyleAgreement"
-        z-index="40"
-        i18n-title-line="style.backStyleDisagreement"
-        i18n-button-label="style.enableCommonStyle"
-        i18n-button-tool-tip="style.differentValuesToolTip"
-        @click="setCommonDynamicBackStyleAgreement">
-      </OverlayWithFixButton>
+    <!-- usingDynamicBackStyle disagreemnt  -->
+    <OverlayWithFixButton
+      v-if="editModeIsBack&& hasDynamicBackStyle && !usingDynamicBackStyleAgreement"
+      z-index="40"
+      i18n-title-line="style.backStyleDisagreement"
+      i18n-button-label="style.enableCommonStyle"
+      i18n-button-tool-tip="style.differentValuesToolTip"
+      @click="setCommonDynamicBackStyleAgreement">
+    </OverlayWithFixButton>
 
-      <!-- Front/Back Stroke Color Selector-->
-      <fade-in-card
-        :showWhen="(editModeIsFront ||editModeIsBack ) && hasStrokeColor">
-        <SimpleColorSelector titleKey="style.strokeColor"
-          style-name="strokeColor"
-          :data.sync="hslaStrokeColorObject"
-          :temp-style-states="tempStyleStates"></SimpleColorSelector>
+    <!-- Front/Back Stroke Color Selector-->
+    <fade-in-card
+      v-show="hasStrokeColor || hasStrokeWidthPercent || hasFillColor">
+      <SimpleColorSelector titleKey="style.strokeColor"
+        v-if="hasStrokeColor"
+        style-name="strokeColor"
+        :data.sync="hslaStrokeColorObject" />
 
-      </fade-in-card>
-
+      <SimpleNumberSelector v-if="hasStrokeWidthPercent"
+        v-bind:data.sync="activeStyleOptions.strokeWidthPercent"
+        title-key="style.strokeWidthPercent"
+        v-bind:min-value="minStrokeWidthPercent"
+        v-bind:max-value="maxStrokeWidthPercent"
+        v-bind:step="20"
+        :thumb-string-values="strokeWidthScaleSelectorThumbStrings">
+      </SimpleNumberSelector>
       <!-- Front/Back Fill Color Selector-->
-      <fade-in-card
-        :showWhen="(editModeIsFront || editModeIsBack) && hasFillColor">
-        <ColorSelector title-key="style.fillColor"
-          panel-front-key="style.front"
-          panel-back-key="style.back"
-          style-name="fillColor"
-          :data.sync="hslaFillColorObject"
-          :temp-style-states="tempStyleStates"
-          :panel="panel"
-          :active-panel="activePanel"
-          :use-dynamic-back-style-from-selector="false">
-        </ColorSelector>
-      </fade-in-card>
+      <SimpleColorSelector title-key="style.fillColor"
+        v-if="hasFillColor"
+        style-name="fillColor"
+        :data.sync="hslaFillColorObject" />
+      <v-container>
+        <v-row justify="end">
+          <!-- Undo and Reset to Defaults buttons -->
+          <v-col cols="1"
+            class="ma-0 pl-0 pr-0 pt-0 pb-2">
+            <HintButton
+              @click="clearStyleData('strokeColor,strokeWidthPercent,fillColor')"
+              data-se-props="strokeColor,strokeWidthPercent,fillColor"
+              data-se-flag="colorGroup"
+              :disabled="disableControl['colorGroup']"
+              type="undo"
+              i18n-label="style.clearChanges"
+              i18n-tooltip="style.clearChangesToolTip">
+            </HintButton>
+          </v-col>
 
-      <!-- Front/Back Stokewidth Number Selector -->
-      <fade-in-card :showWhen="
-        (editModeIsFront || editModeIsBack) && hasStrokeWidthPercent && showMoreLabelStyles 
-      ">
-        <NumberSelector id="strokeWidthPercentSlider"
-          v-bind:data.sync="strokeWidthPercent"
-          style-name="strokeWidthPercent"
-          title-key="style.strokeWidthPercent"
-          panel-front-key="style.front"
-          panel-back-key="style.back"
-          v-bind:min-value="minStrokeWidthPercent"
-          v-bind:max-value="maxStrokeWidthPercent"
-          v-bind:step="20"
-          :temp-style-states="tempStyleStates"
-          :panel="panel"
-          :active-panel="activePanel"
-          :thumb-string-values="strokeWidthScaleSelectorThumbStrings"
-          :use-dynamic-back-style-from-selector="false">
-        </NumberSelector>
-      </fade-in-card>
+          <v-col cols="2"
+            class="ma-0 pl-0 pr-0 pt-0 pb-2">
+            <HintButton
+              @click="resetStyleDataToDefaults('strokeColor,strokeWidthPercent,fillColor', 'two')"
+              type="default"
+              i18n-label="style.restoreDefaults"
+              i18n-tooltip="style.restoreDefaultsToolTip">
+            </HintButton>
+          </v-col>
+        </v-row>
+      </v-container>
+    </fade-in-card>
 
-      <!-- Front/Back Point Radius Number Selector -->
-      <fade-in-card :showWhen="
-        (editModeIsFront || editModeIsBack) && hasPointRadiusPercent && showMoreLabelStyles
-      ">
-        <NumberSelector :data.sync="pointRadiusPercent"
+    <!-- Front/Back Stokewidth Number Selector -->
+    <div v-show="showMoreLabelStyles && activeStyleOptions">
+      <!--- Front/Back Point Radius Number Selector -->
+      <fade-in-card v-show="hasPointRadiusPercent">
+        <SimpleNumberSelector v-if="hasPointRadiusPercent"
+          :data.sync="activeStyleOptions.pointRadiusPercent"
           title-key="style.pointRadiusPercent"
-          panel-front-key="style.front"
-          panel-back-key="style.back"
-          style-name="pointRadiusPercent"
           :min-value="minPointRadiusPercent"
           :max-value="maxPointRadiusPercent"
-          :temp-style-states="tempStyleStates"
           :step="20"
-          :panel="panel"
-          :active-panel="activePanel"
-          :thumb-string-values="pointRadiusSelectorThumbStrings"
-          :use-dynamic-back-style-from-selector="false">
-        </NumberSelector>
-      </fade-in-card>
-
-      <!-- Front/Back Angle Marker Radius Number Selector -->
-      <fade-in-card :showWhen="
-        editModeIsFront && hasAngleMarkerRadiusPercent && showMoreLabelStyles
-      ">
-        <NumberSelector :data.sync="angleMarkerRadiusPercent"
-          title-key="style.angleMarkerRadiusPercent"
-          panel-front-key="style.front"
-          panel-back-key="style.back"
-          style-name="angleMarkerRadiusPercent"
-          :min-value="minAngleMarkerRadiusPercent"
-          :max-value="maxAngleMarkerRadiusPercent"
-          :temp-style-states="tempStyleStates"
-          :step="20"
-          :panel="panel"
-          :active-panel="activePanel"
-          :thumb-string-values="angleMarkerRadiusSelectorThumbStrings"
-          :use-dynamic-back-style-from-selector="false">
-        </NumberSelector>
-      </fade-in-card>
-
-      <!-- Angle Marker Decoration Selector -->
-      <fade-in-card :showWhen="
-        editModeIsFront && hasAngleMarkerDecoration && showMoreLabelStyles
-      ">
-        <v-select v-model="angleMarkerDecorations"
-          v-bind:label="$t('style.angleMarkerDecorations')"
-          :items="angleMarkerDecorationItems"
-          filled
-          outlined
-          small-chips
-          dense
-          multiple
-          @blur="setAngleMarkerDecorationChange(); onAngleMarkerDecorationChanged()"
-          @change="setAngleMarkerDecorationChange(); onAngleMarkerDecorationChanged()">
-        </v-select>
-
-        <!-- Undo and Reset to Defaults buttons -->
-        <v-container class="pa-0 ma-0">
-          <v-row justify="end"
-            no-gutters>
-            <v-col cols="2"
+          :thumb-string-values="pointRadiusSelectorThumbStrings">
+        </SimpleNumberSelector>
+        <v-container>
+          <v-row justify="end">
+            <!-- Undo and Reset to Defaults buttons -->
+            <v-col cols="1"
               class="ma-0 pl-0 pr-0 pt-0 pb-2">
-              <HintButton @click="clearAngleMarkerDecorations"
-                :disabled="disableAngleMarkerDecorationsUndoButton"
+              <HintButton @click="clearStyleData('pointRadiusPercent')"
+                data-se-props="pointRadiusPercent"
+                data-se-flag="pointGroup"
+                :disabled="disableControl[`pointGroup`]"
                 type="undo"
                 i18n-label="style.clearChanges"
                 i18n-tooltip="style.clearChangesToolTip">
@@ -273,7 +192,8 @@
 
             <v-col cols="2"
               class="ma-0 pl-0 pr-0 pt-0 pb-2">
-              <HintButton @click="resetAngleMarkerDecorationsToDefaults"
+              <HintButton
+                @click="resetStyleDataToDefaults('pointRadiusPercent')"
                 type="default"
                 i18n-label="style.restoreDefaults"
                 i18n-tooltip="style.restoreDefaultsToolTip">
@@ -281,62 +201,99 @@
             </v-col>
           </v-row>
         </v-container>
+      </fade-in-card>
+      <!--- Front/Back Angle Marker Radius Number Selector -->
+      <fade-in-card
+        v-show="hasAngleMarkerRadiusPercent || hasAngleMarkerDecoration">
+        <SimpleNumberSelector
+          v-if="editModeIsFront && hasAngleMarkerRadiusPercent"
+          :data.sync="activeStyleOptions.angleMarkerRadiusPercent"
+          title-key="style.angleMarkerRadiusPercent"
+          :min-value="minAngleMarkerRadiusPercent"
+          :max-value="maxAngleMarkerRadiusPercent"
+          :step="20"
+          :thumb-string-values="angleMarkerRadiusSelectorThumbStrings">
+        </SimpleNumberSelector>
+        <!-- Angle Marker Decoration Selector -->
 
+        <v-select v-model="angleMarkerDecorations"
+          v-if="hasAngleMarkerDecoration"
+          class="my-2"
+          v-bind:label="$t('style.angleMarkerDecorations')"
+          :items="angleMarkerDecorationItems"
+          filled
+          outlined
+          small-chips
+          dense
+          multiple>
+        </v-select>
+        <!-- Undo and Reset to Defaults buttons -->
+        <v-container>
+          <v-row justify="end">
+            <!-- Undo and Reset to Defaults buttons -->
+            <v-col cols="1"
+              class="ma-0 pl-0 pr-0 pt-0 pb-2">
+              <HintButton
+                @click="clearStyleData('angleMarkerRadiusPercent,angleMarkerDecoration')"
+                data-se-props="angleMarkerRadiusPercent,angleMarkerDecoration"
+                data-se-flag="angleMarkerGroup"
+                :disabled="disableControl[`angleMarkerGroup`]"
+                type="undo"
+                i18n-label="style.clearChanges"
+                i18n-tooltip="style.clearChangesToolTip">
+              </HintButton>
+            </v-col>
+
+            <v-col cols="2"
+              class="ma-0 pl-0 pr-0 pt-0 pb-2">
+              <HintButton
+                @click="resetStyleDataToDefaults('angleMarkerRadiusPercent,angleMarkerDecoration')"
+                type="default"
+                i18n-label="style.restoreDefaults"
+                i18n-tooltip="style.restoreDefaultsToolTip">
+              </HintButton>
+            </v-col>
+          </v-row>
+        </v-container>
       </fade-in-card>
 
       <!-- Front/Back Dash array card is displayed for front and back so long as there is a dash array property common to all selected objects-->
-      <fade-in-card
-        :showWhen="(hasDashPattern) && (editModeIsFront || editModeIsBack) && showMoreLabelStyles">
+      <fade-in-card v-if="hasDashPattern">
         <span v-show="editModeIsFront"
           class="text-subtitle-2">{{ $t("style.front") }}</span>
         <span v-show="editModeIsBack"
           class="text-subtitle-2">{{ $t("style.back") }}</span>
+
         <span
           class="text-subtitle-2">{{" "+ $t("style.dashPattern") }}</span>
         <span v-if="selectedSENodules.length > 1"
           class="text-subtitle-2"
           style="color:red">{{" "+ $t("style.labelStyleOptionsMultiple") }}</span>
-        <span v-show="
-          !emptyDashPattern &&
+        <span v-show="!emptyDashPattern &&
             !totallyDisableDashPatternSelector &&
-            dashPatternAgreement
-        ">
-          ({{ gapLength.toFixed(0) }}/{{
-        dashLength.toFixed(0)
-        }})
+            dashPatternAgreement">
+          {{ activeDashPattern }}
         </span>
-        <br />
-
-        <!-- Differing data styles detected Overlay --higher z-index rendered on top-->
-        <OverlayWithFixButton
-          v-if="(editModeIsFront || editModeIsBack) && !dashPatternAgreement"
-          z-index="1"
-          i18n-title-line="style.styleDisagreement"
-          i18n-button-label="style.enableCommonStyle"
-          i18n-button-tool-tip="style.differentValuesToolTip"
-          @click="setCommonDashPatternAgreement">
-        </OverlayWithFixButton>
 
         <!-- The dash property slider -->
-        <v-range-slider v-model="sliderDashArray"
+        <v-range-slider v-model="activeStyleOptions.dashArray"
           :min="0"
           step="2"
           :disabled="
           !dashPatternAgreement ||
             totallyDisableDashPatternSelector ||
-            emptyDashPattern
-        "
-          @change="onDashPatternChange"
+            emptyDashPattern"
           :max="maxGapLengthPlusDashLength"
           type="range"
           dense>
-          <template v-slot:prepend>
+          <!-- Since we are changing two numbers, the icons are confusing to the user -->
+          <!--template v-slot:prepend>
             <v-icon @click="decrementDashPattern">mdi-minus</v-icon>
           </template>
 
           <template v-slot:append>
             <v-icon @click="incrementDashPattern">mdi-plus</v-icon>
-          </template>
+          </template-->
         </v-range-slider>
 
         <!-- Dis/enable Dash Pattern, Undo and Reset to Defaults buttons -->
@@ -365,35 +322,57 @@
               </v-tooltip>
             </v-col>
 
-            <v-col cols="2"
+            <!-- Undo and Reset to Defaults buttons -->
+            <v-col cols="1"
               class="ma-0 pl-0 pr-0 pt-0 pb-2">
-              <HintButton v-show="dashPatternAgreement &&
-                !totallyDisableDashPatternSelector &&
-                !emptyDashPattern"
-                :disabled="disableDashPatternUndoButton||emptyDashPattern"
-                @click="clearRecentDashPatternChanges"
+              <HintButton @click="clearStyleData('dashArray')"
+                data-se-props="dashArray"
+                data-se-flag="dashPatternGroup"
+                :disabled="disableControl[`dashPatternGroup`]"
+                type="undo"
                 i18n-label="style.clearChanges"
-                i18n-tooltip="style.clearChangesToolTip"
-                type="undo"></HintButton>
+                i18n-tooltip="style.clearChangesToolTip">
+              </HintButton>
             </v-col>
 
             <v-col cols="2"
               class="ma-0 pl-0 pr-0 pt-0 pb-2">
-              <HintButton v-show="dashPatternAgreement &&
-                !totallyDisableDashPatternSelector &&
-                !emptyDashPattern"
-                :disabled="emptyDashPattern"
-                @click="resetDashPatternToDefaults"
+              <HintButton @click="resetStyleDataToDefaults('dashArray')"
+                type="default"
                 i18n-label="style.restoreDefaults"
-                i18n-tooltip="style.restoreDefaultsToolTip"
-                type="default"></HintButton>
+                i18n-tooltip="style.restoreDefaultsToolTip">
+              </HintButton>
             </v-col>
           </v-row>
         </v-container>
-
       </fade-in-card>
-    </v-card>
-
+    </div>
+    <v-container class="pa-0 ma-0">
+      <v-row no-gutters>
+        <v-col cols="auto">
+          <v-tooltip bottom
+            :open-delay="toolTipOpenDelay"
+            :close-delay="toolTipCloseDelay"
+            max-width="400px"
+            class="pa-0 pm-0">
+            <template v-slot:activator="{on}">
+              <v-btn v-on="on"
+                @click="toggleShowMoreLabelStyles"
+                class="text-subtitle-2"
+                text
+                plain
+                ripple
+                x-small>
+                <v-icon v-if="showMoreLabelStyles">mdi-chevron-up
+                </v-icon>
+                <v-icon v-else>mdi-chevron-down </v-icon>
+              </v-btn>
+            </template>
+            {{$t('style.toggleStyleOptionsToolTip')}}
+          </v-tooltip>
+        </v-col>
+      </v-row>
+    </v-container>
   </div>
 
 </template>
@@ -404,7 +383,6 @@ import { Watch, Prop } from "vue-property-decorator";
 import { SENodule } from "../models/SENodule";
 import Nodule from "../plottables/Nodule";
 import { namespace } from "vuex-class";
-// import AppStore from "@/store";
 import { StyleOptions, StyleEditPanels } from "../types/Styles";
 import SETTINGS from "@/global-settings";
 import FadeInCard from "@/components/FadeInCard.vue";
@@ -412,10 +390,9 @@ import { hslaColorType, AppState, LabelDisplayMode } from "@/types";
 import { StyleNoduleCommand } from "@/commands/StyleNoduleCommand";
 import EventBus from "@/eventHandlers/EventBus";
 import NumberSelector from "@/components/NumberSelector.vue";
+import SimpleNumberSelector from "@/components/SimpleNumberSelector.vue";
 import SimpleColorSelector from "@/components/SimpleColorSelector.vue";
-// import TextInputSelector from "@/components/TextInputSelector.vue";
 import ColorSelector from "@/components/ColorSelector.vue";
-//import { TranslateResult } from "vue-i18n";
 import i18n from "../i18n";
 import HintButton from "@/components/HintButton.vue";
 import OverlayWithFixButton from "@/components/OverlayWithFixButton.vue";
@@ -435,6 +412,7 @@ type labelDisplayModeItem = {
   components: {
     FadeInCard,
     NumberSelector,
+    SimpleNumberSelector,
     ColorSelector,
     SimpleColorSelector,
     HintButton,
@@ -460,6 +438,15 @@ export default class FrontBackStyle extends Vue {
   @SE.State((s: AppState) => s.styleSavedFromPanel)
   readonly styleSavedFromPanel!: StyleEditPanels;
 
+  // The following object should match all the data-se-flag attributes
+  // found in the <template>
+  disableControl = {
+    colorGroup: true,
+    pointGroup: true,
+    angleMarkerGroup: true,
+    dashPatternGroup: true,
+    dynBackGroup: true
+  };
   /**
    * These are the temp style state for the selected objects. Used to set the color/number/dash/contrast selectors when the user disables the dynamic back styling.
    */
@@ -473,7 +460,7 @@ export default class FrontBackStyle extends Vue {
   /**
    * Help to display all the availble styling choices when nothing is selected
    */
-  private noObjectsSelected = true;
+  // private noObjectsSelected = true;
 
   private toolTipOpenDelay = SETTINGS.toolTip.openDelay;
   private toolTipCloseDelay = SETTINGS.toolTip.closeDelay;
@@ -483,7 +470,7 @@ export default class FrontBackStyle extends Vue {
    * same across the selected objects. In the case that they are not initially the same, the cooresponding adjustment tool
    * is display in a different way than the usual default.
    */
-  private strokeWidthPercent: number | undefined = 100;
+
   private maxStrokeWidthPercent = SETTINGS.style.maxStrokeWidthPercent;
   private minStrokeWidthPercent = SETTINGS.style.minStrokeWidthPercent;
   //step is 20 from 60 to 200 is 8 steps
@@ -498,31 +485,14 @@ export default class FrontBackStyle extends Vue {
     "100%"
   ];
 
-  private labelTextScalePercent: number | undefined = 100;
-  private maxLabelTextScalePercent = SETTINGS.style.maxLabelTextScalePercent;
-  private minLabelTextScalePercent = SETTINGS.style.minLabelTextScalePercent;
-  //step is 20 from 60 to 200 is 8 steps
-  private textScaleSelectorThumbStrings = [
-    "-40%",
-    "-20%",
-    "0%",
-    "20%",
-    "40%",
-    "60%",
-    "80%",
-    "100%"
-  ];
-
   private styleDataAgreement = true;
   private totalyDisableStyleDataSelector = false;
-  private disableStyleSelectorUndoButton = true;
 
   //Many of the label style will not be commonly modified so create a button/variable for
   // the user to click to show more of the Label Styling options
   private showMoreLabelStyles = false;
   private moreOrLessText = i18n.t("style.moreStyleOptions"); // The text for the button to toggle between less/more options
 
-  private pointRadiusPercent: number | undefined = 100;
   private maxPointRadiusPercent = SETTINGS.style.maxPointRadiusPercent;
   private minPointRadiusPercent = SETTINGS.style.minPointRadiusPercent;
   //step is 20 from 60 to 200 is 8 steps
@@ -537,7 +507,6 @@ export default class FrontBackStyle extends Vue {
     "100%"
   ];
 
-  private angleMarkerRadiusPercent: number | undefined = 100;
   private maxAngleMarkerRadiusPercent =
     SETTINGS.style.maxAngleMarkerRadiusPercent;
   private minAngleMarkerRadiusPercent =
@@ -565,9 +534,7 @@ export default class FrontBackStyle extends Vue {
       value: "doubleArc"
     }
   ];
-  private angleMarkerDecorationChange = false;
   private angleMarkerDecorationsAgreement = true;
-  private disableAngleMarkerDecorationsUndoButton = true;
   private totalyDisableAngleMarkerDecorationsSelector = false;
 
   private hslaStrokeColorObject: hslaColorType = { h: 0, s: 1, l: 1, a: 0.001 }; // Color for Vuetify Color picker NOTE: setting a=0 creates the following error:
@@ -630,8 +597,6 @@ export default class FrontBackStyle extends Vue {
     "Same"
   ];
 
-  private disableDashPatternUndoButton = false;
-  private disableBackStyleContrastUndoButton = false;
   private activeStyleOptions: StyleOptions | null = null;
   private pastStyleOptions: StyleOptions | null = null;
   commonStyleProperties: string[] = [];
@@ -647,13 +612,29 @@ export default class FrontBackStyle extends Vue {
     //  Mount a save listener
     EventBus.listen("save-style-state", this.saveStyleState);
     // EventBus.listen("set-active-style-panel", this.setActivePanel);
+    console.debug("In mounted()", this.$el);
+
+    // const elems = this.$el.querySelectorAll("[data-se-props]");
+    // for (let k = 0; k < elems.length; k++) {
+    //   const z = elems.item(k);
+    //   // console.debug("Marked element is", z);
+    // }
   }
   get editModeIsBack(): boolean {
     return this.panel === StyleEditPanels.Back;
   }
+
   get editModeIsFront(): boolean {
     return this.panel === StyleEditPanels.Front;
   }
+  get activeDashPattern(): string {
+    if (this.activeStyleOptions && this.activeStyleOptions.dashArray) {
+      const dashLength = this.activeStyleOptions.dashArray[0];
+      const gapLength = this.activeStyleOptions.dashArray[1];
+      return `(${dashLength}/${gapLength})`;
+    } else return "";
+  }
+
   toggleShowMoreLabelStyles(): void {
     this.showMoreLabelStyles = !this.showMoreLabelStyles;
     if (!this.showMoreLabelStyles) {
@@ -669,24 +650,54 @@ export default class FrontBackStyle extends Vue {
     return this.selectedSENodules.every(node => node.showing);
   }
 
-  // These methods are linked to the dashPattern fade-in-card
-  onDashPatternChange(): void {
-    this.disableDashPatternUndoButton = false;
-    this.gapLength = this.sliderDashArray[0];
-    this.dashLength = this.sliderDashArray[1] - this.sliderDashArray[0];
-    SEStore.changeStyle({
-      selected: this.selectedSENodules,
-      panel: this.panel,
-      payload: {
-        dashArray: [this.dashLength, this.gapLength] //correct order!!!!
-      }
+  clearStyleData(props: string): void {
+    const listOfProps = props.split(",");
+    console.debug("Reset to start of edit session", listOfProps);
+
+    const initialStyleStates = SEStore.getInitialStyleState(this.panel);
+    this.selectedSENodules.forEach((n: SENodule, k: number) => {
+      // Start with an empty update bundle
+      const payload: StyleOptions = {};
+
+      // Include only the properties we want to clear
+      listOfProps.forEach((p: string) => {
+        (payload as any)[p] = (initialStyleStates[k] as any)[p];
+      });
+
+      SEStore.changeStyle({
+        selected: [n],
+        panel: this.panel,
+        payload
+      });
     });
   }
+  resetStyleDataToDefaults(props: string, flag: string): void {
+    const listOfProps = props.split(",");
+    console.debug("Reset to default properties", listOfProps);
+
+    const defaultState = SEStore.getDefaultStyleState(this.panel);
+    this.selectedSENodules.forEach((n: SENodule, k: number) => {
+      // Start with an empty update bundle
+      const payload: StyleOptions = {};
+
+      // Include only the properties we want to restore to default
+      listOfProps.forEach((p: string) => {
+        (payload as any)[p] = (defaultState[k] as any)[p];
+      });
+
+      SEStore.changeStyle({
+        selected: [n],
+        panel: this.panel,
+        payload
+      });
+    });
+  }
+
+  // These methods are linked to the dashPattern fade-in-card
   setCommonDashPatternAgreement(): void {
     this.dashPatternAgreement = true;
   }
   clearRecentDashPatternChanges(): void {
-    this.disableDashPatternUndoButton = true;
     const selected = this.selectedSENodules;
     const initialStyleStates = SEStore.getInitialStyleState(this.panel);
     for (let i = 0; i < selected.length; i++) {
@@ -718,38 +729,7 @@ export default class FrontBackStyle extends Vue {
     }
     this.setDashPatternSelectorState(initialStyleStates);
   }
-  resetDashPatternToDefaults(): void {
-    const selected = this.selectedSENodules;
-    const defaultStyleStates = SEStore.getDefaultStyleState(this.panel);
-    for (let i = 0; i < selected.length; i++) {
-      // Check see if the selected[i] exist and has length >0
-      if (
-        defaultStyleStates[i].dashArray &&
-        (defaultStyleStates[i].dashArray as number[]).length > 0
-      ) {
-        SEStore.changeStyle({
-          selected: [selected[i]],
-          panel: this.panel,
-          payload: {
-            dashArray: [
-              (defaultStyleStates[i].dashArray as number[])[0],
-              (defaultStyleStates[i].dashArray as number[])[1]
-            ]
-          }
-        });
-      } else if (defaultStyleStates[i].dashArray) {
-        // The selected [i] exists and the array is empty
-        SEStore.changeStyle({
-          selected: [selected[i]],
-          panel: this.panel,
-          payload: {
-            dashArray: []
-          }
-        });
-      }
-    }
-    this.setDashPatternSelectorState(defaultStyleStates);
-  }
+
   toggleDashPatternSliderAvailibity(): void {
     if (!this.emptyDashPattern) {
       this.sliderDashArray.clear();
@@ -785,7 +765,6 @@ export default class FrontBackStyle extends Vue {
       this.sliderDashArray[1] + 1 <=
       SETTINGS.style.maxGapLengthPlusDashLength
     ) {
-      this.disableDashPatternUndoButton = false;
       Vue.set(this.sliderDashArray, 1, this.sliderDashArray[1] + 1); // trigger the update
       this.gapLength = this.sliderDashArray[0];
       this.dashLength = this.sliderDashArray[1] - this.sliderDashArray[0];
@@ -800,13 +779,11 @@ export default class FrontBackStyle extends Vue {
     }
   }
   decrementDashPattern(): void {
-    this.disableDashPatternUndoButton = false;
     // increasing the value of the sliderDashArray[0] decreases the length of the dash
     if (
       this.sliderDashArray[0] + 1 <=
       SETTINGS.style.maxGapLengthPlusDashLength
     ) {
-      this.disableDashPatternUndoButton = false;
       Vue.set(this.sliderDashArray, 0, this.sliderDashArray[0] + 1);
       this.gapLength = this.sliderDashArray[0];
       this.dashLength = this.sliderDashArray[1] - this.sliderDashArray[0];
@@ -825,7 +802,6 @@ export default class FrontBackStyle extends Vue {
      */
   }
   setDashPatternSelectorState(styleState: StyleOptions[]): void {
-    this.disableDashPatternUndoButton = true;
     // reset to the default which are overwritten as necessary
     this.emptyDashPattern = true;
     this.dashPatternAgreement = true;
@@ -880,7 +856,6 @@ export default class FrontBackStyle extends Vue {
   }
   disableDashPatternSelector(totally: boolean): void {
     this.dashPatternAgreement = false;
-    this.disableDashPatternUndoButton = true;
     // Set the gap and dash to the default
     this.gapLength = 5;
     this.dashLength = 10;
@@ -889,7 +864,6 @@ export default class FrontBackStyle extends Vue {
 
   // These methods are linked to the usingDynamicBackStyle fade-in-card
   onBackStyleContrastChange(): void {
-    this.disableBackStyleContrastUndoButton = false;
     SEStore.changeStyle({
       selected: this.selectedSENodules,
       panel: this.panel,
@@ -903,7 +877,6 @@ export default class FrontBackStyle extends Vue {
     this.usingDynamicBackStyleCommonValue = true;
   }
   clearRecentDynamicBackStyleChanges(): void {
-    this.disableBackStyleContrastUndoButton = true;
     const selected = this.selectedSENodules;
     const initialStyleStates = SEStore.getInitialStyleState(this.panel);
     const initialBackStyleContrast = this.initialBackStyleContrast;
@@ -919,21 +892,7 @@ export default class FrontBackStyle extends Vue {
     this.backStyleContrast = initialBackStyleContrast;
     this.setDynamicBackStyleSelectorState(initialStyleStates);
   }
-  resetDynamicBackStyleToDefaults(): void {
-    const selected = this.selectedSENodules;
-    const defaultStyleStates = SEStore.getDefaultStyleState(this.panel);
-    for (let i = 0; i < selected.length; i++) {
-      SEStore.changeStyle({
-        selected: [selected[i]],
-        panel: this.panel,
-        payload: {
-          backStyleContrast: SETTINGS.style.backStyleContrast
-        }
-      });
-    }
-    this.backStyleContrast = SETTINGS.style.backStyleContrast;
-    this.setDynamicBackStyleSelectorState(defaultStyleStates);
-  }
+
   toggleBackStyleOptionsAvailability(): void {
     this.usingDynamicBackStyle = !this.usingDynamicBackStyle;
     this.usingDynamicBackStyleAgreement = true;
@@ -962,7 +921,6 @@ export default class FrontBackStyle extends Vue {
       this.usingDynamicBackStyle !== undefined &&
       this.backStyleContrast + 0.1 <= 1
     ) {
-      this.disableBackStyleContrastUndoButton = false;
       this.backStyleContrast += 0.1;
       SEStore.changeStyle({
         selected: this.selectedSENodules,
@@ -978,7 +936,6 @@ export default class FrontBackStyle extends Vue {
       this.usingDynamicBackStyle !== undefined &&
       this.backStyleContrast - 0.1 >= 0
     ) {
-      this.disableBackStyleContrastUndoButton = false;
       this.backStyleContrast -= 0.1;
       SEStore.changeStyle({
         selected: this.selectedSENodules,
@@ -1027,24 +984,6 @@ export default class FrontBackStyle extends Vue {
   }
 
   // These methods are linked to the angle marker decoration fade-in-card
-  resetAngleMarkerDecorationsToDefaults(): void {
-    const selected = this.selectedSENodules;
-    const defaultStyleStates = SEStore.getDefaultStyleState(
-      StyleEditPanels.Front
-    );
-
-    for (let i = 0; i < selected.length; i++) {
-      SEStore.changeStyle({
-        selected: [selected[i]],
-        panel: StyleEditPanels.Front,
-        payload: {
-          angleMarkerTickMark: defaultStyleStates[i].angleMarkerTickMark,
-          angleMarkerDoubleArc: defaultStyleStates[i].angleMarkerDoubleArc
-        }
-      });
-    }
-    this.setAngleMarkerDecorationSelectorState(defaultStyleStates);
-  }
   clearAngleMarkerDecorations(): void {
     const selected = this.selectedSENodules;
 
@@ -1063,10 +1002,10 @@ export default class FrontBackStyle extends Vue {
     }
     this.setAngleMarkerDecorationSelectorState(initialStyleStates);
   }
-  onAngleMarkerDecorationChanged(): void {
-    this.disableAngleMarkerDecorationsUndoButton = false;
 
-    const selected = this.selectedSENodules;
+  @Watch("angleMarkerDecorations")
+  onAngleMarkerDecorationChanged(): void {
+    // const selected = this.selectedSENodules;
 
     const angleMarkerDoubleArcDisplay =
       this.angleMarkerDecorations?.findIndex(x => x === "doubleArc") === -1
@@ -1076,22 +1015,12 @@ export default class FrontBackStyle extends Vue {
       this.angleMarkerDecorations?.findIndex(x => x === "tickMark") === -1
         ? false
         : true;
-
-    // if there has been some change then change the style
-    if (this.angleMarkerDecorationChange) {
-      SEStore.changeStyle({
-        selected: selected,
-        panel: StyleEditPanels.Front,
-        payload: {
-          angleMarkerTickMark: angleMarkerTickMarkDisplay,
-          angleMarkerDoubleArc: angleMarkerDoubleArcDisplay
-        }
-      });
+    if (this.activeStyleOptions) {
+      this.activeStyleOptions.angleMarkerTickMark = angleMarkerTickMarkDisplay;
+      this.activeStyleOptions.angleMarkerDoubleArc = angleMarkerDoubleArcDisplay;
     }
-    this.angleMarkerDecorationChange = false;
   }
   setAngleMarkerDecorationSelectorState(styleState: StyleOptions[]): void {
-    this.disableAngleMarkerDecorationsUndoButton = true;
     this.angleMarkerDecorationsAgreement = true;
     this.totalyDisableAngleMarkerDecorationsSelector = false;
     // Make sure that across the selected objects all 8 properties are defined and agree
@@ -1136,14 +1065,11 @@ export default class FrontBackStyle extends Vue {
   }
   disableAnglerMarkerDecorationsSelector(totally: boolean): void {
     this.angleMarkerDecorationsAgreement = false;
-    this.disableAngleMarkerDecorationsUndoButton = true;
     this.totalyDisableAngleMarkerDecorationsSelector = totally;
     // Set the angle marker disabled values
     this.angleMarkerDecorations = undefined;
   }
-  setAngleMarkerDecorationChange(): void {
-    this.angleMarkerDecorationChange = true;
-  }
+
   setStyleDataAgreement(): void {
     this.angleMarkerDecorationsAgreement = true;
   }
@@ -1204,6 +1130,17 @@ export default class FrontBackStyle extends Vue {
       );
     }
   }
+  @Watch("hslaFillColorObject", { deep: true })
+  onFillColorChanged(newVal: hslaColorType): void {
+    console.debug("New fill color", newVal);
+    if (this.activeStyleOptions) {
+      Vue.set(
+        this.activeStyleOptions,
+        "fillColor",
+        Nodule.convertHSLAObjectToString(newVal)
+      );
+    }
+  }
   /**
    * This is an example of the two-way binding that is provided by the Vuex store. As this is a Vue component we can Watch variables, and
    * when they change, this method will execute in response to that change.
@@ -1237,6 +1174,12 @@ export default class FrontBackStyle extends Vue {
       .map((obj: SENodule) => obj.ref!.currentStyleState(this.panel));
 
     this.activeStyleOptions = { ...styleOptionsOfSelected[0] };
+    if (this.activeStyleOptions.dashArray) {
+      console.debug("Selected objects include dash pattern");
+      if (this.activeStyleOptions.dashArray.length === 0) {
+        this.activeStyleOptions.dashArray.push(0, 0);
+      }
+    }
     const commonProps = styleOptionsOfSelected.flatMap((opt: StyleOptions) =>
       // Exclude internal JS property like __ob__
       Object.getOwnPropertyNames(opt).filter((s: string) => !s.startsWith("__"))
@@ -1261,6 +1204,23 @@ export default class FrontBackStyle extends Vue {
     this.setDynamicBackStyleSelectorState(
       SEStore.getInitialStyleState(this.panel)
     );
+  }
+
+  enableResetButton(prop: string): void {
+    // Find all the buttons that have the "data-se-props" attribute
+    const candidates = this.$el.querySelectorAll("[data-se-props]");
+    candidates.forEach((el: Element) => {
+      const propList = el.getAttribute("data-se-props")?.split(",");
+
+      // Find which one matche the property name we are looking for
+      if (propList?.find((s: string) => s === prop)) {
+        // Find the flag name needed to (re) enabled the button
+        const flagName = el.getAttribute("data-se-flag") as string;
+
+        // Set the boolean flag controlling its disable behavior
+        (this.disableControl as any)[flagName] = false;
+      }
+    });
   }
 
   @Watch("activeStyleOptions", { deep: true, immediate: true })
@@ -1302,7 +1262,10 @@ export default class FrontBackStyle extends Vue {
       if (a === b) {
         // console.debug(`Excluding ${p} from payload`);
         delete (updatePayload as any)[p];
-      } else console.debug(`Property ${p} is update from ${a} to ${b}`);
+      } else {
+        console.debug(`Property ${p} is updated from ${a} to ${b}`);
+        this.enableResetButton(p);
+      }
     });
 
     /* If multiple labels are selected, do not update the name */
@@ -1359,61 +1322,61 @@ export default class FrontBackStyle extends Vue {
     }
   }
 
+  areEquivalentStyleOptions(
+    opt1: StyleOptions | undefined,
+    opt2: StyleOptions | undefined
+  ): boolean {
+    function arrayEquivalentArray(
+      arr1: Array<string | number>,
+      arr2: Array<string | number>
+    ): boolean {
+      return false;
+    }
+
+    const aProps = opt1
+      ? Object.getOwnPropertyNames(opt1).filter(
+          (s: string) => !s.startsWith("__")
+        )
+      : []; // Set to an empty array of the arg is undefined or null
+    const bProps = opt2
+      ? Object.getOwnPropertyNames(opt2).filter(
+          (s: string) => !s.startsWith("__")
+        )
+      : []; // Set to an empty array of the arg is undefined or null
+    if (aProps.length !== bProps.length)
+      throw new Error(
+        "Attempted to compare two different length StyleOptions in areEquivalentStyles"
+      );
+
+    // Verify equivalence of all the style properties
+    return [...aProps].every((p: string) => {
+      const aVal = (aProps as any)[p];
+      const bVal = (bProps as any)[p];
+      if (typeof aVal !== typeof bVal) return false;
+      if (typeof aVal == "number") return Math.abs(aVal - bVal) < 1e-8;
+      else if (Array.isArray(aVal) && Array.isArray(bVal))
+        return arrayEquivalentArray(aVal, bVal);
+      else if (typeof aVal === "object")
+        throw new Error("Object comparison is not currently supported");
+      else return aVal === bVal;
+    });
+  }
+
   areEquivalentStyles(
     styleStates1: StyleOptions[],
     styleStates2: StyleOptions[]
   ): boolean {
+    console.debug("areEquivalentStyle");
     if (styleStates1.length !== styleStates2.length) {
-      throw "Attempted to compare two different length styles in areEquivalentStyles";
-      //return false;
+      throw new Error(
+        "Attempted to compare two different length styles in areEquivalentStyles"
+      );
     }
-    for (let i = 0; i < styleStates1.length; i++) {
-      const a = styleStates1[i];
-      const b = styleStates2[i];
-      if (
-        a.strokeWidthPercent === b.strokeWidthPercent &&
-        a.strokeColor === b.strokeColor &&
-        a.fillColor === b.fillColor &&
-        a.dynamicBackStyle === b.dynamicBackStyle &&
-        a.pointRadiusPercent === b.pointRadiusPercent &&
-        a.angleMarkerRadiusPercent === b.angleMarkerRadiusPercent
-      ) {
-        //now check the dash array which can be undefined, an empty array,length one array or a length two array.
-        if (a.dashArray === undefined && b.dashArray === undefined) {
-          break; // stop checking this pair in the array because we can conclude they are equal.
-        }
-        if (a.dashArray !== undefined && b.dashArray !== undefined) {
-          if (a.dashArray.length === b.dashArray.length) {
-            if (a.dashArray.length === 0 && b.dashArray.length === 0) {
-              break; // stop checking this pair in the array because we can conclude they are equal.
-            } else if (
-              a.dashArray.length === 1 &&
-              b.dashArray.length === 1 &&
-              a.dashArray[0] === b.dashArray[0]
-            ) {
-              break; // stop checking this pair in the array because we can conclude they are equal.
-            } else if (
-              a.dashArray.length === 2 &&
-              b.dashArray.length === 2 &&
-              a.dashArray[0] === b.dashArray[0] &&
-              a.dashArray[1] === b.dashArray[1]
-            ) {
-              break; // stop checking this pair in the array because we can conclude they are equal.
-            } else {
-              return false;
-            }
-          } else {
-            return false;
-          }
-        } else {
-          return false;
-        }
-      } else {
-        return false;
-      }
-    }
-    // If we reach here the arrays of style states are equal
-    return true;
+
+    // The outer every runs on the two input arguments
+    return styleStates1.every((a: StyleOptions, i: number) =>
+      this.areEquivalentStyleOptions(a, styleStates2[i])
+    );
   }
 }
 </script>
