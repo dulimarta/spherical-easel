@@ -2,7 +2,7 @@
   <div>
     <!-- objects(s) not showing overlay ---higher z-index rendered on top -- covers entire panel including the header-->
     <OverlayWithFixButton
-      v-if="( editModeIsFront || editModeIsBack ) && !allObjectsShowing()"
+      v-if="( editModeIsFront || editModeIsBack ) && !allObjectsShowing"
       z-index="100"
       i18n-title-line="style.objectNotVisible"
       i18n-subtitle-line="style.clickToMakeObjectsVisible"
@@ -10,6 +10,16 @@
       i18n-button-tool-tip="style.objectsNotShowingToolTip"
       @click="toggleAllObjectsVisibility">
     </OverlayWithFixButton>
+    <OverlayWithFixButton v-if="stylePropsConflictList.length > 0"
+      z-index="1"
+      i18n-title-line="style.styleDisagreement"
+      i18n-button-label="style.enableCommonStyle"
+      i18n-button-tool-tip="style.differentValuesToolTip"
+      :i18n-list-items="stylePropsConflictList"
+      @click="setStyleDataAgreement">
+
+    </OverlayWithFixButton>
+
     <!-- Back Style Contrast Slider -->
     <fade-in-card :showWhen="editModeIsBack"
       color="red">
@@ -269,9 +279,7 @@
         <span v-if="selectedSENodules.length > 1"
           class="text-subtitle-2"
           style="color:red">{{" "+ $t("style.labelStyleOptionsMultiple") }}</span>
-        <span v-show="!emptyDashPattern &&
-            !totallyDisableDashPatternSelector &&
-            dashPatternAgreement">
+        <span v-show="!emptyDashPattern">
           {{ activeDashPattern }}
         </span>
 
@@ -279,21 +287,17 @@
         <v-range-slider v-model="activeStyleOptions.dashArray"
           :min="0"
           step="2"
-          :disabled="
-          !dashPatternAgreement ||
-            totallyDisableDashPatternSelector ||
-            emptyDashPattern"
+          :disabled="emptyDashPattern"
           :max="maxGapLengthPlusDashLength"
           type="range"
           dense>
-          <!-- Since we are changing two numbers, the icons are confusing to the user -->
-          <!--template v-slot:prepend>
+          <template v-slot:prepend>
             <v-icon @click="decrementDashPattern">mdi-minus</v-icon>
           </template>
 
           <template v-slot:append>
             <v-icon @click="incrementDashPattern">mdi-plus</v-icon>
-          </template-->
+          </template>
         </v-range-slider>
 
         <!-- Dis/enable Dash Pattern, Undo and Reset to Defaults buttons -->
@@ -399,15 +403,6 @@ import OverlayWithFixButton from "@/components/OverlayWithFixButton.vue";
 import { SEStore } from "@/store";
 const SE = namespace("se");
 
-// import { getModule } from "vuex-module-decorators";
-// import UI from "@/store/ui-styles";
-type labelDisplayModeItem = {
-  text: any; //typeof VueI18n.TranslateResult
-  value: LabelDisplayMode;
-  optionRequiresMeasurementValueToExist: boolean;
-  optionRequiresCaptionToExist: boolean;
-};
-
 @Component({
   components: {
     FadeInCard,
@@ -485,8 +480,7 @@ export default class FrontBackStyle extends Vue {
     "100%"
   ];
 
-  private styleDataAgreement = true;
-  private totalyDisableStyleDataSelector = false;
+  private stylePropsConflictList: Array<string> = [];
 
   //Many of the label style will not be commonly modified so create a button/variable for
   // the user to click to show more of the Label Styling options
@@ -534,8 +528,6 @@ export default class FrontBackStyle extends Vue {
       value: "doubleArc"
     }
   ];
-  private angleMarkerDecorationsAgreement = true;
-  private totalyDisableAngleMarkerDecorationsSelector = false;
 
   private hslaStrokeColorObject: hslaColorType = { h: 0, s: 1, l: 1, a: 0.001 }; // Color for Vuetify Color picker NOTE: setting a=0 creates the following error:
   // create a circle, open the style panel, select the circle when the basic panel is open, switch to the foreground panel, the selected circle has a displayed opacity of 0 --
@@ -559,8 +551,6 @@ export default class FrontBackStyle extends Vue {
   /** dashLength= sliderArray[1] - sliderArray[0] */
   private dashLength = 10;
   /** gap then dash in DashPattern when passed to object*/
-  private dashPatternAgreement = true;
-  private totallyDisableDashPatternSelector = false;
   /** sliderDashArray[1]- sliderDashArray[0] is always positive or zero and equals dashLength */
   private sliderDashArray: number[] = [5, 15];
   private emptyDashPattern = false;
@@ -612,13 +602,6 @@ export default class FrontBackStyle extends Vue {
     //  Mount a save listener
     EventBus.listen("save-style-state", this.saveStyleState);
     // EventBus.listen("set-active-style-panel", this.setActivePanel);
-    console.debug("In mounted()", this.$el);
-
-    // const elems = this.$el.querySelectorAll("[data-se-props]");
-    // for (let k = 0; k < elems.length; k++) {
-    //   const z = elems.item(k);
-    //   // console.debug("Marked element is", z);
-    // }
   }
   get editModeIsBack(): boolean {
     return this.panel === StyleEditPanels.Back;
@@ -635,6 +618,10 @@ export default class FrontBackStyle extends Vue {
     } else return "";
   }
 
+  get allObjectsShowing(): boolean {
+    return this.selectedSENodules.every(node => node.showing);
+  }
+
   toggleShowMoreLabelStyles(): void {
     this.showMoreLabelStyles = !this.showMoreLabelStyles;
     if (!this.showMoreLabelStyles) {
@@ -645,9 +632,6 @@ export default class FrontBackStyle extends Vue {
   }
   toggleAllObjectsVisibility(): void {
     EventBus.fire("toggle-object-visibility", { fromPanel: true });
-  }
-  allObjectsShowing(): boolean {
-    return this.selectedSENodules.every(node => node.showing);
   }
 
   clearStyleData(props: string): void {
@@ -693,43 +677,6 @@ export default class FrontBackStyle extends Vue {
     });
   }
 
-  // These methods are linked to the dashPattern fade-in-card
-  setCommonDashPatternAgreement(): void {
-    this.dashPatternAgreement = true;
-  }
-  clearRecentDashPatternChanges(): void {
-    const selected = this.selectedSENodules;
-    const initialStyleStates = SEStore.getInitialStyleState(this.panel);
-    for (let i = 0; i < selected.length; i++) {
-      // Check see if the initialStylesStates[i] exist and has length >0
-      if (
-        initialStyleStates[i].dashArray &&
-        (initialStyleStates[i].dashArray as number[]).length > 0
-      ) {
-        SEStore.changeStyle({
-          selected: [selected[i]],
-          panel: this.panel,
-          payload: {
-            dashArray: [
-              (initialStyleStates[i].dashArray as number[])[0],
-              (initialStyleStates[i].dashArray as number[])[1]
-            ]
-          }
-        });
-      } else if (initialStyleStates[i].dashArray) {
-        // The selected [i] exists and the array is empty
-        SEStore.changeStyle({
-          selected: [selected[i]],
-          panel: this.panel,
-          payload: {
-            dashArray: []
-          }
-        });
-      }
-    }
-    this.setDashPatternSelectorState(initialStyleStates);
-  }
-
   toggleDashPatternSliderAvailibity(): void {
     if (!this.emptyDashPattern) {
       this.sliderDashArray.clear();
@@ -745,6 +692,8 @@ export default class FrontBackStyle extends Vue {
           dashArray: [this.dashLength, this.gapLength]
         }
       });
+      if (this.activeStyleOptions && this.activeStyleOptions.dashArray)
+        this.activeStyleOptions.dashArray = [this.dashLength, this.gapLength];
     } else {
       SEStore.changeStyle({
         selected: this.selectedSENodules,
@@ -756,6 +705,8 @@ export default class FrontBackStyle extends Vue {
       this.sliderDashArray.clear();
       this.sliderDashArray.push(4);
       this.sliderDashArray.push(16);
+      if (this.activeStyleOptions && this.activeStyleOptions.dashArray)
+        delete this.activeStyleOptions.dashArray;
     }
     // this.emptyDashPattern = !this.emptyDashPattern;
   }
@@ -768,14 +719,17 @@ export default class FrontBackStyle extends Vue {
       Vue.set(this.sliderDashArray, 1, this.sliderDashArray[1] + 1); // trigger the update
       this.gapLength = this.sliderDashArray[0];
       this.dashLength = this.sliderDashArray[1] - this.sliderDashArray[0];
+      if (this.activeStyleOptions && this.activeStyleOptions.dashArray) {
+        console.debug(
+          "Updating styleoption dash array +1",
+          this.sliderDashArray
+        );
 
-      SEStore.changeStyle({
-        selected: this.selectedSENodules,
-        panel: this.panel,
-        payload: {
-          dashArray: [this.dashLength, this.gapLength]
-        }
-      });
+        Vue.set(this.activeStyleOptions, "dashArray", [
+          this.dashLength,
+          this.gapLength
+        ]);
+      }
     }
   }
   decrementDashPattern(): void {
@@ -784,82 +738,25 @@ export default class FrontBackStyle extends Vue {
       this.sliderDashArray[0] + 1 <=
       SETTINGS.style.maxGapLengthPlusDashLength
     ) {
+      console.debug("Updating slider dash array -1", this.sliderDashArray);
       Vue.set(this.sliderDashArray, 0, this.sliderDashArray[0] + 1);
       this.gapLength = this.sliderDashArray[0];
       this.dashLength = this.sliderDashArray[1] - this.sliderDashArray[0];
-
-      SEStore.changeStyle({
-        selected: this.selectedSENodules,
-        panel: this.panel,
-        payload: {
-          dashArray: [this.dashLength, this.gapLength]
-        }
-      });
+      if (this.activeStyleOptions && this.activeStyleOptions.dashArray) {
+        console.debug(
+          "Updating styleoption dash array -1",
+          this.sliderDashArray
+        );
+        Vue.set(this.activeStyleOptions, "dashArray", [
+          this.dashLength,
+          this.gapLength
+        ]);
+      }
     }
     /** TODO:
      * The actual dots on the slider are not moveing when I click the plus (-) sign and trigger this decrementDashPattern method
      * How do I trigger an event that will cause the actual dots on the slider to move?
      */
-  }
-  setDashPatternSelectorState(styleState: StyleOptions[]): void {
-    // reset to the default which are overwritten as necessary
-    this.emptyDashPattern = true;
-    this.dashPatternAgreement = true;
-    this.gapLength = 4;
-    this.dashLength = 12;
-    this.totallyDisableDashPatternSelector = false;
-    if (styleState[0].dashArray !== undefined) {
-      if (styleState[0].dashArray.length > 0) {
-        // all selected nodules should have length>0 and the same gap and dash length
-        this.dashLength = styleState[0].dashArray[0];
-        this.gapLength = styleState[0].dashArray[1];
-        this.emptyDashPattern = false;
-        if (
-          !styleState.every(styleObject => {
-            if (styleObject.dashArray) {
-              return (
-                styleObject.dashArray.length > 0 &&
-                styleObject.dashArray[0] == this.dashLength &&
-                styleObject.dashArray[1] == this.gapLength
-              );
-            } else {
-              return false;
-            }
-          })
-        ) {
-          // The dashPattern property exists on the selected objects but the dash array doesn't agree (so don't totally disable the selector)
-          this.disableDashPatternSelector(false);
-        }
-      } else {
-        // make sure that all selected objects have zero length dash array
-        if (
-          !styleState.every(styleObject => {
-            if (styleObject.dashArray) {
-              return styleObject.dashArray.length === 0;
-            } else {
-              return false;
-            }
-          })
-        ) {
-          // The dashPattern property exists on the selected objects but the dash array doesn't agree (so don't totally disable the selector)
-          this.disableDashPatternSelector(false);
-        }
-      }
-    } else {
-      // The dashPattern property doesn't exists on the selected objects so totally disable the selector
-      this.disableDashPatternSelector(true);
-    }
-    // Set the slider dash array values
-    this.sliderDashArray.clear();
-    this.sliderDashArray.push(this.gapLength);
-    this.sliderDashArray.push(this.gapLength + this.dashLength);
-  }
-  disableDashPatternSelector(totally: boolean): void {
-    this.dashPatternAgreement = false;
-    // Set the gap and dash to the default
-    this.gapLength = 5;
-    this.dashLength = 10;
-    this.totallyDisableDashPatternSelector = totally;
   }
 
   // These methods are linked to the usingDynamicBackStyle fade-in-card
@@ -875,22 +772,6 @@ export default class FrontBackStyle extends Vue {
   setCommonDynamicBackStyleAgreement(): void {
     this.usingDynamicBackStyleAgreement = true;
     this.usingDynamicBackStyleCommonValue = true;
-  }
-  clearRecentDynamicBackStyleChanges(): void {
-    const selected = this.selectedSENodules;
-    const initialStyleStates = SEStore.getInitialStyleState(this.panel);
-    const initialBackStyleContrast = this.initialBackStyleContrast;
-    for (let i = 0; i < selected.length; i++) {
-      SEStore.changeStyle({
-        selected: [selected[i]],
-        panel: this.panel,
-        payload: {
-          backStyleContrast: initialBackStyleContrast
-        }
-      });
-    }
-    this.backStyleContrast = initialBackStyleContrast;
-    this.setDynamicBackStyleSelectorState(initialStyleStates);
   }
 
   toggleBackStyleOptionsAvailability(): void {
@@ -913,7 +794,7 @@ export default class FrontBackStyle extends Vue {
         if (seNodule.ref)
           this.tempStyleStates.push(seNodule.ref.currentStyleState(this.panel));
       });
-      this.setDashPatternSelectorState(this.tempStyleStates);
+      // this.setDashPatternSelectorState(this.tempStyleStates);
     }
   }
   incrementBackStyleContrast(): void {
@@ -983,26 +864,6 @@ export default class FrontBackStyle extends Vue {
     this.totallyDisableDynamicBackStyleSelector = totally;
   }
 
-  // These methods are linked to the angle marker decoration fade-in-card
-  clearAngleMarkerDecorations(): void {
-    const selected = this.selectedSENodules;
-
-    const initialStyleStates = SEStore.getInitialStyleState(
-      StyleEditPanels.Label
-    );
-    for (let i = 0; i < selected.length; i++) {
-      SEStore.changeStyle({
-        selected: [selected[i]],
-        panel: StyleEditPanels.Front,
-        payload: {
-          angleMarkerTickMark: initialStyleStates[i].angleMarkerTickMark,
-          angleMarkerDoubleArc: initialStyleStates[i].angleMarkerDoubleArc
-        }
-      });
-    }
-    this.setAngleMarkerDecorationSelectorState(initialStyleStates);
-  }
-
   @Watch("angleMarkerDecorations")
   onAngleMarkerDecorationChanged(): void {
     // const selected = this.selectedSENodules;
@@ -1020,58 +881,9 @@ export default class FrontBackStyle extends Vue {
       this.activeStyleOptions.angleMarkerDoubleArc = angleMarkerDoubleArcDisplay;
     }
   }
-  setAngleMarkerDecorationSelectorState(styleState: StyleOptions[]): void {
-    this.angleMarkerDecorationsAgreement = true;
-    this.totalyDisableAngleMarkerDecorationsSelector = false;
-    // Make sure that across the selected objects all 8 properties are defined and agree
-    //   If one property on one selected is undefined, then set styleDataAgreement=false, and totalyDisableStyleDataSelector = true
-    //   If all properties are defined,but one property doesn't agree across all selected then set styleDataAgreement=false, and totalyDisableStyleDataSelector = false
-    // start at 1 because the first styleState always agress with itself -- in the case of only one object selected, this shouldn't execute
-    for (var style of ["angleMarkerTickMark", "angleMarkerDoubleArc"]) {
-      // Record the value of the style on the first style state
-      let value = (styleState[0] as any)[style];
-      // screen for undefined - if undefined then this is not a property that is going to be set by the style panel for this selection of objects
-      if (value !== undefined) {
-        if (
-          styleState.length > 1 &&
-          !styleState.every(
-            styleObject => (styleObject as any)[style] === value
-          )
-        ) {
-          // The style property exists on the selected objects but value
-          // doesn't agree (so don't totally disable the selector)
-          this.disableAnglerMarkerDecorationsSelector(false);
-          break;
-        }
-        // If the execution reaches here, the style exists on all style states and is the same in all style states
-      } else {
-        // The style property doesn't exists on the selected objects so totally disable the selector
-        this.disableAnglerMarkerDecorationsSelector(true);
-        break;
-      }
-    }
-    // Now set the displays of the angle Marker Decorations array)
-    if (
-      !this.totalyDisableAngleMarkerDecorationsSelector &&
-      this.angleMarkerDecorationsAgreement
-    ) {
-      if ((styleState[0] as StyleOptions).angleMarkerTickMark) {
-        this.angleMarkerDecorations!.push("tickMark");
-      }
-      if ((styleState[0] as StyleOptions).angleMarkerDoubleArc) {
-        this.angleMarkerDecorations!.push("doubleArc");
-      }
-    }
-  }
-  disableAnglerMarkerDecorationsSelector(totally: boolean): void {
-    this.angleMarkerDecorationsAgreement = false;
-    this.totalyDisableAngleMarkerDecorationsSelector = totally;
-    // Set the angle marker disabled values
-    this.angleMarkerDecorations = undefined;
-  }
 
   setStyleDataAgreement(): void {
-    this.angleMarkerDecorationsAgreement = true;
+    this.stylePropsConflictList.splice(0);
   }
 
   /**
@@ -1155,7 +967,6 @@ export default class FrontBackStyle extends Vue {
     this.commonStyleProperties.splice(0);
     if (newSelection.length === 0) {
       //totally disable the selectors in this component
-      this.disableDashPatternSelector(true);
       this.disableDynamicBackStyleSelector(true);
       SEStore.setOldStyleSelection([]);
       return;
@@ -1200,10 +1011,40 @@ export default class FrontBackStyle extends Vue {
 
     SEStore.setSavedFromPanel(this.panel);
     //Set the initial state of the fade-in-card/selectors (checking to see if the property is the same across all selected objects)
-    this.setDashPatternSelectorState(SEStore.getInitialStyleState(this.panel));
-    this.setDynamicBackStyleSelectorState(
-      SEStore.getInitialStyleState(this.panel)
-    );
+    const plottables = newSelection
+      .filter((n: SENodule) => n.ref !== null)
+      .map((n: SENodule) => n.ref!);
+
+    if (plottables.length > 1) {
+      // When multiple objects are selected, check for possible conflict
+      const disagreePropNames = this.commonStyleProperties.filter(
+        (propName: string) => {
+          // Confirm that the value of
+          const referenceSO = plottables[0].currentStyleState(this.panel);
+          const referenceValue = (referenceSO as any)[propName];
+          const agreement = plottables.every((p: Nodule) => {
+            const thisSO = p.currentStyleState(this.panel);
+            const thisValue = (thisSO as any)[propName];
+            console.debug(
+              `Comparing ${propName}: ${thisValue} vs ${referenceValue}`
+            );
+            return thisValue === referenceValue;
+          });
+          console.debug(`Property ${propName} agreement`, agreement);
+          return !agreement;
+        }
+      );
+      this.stylePropsConflictList.splice(0);
+      if (disagreePropNames.length > 0) {
+        this.stylePropsConflictList.push(...disagreePropNames);
+        console.error("Disagreement in property values");
+        console.debug("List of disagreement", disagreePropNames);
+      }
+    }
+    // this.setDashPatternSelectorState(SEStore.getInitialStyleState(this.panel));
+    // this.setDynamicBackStyleSelectorState(
+    //   SEStore.getInitialStyleState(this.panel)
+    // );
   }
 
   enableResetButton(prop: string): void {
@@ -1225,9 +1066,10 @@ export default class FrontBackStyle extends Vue {
 
   @Watch("activeStyleOptions", { deep: true, immediate: true })
   onActiveStyleOptionsChanged(newVal: StyleOptions | null): void {
+    // If no active style, do nothing
     if (newVal === null) return;
     console.debug("active style options changed", newVal);
-    if (newVal === null) return;
+    // Extract property names from the previous active style options
     const oldProps: Set<string> = new Set(
       this.pastStyleOptions
         ? Object.getOwnPropertyNames(this.pastStyleOptions).filter(
@@ -1235,6 +1077,7 @@ export default class FrontBackStyle extends Vue {
           )
         : []
     );
+    // Extract property names from the current active style options
     const newProps: Set<string> = new Set(
       newVal
         ? Object.getOwnPropertyNames(newVal).filter(
@@ -1242,18 +1085,26 @@ export default class FrontBackStyle extends Vue {
           )
         : []
     );
+    // Check for removed property names
     const removedProps = [...oldProps].filter((p: string) => !newProps.has(p));
-    if (removedProps.length > 0 && this.selectedSENodules.length > 0)
+    if (removedProps.length > 0 && this.selectedSENodules.length > 0) {
+      console.debug("Attempt to remove", removedProps);
       throw new Error(
         "Removing style options from selections is not currently supported"
       );
+    }
+
+    // Check for new property names
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const addedProps = [...newProps].filter((p: string) => !oldProps.has(p));
     if (addedProps.length > 0)
       console.debug("Adding some new props", addedProps);
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const updatedProps = [...newProps].filter((p: string) => oldProps.has(p));
-    const updatePayload: StyleOptions = { ...newVal };
+
+    const updatePayload: StyleOptions = { ...newVal }; // Make a clone
+
+    // Remove properties which did not change value
     [...updatedProps].forEach((p: string) => {
       const a = (this.pastStyleOptions as any)[p];
       const b = (newVal as any)[p];
@@ -1264,7 +1115,7 @@ export default class FrontBackStyle extends Vue {
         delete (updatePayload as any)[p];
       } else {
         console.debug(`Property ${p} is updated from ${a} to ${b}`);
-        this.enableResetButton(p);
+        this.enableResetButton(p); // Enable the undo button associated with this property
       }
     });
 
@@ -1272,6 +1123,7 @@ export default class FrontBackStyle extends Vue {
     if (this.selectedSENodules.length > 1)
       delete updatePayload.labelDisplayText;
 
+    // Apply the style
     this.selectedSENodules
       .filter((obj: SENodule) => obj.ref)
       .map((obj: SENodule): Required<SENodule> => obj as Required<SENodule>)

@@ -343,7 +343,6 @@ export default class Line extends Nodule {
    * @param options The style options
    */
   updateStyle(mode: StyleEditPanels, options: StyleOptions): void {
-    console.debug("Line: Update style of line using", options);
     if (mode === StyleEditPanels.Front || mode === StyleEditPanels.Back) {
       const currentOptions = this.styleOptions.get(mode);
       this.styleOptions.set(mode, { ...currentOptions, ...options });
