@@ -725,9 +725,9 @@ export const SETTINGS = {
   },
   parameterization: {
     useNewtonsMethod: true, // When finding the zeros, should we use newton's method?  If false we use bisections
-    subdivisions: 100, // When searching function on a parametrized curve for a change in sign, use this many subdivisions
+    subdivisions: 80, // When searching function on a parametrized curve for a change in sign, use this many subdivisions
     bisectionMinSize: 0.0000001, // stop running the bisection method (if Newton's method is not used) when the interval is less than this size
-    numberOfTestTValues: 50, // When checking if a parametric curve is unit or the number of times the curve intersects a plane connecting two points on the curve use this many points
+    numberOfTestTValues: 10, // When checking if a parametric curve is unit or the number of times the curve intersects a plane connecting two points on the curve use this many points
     maxNumberOfIterationArcLength: 5, // maximum number of times it will iterate over the curve to find the arcLength (i.e. the curve is divided into at most subdivisions*maxNumberOfIterationArcLength subdivisions while looking for the arcLength)
     maxChangeInArcLength: 0.00001 // If the change in arcLength is less than this, return the value
   },
