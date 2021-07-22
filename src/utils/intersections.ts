@@ -192,6 +192,7 @@ export function intersectLineWithEllipse(
     d,
     ellipse.ref.tMin,
     ellipse.ref.tMax,
+    [],
     dp
   );
   const returnItems: IntersectionReturnType[] = [];
@@ -207,10 +208,16 @@ export function intersectLineWithEllipse(
   returnItems.push(intersection2);
   // console.log("Line Ellipse Inter", zeros);
   zeros.forEach((z, ind) => {
-    returnItems[ind].vector.copy(
-      ellipse.ref.E(z).applyMatrix4(ellipse.ref.ellipseFrame)
-    );
-    returnItems[ind].exists = true;
+    if (ind > 2) {
+      console.debug(
+        "Ellips and Line Intersection resulted in more than 2 points."
+      );
+    } else {
+      returnItems[ind].vector.copy(
+        ellipse.ref.E(z).applyMatrix4(ellipse.ref.ellipseFrame)
+      );
+      returnItems[ind].exists = true;
+    }
   });
 
   return returnItems;
@@ -252,6 +259,7 @@ export function intersectLineWithParametric(
     d,
     parametric.ref.tNumbers.min,
     parametric.ref.tNumbers.max,
+    [],
     dp
   );
 
@@ -391,6 +399,7 @@ export function intersectSegmentWithEllipse(
     d,
     ellipse.ref.tMin,
     ellipse.ref.tMax,
+    [],
     dp
   );
   const returnItems: IntersectionReturnType[] = [];
@@ -459,6 +468,7 @@ export function intersectSegmentWithParametric(
     d,
     parametric.ref.tNumbers.min,
     parametric.ref.tNumbers.max,
+    parametric.ref.c1DiscontinuityParameterValues,
     dp
   );
 
@@ -681,6 +691,7 @@ export function intersectCircleWithEllipse(
     d,
     ellipse.ref.tMin,
     ellipse.ref.tMax,
+    [],
     dp
   );
   const returnItems: IntersectionReturnType[] = [];
@@ -773,6 +784,7 @@ export function intersectCircleWithParametric(
     d,
     parametric.ref.tNumbers.min,
     parametric.ref.tNumbers.max,
+    parametric.ref.c1DiscontinuityParameterValues,
     dp
   );
 
@@ -879,6 +891,7 @@ export function intersectEllipseWithEllipse(
     d,
     ellipse2.ref.tMin,
     ellipse2.ref.tMax,
+    [],
     dp
   );
   const returnItems: IntersectionReturnType[] = [];
@@ -997,6 +1010,7 @@ export function intersectEllipseWithParametric(
     d,
     parametric.ref.tNumbers.min,
     parametric.ref.tNumbers.max,
+    parametric.ref.c1DiscontinuityParameterValues,
     dp
   );
 

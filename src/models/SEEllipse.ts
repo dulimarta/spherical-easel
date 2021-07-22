@@ -380,11 +380,12 @@ export class SEEllipse extends SENodule
       );
 
       const normalList = SENodule.getNormalsToLineThruParametrically(
-        this.ref.E.bind(this.ref), // bind the this.ref so that this in the this.ref.E method is this.ref
+        // this.ref.E.bind(this.ref), // bind the this.ref so that this in the this.ref.E method is this.ref
         this.ref.Ep.bind(this.ref), // bind the this.ref so that this in the this.ref.E method is this.ref
         transformedToStandard,
         this.ref.tMin,
         this.ref.tMax,
+        [], // Avoid these t values
         this.ref.Epp.bind(this.ref) // bind the this.ref so that this in the this.ref.E method is this.ref
       );
       // // return the normal vector that is closest to oldNormal DO NOT DO THIS FOR NOW
@@ -394,7 +395,9 @@ export class SEEllipse extends SENodule
       // const ind = normalList.findIndex((vec: Vector3) => {
       //   return vec.angleTo(oldNormal) === minAngle;
       // });
-      return normalList.map(vec => vec.applyMatrix4(this.ref.ellipseFrame));
+      return normalList.map(vec =>
+        vec.applyMatrix4(this.ref.ellipseFrame).normalize()
+      );
     }
   }
 

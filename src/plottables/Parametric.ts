@@ -59,6 +59,12 @@ export default class Parametric extends Nodule {
     z: ExpressionParser.NOT_DEFINED
   };
 
+  private primeX2CoordinateSyntaxTrees: CoordinateSyntaxTrees = {
+    x: ExpressionParser.NOT_DEFINED,
+    y: ExpressionParser.NOT_DEFINED,
+    z: ExpressionParser.NOT_DEFINED
+  };
+
   private _tExpressions: MinMaxExpression = { min: "", max: "" };
 
   private tSyntaxTrees: MinMaxSyntaxTrees = {
@@ -67,6 +73,7 @@ export default class Parametric extends Nodule {
   };
   private _tNumbers: MinMaxNumber = { min: NaN, max: NaN };
 
+  private _c1DiscontinuityParameterValues: number[] = [];
   /**
    * The expressions that are the parents of this curve
    */
@@ -83,6 +90,7 @@ export default class Parametric extends Nodule {
    */
   private parameterization = new Vector3();
   private parameterizationPrime = new Vector3();
+  private parameterizationPrimeX2 = new Vector3();
   private _closed: boolean; // true if P(tNumber.min)=P(tNumber.max)
 
   /**
@@ -155,6 +163,7 @@ export default class Parametric extends Nodule {
     tExpressions: { min: string; max: string },
     tNumbers: { min: number; max: number },
     measurementParents: SEExpression[],
+    c1DiscontinuityParameterValues: number[],
     closed: boolean
   ) {
     super();
@@ -186,9 +195,22 @@ export default class Parametric extends Nodule {
       "t"
     );
 
+    this.primeX2CoordinateSyntaxTrees.x = ExpressionParser.differentiate(
+      this.primeCoordinateSyntaxTrees.x,
+      "t"
+    );
+    this.primeX2CoordinateSyntaxTrees.y = ExpressionParser.differentiate(
+      this.primeCoordinateSyntaxTrees.y,
+      "t"
+    );
+    this.primeX2CoordinateSyntaxTrees.z = ExpressionParser.differentiate(
+      this.primeCoordinateSyntaxTrees.z,
+      "t"
+    );
+
     this._tExpressions.min = tExpressions.min;
     this._tExpressions.max = tExpressions.max;
-    if (this._tExpressions.min !== "") {
+    if (this._tExpressions.min !== "" && this._tExpressions.max !== "") {
       this.tSyntaxTrees.min = ExpressionParser.parse(this._tExpressions.min);
       this.tSyntaxTrees.max = ExpressionParser.parse(this._tExpressions.max);
     }
@@ -199,41 +221,9 @@ export default class Parametric extends Nodule {
 
     this._closed = closed;
 
-    this._seParentExpressions.forEach((m: SEExpression) => {
-      const measurementName = m.name;
-      // console.debug("Measurement", m, measurementName);
-      this.varMap.set(measurementName, m.value);
-    });
-    //add the current t value
-    this.varMap.set("t", 0.67213461);
-
-    // console.log(
-    //   "test the derivatives",
-    //   ExpressionParser.evaluate(
-    //     this.primeCoordinateSyntaxTrees.x,
-    //     this.varMap
-    //   ) -
-    //     this.parser.evaluateWithVars(
-    //       this.primeCoordinateExpressions.x,
-    //       this.varMap
-    //     ),
-    //   ExpressionParser.evaluate(
-    //     this.primeCoordinateSyntaxTrees.y,
-    //     this.varMap
-    //   ) -
-    //     this.parser.evaluateWithVars(
-    //       this.primeCoordinateExpressions.y,
-    //       this.varMap
-    //     ),
-    //   ExpressionParser.evaluate(
-    //     this.primeCoordinateSyntaxTrees.z,
-    //     this.varMap
-    //   ) -
-    //     this.parser.evaluateWithVars(
-    //       this.primeCoordinateExpressions.z,
-    //       this.varMap
-    //     )
-    // );
+    this._c1DiscontinuityParameterValues.push(
+      ...c1DiscontinuityParameterValues
+    );
 
     // Determine an *ESTIMATE* of number of front/back parts need to render the curve, the curves can change length and shape depending on the
     // the value of the M1, M2, etc.  So overestimate the actual number
@@ -292,6 +282,7 @@ export default class Parametric extends Nodule {
               this._tNumbers.max -
                 (1 / SETTINGS.parameterization.subdivisions) *
                   (this._tNumbers.max - this._tNumbers.min),
+              this._c1DiscontinuityParameterValues,
               dp.bind(this)
             );
           } else {
@@ -299,6 +290,7 @@ export default class Parametric extends Nodule {
               d.bind(this),
               this._tNumbers.min,
               this._tNumbers.max,
+              this._c1DiscontinuityParameterValues,
               dp.bind(this)
             );
           }
@@ -350,6 +342,8 @@ export default class Parametric extends Nodule {
         }
       });
     });
+    // The *first* front or back path might be divided into two parts so add one to the number of parts
+    this._numberOfParts += 1;
     console.log("number of parts", this._numberOfParts);
 
     // to set the number of vertices need to render the parametric curve use the density of SUBDIVISIONS per unit INITIAL arcLength and multiply by the arcLength
@@ -357,7 +351,7 @@ export default class Parametric extends Nodule {
       this._tNumbers.min,
       this._tNumbers.max
     );
-    console.log("arcLength", this._initialArcLength);
+    // console.log("arcLength", this._initialArcLength);
     // As the Parametric is moved around the vertices are passed between the front and back parts, but it
     // is always true that sum of the number of all frontVertices and the sum of all the backVertices = 2*floor(SUBDIVISIONS*InitialArcLength)+2
     const frontVertices: Two.Vector[] = [];
@@ -482,11 +476,42 @@ export default class Parametric extends Nodule {
     });
     //add the current t value
     this.varMap.set("t", t);
-
+    // console.log("t val in pprime", t);
     return this.parameterizationPrime.set(
       ExpressionParser.evaluate(this.primeCoordinateSyntaxTrees.x, this.varMap),
       ExpressionParser.evaluate(this.primeCoordinateSyntaxTrees.y, this.varMap),
       ExpressionParser.evaluate(this.primeCoordinateSyntaxTrees.z, this.varMap)
+    );
+  }
+
+  /**
+   * The parameterization of the derivative of the curve
+   * Note: This is *not* a unit parameterization
+   * @param t the parameter
+   */
+  public PPPrime(t: number): Vector3 {
+    // first update the map with the current value of
+    this._seParentExpressions.forEach((m: SEExpression) => {
+      const measurementName = m.name;
+      // console.debug("Measurement", m, measurementName);
+      this.varMap.set(measurementName, m.value);
+    });
+    //add the current t value
+    this.varMap.set("t", t);
+
+    return this.parameterizationPrimeX2.set(
+      ExpressionParser.evaluate(
+        this.primeX2CoordinateSyntaxTrees.x,
+        this.varMap
+      ),
+      ExpressionParser.evaluate(
+        this.primeX2CoordinateSyntaxTrees.y,
+        this.varMap
+      ),
+      ExpressionParser.evaluate(
+        this.primeX2CoordinateSyntaxTrees.z,
+        this.varMap
+      )
     );
   }
 
@@ -604,16 +629,19 @@ export default class Parametric extends Nodule {
     // if the tMin/tMax values are out of order plot nothing (the object doesn't exist)
     if (tMax <= tMin) return;
 
-    const tempArcLength = Math.min(
-      this.arcLength(tMin, tMax),
-      this._initialArcLength
-    ); // this is always less than this._initialArcLength
+    const tempArcLength = Math.max(
+      Math.min(this.arcLength(tMin, tMax), this._initialArcLength),
+      1
+    ); // this is always less than this._initialArcLength and bigger than one
 
     let lastPositiveIndex = -1;
     let lastNegativeIndex = -1;
 
     let currentFrontPartIndex = 0;
     let currentBackPartIndex = 0;
+
+    let firstBackPart = true;
+    let firstFrontPart = true;
 
     for (
       let index = 0;
@@ -631,33 +659,25 @@ export default class Parametric extends Nodule {
       // Set tmpVector equal to location on the target Parametric in rotated position
       this.tmpVector.applyMatrix4(transformMatrix);
 
-      // console.log(
-      //   "tmp z",
-      //   this.tmpVector.z,
-      //   this.frontParts.length,
-      //   this.backParts.length,
-      //   lastPositiveIndex,
-      //   currentFrontPartIndex
-      // );
       // When the Z-coordinate is negative, the vertex belongs the
       // the back side of the sphere
       if (this.tmpVector.z < 0) {
         // Move to the next back part if necessary
-        if (lastNegativeIndex !== index - 1) {
+        if (lastNegativeIndex !== index - 1 && !firstBackPart) {
           currentBackPartIndex++;
+          // console.log(
+          //   "c back part ind",
+          //   currentBackPartIndex,
+          //   this.backParts.length
+          // );
           if (currentBackPartIndex >= this.backParts.length) {
             throw new Error(
               "Parametric update: Needs more back parts than were allocated in the constructor"
             );
           }
         }
+        firstBackPart = false;
         lastNegativeIndex = index;
-        // console.log(
-        //   "index, last neg index, currentBackPartIndex",
-        //   index,
-        //   lastNegativeIndex,
-        //   currentBackPartIndex
-        // );
 
         const vertex = this.pool.pop();
         if (vertex !== undefined) {
@@ -675,21 +695,22 @@ export default class Parametric extends Nodule {
         }
       } else {
         // Move to the next front part if necessary
-        if (lastPositiveIndex !== index - 1) {
+        if (lastPositiveIndex !== index - 1 && !firstFrontPart) {
           currentFrontPartIndex++;
+          // console.log(
+          //   "c front part ind",
+          //   currentBackPartIndex,
+          //   this.backParts.length
+          // );
           if (currentFrontPartIndex >= this.frontParts.length) {
             throw new Error(
               "Parametric Update: Needs more front parts than were allocated in the constructor"
             );
           }
         }
+        firstFrontPart = false;
         lastPositiveIndex = index;
-        // console.log(
-        //   "index, last pos index, currentFrontPartIndex",
-        //   index,
-        //   lastPositiveIndex,
-        //   currentFrontPartIndex
-        // );
+
         const vertex = this.pool.pop();
         if (vertex !== undefined) {
           vertex.x = this.tmpVector.x;
@@ -717,7 +738,9 @@ export default class Parametric extends Nodule {
   get coordinateExpressions(): CoordExpression {
     return this._coordinateExpressions;
   }
-
+  get c1DiscontinuityParameterValues(): number[] {
+    return this._c1DiscontinuityParameterValues;
+  }
   get tExpressions(): MinMaxExpression {
     return this._tExpressions;
   }

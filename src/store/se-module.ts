@@ -213,6 +213,7 @@ export default class SE extends VuexModule implements AppState {
     this.seLines.forEach((x: SELine) => x.ref.removeFromLayers());
     this.sePoints.forEach((x: SEPoint) => x.ref.removeFromLayers());
     this.seSegments.forEach((x: SESegment) => x.ref.removeFromLayers());
+    this.seParametrics.forEach((x: SEParametric) => x.ref.removeFromLayers());
   }
 
   @Mutation
@@ -519,7 +520,7 @@ export default class SE extends VuexModule implements AppState {
   @Mutation
   unglowAllSENodules(): void {
     this.seNodules.forEach((p: SENodule) => {
-      if (!p.selected) {
+      if (!p.selected && p.exists) {
         p.glowing = false;
       }
     });
@@ -805,7 +806,6 @@ export default class SE extends VuexModule implements AppState {
       this.seEllipses.forEach((oldEllipse: SEEllipse) => {
         const intersectionInfo = intersectLineWithEllipse(newLine, oldEllipse);
         intersectionInfo.forEach((info, index) => {
-          console.log("info.vec", info.vector, avoidVectors);
           if (
             !avoidVectors.some(v =>
               this.tempVec.subVectors(info.vector, v).isZero()

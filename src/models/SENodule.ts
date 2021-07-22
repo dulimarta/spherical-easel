@@ -389,7 +389,7 @@ export abstract class SENodule {
     } else {
       dpp = undefined;
     }
-    const zeros = this.findZerosParametrically(dp, tMin, tMax, dpp);
+    const zeros = this.findZerosParametrically(dp, tMin, tMax, [], dpp);
 
     // The zeros of dp are either minimums or maximums (or neither, but this is very unlikely so we assume it doesn't happen)
     let minTVal: number = zeros[0]; // The t value that minimizes d
@@ -443,11 +443,12 @@ export abstract class SENodule {
    * @param periodic if true, implies P(t) = P(t + (tMax-tMin)) for all t
    */
   protected static getNormalsToLineThruParametrically(
-    P: (t: number) => Vector3,
+    // P: (t: number) => Vector3,
     PPrime: (t: number) => Vector3,
     unitVec: Vector3,
     tMin: number,
     tMax: number,
+    avoidTheseTValues: number[],
     PPPrime?: (t: number) => Vector3
   ): Vector3[] {
     // First form the objective function, this is the function that we want to find the zeros.
@@ -467,7 +468,13 @@ export abstract class SENodule {
       dp = undefined;
     }
 
-    const zeros = this.findZerosParametrically(d, tMin, tMax, dp);
+    const zeros = this.findZerosParametrically(
+      d,
+      tMin,
+      tMax,
+      avoidTheseTValues,
+      dp
+    );
 
     const returnVectors: Vector3[] = [];
     zeros.forEach(tVal => {
@@ -480,11 +487,27 @@ export abstract class SENodule {
       //   temp.copy(PPrime(tVal).normalize()).z
       // );
       temp.copy(PPrime(tVal));
-      // don't return any zero vectors, the derivative being zero leads to a zero, but not a perpendicular
-      if (!temp.isZero(SETTINGS.tolerance)) {
-        returnVectors.push(temp.normalize());
-      }
+      // don't return any zero vectors, the derivative being zero leads to a zero of d, but not a perpendicular
+      // also check that that vec is perpendicular to the given unitVector
+      // if (Math.abs(temp.dot(unitVec)) < SETTINGS.tolerance) {
+      //   console.log("through point in SENodule");
+      // } else {
+      //   console.log("not through point in SENodule");
+      // }
+      returnVectors.push(temp);
+      // }
     });
+    // remove duplicates from the list
+    // const uniqueNormals: Vector3[] = [];
+    // returnVectors.forEach(vec => {
+    //   if (
+    //     uniqueNormals.every(
+    //       nor => !nor.cross(vec).isZero(SETTINGS.nearlyAntipodalIdeal)
+    //     )
+    //   ) {
+    //     uniqueNormals.push(vec);
+    //   }
+    // });
     // console.log(
     //   "returnVectors list 0",
     //   returnVectors.length,
@@ -499,8 +522,9 @@ export abstract class SENodule {
   public static findZerosParametrically(
     f: (t: number) => number,
     tMin: number,
-    tMax: number, // if the curve is closed, don't use tMax but tMax - (1 / SETTINGS.parameterization.subdivisions) * (tMax - tMin)
-    fPrime?: (t: number) => number
+    tMax: number,
+    avoidTheseTValues: number[],
+    fPrime?: (t: number) => number // not used if bisection method is used
   ): number[] {
     // now we need to find all the places that d changes sign so we know where to start Newton's method
     const signChanges = [];
@@ -509,7 +533,17 @@ export abstract class SENodule {
     let tVal: number;
     let lastTVal = tMin;
     if (Math.abs(f(tMin)) < SETTINGS.tolerance / 1000) {
-      zeros.push(tMin);
+      // make sure that tMin is not on the avoid list
+      if (
+        avoidTheseTValues.every(
+          num => Math.abs(num - tMin) > SETTINGS.tolerance
+        )
+      ) {
+        zeros.push(tMin);
+      }
+      // else {
+      //   console.log("Excluded value", tMin);
+      // }
       // console.log("Actual zero! tMin", tMin, f(tMin));
     }
 
@@ -517,11 +551,27 @@ export abstract class SENodule {
       tVal =
         tMin + (i / SETTINGS.parameterization.subdivisions) * (tMax - tMin);
       if (Math.abs(f(tVal)) < SETTINGS.tolerance / 1000) {
-        zeros.push(tVal);
+        // make sure that tVal is not on the avoid list
+        if (
+          avoidTheseTValues.every(
+            num => Math.abs(num - tVal) > SETTINGS.tolerance
+          )
+        ) {
+          zeros.push(tVal);
+        }
+        // else {
+        //   console.log("Excluded value", tVal);
+        // }
         // console.log("Actual zero!", tVal, f(tVal));
       } else if (f(tVal) * f(lastTVal) < 0) {
-        // console.log("sign Change", tVal, f(tVal));
-        signChanges.push([lastTVal, tVal]);
+        // make sure that tMin is not on the avoid list
+        if (!avoidTheseTValues.some(num => lastTVal <= num && num <= tVal)) {
+          // console.log("sign Change", tVal, f(tVal));
+          signChanges.push([lastTVal, tVal]);
+        }
+        // else {
+        //   console.log("Excluded Interval", lastTVal, tVal);
+        // }
       }
 
       lastTVal = tVal;
@@ -535,27 +585,38 @@ export abstract class SENodule {
     }
 
     signChanges.forEach(interval => {
-      // Bisection Method
-      const zeroTVal = SENodule.bisection(f, interval[0], interval[1]);
-      zeros.push(zeroTVal as number);
+      try {
+        if (SETTINGS.parameterization.useNewtonsMethod) {
+          //Newton's Method
+          const zeroTVal: number | boolean = newton(
+            f,
+            fPrime,
+            (interval[0] + interval[1]) / 2
+            // { verbose: true }
+          );
 
-      // Newton's Method
-      // const zeroTVal: number | boolean = newton(
-      //   f,
-      //   fPrime,
-      //   (interval[0] + interval[1]) / 2
-      //   // { verbose: true }
-      // );
-
-      // if (
-      //   zeroTVal !== false &&
-      //   interval[0] <= zeroTVal &&
-      //   zeroTVal <= interval[1]
-      // ) {
-      //   zeros.push(zeroTVal as number);
-      // } else {
-      //   console.log("Newton's method failed to converge in interval");
-      // }
+          if (
+            zeroTVal !== false &&
+            interval[0] - SETTINGS.tolerance <= zeroTVal &&
+            zeroTVal <= interval[1] + SETTINGS.tolerance
+          ) {
+            zeros.push(zeroTVal as number);
+          } else {
+            console.log(
+              "Newton's method failed to converge in interval",
+              zeroTVal,
+              interval[0],
+              interval[1]
+            );
+          }
+        } else {
+          // Bisection Method
+          const zeroTVal = SENodule.bisection(f, interval[0], interval[1]);
+          zeros.push(zeroTVal as number);
+        }
+      } catch (err) {
+        console.debug("Newton's method error", err);
+      }
     });
     return zeros;
   }
