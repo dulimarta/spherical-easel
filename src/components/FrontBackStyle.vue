@@ -1,8 +1,7 @@
 <template>
   <div>
     <!-- objects(s) not showing overlay ---higher z-index rendered on top -- covers entire panel including the header-->
-    <OverlayWithFixButton
-      v-if="( editModeIsFront || editModeIsBack ) && !allObjectsShowing"
+    <OverlayWithFixButton v-if="!allObjectsShowing"
       z-index="100"
       i18n-title-line="style.objectNotVisible"
       i18n-subtitle-line="style.clickToMakeObjectsVisible"
@@ -10,16 +9,11 @@
       i18n-button-tool-tip="style.objectsNotShowingToolTip"
       @click="toggleAllObjectsVisibility">
     </OverlayWithFixButton>
-    <OverlayWithFixButton v-if="stylePropsConflictList.length > 0"
-      z-index="1"
-      i18n-title-line="style.styleDisagreement"
-      i18n-button-label="style.enableCommonStyle"
-      i18n-button-tool-tip="style.differentValuesToolTip"
-      :i18n-list-items="stylePropsConflictList"
-      @click="setStyleDataAgreement">
-
-    </OverlayWithFixButton>
-
+    <ul v-if="editModeIsBack">
+      <li>Enable back style editing? {{enableBackStyleEditing}}</li>
+      <li>Use automatic backstyle? {{usingAutomaticBackStyle}}</li>
+      <li>autoBackstyle value? {{propDynamicBackStyleCommonValue}}</li>
+    </ul>
     <!-- Back Style Contrast Slider -->
     <fade-in-card :showWhen="editModeIsBack"
       color="red">
@@ -29,16 +23,6 @@
         {{" ("+ Math.floor(backStyleContrast*100)+"%)" }}
       </span>
       <br />
-
-      <!-- Enable the Dynamic Back Style Overlay -->
-      <OverlayWithFixButton v-if="editModeIsBack && hasDynamicBackStyle && usingDynamicBackStyleAgreement 
-        && !(usingDynamicBackStyle || usingDynamicBackStyleCommonValue)"
-        z-index="5"
-        i18n-title-line="style.dynamicBackStyleHeader"
-        i18n-button-label="style.enableDynamicBackStyle"
-        i18n-button-tool-tip="style.disableDynamicBackStyleToolTip"
-        @click="toggleBackStyleOptionsAvailability">
-      </OverlayWithFixButton>
 
       <!-- The contrast slider -->
       <v-tooltip bottom
@@ -53,7 +37,7 @@
             @change="onBackStyleContrastChange"
             :max="1"
             type="range"
-            :disabled="!usingDynamicBackStyle"
+            :disabled="!usingAutomaticBackStyle"
             dense>
             <template v-slot:prepend>
               <v-icon @click="decrementBackStyleContrast">mdi-minus
@@ -75,6 +59,7 @@
       <v-container>
         <v-row justify="end">
           <!-- Undo and Reset to Defaults buttons -->
+          <v-col>Reset/Undo: inoperable</v-col>
           <v-col cols="1"
             class="ma-0 pl-0 pr-0 pt-0 pb-2">
             <HintButton @click="clearStyleData('dynamicBackStyle')"
@@ -98,81 +83,113 @@
           </v-col>
         </v-row>
       </v-container>
+      <OverlayWithFixButton v-if="enableBackStyleEditing"
+        z-index="5"
+        i18n-title-line="style.dynamicBackStyleHeader"
+        i18n-button-label="style.enableDynamicBackStyle"
+        i18n-button-tool-tip="style.disableDynamicBackStyleToolTip"
+        @click="toggleBackStyleOptionsAvailability">
+        Enable auto back styling?
+      </OverlayWithFixButton>
     </fade-in-card>
 
     <!-- Scope of the Disable Dynamic Back Style Overlay and the BackStyle Disagreemnt overlay-->
-    <!--v-card color="grey lighten-2"-->
+    <v-card color="grey lighten-2">
+      <OverlayWithFixButton v-if="stylePropsConflictList.length > 0"
+        z-index="1"
+        i18n-title-line="style.styleDisagreement"
+        i18n-button-label="style.enableCommonStyle"
+        i18n-button-tool-tip="style.differentValuesToolTip"
+        :i18n-list-items="stylePropsConflictList"
+        @click="setStyleDataAgreement">
 
-    <!-- Disable the Dynamic Back Style Overlay -->
-    <OverlayWithFixButton v-if="editModeIsBack && hasDynamicBackStyle && usingDynamicBackStyleAgreement &&
-        (usingDynamicBackStyle || usingDynamicBackStyleCommonValue)"
-      z-index="50"
-      i18n-title-line="style.dynamicBackStyleHeader"
-      i18n-button-label="style.disableDynamicBackStyle"
-      i18n-button-tool-tip="style.disableDynamicBackStyleToolTip"
-      @click="toggleBackStyleOptionsAvailability">
-    </OverlayWithFixButton>
+      </OverlayWithFixButton>
+      <!-- Enable the Dynamic Back Style Overlay -->
 
-    <!-- usingDynamicBackStyle disagreemnt  -->
-    <OverlayWithFixButton
-      v-if="editModeIsBack&& hasDynamicBackStyle && !usingDynamicBackStyleAgreement"
-      z-index="40"
-      i18n-title-line="style.backStyleDisagreement"
-      i18n-button-label="style.enableCommonStyle"
-      i18n-button-tool-tip="style.differentValuesToolTip"
-      @click="setCommonDynamicBackStyleAgreement">
-    </OverlayWithFixButton>
+      <!-- Disable the Dynamic Back Style Overlay -->
+      <OverlayWithFixButton
+        v-if="editModeIsBack && !enableBackStyleEditing"
+        z-index="50"
+        i18n-title-line="style.dynamicBackStyleHeader"
+        i18n-subtitle-line="To allow style customization, back styling must be disabled"
+        i18n-button-label="style.disableDynamicBackStyle"
+        i18n-button-tool-tip="style.disableDynamicBackStyleToolTip"
+        @click="toggleBackStyleOptionsAvailability">
+        Disable auto back styling?
+        <ul>
+          <li>Apply Dynamic Back Stlye? {{usingAutomaticBackStyle}}
+          </li>
+          <li>Common Value {{propDynamicBackStyleCommonValue}}</li>
+        </ul>
+      </OverlayWithFixButton>
 
-    <!-- Front/Back Stroke Color Selector-->
-    <fade-in-card
-      v-show="hasStrokeColor || hasStrokeWidthPercent || hasFillColor">
-      <SimpleColorSelector titleKey="style.strokeColor"
-        v-if="hasStrokeColor"
-        style-name="strokeColor"
-        :data.sync="hslaStrokeColorObject" />
+      <!-- usingAutomaticBackStyle disagreemnt  -->
+      <!--OverlayWithFixButton
+        v-if="enableBackStyleEditing && !styleDataAgreement"
+        z-index="40"
+        i18n-title-line="style.backStyleDisagreement"
+        i18n-button-label="style.enableCommonStyle"
+        i18n-button-tool-tip="style.differentValuesToolTip"
+        @click="setCommonDynamicBackStyleAgreement">
+        Which three
+        <ul>
+          <li>Apply Dynamic Back Stlye? {{usingAutomaticBackStyle}}
+          </li>
+          <li>Common Value {{propDynamicBackStyleCommonValue}}</li>
+        </ul>
 
-      <SimpleNumberSelector v-if="hasStrokeWidthPercent"
-        v-bind:data.sync="activeStyleOptions.strokeWidthPercent"
-        title-key="style.strokeWidthPercent"
-        v-bind:min-value="minStrokeWidthPercent"
-        v-bind:max-value="maxStrokeWidthPercent"
-        v-bind:step="20"
-        :thumb-string-values="strokeWidthScaleSelectorThumbStrings">
-      </SimpleNumberSelector>
-      <!-- Front/Back Fill Color Selector-->
-      <SimpleColorSelector title-key="style.fillColor"
-        v-if="hasFillColor"
-        style-name="fillColor"
-        :data.sync="hslaFillColorObject" />
-      <v-container>
-        <v-row justify="end">
-          <!-- Undo and Reset to Defaults buttons -->
-          <v-col cols="1"
-            class="ma-0 pl-0 pr-0 pt-0 pb-2">
-            <HintButton
-              @click="clearStyleData('strokeColor,strokeWidthPercent,fillColor')"
-              data-se-props="strokeColor,strokeWidthPercent,fillColor"
-              data-se-flag="colorGroup"
-              :disabled="disableControl['colorGroup']"
-              type="undo"
-              i18n-label="style.clearChanges"
-              i18n-tooltip="style.clearChangesToolTip">
-            </HintButton>
-          </v-col>
+      </OverlayWithFixButton-->
 
-          <v-col cols="2"
-            class="ma-0 pl-0 pr-0 pt-0 pb-2">
-            <HintButton
-              @click="resetStyleDataToDefaults('strokeColor,strokeWidthPercent,fillColor', 'two')"
-              type="default"
-              i18n-label="style.restoreDefaults"
-              i18n-tooltip="style.restoreDefaultsToolTip">
-            </HintButton>
-          </v-col>
-        </v-row>
-      </v-container>
-    </fade-in-card>
+      <!-- Front/Back Stroke Color Selector-->
+      <fade-in-card
+        v-show="hasStrokeColor || hasStrokeWidthPercent || hasFillColor">
+        <SimpleColorSelector titleKey="style.strokeColor"
+          v-if="hasStrokeColor"
+          style-name="strokeColor"
+          :data.sync="hslaStrokeColorObject" />
 
+        <SimpleNumberSelector v-if="hasStrokeWidthPercent"
+          v-bind:data.sync="activeStyleOptions.strokeWidthPercent"
+          title-key="style.strokeWidthPercent"
+          v-bind:min-value="minStrokeWidthPercent"
+          v-bind:max-value="maxStrokeWidthPercent"
+          v-bind:step="20"
+          :thumb-string-values="strokeWidthScaleSelectorThumbStrings">
+        </SimpleNumberSelector>
+        <!-- Front/Back Fill Color Selector-->
+        <SimpleColorSelector title-key="style.fillColor"
+          v-if="hasFillColor"
+          style-name="fillColor"
+          :data.sync="hslaFillColorObject" />
+        <v-container>
+          <v-row justify="end">
+            <!-- Undo and Reset to Defaults buttons -->
+            <v-col cols="1"
+              class="ma-0 pl-0 pr-0 pt-0 pb-2">
+              <HintButton
+                @click="clearStyleData('strokeColor,strokeWidthPercent,fillColor')"
+                data-se-props="strokeColor,strokeWidthPercent,fillColor"
+                data-se-flag="colorGroup"
+                :disabled="disableControl['colorGroup']"
+                type="undo"
+                i18n-label="style.clearChanges"
+                i18n-tooltip="style.clearChangesToolTip">
+              </HintButton>
+            </v-col>
+
+            <v-col cols="2"
+              class="ma-0 pl-0 pr-0 pt-0 pb-2">
+              <HintButton
+                @click="resetStyleDataToDefaults('strokeColor,strokeWidthPercent,fillColor', 'two')"
+                type="default"
+                i18n-label="style.restoreDefaults"
+                i18n-tooltip="style.restoreDefaultsToolTip">
+              </HintButton>
+            </v-col>
+          </v-row>
+        </v-container>
+      </fade-in-card>
+    </v-card>
     <!-- Front/Back Stokewidth Number Selector -->
     <div v-show="showMoreLabelStyles && activeStyleOptions">
       <!--- Front/Back Point Radius Number Selector -->
@@ -545,21 +562,20 @@ export default class FrontBackStyle extends Vue {
   private maxGapLengthPlusDashLength =
     SETTINGS.style.maxGapLengthPlusDashLength;
 
-  private totallyDisableDynamicBackStyleSelector = false;
-  // usingDynamicBackStyleAgreement indicates if all the usingDynamicBackStyle booleans are the same (either T or F)
-  private usingDynamicBackStyleAgreement = true;
-  // usingDynamicBackStyleCommonValue = true indicates ( when usingDynamicBackStyleAgreement = true ) that
+  // propDynamicBackStyleCommonValue = true indicates ( when styleDataAgreement = true ) that
   // all selected objects have the dynamicBackstyle = true
-  // usingDynamicBackStyleCommonValue = false indicates ( when usingDynamicBackStyleAgreement = true ) that
+  // propDynamicBackStyleCommonValue = false indicates ( when styleDataAgreement = true ) that
   // all selected objects have the dynamicBackstyle = false
-  // if usingDynamicBackStyleAgreement = false then usingDynamicBackStyleCommonValue is meaningless
-  // if usingDynamicBackStyleAgreement = true and usingDynamicBackStyleCommonValue is undefined, then something went horribly wrong!
-  private usingDynamicBackStyleCommonValue: boolean | undefined = true;
-  // usingDynamicBackStyle = false means that the user is setting the color for the back on their own and is
+  // if styleDataAgreement = false then propDynamicBackStyleCommonValue is meaningless
+  // if styleDataAgreement = true and propDynamicBackStyleCommonValue is undefined, then something went horribly wrong!
+  private propDynamicBackStyleCommonValue = true;
+  // usingAutomaticBackStyle = false means that the user is setting the color for the back on their own and is
   // *not* using the contrast (i.e. not using the dynamic back styling)
-  // usingDynamicBackStyle = true means the program is setting the style of the back objects
-  private usingDynamicBackStyle: boolean | undefined = true;
+  // usingAutomaticBackStyle = true means the program is setting the style of the back objects
+  private usingAutomaticBackStyle = true;
 
+  // dbAgreement and udbCommonValue are computed by the program
+  // useDB is set by user
   private backStyleContrast = Nodule.getBackStyleContrast();
   private backStyleContrastSelectorThumbStrings = [
     "Min",
@@ -590,6 +606,9 @@ export default class FrontBackStyle extends Vue {
     //  Mount a save listener
     EventBus.listen("save-style-state", this.saveStyleState);
     // EventBus.listen("set-active-style-panel", this.setActivePanel);
+
+    // Enable use automatic back styling only when we are mounted as a BackStyle
+    this.usingAutomaticBackStyle = this.panel === StyleEditPanels.Back;
   }
   get editModeIsBack(): boolean {
     return this.panel === StyleEditPanels.Back;
@@ -608,6 +627,16 @@ export default class FrontBackStyle extends Vue {
 
   get allObjectsShowing(): boolean {
     return this.selectedSENodules.every(node => node.showing);
+  }
+
+  get enableBackStyleEditing(): boolean {
+    // Must be in  Back panel
+    if (this.panel !== StyleEditPanels.Back) return false;
+    // The user wants automatic back styling
+    // [The user does NOT manual back styling]
+    if (this.usingAutomaticBackStyle === true) return false;
+    // We got here when the user requested manual editing of back style
+    return !this.propDynamicBackStyleCommonValue;
   }
 
   toggleShowMoreLabelStyles(): void {
@@ -747,7 +776,7 @@ export default class FrontBackStyle extends Vue {
      */
   }
 
-  // These methods are linked to the usingDynamicBackStyle fade-in-card
+  // These methods are linked to the usingAutomaticBackStyle fade-in-card
   onBackStyleContrastChange(): void {
     SEStore.changeStyle({
       selected: this.selectedSENodules,
@@ -757,25 +786,20 @@ export default class FrontBackStyle extends Vue {
       }
     });
   }
-  setCommonDynamicBackStyleAgreement(): void {
-    this.usingDynamicBackStyleAgreement = true;
-    this.usingDynamicBackStyleCommonValue = true;
-  }
 
   toggleBackStyleOptionsAvailability(): void {
-    this.usingDynamicBackStyle = !this.usingDynamicBackStyle;
-    this.usingDynamicBackStyleAgreement = true;
-    this.usingDynamicBackStyleCommonValue = this.usingDynamicBackStyle;
+    this.usingAutomaticBackStyle = !this.usingAutomaticBackStyle;
+    this.propDynamicBackStyleCommonValue = this.usingAutomaticBackStyle;
 
     SEStore.changeStyle({
       selected: this.selectedSENodules,
       panel: this.panel,
       payload: {
-        dynamicBackStyle: this.usingDynamicBackStyle
+        dynamicBackStyle: this.usingAutomaticBackStyle
       }
     });
 
-    if (!this.usingDynamicBackStyle) {
+    if (!this.usingAutomaticBackStyle) {
       const selectedSENodules = this.selectedSENodules;
       this.tempStyleStates.clear();
       selectedSENodules.forEach(seNodule => {
@@ -787,7 +811,7 @@ export default class FrontBackStyle extends Vue {
   }
   incrementBackStyleContrast(): void {
     if (
-      this.usingDynamicBackStyle !== undefined &&
+      this.usingAutomaticBackStyle !== undefined &&
       this.backStyleContrast + 0.1 <= 1
     ) {
       this.backStyleContrast += 0.1;
@@ -802,7 +826,7 @@ export default class FrontBackStyle extends Vue {
   }
   decrementBackStyleContrast(): void {
     if (
-      this.usingDynamicBackStyle !== undefined &&
+      this.usingAutomaticBackStyle !== undefined &&
       this.backStyleContrast - 0.1 >= 0
     ) {
       this.backStyleContrast -= 0.1;
@@ -814,42 +838,6 @@ export default class FrontBackStyle extends Vue {
         }
       });
     }
-  }
-  setDynamicBackStyleSelectorState(styleState: StyleOptions[]): void {
-    this.usingDynamicBackStyleAgreement = true;
-    this.totallyDisableDynamicBackStyleSelector = false;
-
-    this.usingDynamicBackStyle = styleState[0].dynamicBackStyle;
-    this.usingDynamicBackStyleCommonValue =
-      "dynamicBackStyle" in styleState[0]
-        ? (styleState[0] as any).dynamicBackStyle
-        : undefined;
-
-    // screen for undefined - if undefined then this is not a property that is going to be set by the style panel for this selection of objects
-    if (
-      this.usingDynamicBackStyleCommonValue === undefined ||
-      !styleState.every(
-        styleObject =>
-          (styleObject as any).dynamicBackStyle ==
-          this.usingDynamicBackStyleCommonValue
-      )
-    ) {
-      // The dynamicBackStyle exists on the selected objects but the
-      // doesn't agree
-      this.usingDynamicBackStyleAgreement = false;
-    }
-
-    if (
-      this.usingDynamicBackStyleAgreement &&
-      !this.usingDynamicBackStyleCommonValue
-    ) {
-      this.usingDynamicBackStyle = false;
-    }
-  }
-  disableDynamicBackStyleSelector(totally: boolean): void {
-    this.usingDynamicBackStyleAgreement = false;
-    this.usingDynamicBackStyle = true;
-    this.totallyDisableDynamicBackStyleSelector = totally;
   }
 
   @Watch("angleMarkerDecorations")
@@ -872,6 +860,7 @@ export default class FrontBackStyle extends Vue {
 
   setStyleDataAgreement(): void {
     this.stylePropsConflictList.splice(0);
+    if (this.editModeIsBack) this.propDynamicBackStyleCommonValue = true;
   }
 
   /**
@@ -947,15 +936,14 @@ export default class FrontBackStyle extends Vue {
    */
   @Watch("selectedSENodules")
   onSelectionChanged(newSelection: SENodule[]): void {
-    console.log("FrontBackStyle: onSelectionChanged");
-
     // Before changing the selections save the state for an undo/redo command (if necessary)
     this.saveStyleState();
 
     this.commonStyleProperties.splice(0);
     if (newSelection.length === 0) {
       //totally disable the selectors in this component
-      this.disableDynamicBackStyleSelector(true);
+      if (this.editModeIsBack) this.usingAutomaticBackStyle = true;
+
       SEStore.setOldStyleSelection([]);
       return;
     }
@@ -1005,6 +993,7 @@ export default class FrontBackStyle extends Vue {
 
     if (plottables.length > 1) {
       // When multiple objects are selected, check for possible conflict
+      this.propDynamicBackStyleCommonValue = false;
       const disagreePropNames = this.commonStyleProperties.filter(
         (propName: string) => {
           // Confirm that the values of common style property are the same
@@ -1012,6 +1001,8 @@ export default class FrontBackStyle extends Vue {
           // Use the first object as reference
           const referenceSO = plottables[0].currentStyleState(this.panel);
           const referenceValue = (referenceSO as any)[propName];
+          if (propName === "dynamicBackStyle")
+            this.propDynamicBackStyleCommonValue = referenceValue;
 
           // Verify that the re
           const agreement = plottables.every((p: Nodule) => {
@@ -1034,11 +1025,13 @@ export default class FrontBackStyle extends Vue {
         console.error("Disagreement in property values");
         console.debug("List of disagreement", disagreePropNames);
       }
+    } else {
+      // If we reach this point we have EXACTLY ONE object selected
+      const opt = plottables[0].currentStyleState(this.panel);
+      this.propDynamicBackStyleCommonValue =
+        (opt as any)["dynamicBackStyle"] ?? false;
+      console.debug("Only one object is selected with style options", opt);
     }
-    // this.setDashPatternSelectorState(SEStore.getInitialStyleState(this.panel));
-    // this.setDynamicBackStyleSelectorState(
-    //   SEStore.getInitialStyleState(this.panel)
-    // );
   }
 
   enableResetButton(prop: string): void {
