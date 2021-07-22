@@ -10,52 +10,6 @@
       i18n-button-tool-tip="style.labelsNotShowingToolTip"
       @click="toggleAllLabelsVisibility">
     </OverlayWithFixButton>
-    <v-container class="pa-0 ma-0">
-      <v-row no-gutters>
-        <v-col cols="auto">
-          <v-tooltip bottom
-            :open-delay="toolTipOpenDelay"
-            :close-delay="toolTipCloseDelay"
-            max-width="400px"
-            class="pa-0 pm-0">
-            <template v-slot:activator="{on}">
-              <v-btn v-on="on"
-                @click="toggleShowMoreLabelStyles"
-                class="text-subtitle-2"
-                text
-                plain
-                ripple
-                x-small>
-                <v-icon v-if="showMoreLabelStyles">mdi-chevron-up
-                </v-icon>
-                <v-icon v-else>mdi-chevron-down </v-icon>
-              </v-btn>
-            </template>
-            {{$t('style.toggleStyleOptionsToolTip')}}
-          </v-tooltip>
-        </v-col>
-        <v-spacer />
-        <!-- Undo and Reset to Defaults buttons -->
-        <v-col cols="2"
-          class="ma-0 pl-0 pr-0 pt-0 pb-2">
-          <HintButton @click="clearStyleData"
-            :disabled="disableStyleSelectorUndoButton"
-            type="undo"
-            i18n-label="style.clearChanges"
-            i18n-tooltip="style.clearChangesToolTip">
-          </HintButton>
-        </v-col>
-
-        <v-col cols="2"
-          class="ma-0 pl-0 pr-0 pt-0 pb-2">
-          <HintButton @click="resetStyleDataToDefaults"
-            type="default"
-            i18n-label="style.restoreDefaults"
-            i18n-tooltip="style.restoreDefaultsToolTip">
-          </HintButton>
-        </v-col>
-      </v-row>
-    </v-container>
 
     <!-- Label Text Options -->
     <FadeInCard>
@@ -140,6 +94,34 @@
           </v-select>
         </div>
       </div>
+      <v-container class="pa-0 ma-0">
+        <v-row no-gutters
+          justify="end">
+          <!-- Undo and Reset to Defaults buttons -->
+          <v-col cols="2"
+            class="ma-0 pl-0 pr-0 pt-0 pb-2">
+            <HintButton
+              @click="clearStyleData('labelDisplayText,labelDisplayMode,labelDisplayCaption,labelTextFamily,labelTextStyle,labelTextDecoration')"
+              data-se-props="labelDisplayText,labelDisplayMode,labelDisplayCaption,labelTextFamily,labelTextStyle,labelTextDecoration"
+              data-se-flag="textGroup"
+              :disabled="disableControl['textGroup']"
+              type="undo"
+              i18n-label="style.clearChanges"
+              i18n-tooltip="style.clearChangesToolTip">
+            </HintButton>
+          </v-col>
+
+          <v-col cols="2"
+            class="ma-0 pl-0 pr-0 pt-0 pb-2">
+            <HintButton
+              @click="resetStyleDataToDefaults('labelDisplayText,labelDisplayMode,labelDisplayCaption,labelTextFamily,labelTextStyle,labelTextDecoration')"
+              type="default"
+              i18n-label="style.restoreDefaults"
+              i18n-tooltip="style.restoreDefaultsToolTip">
+            </HintButton>
+          </v-col>
+        </v-row>
+      </v-container>
 
     </FadeInCard>
     <!-- Label Text Scale Number Selector-->
@@ -162,6 +144,34 @@
           v-bind:step="0.39269875"
           :thumb-string-values="textRotationSelectorThumbStrings">
         </NumberSelector>
+        <v-container class="pa-0 ma-0">
+          <v-row no-gutters
+            justify="end">
+            <!-- Undo and Reset to Defaults buttons -->
+            <v-col cols="2"
+              class="ma-0 pl-0 pr-0 pt-0 pb-2">
+              <HintButton
+                @click="clearStyleData('labelTextScalePercent,labelTextRotation')"
+                data-se-props="labelTextScalePercent,labelTextRotation"
+                data-se-flag="sizeGroup"
+                :disabled="disableControl['sizeGroup']"
+                type="undo"
+                i18n-label="style.clearChanges"
+                i18n-tooltip="style.clearChangesToolTip">
+              </HintButton>
+            </v-col>
+
+            <v-col cols="2"
+              class="ma-0 pl-0 pr-0 pt-0 pb-2">
+              <HintButton
+                @click="resetStyleDataToDefaults('labelTextScalePercent,labelTextRotation')"
+                type="default"
+                i18n-label="style.restoreDefaults"
+                i18n-tooltip="style.restoreDefaultsToolTip">
+              </HintButton>
+            </v-col>
+          </v-row>
+        </v-container>
       </FadeInCard>
 
       <!-- Label Front Fill Color Selector -->
@@ -170,16 +180,61 @@
         <ColorSelector title-key="style.labelFrontFillColor"
           style-name="labelFrontFillColor"
           :data.sync="hslaLabelFrontFillColorObject"></ColorSelector>
-      </FadeInCard>
-
-      <!-- Label Back Fill Color Selector : -->
-      <FadeInCard>
         <ColorSelector title-key="style.labelBackFillColor"
           style-name="labelBackFillColor"
           :data.sync="hslaLabelBackFillColorObject"></ColorSelector>
+        <v-container class="pa-0 ma-0">
+          <v-row no-gutters
+            justify="end">
+            <!-- Undo and Reset to Defaults buttons -->
+            <v-col cols="2"
+              class="ma-0 pl-0 pr-0 pt-0 pb-2">
+              <HintButton
+                @click="clearStyleData('labelFrontFillColor,labelBackFillColor')"
+                data-se-props="labelFrontFillColor,labelBackFillColor"
+                data-se-flag="colorGroup"
+                :disabled="disableControl['colorGroup']"
+                type="undo"
+                i18n-label="style.clearChanges"
+                i18n-tooltip="style.clearChangesToolTip">
+              </HintButton>
+            </v-col>
+
+            <v-col cols="2"
+              class="ma-0 pl-0 pr-0 pt-0 pb-2">
+              <HintButton
+                @click="resetStyleDataToDefaults('labelFrontFillColor,labelBackFillColor')"
+                type="default"
+                i18n-label="style.restoreDefaults"
+                i18n-tooltip="style.restoreDefaultsToolTip">
+              </HintButton>
+            </v-col>
+          </v-row>
+        </v-container>
+
       </FadeInCard>
     </div>
     <!-- Show more or less styling options -->
+    <v-tooltip bottom
+      :open-delay="toolTipOpenDelay"
+      :close-delay="toolTipCloseDelay"
+      max-width="400px"
+      class="pa-0 pm-0">
+      <template v-slot:activator="{on}">
+        <v-btn v-on="on"
+          @click="toggleShowMoreLabelStyles"
+          class="text-subtitle-2"
+          text
+          plain
+          ripple
+          x-small>
+          <v-icon v-if="showMoreLabelStyles">mdi-chevron-up
+          </v-icon>
+          <v-icon v-else>mdi-chevron-down </v-icon>
+        </v-btn>
+      </template>
+      {{$t('style.toggleStyleOptionsToolTip')}}
+    </v-tooltip>
 
   </div>
 
@@ -243,6 +298,11 @@ export default class LabelStyle extends Vue {
   @SE.State((s: AppState) => s.initialBackStyleContrast)
   readonly initialBackStyleContrast!: number;
 
+  disableControl = {
+    textGroup: true,
+    sizeGroup: true,
+    colorGroup: true
+  };
   /**
    * These are the temp style state for the selected objects. Used to set the color/number/dash/contrast selectors when the user disables the dynamic back styling.
    */
@@ -537,69 +597,37 @@ export default class LabelStyle extends Vue {
     // return this.labelDisplayCaptionTestResults[1];
     return true;
   }
-  resetStyleDataToDefaults(): void {
-    const selected: SENodule[] = [];
 
-    this.selectedSENodules.forEach(node => {
-      selected.push(((node as unknown) as Labelable).label!);
-    });
-
-    const defaultStyleStates = SEStore.getDefaultStyleState(
-      StyleEditPanels.Label
-    );
-
-    for (let i = 0; i < selected.length; i++) {
-      SEStore.changeStyle({
-        selected: [selected[i]],
-        panel: StyleEditPanels.Label,
-        payload: {
-          ...defaultStyleStates[i]
-        }
+  resetStyleDataTo(props: Array<string>, options: StyleOptions[]): void {
+    this.selectedSENodules
+      .filter((n: SENodule) => n.isLabelable())
+      .map((n: SENodule) => ((n as unknown) as Labelable).label!)
+      .forEach((n: SENodule, k: number) => {
+        // Start with nothing in the update bundle
+        const payload: StyleOptions = {};
+        props.forEach((p: string) => {
+          (payload as any)[p] = (options[k] as any)[p];
+        });
+        SEStore.changeStyle({
+          selected: [n],
+          panel: this.panel,
+          payload
+        });
       });
-    }
-    this.setStyleDataSelectorState(defaultStyleStates);
   }
-  clearStyleData(): void {
-    const selected: SENodule[] = [];
-    this.selectedSENodules.forEach(node => {
-      selected.push(((node as unknown) as Labelable).label!);
-    });
-
-    const initialStyleStates = SEStore.getInitialStyleState(
-      StyleEditPanels.Label
-    );
-    for (let i = 0; i < selected.length; i++) {
-      SEStore.changeStyle({
-        selected: [selected[i]],
-        panel: StyleEditPanels.Label,
-        payload: {
-          ...initialStyleStates[i]
-        }
-      });
-    }
-    this.setStyleDataSelectorState(initialStyleStates);
+  resetStyleDataToDefaults(props: string): void {
+    console.debug("Reset label style to default");
+    const listOfProps = props.split(",");
+    const defaultStyleStates = SEStore.getDefaultStyleState(this.panel);
+    this.resetStyleDataTo(listOfProps, defaultStyleStates);
   }
 
-  setStyleDataSelectorState(styleState: StyleOptions[]): void {
-    this.disableStyleSelectorUndoButton = true;
-    this.styleDataAgreement = true;
-    // Make sure that across the selected objects all their properties agree
-    //   If one property on one selected is undefined, then set styleDataAgreement=false
-    //   If all properties are defined,but one property doesn't agree across all selected then set styleDataAgreement=false
-    // start at 1 because the first styleState always agrees with itself -- in the case of only one object selected, this shouldn't execute
-    if (styleState.length > 1) {
-      this.styleDataAgreement = this.commonStyleProperties.every(
-        (style: string) => {
-          // Record the value of the style on the first style state
-          let value = (styleState[0] as any)[style];
-          // screen for undefined - if undefined then this is not a property that is going to be set by the style panel for this selection of objects
-
-          return !styleState.every(
-            styleObject => (styleObject as any)[style] === value
-          );
-        }
-      );
-    }
+  clearStyleData(props: string): void {
+    console.debug("Reset label style to start of edit");
+    const listOfProps = props.split(",");
+    console.debug("Reset ", listOfProps, "to the start of edit session");
+    const initialStyleStates = SEStore.getInitialStyleState(this.panel);
+    this.resetStyleDataTo(listOfProps, initialStyleStates);
   }
 
   disableStyleDataSelector(totally: boolean): void {
@@ -673,6 +701,31 @@ export default class LabelStyle extends Vue {
       this.onSelectionChanged(this.selectedSENodules);
     }
   }
+
+  enableResetButton(prop: string): void {
+    // console.debug("Enable undo button for", prop);
+    const candidates = this.$el.querySelectorAll("[data-se-props]");
+    // console.debug("Candidates of undo button for", candidates);
+    candidates.forEach((el: Element) => {
+      const propList = el.getAttribute("data-se-props")?.split(",");
+      if (propList) {
+        // console.debug("Button", el, "with prop", propList);
+        // Find which one matche the property name we are looking for
+        if (
+          propList.find((s: string) => {
+            // console.debug(`Checking ${s}  <==> ${prop}`);
+            return s === prop;
+          })
+        ) {
+          // Find the flag name needed to (re) enabled the button
+          const flagName = el.getAttribute("data-se-flag") as string;
+          // console.debug("Found flag", flagName);
+          // Set the boolean flag controlling its disable behavior
+          (this.disableControl as any)[flagName] = false;
+        }
+      }
+    });
+  }
   /**
    * This is an example of the two-way binding that is provided by the Vuex store. As this is a Vue component we can Watch variables, and
    * when they change, this method will execute in response to that change.
@@ -728,9 +781,6 @@ export default class LabelStyle extends Vue {
       });
 
     this.activeStyleOptions = { ...styleOptionsOfSelected[0] }; // Create a clone
-    console.debug("Saved as active style options", {
-      ...this.activeStyleOptions
-    });
 
     // Use flatmap (1-to-many) to compile all the style properties of
     // of the selected objects
@@ -742,10 +792,33 @@ export default class LabelStyle extends Vue {
     this.commonStyleProperties.push(...uniqueProps);
 
     //Set the initial state of the fade-in-card/selectors (checking to see if the property is the same across all selected objects)
-    this.setStyleDataSelectorState(
-      // SEStore.getInitialStyleState(StyleEditPanels.Label)
-      styleOptionsOfSelected
-    );
+    this.disableStyleSelectorUndoButton = true;
+    this.styleDataAgreement = true;
+    // Make sure that across the selected objects all their properties agree
+    //   If one property on one selected is undefined, then set styleDataAgreement=false
+    //   If all properties are defined,but one property doesn't agree across all selected then set styleDataAgreement=false
+    // start at 1 because the first styleState always agrees with itself -- in the case of only one object selected, this shouldn't execute
+    if (this.selectedLabels.length > 1) {
+      const conflictingPropNames = this.commonStyleProperties.filter(
+        (propName: string) => {
+          // Record the value of the style on the first style state
+          const referenceSO = this.selectedLabels[0].currentStyleState(
+            this.panel
+          );
+          const referenceValue = (referenceSO as any)[propName];
+
+          const agreement = this.selectedLabels.every((obj: Label) => {
+            const thisSO = obj.currentStyleState(this.panel);
+            const thisValue = (thisSO as any)[propName];
+            return thisValue === referenceValue;
+          });
+
+          return !agreement;
+        }
+      );
+      console.debug("Conflict list", conflictingPropNames);
+      this.styleDataAgreement = conflictingPropNames.length === 0;
+    }
   }
 
   // Use a deep wather because we are observing an object!
@@ -786,7 +859,10 @@ export default class LabelStyle extends Vue {
       if (a === b) {
         // console.debug(`Excluding ${p} from payload`);
         delete (updatePayload as any)[p];
-      } else console.debug(`Property ${p} is update from ${a} to ${b}`);
+      } else {
+        console.debug(`Property ${p} is update from ${a} to ${b}`);
+        this.enableResetButton(p);
+      }
     });
 
     /* If multiple labels are selected, do not update the name */

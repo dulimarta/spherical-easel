@@ -460,11 +460,6 @@ export default class FrontBackStyle extends Vue {
   private tempStyleStates: StyleOptions[] = [];
 
   /**
-   * These help with redo/redo
-   */
-  private currentStyleStates: StyleOptions[] = [];
-
-  /**
    * Help to display all the availble styling choices when nothing is selected
    */
   // private noObjectsSelected = true;
@@ -810,16 +805,6 @@ export default class FrontBackStyle extends Vue {
         dynamicBackStyle: this.usingAutomaticBackStyle
       }
     });
-
-    if (!this.usingAutomaticBackStyle) {
-      const selectedSENodules = this.selectedSENodules;
-      this.tempStyleStates.clear();
-      selectedSENodules.forEach(seNodule => {
-        if (seNodule.ref)
-          this.tempStyleStates.push(seNodule.ref.currentStyleState(this.panel));
-      });
-      // this.setDashPatternSelectorState(this.tempStyleStates);
-    }
   }
   incrementBackStyleContrast(): void {
     if (this.usingAutomaticBackStyle && this.backStyleContrast + 0.1 <= 1) {
@@ -986,6 +971,8 @@ export default class FrontBackStyle extends Vue {
     if (plottables.length > 1) {
       // When multiple objects are selected, check for possible conflict
       this.propDynamicBackStyleCommonValue = false;
+
+      // Select property names which have conflicting values
       const disagreePropNames = this.commonStyleProperties.filter(
         (propName: string) => {
           // Confirm that the values of common style property are the same
@@ -1113,16 +1100,17 @@ export default class FrontBackStyle extends Vue {
   }
 
   saveStyleState(): void {
+    // TODO: oldStyleSelection is always empty???
     const oldSelection = this.oldStyleSelection;
     // There must be an old selection in order for there to be a change to save
     if (oldSelection.length > 0) {
       console.log("Attempt style save command");
       //Record the current state of each Nodule
-      this.currentStyleStates.splice(0);
+      const currentStyleStates: Array<StyleOptions> = [];
 
       oldSelection.forEach((seNodule: SENodule) => {
         if (seNodule.ref !== undefined)
-          this.currentStyleStates.push(
+          currentStyleStates.push(
             seNodule.ref.currentStyleState(this.styleSavedFromPanel)
           );
       });
@@ -1131,10 +1119,7 @@ export default class FrontBackStyle extends Vue {
       );
       const initialBackStyleContrast = this.initialBackStyleContrast;
       if (
-        !this.areEquivalentStyles(
-          this.currentStyleStates,
-          initialStyleStates
-        ) ||
+        !this.areEquivalentStyles(currentStyleStates, initialStyleStates) ||
         initialBackStyleContrast != Nodule.getBackStyleContrast()
       ) {
         console.log("Issued style save command");
@@ -1142,7 +1127,7 @@ export default class FrontBackStyle extends Vue {
         new StyleNoduleCommand(
           oldSelection,
           this.styleSavedFromPanel,
-          this.currentStyleStates,
+          currentStyleStates,
           initialStyleStates,
           Nodule.getBackStyleContrast(),
           initialBackStyleContrast
