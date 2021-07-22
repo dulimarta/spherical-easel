@@ -551,16 +551,17 @@ export default class SE extends VuexModule implements AppState {
     // Important: object destructuring below seems to solve the issue
     // of merging undefined properties in updateStyle()
     const opt: StyleOptions = { ...payload };
-    if (
-      payload.backStyleContrast &&
-      payload.backStyleContrast != Nodule.getBackStyleContrast()
-    ) {
-      // Update all Nodules because more than just the selected nodules depend on the backStyleContrast
-      Nodule.setBackStyleContrast(payload.backStyleContrast);
-      this.seNodules.forEach((n: SENodule) => {
-        n.ref?.stylize(DisplayStyle.ApplyCurrentVariables);
-      });
-    }
+    // if (
+    //   payload.backStyleContrast &&
+    //   payload.backStyleContrast != Nodule.getBackStyleContrast()
+    // ) {
+    //   // Update all Nodules because more than just the selected nodules depend on the backStyleContrast
+    //   Nodule.setBackStyleContrast(payload.backStyleContrast);
+    //   console.debug("Changing Global backstyle contrast");
+    //   this.seNodules.forEach((n: SENodule) => {
+    //     n.ref?.stylize(DisplayStyle.ApplyCurrentVariables);
+    //   });
+    // }
     selected.forEach((n: SENodule) => {
       n.ref?.updateStyle(panel, opt);
       if (opt.pointRadiusPercent !== undefined) {

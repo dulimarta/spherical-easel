@@ -17,7 +17,7 @@ export interface StyleOptions {
   dashArray?: number[];
   dynamicBackStyle?: boolean;
   pointRadiusPercent?: number;
-  backStyleContrast?: number;
+  // backStyleContrast?: number;
   labelTextStyle?: string;
   labelTextFamily?: string;
   labelTextDecoration?: string;

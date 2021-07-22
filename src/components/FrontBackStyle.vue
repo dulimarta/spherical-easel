@@ -62,10 +62,10 @@
           <v-col>Reset/Undo: inoperable</v-col>
           <v-col cols="1"
             class="ma-0 pl-0 pr-0 pt-0 pb-2">
-            <HintButton @click="clearStyleData('dynamicBackStyle')"
-              data-se-props="dynamicBackStyle"
-              data-se-flag="dynBackGroup"
-              :disabled="disableControl['dynBackGroup']"
+            <HintButton @click="clearStyleData('backStyleContrast')"
+              data-se-props="backStyleContrast"
+              data-se-flag="backContrastGroup"
+              :disabled="disableControl['backContrastGroup']"
               type="undo"
               i18n-label="style.clearChanges"
               i18n-tooltip="style.clearChangesToolTip">
@@ -75,7 +75,7 @@
           <v-col cols="2"
             class="ma-0 pl-0 pr-0 pt-0 pb-2">
             <HintButton
-              @click="resetStyleDataToDefaults('dynamicBackStyle')"
+              @click="resetStyleDataToDefaults('backStyleContrast')"
               type="default"
               i18n-label="style.restoreDefaults"
               i18n-tooltip="style.restoreDefaultsToolTip">
@@ -180,7 +180,7 @@
             <v-col cols="2"
               class="ma-0 pl-0 pr-0 pt-0 pb-2">
               <HintButton
-                @click="resetStyleDataToDefaults('strokeColor,strokeWidthPercent,fillColor', 'two')"
+                @click="resetStyleDataToDefaults('strokeColor,strokeWidthPercent,fillColor')"
                 type="default"
                 i18n-label="style.restoreDefaults"
                 i18n-tooltip="style.restoreDefaultsToolTip">
@@ -402,7 +402,7 @@ import Vue from "vue";
 import Component from "vue-class-component";
 import { Watch, Prop } from "vue-property-decorator";
 import { SENodule } from "../models/SENodule";
-import Nodule from "../plottables/Nodule";
+import Nodule, { DisplayStyle } from "../plottables/Nodule";
 import { namespace } from "vuex-class";
 import { StyleOptions, StyleEditPanels } from "../types/Styles";
 import SETTINGS from "@/global-settings";
@@ -457,7 +457,7 @@ export default class FrontBackStyle extends Vue {
     pointGroup: true,
     angleMarkerGroup: true,
     dashPatternGroup: true,
-    dynBackGroup: true
+    backContrastGroup: true
   };
   /**
    * These are the temp style state for the selected objects. Used to set the color/number/dash/contrast selectors when the user disables the dynamic back styling.
@@ -652,46 +652,63 @@ export default class FrontBackStyle extends Vue {
   }
 
   clearStyleData(props: string): void {
-    const listOfProps = props.split(",");
-    console.debug("Reset to start of edit session", listOfProps);
+    if (props !== "backStyleContrast") {
+      const listOfProps = props.split(",");
+      console.debug("Reset to start of edit session", listOfProps);
 
-    const initialStyleStates = SEStore.getInitialStyleState(this.panel);
-    this.selectedSENodules.forEach((n: SENodule, k: number) => {
-      // Start with an empty update bundle
-      const payload: StyleOptions = {};
+      const initialStyleStates = SEStore.getInitialStyleState(this.panel);
+      this.selectedSENodules.forEach((n: SENodule, k: number) => {
+        // Start with an empty update bundle
+        const payload: StyleOptions = {};
 
-      // Include only the properties we want to clear
-      listOfProps.forEach((p: string) => {
-        (payload as any)[p] = (initialStyleStates[k] as any)[p];
+        // Include only the properties we want to clear
+        listOfProps.forEach((p: string) => {
+          (payload as any)[p] = (initialStyleStates[k] as any)[p];
+        });
+
+        SEStore.changeStyle({
+          selected: [n],
+          panel: this.panel,
+          payload
+        });
       });
-
-      SEStore.changeStyle({
-        selected: [n],
-        panel: this.panel,
-        payload
+    } else if (this.editModeIsBack) {
+      Nodule.setBackStyleContrast(this.initialBackStyleContrast);
+      console.debug("Changing Global backstyle contrast");
+      this.selectedSENodules.forEach((n: SENodule) => {
+        n.ref?.stylize(DisplayStyle.ApplyCurrentVariables);
       });
-    });
+    }
   }
-  resetStyleDataToDefaults(props: string, flag: string): void {
-    const listOfProps = props.split(",");
-    console.debug("Reset to default properties", listOfProps);
 
-    const defaultState = SEStore.getDefaultStyleState(this.panel);
-    this.selectedSENodules.forEach((n: SENodule, k: number) => {
-      // Start with an empty update bundle
-      const payload: StyleOptions = {};
+  resetStyleDataToDefaults(props: string): void {
+    if (props !== "backStyleContrast") {
+      const listOfProps = props.split(",");
+      console.debug("Reset to default properties", listOfProps);
 
-      // Include only the properties we want to restore to default
-      listOfProps.forEach((p: string) => {
-        (payload as any)[p] = (defaultState[k] as any)[p];
+      const defaultState = SEStore.getDefaultStyleState(this.panel);
+      this.selectedSENodules.forEach((n: SENodule, k: number) => {
+        // Start with an empty update bundle
+        const payload: StyleOptions = {};
+
+        // Include only the properties we want to restore to default
+        listOfProps.forEach((p: string) => {
+          (payload as any)[p] = (defaultState[k] as any)[p];
+        });
+
+        SEStore.changeStyle({
+          selected: [n],
+          panel: this.panel,
+          payload
+        });
       });
-
-      SEStore.changeStyle({
-        selected: [n],
-        panel: this.panel,
-        payload
+    } else if (this.editModeIsBack) {
+      Nodule.setBackStyleContrast(SETTINGS.style.backStyleContrast);
+      console.debug("Changing Global backstyle contrast");
+      this.selectedSENodules.forEach((n: SENodule) => {
+        n.ref?.stylize(DisplayStyle.ApplyCurrentVariables);
       });
-    });
+    }
   }
 
   toggleDashPatternSliderAvailibity(): void {
@@ -777,13 +794,13 @@ export default class FrontBackStyle extends Vue {
   }
 
   // These methods are linked to the usingAutomaticBackStyle fade-in-card
+  @Watch("backStyleContrast")
   onBackStyleContrastChange(): void {
-    SEStore.changeStyle({
-      selected: this.selectedSENodules,
-      panel: this.panel,
-      payload: {
-        backStyleContrast: this.backStyleContrast
-      }
+    console.debug("Background contrast updated to", this.backStyleContrast);
+    Nodule.setBackStyleContrast(this.backStyleContrast);
+    console.debug("Changing Global backstyle contrast");
+    this.selectedSENodules.forEach((n: SENodule) => {
+      n.ref?.stylize(DisplayStyle.ApplyCurrentVariables);
     });
   }
 
@@ -810,33 +827,13 @@ export default class FrontBackStyle extends Vue {
     }
   }
   incrementBackStyleContrast(): void {
-    if (
-      this.usingAutomaticBackStyle !== undefined &&
-      this.backStyleContrast + 0.1 <= 1
-    ) {
+    if (this.usingAutomaticBackStyle && this.backStyleContrast + 0.1 <= 1) {
       this.backStyleContrast += 0.1;
-      SEStore.changeStyle({
-        selected: this.selectedSENodules,
-        panel: this.panel,
-        payload: {
-          backStyleContrast: this.backStyleContrast
-        }
-      });
     }
   }
   decrementBackStyleContrast(): void {
-    if (
-      this.usingAutomaticBackStyle !== undefined &&
-      this.backStyleContrast - 0.1 >= 0
-    ) {
+    if (this.usingAutomaticBackStyle && this.backStyleContrast - 0.1 >= 0) {
       this.backStyleContrast -= 0.1;
-      SEStore.changeStyle({
-        selected: this.selectedSENodules,
-        panel: this.panel,
-        payload: {
-          backStyleContrast: this.backStyleContrast
-        }
-      });
     }
   }
 
