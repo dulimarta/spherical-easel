@@ -17,6 +17,19 @@
               </v-sheet>
             </v-col>
           </v-row>
+          <v-row>
+            <v-col cols="12">
+              <v-sheet rounded
+                color="accent"
+                :elevation="4"
+                class="my-3">
+                <ParametricTracingExpressions
+                  i18LabelKey="objectTree.tExpressionData"
+                  :tExpressionData="tExpressionData">
+                </ParametricTracingExpressions>
+              </v-sheet>
+            </v-col>
+          </v-row>
 
           <v-row>
             <v-col cols="12">
@@ -28,16 +41,22 @@
                   :name="tVal.name">
                 </ParametricTNumber>
               </template>
-              <template v-for="(tVal,idk) in tExpressionData">
-                <ParametricTExpression :placeholder="tVal.placeholder"
-                  :key="idk+2"
-                  :i18nLabelKey="tVal.i18nLabelkey"
-                  :i18nToolTip="tVal.i18nToolTip"
-                  :name="tVal.name">
-                </ParametricTExpression>
-              </template>
+
             </v-col>
           </v-row>
+          <v-row>
+            <v-col cols="12">
+              <template>
+                <ParametricCuspParameterValues
+                  :i18nLabelKey="cusp.i18nLabelKey"
+                  :i18nToolTip="cusp.i18nToolTip"
+                  :name="cusp.name">
+                </ParametricCuspParameterValues>
+              </template>
+
+            </v-col>
+          </v-row>
+
         </v-container>
 
       </v-card-text>
@@ -71,8 +90,9 @@ import {
 import { SEExpression } from "@/models/SEExpression";
 import { ExpressionParser } from "@/expression/ExpressionParser";
 import ParametricCoordinates from "@/components/ParametricCoordinates.vue";
-import ParametricTExpression from "@/components/ParametricTExpression.vue";
+import ParametricTracingExpressions from "@/components/ParametricTracingExpressions.vue";
 import ParametricTNumber from "@/components/ParametricTNumber.vue";
+import ParametricCuspParameterValues from "@/components/ParametricCuspParameterValues.vue";
 import EventBus from "@/eventHandlers/EventBus";
 import { namespace } from "vuex-class";
 import SETTINGS from "@/global-settings";
@@ -102,13 +122,15 @@ interface ParametricDataType {
   xCoord?: string;
   yCoord?: string;
   zCoord?: string;
+  cuspParameterValues?: number[];
 }
 
 @Component({
   components: {
     ParametricCoordinates,
     ParametricTNumber,
-    ParametricTExpression
+    ParametricTracingExpressions,
+    ParametricCuspParameterValues
   }
 })
 export default class ParametricForm extends Vue {
@@ -127,6 +149,7 @@ export default class ParametricForm extends Vue {
   private coordinateExpressions: CoordExpression = { x: "", y: "", z: "" };
   private tExpressions: MinMaxExpression = { min: "", max: "" };
   private tNumbers: MinMaxNumber = { min: NaN, max: NaN };
+  private c1DiscontunityParameterValues: number[] = [];
 
   private parser = new ExpressionParser();
   readonly varMap = new Map<string, number>();
@@ -183,6 +206,12 @@ export default class ParametricForm extends Vue {
       name: "zCoord"
     }
   ];
+
+  private readonly cusp = {
+    i18nLabelKey: "objectTree.cuspParameterValues",
+    i18nToolTip: "objectTree.cuspParameterValuesTip",
+    name: "cuspParameterValues"
+  };
 
   created(): void {
     window.addEventListener("keydown", this.keyHandler);
@@ -241,6 +270,7 @@ export default class ParametricForm extends Vue {
       "sin(M1)+2*cos(M1)^2*sin(M1)*(cos(t)-cos(t)^2)";
     this.coordinateExpressions.y = "2*cos(M1)^2*sin(M1)*sin(t)*(1-cos(t))";
     this.coordinateExpressions.z = "cos(M1)-2*cos(M1)*sin(M1)^2*(1-cos(t))";
+    this.c1DiscontunityParameterValues = [0, 2 * Math.PI];
     // this.primeCoordinateExpressions.x =
     //   "2*cos(M1)^2*sin(M1)*(-1*sin(t)+2*cos(t)*sin(t))";
     // this.primeCoordinateExpressions.y =
@@ -249,7 +279,7 @@ export default class ParametricForm extends Vue {
   }
   setSprialExpressions(): void {
     this.tNumbers.min = 0;
-    this.tNumbers.max = 0.9;
+    this.tNumbers.max = 0.99;
     this.coordinateExpressions.x = "sqrt(1-t^2)*cos(4*pi*t)";
     this.coordinateExpressions.y = "sqrt(1-t^2)*sin(4*pi*t)";
     this.coordinateExpressions.z = "t";
@@ -286,18 +316,36 @@ export default class ParametricForm extends Vue {
     // const q = "3";
     // this.tNumbers.min = 0;
     // this.tNumbers.max = 2 * Math.PI;
+    // this.c1DiscontunityParameterValues = [
+    //   0,
+    //   (2 * Math.PI) / 3,
+    //   (4 * Math.PI) / 3
+    // ];
 
     // epicycloid 1
     // const w = "2*pi/3";
     // const q = "3";
     // this.tNumbers.min = 0;
     // this.tNumbers.max = 2 * Math.PI;
+    // this.c1DiscontunityParameterValues = [
+    //   0,
+    //   (2 * Math.PI) / 3,
+    //   (4 * Math.PI) / 3
+    // ];
 
     // spherical helix
     const w = "0.7227342478"; //acos(3/4)
     const q = "0.75";
     this.tNumbers.min = 0;
     this.tNumbers.max = 8 * Math.PI;
+    this.c1DiscontunityParameterValues = [
+      0,
+      ((1 * 8) / 6) * Math.PI,
+      ((2 * 8) / 6) * Math.PI,
+      ((3 * 8) / 6) * Math.PI,
+      ((4 * 8) / 6) * Math.PI,
+      ((5 * 8) / 6) * Math.PI
+    ];
     // this.tExpressions.min = "0";
     // this.tExpressions.max = "M2";
 
@@ -352,6 +400,11 @@ export default class ParametricForm extends Vue {
     if (obj.zCoord !== undefined) {
       this.coordinateExpressions.z = obj.zCoord;
     }
+    if (obj.cuspParameterValues !== undefined) {
+      this.c1DiscontunityParameterValues.splice(0);
+      this.c1DiscontunityParameterValues.push(...obj.cuspParameterValues);
+      console.log("cusp", this.c1DiscontunityParameterValues);
+    }
   }
 
   get disableAddParametricButton(): boolean {
@@ -364,15 +417,6 @@ export default class ParametricForm extends Vue {
     );
   }
   addParametricCurve(): void {
-    // If  tMaxNumber is less than tMinN umber -- error!
-    if (this.tNumbers.min >= this.tNumbers.max) {
-      EventBus.fire("show-alert", {
-        key: "objectTree.tMinNotLessThantMax",
-        type: "error"
-      });
-      return;
-    }
-
     // Do not allow adding the same parametric twice
     let duplicateCurve = false;
     this.oldParametrics.forEach(para => {
@@ -392,7 +436,27 @@ export default class ParametricForm extends Vue {
       });
       return;
     }
-    // Both tExpressions must either be empty or not empty
+    // If  tMaxNumber is less than tMinNumber -- error!
+    if (this.tNumbers.min >= this.tNumbers.max) {
+      EventBus.fire("show-alert", {
+        key: "objectTree.tMinNotLessThantMax",
+        type: "error"
+      });
+      return;
+    }
+    // the cusp parameter values must all be between tMinNumber and tMaxNumber
+    if (
+      !this.c1DiscontunityParameterValues.every(
+        num => this.tNumbers.min <= num && num <= this.tNumbers.max
+      )
+    ) {
+      EventBus.fire("show-alert", {
+        key: "objectTree.cuspValuesOutOfBounds",
+        type: "error"
+      });
+      return;
+    }
+    // tExpressions must either both be empty or both not empty
     if (
       (this.tExpressions.min.length === 0 &&
         this.tExpressions.max.length !== 0) ||
@@ -436,7 +500,7 @@ export default class ParametricForm extends Vue {
       return;
     }
 
-    // verify we can compute P' using ExpressionParser
+    // verify we can compute P' and P'' using ExpressionParser
     //const notPerpAtThisTValue = this.curveAndDerivativePerpCheck(tValues);
     try {
       ExpressionParser.differentiate(
@@ -449,6 +513,27 @@ export default class ParametricForm extends Vue {
       );
       ExpressionParser.differentiate(
         ExpressionParser.parse(this.coordinateExpressions.z),
+        "t"
+      );
+      ExpressionParser.differentiate(
+        ExpressionParser.differentiate(
+          ExpressionParser.parse(this.coordinateExpressions.x),
+          "t"
+        ),
+        "t"
+      );
+      ExpressionParser.differentiate(
+        ExpressionParser.differentiate(
+          ExpressionParser.parse(this.coordinateExpressions.y),
+          "t"
+        ),
+        "t"
+      );
+      ExpressionParser.differentiate(
+        ExpressionParser.differentiate(
+          ExpressionParser.parse(this.coordinateExpressions.z),
+          "t"
+        ),
         "t"
       );
     } catch (err) {
@@ -522,6 +607,7 @@ export default class ParametricForm extends Vue {
       this.tExpressions,
       this.tNumbers,
       calculationParents,
+      this.c1DiscontunityParameterValues,
       closed
     );
     // Set the display to the default values
@@ -648,38 +734,5 @@ export default class ParametricForm extends Vue {
     }
     return null;
   }
-  // curveAndDerivativePerpCheck(tValues: number[]): null | number {
-  //   // I'm not using tValues.forEach because once a non-unit vector is found, we return the t value and stop checking.
-  //   for (let i = 0; i < tValues.length; i++) {
-  //     this.varMap.set("t", tValues[i]);
-
-  //     this.tempVector.set(
-  //       this.parser.evaluateWithVars(this.coordinateExpressions.x, this.varMap),
-  //       this.parser.evaluateWithVars(this.coordinateExpressions.y, this.varMap),
-  //       this.parser.evaluateWithVars(this.coordinateExpressions.z, this.varMap)
-  //     );
-  //     this.tempVector1.set(
-  //       this.parser.evaluateWithVars(
-  //         this.primeCoordinateExpressions.x,
-  //         this.varMap
-  //       ),
-  //       this.parser.evaluateWithVars(
-  //         this.primeCoordinateExpressions.y,
-  //         this.varMap
-  //       ),
-  //       this.parser.evaluateWithVars(
-  //         this.primeCoordinateExpressions.z,
-  //         this.varMap
-  //       )
-  //     );
-  //     if (
-  //       Math.abs(this.tempVector.dot(this.tempVector1)) >
-  //       SETTINGS.nearlyAntipodalIdeal
-  //     ) {
-  //       return tValues[i];
-  //     }
-  //   }
-  //   return null;
-  // }
 }
 </script>

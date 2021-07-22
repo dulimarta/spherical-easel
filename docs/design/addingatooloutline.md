@@ -148,8 +148,10 @@ This section is an outline of the steps needed to add a tool that takes user mou
     - Updating <span class="command">DeleteNoduleCommand</span> to handle `Aaa` objects
     - If the `Aaa` objects are not completely determined by their parents and/or the object is should be movable, a <span class="command">MoveAaaCommand</span> will also need to be added and used in the <span class="handler">MoveHandler</span> class. Otherwise, a <span class="method">Move()</span> method in <span class="class">SEAaa</span> class can be used.
 
-8.  Follow step 1, 2, 5, 6, 7, and 8 of [Adding a Control Tool](#adding-a-control-tool)
+8.  Update the <span class="method">removeAllFromLayers()</span> method in <span class="file">se-module.ts</span> to remove all `Aaa` objects when the broom is clicked.
 
-9.  Update <span class="component">SENoduleItems.vue</span> and <span class="component">ObjectTree.vue</span>to show `Aaa` items
+9.  Follow step 1, 2, 5, 6, 7, and 8 of [Adding a Control Tool](#adding-a-control-tool)
 
-10. Update <span class="component">Style.vue</span> to list the `Aaa` items when they are selected.
+10. Update <span class="component">SENoduleItems.vue</span> and <span class="component">ObjectTree.vue</span>to show `Aaa` items
+
+11. Update <span class="component">Style.vue</span> to list the `Aaa` items when they are selected.

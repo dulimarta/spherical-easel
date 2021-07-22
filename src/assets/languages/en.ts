@@ -387,7 +387,9 @@ export default {
     polarLineDuplicate:
       "The polar line of this point has already been created.",
     polarPointDuplicate:
-      "The polar points of this {object} has already been created."
+      "The polar points of this {object} has already been created.",
+    perpendicularLineThruPointParametricSelected:
+      "Parametric {name} selected. Now select a location to create a new point or to create a point on an object."
   },
 
   objectTree: {
@@ -458,9 +460,7 @@ export default {
       "An expression (depending on measurement tokens) for the z coordinate for the parametric curve.",
     zCoordPrimeExpressionTip:
       "The derivative of the z coordinate formula for the parametric curve.",
-    parametricXPCoordinate: "X'(t) formula",
-    parametricYPCoordinate: "Y'(t) formula",
-    parametricZPCoordinate: "Z'(t) formula",
+    tExpressionData: "Optional Tracing Expressions",
     tMinExpression: "Minimum Parameter Tracing Expression",
     tMinExpressionTip:
       "An optional expression (depending on measurements tokens) that gives the starting t value when tracing the parametric curve. This value is always evaluated to be greater than or equal to the minimum parameter value.",
@@ -476,6 +476,11 @@ export default {
     tMaxNumber: "Maximum parameter(t) Value",
     tMaxNumberTip:
       "A required absolute minimum t value for tracing the parametric curve that is the upper bound for the optional tMax Tracing Expression.",
+    cuspParameterValues: "Cusp t values (if any)",
+    cuspParameterValuesTip:
+      "The comma separated list of the t values of the parameter (if any) where the parametric curve has cusps. If the curve is closed and their is a cusp point at the point of closure, include both the minimum and maximum parameter value.",
+    cuspValuesOutOfBounds:
+      "At least one of the cusp parameter values is not between the minimum and maximum parameter values. Check the cusp parameter values.",
     currentTValue: "Current Value: ",
     tMinNotLessThantMax:
       "The minimum t value must be less than the maximum t value for at least one set of measurements. Change at least one t value expressions.",

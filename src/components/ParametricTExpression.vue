@@ -1,24 +1,35 @@
 <template>
   <div>
-    <v-tooltip bottom
-      :open-delay="toolTipOpenDelay"
-      :close-delay="toolTipCloseDelay"
-      max-width="400px">
-      <template v-slot:activator="{on}">
-        <v-text-field v-model="tValueExpression"
-          v-on="on"
-          dense
-          :label="$t(i18nLabelKey)"
-          :placeholder="placeholder"
-          :error-messages="parsingError"
-          @keydown="onKeyPressed"
-          outlined
-          clearable
-          :hint="currentValueString"
-          persistent-hint></v-text-field>
-      </template>
-      {{$t(i18nToolTip)}}
-    </v-tooltip>
+    <v-card raised
+      outlined>
+      <v-card-text>
+        <v-container>
+          <v-row>
+            <v-col cols="12">
+              <v-tooltip bottom
+                :open-delay="toolTipOpenDelay"
+                :close-delay="toolTipCloseDelay"
+                max-width="400px">
+                <template v-slot:activator="{on}">
+                  <v-text-field v-model="tValueExpression"
+                    v-on="on"
+                    dense
+                    :label="$t(i18nLabelKey)"
+                    :placeholder="placeholder"
+                    :error-messages="parsingError"
+                    @keydown="onKeyPressed"
+                    outlined
+                    clearable
+                    :hint="currentValueString"
+                    persistent-hint></v-text-field>
+                </template>
+                {{$t(i18nToolTip)}}
+              </v-tooltip>
+            </v-col>
+          </v-row>
+        </v-container>
+      </v-card-text>
+    </v-card>
   </div>
 </template>
 <script lang="ts">

@@ -192,7 +192,7 @@ export const SETTINGS = {
     initialValueDisplayMode: ValueDisplayMode.MultipleOfPi, // Set the initial display of the values for the measurement of the angle
     initialLabelOffset: 0.02, // When making point labels this is initially how far (roughly) they are from the line
     minimumArcLength: 0.045, // Don't create segments with a length less than this (must be larger than point.hitIdealDistance because if not it is possible to create a line segment of length zero )
-    numPoints: 20, // The number of vertices used to render the segment. These are spread over the front and back parts. MAKE THIS EVEN!
+    numPoints: 60, // The number of vertices used to render the segment. These are spread over the front and back parts. MAKE THIS EVEN!
     hitIdealDistance: 0.03, // The user has to be within this distance on the ideal unit sphere to select the line.
     //dynamicBackStyle is a flag that means the fill color, and stroke of the segments drawn on the back are automatically calculated based on the value of SETTINGS.contrast and their front counterparts
     closeEnoughToPi: 0.005, //If the arcLength of a segment is within this distance of pi, consider it length pi, so that it is not defined by its endpoints and can be moved
@@ -419,7 +419,7 @@ export const SETTINGS = {
     minimumAngleSumDifference: 0.0001, // Don't create ellipses (and ellipse don't exist) when an angle sum to the foci minus the angle between the foci is smaller than this
     minimumCreationDistance: 0.025, // Don't create an ellipse point unless it is more than this distance away from each focus.
     numPoints: 30, // This is the anchor density in the rendering the number of anchors is floor(numPoints*arcLength)
-    evenSphereSampleSize: 50, // This is the number of almost evenly spaced points on the sphere to sample for the number of perpendiculars and tangents
+    evenSphereSampleSize: 90, // This is the number of almost evenly spaced points on the sphere to sample for the number of perpendiculars and tangents
     hitIdealDistance: 0.03, // The user has to be within this distance on the ideal unit sphere to select the parametric curve.
     //dynamicBackStyle is a flag that means the fill, linewidth, and strokeColor of the parametric curves drawn on the back are automatically calculated based on the value of SETTINGS.contrast and their front counterparts
     dynamicBackStyle: true,
@@ -724,9 +724,10 @@ export const SETTINGS = {
     display: true // controls if they should be displayed
   },
   parameterization: {
-    subdivisions: 60, // When searching function on a parametrized curve for a change in sign, use this many subdivisions
-    bisectionMinSize: 0.00001, // stop running the bisection method (if Newton's method is not used) when the interval is less than this size
-    numberOfTestTValues: 10, // When checking if a parametric curve is unit or is perpendicular to the derivative or the number of times the curve intersects a plane connecting two points on the curve use this many points
+    useNewtonsMethod: true, // When finding the zeros, should we use newton's method?  If false we use bisections
+    subdivisions: 80, // When searching function on a parametrized curve for a change in sign, use this many subdivisions
+    bisectionMinSize: 0.0000001, // stop running the bisection method (if Newton's method is not used) when the interval is less than this size
+    numberOfTestTValues: 10, // When checking if a parametric curve is unit or the number of times the curve intersects a plane connecting two points on the curve use this many points
     maxNumberOfIterationArcLength: 5, // maximum number of times it will iterate over the curve to find the arcLength (i.e. the curve is divided into at most subdivisions*maxNumberOfIterationArcLength subdivisions while looking for the arcLength)
     maxChangeInArcLength: 0.00001 // If the change in arcLength is less than this, return the value
   },

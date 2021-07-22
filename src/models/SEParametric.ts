@@ -72,12 +72,13 @@ export class SEParametric extends SENodule
 
     let numberOfPerp: number;
     sample.forEach(vec => {
-      numberOfPerp = this.getNormalsToLineThru(vec, this.tmpVector).length;
+      numberOfPerp = this.getNormalsToLineThru(vec, this.tmpVector, true)
+        .length;
       if (numberOfPerp > this._maxNumberOfPerpendiculars) {
         this._maxNumberOfPerpendiculars = numberOfPerp;
       }
     });
-    console.log("Number of Perps", this._maxNumberOfPerpendiculars);
+    // console.log("Number of Perps", this._maxNumberOfPerpendiculars);
     // sample for number of tangents from any point on the sphere
 
     SEParametric.PARAMETRIC_COUNT++;
@@ -200,8 +201,8 @@ export class SEParametric extends SENodule
         this.ref.PPrime.bind(this.ref), // bind the this.ref so that this in the this.ref.PPrime method is this.ref
         transformedToStandard,
         tMin,
-        tMax
-        //this.ref.Epp.bind(this.ref) // bind the this.ref so that this in the this.ref.E method is this.ref
+        tMax,
+        this.ref.PPPrime.bind(this.ref) // bind the this.ref so that this in the this.ref.PPPrime method is this.ref
       )
     );
     // Finally transform the closest vector on the ellipse in standard position to the target unit sphere
@@ -257,62 +258,87 @@ export class SEParametric extends SENodule
    */
   public getNormalsToLineThru(
     sePointVector: Vector3,
-    oldNormal: Vector3 // ignored for Ellipse and Circle and Parametric, but not other one-dimensional objects
+    oldNormal: Vector3, // ignored for Ellipse and Circle and Parametric, but not other one-dimensional objects
+    useFullTInterval?: boolean // only used in the constructor when figuring out the maximum number of perpendiculars to a SEParametric
   ): Vector3[] {
     const transformedToStandard = new Vector3();
     transformedToStandard.copy(sePointVector);
-    transformedToStandard.applyMatrix4(SEStore.inverseTotalRotationMatrix);
+    transformedToStandard
+      .applyMatrix4(SEStore.inverseTotalRotationMatrix)
+      .normalize();
 
     // find the tracing tMin and tMax
-    const [tMin, tMax] = this.ref.tMinMaxExpressionValues() ?? [
-      this.ref.tNumbers.min,
-      this.ref.tNumbers.max
-    ];
-    // It must be the case that tMax> tMin because in update we check to make sure -- if it is not true then this parametric doesn't exist
+    const [tMin, tMax] = useFullTInterval
+      ? [this.ref.tNumbers.min, this.ref.tNumbers.max]
+      : this.ref.tMinMaxExpressionValues() ?? [
+          this.ref.tNumbers.min,
+          this.ref.tNumbers.max
+        ];
 
-    const normalList = SENodule.getNormalsToLineThruParametrically(
-      this.ref.P.bind(this.ref), // bind the this.ref so that this in the this.ref.P method is this.ref
+    // It must be the case that tMax> tMin because in update we check to make sure -- if it is not true then this parametric doesn't exist
+    // console.log("normal search");
+    let normalList: Vector3[] = [];
+
+    normalList = SENodule.getNormalsToLineThruParametrically(
+      //this.ref.P.bind(this.ref), // bind the this.ref so that this in the this.ref.P method is this.ref
       this.ref.PPrime.bind(this.ref), // bind the this.ref so that this in the this.ref.PPrime method is this.ref
       transformedToStandard,
       tMin,
-      tMax
-      //this.ref.Epp.bind(this.ref) // bind the this.ref so that this in the this.ref.E method is this.ref
+      tMax,
+      this.ref.c1DiscontinuityParameterValues,
+      this.ref.PPPrime.bind(this.ref) // bind the this.ref so that this in the this.ref.PPPrime method is this.ref
     );
-    // // return the normal vector that is closest to oldNormal DO NOT DO THIS FOR NOW
-    // const minAngle = Math.min(
-    //   ...(normalList.map(vec => vec.angleTo(oldNormal)) as number[])
-    // );
-    // const ind = normalList.findIndex((vec: Vector3) => {
-    //   return vec.angleTo(oldNormal) === minAngle;
+
+    // normalList.forEach((vec, ind) => {
+    //   if (
+    //     Math.abs(vec.dot(transformedToStandard)) >
+    //     SETTINGS.tolerance / 1000
+    //   ) {
+    //     console.log(ind, "NOT through point");
+    //   }
+    //   if (vec.isZero(SETTINGS.tolerance / 1000)) {
+    //     console.log(ind, " Vector is ZERO");
+    //   }
     // });
 
-    // normalList.forEach(vec =>
-    //   console.log(Math.abs(vec.dot(transformedToStandard)) < 0.00001)
+    // console.log("# normals before", normalList.length);
+    normalList = normalList
+      // make sure that the returned vector are not just zeros of PPrime (which do not lead to perpendiculars)
+      .filter(vec => !vec.isZero(SETTINGS.tolerance / 1000))
+      // check that normals that are perpendicular to the line that passes through the given vector
+      .filter(
+        vec =>
+          Math.abs(vec.dot(transformedToStandard)) < SETTINGS.tolerance / 1000
+      )
+      .filter(vec => vec.normalize());
+    // console.log("# normals middle", normalList.length);
+
+    // return normalList.map(vec =>
+    //   vec
+    //     .applyMatrix4(
+    //       this.tmpMatrix.getInverse(SEStore.inverseTotalRotationMatrix)
+    //     )
+    //     .normalize()
     // );
-
-    normalList.forEach(vec => {
-      if (Math.abs(vec.length() - 1) > 0.00000001) {
-        console.log("BLAHHHHHHH normal len", vec.length());
-      }
-    });
-
-    // check for normals that arise from curve being C0 and not C1 -- must pass through the given vector
-    // normalList = normalList
-    //   .filter(vec => Math.abs(vec.dot(transformedToStandard)) < 0.00001)
-    //   .filter(vec => vec.normalize());
 
     // remove duplicates from the list
     const uniqueNormals: Vector3[] = [];
     normalList.forEach(vec => {
       if (
-        uniqueNormals.every(
-          nor => !nor.cross(vec).isZero(SETTINGS.nearlyAntipodalIdeal)
+        !uniqueNormals.some(nor =>
+          this.tmpVector
+            .crossVectors(vec, nor)
+            .isZero(SETTINGS.nearlyAntipodalIdeal)
         )
       ) {
-        uniqueNormals.push(vec.normalize());
+        uniqueNormals.push(vec);
       }
+      // else {
+      //   console.log("Duplicate normal found");
+      // }
     });
-    // console.log("un per", uniqueNormals, normalList.length);
+    // console.log("# normals end", uniqueNormals.length);
+    // console.log("uni perp", uniqueNormals);
 
     if (uniqueNormals.length > this._maxNumberOfPerpendiculars) {
       console.debug(
@@ -320,9 +346,11 @@ export class SEParametric extends SENodule
       );
     }
     return uniqueNormals.map(vec =>
-      vec.applyMatrix4(
-        this.tmpMatrix.getInverse(SEStore.inverseTotalRotationMatrix)
-      )
+      vec
+        .applyMatrix4(
+          this.tmpMatrix.getInverse(SEStore.inverseTotalRotationMatrix)
+        )
+        .normalize()
     );
   }
 

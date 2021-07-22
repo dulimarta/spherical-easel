@@ -399,13 +399,17 @@ export class SEAngleMarker extends SEExpression
             this._firstSEParent.locationVector,
             this._secondSEParent.locationVector
           )
-          .isZero(SETTINGS.nearlyAntipodalIdeal) &&
+          .isZero(
+            SETTINGS.nearlyAntipodalIdeal / SEStore.zoomMagnificationFactor
+          ) &&
         !this.tmpVector1
           .crossVectors(
             this._thirdSEParent.locationVector,
             this._secondSEParent.locationVector
           )
-          .isZero(SETTINGS.nearlyAntipodalIdeal);
+          .isZero(
+            SETTINGS.nearlyAntipodalIdeal / SEStore.zoomMagnificationFactor
+          );
     }
 
     //update _vertexVector , _startVector , _endVector using _angleMarkerRadius (which is set in the )

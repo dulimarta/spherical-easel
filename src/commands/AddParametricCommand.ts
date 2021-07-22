@@ -73,7 +73,10 @@ export class AddParametricCommand extends Command {
         /* arg-13 */ this.seLabel.showing,
         /* arg-14 */ this.seParametric.ref.seParentExpressions
           .map((n: SEExpression) => n.name)
-          .join("@")
+          .join("@"),
+        /* arg-15 */ this.seParametric.ref.c1DiscontinuityParameterValues.join(
+          "@"
+        )
       ]
         .join(";") // Can't use "/" may get mixed up with division
         // Replace the first ";" with "/" so CommandInterpreter is able to identify and dispatch this command correctly
@@ -98,22 +101,29 @@ export class AddParametricCommand extends Command {
       max: tokens[5]
     };
     const tNumbers: MinMaxNumber = {
-      min: Number(tokens[3]),
-      max: Number(tokens[4])
+      min: Number(tokens[6]),
+      max: Number(tokens[7])
     };
-    const closed = tokens[5] === "true";
+    const closed = tokens[8] === "true";
 
     const calculationParents: (SENodule | undefined)[] = [];
-    const parentNames = tokens[11].split("@");
+
+    const parentNames = tokens[14] !== "" ? tokens[14].split("@") : [];
     parentNames.forEach(name =>
       calculationParents.push(objMap.get(name) as SENodule | undefined)
     );
+
+    const tValues = tokens[15] !== "" ? tokens[14].split("@") : [];
+    const c1DiscontinuityParameterValues: number[] = [];
+    tValues.forEach(str => c1DiscontinuityParameterValues.push(Number(str)));
+
     if (calculationParents.every(seNodule => seNodule !== undefined)) {
       const parametric = new Parametric(
         coordinateExpressions,
         tExpressions,
         tNumbers,
         calculationParents.map(par => par as SEExpression),
+        c1DiscontinuityParameterValues,
         closed
       );
       // Set the display to the default values

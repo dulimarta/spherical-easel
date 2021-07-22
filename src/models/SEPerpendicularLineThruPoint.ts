@@ -65,6 +65,7 @@ export class SEPerpendicularLineThruPoint extends SELine {
         this.seParentPoint.locationVector,
         this.normalVector // the soon to be old normal vector
       );
+      console.log("num Normals", normals.length, "index", this._index);
       if (normals[this._index] !== undefined) {
         this.normalVector.copy(normals[this._index]);
 
@@ -86,6 +87,7 @@ export class SEPerpendicularLineThruPoint extends SELine {
     }
     // Update visibility
     if (this._exists && this._showing) {
+      console.log("set per visible", this._index);
       this.ref.setVisible(true);
     } else {
       this.ref.setVisible(false);

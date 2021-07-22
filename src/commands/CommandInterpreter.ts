@@ -76,7 +76,7 @@ function executeIndividual(command: string): Command {
       return AddCalculationCommand.parse(command, noduleDictionary);
     case "AddParametric":
       return AddParametricCommand.parse(command, noduleDictionary);
-    case "AddParametricEndPoint":
+    case "AddParametricEndPoints":
       return AddParametricEndPointsCommand.parse(command, noduleDictionary);
     default: {
       const errMsg = `Not yet implemented: ${command}`;
