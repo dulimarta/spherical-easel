@@ -533,18 +533,6 @@ export default class FrontBackStyle extends Vue {
   // create a circle, open the style panel, select the circle when the basic panel is open, switch to the foreground panel, the selected circle has a displayed opacity of 0 --
   // that is the blinking is between nothing and a red circle glowing circle) The color picker display is correct though... strange!
   private hslaFillColorObject: hslaColorType = { h: 0, s: 1, l: 1, a: 0.001 }; // Color for Vuetify Color picker
-  private hslaLabelFrontFillColorObject: hslaColorType = {
-    h: 0,
-    s: 1,
-    l: 1,
-    a: 0.001
-  };
-  private hslaLabelBackFillColorObject: hslaColorType = {
-    h: 0,
-    s: 1,
-    l: 1,
-    a: 0.001
-  }; // Color for Vuetify Color picker
 
   /** gapLength = sliderArray[0] */
   private gapLength = 5;
@@ -1019,15 +1007,21 @@ export default class FrontBackStyle extends Vue {
       // When multiple objects are selected, check for possible conflict
       const disagreePropNames = this.commonStyleProperties.filter(
         (propName: string) => {
-          // Confirm that the value of
+          // Confirm that the values of common style property are the same
+          // across all selected objects
+          // Use the first object as reference
           const referenceSO = plottables[0].currentStyleState(this.panel);
           const referenceValue = (referenceSO as any)[propName];
+
+          // Verify that the re
           const agreement = plottables.every((p: Nodule) => {
             const thisSO = p.currentStyleState(this.panel);
             const thisValue = (thisSO as any)[propName];
             console.debug(
               `Comparing ${propName}: ${thisValue} vs ${referenceValue}`
             );
+            if (Array.isArray(thisValue) || Array.isArray(referenceValue))
+              return this.dashArrayCompare(thisValue, referenceValue);
             return thisValue === referenceValue;
           });
           console.debug(`Property ${propName} agreement`, agreement);
@@ -1172,6 +1166,21 @@ export default class FrontBackStyle extends Vue {
       // clear the old selection so that this save style state will not be executed again until changes are made.
       SEStore.setOldStyleSelection([]);
     }
+  }
+
+  /**
+   * In the following function: undefined, [], [0,0] are equivalent
+   */
+  dashArrayCompare(
+    arr1: Array<number> | undefined,
+    arr2: Array<number> | undefined
+  ): boolean {
+    const a = arr1 || []; // turn undefined into zero-length array
+    const b = arr2 || []; // turn undefined into zero length array
+    if (a.length == 0 && b.length === 0) return true;
+    if (a.length == 0) return b.every((val: number) => val === 0);
+    if (b.length == 0) return a.every((val: number) => val === 0);
+    return a.every((val: number, k: number) => val === b[k]);
   }
 
   areEquivalentStyleOptions(
