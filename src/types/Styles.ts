@@ -139,8 +139,8 @@ export const DEFAULT_ANGLE_MARKER_BACK_STYLE: StyleOptions = {
 
 export const DEFAULT_LABEL_TEXT_STYLE: Partial<StyleOptions> = {
   labelDisplayMode: LabelDisplayMode.NameOnly,
-  labelDisplayText: "No Label",
-  labelDisplayCaption: "No caption",
+  // labelDisplayText: "No Label",
+  // labelDisplayCaption: "No caption",
   labelTextFamily: SETTINGS.label.family,
   labelTextStyle: SETTINGS.label.style,
   labelTextDecoration: SETTINGS.label.decoration,

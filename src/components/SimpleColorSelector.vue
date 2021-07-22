@@ -72,7 +72,7 @@ import OverlayWithFixButton from "@/components/OverlayWithFixButton.vue";
 import i18n from "../i18n";
 
 @Component({ components: { HintButton, OverlayWithFixButton } })
-export default class ColorSelector extends Vue {
+export default class SimpleColorSelector extends Vue {
   @Prop() readonly titleKey!: string;
   @PropSync("data") colorData?: hslaColorType;
   @Prop({ required: true }) readonly styleName!: string;

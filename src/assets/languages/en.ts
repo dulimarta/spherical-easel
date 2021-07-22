@@ -261,7 +261,7 @@ export default {
     convertSelectionToLabels:
       "A mix of label and non-label objects were selected when all label displays were changed. In order to do this the current selection was converted to all the labels of those objects.",
 
-    dashPattern: "Enabled",
+    dashPattern: "Dash Pattern",
     dashPatternCheckBoxToolTip:
       "Enable or Disable a dash pattern for the selected objects.",
 

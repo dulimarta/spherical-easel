@@ -10,28 +10,52 @@
       i18n-button-tool-tip="style.labelsNotShowingToolTip"
       @click="toggleAllLabelsVisibility">
     </OverlayWithFixButton>
-    <v-row no-gutters>
-      <v-spacer />
-      <!-- Undo and Reset to Defaults buttons -->
-      <v-col cols="2"
-        class="ma-0 pl-0 pr-0 pt-0 pb-2">
-        <HintButton @click="clearStyleData"
-          :disabled="disableStyleSelectorUndoButton"
-          type="undo"
-          i18n-label="style.clearChanges"
-          i18n-tooltip="style.clearChangesToolTip">
-        </HintButton>
-      </v-col>
+    <v-container class="pa-0 ma-0">
+      <v-row no-gutters>
+        <v-col cols="auto">
+          <v-tooltip bottom
+            :open-delay="toolTipOpenDelay"
+            :close-delay="toolTipCloseDelay"
+            max-width="400px"
+            class="pa-0 pm-0">
+            <template v-slot:activator="{on}">
+              <v-btn v-on="on"
+                @click="toggleShowMoreLabelStyles"
+                class="text-subtitle-2"
+                text
+                plain
+                ripple
+                x-small>
+                <v-icon v-if="showMoreLabelStyles">mdi-chevron-up
+                </v-icon>
+                <v-icon v-else>mdi-chevron-down </v-icon>
+              </v-btn>
+            </template>
+            {{$t('style.toggleStyleOptionsToolTip')}}
+          </v-tooltip>
+        </v-col>
+        <v-spacer />
+        <!-- Undo and Reset to Defaults buttons -->
+        <v-col cols="2"
+          class="ma-0 pl-0 pr-0 pt-0 pb-2">
+          <HintButton @click="clearStyleData"
+            :disabled="disableStyleSelectorUndoButton"
+            type="undo"
+            i18n-label="style.clearChanges"
+            i18n-tooltip="style.clearChangesToolTip">
+          </HintButton>
+        </v-col>
 
-      <v-col cols="2"
-        class="ma-0 pl-0 pr-0 pt-0 pb-2">
-        <HintButton @click="resetStyleDataToDefaults"
-          type="default"
-          i18n-label="style.restoreDefaults"
-          i18n-tooltip="style.restoreDefaultsToolTip">
-        </HintButton>
-      </v-col>
-    </v-row>
+        <v-col cols="2"
+          class="ma-0 pl-0 pr-0 pt-0 pb-2">
+          <HintButton @click="resetStyleDataToDefaults"
+            type="default"
+            i18n-label="style.restoreDefaults"
+            i18n-tooltip="style.restoreDefaultsToolTip">
+          </HintButton>
+        </v-col>
+      </v-row>
+    </v-container>
 
     <!-- Label Text Options -->
     <FadeInCard>
@@ -56,6 +80,7 @@
       <!-- Label Text Selections -->
       <div v-if="activeStyleOptions">
         <v-text-field v-model.lazy="activeStyleOptions.labelDisplayText"
+          v-if="selectedSENodules.length < 2"
           v-bind:label="$t('style.labelText')"
           :counter="maxLabelDisplayTextLength"
           filled
@@ -115,32 +140,6 @@
           </v-select>
         </div>
       </div>
-      <v-container class="pa-0 ma-0">
-        <v-row>
-          <v-col cols="auto">
-            <v-tooltip bottom
-              :open-delay="toolTipOpenDelay"
-              :close-delay="toolTipCloseDelay"
-              max-width="400px"
-              class="pa-0 pm-0">
-              <template v-slot:activator="{on}">
-                <v-btn v-on="on"
-                  @click="toggleShowMoreLabelStyles"
-                  class="text-subtitle-2"
-                  text
-                  plain
-                  ripple
-                  x-small>
-                  <v-icon v-if="showMoreLabelStyles">mdi-chevron-up
-                  </v-icon>
-                  <v-icon v-else>mdi-chevron-down </v-icon>
-                </v-btn>
-              </template>
-              {{$t('style.toggleStyleOptionsToolTip')}}
-            </v-tooltip>
-          </v-col>
-        </v-row>
-      </v-container>
 
     </FadeInCard>
     <!-- Label Text Scale Number Selector-->
@@ -170,16 +169,14 @@
 
         <ColorSelector title-key="style.labelFrontFillColor"
           style-name="labelFrontFillColor"
-          :data.sync="hslaLabelFrontFillColorObject"
-          :temp-style-states="tempStyleStates"></ColorSelector>
+          :data.sync="hslaLabelFrontFillColorObject"></ColorSelector>
       </FadeInCard>
 
       <!-- Label Back Fill Color Selector : -->
       <FadeInCard>
         <ColorSelector title-key="style.labelBackFillColor"
           style-name="labelBackFillColor"
-          :data.sync="hslaLabelBackFillColorObject"
-          :temp-style-states="tempStyleStates"></ColorSelector>
+          :data.sync="hslaLabelBackFillColorObject"></ColorSelector>
       </FadeInCard>
     </div>
     <!-- Show more or less styling options -->
@@ -700,10 +697,7 @@ export default class LabelStyle extends Vue {
       return;
     }
 
-    // record the new selections in the old
-    SEStore.setOldStyleSelection([]);
     // We are on the label panel so push the labels onto the oldSelections
-
     const oldSelection: SENodule[] = [];
     newSelection.forEach((obj: SENodule) =>
       oldSelection.push(((obj as unknown) as Labelable).label!)
@@ -712,7 +706,15 @@ export default class LabelStyle extends Vue {
     this.selectedLabels.push(
       ...(oldSelection as SELabel[]).map((s: SELabel) => s.ref)
     );
+    // record the new SENodule selections in the old
     SEStore.setOldStyleSelection(oldSelection);
+    // Get the initial and default style state of the object for undo/redo and buttons to revert to initial style.
+    // Put this in the store so that it is availble to *all* panels. Get the front and back information at the same time.
+    SEStore.recordStyleState({
+      selected: oldSelection,
+      backContrast: Nodule.getBackStyleContrast()
+    });
+    SEStore.setSavedFromPanel(StyleEditPanels.Label);
 
     // Create a list of the common properties of the selected objects.
     // commonStyleProperties is a number (corresponding to an enum) array
@@ -733,20 +735,12 @@ export default class LabelStyle extends Vue {
     // Use flatmap (1-to-many) to compile all the style properties of
     // of the selected objects
     const commonProps = styleOptionsOfSelected.flatMap((opt: StyleOptions) =>
+      // Exclude internal JS property like __ob__
       Object.getOwnPropertyNames(opt).filter((s: string) => !s.startsWith("__"))
     );
     const uniqueProps = new Set(commonProps);
     this.commonStyleProperties.push(...uniqueProps);
 
-    // Get the initial and default style state of the object for undo/redo and buttons to revert to initial style.
-    // Put this in the store so that it is availble to *all* panels. Get the front and back information at the same time.
-
-    SEStore.recordStyleState({
-      selected: newSelection.map(obj => ((obj as unknown) as Labelable).label!),
-      backContrast: Nodule.getBackStyleContrast()
-    });
-
-    SEStore.setSavedFromPanel(StyleEditPanels.Label);
     //Set the initial state of the fade-in-card/selectors (checking to see if the property is the same across all selected objects)
     this.setStyleDataSelectorState(
       // SEStore.getInitialStyleState(StyleEditPanels.Label)
@@ -801,6 +795,10 @@ export default class LabelStyle extends Vue {
     this.selectedLabels.forEach((z: Label) => {
       z.updateStyle(this.panel, { ...updatePayload });
     });
+    // Enable the Undo button after changes are made
+    this.disableStyleSelectorUndoButton = false;
+    // Save the current selection to be used as "past selection" in the next cycle
+    // when this function is called again
     this.pastStyleOptions = { ...newVal };
   }
 
@@ -888,17 +886,19 @@ export default class LabelStyle extends Vue {
     styleStates1: StyleOptions[],
     styleStates2: StyleOptions[]
   ): boolean {
-    console.debug("areEquivalentStyle");
     if (styleStates1.length !== styleStates2.length) {
-      throw new Error(
-        "Attempted to compare two different length styles in areEquivalentStyles"
-      );
+      // throw new Error(
+      //   "Attempted to compare two different length styles in areEquivalentStyles"
+      // );
+      return false;
     }
 
     // The outer every runs on the two input arguments
-    return styleStates1.every((a: StyleOptions, i: number) =>
+    const compare = styleStates1.every((a: StyleOptions, i: number) =>
       this.areEquivalentStyleOptions(a, styleStates2[i])
     );
+    console.debug("areEquivalentStyles?", compare);
+    return compare;
   }
 }
 </script>
