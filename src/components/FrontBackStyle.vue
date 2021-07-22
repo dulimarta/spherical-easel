@@ -9,11 +9,6 @@
       i18n-button-tool-tip="style.objectsNotShowingToolTip"
       @click="toggleAllObjectsVisibility">
     </OverlayWithFixButton>
-    <ul v-if="editModeIsBack">
-      <li>Enable back style editing? {{enableBackStyleEditing}}</li>
-      <li>Use automatic backstyle? {{usingAutomaticBackStyle}}</li>
-      <li>autoBackstyle value? {{propDynamicBackStyleCommonValue}}</li>
-    </ul>
     <!-- Back Style Contrast Slider -->
     <fade-in-card :showWhen="editModeIsBack"
       color="red">

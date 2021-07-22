@@ -907,33 +907,6 @@ export default class Circle extends Nodule {
     this.glowingBackPart.remove();
   }
 
-  /**
-   * Copies the style options set by the Style Panel into the style variables and then updates the
-   * Two.js objects (with adjustSize and stylize(ApplyVariables))
-   * @param options The style options
-   */
-  updateStyle(mode: StyleEditPanels, options: StyleOptions): void {
-    console.debug("Circle Update style using", options);
-    if (mode === StyleEditPanels.Front || mode === StyleEditPanels.Back) {
-      const currentOptions = this.styleOptions.get(mode);
-      this.styleOptions.set(mode, { ...currentOptions, ...options });
-      // Now apply the style and size
-      this.stylize(DisplayStyle.ApplyCurrentVariables);
-      this.adjustSize();
-    }
-  }
-
-  /**
-   * Return the current style state
-   */
-  currentStyleState(panel: StyleEditPanels): StyleOptions {
-    if (panel === StyleEditPanels.Front || panel === StyleEditPanels.Back)
-      return this.styleOptions.get(panel)!;
-    else return {};
-  }
-  /**
-   * Return the default style state
-   */
   defaultStyleState(panel: StyleEditPanels): StyleOptions {
     switch (panel) {
       case StyleEditPanels.Front:

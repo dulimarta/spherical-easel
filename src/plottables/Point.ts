@@ -247,33 +247,7 @@ export default class Point extends Nodule {
     // apply the new color variables to the object
     this.stylize(DisplayStyle.ApplyCurrentVariables);
   }
-  /**
-   * Copies the style options set by the Style Panel into the style variables and then updates the
-   * Two.js objects (with adjustSize and stylize(ApplyVariables))
-   * @param options The style options
-   */
-  updateStyle(mode: StyleEditPanels, options: StyleOptions): void {
-    console.debug("Point: Update style of point using", options);
-    if (mode === StyleEditPanels.Front || mode === StyleEditPanels.Back) {
-      const currentOption = this.styleOptions.get(mode);
-      // Use JavaScript object destructuring to combine the two options
-      // IMPORTANT: the order of the de-structure below is Important
-      // The current option must be written FIRST the the new incoming
-      // option will override current settings
-      this.styleOptions.set(mode, { ...currentOption, ...options });
-      // Now apply the style and size
-      this.stylize(DisplayStyle.ApplyCurrentVariables);
-      this.adjustSize();
-    }
-  }
-  /**
-   * Return the current style state
-   */
-  currentStyleState(panel: StyleEditPanels): StyleOptions {
-    if (panel === StyleEditPanels.Front || panel === StyleEditPanels.Back)
-      return this.styleOptions.get(panel)!;
-    else return {};
-  }
+
   /**
    * Return the default style state
    */

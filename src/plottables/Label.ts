@@ -374,25 +374,7 @@ export default class Label extends Nodule {
     // apply the new color variables to the object
     this.stylize(DisplayStyle.ApplyCurrentVariables);
   }
-  /**
-   * Copies the style options set by the Style Panel into the style variables and then updates the
-   * Two.js objects (with adjustSize and stylize(ApplyVariables))
-   * @param options The style options
-   */
-  updateStyle(mode: StyleEditPanels, options: StyleOptions): void {
-    const currentOptions = this.styleOptions.get(mode);
-    this.styleOptions.set(mode, { ...currentOptions, ...options });
 
-    // Now apply the style and size
-    this.stylize(DisplayStyle.ApplyCurrentVariables);
-    this.adjustSize();
-  }
-  /**
-   * Return the current style state
-   */
-  currentStyleState(panel: StyleEditPanels): StyleOptions {
-    return this.styleOptions.get(panel)!;
-  }
   /**
    * Return the default style state
    */

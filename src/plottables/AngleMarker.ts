@@ -2645,22 +2645,9 @@ export default class AngleMarker extends Nodule {
    * @param options The style options
    */
   updateStyle(mode: StyleEditPanels, options: StyleOptions): void {
-    console.debug("Angle Marker Update style of Angle Marker using", options);
-    const currentOptions = this.styleOptions.get(mode);
-    this.styleOptions.set(mode, { ...currentOptions, ...options });
-
-    // Now apply the style and size and decoration display
-    this.stylize(DisplayStyle.ApplyCurrentVariables); // applies the colors and stroke size changes
-    this.adjustSize(); // applies the radius changes
+    console.debug("Update style of Angle Marker using", options);
+    super.updateStyle(mode, options);
     this.setVisible(true); // applies the decoration changes (we know that the angle marker is visible because the style panel won't let you edit hidden objects)
-  }
-  /**
-   * Return the current style state
-   */
-  currentStyleState(panel: StyleEditPanels): StyleOptions {
-    if (panel === StyleEditPanels.Front || panel === StyleEditPanels.Back) {
-      return this.styleOptions.get(panel)!;
-    } else return {};
   }
 
   /**
