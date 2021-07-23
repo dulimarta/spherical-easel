@@ -68,10 +68,7 @@
         i18n-title-line="style.selectAnObject"
         i18n-subtitle-line="style.closeOrSelect"
         i18n-list-title="style.toSelectObjects"
-        i18n-list-item-one="style.selectionDirection1"
-        i18n-list-item-two="style.selectionDirection2"
-        i18n-list-item-three="style.selectionDirection3"
-        i18n-list-item-four="style.selectionDirection4"
+        :i18n-list-items="['style.selectionDirection1','style.selectionDirection2','style.selectionDirection3','style.selectionDirection4']"
         i18n-button-label="style.closeStylingPanel"
         i18n-button-tool-tip="style.noSelectionToolTip"
         @click="$emit('toggle-style-panel')">

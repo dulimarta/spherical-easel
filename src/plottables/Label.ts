@@ -71,7 +71,7 @@ export default class Label extends Nodule {
    * _value is the associated number array, if any, that describes the object being labeled. Typically this is just one number, but for points is an array of
    * the three coordinate values.
    */
-  // protected _shortUserName = "";
+  protected _shortUserName = "";
   // protected _caption = "";
   protected _value: number[] = [];
 
@@ -196,19 +196,16 @@ export default class Label extends Nodule {
    * Set and get the shortUserName
    */
   set shortUserName(name: string) {
-    const shortName = name.slice(0, SETTINGS.label.maxLabelDisplayTextLength);
+    this._shortUserName = name;
+    // const shortName = name.slice(0, SETTINGS.label.maxLabelDisplayTextLength);
     this.updateStyle(StyleEditPanels.Label, {
-      labelDisplayText: shortName
+      labelDisplayText: name
     });
     this.stylize(DisplayStyle.ApplyCurrentVariables);
   }
 
   get shortUserName(): string {
-    const labelStyle = this.styleOptions.get(StyleEditPanels.Label);
-    return (labelStyle?.labelDisplayText ?? "No Label").slice(
-      0,
-      SETTINGS.label.maxLabelDisplayTextLength
-    );
+    return this._shortUserName;
   }
 
   /**
@@ -373,6 +370,18 @@ export default class Label extends Nodule {
     }
     // apply the new color variables to the object
     this.stylize(DisplayStyle.ApplyCurrentVariables);
+  }
+
+  /**
+   * Copies the style options set by the Style Panel into the style variables and then updates the
+   * Two.js objects (with adjustSize and stylize(ApplyVariables))
+   * @param options The style options
+   */
+  updateStyle(mode: StyleEditPanels, options: StyleOptions): void {
+    if (options.labelDisplayText) {
+      this._shortUserName = options.labelDisplayText;
+    }
+    super.updateStyle(mode, options);
   }
 
   /**
