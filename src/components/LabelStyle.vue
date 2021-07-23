@@ -129,21 +129,21 @@
       <FadeInCard>
         {{ $t("style.labelTextScalePercent")}} &
         {{$t("style.labelTextRotation")}}
-        <NumberSelector
+        <SimpleNumberSelector
           v-bind:data.sync="activeStyleOptions.labelTextScalePercent"
           title-key="style.labelTextScalePercent"
           v-bind:min="minLabelTextScalePercent"
           v-bind:max="maxLabelTextScalePercent"
           v-bind:step="20"
           :thumb-string-values="textScaleSelectorThumbStrings" />
-        <NumberSelector
+        <SimpleNumberSelector
           v-bind:data.sync="activeStyleOptions.labelTextRotation"
           title-key="style.labelTextRotation"
           v-bind:min="-3.14159"
           v-bind:max="3.14159"
           v-bind:step="0.39269875"
           :thumb-string-values="textRotationSelectorThumbStrings">
-        </NumberSelector>
+        </SimpleNumberSelector>
         <v-container class="pa-0 ma-0">
           <v-row no-gutters
             justify="end">
@@ -177,23 +177,19 @@
       <!-- Label Front Fill Color Selector -->
       <FadeInCard>
 
-        <ColorSelector title-key="style.labelFrontFillColor"
+        <SimpleColorSelector title-key="style.labelFrontFillColor"
           style-name="labelFrontFillColor"
-          :data.sync="hslaLabelFrontFillColorObject"></ColorSelector>
-        <ColorSelector title-key="style.labelBackFillColor"
-          style-name="labelBackFillColor"
-          :data.sync="hslaLabelBackFillColorObject"></ColorSelector>
+          :data.sync="hslaLabelFrontFillColorObject"></SimpleColorSelector>
         <v-container class="pa-0 ma-0">
           <v-row no-gutters
             justify="end">
             <!-- Undo and Reset to Defaults buttons -->
             <v-col cols="2"
               class="ma-0 pl-0 pr-0 pt-0 pb-2">
-              <HintButton
-                @click="clearStyleData('labelFrontFillColor,labelBackFillColor')"
-                data-se-props="labelFrontFillColor,labelBackFillColor"
-                data-se-flag="colorGroup"
-                :disabled="disableControl['colorGroup']"
+              <HintButton @click="clearStyleData('labelFrontFillColor')"
+                data-se-props="labelFrontFillColor"
+                data-se-flag="frontColorGroup"
+                :disabled="disableControl['frontColorGroup']"
                 type="undo"
                 i18n-label="style.clearChanges"
                 i18n-tooltip="style.clearChangesToolTip">
@@ -203,7 +199,40 @@
             <v-col cols="2"
               class="ma-0 pl-0 pr-0 pt-0 pb-2">
               <HintButton
-                @click="resetStyleDataToDefaults('labelFrontFillColor,labelBackFillColor')"
+                @click="resetStyleDataToDefaults('labelFrontFillColor')"
+                type="default"
+                i18n-label="style.restoreDefaults"
+                i18n-tooltip="style.restoreDefaultsToolTip">
+              </HintButton>
+            </v-col>
+          </v-row>
+        </v-container>
+
+      </FadeInCard>
+      <FadeInCard v-if="hasBackStyle">
+        <SimpleColorSelector title-key="style.labelBackFillColor"
+          style-name="labelBackFillColor"
+          :data.sync="hslaLabelBackFillColorObject"></SimpleColorSelector>
+        <v-container class="pa-0 ma-0">
+          <v-row no-gutters
+            justify="end">
+            <!-- Undo and Reset to Defaults buttons -->
+            <v-col cols="2"
+              class="ma-0 pl-0 pr-0 pt-0 pb-2">
+              <HintButton @click="clearStyleData('labelBackFillColor')"
+                data-se-props="labelBackFillColor"
+                data-se-flag="backColorGroup"
+                :disabled="disableControl['backColorGroup']"
+                type="undo"
+                i18n-label="style.clearChanges"
+                i18n-tooltip="style.clearChangesToolTip">
+              </HintButton>
+            </v-col>
+
+            <v-col cols="2"
+              class="ma-0 pl-0 pr-0 pt-0 pb-2">
+              <HintButton
+                @click="resetStyleDataToDefaults('labelBackFillColor')"
                 type="default"
                 i18n-label="style.restoreDefaults"
                 i18n-tooltip="style.restoreDefaultsToolTip">
@@ -252,9 +281,9 @@ import FadeInCard from "@/components/FadeInCard.vue";
 import { hslaColorType, AppState, Labelable } from "@/types";
 import { StyleNoduleCommand } from "@/commands/StyleNoduleCommand";
 import EventBus from "@/eventHandlers/EventBus";
-import NumberSelector from "@/components/SimpleNumberSelector.vue";
+import SimpleNumberSelector from "@/components/SimpleNumberSelector.vue";
 // import TextInputSelector from "@/components/TextInputSelector.vue";
-import ColorSelector from "@/components/SimpleColorSelector.vue";
+import SimpleColorSelector from "@/components/SimpleColorSelector.vue";
 import i18n from "../i18n";
 import HintButton from "@/components/HintButton.vue";
 import OverlayWithFixButton from "@/components/OverlayWithFixButton.vue";
@@ -274,8 +303,8 @@ type labelDisplayModeItem = {
 @Component({
   components: {
     FadeInCard,
-    NumberSelector,
-    ColorSelector,
+    SimpleNumberSelector,
+    SimpleColorSelector,
     HintButton,
     OverlayWithFixButton
   }
@@ -301,7 +330,8 @@ export default class LabelStyle extends Vue {
   disableControl = {
     textGroup: true,
     sizeGroup: true,
-    colorGroup: true
+    frontColorGroup: true,
+    backColorGroup: true
   };
   /**
    * These are the temp style state for the selected objects. Used to set the color/number/dash/contrast selectors when the user disables the dynamic back styling.
@@ -313,6 +343,8 @@ export default class LabelStyle extends Vue {
    */
   private currentStyleStates: StyleOptions[] = [];
   private selectedLabels: Label[] = [];
+  private selectedSELabels: SELabel[] = [];
+  // private selectedSELables: SELabel[] = p[]
   private toolTipOpenDelay = SETTINGS.toolTip.openDelay;
   private toolTipCloseDelay = SETTINGS.toolTip.closeDelay;
   /**
@@ -325,16 +357,7 @@ export default class LabelStyle extends Vue {
   private maxLabelTextScalePercent = SETTINGS.style.maxLabelTextScalePercent;
   private minLabelTextScalePercent = SETTINGS.style.minLabelTextScalePercent;
   //step is 20 from 60 to 200 is 8 steps
-  private textScaleSelectorThumbStrings = [
-    "-40%",
-    "-20%",
-    "0%",
-    "20%",
-    "40%",
-    "60%",
-    "80%",
-    "100%"
-  ];
+  private textScaleSelectorThumbStrings: Array<string> = [];
 
   private styleDataAgreement = true;
   private disableStyleSelectorUndoButton = true;
@@ -448,25 +471,7 @@ export default class LabelStyle extends Vue {
   ];
 
   //step is Pi/8 from -pi to pi is 17 steps
-  private textRotationSelectorThumbStrings = [
-    "-180" + "\u{00B0}",
-    "-157.5" + "\u{00B0}",
-    "-135" + "\u{00B0}",
-    "-112.5" + "\u{00B0}",
-    "-90" + "\u{00B0}",
-    "-67.5" + "\u{00B0}",
-    "-45" + "\u{00B0}",
-    "-22.5" + "\u{00B0}",
-    "0" + "\u{00B0}",
-    "+22.5" + "\u{00B0}",
-    "+45" + "\u{00B0}",
-    "+67.5" + "\u{00B0}",
-    "+90" + "\u{00B0}",
-    "+112.5" + "\u{00B0}",
-    "+135" + "\u{00B0}",
-    "+157.5" + "\u{00B0}",
-    "+180" + "\u{00B0}"
-  ];
+  private textRotationSelectorThumbStrings: Array<string> = [];
 
   // private hslaStrokeColorObject: hslaColorType = { h: 0, s: 1, l: 1, a: 0.001 }; // Color for Vuetify Color picker NOTE: setting a=0 creates the following error:
   // create a circle, open the style panel, select the circle when the basic panel is open, switch to the foreground panel, the selected circle has a displayed opacity of 0 --
@@ -487,10 +492,19 @@ export default class LabelStyle extends Vue {
 
   private commonStyleProperties: Array<string> = [];
 
-  constructor() {
-    super();
+  created(): void {
+    for (
+      let s = SETTINGS.style.minLabelTextScalePercent;
+      s <= SETTINGS.style.maxLabelTextScalePercent;
+      s += 20
+    )
+      this.textScaleSelectorThumbStrings.push(s.toFixed(0) + "%");
+    for (let angle = -180; angle <= 180; angle += 22.5) {
+      this.textRotationSelectorThumbStrings.push(
+        angle.toFixed(1).replace(/\.0$/, "") + "\u{00B0}"
+      );
+    }
   }
-
   /** mounted() is part of VueJS lifecycle hooks */
   mounted(): void {
     // Pass any selected objects when Label Panel is mounted to the onSelection change
@@ -508,6 +522,9 @@ export default class LabelStyle extends Vue {
         return true;
       }
     });
+  }
+  get hasBackStyle(): boolean {
+    return this.hasStyle(/dynamicBackStyle/);
   }
 
   @Watch("hslaLabelFrontFillColorObject", { deep: true })
@@ -531,167 +548,6 @@ export default class LabelStyle extends Vue {
       );
     }
   }
-  toggleShowMoreLabelStyles(): void {
-    this.showMoreLabelStyles = !this.showMoreLabelStyles;
-    if (!this.showMoreLabelStyles) {
-      this.moreOrLessText = i18n.t("style.moreStyleOptions");
-    } else {
-      this.moreOrLessText = i18n.t("style.lessStyleOptions");
-    }
-  }
-  toggleAllLabelsVisibility(): void {
-    EventBus.fire("toggle-label-visibility", { fromPanel: true });
-  }
-
-  // These methods are linked to the Style Data fade-in-card
-  labelDisplayTextCheck(): boolean {
-    return true;
-    // this.labelDisplayTestResults[0] = this.labelDisplayTestResults[1];
-    // this.labelDisplayTestResults[1] =
-    //   this.labelDisplayText !== undefined &&
-    //   (this.labelDisplayText.length === 0 ||
-    //     this.labelDisplayText.length <=
-    //       SETTINGS.label.maxLabelDisplayTextLength);
-    // // const translation = i18n.t("style.maxMinLabelDisplayTextLengthWarning", {
-    // //   max: SETTINGS.label.maxLabelDisplayTextLength
-    // // });
-    // if (!this.labelDisplayTestResults[0]) {
-    //   this.labelDisplayTextErrorMessageKey =
-    //     "style.maxMinLabelDisplayTextLengthWarning";
-    // } else {
-    //   this.labelDisplayTextErrorMessageKey = "";
-    // }
-    // // set the label text to the first 6 characters
-    // this.labelDisplayText =
-    //   this.labelDisplayText !== undefined
-    //     ? this.labelDisplayText.slice(
-    //         0,
-    //         SETTINGS.label.maxLabelDisplayTextLength
-    //       )
-    //     : "";
-    // return this.labelDisplayTestResults[1]; // || translation;
-  }
-  labelDisplayCaptionCheck(): boolean {
-    // this.labelDisplayCaptionTestResults[0] = this.labelDisplayCaptionTestResults[1];
-    // this.labelDisplayCaptionTestResults[1] =
-    //   this.labelDisplayCaption !== undefined &&
-    //   this.labelDisplayCaption.length <=
-    //     SETTINGS.label.maxLabelDisplayCaptionLength;
-    // // display the error message
-    // if (!this.labelDisplayCaptionTestResults[0]) {
-    //   this.labelDisplayCaptionErrorMessageKey =
-    //     "style.maxMinLabelDisplayCaptionLengthWarning";
-    // } else {
-    //   this.labelDisplayCaptionErrorMessageKey = "";
-    // }
-    // // const translation = i18n.t("style.maxMinLabelDisplayCaptionLengthWarning", {
-    // //   max: SETTINGS.label.maxLabelDisplayCaptionLength
-    // // });
-    // this.labelDisplayCaption =
-    //   this.labelDisplayCaption !== undefined
-    //     ? this.labelDisplayCaption.slice(
-    //         0,
-    //         SETTINGS.label.maxLabelDisplayCaptionLength
-    //       )
-    //     : "";
-    // return this.labelDisplayCaptionTestResults[1];
-    return true;
-  }
-
-  resetStyleDataTo(props: Array<string>, options: StyleOptions[]): void {
-    this.selectedSENodules
-      .filter((n: SENodule) => n.isLabelable())
-      .map((n: SENodule) => ((n as unknown) as Labelable).label!)
-      .forEach((n: SENodule, k: number) => {
-        // Start with nothing in the update bundle
-        const payload: StyleOptions = {};
-        props.forEach((p: string) => {
-          (payload as any)[p] = (options[k] as any)[p];
-        });
-        SEStore.changeStyle({
-          selected: [n],
-          panel: this.panel,
-          payload
-        });
-      });
-  }
-  resetStyleDataToDefaults(props: string): void {
-    console.debug("Reset label style to default");
-    const listOfProps = props.split(",");
-    const defaultStyleStates = SEStore.getDefaultStyleState(this.panel);
-    this.resetStyleDataTo(listOfProps, defaultStyleStates);
-  }
-
-  clearStyleData(props: string): void {
-    console.debug("Reset label style to start of edit");
-    const listOfProps = props.split(",");
-    console.debug("Reset ", listOfProps, "to the start of edit session");
-    const initialStyleStates = SEStore.getInitialStyleState(this.panel);
-    this.resetStyleDataTo(listOfProps, initialStyleStates);
-  }
-
-  disableStyleDataSelector(totally: boolean): void {
-    this.styleDataAgreement = false;
-    this.disableStyleSelectorUndoButton = true;
-  }
-
-  setStyleDataAgreement(): void {
-    this.styleDataAgreement = true;
-  }
-
-  /**
-   * Determines if the commonStyleProperties has the given input of type Styles
-   * The input is an enum of type Styles
-   * This is the key method for the hasXXX() methods which control the display of the XXX fade-in-card
-   */
-  hasStyle(property: RegExp): boolean {
-    return this.commonStyleProperties.some((z: string) => z.match(property));
-  }
-
-  //This controls if the labelDisplayModeItems include ValueOnly and NameAndValue (When no value in the Label)\
-  // and if the caption is empty, NameAndCaption and Caption Only are not options
-  labelDisplayModeValueFilter(
-    items: labelDisplayModeItem[]
-  ): labelDisplayModeItem[] {
-    const returnItems: labelDisplayModeItem[] = [];
-    if (
-      this.selectedSENodules.every(node => {
-        if (node.isLabelable()) {
-          return ((node as unknown) as Labelable).label!.ref.value.length !== 0;
-        } else {
-          return true;
-        }
-      })
-    ) {
-      // value is present in all labels so pass long all options in labelDisplayModeItems
-      returnItems.push(...items);
-    } else {
-      // value is not present in all labels so pass long all options in labelDisplayModeItems that don't have value in them
-      returnItems.push(
-        ...items.filter(itm => !itm.optionRequiresMeasurementValueToExist)
-      );
-    }
-
-    if (
-      (this.selectedSENodules as SENodule[]).every(node => {
-        if (node.isLabelable()) {
-          return (
-            ((node as unknown) as Labelable).label!.ref.caption.trim()
-              .length !== 0
-          );
-        } else {
-          return true;
-        }
-      })
-    ) {
-      // caption is present in all labels
-      return returnItems;
-    } else {
-      // caption is not present in all labels so pass long all options in labelDisplayModeItems that don't have caption in them
-      return returnItems.filter(itm => !itm.optionRequiresCaptionToExist);
-    }
-  }
-
   @Watch("activePanel")
   private activePanelChange(): void {
     if (
@@ -702,30 +558,6 @@ export default class LabelStyle extends Vue {
     }
   }
 
-  enableResetButton(prop: string): void {
-    // console.debug("Enable undo button for", prop);
-    const candidates = this.$el.querySelectorAll("[data-se-props]");
-    // console.debug("Candidates of undo button for", candidates);
-    candidates.forEach((el: Element) => {
-      const propList = el.getAttribute("data-se-props")?.split(",");
-      if (propList) {
-        // console.debug("Button", el, "with prop", propList);
-        // Find which one matche the property name we are looking for
-        if (
-          propList.find((s: string) => {
-            // console.debug(`Checking ${s}  <==> ${prop}`);
-            return s === prop;
-          })
-        ) {
-          // Find the flag name needed to (re) enabled the button
-          const flagName = el.getAttribute("data-se-flag") as string;
-          // console.debug("Found flag", flagName);
-          // Set the boolean flag controlling its disable behavior
-          (this.disableControl as any)[flagName] = false;
-        }
-      }
-    });
-  }
   /**
    * This is an example of the two-way binding that is provided by the Vuex store. As this is a Vue component we can Watch variables, and
    * when they change, this method will execute in response to that change.
@@ -739,9 +571,10 @@ export default class LabelStyle extends Vue {
     );
 
     // Before changing the selections save the state for an undo/redo command (if necessary)
-    // this.saveStyleState();
+    this.saveStyleState();
 
     this.commonStyleProperties.splice(0);
+    this.selectedSELabels.splice(0);
     this.activeStyleOptions = null;
     if (newSelection.length === 0) {
       //totally disable the selectors in this component
@@ -752,9 +585,13 @@ export default class LabelStyle extends Vue {
 
     // We are on the label panel so push the labels onto the oldSelections
     const oldSelection: SENodule[] = [];
-    newSelection.forEach((obj: SENodule) =>
-      oldSelection.push(((obj as unknown) as Labelable).label!)
-    );
+    newSelection.forEach((obj: SENodule) => {
+      const z = ((obj as unknown) as Labelable).label;
+      if (z) {
+        oldSelection.push(z);
+        this.selectedSELabels.push(z);
+      }
+    });
     this.selectedLabels.splice(0);
     this.selectedLabels.push(
       ...(oldSelection as SELabel[]).map((s: SELabel) => s.ref)
@@ -860,7 +697,7 @@ export default class LabelStyle extends Vue {
         // console.debug(`Excluding ${p} from payload`);
         delete (updatePayload as any)[p];
       } else {
-        console.debug(`Property ${p} is update from ${a} to ${b}`);
+        // console.debug(`Property ${p} is update from ${a} to ${b}`);
         this.enableResetButton(p);
       }
     });
@@ -868,19 +705,199 @@ export default class LabelStyle extends Vue {
     /* If multiple labels are selected, do not update the name */
     if (this.selectedLabels.length > 1) delete updatePayload.labelDisplayText;
 
-    this.selectedLabels.forEach((z: Label) => {
-      z.updateStyle(this.panel, { ...updatePayload });
+    this.selectedSELabels.forEach((n: SELabel) => {
+      SEStore.changeStyle({
+        selected: [n],
+        panel: StyleEditPanels.Label,
+        payload: updatePayload
+      });
     });
+    // this.selectedLabels.forEach((z: Label) => {
+    //   z.updateStyle(this.panel, { ...updatePayload });
+    // });
     // Enable the Undo button after changes are made
     this.disableStyleSelectorUndoButton = false;
     // Save the current selection to be used as "past selection" in the next cycle
     // when this function is called again
     this.pastStyleOptions = { ...newVal };
   }
+  toggleShowMoreLabelStyles(): void {
+    this.showMoreLabelStyles = !this.showMoreLabelStyles;
+    if (!this.showMoreLabelStyles) {
+      this.moreOrLessText = i18n.t("style.moreStyleOptions");
+    } else {
+      this.moreOrLessText = i18n.t("style.lessStyleOptions");
+    }
+  }
+  toggleAllLabelsVisibility(): void {
+    EventBus.fire("toggle-label-visibility", { fromPanel: true });
+  }
+
+  // These methods are linked to the Style Data fade-in-card
+  labelDisplayTextCheck(txt: string | undefined): boolean | string {
+    if (txt && txt.length > SETTINGS.label.maxLabelDisplayTextLength) {
+      setTimeout(() => {
+        if (this.activeStyleOptions)
+          this.activeStyleOptions.labelDisplayText = txt.substr(
+            0,
+            SETTINGS.label.maxLabelDisplayTextLength
+          );
+      }, 3000);
+      return this.$t("style.maxMinLabelDisplayTextLengthWarning", {
+        max: SETTINGS.label.maxLabelDisplayTextLength
+      }) as string;
+    }
+    return true;
+  }
+  labelDisplayCaptionCheck(txt: string | undefined): boolean | string {
+    if (txt && txt.length > SETTINGS.label.maxLabelDisplayCaptionLength) {
+      setTimeout(() => {
+        if (this.activeStyleOptions)
+          this.activeStyleOptions.labelDisplayCaption = txt.substr(
+            0,
+            SETTINGS.label.maxLabelDisplayCaptionLength
+          );
+      }, 3000);
+      return this.$t("style.maxMinLabelDisplayTextLengthWarning", {
+        max: SETTINGS.label.maxLabelDisplayTextLength
+      }) as string;
+    }
+    return true;
+  }
+
+  resetStyleDataTo(props: Array<string>, options: StyleOptions[]): void {
+    if (options.length < this.selectedSENodules.length) {
+      throw new Error(
+        `You have only ${options.length} styleoptions to reset ${this.selectedSENodules.length} objects`
+      );
+    }
+    if (options.length > 0) {
+      this.activeStyleOptions = { ...options[0] };
+    } else {
+      this.activeStyleOptions = null;
+    }
+    this.selectedSENodules
+      .filter((n: SENodule) => n.isLabelable())
+      .map((n: SENodule) => ((n as unknown) as Labelable).label!)
+      .forEach((n: SENodule, k: number) => {
+        // Start with nothing in the update bundle
+        const payload: StyleOptions = {};
+        props.forEach((p: string) => {
+          (payload as any)[p] = (options[k] as any)[p];
+        });
+        SEStore.changeStyle({
+          selected: [n],
+          panel: this.panel,
+          payload
+        });
+      });
+  }
+  resetStyleDataToDefaults(props: string): void {
+    console.debug("Reset label style to default");
+    const listOfProps = props.split(",");
+    const defaultStyleStates = SEStore.getDefaultStyleState(this.panel);
+    this.resetStyleDataTo(listOfProps, defaultStyleStates);
+  }
+
+  clearStyleData(props: string): void {
+    console.debug("Reset label style to start of edit");
+    const listOfProps = props.split(",");
+    console.debug("Reset ", listOfProps, "to the start of edit session");
+    const initialStyleStates = SEStore.getInitialStyleState(this.panel);
+    this.resetStyleDataTo(listOfProps, initialStyleStates);
+  }
+
+  disableStyleDataSelector(totally: boolean): void {
+    this.styleDataAgreement = false;
+    this.disableStyleSelectorUndoButton = true;
+  }
+
+  setStyleDataAgreement(): void {
+    this.styleDataAgreement = true;
+  }
+
+  /**
+   * Determines if the commonStyleProperties has the given input of type Styles
+   * The input is an enum of type Styles
+   * This is the key method for the hasXXX() methods which control the display of the XXX fade-in-card
+   */
+  hasStyle(property: RegExp): boolean {
+    return this.commonStyleProperties.some((z: string) => z.match(property));
+  }
+
+  //This controls if the labelDisplayModeItems include ValueOnly and NameAndValue (When no value in the Label)\
+  // and if the caption is empty, NameAndCaption and Caption Only are not options
+  labelDisplayModeValueFilter(
+    items: labelDisplayModeItem[]
+  ): labelDisplayModeItem[] {
+    const returnItems: labelDisplayModeItem[] = [];
+    if (
+      this.selectedSENodules.every(node => {
+        if (node.isLabelable()) {
+          return ((node as unknown) as Labelable).label!.ref.value.length !== 0;
+        } else {
+          return true;
+        }
+      })
+    ) {
+      // value is present in all labels so pass long all options in labelDisplayModeItems
+      returnItems.push(...items);
+    } else {
+      // value is not present in all labels so pass long all options in labelDisplayModeItems that don't have value in them
+      returnItems.push(
+        ...items.filter(itm => !itm.optionRequiresMeasurementValueToExist)
+      );
+    }
+
+    if (
+      (this.selectedSENodules as SENodule[]).every(node => {
+        if (node.isLabelable()) {
+          return (
+            ((node as unknown) as Labelable).label!.ref.caption.trim()
+              .length !== 0
+          );
+        } else {
+          return true;
+        }
+      })
+    ) {
+      // caption is present in all labels
+      return returnItems;
+    } else {
+      // caption is not present in all labels so pass long all options in labelDisplayModeItems that don't have caption in them
+      return returnItems.filter(itm => !itm.optionRequiresCaptionToExist);
+    }
+  }
+
+  enableResetButton(prop: string): void {
+    // console.debug("Enable undo button for", prop);
+    const candidates = this.$el.querySelectorAll("[data-se-props]");
+    // console.debug("Candidates of undo button for", candidates);
+    candidates.forEach((el: Element) => {
+      const propList = el.getAttribute("data-se-props")?.split(",");
+      if (propList) {
+        // console.debug("Button", el, "with prop", propList);
+        // Find which one matche the property name we are looking for
+        if (
+          propList.find((s: string) => {
+            // console.debug(`Checking ${s}  <==> ${prop}`);
+            return s === prop;
+          })
+        ) {
+          // Find the flag name needed to (re) enabled the button
+          const flagName = el.getAttribute("data-se-flag") as string;
+          // console.debug("Found flag", flagName);
+          // Set the boolean flag controlling its disable behavior
+          (this.disableControl as any)[flagName] = false;
+        }
+      }
+    });
+  }
 
   saveStyleState(): void {
     // There must be an old selection in order for there to be a change to save
     const oldSelection = this.oldStyleSelection;
+    console.debug("Number of items to save", oldSelection.length);
     if (oldSelection.length > 0) {
       //Record the current state of each Nodule
       this.currentStyleStates.splice(0);

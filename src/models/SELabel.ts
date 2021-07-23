@@ -199,11 +199,11 @@ export class SELabel extends SENodule implements Visitable {
   }
 
   public get noduleDescription(): string {
-    return "Error in SELabel noduleDescription"; // this should never be executed
+    throw new Error("SELabel noduleDescription should never be called");
   }
 
   public get noduleItemText(): string {
-    return "Error in SELabel noduleItemText"; // this should never be executed
+    throw new Error("SELabel noduleItemText should never be called");
   }
   public isHitAt(
     unitIdealVector: Vector3,

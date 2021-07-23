@@ -138,20 +138,17 @@ import { SEPointDistance } from "@/models/SEPointDistance";
 import { SESlider } from "@/models/SESlider";
 import { SetNoduleDisplayCommand } from "@/commands/SetNoduleDisplayCommand";
 import { SetValueDisplayModeCommand } from "@/commands/SetValueDisplayModeCommand";
-import SETTINGS from "@/global-settings";
 import { UpdateMode, UpdateStateType, ValueDisplayMode } from "@/types";
 import { SEAngleMarker } from "@/models/SEAngleMarker";
 import { SEPointCoordinate } from "@/models/SEPointCoordinate";
 import { SEEllipse } from "@/models/SEEllipse";
-import ToggleLabelDisplayHandler from "@/eventHandlers/ToggleLabelDisplayHandler";
 import { DeleteNoduleCommand } from "@/commands/DeleteNoduleCommand";
 import { CommandGroup } from "@/commands/CommandGroup";
 import { SEParametric } from "@/models/SEParametric";
 
 @Component
 export default class SENoduleItem extends Vue {
-  @Prop()
-  readonly node!: SENodule;
+  @Prop() readonly node!: SENodule;
 
   /**
    * Objects that define the deleted objects (and all descendants) before deleting (for undoing delete)

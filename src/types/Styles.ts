@@ -147,13 +147,11 @@ export const DEFAULT_LABEL_TEXT_STYLE: Partial<StyleOptions> = {
   labelTextScalePercent: 100,
   labelTextRotation: 0,
   labelFrontFillColor: SETTINGS.label.fillColor.front,
-  labelBackFillColor: SETTINGS.label.fillColor.back,
-  dynamicBackStyle: SETTINGS.label.dynamicBackStyle
+  labelBackFillColor: SETTINGS.label.fillColor.back
 };
 
 export const DEFAULT_LABEL_FRONT_STYLE: Partial<StyleOptions> = {
-  fillColor: SETTINGS.label.fillColor.front,
-  dynamicBackStyle: SETTINGS.label.dynamicBackStyle
+  fillColor: SETTINGS.label.fillColor.front
 };
 
 export const DEFAULT_LABEL_BACK_STYLE: Partial<StyleOptions> = {
