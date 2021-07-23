@@ -71,7 +71,7 @@ class Lexer {
   }
 
   lastToken(): string {
-    return this.prev?.text ?? "Start of input";
+    return this.prev?.text ?? String(i18n.t(`objectTree.startOfInput`)); //"Start of input";
   }
   skipWhiteSpaces(): void {
     // \s is Regex for whitespace
@@ -242,7 +242,11 @@ export class ExpressionParser {
           return eTree;
         } else
           return throwError(
-            `expected ')' at '${token.value.text}'`,
+            String(
+              i18n.t(`objectTree.expectedRightParenthesis`, {
+                text: `${token.value.text}`
+              })
+            ),
             token.value
           );
       }
@@ -273,7 +277,11 @@ export class ExpressionParser {
         token = tokenizer.next();
         if (token.value.kind !== TokenType.LEFT_PAREN)
           return throwError(
-            `expected '(' at function name '${lexer.lastToken()}'`,
+            String(
+              i18n.t(`objectTree.expectedLeftParenthesis`, {
+                text: `${lexer.lastToken()}`
+              })
+            ),
             token.value
           );
         token = tokenizer.next();
@@ -290,12 +298,20 @@ export class ExpressionParser {
           return { node: out, args };
         } else
           return throwError(
-            `Expected ')', but received ${token.value.text}`,
+            String(
+              i18n.t(`objectTree.expectedRightButParenthesis`, {
+                text: `${token.value.text}`
+              })
+            ),
             token.value
           );
       } else
         return throwError(
-          `Unexpected input at '${token.value.text}'`,
+          String(
+            i18n.t(`objectTree.unexpectedInput`, {
+              text: `${token.value.text}`
+            })
+          ),
           token.value
         );
     }
@@ -362,7 +378,14 @@ export class ExpressionParser {
 
     // Be sure there is no leftover character after a valid expression
     if (token.value.kind === TokenType.EOF) return out;
-    else throw new SyntaxError(`Unexpected token at '${token.value.text}'`);
+    else
+      throw new SyntaxError(
+        String(
+          i18n.t(`objectTree.unexpectedToken`, {
+            text: `${token.value.text}`
+          })
+        )
+      );
   }
   static readonly NOT_DEFINED: SyntaxTree = {
     node: { kind: TokenType.UNKNOWN, text: "0", numericValue: 0 }
@@ -457,7 +480,7 @@ export class ExpressionParser {
       }
       case TokenType.POW: {
         if (input.rightChild?.node.kind !== TokenType.NUMBER)
-          throw new Error("Can't handle non-numeric exponents");
+          throw new Error(String(i18n.t(`objectTree.nonNumericExponents`)));
         const fDiff = this.differentiate(input.leftChild, varName);
         const expo = input.rightChild.node.numericValue ?? 1;
         const N: SyntaxTree = {
@@ -823,14 +846,23 @@ export class ExpressionParser {
             };
           }
           default:
-            throw new SyntaxError(`Unknown math builtin ${input.node.text}`);
+            throw new SyntaxError(
+              String(
+                i18n.t(`objectTree.unknownFunction`, {
+                  text: `${input.node.text}`
+                })
+              )
+            );
         }
       }
       default:
         throw new Error(
-          `Unhandled token type ${TokenType[input.node.kind]} ${
-            input.node.text
-          }`
+          String(
+            i18n.t(`objectTree.unhandledTokenType`, {
+              text: `${TokenType[input.node.kind]}`,
+              text2: `${input.node.text}`
+            })
+          )
         );
     }
   }
@@ -848,7 +880,14 @@ export class ExpressionParser {
           return t.node.numericValue ?? 0;
         case TokenType.MEASUREMENT:
           if (varMap.has(measureName)) return varMap.get(measureName) ?? 0;
-          else throw new Error(`Undefined variable ${measureName}`);
+          else
+            throw new Error(
+              String(
+                i18n.t(`objectTree.undefinedVariable`, {
+                  text: `${measureName}`
+                })
+              )
+            );
         case TokenType.PLUS:
           return valueOf(t.leftChild ?? null) + valueOf(t.rightChild ?? null);
         case TokenType.MINUS:
@@ -859,7 +898,7 @@ export class ExpressionParser {
           numValue = valueOf(t.rightChild ?? null);
           if (Math.abs(numValue) > 1e-4)
             return valueOf(t.leftChild ?? null) / valueOf(t.rightChild ?? null);
-          else throw new RangeError("Attempt to divide by zero");
+          else throw new RangeError(String(i18n.t(`objectTree.divideByZero`)));
         case TokenType.POW:
           return Math.pow(
             valueOf(t.leftChild ?? null),
@@ -908,7 +947,13 @@ export class ExpressionParser {
             case "tan":
               return Math.tan(valueOf(args[0]));
             default:
-              throw new SyntaxError(`Unknown math builtin ${t.node.text}`);
+              throw new SyntaxError(
+                String(
+                  i18n.t(`objectTree.unknownFunction`, {
+                    text: `${t.node.text}`
+                  })
+                )
+              );
           }
 
         default:

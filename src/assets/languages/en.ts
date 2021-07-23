@@ -395,6 +395,17 @@ export default {
   objectTree: {
     expression: "Expression",
     parserError: "Reached end of input while parsing expression",
+    expectedRightParenthesis: "Expected ')' at {text}",
+    expectedLeftParenthesis: "Expected '(' at function name {text}}",
+    expectedRightButParenthesis: "Expected ')', but received {text}",
+    unexpectedInput: "Unexpected input at {text}",
+    unexpectedToken: "Unexpected token at {text}",
+    nonNumericExponents: "Can't handle non-numeric exponents",
+    unknownFunction: "Unknown mathematical function {text}.",
+    unhandledTokenType: "Unhandled token type {text} {text2}",
+    undefinedVariable: "Undefined variable {text}",
+    divideByZero: "Attempted to divide by zero.",
+    startOfInput: "Start of input",
     cycleValueDisplayMode:
       "Click to cycle to the next value display mode including multiples of pi and degrees.",
     toggleDisplay: "Toggle the display of the corresponding object.",
