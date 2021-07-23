@@ -308,12 +308,13 @@ export default class ParametricForm extends Vue {
   setCycloidExpressions(): void {
     // See https://mathcurve.com/courbes3d.gb/cycloidspheric/cycloidspheric.shtml
     // https://demonstrations.wolfram.com/SphericalCycloid/
-    //a =1/Sqrt[-((2 Cot[w]    Csc[w])/ q)+ Csc[w]^2 + Csc[w]^2/q^2 ]
-    const a = "(-1*((2*1/tan(w)*1/sin(w))/q)+1/sin(w)^2+1/sin(w)^2/q^2)^(-1/2)";
+    //a =1/Sqrt[       -(( 2 Cot[w] Csc[w])   / q)+Csc[w]^2 + Csc[w]^2/q^2 ]
+    const a =
+      "1/sqrt(-1*((2/tan(w)*1/sin(w))*1/b)+1/sin(w)^2+1/sin(w)^2*1/b^2)";
 
     //hypocycloid
     // const w = "pi/3";
-    // const q = "3";
+    // const b = "3";
     // this.tNumbers.min = 0;
     // this.tNumbers.max = 2 * Math.PI;
     // this.c1DiscontunityParameterValues = [
@@ -324,7 +325,7 @@ export default class ParametricForm extends Vue {
 
     // epicycloid 1
     // const w = "2*pi/3";
-    // const q = "3";
+    // const b = "3";
     // this.tNumbers.min = 0;
     // this.tNumbers.max = 2 * Math.PI;
     // this.c1DiscontunityParameterValues = [
@@ -335,7 +336,7 @@ export default class ParametricForm extends Vue {
 
     // spherical helix
     const w = "0.7227342478"; //acos(3/4)
-    const q = "0.75";
+    const b = "0.75";
     this.tNumbers.min = 0;
     this.tNumbers.max = 8 * Math.PI;
     this.c1DiscontunityParameterValues = [
@@ -344,35 +345,36 @@ export default class ParametricForm extends Vue {
       ((2 * 8) / 6) * Math.PI,
       ((3 * 8) / 6) * Math.PI,
       ((4 * 8) / 6) * Math.PI,
-      ((5 * 8) / 6) * Math.PI
+      ((5 * 8) / 6) * Math.PI,
+      8 * Math.PI
     ];
     // this.tExpressions.min = "0";
     // this.tExpressions.max = "M2";
 
-    this.coordinateExpressions.x = "(1/q)*((q-cos(w))*cos(t)+cos(w)*cos(t)*cos(q*t)+sin(t)*sin(q*t))*a"
+    this.coordinateExpressions.x = "(1/b)*((b-cos(w))*cos(t)+cos(w)*cos(t)*cos(b*t)+sin(t)*sin(b*t))*a"
       .replaceAll(`a`, a)
       .replaceAll(`w`, w)
-      .replaceAll(`q`, q);
-    this.coordinateExpressions.y = "(1/q)*((q-cos(w))*sin(t)+cos(w)*sin(t)*cos(q*t)-cos(t)*sin(q*t))*a"
+      .replaceAll(`b`, b);
+    this.coordinateExpressions.y = "(1/b)*((b-cos(w))*sin(t)+cos(w)*sin(t)*cos(b*t)-cos(t)*sin(b*t))*a"
       .replaceAll(`a`, a)
       .replaceAll(`w`, w)
-      .replaceAll(`q`, q);
-    this.coordinateExpressions.z = "(1/q)*sin(w)*(1-cos(q*t))*a-((a/q)-a*cos(w))/sin(w)"
+      .replaceAll(`b`, b);
+    this.coordinateExpressions.z = "(1/b)*sin(w)*(1-cos(b*t))*a-((a/b)-a*cos(w))/sin(w)"
       .replaceAll(`a`, a)
       .replaceAll(`w`, w)
-      .replaceAll(`q`, q);
-    // this.primeCoordinateExpressions.x = "(1/q)*(2*(-q+cos(w))*sin(t)*sin((q*t)/2)^2+cos(t)*(1-q*cos(w))*sin(q*t))*a"
+      .replaceAll(`b`, b);
+    // this.primeCoordinateExpressions.x = "(1/b)*(2*(-b+cos(w))*sin(t)*sin((b*t)/2)^2+cos(t)*(1-b*cos(w))*sin(b*t))*a"
     //   .replaceAll(`a`, a)
     //   .replaceAll(`w`, w)
-    //   .replaceAll(`q`, q);
-    // this.primeCoordinateExpressions.y = "(1/q)*(2*cos(t)*(q-cos(w))*sin((q*t)/2)^2+(1-q*cos(w))*sin(t)*sin(q*t))*a"
+    //   .replaceAll(`b`, b);
+    // this.primeCoordinateExpressions.y = "(1/b)*(2*cos(t)*(b-cos(w))*sin((b*t)/2)^2+(1-b*cos(w))*sin(t)*sin(b*t))*a"
     //   .replaceAll(`a`, a)
     //   .replaceAll(`w`, w)
-    //   .replaceAll(`q`, q);
-    // this.primeCoordinateExpressions.z = "sin(q*t)*sin(w)*a"
+    //   .replaceAll(`b`, b);
+    // this.primeCoordinateExpressions.z = "sin(b*t)*sin(w)*a"
     //   .replaceAll(`a`, a)
     //   .replaceAll(`w`, w)
-    //   .replaceAll(`q`, q);
+    //   .replaceAll(`b`, b);
   }
   beforeDestroy(): void {
     window.removeEventListener("keydown", this.keyHandler);
@@ -721,6 +723,7 @@ export default class ParametricForm extends Vue {
     // I'm not using tValues.forEach because once a non-unit vector is found, we return the t value and stop checking.
     for (let i = 0; i < tValues.length; i++) {
       this.varMap.set("t", tValues[i]);
+
       this.tempVector.set(
         this.parser.evaluateWithVars(this.coordinateExpressions.x, this.varMap),
         this.parser.evaluateWithVars(this.coordinateExpressions.y, this.varMap),
