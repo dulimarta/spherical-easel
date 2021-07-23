@@ -486,6 +486,8 @@ export class ExpressionParser {
 
         // // typical use case of diff (f^N) = N * f^(N-1) * diff(f) can't handle N = -1/2 so use more complex/general version
         // // diff(f(x)^g(x)) = f(x)^g(x) * diff(g(x)) * ln(f(x)) + f(x)^(g(x)-1) * g(x) * diff(f(x))
+        // // HOWEVER this has its own problems, when f(x) is negative like for sin(M1)^2 this causes problems with the ln(f(x)) term
+        // // Perhaps change ln(f(x)) to ln(abs(f(x))), but then if f(x)=0, we still have problems (like in sin(t)^2 when t=0)
 
         // const gDiff = this.differentiate(input.rightChild, varName);
         // let lnf: SyntaxTree;
