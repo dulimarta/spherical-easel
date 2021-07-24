@@ -1,6 +1,13 @@
 <template>
   <div>
-
+    <StyleEditor :style-data="activeStyleOptions"
+      :panel="panel"
+      :nodule-filter-function="labelFilter"
+      :nodule-map-function="labelMapper">
+      <div slot-scope="{agree}">
+        Data agreement: {{agree}}
+      </div>
+    </StyleEditor>
     <!-- Label(s) not showing overlay -- higher z-index rendered on top -- covers entire panel including the header-->
     <OverlayWithFixButton v-if="!allLabelsShowing"
       z-index="100"
@@ -179,7 +186,8 @@
 
         <SimpleColorSelector title-key="style.labelFrontFillColor"
           style-name="labelFrontFillColor"
-          :data.sync="hslaLabelFrontFillColorObject"></SimpleColorSelector>
+          :data.sync="hslaLabelFrontFillColorObject">
+        </SimpleColorSelector>
         <v-container class="pa-0 ma-0">
           <v-row no-gutters
             justify="end">
@@ -212,7 +220,8 @@
       <FadeInCard v-if="hasBackStyle">
         <SimpleColorSelector title-key="style.labelBackFillColor"
           style-name="labelBackFillColor"
-          :data.sync="hslaLabelBackFillColorObject"></SimpleColorSelector>
+          :data.sync="hslaLabelBackFillColorObject">
+        </SimpleColorSelector>
         <v-container class="pa-0 ma-0">
           <v-row no-gutters
             justify="end">
@@ -264,7 +273,6 @@
       </template>
       {{$t('style.toggleStyleOptionsToolTip')}}
     </v-tooltip>
-
   </div>
 
 </template>
@@ -290,6 +298,7 @@ import OverlayWithFixButton from "@/components/OverlayWithFixButton.vue";
 import { SEStore } from "@/store";
 import { SELabel } from "@/models/SELabel";
 import Label from "@/plottables/Label";
+import StyleEditor from "@/components/StyleEditor.vue";
 const SE = namespace("se");
 
 // import UI from "@/store/ui-styles";
@@ -306,7 +315,8 @@ type labelDisplayModeItem = {
     SimpleNumberSelector,
     SimpleColorSelector,
     HintButton,
-    OverlayWithFixButton
+    OverlayWithFixButton,
+    StyleEditor
   }
 })
 export default class LabelStyle extends Vue {
@@ -333,11 +343,16 @@ export default class LabelStyle extends Vue {
     frontColorGroup: true,
     backColorGroup: true
   };
-  /**
-   * These are the temp style state for the selected objects. Used to set the color/number/dash/contrast selectors when the user disables the dynamic back styling.
-   */
-  private tempStyleStates: StyleOptions[] = [];
 
+  labelFilter(n: SENodule): boolean {
+    console.debug("Label Filter is called");
+    return n.isLabelable();
+  }
+
+  labelMapper(n: SENodule): Nodule {
+    console.debug("Label mapper is called");
+    return ((n as unknown) as Labelable).label!.ref!;
+  }
   /**
    * These help with redo/redo
    */
@@ -508,7 +523,7 @@ export default class LabelStyle extends Vue {
   /** mounted() is part of VueJS lifecycle hooks */
   mounted(): void {
     // Pass any selected objects when Label Panel is mounted to the onSelection change
-    this.onSelectionChanged(this.selectedSENodules);
+    // this.onSelectionChanged(this.selectedSENodules);
     //  Mount a save listener
     EventBus.listen("save-style-state", this.saveStyleState);
     // EventBus.listen("set-active-style-panel", this.setActivePanel);
@@ -562,13 +577,13 @@ export default class LabelStyle extends Vue {
    * This is an example of the two-way binding that is provided by the Vuex store. As this is a Vue component we can Watch variables, and
    * when they change, this method will execute in response to that change.
    */
-  @Watch("selectedSENodules")
+  // @Watch("selectedSENodules")
   onSelectionChanged(newSelection: SENodule[]): void {
-    console.log(
-      "LabelStyle: onSelectionChanged",
-      newSelection.length,
-      " object selected"
-    );
+    // console.log(
+    //   "LabelStyle: onSelectionChanged",
+    //   newSelection.length,
+    //   " object selected"
+    // );
 
     // Before changing the selections save the state for an undo/redo command (if necessary)
     this.saveStyleState();

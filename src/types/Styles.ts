@@ -130,7 +130,6 @@ export const DEFAULT_ANGLE_MARKER_BACK_STYLE: StyleOptions = {
   strokeColor: SETTINGS.angleMarker.drawn.strokeColor.back,
   strokeWidthPercent: 100,
   dashArray: SETTINGS.angleMarker.drawn.dashArray.back,
-  // TODO: should we also include tickmark and doubleArc for the back style?
   angleMarkerTickMark: SETTINGS.angleMarker.defaultTickMark,
   angleMarkerDoubleArc: SETTINGS.angleMarker.defaultDoubleArc,
   angleMarkerRadiusPercent: 100,
@@ -155,7 +154,7 @@ export const DEFAULT_LABEL_FRONT_STYLE: Partial<StyleOptions> = {
 };
 
 export const DEFAULT_LABEL_BACK_STYLE: Partial<StyleOptions> = {
-  fillColor: SETTINGS.label.fillColor.front,
+  fillColor: SETTINGS.label.fillColor.back,
   dynamicBackStyle: SETTINGS.label.dynamicBackStyle
 };
 
