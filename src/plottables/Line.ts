@@ -187,7 +187,6 @@ export default class Line extends Nodule {
   }
 
   normalDisplay(): void {
-    console.log("normal display in Line");
     this.frontNormalDisplay();
     this.backNormalDisplay();
   }
@@ -200,7 +199,6 @@ export default class Line extends Nodule {
    * call this method once that vector is updated.
    */
   public updateDisplay(): void {
-    console.log("update in Line");
     //Form the X Axis perpendicular to the normalDirection, this is where the plotting will start.
     this.desiredXAxis
       .set(-this._normalVector.y, this._normalVector.x, 0)
@@ -285,7 +283,6 @@ export default class Line extends Nodule {
       this.backHalf.visible = false;
       this.glowingBackHalf.visible = false;
     } else {
-      console.log("set vis in line");
       this.normalDisplay();
     }
   }

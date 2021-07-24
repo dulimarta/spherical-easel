@@ -32,6 +32,7 @@ import { SEEllipse } from "@/models/SEEllipse";
 const MAXNUMBEROFPERPENDICULARS = 10; // maximum number of perpendiculars to a one dimensional through a point across all objects
 import { SEStore } from "@/store";
 import { SEParametric } from "@/models/SEParametric";
+import NonFreeLine from "@/plottables/NonFreeLine";
 
 export default class PerpendicularLineThruPointHandler extends Highlighter {
   /**
@@ -635,26 +636,27 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
       if (this.tmpVector.isZero(SETTINGS.nearlyAntipodalIdeal)) {
         //console.log("parallel normal and sePointVector in handler");
         // In this case any line containing the sePoint will be perpendicular to the line/segment,
-        // grab the temporary normal vector if it has been added otherwise make the perpendicular pass through the
-        // mid point of the start and end vector or if that fails the start vector
-
+        // grab the temporary normal vector if it has been added
+        // otherwise
+        // make the perpendicular pass through the closest point to the click location on the oneDimensionalParent
+        // or
+        // mid point of the start and end vector
+        // or
+        // the start vector
+        const closestPointOnOneDimensionalParent = oneDimensional.closestVector(
+          this.currentSphereVector
+        );
         // In the line and segment case there is always exactly one perpendicular line
         if (this.temporaryLinesAdded[0]) {
           this.tmpVector.copy(this.temporaryNormals[0]);
         } else if (
           !this.tmpVector1
-            .crossVectors(
-              oneDimensional.startSEPoint.locationVector,
-              oneDimensional.endSEPoint.locationVector
-            )
+            .crossVectors(sePointVector, closestPointOnOneDimensionalParent)
             .isZero(SETTINGS.nearlyAntipodalIdeal)
         ) {
           this.tmpVector.crossVectors(
             sePointVector,
-            this.tmpVector1
-              .copy(oneDimensional.startSEPoint.locationVector)
-              .add(oneDimensional.endSEPoint.locationVector)
-              .normalize()
+            closestPointOnOneDimensionalParent
           );
         } else {
           this.tmpVector.crossVectors(
@@ -679,11 +681,30 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
       if (this.tmpVector.isZero(SETTINGS.nearlyAntipodalIdeal)) {
         //console.log("parallel normal and sePointVector in handler");
         // In this case any line containing the sePoint will be perpendicular to the circle,
-        // grab the temporary normal vector if it has been added otherwise make the perpendicular pass through the
-        // circle point
-        // In the circle case there is always exactly one perpendicular line
+
+        // In this case any line containing the sePoint will be perpendicular to the circle,
+        // grab the temporary normal vector if it has been added
+        // otherwise
+        // make the perpendicular pass through the closest point to the click location on the oneDimensionalParent
+        // or
+        // mid point of the start and end vector
+        // or
+        // the start vector
+        const closestPointOnOneDimensionalParent = oneDimensional.closestVector(
+          this.currentSphereVector
+        );
+        // In the line and segment case there is always exactly one perpendicular line
         if (this.temporaryLinesAdded[0]) {
           this.tmpVector.copy(this.temporaryNormals[0]);
+        } else if (
+          !this.tmpVector1
+            .crossVectors(sePointVector, closestPointOnOneDimensionalParent)
+            .isZero(SETTINGS.nearlyAntipodalIdeal)
+        ) {
+          this.tmpVector.crossVectors(
+            sePointVector,
+            closestPointOnOneDimensionalParent
+          );
         } else {
           this.tmpVector.crossVectors(
             sePointVector,
@@ -741,7 +762,7 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
       endSEPoint.locationVector.crossVectors(sePointVector, vec);
 
       // Create a plottable line to display for this perpendicular
-      const plottableLine = new Line();
+      const plottableLine = new NonFreeLine();
       // Stylize the new Line
       plottableLine.stylize(DisplayStyle.ApplyCurrentVariables);
       plottableLine.adjustSize();

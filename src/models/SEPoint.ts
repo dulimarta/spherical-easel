@@ -97,6 +97,7 @@ export class SEPoint extends SENodule implements Visitable, Labelable {
       state.stateArray.push(pointState);
     }
     //#endregion saveState
+    this.markKidsOutOfDate(); // if we don't do this, then some children are updated (at least) twice and the the second update is incorrect.
     this.updateKids(state);
   }
 
