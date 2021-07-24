@@ -8,12 +8,14 @@ import { Component, Prop, Vue, Watch } from "vue-property-decorator";
 import { ScopedSlotChildren } from "vue/types/vnode";
 import Style from "./Style.vue";
 import { namespace } from "vuex-class";
+import { SEStore } from "@/store";
+import EventBus from "@/eventHandlers/EventBus";
 const SE = namespace("se");
 
 @Component
 export default class extends Vue {
   @Prop({ required: true }) readonly panel!: StyleEditPanels;
-  @Prop({ required: true }) readonly styleData!: StyleOptions | null;
+  // @Prop({ required: true }) readonly styleData!: StyleOptions | null;
   @Prop({ required: true }) noduleFilterFunction!: (n: SENodule) => boolean;
   @Prop({ required: true }) noduleMapFunction!: (n: SENodule) => Nodule;
 
@@ -23,12 +25,16 @@ export default class extends Vue {
   commonStyleProperties: Array<string> = [];
   selectedSENodules: Array<SENodule> = [];
   selectedNodules: Array<Nodule> = [];
+  activeStyleOptions: StyleOptions = {};
+  previousStyleOption: StyleOptions = {};
   dataAgreement = true;
 
   render(): ScopedSlotChildren {
     if (this.$scopedSlots.default)
       return this.$scopedSlots.default({
-        agree: this.dataAgreement
+        agreement: this.dataAgreement,
+        styleOptions: this.activeStyleOptions,
+        selectionCount: this.selectedNodules.length
       });
     return {} as ScopedSlotChildren;
     // throw new Error("Default scoped slot is undefined");
@@ -50,6 +56,7 @@ export default class extends Vue {
     console.debug("StyleEditor: object selection changed", newSelection.length);
     this.commonStyleProperties.splice(0);
     this.dataAgreement = true;
+    this.activeStyleOptions = {};
     if (newSelection.length === 0) {
       return;
     }
@@ -65,6 +72,7 @@ export default class extends Vue {
       console.debug("Filtered object", n);
       return n.currentStyleState(this.panel);
     });
+    this.activeStyleOptions = { ...styleOptionsOfSelected[0] };
     const commonProps = styleOptionsOfSelected.flatMap((opt: StyleOptions) =>
       Object.getOwnPropertyNames(opt).filter((s: string) => !s.startsWith("__"))
     );
@@ -107,10 +115,53 @@ export default class extends Vue {
     }
   }
 
-  // @Watch("styleData", { deep: true })
-  // changed(z: StyleOptions): void {
-  //   console.debug("Inside style editor", z);
-  // }
+  @Watch("activeStyleOptions", { deep: true, immediate: true })
+  onStyleOptionsChanged(z: StyleOptions): void {
+    const newOptions = { ...z };
+    console.debug("Inside style editor active style options", newOptions);
+    const oldProps = new Set(
+      Object.getOwnPropertyNames(this.previousStyleOption).filter(
+        (s: string) => !s.startsWith("__")
+      )
+    );
+    const newProps = new Set(
+      Object.getOwnPropertyNames(newOptions).filter(
+        (s: string) => !s.startsWith("__")
+      )
+    );
+    console.debug("Old props", oldProps);
+    console.debug("New props", newProps);
+    const updatedProps = [...newProps].filter((p: string) => oldProps.has(p));
+    const updatePayload: StyleOptions = { ...newOptions };
+
+    console.debug("updated props", updatedProps);
+    // Build the update payload by including only changed values
+    [...updatedProps].forEach((p: string) => {
+      const a = (this.previousStyleOption as any)[p];
+      const b = (newOptions as any)[p];
+      // Exclude the property from payload if it did not change
+      if (a === b) delete (updatePayload as any)[p];
+      else {
+        console.debug(`Property ${p} changed from ${a} to ${b}`);
+        // this.$emit("style-option-change", { prop: p });
+        EventBus.fire("style-option-change", { prop: p });
+      }
+    });
+
+    /* If multiple objects are selected do not update the label text */
+    if (this.selectedNodules.length > 1) delete updatePayload.labelDisplayText;
+    // console.debug(
+    //   "About to update selected objects using payload",
+    //   updatePayload
+    // );
+    if (updatedProps.length > 1) {
+      this.selectedNodules.forEach((n: Nodule) => {
+        // console.debug("Updating style of", n);
+        n.updateStyle(this.panel, updatePayload);
+      });
+    }
+    this.previousStyleOption = { ...newOptions };
+  }
 }
 </script>
 
