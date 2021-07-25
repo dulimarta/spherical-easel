@@ -140,6 +140,7 @@ export class SEPointOnOneDimensional extends SEPoint {
       };
       state.stateArray.push(pointState);
     }
+    this.markKidsOutOfDate(); // if we don't do this, then some children are updated (at least) twice and the the second update is incorrect.
     this.updateKids(state);
   }
 

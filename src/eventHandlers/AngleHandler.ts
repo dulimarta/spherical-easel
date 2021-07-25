@@ -660,7 +660,7 @@ export default class AngleHandler extends Highlighter {
             this.hitSEParametrics[0].glowing = true;
             this.snapPoint = null;
             this.snapOneDimensional = this.hitSEParametrics[0];
-          }else {
+          } else {
             //Nothing nearby so don't snap to anything
             this.snapOneDimensional = null;
             this.snapPoint = null;
@@ -879,6 +879,38 @@ export default class AngleHandler extends Highlighter {
   }
 
   private makeAngleMarkerFromThreePoints(): void {
+    // make sure that this triple of points has not been measured already
+    // this is only possible if all three points are existing points
+    if (this.targetPoints.every(entry => entry !== null)) {
+      let measurementName = "";
+      if (
+        SEStore.expressions.some(exp => {
+          if (
+            exp instanceof SEAngleMarker &&
+            exp.parents[0].name === this.targetPoints[0]?.name && // order matters in angles angle 0 1 2 is different than 2 1 0
+            exp.parents[1].name === this.targetPoints[1]?.name &&
+            exp.parents[2].name === this.targetPoints[2]?.name
+          ) {
+            measurementName = exp.name;
+            return true;
+          } else {
+            return false;
+          }
+        })
+      ) {
+        EventBus.fire("show-alert", {
+          key: `handlers.duplicateThreePointAngleMeasurement`,
+          keyOptions: {
+            pt0Name: `${this.targetPoints[0]?.name}`,
+            pt1Name: `${this.targetPoints[1]?.name}`,
+            pt2Name: `${this.targetPoints[2]?.name}`,
+            measurementName: `${measurementName}`
+          },
+          type: "error"
+        });
+        return;
+      }
+    }
     // Create a command group to add the points defining the circle and the circle to the store
     // This way a single undo click will undo all (potentially three) operations.
     const angleMarkerCommandGroup = new CommandGroup();
@@ -1033,6 +1065,34 @@ export default class AngleHandler extends Highlighter {
   }
 
   private makeAngleMarkerFromTwoLines(): void {
+    // make sure that this pair of lines has not been measured already
+    let measurementName = "";
+    if (
+      SEStore.expressions.some(exp => {
+        if (
+          exp instanceof SEAngleMarker &&
+          exp.parents[0].name === this.targetLines[0]?.name && // order matters in angles angle from L1 to L2 is different than from L2 to L1
+          exp.parents[1].name === this.targetLines[1]?.name
+        ) {
+          measurementName = exp.name;
+          return true;
+        } else {
+          return false;
+        }
+      })
+    ) {
+      EventBus.fire("show-alert", {
+        key: `handlers.duplicateLineAngleMeasurement`,
+        keyOptions: {
+          line0Name: `${this.targetLines[0]?.name}`,
+          line1Name: `${this.targetLines[1]?.name}`,
+          measurementName: `${measurementName}`
+        },
+        type: "error"
+      });
+      return;
+    }
+
     // Create a new angle marker plottable
     const newAngleMarker = new AngleMarker();
     // Set the display to the default values
@@ -1086,6 +1146,34 @@ export default class AngleHandler extends Highlighter {
   }
 
   private makeAngleMarkerFromTwoSegments(): void {
+    // make sure that this pair of segments has not been measured already
+    let measurementName = "";
+    if (
+      SEStore.expressions.some(exp => {
+        if (
+          exp instanceof SEAngleMarker &&
+          exp.parents[0].name === this.targetSegments[0]?.name && // order matters in angles angle from S1 to S2 is different than from S2 to S1
+          exp.parents[1].name === this.targetSegments[1]?.name
+        ) {
+          measurementName = exp.name;
+          return true;
+        } else {
+          return false;
+        }
+      })
+    ) {
+      EventBus.fire("show-alert", {
+        key: `handlers.duplicateSegmentAngleMeasurement`,
+        keyOptions: {
+          seg0Name: `${this.targetSegments[0]?.name}`,
+          seg1Name: `${this.targetSegments[1]?.name}`,
+          measurementName: `${measurementName}`
+        },
+        type: "error"
+      });
+      return;
+    }
+
     // Create a new angle marker plottable
     const newAngleMarker = new AngleMarker();
     // Set the display to the default values
@@ -1168,6 +1256,48 @@ export default class AngleHandler extends Highlighter {
   }
 
   private makeAngleMarkerFromLineAndSegment(): void {
+    // make sure that this segment and line has not been measured already
+    let measurementName = "";
+    if (this.lineSelectedFirst) {
+      SEStore.expressions.some(exp => {
+        if (
+          exp instanceof SEAngleMarker &&
+          exp.firstSEParent.name === this.targetLines[0]?.name && // order matters in angles angle from S1 to S2 is different than from S2 to S1
+          exp.secondSEParent.name === this.targetSegments[0]?.name
+        ) {
+          measurementName = exp.name;
+          return true;
+        } else {
+          return false;
+        }
+      });
+    } else {
+      SEStore.expressions.some(exp => {
+        if (
+          exp instanceof SEAngleMarker &&
+          exp.firstSEParent.name === this.targetSegments[0]?.name &&
+          exp.secondSEParent.name === this.targetLines[0]?.name // order matters in angles angle from S1 to S2 is different than from S2 to S1
+        ) {
+          measurementName = exp.name;
+          return true;
+        } else {
+          return false;
+        }
+      });
+    }
+    if (measurementName !== "") {
+      EventBus.fire("show-alert", {
+        key: `handlers.duplicateSegmentLineAngleMeasurement`,
+        keyOptions: {
+          lineName: `${this.targetLines[0]?.name}`,
+          segName: `${this.targetSegments[0]?.name}`,
+          measurementName: `${measurementName}`
+        },
+        type: "error"
+      });
+      return;
+    }
+
     // Create a new angle marker plottable
     const newAngleMarker = new AngleMarker();
     // Set the display to the default values

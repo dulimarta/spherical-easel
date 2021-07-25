@@ -335,23 +335,37 @@ export default {
     circleCenterSelected:
       "Center of circle selected. Now select a point on the circle.",
     duplicatePointMessage: "Duplicate point. Select another.",
+    duplicatePointDistanceMeasurement:
+      "The distance between points {pt0Name} and {pt1Name} has already been measured. This distance is measurement {measurementName}.",
     newMeasurementAdded: "New measurement {name} added.",
     selectAnotherPoint: "Select the next point.",
+    duplicatePointCoordinateMeasurement:
+      "The coordinates of point {ptName} have already been measured.",
     newSegmentMeasurementAdded: "New measurement {name} added.",
+    duplicateSegmentMeasurement:
+      "The selected segment has already been measured. The length of segment {segName} is measurement {measurementName}.",
     duplicateLineMessage: "Duplicate line. Select another.",
+    duplicateLineAngleMeasurement:
+      "The angle between lines {line0Name} and {line1Name} has already been measured. This angle is measurement {measurementName}.",
     duplicateSegmentMessage: "Duplicate segment. Select another.",
+    duplicateSegmentAngleMeasurement:
+      "The angle between segments {seg0Name} and {seg1Name} has already been measured. This angle is measurement {measurementName}.",
     segmentsWithOutCommonEndpoint:
       "The selected segment does not have a common endpoint with the previously selected one. Select another.",
     segmentWithOutEndpointOnLine:
       "The selected segment does not have a endpoint on the previously selected line. Select another.",
     lineDoesNotContainEndpointOfSegment:
       "The selected line does contain an endpoint on the previously selected segment. Select another.",
+    duplicateSegmentLineAngleMeasurement:
+      "The angle between segment {segName} and line {lineName} has already been measured. This angle is measurement {measurementName}.",
     antipodalPointMessage:
       "The selected point is antipodal or equal to the first selected point. Select another.",
     antipodalPointMessage2:
       "The selected point is antipodal or equal to the second selected point. Select another.",
     newAngleAdded: "New angle measure added.",
     newAngleAddedV2: "New angle measure {name} added.",
+    duplicateThreePointAngleMeasurement:
+      "The angle with vertex {pt1Name}, from {pt0Name} and to {pt2Name} has already been measured. This angle is measurement {measurementName}.",
     selectMorePoints: "Select {needed} more point(s).",
     selectAnotherLineOrSegment: "Select 1 more line or segment.",
     newCoordinatePointMeasurementAdded: "New coordinate measurements added",
@@ -426,7 +440,7 @@ export default {
     calculationDescription: "Calculation based on expression {str}",
     calculationValue: "{token} - Calculation: {val}",
     coordinateOf: "The {axisName} coordinate of point {pt}.",
-    coordOf: "{token} - {axisName} Coord: {val}",
+    coordOf: "{token} - {pt} {axisName} Coord: {val}",
     x: "x",
     y: "y",
     z: "z",

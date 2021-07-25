@@ -46,31 +46,34 @@ export class SEPointCoordinate extends SEExpression {
   public customStyles = (): Set<string> => emptySet;
 
   public get noduleDescription(): string {
+    this.prettyValue;
     switch (this.selector) {
       case CoordinateSelection.X_VALUE:
         return String(
           i18n.t(`objectTree.coordinateOf`, {
             axisName: String(i18n.t(`objectTree.x`)),
-            pt: this.point.label?.ref.shortUserName,
-            val: this.value
+            pt: this.point.label?.ref.shortUserName
+            //val: this.value
           })
         );
       case CoordinateSelection.Y_VALUE:
         return String(
           i18n.t(`objectTree.coordinateOf`, {
             axisName: String(i18n.t(`objectTree.y`)),
-            pt: this.point.label?.ref.shortUserName,
-            val: this.value
+            pt: this.point.label?.ref.shortUserName
+            // val: this.value
           })
         );
       case CoordinateSelection.Z_VALUE:
         return String(
           i18n.t(`objectTree.coordinateOf`, {
             axisName: String(i18n.t(`objectTree.z`)),
-            pt: this.point.label?.ref.shortUserName,
-            val: this.value
+            pt: this.point.label?.ref.shortUserName
+            // val: this.value
           })
         );
+      default:
+        return this.name;
     }
   }
 

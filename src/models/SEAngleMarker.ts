@@ -303,6 +303,13 @@ export class SEAngleMarker extends SEExpression
     );
   }
 
+  get firstSEParent(): SELine | SESegment | SEPoint {
+    return this._firstSEParent;
+  }
+  get secondSEParent(): SELine | SESegment | SEPoint {
+    return this._secondSEParent;
+  }
+
   public isHitAt(
     unitIdealVector: Vector3,
     currentMagnificationFactor: number
