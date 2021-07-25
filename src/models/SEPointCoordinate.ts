@@ -46,6 +46,7 @@ export class SEPointCoordinate extends SEExpression {
   public customStyles = (): Set<string> => emptySet;
 
   public get noduleDescription(): string {
+    this.prettyValue;
     switch (this.selector) {
       case CoordinateSelection.X_VALUE:
         return String(
