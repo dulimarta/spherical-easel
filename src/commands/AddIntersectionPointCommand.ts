@@ -54,7 +54,7 @@ export class AddIntersectionPointCommand extends Command {
   toOpcode(): null | string | Array<string> {
     return [
       "AddIntersectionPoint",
-      /* arg-1 */ this.sePoint,
+      /* arg-1 */ this.sePoint.name,
       /* arg-2 */ this.sePoint.locationVector.toFixed(7),
       /* arg-3 */ this.parent1.name,
       /* arg-4 */ this.parent2.name,

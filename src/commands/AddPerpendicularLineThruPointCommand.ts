@@ -10,6 +10,7 @@ import { Vector3 } from "three";
 import Label from "@/plottables/Label";
 import SETTINGS from "@/global-settings";
 import NonFreePoint from "@/plottables/NonFreePoint";
+import NonFreeLine from "@/plottables/NonFreeLine";
 export class AddPerpendicularLineThruPointCommand extends Command {
   private sePerpendicularLineThruPoint: SEPerpendicularLineThruPoint;
   private parentSEPoint: SEPoint;
@@ -73,12 +74,12 @@ export class AddPerpendicularLineThruPointCommand extends Command {
     const startPoint = objMap.get(tokens[3]) as SEPoint | undefined;
     const perpToLine = objMap.get(tokens[6]) as SEOneDimensional | undefined;
     if (startPoint && perpToLine) {
-      const line = new Line();
+      const line = new NonFreeLine();
       line.stylize(DisplayStyle.ApplyCurrentVariables);
       line.adjustSize();
       const normal = new Vector3();
       normal.from(tokens[2]);
-      5;
+
       const endPoint = new SEPoint(new NonFreePoint());
       endPoint.showing = false;
       endPoint.exists = true;
@@ -100,7 +101,7 @@ export class AddPerpendicularLineThruPointCommand extends Command {
       seLine.exists = tokens[9] === "true";
       objMap.set(tokens[1], seLine);
 
-      const seLabel = new SELabel(new Label(), perpToLine);
+      const seLabel = new SELabel(new Label(), seLine);
       const labelPosition = new Vector3()
         .copy(endPoint.locationVector)
         .add(
