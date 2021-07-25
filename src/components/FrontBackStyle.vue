@@ -1013,23 +1013,6 @@ export default class FrontBackStyle extends Vue {
     }
   }
 
-  enableResetButton(prop: string): void {
-    // Find all the buttons that have the "data-se-props" attribute
-    const candidates = this.$el.querySelectorAll("[data-se-props]");
-    candidates.forEach((el: Element) => {
-      const propList = el.getAttribute("data-se-props")?.split(",");
-
-      // Find which one matche the property name we are looking for
-      if (propList?.find((s: string) => s === prop)) {
-        // Find the flag name needed to (re) enabled the button
-        const flagName = el.getAttribute("data-se-flag") as string;
-
-        // Set the boolean flag controlling its disable behavior
-        (this.disableControl as any)[flagName] = false;
-      }
-    });
-  }
-
   @Watch("activeStyleOptions", { deep: true, immediate: true })
   onActiveStyleOptionsChanged(newVal: StyleOptions | null): void {
     // If no active style, do nothing
@@ -1081,7 +1064,6 @@ export default class FrontBackStyle extends Vue {
         delete (updatePayload as any)[p];
       } else {
         console.debug(`Property ${p} is updated from ${a} to ${b}`);
-        this.enableResetButton(p); // Enable the undo button associated with this property
       }
     });
 

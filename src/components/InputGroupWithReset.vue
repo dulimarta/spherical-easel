@@ -41,28 +41,29 @@ export default class InputGroup extends Vue {
   mounted(): void {
     EventBus.listen("style-option-change", (ev: { prop: string }): void => {
       const selectors = this.inputSelector.split(",");
-      console.debug(
-        "Requested property is",
-        ev.prop,
-        "my selector is",
-        selectors
-      );
+      // console.debug(
+      //   "Requested property is",
+      //   ev.prop,
+      //   "my selector is",
+      //   selectors
+      // );
       const pos = selectors.findIndex((s: string) => {
-        console.debug(`Checking match ${s} vs. ${ev.prop}`);
+        // console.debug(`Checking match ${s} vs. ${ev.prop}`);
         return s === ev.prop;
       });
-      console.debug("Matching tag at", pos);
+      // console.debug("Matching tag at", pos);
       if (pos >= 0) this.resetDisabled = false;
     });
   }
 
   doClear(): void {
-    this.$emit("input-clear");
-    this.resetDisabled = true;
+    EventBus.fire("style-data-clear", { selector: this.inputSelector });
+    // this.resetDisabled = true;
   }
 
   doReset(): void {
-    this.$emit("input-to-default");
+    // console.debug("Emitting event style-data-to-default");
+    EventBus.fire("style-data-to-default", { selector: this.inputSelector });
   }
 }
 </script>

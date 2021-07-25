@@ -47,8 +47,11 @@ export interface AppState {
   intersections: SEIntersectionPoint[];
   expressions: SEExpression[];
   temporaryNodules: Nodule[];
+  // TODO: replace the following two arrays with the maps below
   initialStyleStates: StyleOptions[];
   defaultStyleStates: StyleOptions[];
+  initialStyleStatesMap: Map<StyleEditPanels, StyleOptions[]>;
+  defaultStyleStatesMap: Map<StyleEditPanels, StyleOptions[]>;
   oldStyleSelections: SENodule[];
   styleSavedFromPanel: StyleEditPanels;
   initialBackStyleContrast: number;

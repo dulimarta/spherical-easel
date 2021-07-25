@@ -107,8 +107,11 @@ export default class SE extends VuexModule implements AppState {
   intersections: SEIntersectionPoint[] = [];
   // measurements = [],
   expressions: SEExpression[] = [];
+  // TODO: replace the following arrays with the Map below
   initialStyleStates: StyleOptions[] = [];
   defaultStyleStates: StyleOptions[] = [];
+  initialStyleStatesMap: Map<StyleEditPanels, StyleOptions[]> = new Map();
+  defaultStyleStatesMap: Map<StyleEditPanels, StyleOptions[]> = new Map();
   styleSavedFromPanel = StyleEditPanels.Label;
   initialBackStyleContrast = SETTINGS.style.backStyleContrast;
   inverseTotalRotationMatrix = new Matrix4(); //initially the identity. The composition of all the inverses of the rotation matrices applied to the sphere
@@ -586,6 +589,27 @@ export default class SE extends VuexModule implements AppState {
   //   }
   // },
 
+  @Mutation
+  recordStyleStateByPanel(data: {
+    panel: StyleEditPanels;
+    selected: Array<Nodule>;
+  }): void {
+    console.debug("About to record style", data.selected.length, "objects");
+    const current = data.selected.map((n: Nodule) =>
+      n.currentStyleState(data.panel)
+    );
+    console.debug(
+      "SEStore recording style of selected objects in",
+      StyleEditPanels[data.panel],
+      "with",
+      current
+    );
+    this.initialStyleStatesMap.set(data.panel, current);
+    this.defaultStyleStatesMap.set(
+      data.panel,
+      data.selected.map((n: Nodule) => n.defaultStyleState(data.panel))
+    );
+  }
   @Mutation
   recordStyleState({
     selected, // The selected SENodules that this change applies to, passing this as a argument allows styling to be undone.
