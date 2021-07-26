@@ -480,7 +480,7 @@ export default class Label extends Nodule {
               "(" +
               `${this._value
                 .map(num => num.toFixed(SETTINGS.decimalPrecision))
-                .join(",")}$` +
+                .join(",")}` +
               ")";
           } else {
             let valueDisplayMode;
