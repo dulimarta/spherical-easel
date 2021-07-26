@@ -56,10 +56,12 @@ export default class ParametricCuspParameterValues extends Vue {
 
   mounted(): void {
     EventBus.listen("measurement-selected", this.addVarToExpr.bind(this));
+    EventBus.listen("parametric-clear-data", this.reset);
   }
 
   reset(): void {
     this.tValueExpression = "";
+    this.parsingError = "";
   }
 
   addVarToExpr(param: any): void {

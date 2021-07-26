@@ -86,12 +86,14 @@ export default class ParametricCoordinate extends Vue {
   mounted(): void {
     EventBus.listen("measurement-selected", this.addVarToExpr.bind(this));
     EventBus.listen("test-t-value", this.setTestTValue);
+    EventBus.listen("parametric-clear-data", this.reset);
   }
   setTestTValue(obj: TestTValueType): void {
     this.testTValue = obj.val;
   }
   reset(): void {
     this.coordinateExpression = "";
+    this.parsingError = "";
   }
 
   addVarToExpr(param: any): void {

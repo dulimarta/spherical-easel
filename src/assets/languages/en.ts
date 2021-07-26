@@ -9,7 +9,6 @@ export default {
     ToolsTabToolTip: "Tools",
     UndoLastAction: "Undo last action"
   },
-
   toolGroups: {
     EditTools: "Edit Tools",
     DisplayTools: "Display Tools",
@@ -469,22 +468,16 @@ export default {
     parametricCurves: "Parametric Curves",
 
     parametricCoordinates: "Parametric Formulas",
-    parametricDerivativeCoordinates: "Derivative Formulas",
+
     xParametricCoordinate: "X(t) formula",
     yParametricCoordinate: "Y(t) formula",
     zParametricCoordinate: "Z(t) formula",
     xCoordExpressionTip:
       "An expression (depending on measurement tokens) for the x coordinate for the parametric curve.",
-    xCoordPrimeExpressionTip:
-      "The derivative of the x coordinate formula for the parametric curve.",
     yCoordExpressionTip:
       "An expression (depending on measurement tokens) for the y coordinate for the parametric curve.",
-    yCoordPrimeExpressionTip:
-      "The derivative of the y coordinate formula for the parametric curve.",
     zCoordExpressionTip:
       "An expression (depending on measurement tokens) for the z coordinate for the parametric curve.",
-    zCoordPrimeExpressionTip:
-      "The derivative of the z coordinate formula for the parametric curve.",
     tExpressionData: "Optional Tracing Expressions",
     tMinExpression: "Minimum Parameter Tracing Expression",
     tMinExpressionTip:

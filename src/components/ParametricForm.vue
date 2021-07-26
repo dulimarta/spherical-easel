@@ -309,8 +309,10 @@ export default class ParametricForm extends Vue {
     // See https://mathcurve.com/courbes3d.gb/cycloidspheric/cycloidspheric.shtml
     // https://demonstrations.wolfram.com/SphericalCycloid/
     //a =1/Sqrt[       -(( 2 Cot[w] Csc[w])   / q)+Csc[w]^2 + Csc[w]^2/q^2 ]
+    // const a =
+    //   "1/sqrt(-1*((2/tan(w)*1/sin(w))*1/b)+1/sin(w)^2+1/sin(w)^2*1/b^2)";
     const a =
-      "1/sqrt(-1*((2/tan(w)*1/sin(w))*1/b)+1/sin(w)^2+1/sin(w)^2*1/b^2)";
+      "(-1*((2/tan(w)*1/sin(w))*1/b)+1/sin(w)^2+1/sin(w)^2*1/b^2)^(-1/2)";
 
     //hypocycloid
     // const w = "pi/3";
@@ -448,6 +450,7 @@ export default class ParametricForm extends Vue {
     }
     // the cusp parameter values must all be between tMinNumber and tMaxNumber
     if (
+      this.c1DiscontunityParameterValues.length > 0 &&
       !this.c1DiscontunityParameterValues.every(
         num => this.tNumbers.min <= num && num <= this.tNumbers.max
       )
@@ -717,6 +720,13 @@ export default class ParametricForm extends Vue {
 
     newSEParametric.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
     console.log("add Parametric comands");
+    //reset for another parametric curve.
+    this.coordinateExpressions = { x: "", y: "", z: "" };
+    this.tExpressions = { min: "", max: "" };
+    this.tNumbers = { min: NaN, max: NaN };
+    this.c1DiscontunityParameterValues = [];
+    // clear the entries in the components
+    EventBus.fire("parametric-clear-data", {});
   }
 
   parametricCurveIsUnitCheck(tValues: number[]): null | number {
