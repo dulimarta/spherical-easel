@@ -141,20 +141,22 @@ export default class SimpleColorSelector extends Vue {
   }
 
   onColorChange(data: { hsla: hslaColorType }): void {
-    const col = data.hsla;
-    console.debug("Color changed to", col);
-    const hue = col.h.toFixed(0);
-    const sat = (col.s * 100).toFixed(0) + "%";
-    const lum = (col.l * 100).toFixed(0) + "%";
-    const alpha = col.a.toFixed(3);
-    this.externalColor = `hsla(${hue},${sat},${lum},${alpha})`;
+    if (data.hsla) {
+      const col = data.hsla;
+      // console.debug("Color changed to", col);
+      const hue = col.h.toFixed(0);
+      const sat = (col.s * 100).toFixed(0) + "%";
+      const lum = (col.l * 100).toFixed(0) + "%";
+      const alpha = col.a.toFixed(3);
+      this.externalColor = `hsla(${hue},${sat},${lum},${alpha})`;
+    } else this.externalColor = "N/A";
 
-    console.log(
-      "Color converted from",
-      this.internalColor,
-      "to",
-      this.externalColor
-    );
+    // console.log(
+    //   "Color converted from",
+    //   this.internalColor,
+    //   "to",
+    //   this.externalColor
+    // );
   }
 
   //No Data means noFill or noStroke

@@ -18,6 +18,11 @@ export default class extends Vue {
   @Prop({ required: true }) noduleFilterFunction!: (n: SENodule) => boolean;
   @Prop({ required: true }) noduleMapFunction!: (n: SENodule) => Nodule;
 
+  // automaticBackState is controlled by user
+  // automaticBackStyle : FALSE means she wants to customize back style
+  // automaticBackStyle : TRUE means the program will customize back style
+  @Prop({ default: true }) automaticBackStyle!: boolean;
+
   @SE.State((s: AppState) => s.selectedSENodules)
   readonly allSelectedSENodules!: SENodule[];
 
@@ -33,7 +38,16 @@ export default class extends Vue {
   selectedNodules: Array<Nodule> = [];
   activeStyleOptions: StyleOptions = {};
   previousStyleOption: StyleOptions = {};
+
+  /*
+  When dataAgreement is TRUE
+  * propDynamicBackStyleCommonValue is TRUE when all selected objects 
+    have the dynamicBackStyle = TRUE
+  * propDynamicBackStyleCommonValue is FALSE when all selected objects 
+    have the dynamicBackStyle = FALSE
+  */
   dataAgreement = true;
+  propDynamicBackStyleCommonValue = false;
 
   render(): ScopedSlotChildren {
     if (this.$scopedSlots.default)
@@ -41,11 +55,45 @@ export default class extends Vue {
         agreement: this.dataAgreement,
         styleOptions: this.activeStyleOptions,
         selectionCount: this.selectedNodules.length,
-        forceDataAgreement: this.forceDataAgreement
+        conflictingProps: this.conflictingPropNames,
+
+        enableBackStyleEdit: this.enableBackStyleEdit,
+        automaticBackStyleCommonValue: this.propDynamicBackStyleCommonValue,
+        forceDataAgreement: this.forceDataAgreement,
+        hasStyle: this.hasStyle
       });
     return {} as ScopedSlotChildren;
     // throw new Error("Default scoped slot is undefined");
   }
+
+  get enableBackStyleEdit(): boolean {
+    // Must be in Back panel
+    if (this.panel !== StyleEditPanels.Back) {
+      console.debug(
+        "Enable Back Style Edit? No, becasue the user is NOT editing Back panel"
+      );
+      return false;
+    }
+    // The user wants automatic back styling
+    // [The user does NOT want manual back styling/does NOT want to edit]
+    if (this.automaticBackStyle === false) {
+      console.debug(
+        "Enable Back Style Edit? Yes, becasue the user does not want automaic back style"
+      );
+      return true;
+    }
+    console.debug(
+      "Enable Back Style Edit? It depend on dynamicBackStyleCommonValue: ",
+      !this.propDynamicBackStyleCommonValue
+    );
+    // We got here when the user requested manual editing of back style
+    return !this.propDynamicBackStyleCommonValue;
+  }
+
+  hasStyle(prop: RegExp): boolean {
+    return this.commonStyleProperties.some((x: string) => x.match(prop));
+  }
+
   created(): void {
     // const self = this;
     EventBus.listen("style-data-clear", this.undo.bind(this));
@@ -104,9 +152,16 @@ export default class extends Vue {
     console.debug("Panel changed?");
   }
 
+  @Watch("automaticBackStyle")
+  onAutomaticBackStyleChanged(newVal: boolean): void {
+    //
+    // if (this.panel === StyleEditPanels.Back)
+    // this.propDynamicBackStyleCommonValue =
+  }
+
   @Watch("allSelectedSENodules", { immediate: true })
   onSelectionChanged(newSelection: SENodule[]): void {
-    console.debug("StyleEditor: object selection changed", newSelection.length);
+    // console.debug("StyleEditor: object selection changed", newSelection.length);
     this.commonStyleProperties.splice(0);
     this.dataAgreement = true;
     this.activeStyleOptions = {};
@@ -122,7 +177,7 @@ export default class extends Vue {
     // Save current state so we can reset to this state if needed to
 
     const styleOptionsOfSelected = this.selectedNodules.map((n: Nodule) => {
-      console.debug("Filtered object", n);
+      // console.debug("Filtered object", n);
       return n.currentStyleState(this.panel);
     });
     SEStore.recordStyleStateByPanel({
@@ -136,9 +191,8 @@ export default class extends Vue {
     const uniqueProps = new Set(commonProps);
     this.commonStyleProperties.push(...uniqueProps);
 
-    let propDynamicBackstyleCommonValue: boolean;
     if (this.selectedNodules.length > 1) {
-      propDynamicBackstyleCommonValue = false;
+      this.propDynamicBackStyleCommonValue = false;
       // When multiple plottables are selected, check for possible conflict
       this.conflictingPropNames = this.commonStyleProperties.filter(
         (propName: string) => {
@@ -149,13 +203,12 @@ export default class extends Vue {
           );
           const refValue = (refStyleOption as any)[propName];
           if (propName === "dynamicBackStyle")
-            propDynamicBackstyleCommonValue = refValue;
+            this.propDynamicBackStyleCommonValue = refValue;
           const agreement = this.selectedNodules.every((obj: Nodule) => {
             const thisStyleOption = obj.currentStyleState(this.panel);
             const thisValue = (thisStyleOption as any)[propName];
             if (Array.isArray(thisValue) || Array.isArray(refValue)) {
-              // TODO: Compare dash array
-              return false;
+              return this.dashArrayCompare(thisValue, refValue);
             } else return thisValue === refValue;
           });
           return !agreement;
@@ -171,12 +224,26 @@ export default class extends Vue {
     } else {
       // If we reach this point we have EXACTLY ONE object selected
       const opt = this.selectedNodules[0].currentStyleState(this.panel);
-      propDynamicBackstyleCommonValue =
+      this.propDynamicBackStyleCommonValue =
         (opt as any)["dynamicBackStyle"] ?? false;
       console.debug("Only one object is selected");
     }
   }
 
+  /**
+   * In the following function: undefined, [], [0,0] are equivalent
+   */
+  dashArrayCompare(
+    arr1: Array<number> | undefined,
+    arr2: Array<number> | undefined
+  ): boolean {
+    const a = arr1 || []; // turn undefined into zero-length array
+    const b = arr2 || []; // turn undefined into zero length array
+    if (a.length == 0 && b.length === 0) return true;
+    if (a.length == 0) return b.every((val: number) => val === 0);
+    if (b.length == 0) return a.every((val: number) => val === 0);
+    return a.every((val: number, k: number) => val === b[k]);
+  }
   @Watch("activeStyleOptions", { deep: true, immediate: true })
   onStyleOptionsChanged(z: StyleOptions): void {
     const newOptions = { ...z };
@@ -192,11 +259,11 @@ export default class extends Vue {
       )
     );
     // console.debug("Old props", oldProps);
-    console.debug("New props", newProps);
+    // console.debug("New props", newProps);
     const updatedProps = [...newProps].filter((p: string) => oldProps.has(p));
     const updatePayload: StyleOptions = { ...newOptions };
 
-    console.debug("updated props", updatedProps);
+    // console.debug("updated props", updatedProps);
     // Build the update payload by including only changed values
     [...updatedProps].forEach((p: string) => {
       const a = (this.previousStyleOption as any)[p];
@@ -204,7 +271,7 @@ export default class extends Vue {
       // Exclude the property from payload if it did not change
       if (a === b) delete (updatePayload as any)[p];
       else {
-        console.debug(`Property ${p} changed from ${a} to ${b}`);
+        // console.debug(`Property ${p} changed from ${a} to ${b}`);
         // this.$emit("style-option-change", { prop: p });
         EventBus.fire("style-option-change", { prop: p });
       }
@@ -227,7 +294,10 @@ export default class extends Vue {
 
   forceDataAgreement(): void {
     console.debug("User overrides data disagreement");
+    if (this.panel === StyleEditPanels.Back)
+      this.propDynamicBackStyleCommonValue = true;
   }
+
   areEquivalentStyleOptions(
     opt1: StyleOptions | undefined,
     opt2: StyleOptions | undefined

@@ -173,7 +173,6 @@ import EventBus from "@/eventHandlers/EventBus";
 import SimpleNumberSelector from "@/components/SimpleNumberSelector.vue";
 import SimpleColorSelector from "@/components/SimpleColorSelector.vue";
 import i18n from "../i18n";
-import HintButton from "@/components/HintButton.vue";
 import OverlayWithFixButton from "@/components/OverlayWithFixButton.vue";
 import StyleEditor from "@/components/StyleEditor.vue";
 const SE = namespace("se");
@@ -191,7 +190,6 @@ type labelDisplayModeItem = {
     FadeInCard,
     SimpleNumberSelector,
     SimpleColorSelector,
-    HintButton,
     OverlayWithFixButton,
     StyleEditor,
     InputGroup
