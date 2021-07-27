@@ -5,11 +5,11 @@
       :nodule-map-function="objectMapper"
       :automatic-back-style="usingAutomaticBackStyle">
       <div
-        slot-scope="{agreement, forceDataAgreement, hasStyle, styleOptions,conflictingProps, enableBackStyleEdit, automaticBackStyleCommonValue}">
+        slot-scope="{agreement, forceDataAgreement, hasStyle, styleOptions, conflictingProps, enableBackStyleEdit, automaticBackStyleCommonValue}">
         <ul>
           <li>Conclict list: {{conflictingProps}}</li>
           <li>Data agreement: {{agreement}}</li>
-          <!-- <li>Style Opt: {{styleOptions}}</li> -->
+          <li>Style Opt: {{styleOptions}}</li>
           <li>Enable Back Style edit?
             {{enableBackStyleEdit}}</li>
           <li>Automatic Back Style Common Value
@@ -166,7 +166,7 @@
               class="text-subtitle-2"
               style="color:red">{{" "+ $t("style.labelStyleOptionsMultiple") }}</span>
             <span v-show="!emptyDashPattern">
-              {{ activeDashPattern }}
+              {{ activeDashPattern(styleOptions) }}
             </span>
             <!-- The dash property slider -->
             <v-range-slider v-model="styleOptions.dashArray"
@@ -177,12 +177,14 @@
               type="range"
               dense>
               <template v-slot:prepend>
-                <v-icon @click="decrementDashPattern">mdi-minus
+                <v-icon @click="decrementDashPattern(styleOptions)">
+                  mdi-minus
                 </v-icon>
               </template>
 
               <template v-slot:append>
-                <v-icon @click="incrementDashPattern">mdi-plus</v-icon>
+                <v-icon @click="incrementDashPattern(styleOptions)">
+                  mdi-plus</v-icon>
               </template>
             </v-range-slider>
             <!-- Dis/enable Dash Pattern, Undo and Reset to Defaults buttons -->
@@ -201,7 +203,7 @@
                           :true-value="false"
                           :label="$t('style.dashPattern')"
                           color="indigo darken-3"
-                          @change="toggleDashPatternSliderAvailibity"
+                          @change="toggleDashPatternSliderAvailibity(styleOptions)"
                           hide-details
                           x-small
                           dense></v-checkbox>
@@ -261,7 +263,6 @@ import StyleEditor from "@/components/StyleEditor.vue";
 import InputGroup from "@/components/InputGroupWithReset.vue";
 import FadeInCard from "@/components/FadeInCard.vue";
 import { AppState } from "@/types";
-import { StyleNoduleCommand } from "@/commands/StyleNoduleCommand";
 import EventBus from "@/eventHandlers/EventBus";
 import NumberSelector from "@/components/NumberSelector.vue";
 import SimpleNumberSelector from "@/components/SimpleNumberSelector.vue";
@@ -270,7 +271,6 @@ import ColorSelector from "@/components/ColorSelector.vue";
 import i18n from "../i18n";
 import HintButton from "@/components/HintButton.vue";
 import OverlayWithFixButton from "@/components/OverlayWithFixButton.vue";
-import { SEStore } from "@/store";
 const SE = namespace("se");
 
 @Component({
@@ -388,8 +388,6 @@ export default class FrontBackStyle extends Vue {
     "Same"
   ];
 
-  private activeStyleOptions: StyleOptions | null = null;
-
   created(): void {
     for (
       let s = SETTINGS.style.minStrokeWidthPercent;
@@ -428,16 +426,16 @@ export default class FrontBackStyle extends Vue {
   get editModeIsFront(): boolean {
     return this.panel === StyleEditPanels.Front;
   }
-  get activeDashPattern(): string {
-    if (this.activeStyleOptions && this.activeStyleOptions.dashArray) {
-      const dashLength = this.activeStyleOptions.dashArray[0];
-      const gapLength = this.activeStyleOptions.dashArray[1];
-      return `(${dashLength}/${gapLength})`;
-    } else return "";
-  }
 
   get allObjectsShowing(): boolean {
     return this.selectedSENodules.every(node => node.showing);
+  }
+  activeDashPattern(opt: StyleOptions): string {
+    if (opt.dashArray) {
+      const dashLength = opt.dashArray[0];
+      const gapLength = opt.dashArray[1];
+      return `(${dashLength}/${gapLength})`;
+    } else return "";
   }
 
   toggleShowMoreLabelStyles(): void {
@@ -468,40 +466,22 @@ export default class FrontBackStyle extends Vue {
     });
   }
 
-  toggleDashPatternSliderAvailibity(): void {
+  toggleDashPatternSliderAvailibity(opt: StyleOptions): void {
+    this.sliderDashArray.splice(0);
     if (!this.emptyDashPattern) {
-      this.sliderDashArray.clear();
       this.sliderDashArray.push(this.gapLength as number);
       this.sliderDashArray.push(
         (this.dashLength as number) + (this.gapLength as number)
       );
 
-      // SEStore.changeStyle({
-      //   selected: this.selectedNodules,
-      //   panel: this.panel,
-      //   payload: {
-      //     dashArray: [this.dashLength, this.gapLength]
-      //   }
-      // });
-      if (this.activeStyleOptions && this.activeStyleOptions.dashArray)
-        this.activeStyleOptions.dashArray = [this.dashLength, this.gapLength];
+      if (opt.dashArray) opt.dashArray = [this.dashLength, this.gapLength];
     } else {
-      // SEStore.changeStyle({
-      //   selected: this.selectedSENodules,
-      //   panel: this.panel,
-      //   payload: {
-      //     dashArray: []
-      //   }
-      // });
-      this.sliderDashArray.clear();
       this.sliderDashArray.push(4);
       this.sliderDashArray.push(16);
-      if (this.activeStyleOptions && this.activeStyleOptions.dashArray)
-        delete this.activeStyleOptions.dashArray;
+      if (opt.dashArray) opt.dashArray = [0, 0];
     }
-    // this.emptyDashPattern = !this.emptyDashPattern;
   }
-  incrementDashPattern(): void {
+  incrementDashPattern(opt: StyleOptions): void {
     // increasing the value of the sliderDashArray[1] increases the length of the dash
     if (
       this.sliderDashArray[1] + 1 <=
@@ -510,20 +490,17 @@ export default class FrontBackStyle extends Vue {
       Vue.set(this.sliderDashArray, 1, this.sliderDashArray[1] + 1); // trigger the update
       this.gapLength = this.sliderDashArray[0];
       this.dashLength = this.sliderDashArray[1] - this.sliderDashArray[0];
-      if (this.activeStyleOptions && this.activeStyleOptions.dashArray) {
+      if (opt.dashArray) {
         console.debug(
           "Updating styleoption dash array +1",
           this.sliderDashArray
         );
 
-        Vue.set(this.activeStyleOptions, "dashArray", [
-          this.dashLength,
-          this.gapLength
-        ]);
+        Vue.set(opt, "dashArray", [this.dashLength, this.gapLength]);
       }
     }
   }
-  decrementDashPattern(): void {
+  decrementDashPattern(opt: StyleOptions): void {
     // increasing the value of the sliderDashArray[0] decreases the length of the dash
     if (
       this.sliderDashArray[0] + 1 <=
@@ -533,15 +510,12 @@ export default class FrontBackStyle extends Vue {
       Vue.set(this.sliderDashArray, 0, this.sliderDashArray[0] + 1);
       this.gapLength = this.sliderDashArray[0];
       this.dashLength = this.sliderDashArray[1] - this.sliderDashArray[0];
-      if (this.activeStyleOptions && this.activeStyleOptions.dashArray) {
+      if (opt.dashArray) {
         console.debug(
           "Updating styleoption dash array -1",
           this.sliderDashArray
         );
-        Vue.set(this.activeStyleOptions, "dashArray", [
-          this.dashLength,
-          this.gapLength
-        ]);
+        Vue.set(opt, "dashArray", [this.dashLength, this.gapLength]);
       }
     }
     /** TODO:
@@ -555,7 +529,6 @@ export default class FrontBackStyle extends Vue {
   onBackStyleContrastChange(): void {
     console.debug("Background contrast updated to", this.backStyleContrast);
     Nodule.setBackStyleContrast(this.backStyleContrast);
-    console.debug("Changing Global backstyle contrast");
     this.selectedSENodules.forEach((n: SENodule) => {
       n.ref?.stylize(DisplayStyle.ApplyCurrentVariables);
     });
@@ -563,15 +536,8 @@ export default class FrontBackStyle extends Vue {
 
   toggleBackStyleOptionsAvailability(): void {
     this.usingAutomaticBackStyle = !this.usingAutomaticBackStyle;
-
-    // SEStore.changeStyle({
-    //   selected: this.selectedSENodules,
-    //   panel: this.panel,
-    //   payload: {
-    //     dynamicBackStyle: this.usingAutomaticBackStyle
-    //   }
-    // });
   }
+
   incrementBackStyleContrast(): void {
     if (this.usingAutomaticBackStyle && this.backStyleContrast + 0.1 <= 1) {
       this.backStyleContrast += 0.1;
