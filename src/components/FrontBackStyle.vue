@@ -73,8 +73,8 @@
             <span>{{ $t("style.backStyleContrastToolTip") }}</span>
           </v-tooltip>
         </InputGroup>
-        <v-card color="red">
-          ******* Where are we **************?
+        <v-card>
+
           <OverlayWithFixButton v-if="conflictingProps.length > 0"
             z-index="1"
             i18n-title-line="style.styleDisagreement"
@@ -88,7 +88,7 @@
             v-if="editModeIsBack && !enableBackStyleEdit"
             z-index="50"
             i18n-title-line="style.dynamicBackStyleHeader"
-            i18n-subtitle-line="To allow style customization, back styling must be disabled"
+            i18n-subtitle-line="To allow style customization, automatic back styling must be disabled"
             i18n-button-label="style.disableDynamicBackStyle"
             i18n-button-tool-tip="style.disableDynamicBackStyleToolTip"
             @click="toggleBackStyleOptionsAvailability">
@@ -117,7 +117,6 @@
           </InputGroup>
         </v-card>
         <div v-show="showMoreLabelStyles">
-          More widgets below this line
           <InputGroup input-selector="pointRadiusPercent"
             v-if="hasStyle(/pointRadiusPercent/)">
             <!--- Front/Back Point Radius Number Selector -->
@@ -306,11 +305,14 @@ export default class FrontBackStyle extends Vue {
   @SE.State((s: AppState) => s.styleSavedFromPanel)
   readonly styleSavedFromPanel!: StyleEditPanels;
 
+  /* Include only those objects that have a plottable */
   objectFilter(n: SENodule): boolean {
     return n.ref !== undefined;
   }
 
+  /* Map the object to its plottable */
   objectMapper(n: SENodule): Nodule {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     return n.ref!;
   }
 
@@ -474,23 +476,23 @@ export default class FrontBackStyle extends Vue {
         (this.dashLength as number) + (this.gapLength as number)
       );
 
-      SEStore.changeStyle({
-        selected: this.selectedSENodules,
-        panel: this.panel,
-        payload: {
-          dashArray: [this.dashLength, this.gapLength]
-        }
-      });
+      // SEStore.changeStyle({
+      //   selected: this.selectedNodules,
+      //   panel: this.panel,
+      //   payload: {
+      //     dashArray: [this.dashLength, this.gapLength]
+      //   }
+      // });
       if (this.activeStyleOptions && this.activeStyleOptions.dashArray)
         this.activeStyleOptions.dashArray = [this.dashLength, this.gapLength];
     } else {
-      SEStore.changeStyle({
-        selected: this.selectedSENodules,
-        panel: this.panel,
-        payload: {
-          dashArray: []
-        }
-      });
+      // SEStore.changeStyle({
+      //   selected: this.selectedSENodules,
+      //   panel: this.panel,
+      //   payload: {
+      //     dashArray: []
+      //   }
+      // });
       this.sliderDashArray.clear();
       this.sliderDashArray.push(4);
       this.sliderDashArray.push(16);
@@ -562,13 +564,13 @@ export default class FrontBackStyle extends Vue {
   toggleBackStyleOptionsAvailability(): void {
     this.usingAutomaticBackStyle = !this.usingAutomaticBackStyle;
 
-    SEStore.changeStyle({
-      selected: this.selectedSENodules,
-      panel: this.panel,
-      payload: {
-        dynamicBackStyle: this.usingAutomaticBackStyle
-      }
-    });
+    // SEStore.changeStyle({
+    //   selected: this.selectedSENodules,
+    //   panel: this.panel,
+    //   payload: {
+    //     dynamicBackStyle: this.usingAutomaticBackStyle
+    //   }
+    // });
   }
   incrementBackStyleContrast(): void {
     if (this.usingAutomaticBackStyle && this.backStyleContrast + 0.1 <= 1) {

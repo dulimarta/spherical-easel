@@ -72,7 +72,7 @@ export default class Label extends Nodule {
    * the three coordinate values.
    */
   protected _shortUserName = "";
-  // protected _caption = "";
+  protected _caption = "";
   protected _value: number[] = [];
 
   /**
@@ -212,10 +212,12 @@ export default class Label extends Nodule {
    * Return and set the caption associated with this object
    */
   get caption(): string {
-    const labelStyle = this.styleOptions.get(StyleEditPanels.Label);
-    return labelStyle?.labelDisplayCaption ?? "No Label";
+    // const labelStyle = this.styleOptions.get(StyleEditPanels.Label);
+    // return labelStyle?.labelDisplayCaption ?? "No Label";
+    return this._caption;
   }
   set caption(cap: string) {
+    this._caption = cap;
     this.updateStyle(StyleEditPanels.Label, {
       labelDisplayCaption: cap
     });
@@ -378,10 +380,19 @@ export default class Label extends Nodule {
    * @param options The style options
    */
   updateStyle(mode: StyleEditPanels, options: StyleOptions): void {
-    if (options.labelDisplayText) {
-      this._shortUserName = options.labelDisplayText;
-    }
     super.updateStyle(mode, options);
+    if (options.labelDisplayText) {
+      this._shortUserName = options.labelDisplayText.slice(
+        0,
+        SETTINGS.label.maxLabelDisplayTextLength
+      );
+    }
+
+    if (options.labelDisplayCaption)
+      this._caption = options.labelDisplayCaption.slice(
+        0,
+        SETTINGS.label.maxLabelDisplayCaptionLength
+      );
   }
 
   /**

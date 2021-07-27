@@ -201,13 +201,13 @@ export default class LabelStyle extends Vue {
   @SE.State((s: AppState) => s.selectedSENodules)
   readonly selectedSENodules!: SENodule[];
 
+  // Include only those objects that have SELabel
   labelFilter(n: SENodule): boolean {
-    console.debug("Label Filter is called");
     return n.isLabelable();
   }
 
+  // Map each object to its plotabble label
   labelMapper(n: SENodule): Nodule {
-    console.debug("Label mapper is called");
     return ((n as unknown) as Labelable).label!.ref!;
   }
 
@@ -224,9 +224,6 @@ export default class LabelStyle extends Vue {
   private showMoreLabelStyles = false;
   private moreOrLessText = i18n.t("style.moreStyleOptions"); // The text for the button to toggle between less/more options
 
-  // Using deep watcher, VueJS does not keep track the old object
-  // We have to manage it ourself
-  private activeStyleOptions: StyleOptions | null = null;
   private maxLabelDisplayTextLength = SETTINGS.label.maxLabelDisplayTextLength;
   private labelDisplayTextErrorMessageKey = "";
   private labelDisplayTestResults = [true, true];
@@ -368,13 +365,6 @@ export default class LabelStyle extends Vue {
   // These methods are linked to the Style Data fade-in-card
   labelDisplayTextCheck(txt: string | undefined): boolean | string {
     if (txt && txt.length > SETTINGS.label.maxLabelDisplayTextLength) {
-      setTimeout(() => {
-        if (this.activeStyleOptions)
-          this.activeStyleOptions.labelDisplayText = txt.substr(
-            0,
-            SETTINGS.label.maxLabelDisplayTextLength
-          );
-      }, 3000);
       return this.$t("style.maxMinLabelDisplayTextLengthWarning", {
         max: SETTINGS.label.maxLabelDisplayTextLength
       }) as string;
@@ -383,22 +373,11 @@ export default class LabelStyle extends Vue {
   }
   labelDisplayCaptionCheck(txt: string | undefined): boolean | string {
     if (txt && txt.length > SETTINGS.label.maxLabelDisplayCaptionLength) {
-      setTimeout(() => {
-        if (this.activeStyleOptions)
-          this.activeStyleOptions.labelDisplayCaption = txt.substr(
-            0,
-            SETTINGS.label.maxLabelDisplayCaptionLength
-          );
-      }, 3000);
       return this.$t("style.maxMinLabelDisplayTextLengthWarning", {
         max: SETTINGS.label.maxLabelDisplayTextLength
       }) as string;
     }
     return true;
-  }
-
-  setStyleDataAgreement(): void {
-    console.debug("What goes here???");
   }
 
   //This controls if the labelDisplayModeItems include ValueOnly and NameAndValue (When no value in the Label)\

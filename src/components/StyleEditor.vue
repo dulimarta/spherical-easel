@@ -9,8 +9,13 @@ import { ScopedSlotChildren } from "vue/types/vnode";
 import { namespace } from "vuex-class";
 import { SEStore } from "@/store";
 import EventBus from "@/eventHandlers/EventBus";
+import { StyleNoduleCommand } from "@/commands/StyleNoduleCommand";
 const SE = namespace("se");
-
+type StyleOptionDiff = {
+  prop: string;
+  oldValue: string | number | Array<number> | undefined;
+  newValue: string | number | Array<number> | undefined;
+};
 @Component
 export default class extends Vue {
   @Prop({ required: true }) readonly panel!: StyleEditPanels;
@@ -32,12 +37,16 @@ export default class extends Vue {
   @SE.State((s: AppState) => s.defaultStyleStatesMap)
   readonly defaultStatesMap!: Map<StyleEditPanels, StyleOptions[]>;
 
+  @SE.State((s: AppState) => s.oldStyleSelections)
+  readonly oldStyleSelections!: SENodule[];
+
   commonStyleProperties: Array<string> = [];
   conflictingPropNames: Array<string> = [];
   selectedSENodules: Array<SENodule> = [];
   selectedNodules: Array<Nodule> = [];
+  previousSelectedNodules: Array<Nodule> = [];
   activeStyleOptions: StyleOptions = {};
-  previousStyleOption: StyleOptions = {};
+  previousStyleOptions: StyleOptions = {};
 
   /*
   When dataAgreement is TRUE
@@ -98,9 +107,7 @@ export default class extends Vue {
     // const self = this;
     EventBus.listen("style-data-clear", this.undo.bind(this));
     EventBus.listen("style-data-to-default", this.restoreDefault.bind(this));
-    EventBus.listen("save-style-state", () => {
-      console.error("Missing event listener for save-style-state");
-    });
+    EventBus.listen("save-style-state", this.saveStyleState.bind(this));
   }
   mounted(): void {
     console.debug(
@@ -162,6 +169,8 @@ export default class extends Vue {
   @Watch("allSelectedSENodules", { immediate: true })
   onSelectionChanged(newSelection: SENodule[]): void {
     // console.debug("StyleEditor: object selection changed", newSelection.length);
+
+    this.saveStyleState();
     this.commonStyleProperties.splice(0);
     this.dataAgreement = true;
     this.activeStyleOptions = {};
@@ -171,18 +180,20 @@ export default class extends Vue {
 
     console.debug("***********************");
     this.selectedSENodules = newSelection.filter(this.noduleFilterFunction);
-    console.debug("Selected SENodules", this.selectedNodules);
     this.selectedNodules = this.selectedSENodules.map(this.noduleMapFunction);
+    console.debug("Selected SENodules", this.selectedSENodules);
     console.debug("Selected plottables", this.selectedNodules);
-    // Save current state so we can reset to this state if needed to
+    SEStore.setOldStyleSelection(this.selectedSENodules);
 
+    // Save current state so we can reset to this state if needed to
     const styleOptionsOfSelected = this.selectedNodules.map((n: Nodule) => {
       // console.debug("Filtered object", n);
       return n.currentStyleState(this.panel);
     });
-    SEStore.recordStyleStateByPanel({
+    SEStore.recordStyleState({
       panel: this.panel,
-      selected: this.selectedNodules
+      selected: this.selectedNodules,
+      backContrast: Nodule.backStyleContrast
     });
     this.activeStyleOptions = { ...styleOptionsOfSelected[0] };
     const commonProps = styleOptionsOfSelected.flatMap((opt: StyleOptions) =>
@@ -204,10 +215,15 @@ export default class extends Vue {
           const refValue = (refStyleOption as any)[propName];
           if (propName === "dynamicBackStyle")
             this.propDynamicBackStyleCommonValue = refValue;
+          else if (propName === "dashArray") {
+            if (Array.isArray(refValue) && refValue.length === 0)
+              refValue.push(0, 0);
+          }
           const agreement = this.selectedNodules.every((obj: Nodule) => {
             const thisStyleOption = obj.currentStyleState(this.panel);
             const thisValue = (thisStyleOption as any)[propName];
             if (Array.isArray(thisValue) || Array.isArray(refValue)) {
+              if (thisValue.length === 0) thisValue.push(0, 0);
               return this.dashArrayCompare(thisValue, refValue);
             } else return thisValue === refValue;
           });
@@ -224,10 +240,13 @@ export default class extends Vue {
     } else {
       // If we reach this point we have EXACTLY ONE object selected
       const opt = this.selectedNodules[0].currentStyleState(this.panel);
+      if (opt.dashArray && opt.dashArray.length === 0) opt.dashArray.push(0, 0);
       this.propDynamicBackStyleCommonValue =
         (opt as any)["dynamicBackStyle"] ?? false;
       console.debug("Only one object is selected");
     }
+    this.previousSelectedNodules.splice(0);
+    this.previousSelectedNodules.push(...this.selectedNodules);
   }
 
   /**
@@ -244,12 +263,13 @@ export default class extends Vue {
     if (b.length == 0) return a.every((val: number) => val === 0);
     return a.every((val: number, k: number) => val === b[k]);
   }
+
   @Watch("activeStyleOptions", { deep: true, immediate: true })
   onStyleOptionsChanged(z: StyleOptions): void {
     const newOptions = { ...z };
     // console.debug("Inside style editor active style options", newOptions);
     const oldProps = new Set(
-      Object.getOwnPropertyNames(this.previousStyleOption).filter(
+      Object.getOwnPropertyNames(this.previousStyleOptions).filter(
         (s: string) => !s.startsWith("__")
       )
     );
@@ -266,13 +286,12 @@ export default class extends Vue {
     // console.debug("updated props", updatedProps);
     // Build the update payload by including only changed values
     [...updatedProps].forEach((p: string) => {
-      const a = (this.previousStyleOption as any)[p];
+      const a = (this.previousStyleOptions as any)[p];
       const b = (newOptions as any)[p];
       // Exclude the property from payload if it did not change
       if (a === b) delete (updatePayload as any)[p];
       else {
         // console.debug(`Property ${p} changed from ${a} to ${b}`);
-        // this.$emit("style-option-change", { prop: p });
         EventBus.fire("style-option-change", { prop: p });
       }
     });
@@ -289,53 +308,61 @@ export default class extends Vue {
         n.updateStyle(this.panel, updatePayload);
       });
     }
-    this.previousStyleOption = { ...newOptions };
+    this.previousStyleOptions = { ...z };
   }
 
   forceDataAgreement(): void {
     console.debug("User overrides data disagreement");
+    this.dataAgreement = true;
+    this.conflictingPropNames.splice(0);
     if (this.panel === StyleEditPanels.Back)
       this.propDynamicBackStyleCommonValue = true;
   }
 
-  areEquivalentStyleOptions(
+  compute_diff(
     opt1: StyleOptions | undefined,
     opt2: StyleOptions | undefined
-  ): boolean {
-    function arrayEquivalentArray(
-      arr1: Array<string | number>,
-      arr2: Array<string | number>
-    ): boolean {
-      return false;
+  ): Array<StyleOptionDiff> {
+    if (!opt1 && !opt2) return [];
+    const diffOut: Array<StyleOptionDiff> = [];
+    if (!opt1) {
+      for (const p in opt2) {
+        diffOut.push({
+          prop: p,
+          oldValue: undefined,
+          newValue: (opt2 as any)[p]
+        });
+      }
+      return diffOut;
     }
+    if (!opt2) {
+      for (const p in opt1) {
+        diffOut.push({
+          prop: p,
+          oldValue: (opt2 as any)[p],
+          newValue: undefined
+        });
+      }
+      return diffOut;
+    }
+    const nameArr: Array<string> = [
+      ...Object.getOwnPropertyNames(opt1),
+      ...Object.getOwnPropertyNames(opt2)
+    ].filter((s: string) => !s.startsWith("__"));
 
-    const aProps = opt1
-      ? Object.getOwnPropertyNames(opt1).filter(
-          (s: string) => !s.startsWith("__")
-        )
-      : []; // Set to an empty array of the arg is undefined or null
-    const bProps = opt2
-      ? Object.getOwnPropertyNames(opt2).filter(
-          (s: string) => !s.startsWith("__")
-        )
-      : []; // Set to an empty array of the arg is undefined or null
-    if (aProps.length !== bProps.length)
-      throw new Error(
-        "Attempted to compare two different length StyleOptions in areEquivalentStyles"
-      );
+    const allPropNames = new Set(nameArr);
 
     // Verify equivalence of all the style properties
-    return [...aProps].every((p: string) => {
-      const aVal = (aProps as any)[p];
-      const bVal = (bProps as any)[p];
-      if (typeof aVal !== typeof bVal) return false;
-      if (typeof aVal == "number") return Math.abs(aVal - bVal) < 1e-8;
-      else if (Array.isArray(aVal) && Array.isArray(bVal))
-        return arrayEquivalentArray(aVal, bVal);
-      else if (typeof aVal === "object")
-        throw new Error("Object comparison is not currently supported");
-      else return aVal === bVal;
+    [...allPropNames].forEach((p: string) => {
+      const aVal = (opt1 as any)[p];
+      const bVal = (opt2 as any)[p];
+      if (Array.isArray(aVal) && Array.isArray(bVal)) {
+        if (!this.dashArrayCompare(aVal, bVal))
+          diffOut.push({ prop: p, oldValue: aVal, newValue: bVal });
+      } else if (aVal != bVal)
+        diffOut.push({ prop: p, oldValue: aVal, newValue: bVal });
     });
+    return diffOut;
   }
 
   areEquivalentStyles(
@@ -347,11 +374,45 @@ export default class extends Vue {
     }
 
     // The outer every runs on the two input arguments
-    const compare = styleStates1.every((a: StyleOptions, i: number) =>
-      this.areEquivalentStyleOptions(a, styleStates2[i])
+    const compare = styleStates1.every(
+      (a: StyleOptions, i: number) =>
+        this.compute_diff(a, styleStates2[i]).length === 0
     );
     console.debug("areEquivalentStyles?", compare);
     return compare;
+  }
+
+  saveStyleState(): void {
+    if (this.oldStyleSelections.length > 0) {
+      console.debug(
+        "Number of previously selected object? ",
+        this.previousSelectedNodules.length
+      );
+      console.debug(
+        "Number of currently selected object? ",
+        this.selectedNodules.length
+      );
+      const prev = this.initialStatesMap.get(this.panel) ?? [];
+      const curr = this.selectedNodules.map((n: Nodule) =>
+        n.currentStyleState(this.panel)
+      );
+      if (!this.areEquivalentStyles(prev, curr)) {
+        console.debug("Must issue StyleNoduleCommand");
+        console.debug("Previous style", prev);
+        console.debug("Next style", curr);
+        new StyleNoduleCommand(
+          this.selectedNodules,
+          this.panel,
+          curr,
+          prev
+        ).push();
+      } else {
+        console.debug("Eveything stayed unchanged");
+      }
+      SEStore.setOldStyleSelection([]);
+    } else {
+      console.debug("No dirty selection");
+    }
   }
 }
 </script>
