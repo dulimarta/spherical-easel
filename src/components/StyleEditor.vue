@@ -1,7 +1,7 @@
 
 <script lang="ts">
 import { SENodule } from "@/models/SENodule";
-import Nodule from "@/plottables/Nodule";
+import Nodule, { DisplayStyle } from "@/plottables/Nodule";
 import { AppState } from "@/types";
 import { StyleEditPanels, StyleOptions } from "@/types/Styles";
 import { Component, Prop, Vue, Watch } from "vue-property-decorator";
@@ -10,6 +10,8 @@ import { namespace } from "vuex-class";
 import { SEStore } from "@/store";
 import EventBus from "@/eventHandlers/EventBus";
 import { StyleNoduleCommand } from "@/commands/StyleNoduleCommand";
+import App from "@/App.vue";
+import SETTINGS from "@/global-settings";
 const SE = namespace("se");
 type StyleOptionDiff = {
   prop: string;
@@ -39,6 +41,9 @@ export default class extends Vue {
 
   @SE.State((s: AppState) => s.oldStyleSelections)
   readonly oldStyleSelections!: SENodule[];
+
+  @SE.State((s: AppState) => s.initialBackStyleContrast)
+  readonly initialBackStyleContrast!: number;
 
   commonStyleProperties: Array<string> = [];
   conflictingPropNames: Array<string> = [];
@@ -132,25 +137,34 @@ export default class extends Vue {
     });
   }
   undo(ev: { selector: string }): void {
-    // console.debug(
-    //   StyleEditPanels[this.panel],
-    //   `: restore style state ${ev.selector} to start of edit session`
-    // );
-    const styleData = this.initialStatesMap.get(this.panel);
-    if (styleData) {
-      const listOfProps = ev.selector.split(",");
-      this.restoreTo(listOfProps, styleData);
+    console.debug("Restoring to start of selection", ev.selector);
+    if (ev.selector !== "backStyleContrast") {
+      const styleData = this.initialStatesMap.get(this.panel);
+      if (styleData) {
+        const listOfProps = ev.selector.split(",");
+        this.restoreTo(listOfProps, styleData);
+      }
+    } else {
+      Nodule.setBackStyleContrast(this.initialBackStyleContrast);
+      console.debug("Changing Global backstyle contrast");
+      this.selectedSENodules.forEach((n: SENodule) => {
+        n.ref?.stylize(DisplayStyle.ApplyCurrentVariables);
+      });
     }
   }
   restoreDefault(ev: { selector: string }): void {
-    // console.debug(
-    //   StyleEditPanels[this.panel],
-    //   `: restore style state ${ev.selector} to default settings`
-    // );
-    const styleData = this.defaultStatesMap.get(this.panel);
-    if (styleData) {
-      const listOfProps = ev.selector.split(",");
-      this.restoreTo(listOfProps, styleData);
+    console.debug("Restoring to default", ev.selector);
+    if (ev.selector !== "backStyleContrast") {
+      const styleData = this.defaultStatesMap.get(this.panel);
+      if (styleData) {
+        const listOfProps = ev.selector.split(",");
+        this.restoreTo(listOfProps, styleData);
+      }
+    } else {
+      Nodule.setBackStyleContrast(SETTINGS.style.backStyleContrast);
+      this.selectedSENodules.forEach((n: SENodule) => {
+        n.ref?.stylize(DisplayStyle.ApplyCurrentVariables);
+      });
     }
   }
 
@@ -161,9 +175,9 @@ export default class extends Vue {
 
   @Watch("automaticBackStyle")
   onAutomaticBackStyleChanged(newVal: boolean): void {
-    //
-    // if (this.panel === StyleEditPanels.Back)
-    // this.propDynamicBackStyleCommonValue =
+    if (this.panel === StyleEditPanels.Back) {
+      this.propDynamicBackStyleCommonValue = newVal;
+    }
   }
 
   @Watch("allSelectedSENodules", { immediate: true })
@@ -298,10 +312,14 @@ export default class extends Vue {
 
     /* If multiple objects are selected do not update the label text */
     if (this.selectedNodules.length > 1) delete updatePayload.labelDisplayText;
-    // console.debug(
-    //   "About to update selected objects using payload",
-    //   updatePayload
-    // );
+    if (this.panel == StyleEditPanels.Back) {
+      if (!this.automaticBackStyle)
+        updatePayload.dynamicBackStyle = !this.propDynamicBackStyleCommonValue;
+      console.debug(
+        "About to update backstyle of selected objects using payload",
+        updatePayload
+      );
+    }
     if (updatedProps.length > 1) {
       this.selectedNodules.forEach((n: Nodule) => {
         // console.debug("Updating style of", n);

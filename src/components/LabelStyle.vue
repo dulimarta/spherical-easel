@@ -5,10 +5,12 @@
       :nodule-map-function="labelMapper">
       <div
         slot-scope="{agreement, styleOptions, selectionCount, forceDataAgreement}">
-        <ul>
+        <!-- For debugging -->
+        <!--ul>
+
           <li>Data agreement: {{agreement}}</li>
           <li>Style Opt: {{styleOptions}}</li>
-        </ul>
+        </ul-->
 
         <!-- Label(s) not showing overlay -- higher z-index rendered on top -- covers entire panel including the header-->
         <OverlayWithFixButton v-if="!allLabelsShowing"

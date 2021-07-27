@@ -45,7 +45,7 @@ export class SELine extends SENodule
    */
   protected _normalVector = new Vector3();
   /** Temporary vectors to help with calculations */
-  private tmpVector = new Vector3(); //
+  protected tmpVector = new Vector3(); //
   private tmpVector1 = new Vector3();
   private tmpVector2 = new Vector3();
   private tmpVector3 = new Vector3();

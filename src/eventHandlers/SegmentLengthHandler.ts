@@ -68,7 +68,7 @@ export default class SegmentLengthHandler extends Highlighter {
         // Set the selected segment's Label to display and to show NameAndValue in an undoable way
         segmentCommandGroup.addCommand(
           new StyleNoduleCommand(
-            [this.targetSegment.label!],
+            [this.targetSegment.label!.ref],
             StyleEditPanels.Front,
             [
               {
@@ -180,7 +180,7 @@ export default class SegmentLengthHandler extends Highlighter {
           // Set the selected segment's Label to display and to show NameAndValue in an undoable way
           segmentCommandGroup.addCommand(
             new StyleNoduleCommand(
-              [object1.label!],
+              [object1.label!.ref],
               StyleEditPanels.Front,
               [
                 {

@@ -5,10 +5,9 @@
       :nodule-map-function="objectMapper"
       :automatic-back-style="usingAutomaticBackStyle">
       <div
-        slot-scope="{agreement, forceDataAgreement, hasStyle, styleOptions, conflictingProps, enableBackStyleEdit, automaticBackStyleCommonValue}">
-        <ul>
+        slot-scope="{forceDataAgreement, hasStyle, styleOptions, conflictingProps, enableBackStyleEdit /*, automaticBackStyleCommonValue*/}">
+        <!--ul>
           <li>Conclict list: {{conflictingProps}}</li>
-          <li>Data agreement: {{agreement}}</li>
           <li>Style Opt: {{styleOptions}}</li>
           <li>Enable Back Style edit?
             {{enableBackStyleEdit}}</li>
@@ -16,7 +15,7 @@
             {{automaticBackStyleCommonValue}}---</li>
           <li>User request automatic back style?
             {{usingAutomaticBackStyle}}</li>
-        </ul>
+        </ul-->
         <!-- objects(s) not showing overlay ---higher z-index rendered on top -- covers entire panel including the header-->
         <OverlayWithFixButton v-if="!allObjectsShowing"
           z-index="100"
@@ -26,7 +25,7 @@
           i18n-button-tool-tip="style.objectsNotShowingToolTip"
           @click="toggleAllObjectsVisibility">
         </OverlayWithFixButton>
-        <InputGroup input-selector="NONE"
+        <InputGroup input-selector="backstyleContrast"
           v-if="editModeIsBack">
           <!-- Enable the Dynamic Back Style Overlay -->
           <OverlayWithFixButton v-if="!usingAutomaticBackStyle"
@@ -264,10 +263,8 @@ import InputGroup from "@/components/InputGroupWithReset.vue";
 import FadeInCard from "@/components/FadeInCard.vue";
 import { AppState } from "@/types";
 import EventBus from "@/eventHandlers/EventBus";
-import NumberSelector from "@/components/NumberSelector.vue";
 import SimpleNumberSelector from "@/components/SimpleNumberSelector.vue";
 import SimpleColorSelector from "@/components/SimpleColorSelector.vue";
-import ColorSelector from "@/components/ColorSelector.vue";
 import i18n from "../i18n";
 import HintButton from "@/components/HintButton.vue";
 import OverlayWithFixButton from "@/components/OverlayWithFixButton.vue";
@@ -276,9 +273,7 @@ const SE = namespace("se");
 @Component({
   components: {
     FadeInCard,
-    NumberSelector,
     SimpleNumberSelector,
-    ColorSelector,
     SimpleColorSelector,
     HintButton,
     OverlayWithFixButton,
@@ -448,22 +443,6 @@ export default class FrontBackStyle extends Vue {
   }
   toggleAllObjectsVisibility(): void {
     EventBus.fire("toggle-object-visibility", { fromPanel: true });
-  }
-
-  clearBacKStyleConstrast(): void {
-    Nodule.setBackStyleContrast(this.initialBackStyleContrast);
-    console.debug("Changing Global backstyle contrast");
-    this.selectedSENodules.forEach((n: SENodule) => {
-      n.ref?.stylize(DisplayStyle.ApplyCurrentVariables);
-    });
-  }
-
-  resetBackStyleContrastToDefaults(props: string): void {
-    Nodule.setBackStyleContrast(SETTINGS.style.backStyleContrast);
-    console.debug("Changing Global backstyle contrast");
-    this.selectedSENodules.forEach((n: SENodule) => {
-      n.ref?.stylize(DisplayStyle.ApplyCurrentVariables);
-    });
   }
 
   toggleDashPatternSliderAvailibity(opt: StyleOptions): void {
