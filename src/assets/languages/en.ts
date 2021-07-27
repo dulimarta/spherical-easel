@@ -406,6 +406,8 @@ export default {
   },
 
   objectTree: {
+    triangleWithEdges: "A triangle with ordered edges {edges}.",
+    polygonWithEdges: "A polygon with ordered edges {edges}.",
     expression: "Expression",
     parserError: "Reached end of input while parsing expression",
     expectedRightParenthesis: "Expected ')' at {text}",

@@ -115,6 +115,13 @@ export const DEFAULT_ELLIPSE_BACK_STYLE: StyleOptions = {
   dashArray: SETTINGS.ellipse.drawn.dashArray.back
 };
 
+export const DEFAULT_POLYGON_FRONT_STYLE: StyleOptions = {
+  fillColor: SETTINGS.polygon.drawn.fillColor.front
+};
+export const DEFAULT_POLYGON_BACK_STYLE: StyleOptions = {
+  fillColor: SETTINGS.polygon.drawn.fillColor.back
+};
+
 export const DEFAULT_ANGLE_MARKER_FRONT_STYLE: StyleOptions = {
   fillColor: SETTINGS.angleMarker.drawn.fillColor.front,
   strokeColor: SETTINGS.angleMarker.drawn.strokeColor.front,

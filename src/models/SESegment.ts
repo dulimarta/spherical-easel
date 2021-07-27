@@ -118,9 +118,15 @@ export class SESegment extends SENodule
   get arcLength(): number {
     return this._arcLength;
   }
+
   set arcLength(len: number) {
     this._arcLength = len;
   }
+
+  get longerThanPi(): boolean {
+    return this._arcLength > Math.PI;
+  }
+
   public get noduleDescription(): string {
     return String(
       i18n.t(`objectTree.segmentThrough`, {
@@ -464,6 +470,37 @@ export class SESegment extends SENodule
         )
         .normalize();
     }
+  }
+
+  public getMidPointVector(): Vector3 {
+    const midVector = new Vector3();
+    this.toVector.crossVectors(
+      this._normalVector,
+      this._startSEPoint.locationVector
+    );
+
+    // There are two cases depending on the arcLength
+    // Case 1 ArcLength < PI
+    //  In this case we want dot(toVector, end) > 0
+    // Case 2 ArcLength > PI
+    //  In this case we want dot(toVector, end) < 0
+    // Case 3 Arclength = Pi
+
+    if (this._arcLength > Math.PI) {
+      if (this.toVector.dot(this._endSEPoint.locationVector) > 0) {
+        this.toVector.multiplyScalar(-1);
+      }
+    } else if (this._arcLength < Math.PI) {
+      if (this.toVector.dot(this._endSEPoint.locationVector) < 0) {
+        this.toVector.multiplyScalar(-1);
+      }
+    }
+    // midVector =  cos(arcLength/2)*start + sin(arcLength/2)*this.toVector
+    midVector
+      .copy(this._startSEPoint.locationVector)
+      .multiplyScalar(Math.cos(this._arcLength / 2));
+    midVector.addScaledVector(this.toVector, Math.sin(this._arcLength / 2));
+    return midVector.normalize();
   }
 
   /**

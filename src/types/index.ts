@@ -1,6 +1,6 @@
 // Declaration of all internal data types
 
-import Two from "two.js";
+import Two, { Polygon } from "two.js";
 import { SEPoint } from "@/models/SEPoint";
 import { SELabel } from "@/models/SELabel";
 import { SELine } from "@/models/SELine";
@@ -17,6 +17,7 @@ import { SEPerpendicularLineThruPoint } from "@/models/SEPerpendicularLineThruPo
 import { SEEllipse } from "@/models/SEEllipse";
 import { SEParametric } from "@/models/SEParametric";
 import { SyntaxTree } from "@/expression/ExpressionParser";
+import { SEPolygon } from "@/models/SEPolygon";
 
 export interface Selectable {
   hit(x: number, y: number, coord: unknown, who: unknown): boolean;
@@ -132,6 +133,16 @@ export interface Labelable {
   label?: SELabel;
 }
 /**
+ * A variable types for polygon
+ */
+
+export type location = {
+  x: number;
+  y: number;
+  front: boolean;
+};
+
+/**
  * The variable types for parametric objects
  */
 export type CoordExpression = {
@@ -172,7 +183,8 @@ export type plottableType =
   | "circle"
   | "angleMarker"
   | "ellipse"
-  | "parametric";
+  | "parametric"
+  | "polygon";
 export type sides = "front" | "back" | "mid";
 export type plottableProperties = {
   type: plottableType;
@@ -241,7 +253,17 @@ export type ObjectState =
   | AngleMarkerState
   | PerpendicularLineThruPointState
   | ExpressionState
-  | ParametricState;
+  | ParametricState
+  | PolygonState;
+
+export interface PolygonState {
+  kind: "polygon";
+  object: SEPolygon;
+}
+
+export function isPolygonState(entry: ObjectState): entry is PolygonState {
+  return entry.kind === "polygon";
+}
 
 export interface PerpendicularLineThruPointState {
   kind: "perpendicularLineThruPoint";

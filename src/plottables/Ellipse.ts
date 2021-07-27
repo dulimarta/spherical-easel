@@ -1033,10 +1033,10 @@ export default class Ellipse extends Nodule {
   addToLayers(layers: Two.Group[]): void {
     // These must always be executed even if the front/back part is empty
     // Otherwise when they become non-empty they are not displayed
-    this.frontFill.addTo(layers[LAYER.foreground]);
+    this.frontFill.addTo(layers[LAYER.foregroundFills]);
     this.frontPart.addTo(layers[LAYER.foreground]);
     this.glowingFrontPart.addTo(layers[LAYER.foregroundGlowing]);
-    this.backFill.addTo(layers[LAYER.background]);
+    this.backFill.addTo(layers[LAYER.backgroundFills]);
     this.backPart.addTo(layers[LAYER.background]);
     this.glowingBackPart.addTo(layers[LAYER.backgroundGlowing]);
   }

@@ -2,7 +2,7 @@ import { ValueDisplayMode, LabelDisplayMode } from "./types";
 
 export const SETTINGS = {
   nearlyAntipodalIdeal: 0.005, // Two unit vectors, U and V, are nearly antipodal or nearly parallel (the) if crossVectors(U,V).isZero(nearlyAntipodalIdeal) is true
-  tolerance: 0.0000001, // Any number less that this tolerance is considered zero
+  tolerance: 0.000000001, // Any number less that this tolerance is considered zero
   hideObjectHidesLabel: true, // hiding an object hide the label of that object automatically if this is true
   showObjectShowsLabel: false, // showing an object (via the object tree) automatically shows the label if this is true
   decimalPrecision: 3, // The number decimal places to display when numerically measuring or computing a value
@@ -468,6 +468,29 @@ export const SETTINGS = {
       // The dash pattern will always be the same as the default drawn version
     }
   },
+  polygon: {
+    showLabelsInitially: false, // Should the labels be show upon creating the polygon
+    maxLabelDistance: 0.08, // The maximum distance that a label is allowed to get away from the polygon
+    initialLabelOffset: 0.02, // When making point labels this is initially how far (roughly) they are from the polygon
+    minimumVertexToEdgeThickness: 0.02, // the polygon doesn't exist if distance from any vertex to any non-adjacent edge is less than this.
+    defaultLabelMode: LabelDisplayMode.NameOnly, // The default way of displaying this objects label
+    numPoints: 60, // The number of extra vertices used to draw the parts of the fill of the polygon that are on the boundary circle. MAKE THIS EVEN!
+    hitIdealDistance: 0.03, // The user has to be within this distance on the ideal unit sphere to select the polygon.
+    //dynamicBackStyle is a flag that means the fill the polygon drawn on the back are automatically calculated based on the value of SETTINGS.contrast and their front counterparts
+    dynamicBackStyle: true,
+    //The properties of the polygon when it is drawn on the sphereCanvas and is not glowing
+    drawn: {
+      fillColor: {
+        front: "hsla(254, 100%, 90%, 0.2)", //"hsla(217, 100%, 80%, 0.0005)", //"noFill",
+        frontHSLA: { h: 254, s: 100, l: 90, a: 0.2 },
+        back: "hsla(10, 100%, 50%, 0.1)", //"hsla(217, 100%, 80%, 0.0002)" //"noFill"
+        backHSLA: { h: 254, s: 100, l: 50, a: 0.2 }
+      }
+      //  strokeColor is determined by each edge
+      // strokeWidth is determined by each edge
+      // dashArray is determined by each edge
+    }
+  },
   label: {
     maxLabelDisplayCaptionLength: 15, // The maximum number of characters in the displayed label caption
     maxLabelDisplayTextLength: 8, // The maximum number of characters in the displayed label name
@@ -756,6 +779,7 @@ export enum LAYER {
   backgroundAngleMarkersGlowing,
   backgroundAngleMarkers,
   backgroundGlowing,
+  backgroundFills,
   background,
   backgroundPointsGlowing,
   backgroundPoints,
@@ -765,6 +789,7 @@ export enum LAYER {
   foregroundAngleMarkersGlowing,
   foregroundAngleMarkers,
   foregroundGlowing,
+  foregroundFills,
   foreground,
   foregroundPointsGlowing,
   foregroundPoints,

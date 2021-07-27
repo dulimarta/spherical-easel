@@ -35,6 +35,10 @@ export default class Segment extends Nodule {
    *  gives the direction in which the segment is drawn
    */
 
+  /** Two values that help in polygon when tracing a collection of segments */
+  private _firstVertexIsOnFront = false;
+  private _lastVertexIsOnFront = false;
+
   /** A temporary matrix maps a segment in standard position to the current position so we can determine which points are on the back and which are on the front*/
   private transformMatrix = new Matrix4();
 
@@ -44,10 +48,10 @@ export default class Segment extends Nodule {
    * can have two front parts or two back parts. The frontExtra and backExtra are variables to represent those
    * extra parts. There are glowing counterparts for each part.
    */
-  private frontPart: Two.Path;
-  private frontExtra: Two.Path;
-  private backPart: Two.Path;
-  private backExtra: Two.Path;
+  private _frontPart: Two.Path;
+  private _frontExtra: Two.Path;
+  private _backPart: Two.Path;
+  private _backExtra: Two.Path;
   private glowingFrontPart: Two.Path;
   private glowingFrontExtra: Two.Path;
   private glowingBackPart: Two.Path;
@@ -104,48 +108,48 @@ export default class Segment extends Nodule {
     for (let k = 0; k < SUBDIVS; k++) {
       vertices.push(new Two.Vector(0, 0));
     }
-    this.frontPart = new Two.Path(
+    this._frontPart = new Two.Path(
       vertices,
       /* closed */ false,
       /* curve */ false
     );
     // Create the other parts cloning the front part
-    this.glowingFrontPart = this.frontPart.clone();
-    this.frontExtra = this.frontPart.clone();
-    this.glowingFrontExtra = this.frontPart.clone();
-    this.backPart = this.frontPart.clone();
-    this.glowingBackPart = this.frontPart.clone();
-    this.backExtra = this.backPart.clone();
-    this.glowingBackExtra = this.backPart.clone();
+    this.glowingFrontPart = this._frontPart.clone();
+    this._frontExtra = this._frontPart.clone();
+    this.glowingFrontExtra = this._frontPart.clone();
+    this._backPart = this._frontPart.clone();
+    this.glowingBackPart = this._frontPart.clone();
+    this._backExtra = this._backPart.clone();
+    this.glowingBackExtra = this._backPart.clone();
     // Clear the vertices from the extra parts because they will be added later as they are exchanged from other parts
 
     // The clear() extension function works only on JS Array, but
     // not on Two.JS Collection class. Use splice() instead.
-    this.frontExtra.vertices.splice(0);
+    this._frontExtra.vertices.splice(0);
     this.glowingFrontExtra.vertices.splice(0);
-    this.backExtra.vertices.splice(0);
+    this._backExtra.vertices.splice(0);
     this.glowingBackExtra.vertices.splice(0);
 
     //Record the path ids for all the TwoJS objects which are not glowing. This is for use in IconBase to create icons.
-    Nodule.idPlottableDescriptionMap.set(String(this.frontPart.id), {
+    Nodule.idPlottableDescriptionMap.set(String(this._frontPart.id), {
       type: "segment",
       side: "front",
       fill: false,
       part: ""
     });
-    Nodule.idPlottableDescriptionMap.set(String(this.frontExtra.id), {
+    Nodule.idPlottableDescriptionMap.set(String(this._frontExtra.id), {
       type: "segment",
       side: "front",
       fill: false,
       part: ""
     });
-    Nodule.idPlottableDescriptionMap.set(String(this.backPart.id), {
+    Nodule.idPlottableDescriptionMap.set(String(this._backPart.id), {
       type: "segment",
       side: "back",
       fill: false,
       part: ""
     });
-    Nodule.idPlottableDescriptionMap.set(String(this.backExtra.id), {
+    Nodule.idPlottableDescriptionMap.set(String(this._backExtra.id), {
       type: "segment",
       side: "back",
       fill: false,
@@ -153,23 +157,23 @@ export default class Segment extends Nodule {
     });
 
     // Set the style that never changes -- Fill
-    this.frontPart.noFill();
+    this._frontPart.noFill();
     this.glowingFrontPart.noFill();
-    this.backPart.noFill();
+    this._backPart.noFill();
     this.glowingBackPart.noFill();
-    this.frontExtra.noFill();
+    this._frontExtra.noFill();
     this.glowingFrontExtra.noFill();
-    this.backExtra.noFill();
+    this._backExtra.noFill();
     this.glowingBackExtra.noFill();
 
     // The segment is not initially glowing but leave the regular parts visible for the temporary objects
-    this.frontPart.visible = true;
+    this._frontPart.visible = true;
     this.glowingFrontPart.visible = false;
-    this.backPart.visible = true;
+    this._backPart.visible = true;
     this.glowingBackPart.visible = false;
-    this.frontExtra.visible = true;
+    this._frontExtra.visible = true;
     this.glowingFrontExtra.visible = false;
-    this.backExtra.visible = true;
+    this._backExtra.visible = true;
     this.glowingBackExtra.visible = false;
 
     this.styleOptions.set(StyleEditPanels.Front, DEFAULT_SEGMENT_FRONT_STYLE);
@@ -177,30 +181,30 @@ export default class Segment extends Nodule {
   }
 
   frontGlowingDisplay(): void {
-    this.frontPart.visible = true;
+    this._frontPart.visible = true;
     this.glowingFrontPart.visible = true;
-    this.frontExtra.visible = true;
+    this._frontExtra.visible = true;
     this.glowingFrontExtra.visible = true;
   }
 
   backGlowingDisplay(): void {
-    this.backPart.visible = true;
+    this._backPart.visible = true;
     this.glowingBackPart.visible = true;
-    this.backExtra.visible = true;
+    this._backExtra.visible = true;
     this.glowingBackExtra.visible = true;
   }
 
   backNormalDisplay(): void {
-    this.backPart.visible = true;
+    this._backPart.visible = true;
     this.glowingBackPart.visible = false;
-    this.backExtra.visible = true;
+    this._backExtra.visible = true;
     this.glowingBackExtra.visible = false;
   }
 
   frontNormalDisplay(): void {
-    this.frontPart.visible = true;
+    this._frontPart.visible = true;
     this.glowingFrontPart.visible = false;
-    this.frontExtra.visible = true;
+    this._frontExtra.visible = true;
     this.glowingFrontExtra.visible = false;
   }
 
@@ -249,10 +253,10 @@ export default class Segment extends Nodule {
     // Each half (and extra) path will pull anchor points from
     // this pool as needed
     const pool: Two.Anchor[] = [];
-    pool.push(...this.frontPart.vertices.splice(0));
-    pool.push(...this.frontExtra.vertices.splice(0));
-    pool.push(...this.backPart.vertices.splice(0));
-    pool.push(...this.backExtra.vertices.splice(0));
+    pool.push(...this._frontPart.vertices.splice(0));
+    pool.push(...this._frontExtra.vertices.splice(0));
+    pool.push(...this._backPart.vertices.splice(0));
+    pool.push(...this._backExtra.vertices.splice(0));
     const glowingPool: Two.Anchor[] = [];
     glowingPool.push(...this.glowingFrontPart.vertices.splice(0));
     glowingPool.push(...this.glowingFrontExtra.vertices.splice(0));
@@ -262,8 +266,8 @@ export default class Segment extends Nodule {
     // We begin with the "main" paths as the current active paths
     // As we find additional zero-crossing, we then switch to the
     // "extra" paths
-    let activeFront = this.frontPart.vertices;
-    let activeBack = this.backPart.vertices;
+    let activeFront = this._frontPart.vertices;
+    let activeBack = this._backPart.vertices;
     let glowingActiveFront = this.glowingFrontPart.vertices;
     let glowingActiveBack = this.glowingBackPart.vertices;
     for (let pos = 0; pos < 2 * SUBDIVS; pos++) {
@@ -276,6 +280,13 @@ export default class Segment extends Nodule {
       this.tmpVector1.applyMatrix4(this.transformMatrix);
       const thisSign = Math.sign(this.tmpVector1.z);
 
+      if (pos === 0) {
+        this._firstVertexIsOnFront = thisSign === 1;
+      }
+      if (pos === 2 * SUBDIVS - 1) {
+        this._lastVertexIsOnFront = thisSign === 1;
+      }
+
       // CHeck for zero-crossing
       if (lastSign !== thisSign) {
         // We have a zero crossing
@@ -283,7 +294,7 @@ export default class Segment extends Nodule {
           // If we already had a positive crossing
           // The next chunk is a split front part
           if (toPos.length > 0) {
-            activeFront = this.frontExtra.vertices;
+            activeFront = this._frontExtra.vertices;
             glowingActiveFront = this.glowingFrontExtra.vertices;
             posIndex = 0;
           }
@@ -293,7 +304,7 @@ export default class Segment extends Nodule {
         // The next chunk is a split back part
         if (thisSign < 0) {
           if (toNeg.length > 0) {
-            activeBack = this.backExtra.vertices;
+            activeBack = this._backExtra.vertices;
             glowingActiveBack = this.glowingBackExtra.vertices;
             negIndex = 0;
           }
@@ -360,15 +371,34 @@ export default class Segment extends Nodule {
     this._normalVector.copy(idealUnitNormalVector).normalize();
   }
 
+  get frontPart(): Two.Path {
+    return this._frontPart;
+  }
+  get backPart(): Two.Path {
+    return this._backPart;
+  }
+  get frontPartExtra(): Two.Path {
+    return this._frontExtra;
+  }
+  get backPartExtra(): Two.Path {
+    return this._backExtra;
+  }
+  get firstVertexIsOnFront(): boolean {
+    return this._firstVertexIsOnFront;
+  }
+  get lastVertexIsOnFront(): boolean {
+    return this._lastVertexIsOnFront;
+  }
+
   setVisible(flag: boolean): void {
     if (!flag) {
-      this.frontPart.visible = false;
+      this._frontPart.visible = false;
       this.glowingFrontPart.visible = false;
-      this.frontExtra.visible = false;
+      this._frontExtra.visible = false;
       this.glowingFrontExtra.visible = false;
-      this.backPart.visible = false;
+      this._backPart.visible = false;
       this.glowingBackPart.visible = false;
-      this.backExtra.visible = false;
+      this._backExtra.visible = false;
       this.glowingBackExtra.visible = false;
     } else {
       this.normalDisplay();
@@ -401,32 +431,32 @@ export default class Segment extends Nodule {
     dup._normalVector.copy(this._normalVector);
     //Copy the vertices of front/back/part
     const pool: Two.Anchor[] = [];
-    pool.push(...dup.frontPart.vertices.splice(0)); //concatenates the pool array and the front vertices array and empties the frontPart array
-    pool.push(...dup.backPart.vertices.splice(0)); //concatenates the pool array and the back vertices array and empties the backPart array
+    pool.push(...dup._frontPart.vertices.splice(0)); //concatenates the pool array and the front vertices array and empties the frontPart array
+    pool.push(...dup._backPart.vertices.splice(0)); //concatenates the pool array and the back vertices array and empties the backPart array
 
     // The length of the Pool array is 2*SUBDIVISIONS = this.frontPart.length + this.frontExtra.length + this.backPart.length + this.backExtra.length because dup.frontPart and dup.backPart initially contains all the vertices and frontExtra and backExtra are empty.
-    this.frontPart.vertices.forEach((v: Two.Anchor, pos: number) => {
+    this._frontPart.vertices.forEach((v: Two.Anchor, pos: number) => {
       // Add a vertex in the frontPart (while taking one away from the pool)
       const v1 = pool.pop();
-      if (v1) dup.frontPart.vertices.push(v1); // Exclamation point means that the linter assumes that the popped object is non-null
+      if (v1) dup._frontPart.vertices.push(v1); // Exclamation point means that the linter assumes that the popped object is non-null
       // Copy the this.frontPart vertex v into the newly added vertex in frontPart
-      dup.frontPart.vertices[pos].copy(v); //
+      dup._frontPart.vertices[pos].copy(v); //
     });
     // Repeat for the frontExtra/backPart/backExtra
-    this.frontExtra.vertices.forEach((v: Two.Anchor, pos: number) => {
+    this._frontExtra.vertices.forEach((v: Two.Anchor, pos: number) => {
       const v1 = pool.pop();
-      if (v1) dup.frontExtra.vertices.push(v1);
-      dup.frontExtra.vertices[pos].copy(v);
+      if (v1) dup._frontExtra.vertices.push(v1);
+      dup._frontExtra.vertices[pos].copy(v);
     });
-    this.backPart.vertices.forEach((v: Two.Anchor, pos: number) => {
+    this._backPart.vertices.forEach((v: Two.Anchor, pos: number) => {
       const v1 = pool.pop();
-      if (v1) dup.backPart.vertices.push(v1);
-      dup.backPart.vertices[pos].copy(v);
+      if (v1) dup._backPart.vertices.push(v1);
+      dup._backPart.vertices[pos].copy(v);
     });
-    this.backExtra.vertices.forEach((v: Two.Anchor, pos: number) => {
+    this._backExtra.vertices.forEach((v: Two.Anchor, pos: number) => {
       const v1 = pool.pop();
-      if (v1) dup.backExtra.vertices.push(v1);
-      dup.backExtra.vertices[pos].copy(v);
+      if (v1) dup._backExtra.vertices.push(v1);
+      dup._backExtra.vertices[pos].copy(v);
     });
 
     // Repeat for all glowing parts/extras
@@ -448,7 +478,7 @@ export default class Segment extends Nodule {
       if (v1) dup.glowingBackPart.vertices.push(v1);
       dup.glowingBackPart.vertices[pos].copy(v);
     });
-    this.backExtra.vertices.forEach((v: Two.Anchor, pos: number) => {
+    this._backExtra.vertices.forEach((v: Two.Anchor, pos: number) => {
       const v1 = glowingPool.pop();
       if (v1) dup.glowingBackExtra.vertices.push(v1);
       dup.glowingBackExtra.vertices[pos].copy(v);
@@ -457,10 +487,10 @@ export default class Segment extends Nodule {
   }
 
   addToLayers(layers: Two.Group[]): void {
-    this.frontPart.addTo(layers[LAYER.foreground]);
-    this.frontExtra.addTo(layers[LAYER.foreground]);
-    this.backPart.addTo(layers[LAYER.background]);
-    this.backExtra.addTo(layers[LAYER.background]);
+    this._frontPart.addTo(layers[LAYER.foreground]);
+    this._frontExtra.addTo(layers[LAYER.foreground]);
+    this._backPart.addTo(layers[LAYER.background]);
+    this._backExtra.addTo(layers[LAYER.background]);
     this.glowingFrontPart.addTo(layers[LAYER.foregroundGlowing]);
     this.glowingFrontExtra.addTo(layers[LAYER.foregroundGlowing]);
     this.glowingBackPart.addTo(layers[LAYER.backgroundGlowing]);
@@ -468,10 +498,10 @@ export default class Segment extends Nodule {
   }
 
   removeFromLayers(): void {
-    this.frontPart.remove();
-    this.frontExtra.remove();
-    this.backPart.remove();
-    this.backExtra.remove();
+    this._frontPart.remove();
+    this._frontExtra.remove();
+    this._backPart.remove();
+    this._backExtra.remove();
     this.glowingFrontPart.remove();
     this.glowingFrontExtra.remove();
     this.glowingBackPart.remove();
@@ -501,9 +531,9 @@ export default class Segment extends Nodule {
     const backStyle = this.styleOptions.get(StyleEditPanels.Back);
     const frontStrokeWidthPercent = frontStyle?.strokeWidthPercent ?? 100;
     const backStrokeWidthPercent = backStyle?.strokeWidthPercent ?? 100;
-    this.frontPart.linewidth =
+    this._frontPart.linewidth =
       (Segment.currentSegmentStrokeWidthFront * frontStrokeWidthPercent) / 100;
-    this.backPart.linewidth =
+    this._backPart.linewidth =
       (Segment.currentSegmentStrokeWidthBack *
         (backStyle?.dynamicBackStyle
           ? Nodule.contrastStrokeWidthPercent(frontStrokeWidthPercent)
@@ -520,9 +550,9 @@ export default class Segment extends Nodule {
           : backStrokeWidthPercent)) /
       100;
 
-    this.frontExtra.linewidth =
+    this._frontExtra.linewidth =
       (Segment.currentSegmentStrokeWidthFront * frontStrokeWidthPercent) / 100;
-    this.backExtra.linewidth =
+    this._backExtra.linewidth =
       (Segment.currentSegmentStrokeWidthBack *
         (backStyle?.dynamicBackStyle
           ? Nodule.contrastStrokeWidthPercent(frontStrokeWidthPercent)
@@ -555,55 +585,55 @@ export default class Segment extends Nodule {
 
         // FRONT PART
         // no fillColor
-        this.frontPart.stroke = SETTINGS.segment.temp.strokeColor.front;
+        this._frontPart.stroke = SETTINGS.segment.temp.strokeColor.front;
         // strokeWidthPercent -- The line width is set to the current line width (which is updated for zoom magnification)
-        this.frontPart.linewidth = Segment.currentSegmentStrokeWidthFront;
+        this._frontPart.linewidth = Segment.currentSegmentStrokeWidthFront;
 
         // Copy the front dash properties from the front default drawn dash properties
         if (SETTINGS.segment.drawn.dashArray.front.length > 0) {
-          this.frontPart.dashes.clear();
+          this._frontPart.dashes.clear();
           SETTINGS.segment.drawn.dashArray.front.forEach(v => {
-            this.frontPart.dashes.push(v);
+            this._frontPart.dashes.push(v);
           });
         }
 
         // FRONT EXTRA
         // no fillColor
-        this.frontExtra.stroke = SETTINGS.segment.temp.strokeColor.front;
+        this._frontExtra.stroke = SETTINGS.segment.temp.strokeColor.front;
         // strokeWidthPercent -- The line width is set to the current line width (which is updated for zoom magnification)
-        this.frontExtra.linewidth = Segment.currentSegmentStrokeWidthFront;
+        this._frontExtra.linewidth = Segment.currentSegmentStrokeWidthFront;
 
         // Copy the front dash properties from the front default drawn dash properties
         if (SETTINGS.segment.drawn.dashArray.front.length > 0) {
-          this.frontExtra.dashes.clear();
+          this._frontExtra.dashes.clear();
           SETTINGS.segment.drawn.dashArray.front.forEach(v => {
-            this.frontExtra.dashes.push(v);
+            this._frontExtra.dashes.push(v);
           });
         }
         // BACK PART
         // no fill color
-        this.backPart.stroke = SETTINGS.segment.temp.strokeColor.back;
+        this._backPart.stroke = SETTINGS.segment.temp.strokeColor.back;
         // strokeWidthPercent -- The line width is set to the current line width (which is updated for zoom magnification)
-        this.backPart.linewidth = Segment.currentSegmentStrokeWidthBack;
+        this._backPart.linewidth = Segment.currentSegmentStrokeWidthBack;
 
         // Copy the back dash properties from the back default drawn dash properties
         if (SETTINGS.segment.drawn.dashArray.back.length > 0) {
-          this.backPart.dashes.clear();
+          this._backPart.dashes.clear();
           SETTINGS.segment.drawn.dashArray.back.forEach(v => {
-            this.backPart.dashes.push(v);
+            this._backPart.dashes.push(v);
           });
         }
         // BACK EXTRA
         // no fill color
-        this.backExtra.stroke = SETTINGS.segment.temp.strokeColor.back;
+        this._backExtra.stroke = SETTINGS.segment.temp.strokeColor.back;
         // strokeWidthPercent -- The line width is set to the current line width (which is updated for zoom magnification)
-        this.backExtra.linewidth = Segment.currentSegmentStrokeWidthBack;
+        this._backExtra.linewidth = Segment.currentSegmentStrokeWidthBack;
 
         // Copy the back dash properties from the back default drawn dash properties
         if (SETTINGS.segment.drawn.dashArray.back.length > 0) {
-          this.backExtra.dashes.clear();
+          this._backExtra.dashes.clear();
           SETTINGS.segment.drawn.dashArray.back.forEach(v => {
-            this.backExtra.dashes.push(v);
+            this._backExtra.dashes.push(v);
           });
         }
 
@@ -622,36 +652,36 @@ export default class Segment extends Nodule {
         const frontStyle = this.styleOptions.get(StyleEditPanels.Front);
         // no fillColor
         if (frontStyle?.strokeColor == "noStroke") {
-          this.frontPart.noStroke();
+          this._frontPart.noStroke();
         } else {
-          this.frontPart.stroke = frontStyle?.strokeColor as Color;
+          this._frontPart.stroke = frontStyle?.strokeColor as Color;
         }
         // strokeWidthPercent applied by adjustSize()
 
         if (frontStyle?.dashArray && frontStyle.dashArray.length > 0) {
-          this.frontPart.dashes.clear();
-          this.frontPart.dashes.push(...frontStyle.dashArray);
+          this._frontPart.dashes.clear();
+          this._frontPart.dashes.push(...frontStyle.dashArray);
         } else {
           // the array length is zero and no dash array should be set
-          this.frontPart.dashes.clear();
-          this.frontPart.dashes.push(0);
+          this._frontPart.dashes.clear();
+          this._frontPart.dashes.push(0);
         }
         // FRONT EXTRA
         // no fillColor
         if (frontStyle?.strokeColor == "noStroke") {
-          this.frontExtra.noStroke();
+          this._frontExtra.noStroke();
         } else {
-          this.frontExtra.stroke = frontStyle?.strokeColor as Color;
+          this._frontExtra.stroke = frontStyle?.strokeColor as Color;
         }
         // strokeWidthPercent applied by adjustSize()
 
         if (frontStyle?.dashArray && frontStyle.dashArray.length > 0) {
-          this.frontExtra.dashes.clear();
-          this.frontExtra.dashes.push(...frontStyle.dashArray);
+          this._frontExtra.dashes.clear();
+          this._frontExtra.dashes.push(...frontStyle.dashArray);
         } else {
           // the array length is zero and no dash array should be set
-          this.frontExtra.dashes.clear();
-          this.frontExtra.dashes.push(0);
+          this._frontExtra.dashes.clear();
+          this._frontExtra.dashes.push(0);
         }
 
         // BACK PART
@@ -663,28 +693,28 @@ export default class Segment extends Nodule {
             Nodule.contrastStrokeColor(frontStyle?.strokeColor ?? "black") ==
             "noStroke"
           ) {
-            this.backPart.noStroke();
+            this._backPart.noStroke();
           } else {
-            this.backPart.stroke = Nodule.contrastStrokeColor(
+            this._backPart.stroke = Nodule.contrastStrokeColor(
               frontStyle?.strokeColor ?? "black"
             );
           }
         } else {
           if (backStyle?.strokeColor == "noStroke") {
-            this.backPart.noStroke();
+            this._backPart.noStroke();
           } else {
-            this.backPart.stroke = backStyle?.strokeColor as Color;
+            this._backPart.stroke = backStyle?.strokeColor as Color;
           }
         }
         // strokeWidthPercent applied by adjustSize()
 
         if (backStyle?.dashArray && backStyle.dashArray.length > 0) {
-          this.backPart.dashes.clear();
-          this.backPart.dashes.push(...backStyle.dashArray);
+          this._backPart.dashes.clear();
+          this._backPart.dashes.push(...backStyle.dashArray);
         } else {
           // the array length is zero and no dash array should be set
-          this.backPart.dashes.clear();
-          this.backPart.dashes.push(0);
+          this._backPart.dashes.clear();
+          this._backPart.dashes.push(0);
         }
         // BACK EXTRA
         // no fillColor
@@ -693,28 +723,28 @@ export default class Segment extends Nodule {
             Nodule.contrastStrokeColor(frontStyle?.strokeColor ?? "black") ==
             "noStroke"
           ) {
-            this.backExtra.noStroke();
+            this._backExtra.noStroke();
           } else {
-            this.backExtra.stroke = Nodule.contrastStrokeColor(
+            this._backExtra.stroke = Nodule.contrastStrokeColor(
               frontStyle?.strokeColor ?? "black"
             );
           }
         } else {
           if (backStyle?.strokeColor == "noStroke") {
-            this.backExtra.noStroke();
+            this._backExtra.noStroke();
           } else {
-            this.backExtra.stroke = backStyle?.strokeColor as Color;
+            this._backExtra.stroke = backStyle?.strokeColor as Color;
           }
         }
         // strokeWidthPercent applied by adjustSize()
 
         if (backStyle?.dashArray && backStyle.dashArray.length > 0) {
-          this.backExtra.dashes.clear();
-          this.backExtra.dashes.push(...backStyle.dashArray);
+          this._backExtra.dashes.clear();
+          this._backExtra.dashes.push(...backStyle.dashArray);
         } else {
           // the array length is zero and no dash array should be set
-          this.backExtra.dashes.clear();
-          this.backExtra.dashes.push(0);
+          this._backExtra.dashes.clear();
+          this._backExtra.dashes.push(0);
         }
 
         // UPDATE the glowing width so it is always bigger than the drawn width

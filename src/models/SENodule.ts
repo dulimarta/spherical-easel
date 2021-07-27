@@ -16,6 +16,7 @@ export abstract class SENodule {
   public static ELLIPSE_COUNT = 0;
   public static PARAMETRIC_COUNT = 0;
   public static LABEL_COUNT = 0;
+  public static POLYGON_COUNT = 0;
 
   static resetAllCounters(): void {
     NODE_COUNT = 0;
@@ -28,6 +29,7 @@ export abstract class SENodule {
     SENodule.ELLIPSE_COUNT = 0;
     SENodule.PARAMETRIC_COUNT = 0;
     SENodule.LABEL_COUNT = 0;
+    SENodule.POLYGON_COUNT = 0;
   }
 
   /**
