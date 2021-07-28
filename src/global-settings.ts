@@ -472,7 +472,7 @@ export const SETTINGS = {
     showLabelsInitially: false, // Should the labels be show upon creating the polygon
     maxLabelDistance: 0.08, // The maximum distance that a label is allowed to get away from the polygon
     initialLabelOffset: 0.02, // When making point labels this is initially how far (roughly) they are from the polygon
-    minimumVertexToEdgeThickness: 0.02, // the polygon doesn't exist if distance from any vertex to any non-adjacent edge is less than this.
+    minimumVertexToEdgeThickness: 0.04, // the polygon doesn't exist if distance from any vertex to any non-adjacent edge is less than this.
     defaultLabelMode: LabelDisplayMode.NameOnly, // The default way of displaying this objects label
     numPoints: 60, // The number of extra vertices used to draw the parts of the fill of the polygon that are on the boundary circle. MAKE THIS EVEN!
     hitIdealDistance: 0.03, // The user has to be within this distance on the ideal unit sphere to select the polygon.

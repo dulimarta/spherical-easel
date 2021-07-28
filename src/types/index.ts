@@ -141,7 +141,10 @@ export type location = {
   y: number;
   front: boolean;
 };
-
+export type visitedIndex = {
+  index: number;
+  visited: boolean;
+};
 /**
  * The variable types for parametric objects
  */

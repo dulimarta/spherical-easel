@@ -10,17 +10,21 @@ import {
   DEFAULT_POLYGON_FRONT_STYLE,
   DEFAULT_POLYGON_BACK_STYLE
 } from "@/types/Styles";
-import { location } from "@/types";
+import { location, visitedIndex } from "@/types";
 import AppStore from "@/store";
 import { SENodule } from "@/models/SENodule";
 import { SEExpression } from "@/models/SEExpression";
 import { SEStore } from "@/store";
 import { ExpressionParser } from "@/expression/ExpressionParser";
 import Segment from "./Segment";
+import { SEPolygon } from "@/models/SEPolygon";
 
 const BOUNDARYSUBDIVISIONS = SETTINGS.polygon.numPoints; // The number of points used to draw parts of the boundary circle when the polygon crosses it.
 
 export default class Polygon extends Nodule {
+  /** The model object of this plottable. Included so that we can use isHitAt to determine if a point is inside or outside of P */
+  private _sePolgon: SEPolygon | null = null;
+
   /**
    * The Segments that are the boundary of this polygon are stored in edgeSegments
    * These are listed so that tracing out the segment boundary in order
@@ -295,210 +299,261 @@ export default class Polygon extends Nodule {
     const allEdgesOnBack = locationArray.every(loc => loc.front === false);
     // The polygon interior is split between front and back
     if (!allEdgesOnFront && !allEdgesOnBack) {
-      // Count the intersections with the boundary circle
-      // first rotate the locationArray so that locationArray[0] is on the back side of the sphere
-      //  and locationArray[-1] is on the front. (LocationArray[0] is on the boundary circle)
-      let firstChangeSidesIndexFromFrontToBack = -1;
-      let numberOfFrontToBackIntersections = 0;
-      let numberOfBackToFrontIntersections = 0;
+      // Count and record the indices of intersections with the boundary circle
+      const frontToBackIntersectionIndices: visitedIndex[] = []; // i is on this list if location[i-1] is on front and location[i] is on back
+      const backToFrontIntersectionIndices: visitedIndex[] = []; // i is on this list if location[i-1] is on back and location[i] is on front
       const n = locationArray.length;
       locationArray.forEach((loc, index) => {
         const previousIndex = (((index - 1) % n) + n) % n;
         if (loc.front && !locationArray[previousIndex].front) {
-          numberOfBackToFrontIntersections += 1;
+          backToFrontIntersectionIndices.push({ index: index, visited: false });
         } else if (!loc.front && locationArray[previousIndex].front) {
-          numberOfFrontToBackIntersections = +1;
-          if (firstChangeSidesIndexFromFrontToBack === -1) {
-            firstChangeSidesIndexFromFrontToBack = index;
-          }
+          frontToBackIntersectionIndices.push({ index: index, visited: false });
         }
       });
-      locationArray.rotate(firstChangeSidesIndexFromFrontToBack); //locationArray[0] is now the old locationArray[changeSidedIndex]
 
-      // Keep track of the front/back fill index
-      let currentFrontFillIndex = 0;
-      let currentBackFillIndex = 0;
+      // for each intersection index compute the angle from the x axis so that at a crossing we can find the next crossing
+      const frontToBackIntersectionAngles: number[] = [];
+      frontToBackIntersectionIndices.forEach(visnum =>
+        frontToBackIntersectionAngles.push(
+          Math.atan2(
+            locationArray[visnum.index].y,
+            locationArray[visnum.index].x
+          )
+        )
+      );
+      const backToFrontIntersectionAngles: number[] = [];
+      backToFrontIntersectionIndices.forEach(visnum =>
+        backToFrontIntersectionAngles.push(
+          Math.atan2(
+            locationArray[visnum.index].y,
+            locationArray[visnum.index].x
+          )
+        )
+      );
+      // Keep track of the front fill index
+      let currentFrontFillIndex = -1;
 
-      //keep track of the start boundary point and the current side so we can add boundary points appropriately
-      let boundaryCircleStartPoint = [locationArray[0].x, locationArray[0].y];
-      let currentSideIsFront = locationArray[0].front === true;
-
-      locationArray.forEach((loc, index) => {
-        if (!loc.front) {
-          // Move to the next back fill if necessary
-          // if (lastNegativeIndex !== index - 1 && !firstBackPart) {
-          //   currentBackFillIndex++;
-          //   // console.log(
-          //   //   "c back part ind",
-          //   //   currentBackFillIndex,
-          //   //   this.backParts.length
-          //   // );
-          //   if (currentBackFillIndex >= this.backFills.length) {
-          //     throw new Error(
-          //       "Polygon update: Needs more back fills than were allocated in the constructor"
-          //     );
-          //   }
-          // }
-          // firstBackPart = false;
-          // lastNegativeIndex = index;
-
-          const vertex = this.pool.pop();
-          if (vertex !== undefined) {
-            vertex.x = loc.x;
-            vertex.y = loc.y;
-            this.backFills[currentBackFillIndex].vertices.push(vertex);
-          }
-        } else {
-          // Move to the next front fill if necessary
-          // if (lastPositiveIndex !== index - 1 && !firstFrontPart) {
-          //   currentFrontFillIndex++;
-          //   // console.log(
-          //   //   "c front part ind",
-          //   //   currentBackFillIndex,
-          //   //   this.backParts.length
-          //   // );
-          //   if (currentFrontFillIndex >= this.frontFills.length) {
-          //     throw new Error(
-          //       "Polygon Update: Needs more front fills than were allocated in the constructor"
-          //     );
-          //   }
-          // }
-          // firstFrontPart = false;
-          // lastPositiveIndex = index;
-
-          const vertex = this.pool.pop();
-          if (vertex !== undefined) {
-            vertex.x = loc.x;
-            vertex.y = loc.y;
-            this.frontFills[currentFrontFillIndex].vertices.push(vertex);
-          }
+      // now trace all the front fills
+      while (
+        backToFrontIntersectionIndices.some(visnum => visnum.visited === false)
+      ) {
+        currentFrontFillIndex += 1;
+        if (currentFrontFillIndex === this.frontFills.length) {
+          throw new Error(
+            "Polygon: Not enough front fill parts allocated in the constructor"
+          );
         }
+        // first draw an edge in the fill from the first non-visited intersection
+        let i = backToFrontIntersectionIndices.findIndex(
+          visnum => visnum.visited === false
+        );
+        i = backToFrontIntersectionIndices[i].index;
 
-        const nextIndex = (((index + 1) % n) + n) % n;
-        // Check to see if the nextIndex leads to a location on the other side.
-        if (locationArray[index].front !== locationArray[nextIndex].front) {
-          // The nextIndex leads to a location on the other side.
-          // Time to cap off the side we have been writing to and add
-          if (currentSideIsFront) {
-            //find the angular width of the part of the boundary polygon to be copied
-            // Compute the angle from the positive x axis to the boundary start point
-            //NOTE: the syntax for atan2 is atan2(y,x)!!!!!
-            const startAngle = Math.atan2(
-              boundaryCircleStartPoint[0],
-              boundaryCircleStartPoint[1]
-            );
-            // Compute the angle from the positive x axis to the current location
-            //NOTE: the syntax for atan2 is atan2(y,x)!!!!!
-            const endAngle = Math.atan2(
-              locationArray[index].y,
-              locationArray[index].x
-            );
-          } else {
+        // trace a fill face
+        while (
+          this.frontFills[currentFrontFillIndex].vertices.length !== 0 ||
+          (this.frontFills[currentFrontFillIndex].vertices[0].x !==
+            locationArray[i].x &&
+            this.frontFills[currentFrontFillIndex].vertices[0].y !==
+              locationArray[i].y)
+        ) {
+          // mark this intersection visited
+          backToFrontIntersectionIndices[i].visited = true;
+          // have we completed a face?
+          while (locationArray[i].front === true) {
+            const vertex = this.pool.pop();
+            if (vertex !== undefined) {
+              vertex.x = locationArray[i].x;
+              vertex.y = locationArray[i].y;
+              this.frontFills[currentFrontFillIndex].vertices.push(vertex);
+            } else {
+              throw new Error(
+                "Polygon: not enough anchors in the pool to trace a front edge."
+              );
+            }
+            i++;
           }
-
-          // reset the boundaryCircleStartPoint and currentSide is front variable for tracing the next part of the fill
-          boundaryCircleStartPoint = [
-            locationArray[nextIndex].x,
-            locationArray[nextIndex].y
+          const previousIndex = (((i - 1) % n) + n) % n;
+          const startAngle = Math.atan2(
+            locationArray[previousIndex].y,
+            locationArray[previousIndex].x
+          );
+          // now trace the boundary to the nearest back to front index search CW from startAngle among the angles to find the index to continue with
+          let smallestIndex = -1;
+          let smallestAngle = 2 * Math.PI; // any number bigger than the smallest possible angle so that the first time there is a smallest angle to record
+          let nextIndex = -1;
+          let difference = 2 * Math.PI; // any number bigger than the largest possible difference so that the first time there is an angle bigger than startAngle its difference is recorded
+          backToFrontIntersectionAngles.forEach((ang, ind) => {
+            if (ang < smallestAngle) {
+              smallestAngle = ang;
+              smallestIndex = ind;
+            }
+            if (startAngle < ang && ang - startAngle < difference) {
+              difference = ang - startAngle;
+              nextIndex = ind;
+            }
+          });
+          if (nextIndex === -1) {
+            // in this case startAngle was the largest angle and so the smallest one is the nextIndex
+            nextIndex = smallestIndex;
+          }
+          const endAngle = Math.atan2(
+            locationArray[nextIndex].y,
+            locationArray[nextIndex].x
+          );
+          // Compute the angular width of the section of the boundary polygon to add to the front/back fill
+          // This can be positive if traced counterclockwise or negative if traced clockwise( add 2 Pi to make positive)
+          let angularWidth = endAngle - startAngle;
+          if (angularWidth < 0) {
+            angularWidth += 2 * Math.PI;
+          }
+          //console.log(angularWidth);
+          // When tracing the boundary polygon we start from fromVector locationArray[previousIndex]
+          const fromVector = [
+            locationArray[previousIndex].x,
+            locationArray[previousIndex].y
           ];
-          currentSideIsFront = locationArray[nextIndex].front === true;
-        }
-      });
+          // then
+          // trace in the direction of a toVector that is perpendicular to locationArray[previousIndex]
+          // and is the next one CW from  locationArray[previousIndex]
+          const toVector = [fromVector[1], -fromVector[0]];
 
-      //   //find the angular width of the part of the boundary polygon to be copied
-      //   // Compute the angle from the positive x axis to the last frontPartVertex
-      //   //NOTE: the syntax for atan2 is atan2(y,x)!!!!!
-      //   const startAngle = Math.atan2(
-      //     this.frontPart.vertices[frontLen - 1].y,
-      //     this.frontPart.vertices[frontLen - 1].x
-      //   );
-      //   // Compute the angle from the positive x axis to the first frontPartVertex
-      //   //NOTE: the syntax for atan2 is atan2(y,x)!!!!!
-      //   const endAngle = Math.atan2(
-      //     this.frontPart.vertices[0].y,
-      //     this.frontPart.vertices[0].x
-      //   );
-      //   // Compute the angular width of the section of the boundary polygon to add to the front/back fill
-      //   // This can be positive if traced counterclockwise or negative if traced clockwise( add 2 Pi to make positive)
-      //   let angularWidth = endAngle - startAngle;
-      //   if (angularWidth < 0) {
-      //     angularWidth += 2 * Math.PI;
-      //   }
-      //   //console.log(angularWidth);
-      //   // When tracing the boundary polygon we start from fromVector = this.frontPart.vertices[frontLen - 1]
-      //   const fromVector = [
-      //     this.frontPart.vertices[frontLen - 1].x,
-      //     this.frontPart.vertices[frontLen - 1].y
-      //   ];
-      //   // then
-      //   // trace in the direction of a toVector that is perpendicular to this.frontPart.vertices[frontLen - 1]
-      //   // and points in the same direction as this.frontPart.vertices[0]
-      //   let toVector = [-fromVector[1], fromVector[0]];
-      //   // If the toVector doesn't point in the same direction as the first vector in frontPart then reverse the toVector
-      //   if (
-      //     toVector[0] * this.frontPart.vertices[0].x +
-      //       toVector[1] * this.frontPart.vertices[0].y <
-      //     0
-      //   ) {
-      //     toVector = [-toVector[0], -toVector[1]];
-      //   }
-      //   // If the a,b are bigger than Pi/2 then reverse the toVector
-      //   if (this._a > Math.PI / 2) {
-      //     toVector = [-toVector[0], -toVector[1]];
-      //   }
-      //   // Create the boundary points
-      //   boundaryPoints = this.boundaryCircleCoordinates(
-      //     fromVector,
-      //     SUBDIVISIONS + 1,
-      //     toVector,
-      //     angularWidth
-      //   );
-      //   // Build the frontFill- first add the frontPart.vertices
-      //   this.frontPart.vertices.forEach(node => {
-      //     if (posIndexFill === this.frontFill.vertices.length) {
-      //       //add a vector from the pool
-      //       this.frontFill.vertices.push(pool.pop()!);
-      //     }
-      //     this.frontFill.vertices[posIndexFill].x = node.x;
-      //     this.frontFill.vertices[posIndexFill].y = node.y;
-      //     posIndexFill++;
-      //   });
-      //   // add the boundary points
-      //   boundaryPoints.forEach(node => {
-      //     if (posIndexFill === this.frontFill.vertices.length) {
-      //       //add a vector from the pool
-      //       this.frontFill.vertices.push(pool.pop()!);
-      //     }
-      //     this.frontFill.vertices[posIndexFill].x = node[0];
-      //     this.frontFill.vertices[posIndexFill].y = node[1];
-      //     posIndexFill++;
-      //   });
-      //   // console.log("posIndex", posIndexFill, " of ", 4 * SUBDIVISIONS + 2);
-      //   // console.log("pool size", pool.length);
-      //   // Build the backFill- first add the backPart.vertices
-      //   this.backPart.vertices.forEach(node => {
-      //     if (negIndexFill === this.backFill.vertices.length) {
-      //       //add a vector from the pool
-      //       this.backFill.vertices.push(pool.pop()!);
-      //     }
-      //     this.backFill.vertices[negIndexFill].x = node.x;
-      //     this.backFill.vertices[negIndexFill].y = node.y;
-      //     negIndexFill++;
-      //   });
-      //   // console.log("negIndex", negIndexFill, " of ", 4 * SUBDIVISIONS + 2);
-      //   // console.log("pool size", pool.length);
-      //   // add the boundary points (but in reverse!)
-      //   boundaryPoints.reverse().forEach(node => {
-      //     if (negIndexFill === this.backFill.vertices.length) {
-      //       //add a vector from the pool
-      //       this.backFill.vertices.push(pool.pop()!);
-      //     }
-      //     this.backFill.vertices[negIndexFill].x = node[0];
-      //     this.backFill.vertices[negIndexFill].y = node[1];
-      //     negIndexFill++;
-      //   });
-      //   // put remaining vertices in the storage (there shouldn't be any in this case)
-      //   this.fillStorageAnchors.push(...pool.splice(0));
+          // add the boundary vertices from start to end in the direction of
+          const boundaryPoints = this.boundaryCircleCoordinates(
+            fromVector,
+            Math.floor(BOUNDARYSUBDIVISIONS / this.edgeSegments.length),
+            toVector,
+            angularWidth
+          );
+          boundaryPoints.forEach(pt => {
+            const vertex = this.pool.pop();
+            if (vertex !== undefined) {
+              vertex.x = pt[0];
+              vertex.y = pt[1];
+              this.frontFills[currentFrontFillIndex].vertices.push(vertex);
+            } else {
+              throw new Error(
+                "Polygon: not enough anchors in the pool to trace a front boundary circle edge."
+              );
+            }
+          });
+          // go to the start of the while loop with
+          i = backToFrontIntersectionIndices[nextIndex].index;
+        }
+      }
+
+      // Keep track of the back fill index
+      let currentBackFillIndex = -1;
+
+      // now trace all the back fills
+      while (
+        frontToBackIntersectionIndices.some(visnum => visnum.visited === false)
+      ) {
+        currentBackFillIndex += 1;
+        if (currentBackFillIndex === this.backFills.length) {
+          throw new Error(
+            "Polygon: Not enough back fill parts allocated in the constructor"
+          );
+        }
+        // first draw an edge in the fill from the first non-visited intersection
+        let i = frontToBackIntersectionIndices.findIndex(
+          visnum => visnum.visited === false
+        );
+        i = frontToBackIntersectionIndices[i].index;
+
+        // trace a fill face
+        while (
+          this.backFills[currentBackFillIndex].vertices.length !== 0 ||
+          (this.backFills[currentBackFillIndex].vertices[0].x !==
+            locationArray[i].x &&
+            this.backFills[currentBackFillIndex].vertices[0].y !==
+              locationArray[i].y)
+        ) {
+          // mark this intersection visited
+          frontToBackIntersectionIndices[i].visited = true;
+          // have we completed a face?
+          while (locationArray[i].front === false) {
+            const vertex = this.pool.pop();
+            if (vertex !== undefined) {
+              vertex.x = locationArray[i].x;
+              vertex.y = locationArray[i].y;
+              this.backFills[currentBackFillIndex].vertices.push(vertex);
+            } else {
+              throw new Error(
+                "Polygon: not enough anchors in the pool to trace a front edge."
+              );
+            }
+            i++;
+          }
+          const previousIndex = (((i - 1) % n) + n) % n;
+          const startAngle = Math.atan2(
+            locationArray[previousIndex].y,
+            locationArray[previousIndex].x
+          );
+          // now trace the boundary to the nearest front to back index search CCW from startAngle among the angles to find the index to continue with
+          let largestIndex = -1;
+          let largestAngle = -2 * Math.PI; // any number smaller than the largest possible angle so that the first time there is a largest angle to record
+          let nextIndex = -1;
+          let difference = 2 * Math.PI; // any number bigger than the largest possible difference so that the first time there is an angle bigger than startAngle its difference is recorded
+          frontToBackIntersectionAngles.forEach((ang, ind) => {
+            if (largestAngle < ang) {
+              largestAngle = ang;
+              largestIndex = ind;
+            }
+            if (ang < startAngle && startAngle - ang < difference) {
+              difference = ang - startAngle;
+              nextIndex = ind;
+            }
+          });
+          if (nextIndex === -1) {
+            // in this case startAngle was the largest angle and so the smallest one is the nextIndex
+            nextIndex = largestIndex;
+          }
+          const endAngle = Math.atan2(
+            locationArray[nextIndex].y,
+            locationArray[nextIndex].x
+          );
+          // Compute the angular width of the section of the boundary polygon to add to the front/back fill
+          // This can be positive if traced counterclockwise or negative if traced clockwise( add 2 Pi to make positive)
+          let angularWidth = endAngle - startAngle;
+          if (angularWidth < 0) {
+            angularWidth += 2 * Math.PI;
+          }
+          //console.log(angularWidth);
+          // When tracing the boundary polygon we start from fromVector locationArray[previousIndex]
+          const fromVector = [
+            locationArray[previousIndex].x,
+            locationArray[previousIndex].y
+          ];
+          // then
+          // trace in the direction of a toVector that is perpendicular to locationArray[previousIndex]
+          // and is the next one CCW from  locationArray[previousIndex]
+          const toVector = [-fromVector[1], fromVector[0]];
+
+          // add the boundary vertices from start to end in the direction of
+          const boundaryPoints = this.boundaryCircleCoordinates(
+            fromVector,
+            Math.floor(BOUNDARYSUBDIVISIONS / this.edgeSegments.length),
+            toVector,
+            angularWidth
+          );
+          boundaryPoints.forEach(pt => {
+            const vertex = this.pool.pop();
+            if (vertex !== undefined) {
+              vertex.x = pt[0];
+              vertex.y = pt[1];
+              this.backFills[currentBackFillIndex].vertices.push(vertex);
+            } else {
+              throw new Error(
+                "Polygon: not enough anchors in the pool to trace a front boundary circle edge."
+              );
+            }
+          });
+          // go to the start of the while loop with
+          i = frontToBackIntersectionIndices[nextIndex].index;
+        }
+      }
     }
     // The polygon interior is only on the front of the sphere
     else if (allEdgesOnFront && this._area < 2 * Math.PI) {
@@ -692,6 +747,9 @@ export default class Polygon extends Nodule {
   set area(newArea: number) {
     this._area = newArea;
   }
+  set SEPolygon(sePolygon: SEPolygon) {
+    this._sePolgon = sePolygon;
+  }
 
   frontGlowingDisplay(): void {
     this.frontFills.forEach(part => (part.visible = true));
@@ -735,7 +793,9 @@ export default class Polygon extends Nodule {
   /**
    * Sets the variables for stroke width glowing/not, this is empty in Polygon because there are no edges to stroke
    */
-  adjustSize(): void {}
+  adjustSize(): void {
+    // there is nothing to adjust
+  }
 
   /**
    * Adds the front/back/glowing/not parts to the correct layers
@@ -744,15 +804,12 @@ export default class Polygon extends Nodule {
   addToLayers(layers: Two.Group[]): void {
     // These must always be executed even if the front/back part is empty
     // Otherwise when they become non-empty they are not displayed
-
     this.frontFills.forEach(part => part.addTo(layers[LAYER.foregroundFills]));
-
     this.backFills.forEach(part => part.addTo(layers[LAYER.backgroundFills]));
   }
 
   removeFromLayers(/*layers: Two.Group[]*/): void {
     this.frontFills.forEach(part => part.remove());
-
     this.backFills.forEach(part => part.remove());
   }
 

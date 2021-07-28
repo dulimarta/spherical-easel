@@ -1,7 +1,7 @@
 import { SENodule } from "./SENodule";
 import { SEPoint } from "./SEPoint";
 import Circle from "@/plottables/Circle";
-import { Vector3, Matrix4 } from "three";
+import { Vector3, Matrix4, UniformsLib } from "three";
 import { Visitable } from "@/visitors/Visitable";
 import { Visitor } from "@/visitors/Visitor";
 import SETTINGS from "@/global-settings";
@@ -17,6 +17,7 @@ import i18n from "@/i18n";
 import { SESegment } from "./SESegment";
 import { SEAngleMarker } from "./SEAngleMarker";
 import Polygon from "@/plottables/Polygon";
+import Segment from "@/plottables/Segment";
 
 const styleSet = new Set([
   ...Object.getOwnPropertyNames(DEFAULT_POLYGON_FRONT_STYLE),
@@ -55,16 +56,6 @@ export class SEPolygon extends SENodule implements Visitable, Labelable {
    */
   private _angleMarkers: SEAngleMarker[] = [];
 
-  /**
-   * An array with the same length as _SEEdgeSegments containing the +1/-1 multiplier on the normal of SESegments, so
-   * that a point pt is inside the polygon if and only if
-   *
-   *  pt dot ( _interiorDirectionMultipliers[i] * SEEdgeSegments[i].normal) > 0
-   *
-   * for all i
-   */
-  private _interiorDirectionMultipliers: number[] = [];
-
   /** Temporary vectors */
   private tmpVector = new Vector3();
   private tmpVector1 = new Vector3();
@@ -82,15 +73,16 @@ export class SEPolygon extends SENodule implements Visitable, Labelable {
     poly: Polygon,
     edges: SESegment[],
     flippedBooleans: boolean[],
-    interiorDirectionMultipliers: number[],
     angleMarkers: SEAngleMarker[]
   ) {
     super();
     this.ref = poly;
     this._SEEdgeSegments.push(...edges);
-    this._interiorDirectionMultipliers.push(...interiorDirectionMultipliers);
     this._segmentIsFlipped.push(...flippedBooleans);
     this._angleMarkers.push(...angleMarkers);
+
+    // set the reference to SEPolygon, so we can use isHitAt to determine if a point is inside or outside of P
+    this.ref.SEPolygon = this;
 
     SENodule.POLYGON_COUNT++;
     this.name = `Po${SENodule.POLYGON_COUNT}`;
@@ -102,10 +94,6 @@ export class SEPolygon extends SENodule implements Visitable, Labelable {
 
   get SEEdgeSegments(): SESegment[] {
     return this._SEEdgeSegments;
-  }
-
-  get interiorDirectionMultipliers(): number[] {
-    return this._interiorDirectionMultipliers;
   }
 
   get segmentFlippedList(): boolean[] {
@@ -149,16 +137,153 @@ export class SEPolygon extends SENodule implements Visitable, Labelable {
     unitIdealVector: Vector3,
     currentMagnificationFactor: number
   ): boolean {
-    const interior: boolean[] = [];
-    this._SEEdgeSegments.forEach((seg, ind) => {
-      this.tmpVector.copy(seg.normalVector);
-      this.tmpVector.multiplyScalar(this._interiorDirectionMultipliers[ind]);
-      interior.push(
-        unitIdealVector.dot(this.tmpVector) >
-          -SETTINGS.polygon.hitIdealDistance / currentMagnificationFactor
+    //first make sure the unitIdeal is not a point on any of the line segments
+    if (this._SEEdgeSegments.some(seg => seg.onSegment(unitIdealVector))) {
+      return true;
+    }
+    // create a point, P, inside the polygon, then connect unitIdealVector with P and count the intersection (intersections with vertices are not allowed!)
+    // with the line segment edges. If the number of intersections is even, unitIdealVector is inside, if odd, outside.
+
+    // first create P near angleMarkers[1] which measures the angle from SEEdgeSegments[0] to SEEdgeSegments[1]
+
+    // set up a coordinate frame with
+    //   center being the common point of SEEdgeSegments[0] and SEEdgeSegments[1]
+    //   from being a vector in the plane of SEEdgeSegments[0]. Traveling from Q along SEEdgeSegments[0] for Pi/2 angle you arrive at from
+    const center = new Vector3();
+    const from = new Vector3();
+    const to = new Vector3();
+    if (this.segmentFlippedList[0]) {
+      center.copy(this._SEEdgeSegments[0].startSEPoint.locationVector);
+    } else {
+      center.copy(this._SEEdgeSegments[0].endSEPoint.locationVector);
+    }
+    to.crossVectors(
+      center,
+      this._SEEdgeSegments[0].getMidPointVector()
+    ).normalize();
+    from.crossVectors(to, center).normalize();
+
+    // P is   sin(SETTINGS.minimumVertexToEdgeThickness/2)*cos(angle/2)*from +
+    //        sin(SETTINGS.minimumVertexToEdgeThickness/2)*sin(angle/2)*to +
+    //                     cos(SETTINGS.minimumVertexToEdgeThickness/2)*center
+    const angle = this._angleMarkers[1].value;
+    const P = new Vector3(0, 0, 0);
+    P.addScaledVector(
+      from,
+      Math.sin(SETTINGS.polygon.minimumVertexToEdgeThickness / 2) *
+        Math.cos(angle / 2)
+    );
+    P.addScaledVector(
+      to,
+      Math.sin(SETTINGS.polygon.minimumVertexToEdgeThickness / 2) *
+        Math.sin(angle / 2)
+    );
+    P.addScaledVector(
+      center,
+      Math.cos(SETTINGS.polygon.minimumVertexToEdgeThickness / 2)
+    );
+    P.normalize();
+
+    // how many times does the segment (of length less than or equal to pi) from P to unitIdealVector, called S
+    //  cross on the edges of the polygon? if even  unitIdealVector is inside the polygon, if not unitIdealVector is outside
+
+    const perpToLineThroughPAndUnitIdealVector = new Vector3();
+    perpToLineThroughPAndUnitIdealVector.crossVectors(P, unitIdealVector);
+    if (perpToLineThroughPAndUnitIdealVector.isZero(SETTINGS.tolerance)) {
+      // P and unitIdealVector are the same or antipodal and any vector perpendicular to P will do
+      perpToLineThroughPAndUnitIdealVector.crossVectors(
+        P,
+        new Vector3(0, 1, 0)
       );
+      if (perpToLineThroughPAndUnitIdealVector.isZero(SETTINGS.tolerance)) {
+        // P and unitIdealVector are the same or antipodal and any vector perpendicular to P will do
+        perpToLineThroughPAndUnitIdealVector.crossVectors(
+          P,
+          new Vector3(1, 0, 0)
+        );
+      }
+    }
+    perpToLineThroughPAndUnitIdealVector.normalize();
+
+    const lengthOfSegmentFromPToUnitIdeal = P.angleTo(unitIdealVector);
+
+    let totalNumberOfCrossings = 0;
+    this._SEEdgeSegments.forEach(seg => {
+      // compute the number of intersections between S and seg, the intersections possibly occur at +/- normalToSeg cross perpToLineThroughPAndUnitIdealVector
+      const possibleIntersectionLocation = new Vector3();
+      possibleIntersectionLocation
+        .crossVectors(seg.normalVector, perpToLineThroughPAndUnitIdealVector)
+        .normalize();
+      let sumOfDistancesFromPAndUnitIdeal =
+        P.angleTo(possibleIntersectionLocation) +
+        unitIdealVector.angleTo(possibleIntersectionLocation);
+
+      // check to see if the possibleIntersection is on *both* the segment and the P to unitIdeal segment
+      if (
+        seg.onSegment(possibleIntersectionLocation) &&
+        Math.abs(
+          sumOfDistancesFromPAndUnitIdeal - lengthOfSegmentFromPToUnitIdeal
+        ) < SETTINGS.tolerance
+      ) {
+        // check to make sure the intersection isn't either endpoint
+        if (
+          this.tmpVector
+            .subVectors(
+              seg.startSEPoint.locationVector,
+              possibleIntersectionLocation
+            )
+            .isZero(SETTINGS.tolerance) ||
+          this.tmpVector
+            .subVectors(
+              seg.endSEPoint.locationVector,
+              possibleIntersectionLocation
+            )
+            .isZero(SETTINGS.tolerance)
+        ) {
+          throw new Error(
+            "Polygon: The line from a point interior to unitIdealVector passes through a vertex!"
+          );
+        } else {
+          totalNumberOfCrossings += 1;
+        }
+      }
+      possibleIntersectionLocation.multiplyScalar(-1);
+      sumOfDistancesFromPAndUnitIdeal =
+        P.angleTo(possibleIntersectionLocation) +
+        unitIdealVector.angleTo(possibleIntersectionLocation);
+
+      // check to see if the possibleIntersection is on *both* the segment and the P to unitIdeal segment
+      if (
+        seg.onSegment(possibleIntersectionLocation) &&
+        Math.abs(
+          sumOfDistancesFromPAndUnitIdeal - lengthOfSegmentFromPToUnitIdeal
+        ) < SETTINGS.tolerance
+      ) {
+        // check to make sure the intersection isn't either endpoint
+        if (
+          this.tmpVector
+            .subVectors(
+              seg.startSEPoint.locationVector,
+              possibleIntersectionLocation
+            )
+            .isZero(SETTINGS.tolerance) ||
+          this.tmpVector
+            .subVectors(
+              seg.endSEPoint.locationVector,
+              possibleIntersectionLocation
+            )
+            .isZero(SETTINGS.tolerance)
+        ) {
+          throw new Error(
+            "Polygon: The line from a point interior to unitIdealVector passes through a vertex!"
+          );
+        } else {
+          totalNumberOfCrossings += 1;
+        }
+      }
     });
-    return interior.every(bol => bol === true);
+
+    return totalNumberOfCrossings % 2 === 0;
   }
 
   public update(state: UpdateStateType): void {
@@ -232,95 +357,6 @@ export class SEPolygon extends SENodule implements Visitable, Labelable {
           break;
         }
       }
-    }
-
-    if (this._exists) {
-      // update the interior direction multipliers
-      this._SEEdgeSegments.forEach((seg, index) => {
-        const nextIndex = (((index + 1) % n) + n) % n;
-        const testVector = this._SEEdgeSegments[nextIndex].getMidPointVector();
-        if (
-          this._angleMarkers[nextIndex].value <
-          Math.PI - SETTINGS.tolerance
-        ) {
-          // When the angle is less than Pi
-          // the normal vector to this._SEEdgeSegments[index] and testVector should be on the
-          // same side of the line containing this._SEEdgeSegments[index]
-          if (this._SEEdgeSegments[index].normalVector.dot(testVector) > 0) {
-            this._interiorDirectionMultipliers[index] = 1;
-          } else {
-            this._interiorDirectionMultipliers[index] = -1;
-          }
-        } else if (
-          this._angleMarkers[nextIndex].value >
-          Math.PI + SETTINGS.tolerance
-        ) {
-          // When the angle is greater than Pi
-          // the normal vector to this._SEEdgeSegments[index] and testVector are on the
-          // opposite sides of the line containing this._SEEdgeSegments[index]
-          if (this._SEEdgeSegments[index].normalVector.dot(testVector) > 0) {
-            this._interiorDirectionMultipliers[index] = -1;
-          } else {
-            this._interiorDirectionMultipliers[index] = 1;
-          }
-        } else {
-          // We have a straight angle, record a zero and fix after this first pass
-          this._interiorDirectionMultipliers[index] = 0;
-        }
-      });
-      // handle the angles that are exactly pi (within SETTINGS.tolerance)
-      while (this._interiorDirectionMultipliers.some(val => val === 0)) {
-        const zeroIndex = this._interiorDirectionMultipliers.findIndex(
-          val => val === 0
-        );
-        let nextNonZeroIndex = zeroIndex; // temporary assignment
-        for (let i = 1; i < this._interiorDirectionMultipliers.length; i++) {
-          //search the (zeroIndex plus i) mod n for the next non-zero
-          const nextIndex = (((zeroIndex + 1) % n) + n) % n;
-          if (this._interiorDirectionMultipliers[nextIndex] !== 0) {
-            nextNonZeroIndex = nextIndex;
-            break;
-          }
-        }
-        const testVector = this._SEEdgeSegments[
-          nextNonZeroIndex
-        ].getMidPointVector();
-        if (this._angleMarkers[nextNonZeroIndex].value < Math.PI) {
-          // When the angle is less than Pi
-          // the normal vector to this._SEEdgeSegments[nextNonZeroIndex] and testVector should be on the
-          // same side of the line containing this._SEEdgeSegments[nextNonZeroIndex]
-          if (
-            this._SEEdgeSegments[nextNonZeroIndex].normalVector.dot(
-              testVector
-            ) > 0
-          ) {
-            this._interiorDirectionMultipliers[nextNonZeroIndex] = 1;
-          } else {
-            this._interiorDirectionMultipliers[nextNonZeroIndex] = -1;
-          }
-        } else if (this._angleMarkers[nextNonZeroIndex].value > Math.PI) {
-          // When the angle is greater than Pi
-          // the normal vector to this._SEEdgeSegments[nextNonZeroIndex] and testVector are on the
-          // opposite sides of the line containing this._SEEdgeSegments[nextNonZeroIndex]
-          if (
-            this._SEEdgeSegments[nextNonZeroIndex].normalVector.dot(
-              testVector
-            ) > 0
-          ) {
-            this._interiorDirectionMultipliers[nextNonZeroIndex] = -1;
-          } else {
-            this._interiorDirectionMultipliers[nextNonZeroIndex] = 1;
-          }
-        } else {
-          throw new Error(
-            "SEPolygon: Updating the interiorDirectionMultipliers. This angle should not be PI."
-          );
-        }
-      }
-
-      // display the new polygon with the updated values
-      this.ref.area = this.area; // must be updated so that the display polygon is rendered correctly
-      this.ref.updateDisplay();
     }
 
     if (this.showing && this._exists) {
