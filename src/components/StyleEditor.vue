@@ -10,7 +10,6 @@ import { namespace } from "vuex-class";
 import { SEStore } from "@/store";
 import EventBus from "@/eventHandlers/EventBus";
 import { StyleNoduleCommand } from "@/commands/StyleNoduleCommand";
-import App from "@/App.vue";
 import SETTINGS from "@/global-settings";
 const SE = namespace("se");
 type StyleOptionDiff = {
@@ -137,7 +136,6 @@ export default class extends Vue {
     });
   }
   undo(ev: { selector: string }): void {
-    console.debug("Restoring to start of selection", ev.selector);
     if (ev.selector !== "backStyleContrast") {
       const styleData = this.initialStatesMap.get(this.panel);
       if (styleData) {
@@ -146,14 +144,10 @@ export default class extends Vue {
       }
     } else {
       Nodule.setBackStyleContrast(this.initialBackStyleContrast);
-      console.debug("Changing Global backstyle contrast");
-      this.selectedSENodules.forEach((n: SENodule) => {
-        n.ref?.stylize(DisplayStyle.ApplyCurrentVariables);
-      });
+      this.activeStyleOptions.backStyleContrast = this.initialBackStyleContrast;
     }
   }
   restoreDefault(ev: { selector: string }): void {
-    console.debug("Restoring to default", ev.selector);
     if (ev.selector !== "backStyleContrast") {
       const styleData = this.defaultStatesMap.get(this.panel);
       if (styleData) {
@@ -162,9 +156,8 @@ export default class extends Vue {
       }
     } else {
       Nodule.setBackStyleContrast(SETTINGS.style.backStyleContrast);
-      this.selectedSENodules.forEach((n: SENodule) => {
-        n.ref?.stylize(DisplayStyle.ApplyCurrentVariables);
-      });
+      this.activeStyleOptions.backStyleContrast =
+        SETTINGS.style.backStyleContrast;
     }
   }
 
@@ -320,7 +313,14 @@ export default class extends Vue {
         updatePayload
       );
     }
-    if (updatedProps.length > 1) {
+    if (updatedProps.length > 0) {
+      if (updatePayload.backStyleContrast) {
+        Nodule.setBackStyleContrast(updatePayload.backStyleContrast);
+        this.selectedNodules.forEach((n: Nodule) => {
+          n.stylize(DisplayStyle.ApplyCurrentVariables);
+        });
+        delete updatePayload.backStyleContrast;
+      }
       this.selectedNodules.forEach((n: Nodule) => {
         // console.debug("Updating style of", n);
         n.updateStyle(this.panel, updatePayload);

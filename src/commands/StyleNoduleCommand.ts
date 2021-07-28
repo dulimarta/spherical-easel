@@ -1,5 +1,5 @@
 import { Command } from "./Command";
-import Nodule from "@/plottables/Nodule";
+import Nodule, { DisplayStyle } from "@/plottables/Nodule";
 import { StyleOptions, StyleEditPanels } from "../types/Styles";
 
 export class StyleNoduleCommand extends Command {
@@ -7,16 +7,14 @@ export class StyleNoduleCommand extends Command {
   private panel: StyleEditPanels;
   private currentStyles: StyleOptions[] = [];
   private pastStyles: StyleOptions[] = [];
-  private currentBackStyleContrast: number | undefined;
-  private pastBackStyleContrast: number | undefined;
+  // private currentBackStyleContrast: number | undefined;
+  // private pastBackStyleContrast: number | undefined;
 
   constructor(
     nodules: Nodule[],
     panel: StyleEditPanels,
     currentStyles: StyleOptions[],
-    pastStyles: StyleOptions[],
-    currentBackStyleContrast?: number,
-    pastBackStyleContrast?: number
+    pastStyles: StyleOptions[]
   ) {
     super();
     console.debug("Creating StyleNoduleCommand");
@@ -30,11 +28,22 @@ export class StyleNoduleCommand extends Command {
     pastStyles.forEach(obj => {
       this.pastStyles.push({ ...obj });
     });
-    this.currentBackStyleContrast = currentBackStyleContrast;
-    this.pastBackStyleContrast = pastBackStyleContrast;
+    // this.currentBackStyleContrast = currentBackStyleContrast;
+    // this.pastBackStyleContrast = pastBackStyleContrast;
   }
 
   do(): void {
+    if (
+      this.currentStyles.length > 0 &&
+      this.currentStyles[0].backStyleContrast
+    ) {
+      Nodule.setBackStyleContrast(this.currentStyles[0].backStyleContrast);
+      this.nodules.forEach((n: Nodule, k: number) => {
+        n.stylize(DisplayStyle.ApplyCurrentVariables);
+        // delete this.currentStyles[k].backStyleContrast;
+      });
+    }
+
     for (let i = 0; i < this.nodules.length; i++) {
       Command.store.changeStyle({
         selected: [this.nodules[i]],
@@ -51,6 +60,13 @@ export class StyleNoduleCommand extends Command {
   }
 
   restoreState(): void {
+    if (this.pastStyles.length > 0 && this.pastStyles[0].backStyleContrast) {
+      Nodule.setBackStyleContrast(this.pastStyles[0].backStyleContrast);
+      this.nodules.forEach((n: Nodule, k: number) => {
+        n.stylize(DisplayStyle.ApplyCurrentVariables);
+        // delete this.currentStyles[k].backStyleContrast;
+      });
+    }
     for (let i = 0; i < this.nodules.length; i++) {
       console.debug(
         "Restore effect of StyleNoduleCommand to ",

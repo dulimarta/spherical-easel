@@ -5,7 +5,7 @@
       :nodule-map-function="objectMapper"
       :automatic-back-style="usingAutomaticBackStyle">
       <div
-        slot-scope="{forceDataAgreement, hasStyle, styleOptions, conflictingProps, enableBackStyleEdit /*, automaticBackStyleCommonValue*/}">
+        slot-scope="{forceDataAgreement, hasStyle, styleOptions, conflictingProps, enableBackStyleEdit/*, automaticBackStyleCommonValue*/}">
         <!--ul>
           <li>Conclict list: {{conflictingProps}}</li>
           <li>Style Opt: {{styleOptions}}</li>
@@ -25,7 +25,7 @@
           i18n-button-tool-tip="style.objectsNotShowingToolTip"
           @click="toggleAllObjectsVisibility">
         </OverlayWithFixButton>
-        <InputGroup input-selector="backstyleContrast"
+        <InputGroup input-selector="backStyleContrast"
           v-if="editModeIsBack">
           <!-- Enable the Dynamic Back Style Overlay -->
           <OverlayWithFixButton v-if="!usingAutomaticBackStyle"
@@ -40,31 +40,32 @@
           <span
             class="text-subtitle-2">{{ $t('style.backStyleContrast') }}</span>
           <span>
-            {{" ("+ Math.floor(backStyleContrast*100)+"%)" }}
+            {{" ("+ Math.floor(styleOptions.backStyleContrast*100)+"%)" }}
           </span>
           <v-tooltip bottom
             :open-delay="toolTipOpenDelay"
             :close-delay="toolTipCloseDelay"
             max-width="400px">
             <template v-slot:activator="{ on }">
-              <v-slider v-model.number="backStyleContrast"
+              <v-slider v-model.number="styleOptions.backStyleContrast"
                 :min="0"
                 v-on="on"
                 step="0.1"
-                @change="onBackStyleContrastChange"
                 :max="1"
                 type="range"
                 :disabled="!usingAutomaticBackStyle"
                 dense>
                 <template v-slot:prepend>
-                  <v-icon @click="decrementBackStyleContrast">mdi-minus
+                  <v-icon @click="styleOptions.backStyleContrast -= 0.1">
+                    mdi-minus
                   </v-icon>
                 </template>
                 <template v-slot:thumb-label="{ value }">
                   {{ backStyleContrastSelectorThumbStrings[Math.floor(value*10)] }}
                 </template>
                 <template v-slot:append>
-                  <v-icon @click="incrementBackStyleContrast">mdi-plus
+                  <v-icon @click="styleOptions.backStyleContrast += 0.1">
+                    mdi-plus
                   </v-icon>
                 </template>
               </v-slider>
@@ -311,11 +312,6 @@ export default class FrontBackStyle extends Vue {
     return n.ref!;
   }
 
-  /**
-   * Help to display all the availble styling choices when nothing is selected
-   */
-  // private noObjectsSelected = true;
-
   private toolTipOpenDelay = SETTINGS.toolTip.openDelay;
   private toolTipCloseDelay = SETTINGS.toolTip.closeDelay;
   /**
@@ -368,7 +364,7 @@ export default class FrontBackStyle extends Vue {
 
   // dbAgreement and udbCommonValue are computed by the program
   // useDB is set by user
-  private backStyleContrast = Nodule.getBackStyleContrast();
+  // private backStyleContrast = Nodule.getBackStyleContrast();
   private backStyleContrastSelectorThumbStrings = [
     "Min",
     "10%",
@@ -503,29 +499,8 @@ export default class FrontBackStyle extends Vue {
      */
   }
 
-  // These methods are linked to the usingAutomaticBackStyle fade-in-card
-  @Watch("backStyleContrast")
-  onBackStyleContrastChange(): void {
-    console.debug("Background contrast updated to", this.backStyleContrast);
-    Nodule.setBackStyleContrast(this.backStyleContrast);
-    this.selectedSENodules.forEach((n: SENodule) => {
-      n.ref?.stylize(DisplayStyle.ApplyCurrentVariables);
-    });
-  }
-
   toggleBackStyleOptionsAvailability(): void {
     this.usingAutomaticBackStyle = !this.usingAutomaticBackStyle;
-  }
-
-  incrementBackStyleContrast(): void {
-    if (this.usingAutomaticBackStyle && this.backStyleContrast + 0.1 <= 1) {
-      this.backStyleContrast += 0.1;
-    }
-  }
-  decrementBackStyleContrast(): void {
-    if (this.usingAutomaticBackStyle && this.backStyleContrast - 0.1 >= 0) {
-      this.backStyleContrast -= 0.1;
-    }
   }
 }
 </script>
