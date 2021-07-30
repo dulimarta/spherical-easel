@@ -814,7 +814,7 @@ export default class PolygonHandler extends Highlighter {
       // Set the selected segment's Label to display and to show NameAndValue in an undoable way
       polygonCommandGroup.addCommand(
         new StyleNoduleCommand(
-          [seg.label!],
+          [seg.label!.ref],
           StyleEditPanels.Front,
           [
             {

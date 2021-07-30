@@ -196,13 +196,13 @@ export default class Polygon extends Nodule {
     // Bring all the locations of the vertices in the correct order in one array
     const locationArray: location[] = [];
     this.edgeSegments.forEach((seg, index) => {
-      console.log("seg flipped", index, this.segmentIsFlipped[index]);
-      console.log("first vertex on front", seg.firstVertexIsOnFront);
-      console.log("last vertex on front", seg.lastVertexIsOnFront);
-      console.log("front extra length", seg.frontPartExtra.vertices.length);
-      console.log("back extra length", seg.backPartExtra.vertices.length);
-      console.log("front length", seg.frontPart.vertices.length);
-      console.log("back length", seg.backPart.vertices.length);
+      // console.log("seg flipped", index, this.segmentIsFlipped[index]);
+      // console.log("first vertex on front", seg.firstVertexIsOnFront);
+      // console.log("last vertex on front", seg.lastVertexIsOnFront);
+      // console.log("front extra length", seg.frontPartExtra.vertices.length);
+      // console.log("back extra length", seg.backPartExtra.vertices.length);
+      // console.log("front length", seg.frontPart.vertices.length);
+      // console.log("back length", seg.backPart.vertices.length);
       if (this.segmentIsFlipped[index]) {
         // work from the end to the start in each part of the segment
         if (seg.lastVertexIsOnFront) {
