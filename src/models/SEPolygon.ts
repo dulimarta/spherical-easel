@@ -18,12 +18,13 @@ import { SESegment } from "./SESegment";
 import { SEAngleMarker } from "./SEAngleMarker";
 import Polygon from "@/plottables/Polygon";
 import Segment from "@/plottables/Segment";
+import { SEExpression } from "./SEExpression";
 
 const styleSet = new Set([
   ...Object.getOwnPropertyNames(DEFAULT_POLYGON_FRONT_STYLE),
   ...Object.getOwnPropertyNames(DEFAULT_POLYGON_BACK_STYLE)
 ]);
-export class SEPolygon extends SENodule implements Visitable, Labelable {
+export class SEPolygon extends SEExpression implements Visitable, Labelable {
   /**
    * The plottable (TwoJS) segment associated with this model segment
    */
@@ -48,13 +49,18 @@ export class SEPolygon extends SENodule implements Visitable, Labelable {
    *  _SEEdgeSegments[i].startSEPoint to _SEEdgeSegments[i].endSEPoint is the positive direction in edge _SEEdgeSegments[i]
    *
    */
-  private _SEEdgeSegments: SESegment[] = [];
+  private _seEdgeSegments: SESegment[] = [];
   private _segmentIsFlipped: boolean[] = [];
 
   /**
    * _angleMarkers[i] is the angle between _SESegments[i-1] and _SESegments[i]
    */
   private _angleMarkers: SEAngleMarker[] = [];
+
+  /**
+   * The number of this polygon when it was created (i.e. this is the number polygons have created so far)
+   */
+  private _polygonNumber = 0;
 
   /** Temporary vectors */
   private tmpVector = new Vector3();
@@ -77,23 +83,27 @@ export class SEPolygon extends SENodule implements Visitable, Labelable {
   ) {
     super();
     this.ref = poly;
-    this._SEEdgeSegments.push(...edges);
+    this._seEdgeSegments.push(...edges);
     this._segmentIsFlipped.push(...flippedBooleans);
     this._angleMarkers.push(...angleMarkers);
 
-    // set the reference to SEPolygon, so we can use isHitAt to determine if a point is inside or outside of P
-    this.ref.SEPolygon = this;
-
+    this._valueDisplayMode = SETTINGS.polygon.initialValueDisplayMode;
+    // SEPolygon is both an expression and a plottable (not the only one)
+    // As an expression to be used in the calculation this.name must be "M###" so that it
+    // can be referenced by the user and found by the parser
+    // however we don't want the initial shortName of the angle marker's label to be displayed with a "M###"
+    //  so we record the angleMarkerNumber and then in SELabel, we set the short name of the Label using this field.
+    // The M### name is defined in the SEExpression constructor
     SENodule.POLYGON_COUNT++;
-    this.name = `Po${SENodule.POLYGON_COUNT}`;
+    this._polygonNumber = SENodule.POLYGON_COUNT;
   }
 
   customStyles(): Set<string> {
     return styleSet;
   }
 
-  get SEEdgeSegments(): SESegment[] {
-    return this._SEEdgeSegments;
+  get seEdgeSegments(): SESegment[] {
+    return this._seEdgeSegments;
   }
 
   get segmentFlippedList(): boolean[] {
@@ -102,11 +112,17 @@ export class SEPolygon extends SENodule implements Visitable, Labelable {
 
   public get noduleDescription(): string {
     let edgeNames = "";
-    this._SEEdgeSegments.forEach(seg => {
+    this._seEdgeSegments.forEach(seg => {
       edgeNames = edgeNames + seg.label?.ref.shortUserName + ", ";
     });
     edgeNames = edgeNames.substring(0, edgeNames.length - 2);
-    if (this._SEEdgeSegments.length === 3) {
+    if (this._seEdgeSegments.length === 2) {
+      return String(
+        i18n.t(`objectTree.bigonWithEdges`, {
+          edges: edgeNames
+        })
+      );
+    } else if (this._seEdgeSegments.length === 3) {
       return String(
         i18n.t(`objectTree.triangleWithEdges`, {
           edges: edgeNames
@@ -122,15 +138,27 @@ export class SEPolygon extends SENodule implements Visitable, Labelable {
   }
 
   public get noduleItemText(): string {
-    return this.label?.ref.shortUserName ?? "No Label Short Name In SEPolygon";
+    return (
+      this.name +
+      " - " +
+      this.label?.ref.shortUserName +
+      `: ${this.prettyValue}`
+    );
   }
 
-  get area(): number {
+  /**
+   * the area of the polygon
+   */
+  get value(): number {
     let sumOfAngles = 0;
     this._angleMarkers.forEach(ang => {
-      sumOfAngles = +ang.value;
+      sumOfAngles += ang.value;
     });
-    return sumOfAngles - this._angleMarkers.length * Math.PI;
+    return sumOfAngles - (this._angleMarkers.length - 2) * Math.PI;
+  }
+
+  get polygonNumber(): number {
+    return this._polygonNumber;
   }
 
   public isHitAt(
@@ -138,9 +166,19 @@ export class SEPolygon extends SENodule implements Visitable, Labelable {
     currentMagnificationFactor: number
   ): boolean {
     //first make sure the unitIdeal is not a point on any of the line segments
-    if (this._SEEdgeSegments.some(seg => seg.onSegment(unitIdealVector))) {
+    if (
+      this._seEdgeSegments.some(seg =>
+        seg.isHitAt(unitIdealVector, currentMagnificationFactor)
+      )
+    ) {
+      // console.log(
+      //   "Here inside hit a segment showing?",
+      //   this.showing,
+      //   this.exists
+      // );
       return true;
     }
+    // console.log("after edge check");
     // create a point, P, inside the polygon, then connect unitIdealVector with P and count the intersection (intersections with vertices are not allowed!)
     // with the line segment edges. If the number of intersections is even, unitIdealVector is inside, if odd, outside.
 
@@ -153,13 +191,13 @@ export class SEPolygon extends SENodule implements Visitable, Labelable {
     const from = new Vector3();
     const to = new Vector3();
     if (this.segmentFlippedList[0]) {
-      center.copy(this._SEEdgeSegments[0].startSEPoint.locationVector);
+      center.copy(this._seEdgeSegments[0].startSEPoint.locationVector);
     } else {
-      center.copy(this._SEEdgeSegments[0].endSEPoint.locationVector);
+      center.copy(this._seEdgeSegments[0].endSEPoint.locationVector);
     }
     to.crossVectors(
       center,
-      this._SEEdgeSegments[0].getMidPointVector()
+      this._seEdgeSegments[0].getMidPointVector()
     ).normalize();
     from.crossVectors(to, center).normalize();
 
@@ -208,7 +246,7 @@ export class SEPolygon extends SENodule implements Visitable, Labelable {
     const lengthOfSegmentFromPToUnitIdeal = P.angleTo(unitIdealVector);
 
     let totalNumberOfCrossings = 0;
-    this._SEEdgeSegments.forEach(seg => {
+    this._seEdgeSegments.forEach(seg => {
       // compute the number of intersections between S and seg, the intersections possibly occur at +/- normalToSeg cross perpToLineThroughPAndUnitIdealVector
       const possibleIntersectionLocation = new Vector3();
       possibleIntersectionLocation
@@ -294,28 +332,33 @@ export class SEPolygon extends SENodule implements Visitable, Labelable {
     this.setOutOfDate(false);
 
     // All parent segments must exist (This is equivalent to checking that all the angle markers exist)
-    this._exists = this._SEEdgeSegments.every(seg => seg.exists === true);
+    this._exists = this._seEdgeSegments.every(seg => seg.exists === true);
 
-    const n = this._SEEdgeSegments.length;
+    const n = this._seEdgeSegments.length;
     if (this._exists) {
       // All vertices must be far enough away from any nonadjacent edge to exist
-      for (let i = 0; i < this._SEEdgeSegments.length; i++) {
-        let vertex: SEPoint;
+      for (let i = 0; i < n; i++) {
+        let nextVertex: Vector3; // the next vertex is common to segment i and i+1
         if (this._segmentIsFlipped[i]) {
-          vertex = this._SEEdgeSegments[i].endSEPoint;
+          nextVertex = this._seEdgeSegments[i].startSEPoint.locationVector;
         } else {
-          vertex = this._SEEdgeSegments[i].startSEPoint;
+          nextVertex = this._seEdgeSegments[i].endSEPoint.locationVector;
         }
 
-        for (let j = 0; j < this._SEEdgeSegments.length; j++) {
+        for (let j = 0; j < n; j++) {
           // don't check the segments that are adjacent to the vertex
-          if (j !== i || j !== (((i - 1) % n) + n) % n) {
+          if (j !== i && j !== (((i + 1) % n) + n) % n) {
             if (
-              this._SEEdgeSegments[j]
-                .closestVector(vertex.locationVector)
-                .angleTo(vertex.locationVector) <
+              this._seEdgeSegments[j]
+                .closestVector(nextVertex)
+                .angleTo(nextVertex) <
               SETTINGS.polygon.minimumVertexToEdgeThickness
             ) {
+              console.log(
+                "too close",
+                this._seEdgeSegments[i].name,
+                this._seEdgeSegments[j].name
+              );
               // break out of the inner loop if we hit a false value (i.e. a vertex is too close to an edge)
               this._exists = false;
               break;
@@ -330,23 +373,33 @@ export class SEPolygon extends SENodule implements Visitable, Labelable {
     }
     // All segments must only intersect at endpoints
     if (this._exists) {
-      for (let i = 0; i < this._SEEdgeSegments.length; i++) {
-        const intersectionPointListWithParentSegi = SEStore.findIntersectionPointsByParent(
-          this._SEEdgeSegments[i].name
-        );
-        for (let j = 0; j < this._SEEdgeSegments.length; j++) {
-          // don't check the segments that are adjacent to the segment
-          if (j !== (((i + 1) % n) + n) % n || j !== (((i - 1) % n) + n) % n) {
+      for (let i = 0; i < n; i++) {
+        for (let j = 0; j < n; j++) {
+          // don't check the segments that are adjacent to segment[i] (or the ith segment)
+          if (
+            j !== (((i + 1) % n) + n) % n &&
+            j !== i &&
+            j !== (((i - 1) % n) + n) % n
+          ) {
             if (
-              intersectionPointListWithParentSegi.some(pt => {
-                if (pt.name.includes(this._SEEdgeSegments[i].name)) {
-                  return pt.exists; // this will get executed *twice* as every pair of segments intersects twice
-                } else {
-                  return false;
-                }
-              })
+              SEStore.findIntersectionPointsByParent(
+                this._seEdgeSegments[i].name,
+                this._seEdgeSegments[j].name
+              ).some(pt => pt.exists)
             ) {
-              // no need to keep searching break out of the inner loop
+              console.log(
+                "interection",
+                i,
+                this._seEdgeSegments[i].name,
+                j,
+                this._seEdgeSegments[j].name
+              );
+              // SEStore.findIntersectionPointsByParent(
+              //   this._seEdgeSegments[i].name,
+              //   this._seEdgeSegments[j].name
+              // ).forEach(pt => console.log(pt));
+
+              // the ith segment intersects the j th segment
               this._exists = false;
               break;
             }
@@ -376,6 +429,10 @@ export class SEPolygon extends SENodule implements Visitable, Labelable {
       state.stateArray.push(polygonState);
     }
 
+    //update the display
+    this.ref.area = this.value;
+    this.ref.updateDisplay();
+
     this.updateKids(state);
   }
 
@@ -391,7 +448,7 @@ export class SEPolygon extends SENodule implements Visitable, Labelable {
     // the ideal unit vector is NOT inside the polygon
     let minimumDistance = 2 * Math.PI; // something larger that the maximum distance from any point to a line segment
     const minimumDistanceVector = new Vector3();
-    this._SEEdgeSegments.forEach(seg => {
+    this._seEdgeSegments.forEach(seg => {
       this.tmpVector.copy(seg.closestVector(idealUnitSphereVector));
       const distanceToSeg = this.tmpVector.angleTo(idealUnitSphereVector);
       if (distanceToSeg < minimumDistance) {

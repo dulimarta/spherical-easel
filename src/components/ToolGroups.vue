@@ -478,6 +478,26 @@ export default class ToolGroups extends Vue {
       toolGroup: "measurement"
     },
     {
+      id: 20,
+      actionModeValue: "measureTriangle",
+      displayedName: "MeasureTriangleDisplayedName",
+      icon: "$vuetify.icons.value.measuredTriangle",
+      toolTipMessage: "MeasureTriangleToolTipMessage",
+      toolUseMessage: "MeasureTriangleToolUseMessage",
+      displayToolUseMessage: false,
+      toolGroup: "measurement"
+    },
+    {
+      id: 25,
+      actionModeValue: "measurePolygon",
+      displayedName: "MeasurePolygonDisplayedName",
+      icon: "$vuetify.icons.value.measuredPolygon",
+      toolTipMessage: "MeasurePolygonToolTipMessage",
+      toolUseMessage: "MeasurePolygonToolUseMessage",
+      displayToolUseMessage: false,
+      toolGroup: "measurement"
+    },
+    {
       id: 0,
       actionModeValue: "ellipse",
       displayedName: "CreateEllipseDisplayedName",
@@ -497,16 +517,6 @@ export default class ToolGroups extends Vue {
       displayToolUseMessage: false,
       toolGroup: "developerOnly"
     }
-    // {
-    //   id: 75,
-    //   actionModeValue: "slider",
-    //   displayedName: "CreateSliderDisplayedName",
-    //   icon: "mdi-arrow-left-right-bold",
-    //   toolTipMessage: "CreateSliderToolTipMessage",
-    //   toolUseMessage: "CreateSliderToolUseMessage",
-    //   displayToolUseMessage: false,
-    //   toolGroup: "construction"
-    // }
 
     //sort the button list by id so that we don't have to reorder the list each item we add a new button
   ].sort((a: ToolButtonType, b: ToolButtonType) => {

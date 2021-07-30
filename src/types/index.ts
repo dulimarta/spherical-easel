@@ -95,7 +95,9 @@ export type ActionMode =
   | "toggleLabelDisplay"
   | "zoomFit"
   | "zoomIn"
-  | "zoomOut";
+  | "zoomOut"
+  | "measureTriangle"
+  | "measurePolygon";
 /**
  * Intersection Vector3 and if that intersection exists
  */

@@ -469,22 +469,24 @@ export const SETTINGS = {
     }
   },
   polygon: {
+    initialValueDisplayMode: ValueDisplayMode.MultipleOfPi, // Set the initial display of the values for the measurement of the polygon area
     showLabelsInitially: false, // Should the labels be show upon creating the polygon
     maxLabelDistance: 0.08, // The maximum distance that a label is allowed to get away from the polygon
     initialLabelOffset: 0.02, // When making point labels this is initially how far (roughly) they are from the polygon
-    minimumVertexToEdgeThickness: 0.04, // the polygon doesn't exist if distance from any vertex to any non-adjacent edge is less than this.
+    minimumVertexToEdgeThickness: 0.004, // the polygon doesn't exist if distance from any vertex to any non-adjacent edge is less than this.
     defaultLabelMode: LabelDisplayMode.NameOnly, // The default way of displaying this objects label
     numPoints: 60, // The number of extra vertices used to draw the parts of the fill of the polygon that are on the boundary circle. MAKE THIS EVEN!
+    numberOfTemporaryAngleMarkers: 15, // this is the maximum number of angle markers that will be displayed as the user creates a polygon, the user can create a polygon with more sides that then, but the temporary angle markers will not be display after this number
     hitIdealDistance: 0.03, // The user has to be within this distance on the ideal unit sphere to select the polygon.
     //dynamicBackStyle is a flag that means the fill the polygon drawn on the back are automatically calculated based on the value of SETTINGS.contrast and their front counterparts
     dynamicBackStyle: true,
     //The properties of the polygon when it is drawn on the sphereCanvas and is not glowing
     drawn: {
       fillColor: {
-        front: "hsla(254, 100%, 90%, 0.2)", //"hsla(217, 100%, 80%, 0.0005)", //"noFill",
-        frontHSLA: { h: 254, s: 100, l: 90, a: 0.2 },
+        front: "hsla(254, 100%, 90%, 0.6)", //"hsla(217, 100%, 80%, 0.0005)", //"noFill",
+        frontHSLA: { h: 254, s: 100, l: 90, a: 0.6 },
         back: "hsla(10, 100%, 50%, 0.1)", //"hsla(217, 100%, 80%, 0.0002)" //"noFill"
-        backHSLA: { h: 254, s: 100, l: 50, a: 0.2 }
+        backHSLA: { h: 10, s: 100, l: 50, a: 0.2 }
       }
       //  strokeColor is determined by each edge
       // strokeWidth is determined by each edge
@@ -538,10 +540,10 @@ export const SETTINGS = {
     //The properties of the angleMarker when it is drawn on the sphereCanvas and is not glowing
     drawn: {
       fillColor: {
-        front: "hsla(254, 100%, 90%, 1)", //"noFill",0.001
-        frontHSLA: { h: 254, s: 100, l: 90, a: 1 },
-        back: "hsla(10, 100%, 50%, 1)", //"hsla(0, 0%, 0%, 1)" //"noFill"
-        backHSLA: { h: 10, s: 100, l: 50, a: 1 }
+        front: "hsla(254, 100%, 90%, 0.5)", //"noFill",0.001
+        frontHSLA: { h: 254, s: 100, l: 90, a: 0.5 },
+        back: "hsla(10, 100%, 50%, 0.4)", //"hsla(0, 0%, 0%, 1)" //"noFill"
+        backHSLA: { h: 10, s: 100, l: 50, a: 0.4 }
       },
       strokeColor: {
         front: "hsla(0, 0%, 0%, 1)",
@@ -577,7 +579,7 @@ export const SETTINGS = {
     //The properties of the angle marker when it is temporarily shown by the angle measuring tool while drawing
     temp: {
       fillColor: {
-        front: "hsla(0, 0%, 90%, 0.3)", //"noFill",
+        front: "hsla(340, 0%, 50%, 0.4)", //front: "hsla(0, 0%, 90%, 0.3)", //"noFill",
         back: "hsla(0, 0%, 50%, 0.3)" //"noFill"
       },
       strokeColor: {

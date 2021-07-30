@@ -142,6 +142,28 @@ const vuetify = new Vuetify({
             ["parametric", "front"]
           ]
         }
+      },
+      measuredTriangle: {
+        component: IconBase,
+        props: {
+          iconName: "MeasuredTriangle",
+          iconFile: "/icons/iconMeasuredTrianglePaths.svg",
+          emphasizeTypes: [
+            ["point", "front"],
+            ["angleMarker", "back", "front"]
+          ]
+        }
+      },
+      measuredPolygon: {
+        component: IconBase,
+        props: {
+          iconName: "MeasuredPolygon",
+          iconFile: "/icons/iconMeasuredPolygonPaths.svg",
+          emphasizeTypes: [
+            ["point", "front"],
+            ["angleMarker", "back", "front"]
+          ]
+        }
       }
     }
   },

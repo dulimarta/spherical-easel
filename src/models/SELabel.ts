@@ -18,6 +18,7 @@ import { SECircle } from "./SECircle";
 import { SEAngleMarker } from "./SEAngleMarker";
 import { SEEllipse } from "./SEEllipse";
 import { SEParametric } from "./SEParametric";
+import { SEPolygon } from "./SEPolygon";
 
 const styleSet = new Set([
   ...Object.getOwnPropertyNames(DEFAULT_LABEL_TEXT_STYLE),
@@ -58,12 +59,19 @@ export class SELabel extends SENodule implements Visitable {
 
     // set the Label shortUserName as the name of the parent object initially
     if (this.parent instanceof SEAngleMarker) {
-      // Angle Markers are the exception which are both plottable and an expression.
+      // Angle Markers are an exception which are both plottable and an expression.
       // As expressions MUST have a name of a measurement token (ie. M###), we can't
       // use the parent name for the short name, so to get around this we use  this
       // and the angleMarkerNumber.
       label.shortUserName = `Am${this.parent.angleMarkerNumber}`;
-    } else {
+    } else if (this.parent instanceof SEPolygon) {
+      // polygons are an exception which are both plottable and an expression.
+      // As expressions MUST have a name of a measurement token (ie. M###), we can't
+      // use the parent name for the short name, so to get around this we use  this
+      // and the angleMarkerNumber.
+      label.shortUserName = `Po${this.parent.polygonNumber}`;
+    }
+    {
       label.shortUserName = parent.name;
     }
     // Set the size for zoom
@@ -95,6 +103,9 @@ export class SELabel extends SENodule implements Visitable {
     } else if (parent instanceof SEParametric) {
       this.ref.initialLabelDisplayMode = SETTINGS.parametric.defaultLabelMode;
       this.showing = SETTINGS.parametric.showLabelsInitially;
+    } else if (parent instanceof SEPolygon) {
+      this.ref.initialLabelDisplayMode = SETTINGS.polygon.defaultLabelMode;
+      this.showing = SETTINGS.polygon.showLabelsInitially;
     } else {
       this.showing = true;
     }

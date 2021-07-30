@@ -6,10 +6,12 @@ import { OneDimensional, Labelable } from "@/types";
 import { UpdateMode, UpdateStateType, LineState } from "@/types";
 import i18n from "@/i18n";
 import { SELine } from "./SELine";
+import { Vector3 } from "three";
 
 export class SEPolarLine extends SELine
   implements Visitable, OneDimensional, Labelable {
   private polarPointParent: SEPoint;
+  private tempVector = new Vector3();
   /**
    * Create an SELine
    * @param line plottable (TwoJS) line associated with this line
@@ -53,25 +55,25 @@ export class SEPolarLine extends SELine
     if (this._exists) {
       // now update the locations of endSEPoiont and startSEPoint
       // form a vector perpendicular to the polar point parent
-      this.tmpVector.set(
+      this.tempVector.set(
         -this.polarPointParent.locationVector.y,
         this.polarPointParent.locationVector.x,
         0
       );
       // check to see if this vector is zero, if so choose a different way of being perpendicular to the polar point parent
-      if (this.tmpVector.isZero(SETTINGS.nearlyAntipodalIdeal)) {
-        this.tmpVector.set(
+      if (this.tempVector.isZero(SETTINGS.nearlyAntipodalIdeal)) {
+        this.tempVector.set(
           0,
           -this.polarPointParent.locationVector.z,
           this.polarPointParent.locationVector.y
         );
       }
-      this.endSEPoint.locationVector = this.tmpVector.normalize();
-      this.tmpVector.crossVectors(
+      this.endSEPoint.locationVector = this.tempVector.normalize();
+      this.tempVector.crossVectors(
         this.polarPointParent.locationVector,
         this.endSEPoint.locationVector
       );
-      this.startSEPoint.locationVector = this.tmpVector.normalize();
+      this.startSEPoint.locationVector = this.tempVector.normalize();
 
       //update the normal vector
       this._normalVector.copy(this.polarPointParent.locationVector).normalize();

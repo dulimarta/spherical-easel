@@ -54,6 +54,7 @@ import EventBus from "@/eventHandlers/EventBus";
 import { SEPolarLine } from "@/models/SEPolarLine";
 import { SEParametric } from "@/models/SEParametric";
 import Parametric from "@/plottables/Parametric";
+import { SEPolygon } from "@/models/SEPolygon";
 const tmpMatrix = new Matrix4();
 //const tmpVector = new Vector3();
 
@@ -102,6 +103,7 @@ export default class SE extends VuexModule implements AppState {
   seEllipses: SEEllipse[] = []; // An array of all SEEllipse
   seParametrics: SEParametric[] = []; // An array of all SEParametric
   seAngleMarkers: SEAngleMarker[] = []; // An array of all SEAngleMarkers
+  sePolygons: SEPolygon[] = []; // An array of all SEAngleMarkers
   seLabels: SELabel[] = []; // An array of all SELabels
   temporaryNodules: Nodule[] = []; // An array of all Nodules that are temporary - created by the handlers.
   intersections: SEIntersectionPoint[] = [];
@@ -131,6 +133,7 @@ export default class SE extends VuexModule implements AppState {
     this.seSegments.splice(0);
     this.seCircles.splice(0);
     this.seAngleMarkers.splice(0);
+    this.sePolygons.splice(0);
     this.seEllipses.splice(0);
     this.seParametrics.splice(0);
     this.seLabels.splice(0);
@@ -390,6 +393,31 @@ export default class SE extends VuexModule implements AppState {
       victimAngleMarker.ref.removeFromLayers();
       // victimCircle.removeSelfSafely();
       this.seAngleMarkers.splice(angleMarkerPos, 1); // Remove the angleMarker from the list
+      this.seNodules.splice(pos2, 1);
+      this.expressions.splice(pos3, 1);
+      this.hasUnsavedNodules = true;
+    }
+  }
+
+  @Mutation
+  addPolygonAndExpression(polygon: SEPolygon): void {
+    this.expressions.push(polygon);
+    this.sePolygons.push(polygon);
+    this.seNodules.push(polygon);
+    polygon.ref.addToLayers(this.layers);
+    this.hasUnsavedNodules = true;
+  }
+
+  @Mutation
+  removePolygonAndExpression(polygonId: number): void {
+    const polygonPos = this.sePolygons.findIndex(x => x.id === polygonId);
+    const pos2 = this.seNodules.findIndex(x => x.id === polygonId);
+    const pos3 = this.expressions.findIndex(x => x.id === polygonId);
+    if (polygonPos >= 0) {
+      /* victim polygon is found */
+      const victimPolygon: SEPolygon = this.sePolygons[polygonPos];
+      victimPolygon.ref.removeFromLayers();
+      this.sePolygons.splice(polygonPos, 1); // Remove the polygon from the list
       this.seNodules.splice(pos2, 1);
       this.expressions.splice(pos3, 1);
       this.hasUnsavedNodules = true;
@@ -1639,13 +1667,33 @@ export default class SE extends VuexModule implements AppState {
     };
   }
 
-  get findIntersectionPointsByParent(): (_: string) => SEIntersectionPoint[] {
-    return (parentName: string): SEIntersectionPoint[] => {
-      return this.sePoints
+  /**
+   * If one parent name is given, this returns a list of all intersection points that have a parent with that name.
+   * If two parent names are given, this returns a list of all intersection points that a parent with the first name and a parent with the second name
+   */
+  get findIntersectionPointsByParent(): (
+    parent1Name: string,
+    parent2Name?: string
+  ) => SEIntersectionPoint[] {
+    return (
+      parent1Name: string,
+      parent2Name?: string
+    ): SEIntersectionPoint[] => {
+      const intersectionPoints = this.sePoints
         .filter(
-          p => p instanceof SEIntersectionPoint && p.name.includes(parentName)
+          p =>
+            p instanceof SEIntersectionPoint &&
+            p.parents.some(seNodule => seNodule.name === parent1Name)
         )
         .map(obj => obj as SEIntersectionPoint);
+
+      if (parent2Name) {
+        return intersectionPoints.filter(p =>
+          p.parents.some(seNodule => seNodule.name === parent2Name)
+        );
+      } else {
+        return intersectionPoints;
+      }
     };
   }
 

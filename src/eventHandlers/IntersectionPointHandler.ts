@@ -30,7 +30,7 @@ export default class IntersectionPointHandler extends Highlighter {
    * The prefix of the name so we can search for all intersection points for this prefix and return all
    * of the intersection points of the two one-dimensional objects
    */
-  private intersectionPointParentNames = "";
+  // private intersectionPointParentNames = "";
 
   constructor(layers: Two.Group[]) {
     super(layers);
@@ -126,15 +126,70 @@ export default class IntersectionPointHandler extends Highlighter {
       );
       if (filtered.length > 0) filtered[0].glowing = true;
     } else if (this.hitSESegments.length > 0) {
-      this.hitSESegments[0].glowing = true;
+      if (this.oneDimensional1 !== null) {
+        if (
+          SEStore.findIntersectionPointsByParent(
+            this.oneDimensional1.name,
+            this.hitSESegments[0].name
+          ).some(pt => pt.exists && !pt.isUserCreated)
+        ) {
+          this.hitSESegments[0].glowing = true;
+        }
+      } else {
+        this.hitSESegments[0].glowing = true;
+      }
     } else if (this.hitSELines.length > 0) {
-      this.hitSELines[0].glowing = true;
+      if (this.oneDimensional1 !== null) {
+        if (
+          SEStore.findIntersectionPointsByParent(
+            this.oneDimensional1.name,
+            this.hitSELines[0].name
+          ).some(pt => pt.exists && !pt.isUserCreated)
+        ) {
+          this.hitSELines[0].glowing = true;
+        }
+      } else {
+        this.hitSELines[0].glowing = true;
+      }
     } else if (this.hitSECircles.length > 0) {
-      this.hitSECircles[0].glowing = true;
+      if (this.oneDimensional1 !== null) {
+        if (
+          SEStore.findIntersectionPointsByParent(
+            this.oneDimensional1.name,
+            this.hitSECircles[0].name
+          ).some(pt => pt.exists && !pt.isUserCreated)
+        ) {
+          this.hitSECircles[0].glowing = true;
+        }
+      } else {
+        this.hitSECircles[0].glowing = true;
+      }
     } else if (this.hitSEEllipses.length > 0) {
-      this.hitSEEllipses[0].glowing = true;
+      if (this.oneDimensional1 !== null) {
+        if (
+          SEStore.findIntersectionPointsByParent(
+            this.oneDimensional1.name,
+            this.hitSEEllipses[0].name
+          ).some(pt => pt.exists && !pt.isUserCreated)
+        ) {
+          this.hitSEEllipses[0].glowing = true;
+        }
+      } else {
+        this.hitSEEllipses[0].glowing = true;
+      }
     } else if (this.hitSEParametrics.length > 0) {
-      this.hitSEParametrics[0].glowing = true;
+      if (this.oneDimensional1 !== null) {
+        if (
+          SEStore.findIntersectionPointsByParent(
+            this.oneDimensional1.name,
+            this.hitSEParametrics[0].name
+          ).some(pt => pt.exists && !pt.isUserCreated)
+        ) {
+          this.hitSEParametrics[0].glowing = true;
+        }
+      } else {
+        this.hitSEParametrics[0].glowing = true;
+      }
     }
   }
 
@@ -462,17 +517,18 @@ export default class IntersectionPointHandler extends Highlighter {
     // We don't know how many point of intersection there are so we are missing the ",<order num>)"
     // part of the name, so this is the name prefix
 
-    if (oneDimensional1.name < oneDimensional2.name) {
-      this.intersectionPointParentNames = `(${oneDimensional1.name},${oneDimensional2.name}`;
-    } else {
-      this.intersectionPointParentNames = `(${oneDimensional2.name},${oneDimensional1.name}`;
-    }
+    // if (oneDimensional1.name < oneDimensional2.name) {
+    //   this.intersectionPointParentNames = `(${oneDimensional1.name},${oneDimensional2.name}`;
+    // } else {
+    //   this.intersectionPointParentNames = `(${oneDimensional2.name},${oneDimensional1.name}`;
+    // }
 
     // Get all the SEIntersectionPoints that start with this prefix and convert them to user created points,
     // but only if the point exists on the screen as an actual intersection point.
     const intersectionConversionCommandGroup = new CommandGroup();
     SEStore.findIntersectionPointsByParent(
-      this.intersectionPointParentNames
+      oneDimensional1.name,
+      oneDimensional2.name
     ).forEach((element: SEIntersectionPoint, index: number) => {
       if (!element.isUserCreated) {
         if (this.updatedIntersectionInfo[index].exists) {

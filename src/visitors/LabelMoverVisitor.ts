@@ -9,6 +9,7 @@ import { SELabel } from "@/models/SELabel";
 import { SEEllipse } from "@/models/SEEllipse";
 import { SEAngleMarker } from "@/models/SEAngleMarker";
 import { SEParametric } from "@/models/SEParametric";
+import { SEPolygon } from "@/models/SEPolygon";
 
 export class LabelMoverVisitor implements Visitor {
   private locationVector: Vector3 = new Vector3();
@@ -58,6 +59,11 @@ export class LabelMoverVisitor implements Visitor {
 
   // eslint-disable-next-line
   actionOnParametric(p: SEParametric): void {
+    // e.update();
+  }
+
+  // eslint-disable-next-line
+  actionOnPolygon(p: SEPolygon): void {
     // e.update();
   }
 }

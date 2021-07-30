@@ -195,6 +195,7 @@ export default class Style extends Vue {
     });
     const elementListi18nKeys = [
       "style.parametric",
+      "style.polygon",
       "style.point",
       "style.line",
       "style.segment",
@@ -203,7 +204,7 @@ export default class Style extends Vue {
       "style.angleMarker",
       "style.ellipse"
     ];
-    const firstPartList = ["Pa", "P", "Li", "Ls", "C", "La", "M", "E"]; // The *internal* names of the objects start with these strings (the oder must match the order of the signular/pural i18n keys)
+    const firstPartList = ["Pa", "Po", "P", "Li", "Ls", "C", "La", "M", "E"]; // The *internal* names of the objects start with these strings (the oder must match the order of the signular/pural i18n keys)
     const countList: number[] = [];
     firstPartList.forEach(str => {
       let count = 0;

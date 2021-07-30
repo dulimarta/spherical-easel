@@ -6,13 +6,30 @@
 
       <v-row>
         <v-col cols="auto">
-
-          <v-icon v-if="isPoint"
+          <v-icon v-if="isAntipode"
+            medium>
+            $vuetify.icons.value.antipode</v-icon>
+          <v-icon v-else-if="isPointOnObject"
+            medium>
+            $vuetify.icons.value.pointOnObject
+          </v-icon>
+          <v-icon v-else-if="isIntersectionPoint"
+            medium>
+            $vuetify.icons.value.intersectionPoint
+          </v-icon>
+          <v-icon v-else-if="isPolar"
+            medium>
+            $vuetify.icons.value.polar
+          </v-icon>
+          <v-icon v-else-if="isPoint"
             medium>
             $vuetify.icons.value.point</v-icon>
           <v-icon v-else-if="isLineSegment"
             medium>
             $vuetify.icons.value.segment</v-icon>
+          <v-icon v-else-if="isPerpendicular"
+            medium>
+            $vuetify.icons.value.perpendicular</v-icon>
           <v-icon v-else-if="isLine"
             medium>
             $vuetify.icons.value.line</v-icon>
@@ -28,14 +45,23 @@
             medium>
             $vuetify.icons.value.parametric
           </v-icon>
-          <v-icon v-else-if="isIntersectionPoint"
-            medium>
-            $vuetify.icons.value.intersectionPoint
-          </v-icon>
+
           <v-icon v-else-if="isSlider">mdi-arrow-left-right</v-icon>
           <v-icon v-else-if="isAngle"
             medium>
             $vuetify.icons.value.angle</v-icon>
+          <v-icon v-else-if="isMeasuredTriangle"
+            medium>
+            $vuetify.icons.value.measuredTriangle</v-icon>
+          <v-icon v-else-if="isMeasuredPolygon"
+            medium>
+            $vuetify.icons.value.measuredPolygon</v-icon>
+          <v-icon v-else-if="isSegmentLength">
+            $vuetify.icons.value.segmentLength
+          </v-icon>
+          <v-icon v-else-if="isPointDistance">
+            $vuetify.icons.value.pointDistance
+          </v-icon>
           <v-icon v-else-if="isMeasurement">mdi-tape-measure
           </v-icon>
           <v-icon v-else-if="isCalculation">mdi-calculator</v-icon>
@@ -145,6 +171,12 @@ import { SEEllipse } from "@/models/SEEllipse";
 import { DeleteNoduleCommand } from "@/commands/DeleteNoduleCommand";
 import { CommandGroup } from "@/commands/CommandGroup";
 import { SEParametric } from "@/models/SEParametric";
+import { SEPolygon } from "@/models/SEPolygon";
+import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
+import { SEPolarLine } from "@/models/SEPolarLine";
+import { SEPolarPoint } from "@/models/SEPolarPoint";
+import { SEPerpendicularLineThruPoint } from "@/models/SEPerpendicularLineThruPoint";
+import { SEPointOnOneDimensional } from "@/models/SEPointOnOneDimensional";
 
 @Component
 export default class SENoduleItem extends Vue {
@@ -169,6 +201,12 @@ export default class SENoduleItem extends Vue {
       this.node.parents
         .map(n => n as SEPoint)
         .forEach((p: SEPoint) => {
+          p.glowing = flag;
+        });
+    } else if (this.node instanceof SEPolygon) {
+      this.node.seEdgeSegments
+        .map(n => n as SESegment)
+        .forEach((p: SESegment) => {
           p.glowing = flag;
         });
     }
@@ -224,6 +262,10 @@ export default class SENoduleItem extends Vue {
     } else if (this.node instanceof SESegmentLength) {
       if (!this.node.seSegment.label?.showing) {
         new SetNoduleDisplayCommand(this.node.seSegment.label!, true).execute();
+      }
+    } else if (this.node instanceof SEPolygon) {
+      if (!this.node.label?.showing) {
+        new SetNoduleDisplayCommand(this.node.label!, true).execute();
       }
     }
     const oldValueDisplayMode = (this.node as SEExpression).valueDisplayMode;
@@ -292,9 +334,42 @@ export default class SENoduleItem extends Vue {
   get isSlider(): boolean {
     return this.node instanceof SESlider;
   }
+  get isMeasuredTriangle(): boolean {
+    return (
+      this.node instanceof SEPolygon && this.node.seEdgeSegments.length === 3
+    );
+  }
+  get isMeasuredPolygon(): boolean {
+    return this.node instanceof SEPolygon;
+  }
 
   get isParametric(): boolean {
     return this.node instanceof SEParametric;
+  }
+
+  get isAntipode(): boolean {
+    return this.node instanceof SEAntipodalPoint;
+  }
+
+  get isPolar(): boolean {
+    return (
+      this.node instanceof SEPolarLine || this.node instanceof SEPolarPoint
+    );
+  }
+
+  get isPerpendicular(): boolean {
+    return this.node instanceof SEPerpendicularLineThruPoint;
+  }
+  get isPointOnObject(): boolean {
+    return this.node instanceof SEPointOnOneDimensional;
+  }
+
+  get isSegmentLength(): boolean {
+    return this.node instanceof SESegmentLength;
+  }
+
+  get isPointDistance(): boolean {
+    return this.node instanceof SEPointDistance;
   }
 
   get isPlottable(): boolean {
@@ -305,7 +380,8 @@ export default class SENoduleItem extends Vue {
       this.node instanceof SECircle ||
       this.node instanceof SEEllipse ||
       this.node instanceof SEAngleMarker ||
-      this.node instanceof SEParametric
+      this.node instanceof SEParametric ||
+      this.node instanceof SEPolygon
     );
   }
 

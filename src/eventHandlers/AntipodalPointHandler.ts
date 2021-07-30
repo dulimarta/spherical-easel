@@ -252,11 +252,7 @@ export default class AntipodalPointHandler extends Highlighter {
         vtx.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
 
         // reset in prep for next antipodal point
-        this.parentPoint = null;
-        this.oneDimensionalContainingParentPoint = null;
-        this.parentPointVector.set(0, 0, 0);
-        this.snapToTemporaryOneDimensional = null;
-        this.snapToTemporaryPoint = null;
+        this.mouseLeave(event);
       }
     }
   }

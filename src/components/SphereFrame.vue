@@ -38,6 +38,7 @@ import ToggleLabelDisplayHandler from "@/eventHandlers/ToggleLabelDisplayHandler
 import PerpendicularLineThruPointHandler from "@/eventHandlers/PerpendicularLineThruPointHandler";
 import IconFactoryHandler from "@/eventHandlers/IconFactoryHandler";
 import EllipseHandler from "@/eventHandlers/EllipseHandler";
+import PolygonHandler from "@/eventHandlers/PolygonHandler";
 
 import EventBus from "@/eventHandlers/EventBus";
 import MoveHandler from "../eventHandlers/MoveHandler";
@@ -113,6 +114,8 @@ export default class SphereFrame extends VueComponent {
   private toggleLabelDisplayTool!: ToggleLabelDisplayHandler;
   private perpendicularLineThruPointTool!: PerpendicularLineThruPointHandler;
   private iconFactoryTool!: IconFactoryHandler;
+  private measureTriangleTool!: PolygonHandler;
+  private measurePolygonTool!: PolygonHandler;
 
   /**
    * The layers for displaying the various objects in the right way. So a point in the
@@ -262,6 +265,8 @@ export default class SphereFrame extends VueComponent {
     this.perpendicularLineThruPointTool = new PerpendicularLineThruPointHandler(
       this.layers
     );
+    this.measureTriangleTool = new PolygonHandler(this.layers, true);
+    this.measurePolygonTool = new PolygonHandler(this.layers, false);
 
     // Make the canvas accessible to other components which need
     // to grab the SVG contents of the sphere
@@ -674,6 +679,12 @@ export default class SphereFrame extends VueComponent {
         break;
       case "perpendicular":
         this.currentTool = this.perpendicularLineThruPointTool;
+        break;
+      case "measureTriangle":
+        this.currentTool = this.measureTriangleTool;
+        break;
+      case "measurePolygon":
+        this.currentTool = this.measurePolygonTool;
         break;
       default:
         this.currentTool = null;

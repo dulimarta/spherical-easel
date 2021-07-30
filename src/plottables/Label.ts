@@ -21,6 +21,7 @@ import { SECircle } from "@/models/SECircle";
 import { SEAngleMarker } from "@/models/SEAngleMarker";
 import { SESegmentLength } from "@/models/SESegmentLength";
 import { ValueDisplayMode } from "@/types";
+import { SEPolygon } from "@/models/SEPolygon";
 
 /**
  * Each Point object is uniquely associated with a SEPoint object.
@@ -486,6 +487,10 @@ export default class Label extends Nodule {
             let valueDisplayMode;
             if (this.seLabel!.parent instanceof SEAngleMarker) {
               valueDisplayMode = (this.seLabel!.parent as SEAngleMarker)
+                .valueDisplayMode;
+            }
+            if (this.seLabel!.parent instanceof SEPolygon) {
+              valueDisplayMode = (this.seLabel!.parent as SEPolygon)
                 .valueDisplayMode;
             } else if (this.seLabel!.parent instanceof SESegment) {
               const seSegLength = this.seLabel!.parent.kids.find(

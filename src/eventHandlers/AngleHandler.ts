@@ -14,7 +14,6 @@ import { DisplayStyle } from "@/plottables/Nodule";
 import SETTINGS from "@/global-settings";
 import Label from "@/plottables/Label";
 import { SELabel } from "@/models/SELabel";
-import { AddAngleMarkerCommand as AddAngleMarkerAndExpressionCommand } from "@/commands/AddAngleMarkerAndExpressionCommand";
 import { CommandGroup } from "@/commands/CommandGroup";
 import { SEPointOnOneDimensional } from "@/models/SEPointOnOneDimensional";
 import { AddPointOnOneDimensionalCommand } from "@/commands/AddPointOnOneDimensionalCommand";
@@ -23,6 +22,7 @@ import { SEEllipse } from "@/models/SEEllipse";
 import { SEStore } from "@/store";
 import { AngleMode } from "@/types";
 import { SEParametric } from "@/models/SEParametric";
+import { AddAngleMarkerCommand } from "@/commands/AddAngleMarkerAndExpressionCommand";
 
 enum HighlightMode {
   NONE,
@@ -1047,7 +1047,7 @@ export default class AngleHandler extends Highlighter {
     newSELabel.locationVector = this.tmpVector;
 
     angleMarkerCommandGroup.addCommand(
-      new AddAngleMarkerAndExpressionCommand(
+      new AddAngleMarkerCommand(
         AngleMode.POINTS,
         newSEAngleMarker,
         newSELabel,
@@ -1134,7 +1134,7 @@ export default class AngleHandler extends Highlighter {
     newSELabel.locationVector = this.tmpVector;
 
     // execute the command to do all the creating
-    new AddAngleMarkerAndExpressionCommand(
+    new AddAngleMarkerCommand(
       AngleMode.LINES,
       newSEAngleMarker,
       newSELabel,
@@ -1243,7 +1243,7 @@ export default class AngleHandler extends Highlighter {
       .normalize();
     newSELabel.locationVector = this.tmpVector;
 
-    new AddAngleMarkerAndExpressionCommand(
+    new AddAngleMarkerCommand(
       AngleMode.SEGMENTS,
       newSEAngleMarker,
       newSELabel,
@@ -1383,7 +1383,7 @@ export default class AngleHandler extends Highlighter {
       .normalize();
     newSELabel.locationVector = this.tmpVector;
     // execute the command to do all the creating
-    new AddAngleMarkerAndExpressionCommand(
+    new AddAngleMarkerCommand(
       AngleMode.LINEANDSEGMENT,
       newSEAngleMarker,
       newSELabel,

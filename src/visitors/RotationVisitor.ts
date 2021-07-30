@@ -10,6 +10,7 @@ import { SEPointOnOneDimensional } from "@/models/SEPointOnOneDimensional";
 import { SEEllipse } from "@/models/SEEllipse";
 import { SEAngleMarker } from "@/models/SEAngleMarker";
 import { SEParametric } from "@/models/SEParametric";
+import { SEPolygon } from "@/models/SEPolygon";
 
 export class RotationVisitor implements Visitor {
   private transformMatrix: Matrix4 = new Matrix4();
@@ -78,5 +79,9 @@ export class RotationVisitor implements Visitor {
   actionOnParametric(e: SEParametric): void {
     // update the display of the plottable object. update gets the new rotation matrix directly from the store.
     e.ref.updateDisplay();
+  }
+  actionOnPolygon(p: SEPolygon): void {
+    // update the display of the plottable object. update gets the new rotation matrix directly from the store.
+    p.ref.updateDisplay();
   }
 }

@@ -8,7 +8,6 @@ import { AddPerpendicularLineThruPointCommand } from "./AddPerpendicularLineThru
 import { AddPointCommand } from "./AddPointCommand";
 import { AddPointOnOneDimensionalCommand } from "./AddPointOnOneDimensionalCommand";
 import { AddSegmentCommand } from "./AddSegmentCommand";
-import { AddAngleMarkerCommand } from "./AddAngleMarkerAndExpressionCommand";
 import { Command } from "./Command";
 import { CommandGroup } from "./CommandGroup";
 import { AddCalculationCommand } from "./AddCalculationCommand";
@@ -20,6 +19,8 @@ import { AddEllipseCommand } from "./AddEllipseCommand";
 import { AddPolarPointCommand } from "./AddPolarPointCommand";
 import { AddParametricCommand } from "./AddParametricCommand";
 import { AddParametricEndPointsCommand } from "./AddParametricEndPointsCommand";
+import { AddAngleMarkerCommand } from "./AddAngleMarkerAndExpressionCommand";
+import { AddPolygonCommand } from "./AddPolygonAndExpressionCommand";
 const noduleDictionary = new Map<string, SENodule>();
 
 function executeIndividual(command: string): Command {
@@ -62,6 +63,8 @@ function executeIndividual(command: string): Command {
       );
     case "AddAngleMarker":
       return AddAngleMarkerCommand.parse(command, noduleDictionary);
+    case "AddPolygon":
+      return AddPolygonCommand.parse(command, noduleDictionary);
     case "AddLocationMeasurement":
       return AddLocationMeasurementCommand.parse(command, noduleDictionary);
     case "AddPointDistanceMeasurement":

@@ -15,6 +15,7 @@ import { SELabel } from "@/models/SELabel";
 import { SEAngleMarker } from "@/models/SEAngleMarker";
 import { SEEllipse } from "@/models/SEEllipse";
 import { SEParametric } from "@/models/SEParametric";
+import { SEPolygon } from "@/models/SEPolygon";
 
 export default abstract class MouseHandler implements ToolStrategy {
   protected readonly X_AXIS = new Vector3(1, 0, 0);
@@ -56,6 +57,7 @@ export default abstract class MouseHandler implements ToolStrategy {
   protected hitSELabels: SELabel[] = [];
   protected hitSEAngleMarkers: SEAngleMarker[] = [];
   protected hitSEParametrics: SEParametric[] = [];
+  protected hitSEPolygons: SEPolygon[] = [];
 
   /**
    * Holds the layers for each type of object, background, glowing background, etc..

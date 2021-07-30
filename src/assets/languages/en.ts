@@ -24,6 +24,17 @@ export default {
     CurrentTool: "Current Tool",
     NoToolSelected: "No Tool Selected",
 
+    MeasureTriangleDisplayedName: "Measure<br>Triangle",
+    MeasureTriangleToolTipMessage:
+      "Measure the angles and sides of a triangle.",
+    MeasureTriangleToolUseMessage:
+      "Select three line segments that make a triangle.",
+
+    MeasurePolygonDisplayedName: "Measure<br>Polygon",
+    MeasurePolygonToolTipMessage: "Measure the angles and sides of a polygon.",
+    MeasurePolygonToolUseMessage:
+      "Select three or more line segments that make a polygon with out crossing.",
+
     CreateAngleDisplayedName: "Measure<br>Angle",
     CreateAngleToolTipMessage: "Calculate Angle",
     CreateAngleToolUseMessage:
@@ -176,6 +187,7 @@ export default {
     angleMarker: "1 Angle Marker | {count} Angle Markers",
     ellipse: "1 Ellipse | {count} Ellipses",
     parametric: "1 Parametric | {count} Parametrics",
+    polygon: "1 Polygon | {count} Polygons",
 
     showLabels: "Show Label(s)",
     showObjects: "Show Object(s)",
@@ -402,12 +414,20 @@ export default {
     polarPointDuplicate:
       "The polar points of this {object} has already been created.",
     perpendicularLineThruPointParametricSelected:
-      "Parametric {name} selected. Now select a location to create a new point or to create a point on an object."
+      "Parametric {name} selected. Now select a location to create a new point or to create a point on an object.",
+    newSegmentIntersectsOrToClose:
+      "The selected segment intersects the previously selected segments or the free endpoint of the selected segment is too close to one of the previously selected segments.",
+    newSegmentMustHaveEndpointInCommon:
+      "The selected segment doesn't have an endpoint in common with the end point of the previously selected segments.",
+    newSegmentMustCloseTriangle:
+      "The selected segment doesn't form a triangle with the previously selected segments.",
+    newPolygonAdded: "A new polygon was created."
   },
 
   objectTree: {
-    triangleWithEdges: "A triangle with ordered edges {edges}.",
-    polygonWithEdges: "A polygon with ordered edges {edges}.",
+    bigonWithEdges: "The area of a bi-gon with ordered edges {edges}.",
+    triangleWithEdges: "The area of a triangle with ordered edges {edges}.",
+    polygonWithEdges: "The area of a polygon with ordered edges {edges}.",
     expression: "Expression",
     parserError: "Reached end of input while parsing expression",
     expectedRightParenthesis: "Expected ')' at {text}",
@@ -434,8 +454,8 @@ export default {
     step: "Step",
     create: "Create",
     anglePoints: "Angle formed by points {p1}, {p2}, and {p3}.",
-    angleSegments: "Angle formed by lines {line1} and {line2}.",
-    angleLines: "Angle formed by segments {seg1} and {seg2}.",
+    angleSegments: "Angle formed by lines {seg1} and {seg2}.",
+    angleLines: "Angle formed by segments {line1} and {line2}.",
     angleSegmentLine: "Angle formed by segment {seg} and line {line}.",
     angleLineSegment: "Angle formed by line {line} and segment {seg}.",
     calculationDescription: "Calculation based on expression {str}",
