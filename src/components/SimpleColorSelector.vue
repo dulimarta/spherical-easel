@@ -2,22 +2,9 @@
   <div>
     <div>
       <span class="text-subtitle-2">{{ $t(titleKey)+" " }}</span>
-      <v-icon :color="convertColorToRGBAString(colorData)"
+      <v-icon :color="internalColor.hexa"
         small>mdi-checkbox-blank</v-icon>
     </div>
-
-    <!-- The color picker -->
-    <v-color-picker @update:color="onColorChange"
-      :disabled="noData"
-      hide-sliders
-      hide-canvas
-      show-swatches
-      :hide-inputs="!showColorInputs"
-      :swatches-max-height="100"
-      :swatches="colorSwatches"
-      v-model="colorData"
-      id="colorPicker">
-    </v-color-picker>
 
     <!-- Show no fill checkbox, color code inputs, Undo and Reset to Defaults buttons -->
     <v-container class="pa-0 ma-0">
@@ -34,7 +21,6 @@
                 <v-checkbox v-model="noData"
                   :label="noDataUILabel"
                   color="indigo darken-3"
-                  @change="setNoData"
                   hide-details
                   x-small
                   dense></v-checkbox>
@@ -55,6 +41,19 @@
 
       </v-row>
     </v-container>
+    <!-- The color picker -->
+    <v-color-picker @update:color="onColorChange"
+      :disabled="noData"
+      hide-sliders
+      hide-canvas
+      show-swatches
+      :hide-inputs="!showColorInputs"
+      :swatches-max-height="100"
+      :swatches="colorSwatches"
+      v-model="internalColor"
+      mode="hsla"
+      id="colorPicker">
+    </v-color-picker>
   </div>
 </template>
 
@@ -63,7 +62,7 @@
 <script lang="ts">
 import Vue from "vue";
 import Component from "vue-class-component";
-import { Prop, PropSync } from "vue-property-decorator";
+import { Prop, PropSync, Watch } from "vue-property-decorator";
 import SETTINGS from "@/global-settings";
 import Nodule from "@/plottables/Nodule";
 import { hslaColorType } from "@/types";
@@ -71,22 +70,24 @@ import HintButton from "@/components/HintButton.vue";
 import OverlayWithFixButton from "@/components/OverlayWithFixButton.vue";
 import i18n from "../i18n";
 
+const NO_HSLA_DATA = "hsla(0, 0%,0%,0)";
 @Component({ components: { HintButton, OverlayWithFixButton } })
 export default class SimpleColorSelector extends Vue {
   @Prop() readonly titleKey!: string;
-  @PropSync("data") colorData?: hslaColorType;
+  // external representation: hsla in CSS
+  @PropSync("data") externalColor!: string;
   @Prop({ required: true }) readonly styleName!: string;
 
-  //private defaultStyleStates: StyleOptions[] = [];
-
+  // Internal representation is an object with multiple color representations
+  internalColor: any = {};
   private toolTipOpenDelay = SETTINGS.toolTip.openDelay;
   private toolTipCloseDelay = SETTINGS.toolTip.closeDelay;
 
   private noData = false; // no data means noFill or noStroke
-  private preNoColor: string | undefined = "";
+  private preNoColor: string = NO_HSLA_DATA;
 
   // For TwoJS
-  private colorString: string | undefined = "hsla(0, 0%,0%,0)";
+  // private colorString: string | undefined = "hsla(0, 0%,0%,0)";
   private showColorInputs = false;
 
   private colorSwatches = SETTINGS.style.swatches;
@@ -119,7 +120,7 @@ export default class SimpleColorSelector extends Vue {
     }
   }
 
-  convertColorToRGBAString(colorObject: any): string {
+  convertColorToRGBAString(colorObject: hslaColorType): string {
     // THANK YOU INTERNET!
     const h = colorObject.h;
     const s = colorObject.s * 100;
@@ -138,24 +139,35 @@ export default class SimpleColorSelector extends Vue {
     return `#${f(0)}${f(8)}${f(4)}`;
   }
 
-  onColorChange(newColor: any): void {
-    // console.log("color Data", this.colorData);
+  onColorChange(data: { hsla: hslaColorType }): void {
+    if (data.hsla) {
+      const col = data.hsla;
+      // console.debug("Color changed to", col);
+      const hue = col.h.toFixed(0);
+      const sat = (col.s * 100).toFixed(0) + "%";
+      const lum = (col.l * 100).toFixed(0) + "%";
+      const alpha = col.a.toFixed(3);
+      this.externalColor = `hsla(${hue},${sat},${lum},${alpha})`;
+    } else this.externalColor = "N/A";
 
-    this.colorString = Nodule.convertHSLAObjectToString(
-      newColor.hsla ?? { h: 0, s: 0, l: 1, a: 1 }
-    );
+    // console.log(
+    //   "Color converted from",
+    //   this.internalColor,
+    //   "to",
+    //   this.externalColor
+    // );
   }
 
-  //No Data means noFill or noStroke
+  @Watch("noData")
   setNoData(): void {
     if (this.noData) {
-      this.preNoColor = this.colorString;
-      this.colorString = this.noDataStr;
-      this.colorData = Nodule.convertStringToHSLAObject("hsla(0,100%,100%,0)");
+      this.preNoColor = this.externalColor;
+      this.externalColor = NO_HSLA_DATA;
       this.showColorInputs = false;
     } else {
-      this.colorString = this.preNoColor;
-      this.colorData = Nodule.convertStringToHSLAObject(this.colorString);
+      this.externalColor = this.preNoColor;
+      this.showColorInputs = true;
+      //   // this.colorData = Nodule.convertStringToHSLAObject(this.colorString);
     }
     // If this color selector is on the label panel, then all changes are directed at the label(s).
   }

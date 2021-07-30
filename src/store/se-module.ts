@@ -109,8 +109,11 @@ export default class SE extends VuexModule implements AppState {
   intersections: SEIntersectionPoint[] = [];
   // measurements = [],
   expressions: SEExpression[] = [];
+  // TODO: replace the following arrays with the Map below
   initialStyleStates: StyleOptions[] = [];
   defaultStyleStates: StyleOptions[] = [];
+  initialStyleStatesMap: Map<StyleEditPanels, StyleOptions[]> = new Map();
+  defaultStyleStatesMap: Map<StyleEditPanels, StyleOptions[]> = new Map();
   styleSavedFromPanel = StyleEditPanels.Label;
   initialBackStyleContrast = SETTINGS.style.backStyleContrast;
   inverseTotalRotationMatrix = new Matrix4(); //initially the identity. The composition of all the inverses of the rotation matrices applied to the sphere
@@ -573,7 +576,7 @@ export default class SE extends VuexModule implements AppState {
     panel,
     payload
   }: {
-    selected: SENodule[];
+    selected: Nodule[];
     panel: StyleEditPanels;
     payload: StyleOptions;
   }): void {
@@ -591,12 +594,12 @@ export default class SE extends VuexModule implements AppState {
     //     n.ref?.stylize(DisplayStyle.ApplyCurrentVariables);
     //   });
     // }
-    selected.forEach((n: SENodule) => {
-      n.ref?.updateStyle(panel, opt);
-      if (opt.pointRadiusPercent !== undefined) {
-        // if the point radius Percent changes then this can effects the label location so run update
-        n.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
-      }
+    selected.forEach((n: Nodule) => {
+      n.updateStyle(panel, opt);
+      // if (opt.pointRadiusPercent !== undefined) {
+      //   // if the point radius Percent changes then this can effects the label location so run update
+      //   n.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
+      // }
     });
   }
 
@@ -615,61 +618,27 @@ export default class SE extends VuexModule implements AppState {
   // },
 
   @Mutation
-  recordStyleState({
-    selected, // The selected SENodules that this change applies to, passing this as a argument allows styling to be undone.
-    backContrast
-  }: {
-    selected: SENodule[];
+  recordStyleState(data: {
+    panel: StyleEditPanels;
+    selected: Array<Nodule>;
     backContrast: number;
   }): void {
-    this.initialStyleStates.splice(0);
-    this.defaultStyleStates.splice(0);
-    selected.forEach(seNodule => {
-      // The first third is the front style settings, the second third is the back, the final third are the corresponding labels
-      if (seNodule.ref) {
-        this.initialStyleStates.push(
-          seNodule.ref.currentStyleState(StyleEditPanels.Front)
-        );
-        this.defaultStyleStates.push(
-          seNodule.ref.defaultStyleState(StyleEditPanels.Front)
-        );
-      }
-    });
-    selected.forEach(seNodule => {
-      // The first third is the front style settings, the second third is the back, the final third are the corresponding labels
-      if (seNodule.ref !== undefined) {
-        this.initialStyleStates.push(
-          seNodule.ref.currentStyleState(StyleEditPanels.Back)
-        );
-        this.defaultStyleStates.push(
-          seNodule.ref.defaultStyleState(StyleEditPanels.Back)
-        );
-      }
-    });
-    selected.forEach(seNodule => {
-      // The first third is the front style settings, the second third is the back, the final third are the corresponding labels
-      if (seNodule instanceof SELabel && seNodule.ref !== undefined) {
-        this.initialStyleStates.push(
-          seNodule.ref.currentStyleState(StyleEditPanels.Label)
-        );
-        this.defaultStyleStates.push(
-          seNodule.ref.defaultStyleState(StyleEditPanels.Label)
-        );
-      } else {
-        const label = ((seNodule as unknown) as Labelable).label;
-        if (label !== undefined) {
-          this.initialStyleStates.push(
-            label.ref.currentStyleState(StyleEditPanels.Label)
-          );
-          this.defaultStyleStates.push(
-            label.ref.defaultStyleState(StyleEditPanels.Label)
-          );
-        } else {
-          throw "Attempted to use the label of an unlabelable SENodule in recordStyleState in mutations.ts";
-        }
-      }
-    });
-    this.initialBackStyleContrast = backContrast;
+    console.debug("About to record style", data.selected.length, "objects");
+    const current = data.selected.map((n: Nodule) =>
+      n.currentStyleState(data.panel)
+    );
+    console.debug(
+      "SEStore recording style of selected objects in",
+      StyleEditPanels[data.panel],
+      "with",
+      current
+    );
+    this.initialStyleStatesMap.set(data.panel, current);
+    this.defaultStyleStatesMap.set(
+      data.panel,
+      data.selected.map((n: Nodule) => n.defaultStyleState(data.panel))
+    );
+    this.initialBackStyleContrast = data.backContrast;
   }
 
   @Mutation

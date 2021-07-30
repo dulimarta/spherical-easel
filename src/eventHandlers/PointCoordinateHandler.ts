@@ -101,7 +101,7 @@ export default class PointCoordinateHandler extends Highlighter {
         // Set the selected segment's Label to display and to show NameAndValue in an undoable way
         coordinatizeCommandGroup.addCommand(
           new StyleNoduleCommand(
-            [this.targetPoint.label!],
+            [this.targetPoint.label!.ref],
             StyleEditPanels.Front,
             [
               {
