@@ -99,6 +99,15 @@ export default class SelectionHandler extends Highlighter {
           (n as any).ref.glowingDisplay();
         });
     }
+    // Get all SEPolygons
+    if (keyEvent.key.match("O")) {
+      SEStore.sePolygons
+        .filter((n: any) => n.showing) //no hidden Polygons allowed
+        .forEach((n: any) => {
+          this.keyPressSelection.push(n);
+          (n as any).ref.glowingDisplay();
+        });
+    }
     // Now process the hitSENodules so the user can select by number
     // If there is nothing or only one nearby ignore this key event
     if (this.hitSENodules?.length <= 1) return;

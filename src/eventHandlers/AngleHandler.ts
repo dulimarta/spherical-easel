@@ -346,6 +346,23 @@ export default class AngleHandler extends Highlighter {
             this.temporaryFirstPoint.positionVector = this.hitSEParametrics[0].closestVector(
               this.currentSphereVector
             );
+          } else if (this.hitSEPolygons.length > 0) {
+            // The user clicked on a parametric, assume they want to create an
+            // from three points, the first of which is on a parametric.
+            this.angleMode = AngleMode.POINTS;
+            this.targetPoints.push(null);
+            this.sePointOneDimensionalParents.push(this.hitSEPolygons[0]);
+            this.pointLocations.push(
+              this.tmpPointVector1.copy(
+                this.hitSEPolygons[0].closestVector(this.currentSphereVector)
+              )
+            );
+            this.temporaryAngleMarker.startVector = this.hitSEPolygons[0].closestVector(
+              this.currentSphereVector
+            );
+            this.temporaryFirstPoint.positionVector = this.hitSEPolygons[0].closestVector(
+              this.currentSphereVector
+            );
           } else {
             // The user clicked on empty space, assume they want to create
             // an angle from three points, the first of which is a free point
@@ -495,6 +512,29 @@ export default class AngleHandler extends Highlighter {
                 );
               }
             }
+          }
+          if (this.hitSEPolygons.length > 0) {
+            // the user wants to create a point on a parametric to make an angle
+            this.tmpVector.copy(
+              this.hitSEPolygons[0].closestVector(this.currentSphereVector)
+            );
+            if (this.allowPointLocation(this.tmpVector)) {
+              this.targetPoints.push(null);
+              this.sePointOneDimensionalParents.push(this.hitSEPolygons[0]);
+              if (this.targetPoints.length == 2) {
+                this.temporaryAngleMarker.vertexVector = this.tmpVector;
+                this.temporarySecondPoint.positionVector = this.tmpVector;
+                this.pointLocations.push(
+                  this.tmpPointVector2.copy(this.tmpVector)
+                );
+              } else {
+                this.temporaryAngleMarker.endVector = this.tmpVector;
+                this.temporaryThirdPoint.positionVector = this.tmpVector;
+                this.pointLocations.push(
+                  this.tmpPointVector3.copy(this.tmpVector)
+                );
+              }
+            }
           } else {
             // the user wants to create a new point to make an angle
             if (this.allowPointLocation(this.currentSphereVector)) {
@@ -630,8 +670,11 @@ export default class AngleHandler extends Highlighter {
             this.hitSEParametrics[0].glowing = true;
             this.snapOneDimensional = this.hitSEParametrics[0];
             this.snapPoint = null;
+          } else if (this.hitSEPolygons.length > 0) {
+            this.hitSEPolygons[0].glowing = true;
+            this.snapOneDimensional = this.hitSEPolygons[0];
+            this.snapPoint = null;
           }
-
           break;
         case AngleMode.POINTS:
           // The use has selected or created a point
@@ -660,6 +703,10 @@ export default class AngleHandler extends Highlighter {
             this.hitSEParametrics[0].glowing = true;
             this.snapPoint = null;
             this.snapOneDimensional = this.hitSEParametrics[0];
+          } else if (this.hitSEPolygons.length > 0) {
+            this.hitSEPolygons[0].glowing = true;
+            this.snapPoint = null;
+            this.snapOneDimensional = this.hitSEPolygons[0];
           } else {
             //Nothing nearby so don't snap to anything
             this.snapOneDimensional = null;

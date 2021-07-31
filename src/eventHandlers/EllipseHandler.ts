@@ -298,6 +298,35 @@ export default class EllipseHandler extends Highlighter {
           //that will prevent a mouse release at the same location as focus 2 from creating the ellipse
           this.mouseMoved(event);
         }
+      } else if (this.hitSEPolygons.length > 0) {
+        // One of the foci of the ellipse will be a point on a circle
+        //  Eventually, we will create a new SEPointOneDimensional and Point
+        if (!this.focus1LocationSelected) {
+          this.focus1SEPointOneDimensionalParent = this.hitSEPolygons[0];
+          this.focus1Vector.copy(
+            this.focus1SEPointOneDimensionalParent.closestVector(
+              this.currentSphereVector
+            )
+          );
+          this.temporaryEllipse.focus1Vector = this.focus1Vector;
+          this.temporaryFocus1Marker.positionVector = this.focus1Vector;
+          this.focus1SEPoint = null;
+          this.focus1LocationSelected = true;
+        } else {
+          this.focus2SEPointOneDimensionalParent = this.hitSEPolygons[0];
+          this.focus2Vector.copy(
+            this.focus2SEPointOneDimensionalParent.closestVector(
+              this.currentSphereVector
+            )
+          );
+          this.temporaryEllipse.focus2Vector = this.focus2Vector;
+          this.temporaryFocus2Marker.positionVector = this.focus2Vector;
+          this.focus2SEPoint = null;
+          this.focus2LocationSelected = true;
+          // trigger this so that temporaryEllipsePoint's location is set and
+          //that will prevent a mouse release at the same location as focus 2 from creating the ellipse
+          this.mouseMoved(event);
+        }
       } else {
         // The mouse press is not near an existing point or one dimensional object.
         //  Eventually, we will create a new SEPoint and Point
@@ -364,6 +393,8 @@ export default class EllipseHandler extends Highlighter {
       possiblyGlowing = this.hitSEEllipses[0];
     } else if (this.hitSEParametrics.length > 0) {
       possiblyGlowing = this.hitSEParametrics[0];
+    } else if (this.hitSEPolygons.length > 0) {
+      possiblyGlowing = this.hitSEPolygons[0];
     } else {
       this.snapTemporaryPointMarkerToOneDimensional = null;
       this.snapTemporaryPointMarkerToPoint = null;
@@ -931,6 +962,22 @@ export default class EllipseHandler extends Highlighter {
           new AddPointOnOneDimensionalCommand(
             vtx as SEPointOnOneDimensional,
             this.hitSEParametrics[0],
+            newSELabel
+          )
+        );
+      } else if (this.hitSEPolygons.length > 0) {
+        // The end of the line will be a point on a ellipse
+        vtx = new SEPointOnOneDimensional(
+          newEllipsePoint,
+          this.hitSEPolygons[0]
+        );
+        // Set the Location
+        vtx.locationVector = this.temporaryEllipsePointMarker.positionVector;
+        newSELabel = new SELabel(newLabel, vtx);
+        ellipseCommandGroup.addCommand(
+          new AddPointOnOneDimensionalCommand(
+            vtx as SEPointOnOneDimensional,
+            this.hitSEPolygons[0],
             newSELabel
           )
         );

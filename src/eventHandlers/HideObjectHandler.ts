@@ -43,6 +43,8 @@ export default class HideObjectHandler extends Highlighter {
         this.victim = this.hitSELabels[0];
       } else if (this.hitSEAngleMarkers.length > 0) {
         this.victim = this.hitSEAngleMarkers[0];
+      } else if (this.hitSEPolygons.length > 0) {
+        this.victim = this.hitSEPolygons[0];
       }
 
       if (this.victim != null) {
@@ -83,6 +85,8 @@ export default class HideObjectHandler extends Highlighter {
       this.hitSELabels[0].glowing = true;
     } else if (this.hitSEAngleMarkers.length > 0) {
       this.hitSEAngleMarkers[0].glowing = true;
+    } else if (this.hitSEPolygons.length > 0) {
+      this.hitSEPolygons[0].glowing = true;
     }
   }
 

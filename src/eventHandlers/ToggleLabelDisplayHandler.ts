@@ -46,6 +46,10 @@ export default class ToggleLabelDisplayHandler extends Highlighter {
         if (this.hitSEAngleMarkers[0].label != null) {
           this.label = this.hitSEAngleMarkers[0].label;
         }
+      } else if (this.hitSEPolygons.length > 0) {
+        if (this.hitSEPolygons[0].label != null) {
+          this.label = this.hitSEPolygons[0].label;
+        }
       } else if (this.hitSELabels.length > 0) {
         this.label = this.hitSELabels[0];
       }
@@ -81,6 +85,8 @@ export default class ToggleLabelDisplayHandler extends Highlighter {
       this.hitSEParametrics[0].glowing = true;
     } else if (this.hitSEAngleMarkers.length > 0) {
       this.hitSEAngleMarkers[0].glowing = true;
+    } else if (this.hitSEPolygons.length > 0) {
+      this.hitSEPolygons[0].glowing = true;
     } else if (this.hitSELabels.length > 0) {
       this.hitSELabels[0].glowing = true;
     }

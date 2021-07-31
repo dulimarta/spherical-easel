@@ -308,7 +308,7 @@ export class SEPolygon extends SEExpression implements Visitable, Labelable {
       segmentsToCheck.push(seg);
     });
 
-    console.log("number of exluded segments", this._n - segmentsToCheck.length);
+    // console.log("number of excluded segments", this._n - segmentsToCheck.length);
     // how many times does the segment (of length less than or equal to pi) from P to unitIdealVector, called S
     //  cross on the edges of the polygon? if even  unitIdealVector is inside the polygon, if not unitIdealVector is outside
 

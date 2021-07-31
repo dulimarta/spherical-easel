@@ -57,6 +57,8 @@ export default class DeleteHandler extends Highlighter {
         new SetNoduleDisplayCommand(this.hitSELabels[0], false).execute();
       } else if (this.hitSEAngleMarkers.length > 0) {
         this.victim = this.hitSEAngleMarkers[0];
+      } else if (this.hitSEPolygons.length > 0) {
+        this.victim = this.hitSEPolygons[0];
       }
 
       if (this.victim != null) {
@@ -101,6 +103,8 @@ export default class DeleteHandler extends Highlighter {
       this.hitSEAngleMarkers[0].glowing = true;
     } else if (this.hitSEParametrics.length > 0) {
       this.hitSEParametrics[0].glowing = true;
+    } else if (this.hitSEPolygons.length > 0) {
+      this.hitSEPolygons[0].glowing = true;
     }
   }
 
