@@ -1,5 +1,4 @@
 import i18n from "@/i18n";
-import { TranslateResult } from "vue-i18n";
 
 export enum TokenType {
   /* 0 */ PLUS,
@@ -391,6 +390,139 @@ export class ExpressionParser {
     node: { kind: TokenType.UNKNOWN, text: "0", numericValue: 0 }
   };
 
+  static simplifiedSumOf(one: SyntaxTree, two: SyntaxTree): SyntaxTree {
+    // One of the term is zero
+    if (one.node.kind === TokenType.NUMBER && one.node.text === "0") return two;
+    if (two.node.kind === TokenType.NUMBER && two.node.text === "0") return one;
+    // Both terms are numeric constants
+    if (
+      one.node.kind === TokenType.NUMBER &&
+      two.node.kind === TokenType.NUMBER
+    ) {
+      const sum = one.node.numericValue! + two.node.numericValue!;
+      return {
+        node: {
+          kind: TokenType.NUMBER,
+          numericValue: sum,
+          text: sum.toFixed(10)
+        }
+      };
+    }
+    return {
+      node: { kind: TokenType.PLUS, text: "" },
+      leftChild: one,
+      rightChild: two
+    };
+  }
+
+  static simplifiedDifferenceOf(one: SyntaxTree, two: SyntaxTree): SyntaxTree {
+    // The second term is zero
+    if (two.node.kind === TokenType.NUMBER && two.node.text === "0") return one;
+    // Both terms are numeric constant
+    if (
+      one.node.kind === TokenType.NUMBER &&
+      two.node.kind === TokenType.NUMBER
+    ) {
+      const difference = one.node.numericValue! - two.node.numericValue!;
+      return {
+        node: {
+          kind: TokenType.NUMBER,
+          numericValue: difference,
+          text: difference.toFixed(10)
+        }
+      };
+    }
+    return {
+      node: { kind: TokenType.MINUS, text: "" },
+      leftChild: one,
+      rightChild: two
+    };
+  }
+  static simplifiedProductOf(one: SyntaxTree, two: SyntaxTree): SyntaxTree {
+    /* One of the factors is zero */
+    if (one.node.kind === TokenType.NUMBER && one.node.text === "0") return one;
+    if (two.node.kind === TokenType.NUMBER && two.node.text === "0") return two;
+    /* One of the factors is identity */
+    if (one.node.kind === TokenType.NUMBER && one.node.text === "1") return two;
+    if (two.node.kind === TokenType.NUMBER && two.node.text === "1") return one;
+
+    /* both are constants */
+    if (
+      one.node.kind === TokenType.NUMBER &&
+      two.node.kind === TokenType.NUMBER
+    ) {
+      const product = one.node.numericValue! * two.node.numericValue!;
+      return {
+        node: {
+          kind: TokenType.NUMBER,
+          numericValue: product,
+          text: product.toFixed(10)
+        }
+      };
+    }
+
+    return {
+      node: { kind: TokenType.MULT },
+      leftChild: one,
+      rightChild: two
+    };
+  }
+
+  static simplifiedQuotientOf(num: SyntaxTree, denum: SyntaxTree): SyntaxTree {
+    if (num.node.kind === TokenType.NUMBER && num.node.text === "0") return num;
+    if (denum.node.kind === TokenType.NUMBER && denum.node.text === "1")
+      return num;
+    /* both are constants */
+    if (
+      num.node.kind === TokenType.NUMBER &&
+      denum.node.kind === TokenType.NUMBER
+    ) {
+      const div = num.node.numericValue! / denum.node.numericValue!;
+      return {
+        node: {
+          kind: TokenType.NUMBER,
+          numericValue: div,
+          text: div.toFixed(10)
+        }
+      };
+    }
+    return {
+      node: { kind: TokenType.DIV },
+      leftChild: num,
+      rightChild: denum
+    };
+  }
+
+  static simplifiedPowerOf(base: SyntaxTree, exponent: SyntaxTree): SyntaxTree {
+    if (exponent.node.kind === TokenType.NUMBER && exponent.node.text === "0")
+      return {
+        node: { kind: TokenType.NUMBER, text: "1" }
+      };
+    if (exponent.node.kind === TokenType.NUMBER && exponent.node.text === "1")
+      return base;
+    if (
+      base.node.kind === TokenType.NUMBER &&
+      exponent.node.kind === TokenType.NUMBER
+    ) {
+      const pow = Math.pow(
+        base.node.numericValue!,
+        exponent.node.numericValue!
+      );
+      return {
+        node: {
+          kind: TokenType.NUMBER,
+          numericValue: pow,
+          text: pow.toFixed(10)
+        }
+      };
+    }
+    return {
+      node: { kind: TokenType.POW },
+      leftChild: base,
+      rightChild: exponent
+    };
+  }
+
   static differentiate(
     input: SyntaxTree | undefined,
     varName: string
@@ -411,155 +543,97 @@ export class ExpressionParser {
             node: { kind: TokenType.NUMBER, text: "0", numericValue: 0 }
           };
 
-      case TokenType.PLUS:
-      case TokenType.MINUS: {
+      case TokenType.PLUS: {
         // diff(f(x) + g(x)) = diff(f(x)) + diff(g(x))
         const leftDiff = this.differentiate(input.leftChild, varName);
         const rightDiff = this.differentiate(input.rightChild, varName);
-        return {
-          node: { kind: input.node.kind, text: "" },
-          leftChild: leftDiff,
-          rightChild: rightDiff
-        };
+        return this.simplifiedSumOf(leftDiff, rightDiff);
+        // Check for ZERO values
+      }
+      case TokenType.MINUS: {
+        // diff(f(x) - g(x)) = diff(f(x)) - diff(g(x))
+        const leftDiff = this.differentiate(input.leftChild, varName);
+        const rightDiff = this.differentiate(input.rightChild, varName);
+        return this.simplifiedDifferenceOf(leftDiff, rightDiff);
       }
       case TokenType.MULT: {
         // diff(f(x) g(x)) = diff(f(x)) g(x) + f(x) diff(g(x))
         const fDiff = this.differentiate(input.leftChild, varName);
         const gDiff = this.differentiate(input.rightChild, varName);
-        const firstTerm: SyntaxTree = {
-          node: {
-            kind: TokenType.MULT
-          },
-          leftChild: fDiff,
-          rightChild: input.rightChild
-        };
-        const secondTerm: SyntaxTree = {
-          node: {
-            kind: TokenType.MULT
-          },
-          leftChild: input.leftChild,
-          rightChild: gDiff
-        };
-        return {
-          node: { kind: TokenType.PLUS },
-          leftChild: firstTerm,
-          rightChild: secondTerm
-        };
+        const firstTerm = this.simplifiedProductOf(fDiff, input.rightChild!);
+        const secondTerm = this.simplifiedProductOf(input.leftChild!, gDiff);
+        return this.simplifiedSumOf(firstTerm, secondTerm);
       }
       case TokenType.DIV: {
         // diff(f(x)/ g(x)) = [diff(f(x)) g(x) - f(x) diff(g(x))] / g(x)*g(x)
         const fDiff = this.differentiate(input.leftChild, varName);
         const gDiff = this.differentiate(input.rightChild, varName);
-        const numerator: SyntaxTree = {
-          node: {
-            kind: TokenType.MINUS
-          },
-          leftChild: {
-            node: { kind: TokenType.MULT },
-            leftChild: fDiff,
-            rightChild: input.rightChild
-          },
-          rightChild: {
-            node: { kind: TokenType.MULT },
-            leftChild: input.leftChild,
-            rightChild: gDiff
-          }
-        };
-        const denominator: SyntaxTree = {
-          node: {
-            kind: TokenType.MULT
-          },
-          leftChild: input.rightChild,
-          rightChild: input.rightChild
-        };
-        return {
-          node: { kind: TokenType.DIV },
-          leftChild: numerator,
-          rightChild: denominator
-        };
+        const firstNumeratorTerm = this.simplifiedProductOf(
+          fDiff,
+          input.rightChild!
+        );
+        const secondNumeratorTerm = this.simplifiedProductOf(
+          input.leftChild!,
+          gDiff
+        );
+        const numerator = this.simplifiedDifferenceOf(
+          firstNumeratorTerm,
+          secondNumeratorTerm
+        );
+        const denominator = this.simplifiedProductOf(
+          input.rightChild!,
+          input.rightChild!
+        );
+        return this.simplifiedQuotientOf(numerator, denominator);
       }
       case TokenType.POW: {
-        // if (input.rightChild?.node.kind !== TokenType.NUMBER)
-        //   throw new Error(String(i18n.t(`objectTree.nonNumericExponents`)));
-        // const fDiff = this.differentiate(input.leftChild, varName);
-        // const expo = input.rightChild.node.numericValue ?? 1;
-        // const N: SyntaxTree = {
-        //   node: {
-        //     kind: TokenType.NUMBER,
-        //     numericValue: input.rightChild.node.numericValue
-        //   }
-        // };
-        // const fPower: SyntaxTree = {
-        //   node: { kind: TokenType.POW },
-        //   leftChild: input.leftChild,
-        //   rightChild: {
-        //     node: { kind: TokenType.NUMBER, numericValue: expo - 1 }
-        //   }
-        // };
-        // // Return the product of the three terms above
-        // return {
-        //   node: { kind: TokenType.MULT },
-        //   leftChild: N,
-        //   rightChild: {
-        //     node: { kind: TokenType.MULT },
-        //     leftChild: fPower,
-        //     rightChild: fDiff
-        //   }
-        // };
-
         // typical use case of diff (f^N) = N * f^(N-1) * diff(f) can't handle N = -1/2 so use more complex/general version
-        // diff(f(x)^g(x)) = f(x)^g(x) * ln(f(x)^diff(g(x))) + f(x)^(g(x)-1) * g(x) * diff(f(x))
+        // diff(f(x)^g(x)) = f(x)^g(x) * ln(f(x)^diff(g(x))) + g(x) * f(x)^(g(x)-1) * diff(f(x))
         // HOWEVER this has its own problems, when f(x) is negative like for sin(M1)^2 this causes problems with the ln(f(x)) term
         // Perhaps change ln(f(x)) to ln(abs(f(x))), but then if f(x)=0, we still have problems (like in sin(t)^2 when t=0)
 
         const gDiff = this.differentiate(input.rightChild, varName);
-        const lnfTogDiff = {
-          node: { kind: TokenType.MATH_BUILTIN, text: "ln" },
-          args: [
-            {
-              node: { kind: TokenType.POW },
-              leftChild: input.leftChild,
-              rightChild: gDiff
-            }
-          ]
-        };
-
-        const fTogMinusOne: SyntaxTree = {
-          node: { kind: TokenType.POW },
-          leftChild: input.leftChild,
-          rightChild: {
-            node: { kind: TokenType.MINUS },
-            leftChild: input.rightChild,
-            rightChild: {
-              node: { kind: TokenType.NUMBER, text: "1", numericValue: 1 }
-            }
+        const lnArg = this.simplifiedPowerOf(input.leftChild!, gDiff);
+        let lnfTogDiff: SyntaxTree;
+        if (lnArg.node.kind === TokenType.NUMBER) {
+          if (lnArg.node.text == "1") {
+            lnfTogDiff = {
+              node: { kind: TokenType.NUMBER, numericValue: 0, text: "0" }
+            };
+          } else {
+            const val = Math.log(lnArg.node.numericValue!);
+            lnfTogDiff = {
+              node: {
+                kind: TokenType.NUMBER,
+                numericValue: val,
+                text: val.toFixed(10)
+              }
+            };
           }
+        } else
+          lnfTogDiff = {
+            node: { kind: TokenType.MATH_BUILTIN, text: "ln" },
+            args: [lnArg]
+          };
+        const ONE: SyntaxTree = {
+          node: { kind: TokenType.NUMBER, numericValue: 1, text: "1" }
         };
+        const fTogMinusOne = this.simplifiedPowerOf(
+          input.leftChild!,
+          this.simplifiedDifferenceOf(input.rightChild!, ONE)
+        );
         const fDiff = this.differentiate(input.leftChild, varName);
 
         // Create the left term
-        const firstTerm: SyntaxTree = {
-          node: { kind: TokenType.MULT },
-          leftChild: input,
-          rightChild: lnfTogDiff
-        };
+        const firstTerm = this.simplifiedProductOf(input, lnfTogDiff);
         // Create the right triple
-        const secondTerm: SyntaxTree = {
-          node: { kind: TokenType.MULT },
-          leftChild: fTogMinusOne,
-          rightChild: {
-            node: { kind: TokenType.MULT },
-            leftChild: input.rightChild,
-            rightChild: fDiff
-          }
-        };
+        const secondTerm = this.simplifiedProductOf(
+          this.simplifiedProductOf(input.rightChild!, fTogMinusOne),
+          fDiff
+        );
 
         // Return the sum of the two terms above
-        return {
-          node: { kind: TokenType.PLUS },
-          leftChild: firstTerm,
-          rightChild: secondTerm
-        };
+        return this.simplifiedSumOf(firstTerm, secondTerm);
       }
       case TokenType.MATH_BUILTIN: {
         const args = input.args!;
@@ -592,6 +666,10 @@ export class ExpressionParser {
           }
           case "acos": {
             // diff(acos(f(x))) = -1*diff(f(x))/sqrt(1-f(x)*f(x))
+            const ONE: SyntaxTree = {
+              node: { kind: TokenType.NUMBER, numericValue: 1, text: "1" }
+            };
+
             const minusOne: SyntaxTree = {
               node: {
                 kind: TokenType.NUMBER,
@@ -599,24 +677,11 @@ export class ExpressionParser {
                 numericValue: -1
               }
             };
-            const fxsquared: SyntaxTree = {
-              node: {
-                kind: TokenType.MULT
-              },
-              leftChild: args[0],
-              rightChild: args[0]
-            };
-            const oneMinusfxsquared: SyntaxTree = {
-              node: { kind: TokenType.MINUS },
-              leftChild: {
-                node: {
-                  kind: TokenType.NUMBER,
-                  text: "1",
-                  numericValue: 1
-                }
-              },
-              rightChild: fxsquared
-            };
+            const fxsquared = this.simplifiedProductOf(args[0], args[0]);
+            const oneMinusfxsquared = this.simplifiedDifferenceOf(
+              ONE,
+              fxsquared
+            );
             const sqrtTerm: SyntaxTree = {
               node: {
                 kind: TokenType.MATH_BUILTIN,
@@ -626,36 +691,24 @@ export class ExpressionParser {
             };
             const fDiff = this.differentiate(args[0], varName);
             //return the triple
-            return {
-              node: { kind: TokenType.MULT },
-              leftChild: minusOne,
-              rightChild: {
-                node: { kind: TokenType.DIV },
-                leftChild: fDiff,
-                rightChild: sqrtTerm
-              }
-            };
+            return this.simplifiedProductOf(
+              minusOne,
+              this.simplifiedQuotientOf(fDiff, sqrtTerm)
+            );
           }
           case "asin": {
             // diff(asin(f(x))) = diff(f(x))/sqrt(1-f(x)*f(x))
-            const fxsquared: SyntaxTree = {
-              node: {
-                kind: TokenType.MULT
-              },
-              leftChild: args[0],
-              rightChild: args[0]
-            };
-            const oneMinusfxsquared: SyntaxTree = {
-              node: { kind: TokenType.MINUS },
-              leftChild: {
+            const fxsquared = this.simplifiedProductOf(args[0], args[0]);
+            const oneMinusfxsquared = this.simplifiedDifferenceOf(
+              {
                 node: {
                   kind: TokenType.NUMBER,
                   text: "1",
                   numericValue: 1
                 }
               },
-              rightChild: fxsquared
-            };
+              fxsquared
+            );
             const sqrtTerm: SyntaxTree = {
               node: {
                 kind: TokenType.MATH_BUILTIN,
@@ -665,40 +718,25 @@ export class ExpressionParser {
             };
             const fDiff = this.differentiate(args[0], varName);
             //return the triple
-            return {
-              node: { kind: TokenType.DIV },
-              leftChild: fDiff,
-              rightChild: sqrtTerm
-            };
+            return this.simplifiedQuotientOf(fDiff, sqrtTerm);
           }
           case "atan": {
             // diff(atan(f(x))) = diff(f(x))/(1+f(x)*f(x))
-            const fxsquared: SyntaxTree = {
-              node: {
-                kind: TokenType.MULT
-              },
-              leftChild: args[0],
-              rightChild: args[0]
-            };
-            const onePlusfxsquared: SyntaxTree = {
-              node: { kind: TokenType.PLUS },
-              leftChild: {
+            const fxsquared = this.simplifiedProductOf(args[0], args[0]);
+            const onePlusfxsquared = this.simplifiedSumOf(
+              {
                 node: {
                   kind: TokenType.NUMBER,
                   text: "1",
                   numericValue: 1
                 }
               },
-              rightChild: fxsquared
-            };
+              fxsquared
+            );
 
             const fDiff = this.differentiate(args[0], varName);
             //return the triple
-            return {
-              node: { kind: TokenType.DIV },
-              leftChild: fDiff,
-              rightChild: onePlusfxsquared
-            };
+            return this.simplifiedQuotientOf(fDiff, onePlusfxsquared);
           }
           case "ceil":
             //We are going to ignore the fact that the derivative at integer values is undefined

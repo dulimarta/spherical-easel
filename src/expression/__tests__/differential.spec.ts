@@ -34,111 +34,76 @@ describe("Derivatives", () => {
     it("differentiates polynomial terms", () => {
       const out = diff("z ** 3 ", "z");
       expect(out.node.kind).toEqual(TokenType.MULT);
-      expect(out.rightChild?.node.kind).toEqual(TokenType.MULT);
 
       const coeff = out.leftChild;
       expect(coeff?.node.kind).toEqual(TokenType.NUMBER);
       expect(coeff?.node.numericValue).toEqual(3);
 
-      const powerTerm = out.rightChild?.leftChild;
+      const powerTerm = out.rightChild;
       expect(powerTerm?.node.kind).toEqual(TokenType.POW);
       expect(powerTerm?.leftChild?.node.kind).toEqual(TokenType.MEASUREMENT);
       expect(powerTerm?.leftChild?.node.text).toEqual("z");
       expect(powerTerm?.rightChild?.node.kind).toEqual(TokenType.NUMBER);
       expect(powerTerm?.rightChild?.node.numericValue).toEqual(2);
-
-      const thirdTerm = out.rightChild?.rightChild;
-      // console.debug("3rd term", thirdTerm);
-      expect(thirdTerm?.node.kind).toEqual(TokenType.NUMBER);
-      expect(thirdTerm?.node.numericValue).toEqual(1);
     });
 
     it("differentiates sum of terms", () => {
       const out = diff("2 + x");
-      expect(out.node.kind).toEqual(TokenType.PLUS);
-      expect(out.leftChild).toBeTruthy();
-      const left = out.leftChild!;
-      expect(left.node.kind).toEqual(TokenType.NUMBER);
-      expect(left.node.numericValue).toEqual(0);
-      expect(out.rightChild).toBeTruthy();
-      const right = out.rightChild!;
-      expect(right.node.kind).toEqual(TokenType.NUMBER);
-      expect(right.node.numericValue).toEqual(1);
+      expect(out.node.kind).toEqual(TokenType.NUMBER);
+      expect(out.node.numericValue).toEqual(1);
+      // expect(out.leftChild).toBeTruthy();
+      // const left = out.leftChild!;
+      // expect(left.node.kind).toEqual(TokenType.NUMBER);
+      // expect(left.node.numericValue).toEqual(0);
+      // expect(out.rightChild).toBeTruthy();
+      // const right = out.rightChild!;
+      // expect(right.node.kind).toEqual(TokenType.NUMBER);
+      // expect(right.node.numericValue).toEqual(1);
     });
 
     it("differentiates sum of terms", () => {
       const out = diff("2*t**4 + 7*t", "t");
       expect(out.node.kind).toEqual(TokenType.PLUS);
       expect(out.leftChild).toBeTruthy();
-      const left = out.leftChild!;
-      // First term 0 * t ** 4 + 2 * 4 * t**3 * 1
-      expect(left.node.kind).toEqual(TokenType.PLUS);
-      expect(left.leftChild?.node.kind).toEqual(TokenType.MULT);
-      expect(left.leftChild?.leftChild?.node.kind).toEqual(TokenType.NUMBER);
-      expect(left.leftChild?.leftChild?.node.numericValue).toEqual(0);
-      expect(left.leftChild?.rightChild?.node.kind).toEqual(TokenType.POW);
-      expect(left.leftChild?.rightChild?.leftChild?.node.kind).toEqual(
-        TokenType.MEASUREMENT
-      );
-      expect(left.leftChild?.rightChild?.leftChild?.node.text).toEqual("t");
-      expect(left.leftChild?.rightChild?.rightChild?.node.kind).toEqual(
-        TokenType.NUMBER
-      );
-      expect(left.leftChild?.rightChild?.rightChild?.node.numericValue).toEqual(
-        4
-      );
+      // First term 8 * t**3
+      const firstTerm = out.leftChild!;
+      expect(firstTerm.node.kind).toEqual(TokenType.MULT);
+      expect(firstTerm.leftChild).toBeTruthy();
+      expect(firstTerm.rightChild).toBeTruthy();
+      const coeff = firstTerm.leftChild!;
+      // console.debug("First term coefficient", coeff);
+      expect(coeff.node.kind).toEqual(TokenType.NUMBER);
+      expect(coeff.node.numericValue).toEqual(2);
+
+      const prodTerm = firstTerm.rightChild!;
+      expect(prodTerm.node.kind).toEqual(TokenType.MULT);
+      expect(prodTerm.leftChild?.node.kind).toEqual(TokenType.NUMBER);
+      expect(prodTerm.leftChild?.node.numericValue).toEqual(4);
+
+      const powTerm = prodTerm.rightChild!;
+
+      expect(powTerm.node.kind).toEqual(TokenType.POW);
+      expect(powTerm.leftChild?.node.kind).toEqual(TokenType.MEASUREMENT);
+      expect(powTerm.leftChild?.node.text).toEqual("t");
+      expect(powTerm.rightChild?.node.kind).toEqual(TokenType.NUMBER);
+      expect(powTerm.rightChild?.node.numericValue).toEqual(3);
 
       expect(out.rightChild).toBeTruthy();
-      const second = out.rightChild!;
-      // 0*t + 7*1
-      expect(second.node.kind).toEqual(TokenType.PLUS);
-      expect(second.leftChild?.node.kind).toEqual(TokenType.MULT);
-      expect(second.leftChild?.leftChild?.node.kind).toEqual(TokenType.NUMBER); // 0
-      expect(second.leftChild?.leftChild?.node.numericValue).toEqual(0); // 0
-      expect(second.leftChild?.rightChild?.node.kind).toEqual(
-        TokenType.MEASUREMENT
-      );
-      expect(second.leftChild?.rightChild?.node.text).toEqual("t");
-      expect(second.rightChild?.node.kind).toEqual(TokenType.MULT);
-      expect(second.rightChild?.leftChild?.node.kind).toEqual(TokenType.NUMBER);
-      expect(second.rightChild?.leftChild?.node.numericValue).toEqual(7);
-      expect(second.rightChild?.rightChild?.node.kind).toEqual(
-        TokenType.NUMBER
-      );
-      expect(second.rightChild?.rightChild?.node.numericValue).toEqual(1);
+      const secondTerm = out.rightChild!;
+      expect(secondTerm.node.kind).toEqual(TokenType.NUMBER);
+      expect(secondTerm.node.numericValue).toEqual(7);
     });
 
     it("differentiates of difference of terms", () => {
       const out = diff("a - x");
-      expect(out.node.kind).toEqual(TokenType.MINUS);
-      expect(out.leftChild).toBeTruthy();
-      const left = out.leftChild!;
-      expect(left.node.kind).toEqual(TokenType.NUMBER);
-      expect(left.node.numericValue).toEqual(0);
-      expect(out.rightChild).toBeTruthy();
-      const right = out.rightChild!;
-      expect(right.node.kind).toEqual(TokenType.NUMBER);
-      expect(right.node.numericValue).toEqual(1);
+      expect(out.node.kind).toEqual(TokenType.NUMBER);
+      expect(out.node.numericValue).toEqual(-1);
     });
 
     it("differentiates product of terms", () => {
       const out = diff("a * x");
-      expect(out.node.kind).toEqual(TokenType.PLUS);
-
-      expect(out.leftChild).toBeTruthy();
-      const left = out.leftChild!;
-      expect(left.node.kind).toEqual(TokenType.MULT);
-      expect(left.leftChild?.node.kind).toEqual(TokenType.NUMBER);
-      expect(left.leftChild?.node.numericValue).toEqual(0);
-      expect(left.rightChild?.node.kind).toEqual(TokenType.MEASUREMENT);
-
-      expect(out.rightChild).toBeTruthy();
-      const right = out.rightChild!;
-      expect(right.node.kind).toEqual(TokenType.MULT);
-      expect(right.leftChild?.node.kind).toEqual(TokenType.MEASUREMENT);
-      expect(right.leftChild?.node.text).toEqual("a");
-      expect(right.rightChild?.node.kind).toEqual(TokenType.NUMBER);
-      expect(right.rightChild?.node.numericValue).toEqual(1);
+      expect(out.node.kind).toEqual(TokenType.MEASUREMENT);
+      expect(out.node.text).toEqual("a");
     });
   });
 
