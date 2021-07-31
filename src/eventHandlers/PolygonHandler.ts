@@ -512,6 +512,7 @@ export default class PolygonHandler extends Highlighter {
             );
             this.temporaryAngleMarkersAdded[ind] = true;
             this.temporaryAngleMarkers[ind].addToLayers(this.layers);
+            this.temporaryAngleMarkers[ind].updateDisplay();
           }
         });
 
@@ -531,8 +532,8 @@ export default class PolygonHandler extends Highlighter {
             : this.seEdgeSegments[0].endSEPoint.locationVector,
           AngleMarker.currentAngleMarkerRadius
         );
+        this.temporaryAngleMarkers[0].updateDisplay();
       }
-      this.temporaryAngleMarkers.forEach(am => am.updateDisplay());
     }
   }
 

@@ -67,6 +67,8 @@ export class SEPolygon extends SEExpression implements Visitable, Labelable {
   private tmpVector1 = new Vector3();
   private tmpVector2 = new Vector3();
 
+  //** The numerber of edges in this polygon */
+  private _n: number;
   /**
    * Create a model SEPolygon using:
    * @param poly The plottable TwoJS Object associated to this object
@@ -86,6 +88,7 @@ export class SEPolygon extends SEExpression implements Visitable, Labelable {
     this._seEdgeSegments.push(...edges);
     this._segmentIsFlipped.push(...flippedBooleans);
     this._angleMarkers.push(...angleMarkers);
+    this._n = this._seEdgeSegments.length;
 
     this._valueDisplayMode = SETTINGS.polygon.initialValueDisplayMode;
     // SEPolygon is both an expression and a plottable (not the only one)
@@ -178,33 +181,62 @@ export class SEPolygon extends SEExpression implements Visitable, Labelable {
       // );
       return true;
     }
-    // console.log("after edge check");
-    // create a point, P, inside the polygon, then connect unitIdealVector with P and count the intersection (intersections with vertices are not allowed!)
+    // find the closest vertex of the polygon (to each edge, the vertex is the *last* one on the edge in the direction the edge is traced)
+    const center = new Vector3();
+    let closestSegmentIndex = -1;
+    let closestDistance = 2 * Math.PI; // set to a number bigger than all possible distances
+    this._seEdgeSegments.forEach((seg, ind) => {
+      let distance: number;
+      if (this.segmentFlippedList[ind]) {
+        distance = seg.startSEPoint.locationVector.angleTo(unitIdealVector);
+        if (distance < closestDistance) {
+          closestDistance = distance;
+          closestSegmentIndex = ind;
+          center.copy(seg.endSEPoint.locationVector);
+        }
+      } else {
+        distance = seg.endSEPoint.locationVector.angleTo(unitIdealVector);
+        if (distance < closestDistance) {
+          closestDistance = distance;
+          closestSegmentIndex = ind;
+          center.copy(seg.endSEPoint.locationVector);
+        }
+      }
+    });
+
+    // create a point, P, inside the polygon and near the closest point, then connect unitIdealVector with P and count the intersection (intersections with vertices are not allowed!)
     // with the line segment edges. If the number of intersections is even, unitIdealVector is inside, if odd, outside.
 
-    // first create P near angleMarkers[1] which measures the angle from SEEdgeSegments[0] to SEEdgeSegments[1]
-
+    // first create P near angleMarkers[index+1] which measures the angle from SEEdgeSegments[index] to SEEdgeSegments[index+1]
     // set up a coordinate frame with
-    //   center being the common point of SEEdgeSegments[0] and SEEdgeSegments[1]
-    //   from being a vector in the plane of SEEdgeSegments[0]. Traveling from Q along SEEdgeSegments[0] for Pi/2 angle you arrive at from
-    const center = new Vector3();
+    //   center being the common point of SEEdgeSegments[index] and SEEdgeSegments[index+1]
+    //   from being a vector in the plane of SEEdgeSegments[index]. Traveling from Q along SEEdgeSegments[index] for Pi/2 angle you arrive at from
     const from = new Vector3();
     const to = new Vector3();
-    if (this.segmentFlippedList[0]) {
-      center.copy(this._seEdgeSegments[0].startSEPoint.locationVector);
+    if (this.segmentFlippedList[closestSegmentIndex]) {
+      center.copy(
+        this._seEdgeSegments[closestSegmentIndex].startSEPoint.locationVector
+      );
     } else {
-      center.copy(this._seEdgeSegments[0].endSEPoint.locationVector);
+      center.copy(
+        this._seEdgeSegments[closestSegmentIndex].endSEPoint.locationVector
+      );
     }
     to.crossVectors(
       center,
-      this._seEdgeSegments[0].getMidPointVector()
+      this._seEdgeSegments[closestSegmentIndex].getMidPointVector()
     ).normalize();
     from.crossVectors(to, center).normalize();
 
+    // compute the next index
+    const nextIndex =
+      (((closestSegmentIndex + 1) % this._n) + this._n) % this._n;
+    // read the angle at the closest vector
+    const angle = this._angleMarkers[nextIndex].value;
     // P is   sin(SETTINGS.minimumVertexToEdgeThickness/2)*cos(angle/2)*from +
     //        sin(SETTINGS.minimumVertexToEdgeThickness/2)*sin(angle/2)*to +
     //                     cos(SETTINGS.minimumVertexToEdgeThickness/2)*center
-    const angle = this._angleMarkers[1].value;
+    // angle = SETTINGS.polygon.minimumVertexToEdgeThickness / 2 so the point is guaranteed to be inside the polygon
     const P = new Vector3(0, 0, 0);
     P.addScaledVector(
       from,
@@ -222,31 +254,66 @@ export class SEPolygon extends SEExpression implements Visitable, Labelable {
     );
     P.normalize();
 
-    // how many times does the segment (of length less than or equal to pi) from P to unitIdealVector, called S
-    //  cross on the edges of the polygon? if even  unitIdealVector is inside the polygon, if not unitIdealVector is outside
+    closestDistance = P.angleTo(unitIdealVector);
 
+    // compute the perpendicular to the line through P and unitIdealVector
     const perpToLineThroughPAndUnitIdealVector = new Vector3();
     perpToLineThroughPAndUnitIdealVector.crossVectors(P, unitIdealVector);
     if (perpToLineThroughPAndUnitIdealVector.isZero(SETTINGS.tolerance)) {
       // P and unitIdealVector are the same or antipodal and any vector perpendicular to P will do
       perpToLineThroughPAndUnitIdealVector.crossVectors(
         P,
-        new Vector3(0, 1, 0)
+        new Vector3(-P.y, P.x, 0).normalize()
       );
       if (perpToLineThroughPAndUnitIdealVector.isZero(SETTINGS.tolerance)) {
-        // P and unitIdealVector are the same or antipodal and any vector perpendicular to P will do
+        // P is the vector (0,0,+/- 1)
         perpToLineThroughPAndUnitIdealVector.crossVectors(
           P,
-          new Vector3(1, 0, 0)
+          new Vector3(-P.z, 0, P.x).normalize()
         );
       }
     }
     perpToLineThroughPAndUnitIdealVector.normalize();
 
-    const lengthOfSegmentFromPToUnitIdeal = P.angleTo(unitIdealVector);
+    // now decide which edges of the polygon can possibly intersect the line segment from the interior point near the closest
+    // There are two types of segments to exclude
+    //  1) If the end points of the segment are on the same side of the plane containing the segment from P to unitIdealVector and the length of the segment is less than Pi
+    //  2) If the angle between the plane containing the segment and P is bigger than closestDistance
+    const segmentsToCheck: SESegment[] = [];
+    this._seEdgeSegments.forEach((seg, ind) => {
+      // check condition 1
+      if (
+        perpToLineThroughPAndUnitIdealVector.dot(
+          seg.endSEPoint.locationVector
+        ) *
+          perpToLineThroughPAndUnitIdealVector.dot(
+            seg.startSEPoint.locationVector
+          ) >
+          0 &&
+        seg.arcLength < Math.PI
+      ) {
+        return;
+      }
+      // check condition 2
+      // make sure that P and the normal vector to the segment are pointing in the same direction
+      if (P.dot(seg.normalVector) > 0) {
+        this.tmpVector.copy(seg.normalVector);
+      } else {
+        this.tmpVector.copy(seg.normalVector).multiplyScalar(-1);
+      }
+
+      if (Math.PI / 2 - P.angleTo(this.tmpVector) > closestDistance) {
+        return;
+      }
+      segmentsToCheck.push(seg);
+    });
+
+    console.log("number of exluded segments", this._n - segmentsToCheck.length);
+    // how many times does the segment (of length less than or equal to pi) from P to unitIdealVector, called S
+    //  cross on the edges of the polygon? if even  unitIdealVector is inside the polygon, if not unitIdealVector is outside
 
     let totalNumberOfCrossings = 0;
-    this._seEdgeSegments.forEach(seg => {
+    segmentsToCheck.forEach(seg => {
       // compute the number of intersections between S and seg, the intersections possibly occur at +/- normalToSeg cross perpToLineThroughPAndUnitIdealVector
       const possibleIntersectionLocation = new Vector3();
       possibleIntersectionLocation
@@ -259,9 +326,8 @@ export class SEPolygon extends SEExpression implements Visitable, Labelable {
       // check to see if the possibleIntersection is on *both* the segment and the P to unitIdeal segment
       if (
         seg.onSegment(possibleIntersectionLocation) &&
-        Math.abs(
-          sumOfDistancesFromPAndUnitIdeal - lengthOfSegmentFromPToUnitIdeal
-        ) < SETTINGS.tolerance
+        Math.abs(sumOfDistancesFromPAndUnitIdeal - closestDistance) <
+          SETTINGS.tolerance
       ) {
         // check to make sure the intersection isn't either endpoint
         if (
@@ -293,9 +359,8 @@ export class SEPolygon extends SEExpression implements Visitable, Labelable {
       // check to see if the possibleIntersection is on *both* the segment and the P to unitIdeal segment
       if (
         seg.onSegment(possibleIntersectionLocation) &&
-        Math.abs(
-          sumOfDistancesFromPAndUnitIdeal - lengthOfSegmentFromPToUnitIdeal
-        ) < SETTINGS.tolerance
+        Math.abs(sumOfDistancesFromPAndUnitIdeal - closestDistance) <
+          SETTINGS.tolerance
       ) {
         // check to make sure the intersection isn't either endpoint
         if (
@@ -334,10 +399,9 @@ export class SEPolygon extends SEExpression implements Visitable, Labelable {
     // All parent segments must exist (This is equivalent to checking that all the angle markers exist)
     this._exists = this._seEdgeSegments.every(seg => seg.exists === true);
 
-    const n = this._seEdgeSegments.length;
     if (this._exists) {
       // All vertices must be far enough away from any nonadjacent edge to exist
-      for (let i = 0; i < n; i++) {
+      for (let i = 0; i < this._n; i++) {
         let nextVertex: Vector3; // the next vertex is common to segment i and i+1
         if (this._segmentIsFlipped[i]) {
           nextVertex = this._seEdgeSegments[i].startSEPoint.locationVector;
@@ -345,9 +409,9 @@ export class SEPolygon extends SEExpression implements Visitable, Labelable {
           nextVertex = this._seEdgeSegments[i].endSEPoint.locationVector;
         }
 
-        for (let j = 0; j < n; j++) {
+        for (let j = 0; j < this._n; j++) {
           // don't check the segments that are adjacent to the vertex
-          if (j !== i && j !== (((i + 1) % n) + n) % n) {
+          if (j !== i && j !== (((i + 1) % this._n) + this._n) % this._n) {
             if (
               this._seEdgeSegments[j]
                 .closestVector(nextVertex)
@@ -373,13 +437,13 @@ export class SEPolygon extends SEExpression implements Visitable, Labelable {
     }
     // All segments must only intersect at endpoints
     if (this._exists) {
-      for (let i = 0; i < n; i++) {
-        for (let j = 0; j < n; j++) {
+      for (let i = 0; i < this._n; i++) {
+        for (let j = 0; j < this._n; j++) {
           // don't check the segments that are adjacent to segment[i] (or the ith segment)
           if (
-            j !== (((i + 1) % n) + n) % n &&
+            j !== (((i + 1) % this._n) + this._n) % this._n &&
             j !== i &&
-            j !== (((i - 1) % n) + n) % n
+            j !== (((i - 1) % this._n) + this._n) % this._n
           ) {
             if (
               SEStore.findIntersectionPointsByParent(
@@ -387,13 +451,13 @@ export class SEPolygon extends SEExpression implements Visitable, Labelable {
                 this._seEdgeSegments[j].name
               ).some(pt => pt.exists)
             ) {
-              console.log(
-                "interection",
-                i,
-                this._seEdgeSegments[i].name,
-                j,
-                this._seEdgeSegments[j].name
-              );
+              // console.log(
+              //   "intersection",
+              //   i,
+              //   this._seEdgeSegments[i].name,
+              //   j,
+              //   this._seEdgeSegments[j].name
+              // );
               // SEStore.findIntersectionPointsByParent(
               //   this._seEdgeSegments[i].name,
               //   this._seEdgeSegments[j].name
