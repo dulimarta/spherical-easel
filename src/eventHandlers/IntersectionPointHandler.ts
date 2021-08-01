@@ -5,7 +5,7 @@ import { ConvertInterPtToUserCreatedCommand } from "@/commands/ConvertInterPtToU
 import { SELine } from "@/models/SELine";
 import { SESegment } from "@/models/SESegment";
 import { SECircle } from "@/models/SECircle";
-import { IntersectionReturnType, SEOneDimensional } from "@/types";
+import { IntersectionReturnType, SEOneOrTwoDimensional } from "@/types";
 import { CommandGroup } from "@/commands/CommandGroup";
 import EventBus from "./EventBus";
 import { SEPoint } from "@/models/SEPoint";
@@ -18,8 +18,8 @@ export default class IntersectionPointHandler extends Highlighter {
   /**
    * The two objects to intersect
    */
-  private oneDimensional1: SEOneDimensional | null = null;
-  private oneDimensional2: SEOneDimensional | null = null;
+  private oneDimensional1: SEOneOrTwoDimensional | null = null;
+  private oneDimensional2: SEOneOrTwoDimensional | null = null;
   /**
    * An array to hold updated information about the intersection points so we can properly
    * convert the existing intersection points to isUserCreated = true
@@ -210,8 +210,8 @@ export default class IntersectionPointHandler extends Highlighter {
     }
   }
   doIntersection(
-    oneDimensional1: SEOneDimensional,
-    oneDimensional2: SEOneDimensional
+    oneDimensional1: SEOneOrTwoDimensional,
+    oneDimensional2: SEOneOrTwoDimensional
   ): void {
     // Make sure the objects intersect on the screen and only convert those that are actual
     // intersection point showing on the default screen plane.
@@ -567,8 +567,8 @@ export default class IntersectionPointHandler extends Highlighter {
 
       if (object1.isOneDimensional() && object2.isOneDimensional()) {
         this.doIntersection(
-          object1 as SEOneDimensional,
-          object2 as SEOneDimensional
+          object1 as SEOneOrTwoDimensional,
+          object2 as SEOneOrTwoDimensional
         );
       }
     }

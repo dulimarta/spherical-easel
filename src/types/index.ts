@@ -203,13 +203,20 @@ export type plottableProperties = {
 /**
  * All the one or two dimensional SE Classes
  */
-export type SEOneDimensional =
+export type SEOneOrTwoDimensional =
   | SELine
   | SESegment
   | SECircle
   | SEEllipse
   | SEParametric
   | SEPolygon;
+
+export type SEOneDimensional =
+  | SELine
+  | SESegment
+  | SECircle
+  | SEEllipse
+  | SEParametric;
 
 export type hslaColorType = {
   h: number;

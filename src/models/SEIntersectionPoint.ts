@@ -1,7 +1,7 @@
 import { SEPoint } from "./SEPoint";
 import Point from "@/plottables/Point";
 import { IntersectionReturnType } from "@/types";
-import { SEOneDimensional } from "@/types";
+import { SEOneOrTwoDimensional } from "@/types";
 import { UpdateMode, UpdateStateType, PointState } from "@/types";
 import { intersectTwoObjects } from "@/utils/intersections";
 import i18n from "@/i18n";
@@ -20,8 +20,8 @@ export class SEIntersectionPoint extends SEPoint {
   /**
    * The One-Dimensional parents of this SEInstructionPoint
    */
-  private seParent1: SEOneDimensional;
-  private seParent2: SEOneDimensional;
+  private seParent1: SEOneOrTwoDimensional;
+  private seParent2: SEOneOrTwoDimensional;
 
   /**
    * The numbering of the intersection in the case of multiple intersection
@@ -41,8 +41,8 @@ export class SEIntersectionPoint extends SEPoint {
    */
   constructor(
     pt: Point,
-    seParent1: SEOneDimensional,
-    seParent2: SEOneDimensional,
+    seParent1: SEOneOrTwoDimensional,
+    seParent2: SEOneOrTwoDimensional,
     order: number,
     isUserCreated: boolean
   ) {

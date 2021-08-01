@@ -7,7 +7,7 @@ import { SECircle } from "@/models/SECircle";
 import { SEAngleMarker } from "@/models/SEAngleMarker";
 import EventBus from "@/eventHandlers/EventBus";
 import AngleMarker from "@/plottables/AngleMarker";
-import { OneDimensional, SEOneDimensional, UpdateMode } from "@/types";
+import { OneDimensional, SEOneOrTwoDimensional, UpdateMode } from "@/types";
 import Point from "@/plottables/Point";
 import { Vector3 } from "three";
 import { DisplayStyle } from "@/plottables/Nodule";
@@ -15,8 +15,8 @@ import SETTINGS from "@/global-settings";
 import Label from "@/plottables/Label";
 import { SELabel } from "@/models/SELabel";
 import { CommandGroup } from "@/commands/CommandGroup";
-import { SEPointOnOneDimensional } from "@/models/SEPointOnOneDimensional";
-import { AddPointOnOneDimensionalCommand } from "@/commands/AddPointOnOneDimensionalCommand";
+import { SEPointOnOneOrTwoDimensional } from "@/models/SEPointOnOneOrTwoDimensional";
+import { AddPointOnOneDimensionalCommand } from "@/commands/AddPointOnOneOrTwoDimensionalCommand";
 import { AddPointCommand } from "@/commands/AddPointCommand";
 import { SEEllipse } from "@/models/SEEllipse";
 import { SEStore } from "@/store";
@@ -74,7 +74,7 @@ export default class AngleHandler extends Highlighter {
    * we will assume that the user wants to create a angle from lines & segments (and not put
    * a point on the line or segment). The first point can be a point on a SECircle or SEEllipse.
    */
-  private sePointOneDimensionalParents: (SEOneDimensional | null)[] = [];
+  private sePointOneDimensionalParents: (SEOneOrTwoDimensional | null)[] = [];
   private pointLocations: Vector3[] = [];
 
   /**
@@ -218,10 +218,11 @@ export default class AngleHandler extends Highlighter {
       // a segment has already been selected
       if (
         (this.targetSegments[0].startSEPoint instanceof
-          SEPointOnOneDimensional &&
+          SEPointOnOneOrTwoDimensional &&
           this.targetSegments[0].startSEPoint.parentOneDimensional ===
             candidate) ||
-        (this.targetSegments[0].endSEPoint instanceof SEPointOnOneDimensional &&
+        (this.targetSegments[0].endSEPoint instanceof
+          SEPointOnOneOrTwoDimensional &&
           this.targetSegments[0].endSEPoint.parentOneDimensional ===
             candidate) ||
         this.targetSegments[0].endSEPoint === candidate.startSEPoint ||
@@ -241,10 +242,10 @@ export default class AngleHandler extends Highlighter {
     if (candidate instanceof SESegment) {
       // a line has already been selected
       if (
-        (candidate.startSEPoint instanceof SEPointOnOneDimensional &&
+        (candidate.startSEPoint instanceof SEPointOnOneOrTwoDimensional &&
           candidate.startSEPoint.parentOneDimensional ===
             this.targetLines[0]) ||
-        (candidate.endSEPoint instanceof SEPointOnOneDimensional &&
+        (candidate.endSEPoint instanceof SEPointOnOneOrTwoDimensional &&
           candidate.endSEPoint.parentOneDimensional === this.targetLines[0]) ||
         this.targetLines[0].endSEPoint === candidate.startSEPoint ||
         this.targetLines[0].endSEPoint === candidate.endSEPoint ||
@@ -978,7 +979,7 @@ export default class AngleHandler extends Highlighter {
         newPoint.adjustSize();
 
         // Create the model object for the new point and link them
-        const vtx = new SEPointOnOneDimensional(
+        const vtx = new SEPointOnOneOrTwoDimensional(
           newPoint,
           this.sePointOneDimensionalParents[i]!
         );
@@ -990,7 +991,7 @@ export default class AngleHandler extends Highlighter {
 
         angleMarkerCommandGroup.addCommand(
           new AddPointOnOneDimensionalCommand(
-            vtx as SEPointOnOneDimensional,
+            vtx as SEPointOnOneOrTwoDimensional,
             this.sePointOneDimensionalParents[i]!,
             newSELabel
           )
@@ -1379,7 +1380,8 @@ export default class AngleHandler extends Highlighter {
     // Set the initial label location near point of the segment that is on the line
     // and turn off the label of the vertex point (SETTINGS.angleMarker.turnOffVertexLabelOnCreation)
     if (
-      this.targetSegments[0].startSEPoint instanceof SEPointOnOneDimensional &&
+      this.targetSegments[0].startSEPoint instanceof
+        SEPointOnOneOrTwoDimensional &&
       this.targetSegments[0].startSEPoint.parentOneDimensional ===
         this.targetLines[0]
     ) {
@@ -1388,7 +1390,8 @@ export default class AngleHandler extends Highlighter {
         this.targetSegments[0].startSEPoint.label!.showing = false;
       }
     } else if (
-      this.targetSegments[0].endSEPoint instanceof SEPointOnOneDimensional &&
+      this.targetSegments[0].endSEPoint instanceof
+        SEPointOnOneOrTwoDimensional &&
       this.targetSegments[0].endSEPoint.parentOneDimensional ===
         this.targetLines[0]
     ) {

@@ -1,6 +1,6 @@
 import { SENodule } from "./SENodule";
 import { ValueDisplayMode } from "@/types";
-import { SEOneDimensional, UpdateStateType, UpdateMode } from "@/types";
+import { SEOneOrTwoDimensional, UpdateStateType, UpdateMode } from "@/types";
 import { Vector3 } from "three";
 import SETTINGS from "@/global-settings";
 
@@ -37,7 +37,7 @@ export abstract class SEExpression extends SENodule {
     return false;
   }
 
-  public isOneDimensional(): this is SEOneDimensional {
+  public isOneDimensional(): this is SEOneOrTwoDimensional {
     return false;
   }
   public isSegmentOfLengthPi(): boolean {

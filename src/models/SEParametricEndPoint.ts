@@ -1,7 +1,7 @@
 import { SEPoint } from "./SEPoint";
 import Point from "@/plottables/Point";
 import { Vector3 } from "three";
-import { SEOneDimensional } from "@/types";
+import { SEOneOrTwoDimensional } from "@/types";
 import { UpdateMode, UpdateStateType, PointState } from "@/types";
 import i18n from "@/i18n";
 import { SESegment } from "./SESegment";

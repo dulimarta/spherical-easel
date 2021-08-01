@@ -8,6 +8,7 @@ import { SECircle } from "@/models/SECircle";
 import { SELabel } from "@/models/SELabel";
 import {
   SEOneDimensional,
+  SEOneOrTwoDimensional,
   UpdateMode,
   SEIntersectionReturnType
 } from "@/types";
@@ -22,8 +23,8 @@ import { SEPerpendicularLineThruPoint } from "@/models/SEPerpendicularLineThruPo
 import SETTINGS from "@/global-settings";
 import { DisplayStyle } from "@/plottables/Nodule";
 import { AddIntersectionPointCommand } from "@/commands/AddIntersectionPointCommand";
-import { AddPointOnOneDimensionalCommand } from "@/commands/AddPointOnOneDimensionalCommand";
-import { SEPointOnOneDimensional } from "@/models/SEPointOnOneDimensional";
+import { AddPointOnOneDimensionalCommand } from "@/commands/AddPointOnOneOrTwoDimensionalCommand";
+import { SEPointOnOneOrTwoDimensional } from "@/models/SEPointOnOneOrTwoDimensional";
 import { AddPointCommand } from "@/commands/AddPointCommand";
 import { ConvertInterPtToUserCreatedCommand } from "@/commands/ConvertInterPtToUserCreatedCommand";
 import EventBus from "./EventBus";
@@ -51,7 +52,7 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
   /**
    * As the user moves the pointer around snap the temporary point marker to this object temporarily
    */
-  protected snapToTemporaryOneDimensional: SEOneDimensional | null = null;
+  protected snapToTemporaryOneDimensional: SEOneOrTwoDimensional | null = null;
   protected snapToTemporaryPoint: SEPoint | null = null;
 
   /**
@@ -62,7 +63,7 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
   /**
    * If the sePoint is a point on an oneDimensional parent, the parent is recorded in sePointOneDimensionalParent
    */
-  private sePointOneDimensionalParent: SEOneDimensional | null = null;
+  private sePointOneDimensionalParent: SEOneOrTwoDimensional | null = null;
 
   /**
    * The vector location of the sePoint, used for the tempLine and to create a new point if the user clicks on nothing
@@ -537,7 +538,7 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
 
   createPerpendicular(
     oneDimensional: SEOneDimensional,
-    sePointOneDimensionalParent: SEOneDimensional | null,
+    sePointOneDimensionalParent: SEOneOrTwoDimensional | null,
     sePointVector: Vector3,
     sePoint: SEPoint | null
   ): void {
@@ -556,7 +557,7 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
       if (sePointOneDimensionalParent !== null) {
         // create new point on one dimensional object
         // Create the model object for the new point and link them
-        this.sePoint = new SEPointOnOneDimensional( // Use  this.sePoint so that this variable points to the parent point, no matter how it is created or picked
+        this.sePoint = new SEPointOnOneOrTwoDimensional( // Use  this.sePoint so that this variable points to the parent point, no matter how it is created or picked
           newPoint,
           sePointOneDimensionalParent
         );
@@ -579,7 +580,7 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
 
         addPerpendicularLineGroup.addCommand(
           new AddPointOnOneDimensionalCommand(
-            this.sePoint as SEPointOnOneDimensional,
+            this.sePoint as SEPointOnOneOrTwoDimensional,
             sePointOneDimensionalParent,
             newSELabel
           )

@@ -1,6 +1,6 @@
 import { SEPoint } from "./SEPoint";
-import { PerpendicularLineThruPointState } from "@/types";
-import { SEOneDimensional } from "@/types";
+import { PerpendicularLineThruPointState, SEOneDimensional } from "@/types";
+import { SEOneOrTwoDimensional } from "@/types";
 import { UpdateMode, UpdateStateType } from "@/types";
 import { SELine } from "./SELine";
 import { Vector3 } from "three";

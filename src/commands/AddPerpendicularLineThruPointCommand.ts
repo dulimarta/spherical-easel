@@ -2,7 +2,7 @@ import { Command } from "./Command";
 import { SEPoint } from "@/models/SEPoint";
 import { SELabel } from "@/models/SELabel";
 import { SEPerpendicularLineThruPoint } from "@/models/SEPerpendicularLineThruPoint";
-import { SEOneDimensional, UpdateMode } from "@/types";
+import { SEOneDimensional, SEOneOrTwoDimensional, UpdateMode } from "@/types";
 import Line from "@/plottables/Line";
 import { DisplayStyle } from "@/plottables/Nodule";
 import { SENodule } from "@/models/SENodule";

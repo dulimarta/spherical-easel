@@ -6,7 +6,7 @@ import { AddIntersectionPointCommand } from "./AddIntersectionPointCommand";
 import { AddLineCommand } from "./AddLineCommand";
 import { AddPerpendicularLineThruPointCommand } from "./AddPerpendicularLineThruPointCommand";
 import { AddPointCommand } from "./AddPointCommand";
-import { AddPointOnOneDimensionalCommand } from "./AddPointOnOneDimensionalCommand";
+import { AddPointOnOneDimensionalCommand } from "./AddPointOnOneOrTwoDimensionalCommand";
 import { AddSegmentCommand } from "./AddSegmentCommand";
 import { Command } from "./Command";
 import { CommandGroup } from "./CommandGroup";
