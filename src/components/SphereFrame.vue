@@ -22,7 +22,7 @@ import LineHandler from "@/eventHandlers/LineHandler";
 import SegmentHandler from "@/eventHandlers/SegmentHandler";
 import CircleHandler from "@/eventHandlers/CircleHandler";
 import RotateHandler from "@/eventHandlers/RotateHandler";
-import PointOnOneDimensionalHandler from "@/eventHandlers/PointOnOneDimensionalHandler";
+import PointOnOneDimensionalHandler from "@/eventHandlers/PointOnOneOrTwoDimensionalHandler";
 import IntersectionPointHandler from "@/eventHandlers/IntersectionPointHandler";
 import AntipodalPointHandler from "@/eventHandlers/AntipodalPointHandler";
 import PolarObjectHandler from "@/eventHandlers/PolarObjectHandler";
