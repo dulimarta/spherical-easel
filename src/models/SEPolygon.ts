@@ -67,8 +67,11 @@ export class SEPolygon extends SEExpression implements Visitable, Labelable {
   private tmpVector1 = new Vector3();
   private tmpVector2 = new Vector3();
 
-  //** The numerber of edges in this polygon */
+  //** The number of edges in this polygon */
   private _n: number;
+
+  /** The area of the polygon */
+  private _area = 0;
   /**
    * Create a model SEPolygon using:
    * @param poly The plottable TwoJS Object associated to this object
@@ -122,19 +125,22 @@ export class SEPolygon extends SEExpression implements Visitable, Labelable {
     if (this._seEdgeSegments.length === 2) {
       return String(
         i18n.t(`objectTree.bigonWithEdges`, {
-          edges: edgeNames
+          edges: edgeNames,
+          val: this._area
         })
       );
     } else if (this._seEdgeSegments.length === 3) {
       return String(
         i18n.t(`objectTree.triangleWithEdges`, {
-          edges: edgeNames
+          edges: edgeNames,
+          val: this._area
         })
       );
     } else {
       return String(
         i18n.t(`objectTree.polygonWithEdges`, {
-          edges: edgeNames
+          edges: edgeNames,
+          val: this._area
         })
       );
     }
@@ -153,11 +159,7 @@ export class SEPolygon extends SEExpression implements Visitable, Labelable {
    * the area of the polygon
    */
   get value(): number {
-    let sumOfAngles = 0;
-    this._angleMarkers.forEach(ang => {
-      sumOfAngles += ang.value;
-    });
-    return sumOfAngles - (this._angleMarkers.length - 2) * Math.PI;
+    return this._area;
   }
 
   get polygonNumber(): number {
@@ -492,9 +494,15 @@ export class SEPolygon extends SEExpression implements Visitable, Labelable {
       };
       state.stateArray.push(polygonState);
     }
+    // update the area
+    let sumOfAngles = 0;
+    this._angleMarkers.forEach(ang => {
+      sumOfAngles += ang.value;
+    });
+    this._area = sumOfAngles - (this._n - 2) * Math.PI;
 
     //update the display
-    this.ref.area = this.value;
+    this.ref.area = this._area;
     this.ref.updateDisplay();
 
     this.updateKids(state);

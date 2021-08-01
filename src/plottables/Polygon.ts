@@ -18,6 +18,7 @@ import { SEStore } from "@/store";
 import { ExpressionParser } from "@/expression/ExpressionParser";
 import Segment from "./Segment";
 import { SEPolygon } from "@/models/SEPolygon";
+import { SESegment } from "@/models/SESegment";
 
 const BOUNDARYSUBDIVISIONS = SETTINGS.polygon.numPoints; // The number of points used to draw parts of the boundary circle when the polygon crosses it.
 
@@ -43,7 +44,7 @@ export default class Polygon extends Nodule {
    */
   private edgeSegments: Segment[] = [];
   private segmentIsFlipped: boolean[] = [];
-
+  private seEdgeSegments: SESegment[] = [];
   /**
    * An array with the same length as _edgeSegments containing the +1/-1 multiplier on the normal of SESegments, so
    * that a point pt is inside the polygon if and only if
@@ -112,9 +113,10 @@ export default class Polygon extends Nodule {
   private tmpVector1 = new Vector3();
   private tmpMatrix = new Matrix4();
 
-  constructor(segmentList: Segment[], segmentFlippedList: boolean[]) {
+  constructor(segmentList: SESegment[], segmentFlippedList: boolean[]) {
     super();
-    this.edgeSegments.push(...segmentList);
+    this.seEdgeSegments.push(...segmentList);
+    this.edgeSegments.push(...segmentList.map(seg => seg.ref));
     this.segmentIsFlipped.push(...segmentFlippedList);
 
     // There are this.edgeSegment.length number of straight lines in the polygon so the polygon can
@@ -905,11 +907,19 @@ export default class Polygon extends Nodule {
 
   frontGlowingDisplay(): void {
     this.frontFills.forEach(part => (part.visible = true));
-    this.edgeSegments.forEach(seg => seg.frontGlowingDisplay());
+    this.seEdgeSegments.forEach(seg => {
+      if (!seg.selected) {
+        seg.ref.frontGlowingDisplay();
+      }
+    });
   }
   backGlowingDisplay(): void {
     this.backFills.forEach(part => (part.visible = true));
-    this.edgeSegments.forEach(seg => seg.backGlowingDisplay());
+    this.seEdgeSegments.forEach(seg => {
+      if (!seg.selected) {
+        seg.ref.backGlowingDisplay();
+      }
+    });
   }
   glowingDisplay(): void {
     this.frontGlowingDisplay();
@@ -917,11 +927,19 @@ export default class Polygon extends Nodule {
   }
   frontNormalDisplay(): void {
     this.frontFills.forEach(part => (part.visible = true));
-    this.edgeSegments.forEach(seg => seg.frontNormalDisplay());
+    this.seEdgeSegments.forEach(seg => {
+      if (!seg.selected) {
+        seg.ref.frontNormalDisplay();
+      }
+    });
   }
   backNormalDisplay(): void {
     this.backFills.forEach(part => (part.visible = true));
-    this.edgeSegments.forEach(seg => seg.backNormalDisplay());
+    this.seEdgeSegments.forEach(seg => {
+      if (!seg.selected) {
+        seg.ref.backNormalDisplay();
+      }
+    });
   }
   normalDisplay(): void {
     this.frontNormalDisplay();

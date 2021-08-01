@@ -257,15 +257,24 @@ export default class SENoduleItem extends Vue {
     // If the user clicks this they the want to have the label showing so turn it on
     if (this.node instanceof SEAngleMarker) {
       if (!this.node.label?.showing) {
-        new SetNoduleDisplayCommand(this.node.label!, true).execute();
+        if (this.node.label) {
+          new SetNoduleDisplayCommand(this.node.label, true).execute();
+        }
       }
     } else if (this.node instanceof SESegmentLength) {
       if (!this.node.seSegment.label?.showing) {
-        new SetNoduleDisplayCommand(this.node.seSegment.label!, true).execute();
+        if (this.node.seSegment.label) {
+          new SetNoduleDisplayCommand(
+            this.node.seSegment.label,
+            true
+          ).execute();
+        }
       }
     } else if (this.node instanceof SEPolygon) {
       if (!this.node.label?.showing) {
-        new SetNoduleDisplayCommand(this.node.label!, true).execute();
+        if (this.node.label) {
+          new SetNoduleDisplayCommand(this.node.label, true).execute();
+        }
       }
     }
     const oldValueDisplayMode = (this.node as SEExpression).valueDisplayMode;
@@ -289,6 +298,7 @@ export default class SENoduleItem extends Vue {
     ).execute();
     // update a parent (who is parent to both this measurement and the label) to update the display on the sphere canvas
     if (!(this.node instanceof SECalculation)) {
+      this.node.parents[0].markKidsOutOfDate();
       this.node.parents[0].update({
         mode: UpdateMode.DisplayOnly,
         stateArray: []

@@ -67,8 +67,8 @@ export default class PolygonHandler extends Highlighter {
    * entries of pointLocations.
    */
   private tmpVector = new Vector3();
-  private tmpPointVector2 = new Vector3();
-  private tmpPointVector3 = new Vector3();
+  private tmpVector2 = new Vector3();
+  private tmpVector3 = new Vector3();
 
   /**  The temporary plottable TwoJS angles/indicate interior displayed as the move the mouse */
   private temporaryAngleMarkers: AngleMarker[] = [];
@@ -296,28 +296,64 @@ export default class PolygonHandler extends Highlighter {
       }
       // Check to see if we are ready to make the polygon
       if (this.chainClosed) {
+        // makes sure that this polygon has not been measured before
+        let measuredBefore = false;
+        let token = "";
+        SEStore.sePolygons.forEach(poly => {
+          // if they have different lengths they are different
+          if (poly.seEdgeSegments.length !== this.seEdgeSegments.length) {
+            return;
+          }
+          // find the name of the first segment of the proposed polygon (this), in the existing one (poly)
+          // we are searching cyclically
+          const startIndex = poly.seEdgeSegments.findIndex(
+            seg => seg.name === this.seEdgeSegments[0].name
+          );
+          // if the first segment wasn't found, then they are different
+          if (startIndex !== -1) {
+            // Search the rest of this.seSegment for the same segments in the same order (but only if not measureBefore is true -- don't overwrite measured before)
+            if (measuredBefore === false) {
+              measuredBefore = this.seEdgeSegments.every((seg, i) => {
+                const cyclicNextIndex =
+                  (((i + startIndex) % this.seEdgeSegments.length) +
+                    this.seEdgeSegments.length) %
+                  this.seEdgeSegments.length;
+                if (
+                  poly.seEdgeSegments[cyclicNextIndex].name ===
+                  this.seEdgeSegments[i].name
+                ) {
+                  return true;
+                } else {
+                  return false;
+                }
+              });
+              if (measuredBefore) {
+                token = poly.name;
+              }
+            }
+          }
+        });
+
+        if (measuredBefore) {
+          EventBus.fire("show-alert", {
+            key: `handlers.previouslyMeasuredPolygon`,
+            keyOptions: { token: token },
+            type: "error"
+          });
+          //clear the arrays and prepare for the next angle and remove temporary objects
+          this.mouseLeave(event);
+          return;
+        }
         const polygonCommandGroup = new CommandGroup();
 
         // Create and add all the angle markers to the polygonCommandGroup
         const seAngleMarkerList = this.addAngleMarkers(polygonCommandGroup);
-        if (seAngleMarkerList.length === 0) {
-          // duplicate angle markers were attempted and the adding failed
-          //clear the arrays and prepare for the next angle and remove temporary objects
-          this.mouseLeave(event);
-          return;
-        }
 
         // Create and add all the angle markers to the polygonCommandGroup
-        const error = this.addMeasuredSegments(polygonCommandGroup);
-        if (error) {
-          // a line segment was already measured (Duplicate segment measurement)
-          //clear the arrays and prepare for the next angle and remove temporary objects
-          this.mouseLeave(event);
-          return;
-        }
+        this.addMeasuredSegments(polygonCommandGroup);
 
         const newPolygon = new Polygon(
-          this.seEdgeSegments.map(seSegment => seSegment.ref),
+          this.seEdgeSegments,
           this.segmentIsFlipped
         );
         // Set the display to the default values
@@ -498,16 +534,22 @@ export default class PolygonHandler extends Highlighter {
         this.seEdgeSegments.forEach((seg, ind) => {
           if (!this.temporaryAngleMarkersAdded[ind] && ind !== 0) {
             const previousSeg = this.seEdgeSegments[ind - 1];
-            this.temporaryAngleMarkers[ind].setAngleMarkerFromThreeVectors(
+            this.tmpVector.copy(
               this.segmentIsFlipped[ind - 1]
                 ? previousSeg.endSEPoint.locationVector
-                : previousSeg.startSEPoint.locationVector,
+                : previousSeg.startSEPoint.locationVector
+            );
+            this.tmpVector2.copy(
+              this.segmentIsFlipped[ind]
+                ? seg.startSEPoint.locationVector
+                : seg.endSEPoint.locationVector
+            );
+            this.temporaryAngleMarkers[ind].setAngleMarkerFromThreeVectors(
+              this.tmpVector.multiplyScalar(previousSeg.longerThanPi ? -1 : 1),
               this.segmentIsFlipped[ind]
                 ? seg.endSEPoint.locationVector
                 : seg.startSEPoint.locationVector,
-              this.segmentIsFlipped[ind]
-                ? seg.startSEPoint.locationVector
-                : seg.endSEPoint.locationVector,
+              this.tmpVector2.multiplyScalar(seg.longerThanPi ? -1 : 1),
               AngleMarker.currentAngleMarkerRadius
             );
             this.temporaryAngleMarkersAdded[ind] = true;
@@ -521,17 +563,36 @@ export default class PolygonHandler extends Highlighter {
           this.temporaryAngleMarkers[0].addToLayers(this.layers);
         }
 
+        this.tmpVector3.copy(
+          this.segmentIsFlipped[0]
+            ? this.seEdgeSegments[0].startSEPoint.locationVector
+            : this.seEdgeSegments[0].endSEPoint.locationVector
+        );
         // update the zeroth temporary angle marker
+        // if (this.seEdgeSegments[0].longerThanPi) {
+        // this.temporaryAngleMarkers[0].setAngleMarkerFromThreeVectors(
+        //   this.tmpVector3.multiplyScalar(
+        //     this.seEdgeSegments[0].longerThanPi ? -1 : 1
+        //   ),
+        //   this.segmentIsFlipped[0]
+        //     ? this.seEdgeSegments[0].endSEPoint.locationVector
+        //     : this.seEdgeSegments[0].startSEPoint.locationVector,
+        //   this.currentSphereVector,
+        //   AngleMarker.currentAngleMarkerRadius
+        // );
+        // } else {
         this.temporaryAngleMarkers[0].setAngleMarkerFromThreeVectors(
           this.currentSphereVector,
           this.segmentIsFlipped[0]
             ? this.seEdgeSegments[0].endSEPoint.locationVector
             : this.seEdgeSegments[0].startSEPoint.locationVector,
-          this.segmentIsFlipped[0]
-            ? this.seEdgeSegments[0].startSEPoint.locationVector
-            : this.seEdgeSegments[0].endSEPoint.locationVector,
+          this.tmpVector3.multiplyScalar(
+            this.seEdgeSegments[0].longerThanPi ? -1 : 1
+          ),
           AngleMarker.currentAngleMarkerRadius
         );
+        // }
+
         this.temporaryAngleMarkers[0].updateDisplay();
       }
     }
@@ -544,6 +605,7 @@ export default class PolygonHandler extends Highlighter {
 
   mouseLeave(event: MouseEvent): void {
     super.mouseLeave(event);
+    // console.log("mouse leave");
     // call an unglow all command
     SEStore.unglowAllSENodules();
     this.infoText.hide();
@@ -552,6 +614,8 @@ export default class PolygonHandler extends Highlighter {
     this.seEdgeSegments.splice(0);
     this.segmentIsFlipped.splice(0);
     this.chainClosed = false;
+    this.startSEPoint = null;
+    this.endSEPoint = null;
 
     // remove all temporary angle markers
     this.temporaryAngleMarkers.forEach((am, ind) => {
@@ -573,6 +637,8 @@ export default class PolygonHandler extends Highlighter {
     this.seEdgeSegments.splice(0);
     this.segmentIsFlipped.splice(0);
     this.chainClosed = false;
+    this.startSEPoint = null;
+    this.endSEPoint = null;
   }
 
   /**
@@ -782,9 +848,9 @@ export default class PolygonHandler extends Highlighter {
         stateArray: []
       });
     });
-    return seAngleMarkers; //Success no duplicate angle markers found
+    return seAngleMarkers;
   }
-  addMeasuredSegments(polygonCommandGroup: CommandGroup): boolean {
+  addMeasuredSegments(polygonCommandGroup: CommandGroup): void {
     this.seEdgeSegments.forEach(seg => {
       // make sure that this pair of segments has not been measured already
       const oldSegmentLength = SEStore.expressions.find(exp => {
@@ -839,6 +905,5 @@ export default class PolygonHandler extends Highlighter {
         stateArray: []
       });
     });
-    return false;
   }
 }

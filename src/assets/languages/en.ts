@@ -421,13 +421,18 @@ export default {
       "The selected segment doesn't have an endpoint in common with the end point of the previously selected segments.",
     newSegmentMustCloseTriangle:
       "The selected segment doesn't form a triangle with the previously selected segments.",
+    previouslyMeasuredPolygon:
+      "This polygon was measured previously.  See measurement {token}.",
     newPolygonAdded: "A new polygon was created."
   },
 
   objectTree: {
-    bigonWithEdges: "The area of a bi-gon with ordered edges {edges}.",
-    triangleWithEdges: "The area of a triangle with ordered edges {edges}.",
-    polygonWithEdges: "The area of a polygon with ordered edges {edges}.",
+    bigonWithEdges:
+      "The area of a bi-gon with ordered edges {edges}. Area: {val}",
+    triangleWithEdges:
+      "The area of a triangle with ordered edges {edges}. Area: {val}",
+    polygonWithEdges:
+      "The area of a polygon with ordered edges {edges}. Area: {val}",
     expression: "Expression",
     parserError: "Reached end of input while parsing expression",
     expectedRightParenthesis: "Expected ')' at {text}",
@@ -453,21 +458,28 @@ export default {
     max: "Max",
     step: "Step",
     create: "Create",
-    anglePoints: "Angle formed by points {p1}, {p2}, and {p3}.",
-    angleSegments: "Angle formed by lines {seg1} and {seg2}.",
-    angleLines: "Angle formed by segments {line1} and {line2}.",
-    angleSegmentLine: "Angle formed by segment {seg} and line {line}.",
-    angleLineSegment: "Angle formed by line {line} and segment {seg}.",
-    calculationDescription: "Calculation based on expression {str}",
-    calculationValue: "{token} - Calculation: {val}",
+    anglePoints:
+      "Angle formed by points {p1}, {p2}, and {p3} with measure {val}.",
+    angleSegments:
+      "Angle formed by lines {seg1} and {seg2} with measure {val}.",
+    angleLines:
+      "Angle formed by segments {line1} and {line2} with measure {val}.",
+    angleSegmentLine:
+      "Angle formed by segment {seg} and line {line} with measure {val}.",
+    angleLineSegment:
+      "Angle formed by line {line} and segment {seg} with measure {val}.",
+    calculationDescription:
+      "Calculation based on expression {str} with value {val}",
+    calculationValue: "{token} - Calc: {val}",
     coordinateOf: "The {axisName} coordinate of point {pt}.",
     coordOf: "{token} - {pt} {axisName} Coord: {val}",
     x: "x",
     y: "y",
     z: "z",
-    distanceBetweenPts: "Distance between points {pt1} and {pt2}.",
-    distanceValue: "{token} - Distance: {val}",
-    segmentLength: "Length of segment {seg}.",
+    distanceBetweenPts:
+      "Distance between points {pt1} and {pt2}. Distance: {val}",
+    distanceValue: "{token} - Dist: {val}",
+    segmentLength: "Length of segment {seg}. Length: {val}",
     antipodeOf: "Antipode of point {pt}",
     aPolarPointOf: "Polar point of line {line} with index {index}.",
     circleThrough: "Circle with center {center} through point {through}",

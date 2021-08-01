@@ -3,6 +3,7 @@ import Nodule from "@/plottables/Nodule";
 import { UpdateStateType } from "@/types";
 import newton from "newton-raphson-method";
 import SETTINGS from "@/global-settings";
+import { colors } from "vuetify/lib";
 
 let NODE_COUNT = 0;
 
@@ -65,7 +66,7 @@ export abstract class SENodule {
   /* If the object is not visible then showing = true (The user can hide objects)*/
   protected _showing = true;
 
-  /* If the object is selected, it is either being used by an event tool or is in the setSelectedSENodules sin mutations*/
+  /* If the object is selected, it is either being used by an event tool or is in the setSelectedSENodules in mutations. Its glow property is not turned off by the highlighter.ts routines*/
   protected _selected = false;
 
   /* This boolean is set to indicate that the object is out of date and needs to be updated. */
@@ -332,7 +333,8 @@ export abstract class SENodule {
     }
   }
 
-  /** Careful n.selected is not the same as being on the setSelectedSENodules list */
+  /** Careful n.selected is not the same as being on the setSelectedSENodules list. A selected
+   *  object's glow property is not turned off by the highlighter.ts routines */
   set selected(b: boolean) {
     // selecting has no effect on hidden objects
     if (!this._showing) return;
