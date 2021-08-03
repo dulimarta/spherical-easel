@@ -275,10 +275,8 @@ export default class App extends Vue {
             .doc(this.uid)
             .get()
             .then((ds: DocumentSnapshot) => {
-              console.debug("Fetching profile picture?", ds);
               if (ds.exists) {
                 const { profilePictureURL } = ds.data() as any;
-                console.debug("Fetching profile picture?", ds);
                 if (profilePictureURL) {
                   this.profilePicUrl = profilePictureURL;
                 }

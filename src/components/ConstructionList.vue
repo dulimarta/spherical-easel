@@ -145,22 +145,21 @@ export default class extends Vue {
           svgString,
           "image/svg+xml"
         );
-        this.previewSVG = newDoc.querySelector("svg");
+        const newSVG = newDoc.querySelector("svg") as SVGElement;
         console.debug(
           "onItemHover:",
           this.previewSVG,
           this.svgParent?.firstChild
         );
-        if (this.previewSVG)
-          // We assume the SVG tree is always the first child
-          // The following code works on FireFox but not on CHrome
-          this.svgRoot.replaceWith(this.previewSVG);
+        if (this.previewSVG) this.previewSVG.replaceWith(newSVG);
+        else this.svgRoot.replaceWith(newSVG);
+        this.previewSVG = newSVG;
       });
   }
 
   onItemLeave(/*_ev: MouseEvent*/): void {
     this.lastDocId = null;
-    this.previewSVG?.replaceWith(this.svgRoot);
+    // this.previewSVG?.replaceWith(this.svgRoot);
   }
 
   onListLeave(/*_ev: MouseEvent*/): void {
