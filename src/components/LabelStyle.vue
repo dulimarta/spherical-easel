@@ -7,8 +7,6 @@
         slot-scope="{agreement, styleOptions, selectionCount, forceDataAgreement}">
         <!-- For debugging -->
         <!--ul>
-
-          <li>Data agreement: {{agreement}}</li>
           <li>Style Opt: {{styleOptions}}</li>
         </ul-->
 
@@ -53,7 +51,7 @@
           <v-select v-model.lazy="styleOptions.labelDisplayMode"
             :class="showMoreLabelStyles ? '' : 'pa-0'"
             v-bind:label="$t('style.labelDisplayMode')"
-            :items="labelDisplayModeValueFilter(labelDisplayModeItems)"
+            :items="labelDisplayModeValueFilter(styleOptions)"
             filled
             outlined
             dense>
@@ -123,9 +121,10 @@
         </InputGroup>
         <InputGroup input-selector="labelBackFillColor"
           v-if="showMoreLabelStyles">
-          <OverlayWithFixButton i18n-title-line="Automatic Back Style"
-            i18n-subtitle-line="Subtitle?"
-            i18n-button-label="Go">
+          <OverlayWithFixButton v-if="usingAutomaticBackStyle"
+            i18n-title-line="Automatic Back Style"
+            i18n-button-label="Go"
+            @click="toggleBackStyleOptionsAvailability">
           </OverlayWithFixButton>
           <SimpleColorSelector title-key="style.labelBackFillColor"
             style-name="labelBackFillColor"
@@ -165,7 +164,7 @@ import { Component, Prop } from "vue-property-decorator";
 import { SENodule } from "../models/SENodule";
 import Nodule from "../plottables/Nodule";
 import { namespace } from "vuex-class";
-import { StyleEditPanels } from "../types/Styles";
+import { StyleEditPanels, StyleOptions } from "../types/Styles";
 import { LabelDisplayMode } from "@/types";
 import SETTINGS from "@/global-settings";
 import FadeInCard from "@/components/FadeInCard.vue";
@@ -177,6 +176,8 @@ import SimpleColorSelector from "@/components/SimpleColorSelector.vue";
 import i18n from "../i18n";
 import OverlayWithFixButton from "@/components/OverlayWithFixButton.vue";
 import StyleEditor from "@/components/StyleEditor.vue";
+import Label from "@/plottables/Label";
+import { SELabel } from "@/models/SELabel";
 const SE = namespace("se");
 
 // import UI from "@/store/ui-styles";
@@ -212,6 +213,11 @@ export default class LabelStyle extends Vue {
   labelMapper(n: SENodule): Nodule {
     return ((n as unknown) as Labelable).label!.ref!;
   }
+
+  // usingAutomaticBackStyle = false means that the user is setting the color for the back on their own and is
+  // *not* using the contrast (i.e. not using the dynamic back styling)
+  // usingAutomaticBackStyle = true means the program is setting the style of the back objects
+  private usingAutomaticBackStyle = true;
 
   private toolTipOpenDelay = SETTINGS.toolTip.openDelay;
   private toolTipCloseDelay = SETTINGS.toolTip.closeDelay;
@@ -364,6 +370,10 @@ export default class LabelStyle extends Vue {
     EventBus.fire("toggle-label-visibility", { fromPanel: true });
   }
 
+  toggleBackStyleOptionsAvailability(): void {
+    this.usingAutomaticBackStyle = !this.usingAutomaticBackStyle;
+  }
+
   // These methods are linked to the Style Data fade-in-card
   labelDisplayTextCheck(txt: string | undefined): boolean | string {
     if (txt && txt.length > SETTINGS.label.maxLabelDisplayTextLength) {
@@ -385,39 +395,27 @@ export default class LabelStyle extends Vue {
   //This controls if the labelDisplayModeItems include ValueOnly and NameAndValue (When no value in the Label)\
   // and if the caption is empty, NameAndCaption and Caption Only are not options
   labelDisplayModeValueFilter(
-    items: labelDisplayModeItem[]
+    opt: StyleOptions
+    // items: labelDisplayModeItem[]
   ): labelDisplayModeItem[] {
     const returnItems: labelDisplayModeItem[] = [];
-    if (
-      this.selectedSENodules.every(node => {
-        if (node.isLabelable()) {
-          return ((node as unknown) as Labelable).label!.ref.value.length !== 0;
-        } else {
-          return true;
-        }
-      })
-    ) {
+    const allLabels = this.selectedSENodules
+      .filter(this.labelFilter)
+      .map(this.labelMapper)
+      .map((n: Nodule) => n as Label);
+    if (allLabels.every((lab: Label) => lab.value.length !== 0)) {
       // value is present in all labels so pass long all options in labelDisplayModeItems
-      returnItems.push(...items);
+      returnItems.push(...this.labelDisplayModeItems);
     } else {
       // value is not present in all labels so pass long all options in labelDisplayModeItems that don't have value in them
       returnItems.push(
-        ...items.filter(itm => !itm.optionRequiresMeasurementValueToExist)
+        ...this.labelDisplayModeItems.filter(
+          item => !item.optionRequiresMeasurementValueToExist
+        )
       );
     }
 
-    if (
-      (this.selectedSENodules as SENodule[]).every(node => {
-        if (node.isLabelable()) {
-          return (
-            ((node as unknown) as Labelable).label!.ref.caption.trim()
-              .length !== 0
-          );
-        } else {
-          return true;
-        }
-      })
-    ) {
+    if (opt.labelDisplayCaption && opt.labelDisplayCaption.length > 0) {
       // caption is present in all labels
       return returnItems;
     } else {

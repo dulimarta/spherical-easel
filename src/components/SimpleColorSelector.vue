@@ -42,8 +42,7 @@
       </v-row>
     </v-container>
     <!-- The color picker -->
-    <v-color-picker @update:color="onColorChange"
-      :disabled="noData"
+    <v-color-picker :disabled="noData"
       hide-sliders
       hide-canvas
       show-swatches
@@ -64,7 +63,7 @@ import Vue from "vue";
 import Component from "vue-class-component";
 import { Prop, PropSync, Watch } from "vue-property-decorator";
 import SETTINGS from "@/global-settings";
-import Nodule from "@/plottables/Nodule";
+// import Nodule from "@/plottables/Nodule";
 import { hslaColorType } from "@/types";
 import HintButton from "@/components/HintButton.vue";
 import OverlayWithFixButton from "@/components/OverlayWithFixButton.vue";
@@ -75,7 +74,7 @@ const NO_HSLA_DATA = "hsla(0, 0%,0%,0)";
 export default class SimpleColorSelector extends Vue {
   @Prop() readonly titleKey!: string;
   // external representation: hsla in CSS
-  @PropSync("data") externalColor!: string;
+  @PropSync("data") hslaColor!: string;
   @Prop({ required: true }) readonly styleName!: string;
 
   // Internal representation is an object with multiple color representations
@@ -96,6 +95,19 @@ export default class SimpleColorSelector extends Vue {
 
   // Vue component life cycle hook
   mounted(): void {
+    if (this.hslaColor) {
+      const parts = this.hslaColor
+        .trim()
+        .replace(/hsla *\(/, "")
+        .replace(")", "")
+        .split(",");
+      this.internalColor.hsla = {
+        h: Number(parts[0]),
+        s: Number(parts[1].replace("%", "")) / 100,
+        l: Number(parts[2].replace("%", "")) / 100,
+        a: Number(parts[3])
+      };
+    }
     // If these commands are in the beforeUpdate() method they are executed over and over but
     // they only need to be executed once.
     const propName = this.styleName.replace("Color", "");
@@ -112,6 +124,16 @@ export default class SimpleColorSelector extends Vue {
     // console.log("noStrData", this.noDataStr);
   }
 
+  beforeUpdate(): void {
+    const col = this.internalColor.hsla;
+    //   // console.debug("Color changed to", col);
+    const hue = col.h.toFixed(0);
+    const sat = (col.s * 100).toFixed(0) + "%";
+    const lum = (col.l * 100).toFixed(0) + "%";
+    const alpha = col.a.toFixed(3);
+    this.hslaColor = `hsla(${hue},${sat},${lum},${alpha})`;
+  }
+
   toggleColorInputs(): void {
     if (!this.noData) {
       this.showColorInputs = !this.showColorInputs;
@@ -120,52 +142,14 @@ export default class SimpleColorSelector extends Vue {
     }
   }
 
-  convertColorToRGBAString(colorObject: hslaColorType): string {
-    // THANK YOU INTERNET!
-    const h = colorObject.h;
-    const s = colorObject.s * 100;
-    let l = colorObject.l * 100;
-    // console.log("h ", h, " s ", s, " l ", l);
-    l /= 100;
-    const a = (s * Math.min(l, 1 - l)) / 100;
-    const f = (n: number) => {
-      const k = (n + h / 30) % 12;
-      const color = l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
-      return Math.round(255 * color)
-        .toString(16)
-        .padStart(2, "0"); // convert to Hex and prefix "0" if needed
-    };
-    // console.log(`#${f(0)}${f(8)}${f(4)}`);
-    return `#${f(0)}${f(8)}${f(4)}`;
-  }
-
-  onColorChange(data: { hsla: hslaColorType }): void {
-    if (data.hsla) {
-      const col = data.hsla;
-      // console.debug("Color changed to", col);
-      const hue = col.h.toFixed(0);
-      const sat = (col.s * 100).toFixed(0) + "%";
-      const lum = (col.l * 100).toFixed(0) + "%";
-      const alpha = col.a.toFixed(3);
-      this.externalColor = `hsla(${hue},${sat},${lum},${alpha})`;
-    } else this.externalColor = "N/A";
-
-    // console.log(
-    //   "Color converted from",
-    //   this.internalColor,
-    //   "to",
-    //   this.externalColor
-    // );
-  }
-
   @Watch("noData")
   setNoData(): void {
     if (this.noData) {
-      this.preNoColor = this.externalColor;
-      this.externalColor = NO_HSLA_DATA;
+      this.preNoColor = this.hslaColor;
+      this.hslaColor = NO_HSLA_DATA;
       this.showColorInputs = false;
     } else {
-      this.externalColor = this.preNoColor;
+      this.hslaColor = this.preNoColor;
       this.showColorInputs = true;
       //   // this.colorData = Nodule.convertStringToHSLAObject(this.colorString);
     }

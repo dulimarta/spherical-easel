@@ -102,7 +102,7 @@ export default class PointCoordinateHandler extends Highlighter {
         coordinatizeCommandGroup.addCommand(
           new StyleNoduleCommand(
             [this.targetPoint.label!.ref],
-            StyleEditPanels.Front,
+            StyleEditPanels.Label,
             [
               {
                 // panel: StyleEditPanels.Front,
