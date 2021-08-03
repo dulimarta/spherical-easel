@@ -145,21 +145,19 @@ export default class extends Vue {
           svgString,
           "image/svg+xml"
         );
-        const newSVG = newDoc.querySelector("svg") as SVGElement;
+        this.previewSVG = newDoc.querySelector("svg") as SVGElement;
         console.debug(
           "onItemHover:",
           this.previewSVG,
           this.svgParent?.firstChild
         );
-        if (this.previewSVG) this.previewSVG.replaceWith(newSVG);
-        else this.svgRoot.replaceWith(newSVG);
-        this.previewSVG = newSVG;
+        this.svgRoot.replaceWith(this.previewSVG);
       });
   }
 
   onItemLeave(/*_ev: MouseEvent*/): void {
     this.lastDocId = null;
-    // this.previewSVG?.replaceWith(this.svgRoot);
+    this.previewSVG?.replaceWith(this.svgRoot);
   }
 
   onListLeave(/*_ev: MouseEvent*/): void {
