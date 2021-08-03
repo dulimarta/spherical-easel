@@ -35,6 +35,7 @@ import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import { SEEllipse } from "@/models/SEEllipse";
 
 import { SEStore } from "@/store";
+import { SEPolygon } from "@/models/SEPolygon";
 const tmpVector1 = new Vector3();
 // const tmpVector2 = new Vector3();
 const desiredZAxis = new Vector3();
@@ -113,7 +114,10 @@ export default class MoveHandler extends Highlighter {
     this.movingSomething = true;
 
     // Query the nearby SENodules to select the one the user wishes to move (if none the sphere rotates)
-    if (this.hitSENodules.length > 0) {
+    if (
+      this.hitSENodules.length > 0 &&
+      !this.hitSENodules.every(node => node instanceof SEPolygon)
+    ) {
       // Prioritize moving points then label then lines then segments, then circles
       const freePoints = this.hitSEPoints.filter(
         n => n.isFreeToMove() && n.showing

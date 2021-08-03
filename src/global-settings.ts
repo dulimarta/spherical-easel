@@ -598,8 +598,8 @@ export const SETTINGS = {
     emphasize: {
       angleMarker: {
         strokeWidth: {
-          front: 3,
-          back: 3
+          front: 2.5,
+          back: 2.5
         },
         edgeColor: {
           front: "hsla(0, 0%, 0%, 1)",
@@ -666,8 +666,8 @@ export const SETTINGS = {
     },
     angleMarker: {
       scale: {
-        front: 10,
-        back: 8
+        front: 7,
+        back: 5
       },
       strokeWidth: {
         front: 1,

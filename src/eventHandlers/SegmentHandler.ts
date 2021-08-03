@@ -181,6 +181,30 @@ export default class SegmentHandler extends Highlighter {
         this.temporarySegment.startVector = this.startVector;
         this.temporaryStartMarker.positionVector = this.startVector;
         this.startSEPoint = null;
+      } else if (this.hitSEParametrics.length > 0) {
+        // The start of the line will be a point on a Ellipse
+        //  Eventually, we will create a new SEPointOneDimensional and Point
+        this.startSEPointOneDimensionalParent = this.hitSEParametrics[0];
+        this.startVector.copy(
+          this.startSEPointOneDimensionalParent.closestVector(
+            this.currentSphereVector
+          )
+        );
+        this.temporarySegment.startVector = this.startVector;
+        this.temporaryStartMarker.positionVector = this.startVector;
+        this.startSEPoint = null;
+      } else if (this.hitSEPolygons.length > 0) {
+        // The start of the line will be a point on a Ellipse
+        //  Eventually, we will create a new SEPointOneDimensional and Point
+        this.startSEPointOneDimensionalParent = this.hitSEPolygons[0];
+        this.startVector.copy(
+          this.startSEPointOneDimensionalParent.closestVector(
+            this.currentSphereVector
+          )
+        );
+        this.temporarySegment.startVector = this.startVector;
+        this.temporaryStartMarker.positionVector = this.startVector;
+        this.startSEPoint = null;
       } else {
         // The mouse press is not near an existing point or one dimensional object.
         //  Record the location in a temporary point (startMarker found in MouseHandler).
@@ -284,6 +308,19 @@ export default class SegmentHandler extends Highlighter {
       } else {
         this.snapStartMarkerToTemporaryOneDimensional = null;
         this.snapEndMarkerToTemporaryOneDimensional = this.hitSEParametrics[0];
+        this.snapStartMarkerToTemporaryPoint = null;
+        this.snapEndMarkerToTemporaryPoint = null;
+      }
+    } else if (this.hitSEPolygons.length > 0) {
+      this.hitSEPolygons[0].glowing = true;
+      if (!this.startLocationSelected) {
+        this.snapStartMarkerToTemporaryOneDimensional = this.hitSEPolygons[0];
+        this.snapEndMarkerToTemporaryOneDimensional = null;
+        this.snapStartMarkerToTemporaryPoint = null;
+        this.snapEndMarkerToTemporaryPoint = null;
+      } else {
+        this.snapStartMarkerToTemporaryOneDimensional = null;
+        this.snapEndMarkerToTemporaryOneDimensional = this.hitSEPolygons[0];
         this.snapStartMarkerToTemporaryPoint = null;
         this.snapEndMarkerToTemporaryPoint = null;
       }
@@ -659,6 +696,22 @@ export default class SegmentHandler extends Highlighter {
           new AddPointOnOneDimensionalCommand(
             vtx as SEPointOnOneDimensional,
             this.hitSEParametrics[0],
+            newSELabel
+          )
+        );
+      } else if (this.hitSEPolygons.length > 0) {
+        // The end of the line will be a point on a Ellipse
+        vtx = new SEPointOnOneDimensional(newEndPoint, this.hitSEPolygons[0]);
+        // Set the Location
+        vtx.locationVector = this.hitSEPolygons[0].closestVector(
+          this.currentSphereVector
+        );
+        newSELabel = new SELabel(newLabel, vtx);
+
+        segmentGroup.addCommand(
+          new AddPointOnOneDimensionalCommand(
+            vtx as SEPointOnOneDimensional,
+            this.hitSEPolygons[0],
             newSELabel
           )
         );

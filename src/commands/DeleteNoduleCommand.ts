@@ -11,6 +11,7 @@ import { SEExpression } from "@/models/SEExpression";
 import { SESegmentLength } from "@/models/SESegmentLength";
 import { SEPointCoordinate } from "@/models/SEPointCoordinate";
 import { SEParametric } from "@/models/SEParametric";
+import { SEPolygon } from "@/models/SEPolygon";
 
 export class DeleteNoduleCommand extends Command {
   private seNodule: SENodule;
@@ -60,6 +61,8 @@ export class DeleteNoduleCommand extends Command {
       Command.store.removeLabel(this.seNodule.id);
     } else if (this.seNodule instanceof SEAngleMarker) {
       Command.store.removeAngleMarkerAndExpression(this.seNodule.id);
+    } else if (this.seNodule instanceof SEPolygon) {
+      Command.store.removePolygonAndExpression(this.seNodule.id);
     } else if (this.seNodule instanceof SEExpression) {
       Command.store.removeExpression(this.seNodule.id);
       // when removing expressions that have effects on the labels, we must set those label display arrays to empty
@@ -91,6 +94,8 @@ export class DeleteNoduleCommand extends Command {
       Command.store.addEllipse(this.seNodule);
     } else if (this.seNodule instanceof SEParametric) {
       Command.store.addParametric(this.seNodule);
+    } else if (this.seNodule instanceof SEPolygon) {
+      Command.store.addPolygonAndExpression(this.seNodule);
     } else if (this.seNodule instanceof SESegment) {
       Command.store.addSegment(this.seNodule);
     } else if (this.seNodule instanceof SELabel) {

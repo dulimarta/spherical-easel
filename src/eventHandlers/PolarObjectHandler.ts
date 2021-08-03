@@ -36,6 +36,7 @@ import { SEPolarLine } from "@/models/SEPolarLine";
 import { AddIntersectionPointCommand } from "@/commands/AddIntersectionPointCommand";
 import { AddPolarLineCommand } from "@/commands/AddPolarLineCommand";
 import { SEParametric } from "@/models/SEParametric";
+import { SEPolygon } from "@/models/SEPolygon";
 
 enum Create {
   NONE,
@@ -58,10 +59,11 @@ export default class PolarObjectHandler extends Highlighter {
   /**
    * As the user moves the pointer around snap the temporary marker to this object temporarily
    */
-  protected snapToTemporaryCircleOrEllipseOrParametric:
+  protected snapToTemporaryCircleOrEllipseOrParametricOrPolygon:
     | SECircle
     | SEEllipse
     | SEParametric
+    | SEPolygon
     | null = null;
   protected temporaryParentLineOrSegment: SESegment | SELine | null = null;
   protected snapToTemporaryPoint: SEPoint | null = null;
@@ -199,6 +201,16 @@ export default class PolarObjectHandler extends Highlighter {
         );
         this.parentPoint = null;
         this.parentLineOrSegment = null;
+      } else if (this.hitSEPolygons.length > 0) {
+        // The user selected an parametric and we will create a point on it and the polar line of that point
+        this.oneDimensionalContainingParentPoint = this.hitSEPolygons[0];
+        this.parentPointVector.copy(
+          this.oneDimensionalContainingParentPoint.closestVector(
+            this.currentSphereVector
+          )
+        );
+        this.parentPoint = null;
+        this.parentLineOrSegment = null;
       } else {
         // The user selected an empty location and we will create a point there
         this.parentPointVector.copy(this.currentSphereVector);
@@ -234,7 +246,7 @@ export default class PolarObjectHandler extends Highlighter {
       if (!alreadyExists) {
         this.hitSEPoints[0].glowing = true;
         this.snapToTemporaryPoint = this.hitSEPoints[0];
-        this.snapToTemporaryCircleOrEllipseOrParametric = null;
+        this.snapToTemporaryCircleOrEllipseOrParametricOrPolygon = null;
         this.creating = Create.POLARLINE;
         this.temporaryParentLineOrSegment = null;
       } else {
@@ -257,7 +269,7 @@ export default class PolarObjectHandler extends Highlighter {
         this.hitSESegments[0]
           ? (this.hitSESegments[0].glowing = true)
           : (this.hitSELines[0].glowing = true);
-        this.snapToTemporaryCircleOrEllipseOrParametric = null;
+        this.snapToTemporaryCircleOrEllipseOrParametricOrPolygon = null;
         this.creating = Create.POLARPOINTS;
         this.snapToTemporaryPoint = null;
       } else {
@@ -265,24 +277,30 @@ export default class PolarObjectHandler extends Highlighter {
       }
     } else if (this.hitSECircles.length > 0) {
       this.hitSECircles[0].glowing = true;
-      this.snapToTemporaryCircleOrEllipseOrParametric = this.hitSECircles[0];
+      this.snapToTemporaryCircleOrEllipseOrParametricOrPolygon = this.hitSECircles[0];
       this.snapToTemporaryPoint = null;
       this.creating = Create.POLARLINE;
       this.temporaryParentLineOrSegment = null;
     } else if (this.hitSEEllipses.length > 0) {
       this.hitSEEllipses[0].glowing = true;
-      this.snapToTemporaryCircleOrEllipseOrParametric = this.hitSEEllipses[0];
+      this.snapToTemporaryCircleOrEllipseOrParametricOrPolygon = this.hitSEEllipses[0];
       this.snapToTemporaryPoint = null;
       this.creating = Create.POLARLINE;
       this.temporaryParentLineOrSegment = null;
     } else if (this.hitSEParametrics.length > 0) {
       this.hitSEParametrics[0].glowing = true;
-      this.snapToTemporaryCircleOrEllipseOrParametric = this.hitSEParametrics[0];
+      this.snapToTemporaryCircleOrEllipseOrParametricOrPolygon = this.hitSEParametrics[0];
+      this.snapToTemporaryPoint = null;
+      this.creating = Create.POLARLINE;
+      this.temporaryParentLineOrSegment = null;
+    } else if (this.hitSEPolygons.length > 0) {
+      this.hitSEPolygons[0].glowing = true;
+      this.snapToTemporaryCircleOrEllipseOrParametricOrPolygon = this.hitSEPolygons[0];
       this.snapToTemporaryPoint = null;
       this.creating = Create.POLARLINE;
       this.temporaryParentLineOrSegment = null;
     } else {
-      this.snapToTemporaryCircleOrEllipseOrParametric = null;
+      this.snapToTemporaryCircleOrEllipseOrParametricOrPolygon = null;
       this.snapToTemporaryPoint = null;
       this.creating = Create.POLARLINE;
       this.temporaryParentLineOrSegment = null;
@@ -320,8 +338,10 @@ export default class PolarObjectHandler extends Highlighter {
           }
         }
         // the user is possibly adding polar line with the point on an object
-        else if (this.snapToTemporaryCircleOrEllipseOrParametric !== null) {
-          this.temporaryPoint.positionVector = this.snapToTemporaryCircleOrEllipseOrParametric.closestVector(
+        else if (
+          this.snapToTemporaryCircleOrEllipseOrParametricOrPolygon !== null
+        ) {
+          this.temporaryPoint.positionVector = this.snapToTemporaryCircleOrEllipseOrParametricOrPolygon.closestVector(
             this.currentSphereVector
           );
         }
@@ -421,7 +441,7 @@ export default class PolarObjectHandler extends Highlighter {
     }
     this.temporaryPointAdded = false;
 
-    this.snapToTemporaryCircleOrEllipseOrParametric = null;
+    this.snapToTemporaryCircleOrEllipseOrParametricOrPolygon = null;
     this.snapToTemporaryPoint = null;
   }
   activate(): void {

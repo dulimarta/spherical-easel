@@ -393,6 +393,10 @@ export default class SE extends VuexModule implements AppState {
       const victimAngleMarker: SEAngleMarker = this.seAngleMarkers[
         angleMarkerPos
       ];
+      // when removing expressions that have effects on the labels, we must set those label display arrays to empty
+      if (victimAngleMarker.label) {
+        victimAngleMarker.label.ref.value = [];
+      }
       victimAngleMarker.ref.removeFromLayers();
       // victimCircle.removeSelfSafely();
       this.seAngleMarkers.splice(angleMarkerPos, 1); // Remove the angleMarker from the list
@@ -419,6 +423,10 @@ export default class SE extends VuexModule implements AppState {
     if (polygonPos >= 0) {
       /* victim polygon is found */
       const victimPolygon: SEPolygon = this.sePolygons[polygonPos];
+      // when removing expressions that have effects on the labels, we must set those label display arrays to empty
+      if (victimPolygon.label) {
+        victimPolygon.label.ref.value = [];
+      }
       victimPolygon.ref.removeFromLayers();
       this.sePolygons.splice(polygonPos, 1); // Remove the polygon from the list
       this.seNodules.splice(pos2, 1);

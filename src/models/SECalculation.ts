@@ -25,9 +25,7 @@ export class SECalculation extends SEExpression {
       // vars.push(v[0]);
       // Find the SENodule parents of this calculation
       // SEStore.expressions.forEach(n => console.log(n.name));
-      const pos = SEStore.expressions.findIndex(z =>
-        z.name.startsWith(`${v[0]}`)
-      );
+      const pos = SEStore.expressions.findIndex(z => z.name === `${v[0]}`);
       // add it to the calculationParents if it is not already added
       if (pos > -1) {
         const pos2 = this._calculationParents.findIndex(
