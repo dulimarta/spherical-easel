@@ -154,6 +154,7 @@ export class SEParametric extends SENodule
 
     if (this._exists) {
       // display the updated parametric
+      this.ref.calculateAndCacheArcLength();
       this.ref.updateDisplay();
     }
 

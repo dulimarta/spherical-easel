@@ -102,6 +102,7 @@ export default class Parametric extends Nodule {
    * The arcLength of the parametric curve from tNumber.min to tNumber.Max
    */
   private _initialArcLength: number;
+  private _arcLengthValues: Array<number> = [];
 
   /**
    * Vuex global state
@@ -347,10 +348,8 @@ export default class Parametric extends Nodule {
     console.log("number of parts", this._numberOfParts);
 
     // to set the number of vertices need to render the parametric curve use the density of SUBDIVISIONS per unit INITIAL arcLength and multiply by the arcLength
-    this._initialArcLength = this.arcLength(
-      this._tNumbers.min,
-      this._tNumbers.max
-    );
+    this._initialArcLength = 0;
+    this.calculateAndCacheArcLength();
     // console.log("arcLength", this._initialArcLength);
     // As the Parametric is moved around the vertices are passed between the front and back parts, but it
     // is always true that sum of the number of all frontVertices and the sum of all the backVertices = 2*floor(SUBDIVISIONS*InitialArcLength)+2
@@ -516,16 +515,16 @@ export default class Parametric extends Nodule {
   }
 
   /**
-   *
-   * @param tMin starting t parameter
-   * @param tMax ending t parameter
-   * @returns acrLength of the curve from tMin to tMax
+   * Preccompute arclength and store the cumulative values in an array
    */
-  arcLength(tMin: number, tMax: number): number {
+  calculateAndCacheArcLength(): void {
+    const tMin = this._tNumbers.min;
+    const tMax = this._tNumbers.max;
     let oldArcLength = 0;
     let newArcLength: number;
     let iteration = 1;
     do {
+      this._arcLengthValues.splice(0);
       newArcLength = 0;
       // replace with Simpson's rule? some adaptive algorithm? PPrime is possibly undefined at certain values
       for (
@@ -541,6 +540,7 @@ export default class Parametric extends Nodule {
         if (!isNaN(len)) {
           newArcLength += len;
         }
+        this._arcLengthValues.push(newArcLength);
 
         // console.log(
         //   "PPrime",
@@ -563,7 +563,8 @@ export default class Parametric extends Nodule {
         Math.abs(oldArcLength - newArcLength) <
         SETTINGS.parameterization.maxChangeInArcLength
       ) {
-        return newArcLength;
+        this._initialArcLength = newArcLength;
+        return;
       } else {
         oldArcLength = newArcLength;
         iteration++;
@@ -572,8 +573,17 @@ export default class Parametric extends Nodule {
     } while (
       iteration < SETTINGS.parameterization.maxNumberOfIterationArcLength
     );
+    this._initialArcLength = newArcLength;
+  }
 
-    return newArcLength;
+  arcLength(tMin: number, tMax: number): number {
+    const M = this._arcLengthValues.length;
+    const range = this.tNumbers.max - this.tNumbers.min;
+    const sMin = (tMin - this.tNumbers.min) / range;
+    const sMax = (tMax - this.tNumbers.min) / range;
+    const minIndex = Math.floor(sMin * (M - 1));
+    const maxIndex = Math.floor(sMax * (M - 1));
+    return this._arcLengthValues[maxIndex] - this._arcLengthValues[minIndex];
   }
   /**
    * The Parametric curve is given in on the unit sphere, which might have been rotated, so we always transform from the un-rotated
