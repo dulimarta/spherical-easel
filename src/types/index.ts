@@ -124,6 +124,18 @@ export interface OneDimensional {
    * @param idealUnitSphereVector A vector location on the sphere
    */
   closestVector(idealUnitSphereVector: Vector3): Vector3;
+
+  /**
+   * Return the normal vector(s) to the plane containing a line that is perpendicular to this one dimensional through the
+   * sePoint, in the case that the usual way of defining this line is not well defined  (something is parallel),
+   * use the oldNormal to help compute a new normal (which is returned)
+   * @param sePoint A point on the line normal to this parametric
+   */
+  getNormalsToLineThru(
+    sePointVector: Vector3,
+    oldNormal: Vector3, // ignored for Ellipse and Circle and Parametric, but not other one-dimensional objects
+    useFullTInterval?: boolean // only used in the constructor when figuring out the maximum number of perpendiculars to a SEParametric
+  ): Vector3[];
 }
 
 export interface Labelable {

@@ -1,6 +1,6 @@
 /** @format */
 
-import { Vector3, Vector2, Matrix4 } from "three";
+import { Vector3, Matrix4 } from "three";
 import Two from "two.js";
 import SETTINGS, { LAYER } from "@/global-settings";
 import Nodule, { DisplayStyle } from "./Nodule";
@@ -12,9 +12,7 @@ import {
 } from "@/types/Styles";
 import { location, visitedIndex } from "@/types";
 import AppStore from "@/store";
-import { SENodule } from "@/models/SENodule";
 import { SEExpression } from "@/models/SEExpression";
-import { SEStore } from "@/store";
 import { ExpressionParser } from "@/expression/ExpressionParser";
 import Segment from "./Segment";
 import { SEPolygon } from "@/models/SEPolygon";
