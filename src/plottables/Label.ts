@@ -394,6 +394,13 @@ export default class Label extends Nodule {
         0,
         SETTINGS.label.maxLabelDisplayCaptionLength
       );
+    if (this.seLabel?.parent instanceof SEAngleMarker) {
+      const angleMarker = this.seLabel.parent;
+      this._shortUserName = `Am${angleMarker.angleMarkerNumber}`;
+    } else if (this.seLabel?.parent instanceof SEPolygon) {
+      const polygon = this.seLabel.parent;
+      this._shortUserName = `Po${polygon.polygonNumber}`;
+    }
   }
 
   /**
