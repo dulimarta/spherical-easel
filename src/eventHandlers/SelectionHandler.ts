@@ -4,6 +4,14 @@ import EventBus from "@/eventHandlers/EventBus";
 import Highlighter from "./Highlighter";
 import { Vector3 } from "three";
 import { SEStore } from "@/store";
+import { SEPoint } from "@/models/SEPoint";
+import { SECircle } from "@/models/SECircle";
+import { SEEllipse } from "@/models/SEEllipse";
+import { SELine } from "@/models/SELine";
+import { SESegment } from "@/models/SESegment";
+import { SEParametric } from "@/models/SEParametric";
+import { SEPolygon } from "@/models/SEPolygon";
+import { SEAngleMarker } from "@/models/SEAngleMarker";
 // import { SEPoint } from "@/models/SEPoint";
 // import { SELine } from "@/models/SELine";
 // import { SESegment } from "@/models/SESegment";
@@ -37,10 +45,10 @@ export default class SelectionHandler extends Highlighter {
     if (keyEvent.key.match("p")) {
       SEStore.sePoints
         .filter(
-          (n: any) =>
+          (n: SEPoint) =>
             !(n instanceof SEIntersectionPoint && !n.isUserCreated) && n.showing
         ) // no unUserCreated intersection points allowed and no hidden points allowed
-        .forEach((n: any) => {
+        .forEach((n: SEPoint) => {
           this.keyPressSelection.push(n);
           (n as any).ref.glowingDisplay();
         });
@@ -48,8 +56,8 @@ export default class SelectionHandler extends Highlighter {
     // Get all SECircles
     if (keyEvent.key.match("c")) {
       SEStore.seCircles
-        .filter((n: any) => n.showing) //no hidden circles allowed
-        .forEach((n: any) => {
+        .filter((n: SECircle) => n.showing) //no hidden circles allowed
+        .forEach((n: SECircle) => {
           this.keyPressSelection.push(n);
           (n as any).ref.glowingDisplay();
         });
@@ -57,8 +65,8 @@ export default class SelectionHandler extends Highlighter {
     // Get all SEEllipses
     if (keyEvent.key.match("e")) {
       SEStore.seEllipses
-        .filter((n: any) => n.showing) //no hidden Ellipses allowed
-        .forEach((n: any) => {
+        .filter((n: SEEllipse) => n.showing) //no hidden Ellipses allowed
+        .forEach((n: SEEllipse) => {
           this.keyPressSelection.push(n);
           (n as any).ref.glowingDisplay();
         });
@@ -66,8 +74,8 @@ export default class SelectionHandler extends Highlighter {
     // Get all SELines
     if (keyEvent.key.match("l")) {
       SEStore.seLines
-        .filter((n: any) => n.showing) //no hidden lines allowed
-        .forEach((n: any) => {
+        .filter((n: SELine) => n.showing) //no hidden lines allowed
+        .forEach((n: SELine) => {
           this.keyPressSelection.push(n);
           (n as any).ref.glowingDisplay();
         });
@@ -75,8 +83,8 @@ export default class SelectionHandler extends Highlighter {
     // Get all SESegments
     if (keyEvent.key.match("s")) {
       SEStore.seSegments
-        .filter((n: any) => n.showing) //no hidden segments allowed
-        .forEach((n: any) => {
+        .filter((n: SESegment) => n.showing) //no hidden segments allowed
+        .forEach((n: SESegment) => {
           this.keyPressSelection.push(n);
           (n as any).ref.glowingDisplay();
         });
@@ -84,8 +92,8 @@ export default class SelectionHandler extends Highlighter {
     // Get all SEAngleMarkers
     if (keyEvent.key.match("a")) {
       SEStore.seAngleMarkers
-        .filter((n: any) => n.showing) //no hidden angle markers allowed
-        .forEach((n: any) => {
+        .filter((n: SEAngleMarker) => n.showing) //no hidden angle markers allowed
+        .forEach((n: SEAngleMarker) => {
           this.keyPressSelection.push(n);
           (n as any).ref.glowingDisplay();
         });
@@ -93,8 +101,8 @@ export default class SelectionHandler extends Highlighter {
     // Get all SEParametrics
     if (keyEvent.key.match("P")) {
       SEStore.seParametrics
-        .filter((n: any) => n.showing) //no hidden parametrics allowed
-        .forEach((n: any) => {
+        .filter((n: SEParametric) => n.showing) //no hidden parametrics allowed
+        .forEach((n: SEParametric) => {
           this.keyPressSelection.push(n);
           (n as any).ref.glowingDisplay();
         });
@@ -102,8 +110,8 @@ export default class SelectionHandler extends Highlighter {
     // Get all SEPolygons
     if (keyEvent.key.match("O")) {
       SEStore.sePolygons
-        .filter((n: any) => n.showing) //no hidden Polygons allowed
-        .forEach((n: any) => {
+        .filter((n: SEPolygon) => n.showing) //no hidden Polygons allowed
+        .forEach((n: SEPolygon) => {
           this.keyPressSelection.push(n);
           (n as any).ref.glowingDisplay();
         });

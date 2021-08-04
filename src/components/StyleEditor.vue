@@ -134,6 +134,11 @@ export default class extends Vue {
       // console.debug("Updating style of", n, "using", updatePayload);
       n.updateStyle(this.panel, updatePayload);
     });
+    if (styleData.length > 0) {
+      propNames.forEach((p: string) => {
+        (this.activeStyleOptions as any)[p] = (styleData[0] as any)[p];
+      });
+    }
   }
   undo(ev: { selector: string }): void {
     if (ev.selector !== "backStyleContrast") {
@@ -180,10 +185,10 @@ export default class extends Vue {
     this.saveStyleState();
     this.commonStyleProperties.splice(0);
     this.dataAgreement = true;
-    this.activeStyleOptions = {};
     if (newSelection.length === 0) {
       return;
     }
+    this.activeStyleOptions = {};
 
     console.debug("***********************");
     this.selectedSENodules = newSelection.filter(this.noduleFilterFunction);
@@ -202,11 +207,17 @@ export default class extends Vue {
       selected: this.selectedNodules,
       backContrast: Nodule.backStyleContrast
     });
+
+    // Use the style of the first selected object as the initial value
     this.activeStyleOptions = { ...styleOptionsOfSelected[0] };
+
+    // Use flatmap (1-to-many mapping) to compile all the styling properties
+    // of all the selected objects
     const commonProps = styleOptionsOfSelected.flatMap((opt: StyleOptions) =>
       Object.getOwnPropertyNames(opt).filter((s: string) => !s.startsWith("__"))
     );
-    const uniqueProps = new Set(commonProps);
+    const uniqueProps = new Set(commonProps); // Convert to set to remove duplicates
+    // Use destructuring (...) to convert back from set to array
     this.commonStyleProperties.push(...uniqueProps);
 
     if (this.selectedNodules.length > 1) {
@@ -223,9 +234,13 @@ export default class extends Vue {
           if (propName === "dynamicBackStyle")
             this.propDynamicBackStyleCommonValue = refValue;
           else if (propName === "dashArray") {
+            // Replace missing values in dash array with zeroes
             if (Array.isArray(refValue) && refValue.length === 0)
               refValue.push(0, 0);
           }
+
+          // Style data is in agreement if all the selected object shared
+          // the same value for all the common style properties
           const agreement = this.selectedNodules.every((obj: Nodule) => {
             const thisStyleOption = obj.currentStyleState(this.panel);
             const thisValue = (thisStyleOption as any)[propName];
@@ -234,6 +249,7 @@ export default class extends Vue {
               return this.dashArrayCompare(thisValue, refValue);
             } else return thisValue === refValue;
           });
+          // If values do not agree, include its property name into the conflict array
           return !agreement;
         }
       );
@@ -396,7 +412,7 @@ export default class extends Vue {
       (a: StyleOptions, i: number) =>
         this.compute_diff(a, styleStates2[i]).length === 0
     );
-    console.debug("areEquivalentStyles?", compare);
+    // console.debug("areEquivalentStyles?", compare);
     return compare;
   }
 

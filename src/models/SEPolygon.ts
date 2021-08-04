@@ -1,6 +1,4 @@
 import { SENodule } from "./SENodule";
-import { SEPoint } from "./SEPoint";
-import Circle from "@/plottables/Circle";
 import { Vector3, Matrix4, UniformsLib } from "three";
 import { Visitable } from "@/visitors/Visitable";
 import { Visitor } from "@/visitors/Visitor";
@@ -9,7 +7,12 @@ import {
   DEFAULT_POLYGON_BACK_STYLE,
   DEFAULT_POLYGON_FRONT_STYLE
 } from "@/types/Styles";
-import { UpdateMode, UpdateStateType, PolygonState } from "@/types";
+import {
+  UpdateMode,
+  UpdateStateType,
+  PolygonState,
+  OneDimensional
+} from "@/types";
 import { Labelable } from "@/types";
 import { SELabel } from "@/models/SELabel";
 import { SEStore } from "@/store";
@@ -17,14 +20,14 @@ import i18n from "@/i18n";
 import { SESegment } from "./SESegment";
 import { SEAngleMarker } from "./SEAngleMarker";
 import Polygon from "@/plottables/Polygon";
-import Segment from "@/plottables/Segment";
 import { SEExpression } from "./SEExpression";
 
 const styleSet = new Set([
   ...Object.getOwnPropertyNames(DEFAULT_POLYGON_FRONT_STYLE),
   ...Object.getOwnPropertyNames(DEFAULT_POLYGON_BACK_STYLE)
 ]);
-export class SEPolygon extends SEExpression implements Visitable, Labelable {
+export class SEPolygon extends SEExpression
+  implements Visitable, OneDimensional, Labelable {
   /**
    * The plottable (TwoJS) segment associated with this model segment
    */
@@ -531,6 +534,15 @@ export class SEPolygon extends SEExpression implements Visitable, Labelable {
 
     return minimumDistanceVector.normalize();
   }
+
+  public getNormalsToLineThru(
+    sePointVector: Vector3,
+    oldNormal: Vector3,
+    useFullTInterval?: boolean
+  ): Vector3[] {
+    throw new Error("Method not implemented.");
+  }
+
   /**
    * Return the vector near the SECircle (within SETTINGS.polygon.maxLabelDistance) that is closest to the idealUnitSphereVector
    * @param idealUnitSphereVector A vector on the unit sphere

@@ -1,11 +1,8 @@
 import { Command } from "./Command";
-import { SEPoint } from "@/models/SEPoint";
 import { SELabel } from "@/models/SELabel";
 import { SEAngleMarker } from "@/models/SEAngleMarker";
-import { SELine } from "@/models/SELine";
 import { SESegment } from "@/models/SESegment";
 import { SENodule } from "@/models/SENodule";
-import AngleMarker from "@/plottables/AngleMarker";
 import { DisplayStyle } from "@/plottables/Nodule";
 import Label from "@/plottables/Label";
 import { Vector3 } from "three";
@@ -116,7 +113,7 @@ export class AddPolygonCommand extends Command {
     if (seAngleMarkerParents.every(angMark => angMark?.exists)) {
       if (seSegments.every(seg => seg?.exists)) {
         const polygon = new Polygon(
-          seSegments.map(seg => seg as SESegment),
+          seSegments.map(seg => seg as SESegment), //.map(seg => seg.ref),
           segmentIsFlipped.map(bool => bool as boolean)
         );
         // Set the display to the default values

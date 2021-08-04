@@ -30,7 +30,7 @@ import { Prop, PropSync, Component } from "vue-property-decorator";
 @Component
 export default class SimpleNumberSelector extends Vue {
   @Prop() readonly titleKey!: string;
-  @PropSync("data", { type: Number }) styleData!: number;
+  @PropSync("data") styleData!: number;
   @Prop() readonly thumbStringValues?: string[];
 
   //converts the value of the slider to the text message displayed in the thumb marker
