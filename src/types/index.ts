@@ -141,7 +141,7 @@ export interface OneDimensional {
    * use the oldNormal to help compute a new normal (which is returned)
    * @param sePoint A point on the line normal to this parametric
    */
-  getNormalsToLineThru(
+  getNormalsToPerpendicularLinesThru(
     sePointVector: Vector3,
     oldNormal: Vector3, // ignored for Ellipse and Circle and Parametric, but not other one-dimensional objects
     useFullTInterval?: boolean // only used in the constructor when figuring out the maximum number of perpendiculars to a SEParametric

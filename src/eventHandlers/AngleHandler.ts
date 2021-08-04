@@ -104,7 +104,7 @@ export default class AngleHandler extends Highlighter {
 
   /** The objects that a temporary point making up an angle could snap to (displayed only) */
   private snapPoint: SEPoint | null = null;
-  private snapOneDimensional: OneDimensional | null = null;
+  private snapOneDimensional: SEOneOrTwoDimensional | null = null;
 
   /* temporary vector to help with computations */
   private tmpVector = new Vector3();

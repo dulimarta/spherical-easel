@@ -26,8 +26,7 @@ const styleSet = new Set([
   ...Object.getOwnPropertyNames(DEFAULT_POLYGON_FRONT_STYLE),
   ...Object.getOwnPropertyNames(DEFAULT_POLYGON_BACK_STYLE)
 ]);
-export class SEPolygon extends SEExpression
-  implements Visitable, OneDimensional, Labelable {
+export class SEPolygon extends SEExpression implements Visitable, Labelable {
   /**
    * The plottable (TwoJS) segment associated with this model segment
    */
