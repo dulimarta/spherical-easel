@@ -134,10 +134,14 @@ export default class extends Vue {
     this.originalSphereMatrix.copy(this.inverseTotalRotationMatrix);
   }
 
-  onItemHover(s: SphericalConstruction): void {
+  // TODO: the onXXXX functions below are not bug-free yet
+  // There is a potential race-condition when the mouse moves too fast
+  // or when the mouse moves while a new construction is being loaded
+
+  async onItemHover(s: SphericalConstruction): Promise<void> {
     if (this.lastDocId === s.id) return; // Prevent double hovers?
     this.lastDocId = s.id;
-    axios
+    const newSvg = await axios
       .get(s.previewData)
       .then((r: AxiosResponse) => r.data)
       .then((svgString: string) => {
@@ -145,14 +149,11 @@ export default class extends Vue {
           svgString,
           "image/svg+xml"
         );
-        this.previewSVG = newDoc.querySelector("svg") as SVGElement;
-        console.debug(
-          "onItemHover:",
-          this.previewSVG,
-          this.svgParent?.firstChild
-        );
-        this.svgRoot.replaceWith(this.previewSVG);
+        return newDoc.querySelector("svg") as SVGElement;
       });
+    this.previewSVG = newSvg;
+    console.debug("onItemHover:", this.previewSVG);
+    this.svgRoot.replaceWith(this.previewSVG);
   }
 
   onItemLeave(/*_ev: MouseEvent*/): void {
