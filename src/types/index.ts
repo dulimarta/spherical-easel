@@ -1,6 +1,6 @@
 // Declaration of all internal data types
 
-import Two, { Polygon } from "two.js";
+import Two from "two.js";
 import { SEPoint } from "@/models/SEPoint";
 import { SELabel } from "@/models/SELabel";
 import { SELine } from "@/models/SELine";
@@ -18,6 +18,7 @@ import { SEEllipse } from "@/models/SEEllipse";
 import { SEParametric } from "@/models/SEParametric";
 import { SyntaxTree } from "@/expression/ExpressionParser";
 import { SEPolygon } from "@/models/SEPolygon";
+import { SETangentLineThruPoint } from "@/models/SETangentLineThruPoint";
 
 export interface Selectable {
   hit(x: number, y: number, coord: unknown, who: unknown): boolean;
@@ -86,6 +87,7 @@ export type ActionMode =
   | "line"
   | "move"
   | "perpendicular"
+  | "tangent"
   | "point"
   | "pointDistance"
   | "pointOnOneDim"
@@ -118,6 +120,14 @@ export interface SEIntersectionReturnType {
   parent2: SEOneDimensional;
 }
 
+/**
+ * For a parametric equation P(t), this is the pair P(t), t
+ */
+export type parametricVectorAndTValue = {
+  vector: Vector3;
+  tVal: number;
+};
+
 export interface OneDimensional {
   /**
    * Returns the closest vector on the one dimensional object to the idealUnitSphereVector
@@ -131,7 +141,7 @@ export interface OneDimensional {
    * use the oldNormal to help compute a new normal (which is returned)
    * @param sePoint A point on the line normal to this parametric
    */
-  getNormalsToLineThru(
+  getNormalsToPerpendicularLinesThru(
     sePointVector: Vector3,
     oldNormal: Vector3, // ignored for Ellipse and Circle and Parametric, but not other one-dimensional objects
     useFullTInterval?: boolean // only used in the constructor when figuring out the maximum number of perpendiculars to a SEParametric
@@ -215,13 +225,22 @@ export type plottableProperties = {
 /**
  * All the one or two dimensional SE Classes
  */
-export type SEOneDimensional =
+export type SEOneOrTwoDimensional =
   | SELine
   | SESegment
   | SECircle
   | SEEllipse
   | SEParametric
   | SEPolygon;
+
+export type SEOneDimensional =
+  | SELine
+  | SESegment
+  | SECircle
+  | SEEllipse
+  | SEParametric;
+
+export type SEOneDimensionalNotStraight = SECircle | SEEllipse | SEParametric;
 
 export type hslaColorType = {
   h: number;
@@ -273,6 +292,7 @@ export type ObjectState =
   | LabelState
   | AngleMarkerState
   | PerpendicularLineThruPointState
+  | TangentLineThruPointState
   | ExpressionState
   | ParametricState
   | PolygonState;
@@ -295,6 +315,17 @@ export function isPerpendicularLineThruPointState(
   entry: ObjectState
 ): entry is PerpendicularLineThruPointState {
   return entry.kind === "perpendicularLineThruPoint";
+}
+
+export interface TangentLineThruPointState {
+  kind: "tangentLineThruPoint";
+  object: SETangentLineThruPoint;
+}
+
+export function isTangentLineThruPointState(
+  entry: ObjectState
+): entry is TangentLineThruPointState {
+  return entry.kind === "tangentLineThruPoint";
 }
 
 export interface AngleMarkerState {

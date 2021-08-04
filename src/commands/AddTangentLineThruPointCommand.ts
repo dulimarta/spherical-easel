@@ -1,8 +1,12 @@
 import { Command } from "./Command";
 import { SEPoint } from "@/models/SEPoint";
 import { SELabel } from "@/models/SELabel";
-import { SEPerpendicularLineThruPoint } from "@/models/SEPerpendicularLineThruPoint";
-import { SEOneDimensional, SEOneOrTwoDimensional, UpdateMode } from "@/types";
+import { SETangentLineThruPoint } from "@/models/SETangentLineThruPoint";
+import {
+  SEOneDimensional,
+  SEOneDimensionalNotStraight,
+  UpdateMode
+} from "@/types";
 import Line from "@/plottables/Line";
 import { DisplayStyle } from "@/plottables/Nodule";
 import { SENodule } from "@/models/SENodule";
@@ -11,51 +15,52 @@ import Label from "@/plottables/Label";
 import SETTINGS from "@/global-settings";
 import NonFreePoint from "@/plottables/NonFreePoint";
 import NonFreeLine from "@/plottables/NonFreeLine";
-export class AddPerpendicularLineThruPointCommand extends Command {
-  private sePerpendicularLineThruPoint: SEPerpendicularLineThruPoint;
+import { SEEllipse } from "@/models/SEEllipse";
+import { SEParametric } from "@/models/SEParametric";
+import { SECircle } from "@/models/SECircle";
+export class AddTangentLineThruPointCommand extends Command {
+  private seTangentLineThruPoint: SETangentLineThruPoint;
   private parentSEPoint: SEPoint;
-  private parentOneDimensional: SEOneDimensional;
+  private parentOneDimensional: SEOneDimensionalNotStraight;
   private seLabel: SELabel;
 
   constructor(
-    sePerpendicularLineThruPoint: SEPerpendicularLineThruPoint,
+    seTangentLineThruPoint: SETangentLineThruPoint,
     parentSEPoint: SEPoint,
-    parentOneDimensional: SEOneDimensional,
+    parentOneDimensional: SEOneDimensionalNotStraight,
     seLabel: SELabel
   ) {
     super();
-    this.sePerpendicularLineThruPoint = sePerpendicularLineThruPoint;
+    this.seTangentLineThruPoint = seTangentLineThruPoint;
     this.parentSEPoint = parentSEPoint;
     this.parentOneDimensional = parentOneDimensional;
     this.seLabel = seLabel;
   }
 
   do(): void {
-    this.parentSEPoint.registerChild(this.sePerpendicularLineThruPoint);
-    this.parentOneDimensional.registerChild(this.sePerpendicularLineThruPoint);
-    this.sePerpendicularLineThruPoint.registerChild(this.seLabel);
-    Command.store.addLine(this.sePerpendicularLineThruPoint);
+    this.parentSEPoint.registerChild(this.seTangentLineThruPoint);
+    this.parentOneDimensional.registerChild(this.seTangentLineThruPoint);
+    this.seTangentLineThruPoint.registerChild(this.seLabel);
+    Command.store.addLine(this.seTangentLineThruPoint);
     Command.store.addLabel(this.seLabel);
   }
 
   saveState(): void {
-    this.lastState = this.sePerpendicularLineThruPoint.id;
+    this.lastState = this.seTangentLineThruPoint.id;
   }
 
   restoreState(): void {
     Command.store.removeLabel(this.seLabel.id);
     Command.store.removeLine(this.lastState);
-    this.sePerpendicularLineThruPoint.unregisterChild(this.seLabel);
-    this.parentOneDimensional.unregisterChild(
-      this.sePerpendicularLineThruPoint
-    );
-    this.parentSEPoint.unregisterChild(this.sePerpendicularLineThruPoint);
+    this.seTangentLineThruPoint.unregisterChild(this.seLabel);
+    this.parentOneDimensional.unregisterChild(this.seTangentLineThruPoint);
+    this.parentSEPoint.unregisterChild(this.seTangentLineThruPoint);
   }
 
   toOpcode(): null | string | Array<string> {
-    const targetLine = this.sePerpendicularLineThruPoint;
+    const targetLine = this.seTangentLineThruPoint;
     return [
-      "AddPerpendicularLineThruPoint",
+      "AddTangentLineThruPoint",
       /* arg-1 */ targetLine.name,
       /* arg-2 */ targetLine.normalVector.toFixed(7),
       /* arg-3 */ targetLine.startSEPoint.name,
@@ -72,7 +77,9 @@ export class AddPerpendicularLineThruPointCommand extends Command {
   static parse(command: string, objMap: Map<string, SENodule>): Command {
     const tokens = command.split("/");
     const startPoint = objMap.get(tokens[3]) as SEPoint | undefined;
-    const perpToLine = objMap.get(tokens[6]) as SEOneDimensional | undefined;
+    const perpToLine = objMap.get(tokens[6]) as
+      | SEOneDimensionalNotStraight
+      | undefined;
     if (startPoint && perpToLine) {
       const line = new NonFreeLine();
       line.stylize(DisplayStyle.ApplyCurrentVariables);
@@ -87,7 +94,7 @@ export class AddPerpendicularLineThruPointCommand extends Command {
       endLocation.from(tokens[5]);
       endPoint.locationVector = endLocation;
       const index = Number(tokens[10]);
-      const seLine = new SEPerpendicularLineThruPoint(
+      const seLine = new SETangentLineThruPoint(
         line,
         perpToLine,
         startPoint,
@@ -117,7 +124,7 @@ export class AddPerpendicularLineThruPointCommand extends Command {
       seLabel.showing = tokens[8] === "true";
       seLabel.exists = tokens[9] === "true";
       objMap.set(tokens[7], seLabel);
-      return new AddPerpendicularLineThruPointCommand(
+      return new AddTangentLineThruPointCommand(
         seLine,
         startPoint,
         perpToLine,
@@ -125,7 +132,7 @@ export class AddPerpendicularLineThruPointCommand extends Command {
       );
     } else {
       throw new Error(
-        `AddPerpendicularLineThruPoint: parent start point ${tokens[3]} or parent line ${tokens[6]} is undefined`
+        `AddTangentLineThruPoint: parent start point ${tokens[3]} or parent line ${tokens[6]} is undefined`
       );
     }
   }

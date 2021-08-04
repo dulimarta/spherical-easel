@@ -55,6 +55,7 @@ import { SEPolarLine } from "@/models/SEPolarLine";
 import { SEParametric } from "@/models/SEParametric";
 import Parametric from "@/plottables/Parametric";
 import { SEPolygon } from "@/models/SEPolygon";
+import { SETangentLineThruPoint } from "@/models/SETangentLineThruPoint";
 const tmpMatrix = new Matrix4();
 //const tmpVector = new Vector3();
 
@@ -704,7 +705,13 @@ export default class SE extends VuexModule implements AppState {
       }
       // Only perpendicular to line through point, the SEEndPoint is auto generated SEPoint (never added to the state)
       // and the user cannot interact with it. So it is *not* a vector to avoid for intersections.
-      if (!(newLine instanceof SEPerpendicularLineThruPoint || SEPolarLine)) {
+      if (
+        !(
+          newLine instanceof SEPerpendicularLineThruPoint ||
+          newLine instanceof SEPolarLine ||
+          newLine instanceof SETangentLineThruPoint
+        )
+      ) {
         avoidVectors.push(newLine.endSEPoint.locationVector);
       }
       this.sePoints.forEach(pt => {

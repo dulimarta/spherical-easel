@@ -10,7 +10,7 @@ import {
   DEFAULT_ELLIPSE_BACK_STYLE,
   DEFAULT_ELLIPSE_FRONT_STYLE
 } from "@/types/Styles";
-import { UpdateMode, UpdateStateType, CircleState } from "@/types";
+import { UpdateMode, UpdateStateType } from "@/types";
 import { Labelable } from "@/types";
 import { SELabel } from "@/models/SELabel";
 import { SEStore } from "@/store";
@@ -207,10 +207,17 @@ export class SEEllipse extends SENodule
         this._focus2SEPoint.locationVector
       );
 
-      // The foci must not be antipodal (but can be on top of each other -- but not the same exact SEPoint)
+      // The foci must not be antipodal
       this._exists =
         this._exists &&
         !sumOfFocusVectors.isZero(SETTINGS.nearlyAntipodalIdeal);
+
+      //The foci must not be right on each other
+      this._exists =
+        this._exists &&
+        this._focus1SEPoint.locationVector.angleTo(
+          this._focus2SEPoint.locationVector
+        ) > SETTINGS.ellipse.minimumAngleSumDifference;
 
       // The ellipse point can't be on the line segment connecting the foci or on the line segment connecting the antipodes of the foci
       this._exists =
@@ -279,7 +286,7 @@ export class SEEllipse extends SENodule
         this.ref.tMin,
         this.ref.tMax,
         this.ref.Epp.bind(this.ref) // bind the this.ref so that this in the this.ref.E method is this.ref
-      )
+      ).vector
     );
     // Finally transform the closest vector on the ellipse in standard position to the target unit sphere
     return closestStandardVector.applyMatrix4(this.ref.ellipseFrame);
@@ -330,7 +337,7 @@ export class SEEllipse extends SENodule
    * use the oldNormal to help compute a new normal (which is returned)
    * @param sePoint A point on the line normal to this circle
    */
-  public getNormalsToLineThru(
+  public getNormalsToPerpendicularLinesThru(
     sePointVector: Vector3,
     oldNormal: Vector3 // ignored for Ellipse and Circle, but not other one-dimensional objects
   ): Vector3[] {
@@ -379,7 +386,7 @@ export class SEEllipse extends SENodule
         this.tmpMatrix.getInverse(this.ref.ellipseFrame)
       );
 
-      const normalList = SENodule.getNormalsToLineThruParametrically(
+      const normalList = SENodule.getNormalsToPerpendicularLinesThruParametrically(
         // this.ref.E.bind(this.ref), // bind the this.ref so that this in the this.ref.E method is this.ref
         this.ref.Ep.bind(this.ref), // bind the this.ref so that this in the this.ref.E method is this.ref
         transformedToStandard,
@@ -395,10 +402,102 @@ export class SEEllipse extends SENodule
       // const ind = normalList.findIndex((vec: Vector3) => {
       //   return vec.angleTo(oldNormal) === minAngle;
       // });
+      // console.log("normal list length", normalList.length);
       return normalList.map(vec =>
         vec.applyMatrix4(this.ref.ellipseFrame).normalize()
       );
     }
+  }
+
+  /**
+   * Return the normal vectors to the planes containing the line that is tangent to this Ellipse through the
+   * sePointVector, in the case that the usual way of defining this line is not well defined  (something is parallel),
+   * use the oldNormal to help compute a new normal (which is returned)
+   * @param sePointVector A point on the line tangent to this Ellipse
+   */
+  public getNormalsToTangentLinesThru(
+    sePointVector: Vector3,
+    useFullTInterval?: boolean // only used in the constructor when figuring out the maximum number of Tangents to a SEParametric
+  ): Vector3[] {
+    const sumOfDistancesToFoci =
+      sePointVector.angleTo(this._focus1SEPoint.locationVector) +
+      sePointVector.angleTo(this._focus2SEPoint.locationVector);
+
+    this.tmpVector.copy(this._focus1SEPoint.locationVector);
+    this.tmpVector1.copy(this._focus2SEPoint.locationVector);
+    const sumOfDistancesToAntipodesOfFoci =
+      sePointVector.angleTo(this.tmpVector.multiplyScalar(-1)) +
+      sePointVector.angleTo(this.tmpVector1.multiplyScalar(-1));
+
+    // If the vector is on the Ellipse or its antipode then there is one tangent
+    if (
+      (this._a < Math.PI / 2 &&
+        (Math.abs(sumOfDistancesToFoci - this.ellipseAngleSum) <
+          0.001 / SEStore.zoomMagnificationFactor ||
+          Math.abs(sumOfDistancesToAntipodesOfFoci - this.ellipseAngleSum) <
+            0.001 / SEStore.zoomMagnificationFactor)) ||
+      (this._a > Math.PI / 2 &&
+        (Math.abs(
+          sumOfDistancesToAntipodesOfFoci - 2 * Math.PI + this.ellipseAngleSum
+        ) <
+          0.001 / SEStore.zoomMagnificationFactor ||
+          Math.abs(sumOfDistancesToFoci - 2 * Math.PI + this.ellipseAngleSum) <
+            0.001 / SEStore.zoomMagnificationFactor))
+    ) {
+      // console.log("here");
+      const transformedToStandard = new Vector3();
+      transformedToStandard.copy(sePointVector);
+      transformedToStandard.applyMatrix4(
+        this.tmpMatrix.getInverse(this.ref.ellipseFrame)
+      );
+      const coorespondingTVal = SENodule.closestVectorParametrically(
+        this.ref.E.bind(this.ref), // bind the this.ref so that this in the this.ref.E method is this.ref
+        this.ref.Ep.bind(this.ref), // bind the this.ref so that this in the this.ref.E method is this.ref
+        transformedToStandard,
+        this.ref.tMin,
+        this.ref.tMax,
+        this.ref.Epp.bind(this.ref) // bind the this.ref so that this in the this.ref.E method is this.ref
+      ).tVal;
+      // console.log("coord t val", coorespondingTVal);
+      const tangentVector = new Vector3();
+      tangentVector.copy(this.ref.Ep(coorespondingTVal));
+      tangentVector.applyMatrix4(this.ref.ellipseFrame);
+      tangentVector.cross(sePointVector);
+      // console.log("tan vec", tangentVector.x, tangentVector.y, tangentVector.z);
+      return [tangentVector.normalize()];
+    }
+    // If the vector is inside the Ellipse or the antipode of the Ellipse there is no tangent or the ellipse is a great circle (a=Pi/2)
+    if (
+      Math.abs(this._a - Math.PI / 2) < SETTINGS.tolerance ||
+      (this._a < Math.PI / 2 &&
+        (sumOfDistancesToFoci < this.ellipseAngleSum ||
+          sumOfDistancesToAntipodesOfFoci < this.ellipseAngleSum)) ||
+      (this._a > Math.PI / 2 &&
+        (sumOfDistancesToAntipodesOfFoci < 2 * Math.PI - this.ellipseAngleSum ||
+          sumOfDistancesToFoci < 2 * Math.PI - this.ellipseAngleSum))
+    ) {
+      return [];
+    }
+    // Use the parametrization to find the tangents in the remaining case when there are two tangents
+    const transformedToStandard = new Vector3();
+    transformedToStandard.copy(sePointVector);
+    transformedToStandard.applyMatrix4(
+      this.tmpMatrix.getInverse(this.ref.ellipseFrame)
+    );
+
+    const normalList = SENodule.getNormalsToTangentLinesThruParametrically(
+      this.ref.E.bind(this.ref),
+      this.ref.Ep.bind(this.ref),
+      transformedToStandard,
+      this.ref.tMin,
+      this.ref.tMax,
+      [], // Avoid these t values
+      this.ref.Epp.bind(this.ref)
+    );
+
+    return normalList.map(vec =>
+      vec.applyMatrix4(this.ref.ellipseFrame).normalize()
+    );
   }
 
   /**

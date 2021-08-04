@@ -103,10 +103,15 @@ export default {
     CreateSliderToolTipMessage: "User Controlled Value",
     CreateSliderToolUseMessage: "Click this button to create a value slider ",
 
+    CreateTangentDisplayedName: "Tangent<br>&nbsp;",
+    CreateTangentToolTipMessage: "Tangent Through Point",
+    CreateTangentToolUseMessage:
+      "Create the tangent line(s) to a selected non-straight one-dimensional object and selected location.",
+
     CreatePerpendicularDisplayedName: "Perpendicular<br>&nbsp;",
     CreatePerpendicularToolTipMessage: "Perpendicular Through Point",
     CreatePerpendicularToolUseMessage:
-      "Create a perpendicular line to a selected one-dimensional object and selected location.",
+      "Create the perpendicular line(s) to a selected one-dimensional object and selected location.",
 
     DeleteDisplayedName: "Delete<br>&nbsp;",
     DeleteToolTipMessage: "Delete Objects",
@@ -398,23 +403,24 @@ export default {
       "Selection Update: {number} objects selected. Hold the Alt/Option key to add or subtract from the current selection.",
     selectionUpdateNothingSelected: "No objects selected.",
     pointCreationAttemptDuplicate: "There is already a point at this location.",
-    perpendicularLineThruPointPointSelected:
+    lineThruPointPointSelected:
       "Point selected. Now select a one dimensional object to determine the perpendicular.",
-    perpendicularLineThruPointLineSelected:
+    lineThruPointLineSelected:
       "Line {name} selected. Now select a location to create a new point or to create a point on an object.",
-    perpendicularLineThruPointSegmentSelected:
+    lineThruPointSegmentSelected:
       "Segment {name} selected. Now select a location to create a new point or to create a point on an object.",
-    perpendicularLineThruPointCircleSelected:
+    lineThruPointCircleSelected:
       "Circle {name} selected. Now select a location to create a new point or to create a point on an object.",
-    perpendicularLineThruPointEllipseSelected:
+    lineThruPointEllipseSelected:
       "Ellipse {name} selected. Now select a location to create a new point or to create a point on an object.",
+    lineThruPointParametricSelected:
+      "Parametric {name} selected. Now select a location to create a new point or to create a point on an object.",
+
     antipodeDuplicate: "The antipode of this point has already been created.",
     polarLineDuplicate:
       "The polar line of this point has already been created.",
     polarPointDuplicate:
       "The polar points of this {object} has already been created.",
-    perpendicularLineThruPointParametricSelected:
-      "Parametric {name} selected. Now select a location to create a new point or to create a point on an object.",
     newSegmentIntersectsOrToClose:
       "The selected segment intersects the previously selected segments or the free endpoint of the selected segment is too close to one of the previously selected segments.",
     newSegmentMustHaveEndpointInCommon:
@@ -497,6 +503,8 @@ export default {
     freePoint: "Free point",
     perpendicularLineThru:
       "Perpendicular line to {oneDimensionalParentType} {oneDimensional} through point {pt} with index {index}",
+    tangentLineThru:
+      "Tangent line to {oneDimensionalParentType} {oneDimensional} through point {pt} with index {index}",
     deleteNode: "Delete the selected object.",
 
     parametricCurves: "Parametric Curves",

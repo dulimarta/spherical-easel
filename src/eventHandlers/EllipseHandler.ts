@@ -12,10 +12,10 @@ import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import { DisplayStyle } from "@/plottables/Nodule";
 import Highlighter from "./Highlighter";
 import { ConvertInterPtToUserCreatedCommand } from "@/commands/ConvertInterPtToUserCreatedCommand";
-import { SEPointOnOneDimensional } from "@/models/SEPointOnOneDimensional";
+import { SEPointOnOneOrTwoDimensional } from "@/models/SEPointOnOneOrTwoDimensional";
 import { AddIntersectionPointCommand } from "@/commands/AddIntersectionPointCommand";
-import { AddPointOnOneDimensionalCommand } from "@/commands/AddPointOnOneDimensionalCommand";
-import { SEOneDimensional, SEIntersectionReturnType } from "@/types";
+import { AddPointOnOneDimensionalCommand } from "@/commands/AddPointOnOneOrTwoDimensionalCommand";
+import { SEOneOrTwoDimensional, SEIntersectionReturnType } from "@/types";
 import { UpdateMode } from "@/types";
 import Label from "@/plottables/Label";
 import { SELabel } from "@/models/SELabel";
@@ -40,8 +40,8 @@ export default class EllipseHandler extends Highlighter {
   /** The model object point that is a point on the ellipse (if any) */
   private ellipseSEPoint: SEPoint | null = null;
   /** The possible parent of the foci(1|2)SEPoint*/
-  private focus1SEPointOneDimensionalParent: SEOneDimensional | null = null;
-  private focus2SEPointOneDimensionalParent: SEOneDimensional | null = null;
+  private focus1SEPointOneDimensionalParent: SEOneOrTwoDimensional | null = null;
+  private focus2SEPointOneDimensionalParent: SEOneOrTwoDimensional | null = null;
 
   /** Depending on where the user is in selecting the point, we know what to temporary objects to add to the scene */
   private focus1LocationSelected = false;
@@ -72,7 +72,7 @@ export default class EllipseHandler extends Highlighter {
   /**
    * As the user moves the pointer around snap the temporary marker to these objects temporarily
    */
-  protected snapTemporaryPointMarkerToOneDimensional: SEOneDimensional | null = null;
+  protected snapTemporaryPointMarkerToOneDimensional: SEOneOrTwoDimensional | null = null;
   protected snapTemporaryPointMarkerToPoint: SEPoint | null = null;
 
   constructor(layers: Two.Group[]) {
@@ -380,7 +380,7 @@ export default class EllipseHandler extends Highlighter {
     // The user can create points on ellipses, circles, segments, and lines, so
     // highlight those as well (but only one) if they are nearby also
     // Also set the snap objects
-    let possiblyGlowing: SEPoint | SEOneDimensional | null = null;
+    let possiblyGlowing: SEPoint | SEOneOrTwoDimensional | null = null;
     if (this.hitSEPoints.length > 0) {
       possiblyGlowing = this.hitSEPoints[0];
     } else if (this.hitSESegments.length > 0) {
@@ -733,11 +733,11 @@ export default class EllipseHandler extends Highlighter {
       const newLabel = new Label();
       let newSELabel: SELabel | null = null;
 
-      let vtx: SEPoint | SEPointOnOneDimensional | null = null;
+      let vtx: SEPoint | SEPointOnOneOrTwoDimensional | null = null;
       if (this.focus1SEPointOneDimensionalParent) {
         // Focus 1 mouse press landed near a oneDimensional
         // Create the model object for the new point and link them
-        vtx = new SEPointOnOneDimensional(
+        vtx = new SEPointOnOneOrTwoDimensional(
           newCenterPoint,
           this.focus1SEPointOneDimensionalParent
         );
@@ -746,7 +746,7 @@ export default class EllipseHandler extends Highlighter {
 
         ellipseCommandGroup.addCommand(
           new AddPointOnOneDimensionalCommand(
-            vtx as SEPointOnOneDimensional,
+            vtx as SEPointOnOneOrTwoDimensional,
             this.focus1SEPointOneDimensionalParent,
             newSELabel
           )
@@ -796,11 +796,11 @@ export default class EllipseHandler extends Highlighter {
       const newLabel = new Label();
       let newSELabel: SELabel | null = null;
 
-      let vtx: SEPoint | SEPointOnOneDimensional | null = null;
+      let vtx: SEPoint | SEPointOnOneOrTwoDimensional | null = null;
       if (this.focus2SEPointOneDimensionalParent) {
         // Focus 1 mouse press landed near a oneDimensional
         // Create the model object for the new point and link them
-        vtx = new SEPointOnOneDimensional(
+        vtx = new SEPointOnOneOrTwoDimensional(
           newCenterPoint,
           this.focus2SEPointOneDimensionalParent
         );
@@ -809,7 +809,7 @@ export default class EllipseHandler extends Highlighter {
 
         ellipseCommandGroup.addCommand(
           new AddPointOnOneDimensionalCommand(
-            vtx as SEPointOnOneDimensional,
+            vtx as SEPointOnOneOrTwoDimensional,
             this.focus2SEPointOneDimensionalParent,
             newSELabel
           )
@@ -882,12 +882,12 @@ export default class EllipseHandler extends Highlighter {
       // Create the plottable label
       const newLabel = new Label();
 
-      let vtx: SEPoint | SEPointOnOneDimensional | null = null;
+      let vtx: SEPoint | SEPointOnOneOrTwoDimensional | null = null;
       let newSELabel: SELabel | null = null;
       if (this.hitSESegments.length > 0) {
         // The end of the line will be a point on a segment
         // Create the model object for the new point and link them
-        vtx = new SEPointOnOneDimensional(
+        vtx = new SEPointOnOneOrTwoDimensional(
           newEllipsePoint,
           this.hitSESegments[0]
         );
@@ -898,7 +898,7 @@ export default class EllipseHandler extends Highlighter {
 
         ellipseCommandGroup.addCommand(
           new AddPointOnOneDimensionalCommand(
-            vtx as SEPointOnOneDimensional,
+            vtx as SEPointOnOneOrTwoDimensional,
             this.hitSESegments[0],
             newSELabel
           )
@@ -906,20 +906,23 @@ export default class EllipseHandler extends Highlighter {
       } else if (this.hitSELines.length > 0) {
         // The end of the line will be a point on a line
         // Create the model object for the new point and link them
-        vtx = new SEPointOnOneDimensional(newEllipsePoint, this.hitSELines[0]);
+        vtx = new SEPointOnOneOrTwoDimensional(
+          newEllipsePoint,
+          this.hitSELines[0]
+        );
         // Set the Location
         vtx.locationVector = this.temporaryEllipsePointMarker.positionVector;
         newSELabel = new SELabel(newLabel, vtx);
         ellipseCommandGroup.addCommand(
           new AddPointOnOneDimensionalCommand(
-            vtx as SEPointOnOneDimensional,
+            vtx as SEPointOnOneOrTwoDimensional,
             this.hitSELines[0],
             newSELabel
           )
         );
       } else if (this.hitSECircles.length > 0) {
         // The end of the line will be a point on a circle
-        vtx = new SEPointOnOneDimensional(
+        vtx = new SEPointOnOneOrTwoDimensional(
           newEllipsePoint,
           this.hitSECircles[0]
         );
@@ -928,14 +931,14 @@ export default class EllipseHandler extends Highlighter {
         newSELabel = new SELabel(newLabel, vtx);
         ellipseCommandGroup.addCommand(
           new AddPointOnOneDimensionalCommand(
-            vtx as SEPointOnOneDimensional,
+            vtx as SEPointOnOneOrTwoDimensional,
             this.hitSECircles[0],
             newSELabel
           )
         );
       } else if (this.hitSEEllipses.length > 0) {
         // The end of the line will be a point on a ellipse
-        vtx = new SEPointOnOneDimensional(
+        vtx = new SEPointOnOneOrTwoDimensional(
           newEllipsePoint,
           this.hitSEEllipses[0]
         );
@@ -944,14 +947,14 @@ export default class EllipseHandler extends Highlighter {
         newSELabel = new SELabel(newLabel, vtx);
         ellipseCommandGroup.addCommand(
           new AddPointOnOneDimensionalCommand(
-            vtx as SEPointOnOneDimensional,
+            vtx as SEPointOnOneOrTwoDimensional,
             this.hitSEEllipses[0],
             newSELabel
           )
         );
       } else if (this.hitSEParametrics.length > 0) {
         // The end of the line will be a point on a ellipse
-        vtx = new SEPointOnOneDimensional(
+        vtx = new SEPointOnOneOrTwoDimensional(
           newEllipsePoint,
           this.hitSEParametrics[0]
         );
@@ -960,14 +963,14 @@ export default class EllipseHandler extends Highlighter {
         newSELabel = new SELabel(newLabel, vtx);
         ellipseCommandGroup.addCommand(
           new AddPointOnOneDimensionalCommand(
-            vtx as SEPointOnOneDimensional,
+            vtx as SEPointOnOneOrTwoDimensional,
             this.hitSEParametrics[0],
             newSELabel
           )
         );
       } else if (this.hitSEPolygons.length > 0) {
         // The end of the line will be a point on a ellipse
-        vtx = new SEPointOnOneDimensional(
+        vtx = new SEPointOnOneOrTwoDimensional(
           newEllipsePoint,
           this.hitSEPolygons[0]
         );
@@ -976,7 +979,7 @@ export default class EllipseHandler extends Highlighter {
         newSELabel = new SELabel(newLabel, vtx);
         ellipseCommandGroup.addCommand(
           new AddPointOnOneDimensionalCommand(
-            vtx as SEPointOnOneDimensional,
+            vtx as SEPointOnOneOrTwoDimensional,
             this.hitSEPolygons[0],
             newSELabel
           )

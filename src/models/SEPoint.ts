@@ -12,7 +12,7 @@ import {
   UpdateMode,
   UpdateStateType,
   PointState,
-  SEOneDimensional,
+  SEOneOrTwoDimensional,
   Labelable
 } from "@/types";
 import { SELabel } from "./SELabel";
@@ -209,7 +209,7 @@ export class SEPoint extends SENodule implements Visitable, Labelable {
   public isFreePoint(): boolean {
     return true;
   }
-  public isOneDimensional(): this is SEOneDimensional {
+  public isOneDimensional(): this is SEOneOrTwoDimensional {
     return false;
   }
   public isPoint(): boolean {

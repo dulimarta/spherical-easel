@@ -176,7 +176,7 @@ import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
 import { SEPolarLine } from "@/models/SEPolarLine";
 import { SEPolarPoint } from "@/models/SEPolarPoint";
 import { SEPerpendicularLineThruPoint } from "@/models/SEPerpendicularLineThruPoint";
-import { SEPointOnOneDimensional } from "@/models/SEPointOnOneDimensional";
+import { SEPointOnOneOrTwoDimensional } from "@/models/SEPointOnOneOrTwoDimensional";
 
 @Component
 export default class SENoduleItem extends Vue {
@@ -371,7 +371,7 @@ export default class SENoduleItem extends Vue {
     return this.node instanceof SEPerpendicularLineThruPoint;
   }
   get isPointOnObject(): boolean {
-    return this.node instanceof SEPointOnOneDimensional;
+    return this.node instanceof SEPointOnOneOrTwoDimensional;
   }
 
   get isSegmentLength(): boolean {

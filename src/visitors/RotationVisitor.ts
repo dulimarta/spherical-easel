@@ -6,7 +6,7 @@ import { SECircle } from "@/models/SECircle";
 import { SESegment } from "@/models/SESegment";
 import { SELabel } from "@/models/SELabel";
 // import { UpdateMode } from "@/types";
-import { SEPointOnOneDimensional } from "@/models/SEPointOnOneDimensional";
+import { SEPointOnOneOrTwoDimensional } from "@/models/SEPointOnOneOrTwoDimensional";
 import { SEEllipse } from "@/models/SEEllipse";
 import { SEAngleMarker } from "@/models/SEAngleMarker";
 import { SEParametric } from "@/models/SEParametric";
@@ -31,7 +31,7 @@ export class RotationVisitor implements Visitor {
   actionOnPoint(p: SEPoint): void {
     this.tmpVector.copy(p.locationVector); // Copy the old vector location of the SEPoint
     this.tmpVector.applyMatrix4(this.transformMatrix); // Apply the matrix
-    if (p instanceof SEPointOnOneDimensional) {
+    if (p instanceof SEPointOnOneOrTwoDimensional) {
       p.pointDirectLocationSetter(this.tmpVector); // use the direct setter because the parent might be out of date.
     } else {
       p.locationVector = this.tmpVector; // Set the new position vector

@@ -353,7 +353,7 @@ export default class Parametric extends Nodule {
     });
     // The *first* front or back path might be divided into two parts so add one to the number of parts
     this._numberOfParts += 1;
-    console.log("number of parts", this._numberOfParts);
+    // console.log("number of parts", this._numberOfParts);
 
     // to set the number of vertices need to render the parametric curve use the density of SUBDIVISIONS per unit INITIAL arcLength and multiply by the arcLength
     this._initialArcLength = 0;

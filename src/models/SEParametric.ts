@@ -41,9 +41,10 @@ export class SEParametric extends SENodule
   private tmpMatrix = new Matrix4();
 
   /**
-   * Compute the maximum number of perpendiculars to this SEParametric
+   * Store the maximum number of Perpendiculars/Tangents to this SEParametric
    */
   private _maxNumberOfPerpendiculars = 1;
+  private _maxNumberOfTangents = 2;
 
   /**
    * The SE endpoints of this curve, if any
@@ -72,15 +73,26 @@ export class SEParametric extends SENodule
 
     let numberOfPerp: number;
     sample.forEach(vec => {
-      numberOfPerp = this.getNormalsToLineThru(vec, this.tmpVector, true)
-        .length;
+      numberOfPerp = this.getNormalsToPerpendicularLinesThru(
+        vec,
+        this.tmpVector,
+        true
+      ).length;
       if (numberOfPerp > this._maxNumberOfPerpendiculars) {
         this._maxNumberOfPerpendiculars = numberOfPerp;
       }
     });
     // console.log("Number of Perps", this._maxNumberOfPerpendiculars);
-    // sample for number of tangents from any point on the sphere
 
+    // sample for number of tangents from any point on the sphere
+    let numberOfTangents: number;
+    sample.forEach(vec => {
+      numberOfTangents = this.getNormalsToTangentLinesThru(vec, true).length;
+      if (numberOfTangents > this._maxNumberOfTangents) {
+        this._maxNumberOfTangents = numberOfTangents;
+      }
+    });
+    console.log("Number of tangent", this._maxNumberOfTangents);
     SEParametric.PARAMETRIC_COUNT++;
     this.name = `Pa${SEParametric.PARAMETRIC_COUNT}`;
   }
@@ -92,6 +104,11 @@ export class SEParametric extends SENodule
   get maxNumberOfPerpendiculars(): number {
     return this._maxNumberOfPerpendiculars;
   }
+
+  get maxNumberOfTangents(): number {
+    return this._maxNumberOfTangents;
+  }
+
   public get noduleDescription(): string {
     return String(
       i18n.t(`objectTree.parametricDescription`, {
@@ -204,7 +221,7 @@ export class SEParametric extends SENodule
         tMin,
         tMax,
         this.ref.PPPrime.bind(this.ref) // bind the this.ref so that this in the this.ref.PPPrime method is this.ref
-      )
+      ).vector
     );
     // Finally transform the closest vector on the ellipse in standard position to the target unit sphere
     return closestStandardVector.applyMatrix4(
@@ -257,7 +274,7 @@ export class SEParametric extends SENodule
    * use the oldNormal to help compute a new normal (which is returned)
    * @param sePoint A point on the line normal to this parametric
    */
-  public getNormalsToLineThru(
+  public getNormalsToPerpendicularLinesThru(
     sePointVector: Vector3,
     oldNormal: Vector3, // ignored for Ellipse and Circle and Parametric, but not other one-dimensional objects
     useFullTInterval?: boolean // only used in the constructor when figuring out the maximum number of perpendiculars to a SEParametric
@@ -280,7 +297,7 @@ export class SEParametric extends SENodule
     // console.log("normal search");
     let normalList: Vector3[] = [];
 
-    normalList = SENodule.getNormalsToLineThruParametrically(
+    normalList = SENodule.getNormalsToPerpendicularLinesThruParametrically(
       //this.ref.P.bind(this.ref), // bind the this.ref so that this in the this.ref.P method is this.ref
       this.ref.PPrime.bind(this.ref), // bind the this.ref so that this in the this.ref.PPrime method is this.ref
       transformedToStandard,
@@ -342,6 +359,136 @@ export class SEParametric extends SENodule
     // console.log("uni perp", uniqueNormals);
 
     if (uniqueNormals.length > this._maxNumberOfPerpendiculars) {
+      console.debug(
+        "The number of normal vectors is bigger than the number of normals counted in the constructor. (Ignore this if issued by constructor.)"
+      );
+    }
+    return uniqueNormals.map(vec =>
+      vec
+        .applyMatrix4(
+          this.tmpMatrix.getInverse(SEStore.inverseTotalRotationMatrix)
+        )
+        .normalize()
+    );
+  }
+
+  /**
+   * Return the normal vector(s) to the plane containing a line that is tangent to this parametric through the
+   * sePoint, in the case that the usual way of defining this line is not well defined  (something is parallel),
+   * use the oldNormal to help compute a new normal (which is returned)
+   * @param sePoint A point on the line tangent to this parametric
+   */
+  public getNormalsToTangentLinesThru(
+    sePointVector: Vector3,
+    useFullTInterval?: boolean // only used in the constructor when figuring out the maximum number of Tangents to a SEParametric
+  ): Vector3[] {
+    const transformedToStandard = new Vector3();
+    transformedToStandard.copy(sePointVector);
+    transformedToStandard
+      .applyMatrix4(SEStore.inverseTotalRotationMatrix)
+      .normalize();
+    // It must be the case that tMax> tMin because in update we check to make sure -- if it is not true then this parametric doesn't exist
+
+    // find the tracing tMin and tMax
+    const [tMin, tMax] = useFullTInterval
+      ? [this.ref.tNumbers.min, this.ref.tNumbers.max]
+      : this.ref.tMinMaxExpressionValues() ?? [
+          this.ref.tNumbers.min,
+          this.ref.tNumbers.max
+        ];
+    const avoidTValues: number[] = [];
+    avoidTValues.push(...this.ref.c1DiscontinuityParameterValues);
+    let normalList: Vector3[] = [];
+    //If the vector is on the Parametric then there is at at least one tangent
+    if (
+      this.closestVector(sePointVector).angleTo(sePointVector) <
+      0.01 / SEStore.zoomMagnificationFactor
+    ) {
+      // console.log("here");
+      const coorespondingTVal = SENodule.closestVectorParametrically(
+        this.ref.P.bind(this.ref), // bind the this.ref so that this in the this.ref.E method is this.ref
+        this.ref.PPrime.bind(this.ref), // bind the this.ref so that this in the this.ref.E method is this.ref
+        transformedToStandard,
+        tMin,
+        tMax,
+        this.ref.PPPrime.bind(this.ref) // bind the this.ref so that this in the this.ref.E method is this.ref
+      ).tVal;
+      // console.log("coord t val", coorespondingTVal);
+      const tangentVector = new Vector3();
+      tangentVector.copy(this.ref.PPrime(coorespondingTVal));
+      tangentVector.applyMatrix4(SEStore.inverseTotalRotationMatrix);
+      tangentVector.cross(this.ref.P(coorespondingTVal));
+      avoidTValues.push(coorespondingTVal);
+      // console.log("coordes t val", coorespondingTVal);
+      normalList.push(tangentVector.normalize());
+    }
+
+    // console.log("normal search");
+
+    normalList.push(
+      ...SENodule.getNormalsToTangentLinesThruParametrically(
+        this.ref.P.bind(this.ref), // bind the this.ref so that this in the this.ref.P method is this.ref
+        this.ref.PPrime.bind(this.ref), // bind the this.ref so that this in the this.ref.PPrime method is this.ref
+        transformedToStandard,
+        tMin,
+        tMax,
+        avoidTValues,
+        this.ref.PPPrime.bind(this.ref) // bind the this.ref so that this in the this.ref.PPPrime method is this.ref
+      )
+    );
+
+    // normalList.forEach((vec, ind) => {
+    //   if (
+    //     Math.abs(vec.dot(transformedToStandard)) >
+    //     SETTINGS.tolerance / 1000
+    //   ) {
+    //     console.log(ind, "NOT through point");
+    //   }
+    //   if (vec.isZero(SETTINGS.tolerance / 1000)) {
+    //     console.log(ind, " Vector is ZERO");
+    //   }
+    // });
+
+    // console.log("# normals before", normalList.length);
+    normalList = normalList
+      // make sure that the returned vector are not just zeros of PPrime (which do not lead to Tangents)
+      .filter(vec => !vec.isZero(SETTINGS.tolerance / 1000))
+      // check that normals that are perpendicular to the line that passes through the given vector
+      .filter(
+        vec =>
+          Math.abs(vec.dot(transformedToStandard)) < SETTINGS.tolerance / 1000
+      )
+      .filter(vec => vec.normalize());
+    // console.log("# normals middle", normalList.length);
+
+    // return normalList.map(vec =>
+    //   vec
+    //     .applyMatrix4(
+    //       this.tmpMatrix.getInverse(SEStore.inverseTotalRotationMatrix)
+    //     )
+    //     .normalize()
+    // );
+
+    // remove duplicates from the list
+    const uniqueNormals: Vector3[] = [];
+    normalList.forEach(vec => {
+      if (
+        !uniqueNormals.some(nor =>
+          this.tmpVector
+            .crossVectors(vec, nor)
+            .isZero(SETTINGS.nearlyAntipodalIdeal)
+        )
+      ) {
+        uniqueNormals.push(vec);
+      }
+      // else {
+      //   console.log("Duplicate normal found");
+      // }
+    });
+    // console.log("# normals end", uniqueNormals.length);
+    // console.log("uni perp", uniqueNormals);
+
+    if (uniqueNormals.length > this._maxNumberOfTangents) {
       console.debug(
         "The number of normal vectors is bigger than the number of normals counted in the constructor. (Ignore this if issued by constructor.)"
       );
