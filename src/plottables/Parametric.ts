@@ -100,7 +100,9 @@ export default class Parametric extends Nodule {
    */
   private _initialArcLength: number;
   private _arcLengthValues: Array<number> = [];
-  private _pprimeValues: Array<Vector3> = [];
+  private _coordValues: Array<Vector3> = [];
+  private _pPrimeValues: Array<Vector3> = [];
+  private _ppPrimeValues: Array<Vector3> = [];
 
   /**
    * Vuex global state
@@ -221,10 +223,25 @@ export default class Parametric extends Nodule {
 
     this._seParentExpressions.push(...measurementParents);
     this.evaluateFunctionAndCache(
+      this.coordinateSyntaxTrees,
+      tNumbers.min,
+      tNumbers.max,
+      this._coordValues,
+      measurementParents
+    );
+    this.evaluateFunctionAndCache(
       this.primeCoordinateSyntaxTrees,
       tNumbers.min,
       tNumbers.max,
-      this._pprimeValues,
+      this._pPrimeValues,
+      measurementParents
+    );
+
+    this.evaluateFunctionAndCache(
+      this.primeX2CoordinateSyntaxTrees,
+      tNumbers.min,
+      tNumbers.max,
+      this._ppPrimeValues,
       measurementParents
     );
 
@@ -448,34 +465,8 @@ export default class Parametric extends Nodule {
     return [tMin, tMax];
   }
 
-  /**
-   * The parameterization of the curve.
-   * @param t the parameter
-   * @returns vector containing the location
-   */
-  public P(t: number): Vector3 {
-    // first update the map with the current value of
-    this._seParentExpressions.forEach((m: SEExpression) => {
-      const measurementName = m.name;
-      // console.debug("Measurement", m, measurementName);
-      this.varMap.set(measurementName, m.value);
-    });
-    //add the current t value
-    this.varMap.set("t", t);
-
-    return this.parameterization.set(
-      ExpressionParser.evaluate(this.coordinateSyntaxTrees.x, this.varMap),
-      ExpressionParser.evaluate(this.coordinateSyntaxTrees.y, this.varMap),
-      ExpressionParser.evaluate(this.coordinateSyntaxTrees.z, this.varMap)
-    );
-  }
-  /**
-   * The parameterization of the derivative of the curve
-   * Note: This is *not* a unit parameterization
-   * @param t the parameter
-   */
-  public PPrime(t: number): Vector3 {
-    const N = this._pprimeValues.length;
+  private lookupFunctionValueAt(t: number, arr: Array<Vector3>): Vector3 {
+    const N = arr.length;
     if (N > 0) {
       const range = this.tNumbers.max - this.tNumbers.min;
       // Convert t in [tMin, tMax] to s in [0,1]
@@ -485,38 +476,46 @@ export default class Parametric extends Nodule {
       if (sIndex < N - 1) {
         /* Use linear interpolation of two neighboring values in the array */
         const fraction = idealIndex - sIndex; // the amount of deviation from the ideal location
-        this.parameterizationPrime.set(0, 0, 0);
+        this.tmpVector.set(0, 0, 0);
 
         // compute weighted average (1-f)*arr[k] + f*arr[k+1]
-        this.parameterizationPrime.addScaledVector(
-          this._pprimeValues[sIndex],
-          1 - fraction
-        );
-        this.parameterizationPrime.addScaledVector(
-          this._pprimeValues[sIndex + 1],
-          fraction
-        );
-        return this.parameterizationPrime;
-      } else return this._pprimeValues[N - 1];
-    } else throw new Error(`Attempt to evaluate PPrime at t=${t}`);
+        this.tmpVector.addScaledVector(arr[sIndex], 1 - fraction);
+        this.tmpVector.addScaledVector(arr[sIndex + 1], fraction);
+        return this.tmpVector;
+      } else return arr[N - 1];
+    } else throw new Error(`Attempt to evaluate function value at t=${t}`);
+  }
+  /**
+   * The parameterization of the curve.
+   * @param t the parameter
+   * @returns vector containing the location
+   */
+  public P(t: number): Vector3 {
+    return this.lookupFunctionValueAt(t, this._coordValues);
+    // // first update the map with the current value of
+    // this._seParentExpressions.forEach((m: SEExpression) => {
+    //   const measurementName = m.name;
+    //   // console.debug("Measurement", m, measurementName);
+    //   this.varMap.set(measurementName, m.value);
+    // });
+    // //add the current t value
+    // this.varMap.set("t", t);
+
+    // return this.parameterization.set(
+    //   ExpressionParser.evaluate(this.coordinateSyntaxTrees.x, this.varMap),
+    //   ExpressionParser.evaluate(this.coordinateSyntaxTrees.y, this.varMap),
+    //   ExpressionParser.evaluate(this.coordinateSyntaxTrees.z, this.varMap)
+    // );
   }
 
-  // public PPrime(t: number): Vector3 {
-  //   // first update the map with the current value of
-  //   this._seParentExpressions.forEach((m: SEExpression) => {
-  //     const measurementName = m.name;
-  //     // console.debug("Measurement", m, measurementName);
-  //     this.varMap.set(measurementName, m.value);
-  //   });
-  //   //add the current t value
-  //   this.varMap.set("t", t);
-  //   // console.log("t val in pprime", t);
-  //   return this.parameterizationPrime.set(
-  //     ExpressionParser.evaluate(this.primeCoordinateSyntaxTrees.x, this.varMap),
-  //     ExpressionParser.evaluate(this.primeCoordinateSyntaxTrees.y, this.varMap),
-  //     ExpressionParser.evaluate(this.primeCoordinateSyntaxTrees.z, this.varMap)
-  //   );
-  // }
+  /**
+   * The parameterization of the derivative of the curve
+   * Note: This is *not* a unit parameterization
+   * @param t the parameter
+   */
+  public PPrime(t: number): Vector3 {
+    return this.lookupFunctionValueAt(t, this._pPrimeValues);
+  }
 
   /**
    * The parameterization of the derivative of the curve
@@ -524,29 +523,7 @@ export default class Parametric extends Nodule {
    * @param t the parameter
    */
   public PPPrime(t: number): Vector3 {
-    // first update the map with the current value of
-    this._seParentExpressions.forEach((m: SEExpression) => {
-      const measurementName = m.name;
-      // console.debug("Measurement", m, measurementName);
-      this.varMap.set(measurementName, m.value);
-    });
-    //add the current t value
-    this.varMap.set("t", t);
-
-    return this.parameterizationPrimeX2.set(
-      ExpressionParser.evaluate(
-        this.primeX2CoordinateSyntaxTrees.x,
-        this.varMap
-      ),
-      ExpressionParser.evaluate(
-        this.primeX2CoordinateSyntaxTrees.y,
-        this.varMap
-      ),
-      ExpressionParser.evaluate(
-        this.primeX2CoordinateSyntaxTrees.z,
-        this.varMap
-      )
-    );
+    return this.lookupFunctionValueAt(t, this._ppPrimeValues);
   }
 
   evaluateFunctionAndCache(
