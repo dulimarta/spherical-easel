@@ -1,6 +1,6 @@
 /** @format */
 
-import { Vector3, Vector2, Matrix4 } from "three";
+import { Vector3, Matrix4 } from "three";
 import Two from "two.js";
 import SETTINGS, { LAYER } from "@/global-settings";
 import Nodule, { DisplayStyle } from "./Nodule";
@@ -12,10 +12,7 @@ import {
 } from "@/types/Styles";
 import AppStore from "@/store";
 import { SENodule } from "@/models/SENodule";
-import { namespace } from "vuex-class";
 import {
-  AppState,
-  UpdateMode,
   CoordExpression,
   MinMaxExpression,
   MinMaxNumber,
@@ -103,6 +100,7 @@ export default class Parametric extends Nodule {
    */
   private _initialArcLength: number;
   private _arcLengthValues: Array<number> = [];
+  private _pprimeValues: Array<Vector3> = [];
 
   /**
    * Vuex global state
@@ -173,6 +171,7 @@ export default class Parametric extends Nodule {
     this._coordinateExpressions.y = coordinateExpressions.y;
     this._coordinateExpressions.z = coordinateExpressions.z;
 
+    // F(t)
     this.coordinateSyntaxTrees.x = ExpressionParser.parse(
       coordinateExpressions.x
     );
@@ -183,6 +182,7 @@ export default class Parametric extends Nodule {
       coordinateExpressions.z
     );
 
+    // F'(t)
     this.primeCoordinateSyntaxTrees.x = ExpressionParser.differentiate(
       this.coordinateSyntaxTrees.x,
       "t"
@@ -196,6 +196,7 @@ export default class Parametric extends Nodule {
       "t"
     );
 
+    // F''(t)
     this.primeX2CoordinateSyntaxTrees.x = ExpressionParser.differentiate(
       this.primeCoordinateSyntaxTrees.x,
       "t"
@@ -219,6 +220,13 @@ export default class Parametric extends Nodule {
     this._tNumbers.max = tNumbers.max;
 
     this._seParentExpressions.push(...measurementParents);
+    this.evaluateFunctionAndCache(
+      this.primeCoordinateSyntaxTrees,
+      tNumbers.min,
+      tNumbers.max,
+      this._pprimeValues,
+      measurementParents
+    );
 
     this._closed = closed;
 
@@ -467,21 +475,48 @@ export default class Parametric extends Nodule {
    * @param t the parameter
    */
   public PPrime(t: number): Vector3 {
-    // first update the map with the current value of
-    this._seParentExpressions.forEach((m: SEExpression) => {
-      const measurementName = m.name;
-      // console.debug("Measurement", m, measurementName);
-      this.varMap.set(measurementName, m.value);
-    });
-    //add the current t value
-    this.varMap.set("t", t);
-    // console.log("t val in pprime", t);
-    return this.parameterizationPrime.set(
-      ExpressionParser.evaluate(this.primeCoordinateSyntaxTrees.x, this.varMap),
-      ExpressionParser.evaluate(this.primeCoordinateSyntaxTrees.y, this.varMap),
-      ExpressionParser.evaluate(this.primeCoordinateSyntaxTrees.z, this.varMap)
-    );
+    const N = this._pprimeValues.length;
+    if (N > 0) {
+      const range = this.tNumbers.max - this.tNumbers.min;
+      // Convert t in [tMin, tMax] to s in [0,1]
+      const s = (t - this.tNumbers.min) / range;
+      const idealIndex = s * N; // Where ideal location in the array
+      const sIndex = Math.floor(idealIndex); // the discretized location in the array
+      if (sIndex < N - 1) {
+        /* Use linear interpolation of two neighboring values in the array */
+        const fraction = idealIndex - sIndex; // the amount of deviation from the ideal location
+        this.parameterizationPrime.set(0, 0, 0);
+
+        // compute weighted average (1-f)*arr[k] + f*arr[k+1]
+        this.parameterizationPrime.addScaledVector(
+          this._pprimeValues[sIndex],
+          1 - fraction
+        );
+        this.parameterizationPrime.addScaledVector(
+          this._pprimeValues[sIndex + 1],
+          fraction
+        );
+        return this.parameterizationPrime;
+      } else return this._pprimeValues[N - 1];
+    } else throw new Error(`Attempt to evaluate PPrime at t=${t}`);
   }
+
+  // public PPrime(t: number): Vector3 {
+  //   // first update the map with the current value of
+  //   this._seParentExpressions.forEach((m: SEExpression) => {
+  //     const measurementName = m.name;
+  //     // console.debug("Measurement", m, measurementName);
+  //     this.varMap.set(measurementName, m.value);
+  //   });
+  //   //add the current t value
+  //   this.varMap.set("t", t);
+  //   // console.log("t val in pprime", t);
+  //   return this.parameterizationPrime.set(
+  //     ExpressionParser.evaluate(this.primeCoordinateSyntaxTrees.x, this.varMap),
+  //     ExpressionParser.evaluate(this.primeCoordinateSyntaxTrees.y, this.varMap),
+  //     ExpressionParser.evaluate(this.primeCoordinateSyntaxTrees.z, this.varMap)
+  //   );
+  // }
 
   /**
    * The parameterization of the derivative of the curve
@@ -512,6 +547,33 @@ export default class Parametric extends Nodule {
         this.varMap
       )
     );
+  }
+
+  evaluateFunctionAndCache(
+    fn: CoordinateSyntaxTrees,
+    tMin: number,
+    tMax: number,
+    cache: Array<Vector3>,
+    depVars: Array<SEExpression>
+  ): void {
+    const N = SETTINGS.parameterization.subdivisions * 4;
+    const RANGE = tMax - tMin;
+    const varMap: Map<string, number> = new Map();
+    depVars.forEach((m: SEExpression) => {
+      varMap.set(m.name, m.value);
+    });
+
+    let vecValue: Vector3;
+    for (let i = 0; i < N; i++) {
+      const tValue = tMin + (i * RANGE) / (N - 1);
+      varMap.set("t", tValue);
+      vecValue = new Vector3(
+        ExpressionParser.evaluate(fn.x, varMap),
+        ExpressionParser.evaluate(fn.y, varMap),
+        ExpressionParser.evaluate(fn.z, varMap)
+      );
+      cache.push(vecValue);
+    }
   }
 
   /**
