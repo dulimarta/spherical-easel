@@ -21,6 +21,7 @@ import { AddParametricCommand } from "./AddParametricCommand";
 import { AddParametricEndPointsCommand } from "./AddParametricEndPointsCommand";
 import { AddAngleMarkerCommand } from "./AddAngleMarkerAndExpressionCommand";
 import { AddPolygonCommand } from "./AddPolygonAndExpressionCommand";
+import { AddTangentLineThruPointCommand } from "./AddTangentLineThruPointCommand";
 const noduleDictionary = new Map<string, SENodule>();
 
 function executeIndividual(command: string): Command {
@@ -61,6 +62,8 @@ function executeIndividual(command: string): Command {
         command,
         noduleDictionary
       );
+    case "AddTangentLineThruPoint":
+      return AddTangentLineThruPointCommand.parse(command, noduleDictionary);
     case "AddAngleMarker":
       return AddAngleMarkerCommand.parse(command, noduleDictionary);
     case "AddPolygon":
@@ -74,7 +77,6 @@ function executeIndividual(command: string): Command {
       );
     case "AddLengthMeasurement":
       return AddLengthMeasurementCommand.parse(command, noduleDictionary);
-
     case "AddCalculation":
       return AddCalculationCommand.parse(command, noduleDictionary);
     case "AddParametric":

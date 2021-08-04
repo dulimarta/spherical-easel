@@ -116,7 +116,7 @@ export class AddPolygonCommand extends Command {
     if (seAngleMarkerParents.every(angMark => angMark?.exists)) {
       if (seSegments.every(seg => seg?.exists)) {
         const polygon = new Polygon(
-          seSegments.map(seg => seg as SESegment).map(seg => seg.ref),
+          seSegments.map(seg => seg as SESegment),
           segmentIsFlipped.map(bool => bool as boolean)
         );
         // Set the display to the default values

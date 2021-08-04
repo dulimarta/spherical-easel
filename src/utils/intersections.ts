@@ -9,6 +9,8 @@ import SETTINGS from "@/global-settings";
 import { SEParametric } from "@/models/SEParametric";
 import { SEStore } from "@/store";
 import Parametric from "@/plottables/Parametric";
+import { SETangentLineThruPoint } from "@/models/SETangentLineThruPoint";
+import { SEPointOnOneOrTwoDimensional } from "@/models/SEPointOnOneOrTwoDimensional";
 
 // const PIXEL_CLOSE_ENOUGH = 8;
 
@@ -153,6 +155,41 @@ export function intersectLineWithCircle(
   circle: SECircle
   // layer: Two.Group
 ): IntersectionReturnType[] {
+  if (
+    line instanceof SETangentLineThruPoint &&
+    line.seParentOneDimensional.name === circle.name
+  ) {
+    if (
+      line.seParentPoint instanceof SEPointOnOneOrTwoDimensional &&
+      line.seParentPoint.parentOneDimensional.name === circle.name
+    ) {
+      return []; // in this case the point on the line of tangency is on the one dimensional non-straight object, that is, the point of tangency is the intersection, which already exists so doesn't need to be returned here
+    } else {
+      // in this case the point on the line of tangency is not on the one dimensional non-straight, so the intersection between this line and this circle is a single point
+      const tmpVector = new Vector3();
+      tmpVector.crossVectors(
+        line.normalVector,
+        circle.centerSEPoint.locationVector
+      ); // this is a vector on the line, Pi/2 from the intersection point
+      tmpVector.cross(line.normalVector); // This is either the intersection point or the antipode of the intersection
+      // make sure this points in the correct direction
+      if (
+        (tmpVector.dot(circle.centerSEPoint.locationVector) > 0 &&
+          circle.circleRadius <= Math.PI / 2) ||
+        (tmpVector.dot(circle.centerSEPoint.locationVector) < 0 &&
+          circle.circleRadius > Math.PI / 2)
+      ) {
+        return [{ vector: tmpVector, exists: true }];
+      } else if (
+        (tmpVector.dot(circle.centerSEPoint.locationVector) < 0 &&
+          circle.circleRadius <= Math.PI / 2) ||
+        (tmpVector.dot(circle.centerSEPoint.locationVector) > 0 &&
+          circle.circleRadius > Math.PI / 2)
+      ) {
+        return [{ vector: tmpVector.multiplyScalar(-1), exists: true }];
+      }
+    }
+  }
   // Use the circle circle intersection
   return intersectCircles(
     line.normalVector,
@@ -172,6 +209,72 @@ export function intersectLineWithEllipse(
   ellipse: SEEllipse
   // layer: Two.Group
 ): IntersectionReturnType[] {
+  if (
+    line instanceof SETangentLineThruPoint &&
+    line.seParentOneDimensional.name === ellipse.name
+  ) {
+    if (
+      line.seParentPoint instanceof SEPointOnOneOrTwoDimensional &&
+      line.seParentPoint.parentOneDimensional.name === ellipse.name
+    ) {
+      return []; // in this case the point on the line of tangency is on the one dimensional non-straight object, that is, the point of tangency is the intersection, which already exists so doesn't need to be returned here
+    } else {
+      // in this case the point on the line of tangency is not on the one dimensional non-straight, so the intersection between this line and this circle is a single point
+      // find the point on the ellipse that is closest to the line, that is the point of tangency
+      // The cosine of the angle between the normal (to the plane) and a point E(t) is E(t).dot(n) <-- this is the function we want to find the minimum of
+      const tmpVector = new Vector3();
+      tmpVector.copy(line.normalVector);
+
+      // Transform the normal into the standard coordinates of the ellipse.
+      tmpVector.applyMatrix4(tmpMatrix.getInverse(ellipse.ref.ellipseFrame));
+
+      if (tmpVector.dot(ellipse.ref.E(1.2312)) < 0) {
+        // 1.2312 is a totally random number, it should not matter!
+        tmpVector.multiplyScalar(-1);
+      }
+      // First form the objective function, this is the function whose minimum we want to find.
+      const d: (t: number) => number = function(t: number): number {
+        return ellipse.ref.E(t).dot(tmpVector);
+      };
+
+      // The derivative of d(t) is zero at a minimum or max, so we want to find the zeros of d'(t)
+
+      const dp: (t: number) => number = function(t: number): number {
+        return ellipse.ref.Ep(t).dot(tmpVector);
+      };
+
+      // use (P''(t) /dot unitVec) as the second derivative
+
+      const dpp = function(t: number): number {
+        return ellipse.ref.Epp(t).dot(tmpVector);
+      };
+
+      const zeros = SENodule.findZerosParametrically(
+        dp,
+        ellipse.ref.tMin,
+        ellipse.ref.tMax,
+        [],
+        dpp
+      );
+
+      // The zeros of dp are either minimums or maximums (or neither, but this is very unlikely so we assume it doesn't happen)
+      let minTVal: number = zeros[0]; // The t value that minimizes d
+      zeros.forEach(tVal => {
+        if (d(tVal) < d(minTVal)) {
+          minTVal = tVal;
+        }
+      });
+      tmpVector.copy(
+        ellipse.ref.E(minTVal).applyMatrix4(ellipse.ref.ellipseFrame)
+      );
+      return [
+        {
+          vector: tmpVector,
+          exists: true
+        }
+      ];
+    }
+  }
   // Transform the line into the standard coordinates of the ellipse.
   const transformedToStandard = new Vector3();
   transformedToStandard.copy(line.normalVector);
@@ -208,9 +311,11 @@ export function intersectLineWithEllipse(
   returnItems.push(intersection2);
   // console.log("Line Ellipse Inter", zeros);
   zeros.forEach((z, ind) => {
-    if (ind > 2) {
+    // console.log("ind", ind);
+    if (ind > 1) {
       console.debug(
-        "Ellips and Line Intersection resulted in more than 2 points."
+        "Ellipse and Line Intersection resulted in more than 2 points.",
+        zeros
       );
     } else {
       returnItems[ind].vector.copy(
@@ -233,6 +338,97 @@ export function intersectLineWithParametric(
   parametric: SEParametric
   // layer: Two.Group
 ): IntersectionReturnType[] {
+  const returnItems: IntersectionReturnType[] = [];
+  const avoidTValues: number[] = [];
+  // find the tracing tMin and tMax
+  const [
+    tracingTMin,
+    tracingTMax
+  ] = parametric.ref.tMinMaxExpressionValues() ?? [
+    parametric.ref.tNumbers.min,
+    parametric.ref.tNumbers.max
+  ];
+
+  if (
+    line instanceof SETangentLineThruPoint &&
+    line.seParentOneDimensional.name === parametric.name
+  ) {
+    // console.log("1 intersection index ", line.index);
+    if (
+      !(line.seParentPoint instanceof SEPointOnOneOrTwoDimensional) ||
+      !(line.seParentPoint.parentOneDimensional.name === parametric.name)
+      // there can be multiple tangent through the point and only one (with index 0) is locally tangent at the SEPointOnOneOrTwoDimensional
+    ) {
+      // console.log("2 intersection index", line.index);
+      // in this case the point on the line of tangency is not on the one dimensional non-straight, so the intersection between this line and this circle is a single point
+      // find the point on the parametric that is closest to the line, that is the point of tangency
+      // The cosine of the angle between the normal (to the plane) and a point E(t) is E(t).dot(n) <-- this is the function we want to find the minimum of
+      // We know that E(t) is totally on one side of the plane, so to make this problem a minimum pick a point on Ellipse and check the dot product
+      const tmpVector = new Vector3();
+      tmpVector.copy(line.normalVector);
+
+      // Transform the normal into the standard coordinates of the parametric.
+      tmpVector.applyMatrix4(
+        tmpMatrix.getInverse(SEStore.inverseTotalRotationMatrix)
+      );
+      // First form the objective function, this is the function whose minimum we want to find.
+      const d: (t: number) => number = function(t: number): number {
+        return parametric.ref.P(t).dot(tmpVector);
+      };
+
+      // The derivative of d(t) is zero at a minimum or max, so we want to find the zeros of d'(t)
+      const dp: (t: number) => number = function(t: number): number {
+        return parametric.ref.PPrime(t).dot(tmpVector);
+      };
+
+      // use (P''(t) /dot unitVec) as the second derivative
+      const dpp = function(t: number): number {
+        return parametric.ref.PPPrime(t).dot(tmpVector);
+      };
+
+      const zeros = SENodule.findZerosParametrically(
+        dp,
+        parametric.ref.tNumbers.min,
+        parametric.ref.tNumbers.max,
+        [],
+        dpp
+      );
+
+      // The zeros of dp are either minimums or maximums (or neither, but this is very unlikely so we assume it doesn't happen)
+      // there are potentially lots of extremes, but we are interested in any point where the parametric is *locally* on one side of the
+      // the plane of the line and so the value of d is near zero
+
+      const minTVal: number[] = []; // The t values that make d nearly zero
+      zeros.forEach(tVal => {
+        if (
+          Math.abs(d(tVal)) < SETTINGS.tolerance &&
+          // d(tVal) < d(minTVal) &&
+          tracingTMin <= tVal &&
+          tVal <= tracingTMax
+        ) {
+          minTVal.push(tVal);
+        }
+      });
+
+      minTVal.forEach(min => {
+        const returnVec = new Vector3();
+        returnVec.copy(
+          parametric.ref
+            .P(min)
+            .applyMatrix4(
+              tmpMatrix.getInverse(SEStore.inverseTotalRotationMatrix)
+            )
+        );
+        avoidTValues.push(min);
+        returnItems.push({
+          vector: returnVec,
+          exists: true
+        });
+      });
+    }
+  }
+  // now compute the other intersections that are not near the point of tangency
+
   // Transform the line into the standard coordinates of the parametric.
   const transformedToStandard = new Vector3();
   transformedToStandard.copy(line.normalVector);
@@ -246,26 +442,17 @@ export function intersectLineWithParametric(
   const dp = function(t: number): number {
     return parametric.ref.PPrime(t).dot(transformedToStandard);
   };
-  // find the tracing tMin and tMax
-  const [
-    tracingTMin,
-    tracingTMax
-  ] = parametric.ref.tMinMaxExpressionValues() ?? [
-    parametric.ref.tNumbers.min,
-    parametric.ref.tNumbers.max
-  ];
 
   const zeros = SENodule.findZerosParametrically(
     d,
     parametric.ref.tNumbers.min,
     parametric.ref.tNumbers.max,
-    [],
+    avoidTValues,
     dp
   );
 
   const maxNumberOfIntersections = 2 * parametric.ref.numberOfParts;
 
-  const returnItems: IntersectionReturnType[] = [];
   for (let i = 0; i < maxNumberOfIntersections; i++) {
     const intersection: IntersectionReturnType = {
       vector: new Vector3(),

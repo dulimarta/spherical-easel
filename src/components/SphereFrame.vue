@@ -36,6 +36,7 @@ import CoordinateHandler from "@/eventHandlers/PointCoordinateHandler";
 import SliderHandler from "@/eventHandlers/SliderHandler";
 import ToggleLabelDisplayHandler from "@/eventHandlers/ToggleLabelDisplayHandler";
 import PerpendicularLineThruPointHandler from "@/eventHandlers/PerpendicularLineThruPointHandler";
+import TangentLineThruPointHandler from "@/eventHandlers/TangentLineThruPointHandler";
 import IconFactoryHandler from "@/eventHandlers/IconFactoryHandler";
 import EllipseHandler from "@/eventHandlers/EllipseHandler";
 import PolygonHandler from "@/eventHandlers/PolygonHandler";
@@ -113,6 +114,7 @@ export default class SphereFrame extends VueComponent {
   private sliderTool!: SliderHandler;
   private toggleLabelDisplayTool!: ToggleLabelDisplayHandler;
   private perpendicularLineThruPointTool!: PerpendicularLineThruPointHandler;
+  private tangentLineThruPointTool!: TangentLineThruPointHandler;
   private iconFactoryTool!: IconFactoryHandler;
   private measureTriangleTool!: PolygonHandler;
   private measurePolygonTool!: PolygonHandler;
@@ -263,6 +265,9 @@ export default class SphereFrame extends VueComponent {
     this.sliderTool = new SliderHandler(this.layers);
     this.toggleLabelDisplayTool = new ToggleLabelDisplayHandler(this.layers);
     this.perpendicularLineThruPointTool = new PerpendicularLineThruPointHandler(
+      this.layers
+    );
+    this.tangentLineThruPointTool = new TangentLineThruPointHandler(
       this.layers
     );
     this.measureTriangleTool = new PolygonHandler(this.layers, true);
@@ -679,6 +684,9 @@ export default class SphereFrame extends VueComponent {
         break;
       case "perpendicular":
         this.currentTool = this.perpendicularLineThruPointTool;
+        break;
+      case "tangent":
+        this.currentTool = this.tangentLineThruPointTool;
         break;
       case "measureTriangle":
         this.currentTool = this.measureTriangleTool;

@@ -2,7 +2,7 @@ import { ValueDisplayMode, LabelDisplayMode } from "./types";
 
 export const SETTINGS = {
   nearlyAntipodalIdeal: 0.005, // Two unit vectors, U and V, are nearly antipodal or nearly parallel (the) if crossVectors(U,V).isZero(nearlyAntipodalIdeal) is true
-  tolerance: 0.000000001, // Any number less that this tolerance is considered zero
+  tolerance: 0.00000000001, // Any number less that this tolerance is considered zero
   hideObjectHidesLabel: true, // hiding an object hide the label of that object automatically if this is true
   showObjectShowsLabel: false, // showing an object (via the object tree) automatically shows the label if this is true
   decimalPrecision: 3, // The number decimal places to display when numerically measuring or computing a value
@@ -357,7 +357,7 @@ export const SETTINGS = {
     maxLabelDistance: 0.08, // The maximum distance that a label is allowed to get away from the ellipse
     initialLabelOffset: 0.02, // When making point labels this is initially how far (roughly) they are from the ellipse
     defaultLabelMode: LabelDisplayMode.NameOnly, // The default way of displaying this objects label
-    minimumAngleSumDifference: 0.0001, // Don't create ellipses (and ellipse don't exist) when an angle sum to the foci minus the angle between the foci is smaller than this
+    minimumAngleSumDifference: 0.01, // Don't create ellipses (and ellipse don't exist) when an angle sum to the foci minus the angle between the foci is smaller than this
     minimumCreationDistance: 0.025, // Don't create an ellipse point unless it is more than this distance away from each focus.
     numPoints: 100, // Twice this number are used to draw the edge of the ellipse and 4 times this many are used to to draw the fill of the ellipse. These are spread over the front and back parts. MAKE THIS EVEN!
     hitIdealDistance: 0.03, // The user has to be within this distance on the ideal unit sphere to select the ellipse.

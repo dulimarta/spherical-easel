@@ -14,6 +14,7 @@ import { UpdateMode, UpdateStateType, CircleState } from "@/types";
 import { Labelable } from "@/types";
 import { SELabel } from "@/models/SELabel";
 import { SEStore } from "@/store";
+import { intersectCircles } from "@/utils/intersections";
 import i18n from "@/i18n";
 
 const styleSet = new Set([
@@ -227,7 +228,7 @@ export class SECircle extends SENodule
    * use the oldNormal to help compute a new normal (which is returned)
    * @param sePoint A point on the line normal to this circle
    */
-  public getNormalsToLineThru(
+  public getNormalsToPerpendicularLinesThru(
     sePointVector: Vector3,
     oldNormal: Vector3
   ): Vector3[] {
@@ -246,6 +247,85 @@ export class SECircle extends SENodule
         .addScaledVector(sePointVector, -1 * oldNormal.dot(sePointVector));
     }
     return [this.tmpVector.normalize()];
+  }
+
+  /**
+   * Return the normal vectors to the planes containing the lines that is tangent to this circle through the
+   * sePointVector, in the case that the usual way of defining this line is not well defined  (something is parallel),
+   * use the oldNormal to help compute a new normal (which is returned)
+   * @param sePointVector A point on the line tangent to this circle
+   */
+  public getNormalsToTangentLinesThru(
+    sePointVector: Vector3,
+    useFullTInterval?: boolean // only used in the constructor when figuring out the maximum number of Tangents to a SEParametric
+  ): Vector3[] {
+    const distanceFromCenterToVector = sePointVector.angleTo(
+      this._centerSEPoint.locationVector
+    );
+
+    // console.log(
+    //   "SECircle here 0",
+    //   Math.abs(distanceFromCenterToVector - this.circleRadius)
+    // );
+    // If the vector is on the circle or its antipode then there is one tangent
+    if (
+      Math.abs(distanceFromCenterToVector - this.circleRadius) <
+        0.005 / SEStore.zoomMagnificationFactor ||
+      Math.abs(distanceFromCenterToVector + this.circleRadius - Math.PI) <
+        0.005 / SEStore.zoomMagnificationFactor
+    ) {
+      // tmpVector is not zero because we know that the center and sePointVector are not the same or antipodal
+      const tmpVector = new Vector3();
+      tmpVector.crossVectors(sePointVector, this._centerSEPoint.locationVector);
+      tmpVector.cross(sePointVector);
+      // console.log("SECircle here 1", tmpVector.x, tmpVector.y, tmpVector.z);
+      return [tmpVector.normalize()];
+    }
+
+    // If the vector is inside the circle or the antipode of the circle there is no tangent or if the circle has radius PI/2
+    if (
+      Math.abs(this.circleRadius - Math.PI / 2) < SETTINGS.tolerance ||
+      (this.circleRadius < Math.PI / 2 &&
+        (distanceFromCenterToVector < this.circleRadius ||
+          distanceFromCenterToVector > Math.PI - this.circleRadius)) ||
+      (this.circleRadius > Math.PI / 2 &&
+        (distanceFromCenterToVector < Math.PI - this.circleRadius ||
+          distanceFromCenterToVector > this.circleRadius))
+    ) {
+      return [];
+    }
+
+    // The vector is not on or in the circle or its antipode, there are two tangents. Use the intersectCircles routine
+    let secondRadius; // this is the radius of the circle about sePointVector that intersects this circle at the points of tangency
+    if (this.circleRadius < Math.PI) {
+      // use the spherical pythagorean theorem
+      secondRadius = Math.acos(
+        Math.cos(distanceFromCenterToVector) / Math.cos(this.circleRadius)
+      );
+    } else {
+      secondRadius = Math.acos(
+        Math.cos(distanceFromCenterToVector) /
+          Math.cos(Math.PI - this.circleRadius)
+      );
+    }
+    const intersections = intersectCircles(
+      this._centerSEPoint.locationVector,
+      this.circleRadius,
+      sePointVector,
+      secondRadius
+    );
+    this.tmpVector.crossVectors(
+      intersections[0].vector,
+      this._centerSEPoint.locationVector
+    );
+    this.tmpVector1.crossVectors(
+      intersections[1].vector,
+      this._centerSEPoint.locationVector
+    );
+    return [
+      this.tmpVector.cross(intersections[0].vector).normalize(),
+      this.tmpVector1.cross(intersections[1].vector).normalize()
+    ];
   }
 
   /**

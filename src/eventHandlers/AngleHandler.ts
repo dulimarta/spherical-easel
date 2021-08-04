@@ -147,6 +147,7 @@ export default class AngleHandler extends Highlighter {
           .crossVectors(candidate, this.pointLocations[0])
           .isZero(SETTINGS.nearlyAntipodalIdeal)
       ) {
+        console.log("here 1", this.pointLocations.length);
         EventBus.fire("show-alert", {
           key: `handlers.antipodalPointMessage`,
           keyOptions: {},
@@ -160,6 +161,7 @@ export default class AngleHandler extends Highlighter {
           .crossVectors(candidate, this.pointLocations[1])
           .isZero(SETTINGS.nearlyAntipodalIdeal)
       ) {
+        console.log("here 2", this.pointLocations.length);
         EventBus.fire("show-alert", {
           key: `handlers.antipodalPointMessage2`,
           keyOptions: {},
@@ -383,7 +385,9 @@ export default class AngleHandler extends Highlighter {
           // this.targetPoints/sePointOneDimensionalParent/pointLocations are equal (and equal to 1 or 2)
           if (this.hitSEPoints.length > 0) {
             // The user continued to add more points to make the angle
+            console.log("here 2.5", this.pointLocations.length);
             if (this.allowPointLocation(this.hitSEPoints[0].locationVector)) {
+              console.log("here 3", this.pointLocations.length);
               this.targetPoints.push(this.hitSEPoints[0]);
               this.sePointOneDimensionalParents.push(null);
               if (this.targetPoints.length == 2) {
@@ -513,8 +517,7 @@ export default class AngleHandler extends Highlighter {
                 );
               }
             }
-          }
-          if (this.hitSEPolygons.length > 0) {
+          } else if (this.hitSEPolygons.length > 0) {
             // the user wants to create a point on a parametric to make an angle
             this.tmpVector.copy(
               this.hitSEPolygons[0].closestVector(this.currentSphereVector)
@@ -869,11 +872,11 @@ export default class AngleHandler extends Highlighter {
       }
     });
     //clear the arrays and prepare for the next angle
-    this.targetPoints.clear();
-    this.targetLines.clear();
-    this.targetSegments.clear();
-    this.pointLocations.clear();
-    this.sePointOneDimensionalParents.clear();
+    this.targetPoints.splice(0);
+    this.targetLines.splice(0);
+    this.targetSegments.splice(0);
+    this.pointLocations.splice(0);
+    this.sePointOneDimensionalParents.splice(0);
     this.makingAnAngleMarker = false;
     this.angleMode = AngleMode.NONE;
     // Remove temporary objects

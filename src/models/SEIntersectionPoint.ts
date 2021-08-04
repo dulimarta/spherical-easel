@@ -130,9 +130,12 @@ export class SEIntersectionPoint extends SEPoint {
         this.seParent1,
         this.seParent2
       );
-
-      this._exists = updatedIntersectionInfo[this.order].exists;
-      this.locationVector = updatedIntersectionInfo[this.order].vector; // Calls the setter of SEPoint which calls the setter of Point which updates the display
+      if (updatedIntersectionInfo[this.order] !== undefined) {
+        this._exists = updatedIntersectionInfo[this.order].exists;
+        this.locationVector = updatedIntersectionInfo[this.order].vector; // Calls the setter of SEPoint which calls the setter of Point which updates the display
+      } else {
+        this._exists = false;
+      }
     }
     // if (this._isUserCreated) {
     //   console.log("update intersection pt", this.locationVector.x);

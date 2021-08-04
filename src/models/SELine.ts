@@ -188,7 +188,7 @@ export class SELine extends SENodule
    * use the oldNormal to help compute a new normal (which is returned)
    * @param sePoint A point on the line normal to this circle
    */
-  public getNormalsToLineThru(
+  public getNormalsToPerpendicularLinesThru(
     sePointVector: Vector3,
     oldNormal: Vector3
   ): Vector3[] {
@@ -209,7 +209,7 @@ export class SELine extends SENodule
 
       // if (oldNormal.angleTo(this.tmpVector3) > 0.01) {
       // console.log(
-      //   "change in normal vector in getNormalsToLineThru",
+      //   "change in normal vector in getNormalsToPerpendicularLinesThru",
       //   oldNormal.angleTo(this.tmpVector3)
       // );
       // }

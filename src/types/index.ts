@@ -1,6 +1,6 @@
 // Declaration of all internal data types
 
-import Two, { Polygon } from "two.js";
+import Two from "two.js";
 import { SEPoint } from "@/models/SEPoint";
 import { SELabel } from "@/models/SELabel";
 import { SELine } from "@/models/SELine";
@@ -18,6 +18,7 @@ import { SEEllipse } from "@/models/SEEllipse";
 import { SEParametric } from "@/models/SEParametric";
 import { SyntaxTree } from "@/expression/ExpressionParser";
 import { SEPolygon } from "@/models/SEPolygon";
+import { SETangentLineThruPoint } from "@/models/SETangentLineThruPoint";
 
 export interface Selectable {
   hit(x: number, y: number, coord: unknown, who: unknown): boolean;
@@ -86,6 +87,7 @@ export type ActionMode =
   | "line"
   | "move"
   | "perpendicular"
+  | "tangent"
   | "point"
   | "pointDistance"
   | "pointOnOneDim"
@@ -117,6 +119,14 @@ export interface SEIntersectionReturnType {
   parent1: SEOneDimensional;
   parent2: SEOneDimensional;
 }
+
+/**
+ * For a parametric equation P(t), this is the pair P(t), t
+ */
+export type parametricVectorAndTValue = {
+  vector: Vector3;
+  tVal: number;
+};
 
 export interface OneDimensional {
   /**
@@ -218,6 +228,8 @@ export type SEOneDimensional =
   | SEEllipse
   | SEParametric;
 
+export type SEOneDimensionalNotStraight = SECircle | SEEllipse | SEParametric;
+
 export type hslaColorType = {
   h: number;
   s: number;
@@ -268,6 +280,7 @@ export type ObjectState =
   | LabelState
   | AngleMarkerState
   | PerpendicularLineThruPointState
+  | TangentLineThruPointState
   | ExpressionState
   | ParametricState
   | PolygonState;
@@ -290,6 +303,17 @@ export function isPerpendicularLineThruPointState(
   entry: ObjectState
 ): entry is PerpendicularLineThruPointState {
   return entry.kind === "perpendicularLineThruPoint";
+}
+
+export interface TangentLineThruPointState {
+  kind: "tangentLineThruPoint";
+  object: SETangentLineThruPoint;
+}
+
+export function isTangentLineThruPointState(
+  entry: ObjectState
+): entry is TangentLineThruPointState {
+  return entry.kind === "tangentLineThruPoint";
 }
 
 export interface AngleMarkerState {

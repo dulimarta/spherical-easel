@@ -84,6 +84,17 @@ const vuetify = new Vuetify({
           ]
         }
       },
+      tangent: {
+        component: IconBase,
+        props: {
+          iconName: "Tangent",
+          iconFile: "/icons/iconTangentPaths.svg",
+          emphasizeTypes: [
+            ["point", "front"],
+            ["line", "front", "back"]
+          ]
+        }
+      },
       intersection: {
         component: IconBase,
         props: {

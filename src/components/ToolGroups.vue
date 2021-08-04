@@ -408,6 +408,16 @@ export default class ToolGroups extends Vue {
       toolGroup: "construction"
     },
     {
+      id: 25,
+      actionModeValue: "tangent",
+      displayedName: "CreateTangentDisplayedName",
+      icon: "$vuetify.icons.value.tangent",
+      toolTipMessage: "CreateTangentToolTipMessage",
+      toolUseMessage: "CreateTangentToolUseMessage",
+      displayToolUseMessage: false,
+      toolGroup: "construction"
+    },
+    {
       id: 30,
       actionModeValue: "perpendicular",
       displayedName: "CreatePerpendicularDisplayedName",

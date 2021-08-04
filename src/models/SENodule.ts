@@ -1,6 +1,6 @@
-import { Vector3 } from "three";
+import { UnsignedShort4444Type, Vector3 } from "three";
 import Nodule from "@/plottables/Nodule";
-import { UpdateStateType } from "@/types";
+import { parametricVectorAndTValue, UpdateStateType } from "@/types";
 import newton from "newton-raphson-method";
 import SETTINGS from "@/global-settings";
 import { colors } from "vuetify/lib";
@@ -47,6 +47,12 @@ export abstract class SENodule {
    * A pointer to the corresponding plottable object
    */
   public ref?: Nodule;
+
+  /**
+   * temporary vectors to help with finding tangents
+   */
+  private tmpVec1 = new Vector3();
+  private tmpVec2 = new Vector3();
 
   /* A unique identification number and name for each node */
   public id: number;
@@ -369,7 +375,7 @@ export abstract class SENodule {
     tMin: number,
     tMax: number,
     PPPrime?: (t: number) => Vector3
-  ): Vector3 {
+  ): parametricVectorAndTValue {
     // First form the objective function, this is the function whose minimum we want to find.
     // The (angular) distance from P(t) to unitVec is d(t) = acos(P(t) /dot unitVec) because P(t) and unitVec are both unit
     const d: (t: number) => number = function(t: number): number {
@@ -402,7 +408,12 @@ export abstract class SENodule {
         minTVal = tVal;
       }
     });
-    return P(minTVal);
+    const returnPair: parametricVectorAndTValue = {
+      vector: P(minTVal),
+      tVal: minTVal
+    };
+
+    return returnPair;
   }
 
   /**
@@ -446,7 +457,7 @@ export abstract class SENodule {
    * @param closed if true, implies P(tMin)=P(tMax)
    * @param periodic if true, implies P(t) = P(t + (tMax-tMin)) for all t
    */
-  protected static getNormalsToLineThruParametrically(
+  protected static getNormalsToPerpendicularLinesThruParametrically(
     // P: (t: number) => Vector3,
     PPrime: (t: number) => Vector3,
     unitVec: Vector3,
@@ -523,6 +534,62 @@ export abstract class SENodule {
     return returnVectors;
   }
 
+  /**
+   * Find all the unit normal vector lines that are perpendicular to the curve P(t) where tMin<= t <= tMax using subdivisions and Newton's method that
+   * pass though unitVec
+   * @param PPPrime P''(t) is the parameterization of second derivative of P(t) (NOT NECESSARILY UNIT)
+   * @param PPrime P'(t) is the parameterization of the derivative of P(t) (NOT NECESSARILY UNIT)
+   * @param unitVec a unit vector
+   * @param tMin
+   * @param tMax
+   */
+  protected static getNormalsToTangentLinesThruParametrically(
+    P: (t: number) => Vector3,
+    PPrime: (t: number) => Vector3,
+    unitVec: Vector3,
+    tMin: number,
+    tMax: number,
+    avoidTheseTValues: number[],
+    PPPrime?: (t: number) => Vector3
+  ): Vector3[] {
+    // First form the objective function, this is the function that we want to find the zeros.
+    // We want to find the t values where the P(t) x P'(t) is perpendicular to unitVec (because P(t) x P'(t) is a normal to the plane defining the tangent
+
+    // This means we want the dot product to be zero
+    const d: (t: number) => number = function(t: number): number {
+      const tmpVec = new Vector3();
+      tmpVec.crossVectors(P(t), PPrime(t));
+      return tmpVec.dot(unitVec);
+    };
+    // use (P(t)xP''(t)).unitVect as the second derivative if necessary
+    let dp: ((t: number) => number) | undefined;
+    if (PPPrime !== undefined) {
+      dp = function(t: number): number {
+        const tmpVec = new Vector3();
+        tmpVec.crossVectors(P(t), PPPrime(t));
+        return tmpVec.dot(unitVec);
+      };
+    } else {
+      dp = undefined;
+    }
+
+    const zeros = this.findZerosParametrically(
+      d,
+      tMin,
+      tMax,
+      avoidTheseTValues,
+      dp
+    );
+
+    const returnVectors: Vector3[] = [];
+    zeros.forEach(tVal => {
+      const temp = new Vector3();
+      temp.copy(P(tVal).cross(PPrime(tVal)));
+      returnVectors.push(temp.normalize());
+    });
+    return returnVectors;
+  }
+
   public static findZerosParametrically(
     f: (t: number) => number,
     tMin: number,
@@ -590,7 +657,10 @@ export abstract class SENodule {
 
     signChanges.forEach(interval => {
       try {
-        if (SETTINGS.parameterization.useNewtonsMethod) {
+        if (
+          SETTINGS.parameterization.useNewtonsMethod &&
+          fPrime !== undefined
+        ) {
           //Newton's Method
           const zeroTVal: number | boolean = newton(
             f,
