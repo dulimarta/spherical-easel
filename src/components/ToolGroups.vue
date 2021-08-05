@@ -388,6 +388,16 @@ export default class ToolGroups extends Vue {
       toolGroup: "edit"
     },
     {
+      id: 0,
+      actionModeValue: "midpoint",
+      displayedName: "CreateMidpointDisplayedName",
+      icon: "$vuetify.icons.value.midpoint",
+      toolTipMessage: "CreateMidpointToolTipMessage",
+      toolUseMessage: "CreateMidpointToolUseMessage",
+      displayToolUseMessage: false,
+      toolGroup: "construction"
+    },
+    {
       id: 15,
       actionModeValue: "antipodalPoint",
       displayedName: "CreateAntipodalPointDisplayedName",
@@ -516,6 +526,16 @@ export default class ToolGroups extends Vue {
       toolUseMessage: "CreateEllipseToolUseMessage",
       displayToolUseMessage: false,
       toolGroup: "conic"
+    },
+    {
+      id: 0,
+      actionModeValue: "nSectPoint",
+      displayedName: "CreateNSectDisplayedName",
+      icon: "$vuetify.icons.value.nSectPoint",
+      toolTipMessage: "CreateNSectToolTipMessage",
+      toolUseMessage: "CreateNSectToolUseMessage",
+      displayToolUseMessage: false,
+      toolGroup: "advanced"
     },
     {
       id: 0,

@@ -50,6 +50,16 @@ export default {
     CreatePolarToolUseMessage:
       "Select a location to create a point (if necessary) and its polar line or select a line segment or line to create both polar points",
 
+    CreateMidpointDisplayedName: "Midpoint<br>&nbsp;",
+    CreateMidpointToolTipMessage: "Create the midpoint of a line segment.",
+    CreateMidpointToolUseMessage:
+      "Select a line segment to create its midpoint.",
+
+    CreateNSectDisplayedName: "N-Sect<br>Segment",
+    CreateNSectToolTipMessage: "Divide a line segment into N equal pieces.",
+    CreateNSectToolUseMessage:
+      "Use a number key to select a number then select a line segment to divide into that many equal pieces.",
+
     CreateCircleDisplayedName: "Create<br>Circle",
     CreateCircleToolTipMessage: "Insert circle",
     CreateCircleToolUseMessage:
@@ -339,6 +349,17 @@ export default {
     objectVisible: "Object Visible"
   },
   handlers: {
+    nEqualOneSegmentNSect:
+      "You must choose to divide segments into more than 1 equal pieces.",
+    nSetSegmentNSect: "You are dividing segments into {number} equal pieces.",
+    bisectedSegmentAlready:
+      "Segment {segment} has already been bisected. Choose another segment or divide this one into more than two equal pieces.",
+    nSectedSegmentAlready:
+      "Segment {segment} has already been divided into {number} pieces. Choose another segment or divide it into something other than {number} equal pieces.",
+    segmentSuccessfullyBisected:
+      "Segment {segment} has be successfully bisected",
+    segmentSuccessfullyNSected:
+      "Segment {segment} has be successfully divided into {number} equal pieces.",
     ellipseAntipodalSelected:
       "The foci of an ellipse are not allowed to be antipodal or identical. Select another location.",
     ellipseFocus2Selected:
@@ -433,6 +454,9 @@ export default {
   },
 
   objectTree: {
+    aMidPointOf: "A midpoint of segment {segment}",
+    anNsectPointOf:
+      "Segment {segment} is divided into {N} equal parts and this is the point with index {index}.",
     bigonWithEdges:
       "The area of a bi-gon with ordered edges {edges}. Area: {val}",
     triangleWithEdges:

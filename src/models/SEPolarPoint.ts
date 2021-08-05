@@ -4,6 +4,7 @@ import { UpdateMode, UpdateStateType, PointState } from "@/types";
 import i18n from "@/i18n";
 import { SELine } from "./SELine";
 import { SESegment } from "./SESegment";
+import NonFreePoint from "@/plottables/NonFreePoint";
 
 export class SEPolarPoint extends SEPoint {
   /**
@@ -19,7 +20,7 @@ export class SEPolarPoint extends SEPoint {
    * @param index Which point is this?  There are two polar points associated with each line
    */
   constructor(
-    point: Point,
+    point: NonFreePoint,
     polarLineOrSegmentParent: SELine | SESegment,
     index: number
   ) {

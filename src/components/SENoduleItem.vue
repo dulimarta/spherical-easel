@@ -21,6 +21,14 @@
             medium>
             $vuetify.icons.value.polar
           </v-icon>
+          <v-icon v-else-if="isMidpoint"
+            medium>
+            $vuetify.icons.value.midpoint
+          </v-icon>
+          <v-icon v-else-if="isNSectPoint"
+            medium>
+            $vuetify.icons.value.nSectPoint
+          </v-icon>
           <v-icon v-else-if="isPoint"
             medium>
             $vuetify.icons.value.point</v-icon>
@@ -177,6 +185,7 @@ import { SEPolarLine } from "@/models/SEPolarLine";
 import { SEPolarPoint } from "@/models/SEPolarPoint";
 import { SEPerpendicularLineThruPoint } from "@/models/SEPerpendicularLineThruPoint";
 import { SEPointOnOneOrTwoDimensional } from "@/models/SEPointOnOneOrTwoDimensional";
+import { SENSectPoint } from "@/models/SENSectPoint";
 
 @Component
 export default class SENoduleItem extends Vue {
@@ -380,6 +389,14 @@ export default class SENoduleItem extends Vue {
 
   get isPointDistance(): boolean {
     return this.node instanceof SEPointDistance;
+  }
+  get isMidpoint(): boolean {
+    return (
+      this.node instanceof SENSectPoint && (this.node as SENSectPoint).N === 2
+    );
+  }
+  get isNSectPoint(): boolean {
+    return this.node instanceof SENSectPoint;
   }
 
   get isPlottable(): boolean {

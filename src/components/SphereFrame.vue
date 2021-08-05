@@ -40,6 +40,7 @@ import TangentLineThruPointHandler from "@/eventHandlers/TangentLineThruPointHan
 import IconFactoryHandler from "@/eventHandlers/IconFactoryHandler";
 import EllipseHandler from "@/eventHandlers/EllipseHandler";
 import PolygonHandler from "@/eventHandlers/PolygonHandler";
+import NSectSegmentHandler from "@/eventHandlers/NSectSegmentHandler";
 
 import EventBus from "@/eventHandlers/EventBus";
 import MoveHandler from "../eventHandlers/MoveHandler";
@@ -118,6 +119,8 @@ export default class SphereFrame extends VueComponent {
   private iconFactoryTool!: IconFactoryHandler;
   private measureTriangleTool!: PolygonHandler;
   private measurePolygonTool!: PolygonHandler;
+  private midpointTool!: NSectSegmentHandler;
+  private nSectSegmentTool!: NSectSegmentHandler;
 
   /**
    * The layers for displaying the various objects in the right way. So a point in the
@@ -272,6 +275,8 @@ export default class SphereFrame extends VueComponent {
     );
     this.measureTriangleTool = new PolygonHandler(this.layers, true);
     this.measurePolygonTool = new PolygonHandler(this.layers, false);
+    this.midpointTool = new NSectSegmentHandler(this.layers, true);
+    this.nSectSegmentTool = new NSectSegmentHandler(this.layers, false);
 
     // Make the canvas accessible to other components which need
     // to grab the SVG contents of the sphere
@@ -693,6 +698,12 @@ export default class SphereFrame extends VueComponent {
         break;
       case "measurePolygon":
         this.currentTool = this.measurePolygonTool;
+        break;
+      case "midpoint":
+        this.currentTool = this.midpointTool;
+        break;
+      case "nSectPoint":
+        this.currentTool = this.nSectSegmentTool;
         break;
       default:
         this.currentTool = null;

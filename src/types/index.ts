@@ -102,7 +102,9 @@ export type ActionMode =
   | "zoomIn"
   | "zoomOut"
   | "measureTriangle"
-  | "measurePolygon";
+  | "measurePolygon"
+  | "midpoint"
+  | "nSectPoint";
 /**
  * Intersection Vector3 and if that intersection exists
  */
