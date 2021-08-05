@@ -398,6 +398,16 @@ export default class ToolGroups extends Vue {
       toolGroup: "construction"
     },
     {
+      id: 5,
+      actionModeValue: "angleBisector",
+      displayedName: "CreateAngleBisectorDisplayedName",
+      icon: "$vuetify.icons.value.angleBisector",
+      toolTipMessage: "CreateAngleBisectorToolTipMessage",
+      toolUseMessage: "CreateAngleBisectorToolUseMessage",
+      displayToolUseMessage: false,
+      toolGroup: "construction"
+    },
+    {
       id: 15,
       actionModeValue: "antipodalPoint",
       displayedName: "CreateAntipodalPointDisplayedName",
@@ -528,12 +538,22 @@ export default class ToolGroups extends Vue {
       toolGroup: "conic"
     },
     {
-      id: 0,
+      id: 10,
       actionModeValue: "nSectPoint",
-      displayedName: "CreateNSectDisplayedName",
+      displayedName: "CreateNSectSegmentDisplayedName",
       icon: "$vuetify.icons.value.nSectPoint",
-      toolTipMessage: "CreateNSectToolTipMessage",
-      toolUseMessage: "CreateNSectToolUseMessage",
+      toolTipMessage: "CreateNSectSegmentToolTipMessage",
+      toolUseMessage: "CreateNSectSegmentToolUseMessage",
+      displayToolUseMessage: false,
+      toolGroup: "advanced"
+    },
+    {
+      id: 15,
+      actionModeValue: "nSectLine",
+      displayedName: "CreateNSectAngleDisplayedName",
+      icon: "$vuetify.icons.value.nSectLine",
+      toolTipMessage: "CreateNSectAngleToolTipMessage",
+      toolUseMessage: "CreateNSectAngleToolUseMessage",
       displayToolUseMessage: false,
       toolGroup: "advanced"
     },

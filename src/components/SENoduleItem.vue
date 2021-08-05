@@ -38,6 +38,15 @@
           <v-icon v-else-if="isPerpendicular"
             medium>
             $vuetify.icons.value.perpendicular</v-icon>
+          <v-icon v-else-if="isTangent"
+            medium>
+            $vuetify.icons.value.tangent</v-icon>
+          <v-icon v-else-if="isAngleBisector"
+            medium>
+            $vuetify.icons.value.angleBisector</v-icon>
+          <v-icon v-else-if="isNSectLine"
+            medium>
+            $vuetify.icons.value.nSectLine</v-icon>
           <v-icon v-else-if="isLine"
             medium>
             $vuetify.icons.value.line</v-icon>
@@ -186,6 +195,8 @@ import { SEPolarPoint } from "@/models/SEPolarPoint";
 import { SEPerpendicularLineThruPoint } from "@/models/SEPerpendicularLineThruPoint";
 import { SEPointOnOneOrTwoDimensional } from "@/models/SEPointOnOneOrTwoDimensional";
 import { SENSectPoint } from "@/models/SENSectPoint";
+import { SETangentLineThruPoint } from "@/models/SETangentLineThruPoint";
+import { SENSectLine } from "@/models/SENSectLine";
 
 @Component
 export default class SENoduleItem extends Vue {
@@ -397,6 +408,18 @@ export default class SENoduleItem extends Vue {
   }
   get isNSectPoint(): boolean {
     return this.node instanceof SENSectPoint;
+  }
+
+  get isTangent(): boolean {
+    return this.node instanceof SETangentLineThruPoint;
+  }
+  get isAngleBisector(): boolean {
+    return (
+      this.node instanceof SENSectLine && (this.node as SENSectLine).N === 2
+    );
+  }
+  get isNSectLine(): boolean {
+    return this.node instanceof SENSectLine;
   }
 
   get isPlottable(): boolean {

@@ -225,6 +225,16 @@ export class SEAngleMarker extends SEExpression
     return this._secondSEParent;
   }
 
+  get vertexVector(): Vector3 {
+    return this._vertexVector;
+  }
+  get startVector(): Vector3 {
+    return this._startVector;
+  }
+  get endVector(): Vector3 {
+    return this._endVector;
+  }
+
   public isHitAt(
     unitIdealVector: Vector3,
     currentMagnificationFactor: number

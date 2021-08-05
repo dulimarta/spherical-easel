@@ -234,7 +234,8 @@ export const SETTINGS = {
     }
   },
   line: {
-    showLabelsInitially: false, // Should the labels be show upon creating the line
+    showLabelsInitially: false, // Should the labels be shown upon creating the line
+    showLabelsOfNonFreeLinesInitially: false, // Should the labels be shown upon creating the non-free line
     maxLabelDistance: 0.08, // The maximum distance that a label is allowed to get away from the line
     initialLabelOffset: 0.02, // When making point labels this is initially how far (roughly) they are from the line
     defaultLabelMode: LabelDisplayMode.NameOnly, // The default way of displaying this objects label

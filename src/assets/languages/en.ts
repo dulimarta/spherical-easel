@@ -55,9 +55,20 @@ export default {
     CreateMidpointToolUseMessage:
       "Select a line segment to create its midpoint.",
 
-    CreateNSectDisplayedName: "N-Sect<br>Segment",
-    CreateNSectToolTipMessage: "Divide a line segment into N equal pieces.",
-    CreateNSectToolUseMessage:
+    CreateAngleBisectorDisplayedName: "Angle<br>Bisector",
+    CreateAngleBisectorToolTipMessage: "Create the angle bisector of an angle.",
+    CreateAngleBisectorToolUseMessage:
+      "Select an angle to create its bisector.",
+
+    CreateNSectAngleDisplayedName: "N-Sect<br>Angle",
+    CreateNSectAngleToolTipMessage: "Divide an angle into N equal pieces.",
+    CreateNSectAngleToolUseMessage:
+      "Use a number key to select a number then select an angle to divide into that many equal pieces.",
+
+    CreateNSectSegmentDisplayedName: "N-Sect<br>Segment",
+    CreateNSectSegmentToolTipMessage:
+      "Divide a line segment into N equal pieces.",
+    CreateNSectSegmentToolUseMessage:
       "Use a number key to select a number then select a line segment to divide into that many equal pieces.",
 
     CreateCircleDisplayedName: "Create<br>Circle",
@@ -349,13 +360,23 @@ export default {
     objectVisible: "Object Visible"
   },
   handlers: {
+    nEqualOneAngleNSect:
+      "You must choose to divide angles into more than 1 equal pieces.",
+    nSetAngleNSect: "You are dividing angles into {number} equal pieces.",
+    bisectedAngleAlready:
+      "Angle {angle} has already been bisected. Choose another angle or divide this one into more than two equal pieces.",
+    nSectedAngleAlready:
+      "Angle {angle} has already been divided into {number} equal pieces. Choose another angle or divide it into something other than {number} equal pieces.",
+    angleSuccessfullyBisected: "Angle {angle} has be successfully bisected",
+    angleSuccessfullyNSected:
+      "Angle {angle} has be successfully divided into {number} equal pieces.",
     nEqualOneSegmentNSect:
       "You must choose to divide segments into more than 1 equal pieces.",
     nSetSegmentNSect: "You are dividing segments into {number} equal pieces.",
     bisectedSegmentAlready:
       "Segment {segment} has already been bisected. Choose another segment or divide this one into more than two equal pieces.",
     nSectedSegmentAlready:
-      "Segment {segment} has already been divided into {number} pieces. Choose another segment or divide it into something other than {number} equal pieces.",
+      "Segment {segment} has already been divided into {number} equal pieces. Choose another segment or divide it into something other than {number} equal pieces.",
     segmentSuccessfullyBisected:
       "Segment {segment} has be successfully bisected",
     segmentSuccessfullyNSected:
@@ -454,6 +475,9 @@ export default {
   },
 
   objectTree: {
+    aMidLineOf: "The line bisecting angle {angle}.",
+    anNsectLineOf:
+      "Angle {angle} is divided into {N} equal parts and this is the line with index {index}.",
     aMidPointOf: "A midpoint of segment {segment}",
     anNsectPointOf:
       "Segment {segment} is divided into {N} equal parts and this is the point with index {index}.",

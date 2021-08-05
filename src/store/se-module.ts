@@ -56,6 +56,7 @@ import { SEParametric } from "@/models/SEParametric";
 import Parametric from "@/plottables/Parametric";
 import { SEPolygon } from "@/models/SEPolygon";
 import { SETangentLineThruPoint } from "@/models/SETangentLineThruPoint";
+import { SENSectLine } from "@/models/SENSectLine";
 const tmpMatrix = new Matrix4();
 //const tmpVector = new Vector3();
 
@@ -709,7 +710,8 @@ export default class SE extends VuexModule implements AppState {
         !(
           newLine instanceof SEPerpendicularLineThruPoint ||
           newLine instanceof SEPolarLine ||
-          newLine instanceof SETangentLineThruPoint
+          newLine instanceof SETangentLineThruPoint ||
+          newLine instanceof SENSectLine
         )
       ) {
         avoidVectors.push(newLine.endSEPoint.locationVector);

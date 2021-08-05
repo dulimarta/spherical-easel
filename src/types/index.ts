@@ -104,7 +104,9 @@ export type ActionMode =
   | "measureTriangle"
   | "measurePolygon"
   | "midpoint"
-  | "nSectPoint";
+  | "nSectPoint"
+  | "angleBisector"
+  | "nSectLine";
 /**
  * Intersection Vector3 and if that intersection exists
  */

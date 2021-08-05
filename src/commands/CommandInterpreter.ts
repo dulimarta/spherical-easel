@@ -22,6 +22,8 @@ import { AddParametricEndPointsCommand } from "./AddParametricEndPointsCommand";
 import { AddAngleMarkerCommand } from "./AddAngleMarkerAndExpressionCommand";
 import { AddPolygonCommand } from "./AddPolygonAndExpressionCommand";
 import { AddTangentLineThruPointCommand } from "./AddTangentLineThruPointCommand";
+import { AddNSectLineCommand } from "./AddNSectLineCommand";
+import { AddNSectPointCommand } from "./AddNSectPointCommand";
 const noduleDictionary = new Map<string, SENodule>();
 
 function executeIndividual(command: string): Command {
@@ -83,6 +85,10 @@ function executeIndividual(command: string): Command {
       return AddParametricCommand.parse(command, noduleDictionary);
     case "AddParametricEndPoints":
       return AddParametricEndPointsCommand.parse(command, noduleDictionary);
+    case "AddNSectPoint":
+      return AddNSectPointCommand.parse(command, noduleDictionary);
+    case "AddNSectLine":
+      return AddNSectLineCommand.parse(command, noduleDictionary);
     default: {
       const errMsg = `Not yet implemented: ${command}`;
       EventBus.fire("show-alert", {

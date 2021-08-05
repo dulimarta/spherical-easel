@@ -79,7 +79,7 @@ export default class PolarObjectHandler extends Highlighter {
   /**
    * A temporary plottable (TwoJS) points and lines created while the user is making the polar object
    */
-  protected temporaryPolarLineMarker: Line; // indicates to the user where the polar line will be created
+  protected temporaryPolarLineMarker: NonFreeLine; // indicates to the user where the polar line will be created
   protected temporaryPolarPointMarker1: Point; // indicates to the user where a new polar point will be created
   protected temporaryPolarPointMarker2: Point; // indicates to the user where a new polar point will be created
   protected temporaryPoint: Point; // indicates to the user where a point will be created along with its polar line
@@ -619,8 +619,7 @@ export default class PolarObjectHandler extends Highlighter {
     // The (end|start)SEPoint is never shown and can never be selected (so it is never added to the store via Command.store.commit.addPoint).
     // The (end|start)SEPoint is also never added to the object tree structure (via un/registrerChild) because it is
     // updated when the the new SEPolarLine is updated.
-    const plottableEndPoint = new NonFreePoint();
-    const endSEPoint = new SEPoint(plottableEndPoint);
+    const endSEPoint = new SEPoint(new NonFreePoint());
     endSEPoint.showing = false; // this never changes
     endSEPoint.exists = true; // this never changes
     // form an orthonormal frame using the polar point parent vector

@@ -87,7 +87,7 @@ export class SENSectPoint extends SEPoint {
       toAxis.multiplyScalar(Math.sin((arcLength * this._index) / this._N));
 
       // Update the current location in the plottable
-      this._locationVector.addVectors(startVector, toAxis);
+      this._locationVector.addVectors(startVector, toAxis).normalize();
       this.ref.positionVector = this._locationVector;
     }
 
