@@ -43,8 +43,8 @@ export default class TextInputSelector extends Vue {
   onDataChanged(newData: string): void {
     SEStore.changeStyle({
       selected: this.$store.getters.selectedSENodules(),
+      panel: this.mode,
       payload: {
-        panel: this.mode,
         [this.styleName]: newData
       }
     });
