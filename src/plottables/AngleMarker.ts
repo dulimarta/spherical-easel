@@ -4,9 +4,13 @@ import { Vector3, Matrix4 } from "three";
 import Two from "two.js";
 import SETTINGS, { LAYER } from "@/global-settings";
 import Nodule, { DisplayStyle } from "./Nodule";
-import { StyleOptions, StyleEditPanels } from "@/types/Styles";
+import {
+  StyleOptions,
+  StyleEditPanels,
+  DEFAULT_ANGLE_MARKER_FRONT_STYLE,
+  DEFAULT_ANGLE_MARKER_BACK_STYLE
+} from "@/types/Styles";
 import AppStore from "@/store";
-import { SENodule } from "@/models/SENodule";
 
 const desiredXAxis = new Vector3();
 const desiredYAxis = new Vector3();
@@ -62,8 +66,8 @@ export default class AngleMarker extends Nodule {
   /**
    * The angleMarkerDecorations
    */
-  private _angleMarkerTickMark = SETTINGS.angleMarker.defaultTickMark;
-  private _angleMarkerDoubleArc = SETTINGS.angleMarker.defaultDoubleArc;
+  // private _angleMarkerTickMark = SETTINGS.angleMarker.defaultTickMark;
+  // private _angleMarkerDoubleArc = SETTINGS.angleMarker.defaultDoubleArc;
   /**
    * Vuex global state
    */
@@ -122,23 +126,11 @@ export default class AngleMarker extends Nodule {
    * The styling variables for the drawn angle marker. The user can modify these.
    */
   // Front
-  private fillColorFront = SETTINGS.angleMarker.drawn.fillColor.front;
-  private strokeColorFront = SETTINGS.angleMarker.drawn.strokeColor.front;
   private glowingStrokeColorFront =
     SETTINGS.angleMarker.glowing.strokeColor.front;
-  private strokeWidthPercentFront = 100;
-  private dashArrayFront = [] as number[]; // Initialize in constructor
   // Back -- use the default non-dynamic back style options so that when the user disables the dynamic back style these options are displayed
-  private fillColorBack = SETTINGS.angleMarker.drawn.fillColor.back;
-  private strokeColorBack = SETTINGS.angleMarker.drawn.strokeColor.back;
   private glowingStrokeColorBack =
     SETTINGS.angleMarker.glowing.strokeColor.back;
-  private strokeWidthPercentBack = 100;
-  private dashArrayBack = [] as number[]; // Initialize in constructor
-  private dynamicBackStyle = SETTINGS.angleMarker.dynamicBackStyle;
-
-  // Applies to both sides
-  private _angleMarkerRadiusPercent = 100;
 
   /**
    * The stops and gradient for front/back fill shading (IF USED)
@@ -150,7 +142,7 @@ export default class AngleMarker extends Nodule {
   // );
   // private frontGradientColor = new Two.Stop(
   //   2 * SETTINGS.boundaryCircle.radius,
-  //   this.fillColorFront,
+  //   frontStyle?.fillColor,
   //   1
   // );
   // private frontGradient = new Two.RadialGradient(
@@ -162,7 +154,7 @@ export default class AngleMarker extends Nodule {
   // private backGradientColorCenter = new Two.Stop(0, SETTINGS.fill.backGray, 1);
   // private backGradientColor = new Two.Stop(
   //   1 * SETTINGS.boundaryCircle.radius,
-  //   this.fillColorBack,
+  //   backStyle?.fillColor,
   //   1
   // );
   // private backGradient = new Two.RadialGradient(
@@ -408,17 +400,6 @@ export default class AngleMarker extends Nodule {
     this.glowingBackCirclePathTail.visible = false;
     this.glowingBackCirclePathDoubleArcTail.visible = false;
 
-    if (SETTINGS.angleMarker.drawn.dashArray.front.length > 0) {
-      SETTINGS.angleMarker.drawn.dashArray.front.forEach(v =>
-        this.dashArrayFront.push(v)
-      );
-    }
-    if (SETTINGS.angleMarker.drawn.dashArray.back.length > 0) {
-      SETTINGS.angleMarker.drawn.dashArray.back.forEach(v =>
-        this.dashArrayBack.push(v)
-      );
-    }
-
     //Straight part initialize
     const verticesStraight: Two.Vector[] = [];
     for (let k = 0; k < STRIAGHTEDGESUBDIVISIONS; k++) {
@@ -567,6 +548,15 @@ export default class AngleMarker extends Nodule {
     this.frontFill2.visible = true;
     this.backFill1.visible = true;
     this.backFill2.visible = true;
+
+    this.styleOptions.set(
+      StyleEditPanels.Front,
+      DEFAULT_ANGLE_MARKER_FRONT_STYLE
+    );
+    this.styleOptions.set(
+      StyleEditPanels.Back,
+      DEFAULT_ANGLE_MARKER_BACK_STYLE
+    );
   }
   /**
    * Map part of a circle in standard position to the location and orientation of the angleMarker
@@ -1963,8 +1953,11 @@ export default class AngleMarker extends Nodule {
     this.glowingFrontCirclePathTail.visible = true;
     this.glowingFrontStraightStart.visible = true;
     this.glowingFrontStraightEnd.visible = true;
-
-    if (this._angleMarkerDoubleArc) {
+    const frontStyle = this.styleOptions.get(StyleEditPanels.Front);
+    if (
+      frontStyle?.angleMarkerDoubleArc &&
+      frontStyle.angleMarkerDoubleArc === true
+    ) {
       this.frontCirclePathDoubleArcStart.visible = true;
       this.frontCirclePathDoubleArcTail.visible = true;
       this.glowingFrontCirclePathDoubleArcStart.visible = true;
@@ -1990,7 +1983,11 @@ export default class AngleMarker extends Nodule {
     this.glowingBackStraightStart.visible = true;
     this.glowingBackStraightEnd.visible = true;
 
-    if (this._angleMarkerDoubleArc) {
+    const backStyle = this.styleOptions.get(StyleEditPanels.Back);
+    if (
+      backStyle?.angleMarkerDoubleArc &&
+      backStyle.angleMarkerDoubleArc === true
+    ) {
       this.backCirclePathDoubleArcStart.visible = true;
       this.backCirclePathDoubleArcTail.visible = true;
       this.glowingBackCirclePathDoubleArcStart.visible = true;
@@ -2021,7 +2018,11 @@ export default class AngleMarker extends Nodule {
     this.glowingFrontCirclePathTail.visible = false;
     this.glowingFrontStraightStart.visible = false;
     this.glowingFrontStraightEnd.visible = false;
-    if (this._angleMarkerDoubleArc) {
+    const frontStyle = this.styleOptions.get(StyleEditPanels.Front);
+    if (
+      frontStyle?.angleMarkerDoubleArc &&
+      frontStyle.angleMarkerDoubleArc === true
+    ) {
       this.frontCirclePathDoubleArcStart.visible = true;
       this.frontCirclePathDoubleArcTail.visible = true;
       this.glowingFrontCirclePathDoubleArcStart.visible = false;
@@ -2047,7 +2048,11 @@ export default class AngleMarker extends Nodule {
     this.glowingBackStraightStart.visible = false;
     this.glowingBackStraightEnd.visible = false;
 
-    if (this._angleMarkerDoubleArc) {
+    const backStyle = this.styleOptions.get(StyleEditPanels.Back);
+    if (
+      backStyle?.angleMarkerDoubleArc &&
+      backStyle.angleMarkerDoubleArc === true
+    ) {
       this.backCirclePathDoubleArcStart.visible = true;
       this.backCirclePathDoubleArcTail.visible = true;
       this.glowingBackCirclePathDoubleArcStart.visible = false;
@@ -2639,336 +2644,198 @@ export default class AngleMarker extends Nodule {
    * Two.js objects (with adjustSize and stylize(ApplyVariables))
    * @param options The style options
    */
-  updateStyle(options: StyleOptions): void {
-    console.debug("Angle Marker Update style of Angle Marker using", options);
-    if (options.angleMarkerRadiusPercent !== undefined) {
-      this._angleMarkerRadiusPercent = options.angleMarkerRadiusPercent;
-    }
-
-    if (options.angleMarkerTickMark !== undefined) {
-      this._angleMarkerTickMark = options.angleMarkerTickMark;
-      console.log("Angle Marker Tick Marks Not Implemented Yet!");
-    }
-
-    if (options.angleMarkerDoubleArc !== undefined) {
-      this._angleMarkerDoubleArc = options.angleMarkerDoubleArc;
-    }
-
-    if (options.panel === StyleEditPanels.Front) {
-      // Set the front options
-      if (options.strokeWidthPercent !== undefined) {
-        this.strokeWidthPercentFront = options.strokeWidthPercent;
-      }
-      if (options.fillColor !== undefined) {
-        this.fillColorFront = options.fillColor;
-      }
-      if (options.strokeColor !== undefined) {
-        this.strokeColorFront = options.strokeColor;
-      }
-      if (options.dashArray !== undefined) {
-        this.dashArrayFront.clear();
-        for (let i = 0; i < options.dashArray.length; i++) {
-          this.dashArrayFront.push(options.dashArray[i]);
-        }
-      }
-    } else if (options.panel == StyleEditPanels.Back) {
-      // Set the back options
-      // options.dynamicBackStyle is boolean, so we need to explicitly check for undefined otherwise
-      // when it is false, this doesn't execute and this.dynamicBackStyle is not set
-      if (options.dynamicBackStyle !== undefined) {
-        this.dynamicBackStyle = options.dynamicBackStyle;
-      }
-      // overwrite the back options only in the case the dynamic style is not enabled
-      if (!this.dynamicBackStyle) {
-        if (options.strokeWidthPercent !== undefined) {
-          this.strokeWidthPercentBack = options.strokeWidthPercent;
-        }
-        if (options.fillColor !== undefined) {
-          this.fillColorBack = options.fillColor;
-        }
-        if (options.strokeColor !== undefined) {
-          this.strokeColorBack = options.strokeColor;
-        }
-        if (options.dashArray !== undefined) {
-          // clear the dashArray
-          this.dashArrayBack.clear();
-          for (let i = 0; i < options.dashArray.length; i++) {
-            this.dashArrayBack.push(options.dashArray[i]);
-          }
-        }
-      }
-    }
-    // Now apply the style and size and decoration display
-    this.stylize(DisplayStyle.ApplyCurrentVariables); // applies the colors and stroke size changes
-    this.adjustSize(); // applies the radius changes
+  updateStyle(mode: StyleEditPanels, options: StyleOptions): void {
+    console.debug("Update style of Angle Marker using", options);
+    super.updateStyle(mode, options);
     this.setVisible(true); // applies the decoration changes (we know that the angle marker is visible because the style panel won't let you edit hidden objects)
   }
-  /**
-   * Return the current style state
-   */
-  currentStyleState(panel: StyleEditPanels): StyleOptions {
-    switch (panel) {
-      case StyleEditPanels.Front: {
-        const dashArrayFront = [] as number[];
-        if (this.dashArrayFront.length > 0) {
-          this.dashArrayFront.forEach(v => dashArrayFront.push(v));
-        }
-        return {
-          panel: panel,
-          strokeWidthPercent: this.strokeWidthPercentFront,
-          strokeColor: this.strokeColorFront,
-          fillColor: this.fillColorFront,
-          dashArray: dashArrayFront,
-          angleMarkerRadiusPercent: this._angleMarkerRadiusPercent,
-          angleMarkerTickMark: this._angleMarkerTickMark,
-          angleMarkerDoubleArc: this._angleMarkerDoubleArc
-        };
-        break;
-      }
-      case StyleEditPanels.Back: {
-        const dashArrayBack = [] as number[];
-        if (this.dashArrayBack.length > 0) {
-          this.dashArrayBack.forEach(v => dashArrayBack.push(v));
-        }
-        return {
-          panel: panel,
-          strokeWidthPercent: this.strokeWidthPercentBack,
-          strokeColor: this.strokeColorBack,
-          fillColor: this.fillColorBack,
-          dashArray: dashArrayBack,
-          dynamicBackStyle: this.dynamicBackStyle
-          // angleMarkerRadiusPercent: this._angleMarkerRadiusPercent,
-          // angleMarkerTickMark: this._angleMarkerTickMark,
-          // angleMarkerDoubleArc: this._angleMarkerDoubleArc
-        };
-      }
-      default:
-      case StyleEditPanels.Label: {
-        return {
-          panel: panel
-        };
-      }
-    }
-  }
+
   /**
    * Return the default style state
    */
   defaultStyleState(panel: StyleEditPanels): StyleOptions {
     switch (panel) {
-      case StyleEditPanels.Front: {
-        const dashArrayFront = [] as number[];
-        if (SETTINGS.angleMarker.drawn.dashArray.front.length > 0) {
-          SETTINGS.angleMarker.drawn.dashArray.front.forEach(v =>
-            dashArrayFront.push(v)
-          );
-        }
-        return {
-          panel: panel,
-          strokeWidthPercent: 100,
-          fillColor: SETTINGS.angleMarker.drawn.fillColor.front,
-          strokeColor: SETTINGS.angleMarker.drawn.strokeColor.front,
-          dashArray: dashArrayFront,
-          angleMarkerRadiusPercent: 100,
-          angleMarkerTickMark: SETTINGS.angleMarker.defaultTickMark,
-          angleMarkerDoubleArc: SETTINGS.angleMarker.defaultDoubleArc
-        };
-      }
-      case StyleEditPanels.Back: {
-        const dashArrayBack = [] as number[];
+      case StyleEditPanels.Front:
+        return DEFAULT_ANGLE_MARKER_FRONT_STYLE;
+      case StyleEditPanels.Back:
+        if (SETTINGS.angleMarker.dynamicBackStyle) {
+          return {
+            ...DEFAULT_ANGLE_MARKER_BACK_STYLE,
+            strokeWidthPercent: Nodule.contrastStrokeWidthPercent(100),
+            strokeColor: Nodule.contrastStrokeColor(
+              SETTINGS.angleMarker.drawn.strokeColor.front
+            ),
+            fillColor: Nodule.contrastStrokeColor(
+              SETTINGS.angleMarker.drawn.fillColor.front
+            )
+          };
+        } else return DEFAULT_ANGLE_MARKER_BACK_STYLE;
 
-        if (SETTINGS.angleMarker.drawn.dashArray.back.length > 0) {
-          SETTINGS.angleMarker.drawn.dashArray.back.forEach(v =>
-            dashArrayBack.push(v)
-          );
-        }
-        return {
-          panel: panel,
-
-          strokeWidthPercent: SETTINGS.angleMarker.dynamicBackStyle
-            ? Nodule.contrastStrokeWidthPercent(100)
-            : 100,
-
-          strokeColor: SETTINGS.angleMarker.dynamicBackStyle
-            ? Nodule.contrastStrokeColor(
-                SETTINGS.angleMarker.drawn.strokeColor.front
-              )
-            : SETTINGS.angleMarker.drawn.strokeColor.back,
-
-          fillColor: SETTINGS.angleMarker.dynamicBackStyle
-            ? Nodule.contrastFillColor(
-                SETTINGS.angleMarker.drawn.fillColor.front
-              )
-            : SETTINGS.angleMarker.drawn.fillColor.back,
-
-          dashArray: dashArrayBack,
-
-          dynamicBackStyle: SETTINGS.angleMarker.dynamicBackStyle
-        };
-      }
       default:
-      case StyleEditPanels.Label: {
-        return {
-          panel: panel
-        };
-      }
+        return {};
     }
   }
   /**
    * Sets the variables for stroke width glowing/not
    */
   adjustSize(): void {
+    const frontStyle = this.styleOptions.get(StyleEditPanels.Front);
+    const backStyle = this.styleOptions.get(StyleEditPanels.Back);
+    const frontStrokeWidthPercent = frontStyle?.strokeWidthPercent ?? 100;
+    const backStrokeWidthPercent = backStyle?.strokeWidthPercent ?? 100;
     this.frontCirclePathStart.linewidth =
       (AngleMarker.currentAngleMarkerCircularStrokeWidthFront *
-        this.strokeWidthPercentFront) /
+        frontStrokeWidthPercent) /
       100;
 
     this.frontCirclePathTail.linewidth =
       (AngleMarker.currentAngleMarkerCircularStrokeWidthFront *
-        this.strokeWidthPercentFront) /
+        frontStrokeWidthPercent) /
       100;
 
     this.frontCirclePathDoubleArcStart.linewidth =
       (AngleMarker.currentAngleMarkerCircularStrokeWidthFront *
-        this.strokeWidthPercentFront) /
+        frontStrokeWidthPercent) /
       100;
 
     this.frontCirclePathDoubleArcTail.linewidth =
       (AngleMarker.currentAngleMarkerCircularStrokeWidthFront *
-        this.strokeWidthPercentFront) /
+        frontStrokeWidthPercent) /
       100;
 
     this.backCirclePathStart.linewidth =
       (AngleMarker.currentAngleMarkerCircularStrokeWidthBack *
-        (this.dynamicBackStyle
-          ? Nodule.contrastStrokeWidthPercent(this.strokeWidthPercentFront)
-          : this.strokeWidthPercentBack)) /
+        (backStyle?.dynamicBackStyle
+          ? Nodule.contrastStrokeWidthPercent(frontStrokeWidthPercent)
+          : backStrokeWidthPercent)) /
       100;
 
     this.backCirclePathTail.linewidth =
       (AngleMarker.currentAngleMarkerCircularStrokeWidthBack *
-        (this.dynamicBackStyle
-          ? Nodule.contrastStrokeWidthPercent(this.strokeWidthPercentFront)
-          : this.strokeWidthPercentBack)) /
+        (backStyle?.dynamicBackStyle
+          ? Nodule.contrastStrokeWidthPercent(frontStrokeWidthPercent)
+          : backStrokeWidthPercent)) /
       100;
 
     this.backCirclePathDoubleArcStart.linewidth =
       (AngleMarker.currentAngleMarkerCircularStrokeWidthBack *
-        (this.dynamicBackStyle
-          ? Nodule.contrastStrokeWidthPercent(this.strokeWidthPercentFront)
-          : this.strokeWidthPercentBack)) /
+        (backStyle?.dynamicBackStyle
+          ? Nodule.contrastStrokeWidthPercent(frontStrokeWidthPercent)
+          : backStrokeWidthPercent)) /
       100;
 
     this.backCirclePathDoubleArcTail.linewidth =
       (AngleMarker.currentAngleMarkerCircularStrokeWidthBack *
-        (this.dynamicBackStyle
-          ? Nodule.contrastStrokeWidthPercent(this.strokeWidthPercentFront)
-          : this.strokeWidthPercentBack)) /
+        (backStyle?.dynamicBackStyle
+          ? Nodule.contrastStrokeWidthPercent(frontStrokeWidthPercent)
+          : backStrokeWidthPercent)) /
       100;
 
     this.glowingFrontCirclePathStart.linewidth =
       (AngleMarker.currentGlowingAngleMarkerCircularStrokeWidthFront *
-        this.strokeWidthPercentFront) /
+        frontStrokeWidthPercent) /
       100;
 
     this.glowingFrontCirclePathTail.linewidth =
       (AngleMarker.currentGlowingAngleMarkerCircularStrokeWidthFront *
-        this.strokeWidthPercentFront) /
+        frontStrokeWidthPercent) /
       100;
 
     this.glowingFrontCirclePathDoubleArcStart.linewidth =
       (AngleMarker.currentGlowingAngleMarkerCircularStrokeWidthFront *
-        this.strokeWidthPercentFront) /
+        frontStrokeWidthPercent) /
       100;
 
     this.glowingFrontCirclePathDoubleArcTail.linewidth =
       (AngleMarker.currentGlowingAngleMarkerCircularStrokeWidthFront *
-        this.strokeWidthPercentFront) /
+        frontStrokeWidthPercent) /
       100;
 
     this.glowingBackCirclePathStart.linewidth =
       (AngleMarker.currentGlowingAngleMarkerCircularStrokeWidthBack *
-        (this.dynamicBackStyle
-          ? Nodule.contrastStrokeWidthPercent(this.strokeWidthPercentFront)
-          : this.strokeWidthPercentBack)) /
+        (backStyle?.dynamicBackStyle
+          ? Nodule.contrastStrokeWidthPercent(frontStrokeWidthPercent)
+          : backStrokeWidthPercent)) /
       100;
 
     this.glowingBackCirclePathTail.linewidth =
       (AngleMarker.currentGlowingAngleMarkerCircularStrokeWidthBack *
-        (this.dynamicBackStyle
-          ? Nodule.contrastStrokeWidthPercent(this.strokeWidthPercentFront)
-          : this.strokeWidthPercentBack)) /
+        (backStyle?.dynamicBackStyle
+          ? Nodule.contrastStrokeWidthPercent(frontStrokeWidthPercent)
+          : backStrokeWidthPercent)) /
       100;
 
     this.glowingBackCirclePathDoubleArcStart.linewidth =
       (AngleMarker.currentGlowingAngleMarkerCircularStrokeWidthBack *
-        (this.dynamicBackStyle
-          ? Nodule.contrastStrokeWidthPercent(this.strokeWidthPercentFront)
-          : this.strokeWidthPercentBack)) /
+        (backStyle?.dynamicBackStyle
+          ? Nodule.contrastStrokeWidthPercent(frontStrokeWidthPercent)
+          : backStrokeWidthPercent)) /
       100;
 
     this.glowingBackCirclePathDoubleArcTail.linewidth =
       (AngleMarker.currentGlowingAngleMarkerCircularStrokeWidthBack *
-        (this.dynamicBackStyle
-          ? Nodule.contrastStrokeWidthPercent(this.strokeWidthPercentFront)
-          : this.strokeWidthPercentBack)) /
+        (backStyle?.dynamicBackStyle
+          ? Nodule.contrastStrokeWidthPercent(frontStrokeWidthPercent)
+          : backStrokeWidthPercent)) /
       100;
 
     this.frontStraightStart.linewidth =
       (AngleMarker.currentAngleMarkerStraightStrokeWidthFront *
-        this.strokeWidthPercentFront) /
+        frontStrokeWidthPercent) /
       100;
 
     this.frontStraightEnd.linewidth =
       (AngleMarker.currentAngleMarkerStraightStrokeWidthFront *
-        this.strokeWidthPercentFront) /
+        frontStrokeWidthPercent) /
       100;
 
     this.backStraightStart.linewidth =
       (AngleMarker.currentAngleMarkerStraightStrokeWidthBack *
-        (this.dynamicBackStyle
-          ? Nodule.contrastStrokeWidthPercent(this.strokeWidthPercentFront)
-          : this.strokeWidthPercentBack)) /
+        (backStyle?.dynamicBackStyle
+          ? Nodule.contrastStrokeWidthPercent(frontStrokeWidthPercent)
+          : backStrokeWidthPercent)) /
       100;
 
     this.backStraightEnd.linewidth =
       (AngleMarker.currentAngleMarkerStraightStrokeWidthBack *
-        (this.dynamicBackStyle
-          ? Nodule.contrastStrokeWidthPercent(this.strokeWidthPercentFront)
-          : this.strokeWidthPercentBack)) /
+        (backStyle?.dynamicBackStyle
+          ? Nodule.contrastStrokeWidthPercent(frontStrokeWidthPercent)
+          : backStrokeWidthPercent)) /
       100;
 
     this.glowingFrontStraightStart.linewidth =
       (AngleMarker.currentGlowingAngleMarkerStraightStrokeWidthFront *
-        this.strokeWidthPercentFront) /
+        frontStrokeWidthPercent) /
       100;
 
     this.glowingFrontStraightEnd.linewidth =
       (AngleMarker.currentGlowingAngleMarkerStraightStrokeWidthFront *
-        this.strokeWidthPercentFront) /
+        frontStrokeWidthPercent) /
       100;
 
     this.glowingBackStraightStart.linewidth =
       (AngleMarker.currentGlowingAngleMarkerStraightStrokeWidthBack *
-        (this.dynamicBackStyle
-          ? Nodule.contrastStrokeWidthPercent(this.strokeWidthPercentFront)
-          : this.strokeWidthPercentBack)) /
+        (backStyle?.dynamicBackStyle
+          ? Nodule.contrastStrokeWidthPercent(frontStrokeWidthPercent)
+          : backStrokeWidthPercent)) /
       100;
 
     this.glowingBackStraightEnd.linewidth =
       (AngleMarker.currentGlowingAngleMarkerStraightStrokeWidthBack *
-        (this.dynamicBackStyle
-          ? Nodule.contrastStrokeWidthPercent(this.strokeWidthPercentFront)
-          : this.strokeWidthPercentBack)) /
+        (backStyle?.dynamicBackStyle
+          ? Nodule.contrastStrokeWidthPercent(frontStrokeWidthPercent)
+          : backStrokeWidthPercent)) /
       100;
 
     // adjust the radius of the angle marker
     this._angleMarkerRadius =
-      (AngleMarker.currentAngleMarkerRadius * this._angleMarkerRadiusPercent) /
+      (AngleMarker.currentAngleMarkerRadius *
+        (frontStyle?.angleMarkerRadiusPercent ?? 100)) /
       100;
 
     this._angleMarkerRadiusDoubleArc =
       (AngleMarker.currentAngleMarkerRadiusDoubleArc *
-        this._angleMarkerRadiusPercent) /
+        (frontStyle?.angleMarkerRadiusPercent ?? 100)) /
       100;
     // console.log("AM Radius", this._angleMarkerRadius);
     // recompute the three vectors that determine the angle marker with the new angle marker radius
@@ -3119,21 +2986,22 @@ export default class AngleMarker extends Nodule {
         // Use the current variables to directly modify the Two.js objects.
 
         // FRONT
-        if (this.fillColorFront === "noFill") {
+        const frontStyle = this.styleOptions.get(StyleEditPanels.Front);
+        if (frontStyle?.fillColor === "noFill") {
           this.frontFill1.noFill();
           this.frontFill2.noFill();
         } else {
           // If the angle markers are shaded like circles
-          //this.frontGradientColor.color = this.fillColorFront;
+          //this.frontGradientColor.color = frontStyle?.fillColor;
           // this.frontFill1.fill = this.frontGradient;
           // this.frontFill2.fill = this.frontGradient;
 
           // If the angle markers are not shaded
-          this.frontFill1.fill = this.fillColorFront;
-          this.frontFill2.fill = this.fillColorFront;
+          this.frontFill1.fill = frontStyle?.fillColor ?? "black";
+          this.frontFill2.fill = frontStyle?.fillColor ?? "black";
         }
 
-        if (this.strokeColorFront === "noStroke") {
+        if (frontStyle?.strokeColor === "noStroke") {
           this.frontCirclePathStart.noStroke();
           this.frontStraightStart.noStroke();
           this.frontCirclePathDoubleArcStart.noStroke();
@@ -3141,25 +3009,30 @@ export default class AngleMarker extends Nodule {
           this.frontStraightEnd.noStroke();
           this.frontCirclePathDoubleArcTail.noStroke();
         } else {
-          this.frontCirclePathStart.stroke = this.strokeColorFront;
-          this.frontStraightStart.stroke = this.strokeColorFront;
-          this.frontCirclePathDoubleArcStart.stroke = this.strokeColorFront;
-          this.frontCirclePathTail.stroke = this.strokeColorFront;
-          this.frontStraightEnd.stroke = this.strokeColorFront;
-          this.frontCirclePathDoubleArcTail.stroke = this.strokeColorFront;
+          this.frontCirclePathStart.stroke = frontStyle?.strokeColor ?? "black";
+          this.frontStraightStart.stroke = frontStyle?.strokeColor ?? "black";
+          this.frontCirclePathDoubleArcStart.stroke =
+            frontStyle?.strokeColor ?? "black";
+          this.frontCirclePathTail.stroke = frontStyle?.strokeColor ?? "black";
+          this.frontStraightEnd.stroke = frontStyle?.strokeColor ?? "black";
+          this.frontCirclePathDoubleArcTail.stroke =
+            frontStyle?.strokeColor ?? "black";
         }
         // strokeWidthPercent is applied by adjustSize()
-        if (this.dashArrayFront.length > 0) {
+        if (frontStyle?.dashArray && frontStyle.dashArray.length > 0) {
           this.frontCirclePathStart.dashes.clear();
           this.frontCirclePathDoubleArcStart.dashes.clear();
           this.frontCirclePathTail.dashes.clear();
           this.frontCirclePathDoubleArcTail.dashes.clear();
-          this.dashArrayFront.forEach(v => {
-            this.frontCirclePathStart.dashes.push(v);
-            this.frontCirclePathDoubleArcStart.dashes.push(v);
-            this.frontCirclePathTail.dashes.push(v);
-            this.frontCirclePathDoubleArcTail.dashes.push(v);
-          });
+
+          this.frontCirclePathStart.dashes.push(...frontStyle.dashArray);
+          this.frontCirclePathDoubleArcStart.dashes.push(
+            ...frontStyle.dashArray
+          );
+          this.frontCirclePathTail.dashes.push(...frontStyle.dashArray);
+          this.frontCirclePathDoubleArcTail.dashes.push(
+            ...frontStyle.dashArray
+          );
         } else {
           // the array length is zero and no dash array should be set
           this.frontCirclePathStart.dashes.clear();
@@ -3173,41 +3046,50 @@ export default class AngleMarker extends Nodule {
           this.frontCirclePathDoubleArcTail.dashes.push(0);
         }
         // BACK
-        if (this.dynamicBackStyle) {
-          if (Nodule.contrastFillColor(this.fillColorFront) === "noFill") {
+        const backStyle = this.styleOptions.get(StyleEditPanels.Back);
+        if (backStyle?.dynamicBackStyle) {
+          if (
+            Nodule.contrastFillColor(frontStyle?.fillColor ?? "black") ===
+            "noFill"
+          ) {
             this.backFill1.noFill();
             this.backFill2.noFill();
           } else {
             // If the angle markers are shaded
             // this.backGradientColor.color = Nodule.contrastFillColor(
-            //   this.fillColorFront
+            //   frontStyle?.fillColor
             // );
             // this.backFill1.fill = this.backGradient;
             // this.backFill2.fill = this.backGradient;
 
             // If the angle markers are not shaded
-            this.backFill1.fill = Nodule.contrastFillColor(this.fillColorFront);
-            this.backFill2.fill = Nodule.contrastFillColor(this.fillColorFront);
+            this.backFill1.fill = Nodule.contrastFillColor(
+              frontStyle?.fillColor ?? "black"
+            );
+            this.backFill2.fill = Nodule.contrastFillColor(
+              frontStyle?.fillColor ?? "black"
+            );
           }
         } else {
-          if (this.fillColorBack === "noFill") {
+          if (backStyle?.fillColor === "noFill") {
             this.backFill1.noFill();
             this.backFill2.noFill();
           } else {
             // If the angle markers are shaded
-            // this.backGradientColor.color = this.fillColorBack;
+            // this.backGradientColor.color = backStyle?.fillColor;
             // this.backFill1.fill = this.backGradient;
             // this.backFill2.fill = this.backGradient;
 
             // If the angle markers are not shaded
-            this.backFill1.fill = this.fillColorBack;
-            this.backFill2.fill = this.fillColorBack;
+            this.backFill1.fill = backStyle?.fillColor ?? "black";
+            this.backFill2.fill = backStyle?.fillColor ?? "black";
           }
         }
 
-        if (this.dynamicBackStyle) {
+        if (backStyle?.dynamicBackStyle) {
           if (
-            Nodule.contrastStrokeColor(this.strokeColorFront) === "noStroke"
+            Nodule.contrastStrokeColor(frontStyle?.strokeColor ?? "black") ===
+            "noStroke"
           ) {
             this.backCirclePathStart.noStroke();
             this.backStraightStart.noStroke();
@@ -3217,26 +3099,26 @@ export default class AngleMarker extends Nodule {
             this.backCirclePathDoubleArcTail.noStroke();
           } else {
             this.backCirclePathStart.stroke = Nodule.contrastStrokeColor(
-              this.strokeColorFront
+              frontStyle?.strokeColor ?? "black"
             );
             this.backStraightStart.stroke = Nodule.contrastStrokeColor(
-              this.strokeColorFront
+              frontStyle?.strokeColor ?? "black"
             );
             this.backCirclePathDoubleArcStart.stroke = Nodule.contrastStrokeColor(
-              this.strokeColorFront
+              frontStyle?.strokeColor ?? "black"
             );
             this.backCirclePathTail.stroke = Nodule.contrastStrokeColor(
-              this.strokeColorFront
+              frontStyle?.strokeColor ?? "black"
             );
             this.backStraightEnd.stroke = Nodule.contrastStrokeColor(
-              this.strokeColorFront
+              frontStyle?.strokeColor ?? "black"
             );
             this.backCirclePathDoubleArcTail.stroke = Nodule.contrastStrokeColor(
-              this.strokeColorFront
+              frontStyle?.strokeColor ?? "black"
             );
           }
         } else {
-          if (this.strokeColorBack === "noStroke") {
+          if (backStyle?.strokeColor === "noStroke") {
             this.backCirclePathStart.noStroke();
             this.backStraightStart.noStroke();
             this.backCirclePathDoubleArcStart.noStroke();
@@ -3244,27 +3126,28 @@ export default class AngleMarker extends Nodule {
             this.backStraightEnd.noStroke();
             this.backCirclePathDoubleArcTail.noStroke();
           } else {
-            this.backCirclePathStart.stroke = this.strokeColorBack;
-            this.backStraightStart.stroke = this.strokeColorBack;
-            this.backCirclePathDoubleArcStart.stroke = this.strokeColorBack;
-            this.backCirclePathTail.stroke = this.strokeColorBack;
-            this.backStraightEnd.stroke = this.strokeColorBack;
-            this.backCirclePathDoubleArcTail.stroke = this.strokeColorBack;
+            this.backCirclePathStart.stroke = backStyle?.strokeColor ?? "black";
+            this.backStraightStart.stroke = backStyle?.strokeColor ?? "black";
+            this.backCirclePathDoubleArcStart.stroke =
+              backStyle?.strokeColor ?? "black";
+            this.backCirclePathTail.stroke = backStyle?.strokeColor ?? "black";
+            this.backStraightEnd.stroke = backStyle?.strokeColor ?? "black";
+            this.backCirclePathDoubleArcTail.stroke =
+              backStyle?.strokeColor ?? "black";
           }
         }
 
         // strokeWidthPercent applied by adjustSizer()
-        if (this.dashArrayBack.length > 0) {
+        if (backStyle?.dashArray && backStyle.dashArray.length > 0) {
           this.backCirclePathStart.dashes.clear();
           this.backCirclePathDoubleArcStart.dashes.clear();
           this.backCirclePathTail.dashes.clear();
           this.backCirclePathDoubleArcTail.dashes.clear();
-          this.dashArrayBack.forEach(v => {
-            this.backCirclePathStart.dashes.push(v);
-            this.backCirclePathDoubleArcStart.dashes.push(v);
-            this.backCirclePathTail.dashes.push(v);
-            this.backCirclePathDoubleArcTail.dashes.push(v);
-          });
+
+          this.backCirclePathStart.dashes.push(...backStyle.dashArray);
+          this.backCirclePathDoubleArcStart.dashes.push(...backStyle.dashArray);
+          this.backCirclePathTail.dashes.push(...backStyle.dashArray);
+          this.backCirclePathDoubleArcTail.dashes.push(...backStyle.dashArray);
         } else {
           // the array length is zero and no dash array should be set
           this.backCirclePathStart.dashes.clear();
@@ -3290,17 +3173,20 @@ export default class AngleMarker extends Nodule {
         this.glowingFrontCirclePathDoubleArcTail.stroke = this.glowingStrokeColorFront;
         // strokeWidthPercent applied by adjustSize()
         // Copy the front dash properties to the glowing object
-        if (this.dashArrayFront.length > 0) {
+        if (frontStyle?.dashArray && frontStyle.dashArray.length > 0) {
           this.glowingFrontCirclePathStart.dashes.clear();
           this.glowingFrontCirclePathDoubleArcStart.dashes.clear();
           this.glowingFrontCirclePathTail.dashes.clear();
           this.glowingFrontCirclePathDoubleArcTail.dashes.clear();
-          this.dashArrayFront.forEach(v => {
-            this.glowingFrontCirclePathStart.dashes.push(v);
-            this.glowingFrontCirclePathDoubleArcStart.dashes.push(v);
-            this.glowingFrontCirclePathTail.dashes.push(v);
-            this.glowingFrontCirclePathDoubleArcTail.dashes.push(v);
-          });
+
+          this.glowingFrontCirclePathStart.dashes.push(...frontStyle.dashArray);
+          this.glowingFrontCirclePathDoubleArcStart.dashes.push(
+            ...frontStyle.dashArray
+          );
+          this.glowingFrontCirclePathTail.dashes.push(...frontStyle.dashArray);
+          this.glowingFrontCirclePathDoubleArcTail.dashes.push(
+            ...frontStyle.dashArray
+          );
         } else {
           // the array length is zero and no dash array should be set
           this.glowingFrontCirclePathStart.dashes.clear();
@@ -3324,17 +3210,20 @@ export default class AngleMarker extends Nodule {
         this.glowingBackCirclePathDoubleArcTail.stroke = this.glowingStrokeColorBack;
         // strokeWidthPercent applied by adjustSize()
         // Copy the back dash properties to the glowing object
-        if (this.dashArrayBack.length > 0) {
+        if (backStyle?.dashArray && backStyle.dashArray.length > 0) {
           this.glowingBackCirclePathStart.dashes.clear();
           this.glowingBackCirclePathDoubleArcStart.dashes.clear();
           this.glowingBackCirclePathTail.dashes.clear();
           this.glowingBackCirclePathDoubleArcTail.dashes.clear();
-          this.dashArrayBack.forEach(v => {
-            this.glowingBackCirclePathStart.dashes.push(v);
-            this.glowingBackCirclePathDoubleArcStart.dashes.push(v);
-            this.glowingBackCirclePathTail.dashes.push(v);
-            this.glowingBackCirclePathDoubleArcTail.dashes.push(v);
-          });
+
+          this.glowingBackCirclePathStart.dashes.push(...backStyle.dashArray);
+          this.glowingBackCirclePathDoubleArcStart.dashes.push(
+            ...backStyle.dashArray
+          );
+          this.glowingBackCirclePathTail.dashes.push(...backStyle.dashArray);
+          this.glowingBackCirclePathDoubleArcTail.dashes.push(
+            ...backStyle.dashArray
+          );
         } else {
           // the array length is zero and no dash array should be set
           this.glowingBackCirclePathStart.dashes.clear();

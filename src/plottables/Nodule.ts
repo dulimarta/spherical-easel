@@ -25,13 +25,14 @@ export default abstract class Nodule implements Stylable, Resizeable {
   /**
    * A map that lets use look up the properties of a plottable object
    * using only the TwoJS id. Useful in the creation of icons when processing the SVG
-   * in IconFactorys
+   * in IconFactory
    */
   public static idPlottableDescriptionMap = new Map<
     string,
     plottableProperties
   >();
 
+  protected styleOptions: Map<StyleEditPanels, StyleOptions> = new Map();
   /**
    * Is this needed when we reset the sphere canvas? I'm not sure yet, so I commented out the calls to it
    * when resetting/loading.
@@ -57,12 +58,9 @@ export default abstract class Nodule implements Stylable, Resizeable {
   /** Update visual style(s) */
   abstract normalDisplay(): void;
   abstract glowingDisplay(): void;
-  abstract updateStyle(options: StyleOptions): void;
   /** set the glowing visual style differently depending on if selected or not */
   abstract setSelectedColoring(flag: boolean): void;
 
-  /** Get the current style state of the Nodule */
-  abstract currentStyleState(mode: StyleEditPanels): StyleOptions;
   /** Get the default style state of the Nodule */
   abstract defaultStyleState(mode: StyleEditPanels): StyleOptions;
 
@@ -170,5 +168,23 @@ export default abstract class Nodule implements Stylable, Resizeable {
       colorObject.a +
       ")"
     );
+  }
+
+  /** Get the current style state of the Nodule */
+  currentStyleState(mode: StyleEditPanels): StyleOptions {
+    return this.styleOptions.get(mode) ?? {};
+  }
+  /**
+   * Copies the style options set by the Style Panel into the style variables and then updates the
+   * Two.js objects (with adjustSize and stylize(ApplyVariables))
+   * @param options The style options
+   */
+  updateStyle(mode: StyleEditPanels, options: StyleOptions): void {
+    // console.debug("Update style of plottable", this, "using", options);
+    const currentOptions = this.styleOptions.get(mode);
+    this.styleOptions.set(mode, { ...currentOptions, ...options });
+    // Now apply the style and size
+    this.stylize(DisplayStyle.ApplyCurrentVariables);
+    this.adjustSize();
   }
 }

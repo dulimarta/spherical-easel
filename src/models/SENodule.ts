@@ -1,13 +1,9 @@
-import { Vector3 } from "three";
+import { UnsignedShort4444Type, Vector3 } from "three";
 import Nodule from "@/plottables/Nodule";
-import { Styles } from "@/types/Styles";
-import { UpdateStateType } from "@/types";
+import { parametricVectorAndTValue, UpdateStateType } from "@/types";
 import newton from "newton-raphson-method";
 import SETTINGS from "@/global-settings";
-
-//import AppStore from "@/store";
-
-//import { magnificationLevel } from "@/components/SENoduleItem.vue";
+import { colors } from "vuetify/lib";
 
 let NODE_COUNT = 0;
 
@@ -19,7 +15,9 @@ export abstract class SENodule {
   public static ANGLEMARKER_COUNT = 0;
   public static EXPR_COUNT = 0;
   public static ELLIPSE_COUNT = 0;
+  public static PARAMETRIC_COUNT = 0;
   public static LABEL_COUNT = 0;
+  public static POLYGON_COUNT = 0;
 
   static resetAllCounters(): void {
     NODE_COUNT = 0;
@@ -30,7 +28,9 @@ export abstract class SENodule {
     SENodule.CIRCLE_COUNT = 0;
     SENodule.EXPR_COUNT = 0;
     SENodule.ELLIPSE_COUNT = 0;
+    SENodule.PARAMETRIC_COUNT = 0;
     SENodule.LABEL_COUNT = 0;
+    SENodule.POLYGON_COUNT = 0;
   }
 
   /**
@@ -47,6 +47,12 @@ export abstract class SENodule {
    * A pointer to the corresponding plottable object
    */
   public ref?: Nodule;
+
+  /**
+   * temporary vectors to help with finding tangents
+   */
+  private tmpVec1 = new Vector3();
+  private tmpVec2 = new Vector3();
 
   /* A unique identification number and name for each node */
   public id: number;
@@ -66,7 +72,7 @@ export abstract class SENodule {
   /* If the object is not visible then showing = true (The user can hide objects)*/
   protected _showing = true;
 
-  /* If the object is selected, it is either being used by an event tool or is in the setSelectedSENodules sin mutations*/
+  /* If the object is selected, it is either being used by an event tool or is in the setSelectedSENodules in mutations. Its glow property is not turned off by the highlighter.ts routines*/
   protected _selected = false;
 
   /* This boolean is set to indicate that the object is out of date and needs to be updated. */
@@ -95,7 +101,7 @@ export abstract class SENodule {
    * NOTE: Ideally we want to use an abstract static method.
    * But Typescript does not support it (yet?)
    */
-  public abstract customStyles(): Set<Styles>;
+  public abstract customStyles(): Set<string>;
 
   /* Marks all descendants (kids, grand kids, etc.) of the current SENodule out of date */
   public markKidsOutOfDate(): void {
@@ -333,7 +339,8 @@ export abstract class SENodule {
     }
   }
 
-  /** Careful n.selected is not the same as being on the setSelectedSENodules list */
+  /** Careful n.selected is not the same as being on the setSelectedSENodules list. A selected
+   *  object's glow property is not turned off by the highlighter.ts routines */
   set selected(b: boolean) {
     // selecting has no effect on hidden objects
     if (!this._showing) return;
@@ -368,7 +375,7 @@ export abstract class SENodule {
     tMin: number,
     tMax: number,
     PPPrime?: (t: number) => Vector3
-  ): Vector3 {
+  ): parametricVectorAndTValue {
     // First form the objective function, this is the function whose minimum we want to find.
     // The (angular) distance from P(t) to unitVec is d(t) = acos(P(t) /dot unitVec) because P(t) and unitVec are both unit
     const d: (t: number) => number = function(t: number): number {
@@ -392,7 +399,7 @@ export abstract class SENodule {
     } else {
       dpp = undefined;
     }
-    const zeros = this.findZerosParametrically(dp, tMin, tMax, dpp);
+    const zeros = this.findZerosParametrically(dp, tMin, tMax, [], dpp);
 
     // The zeros of dp are either minimums or maximums (or neither, but this is very unlikely so we assume it doesn't happen)
     let minTVal: number = zeros[0]; // The t value that minimizes d
@@ -401,13 +408,18 @@ export abstract class SENodule {
         minTVal = tVal;
       }
     });
-    return P(minTVal);
+    const returnPair: parametricVectorAndTValue = {
+      vector: P(minTVal),
+      tVal: minTVal
+    };
+
+    return returnPair;
   }
 
   /**
    * A recursive method to implement the bisection method
    * @param f The continuous function whose zero we want to compute
-   * t1< t2 and f(t1)*f(t2)<0
+   * t1 < t2 and f(t1)*f(t2)<0
    * @param t1
    * @param t2
    * @returns
@@ -417,6 +429,12 @@ export abstract class SENodule {
     t1: number,
     t2: number
   ): number {
+    if (Math.abs(f(t1)) < SETTINGS.tolerance / 1000) {
+      return t1;
+    }
+    if (Math.abs(f(t2)) < SETTINGS.tolerance / 1000) {
+      return t2;
+    }
     const mid = (t1 + t2) / 2;
     if (Math.abs(t2 - t1) < SETTINGS.parameterization.bisectionMinSize) {
       return mid;
@@ -439,12 +457,13 @@ export abstract class SENodule {
    * @param closed if true, implies P(tMin)=P(tMax)
    * @param periodic if true, implies P(t) = P(t + (tMax-tMin)) for all t
    */
-  protected static getNormalsToLineThruParametrically(
-    P: (t: number) => Vector3,
+  protected static getNormalsToPerpendicularLinesThruParametrically(
+    // P: (t: number) => Vector3,
     PPrime: (t: number) => Vector3,
     unitVec: Vector3,
     tMin: number,
     tMax: number,
+    avoidTheseTValues: number[],
     PPPrime?: (t: number) => Vector3
   ): Vector3[] {
     // First form the objective function, this is the function that we want to find the zeros.
@@ -464,12 +483,109 @@ export abstract class SENodule {
       dp = undefined;
     }
 
-    const zeros = this.findZerosParametrically(d, tMin, tMax, dp);
+    const zeros = this.findZerosParametrically(
+      d,
+      tMin,
+      tMax,
+      avoidTheseTValues,
+      dp
+    );
 
     const returnVectors: Vector3[] = [];
     zeros.forEach(tVal => {
       const temp = new Vector3();
-      returnVectors.push(temp.copy(PPrime(tVal).normalize()));
+      // console.log(
+      //   "tval and pprime",
+      //   tVal,
+      //   temp.copy(PPrime(tVal).normalize()).x,
+      //   temp.copy(PPrime(tVal).normalize()).y,
+      //   temp.copy(PPrime(tVal).normalize()).z
+      // );
+      temp.copy(PPrime(tVal));
+      // don't return any zero vectors, the derivative being zero leads to a zero of d, but not a perpendicular
+      // also check that that vec is perpendicular to the given unitVector
+      // if (Math.abs(temp.dot(unitVec)) < SETTINGS.tolerance) {
+      //   console.log("through point in SENodule");
+      // } else {
+      //   console.log("not through point in SENodule");
+      // }
+      returnVectors.push(temp);
+      // }
+    });
+    // remove duplicates from the list
+    // const uniqueNormals: Vector3[] = [];
+    // returnVectors.forEach(vec => {
+    //   if (
+    //     uniqueNormals.every(
+    //       nor => !nor.cross(vec).isZero(SETTINGS.nearlyAntipodalIdeal)
+    //     )
+    //   ) {
+    //     uniqueNormals.push(vec);
+    //   }
+    // });
+    // console.log(
+    //   "returnVectors list 0",
+    //   returnVectors.length,
+    //   returnVectors[1].x,
+    //   returnVectors[1].y,
+    //   returnVectors[1].z
+    // );
+
+    return returnVectors;
+  }
+
+  /**
+   * Find all the unit normal vector lines that are perpendicular to the curve P(t) where tMin<= t <= tMax using subdivisions and Newton's method that
+   * pass though unitVec
+   * @param PPPrime P''(t) is the parameterization of second derivative of P(t) (NOT NECESSARILY UNIT)
+   * @param PPrime P'(t) is the parameterization of the derivative of P(t) (NOT NECESSARILY UNIT)
+   * @param unitVec a unit vector
+   * @param tMin
+   * @param tMax
+   */
+  protected static getNormalsToTangentLinesThruParametrically(
+    P: (t: number) => Vector3,
+    PPrime: (t: number) => Vector3,
+    unitVec: Vector3,
+    tMin: number,
+    tMax: number,
+    avoidTheseTValues: number[],
+    PPPrime?: (t: number) => Vector3
+  ): Vector3[] {
+    // First form the objective function, this is the function that we want to find the zeros.
+    // We want to find the t values where the P(t) x P'(t) is perpendicular to unitVec (because P(t) x P'(t) is a normal to the plane defining the tangent
+
+    // This means we want the dot product to be zero
+    const d: (t: number) => number = function(t: number): number {
+      const tmpVec = new Vector3();
+      tmpVec.crossVectors(P(t), PPrime(t));
+      return tmpVec.dot(unitVec);
+    };
+    // use (P(t)xP''(t)).unitVect as the second derivative if necessary
+    let dp: ((t: number) => number) | undefined;
+    if (PPPrime !== undefined) {
+      dp = function(t: number): number {
+        const tmpVec = new Vector3();
+        tmpVec.crossVectors(P(t), PPPrime(t));
+        return tmpVec.dot(unitVec);
+      };
+    } else {
+      dp = undefined;
+    }
+
+    const zeros = this.findZerosParametrically(
+      d,
+      tMin,
+      tMax,
+      avoidTheseTValues,
+      dp
+    );
+
+    const returnVectors: Vector3[] = [];
+    zeros.forEach(tVal => {
+      const temp = new Vector3();
+      temp.copy(P(tVal).cross(PPrime(tVal)));
+      returnVectors.push(temp.normalize());
     });
     return returnVectors;
   }
@@ -478,46 +594,102 @@ export abstract class SENodule {
     f: (t: number) => number,
     tMin: number,
     tMax: number,
-    fPrime?: (t: number) => number
+    avoidTheseTValues: number[],
+    fPrime?: (t: number) => number // not used if bisection method is used
   ): number[] {
     // now we need to find all the places that d changes sign so we know where to start Newton's method
     const signChanges = [];
+    const zeros: number[] = [];
+
     let tVal: number;
     let lastTVal = tMin;
+    if (Math.abs(f(tMin)) < SETTINGS.tolerance / 1000) {
+      // make sure that tMin is not on the avoid list
+      if (
+        avoidTheseTValues.every(
+          num => Math.abs(num - tMin) > SETTINGS.tolerance
+        )
+      ) {
+        zeros.push(tMin);
+      }
+      // else {
+      //   console.log("Excluded value", tMin);
+      // }
+      // console.log("Actual zero! tMin", tMin, f(tMin));
+    }
+
     for (let i = 1; i < SETTINGS.parameterization.subdivisions + 1; i++) {
       tVal =
         tMin + (i / SETTINGS.parameterization.subdivisions) * (tMax - tMin);
-      if (f(tVal) * f(lastTVal) < 0) {
-        signChanges.push([lastTVal, tVal]);
+      if (Math.abs(f(tVal)) < SETTINGS.tolerance / 1000) {
+        // make sure that tVal is not on the avoid list
+        if (
+          avoidTheseTValues.every(
+            num => Math.abs(num - tVal) > SETTINGS.tolerance
+          )
+        ) {
+          zeros.push(tVal);
+        }
+        // else {
+        //   console.log("Excluded value", tVal);
+        // }
+        // console.log("Actual zero!", tVal, f(tVal));
+      } else if (f(tVal) * f(lastTVal) < 0) {
+        // make sure that tMin is not on the avoid list
+        if (!avoidTheseTValues.some(num => lastTVal <= num && num <= tVal)) {
+          // console.log("sign Change", tVal, f(tVal));
+          signChanges.push([lastTVal, tVal]);
+        }
+        // else {
+        //   console.log("Excluded Interval", lastTVal, tVal);
+        // }
       }
+
       lastTVal = tVal;
     }
-    if (signChanges.length === 0) {
+    // if (zeros.length > 0) {
+    //   console.log("number of zeros", zeros.length);
+    // }
+    if (signChanges.length === 0 && zeros.length === 0) {
       // console.log("No sign changes; No zeros");
       return [];
     }
 
-    const zeros: number[] = [];
     signChanges.forEach(interval => {
-      // Bisection Method
-      // const zeroTVal = SENodule.bisection(d, interval[0], interval[1]);
-      // zeros.push(zeroTVal as number);
+      try {
+        if (
+          SETTINGS.parameterization.useNewtonsMethod &&
+          fPrime !== undefined
+        ) {
+          //Newton's Method
+          const zeroTVal: number | boolean = newton(
+            f,
+            fPrime,
+            (interval[0] + interval[1]) / 2
+            // { verbose: true }
+          );
 
-      // Newton's Method
-      const zeroTVal: number | boolean = newton(
-        f,
-        fPrime,
-        (interval[0] + interval[1]) / 2
-        // { verbose: true }
-      );
-      if (
-        zeroTVal !== false &&
-        interval[0] < zeroTVal &&
-        zeroTVal < interval[1]
-      ) {
-        zeros.push(zeroTVal as number);
-      } else {
-        console.log("Newton's method failed to converge in interval");
+          if (
+            zeroTVal !== false &&
+            interval[0] - SETTINGS.tolerance <= zeroTVal &&
+            zeroTVal <= interval[1] + SETTINGS.tolerance
+          ) {
+            zeros.push(zeroTVal as number);
+          } else {
+            console.log(
+              "Newton's method failed to converge in interval",
+              zeroTVal,
+              interval[0],
+              interval[1]
+            );
+          }
+        } else {
+          // Bisection Method
+          const zeroTVal = SENodule.bisection(f, interval[0], interval[1]);
+          zeros.push(zeroTVal as number);
+        }
+      } catch (err) {
+        console.debug("Newton's method error", err);
       }
     });
     return zeros;

@@ -14,10 +14,10 @@ import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import { DisplayStyle } from "@/plottables/Nodule";
 import Highlighter from "./Highlighter";
 import { ConvertInterPtToUserCreatedCommand } from "@/commands/ConvertInterPtToUserCreatedCommand";
-import { SEPointOnOneDimensional } from "@/models/SEPointOnOneDimensional";
+import { SEPointOnOneOrTwoDimensional } from "@/models/SEPointOnOneOrTwoDimensional";
 import { AddIntersectionPointCommand } from "@/commands/AddIntersectionPointCommand";
-import { AddPointOnOneDimensionalCommand } from "@/commands/AddPointOnOneDimensionalCommand";
-import { SEOneDimensional, SEIntersectionReturnType } from "@/types";
+import { AddPointOnOneDimensionalCommand } from "@/commands/AddPointOnOneOrTwoDimensionalCommand";
+import { SEOneOrTwoDimensional, SEIntersectionReturnType } from "@/types";
 import { UpdateMode } from "@/types";
 import Label from "@/plottables/Label";
 import { SELabel } from "@/models/SELabel";
@@ -38,7 +38,7 @@ export default class CircleHandler extends Highlighter {
   /** The model object point that is a point on the circle (if any) */
   private circleSEPoint: SEPoint | null = null;
   /** The possible parent of the centerSEPoint*/
-  private centerSEPointOneDimensionalParent: SEOneDimensional | null = null;
+  private centerSEPointOneDimensionalParent: SEOneOrTwoDimensional | null = null;
 
   /** The radius of the temporary circle (along the surface of the sphere) */
   private arcRadius = 0;
@@ -63,8 +63,8 @@ export default class CircleHandler extends Highlighter {
   /**
    * As the user moves the pointer around snap the temporary marker to these objects temporarily
    */
-  protected snapStartMarkerToTemporaryOneDimensional: SEOneDimensional | null = null;
-  protected snapEndMarkerToTemporaryOneDimensional: SEOneDimensional | null = null;
+  protected snapStartMarkerToTemporaryOneDimensional: SEOneOrTwoDimensional | null = null;
+  protected snapEndMarkerToTemporaryOneDimensional: SEOneOrTwoDimensional | null = null;
   protected snapStartMarkerToTemporaryPoint: SEPoint | null = null;
   protected snapEndMarkerToTemporaryPoint: SEPoint | null = null;
   /**
@@ -142,6 +142,42 @@ export default class CircleHandler extends Highlighter {
         // The center of the circle will be a point on a circle
         //  Eventually, we will create a new SEPointOneDimensional and Point
         this.centerSEPointOneDimensionalParent = this.hitSECircles[0];
+        this.centerVector.copy(
+          this.centerSEPointOneDimensionalParent.closestVector(
+            this.currentSphereVector
+          )
+        );
+        this.temporaryCircle.centerVector = this.centerVector;
+        this.temporaryStartMarker.positionVector = this.centerVector;
+        this.centerSEPoint = null;
+      } else if (this.hitSEEllipses.length > 0) {
+        // The center of the circle will be a point on a circle
+        //  Eventually, we will create a new SEPointOneDimensional and Point
+        this.centerSEPointOneDimensionalParent = this.hitSEEllipses[0];
+        this.centerVector.copy(
+          this.centerSEPointOneDimensionalParent.closestVector(
+            this.currentSphereVector
+          )
+        );
+        this.temporaryCircle.centerVector = this.centerVector;
+        this.temporaryStartMarker.positionVector = this.centerVector;
+        this.centerSEPoint = null;
+      } else if (this.hitSEParametrics.length > 0) {
+        // The center of the circle will be a point on a circle
+        //  Eventually, we will create a new SEPointOneDimensional and Point
+        this.centerSEPointOneDimensionalParent = this.hitSEParametrics[0];
+        this.centerVector.copy(
+          this.centerSEPointOneDimensionalParent.closestVector(
+            this.currentSphereVector
+          )
+        );
+        this.temporaryCircle.centerVector = this.centerVector;
+        this.temporaryStartMarker.positionVector = this.centerVector;
+        this.centerSEPoint = null;
+      } else if (this.hitSEPolygons.length > 0) {
+        // The center of the circle will be a point on a circle
+        //  Eventually, we will create a new SEPointOneDimensional and Point
+        this.centerSEPointOneDimensionalParent = this.hitSEPolygons[0];
         this.centerVector.copy(
           this.centerSEPointOneDimensionalParent.closestVector(
             this.currentSphereVector
@@ -240,6 +276,32 @@ export default class CircleHandler extends Highlighter {
       } else {
         this.snapStartMarkerToTemporaryOneDimensional = null;
         this.snapEndMarkerToTemporaryOneDimensional = this.hitSEEllipses[0];
+        this.snapStartMarkerToTemporaryPoint = null;
+        this.snapEndMarkerToTemporaryPoint = null;
+      }
+    } else if (this.hitSEParametrics.length > 0) {
+      this.hitSEParametrics[0].glowing = true;
+      if (!this.centerLocationSelected) {
+        this.snapStartMarkerToTemporaryOneDimensional = this.hitSEParametrics[0];
+        this.snapEndMarkerToTemporaryOneDimensional = null;
+        this.snapStartMarkerToTemporaryPoint = null;
+        this.snapEndMarkerToTemporaryPoint = null;
+      } else {
+        this.snapStartMarkerToTemporaryOneDimensional = null;
+        this.snapEndMarkerToTemporaryOneDimensional = this.hitSEParametrics[0];
+        this.snapStartMarkerToTemporaryPoint = null;
+        this.snapEndMarkerToTemporaryPoint = null;
+      }
+    } else if (this.hitSEPolygons.length > 0) {
+      this.hitSEPolygons[0].glowing = true;
+      if (!this.centerLocationSelected) {
+        this.snapStartMarkerToTemporaryOneDimensional = this.hitSEPolygons[0];
+        this.snapEndMarkerToTemporaryOneDimensional = null;
+        this.snapStartMarkerToTemporaryPoint = null;
+        this.snapEndMarkerToTemporaryPoint = null;
+      } else {
+        this.snapStartMarkerToTemporaryOneDimensional = null;
+        this.snapEndMarkerToTemporaryOneDimensional = this.hitSEPolygons[0];
         this.snapStartMarkerToTemporaryPoint = null;
         this.snapEndMarkerToTemporaryPoint = null;
       }
@@ -467,11 +529,11 @@ export default class CircleHandler extends Highlighter {
       const newLabel = new Label();
       let newSELabel: SELabel | null = null;
 
-      let vtx: SEPoint | SEPointOnOneDimensional | null = null;
+      let vtx: SEPoint | SEPointOnOneOrTwoDimensional | null = null;
       if (this.centerSEPointOneDimensionalParent) {
         // Starting mouse press landed near a oneDimensional
         // Create the model object for the new point and link them
-        vtx = new SEPointOnOneDimensional(
+        vtx = new SEPointOnOneOrTwoDimensional(
           newCenterPoint,
           this.centerSEPointOneDimensionalParent
         );
@@ -480,7 +542,7 @@ export default class CircleHandler extends Highlighter {
 
         circleCommandGroup.addCommand(
           new AddPointOnOneDimensionalCommand(
-            vtx,
+            vtx as SEPointOnOneOrTwoDimensional,
             this.centerSEPointOneDimensionalParent,
             newSELabel
           )
@@ -546,12 +608,12 @@ export default class CircleHandler extends Highlighter {
       // Create the plottable label
       const newLabel = new Label();
 
-      let vtx: SEPoint | SEPointOnOneDimensional | null = null;
+      let vtx: SEPoint | SEPointOnOneOrTwoDimensional | null = null;
       let newSELabel: SELabel | null = null;
       if (this.hitSESegments.length > 0) {
         // The end of the line will be a point on a segment
         // Create the model object for the new point and link them
-        vtx = new SEPointOnOneDimensional(
+        vtx = new SEPointOnOneOrTwoDimensional(
           newCirclePoint,
           this.hitSESegments[0]
         );
@@ -563,7 +625,7 @@ export default class CircleHandler extends Highlighter {
 
         circleCommandGroup.addCommand(
           new AddPointOnOneDimensionalCommand(
-            vtx,
+            vtx as SEPointOnOneOrTwoDimensional,
             this.hitSESegments[0],
             newSELabel
           )
@@ -571,7 +633,10 @@ export default class CircleHandler extends Highlighter {
       } else if (this.hitSELines.length > 0) {
         // The end of the line will be a point on a line
         // Create the model object for the new point and link them
-        vtx = new SEPointOnOneDimensional(newCirclePoint, this.hitSELines[0]);
+        vtx = new SEPointOnOneOrTwoDimensional(
+          newCirclePoint,
+          this.hitSELines[0]
+        );
         // Set the Location
         vtx.locationVector = this.hitSELines[0].closestVector(
           this.currentSphereVector
@@ -579,14 +644,17 @@ export default class CircleHandler extends Highlighter {
         newSELabel = new SELabel(newLabel, vtx);
         circleCommandGroup.addCommand(
           new AddPointOnOneDimensionalCommand(
-            vtx,
+            vtx as SEPointOnOneOrTwoDimensional,
             this.hitSELines[0],
             newSELabel
           )
         );
       } else if (this.hitSECircles.length > 0) {
         // The end of the line will be a point on a circle
-        vtx = new SEPointOnOneDimensional(newCirclePoint, this.hitSECircles[0]);
+        vtx = new SEPointOnOneOrTwoDimensional(
+          newCirclePoint,
+          this.hitSECircles[0]
+        );
         // Set the Location
         vtx.locationVector = this.hitSECircles[0].closestVector(
           this.currentSphereVector
@@ -594,14 +662,14 @@ export default class CircleHandler extends Highlighter {
         newSELabel = new SELabel(newLabel, vtx);
         circleCommandGroup.addCommand(
           new AddPointOnOneDimensionalCommand(
-            vtx,
+            vtx as SEPointOnOneOrTwoDimensional,
             this.hitSECircles[0],
             newSELabel
           )
         );
       } else if (this.hitSEEllipses.length > 0) {
         // The end of the line will be a point on a ellipse
-        vtx = new SEPointOnOneDimensional(
+        vtx = new SEPointOnOneOrTwoDimensional(
           newCirclePoint,
           this.hitSEEllipses[0]
         );
@@ -612,8 +680,44 @@ export default class CircleHandler extends Highlighter {
         newSELabel = new SELabel(newLabel, vtx);
         circleCommandGroup.addCommand(
           new AddPointOnOneDimensionalCommand(
-            vtx,
+            vtx as SEPointOnOneOrTwoDimensional,
             this.hitSEEllipses[0],
+            newSELabel
+          )
+        );
+      } else if (this.hitSEParametrics.length > 0) {
+        // The end of the line will be a point on a parametric
+        vtx = new SEPointOnOneOrTwoDimensional(
+          newCirclePoint,
+          this.hitSEParametrics[0]
+        );
+        // Set the Location
+        vtx.locationVector = this.hitSEParametrics[0].closestVector(
+          this.currentSphereVector
+        );
+        newSELabel = new SELabel(newLabel, vtx);
+        circleCommandGroup.addCommand(
+          new AddPointOnOneDimensionalCommand(
+            vtx as SEPointOnOneOrTwoDimensional,
+            this.hitSEParametrics[0],
+            newSELabel
+          )
+        );
+      } else if (this.hitSEPolygons.length > 0) {
+        // The end of the line will be a point on a polygon
+        vtx = new SEPointOnOneOrTwoDimensional(
+          newCirclePoint,
+          this.hitSEPolygons[0]
+        );
+        // Set the Location
+        vtx.locationVector = this.hitSEPolygons[0].closestVector(
+          this.currentSphereVector
+        );
+        newSELabel = new SELabel(newLabel, vtx);
+        circleCommandGroup.addCommand(
+          new AddPointOnOneDimensionalCommand(
+            vtx as SEPointOnOneOrTwoDimensional,
+            this.hitSEPolygons[0],
             newSELabel
           )
         );

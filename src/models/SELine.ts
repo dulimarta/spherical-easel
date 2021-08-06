@@ -6,20 +6,20 @@ import { Visitor } from "@/visitors/Visitor";
 import { SEPoint } from "./SEPoint";
 import SETTINGS from "@/global-settings";
 import { OneDimensional, Labelable } from "@/types";
-import { Styles } from "@/types/Styles";
 import { UpdateMode, UpdateStateType, LineState } from "@/types";
 import { SELabel } from "@/models/SELabel";
 // import  SENoduleItem  from "*.vue";
 // import magnificationLevel from "*.vue";
-import magnificationLevel from "@/components/SENoduleItem.vue";
 import { SEStore } from "@/store";
 import i18n from "@/i18n";
+import {
+  DEFAULT_LINE_BACK_STYLE,
+  DEFAULT_LINE_FRONT_STYLE
+} from "@/types/Styles";
 
 const styleSet = new Set([
-  Styles.strokeWidthPercent,
-  Styles.strokeColor,
-  Styles.dashArray,
-  Styles.dynamicBackStyle
+  ...Object.getOwnPropertyNames(DEFAULT_LINE_FRONT_STYLE),
+  ...Object.getOwnPropertyNames(DEFAULT_LINE_BACK_STYLE)
 ]);
 
 export class SELine extends SENodule
@@ -46,8 +46,9 @@ export class SELine extends SENodule
   protected _normalVector = new Vector3();
   /** Temporary vectors to help with calculations */
   protected tmpVector = new Vector3(); //
-  protected tmpVector1 = new Vector3();
-  protected tmpVector2 = new Vector3();
+  private tmpVector1 = new Vector3();
+  private tmpVector2 = new Vector3();
+  private tmpVector3 = new Vector3();
   private desiredZAxis = new Vector3();
   /**
    * Create an SELine
@@ -72,7 +73,7 @@ export class SELine extends SENodule
     this.name = `Li${SELine.LINE_COUNT}`;
   }
 
-  customStyles(): Set<Styles> {
+  customStyles(): Set<string> {
     return styleSet;
   }
 
@@ -187,29 +188,36 @@ export class SELine extends SENodule
    * use the oldNormal to help compute a new normal (which is returned)
    * @param sePoint A point on the line normal to this circle
    */
-  public getNormalsToLineThru(
+  public getNormalsToPerpendicularLinesThru(
     sePointVector: Vector3,
     oldNormal: Vector3
   ): Vector3[] {
-    this.tmpVector.crossVectors(sePointVector, this._normalVector);
+    this.tmpVector3.set(0, 0, 0);
+    this.tmpVector3.crossVectors(sePointVector, this._normalVector);
     // Check to see if the tmpVector is zero (i.e the normal vector and given point are parallel -- ether
     // nearly antipodal or in the same direction)
-    if (this.tmpVector.isZero(SETTINGS.nearlyAntipodalIdeal)) {
+
+    if (this.tmpVector3.isZero(SETTINGS.nearlyAntipodalIdeal)) {
+      // console.log("get normals to line thru temp is zero");
       // In this case any line containing the sePoint will be perpendicular to the line, but
       //  we want to choose one line whose normal is near the oldNormal and perpendicular to sePointVector
       // So project the oldNormal vector onto the plane perpendicular to sePointVector
-      this.tmpVector
+      this.tmpVector3
         .copy(oldNormal)
         .addScaledVector(sePointVector, -1 * oldNormal.dot(sePointVector))
         .normalize();
-      // if (oldNormal.angleTo(this.tmpVector) > 0.0009) {
-      //   console.log(
-      //     "change in normal vector in getNormalsToLineThru",
-      //     oldNormal.angleTo(this.tmpVector)
-      //   );
+
+      // if (oldNormal.angleTo(this.tmpVector3) > 0.01) {
+      // console.log(
+      //   "change in normal vector in getNormalsToPerpendicularLinesThru",
+      //   oldNormal.angleTo(this.tmpVector3)
+      // );
       // }
     }
-    return [this.tmpVector.normalize()];
+    this.tmpVector3.normalize();
+    // console.log("here x", this.tmpVector3.x);
+
+    return [this.tmpVector3];
   }
 
   public update(state: UpdateStateType): void {

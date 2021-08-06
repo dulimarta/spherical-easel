@@ -1,11 +1,15 @@
 /** @format */
 
-import Two from "two.js";
+import Two, { Color } from "two.js";
 import SETTINGS, { LAYER } from "@/global-settings";
 import Nodule, { DisplayStyle } from "./Nodule";
 import { Vector3 } from "three";
-import { StyleOptions, StyleEditPanels } from "@/types/Styles";
-import { SENodule } from "@/models/SENodule";
+import {
+  StyleOptions,
+  StyleEditPanels,
+  DEFAULT_POINT_FRONT_STYLE,
+  DEFAULT_POINT_BACK_STYLE
+} from "@/types/Styles";
 
 /**
  * Each Point object is uniquely associated with a SEPoint object.
@@ -38,19 +42,11 @@ export default class Point extends Nodule {
    * The styling variables for the drawn point. The user can modify these.
    */
   // Front
-  protected fillColorFront = SETTINGS.point.drawn.fillColor.front;
-  protected strokeColorFront = SETTINGS.point.drawn.strokeColor.front;
   protected glowingFillColorFront = SETTINGS.point.glowing.fillColor.front;
   protected glowingStrokeColorFront = SETTINGS.point.glowing.strokeColor.front;
-  protected pointRadiusPercentFront = SETTINGS.point.radiusPercent.front;
   // Back - use the default non-dynamic back style options so that when the user disables the dynamic back style these options are displayed
-  protected fillColorBack = SETTINGS.point.drawn.fillColor.back;
-  protected strokeColorBack = SETTINGS.point.drawn.strokeColor.back;
   protected glowingFillColorBack = SETTINGS.point.glowing.fillColor.back;
   protected glowingStrokeColorBack = SETTINGS.point.glowing.strokeColor.back;
-  protected pointRadiusPercentBack = SETTINGS.point.radiusPercent.back;
-
-  protected dynamicBackStyle = SETTINGS.point.dynamicBackStyle;
 
   /**
    * Initialize the current point scale factor that is adjusted by the zoom level and the user pointRadiusPercent
@@ -122,6 +118,8 @@ export default class Point extends Nodule {
       SETTINGS.point.drawn.pointStrokeWidth.front;
     this.glowingBackPoint.linewidth =
       SETTINGS.point.drawn.pointStrokeWidth.back;
+    this.styleOptions.set(StyleEditPanels.Front, DEFAULT_POINT_FRONT_STYLE);
+    this.styleOptions.set(StyleEditPanels.Back, DEFAULT_POINT_BACK_STYLE);
   }
 
   /**
@@ -146,12 +144,17 @@ export default class Point extends Nodule {
    * The percent that the default radius point is scaled relative to the current magnification factor
    */
   get pointRadiusPercent(): number {
+    const frontStyle = this.styleOptions.get(StyleEditPanels.Front);
+    const backStyle = this.styleOptions.get(StyleEditPanels.Back);
+    if (!frontStyle) return 100;
+    const radiusPercentFront = frontStyle.pointRadiusPercent ?? 100;
+    const radiusPercentBack = backStyle?.pointRadiusPercent ?? 90;
     if (this._locationVector.z < 0) {
-      return this.dynamicBackStyle
-        ? Nodule.contrastPointRadiusPercent(this.pointRadiusPercentFront)
-        : this.pointRadiusPercentBack;
+      return backStyle?.dynamicBackStyle ?? false
+        ? Nodule.contrastPointRadiusPercent(radiusPercentFront)
+        : radiusPercentBack;
     } else {
-      return this.pointRadiusPercentFront;
+      return radiusPercentFront;
     }
   }
 
@@ -244,146 +247,60 @@ export default class Point extends Nodule {
     // apply the new color variables to the object
     this.stylize(DisplayStyle.ApplyCurrentVariables);
   }
-  /**
-   * Copies the style options set by the Style Panel into the style variables and then updates the
-   * Two.js objects (with adjustSize and stylize(ApplyVariables))
-   * @param options The style options
-   */
-  updateStyle(options: StyleOptions): void {
-    console.debug("Point: Update style of point using", options);
-    if (options.panel === StyleEditPanels.Front) {
-      // Set the front options
-      if (options.pointRadiusPercent !== undefined) {
-        // if the percent radius changes then the mutations changeStyle commit updates the object which can effect the location of the point's label
-        this.pointRadiusPercentFront = options.pointRadiusPercent;
-      }
-      if (options.fillColor !== undefined) {
-        this.fillColorFront = options.fillColor;
-      }
-      if (options.strokeColor !== undefined) {
-        this.strokeColorFront = options.strokeColor;
-      }
-    } else if (options.panel === StyleEditPanels.Back) {
-      // Set the back options
-      // options.dynamicBackStyle is boolean, so we need to explicitly check for undefined otherwise
-      // when it is false, this doesn't execute and this.dynamicBackStyle is not set
-      if (options.dynamicBackStyle !== undefined) {
-        this.dynamicBackStyle = options.dynamicBackStyle;
-      }
-      // overwrite the back options only in the case the dynamic style is not enabled
-      if (!this.dynamicBackStyle !== undefined) {
-        if (options.pointRadiusPercent) {
-          // if the percent radius changes then the mutations changeStyle commit updates the object which can effect the location of the point's label
-          this.pointRadiusPercentBack = options.pointRadiusPercent;
-        }
-        if (options.fillColor !== undefined) {
-          this.fillColorBack = options.fillColor;
-        }
-        if (options.strokeColor !== undefined) {
-          this.strokeColorBack = options.strokeColor;
-        }
-      }
-    }
-    // Now apply the style and size
-    this.stylize(DisplayStyle.ApplyCurrentVariables);
-    this.adjustSize();
-  }
-  /**
-   * Return the current style state
-   */
-  currentStyleState(panel: StyleEditPanels): StyleOptions {
-    switch (panel) {
-      case StyleEditPanels.Front: {
-        return {
-          panel: panel,
-          pointRadiusPercent: this.pointRadiusPercentFront,
-          strokeColor: this.strokeColorFront,
-          fillColor: this.fillColorFront
-        };
-      }
-      case StyleEditPanels.Back: {
-        return {
-          panel: panel,
-          pointRadiusPercent: this.pointRadiusPercentBack,
-          strokeColor: this.strokeColorBack,
-          fillColor: this.fillColorBack,
-          dynamicBackStyle: this.dynamicBackStyle
-        };
-      }
-      default:
-      case StyleEditPanels.Label: {
-        return {
-          panel: panel
-        };
-      }
-    }
-  }
+
   /**
    * Return the default style state
    */
   defaultStyleState(panel: StyleEditPanels): StyleOptions {
     switch (panel) {
-      case StyleEditPanels.Front: {
-        return {
-          panel: panel,
-          pointRadiusPercent: SETTINGS.point.radiusPercent.front,
-          strokeColor: SETTINGS.point.drawn.strokeColor.front,
-          fillColor: SETTINGS.point.drawn.fillColor.front
-        };
-        // Back
-      }
+      case StyleEditPanels.Front:
+        return DEFAULT_POINT_FRONT_STYLE;
 
-      case StyleEditPanels.Back: {
-        return {
-          panel: panel,
+      case StyleEditPanels.Back:
+        if (SETTINGS.point.dynamicBackStyle)
+          return {
+            ...DEFAULT_POINT_BACK_STYLE,
+            pointRadiusPercent: Nodule.contrastPointRadiusPercent(
+              SETTINGS.point.radiusPercent.front
+            ),
+            strokeColor: Nodule.contrastStrokeColor(
+              SETTINGS.point.drawn.strokeColor.front
+            ),
+            fillColor: Nodule.contrastFillColor(
+              SETTINGS.point.drawn.fillColor.front
+            )
+          };
+        else return DEFAULT_POINT_BACK_STYLE;
 
-          pointRadiusPercent: SETTINGS.point.dynamicBackStyle
-            ? Nodule.contrastPointRadiusPercent(
-                SETTINGS.point.radiusPercent.front
-              )
-            : SETTINGS.point.radiusPercent.back,
-
-          strokeColor: SETTINGS.point.dynamicBackStyle
-            ? Nodule.contrastStrokeColor(SETTINGS.point.drawn.strokeColor.front)
-            : SETTINGS.point.drawn.strokeColor.back,
-
-          fillColor: SETTINGS.point.dynamicBackStyle
-            ? Nodule.contrastFillColor(SETTINGS.point.drawn.fillColor.front)
-            : SETTINGS.point.drawn.fillColor.back,
-
-          dynamicBackStyle: SETTINGS.point.dynamicBackStyle
-        };
-      }
       default:
-      case StyleEditPanels.Label: {
-        return {
-          panel: panel
-        };
-      }
+        return {};
     }
   }
   /**
    * Sets the variables for point radius glowing/not
    */
   adjustSize(): void {
-    this.frontPoint.scale =
-      (Point.pointScaleFactor * this.pointRadiusPercentFront) / 100;
+    const frontStyle = this.styleOptions.get(StyleEditPanels.Front);
+    const backStyle = this.styleOptions.get(StyleEditPanels.Back);
+    const radiusPercentFront = frontStyle?.pointRadiusPercent ?? 100;
+    const radiusPercentBack = backStyle?.pointRadiusPercent ?? 90;
+    this.frontPoint.scale = (Point.pointScaleFactor * radiusPercentFront) / 100;
 
     this.backPoint.scale =
       (Point.pointScaleFactor *
-        (this.dynamicBackStyle
-          ? Nodule.contrastPointRadiusPercent(this.pointRadiusPercentFront)
-          : this.pointRadiusPercentBack)) /
+        (backStyle?.dynamicBackStyle ?? false
+          ? Nodule.contrastPointRadiusPercent(radiusPercentFront)
+          : radiusPercentBack)) /
       100;
 
     this.glowingFrontPoint.scale =
-      (Point.pointScaleFactor * this.pointRadiusPercentFront) / 100;
+      (Point.pointScaleFactor * radiusPercentFront) / 100;
 
     this.glowingBackPoint.scale =
       (Point.pointScaleFactor *
-        (this.dynamicBackStyle
-          ? Nodule.contrastPointRadiusPercent(this.pointRadiusPercentFront)
-          : this.pointRadiusPercentBack)) /
+        (backStyle?.dynamicBackStyle ?? false
+          ? Nodule.contrastPointRadiusPercent(radiusPercentFront)
+          : radiusPercentBack)) /
       100;
   }
   /**
@@ -425,48 +342,52 @@ export default class Point extends Nodule {
       case DisplayStyle.ApplyCurrentVariables: {
         // Use the current variables to directly modify the Two.js objects.
         // FRONT
-        if (this.fillColorFront === "noFill") {
+        const frontStyle = this.styleOptions.get(StyleEditPanels.Front)!;
+        if (frontStyle.fillColor === "noFill") {
           this.frontPoint.noFill();
         } else {
-          this.frontPoint.fill = this.fillColorFront;
+          this.frontPoint.fill = frontStyle.fillColor as Color;
         }
-        if (this.strokeColorFront == "noStroke") {
+        if (frontStyle.strokeColor == "noStroke") {
           this.frontPoint.noStroke();
         } else {
-          this.frontPoint.stroke = this.strokeColorFront;
+          this.frontPoint.stroke = frontStyle.strokeColor as Color;
         }
         //stroke width is not user modifiable - set in the constructor
         // pointRadiusPercent applied by adjustSize();
 
         // BACK
-        if (this.dynamicBackStyle) {
-          if (Nodule.contrastFillColor(this.fillColorFront) === "noFill") {
+        const backStyle = this.styleOptions.get(StyleEditPanels.Back)!;
+        if (backStyle.dynamicBackStyle) {
+          if (Nodule.contrastFillColor(frontStyle.fillColor!) === "noFill") {
             this.backPoint.noFill();
           } else {
-            this.backPoint.fill = Nodule.contrastFillColor(this.fillColorFront);
+            this.backPoint.fill = Nodule.contrastFillColor(
+              frontStyle.fillColor!
+            );
           }
         } else {
-          if (this.fillColorBack === "noFill") {
+          if (backStyle.fillColor === "noFill") {
             this.backPoint.noFill();
           } else {
-            this.backPoint.fill = this.fillColorBack;
+            this.backPoint.fill = backStyle.fillColor as Color;
           }
         }
-        if (this.dynamicBackStyle) {
+        if (backStyle.dynamicBackStyle) {
           if (
-            Nodule.contrastStrokeColor(this.strokeColorFront) === "noStroke"
+            Nodule.contrastStrokeColor(frontStyle.strokeColor!) === "noStroke"
           ) {
             this.backPoint.noStroke();
           } else {
             this.backPoint.stroke = Nodule.contrastStrokeColor(
-              this.strokeColorFront
+              frontStyle.strokeColor!
             );
           }
         } else {
-          if (this.strokeColorBack === "noStroke") {
+          if (backStyle.strokeColor === "noStroke") {
             this.backPoint.noStroke();
           } else {
-            this.backPoint.stroke = this.strokeColorBack;
+            this.backPoint.stroke = backStyle.strokeColor as Color;
           }
         }
         //stroke width is not user modifiable - set in the constructor

@@ -22,7 +22,7 @@ import LineHandler from "@/eventHandlers/LineHandler";
 import SegmentHandler from "@/eventHandlers/SegmentHandler";
 import CircleHandler from "@/eventHandlers/CircleHandler";
 import RotateHandler from "@/eventHandlers/RotateHandler";
-import PointOnOneDimensionalHandler from "@/eventHandlers/PointOnOneDimensionalHandler";
+import PointOnOneDimensionalHandler from "@/eventHandlers/PointOnOneOrTwoDimensionalHandler";
 import IntersectionPointHandler from "@/eventHandlers/IntersectionPointHandler";
 import AntipodalPointHandler from "@/eventHandlers/AntipodalPointHandler";
 import PolarObjectHandler from "@/eventHandlers/PolarObjectHandler";
@@ -36,16 +36,19 @@ import CoordinateHandler from "@/eventHandlers/PointCoordinateHandler";
 import SliderHandler from "@/eventHandlers/SliderHandler";
 import ToggleLabelDisplayHandler from "@/eventHandlers/ToggleLabelDisplayHandler";
 import PerpendicularLineThruPointHandler from "@/eventHandlers/PerpendicularLineThruPointHandler";
+import TangentLineThruPointHandler from "@/eventHandlers/TangentLineThruPointHandler";
 import IconFactoryHandler from "@/eventHandlers/IconFactoryHandler";
 import EllipseHandler from "@/eventHandlers/EllipseHandler";
+import PolygonHandler from "@/eventHandlers/PolygonHandler";
 
 import EventBus from "@/eventHandlers/EventBus";
 import MoveHandler from "../eventHandlers/MoveHandler";
-import { AppState, plottableType, UpdateMode } from "@/types";
+import { ActionMode, AppState, plottableType, UpdateMode } from "@/types";
 import colors from "vuetify/es5/util/colors";
 import { SELabel } from "@/models/SELabel";
 import FileSaver from "file-saver";
 import Nodule from "@/plottables/Nodule";
+import { SELine } from "@/models/SELine";
 const SE = namespace("se");
 
 @Component({})
@@ -54,7 +57,7 @@ export default class SphereFrame extends VueComponent {
   readonly canvasSize!: number;
 
   @SE.State((s: AppState) => s.actionMode)
-  readonly actionMode!: string;
+  readonly actionMode!: ActionMode;
 
   @SE.State((s: AppState) => s.zoomMagnificationFactor)
   readonly zoomMagnificationFactor!: number;
@@ -111,7 +114,10 @@ export default class SphereFrame extends VueComponent {
   private sliderTool!: SliderHandler;
   private toggleLabelDisplayTool!: ToggleLabelDisplayHandler;
   private perpendicularLineThruPointTool!: PerpendicularLineThruPointHandler;
+  private tangentLineThruPointTool!: TangentLineThruPointHandler;
   private iconFactoryTool!: IconFactoryHandler;
+  private measureTriangleTool!: PolygonHandler;
+  private measurePolygonTool!: PolygonHandler;
 
   /**
    * The layers for displaying the various objects in the right way. So a point in the
@@ -261,6 +267,11 @@ export default class SphereFrame extends VueComponent {
     this.perpendicularLineThruPointTool = new PerpendicularLineThruPointHandler(
       this.layers
     );
+    this.tangentLineThruPointTool = new TangentLineThruPointHandler(
+      this.layers
+    );
+    this.measureTriangleTool = new PolygonHandler(this.layers, true);
+    this.measurePolygonTool = new PolygonHandler(this.layers, false);
 
     // Make the canvas accessible to other components which need
     // to grab the SVG contents of the sphere
@@ -331,7 +342,7 @@ export default class SphereFrame extends VueComponent {
   //#endregion updateView
 
   handleMouseWheel(event: WheelEvent): void {
-    console.debug("Mouse Wheel Zoom!");
+    // console.debug("Mouse Wheel Zoom!");
     // Compute (pixelX,pixelY) = the location of the mouse release in pixel coordinates relative to
     //  the top left of the sphere frame. This is a location *post* affine transformation
     const target = (event.currentTarget || event.target) as HTMLDivElement;
@@ -433,14 +444,39 @@ export default class SphereFrame extends VueComponent {
 
   handleMousePressed(e: MouseEvent): void {
     // Only process events from the left (inner) mouse button to avoid adverse interactions with any pop-up menu
+    // const bb = (e.currentTarget as HTMLElement).getBoundingClientRect();
+    // console.debug(
+    //   "Mode",
+    //   this.actionMode,
+    //   ` mouse pressed at (${e.clientX - bb.left},${e.clientY - bb.top})`
+    // );
     if (e.button === 0) this.currentTool?.mousePressed(e);
   }
 
   handleMouseReleased(e: MouseEvent): void {
     // Only process events from the left (inner) mouse button to avoid adverse interactions with any pop-up menu
-    if (e.button === 0)
+    // const bb = (e.currentTarget as HTMLElement).getBoundingClientRect();
+    // console.debug(
+    //   "Mode",
+    //   this.actionMode,
+    //   ` mouse released at (${e.clientX - bb.left},${e.clientY - bb.top})`
+    // );
+    if (e.button === 0) {
       // When currentTool is NULL, the following line does nothing
       this.currentTool?.mouseReleased(e);
+      // console.debug(
+      //   SEStore.sePoints.length,
+      //   "P  ",
+      //   SEStore.seLines.length,
+      //   "L   ",
+      //   SEStore.seSegments.length,
+      //   "S   ",
+      //   SEStore.seCircles.length,
+      //   "C   ",
+      //   SEStore.seEllipses.length,
+      //   "E"
+      // );
+    }
   }
 
   handleMouseLeave(e: MouseEvent): void {
@@ -544,7 +580,7 @@ export default class SphereFrame extends VueComponent {
    * we would not be able to do this (at least not directly).
    */
   @Watch("actionMode")
-  switchActionMode(mode: string): void {
+  switchActionMode(mode: ActionMode): void {
     this.currentTool?.deactivate();
     this.currentTool = null;
     //set the default footer color -- override as necessary
@@ -648,6 +684,15 @@ export default class SphereFrame extends VueComponent {
         break;
       case "perpendicular":
         this.currentTool = this.perpendicularLineThruPointTool;
+        break;
+      case "tangent":
+        this.currentTool = this.tangentLineThruPointTool;
+        break;
+      case "measureTriangle":
+        this.currentTool = this.measureTriangleTool;
+        break;
+      case "measurePolygon":
+        this.currentTool = this.measurePolygonTool;
         break;
       default:
         this.currentTool = null;

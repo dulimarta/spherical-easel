@@ -68,10 +68,7 @@
         i18n-title-line="style.selectAnObject"
         i18n-subtitle-line="style.closeOrSelect"
         i18n-list-title="style.toSelectObjects"
-        i18n-list-item-one="style.selectionDirection1"
-        i18n-list-item-two="style.selectionDirection2"
-        i18n-list-item-three="style.selectionDirection3"
-        i18n-list-item-four="style.selectionDirection4"
+        :i18n-list-items="['style.selectionDirection1','style.selectionDirection2','style.selectionDirection3','style.selectionDirection4']"
         i18n-button-label="style.closeStylingPanel"
         i18n-button-tool-tip="style.noSelectionToolTip"
         @click="$emit('toggle-style-panel')">
@@ -104,7 +101,6 @@
       <v-icon v-on:click="$emit('toggle-style-panel')">mdi-palette
       </v-icon>
     </div>
-
   </transition>
 
 </template>
@@ -192,8 +188,14 @@ export default class Style extends Vue {
     // console.log("Style update selected item array: onSelectionChanged");
 
     const tempArray: string[] = [];
-    this.selectedSENodules.forEach(node => tempArray.push(node.name));
+    const alreadyCounted: boolean[] = []; // records if the tempArray item has already been counted (helps avoid one tempArray item being counted multiple times -- make sure the order of the search dicated by firstPartialList is correct)
+    this.selectedSENodules.forEach(node => {
+      tempArray.push(node.name);
+      alreadyCounted.push(false);
+    });
     const elementListi18nKeys = [
+      "style.parametric",
+      "style.polygon",
       "style.point",
       "style.line",
       "style.segment",
@@ -202,12 +204,13 @@ export default class Style extends Vue {
       "style.angleMarker",
       "style.ellipse"
     ];
-    const firstPartList = ["P", "Li", "Ls", "C", "La", "M", "E"]; // The *internal* names of the objects start with these strings (the oder must match the order of the signular/pural i18n keys)
+    const firstPartList = ["Pa", "Po", "P", "Li", "Ls", "C", "La", "M", "E"]; // The *internal* names of the objects start with these strings (the oder must match the order of the signular/pural i18n keys)
     const countList: number[] = [];
     firstPartList.forEach(str => {
       let count = 0;
-      tempArray.forEach(name => {
-        if (name.startsWith(str)) {
+      tempArray.forEach((name, ind) => {
+        if (name.startsWith(str) && !alreadyCounted[ind]) {
+          alreadyCounted[ind] = true;
           count++;
         }
       });

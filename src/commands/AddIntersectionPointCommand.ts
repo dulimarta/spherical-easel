@@ -1,6 +1,6 @@
 import { Command } from "./Command";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
-import { SEOneDimensional, UpdateMode } from "@/types";
+import { SEOneOrTwoDimensional, UpdateMode } from "@/types";
 import { SELabel } from "@/models/SELabel";
 import { SENodule } from "@/models/SENodule";
 import { Vector3 } from "three";
@@ -10,14 +10,14 @@ import SETTINGS from "@/global-settings";
 import NonFreePoint from "@/plottables/NonFreePoint";
 export class AddIntersectionPointCommand extends Command {
   private sePoint: SEIntersectionPoint;
-  private parent1: SEOneDimensional;
-  private parent2: SEOneDimensional;
+  private parent1: SEOneOrTwoDimensional;
+  private parent2: SEOneOrTwoDimensional;
   private seLabel: SELabel;
 
   constructor(
     sePoint: SEIntersectionPoint,
-    parent1: SEOneDimensional,
-    parent2: SEOneDimensional,
+    parent1: SEOneOrTwoDimensional,
+    parent2: SEOneOrTwoDimensional,
     seLabel: SELabel
   ) {
     super();
@@ -54,7 +54,7 @@ export class AddIntersectionPointCommand extends Command {
   toOpcode(): null | string | Array<string> {
     return [
       "AddIntersectionPoint",
-      /* arg-1 */ this.sePoint,
+      /* arg-1 */ this.sePoint.name,
       /* arg-2 */ this.sePoint.locationVector.toFixed(7),
       /* arg-3 */ this.parent1.name,
       /* arg-4 */ this.parent2.name,
@@ -69,8 +69,8 @@ export class AddIntersectionPointCommand extends Command {
 
   static parse(cmd: string, objMap: Map<string, SENodule>): Command {
     const tokens = cmd.split("/");
-    const parent1 = objMap.get(tokens[3]) as SEOneDimensional;
-    const parent2 = objMap.get(tokens[4]) as SEOneDimensional;
+    const parent1 = objMap.get(tokens[3]) as SEOneOrTwoDimensional;
+    const parent2 = objMap.get(tokens[4]) as SEOneOrTwoDimensional;
     if (parent1 && parent2) {
       const location = new Vector3();
       location.from(tokens[2]);

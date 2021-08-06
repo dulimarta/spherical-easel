@@ -16,7 +16,7 @@ import { Prop } from "vue-property-decorator";
 
 @Component({})
 export default class FadeInCard extends Vue {
-  @Prop()
+  @Prop({ default: true })
   readonly showWhen!: boolean;
   readonly color!: string;
 }

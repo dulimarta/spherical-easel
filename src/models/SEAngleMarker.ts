@@ -8,7 +8,10 @@ import { Visitable } from "@/visitors/Visitable";
 import { Visitor } from "@/visitors/Visitor";
 import { AngleMarkerState } from "@/types";
 import SETTINGS from "@/global-settings";
-import { Styles } from "@/types/Styles";
+import {
+  DEFAULT_ANGLE_MARKER_BACK_STYLE,
+  DEFAULT_ANGLE_MARKER_FRONT_STYLE
+} from "@/types/Styles";
 import { UpdateMode, UpdateStateType } from "@/types";
 import { Labelable } from "@/types";
 import { SELabel } from "@/models/SELabel";
@@ -17,14 +20,8 @@ import { AngleMode } from "@/types";
 import i18n from "@/i18n";
 
 const styleSet = new Set([
-  Styles.strokeColor,
-  Styles.strokeWidthPercent,
-  Styles.dashArray,
-  Styles.fillColor,
-  Styles.dynamicBackStyle,
-  Styles.angleMarkerRadiusPercent,
-  Styles.angleMarkerTickMark,
-  Styles.angleMarkerDoubleArc
+  ...Object.getOwnPropertyNames(DEFAULT_ANGLE_MARKER_FRONT_STYLE),
+  ...Object.getOwnPropertyNames(DEFAULT_ANGLE_MARKER_BACK_STYLE)
 ]);
 
 export class SEAngleMarker extends SEExpression
@@ -102,6 +99,8 @@ export class SEAngleMarker extends SEExpression
    */
   private _angleMarkerNumber = 0;
 
+  /** The measure of the angle */
+  private _measure = 0;
   /**
    * Create a model SEAngleMarker using:
    * @param angMar The plottable TwoJS Object associated to this object
@@ -129,11 +128,12 @@ export class SEAngleMarker extends SEExpression
     // can be referenced by the user and found by the parser
     // however we don't want the initial shortName of the angle marker's label to be displayed with a "M###"
     //  so we record the angleMarkerNumber and then in SELabel, we set the short name of the Label using this field.
+    // The M### name is defined in the SEExpression constructor
     SEAngleMarker.ANGLEMARKER_COUNT++;
     this._angleMarkerNumber = SEAngleMarker.ANGLEMARKER_COUNT;
   }
 
-  customStyles(): Set<Styles> {
+  customStyles(): Set<string> {
     return styleSet;
   }
 
@@ -159,7 +159,8 @@ export class SEAngleMarker extends SEExpression
         i18n.t(`objectTree.anglePoints`, {
           p1: this._firstSEParent.label?.ref.shortUserName,
           p2: this._secondSEParent.label?.ref.shortUserName,
-          p3: this._thirdSEParent.label?.ref.shortUserName
+          p3: this._thirdSEParent.label?.ref.shortUserName,
+          val: this._measure
         })
       );
     } else {
@@ -170,7 +171,8 @@ export class SEAngleMarker extends SEExpression
         return String(
           i18n.t(`objectTree.angleSegments`, {
             seg1: this._firstSEParent.label?.ref.shortUserName,
-            seg2: this._secondSEParent.label?.ref.shortUserName
+            seg2: this._secondSEParent.label?.ref.shortUserName,
+            val: this._measure
           })
         );
       } else if (
@@ -180,7 +182,8 @@ export class SEAngleMarker extends SEExpression
         return String(
           i18n.t(`objectTree.angleLines`, {
             line1: this._firstSEParent.label?.ref.shortUserName,
-            line2: this._secondSEParent.label?.ref.shortUserName
+            line2: this._secondSEParent.label?.ref.shortUserName,
+            val: this._measure
           })
         );
       } else if (
@@ -190,19 +193,20 @@ export class SEAngleMarker extends SEExpression
         return String(
           i18n.t(`objectTree.angleLineSegment`, {
             line1: this._firstSEParent.label?.ref.shortUserName,
-            line2: this._secondSEParent.label?.ref.shortUserName
+            line2: this._secondSEParent.label?.ref.shortUserName,
+            val: this._measure
           })
         );
       } else {
         return String(
           i18n.t(`objectTree.angleSegmentLine`, {
             line1: this._firstSEParent.label?.ref.shortUserName,
-            line2: this._secondSEParent.label?.ref.shortUserName
+            line2: this._secondSEParent.label?.ref.shortUserName,
+            val: this._measure
           })
         );
       }
     }
-    return "Error in Angle Marker Description";
   }
 
   public get noduleItemText(): string {
@@ -212,6 +216,13 @@ export class SEAngleMarker extends SEExpression
       this.label?.ref.shortUserName +
       `: ${this.prettyValue}`
     );
+  }
+
+  get firstSEParent(): SELine | SESegment | SEPoint {
+    return this._firstSEParent;
+  }
+  get secondSEParent(): SELine | SESegment | SEPoint {
+    return this._secondSEParent;
   }
 
   public isHitAt(
@@ -310,13 +321,17 @@ export class SEAngleMarker extends SEExpression
             this._firstSEParent.locationVector,
             this._secondSEParent.locationVector
           )
-          .isZero(SETTINGS.nearlyAntipodalIdeal) &&
+          .isZero(
+            SETTINGS.nearlyAntipodalIdeal / SEStore.zoomMagnificationFactor
+          ) &&
         !this.tmpVector1
           .crossVectors(
             this._thirdSEParent.locationVector,
             this._secondSEParent.locationVector
           )
-          .isZero(SETTINGS.nearlyAntipodalIdeal);
+          .isZero(
+            SETTINGS.nearlyAntipodalIdeal / SEStore.zoomMagnificationFactor
+          );
     }
 
     //update _vertexVector , _startVector , _endVector using _angleMarkerRadius (which is set in the )
@@ -792,6 +807,13 @@ export class SEAngleMarker extends SEExpression
         this.ref.startVector = this._startVector;
         this.ref.endVector = this._endVector;
       }
+      // update the measure
+      this._measure = this.measureAngle(
+        this._startVector,
+        this._vertexVector,
+        this._endVector
+      );
+
       // display the new angleMarker
       this.ref.updateDisplay();
     }
@@ -802,22 +824,13 @@ export class SEAngleMarker extends SEExpression
       this.ref.setVisible(false);
     }
     // These angle markers are completely determined by their line/segment/point parents and an update on the parents
-    // will cause this circle to be put into the correct location. Therefore there is no need to
+    // will cause this angleMarker to be put into the correct location. Therefore there is no need to
     // store it in the stateArray for undo move. Only store for delete
 
     if (state.mode == UpdateMode.RecordStateForDelete) {
       const angleMarkerState: AngleMarkerState = {
         kind: "angleMarker",
         object: this
-        // vertexVectorX: this._vertexVector.x,
-        // vertexVectorY: this._vertexVector.y,
-        // vertexVectorZ: this._vertexVector.z,
-        // startVectorX: this._startVector.x,
-        // startVectorY: this._startVector.y,
-        // startVectorZ: this._startVector.z,
-        // endVectorX: this._endVector.x,
-        // endVectorY: this._endVector.y,
-        // endVectorZ: this._endVector.z
       };
       state.stateArray.push(angleMarkerState);
     }
@@ -826,8 +839,9 @@ export class SEAngleMarker extends SEExpression
     //this.name = this.name.substring(0, pos + 2) + this.prettyValue;
 
     // When this updates send its value to the label of the angleMarker
-    this.label!.ref.value = [this.value];
-
+    if (this.label) {
+      this.label.ref.value = [this.value];
+    }
     this.setOutOfDate(false);
     this.updateKids(state);
   }

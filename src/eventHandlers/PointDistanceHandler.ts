@@ -17,9 +17,9 @@ export default class PointDistantHandler extends Highlighter {
   }
 
   mousePressed(event: MouseEvent): void {
-    //Select an object to delete
     if (this.isOnSphere) {
-      const possibleTargetPointList = this.hitSEPoints.filter(
+      let possibleTargetPointList: SEPoint[] = [];
+      possibleTargetPointList = this.hitSEPoints.filter(
         p => !(p instanceof SEIntersectionPoint && !p.isUserCreated)
       );
       if (possibleTargetPointList.length > 0) {
@@ -27,6 +27,7 @@ export default class PointDistantHandler extends Highlighter {
           (p: SEPoint) => p.id === possibleTargetPointList[0].id
         );
         if (pos >= 0) {
+          console.log("here");
           EventBus.fire("show-alert", {
             key: `handlers.duplicatePointMessage`,
             keyOptions: {},
@@ -41,6 +42,38 @@ export default class PointDistantHandler extends Highlighter {
       }
 
       if (this.targetPoints.length === 2) {
+        // make sure that this pair of points has not been measured already
+        let measurementName = "";
+        if (
+          SEStore.expressions.some(exp => {
+            if (
+              exp instanceof SEPointDistance &&
+              ((exp.parents[0].name === this.targetPoints[0].name &&
+                exp.parents[1].name === this.targetPoints[1].name) ||
+                (exp.parents[0].name === this.targetPoints[1].name &&
+                  exp.parents[1].name === this.targetPoints[0].name))
+            ) {
+              measurementName = exp.name;
+              return true;
+            } else {
+              return false;
+            }
+          })
+        ) {
+          EventBus.fire("show-alert", {
+            key: `handlers.duplicatePointDistanceMeasurement`,
+            keyOptions: {
+              pt0Name: `${this.targetPoints[0].name}`,
+              pt1Name: `${this.targetPoints[1].name}`,
+              measurementName: `${measurementName}`
+            },
+            type: "error"
+          });
+          // reset for another distance measurement
+          this.mouseLeave(event);
+          return;
+        }
+
         const distanceMeasure = new SEPointDistance(
           this.targetPoints[0],
           this.targetPoints[1]
@@ -86,7 +119,7 @@ export default class PointDistantHandler extends Highlighter {
       p.selected = false;
       p.glowing = false;
     });
-    this.targetPoints.slice(0);
+    this.targetPoints.splice(0);
   }
 
   activate(): void {
@@ -99,16 +132,45 @@ export default class PointDistantHandler extends Highlighter {
         object2 instanceof SEPoint &&
         object1 !== object2
       ) {
-        const distanceMeasure = new SEPointDistance(object1, object2);
+        // make sure that this pair of points has not been measured already
+        let measurementName = "";
+        if (
+          SEStore.expressions.some(exp => {
+            if (
+              exp instanceof SEPointDistance &&
+              ((exp.parents[0].name === object1.name &&
+                exp.parents[1].name === object2.name) ||
+                (exp.parents[0].name === object2.name &&
+                  exp.parents[1].name === object1.name))
+            ) {
+              measurementName = exp.name;
+              return true;
+            } else {
+              return false;
+            }
+          })
+        ) {
+          EventBus.fire("show-alert", {
+            key: `handlers.duplicatePointDistanceMeasurement`,
+            keyOptions: {
+              pt0Name: `${object1.name}`,
+              pt1Name: `${object2.name}`,
+              measurementName: `${measurementName}`
+            },
+            type: "error"
+          });
+        } else {
+          const distanceMeasure = new SEPointDistance(object1, object2);
 
-        EventBus.fire("show-alert", {
-          text: `New measurement ${distanceMeasure.name} added`,
-          type: "success"
-        });
-        new AddPointDistanceMeasurementCommand(distanceMeasure, [
-          object1,
-          object2
-        ]).execute();
+          EventBus.fire("show-alert", {
+            text: `New measurement ${distanceMeasure.name} added`,
+            type: "success"
+          });
+          new AddPointDistanceMeasurementCommand(distanceMeasure, [
+            object1,
+            object2
+          ]).execute();
+        }
       }
     }
     //Unselect the selected objects and clear the selectedObject array

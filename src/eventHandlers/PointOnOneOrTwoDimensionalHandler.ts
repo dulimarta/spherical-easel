@@ -3,13 +3,13 @@ import Point from "@/plottables/Point";
 import { AddPointCommand } from "@/commands/AddPointCommand";
 import { DisplayStyle } from "@/plottables/Nodule";
 import Highlighter from "./Highlighter";
-import { SEPointOnOneDimensional } from "@/models/SEPointOnOneDimensional";
-import { SEOneDimensional } from "@/types";
+import { SEPointOnOneOrTwoDimensional } from "@/models/SEPointOnOneOrTwoDimensional";
+import { SEOneOrTwoDimensional } from "@/types";
 import Label from "@/plottables/Label";
 import { SELabel } from "@/models/SELabel";
 import SETTINGS from "@/global-settings";
 import { Vector3 } from "three";
-import { AddPointOnOneDimensionalCommand } from "@/commands/AddPointOnOneDimensionalCommand";
+import { AddPointOnOneDimensionalCommand } from "@/commands/AddPointOnOneOrTwoDimensionalCommand";
 import { SEStore } from "@/store";
 
 export default class PointOnOneDimensionalHandler extends Highlighter {
@@ -23,11 +23,11 @@ export default class PointOnOneDimensionalHandler extends Highlighter {
   /**
    * As the user moves the pointer around snap the temporary marker to this object temporarily
    */
-  protected snapToTemporaryOneDimensional: SEOneDimensional | null = null;
+  protected snapToTemporaryOneDimensional: SEOneOrTwoDimensional | null = null;
   /**
    * The parent of the point
    */
-  private oneDimensional: SEOneDimensional | null = null;
+  private oneDimensional: SEOneOrTwoDimensional | null = null;
 
   /* temporary vector to help with computation */
   private tmpVector = new Vector3();
@@ -56,6 +56,10 @@ export default class PointOnOneDimensionalHandler extends Highlighter {
           this.oneDimensional = this.hitSECircles[0];
         } else if (this.hitSEEllipses.length > 0) {
           this.oneDimensional = this.hitSEEllipses[0];
+        } else if (this.hitSEParametrics.length > 0) {
+          this.oneDimensional = this.hitSEParametrics[0];
+        } else if (this.hitSEPolygons.length > 0) {
+          this.oneDimensional = this.hitSEPolygons[0];
         }
       }
       if (this.oneDimensional !== null) {
@@ -67,7 +71,10 @@ export default class PointOnOneDimensionalHandler extends Highlighter {
         const newLabel = new Label();
 
         // Create the model object for the new point and link them
-        const vtx = new SEPointOnOneDimensional(newPoint, this.oneDimensional);
+        const vtx = new SEPointOnOneOrTwoDimensional(
+          newPoint,
+          this.oneDimensional
+        );
         vtx.locationVector = this.oneDimensional.closestVector(
           this.currentSphereVector
         );
@@ -87,7 +94,7 @@ export default class PointOnOneDimensionalHandler extends Highlighter {
         // Create and execute the command to create a new point for undo/redo
         //new AddPointCommand(vtx, newSELabel).execute();
         new AddPointOnOneDimensionalCommand(
-          vtx,
+          vtx as SEPointOnOneOrTwoDimensional,
           this.oneDimensional,
           newSELabel
         ).execute();
@@ -120,6 +127,12 @@ export default class PointOnOneDimensionalHandler extends Highlighter {
       } else if (this.hitSEEllipses.length > 0) {
         this.hitSEEllipses[0].glowing = true;
         this.snapToTemporaryOneDimensional = this.hitSEEllipses[0];
+      } else if (this.hitSEParametrics.length > 0) {
+        this.hitSEParametrics[0].glowing = true;
+        this.snapToTemporaryOneDimensional = this.hitSEParametrics[0];
+      } else if (this.hitSEPolygons.length > 0) {
+        this.hitSEPolygons[0].glowing = true;
+        this.snapToTemporaryOneDimensional = this.hitSEPolygons[0];
       }
     }
     if (this.isOnSphere) {

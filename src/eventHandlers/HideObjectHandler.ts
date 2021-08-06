@@ -37,10 +37,14 @@ export default class HideObjectHandler extends Highlighter {
         this.victim = this.hitSECircles[0];
       } else if (this.hitSEEllipses.length > 0) {
         this.victim = this.hitSEEllipses[0];
+      } else if (this.hitSEParametrics.length > 0) {
+        this.victim = this.hitSEParametrics[0];
       } else if (this.hitSELabels.length > 0) {
         this.victim = this.hitSELabels[0];
       } else if (this.hitSEAngleMarkers.length > 0) {
         this.victim = this.hitSEAngleMarkers[0];
+      } else if (this.hitSEPolygons.length > 0) {
+        this.victim = this.hitSEPolygons[0];
       }
 
       if (this.victim != null) {
@@ -75,10 +79,14 @@ export default class HideObjectHandler extends Highlighter {
       this.hitSECircles[0].glowing = true;
     } else if (this.hitSEEllipses.length > 0) {
       this.hitSEEllipses[0].glowing = true;
+    } else if (this.hitSEParametrics.length > 0) {
+      this.hitSEParametrics[0].glowing = true;
     } else if (this.hitSELabels.length > 0) {
       this.hitSELabels[0].glowing = true;
     } else if (this.hitSEAngleMarkers.length > 0) {
       this.hitSEAngleMarkers[0].glowing = true;
+    } else if (this.hitSEPolygons.length > 0) {
+      this.hitSEPolygons[0].glowing = true;
     }
   }
 

@@ -1,72 +1,74 @@
 import { Command } from "./Command";
 import { SEPoint } from "@/models/SEPoint";
-import { SEOneDimensional, UpdateMode } from "@/types";
+import { SEOneOrTwoDimensional, UpdateMode } from "@/types";
 import { SELabel } from "@/models/SELabel";
 import SETTINGS from "@/global-settings";
 import { SENodule } from "@/models/SENodule";
 import { Vector3 } from "three";
 import Point from "@/plottables/Point";
-import { SEPointOnOneDimensional } from "@/models/SEPointOnOneDimensional";
+import { SEPointOnOneOrTwoDimensional } from "@/models/SEPointOnOneOrTwoDimensional";
 import { DisplayStyle } from "@/plottables/Nodule";
 import Label from "@/plottables/Label";
 
 export class AddPointOnOneDimensionalCommand extends Command {
-  private sePointOnOneDimensional: SEPoint | SEPointOnOneDimensional;
-  private parent: SEOneDimensional;
+  private sePointOnOneOrTwoDimensional: SEPointOnOneOrTwoDimensional;
+  private parent: SEOneOrTwoDimensional;
   private seLabel: SELabel;
   constructor(
-    sePointOnOneDimensional: SEPoint | SEPointOnOneDimensional,
-    parent: SEOneDimensional,
+    sePointOnOneDimensional: SEPointOnOneOrTwoDimensional,
+    parent: SEOneOrTwoDimensional,
     seLabel: SELabel
   ) {
     super();
-    this.sePointOnOneDimensional = sePointOnOneDimensional;
+    this.sePointOnOneOrTwoDimensional = sePointOnOneDimensional;
     this.parent = parent;
     this.seLabel = seLabel;
   }
 
   do(): void {
-    this.parent.registerChild(this.sePointOnOneDimensional);
-    this.sePointOnOneDimensional.registerChild(this.seLabel);
+    this.parent.registerChild(this.sePointOnOneOrTwoDimensional);
+    this.sePointOnOneOrTwoDimensional.registerChild(this.seLabel);
     if (SETTINGS.point.showLabelsOfPointOnObjectInitially) {
       this.seLabel.showing = true;
     } else {
       this.seLabel.showing = false;
     }
-    Command.store.addPoint(this.sePointOnOneDimensional);
+    Command.store.addPoint(this.sePointOnOneOrTwoDimensional);
     Command.store.addLabel(this.seLabel);
-    this.sePointOnOneDimensional.update({
+    this.sePointOnOneOrTwoDimensional.update({
       mode: UpdateMode.DisplayOnly,
       stateArray: []
     });
   }
 
   saveState(): void {
-    this.lastState = this.sePointOnOneDimensional.id;
+    this.lastState = this.sePointOnOneOrTwoDimensional.id;
   }
 
   restoreState(): void {
     Command.store.removeLabel(this.seLabel.id);
     Command.store.removePoint(this.lastState);
-    this.sePointOnOneDimensional.unregisterChild(this.seLabel);
-    this.parent.unregisterChild(this.sePointOnOneDimensional);
+    this.sePointOnOneOrTwoDimensional.unregisterChild(this.seLabel);
+    this.parent.unregisterChild(this.sePointOnOneOrTwoDimensional);
   }
 
   toOpcode(): null | string | Array<string> {
     return [
       "AddPointOnOneDimensional",
-      /* arg-1 */ this.sePointOnOneDimensional.name,
-      /* arg-2 */ this.sePointOnOneDimensional.locationVector.toFixed(7),
+      /* arg-1 */ this.sePointOnOneOrTwoDimensional.name,
+      /* arg-2 */ this.sePointOnOneOrTwoDimensional.locationVector.toFixed(7),
       /* arg-3 */ this.parent.name,
       /* arg-4 */ this.seLabel.name,
-      /* arg-5 */ this.sePointOnOneDimensional.showing,
-      /* arg-6 */ this.sePointOnOneDimensional.exists
+      /* arg-5 */ this.sePointOnOneOrTwoDimensional.showing,
+      /* arg-6 */ this.sePointOnOneOrTwoDimensional.exists
     ].join("/");
   }
 
   static parse(command: string, objMap: Map<string, SENodule>): Command {
     const tokens = command.split("/");
-    const parentLine = objMap.get(tokens[3]) as SEOneDimensional | undefined;
+    const parentLine = objMap.get(tokens[3]) as
+      | SEOneOrTwoDimensional
+      | undefined;
     if (parentLine) {
       const pointPosition = new Vector3();
       pointPosition.from(tokens[2]);
@@ -75,7 +77,7 @@ export class AddPointOnOneDimensionalCommand extends Command {
       const newPoint = new Point();
       newPoint.stylize(DisplayStyle.ApplyCurrentVariables);
       newPoint.adjustSize();
-      const point = new SEPointOnOneDimensional(newPoint, parentLine);
+      const point = new SEPointOnOneOrTwoDimensional(newPoint, parentLine);
       point.locationVector.copy(pointPosition);
 
       const newLabel = new Label();

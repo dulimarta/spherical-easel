@@ -1,9 +1,9 @@
 import { Command } from "./Command";
 import { SENodule } from "@/models/SENodule";
 import { SESlider } from "@/models/SESlider";
-import { AddMeasurementCommand } from "./AddMeasurementCommand";
+import { AddExpressionCommand } from "./AddExpressionCommand";
 
-export class AddSliderMeasurementCommand extends AddMeasurementCommand {
+export class AddSliderMeasurementCommand extends AddExpressionCommand {
   /**
    * @param seMeasurements
    * @param parents If this is included then the seExpression is made a child of all the SENodules in this array

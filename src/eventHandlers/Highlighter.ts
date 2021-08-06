@@ -10,6 +10,8 @@ import { SECircle } from "@/models/SECircle";
 import { SEStore } from "@/store";
 import { SEAngleMarker } from "@/models/SEAngleMarker";
 import { SEEllipse } from "@/models/SEEllipse";
+import { SEParametric } from "@/models/SEParametric";
+import { SEPolygon } from "@/models/SEPolygon";
 
 export default abstract class Highlighter extends MouseHandler {
   abstract mousePressed(event: MouseEvent): void;
@@ -46,6 +48,8 @@ export default abstract class Highlighter extends MouseHandler {
     this.hitSEEllipses.clear();
     this.hitSELabels.clear();
     this.hitSEAngleMarkers.clear();
+    this.hitSEParametrics.clear();
+    this.hitSEPolygons.clear();
     this.infoText.hide();
 
     // Create an array of SENodules of all nearby objects by querying the store
@@ -97,6 +101,14 @@ export default abstract class Highlighter extends MouseHandler {
       .filter(obj => obj instanceof SEAngleMarker)
       .map(obj => obj as SEAngleMarker);
 
+    this.hitSEParametrics = this.hitSENodules
+      .filter(obj => obj instanceof SEParametric)
+      .map(obj => obj as SEParametric);
+
+    this.hitSEPolygons = this.hitSENodules
+      .filter(obj => obj instanceof SEPolygon)
+      .map(obj => obj as SEPolygon);
+
     // Pull the name field from all these objects into one array of strings
     const text = [
       ...this.hitSEPoints,
@@ -104,7 +116,9 @@ export default abstract class Highlighter extends MouseHandler {
       ...this.hitSESegments,
       ...this.hitSECircles,
       ...this.hitSEEllipses,
-      ...this.hitSEAngleMarkers
+      ...this.hitSEAngleMarkers,
+      ...this.hitSEParametrics,
+      ...this.hitSEPolygons
     ]
       .map(n => n.name)
       .join(", ");

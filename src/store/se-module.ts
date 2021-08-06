@@ -1,5 +1,10 @@
 import { Module, VuexModule, Mutation } from "vuex-module-decorators";
-import { AppState, Labelable, SEIntersectionReturnType } from "@/types";
+import {
+  AppState,
+  Labelable,
+  SEIntersectionReturnType,
+  ActionMode
+} from "@/types";
 import Two from "two.js";
 import { SEPoint } from "@/models/SEPoint";
 import { SESegment } from "@/models/SESegment";
@@ -28,16 +33,29 @@ import {
   intersectLineWithLine,
   intersectLineWithSegment,
   intersectLineWithCircle,
+  intersectLineWithEllipse,
+  intersectLineWithParametric,
   intersectSegmentWithSegment,
   intersectSegmentWithCircle,
-  intersectCircles,
-  intersectLineWithEllipse,
   intersectSegmentWithEllipse,
+  //intersectSegmentWithParametric,
+  intersectCircles,
   intersectCircleWithEllipse,
-  intersectEllipseWithEllipse
+  //intersectCircleWithParametric,
+  intersectEllipseWithEllipse,
+  intersectSegmentWithParametric,
+  intersectCircleWithParametric,
+  intersectEllipseWithParametric,
+  intersectParametricWithParametric
+  //intersectEllipseWithParametric,
+  //intersectParametrics
 } from "@/utils/intersections";
 import EventBus from "@/eventHandlers/EventBus";
 import { SEPolarLine } from "@/models/SEPolarLine";
+import { SEParametric } from "@/models/SEParametric";
+import Parametric from "@/plottables/Parametric";
+import { SEPolygon } from "@/models/SEPolygon";
+import { SETangentLineThruPoint } from "@/models/SETangentLineThruPoint";
 const tmpMatrix = new Matrix4();
 //const tmpVector = new Vector3();
 
@@ -67,8 +85,8 @@ export default class SE extends VuexModule implements AppState {
   //#region appState
 
   sphereRadius = 0; // Is this needed? TODO = remove?
-  actionMode = "rotate"; // The action mode of the Sphere Canvas
-  previousActionMode = "rotate"; // The previous action mode
+  actionMode: ActionMode = "rotate"; // The action mode of the Sphere Canvas
+  previousActionMode: ActionMode = "rotate"; // The previous action mode
   activeToolName = ""; // The active tool for handling user mouse input
   previousActiveToolName = ""; // The active tool for handling user mouse input
   zoomMagnificationFactor = 1; // The CSSTransform magnification factor
@@ -84,14 +102,19 @@ export default class SE extends VuexModule implements AppState {
   seSegments: SESegment[] = []; // An array of all SESegments
   seCircles: SECircle[] = []; // An array of all SECircles
   seEllipses: SEEllipse[] = []; // An array of all SEEllipse
+  seParametrics: SEParametric[] = []; // An array of all SEParametric
   seAngleMarkers: SEAngleMarker[] = []; // An array of all SEAngleMarkers
+  sePolygons: SEPolygon[] = []; // An array of all SEAngleMarkers
   seLabels: SELabel[] = []; // An array of all SELabels
   temporaryNodules: Nodule[] = []; // An array of all Nodules that are temporary - created by the handlers.
   intersections: SEIntersectionPoint[] = [];
   // measurements = [],
   expressions: SEExpression[] = [];
+  // TODO: replace the following arrays with the Map below
   initialStyleStates: StyleOptions[] = [];
   defaultStyleStates: StyleOptions[] = [];
+  initialStyleStatesMap: Map<StyleEditPanels, StyleOptions[]> = new Map();
+  defaultStyleStatesMap: Map<StyleEditPanels, StyleOptions[]> = new Map();
   styleSavedFromPanel = StyleEditPanels.Label;
   initialBackStyleContrast = SETTINGS.style.backStyleContrast;
   inverseTotalRotationMatrix = new Matrix4(); //initially the identity. The composition of all the inverses of the rotation matrices applied to the sphere
@@ -103,7 +126,7 @@ export default class SE extends VuexModule implements AppState {
 
   @Mutation
   init(): void {
-    this.actionMode = "";
+    this.actionMode = "rotate";
     this.activeToolName = "";
     // Do not clear the layers array!
     // Replace clear() with splice(0). Since clear() is an extension function
@@ -114,7 +137,9 @@ export default class SE extends VuexModule implements AppState {
     this.seSegments.splice(0);
     this.seCircles.splice(0);
     this.seAngleMarkers.splice(0);
+    this.sePolygons.splice(0);
     this.seEllipses.splice(0);
+    this.seParametrics.splice(0);
     this.seLabels.splice(0);
     this.selectedSENodules.splice(0);
     this.intersections.splice(0);
@@ -143,7 +168,7 @@ export default class SE extends VuexModule implements AppState {
   }
 
   @Mutation
-  setActionMode(mode: { id: string; name: string }): void {
+  setActionMode(mode: { id: ActionMode; name: string }): void {
     // zoomFit is a one-off tool, so the previousActionMode should never be "zoomFit" (avoid infinite loops too!)
     if (!(this.actionMode == "zoomFit" || this.actionMode === "iconFactory")) {
       this.previousActionMode = this.actionMode;
@@ -161,7 +186,7 @@ export default class SE extends VuexModule implements AppState {
 
   @Mutation
   setZoomMagnificationFactor(mag: number): void {
-    console.log("setZoomMagFactor");
+    // console.log("setZoomMagFactor");
     EventBus.fire("magnification-updated", {
       factor: this.zoomMagnificationFactor / mag
     });
@@ -195,6 +220,7 @@ export default class SE extends VuexModule implements AppState {
     this.seLines.forEach((x: SELine) => x.ref.removeFromLayers());
     this.sePoints.forEach((x: SEPoint) => x.ref.removeFromLayers());
     this.seSegments.forEach((x: SESegment) => x.ref.removeFromLayers());
+    this.seParametrics.forEach((x: SEParametric) => x.ref.removeFromLayers());
   }
 
   @Mutation
@@ -321,6 +347,32 @@ export default class SE extends VuexModule implements AppState {
       this.hasUnsavedNodules = true;
     }
   }
+
+  @Mutation
+  addParametric(parametric: SEParametric): void {
+    this.seParametrics.push(parametric);
+    this.seNodules.push(parametric);
+    parametric.ref.addToLayers(this.layers);
+    this.hasUnsavedNodules = true;
+  }
+
+  @Mutation
+  removeParametric(parametricId: number): void {
+    const parametricPos = this.seParametrics.findIndex(
+      x => x.id === parametricId
+    );
+    const pos2 = this.seNodules.findIndex(x => x.id === parametricId);
+    if (parametricPos >= 0) {
+      /* victim line is found */
+      const victimParametric: SEParametric = this.seParametrics[parametricPos];
+      victimParametric.ref.removeFromLayers();
+      // victimParametric.removeSelfSafely();
+      this.seParametrics.splice(parametricPos, 1); // Remove the parametric from the list
+      this.seNodules.splice(pos2, 1);
+      this.hasUnsavedNodules = true;
+    }
+  }
+
   @Mutation
   addAngleMarkerAndExpression(angleMarker: SEAngleMarker): void {
     this.expressions.push(angleMarker);
@@ -342,9 +394,42 @@ export default class SE extends VuexModule implements AppState {
       const victimAngleMarker: SEAngleMarker = this.seAngleMarkers[
         angleMarkerPos
       ];
+      // when removing expressions that have effects on the labels, we must set those label display arrays to empty
+      if (victimAngleMarker.label) {
+        victimAngleMarker.label.ref.value = [];
+      }
       victimAngleMarker.ref.removeFromLayers();
       // victimCircle.removeSelfSafely();
       this.seAngleMarkers.splice(angleMarkerPos, 1); // Remove the angleMarker from the list
+      this.seNodules.splice(pos2, 1);
+      this.expressions.splice(pos3, 1);
+      this.hasUnsavedNodules = true;
+    }
+  }
+
+  @Mutation
+  addPolygonAndExpression(polygon: SEPolygon): void {
+    this.expressions.push(polygon);
+    this.sePolygons.push(polygon);
+    this.seNodules.push(polygon);
+    polygon.ref.addToLayers(this.layers);
+    this.hasUnsavedNodules = true;
+  }
+
+  @Mutation
+  removePolygonAndExpression(polygonId: number): void {
+    const polygonPos = this.sePolygons.findIndex(x => x.id === polygonId);
+    const pos2 = this.seNodules.findIndex(x => x.id === polygonId);
+    const pos3 = this.expressions.findIndex(x => x.id === polygonId);
+    if (polygonPos >= 0) {
+      /* victim polygon is found */
+      const victimPolygon: SEPolygon = this.sePolygons[polygonPos];
+      // when removing expressions that have effects on the labels, we must set those label display arrays to empty
+      if (victimPolygon.label) {
+        victimPolygon.label.ref.value = [];
+      }
+      victimPolygon.ref.removeFromLayers();
+      this.sePolygons.splice(polygonPos, 1); // Remove the polygon from the list
       this.seNodules.splice(pos2, 1);
       this.expressions.splice(pos3, 1);
       this.hasUnsavedNodules = true;
@@ -399,6 +484,9 @@ export default class SE extends VuexModule implements AppState {
     });
     this.sePoints.forEach((p: SEPoint) => {
       p.accept(rotationVisitor); // Does no updating of the display
+    });
+    this.seParametrics.forEach((para: SEParametric) => {
+      para.accept(rotationVisitor); //update the display because the parametric do not depend on any other geometric objects
     });
     // now do the update of the free points so that display is correct
     this.sePoints.forEach((p: SEPoint) => {
@@ -472,7 +560,7 @@ export default class SE extends VuexModule implements AppState {
   @Mutation
   unglowAllSENodules(): void {
     this.seNodules.forEach((p: SENodule) => {
-      if (!p.selected) {
+      if (!p.selected && p.exists) {
         p.glowing = false;
       }
     });
@@ -494,51 +582,33 @@ export default class SE extends VuexModule implements AppState {
   @Mutation
   changeStyle({
     selected, // The selected SENodules that this change applies to, passing this as a argument allows styling to be undone.
+    panel,
     payload
   }: {
-    selected: SENodule[];
+    selected: Nodule[];
+    panel: StyleEditPanels;
     payload: StyleOptions;
   }): void {
-    const opt: StyleOptions = {
-      panel: payload.panel,
-      strokeWidthPercent: payload.strokeWidthPercent,
-      strokeColor: payload.strokeColor,
-      fillColor: payload.fillColor,
-      dashArray: payload.dashArray,
-      dynamicBackStyle: payload.dynamicBackStyle,
-      pointRadiusPercent: payload.pointRadiusPercent,
-      labelTextStyle: payload.labelTextStyle,
-      labelTextFamily: payload.labelTextFamily,
-      labelTextDecoration: payload.labelTextDecoration,
-      labelTextRotation: payload.labelTextRotation,
-      labelTextScalePercent: payload.labelTextScalePercent,
-      labelDisplayText: payload.labelDisplayText,
-      labelDisplayCaption: payload.labelDisplayCaption,
-      labelDisplayMode: payload.labelDisplayMode,
-      // labelVisibility: payload.labelVisibility,
-      labelFrontFillColor: payload.labelFrontFillColor,
-      labelBackFillColor: payload.labelBackFillColor,
-      // objectVisibility: payload.objectVisibility,
-      angleMarkerRadiusPercent: payload.angleMarkerRadiusPercent,
-      angleMarkerTickMark: payload.angleMarkerTickMark,
-      angleMarkerDoubleArc: payload.angleMarkerDoubleArc
-    };
-    if (
-      payload.backStyleContrast &&
-      payload.backStyleContrast != Nodule.getBackStyleContrast()
-    ) {
-      // Update all Nodules because more than just the selected nodules depend on the backStyleContrast
-      Nodule.setBackStyleContrast(payload.backStyleContrast);
-      this.seNodules.forEach((n: SENodule) => {
-        n.ref?.stylize(DisplayStyle.ApplyCurrentVariables);
-      });
-    }
-    selected.forEach((n: SENodule) => {
-      n.ref?.updateStyle(opt);
-      if (opt.pointRadiusPercent !== undefined) {
-        // if the point radius Percent changes then this can effects the label location so run update
-        n.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
-      }
+    // Important: object destructuring below seems to solve the issue
+    // of merging undefined properties in updateStyle()
+    const opt: StyleOptions = { ...payload };
+    // if (
+    //   payload.backStyleContrast &&
+    //   payload.backStyleContrast != Nodule.getBackStyleContrast()
+    // ) {
+    //   // Update all Nodules because more than just the selected nodules depend on the backStyleContrast
+    //   Nodule.setBackStyleContrast(payload.backStyleContrast);
+    //   console.debug("Changing Global backstyle contrast");
+    //   this.seNodules.forEach((n: SENodule) => {
+    //     n.ref?.stylize(DisplayStyle.ApplyCurrentVariables);
+    //   });
+    // }
+    selected.forEach((n: Nodule) => {
+      n.updateStyle(panel, opt);
+      // if (opt.pointRadiusPercent !== undefined) {
+      //   // if the point radius Percent changes then this can effects the label location so run update
+      //   n.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
+      // }
     });
   }
 
@@ -557,61 +627,27 @@ export default class SE extends VuexModule implements AppState {
   // },
 
   @Mutation
-  recordStyleState({
-    selected, // The selected SENodules that this change applies to, passing this as a argument allows styling to be undone.
-    backContrast
-  }: {
-    selected: SENodule[];
+  recordStyleState(data: {
+    panel: StyleEditPanels;
+    selected: Array<Nodule>;
     backContrast: number;
   }): void {
-    this.initialStyleStates.splice(0);
-    this.defaultStyleStates.splice(0);
-    selected.forEach(seNodule => {
-      // The first third is the front style settings, the second third is the back, the final third are the corresponding labels
-      if (seNodule.ref) {
-        this.initialStyleStates.push(
-          seNodule.ref.currentStyleState(StyleEditPanels.Front)
-        );
-        this.defaultStyleStates.push(
-          seNodule.ref.defaultStyleState(StyleEditPanels.Front)
-        );
-      }
-    });
-    selected.forEach(seNodule => {
-      // The first third is the front style settings, the second third is the back, the final third are the corresponding labels
-      if (seNodule.ref !== undefined) {
-        this.initialStyleStates.push(
-          seNodule.ref.currentStyleState(StyleEditPanels.Back)
-        );
-        this.defaultStyleStates.push(
-          seNodule.ref.defaultStyleState(StyleEditPanels.Back)
-        );
-      }
-    });
-    selected.forEach(seNodule => {
-      // The first third is the front style settings, the second third is the back, the final third are the corresponding labels
-      if (seNodule instanceof SELabel && seNodule.ref !== undefined) {
-        this.initialStyleStates.push(
-          seNodule.ref.currentStyleState(StyleEditPanels.Label)
-        );
-        this.defaultStyleStates.push(
-          seNodule.ref.defaultStyleState(StyleEditPanels.Label)
-        );
-      } else {
-        const label = ((seNodule as unknown) as Labelable).label;
-        if (label !== undefined) {
-          this.initialStyleStates.push(
-            label.ref.currentStyleState(StyleEditPanels.Label)
-          );
-          this.defaultStyleStates.push(
-            label.ref.defaultStyleState(StyleEditPanels.Label)
-          );
-        } else {
-          throw "Attempted to use the label of an unlabelable SENodule in recordStyleState in mutations.ts";
-        }
-      }
-    });
-    this.initialBackStyleContrast = backContrast;
+    console.debug("About to record style", data.selected.length, "objects");
+    const current = data.selected.map((n: Nodule) =>
+      n.currentStyleState(data.panel)
+    );
+    console.debug(
+      "SEStore recording style of selected objects in",
+      StyleEditPanels[data.panel],
+      "with",
+      current
+    );
+    this.initialStyleStatesMap.set(data.panel, current);
+    this.defaultStyleStatesMap.set(
+      data.panel,
+      data.selected.map((n: Nodule) => n.defaultStyleState(data.panel))
+    );
+    this.initialBackStyleContrast = data.backContrast;
   }
 
   @Mutation
@@ -669,7 +705,13 @@ export default class SE extends VuexModule implements AppState {
       }
       // Only perpendicular to line through point, the SEEndPoint is auto generated SEPoint (never added to the state)
       // and the user cannot interact with it. So it is *not* a vector to avoid for intersections.
-      if (!(newLine instanceof SEPerpendicularLineThruPoint || SEPolarLine)) {
+      if (
+        !(
+          newLine instanceof SEPerpendicularLineThruPoint ||
+          newLine instanceof SEPolarLine ||
+          newLine instanceof SETangentLineThruPoint
+        )
+      ) {
         avoidVectors.push(newLine.endSEPoint.locationVector);
       }
       this.sePoints.forEach(pt => {
@@ -777,7 +819,6 @@ export default class SE extends VuexModule implements AppState {
       this.seEllipses.forEach((oldEllipse: SEEllipse) => {
         const intersectionInfo = intersectLineWithEllipse(newLine, oldEllipse);
         intersectionInfo.forEach((info, index) => {
-          console.log("info.vec", info.vector, avoidVectors);
           if (
             !avoidVectors.some(v =>
               this.tempVec.subVectors(info.vector, v).isZero()
@@ -800,6 +841,39 @@ export default class SE extends VuexModule implements AppState {
               SEIntersectionPoint: newSEIntersectionPt,
               parent1: newLine,
               parent2: oldEllipse
+            });
+          }
+        });
+      });
+      //Intersect this new line with all old parametrics
+      this.seParametrics.forEach((oldParametric: SEParametric) => {
+        const intersectionInfo = intersectLineWithParametric(
+          newLine,
+          oldParametric
+        );
+        intersectionInfo.forEach((info, index) => {
+          if (
+            !avoidVectors.some(v =>
+              this.tempVec.subVectors(info.vector, v).isZero()
+            )
+          ) {
+            // info.vector is not on the avoidVectors array, so create an intersection
+            const newPt = new NonFreePoint();
+            newPt.stylize(DisplayStyle.ApplyTemporaryVariables);
+            newPt.adjustSize();
+            const newSEIntersectionPt = new SEIntersectionPoint(
+              newPt,
+              newLine,
+              oldParametric,
+              index,
+              false
+            );
+            newSEIntersectionPt.locationVector = info.vector;
+            newSEIntersectionPt.exists = info.exists;
+            intersectionPointList.push({
+              SEIntersectionPoint: newSEIntersectionPt,
+              parent1: newLine,
+              parent2: oldParametric
             });
           }
         });
@@ -957,7 +1031,39 @@ export default class SE extends VuexModule implements AppState {
           }
         });
       });
-
+      //Intersect this new segment with all old parametrics
+      this.seParametrics.forEach((oldParametric: SEParametric) => {
+        const intersectionInfo = intersectSegmentWithParametric(
+          newSegment,
+          oldParametric
+        );
+        intersectionInfo.forEach((info, index) => {
+          if (
+            !avoidVectors.some(v =>
+              this.tempVec.subVectors(info.vector, v).isZero()
+            )
+          ) {
+            // info.vector is not on the avoidVectors array, so create an intersection
+            const newPt = new NonFreePoint();
+            newPt.stylize(DisplayStyle.ApplyTemporaryVariables);
+            newPt.adjustSize();
+            const newSEIntersectionPt = new SEIntersectionPoint(
+              newPt,
+              newSegment,
+              oldParametric,
+              index,
+              false
+            );
+            newSEIntersectionPt.locationVector = info.vector;
+            newSEIntersectionPt.exists = info.exists;
+            intersectionPointList.push({
+              SEIntersectionPoint: newSEIntersectionPt,
+              parent1: newSegment,
+              parent2: oldParametric
+            });
+          }
+        });
+      });
       return intersectionPointList;
     };
   }
@@ -1113,6 +1219,41 @@ export default class SE extends VuexModule implements AppState {
           }
         });
       });
+
+      //Intersect this new circle with all old parametrics
+      this.seParametrics.forEach((oldParametric: SEParametric) => {
+        const intersectionInfo = intersectCircleWithParametric(
+          newCircle,
+          oldParametric
+        );
+        intersectionInfo.forEach((info, index) => {
+          if (
+            !avoidVectors.some(v =>
+              this.tempVec.subVectors(info.vector, v).isZero()
+            )
+          ) {
+            // info.vector is not on the avoidVectors array, so create an intersection
+            const newPt = new NonFreePoint();
+            newPt.stylize(DisplayStyle.ApplyTemporaryVariables);
+            newPt.adjustSize();
+            const newSEIntersectionPt = new SEIntersectionPoint(
+              newPt,
+              newCircle,
+              oldParametric,
+              index,
+              false
+            );
+            newSEIntersectionPt.locationVector = info.vector;
+            newSEIntersectionPt.exists = info.exists;
+            intersectionPointList.push({
+              SEIntersectionPoint: newSEIntersectionPt,
+              parent1: newCircle,
+              parent2: oldParametric
+            });
+          }
+        });
+      });
+
       return intersectionPointList;
     };
   }
@@ -1255,8 +1396,8 @@ export default class SE extends VuexModule implements AppState {
               newPt.adjustSize();
               const newSEIntersectionPt = new SEIntersectionPoint(
                 newPt,
-                newEllipse,
                 oldEllipse,
+                newEllipse,
                 index,
                 false
               );
@@ -1264,8 +1405,243 @@ export default class SE extends VuexModule implements AppState {
               newSEIntersectionPt.exists = info.exists;
               intersectionPointList.push({
                 SEIntersectionPoint: newSEIntersectionPt,
-                parent1: newEllipse,
-                parent2: oldEllipse
+                parent1: oldEllipse,
+                parent2: newEllipse
+              });
+            }
+          });
+        });
+
+      //Intersect this new ellipse with all old parametrics
+      this.seParametrics.forEach((oldParametric: SEParametric) => {
+        const intersectionInfo = intersectEllipseWithParametric(
+          newEllipse,
+          oldParametric
+        );
+        intersectionInfo.forEach((info, index) => {
+          if (
+            !avoidVectors.some(v =>
+              this.tempVec.subVectors(info.vector, v).isZero()
+            )
+          ) {
+            // info.vector is not on the avoidVectors array, so create an intersection
+            const newPt = new NonFreePoint();
+            newPt.stylize(DisplayStyle.ApplyTemporaryVariables);
+            newPt.adjustSize();
+            const newSEIntersectionPt = new SEIntersectionPoint(
+              newPt,
+              newEllipse,
+              oldParametric,
+              index,
+              false
+            );
+            newSEIntersectionPt.locationVector = info.vector;
+            newSEIntersectionPt.exists = info.exists;
+            intersectionPointList.push({
+              SEIntersectionPoint: newSEIntersectionPt,
+              parent1: newEllipse,
+              parent2: oldParametric
+            });
+          }
+        });
+      });
+
+      return intersectionPointList;
+    };
+  }
+
+  get createAllIntersectionsWithParametric(): (
+    _: SEParametric
+  ) => SEIntersectionReturnType[] {
+    return (newParametric: SEParametric): SEIntersectionReturnType[] => {
+      // Avoid creating an intersection where any SEPoint already exists
+      const avoidVectors: Vector3[] = [];
+      // First add the end points of the newParametric, if they are exist, then
+      //  they won't have been added to the state.points array yet so add them first
+      // Always screen for the zero vector
+      newParametric.endPoints.forEach(pt => {
+        if (!pt.locationVector.isZero()) {
+          avoidVectors.push(pt.locationVector);
+        }
+      });
+      this.sePoints.forEach(pt => {
+        if (!pt.locationVector.isZero()) {
+          avoidVectors.push(pt.locationVector);
+        }
+      });
+
+      // The intersectionPointList to return
+      const intersectionPointList: SEIntersectionReturnType[] = [];
+
+      // Intersect this new parametric with all old lines
+      this.seLines.forEach((oldLine: SELine) => {
+        const intersectionInfo = intersectLineWithParametric(
+          oldLine,
+          newParametric
+        );
+        intersectionInfo.forEach((info, index) => {
+          if (
+            !avoidVectors.some(v =>
+              this.tempVec.subVectors(info.vector, v).isZero()
+            )
+          ) {
+            // info.vector is not on the avoidVectors array, so create an intersection
+            const newPt = new NonFreePoint();
+            newPt.stylize(DisplayStyle.ApplyTemporaryVariables);
+            newPt.adjustSize();
+            const newSEIntersectionPt = new SEIntersectionPoint(
+              newPt,
+              oldLine,
+              newParametric,
+              index,
+              false
+            );
+            newSEIntersectionPt.locationVector = info.vector;
+            newSEIntersectionPt.exists = info.exists;
+            intersectionPointList.push({
+              SEIntersectionPoint: newSEIntersectionPt,
+              parent1: oldLine,
+              parent2: newParametric
+            });
+          }
+        });
+      });
+
+      // Intersect this new parametric with all old segments
+      this.seSegments.forEach((oldSegment: SESegment) => {
+        const intersectionInfo = intersectSegmentWithParametric(
+          oldSegment,
+          newParametric
+        );
+        intersectionInfo.forEach((info, index) => {
+          if (
+            !avoidVectors.some(v =>
+              this.tempVec.subVectors(info.vector, v).isZero()
+            )
+          ) {
+            // info.vector is not on the avoidVectors array, so create an intersection
+            const newPt = new NonFreePoint();
+            newPt.stylize(DisplayStyle.ApplyTemporaryVariables);
+            newPt.adjustSize();
+            const newSEIntersectionPt = new SEIntersectionPoint(
+              newPt,
+              oldSegment,
+              newParametric,
+              index,
+              false
+            );
+            newSEIntersectionPt.locationVector = info.vector;
+            newSEIntersectionPt.exists = info.exists;
+            intersectionPointList.push({
+              SEIntersectionPoint: newSEIntersectionPt,
+              parent1: oldSegment,
+              parent2: newParametric
+            });
+          }
+        });
+      });
+
+      // Intersect this new parametric with all old circles
+      this.seCircles.forEach((oldCircle: SECircle) => {
+        const intersectionInfo = intersectCircleWithParametric(
+          oldCircle,
+          newParametric
+        );
+        intersectionInfo.forEach((info, index) => {
+          if (
+            !avoidVectors.some(v =>
+              this.tempVec.subVectors(info.vector, v).isZero()
+            )
+          ) {
+            // info.vector is not on the avoidVectors array, so create an intersection
+            const newPt = new NonFreePoint();
+            newPt.stylize(DisplayStyle.ApplyTemporaryVariables);
+            newPt.adjustSize();
+            const newSEIntersectionPt = new SEIntersectionPoint(
+              newPt,
+              oldCircle,
+              newParametric,
+              index,
+              false
+            );
+            newSEIntersectionPt.locationVector = info.vector;
+            newSEIntersectionPt.exists = info.exists;
+            intersectionPointList.push({
+              SEIntersectionPoint: newSEIntersectionPt,
+              parent1: oldCircle,
+              parent2: newParametric
+            });
+          }
+        });
+      });
+
+      //Intersect this new parametric with all old ellipses
+      this.seEllipses.forEach((oldEllipse: SEEllipse) => {
+        const intersectionInfo = intersectEllipseWithParametric(
+          oldEllipse,
+          newParametric
+        );
+        intersectionInfo.forEach((info, index) => {
+          if (
+            !avoidVectors.some(v =>
+              this.tempVec.subVectors(info.vector, v).isZero()
+            )
+          ) {
+            // info.vector is not on the avoidVectors array, so create an intersection
+            const newPt = new NonFreePoint();
+            newPt.stylize(DisplayStyle.ApplyTemporaryVariables);
+            newPt.adjustSize();
+            const newSEIntersectionPt = new SEIntersectionPoint(
+              newPt,
+              oldEllipse,
+              newParametric,
+              index,
+              false
+            );
+            newSEIntersectionPt.locationVector = info.vector;
+            newSEIntersectionPt.exists = info.exists;
+            intersectionPointList.push({
+              SEIntersectionPoint: newSEIntersectionPt,
+              parent1: oldEllipse,
+              parent2: newParametric
+            });
+          }
+        });
+      });
+
+      //Intersect this new parametric with all old parametrics
+      this.seParametrics
+        .filter(
+          (parametric: SEParametric) => parametric.id !== newParametric.id
+        ) // ignore self
+        .forEach((oldParametric: SEParametric) => {
+          const intersectionInfo = intersectParametricWithParametric(
+            oldParametric,
+            newParametric
+          );
+          intersectionInfo.forEach((info, index) => {
+            if (
+              !avoidVectors.some(v =>
+                this.tempVec.subVectors(info.vector, v).isZero()
+              )
+            ) {
+              // info.vector is not on the avoidVectors array, so create an intersection
+              const newPt = new NonFreePoint();
+              newPt.stylize(DisplayStyle.ApplyTemporaryVariables);
+              newPt.adjustSize();
+              const newSEIntersectionPt = new SEIntersectionPoint(
+                newPt,
+                oldParametric,
+                newParametric,
+                index,
+                false
+              );
+              newSEIntersectionPt.locationVector = info.vector;
+              newSEIntersectionPt.exists = info.exists;
+              intersectionPointList.push({
+                SEIntersectionPoint: newSEIntersectionPt,
+                parent1: oldParametric,
+                parent2: newParametric
               });
             }
           });
@@ -1275,13 +1651,33 @@ export default class SE extends VuexModule implements AppState {
     };
   }
 
-  get findIntersectionPointsByParent(): (_: string) => SEIntersectionPoint[] {
-    return (parentName: string): SEIntersectionPoint[] => {
-      return this.sePoints
+  /**
+   * If one parent name is given, this returns a list of all intersection points that have a parent with that name.
+   * If two parent names are given, this returns a list of all intersection points that a parent with the first name and a parent with the second name
+   */
+  get findIntersectionPointsByParent(): (
+    parent1Name: string,
+    parent2Name?: string
+  ) => SEIntersectionPoint[] {
+    return (
+      parent1Name: string,
+      parent2Name?: string
+    ): SEIntersectionPoint[] => {
+      const intersectionPoints = this.sePoints
         .filter(
-          p => p instanceof SEIntersectionPoint && p.name.includes(parentName)
+          p =>
+            p instanceof SEIntersectionPoint &&
+            p.parents.some(seNodule => seNodule.name === parent1Name)
         )
         .map(obj => obj as SEIntersectionPoint);
+
+      if (parent2Name) {
+        return intersectionPoints.filter(p =>
+          p.parents.some(seNodule => seNodule.name === parent2Name)
+        );
+      } else {
+        return intersectionPoints;
+      }
     };
   }
 

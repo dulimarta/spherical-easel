@@ -1,9 +1,8 @@
-import { ValueDisplayMode } from "./types";
-import { LabelDisplayMode } from "./types/Styles";
+import { ValueDisplayMode, LabelDisplayMode } from "./types";
 
-export default {
+export const SETTINGS = {
   nearlyAntipodalIdeal: 0.005, // Two unit vectors, U and V, are nearly antipodal or nearly parallel (the) if crossVectors(U,V).isZero(nearlyAntipodalIdeal) is true
-  tolerance: 0.0000001, // Any number less that this tolerance is considered zero
+  tolerance: 0.00000000001, // Any number less that this tolerance is considered zero
   hideObjectHidesLabel: true, // hiding an object hide the label of that object automatically if this is true
   showObjectShowsLabel: false, // showing an object (via the object tree) automatically shows the label if this is true
   decimalPrecision: 3, // The number decimal places to display when numerically measuring or computing a value
@@ -112,6 +111,7 @@ export default {
     showLabelsOfNonFreePointsInitially: false, // Should the labels of non-free points be shown upon creating the point?
     showLabelsOfPointOnObjectInitially: false, // Should the labels of points on objects be shown upon creating the point?
     showLabelsOfPolarPointInitially: false, // Should the labels of polar points be shown upon creation?
+    showLabelsOfParametricEndPointsInitially: true, // Should the labels of the endpoints of a parametric curve be shown upon creating the points?
     readingCoordinatesChangesLabelModeTo: LabelDisplayMode.NameAndValue,
     maxLabelDistance: 0.1, // The maximum distance that a label is allowed to get away from the point
     initialLabelOffset: 0.2, // When making point labels this is initially how far (roughly) they are from the location of the point
@@ -129,7 +129,9 @@ export default {
       },
       fillColor: {
         front: "hsla(0, 100%, 75%, 1)",
-        back: "hsla(0, 100%, 75%, 1)"
+        frontHSLA: { h: 0, s: 100, l: 75, a: 1 },
+        back: "hsla(0, 100%, 75%, 1)",
+        backHSLA: { h: 0, s: 100, l: 75, a: 1 }
       },
       strokeColor: {
         front: "hsla(240, 55%, 55%, 1)",
@@ -170,6 +172,7 @@ export default {
       scalePercent: 85, // The percent that the size of the (free) points are scaled by to get the size of the nonFreePoint
       fillColor: {
         front: "hsla(0, 50%, 75%, 1)",
+        frontHSLA: { h: 0, s: 50, l: 75, a: 1 },
         back: "hsla(0, 25%, 75%, 1)"
       },
       strokeColor: {
@@ -181,7 +184,6 @@ export default {
     }
   },
   segment: {
-    Initially: true, // Should the measure of the length be in multiples of pi
     showLabelsInitially: false, // Should the labels be show upon creating the segment
     maxLabelDistance: 0.15, // The maximum distance that a label is allowed to get away from the segment
     defaultLabelMode: LabelDisplayMode.NameOnly, // The default way of displaying this objects label
@@ -189,10 +191,10 @@ export default {
     initialValueDisplayMode: ValueDisplayMode.MultipleOfPi, // Set the initial display of the values for the measurement of the angle
     initialLabelOffset: 0.02, // When making point labels this is initially how far (roughly) they are from the line
     minimumArcLength: 0.045, // Don't create segments with a length less than this (must be larger than point.hitIdealDistance because if not it is possible to create a line segment of length zero )
-    numPoints: 20, // The number of vertices used to render the segment. These are spread over the front and back parts. MAKE THIS EVEN!
+    numPoints: 60, // The number of vertices used to render the segment. These are spread over the front and back parts. MAKE THIS EVEN!
     hitIdealDistance: 0.03, // The user has to be within this distance on the ideal unit sphere to select the line.
-    //dynamicBackStyle is a flag that means the fill color, and stroke of the segments drawn on the back are automatically calculated based on the value of SETTINGS.contrast and their front counterparts
     closeEnoughToPi: 0.005, //If the arcLength of a segment is within this distance of pi, consider it length pi, so that it is not defined by its endpoints and can be moved
+    //dynamicBackStyle is a flag that means the fill color, and stroke of the segments drawn on the back are automatically calculated based on the value of SETTINGS.contrast and their front counterparts
     dynamicBackStyle: true,
     drawn: {
       // No fill for line segments
@@ -307,7 +309,9 @@ export default {
     drawn: {
       fillColor: {
         front: "hsla(254, 100%, 90%, 0.2)", //"hsla(217, 100%, 80%, 0.0005)", //"noFill",
-        back: "hsla(10, 100%, 50%, 0.1)" //"hsla(217, 100%, 80%, 0.0002)" //"noFill"
+        frontHSLA: { h: 254, s: 100, l: 90, a: 0.2 },
+        back: "hsla(10, 100%, 50%, 0.1)", //"hsla(217, 100%, 80%, 0.0002)" //"noFill"
+        backHSLA: { h: 254, s: 100, l: 50, a: 0.2 }
       },
       strokeColor: {
         front: "hsla(217, 90%, 61%, 1)",
@@ -349,48 +353,50 @@ export default {
     }
   },
   ellipse: {
-    showLabelsInitially: false, // Should the labels be show upon creating the circle
-    maxLabelDistance: 0.08, // The maximum distance that a label is allowed to get away from the circle
-    initialLabelOffset: 0.02, // When making point labels this is initially how far (roughly) they are from the circle
+    showLabelsInitially: false, // Should the labels be show upon creating the ellipse
+    maxLabelDistance: 0.08, // The maximum distance that a label is allowed to get away from the ellipse
+    initialLabelOffset: 0.02, // When making point labels this is initially how far (roughly) they are from the ellipse
     defaultLabelMode: LabelDisplayMode.NameOnly, // The default way of displaying this objects label
-    minimumAngleSumDifference: 0.0001, // Don't create ellipses (and ellipse don't exist) when an angle sum to the foci minus the angle between the foci is smaller than this
+    minimumAngleSumDifference: 0.01, // Don't create ellipses (and ellipse don't exist) when an angle sum to the foci minus the angle between the foci is smaller than this
     minimumCreationDistance: 0.025, // Don't create an ellipse point unless it is more than this distance away from each focus.
-    numPoints: 100, // Twice this number are used to draw the edge of the circle and 4 times this many are used to to draw the fill of the circle. These are spread over the front and back parts. MAKE THIS EVEN!
-    hitIdealDistance: 0.03, // The user has to be within this distance on the ideal unit sphere to select the circle.
-    //dynamicBackStyle is a flag that means the fill, linewidth, and strokeColor of the circles drawn on the back are automatically calculated based on the value of SETTINGS.contrast and their front counterparts
+    numPoints: 100, // Twice this number are used to draw the edge of the ellipse and 4 times this many are used to to draw the fill of the ellipse. These are spread over the front and back parts. MAKE THIS EVEN!
+    hitIdealDistance: 0.03, // The user has to be within this distance on the ideal unit sphere to select the ellipse.
+    //dynamicBackStyle is a flag that means the fill, linewidth, and strokeColor of the ellipses drawn on the back are automatically calculated based on the value of SETTINGS.contrast and their front counterparts
     dynamicBackStyle: true,
-    //The properties of the circle when it is drawn on the sphereCanvas and is not glowing
+    //The properties of the ellipse when it is drawn on the sphereCanvas and is not glowing
     drawn: {
       fillColor: {
         front: "hsla(254, 100%, 90%, 0.2)", //"hsla(217, 100%, 80%, 0.0005)", //"noFill",
-        back: "hsla(10, 100%, 50%, 0.1)" //"hsla(217, 100%, 80%, 0.0002)" //"noFill"
+        frontHSLA: { h: 254, s: 100, l: 90, a: 0.2 },
+        back: "hsla(10, 100%, 50%, 0.1)", //"hsla(217, 100%, 80%, 0.0002)" //"noFill"
+        backHSLA: { h: 10, s: 100, l: 75, a: 0.1 }
       },
       strokeColor: {
         front: "hsla(217, 90%, 61%, 1)",
         back: "hsla(217, 90%, 80%, 1)"
       },
       strokeWidth: {
-        // The thickness of the circle when drawn front/back
+        // The thickness of the ellipse when drawn front/back
         front: 2.5,
         back: 2
-      }, // The thickness of the circle when drawn front/back,
+      }, // The thickness of the ellipse when drawn front/back,
       dashArray: {
         offset: { front: 0, back: 0 },
         front: [] as number[], // An empty array means no dashing.
         back: [10, 5] // An empty array means no dashing.
       } // An empty array means no dashing.
     },
-    //The properties of the region around a circle when it is glowing
+    //The properties of the region around a ellipse when it is glowing
     glowing: {
       // There is no fill for highlighting objects
       strokeColor: {
         front: "hsla(0, 100%, 50%, 1)",
         back: "hsla(0, 100%, 75%, 0.74)"
       },
-      edgeWidth: 5 // edgeWidth/2 is the width of the region around the circle (on each side) that shows the glow
+      edgeWidth: 5 // edgeWidth/2 is the width of the region around the ellipse (on each side) that shows the glow
       // The dash pattern will always be the same as the drawn version
     },
-    //The properties of the circle when it is temporarily shown by the circle tool while drawing
+    //The properties of the ellipse when it is temporarily shown by the ellipse tool while drawing
     temp: {
       fillColor: {
         front: "hsla(0, 0%, 90%, 0.3)", //"noFill",
@@ -404,6 +410,87 @@ export default {
       // The dash pattern will always be the same as the default drawn version
     }
   },
+  parametric: {
+    showLabelsInitially: false, // Should the labels be show upon creating the parametric curve
+    maxLabelDistance: 0.08, // The maximum distance that a label is allowed to get away from the parametric curve
+    initialLabelOffset: 0.02, // When making point labels this is initially how far (roughly) they are from the parametric curve
+    defaultLabelMode: LabelDisplayMode.NameOnly, // The default way of displaying this objects label
+    minimumAngleSumDifference: 0.0001, // Don't create ellipses (and ellipse don't exist) when an angle sum to the foci minus the angle between the foci is smaller than this
+    minimumCreationDistance: 0.025, // Don't create an ellipse point unless it is more than this distance away from each focus.
+    numPoints: 30, // This is the anchor density in the rendering the number of anchors is floor(numPoints*arcLength)
+    evenSphereSampleSize: 90, // This is the number of almost evenly spaced points on the sphere to sample for the number of perpendiculars and tangents
+    hitIdealDistance: 0.03, // The user has to be within this distance on the ideal unit sphere to select the parametric curve.
+    //dynamicBackStyle is a flag that means the fill, linewidth, and strokeColor of the parametric curves drawn on the back are automatically calculated based on the value of SETTINGS.contrast and their front counterparts
+    dynamicBackStyle: true,
+    //The properties of the parametric curve when it is drawn on the sphereCanvas and is not glowing
+    drawn: {
+      fillColor: {
+        front: "hsla(254, 100%, 90%, 0.2)", //"hsla(217, 100%, 80%, 0.0005)", //"noFill",
+        back: "hsla(10, 100%, 50%, 0.1)" //"hsla(217, 100%, 80%, 0.0002)" //"noFill"
+      },
+      strokeColor: {
+        front: "hsla(217, 90%, 61%, 1)",
+        back: "hsla(217, 90%, 80%, 1)"
+      },
+      strokeWidth: {
+        // The thickness of the parametric curve when drawn front/back
+        front: 2.5,
+        back: 2
+      }, // The thickness of the parametric curve when drawn front/back,
+      dashArray: {
+        offset: { front: 0, back: 0 },
+        front: [] as number[], // An empty array means no dashing.
+        back: [10, 5] // An empty array means no dashing.
+      } // An empty array means no dashing.
+    },
+    //The properties of the region around a parametric curve when it is glowing
+    glowing: {
+      // There is no fill for highlighting objects
+      strokeColor: {
+        front: "hsla(0, 100%, 50%, 1)",
+        back: "hsla(0, 100%, 75%, 0.74)"
+      },
+      edgeWidth: 5 // edgeWidth/2 is the width of the region around the parametric curve (on each side) that shows the glow
+      // The dash pattern will always be the same as the drawn version
+    },
+    //The properties of the parametric curve when it is temporarily shown by the parametric curve tool while drawing
+    temp: {
+      fillColor: {
+        front: "hsla(0, 0%, 90%, 0.3)", //"noFill",
+        back: "hsla(0, 0%, 50%, 0.3)" //"noFill"
+      },
+      strokeColor: {
+        front: "hsla(0, 0%, 0%, 1.0)",
+        back: "hsla(0, 0%, 0%, 0.1)"
+      }
+      // The width is the same as the default drawn version
+      // The dash pattern will always be the same as the default drawn version
+    }
+  },
+  polygon: {
+    initialValueDisplayMode: ValueDisplayMode.MultipleOfPi, // Set the initial display of the values for the measurement of the polygon area
+    showLabelsInitially: false, // Should the labels be show upon creating the polygon
+    maxLabelDistance: 0.08, // The maximum distance that a label is allowed to get away from the polygon
+    initialLabelOffset: 0.02, // When making point labels this is initially how far (roughly) they are from the polygon
+    minimumVertexToEdgeThickness: 0.004, // the polygon doesn't exist if distance from any vertex to any non-adjacent edge is less than this.
+    defaultLabelMode: LabelDisplayMode.NameOnly, // The default way of displaying this objects label
+    numPoints: 60, // The number of extra vertices used to draw the parts of the fill of the polygon that are on the boundary circle. MAKE THIS EVEN!
+    numberOfTemporaryAngleMarkers: 15, // this is the maximum number of angle markers that will be displayed as the user creates a polygon, the user can create a polygon with more sides that then, but the temporary angle markers will not be display after this number
+    //dynamicBackStyle is a flag that means the fill the polygon drawn on the back are automatically calculated based on the value of SETTINGS.contrast and their front counterparts
+    dynamicBackStyle: true,
+    //The properties of the polygon when it is drawn on the sphereCanvas and is not glowing
+    drawn: {
+      fillColor: {
+        front: "hsla(254, 100%, 90%, 0.6)", //"hsla(217, 100%, 80%, 0.0005)", //"noFill",
+        frontHSLA: { h: 254, s: 100, l: 90, a: 0.6 },
+        back: "hsla(10, 100%, 50%, 0.1)", //"hsla(217, 100%, 80%, 0.0002)" //"noFill"
+        backHSLA: { h: 10, s: 100, l: 50, a: 0.2 }
+      }
+      //  strokeColor is determined by each edge
+      // strokeWidth is determined by each edge
+      // dashArray is determined by each edge
+    }
+  },
   label: {
     maxLabelDisplayCaptionLength: 15, // The maximum number of characters in the displayed label caption
     maxLabelDisplayTextLength: 8, // The maximum number of characters in the displayed label name
@@ -413,7 +500,9 @@ export default {
     fontSize: 15,
     fillColor: {
       front: "hsla(0, 0%, 0%, 1.0)", //"noFill",
-      back: "hsla(0, 0%, 0%, 0.1)" //"noFill"
+      frontHSLA: { h: 0, s: 0, l: 0, a: 1 },
+      back: "hsla(0, 0%, 0%, 0.1)", //"noFill"
+      backHSLA: { h: 0, s: 0, l: 0, a: 1 }
     },
     style: "normal",
     family: "sans/-serif",
@@ -449,8 +538,10 @@ export default {
     //The properties of the angleMarker when it is drawn on the sphereCanvas and is not glowing
     drawn: {
       fillColor: {
-        front: "hsla(254, 100%, 90%, 1)", //"noFill",0.001
-        back: "hsla(10, 100%, 50%, 1)" //"hsla(0, 0%, 0%, 1)" //"noFill"
+        front: "hsla(254, 100%, 90%, 0.5)", //"noFill",0.001
+        frontHSLA: { h: 254, s: 100, l: 90, a: 0.5 },
+        back: "hsla(10, 100%, 50%, 0.4)", //"hsla(0, 0%, 0%, 1)" //"noFill"
+        backHSLA: { h: 10, s: 100, l: 50, a: 0.4 }
       },
       strokeColor: {
         front: "hsla(0, 0%, 0%, 1)",
@@ -486,7 +577,7 @@ export default {
     //The properties of the angle marker when it is temporarily shown by the angle measuring tool while drawing
     temp: {
       fillColor: {
-        front: "hsla(0, 0%, 90%, 0.3)", //"noFill",
+        front: "hsla(340, 0%, 50%, 0.4)", //front: "hsla(0, 0%, 90%, 0.3)", //"noFill",
         back: "hsla(0, 0%, 50%, 0.3)" //"noFill"
       },
       strokeColor: {
@@ -505,8 +596,8 @@ export default {
     emphasize: {
       angleMarker: {
         strokeWidth: {
-          front: 3,
-          back: 3
+          front: 2.5,
+          back: 2.5
         },
         edgeColor: {
           front: "hsla(0, 0%, 0%, 1)",
@@ -573,8 +664,8 @@ export default {
     },
     angleMarker: {
       scale: {
-        front: 10,
-        back: 8
+        front: 7,
+        back: 5
       },
       strokeWidth: {
         front: 1,
@@ -656,8 +747,12 @@ export default {
     display: true // controls if they should be displayed
   },
   parameterization: {
-    subdivisions: 60, // When searching function on a parametrized curve for a change in sign, use this many subdivisions
-    bisectionMinSize: 0.00001 // stop running the bisection method when the interval is less than this size
+    useNewtonsMethod: true, // When finding the zeros, should we use newton's method?  If false we use bisections
+    subdivisions: 80, // When searching function on a parametrized curve for a change in sign, use this many subdivisions
+    bisectionMinSize: 0.0000001, // stop running the bisection method (if Newton's method is not used) when the interval is less than this size
+    numberOfTestTValues: 10, // When checking if a parametric curve is unit or the number of times the curve intersects a plane connecting two points on the curve use this many points
+    maxNumberOfIterationArcLength: 5, // maximum number of times it will iterate over the curve to find the arcLength (i.e. the curve is divided into at most subdivisions*maxNumberOfIterationArcLength subdivisions while looking for the arcLength)
+    maxChangeInArcLength: 0.00001 // If the change in arcLength is less than this, return the value
   },
   /*A list of which buttons to display - adjusted by the users settings.
   This does NOT belong here but I don't know where else to put it at the moment*/
@@ -684,6 +779,7 @@ export enum LAYER {
   backgroundAngleMarkersGlowing,
   backgroundAngleMarkers,
   backgroundGlowing,
+  backgroundFills,
   background,
   backgroundPointsGlowing,
   backgroundPoints,
@@ -693,6 +789,7 @@ export enum LAYER {
   foregroundAngleMarkersGlowing,
   foregroundAngleMarkers,
   foregroundGlowing,
+  foregroundFills,
   foreground,
   foregroundPointsGlowing,
   foregroundPoints,
@@ -700,3 +797,5 @@ export enum LAYER {
   foregroundText
 }
 //#endregion layers
+
+export default SETTINGS;

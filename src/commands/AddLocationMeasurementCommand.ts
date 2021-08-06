@@ -1,14 +1,14 @@
 import { Command } from "./Command";
 import { SENodule } from "@/models/SENodule";
 import { SEExpression } from "@/models/SEExpression";
-import { AddMeasurementCommand } from "./AddMeasurementCommand";
+import { AddExpressionCommand } from "./AddExpressionCommand";
 import { SEPoint } from "@/models/SEPoint";
 import {
   CoordinateSelection,
   SEPointCoordinate
 } from "@/models/SEPointCoordinate";
 
-export class AddLocationMeasurementCommand extends AddMeasurementCommand {
+export class AddLocationMeasurementCommand extends AddExpressionCommand {
   selector: CoordinateSelection;
 
   /**

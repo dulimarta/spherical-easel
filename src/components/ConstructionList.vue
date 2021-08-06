@@ -40,12 +40,12 @@
                     fab
                     small
                     color="secondary">
-                    <v-icon
-                      @click="$emit('load-requested', {docId: r.id})">
+                    <v-icon @click="loadPreview(r.id)">
                       mdi-download</v-icon>
                   </v-btn>
                 </v-col>
-                <v-col v-if="allowSharing">
+                <v-col v-if="
+                      allowSharing">
                   <v-btn rounded
                     id="_test_sharefab"
                     fab
@@ -104,6 +104,8 @@ export default class extends Vue {
 
   svgParent: HTMLDivElement | null = null;
   svgRoot!: SVGElement;
+  previewSVG: SVGElement | null = null;
+  selectedSVG: SVGElement | null = null;
   // svgRootClone: SVGElement | null = null;
   originalSphereMatrix!: Matrix4;
   domParser!: DOMParser;
@@ -121,7 +123,7 @@ export default class extends Vue {
     // To use `innerHTML` we have to get a reference to the parent of
     // the <svg> tree
     this.svgParent = this.svgCanvas as HTMLDivElement;
-    this.svgRoot = this.svgCanvas?.querySelector("svg") as SVGElement;
+    this.svgRoot = this.svgParent.querySelector("svg") as SVGElement;
   }
 
   previewOrDefault(dataUrl: string | undefined): string {
@@ -132,37 +134,44 @@ export default class extends Vue {
     this.originalSphereMatrix.copy(this.inverseTotalRotationMatrix);
   }
 
-  onItemHover(s: SphericalConstruction): void {
+  // TODO: the onXXXX functions below are not bug-free yet
+  // There is a potential race-condition when the mouse moves too fast
+  // or when the mouse moves while a new construction is being loaded
+
+  async onItemHover(s: SphericalConstruction): Promise<void> {
     if (this.lastDocId === s.id) return; // Prevent double hovers?
     this.lastDocId = s.id;
-    axios
+    const newSvg = await axios
       .get(s.previewData)
       .then((r: AxiosResponse) => r.data)
       .then((svgString: string) => {
-        const newSvg = this.domParser.parseFromString(
+        const newDoc = this.domParser.parseFromString(
           svgString,
           "image/svg+xml"
         );
-        // We assume the SVG tree is always the first child
-        // The following code works on FireFox but not on CHrome
-        this.svgParent?.firstChild?.replaceWith(
-          newSvg.activeElement as SVGElement
-        );
+        return newDoc.querySelector("svg") as SVGElement;
       });
+    this.previewSVG = newSvg;
+    console.debug("onItemHover:", this.previewSVG);
+    this.svgRoot.replaceWith(this.previewSVG);
   }
 
   onItemLeave(/*_ev: MouseEvent*/): void {
     this.lastDocId = null;
+    this.previewSVG?.replaceWith(this.svgRoot);
   }
 
   onListLeave(/*_ev: MouseEvent*/): void {
     // Restore the canvas
-    this.svgParent?.replaceChild(
-      this.svgRoot,
-      this.svgParent.firstChild as SVGElement
-    );
+    if (this.selectedSVG) this.previewSVG?.replaceWith(this.selectedSVG);
+    else this.previewSVG?.replaceWith(this.svgRoot);
     // Restore the rotation matrix
     SEStore.setInverseRotationMatrix(this.originalSphereMatrix);
+  }
+
+  loadPreview(docId: string): void {
+    this.selectedSVG = this.previewSVG;
+    this.$emit("load-requested", { docId });
   }
 }
 </script>

@@ -7,6 +7,8 @@ import { SESegment } from "@/models/SESegment";
 import { SELabel } from "@/models/SELabel";
 import { SEEllipse } from "@/models/SEEllipse";
 import { SEAngleMarker } from "@/models/SEAngleMarker";
+import { SEParametric } from "@/models/SEParametric";
+import { SEPolygon } from "@/models/SEPolygon";
 // import { UpdateMode, UpdateStateType } from "@/types";
 
 export class SegmentNormalArcLengthVisitor implements Visitor {
@@ -56,5 +58,13 @@ export class SegmentNormalArcLengthVisitor implements Visitor {
   // eslint-disable-next-line
   actionOnAngleMarker(a: SEAngleMarker): void {
     //AngleMarekrs are completely determined by their parents so no need to update them
+  }
+  // eslint-disable-next-line
+  actionOnParametric(p: SEParametric): void {
+    //Parametric curves are completely determined by their parents so no need to update them
+  }
+  // eslint-disable-next-line
+  actionOnPolygon(p: SEPolygon): void {
+    //Parametric curves are completely determined by their parents so no need to update them
   }
 }

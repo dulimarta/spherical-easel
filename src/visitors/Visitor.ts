@@ -5,6 +5,8 @@ import { SECircle } from "@/models/SECircle";
 import { SELabel } from "@/models/SELabel";
 import { SEEllipse } from "@/models/SEEllipse";
 import { SEAngleMarker } from "@/models/SEAngleMarker";
+import { SEParametric } from "@/models/SEParametric";
+import { SEPolygon } from "@/models/SEPolygon";
 // import { SEAngleMarker } from "@/models/SEAngleMarker";
 /**
  * Use the Visitor design pattern to apply operation on different types
@@ -19,4 +21,6 @@ export interface Visitor {
   actionOnLabel(l: SELabel): void;
   actionOnAngleMarker(a: SEAngleMarker): void;
   actionOnEllipse(e: SEEllipse): void;
+  actionOnParametric(P: SEParametric): void;
+  actionOnPolygon(P: SEPolygon): void;
 }

@@ -13,7 +13,12 @@ module.exports = {
   //   "^.+\\.vue$": "vue-jest",
   //   "^.+\\.ts$": "ts-jest"
   // },
-  testPathIgnorePatterns: ["tests/unit/.+\\.spec\\.ts", ".+\\.cyp\\.ts"],
+  testPathIgnorePatterns: [
+    "tests/unit/.+\\.spec\\.ts",
+    ".+\\.cyp\\.ts",
+    ".+\\.spek\\.ts",
+    "sphereframe-helper.ts"
+  ],
   // modulePathIgnorePatterns: ["tests/unit/*.spec.ts"],
 
   verbose: true,

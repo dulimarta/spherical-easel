@@ -1,11 +1,15 @@
 import { SEExpression } from "./SEExpression";
 import { SESegment } from "./SESegment";
-import { UpdateStateType, UpdateMode, ValueDisplayMode } from "@/types";
+import {
+  UpdateStateType,
+  UpdateMode,
+  ValueDisplayMode,
+  ExpressionState
+} from "@/types";
 import SETTINGS from "@/global-settings";
 import i18n from "@/i18n";
 
-import { Styles } from "@/types/Styles";
-const emptySet = new Set<Styles>();
+const emptySet = new Set<string>();
 export class SESegmentLength extends SEExpression {
   readonly seSegment: SESegment;
 
@@ -20,9 +24,11 @@ export class SESegmentLength extends SEExpression {
   }
 
   public get noduleDescription(): string {
+    // const val = ;
     return String(
       i18n.t(`objectTree.segmentLength`, {
-        seg: this.seSegment.label?.ref.shortUserName
+        seg: this.seSegment.label?.ref.shortUserName,
+        val: this.value
       })
     );
   }
@@ -37,15 +43,26 @@ export class SESegmentLength extends SEExpression {
   }
 
   public update(state: UpdateStateType): void {
-    if (state.mode !== UpdateMode.DisplayOnly) return;
+    // This object and any of its children has no presence on the sphere canvas, so update for move should
+    if (state.mode === UpdateMode.RecordStateForMove) return;
+    // This object is completely determined by its parents, so only record the object in state array
+    if (state.mode == UpdateMode.RecordStateForDelete) {
+      const expressionState: ExpressionState = {
+        kind: "expression",
+        object: this
+      };
+      state.stateArray.push(expressionState);
+    }
     if (!this.canUpdateNow()) return;
     // When this updates send its value to the label of the segment
-    this.seSegment.label!.ref.value = [this.value];
+    if (this.seSegment.label) {
+      this.seSegment.label.ref.value = [this.value];
+    }
     //const pos = this.name.lastIndexOf(":");
     //this.name = this.name.substring(0, pos + 2) + this.prettyValue;
     this.setOutOfDate(false);
     this.updateKids(state);
   }
 
-  public customStyles = (): Set<Styles> => emptySet;
+  public customStyles = (): Set<string> => emptySet;
 }

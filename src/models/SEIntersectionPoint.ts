@@ -1,7 +1,7 @@
 import { SEPoint } from "./SEPoint";
 import Point from "@/plottables/Point";
 import { IntersectionReturnType } from "@/types";
-import { SEOneDimensional } from "@/types";
+import { SEOneOrTwoDimensional } from "@/types";
 import { UpdateMode, UpdateStateType, PointState } from "@/types";
 import { intersectTwoObjects } from "@/utils/intersections";
 import i18n from "@/i18n";
@@ -20,8 +20,8 @@ export class SEIntersectionPoint extends SEPoint {
   /**
    * The One-Dimensional parents of this SEInstructionPoint
    */
-  private seParent1: SEOneDimensional;
-  private seParent2: SEOneDimensional;
+  private seParent1: SEOneOrTwoDimensional;
+  private seParent2: SEOneOrTwoDimensional;
 
   /**
    * The numbering of the intersection in the case of multiple intersection
@@ -41,8 +41,8 @@ export class SEIntersectionPoint extends SEPoint {
    */
   constructor(
     pt: Point,
-    seParent1: SEOneDimensional,
-    seParent2: SEOneDimensional,
+    seParent1: SEOneOrTwoDimensional,
+    seParent2: SEOneOrTwoDimensional,
     order: number,
     isUserCreated: boolean
   ) {
@@ -124,16 +124,22 @@ export class SEIntersectionPoint extends SEPoint {
     this.setOutOfDate(false);
     this._exists = this.seParent1.exists && this.seParent2.exists;
     if (this._exists) {
-      //console.debug("Updating SEIntersectionPoint", this.name);
+      // console.debug("Updating SEIntersectionPoint", this.name);
       // The objects are in the correct order because the SEIntersectionPoint parents are assigned that way
       const updatedIntersectionInfo: IntersectionReturnType[] = intersectTwoObjects(
         this.seParent1,
         this.seParent2
       );
-
-      this._exists = updatedIntersectionInfo[this.order].exists;
-      this.locationVector = updatedIntersectionInfo[this.order].vector; // Calls the setter of SEPoint which calls the setter of Point which updates the display
+      if (updatedIntersectionInfo[this.order] !== undefined) {
+        this._exists = updatedIntersectionInfo[this.order].exists;
+        this.locationVector = updatedIntersectionInfo[this.order].vector; // Calls the setter of SEPoint which calls the setter of Point which updates the display
+      } else {
+        this._exists = false;
+      }
     }
+    // if (this._isUserCreated) {
+    //   console.log("update intersection pt", this.locationVector.x);
+    // }
     // Update visibility
     if (this._exists && this._isUserCreated && this._showing) {
       this.ref.setVisible(true);

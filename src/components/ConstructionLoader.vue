@@ -227,6 +227,8 @@ export default class ConstructionLoader extends Vue {
     run(script);
     SEStore.clearUnsavedFlag();
     EventBus.fire("construction-loaded", {});
+    // update all
+    SEStore.updateDisplay();
   }
 
   doShareConstruction(event: { docId: string }): void {

@@ -85,6 +85,20 @@
                 </div>
                 <div class="anchored top right">
                   <v-tooltip bottom
+                    v-if="accountEnabled"
+                    :open-delay="toolTipOpenDelay"
+                    :close-delay="toolTipCloseDelay">
+                    <template v-slot:activator="{ on }">
+                      <v-btn icon
+                        tile
+                        @click="requestShare()"
+                        v-on="on">
+                        <v-icon>mdi-share</v-icon>
+                      </v-btn>
+                    </template>
+                    <span>Reset sphere</span>
+                  </v-tooltip>
+                  <v-tooltip bottom
                     :open-delay="toolTipOpenDelay"
                     :close-delay="toolTipCloseDelay">
                     <template v-slot:activator="{ on }">
@@ -255,7 +269,7 @@ import Nodule from "@/plottables/Nodule";
 import Ellipse from "@/plottables/Ellipse";
 import { namespace } from "vuex-class";
 import { SENodule } from "@/models/SENodule";
-import { AppState, ConstructionInFirestore } from "@/types";
+import { ActionMode, AppState, ConstructionInFirestore } from "@/types";
 import IconBase from "@/components/IconBase.vue";
 import AngleMarker from "@/plottables/AngleMarker";
 import { FirebaseFirestore, DocumentSnapshot } from "@firebase/firestore-types";
@@ -264,6 +278,10 @@ import { ConstructionScript } from "@/types";
 import { Route } from "vue-router";
 import Dialog, { DialogAction } from "@/components/Dialog.vue";
 import { SEStore } from "@/store";
+import Parametric from "@/plottables/Parametric";
+import { Matrix4 } from "three";
+import { Unsubscribe } from "@firebase/util";
+import { FirebaseAuth, User } from "@firebase/auth-types";
 const SE = namespace("se");
 
 /**
@@ -288,28 +306,14 @@ export default class Easel extends Vue {
   @Prop()
   documentId: string | undefined;
 
-  // @SE.State((s: AppState) => s.sePoints)
-  // readonly points!: SENodule[];
-
-  // @SE.State((s: AppState) => s.seLines)
-  // readonly lines!: SENodule[];
-
-  // @SE.State((s: AppState) => s.seSegments)
-  // readonly segments!: SENodule[];
-
-  // @SE.State((s: AppState) => s.seCircles)
-  // readonly circles!: SENodule[];
-
   @SE.State((s: AppState) => s.seNodules)
   readonly seNodules!: SENodule[];
 
   @SE.State((s: AppState) => s.temporaryNodules)
   readonly temporaryNodules!: Nodule[];
 
-  // @SE.State((s: AppState) => s.previousZoomMagnificationFactor)
-  // readonly previousZoomMagnificationFactor!: number;
-
   readonly $appDB!: FirebaseFirestore;
+  readonly $appAuth!: FirebaseAuth;
 
   private availHeight = 0; // Both split panes are sandwiched between the app bar and footer. This variable hold the number of pixels available for canvas height
   private currentCanvasSize = 0; // Result of height calculation will be passed to <v-responsive> via this variable
@@ -329,9 +333,15 @@ export default class Easel extends Vue {
   private displayZoomInToolUseMessage = false;
   private displayZoomOutToolUseMessage = false;
   private displayZoomFitToolUseMessage = false;
-  private actionMode = { id: "", name: "" };
+  private actionMode: { id: ActionMode; name: string } = {
+    id: "rotate",
+    name: ""
+  };
   private confirmedLeaving = false;
   private attemptedToRoute: Route | null = null;
+  private accountEnabled = false;
+  private uid = "";
+  private authSubscription!: Unsubscribe;
 
   $refs!: {
     responsiveBox: VueComponent;
@@ -425,6 +435,7 @@ export default class Easel extends Vue {
         }
       });
   }
+
   /** mounted() is part of VueJS lifecycle hooks */
   mounted(): void {
     window.addEventListener("resize", this.onWindowResized);
@@ -434,6 +445,19 @@ export default class Easel extends Vue {
       "set-action-mode-to-select-tool",
       this.setActionModeToSelectTool
     );
+    EventBus.listen("secret-key-detected", () => {
+      if (this.uid.length > 0) this.accountEnabled = true;
+    });
+    this.authSubscription = this.$appAuth.onAuthStateChanged(
+      (u: User | null) => {
+        if (u !== null) this.uid = u.uid;
+      }
+    );
+  }
+  beforeDestroy(): void {
+    if (this.authSubscription) this.authSubscription();
+    EventBus.unlisten("set-action-mode-to-select-tool");
+    EventBus.unlisten("secret-key-detected");
   }
 
   /**
@@ -515,6 +539,7 @@ export default class Easel extends Vue {
     Point.updatePointScaleFactorForZoom(e.factor);
     Label.updateTextScaleFactorForZoom(e.factor);
     Ellipse.updateCurrentStrokeWidthForZoom(e.factor);
+    Parametric.updateCurrentStrokeWidthForZoom(e.factor);
 
     // Apply the new size in each nodule in the store
     this.seNodules.forEach((p: SENodule) => {
@@ -526,6 +551,11 @@ export default class Easel extends Vue {
     });
   }
   //#endregion resizePlottables
+
+  requestShare(): void {
+    // Alternate place to handle "Share Construction"
+    // EventBus.fire("share-construction-requested", {});
+  }
 
   doLeave(): void {
     this.confirmedLeaving = true;

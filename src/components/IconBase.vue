@@ -48,64 +48,89 @@ export default class IconBase extends Vue {
       // the angle markers fill object contains the center of the dialation
       // then the d="M -75.437 -26.553... gives the center of the dialation
       // so the new translation vector is [-75.437*(1-scale),-26.553*(1-scale)]
-      const ind = parts.findIndex(ele => {
-        const type = this.getAttribute(ele, "type");
-        const fill = this.getAttribute(ele, "myfill");
-        // console.log("check", type, fill);
-        if (type === "angleMarker" && fill === "true") {
-          return true;
-        } else {
-          return false;
+      // const ind = parts.findIndex(ele => {
+      //   const type = this.getAttribute(ele, "type");
+      //   const fill = this.getAttribute(ele, "myfill");
+      //   // console.log("check", type, fill);
+      //   if (type === "angleMarker" && fill === "true") {
+      //     return true;
+      //   } else {
+      //     return false;
+      //   }
+      // });
+
+      // if (ind !== -1) {
+      //   // there is an angleMarker fill path
+      //   const vals = this.getAttribute(parts[ind], "d")?.split(" ") ?? [];
+      //   if (vals.length === 0) {
+      //     throw new Error(
+      //       `IconBase - Undefined d path attribute in ${parts[ind]}.`
+      //     );
+      //   }
+      // console.log("scale angle marker", vals[1], vals[2]);
+      // vals[1] and vals[2] contain the center of the dilation, scale *all* anglemarker parts (both circle edge and fill)
+      parts.forEach((svgString, index) => {
+        if (index === 0) return; // do nothing to the <defn>...</defn> string
+        const type = this.getAttribute(svgString, "type");
+        const side = this.getAttribute(svgString, "side");
+        const fill = this.getAttribute(svgString, "myfill");
+
+        if (fill === "true" && type === "angleMarker") {
+          const vals = this.getAttribute(svgString, "d")?.split(" ") ?? [];
+          if (vals.length === 0) {
+            throw new Error(
+              `IconBase - Undefined d path attribute in ${svgString}.`
+            );
+          }
+          // this is part of an angleMarker and the previous part is the edge of the fill so
+          if (side === "front") {
+            // this angleMarker is on the front
+            parts[index] = this.setAttribute(
+              parts[index],
+              "transform",
+              this.setTransformationScale(
+                this.getAttribute(parts[index], "transform") ?? "",
+                SETTINGS.icons.angleMarker.scale.front,
+                Number(vals[1]) * (1 - SETTINGS.icons.angleMarker.scale.front),
+                Number(vals[2]) * (1 - SETTINGS.icons.angleMarker.scale.front)
+              )
+            );
+            parts[index - 1] = this.setAttribute(
+              parts[index - 1],
+              "transform",
+              this.setTransformationScale(
+                this.getAttribute(parts[index - 1], "transform") ?? "",
+                SETTINGS.icons.angleMarker.scale.front,
+                Number(vals[1]) * (1 - SETTINGS.icons.angleMarker.scale.front),
+                Number(vals[2]) * (1 - SETTINGS.icons.angleMarker.scale.front)
+              )
+            );
+          } else {
+            //this angleMarker is on the back
+            parts[index] = this.setAttribute(
+              parts[index],
+              "transform",
+              this.setTransformationScale(
+                this.getAttribute(parts[index], "transform") ?? "",
+                SETTINGS.icons.angleMarker.scale.front,
+                Number(vals[1]) * (1 - SETTINGS.icons.angleMarker.scale.back),
+                Number(vals[2]) * (1 - SETTINGS.icons.angleMarker.scale.back)
+              )
+            );
+            parts[index - 1] = this.setAttribute(
+              parts[index - 1],
+              "transform",
+              this.setTransformationScale(
+                this.getAttribute(parts[index - 1], "transform") ?? "",
+                SETTINGS.icons.angleMarker.scale.front,
+                Number(vals[1]) * (1 - SETTINGS.icons.angleMarker.scale.back),
+                Number(vals[2]) * (1 - SETTINGS.icons.angleMarker.scale.back)
+              )
+            );
+          }
         }
       });
-
-      if (ind !== -1) {
-        // there is an angleMarker fill path
-        const vals = this.getAttribute(parts[ind], "d")?.split(" ") ?? [];
-        if (vals.length === 0) {
-          throw new Error(
-            `IconBase - Undefined d path attribute in ${parts[ind]}.`
-          );
-        }
-        // console.log("scale angle marker", vals[1], vals[2]);
-        // vals[1] and vals[2] contain the center of the dilation, scale *all* anglemarker parts (both circle edge and fill)
-        // This was not designed to handle more than one angle marker in an iconXXXPaths.svg file.
-        parts.forEach((svgString, index) => {
-          if (index === 0) return; // do nothing to the <defn>...</defn> string
-          const type = this.getAttribute(svgString, "type");
-          const side = this.getAttribute(svgString, "side");
-
-          if (type === "angleMarker") {
-            // this is part of an angleMarker
-            if (side === "front") {
-              // this angleMarker is on the front
-              parts[index] = this.setAttribute(
-                parts[index],
-                "transform",
-                this.setTransformationScale(
-                  this.getAttribute(parts[index], "transform") ?? "",
-                  SETTINGS.icons.angleMarker.scale.front,
-                  Number(vals[1]) *
-                    (1 - SETTINGS.icons.angleMarker.scale.front),
-                  Number(vals[2]) * (1 - SETTINGS.icons.angleMarker.scale.front)
-                )
-              );
-            } else {
-              //this angleMarker is on the back
-              parts[index] = this.setAttribute(
-                parts[index],
-                "transform",
-                this.setTransformationScale(
-                  this.getAttribute(parts[index], "transform") ?? "",
-                  SETTINGS.icons.angleMarker.scale.front,
-                  Number(vals[1]) * (1 - SETTINGS.icons.angleMarker.scale.back),
-                  Number(vals[2]) * (1 - SETTINGS.icons.angleMarker.scale.back)
-                )
-              );
-            }
-          }
-        });
-      }
+      // }
       parts.forEach((svgString, index) => {
         if (index === 0) return; // do nothing to the <defn>...</defn> string
         parts[index] = this.amendAttributes(parts[index]);
@@ -555,23 +580,13 @@ export default class IconBase extends Vue {
         });
         if (ind === -1) {
           // This object is not emphasized
-          if (
-            backFront === "04" ||
-            backFront === "05" ||
-            backFront === "10" ||
-            backFront === "11"
-          ) {
+          if (backFront === "back") {
             return SETTINGS.icons.angleMarker.strokeWidth.back.toString();
           } else {
             return SETTINGS.icons.angleMarker.strokeWidth.front.toString();
           }
         } else {
-          if (
-            backFront === "04" ||
-            backFront === "05" ||
-            backFront === "10" ||
-            backFront === "11"
-          ) {
+          if (backFront === "back") {
             if (emph[ind].indexOf("back") !== -1) {
               // The back side of the object is emphasized
               return SETTINGS.icons.emphasize.angleMarker.strokeWidth.back.toString();

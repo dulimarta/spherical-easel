@@ -6,7 +6,6 @@ import Vue from "vue";
 import Component from "vue-class-component";
 import { Watch } from "vue-property-decorator";
 import { SENodule } from "../models/SENodule";
-import { Styles } from "../types/Styles";
 import FadeInCard from "@/components/FadeInCard.vue";
 import { AppState } from "@/types";
 import { namespace } from "vuex-class";
@@ -16,29 +15,23 @@ export default class AdvancedStyle extends Vue {
   @SE.State((s: AppState) => s.selectedSENodules)
   readonly selectedSENodules!: SENodule[];
 
-  commonStyleProperties: number[] = [];
+  commonStyleProperties: string[] = [];
 
   constructor() {
     super();
     // this.commonProperties = new Set();
   }
 
-  hasStyles(s: Styles): boolean {
-    const sNum = Number(s);
-    return (
-      this.commonStyleProperties.length > 0 &&
-      this.commonStyleProperties.findIndex(x => x === sNum) >= 0
-    );
+  hasStyles(prop: RegExp): boolean {
+    return this.commonStyleProperties.some((x: string) => x.match(prop));
   }
 
   get hasColor(): boolean {
-    return (
-      this.hasStyles(Styles.strokeColor) || this.hasStyles(Styles.fillColor)
-    );
+    return this.hasStyles(/Color/);
   }
 
   get hasStrokeWidth(): boolean {
-    return this.hasStyles(Styles.strokeWidthPercent);
+    return this.hasStyles(/strokeWidthPercent/);
   }
 
   @Watch("selectedSENodules")

@@ -1,7 +1,7 @@
 import { SEPoint } from "./SEPoint";
 import Point from "@/plottables/Point";
 import { Vector3 } from "three";
-import { SEOneDimensional } from "@/types";
+import { SEOneOrTwoDimensional } from "@/types";
 import { UpdateMode, UpdateStateType, PointState } from "@/types";
 import i18n from "@/i18n";
 import { SESegment } from "./SESegment";
@@ -9,11 +9,11 @@ import { SELine } from "./SELine";
 import { SECircle } from "./SECircle";
 import { SEEllipse } from "./SEEllipse";
 
-export class SEPointOnOneDimensional extends SEPoint {
+export class SEPointOnOneOrTwoDimensional extends SEPoint {
   /**
    * The One-Dimensional parents of this SEPointOnOneDimensional
    */
-  private oneDimensionalParent: SEOneDimensional;
+  private oneDimensionalParent: SEOneOrTwoDimensional;
 
   private tmpVector4 = new Vector3();
   /**
@@ -21,7 +21,7 @@ export class SEPointOnOneDimensional extends SEPoint {
    * @param point the TwoJS point associated with this intersection
    * @param oneDimensionalParent The parent
    */
-  constructor(point: Point, oneDimensionalParent: SEOneDimensional) {
+  constructor(point: Point, oneDimensionalParent: SEOneOrTwoDimensional) {
     super(point);
     this.ref = point;
     this.oneDimensionalParent = oneDimensionalParent;
@@ -39,7 +39,9 @@ export class SEPointOnOneDimensional extends SEPoint {
     if (!this.oneDimensionalParent.isOutOfDate()) {
       this._locationVector
         .copy(
-          (this.oneDimensionalParent as SEOneDimensional).closestVector(pos)
+          (this.oneDimensionalParent as SEOneOrTwoDimensional).closestVector(
+            pos
+          )
         )
         .normalize();
     } else {
@@ -97,7 +99,7 @@ export class SEPointOnOneDimensional extends SEPoint {
     this.ref.positionVector = this._locationVector;
   }
 
-  get parentOneDimensional(): SEOneDimensional {
+  get parentOneDimensional(): SEOneOrTwoDimensional {
     return this.oneDimensionalParent;
   }
 
@@ -112,7 +114,7 @@ export class SEPointOnOneDimensional extends SEPoint {
       // Update the current location with the closest point on the parent to the old location
       this._locationVector
         .copy(
-          (this.oneDimensionalParent as SEOneDimensional).closestVector(
+          (this.oneDimensionalParent as SEOneOrTwoDimensional).closestVector(
             this._locationVector
           )
         )
@@ -140,6 +142,7 @@ export class SEPointOnOneDimensional extends SEPoint {
       };
       state.stateArray.push(pointState);
     }
+    this.markKidsOutOfDate(); // if we don't do this, then some children are updated (at least) twice and the the second update is incorrect.
     this.updateKids(state);
   }
 

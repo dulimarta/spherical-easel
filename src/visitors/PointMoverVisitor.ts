@@ -5,9 +5,11 @@ import { SELine } from "@/models/SELine";
 import { Vector3 } from "three";
 import { SECircle } from "@/models/SECircle";
 import { SESegment } from "@/models/SESegment";
-import { SEPointOnOneDimensional } from "@/models/SEPointOnOneDimensional";
+import { SEPointOnOneOrTwoDimensional } from "@/models/SEPointOnOneOrTwoDimensional";
 import { SEEllipse } from "@/models/SEEllipse";
 import { SEAngleMarker } from "@/models/SEAngleMarker";
+import { SEParametric } from "@/models/SEParametric";
+import { SEPolygon } from "@/models/SEPolygon";
 
 export class PointMoverVisitor implements Visitor {
   private locationVector: Vector3 = new Vector3();
@@ -24,7 +26,7 @@ export class PointMoverVisitor implements Visitor {
   //#region actionOnPoint
   actionOnPoint(p: SEPoint): void {
     // Don't use the usual location setter for points on one dimensional because that will move the label to the location on a possibly out of date parent.
-    if (!(p instanceof SEPointOnOneDimensional)) {
+    if (!(p instanceof SEPointOnOneOrTwoDimensional)) {
       p.locationVector = this.locationVector; // Set the new position vector
     } else {
       p.pointDirectLocationSetter(this.locationVector);
@@ -58,5 +60,13 @@ export class PointMoverVisitor implements Visitor {
   // eslint-disable-next-line
   actionOnAngleMarker(a: SEAngleMarker): void {
     //a.update()
+  }
+  // eslint-disable-next-line
+  actionOnParametric(p: SEParametric): void {
+    // e.update();
+  }
+  // eslint-disable-next-line
+  actionOnPolygon(p: SEPolygon): void {
+    // e.update();
   }
 }

@@ -1,14 +1,11 @@
 import { SEExpression } from "./SEExpression";
-import { UpdateStateType, UpdateMode } from "@/types";
+import { UpdateStateType, UpdateMode, ExpressionState } from "@/types";
 import { ExpressionParser } from "@/expression/ExpressionParser";
-// import AppStore from "@/store";
 import { SEStore } from "@/store";
-import { Styles } from "@/types/Styles";
-import SETTINGS from "@/global-settings";
 import { SENodule } from "./SENodule";
 import i18n from "@/i18n";
 
-const emptySet = new Set<Styles>();
+const emptySet = new Set<string>();
 const parser = new ExpressionParser();
 export class SECalculation extends SEExpression {
   // static parser = new ExpressionParser();
@@ -28,15 +25,21 @@ export class SECalculation extends SEExpression {
       // vars.push(v[0]);
       // Find the SENodule parents of this calculation
       // SEStore.expressions.forEach(n => console.log(n.name));
-      const pos = SEStore.expressions.findIndex(z =>
-        z.name.startsWith(`${v[0]}`)
-      );
-      if (pos > -1) this._calculationParents.push(SEStore.expressions[pos]);
+      const pos = SEStore.expressions.findIndex(z => z.name === `${v[0]}`);
+      // add it to the calculationParents if it is not already added
+      if (pos > -1) {
+        const pos2 = this._calculationParents.findIndex(
+          parent => parent.name === SEStore.expressions[pos].name
+        );
+        if (pos2 < 0) {
+          this._calculationParents.push(SEStore.expressions[pos]);
+        }
+      }
+
+      // if (pos > -1) this._calculationParents.push(SEStore.expressions[pos]);
     }
 
-    this._calculationParents.forEach((par: SENodule) => {
-      par.registerChild(this);
-    });
+    // DO not register parents here. That is done the in the command
 
     // This might not be necessary because all expressions have the name "M####" and should be caught by the above
     //  This appears to make ALL expressions have this as a child
@@ -82,14 +85,14 @@ export class SECalculation extends SEExpression {
         // if (pos >= 0) {
         //   const shorttName = m.name.substring(0, pos);
         const measurementName = m.name;
-        varMap.set(measurementName.replace(/-.+/, ""), m.value);
+        varMap.set(measurementName, m.value);
         // }
       });
     // console.log(this._calculationParents, varMap);
     // this.expressions.forEach((m: SEExpression) => {
     //   const measurementName = m.name;
     //   // console.debug("Measurement", m, measurementName);
-    //   this.varMap.set(measurementName.replace(/-.+/, ""), m.value);
+    //   this.varMap.set(measurementName, m.value);
     // });
 
     // console.log("recalc", varMap);
@@ -99,7 +102,8 @@ export class SECalculation extends SEExpression {
   public get noduleDescription(): string {
     return String(
       i18n.t(`objectTree.calculationDescription`, {
-        str: this.exprText
+        str: this.exprText,
+        val: this.value
       })
     );
   }
@@ -113,18 +117,23 @@ export class SECalculation extends SEExpression {
     );
   }
 
-  // TODO: Move this method up to the parent class?
   public update(state: UpdateStateType): void {
-    if (state.mode !== UpdateMode.DisplayOnly) return;
+    // This object and any of its children has no presence on the sphere canvas, so update for move should
+    if (state.mode === UpdateMode.RecordStateForMove) return;
+    // This object is completely determined by its parents, so only record the object in state array
+    if (state.mode == UpdateMode.RecordStateForDelete) {
+      const expressionState: ExpressionState = {
+        kind: "expression",
+        object: this
+      };
+      state.stateArray.push(expressionState);
+    }
     if (!this.canUpdateNow()) return;
     this.recalculate();
-    // const pos = this.name.lastIndexOf("):");
-    // this.name =
-    //   this.name.substring(0, pos + 2) +
-    //   +this.value.toFixed(SETTINGS.decimalPrecision);
+
     this.setOutOfDate(false);
     this.updateKids(state);
   }
 
-  public customStyles = (): Set<Styles> => emptySet;
+  public customStyles = (): Set<string> => emptySet;
 }

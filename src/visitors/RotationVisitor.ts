@@ -6,9 +6,11 @@ import { SECircle } from "@/models/SECircle";
 import { SESegment } from "@/models/SESegment";
 import { SELabel } from "@/models/SELabel";
 // import { UpdateMode } from "@/types";
-import { SEPointOnOneDimensional } from "@/models/SEPointOnOneDimensional";
+import { SEPointOnOneOrTwoDimensional } from "@/models/SEPointOnOneOrTwoDimensional";
 import { SEEllipse } from "@/models/SEEllipse";
 import { SEAngleMarker } from "@/models/SEAngleMarker";
+import { SEParametric } from "@/models/SEParametric";
+import { SEPolygon } from "@/models/SEPolygon";
 
 export class RotationVisitor implements Visitor {
   private transformMatrix: Matrix4 = new Matrix4();
@@ -29,7 +31,7 @@ export class RotationVisitor implements Visitor {
   actionOnPoint(p: SEPoint): void {
     this.tmpVector.copy(p.locationVector); // Copy the old vector location of the SEPoint
     this.tmpVector.applyMatrix4(this.transformMatrix); // Apply the matrix
-    if (p instanceof SEPointOnOneDimensional) {
+    if (p instanceof SEPointOnOneOrTwoDimensional) {
       p.pointDirectLocationSetter(this.tmpVector); // use the direct setter because the parent might be out of date.
     } else {
       p.locationVector = this.tmpVector; // Set the new position vector
@@ -72,5 +74,14 @@ export class RotationVisitor implements Visitor {
   // eslint-disable-next-line
   actionOnAngleMarker(a: SEAngleMarker): void {
     //AngleMarekrs are completely determined by their parents so no need to update them
+  }
+  // eslint-disable-next-line
+  actionOnParametric(e: SEParametric): void {
+    // update the display of the plottable object. update gets the new rotation matrix directly from the store.
+    e.ref.updateDisplay();
+  }
+  actionOnPolygon(p: SEPolygon): void {
+    // update the display of the plottable object. update gets the new rotation matrix directly from the store.
+    p.ref.updateDisplay();
   }
 }

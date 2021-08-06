@@ -1,9 +1,11 @@
-import { Vector3, Matrix4 } from "three";
-import Two from "two.js";
-import SETTINGS, { LAYER } from "@/global-settings";
+import SETTINGS from "@/global-settings";
 import Nodule, { DisplayStyle } from "./Nodule";
-import { StyleOptions, StyleEditPanels } from "@/types/Styles";
-import { SENodule } from "@/models/SENodule";
+import {
+  StyleOptions,
+  StyleEditPanels,
+  DEFAULT_NONFREE_LINE_FRONT_STYLE,
+  DEFAULT_NONFREE_LINE_BACK_STYLE
+} from "@/types/Styles";
 import Line from "./Line";
 
 export default class NonFreeLine extends Line {
@@ -18,27 +20,32 @@ export default class NonFreeLine extends Line {
      * The styling variables for the drawn non-free line. The user can modify these.
      */
     // Front
-    this.strokeColorFront = SETTINGS.line.nonFree.strokeColor.front;
-    if (SETTINGS.line.nonFree.dashArray.front.length > 0) {
-      SETTINGS.line.nonFree.dashArray.front.forEach(v =>
-        this.dashArrayFront.push(v)
-      );
-    }
-    this.strokeWidthPercentFront = 100;
+    // const dashArrayFront: Array<number> = [];
+    // if (SETTINGS.line.nonFree.dashArray.front.length > 0) {
+    //   dashArrayFront.push(...SETTINGS.line.nonFree.dashArray.front);
+    // }
 
     // Back use the default non-dynamic back style options so that when the user disables the dynamic back style these options are displayed
-    this.dynamicBackStyle = SETTINGS.line.dynamicBackStyle;
-    this.strokeColorBack = SETTINGS.line.nonFree.strokeColor.back;
-    if (SETTINGS.line.nonFree.dashArray.back.length > 0) {
-      SETTINGS.line.nonFree.dashArray.back.forEach(v =>
-        this.dashArrayBack.push(v)
-      );
-    }
-    this.strokeWidthPercentBack = 100;
+    // this.dynamicBackStyle = SETTINGS.line.dynamicBackStyle;
+    // this.strokeColorBack = SETTINGS.line.nonFree.strokeColor.back;
+    // if (SETTINGS.line.nonFree.dashArray.back.length > 0) {
+    //   SETTINGS.line.nonFree.dashArray.back.forEach(v =>
+    //     this.dashArrayBack.push(v)
+    //   );
+    // }
+    // this.strokeWidthPercentBack = 100;
 
     // Now apply the new style and size
     this.stylize(DisplayStyle.ApplyCurrentVariables);
     this.adjustSize();
+    this.styleOptions.set(
+      StyleEditPanels.Front,
+      DEFAULT_NONFREE_LINE_FRONT_STYLE
+    );
+    this.styleOptions.set(
+      StyleEditPanels.Back,
+      DEFAULT_NONFREE_LINE_BACK_STYLE
+    );
   }
 
   /**
@@ -46,82 +53,54 @@ export default class NonFreeLine extends Line {
    */
   defaultStyleState(panel: StyleEditPanels): StyleOptions {
     switch (panel) {
-      case StyleEditPanels.Front: {
-        const dashArrayFront = [] as number[];
-        if (SETTINGS.line.nonFree.dashArray.front.length > 0) {
-          SETTINGS.line.nonFree.dashArray.front.forEach(v =>
-            dashArrayFront.push(v)
-          );
-        }
-        return {
-          panel: panel,
-          strokeWidthPercent: 100,
-          strokeColor: SETTINGS.line.nonFree.strokeColor.front,
-          dashArray: dashArrayFront
-        };
-      }
-      case StyleEditPanels.Back: {
-        const dashArrayBack = [] as number[];
+      case StyleEditPanels.Front:
+        return DEFAULT_NONFREE_LINE_FRONT_STYLE;
 
-        if (SETTINGS.line.nonFree.dashArray.back.length > 0) {
-          SETTINGS.line.nonFree.dashArray.back.forEach(v =>
-            dashArrayBack.push(v)
-          );
-        }
-        return {
-          panel: panel,
+      case StyleEditPanels.Back:
+        if (SETTINGS.line.dynamicBackStyle)
+          return {
+            ...DEFAULT_NONFREE_LINE_BACK_STYLE,
+            strokeWidthPercent: Nodule.contrastStrokeWidthPercent(100),
+            strokeColor: Nodule.contrastStrokeColor(
+              SETTINGS.line.nonFree.strokeColor.front
+            )
+          };
+        else return DEFAULT_NONFREE_LINE_BACK_STYLE;
 
-          strokeWidthPercent: SETTINGS.line.dynamicBackStyle
-            ? Nodule.contrastStrokeWidthPercent(100)
-            : 100,
-
-          strokeColor: SETTINGS.line.dynamicBackStyle
-            ? Nodule.contrastStrokeColor(
-                SETTINGS.line.nonFree.strokeColor.front
-              )
-            : SETTINGS.line.nonFree.strokeColor.back,
-
-          dashArray: dashArrayBack,
-
-          dynamicBackStyle: SETTINGS.line.dynamicBackStyle
-        };
-      }
       default:
-      case StyleEditPanels.Label: {
-        return {
-          panel: panel
-        };
-      }
+        return {};
     }
   }
   /**
    * Sets the variables for stroke width glowing/not
    */
   adjustSize(): void {
+    const frontStyle = this.styleOptions.get(StyleEditPanels.Front);
+    const backStyle = this.styleOptions.get(StyleEditPanels.Back);
+    const frontStrokeWidthPercent = frontStyle?.strokeWidthPercent ?? 100;
+    const backStrokeWidthPercent = backStyle?.strokeWidthPercent ?? 100;
     this.frontHalf.linewidth =
-      ((Line.currentLineStrokeWidthFront * this.strokeWidthPercentFront) /
-        100) *
+      ((Line.currentLineStrokeWidthFront * frontStrokeWidthPercent) / 100) *
       (this.nonFreeLineScalePercent / 100);
 
     this.backHalf.linewidth =
       ((Line.currentLineStrokeWidthBack *
-        (this.dynamicBackStyle
-          ? Nodule.contrastStrokeWidthPercent(this.strokeWidthPercentFront)
-          : this.strokeWidthPercentBack)) /
+        (backStyle?.dynamicBackStyle
+          ? Nodule.contrastStrokeWidthPercent(frontStrokeWidthPercent)
+          : backStrokeWidthPercent)) /
         100) *
       (this.nonFreeLineScalePercent / 100);
 
     this.glowingFrontHalf.linewidth =
-      ((Line.currentGlowingLineStrokeWidthFront *
-        this.strokeWidthPercentFront) /
+      ((Line.currentGlowingLineStrokeWidthFront * frontStrokeWidthPercent) /
         100) *
       (this.nonFreeLineScalePercent / 100);
 
     this.glowingBackHalf.linewidth =
       ((Line.currentGlowingLineStrokeWidthBack *
-        (this.dynamicBackStyle
-          ? Nodule.contrastStrokeWidthPercent(this.strokeWidthPercentFront)
-          : this.strokeWidthPercentBack)) /
+        (backStyle?.dynamicBackStyle
+          ? Nodule.contrastStrokeWidthPercent(frontStrokeWidthPercent)
+          : backStrokeWidthPercent)) /
         100) *
       (this.nonFreeLineScalePercent / 100);
   }

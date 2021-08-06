@@ -19,19 +19,13 @@
           </v-list-item-subtitle>
         </v-list-item-content>
       </v-list-item>
-
-      <v-card-text class="pt-0 text-subtitle-2"
-        v-if="i18nListTitle!== undefined">
+      <v-card-text class="pt-0 text-subtitle-2">
+        <slot />
         {{$t(i18nListTitle)}}
         <ul>
-          <li v-if="i18nListItemOne!== undefined">{{$t(i18nListItemOne)}}
-          </li>
-          <li v-if="i18nListItemTwo!== undefined">{{$t(i18nListItemTwo)}}
-          </li>
-          <li v-if="i18nListItemThree!== undefined">
-            {{$t(i18nListItemThree)}}
-          </li>
-          <li v-if="i18nListItemFour!== undefined">{{$t(i18nListItemFour)}}
+          <li v-for="(z,pos) in i18nListItems"
+            :key="pos">
+            {{$t(z)}}
           </li>
         </ul>
       </v-card-text>
@@ -74,10 +68,7 @@ export default class OverlayWithFixButton extends Vue {
   @Prop() readonly i18nTitleLine?: string;
   @Prop() readonly i18nSubtitleLine?: string;
   @Prop() readonly i18nListTitle?: string;
-  @Prop() readonly i18nListItemOne?: string;
-  @Prop() readonly i18nListItemTwo?: string;
-  @Prop() readonly i18nListItemThree?: string;
-  @Prop() readonly i18nListItemFour?: string;
+  @Prop() readonly i18nListItems?: Array<string>;
   @Prop() readonly zIndex!: number;
   @Prop() readonly disabled?: boolean;
   @Prop() readonly color?: string;

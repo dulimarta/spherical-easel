@@ -36,7 +36,7 @@ export default class MessageBox extends Vue {
   addMessage(m: MessageType): void {
     if (this.messageTimer) {
       // We have an active message on display
-      console.debug("Queue incoming messages", m);
+      // console.debug("Queue incoming messages", m);
       this.messages.push(m);
     } else {
       const translation = i18n.t(m.key, m.keyOptions).toString();
@@ -57,7 +57,7 @@ export default class MessageBox extends Vue {
       this.messageType = next.type;
       this.showMe = true;
     } else {
-      console.debug("Message queue is empty");
+      // console.debug("Message queue is empty");
       if (this.messageTimer) clearInterval(this.messageTimer);
       this.messageTimer = null;
       this.messageText = null;

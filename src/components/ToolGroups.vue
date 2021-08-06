@@ -199,7 +199,7 @@ import Vue from "vue";
 /* Import the components so we can use the class-style vue components in TypeScript. */
 import Component from "vue-class-component";
 import ToolButton from "@/components/ToolButton.vue";
-import { ToolButtonType } from "@/types";
+import { ActionMode, ToolButtonType } from "@/types";
 import { SEStore } from "@/store";
 /* Import the global settings. */
 import SETTINGS from "@/global-settings";
@@ -210,7 +210,10 @@ import SETTINGS from "@/global-settings";
 })
 export default class ToolGroups extends Vue {
   /* Controls the selection of the actionMode using the buttons. The default is segment. */
-  private actionMode = { id: "", name: "" };
+  private actionMode: { id: ActionMode; name: string } = {
+    id: "rotate",
+    name: ""
+  };
 
   /* Use the global settings to set the variables bound to the toolTipOpen/CloseDelay */
   private toolTipOpenDelay = SETTINGS.toolTip.openDelay;
@@ -405,6 +408,16 @@ export default class ToolGroups extends Vue {
       toolGroup: "construction"
     },
     {
+      id: 25,
+      actionModeValue: "tangent",
+      displayedName: "CreateTangentDisplayedName",
+      icon: "$vuetify.icons.value.tangent",
+      toolTipMessage: "CreateTangentToolTipMessage",
+      toolUseMessage: "CreateTangentToolUseMessage",
+      displayToolUseMessage: false,
+      toolGroup: "construction"
+    },
+    {
       id: 30,
       actionModeValue: "perpendicular",
       displayedName: "CreatePerpendicularDisplayedName",
@@ -471,6 +484,26 @@ export default class ToolGroups extends Vue {
       icon: "mdi-axis-arrow-info",
       toolTipMessage: "CreateCoordinateToolTipMessage",
       toolUseMessage: "CreateCoordinateToolUseMessage",
+      displayToolUseMessage: false,
+      toolGroup: "measurement"
+    },
+    {
+      id: 20,
+      actionModeValue: "measureTriangle",
+      displayedName: "MeasureTriangleDisplayedName",
+      icon: "$vuetify.icons.value.measuredTriangle",
+      toolTipMessage: "MeasureTriangleToolTipMessage",
+      toolUseMessage: "MeasureTriangleToolUseMessage",
+      displayToolUseMessage: false,
+      toolGroup: "measurement"
+    },
+    {
+      id: 25,
+      actionModeValue: "measurePolygon",
+      displayedName: "MeasurePolygonDisplayedName",
+      icon: "$vuetify.icons.value.measuredPolygon",
+      toolTipMessage: "MeasurePolygonToolTipMessage",
+      toolUseMessage: "MeasurePolygonToolUseMessage",
       displayToolUseMessage: false,
       toolGroup: "measurement"
     },

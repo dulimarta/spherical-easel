@@ -8,15 +8,16 @@ import SETTINGS from "@/global-settings";
 import { OneDimensional, SegmentState, Labelable } from "@/types";
 import { UpdateMode, UpdateStateType } from "@/types";
 import { SELabel } from "@/models/SELabel";
-import { Styles } from "@/types/Styles";
+import {
+  DEFAULT_SEGMENT_BACK_STYLE,
+  DEFAULT_SEGMENT_FRONT_STYLE
+} from "@/types/Styles";
 import { SEStore } from "@/store";
 import i18n from "@/i18n";
 
 const styleSet = new Set([
-  Styles.strokeWidthPercent,
-  Styles.strokeColor,
-  Styles.dashArray,
-  Styles.dynamicBackStyle
+  ...Object.getOwnPropertyNames(DEFAULT_SEGMENT_FRONT_STYLE),
+  ...Object.getOwnPropertyNames(DEFAULT_SEGMENT_BACK_STYLE)
 ]);
 
 export class SESegment extends SENodule
@@ -89,7 +90,7 @@ export class SESegment extends SENodule
     this.name = `Ls${SENodule.SEGMENT_COUNT}`;
   }
 
-  customStyles(): Set<Styles> {
+  customStyles(): Set<string> {
     return styleSet;
   }
 
@@ -117,9 +118,15 @@ export class SESegment extends SENodule
   get arcLength(): number {
     return this._arcLength;
   }
+
   set arcLength(len: number) {
     this._arcLength = len;
   }
+
+  get longerThanPi(): boolean {
+    return this._arcLength > Math.PI;
+  }
+
   public get noduleDescription(): string {
     return String(
       i18n.t(`objectTree.segmentThrough`, {
@@ -173,6 +180,10 @@ export class SESegment extends SENodule
    * @param unitIdealVector A vector *on* the line containing the segment
    */
   public onSegment(unitIdealVector: Vector3): boolean {
+    // if the unitIdealVector is somehow zero return false
+    if (unitIdealVector.isZero(SETTINGS.tolerance)) {
+      return false;
+    }
     // check the endpoints
     if (
       this.tmpVector
@@ -263,7 +274,7 @@ export class SESegment extends SENodule
    * use the oldNormal to help compute a new normal (which is returned)
    * @param sePoint A point on the line normal to this circle
    */
-  public getNormalsToLineThru(
+  public getNormalsToPerpendicularLinesThru(
     sePointVector: Vector3,
     oldNormal: Vector3
   ): Vector3[] {
@@ -459,6 +470,37 @@ export class SESegment extends SENodule
         )
         .normalize();
     }
+  }
+
+  public getMidPointVector(): Vector3 {
+    const midVector = new Vector3();
+    this.toVector.crossVectors(
+      this._normalVector,
+      this._startSEPoint.locationVector
+    );
+
+    // There are two cases depending on the arcLength
+    // Case 1 ArcLength < PI
+    //  In this case we want dot(toVector, end) > 0
+    // Case 2 ArcLength > PI
+    //  In this case we want dot(toVector, end) < 0
+    // Case 3 Arclength = Pi
+
+    if (this._arcLength > Math.PI) {
+      if (this.toVector.dot(this._endSEPoint.locationVector) > 0) {
+        this.toVector.multiplyScalar(-1);
+      }
+    } else if (this._arcLength < Math.PI) {
+      if (this.toVector.dot(this._endSEPoint.locationVector) < 0) {
+        this.toVector.multiplyScalar(-1);
+      }
+    }
+    // midVector =  cos(arcLength/2)*start + sin(arcLength/2)*this.toVector
+    midVector
+      .copy(this._startSEPoint.locationVector)
+      .multiplyScalar(Math.cos(this._arcLength / 2));
+    midVector.addScaledVector(this.toVector, Math.sin(this._arcLength / 2));
+    return midVector.normalize();
   }
 
   /**

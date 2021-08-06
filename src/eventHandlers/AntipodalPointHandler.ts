@@ -5,7 +5,7 @@ import { AddAntipodalPointCommand } from "@/commands/AddAntipodalPointCommand";
 import { DisplayStyle } from "@/plottables/Nodule";
 import Highlighter from "./Highlighter";
 import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
-import { UpdateMode, SEOneDimensional } from "@/types";
+import { UpdateMode, SEOneOrTwoDimensional } from "@/types";
 import Label from "@/plottables/Label";
 import { SELabel } from "@/models/SELabel";
 import { Vector3 } from "three";
@@ -14,8 +14,8 @@ import { CommandGroup } from "@/commands/CommandGroup";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import { ConvertInterPtToUserCreatedCommand } from "@/commands/ConvertInterPtToUserCreatedCommand";
 import Point from "@/plottables/Point";
-import { SEPointOnOneDimensional } from "@/models/SEPointOnOneDimensional";
-import { AddPointOnOneDimensionalCommand } from "@/commands/AddPointOnOneDimensionalCommand";
+import { SEPointOnOneOrTwoDimensional } from "@/models/SEPointOnOneOrTwoDimensional";
+import { AddPointOnOneDimensionalCommand } from "@/commands/AddPointOnOneOrTwoDimensionalCommand";
 import { AddPointCommand } from "@/commands/AddPointCommand";
 import EventBus from "./EventBus";
 import { SEStore } from "@/store";
@@ -28,12 +28,12 @@ export default class AntipodalPointHandler extends Highlighter {
   /**
    * If the user clicks on a one dimensional, create a point on that one dimensional *and* create the antipode of that point
    */
-  private oneDimensionalContainingParentPoint: SEOneDimensional | null = null;
+  private oneDimensionalContainingParentPoint: SEOneOrTwoDimensional | null = null;
 
   /**
    * As the user moves the pointer around snap the temporary marker to this object temporarily
    */
-  protected snapToTemporaryOneDimensional: SEOneDimensional | null = null;
+  protected snapToTemporaryOneDimensional: SEOneOrTwoDimensional | null = null;
   protected snapToTemporaryPoint: SEPoint | null = null;
 
   /**
@@ -119,6 +119,15 @@ export default class AntipodalPointHandler extends Highlighter {
           )
         );
         this.parentPoint = null;
+      } else if (this.hitSEPolygons.length > 0) {
+        // The user selected an ellipse and we will create a point on it
+        this.oneDimensionalContainingParentPoint = this.hitSEPolygons[0];
+        this.parentPointVector.copy(
+          this.oneDimensionalContainingParentPoint.closestVector(
+            this.currentSphereVector
+          )
+        );
+        this.parentPoint = null;
       } else {
         // The user selected an empty location and we will create a point there
         this.parentPointVector.copy(this.currentSphereVector);
@@ -150,7 +159,7 @@ export default class AntipodalPointHandler extends Highlighter {
           const newLabel = new Label();
 
           // Create the model object for the new point and link them
-          this.parentPoint = new SEPointOnOneDimensional(
+          this.parentPoint = new SEPointOnOneOrTwoDimensional(
             newPoint,
             this.oneDimensionalContainingParentPoint
           );
@@ -172,7 +181,7 @@ export default class AntipodalPointHandler extends Highlighter {
           //new AddPointCommand(vtx, newSELabel).execute();
           antipodalCommandGroup.addCommand(
             new AddPointOnOneDimensionalCommand(
-              this.parentPoint,
+              this.parentPoint as SEPointOnOneOrTwoDimensional,
               this.oneDimensionalContainingParentPoint,
               newSELabel
             )
@@ -243,11 +252,7 @@ export default class AntipodalPointHandler extends Highlighter {
         vtx.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
 
         // reset in prep for next antipodal point
-        this.parentPoint = null;
-        this.oneDimensionalContainingParentPoint = null;
-        this.parentPointVector.set(0, 0, 0);
-        this.snapToTemporaryOneDimensional = null;
-        this.snapToTemporaryPoint = null;
+        this.mouseLeave(event);
       }
     }
   }
@@ -277,6 +282,14 @@ export default class AntipodalPointHandler extends Highlighter {
     } else if (this.hitSEEllipses.length > 0) {
       this.hitSEEllipses[0].glowing = true;
       this.snapToTemporaryOneDimensional = this.hitSEEllipses[0];
+      this.snapToTemporaryPoint = null;
+    } else if (this.hitSEParametrics.length > 0) {
+      this.hitSEParametrics[0].glowing = true;
+      this.snapToTemporaryOneDimensional = this.hitSEParametrics[0];
+      this.snapToTemporaryPoint = null;
+    } else if (this.hitSEPolygons.length > 0) {
+      this.hitSEPolygons[0].glowing = true;
+      this.snapToTemporaryOneDimensional = this.hitSEPolygons[0];
       this.snapToTemporaryPoint = null;
     } else {
       this.snapToTemporaryOneDimensional = null;

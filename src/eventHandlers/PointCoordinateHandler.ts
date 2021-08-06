@@ -28,12 +28,34 @@ export default class PointCoordinateHandler extends Highlighter {
   mousePressed(event: MouseEvent): void {
     //Select a point to examine its coordinates
     if (this.isOnSphere) {
-      // only select non-user created points
+      // only select non-user created points and not measured point coordinates
       const userCreatedPoints = this.hitSEPoints.filter(
         p => !(p instanceof SEIntersectionPoint && !p.isUserCreated)
       );
       if (userCreatedPoints.length > 0) {
         this.targetPoint = userCreatedPoints[0];
+      }
+
+      if (
+        SEStore.expressions.some(exp => {
+          if (
+            exp instanceof SEPointCoordinate &&
+            exp.parents[0].name === this.targetPoint?.name
+          ) {
+            return true;
+          } else {
+            return false;
+          }
+        })
+      ) {
+        EventBus.fire("show-alert", {
+          key: `handlers.duplicatePointCoordinateMeasurement`,
+          keyOptions: {
+            ptName: `${this.targetPoint?.name}`
+          },
+          type: "error"
+        });
+        return;
       }
 
       if (this.targetPoint != null) {
@@ -79,11 +101,11 @@ export default class PointCoordinateHandler extends Highlighter {
         // Set the selected segment's Label to display and to show NameAndValue in an undoable way
         coordinatizeCommandGroup.addCommand(
           new StyleNoduleCommand(
-            [this.targetPoint.label!],
-            StyleEditPanels.Front,
+            [this.targetPoint.label!.ref],
+            StyleEditPanels.Label,
             [
               {
-                panel: StyleEditPanels.Front,
+                // panel: StyleEditPanels.Front,
                 // labelVisibility: true,
                 labelDisplayMode:
                   SETTINGS.point.readingCoordinatesChangesLabelModeTo
@@ -91,7 +113,7 @@ export default class PointCoordinateHandler extends Highlighter {
             ],
             [
               {
-                panel: StyleEditPanels.Front,
+                // panel: StyleEditPanels.Front,
                 // labelVisibility: this.targetPoint.label!.showing,
                 labelDisplayMode: this.targetPoint.label!.ref.labelDisplayMode
               }

@@ -114,7 +114,9 @@ This section is an outline of the steps needed to add a tool that takes user mou
     - Adding a new <span class="interface">AaaState</span> interface and <span class="method">isAaaState</span> method to <span class="file">index.ts</span> and updating the <span class="type">ObjectState</span> type.
     - Adding a new method <span class="method">actionOnAaa</span> in all the <span class="folder">Vistor</span> classes in the <span class="folder">visitor</span> folder and updating the <span class="interface">Visitor</span> interface in <span class="file">visitor.ts</span>.
     - Creating the static (in class <span class="class">Aaa</span>) method <span class="method">updateCurrentStrokeWidthForZoom</span> and calling it from <span class="file">Easel.vue</span> file to adjust the linewidth for zoom.
-    - To make the icon SVG (or part of the icon SVG) for `Aaa` you will have to update the <span class="field">id</span> field of all the <span class="package">Two.js</span> objects to distinguish them from others (unique first two digits) and between front and back (last two digits) paths.
+    - To make the icon SVG (or part of the icon SVG) for `Aaa` you will have to update the static method <span class="method">Nodule.idPlottableDescriptionMap</span> of all the <span class="package">Two.js</span> using the <span class="filed">id</span>
+
+    <<< @/src/plottable/Parametric.ts#updatePlottableMap
 
 2.  Create a new <span class="class">AaaHandler</span> class (extending <span class="class">Highlighter</span>). This means
 
@@ -144,11 +146,12 @@ This section is an outline of the steps needed to add a tool that takes user mou
 7.  Update all event handlers to allow all other tools to appropriately highlight, select, and interact with the `Aaa` objects. This also means
 
     - Updating <span class="command">DeleteNoduleCommand</span> to handle `Aaa` objects
-    - If the `Aaa` objects are not completely determined by their parents, a <span class="command">MoveAaaCommand</span> will also need to be added and used in the <span class="handler">MoveHandler</span> class. Otherwise, a <span class="method">Move()</span> method in <span class="class">SEAaa</span> class can be used.
-    - Adding a <span class="method">allAaas</span> method in <span class="file">getters.ts</span>.
+    - If the `Aaa` objects are not completely determined by their parents and/or the object is should be movable, a <span class="command">MoveAaaCommand</span> will also need to be added and used in the <span class="handler">MoveHandler</span> class. Otherwise, a <span class="method">Move()</span> method in <span class="class">SEAaa</span> class can be used.
 
-8.  Follow step 1, 2, 5, 6, 7, and 8 of [Adding a Control Tool](#adding-a-control-tool)
+8.  Update the <span class="method">removeAllFromLayers()</span> method in <span class="file">se-module.ts</span> to remove all `Aaa` objects when the broom is clicked.
 
-9.  Update <span class="component">SENoduleItems.vue</span> and <span class="component">ObjectTree.vue</span>to show `Aaa` items
+9.  Follow step 1, 2, 5, 6, 7, and 8 of [Adding a Control Tool](#adding-a-control-tool)
 
-10. Update <span class="component">Style.vue</span> to list the `Aaa` items when they are selected.
+10. Update <span class="component">SENoduleItems.vue</span> and <span class="component">ObjectTree.vue</span>to show `Aaa` items
+
+11. Update <span class="component">Style.vue</span> to list the `Aaa` items when they are selected.

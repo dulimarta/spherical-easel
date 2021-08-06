@@ -7,9 +7,12 @@ import Nodule, { DisplayStyle } from "./Nodule";
 import { Vector3 } from "three";
 import {
   StyleOptions,
-  LabelDisplayMode,
-  StyleEditPanels
+  StyleEditPanels,
+  DEFAULT_LABEL_TEXT_STYLE,
+  DEFAULT_LABEL_FRONT_STYLE,
+  DEFAULT_LABEL_BACK_STYLE
 } from "@/types/Styles";
+import { LabelDisplayMode } from "@/types";
 import { SELabel } from "@/models/SELabel";
 import { SELine } from "@/models/SELine";
 import { SEPoint } from "@/models/SEPoint";
@@ -18,6 +21,7 @@ import { SECircle } from "@/models/SECircle";
 import { SEAngleMarker } from "@/models/SEAngleMarker";
 import { SESegmentLength } from "@/models/SESegmentLength";
 import { ValueDisplayMode } from "@/types";
+import { SEPolygon } from "@/models/SEPolygon";
 
 /**
  * Each Point object is uniquely associated with a SEPoint object.
@@ -79,7 +83,7 @@ export default class Label extends Nodule {
   /**
    * Controls how the label is displayed, the initial value depends on the object and this is set in the constructor
    */
-  protected textLabelMode = LabelDisplayMode.NameOnly;
+  // protected textLabelMode = LabelDisplayMode.NameOnly;
   /**
    * The default size of the text. The size that appears at all zoom levels.
    * Set with text.size = this.defaultSize
@@ -91,26 +95,26 @@ export default class Label extends Nodule {
    * of color are accepted. text.noFill(); Removes the fill.
    * Set with text.fill= this.front/back FillColor
    */
-  protected frontFillColor = SETTINGS.label.fillColor.front;
-  protected backFillColor = SETTINGS.label.fillColor.back;
+  // protected frontFillColor = SETTINGS.label.fillColor.front;
+  // protected backFillColor = SETTINGS.label.fillColor.back;
   /**
    * A string representing the font style to be applied to the rendered text. e.g: 'normal' or 'italic'.
    * Default value is 'normal'.
    * Set with text.style=this.textStyle
    */
-  protected textStyle = SETTINGS.label.style;
+  // protected textStyle = SETTINGS.label.style;
   /**
    * css font-family to be applied to the rendered text. Default value is 'sans-serif'.
    * Set with text.family = this.textFamily
    * see https://www.cssfontstack.com/
    */
-  protected textFamily = SETTINGS.label.family;
+  // protected textFamily = SETTINGS.label.family;
   /**
    * A string representing the text decoration to be applied to the rendered text. e.g: 'none',
    * 'underline', or 'strikethrough'. Default value is 'none'
    * Set with text.decoration = this.textDecoration
    */
-  protected textDecoration = SETTINGS.label.decoration;
+  // protected textDecoration = SETTINGS.label.decoration;
   /**
    * A string representing the vertical alignment to be applied to the rendered text. e.g: 'middle',
    * 'baseline', or 'top'. Default value is 'middle'.
@@ -134,14 +138,14 @@ export default class Label extends Nodule {
    * A number that represents the rotation of the text in the drawing space, in radians.
    * Set with text.rotation=this.textRotation
    */
-  protected textRotation = SETTINGS.label.rotation;
+  // protected textRotation = SETTINGS.label.rotation;
   /**
    * A number that represents the uniform scale of the text in the drawing space. May be changed by the user to increase/decrease the
    * size of the text relative to the scaled default (ie. the default size is the same at all zoom levels)
    */
-  protected textScalePercent = SETTINGS.label.textScalePercent;
+  // protected textScalePercent = SETTINGS.label.textScalePercent;
 
-  protected dynamicBackStyle = SETTINGS.label.dynamicBackStyle;
+  // protected dynamicBackStyle = SETTINGS.label.dynamicBackStyle;
 
   /**
    * Initialize the current point scale factor that is adjusted by the zoom level and the user pointRadiusPercent
@@ -184,32 +188,40 @@ export default class Label extends Nodule {
     // this.glowingFrontText.stroke = SETTINGS.label.glowingStrokeColor.front;
     this.glowingBackText.linewidth = SETTINGS.label.glowingStrokeWidth.back;
     // this.glowingBackText.stroke = SETTINGS.label.glowingStrokeColor.back;
+
+    this.styleOptions.set(StyleEditPanels.Label, DEFAULT_LABEL_TEXT_STYLE);
+    this.styleOptions.set(StyleEditPanels.Front, DEFAULT_LABEL_FRONT_STYLE);
+    this.styleOptions.set(StyleEditPanels.Back, DEFAULT_LABEL_BACK_STYLE);
   }
   /**
    * Set and get the shortUserName
    */
   set shortUserName(name: string) {
-    this._shortUserName = name.slice(
-      0,
-      SETTINGS.label.maxLabelDisplayTextLength
-    );
+    this._shortUserName = name;
+    // const shortName = name.slice(0, SETTINGS.label.maxLabelDisplayTextLength);
+    this.updateStyle(StyleEditPanels.Label, {
+      labelDisplayText: name
+    });
     this.stylize(DisplayStyle.ApplyCurrentVariables);
   }
+
   get shortUserName(): string {
-    return this._shortUserName.slice(
-      0,
-      SETTINGS.label.maxLabelDisplayTextLength
-    );
+    return this._shortUserName;
   }
 
   /**
    * Return and set the caption associated with this object
    */
   get caption(): string {
+    // const labelStyle = this.styleOptions.get(StyleEditPanels.Label);
+    // return labelStyle?.labelDisplayCaption ?? "No Label";
     return this._caption;
   }
   set caption(cap: string) {
     this._caption = cap;
+    this.updateStyle(StyleEditPanels.Label, {
+      labelDisplayCaption: cap
+    });
   }
 
   /**
@@ -248,11 +260,15 @@ export default class Label extends Nodule {
    * Set the initial label display mode and update the display
    */
   set initialLabelDisplayMode(mode: LabelDisplayMode) {
-    this.textLabelMode = mode;
+    this.updateStyle(StyleEditPanels.Label, {
+      labelDisplayMode: mode
+    });
+    // this.textLabelMode = mode;
     this.stylize(DisplayStyle.ApplyCurrentVariables);
   }
   get labelDisplayMode(): LabelDisplayMode {
-    return this.textLabelMode;
+    const labelStyle = this.styleOptions.get(StyleEditPanels.Label);
+    return labelStyle?.labelDisplayMode ?? LabelDisplayMode.NameOnly;
   }
   /**  Return the a rectangle in pixel space of the text*/
   get boundingRectangle(): {
@@ -358,204 +374,73 @@ export default class Label extends Nodule {
     // apply the new color variables to the object
     this.stylize(DisplayStyle.ApplyCurrentVariables);
   }
+
   /**
    * Copies the style options set by the Style Panel into the style variables and then updates the
    * Two.js objects (with adjustSize and stylize(ApplyVariables))
    * @param options The style options
    */
-  updateStyle(options: StyleOptions): void {
-    console.debug(
-      "Label: Update style of Label of ",
-      this._shortUserName,
-      " using",
-      options
-    );
-    if (options.labelDisplayMode !== undefined) {
-      this.textLabelMode = options.labelDisplayMode;
-    }
-    if (options.labelDisplayText !== undefined) {
-      this._shortUserName = options.labelDisplayText;
-    }
-    if (options.labelDisplayCaption !== undefined) {
-      this._caption = options.labelDisplayCaption;
-    }
-    if (options.labelTextFamily !== undefined) {
-      this.textFamily = options.labelTextFamily;
-    }
-    if (options.labelTextStyle !== undefined) {
-      this.textStyle = options.labelTextStyle;
-    }
-    if (options.labelTextDecoration !== undefined) {
-      this.textDecoration = options.labelTextDecoration;
-    }
-    if (options.labelTextRotation !== undefined) {
-      this.textRotation = options.labelTextRotation;
-    }
-    // if (options.labelVisibility !== undefined) {
-    //   if (this.seLabel !== undefined) {
-    //     this.seLabel.showing = options.labelVisibility; //Applied immediately
-    //   }
-    // }
-    // The object of a label refers to the parent
-    // if (options.objectVisibility !== undefined) {
-    //   if (this.seLabel !== undefined) {
-    //     this.seLabel.parent.showing = options.objectVisibility; //Applied immediately
-    //   }
-    // }
-    if (options.labelTextScalePercent !== undefined) {
-      this.textScalePercent = options.labelTextScalePercent;
+  updateStyle(mode: StyleEditPanels, options: StyleOptions): void {
+    super.updateStyle(mode, options);
+    if (options.labelDisplayText) {
+      this._shortUserName = options.labelDisplayText.slice(
+        0,
+        SETTINGS.label.maxLabelDisplayTextLength
+      );
     }
 
-    if (options.labelFrontFillColor !== undefined) {
-      this.frontFillColor = options.labelFrontFillColor;
-    }
-
-    if (options.labelBackFillColor !== undefined) {
-      this.backFillColor = options.labelBackFillColor;
-    }
-
-    if (options.dynamicBackStyle !== undefined) {
-      this.dynamicBackStyle = options.dynamicBackStyle;
-    }
-
-    // if (options.panel === StyleEditPanels.Front) {
-    //   // Set the front options
-    //   if (options.fillColor !== undefined) {
-    //     this.frontFillColor = options.fillColor;
-    //   }
-
-    // } else if (options.panel === StyleEditPanels.Back) {
-    //   // Set the back options
-    //   // options.dynamicBackStyle is boolean, so we need to explicitly check for undefined otherwise
-    //   // when it is false, this doesn't execute and this.dynamicBackStyle is not set
-    //   if (options.dynamicBackStyle !== undefined) {
-    //     this.dynamicBackStyle = options.dynamicBackStyle;
-    //   }
-    //   // overwrite the back options only in the case the dynamic style is not enabled
-    //   if (!this.dynamicBackStyle) {
-    //     if (options.fillColor !== undefined) {
-    //       this.backFillColor = options.fillColor;
-    //     }
-
-    //   }
-    // }
-    // Now apply the style and size
-    this.stylize(DisplayStyle.ApplyCurrentVariables);
-    this.adjustSize();
-  }
-  /**
-   * Return the current style state
-   */
-  currentStyleState(panel: StyleEditPanels): StyleOptions {
-    switch (panel) {
-      case StyleEditPanels.Front: {
-        // This should *never* be called
-        return {
-          panel: panel,
-          fillColor: this.frontFillColor,
-          dynamicBackStyle: this.dynamicBackStyle
-        };
-      }
-      case StyleEditPanels.Back: {
-        // This should *never* be called
-        return {
-          panel: panel,
-          fillColor: this.backFillColor,
-          dynamicBackStyle: this.dynamicBackStyle
-        };
-      }
-      default:
-      case StyleEditPanels.Label: {
-        // let objectVisibility: boolean | undefined = undefined;
-        // if (this.seLabel !== undefined) {
-        //   objectVisibility = this.seLabel!.parent.showing;
-        // }
-        return {
-          panel: panel,
-          labelDisplayText: this._shortUserName,
-          labelDisplayCaption: this._caption,
-          labelDisplayMode: this.textLabelMode,
-          labelTextFamily: this.textFamily,
-          labelTextStyle: this.textStyle,
-          labelTextDecoration: this.textDecoration,
-          labelTextRotation: this.textRotation,
-          // labelVisibility: this.frontText.visible || this.backText.visible,
-          // objectVisibility: this.seLabel!.parent.showing,
-          labelTextScalePercent: this.textScalePercent,
-          labelFrontFillColor: this.frontFillColor,
-          labelBackFillColor: this.backFillColor,
-          dynamicBackStyle: this.dynamicBackStyle
-        };
-      }
+    if (options.labelDisplayCaption)
+      this._caption = options.labelDisplayCaption.slice(
+        0,
+        SETTINGS.label.maxLabelDisplayCaptionLength
+      );
+    if (this.seLabel?.parent instanceof SEAngleMarker) {
+      const angleMarker = this.seLabel.parent;
+      this._shortUserName = `Am${angleMarker.angleMarkerNumber}`;
+    } else if (this.seLabel?.parent instanceof SEPolygon) {
+      const polygon = this.seLabel.parent;
+      this._shortUserName = `Po${polygon.polygonNumber}`;
     }
   }
+
   /**
    * Return the default style state
    */
   defaultStyleState(panel: StyleEditPanels): StyleOptions {
-    switch (panel) {
-      case StyleEditPanels.Front: {
-        //Should never be called
-        return {
-          panel: panel,
-          fillColor: SETTINGS.label.fillColor.front,
-          dynamicBackStyle: SETTINGS.label.dynamicBackStyle
-        };
-      }
-      case StyleEditPanels.Back: {
-        //Should never be called
-        return {
-          panel: panel,
-          fillColor: SETTINGS.label.dynamicBackStyle
-            ? Nodule.contrastFillColor(SETTINGS.label.fillColor.front)
-            : SETTINGS.label.fillColor.back,
-          dynamicBackStyle: SETTINGS.label.dynamicBackStyle
-        };
-      }
-      default:
-      case StyleEditPanels.Label: {
-        let labelVisibility: boolean | undefined = undefined;
-        let labelDisplayMode = LabelDisplayMode.NameOnly;
-        if (this.seLabel !== undefined) {
-          if (this.seLabel.parent instanceof SEPoint) {
-            labelDisplayMode = SETTINGS.point.defaultLabelMode;
-            if (this.seLabel.parent.isFreePoint()) {
-              labelVisibility = SETTINGS.point.showLabelsOfFreePointsInitially;
-            } else {
-              labelVisibility =
-                SETTINGS.point.showLabelsOfNonFreePointsInitially;
-            }
-          } else if (this.seLabel.parent instanceof SELine) {
-            labelDisplayMode = SETTINGS.line.defaultLabelMode;
-            labelVisibility = SETTINGS.line.showLabelsInitially;
-          } else if (this.seLabel.parent instanceof SESegment) {
-            labelDisplayMode = SETTINGS.segment.defaultLabelMode;
-            labelVisibility = SETTINGS.segment.showLabelsInitially;
-          } else if (this.seLabel.parent instanceof SECircle) {
-            labelDisplayMode = SETTINGS.circle.defaultLabelMode;
-            labelVisibility = SETTINGS.circle.showLabelsInitially;
-          } else if (this.seLabel.parent instanceof SEAngleMarker) {
-            labelDisplayMode = SETTINGS.angleMarker.defaultLabelMode;
-            labelVisibility = SETTINGS.circle.showLabelsInitially;
-          }
+    if (panel === StyleEditPanels.Label) {
+      let labelDisplayMode = LabelDisplayMode.NameOnly;
+      if (this.seLabel !== undefined) {
+        if (this.seLabel.parent instanceof SEPoint) {
+          labelDisplayMode = SETTINGS.point.defaultLabelMode;
+          // if (this.seLabel.parent.isFreePoint()) {
+          // labelVisibility = SETTINGS.point.showLabelsOfFreePointsInitially;
+          // } else {
+          // labelVisibility =
+          //   SETTINGS.point.showLabelsOfNonFreePointsInitially;
+          // }
+        } else if (this.seLabel.parent instanceof SELine) {
+          labelDisplayMode = SETTINGS.line.defaultLabelMode;
+          // labelVisibility = SETTINGS.line.showLabelsInitially;
+        } else if (this.seLabel.parent instanceof SESegment) {
+          labelDisplayMode = SETTINGS.segment.defaultLabelMode;
+          // labelVisibility = SETTINGS.segment.showLabelsInitially;
+        } else if (this.seLabel.parent instanceof SECircle) {
+          labelDisplayMode = SETTINGS.circle.defaultLabelMode;
+          // labelVisibility = SETTINGS.circle.showLabelsInitially;
+        } else if (this.seLabel.parent instanceof SEAngleMarker) {
+          labelDisplayMode = SETTINGS.angleMarker.defaultLabelMode;
+          // labelVisibility = SETTINGS.circle.showLabelsInitially;
         }
-        return {
-          panel: panel,
-          labelDisplayText: this.seLabel!.parent.name,
-          labelDisplayCaption: "",
-          labelDisplayMode: labelDisplayMode,
-          labelTextFamily: SETTINGS.label.family,
-          labelTextStyle: SETTINGS.label.style,
-          labelTextDecoration: SETTINGS.label.decoration,
-          labelTextRotation: SETTINGS.label.rotation,
-          // labelVisibility: labelVisibility,
-          // objectVisibility: true,
-          labelTextScalePercent: SETTINGS.label.textScalePercent,
-          labelFrontFillColor: SETTINGS.label.fillColor.front,
-          labelBackFillColor: SETTINGS.label.fillColor.back,
-          dynamicBackStyle: SETTINGS.label.dynamicBackStyle
-        };
       }
+      return {
+        ...DEFAULT_LABEL_TEXT_STYLE,
+        labelDisplayText: this.seLabel!.parent.name,
+        labelDisplayCaption: "",
+        labelDisplayMode: labelDisplayMode
+      };
+    } else {
+      //Should never be called
+      return {};
     }
   }
 
@@ -563,9 +448,10 @@ export default class Label extends Nodule {
    * Sets the variables for point radius glowing/not
    */
   adjustSize(): void {
-    this.frontText.scale =
-      (Label.textScaleFactor * this.textScalePercent) / 100;
-    this.backText.scale = (Label.textScaleFactor * this.textScalePercent) / 100;
+    const labelStyle = this.styleOptions.get(StyleEditPanels.Label);
+    const textScalePercent = labelStyle?.labelTextScalePercent ?? 100;
+    this.frontText.scale = (Label.textScaleFactor * textScalePercent) / 100;
+    this.backText.scale = (Label.textScaleFactor * textScalePercent) / 100;
     // this.backText.scale =
     //   (Label.textScaleFactor *
     //     (this.dynamicBackStyle
@@ -574,9 +460,9 @@ export default class Label extends Nodule {
     //   100;
 
     this.glowingFrontText.scale =
-      (Label.textScaleFactor * this.textScalePercent) / 100;
+      (Label.textScaleFactor * textScalePercent) / 100;
     this.glowingBackText.scale =
-      (Label.textScaleFactor * this.textScalePercent) / 100;
+      (Label.textScaleFactor * textScalePercent) / 100;
     // this.glowingBackText.scale =
     //   (Label.textScaleFactor *
     //     (this.dynamicBackStyle
@@ -603,7 +489,7 @@ export default class Label extends Nodule {
 
       case DisplayStyle.ApplyCurrentVariables: {
         // Use the current variables to directly modify the Two.js objects.
-
+        const labelStyle = this.styleOptions.get(StyleEditPanels.Label);
         // Properties that have no sides
         let labelText = "";
         // Compute the numerical part of the label (if any) and add it to the end of label
@@ -613,12 +499,16 @@ export default class Label extends Nodule {
               "(" +
               `${this._value
                 .map(num => num.toFixed(SETTINGS.decimalPrecision))
-                .join(",")}$` +
+                .join(",")}` +
               ")";
           } else {
             let valueDisplayMode;
             if (this.seLabel!.parent instanceof SEAngleMarker) {
               valueDisplayMode = (this.seLabel!.parent as SEAngleMarker)
+                .valueDisplayMode;
+            }
+            if (this.seLabel!.parent instanceof SEPolygon) {
+              valueDisplayMode = (this.seLabel!.parent as SEPolygon)
                 .valueDisplayMode;
             } else if (this.seLabel!.parent instanceof SESegment) {
               const seSegLength = this.seLabel!.parent.kids.find(
@@ -646,13 +536,14 @@ export default class Label extends Nodule {
             }
           }
         }
-        switch (this.textLabelMode) {
+
+        switch (labelStyle?.labelDisplayMode) {
           case LabelDisplayMode.NameOnly: {
-            labelText = this._shortUserName;
+            labelText = labelStyle?.labelDisplayText ?? "No Label";
             break;
           }
           case LabelDisplayMode.CaptionOnly: {
-            labelText = this._caption;
+            labelText = labelStyle?.labelDisplayCaption ?? "No Caption";
             break;
           }
           case LabelDisplayMode.ValueOnly: {
@@ -663,7 +554,8 @@ export default class Label extends Nodule {
             break;
           }
           case LabelDisplayMode.NameAndCaption: {
-            labelText = this.shortUserName + ": " + this._caption;
+            labelText =
+              this.shortUserName + ": " + labelStyle?.labelDisplayCaption;
             break;
           }
           case LabelDisplayMode.NameAndValue: {
@@ -680,59 +572,74 @@ export default class Label extends Nodule {
         this.backText.value = labelText;
         this.glowingFrontText.value = labelText;
         this.glowingBackText.value = labelText;
-        if (this.textStyle !== "bold") {
-          this.frontText.style = this.textStyle;
-          this.backText.style = this.textStyle;
-          this.glowingFrontText.style = this.textStyle;
-          this.glowingBackText.style = this.textStyle;
+        if (labelStyle?.labelTextStyle !== "bold") {
+          this.frontText.style =
+            labelStyle?.labelTextStyle ?? SETTINGS.label.style;
+          this.backText.style =
+            labelStyle?.labelTextStyle ?? SETTINGS.label.style;
+          this.glowingFrontText.style =
+            labelStyle?.labelTextStyle ?? SETTINGS.label.style;
+          this.glowingBackText.style =
+            labelStyle?.labelTextStyle ?? SETTINGS.label.style;
           this.frontText.weight = "normal";
           this.backText.weight = "normal";
           this.glowingFrontText.weight = "normal";
           this.glowingBackText.weight = "normal";
-        } else if (this.textStyle === "bold") {
+        } else if (labelStyle?.labelTextStyle === "bold") {
           this.frontText.weight = "bold";
           this.backText.weight = "bold";
           this.glowingFrontText.weight = "bold";
           this.glowingBackText.weight = "bold";
         }
 
-        this.frontText.family = this.textFamily;
-        this.backText.family = this.textFamily;
-        this.glowingFrontText.family = this.textFamily;
-        this.glowingBackText.family = this.textFamily;
+        this.frontText.family =
+          labelStyle?.labelTextFamily ?? SETTINGS.label.family;
+        this.backText.family =
+          labelStyle?.labelTextFamily ?? SETTINGS.label.family;
+        this.glowingFrontText.family =
+          labelStyle?.labelTextFamily ?? SETTINGS.label.family;
+        this.glowingBackText.family =
+          labelStyle?.labelTextFamily ?? SETTINGS.label.family;
 
-        this.frontText.decoration = this.textDecoration;
-        this.backText.decoration = this.textDecoration;
-        this.glowingFrontText.decoration = this.textDecoration;
-        this.glowingBackText.decoration = this.textDecoration;
+        this.frontText.decoration =
+          labelStyle?.labelTextDecoration ?? SETTINGS.label.decoration;
+        this.backText.decoration =
+          labelStyle?.labelTextDecoration ?? SETTINGS.label.decoration;
+        this.glowingFrontText.decoration =
+          labelStyle?.labelTextDecoration ?? SETTINGS.label.decoration;
+        this.glowingBackText.decoration =
+          labelStyle?.labelTextDecoration ?? SETTINGS.label.decoration;
 
-        this.frontText.rotation = this.textRotation;
-        this.backText.rotation = this.textRotation;
-        this.glowingFrontText.rotation = this.textRotation;
-        this.glowingBackText.rotation = this.textRotation;
+        this.frontText.rotation = labelStyle?.labelTextRotation ?? 0;
+        this.backText.rotation = labelStyle?.labelTextRotation ?? 0;
+        this.glowingFrontText.rotation = labelStyle?.labelTextRotation ?? 0;
+        this.glowingBackText.rotation = labelStyle?.labelTextRotation ?? 0;
 
         // FRONT
-        if (this.frontFillColor === "noLabelFrontFill") {
+        // const frontStyle = this.styleOptions.get(StyleEditPanels.Front)
+        const frontFillColor =
+          labelStyle?.labelFrontFillColor ?? SETTINGS.label.fillColor.front;
+        const backFillColor =
+          labelStyle?.labelBackFillColor ?? SETTINGS.label.fillColor.back;
+        if (frontFillColor === "noLabelFrontFill") {
           this.frontText.noFill();
         } else {
-          this.frontText.fill = this.frontFillColor;
+          this.frontText.fill = frontFillColor;
         }
         this.glowingFrontText.stroke = this.glowingStrokeColorFront;
 
         // BACK
-        if (this.dynamicBackStyle) {
-          if (
-            Nodule.contrastFillColor(this.frontFillColor) === "noLabelBackFill"
-          ) {
+        if (labelStyle?.dynamicBackStyle) {
+          if (Nodule.contrastFillColor(frontFillColor) === "noLabelBackFill") {
             this.backText.noFill();
           } else {
-            this.backText.fill = Nodule.contrastFillColor(this.frontFillColor);
+            this.backText.fill = Nodule.contrastFillColor(frontFillColor);
           }
         } else {
-          if (this.backFillColor === "noLabelBackFill") {
+          if (backFillColor === "noLabelBackFill") {
             this.backText.noFill();
           } else {
-            this.backText.fill = this.backFillColor;
+            this.backText.fill = backFillColor;
           }
         }
         this.glowingBackText.stroke = this.glowingStrokeColorBack;

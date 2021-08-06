@@ -63,7 +63,7 @@ export default class SENoduleTree extends Vue {
 
   get existingChildren(): SENodule[] {
     return this.children.filter((n: SENodule) => {
-      if (n instanceof SEIntersectionPoint) return n.isUserCreated;
+      if (n instanceof SEIntersectionPoint) return n.isUserCreated && n.exists;
       else return n.exists;
     });
   }
@@ -73,10 +73,7 @@ export default class SENoduleTree extends Vue {
     const pos = this.children.findIndex(n => n.id === x.id);
     // console.debug("****Selection", x, "at", pos);
     if (pos >= 0) {
-      EventBus.fire(
-        "measurement-selected",
-        this.children[pos].name.replace(/-.+/, "")
-      );
+      EventBus.fire("measurement-selected", this.children[pos].name);
     }
   }
   isSlider(n: SENodule): boolean {

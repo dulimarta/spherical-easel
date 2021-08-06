@@ -1,6 +1,6 @@
 import { Command } from "./Command";
 import { SEPoint } from "@/models/SEPoint";
-import { SEOneDimensional, UpdateMode } from "@/types";
+import { SEOneOrTwoDimensional, UpdateMode } from "@/types";
 import { SELabel } from "@/models/SELabel";
 import SETTINGS from "@/global-settings";
 import { SENodule } from "@/models/SENodule";
@@ -10,7 +10,7 @@ import { SELine } from "@/models/SELine";
 import { SEPolarPoint } from "@/models/SEPolarPoint";
 import Point from "@/plottables/Point";
 import { DisplayStyle } from "@/plottables/Nodule";
-import { SEPointOnOneDimensional } from "@/models/SEPointOnOneDimensional";
+import { SEPointOnOneOrTwoDimensional } from "@/models/SEPointOnOneOrTwoDimensional";
 import Label from "@/plottables/Label";
 
 export class AddPolarPointCommand extends Command {

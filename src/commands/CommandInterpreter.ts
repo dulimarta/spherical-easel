@@ -6,9 +6,8 @@ import { AddIntersectionPointCommand } from "./AddIntersectionPointCommand";
 import { AddLineCommand } from "./AddLineCommand";
 import { AddPerpendicularLineThruPointCommand } from "./AddPerpendicularLineThruPointCommand";
 import { AddPointCommand } from "./AddPointCommand";
-import { AddPointOnOneDimensionalCommand } from "./AddPointOnOneDimensionalCommand";
+import { AddPointOnOneDimensionalCommand } from "./AddPointOnOneOrTwoDimensionalCommand";
 import { AddSegmentCommand } from "./AddSegmentCommand";
-import { AddAngleMarkerCommand } from "./AddAngleMarkerAndExpressionCommand";
 import { Command } from "./Command";
 import { CommandGroup } from "./CommandGroup";
 import { AddCalculationCommand } from "./AddCalculationCommand";
@@ -18,6 +17,11 @@ import { AddLengthMeasurementCommand } from "./AddLengthMeasurementCommand";
 import { ConstructionScript } from "@/types";
 import { AddEllipseCommand } from "./AddEllipseCommand";
 import { AddPolarPointCommand } from "./AddPolarPointCommand";
+import { AddParametricCommand } from "./AddParametricCommand";
+import { AddParametricEndPointsCommand } from "./AddParametricEndPointsCommand";
+import { AddAngleMarkerCommand } from "./AddAngleMarkerAndExpressionCommand";
+import { AddPolygonCommand } from "./AddPolygonAndExpressionCommand";
+import { AddTangentLineThruPointCommand } from "./AddTangentLineThruPointCommand";
 const noduleDictionary = new Map<string, SENodule>();
 
 function executeIndividual(command: string): Command {
@@ -58,8 +62,12 @@ function executeIndividual(command: string): Command {
         command,
         noduleDictionary
       );
+    case "AddTangentLineThruPoint":
+      return AddTangentLineThruPointCommand.parse(command, noduleDictionary);
     case "AddAngleMarker":
       return AddAngleMarkerCommand.parse(command, noduleDictionary);
+    case "AddPolygon":
+      return AddPolygonCommand.parse(command, noduleDictionary);
     case "AddLocationMeasurement":
       return AddLocationMeasurementCommand.parse(command, noduleDictionary);
     case "AddPointDistanceMeasurement":
@@ -69,9 +77,12 @@ function executeIndividual(command: string): Command {
       );
     case "AddLengthMeasurement":
       return AddLengthMeasurementCommand.parse(command, noduleDictionary);
-
     case "AddCalculation":
       return AddCalculationCommand.parse(command, noduleDictionary);
+    case "AddParametric":
+      return AddParametricCommand.parse(command, noduleDictionary);
+    case "AddParametricEndPoints":
+      return AddParametricEndPointsCommand.parse(command, noduleDictionary);
     default: {
       const errMsg = `Not yet implemented: ${command}`;
       EventBus.fire("show-alert", {

@@ -89,11 +89,6 @@
       The router controls this background and it can be Easel or settings or...
     -->
     <v-main>
-      <v-alert v-show="!isSupportedBrowser"
-        type="error"
-        dismissible>
-        Please use FireFox. Some features may not work on other browsers.
-      </v-alert>
       <router-view>
         <!-- this is the spot where the views controlled by Vue Router will be rendred v-html="$t('buttons.' + button.displayedName )"-->
       </router-view>
@@ -237,10 +232,6 @@ export default class App extends Vue {
     return SEStore.sePoints.length > 0;
   }
 
-  get isSupportedBrowser(): boolean {
-    return this.clientBrowser.name === "firefox";
-  }
-
   readonly keyHandler = (ev: KeyboardEvent): void => {
     if (ev.repeat) return; // Ignore repeated events on the same key
     if (!ev.altKey) return;
@@ -254,7 +245,7 @@ export default class App extends Vue {
       // Directly setting the accountEnable flag here does not trigger
       // a UI update even after calling $forceUpdate()
       // Firing an event seems to solve the problem
-      EventBus.fire("secret-key", {});
+      EventBus.fire("secret-key-detected", {});
     } else {
       this.acceptedKeys = 0;
     }
@@ -262,12 +253,13 @@ export default class App extends Vue {
 
   created(): void {
     window.addEventListener("keydown", this.keyHandler);
-    EventBus.listen("secret-key", () => {
+    EventBus.listen("secret-key-detected", () => {
       console.log("Got the secret key");
       this.accountEnabled = true;
       this.acceptedKeys = 0;
       this.$forceUpdate();
     });
+    EventBus.listen("share-construction-requested", this.doShare);
     this.clientBrowser = detect();
   }
 
@@ -285,10 +277,8 @@ export default class App extends Vue {
             .doc(this.uid)
             .get()
             .then((ds: DocumentSnapshot) => {
-              console.debug("Fetching profile picture?", ds);
               if (ds.exists) {
                 const { profilePictureURL } = ds.data() as any;
-                console.debug("Fetching profile picture?", ds);
                 if (profilePictureURL) {
                   this.profilePicUrl = profilePictureURL;
                 }

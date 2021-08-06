@@ -15,6 +15,10 @@ import { SEExpression } from "@/models/SEExpression";
 import { SEAngleMarker } from "@/models/SEAngleMarker";
 import { SEPerpendicularLineThruPoint } from "@/models/SEPerpendicularLineThruPoint";
 import { SEEllipse } from "@/models/SEEllipse";
+import { SEParametric } from "@/models/SEParametric";
+import { SyntaxTree } from "@/expression/ExpressionParser";
+import { SEPolygon } from "@/models/SEPolygon";
+import { SETangentLineThruPoint } from "@/models/SETangentLineThruPoint";
 
 export interface Selectable {
   hit(x: number, y: number, coord: unknown, who: unknown): boolean;
@@ -36,17 +40,20 @@ export interface AppState {
   seSegments: SESegment[];
   seCircles: SECircle[];
   seEllipses: SEEllipse[];
+  seParametrics: SEParametric[];
   seAngleMarkers: SEAngleMarker[];
   seLabels: SELabel[];
   seNodules: SENodule[];
   selectedSENodules: SENodule[];
 
   intersections: SEIntersectionPoint[];
-  // measurements: SEExpression[];
   expressions: SEExpression[];
   temporaryNodules: Nodule[];
+  // TODO: replace the following two arrays with the maps below
   initialStyleStates: StyleOptions[];
   defaultStyleStates: StyleOptions[];
+  initialStyleStatesMap: Map<StyleEditPanels, StyleOptions[]>;
+  defaultStyleStatesMap: Map<StyleEditPanels, StyleOptions[]>;
   oldStyleSelections: SENodule[];
   styleSavedFromPanel: StyleEditPanels;
   initialBackStyleContrast: number;
@@ -67,6 +74,35 @@ export interface ToolButtonType {
   toolTipMessage: string;
 }
 
+export type ActionMode =
+  | "angle"
+  | "antipodalPoint"
+  | "circle"
+  | "coordinate"
+  | "delete"
+  | "ellipse"
+  | "hide"
+  | "iconFactory"
+  | "intersect"
+  | "line"
+  | "move"
+  | "perpendicular"
+  | "tangent"
+  | "point"
+  | "pointDistance"
+  | "pointOnOneDim"
+  | "polar"
+  | "rotate"
+  | "segment"
+  | "segmentLength"
+  | "select"
+  | "slider"
+  | "toggleLabelDisplay"
+  | "zoomFit"
+  | "zoomIn"
+  | "zoomOut"
+  | "measureTriangle"
+  | "measurePolygon";
 /**
  * Intersection Vector3 and if that intersection exists
  */
@@ -84,12 +120,32 @@ export interface SEIntersectionReturnType {
   parent2: SEOneDimensional;
 }
 
+/**
+ * For a parametric equation P(t), this is the pair P(t), t
+ */
+export type parametricVectorAndTValue = {
+  vector: Vector3;
+  tVal: number;
+};
+
 export interface OneDimensional {
   /**
    * Returns the closest vector on the one dimensional object to the idealUnitSphereVector
    * @param idealUnitSphereVector A vector location on the sphere
    */
   closestVector(idealUnitSphereVector: Vector3): Vector3;
+
+  /**
+   * Return the normal vector(s) to the plane containing a line that is perpendicular to this one dimensional through the
+   * sePoint, in the case that the usual way of defining this line is not well defined  (something is parallel),
+   * use the oldNormal to help compute a new normal (which is returned)
+   * @param sePoint A point on the line normal to this parametric
+   */
+  getNormalsToPerpendicularLinesThru(
+    sePointVector: Vector3,
+    oldNormal: Vector3, // ignored for Ellipse and Circle and Parametric, but not other one-dimensional objects
+    useFullTInterval?: boolean // only used in the constructor when figuring out the maximum number of perpendiculars to a SEParametric
+  ): Vector3[];
 }
 
 export interface Labelable {
@@ -103,7 +159,52 @@ export interface Labelable {
   ): Vector3;
   label?: SELabel;
 }
+/**
+ * A variable types for polygon
+ */
 
+export type location = {
+  x: number;
+  y: number;
+  front: boolean;
+};
+export type visitedIndex = {
+  index: number;
+  visited: boolean;
+};
+/**
+ * The variable types for parametric objects
+ */
+export type CoordExpression = {
+  x: string;
+  y: string;
+  z: string;
+};
+
+export type MinMaxExpression = {
+  min: string;
+  max: string;
+};
+
+export type CoordinateSyntaxTrees = {
+  x: SyntaxTree;
+  y: SyntaxTree;
+  z: SyntaxTree;
+};
+
+export type MinMaxSyntaxTrees = {
+  min: SyntaxTree;
+  max: SyntaxTree;
+};
+
+export type MinMaxNumber = {
+  min: number;
+  max: number;
+};
+
+/**
+ * The properties of a plottable object needed when creating icons
+ */
 export type plottableType =
   | "boundaryCircle"
   | "point"
@@ -111,11 +212,10 @@ export type plottableType =
   | "segment"
   | "circle"
   | "angleMarker"
-  | "ellipse";
+  | "ellipse"
+  | "parametric"
+  | "polygon";
 export type sides = "front" | "back" | "mid";
-/**
- * The properties of a plottable object needed when creating icons
- */
 export type plottableProperties = {
   type: plottableType;
   side: sides;
@@ -123,9 +223,24 @@ export type plottableProperties = {
   part: string;
 };
 /**
- * All the one dimensional SE Classes
+ * All the one or two dimensional SE Classes
  */
-export type SEOneDimensional = SELine | SESegment | SECircle | SEEllipse;
+export type SEOneOrTwoDimensional =
+  | SELine
+  | SESegment
+  | SECircle
+  | SEEllipse
+  | SEParametric
+  | SEPolygon;
+
+export type SEOneDimensional =
+  | SELine
+  | SESegment
+  | SECircle
+  | SEEllipse
+  | SEParametric;
+
+export type SEOneDimensionalNotStraight = SECircle | SEEllipse | SEParametric;
 
 export type hslaColorType = {
   h: number;
@@ -152,6 +267,14 @@ export enum ValueDisplayMode {
   DegreeDecimals // convert to degrees for display
 }
 
+export enum LabelDisplayMode {
+  NameOnly, // display only the name
+  CaptionOnly, // display the caption only
+  ValueOnly, // display the value only (if any)
+  NameAndCaption, // display the name and caption
+  NameAndValue // display the name and value (if any)
+}
+
 export interface UpdateStateType {
   mode: UpdateMode;
   stateArray: ObjectState[];
@@ -168,7 +291,20 @@ export type ObjectState =
   | PointState
   | LabelState
   | AngleMarkerState
-  | PerpendicularLineThruPointState;
+  | PerpendicularLineThruPointState
+  | TangentLineThruPointState
+  | ExpressionState
+  | ParametricState
+  | PolygonState;
+
+export interface PolygonState {
+  kind: "polygon";
+  object: SEPolygon;
+}
+
+export function isPolygonState(entry: ObjectState): entry is PolygonState {
+  return entry.kind === "polygon";
+}
 
 export interface PerpendicularLineThruPointState {
   kind: "perpendicularLineThruPoint";
@@ -179,6 +315,17 @@ export function isPerpendicularLineThruPointState(
   entry: ObjectState
 ): entry is PerpendicularLineThruPointState {
   return entry.kind === "perpendicularLineThruPoint";
+}
+
+export interface TangentLineThruPointState {
+  kind: "tangentLineThruPoint";
+  object: SETangentLineThruPoint;
+}
+
+export function isTangentLineThruPointState(
+  entry: ObjectState
+): entry is TangentLineThruPointState {
+  return entry.kind === "tangentLineThruPoint";
 }
 
 export interface AngleMarkerState {
@@ -260,6 +407,30 @@ export interface EllipseState {
 }
 export function isEllipseState(entry: ObjectState): entry is EllipseState {
   return entry.kind === "ellipse";
+}
+
+export interface ParametricState {
+  // No fields are needed for moving ellipses because they are completely determined by their point parents
+  kind: "parametric";
+  // Fields needed for undoing delete
+  object: SEParametric;
+}
+export function isParametricState(
+  entry: ObjectState
+): entry is ParametricState {
+  return entry.kind === "parametric";
+}
+
+export interface ExpressionState {
+  // No fields are needed for moving because non-angle marker expressions are not movable
+  kind: "expression";
+  // Fields needed for undoing delete
+  object: SEExpression;
+}
+export function isExpressionState(
+  entry: ObjectState
+): entry is ExpressionState {
+  return entry.kind === "expression";
 }
 
 export type ConstructionScript = Array<string | Array<string>>;

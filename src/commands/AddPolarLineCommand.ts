@@ -1,7 +1,7 @@
 import { Command } from "./Command";
 import { SEPoint } from "@/models/SEPoint";
 import { SELabel } from "@/models/SELabel";
-import { SEOneDimensional, UpdateMode } from "@/types";
+import { SEOneOrTwoDimensional, UpdateMode } from "@/types";
 import Line from "@/plottables/Line";
 import { DisplayStyle } from "@/plottables/Nodule";
 import { SENodule } from "@/models/SENodule";

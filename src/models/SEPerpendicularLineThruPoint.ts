@@ -1,6 +1,6 @@
 import { SEPoint } from "./SEPoint";
-import { PerpendicularLineThruPointState } from "@/types";
-import { SEOneDimensional } from "@/types";
+import { PerpendicularLineThruPointState, SEOneDimensional } from "@/types";
+import { SEOneOrTwoDimensional } from "@/types";
 import { UpdateMode, UpdateStateType } from "@/types";
 import { SELine } from "./SELine";
 import { Vector3 } from "three";
@@ -10,6 +10,7 @@ import SETTINGS from "@/global-settings";
 import { SESegment } from "./SESegment";
 import { SECircle } from "./SECircle";
 import { SEEllipse } from "./SEEllipse";
+import { SEParametric } from "./SEParametric";
 
 export class SEPerpendicularLineThruPoint extends SELine {
   /**
@@ -22,6 +23,10 @@ export class SEPerpendicularLineThruPoint extends SELine {
    */
 
   private seParentPoint: SEPoint;
+
+  /** Temporary vectors to help with calculations */
+
+  private tempVector1 = new Vector3();
 
   /**
    * In the case of ellipses where there are upto four perpendiculars through a point, this is the index to use
@@ -60,26 +65,42 @@ export class SEPerpendicularLineThruPoint extends SELine {
     this._exists =
       this.seParentOneDimensional.exists && this.seParentPoint.exists;
     if (this._exists) {
+      const tVec = new Vector3();
+      tVec.copy(this._normalVector);
+      // console.log("before x", this.name, this._normalVector.x);
       // Get the normal(s) vector to the line
-      const normals = this.seParentOneDimensional.getNormalsToLineThru(
+      const normals = this.seParentOneDimensional.getNormalsToPerpendicularLinesThru(
         this.seParentPoint.locationVector,
-        this.normalVector // the soon to be old normal vector
+        this._normalVector // the soon to be old normal vector
       );
+      // console.log(
+      //   "angle change with returned normals",
+      //   this.name,
+      //   normals[this._index].angleTo(this._normalVector),
+      //   this._normalVector.x
+      // );
+
       if (normals[this._index] !== undefined) {
-        this.normalVector.copy(normals[this._index]);
+        this._normalVector.copy(normals[this._index]);
 
         // Given this.startPoint (in SELine)=this.seParentPoint and this.normalVector compute the endSEPoint
-        // This is *never* undefined because the getNormalsToLineThru *never* returns a point with
+        // This is *never* undefined because the getNormalsToPerpendicularLinesThru *never* returns a point with
         //  location parallel to this.seParentPoint.locationVector
-        this.tmpVector1.crossVectors(
+        this.tempVector1.crossVectors(
           this.seParentPoint.locationVector,
-          this.normalVector
+          this._normalVector
         );
 
-        this.endSEPoint.locationVector = this.tmpVector1.normalize();
+        this.endSEPoint.locationVector = this.tempVector1.normalize();
 
         // Set the normal vector in the plottable object (the setter also calls the updateDisplay() method)
-        this.ref.normalVector = this.normalVector;
+        this.ref.normalVector = this._normalVector;
+        // console.log(
+        //   "angle change",
+        //   this.name,
+        //   tVec.angleTo(this._normalVector),
+        //   this._normalVector.x
+        // );
       } else {
         this._exists = false;
       }
@@ -120,6 +141,8 @@ export class SEPerpendicularLineThruPoint extends SELine {
       oneDimensionalParentType = i18n.tc("objects.circles", 3);
     } else if (this.seParentOneDimensional instanceof SEEllipse) {
       oneDimensionalParentType = i18n.tc("objects.ellipses", 3);
+    } else if (this.seParentOneDimensional instanceof SEParametric) {
+      oneDimensionalParentType = i18n.tc("objects.parametrics", 3);
     }
 
     return String(

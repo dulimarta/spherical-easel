@@ -9,15 +9,15 @@ import { CommandGroup } from "@/commands/CommandGroup";
 import { AddPointCommand } from "@/commands/AddPointCommand";
 import { AddSegmentCommand } from "@/commands/AddSegmentCommand";
 import { AddIntersectionPointCommand } from "@/commands/AddIntersectionPointCommand";
-import { AddPointOnOneDimensionalCommand } from "@/commands/AddPointOnOneDimensionalCommand";
+import { AddPointOnOneDimensionalCommand } from "@/commands/AddPointOnOneOrTwoDimensionalCommand";
 import { SESegment } from "@/models/SESegment";
 import SETTINGS from "@/global-settings";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import { DisplayStyle } from "@/plottables/Nodule";
 import Highlighter from "./Highlighter";
 import { ConvertInterPtToUserCreatedCommand } from "@/commands/ConvertInterPtToUserCreatedCommand";
-import { SEOneDimensional, SEIntersectionReturnType } from "@/types";
-import { SEPointOnOneDimensional } from "@/models/SEPointOnOneDimensional";
+import { SEOneOrTwoDimensional, SEIntersectionReturnType } from "@/types";
+import { SEPointOnOneOrTwoDimensional } from "@/models/SEPointOnOneOrTwoDimensional";
 import { UpdateMode } from "@/types";
 import Label from "@/plottables/Label";
 import { SELabel } from "@/models/SELabel";
@@ -33,7 +33,7 @@ export default class SegmentHandler extends Highlighter {
    */
   private startSEPoint: SEPoint | null = null;
   private endSEPoint: SEPoint | null = null;
-  private startSEPointOneDimensionalParent: SEOneDimensional | null = null;
+  private startSEPointOneDimensionalParent: SEOneOrTwoDimensional | null = null;
   /**
    * The arcLength of the segment
    */
@@ -53,8 +53,8 @@ export default class SegmentHandler extends Highlighter {
   /**
    * As the user moves the pointer around snap the temporary marker to these objects temporarily
    */
-  protected snapStartMarkerToTemporaryOneDimensional: SEOneDimensional | null = null;
-  protected snapEndMarkerToTemporaryOneDimensional: SEOneDimensional | null = null;
+  protected snapStartMarkerToTemporaryOneDimensional: SEOneOrTwoDimensional | null = null;
+  protected snapEndMarkerToTemporaryOneDimensional: SEOneOrTwoDimensional | null = null;
   protected snapStartMarkerToTemporaryPoint: SEPoint | null = null;
   protected snapEndMarkerToTemporaryPoint: SEPoint | null = null;
   /**
@@ -181,6 +181,30 @@ export default class SegmentHandler extends Highlighter {
         this.temporarySegment.startVector = this.startVector;
         this.temporaryStartMarker.positionVector = this.startVector;
         this.startSEPoint = null;
+      } else if (this.hitSEParametrics.length > 0) {
+        // The start of the line will be a point on a Ellipse
+        //  Eventually, we will create a new SEPointOneDimensional and Point
+        this.startSEPointOneDimensionalParent = this.hitSEParametrics[0];
+        this.startVector.copy(
+          this.startSEPointOneDimensionalParent.closestVector(
+            this.currentSphereVector
+          )
+        );
+        this.temporarySegment.startVector = this.startVector;
+        this.temporaryStartMarker.positionVector = this.startVector;
+        this.startSEPoint = null;
+      } else if (this.hitSEPolygons.length > 0) {
+        // The start of the line will be a point on a Ellipse
+        //  Eventually, we will create a new SEPointOneDimensional and Point
+        this.startSEPointOneDimensionalParent = this.hitSEPolygons[0];
+        this.startVector.copy(
+          this.startSEPointOneDimensionalParent.closestVector(
+            this.currentSphereVector
+          )
+        );
+        this.temporarySegment.startVector = this.startVector;
+        this.temporaryStartMarker.positionVector = this.startVector;
+        this.startSEPoint = null;
       } else {
         // The mouse press is not near an existing point or one dimensional object.
         //  Record the location in a temporary point (startMarker found in MouseHandler).
@@ -271,6 +295,32 @@ export default class SegmentHandler extends Highlighter {
       } else {
         this.snapStartMarkerToTemporaryOneDimensional = null;
         this.snapEndMarkerToTemporaryOneDimensional = this.hitSEEllipses[0];
+        this.snapStartMarkerToTemporaryPoint = null;
+        this.snapEndMarkerToTemporaryPoint = null;
+      }
+    } else if (this.hitSEParametrics.length > 0) {
+      this.hitSEParametrics[0].glowing = true;
+      if (!this.startLocationSelected) {
+        this.snapStartMarkerToTemporaryOneDimensional = this.hitSEParametrics[0];
+        this.snapEndMarkerToTemporaryOneDimensional = null;
+        this.snapStartMarkerToTemporaryPoint = null;
+        this.snapEndMarkerToTemporaryPoint = null;
+      } else {
+        this.snapStartMarkerToTemporaryOneDimensional = null;
+        this.snapEndMarkerToTemporaryOneDimensional = this.hitSEParametrics[0];
+        this.snapStartMarkerToTemporaryPoint = null;
+        this.snapEndMarkerToTemporaryPoint = null;
+      }
+    } else if (this.hitSEPolygons.length > 0) {
+      this.hitSEPolygons[0].glowing = true;
+      if (!this.startLocationSelected) {
+        this.snapStartMarkerToTemporaryOneDimensional = this.hitSEPolygons[0];
+        this.snapEndMarkerToTemporaryOneDimensional = null;
+        this.snapStartMarkerToTemporaryPoint = null;
+        this.snapEndMarkerToTemporaryPoint = null;
+      } else {
+        this.snapStartMarkerToTemporaryOneDimensional = null;
+        this.snapEndMarkerToTemporaryOneDimensional = this.hitSEPolygons[0];
         this.snapStartMarkerToTemporaryPoint = null;
         this.snapEndMarkerToTemporaryPoint = null;
       }
@@ -471,7 +521,7 @@ export default class SegmentHandler extends Highlighter {
     // Create a new command group to store potentially three commands. Those to add the endpoints (which might be new) and the segment itself.
     const segmentGroup = new CommandGroup();
     if (this.startSEPoint === null) {
-      // We have to create a new SEPointOnOneDimensional or SEPoint and Point
+      // We have to create a new SEPointOnOneOrTwoDimensional or SEPoint and Point
       const newStartPoint = new Point();
       // Set the display to the default values
       newStartPoint.stylize(DisplayStyle.ApplyCurrentVariables);
@@ -479,12 +529,12 @@ export default class SegmentHandler extends Highlighter {
       // Create Plottable Label
       const newLabel = new Label();
 
-      let vtx: SEPoint | SEPointOnOneDimensional | null = null;
+      let vtx: SEPoint | SEPointOnOneOrTwoDimensional | null = null;
       let newSELabel: SELabel | null = null;
       if (this.startSEPointOneDimensionalParent) {
         // Starting mouse press landed near a oneDimensional
         // Create the model object for the new point and link them
-        vtx = new SEPointOnOneDimensional(
+        vtx = new SEPointOnOneOrTwoDimensional(
           newStartPoint,
           this.startSEPointOneDimensionalParent
         );
@@ -492,7 +542,7 @@ export default class SegmentHandler extends Highlighter {
 
         segmentGroup.addCommand(
           new AddPointOnOneDimensionalCommand(
-            vtx,
+            vtx as SEPointOnOneOrTwoDimensional,
             this.startSEPointOneDimensionalParent,
             newSELabel
           )
@@ -563,12 +613,15 @@ export default class SegmentHandler extends Highlighter {
       // Create Plottable Label
       const newLabel = new Label();
 
-      let vtx: SEPoint | SEPointOnOneDimensional | null = null;
+      let vtx: SEPoint | SEPointOnOneOrTwoDimensional | null = null;
       let newSELabel: SELabel | null = null;
       if (this.hitSESegments.length > 0) {
         // The end of the line will be a point on a segment
         // Create the model object for the new point and link them
-        vtx = new SEPointOnOneDimensional(newEndPoint, this.hitSESegments[0]);
+        vtx = new SEPointOnOneOrTwoDimensional(
+          newEndPoint,
+          this.hitSESegments[0]
+        );
         // Set the Location
         vtx.locationVector = this.hitSESegments[0].closestVector(
           this.currentSphereVector
@@ -576,7 +629,7 @@ export default class SegmentHandler extends Highlighter {
         newSELabel = new SELabel(newLabel, vtx);
         segmentGroup.addCommand(
           new AddPointOnOneDimensionalCommand(
-            vtx,
+            vtx as SEPointOnOneOrTwoDimensional,
             this.hitSESegments[0],
             newSELabel
           )
@@ -584,7 +637,7 @@ export default class SegmentHandler extends Highlighter {
       } else if (this.hitSELines.length > 0) {
         // The end of the line will be a point on a line
         // Create the model object for the new point and link them
-        vtx = new SEPointOnOneDimensional(newEndPoint, this.hitSELines[0]);
+        vtx = new SEPointOnOneOrTwoDimensional(newEndPoint, this.hitSELines[0]);
         // Set the Location
         vtx.locationVector = this.hitSELines[0].closestVector(
           this.currentSphereVector
@@ -593,14 +646,17 @@ export default class SegmentHandler extends Highlighter {
 
         segmentGroup.addCommand(
           new AddPointOnOneDimensionalCommand(
-            vtx,
+            vtx as SEPointOnOneOrTwoDimensional,
             this.hitSELines[0],
             newSELabel
           )
         );
       } else if (this.hitSECircles.length > 0) {
         // The end of the line will be a point on a circle
-        vtx = new SEPointOnOneDimensional(newEndPoint, this.hitSECircles[0]);
+        vtx = new SEPointOnOneOrTwoDimensional(
+          newEndPoint,
+          this.hitSECircles[0]
+        );
         // Set the Location
         vtx.locationVector = this.hitSECircles[0].closestVector(
           this.currentSphereVector
@@ -609,14 +665,17 @@ export default class SegmentHandler extends Highlighter {
 
         segmentGroup.addCommand(
           new AddPointOnOneDimensionalCommand(
-            vtx,
+            vtx as SEPointOnOneOrTwoDimensional,
             this.hitSECircles[0],
             newSELabel
           )
         );
       } else if (this.hitSEEllipses.length > 0) {
         // The end of the line will be a point on a Ellipse
-        vtx = new SEPointOnOneDimensional(newEndPoint, this.hitSEEllipses[0]);
+        vtx = new SEPointOnOneOrTwoDimensional(
+          newEndPoint,
+          this.hitSEEllipses[0]
+        );
         // Set the Location
         vtx.locationVector = this.hitSEEllipses[0].closestVector(
           this.currentSphereVector
@@ -625,8 +684,46 @@ export default class SegmentHandler extends Highlighter {
 
         segmentGroup.addCommand(
           new AddPointOnOneDimensionalCommand(
-            vtx,
+            vtx as SEPointOnOneOrTwoDimensional,
             this.hitSEEllipses[0],
+            newSELabel
+          )
+        );
+      } else if (this.hitSEParametrics.length > 0) {
+        // The end of the line will be a point on a Ellipse
+        vtx = new SEPointOnOneOrTwoDimensional(
+          newEndPoint,
+          this.hitSEParametrics[0]
+        );
+        // Set the Location
+        vtx.locationVector = this.hitSEParametrics[0].closestVector(
+          this.currentSphereVector
+        );
+        newSELabel = new SELabel(newLabel, vtx);
+
+        segmentGroup.addCommand(
+          new AddPointOnOneDimensionalCommand(
+            vtx as SEPointOnOneOrTwoDimensional,
+            this.hitSEParametrics[0],
+            newSELabel
+          )
+        );
+      } else if (this.hitSEPolygons.length > 0) {
+        // The end of the line will be a point on a Ellipse
+        vtx = new SEPointOnOneOrTwoDimensional(
+          newEndPoint,
+          this.hitSEPolygons[0]
+        );
+        // Set the Location
+        vtx.locationVector = this.hitSEPolygons[0].closestVector(
+          this.currentSphereVector
+        );
+        newSELabel = new SELabel(newLabel, vtx);
+
+        segmentGroup.addCommand(
+          new AddPointOnOneDimensionalCommand(
+            vtx as SEPointOnOneOrTwoDimensional,
+            this.hitSEPolygons[0],
             newSELabel
           )
         );
