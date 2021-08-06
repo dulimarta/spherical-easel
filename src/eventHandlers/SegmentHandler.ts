@@ -22,6 +22,7 @@ import { UpdateMode } from "@/types";
 import Label from "@/plottables/Label";
 import { SELabel } from "@/models/SELabel";
 import { SEStore } from "@/store";
+import EventBus from "./EventBus";
 export default class SegmentHandler extends Highlighter {
   /**
    * The starting unit vector location of the segment
@@ -90,7 +91,9 @@ export default class SegmentHandler extends Highlighter {
    * A temporary vector to help with normal vector computations
    */
   private tmpVector = new Vector3();
-
+  private tmpVector1 = new Vector3();
+  private tmpVector2 = new Vector3();
+  private tmpVector3 = new Vector3();
   /**
    * Make a segment handler
    * @param layers The TwoGroup array of layer so plottable objects can be put into the correct layers for correct rendering
@@ -437,36 +440,15 @@ export default class SegmentHandler extends Highlighter {
           this.startVector.angleTo(this.currentSphereVector) >
           SETTINGS.segment.minimumArcLength
         ) {
-          this.makeSegment(event);
-
-          // Remove the temporary objects
-          this.temporarySegment.removeFromLayers();
-          this.temporaryStartMarker.removeFromLayers();
-          this.temporaryEndMarker.removeFromLayers();
-          this.isTemporaryStartMarkerAdded = false;
-          this.isTemporaryEndMarkerAdded = false;
-          this.isTemporarySegmentAdded = false;
-
-          this.snapStartMarkerToTemporaryOneDimensional = null;
-          this.snapEndMarkerToTemporaryOneDimensional = null;
-          this.snapStartMarkerToTemporaryPoint = null;
-          this.snapEndMarkerToTemporaryPoint = null;
-
-          // Clear old points and values to get ready for creating the next segment.
-          if (this.startSEPoint) {
-            this.startSEPoint.glowing = false;
-            this.startSEPoint.selected = false;
+          if (!this.makeSegment(event)) {
+            EventBus.fire("show-alert", {
+              key: `handlers.segmentCreationAttemptDuplicate`,
+              keyOptions: {},
+              type: "error"
+            });
           }
-          this.startSEPoint = null;
-          this.endSEPoint = null;
-          this.nearlyAntipodal = false;
-          this.longerThanPi = false;
-          this.startLocationSelected = false;
-          this.arcLength = 0;
-          this.startSEPointOneDimensionalParent = null;
 
-          // call an unglow all command
-          SEStore.unglowAllSENodules();
+          this.mouseLeave(event);
         }
       } else {
         // Remove the temporary objects from the display.
@@ -517,7 +499,7 @@ export default class SegmentHandler extends Highlighter {
     SEStore.unglowAllSENodules();
   }
 
-  private makeSegment(event: MouseEvent): void {
+  private makeSegment(event: MouseEvent): boolean {
     // Create a new command group to store potentially three commands. Those to add the endpoints (which might be new) and the segment itself.
     const segmentGroup = new CommandGroup();
     if (this.startSEPoint === null) {
@@ -764,9 +746,60 @@ export default class SegmentHandler extends Highlighter {
     this.temporarySegment.arcLength = this.arcLength;
     this.temporarySegment.normalVector = this.normalVector;
     this.temporarySegment.updateDisplay();
-    // Clone the temporary segment and mark it added to the scene,
-    this.isTemporarySegmentAdded = false;
+
+    // make sure that this segment hasn't been added before
+    if (
+      SEStore.seSegments.some(
+        seg =>
+          ((this.tmpVector
+            .subVectors(
+              seg.startSEPoint.locationVector,
+              this.startSEPoint
+                ? this.startSEPoint.locationVector
+                : this.tmpVector
+            )
+            .isZero() &&
+            this.tmpVector1
+              .subVectors(
+                seg.endSEPoint.locationVector,
+                this.endSEPoint
+                  ? this.endSEPoint.locationVector
+                  : this.tmpVector1
+              )
+              .isZero()) ||
+            (this.tmpVector
+              .subVectors(
+                seg.endSEPoint.locationVector,
+                this.startSEPoint
+                  ? this.startSEPoint.locationVector
+                  : this.tmpVector
+              )
+              .isZero() &&
+              this.tmpVector1
+                .subVectors(
+                  seg.startSEPoint.locationVector,
+                  this.endSEPoint
+                    ? this.endSEPoint.locationVector
+                    : this.tmpVector1
+                )
+                .isZero())) &&
+          seg.longerThanPi === this.longerThanPi &&
+          (this.tmpVector2
+            .copy(this.normalVector)
+            .sub(seg.normalVector)
+            .isZero() ||
+            this.tmpVector3
+              .copy(this.normalVector)
+              .multiplyScalar(-1)
+              .sub(seg.normalVector)
+              .isZero())
+      )
+    ) {
+      return false;
+    }
+    // Clone the temporary segment and mark it removed from the scene,
     const newSegment = this.temporarySegment.clone();
+    this.isTemporarySegmentAdded = false;
     // Stylize the new segment
     newSegment.stylize(DisplayStyle.ApplyCurrentVariables);
     newSegment.adjustSize();
@@ -833,6 +866,7 @@ export default class SegmentHandler extends Highlighter {
       }
     );
     segmentGroup.execute();
+    return true;
   }
 
   /**

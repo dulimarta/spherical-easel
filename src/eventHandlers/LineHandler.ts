@@ -22,6 +22,7 @@ import { UpdateMode } from "@/types";
 import Label from "@/plottables/Label";
 import { SELabel } from "@/models/SELabel";
 import { SEStore } from "@/store";
+import EventBus from "./EventBus";
 export default class LineHandler extends Highlighter {
   /**
    * The starting vector location of the line
@@ -424,31 +425,15 @@ export default class LineHandler extends Highlighter {
           this.startVector.angleTo(this.currentSphereVector) >
           SETTINGS.line.minimumLength
         ) {
-          this.makeLine();
-          // Get ready for the next line
-          this.startLocationSelected = false;
-          if (this.startSEPoint) {
-            this.startSEPoint.glowing = false;
-            this.startSEPoint.selected = false;
+          if (!this.makeLine()) {
+            EventBus.fire("show-alert", {
+              key: `handlers.lineCreationAttemptDuplicate`,
+              keyOptions: {},
+              type: "error"
+            });
           }
-          this.startSEPoint = null;
-          this.endSEPoint = null;
-          this.startSEPointOneDimensionalParent = null;
-
-          // Remove the temporary line and markers
-          this.temporaryLine.removeFromLayers();
-          this.temporaryStartMarker.removeFromLayers();
-          this.temporaryEndMarker.removeFromLayers();
-          this.isTemporaryLineAdded = false;
-          this.isTemporaryStartMarkerAdded = false;
-          this.isTemporaryEndMarkerAdded = false;
-
-          this.snapStartMarkerToTemporaryOneDimensional = null;
-          this.snapEndMarkerToTemporaryOneDimensional = null;
-          this.snapStartMarkerToTemporaryPoint = null;
-          this.snapEndMarkerToTemporaryPoint = null;
-          // call an unglow all command
-          SEStore.unglowAllSENodules();
+          // Get ready for the next line
+          this.mouseLeave(event);
         }
       } else {
         this.temporaryLine.removeFromLayers();
@@ -497,7 +482,7 @@ export default class LineHandler extends Highlighter {
   }
 
   // Create a new line from the mouse event information
-  private makeLine(): void {
+  private makeLine(): boolean {
     //Create a command group so this can be undone
     const lineGroup = new CommandGroup();
 
@@ -742,6 +727,25 @@ export default class LineHandler extends Highlighter {
     // Set the normal vector to the line in the plottable object, this setter calls updateDisplay()
     this.temporaryLine.normalVector = this.normalVector;
 
+    // check to make sure that this line doesn't already exist
+    if (
+      SEStore.seLines.some(line =>
+        this.tmpVector.subVectors(line.normalVector, this.normalVector).isZero()
+      )
+    ) {
+      return false;
+    }
+
+    if (
+      SEStore.seLines.some(line =>
+        this.tmpVector
+          .subVectors(line.normalVector, this.normalVector.multiplyScalar(-1))
+          .isZero()
+      )
+    ) {
+      return false;
+    }
+
     // Create the new line after the normalVector is set
     const newLine = this.temporaryLine.clone();
     // Stylize the new Line
@@ -808,6 +812,7 @@ export default class LineHandler extends Highlighter {
       }
     );
     lineGroup.execute();
+    return true;
   }
 
   activate(): void {

@@ -583,42 +583,46 @@ export default class AngleHandler extends Highlighter {
       }
       // Check to see if we are ready to make the angle
       if (this.targetPoints.length === 3) {
-        this.makeAngleMarkerFromThreePoints();
-        EventBus.fire("show-alert", {
-          key: `handlers.newAngleAdded`,
-          keyOptions: {},
-          type: "success"
-        });
+        if (this.makeAngleMarkerFromThreePoints()) {
+          EventBus.fire("show-alert", {
+            key: `handlers.newAngleAdded`,
+            keyOptions: {},
+            type: "success"
+          });
+        }
         //clear the arrays and prepare for the next angle and remove temporary objects
         this.mouseLeave(event);
       } else if (this.targetLines.length === 2) {
-        this.makeAngleMarkerFromTwoLines();
-        EventBus.fire("show-alert", {
-          key: `handlers.newAngleAdded`,
-          keyOptions: {},
-          type: "success"
-        });
+        if (this.makeAngleMarkerFromTwoLines()) {
+          EventBus.fire("show-alert", {
+            key: `handlers.newAngleAdded`,
+            keyOptions: {},
+            type: "success"
+          });
+        }
         //clear the arrays and prepare for the next angle and remove temporary objects
         this.mouseLeave(event);
       } else if (this.targetSegments.length === 2) {
-        this.makeAngleMarkerFromTwoSegments();
-        EventBus.fire("show-alert", {
-          key: `handlers.newAngleAdded`,
-          keyOptions: {},
-          type: "success"
-        });
+        if (this.makeAngleMarkerFromTwoSegments()) {
+          EventBus.fire("show-alert", {
+            key: `handlers.newAngleAdded`,
+            keyOptions: {},
+            type: "success"
+          });
+        }
         //clear the arrays and prepare for the next angle and remove temporary objects
         this.mouseLeave(event);
       } else if (
         this.targetLines.length === 1 &&
         this.targetSegments.length === 1
       ) {
-        this.makeAngleMarkerFromLineAndSegment();
-        EventBus.fire("show-alert", {
-          key: `handlers.newAngleAdded`,
-          keyOptions: {},
-          type: "success"
-        });
+        if (this.makeAngleMarkerFromLineAndSegment()) {
+          EventBus.fire("show-alert", {
+            key: `handlers.newAngleAdded`,
+            keyOptions: {},
+            type: "success"
+          });
+        }
         //clear the arrays and prepare for the next angle and remove temporary objects
         this.mouseLeave(event);
       } else {
@@ -929,7 +933,7 @@ export default class AngleHandler extends Highlighter {
     this.snapPoint = null;
   }
 
-  private makeAngleMarkerFromThreePoints(): void {
+  private makeAngleMarkerFromThreePoints(): boolean {
     // make sure that this triple of points has not been measured already
     // this is only possible if all three points are existing points
     if (this.targetPoints.every(entry => entry !== null)) {
@@ -959,7 +963,7 @@ export default class AngleHandler extends Highlighter {
           },
           type: "error"
         });
-        return;
+        return false;
       }
     }
     // Create a command group to add the points defining the circle and the circle to the store
@@ -1113,9 +1117,11 @@ export default class AngleHandler extends Highlighter {
 
     // Update the display of the new angle marker
     newSEAngleMarker.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
+
+    return true;
   }
 
-  private makeAngleMarkerFromTwoLines(): void {
+  private makeAngleMarkerFromTwoLines(): boolean {
     // make sure that this pair of lines has not been measured already
     let measurementName = "";
     if (
@@ -1141,7 +1147,7 @@ export default class AngleHandler extends Highlighter {
         },
         type: "error"
       });
-      return;
+      return false;
     }
 
     // Create a new angle marker plottable
@@ -1194,9 +1200,10 @@ export default class AngleHandler extends Highlighter {
     ).execute();
     // Update the display of the new angle marker
     newSEAngleMarker.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
+    return true;
   }
 
-  private makeAngleMarkerFromTwoSegments(): void {
+  private makeAngleMarkerFromTwoSegments(): boolean {
     // make sure that this pair of segments has not been measured already
     let measurementName = "";
     if (
@@ -1222,7 +1229,7 @@ export default class AngleHandler extends Highlighter {
         },
         type: "error"
       });
-      return;
+      return false;
     }
 
     // Create a new angle marker plottable
@@ -1304,9 +1311,10 @@ export default class AngleHandler extends Highlighter {
 
     // Update the display of the new angle marker
     newSEAngleMarker.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
+    return true;
   }
 
-  private makeAngleMarkerFromLineAndSegment(): void {
+  private makeAngleMarkerFromLineAndSegment(): boolean {
     // make sure that this segment and line has not been measured already
     let measurementName = "";
     if (this.lineSelectedFirst) {
@@ -1346,7 +1354,7 @@ export default class AngleHandler extends Highlighter {
         },
         type: "error"
       });
-      return;
+      return false;
     }
 
     // Create a new angle marker plottable
@@ -1445,5 +1453,6 @@ export default class AngleHandler extends Highlighter {
     ).execute();
     // Update the display of the new angle marker
     newSEAngleMarker.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
+    return true;
   }
 }

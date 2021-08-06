@@ -445,6 +445,14 @@ export default {
       "Selection Update: {number} objects selected. Hold the Alt/Option key to add or subtract from the current selection.",
     selectionUpdateNothingSelected: "No objects selected.",
     pointCreationAttemptDuplicate: "There is already a point at this location.",
+    circleCreationAttemptDuplicate:
+      "There is already a circle with this center and radius.",
+    ellipseCreationAttemptDuplicate:
+      "There is already an ellipse with these foci and angle sum.",
+    segmentCreationAttemptDuplicate:
+      "There is already a line segment with these endpoints, this normal vector, and length.",
+    lineCreationAttemptDuplicate:
+      "There is already a line with this normal vector.",
     lineThruPointPointSelected:
       "Point selected. Now select a one dimensional object to determine the perpendicular.",
     lineThruPointLineSelected:
