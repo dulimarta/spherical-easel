@@ -270,121 +270,141 @@ export default class NSectAngleHandler extends Highlighter {
   createNSection(candidateAngle: SEAngleMarker): void {
     const nSectingLinesCommandGroup = new CommandGroup();
     const nSectingLineArray: SENSectLine[] = []; // a list of the new lines to be updated at the end of creation
-    // Create the N-sectioning lines
-    for (let i = 1; i < this.selectedNValue; i++) {
-      // create the plottable line
-      const newLine = new NonFreeLine();
-      // Set the display to the default values
-      newLine.stylize(DisplayStyle.ApplyCurrentVariables);
-      newLine.adjustSize();
 
-      // get the SEPoint at the vertex of the angle marker
-      const startSEPoint = SEStore.sePoints.find(pt =>
-        this.tmpVector
-          .subVectors(pt.locationVector, candidateAngle.vertexVector)
-          .isZero()
-      );
+    // get the SEPoint at the vertex of the angle marker
+    const startSEPoint = SEStore.sePoints.find(pt =>
+      this.tmpVector
+        .subVectors(pt.locationVector, candidateAngle.vertexVector)
+        .isZero()
+    );
 
-      if (startSEPoint !== undefined) {
-        // create the orthonormal frame with the z -axis as startSEPoint.locationVector
-        const fromVector = new Vector3();
-        fromVector.copy(candidateAngle.startVector);
-        fromVector
-          .addScaledVector(
-            candidateAngle.vertexVector,
-            -1 * candidateAngle.vertexVector.dot(candidateAngle.startVector)
-          )
-          .normalize();
+    // create the orthonormal frame with the z -axis as startSEPoint.locationVector
+    const fromVector = new Vector3();
+    fromVector.copy(candidateAngle.startVector);
+    fromVector
+      .addScaledVector(
+        candidateAngle.vertexVector,
+        -1 * candidateAngle.vertexVector.dot(candidateAngle.startVector)
+      )
+      .normalize();
 
-        const toVector = new Vector3();
-        toVector.crossVectors(candidateAngle.vertexVector, fromVector)
-          .normalize;
-        const angle = candidateAngle.value;
+    const toVector = new Vector3();
+    toVector.crossVectors(candidateAngle.vertexVector, fromVector).normalize;
+    const angle = candidateAngle.value;
+
+    if (startSEPoint !== undefined) {
+      for (let i = 1; i < this.selectedNValue; i++) {
+        // Create the N-sectioning lines
 
         // The other (end) point on the line is the point at
         // fromVector*cos(angle*(index/N)) + toVector*sin(angle *index/N)
-        fromVector.multiplyScalar(Math.cos((angle * i) / this.selectedNValue));
-        toVector.multiplyScalar(Math.sin((angle * i) / this.selectedNValue));
-        const tempVector = new Vector3();
-        tempVector.addVectors(fromVector, toVector).normalize();
+        const scaledFromVector = new Vector3();
+        scaledFromVector
+          .copy(fromVector)
+          .multiplyScalar(Math.cos((angle * i) / this.selectedNValue));
 
-        // create the endSEPoint on the line, this is *never* displayed and never put into the DAG of SENodules
-        const endSEPoint = new SEPoint(new NonFreePoint());
-        endSEPoint.showing = false; // this never changes
-        endSEPoint.exists = true; // this never changes
+        const scaledToVector = new Vector3();
+        scaledToVector
+          .copy(toVector)
+          .multiplyScalar(Math.sin((angle * i) / this.selectedNValue));
 
-        endSEPoint.locationVector = tempVector;
+        const endPointVector = new Vector3();
+        endPointVector.addVectors(scaledFromVector, scaledToVector).normalize();
 
         //compute the normal vector
-        tempVector
-          .crossVectors(startSEPoint.locationVector, endSEPoint.locationVector)
+        const normalVector = new Vector3();
+        normalVector
+          .crossVectors(startSEPoint.locationVector, endPointVector)
           .normalize();
 
-        // Create the model object for the new point and link them
-        const nSectingLine = new SENSectLine(
-          newLine,
-          startSEPoint,
-          tempVector,
-          endSEPoint,
-          candidateAngle,
-          i,
-          this.selectedNValue
+        // make sure that this line doesn't already exist
+        const index = SEStore.seLines.findIndex(line =>
+          this.tmpVector.subVectors(line.normalVector, normalVector).isZero()
         );
+        if (index === -1) {
+          // create the endSEPoint on the line, this is *never* displayed and never put into the DAG of SENodules
+          const endSEPoint = new SEPoint(new NonFreePoint());
+          endSEPoint.showing = false; // this never changes
+          endSEPoint.exists = true; // this never changes
+          endSEPoint.locationVector = endPointVector; // this gets updated
 
-        // Create plottable for the Label
-        const newLabel2 = new Label();
-        const newSELabel2 = new SELabel(newLabel2, nSectingLine);
-        // Set the initial label location
-        this.tmpVector
-          .copy(endSEPoint.locationVector)
-          .add(
-            new Vector3(
-              2 * SETTINGS.point.initialLabelOffset,
-              SETTINGS.point.initialLabelOffset,
-              0
+          // create the plottable line
+          const newLine = new NonFreeLine();
+          // Set the display to the default values
+          newLine.stylize(DisplayStyle.ApplyCurrentVariables);
+          newLine.adjustSize();
+
+          // Create the model object for the new point and link them
+          const nSectingLine = new SENSectLine(
+            newLine,
+            startSEPoint,
+            normalVector,
+            endSEPoint,
+            candidateAngle,
+            i,
+            this.selectedNValue
+          );
+
+          // Create plottable for the Label
+          const newLabel2 = new Label();
+          const newSELabel2 = new SELabel(newLabel2, nSectingLine);
+          // Set the initial label location
+          this.tmpVector
+            .copy(endSEPoint.locationVector)
+            .add(
+              new Vector3(
+                2 * SETTINGS.point.initialLabelOffset,
+                SETTINGS.point.initialLabelOffset,
+                0
+              )
             )
-          )
-          .normalize();
-        newSELabel2.locationVector = this.tmpVector;
+            .normalize();
+          newSELabel2.locationVector = this.tmpVector;
 
-        nSectingLinesCommandGroup.addCommand(
-          new AddNSectLineCommand(nSectingLine, candidateAngle, newSELabel2)
-        );
+          nSectingLinesCommandGroup.addCommand(
+            new AddNSectLineCommand(nSectingLine, candidateAngle, newSELabel2)
+          );
 
-        // Update the display of the n sect line after creating them all and adding them to the DAG
-        nSectingLineArray.push(nSectingLine);
+          // Update the display of the n sect line after creating them all and adding them to the DAG
+          nSectingLineArray.push(nSectingLine);
 
-        // Determine all new intersection points and add their creation to the command so it can be undone
-        SEStore.createAllIntersectionsWithLine(nSectingLine).forEach(
-          (item: SEIntersectionReturnType) => {
-            // Create the plottable label
-            const newLabel = new Label();
-            const newSELabel = new SELabel(newLabel, item.SEIntersectionPoint);
-            // Set the initial label location
-            this.tmpVector
-              .copy(item.SEIntersectionPoint.locationVector)
-              .add(
-                new Vector3(
-                  2 * SETTINGS.point.initialLabelOffset,
-                  SETTINGS.point.initialLabelOffset,
-                  0
+          // Determine all new intersection points and add their creation to the command so it can be undone
+          SEStore.createAllIntersectionsWithLine(nSectingLine).forEach(
+            (item: SEIntersectionReturnType) => {
+              // Create the plottable label
+              const newLabel = new Label();
+              const newSELabel = new SELabel(
+                newLabel,
+                item.SEIntersectionPoint
+              );
+              // Set the initial label location
+              this.tmpVector
+                .copy(item.SEIntersectionPoint.locationVector)
+                .add(
+                  new Vector3(
+                    2 * SETTINGS.point.initialLabelOffset,
+                    SETTINGS.point.initialLabelOffset,
+                    0
+                  )
                 )
-              )
-              .normalize();
-            newSELabel.locationVector = this.tmpVector;
+                .normalize();
+              newSELabel.locationVector = this.tmpVector;
 
-            nSectingLinesCommandGroup.addCommand(
-              new AddIntersectionPointCommand(
-                item.SEIntersectionPoint,
-                item.parent1,
-                item.parent2,
-                newSELabel
-              )
-            );
-            item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points
-            newSELabel.showing = false;
-          }
-        );
+              nSectingLinesCommandGroup.addCommand(
+                new AddIntersectionPointCommand(
+                  item.SEIntersectionPoint,
+                  item.parent1,
+                  item.parent2,
+                  newSELabel
+                )
+              );
+              item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points
+              newSELabel.showing = false;
+            }
+          );
+        } else {
+          console.log("An n-secting line already exists", i);
+        }
       }
     }
     nSectingLinesCommandGroup.execute();

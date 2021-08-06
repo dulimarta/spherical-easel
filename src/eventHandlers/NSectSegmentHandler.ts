@@ -246,60 +246,77 @@ export default class NSectSegmentHandler extends Highlighter {
     const nSectingPointsCommandGroup = new CommandGroup();
     const nSectingPointArray: SENSectPoint[] = []; // a list of the new points to be updated at the end of creation
     // Create the N-sectioning points
+    const startVector = new Vector3();
+    startVector.copy(candidateSegment.startSEPoint.locationVector);
+    const arcLength = candidateSegment.arcLength;
+    const normalVector = candidateSegment.normalVector;
+    const toAxis = new Vector3();
+    toAxis
+      .crossVectors(normalVector, startVector)
+      .multiplyScalar(arcLength > Math.PI ? -1 : 1)
+      .normalize();
+
     for (let i = 1; i < this.selectedNValue; i++) {
-      const newPoint = new NonFreePoint();
-      // Set the display to the default values
-      newPoint.stylize(DisplayStyle.ApplyCurrentVariables);
-      newPoint.adjustSize();
-
-      // Create the model object for the new point and link them
-      const nSectingPoint = new SENSectPoint(
-        newPoint,
-        candidateSegment,
-        i,
-        this.selectedNValue
-      );
-
-      // calculate the location
-      const startVector = new Vector3();
-      startVector.copy(candidateSegment.startSEPoint.locationVector);
-      const arcLength = candidateSegment.arcLength;
-      const normalVector = candidateSegment.normalVector;
-
-      const toAxis = new Vector3();
-      toAxis
-        .crossVectors(normalVector, startVector)
-        .multiplyScalar(arcLength > Math.PI ? -1 : 1)
-        .normalize();
       // this point is located at
       // startVector*cos(arcLength * index/N) + toAxis*sin(arcLength * index/N)
-      startVector.multiplyScalar(
-        Math.cos((arcLength * i) / this.selectedNValue)
+      const scaledStartVector = new Vector3();
+      scaledStartVector
+        .copy(startVector)
+        .multiplyScalar(Math.cos((arcLength * i) / this.selectedNValue));
+
+      const scaledToAxis = new Vector3();
+      scaledToAxis
+        .copy(toAxis)
+        .multiplyScalar(Math.sin((arcLength * i) / this.selectedNValue));
+
+      const nSectingPointVector = new Vector3();
+      nSectingPointVector.addVectors(scaledStartVector, scaledToAxis).normalize;
+
+      // Make sure that this point doesn't exist already
+      const index = SEStore.sePoints.findIndex(pt =>
+        this.tmpVector
+          .subVectors(pt.locationVector, nSectingPointVector)
+          .isZero()
       );
-      toAxis.multiplyScalar(Math.sin((arcLength * i) / this.selectedNValue));
+      if (index === -1) {
+        const newPoint = new NonFreePoint();
+        // Set the display to the default values
+        newPoint.stylize(DisplayStyle.ApplyCurrentVariables);
+        newPoint.adjustSize();
 
-      // Update the current location in the plottable
-      nSectingPoint.locationVector.addVectors(startVector, toAxis);
+        // Create the model object for the new point and link them
+        const nSectingPoint = new SENSectPoint(
+          newPoint,
+          candidateSegment,
+          i,
+          this.selectedNValue
+        );
 
-      // Create plottable for the Label
-      const newLabel2 = new Label();
-      const newSELabel2 = new SELabel(newLabel2, nSectingPoint);
-      // Set the initial label location
-      this.tmpVector
-        .copy(nSectingPoint.locationVector)
-        .add(
-          new Vector3(
-            2 * SETTINGS.point.initialLabelOffset,
-            SETTINGS.point.initialLabelOffset,
-            0
+        // Update the current location in the model object
+        nSectingPoint.locationVector = nSectingPointVector;
+
+        // Create plottable for the Label
+        const newLabel2 = new Label();
+        const newSELabel2 = new SELabel(newLabel2, nSectingPoint);
+        // Set the initial label location
+        this.tmpVector
+          .copy(nSectingPoint.locationVector)
+          .add(
+            new Vector3(
+              2 * SETTINGS.point.initialLabelOffset,
+              SETTINGS.point.initialLabelOffset,
+              0
+            )
           )
-        )
-        .normalize();
-      newSELabel2.locationVector = this.tmpVector;
+          .normalize();
+        newSELabel2.locationVector = this.tmpVector;
 
-      nSectingPointsCommandGroup.addCommand(
-        new AddNSectPointCommand(nSectingPoint, candidateSegment, newSELabel2)
-      );
+        nSectingPointsCommandGroup.addCommand(
+          new AddNSectPointCommand(nSectingPoint, candidateSegment, newSELabel2)
+        );
+      } else {
+        console.log("An n-secting point already exists", i);
+      }
     }
     nSectingPointsCommandGroup.execute();
     nSectingPointArray.forEach(nSectingPoint => {
