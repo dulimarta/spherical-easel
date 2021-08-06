@@ -197,6 +197,7 @@ import { SEPointOnOneOrTwoDimensional } from "@/models/SEPointOnOneOrTwoDimensio
 import { SENSectPoint } from "@/models/SENSectPoint";
 import { SETangentLineThruPoint } from "@/models/SETangentLineThruPoint";
 import { SENSectLine } from "@/models/SENSectLine";
+import { SEStore } from "@/store";
 
 @Component
 export default class SENoduleItem extends Vue {
@@ -269,8 +270,8 @@ export default class SENoduleItem extends Vue {
       deleteCommandGroup.addCommand(new DeleteNoduleCommand(element.object));
     });
     deleteCommandGroup.execute();
-    // } else {
-    // }
+    // when deleting mesurements, the measure object(if any) must be unglowed
+    SEStore.unglowAllSENodules();
   }
 
   cycleValueDisplayMode(): void {

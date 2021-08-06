@@ -493,8 +493,8 @@ export default class Label extends Nodule {
         // Properties that have no sides
         let labelText = "";
         // Compute the numerical part of the label (if any) and add it to the end of label
-        if (this.value.length > 0) {
-          if (this.seLabel!.parent instanceof SEPoint) {
+        if (this.value.length > 0 && this.seLabel !== undefined) {
+          if (this.seLabel.parent instanceof SEPoint) {
             labelText =
               "(" +
               `${this._value
@@ -503,15 +503,15 @@ export default class Label extends Nodule {
               ")";
           } else {
             let valueDisplayMode;
-            if (this.seLabel!.parent instanceof SEAngleMarker) {
-              valueDisplayMode = (this.seLabel!.parent as SEAngleMarker)
+            if (this.seLabel.parent instanceof SEAngleMarker) {
+              valueDisplayMode = (this.seLabel.parent as SEAngleMarker)
                 .valueDisplayMode;
             }
-            if (this.seLabel!.parent instanceof SEPolygon) {
-              valueDisplayMode = (this.seLabel!.parent as SEPolygon)
+            if (this.seLabel.parent instanceof SEPolygon) {
+              valueDisplayMode = (this.seLabel.parent as SEPolygon)
                 .valueDisplayMode;
-            } else if (this.seLabel!.parent instanceof SESegment) {
-              const seSegLength = this.seLabel!.parent.kids.find(
+            } else if (this.seLabel.parent instanceof SESegment) {
+              const seSegLength = this.seLabel.parent.kids.find(
                 node => node instanceof SESegmentLength
               );
               valueDisplayMode = (seSegLength as SESegmentLength)

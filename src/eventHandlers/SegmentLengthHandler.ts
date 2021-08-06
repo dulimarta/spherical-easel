@@ -12,6 +12,7 @@ import { LabelDisplayMode } from "@/types";
 import { UpdateMode } from "@/types";
 import { SEStore } from "@/store";
 import { SEExpression } from "@/models/SEExpression";
+import { SetNoduleDisplayCommand } from "@/commands/SetNoduleDisplayCommand";
 export default class SegmentLengthHandler extends Highlighter {
   /**
    * Segment to measure
@@ -54,7 +55,10 @@ export default class SegmentLengthHandler extends Highlighter {
         return;
       }
 
-      if (this.targetSegment != null) {
+      if (
+        this.targetSegment !== null &&
+        this.targetSegment.label !== undefined
+      ) {
         const lenMeasure = new SESegmentLength(this.targetSegment);
         EventBus.fire("show-alert", {
           key: `handlers.newSegmentMeasurementAdded`,
@@ -68,8 +72,8 @@ export default class SegmentLengthHandler extends Highlighter {
         // Set the selected segment's Label to display and to show NameAndValue in an undoable way
         segmentCommandGroup.addCommand(
           new StyleNoduleCommand(
-            [this.targetSegment.label!.ref],
-            StyleEditPanels.Front,
+            [this.targetSegment.label.ref],
+            StyleEditPanels.Label,
             [
               {
                 // panel: StyleEditPanels.Front,
@@ -81,10 +85,13 @@ export default class SegmentLengthHandler extends Highlighter {
               {
                 // panel: StyleEditPanels.Front,
                 // labelVisibility: this.targetSegment.label!.showing,
-                labelDisplayMode: this.targetSegment.label!.ref.labelDisplayMode
+                labelDisplayMode: this.targetSegment.label.ref.labelDisplayMode
               }
             ]
           )
+        );
+        segmentCommandGroup.addCommand(
+          new SetNoduleDisplayCommand(this.targetSegment.label, true)
         );
         segmentCommandGroup.execute();
         // Update the display so the changes become apparent

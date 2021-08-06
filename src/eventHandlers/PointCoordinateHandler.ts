@@ -15,6 +15,7 @@ import { StyleNoduleCommand } from "@/commands/StyleNoduleCommand";
 import { StyleEditPanels } from "@/types/Styles";
 import { UpdateMode } from "@/types";
 import { SEStore } from "@/store";
+import { SetNoduleDisplayCommand } from "@/commands/SetNoduleDisplayCommand";
 export default class PointCoordinateHandler extends Highlighter {
   /**
    * Point to inspect its coordinate
@@ -58,7 +59,7 @@ export default class PointCoordinateHandler extends Highlighter {
         return;
       }
 
-      if (this.targetPoint != null) {
+      if (this.targetPoint != null && this.targetPoint.label !== undefined) {
         const xMeasure = new SEPointCoordinate(
           this.targetPoint,
           CoordinateSelection.X_VALUE
@@ -101,7 +102,7 @@ export default class PointCoordinateHandler extends Highlighter {
         // Set the selected segment's Label to display and to show NameAndValue in an undoable way
         coordinatizeCommandGroup.addCommand(
           new StyleNoduleCommand(
-            [this.targetPoint.label!.ref],
+            [this.targetPoint.label.ref],
             StyleEditPanels.Label,
             [
               {
@@ -115,10 +116,14 @@ export default class PointCoordinateHandler extends Highlighter {
               {
                 // panel: StyleEditPanels.Front,
                 // labelVisibility: this.targetPoint.label!.showing,
-                labelDisplayMode: this.targetPoint.label!.ref.labelDisplayMode
+                labelDisplayMode: this.targetPoint.label.ref.labelDisplayMode
               }
             ]
           )
+        );
+        // show the label (in case the label is not shown - measureing shows it)
+        coordinatizeCommandGroup.addCommand(
+          new SetNoduleDisplayCommand(this.targetPoint.label, true)
         );
         coordinatizeCommandGroup.execute();
         // Update the display so the changes become apparent

@@ -31,6 +31,7 @@ import { AddLengthMeasurementCommand } from "@/commands/AddLengthMeasurementComm
 import { StyleNoduleCommand } from "@/commands/StyleNoduleCommand";
 import { StyleEditPanels } from "@/types/Styles";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
+import { SetNoduleDisplayCommand } from "@/commands/SetNoduleDisplayCommand";
 
 export default class PolygonHandler extends Highlighter {
   /**
@@ -372,19 +373,20 @@ export default class PolygonHandler extends Highlighter {
         const newLabel = new Label();
         const newSELabel = new SELabel(newLabel, vtx);
 
-        // Set the initial label location
-        this.tmpVector
-          .copy(this.startSEPoint!.locationVector)
-          .add(
-            new Vector3(
-              2 * SETTINGS.polygon.initialLabelOffset,
-              SETTINGS.polygon.initialLabelOffset,
-              0
+        if (this.startSEPoint) {
+          // Set the initial label location
+          this.tmpVector
+            .copy(this.startSEPoint.locationVector)
+            .add(
+              new Vector3(
+                2 * SETTINGS.polygon.initialLabelOffset,
+                SETTINGS.polygon.initialLabelOffset,
+                0
+              )
             )
-          )
-          .normalize();
-        newSELabel.locationVector = this.tmpVector;
-
+            .normalize();
+          newSELabel.locationVector = this.tmpVector;
+        }
         // Create and execute the command to create a new point for undo/redo
         polygonCommandGroup
           .addCommand(
@@ -397,8 +399,15 @@ export default class PolygonHandler extends Highlighter {
             )
           )
           .execute();
-        // Update the display of the antipodal point
+        // Update the display
         vtx.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
+        // Update the display so the changes become apparent
+        this.seEdgeSegments.forEach(seg => {
+          seg.update({
+            mode: UpdateMode.DisplayOnly,
+            stateArray: []
+          });
+        });
 
         EventBus.fire("show-alert", {
           key: `handlers.newPolygonAdded`,
@@ -879,31 +888,31 @@ export default class PolygonHandler extends Highlighter {
         new AddLengthMeasurementCommand(lenMeasure, seg)
       );
       // Set the selected segment's Label to display and to show NameAndValue in an undoable way
-      polygonCommandGroup.addCommand(
-        new StyleNoduleCommand(
-          [seg.label!.ref],
-          StyleEditPanels.Front,
-          [
-            {
-              // panel: StyleEditPanels.Front,
-              // labelVisibility: true,
-              labelDisplayMode: SETTINGS.segment.measuringChangesLabelModeTo
-            }
-          ],
-          [
-            {
-              // panel: StyleEditPanels.Front,
-              // labelVisibility: seg.label!.showing,
-              labelDisplayMode: seg.label!.ref.labelDisplayMode
-            }
-          ]
-        )
-      );
-      // Update the display so the changes become apparent
-      seg.update({
-        mode: UpdateMode.DisplayOnly,
-        stateArray: []
-      });
+      if (seg.label !== undefined) {
+        polygonCommandGroup.addCommand(
+          new StyleNoduleCommand(
+            [seg.label.ref],
+            StyleEditPanels.Label,
+            [
+              {
+                // panel: StyleEditPanels.Front,
+                // labelVisibility: true,
+                labelDisplayMode: SETTINGS.segment.measuringChangesLabelModeTo
+              }
+            ],
+            [
+              {
+                // panel: StyleEditPanels.Front,
+                // labelVisibility: seg.label!.showing,
+                labelDisplayMode: seg.label.ref.labelDisplayMode
+              }
+            ]
+          )
+        );
+        polygonCommandGroup.addCommand(
+          new SetNoduleDisplayCommand(seg.label, true)
+        );
+      }
     });
   }
 }

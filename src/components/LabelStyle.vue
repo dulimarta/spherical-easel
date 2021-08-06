@@ -346,6 +346,10 @@ export default class LabelStyle extends Vue {
         angle.toFixed(1).replace(/\.0$/, "") + "\u{00B0}"
       );
     }
+    // console.log(
+    //   "rotation angle thumb labels",
+    //   this.textRotationSelectorThumbStrings
+    // );
   }
 
   get allLabelsShowing(): boolean {
