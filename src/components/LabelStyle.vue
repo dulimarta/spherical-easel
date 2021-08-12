@@ -122,8 +122,8 @@
         <InputGroup input-selector="labelBackFillColor"
           v-if="showMoreLabelStyles">
           <OverlayWithFixButton v-if="usingAutomaticBackStyle"
-            i18n-title-line="Automatic Back Style"
-            i18n-button-label="Go"
+            i18n-title-line="style.dynamicBackStyleHeader"
+            i18n-button-label="style.enableDynamicBackStyle"
             @click="toggleBackStyleOptionsAvailability">
           </OverlayWithFixButton>
           <SimpleColorSelector title-key="style.labelBackFillColor"

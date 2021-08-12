@@ -96,17 +96,7 @@ export default class SimpleColorSelector extends Vue {
   // Vue component life cycle hook
   mounted(): void {
     if (this.hslaColor) {
-      const parts = this.hslaColor
-        .trim()
-        .replace(/hsla *\(/, "")
-        .replace(")", "")
-        .split(",");
-      this.internalColor.hsla = {
-        h: Number(parts[0]),
-        s: Number(parts[1].replace("%", "")) / 100,
-        l: Number(parts[2].replace("%", "")) / 100,
-        a: Number(parts[3])
-      };
+      this.calculateInternalColorFrom(this.hslaColor);
     }
     // If these commands are in the beforeUpdate() method they are executed over and over but
     // they only need to be executed once.
@@ -142,8 +132,49 @@ export default class SimpleColorSelector extends Vue {
     }
   }
 
+  convertColorToRGBAString(colorObject: hslaColorType): string {
+    // THANK YOU INTERNET!
+    const hue = colorObject.h;
+    const sat = colorObject.s * 100;
+    const lum = colorObject.l;
+    const a = (sat * Math.min(lum, 1 - lum)) / 100;
+    const f = (n: number): string => {
+      const k = (n + hue / 30) % 12;
+      const color = lum - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
+      return Math.round(255 * color)
+        .toString(16)
+        .padStart(2, "00");
+    };
+    return `#${f(0)}${f(8)}${f(4)}`;
+  }
+
+  @Watch("hslaColor")
+  calculateInternalColorFrom(hslaString: string): void {
+    // console.debug("HSLA string changed", hslaString);
+    const parts = hslaString
+      .trim()
+      .replace(/hsla *\(/, "")
+      .replace(")", "")
+      .split(",");
+    this.internalColor.hsla = {
+      h: Number(parts[0]),
+      s: Number(parts[1].replace("%", "")) / 100,
+      l: Number(parts[2].replace("%", "")) / 100,
+      a: Number(parts[3])
+    };
+    this.internalColor.hexa = this.convertColorToRGBAString(
+      this.internalColor.hsla
+    );
+  }
+
   @Watch("noData")
   setNoData(): void {
+    // console.debug(
+    //   "Saved HSLA",
+    //   this.preNoColor,
+    //   "current HSLA",
+    //   this.hslaColor
+    // );
     if (this.noData) {
       this.preNoColor = this.hslaColor;
       this.hslaColor = NO_HSLA_DATA;
