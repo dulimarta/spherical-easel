@@ -286,7 +286,7 @@ export default class Parametric extends Nodule {
     tValues.forEach(t1 => {
       tValues.forEach(t2 => {
         // avoid duplicate searches so make t1 less than t2 and avoid tangent lines so make the difference large-ish
-        if (t1 < t2 && Math.abs(t2 - t1) > 0.2) {
+        if (t1 < t2 && Math.abs(t2 - t1) > 0.1) {
           // if the curves is closed do not search if t2=tMax, because this has been search already by tMin ( a t value that correspond to the same point).
           if (this.closed && t2 === this._tNumbers.max) {
             return;
@@ -358,11 +358,11 @@ export default class Parametric extends Nodule {
           // DuplicateZeroTValues counts t1 and t2, so add 2 back into the count
           // Divide by two because the parts alternate between front and back and this.numberOfParts is the number of front parts (which is equal to the number of back parts)
           if (
-            Math.ceil((zeros.length - duplicateZeroTValues.length + 2) / 2) >
+            Math.ceil(zeros.length - duplicateZeroTValues.length + 2) >
             this._numberOfParts
           ) {
             this._numberOfParts = Math.ceil(
-              (zeros.length - duplicateZeroTValues.length + 2) / 2
+              zeros.length - duplicateZeroTValues.length + 2
             );
           }
         }
@@ -370,7 +370,7 @@ export default class Parametric extends Nodule {
     });
     // The *first* front or back path might be divided into two parts so add one to the number of parts
     this._numberOfParts += 1;
-    // console.log("number of parts", this._numberOfParts);
+    console.log("number of parts", this._numberOfParts);
 
     // to set the number of vertices need to render the parametric curve use the density of SUBDIVISIONS per unit INITIAL arcLength and multiply by the arcLength
     this._initialArcLength = 0;

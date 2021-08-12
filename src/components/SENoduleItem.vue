@@ -4,7 +4,7 @@
       @mouseenter="glowMe(true)"
       @mouseleave="glowMe(false)">
 
-      <v-row>
+      <v-row justify="start">
         <v-col cols="auto">
           <v-icon v-if="isAntipode"
             medium>
@@ -62,7 +62,6 @@
             medium>
             $vuetify.icons.value.parametric
           </v-icon>
-
           <v-icon v-else-if="isSlider">mdi-arrow-left-right</v-icon>
           <v-icon v-else-if="isAngle"
             medium>
@@ -85,11 +84,10 @@
 
         </v-col>
         <v-col class="text-truncate">
-
           <v-tooltip right>
             <template v-slot:activator="{ on }">
               <div id="_test_selection"
-                class="contentText ml-1"
+                class="contentText"
                 @click="selectMe"
                 v-on="on"
                 :class="showClass">
@@ -100,66 +98,84 @@
           </v-tooltip>
 
         </v-col>
-        <v-col cols="auto">
+        <v-col justify="end">
+          <v-row align="center"
+            no-gutters>
+            <v-col>
+              <v-tooltip right>
+                <template v-slot:activator="{ on }">
+                  <div id="_test_toggle_format"
+                    v-show="isExpressionAndNotCoordinate"
+                    v-on="on"
+                    @click="cycleValueDisplayMode">
+                    <v-icon small>
+                      mdi-recycle-variant
+                    </v-icon>
+                  </div>
+                </template>
+                <span>{{ $t(`objectTree.cycleValueDisplayMode`) }}</span>
+              </v-tooltip>
+            </v-col>
+            <v-col>
+              <v-tooltip right>
+                <template v-slot:activator="{ on }">
+                  <div id="_test_toggle_visibility"
+                    v-show="isPlottable"
+                    v-on="on"
+                    @click="toggleVisibility">
+                    <v-icon small
+                      v-if="isHidden">
+                      mdi-eye
+                    </v-icon>
+                    <v-icon small
+                      v-else
+                      style="color:gray">
+                      mdi-eye-off
+                    </v-icon>
+                  </div>
+                </template>
+                <span>{{ $t(`objectTree.toggleDisplay`) }}</span>
+              </v-tooltip>
+            </v-col>
+            <v-col>
+              <v-tooltip right>
+                <template v-slot:activator="{ on }">
+                  <div id="_toggle_label_display"
+                    v-show="isPlottable"
+                    v-on="on"
+                    @click="toggleLabelDisplay">
 
-          <v-tooltip right>
-            <template v-slot:activator="{ on }">
-              <div id="_test_toggle_visibility"
-                v-show="isPlottable"
-                v-on="on"
-                @click="toggleVisibility"
-                class="mr-2">
-                <v-icon small
-                  v-if="isHidden">
-                  mdi-eye
-                </v-icon>
-                <v-icon small
-                  v-else
-                  style="color:gray">
-                  mdi-eye-off
-                </v-icon>
-              </div>
-            </template>
-            <span>{{ $t(`objectTree.toggleDisplay`) }}</span>
-          </v-tooltip>
+                    <v-icon small
+                      v-if="isLabelHidden">
+                      mdi-label-outline
+                    </v-icon>
+                    <v-icon small
+                      v-else
+                      style="color:gray">
+                      mdi-label-off-outline
+                    </v-icon>
+                  </div>
+                </template>
+                <span>{{ $t(`objectTree.toggleLabelDisplay`) }}</span>
+              </v-tooltip>
+            </v-col>
+            <v-col>
+              <v-tooltip right>
+                <template v-slot:activator="{ on }">
+                  <div id="_delete_node"
+                    v-on="on"
+                    @click="deleteNode">
+                    <v-icon small>
+                      mdi-trash-can-outline
+                    </v-icon>
+                  </div>
+                </template>
+                <span>{{ $t(`objectTree.deleteNode`) }}</span>
+              </v-tooltip>
+            </v-col>
 
+          </v-row>
         </v-col>
-        <v-col cols="auto">
-
-          <v-tooltip right>
-            <template v-slot:activator="{ on }">
-              <div id="_test_toggle_format"
-                v-show="isExpressionAndNotCoordinate"
-                v-on="on"
-                @click="cycleValueDisplayMode"
-                class="mr-2">
-                <v-icon small>
-                  mdi-recycle-variant
-                </v-icon>
-              </div>
-            </template>
-            <span>{{ $t(`objectTree.cycleValueDisplayMode`) }}</span>
-          </v-tooltip>
-
-        </v-col>
-        <v-col cols="auto">
-
-          <v-tooltip right>
-            <template v-slot:activator="{ on }">
-              <div id="_delete_node"
-                v-on="on"
-                @click="deleteNode"
-                class="mr-2">
-                <v-icon small>
-                  mdi-trash-can-outline
-                </v-icon>
-              </div>
-            </template>
-            <span>{{ $t(`objectTree.deleteNode`) }}</span>
-          </v-tooltip>
-
-        </v-col>
-
       </v-row>
     </div>
   </div>
@@ -198,6 +214,7 @@ import { SENSectPoint } from "@/models/SENSectPoint";
 import { SETangentLineThruPoint } from "@/models/SETangentLineThruPoint";
 import { SENSectLine } from "@/models/SENSectLine";
 import { SEStore } from "@/store";
+import { SELabel } from "@/models/SELabel";
 
 @Component
 export default class SENoduleItem extends Vue {
@@ -230,6 +247,9 @@ export default class SENoduleItem extends Vue {
         .forEach((p: SESegment) => {
           p.glowing = flag;
         });
+    } else if (this.node instanceof SEPointCoordinate) {
+      const target = this.node.point as SEPoint;
+      target.glowing = flag;
     }
   }
 
@@ -242,6 +262,26 @@ export default class SENoduleItem extends Vue {
 
   toggleVisibility(): void {
     new SetNoduleDisplayCommand(this.node, !this.node.showing).execute();
+  }
+  toggleLabelDisplay(): void {
+    if (
+      // this.isPlottable
+      this.node instanceof SEPoint ||
+      this.node instanceof SELine ||
+      this.node instanceof SESegment ||
+      this.node instanceof SECircle ||
+      this.node instanceof SEEllipse ||
+      this.node instanceof SEAngleMarker ||
+      this.node instanceof SEParametric ||
+      this.node instanceof SEPolygon
+    ) {
+      if (this.node.label) {
+        new SetNoduleDisplayCommand(
+          this.node.label,
+          !this.node.label.showing
+        ).execute();
+      }
+    }
   }
 
   deleteNode(): void {
@@ -331,6 +371,22 @@ export default class SENoduleItem extends Vue {
   }
   get isHidden(): boolean {
     return !this.node.showing;
+  }
+  get isLabelHidden(): boolean {
+    if (
+      // this.isPlottable
+      this.node instanceof SEPoint ||
+      this.node instanceof SELine ||
+      this.node instanceof SESegment ||
+      this.node instanceof SECircle ||
+      this.node instanceof SEEllipse ||
+      this.node instanceof SEAngleMarker ||
+      this.node instanceof SEParametric ||
+      this.node instanceof SEPolygon
+    ) {
+      return !this.node.label?.showing;
+    }
+    return false;
   }
   get isExpressionAndNotCoordinate(): boolean {
     return (

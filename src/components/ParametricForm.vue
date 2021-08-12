@@ -279,7 +279,7 @@ export default class ParametricForm extends Vue {
   }
   setSprialExpressions(): void {
     this.tNumbers.min = 0;
-    this.tNumbers.max = 0.99;
+    this.tNumbers.max = 0.9;
     this.coordinateExpressions.x = "sqrt(1-t^2)*cos(4*pi*t)";
     this.coordinateExpressions.y = "sqrt(1-t^2)*sin(4*pi*t)";
     this.coordinateExpressions.z = "t";
