@@ -99,16 +99,16 @@
           <SimpleNumberSelector
             v-bind:data.sync="styleOptions.labelTextScalePercent"
             title-key="style.labelTextScalePercent"
-            v-bind:min="minLabelTextScalePercent"
-            v-bind:max="maxLabelTextScalePercent"
-            v-bind:step="20"
+            :min="minLabelTextScalePercent"
+            :max="maxLabelTextScalePercent"
+            :step="20"
             :thumb-string-values="textScaleSelectorThumbStrings" />
           <SimpleNumberSelector
             v-bind:data.sync="styleOptions.labelTextRotation"
             title-key="style.labelTextRotation"
-            v-bind:min="-3.14159"
-            v-bind:max="3.14159"
-            v-bind:step="0.39269875"
+            :min="-3.14159"
+            :max="3.14159"
+            :step="0.39269875"
             :thumb-string-values="textRotationSelectorThumbStrings">
           </SimpleNumberSelector>
         </InputGroup>

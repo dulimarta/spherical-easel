@@ -106,9 +106,9 @@
             <SimpleNumberSelector v-if="hasStyle(/strokeWidthPercent/)"
               v-bind:data.sync="styleOptions.strokeWidthPercent"
               title-key="style.strokeWidthPercent"
-              v-bind:min-value="minStrokeWidthPercent"
-              v-bind:max-value="maxStrokeWidthPercent"
-              v-bind:step="20"
+              :min="minStrokeWidthPercent"
+              :max="maxStrokeWidthPercent"
+              :step="20"
               :thumb-string-values="strokeWidthScaleSelectorThumbStrings" />
             <SimpleColorSelector title-key="style.fillColor"
               v-if="hasStyle(/fillColor/)"
@@ -124,8 +124,8 @@
             <SimpleNumberSelector
               :data.sync="styleOptions.pointRadiusPercent"
               title-key="style.pointRadiusPercent"
-              :min-value="minPointRadiusPercent"
-              :max-value="maxPointRadiusPercent"
+              :min="minPointRadiusPercent"
+              :max="maxPointRadiusPercent"
               :step="20"
               :thumb-string-values="pointRadiusSelectorThumbStrings">
             </SimpleNumberSelector>
@@ -137,8 +137,8 @@
             <SimpleNumberSelector
               :data.sync="styleOptions.angleMarkerRadiusPercent"
               title-key="style.angleMarkerRadiusPercent"
-              :min-value="minAngleMarkerRadiusPercent"
-              :max-value="maxAngleMarkerRadiusPercent"
+              :min="minAngleMarkerRadiusPercent"
+              :max="maxAngleMarkerRadiusPercent"
               :step="20"
               :thumb-string-values="angleMarkerRadiusSelectorThumbStrings">
             </SimpleNumberSelector>
@@ -154,7 +154,8 @@
               </v-col>
             </v-row>
           </InputGroup>
-          <InputGroup input-selector="dashArray">
+          <InputGroup input-selector="dashArray"
+            v-if="hasStyle(/dashArray/)">
             <span v-show="editModeIsFront"
               class="text-subtitle-2">{{ $t("style.front") }}</span>
             <span v-show="editModeIsBack"
