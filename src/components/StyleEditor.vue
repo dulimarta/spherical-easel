@@ -262,6 +262,7 @@ export default class extends Vue {
       }
     } else {
       // If we reach this point we have EXACTLY ONE object selected
+      this.conflictingPropNames.splice(0);
       const opt = this.selectedNodules[0].currentStyleState(this.panel);
       if (opt.dashArray && opt.dashArray.length === 0) opt.dashArray.push(0, 0);
       this.propDynamicBackStyleCommonValue =
