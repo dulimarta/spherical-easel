@@ -160,10 +160,7 @@ export class SEParametric extends SENodule
     });
 
     // find the tracing tMin and tMax
-    const [tMin, tMax] = this.ref.tMinMaxExpressionValues() ?? [
-      this.ref.tNumbers.min,
-      this.ref.tNumbers.max
-    ];
+    const [tMin, tMax] = this.ref.tMinMaxExpressionValues();
     // if the tMin/tMax values are out of order then parametric curve doesn't exist
     if (tMax <= tMin) {
       this._exists = false;
@@ -171,7 +168,8 @@ export class SEParametric extends SENodule
 
     if (this._exists) {
       // display the updated parametric
-      this.ref.calculateAndCacheArcLength();
+      console.debug("Rebuilding parametric curve????");
+      // this.ref.buildCurve();
       this.ref.updateDisplay();
     }
 
@@ -206,10 +204,7 @@ export class SEParametric extends SENodule
     transformedToStandard.applyMatrix4(SEStore.inverseTotalRotationMatrix);
 
     // find the tracing tMin and tMax
-    const [tMin, tMax] = this.ref.tMinMaxExpressionValues() ?? [
-      this.ref.tNumbers.min,
-      this.ref.tNumbers.max
-    ];
+    const [tMin, tMax] = this.ref.tMinMaxExpressionValues();
     // It must be the case that tMax> tMin because in update we check to make sure -- if it is not true then this parametric doesn't exist
 
     const closestStandardVector = new Vector3();
@@ -288,10 +283,7 @@ export class SEParametric extends SENodule
     // find the tracing tMin and tMax
     const [tMin, tMax] = useFullTInterval
       ? [this.ref.tNumbers.min, this.ref.tNumbers.max]
-      : this.ref.tMinMaxExpressionValues() ?? [
-          this.ref.tNumbers.min,
-          this.ref.tNumbers.max
-        ];
+      : this.ref.tMinMaxExpressionValues();
 
     // It must be the case that tMax> tMin because in update we check to make sure -- if it is not true then this parametric doesn't exist
     // console.log("normal search");
@@ -392,10 +384,7 @@ export class SEParametric extends SENodule
     // find the tracing tMin and tMax
     const [tMin, tMax] = useFullTInterval
       ? [this.ref.tNumbers.min, this.ref.tNumbers.max]
-      : this.ref.tMinMaxExpressionValues() ?? [
-          this.ref.tNumbers.min,
-          this.ref.tNumbers.max
-        ];
+      : this.ref.tMinMaxExpressionValues();
     const avoidTValues: number[] = [];
     avoidTValues.push(...this.ref.c1DiscontinuityParameterValues);
     let normalList: Vector3[] = [];

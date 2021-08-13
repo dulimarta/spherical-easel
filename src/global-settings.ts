@@ -748,7 +748,7 @@ export const SETTINGS = {
     display: true // controls if they should be displayed
   },
   parameterization: {
-    useNewtonsMethod: true, // When finding the zeros, should we use newton's method?  If false we use bisections
+    useNewtonsMethod: false, // When finding the zeros, should we use newton's method?  If false we use bisections
     subdivisions: 80, // When searching function on a parametrized curve for a change in sign, use this many subdivisions
     bisectionMinSize: 0.0000001, // stop running the bisection method (if Newton's method is not used) when the interval is less than this size
     numberOfTestTValues: 10, // When checking if a parametric curve is unit or the number of times the curve intersects a plane connecting two points on the curve use this many points
