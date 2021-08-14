@@ -1,5 +1,5 @@
 <template>
-  <FadeInCard>
+  <FadeInCard :key="componentKey">
     <slot></slot>
     <v-container class="pa-0 ma-0">
       <v-row no-gutters
@@ -37,6 +37,8 @@ export default class InputGroup extends Vue {
   @Prop({ required: true }) readonly inputSelector!: string;
 
   resetDisabled = true;
+  // add this so that when you click the undo button or the clear button the fadeInCard updates and the selections made by style-data-clear and style-data-to-default are made in the card
+  private componentKey = 0;
 
   mounted(): void {
     EventBus.listen("style-option-change", (ev: { prop: string }): void => {
@@ -58,12 +60,14 @@ export default class InputGroup extends Vue {
 
   doClear(): void {
     EventBus.fire("style-data-clear", { selector: this.inputSelector });
-    // this.resetDisabled = true;
+    this.componentKey += 1; //forces update of the contents of the slot
+    // this.resetDisabled = false;
   }
 
   doReset(): void {
     // console.debug("Emitting event style-data-to-default");
     EventBus.fire("style-data-to-default", { selector: this.inputSelector });
+    this.componentKey += 1; //forces update of the contents of the slot
   }
 }
 </script>

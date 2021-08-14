@@ -145,6 +145,10 @@ export default class extends Vue {
       const styleData = this.initialStatesMap.get(this.panel);
       if (styleData) {
         const listOfProps = ev.selector.split(",");
+        if (ev.selector === "labelBackFillColor") {
+          // if the user restores the labelBackFillColor to defaults also restore the automaticBackStyling
+          listOfProps.push("labelDynamicBackStyle");
+        }
         this.restoreTo(listOfProps, styleData);
       }
     } else {
@@ -153,10 +157,15 @@ export default class extends Vue {
     }
   }
   restoreDefault(ev: { selector: string }): void {
+    console.log("ev selector", ev.selector);
     if (ev.selector !== "backStyleContrast") {
       const styleData = this.defaultStatesMap.get(this.panel);
       if (styleData) {
         const listOfProps = ev.selector.split(",");
+        if (ev.selector === "labelBackFillColor") {
+          // if the user restores the labelBackFillColor to defaults also restore the automaticBackStyling
+          listOfProps.push("labelDynamicBackStyle");
+        }
         this.restoreTo(listOfProps, styleData);
       }
     } else {
@@ -254,10 +263,10 @@ export default class extends Vue {
         }
       );
       if (this.conflictingPropNames.length > 0) {
-        console.error(
-          "Disagreement in property value",
-          this.conflictingPropNames
-        );
+        this.conflictingPropNames.forEach(prop => {
+          console.error("Disagreement in property value", prop);
+        });
+
         this.dataAgreement = false;
       }
     } else {
@@ -290,6 +299,7 @@ export default class extends Vue {
 
   @Watch("activeStyleOptions", { deep: true, immediate: true })
   onStyleOptionsChanged(z: StyleOptions): void {
+    console.log("onStyleOpCha in styleEditor", z);
     const newOptions = { ...z };
     // console.debug("Inside style editor active style options", newOptions);
     const oldProps = new Set(
@@ -322,6 +332,7 @@ export default class extends Vue {
 
     /* If multiple objects are selected do not update the label text */
     if (this.selectedNodules.length > 1) delete updatePayload.labelDisplayText;
+
     if (this.panel == StyleEditPanels.Back) {
       if (!this.automaticBackStyle)
         updatePayload.dynamicBackStyle = !this.propDynamicBackStyleCommonValue;
@@ -346,10 +357,18 @@ export default class extends Vue {
     this.previousStyleOptions = { ...z };
   }
 
-  forceDataAgreement(): void {
+  forceDataAgreement(props: string[]): void {
     console.debug("User overrides data disagreement");
     this.dataAgreement = true;
-    this.conflictingPropNames.splice(0);
+    props.forEach(prop => {
+      const ind = this.conflictingPropNames.findIndex(
+        conflictProp => conflictProp === prop
+      );
+      if (ind > -1) {
+        this.conflictingPropNames.splice(ind);
+      }
+    });
+    // this.conflictingPropNames.splice(0);
     if (this.panel === StyleEditPanels.Back)
       this.propDynamicBackStyleCommonValue = true;
   }

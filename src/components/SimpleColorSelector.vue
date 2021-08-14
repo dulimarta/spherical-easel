@@ -26,7 +26,7 @@
                   dense></v-checkbox>
               </span>
             </template>
-            {{$t('style.noFillLabelTip')}}
+            {{isOnLabelPanel? $t('style.noFillLabelTip'): $t('style.noFillTip')}}
           </v-tooltip>
         </v-col>
         <v-spacer />
@@ -34,6 +34,7 @@
           class="ma-0 pl-0 pr-0 pt-2 pb-2">
           <HintButton type="colorInput"
             @click="toggleColorInputs"
+            :disabled="noData"
             i18n-label="style.showColorInputs"
             i18n-tooltip="style.showColorInputsToolTip">
           </HintButton>
@@ -85,6 +86,10 @@ export default class SimpleColorSelector extends Vue {
   private noData = false; // no data means noFill or noStroke
   private preNoColor: string = NO_HSLA_DATA;
 
+  private isOnLabelPanel = false;
+
+  // private boxSampleColor: string = "";
+
   // For TwoJS
   // private colorString: string | undefined = "hsla(0, 0%,0%,0)";
   private showColorInputs = false;
@@ -95,9 +100,20 @@ export default class SimpleColorSelector extends Vue {
 
   // Vue component life cycle hook
   mounted(): void {
+    // console.log("mounting!", this.hslaColor);
     if (this.hslaColor) {
       this.calculateInternalColorFrom(this.hslaColor);
+      // set the noData flag
+      if (
+        this.internalColor.hsla.h === 0 &&
+        this.internalColor.hsla.s === 0 &&
+        this.internalColor.hsla.l === 0 &&
+        this.internalColor.hsla.a === 0
+      ) {
+        this.noData = true;
+      }
     }
+    // this.boxSampleColor = this.internalColor.hexa;
     // If these commands are in the beforeUpdate() method they are executed over and over but
     // they only need to be executed once.
     const propName = this.styleName.replace("Color", "");
@@ -109,12 +125,16 @@ export default class SimpleColorSelector extends Vue {
       this.styleName.search(re) === -1
         ? i18n.t("style.noStroke")
         : i18n.t("style.noFill"); // the noStroke/noFill option
+
+    var re2 = /label/gi;
+    this.isOnLabelPanel = this.titleKey.search(re2) !== -1;
     //this.noDataUILabel = `No ${inTitleCase}`;
     // console.log("style name", this.styleName);
     // console.log("noStrData", this.noDataStr);
   }
 
   beforeUpdate(): void {
+    // console.log("before update Simple color selector");
     const col = this.internalColor.hsla;
     //   // console.debug("Color changed to", col);
     const hue = col.h.toFixed(0);
@@ -125,11 +145,11 @@ export default class SimpleColorSelector extends Vue {
   }
 
   toggleColorInputs(): void {
-    if (!this.noData) {
-      this.showColorInputs = !this.showColorInputs;
-    } else {
-      this.showColorInputs = false;
-    }
+    // if (!this.noData) {
+    this.showColorInputs = !this.showColorInputs;
+    // } else {
+    //   this.showColorInputs = false;
+    // }
   }
 
   convertColorToRGBAString(colorObject: hslaColorType): string {
@@ -162,9 +182,19 @@ export default class SimpleColorSelector extends Vue {
       l: Number(parts[2].replace("%", "")) / 100,
       a: Number(parts[3])
     };
-    this.internalColor.hexa = this.convertColorToRGBAString(
-      this.internalColor.hsla
-    );
+
+    if (this.noData) {
+      this.internalColor.hexa = this.convertColorToRGBAString({
+        h: 0,
+        s: 1,
+        l: 1,
+        a: 0
+      });
+    } else {
+      this.internalColor.hexa = this.convertColorToRGBAString(
+        this.internalColor.hsla
+      );
+    }
   }
 
   @Watch("noData")
@@ -176,12 +206,22 @@ export default class SimpleColorSelector extends Vue {
     //   this.hslaColor
     // );
     if (this.noData) {
+      if (
+        this.internalColor.hsla.h !== 0 ||
+        this.internalColor.hsla.s !== 0 ||
+        this.internalColor.hsla.l !== 0 ||
+        this.internalColor.hsla.a !== 0
+      ) {
+        this.preNoColor = this.hslaColor;
+      }
       this.preNoColor = this.hslaColor;
       this.hslaColor = NO_HSLA_DATA;
       this.showColorInputs = false;
+      this.colorSwatches = SETTINGS.style.greyedOutSwatches;
     } else {
       this.hslaColor = this.preNoColor;
-      this.showColorInputs = true;
+      this.colorSwatches = SETTINGS.style.swatches;
+      // this.showColorInputs = true;
       //   // this.colorData = Nodule.convertStringToHSLAObject(this.colorString);
     }
     // If this color selector is on the label panel, then all changes are directed at the label(s).

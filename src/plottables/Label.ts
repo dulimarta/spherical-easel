@@ -8,9 +8,9 @@ import { Vector3 } from "three";
 import {
   StyleOptions,
   StyleEditPanels,
-  DEFAULT_LABEL_TEXT_STYLE,
-  DEFAULT_LABEL_FRONT_STYLE,
-  DEFAULT_LABEL_BACK_STYLE
+  DEFAULT_LABEL_TEXT_STYLE
+  // DEFAULT_LABEL_FRONT_STYLE,
+  // DEFAULT_LABEL_BACK_STYLE
 } from "@/types/Styles";
 import { LabelDisplayMode } from "@/types";
 import { SELabel } from "@/models/SELabel";
@@ -190,8 +190,8 @@ export default class Label extends Nodule {
     // this.glowingBackText.stroke = SETTINGS.label.glowingStrokeColor.back;
 
     this.styleOptions.set(StyleEditPanels.Label, DEFAULT_LABEL_TEXT_STYLE);
-    this.styleOptions.set(StyleEditPanels.Front, DEFAULT_LABEL_FRONT_STYLE);
-    this.styleOptions.set(StyleEditPanels.Back, DEFAULT_LABEL_BACK_STYLE);
+    // this.styleOptions.set(StyleEditPanels.Front, DEFAULT_LABEL_FRONT_STYLE);
+    // this.styleOptions.set(StyleEditPanels.Back, DEFAULT_LABEL_BACK_STYLE);
   }
   /**
    * Set and get the shortUserName
@@ -621,6 +621,7 @@ export default class Label extends Nodule {
           labelStyle?.labelFrontFillColor ?? SETTINGS.label.fillColor.front;
         const backFillColor =
           labelStyle?.labelBackFillColor ?? SETTINGS.label.fillColor.back;
+        // console.log("front fill label", frontFillColor);
         if (frontFillColor === "noLabelFrontFill") {
           this.frontText.noFill();
         } else {

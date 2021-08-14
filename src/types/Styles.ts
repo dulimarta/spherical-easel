@@ -28,6 +28,7 @@ export interface StyleOptions {
   labelDisplayMode?: LabelDisplayMode;
   labelFrontFillColor?: string;
   labelBackFillColor?: string;
+  labelDynamicBackStyle?: boolean;
   angleMarkerRadiusPercent?: number;
   angleMarkerTickMark?: boolean;
   angleMarkerDoubleArc?: boolean;
@@ -160,18 +161,20 @@ export const DEFAULT_LABEL_TEXT_STYLE: Partial<StyleOptions> = {
   labelTextScalePercent: 100,
   labelTextRotation: 0,
   labelFrontFillColor: SETTINGS.label.fillColor.front,
-  labelBackFillColor: SETTINGS.label.fillColor.back
-};
-
-export const DEFAULT_LABEL_FRONT_STYLE: Partial<StyleOptions> = {
-  fillColor: SETTINGS.label.fillColor.front
-};
-
-export const DEFAULT_LABEL_BACK_STYLE: Partial<StyleOptions> = {
-  fillColor: SETTINGS.label.fillColor.back,
-  dynamicBackStyle: SETTINGS.label.dynamicBackStyle,
+  labelBackFillColor: SETTINGS.label.fillColor.back,
+  labelDynamicBackStyle: SETTINGS.label.dynamicBackStyle,
   backStyleContrast: SETTINGS.style.backStyleContrast
 };
+
+// export const DEFAULT_LABEL_FRONT_STYLE: Partial<StyleOptions> = {
+//   fillColor: SETTINGS.label.fillColor.front
+// };
+
+// export const DEFAULT_LABEL_BACK_STYLE: Partial<StyleOptions> = {
+//   fillColor: SETTINGS.label.fillColor.back,
+//   dynamicBackStyle: SETTINGS.label.dynamicBackStyle
+//   // backStyleContrast: SETTINGS.style.backStyleContrast
+// };
 
 export const DEFAULT_PARAMETRIC_FRONT_STYLE: StyleOptions = {
   strokeColor: SETTINGS.parametric.drawn.strokeColor.front,
