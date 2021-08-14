@@ -573,6 +573,8 @@ export default class Parametric extends Nodule {
                 part: currentBackPartIndex.toString()
               }
             );
+            this.stylize(DisplayStyle.ApplyCurrentVariables);
+            this.adjustSize();
           }
         }
         firstBackPart = false;
@@ -628,6 +630,8 @@ export default class Parametric extends Nodule {
                 part: currentFrontPartIndex.toString()
               }
             );
+            this.stylize(DisplayStyle.ApplyCurrentVariables);
+            this.adjustSize();
           }
         }
         firstFrontPart = false;
