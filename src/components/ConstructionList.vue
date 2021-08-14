@@ -10,8 +10,7 @@
           :key="pos">
           <!-- the class "listitem" is used for testing. Do not remove it -->
           <v-list-item class="_test_constructionItem"
-            @mouseover.capture="onItemHover(r)"
-            @mouseleave="onItemLeave">
+            @mouseover.capture="onItemHover(r)">
             <v-list-item-avatar size="64">
               <img :src="previewOrDefault(r.previewData)"
                 alt="preview">
@@ -131,13 +130,13 @@ export default class extends Vue {
   }
 
   onListEnter(/*ev:MouseEvent*/): void {
+    this.previewSVG = null;
     this.originalSphereMatrix.copy(this.inverseTotalRotationMatrix);
   }
 
   // TODO: the onXXXX functions below are not bug-free yet
   // There is a potential race-condition when the mouse moves too fast
   // or when the mouse moves while a new construction is being loaded
-
   async onItemHover(s: SphericalConstruction): Promise<void> {
     if (this.lastDocId === s.id) return; // Prevent double hovers?
     this.lastDocId = s.id;
@@ -151,20 +150,21 @@ export default class extends Vue {
         );
         return newDoc.querySelector("svg") as SVGElement;
       });
-    this.previewSVG = newSvg;
-    console.debug("onItemHover:", this.previewSVG);
-    this.svgRoot.replaceWith(this.previewSVG);
-  }
 
-  onItemLeave(/*_ev: MouseEvent*/): void {
-    this.lastDocId = null;
-    this.previewSVG?.replaceWith(this.svgRoot);
+    // If we are previewing a construction replace that with the new one
+    // Otherwise replace the current top-level SVG with the new one
+    if (this.previewSVG !== null) this.previewSVG.replaceWith(newSvg);
+    else this.svgRoot.replaceWith(newSvg);
+    // console.debug("onItemHover:", this.previewSVG);
+    this.previewSVG = newSvg;
   }
 
   onListLeave(/*_ev: MouseEvent*/): void {
     // Restore the canvas
-    if (this.selectedSVG) this.previewSVG?.replaceWith(this.selectedSVG);
-    else this.previewSVG?.replaceWith(this.svgRoot);
+    this.svgParent?.replaceChild(
+      this.svgRoot,
+      this.svgParent.firstChild as SVGElement
+    );
     // Restore the rotation matrix
     SEStore.setInverseRotationMatrix(this.originalSphereMatrix);
   }

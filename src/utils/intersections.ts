@@ -341,13 +341,7 @@ export function intersectLineWithParametric(
   const returnItems: IntersectionReturnType[] = [];
   const avoidTValues: number[] = [];
   // find the tracing tMin and tMax
-  const [
-    tracingTMin,
-    tracingTMax
-  ] = parametric.ref.tMinMaxExpressionValues() ?? [
-    parametric.ref.tNumbers.min,
-    parametric.ref.tNumbers.max
-  ];
+  const [tracingTMin, tracingTMax] = parametric.ref.tMinMaxExpressionValues();
 
   if (
     line instanceof SETangentLineThruPoint &&
@@ -643,13 +637,7 @@ export function intersectSegmentWithParametric(
     return parametric.ref.PPrime(t).dot(transformedToStandard);
   };
   // find the tracing tMin and tMax
-  const [
-    tracingTMin,
-    tracingTMax
-  ] = parametric.ref.tMinMaxExpressionValues() ?? [
-    parametric.ref.tNumbers.min,
-    parametric.ref.tNumbers.max
-  ];
+  const [tracingTMin, tracingTMax] = parametric.ref.tMinMaxExpressionValues();
 
   const zeros = SENodule.findZerosParametrically(
     d,
@@ -671,19 +659,22 @@ export function intersectSegmentWithParametric(
   }
 
   // console.log("Number of Para/seg Intersections:", zeros.length);
-  zeros.forEach((z, ind) => {
-    returnItems[ind].vector.copy(
-      parametric.ref
-        .P(z)
-        .applyMatrix4(tmpMatrix.getInverse(SEStore.inverseTotalRotationMatrix))
-    );
-    if (tracingTMin <= z && z <= tracingTMax) {
-      // it must be on both the segment and the visible part of the parametric
-      returnItems[ind].exists = segment.onSegment(returnItems[ind].vector);
-    } else {
-      returnItems[ind].exists = false;
-    }
-  });
+  if (returnItems.length >= zeros.length)
+    zeros.forEach((z, ind) => {
+      returnItems[ind].vector.copy(
+        parametric.ref
+          .P(z)
+          .applyMatrix4(
+            tmpMatrix.getInverse(SEStore.inverseTotalRotationMatrix)
+          )
+      );
+      if (tracingTMin <= z && z <= tracingTMax) {
+        // it must be on both the segment and the visible part of the parametric
+        returnItems[ind].exists = segment.onSegment(returnItems[ind].vector);
+      } else {
+        returnItems[ind].exists = false;
+      }
+    });
   return returnItems;
 }
 
@@ -959,13 +950,7 @@ export function intersectCircleWithParametric(
   };
 
   // find the tracing tMin and tMax
-  const [
-    tracingTMin,
-    tracingTMax
-  ] = parametric.ref.tMinMaxExpressionValues() ?? [
-    parametric.ref.tNumbers.min,
-    parametric.ref.tNumbers.max
-  ];
+  const [tracingTMin, tracingTMax] = parametric.ref.tMinMaxExpressionValues();
 
   const zeros = SENodule.findZerosParametrically(
     d,
@@ -1185,13 +1170,7 @@ export function intersectEllipseWithParametric(
   };
 
   // find the tracing tMin and tMax
-  const [
-    tracingTMin,
-    tracingTMax
-  ] = parametric.ref.tMinMaxExpressionValues() ?? [
-    parametric.ref.tNumbers.min,
-    parametric.ref.tNumbers.max
-  ];
+  const [tracingTMin, tracingTMax] = parametric.ref.tMinMaxExpressionValues();
 
   const zeros = SENodule.findZerosParametrically(
     d,

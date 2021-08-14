@@ -399,21 +399,36 @@ export abstract class SENodule {
     } else {
       dpp = undefined;
     }
+
     const zeros = this.findZerosParametrically(dp, tMin, tMax, [], dpp);
+    if (zeros.length > 0) {
+      // The zeros of dp are either minimums or maximums (or neither, but this is very unlikely so we assume it doesn't happen)
+      let minTVal: number = zeros[0]; // The t value that minimizes d
+      zeros.forEach(tVal => {
+        if (d(tVal) < d(minTVal)) {
+          minTVal = tVal;
+        }
+      });
+      const returnPair: parametricVectorAndTValue = {
+        vector: P(minTVal),
+        tVal: minTVal
+      };
 
-    // The zeros of dp are either minimums or maximums (or neither, but this is very unlikely so we assume it doesn't happen)
-    let minTVal: number = zeros[0]; // The t value that minimizes d
-    zeros.forEach(tVal => {
-      if (d(tVal) < d(minTVal)) {
-        minTVal = tVal;
-      }
-    });
-    const returnPair: parametricVectorAndTValue = {
-      vector: P(minTVal),
-      tVal: minTVal
-    };
-
-    return returnPair;
+      return returnPair;
+    } else {
+      const d1 = d(tMin);
+      const d2 = d(tMax);
+      if (d1 < d2) {
+        return {
+          vector: P(tMin),
+          tVal: d1
+        };
+      } else
+        return {
+          vector: P(tMin),
+          tVal: d2
+        };
+    }
   }
 
   /**
@@ -621,6 +636,8 @@ export abstract class SENodule {
     for (let i = 1; i < SETTINGS.parameterization.subdivisions + 1; i++) {
       tVal =
         tMin + (i / SETTINGS.parameterization.subdivisions) * (tMax - tMin);
+      if (tVal < tMin || tVal > tMax)
+        console.debug("Evaluating at t", tVal, "out of range", tMin, tMax);
       if (Math.abs(f(tVal)) < SETTINGS.tolerance / 1000) {
         // make sure that tVal is not on the avoid list
         if (
@@ -651,7 +668,7 @@ export abstract class SENodule {
     //   console.log("number of zeros", zeros.length);
     // }
     if (signChanges.length === 0 && zeros.length === 0) {
-      // console.log("No sign changes; No zeros");
+      console.debug("No sign changes; No zeros");
       return [];
     }
 
@@ -678,9 +695,9 @@ export abstract class SENodule {
           } else {
             console.log(
               "Newton's method failed to converge in interval",
-              zeroTVal,
               interval[0],
-              interval[1]
+              interval[1],
+              zeroTVal
             );
           }
         } else {
