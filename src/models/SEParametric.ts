@@ -4,12 +4,11 @@ import Ellipse from "@/plottables/Ellipse";
 import { Vector3, Matrix4 } from "three";
 import { Visitable } from "@/visitors/Visitable";
 import { Visitor } from "@/visitors/Visitor";
-import { EllipseState, OneDimensional, ParametricState } from "@/types";
+import { OneDimensional, ParametricState } from "@/types";
 import SETTINGS from "@/global-settings";
 import { UpdateMode, UpdateStateType, CircleState } from "@/types";
 import { Labelable } from "@/types";
 import { SELabel } from "@/models/SELabel";
-import { Vector } from "two.js";
 import { SEStore } from "@/store";
 import i18n from "@/i18n";
 import Parametric from "@/plottables/Parametric";
@@ -168,8 +167,7 @@ export class SEParametric extends SENodule
 
     if (this._exists) {
       // display the updated parametric
-      console.debug("Rebuilding parametric curve????");
-      // this.ref.buildCurve();
+      this.ref.buildCurve();
       this.ref.updateDisplay();
     }
 
@@ -311,7 +309,7 @@ export class SEParametric extends SENodule
     //   }
     // });
 
-    console.log("# normals before", normalList.length);
+    // console.log("# normals before", normalList.length);
     // normalList = normalList
     //   // make sure that the returned vector are not just zeros of PPrime (which do not lead to perpendiculars)
     //   .filter(vec => !vec.isZero(SETTINGS.tolerance / 1000))

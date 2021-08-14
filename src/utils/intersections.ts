@@ -659,19 +659,22 @@ export function intersectSegmentWithParametric(
   }
 
   // console.log("Number of Para/seg Intersections:", zeros.length);
-  zeros.forEach((z, ind) => {
-    returnItems[ind].vector.copy(
-      parametric.ref
-        .P(z)
-        .applyMatrix4(tmpMatrix.getInverse(SEStore.inverseTotalRotationMatrix))
-    );
-    if (tracingTMin <= z && z <= tracingTMax) {
-      // it must be on both the segment and the visible part of the parametric
-      returnItems[ind].exists = segment.onSegment(returnItems[ind].vector);
-    } else {
-      returnItems[ind].exists = false;
-    }
-  });
+  if (returnItems.length >= zeros.length)
+    zeros.forEach((z, ind) => {
+      returnItems[ind].vector.copy(
+        parametric.ref
+          .P(z)
+          .applyMatrix4(
+            tmpMatrix.getInverse(SEStore.inverseTotalRotationMatrix)
+          )
+      );
+      if (tracingTMin <= z && z <= tracingTMax) {
+        // it must be on both the segment and the visible part of the parametric
+        returnItems[ind].exists = segment.onSegment(returnItems[ind].vector);
+      } else {
+        returnItems[ind].exists = false;
+      }
+    });
   return returnItems;
 }
 

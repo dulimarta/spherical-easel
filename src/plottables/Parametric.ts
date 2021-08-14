@@ -1,7 +1,7 @@
 /** @format */
 
 import { Vector3, Matrix4 } from "three";
-import Two, { Path } from "two.js";
+import Two from "two.js";
 import SETTINGS, { LAYER } from "@/global-settings";
 import Nodule, { DisplayStyle } from "./Nodule";
 import {
@@ -11,7 +11,6 @@ import {
   DEFAULT_PARAMETRIC_BACK_STYLE
 } from "@/types/Styles";
 import AppStore from "@/store";
-import { SENodule } from "@/models/SENodule";
 import {
   CoordExpression,
   MinMaxExpression,
@@ -117,7 +116,7 @@ export default class Parametric extends Nodule {
   private backParts: Two.Path[] = [];
   private glowingFrontParts: Two.Path[] = [];
   private glowingBackParts: Two.Path[] = [];
-  private _numberOfParts = 1; // we need at least one of each front and back to render the object
+  // private _numberOfParts = 1; // we need at least one of each front and back to render the object
 
   private pool: Two.Anchor[] = []; //The pool of vertices
   private glowingPool: Two.Anchor[] = []; //The pool of vertices
@@ -227,226 +226,83 @@ export default class Parametric extends Nodule {
     this._tNumbers.max = tNumbers.max;
 
     this._seParentExpressions.push(...measurementParents);
-    this.evaluateFunctionAndCache(
-      this.coordinateSyntaxTrees,
-      tNumbers.min,
-      tNumbers.max,
-      this._coordValues,
-      measurementParents
-    );
-    this.evaluateFunctionAndCache(
-      this.primeCoordinateSyntaxTrees,
-      tNumbers.min,
-      tNumbers.max,
-      this._pPrimeValues,
-      measurementParents
-    );
-
-    this.evaluateFunctionAndCache(
-      this.primeX2CoordinateSyntaxTrees,
-      tNumbers.min,
-      tNumbers.max,
-      this._ppPrimeValues,
-      measurementParents
-    );
-
     this._closed = closed;
 
     this._c1DiscontinuityParameterValues.push(
       ...c1DiscontinuityParameterValues
     );
 
-    // Determine an *ESTIMATE* of number of front/back parts need to render the curve, the curves can change length and shape depending on the
-    // the value of the M1, M2, etc.  So overestimate the actual number
-    //
-    // Do this by sampling along the curve from tNumbers.min to tNumbers.max and then intersecting the curve with the plane through two points on the curve (and counting the intersections)
-
-    // we know that is is not the case that tNumber.max <= tNumber.min because the ParametricForm.vue checked for this
-    const tValues: number[] = [];
-    for (
-      let i = 0;
-      i < SETTINGS.parameterization.numberOfTestTValues + 1;
-      i++
-    ) {
-      tValues.push(
-        this._tNumbers.min +
-          (i / SETTINGS.parameterization.numberOfTestTValues) *
-            (this._tNumbers.max - this._tNumbers.min)
-      );
-    }
-    // First form the objective function, this is the function that we want to find the zeros.
-    // We want to find the t values where the P(t) is perpendicular to tmpVector
-    // because tmpVector will be a normal to the plane containing P(t1) and P(t2)
-    // This means we want the dot product to be zero
-    const d = (t: number): number => {
-      return this.P(t).dot(this.tmpVector);
-    };
-    const dp = (t: number): number => {
-      return this.PPrime(t).dot(this.tmpVector);
-    };
-
-    // console.log(
-    //   "Intersect Parametric with many planes and count the intersections"
-    // );
-    // const tmp1 = new Vector3();
-    // const tmp = new Vector3();
-    // tValues.forEach(t1 => {
-    //   tValues.forEach(t2 => {
-    //     // avoid duplicate searches so make t1 less than t2 and avoid tangent lines so make the difference large-ish
-    //     if (t1 < t2 && Math.abs(t2 - t1) > 0.2) {
-    //       // if the curves is closed do not search if t2=tMax, because this has been search already by tMin ( a t value that correspond to the same point).
-    //       if (this.closed && t2 === this._tNumbers.max) {
-    //         return;
-    //       }
-    //       // console.log("New Search", t1, t2);
-
-    //       // Set the tmpVector to the normal of the plane thru P(t1) and P(t2)
-    //       // In the following calculation we can't use this.tmpVector and this.tmpVector1
-    //       // because they are alterned by P(t1) and P(t2) calls
-    //       tmp1.copy(this.P(t1)); // Copy P(t1) to a new tmp vector because computing P(t2) will overwrite P(t1)
-    //       tmp.crossVectors(tmp1, this.P(t2));
-
-    //       if (tmp.isZero(SETTINGS.nearlyAntipodalIdeal)) return;
-
-    //       let zeros: number[];
-    //       if (this.closed) {
-    //         // if the curve is closed then we don't want both tMin and tMax (which correspond to the same point) to be different zeros
-    //         zeros = SENodule.findZerosParametrically(
-    //           d.bind(this),
-    //           this._tNumbers.min,
-    //           this._tNumbers.max -
-    //             (1 / SETTINGS.parameterization.subdivisions) *
-    //               (this._tNumbers.max - this._tNumbers.min),
-    //           this._c1DiscontinuityParameterValues,
-    //           dp.bind(this)
-    //         );
-    //       } else {
-    //         zeros = SENodule.findZerosParametrically(
-    //           d.bind(this),
-    //           this._tNumbers.min,
-    //           this._tNumbers.max,
-    //           this._c1DiscontinuityParameterValues,
-    //           dp.bind(this)
-    //         );
-    //       }
-    //       // if (
-    //       //   -1 ===
-    //       //   zeros.findIndex(z => {
-    //       //     if (
-    //       //       Math.abs(z - t1) < SETTINGS.tolerance ||
-    //       //       Math.abs(z - t2) < SETTINGS.tolerance
-    //       //     ) {
-    //       //       return true;
-    //       //     } else {
-    //       //       return false;
-    //       //     }
-    //       //   })
-    //       // ) {
-    //       //   console.log(
-    //       //     "t1 or t2 doesn't appear on the list of zeros",
-    //       //     zeros.length,
-    //       //     zeros,
-    //       //     t1,
-    //       //     t2
-    //       //   );
-    //       // }
-
-    //       // Search for zeros that are very close to or equal to the t1 and t2 values, and don't count them (we don't have to
-    //       // remove them because we only care about the number of zeros)
-    //       const duplicateZeroTValues: number[] = [];
-    //       zeros.forEach((z, ind) => {
-    //         if (Math.abs(z - t1) < SETTINGS.tolerance) {
-    //           duplicateZeroTValues.push(ind);
-    //         } else if (Math.abs(z - t2) < SETTINGS.tolerance) {
-    //           duplicateZeroTValues.push(ind);
-    //         }
-    //       });
-    //       // if (duplicateZeroTValues.length > 2) {
-    //       //   console.log(zeros, t1, t2);
-    //       // }
-    //       // DuplicateZeroTValues counts t1 and t2, so add 2 back into the count
-    //       // Divide by two because the parts alternate between front and back and this.numberOfParts is the number of front parts (which is equal to the number of back parts)
-    //       if (
-    //         Math.ceil((zeros.length - duplicateZeroTValues.length + 2) / 2) >
-    //         this._numberOfParts
-    //       ) {
-    //         this._numberOfParts = Math.ceil(
-    //           (zeros.length - duplicateZeroTValues.length + 2) / 2
-    //         );
-    //       }
-    //     }
-    //   });
-    // });
-    // The *first* front or back path might be divided into two parts so add one to the number of parts
-    this._numberOfParts += 1;
-    console.log("number of parts", this._numberOfParts);
-
-    // to set the number of vertices need to render the parametric curve use the density of SUBDIVISIONS per unit INITIAL arcLength and multiply by the arcLength
-    // this._initialArcLength = 0;
-    this.calculateAndCacheArcLength();
-    // console.log("arcLength", this._initialArcLength);
-    // As the Parametric is moved around the vertices are passed between the front and back parts, but it
-    // is always true that sum of the number of all frontVertices and the sum of all the backVertices = 2*floor(SUBDIVISIONS*InitialArcLength)+2
-    const frontVertices: Two.Vector[] = [];
-    for (let k = 0; k < this.numAnchors; k++) {
-      // Create Two.Vectors for the paths that will be cloned later
-      frontVertices.push(new Two.Vector(0, 0));
-    }
-    this.frontParts[0] = new Two.Path(
-      frontVertices,
-      /*closed*/ false,
-      /*curve*/ false
+    this.styleOptions.set(
+      StyleEditPanels.Front,
+      DEFAULT_PARAMETRIC_FRONT_STYLE
     );
-    console.debug("Number of anchors", frontVertices.length);
-    // now create, record ids, and set nofill (and strip of their anchors so that the number of anchors is correct) the other parts that may be needed
-    for (let i = 0; i < this._numberOfParts; i++) {
-      this.glowingFrontParts[i] = this.frontParts[0].clone();
-      this.backParts[i] = this.frontParts[0].clone();
-      this.glowingBackParts[i] = this.frontParts[0].clone();
+    this.styleOptions.set(StyleEditPanels.Back, DEFAULT_PARAMETRIC_BACK_STYLE);
 
-      if (i > 0) {
-        // clear the vectors from all the parts so that the total number (between front and back) of vectors is 2*SUBDIVISIONS
-        this.frontParts[i] = this.frontParts[0].clone();
-        this.frontParts[i].vertices.splice(0);
-        this.glowingFrontParts[i].vertices.splice(0);
-        this.backParts[i].vertices.splice(0);
-        this.glowingBackParts[i].vertices.splice(0);
+    this.buildCurve(true);
+  }
+
+  buildCurve(firstBuild = false) {
+    this.evaluateFunctionAndCache(
+      this.coordinateSyntaxTrees,
+      this._coordValues
+    );
+    this.evaluateFunctionAndCache(
+      this.primeCoordinateSyntaxTrees,
+      this._pPrimeValues
+    );
+
+    this.evaluateFunctionAndCache(
+      this.primeX2CoordinateSyntaxTrees,
+      this._ppPrimeValues
+    );
+    if (firstBuild) {
+      this.calculateAndCacheArcLength();
+      console.debug("First time build");
+      const frontVertices: Two.Vector[] = [];
+      for (let k = 0; k < this.numAnchors; k++) {
+        // Create Two.Vectors for the paths that will be cloned later
+        frontVertices.push(new Two.Vector(0, 0));
       }
-      Nodule.idPlottableDescriptionMap.set(String(this.frontParts[i].id), {
+      this.frontParts.push(
+        new Two.Path(frontVertices, /*closed*/ false, /*curve*/ false)
+      );
+      console.debug("Number of anchors", frontVertices.length);
+      // now create, record ids, and set nofill (and strip of their anchors so that the number of anchors is correct) the other parts that may be needed
+      this.glowingFrontParts.push(this.frontParts[0].clone());
+      this.backParts.push(new Two.Path([], false, false));
+      this.glowingBackParts.push(new Two.Path([], false, false));
+
+      Nodule.idPlottableDescriptionMap.set(String(this.frontParts[0].id), {
         type: "parametric",
         side: "front",
         fill: false,
-        part: i.toString()
+        part: "0"
       });
       // #region updatePlottableMap
-      Nodule.idPlottableDescriptionMap.set(String(this.backParts[i].id), {
+      Nodule.idPlottableDescriptionMap.set(String(this.backParts[0].id), {
         type: "parametric",
         side: "back",
         fill: false,
-        part: i.toString()
+        part: "0"
       });
       // #endregion updatePlottableMap
 
       // Set the styles that are always true
       // The front/back parts have no fill because that is handled by the front/back fill
       // The front/back fill have no stroke because that is handled by the front/back part
-      this.frontParts[i].noFill();
-      this.backParts[i].noFill();
-      this.glowingFrontParts[i].noFill();
-      this.glowingBackParts[i].noFill();
+      this.frontParts[0].noFill();
+      this.backParts[0].noFill();
+      this.glowingFrontParts[0].noFill();
+      this.glowingBackParts[0].noFill();
 
       //Turn off the glowing display initially but leave it on so that the temporary objects show up
-      this.frontParts[i].visible = true;
-      this.backParts[i].visible = true;
-      this.glowingBackParts[i].visible = false;
-      this.glowingFrontParts[i].visible = false;
+      this.frontParts[0].visible = true;
+      this.backParts[0].visible = true;
+      this.glowingBackParts[0].visible = false;
+      this.glowingFrontParts[0].visible = false;
+    } else {
+      console.debug("Curve rebuild???????");
     }
-
-    this.styleOptions.set(
-      StyleEditPanels.Front,
-      DEFAULT_PARAMETRIC_FRONT_STYLE
-    );
-    this.styleOptions.set(StyleEditPanels.Back, DEFAULT_PARAMETRIC_BACK_STYLE);
   }
 
   /**
@@ -497,20 +353,6 @@ export default class Parametric extends Nodule {
    */
   public P(t: number): Vector3 {
     return this.lookupFunctionValueAt(t, this._coordValues);
-    // // first update the map with the current value of
-    // this._seParentExpressions.forEach((m: SEExpression) => {
-    //   const measurementName = m.name;
-    //   // console.debug("Measurement", m, measurementName);
-    //   this.varMap.set(measurementName, m.value);
-    // });
-    // //add the current t value
-    // this.varMap.set("t", t);
-
-    // return this.parameterization.set(
-    //   ExpressionParser.evaluate(this.coordinateSyntaxTrees.x, this.varMap),
-    //   ExpressionParser.evaluate(this.coordinateSyntaxTrees.y, this.varMap),
-    //   ExpressionParser.evaluate(this.coordinateSyntaxTrees.z, this.varMap)
-    // );
   }
 
   /**
@@ -533,21 +375,19 @@ export default class Parametric extends Nodule {
 
   evaluateFunctionAndCache(
     fn: CoordinateSyntaxTrees,
-    tMin: number,
-    tMax: number,
-    cache: Array<Vector3>,
-    depVars: Array<SEExpression>
+    cache: Array<Vector3>
   ): void {
     const N = SETTINGS.parameterization.subdivisions * 4;
-    const RANGE = tMax - tMin;
+    const RANGE = this._tNumbers.max - this._tNumbers.min;
     const varMap: Map<string, number> = new Map();
-    depVars.forEach((m: SEExpression) => {
+    cache.splice(0);
+    this.seParentExpressions.forEach((m: SEExpression) => {
       varMap.set(m.name, m.value);
     });
 
     let vecValue: Vector3;
     for (let i = 0; i < N; i++) {
-      const tValue = tMin + (i * RANGE) / (N - 1);
+      const tValue = this._tNumbers.min + (i * RANGE) / (N - 1);
       varMap.set("t", tValue);
       vecValue = new Vector3(
         ExpressionParser.evaluate(fn.x, varMap),
@@ -648,26 +488,27 @@ export default class Parametric extends Nodule {
     // Each front/back  path will pull anchor points from
     // this pool as needed
     // find the tracing tMin and tMax
-    // const [tMin, tMax] = this.tMinMaxExpressionValues() ?? [
-    //   this._tNumbers.min,
-    //   this._tNumbers.max
-    // ];
+    const [tMin, tMax] = this.tMinMaxExpressionValues() ?? [
+      this._tNumbers.min,
+      this._tNumbers.max
+    ];
 
-    // // if the tMin/tMax values are out of order plot nothing (the object doesn't exist)
-    // if (tMax <= tMin) return;
-    const tMin = this._tNumbers.min;
-    const tMax = this._tNumbers.max;
+    // if the tMin/tMax values are out of order plot nothing (the object doesn't exist)
+    if (tMax <= tMin) return;
+    // const tMin = this._tNumbers.min;
+    // const tMax = this._tNumbers.max;
 
-    this.frontParts.forEach((path: Path) => {
+    /* Move all vertices back to pool */
+    this.frontParts.forEach((path: Two.Path) => {
       this.pool.push(...path.vertices.splice(0));
     });
-    this.backParts.forEach((path: Path) => {
+    this.backParts.forEach((path: Two.Path) => {
       this.pool.push(...path.vertices.splice(0));
     });
-    this.glowingFrontParts.forEach((path: Path) => {
+    this.glowingFrontParts.forEach((path: Two.Path) => {
       this.glowingPool.push(...path.vertices.splice(0));
     });
-    this.glowingBackParts.forEach((path: Path) => {
+    this.glowingBackParts.forEach((path: Two.Path) => {
       this.glowingPool.push(...path.vertices.splice(0));
     });
 
@@ -690,8 +531,7 @@ export default class Parametric extends Nodule {
       const tVal = tMin + (index / (this.numAnchors - 1)) * (tMax - tMin);
 
       // P(tval) is the location on the unit sphere of the Parametric in un-rotated position
-      const out = this.P(tVal);
-      this.tmpVector.set(out.x, out.y, out.z);
+      this.tmpVector.copy(this.P(tVal));
       // Set tmpVector equal to location on the target Parametric in rotated position
       this.tmpVector.applyMatrix4(transformMatrix);
 
@@ -711,19 +551,21 @@ export default class Parametric extends Nodule {
               "Parametric update: Needs more back parts than were allocated in the constructor"
             );
             const newPath = new Two.Path([], false, false);
+            this.backParts.push(newPath);
+            newPath.vertices.splice(0);
             newPath.noFill();
             newPath.visible = true;
             if (this.backgroundLayer) newPath.addTo(this.backgroundLayer);
 
             const newGlowPath = new Two.Path([], false, false);
+            this.glowingBackParts.push(newGlowPath);
+            newGlowPath.vertices.splice(0);
             newGlowPath.noFill();
             newGlowPath.visible = false;
             if (this.glowingBgLayer) newGlowPath.addTo(this.glowingBgLayer);
 
-            this.backParts.push(newPath);
-            this.glowingBackParts.push(newGlowPath);
             Nodule.idPlottableDescriptionMap.set(
-              String(this.frontParts[currentFrontPartIndex - 1].id),
+              String(this.backParts[currentBackPartIndex - 1].id),
               {
                 type: "parametric",
                 side: "back",
@@ -764,17 +606,19 @@ export default class Parametric extends Nodule {
               "Parametric Update: Needs more front parts than were allocated in the constructor"
             );
             const newPath = new Two.Path([], false, false);
+            this.frontParts.push(newPath);
+            newPath.vertices.splice(0);
             newPath.noFill();
             newPath.visible = true;
             if (this.foregroundLayer) newPath.addTo(this.foregroundLayer);
 
             const newGlowPath = new Two.Path([], false, false);
+            this.glowingFrontParts.push(newGlowPath);
+            newGlowPath.vertices.splice(0);
             newGlowPath.noFill();
             newGlowPath.visible = true;
             if (this.glowingFgLayer) newGlowPath.addTo(this.glowingFgLayer);
 
-            this.frontParts.push(newPath);
-            this.glowingFrontParts.push(newGlowPath);
             Nodule.idPlottableDescriptionMap.set(
               String(this.frontParts[currentFrontPartIndex - 1].id),
               {
@@ -829,7 +673,10 @@ export default class Parametric extends Nodule {
     return this._seParentExpressions;
   }
   get numberOfParts(): number {
-    return this._numberOfParts;
+    return (
+      this.frontParts.filter((p: Two.Path) => p.vertices.length > 0).length +
+      this.backParts.filter((p: Two.Path) => p.vertices.length > 0).length
+    );
   }
 
   endPointVector(minMax: boolean): Vector3 | undefined {
