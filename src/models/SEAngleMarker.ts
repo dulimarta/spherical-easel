@@ -211,10 +211,7 @@ export class SEAngleMarker extends SEExpression
 
   public get noduleItemText(): string {
     return (
-      this.name +
-      " - " +
-      this.label?.ref.shortUserName +
-      `: ${this.prettyValue}`
+      this.name + ": " + this.label?.ref.shortUserName + ` ${this.prettyValue}`
     );
   }
 

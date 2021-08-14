@@ -12,6 +12,7 @@ import { SESegmentLength } from "@/models/SESegmentLength";
 import { SEPointCoordinate } from "@/models/SEPointCoordinate";
 import { SEParametric } from "@/models/SEParametric";
 import { SEPolygon } from "@/models/SEPolygon";
+import { SEStore } from "@/store";
 
 export class DeleteNoduleCommand extends Command {
   private seNodule: SENodule;
@@ -70,7 +71,16 @@ export class DeleteNoduleCommand extends Command {
         if (this.seNodule.seSegment.label) {
           this.seNodule.seSegment.label.ref.value = [];
         }
-      } else if (this.seNodule instanceof SEPointCoordinate) {
+      } else if (
+        this.seNodule instanceof SEPointCoordinate &&
+        SEStore.expressions
+          .filter(exp => exp instanceof SEPointCoordinate)
+          .every(
+            exp =>
+              (exp as SEPointCoordinate).point.name !==
+              (this.seNodule as SEPointCoordinate).point.name
+          )
+      ) {
         if (this.seNodule.point.label) {
           this.seNodule.point.label.ref.value = [];
         }

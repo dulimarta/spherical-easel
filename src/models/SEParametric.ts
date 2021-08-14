@@ -81,7 +81,7 @@ export class SEParametric extends SENodule
         this._maxNumberOfPerpendiculars = numberOfPerp;
       }
     });
-    // console.log("Number of Perps", this._maxNumberOfPerpendiculars);
+    console.log("Number of Perps", this._maxNumberOfPerpendiculars);
 
     // sample for number of tangents from any point on the sphere
     let numberOfTangents: number;

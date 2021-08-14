@@ -19,7 +19,7 @@ export class SEPointCoordinate extends SEExpression {
    * Temporary matrix and vector so that can compute the location of the point with out all the rotations
    */
   private invMatrix = new Matrix4();
-  private tmpVector = new Vector3();
+  private valueVector = new Vector3();
 
   constructor(point: SEPoint, selector: CoordinateSelection) {
     super(); // this.name is set to a measurement token M### in the super constructor
@@ -28,20 +28,21 @@ export class SEPointCoordinate extends SEExpression {
   }
 
   public get value(): number {
-    // apply the inverse of the total rotation matrix to compute the location of the point without all the sphere rotations.
-    this.invMatrix = SEStore.inverseTotalRotationMatrix;
-    this.tmpVector.copy(this.point.locationVector);
     switch (this.selector) {
       case CoordinateSelection.X_VALUE:
-        return this.tmpVector.applyMatrix4(this.invMatrix).x;
+        return this.valueVector.x;
       case CoordinateSelection.Y_VALUE:
-        return this.tmpVector.applyMatrix4(this.invMatrix).y;
+        return this.valueVector.y;
       case CoordinateSelection.Z_VALUE:
-        return this.tmpVector.applyMatrix4(this.invMatrix).z;
+        return this.valueVector.z;
 
       default:
         return Number.NaN;
     }
+  }
+
+  get sePoint(): SEPoint {
+    return this.point;
   }
   public customStyles = (): Set<string> => emptySet;
 
@@ -51,24 +52,24 @@ export class SEPointCoordinate extends SEExpression {
         return String(
           i18n.t(`objectTree.coordinateOf`, {
             axisName: String(i18n.t(`objectTree.x`)),
-            pt: this.point.label?.ref.shortUserName
-            //val: this.value
+            pt: this.point.label?.ref.shortUserName,
+            val: this.value
           })
         );
       case CoordinateSelection.Y_VALUE:
         return String(
           i18n.t(`objectTree.coordinateOf`, {
             axisName: String(i18n.t(`objectTree.y`)),
-            pt: this.point.label?.ref.shortUserName
-            // val: this.value
+            pt: this.point.label?.ref.shortUserName,
+            val: this.value
           })
         );
       case CoordinateSelection.Z_VALUE:
         return String(
           i18n.t(`objectTree.coordinateOf`, {
             axisName: String(i18n.t(`objectTree.z`)),
-            pt: this.point.label?.ref.shortUserName
-            // val: this.value
+            pt: this.point.label?.ref.shortUserName,
+            val: this.value
           })
         );
       default:
@@ -122,13 +123,19 @@ export class SEPointCoordinate extends SEExpression {
       state.stateArray.push(expressionState);
     }
     if (!this.canUpdateNow()) return;
+
+    // apply the inverse of the total rotation matrix to compute the location of the point without all the sphere rotations.
+    this.invMatrix = SEStore.inverseTotalRotationMatrix;
+    this.valueVector
+      .copy(this.point.locationVector)
+      .applyMatrix4(this.invMatrix);
+
     // When this updates send its value to the label
-    this.tmpVector.copy(this.point.locationVector).applyMatrix4(this.invMatrix);
     if (this.point.label) {
       this.point.label.ref.value = [
-        this.tmpVector.x,
-        this.tmpVector.y,
-        this.tmpVector.z
+        this.valueVector.x,
+        this.valueVector.y,
+        this.valueVector.z
       ];
     }
     //const pos = this.name.lastIndexOf(":");

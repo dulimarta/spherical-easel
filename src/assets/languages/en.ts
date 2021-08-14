@@ -124,13 +124,13 @@ export default {
     CreateSliderToolTipMessage: "User Controlled Value",
     CreateSliderToolUseMessage: "Click this button to create a value slider ",
 
-    CreateTangentDisplayedName: "Tangent<br>&nbsp;",
-    CreateTangentToolTipMessage: "Tangent Through Point",
+    CreateTangentDisplayedName: "Tangents<br>&nbsp;",
+    CreateTangentToolTipMessage: "Tangents through a point",
     CreateTangentToolUseMessage:
-      "Create the tangent line(s) to a selected non-straight one-dimensional object and selected location.",
+      "Create the tangent lines to a selected non-straight one-dimensional object and selected location.",
 
     CreatePerpendicularDisplayedName: "Perpendicular<br>&nbsp;",
-    CreatePerpendicularToolTipMessage: "Perpendicular Through Point",
+    CreatePerpendicularToolTipMessage: "Perpendicular(s) through a point",
     CreatePerpendicularToolUseMessage:
       "Create the perpendicular line(s) to a selected one-dimensional object and selected location.",
 
@@ -511,8 +511,10 @@ export default {
     cycleValueDisplayMode:
       "Click to cycle to the next value display mode including multiples of pi and degrees.",
     toggleDisplay: "Toggle the display of the corresponding object.",
+    toggleLabelDisplay:
+      "Toggle the  display of the corresponding object's label.",
     slider: "Slider",
-    sliderValue: "{token} - Slider: {val}",
+    sliderValue: "{token}: Slider: {val}",
     noObjectsInDatabase: "No objects in database",
     result: "Result",
     calculationExpression: "Calculation Expression",
@@ -532,15 +534,15 @@ export default {
       "Angle formed by line {line} and segment {seg} with measure {val}.",
     calculationDescription:
       "Calculation based on expression {str} with value {val}",
-    calculationValue: "{token} - Calc: {val}",
-    coordinateOf: "The {axisName} coordinate of point {pt}.",
-    coordOf: "{token} - {pt} {axisName} Coord: {val}",
+    calculationValue: "{token}: Calc: {val}",
+    coordinateOf: "The {axisName} coordinate of point {pt}: {val}",
+    coordOf: "{token}: {pt} {axisName}: {val}",
     x: "x",
     y: "y",
     z: "z",
     distanceBetweenPts:
       "Distance between points {pt1} and {pt2}. Distance: {val}",
-    distanceValue: "{token} - Dist: {val}",
+    distanceValue: "{token}: Dist: {val}",
     segmentLength: "Length of segment {seg}. Length: {val}",
     antipodeOf: "Antipode of point {pt}",
     aPolarPointOf: "Polar point of line {line} with index {index}.",
