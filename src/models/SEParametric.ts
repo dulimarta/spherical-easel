@@ -311,16 +311,16 @@ export class SEParametric extends SENodule
     //   }
     // });
 
-    // console.log("# normals before", normalList.length);
-    normalList = normalList
-      // make sure that the returned vector are not just zeros of PPrime (which do not lead to perpendiculars)
-      .filter(vec => !vec.isZero(SETTINGS.tolerance / 1000))
-      // check that normals that are perpendicular to the line that passes through the given vector
-      .filter(
-        vec =>
-          Math.abs(vec.dot(transformedToStandard)) < SETTINGS.tolerance / 1000
-      )
-      .filter(vec => vec.normalize());
+    console.log("# normals before", normalList.length);
+    // normalList = normalList
+    //   // make sure that the returned vector are not just zeros of PPrime (which do not lead to perpendiculars)
+    //   .filter(vec => !vec.isZero(SETTINGS.tolerance / 1000))
+    //   // check that normals that are perpendicular to the line that passes through the given vector
+    //   .filter(
+    //     vec =>
+    //       Math.abs(vec.dot(transformedToStandard)) < SETTINGS.tolerance / 1000
+    //   )
+    //   .filter(vec => vec.normalize());
     // console.log("# normals middle", normalList.length);
 
     // return normalList.map(vec =>

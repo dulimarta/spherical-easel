@@ -559,7 +559,7 @@ export default class Parametric extends Nodule {
   }
 
   /**
-   * Preccompute arclength and store the cumulative values in an array
+   * Pre-compute arc length and store the cumulative values in an array
    */
   calculateAndCacheArcLength(): void {
     const tMin = this._tNumbers.min;
@@ -571,39 +571,26 @@ export default class Parametric extends Nodule {
     console.debug("Recalculating arc length");
     let interAnchorDistance = 0;
     do {
-      // this._arcLengthValues.splice(0);
       newArcLength = 0;
       // replace with Simpson's rule? some adaptive algorithm? PPrime is possibly undefined at certain values
-      // curr.copy(this.P(tMin));
       for (let i = 0; i < SUBDIVISIONS * iteration; i++) {
         const tValue =
           tMin + ((i + 0.5) / (SUBDIVISIONS * iteration)) * (tMax - tMin);
 
         const len = this.PPrime(tValue).length();
-        console.debug("At", tValue, "segment length", len);
         if (!isNaN(len)) {
           newArcLength += len;
         }
-        // this._arcLengthValues.push(newArcLength);
       }
       interAnchorDistance =
         (newArcLength / (SUBDIVISIONS * iteration)) * (tMax - tMin);
       // newArcLength /=
       //   (SETTINGS.parameterization.subdivisions * iteration) / (tMax - tMin);
 
-      console.debug(
-        "Iteration",
-        iteration,
-        "arc length = ",
-        newArcLength,
-        "anchor distance",
-        interAnchorDistance
-      );
       if (
         Math.abs(currArcLength - newArcLength) <
         SETTINGS.parameterization.maxChangeInArcLength
       ) {
-        // this._initialArcLength = newArcLength;
         this.numAnchors = interAnchorDistance * SUBDIVISIONS;
         return;
       } else {
