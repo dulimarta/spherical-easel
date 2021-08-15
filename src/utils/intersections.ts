@@ -456,18 +456,21 @@ export function intersectLineWithParametric(
   }
 
   // console.log("Number of Para/Line Intersections:", zeros.length);
-  zeros.forEach((z, ind) => {
-    returnItems[ind].vector.copy(
-      parametric.ref
-        .P(z)
-        .applyMatrix4(tmpMatrix.getInverse(SEStore.inverseTotalRotationMatrix))
-    );
-    if (tracingTMin <= z && z <= tracingTMax) {
-      returnItems[ind].exists = true;
-    } else {
-      returnItems[ind].exists = false;
-    }
-  });
+  if (returnItems.length >= zeros.length)
+    zeros.forEach((z, ind) => {
+      returnItems[ind].vector.copy(
+        parametric.ref
+          .P(z)
+          .applyMatrix4(
+            tmpMatrix.getInverse(SEStore.inverseTotalRotationMatrix)
+          )
+      );
+      if (tracingTMin <= z && z <= tracingTMax) {
+        returnItems[ind].exists = true;
+      } else {
+        returnItems[ind].exists = false;
+      }
+    });
 
   return returnItems;
 }

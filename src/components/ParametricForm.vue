@@ -106,8 +106,6 @@ import { SEParametric } from "@/models/SEParametric";
 import { CommandGroup } from "@/commands/CommandGroup";
 import { AddParametricCommand } from "@/commands/AddParametricCommand";
 import { AddParametricEndPointsCommand } from "@/commands/AddParametricEndPointsCommand";
-import { Store } from "vuex";
-import Point from "@/plottables/Point";
 import { SEParametricEndPoint } from "@/models/SEParametricEndPoint";
 import NonFreePoint from "@/plottables/NonFreePoint";
 import { AddIntersectionPointCommand } from "@/commands/AddIntersectionPointCommand";
