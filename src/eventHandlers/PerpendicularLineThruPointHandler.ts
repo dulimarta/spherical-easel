@@ -30,18 +30,23 @@ import { ConvertInterPtToUserCreatedCommand } from "@/commands/ConvertInterPtToU
 import EventBus from "./EventBus";
 import { SEEllipse } from "@/models/SEEllipse";
 
-const MAXNUMBEROFPERPENDICULARS = 10; // maximum number of perpendiculars to a one dimensional through a point across all objects
+// const MAXNUMBEROFPERPENDICULARS = 10; // maximum number of perpendiculars to a one dimensional through a point across all objects
 import { SEStore } from "@/store";
 import { SEParametric } from "@/models/SEParametric";
 import NonFreeLine from "@/plottables/NonFreeLine";
 
+type TemporaryLine = {
+  line: Line;
+  exist: boolean;
+  tmpNormal: Vector3;
+};
 export default class PerpendicularLineThruPointHandler extends Highlighter {
   /**
    * A temporary lines to display while the user is creating a new line -- there needs to be as many temporary lines as there are possible normal lines
    */
-  private tempLines: Line[] = [];
-  private temporaryLinesAdded: boolean[] = [];
-  private temporaryNormals: Vector3[] = []; // The normal to the plane of the temporary line
+  private tempLines: TemporaryLine[] = [];
+  // private temporaryLinesAdded: boolean[] = [];
+  // private temporaryNormals: Vector3[] = []; // The normal to the plane of the temporary line
 
   /**
    * A temporary plottable (TwoJS) point created while the user is making the perpendicular
@@ -86,14 +91,17 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
 
   constructor(layers: Two.Group[]) {
     super(layers);
-    // Create and style the temporary lines
-    for (let i = 0; i < MAXNUMBEROFPERPENDICULARS; i++) {
-      this.tempLines.push(new Line());
-      this.tempLines[i].stylize(DisplayStyle.ApplyTemporaryVariables);
-      SEStore.addTemporaryNodule(this.tempLines[i]);
-      this.temporaryLinesAdded.push(false);
-      this.temporaryNormals.push(new Vector3());
-    }
+
+    // Create and style the temporary line (initially allocate one)
+    this.tempLines.push({
+      line: new Line(),
+      exist: false,
+      tmpNormal: new Vector3()
+    });
+    this.tempLines[0].line.stylize(DisplayStyle.ApplyTemporaryVariables);
+    SEStore.addTemporaryNodule(this.tempLines[0].line);
+    // this.temporaryLinesAdded.push(false);
+    // this.temporaryNormals.push(new Vector3());
 
     // Create and style the temporary point marking the point on the perpendicular being created
     this.temporaryPointMarker = new Point();
@@ -339,10 +347,10 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
         this.temporaryPointMarker.removeFromLayers();
         this.temporaryPointAdded = false;
 
-        this.temporaryLinesAdded = [];
-        this.tempLines.forEach(line => {
-          line.removeFromLayers();
-          this.temporaryLinesAdded.push(false);
+        // this.temporaryLinesAdded = [];
+        this.tempLines.forEach((z: TemporaryLine) => {
+          z.line.removeFromLayers();
+          z.exist = false; //.temporaryLinesAdded.push(false);
         });
 
         this.sePointVector.set(0, 0, 0);
@@ -481,32 +489,40 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
         }
         const normalList = this.oneDimensional.getNormalsToPerpendicularLinesThru(
           vectorLocation,
-          this.temporaryNormals[0] // In Ellipses/Parametrics this is ignored
+          this.tempLines[0].tmpNormal // In Ellipses/Parametrics this is ignored
         );
-        // console.log(
-        //   "number of normals",
-        //   normalList.length,
-        //   this.tempLines.length
-        // );
 
-        if (normalList.length > MAXNUMBEROFPERPENDICULARS) {
-          throw new Error(
-            "The number normals is bigger than the MAXNUMBEROFPERPENDICULARS temporary perpendiculars"
+        // Add new temporary lines as needed
+        while (this.tempLines.length < normalList.length) {
+          console.debug(
+            "Adding new temporary line to match normalList",
+            this.tempLines.length,
+            normalList.length
           );
+          const newLine = new Line();
+          this.tempLines.push({
+            line: newLine,
+            exist: false,
+            tmpNormal: new Vector3()
+          });
+          newLine.stylize(DisplayStyle.ApplyTemporaryVariables);
+          SEStore.addTemporaryNodule(newLine);
+          // this.temporaryLinesAdded.push(false);
+          // this.temporaryNormals.push(new Vector3());
         }
 
         //set the display of the normals and the vectors
-        this.temporaryNormals.forEach((vec, ind) => {
+        this.tempLines.forEach((z: TemporaryLine, ind: number) => {
           // console.log("index", ind, normalList[ind]);
 
           if (ind < normalList.length) {
-            this.temporaryLinesAdded[ind] = true;
-            vec.copy(normalList[ind]);
-            this.tempLines[ind].normalVector = vec;
-            this.tempLines[ind].addToLayers(this.layers);
+            z.exist = true;
+            z.tmpNormal.copy(normalList[ind]);
+            z.line.normalVector = z.tmpNormal;
+            z.line.addToLayers(this.layers);
           } else {
-            this.temporaryLinesAdded[ind] = false;
-            this.tempLines[ind].removeFromLayers();
+            z.exist = false;
+            z.line.removeFromLayers();
           }
         });
       }
@@ -534,9 +550,9 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
     this.temporaryPointMarker.removeFromLayers();
     this.temporaryPointAdded = false;
 
-    this.temporaryNormals.forEach((vec, ind) => {
-      this.temporaryLinesAdded[ind] = false;
-      this.tempLines[ind].removeFromLayers();
+    this.tempLines.forEach((ln: TemporaryLine, ind: number) => {
+      ln.exist = false;
+      ln.line.removeFromLayers();
     });
 
     this.sePointVector.set(0, 0, 0);
@@ -644,13 +660,16 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
       // There are upto four perpendiculars
       this.numberOfPerpendiculars = 4;
     } else if (oneDimensional instanceof SEParametric) {
-      // There are upto ??? perpendiculars
-      this.numberOfPerpendiculars = oneDimensional.maxNumberOfPerpendiculars;
+      // Calculate the number of perpendiculars from the number of
+      // "active" temporary lines
+      this.numberOfPerpendiculars = this.tempLines.filter(
+        (ln: TemporaryLine) => ln.exist
+      ).length;
     }
     normalVectors = oneDimensional
       .getNormalsToPerpendicularLinesThru(
         sePointVector,
-        this.temporaryNormals[0] // ignored in the case of SEEllipse
+        this.tempLines[0].tmpNormal // ignored in the case of SEEllipse
       )
       .map(vec => vec.normalize());
     // console.log("number of normals in handler", normalVectors.length);

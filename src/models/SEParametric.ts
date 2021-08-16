@@ -1,12 +1,12 @@
 import { SENodule } from "./SENodule";
-import { SEPoint } from "./SEPoint";
-import Ellipse from "@/plottables/Ellipse";
+// import { SEPoint } from "./SEPoint";
+// import Ellipse from "@/plottables/Ellipse";
 import { Vector3, Matrix4 } from "three";
 import { Visitable } from "@/visitors/Visitable";
 import { Visitor } from "@/visitors/Visitor";
 import { OneDimensional, ParametricState } from "@/types";
 import SETTINGS from "@/global-settings";
-import { UpdateMode, UpdateStateType, CircleState } from "@/types";
+import { UpdateMode, UpdateStateType } from "@/types";
 import { Labelable } from "@/types";
 import { SELabel } from "@/models/SELabel";
 import { SEStore } from "@/store";
@@ -40,12 +40,6 @@ export class SEParametric extends SENodule
   private tmpMatrix = new Matrix4();
 
   /**
-   * Store the maximum number of Perpendiculars/Tangents to this SEParametric
-   */
-  private _maxNumberOfPerpendiculars = 1;
-  private _maxNumberOfTangents = 2;
-
-  /**
    * The SE endpoints of this curve, if any
    */
   private _endPoints: SEParametricEndPoint[] = [];
@@ -60,52 +54,22 @@ export class SEParametric extends SENodule
 
     // Sample for max number of perpendiculars from any point on the sphere
     // https://stackoverflow.com/questions/9600801/evenly-distributing-n-points-on-a-sphere
-    const sample: Vector3[] = [];
-    for (let i = 0; i < SETTINGS.parametric.evenSphereSampleSize; i++) {
-      const y = 1 - (i / (SETTINGS.parametric.evenSphereSampleSize - 1)) * 2; // y goes from 1 to -1
-      const radius = Math.sqrt(1 - y * y); // radius at y
-      const theta = ((Math.sqrt(5) + 1) / 2) * i; // golden angle increment
-      const x = Math.cos(theta) * radius;
-      const z = Math.sin(theta) * radius;
-      sample.push(new Vector3(x, y, z));
-    }
+    // const sample: Vector3[] = [];
+    // for (let i = 0; i < SETTINGS.parametric.evenSphereSampleSize; i++) {
+    //   const y = 1 - (i / (SETTINGS.parametric.evenSphereSampleSize - 1)) * 2; // y goes from 1 to -1
+    //   const radius = Math.sqrt(1 - y * y); // radius at y
+    //   const theta = ((Math.sqrt(5) + 1) / 2) * i; // golden angle increment
+    //   const x = Math.cos(theta) * radius;
+    //   const z = Math.sin(theta) * radius;
+    //   sample.push(new Vector3(x, y, z));
+    // }
 
-    let numberOfPerp: number;
-    sample.forEach(vec => {
-      numberOfPerp = this.getNormalsToPerpendicularLinesThru(
-        vec,
-        this.tmpVector,
-        true
-      ).length;
-      if (numberOfPerp > this._maxNumberOfPerpendiculars) {
-        this._maxNumberOfPerpendiculars = numberOfPerp;
-      }
-    });
-    console.log("Number of Perps", this._maxNumberOfPerpendiculars);
-
-    // sample for number of tangents from any point on the sphere
-    let numberOfTangents: number;
-    sample.forEach(vec => {
-      numberOfTangents = this.getNormalsToTangentLinesThru(vec, true).length;
-      if (numberOfTangents > this._maxNumberOfTangents) {
-        this._maxNumberOfTangents = numberOfTangents;
-      }
-    });
-    console.log("Number of tangent", this._maxNumberOfTangents);
     SEParametric.PARAMETRIC_COUNT++;
     this.name = `Pa${SEParametric.PARAMETRIC_COUNT}`;
   }
 
   customStyles(): Set<string> {
     return styleSet;
-  }
-
-  get maxNumberOfPerpendiculars(): number {
-    return this._maxNumberOfPerpendiculars;
-  }
-
-  get maxNumberOfTangents(): number {
-    return this._maxNumberOfTangents;
   }
 
   public get noduleDescription(): string {
@@ -348,11 +312,11 @@ export class SEParametric extends SENodule
     // console.log("# normals end", uniqueNormals.length);
     // console.log("uni perp", uniqueNormals);
 
-    if (uniqueNormals.length > this._maxNumberOfPerpendiculars) {
-      console.debug(
-        "The number of normal vectors is bigger than the number of normals counted in the constructor. (Ignore this if issued by constructor.)"
-      );
-    }
+    // if (uniqueNormals.length > this._maxNumberOfPerpendiculars) {
+    //   console.debug(
+    //     "The number of normal vectors is bigger than the number of normals counted in the constructor. (Ignore this if issued by constructor.)"
+    //   );
+    // }
     return uniqueNormals.map(vec =>
       vec
         .applyMatrix4(
@@ -385,13 +349,12 @@ export class SEParametric extends SENodule
       : this.ref.tMinMaxExpressionValues();
     const avoidTValues: number[] = [];
     avoidTValues.push(...this.ref.c1DiscontinuityParameterValues);
-    let normalList: Vector3[] = [];
+    const normalList: Vector3[] = [];
     //If the vector is on the Parametric then there is at at least one tangent
     if (
       this.closestVector(sePointVector).angleTo(sePointVector) <
       0.01 / SEStore.zoomMagnificationFactor
     ) {
-      // console.log("here");
       const coorespondingTVal = SENodule.closestVectorParametrically(
         this.ref.P.bind(this.ref), // bind the this.ref so that this in the this.ref.E method is this.ref
         this.ref.PPrime.bind(this.ref), // bind the this.ref so that this in the this.ref.E method is this.ref
@@ -406,7 +369,6 @@ export class SEParametric extends SENodule
       tangentVector.applyMatrix4(SEStore.inverseTotalRotationMatrix);
       tangentVector.cross(this.ref.P(coorespondingTVal));
       avoidTValues.push(coorespondingTVal);
-      // console.log("coordes t val", coorespondingTVal);
       normalList.push(tangentVector.normalize());
     }
 
@@ -436,26 +398,6 @@ export class SEParametric extends SENodule
     //   }
     // });
 
-    // console.log("# normals before", normalList.length);
-    normalList = normalList
-      // make sure that the returned vector are not just zeros of PPrime (which do not lead to Tangents)
-      .filter(vec => !vec.isZero(SETTINGS.tolerance / 1000))
-      // check that normals that are perpendicular to the line that passes through the given vector
-      .filter(
-        vec =>
-          Math.abs(vec.dot(transformedToStandard)) < SETTINGS.tolerance / 1000
-      )
-      .filter(vec => vec.normalize());
-    // console.log("# normals middle", normalList.length);
-
-    // return normalList.map(vec =>
-    //   vec
-    //     .applyMatrix4(
-    //       this.tmpMatrix.getInverse(SEStore.inverseTotalRotationMatrix)
-    //     )
-    //     .normalize()
-    // );
-
     // remove duplicates from the list
     const uniqueNormals: Vector3[] = [];
     normalList.forEach(vec => {
@@ -475,17 +417,14 @@ export class SEParametric extends SENodule
     // console.log("# normals end", uniqueNormals.length);
     // console.log("uni perp", uniqueNormals);
 
-    if (uniqueNormals.length > this._maxNumberOfTangents) {
-      console.debug(
-        "The number of normal vectors is bigger than the number of normals counted in the constructor. (Ignore this if issued by constructor.)"
-      );
-    }
+    // if (uniqueNormals.length > this._maxNumberOfTangents) {
+    //   console.debug(
+    //     "The number of normal vectors is bigger than the number of normals counted in the constructor. (Ignore this if issued by constructor.)"
+    //   );
+    // }
+    this.tmpMatrix.getInverse(SEStore.inverseTotalRotationMatrix);
     return uniqueNormals.map(vec =>
-      vec
-        .applyMatrix4(
-          this.tmpMatrix.getInverse(SEStore.inverseTotalRotationMatrix)
-        )
-        .normalize()
+      vec.applyMatrix4(this.tmpMatrix).normalize()
     );
   }
 

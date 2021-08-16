@@ -236,8 +236,11 @@ export default class Line extends Nodule {
       lastSign = thisSign;
       if (this.tmpVector.z > 0) {
         if (posIndex === this.frontHalf.vertices.length) {
-          const extra = this.backHalf.vertices.pop();
+          let extra: Two.Anchor | undefined;
+          extra = this.backHalf.vertices.pop();
           if (extra) this.frontHalf.vertices.push(extra);
+          extra = this.glowingBackHalf.vertices.pop();
+          if (extra) this.glowingFrontHalf.vertices.push(extra);
         }
         this.frontHalf.vertices[posIndex].x = this.tmpVector.x;
         this.frontHalf.vertices[posIndex].y = this.tmpVector.y;
@@ -246,8 +249,11 @@ export default class Line extends Nodule {
         posIndex++;
       } else {
         if (negIndex === this.backHalf.vertices.length) {
-          const extra = this.frontHalf.vertices.pop();
+          let extra: Two.Anchor | undefined;
+          extra = this.frontHalf.vertices.pop();
           if (extra) this.backHalf.vertices.push(extra);
+          extra = this.glowingFrontHalf.vertices.pop();
+          if (extra) this.glowingBackHalf.vertices.push(extra);
         }
         this.backHalf.vertices[negIndex].x = this.tmpVector.x;
         this.backHalf.vertices[negIndex].y = this.tmpVector.y;
