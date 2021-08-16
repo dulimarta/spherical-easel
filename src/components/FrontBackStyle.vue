@@ -36,7 +36,7 @@
             @click="toggleBackStyleOptionsAvailability">
             Enable auto back styling?
           </OverlayWithFixButton>
-          <!-- Blobal contrast slider -->
+          <!-- Global contrast slider -->
           <span
             class="text-subtitle-2">{{ $t('style.backStyleContrast') }}</span>
           <span>

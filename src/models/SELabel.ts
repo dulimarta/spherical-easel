@@ -5,8 +5,8 @@ import { SENodule } from "./SENodule";
 import { Vector3 } from "three";
 import SETTINGS from "@/global-settings";
 import {
-  DEFAULT_LABEL_BACK_STYLE,
-  DEFAULT_LABEL_FRONT_STYLE,
+  // DEFAULT_LABEL_BACK_STYLE,
+  // DEFAULT_LABEL_FRONT_STYLE,
   DEFAULT_LABEL_TEXT_STYLE
 } from "@/types/Styles";
 import { UpdateMode, UpdateStateType, LabelState, Labelable } from "@/types";
@@ -21,9 +21,9 @@ import { SEParametric } from "./SEParametric";
 import { SEPolygon } from "./SEPolygon";
 
 const styleSet = new Set([
-  ...Object.getOwnPropertyNames(DEFAULT_LABEL_TEXT_STYLE),
-  ...Object.getOwnPropertyNames(DEFAULT_LABEL_FRONT_STYLE),
-  ...Object.getOwnPropertyNames(DEFAULT_LABEL_BACK_STYLE)
+  ...Object.getOwnPropertyNames(DEFAULT_LABEL_TEXT_STYLE)
+  // ...Object.getOwnPropertyNames(DEFAULT_LABEL_FRONT_STYLE),
+  // ...Object.getOwnPropertyNames(DEFAULT_LABEL_BACK_STYLE)
 ]);
 
 export class SELabel extends SENodule implements Visitable {

@@ -223,7 +223,8 @@ export default {
 
     noFillLabelTip:
       "If you want to make the labels only appear on the front of the sphere disable automatic back styling and check 'No Fill' on the Label Back Fill Color. Similarly, to make the labels only appear on the back of the sphere disable automatic back styling and check 'No Fill' on the Label Front Fill Color.",
-
+    noFillTip:
+      "Check this to remove the fill or stoke from the selected object(s).",
     selectAnObject: "Select Object(s) To Style",
     closeOrSelect: "Close the styling panel or select object(s).",
     toSelectObjects: "To select objects:",
@@ -258,7 +259,10 @@ export default {
       "The selected objects have different values for at least one of these style options. Click the button and edit a style to make all selected objects have that style value in common.",
     enableCommonStyle: "Overide",
     differentValuesToolTip:
-      "The selected objects have different values for at least one style option. Click the button and edit a style to make all selected objects have that style value in common.",
+      "The selected objects have different values for at least one style option. Click the button and edit a style to make *all* selected objects have *all* the styles in this block have a common value(s).",
+
+    singleLabelTextToolTip: "Enter a label text.",
+    multiLabelTextToolTip: "You can not edit more than one label at a time.",
 
     dynamicBackStyleHeader: "Automatic Back Styling",
     disableDynamicBackStyle: "Disable",
@@ -323,9 +327,11 @@ export default {
     labelText: "Label Text",
     labelCaption: "Label Caption",
     renameLabels: "Rename All",
-    maxMinLabelDisplayTextLengthWarning:
-      "Must be between 1 and {max} characters long.",
-    maxMinLabelDisplayCaptionLengthWarning:
+    maxLabelDisplayTextLengthWarning:
+      "Label must be between 1 and {max} characters long.",
+    minLabelDisplayTextLengthWarning:
+      "Label must contain at least 1 character.",
+    maxLabelDisplayCaptionLengthWarning:
       "Must be at most {max} characters long.",
     labelTextScalePercent: "Label Scale",
     labelTextRotation: "Label Rotation",

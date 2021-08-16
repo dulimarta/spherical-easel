@@ -70,6 +70,60 @@ export const SETTINGS = {
         "#D1C4E9"
       ]
     ],
+    greyedOutSwatches: [
+      [
+        //grey
+        "#BDBDBD",
+        "#BDBDBD",
+        "#BDBDBD",
+        "#BDBDBD",
+        "#BDBDBD",
+        "#BDBDBD",
+        "#BDBDBD",
+        "#BDBDBD",
+        "#BDBDBD",
+        "#BDBDBD"
+      ],
+      [
+        //grey
+        "#BDBDBD",
+        "#BDBDBD",
+        "#BDBDBD",
+        "#BDBDBD",
+        "#BDBDBD",
+        "#BDBDBD",
+        "#BDBDBD",
+        "#BDBDBD",
+        "#BDBDBD",
+        "#BDBDBD"
+      ],
+      [
+        //grey
+        "#BDBDBD",
+        "#BDBDBD",
+        "#BDBDBD",
+        "#BDBDBD",
+        "#BDBDBD",
+        "#BDBDBD",
+        "#BDBDBD",
+        "#BDBDBD",
+        "#BDBDBD",
+        "#BDBDBD"
+      ],
+      [
+        //grey
+        "#BDBDBD",
+        "#BDBDBD",
+        "#BDBDBD",
+        "#BDBDBD",
+        "#BDBDBD",
+        "#BDBDBD",
+        "#BDBDBD",
+        "#BDBDBD",
+        "#BDBDBD",
+        "#BDBDBD"
+      ]
+    ],
     selectedColor: {
       front: "hsla(0, 100%, 50%, 0.5)",
       back: "2)"
