@@ -189,6 +189,9 @@
             :max="parametricTMax"
             :step="parametricTStep" />
         </v-col>
+        <v-col cols="auto">
+          <v-icon @click="animateCurvePoint">mdi-run</v-icon>
+        </v-col>
       </v-row>
     </v-container>
   </div>
@@ -266,14 +269,12 @@ export default class SENoduleItem extends Vue {
 
   mounted(): void {
     if (this.node instanceof SEParametric) {
-      console.debug("Setting up parametric curve");
       this.curve = this.node.ref;
       this.curvePoint = new SEPoint(new Point());
       const [tMin, tMax] = this.curve.tMinMaxExpressionValues();
       this.parametricTMin = tMin;
       this.parametricTMax = tMax;
       this.parametricTStep = (tMax - tMin) / 100;
-      // const pos = this.curve.P(tMin);
       const label = new SELabel(new Label(), this.curvePoint);
       const addCommand = new AddPointCommand(this.curvePoint, label);
       addCommand.execute();
@@ -429,6 +430,22 @@ export default class SENoduleItem extends Vue {
       this.curvePoint.locationVector = p;
       this.curvePoint.ref.updateDisplay();
     }
+  }
+
+  animateCurvePoint(): void {
+    const repeatCount = Math.ceil(
+      (this.parametricTMax - this.parametricTMin) / this.parametricTStep
+    );
+    this.parametricTime = this.parametricTMin;
+    const timer = setInterval(() => {
+      if (this.parametricTime <= this.parametricTMax) {
+        this.parametricTime += this.parametricTStep;
+      }
+    }, 100);
+    setTimeout(() => {
+      console.debug("Stop the interval timer");
+      clearInterval(timer);
+    }, repeatCount * 100);
   }
 
   get isPoint(): boolean {
