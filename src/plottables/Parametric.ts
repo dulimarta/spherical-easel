@@ -336,8 +336,8 @@ export default class Parametric extends Nodule {
         this.tmpVector.set(0, 0, 0);
         this.tmpVector.addScaledVector(arr[sIndex], 1 - fraction);
         this.tmpVector.addScaledVector(arr[sIndex + 1], fraction);
-        return this.tmpVector;
-      } else return arr[N - 1];
+      } else this.tmpVector.copy(arr[N - 1]);
+      return this.tmpVector;
     } else throw new Error(`Attempt to evaluate function value at t=${t}`);
   }
   /**
