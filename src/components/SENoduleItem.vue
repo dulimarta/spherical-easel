@@ -252,7 +252,7 @@ export default class SENoduleItem extends Vue {
   readonly inverseRotationMatrix!: Matrix4;
 
   private rotationMatrix = new Matrix4();
-  curve: Parametric | null = null;
+  curve: SEParametric | null = null;
   curvePoint: SEPoint | null = null;
   parametricTime = 0;
   parametricTMin = 0;
@@ -269,7 +269,7 @@ export default class SENoduleItem extends Vue {
 
   mounted(): void {
     if (this.node instanceof SEParametric) {
-      this.curve = this.node.ref;
+      this.curve = this.node;
       this.curvePoint = new SEPoint(new Point());
       const [tMin, tMax] = this.curve.tMinMaxExpressionValues();
       this.parametricTMin = tMin;
@@ -424,7 +424,7 @@ export default class SENoduleItem extends Vue {
   onParametricTimeChanged(tVal: number): void {
     if (this.curve && this.curvePoint) {
       this.rotationMatrix.getInverse(this.inverseRotationMatrix);
-      const p = this.curve.P(tVal);
+      const p = this.curve.ref.P(tVal);
       // console.debug("At", tVal.toFixed(3), "position: ", p.toFixed(3));
       p.applyMatrix4(this.rotationMatrix);
       this.curvePoint.locationVector = p;

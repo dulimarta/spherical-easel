@@ -341,7 +341,7 @@ export function intersectLineWithParametric(
   const returnItems: IntersectionReturnType[] = [];
   const avoidTValues: number[] = [];
   // find the tracing tMin and tMax
-  const [tracingTMin, tracingTMax] = parametric.ref.tMinMaxExpressionValues();
+  const [tracingTMin, tracingTMax] = parametric.tMinMaxExpressionValues();
 
   if (
     line instanceof SETangentLineThruPoint &&
@@ -382,8 +382,8 @@ export function intersectLineWithParametric(
 
       const zeros = SENodule.findZerosParametrically(
         dp,
-        parametric.ref.tNumbers.min,
-        parametric.ref.tNumbers.max,
+        parametric.tNumbers.min,
+        parametric.tNumbers.max,
         [],
         dpp
       );
@@ -439,8 +439,8 @@ export function intersectLineWithParametric(
 
   const zeros = SENodule.findZerosParametrically(
     d,
-    parametric.ref.tNumbers.min,
-    parametric.ref.tNumbers.max,
+    parametric.tNumbers.min,
+    parametric.tNumbers.max,
     avoidTValues,
     dp
   );
@@ -640,13 +640,13 @@ export function intersectSegmentWithParametric(
     return parametric.ref.PPrime(t).dot(transformedToStandard);
   };
   // find the tracing tMin and tMax
-  const [tracingTMin, tracingTMax] = parametric.ref.tMinMaxExpressionValues();
+  const [tracingTMin, tracingTMax] = parametric.tMinMaxExpressionValues();
 
   const zeros = SENodule.findZerosParametrically(
     d,
-    parametric.ref.tNumbers.min,
-    parametric.ref.tNumbers.max,
-    parametric.ref.c1DiscontinuityParameterValues,
+    parametric.tNumbers.min,
+    parametric.tNumbers.max,
+    parametric.c1DiscontinuityParameterValues,
     dp
   );
 
@@ -953,13 +953,13 @@ export function intersectCircleWithParametric(
   };
 
   // find the tracing tMin and tMax
-  const [tracingTMin, tracingTMax] = parametric.ref.tMinMaxExpressionValues();
+  const [tracingTMin, tracingTMax] = parametric.tMinMaxExpressionValues();
 
   const zeros = SENodule.findZerosParametrically(
     d,
-    parametric.ref.tNumbers.min,
-    parametric.ref.tNumbers.max,
-    parametric.ref.c1DiscontinuityParameterValues,
+    parametric.tNumbers.min,
+    parametric.tNumbers.max,
+    parametric.c1DiscontinuityParameterValues,
     dp
   );
 
@@ -1173,13 +1173,13 @@ export function intersectEllipseWithParametric(
   };
 
   // find the tracing tMin and tMax
-  const [tracingTMin, tracingTMax] = parametric.ref.tMinMaxExpressionValues();
+  const [tracingTMin, tracingTMax] = parametric.tMinMaxExpressionValues();
 
   const zeros = SENodule.findZerosParametrically(
     d,
-    parametric.ref.tNumbers.min,
-    parametric.ref.tNumbers.max,
-    parametric.ref.c1DiscontinuityParameterValues,
+    parametric.tNumbers.min,
+    parametric.tNumbers.max,
+    parametric.c1DiscontinuityParameterValues,
     dp
   );
 

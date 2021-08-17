@@ -10,14 +10,12 @@ import {
   DEFAULT_PARAMETRIC_FRONT_STYLE,
   DEFAULT_PARAMETRIC_BACK_STYLE
 } from "@/types/Styles";
-import AppStore from "@/store";
 import {
   CoordExpression,
   MinMaxExpression,
   MinMaxNumber,
   CoordinateSyntaxTrees,
-  MinMaxSyntaxTrees,
-  LabelDisplayMode
+  MinMaxSyntaxTrees
 } from "@/types";
 import { SEExpression } from "@/models/SEExpression";
 import { SEStore } from "@/store";
@@ -39,42 +37,12 @@ const SUBDIVISIONS = SETTINGS.parametric.numPoints;
  * total points 2N so we don't create/remove new points)
  */
 export default class Parametric extends Nodule {
-  /**
-   * These are string expressions that once set define the Parametric curve
-   */
-  private _coordinateExpressions: CoordExpression = { x: "", y: "", z: "" };
+  // private _tNumbers: MinMaxNumber = { min: NaN, max: NaN };
 
-  private coordinateSyntaxTrees: CoordinateSyntaxTrees = {
-    x: ExpressionParser.NOT_DEFINED,
-    y: ExpressionParser.NOT_DEFINED,
-    z: ExpressionParser.NOT_DEFINED
-  };
-
-  private primeCoordinateSyntaxTrees: CoordinateSyntaxTrees = {
-    x: ExpressionParser.NOT_DEFINED,
-    y: ExpressionParser.NOT_DEFINED,
-    z: ExpressionParser.NOT_DEFINED
-  };
-
-  private primeX2CoordinateSyntaxTrees: CoordinateSyntaxTrees = {
-    x: ExpressionParser.NOT_DEFINED,
-    y: ExpressionParser.NOT_DEFINED,
-    z: ExpressionParser.NOT_DEFINED
-  };
-
-  private _tExpressions: MinMaxExpression = { min: "", max: "" };
-
-  private tSyntaxTrees: MinMaxSyntaxTrees = {
-    min: ExpressionParser.NOT_DEFINED,
-    max: ExpressionParser.NOT_DEFINED
-  };
-  private _tNumbers: MinMaxNumber = { min: NaN, max: NaN };
-
-  private _c1DiscontinuityParameterValues: number[] = [];
   /**
    * The expressions that are the parents of this curve
    */
-  private _seParentExpressions: SEExpression[] = [];
+  // private _seParentExpressions: SEExpression[] = [];
 
   /**
    * A parser to convert from the expression to a formula/number
@@ -91,11 +59,6 @@ export default class Parametric extends Nodule {
   private _closed: boolean; // true if P(tNumber.min)=P(tNumber.max)
 
   /**
-   * The map which gets updated with the current value of the measurements
-   */
-  readonly varMap = new Map<string, number>();
-
-  /**
    * The arcLength of the parametric curve from tNumber.min to tNumber.Max
    */
   // private _initialArcLength: number;
@@ -104,6 +67,8 @@ export default class Parametric extends Nodule {
   private _coordValues: Array<Vector3> = [];
   private _pPrimeValues: Array<Vector3> = [];
   private _ppPrimeValues: Array<Vector3> = [];
+  private tMinimum = 0;
+  private tMaximum = 1;
 
   /**
    * The TwoJS objects to display the front/back parts and their glowing counterparts.
@@ -159,100 +124,41 @@ export default class Parametric extends Nodule {
   private tmpVector1 = new Vector3();
   private tmpMatrix = new Matrix4();
 
-  constructor(
-    coordinateExpressions: { x: string; y: string; z: string },
-    tExpressions: { min: string; max: string },
-    tNumbers: { min: number; max: number },
-    measurementParents: SEExpression[],
-    c1DiscontinuityParameterValues: number[],
-    closed: boolean
-  ) {
+  constructor(tMin = 0, tMax = 1, closed = false) {
     super();
-    // Set the expressions for the curve, its derivative, and the tMin & tMax
-    this._coordinateExpressions.x = coordinateExpressions.x;
-    this._coordinateExpressions.y = coordinateExpressions.y;
-    this._coordinateExpressions.z = coordinateExpressions.z;
 
-    // F(t)
-    this.coordinateSyntaxTrees.x = ExpressionParser.parse(
-      coordinateExpressions.x
-    );
-    this.coordinateSyntaxTrees.y = ExpressionParser.parse(
-      coordinateExpressions.y
-    );
-    this.coordinateSyntaxTrees.z = ExpressionParser.parse(
-      coordinateExpressions.z
-    );
+    this.tMinimum = tMin;
+    this.tMaximum = tMax;
 
-    // F'(t)
-    this.primeCoordinateSyntaxTrees.x = ExpressionParser.differentiate(
-      this.coordinateSyntaxTrees.x,
-      "t"
-    );
-    this.primeCoordinateSyntaxTrees.y = ExpressionParser.differentiate(
-      this.coordinateSyntaxTrees.y,
-      "t"
-    );
-    this.primeCoordinateSyntaxTrees.z = ExpressionParser.differentiate(
-      this.coordinateSyntaxTrees.z,
-      "t"
-    );
-
-    // F''(t)
-    this.primeX2CoordinateSyntaxTrees.x = ExpressionParser.differentiate(
-      this.primeCoordinateSyntaxTrees.x,
-      "t"
-    );
-    this.primeX2CoordinateSyntaxTrees.y = ExpressionParser.differentiate(
-      this.primeCoordinateSyntaxTrees.y,
-      "t"
-    );
-    this.primeX2CoordinateSyntaxTrees.z = ExpressionParser.differentiate(
-      this.primeCoordinateSyntaxTrees.z,
-      "t"
-    );
-
-    this._tExpressions.min = tExpressions.min;
-    this._tExpressions.max = tExpressions.max;
-    if (this._tExpressions.min !== "" && this._tExpressions.max !== "") {
-      this.tSyntaxTrees.min = ExpressionParser.parse(this._tExpressions.min);
-      this.tSyntaxTrees.max = ExpressionParser.parse(this._tExpressions.max);
-    }
-    this._tNumbers.min = tNumbers.min;
-    this._tNumbers.max = tNumbers.max;
-
-    this._seParentExpressions.push(...measurementParents);
+    // this._seParentExpressions.push(...measurementParents);
     this._closed = closed;
-
-    this._c1DiscontinuityParameterValues.push(
-      ...c1DiscontinuityParameterValues
-    );
 
     this.styleOptions.set(
       StyleEditPanels.Front,
       DEFAULT_PARAMETRIC_FRONT_STYLE
     );
     this.styleOptions.set(StyleEditPanels.Back, DEFAULT_PARAMETRIC_BACK_STYLE);
-
-    this.buildCurve(true);
+    console.debug("Construction parametric", this);
+    // this.buildCurve(true);
   }
 
-  buildCurve(firstBuild = false) {
-    this.evaluateFunctionAndCache(
-      this.coordinateSyntaxTrees,
-      this._coordValues
-    );
-    this.evaluateFunctionAndCache(
-      this.primeCoordinateSyntaxTrees,
-      this._pPrimeValues
-    );
+  public setFunctions(
+    fn: Vector3[],
+    fnPrime: Vector3[],
+    fnDoublePrime: Vector3[]
+  ): void {
+    this._coordValues.splice(0);
+    this._coordValues.push(...fn);
+    this._pPrimeValues.splice(0);
+    this._pPrimeValues.push(...fnPrime);
+    this._ppPrimeValues.splice(0);
+    this._ppPrimeValues.push(...fnDoublePrime);
+    this.buildCurve();
+  }
 
-    this.evaluateFunctionAndCache(
-      this.primeX2CoordinateSyntaxTrees,
-      this._ppPrimeValues
-    );
-    if (firstBuild) {
-      this.calculateAndCacheArcLength();
+  buildCurve() {
+    if (this._coordValues.length > 0) {
+      this.numAnchors = this.determineAnchorsFromArcLength();
       console.debug("First time build");
       const frontVertices: Two.Vector[] = [];
       for (let k = 0; k < this.numAnchors; k++) {
@@ -299,33 +205,12 @@ export default class Parametric extends Nodule {
     }
   }
 
-  /**
-   * The tMin & tMax starting *tracing* parameter of the curve.
-   */
-  public tMinMaxExpressionValues(): number[] {
-    if (this._tExpressions.min === "" || this._tExpressions.max === "")
-      return [this._tNumbers.min, this._tNumbers.max];
-    // first update the map with the current values of the measurements
-    this._seParentExpressions.forEach((m: SEExpression) => {
-      const measurementName = m.name;
-      // console.debug("Measurement", m, measurementName);
-      this.varMap.set(measurementName, m.value);
-    });
-    let tMin = ExpressionParser.evaluate(this.tSyntaxTrees.min, this.varMap);
-    let tMax = ExpressionParser.evaluate(this.tSyntaxTrees.max, this.varMap);
-    // restrict to the parameter interval of tNumber.min to tNumber.max
-    if (tMin < this._tNumbers.min) tMin = this._tNumbers.min;
-    if (tMax > this._tNumbers.max) tMax = this._tNumbers.max;
-
-    return [tMin, tMax];
-  }
-
   private lookupFunctionValueAt(t: number, arr: Array<Vector3>): Vector3 {
     const N = arr.length;
     if (N > 0) {
-      const range = this.tNumbers.max - this.tNumbers.min;
+      const range = this.tMaximum - this.tMinimum;
       // Convert t in [tMin, tMax] to s in [0,1]
-      const s = (t - this.tNumbers.min) / range;
+      const s = (t - this.tMinimum) / range;
       const idealIndex = s * N; // Where ideal location in the array
       const sIndex = Math.floor(idealIndex); // the discretized location in the array
       if (sIndex < N - 1) {
@@ -367,37 +252,12 @@ export default class Parametric extends Nodule {
     return this.lookupFunctionValueAt(t, this._ppPrimeValues);
   }
 
-  evaluateFunctionAndCache(
-    fn: CoordinateSyntaxTrees,
-    cache: Array<Vector3>
-  ): void {
-    const N = SETTINGS.parameterization.subdivisions * 4;
-    const RANGE = this._tNumbers.max - this._tNumbers.min;
-    const varMap: Map<string, number> = new Map();
-    cache.splice(0);
-    this.seParentExpressions.forEach((m: SEExpression) => {
-      varMap.set(m.name, m.value);
-    });
-
-    let vecValue: Vector3;
-    for (let i = 0; i < N; i++) {
-      const tValue = this._tNumbers.min + (i * RANGE) / (N - 1);
-      varMap.set("t", tValue);
-      vecValue = new Vector3(
-        ExpressionParser.evaluate(fn.x, varMap),
-        ExpressionParser.evaluate(fn.y, varMap),
-        ExpressionParser.evaluate(fn.z, varMap)
-      );
-      cache.push(vecValue);
-    }
-  }
-
   /**
    * Pre-compute arc length and store the cumulative values in an array
    */
-  calculateAndCacheArcLength(): void {
-    const tMin = this._tNumbers.min;
-    const tMax = this._tNumbers.max;
+  determineAnchorsFromArcLength(): number {
+    // const tMin = this._tNumbers.min;
+    // const tMax = this._tNumbers.max;
     // let oldArcLength = 0;
     let newArcLength = 0;
     let currArcLength = 0;
@@ -407,9 +267,10 @@ export default class Parametric extends Nodule {
     do {
       newArcLength = 0;
       // replace with Simpson's rule? some adaptive algorithm? PPrime is possibly undefined at certain values
+      const tRange = this.tMaximum - this.tMinimum;
       for (let i = 0; i < SUBDIVISIONS * iteration; i++) {
         const tValue =
-          tMin + ((i + 0.5) / (SUBDIVISIONS * iteration)) * (tMax - tMin);
+          this.tMinimum + ((i + 0.5) / (SUBDIVISIONS * iteration)) * tRange;
 
         const len = this.PPrime(tValue).length();
         if (!isNaN(len)) {
@@ -417,7 +278,7 @@ export default class Parametric extends Nodule {
         }
       }
       interAnchorDistance =
-        (newArcLength / (SUBDIVISIONS * iteration)) * (tMax - tMin);
+        (newArcLength / (SUBDIVISIONS * iteration)) * tRange;
       // newArcLength /=
       //   (SETTINGS.parameterization.subdivisions * iteration) / (tMax - tMin);
 
@@ -425,8 +286,7 @@ export default class Parametric extends Nodule {
         Math.abs(currArcLength - newArcLength) <
         SETTINGS.parameterization.maxChangeInArcLength
       ) {
-        this.numAnchors = interAnchorDistance * SUBDIVISIONS;
-        return;
+        return Math.floor(interAnchorDistance * SUBDIVISIONS);
       } else {
         currArcLength = newArcLength;
       }
@@ -435,7 +295,7 @@ export default class Parametric extends Nodule {
       iteration < SETTINGS.parameterization.maxNumberOfIterationArcLength
     );
     // this._initialArcLength = newArcLength;
-    this.numAnchors = interAnchorDistance * SUBDIVISIONS;
+    return Math.floor(interAnchorDistance * SUBDIVISIONS);
   }
 
   // arcLength(tMin: number, tMax: number): number {
@@ -482,10 +342,10 @@ export default class Parametric extends Nodule {
     // Each front/back  path will pull anchor points from
     // this pool as needed
     // find the tracing tMin and tMax
-    const [tMin, tMax] = this.tMinMaxExpressionValues();
+    // const [tMin, tMax] = this.tMinMaxExpressionValues();
 
     // if the tMin/tMax values are out of order plot nothing (the object doesn't exist)
-    if (tMax <= tMin) return;
+    if (this.tMaximum <= this.tMinimum) return;
     // const tMin = this._tNumbers.min;
     // const tMax = this._tNumbers.max;
 
@@ -512,9 +372,10 @@ export default class Parametric extends Nodule {
     let firstBackPart = true;
     let firstFrontPart = true;
 
+    const tRange = this.tMaximum - this.tMinimum;
     for (let index = 0; index < this.numAnchors; index++) {
       // The t value
-      const tVal = tMin + (index / (this.numAnchors - 1)) * (tMax - tMin);
+      const tVal = this.tMinimum + (index / (this.numAnchors - 1)) * tRange;
 
       // P(tval) is the location on the unit sphere of the Parametric in un-rotated position
       this.tmpVector.copy(this.P(tVal));
@@ -647,21 +508,21 @@ export default class Parametric extends Nodule {
   get closed(): boolean {
     return this._closed;
   }
-  get coordinateExpressions(): CoordExpression {
-    return this._coordinateExpressions;
-  }
-  get c1DiscontinuityParameterValues(): number[] {
-    return this._c1DiscontinuityParameterValues;
-  }
-  get tExpressions(): MinMaxExpression {
-    return this._tExpressions;
-  }
-  get tNumbers(): MinMaxNumber {
-    return this._tNumbers;
-  }
-  get seParentExpressions(): SEExpression[] {
-    return this._seParentExpressions;
-  }
+  // get coordinateExpressions(): CoordExpression {
+  //   return this._coordinateExpressions;
+  // }
+  // get c1DiscontinuityParameterValues(): number[] {
+  //   return this._c1DiscontinuityParameterValues;
+  // }
+  // get tExpressions(): MinMaxExpression {
+  //   return this._tExpressions;
+  // }
+  // get tNumbers(): MinMaxNumber {
+  //   return this._tNumbers;
+  // }
+  // get seParentExpressions(): SEExpression[] {
+  //   return this._seParentExpressions;
+  // }
   get numberOfParts(): number {
     return (
       this.frontParts.filter((p: Two.Path) => p.vertices.length > 0).length +
@@ -679,19 +540,19 @@ export default class Parametric extends Nodule {
     transformMatrix.multiply(this.tmpMatrix);
 
     // find the tracing tMin and tMax
-    const [tMin, tMax] = this.tMinMaxExpressionValues() ?? [
-      this._tNumbers.min,
-      this._tNumbers.max
-    ];
+    // const [tMin, tMax] = this.tMinMaxExpressionValues() ?? [
+    //   this._tNumbers.min,
+    //   this._tNumbers.max
+    // ];
 
     // if the tMin/tMax values are out of order plot nothing (the object doesn't exist)
-    if (tMax <= tMin) return undefined;
+    if (this.tMaximum <= this.tMinimum) return undefined;
 
     let tVal: number;
     if (minMax) {
-      tVal = tMin;
+      tVal = this.tMinimum;
     } else {
-      tVal = tMax;
+      tVal = this.tMaximum;
     }
     // P(tval) is the location on the unit sphere of the Parametric in un-rotated position
     this.tmpVector.copy(this.P(tVal));

@@ -4,7 +4,15 @@ import { SENodule } from "./SENodule";
 import { Vector3, Matrix4 } from "three";
 import { Visitable } from "@/visitors/Visitable";
 import { Visitor } from "@/visitors/Visitor";
-import { OneDimensional, ParametricState } from "@/types";
+import {
+  OneDimensional,
+  ParametricState,
+  CoordExpression,
+  CoordinateSyntaxTrees,
+  MinMaxNumber,
+  MinMaxExpression,
+  MinMaxSyntaxTrees
+} from "@/types";
 import SETTINGS from "@/global-settings";
 import { UpdateMode, UpdateStateType } from "@/types";
 import { Labelable } from "@/types";
@@ -17,7 +25,8 @@ import {
   DEFAULT_PARAMETRIC_BACK_STYLE,
   DEFAULT_PARAMETRIC_FRONT_STYLE
 } from "@/types/Styles";
-
+import { ExpressionParser } from "@/expression/ExpressionParser";
+import { SEExpression } from "./SEExpression";
 const styleSet = new Set([
   ...Object.getOwnPropertyNames(DEFAULT_PARAMETRIC_FRONT_STYLE),
   ...Object.getOwnPropertyNames(DEFAULT_PARAMETRIC_BACK_STYLE)
@@ -43,14 +52,119 @@ export class SEParametric extends SENodule
    * The SE endpoints of this curve, if any
    */
   private _endPoints: SEParametricEndPoint[] = [];
+
+  /**
+   * These are string expressions that once set define the Parametric curve
+   */
+  private _coordinateExpressions: CoordExpression = { x: "", y: "", z: "" };
+
+  private coordinateSyntaxTrees: CoordinateSyntaxTrees = {
+    x: ExpressionParser.NOT_DEFINED,
+    y: ExpressionParser.NOT_DEFINED,
+    z: ExpressionParser.NOT_DEFINED
+  };
+
+  private primeCoordinateSyntaxTrees: CoordinateSyntaxTrees = {
+    x: ExpressionParser.NOT_DEFINED,
+    y: ExpressionParser.NOT_DEFINED,
+    z: ExpressionParser.NOT_DEFINED
+  };
+
+  private primeX2CoordinateSyntaxTrees: CoordinateSyntaxTrees = {
+    x: ExpressionParser.NOT_DEFINED,
+    y: ExpressionParser.NOT_DEFINED,
+    z: ExpressionParser.NOT_DEFINED
+  };
+  /**
+   * The expressions that are the parents of this curve
+   */
+
+  private _seParentExpressions: SEExpression[] = [];
+  private _tNumbers: MinMaxNumber = { min: NaN, max: NaN };
+  private _tExpressions: MinMaxExpression = { min: "", max: "" };
+  private _c1DiscontinuityParameterValues: number[] = [];
+
+  private tSyntaxTrees: MinMaxSyntaxTrees = {
+    min: ExpressionParser.NOT_DEFINED,
+    max: ExpressionParser.NOT_DEFINED
+  };
+  /**
+   * The map which gets updated with the current value of the measurements
+   */
+  readonly varMap = new Map<string, number>();
+
   /**
    * Create a model SEParametric using:
    * @param parametric The plottable TwoJS Object associated to this object
    */
-  constructor(parametric: Parametric) {
+  constructor(
+    parametric: Parametric,
+    coordinateExpressions: { x: string; y: string; z: string },
+    tExpressions: { min: string; max: string },
+    c1DiscontinuityParameterValues: number[],
+    measurementParents: SEExpression[]
+  ) {
     super();
     this.ref = parametric;
-    this.ref.updateDisplay();
+    // Set the expressions for the curve, its derivative, and the tMin & tMax
+    this.coordinateExpressions.x = coordinateExpressions.x;
+    this.coordinateExpressions.y = coordinateExpressions.y;
+    this.coordinateExpressions.z = coordinateExpressions.z;
+    // F(t)
+    this.coordinateSyntaxTrees.x = ExpressionParser.parse(
+      coordinateExpressions.x
+    );
+    this.coordinateSyntaxTrees.y = ExpressionParser.parse(
+      coordinateExpressions.y
+    );
+    this.coordinateSyntaxTrees.z = ExpressionParser.parse(
+      coordinateExpressions.z
+    );
+
+    // F'(t)
+    this.primeCoordinateSyntaxTrees.x = ExpressionParser.differentiate(
+      this.coordinateSyntaxTrees.x,
+      "t"
+    );
+    this.primeCoordinateSyntaxTrees.y = ExpressionParser.differentiate(
+      this.coordinateSyntaxTrees.y,
+      "t"
+    );
+    this.primeCoordinateSyntaxTrees.z = ExpressionParser.differentiate(
+      this.coordinateSyntaxTrees.z,
+      "t"
+    );
+
+    // F''(t)
+    this.primeX2CoordinateSyntaxTrees.x = ExpressionParser.differentiate(
+      this.primeCoordinateSyntaxTrees.x,
+      "t"
+    );
+    this.primeX2CoordinateSyntaxTrees.y = ExpressionParser.differentiate(
+      this.primeCoordinateSyntaxTrees.y,
+      "t"
+    );
+    this.primeX2CoordinateSyntaxTrees.z = ExpressionParser.differentiate(
+      this.primeCoordinateSyntaxTrees.z,
+      "t"
+    );
+    if (tExpressions.min !== "" && tExpressions.max !== "") {
+      this._tExpressions.min = tExpressions.min;
+      this._tExpressions.max = tExpressions.max;
+      this.tSyntaxTrees.min = ExpressionParser.parse(this._tExpressions.min);
+      this.tSyntaxTrees.max = ExpressionParser.parse(this._tExpressions.max);
+    } else {
+      // Use unit interval as default range for t values
+      this._tNumbers.min = 0;
+      this._tNumbers.max = 1;
+    }
+    if (c1DiscontinuityParameterValues.length > 0) {
+      this._c1DiscontinuityParameterValues.push(
+        ...c1DiscontinuityParameterValues
+      );
+      console.log("****** Parametric curve with discontinuity!!!!!");
+    }
+    this._seParentExpressions.push(...measurementParents);
 
     // Sample for max number of perpendiculars from any point on the sphere
     // https://stackoverflow.com/questions/9600801/evenly-distributing-n-points-on-a-sphere
@@ -66,6 +180,81 @@ export class SEParametric extends SENodule
 
     SEParametric.PARAMETRIC_COUNT++;
     this.name = `Pa${SEParametric.PARAMETRIC_COUNT}`;
+    this.calculateFunctionAndDerivatives(true);
+    this.ref.updateDisplay();
+  }
+
+  calculateFunctionAndDerivatives(firstBuild = false): void {
+    const fnValues: Vector3[] = [];
+    const fnPrimeValues: Vector3[] = [];
+    const fnPPrimeValues: Vector3[] = [];
+    this._seParentExpressions.forEach((m: SEExpression) => {
+      this.varMap.set(m.name, m.value);
+    });
+    if (
+      this.tSyntaxTrees.min !== ExpressionParser.NOT_DEFINED &&
+      this.tSyntaxTrees.max !== ExpressionParser.NOT_DEFINED
+    ) {
+      this.tNumbers.min = ExpressionParser.evaluate(
+        this.tSyntaxTrees.min,
+        this.varMap
+      );
+      this.tNumbers.max = ExpressionParser.evaluate(
+        this.tSyntaxTrees.max,
+        this.varMap
+      );
+    }
+    this.evaluateFunctionAndCache(this.coordinateSyntaxTrees, fnValues);
+    this.evaluateFunctionAndCache(
+      this.primeCoordinateSyntaxTrees,
+      fnPrimeValues
+    );
+    this.evaluateFunctionAndCache(
+      this.primeX2CoordinateSyntaxTrees,
+      fnPPrimeValues
+    );
+    this.ref.setFunctions(fnValues, fnPrimeValues, fnPPrimeValues);
+  }
+
+  evaluateFunctionAndCache(
+    fn: CoordinateSyntaxTrees,
+    cache: Array<Vector3>
+  ): void {
+    const N = SETTINGS.parameterization.subdivisions * 4;
+    const RANGE = this.tNumbers.max - this.tNumbers.min;
+    cache.splice(0);
+
+    let vecValue: Vector3;
+    for (let i = 0; i < N; i++) {
+      const tValue = this.tNumbers.min + (i * RANGE) / (N - 1);
+      this.varMap.set("t", tValue);
+      vecValue = new Vector3(
+        ExpressionParser.evaluate(fn.x, this.varMap),
+        ExpressionParser.evaluate(fn.y, this.varMap),
+        ExpressionParser.evaluate(fn.z, this.varMap)
+      );
+      cache.push(vecValue);
+    }
+  }
+  /**
+   * The tMin & tMax starting *tracing* parameter of the curve.
+   */
+  public tMinMaxExpressionValues(): number[] {
+    if (this._tExpressions.min === "" || this._tExpressions.max === "")
+      return [this.tNumbers.min, this.tNumbers.max];
+    // first update the map with the current values of the measurements
+    this._seParentExpressions.forEach((m: SEExpression) => {
+      const measurementName = m.name;
+      // console.debug("Measurement", m, measurementName);
+      this.varMap.set(measurementName, m.value);
+    });
+    let tMin = ExpressionParser.evaluate(this.tSyntaxTrees.min, this.varMap);
+    let tMax = ExpressionParser.evaluate(this.tSyntaxTrees.max, this.varMap);
+    // restrict to the parameter interval of tNumber.min to tNumber.max
+    if (tMin < this.tNumbers.min) tMin = this.tNumbers.min;
+    if (tMax > this.tNumbers.max) tMax = this.tNumbers.max;
+
+    return [tMin, tMax];
   }
 
   customStyles(): Set<string> {
@@ -75,11 +264,11 @@ export class SEParametric extends SENodule
   public get noduleDescription(): string {
     return String(
       i18n.t(`objectTree.parametricDescription`, {
-        xExpression: this.ref.coordinateExpressions.x,
-        yExpression: this.ref.coordinateExpressions.y,
-        zExpression: this.ref.coordinateExpressions.z,
-        tMinNumber: this.ref.tNumbers.min,
-        tMaxNumber: this.ref.tNumbers.max
+        xExpression: this.coordinateExpressions.x,
+        yExpression: this.coordinateExpressions.y,
+        zExpression: this.coordinateExpressions.z,
+        tMinNumber: this.tNumbers.min,
+        tMaxNumber: this.tNumbers.max
       })
     );
   }
@@ -118,12 +307,12 @@ export class SEParametric extends SENodule
     this.setOutOfDate(false);
 
     // The measurement expressions parents must exist
-    this._exists = this.ref.seParentExpressions.every(exp => {
+    this._exists = this._seParentExpressions.every(exp => {
       return exp.exists;
     });
 
     // find the tracing tMin and tMax
-    const [tMin, tMax] = this.ref.tMinMaxExpressionValues();
+    const [tMin, tMax] = this.tMinMaxExpressionValues();
     // if the tMin/tMax values are out of order then parametric curve doesn't exist
     if (tMax <= tMin) {
       this._exists = false;
@@ -131,7 +320,7 @@ export class SEParametric extends SENodule
 
     if (this._exists) {
       // display the updated parametric
-      this.ref.buildCurve();
+      // this.calculateFunctionAndDerivatives();
       this.ref.updateDisplay();
     }
 
@@ -166,7 +355,7 @@ export class SEParametric extends SENodule
     transformedToStandard.applyMatrix4(SEStore.inverseTotalRotationMatrix);
 
     // find the tracing tMin and tMax
-    const [tMin, tMax] = this.ref.tMinMaxExpressionValues();
+    const [tMin, tMax] = this.tMinMaxExpressionValues();
     // It must be the case that tMax> tMin because in update we check to make sure -- if it is not true then this parametric doesn't exist
 
     const closestStandardVector = new Vector3();
@@ -244,20 +433,21 @@ export class SEParametric extends SENodule
 
     // find the tracing tMin and tMax
     const [tMin, tMax] = useFullTInterval
-      ? [this.ref.tNumbers.min, this.ref.tNumbers.max]
-      : this.ref.tMinMaxExpressionValues();
+      ? [this.tNumbers.min, this.tNumbers.max]
+      : this.tMinMaxExpressionValues();
 
     // It must be the case that tMax> tMin because in update we check to make sure -- if it is not true then this parametric doesn't exist
     // console.log("normal search");
     let normalList: Vector3[] = [];
 
+    // TODO: Replace with a loop here
     normalList = SENodule.getNormalsToPerpendicularLinesThruParametrically(
       //this.ref.P.bind(this.ref), // bind the this.ref so that this in the this.ref.P method is this.ref
       this.ref.PPrime.bind(this.ref), // bind the this.ref so that this in the this.ref.PPrime method is this.ref
       transformedToStandard,
       tMin,
       tMax,
-      this.ref.c1DiscontinuityParameterValues,
+      [],
       this.ref.PPPrime.bind(this.ref) // bind the this.ref so that this in the this.ref.PPPrime method is this.ref
     );
 
@@ -345,10 +535,10 @@ export class SEParametric extends SENodule
 
     // find the tracing tMin and tMax
     const [tMin, tMax] = useFullTInterval
-      ? [this.ref.tNumbers.min, this.ref.tNumbers.max]
-      : this.ref.tMinMaxExpressionValues();
+      ? [this.tNumbers.min, this.tNumbers.max]
+      : this.tMinMaxExpressionValues();
     const avoidTValues: number[] = [];
-    avoidTValues.push(...this.ref.c1DiscontinuityParameterValues);
+    avoidTValues.push(...this._c1DiscontinuityParameterValues);
     const normalList: Vector3[] = [];
     //If the vector is on the Parametric then there is at at least one tangent
     if (
@@ -428,6 +618,21 @@ export class SEParametric extends SENodule
     );
   }
 
+  get coordinateExpressions(): CoordExpression {
+    return this._coordinateExpressions;
+  }
+  get c1DiscontinuityParameterValues(): number[] {
+    return this._c1DiscontinuityParameterValues;
+  }
+  get tExpressions(): MinMaxExpression {
+    return this._tExpressions;
+  }
+  get tNumbers(): MinMaxNumber {
+    return this._tNumbers;
+  }
+  get seParentExpressions(): SEExpression[] {
+    return this._seParentExpressions;
+  }
   // I wish the SENodule methods would work but I couldn't figure out how
   // See the attempts in SENodule around line 218
   public isFreePoint(): boolean {
