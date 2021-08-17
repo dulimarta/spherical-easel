@@ -94,13 +94,20 @@ export class SEParametric extends SENodule
   readonly varMap = new Map<string, number>();
 
   /**
+   * The map which holds the previous value of the measurements.
+   * This helps to avoid unnecessary rebuilding of curves.
+   */
+  readonly prevVarMap = new Map<string, number>();
+  numberOfContinuousCurves = 1;
+
+  /**
    * Create a model SEParametric using:
    * @param parametric The plottable TwoJS Object associated to this object
    */
   constructor(
     parametric: Parametric,
     coordinateExpressions: { x: string; y: string; z: string },
-    tExpressions: { min: string; max: string },
+    tExpressions: { min: string | number; max: string | number },
     c1DiscontinuityParameterValues: number[],
     measurementParents: SEExpression[]
   ) {
@@ -110,7 +117,7 @@ export class SEParametric extends SENodule
     this.coordinateExpressions.x = coordinateExpressions.x;
     this.coordinateExpressions.y = coordinateExpressions.y;
     this.coordinateExpressions.z = coordinateExpressions.z;
-    // F(t)
+    // P(t)
     this.coordinateSyntaxTrees.x = ExpressionParser.parse(
       coordinateExpressions.x
     );
@@ -121,7 +128,7 @@ export class SEParametric extends SENodule
       coordinateExpressions.z
     );
 
-    // F'(t)
+    // P'(t)
     this.primeCoordinateSyntaxTrees.x = ExpressionParser.differentiate(
       this.coordinateSyntaxTrees.x,
       "t"
@@ -135,7 +142,7 @@ export class SEParametric extends SENodule
       "t"
     );
 
-    // F''(t)
+    // P''(t)
     this.primeX2CoordinateSyntaxTrees.x = ExpressionParser.differentiate(
       this.primeCoordinateSyntaxTrees.x,
       "t"
@@ -148,21 +155,47 @@ export class SEParametric extends SENodule
       this.primeCoordinateSyntaxTrees.z,
       "t"
     );
-    if (tExpressions.min !== "" && tExpressions.max !== "") {
+    if (typeof tExpressions.min === "number")
+      this._tNumbers.min = tExpressions.min as number;
+    else {
       this._tExpressions.min = tExpressions.min;
-      this._tExpressions.max = tExpressions.max;
       this.tSyntaxTrees.min = ExpressionParser.parse(this._tExpressions.min);
-      this.tSyntaxTrees.max = ExpressionParser.parse(this._tExpressions.max);
-    } else {
-      // Use unit interval as default range for t values
-      this._tNumbers.min = 0;
-      this._tNumbers.max = 1;
     }
-    if (c1DiscontinuityParameterValues.length > 0) {
+    if (typeof tExpressions.max === "number")
+      this._tNumbers.max = tExpressions.max as number;
+    else {
+      this._tExpressions.max = tExpressions.max;
+      this.tSyntaxTrees.max = ExpressionParser.parse(this._tExpressions.max);
+    }
+
+    const numDiscontinuity = c1DiscontinuityParameterValues.length;
+    if (numDiscontinuity > 0) {
       this._c1DiscontinuityParameterValues.push(
         ...c1DiscontinuityParameterValues
       );
-      console.log("****** Parametric curve with discontinuity!!!!!");
+      console.log(
+        "****** Parametric curve with discontinuity!!!!!",
+        c1DiscontinuityParameterValues
+      );
+      const breakPoints: number[] = [];
+      if (this._tNumbers.min < this.c1DiscontinuityParameterValues[0]) {
+        breakPoints.push(this._tNumbers.min);
+      }
+      breakPoints.push(...c1DiscontinuityParameterValues);
+      if (
+        this._tNumbers.max >
+        c1DiscontinuityParameterValues[numDiscontinuity - 1]
+      )
+        breakPoints.push(this._tNumbers.max);
+      this.numberOfContinuousCurves = breakPoints.length - 1;
+      for (let m = 1; m < breakPoints.length; m++) {
+        console.debug(
+          "Continuous interval",
+          m,
+          breakPoints[m - 1],
+          breakPoints[m]
+        );
+      }
     }
     this._seParentExpressions.push(...measurementParents);
 
@@ -181,16 +214,29 @@ export class SEParametric extends SENodule
     SEParametric.PARAMETRIC_COUNT++;
     this.name = `Pa${SEParametric.PARAMETRIC_COUNT}`;
     this.calculateFunctionAndDerivatives(true);
-    this.ref.updateDisplay();
+    parametric.updateDisplay();
   }
 
   calculateFunctionAndDerivatives(firstBuild = false): void {
-    const fnValues: Vector3[] = [];
-    const fnPrimeValues: Vector3[] = [];
-    const fnPPrimeValues: Vector3[] = [];
     this._seParentExpressions.forEach((m: SEExpression) => {
       this.varMap.set(m.name, m.value);
     });
+    let updatedCount = 0;
+    for (const [key, val] of this.varMap) {
+      const prevValue = this.prevVarMap.get(key);
+      if (!prevValue || Math.abs(val - prevValue) > 1e-6) {
+        updatedCount++;
+        this.prevVarMap.set(key, val);
+      }
+    }
+    if (updatedCount === 0) {
+      // console.debug("No rebuilding function and its derivatives required");
+      return;
+    }
+    // console.debug("(Re)building function and its derivatives");
+    const fnValues: Vector3[] = [];
+    const fnPrimeValues: Vector3[] = [];
+    const fnPPrimeValues: Vector3[] = [];
     if (
       this.tSyntaxTrees.min !== ExpressionParser.NOT_DEFINED &&
       this.tSyntaxTrees.max !== ExpressionParser.NOT_DEFINED
@@ -213,7 +259,13 @@ export class SEParametric extends SENodule
       this.primeX2CoordinateSyntaxTrees,
       fnPPrimeValues
     );
-    this.ref.setFunctions(fnValues, fnPrimeValues, fnPPrimeValues);
+    this.ref.setRangeAndFunctions(
+      fnValues,
+      fnPrimeValues,
+      fnPPrimeValues,
+      this.tNumbers.min,
+      this.tNumbers.max
+    );
   }
 
   evaluateFunctionAndCache(
@@ -320,7 +372,7 @@ export class SEParametric extends SENodule
 
     if (this._exists) {
       // display the updated parametric
-      // this.calculateFunctionAndDerivatives();
+      this.calculateFunctionAndDerivatives();
       this.ref.updateDisplay();
     }
 

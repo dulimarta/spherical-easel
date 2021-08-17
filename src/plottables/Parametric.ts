@@ -10,16 +10,7 @@ import {
   DEFAULT_PARAMETRIC_FRONT_STYLE,
   DEFAULT_PARAMETRIC_BACK_STYLE
 } from "@/types/Styles";
-import {
-  CoordExpression,
-  MinMaxExpression,
-  MinMaxNumber,
-  CoordinateSyntaxTrees,
-  MinMaxSyntaxTrees
-} from "@/types";
-import { SEExpression } from "@/models/SEExpression";
 import { SEStore } from "@/store";
-import { ExpressionParser } from "@/expression/ExpressionParser";
 
 // const desiredXAxis = new Vector3();
 // const desiredYAxis = new Vector3();
@@ -37,26 +28,12 @@ const SUBDIVISIONS = SETTINGS.parametric.numPoints;
  * total points 2N so we don't create/remove new points)
  */
 export default class Parametric extends Nodule {
-  // private _tNumbers: MinMaxNumber = { min: NaN, max: NaN };
-
-  /**
-   * The expressions that are the parents of this curve
-   */
-  // private _seParentExpressions: SEExpression[] = [];
-
-  /**
-   * A parser to convert from the expression to a formula/number
-   */
-  // private parser = new ExpressionParser();
-
   /**
    * The vector P(t) for tMin <= t <= tMax P(t)= parameterization traces out the curve
    * And the vector P'(t) = parameterizationPrime of the curve.
    */
-  private parameterization = new Vector3();
-  private parameterizationPrime = new Vector3();
-  private parameterizationPrimeX2 = new Vector3();
   private _closed: boolean; // true if P(tNumber.min)=P(tNumber.max)
+  public next: Parametric | null = null;
 
   /**
    * The arcLength of the parametric curve from tNumber.min to tNumber.Max
@@ -77,7 +54,6 @@ export default class Parametric extends Nodule {
   private backParts: Two.Path[] = [];
   private glowingFrontParts: Two.Path[] = [];
   private glowingBackParts: Two.Path[] = [];
-  // private _numberOfParts = 1; // we need at least one of each front and back to render the object
 
   private pool: Two.Anchor[] = []; //The pool of vertices
   private glowingPool: Two.Anchor[] = []; //The pool of vertices
@@ -130,7 +106,6 @@ export default class Parametric extends Nodule {
     this.tMinimum = tMin;
     this.tMaximum = tMax;
 
-    // this._seParentExpressions.push(...measurementParents);
     this._closed = closed;
 
     this.styleOptions.set(
@@ -138,15 +113,17 @@ export default class Parametric extends Nodule {
       DEFAULT_PARAMETRIC_FRONT_STYLE
     );
     this.styleOptions.set(StyleEditPanels.Back, DEFAULT_PARAMETRIC_BACK_STYLE);
-    console.debug("Construction parametric", this);
-    // this.buildCurve(true);
   }
 
-  public setFunctions(
+  public setRangeAndFunctions(
     fn: Vector3[],
     fnPrime: Vector3[],
-    fnDoublePrime: Vector3[]
+    fnDoublePrime: Vector3[],
+    tMin: number,
+    tMax: number
   ): void {
+    this.tMinimum = tMin;
+    this.tMaximum = tMax;
     this._coordValues.splice(0);
     this._coordValues.push(...fn);
     this._pPrimeValues.splice(0);
@@ -159,7 +136,6 @@ export default class Parametric extends Nodule {
   buildCurve() {
     if (this._coordValues.length > 0) {
       this.numAnchors = this.determineAnchorsFromArcLength();
-      console.debug("First time build");
       const frontVertices: Two.Vector[] = [];
       for (let k = 0; k < this.numAnchors; k++) {
         // Create Two.Vectors for the paths that will be cloned later
@@ -174,13 +150,13 @@ export default class Parametric extends Nodule {
       this.backParts.push(new Two.Path([], false, false));
       this.glowingBackParts.push(new Two.Path([], false, false));
 
+      // #region updatePlottableMap
       Nodule.idPlottableDescriptionMap.set(String(this.frontParts[0].id), {
         type: "parametric",
         side: "front",
         fill: false,
         part: "0"
       });
-      // #region updatePlottableMap
       Nodule.idPlottableDescriptionMap.set(String(this.backParts[0].id), {
         type: "parametric",
         side: "back",
@@ -202,6 +178,8 @@ export default class Parametric extends Nodule {
       this.backParts[0].visible = true;
       this.glowingBackParts[0].visible = false;
       this.glowingFrontParts[0].visible = false;
+      this.stylize(DisplayStyle.ApplyCurrentVariables);
+      this.adjustSize();
     }
   }
 
