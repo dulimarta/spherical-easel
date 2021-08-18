@@ -412,7 +412,7 @@ export class SEParametric extends SENodule
       // display the updated parametric
       this.calculateFunctionAndDerivatives();
       let ptr: Parametric | null = this.ref;
-      while (ptr != null) {
+      while (ptr !== null) {
         ptr.updateDisplay();
         ptr = ptr.next;
       }

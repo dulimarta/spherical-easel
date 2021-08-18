@@ -4,6 +4,7 @@ import { parametricVectorAndTValue, UpdateStateType } from "@/types";
 import newton from "newton-raphson-method";
 import SETTINGS from "@/global-settings";
 import { colors } from "vuetify/lib";
+import Parametric from "@/plottables/Parametric";
 
 let NODE_COUNT = 0;
 
@@ -331,9 +332,23 @@ export abstract class SENodule {
     if (/*this._selected || */ !this._showing) return;
     if (b) {
       // Set the display for the corresponding plottable object
-      this.ref?.glowingDisplay();
+      if (!(this.ref instanceof Parametric)) this.ref?.glowingDisplay();
+      else {
+        let ptr: Parametric | null = this.ref;
+        while (ptr !== null) {
+          ptr.glowingDisplay();
+          ptr = ptr.next;
+        }
+      }
     } else {
-      this.ref?.normalDisplay();
+      if (!(this.ref instanceof Parametric)) this.ref?.normalDisplay();
+      else {
+        let ptr: Parametric | null = this.ref;
+        while (ptr !== null) {
+          ptr.normalDisplay();
+          ptr = ptr.next;
+        }
+      }
       // TODO: not glowing implies not selected?
       // this.selected = false;
     }

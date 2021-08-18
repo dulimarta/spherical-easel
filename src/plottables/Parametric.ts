@@ -19,6 +19,11 @@ import { SEStore } from "@/store";
 const transformMatrix = new Matrix4(); // maps from the un-rotated sphere to the rotated one
 const SUBDIVISIONS = SETTINGS.parametric.numPoints;
 
+// WARNING: We can't use one "ptr" declared globally
+// Some functions may call each other, hence overriding the current
+// value used across them
+//let ptr: Parametric | null = null;
+
 /**
  * For drawing surface Parametric. A Parametric consists of two paths (front and back)
  * for a total of 2N subdivisions.
@@ -28,7 +33,7 @@ const SUBDIVISIONS = SETTINGS.parametric.numPoints;
  * total points 2N so we don't create/remove new points)
  */
 export default class Parametric extends Nodule {
-  public partId = 0;
+  public partId = 0; // just for debugging
   /**
    * The vector P(t) for tMin <= t <= tMax P(t)= parameterization traces out the curve
    * And the vector P'(t) = parameterizationPrime of the curve.
@@ -552,7 +557,7 @@ export default class Parametric extends Nodule {
     );
   }
 
-  endPointVector(minMax: boolean): Vector3 | undefined {
+  public endPointVector(minMax: boolean): Vector3 | undefined {
     transformMatrix.getInverse(SEStore.inverseTotalRotationMatrix);
     this.tmpMatrix.makeScale(
       SETTINGS.boundaryCircle.radius,
@@ -582,32 +587,33 @@ export default class Parametric extends Nodule {
     return this.tmpVector.applyMatrix4(transformMatrix);
   }
 
-  frontGlowingDisplay(): void {
+  private frontGlowingDisplay(): void {
     this.frontParts.forEach(part => (part.visible = true));
     this.glowingFrontParts.forEach(part => (part.visible = true));
   }
-  backGlowingDisplay(): void {
+  private backGlowingDisplay(): void {
     this.backParts.forEach(part => (part.visible = true));
     this.glowingBackParts.forEach(part => (part.visible = true));
   }
-  glowingDisplay(): void {
+  public glowingDisplay(): void {
     this.frontGlowingDisplay();
     this.backGlowingDisplay();
   }
-  frontNormalDisplay(): void {
+
+  private frontNormalDisplay(): void {
     this.frontParts.forEach(part => (part.visible = true));
     this.glowingFrontParts.forEach(part => (part.visible = false));
   }
-  backNormalDisplay(): void {
+  private backNormalDisplay(): void {
     this.backParts.forEach(part => (part.visible = true));
     this.glowingBackParts.forEach(part => (part.visible = false));
   }
-  normalDisplay(): void {
+  public normalDisplay(): void {
     this.frontNormalDisplay();
     this.backNormalDisplay();
   }
 
-  setVisible(flag: boolean): void {
+  public setVisible(flag: boolean): void {
     if (!flag) {
       this.frontParts.forEach(part => (part.visible = false));
       this.backParts.forEach(part => (part.visible = false));
@@ -638,7 +644,7 @@ export default class Parametric extends Nodule {
    * Adds the front/back/glowing/not parts to the correct layers
    * @param layers
    */
-  addToLayers(layers: Two.Group[]): void {
+  public addToLayers(layers: Two.Group[]): void {
     // These must always be executed even if the front/back part is empty
     // Otherwise when they become non-empty they are not displayed
 
@@ -657,7 +663,7 @@ export default class Parametric extends Nodule {
     );
   }
 
-  removeFromLayers(/*layers: Two.Group[]*/): void {
+  public removeFromLayers(/*layers: Two.Group[]*/): void {
     this.frontParts.forEach(part => part.remove());
 
     this.glowingFrontParts.forEach(part => part.remove());
@@ -694,7 +700,7 @@ export default class Parametric extends Nodule {
   /**
    * Sets the variables for stroke width glowing/not
    */
-  adjustSize(): void {
+  public adjustSize(): void {
     const frontStyle = this.styleOptions.get(StyleEditPanels.Front);
     const frontStrokeWidthPercent = frontStyle?.strokeWidthPercent ?? 100;
     const backStyle = this.styleOptions.get(StyleEditPanels.Back);
@@ -742,7 +748,7 @@ export default class Parametric extends Nodule {
    *
    * Apply CurrentVariables means that all current values of the private style variables are copied into the actual Two.js objects
    */
-  stylize(flag: DisplayStyle): void {
+  public stylize(flag: DisplayStyle): void {
     switch (flag) {
       case DisplayStyle.ApplyTemporaryVariables: {
         // Use the SETTINGS temporary options to directly modify the Two.js objects.
