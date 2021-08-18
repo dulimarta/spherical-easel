@@ -213,11 +213,11 @@ export class SEParametric extends SENodule
 
     SEParametric.PARAMETRIC_COUNT++;
     this.name = `Pa${SEParametric.PARAMETRIC_COUNT}`;
-    this.calculateFunctionAndDerivatives(true);
+    this.calculateFunctionAndDerivatives(true); // true: First build
     parametric.updateDisplay();
   }
 
-  calculateFunctionAndDerivatives(firstBuild = false): void {
+  private calculateFunctionAndDerivatives(firstBuild = false): void {
     this._seParentExpressions.forEach((m: SEExpression) => {
       this.varMap.set(m.name, m.value);
     });
@@ -229,10 +229,12 @@ export class SEParametric extends SENodule
         this.prevVarMap.set(key, val);
       }
     }
-    if (updatedCount === 0) {
+    if (!firstBuild && updatedCount === 0) {
       // console.debug("No rebuilding function and its derivatives required");
       return;
     }
+    // We have to rebuild when either this call is the FIRST build
+    // OR some variables have changed their value
     // console.debug("(Re)building function and its derivatives");
     const fnValues: Vector3[] = [];
     const fnPrimeValues: Vector3[] = [];
@@ -268,7 +270,7 @@ export class SEParametric extends SENodule
     );
   }
 
-  evaluateFunctionAndCache(
+  private evaluateFunctionAndCache(
     fn: CoordinateSyntaxTrees,
     cache: Array<Vector3>
   ): void {

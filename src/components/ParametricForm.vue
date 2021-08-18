@@ -612,9 +612,9 @@ export default class ParametricForm extends Vue {
       closed
     );
     // Set the display to the default values
-    parametric.stylize(DisplayStyle.ApplyCurrentVariables);
+    // parametric.stylize(DisplayStyle.ApplyCurrentVariables);
     // Adjust the stroke width to the current zoom magnification factor
-    parametric.adjustSize();
+    // parametric.adjustSize();
 
     // Add the last command to the group and then execute it (i.e. add the potentially two points and the circle to the store.)
     if (this.tExpressions.min === "")

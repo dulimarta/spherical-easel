@@ -102,7 +102,6 @@ export default class Parametric extends Nodule {
 
   constructor(tMin = 0, tMax = 1, closed = false) {
     super();
-
     this.tMinimum = tMin;
     this.tMaximum = tMax;
 
@@ -133,9 +132,11 @@ export default class Parametric extends Nodule {
     this.buildCurve();
   }
 
-  buildCurve() {
-    if (this._coordValues.length > 0) {
-      this.numAnchors = this.determineAnchorsFromArcLength();
+  private buildCurve() {
+    this.numAnchors = this.determineAnchorsFromArcLength();
+    console.debug("Number of anchors", this.numAnchors);
+    if (this.frontParts.length === 0) {
+      // This is a new build
       const frontVertices: Two.Vector[] = [];
       for (let k = 0; k < this.numAnchors; k++) {
         // Create Two.Vectors for the paths that will be cloned later
@@ -144,9 +145,8 @@ export default class Parametric extends Nodule {
       this.frontParts.push(
         new Two.Path(frontVertices, /*closed*/ false, /*curve*/ false)
       );
-      console.debug("Number of anchors", frontVertices.length);
-      // now create, record ids, and set nofill (and strip of their anchors so that the number of anchors is correct) the other parts that may be needed
       this.glowingFrontParts.push(this.frontParts[0].clone());
+      // Don't use .clone() for back parts we intentionally want to keep them empty
       this.backParts.push(new Two.Path([], false, false));
       this.glowingBackParts.push(new Two.Path([], false, false));
 
@@ -178,8 +178,18 @@ export default class Parametric extends Nodule {
       this.backParts[0].visible = true;
       this.glowingBackParts[0].visible = false;
       this.glowingFrontParts[0].visible = false;
-      this.stylize(DisplayStyle.ApplyCurrentVariables);
-      this.adjustSize();
+    } else {
+      // This is a rebuild, check if the number of anchors has changed
+      const frontVertexCount = this.frontParts
+        .map((p: Two.Path) => p.vertices.length)
+        .reduce((total: number, currLen: number) => total + currLen);
+      const backVertexCount = this.backParts
+        .map((p: Two.Path) => p.vertices.length)
+        .reduce((total: number, currLen: number) => total + currLen);
+      const delta = this.numAnchors - (frontVertexCount + backVertexCount);
+      if (delta !== 0) {
+        throw new Error(`Two.Path vertices need to be adjusted by ${delta}`);
+      }
     }
   }
 
@@ -233,14 +243,14 @@ export default class Parametric extends Nodule {
   /**
    * Pre-compute arc length and store the cumulative values in an array
    */
-  determineAnchorsFromArcLength(): number {
+  private determineAnchorsFromArcLength(): number {
     // const tMin = this._tNumbers.min;
     // const tMax = this._tNumbers.max;
     // let oldArcLength = 0;
     let newArcLength = 0;
     let currArcLength = 0;
     let iteration = 1;
-    console.debug("Recalculating arc length");
+    console.debug("Parametric:: Recalculating arc length");
     let interAnchorDistance = 0;
     do {
       newArcLength = 0;
@@ -276,15 +286,6 @@ export default class Parametric extends Nodule {
     return Math.floor(interAnchorDistance * SUBDIVISIONS);
   }
 
-  // arcLength(tMin: number, tMax: number): number {
-  //   const M = this._arcLengthValues.length;
-  //   const range = this.tNumbers.max - this.tNumbers.min;
-  //   const sMin = (tMin - this.tNumbers.min) / range;
-  //   const sMax = (tMax - this.tNumbers.min) / range;
-  //   const minIndex = Math.floor(sMin * (M - 1));
-  //   const maxIndex = Math.floor(sMax * (M - 1));
-  //   return this._arcLengthValues[maxIndex] - this._arcLengthValues[minIndex];
-  // }
   /**
    * The Parametric curve is given in on the unit sphere, which might have been rotated, so we always transform from the un-rotated
    * sphere to the rotated one and then project the points to 2D (assigning to front/back depending on the sign of the z coordinate)
@@ -373,18 +374,16 @@ export default class Parametric extends Nodule {
           // );
           if (currentBackPartIndex >= this.backParts.length) {
             console.info(
-              "Parametric update: Needs more back parts than were allocated in the constructor"
+              "Parametric update: Needs more back parts than were allocated initially"
             );
             const newPath = new Two.Path([], false, false);
             this.backParts.push(newPath);
-            newPath.vertices.splice(0);
             newPath.noFill();
             newPath.visible = true;
             if (this.backgroundLayer) newPath.addTo(this.backgroundLayer);
 
             const newGlowPath = new Two.Path([], false, false);
             this.glowingBackParts.push(newGlowPath);
-            newGlowPath.vertices.splice(0);
             newGlowPath.noFill();
             newGlowPath.visible = false;
             if (this.glowingBgLayer) newGlowPath.addTo(this.glowingBgLayer);
@@ -430,18 +429,16 @@ export default class Parametric extends Nodule {
           // );
           if (currentFrontPartIndex >= this.frontParts.length) {
             console.info(
-              "Parametric Update: Needs more front parts than were allocated in the constructor"
+              "Parametric Update: Needs more front parts than were allocated initially"
             );
             const newPath = new Two.Path([], false, false);
             this.frontParts.push(newPath);
-            newPath.vertices.splice(0);
             newPath.noFill();
             newPath.visible = true;
             if (this.foregroundLayer) newPath.addTo(this.foregroundLayer);
 
             const newGlowPath = new Two.Path([], false, false);
             this.glowingFrontParts.push(newGlowPath);
-            newGlowPath.vertices.splice(0);
             newGlowPath.noFill();
             newGlowPath.visible = true;
             if (this.glowingFgLayer) newGlowPath.addTo(this.glowingFgLayer);

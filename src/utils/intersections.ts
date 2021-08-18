@@ -8,7 +8,6 @@ import { SENodule } from "@/models/SENodule";
 import SETTINGS from "@/global-settings";
 import { SEParametric } from "@/models/SEParametric";
 import { SEStore } from "@/store";
-import Parametric from "@/plottables/Parametric";
 import { SETangentLineThruPoint } from "@/models/SETangentLineThruPoint";
 import { SEPointOnOneOrTwoDimensional } from "@/models/SEPointOnOneOrTwoDimensional";
 
@@ -1215,6 +1214,7 @@ export function intersectParametricWithParametric(
   parametric1: SEParametric,
   parametric2: SEParametric
 ): IntersectionReturnType[] {
+  // TODO: complete this function
   const maxNumberOfIntersections = 0;
   //  parametric1.ref.numberOfParts + parametric2.ref.numberOfParts;
 
