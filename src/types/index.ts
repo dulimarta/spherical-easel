@@ -56,7 +56,7 @@ export interface AppState {
   defaultStyleStatesMap: Map<StyleEditPanels, StyleOptions[]>;
   oldStyleSelections: SENodule[];
   styleSavedFromPanel: StyleEditPanels;
-  initialBackStyleContrast: number;
+  // initialBackStyleContrast: number;
   inverseTotalRotationMatrix: Matrix4; // Initially the identity. This is the composition of all the inverses of the rotation matrices applied to the sphere.
   svgCanvas: HTMLDivElement | null;
   hasUnsavedNodules: boolean;

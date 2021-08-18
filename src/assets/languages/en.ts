@@ -196,6 +196,9 @@ export default {
   },
 
   style: {
+    dashArrayReverse: "Switch Dash and Gap",
+    dashPatternReverseArrayToolTip:
+      "Switch the dash and gap lengths so that the gap length can be less than the dash length",
     labelStyle: "Label Style",
     foregroundStyle: "Foreground Style",
     backgroundStyle: "Background Style",
@@ -204,6 +207,7 @@ export default {
     back: "Back",
     front: "Front",
     value: "Value",
+    frontAndBack: "Front and Back",
 
     point: "1 Point | {count} Points",
     line: "1 Line | {count} Lines",
@@ -254,6 +258,9 @@ export default {
       "Not all objects in the current selection are visible. Click this button to make them visible and then they will be styleable.",
 
     backStyleDisagreement: "Back Styling Disagreement",
+    backStyleDifferentValuesToolTip:
+      "The selected objects have different automatic back styling settings. At least one want to use automatic back styling and at least one does not want to. Click the button to disable automatic back styling for all selected objects.",
+
     styleDisagreement: "Common Style Disagreement",
     differentValues:
       "The selected objects have different values for at least one of these style options. Click the button and edit a style to make all selected objects have that style value in common.",
@@ -262,13 +269,13 @@ export default {
       "The selected objects have different values for at least one style option. Click the button and edit a style to make *all* selected objects have *all* the styles in this block have a common value(s).",
 
     singleLabelTextToolTip: "Enter a label text.",
-    multiLabelTextToolTip: "You can not edit more than one label at a time.",
+    multiLabelTextToolTip: "You cannot edit more than one label at a time.",
 
     dynamicBackStyleHeader: "Automatic Back Styling",
     disableDynamicBackStyle: "Disable",
     enableDynamicBackStyle: "Enable",
     disableDynamicBackStyleToolTip:
-      "The styling of objects on the back of the sphere is handled automatically unless disabled. The automatic style depends on a Back Styling Contrast percent and the front styling. The contrast is a global variable and applies to all objects the have Dynamic Back Styling enabled. If the contrast is 100%, then there is no difference between the styling of objects on the front and the back of the sphere. If the contrast is 0%, then colors on back of sphere are almost transparent and size reduction is maximized for points and thicknesses. Dash pattern is not effected by the contrast. The Back Contrast percent may be set in the Background Style panel.",
+      "The styling of objects on the back of the sphere is handled automatically unless disabled. The automatic style depends on a Global Back Styling Contrast percent and the front styling. The contrast is a global variable and applies to all objects the have Dynamic Back Styling enabled. If the contrast is 100%, then there is no difference between the styling of objects on the front and the back of the sphere. If the contrast is 0%, then colors on back of sphere are almost transparent and size reduction is maximized for points and thicknesses. Dash pattern is not effected by the contrast. The Back Contrast percent may be set in the Background Style panel.",
 
     clearChanges: "Undo",
     clearChangesToolTip:
@@ -311,16 +318,17 @@ export default {
     labelBackFillColor: "Label Back Fill Color",
     pointRadiusPercent: "Point Radius",
     angleMarkerRadiusPercent: "Angle Marker Radius",
-    angleMarkerDecorations: "Angle Marker Decorations",
+    angleMarkerOptions: "Angle Marker Options",
     angleMarkerDoubleArc: "Double Arc",
     angleMarkerTickMark: "Tick Mark",
 
     strokeColor: "Stroke Color",
     strokeWidthPercent: "Stroke Width",
     dynamicBackStyle: "Dynamic Back Style",
-    backStyleContrast: "Global Back Style Contrast",
+    globalBackStyleContrast: "Global",
+    backStyleContrast: "Back Style Contrast",
     backStyleContrastToolTip:
-      "By default the back side display style of an object is determined by the front style of that object and the value of Back Style Contrast. A Back Style Contrast of 100% means there is no color or size difference between front and back styling. A Back Style Contrast of 0% means that the object is barely visible and its size reduction is maximized.",
+      "By default the back side display style of an object is determined by the front style of that object and the value of Global Back Style Contrast. A Back Style Contrast of 100% means there is no color or size difference between front and back styling. A Back Style Contrast of 0% means that the object is invisible and its size reduction is maximized.",
 
     labelStyleOptions: "Label Text Options",
     labelStyleOptionsMultiple: "(Multiple)",

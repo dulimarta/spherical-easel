@@ -880,7 +880,11 @@ export default class Parametric extends Nodule {
 
         // THIS SHOULD NEVER BE EXECUTED
         //FRONT
-        if (SETTINGS.parametric.temp.strokeColor.front === "noStroke") {
+        if (
+          Nodule.hlsaIsNoFillOrNoStroke(
+            SETTINGS.parametric.temp.strokeColor.front
+          )
+        ) {
           this.frontParts.forEach(part => part.noStroke());
         } else {
           this.frontParts.forEach(
@@ -898,9 +902,16 @@ export default class Parametric extends Nodule {
           SETTINGS.parametric.drawn.dashArray.front.forEach(v => {
             this.frontParts.forEach(part => part.dashes.push(v));
           });
+          if (SETTINGS.parametric.drawn.dashArray.reverse.front) {
+            this.frontParts.forEach(part => part.dashes.reverse());
+          }
         }
         //BACK
-        if (SETTINGS.parametric.temp.strokeColor.back === "noStroke") {
+        if (
+          Nodule.hlsaIsNoFillOrNoStroke(
+            SETTINGS.parametric.temp.strokeColor.back
+          )
+        ) {
           this.backParts.forEach(part => part.noStroke());
         } else {
           this.backParts.forEach(
@@ -917,6 +928,9 @@ export default class Parametric extends Nodule {
           SETTINGS.parametric.drawn.dashArray.back.forEach(v => {
             this.backParts.forEach(part => part.dashes.push(v));
           });
+          if (SETTINGS.parametric.drawn.dashArray.reverse.back) {
+            this.backParts.forEach(part => part.dashes.reverse());
+          }
         }
 
         // The temporary display is never highlighted
@@ -932,18 +946,25 @@ export default class Parametric extends Nodule {
         const frontStyle = this.styleOptions.get(StyleEditPanels.Front);
         const strokeColorFront = frontStyle?.strokeColor ?? "black";
 
-        if (strokeColorFront === "noStroke") {
+        if (Nodule.hlsaIsNoFillOrNoStroke(strokeColorFront)) {
           this.frontParts.forEach(part => part.noStroke());
         } else {
           this.frontParts.forEach(part => (part.stroke = strokeColorFront));
         }
         // strokeWidthPercent is applied by adjustSize()
 
-        if (frontStyle?.dashArray && frontStyle.dashArray.length > 0) {
+        if (
+          frontStyle?.dashArray &&
+          frontStyle?.reverseDashArray !== undefined &&
+          frontStyle.dashArray.length > 0
+        ) {
           this.frontParts.forEach(part => part.dashes.clear());
           frontStyle.dashArray.forEach(v => {
             this.frontParts.forEach(part => part.dashes.push(v));
           });
+          if (frontStyle.reverseDashArray) {
+            this.frontParts.forEach(part => part.dashes.reverse());
+          }
         } else {
           // the array length is zero and no dash array should be set
           this.frontParts.forEach(part => part.dashes.clear());
@@ -953,7 +974,11 @@ export default class Parametric extends Nodule {
         const backStyle = this.styleOptions.get(StyleEditPanels.Back);
         const strokeColorBack = backStyle?.strokeColor ?? "black";
         if (backStyle?.dynamicBackStyle) {
-          if (Nodule.contrastStrokeColor(strokeColorFront) === "noStroke") {
+          if (
+            Nodule.hlsaIsNoFillOrNoStroke(
+              Nodule.contrastStrokeColor(strokeColorFront)
+            )
+          ) {
             this.backParts.forEach(part => part.noStroke());
           } else {
             this.backParts.forEach(
@@ -962,7 +987,7 @@ export default class Parametric extends Nodule {
             );
           }
         } else {
-          if (strokeColorBack === "noStroke") {
+          if (Nodule.hlsaIsNoFillOrNoStroke(strokeColorBack)) {
             this.backParts.forEach(part => part.noStroke());
           } else {
             this.backParts.forEach(part => (part.stroke = strokeColorBack));
@@ -971,11 +996,18 @@ export default class Parametric extends Nodule {
 
         // strokeWidthPercent applied by adjustSizer()
 
-        if (backStyle?.dashArray && backStyle.dashArray.length > 0) {
+        if (
+          backStyle?.dashArray &&
+          backStyle?.reverseDashArray !== undefined &&
+          backStyle.dashArray.length > 0
+        ) {
           this.backParts.forEach(part => part.dashes.clear());
           backStyle.dashArray.forEach(v => {
             this.backParts.forEach(part => part.dashes.push(v));
           });
+          if (backStyle.reverseDashArray) {
+            this.backParts.forEach(part => part.dashes.reverse());
+          }
         } else {
           // the array length is zero and no dash array should be set
           this.backParts.forEach(part => part.dashes.clear());
@@ -992,11 +1024,18 @@ export default class Parametric extends Nodule {
         // strokeWidthPercent applied by adjustSize()
 
         // Copy the front dash properties to the glowing object
-        if (frontStyle?.dashArray && frontStyle.dashArray.length > 0) {
+        if (
+          frontStyle?.dashArray &&
+          frontStyle?.reverseDashArray !== undefined &&
+          frontStyle.dashArray.length > 0
+        ) {
           this.glowingFrontParts.forEach(part => part.dashes.clear());
           frontStyle.dashArray.forEach(v => {
             this.glowingFrontParts.forEach(part => part.dashes.push(v));
           });
+          if (frontStyle.reverseDashArray) {
+            this.glowingFrontParts.forEach(part => part.dashes.reverse());
+          }
         } else {
           // the array length is zero and no dash array should be set
           this.glowingFrontParts.forEach(part => part.dashes.clear());
@@ -1011,11 +1050,18 @@ export default class Parametric extends Nodule {
         // strokeWidthPercent applied by adjustSize()
 
         // Copy the back dash properties to the glowing object
-        if (backStyle?.dashArray && backStyle.dashArray.length > 0) {
+        if (
+          backStyle?.dashArray &&
+          backStyle?.reverseDashArray !== undefined &&
+          backStyle.dashArray.length > 0
+        ) {
           this.glowingBackParts.forEach(part => part.dashes.clear());
           backStyle.dashArray.forEach(v => {
             this.glowingBackParts.forEach(part => part.dashes.push(v));
           });
+          if (backStyle.reverseDashArray) {
+            this.glowingBackParts.forEach(part => part.dashes.reverse());
+          }
         } else {
           // the array length is zero and no dash array should be set
           this.glowingBackParts.forEach(part => part.dashes.clear());

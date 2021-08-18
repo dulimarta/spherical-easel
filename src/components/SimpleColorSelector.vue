@@ -1,9 +1,13 @@
 <template>
   <div>
     <div>
-      <span class="text-subtitle-2">{{ $t(titleKey)+" " }}</span>
-      <v-icon :color="internalColor.hexa"
+      <span class="text-subtitle-2"
+        :style="{'color' : conflict?'red':''}">{{ $t(titleKey)+" " }}</span>
+      <v-icon :color="conflict !== 'red' ? internalColor.hexa : `#ffffff`"
         small>mdi-checkbox-blank</v-icon>
+      <span v-if="numSelected > 1"
+        class="text-subtitle-2"
+        style="color:red">{{" "+ $t("style.labelStyleOptionsMultiple") }}</span>
     </div>
 
     <!-- Show no fill checkbox, color code inputs, Undo and Reset to Defaults buttons -->
@@ -23,7 +27,8 @@
                   color="indigo darken-3"
                   hide-details
                   x-small
-                  dense></v-checkbox>
+                  dense
+                  @click="changeEvent"></v-checkbox>
               </span>
             </template>
             {{isOnLabelPanel? $t('style.noFillLabelTip'): $t('style.noFillTip')}}
@@ -43,17 +48,19 @@
       </v-row>
     </v-container>
     <!-- The color picker -->
-    <v-color-picker :disabled="noData"
-      hide-sliders
-      hide-canvas
-      show-swatches
-      :hide-inputs="!showColorInputs"
-      :swatches-max-height="100"
-      :swatches="colorSwatches"
-      v-model="internalColor"
-      mode="hsla"
-      id="colorPicker">
-    </v-color-picker>
+    <div @click="changeEvent">
+      <v-color-picker :disabled="noData"
+        hide-sliders
+        hide-canvas
+        show-swatches
+        :hide-inputs="!showColorInputs"
+        :swatches-max-height="100"
+        :swatches="colorSwatches"
+        v-model="internalColor"
+        mode="hsla"
+        id="colorPicker">
+      </v-color-picker>
+    </div>
   </div>
 </template>
 
@@ -74,9 +81,11 @@ const NO_HSLA_DATA = "hsla(0, 0%,0%,0)";
 @Component({ components: { HintButton, OverlayWithFixButton } })
 export default class SimpleColorSelector extends Vue {
   @Prop() readonly titleKey!: string;
+  @Prop() conflict!: boolean;
   // external representation: hsla in CSS
   @PropSync("data") hslaColor!: string;
   @Prop({ required: true }) readonly styleName!: string;
+  @Prop() readonly numSelected!: number;
 
   // Internal representation is an object with multiple color representations
   internalColor: any = {};
@@ -98,10 +107,14 @@ export default class SimpleColorSelector extends Vue {
   private noDataStr = "";
   private noDataUILabel = i18n.t("style.noFill");
 
+  changeEvent(): void {
+    // console.log("emit!");
+    this.$emit("resetColor");
+  }
   // Vue component life cycle hook
   mounted(): void {
     // console.log("mounting!", this.hslaColor);
-    if (this.hslaColor) {
+    if (this.hslaColor !== undefined && this.hslaColor !== null) {
       this.calculateInternalColorFrom(this.hslaColor);
       // set the noData flag
       if (
@@ -214,7 +227,7 @@ export default class SimpleColorSelector extends Vue {
       ) {
         this.preNoColor = this.hslaColor;
       }
-      this.preNoColor = this.hslaColor;
+      //this.preNoColor = this.hslaColor;
       this.hslaColor = NO_HSLA_DATA;
       this.showColorInputs = false;
       this.colorSwatches = SETTINGS.style.greyedOutSwatches;
