@@ -116,7 +116,13 @@ export class AddParametricCommand extends Command {
     tValues.forEach(str => c1DiscontinuityParameterValues.push(Number(str)));
 
     if (calculationParents.every(seNodule => seNodule !== undefined)) {
-      const parametric = new Parametric(tNumbers.min, tNumbers.max, closed);
+      const parametric = new Parametric(
+        tNumbers.min,
+        tNumbers.max,
+        tNumbers.min,
+        tNumbers.max,
+        closed
+      );
       // Set the display to the default values
       parametric.stylize(DisplayStyle.ApplyCurrentVariables);
       // Adjust the stroke width to the current zoom magnification factor

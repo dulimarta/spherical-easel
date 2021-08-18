@@ -27,6 +27,7 @@ import {
 } from "@/types/Styles";
 import { ExpressionParser } from "@/expression/ExpressionParser";
 import { SEExpression } from "./SEExpression";
+import { DisplayStyle } from "@/plottables/Nodule";
 const styleSet = new Set([
   ...Object.getOwnPropertyNames(DEFAULT_PARAMETRIC_FRONT_STYLE),
   ...Object.getOwnPropertyNames(DEFAULT_PARAMETRIC_BACK_STYLE)
@@ -98,7 +99,6 @@ export class SEParametric extends SENodule
    * This helps to avoid unnecessary rebuilding of curves.
    */
   readonly prevVarMap = new Map<string, number>();
-  numberOfContinuousCurves = 1;
 
   /**
    * Create a model SEParametric using:
@@ -170,31 +170,31 @@ export class SEParametric extends SENodule
 
     const numDiscontinuity = c1DiscontinuityParameterValues.length;
     if (numDiscontinuity > 0) {
-      this._c1DiscontinuityParameterValues.push(
-        ...c1DiscontinuityParameterValues
-      );
       console.log(
         "****** Parametric curve with discontinuity!!!!!",
         c1DiscontinuityParameterValues
       );
-      const breakPoints: number[] = [];
-      if (this._tNumbers.min < this.c1DiscontinuityParameterValues[0]) {
-        breakPoints.push(this._tNumbers.min);
+      if (this._tNumbers.min < c1DiscontinuityParameterValues[0]) {
+        this._c1DiscontinuityParameterValues.push(this._tNumbers.min);
       }
-      breakPoints.push(...c1DiscontinuityParameterValues);
+      this._c1DiscontinuityParameterValues.push(
+        ...c1DiscontinuityParameterValues
+      );
       if (
         this._tNumbers.max >
         c1DiscontinuityParameterValues[numDiscontinuity - 1]
       )
-        breakPoints.push(this._tNumbers.max);
-      this.numberOfContinuousCurves = breakPoints.length - 1;
-      for (let m = 1; m < breakPoints.length; m++) {
-        console.debug(
-          "Continuous interval",
-          m,
-          breakPoints[m - 1],
-          breakPoints[m]
-        );
+        this._c1DiscontinuityParameterValues.push(this._tNumbers.max);
+      let ptr: Parametric | null = this.ref; // Head of the list
+      for (
+        let m = 1;
+        m < this._c1DiscontinuityParameterValues.length - 1;
+        m++
+      ) {
+        const p = new Parametric();
+        p.partId = m;
+        ptr.next = p;
+        ptr = p;
       }
     }
     this._seParentExpressions.push(...measurementParents);
@@ -214,7 +214,11 @@ export class SEParametric extends SENodule
     SEParametric.PARAMETRIC_COUNT++;
     this.name = `Pa${SEParametric.PARAMETRIC_COUNT}`;
     this.calculateFunctionAndDerivatives(true); // true: First build
-    parametric.updateDisplay();
+    let ptr: Parametric | null = this.ref;
+    while (ptr !== null) {
+      ptr.updateDisplay();
+      ptr = ptr.next;
+    }
   }
 
   private calculateFunctionAndDerivatives(firstBuild = false): void {
@@ -261,13 +265,42 @@ export class SEParametric extends SENodule
       this.primeX2CoordinateSyntaxTrees,
       fnPPrimeValues
     );
-    this.ref.setRangeAndFunctions(
-      fnValues,
-      fnPrimeValues,
-      fnPPrimeValues,
-      this.tNumbers.min,
-      this.tNumbers.max
-    );
+    if (this._c1DiscontinuityParameterValues.length === 0) {
+      console.debug("We have just ONE continuous curve");
+      this.ref.setRangeAndFunctions(
+        fnValues,
+        fnPrimeValues,
+        fnPPrimeValues,
+        this.tNumbers.min,
+        this.tNumbers.max,
+        this.tNumbers.min,
+        this.tNumbers.max
+      );
+    } else {
+      console.debug(
+        "We have",
+        this._c1DiscontinuityParameterValues.length - 1,
+        "continuous curves"
+      );
+      let p: Parametric | null = this.ref;
+      const breakPoints = this._c1DiscontinuityParameterValues;
+      let m = 1;
+      while (p !== null) {
+        p.setRangeAndFunctions(
+          fnValues,
+          fnPrimeValues,
+          fnPPrimeValues,
+          this.tNumbers.min,
+          this.tNumbers.max,
+          breakPoints[m - 1],
+          breakPoints[m]
+        );
+        p.stylize(DisplayStyle.ApplyCurrentVariables);
+        p.adjustSize();
+        m++;
+        p = p.next;
+      }
+    }
   }
 
   private evaluateFunctionAndCache(
@@ -276,6 +309,9 @@ export class SEParametric extends SENodule
   ): void {
     const N = SETTINGS.parameterization.subdivisions * 4;
     const RANGE = this.tNumbers.max - this.tNumbers.min;
+    console.debug(
+      `Evaluate function in range, [${this.tNumbers.min}, ${this.tNumbers.max}]`
+    );
     cache.splice(0);
 
     let vecValue: Vector3;
@@ -375,7 +411,11 @@ export class SEParametric extends SENodule
     if (this._exists) {
       // display the updated parametric
       this.calculateFunctionAndDerivatives();
-      this.ref.updateDisplay();
+      let ptr: Parametric | null = this.ref;
+      while (ptr != null) {
+        ptr.updateDisplay();
+        ptr = ptr.next;
+      }
     }
 
     if (this.showing && this._exists) {
@@ -592,7 +632,7 @@ export class SEParametric extends SENodule
       ? [this.tNumbers.min, this.tNumbers.max]
       : this.tMinMaxExpressionValues();
     const avoidTValues: number[] = [];
-    avoidTValues.push(...this._c1DiscontinuityParameterValues);
+    // avoidTValues.push(...this._c1DiscontinuityParameterValues);
     const normalList: Vector3[] = [];
     //If the vector is on the Parametric then there is at at least one tangent
     if (

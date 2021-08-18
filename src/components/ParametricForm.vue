@@ -607,14 +607,16 @@ export default class ParametricForm extends Vue {
 
     // TODO: Use multiple parametric if we have discontinuity
     const parametric = new Parametric(
-      this.tNumbers.min,
+      this.tNumbers.min, // global min-max
+      this.tNumbers.max,
+      this.tNumbers.min, // part min-max
       this.tNumbers.max,
       closed
     );
     // Set the display to the default values
-    // parametric.stylize(DisplayStyle.ApplyCurrentVariables);
+    parametric.stylize(DisplayStyle.ApplyCurrentVariables);
     // Adjust the stroke width to the current zoom magnification factor
-    // parametric.adjustSize();
+    parametric.adjustSize();
 
     // Add the last command to the group and then execute it (i.e. add the potentially two points and the circle to the store.)
     if (this.tExpressions.min === "")

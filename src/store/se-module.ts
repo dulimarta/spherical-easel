@@ -353,7 +353,11 @@ export default class SE extends VuexModule implements AppState {
   addParametric(parametric: SEParametric): void {
     this.seParametrics.push(parametric);
     this.seNodules.push(parametric);
-    parametric.ref.addToLayers(this.layers);
+    let ptr: Parametric | null = parametric.ref;
+    while (ptr) {
+      ptr.addToLayers(this.layers);
+      ptr = ptr.next;
+    }
     this.hasUnsavedNodules = true;
   }
 
@@ -366,7 +370,11 @@ export default class SE extends VuexModule implements AppState {
     if (parametricPos >= 0) {
       /* victim line is found */
       const victimParametric: SEParametric = this.seParametrics[parametricPos];
-      victimParametric.ref.removeFromLayers();
+      let ptr: Parametric | null = victimParametric.ref;
+      while (ptr !== null) {
+        ptr.removeFromLayers();
+        ptr = ptr.next;
+      }
       // victimParametric.removeSelfSafely();
       this.seParametrics.splice(parametricPos, 1); // Remove the parametric from the list
       this.seNodules.splice(pos2, 1);
