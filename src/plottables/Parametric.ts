@@ -16,7 +16,8 @@ import {
   MinMaxExpression,
   MinMaxNumber,
   CoordinateSyntaxTrees,
-  MinMaxSyntaxTrees
+  MinMaxSyntaxTrees,
+  LabelDisplayMode
 } from "@/types";
 import { SEExpression } from "@/models/SEExpression";
 import { SEStore } from "@/store";
@@ -103,11 +104,6 @@ export default class Parametric extends Nodule {
   private _coordValues: Array<Vector3> = [];
   private _pPrimeValues: Array<Vector3> = [];
   private _ppPrimeValues: Array<Vector3> = [];
-
-  /**
-   * Vuex global state
-   */
-  protected store = AppStore; //
 
   /**
    * The TwoJS objects to display the front/back parts and their glowing counterparts.
@@ -300,8 +296,6 @@ export default class Parametric extends Nodule {
       this.backParts[0].visible = true;
       this.glowingBackParts[0].visible = false;
       this.glowingFrontParts[0].visible = false;
-    } else {
-      console.debug("Curve rebuild???????");
     }
   }
 
@@ -342,8 +336,8 @@ export default class Parametric extends Nodule {
         this.tmpVector.set(0, 0, 0);
         this.tmpVector.addScaledVector(arr[sIndex], 1 - fraction);
         this.tmpVector.addScaledVector(arr[sIndex + 1], fraction);
-        return this.tmpVector;
-      } else return arr[N - 1];
+      } else this.tmpVector.copy(arr[N - 1]);
+      return this.tmpVector;
     } else throw new Error(`Attempt to evaluate function value at t=${t}`);
   }
   /**
@@ -488,10 +482,7 @@ export default class Parametric extends Nodule {
     // Each front/back  path will pull anchor points from
     // this pool as needed
     // find the tracing tMin and tMax
-    const [tMin, tMax] = this.tMinMaxExpressionValues() ?? [
-      this._tNumbers.min,
-      this._tNumbers.max
-    ];
+    const [tMin, tMax] = this.tMinMaxExpressionValues();
 
     // if the tMin/tMax values are out of order plot nothing (the object doesn't exist)
     if (tMax <= tMin) return;
@@ -511,11 +502,6 @@ export default class Parametric extends Nodule {
     this.glowingBackParts.forEach((path: Two.Path) => {
       this.glowingPool.push(...path.vertices.splice(0));
     });
-
-    // const tempArcLength = Math.max(
-    //   Math.min(this.arcLength(tMin, tMax), this._initialArcLength),
-    //   1
-    // ); // this is always less than this._initialArcLength and bigger than one
 
     let lastPositiveIndex = -1;
     let lastNegativeIndex = -1;

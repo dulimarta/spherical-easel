@@ -1,10 +1,12 @@
 <template>
   <div>
-    <div class="node"
+    <v-container class="node"
       @mouseenter="glowMe(true)"
       @mouseleave="glowMe(false)">
 
-      <v-row justify="start">
+      <v-row dense
+        justify="start"
+        class="pa-0">
         <v-col cols="auto">
           <v-icon v-if="isAntipode"
             medium>
@@ -177,13 +179,27 @@
           </v-row>
         </v-col>
       </v-row>
-    </div>
+      <v-row v-if="isParametric">
+        <v-col cols="auto">
+          t = {{parametricTime.toFixed(3)}}
+        </v-col>
+        <v-col>
+          <v-slider v-model="parametricTime"
+            :min="parametricTMin"
+            :max="parametricTMax"
+            :step="parametricTStep" />
+        </v-col>
+        <v-col cols="auto">
+          <v-icon @click="animateCurvePoint">mdi-run</v-icon>
+        </v-col>
+      </v-row>
+    </v-container>
   </div>
 </template>
 
 <script lang="ts">
 import Vue from "vue";
-import { Prop, Component } from "vue-property-decorator";
+import { Prop, Component, Watch } from "vue-property-decorator";
 import { SENodule } from "../models/SENodule";
 import { SEIntersectionPoint } from "../models/SEIntersectionPoint";
 import { SEPoint } from "../models/SEPoint";
@@ -197,7 +213,12 @@ import { SEPointDistance } from "@/models/SEPointDistance";
 import { SESlider } from "@/models/SESlider";
 import { SetNoduleDisplayCommand } from "@/commands/SetNoduleDisplayCommand";
 import { SetValueDisplayModeCommand } from "@/commands/SetValueDisplayModeCommand";
-import { UpdateMode, UpdateStateType, ValueDisplayMode } from "@/types";
+import {
+  AppState,
+  UpdateMode,
+  UpdateStateType,
+  ValueDisplayMode
+} from "@/types";
 import { SEAngleMarker } from "@/models/SEAngleMarker";
 import { SEPointCoordinate } from "@/models/SEPointCoordinate";
 import { SEEllipse } from "@/models/SEEllipse";
@@ -214,11 +235,29 @@ import { SENSectPoint } from "@/models/SENSectPoint";
 import { SETangentLineThruPoint } from "@/models/SETangentLineThruPoint";
 import { SENSectLine } from "@/models/SENSectLine";
 import { SEStore } from "@/store";
+import Parametric from "@/plottables/Parametric";
+import Point from "@/plottables/Point";
+import { AddPointCommand } from "@/commands/AddPointCommand";
 import { SELabel } from "@/models/SELabel";
+import Label from "@/plottables/Label";
+import { namespace } from "vuex-class";
+import { Matrix4 } from "three";
 
+const SE = namespace("se");
 @Component
 export default class SENoduleItem extends Vue {
   @Prop() readonly node!: SENodule;
+
+  @SE.State((s: AppState) => s.inverseTotalRotationMatrix)
+  readonly inverseRotationMatrix!: Matrix4;
+
+  private rotationMatrix = new Matrix4();
+  curve: Parametric | null = null;
+  curvePoint: SEPoint | null = null;
+  parametricTime = 0;
+  parametricTMin = 0;
+  parametricTMax = 1;
+  parametricTStep = 0.01;
 
   /**
    * Objects that define the deleted objects (and all descendants) before deleting (for undoing delete)
@@ -228,6 +267,20 @@ export default class SENoduleItem extends Vue {
     stateArray: []
   };
 
+  mounted(): void {
+    if (this.node instanceof SEParametric) {
+      this.curve = this.node.ref;
+      this.curvePoint = new SEPoint(new Point());
+      const [tMin, tMax] = this.curve.tMinMaxExpressionValues();
+      this.parametricTMin = tMin;
+      this.parametricTMax = tMax;
+      this.parametricTStep = (tMax - tMin) / 100;
+      const label = new SELabel(new Label(), this.curvePoint);
+      const addCommand = new AddPointCommand(this.curvePoint, label);
+      addCommand.execute();
+      this.onParametricTimeChanged(tMin);
+    }
+  }
   glowMe(flag: boolean): void {
     /* If the highlighted object is plottable, we highlight
        it directly. Otherwise, we highlight its parents */
@@ -366,6 +419,35 @@ export default class SENoduleItem extends Vue {
       });
     }
   }
+
+  @Watch("parametricTime")
+  onParametricTimeChanged(tVal: number): void {
+    if (this.curve && this.curvePoint) {
+      this.rotationMatrix.getInverse(this.inverseRotationMatrix);
+      const p = this.curve.P(tVal);
+      // console.debug("At", tVal.toFixed(3), "position: ", p.toFixed(3));
+      p.applyMatrix4(this.rotationMatrix);
+      this.curvePoint.locationVector = p;
+      this.curvePoint.ref.updateDisplay();
+    }
+  }
+
+  animateCurvePoint(): void {
+    const repeatCount = Math.ceil(
+      (this.parametricTMax - this.parametricTMin) / this.parametricTStep
+    );
+    this.parametricTime = this.parametricTMin;
+    const timer = setInterval(() => {
+      if (this.parametricTime <= this.parametricTMax) {
+        this.parametricTime += this.parametricTStep;
+      }
+    }, 100);
+    setTimeout(() => {
+      console.debug("Stop the interval timer");
+      clearInterval(timer);
+    }, repeatCount * 100);
+  }
+
   get isPoint(): boolean {
     return this.node instanceof SEPoint;
   }
@@ -518,18 +600,18 @@ export default class SENoduleItem extends Vue {
 }
 .node,
 .visibleNode {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  margin: 0 0.25em;
+  // display: flex;
+  // flex-direction: row;
+  // align-items: center;
+  // margin: 0 0.25em;
   background-color: white;
   .contentText {
     // Expand to fill in the remaining available space
-    flex-grow: 1;
+    // flex-grow: 1;
   }
   v-icon {
     // Icons should not grow, just fit to content
-    flex-grow: 0;
+    // flex-grow: 0;
   }
 
   &:hover {

@@ -550,8 +550,8 @@ export abstract class SENodule {
   }
 
   /**
-   * Find all the unit normal vector lines that are perpendicular to the curve P(t) where tMin<= t <= tMax using subdivisions and Newton's method that
-   * pass though unitVec
+   * Find all the unit normal vector lines that are tangent to the curve P(t) where tMin<= t <= tMax
+   * using subdivisions and Newton's method that pass though unitVec
    * @param PPPrime P''(t) is the parameterization of second derivative of P(t) (NOT NECESSARILY UNIT)
    * @param PPrime P'(t) is the parameterization of the derivative of P(t) (NOT NECESSARILY UNIT)
    * @param unitVec a unit vector
@@ -573,8 +573,8 @@ export abstract class SENodule {
     // This means we want the dot product to be zero
     const d: (t: number) => number = function(t: number): number {
       const tmpVec = new Vector3();
-      tmpVec.crossVectors(P(t), PPrime(t));
-      return tmpVec.dot(unitVec);
+      tmpVec.crossVectors(P(t), unitVec);
+      return tmpVec.dot(PPrime(t));
     };
     // use (P(t)xP''(t)).unitVect as the second derivative if necessary
     let dp: ((t: number) => number) | undefined;
@@ -599,7 +599,8 @@ export abstract class SENodule {
     const returnVectors: Vector3[] = [];
     zeros.forEach(tVal => {
       const temp = new Vector3();
-      temp.copy(P(tVal).cross(PPrime(tVal)));
+
+      temp.copy(P(tVal).cross(unitVec));
       returnVectors.push(temp.normalize());
     });
     return returnVectors;
@@ -664,11 +665,7 @@ export abstract class SENodule {
 
       lastTVal = tVal;
     }
-    // if (zeros.length > 0) {
-    //   console.log("number of zeros", zeros.length);
-    // }
     if (signChanges.length === 0 && zeros.length === 0) {
-      console.debug("No sign changes; No zeros");
       return [];
     }
 
