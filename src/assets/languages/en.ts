@@ -259,7 +259,7 @@ export default {
 
     backStyleDisagreement: "Back Styling Disagreement",
     backStyleDifferentValuesToolTip:
-      "The selected objects have different automatic back styling settings. At least one want to use automatic back styling and at least one does not want to. Click the button to disable automatic back styling for all selected objects.",
+      "The selected objects have different automatic back styling settings. At least one want to use automatic back styling and at least one does not want to. Click the button make the automatic back styling the same for all selected objects.",
 
     styleDisagreement: "Common Style Disagreement",
     differentValues:
@@ -269,7 +269,8 @@ export default {
       "The selected objects have different values for at least one style option. Click the button and edit a style to make *all* selected objects have *all* the styles in this block have a common value(s).",
 
     singleLabelTextToolTip: "Enter a label text.",
-    multiLabelTextToolTip: "You cannot edit more than one label at a time.",
+    multiLabelTextToolTip:
+      "You cannot edit the text of more than one label at a time.",
 
     dynamicBackStyleHeader: "Automatic Back Styling",
     disableDynamicBackStyle: "Disable",
@@ -587,30 +588,30 @@ export default {
     yParametricCoordinate: "Y(t) formula",
     zParametricCoordinate: "Z(t) formula",
     xCoordExpressionTip:
-      "An expression (depending on measurement tokens) for the x coordinate for the parametric curve.",
+      "An expression (possibly depending on measurement tokens) for the x coordinate for the parametric curve.",
     yCoordExpressionTip:
-      "An expression (depending on measurement tokens) for the y coordinate for the parametric curve.",
+      "An expression (possibly depending on measurement tokens) for the y coordinate for the parametric curve.",
     zCoordExpressionTip:
-      "An expression (depending on measurement tokens) for the z coordinate for the parametric curve.",
+      "An expression (possibly depending on measurement tokens) for the z coordinate for the parametric curve.",
     tExpressionData: "Optional Tracing Expressions",
     tMinExpression: "Minimum Parameter Tracing Expression",
     tMinExpressionTip:
-      "An optional expression (depending on measurements tokens) that gives the starting t value when tracing the parametric curve. This value is always evaluated to be greater than or equal to the minimum parameter value.",
+      "An optional expression (that MUST depend on measurements tokens) that gives the starting t value when tracing the parametric curve. This value is always evaluated to be greater than or equal to the minimum parameter value.",
     tMaxExpression: "Maximum Parameter Tracing Expression",
     tMaxExpressionTip:
-      "An optional expression (depending on measurements tokens) that gives the ending t value when tracing the parametric curve. This value is always evaluated to be less than or equal to the maximum parameter value.",
+      "An optional expression (that MUST depend on measurements tokens) that gives the ending t value when tracing the parametric curve. This value is always evaluated to be less than or equal to the maximum parameter value.",
     exactlyOneEmptyTExpression:
       "Maximum and Minimum Parameter Tracing Expression must either both be empty or both be defined.",
 
     tMinNumber: "Minimum parameter(t) Value",
     tMinNumberTip:
-      "A required absolute minimum t value for tracing the parametric curve that is the lower bound for the optional tMin Tracing Expression.",
+      "A required absolute minimum t (must be a number) value for tracing the parametric curve that is the lower bound for the optional tMin Tracing Expression.",
     tMaxNumber: "Maximum parameter(t) Value",
     tMaxNumberTip:
-      "A required absolute minimum t value for tracing the parametric curve that is the upper bound for the optional tMax Tracing Expression.",
+      "A required absolute minimum t (must be a number) value for tracing the parametric curve that is the upper bound for the optional tMax Tracing Expression.",
     cuspParameterValues: "Cusp t values (if any)",
     cuspParameterValuesTip:
-      "The comma separated list of the t values of the parameter (if any) where the parametric curve has cusps. If the curve is closed and their is a cusp point at the point of closure, include both the minimum and maximum parameter value.",
+      "The comma separated list of the t (each must be a number) values of the parameter (if any) where the parametric curve has cusps. If the curve is closed and their is a cusp point at the point of closure, include both the minimum and maximum parameter value.",
     cuspValuesOutOfBounds:
       "At least one of the cusp parameter values is not between the minimum and maximum parameter values. Check the cusp parameter values.",
     currentTValue: "Current Value: ",

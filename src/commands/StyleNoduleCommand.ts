@@ -35,16 +35,16 @@ export class StyleNoduleCommand extends Command {
   }
 
   do(): void {
-    if (
-      this.currentStyles.length > 0 &&
-      this.currentStyles[0].backStyleContrast
-    ) {
-      Nodule.setBackStyleContrast(this.currentStyles[0].backStyleContrast);
-      this.nodules.forEach((n: Nodule, k: number) => {
-        n.stylize(DisplayStyle.ApplyCurrentVariables);
-        // delete this.currentStyles[k].backStyleContrast;
-      });
-    }
+    // if (
+    //   this.currentStyles.length > 0 &&
+    //   this.currentStyles[0].backStyleContrast
+    // ) {
+    //   Nodule.setBackStyleContrast(this.currentStyles[0].backStyleContrast);
+    //   this.nodules.forEach((n: Nodule, k: number) => {
+    //     n.stylize(DisplayStyle.ApplyCurrentVariables);
+    //     // delete this.currentStyles[k].backStyleContrast;
+    //   });
+    // }
 
     for (let i = 0; i < this.nodules.length; i++) {
       console.debug(
@@ -68,13 +68,13 @@ export class StyleNoduleCommand extends Command {
   }
 
   restoreState(): void {
-    if (this.pastStyles.length > 0 && this.pastStyles[0].backStyleContrast) {
-      Nodule.setBackStyleContrast(this.pastStyles[0].backStyleContrast);
-      this.nodules.forEach((n: Nodule, k: number) => {
-        n.stylize(DisplayStyle.ApplyCurrentVariables);
-        // delete this.currentStyles[k].backStyleContrast;
-      });
-    }
+    // if (this.pastStyles.length > 0 && this.pastStyles[0].backStyleContrast) {
+    //   Nodule.setBackStyleContrast(this.pastStyles[0].backStyleContrast);
+    //   this.nodules.forEach((n: Nodule, k: number) => {
+    //     n.stylize(DisplayStyle.ApplyCurrentVariables);
+    //     // delete this.currentStyles[k].backStyleContrast;
+    //   });
+    // }
     for (let i = 0; i < this.nodules.length; i++) {
       // console.debug(
       //   "Restore effect of StyleNoduleCommand to ",

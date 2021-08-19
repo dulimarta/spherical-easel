@@ -50,7 +50,7 @@
                   v-bind:label="$t('style.labelText')"
                   :counter="maxLabelDisplayTextLength"
                   ref="labelDisplayText"
-                  :class="{'shake' : animatedInput.labelDisplayText}"
+                  :class="{shake: animatedInput.labelDisplayText, conflict: conflictItems.labelDisplayText}"
                   filled
                   outlined
                   dense
@@ -65,12 +65,11 @@
           <!-- Label Diplay Mode Selections -->
 
           <v-select v-model.lazy="styleOptions.labelDisplayMode"
-            :class="[showMoreLabelStyles ? '': 'pa-0', {'shake' : animatedInput.labelDisplayMode}]"
+            :class="[showMoreLabelStyles ? '': 'pa-0', {'shake' : animatedInput.labelDisplayMode,conflict: conflictItems.labelTextFamily}]"
             :disabled="labelDisplayModeValueFilter(styleOptions).length < 2"
             ref="labelDisplayMode"
             v-bind:label="$t('style.labelDisplayMode')"
             :items="labelDisplayModeValueFilter(styleOptions)"
-            :background-color="conflictItems.labelDisplayMode?'red':''"
             @change="conflictItems.labelDisplayMode = false"
             filled
             outlined
@@ -82,8 +81,7 @@
               :counter="maxLabelDisplayCaptionLength"
               :placeholder="placeHolderText(selectionCount, true)"
               ref="labelDisplayCaption"
-              :class="{'shake' : animatedInput.labelDisplayCaption}"
-              :background-color="conflictItems.labelDisplayCaption?'red':''"
+              :class="{shake: animatedInput.labelDisplayCaption, conflict: conflictItems.labelDisplayCaption}"
               filled
               outlined
               dense
@@ -96,8 +94,7 @@
               v-bind:label="$t('style.labelTextFamily')"
               :items="labelTextFamilyItems"
               ref="labelTextFamily"
-              :class="{'shake' : animatedInput.labelTextFamily}"
-              :background-color="conflictItems.labelTextFamily?'red':''"
+              :class="{shake: animatedInput.labelTextFamily, conflict: conflictItems.labelTextFamily}"
               @change="conflictItems.labelTextFamily = false"
               filled
               outlined
@@ -107,8 +104,7 @@
               v-bind:label="$t('style.labelTextStyle')"
               :items="labelTextStyleItems"
               ref="labelTextStyle"
-              :class="{'shake' : animatedInput.labelTextStyle}"
-              :background-color="conflictItems.labelTextStyle?'red':''"
+              :class="{shake: animatedInput.labelTextStyle, conflict: conflictItems.labelTextStyle}"
               @change="conflictItems.labelTextStyle=false"
               filled
               outlined
@@ -118,8 +114,7 @@
               v-bind:label="$t('style.labelTextDecoration')"
               :items="labelTextDecorationItems"
               ref="labelTextDecorations"
-              :class="{'shake' : animatedInput.labelTextDecoration}"
-              :background-color="conflictItems.labelTextDecoration?'red':''"
+              :class="{shake: animatedInput.labelTextDecoration, conflict: conflictItems.labelTextDecoration}"
               @change="conflictItems.labelTextDecoration= false"
               filled
               outlined
@@ -203,6 +198,23 @@
           :panel="panel"
           input-selector="labelBackFillColor"
           v-if="showMoreLabelStyles">
+          <OverlayWithFixButton
+            v-if="!dataAgreement(/labelDynamicBackStyle/)"
+            z-index="100"
+            i18n-title-line="style.backStyleDisagreement"
+            i18n-button-label="style.enableCommonStyle"
+            i18n-button-tool-tip="style.backStyleDifferentValuesToolTip"
+            @click="forceDataAgreement([`labelDynamicBackStyle`]); styleOptions.labelDynamicBackStyle =!styleOptions.labelDynamicBackStyle">
+          </OverlayWithFixButton>
+
+          <OverlayWithFixButton v-if="styleOptions.labelDynamicBackStyle"
+            z-index="10"
+            i18n-title-line="style.dynamicBackStyleHeader"
+            i18n-button-label="style.disableDynamicBackStyle"
+            i18n-button-tool-tip="style.disableDynamicBackStyleToolTip"
+            @click="styleOptions.labelDynamicBackStyle =!styleOptions.labelDynamicBackStyle">
+          </OverlayWithFixButton>
+
           <OverlayWithFixButton v-if="!dataAgreement(/labelBackFillColor/)"
             z-index="1"
             i18n-title-line="style.styleDisagreement"
@@ -211,13 +223,7 @@
             @click="distinguishConflictingItems(conflictingProps);
             forceDataAgreement([`labelBackFillColor`])">
           </OverlayWithFixButton>
-          <OverlayWithFixButton v-if="styleOptions.labelDynamicBackStyle"
-            z-index="10"
-            i18n-title-line="style.dynamicBackStyleHeader"
-            i18n-button-label="style.disableDynamicBackStyle"
-            i18n-button-tool-tip="style.disableDynamicBackStyleToolTip"
-            @click="styleOptions.labelDynamicBackStyle =!styleOptions.labelDynamicBackStyle">
-          </OverlayWithFixButton>
+
           <SimpleColorSelector class="pa-2"
             :numSelected="selectionCount"
             title-key="style.labelBackFillColor"
@@ -711,16 +717,12 @@ export default class LabelStyle extends Vue {
   color: rgb(255, 82, 82);
 }
 
-// .v-text-field--outlined >>> fieldset {
-//   border-color: rgba(192, 0, 250, 0.986);
-// }
-
-.border >>> .v-text-field--outlined fieldset {
-  color: red !important;
+.v-text-field--outlined.conflict {
+  ::v-deep fieldset {
+    border-color: rgb(255, 82, 82);
+  }
 }
-// .v-text-field--outlined fieldset {
-//   color: red !important;
-// }
+
 .v-btn__content {
   height: 400px;
   word-wrap: break-word;

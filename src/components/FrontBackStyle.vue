@@ -83,7 +83,7 @@
             i18n-title-line="style.backStyleDisagreement"
             i18n-button-label="style.enableCommonStyle"
             i18n-button-tool-tip="style.backStyleDifferentValuesToolTip"
-            @click="forceDataAgreement([`dynamicBackStyle`])">
+            @click="forceDataAgreement([`dynamicBackStyle`]); styleOptions.dynamicBackStyle=!styleOptions.dynamicBackStyle">
           </OverlayWithFixButton>
           <OverlayWithFixButton
             v-if="editModeIsBack && styleOptions.dynamicBackStyle"

@@ -237,6 +237,9 @@ export default class ParametricForm extends Vue {
     } else if (ev.code === "KeyY") {
       this.setCycloidExpressions();
       this.addParametricCurve();
+    } else if (ev.code === "KeyT") {
+      this.setTrochoidExpressions();
+      this.addParametricCurve();
     }
   };
   setCircleExpressions(): void {
@@ -312,7 +315,7 @@ export default class ParametricForm extends Vue {
     const a =
       "(-1*((2/tan(w)*1/sin(w))*1/b)+1/sin(w)^2+1/sin(w)^2*1/b^2)^(-1/2)";
 
-    //hypocycloid
+    // //hypocycloid
     // const w = "pi/3";
     // const b = "3";
     // this.tNumbers.min = 0;
@@ -320,10 +323,11 @@ export default class ParametricForm extends Vue {
     // this.c1DiscontunityParameterValues = [
     //   0,
     //   (2 * Math.PI) / 3,
-    //   (4 * Math.PI) / 3
+    //   (4 * Math.PI) / 3,
+    //    2 * Math.PI
     // ];
 
-    // epicycloid 1
+    // //epicycloid 1
     // const w = "2*pi/3";
     // const b = "3";
     // this.tNumbers.min = 0;
@@ -331,10 +335,11 @@ export default class ParametricForm extends Vue {
     // this.c1DiscontunityParameterValues = [
     //   0,
     //   (2 * Math.PI) / 3,
-    //   (4 * Math.PI) / 3
+    //   (4 * Math.PI) / 3,
+    //   2 * Math.PI
     // ];
 
-    // spherical helix
+    // //spherical helix
     const w = "0.7227342478"; //acos(3/4)
     const b = "0.75";
     this.tNumbers.min = 0;
@@ -376,6 +381,55 @@ export default class ParametricForm extends Vue {
     //   .replaceAll(`w`, w)
     //   .replaceAll(`b`, b);
   }
+
+  setTrochoidExpressions(): void {
+    // See https://mathcurve.com/courbes3d.gb/cycloidspheric/cycloidspheric.shtml
+    // https://demonstrations.wolfram.com/SphericalCycloid/
+    // https://mathcurve.com/courbes3d.gb/cycloidspheric/trochoidspheric.shtml
+    // c=Sqrt[2]/Sqrt[-4 b^2 q Cot[w]    Csc[w]    +b^2   Csc[w]^2+d^2   Csc[w]^2+2 b^2 q^2   Csc[w]^2+b^2 Cos[2 w]   Csc[w]^2-d^2 Cos[2 w]  Csc[w]^2]
+    const e =
+      "(2)^(1/2)*(-4*b^2*q*cos(w)/sin(w)*1/sin(w)^2+b^2*1/sin(w)^2+d^2*1/sin(w)^2+2*b^2*q^2*1/sin(w)^2+b^2*cos(2*w)*1/sin(w)^2-d^2*cos(2*w)*1/sin(w)^2)^(-1/2)";
+
+    // //curve 1
+    const b = "0.5";
+    const d = "1";
+    const w = "pi/2";
+    const q = "3";
+    this.tNumbers.min = 0;
+    this.tNumbers.max = 2 * Math.PI;
+    this.c1DiscontunityParameterValues = [];
+
+    // //curve 2 //this doesn't work at the moment, but it works in Mathematica, I don't know what the issue it, but it might have to do to with the parser?
+    // const b = "1/2";
+    // const d = "2";
+    // const w = "pi/3";
+    // const q = "8/10";
+    // this.tNumbers.min = 0;
+    // this.tNumbers.max = 10 * Math.PI;
+    // this.c1DiscontunityParameterValues = [];
+    //                              e*((q*b-b*Cos[w]+d*Cos[w]*Cos[q*t])*Cos[t]+d*Sin[t]*Sin[q*t]) Mathematica input
+    this.coordinateExpressions.x = "e*((q*b-b*cos(w)+d*cos(w)*cos(q*t))*cos(t)+d*sin(t)*sin(q*t))"
+      .replaceAll(`e`, e)
+      .replaceAll(`b`, b)
+      .replaceAll(`d`, d)
+      .replaceAll(`q`, q)
+      .replaceAll(`w`, w);
+    //                              e*((q*b-b*Cos[w]+d*Cos[w]*Cos[q*t])*Sin[t]-d*Cos[t]*Sin[q*t]), Mathematica input
+    this.coordinateExpressions.y = "e*((q*b-b*cos(w)+d*cos(w)*cos(q*t))*sin(t)-d*cos(t)*sin(q*t))"
+      .replaceAll(`e`, e)
+      .replaceAll(`b`, b)
+      .replaceAll(`d`, d)
+      .replaceAll(`q`, q)
+      .replaceAll(`w`, w);
+    //                              e*(Sin[w]*(b-d*Cos[q*t])-(b-b*q*Cos[w])/Sin[w]) Mathematica input
+    this.coordinateExpressions.z = "e*(sin(w)*(b-d*cos(q*t))-(b-b*q*cos(w))/sin(w))"
+      .replaceAll(`e`, e)
+      .replaceAll(`b`, b)
+      .replaceAll(`d`, d)
+      .replaceAll(`q`, q)
+      .replaceAll(`w`, w);
+  }
+
   beforeDestroy(): void {
     window.removeEventListener("keydown", this.keyHandler);
   }
@@ -733,6 +787,13 @@ export default class ParametricForm extends Vue {
       this.varMap.set("t", tValues[i]);
 
       this.tempVector.set(
+        this.parser.evaluateWithVars(this.coordinateExpressions.x, this.varMap),
+        this.parser.evaluateWithVars(this.coordinateExpressions.y, this.varMap),
+        this.parser.evaluateWithVars(this.coordinateExpressions.z, this.varMap)
+      );
+      console.log(
+        "length",
+        this.tempVector.length(),
         this.parser.evaluateWithVars(this.coordinateExpressions.x, this.varMap),
         this.parser.evaluateWithVars(this.coordinateExpressions.y, this.varMap),
         this.parser.evaluateWithVars(this.coordinateExpressions.z, this.varMap)
