@@ -508,6 +508,23 @@ export class SEParametric extends SENodule
     v.actionOnParametric(this);
   }
 
+  private removeDuplicateVectors(arr: Array<Vector3>): void {
+    let N = arr.length;
+    const duplicatePos: Array<number> = [];
+    for (let k = 0; k < N; k++) {
+      for (let m = k + 1; m < N; m++) {
+        const dotProd = Math.abs(arr[k].dot(arr[m]));
+        if (Math.abs(dotProd - 1) < 1e-6) duplicatePos.push(m);
+      }
+      // Remove duplicate items from the highest index first
+      // so the positions of the other items are not affected
+      for (let n = duplicatePos.length - 1; n >= 0; n--) {
+        arr.splice(duplicatePos[n], 1);
+        N--;
+      }
+      duplicatePos.splice(0);
+    }
+  }
   /**
    * Return the normal vector(s) to the plane containing a line that is perpendicular to this parametric through the
    * sePoint, in the case that the usual way of defining this line is not well defined  (something is parallel),
@@ -545,63 +562,18 @@ export class SEParametric extends SENodule
       this.ref.PPPrime.bind(this.ref) // bind the this.ref so that this in the this.ref.PPPrime method is this.ref
     );
 
-    // normalList.forEach((vec, ind) => {
-    //   if (
-    //     Math.abs(vec.dot(transformedToStandard)) >
-    //     SETTINGS.tolerance / 1000
-    //   ) {
-    //     console.log(ind, "NOT through point");
-    //   }
-    //   if (vec.isZero(SETTINGS.tolerance / 1000)) {
-    //     console.log(ind, " Vector is ZERO");
-    //   }
-    // });
-
     // console.log("# normals before", normalList.length);
-    // normalList = normalList
-    //   // make sure that the returned vector are not just zeros of PPrime (which do not lead to perpendiculars)
-    //   .filter(vec => !vec.isZero(SETTINGS.tolerance / 1000))
-    //   // check that normals that are perpendicular to the line that passes through the given vector
-    //   .filter(
-    //     vec =>
-    //       Math.abs(vec.dot(transformedToStandard)) < SETTINGS.tolerance / 1000
-    //   )
-    //   .filter(vec => vec.normalize());
-    // console.log("# normals middle", normalList.length);
-
-    // return normalList.map(vec =>
-    //   vec
-    //     .applyMatrix4(
-    //       this.tmpMatrix.getInverse(SEStore.inverseTotalRotationMatrix)
-    //     )
-    //     .normalize()
-    // );
+    normalList.forEach((n: Vector3, k: number) => {
+      console.debug(`Normal-${k}`, n.toFixed(3));
+    });
 
     // remove duplicates from the list
-    const uniqueNormals: Vector3[] = [];
-    normalList.forEach(vec => {
-      if (
-        !uniqueNormals.some(nor =>
-          this.tmpVector
-            .crossVectors(vec, nor)
-            .isZero(SETTINGS.nearlyAntipodalIdeal)
-        )
-      ) {
-        uniqueNormals.push(vec);
-      }
-      // else {
-      //   console.log("Duplicate normal found");
-      // }
+    this.removeDuplicateVectors(normalList);
+    console.log("Unique normals", normalList.length);
+    normalList.forEach((n: Vector3, k: number) => {
+      console.debug(`Normal-${k}`, n.toFixed(3));
     });
-    // console.log("# normals end", uniqueNormals.length);
-    // console.log("uni perp", uniqueNormals);
-
-    // if (uniqueNormals.length > this._maxNumberOfPerpendiculars) {
-    //   console.debug(
-    //     "The number of normal vectors is bigger than the number of normals counted in the constructor. (Ignore this if issued by constructor.)"
-    //   );
-    // }
-    return uniqueNormals.map(vec =>
+    return normalList.map(vec =>
       vec
         .applyMatrix4(
           this.tmpMatrix.getInverse(SEStore.inverseTotalRotationMatrix)
@@ -647,7 +619,6 @@ export class SEParametric extends SENodule
         tMax,
         this.ref.PPPrime.bind(this.ref) // bind the this.ref so that this in the this.ref.E method is this.ref
       ).tVal;
-      // console.log("coord t val", coorespondingTVal);
       const tangentVector = new Vector3();
       tangentVector.copy(this.ref.PPrime(coorespondingTVal));
       tangentVector.applyMatrix4(SEStore.inverseTotalRotationMatrix);
@@ -683,23 +654,10 @@ export class SEParametric extends SENodule
     // });
 
     // remove duplicates from the list
-    const uniqueNormals: Vector3[] = [];
-    normalList.forEach(vec => {
-      if (
-        !uniqueNormals.some(nor =>
-          this.tmpVector
-            .crossVectors(vec, nor)
-            .isZero(SETTINGS.nearlyAntipodalIdeal)
-        )
-      ) {
-        uniqueNormals.push(vec);
-      }
-      // else {
-      //   console.log("Duplicate normal found");
-      // }
-    });
-    // console.log("# normals end", uniqueNormals.length);
-    // console.log("uni perp", uniqueNormals);
+    // console.log("perpendiculars", normalList);
+    this.removeDuplicateVectors(normalList);
+
+    console.log("uni perpendicular", normalList);
 
     // if (uniqueNormals.length > this._maxNumberOfTangents) {
     //   console.debug(
@@ -707,9 +665,7 @@ export class SEParametric extends SENodule
     //   );
     // }
     this.tmpMatrix.getInverse(SEStore.inverseTotalRotationMatrix);
-    return uniqueNormals.map(vec =>
-      vec.applyMatrix4(this.tmpMatrix).normalize()
-    );
+    return normalList.map(vec => vec.applyMatrix4(this.tmpMatrix).normalize());
   }
 
   get coordinateExpressions(): CoordExpression {
