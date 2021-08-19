@@ -4,7 +4,7 @@
       :nodule-filter-function="labelFilter"
       :nodule-map-function="labelMapper">
       <div
-        slot-scope="{styleOptions, selectionCount, forceDataAgreement, conflictingProps}">
+        slot-scope="{dataAgreement, styleOptions, selectionCount, forceDataAgreement, conflictingProps}">
         <!-- For debugging -->
         <!--ul>
           <li>Style Opt: {{styleOptions}}</li>
@@ -19,16 +19,17 @@
           i18n-button-tool-tip="style.labelsNotShowingToolTip"
           @click="toggleAllLabelsVisibility">
         </OverlayWithFixButton>
-        <InputGroup
+        <InputGroup :numSelected="selectionCount"
+          :panel="panel"
           input-selector="labelDisplayText,labelDisplayMode,labelDisplayCaption,labelTextFamily,labelTextStyle,labelTextDecoration">
           <!-- Differing data styles detected Overlay --higher z-index rendered on top-->
           <OverlayWithFixButton
-            v-if="dataAgreement(conflictingProps,[`labelDisplayMode`,`labelDisplayCaption`,`labelTextFamily`,`labelTextStyle`,`labelTextDecoration`])"
+            v-if="!dataAgreement(/labelDisplayMode|labelDisplayCaption|labelTextFamily|labelTextStyle|labelTextDecoration/)"
             z-index="1"
             i18n-title-line="style.styleDisagreement"
             i18n-button-label="style.enableCommonStyle"
             i18n-button-tool-tip="style.differentValuesToolTip"
-            @click="shakeConflictingItems(conflictingProps);
+            @click="distinguishConflictingItems(conflictingProps);
             forceDataAgreement([`labelDisplayMode`,`labelDisplayCaption`,`labelTextFamily`,`labelTextStyle`,`labelTextDecoration`])">
           </OverlayWithFixButton>
           <!-- Label Text Options -->
@@ -69,6 +70,8 @@
             ref="labelDisplayMode"
             v-bind:label="$t('style.labelDisplayMode')"
             :items="labelDisplayModeValueFilter(styleOptions)"
+            :background-color="conflictItems.labelDisplayMode?'red':''"
+            @change="conflictItems.labelDisplayMode = false"
             filled
             outlined
             dense>
@@ -80,9 +83,11 @@
               :placeholder="placeHolderText(selectionCount, true)"
               ref="labelDisplayCaption"
               :class="{'shake' : animatedInput.labelDisplayCaption}"
+              :background-color="conflictItems.labelDisplayCaption?'red':''"
               filled
               outlined
               dense
+              @keypress="conflictItems.labelDisplayCaption=false"
               v-bind:error-messages="$t(labelDisplayCaptionErrorMessageKey, { max: maxLabelDisplayCaptionLength })"
               :rules="[labelDisplayCaptionCheck,labelDisplayCaptionTruncate(styleOptions)]">
             </v-text-field>
@@ -92,6 +97,8 @@
               :items="labelTextFamilyItems"
               ref="labelTextFamily"
               :class="{'shake' : animatedInput.labelTextFamily}"
+              :background-color="conflictItems.labelTextFamily?'red':''"
+              @change="conflictItems.labelTextFamily = false"
               filled
               outlined
               dense>
@@ -101,6 +108,8 @@
               :items="labelTextStyleItems"
               ref="labelTextStyle"
               :class="{'shake' : animatedInput.labelTextStyle}"
+              :background-color="conflictItems.labelTextStyle?'red':''"
+              @change="conflictItems.labelTextStyle=false"
               filled
               outlined
               dense>
@@ -110,6 +119,8 @@
               :items="labelTextDecorationItems"
               ref="labelTextDecorations"
               :class="{'shake' : animatedInput.labelTextDecoration}"
+              :background-color="conflictItems.labelTextDecoration?'red':''"
+              @change="conflictItems.labelTextDecoration= false"
               filled
               outlined
               dense>
@@ -117,66 +128,87 @@
 
           </div>
         </InputGroup>
-        <InputGroup
+
+        <InputGroup :numSelected="selectionCount"
+          :panel="panel"
           input-selector="labelTextScalePercent,labelTextRotation"
           v-if="showMoreLabelStyles">
           <OverlayWithFixButton
-            v-if="dataAgreement(conflictingProps,[`labelTextScalePercent`,`labelTextRotation`])"
+            v-if="!dataAgreement(/labelTextScalePercent|labelTextRotation/)"
             z-index="1"
             i18n-title-line="style.styleDisagreement"
             i18n-button-label="style.enableCommonStyle"
             i18n-button-tool-tip="style.differentValuesToolTip"
-            @click="shakeConflictingItems(conflictingProps);
+            @click="distinguishConflictingItems(conflictingProps);
             forceDataAgreement([`labelTextScalePercent`,`labelTextRotation`])">
           </OverlayWithFixButton>
           {{ $t("style.labelTextScalePercent")}} &
-          {{$t("style.labelTextRotation")}}
-          <SimpleNumberSelector
+          {{$t("style.labelTextRotation")}} <span
+            v-if="selectedSENodules.length > 1"
+            class="text-subtitle-2"
+            style="color:red">{{" "+ $t("style.labelStyleOptionsMultiple") }}</span>
+          <v-divider></v-divider>
+          <SimpleNumberSelector class="pa-2"
+            :numSelected="selectionCount"
             v-bind:data.sync="styleOptions.labelTextScalePercent"
             title-key="style.labelTextScalePercent"
             ref="labelTextScalePercent"
+            :color="conflictItems.labelTextScalePercent?'red':''"
+            :conflict="conflictItems.labelTextScalePercent"
+            v-on:resetColor="conflictItems.labelTextScalePercent=false"
             :class="{'shake' : animatedInput.labelTextScalePercent}"
             :min="minLabelTextScalePercent"
             :max="maxLabelTextScalePercent"
             :step="20"
             :thumb-string-values="textScaleSelectorThumbStrings" />
-          <SimpleNumberSelector
+          <v-divider></v-divider>
+          <SimpleNumberSelector class="pa-2"
+            :numSelected="selectionCount"
             v-bind:data.sync="styleOptions.labelTextRotation"
             ref="labelTextRotation"
+            :conflict="conflictItems.labelTextRotation"
             :class="{'shake' : animatedInput.labelTextRotation}"
             title-key="style.labelTextRotation"
+            :color="conflictItems.labelTextRotation?'red':''"
+            v-on:resetColor="conflictItems.labelTextRotation=false"
             :min="-3.14159"
             :max="3.14159"
             :step="0.39269875"
             :thumb-string-values="textRotationSelectorThumbStrings">
           </SimpleNumberSelector>
         </InputGroup>
-        <InputGroup input-selector="labelFrontFillColor"
+        <InputGroup :numSelected="selectionCount"
+          :panel="panel"
+          input-selector="labelFrontFillColor"
           v-if="showMoreLabelStyles">
           <OverlayWithFixButton
-            v-if="dataAgreement(conflictingProps,[`labelFrontFillColor`])"
+            v-if="!dataAgreement(/labelFrontFillColor/)"
             z-index="1"
             i18n-title-line="style.styleDisagreement"
             i18n-button-label="style.enableCommonStyle"
             i18n-button-tool-tip="style.differentValuesToolTip"
-            @click="shakeConflictingItems(conflictingProps);
+            @click="distinguishConflictingItems(conflictingProps);
             forceDataAgreement([`labelFrontFillColor`])">
           </OverlayWithFixButton>
           <SimpleColorSelector title-key="style.labelFrontFillColor"
+            :numSelected="selectionCount"
             ref="labelFrontFillColor"
             style-name="labelFrontFillColor"
+            :conflict="conflictItems.labelFrontFillColor"
+            v-on:resetColor="conflictItems.labelFrontFillColor=false"
             :data.sync="styleOptions.labelFrontFillColor">
           </SimpleColorSelector>
         </InputGroup>
-        <InputGroup input-selector="labelBackFillColor"
+        <InputGroup :numSelected="selectionCount"
+          :panel="panel"
+          input-selector="labelBackFillColor"
           v-if="showMoreLabelStyles">
-          <OverlayWithFixButton
-            v-if="dataAgreement(conflictingProps,[`labelBackFillColor`])"
+          <OverlayWithFixButton v-if="!dataAgreement(/labelBackFillColor/)"
             z-index="1"
             i18n-title-line="style.styleDisagreement"
             i18n-button-label="style.enableCommonStyle"
             i18n-button-tool-tip="style.differentValuesToolTip"
-            @click="shakeConflictingItems(conflictingProps);
+            @click="distinguishConflictingItems(conflictingProps);
             forceDataAgreement([`labelBackFillColor`])">
           </OverlayWithFixButton>
           <OverlayWithFixButton v-if="styleOptions.labelDynamicBackStyle"
@@ -186,7 +218,11 @@
             i18n-button-tool-tip="style.disableDynamicBackStyleToolTip"
             @click="styleOptions.labelDynamicBackStyle =!styleOptions.labelDynamicBackStyle">
           </OverlayWithFixButton>
-          <SimpleColorSelector title-key="style.labelBackFillColor"
+          <SimpleColorSelector class="pa-2"
+            :numSelected="selectionCount"
+            title-key="style.labelBackFillColor"
+            :conflict="conflictItems.labelBackFillColor"
+            v-on:resetColor="conflictItems.labelBackFillColor=false"
             ref="labelBackFillColor"
             style-name="labelBackFillColor"
             :data.sync="styleOptions.labelBackFillColor">
@@ -221,7 +257,7 @@
 </template>
 <script lang="ts">
 import Vue from "vue";
-import { Component, Prop } from "vue-property-decorator";
+import { Component, Prop, Watch } from "vue-property-decorator";
 import { SENodule } from "../models/SENodule";
 import Nodule from "../plottables/Nodule";
 import { namespace } from "vuex-class";
@@ -260,6 +296,18 @@ type Animatable = {
   labelTextRotation: boolean;
 };
 
+type ConflictItems = {
+  labelDisplayText: boolean;
+  labelDisplayMode: boolean;
+  labelDisplayCaption: boolean;
+  labelTextFamily: boolean;
+  labelTextStyle: boolean;
+  labelTextDecoration: boolean;
+  labelTextScalePercent: boolean;
+  labelTextRotation: boolean;
+  labelBackFillColor: boolean;
+  labelFrontFillColor: boolean;
+};
 @Component({
   components: {
     FadeInCard,
@@ -275,6 +323,15 @@ export default class LabelStyle extends Vue {
 
   @SE.State((s: AppState) => s.selectedSENodules)
   readonly selectedSENodules!: SENodule[];
+
+  @Watch("selectedSENodules")
+  resetAllItemsFromConflict(): void {
+    // console.log("here");
+    const key = Object.keys(this.conflictItems);
+    key.forEach(prop => {
+      (this.conflictItems as any)[prop] = false;
+    });
+  }
 
   // Include only those objects that have SELabel
   labelFilter(n: SENodule): boolean {
@@ -305,6 +362,21 @@ export default class LabelStyle extends Vue {
     labelTextScalePercent: false,
     labelTextRotation: false
   };
+  // change the background color of the input if there is a conflict on that particular input
+  private conflictItems: ConflictItems = {
+    labelDisplayText: false,
+    labelDisplayMode: false,
+    labelDisplayCaption: false,
+    labelTextFamily: false,
+    labelTextStyle: false,
+    labelTextDecoration: false,
+    labelTextScalePercent: false,
+    labelTextRotation: false,
+    labelBackFillColor: false,
+    labelFrontFillColor: false
+  };
+
+  private conflictingPropNames: string[] = []; // this should always be identical to conflictingProps in the template above.
 
   private maxLabelTextScalePercent = SETTINGS.style.maxLabelTextScalePercent;
   private minLabelTextScalePercent = SETTINGS.style.minLabelTextScalePercent;
@@ -436,6 +508,35 @@ export default class LabelStyle extends Vue {
     //   this.textRotationSelectorThumbStrings
     // );
   }
+  mounted(): void {
+    EventBus.listen(
+      "style-label-conflict-color-reset",
+      this.resetAndRestoreConflictItemss
+    );
+    EventBus.listen(
+      "style-update-conflicting-props",
+      (names: { propNames: string[] }): void => {
+        // this.conflictingPropNames.forEach(name =>
+        //   console.log("old prop", name)
+        // );
+        this.conflictingPropNames.splice(0);
+        names.propNames.forEach(name => this.conflictingPropNames.push(name));
+        // this.conflictingPropNames.forEach(name =>
+        //   console.log("new prop", name)
+        // );
+      }
+    );
+  }
+
+  resetAndRestoreConflictItemss(): void {
+    this.resetAllItemsFromConflict();
+    this.distinguishConflictingItems(this.conflictingPropNames);
+  }
+
+  beforeDestroy(): void {
+    EventBus.unlisten("style-label-conflict-color-reset");
+    EventBus.unlisten("style-update-conflicting-props");
+  }
 
   get allLabelsShowing(): boolean {
     return this.selectedSENodules.every(node => {
@@ -551,14 +652,6 @@ export default class LabelStyle extends Vue {
       return returnItems.filter(itm => !itm.optionRequiresCaptionToExist);
     }
   }
-  dataAgreement(conflictingPropNames: string[], checkProps: string[]): boolean {
-    return checkProps.some(
-      prop =>
-        conflictingPropNames.findIndex(
-          conflictProp => conflictProp === prop
-        ) !== -1
-    );
-  }
 
   placeHolderText(numSelected: number, caption: boolean): string {
     if (numSelected > 1) {
@@ -576,7 +669,7 @@ export default class LabelStyle extends Vue {
     }
   }
 
-  shakeConflictingItems(conflictingProps: string[]): void {
+  distinguishConflictingItems(conflictingProps: string[]): void {
     conflictingProps.forEach(conflictPropName => {
       switch (conflictPropName) {
         case "labelDisplayText":
@@ -596,11 +689,17 @@ export default class LabelStyle extends Vue {
           }
           break;
       }
-
-      (this.animatedInput as any)[conflictPropName] = true;
-      setTimeout(() => {
-        (this.animatedInput as any)[conflictPropName] = false;
-      }, 1000);
+      // console.log(this.$refs);
+      // (this.animatedInput as any)[conflictPropName] = true;
+      if (conflictPropName.search(/Color/) === -1) {
+        (this.conflictItems as any)[conflictPropName] = "error";
+      } else {
+        (this.conflictItems as any)[conflictPropName] = "red";
+      }
+      // setTimeout(() => {
+      //   (this.animatedInput as any)[conflictPropName] = false;
+      //   // (this.conflictItems as any)[conflictPropName] = undefined;
+      // }, 1000);
     });
   }
 }
@@ -612,6 +711,16 @@ export default class LabelStyle extends Vue {
   color: rgb(255, 82, 82);
 }
 
+// .v-text-field--outlined >>> fieldset {
+//   border-color: rgba(192, 0, 250, 0.986);
+// }
+
+.border >>> .v-text-field--outlined fieldset {
+  color: red !important;
+}
+// .v-text-field--outlined fieldset {
+//   color: red !important;
+// }
 .v-btn__content {
   height: 400px;
   word-wrap: break-word;

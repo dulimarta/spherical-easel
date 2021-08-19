@@ -22,6 +22,8 @@ import { SEAngleMarker } from "@/models/SEAngleMarker";
 import { SESegmentLength } from "@/models/SESegmentLength";
 import { ValueDisplayMode } from "@/types";
 import { SEPolygon } from "@/models/SEPolygon";
+import { SEParametric } from "@/models/SEParametric";
+import { SEEllipse } from "@/models/SEEllipse";
 
 /**
  * Each Point object is uniquely associated with a SEPoint object.
@@ -430,6 +432,12 @@ export default class Label extends Nodule {
         } else if (this.seLabel.parent instanceof SEAngleMarker) {
           labelDisplayMode = SETTINGS.angleMarker.defaultLabelMode;
           // labelVisibility = SETTINGS.circle.showLabelsInitially;
+        } else if (this.seLabel.parent instanceof SEParametric) {
+          labelDisplayMode = SETTINGS.parametric.defaultLabelMode;
+          // labelVisibility = SETTINGS.circle.showLabelsInitially;
+        } else if (this.seLabel.parent instanceof SEEllipse) {
+          labelDisplayMode = SETTINGS.ellipse.defaultLabelMode;
+          // labelVisibility = SETTINGS.circle.showLabelsInitially;
         }
       }
       return {
@@ -622,7 +630,7 @@ export default class Label extends Nodule {
         const backFillColor =
           labelStyle?.labelBackFillColor ?? SETTINGS.label.fillColor.back;
         // console.log("front fill label", frontFillColor);
-        if (frontFillColor === "noLabelFrontFill") {
+        if (Nodule.hlsaIsNoFillOrNoStroke(frontFillColor)) {
           this.frontText.noFill();
         } else {
           this.frontText.fill = frontFillColor;
@@ -630,14 +638,21 @@ export default class Label extends Nodule {
         this.glowingFrontText.stroke = this.glowingStrokeColorFront;
 
         // BACK
-        if (labelStyle?.dynamicBackStyle) {
-          if (Nodule.contrastFillColor(frontFillColor) === "noLabelBackFill") {
+        if (
+          labelStyle?.labelDynamicBackStyle !== undefined &&
+          labelStyle?.labelDynamicBackStyle === true
+        ) {
+          if (
+            Nodule.hlsaIsNoFillOrNoStroke(
+              Nodule.contrastFillColor(frontFillColor)
+            )
+          ) {
             this.backText.noFill();
           } else {
             this.backText.fill = Nodule.contrastFillColor(frontFillColor);
           }
         } else {
-          if (backFillColor === "noLabelBackFill") {
+          if (Nodule.hlsaIsNoFillOrNoStroke(backFillColor)) {
             this.backText.noFill();
           } else {
             this.backText.fill = backFillColor;

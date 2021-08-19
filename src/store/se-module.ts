@@ -117,7 +117,7 @@ export default class SE extends VuexModule implements AppState {
   initialStyleStatesMap: Map<StyleEditPanels, StyleOptions[]> = new Map();
   defaultStyleStatesMap: Map<StyleEditPanels, StyleOptions[]> = new Map();
   styleSavedFromPanel = StyleEditPanels.Label;
-  initialBackStyleContrast = SETTINGS.style.backStyleContrast;
+  // initialBackStyleContrast = SETTINGS.style.backStyleContrast;
   inverseTotalRotationMatrix = new Matrix4(); //initially the identity. The composition of all the inverses of the rotation matrices applied to the sphere
   svgCanvas: HTMLDivElement | null = null;
   hasUnsavedNodules = false;
@@ -622,6 +622,18 @@ export default class SE extends VuexModule implements AppState {
     });
   }
 
+  @Mutation
+  changeBackContrast(newContrast: number): void {
+    Nodule.setBackStyleContrast(newContrast);
+    // update all objects display
+    this.seNodules.forEach(seNodule => {
+      // stylize the objects
+      console.log("name", seNodule.name);
+      seNodule.ref?.stylize(DisplayStyle.ApplyCurrentVariables);
+      // stylize the labels
+      // if (seNodule.l)
+    });
+  }
   // addCalculation(calc: SECalculation): void {
   //   // TODO: should we also push it to this.nodules?
   //   // this.nodules.push(calc);
@@ -640,7 +652,6 @@ export default class SE extends VuexModule implements AppState {
   recordStyleState(data: {
     panel: StyleEditPanels;
     selected: Array<Nodule>;
-    backContrast: number;
   }): void {
     console.debug("About to record style", data.selected.length, "objects");
     const current = data.selected.map((n: Nodule) =>
@@ -657,7 +668,7 @@ export default class SE extends VuexModule implements AppState {
       data.panel,
       data.selected.map((n: Nodule) => n.defaultStyleState(data.panel))
     );
-    this.initialBackStyleContrast = data.backContrast;
+    // this.initialBackStyleContrast = data.backContrast;
   }
 
   @Mutation

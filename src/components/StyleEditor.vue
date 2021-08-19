@@ -2,7 +2,7 @@
 <script lang="ts">
 import { SENodule } from "@/models/SENodule";
 import Nodule, { DisplayStyle } from "@/plottables/Nodule";
-import { AppState } from "@/types";
+import { AppState, SEOneDimensional } from "@/types";
 import { StyleEditPanels, StyleOptions } from "@/types/Styles";
 import { Component, Prop, Vue, Watch } from "vue-property-decorator";
 import { ScopedSlotChildren } from "vue/types/vnode";
@@ -11,6 +11,12 @@ import { SEStore } from "@/store";
 import EventBus from "@/eventHandlers/EventBus";
 import { StyleNoduleCommand } from "@/commands/StyleNoduleCommand";
 import SETTINGS from "@/global-settings";
+import { SEAngleMarker } from "@/models/SEAngleMarker";
+import { SESegment } from "@/models/SESegment";
+import { SECircle } from "@/models/SECircle";
+import { SEEllipse } from "@/models/SEEllipse";
+import { SEParametric } from "@/models/SEParametric";
+import { SELine } from "@/models/SELine";
 const SE = namespace("se");
 type StyleOptionDiff = {
   prop: string;
@@ -41,8 +47,8 @@ export default class extends Vue {
   @SE.State((s: AppState) => s.oldStyleSelections)
   readonly oldStyleSelections!: SENodule[];
 
-  @SE.State((s: AppState) => s.initialBackStyleContrast)
-  readonly initialBackStyleContrast!: number;
+  // @SE.State((s: AppState) => s.initialBackStyleContrast)
+  // readonly initialBackStyleContrast!: number;
 
   commonStyleProperties: Array<string> = [];
   conflictingPropNames: Array<string> = [];
@@ -59,7 +65,7 @@ export default class extends Vue {
   * propDynamicBackStyleCommonValue is FALSE when all selected objects 
     have the dynamicBackStyle = FALSE
   */
-  dataAgreement = true;
+  // dataAgreement = true;
   propDynamicBackStyleCommonValue = false;
 
   render(): ScopedSlotChildren {
@@ -69,42 +75,65 @@ export default class extends Vue {
         styleOptions: this.activeStyleOptions,
         selectionCount: this.selectedNodules.length,
         conflictingProps: this.conflictingPropNames,
-
-        enableBackStyleEdit: this.enableBackStyleEdit,
+        // enableBackStyleEdit: this.enableBackStyleEdit,
         automaticBackStyleCommonValue: this.propDynamicBackStyleCommonValue,
+        angleMarkersSelected: this.anAngleMarkerIsSelected,
+        oneDimensionSelected: this.oneDimensionalIsSelected,
         forceDataAgreement: this.forceDataAgreement,
-        hasStyle: this.hasStyle
+        hasStyle: this.hasStyle,
+        dataAgreement: this.dataAgreement
       });
     return {} as ScopedSlotChildren;
     // throw new Error("Default scoped slot is undefined");
   }
 
-  get enableBackStyleEdit(): boolean {
-    // Must be in Back panel
-    if (this.panel !== StyleEditPanels.Back) {
-      console.debug(
-        "Enable Back Style Edit? No, becasue the user is NOT editing Back panel"
-      );
-      return false;
-    }
-    // The user wants automatic back styling
-    // [The user does NOT want manual back styling/does NOT want to edit]
-    if (this.automaticBackStyle === false) {
-      console.debug(
-        "Enable Back Style Edit? Yes, becasue the user does not want automaic back style"
-      );
-      return true;
-    }
-    console.debug(
-      "Enable Back Style Edit? It depend on dynamicBackStyleCommonValue: ",
-      !this.propDynamicBackStyleCommonValue
+  // get enableBackStyleEdit(): boolean {
+  //   // Must be in Back panel
+  //   if (this.panel !== StyleEditPanels.Back) {
+  //     console.debug(
+  //       "Enable Back Style Edit? No, becasue the user is NOT editing Back panel"
+  //     );
+  //     return false;
+  //   }
+  //   // The user wants automatic back styling
+  //   // [The user does NOT want manual back styling/does NOT want to edit]
+  //   if (this.automaticBackStyle === false) {
+  //     console.debug(
+  //       "Enable Back Style Edit? Yes, becasue the user does not want automatic back style"
+  //     );
+  //     return true;
+  //   }
+  //   console.debug(
+  //     "Enable Back Style Edit? It depend on dynamicBackStyleCommonValue: ",
+  //     !this.propDynamicBackStyleCommonValue
+  //   );
+  //   // We got here when the user requested manual editing of back style
+  //   return !this.propDynamicBackStyleCommonValue;
+  // }
+  get anAngleMarkerIsSelected(): boolean {
+    return (
+      this.selectedSENodules.filter(seNod => seNod instanceof SEAngleMarker)
+        .length > 0
     );
-    // We got here when the user requested manual editing of back style
-    return !this.propDynamicBackStyleCommonValue;
   }
-
+  get oneDimensionalIsSelected(): boolean {
+    return (
+      this.selectedSENodules.filter(
+        seNod =>
+          seNod instanceof SELine ||
+          seNod instanceof SESegment ||
+          seNod instanceof SECircle ||
+          seNod instanceof SEEllipse ||
+          seNod instanceof SEParametric
+      ).length > 0
+    );
+  }
   hasStyle(prop: RegExp): boolean {
     return this.commonStyleProperties.some((x: string) => x.match(prop));
+  }
+
+  dataAgreement(prop: RegExp): boolean {
+    return !this.conflictingPropNames.some((x: string) => x.match(prop));
   }
 
   created(): void {
@@ -129,6 +158,9 @@ export default class extends Vue {
     this.selectedNodules.forEach((n: Nodule, k: number) => {
       const updatePayload: StyleOptions = {};
       propNames.forEach((p: string) => {
+        // if (p === "dashArray") {
+        //   console.log("restore dash array to ", (styleData[k] as any)[p]);
+        // }
         (updatePayload as any)[p] = (styleData[k] as any)[p];
       });
       // console.debug("Updating style of", n, "using", updatePayload);
@@ -140,39 +172,43 @@ export default class extends Vue {
       });
     }
   }
-  undo(ev: { selector: string }): void {
-    if (ev.selector !== "backStyleContrast") {
-      const styleData = this.initialStatesMap.get(this.panel);
-      if (styleData) {
-        const listOfProps = ev.selector.split(",");
-        if (ev.selector === "labelBackFillColor") {
-          // if the user restores the labelBackFillColor to defaults also restore the automaticBackStyling
-          listOfProps.push("labelDynamicBackStyle");
-        }
-        this.restoreTo(listOfProps, styleData);
+  undo(ev: { selector: string; panel: StyleEditPanels }): void {
+    const styleData = this.initialStatesMap.get(this.panel);
+    if (styleData) {
+      const listOfProps = ev.selector.split(",");
+      if (ev.selector === "labelBackFillColor") {
+        // if the user restores the labelBackFillColor to defaults also restore the automaticBackStyling
+        listOfProps.push("labelDynamicBackStyle");
       }
-    } else {
-      Nodule.setBackStyleContrast(this.initialBackStyleContrast);
-      this.activeStyleOptions.backStyleContrast = this.initialBackStyleContrast;
+      if (ev.panel !== undefined && ev.panel === StyleEditPanels.Back) {
+        // if the user restores the something from the back panel also restore the automaticBackStyling
+        listOfProps.push("dynamicBackStyle");
+      }
+      this.restoreTo(listOfProps, styleData);
     }
+
+    // set the color of the conflicting inputs in the style panel to normal
+    EventBus.fire("style-label-conflict-color-reset", {});
   }
-  restoreDefault(ev: { selector: string }): void {
-    console.log("ev selector", ev.selector);
-    if (ev.selector !== "backStyleContrast") {
-      const styleData = this.defaultStatesMap.get(this.panel);
-      if (styleData) {
-        const listOfProps = ev.selector.split(",");
-        if (ev.selector === "labelBackFillColor") {
-          // if the user restores the labelBackFillColor to defaults also restore the automaticBackStyling
-          listOfProps.push("labelDynamicBackStyle");
-        }
-        this.restoreTo(listOfProps, styleData);
+  restoreDefault(ev: { selector: string; panel: StyleEditPanels }): void {
+    // console.log("ev selector", ev.selector);
+    const styleData = this.defaultStatesMap.get(this.panel);
+    if (styleData) {
+      const listOfProps = ev.selector.split(",");
+      if (listOfProps.some(prop => prop === "labelBackFillColor")) {
+        // if the user restores the labelBackFillColor to defaults also restore the automaticBackStyling
+        listOfProps.push("labelDynamicBackStyle");
       }
-    } else {
-      Nodule.setBackStyleContrast(SETTINGS.style.backStyleContrast);
-      this.activeStyleOptions.backStyleContrast =
-        SETTINGS.style.backStyleContrast;
+      if (ev.panel === StyleEditPanels.Back) {
+        // if the user restores the something from the back panel also restore the automaticBackStyling
+        listOfProps.push("dynamicBackStyle");
+      }
+
+      this.restoreTo(listOfProps, styleData);
     }
+
+    // set the color of the conflicting inputs in the style panel to normal
+    EventBus.fire("style-label-conflict-color-reset", {});
   }
 
   @Watch("panel")
@@ -193,7 +229,7 @@ export default class extends Vue {
 
     this.saveStyleState();
     this.commonStyleProperties.splice(0);
-    this.dataAgreement = true;
+    // this.dataAgreement = true;
     if (newSelection.length === 0) {
       return;
     }
@@ -213,8 +249,7 @@ export default class extends Vue {
     });
     SEStore.recordStyleState({
       panel: this.panel,
-      selected: this.selectedNodules,
-      backContrast: Nodule.backStyleContrast
+      selected: this.selectedNodules
     });
 
     // Use the style of the first selected object as the initial value
@@ -222,12 +257,32 @@ export default class extends Vue {
 
     // Use flatmap (1-to-many mapping) to compile all the styling properties
     // of all the selected objects
-    const commonProps = styleOptionsOfSelected.flatMap((opt: StyleOptions) =>
+    const unionOfAllProps = styleOptionsOfSelected.flatMap(
+      (opt: StyleOptions) =>
+        Object.getOwnPropertyNames(opt).filter(
+          (s: string) => !s.startsWith("__")
+        )
+    );
+
+    const unDuplicatedUnionOfAllProps = new Set(unionOfAllProps); // Convert to set to remove duplicates
+    // console.log("undup", unDuplicatedUnionOfAllProps);
+
+    const listOfAllProps = styleOptionsOfSelected.map((opt: StyleOptions) =>
       Object.getOwnPropertyNames(opt).filter((s: string) => !s.startsWith("__"))
     );
-    const uniqueProps = new Set(commonProps); // Convert to set to remove duplicates
+    // console.log("list of common props", listOfAllProps);
+
+    unDuplicatedUnionOfAllProps.forEach(prop => {
+      // make sure that prop is on every list of properties, if so it is a common prop
+      if (listOfAllProps.every(list => list.indexOf(prop) > -1)) {
+        this.commonStyleProperties.push(prop);
+      }
+    });
+
+    console.log("common props", this.commonStyleProperties);
+
     // Use destructuring (...) to convert back from set to array
-    this.commonStyleProperties.push(...uniqueProps);
+    //this.commonStyleProperties.push(...uniqueProps);
 
     if (this.selectedNodules.length > 1) {
       this.propDynamicBackStyleCommonValue = false;
@@ -253,9 +308,18 @@ export default class extends Vue {
           const agreement = this.selectedNodules.every((obj: Nodule) => {
             const thisStyleOption = obj.currentStyleState(this.panel);
             const thisValue = (thisStyleOption as any)[propName];
+            console.log("prop & name", propName, propName.search(/Color/), obj);
+            console.log("ref value", refValue);
+            console.log("this value", thisValue);
+
             if (Array.isArray(thisValue) || Array.isArray(refValue)) {
-              if (thisValue.length === 0) thisValue.push(0, 0);
+              if (thisValue.length === 0) {
+                thisValue.push(0, 0);
+              }
               return this.dashArrayCompare(thisValue, refValue);
+            } else if (propName.search(/Color/) > -1) {
+              // Without this the comparasion was saying that "hsla(0, 0%, 0%, 0.1)" was different than "hsla(0,0%,0%,0.100)"
+              return this.hslaCompare(thisValue, refValue);
             } else return thisValue === refValue;
           });
           // If values do not agree, include its property name into the conflict array
@@ -266,9 +330,14 @@ export default class extends Vue {
         this.conflictingPropNames.forEach(prop => {
           console.error("Disagreement in property value", prop);
         });
-
-        this.dataAgreement = false;
       }
+      //update the conflicting properties
+      const newConflictProps: string[] = [];
+      this.conflictingPropNames.forEach(name => newConflictProps.push(name));
+      EventBus.fire("style-update-conflicting-props", {
+        propNames: newConflictProps
+      });
+      // this.dataAgreement = false;
     } else {
       // If we reach this point we have EXACTLY ONE object selected
       this.conflictingPropNames.splice(0);
@@ -277,6 +346,13 @@ export default class extends Vue {
       this.propDynamicBackStyleCommonValue =
         (opt as any)["dynamicBackStyle"] ?? false;
       console.debug("Only one object is selected");
+
+      //update the conflicting properties
+      const newConflictProps: string[] = [];
+      this.conflictingPropNames.forEach(name => newConflictProps.push(name));
+      EventBus.fire("style-update-conflicting-props", {
+        propNames: newConflictProps
+      });
     }
     this.previousSelectedNodules.splice(0);
     this.previousSelectedNodules.push(...this.selectedNodules);
@@ -295,6 +371,35 @@ export default class extends Vue {
     if (a.length == 0) return b.every((val: number) => val === 0);
     if (b.length == 0) return a.every((val: number) => val === 0);
     return a.every((val: number, k: number) => val === b[k]);
+  }
+
+  hslaCompare(colorString1: string, colorString2: string): boolean {
+    if (colorString1 === undefined && colorString2 === undefined) {
+      return true;
+    }
+    if (colorString1 === undefined || colorString2 === undefined) {
+      return false;
+    }
+    if (
+      colorString1.search(/hsla/) === -1 ||
+      colorString2.search(/hsla/) === -1
+    ) {
+      throw new Error(
+        `Style editor in hslaCompare: at least one of the strings is not a color string: ${colorString1},${colorString2}`
+      );
+    }
+    const hlsaObject1 = Nodule.convertStringToHSLAObject(colorString1);
+    const hlsaObject2 = Nodule.convertStringToHSLAObject(colorString2);
+    // console.log("hsla objects", hlsaObject1.h, hlsaObject2.h);
+    if (
+      Math.abs(hlsaObject1.h - hlsaObject2.h) < SETTINGS.tolerance &&
+      Math.abs(hlsaObject1.s - hlsaObject2.s) < SETTINGS.tolerance &&
+      Math.abs(hlsaObject1.l - hlsaObject2.l) < SETTINGS.tolerance &&
+      Math.abs(hlsaObject1.a - hlsaObject2.a) < SETTINGS.tolerance
+    ) {
+      return true;
+    }
+    return false;
   }
 
   @Watch("activeStyleOptions", { deep: true, immediate: true })
@@ -322,10 +427,23 @@ export default class extends Vue {
     [...updatedProps].forEach((p: string) => {
       const a = (this.previousStyleOptions as any)[p];
       const b = (newOptions as any)[p];
+
+      let aEqualsb = true;
+      if (Array.isArray(b) || Array.isArray(a)) {
+        if (b.length === 0) {
+          b.push(0, 0);
+        }
+        aEqualsb = this.dashArrayCompare(b, a);
+      } else if (p.search(/Color/) > -1) {
+        console.log("prop", p);
+        // Without this the comparasion was saying that "hsla(0, 0%, 0%, 0.1)" was different than "hsla(0,0%,0%,0.100)"
+        aEqualsb = this.hslaCompare(b, a);
+      } else aEqualsb = b === a;
+
       // Exclude the property from payload if it did not change
-      if (a === b) delete (updatePayload as any)[p];
+      if (aEqualsb) delete (updatePayload as any)[p];
       else {
-        // console.debug(`Property ${p} changed from ${a} to ${b}`);
+        console.debug(`Property ${p} changed from ${a} to ${b}`);
         EventBus.fire("style-option-change", { prop: p });
       }
     });
@@ -334,21 +452,21 @@ export default class extends Vue {
     if (this.selectedNodules.length > 1) delete updatePayload.labelDisplayText;
 
     if (this.panel == StyleEditPanels.Back) {
-      if (!this.automaticBackStyle)
-        updatePayload.dynamicBackStyle = !this.propDynamicBackStyleCommonValue;
+      // if (!this.automaticBackStyle)
+      //   updatePayload.dynamicBackStyle = !this.propDynamicBackStyleCommonValue;
       console.debug(
         "About to update backstyle of selected objects using payload",
         updatePayload
       );
     }
     if (updatedProps.length > 0) {
-      if (updatePayload.backStyleContrast) {
-        Nodule.setBackStyleContrast(updatePayload.backStyleContrast);
-        this.selectedNodules.forEach((n: Nodule) => {
-          n.stylize(DisplayStyle.ApplyCurrentVariables);
-        });
-        delete updatePayload.backStyleContrast;
-      }
+      // if (updatePayload.backStyleContrast) {
+      //   Nodule.setBackStyleContrast(updatePayload.backStyleContrast);
+      //   this.selectedNodules.forEach((n: Nodule) => {
+      //     n.stylize(DisplayStyle.ApplyCurrentVariables);
+      //   });
+      //   delete updatePayload.backStyleContrast;
+      // }
       this.selectedNodules.forEach((n: Nodule) => {
         // console.debug("Updating style of", n);
         n.updateStyle(this.panel, updatePayload);
@@ -359,16 +477,24 @@ export default class extends Vue {
 
   forceDataAgreement(props: string[]): void {
     console.debug("User overrides data disagreement");
-    this.dataAgreement = true;
+    // this.dataAgreement = true;
+    console.log("num props before", this.conflictingPropNames.length);
     props.forEach(prop => {
       const ind = this.conflictingPropNames.findIndex(
         conflictProp => conflictProp === prop
       );
+      // console.log("porp", prop, ind);
       if (ind > -1) {
-        this.conflictingPropNames.splice(ind);
+        this.conflictingPropNames.splice(ind, 1);
       }
     });
-    // this.conflictingPropNames.splice(0);
+    //update the conflicting properties
+    const newConflictProps: string[] = [];
+    this.conflictingPropNames.forEach(name => newConflictProps.push(name));
+    // console.log("num props sent", newConflictProps.length);
+    EventBus.fire("style-update-conflicting-props", {
+      propNames: newConflictProps
+    });
     if (this.panel === StyleEditPanels.Back)
       this.propDynamicBackStyleCommonValue = true;
   }
@@ -411,8 +537,14 @@ export default class extends Vue {
       const aVal = (opt1 as any)[p];
       const bVal = (opt2 as any)[p];
       if (Array.isArray(aVal) && Array.isArray(bVal)) {
-        if (!this.dashArrayCompare(aVal, bVal))
+        if (!this.dashArrayCompare(aVal, bVal)) {
           diffOut.push({ prop: p, oldValue: aVal, newValue: bVal });
+        }
+      } else if (p.search(/Color/) > -1) {
+        // Without this the comparasion was saying that "hsla(0, 0%, 0%, 0.1)" was different than "hsla(0,0%,0%,0.100)"
+        if (!this.hslaCompare(bVal, aVal)) {
+          diffOut.push({ prop: p, oldValue: aVal, newValue: bVal });
+        }
       } else if (aVal != bVal)
         diffOut.push({ prop: p, oldValue: aVal, newValue: bVal });
     });

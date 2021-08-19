@@ -14,7 +14,8 @@ export const SETTINGS = {
     minPointRadiusPercent: 60, // The minimum percent point radius different from the scaled for zoom size
     maxAngleMarkerRadiusPercent: 200, // The maximum percent angle marker different from the scaled for zoom size
     minAngleMarkerRadiusPercent: 60, // The minimum percent angle marker different from the scaled for zoom size
-    maxGapLengthPlusDashLength: 20, // the maximum of the sum of the gap and dash and the endpoint (max value) of the dash range slider
+    maxGapLengthOrDashLength: 20, // the maximum of the sum of the gap and dash and the endpoint (max value) of the dash range slider
+    sliderStepSize: 1, // The step size of the dash pattern selector
     maxLabelTextScalePercent: 200, // The maximum percent text scale different from the scaled for zoom size
     minLabelTextScalePercent: 60, // The minimum percent text scale different from the scaled for zoom size
     /* The possible colors to choose from*/
@@ -126,7 +127,7 @@ export const SETTINGS = {
     ],
     selectedColor: {
       front: "hsla(0, 100%, 50%, 0.5)",
-      back: "2)"
+      back: "hsla(0, 100%, 50%, 0.3)"
     }
   },
   zoom: {
@@ -261,9 +262,10 @@ export const SETTINGS = {
         back: 2
       }, // The thickness of the segment when drawn,
       dashArray: {
+        reverse: { front: true, back: true }, // In the slider to select the dash array should the numbers be reversed so that the dash length can be less than the gap length?
         offset: { front: 0, back: 0 },
-        front: [] as number[], // An empty array means no dashing.
-        back: [10, 5] // An empty array means no dashing.
+        front: [0, 0], // An empty array or [0,0] means no dashing.
+        back: [5, 10] // An empty array means no dashing.
       } // An empty array means no dashing.
     },
     //The properties of the region around a segment when it is glowing
@@ -310,9 +312,10 @@ export const SETTINGS = {
         back: 2
       },
       dashArray: {
+        reverse: { front: true, back: true }, // In the slider to select the dash array should the numbers be reversed so that the dash length can be less than the gap length?
         offset: { front: 0, back: 0 },
-        front: [] as number[], // An empty array means no dashing.
-        back: [10, 5] // An empty array means no dashing.
+        front: [0, 0], // An empty array or [0,0] means no dashing.
+        back: [5, 10] // An empty array means no dashing.
       }
     },
     //The properties of the region around a line when it is glowing
@@ -344,9 +347,10 @@ export const SETTINGS = {
       // The thickness reduction of the nonFree line when drawn
       scalePercent: 85, // The percent that the size of the (free) lines are scaled by to get the thickness of the nonFreeLine
       dashArray: {
+        reverse: { front: true, back: true }, // In the slider to select the dash array should the numbers be reversed so that the dash length can be less than the gap length?
         offset: { front: 0, back: 0 },
-        front: [] as number[], // An empty array means no dashing.
-        back: [10, 5] // An empty array means no dashing.
+        front: [0, 0], // An empty array or [0,0] means no dashing.
+        back: [5, 10] // An empty array means no dashing.
       }
     }
   },
@@ -363,9 +367,9 @@ export const SETTINGS = {
     //The properties of the circle when it is drawn on the sphereCanvas and is not glowing
     drawn: {
       fillColor: {
-        front: "hsla(254, 100%, 90%, 0.2)", //"hsla(217, 100%, 80%, 0.0005)", //"noFill",
+        front: "hsla(254, 100%, 90%, 0.2)", //"hsla(217, 100%, 80%, 0.0005)", //"noFill" is "hsla(0,0%,0%,0)"
         frontHSLA: { h: 254, s: 100, l: 90, a: 0.2 },
-        back: "hsla(10, 100%, 50%, 0.1)", //"hsla(217, 100%, 80%, 0.0002)" //"noFill"
+        back: "hsla(10, 100%, 50%, 0.1)", //"hsla(217, 100%, 80%, 0.0002)" //"noFill" is "hsla(0,0%,0%,0)"
         backHSLA: { h: 254, s: 100, l: 50, a: 0.2 }
       },
       strokeColor: {
@@ -378,9 +382,10 @@ export const SETTINGS = {
         back: 2
       }, // The thickness of the circle when drawn front/back,
       dashArray: {
+        reverse: { front: true, back: true }, // In the slider to select the dash array should the numbers be reversed so that the dash length can be less than the gap length?
         offset: { front: 0, back: 0 },
-        front: [] as number[], // An empty array means no dashing.
-        back: [10, 5] // An empty array means no dashing.
+        front: [0, 0], // An empty array or [0,0] means no dashing.
+        back: [5, 10] // An empty array means no dashing.
       } // An empty array means no dashing.
     },
     //The properties of the region around a circle when it is glowing
@@ -396,8 +401,8 @@ export const SETTINGS = {
     //The properties of the circle when it is temporarily shown by the circle tool while drawing
     temp: {
       fillColor: {
-        front: "hsla(0, 0%, 90%, 0.3)", //"noFill",
-        back: "hsla(0, 0%, 50%, 0.3)" //"noFill"
+        front: "hsla(0, 0%, 90%, 0.3)", //"noFill" is "hsla(0,0%,0%,0)",
+        back: "hsla(0, 0%, 50%, 0.3)" //"noFill" is "hsla(0,0%,0%,0)"
       },
       strokeColor: {
         front: "hsla(0, 0%, 0%, 1.0)",
@@ -421,9 +426,9 @@ export const SETTINGS = {
     //The properties of the ellipse when it is drawn on the sphereCanvas and is not glowing
     drawn: {
       fillColor: {
-        front: "hsla(254, 100%, 90%, 0.2)", //"hsla(217, 100%, 80%, 0.0005)", //"noFill",
+        front: "hsla(254, 100%, 90%, 0.2)", //"hsla(217, 100%, 80%, 0.0005)", //"noFill" is "hsla(0,0%,0%,0)",
         frontHSLA: { h: 254, s: 100, l: 90, a: 0.2 },
-        back: "hsla(10, 100%, 50%, 0.1)", //"hsla(217, 100%, 80%, 0.0002)" //"noFill"
+        back: "hsla(10, 100%, 50%, 0.1)", //"hsla(217, 100%, 80%, 0.0002)" //"noFill" is "hsla(0,0%,0%,0)"
         backHSLA: { h: 10, s: 100, l: 75, a: 0.1 }
       },
       strokeColor: {
@@ -436,9 +441,10 @@ export const SETTINGS = {
         back: 2
       }, // The thickness of the ellipse when drawn front/back,
       dashArray: {
+        reverse: { front: true, back: true }, // In the slider to select the dash array should the numbers be reversed so that the dash length can be less than the gap length?
         offset: { front: 0, back: 0 },
-        front: [] as number[], // An empty array means no dashing.
-        back: [10, 5] // An empty array means no dashing.
+        front: [0, 0], // An empty array or [0,0] means no dashing.
+        back: [5, 10] // An empty array means no dashing.
       } // An empty array means no dashing.
     },
     //The properties of the region around a ellipse when it is glowing
@@ -454,8 +460,8 @@ export const SETTINGS = {
     //The properties of the ellipse when it is temporarily shown by the ellipse tool while drawing
     temp: {
       fillColor: {
-        front: "hsla(0, 0%, 90%, 0.3)", //"noFill",
-        back: "hsla(0, 0%, 50%, 0.3)" //"noFill"
+        front: "hsla(0, 0%, 90%, 0.3)", //"noFill" is "hsla(0,0%,0%,0)",
+        back: "hsla(0, 0%, 50%, 0.3)" //"noFill" is "hsla(0,0%,0%,0)"
       },
       strokeColor: {
         front: "hsla(0, 0%, 0%, 1.0)",
@@ -480,8 +486,8 @@ export const SETTINGS = {
     //The properties of the parametric curve when it is drawn on the sphereCanvas and is not glowing
     drawn: {
       fillColor: {
-        front: "hsla(254, 100%, 90%, 0.2)", //"hsla(217, 100%, 80%, 0.0005)", //"noFill",
-        back: "hsla(10, 100%, 50%, 0.1)" //"hsla(217, 100%, 80%, 0.0002)" //"noFill"
+        front: "hsla(254, 100%, 90%, 0.2)", //"hsla(217, 100%, 80%, 0.0005)", //"noFill" is "hsla(0,0%,0%,0)",
+        back: "hsla(10, 100%, 50%, 0.1)" //"hsla(217, 100%, 80%, 0.0002)" //"noFill" is "hsla(0,0%,0%,0)"
       },
       strokeColor: {
         front: "hsla(217, 90%, 61%, 1)",
@@ -493,9 +499,10 @@ export const SETTINGS = {
         back: 2
       }, // The thickness of the parametric curve when drawn front/back,
       dashArray: {
+        reverse: { front: true, back: true }, // In the slider to select the dash array should the numbers be reversed so that the dash length can be less than the gap length?
         offset: { front: 0, back: 0 },
-        front: [] as number[], // An empty array means no dashing.
-        back: [10, 5] // An empty array means no dashing.
+        front: [0, 0], // An empty array or [0,0] means no dashing.
+        back: [5, 10] // An empty array means no dashing.
       } // An empty array means no dashing.
     },
     //The properties of the region around a parametric curve when it is glowing
@@ -511,8 +518,8 @@ export const SETTINGS = {
     //The properties of the parametric curve when it is temporarily shown by the parametric curve tool while drawing
     temp: {
       fillColor: {
-        front: "hsla(0, 0%, 90%, 0.3)", //"noFill",
-        back: "hsla(0, 0%, 50%, 0.3)" //"noFill"
+        front: "hsla(0, 0%, 90%, 0.3)", //"noFill" is "hsla(0,0%,0%,0)",
+        back: "hsla(0, 0%, 50%, 0.3)" //"noFill" is "hsla(0,0%,0%,0)"
       },
       strokeColor: {
         front: "hsla(0, 0%, 0%, 1.0)",
@@ -536,9 +543,9 @@ export const SETTINGS = {
     //The properties of the polygon when it is drawn on the sphereCanvas and is not glowing
     drawn: {
       fillColor: {
-        front: "hsla(254, 100%, 90%, 0.6)", //"hsla(217, 100%, 80%, 0.0005)", //"noFill",
+        front: "hsla(254, 100%, 90%, 0.6)", //"hsla(217, 100%, 80%, 0.0005)", //"noFill" is "hsla(0,0%,0%,0)",
         frontHSLA: { h: 254, s: 100, l: 90, a: 0.6 },
-        back: "hsla(10, 100%, 50%, 0.1)", //"hsla(217, 100%, 80%, 0.0002)" //"noFill"
+        back: "hsla(10, 100%, 50%, 0.1)", //"hsla(217, 100%, 80%, 0.0002)" //"noFill" is "hsla(0,0%,0%,0)"
         backHSLA: { h: 10, s: 100, l: 50, a: 0.2 }
       }
       //  strokeColor is determined by each edge
@@ -554,9 +561,9 @@ export const SETTINGS = {
     dynamicBackStyle: true,
     fontSize: 15,
     fillColor: {
-      front: "hsla(0, 0%, 0%, 1.0)", //"noFill",
+      front: "hsla(0, 0%, 0%, 1.0)", //"noFill" is "hsla(0,0%,0%,0)",
       frontHSLA: { h: 0, s: 0, l: 0, a: 1 },
-      back: "hsla(0, 0%, 0%, 0.1)", //"noFill"
+      back: "hsla(0, 0%, 0%, 0.1)", //"noFill" is "hsla(0,0%,0%,0)"
       backHSLA: { h: 0, s: 0, l: 0, a: 1 }
     },
     style: "normal",
@@ -576,7 +583,8 @@ export const SETTINGS = {
     initialLabelOffset: 0.2, // When making point labels this is initially how far (roughly) they are from the angleMarker
     defaultLabelMode: LabelDisplayMode.ValueOnly, // The default way of displaying this objects label
     turnOffVertexLabelOnCreation: true, // When an angle marker is created with a label at the vertex, that label is turned off if this is set.
-
+    maxGapLengthOrDashLength: 2, // the maximum of the sum of the gap and dash and the endpoint (max value) of the dash range slider
+    sliderStepSize: 0.1, //
     defaultTickMark: false,
     defaultDoubleArc: false,
     defaultRadius: 0.08, // The default radius for angleMarkers
@@ -593,9 +601,9 @@ export const SETTINGS = {
     //The properties of the angleMarker when it is drawn on the sphereCanvas and is not glowing
     drawn: {
       fillColor: {
-        front: "hsla(254, 100%, 90%, 0.5)", //"noFill",0.001
+        front: "hsla(254, 100%, 90%, 0.5)", //"noFill" is "hsla(0,0%,0%,0)",0.001
         frontHSLA: { h: 254, s: 100, l: 90, a: 0.5 },
-        back: "hsla(10, 100%, 50%, 0.4)", //"hsla(0, 0%, 0%, 1)" //"noFill"
+        back: "hsla(10, 100%, 50%, 0.4)", //"hsla(0, 0%, 0%, 1)" //"noFill" is "hsla(0,0%,0%,0)"
         backHSLA: { h: 10, s: 100, l: 50, a: 0.4 }
       },
       strokeColor: {
@@ -613,9 +621,10 @@ export const SETTINGS = {
         }
       }, // The thickness of the edge of the angleMarker when drawn front/back,
       dashArray: {
+        reverse: { front: true, back: true }, // In the slider to select the dash array should the numbers be reversed so that the dash length can be less than the gap length?
         offset: { front: 0, back: 0 },
-        front: [] as number[], // An empty array means no dashing.
-        back: [] // An empty array means no dashing.
+        front: [0, 0], // An empty array or [0,0] means no dashing.
+        back: [0, 0] // An empty array or [0,0] means no dashing.
       } // An empty array means no dashing.
     },
     //The properties of the region around an angle when it is glowing
@@ -632,8 +641,8 @@ export const SETTINGS = {
     //The properties of the angle marker when it is temporarily shown by the angle measuring tool while drawing
     temp: {
       fillColor: {
-        front: "hsla(340, 0%, 50%, 0.4)", //front: "hsla(0, 0%, 90%, 0.3)", //"noFill",
-        back: "hsla(0, 0%, 50%, 0.3)" //"noFill"
+        front: "hsla(340, 0%, 50%, 0.4)", //front: "hsla(0, 0%, 90%, 0.3)", //"noFill" is "hsla(0,0%,0%,0)",
+        back: "hsla(0, 0%, 50%, 0.3)" //"noFill" is "hsla(0,0%,0%,0)"
       },
       strokeColor: {
         front: "hsla(0, 0%, 0%, 0.6)",
