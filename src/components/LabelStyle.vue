@@ -50,7 +50,7 @@
                   v-bind:label="$t('style.labelText')"
                   :counter="maxLabelDisplayTextLength"
                   ref="labelDisplayText"
-                  :class="{'shake' : animatedInput.labelDisplayText}"
+                  :class="{shake : animatedInput.labelDisplayText}"
                   filled
                   outlined
                   dense
@@ -65,12 +65,13 @@
           <!-- Label Diplay Mode Selections -->
 
           <v-select v-model.lazy="styleOptions.labelDisplayMode"
-            :class="[showMoreLabelStyles ? '': 'pa-0', {'shake' : animatedInput.labelDisplayMode}]"
+            :class="[showMoreLabelStyles ? '': 'pa-0', 
+            {shake : animatedInput.labelDisplayMode,
+            conflict: conflictItems.labelDisplayMode}]"
             :disabled="labelDisplayModeValueFilter(styleOptions).length < 2"
             ref="labelDisplayMode"
             v-bind:label="$t('style.labelDisplayMode')"
             :items="labelDisplayModeValueFilter(styleOptions)"
-            :background-color="conflictItems.labelDisplayMode?'red':''"
             @change="conflictItems.labelDisplayMode = false"
             filled
             outlined
@@ -82,8 +83,8 @@
               :counter="maxLabelDisplayCaptionLength"
               :placeholder="placeHolderText(selectionCount, true)"
               ref="labelDisplayCaption"
-              :class="{'shake' : animatedInput.labelDisplayCaption}"
-              :background-color="conflictItems.labelDisplayCaption?'red':''"
+              :class="{shake : animatedInput.labelDisplayCaption,
+              conflict:conflictItems.labelDisplayCaption}"
               filled
               outlined
               dense
@@ -96,8 +97,8 @@
               v-bind:label="$t('style.labelTextFamily')"
               :items="labelTextFamilyItems"
               ref="labelTextFamily"
-              :class="{'shake' : animatedInput.labelTextFamily}"
-              :background-color="conflictItems.labelTextFamily?'red':''"
+              :class="{shake : animatedInput.labelTextFamily,
+              conflict: conflictItems.labelTextFamily}"
               @change="conflictItems.labelTextFamily = false"
               filled
               outlined
@@ -107,8 +108,8 @@
               v-bind:label="$t('style.labelTextStyle')"
               :items="labelTextStyleItems"
               ref="labelTextStyle"
-              :class="{'shake' : animatedInput.labelTextStyle}"
-              :background-color="conflictItems.labelTextStyle?'red':''"
+              :class="{shake : animatedInput.labelTextStyle,
+                       conflict: conflictItems.labelTextStyle}"
               @change="conflictItems.labelTextStyle=false"
               filled
               outlined
@@ -118,8 +119,8 @@
               v-bind:label="$t('style.labelTextDecoration')"
               :items="labelTextDecorationItems"
               ref="labelTextDecorations"
-              :class="{'shake' : animatedInput.labelTextDecoration}"
-              :background-color="conflictItems.labelTextDecoration?'red':''"
+              :class="{shake : animatedInput.labelTextDecoration,
+              conflict: conflictItems.labelTextDecoration}"
               @change="conflictItems.labelTextDecoration= false"
               filled
               outlined
@@ -706,21 +707,21 @@ export default class LabelStyle extends Vue {
 </script>
 <style lang="scss" scoped>
 @import "@/scss/variables.scss";
-
 .select-an-object-text {
   color: rgb(255, 82, 82);
 }
 
-// .v-text-field--outlined >>> fieldset {
-//   border-color: rgba(192, 0, 250, 0.986);
-// }
-
-.border >>> .v-text-field--outlined fieldset {
-  color: red !important;
+/* customize outline color of conflicting input fields
+   Use :v-deep (SCSS) or /deep/ (CSS) to reach out INTO the
+   html elements managed by Vuetify
+ */
+.v-text-field--outlined.conflict {
+  ::v-deep fieldset {
+    border-color: rgba(192, 0, 250, 0.986);
+    border-width: 2px;
+  }
 }
-// .v-text-field--outlined fieldset {
-//   color: red !important;
-// }
+
 .v-btn__content {
   height: 400px;
   word-wrap: break-word;
