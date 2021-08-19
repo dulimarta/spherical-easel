@@ -134,6 +134,7 @@ export class AddParametricCommand extends Command {
         parametric,
         coordinateExpressions,
         tExpressions,
+        tNumbers,
         c1DiscontinuityParameterValues,
         calculationParents.map(par => par as SEExpression)
       );

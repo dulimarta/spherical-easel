@@ -81,8 +81,20 @@ export class SEParametric extends SENodule
    */
 
   private _seParentExpressions: SEExpression[] = [];
-  private _tNumbers: MinMaxNumber = { min: NaN, max: NaN };
+
+  /**
+   * _tNumbers hold the current min/max of the entire curve. This value
+   *   may get updated when tExpressions are updated
+   * _tNumbersHardLimit hold the lifetime min/max of the entire curve. This
+   *   value is "read-only", i.e. stay constant throughout the curve lifetime.
+   *
+   * When tExpressions are provided, the active t range may change
+   * However, the active tNumbers must always be bound by the hard limits.
+   */
   private _tExpressions: MinMaxExpression = { min: "", max: "" };
+  private _tNumbers: MinMaxNumber = { min: NaN, max: NaN };
+  private _tNumbersHardLimit: MinMaxNumber = { min: NaN, max: NaN };
+
   private _c1DiscontinuityParameterValues: number[] = [];
 
   private tSyntaxTrees: MinMaxSyntaxTrees = {
@@ -107,7 +119,8 @@ export class SEParametric extends SENodule
   constructor(
     parametric: Parametric,
     coordinateExpressions: { x: string; y: string; z: string },
-    tExpressions: { min: string | number; max: string | number },
+    tExpressions: { min: string; max: string },
+    tNumbers: { min: number; max: number } /* hard limit */,
     c1DiscontinuityParameterValues: number[],
     measurementParents: SEExpression[]
   ) {
@@ -155,17 +168,14 @@ export class SEParametric extends SENodule
       this.primeCoordinateSyntaxTrees.z,
       "t"
     );
-    if (typeof tExpressions.min === "number")
-      this._tNumbers.min = tExpressions.min as number;
-    else {
+    this._tNumbersHardLimit = tNumbers;
+    if (tExpressions.min.trim().length > 0) {
       this._tExpressions.min = tExpressions.min;
-      this.tSyntaxTrees.min = ExpressionParser.parse(this._tExpressions.min);
+      this.tSyntaxTrees.min = ExpressionParser.parse(tExpressions.min);
     }
-    if (typeof tExpressions.max === "number")
-      this._tNumbers.max = tExpressions.max as number;
-    else {
+    if (tExpressions.max.trim().length > 0) {
       this._tExpressions.max = tExpressions.max;
-      this.tSyntaxTrees.max = ExpressionParser.parse(this._tExpressions.max);
+      this.tSyntaxTrees.max = ExpressionParser.parse(tExpressions.max);
     }
 
     const numDiscontinuity = c1DiscontinuityParameterValues.length;
@@ -174,14 +184,14 @@ export class SEParametric extends SENodule
         "****** Parametric curve with discontinuity!!!!!",
         c1DiscontinuityParameterValues
       );
-      if (this._tNumbers.min < c1DiscontinuityParameterValues[0]) {
+      if (this._tNumbersHardLimit.min < c1DiscontinuityParameterValues[0]) {
         this._c1DiscontinuityParameterValues.push(this._tNumbers.min);
       }
       this._c1DiscontinuityParameterValues.push(
         ...c1DiscontinuityParameterValues
       );
       if (
-        this._tNumbers.max >
+        this._tNumbersHardLimit.max >
         c1DiscontinuityParameterValues[numDiscontinuity - 1]
       )
         this._c1DiscontinuityParameterValues.push(this._tNumbers.max);
@@ -243,19 +253,21 @@ export class SEParametric extends SENodule
     const fnValues: Vector3[] = [];
     const fnPrimeValues: Vector3[] = [];
     const fnPPrimeValues: Vector3[] = [];
-    if (
-      this.tSyntaxTrees.min !== ExpressionParser.NOT_DEFINED &&
-      this.tSyntaxTrees.max !== ExpressionParser.NOT_DEFINED
-    ) {
-      this.tNumbers.min = ExpressionParser.evaluate(
+    if (this.tSyntaxTrees.min !== ExpressionParser.NOT_DEFINED) {
+      const minValue = ExpressionParser.evaluate(
         this.tSyntaxTrees.min,
         this.varMap
       );
-      this.tNumbers.max = ExpressionParser.evaluate(
+
+      this._tNumbers.min = Math.max(this._tNumbersHardLimit.min, minValue);
+    } else this._tNumbers.min = this._tNumbersHardLimit.min;
+    if (this.tSyntaxTrees.max !== ExpressionParser.NOT_DEFINED) {
+      const maxValue = ExpressionParser.evaluate(
         this.tSyntaxTrees.max,
         this.varMap
       );
-    }
+      this._tNumbers.max = Math.min(this._tNumbersHardLimit.max, maxValue);
+    } else this._tNumbers.max = this._tNumbersHardLimit.max;
     this.evaluateFunctionAndCache(this.coordinateSyntaxTrees, fnValues);
     this.evaluateFunctionAndCache(
       this.primeCoordinateSyntaxTrees,
@@ -271,8 +283,8 @@ export class SEParametric extends SENodule
         fnValues,
         fnPrimeValues,
         fnPPrimeValues,
-        this.tNumbers.min,
-        this.tNumbers.max,
+        this._tNumbersHardLimit.min,
+        this._tNumbersHardLimit.max,
         this.tNumbers.min,
         this.tNumbers.max
       );
@@ -290,8 +302,8 @@ export class SEParametric extends SENodule
           fnValues,
           fnPrimeValues,
           fnPPrimeValues,
-          this.tNumbers.min,
-          this.tNumbers.max,
+          this._tNumbersHardLimit.min,
+          this._tNumbersHardLimit.max,
           breakPoints[m - 1],
           breakPoints[m]
         );
@@ -308,15 +320,15 @@ export class SEParametric extends SENodule
     cache: Array<Vector3>
   ): void {
     const N = SETTINGS.parameterization.subdivisions * 4;
-    const RANGE = this.tNumbers.max - this.tNumbers.min;
+    const RANGE = this._tNumbersHardLimit.max - this._tNumbersHardLimit.min;
     console.debug(
-      `Evaluate function in range, [${this.tNumbers.min}, ${this.tNumbers.max}]`
+      `Evaluate function in range, [${this._tNumbersHardLimit.min}, ${this._tNumbersHardLimit.max}]`
     );
     cache.splice(0);
 
     let vecValue: Vector3;
     for (let i = 0; i < N; i++) {
-      const tValue = this.tNumbers.min + (i * RANGE) / (N - 1);
+      const tValue = this._tNumbersHardLimit.min + (i * RANGE) / (N - 1);
       this.varMap.set("t", tValue);
       vecValue = new Vector3(
         ExpressionParser.evaluate(fn.x, this.varMap),
@@ -330,8 +342,11 @@ export class SEParametric extends SENodule
    * The tMin & tMax starting *tracing* parameter of the curve.
    */
   public tMinMaxExpressionValues(): number[] {
-    if (this._tExpressions.min === "" || this._tExpressions.max === "")
-      return [this.tNumbers.min, this.tNumbers.max];
+    if (
+      this.tSyntaxTrees.min === ExpressionParser.NOT_DEFINED ||
+      this.tSyntaxTrees.max === ExpressionParser.NOT_DEFINED
+    )
+      return [this._tNumbersHardLimit.min, this._tNumbersHardLimit.max];
     // first update the map with the current values of the measurements
     this._seParentExpressions.forEach((m: SEExpression) => {
       const measurementName = m.name;
@@ -341,8 +356,8 @@ export class SEParametric extends SENodule
     let tMin = ExpressionParser.evaluate(this.tSyntaxTrees.min, this.varMap);
     let tMax = ExpressionParser.evaluate(this.tSyntaxTrees.max, this.varMap);
     // restrict to the parameter interval of tNumber.min to tNumber.max
-    if (tMin < this.tNumbers.min) tMin = this.tNumbers.min;
-    if (tMax > this.tNumbers.max) tMax = this.tNumbers.max;
+    if (tMin < this._tNumbersHardLimit.min) tMin = this._tNumbersHardLimit.min;
+    if (tMax > this._tNumbersHardLimit.max) tMax = this._tNumbersHardLimit.max;
 
     return [tMin, tMax];
   }
@@ -544,7 +559,7 @@ export class SEParametric extends SENodule
 
     // find the tracing tMin and tMax
     const [tMin, tMax] = useFullTInterval
-      ? [this.tNumbers.min, this.tNumbers.max]
+      ? [this._tNumbersHardLimit.min, this._tNumbersHardLimit.max]
       : this.tMinMaxExpressionValues();
 
     // It must be the case that tMax> tMin because in update we check to make sure -- if it is not true then this parametric doesn't exist
@@ -601,7 +616,7 @@ export class SEParametric extends SENodule
 
     // find the tracing tMin and tMax
     const [tMin, tMax] = useFullTInterval
-      ? [this.tNumbers.min, this.tNumbers.max]
+      ? [this._tNumbersHardLimit.min, this._tNumbersHardLimit.max]
       : this.tMinMaxExpressionValues();
     const avoidTValues: number[] = [];
     // avoidTValues.push(...this._c1DiscontinuityParameterValues);

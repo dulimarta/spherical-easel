@@ -166,6 +166,7 @@ export default class Parametric extends Nodule {
 
   private buildCurve() {
     this.numAnchors = this.determineAnchorsFromArcLength();
+    console.debug("Use", this.numAnchors, "anchor points");
     if (this.frontParts.length === 0) {
       // console.debug(
       //   `Parametric::buildCurve() new build of part-${this.partId} with number of anchors`,
@@ -309,29 +310,44 @@ export default class Parametric extends Nodule {
     let currArcLength = 0;
     let iteration = 1;
     let interAnchorDistance = 0;
+    const curr = new Vector3();
+    const next = new Vector3();
     do {
       newArcLength = 0;
       // replace with Simpson's rule? some adaptive algorithm? PPrime is possibly undefined at certain values
       const tRange = this.tPartMax - this.tPartMin;
+
+      // Approximate the length using inter sample distance
+      curr.copy(this.P(this.tPartMin));
       for (let i = 0; i < SUBDIVISIONS * iteration; i++) {
         const tValue =
           this.tPartMin + ((i + 0.5) / (SUBDIVISIONS * iteration)) * tRange;
+        const len = next
+          .copy(this.P(tValue))
+          .sub(curr)
+          .length();
 
-        const len = this.PPrime(tValue).length();
         if (!isNaN(len)) {
           newArcLength += len;
         }
+        curr.copy(this.P(tValue));
       }
-      interAnchorDistance =
-        (newArcLength / (SUBDIVISIONS * iteration)) * tRange;
+      interAnchorDistance = newArcLength / (SUBDIVISIONS * iteration);
       // newArcLength /=
       //   (SETTINGS.parameterization.subdivisions * iteration) / (tMax - tMin);
-
+      const growth = (newArcLength - currArcLength) / newArcLength;
+      console.debug(
+        `Iteration-${iteration} length changed from ${currArcLength} to ${newArcLength}. Growth = ${growth.toFixed(
+          3
+        )}`,
+        "inter anchor distance",
+        interAnchorDistance
+      );
       if (
         Math.abs(currArcLength - newArcLength) <
         SETTINGS.parameterization.maxChangeInArcLength
       ) {
-        return Math.floor(interAnchorDistance * SUBDIVISIONS);
+        return iteration * SUBDIVISIONS;
       } else {
         currArcLength = newArcLength;
       }
@@ -340,7 +356,7 @@ export default class Parametric extends Nodule {
       iteration < SETTINGS.parameterization.maxNumberOfIterationArcLength
     );
     // this._initialArcLength = newArcLength;
-    return Math.floor(interAnchorDistance * SUBDIVISIONS);
+    return iteration * SUBDIVISIONS;
   }
 
   /**

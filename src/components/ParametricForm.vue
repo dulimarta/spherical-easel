@@ -619,14 +619,15 @@ export default class ParametricForm extends Vue {
     parametric.adjustSize();
 
     // Add the last command to the group and then execute it (i.e. add the potentially two points and the circle to the store.)
-    if (this.tExpressions.min === "")
-      this.tExpressions.min = this.tNumbers.min.toString();
-    if (this.tExpressions.max === "")
-      this.tExpressions.max = this.tNumbers.max.toString();
+    // if (this.tExpressions.min === "")
+    //   this.tExpressions.min = this.tNumbers.min.toString();
+    // if (this.tExpressions.max === "")
+    //   this.tExpressions.max = this.tNumbers.max.toString();
     const newSEParametric = new SEParametric(
       parametric,
       this.coordinateExpressions,
       this.tExpressions,
+      this.tNumbers,
       this.c1DiscontunityParameterValues,
       calculationParents
     );
