@@ -1,8 +1,8 @@
 
 <script lang="ts">
 import { SENodule } from "@/models/SENodule";
-import Nodule, { DisplayStyle } from "@/plottables/Nodule";
-import { AppState, SEOneDimensional } from "@/types";
+import Nodule from "@/plottables/Nodule";
+import { AppState } from "@/types";
 import { StyleEditPanels, StyleOptions } from "@/types/Styles";
 import { Component, Prop, Vue, Watch } from "vue-property-decorator";
 import { ScopedSlotChildren } from "vue/types/vnode";
@@ -10,6 +10,7 @@ import { namespace } from "vuex-class";
 import { SEStore } from "@/store";
 import EventBus from "@/eventHandlers/EventBus";
 import { StyleNoduleCommand } from "@/commands/StyleNoduleCommand";
+import { ChangeBackStyleContrastCommand } from "@/commands/ChangeBackStyleContrastCommand";
 import SETTINGS from "@/global-settings";
 import { SEAngleMarker } from "@/models/SEAngleMarker";
 import { SESegment } from "@/models/SESegment";
@@ -17,6 +18,7 @@ import { SECircle } from "@/models/SECircle";
 import { SEEllipse } from "@/models/SEEllipse";
 import { SEParametric } from "@/models/SEParametric";
 import { SELine } from "@/models/SELine";
+import { CommandGroup } from "@/commands/CommandGroup";
 const SE = namespace("se");
 type StyleOptionDiff = {
   prop: string;
@@ -57,6 +59,7 @@ export default class extends Vue {
   previousSelectedNodules: Array<Nodule> = [];
   activeStyleOptions: StyleOptions = {};
   previousStyleOptions: StyleOptions = {};
+  previousBackstyleContrast = 0;
 
   /*
   When dataAgreement is TRUE
@@ -354,6 +357,7 @@ export default class extends Vue {
         propNames: newConflictProps
       });
     }
+    this.previousBackstyleContrast = Nodule.getBackStyleContrast();
     this.previousSelectedNodules.splice(0);
     this.previousSelectedNodules.push(...this.selectedNodules);
   }
@@ -568,6 +572,16 @@ export default class extends Vue {
   }
 
   saveStyleState(): void {
+    const cmdGroup = new CommandGroup();
+    let subCommandCount = 0;
+    if (this.previousBackstyleContrast !== Nodule.getBackStyleContrast()) {
+      const constrastCommand = new ChangeBackStyleContrastCommand(
+        Nodule.getBackStyleContrast(),
+        this.previousBackstyleContrast
+      );
+      cmdGroup.addCommand(constrastCommand);
+      subCommandCount++;
+    }
     if (this.oldStyleSelections.length > 0) {
       console.debug(
         "Number of previously selected object? ",
@@ -585,12 +599,14 @@ export default class extends Vue {
         console.debug("Must issue StyleNoduleCommand");
         console.debug("Previous style", prev);
         console.debug("Next style", curr);
-        new StyleNoduleCommand(
+        const styleCommand = new StyleNoduleCommand(
           this.selectedNodules,
           this.panel,
           curr,
           prev
-        ).push();
+        );
+        cmdGroup.addCommand(styleCommand);
+        subCommandCount++;
       } else {
         console.debug("Eveything stayed unchanged");
       }
@@ -598,6 +614,7 @@ export default class extends Vue {
     } else {
       console.debug("No dirty selection");
     }
+    if (subCommandCount > 0) cmdGroup.push();
   }
 }
 </script>

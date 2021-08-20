@@ -476,7 +476,7 @@ export default class ParametricForm extends Vue {
     // Do not allow adding the same parametric twice
     let duplicateCurve = false;
     this.oldParametrics.forEach(para => {
-      const coords = para.ref.coordinateExpressions;
+      const coords = para.coordinateExpressions;
       if (
         this.coordinateExpressions.x === coords.x &&
         this.coordinateExpressions.y === coords.y &&
@@ -659,12 +659,12 @@ export default class ParametricForm extends Vue {
       }
     }
 
+    // TODO: Use multiple parametric if we have discontinuity
     const parametric = new Parametric(
-      this.coordinateExpressions,
-      this.tExpressions,
-      this.tNumbers,
-      calculationParents,
-      this.c1DiscontunityParameterValues,
+      this.tNumbers.min, // global min-max
+      this.tNumbers.max,
+      this.tNumbers.min, // part min-max
+      this.tNumbers.max,
       closed
     );
     // Set the display to the default values
@@ -673,7 +673,17 @@ export default class ParametricForm extends Vue {
     parametric.adjustSize();
 
     // Add the last command to the group and then execute it (i.e. add the potentially two points and the circle to the store.)
-    const newSEParametric = new SEParametric(parametric);
+    if (this.tExpressions.min === "")
+      this.tExpressions.min = this.tNumbers.min.toString();
+    if (this.tExpressions.max === "")
+      this.tExpressions.max = this.tNumbers.max.toString();
+    const newSEParametric = new SEParametric(
+      parametric,
+      this.coordinateExpressions,
+      this.tExpressions,
+      this.c1DiscontunityParameterValues,
+      calculationParents
+    );
 
     // Create the plottable and model label
     const newLabel = new Label();

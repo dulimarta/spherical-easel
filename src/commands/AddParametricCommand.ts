@@ -58,25 +58,23 @@ export class AddParametricCommand extends Command {
       [
         "AddParametric",
         /* arg-0 */ this.seParametric.name,
-        /* arg-1 */ this.seParametric.ref.coordinateExpressions.x,
-        /* arg-2 */ this.seParametric.ref.coordinateExpressions.y,
-        /* arg-3 */ this.seParametric.ref.coordinateExpressions.z,
-        /* arg-4 */ this.seParametric.ref.tExpressions.min,
-        /* arg-5 */ this.seParametric.ref.tExpressions.max,
-        /* arg-6 */ this.seParametric.ref.tNumbers.min,
-        /* arg-7 */ this.seParametric.ref.tNumbers.max,
+        /* arg-1 */ this.seParametric.coordinateExpressions.x,
+        /* arg-2 */ this.seParametric.coordinateExpressions.y,
+        /* arg-3 */ this.seParametric.coordinateExpressions.z,
+        /* arg-4 */ this.seParametric.tExpressions.min,
+        /* arg-5 */ this.seParametric.tExpressions.max,
+        /* arg-6 */ this.seParametric.tNumbers.min,
+        /* arg-7 */ this.seParametric.tNumbers.max,
         /* arg-8 */ this.seParametric.ref.closed,
         /* arg-9 */ this.seParametric.showing,
         /* arg-10 */ this.seParametric.exists,
         /* arg-11 */ this.seLabel.name,
         /* arg-12 */ this.seLabel.exists,
         /* arg-13 */ this.seLabel.showing,
-        /* arg-14 */ this.seParametric.ref.seParentExpressions
+        /* arg-14 */ this.seParametric.seParentExpressions
           .map((n: SEExpression) => n.name)
           .join("@"),
-        /* arg-15 */ this.seParametric.ref.c1DiscontinuityParameterValues.join(
-          "@"
-        )
+        /* arg-15 */ this.seParametric.c1DiscontinuityParameterValues.join("@")
       ]
         .join(";") // Can't use "/" may get mixed up with division
         // Replace the first ";" with "/" so CommandInterpreter is able to identify and dispatch this command correctly
@@ -119,11 +117,10 @@ export class AddParametricCommand extends Command {
 
     if (calculationParents.every(seNodule => seNodule !== undefined)) {
       const parametric = new Parametric(
-        coordinateExpressions,
-        tExpressions,
-        tNumbers,
-        calculationParents.map(par => par as SEExpression),
-        c1DiscontinuityParameterValues,
+        tNumbers.min,
+        tNumbers.max,
+        tNumbers.min,
+        tNumbers.max,
         closed
       );
       // Set the display to the default values
@@ -133,7 +130,13 @@ export class AddParametricCommand extends Command {
       parametric.updateDisplay();
 
       // Add the last command to the group and then execute it (i.e. add the potentially two points and the circle to the store.)
-      const newSEParametric = new SEParametric(parametric);
+      const newSEParametric = new SEParametric(
+        parametric,
+        coordinateExpressions,
+        tExpressions,
+        c1DiscontinuityParameterValues,
+        calculationParents.map(par => par as SEExpression)
+      );
       newSEParametric.name = tokens[0];
       objMap.set(tokens[0], newSEParametric);
       newSEParametric.glowing = false;

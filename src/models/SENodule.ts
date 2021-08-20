@@ -4,6 +4,7 @@ import { parametricVectorAndTValue, UpdateStateType } from "@/types";
 import newton from "newton-raphson-method";
 import SETTINGS from "@/global-settings";
 import { colors } from "vuetify/lib";
+import Parametric from "@/plottables/Parametric";
 
 let NODE_COUNT = 0;
 
@@ -331,9 +332,23 @@ export abstract class SENodule {
     if (/*this._selected || */ !this._showing) return;
     if (b) {
       // Set the display for the corresponding plottable object
-      this.ref?.glowingDisplay();
+      if (!(this.ref instanceof Parametric)) this.ref?.glowingDisplay();
+      else {
+        let ptr: Parametric | null = this.ref;
+        while (ptr !== null) {
+          ptr.glowingDisplay();
+          ptr = ptr.next;
+        }
+      }
     } else {
-      this.ref?.normalDisplay();
+      if (!(this.ref instanceof Parametric)) this.ref?.normalDisplay();
+      else {
+        let ptr: Parametric | null = this.ref;
+        while (ptr !== null) {
+          ptr.normalDisplay();
+          ptr = ptr.next;
+        }
+      }
       // TODO: not glowing implies not selected?
       // this.selected = false;
     }
@@ -506,27 +521,26 @@ export abstract class SENodule {
       dp
     );
 
-    const returnVectors: Vector3[] = [];
-    zeros.forEach(tVal => {
-      const temp = new Vector3();
-      // console.log(
-      //   "tval and pprime",
-      //   tVal,
-      //   temp.copy(PPrime(tVal).normalize()).x,
-      //   temp.copy(PPrime(tVal).normalize()).y,
-      //   temp.copy(PPrime(tVal).normalize()).z
-      // );
-      temp.copy(PPrime(tVal));
-      // don't return any zero vectors, the derivative being zero leads to a zero of d, but not a perpendicular
-      // also check that that vec is perpendicular to the given unitVector
-      // if (Math.abs(temp.dot(unitVec)) < SETTINGS.tolerance) {
-      //   console.log("through point in SENodule");
-      // } else {
-      //   console.log("not through point in SENodule");
-      // }
-      returnVectors.push(temp);
-      // }
-    });
+    console.debug("Zeros for perpendicular lines", zeros);
+
+    const returnVectors = zeros
+      .map(tVal => {
+        const temp = new Vector3();
+        temp.copy(PPrime(tVal));
+        temp.normalize();
+        console.debug("At t=", tVal, "normal is", temp.toFixed(3));
+        // don't return any zero vectors, the derivative being zero leads to a zero of d, but not a perpendicular
+        // also check that that vec is perpendicular to the given unitVector
+        // if (Math.abs(temp.dot(unitVec)) < SETTINGS.tolerance) {
+        //   console.log("through point in SENodule");
+        // } else {
+        //   console.log("not through point in SENodule");
+        // }
+        return temp;
+
+        // }
+      })
+      .filter((n: Vector3) => !n.isZero());
     // remove duplicates from the list
     // const uniqueNormals: Vector3[] = [];
     // returnVectors.forEach(vec => {

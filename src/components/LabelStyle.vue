@@ -712,14 +712,18 @@ export default class LabelStyle extends Vue {
 </script>
 <style lang="scss" scoped>
 @import "@/scss/variables.scss";
-
 .select-an-object-text {
   color: rgb(255, 82, 82);
 }
 
+/* customize outline color of conflicting input fields
+   Use :v-deep (SCSS) or /deep/ (CSS) to reach out INTO the
+   html elements managed by Vuetify
+ */
 .v-text-field--outlined.conflict {
   ::v-deep fieldset {
-    border-color: rgb(255, 82, 82);
+    border-color: rgba(192, 0, 250, 0.986);
+    border-width: 2px;
   }
 }
 
