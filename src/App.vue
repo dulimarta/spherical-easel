@@ -356,6 +356,7 @@ export default class App extends Vue {
       .collection(collectionPath)
       .add({
         script: out,
+        version: "1",
         dateCreated: new Date().toISOString(),
         author: this.whoami,
         description: this.description,
