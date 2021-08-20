@@ -333,13 +333,10 @@ export default class Parametric extends Nodule {
         curr.copy(this.P(tValue));
       }
       interAnchorDistance = newArcLength / (SUBDIVISIONS * iteration);
-      // newArcLength /=
-      //   (SETTINGS.parameterization.subdivisions * iteration) / (tMax - tMin);
       const growth = (newArcLength - currArcLength) / newArcLength;
       console.debug(
-        `Iteration-${iteration} length changed from ${currArcLength} to ${newArcLength}. Growth = ${growth.toFixed(
-          3
-        )}`,
+        `Iteration-${iteration} length changed from ${currArcLength} to ${newArcLength}.` +
+          `Growth = ${growth.toFixed(5)}`,
         "inter anchor distance",
         interAnchorDistance
       );

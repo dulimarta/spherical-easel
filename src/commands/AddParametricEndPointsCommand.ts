@@ -8,20 +8,25 @@ import Point from "@/plottables/Point";
 import { DisplayStyle } from "@/plottables/Nodule";
 import Label from "@/plottables/Label";
 import { SEParametricEndPoint } from "@/models/SEParametricEndPoint";
+import { SEParametricTracePoint } from "@/models/SEParametricTracePoint";
 import { SEParametric } from "@/models/SEParametric";
 
 export class AddParametricEndPointsCommand extends Command {
   private seStartEndPoint: SEParametricEndPoint;
   private seEndEndPoint: SEParametricEndPoint;
+  private seTracePoint: SEParametricTracePoint;
   private parametricParent: SEParametric;
   private seStartLabel: SELabel;
   private seEndLabel: SELabel;
+  private seTraceLabel: SELabel;
   constructor(
     parametricParent: SEParametric,
     startEndPoint: SEParametricEndPoint,
     startLabel: SELabel,
     endEndPoint: SEParametricEndPoint,
-    endLabel: SELabel
+    endLabel: SELabel,
+    tracePoint: SEParametricTracePoint,
+    traceLabel: SELabel
   ) {
     super();
     this.seStartEndPoint = startEndPoint;
@@ -29,24 +34,32 @@ export class AddParametricEndPointsCommand extends Command {
     this.parametricParent = parametricParent;
     this.seStartLabel = startLabel;
     this.seEndLabel = endLabel;
+    this.seTracePoint = tracePoint;
+    this.seTraceLabel = traceLabel;
   }
 
   do(): void {
     this.parametricParent.registerChild(this.seStartEndPoint);
     this.parametricParent.registerChild(this.seEndEndPoint);
+    this.parametricParent.unregisterChild(this.seStartEndPoint);
     this.seStartEndPoint.registerChild(this.seStartLabel);
     this.seEndEndPoint.registerChild(this.seEndLabel);
+    this.seTracePoint.registerChild(this.seTraceLabel);
     if (SETTINGS.point.showLabelsOfParametricEndPointsInitially) {
       this.seStartLabel.showing = true;
       this.seEndLabel.showing = true;
+      this.seTraceLabel.showing = true;
     } else {
       this.seStartLabel.showing = false;
       this.seEndLabel.showing = false;
+      this.seTraceLabel.showing = false;
     }
     Command.store.addPoint(this.seStartEndPoint);
     Command.store.addPoint(this.seEndEndPoint);
+    Command.store.addPoint(this.seTracePoint);
     Command.store.addLabel(this.seStartLabel);
     Command.store.addLabel(this.seEndLabel);
+    Command.store.addLabel(this.seTraceLabel);
     this.seStartEndPoint.update({
       mode: UpdateMode.DisplayOnly,
       stateArray: []
@@ -55,6 +68,7 @@ export class AddParametricEndPointsCommand extends Command {
       mode: UpdateMode.DisplayOnly,
       stateArray: []
     });
+    this.seTracePoint.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
   }
 
   saveState(): void {
@@ -64,12 +78,16 @@ export class AddParametricEndPointsCommand extends Command {
   restoreState(): void {
     Command.store.removeLabel(this.seEndLabel.id);
     Command.store.removeLabel(this.seStartLabel.id);
+    Command.store.removeLabel(this.seTraceLabel.id);
     Command.store.removePoint(this.seEndEndPoint.id);
     Command.store.removePoint(this.seStartEndPoint.id);
+    Command.store.removePoint(this.seTracePoint.id);
     this.seEndEndPoint.unregisterChild(this.seEndLabel);
     this.seStartEndPoint.unregisterChild(this.seStartLabel);
+    this.seTracePoint.unregisterChild(this.seTraceLabel);
     this.parametricParent.unregisterChild(this.seEndEndPoint);
     this.parametricParent.unregisterChild(this.seStartEndPoint);
+    this.parametricParent.unregisterChild(this.seTracePoint);
   }
 
   toOpcode(): null | string | Array<string> {
@@ -84,12 +102,19 @@ export class AddParametricEndPointsCommand extends Command {
       /* arg-7 */ this.seEndEndPoint.locationVector.toFixed(7),
       /* arg-8 */ this.seEndEndPoint.showing,
       /* arg-9 */ this.seEndEndPoint.exists,
-      /* arg-10 */ this.seStartLabel.name,
-      /* arg-11 */ this.seStartLabel.showing,
-      /* arg-12 */ this.seStartLabel.exists,
-      /* arg-13 */ this.seEndLabel.name,
-      /* arg-14 */ this.seEndLabel.showing,
-      /* arg-15 */ this.seEndLabel.exists
+      /* arg-10 */ this.seTracePoint.name,
+      /* arg-11 */ this.seTracePoint.locationVector.toFixed(7),
+      /* arg-12 */ this.seTracePoint.showing,
+      /* arg-13 */ this.seTracePoint.exists,
+      /* arg-14 */ this.seStartLabel.name,
+      /* arg-15 */ this.seStartLabel.showing,
+      /* arg-16 */ this.seStartLabel.exists,
+      /* arg-17 */ this.seEndLabel.name,
+      /* arg-18 */ this.seEndLabel.showing,
+      /* arg-19 */ this.seEndLabel.exists,
+      /* arg-20 */ this.seTraceLabel.name,
+      /* arg-21 */ this.seTraceLabel.showing,
+      /* arg-22 */ this.seTraceLabel.exists
     ].join("/");
   }
 
@@ -120,10 +145,10 @@ export class AddParametricEndPointsCommand extends Command {
       startLabel.locationVector
         .add(new Vector3(2 * offset, offset, 0))
         .normalize();
-      startLabel.showing = tokens[11] === "true";
-      startLabel.exists = tokens[12] === "true";
-      startLabel.name = tokens[10];
-      objMap.set(tokens[10], startLabel);
+      startLabel.showing = tokens[15] === "true";
+      startLabel.exists = tokens[16] === "true";
+      startLabel.name = tokens[14];
+      objMap.set(tokens[14], startLabel);
 
       const endPosition = new Vector3();
       endPosition.from(tokens[7]);
@@ -147,17 +172,44 @@ export class AddParametricEndPointsCommand extends Command {
       endLabel.locationVector
         .add(new Vector3(2 * offset, offset, 0))
         .normalize();
-      endLabel.showing = tokens[14] === "true";
-      endLabel.exists = tokens[15] === "true";
-      endLabel.name = tokens[13];
-      objMap.set(tokens[13], endLabel);
+      endLabel.showing = tokens[18] === "true";
+      endLabel.exists = tokens[19] === "true";
+      endLabel.name = tokens[17];
+      objMap.set(tokens[17], endLabel);
+
+      const tracePosition = new Vector3();
+      tracePosition.from(tokens[11]);
+      const tracePoint = new Point();
+      tracePoint.stylize(DisplayStyle.ApplyCurrentVariables);
+      tracePoint.adjustSize();
+      const seTracePoint = new SEParametricTracePoint(
+        tracePoint,
+        parametricParent
+      );
+      seTracePoint.locationVector.copy(tracePosition);
+      seTracePoint.showing = tokens[12] === "true";
+      seTracePoint.exists = tokens[13] === "true";
+      seTracePoint.name = tokens[10];
+      objMap.set(tokens[10], seTracePoint);
+
+      const traceLabel = new SELabel(new Label(), seTracePoint);
+      traceLabel.locationVector.copy(tracePosition);
+      traceLabel.locationVector
+        .add(new Vector3(2 * offset, offset, 0))
+        .normalize();
+      traceLabel.showing = tokens[21] === "true";
+      traceLabel.exists = tokens[22] === "true";
+      traceLabel.name = tokens[20];
+      objMap.set(tokens[20], traceLabel);
 
       return new AddParametricEndPointsCommand(
         parametricParent,
         seStartPoint,
         startLabel,
         seEndPoint,
-        endLabel
+        endLabel,
+        seTracePoint,
+        traceLabel
       );
     } else {
       throw new Error(

@@ -235,13 +235,9 @@ import { SENSectPoint } from "@/models/SENSectPoint";
 import { SETangentLineThruPoint } from "@/models/SETangentLineThruPoint";
 import { SENSectLine } from "@/models/SENSectLine";
 import { SEStore } from "@/store";
-import Parametric from "@/plottables/Parametric";
-import Point from "@/plottables/Point";
-import { AddPointCommand } from "@/commands/AddPointCommand";
-import { SELabel } from "@/models/SELabel";
-import Label from "@/plottables/Label";
 import { namespace } from "vuex-class";
-import { Matrix4 } from "three";
+import { Matrix4, Vector3 } from "three";
+import { SEParametricTracePoint } from "@/models/SEParametricTracePoint";
 
 const SE = namespace("se");
 @Component
@@ -252,8 +248,9 @@ export default class SENoduleItem extends Vue {
   readonly inverseRotationMatrix!: Matrix4;
 
   private rotationMatrix = new Matrix4();
+  private traceLocation = new Vector3();
   curve: SEParametric | null = null;
-  curvePoint: SEPoint | null = null;
+  curvePoint: SEParametricTracePoint | null = null;
   parametricTime = 0;
   parametricTMin = 0;
   parametricTMax = 1;
@@ -270,14 +267,15 @@ export default class SENoduleItem extends Vue {
   mounted(): void {
     if (this.node instanceof SEParametric) {
       this.curve = this.node;
-      this.curvePoint = new SEPoint(new Point());
+      // const pt = new Point();
+      this.curvePoint = this.curve.tracePoint;
       const [tMin, tMax] = this.curve.tMinMaxExpressionValues();
       this.parametricTMin = tMin;
       this.parametricTMax = tMax;
       this.parametricTStep = (tMax - tMin) / 100;
-      const label = new SELabel(new Label(), this.curvePoint);
-      const addCommand = new AddPointCommand(this.curvePoint, label);
-      addCommand.execute();
+      // const label = new SELabel(new Label(), this.curvePoint);
+      // const addCommand = new AddPointCommand(this.curvePoint, label);
+      // addCommand.execute();
       this.onParametricTimeChanged(tMin);
     }
   }
@@ -424,10 +422,9 @@ export default class SENoduleItem extends Vue {
   onParametricTimeChanged(tVal: number): void {
     if (this.curve && this.curvePoint) {
       this.rotationMatrix.getInverse(this.inverseRotationMatrix);
-      const p = this.curve.ref.P(tVal);
-      // console.debug("At", tVal.toFixed(3), "position: ", p.toFixed(3));
-      p.applyMatrix4(this.rotationMatrix);
-      this.curvePoint.locationVector = p;
+      this.curvePoint.setLocationByTime(tVal);
+      this.traceLocation.copy(this.curvePoint.locationVector);
+      this.traceLocation.applyMatrix4(this.rotationMatrix);
       this.curvePoint.ref.updateDisplay();
     }
   }

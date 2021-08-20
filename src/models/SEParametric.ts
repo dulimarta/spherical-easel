@@ -28,6 +28,7 @@ import {
 import { ExpressionParser } from "@/expression/ExpressionParser";
 import { SEExpression } from "./SEExpression";
 import { DisplayStyle } from "@/plottables/Nodule";
+import { SEParametricTracePoint } from "./SEParametricTracePoint";
 const styleSet = new Set([
   ...Object.getOwnPropertyNames(DEFAULT_PARAMETRIC_FRONT_STYLE),
   ...Object.getOwnPropertyNames(DEFAULT_PARAMETRIC_BACK_STYLE)
@@ -53,6 +54,7 @@ export class SEParametric extends SENodule
    * The SE endpoints of this curve, if any
    */
   private _endPoints: SEParametricEndPoint[] = [];
+  private _tracePoint!: SEParametricTracePoint;
 
   /**
    * These are string expressions that once set define the Parametric curve
@@ -390,6 +392,13 @@ export class SEParametric extends SENodule
   set endPoints(points: SEParametricEndPoint[]) {
     this._endPoints.slice(0);
     this._endPoints.push(...points);
+  }
+
+  set tracePoint(pt: SEParametricTracePoint) {
+    this._tracePoint = pt;
+  }
+  get tracePoint(): SEParametricTracePoint {
+    return this._tracePoint;
   }
 
   public isHitAt(

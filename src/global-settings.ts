@@ -816,7 +816,7 @@ export const SETTINGS = {
     bisectionMinSize: 0.0000001, // stop running the bisection method (if Newton's method is not used) when the interval is less than this size
     numberOfTestTValues: 10, // When checking if a parametric curve is unit or the number of times the curve intersects a plane connecting two points on the curve use this many points
     maxNumberOfIterationArcLength: 5, // maximum number of times it will iterate over the curve to find the arcLength (i.e. the curve is divided into at most subdivisions*maxNumberOfIterationArcLength subdivisions while looking for the arcLength)
-    maxChangeInArcLength: 0.00001 // If the change in arcLength is less than this, return the value
+    maxChangeInArcLength: 0.0001 // If the change in arcLength is less than this, return the value
   },
   /*A list of which buttons to display - adjusted by the users settings.
   This does NOT belong here but I don't know where else to put it at the moment*/

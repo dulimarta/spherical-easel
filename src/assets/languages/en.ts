@@ -622,6 +622,7 @@ export default {
       "The parametric derivative must be perpendicular to the the unit parametric curve vector; these were not perpendicular at a t value of {tVal}.",
 
     endPointOfParametric: "The {end} point of parametric curve {parent}.",
+    tracePointOfParametric: "The trace point of parametric curve {parent}.",
     parametricDescription:
       "Parametric curve with coordinates ({xExpression}, {yExpression}, {zExpression}) for t from {tMinNumber} to {tMaxNumber}.",
     duplicateParametricCurve: "Duplicate parametric curves are not allowed.",

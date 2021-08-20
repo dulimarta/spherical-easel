@@ -109,6 +109,7 @@ import { AddParametricEndPointsCommand } from "@/commands/AddParametricEndPoints
 import { SEParametricEndPoint } from "@/models/SEParametricEndPoint";
 import NonFreePoint from "@/plottables/NonFreePoint";
 import { AddIntersectionPointCommand } from "@/commands/AddIntersectionPointCommand";
+import { SEParametricTracePoint } from "@/models/SEParametricTracePoint";
 
 const SE = namespace("se");
 
@@ -654,12 +655,15 @@ export default class ParametricForm extends Vue {
       // we have to create a two points
       const startPoint = new NonFreePoint();
       const endPoint = new NonFreePoint();
+      const tracePoint = new NonFreePoint();
       // Set the display to the default values
       startPoint.stylize(DisplayStyle.ApplyCurrentVariables);
       endPoint.stylize(DisplayStyle.ApplyCurrentVariables);
+      tracePoint.stylize(DisplayStyle.ApplyCurrentVariables);
       // Adjust the size of the point to the current zoom magnification factor
       startPoint.adjustSize();
       endPoint.adjustSize();
+      tracePoint.adjustSize();
 
       // create the endPoints
       const startSEEndPoint = new SEParametricEndPoint(
@@ -674,11 +678,20 @@ export default class ParametricForm extends Vue {
         "max"
       );
 
+      const traceSEPoint = new SEParametricTracePoint(
+        tracePoint,
+        newSEParametric
+      );
+
+      newSEParametric.tracePoint = traceSEPoint;
+
       // Create the plottable labels
       const startLabel = new Label();
       const endLabel = new Label();
+      const traceLabel = new Label();
       const startSELabel = new SELabel(startLabel, startSEEndPoint);
       const endSELabel = new SELabel(endLabel, endSEEndPoint);
+      const traceSELabel = new SELabel(traceLabel, traceSEPoint);
 
       parametricCommandGroup.addCommand(
         new AddParametricEndPointsCommand(
@@ -686,7 +699,9 @@ export default class ParametricForm extends Vue {
           startSEEndPoint,
           startSELabel,
           endSEEndPoint,
-          endSELabel
+          endSELabel,
+          traceSEPoint,
+          traceSELabel
         )
       );
       newSEParametric.endPoints = [startSEEndPoint, endSEEndPoint];

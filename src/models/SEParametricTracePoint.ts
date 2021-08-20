@@ -8,24 +8,18 @@ import { SEParametric } from "./SEParametric";
 const MAX = false;
 const MIN = true;
 
-export class SEParametricEndPoint extends SEPoint {
+export class SEParametricTracePoint extends SEPoint {
   /**
    * The parent of this SEParametricEndPoint
    */
   private _parametricParent: SEParametric;
-  private _endpoint = MIN;
 
   private tmpVector4 = new Vector3();
 
-  constructor(point: Point, parametricParent: SEParametric, endPoint: string) {
+  constructor(point: Point, parametricParent: SEParametric) {
     super(point);
     this.ref = point;
     this._parametricParent = parametricParent;
-    if (endPoint === "min") {
-      this._endpoint = MIN;
-    } else if (endPoint === "max") {
-      this._endpoint = MAX;
-    }
   }
 
   /**
@@ -37,9 +31,7 @@ export class SEParametricEndPoint extends SEPoint {
     // If the parent is not out of date, use the closest vector, if not set the location directly
     // and the program will update the parent later so that the set location is on the parent (even though it is
     // at the time of execution)
-    const possibleVec = this._parametricParent.ref.endPointVector(
-      this._endpoint
-    );
+    const possibleVec = this._parametricParent.ref.endPointVector(MIN);
     if (!this._parametricParent.isOutOfDate() && possibleVec !== undefined) {
       this._locationVector.copy(possibleVec).normalize();
     } else {
@@ -53,21 +45,11 @@ export class SEParametricEndPoint extends SEPoint {
     return this._locationVector;
   }
 
-  get endPoint(): boolean {
-    return this._endpoint;
-  }
-
   public get noduleDescription(): string {
     let endPoint: string;
-    if (this._endpoint) {
-      endPoint = "start";
-    } else {
-      endPoint = "end";
-    }
     return String(
-      i18n.t(`objectTree.endPointOfParametric`, {
-        parent: this._parametricParent.label?.ref.shortUserName,
-        end: endPoint
+      i18n.t(`objectTree.tracePointOfParametric`, {
+        parent: this._parametricParent.label?.ref.shortUserName
       })
     );
   }
@@ -96,6 +78,11 @@ export class SEParametricEndPoint extends SEPoint {
     this.ref.positionVector = this._locationVector;
   }
 
+  public setLocationByTime(tVal: number): void {
+    const pos = this.parametricParent.ref.P(tVal);
+    this.pointDirectLocationSetter(pos);
+  }
+
   get parametricParent(): SEParametric {
     return this._parametricParent;
   }
@@ -107,9 +94,7 @@ export class SEParametricEndPoint extends SEPoint {
     }
     this.setOutOfDate(false);
     this._exists = this.parametricParent.exists;
-    const possibleVec = this._parametricParent.ref.endPointVector(
-      this._endpoint
-    );
+    const possibleVec = this._parametricParent.ref.endPointVector(MIN);
     if (possibleVec !== undefined && this._exists) {
       // Update the current location with the closest point on the parent to the old location
       this._locationVector.copy(possibleVec).normalize();
