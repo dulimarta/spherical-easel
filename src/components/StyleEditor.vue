@@ -10,7 +10,6 @@ import { namespace } from "vuex-class";
 import { SEStore } from "@/store";
 import EventBus from "@/eventHandlers/EventBus";
 import { StyleNoduleCommand } from "@/commands/StyleNoduleCommand";
-import { ChangeBackStyleContrastCommand } from "@/commands/ChangeBackStyleContrastCommand";
 import SETTINGS from "@/global-settings";
 import { SEAngleMarker } from "@/models/SEAngleMarker";
 import { SESegment } from "@/models/SESegment";
@@ -19,6 +18,7 @@ import { SEEllipse } from "@/models/SEEllipse";
 import { SEParametric } from "@/models/SEParametric";
 import { SELine } from "@/models/SELine";
 import { CommandGroup } from "@/commands/CommandGroup";
+import { ChangeBackStyleContrastCommand } from "@/commands/ChangeBackstyleContrastCommand";
 const SE = namespace("se");
 type StyleOptionDiff = {
   prop: string;
@@ -311,9 +311,9 @@ export default class extends Vue {
           const agreement = this.selectedNodules.every((obj: Nodule) => {
             const thisStyleOption = obj.currentStyleState(this.panel);
             const thisValue = (thisStyleOption as any)[propName];
-            console.log("prop & name", propName, propName.search(/Color/), obj);
-            console.log("ref value", refValue);
-            console.log("this value", thisValue);
+            // console.log("prop & name", propName, propName.search(/Color/), obj);
+            // console.log("ref value", refValue);
+            // console.log("this value", thisValue);
 
             if (Array.isArray(thisValue) || Array.isArray(refValue)) {
               if (thisValue.length === 0) {
@@ -439,7 +439,6 @@ export default class extends Vue {
         }
         aEqualsb = this.dashArrayCompare(b, a);
       } else if (p.search(/Color/) > -1) {
-        console.log("prop", p);
         // Without this the comparasion was saying that "hsla(0, 0%, 0%, 0.1)" was different than "hsla(0,0%,0%,0.100)"
         aEqualsb = this.hslaCompare(b, a);
       } else aEqualsb = b === a;
@@ -455,14 +454,14 @@ export default class extends Vue {
     /* If multiple objects are selected do not update the label text */
     if (this.selectedNodules.length > 1) delete updatePayload.labelDisplayText;
 
-    if (this.panel == StyleEditPanels.Back) {
-      // if (!this.automaticBackStyle)
-      //   updatePayload.dynamicBackStyle = !this.propDynamicBackStyleCommonValue;
-      console.debug(
-        "About to update backstyle of selected objects using payload",
-        updatePayload
-      );
-    }
+    // if (this.panel == StyleEditPanels.Back) {
+    //   // if (!this.automaticBackStyle)
+    //   //   updatePayload.dynamicBackStyle = !this.propDynamicBackStyleCommonValue;
+    //   console.debug(
+    //     "About to update backstyle of selected objects using payload",
+    //     updatePayload
+    //   );
+    // }
     if (updatedProps.length > 0) {
       // if (updatePayload.backStyleContrast) {
       //   Nodule.setBackStyleContrast(updatePayload.backStyleContrast);
@@ -480,9 +479,9 @@ export default class extends Vue {
   }
 
   forceDataAgreement(props: string[]): void {
-    console.debug("User overrides data disagreement");
+    // console.debug("User overrides data disagreement");
     // this.dataAgreement = true;
-    console.log("num props before", this.conflictingPropNames.length);
+    // console.log("num props before", this.conflictingPropNames.length);
     props.forEach(prop => {
       const ind = this.conflictingPropNames.findIndex(
         conflictProp => conflictProp === prop
@@ -576,6 +575,10 @@ export default class extends Vue {
     const cmdGroup = new CommandGroup();
     let subCommandCount = 0;
     if (this.previousBackstyleContrast !== Nodule.getBackStyleContrast()) {
+      console.log(
+        "The back style constant changed to ",
+        Nodule.getBackStyleContrast()
+      );
       const constrastCommand = new ChangeBackStyleContrastCommand(
         Nodule.getBackStyleContrast(),
         this.previousBackstyleContrast

@@ -1,5 +1,6 @@
 import { Command } from "./Command";
 import Nodule, { DisplayStyle } from "@/plottables/Nodule";
+import { SEStore } from "@/store";
 
 export class ChangeBackStyleContrastCommand extends Command {
   private currentBackStyleContrast: number;
@@ -14,6 +15,7 @@ export class ChangeBackStyleContrastCommand extends Command {
 
   do(): void {
     Nodule.setBackStyleContrast(this.currentBackStyleContrast);
+    SEStore.changeBackContrast(this.currentBackStyleContrast);
   }
 
   saveState(): void {
@@ -22,6 +24,7 @@ export class ChangeBackStyleContrastCommand extends Command {
 
   restoreState(): void {
     Nodule.setBackStyleContrast(this.pastBackStyleContrast);
+    SEStore.changeBackContrast(this.pastBackStyleContrast);
   }
 
   toOpcode(): null | string | Array<string> {

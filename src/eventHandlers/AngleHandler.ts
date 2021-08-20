@@ -385,9 +385,7 @@ export default class AngleHandler extends Highlighter {
           // this.targetPoints/sePointOneDimensionalParent/pointLocations are equal (and equal to 1 or 2)
           if (this.hitSEPoints.length > 0) {
             // The user continued to add more points to make the angle
-            console.log("here 2.5", this.pointLocations.length);
             if (this.allowPointLocation(this.hitSEPoints[0].locationVector)) {
-              console.log("here 3", this.pointLocations.length);
               this.targetPoints.push(this.hitSEPoints[0]);
               this.sePointOneDimensionalParents.push(null);
               if (this.targetPoints.length == 2) {

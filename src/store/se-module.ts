@@ -633,11 +633,9 @@ export default class SE extends VuexModule implements AppState {
     Nodule.setBackStyleContrast(newContrast);
     // update all objects display
     this.seNodules.forEach(seNodule => {
-      // stylize the objects
-      console.log("name", seNodule.name);
+      // update the style of the objects
+      // console.log("name", seNodule.name);
       seNodule.ref?.stylize(DisplayStyle.ApplyCurrentVariables);
-      // stylize the labels
-      // if (seNodule.l)
     });
   }
   // addCalculation(calc: SECalculation): void {
