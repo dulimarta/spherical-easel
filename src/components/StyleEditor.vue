@@ -575,6 +575,10 @@ export default class extends Vue {
     const cmdGroup = new CommandGroup();
     let subCommandCount = 0;
     if (this.previousBackstyleContrast !== Nodule.getBackStyleContrast()) {
+      console.log(
+        "The back style constant changed to ",
+        Nodule.getBackStyleContrast()
+      );
       const constrastCommand = new ChangeBackStyleContrastCommand(
         Nodule.getBackStyleContrast(),
         this.previousBackstyleContrast
