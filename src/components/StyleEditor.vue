@@ -10,7 +10,6 @@ import { namespace } from "vuex-class";
 import { SEStore } from "@/store";
 import EventBus from "@/eventHandlers/EventBus";
 import { StyleNoduleCommand } from "@/commands/StyleNoduleCommand";
-import { ChangeBackStyleContrastCommand } from "@/commands/ChangeBackStyleContrastCommand";
 import SETTINGS from "@/global-settings";
 import { SEAngleMarker } from "@/models/SEAngleMarker";
 import { SESegment } from "@/models/SESegment";
@@ -19,6 +18,7 @@ import { SEEllipse } from "@/models/SEEllipse";
 import { SEParametric } from "@/models/SEParametric";
 import { SELine } from "@/models/SELine";
 import { CommandGroup } from "@/commands/CommandGroup";
+import { ChangeBackStyleContrastCommand } from "@/commands/ChangeBackstyleContrastCommand";
 const SE = namespace("se");
 type StyleOptionDiff = {
   prop: string;
