@@ -142,4 +142,18 @@ export abstract class Command {
    */
 
   abstract toOpcode(): null | string | Array<string>;
+
+  // remove the &, / and & from a string and replace with hex equivalent / -> %47, = -> , and & -> %38
+  static symbolToASCIIDec(inputString: string): string {
+    return inputString
+      .replaceAll("=", "%61")
+      .replaceAll("/", "%47")
+      .replaceAll("&", "%38");
+  }
+  static asciiDecToSymbol(inputString: string): string {
+    return inputString
+      .replaceAll("%38", "&")
+      .replaceAll("%47", "/")
+      .replaceAll("%61", "=");
+  }
 }
