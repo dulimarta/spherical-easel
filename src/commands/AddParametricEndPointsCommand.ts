@@ -41,7 +41,7 @@ export class AddParametricEndPointsCommand extends Command {
   do(): void {
     this.parametricParent.registerChild(this.seStartEndPoint);
     this.parametricParent.registerChild(this.seEndEndPoint);
-    this.parametricParent.unregisterChild(this.seStartEndPoint);
+    this.parametricParent.registerChild(this.seTracePoint);
     this.seStartEndPoint.registerChild(this.seStartLabel);
     this.seEndEndPoint.registerChild(this.seEndLabel);
     this.seTracePoint.registerChild(this.seTraceLabel);

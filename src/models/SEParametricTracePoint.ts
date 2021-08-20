@@ -5,7 +5,6 @@ import { UpdateMode, UpdateStateType, PointState } from "@/types";
 import i18n from "@/i18n";
 import { SEParametric } from "./SEParametric";
 
-const MAX = false;
 const MIN = true;
 
 export class SEParametricTracePoint extends SEPoint {
@@ -13,6 +12,7 @@ export class SEParametricTracePoint extends SEPoint {
    * The parent of this SEParametricEndPoint
    */
   private _parametricParent: SEParametric;
+  private parametricTime = NaN;
 
   private tmpVector4 = new Vector3();
 
@@ -46,7 +46,6 @@ export class SEParametricTracePoint extends SEPoint {
   }
 
   public get noduleDescription(): string {
-    let endPoint: string;
     return String(
       i18n.t(`objectTree.tracePointOfParametric`, {
         parent: this._parametricParent.label?.ref.shortUserName
@@ -71,7 +70,7 @@ export class SEParametricTracePoint extends SEPoint {
    * endpoint of the line segment, the point on the segment doesn’t return to its proper (original) location.
    * @param pos The new position of the point
    */
-  public pointDirectLocationSetter(pos: Vector3): void {
+  private pointDirectLocationSetter(pos: Vector3): void {
     // Record the location on the unit ideal sphere of this SEPoint
     this._locationVector.copy(pos).normalize();
     // Set the position of the associated displayed plottable Point
@@ -79,8 +78,10 @@ export class SEParametricTracePoint extends SEPoint {
   }
 
   public setLocationByTime(tVal: number): void {
+    this.parametricTime = tVal;
     const pos = this.parametricParent.ref.P(tVal);
     this.pointDirectLocationSetter(pos);
+    this.update({ mode: UpdateMode.RecordStateForMove, stateArray: [] });
   }
 
   get parametricParent(): SEParametric {
@@ -94,7 +95,7 @@ export class SEParametricTracePoint extends SEPoint {
     }
     this.setOutOfDate(false);
     this._exists = this.parametricParent.exists;
-    const possibleVec = this._parametricParent.ref.endPointVector(MIN);
+    const possibleVec = this._parametricParent.ref.P(this.parametricTime);
     if (possibleVec !== undefined && this._exists) {
       // Update the current location with the closest point on the parent to the old location
       this._locationVector.copy(possibleVec).normalize();
@@ -110,7 +111,7 @@ export class SEParametricTracePoint extends SEPoint {
     } else {
       this.ref.setVisible(false);
     }
-    // SEPointOnOneDimensional are free points and should be recorded for move and delete always
+    // This is a free point and should be recorded for move and delete always
     if (
       state.mode == UpdateMode.RecordStateForDelete ||
       state.mode == UpdateMode.RecordStateForMove
