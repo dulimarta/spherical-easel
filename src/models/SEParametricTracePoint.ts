@@ -1,10 +1,10 @@
 import { SEPoint } from "./SEPoint";
 import Point from "@/plottables/Point";
-import { Vector3 } from "three";
+import { Matrix4, Vector3 } from "three";
 import { UpdateMode, UpdateStateType, PointState } from "@/types";
 import i18n from "@/i18n";
 import { SEParametric } from "./SEParametric";
-
+import { SEStore } from "@/store";
 const MIN = true;
 
 export class SEParametricTracePoint extends SEPoint {
@@ -14,8 +14,8 @@ export class SEParametricTracePoint extends SEPoint {
   private _parametricParent: SEParametric;
   private parametricTime = NaN;
 
-  private tmpVector4 = new Vector3();
-
+  // private tmpVector4 = new Vector3();
+  private tmpMatrix = new Matrix4();
   constructor(point: Point, parametricParent: SEParametric) {
     super(point);
     this.ref = point;
@@ -99,6 +99,9 @@ export class SEParametricTracePoint extends SEPoint {
     if (possibleVec !== undefined && this._exists) {
       // Update the current location with the closest point on the parent to the old location
       this._locationVector.copy(possibleVec).normalize();
+      this.tmpMatrix.getInverse(SEStore.inverseTotalRotationMatrix);
+      this._locationVector.applyMatrix4(this.tmpMatrix);
+
       // Set the position of the associated displayed plottable Point
       this.ref.positionVector = this._locationVector;
     } else {

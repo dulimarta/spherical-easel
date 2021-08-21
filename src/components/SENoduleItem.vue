@@ -421,11 +421,8 @@ export default class SENoduleItem extends Vue {
   @Watch("parametricTime")
   onParametricTimeChanged(tVal: number): void {
     if (this.curve && this.curvePoint) {
-      this.rotationMatrix.getInverse(this.inverseRotationMatrix);
       this.curvePoint.setLocationByTime(tVal);
-      this.traceLocation.copy(this.curvePoint.locationVector);
-      this.traceLocation.applyMatrix4(this.rotationMatrix);
-      this.curvePoint.ref.updateDisplay();
+      this.curvePoint.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
     }
   }
 
