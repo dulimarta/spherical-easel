@@ -343,10 +343,9 @@ export default class Parametric extends Nodule {
       //   "inter anchor distance",
       //   interAnchorDistance.toFixed(5)
       // );
-      if (
-        Math.abs(currArcLength - newArcLength) <
-        SETTINGS.parameterization.maxChangeInArcLength
-      ) {
+      // When the arc length increase is no longer "significant"
+      // we assume that the curve subdivision is good enough
+      if (growth < SETTINGS.parameterization.maxChangeInArcLength) {
         return iteration * SUBDIVISIONS;
       } else {
         currArcLength = newArcLength;

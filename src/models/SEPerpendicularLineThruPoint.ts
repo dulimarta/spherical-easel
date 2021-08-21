@@ -1,12 +1,10 @@
 import { SEPoint } from "./SEPoint";
 import { PerpendicularLineThruPointState, SEOneDimensional } from "@/types";
-import { SEOneOrTwoDimensional } from "@/types";
 import { UpdateMode, UpdateStateType } from "@/types";
 import { SELine } from "./SELine";
 import { Vector3 } from "three";
 import Line from "@/plottables/Line";
 import i18n from "@/i18n";
-import SETTINGS from "@/global-settings";
 import { SESegment } from "./SESegment";
 import { SECircle } from "./SECircle";
 import { SEEllipse } from "./SEEllipse";
@@ -29,9 +27,11 @@ export class SEPerpendicularLineThruPoint extends SELine {
   private tempVector1 = new Vector3();
 
   /**
-   * In the case of ellipses where there are upto four perpendiculars through a point, this is the index to use
+   * In the case of ellipses (or parametric curves in general)
+   * there can be multiple number of perpendiculars through a point, this is the index to use
    */
   private _index: number;
+  private _pencilSize: number;
   /**
    * Create an intersection point between two one-dimensional objects
    * @param line the TwoJS Line associated with this intersection
@@ -47,13 +47,15 @@ export class SEPerpendicularLineThruPoint extends SELine {
     seParentPoint: SEPoint,
     normalVector: Vector3,
     seEndPoint: SEPoint,
-    index: number
+    index: number,
+    pencilSize: number
   ) {
     super(line, seParentPoint, normalVector, seEndPoint);
     this.ref = line;
     this.seParentOneDimensional = seParentOneDimensional;
     this.seParentPoint = seParentPoint;
     this._index = index;
+    this._pencilSize = pencilSize;
   }
 
   public update(state: UpdateStateType): void {
@@ -73,6 +75,13 @@ export class SEPerpendicularLineThruPoint extends SELine {
         this.seParentPoint.locationVector,
         this._normalVector // the soon to be old normal vector
       );
+      if (normals.length > this._pencilSize) {
+        console.debug(
+          "Must allocate new perpendicular lines from",
+          this._index
+        );
+      }
+
       // console.log(
       //   "angle change with returned normals",
       //   this.name,
@@ -102,6 +111,7 @@ export class SEPerpendicularLineThruPoint extends SELine {
         //   this._normalVector.x
         // );
       } else {
+        console.debug("Normal for index", this._index, "is undefined");
         this._exists = false;
       }
     }
@@ -129,6 +139,9 @@ export class SEPerpendicularLineThruPoint extends SELine {
   }
   get index(): number {
     return this._index;
+  }
+  get pencilSize(): number {
+    return this._pencilSize;
   }
 
   public get noduleDescription(): string {

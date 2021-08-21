@@ -708,10 +708,11 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
       const newPerpLine = new SEPerpendicularLineThruPoint(
         plottableLine,
         oneDimensional,
-        this.sePoint! /* start point */,
+        endSEPoint /* end point on the 1D target*/,
         vec /* normal vector */,
-        endSEPoint /* end point */,
-        index /*The index of the perpendicular*/
+        this.sePoint! /* start point */,
+        index /*The index of the perpendicular*/,
+        this.numberOfPerpendiculars
       );
       // turn off the display of perps that don't exist
       if (Math.abs(vec.z - 1) < SETTINGS.tolerance) {
