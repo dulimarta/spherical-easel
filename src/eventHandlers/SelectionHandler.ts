@@ -241,7 +241,7 @@ export default class SelectionHandler extends Highlighter {
       }
     }
     SEStore.setSelectedSENodules(this.currentSelection);
-    console.log("number selected", SEStore.selectedSENodules.length);
+    // console.log("number selected", SEStore.selectedSENodules.length);
     /** 
     console.log("----selected---- objects------");
     this.currentSelection.forEach(n =>

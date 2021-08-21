@@ -657,16 +657,16 @@ export default class SE extends VuexModule implements AppState {
     panel: StyleEditPanels;
     selected: Array<Nodule>;
   }): void {
-    console.debug("About to record style", data.selected.length, "objects");
+    // console.debug("About to record style", data.selected.length, "objects");
     const current = data.selected.map((n: Nodule) =>
       n.currentStyleState(data.panel)
     );
-    console.debug(
-      "SEStore recording style of selected objects in",
-      StyleEditPanels[data.panel],
-      "with",
-      current
-    );
+    // console.debug(
+    //   "SEStore recording style of selected objects in",
+    //   StyleEditPanels[data.panel],
+    //   "with",
+    //   current
+    // );
     this.initialStyleStatesMap.set(data.panel, current);
     this.defaultStyleStatesMap.set(
       data.panel,

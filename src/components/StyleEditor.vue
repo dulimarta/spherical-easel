@@ -59,7 +59,7 @@ export default class extends Vue {
   previousSelectedNodules: Array<Nodule> = [];
   activeStyleOptions: StyleOptions = {};
   previousStyleOptions: StyleOptions = {};
-  previousBackstyleContrast = 0;
+  previousBackstyleContrast = 0.5;
 
   /*
   When dataAgreement is TRUE
@@ -146,10 +146,10 @@ export default class extends Vue {
     EventBus.listen("save-style-state", this.saveStyleState.bind(this));
   }
   mounted(): void {
-    console.debug(
-      "From StyleEditor::mounted. Panel is",
-      StyleEditPanels[this.panel]
-    );
+    // console.debug(
+    //   "From StyleEditor::mounted. Panel is",
+    //   StyleEditPanels[this.panel]
+    // );
   }
   beforeDestroy(): void {
     EventBus.unlisten("style-data-clear");
@@ -238,11 +238,11 @@ export default class extends Vue {
     }
     this.activeStyleOptions = {};
 
-    console.debug("***********************");
+    // console.debug("***********************");
     this.selectedSENodules = newSelection.filter(this.noduleFilterFunction);
     this.selectedNodules = this.selectedSENodules.map(this.noduleMapFunction);
-    console.debug("Selected SENodules", this.selectedSENodules);
-    console.debug("Selected plottables", this.selectedNodules);
+    // console.debug("Selected SENodules", this.selectedSENodules);
+    // console.debug("Selected plottables", this.selectedNodules);
     SEStore.setOldStyleSelection(this.selectedSENodules);
 
     // Save current state so we can reset to this state if needed to
@@ -348,7 +348,7 @@ export default class extends Vue {
       if (opt.dashArray && opt.dashArray.length === 0) opt.dashArray.push(0, 0);
       this.propDynamicBackStyleCommonValue =
         (opt as any)["dynamicBackStyle"] ?? false;
-      console.debug("Only one object is selected");
+      // console.debug("Only one object is selected");
 
       //update the conflicting properties
       const newConflictProps: string[] = [];
@@ -357,7 +357,9 @@ export default class extends Vue {
         propNames: newConflictProps
       });
     }
+
     this.previousBackstyleContrast = Nodule.getBackStyleContrast();
+    console.log("record previous contrast", this.previousBackstyleContrast);
     this.previousSelectedNodules.splice(0);
     this.previousSelectedNodules.push(...this.selectedNodules);
   }
@@ -575,14 +577,17 @@ export default class extends Vue {
     const cmdGroup = new CommandGroup();
     let subCommandCount = 0;
     if (this.previousBackstyleContrast !== Nodule.getBackStyleContrast()) {
-      console.log(
-        "The back style constant changed to ",
-        Nodule.getBackStyleContrast()
-      );
+      // console.log(
+      //   this.previousBackstyleContrast,
+      //   "ISSUED COMMAND: The back style constant changed to ",
+      //   Nodule.getBackStyleContrast()
+      // );
       const constrastCommand = new ChangeBackStyleContrastCommand(
         Nodule.getBackStyleContrast(),
         this.previousBackstyleContrast
       );
+      // update the previous value
+      this.previousBackstyleContrast = Nodule.getBackStyleContrast();
       cmdGroup.addCommand(constrastCommand);
       subCommandCount++;
     }
@@ -600,9 +605,9 @@ export default class extends Vue {
         n.currentStyleState(this.panel)
       );
       if (!this.areEquivalentStyles(prev, curr)) {
-        console.debug("Must issue StyleNoduleCommand");
-        console.debug("Previous style", prev);
-        console.debug("Next style", curr);
+        // console.debug("ISSUE StyleNoduleCommand");
+        // console.debug("Previous style", prev);
+        // console.debug("Next style", curr);
         const styleCommand = new StyleNoduleCommand(
           this.selectedNodules,
           this.panel,
@@ -611,13 +616,15 @@ export default class extends Vue {
         );
         cmdGroup.addCommand(styleCommand);
         subCommandCount++;
-      } else {
-        console.debug("Eveything stayed unchanged");
       }
+      // else {
+      //   console.debug("Eveything stayed unchanged");
+      // }
       SEStore.setOldStyleSelection([]);
-    } else {
-      console.debug("No dirty selection");
     }
+    // else {
+    //   // console.debug("No dirty selection");
+    // }
     if (subCommandCount > 0) cmdGroup.push();
   }
 }

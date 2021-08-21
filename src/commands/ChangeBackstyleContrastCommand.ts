@@ -14,7 +14,7 @@ export class ChangeBackStyleContrastCommand extends Command {
   }
 
   do(): void {
-    Nodule.setBackStyleContrast(this.currentBackStyleContrast);
+    // Nodule.setBackStyleContrast(this.currentBackStyleContrast);
     SEStore.changeBackContrast(this.currentBackStyleContrast);
   }
 
@@ -23,7 +23,7 @@ export class ChangeBackStyleContrastCommand extends Command {
   }
 
   restoreState(): void {
-    Nodule.setBackStyleContrast(this.pastBackStyleContrast);
+    // Nodule.setBackStyleContrast(this.pastBackStyleContrast);
     SEStore.changeBackContrast(this.pastBackStyleContrast);
   }
 
