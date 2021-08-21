@@ -49,7 +49,15 @@ export const DEFAULT_POINT_BACK_STYLE: StyleOptions = {
 
 export const DEFAULT_NONFREEPOINT_FRONT_STYLE: StyleOptions = {
   fillColor: SETTINGS.point.nonFree.fillColor.front,
-  strokeColor: SETTINGS.point.nonFree.strokeColor.front
+  strokeColor: SETTINGS.point.nonFree.strokeColor.front,
+  pointRadiusPercent: SETTINGS.point.nonFree.scalePercent
+};
+
+export const DEFAULT_NONFREEPOINT_BACK_STYLE: StyleOptions = {
+  fillColor: SETTINGS.point.nonFree.fillColor.back,
+  strokeColor: SETTINGS.point.nonFree.strokeColor.back,
+  pointRadiusPercent: SETTINGS.point.nonFree.scalePercent,
+  dynamicBackStyle: SETTINGS.point.dynamicBackStyle
 };
 
 export const DEFAULT_LINE_FRONT_STYLE: StyleOptions = {
@@ -68,12 +76,16 @@ export const DEFAULT_LINE_BACK_STYLE: StyleOptions = {
 };
 export const DEFAULT_NONFREE_LINE_FRONT_STYLE: StyleOptions = {
   strokeColor: SETTINGS.line.nonFree.strokeColor.front,
-  strokeWidthPercent: 100
+  dashArray: SETTINGS.line.nonFree.dashArray.front,
+  reverseDashArray: SETTINGS.line.nonFree.dashArray.reverse.front,
+  strokeWidthPercent: SETTINGS.line.nonFree.scalePercent
 };
 
 export const DEFAULT_NONFREE_LINE_BACK_STYLE: StyleOptions = {
   strokeColor: SETTINGS.line.nonFree.strokeColor.back,
-  strokeWidthPercent: 100,
+  strokeWidthPercent: SETTINGS.line.nonFree.scalePercent,
+  dashArray: SETTINGS.line.nonFree.dashArray.back,
+  reverseDashArray: SETTINGS.line.nonFree.dashArray.reverse.back,
   dynamicBackStyle: SETTINGS.line.dynamicBackStyle
 };
 
