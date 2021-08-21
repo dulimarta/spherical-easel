@@ -482,7 +482,7 @@ export default class TangentLineThruPointHandler extends Highlighter {
     this.snapToTemporaryPoint = null;
   }
 
-  createTangent(
+  private createTangent(
     oneDimensional: SEOneDimensionalNotStraight,
     sePointOneDimensionalParent: SEOneOrTwoDimensional | null,
     sePointVector: Vector3,

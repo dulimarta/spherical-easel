@@ -221,6 +221,7 @@ export default class ParametricForm extends Vue {
     if (!ev.altKey) return;
     if (!ev.ctrlKey) return;
 
+    this.c1DiscontunityParameterValues.splice(0);
     if (ev.code === "KeyC") {
       this.setCircleExpressions();
       this.addParametricCurve();
@@ -273,7 +274,7 @@ export default class ParametricForm extends Vue {
       "sin(M1)+2*cos(M1)^2*sin(M1)*(cos(t)-cos(t)^2)";
     this.coordinateExpressions.y = "2*cos(M1)^2*sin(M1)*sin(t)*(1-cos(t))";
     this.coordinateExpressions.z = "cos(M1)-2*cos(M1)*sin(M1)^2*(1-cos(t))";
-    this.c1DiscontunityParameterValues = [0, 2 * Math.PI];
+    this.c1DiscontunityParameterValues.push(0, 2 * Math.PI);
     // this.primeCoordinateExpressions.x =
     //   "2*cos(M1)^2*sin(M1)*(-1*sin(t)+2*cos(t)*sin(t))";
     // this.primeCoordinateExpressions.y =
@@ -346,7 +347,7 @@ export default class ParametricForm extends Vue {
     const b = "0.75";
     this.tNumbers.min = 0;
     this.tNumbers.max = 8 * Math.PI;
-    this.c1DiscontunityParameterValues = [
+    this.c1DiscontunityParameterValues.push(
       0,
       ((1 * 8) / 6) * Math.PI,
       ((2 * 8) / 6) * Math.PI,
@@ -354,7 +355,7 @@ export default class ParametricForm extends Vue {
       ((4 * 8) / 6) * Math.PI,
       ((5 * 8) / 6) * Math.PI,
       8 * Math.PI
-    ];
+    );
     // this.tExpressions.min = "0";
     // this.tExpressions.max = "M2";
 
@@ -459,7 +460,7 @@ export default class ParametricForm extends Vue {
       this.coordinateExpressions.z = obj.zCoord;
     }
     if (obj.cuspParameterValues !== undefined) {
-      this.c1DiscontunityParameterValues.splice(0);
+      // this.c1DiscontunityParameterValues.splice(0);
       this.c1DiscontunityParameterValues.push(...obj.cuspParameterValues);
       console.log("cusp", this.c1DiscontunityParameterValues);
     }
@@ -825,13 +826,13 @@ export default class ParametricForm extends Vue {
         this.parser.evaluateWithVars(this.coordinateExpressions.y, this.varMap),
         this.parser.evaluateWithVars(this.coordinateExpressions.z, this.varMap)
       );
-      console.log(
-        "length",
-        this.tempVector.length(),
-        this.parser.evaluateWithVars(this.coordinateExpressions.x, this.varMap),
-        this.parser.evaluateWithVars(this.coordinateExpressions.y, this.varMap),
-        this.parser.evaluateWithVars(this.coordinateExpressions.z, this.varMap)
-      );
+      // console.log(
+      //   "length",
+      //   this.tempVector.length(),
+      //   this.parser.evaluateWithVars(this.coordinateExpressions.x, this.varMap),
+      //   this.parser.evaluateWithVars(this.coordinateExpressions.y, this.varMap),
+      //   this.parser.evaluateWithVars(this.coordinateExpressions.z, this.varMap)
+      // );
       if (
         Math.abs(this.tempVector.length() - 1) > SETTINGS.nearlyAntipodalIdeal
       ) {

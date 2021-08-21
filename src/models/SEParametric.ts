@@ -681,7 +681,7 @@ export class SEParametric extends SENodule
     // console.log("perpendiculars", normalList);
     this.removeDuplicateVectors(normalList);
 
-    console.log("uni perpendicular", normalList);
+    // console.log("unique perpendicular", normalList);
 
     // if (uniqueNormals.length > this._maxNumberOfTangents) {
     //   console.debug(

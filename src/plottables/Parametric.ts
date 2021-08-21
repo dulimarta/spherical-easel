@@ -56,7 +56,7 @@ export default class Parametric extends Nodule {
   private _pPrimeValues: Array<Vector3> = [];
   private _ppPrimeValues: Array<Vector3> = [];
 
-  // tGlovalMin <= tPartMin < tPartMax <= tGlobalMax
+  // tGlobalMin <= tPartMin < tPartMax <= tGlobalMax
   private tGlobalMin = 0;
   private tGlobalMax = 1;
   private tPartMin = 0;
@@ -245,6 +245,8 @@ export default class Parametric extends Nodule {
         console.debug("The curve needs fewer anchor points");
       }
     }
+    this.stylize(DisplayStyle.ApplyCurrentVariables);
+    this.adjustSize();
   }
 
   private lookupFunctionValueAt(t: number, arr: Array<Vector3>): Vector3 {
@@ -334,12 +336,13 @@ export default class Parametric extends Nodule {
       }
       interAnchorDistance = newArcLength / (SUBDIVISIONS * iteration);
       const growth = (newArcLength - currArcLength) / newArcLength;
-      console.debug(
-        `Iteration-${iteration} length changed from ${currArcLength} to ${newArcLength}.` +
-          `Growth = ${growth.toFixed(5)}`,
-        "inter anchor distance",
-        interAnchorDistance
-      );
+      // console.debug(
+      //   `Iteration-${iteration} length changed from ${currArcLength.toFixed(
+      //     5
+      //   )} to ${newArcLength.toFixed(5)}.` + `Growth = ${growth.toFixed(5)}`,
+      //   "inter anchor distance",
+      //   interAnchorDistance.toFixed(5)
+      // );
       if (
         Math.abs(currArcLength - newArcLength) <
         SETTINGS.parameterization.maxChangeInArcLength

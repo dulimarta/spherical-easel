@@ -1,17 +1,14 @@
 import { SEPoint } from "./SEPoint";
 import {
   TangentLineThruPointState,
-  SEOneDimensional,
   SEOneDimensionalNotStraight
 } from "@/types";
-import { SEOneOrTwoDimensional } from "@/types";
 import { UpdateMode, UpdateStateType } from "@/types";
 import { SELine } from "./SELine";
 import { Vector3 } from "three";
 import Line from "@/plottables/Line";
 import i18n from "@/i18n";
-import SETTINGS from "@/global-settings";
-import { SESegment } from "./SESegment";
+
 import { SECircle } from "./SECircle";
 import { SEEllipse } from "./SEEllipse";
 import { SEParametric } from "./SEParametric";
