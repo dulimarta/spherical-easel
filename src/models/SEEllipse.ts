@@ -4,7 +4,7 @@ import Ellipse from "@/plottables/Ellipse";
 import { Vector3, Matrix4 } from "three";
 import { Visitable } from "@/visitors/Visitable";
 import { Visitor } from "@/visitors/Visitor";
-import { EllipseState, OneDimensional } from "@/types";
+import { EllipseState, NormalVectorAndTValue, OneDimensional } from "@/types";
 import SETTINGS from "@/global-settings";
 import {
   DEFAULT_ELLIPSE_BACK_STYLE,
@@ -340,7 +340,7 @@ export class SEEllipse extends SENodule
   public getNormalsToPerpendicularLinesThru(
     sePointVector: Vector3,
     oldNormal: Vector3 // ignored for Ellipse and Circle, but not other one-dimensional objects
-  ): Vector3[] {
+  ): NormalVectorAndTValue[] {
     // first check to see if the sePointVector is antipodal or the same as the center of the ellipse
     // First set tmpVector to the center of the ellipse
     this.tmpVector
@@ -377,7 +377,10 @@ export class SEEllipse extends SENodule
       // ) {
       //   return [this.tmpVector];
       // } else {
-      return [this.tmpVector1, this.tmpVector];
+      return [
+        { normal: this.tmpVector1, tVal: NaN },
+        { normal: this.tmpVector, tVal: NaN }
+      ];
       // }
     } else {
       const transformedToStandard = new Vector3();
@@ -403,9 +406,10 @@ export class SEEllipse extends SENodule
       //   return vec.angleTo(oldNormal) === minAngle;
       // });
       // console.log("normal list length", normalList.length);
-      return normalList.map(vec =>
-        vec.applyMatrix4(this.ref.ellipseFrame).normalize()
-      );
+      normalList.map((pair: NormalVectorAndTValue) => {
+        pair.normal.applyMatrix4(this.ref.ellipseFrame).normalize();
+      });
+      return normalList;
     }
   }
 

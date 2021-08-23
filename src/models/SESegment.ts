@@ -5,7 +5,12 @@ import { Visitable } from "@/visitors/Visitable";
 import { Visitor } from "@/visitors/Visitor";
 import { SEPoint } from "./SEPoint";
 import SETTINGS from "@/global-settings";
-import { OneDimensional, SegmentState, Labelable } from "@/types";
+import {
+  OneDimensional,
+  SegmentState,
+  Labelable,
+  NormalVectorAndTValue
+} from "@/types";
 import { UpdateMode, UpdateStateType } from "@/types";
 import { SELabel } from "@/models/SELabel";
 import {
@@ -277,7 +282,7 @@ export class SESegment extends SENodule
   public getNormalsToPerpendicularLinesThru(
     sePointVector: Vector3,
     oldNormal: Vector3
-  ): Vector3[] {
+  ): NormalVectorAndTValue[] {
     this.tmpVector.crossVectors(sePointVector, this._normalVector);
     // Check to see if the tmpVector is zero (i.e the center point and given point are parallel -- ether
     // nearly antipodal or in the same direction)
@@ -286,7 +291,7 @@ export class SESegment extends SENodule
       //  we want to choose one line whose normal is near the oldNormal
       this.tmpVector.copy(oldNormal);
     }
-    return [this.tmpVector.normalize()];
+    return [{ normal: this.tmpVector.normalize(), tVal: NaN }];
   }
 
   public update(state: UpdateStateType): void {

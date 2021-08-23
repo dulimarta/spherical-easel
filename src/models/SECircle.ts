@@ -4,7 +4,7 @@ import Circle from "@/plottables/Circle";
 import { Vector3, Matrix4 } from "three";
 import { Visitable } from "@/visitors/Visitable";
 import { Visitor } from "@/visitors/Visitor";
-import { OneDimensional } from "@/types";
+import { NormalVectorAndTValue, OneDimensional } from "@/types";
 import SETTINGS from "@/global-settings";
 import {
   DEFAULT_CIRCLE_BACK_STYLE,
@@ -231,7 +231,7 @@ export class SECircle extends SENodule
   public getNormalsToPerpendicularLinesThru(
     sePointVector: Vector3,
     oldNormal: Vector3
-  ): Vector3[] {
+  ): NormalVectorAndTValue[] {
     this.tmpVector.crossVectors(
       sePointVector,
       this._centerSEPoint.locationVector
@@ -246,7 +246,7 @@ export class SECircle extends SENodule
         .copy(oldNormal)
         .addScaledVector(sePointVector, -1 * oldNormal.dot(sePointVector));
     }
-    return [this.tmpVector.normalize()];
+    return [{ normal: this.tmpVector.normalize(), tVal: NaN }];
   }
 
   /**

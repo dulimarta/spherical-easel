@@ -1,10 +1,5 @@
 import { Module, VuexModule, Mutation } from "vuex-module-decorators";
-import {
-  AppState,
-  Labelable,
-  SEIntersectionReturnType,
-  ActionMode
-} from "@/types";
+import { AppState, SEIntersectionReturnType, ActionMode } from "@/types";
 import Two from "two.js";
 import { SEPoint } from "@/models/SEPoint";
 import { SESegment } from "@/models/SESegment";
@@ -23,7 +18,6 @@ import { LineNormalVisitor } from "@/visitors/LineNormalVisitor";
 import { SegmentNormalArcLengthVisitor } from "@/visitors/SegmentNormalArcLengthVisitor";
 import { UpdateMode } from "@/types";
 import Nodule, { DisplayStyle } from "@/plottables/Nodule";
-import SETTINGS from "@/global-settings";
 import { SEExpression } from "@/models/SEExpression";
 import { SEAngleMarker } from "@/models/SEAngleMarker";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
@@ -57,6 +51,7 @@ import Parametric from "@/plottables/Parametric";
 import { SEPolygon } from "@/models/SEPolygon";
 import { SETangentLineThruPoint } from "@/models/SETangentLineThruPoint";
 import { SENSectLine } from "@/models/SENSectLine";
+import { SEPencil } from "@/models/SEPencil";
 const tmpMatrix = new Matrix4();
 //const tmpVector = new Vector3();
 
@@ -111,6 +106,7 @@ export default class SE extends VuexModule implements AppState {
   intersections: SEIntersectionPoint[] = [];
   // measurements = [],
   expressions: SEExpression[] = [];
+  sePencils: SEPencil[] = [];
   // TODO: replace the following arrays with the Map below
   initialStyleStates: StyleOptions[] = [];
   defaultStyleStates: StyleOptions[] = [];
@@ -141,6 +137,7 @@ export default class SE extends VuexModule implements AppState {
     this.sePolygons.splice(0);
     this.seEllipses.splice(0);
     this.seParametrics.splice(0);
+    this.sePencils.splice(0);
     this.seLabels.splice(0);
     this.selectedSENodules.splice(0);
     this.intersections.splice(0);
@@ -202,16 +199,6 @@ export default class SE extends VuexModule implements AppState {
     }
   }
 
-  //#region addPoint
-  @Mutation
-  addPoint(point: SEPoint): void {
-    this.sePoints.push(point);
-    this.seNodules.push(point);
-    point.ref.addToLayers(this.layers);
-    this.hasUnsavedNodules = true;
-  }
-  //#endregion addPoint
-
   @Mutation
   removeAllFromLayers(): void {
     this.seAngleMarkers.forEach((x: SEAngleMarker) => x.ref.removeFromLayers());
@@ -228,7 +215,22 @@ export default class SE extends VuexModule implements AppState {
         ptr = ptr.next;
       }
     });
+    this.sePencils.forEach((p: SEPencil) => {
+      p.lines.forEach((l: SEPerpendicularLineThruPoint) => {
+        l.ref.removeFromLayers();
+      });
+    });
   }
+
+  //#region addPoint
+  @Mutation
+  addPoint(point: SEPoint): void {
+    this.sePoints.push(point);
+    this.seNodules.push(point);
+    point.ref.addToLayers(this.layers);
+    this.hasUnsavedNodules = true;
+  }
+  //#endregion addPoint
 
   @Mutation
   removePoint(pointId: number): void {
@@ -384,6 +386,33 @@ export default class SE extends VuexModule implements AppState {
       // victimParametric.removeSelfSafely();
       this.seParametrics.splice(parametricPos, 1); // Remove the parametric from the list
       this.seNodules.splice(pos2, 1);
+      this.hasUnsavedNodules = true;
+    }
+  }
+
+  @Mutation
+  addPencil(pencil: SEPencil): void {
+    this.sePencils.push(pencil);
+    this.seNodules.push(pencil);
+    pencil.lines.forEach((ln: SEPerpendicularLineThruPoint) => {
+      this.seLines.push(ln);
+      this.seNodules.push(ln);
+      ln.ref.addToLayers(this.layers);
+    });
+    this.hasUnsavedNodules = true;
+  }
+
+  @Mutation
+  removePencil(pencilId: number): void {
+    const pos = this.sePencils.findIndex((p: SEPencil) => p.id === pencilId);
+    const pos2 = this.seNodules.findIndex((p: SENodule) => p.id === pencilId);
+    if (pos >= 0) {
+      this.sePencils.splice(pos, 1);
+      this.seNodules.splice(pos2, 1);
+      this.sePencils[pos].lines.forEach((ln: SEPerpendicularLineThruPoint) => {
+        // this.removeLine(ln.id);
+        ln.ref.removeFromLayers();
+      });
       this.hasUnsavedNodules = true;
     }
   }
