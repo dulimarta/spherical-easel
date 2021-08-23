@@ -535,20 +535,20 @@ export default class FrontBackStyle extends Vue {
   // usingAutomaticBackStyle = true means the program is setting the style of the back objects
   // private usingAutomaticBackStyle = true;
   toggleUsingAutomaticBackStyle(opt: StyleOptions): void {
-    console.log(opt);
+    // console.log(opt);
     if (opt.dynamicBackStyle !== undefined) {
-      console.log(
-        "dynamic style before",
-        opt.dynamicBackStyle
-        // this.usingAutomaticBackStyle
-      );
+      // console.log(
+      //   "dynamic style before",
+      //   opt.dynamicBackStyle
+      //   // this.usingAutomaticBackStyle
+      // );
       opt.dynamicBackStyle = !opt.dynamicBackStyle;
       // this.usingAutomaticBackStyle = !this.usingAutomaticBackStyle;
-      console.log(
-        "dynamic style after",
-        opt.dynamicBackStyle
-        // this.usingAutomaticBackStyle
-      );
+      // console.log(
+      //   "dynamic style after",
+      //   opt.dynamicBackStyle
+      //   // this.usingAutomaticBackStyle
+      // );
     }
   }
 
