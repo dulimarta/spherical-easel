@@ -426,10 +426,9 @@ export default class Easel extends Vue {
           const { script } = doc.data() as ConstructionInFirestore;
           run(JSON.parse(script) as ConstructionScript);
         } else {
-          // TODO: add a new I18N entry for the following error message
           EventBus.fire("show-alert", {
-            key: `Construction ${docId} not found`,
-            keyOptions: { docId },
+            key: "constructions.constructionNotFound",
+            keyOptions: { docId: docId },
             type: "error"
           });
         }

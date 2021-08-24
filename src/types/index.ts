@@ -54,7 +54,7 @@ export interface AppState {
   defaultStyleStates: StyleOptions[];
   initialStyleStatesMap: Map<StyleEditPanels, StyleOptions[]>;
   defaultStyleStatesMap: Map<StyleEditPanels, StyleOptions[]>;
-  oldStyleSelections: SENodule[];
+  oldSelections: SENodule[];
   styleSavedFromPanel: StyleEditPanels;
   // initialBackStyleContrast: number;
   inverseTotalRotationMatrix: Matrix4; // Initially the identity. This is the composition of all the inverses of the rotation matrices applied to the sphere.
@@ -73,6 +73,23 @@ export interface ToolButtonType {
   toolUseMessage: string;
   toolTipMessage: string;
 }
+export type SavedNames =
+  | "objectName"
+  | "objectExists"
+  | "objectShowing"
+  | "objectFrontStyle"
+  | "objectBackStyle"
+  | "labelName"
+  | "labelStyle"
+  | "labelVector"
+  | "labelShowing"
+  | "labelExists"
+  | "pointVector"
+  | "antipodalPointsParentName"
+  | "angleMarkerMode"
+  | "angleMarkerFirstParentName"
+  | "angleMarkerSecondParentName"
+  | "angleMarkerThirdParentName";
 
 export type ActionMode =
   | "angle"

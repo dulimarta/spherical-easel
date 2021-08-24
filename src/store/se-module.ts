@@ -96,7 +96,7 @@ export default class SE extends VuexModule implements AppState {
   canvasWidth = 0; //A temporary canvas width;
   seNodules: SENodule[] = []; // An array of all SENodules
   selectedSENodules: SENodule[] = []; // An array of selected SENodules
-  oldStyleSelections: SENodule[] = []; // An array of previous selected SENodules
+  oldSelections: SENodule[] = []; // An array of previous selected SENodules
   layers: Two.Group[] = []; // An array of Two.Group pointer to the layers in the twoInstance
   sePoints: SEPoint[] = []; // An array of all SEPoints
   seLines: SELine[] = []; // An array of all SELines
@@ -563,12 +563,14 @@ export default class SE extends VuexModule implements AppState {
   // Update the display of all free SEPoints to update the entire display
   @Mutation
   updateDisplay(): void {
+    // console.log("update display");
     this.seNodules
-      .filter(obj => obj.isFreePoint())
+      .filter(obj => obj.isFreeToMove())
       .forEach(obj => {
         // First mark the kids out of date so that the update method does a topological sort
         obj.markKidsOutOfDate();
         obj.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
+        // console.log("name", obj.name, "show", obj.showing, "exist", obj.exists);
       });
   }
 
@@ -584,9 +586,9 @@ export default class SE extends VuexModule implements AppState {
   // This is the previous set of nodes that was selected
   // If created from the LabelPanel they are all SSELabels (So we can't justs copy selections before updating it)
   @Mutation
-  setOldStyleSelection(payload: SENodule[]): void {
-    this.oldStyleSelections.splice(0);
-    this.oldStyleSelections.push(...payload);
+  setOldSelection(payload: SENodule[]): void {
+    this.oldSelections.splice(0);
+    this.oldSelections.push(...payload);
   }
 
   @Mutation
@@ -657,16 +659,16 @@ export default class SE extends VuexModule implements AppState {
     panel: StyleEditPanels;
     selected: Array<Nodule>;
   }): void {
-    // console.debug("About to record style", data.selected.length, "objects");
+    console.debug("About to record style", data.selected.length, "objects");
     const current = data.selected.map((n: Nodule) =>
       n.currentStyleState(data.panel)
     );
-    // console.debug(
-    //   "SEStore recording style of selected objects in",
-    //   StyleEditPanels[data.panel],
-    //   "with",
-    //   current
-    // );
+    console.debug(
+      "SEStore recording style of selected objects in",
+      StyleEditPanels[data.panel],
+      "with",
+      current
+    );
     this.initialStyleStatesMap.set(data.panel, current);
     this.defaultStyleStatesMap.set(
       data.panel,

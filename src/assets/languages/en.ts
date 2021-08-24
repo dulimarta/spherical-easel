@@ -641,6 +641,7 @@ export default {
     firestoreConstructionLoaded: "Construction successfully loaded.",
     firestoreConstructionSaved: "Construction successfully saved.",
     firestoreConstructionDeleted: "Construction successfully deleted.",
-    firestoreSaveError: "Construction was not saved."
+    firestoreSaveError: "Construction was not saved.",
+    constructionNotFound: "Construction {docId} not found."
   }
 } as LocaleMessages;

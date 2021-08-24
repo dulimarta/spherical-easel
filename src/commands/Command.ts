@@ -18,6 +18,7 @@ import { DisplayStyle } from "@/plottables/Nodule";
 import Label from "@/plottables/Label";
 import SETTINGS from "@/global-settings";
 import { Vector3 } from "three";
+import { StyleEditPanels, StyleOptions } from "@/types/Styles";
 export abstract class Command {
   protected static store = SEStore;
 
@@ -96,18 +97,32 @@ export abstract class Command {
     return JSON.stringify(out);
   }
 
-  static makePointAndLabel(at: Vector3): { point: SEPoint; label: SELabel } {
+  static makePointAndLabel(
+    pointLocation: Vector3,
+    pointFrontStyleString: string | undefined,
+    pointBackStyleString: string | undefined,
+    labelLocation: Vector3,
+    labelStyleString: string | undefined
+  ): { point: SEPoint; label: SELabel } {
     const newPoint = new Point();
-    newPoint.stylize(DisplayStyle.ApplyCurrentVariables);
-    newPoint.adjustSize();
     const point = new SEPoint(newPoint);
-    point.locationVector.copy(at);
+    point.locationVector.copy(pointLocation);
+    if (pointFrontStyleString !== undefined)
+      newPoint.updateStyle(
+        StyleEditPanels.Front,
+        JSON.parse(pointFrontStyleString)
+      );
+    if (pointBackStyleString !== undefined)
+      newPoint.updateStyle(
+        StyleEditPanels.Back,
+        JSON.parse(pointBackStyleString)
+      );
 
     const newLabel = new Label();
     const label = new SELabel(newLabel, point);
-    label.locationVector.copy(at);
-    const offset = SETTINGS.point.initialLabelOffset;
-    label.locationVector.add(new Vector3(2 * offset, offset, 0)).normalize();
+    label.locationVector.copy(labelLocation);
+    if (labelStyleString !== undefined)
+      newLabel.updateStyle(StyleEditPanels.Label, JSON.parse(labelStyleString));
     return { point, label };
   }
 

@@ -46,8 +46,8 @@ export default class extends Vue {
   @SE.State((s: AppState) => s.defaultStyleStatesMap)
   readonly defaultStatesMap!: Map<StyleEditPanels, StyleOptions[]>;
 
-  @SE.State((s: AppState) => s.oldStyleSelections)
-  readonly oldStyleSelections!: SENodule[];
+  @SE.State((s: AppState) => s.oldSelections)
+  readonly oldSelections!: SENodule[];
 
   // @SE.State((s: AppState) => s.initialBackStyleContrast)
   // readonly initialBackStyleContrast!: number;
@@ -157,7 +157,7 @@ export default class extends Vue {
   }
 
   restoreTo(propNames: string[], styleData: StyleOptions[]): void {
-    // console.debug("Style data to apply", styleData);
+    console.debug("Style data to apply", styleData);
     this.selectedNodules.forEach((n: Nodule, k: number) => {
       const updatePayload: StyleOptions = {};
       propNames.forEach((p: string) => {
@@ -243,13 +243,17 @@ export default class extends Vue {
     this.selectedNodules = this.selectedSENodules.map(this.noduleMapFunction);
     // console.debug("Selected SENodules", this.selectedSENodules);
     // console.debug("Selected plottables", this.selectedNodules);
-    SEStore.setOldStyleSelection(this.selectedSENodules);
+    SEStore.setOldSelection(this.selectedSENodules);
 
     // Save current state so we can reset to this state if needed to
     const styleOptionsOfSelected = this.selectedNodules.map((n: Nodule) => {
-      // console.debug("Filtered object", n);
+      // console.debug("current style state", n.currentStyleState(this.panel));
       return n.currentStyleState(this.panel);
     });
+    // console.log(
+    //   "styleOptionsOfSelected",
+    //   styleOptionsOfSelected[0]
+    // );
     SEStore.recordStyleState({
       panel: this.panel,
       selected: this.selectedNodules
@@ -257,7 +261,10 @@ export default class extends Vue {
 
     // Use the style of the first selected object as the initial value
     this.activeStyleOptions = { ...styleOptionsOfSelected[0] };
-
+    // console.log(
+    //   "active style options",
+    //   this.activeStyleOptions
+    // );
     // Use flatmap (1-to-many mapping) to compile all the styling properties
     // of all the selected objects
     const unionOfAllProps = styleOptionsOfSelected.flatMap(
@@ -276,13 +283,13 @@ export default class extends Vue {
     // console.log("list of common props", listOfAllProps);
 
     unDuplicatedUnionOfAllProps.forEach(prop => {
-      // make sure that prop is on every list of properties, if so it is a common prop
+      // make sure that prop is on every list of properties, if so it is a common prop (i.e. in the intersection)
       if (listOfAllProps.every(list => list.indexOf(prop) > -1)) {
         this.commonStyleProperties.push(prop);
       }
     });
 
-    console.log("common props", this.commonStyleProperties);
+    // console.log("common props", this.commonStyleProperties);
 
     // Use destructuring (...) to convert back from set to array
     //this.commonStyleProperties.push(...uniqueProps);
@@ -348,7 +355,7 @@ export default class extends Vue {
       if (opt.dashArray && opt.dashArray.length === 0) opt.dashArray.push(0, 0);
       this.propDynamicBackStyleCommonValue =
         (opt as any)["dynamicBackStyle"] ?? false;
-      // console.debug("Only one object is selected");
+      console.debug("Only one object is selected");
 
       //update the conflicting properties
       const newConflictProps: string[] = [];
@@ -359,7 +366,7 @@ export default class extends Vue {
     }
 
     this.previousBackstyleContrast = Nodule.getBackStyleContrast();
-    console.log("record previous contrast", this.previousBackstyleContrast);
+    // console.log("record previous contrast", this.previousBackstyleContrast);
     this.previousSelectedNodules.splice(0);
     this.previousSelectedNodules.push(...this.selectedNodules);
   }
@@ -410,7 +417,10 @@ export default class extends Vue {
 
   @Watch("activeStyleOptions", { deep: true, immediate: true })
   onStyleOptionsChanged(z: StyleOptions): void {
-    console.log("onStyleOpCha in styleEditor", z);
+    // console.log(
+    //   "onStyleOpCha in styleEditor",
+    //   z
+    // );
     const newOptions = { ...z };
     // console.debug("Inside style editor active style options", newOptions);
     const oldProps = new Set(
@@ -448,7 +458,7 @@ export default class extends Vue {
       // Exclude the property from payload if it did not change
       if (aEqualsb) delete (updatePayload as any)[p];
       else {
-        console.debug(`Property ${p} changed from ${a} to ${b}`);
+        // console.debug(`Property ${p} changed from ${a} to ${b}`);
         EventBus.fire("style-option-change", { prop: p });
       }
     });
@@ -473,11 +483,20 @@ export default class extends Vue {
       //   delete updatePayload.backStyleContrast;
       // }
       this.selectedNodules.forEach((n: Nodule) => {
-        // console.debug("Updating style of", n);
+        // console.debug(
+        //   "Updating style of",
+        //   n,
+        //   "payload",
+        //   updatePayload
+        // );
         n.updateStyle(this.panel, updatePayload);
       });
     }
     this.previousStyleOptions = { ...z };
+    // console.log(
+    //   "previous label mode ssstyle opts end of onStylOptChange",
+    //   this.previousStyleOptions
+    // );
   }
 
   forceDataAgreement(props: string[]): void {
@@ -591,23 +610,23 @@ export default class extends Vue {
       cmdGroup.addCommand(constrastCommand);
       subCommandCount++;
     }
-    if (this.oldStyleSelections.length > 0) {
-      console.debug(
-        "Number of previously selected object? ",
-        this.previousSelectedNodules.length
-      );
-      console.debug(
-        "Number of currently selected object? ",
-        this.selectedNodules.length
-      );
+    if (this.oldSelections.length > 0) {
+      // console.debug(
+      //   "Number of previously selected object? ",
+      //   this.previousSelectedNodules.length
+      // );
+      // console.debug(
+      //   "Number of currently selected object? ",
+      //   this.selectedNodules.length
+      // );
       const prev = this.initialStatesMap.get(this.panel) ?? [];
       const curr = this.selectedNodules.map((n: Nodule) =>
         n.currentStyleState(this.panel)
       );
       if (!this.areEquivalentStyles(prev, curr)) {
-        // console.debug("ISSUE StyleNoduleCommand");
-        // console.debug("Previous style", prev);
-        // console.debug("Next style", curr);
+        console.debug("ISSUE StyleNoduleCommand");
+        console.debug("Previous style", prev);
+        console.debug("Next style", curr);
         const styleCommand = new StyleNoduleCommand(
           this.selectedNodules,
           this.panel,
@@ -620,7 +639,7 @@ export default class extends Vue {
       // else {
       //   console.debug("Eveything stayed unchanged");
       // }
-      SEStore.setOldStyleSelection([]);
+      SEStore.setOldSelection([]);
     }
     // else {
     //   // console.debug("No dirty selection");

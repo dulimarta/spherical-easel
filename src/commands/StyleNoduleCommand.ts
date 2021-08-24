@@ -35,8 +35,10 @@ export class StyleNoduleCommand extends Command {
       console.debug(
         "Do effect of StyleNoduleCommand on ",
         this.nodules[i],
-        "with payload",
-        this.pastStyles[i].labelDisplayMode
+        "with payload old",
+        this.pastStyles[i],
+        "new",
+        this.currentStyles[i]
       );
       Command.store.changeStyle({
         selected: [this.nodules[i]],

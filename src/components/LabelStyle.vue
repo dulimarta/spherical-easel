@@ -65,7 +65,7 @@
           <!-- Label Diplay Mode Selections -->
 
           <v-select v-model.lazy="styleOptions.labelDisplayMode"
-            :class="[showMoreLabelStyles ? '': 'pa-0', {'shake' : animatedInput.labelDisplayMode,conflict: conflictItems.labelTextFamily}]"
+            :class="[showMoreLabelStyles ? '': 'pa-0', {'shake' : animatedInput.labelDisplayMode,conflict: conflictItems.labelDisplayMode}]"
             :disabled="labelDisplayModeValueFilter(styleOptions).length < 2"
             ref="labelDisplayMode"
             v-bind:label="$t('style.labelDisplayMode')"
@@ -619,10 +619,11 @@ export default class LabelStyle extends Vue {
           0,
           SETTINGS.label.maxLabelDisplayCaptionLength
         );
-      } else if (opt.labelDisplayCaption.length === 0) {
-        // the label mode should be set to name only
-        opt.labelDisplayMode = LabelDisplayMode.NameOnly;
       }
+      // else if (opt.labelDisplayCaption.length === 0) {
+      //   // the label mode should be set to name only
+      //   opt.labelDisplayMode = LabelDisplayMode.NameOnly;
+      // }
     }
     return true;
   }

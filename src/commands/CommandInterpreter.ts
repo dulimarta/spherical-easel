@@ -27,8 +27,8 @@ import { AddNSectPointCommand } from "./AddNSectPointCommand";
 const noduleDictionary = new Map<string, SENodule>();
 
 function executeIndividual(command: string): Command {
-  const slashPos = command.indexOf("/");
-  if (slashPos < 0) {
+  const andPosition = command.indexOf("&");
+  if (andPosition < 0) {
     const errMsg = `Invalid command format: ${command}`;
     EventBus.fire("show-alert", {
       key: errMsg,
@@ -36,7 +36,7 @@ function executeIndividual(command: string): Command {
     });
     throw new Error(errMsg);
   }
-  const opCode = command.substring(0, slashPos);
+  const opCode = command.substring(0, andPosition);
   // Use exact comparison (and not startsWith) because a command name
   // can be a prefix of another command name
   // (example: AddPoint and AddPointOnOneDimensional)

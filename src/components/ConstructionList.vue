@@ -160,13 +160,19 @@ export default class extends Vue {
   }
 
   onListLeave(/*_ev: MouseEvent*/): void {
-    // Restore the canvas
+    // Restore the canvas ** THIS CAUSES PROBLEMS WITH THE *styling (i.e. anything other than the default)* DISPLAY OF THE LABELS
     this.svgParent?.replaceChild(
       this.svgRoot,
       this.svgParent.firstChild as SVGElement
     );
     // Restore the rotation matrix
     SEStore.setInverseRotationMatrix(this.originalSphereMatrix);
+    /// HANS I KNOW THIS IS A TERIBLE WAY TO TRY A SOLVE THIS PROBLEM BUT THIS DOESN'T WORK
+    //    SO THE ISSUE IS IN THE CSS MAYBE? OR THE DOM? OR UPDATING TWO.JS?
+    setTimeout(() => {
+      console.log("list leave");
+      SEStore.updateDisplay();
+    }, 1000);
   }
 
   loadPreview(docId: string): void {

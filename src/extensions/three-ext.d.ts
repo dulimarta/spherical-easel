@@ -28,7 +28,7 @@ declare module "three/src/math/Vector3" {
      *
      * @param arr
      */
-    from(arr: string): void;
+    from(arr: string | undefined): void;
 
     /** Check if the vector is pretty close to zero within some tolerance
      * @param tolerance

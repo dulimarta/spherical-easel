@@ -425,7 +425,7 @@ export default class FrontBackStyle extends Vue {
   // @SE.State((s: AppState) => s.initialBackStyleContrast)
   // readonly initialBackStyleContrast!: number;
 
-  @SE.State((s: AppState) => s.oldStyleSelections)
+  @SE.State((s: AppState) => s.oldSelections)
   readonly oldStyleSelection!: SENodule[];
 
   @SE.State((s: AppState) => s.styleSavedFromPanel)
