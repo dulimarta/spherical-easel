@@ -5,7 +5,7 @@ import { Visitable } from "@/visitors/Visitable";
 import { Visitor } from "@/visitors/Visitor";
 import { SEPoint } from "./SEPoint";
 import SETTINGS from "@/global-settings";
-import { OneDimensional, Labelable } from "@/types";
+import { OneDimensional, Labelable, NormalVectorAndTValue } from "@/types";
 import { UpdateMode, UpdateStateType, LineState } from "@/types";
 import { SELabel } from "@/models/SELabel";
 // import  SENoduleItem  from "*.vue";
@@ -191,7 +191,7 @@ export class SELine extends SENodule
   public getNormalsToPerpendicularLinesThru(
     sePointVector: Vector3,
     oldNormal: Vector3
-  ): Vector3[] {
+  ): NormalVectorAndTValue[] {
     this.tmpVector3.set(0, 0, 0);
     this.tmpVector3.crossVectors(sePointVector, this._normalVector);
     // Check to see if the tmpVector is zero (i.e the normal vector and given point are parallel -- ether
@@ -217,7 +217,7 @@ export class SELine extends SENodule
     this.tmpVector3.normalize();
     // console.log("here x", this.tmpVector3.x);
 
-    return [this.tmpVector3];
+    return [{ normal: this.tmpVector3, tVal: NaN }];
   }
 
   public update(state: UpdateStateType): void {

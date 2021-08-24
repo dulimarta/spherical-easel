@@ -2,8 +2,7 @@ import { Command } from "./Command";
 import { SEPoint } from "@/models/SEPoint";
 import { SELabel } from "@/models/SELabel";
 import { SEPerpendicularLineThruPoint } from "@/models/SEPerpendicularLineThruPoint";
-import { SEOneDimensional, SEOneOrTwoDimensional, UpdateMode } from "@/types";
-import Line from "@/plottables/Line";
+import { SEOneDimensional, UpdateMode } from "@/types";
 import { DisplayStyle } from "@/plottables/Nodule";
 import { SENodule } from "@/models/SENodule";
 import { Vector3 } from "three";
@@ -66,6 +65,7 @@ export class AddPerpendicularLineThruPointCommand extends Command {
       /* arg-8 */ targetLine.showing,
       /* arg-9 */ targetLine.exists,
       /* arg-10*/ targetLine.index
+      // /* arg-11*/ targetLine.pencilSize
     ].join("/");
   }
 
@@ -87,6 +87,7 @@ export class AddPerpendicularLineThruPointCommand extends Command {
       endLocation.from(tokens[5]);
       endPoint.locationVector = endLocation;
       const index = Number(tokens[10]);
+      // const pencilSize = Number(tokens[11]);
       const seLine = new SEPerpendicularLineThruPoint(
         line,
         perpToLine,
@@ -94,6 +95,7 @@ export class AddPerpendicularLineThruPointCommand extends Command {
         normal,
         endPoint,
         index
+        // pencilSize
       );
       seLine.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
       seLine.name = tokens[1];

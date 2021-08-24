@@ -10,7 +10,8 @@ import {
   SEOneDimensional,
   SEOneOrTwoDimensional,
   UpdateMode,
-  SEIntersectionReturnType
+  SEIntersectionReturnType,
+  NormalVectorAndTValue
 } from "@/types";
 import { CommandGroup } from "@/commands/CommandGroup";
 import { SEPoint } from "@/models/SEPoint";
@@ -34,6 +35,8 @@ import { SEEllipse } from "@/models/SEEllipse";
 import { SEStore } from "@/store";
 import { SEParametric } from "@/models/SEParametric";
 import NonFreeLine from "@/plottables/NonFreeLine";
+import { SEPencil } from "@/models/SEPencil";
+import { AddPencilCommand } from "@/commands/AddPencilCommand";
 
 type TemporaryLine = {
   line: Line;
@@ -517,7 +520,7 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
 
           if (ind < normalList.length) {
             z.exist = true;
-            z.tmpNormal.copy(normalList[ind]);
+            z.tmpNormal.copy(normalList[ind].normal);
             z.line.normalVector = z.tmpNormal;
             z.line.addToLayers(this.layers);
           } else {
@@ -550,7 +553,7 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
     this.temporaryPointMarker.removeFromLayers();
     this.temporaryPointAdded = false;
 
-    this.tempLines.forEach((ln: TemporaryLine, ind: number) => {
+    this.tempLines.forEach((ln: TemporaryLine) => {
       ln.exist = false;
       ln.line.removeFromLayers();
     });
@@ -649,6 +652,7 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
 
     // For each type of oneDimensional compute the normal vectors and copy them into normalVectors
     let normalVectors: Vector3[] = [];
+    let usePencil = false;
     if (
       oneDimensional instanceof SELine ||
       oneDimensional instanceof SESegment ||
@@ -656,12 +660,15 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
     ) {
       // There is only one perpendicular
       this.numberOfPerpendiculars = 1;
+      usePencil = false;
     } else if (oneDimensional instanceof SEEllipse) {
       // There are upto four perpendiculars
       this.numberOfPerpendiculars = 4;
+      usePencil = false;
     } else if (oneDimensional instanceof SEParametric) {
       // Calculate the number of perpendiculars from the number of
       // "active" temporary lines
+      usePencil = true;
       this.numberOfPerpendiculars = this.tempLines.filter(
         (ln: TemporaryLine) => ln.exist
       ).length;
@@ -671,11 +678,14 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
         sePointVector,
         this.tempLines[0].tmpNormal // ignored in the case of SEEllipse
       )
-      .map(vec => vec.normalize());
+      .map((pair: NormalVectorAndTValue) => pair.normal.normalize());
     // console.log("number of normals in handler", normalVectors.length);
     // normals is the array of normal vector to the plane containing the line perpendicular to the one Dimensional through the point
     // create a number of such lines (not the number of normals in normalVector because if the user creates the perpendicular when there
     // are only two perpendiculars, then moves the point to a place where there are four, the other two perpendiculars are not created)
+
+    // console.debug("Current command group at #1 is", addPerpendicularLineGroup);
+    const perpendicularLines: Array<SEPerpendicularLineThruPoint> = [];
     for (let index = 0; index < this.numberOfPerpendiculars; index++) {
       // set the perpendicular vector
       let vec: Vector3;
@@ -710,9 +720,10 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
         oneDimensional,
         this.sePoint! /* start point */,
         vec /* normal vector */,
-        endSEPoint /* end point */,
+        endSEPoint /* end point on the 1D target*/,
         index /*The index of the perpendicular*/
       );
+      if (usePencil) perpendicularLines.push(newPerpLine);
       // turn off the display of perps that don't exist
       if (Math.abs(vec.z - 1) < SETTINGS.tolerance) {
         newPerpLine.exists = false;
@@ -738,14 +749,16 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
         .normalize();
       newSELabel.locationVector = this.tmpVector1;
 
-      addPerpendicularLineGroup.addCommand(
-        new AddPerpendicularLineThruPointCommand(
-          newPerpLine,
-          this.sePoint!,
-          oneDimensional,
-          newSELabel
-        )
-      );
+      if (!usePencil) {
+        addPerpendicularLineGroup.addCommand(
+          new AddPerpendicularLineThruPointCommand(
+            newPerpLine,
+            this.sePoint,
+            oneDimensional,
+            newSELabel
+          )
+        );
+      }
 
       // Determine all new intersection points and add their creation to the command so it can be undone
       SEStore.createAllIntersectionsWithLine(newPerpLine).forEach(
@@ -781,8 +794,23 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
       // console.log("after create intersections");
       // console.log(vec.x, vec.y, vec.z);
     }
+    // console.debug("Current command group at #2 is", addPerpendicularLineGroup);
+
+    if (usePencil) {
+      console.debug("Use pencil...");
+      const pencil = new SEPencil(
+        oneDimensional as SEParametric,
+        this.sePoint,
+        perpendicularLines
+      );
+      perpendicularLines.forEach((ln: SEPerpendicularLineThruPoint) => {
+        ln.seParentPencil = pencil;
+      });
+      addPerpendicularLineGroup.addCommand(new AddPencilCommand(pencil));
+    }
     addPerpendicularLineGroup.execute();
   }
+
   activate(): void {
     if (SEStore.selectedSENodules.length == 2) {
       const object1 = SEStore.selectedSENodules[0];

@@ -144,8 +144,12 @@ export interface SEIntersectionReturnType {
 /**
  * For a parametric equation P(t), this is the pair P(t), t
  */
-export type parametricVectorAndTValue = {
+export type ParametricVectorAndTValue = {
   vector: Vector3;
+  tVal: number;
+};
+export type NormalVectorAndTValue = {
+  normal: Vector3;
   tVal: number;
 };
 
@@ -160,13 +164,13 @@ export interface OneDimensional {
    * Return the normal vector(s) to the plane containing a line that is perpendicular to this one dimensional through the
    * sePoint, in the case that the usual way of defining this line is not well defined  (something is parallel),
    * use the oldNormal to help compute a new normal (which is returned)
-   * @param sePoint A point on the line normal to this parametric
+   * @param sePointVector A point on the line normal to this parametric
    */
   getNormalsToPerpendicularLinesThru(
     sePointVector: Vector3,
     oldNormal: Vector3, // ignored for Ellipse and Circle and Parametric, but not other one-dimensional objects
     useFullTInterval?: boolean // only used in the constructor when figuring out the maximum number of perpendiculars to a SEParametric
-  ): Vector3[];
+  ): Array<NormalVectorAndTValue>;
 }
 
 export interface Labelable {

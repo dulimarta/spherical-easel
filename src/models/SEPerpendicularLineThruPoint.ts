@@ -1,22 +1,22 @@
 import { SEPoint } from "./SEPoint";
 import { PerpendicularLineThruPointState, SEOneDimensional } from "@/types";
-import { SEOneOrTwoDimensional } from "@/types";
 import { UpdateMode, UpdateStateType } from "@/types";
 import { SELine } from "./SELine";
 import { Vector3 } from "three";
 import Line from "@/plottables/Line";
 import i18n from "@/i18n";
-import SETTINGS from "@/global-settings";
 import { SESegment } from "./SESegment";
 import { SECircle } from "./SECircle";
 import { SEEllipse } from "./SEEllipse";
 import { SEParametric } from "./SEParametric";
+import { SEPencil } from "./SEPencil";
 
 export class SEPerpendicularLineThruPoint extends SELine {
   /**
    * The One-Dimensional parent of this SEPerpendicularLine
    */
   private seParentOneDimensional: SEOneDimensional;
+  public seParentPencil: SEPencil | null = null;
 
   /**
    * The point parent of this SEPerpendicularLine
@@ -29,9 +29,11 @@ export class SEPerpendicularLineThruPoint extends SELine {
   private tempVector1 = new Vector3();
 
   /**
-   * In the case of ellipses where there are upto four perpendiculars through a point, this is the index to use
+   * In the case of ellipses (or parametric curves in general)
+   * there can be multiple number of perpendiculars through a point, this is the index to use
    */
   private _index: number;
+  // private _pencilSize: number;
   /**
    * Create an intersection point between two one-dimensional objects
    * @param line the TwoJS Line associated with this intersection
@@ -48,15 +50,22 @@ export class SEPerpendicularLineThruPoint extends SELine {
     normalVector: Vector3,
     seEndPoint: SEPoint,
     index: number
+    // pencilSize: number
   ) {
     super(line, seParentPoint, normalVector, seEndPoint);
     this.ref = line;
     this.seParentOneDimensional = seParentOneDimensional;
     this.seParentPoint = seParentPoint;
     this._index = index;
+    // this._pencilSize = pencilSize;
   }
 
   public update(state: UpdateStateType): void {
+    if (this.seParentPencil !== null)
+      console.debug(
+        "Updating perp line index of a pencil at index",
+        this._index
+      );
     // If any one parent is not up to date, don't do anything
     if (!this.canUpdateNow()) {
       return;
@@ -65,6 +74,8 @@ export class SEPerpendicularLineThruPoint extends SELine {
     this._exists =
       this.seParentOneDimensional.exists && this.seParentPoint.exists;
     if (this._exists) {
+      console.debug("Parent pencil", this.seParentPencil);
+      this.seParentPencil?.update(state);
       const tVec = new Vector3();
       tVec.copy(this._normalVector);
       // console.log("before x", this.name, this._normalVector.x);
@@ -73,6 +84,7 @@ export class SEPerpendicularLineThruPoint extends SELine {
         this.seParentPoint.locationVector,
         this._normalVector // the soon to be old normal vector
       );
+
       // console.log(
       //   "angle change with returned normals",
       //   this.name,
@@ -81,7 +93,7 @@ export class SEPerpendicularLineThruPoint extends SELine {
       // );
 
       if (normals[this._index] !== undefined) {
-        this._normalVector.copy(normals[this._index]);
+        this._normalVector.copy(normals[this._index].normal);
 
         // Given this.startPoint (in SELine)=this.seParentPoint and this.normalVector compute the endSEPoint
         // This is *never* undefined because the getNormalsToPerpendicularLinesThru *never* returns a point with
@@ -102,6 +114,7 @@ export class SEPerpendicularLineThruPoint extends SELine {
         //   this._normalVector.x
         // );
       } else {
+        console.debug("Normal for index", this._index, "is undefined");
         this._exists = false;
       }
     }
@@ -130,6 +143,9 @@ export class SEPerpendicularLineThruPoint extends SELine {
   get index(): number {
     return this._index;
   }
+  // get pencilSize(): number {
+  //   return this._pencilSize;
+  // }
 
   public get noduleDescription(): string {
     let oneDimensionalParentType;

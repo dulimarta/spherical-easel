@@ -11,7 +11,8 @@ import {
   CoordinateSyntaxTrees,
   MinMaxNumber,
   MinMaxExpression,
-  MinMaxSyntaxTrees
+  MinMaxSyntaxTrees,
+  NormalVectorAndTValue
 } from "@/types";
 import SETTINGS from "@/global-settings";
 import { UpdateMode, UpdateStateType } from "@/types";
@@ -532,12 +533,12 @@ export class SEParametric extends SENodule
     v.actionOnParametric(this);
   }
 
-  private removeDuplicateVectors(arr: Array<Vector3>): void {
+  private removeDuplicateVectors(arr: Array<NormalVectorAndTValue>): void {
     let N = arr.length;
     const duplicatePos: Array<number> = [];
     for (let k = 0; k < N; k++) {
       for (let m = k + 1; m < N; m++) {
-        const dotProd = Math.abs(arr[k].dot(arr[m]));
+        const dotProd = Math.abs(arr[k].normal.dot(arr[m].normal));
         if (Math.abs(dotProd - 1) < 1e-6) duplicatePos.push(m);
       }
       // Remove duplicate items from the highest index first
@@ -559,7 +560,7 @@ export class SEParametric extends SENodule
     sePointVector: Vector3,
     oldNormal: Vector3, // ignored for Ellipse and Circle and Parametric, but not other one-dimensional objects
     useFullTInterval?: boolean // only used in the constructor when figuring out the maximum number of perpendiculars to a SEParametric
-  ): Vector3[] {
+  ): Array<NormalVectorAndTValue> {
     const transformedToStandard = new Vector3();
     transformedToStandard.copy(sePointVector);
     transformedToStandard
@@ -573,11 +574,11 @@ export class SEParametric extends SENodule
 
     // It must be the case that tMax> tMin because in update we check to make sure -- if it is not true then this parametric doesn't exist
     // console.log("normal search");
-    let normalList: Vector3[] = [];
+    let normalList: Array<NormalVectorAndTValue> = [];
 
     // TODO: Replace with a loop here
     normalList = SENodule.getNormalsToPerpendicularLinesThruParametrically(
-      //this.ref.P.bind(this.ref), // bind the this.ref so that this in the this.ref.P method is this.ref
+      // this.ref.P.bind(this.ref), // bind the this.ref so that this in the this.ref.P method is this.ref
       this.ref.PPrime.bind(this.ref), // bind the this.ref so that this in the this.ref.PPrime method is this.ref
       transformedToStandard,
       tMin,
@@ -587,23 +588,30 @@ export class SEParametric extends SENodule
     );
 
     // console.log("# normals before", normalList.length);
-    normalList.forEach((n: Vector3, k: number) => {
-      console.debug(`Normal-${k}`, n.toFixed(3));
-    });
+    // normalList.forEach((n: Vector3, k: number) => {
+    //   console.debug(`Normal-${k}`, n.toFixed(3));
+    // });
 
     // remove duplicates from the list
     this.removeDuplicateVectors(normalList);
-    console.log("Unique normals", normalList.length);
-    normalList.forEach((n: Vector3, k: number) => {
-      console.debug(`Normal-${k}`, n.toFixed(3));
-    });
-    return normalList.map(vec =>
-      vec
+    // console.log("Unique normals", normalList.length);
+    // normalList.forEach((n: NormalVectorAndTValue, k: number) => {
+    //   console.debug(`Normal-${k}`, n.normal.toFixed(3));
+    // });
+    normalList.forEach((pair: NormalVectorAndTValue) => {
+      pair.normal
         .applyMatrix4(
           this.tmpMatrix.getInverse(SEStore.inverseTotalRotationMatrix)
         )
-        .normalize()
-    );
+        .normalize();
+      this.tmpVector1.copy(this.ref.P(pair.tVal));
+      this.tmpVector1
+        .applyMatrix4(
+          this.tmpMatrix.getInverse(SEStore.inverseTotalRotationMatrix)
+        )
+        .normalize();
+    });
+    return normalList;
   }
 
   /**
@@ -664,6 +672,14 @@ export class SEParametric extends SENodule
         this.ref.PPPrime.bind(this.ref) // bind the this.ref so that this in the this.ref.PPPrime method is this.ref
       )
     );
+    const taggedList: Array<NormalVectorAndTValue> = normalList.map(
+      (vec: Vector3) => {
+        return {
+          normal: vec,
+          tVal: NaN
+        };
+      }
+    );
 
     // normalList.forEach((vec, ind) => {
     //   if (
@@ -679,7 +695,7 @@ export class SEParametric extends SENodule
 
     // remove duplicates from the list
     // console.log("perpendiculars", normalList);
-    this.removeDuplicateVectors(normalList);
+    this.removeDuplicateVectors(taggedList);
 
     // console.log("unique perpendicular", normalList);
 
@@ -689,7 +705,10 @@ export class SEParametric extends SENodule
     //   );
     // }
     this.tmpMatrix.getInverse(SEStore.inverseTotalRotationMatrix);
-    return normalList.map(vec => vec.applyMatrix4(this.tmpMatrix).normalize());
+    return taggedList.map((z: NormalVectorAndTValue) => {
+      z.normal.applyMatrix4(this.tmpMatrix).normalize();
+      return z.normal;
+    });
   }
 
   get coordinateExpressions(): CoordExpression {

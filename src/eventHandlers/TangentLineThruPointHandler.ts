@@ -578,7 +578,7 @@ export default class TangentLineThruPointHandler extends Highlighter {
       // There are only two tangent
       this.numberOfTangents = 2;
     } else if (oneDimensional instanceof SEParametric) {
-      // There are upto ??? tangents
+      // There are upto N tangents, determine the actual count from the temporary lines used so far
       this.numberOfTangents = this.tempLines.filter(
         (z: TemporaryLine) => z.exist
       ).length;

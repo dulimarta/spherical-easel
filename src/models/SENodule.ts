@@ -1,6 +1,10 @@
 import { UnsignedShort4444Type, Vector3 } from "three";
 import Nodule from "@/plottables/Nodule";
-import { parametricVectorAndTValue, UpdateStateType } from "@/types";
+import {
+  NormalVectorAndTValue,
+  ParametricVectorAndTValue,
+  UpdateStateType
+} from "@/types";
 import newton from "newton-raphson-method";
 import SETTINGS from "@/global-settings";
 import { colors } from "vuetify/lib";
@@ -390,7 +394,7 @@ export abstract class SENodule {
     tMin: number,
     tMax: number,
     PPPrime?: (t: number) => Vector3
-  ): parametricVectorAndTValue {
+  ): ParametricVectorAndTValue {
     // First form the objective function, this is the function whose minimum we want to find.
     // The (angular) distance from P(t) to unitVec is d(t) = acos(P(t) /dot unitVec) because P(t) and unitVec are both unit
     const d: (t: number) => number = function(t: number): number {
@@ -424,7 +428,7 @@ export abstract class SENodule {
           minTVal = tVal;
         }
       });
-      const returnPair: parametricVectorAndTValue = {
+      const returnPair: ParametricVectorAndTValue = {
         vector: P(minTVal),
         tVal: minTVal
       };
@@ -495,7 +499,7 @@ export abstract class SENodule {
     tMax: number,
     avoidTheseTValues: number[],
     PPPrime?: (t: number) => Vector3
-  ): Vector3[] {
+  ): NormalVectorAndTValue[] {
     // First form the objective function, this is the function that we want to find the zeros.
     // We want to find the t values where the P'(t) is perpendicular to unitVec (because P'(t) is a normal to the plane defining the perpendicular
     // line to P(t) passing through the point P(t), so we want this line to pass through unitVec i.e. unitVec and P'(t) are perp)
@@ -521,14 +525,16 @@ export abstract class SENodule {
       dp
     );
 
-    console.debug("Zeros for perpendicular lines", zeros);
+    // console.debug("Zeros for perpendicular lines", zeros);
 
-    const returnVectors = zeros
+    const returnVectors: Array<NormalVectorAndTValue> = zeros
       .map(tVal => {
-        const temp = new Vector3();
-        temp.copy(PPrime(tVal));
-        temp.normalize();
-        console.debug("At t=", tVal, "normal is", temp.toFixed(3));
+        const tempNormal = new Vector3();
+        tempNormal.copy(PPrime(tVal));
+        tempNormal.normalize();
+        // const tempLocation = new Vector3();
+        // tempLocation.copy(P(tVal));
+        // console.debug("At t=", tVal, "normal is", temp.toFixed(3));
         // don't return any zero vectors, the derivative being zero leads to a zero of d, but not a perpendicular
         // also check that that vec is perpendicular to the given unitVector
         // if (Math.abs(temp.dot(unitVec)) < SETTINGS.tolerance) {
@@ -536,11 +542,14 @@ export abstract class SENodule {
         // } else {
         //   console.log("not through point in SENodule");
         // }
-        return temp;
+        return {
+          normal: tempNormal,
+          tVal
+        };
 
         // }
       })
-      .filter((n: Vector3) => !n.isZero());
+      .filter((pair: NormalVectorAndTValue) => !pair.normal.isZero());
     // remove duplicates from the list
     // const uniqueNormals: Vector3[] = [];
     // returnVectors.forEach(vec => {
