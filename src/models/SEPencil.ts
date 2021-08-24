@@ -21,6 +21,7 @@ export class SEPencil extends SENodule {
   private _commonPoint: SEPoint;
   private _commonParent: SEParametric;
   private _lines: Array<SEPerpendicularLineThruPoint> = [];
+  private tempVector: Vector3 = new Vector3();
   constructor(
     seParent: SEParametric,
     commontPoint: SEPoint,
@@ -32,7 +33,7 @@ export class SEPencil extends SENodule {
     this._lines.push(...lines);
   }
   public update(state: UpdateStateType): void {
-    // console.debug("Updating SEPencil");
+    console.debug("Updating SEPencil");
     const normals = this._commonParent.getNormalsToPerpendicularLinesThru(
       this._commonPoint.locationVector,
       this._lines[0].normalVector
@@ -46,7 +47,14 @@ export class SEPencil extends SENodule {
         const endSEPoint = new SEPoint(plottableEndPoint);
         endSEPoint.showing = false;
         endSEPoint.exists = true;
-        endSEPoint.locationVector = this._commonParent.ref.P(normals[k].tVal);
+
+        //endSEPoint.locationVector = this._commonParent.ref.P(normals[k].tVal); // Not a good choice. What if the _commonPoint is on the curve? Then endSEPoint is the same as _commonPoint!
+        this.tempVector.crossVectors(
+          this._commonPoint.locationVector,
+          normals[k].normal
+        );
+        endSEPoint.locationVector = this.tempVector.normalize();
+
         const plottableLine = new NonFreeLine();
         plottableLine.stylize(DisplayStyle.ApplyCurrentVariables);
         plottableLine.adjustSize();
