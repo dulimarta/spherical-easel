@@ -390,32 +390,32 @@ export default class SE extends VuexModule implements AppState {
     }
   }
 
-  @Mutation
-  addPencil(pencil: SEPencil): void {
-    this.sePencils.push(pencil);
-    this.seNodules.push(pencil);
-    pencil.lines.forEach((ln: SEPerpendicularLineThruPoint) => {
-      this.seLines.push(ln);
-      this.seNodules.push(ln);
-      ln.ref.addToLayers(this.layers);
-    });
-    this.hasUnsavedNodules = true;
-  }
+  // @Mutation
+  // addPencil(pencil: SEPencil): void {
+  //   this.sePencils.push(pencil);
+  //   this.seNodules.push(pencil);
+  //   pencil.lines.forEach((ln: SEPerpendicularLineThruPoint) => {
+  //     this.seLines.push(ln);
+  //     this.seNodules.push(ln);
+  //     ln.ref.addToLayers(this.layers);
+  //   });
+  //   this.hasUnsavedNodules = true;
+  // }
 
-  @Mutation
-  removePencil(pencilId: number): void {
-    const pos = this.sePencils.findIndex((p: SEPencil) => p.id === pencilId);
-    const pos2 = this.seNodules.findIndex((p: SENodule) => p.id === pencilId);
-    if (pos >= 0) {
-      this.sePencils.splice(pos, 1);
-      this.seNodules.splice(pos2, 1);
-      this.sePencils[pos].lines.forEach((ln: SEPerpendicularLineThruPoint) => {
-        // this.removeLine(ln.id);
-        ln.ref.removeFromLayers();
-      });
-      this.hasUnsavedNodules = true;
-    }
-  }
+  // @Mutation
+  // removePencil(pencilId: number): void {
+  //   const pos = this.sePencils.findIndex((p: SEPencil) => p.id === pencilId);
+  //   const pos2 = this.seNodules.findIndex((p: SENodule) => p.id === pencilId);
+  //   if (pos >= 0) {
+  //     this.sePencils.splice(pos, 1);
+  //     this.seNodules.splice(pos2, 1);
+  //     this.sePencils[pos].lines.forEach((ln: SEPerpendicularLineThruPoint) => {
+  //       // this.removeLine(ln.id);
+  //       ln.ref.removeFromLayers();
+  //     });
+  //     this.hasUnsavedNodules = true;
+  //   }
+  // }
 
   @Mutation
   addAngleMarkerAndExpression(angleMarker: SEAngleMarker): void {

@@ -72,7 +72,7 @@ export class SEPencil extends SENodule {
         this._commonParent.registerChild(newPerpLine);
         this._lines.push(newPerpLine);
         SEStore.addLine(newPerpLine);
-        newPerpLine.update(state);
+        // newPerpLine.update(state);
       }
     }
     // this._lines.forEach((perp: SEPerpendicularLineThruPoint, k: number) => {
