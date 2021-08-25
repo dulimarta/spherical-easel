@@ -8,6 +8,8 @@ import { Vector3 } from "three";
 import Label from "@/plottables/Label";
 import SETTINGS from "@/global-settings";
 import { SENodule } from "@/models/SENodule";
+import { StyleEditPanels } from "@/types/Styles";
+import { SavedNames } from "@/types";
 
 export class AddSegmentCommand extends Command {
   private seSegment: SESegment;
@@ -50,75 +52,135 @@ export class AddSegmentCommand extends Command {
   toOpcode(): null | string | Array<string> {
     return [
       "AddSegment",
-      /* arg-1 */ this.seSegment.name,
-      /* arg-2 */ this.seSegment.normalVector.toFixed(7),
-      /* arg-3 */ this.seSegment.arcLength,
-      /* arg-4 */ this.startSEPoint.name,
-      /* arg-5 */ this.endSEPoint.name,
-      /* arg-6 */ this.seLabel.name,
-      /* arg-7 */ this.seSegment.showing,
-      /* arg-8 */ this.seSegment.exists
-    ].join("/");
+      // Any attribute that could possibly have a "= or "&" or "/" should be run through Command.symbolToASCIIDec
+      // All plottable objects have these attributes
+      "objectName=" + Command.symbolToASCIIDec(this.seSegment.name),
+      "objectExists=" + this.seSegment.exists,
+      "objectShowing=" + this.seSegment.showing,
+      "objectFrontStyle=" +
+        Command.symbolToASCIIDec(
+          JSON.stringify(
+            this.seSegment.ref.currentStyleState(StyleEditPanels.Front)
+          )
+        ),
+      "objectBackStyle=" +
+        Command.symbolToASCIIDec(
+          JSON.stringify(
+            this.seSegment.ref.currentStyleState(StyleEditPanels.Back)
+          )
+        ),
+      // All labels have these attributes
+      "labelName=" + Command.symbolToASCIIDec(this.seLabel.name),
+      "labelStyle=" +
+        Command.symbolToASCIIDec(
+          JSON.stringify(
+            this.seLabel.ref.currentStyleState(StyleEditPanels.Label)
+          )
+        ),
+      "labelVector=" + this.seLabel.ref._locationVector.toFixed(7),
+      "labelShowing=" + this.seLabel.showing,
+      "labelExists=" + this.seLabel.exists,
+      // Object specific attributes
+      "segmentNormalVector=" + this.seSegment.normalVector.toFixed(7),
+      "segmentArcLength=" + this.seSegment.arcLength,
+      "segmentStartPointName=" + this.startSEPoint.name,
+      "segmentEndPointName=" + this.endSEPoint.name
+    ].join("&");
   }
 
   static parse(command: string, objMap: Map<string, SENodule>): Command {
-    // WARNING: the split() trick below assumes that "/" does not occur anywhere
-    // in the JSON output
-    const tokens = command.split("/");
+    // console.log(command);
+    const tokens = command.split("&");
+    const propMap = new Map<SavedNames, string>();
+    // load the tokens into the map
+    tokens.forEach((token, ind) => {
+      if (ind === 0) return; // don't put the command type in the propMap
+      const parts = token.split("=");
+      propMap.set(parts[0] as SavedNames, Command.asciiDecToSymbol(parts[1]));
+    });
 
-    // check if the start point already existed from previous command execution
-    const startSEPoint = objMap.get(tokens[4]) as SEPoint | undefined;
-    const endSEPoint = objMap.get(tokens[5]) as SEPoint | undefined;
+    // get the object specific attributes
+    const segmentStartPoint = objMap.get(
+      propMap.get("segmentStartPointName") ?? ""
+    ) as SEPoint | undefined;
 
-    // At runtime, both the start point and end point
-    // should have been created by a previous AddPointCommand
-    if (startSEPoint && endSEPoint) {
-      const normalVector = new Vector3();
-      normalVector.from(tokens[2]);
-      const arcLength = Number(tokens[3]);
+    const segmentEndPoint = objMap.get(
+      propMap.get("segmentEndPointName") ?? ""
+    ) as SEPoint | undefined;
+
+    const segmentNormalVector = new Vector3();
+    segmentNormalVector.from(propMap.get("segmentNormalVector")); // convert to vector, if .from() fails the vector is set to 0,0,1
+
+    const segmentArcLength = Number(propMap.get("segmentArcLength"));
+
+    if (
+      segmentEndPoint &&
+      segmentStartPoint &&
+      segmentNormalVector.z !== 1 &&
+      !isNaN(segmentArcLength)
+    ) {
+      //make the segment
       const segment = new Segment();
-      segment.startVector = startSEPoint.locationVector;
-      segment.arcLength = arcLength;
-      segment.normalVector = normalVector;
-      segment.updateDisplay();
-      segment.stylize(DisplayStyle.ApplyCurrentVariables);
-      segment.adjustSize();
-      const newSESegment = new SESegment(
+      const seSegment = new SESegment(
         segment,
-        startSEPoint,
-        normalVector,
-        arcLength,
-        endSEPoint
+        segmentStartPoint,
+        segmentNormalVector,
+        segmentArcLength,
+        segmentEndPoint
       );
-      newSESegment.name = tokens[1];
-      newSESegment.showing = tokens[7] === "true";
-      newSESegment.exists = tokens[8] === "true";
-      objMap.set(tokens[1], newSESegment);
+      //style the segment
+      const segmentFrontStyleString = propMap.get("objectFrontStyle");
+      if (segmentFrontStyleString !== undefined)
+        segment.updateStyle(
+          StyleEditPanels.Front,
+          JSON.parse(segmentFrontStyleString)
+        );
+      const segmentBackStyleString = propMap.get("objectBackStyle");
+      if (segmentBackStyleString !== undefined)
+        segment.updateStyle(
+          StyleEditPanels.Back,
+          JSON.parse(segmentBackStyleString)
+        );
 
-      // check if the label already existed from previous command execution
-      const newSELabel = new SELabel(new Label(), newSESegment);
-      const labelPosition = new Vector3();
-      labelPosition
-        .addVectors(startSEPoint.locationVector, endSEPoint.locationVector)
-        .normalize()
-        .add(new Vector3(0, SETTINGS.line.initialLabelOffset, 0))
-        .normalize();
-      if (arcLength > Math.PI) labelPosition.multiplyScalar(-1);
-      newSELabel.locationVector = labelPosition;
-      newSELabel.name = tokens[8];
-      newSELabel.showing = tokens[7] === "true";
-      newSELabel.exists = tokens[8] === "true";
-      objMap.set(tokens[6], newSELabel);
+      //make the label and set its location
+      const label = new Label();
+      const seLabel = new SELabel(label, seSegment);
+      const seLabelLocation = new Vector3();
+      seLabelLocation.from(propMap.get("labelVector")); // convert to Number
+      seLabel.locationVector.copy(seLabelLocation);
+      //style the label
+      const labelStyleString = propMap.get("labelStyle");
+      if (labelStyleString !== undefined)
+        label.updateStyle(StyleEditPanels.Label, JSON.parse(labelStyleString));
+
+      //put the segment in the object map
+      if (propMap.get("objectName") !== undefined) {
+        seSegment.name = propMap.get("objectName") ?? "";
+        seSegment.showing = propMap.get("objectShowing") === "true";
+        seSegment.exists = propMap.get("objectExists") === "true";
+        objMap.set(seSegment.name, seSegment);
+      } else {
+        throw new Error("AddSegment: Segment Name doesn't exist");
+      }
+
+      //put the label in the object map
+      if (propMap.get("labelName") !== undefined) {
+        seLabel.name = propMap.get("labelName") ?? "";
+        seLabel.showing = propMap.get("labelShowing") === "true";
+        seLabel.exists = propMap.get("labelExists") === "true";
+        objMap.set(seLabel.name, seLabel);
+      } else {
+        throw new Error("AddSegment: Label Name doesn't exist");
+      }
       return new AddSegmentCommand(
-        newSESegment,
-        startSEPoint,
-        endSEPoint,
-        newSELabel
-      );
-    } else {
-      throw new Error(
-        `AddSegmentCommand: end points ${tokens[4]} or ${tokens[5]} is not defined`
+        seSegment,
+        segmentStartPoint,
+        segmentEndPoint,
+        seLabel
       );
     }
+    throw new Error(
+      `AddSegment: ${segmentEndPoint}, ${segmentStartPoint}, ${segmentArcLength}, or ${segmentNormalVector}  is undefined`
+    );
   }
 }

@@ -129,6 +129,7 @@ export const DEFAULT_ELLIPSE_FRONT_STYLE: StyleOptions = {
   reverseDashArray: SETTINGS.ellipse.drawn.dashArray.reverse.front
 };
 export const DEFAULT_ELLIPSE_BACK_STYLE: StyleOptions = {
+  dynamicBackStyle: SETTINGS.ellipse.dynamicBackStyle,
   fillColor: SETTINGS.ellipse.drawn.fillColor.back,
   strokeColor: SETTINGS.ellipse.drawn.strokeColor.back,
   strokeWidthPercent: 100,
@@ -140,6 +141,7 @@ export const DEFAULT_POLYGON_FRONT_STYLE: StyleOptions = {
   fillColor: SETTINGS.polygon.drawn.fillColor.front
 };
 export const DEFAULT_POLYGON_BACK_STYLE: StyleOptions = {
+  dynamicBackStyle: SETTINGS.polygon.dynamicBackStyle,
   fillColor: SETTINGS.polygon.drawn.fillColor.back
 };
 

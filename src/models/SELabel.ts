@@ -70,8 +70,7 @@ export class SELabel extends SENodule implements Visitable {
       // use the parent name for the short name, so to get around this we use  this
       // and the angleMarkerNumber.
       label.shortUserName = `Po${this.parent.polygonNumber}`;
-    }
-    {
+    } else {
       label.shortUserName = parent.name;
     }
     // Set the size for zoom

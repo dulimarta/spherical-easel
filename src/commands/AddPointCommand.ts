@@ -87,7 +87,7 @@ export class AddPointCommand extends Command {
     });
     //make the point
     const sePointLocation = new Vector3();
-    sePointLocation.from(propMap.get("pointVector")); // convert to Number
+    sePointLocation.from(propMap.get("pointVector")); // convert to vector
     const pointFrontStyleString = propMap.get("objectFrontStyle");
     const pointBackStyleString = propMap.get("objectBackStyle");
     const point = new Point();

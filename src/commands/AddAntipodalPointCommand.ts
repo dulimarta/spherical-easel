@@ -77,7 +77,7 @@ export class AddAntipodalPointCommand extends Command {
       "labelVector=" + this.seLabel.ref._locationVector.toFixed(7),
       "labelShowing=" + this.seLabel.showing,
       "labelExists=" + this.seLabel.exists,
-      // Object specific attributes
+      // Object specific attributes necessary for recreating the object
       "pointVector=" + this.sePoint.locationVector.toFixed(7),
       "antipodalPointsParentName=" + this.parentSEPoint.name
     ].join("&");

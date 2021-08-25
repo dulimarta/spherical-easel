@@ -89,7 +89,27 @@ export type SavedNames =
   | "angleMarkerMode"
   | "angleMarkerFirstParentName"
   | "angleMarkerSecondParentName"
-  | "angleMarkerThirdParentName";
+  | "angleMarkerThirdParentName"
+  | "circleRadius"
+  | "circleCenterPointName"
+  | "circlePointOnCircleName"
+  | "ellipseFocus1Name"
+  | "ellipseFocus2Name"
+  | "ellipsePointOnEllipseName"
+  | "lineNormalVector"
+  | "lineStartPointName"
+  | "lineEndPointName"
+  | "segmentNormalVector"
+  | "segmentArcLength"
+  | "segmentStartPointName"
+  | "segmentEndPointName"
+  | "intersectionPointParent1Name"
+  | "intersectionPointParent2Name"
+  | "intersectionPointUserCreated"
+  | "intersectionPointOrder"
+  | "intersectionPointVector"
+  | "pointOnOneOrTwoDimensionalParentName"
+  | "pointOnOneOrTwoDimensionalVector";
 
 export type ActionMode =
   | "angle"

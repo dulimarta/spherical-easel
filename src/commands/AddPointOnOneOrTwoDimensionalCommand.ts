@@ -1,6 +1,6 @@
 import { Command } from "./Command";
 import { SEPoint } from "@/models/SEPoint";
-import { SEOneOrTwoDimensional, UpdateMode } from "@/types";
+import { SavedNames, SEOneOrTwoDimensional, UpdateMode } from "@/types";
 import { SELabel } from "@/models/SELabel";
 import SETTINGS from "@/global-settings";
 import { SENodule } from "@/models/SENodule";
@@ -9,6 +9,7 @@ import Point from "@/plottables/Point";
 import { SEPointOnOneOrTwoDimensional } from "@/models/SEPointOnOneOrTwoDimensional";
 import { DisplayStyle } from "@/plottables/Nodule";
 import Label from "@/plottables/Label";
+import { StyleEditPanels } from "@/types/Styles";
 
 export class AddPointOnOneDimensionalCommand extends Command {
   private sePointOnOneOrTwoDimensional: SEPointOnOneOrTwoDimensional;
@@ -55,50 +56,143 @@ export class AddPointOnOneDimensionalCommand extends Command {
   toOpcode(): null | string | Array<string> {
     return [
       "AddPointOnOneDimensional",
-      /* arg-1 */ this.sePointOnOneOrTwoDimensional.name,
-      /* arg-2 */ this.sePointOnOneOrTwoDimensional.locationVector.toFixed(7),
-      /* arg-3 */ this.parent.name,
-      /* arg-4 */ this.seLabel.name,
-      /* arg-5 */ this.sePointOnOneOrTwoDimensional.showing,
-      /* arg-6 */ this.sePointOnOneOrTwoDimensional.exists
-    ].join("/");
+      // Any attribute that could possibly have a "= or "&" or "/" should be run through Command.symbolToASCIIDec
+      // All plottable objects have these attributes
+      "objectName=" +
+        Command.symbolToASCIIDec(this.sePointOnOneOrTwoDimensional.name),
+      "objectExists=" + this.sePointOnOneOrTwoDimensional.exists,
+      "objectShowing=" + this.sePointOnOneOrTwoDimensional.showing,
+      "objectFrontStyle=" +
+        Command.symbolToASCIIDec(
+          JSON.stringify(
+            this.sePointOnOneOrTwoDimensional.ref.currentStyleState(
+              StyleEditPanels.Front
+            )
+          )
+        ),
+      "objectBackStyle=" +
+        Command.symbolToASCIIDec(
+          JSON.stringify(
+            this.sePointOnOneOrTwoDimensional.ref.currentStyleState(
+              StyleEditPanels.Back
+            )
+          )
+        ),
+      // All labels have these attributes
+      "labelName=" + Command.symbolToASCIIDec(this.seLabel.name),
+      "labelStyle=" +
+        Command.symbolToASCIIDec(
+          JSON.stringify(
+            this.seLabel.ref.currentStyleState(StyleEditPanels.Label)
+          )
+        ),
+      "labelVector=" + this.seLabel.ref._locationVector.toFixed(7),
+      "labelShowing=" + this.seLabel.showing,
+      "labelExists=" + this.seLabel.exists,
+      // Object specific attributes
+      "pointOnOneOrTwoDimensionalParentName=" + this.parent.name,
+      "pointOnOneOrTwoDimensionalVector=" +
+        this.sePointOnOneOrTwoDimensional.locationVector.toFixed(7)
+    ].join("&");
   }
 
   static parse(command: string, objMap: Map<string, SENodule>): Command {
-    const tokens = command.split("/");
-    const parentLine = objMap.get(tokens[3]) as
-      | SEOneOrTwoDimensional
-      | undefined;
-    if (parentLine) {
-      const pointPosition = new Vector3();
-      pointPosition.from(tokens[2]);
-      // const { point, label } = Command.makePointAndLabel(pointPosition); // We can't use this because we must create a SEPointOnOneDimensional and not just an SEPoint
+    // console.log(command);
+    const tokens = command.split("&");
+    const propMap = new Map<SavedNames, string>();
+    // load the tokens into the map
+    tokens.forEach((token, ind) => {
+      if (ind === 0) return; // don't put the command type in the propMap
+      const parts = token.split("=");
+      propMap.set(parts[0] as SavedNames, Command.asciiDecToSymbol(parts[1]));
+    });
 
-      const newPoint = new Point();
-      newPoint.stylize(DisplayStyle.ApplyCurrentVariables);
-      newPoint.adjustSize();
-      const point = new SEPointOnOneOrTwoDimensional(newPoint, parentLine);
-      point.locationVector.copy(pointPosition);
+    // get the object specific attributes
+    const pointOnOneOrTwoDimensionalParent = objMap.get(
+      propMap.get("pointOnOneOrTwoDimensionalParentName") ?? ""
+    ) as SEOneOrTwoDimensional | undefined;
 
-      const newLabel = new Label();
-      const label = new SELabel(newLabel, point);
-      label.locationVector.copy(pointPosition);
-      const offset = SETTINGS.point.initialLabelOffset;
-      label.locationVector.add(new Vector3(2 * offset, offset, 0)).normalize();
+    const positionVector = new Vector3();
+    positionVector.from(propMap.get("pointOnOneOrTwoDimensionalVector")); // convert to vector, if .from() fails the vector is set to 0,0,1
+    console.log(
+      objMap,
+      "pointOnOneOrTwoDimensionalParent",
+      pointOnOneOrTwoDimensionalParent,
+      propMap.get("pointOnOneOrTwoDimensionalParentName")
+    );
+    if (pointOnOneOrTwoDimensionalParent && positionVector.z !== 1) {
+      //make the point on object
+      const point = new Point();
+      const sePointOnOneOrTwoDimensional = new SEPointOnOneOrTwoDimensional(
+        point,
+        pointOnOneOrTwoDimensionalParent
+      );
+      sePointOnOneOrTwoDimensional.locationVector = positionVector;
+      //style the point on object
+      const pointOnOneOrTwoDimensionalFrontStyleString = propMap.get(
+        "objectFrontStyle"
+      );
+      if (pointOnOneOrTwoDimensionalFrontStyleString !== undefined)
+        point.updateStyle(
+          StyleEditPanels.Front,
+          JSON.parse(pointOnOneOrTwoDimensionalFrontStyleString)
+        );
+      const pointOnOneOrTwoDimensionalBackStyleString = propMap.get(
+        "objectBackStyle"
+      );
+      if (pointOnOneOrTwoDimensionalBackStyleString !== undefined)
+        point.updateStyle(
+          StyleEditPanels.Back,
+          JSON.parse(pointOnOneOrTwoDimensionalBackStyleString)
+        );
 
-      point.showing = tokens[5] === "true";
-      point.exists = tokens[6] === "true";
-      point.name = tokens[1];
-      objMap.set(tokens[1], point);
-      label.showing = tokens[5] === "true";
-      label.exists = tokens[6] === "true";
-      label.name = tokens[4];
-      objMap.set(tokens[4], label);
-      return new AddPointOnOneDimensionalCommand(point, parentLine, label);
-    } else {
-      throw new Error(
-        `AddPointOnOneDimensional: parent object ${tokens[3]} is undefined`
+      //make the label and set its location
+      const label = new Label();
+      const seLabel = new SELabel(label, sePointOnOneOrTwoDimensional);
+      const seLabelLocation = new Vector3();
+      seLabelLocation.from(propMap.get("labelVector")); // convert to Number
+      seLabel.locationVector.copy(seLabelLocation);
+      //style the label
+      const labelStyleString = propMap.get("labelStyle");
+      if (labelStyleString !== undefined)
+        label.updateStyle(StyleEditPanels.Label, JSON.parse(labelStyleString));
+
+      //put the point on one or two dimensional in the object map
+      if (propMap.get("objectName") !== undefined) {
+        sePointOnOneOrTwoDimensional.name = propMap.get("objectName") ?? "";
+        sePointOnOneOrTwoDimensional.showing =
+          propMap.get("objectShowing") === "true";
+        sePointOnOneOrTwoDimensional.exists =
+          propMap.get("objectExists") === "true";
+        objMap.set(
+          sePointOnOneOrTwoDimensional.name,
+          sePointOnOneOrTwoDimensional
+        );
+      } else {
+        throw new Error(
+          "AddPointOnOneOrTwoDimensionalCommand:  Point name doesn't exist"
+        );
+      }
+
+      //put the label in the object map
+      if (propMap.get("labelName") !== undefined) {
+        seLabel.name = propMap.get("labelName") ?? "";
+        seLabel.showing = propMap.get("labelShowing") === "true";
+        seLabel.exists = propMap.get("labelExists") === "true";
+        objMap.set(seLabel.name, seLabel);
+      } else {
+        throw new Error(
+          "AddPointOnOneOrTwoDimensionalCommand: Label Name doesn't exist"
+        );
+      }
+      return new AddPointOnOneDimensionalCommand(
+        sePointOnOneOrTwoDimensional,
+        pointOnOneOrTwoDimensionalParent,
+        seLabel
       );
     }
+    throw new Error(
+      `AddPointOnOneOrTwoDimensional: ${pointOnOneOrTwoDimensionalParent} or ${positionVector} is undefined`
+    );
   }
 }

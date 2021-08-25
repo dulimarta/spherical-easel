@@ -414,41 +414,43 @@ export default class Label extends Nodule {
       if (this.seLabel !== undefined) {
         if (this.seLabel.parent instanceof SEPoint) {
           labelDisplayMode = SETTINGS.point.defaultLabelMode;
-          // if (this.seLabel.parent.isFreePoint()) {
-          // labelVisibility = SETTINGS.point.showLabelsOfFreePointsInitially;
-          // } else {
-          // labelVisibility =
-          //   SETTINGS.point.showLabelsOfNonFreePointsInitially;
-          // }
         } else if (this.seLabel.parent instanceof SELine) {
           labelDisplayMode = SETTINGS.line.defaultLabelMode;
-          // labelVisibility = SETTINGS.line.showLabelsInitially;
         } else if (this.seLabel.parent instanceof SESegment) {
           labelDisplayMode = SETTINGS.segment.defaultLabelMode;
-          // labelVisibility = SETTINGS.segment.showLabelsInitially;
         } else if (this.seLabel.parent instanceof SECircle) {
           labelDisplayMode = SETTINGS.circle.defaultLabelMode;
-          // labelVisibility = SETTINGS.circle.showLabelsInitially;
         } else if (this.seLabel.parent instanceof SEAngleMarker) {
           labelDisplayMode = SETTINGS.angleMarker.defaultLabelMode;
-          // labelVisibility = SETTINGS.circle.showLabelsInitially;
         } else if (this.seLabel.parent instanceof SEParametric) {
           labelDisplayMode = SETTINGS.parametric.defaultLabelMode;
-          // labelVisibility = SETTINGS.circle.showLabelsInitially;
         } else if (this.seLabel.parent instanceof SEEllipse) {
           labelDisplayMode = SETTINGS.ellipse.defaultLabelMode;
-          // labelVisibility = SETTINGS.circle.showLabelsInitially;
         }
+      }
+      // Angle Markers and polygons are exceptions which are both plottable and an expression.
+      // As expressions MUST have a name of a measurement token (ie. M###), we can't
+      // use the parent name for the short name, so to get around this we use this
+      // and the (angleMarker|polygon)Number.
+      let defaultName = "";
+      if (this.seLabel?.parent instanceof SEAngleMarker) {
+        defaultName = `Am${this.seLabel.parent.angleMarkerNumber}`;
+      } else if (this.seLabel?.parent instanceof SEPolygon) {
+        defaultName = `Po${this.seLabel.parent.polygonNumber}`;
+      } else if (this.seLabel) {
+        defaultName = this.seLabel.parent.name;
       }
       return {
         ...DEFAULT_LABEL_TEXT_STYLE,
-        labelDisplayText: this.seLabel!.parent.name,
+        labelDisplayText: defaultName,
         labelDisplayCaption: "",
         labelDisplayMode: labelDisplayMode
       };
     } else {
       //Should never be called
-      return {};
+      throw new Error(
+        "Called defaultStyleState in Label with non-Label panel."
+      );
     }
   }
 
@@ -460,23 +462,11 @@ export default class Label extends Nodule {
     const textScalePercent = labelStyle?.labelTextScalePercent ?? 100;
     this.frontText.scale = (Label.textScaleFactor * textScalePercent) / 100;
     this.backText.scale = (Label.textScaleFactor * textScalePercent) / 100;
-    // this.backText.scale =
-    //   (Label.textScaleFactor *
-    //     (this.dynamicBackStyle
-    //       ? Nodule.contrastTextScalePercent(this.textScalePercentFront)
-    //       : this.textScalePercentBack)) /
-    //   100;
 
     this.glowingFrontText.scale =
       (Label.textScaleFactor * textScalePercent) / 100;
     this.glowingBackText.scale =
       (Label.textScaleFactor * textScalePercent) / 100;
-    // this.glowingBackText.scale =
-    //   (Label.textScaleFactor *
-    //     (this.dynamicBackStyle
-    //       ? Nodule.contrastTextScalePercent(this.textScalePercentFront)
-    //       : this.textScalePercentBack)) /
-    //   100;
   }
 
   /**
