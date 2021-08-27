@@ -374,6 +374,11 @@ export default class MoveHandler extends Highlighter {
       // last position rotation is in the command structure and can be undone or redone
       new RotateSphereCommand(this.changeInPositionRotationMatrix).push();
     } else {
+      console.debug(
+        "Before move state",
+        this.beforeMoveState.stateArray.length
+      );
+      console.debug("After move state", this.afterMoveState.stateArray.length);
       // Gather the after state of the freePoints, segments, and lines after the move
       if (this.moveTarget instanceof SEPoint) {
         // First mark all children of the target's point parents out of date so that the update method does a topological sort
