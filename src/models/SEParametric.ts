@@ -324,9 +324,9 @@ export class SEParametric extends SENodule
   ): void {
     const N = SETTINGS.parameterization.subdivisions * 4;
     const RANGE = this._tNumbersHardLimit.max - this._tNumbersHardLimit.min;
-    console.debug(
-      `Evaluate function in range, [${this._tNumbersHardLimit.min}, ${this._tNumbersHardLimit.max}]`
-    );
+    // console.debug(
+    //   `Evaluate function in range, [${this._tNumbersHardLimit.min}, ${this._tNumbersHardLimit.max}]`
+    // );
     cache.splice(0);
 
     let vecValue: Vector3;

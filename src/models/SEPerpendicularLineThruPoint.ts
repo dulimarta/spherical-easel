@@ -62,19 +62,14 @@ export class SEPerpendicularLineThruPoint extends SELine {
 
   public update(state: UpdateStateType): void {
     if (this.seParentPencil !== null)
-      console.debug(
-        "Updating perp line index of a pencil at index",
-        this._index
-      );
-    // If any one parent is not up to date, don't do anything
-    if (!this.canUpdateNow()) {
-      return;
-    }
+      if (!this.canUpdateNow()) {
+        // If any one parent is not up to date, don't do anything
+        return;
+      }
     this.setOutOfDate(false);
     this._exists =
       this.seParentOneDimensional.exists && this.seParentPoint.exists;
     if (this._exists) {
-      console.debug("Parent pencil", this.seParentPencil);
       this.seParentPencil?.update(state);
       const tVec = new Vector3();
       tVec.copy(this._normalVector);
@@ -114,7 +109,6 @@ export class SEPerpendicularLineThruPoint extends SELine {
         //   this._normalVector.x
         // );
       } else {
-        console.debug("Normal for index", this._index, "is undefined");
         this._exists = false;
       }
     }

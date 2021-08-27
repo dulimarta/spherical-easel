@@ -444,34 +444,19 @@ export function intersectLineWithParametric(
     dp
   );
 
-  const maxNumberOfIntersections = 2 * parametric.ref.numberOfParts;
+  // const maxNumberOfIntersections = 2 * parametric.ref.numberOfParts;
 
-  for (let i = 0; i < maxNumberOfIntersections; i++) {
-    const intersection: IntersectionReturnType = {
-      vector: new Vector3(),
-      exists: false
-    };
-    returnItems.push(intersection);
-  }
-
-  // console.log("Number of Para/Line Intersections:", zeros.length);
-  if (returnItems.length >= zeros.length)
-    zeros.forEach((z, ind) => {
-      returnItems[ind].vector.copy(
-        parametric.ref
-          .P(z)
-          .applyMatrix4(
-            tmpMatrix.getInverse(SEStore.inverseTotalRotationMatrix)
-          )
-      );
-      if (tracingTMin <= z && z <= tracingTMax) {
-        returnItems[ind].exists = true;
-      } else {
-        returnItems[ind].exists = false;
-      }
-    });
-
-  return returnItems;
+  tmpMatrix.getInverse(SEStore.inverseTotalRotationMatrix);
+  return zeros.map(
+    (tValue: number): IntersectionReturnType => {
+      const vector = new Vector3();
+      vector.copy(parametric.ref.P(tValue)).applyMatrix4(tmpMatrix);
+      return {
+        vector,
+        exists: tracingTMin <= tValue && tValue <= tracingTMax
+      };
+    }
+  );
 }
 
 /**

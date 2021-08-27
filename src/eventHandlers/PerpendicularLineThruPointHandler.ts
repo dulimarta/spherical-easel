@@ -653,6 +653,8 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
     // For each type of oneDimensional compute the normal vectors and copy them into normalVectors
     let normalVectors: Vector3[] = [];
     let usePencil = false;
+    const addPencilGroup = new CommandGroup();
+
     if (
       oneDimensional instanceof SELine ||
       oneDimensional instanceof SESegment ||
@@ -763,6 +765,10 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
       // Determine all new intersection points and add their creation to the command so it can be undone
       SEStore.createAllIntersectionsWithLine(newPerpLine).forEach(
         (item: SEIntersectionReturnType) => {
+          console.debug(
+            "Got intersection point at",
+            item.SEIntersectionPoint.locationVector.toFixed(4)
+          );
           // Create the plottable label
           const newLabel = new Label();
           const newSELabel = new SELabel(newLabel, item.SEIntersectionPoint);
@@ -779,14 +785,16 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
             .normalize();
           newSELabel.locationVector = this.tmpVector;
 
-          addPerpendicularLineGroup.addCommand(
-            new AddIntersectionPointCommand(
-              item.SEIntersectionPoint,
-              item.parent1,
-              item.parent2,
-              newSELabel
-            )
+          const addIntersectionCmd = new AddIntersectionPointCommand(
+            item.SEIntersectionPoint,
+            item.parent1,
+            item.parent2,
+            newSELabel
           );
+
+          if (usePencil) addPencilGroup.addCommand(addIntersectionCmd);
+          else addPerpendicularLineGroup.addCommand(addIntersectionCmd);
+
           item.SEIntersectionPoint.showing = false; // do not display the automatically created intersection points
           newSELabel.showing = false;
         }
@@ -798,17 +806,20 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
 
     if (usePencil) {
       console.debug("Use pencil...");
-      const pencil = new SEPencil(
-        oneDimensional as SEParametric,
-        this.sePoint,
-        perpendicularLines
-      );
-      perpendicularLines.forEach((ln: SEPerpendicularLineThruPoint) => {
-        ln.seParentPencil = pencil;
-      });
-      addPerpendicularLineGroup.addCommand(new AddPencilCommand(pencil));
+      if (perpendicularLines.length > 0) {
+        const pencil = new SEPencil(
+          oneDimensional as SEParametric,
+          this.sePoint,
+          perpendicularLines
+        );
+        perpendicularLines.forEach((ln: SEPerpendicularLineThruPoint) => {
+          ln.seParentPencil = pencil;
+        });
+        addPencilGroup.addCommand(new AddPencilCommand(pencil));
+      }
     }
-    addPerpendicularLineGroup.execute();
+    if (usePencil) addPencilGroup.execute();
+    else addPerpendicularLineGroup.execute();
   }
 
   activate(): void {

@@ -15,12 +15,12 @@ export class AddPencilCommand extends Command {
   }
 
   do(): void {
+    SEStore.addPoint(this.pencil.commonPoint);
     this.pencil.lines.forEach((line: SEPerpendicularLineThruPoint) => {
       SEStore.addLine(line);
       this.pencil.commonPoint.registerChild(line);
       this.pencil.commonParametric.registerChild(line);
     });
-    // Command.store.addPencil(this.pencil);
   }
 
   saveState(): void {
@@ -33,10 +33,11 @@ export class AddPencilCommand extends Command {
       this.pencil.lines.length
     );
     this.pencil.lines.forEach((line: SEPerpendicularLineThruPoint) => {
-      Command.store.removeLine(line.id);
       this.pencil.commonPoint.unregisterChild(line);
       this.pencil.commonParametric.unregisterChild(line);
+      Command.store.removeLine(line.id);
     });
+    Command.store.removePoint(this.pencil.commonPoint.id);
   }
 
   toOpcode(): null | string | Array<string> {
