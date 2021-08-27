@@ -310,17 +310,12 @@ export class SESegment extends SENodule
         this._startSEPoint.locationVector,
         this._endSEPoint.locationVector
       );
+      // console.log("here", this.tmpVector.length(),this.tmpVector.isZero(SETTINGS.nearlyAntipodalIdeal));
       // Check to see if the temporary normal is zero (i.e the start and end vectors are parallel -- ether
       // nearly antipodal or in the same direction)
-      if (
-        this.tmpVector1
-          .crossVectors(
-            this._startSEPoint.locationVector,
-            this._endSEPoint.locationVector
-          )
-          .isZero(SETTINGS.nearlyAntipodalIdeal)
-      ) {
-        if (this._normalVector.length() == 0) {
+      if (this.tmpVector.isZero(SETTINGS.nearlyAntipodalIdeal)) {
+        if (this._normalVector.length() === 0) {
+          // console.log("set up");
           // The normal vector is still at its initial value so can't be used to compute the next normal, so set the
           // the normal vector to an arbitrarily chosen vector perpendicular to the start vector
           this.tmpVector.set(1, 0, 0);
@@ -337,6 +332,7 @@ export class SESegment extends SENodule
             );
           }
         } else {
+          // console.log("normal exists");
           // The start and end vectors align, compute  the next normal vector from the old normal and the start vector
           this.tmpVector.crossVectors(
             this._startSEPoint.locationVector,
