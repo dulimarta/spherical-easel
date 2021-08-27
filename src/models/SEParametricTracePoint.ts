@@ -20,6 +20,7 @@ export class SEParametricTracePoint extends SEPoint {
     super(point);
     this.ref = point;
     this._parametricParent = parametricParent;
+    this.parametricParent.tracePoint = this;
   }
 
   /**
@@ -79,6 +80,7 @@ export class SEParametricTracePoint extends SEPoint {
 
   public setLocationByTime(tVal: number): void {
     this.parametricTime = tVal;
+    // console.log("location by time");
     const pos = this.parametricParent.ref.P(tVal);
     this.pointDirectLocationSetter(pos);
     this.update({ mode: UpdateMode.RecordStateForMove, stateArray: [] });

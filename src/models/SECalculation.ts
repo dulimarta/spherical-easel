@@ -118,6 +118,14 @@ export class SECalculation extends SEExpression {
   }
 
   public update(state: UpdateStateType): void {
+    if (!this.canUpdateNow()) return;
+    this.setOutOfDate(false);
+
+    this.exists = this._calculationParents.every(parent => parent.exists);
+    if (this.exists) {
+      this.recalculate();
+    }
+
     // This object and any of its children has no presence on the sphere canvas, so update for move should
     if (state.mode === UpdateMode.RecordStateForMove) return;
     // This object is completely determined by its parents, so only record the object in state array
@@ -128,10 +136,7 @@ export class SECalculation extends SEExpression {
       };
       state.stateArray.push(expressionState);
     }
-    if (!this.canUpdateNow()) return;
-    this.recalculate();
 
-    this.setOutOfDate(false);
     this.updateKids(state);
   }
 

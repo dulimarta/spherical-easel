@@ -2,7 +2,7 @@ import Two from "two.js";
 import Highlighter from "./Highlighter";
 import { SEPoint } from "@/models/SEPoint";
 import { SENodule } from "@/models/SENodule";
-import { AddLocationMeasurementCommand } from "@/commands/AddLocationMeasurementCommand";
+import { AddPointCoordinateMeasurementCommand } from "@/commands/AddPointCoordinateMeasurementCommand";
 import SETTINGS from "@/global-settings";
 import EventBus from "@/eventHandlers/EventBus";
 import {
@@ -79,21 +79,21 @@ export default class PointCoordinateHandler extends Highlighter {
         });
         const coordinatizeCommandGroup = new CommandGroup();
         coordinatizeCommandGroup.addCommand(
-          new AddLocationMeasurementCommand(
+          new AddPointCoordinateMeasurementCommand(
             xMeasure,
             this.targetPoint,
             CoordinateSelection.X_VALUE
           )
         );
         coordinatizeCommandGroup.addCommand(
-          new AddLocationMeasurementCommand(
+          new AddPointCoordinateMeasurementCommand(
             yMeasure,
             this.targetPoint,
             CoordinateSelection.Y_VALUE
           )
         );
         coordinatizeCommandGroup.addCommand(
-          new AddLocationMeasurementCommand(
+          new AddPointCoordinateMeasurementCommand(
             zMeasure,
             this.targetPoint,
             CoordinateSelection.Z_VALUE
@@ -194,21 +194,21 @@ export default class PointCoordinateHandler extends Highlighter {
             CoordinateSelection.Z_VALUE
           );
           coordinatizeCommandGroup.addCommand(
-            new AddLocationMeasurementCommand(
+            new AddPointCoordinateMeasurementCommand(
               xMeasure,
               p as SEPoint,
               CoordinateSelection.Z_VALUE
             )
           );
           coordinatizeCommandGroup.addCommand(
-            new AddLocationMeasurementCommand(
+            new AddPointCoordinateMeasurementCommand(
               yMeasure,
               p as SEPoint,
               CoordinateSelection.Y_VALUE
             )
           );
           coordinatizeCommandGroup.addCommand(
-            new AddLocationMeasurementCommand(
+            new AddPointCoordinateMeasurementCommand(
               zMeasure,
               p as SEPoint,
               CoordinateSelection.Z_VALUE

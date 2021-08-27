@@ -67,7 +67,6 @@ export class SEAntipodalPoint extends SEPoint {
       };
       state.stateArray.push(pointState);
     }
-
     this.updateKids(state);
   }
   public isFreePoint(): boolean {

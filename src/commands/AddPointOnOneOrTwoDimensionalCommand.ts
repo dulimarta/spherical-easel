@@ -114,12 +114,12 @@ export class AddPointOnOneDimensionalCommand extends Command {
 
     const positionVector = new Vector3();
     positionVector.from(propMap.get("pointOnOneOrTwoDimensionalVector")); // convert to vector, if .from() fails the vector is set to 0,0,1
-    console.log(
-      objMap,
-      "pointOnOneOrTwoDimensionalParent",
-      pointOnOneOrTwoDimensionalParent,
-      propMap.get("pointOnOneOrTwoDimensionalParentName")
-    );
+    // console.log(
+    //   objMap,
+    //   "pointOnOneOrTwoDimensionalParent",
+    //   pointOnOneOrTwoDimensionalParent,
+    //   propMap.get("pointOnOneOrTwoDimensionalParentName")
+    // );
     if (pointOnOneOrTwoDimensionalParent && positionVector.z !== 1) {
       //make the point on object
       const point = new Point();

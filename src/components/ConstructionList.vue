@@ -169,10 +169,10 @@ export default class extends Vue {
     SEStore.setInverseRotationMatrix(this.originalSphereMatrix);
     /// HANS I KNOW THIS IS A TERIBLE WAY TO TRY A SOLVE THIS PROBLEM BUT THIS DOESN'T WORK
     //    SO THE ISSUE IS IN THE CSS MAYBE? OR THE DOM? OR UPDATING TWO.JS?
-    setTimeout(() => {
-      console.log("list leave");
-      SEStore.updateDisplay();
-    }, 1000);
+    // setTimeout(() => {
+    //   console.log("list leave");
+    //   SEStore.updateDisplay();
+    // }, 1000);
   }
 
   loadPreview(docId: string): void {

@@ -715,7 +715,7 @@ export default class ParametricForm extends Vue {
     const traceLabel = new Label();
     const traceSELabel = new SELabel(traceLabel, traceSEPoint);
 
-    newSEParametric.tracePoint = traceSEPoint;
+    // newSEParametric.tracePoint = traceSEPoint; //moved into SEParametricTracePoint
 
     // create the parametric endpoints if there are tracing expressions or the curve is not closed
     if (this.tExpressions.min.length !== 0 || !closed) {

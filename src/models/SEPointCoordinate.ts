@@ -112,6 +112,24 @@ export class SEPointCoordinate extends SEExpression {
   }
 
   public update(state: UpdateStateType): void {
+    if (!this.canUpdateNow()) return;
+    this.exists = this.point.exists;
+    if (this.exists) {
+      // apply the inverse of the total rotation matrix to compute the location of the point without all the sphere rotations.
+      this.invMatrix = SEStore.inverseTotalRotationMatrix;
+      this.valueVector
+        .copy(this.point.locationVector)
+        .applyMatrix4(this.invMatrix);
+
+      // When this updates send its value to the label
+      if (this.point.label) {
+        this.point.label.ref.value = [
+          this.valueVector.x,
+          this.valueVector.y,
+          this.valueVector.z
+        ];
+      }
+    }
     // This object and any of its children has no presence on the sphere canvas, so update for move should
     if (state.mode === UpdateMode.RecordStateForMove) return;
     // This object is completely determined by its parents, so only record the object in state array
@@ -121,22 +139,6 @@ export class SEPointCoordinate extends SEExpression {
         object: this
       };
       state.stateArray.push(expressionState);
-    }
-    if (!this.canUpdateNow()) return;
-
-    // apply the inverse of the total rotation matrix to compute the location of the point without all the sphere rotations.
-    this.invMatrix = SEStore.inverseTotalRotationMatrix;
-    this.valueVector
-      .copy(this.point.locationVector)
-      .applyMatrix4(this.invMatrix);
-
-    // When this updates send its value to the label
-    if (this.point.label) {
-      this.point.label.ref.value = [
-        this.valueVector.x,
-        this.valueVector.y,
-        this.valueVector.z
-      ];
     }
     //const pos = this.name.lastIndexOf(":");
     //this.name = this.name.substring(0, pos + 2) + this.prettyValue;

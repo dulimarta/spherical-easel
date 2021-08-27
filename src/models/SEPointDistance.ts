@@ -41,6 +41,9 @@ export class SEPointDistance extends SEExpression {
   }
 
   public update(state: UpdateStateType): void {
+    if (!this.canUpdateNow()) return;
+    this.exists = this.firstSEPoint.exists && this.secondSEPoint.exists;
+
     // This object and any of its children has no presence on the sphere canvas, so update for move should
     if (state.mode === UpdateMode.RecordStateForMove) return;
     // This object is completely determined by its parents, so only record the object in state array
@@ -51,7 +54,7 @@ export class SEPointDistance extends SEExpression {
       };
       state.stateArray.push(expressionState);
     }
-    if (!this.canUpdateNow()) return;
+
     // When this updates send its value to the label but this has no label to update
     //const pos = this.name.lastIndexOf(":");
     //this.name = this.name.substring(0, pos + 2) + this.prettyValue;
