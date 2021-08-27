@@ -1,6 +1,6 @@
 import { Command } from "./Command";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
-import { SEOneOrTwoDimensional, UpdateMode } from "@/types";
+import { SavedNames, SEOneOrTwoDimensional, UpdateMode } from "@/types";
 import { SELabel } from "@/models/SELabel";
 import { SENodule } from "@/models/SENodule";
 import { Vector3 } from "three";
@@ -8,6 +8,7 @@ import Point from "@/plottables/Point";
 import Label from "@/plottables/Label";
 import SETTINGS from "@/global-settings";
 import NonFreePoint from "@/plottables/NonFreePoint";
+import { StyleEditPanels } from "@/types/Styles";
 export class AddIntersectionPointCommand extends Command {
   private sePoint: SEIntersectionPoint;
   private parent1: SEOneOrTwoDimensional;
@@ -54,54 +55,142 @@ export class AddIntersectionPointCommand extends Command {
   toOpcode(): null | string | Array<string> {
     return [
       "AddIntersectionPoint",
-      /* arg-1 */ this.sePoint.name,
-      /* arg-2 */ this.sePoint.locationVector.toFixed(7),
-      /* arg-3 */ this.parent1.name,
-      /* arg-4 */ this.parent2.name,
-      /* arg-5 */ this.sePoint.intersectionOrder,
-      /* arg-6 */ this.seLabel.name,
-      /* arg-7 */ this.sePoint.isUserCreated,
-      /* arg-8 */ this.sePoint.showing,
-      /* arg-9 */ this.sePoint.exists
-    ].join("/");
-    // We assume that "/" is not used anywhere in the object name
+      // Any attribute that could possibly have a "= or "&" or "/" should be run through Command.symbolToASCIIDec
+      // All plottable objects have these attributes
+      "objectName=" + Command.symbolToASCIIDec(this.sePoint.name),
+      "objectExists=" + this.sePoint.exists,
+      "objectShowing=" + this.sePoint.showing,
+      "objectFrontStyle=" +
+        Command.symbolToASCIIDec(
+          JSON.stringify(
+            this.sePoint.ref.currentStyleState(StyleEditPanels.Front)
+          )
+        ),
+      "objectBackStyle=" +
+        Command.symbolToASCIIDec(
+          JSON.stringify(
+            this.sePoint.ref.currentStyleState(StyleEditPanels.Back)
+          )
+        ),
+      // All labels have these attributes
+      "labelName=" + Command.symbolToASCIIDec(this.seLabel.name),
+      "labelStyle=" +
+        Command.symbolToASCIIDec(
+          JSON.stringify(
+            this.seLabel.ref.currentStyleState(StyleEditPanels.Label)
+          )
+        ),
+      "labelVector=" + this.seLabel.ref._locationVector.toFixed(7),
+      "labelShowing=" + this.seLabel.showing,
+      "labelExists=" + this.seLabel.exists,
+      // Object specific attributes
+      "intersectionPointParent1Name=" + this.parent1.name,
+      "intersectionPointParent2Name=" + this.parent2.name,
+      "intersectionPointUserCreated=" + this.sePoint.isUserCreated,
+      "intersectionPointOrder=" + this.sePoint.intersectionOrder,
+      "intersectionPointVector=" + this.sePoint.locationVector.toFixed(7)
+    ].join("&");
   }
 
-  static parse(cmd: string, objMap: Map<string, SENodule>): Command {
-    const tokens = cmd.split("/");
-    const parent1 = objMap.get(tokens[3]) as SEOneOrTwoDimensional;
-    const parent2 = objMap.get(tokens[4]) as SEOneOrTwoDimensional;
-    if (parent1 && parent2) {
-      const location = new Vector3();
-      location.from(tokens[2]);
+  static parse(command: string, objMap: Map<string, SENodule>): Command {
+    // console.log(command);
+    const tokens = command.split("&");
+    const propMap = new Map<SavedNames, string>();
+    // load the tokens into the map
+    tokens.forEach((token, ind) => {
+      if (ind === 0) return; // don't put the command type in the propMap
+      const parts = token.split("=");
+      propMap.set(parts[0] as SavedNames, Command.asciiDecToSymbol(parts[1]));
+    });
 
-      const order = Number(tokens[5]);
-      const point = new SEIntersectionPoint(
-        new NonFreePoint(),
+    // get the object specific attributes
+    const parent1 = objMap.get(
+      propMap.get("intersectionPointParent1Name") ?? ""
+    ) as SEOneOrTwoDimensional | undefined;
+
+    const parent2 = objMap.get(
+      propMap.get("intersectionPointParent2Name") ?? ""
+    ) as SEOneOrTwoDimensional | undefined;
+
+    const positionVector = new Vector3();
+    positionVector.from(propMap.get("intersectionPointVector")); // convert to vector, if .from() fails the vector is set to 0,0,1
+
+    const intersectionOrder = Number(propMap.get("intersectionPointOrder"));
+
+    const intersectionPointUserCreated =
+      propMap.get("intersectionPointUserCreated") === "true";
+
+    if (
+      parent2 &&
+      parent1 &&
+      positionVector.z !== 1 &&
+      !isNaN(intersectionOrder)
+    ) {
+      //make the intersection point
+      const nonFreePoint = new NonFreePoint();
+      const seIntersectionPoint = new SEIntersectionPoint(
+        nonFreePoint,
         parent1,
         parent2,
-        order,
-        tokens[7] === "true" // isUserCreated
+        intersectionOrder,
+        intersectionPointUserCreated
       );
-      point.showing = tokens[8] === "true";
-      point.exists = tokens[9] === "true";
-      point.name = tokens[1];
-      objMap.set(tokens[1], point);
+      seIntersectionPoint.locationVector = positionVector;
+      //style the intersection point
+      const intersectionPointFrontStyleString = propMap.get("objectFrontStyle");
+      if (intersectionPointFrontStyleString !== undefined)
+        nonFreePoint.updateStyle(
+          StyleEditPanels.Front,
+          JSON.parse(intersectionPointFrontStyleString)
+        );
+      const intersectionPointBackStyleString = propMap.get("objectBackStyle");
+      if (intersectionPointBackStyleString !== undefined)
+        nonFreePoint.updateStyle(
+          StyleEditPanels.Back,
+          JSON.parse(intersectionPointBackStyleString)
+        );
 
-      const label = new SELabel(new Label(), point);
-      label.locationVector.copy(location);
+      //make the label and set its location
+      const label = new Label();
+      const seLabel = new SELabel(label, seIntersectionPoint);
+      const seLabelLocation = new Vector3();
+      seLabelLocation.from(propMap.get("labelVector")); // convert to Number
+      seLabel.locationVector.copy(seLabelLocation);
+      //style the label
+      const labelStyleString = propMap.get("labelStyle");
+      if (labelStyleString !== undefined)
+        label.updateStyle(StyleEditPanels.Label, JSON.parse(labelStyleString));
 
-      const offset = SETTINGS.point.initialLabelOffset;
-      label.locationVector.add(new Vector3(2 * offset, offset, 0)).normalize();
+      //put the segment in the object map
+      if (propMap.get("objectName") !== undefined) {
+        seIntersectionPoint.name = propMap.get("objectName") ?? "";
+        seIntersectionPoint.showing = propMap.get("objectShowing") === "true";
+        seIntersectionPoint.exists = propMap.get("objectExists") === "true";
+        objMap.set(seIntersectionPoint.name, seIntersectionPoint);
+      } else {
+        throw new Error(
+          "AddIntersectionPoint: Intersection point Name doesn't exist"
+        );
+      }
 
-      label.showing = tokens[8] === "true";
-      label.exists = tokens[9] === "true";
-      label.name = tokens[6];
-      objMap.set(tokens[6], label);
-      return new AddIntersectionPointCommand(point, parent1, parent2, label);
-    } else
-      throw new Error(
-        `AddIntersectionPoint: parent ${tokens[3]} or ${tokens[4]} is not found`
+      //put the label in the object map
+      if (propMap.get("labelName") !== undefined) {
+        seLabel.name = propMap.get("labelName") ?? "";
+        seLabel.showing = propMap.get("labelShowing") === "true";
+        seLabel.exists = propMap.get("labelExists") === "true";
+        objMap.set(seLabel.name, seLabel);
+      } else {
+        throw new Error("AddIntersectionPoint: Label Name doesn't exist");
+      }
+      return new AddIntersectionPointCommand(
+        seIntersectionPoint,
+        parent1,
+        parent2,
+        seLabel
       );
+    }
+    throw new Error(
+      `AddIntersectionPointCommand: ${parent2}, ${parent1}, ${positionVector}, or ${intersectionOrder}  is undefined`
+    );
   }
 }

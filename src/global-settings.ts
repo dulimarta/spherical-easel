@@ -429,7 +429,7 @@ export const SETTINGS = {
         front: "hsla(254, 100%, 90%, 0.2)", //"hsla(217, 100%, 80%, 0.0005)", //"noFill" is "hsla(0,0%,0%,0)",
         frontHSLA: { h: 254, s: 100, l: 90, a: 0.2 },
         back: "hsla(10, 100%, 50%, 0.1)", //"hsla(217, 100%, 80%, 0.0002)" //"noFill" is "hsla(0,0%,0%,0)"
-        backHSLA: { h: 10, s: 100, l: 75, a: 0.1 }
+        backHSLA: { h: 254, s: 100, l: 50, a: 0.1 }
       },
       strokeColor: {
         front: "hsla(217, 90%, 61%, 1)",

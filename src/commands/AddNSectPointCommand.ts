@@ -1,12 +1,11 @@
 import { Command } from "./Command";
 import { SEPoint } from "@/models/SEPoint";
-import { SEOneOrTwoDimensional, UpdateMode } from "@/types";
+import { SavedNames, SEOneOrTwoDimensional, UpdateMode } from "@/types";
 import { SELabel } from "@/models/SELabel";
 import SETTINGS from "@/global-settings";
 import { SENodule } from "@/models/SENodule";
 import { Vector3 } from "three";
 import { SESegment } from "@/models/SESegment";
-import { SELine } from "@/models/SELine";
 import { SEPolarPoint } from "@/models/SEPolarPoint";
 import Point from "@/plottables/Point";
 import { DisplayStyle } from "@/plottables/Nodule";
@@ -14,6 +13,7 @@ import { SEPointOnOneOrTwoDimensional } from "@/models/SEPointOnOneOrTwoDimensio
 import Label from "@/plottables/Label";
 import { SENSectPoint } from "@/models/SENSectPoint";
 import NonFreePoint from "@/plottables/NonFreePoint";
+import { StyleEditPanels } from "@/types/Styles";
 
 export class AddNSectPointCommand extends Command {
   private seNSectPoint: SENSectPoint;
@@ -60,52 +60,130 @@ export class AddNSectPointCommand extends Command {
   toOpcode(): null | string | Array<string> {
     return [
       "AddNSectPoint",
-      /* arg-1 */ this.seNSectPoint.name,
-      /* arg-2 */ this.seNSectPoint.locationVector.toFixed(7),
-      /* arg-3 */ this.parentSegment.name,
-      /* arg-4 */ this.seLabel.name,
-      /* arg-5 */ this.seNSectPoint.showing,
-      /* arg-6 */ this.seNSectPoint.exists,
-      /* arg-7*/ this.seNSectPoint.index,
-      /* arg-8*/ this.seNSectPoint.N
-    ].join("/");
+      // Any attribute that could possibly have a "= or "&" or "/" should be run through Command.symbolToASCIIDec
+      // All plottable objects have these attributes
+      "objectName=" + Command.symbolToASCIIDec(this.seNSectPoint.name),
+      "objectExists=" + this.seNSectPoint.exists,
+      "objectShowing=" + this.seNSectPoint.showing,
+      "objectFrontStyle=" +
+        Command.symbolToASCIIDec(
+          JSON.stringify(
+            this.seNSectPoint.ref.currentStyleState(StyleEditPanels.Front)
+          )
+        ),
+      "objectBackStyle=" +
+        Command.symbolToASCIIDec(
+          JSON.stringify(
+            this.seNSectPoint.ref.currentStyleState(StyleEditPanels.Back)
+          )
+        ),
+      // All labels have these attributes
+      "labelName=" + Command.symbolToASCIIDec(this.seLabel.name),
+      "labelStyle=" +
+        Command.symbolToASCIIDec(
+          JSON.stringify(
+            this.seLabel.ref.currentStyleState(StyleEditPanels.Label)
+          )
+        ),
+      "labelVector=" + this.seLabel.ref._locationVector.toFixed(7),
+      "labelShowing=" + this.seLabel.showing,
+      "labelExists=" + this.seLabel.exists,
+      // Object specific attributes
+      "seNSectPointVector=" + this.seNSectPoint.locationVector.toFixed(7),
+      "seNSectPointParentSegmentName=" + this.parentSegment.name,
+      "seNSectPointIndex=" + this.seNSectPoint.index,
+      "seNSectPointN=" + this.seNSectPoint.N
+    ].join("&");
   }
 
   static parse(command: string, objMap: Map<string, SENodule>): Command {
-    const tokens = command.split("/");
-    const parentSegment = objMap.get(tokens[3]) as SESegment | undefined;
-    if (parentSegment) {
-      const pointPosition = new Vector3();
-      pointPosition.from(tokens[2]);
-      // const { point, label } = Command.makePointAndLabel(pointPosition); // We can't use this because we must create a SEPolarPoint and not just an SEPoint
+    // console.log(command);
+    const tokens = command.split("&");
+    const propMap = new Map<SavedNames, string>();
+    // load the tokens into the map
+    tokens.forEach((token, ind) => {
+      if (ind === 0) return; // don't put the command type in the propMap
+      const parts = token.split("=");
+      propMap.set(parts[0] as SavedNames, Command.asciiDecToSymbol(parts[1]));
+    });
 
-      const newPoint = new NonFreePoint();
-      newPoint.stylize(DisplayStyle.ApplyCurrentVariables);
-      newPoint.adjustSize();
-      const index = Number(tokens[7]);
-      const N = Number(tokens[8]);
-      const point = new SENSectPoint(newPoint, parentSegment, index, N);
-      point.locationVector.copy(pointPosition);
+    // get the object specific attributes
+    const seNSectPointParentSegment = objMap.get(
+      propMap.get("seNSectPointParentSegmentName") ?? ""
+    ) as SESegment | undefined;
 
-      const newLabel = new Label();
-      const label = new SELabel(newLabel, point);
-      label.locationVector.copy(pointPosition);
-      const offset = SETTINGS.point.initialLabelOffset;
-      label.locationVector.add(new Vector3(2 * offset, offset, 0)).normalize();
+    const seNSectPointVector = new Vector3();
+    seNSectPointVector.from(propMap.get("seNSectPointVector"));
 
-      point.showing = tokens[5] === "true";
-      point.exists = tokens[6] === "true";
-      point.name = tokens[1];
-      objMap.set(tokens[1], point);
-      label.showing = tokens[5] === "true";
-      label.exists = tokens[6] === "true";
-      label.name = tokens[4];
-      objMap.set(tokens[4], label);
-      return new AddNSectPointCommand(point, parentSegment, label);
-    } else {
-      throw new Error(
-        `AddPolarPoint: parentSegment object ${tokens[3]} is undefined`
+    const seNSectPointIndex = Number(propMap.get("seNSectPointIndex"));
+    const seNSectPointN = Number(propMap.get("seNSectPointN"));
+
+    if (
+      seNSectPointParentSegment &&
+      seNSectPointVector.z !== 1 &&
+      !isNaN(seNSectPointIndex) &&
+      !isNaN(seNSectPointN)
+    ) {
+      //make the Nsect Point
+      const point = new NonFreePoint();
+      const seNSectPoint = new SENSectPoint(
+        point,
+        seNSectPointParentSegment,
+        seNSectPointIndex,
+        seNSectPointN
+      );
+      //style the NSect Point
+      const nSectPointFrontStyleString = propMap.get("objectFrontStyle");
+      if (nSectPointFrontStyleString !== undefined)
+        point.updateStyle(
+          StyleEditPanels.Front,
+          JSON.parse(nSectPointFrontStyleString)
+        );
+      const nSectPointBackStyleString = propMap.get("objectBackStyle");
+      if (nSectPointBackStyleString !== undefined)
+        point.updateStyle(
+          StyleEditPanels.Back,
+          JSON.parse(nSectPointBackStyleString)
+        );
+
+      //make the label and set its location
+      const label = new Label();
+      const seLabel = new SELabel(label, seNSectPoint);
+      const seLabelLocation = new Vector3();
+      seLabelLocation.from(propMap.get("labelVector")); // convert to Number
+      seLabel.locationVector.copy(seLabelLocation);
+      //style the label
+      const labelStyleString = propMap.get("labelStyle");
+      if (labelStyleString !== undefined)
+        label.updateStyle(StyleEditPanels.Label, JSON.parse(labelStyleString));
+
+      //put the circle in the object map
+      if (propMap.get("objectName") !== undefined) {
+        seNSectPoint.name = propMap.get("objectName") ?? "";
+        seNSectPoint.showing = propMap.get("objectShowing") === "true";
+        seNSectPoint.exists = propMap.get("objectExists") === "true";
+        objMap.set(seNSectPoint.name, seNSectPoint);
+      } else {
+        throw new Error("AddNSectPoint: NSectPoint Name doesn't exist");
+      }
+
+      //put the label in the object map
+      if (propMap.get("labelName") !== undefined) {
+        seLabel.name = propMap.get("labelName") ?? "";
+        seLabel.showing = propMap.get("labelShowing") === "true";
+        seLabel.exists = propMap.get("labelExists") === "true";
+        objMap.set(seLabel.name, seLabel);
+      } else {
+        throw new Error("AddNSectPoint: Label Name doesn't exist");
+      }
+      return new AddNSectPointCommand(
+        seNSectPoint,
+        seNSectPointParentSegment,
+        seLabel
       );
     }
+    throw new Error(
+      `AddNSectPoint: ${seNSectPointVector}, ${seNSectPointIndex}, ${seNSectPointN}, or ${seNSectPointParentSegment}  is undefined`
+    );
   }
 }

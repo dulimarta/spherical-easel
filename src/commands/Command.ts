@@ -160,7 +160,13 @@ export abstract class Command {
 
   // remove the &, / and & from a string and replace with hex equivalent / -> %47, = -> , and & -> %38
   static symbolToASCIIDec(inputString: string): string {
+    if (inputString.match(/%61|%47|%38|%64/)) {
+      console.error(
+        `Save Command: Forbidden pattern %61, %47, %38, or %64 found in string ${inputString}`
+      );
+    }
     return inputString
+      .replaceAll("@", "%64")
       .replaceAll("=", "%61")
       .replaceAll("/", "%47")
       .replaceAll("&", "%38");
@@ -169,6 +175,7 @@ export abstract class Command {
     return inputString
       .replaceAll("%38", "&")
       .replaceAll("%47", "/")
-      .replaceAll("%61", "=");
+      .replaceAll("%61", "=")
+      .replaceAll("%64", "@");
   }
 }

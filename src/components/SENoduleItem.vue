@@ -17,7 +17,7 @@
           </v-icon>
           <v-icon v-else-if="isIntersectionPoint"
             medium>
-            $vuetify.icons.value.intersectionPoint
+            $vuetify.icons.value.intersection
           </v-icon>
           <v-icon v-else-if="isPolar"
             medium>
@@ -266,6 +266,11 @@ export default class SENoduleItem extends Vue {
 
   mounted(): void {
     if (this.node instanceof SEParametric) {
+      console.log(
+        "parametric mounted",
+        this.node.name,
+        this.node.tracePoint.name
+      );
       this.curve = this.node;
       // const pt = new Point();
       this.curvePoint = this.curve.tracePoint;

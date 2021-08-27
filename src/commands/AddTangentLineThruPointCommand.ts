@@ -3,6 +3,7 @@ import { SEPoint } from "@/models/SEPoint";
 import { SELabel } from "@/models/SELabel";
 import { SETangentLineThruPoint } from "@/models/SETangentLineThruPoint";
 import {
+  SavedNames,
   SEOneDimensional,
   SEOneDimensionalNotStraight,
   UpdateMode
@@ -18,6 +19,8 @@ import NonFreeLine from "@/plottables/NonFreeLine";
 import { SEEllipse } from "@/models/SEEllipse";
 import { SEParametric } from "@/models/SEParametric";
 import { SECircle } from "@/models/SECircle";
+import { StyleEditPanels } from "@/types/Styles";
+import Point from "@/plottables/Point";
 export class AddTangentLineThruPointCommand extends Command {
   private seTangentLineThruPoint: SETangentLineThruPoint;
   private parentSEPoint: SEPoint;
@@ -58,82 +61,172 @@ export class AddTangentLineThruPointCommand extends Command {
   }
 
   toOpcode(): null | string | Array<string> {
-    const targetLine = this.seTangentLineThruPoint;
     return [
       "AddTangentLineThruPoint",
-      /* arg-1 */ targetLine.name,
-      /* arg-2 */ targetLine.normalVector.toFixed(7),
-      /* arg-3 */ targetLine.startSEPoint.name,
-      /* arg-4 */ targetLine.endSEPoint.name,
-      /* arg-5 */ targetLine.endSEPoint.locationVector.toFixed(7),
-      /* arg-6 */ this.parentOneDimensional.name,
-      /* arg-7 */ this.seLabel.name,
-      /* arg-8 */ targetLine.showing,
-      /* arg-9 */ targetLine.exists,
-      /* arg-10*/ targetLine.index
-    ].join("/");
+      // Any attribute that could possibly have a "= or "&" or "/" should be run through Command.symbolToASCIIDec
+      // All plottable objects have these attributes
+      "objectName=" +
+        Command.symbolToASCIIDec(this.seTangentLineThruPoint.name),
+      "objectExists=" + this.seTangentLineThruPoint.exists,
+      "objectShowing=" + this.seTangentLineThruPoint.showing,
+      "objectFrontStyle=" +
+        Command.symbolToASCIIDec(
+          JSON.stringify(
+            this.seTangentLineThruPoint.ref.currentStyleState(
+              StyleEditPanels.Front
+            )
+          )
+        ),
+      "objectBackStyle=" +
+        Command.symbolToASCIIDec(
+          JSON.stringify(
+            this.seTangentLineThruPoint.ref.currentStyleState(
+              StyleEditPanels.Back
+            )
+          )
+        ),
+      // All labels have these attributes
+      "labelName=" + Command.symbolToASCIIDec(this.seLabel.name),
+      "labelStyle=" +
+        Command.symbolToASCIIDec(
+          JSON.stringify(
+            this.seLabel.ref.currentStyleState(StyleEditPanels.Label)
+          )
+        ),
+      "labelVector=" + this.seLabel.ref._locationVector.toFixed(7),
+      "labelShowing=" + this.seLabel.showing,
+      "labelExists=" + this.seLabel.exists,
+      // Object specific attributes
+      "tangentLineThruPointParentPointName=" + this.parentSEPoint.name,
+      "tangentLineThruPointNormalVector=" +
+        this.seTangentLineThruPoint.normalVector.toFixed(7),
+      "tangentLineThruPointEndSEPointLocationVector=" +
+        this.seTangentLineThruPoint.endSEPoint.locationVector.toFixed(7),
+      "tangentLineThruPointParentOneDimensionalName=" +
+        this.parentOneDimensional.name,
+      "tangentLineThruPointIndex=" + this.seTangentLineThruPoint.index
+    ].join("&");
   }
 
   static parse(command: string, objMap: Map<string, SENodule>): Command {
-    const tokens = command.split("/");
-    const startPoint = objMap.get(tokens[3]) as SEPoint | undefined;
-    const perpToLine = objMap.get(tokens[6]) as
-      | SEOneDimensionalNotStraight
-      | undefined;
-    if (startPoint && perpToLine) {
+    // console.log(command);
+    const tokens = command.split("&");
+    const propMap = new Map<SavedNames, string>();
+    // load the tokens into the map
+    tokens.forEach((token, ind) => {
+      if (ind === 0) return; // don't put the command type in the propMap
+      const parts = token.split("=");
+      propMap.set(parts[0] as SavedNames, Command.asciiDecToSymbol(parts[1]));
+    });
+
+    // get the object specific attributes
+    const tangentLineThruPointParentOneDimensional = objMap.get(
+      propMap.get("tangentLineThruPointParentOneDimensionalName") ?? ""
+    ) as SEOneDimensionalNotStraight | undefined;
+
+    const tangentLineThruPointParentPoint = objMap.get(
+      propMap.get("tangentLineThruPointParentPointName") ?? ""
+    ) as SEPoint | undefined;
+
+    const tangentLineThruPointEndSEPointLocation = new Vector3();
+    tangentLineThruPointEndSEPointLocation.from(
+      propMap.get("tangentLineThruPointEndSEPointLocationVector")
+    );
+
+    const tangentLineThruPointNormal = new Vector3();
+    tangentLineThruPointNormal.from(
+      propMap.get("tangentLineThruPointNormalVector")
+    );
+
+    const tangentLineThruPointIndex = Number(
+      propMap.get("tangentLineThruPointIndex")
+    );
+
+    if (
+      tangentLineThruPointParentPoint &&
+      tangentLineThruPointParentOneDimensional &&
+      tangentLineThruPointNormal.z !== 1 &&
+      tangentLineThruPointEndSEPointLocation.z !== 1 &&
+      !isNaN(tangentLineThruPointIndex)
+    ) {
+      //make the tangent Line
       const line = new NonFreeLine();
-      line.stylize(DisplayStyle.ApplyCurrentVariables);
-      line.adjustSize();
-      const normal = new Vector3();
-      normal.from(tokens[2]);
+      // create the non-displayed not in the DAG End Point of the line
+      const endPoint = new SEPoint(new Point());
+      endPoint.locationVector = tangentLineThruPointEndSEPointLocation;
+      endPoint.exists = true; //never changes
+      endPoint.showing = false; // never changes
 
-      const endPoint = new SEPoint(new NonFreePoint());
-      endPoint.showing = false;
-      endPoint.exists = true;
-      const endLocation = new Vector3();
-      endLocation.from(tokens[5]);
-      endPoint.locationVector = endLocation;
-      const index = Number(tokens[10]);
-      const seLine = new SETangentLineThruPoint(
+      const tangentLineThruPointLine = new SETangentLineThruPoint(
         line,
-        perpToLine,
-        startPoint,
-        normal,
+        tangentLineThruPointParentOneDimensional,
+        tangentLineThruPointParentPoint,
+        tangentLineThruPointNormal,
         endPoint,
-        index
+        tangentLineThruPointIndex
       );
-      seLine.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
-      seLine.name = tokens[1];
-      seLine.showing = tokens[8] === "true";
-      seLine.exists = tokens[9] === "true";
-      objMap.set(tokens[1], seLine);
+      //style the tangent Line
+      const tangentThruPointLineFrontStyleString = propMap.get(
+        "objectFrontStyle"
+      );
+      if (tangentThruPointLineFrontStyleString !== undefined)
+        line.updateStyle(
+          StyleEditPanels.Front,
+          JSON.parse(tangentThruPointLineFrontStyleString)
+        );
+      const tangentThruPointLineBackStyleString = propMap.get(
+        "objectBackStyle"
+      );
+      if (tangentThruPointLineBackStyleString !== undefined)
+        line.updateStyle(
+          StyleEditPanels.Back,
+          JSON.parse(tangentThruPointLineBackStyleString)
+        );
 
-      const seLabel = new SELabel(new Label(), seLine);
-      const labelPosition = new Vector3()
-        .copy(endPoint.locationVector)
-        .add(
-          new Vector3(
-            2 * SETTINGS.point.initialLabelOffset,
-            SETTINGS.point.initialLabelOffset,
-            0
-          )
-        )
-        .normalize();
-      seLabel.locationVector = labelPosition;
-      seLabel.name = tokens[7];
-      seLabel.showing = tokens[8] === "true";
-      seLabel.exists = tokens[9] === "true";
-      objMap.set(tokens[7], seLabel);
+      //make the label and set its location
+      const label = new Label();
+      const seLabel = new SELabel(label, tangentLineThruPointLine);
+      const seLabelLocation = new Vector3();
+      seLabelLocation.from(propMap.get("labelVector")); // convert to Number
+      seLabel.locationVector.copy(seLabelLocation);
+      //style the label
+      const labelStyleString = propMap.get("labelStyle");
+      if (labelStyleString !== undefined)
+        label.updateStyle(StyleEditPanels.Label, JSON.parse(labelStyleString));
+
+      //put the circle in the object map
+      if (propMap.get("objectName") !== undefined) {
+        tangentLineThruPointLine.name = propMap.get("objectName") ?? "";
+        tangentLineThruPointLine.showing =
+          propMap.get("objectShowing") === "true";
+        tangentLineThruPointLine.exists =
+          propMap.get("objectExists") === "true";
+        objMap.set(tangentLineThruPointLine.name, tangentLineThruPointLine);
+      } else {
+        throw new Error(
+          "AddTangentLineThruPoint: Tangent Line Name doesn't exist"
+        );
+      }
+
+      //put the label in the object map
+      if (propMap.get("labelName") !== undefined) {
+        seLabel.name = propMap.get("labelName") ?? "";
+        seLabel.showing = propMap.get("labelShowing") === "true";
+        seLabel.exists = propMap.get("labelExists") === "true";
+        objMap.set(seLabel.name, seLabel);
+      } else {
+        throw new Error("AddTangentLineThruPoint: Label Name doesn't exist");
+      }
       return new AddTangentLineThruPointCommand(
-        seLine,
-        startPoint,
-        perpToLine,
+        tangentLineThruPointLine,
+        tangentLineThruPointParentPoint,
+        tangentLineThruPointParentOneDimensional,
         seLabel
       );
-    } else {
-      throw new Error(
-        `AddTangentLineThruPoint: parent start point ${tokens[3]} or parent line ${tokens[6]} is undefined`
-      );
     }
+
+    throw new Error(
+      `AddTangentLineThruPoint: ${tangentLineThruPointParentPoint}, ${tangentLineThruPointParentOneDimensional}, ${tangentLineThruPointIndex}, ${tangentLineThruPointNormal}, or ${tangentLineThruPointEndSEPointLocation}  is undefined`
+    );
   }
 }

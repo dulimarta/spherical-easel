@@ -149,7 +149,6 @@ export class AddAngleMarkerCommand extends Command {
       | AngleMode
       | undefined;
 
-    console.log(firstParent, secondParent, mode);
     if (firstParent && secondParent && mode) {
       //make the angleMarker
       const angleMarker = new AngleMarker();

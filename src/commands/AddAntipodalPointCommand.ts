@@ -77,7 +77,7 @@ export class AddAntipodalPointCommand extends Command {
       "labelVector=" + this.seLabel.ref._locationVector.toFixed(7),
       "labelShowing=" + this.seLabel.showing,
       "labelExists=" + this.seLabel.exists,
-      // Object specific attributes
+      // Object specific attributes necessary for recreating the object
       "pointVector=" + this.sePoint.locationVector.toFixed(7),
       "antipodalPointsParentName=" + this.parentSEPoint.name
     ].join("&");
@@ -101,7 +101,7 @@ export class AddAntipodalPointCommand extends Command {
       const point = new Point();
       const sePoint = new SEAntipodalPoint(point, parentPoint);
       const sePointLocation = new Vector3();
-      sePointLocation.from(propMap.get("pointVector")); // convert to Number
+      sePointLocation.from(propMap.get("pointVector"));
       sePoint.locationVector.copy(sePointLocation);
       const pointFrontStyleString = propMap.get("objectFrontStyle");
       if (pointFrontStyleString !== undefined)
@@ -120,7 +120,7 @@ export class AddAntipodalPointCommand extends Command {
       const label = new Label();
       const seLabel = new SELabel(label, sePoint);
       const seLabelLocation = new Vector3();
-      seLabelLocation.from(propMap.get("labelVector")); // convert to Number
+      seLabelLocation.from(propMap.get("labelVector"));
       seLabel.locationVector.copy(seLabelLocation);
       const labelStyleString = propMap.get("labelStyle");
       if (labelStyleString !== undefined)
