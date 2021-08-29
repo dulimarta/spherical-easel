@@ -5,8 +5,7 @@ import { SETangentLineThruPoint } from "@/models/SETangentLineThruPoint";
 import {
   SavedNames,
   SEOneDimensional,
-  SEOneDimensionalNotStraight,
-  UpdateMode
+  SEOneDimensionalNotStraight
 } from "@/types";
 import Line from "@/plottables/Line";
 import { DisplayStyle } from "@/plottables/Nodule";

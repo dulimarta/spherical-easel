@@ -2,7 +2,6 @@ import { SENodule } from "@/models/SENodule";
 import { SEPencil } from "@/models/SEPencil";
 import { SEPerpendicularLineThruPoint } from "@/models/SEPerpendicularLineThruPoint";
 import { SEStore } from "@/store";
-import { isTangentLineThruPointState } from "@/types";
 import { Command } from "./Command";
 import { CommandGroup } from "./CommandGroup";
 

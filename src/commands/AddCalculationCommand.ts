@@ -3,7 +3,7 @@ import { SEExpression } from "@/models/SEExpression";
 import { SENodule } from "@/models/SENodule";
 import { SECalculation } from "@/models/SECalculation";
 import { AddExpressionCommand } from "./AddExpressionCommand";
-import { SavedNames, UpdateMode } from "@/types";
+import { SavedNames } from "@/types";
 
 export class AddCalculationCommand extends AddExpressionCommand {
   // private seExpression: SEExpression;
