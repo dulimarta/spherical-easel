@@ -6,7 +6,7 @@ import { SENodule } from "@/models/SENodule";
 import { DisplayStyle } from "@/plottables/Nodule";
 import Label from "@/plottables/Label";
 import { Vector3 } from "three";
-import { SavedNames, UpdateMode } from "@/types";
+import { SavedNames } from "@/types";
 import { SEPolygon } from "@/models/SEPolygon";
 import Polygon from "@/plottables/Polygon";
 import SETTINGS from "@/global-settings";
@@ -56,7 +56,8 @@ export class AddPolygonCommand extends Command {
     this.sePolygon.registerChild(this.seLabel);
     Command.store.addPolygonAndExpression(this.sePolygon);
     Command.store.addLabel(this.seLabel);
-    this.sePolygon.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
+    this.sePolygon.markKidsOutOfDate();
+    this.sePolygon.update();
   }
 
   saveState(): void {

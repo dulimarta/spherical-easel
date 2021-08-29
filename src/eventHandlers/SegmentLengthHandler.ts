@@ -9,7 +9,6 @@ import { CommandGroup } from "@/commands/CommandGroup";
 import { StyleNoduleCommand } from "@/commands/StyleNoduleCommand";
 import { StyleEditPanels } from "@/types/Styles";
 import { LabelDisplayMode } from "@/types";
-import { UpdateMode } from "@/types";
 import { SEStore } from "@/store";
 import { SEExpression } from "@/models/SEExpression";
 import { SetNoduleDisplayCommand } from "@/commands/SetNoduleDisplayCommand";
@@ -95,10 +94,8 @@ export default class SegmentLengthHandler extends Highlighter {
         );
         segmentCommandGroup.execute();
         // Update the display so the changes become apparent
-        this.targetSegment.update({
-          mode: UpdateMode.DisplayOnly,
-          stateArray: []
-        });
+        this.targetSegment.markKidsOutOfDate();
+        this.targetSegment.update();
         this.targetSegment = null;
       }
     }
@@ -207,7 +204,8 @@ export default class SegmentLengthHandler extends Highlighter {
           );
           segmentCommandGroup.execute();
           // make the change show up in the sphere
-          object1.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
+          object1.markKidsOutOfDate();
+          object1.update();
         }
       }
     }

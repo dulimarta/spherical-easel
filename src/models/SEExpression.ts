@@ -1,6 +1,6 @@
 import { SENodule } from "./SENodule";
 import { ValueDisplayMode } from "@/types";
-import { SEOneOrTwoDimensional, UpdateStateType, UpdateMode } from "@/types";
+import { SEOneOrTwoDimensional } from "@/types";
 import { Vector3 } from "three";
 import SETTINGS from "@/global-settings";
 
@@ -24,31 +24,6 @@ export abstract class SEExpression extends SENodule {
     this._valueDisplayMode = vdm;
   }
 
-  public isPointOnOneDimensional(): boolean {
-    return false;
-  }
-  public isFreePoint(): boolean {
-    return false;
-  }
-  public isPoint(): boolean {
-    return false;
-  }
-  public isNonFreeLine(): boolean {
-    return false;
-  }
-
-  public isOneDimensional(): this is SEOneOrTwoDimensional {
-    return false;
-  }
-  public isSegmentOfLengthPi(): boolean {
-    return false;
-  }
-  public isLabelable(): boolean {
-    return false;
-  }
-  public isLabel(): boolean {
-    return false;
-  }
   /* TODO: Evaluate or get the value of the expressions */
   abstract get value(): number;
 

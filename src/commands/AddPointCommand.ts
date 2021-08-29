@@ -2,7 +2,7 @@ import { Command } from "./Command";
 import { SEPoint } from "@/models/SEPoint";
 import { SELabel } from "@/models/SELabel";
 import { Vector3 } from "three";
-import { SavedNames, UpdateMode } from "@/types";
+import { SavedNames } from "@/types";
 import { SENodule } from "@/models/SENodule";
 import { StyleEditPanels, StyleOptions } from "@/types/Styles";
 import Label from "@/plottables/Label";
@@ -24,10 +24,8 @@ export class AddPointCommand extends Command {
     Command.store.addPoint(this.sePoint);
     // Thanks to Will for suggesting the following magic line
     // that makes the objects show up correctly on the canvas
-    this.sePoint.update({
-      mode: UpdateMode.DisplayOnly,
-      stateArray: []
-    });
+    this.sePoint.markKidsOutOfDate();
+    this.sePoint.update();
   }
 
   saveState(): void {

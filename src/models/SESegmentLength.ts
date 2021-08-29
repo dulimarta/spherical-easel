@@ -1,11 +1,6 @@
 import { SEExpression } from "./SEExpression";
 import { SESegment } from "./SESegment";
-import {
-  UpdateStateType,
-  UpdateMode,
-  ValueDisplayMode,
-  ExpressionState
-} from "@/types";
+import { ObjectState } from "@/types";
 import SETTINGS from "@/global-settings";
 import i18n from "@/i18n";
 
@@ -42,29 +37,36 @@ export class SESegmentLength extends SEExpression {
     );
   }
 
-  public update(state: UpdateStateType): void {
+  public update(
+    objectState?: Map<number, ObjectState>,
+    orderedSENoduleList?: number[]
+  ): void {
     if (!this.canUpdateNow()) return;
+    this.setOutOfDate(false);
+
     this.exists = this.seSegment.exists;
-    // This object and any of its children has no presence on the sphere canvas, so update for move should
-    if (state.mode === UpdateMode.RecordStateForMove) return;
-    // This object is completely determined by its parents, so only record the object in state array
-    if (state.mode == UpdateMode.RecordStateForDelete) {
-      const expressionState: ExpressionState = {
-        kind: "expression",
-        object: this
-      };
-      state.stateArray.push(expressionState);
-    }
+
     if (this.exists) {
       // When this updates send its value to the label of the segment
       if (this.seSegment.label) {
         this.seSegment.label.ref.value = [this.value];
       }
     }
-    //const pos = this.name.lastIndexOf(":");
-    //this.name = this.name.substring(0, pos + 2) + this.prettyValue;
-    this.setOutOfDate(false);
-    this.updateKids(state);
+
+    // These segment measurement is completely determined by its parent and an update on the parent
+    // will cause this measurement update correctly. So we don't store any additional information
+    if (objectState && orderedSENoduleList) {
+      if (objectState.has(this.id)) {
+        console.log(
+          `Segment Length with id ${this.id} has been visited twice proceed no further down this branch of the DAG.`
+        );
+        return;
+      }
+      orderedSENoduleList.push(this.id);
+      objectState.set(this.id, { kind: "segmentLength", object: this });
+    }
+
+    this.updateKids(objectState, orderedSENoduleList);
   }
 
   public customStyles = (): Set<string> => emptySet;

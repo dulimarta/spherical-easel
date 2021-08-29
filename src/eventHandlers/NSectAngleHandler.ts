@@ -12,7 +12,7 @@ import { CommandGroup } from "@/commands/CommandGroup";
 import Label from "@/plottables/Label";
 import { SELabel } from "@/models/SELabel";
 import SETTINGS from "@/global-settings";
-import { SEIntersectionReturnType, UpdateMode } from "@/types";
+import { SEIntersectionReturnType } from "@/types";
 import { AddNSectPointCommand } from "@/commands/AddNSectPointCommand";
 import Line from "@/plottables/Line";
 import { SEAngleMarker } from "@/models/SEAngleMarker";
@@ -409,7 +409,8 @@ export default class NSectAngleHandler extends Highlighter {
     }
     nSectingLinesCommandGroup.execute();
     nSectingLineArray.forEach(nSectingPoint => {
-      nSectingPoint.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
+      nSectingPoint.markKidsOutOfDate();
+      nSectingPoint.update();
     });
   }
 }

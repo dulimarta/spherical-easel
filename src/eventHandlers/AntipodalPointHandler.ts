@@ -5,7 +5,7 @@ import { AddAntipodalPointCommand } from "@/commands/AddAntipodalPointCommand";
 import { DisplayStyle } from "@/plottables/Nodule";
 import Highlighter from "./Highlighter";
 import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
-import { UpdateMode, SEOneOrTwoDimensional } from "@/types";
+import { SEOneOrTwoDimensional } from "@/types";
 import Label from "@/plottables/Label";
 import { SELabel } from "@/models/SELabel";
 import { Vector3 } from "three";
@@ -249,7 +249,8 @@ export default class AntipodalPointHandler extends Highlighter {
           .execute();
         // Update the display of the antipodal point
         // TODO: move this update() call into AddAntipodalPointCommand
-        vtx.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
+        vtx.markKidsOutOfDate();
+        vtx.update();
 
         // reset in prep for next antipodal point
         this.mouseLeave(event);
@@ -439,7 +440,8 @@ export default class AntipodalPointHandler extends Highlighter {
         new AddAntipodalPointCommand(vtx, object, newSELabel).execute();
         // Update the display of the antipodal point
         // TODO: move this update() call into AddAntipodalPointCommand
-        vtx.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
+        vtx.markKidsOutOfDate();
+        vtx.update();
       }
     }
     // Unselect the selected objects and clear the selectedObject array

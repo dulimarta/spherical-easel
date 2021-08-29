@@ -602,28 +602,28 @@ export default class Parametric extends Nodule {
     return this.tmpVector.applyMatrix4(transformMatrix);
   }
 
-  private frontGlowingDisplay(): void {
+  frontGlowingDisplay(): void {
     this.frontParts.forEach(part => (part.visible = true));
     this.glowingFrontParts.forEach(part => (part.visible = true));
   }
-  private backGlowingDisplay(): void {
+  backGlowingDisplay(): void {
     this.backParts.forEach(part => (part.visible = true));
     this.glowingBackParts.forEach(part => (part.visible = true));
   }
-  public glowingDisplay(): void {
+  glowingDisplay(): void {
     this.frontGlowingDisplay();
     this.backGlowingDisplay();
   }
 
-  private frontNormalDisplay(): void {
+  frontNormalDisplay(): void {
     this.frontParts.forEach(part => (part.visible = true));
     this.glowingFrontParts.forEach(part => (part.visible = false));
   }
-  private backNormalDisplay(): void {
+  backNormalDisplay(): void {
     this.backParts.forEach(part => (part.visible = true));
     this.glowingBackParts.forEach(part => (part.visible = false));
   }
-  public normalDisplay(): void {
+  normalDisplay(): void {
     this.frontNormalDisplay();
     this.backNormalDisplay();
   }

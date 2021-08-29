@@ -213,12 +213,7 @@ import { SEPointDistance } from "@/models/SEPointDistance";
 import { SESlider } from "@/models/SESlider";
 import { SetNoduleDisplayCommand } from "@/commands/SetNoduleDisplayCommand";
 import { SetValueDisplayModeCommand } from "@/commands/SetValueDisplayModeCommand";
-import {
-  AppState,
-  UpdateMode,
-  UpdateStateType,
-  ValueDisplayMode
-} from "@/types";
+import { AppState, ObjectState, ValueDisplayMode } from "@/types";
 import { SEAngleMarker } from "@/models/SEAngleMarker";
 import { SEPointCoordinate } from "@/models/SEPointCoordinate";
 import { SEEllipse } from "@/models/SEEllipse";
@@ -259,18 +254,11 @@ export default class SENoduleItem extends Vue {
   /**
    * Objects that define the deleted objects (and all descendants) before deleting (for undoing delete)
    */
-  private beforeDeleteState: UpdateStateType = {
-    mode: UpdateMode.RecordStateForDelete,
-    stateArray: []
-  };
+  private beforeDeleteStateMap: Map<number, ObjectState> = new Map(); //number is the SENodule.id
+  private beforeDeleteSENoduleIDList: number[] = [];
 
   mounted(): void {
     if (this.node instanceof SEParametric) {
-      console.log(
-        "parametric mounted",
-        this.node.name,
-        this.node.tracePoint.name
-      );
       this.curve = this.node;
       // const pt = new Point();
       this.curvePoint = this.curve.tracePoint;
@@ -278,9 +266,6 @@ export default class SENoduleItem extends Vue {
       this.parametricTMin = tMin;
       this.parametricTMax = tMax;
       this.parametricTStep = (tMax - tMin) / 100;
-      // const label = new SELabel(new Label(), this.curvePoint);
-      // const addCommand = new AddPointCommand(this.curvePoint, label);
-      // addCommand.execute();
       this.onParametricTimeChanged(tMin);
     }
   }
@@ -341,15 +326,17 @@ export default class SENoduleItem extends Vue {
   }
 
   deleteNode(): void {
-    // if (!(this.node instanceof SECalculation)) {
-    this.beforeDeleteState = {
-      mode: UpdateMode.RecordStateForDelete,
-      stateArray: []
-    };
+    // Clear the delete array and map
+    this.beforeDeleteStateMap.clear();
+    this.beforeDeleteSENoduleIDList.splice(0);
+
     // First mark all children of the victim out of date so that the update method does a topological sort
     this.node.markKidsOutOfDate();
     //Record the state of the victim and all the SENodules that depend on it (i.e kids, grandKids, etc..).
-    this.node.update(this.beforeDeleteState);
+    this.node.update(
+      this.beforeDeleteStateMap,
+      this.beforeDeleteSENoduleIDList
+    );
 
     // console.debug("order of states before reverse");
     // this.beforeDeleteState.stateArray.forEach(obj =>
@@ -361,9 +348,16 @@ export default class SENoduleItem extends Vue {
     // The update method orders the objects from the victim to the leaf (i.e objects with only in arrows)
     // To delete remove from the leaves to the victim (and to undo build from the victim to leaves -- accomplished
     // by the command group reversing the order on restore()).  Therefore reverse the stateArray.
-    this.beforeDeleteState.stateArray.reverse();
-    this.beforeDeleteState.stateArray.forEach(element => {
-      deleteCommandGroup.addCommand(new DeleteNoduleCommand(element.object));
+    this.beforeDeleteSENoduleIDList.reverse();
+    this.beforeDeleteSENoduleIDList.forEach(seNoduleID => {
+      // Get the before state of the SENodule
+      const seNoduleBeforeState = this.beforeDeleteStateMap.get(seNoduleID);
+
+      if (seNoduleBeforeState !== undefined) {
+        deleteCommandGroup.addCommand(
+          new DeleteNoduleCommand(seNoduleBeforeState.object)
+        );
+      }
     });
     deleteCommandGroup.execute();
     // when deleting mesurements, the measure object(if any) must be unglowed
@@ -416,10 +410,7 @@ export default class SENoduleItem extends Vue {
     // update a parent (who is parent to both this measurement and the label) to update the display on the sphere canvas
     if (!(this.node instanceof SECalculation)) {
       this.node.parents[0].markKidsOutOfDate();
-      this.node.parents[0].update({
-        mode: UpdateMode.DisplayOnly,
-        stateArray: []
-      });
+      this.node.parents[0].update();
     }
   }
 
@@ -427,7 +418,8 @@ export default class SENoduleItem extends Vue {
   onParametricTimeChanged(tVal: number): void {
     if (this.curve && this.curvePoint) {
       this.curvePoint.setLocationByTime(tVal);
-      this.curvePoint.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
+      this.curvePoint.markKidsOutOfDate();
+      this.curvePoint.update();
     }
   }
 

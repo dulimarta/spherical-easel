@@ -12,7 +12,6 @@ import { CommandGroup } from "@/commands/CommandGroup";
 import Label from "@/plottables/Label";
 import { SELabel } from "@/models/SELabel";
 import SETTINGS from "@/global-settings";
-import { UpdateMode } from "@/types";
 import { AddNSectPointCommand } from "@/commands/AddNSectPointCommand";
 // import { SEPoint } from "@/models/SEPoint";
 // import { SELine } from "@/models/SELine";
@@ -320,7 +319,8 @@ export default class NSectSegmentHandler extends Highlighter {
     }
     nSectingPointsCommandGroup.execute();
     nSectingPointArray.forEach(nSectingPoint => {
-      nSectingPoint.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
+      nSectingPoint.markKidsOutOfDate();
+      nSectingPoint.update();
     });
   }
 }

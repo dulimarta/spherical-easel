@@ -9,7 +9,6 @@ import { SEParametric } from "@/models/SEParametric";
 import Parametric from "@/plottables/Parametric";
 import { SEExpression } from "@/models/SEExpression";
 import {
-  UpdateMode,
   CoordExpression,
   MinMaxExpression,
   MinMaxNumber,
@@ -241,8 +240,6 @@ export class AddParametricCommand extends Command {
         seParametric.name = propMap.get("objectName") ?? "";
         seParametric.showing = propMap.get("objectShowing") === "true";
         seParametric.exists = propMap.get("objectExists") === "true";
-        // seParametric.glowing = false;
-        // seParametric.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
         objMap.set(seParametric.name, seParametric);
       } else {
         throw new Error("AddParametricCommand:  Parametric name doesn't exist");

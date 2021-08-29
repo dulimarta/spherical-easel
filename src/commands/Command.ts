@@ -19,6 +19,7 @@ import Label from "@/plottables/Label";
 import SETTINGS from "@/global-settings";
 import { Vector3 } from "three";
 import { StyleEditPanels, StyleOptions } from "@/types/Styles";
+import { DeleteNoduleCommand } from "./DeleteNoduleCommand";
 export abstract class Command {
   protected static store = SEStore;
 
@@ -58,7 +59,7 @@ export abstract class Command {
     const nextAction = Command.redoHistory.pop();
 
     if (nextAction) {
-      nextAction.execute();
+      nextAction.execute(true);
     }
     // Update the free points to update the display so that individual command and visitors do
     // not have to update the display in the middle of undoing or redoing a command (this middle stuff causes
@@ -67,11 +68,33 @@ export abstract class Command {
   }
   //#endregion redo
 
-  execute(): void {
+  execute(fromRedo?: boolean): void {
     // Keep this command in the history stack
     Command.commandHistory.push(this);
     this.saveState(); /* Allow the command to save necessary data to restore later */
     this.do(); /* perform the actual action of this command */
+
+    /**
+     * Suppose you create a segment from point A to B, then you move point B to location C, then push
+     * undo, this moves the operation "move point from B to C" onto the redo stack and moves the point to location B
+     * Now suppose you either
+     *
+     *    A) Delete the point at point B
+     *
+     *    B) Move the point from B to location D and create a circle with center the point at D and point on at A
+     *
+     * What happens when you push redo?
+     *
+     * In case A, you are trying to move a point that doesn't exist resulting in an error
+     * In case B, you end up with a circle with center C and point on it A, which is strange behavior
+     *
+     * For this reason(A), it seems to me that when you issue a delete command, the redo stack should be cleared and
+     * for (B), if you issue any new command while there is something on the redo stack, the redo stack should be cleared
+     * But don't clear the redo stack if the new command is from a redo action
+     */
+    if (Command.redoHistory.length > 0 && fromRedo === undefined) {
+      Command.redoHistory.splice(0);
+    }
 
     EventBus.fire("undo-enabled", { value: Command.commandHistory.length > 0 });
     EventBus.fire("redo-enabled", { value: Command.redoHistory.length > 0 });
@@ -81,6 +104,11 @@ export abstract class Command {
   push(): void {
     Command.commandHistory.push(this);
     this.saveState();
+
+    //The reasons for this block of code are above
+    if (Command.redoHistory.length > 0) {
+      Command.redoHistory.splice(0);
+    }
 
     EventBus.fire("undo-enabled", { value: Command.commandHistory.length > 0 });
     EventBus.fire("redo-enabled", { value: Command.redoHistory.length > 0 });

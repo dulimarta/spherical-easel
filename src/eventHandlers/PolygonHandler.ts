@@ -7,7 +7,7 @@ import { SECircle } from "@/models/SECircle";
 import { SEAngleMarker } from "@/models/SEAngleMarker";
 import EventBus from "@/eventHandlers/EventBus";
 import AngleMarker from "@/plottables/AngleMarker";
-import { OneDimensional, SEOneOrTwoDimensional, UpdateMode } from "@/types";
+import { OneDimensional, SEOneOrTwoDimensional } from "@/types";
 import Point from "@/plottables/Point";
 import { Vector3 } from "three";
 import { DisplayStyle } from "@/plottables/Nodule";
@@ -400,13 +400,13 @@ export default class PolygonHandler extends Highlighter {
           )
           .execute();
         // Update the display
-        vtx.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
+        vtx.markKidsOutOfDate();
+        vtx.update();
+
         // Update the display so the changes become apparent
         this.seEdgeSegments.forEach(seg => {
-          seg.update({
-            mode: UpdateMode.DisplayOnly,
-            stateArray: []
-          });
+          seg.markKidsOutOfDate();
+          seg.update();
         });
 
         EventBus.fire("show-alert", {
@@ -794,10 +794,8 @@ export default class PolygonHandler extends Highlighter {
       const newSELabel = new SELabel(newLabel, newSEAngleMarker);
 
       // Update the display of the new angle marker (do it here so that the placement of the newLabel is correct)
-      newSEAngleMarker.update({
-        mode: UpdateMode.DisplayOnly,
-        stateArray: []
-      });
+      newSEAngleMarker.markKidsOutOfDate();
+      newSEAngleMarker.update();
 
       // Set the initial label location near the common endpoint of the segments
       // and turn off the label of the vertex point (SETTINGS.angleMarker.turnOffVertexLabelOnCreation)
@@ -852,10 +850,8 @@ export default class PolygonHandler extends Highlighter {
       seAngleMarkers.push(newSEAngleMarker);
 
       // Update the display of the new angle marker
-      newSEAngleMarker.update({
-        mode: UpdateMode.DisplayOnly,
-        stateArray: []
-      });
+      newSEAngleMarker.markKidsOutOfDate();
+      newSEAngleMarker.update();
     });
     return seAngleMarkers;
   }

@@ -9,7 +9,6 @@ import { SELabel } from "@/models/SELabel";
 import {
   SEOneDimensional,
   SEOneOrTwoDimensional,
-  UpdateMode,
   SEIntersectionReturnType,
   NormalVectorAndTValue
 } from "@/types";
@@ -671,9 +670,10 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
       // Calculate the number of perpendiculars from the number of
       // "active" temporary lines
       usePencil = true;
-      this.numberOfPerpendiculars = this.tempLines.filter(
-        (ln: TemporaryLine) => ln.exist
-      ).length;
+      this.numberOfPerpendiculars = Math.max(
+        this.tempLines.filter((ln: TemporaryLine) => ln.exist).length,
+        1
+      ); // there must be at least one perpendicular to make the pencil command work correctly
     }
     normalVectors = oneDimensional
       .getNormalsToPerpendicularLinesThru(
@@ -732,7 +732,8 @@ export default class PerpendicularLineThruPointHandler extends Highlighter {
         // console.log("normal doesn't exist 1", vec.x, vec.y, vec.z);
       }
       // Update the display of the perpendicular line
-      newPerpLine.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
+      newPerpLine.markKidsOutOfDate();
+      newPerpLine.update();
 
       // Create the plottable label
       const newLabel = new Label();

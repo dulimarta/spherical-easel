@@ -1,7 +1,7 @@
 import { SEPoint } from "./SEPoint";
 import Point from "@/plottables/Point";
 import { Vector3 } from "three";
-import { UpdateMode, UpdateStateType, PointState } from "@/types";
+import { ObjectState } from "@/types";
 import i18n from "@/i18n";
 import { SEParametric } from "./SEParametric";
 
@@ -100,13 +100,17 @@ export class SEParametricEndPoint extends SEPoint {
     return this._parametricParent;
   }
 
-  public update(state: UpdateStateType): void {
+  public update(
+    objectState?: Map<number, ObjectState>,
+    orderedSENoduleList?: number[]
+  ): void {
     // If any one parent is not up to date, don't do anything
-    if (!this.canUpdateNow()) {
-      return;
-    }
+    if (!this.canUpdateNow()) return;
+
     this.setOutOfDate(false);
+
     this._exists = this.parametricParent.exists;
+
     const possibleVec = this._parametricParent.ref.endPointVector(
       this._endpoint
     );
@@ -125,27 +129,24 @@ export class SEParametricEndPoint extends SEPoint {
     } else {
       this.ref.setVisible(false);
     }
-    // SEPointOnOneDimensional are free points and should be recorded for move and delete always
-    if (
-      state.mode == UpdateMode.RecordStateForDelete ||
-      state.mode == UpdateMode.RecordStateForMove
-    ) {
-      const pointState: PointState = {
-        kind: "point",
-        object: this,
-        locationVectorX: this._locationVector.x,
-        locationVectorY: this._locationVector.y,
-        locationVectorZ: this._locationVector.z
-      };
-      state.stateArray.push(pointState);
-    }
-    this.updateKids(state);
-  }
 
-  // I wish the SENodule methods would work but I couldn't figure out how
-  // See the attempts in SENodule
-  public isPointOnOneDimensional(): boolean {
-    return false;
+    // These parametric point are completely determined by their parametric parents and an update on the parents
+    // will cause this point to be put into the correct location. So we don't store any additional information
+    if (objectState && orderedSENoduleList) {
+      if (objectState.has(this.id)) {
+        console.log(
+          `Parametric End Point with id ${this.id} has been visited twice proceed no further down this branch of the DAG.`
+        );
+        return;
+      }
+      orderedSENoduleList.push(this.id);
+      objectState.set(this.id, { kind: "parametricEndPoint", object: this });
+    }
+
+    this.updateKids(objectState, orderedSENoduleList);
+  }
+  public isNonFreePoint(): boolean {
+    return true;
   }
   public isFreePoint(): boolean {
     return false;

@@ -13,7 +13,6 @@ import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
 import { CommandGroup } from "@/commands/CommandGroup";
 import { StyleNoduleCommand } from "@/commands/StyleNoduleCommand";
 import { StyleEditPanels } from "@/types/Styles";
-import { UpdateMode } from "@/types";
 import { SEStore } from "@/store";
 import { SetNoduleDisplayCommand } from "@/commands/SetNoduleDisplayCommand";
 export default class PointCoordinateHandler extends Highlighter {
@@ -127,10 +126,8 @@ export default class PointCoordinateHandler extends Highlighter {
         );
         coordinatizeCommandGroup.execute();
         // Update the display so the changes become apparent
-        this.targetPoint.update({
-          mode: UpdateMode.DisplayOnly,
-          stateArray: []
-        });
+        this.targetPoint.markKidsOutOfDate();
+        this.targetPoint.update();
         this.targetPoint = null;
       }
     }

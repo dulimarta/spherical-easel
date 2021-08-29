@@ -1,5 +1,5 @@
 import { Command } from "./Command";
-import { SavedNames, UpdateMode } from "@/types";
+import { SavedNames } from "@/types";
 import { SELabel } from "@/models/SELabel";
 import SETTINGS from "@/global-settings";
 import { SENodule } from "@/models/SENodule";
@@ -36,7 +36,8 @@ export class AddParametricTracePointCommand extends Command {
     }
     Command.store.addPoint(this.seTracePoint);
     Command.store.addLabel(this.seTraceLabel);
-    this.seTracePoint.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
+    this.seTracePoint.markKidsOutOfDate();
+    this.seTracePoint.update();
   }
 
   saveState(): void {

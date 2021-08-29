@@ -18,7 +18,6 @@ import { AddPointCommand } from "@/commands/AddPointCommand";
 import { AddIntersectionPointCommand } from "@/commands/AddIntersectionPointCommand";
 import { AddPointOnOneDimensionalCommand } from "@/commands/AddPointOnOneOrTwoDimensionalCommand";
 import { SEOneOrTwoDimensional, SEIntersectionReturnType } from "@/types";
-import { UpdateMode } from "@/types";
 import Label from "@/plottables/Label";
 import { SELabel } from "@/models/SELabel";
 import { SEStore } from "@/store";
@@ -854,7 +853,8 @@ export default class LineHandler extends Highlighter {
           object2
         );
         // Update the newSELine so the display is correct when the command group is executed
-        newSELine.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
+        newSELine.markKidsOutOfDate();
+        newSELine.update();
 
         const newSELabel = new SELabel(newLabel, newSELine);
         this.tmpVector

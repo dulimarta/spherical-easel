@@ -1,6 +1,6 @@
 import { Command } from "./Command";
 import { SEPoint } from "@/models/SEPoint";
-import { SavedNames, SEOneOrTwoDimensional, UpdateMode } from "@/types";
+import { SavedNames, SEOneOrTwoDimensional } from "@/types";
 import { SELabel } from "@/models/SELabel";
 import SETTINGS from "@/global-settings";
 import { SENodule } from "@/models/SENodule";
@@ -45,10 +45,8 @@ export class AddNSectLineCommand extends Command {
     }
     Command.store.addLine(this.seNSectLine);
     Command.store.addLabel(this.seLabel);
-    this.seNSectLine.update({
-      mode: UpdateMode.DisplayOnly,
-      stateArray: []
-    });
+    this.seNSectLine.markKidsOutOfDate();
+    this.seNSectLine.update();
   }
 
   saveState(): void {
@@ -57,7 +55,7 @@ export class AddNSectLineCommand extends Command {
 
   restoreState(): void {
     Command.store.removeLabel(this.seLabel.id);
-    Command.store.removePoint(this.lastState);
+    Command.store.removeLine(this.lastState);
     this.seNSectLine.unregisterChild(this.seLabel);
     this.parentAngle.unregisterChild(this.seNSectLine);
   }

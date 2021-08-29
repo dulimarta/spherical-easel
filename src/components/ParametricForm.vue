@@ -81,7 +81,6 @@ import Vue from "vue";
 import Component from "vue-class-component";
 import {
   AppState,
-  UpdateMode,
   CoordExpression,
   MinMaxExpression,
   MinMaxNumber,
@@ -805,7 +804,8 @@ export default class ParametricForm extends Vue {
 
     parametricCommandGroup.execute();
 
-    newSEParametric.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
+    newSEParametric.markKidsOutOfDate();
+    newSEParametric.update();
     console.log("add Parametric comands");
     //reset for another parametric curve.
     this.coordinateExpressions = { x: "", y: "", z: "" };

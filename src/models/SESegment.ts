@@ -7,11 +7,10 @@ import { SEPoint } from "./SEPoint";
 import SETTINGS from "@/global-settings";
 import {
   OneDimensional,
-  SegmentState,
   Labelable,
-  NormalVectorAndTValue
+  NormalVectorAndTValue,
+  ObjectState
 } from "@/types";
-import { UpdateMode, UpdateStateType } from "@/types";
 import { SELabel } from "@/models/SELabel";
 import {
   DEFAULT_SEGMENT_BACK_STYLE,
@@ -294,14 +293,17 @@ export class SESegment extends SENodule
     return [{ normal: this.tmpVector.normalize(), tVal: NaN }];
   }
 
-  public update(state: UpdateStateType): void {
+  public update(
+    objectState?: Map<number, ObjectState>,
+    orderedSENoduleList?: number[]
+  ): void {
     // If any one parent is not up to date, don't do anything
-    if (!this.canUpdateNow()) {
-      return;
-    }
+    if (!this.canUpdateNow()) return;
 
     this.setOutOfDate(false);
+
     this._exists = this._startSEPoint.exists && this._endSEPoint.exists;
+
     if (this._exists) {
       //////////////// This is  essentially setArcLengthAndNormalVector from segmentHandler/////////////////
       // Compute the normal vector from the this.startVector, the (old) normal vector and this.endVector
@@ -409,28 +411,30 @@ export class SESegment extends SENodule
     } else {
       this.ref.setVisible(false);
     }
-    // Record the segment state for a Move or delete if necessary
-    if (
-      state.mode == UpdateMode.RecordStateForDelete ||
-      state.mode == UpdateMode.RecordStateForMove
-    ) {
-      // If the parent points of the segment are antipodal, the normal vector determines the
-      // plane of the segment.  The points also don't determine the arcLength of the segments.
-      // Both of these quantities could change during a move therefore store normal vector and arcLength
-      // in stateArray for undo move. (No need to store the parent points, they will be updated on their own
-      // before this line is updated.) Store the coordinate values of the vector and not the pointer to the vector.
-      const segState: SegmentState = {
+
+    // Segments are determined by more than their point parents so we store additional information
+    // If the parent points of the segment are antipodal, the normal vector determines the
+    // plane of the segment.  The points also don't determine the arcLength of the segments.
+    // Both of these quantities could change during a move therefore store normal vector and arcLength
+    if (objectState && orderedSENoduleList) {
+      if (objectState.has(this.id)) {
+        console.log(
+          `Segment with id ${this.id} has been visited twice proceed no further down this branch of the DAG.`
+        );
+        return;
+      }
+      orderedSENoduleList.push(this.id);
+      const normal = new Vector3();
+      normal.copy(this._normalVector);
+      objectState.set(this.id, {
         kind: "segment",
         object: this,
-        normalVectorX: this._normalVector.x,
-        normalVectorY: this._normalVector.y,
-        normalVectorZ: this._normalVector.z,
-        arcLength: this._arcLength
-      };
-      state.stateArray.push(segState);
+        normalVector: normal,
+        arcLength: this.arcLength
+      });
     }
 
-    this.updateKids(state);
+    this.updateKids(objectState, orderedSENoduleList);
   }
 
   /**
@@ -545,14 +549,8 @@ export class SESegment extends SENodule
         // First mark the kids out of date so that the update method does a topological sort
         this.endSEPoint.markKidsOutOfDate();
         this.startSEPoint.markKidsOutOfDate();
-        this.endSEPoint.update({
-          mode: UpdateMode.DisplayOnly,
-          stateArray: []
-        });
-        this.startSEPoint.update({
-          mode: UpdateMode.DisplayOnly,
-          stateArray: []
-        });
+        this.endSEPoint.update();
+        this.startSEPoint.update();
       }
     } else {
       let pivot = this.startSEPoint;
@@ -614,7 +612,7 @@ export class SESegment extends SENodule
         this.normalVector = this.tmpVector1;
         //Mark kids out of date so that the update method does a topological sort
         this.markKidsOutOfDate();
-        this.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
+        this.update();
       } else {
         //console.log("not parallel free and pivot");
         // For non-antipodal points move the freeEnd
@@ -624,29 +622,16 @@ export class SESegment extends SENodule
         // First mark the kids out of date so that the update method does a topological sort
         freeEnd.markKidsOutOfDate();
         pivot.markKidsOutOfDate();
-        freeEnd.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
-        pivot.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
+        freeEnd.update();
+        pivot.update();
       }
     }
   }
 
-  // I wish the SENodule methods would work but I couldn't figure out how
-  // See the attempts in SENodule around line 218
-  public isFreePoint(): boolean {
-    return false;
-  }
   public isOneDimensional(): boolean {
     return true;
   }
-  public isPoint(): boolean {
-    return false;
-  }
-  public isPointOnOneDimensional(): boolean {
-    return false;
-  }
-  public isLabel(): boolean {
-    return false;
-  }
+
   public isSegmentOfLengthPi(): boolean {
     return (
       Math.abs(this._arcLength - Math.PI) < SETTINGS.segment.closeEnoughToPi
@@ -654,8 +639,5 @@ export class SESegment extends SENodule
   }
   public isLabelable(): boolean {
     return true;
-  }
-  public isNonFreeLine(): boolean {
-    return false;
   }
 }

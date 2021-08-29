@@ -375,15 +375,6 @@ export type hslaColorType = {
   l: number;
   a: number;
 };
-/**
- * There are three modes for updating. The DisplayOnly doesn't record information as the update(mode: , stateArray:[]) method is
- * executed
- */
-export enum UpdateMode {
-  DisplayOnly, // Record nothing in the state Array
-  RecordStateForDelete, // All visited objects must be put into the stateArray
-  RecordStateForMove // Only those objects which depend on more than their point parents need to record that information
-}
 
 /**
  * There are three modes for displaying a value of a measurement.
@@ -402,162 +393,42 @@ export enum LabelDisplayMode {
   NameAndValue // display the name and value (if any)
 }
 
-export interface UpdateStateType {
-  mode: UpdateMode;
-  stateArray: ObjectState[];
-}
+/*******************************************UPDATE TYPES **********************/
 
-/**
- * Record the information necessary to restore/undo a move or delete of the object
- */
-export type ObjectState =
-  | CircleState
-  | EllipseState
-  | LineState
-  | SegmentState
-  | PointState
-  | LabelState
-  | AngleMarkerState
-  | PerpendicularLineThruPointState
-  | TangentLineThruPointState
-  | ExpressionState
-  | ParametricState
-  | PolygonState;
+export type ObjectNames =
+  | "angleMarker"
+  | "antipodalPoint"
+  | "calculation"
+  | "circle"
+  | "ellipse"
+  | "intersectionPoint"
+  | "label"
+  | "line"
+  | "nSectLine"
+  | "nSectPoint"
+  | "parametric"
+  | "parametricEndPoint"
+  | "parametricTracePoint"
+  | "perpendicularLineThruPoint"
+  | "point"
+  | "pointCoordinate"
+  | "pointDistance"
+  | "pointOnOneOrTwoDimensional"
+  | "polarLine"
+  | "polarPoint"
+  | "polygon"
+  | "segment"
+  | "segmentLength"
+  | "slider"
+  | "tangentLineThruPoint";
 
-export interface PolygonState {
-  kind: "polygon";
-  object: SEPolygon;
-}
-
-export function isPolygonState(entry: ObjectState): entry is PolygonState {
-  return entry.kind === "polygon";
-}
-
-export interface PerpendicularLineThruPointState {
-  kind: "perpendicularLineThruPoint";
-  object: SEPerpendicularLineThruPoint;
-}
-
-export function isPerpendicularLineThruPointState(
-  entry: ObjectState
-): entry is PerpendicularLineThruPointState {
-  return entry.kind === "perpendicularLineThruPoint";
-}
-
-export interface TangentLineThruPointState {
-  kind: "tangentLineThruPoint";
-  object: SETangentLineThruPoint;
-}
-
-export function isTangentLineThruPointState(
-  entry: ObjectState
-): entry is TangentLineThruPointState {
-  return entry.kind === "tangentLineThruPoint";
-}
-
-export interface AngleMarkerState {
-  kind: "angleMarker";
-  object: SEAngleMarker;
-  // vertexVectorX: number;
-  // vertexVectorY: number;
-  // vertexVectorZ: number;
-  // startVectorX: number;
-  // startVectorY: number;
-  // startVectorZ: number;
-  // endVectorX: number;
-  // endVectorY: number;
-  // endVectorZ: number;
-}
-export function isAngleMarkerState(
-  entry: ObjectState
-): entry is AngleMarkerState {
-  return entry.kind === "angleMarker";
-}
-
-export interface LineState {
-  kind: "line";
-  object: SELine;
-  normalVectorX: number;
-  normalVectorY: number;
-  normalVectorZ: number;
-}
-export function isLineState(entry: ObjectState): entry is LineState {
-  return entry.kind === "line";
-}
-export interface SegmentState {
-  kind: "segment";
-  object: SESegment;
-  normalVectorX: number;
-  normalVectorY: number;
-  normalVectorZ: number;
-  arcLength: number;
-}
-export function isSegmentState(entry: ObjectState): entry is SegmentState {
-  return entry.kind === "segment";
-}
-export interface PointState {
-  kind: "point";
-  object: SEPoint;
-  locationVectorX: number;
-  locationVectorY: number;
-  locationVectorZ: number;
-}
-export function isPointState(entry: ObjectState): entry is PointState {
-  return entry.kind === "point";
-}
-export interface LabelState {
-  kind: "label";
-  object: SELabel;
-  locationVectorX: number;
-  locationVectorY: number;
-  locationVectorZ: number;
-}
-export function isLabelState(entry: ObjectState): entry is LabelState {
-  return entry.kind === "label";
-}
-
-export interface CircleState {
-  // No fields are needed for moving circles because they are completely determined by their point parents
-  kind: "circle";
-  // Fields needed for undoing delete
-  object: SECircle;
-}
-export function isCircleState(entry: ObjectState): entry is CircleState {
-  return entry.kind === "circle";
-}
-
-export interface EllipseState {
-  // No fields are needed for moving ellipses because they are completely determined by their point parents
-  kind: "ellipse";
-  // Fields needed for undoing delete
-  object: SEEllipse;
-}
-export function isEllipseState(entry: ObjectState): entry is EllipseState {
-  return entry.kind === "ellipse";
-}
-
-export interface ParametricState {
-  // No fields are needed for moving ellipses because they are completely determined by their point parents
-  kind: "parametric";
-  // Fields needed for undoing delete
-  object: SEParametric;
-}
-export function isParametricState(
-  entry: ObjectState
-): entry is ParametricState {
-  return entry.kind === "parametric";
-}
-
-export interface ExpressionState {
-  // No fields are needed for moving because non-angle marker expressions are not movable
-  kind: "expression";
-  // Fields needed for undoing delete
-  object: SEExpression;
-}
-export function isExpressionState(
-  entry: ObjectState
-): entry is ExpressionState {
-  return entry.kind === "expression";
+export interface ObjectState {
+  kind: ObjectNames;
+  object: SENodule;
+  normalVector?: Vector3;
+  arcLength?: number;
+  locationVector?: Vector3;
+  sliderValue?: number;
 }
 
 export type ConstructionScript = Array<string | Array<string>>;
