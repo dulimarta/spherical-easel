@@ -1,6 +1,6 @@
 import { Command } from "./Command";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
-import { SavedNames, SEOneOrTwoDimensional, UpdateMode } from "@/types";
+import { SavedNames, SEOneOrTwoDimensional } from "@/types";
 import { SELabel } from "@/models/SELabel";
 import { SENodule } from "@/models/SENodule";
 import { Vector3 } from "three";
@@ -34,10 +34,8 @@ export class AddIntersectionPointCommand extends Command {
     this.sePoint.registerChild(this.seLabel);
     Command.store.addPoint(this.sePoint);
     Command.store.addLabel(this.seLabel);
-    this.sePoint.update({
-      mode: UpdateMode.DisplayOnly,
-      stateArray: []
-    });
+    this.sePoint.markKidsOutOfDate();
+    this.sePoint.update();
   }
 
   saveState(): void {

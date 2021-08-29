@@ -1,6 +1,6 @@
 import { Command } from "./Command";
 import { SEPoint } from "@/models/SEPoint";
-import { SavedNames, SEOneOrTwoDimensional, UpdateMode } from "@/types";
+import { SavedNames, SEOneOrTwoDimensional } from "@/types";
 import { SELabel } from "@/models/SELabel";
 import SETTINGS from "@/global-settings";
 import { SENodule } from "@/models/SENodule";
@@ -40,10 +40,8 @@ export class AddNSectPointCommand extends Command {
     }
     Command.store.addPoint(this.seNSectPoint);
     Command.store.addLabel(this.seLabel);
-    this.seNSectPoint.update({
-      mode: UpdateMode.DisplayOnly,
-      stateArray: []
-    });
+    this.seNSectPoint.markKidsOutOfDate();
+    this.seNSectPoint.update();
   }
 
   saveState(): void {

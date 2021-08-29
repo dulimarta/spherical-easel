@@ -1,5 +1,5 @@
 import { Command } from "./Command";
-import { SavedNames, UpdateMode } from "@/types";
+import { SavedNames } from "@/types";
 import { SELabel } from "@/models/SELabel";
 import SETTINGS from "@/global-settings";
 import { SENodule } from "@/models/SENodule";
@@ -61,15 +61,12 @@ export class AddParametricEndPointsCommand extends Command {
     Command.store.addLabel(this.seStartLabel);
     Command.store.addLabel(this.seEndLabel);
     Command.store.addLabel(this.seTraceLabel);
-    this.seStartEndPoint.update({
-      mode: UpdateMode.DisplayOnly,
-      stateArray: []
-    });
-    this.seEndEndPoint.update({
-      mode: UpdateMode.DisplayOnly,
-      stateArray: []
-    });
-    this.seTracePoint.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
+    this.seStartEndPoint.markKidsOutOfDate();
+    this.seStartEndPoint.update();
+    this.seEndEndPoint.markKidsOutOfDate();
+    this.seEndEndPoint.update();
+    this.seTracePoint.markKidsOutOfDate();
+    this.seTracePoint.update();
   }
 
   saveState(): void {

@@ -4,13 +4,12 @@ import Ellipse from "@/plottables/Ellipse";
 import { Vector3, Matrix4 } from "three";
 import { Visitable } from "@/visitors/Visitable";
 import { Visitor } from "@/visitors/Visitor";
-import { EllipseState, NormalVectorAndTValue, OneDimensional } from "@/types";
+import { NormalVectorAndTValue, ObjectState, OneDimensional } from "@/types";
 import SETTINGS from "@/global-settings";
 import {
   DEFAULT_ELLIPSE_BACK_STYLE,
   DEFAULT_ELLIPSE_FRONT_STYLE
 } from "@/types/Styles";
-import { UpdateMode, UpdateStateType } from "@/types";
 import { Labelable } from "@/types";
 import { SELabel } from "@/models/SELabel";
 import { SEStore } from "@/store";
@@ -169,11 +168,13 @@ export class SEEllipse extends SENodule
     //   SETTINGS.ellipse.hitIdealDistance / currentMagnificationFactor;
   }
 
-  public update(state: UpdateStateType): void {
+  public update(
+    objectState?: Map<number, ObjectState>,
+    orderedSENoduleList?: number[]
+  ): void {
     // If any one parent is not up to date, don't do anything
-    if (!this.canUpdateNow()) {
-      return;
-    }
+    if (!this.canUpdateNow()) return;
+
     this.setOutOfDate(false);
 
     this._exists =
@@ -251,19 +252,21 @@ export class SEEllipse extends SENodule
     } else {
       this.ref.setVisible(false);
     }
-    // These ellipse are completely determined by their point parents and an update on the parents
-    // will cause this circle to be put into the correct location. Therefore there is no need to
-    // store it in the stateArray for undo move. Only store for delete
 
-    if (state.mode == UpdateMode.RecordStateForDelete) {
-      const ellipseState: EllipseState = {
-        kind: "ellipse",
-        object: this
-      };
-      state.stateArray.push(ellipseState);
+    // These ellipse are completely determined by their point parents and an update on the parents
+    // will cause this ellipse to be put into the correct location.So we don't store any additional information
+    if (objectState && orderedSENoduleList) {
+      if (objectState.has(this.id)) {
+        console.log(
+          `Ellipse with id ${this.id} has been visited twice proceed no further down this branch of the DAG.`
+        );
+        return;
+      }
+      orderedSENoduleList.push(this.id);
+      objectState.set(this.id, { kind: "ellipse", object: this });
     }
 
-    this.updateKids(state);
+    this.updateKids(objectState, orderedSENoduleList);
   }
 
   /**
@@ -545,45 +548,17 @@ export class SEEllipse extends SENodule
       this.ellipseSEPoint.markKidsOutOfDate();
       this.focus1SEPoint.markKidsOutOfDate();
       this.focus2SEPoint.markKidsOutOfDate();
-      this.ellipseSEPoint.update({
-        mode: UpdateMode.DisplayOnly,
-        stateArray: []
-      });
-      this.focus1SEPoint.update({
-        mode: UpdateMode.DisplayOnly,
-        stateArray: []
-      });
-      this.focus2SEPoint.update({
-        mode: UpdateMode.DisplayOnly,
-        stateArray: []
-      });
+      this.ellipseSEPoint.update();
+      this.focus1SEPoint.update();
+      this.focus2SEPoint.update();
     }
   }
 
-  // I wish the SENodule methods would work but I couldn't figure out how
-  // See the attempts in SENodule around line 218
-  public isFreePoint(): boolean {
-    return false;
-  }
   public isOneDimensional(): boolean {
     return true;
   }
-  public isPoint(): boolean {
-    return false;
-  }
-  public isPointOnOneDimensional(): boolean {
-    return false;
-  }
-  public isLabel(): boolean {
-    return false;
-  }
-  public isSegmentOfLengthPi(): boolean {
-    return false;
-  }
+
   public isLabelable(): boolean {
     return true;
-  }
-  public isNonFreeLine(): boolean {
-    return false;
   }
 }

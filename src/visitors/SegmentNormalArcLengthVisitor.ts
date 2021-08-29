@@ -9,7 +9,6 @@ import { SEEllipse } from "@/models/SEEllipse";
 import { SEAngleMarker } from "@/models/SEAngleMarker";
 import { SEParametric } from "@/models/SEParametric";
 import { SEPolygon } from "@/models/SEPolygon";
-// import { UpdateMode, UpdateStateType } from "@/types";
 
 export class SegmentNormalArcLengthVisitor implements Visitor {
   private normalVector: Vector3 = new Vector3();
@@ -39,7 +38,7 @@ export class SegmentNormalArcLengthVisitor implements Visitor {
     // Don't update here, because it may cause a point on one dimensional to update to the wrong location
     // The undo and restore methods of command cause one update for display at the end of every command or
     // command group
-    //s.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
+    //s.update();
   }
 
   // eslint-disable-next-line

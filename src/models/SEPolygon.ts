@@ -7,12 +7,7 @@ import {
   DEFAULT_POLYGON_BACK_STYLE,
   DEFAULT_POLYGON_FRONT_STYLE
 } from "@/types/Styles";
-import {
-  UpdateMode,
-  UpdateStateType,
-  PolygonState,
-  OneDimensional
-} from "@/types";
+import { ObjectState } from "@/types";
 import { Labelable } from "@/types";
 import { SELabel } from "@/models/SELabel";
 import { SEStore } from "@/store";
@@ -393,11 +388,13 @@ export class SEPolygon extends SEExpression implements Visitable, Labelable {
     return totalNumberOfCrossings % 2 === 0;
   }
 
-  public update(state: UpdateStateType): void {
+  public update(
+    objectState?: Map<number, ObjectState>,
+    orderedSENoduleList?: number[]
+  ): void {
     // If any one parent is not up to date, don't do anything
-    if (!this.canUpdateNow()) {
-      return;
-    }
+    if (!this.canUpdateNow()) return;
+
     this.setOutOfDate(false);
 
     // All parent segments must exist (This is equivalent to checking that all the angle markers exist)
@@ -480,34 +477,41 @@ export class SEPolygon extends SEExpression implements Visitable, Labelable {
       }
     }
 
+    // all the angle markers must exist too
+    if (this._exists && this._angleMarkers.every(angMark => angMark.exists)) {
+      // update the area
+      let sumOfAngles = 0;
+      this._angleMarkers.forEach(ang => {
+        sumOfAngles += ang.value;
+      });
+      this._area = sumOfAngles - (this._n - 2) * Math.PI;
+
+      //update the display
+      this.ref.area = this._area;
+      this.ref.updateDisplay();
+    }
+
     if (this.showing && this._exists) {
       this.ref.setVisible(true);
     } else {
       this.ref.setVisible(false);
     }
-    // These polygons are completely determined by their angle marker parents and an update on the parents
-    // will cause this polygon to be put into the correct location. Therefore there is no need to
-    // store it in the stateArray for undo move. Only store for delete
 
-    if (state.mode == UpdateMode.RecordStateForDelete) {
-      const polygonState: PolygonState = {
-        kind: "polygon",
-        object: this
-      };
-      state.stateArray.push(polygonState);
+    // These polygons are completely determined by their line/segment/point parents and an update on the parents
+    // will cause this polygon to be put into the correct location. So we don't store any additional information
+    if (objectState && orderedSENoduleList) {
+      orderedSENoduleList.push(this.id);
+      if (objectState.has(this.id)) {
+        console.log(
+          `Polygon with id ${this.id} has been visited twice proceed no further down this branch of the DAG.`
+        );
+        return;
+      }
+      orderedSENoduleList.push(this.id);
+      objectState.set(this.id, { kind: "polygon", object: this });
     }
-    // update the area
-    let sumOfAngles = 0;
-    this._angleMarkers.forEach(ang => {
-      sumOfAngles += ang.value;
-    });
-    this._area = sumOfAngles - (this._n - 2) * Math.PI;
 
-    //update the display
-    this.ref.area = this._area;
-    this.ref.updateDisplay();
-
-    this.updateKids(state);
+    this.updateKids(objectState, orderedSENoduleList);
   }
 
   /**
@@ -583,30 +587,7 @@ export class SEPolygon extends SEExpression implements Visitable, Labelable {
     v.actionOnPolygon(this);
   }
 
-  // I wish the SENodule methods would work but I couldn't figure out how
-  // See the attempts in SENodule around line 218
-  public isFreePoint(): boolean {
-    return false;
-  }
-  public isOneDimensional(): boolean {
-    return false;
-  }
-  public isPoint(): boolean {
-    return false;
-  }
-  public isPointOnOneDimensional(): boolean {
-    return false;
-  }
-  public isLabel(): boolean {
-    return false;
-  }
-  public isSegmentOfLengthPi(): boolean {
-    return false;
-  }
   public isLabelable(): boolean {
     return true;
-  }
-  public isNonFreeLine(): boolean {
-    return false;
   }
 }

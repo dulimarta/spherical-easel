@@ -6,16 +6,15 @@ import { Visitable } from "@/visitors/Visitable";
 import { Visitor } from "@/visitors/Visitor";
 import {
   OneDimensional,
-  ParametricState,
   CoordExpression,
   CoordinateSyntaxTrees,
   MinMaxNumber,
   MinMaxExpression,
   MinMaxSyntaxTrees,
-  NormalVectorAndTValue
+  NormalVectorAndTValue,
+  ObjectState
 } from "@/types";
 import SETTINGS from "@/global-settings";
-import { UpdateMode, UpdateStateType } from "@/types";
 import { Labelable } from "@/types";
 import { SELabel } from "@/models/SELabel";
 import { SEStore } from "@/store";
@@ -414,17 +413,17 @@ export class SEParametric extends SENodule
     );
   }
 
-  public update(state: UpdateStateType): void {
+  public update(
+    objectState?: Map<number, ObjectState>,
+    orderedSENoduleList?: number[]
+  ): void {
     // If any one parent is not up to date, don't do anything
-    if (!this.canUpdateNow()) {
-      return;
-    }
+    if (!this.canUpdateNow()) return;
+
     this.setOutOfDate(false);
 
     // The measurement expressions parents must exist
-    this._exists = this._seParentExpressions.every(exp => {
-      return exp.exists;
-    });
+    this._exists = this._seParentExpressions.every(exp => exp.exists);
 
     // find the tracing tMin and tMax
     const [tMin, tMax] = this.tMinMaxExpressionValues();
@@ -448,19 +447,21 @@ export class SEParametric extends SENodule
     } else {
       this.ref.setVisible(false);
     }
-    // These parametric are completely determined by their expression parents and an update on the parents
-    // will cause this parametric to be put into the correct location. Therefore there is no need to
-    // store it in the stateArray for undo move. Only store for delete
 
-    if (state.mode == UpdateMode.RecordStateForDelete) {
-      const parametricState: ParametricState = {
-        kind: "parametric",
-        object: this
-      };
-      state.stateArray.push(parametricState);
+    // These parametric are completely determined by their measurement parents and an update on the parents
+    // will cause this parametric to be put into the correct location. So we don't store any additional information
+    if (objectState && orderedSENoduleList) {
+      if (objectState.has(this.id)) {
+        console.log(
+          `Parametric with id ${this.id} has been visited twice proceed no further down this branch of the DAG.`
+        );
+        return;
+      }
+      orderedSENoduleList.push(this.id);
+      objectState.set(this.id, { kind: "parametric", object: this });
     }
 
-    this.updateKids(state);
+    this.updateKids(objectState, orderedSENoduleList);
   }
 
   /**
@@ -726,30 +727,12 @@ export class SEParametric extends SENodule
   get seParentExpressions(): SEExpression[] {
     return this._seParentExpressions;
   }
-  // I wish the SENodule methods would work but I couldn't figure out how
-  // See the attempts in SENodule around line 218
-  public isFreePoint(): boolean {
-    return false;
-  }
+
   public isOneDimensional(): boolean {
     return true;
   }
-  public isPoint(): boolean {
-    return false;
-  }
-  public isPointOnOneDimensional(): boolean {
-    return false;
-  }
-  public isLabel(): boolean {
-    return false;
-  }
-  public isSegmentOfLengthPi(): boolean {
-    return false;
-  }
+  
   public isLabelable(): boolean {
     return true;
-  }
-  public isNonFreeLine(): boolean {
-    return false;
   }
 }

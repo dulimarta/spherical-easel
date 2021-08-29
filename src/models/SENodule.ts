@@ -2,8 +2,8 @@ import { UnsignedShort4444Type, Vector3 } from "three";
 import Nodule from "@/plottables/Nodule";
 import {
   NormalVectorAndTValue,
-  ParametricVectorAndTValue,
-  UpdateStateType
+  ObjectState,
+  ParametricVectorAndTValue
 } from "@/types";
 import newton from "newton-raphson-method";
 import SETTINGS from "@/global-settings";
@@ -86,10 +86,13 @@ export abstract class SENodule {
   /**
    * A method to update the current SENodule on the unit sphere when its parents have changed
    * The first method called is canUpdateNow, that checks to see if all the parents of this object are
-   * not outOfDate. If any are the method returns with out updating, know that the updating method will
+   * not outOfDate. If any are the method returns with out updating, knowing that the updating method will
    * eventually try again because the last method called is updateKids()
    */
-  public abstract update(state: UpdateStateType): void;
+  public abstract update(
+    objectState?: Map<number, ObjectState>,
+    orderedSENoduleList?: number[]
+  ): void;
 
   /**
    * Is the object hit a point at a particular sphere location?
@@ -126,7 +129,10 @@ export abstract class SENodule {
   }
 
   /* Kids of the current SENodule are updated  */
-  public updateKids(state: UpdateStateType): void {
+  public updateKids(
+    objectState?: Map<number, ObjectState>,
+    orderedSENoduleList?: number[]
+  ): void {
     // In order to do a topological sort of the Data Structure (Directed Acyclic Graph), we first
     // query which of the kids of this object are updatable right now and then for those that are updatable
     // we update them. This means that every descendant object is visited only once.
@@ -138,7 +144,10 @@ export abstract class SENodule {
     });
 
     for (let i = 0; i < updatableNowIndexList.length; i++) {
-      this._kids[updatableNowIndexList[i]].update(state);
+      this._kids[updatableNowIndexList[i]].update(
+        objectState,
+        orderedSENoduleList
+      );
     }
     return;
   }
@@ -240,59 +249,59 @@ export abstract class SENodule {
     return this._outOfDate;
   }
 
-  //Hans -  why doesn't this testing for class work?
-  //Should return true only if this is an instance of SEPointOnOneDimensional
-  public abstract isPointOnOneDimensional(): boolean;
-  // This doesn't work
-  // public isPointOnOneDimensional(): this is SEPointOnOneDimensional {
-  //   return true;
-  // }
-
-  // Only returns true if this is an SEPoint and this has no parents
-  public abstract isFreePoint(): boolean;
-  // This doesn't work
-  // public isFreePoint(): this is SEPoint {
-  //   return this._parents.length == 0;
-  // }
-
-  // Only returns true if this is an SEPoint
-  public abstract isPoint(): boolean;
-  // I wish something like this worked but it doesn't
-  // public isPoint(): this is SEPoint {
-  //   return true;
-  // }
-
+  //Should return true only if this is an instance of SEPointOnOneDimensional over ride as appropriate
+  public isPointOnOneDimensional(): boolean {
+    return false;
+  }
+  // Only returns true if this is an SEPoint and this has no parents or is a point on an object
+  public isFreePoint(): boolean {
+    return false;
+  }
+  // Carefule with over ride, for example, the class SEPoint has isFreePoint return true, but its subclasses should return false
+  public isNonFreePoint(): boolean {
+    return false;
+  }
+  // Only returns true if this is an SEPoint (or a sub class)
+  public isPoint(): boolean {
+    return false;
+  }
   // Only returns true if this is an SENonFreeLine
-  public abstract isNonFreeLine(): boolean;
-
+  public isNonFreeLine(): boolean {
+    return false;
+  }
   // Only returns true if this is an SELabel
-  public abstract isLabel(): boolean;
-  // This doesn't work
-  // public isLabel(): this is SELabel {
-  //   return true;
-  // }
-
+  public isLabel(): boolean {
+    return false;
+  }
   // Only returns true if this is an SEOneDimensional
-  public abstract isOneDimensional(): boolean;
-  // This doesn't work
-  // public isOneDimensional(): this is SEOneDimensional {
-  //   return true;
-  // }
+  public isOneDimensional(): boolean {
+    return false;
+  }
   // Only returns true if this is an Labelable
-  public abstract isLabelable(): boolean;
-
-  // Only returns true if this is an SESegment of length pi
-  public abstract isSegmentOfLengthPi(): boolean;
+  public isLabelable(): boolean {
+    return false;
+  }
+  // Only returns true if this is an SESegment of length pi (or very nearly pi)
+  public isSegmentOfLengthPi(): boolean {
+    return false;
+  }
+  //only returns true if this is an SELine where the points defining it are antipodal or nearly so
+  public isLineWithAntipodalPoints(): boolean {
+    return false;
+  }
 
   public isFreeToMove(): boolean {
-    if (this.isFreePoint() || this.isPointOnOneDimensional() || this.isLabel())
+    if (
+      this.isFreePoint() ||
+      this.isPointOnOneDimensional() ||
+      this.isLabel() ||
+      this.isSegmentOfLengthPi() ||
+      this.isLineWithAntipodalPoints()
+    )
       return true;
-    if (this.isNonFreeLine()) {
-      // don't let this fall through because if a point has an empty parents array the .every method returns true even for non-free points
+    if (this.isNonFreeLine() || this.isNonFreePoint()) {
+      // don't let this fall through because if a line or object has an empty parents array the .every method returns true even for non-free lines
       return false;
-    }
-    if (this.isSegmentOfLengthPi()) {
-      return true;
     }
     return this._parents.every(n => n.isFreePoint());
   }

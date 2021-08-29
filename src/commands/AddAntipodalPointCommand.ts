@@ -3,7 +3,7 @@ import { SEPoint } from "@/models/SEPoint";
 import { SELabel } from "@/models/SELabel";
 import { SENodule } from "@/models/SENodule";
 import { Vector3 } from "three";
-import { SavedNames, UpdateMode } from "@/types";
+import { SavedNames } from "@/types";
 import { StyleEditPanels } from "@/types/Styles";
 import Point from "@/plottables/Point";
 import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
@@ -29,10 +29,8 @@ export class AddAntipodalPointCommand extends Command {
     this.sePoint.registerChild(this.seLabel);
     Command.store.addPoint(this.sePoint);
     Command.store.addLabel(this.seLabel);
-    this.sePoint.update({
-      mode: UpdateMode.DisplayOnly,
-      stateArray: []
-    });
+    this.sePoint.markKidsOutOfDate();
+    this.sePoint.update();
   }
 
   saveState(): void {

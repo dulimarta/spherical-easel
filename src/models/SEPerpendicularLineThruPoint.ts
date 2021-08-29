@@ -1,6 +1,6 @@
 import { SEPoint } from "./SEPoint";
-import { PerpendicularLineThruPointState, SEOneDimensional } from "@/types";
-import { UpdateMode, UpdateStateType } from "@/types";
+import { ObjectState, SEOneDimensional } from "@/types";
+
 import { SELine } from "./SELine";
 import { Vector3 } from "three";
 import Line from "@/plottables/Line";
@@ -60,17 +60,24 @@ export class SEPerpendicularLineThruPoint extends SELine {
     // this._pencilSize = pencilSize;
   }
 
-  public update(state: UpdateStateType): void {
-    if (this.seParentPencil !== null)
+  public update(
+    objectState?: Map<number, ObjectState>,
+    orderedSENoduleList?: number[]
+  ): void {
+    if (this.seParentPencil !== null) {
       if (!this.canUpdateNow()) {
         // If any one parent is not up to date, don't do anything
         return;
       }
+    }
+
     this.setOutOfDate(false);
+
     this._exists =
       this.seParentOneDimensional.exists && this.seParentPoint.exists;
+
     if (this._exists) {
-      this.seParentPencil?.update(state);
+      this.seParentPencil?.update(); // SEParentPencil isn't in the DAG, so it only serves to create new perpendiculars
       const tVec = new Vector3();
       tVec.copy(this._normalVector);
       // console.log("before x", this.name, this._normalVector.x);
@@ -112,23 +119,31 @@ export class SEPerpendicularLineThruPoint extends SELine {
         this._exists = false;
       }
     }
+
     // Update visibility
     if (this._exists && this._showing) {
       this.ref.setVisible(true);
     } else {
       this.ref.setVisible(false);
     }
-    // Perpendicular Lines are completely determined by their parents and an update on the parents
-    // will cause this line to be put into the correct location. Therefore there is no need to
-    // store it in the stateArray for undo move. Store only for delete
-    if (state.mode == UpdateMode.RecordStateForDelete) {
-      const perpendicularLineThruPointState: PerpendicularLineThruPointState = {
+
+    // These perpendicular lines are completely determined by their parametric parents and an update on the parents
+    // will cause this line to be put into the correct location. So we don't store any additional information
+    if (objectState && orderedSENoduleList) {
+      if (objectState.has(this.id)) {
+        console.log(
+          `Perpendicular Lint Thru Point with id ${this.id} has been visited twice proceed no further down this branch of the DAG.`
+        );
+        return;
+      }
+      orderedSENoduleList.push(this.id);
+      objectState.set(this.id, {
         kind: "perpendicularLineThruPoint",
         object: this
-      };
-      state.stateArray.push(perpendicularLineThruPointState);
+      });
     }
-    this.updateKids(state);
+
+    this.updateKids(objectState, orderedSENoduleList);
   }
 
   set glowing(b: boolean) {

@@ -45,7 +45,7 @@ import NSectAngleHandler from "@/eventHandlers/NSectAngleHandler";
 
 import EventBus from "@/eventHandlers/EventBus";
 import MoveHandler from "../eventHandlers/MoveHandler";
-import { ActionMode, AppState, plottableType, UpdateMode } from "@/types";
+import { ActionMode, AppState, plottableType } from "@/types";
 import colors from "vuetify/es5/util/colors";
 import { SELabel } from "@/models/SELabel";
 import FileSaver from "file-saver";
@@ -345,7 +345,7 @@ export default class SphereFrame extends VueComponent {
     el.style.overflow = "visible";
     //Now update the display of the arrangment (i.e. make sure the labels are not too far from their associated objects)
     this.seLabels.forEach((l: SELabel) => {
-      l.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
+      l.update();
     });
   }
   //#endregion updateView

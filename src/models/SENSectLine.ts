@@ -1,6 +1,6 @@
 import { SEPoint } from "./SEPoint";
 import Point from "@/plottables/Point";
-import { UpdateMode, UpdateStateType, PointState, LineState } from "@/types";
+import { ObjectState } from "@/types";
 import i18n from "@/i18n";
 import { SELine } from "./SELine";
 import { SESegment } from "./SESegment";
@@ -69,13 +69,17 @@ export class SENSectLine extends SELine {
     return this._index;
   }
 
-  public update(state: UpdateStateType): void {
+  public update(
+    objectState?: Map<number, ObjectState>,
+    orderedSENoduleList?: number[]
+  ): void {
     // If any one parent is not up to date, don't do anything
-    if (!this.canUpdateNow()) {
-      return;
-    }
+    if (!this.canUpdateNow()) return;
+
     this.setOutOfDate(false);
+
     this._exists = this._seAngleParent.exists;
+
     if (this._exists) {
       // update the startSEPoint
       this.startSEPoint.locationVector = this._seAngleParent.vertexVector;
@@ -124,28 +128,23 @@ export class SENSectLine extends SELine {
     } else {
       this.ref.setVisible(false);
     }
-    // Create a line state for a Move or delete if necessary
-    if (
-      state.mode == UpdateMode.RecordStateForDelete ||
-      state.mode == UpdateMode.RecordStateForMove
-    ) {
-      // If the parent points of the line are antipodal, the normal vector determines the
-      // plane of the line.   Store the coordinate values of the normal vector and not the pointer to the vector.
-      const lineState: LineState = {
-        kind: "line",
-        object: this,
-        normalVectorX: this._normalVector.x,
-        normalVectorY: this._normalVector.y,
-        normalVectorZ: this._normalVector.z
-      };
-      state.stateArray.push(lineState);
+
+    // These n sect lines are completely determined by their line/segment/point parents and an update on the parents
+    // will cause this line to be put into the correct location. So we don't store any additional information
+    if (objectState && orderedSENoduleList) {
+      if (objectState.has(this.id)) {
+        console.log(
+          `nSectLine with id ${this.id} has been visited twice proceed no further down this branch of the DAG.`
+        );
+        return;
+      }
+      orderedSENoduleList.push(this.id);
+      objectState.set(this.id, { kind: "nSectLine", object: this });
     }
-    this.updateKids(state);
+
+    this.updateKids(objectState, orderedSENoduleList);
   }
   public isNonFreeLine(): boolean {
     return true;
-  }
-  public isFreePoint(): boolean {
-    return false;
   }
 }

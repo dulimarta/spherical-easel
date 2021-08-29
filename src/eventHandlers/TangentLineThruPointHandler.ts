@@ -7,7 +7,6 @@ import { SELabel } from "@/models/SELabel";
 import {
   SEOneDimensionalNotStraight,
   SEOneOrTwoDimensional,
-  UpdateMode,
   SEIntersectionReturnType
 } from "@/types";
 import { CommandGroup } from "@/commands/CommandGroup";
@@ -630,7 +629,8 @@ export default class TangentLineThruPointHandler extends Highlighter {
         newPerpLine.exists = false;
       }
       // Update the display of the tangent line
-      newPerpLine.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
+      newPerpLine.markKidsOutOfDate();
+      newPerpLine.update();
 
       // Create the plottable label
       const newLabel = new Label();

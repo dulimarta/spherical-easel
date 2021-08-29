@@ -1,7 +1,7 @@
 import { DisplayStyle } from "@/plottables/Nodule";
 import NonFreeLine from "@/plottables/NonFreeLine";
 import NonFreePoint from "@/plottables/NonFreePoint";
-import { UpdateStateType } from "@/types";
+import { ObjectState } from "@/types";
 import {
   DEFAULT_LINE_BACK_STYLE,
   DEFAULT_LINE_FRONT_STYLE
@@ -32,8 +32,14 @@ export class SEPencil extends SENodule {
     this._commonParent = seParent;
     this._lines.push(...lines);
   }
-  public update(state: UpdateStateType): void {
+  public update(
+    objectState?: Map<number, ObjectState>,
+    orderedSENoduleList?: number[]
+  ): void {
+    // This doesn't follow the usual outline of an update method because SEPencil is not in the DAG
+
     console.debug("Updating SEPencil");
+
     const normals = this._commonParent.getNormalsToPerpendicularLinesThru(
       this._commonPoint.locationVector,
       this._lines[0].normalVector
@@ -72,13 +78,9 @@ export class SEPencil extends SENodule {
         this._commonParent.registerChild(newPerpLine);
         this._lines.push(newPerpLine);
         SEStore.addLine(newPerpLine);
-        // newPerpLine.update(state);
       }
     }
-    // this._lines.forEach((perp: SEPerpendicularLineThruPoint, k: number) => {
-    //   console.debug("Updating line", k, "in a pencil of perp");
-    //   // perp.update(state);
-    // });
+    // SEPencil is not in the DAG so it has no kids and updateKids does not need to be called.
   }
 
   public isHitAt(
@@ -106,28 +108,12 @@ export class SEPencil extends SENodule {
   public get noduleItemText(): string {
     return "Pencil of lines";
   }
-  public isPointOnOneDimensional(): boolean {
-    return false;
-  }
-  public isFreePoint(): boolean {
-    return false;
-  }
-  public isPoint(): boolean {
-    return false;
-  }
+
   public isNonFreeLine(): boolean {
     return true;
   }
-  public isLabel(): boolean {
-    return false;
-  }
-  public isLabelable(): boolean {
-    return false;
-  }
+
   public isOneDimensional(): boolean {
     return true;
-  }
-  public isSegmentOfLengthPi(): boolean {
-    return false;
   }
 }

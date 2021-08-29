@@ -911,6 +911,7 @@ export default class Polygon extends Nodule {
       }
     });
   }
+
   backGlowingDisplay(): void {
     this.backFills.forEach(part => (part.visible = true));
     this.seEdgeSegments.forEach(seg => {

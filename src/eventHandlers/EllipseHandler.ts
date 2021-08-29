@@ -16,7 +16,6 @@ import { SEPointOnOneOrTwoDimensional } from "@/models/SEPointOnOneOrTwoDimensio
 import { AddIntersectionPointCommand } from "@/commands/AddIntersectionPointCommand";
 import { AddPointOnOneDimensionalCommand } from "@/commands/AddPointOnOneOrTwoDimensionalCommand";
 import { SEOneOrTwoDimensional, SEIntersectionReturnType } from "@/types";
-import { UpdateMode } from "@/types";
 import Label from "@/plottables/Label";
 import { SELabel } from "@/models/SELabel";
 import EventBus from "./EventBus";
@@ -1188,7 +1187,8 @@ export default class EllipseHandler extends Highlighter {
           object3
         );
         // Update the newSEEllipse so the display is correct when the command group is executed
-        newSEEllipse.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
+        newSEEllipse.markKidsOutOfDate();
+        newSEEllipse.update();
         const newSELabel = new SELabel(newLabel, newSEEllipse);
         // Set the initial label location
         this.tmpMatrix.makeRotationAxis(object3.locationVector, Math.PI / 2);

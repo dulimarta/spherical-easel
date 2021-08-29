@@ -6,13 +6,12 @@ import AngleMarker from "@/plottables/AngleMarker";
 import { Vector3, Matrix4 } from "three";
 import { Visitable } from "@/visitors/Visitable";
 import { Visitor } from "@/visitors/Visitor";
-import { AngleMarkerState } from "@/types";
+import { ObjectState } from "@/types";
 import SETTINGS from "@/global-settings";
 import {
   DEFAULT_ANGLE_MARKER_BACK_STYLE,
   DEFAULT_ANGLE_MARKER_FRONT_STYLE
 } from "@/types/Styles";
-import { UpdateMode, UpdateStateType } from "@/types";
 import { Labelable } from "@/types";
 import { SELabel } from "@/models/SELabel";
 import { SEStore } from "@/store";
@@ -303,12 +302,15 @@ export class SEAngleMarker extends SEExpression
     }
   }
 
-  public update(state: UpdateStateType): void {
+  public update(
+    objectState?: Map<number, ObjectState>,
+    orderedSENoduleList?: number[]
+  ): void {
     // If any one parent is not up to date, don't do anything
-    if (!this.canUpdateNow()) {
-      return;
-    }
+    if (!this.canUpdateNow()) return;
+
     this.setOutOfDate(false);
+
     this._exists = this._firstSEParent.exists && this._secondSEParent.exists;
 
     // If the third parent is not null it should exist in order for the angle marker to exist
@@ -825,32 +827,31 @@ export class SEAngleMarker extends SEExpression
       this.ref.updateDisplay();
     }
 
+    // When this updates send its value to the label of the angleMarker
+    if (this.label && this._exists) {
+      this.label.ref.value = [this.value];
+    }
+
     if (this.showing && this._exists) {
       this.ref.setVisible(true);
     } else {
       this.ref.setVisible(false);
     }
     // These angle markers are completely determined by their line/segment/point parents and an update on the parents
-    // will cause this angleMarker to be put into the correct location. Therefore there is no need to
-    // store it in the stateArray for undo move. Only store for delete
-
-    if (state.mode == UpdateMode.RecordStateForDelete) {
-      const angleMarkerState: AngleMarkerState = {
-        kind: "angleMarker",
-        object: this
-      };
-      state.stateArray.push(angleMarkerState);
+    // will cause this angleMarker to be put into the correct location. So we don't store any additional information
+    if (objectState && orderedSENoduleList) {
+      if (objectState.has(this.id)) {
+        console.log(
+          `Anglemarker with id ${this.id} has been visited twice proceed no further down this branch of the DAG.`
+        );
+        return;
+      }
+      orderedSENoduleList.push(this.id);
+      objectState.set(this.id, { kind: "angleMarker", object: this });
     }
-    //update the name to include the new value
-    //const pos = this.name.lastIndexOf("):");
-    //this.name = this.name.substring(0, pos + 2) + this.prettyValue;
 
-    // When this updates send its value to the label of the angleMarker
-    if (this.label) {
-      this.label.ref.value = [this.value];
-    }
     this.setOutOfDate(false);
-    this.updateKids(state);
+    this.updateKids(objectState, orderedSENoduleList);
   }
 
   /**

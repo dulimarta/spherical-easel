@@ -2,7 +2,7 @@ import { SEExpression } from "./SEExpression";
 import { SEPoint } from "./SEPoint";
 import { SEStore } from "@/store";
 import { Matrix4, Vector3 } from "three";
-import { ExpressionState, UpdateMode, UpdateStateType } from "@/types";
+import { ObjectState } from "@/types";
 import i18n from "@/i18n";
 
 export enum CoordinateSelection {
@@ -111,9 +111,16 @@ export class SEPointCoordinate extends SEExpression {
     }
   }
 
-  public update(state: UpdateStateType): void {
+  public update(
+    objectState?: Map<number, ObjectState>,
+    orderedSENoduleList?: number[]
+  ): void {
     if (!this.canUpdateNow()) return;
+
+    this.setOutOfDate(false);
+
     this.exists = this.point.exists;
+
     if (this.exists) {
       // apply the inverse of the total rotation matrix to compute the location of the point without all the sphere rotations.
       this.invMatrix = SEStore.inverseTotalRotationMatrix;
@@ -130,19 +137,20 @@ export class SEPointCoordinate extends SEExpression {
         ];
       }
     }
-    // This object and any of its children has no presence on the sphere canvas, so update for move should
-    if (state.mode === UpdateMode.RecordStateForMove) return;
-    // This object is completely determined by its parents, so only record the object in state array
-    if (state.mode == UpdateMode.RecordStateForDelete) {
-      const expressionState: ExpressionState = {
-        kind: "expression",
-        object: this
-      };
-      state.stateArray.push(expressionState);
+
+    // These point coordinates are completely determined by their parent and an update on the parent
+    // will cause this point update correctly. So we don't store any additional information
+    if (objectState && orderedSENoduleList) {
+      if (objectState.has(this.id)) {
+        console.log(
+          `Point Coordinate with id ${this.id} has been visited twice proceed no further down this branch of the DAG.`
+        );
+        return;
+      }
+      orderedSENoduleList.push(this.id);
+      objectState.set(this.id, { kind: "pointCoordinate", object: this });
     }
-    //const pos = this.name.lastIndexOf(":");
-    //this.name = this.name.substring(0, pos + 2) + this.prettyValue;
-    this.setOutOfDate(false);
-    this.updateKids(state);
+
+    this.updateKids(objectState, orderedSENoduleList);
   }
 }

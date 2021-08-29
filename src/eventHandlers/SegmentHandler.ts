@@ -18,7 +18,6 @@ import Highlighter from "./Highlighter";
 import { ConvertInterPtToUserCreatedCommand } from "@/commands/ConvertInterPtToUserCreatedCommand";
 import { SEOneOrTwoDimensional, SEIntersectionReturnType } from "@/types";
 import { SEPointOnOneOrTwoDimensional } from "@/models/SEPointOnOneOrTwoDimensional";
-import { UpdateMode } from "@/types";
 import Label from "@/plottables/Label";
 import { SELabel } from "@/models/SELabel";
 import { SEStore } from "@/store";
@@ -977,10 +976,8 @@ export default class SegmentHandler extends Highlighter {
           object2
         );
         // Update the newSESegment so the display is correct when the command group is executed
-        newSESegment.update({
-          mode: UpdateMode.DisplayOnly,
-          stateArray: []
-        });
+        newSESegment.markKidsOutOfDate();
+        newSESegment.update();
         // Create the plottable label
         const newLabel = new Label();
         const newSELabel = new SELabel(newLabel, newSESegment);

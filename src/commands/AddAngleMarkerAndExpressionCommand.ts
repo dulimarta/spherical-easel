@@ -9,7 +9,7 @@ import AngleMarker from "@/plottables/AngleMarker";
 import { DisplayStyle } from "@/plottables/Nodule";
 import Label from "@/plottables/Label";
 import { Vector3 } from "three";
-import { UpdateMode, AngleMode, SavedNames } from "@/types";
+import { AngleMode, SavedNames } from "@/types";
 import { StyleEditPanels } from "@/types/Styles";
 
 export class AddAngleMarkerCommand extends Command {
@@ -64,7 +64,8 @@ export class AddAngleMarkerCommand extends Command {
     this.seAngleMarker.registerChild(this.seLabel);
     Command.store.addAngleMarkerAndExpression(this.seAngleMarker);
     Command.store.addLabel(this.seLabel);
-    this.seAngleMarker.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
+    this.seAngleMarker.markKidsOutOfDate();
+    this.seAngleMarker.update();
   }
 
   saveState(): void {

@@ -18,7 +18,6 @@ import { SEPointOnOneOrTwoDimensional } from "@/models/SEPointOnOneOrTwoDimensio
 import { AddIntersectionPointCommand } from "@/commands/AddIntersectionPointCommand";
 import { AddPointOnOneDimensionalCommand } from "@/commands/AddPointOnOneOrTwoDimensionalCommand";
 import { SEOneOrTwoDimensional, SEIntersectionReturnType } from "@/types";
-import { UpdateMode } from "@/types";
 import Label from "@/plottables/Label";
 import { SELabel } from "@/models/SELabel";
 import EventBus from "./EventBus";
@@ -836,7 +835,8 @@ export default class CircleHandler extends Highlighter {
         // Add the last command to the group and then execute it (i.e. add the potentially two points and the circle to the store.)
         const newSECircle = new SECircle(newCircle, object1, object2);
         // Update the newSECircle so the display is correct when the command group is executed
-        newSECircle.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
+        newSECircle.markKidsOutOfDate();
+        newSECircle.update();
         const newSELabel = new SELabel(newLabel, newSECircle);
         // Set the initial label location
         this.tmpMatrix.makeRotationAxis(object1.locationVector, Math.PI / 2);

@@ -574,7 +574,7 @@ export default class LabelStyle extends Vue {
           max: SETTINGS.label.maxLabelDisplayTextLength
         }) as string;
       } else if (txt.length === 0) {
-        console.log("here");
+        // console.log("here");
         return this.$t("style.minLabelDisplayTextLengthWarning", {}) as string;
       }
     }

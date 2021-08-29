@@ -1,6 +1,6 @@
 import { Command } from "./Command";
 import { SEPoint } from "@/models/SEPoint";
-import { SavedNames, SEOneOrTwoDimensional, UpdateMode } from "@/types";
+import { SavedNames, SEOneOrTwoDimensional } from "@/types";
 import { SELabel } from "@/models/SELabel";
 import SETTINGS from "@/global-settings";
 import { SENodule } from "@/models/SENodule";
@@ -43,10 +43,8 @@ export class AddPolarPointCommand extends Command {
     }
     Command.store.addPoint(this.sePolarPoint);
     Command.store.addLabel(this.seLabel);
-    this.sePolarPoint.update({
-      mode: UpdateMode.DisplayOnly,
-      stateArray: []
-    });
+    this.sePolarPoint.markKidsOutOfDate();
+    this.sePolarPoint.update();
   }
 
   saveState(): void {

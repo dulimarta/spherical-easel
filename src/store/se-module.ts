@@ -16,7 +16,6 @@ import { Vector3, Matrix4 } from "three";
 import { StyleOptions, StyleEditPanels } from "@/types/Styles";
 import { LineNormalVisitor } from "@/visitors/LineNormalVisitor";
 import { SegmentNormalArcLengthVisitor } from "@/visitors/SegmentNormalArcLengthVisitor";
-import { UpdateMode } from "@/types";
 import Nodule, { DisplayStyle } from "@/plottables/Nodule";
 import { SEExpression } from "@/models/SEExpression";
 import { SEAngleMarker } from "@/models/SEAngleMarker";
@@ -536,7 +535,7 @@ export default class SE extends VuexModule implements AppState {
     this.sePoints.forEach((p: SEPoint) => {
       if (p.isFreeToMove()) {
         p.markKidsOutOfDate(); // so this does a topological sort and update is only executed once on each point
-        p.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
+        p.update();
       }
     });
   }
@@ -598,7 +597,7 @@ export default class SE extends VuexModule implements AppState {
       .forEach(obj => {
         // First mark the kids out of date so that the update method does a topological sort
         obj.markKidsOutOfDate();
-        obj.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
+        obj.update();
         // console.log("name", obj.name, "show", obj.showing, "exist", obj.exists);
       });
   }
@@ -652,10 +651,6 @@ export default class SE extends VuexModule implements AppState {
     selected.forEach((n: Nodule) => {
       // console.log("node", n, opt);
       n.updateStyle(panel, opt);
-      // if (opt.pointRadiusPercent !== undefined) {
-      //   // if the point radius Percent changes then this can effects the label location so run update
-      //   n.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
-      // }
     });
   }
 

@@ -1,6 +1,6 @@
 import { Command } from "./Command";
 import { SEPoint } from "@/models/SEPoint";
-import { SavedNames, SEOneOrTwoDimensional, UpdateMode } from "@/types";
+import { SavedNames, SEOneOrTwoDimensional } from "@/types";
 import { SELabel } from "@/models/SELabel";
 import SETTINGS from "@/global-settings";
 import { SENodule } from "@/models/SENodule";
@@ -36,10 +36,8 @@ export class AddPointOnOneDimensionalCommand extends Command {
     }
     Command.store.addPoint(this.sePointOnOneOrTwoDimensional);
     Command.store.addLabel(this.seLabel);
-    this.sePointOnOneOrTwoDimensional.update({
-      mode: UpdateMode.DisplayOnly,
-      stateArray: []
-    });
+    this.sePointOnOneOrTwoDimensional.markKidsOutOfDate();
+    this.sePointOnOneOrTwoDimensional.update();
   }
 
   saveState(): void {

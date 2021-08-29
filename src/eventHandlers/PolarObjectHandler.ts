@@ -5,11 +5,7 @@ import { AddAntipodalPointCommand } from "@/commands/AddAntipodalPointCommand";
 import { DisplayStyle } from "@/plottables/Nodule";
 import Highlighter from "./Highlighter";
 import { SEAntipodalPoint } from "@/models/SEAntipodalPoint";
-import {
-  UpdateMode,
-  SEOneOrTwoDimensional,
-  SEIntersectionReturnType
-} from "@/types";
+import { SEOneOrTwoDimensional, SEIntersectionReturnType } from "@/types";
 import Label from "@/plottables/Label";
 import { SELabel } from "@/models/SELabel";
 import { Vector3 } from "three";
@@ -526,8 +522,10 @@ export default class PolarObjectHandler extends Highlighter {
       new AddPolarPointCommand(polarPoint2, 1, parentLineOrSegment, newSELabel2)
     );
     polarPointsCommandGroup.execute();
-    polarPoint1.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
-    polarPoint2.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
+    polarPoint1.markKidsOutOfDate();
+    polarPoint1.update();
+    polarPoint2.markKidsOutOfDate();
+    polarPoint2.update();
   }
   createPolarLine(): void {
     const polarLineCommandGroup = new CommandGroup();
@@ -664,7 +662,8 @@ export default class PolarObjectHandler extends Highlighter {
       new AddPolarLineCommand(newPolarLine, this.parentPoint, newSELabel)
     );
     // Update the display of the polar line
-    newPolarLine.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
+    newPolarLine.markKidsOutOfDate();
+    newPolarLine.update();
 
     // Determine all new intersection points and add their creation to the command so it can be undone
     SEStore.createAllIntersectionsWithLine(newPolarLine).forEach(

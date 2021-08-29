@@ -4,12 +4,8 @@ import { Visitor } from "@/visitors/Visitor";
 import { SENodule } from "./SENodule";
 import { Vector3 } from "three";
 import SETTINGS from "@/global-settings";
-import {
-  // DEFAULT_LABEL_BACK_STYLE,
-  // DEFAULT_LABEL_FRONT_STYLE,
-  DEFAULT_LABEL_TEXT_STYLE
-} from "@/types/Styles";
-import { UpdateMode, UpdateStateType, LabelState, Labelable } from "@/types";
+import { DEFAULT_LABEL_TEXT_STYLE } from "@/types/Styles";
+import { Labelable, ObjectState } from "@/types";
 import { SEStore } from "@/store";
 import { SEPoint } from "./SEPoint";
 import { SESegment } from "./SESegment";
@@ -131,12 +127,14 @@ export class SELabel extends SENodule implements Visitable {
     v.actionOnLabel(this);
   }
 
-  public update(state: UpdateStateType): void {
+  public update(
+    objectState?: Map<number, ObjectState>,
+    orderedSENoduleList?: number[]
+  ): void {
     // console.log("update SElabel");
     // If any one parent is not up to date, don't do anything
-    if (!this.canUpdateNow()) {
-      return;
-    }
+    if (!this.canUpdateNow()) return;
+
     this.setOutOfDate(false);
 
     //These labels don't exist when their parent doesn't exist
@@ -152,6 +150,7 @@ export class SELabel extends SENodule implements Visitable {
       //Update the location of the associate plottable Label (setter also updates the display)
       this.ref.positionVector = this._locationVector;
     }
+
     // Update visibility
     if (this._showing && this._exists) {
       this.ref.setVisible(true);
@@ -159,25 +158,25 @@ export class SELabel extends SENodule implements Visitable {
       this.ref.setVisible(false);
     }
 
-    // Record the state of the object in state.stateArray if necessary
-    //#region saveState
-    // Create a label state for a Move or delete if necessary
-    if (
-      state.mode == UpdateMode.RecordStateForDelete ||
-      state.mode == UpdateMode.RecordStateForMove
-    ) {
-      // Store the coordinate values of the current location vector of the label.
-      const labelState: LabelState = {
+    // Labels are NOT completely determined by their parents so we store additional information
+    if (objectState && orderedSENoduleList) {
+      if (objectState.has(this.id)) {
+        console.log(
+          `Label with id ${this.id} has been visited twice proceed no further down this branch of the DAG.`
+        );
+        return;
+      }
+      orderedSENoduleList.push(this.id);
+      const location = new Vector3();
+      location.copy(this._locationVector);
+      objectState.set(this.id, {
         kind: "label",
-        locationVectorX: this._locationVector.x,
-        locationVectorY: this._locationVector.y,
-        locationVectorZ: this._locationVector.z,
-        object: this
-      };
-      state.stateArray.push(labelState);
+        object: this,
+        locationVector: location
+      });
     }
-    //#endregion saveState
-    this.updateKids(state);
+
+    this.updateKids(objectState, orderedSENoduleList);
   }
 
   /**
@@ -240,30 +239,7 @@ export class SELabel extends SENodule implements Visitable {
     );
   }
 
-  // I wish the SENodule methods would work but I couldn't figure out how
-  // See the attempts in SENodule
-  public isFreePoint(): boolean {
-    return false;
-  }
-  public isOneDimensional(): boolean {
-    return false;
-  }
-  public isPoint(): boolean {
-    return false;
-  }
-  public isPointOnOneDimensional(): boolean {
-    return false;
-  }
   public isLabel(): boolean {
     return true;
-  }
-  public isSegmentOfLengthPi(): boolean {
-    return false;
-  }
-  public isLabelable(): boolean {
-    return false;
-  }
-  public isNonFreeLine(): boolean {
-    return false;
   }
 }

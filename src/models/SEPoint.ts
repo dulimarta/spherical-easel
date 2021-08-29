@@ -8,13 +8,7 @@ import {
   DEFAULT_POINT_BACK_STYLE,
   DEFAULT_POINT_FRONT_STYLE
 } from "@/types/Styles";
-import {
-  UpdateMode,
-  UpdateStateType,
-  PointState,
-  SEOneOrTwoDimensional,
-  Labelable
-} from "@/types";
+import { SEOneOrTwoDimensional, Labelable, ObjectState } from "@/types";
 import { SELabel } from "./SELabel";
 // The following import creates a circular dependencies when testing SENoduleItem
 // The dependency loop is:
@@ -61,11 +55,13 @@ export class SEPoint extends SENodule implements Visitable, Labelable {
     return styleSet;
   }
 
-  public update(state: UpdateStateType): void {
+  public update(
+    objectState?: Map<number, ObjectState>,
+    orderedSENoduleList?: number[]
+  ): void {
     // If any one parent is not up to date, don't do anything
-    if (!this.canUpdateNow()) {
-      return;
-    }
+    if (!this.canUpdateNow()) return;
+
     this.setOutOfDate(false);
 
     //These points always exist - they have no parents to depend on
@@ -79,26 +75,26 @@ export class SEPoint extends SENodule implements Visitable, Labelable {
     } else {
       this.ref.setVisible(false);
     }
-    // Record the state of the object in state.stateArray if necessary
-    //#region saveState
-    // Create a point state for a Move or delete if necessary
-    if (
-      state.mode == UpdateMode.RecordStateForDelete ||
-      state.mode == UpdateMode.RecordStateForMove
-    ) {
-      //  Store the coordinate values of the vector and not the pointer to the vector.
-      const pointState: PointState = {
+
+    // These are free points and are have no parents so we store additional information
+    if (objectState && orderedSENoduleList) {
+      if (objectState.has(this.id)) {
+        console.log(
+          `Point with id ${this.id} has been visited twice proceed no further down this branch of the DAG.`
+        );
+        return;
+      }
+      const location = new Vector3();
+      location.copy(this._locationVector);
+      orderedSENoduleList.push(this.id);
+      objectState.set(this.id, {
         kind: "point",
-        locationVectorX: this._locationVector.x,
-        locationVectorY: this._locationVector.y,
-        locationVectorZ: this._locationVector.z,
-        object: this
-      };
-      state.stateArray.push(pointState);
+        object: this,
+        locationVector: location
+      });
     }
-    //#endregion saveState
-    this.markKidsOutOfDate(); // if we don't do this, then some children are updated (at least) twice and the the second update is incorrect.
-    this.updateKids(state);
+
+    this.updateKids(objectState, orderedSENoduleList);
   }
 
   /**
@@ -204,30 +200,15 @@ export class SEPoint extends SENodule implements Visitable, Labelable {
     );
   }
 
-  // I wish the SENodule methods would work but I couldn't figure out how
-  // See the attempts in SENodule around line 218
   public isFreePoint(): boolean {
     return true;
   }
-  public isOneDimensional(): this is SEOneOrTwoDimensional {
-    return false;
-  }
+
   public isPoint(): boolean {
     return true;
   }
-  public isPointOnOneDimensional(): boolean {
-    return false;
-  }
-  public isLabel(): boolean {
-    return false;
-  }
-  public isSegmentOfLengthPi(): boolean {
-    return false;
-  }
+
   public isLabelable(): boolean {
     return true;
-  }
-  public isNonFreeLine(): boolean {
-    return false;
   }
 }
