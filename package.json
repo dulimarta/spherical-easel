@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "serve": "npm run app:serve & npm run docs:serve",
-    "build": "npm run app:build && npm run docs:build",
+    "build": "npm run app:build & npm run docs:build",
     "test:unit": "vue-cli-service test:unit --watch",
     "test:cyunit": "cypress open-ct",
     "lint": "vue-cli-service lint",
