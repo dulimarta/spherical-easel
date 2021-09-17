@@ -366,7 +366,6 @@ Using the builtin framework provided by the `vuex-store` package, the store is o
 
 The above components are declared as the following top-level object structure:
 
-
 ```ts
 {
   state: {
@@ -396,14 +395,11 @@ Currently, we have only one module defined in `src/store/se-module.ts`:
 
 Modules are defined under the `modules` property (in `@/store/index.ts`) as shown below:
 
-
 <<< @/src/store/index.ts#storeRoot
-
 
 :::warning IMPORTANT
 The `name` property defined at the `@Module` annotation must match the property name (`se`) defined under the `modules` property.
 :::
-
 
 The `vuex-module-decorator` library automatically convert any class properties/variables into `vuex-store` state variables.
 Currently, we have the following as the store state variables:
@@ -419,7 +415,7 @@ Likewise, action functions must be annotated with `@Action`. Currently we use no
 Any functions defined as JavaScript getter automatically become `vuex-store` getter
 
 :::tip
-TypeScript requires getter functions take no arguments. To provide a getter function that takes argument, we depend on 
+TypeScript requires getter functions take no arguments. To provide a getter function that takes argument, we depend on
 function composition and currying. Essentially, we make the getter function to return a function that takes the arguments.
 In the following snippet we have a getter function `findNearbySENodules` that takes two arguments and returns an array of `SENodule`.
 By returning a function with such signature, the getter function itself requires no parameter.
@@ -430,19 +426,19 @@ By returning a function with such signature, the getter function itself requires
 The `SEStore` exported name provides a type safe syntax (as well as editor auto completion) to the state variables, mutation, action, and getter functions. Examples:
 
 ```ts
-import {SEStore} from "@/store"
+import { SEStore } from "@/store";
 
 // Later in code
-const ctr = new SEPoint(/* args here */)
-const radius = SEStore.sphereRadius;  // this accesses the state variable sphereRadius
-SEStore.addPoint(ctr);                // this invokes the `addPoint` mutation function
+const ctr = new SEPoint(/* args here */);
+const radius = SEStore.sphereRadius; // this accesses the state variable sphereRadius
+SEStore.addPoint(ctr); // this invokes the `addPoint` mutation function
 SEStore.findNearbySENodule(queryPoint, scrPos); // invokes the getter function
 ```
 
 As opposed to the unsafe call below:
 
 ```ts
-this.$store.commit('addPoint', ctr);
+this.$store.commit("addPoint", ctr);
 ```
 
 :::tip
@@ -496,14 +492,14 @@ The user can select items to style before entering the Styling Mode (the mode wh
   onSelectionChanged (newSelection: SENodule[]): void {
 ```
 
-This method then checks to see if there are any style changes that need to be stored in the command stack so they can be undone later. If there is a non-empty selection, the `initialStyleState` and `defaultStyleState` of the selected objects (for front and back) is recorded in these variables in the Vuex store. 
+This method then checks to see if there are any style changes that need to be stored in the command stack so they can be undone later. If there is a non-empty selection, the `initialStyleState` and `defaultStyleState` of the selected objects (for front and back) is recorded in these variables in the Vuex store.
 
 <<< @/src/components/FrontBackStyle.vue#setStyle
 
 Upon <span class="method">setXXXSelectorState()</span> method being executed, the program first determines the common style options (e.g.: `fillColor`, `strokeColor`, etc.) shared by all the selected objects.
 This information is stored in an array which is accessed by the
- <span class="method">hasXXX()</span> function to control the visibility of relevant <span class="component">fade-in-card</span>. 
- The program then checks to see if the value of that style is the same across all selected objects. If it is not, the <span class="variable">XXXAgreement</span> variable is set to <span class="component">false</span> and an overlay panel saying "Differing Styles Detected -- Override" is displayed. If the user clicks that button, the <span class="variable">XXXAgreement</span> variable is set to <span class="component">true</span> and any style selection will set that one style property of all selected objects to be the same. Once a selection is made the <span class="button">Undo</span> button is activated, and by clicking it all selected objects will revert that style property back to the style they had when they were _selected_. Clicking the <span class="button">Apply Defaults</span> button will revert the selected objects back to their default style.
+<span class="method">hasXXX()</span> function to control the visibility of relevant <span class="component">fade-in-card</span>.
+The program then checks to see if the value of that style is the same across all selected objects. If it is not, the <span class="variable">XXXAgreement</span> variable is set to <span class="component">false</span> and an overlay panel saying "Differing Styles Detected -- Override" is displayed. If the user clicks that button, the <span class="variable">XXXAgreement</span> variable is set to <span class="component">true</span> and any style selection will set that one style property of all selected objects to be the same. Once a selection is made the <span class="button">Undo</span> button is activated, and by clicking it all selected objects will revert that style property back to the style they had when they were _selected_. Clicking the <span class="button">Apply Defaults</span> button will revert the selected objects back to their default style.
 
 The big picture idea is that to update the display of an object. The
 
