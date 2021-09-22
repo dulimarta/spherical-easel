@@ -27,7 +27,7 @@ export default class PointDistantHandler extends Highlighter {
           (p: SEPoint) => p.id === possibleTargetPointList[0].id
         );
         if (pos >= 0) {
-          console.log("here");
+          // console.log("here");
           EventBus.fire("show-alert", {
             key: `handlers.duplicatePointMessage`,
             keyOptions: {},

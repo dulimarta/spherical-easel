@@ -1,10 +1,12 @@
 <template>
   <div>
-    <div class="node"
+    <v-container class="node"
       @mouseenter="glowMe(true)"
       @mouseleave="glowMe(false)">
 
-      <v-row>
+      <v-row dense
+        justify="start"
+        class="pa-0">
         <v-col cols="auto">
           <v-icon v-if="isAntipode"
             medium>
@@ -15,11 +17,19 @@
           </v-icon>
           <v-icon v-else-if="isIntersectionPoint"
             medium>
-            $vuetify.icons.value.intersectionPoint
+            $vuetify.icons.value.intersection
           </v-icon>
           <v-icon v-else-if="isPolar"
             medium>
             $vuetify.icons.value.polar
+          </v-icon>
+          <v-icon v-else-if="isMidpoint"
+            medium>
+            $vuetify.icons.value.midpoint
+          </v-icon>
+          <v-icon v-else-if="isNSectPoint"
+            medium>
+            $vuetify.icons.value.nSectPoint
           </v-icon>
           <v-icon v-else-if="isPoint"
             medium>
@@ -30,6 +40,15 @@
           <v-icon v-else-if="isPerpendicular"
             medium>
             $vuetify.icons.value.perpendicular</v-icon>
+          <v-icon v-else-if="isTangent"
+            medium>
+            $vuetify.icons.value.tangent</v-icon>
+          <v-icon v-else-if="isAngleBisector"
+            medium>
+            $vuetify.icons.value.angleBisector</v-icon>
+          <v-icon v-else-if="isNSectLine"
+            medium>
+            $vuetify.icons.value.nSectLine</v-icon>
           <v-icon v-else-if="isLine"
             medium>
             $vuetify.icons.value.line</v-icon>
@@ -45,7 +64,6 @@
             medium>
             $vuetify.icons.value.parametric
           </v-icon>
-
           <v-icon v-else-if="isSlider">mdi-arrow-left-right</v-icon>
           <v-icon v-else-if="isAngle"
             medium>
@@ -68,11 +86,10 @@
 
         </v-col>
         <v-col class="text-truncate">
-
           <v-tooltip right>
             <template v-slot:activator="{ on }">
               <div id="_test_selection"
-                class="contentText ml-1"
+                class="contentText"
                 @click="selectMe"
                 v-on="on"
                 :class="showClass">
@@ -83,74 +100,106 @@
           </v-tooltip>
 
         </v-col>
-        <v-col cols="auto">
+        <v-col justify="end">
+          <v-row align="center"
+            no-gutters>
+            <v-col>
+              <v-tooltip right>
+                <template v-slot:activator="{ on }">
+                  <div id="_test_toggle_format"
+                    v-show="isExpressionAndNotCoordinate"
+                    v-on="on"
+                    @click="cycleValueDisplayMode">
+                    <v-icon small>
+                      mdi-recycle-variant
+                    </v-icon>
+                  </div>
+                </template>
+                <span>{{ $t(`objectTree.cycleValueDisplayMode`) }}</span>
+              </v-tooltip>
+            </v-col>
+            <v-col>
+              <v-tooltip right>
+                <template v-slot:activator="{ on }">
+                  <div id="_test_toggle_visibility"
+                    v-show="isPlottable"
+                    v-on="on"
+                    @click="toggleVisibility">
+                    <v-icon small
+                      v-if="isHidden">
+                      mdi-eye
+                    </v-icon>
+                    <v-icon small
+                      v-else
+                      style="color:gray">
+                      mdi-eye-off
+                    </v-icon>
+                  </div>
+                </template>
+                <span>{{ $t(`objectTree.toggleDisplay`) }}</span>
+              </v-tooltip>
+            </v-col>
+            <v-col>
+              <v-tooltip right>
+                <template v-slot:activator="{ on }">
+                  <div id="_toggle_label_display"
+                    v-show="isPlottable"
+                    v-on="on"
+                    @click="toggleLabelDisplay">
 
-          <v-tooltip right>
-            <template v-slot:activator="{ on }">
-              <div id="_test_toggle_visibility"
-                v-show="isPlottable"
-                v-on="on"
-                @click="toggleVisibility"
-                class="mr-2">
-                <v-icon small
-                  v-if="isHidden">
-                  mdi-eye
-                </v-icon>
-                <v-icon small
-                  v-else
-                  style="color:gray">
-                  mdi-eye-off
-                </v-icon>
-              </div>
-            </template>
-            <span>{{ $t(`objectTree.toggleDisplay`) }}</span>
-          </v-tooltip>
+                    <v-icon small
+                      v-if="isLabelHidden">
+                      mdi-label-outline
+                    </v-icon>
+                    <v-icon small
+                      v-else
+                      style="color:gray">
+                      mdi-label-off-outline
+                    </v-icon>
+                  </div>
+                </template>
+                <span>{{ $t(`objectTree.toggleLabelDisplay`) }}</span>
+              </v-tooltip>
+            </v-col>
+            <v-col>
+              <v-tooltip right>
+                <template v-slot:activator="{ on }">
+                  <div id="_delete_node"
+                    v-on="on"
+                    @click="deleteNode">
+                    <v-icon small>
+                      mdi-trash-can-outline
+                    </v-icon>
+                  </div>
+                </template>
+                <span>{{ $t(`objectTree.deleteNode`) }}</span>
+              </v-tooltip>
+            </v-col>
 
+          </v-row>
         </v-col>
-        <v-col cols="auto">
-
-          <v-tooltip right>
-            <template v-slot:activator="{ on }">
-              <div id="_test_toggle_format"
-                v-show="isExpressionAndNotCoordinate"
-                v-on="on"
-                @click="cycleValueDisplayMode"
-                class="mr-2">
-                <v-icon small>
-                  mdi-recycle-variant
-                </v-icon>
-              </div>
-            </template>
-            <span>{{ $t(`objectTree.cycleValueDisplayMode`) }}</span>
-          </v-tooltip>
-
-        </v-col>
-        <v-col cols="auto">
-
-          <v-tooltip right>
-            <template v-slot:activator="{ on }">
-              <div id="_delete_node"
-                v-on="on"
-                @click="deleteNode"
-                class="mr-2">
-                <v-icon small>
-                  mdi-trash-can-outline
-                </v-icon>
-              </div>
-            </template>
-            <span>{{ $t(`objectTree.deleteNode`) }}</span>
-          </v-tooltip>
-
-        </v-col>
-
       </v-row>
-    </div>
+      <v-row v-if="isParametric">
+        <v-col cols="auto">
+          t = {{parametricTime.toFixed(3)}}
+        </v-col>
+        <v-col>
+          <v-slider v-model="parametricTime"
+            :min="parametricTMin"
+            :max="parametricTMax"
+            :step="parametricTStep" />
+        </v-col>
+        <v-col cols="auto">
+          <v-icon @click="animateCurvePoint">mdi-run</v-icon>
+        </v-col>
+      </v-row>
+    </v-container>
   </div>
 </template>
 
 <script lang="ts">
 import Vue from "vue";
-import { Prop, Component } from "vue-property-decorator";
+import { Prop, Component, Watch } from "vue-property-decorator";
 import { SENodule } from "../models/SENodule";
 import { SEIntersectionPoint } from "../models/SEIntersectionPoint";
 import { SEPoint } from "../models/SEPoint";
@@ -164,7 +213,7 @@ import { SEPointDistance } from "@/models/SEPointDistance";
 import { SESlider } from "@/models/SESlider";
 import { SetNoduleDisplayCommand } from "@/commands/SetNoduleDisplayCommand";
 import { SetValueDisplayModeCommand } from "@/commands/SetValueDisplayModeCommand";
-import { UpdateMode, UpdateStateType, ValueDisplayMode } from "@/types";
+import { AppState, ObjectState, ValueDisplayMode } from "@/types";
 import { SEAngleMarker } from "@/models/SEAngleMarker";
 import { SEPointCoordinate } from "@/models/SEPointCoordinate";
 import { SEEllipse } from "@/models/SEEllipse";
@@ -177,19 +226,49 @@ import { SEPolarLine } from "@/models/SEPolarLine";
 import { SEPolarPoint } from "@/models/SEPolarPoint";
 import { SEPerpendicularLineThruPoint } from "@/models/SEPerpendicularLineThruPoint";
 import { SEPointOnOneOrTwoDimensional } from "@/models/SEPointOnOneOrTwoDimensional";
+import { SENSectPoint } from "@/models/SENSectPoint";
+import { SETangentLineThruPoint } from "@/models/SETangentLineThruPoint";
+import { SENSectLine } from "@/models/SENSectLine";
+import { SEStore } from "@/store";
+import { namespace } from "vuex-class";
+import { Matrix4, Vector3 } from "three";
+import { SEParametricTracePoint } from "@/models/SEParametricTracePoint";
 
+const SE = namespace("se");
 @Component
 export default class SENoduleItem extends Vue {
   @Prop() readonly node!: SENodule;
 
+  @SE.State((s: AppState) => s.inverseTotalRotationMatrix)
+  readonly inverseRotationMatrix!: Matrix4;
+
+  private rotationMatrix = new Matrix4();
+  private traceLocation = new Vector3();
+  curve: SEParametric | null = null;
+  curvePoint: SEParametricTracePoint | null = null;
+  parametricTime = 0;
+  parametricTMin = 0;
+  parametricTMax = 1;
+  parametricTStep = 0.01;
+
   /**
    * Objects that define the deleted objects (and all descendants) before deleting (for undoing delete)
    */
-  private beforeDeleteState: UpdateStateType = {
-    mode: UpdateMode.RecordStateForDelete,
-    stateArray: []
-  };
+  private beforeDeleteStateMap: Map<number, ObjectState> = new Map(); //number is the SENodule.id
+  private beforeDeleteSENoduleIDList: number[] = [];
 
+  mounted(): void {
+    if (this.node instanceof SEParametric) {
+      this.curve = this.node;
+      // const pt = new Point();
+      this.curvePoint = this.curve.tracePoint;
+      const [tMin, tMax] = this.curve.tMinMaxExpressionValues();
+      this.parametricTMin = tMin;
+      this.parametricTMax = tMax;
+      this.parametricTStep = (tMax - tMin) / 100;
+      this.onParametricTimeChanged(tMin);
+    }
+  }
   glowMe(flag: boolean): void {
     /* If the highlighted object is plottable, we highlight
        it directly. Otherwise, we highlight its parents */
@@ -209,6 +288,9 @@ export default class SENoduleItem extends Vue {
         .forEach((p: SESegment) => {
           p.glowing = flag;
         });
+    } else if (this.node instanceof SEPointCoordinate) {
+      const target = this.node.point as SEPoint;
+      target.glowing = flag;
     }
   }
 
@@ -222,17 +304,39 @@ export default class SENoduleItem extends Vue {
   toggleVisibility(): void {
     new SetNoduleDisplayCommand(this.node, !this.node.showing).execute();
   }
+  toggleLabelDisplay(): void {
+    if (
+      // this.isPlottable
+      this.node instanceof SEPoint ||
+      this.node instanceof SELine ||
+      this.node instanceof SESegment ||
+      this.node instanceof SECircle ||
+      this.node instanceof SEEllipse ||
+      this.node instanceof SEAngleMarker ||
+      this.node instanceof SEParametric ||
+      this.node instanceof SEPolygon
+    ) {
+      if (this.node.label) {
+        new SetNoduleDisplayCommand(
+          this.node.label,
+          !this.node.label.showing
+        ).execute();
+      }
+    }
+  }
 
   deleteNode(): void {
-    // if (!(this.node instanceof SECalculation)) {
-    this.beforeDeleteState = {
-      mode: UpdateMode.RecordStateForDelete,
-      stateArray: []
-    };
+    // Clear the delete array and map
+    this.beforeDeleteStateMap.clear();
+    this.beforeDeleteSENoduleIDList.splice(0);
+
     // First mark all children of the victim out of date so that the update method does a topological sort
     this.node.markKidsOutOfDate();
     //Record the state of the victim and all the SENodules that depend on it (i.e kids, grandKids, etc..).
-    this.node.update(this.beforeDeleteState);
+    this.node.update(
+      this.beforeDeleteStateMap,
+      this.beforeDeleteSENoduleIDList
+    );
 
     // console.debug("order of states before reverse");
     // this.beforeDeleteState.stateArray.forEach(obj =>
@@ -244,13 +348,20 @@ export default class SENoduleItem extends Vue {
     // The update method orders the objects from the victim to the leaf (i.e objects with only in arrows)
     // To delete remove from the leaves to the victim (and to undo build from the victim to leaves -- accomplished
     // by the command group reversing the order on restore()).  Therefore reverse the stateArray.
-    this.beforeDeleteState.stateArray.reverse();
-    this.beforeDeleteState.stateArray.forEach(element => {
-      deleteCommandGroup.addCommand(new DeleteNoduleCommand(element.object));
+    this.beforeDeleteSENoduleIDList.reverse();
+    this.beforeDeleteSENoduleIDList.forEach(seNoduleID => {
+      // Get the before state of the SENodule
+      const seNoduleBeforeState = this.beforeDeleteStateMap.get(seNoduleID);
+
+      if (seNoduleBeforeState !== undefined) {
+        deleteCommandGroup.addCommand(
+          new DeleteNoduleCommand(seNoduleBeforeState.object)
+        );
+      }
     });
     deleteCommandGroup.execute();
-    // } else {
-    // }
+    // when deleting mesurements, the measure object(if any) must be unglowed
+    SEStore.unglowAllSENodules();
   }
 
   cycleValueDisplayMode(): void {
@@ -299,17 +410,56 @@ export default class SENoduleItem extends Vue {
     // update a parent (who is parent to both this measurement and the label) to update the display on the sphere canvas
     if (!(this.node instanceof SECalculation)) {
       this.node.parents[0].markKidsOutOfDate();
-      this.node.parents[0].update({
-        mode: UpdateMode.DisplayOnly,
-        stateArray: []
-      });
+      this.node.parents[0].update();
     }
   }
+
+  @Watch("parametricTime")
+  onParametricTimeChanged(tVal: number): void {
+    if (this.curve && this.curvePoint) {
+      this.curvePoint.setLocationByTime(tVal);
+      this.curvePoint.markKidsOutOfDate();
+      this.curvePoint.update();
+    }
+  }
+
+  animateCurvePoint(): void {
+    const repeatCount = Math.ceil(
+      (this.parametricTMax - this.parametricTMin) / this.parametricTStep
+    );
+    this.parametricTime = this.parametricTMin;
+    const timer = setInterval(() => {
+      if (this.parametricTime <= this.parametricTMax) {
+        this.parametricTime += this.parametricTStep;
+      }
+    }, 100);
+    setTimeout(() => {
+      console.debug("Stop the interval timer");
+      clearInterval(timer);
+    }, repeatCount * 100);
+  }
+
   get isPoint(): boolean {
     return this.node instanceof SEPoint;
   }
   get isHidden(): boolean {
     return !this.node.showing;
+  }
+  get isLabelHidden(): boolean {
+    if (
+      // this.isPlottable
+      this.node instanceof SEPoint ||
+      this.node instanceof SELine ||
+      this.node instanceof SESegment ||
+      this.node instanceof SECircle ||
+      this.node instanceof SEEllipse ||
+      this.node instanceof SEAngleMarker ||
+      this.node instanceof SEParametric ||
+      this.node instanceof SEPolygon
+    ) {
+      return !this.node.label?.showing;
+    }
+    return false;
   }
   get isExpressionAndNotCoordinate(): boolean {
     return (
@@ -381,6 +531,26 @@ export default class SENoduleItem extends Vue {
   get isPointDistance(): boolean {
     return this.node instanceof SEPointDistance;
   }
+  get isMidpoint(): boolean {
+    return (
+      this.node instanceof SENSectPoint && (this.node as SENSectPoint).N === 2
+    );
+  }
+  get isNSectPoint(): boolean {
+    return this.node instanceof SENSectPoint;
+  }
+
+  get isTangent(): boolean {
+    return this.node instanceof SETangentLineThruPoint;
+  }
+  get isAngleBisector(): boolean {
+    return (
+      this.node instanceof SENSectLine && (this.node as SENSectLine).N === 2
+    );
+  }
+  get isNSectLine(): boolean {
+    return this.node instanceof SENSectLine;
+  }
 
   get isPlottable(): boolean {
     return (
@@ -421,18 +591,18 @@ export default class SENoduleItem extends Vue {
 }
 .node,
 .visibleNode {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  margin: 0 0.25em;
+  // display: flex;
+  // flex-direction: row;
+  // align-items: center;
+  // margin: 0 0.25em;
   background-color: white;
   .contentText {
     // Expand to fill in the remaining available space
-    flex-grow: 1;
+    // flex-grow: 1;
   }
   v-icon {
     // Icons should not grow, just fit to content
-    flex-grow: 0;
+    // flex-grow: 0;
   }
 
   &:hover {

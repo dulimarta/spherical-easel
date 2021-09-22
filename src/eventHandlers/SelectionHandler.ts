@@ -12,6 +12,7 @@ import { SESegment } from "@/models/SESegment";
 import { SEParametric } from "@/models/SEParametric";
 import { SEPolygon } from "@/models/SEPolygon";
 import { SEAngleMarker } from "@/models/SEAngleMarker";
+import Parametric from "@/plottables/Parametric";
 // import { SEPoint } from "@/models/SEPoint";
 // import { SELine } from "@/models/SELine";
 // import { SESegment } from "@/models/SESegment";
@@ -104,7 +105,11 @@ export default class SelectionHandler extends Highlighter {
         .filter((n: SEParametric) => n.showing) //no hidden parametrics allowed
         .forEach((n: SEParametric) => {
           this.keyPressSelection.push(n);
-          (n as any).ref.glowingDisplay();
+          let ptr: Parametric | null = n.ref;
+          while (ptr !== null) {
+            ptr.glowingDisplay();
+            ptr = ptr.next;
+          }
         });
     }
     // Get all SEPolygons
@@ -236,7 +241,7 @@ export default class SelectionHandler extends Highlighter {
       }
     }
     SEStore.setSelectedSENodules(this.currentSelection);
-    console.log("number selected", SEStore.selectedSENodules.length);
+    // console.log("number selected", SEStore.selectedSENodules.length);
     /** 
     console.log("----selected---- objects------");
     this.currentSelection.forEach(n =>

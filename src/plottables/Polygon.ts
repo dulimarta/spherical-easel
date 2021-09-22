@@ -911,6 +911,7 @@ export default class Polygon extends Nodule {
       }
     });
   }
+
   backGlowingDisplay(): void {
     this.backFills.forEach(part => (part.visible = true));
     this.seEdgeSegments.forEach(seg => {
@@ -1028,7 +1029,7 @@ export default class Polygon extends Nodule {
         // FRONT
         const frontStyle = this.styleOptions.get(StyleEditPanels.Front);
 
-        if (frontStyle?.fillColor === "noFill") {
+        if (Nodule.hlsaIsNoFillOrNoStroke(frontStyle?.fillColor)) {
           this.frontFills.forEach(fill => fill.noFill());
         } else {
           this.frontGradientColor.color = frontStyle?.fillColor ?? "black";
@@ -1039,8 +1040,9 @@ export default class Polygon extends Nodule {
         const backStyle = this.styleOptions.get(StyleEditPanels.Back);
         if (backStyle?.dynamicBackStyle) {
           if (
-            Nodule.contrastFillColor(frontStyle?.fillColor ?? "black") ===
-            "noFill"
+            Nodule.hlsaIsNoFillOrNoStroke(
+              Nodule.contrastFillColor(frontStyle?.fillColor)
+            )
           ) {
             this.backFills.forEach(fill => fill.noFill());
           } else {
@@ -1051,7 +1053,7 @@ export default class Polygon extends Nodule {
             this.backFills.forEach(fill => (fill.fill = this.backGradient));
           }
         } else {
-          if (backStyle?.fillColor === "noFill") {
+          if (Nodule.hlsaIsNoFillOrNoStroke(backStyle?.fillColor)) {
             this.backFills.forEach(fill => fill.noFill());
           } else {
             this.backGradientColor.color = backStyle?.fillColor ?? "black";

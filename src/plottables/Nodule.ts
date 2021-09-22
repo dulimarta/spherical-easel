@@ -20,7 +20,7 @@ export default abstract class Nodule implements Stylable, Resizeable {
   /**
    * The number that control the styling of certain colors and opacities and size if dynamicBackStyling is true
    */
-  static backStyleContrast = SETTINGS.style.backStyleContrast;
+  static globalBackStyleContrast = SETTINGS.style.backStyleContrast;
 
   /**
    * A map that lets use look up the properties of a plottable object
@@ -77,50 +77,54 @@ export default abstract class Nodule implements Stylable, Resizeable {
   abstract updateDisplay(): void;
 
   static setBackStyleContrast(contrast: number): void {
-    this.backStyleContrast = contrast;
+    this.globalBackStyleContrast = contrast;
   }
 
   static getBackStyleContrast(): number {
-    return this.backStyleContrast;
+    return this.globalBackStyleContrast;
   }
 
   /**
-   * Get the back contrasting style using the value of backStyleContrast
+   * Get the back contrasting style using the value of globalBackStyleContrast
    * Principle:
    * Contrast = 1 => no difference between front and back
    * Contrast = 0 => Nothing appears on back of sphere for colors and size reduction is maximized
    */
-  static contrastFillColor(frontColor: string): string {
-    if (frontColor == "noFill") {
-      return "noFill";
+  static contrastFillColor(frontColor: string | undefined): string {
+    if (
+      Nodule.hlsaIsNoFillOrNoStroke(frontColor) ||
+      Nodule.globalBackStyleContrast === 0
+    ) {
+      return "hsla(0,0%,0%,0)";
     }
-    if (frontColor == "noLabelFrontFill") {
-      return "noLabelBackFill";
-    }
+
     const hslaColor = Nodule.convertStringToHSLAObject(frontColor);
-    hslaColor.l = 1 - (1 - hslaColor.l) * Nodule.backStyleContrast;
+    hslaColor.l = 1 - (1 - hslaColor.l) * Nodule.globalBackStyleContrast;
     return Nodule.convertHSLAObjectToString(hslaColor);
   }
 
-  static contrastStrokeColor(frontColor: string): string {
-    if (frontColor == "noStroke") {
-      return "noStroke";
+  static contrastStrokeColor(frontColor: string | undefined): string {
+    if (
+      Nodule.hlsaIsNoFillOrNoStroke(frontColor) ||
+      Nodule.globalBackStyleContrast === 0
+    ) {
+      return "hsla(0,0%,0%,0)";
     }
     const hslaColor = Nodule.convertStringToHSLAObject(frontColor);
-    hslaColor.l = 1 - (1 - hslaColor.l) * Nodule.backStyleContrast;
+    hslaColor.l = 1 - (1 - hslaColor.l) * Nodule.globalBackStyleContrast;
     return Nodule.convertHSLAObjectToString(hslaColor);
   }
 
   // The back linewidth can be up to 20% smaller than their front counterparts.
   static contrastStrokeWidthPercent(frontPercent: number): number {
-    return frontPercent - 20 * Nodule.backStyleContrast;
+    return frontPercent - 20 * Nodule.globalBackStyleContrast;
   }
   // The back points can be up to 20% smaller in radius than their front counterparts.
   static contrastPointRadiusPercent(frontPercent: number): number {
-    return frontPercent - 20 * (1 - Nodule.backStyleContrast);
+    return frontPercent - 20 * (1 - Nodule.globalBackStyleContrast);
   }
   static contrastTextScalePercent(frontPercent: number): number {
-    return frontPercent - 20 * (1 - Nodule.backStyleContrast);
+    return frontPercent - 20 * (1 - Nodule.globalBackStyleContrast);
   }
   static convertStringToHSLAObject(
     colorStringOld: string | undefined
@@ -130,7 +134,7 @@ export default abstract class Nodule implements Stylable, Resizeable {
       const colorString = colorStringOld.slice(5, -1);
       const numberArray = colorString
         .split(",")
-        .map(x => x.replace("%", "").trim()); //remove the percent symbols
+        .map(x => x.replace("%", "").trim()); //remove the percent symbols and the padding spaces
       if (Number(numberArray[3]) <= 0) {
         // If the alpha/opacity value is zero the color picker slider for alpha/opacity disappears and can't be returned
         numberArray[3] = "0";
@@ -143,12 +147,15 @@ export default abstract class Nodule implements Stylable, Resizeable {
       };
     } else {
       // This should never happen
-      return {
-        h: 0,
-        s: 0,
-        l: 0,
-        a: 0
-      };
+      throw new Error(`Color string is undefined`);
+    }
+  }
+  static hlsaIsNoFillOrNoStroke(colorStringOld: string | undefined): boolean {
+    if (colorStringOld) {
+      const hsla = Nodule.convertStringToHSLAObject(colorStringOld);
+      return Math.max(hsla.h, hsla.s, hsla.l, hsla.a) < SETTINGS.tolerance;
+    } else {
+      throw new Error(`Color string is undefined`);
     }
   }
   static convertHSLAObjectToString(colorObject: hslaColorType): string {
@@ -182,7 +189,16 @@ export default abstract class Nodule implements Stylable, Resizeable {
   updateStyle(mode: StyleEditPanels, options: StyleOptions): void {
     // console.debug("Update style of plottable", this, "using", options);
     const currentOptions = this.styleOptions.get(mode);
+    // console.log(
+    //   "mode",
+    //   mode,
+    //   "options",
+    //   options,
+    //   "current options",
+    //   currentOptions
+    // );
     this.styleOptions.set(mode, { ...currentOptions, ...options });
+    // console.log("style options", this.styleOptions);
     // Now apply the style and size
     this.stylize(DisplayStyle.ApplyCurrentVariables);
     this.adjustSize();

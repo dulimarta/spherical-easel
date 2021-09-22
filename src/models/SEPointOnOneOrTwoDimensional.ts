@@ -1,8 +1,7 @@
 import { SEPoint } from "./SEPoint";
 import Point from "@/plottables/Point";
 import { Vector3 } from "three";
-import { SEOneOrTwoDimensional } from "@/types";
-import { UpdateMode, UpdateStateType, PointState } from "@/types";
+import { ObjectState, SEOneOrTwoDimensional } from "@/types";
 import i18n from "@/i18n";
 import { SESegment } from "./SESegment";
 import { SELine } from "./SELine";
@@ -103,13 +102,17 @@ export class SEPointOnOneOrTwoDimensional extends SEPoint {
     return this.oneDimensionalParent;
   }
 
-  public update(state: UpdateStateType): void {
+  public update(
+    objectState?: Map<number, ObjectState>,
+    orderedSENoduleList?: number[]
+  ): void {
     // If any one parent is not up to date, don't do anything
-    if (!this.canUpdateNow()) {
-      return;
-    }
+    if (!this.canUpdateNow()) return;
+
     this.setOutOfDate(false);
+
     this._exists = this.oneDimensionalParent.exists;
+
     if (this._exists) {
       // Update the current location with the closest point on the parent to the old location
       this._locationVector
@@ -122,32 +125,35 @@ export class SEPointOnOneOrTwoDimensional extends SEPoint {
       // Set the position of the associated displayed plottable Point
       this.ref.positionVector = this._locationVector;
     }
+
     // Update visibility
     if (this._showing && this._exists) {
       this.ref.setVisible(true);
     } else {
       this.ref.setVisible(false);
     }
-    // SEPointOnOneDimensional are free points and should be recorded for move and delete always
-    if (
-      state.mode == UpdateMode.RecordStateForDelete ||
-      state.mode == UpdateMode.RecordStateForMove
-    ) {
-      const pointState: PointState = {
-        kind: "point",
+
+    // These are free points on their parent and so we store additional information
+    if (objectState && orderedSENoduleList) {
+      if (objectState.has(this.id)) {
+        console.log(
+          `Point On One or Two Dimensional with id ${this.id} has been visited twice proceed no further down this branch of the DAG.`
+        );
+        return;
+      }
+      orderedSENoduleList.push(this.id);
+      const location = new Vector3();
+      location.copy(this._locationVector);
+      objectState.set(this.id, {
+        kind: "pointOnOneOrTwoDimensional",
         object: this,
-        locationVectorX: this._locationVector.x,
-        locationVectorY: this._locationVector.y,
-        locationVectorZ: this._locationVector.z
-      };
-      state.stateArray.push(pointState);
+        locationVector: location
+      });
     }
-    this.markKidsOutOfDate(); // if we don't do this, then some children are updated (at least) twice and the the second update is incorrect.
-    this.updateKids(state);
+
+    this.updateKids(objectState, orderedSENoduleList);
   }
 
-  // I wish the SENodule methods would work but I couldn't figure out how
-  // See the attempts in SENodule
   public isPointOnOneDimensional(): boolean {
     return true;
   }

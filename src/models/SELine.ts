@@ -5,8 +5,12 @@ import { Visitable } from "@/visitors/Visitable";
 import { Visitor } from "@/visitors/Visitor";
 import { SEPoint } from "./SEPoint";
 import SETTINGS from "@/global-settings";
-import { OneDimensional, Labelable } from "@/types";
-import { UpdateMode, UpdateStateType, LineState } from "@/types";
+import {
+  OneDimensional,
+  Labelable,
+  NormalVectorAndTValue,
+  ObjectState
+} from "@/types";
 import { SELabel } from "@/models/SELabel";
 // import  SENoduleItem  from "*.vue";
 // import magnificationLevel from "*.vue";
@@ -191,7 +195,7 @@ export class SELine extends SENodule
   public getNormalsToPerpendicularLinesThru(
     sePointVector: Vector3,
     oldNormal: Vector3
-  ): Vector3[] {
+  ): NormalVectorAndTValue[] {
     this.tmpVector3.set(0, 0, 0);
     this.tmpVector3.crossVectors(sePointVector, this._normalVector);
     // Check to see if the tmpVector is zero (i.e the normal vector and given point are parallel -- ether
@@ -217,16 +221,20 @@ export class SELine extends SENodule
     this.tmpVector3.normalize();
     // console.log("here x", this.tmpVector3.x);
 
-    return [this.tmpVector3];
+    return [{ normal: this.tmpVector3, tVal: NaN }];
   }
 
-  public update(state: UpdateStateType): void {
+  public update(
+    objectState?: Map<number, ObjectState>,
+    orderedSENoduleList?: number[]
+  ): void {
     // If any one parent is not up to date, don't do anything
-    if (!this.canUpdateNow()) {
-      return;
-    }
+    if (!this.canUpdateNow()) return;
+
     this.setOutOfDate(false);
+
     this._exists = this._startSEPoint.exists && this._endSEPoint.exists;
+
     if (this._exists) {
       // Given an set of this.startPoint, this.endPoint and (old) this.normalVector, and compute the next normal vector
       // Compute a temporary normal from the two points
@@ -261,23 +269,27 @@ export class SELine extends SENodule
       this.ref.setVisible(false);
     }
 
-    // Create a line state for a Move or delete if necessary
-    if (
-      state.mode == UpdateMode.RecordStateForDelete ||
-      state.mode == UpdateMode.RecordStateForMove
-    ) {
-      // If the parent points of the line are antipodal, the normal vector determines the
-      // plane of the line.   Store the coordinate values of the normal vector and not the pointer to the vector.
-      const lineState: LineState = {
+    // Lines are NOT completely determined by their parents so we store additional information
+    // If the parent points of the line are antipodal, the normal vector determines the
+    // plane of the line.
+    if (objectState && orderedSENoduleList) {
+      if (objectState.has(this.id)) {
+        console.log(
+          `Line with id ${this.id} has been visited twice proceed no further down this branch of the DAG.`
+        );
+        return;
+      }
+      orderedSENoduleList.push(this.id);
+      const normal = new Vector3();
+      normal.copy(this._normalVector);
+      objectState.set(this.id, {
         kind: "line",
         object: this,
-        normalVectorX: this._normalVector.x,
-        normalVectorY: this._normalVector.y,
-        normalVectorZ: this._normalVector.z
-      };
-      state.stateArray.push(lineState);
+        normalVector: normal
+      });
     }
-    this.updateKids(state);
+
+    this.updateKids(objectState, orderedSENoduleList);
   }
 
   /**
@@ -321,14 +333,8 @@ export class SELine extends SENodule
         // First mark the kids out of date so that the update method does a topological sort
         this.startSEPoint.markKidsOutOfDate();
         this.endSEPoint.markKidsOutOfDate();
-        this.endSEPoint.update({
-          mode: UpdateMode.DisplayOnly,
-          stateArray: []
-        });
-        this.startSEPoint.update({
-          mode: UpdateMode.DisplayOnly,
-          stateArray: []
-        });
+        this.endSEPoint.update();
+        this.startSEPoint.update();
       }
     } else {
       let pivot = this.startSEPoint;
@@ -381,7 +387,8 @@ export class SELine extends SENodule
         this.tmpVector1.copy(this.normalVector);
         this.tmpVector1.applyAxisAngle(axisOfRotation, rotationAngle);
         this.normalVector = this.tmpVector1;
-        this.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
+        this.markKidsOutOfDate();
+        this.update();
       } else {
         // For non-antipodal points move the freeEnd
         this.tmpVector1.copy(freeEnd.locationVector);
@@ -391,36 +398,31 @@ export class SELine extends SENodule
         // First mark the kids out of date so that the update method does a topological sort
         freeEnd.markKidsOutOfDate();
         pivot.markKidsOutOfDate();
-        freeEnd.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
-        pivot.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
+        freeEnd.update();
+        pivot.update();
       }
     }
   }
 
-  // I wish the SENodule methods would work but I couldn't figure out how
-  // See the attempts in SENodule
-  public isFreePoint(): boolean {
-    return false;
-  }
   public isOneDimensional(): boolean {
     return true;
   }
-  public isPoint(): boolean {
-    return false;
-  }
-  public isPointOnOneDimensional(): boolean {
-    return false;
-  }
-  public isLabel(): boolean {
-    return false;
-  }
-  public isSegmentOfLengthPi(): boolean {
-    return false;
-  }
+
   public isLabelable(): boolean {
     return true;
   }
-  public isNonFreeLine(): boolean {
-    return false;
+
+  public isLineWithAntipodalPoints(): boolean {
+    if (
+      Math.abs(
+        this._endSEPoint.locationVector.angleTo(
+          this._startSEPoint.locationVector
+        ) - Math.PI
+      ) < SETTINGS.line.closeEnoughToPi
+    ) {
+      return true;
+    } else {
+      return false;
+    }
   }
 }

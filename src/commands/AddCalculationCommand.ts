@@ -3,7 +3,7 @@ import { SEExpression } from "@/models/SEExpression";
 import { SENodule } from "@/models/SENodule";
 import { SECalculation } from "@/models/SECalculation";
 import { AddExpressionCommand } from "./AddExpressionCommand";
-import { UpdateMode } from "@/types";
+import { SavedNames } from "@/types";
 
 export class AddCalculationCommand extends AddExpressionCommand {
   // private seExpression: SEExpression;
@@ -24,50 +24,70 @@ export class AddCalculationCommand extends AddExpressionCommand {
   }
 
   toOpcode(): null | string | Array<string> {
-    return (
-      [
-        "AddCalculation",
-        /* arg-0 */ this.seExpression.name,
-        /* arg-1 */ this.arithmeticExpression,
-        /* arg-2 */ this.seExpression.showing,
-        /* arg-3 */ this.seExpression.exists,
-        /* arg-4 to ??? */ this.parents.map((n: SENodule) => n.name).join("@")
-      ]
-        .join(";") // Can't use "/" may get mixed up with division
-        // Replace the first ";" with "/" so CommandInterpreter is able to identify and dispatch this command correctly
-        .replace(";", "/")
-    );
+    return [
+      "AddCalculation",
+      // Any attribute that could possibly have a "=", "@", "&" or "/" should be run through Command.symbolToASCIIDec
+      // All plottable objects have these attributes
+      "objectName=" + Command.symbolToASCIIDec(this.seExpression.name),
+      "objectExists=" + this.seExpression.exists,
+      "objectShowing=" + this.seExpression.showing,
+
+      // Object specific attributes
+      "calculationExpressionString=" +
+        Command.symbolToASCIIDec(this.arithmeticExpression),
+      "calculationParentsNames=" +
+        this.parents.map(n => Command.symbolToASCIIDec(n.name)).join("@")
+    ].join("&");
   }
 
   static parse(command: string, objMap: Map<string, SENodule>): Command {
-    const slashAt = command.indexOf("/");
-    const args = command.substring(slashAt + 1);
-    console.debug("Whole command", command);
-    console.debug("Arguments", args);
-    const tokens = args.split(";");
-    console.debug("Tokens", tokens);
-    const calc = new SECalculation(tokens[1]);
-    calc.name = tokens[0];
-    calc.showing = tokens[2] === "true";
-    calc.exists = tokens[3] === "true";
-    const parents: (SENodule | undefined)[] = [];
-    const parentNames = tokens[4].split("@");
-    parentNames.forEach(name =>
-      parents.push(objMap.get(name) as SENodule | undefined)
-    );
-    if (parents.every(seNodule => seNodule !== undefined)) {
-      objMap.set(tokens[0], calc);
-      // Invoke "update" to trigger reevaluation of the expression
-      // Otherwise, the value of the expressions is shown as ZERO
-      calc.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
+    const tokens = command.split("&");
+    const propMap = new Map<SavedNames, string>();
+    // load the tokens into the map
+    tokens.forEach((token, ind) => {
+      if (ind === 0) return; // don't put the command type in the propMap
+      const parts = token.split("=");
+      propMap.set(parts[0] as SavedNames, Command.asciiDecToSymbol(parts[1]));
+    });
+
+    // get the object specific attributes
+    const tempCalculationParentsNames = propMap.get("calculationParentsNames");
+    const calculationParents: (SEExpression | undefined)[] = [];
+    if (tempCalculationParentsNames) {
+      tempCalculationParentsNames
+        .split("@")
+        .forEach(name =>
+          calculationParents.push(objMap.get(name) as SEExpression | undefined)
+        );
+    }
+
+    const calculationExpression = propMap.get("calculationExpressionString");
+
+    if (
+      calculationParents.every(exp => exp !== undefined) &&
+      calculationExpression
+    ) {
+      const calculation = new SECalculation(calculationExpression);
+
+      //put the length measure in the object map
+      if (propMap.get("objectName") !== undefined) {
+        calculation.name = propMap.get("objectName") ?? "";
+        calculation.showing = propMap.get("objectShowing") === "true";
+        calculation.exists = propMap.get("objectExists") === "true";
+        objMap.set(calculation.name, calculation);
+      } else {
+        throw new Error(
+          "AddCalculationCommand:  calculation name doesn't exist"
+        );
+      }
       return new AddCalculationCommand(
-        calc,
-        tokens[1],
-        parents.map(seNodule => seNodule as SENodule)
+        calculation,
+        calculationExpression,
+        calculationParents.map(exp => exp as SEExpression)
       );
-    } else
-      throw new Error(
-        `AddCalculation: at least one parent in ${parentNames} is undefined`
-      );
+    }
+    throw new Error(
+      `AddCalculationCommand: ${calculationExpression} is undefined`
+    );
   }
 }

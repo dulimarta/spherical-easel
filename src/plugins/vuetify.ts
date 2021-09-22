@@ -175,6 +175,50 @@ const vuetify = new Vuetify({
             ["angleMarker", "back", "front"]
           ]
         }
+      },
+      midpoint: {
+        component: IconBase,
+        props: {
+          iconName: "Midpoint",
+          iconFile: "/icons/iconMidpointPaths.svg",
+          emphasizeTypes: [
+            ["segment", "front"],
+            ["point", "front"]
+          ]
+        }
+      },
+      nSectPoint: {
+        component: IconBase,
+        props: {
+          iconName: "NSectPoint",
+          iconFile: "/icons/iconNSectPointPaths.svg",
+          emphasizeTypes: [
+            ["segment", "front"],
+            ["point", "front"]
+          ]
+        }
+      },
+      angleBisector: {
+        component: IconBase,
+        props: {
+          iconName: "AngleBisector",
+          iconFile: "/icons/iconAngleBisectorPaths.svg",
+          emphasizeTypes: [
+            ["line", "front", "back"],
+            ["angleMarker", "front"]
+          ]
+        }
+      },
+      nSectLine: {
+        component: IconBase,
+        props: {
+          iconName: "NSectLine",
+          iconFile: "/icons/iconNSectLinePaths.svg",
+          emphasizeTypes: [
+            ["line", "front", "back"],
+            ["angleMarker", "front"]
+          ]
+        }
       }
     }
   },

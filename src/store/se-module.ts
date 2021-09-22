@@ -1,10 +1,5 @@
 import { Module, VuexModule, Mutation } from "vuex-module-decorators";
-import {
-  AppState,
-  Labelable,
-  SEIntersectionReturnType,
-  ActionMode
-} from "@/types";
+import { AppState, SEIntersectionReturnType, ActionMode } from "@/types";
 import Two from "two.js";
 import { SEPoint } from "@/models/SEPoint";
 import { SESegment } from "@/models/SESegment";
@@ -21,9 +16,7 @@ import { Vector3, Matrix4 } from "three";
 import { StyleOptions, StyleEditPanels } from "@/types/Styles";
 import { LineNormalVisitor } from "@/visitors/LineNormalVisitor";
 import { SegmentNormalArcLengthVisitor } from "@/visitors/SegmentNormalArcLengthVisitor";
-import { UpdateMode } from "@/types";
 import Nodule, { DisplayStyle } from "@/plottables/Nodule";
-import SETTINGS from "@/global-settings";
 import { SEExpression } from "@/models/SEExpression";
 import { SEAngleMarker } from "@/models/SEAngleMarker";
 import { SEIntersectionPoint } from "@/models/SEIntersectionPoint";
@@ -56,6 +49,8 @@ import { SEParametric } from "@/models/SEParametric";
 import Parametric from "@/plottables/Parametric";
 import { SEPolygon } from "@/models/SEPolygon";
 import { SETangentLineThruPoint } from "@/models/SETangentLineThruPoint";
+import { SENSectLine } from "@/models/SENSectLine";
+import { SEPencil } from "@/models/SEPencil";
 const tmpMatrix = new Matrix4();
 //const tmpVector = new Vector3();
 
@@ -95,7 +90,7 @@ export default class SE extends VuexModule implements AppState {
   canvasWidth = 0; //A temporary canvas width;
   seNodules: SENodule[] = []; // An array of all SENodules
   selectedSENodules: SENodule[] = []; // An array of selected SENodules
-  oldStyleSelections: SENodule[] = []; // An array of previous selected SENodules
+  oldSelections: SENodule[] = []; // An array of previous selected SENodules
   layers: Two.Group[] = []; // An array of Two.Group pointer to the layers in the twoInstance
   sePoints: SEPoint[] = []; // An array of all SEPoints
   seLines: SELine[] = []; // An array of all SELines
@@ -110,13 +105,14 @@ export default class SE extends VuexModule implements AppState {
   intersections: SEIntersectionPoint[] = [];
   // measurements = [],
   expressions: SEExpression[] = [];
+  sePencils: SEPencil[] = [];
   // TODO: replace the following arrays with the Map below
   initialStyleStates: StyleOptions[] = [];
   defaultStyleStates: StyleOptions[] = [];
   initialStyleStatesMap: Map<StyleEditPanels, StyleOptions[]> = new Map();
   defaultStyleStatesMap: Map<StyleEditPanels, StyleOptions[]> = new Map();
   styleSavedFromPanel = StyleEditPanels.Label;
-  initialBackStyleContrast = SETTINGS.style.backStyleContrast;
+  // initialBackStyleContrast = SETTINGS.style.backStyleContrast;
   inverseTotalRotationMatrix = new Matrix4(); //initially the identity. The composition of all the inverses of the rotation matrices applied to the sphere
   svgCanvas: HTMLDivElement | null = null;
   hasUnsavedNodules = false;
@@ -140,6 +136,7 @@ export default class SE extends VuexModule implements AppState {
     this.sePolygons.splice(0);
     this.seEllipses.splice(0);
     this.seParametrics.splice(0);
+    this.sePencils.splice(0);
     this.seLabels.splice(0);
     this.selectedSENodules.splice(0);
     this.intersections.splice(0);
@@ -201,16 +198,6 @@ export default class SE extends VuexModule implements AppState {
     }
   }
 
-  //#region addPoint
-  @Mutation
-  addPoint(point: SEPoint): void {
-    this.sePoints.push(point);
-    this.seNodules.push(point);
-    point.ref.addToLayers(this.layers);
-    this.hasUnsavedNodules = true;
-  }
-  //#endregion addPoint
-
   @Mutation
   removeAllFromLayers(): void {
     this.seAngleMarkers.forEach((x: SEAngleMarker) => x.ref.removeFromLayers());
@@ -220,8 +207,29 @@ export default class SE extends VuexModule implements AppState {
     this.seLines.forEach((x: SELine) => x.ref.removeFromLayers());
     this.sePoints.forEach((x: SEPoint) => x.ref.removeFromLayers());
     this.seSegments.forEach((x: SESegment) => x.ref.removeFromLayers());
-    this.seParametrics.forEach((x: SEParametric) => x.ref.removeFromLayers());
+    this.seParametrics.forEach((x: SEParametric) => {
+      let ptr: Parametric | null = x.ref;
+      while (ptr !== null) {
+        ptr.removeFromLayers();
+        ptr = ptr.next;
+      }
+    });
+    this.sePencils.forEach((p: SEPencil) => {
+      p.lines.forEach((l: SEPerpendicularLineThruPoint) => {
+        l.ref.removeFromLayers();
+      });
+    });
   }
+
+  //#region addPoint
+  @Mutation
+  addPoint(point: SEPoint): void {
+    this.sePoints.push(point);
+    this.seNodules.push(point);
+    point.ref.addToLayers(this.layers);
+    this.hasUnsavedNodules = true;
+  }
+  //#endregion addPoint
 
   @Mutation
   removePoint(pointId: number): void {
@@ -352,7 +360,11 @@ export default class SE extends VuexModule implements AppState {
   addParametric(parametric: SEParametric): void {
     this.seParametrics.push(parametric);
     this.seNodules.push(parametric);
-    parametric.ref.addToLayers(this.layers);
+    let ptr: Parametric | null = parametric.ref;
+    while (ptr) {
+      ptr.addToLayers(this.layers);
+      ptr = ptr.next;
+    }
     this.hasUnsavedNodules = true;
   }
 
@@ -365,13 +377,44 @@ export default class SE extends VuexModule implements AppState {
     if (parametricPos >= 0) {
       /* victim line is found */
       const victimParametric: SEParametric = this.seParametrics[parametricPos];
-      victimParametric.ref.removeFromLayers();
+      let ptr: Parametric | null = victimParametric.ref;
+      while (ptr !== null) {
+        ptr.removeFromLayers();
+        ptr = ptr.next;
+      }
       // victimParametric.removeSelfSafely();
       this.seParametrics.splice(parametricPos, 1); // Remove the parametric from the list
       this.seNodules.splice(pos2, 1);
       this.hasUnsavedNodules = true;
     }
   }
+
+  // @Mutation
+  // addPencil(pencil: SEPencil): void {
+  //   this.sePencils.push(pencil);
+  //   this.seNodules.push(pencil);
+  //   pencil.lines.forEach((ln: SEPerpendicularLineThruPoint) => {
+  //     this.seLines.push(ln);
+  //     this.seNodules.push(ln);
+  //     ln.ref.addToLayers(this.layers);
+  //   });
+  //   this.hasUnsavedNodules = true;
+  // }
+
+  // @Mutation
+  // removePencil(pencilId: number): void {
+  //   const pos = this.sePencils.findIndex((p: SEPencil) => p.id === pencilId);
+  //   const pos2 = this.seNodules.findIndex((p: SENodule) => p.id === pencilId);
+  //   if (pos >= 0) {
+  //     this.sePencils.splice(pos, 1);
+  //     this.seNodules.splice(pos2, 1);
+  //     this.sePencils[pos].lines.forEach((ln: SEPerpendicularLineThruPoint) => {
+  //       // this.removeLine(ln.id);
+  //       ln.ref.removeFromLayers();
+  //     });
+  //     this.hasUnsavedNodules = true;
+  //   }
+  // }
 
   @Mutation
   addAngleMarkerAndExpression(angleMarker: SEAngleMarker): void {
@@ -492,7 +535,7 @@ export default class SE extends VuexModule implements AppState {
     this.sePoints.forEach((p: SEPoint) => {
       if (p.isFreeToMove()) {
         p.markKidsOutOfDate(); // so this does a topological sort and update is only executed once on each point
-        p.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
+        p.update();
       }
     });
   }
@@ -548,12 +591,14 @@ export default class SE extends VuexModule implements AppState {
   // Update the display of all free SEPoints to update the entire display
   @Mutation
   updateDisplay(): void {
+    // console.log("update display");
     this.seNodules
-      .filter(obj => obj.isFreePoint())
+      .filter(obj => obj.isFreeToMove())
       .forEach(obj => {
         // First mark the kids out of date so that the update method does a topological sort
         obj.markKidsOutOfDate();
-        obj.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
+        obj.update();
+        // console.log("name", obj.name, "show", obj.showing, "exist", obj.exists);
       });
   }
 
@@ -569,9 +614,9 @@ export default class SE extends VuexModule implements AppState {
   // This is the previous set of nodes that was selected
   // If created from the LabelPanel they are all SSELabels (So we can't justs copy selections before updating it)
   @Mutation
-  setOldStyleSelection(payload: SENodule[]): void {
-    this.oldStyleSelections.splice(0);
-    this.oldStyleSelections.push(...payload);
+  setOldSelection(payload: SENodule[]): void {
+    this.oldSelections.splice(0);
+    this.oldSelections.push(...payload);
   }
 
   @Mutation
@@ -604,14 +649,21 @@ export default class SE extends VuexModule implements AppState {
     //   });
     // }
     selected.forEach((n: Nodule) => {
+      // console.log("node", n, opt);
       n.updateStyle(panel, opt);
-      // if (opt.pointRadiusPercent !== undefined) {
-      //   // if the point radius Percent changes then this can effects the label location so run update
-      //   n.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
-      // }
     });
   }
 
+  @Mutation
+  changeBackContrast(newContrast: number): void {
+    Nodule.setBackStyleContrast(newContrast);
+    // update all objects display
+    this.seNodules.forEach(seNodule => {
+      // update the style of the objects
+      // console.log("name", seNodule.name);
+      seNodule.ref?.stylize(DisplayStyle.ApplyCurrentVariables);
+    });
+  }
   // addCalculation(calc: SECalculation): void {
   //   // TODO: should we also push it to this.nodules?
   //   // this.nodules.push(calc);
@@ -630,7 +682,6 @@ export default class SE extends VuexModule implements AppState {
   recordStyleState(data: {
     panel: StyleEditPanels;
     selected: Array<Nodule>;
-    backContrast: number;
   }): void {
     console.debug("About to record style", data.selected.length, "objects");
     const current = data.selected.map((n: Nodule) =>
@@ -647,7 +698,7 @@ export default class SE extends VuexModule implements AppState {
       data.panel,
       data.selected.map((n: Nodule) => n.defaultStyleState(data.panel))
     );
-    this.initialBackStyleContrast = data.backContrast;
+    // this.initialBackStyleContrast = data.backContrast;
   }
 
   @Mutation
@@ -709,7 +760,8 @@ export default class SE extends VuexModule implements AppState {
         !(
           newLine instanceof SEPerpendicularLineThruPoint ||
           newLine instanceof SEPolarLine ||
-          newLine instanceof SETangentLineThruPoint
+          newLine instanceof SETangentLineThruPoint ||
+          newLine instanceof SENSectLine
         )
       ) {
         avoidVectors.push(newLine.endSEPoint.locationVector);

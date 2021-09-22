@@ -1,6 +1,6 @@
 import { Command } from "./Command";
 import { SEPoint } from "@/models/SEPoint";
-import { SEOneOrTwoDimensional, UpdateMode } from "@/types";
+import { SavedNames, SEOneOrTwoDimensional } from "@/types";
 import { SELabel } from "@/models/SELabel";
 import SETTINGS from "@/global-settings";
 import { SENodule } from "@/models/SENodule";
@@ -12,6 +12,8 @@ import Point from "@/plottables/Point";
 import { DisplayStyle } from "@/plottables/Nodule";
 import { SEPointOnOneOrTwoDimensional } from "@/models/SEPointOnOneOrTwoDimensional";
 import Label from "@/plottables/Label";
+import NonFreePoint from "@/plottables/NonFreePoint";
+import { StyleEditPanels } from "@/types/Styles";
 
 export class AddPolarPointCommand extends Command {
   private sePolarPoint: SEPolarPoint;
@@ -41,10 +43,8 @@ export class AddPolarPointCommand extends Command {
     }
     Command.store.addPoint(this.sePolarPoint);
     Command.store.addLabel(this.seLabel);
-    this.sePolarPoint.update({
-      mode: UpdateMode.DisplayOnly,
-      stateArray: []
-    });
+    this.sePolarPoint.markKidsOutOfDate();
+    this.sePolarPoint.update();
   }
 
   saveState(): void {
@@ -61,51 +61,127 @@ export class AddPolarPointCommand extends Command {
   toOpcode(): null | string | Array<string> {
     return [
       "AddPolarPoint",
-      /* arg-1 */ this.sePolarPoint.name,
-      /* arg-2 */ this.sePolarPoint.locationVector.toFixed(7),
-      /* arg-3 */ this.parent.name,
-      /* arg-4 */ this.seLabel.name,
-      /* arg-5 */ this.sePolarPoint.showing,
-      /* arg-6 */ this.sePolarPoint.exists,
-      /* arg-7*/ this.index
-    ].join("/");
+      // Any attribute that could possibly have a "= or "&" or "/" should be run through Command.symbolToASCIIDec
+      // All plottable objects have these attributes
+      "objectName=" + Command.symbolToASCIIDec(this.sePolarPoint.name),
+      "objectExists=" + this.sePolarPoint.exists,
+      "objectShowing=" + this.sePolarPoint.showing,
+      "objectFrontStyle=" +
+        Command.symbolToASCIIDec(
+          JSON.stringify(
+            this.sePolarPoint.ref.currentStyleState(StyleEditPanels.Front)
+          )
+        ),
+      "objectBackStyle=" +
+        Command.symbolToASCIIDec(
+          JSON.stringify(
+            this.sePolarPoint.ref.currentStyleState(StyleEditPanels.Back)
+          )
+        ),
+      // All labels have these attributes
+      "labelName=" + Command.symbolToASCIIDec(this.seLabel.name),
+      "labelStyle=" +
+        Command.symbolToASCIIDec(
+          JSON.stringify(
+            this.seLabel.ref.currentStyleState(StyleEditPanels.Label)
+          )
+        ),
+      "labelVector=" + this.seLabel.ref._locationVector.toFixed(7),
+      "labelShowing=" + this.seLabel.showing,
+      "labelExists=" + this.seLabel.exists,
+      // Object specific attributes
+      "polarPointVector=" + this.sePolarPoint.locationVector.toFixed(7),
+      "polarPointParentName=" + this.parent.name,
+      "polarPointIndex=" + this.index
+    ].join("&");
   }
 
   static parse(command: string, objMap: Map<string, SENodule>): Command {
-    const tokens = command.split("/");
-    const parentLineOrSegment = objMap.get(tokens[3]) as
-      | SELine
-      | SESegment
-      | undefined;
-    if (parentLineOrSegment) {
-      const pointPosition = new Vector3();
-      pointPosition.from(tokens[2]);
-      // const { point, label } = Command.makePointAndLabel(pointPosition); // We can't use this because we must create a SEPolarPoint and not just an SEPoint
+    // console.log(command);
+    const tokens = command.split("&");
+    const propMap = new Map<SavedNames, string>();
+    // load the tokens into the map
+    tokens.forEach((token, ind) => {
+      if (ind === 0) return; // don't put the command type in the propMap
+      const parts = token.split("=");
+      propMap.set(parts[0] as SavedNames, Command.asciiDecToSymbol(parts[1]));
+    });
 
-      const newPoint = new Point();
-      newPoint.stylize(DisplayStyle.ApplyCurrentVariables);
-      newPoint.adjustSize();
-      const index = Number(tokens[7]);
-      const point = new SEPolarPoint(newPoint, parentLineOrSegment, index);
-      point.locationVector.copy(pointPosition);
+    // get the object specific attributes
+    const sePolarPointParent = objMap.get(
+      propMap.get("polarPointParentName") ?? ""
+    ) as SELine | SESegment | undefined;
 
-      const newLabel = new Label();
-      const label = new SELabel(newLabel, point);
-      label.locationVector.copy(pointPosition);
-      const offset = SETTINGS.point.initialLabelOffset;
-      label.locationVector.add(new Vector3(2 * offset, offset, 0)).normalize();
+    const sePolarPointVector = new Vector3();
+    sePolarPointVector.from(propMap.get("polarPointVector"));
 
-      point.showing = tokens[5] === "true";
-      point.exists = tokens[6] === "true";
-      point.name = tokens[1];
-      objMap.set(tokens[1], point);
-      label.showing = tokens[5] === "true";
-      label.exists = tokens[6] === "true";
-      label.name = tokens[4];
-      objMap.set(tokens[4], label);
-      return new AddPolarPointCommand(point, index, parentLineOrSegment, label);
-    } else {
-      throw new Error(`AddPolarPoint: parent object ${tokens[3]} is undefined`);
+    const sePolarPointIndex = Number(propMap.get("polarPointIndex"));
+
+    if (
+      sePolarPointParent &&
+      sePolarPointVector.z !== 1 &&
+      !isNaN(sePolarPointIndex)
+    ) {
+      //make the Polar Point
+      const point = new NonFreePoint();
+      const sePolarPoint = new SEPolarPoint(
+        point,
+        sePolarPointParent,
+        sePolarPointIndex
+      );
+      //style the Polar Point
+      const polarPointFrontStyleString = propMap.get("objectFrontStyle");
+      if (polarPointFrontStyleString !== undefined)
+        point.updateStyle(
+          StyleEditPanels.Front,
+          JSON.parse(polarPointFrontStyleString)
+        );
+      const polarPointBackStyleString = propMap.get("objectBackStyle");
+      if (polarPointBackStyleString !== undefined)
+        point.updateStyle(
+          StyleEditPanels.Back,
+          JSON.parse(polarPointBackStyleString)
+        );
+
+      //make the label and set its location
+      const label = new Label();
+      const seLabel = new SELabel(label, sePolarPoint);
+      const seLabelLocation = new Vector3();
+      seLabelLocation.from(propMap.get("labelVector")); // convert to Number
+      seLabel.locationVector.copy(seLabelLocation);
+      //style the label
+      const labelStyleString = propMap.get("labelStyle");
+      if (labelStyleString !== undefined)
+        label.updateStyle(StyleEditPanels.Label, JSON.parse(labelStyleString));
+
+      //put the circle in the object map
+      if (propMap.get("objectName") !== undefined) {
+        sePolarPoint.name = propMap.get("objectName") ?? "";
+        sePolarPoint.showing = propMap.get("objectShowing") === "true";
+        sePolarPoint.exists = propMap.get("objectExists") === "true";
+        objMap.set(sePolarPoint.name, sePolarPoint);
+      } else {
+        throw new Error("AddPolarPoint: PolarPoint Name doesn't exist");
+      }
+
+      //put the label in the object map
+      if (propMap.get("labelName") !== undefined) {
+        seLabel.name = propMap.get("labelName") ?? "";
+        seLabel.showing = propMap.get("labelShowing") === "true";
+        seLabel.exists = propMap.get("labelExists") === "true";
+        objMap.set(seLabel.name, seLabel);
+      } else {
+        throw new Error("AddPolarPoint: Label Name doesn't exist");
+      }
+      return new AddPolarPointCommand(
+        sePolarPoint,
+        sePolarPointIndex,
+        sePolarPointParent,
+        seLabel
+      );
     }
+    throw new Error(
+      `AddPolarPoint: ${sePolarPointVector}, ${sePolarPointIndex}, or ${sePolarPointParent}  is undefined`
+    );
   }
 }

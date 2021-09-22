@@ -16,7 +16,6 @@ import { SEPointOnOneOrTwoDimensional } from "@/models/SEPointOnOneOrTwoDimensio
 import { AddIntersectionPointCommand } from "@/commands/AddIntersectionPointCommand";
 import { AddPointOnOneDimensionalCommand } from "@/commands/AddPointOnOneOrTwoDimensionalCommand";
 import { SEOneOrTwoDimensional, SEIntersectionReturnType } from "@/types";
-import { UpdateMode } from "@/types";
 import Label from "@/plottables/Label";
 import { SELabel } from "@/models/SELabel";
 import EventBus from "./EventBus";
@@ -635,7 +634,13 @@ export default class EllipseHandler extends Highlighter {
                 this.focus1Vector.angleTo(this.focus2Vector) -
                 SETTINGS.ellipse.minimumAngleSumDifference
           ) {
-            this.makeEllipse();
+            if (!this.makeEllipse()) {
+              EventBus.fire("show-alert", {
+                key: `handlers.ellipseCreationAttemptDuplicate`,
+                keyOptions: {},
+                type: "error"
+              });
+            }
             // reset to get ready to make a new ellipse
             this.mouseLeave(event);
           }
@@ -714,7 +719,7 @@ export default class EllipseHandler extends Highlighter {
   /**
    * Add a new circle the user has moved the mouse far enough (but not a radius of PI)
    */
-  makeEllipse(): void {
+  makeEllipse(): boolean {
     // Create a command group to add the points defining the ellipse and the ellipse to the store
     // This way a single undo click will undo all (potentially three) operations.
     const ellipseCommandGroup = new CommandGroup();
@@ -1019,6 +1024,56 @@ export default class EllipseHandler extends Highlighter {
     // //update the display
     // this.temporaryEllipse.updateDisplay();
 
+    const angleSumToEllipsePoint =
+      this.focus1SEPoint.locationVector.angleTo(
+        this.ellipseSEPoint.locationVector
+      ) +
+      this.focus2SEPoint.locationVector.angleTo(
+        this.ellipseSEPoint.locationVector
+      );
+
+    // check to make sure that this ellipse doesn't already exist
+    if (
+      SEStore.seEllipses.some(
+        ell =>
+          ((this.tmpVector
+            .subVectors(
+              ell.focus1SEPoint.locationVector,
+              this.focus1SEPoint
+                ? this.focus1SEPoint.locationVector
+                : this.tmpVector
+            )
+            .isZero() &&
+            this.tmpVector
+              .subVectors(
+                ell.focus2SEPoint.locationVector,
+                this.focus2SEPoint
+                  ? this.focus2SEPoint.locationVector
+                  : this.tmpVector
+              )
+              .isZero()) ||
+            (this.tmpVector
+              .subVectors(
+                ell.focus1SEPoint.locationVector,
+                this.focus2SEPoint
+                  ? this.focus2SEPoint.locationVector
+                  : this.tmpVector
+              )
+              .isZero() &&
+              this.tmpVector
+                .subVectors(
+                  ell.focus2SEPoint.locationVector,
+                  this.focus1SEPoint
+                    ? this.focus1SEPoint.locationVector
+                    : this.tmpVector
+                )
+                .isZero())) &&
+          Math.abs(ell.ellipseAngleSum - angleSumToEllipsePoint) <
+            SETTINGS.tolerance
+      )
+    ) {
+      return false;
+    }
     // Clone the current circle after the circlePoint is set
     const newEllipse = this.temporaryEllipse.clone();
     // Set the display to the default values
@@ -1098,6 +1153,7 @@ export default class EllipseHandler extends Highlighter {
     );
 
     ellipseCommandGroup.execute();
+    return true;
   }
 
   activate(): void {
@@ -1131,7 +1187,8 @@ export default class EllipseHandler extends Highlighter {
           object3
         );
         // Update the newSEEllipse so the display is correct when the command group is executed
-        newSEEllipse.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
+        newSEEllipse.markKidsOutOfDate();
+        newSEEllipse.update();
         const newSELabel = new SELabel(newLabel, newSEEllipse);
         // Set the initial label location
         this.tmpMatrix.makeRotationAxis(object3.locationVector, Math.PI / 2);

@@ -46,7 +46,7 @@ This is automatically generated when the object was created, but the user can ch
 - E - [Ellipse](/tools/conic.html#ellipse)
 - H - [Hyperbola](/tools/conic.html#parabola)
 - Pa - [Parabola](/tools/conic.html#hyperbola)
-- Po - [Polygon](/tools/basic.html#polygon-too-hard)
+- Po - [Polygon](/tools/basic.html#polygon)
 - Ca - [Circular Arc](/tools/advanced.html#circular-arc)
 - Pc - [Parametric Curve](/tools/advanced.html#parametric-curve-user-defined)
 - Rp - [Reflection over a point](/tools/transformation.html#create-reflection-over-point)

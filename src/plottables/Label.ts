@@ -8,9 +8,9 @@ import { Vector3 } from "three";
 import {
   StyleOptions,
   StyleEditPanels,
-  DEFAULT_LABEL_TEXT_STYLE,
-  DEFAULT_LABEL_FRONT_STYLE,
-  DEFAULT_LABEL_BACK_STYLE
+  DEFAULT_LABEL_TEXT_STYLE
+  // DEFAULT_LABEL_FRONT_STYLE,
+  // DEFAULT_LABEL_BACK_STYLE
 } from "@/types/Styles";
 import { LabelDisplayMode } from "@/types";
 import { SELabel } from "@/models/SELabel";
@@ -22,6 +22,8 @@ import { SEAngleMarker } from "@/models/SEAngleMarker";
 import { SESegmentLength } from "@/models/SESegmentLength";
 import { ValueDisplayMode } from "@/types";
 import { SEPolygon } from "@/models/SEPolygon";
+import { SEParametric } from "@/models/SEParametric";
+import { SEEllipse } from "@/models/SEEllipse";
 
 /**
  * Each Point object is uniquely associated with a SEPoint object.
@@ -190,8 +192,8 @@ export default class Label extends Nodule {
     // this.glowingBackText.stroke = SETTINGS.label.glowingStrokeColor.back;
 
     this.styleOptions.set(StyleEditPanels.Label, DEFAULT_LABEL_TEXT_STYLE);
-    this.styleOptions.set(StyleEditPanels.Front, DEFAULT_LABEL_FRONT_STYLE);
-    this.styleOptions.set(StyleEditPanels.Back, DEFAULT_LABEL_BACK_STYLE);
+    // this.styleOptions.set(StyleEditPanels.Front, DEFAULT_LABEL_FRONT_STYLE);
+    // this.styleOptions.set(StyleEditPanels.Back, DEFAULT_LABEL_BACK_STYLE);
   }
   /**
    * Set and get the shortUserName
@@ -412,35 +414,43 @@ export default class Label extends Nodule {
       if (this.seLabel !== undefined) {
         if (this.seLabel.parent instanceof SEPoint) {
           labelDisplayMode = SETTINGS.point.defaultLabelMode;
-          // if (this.seLabel.parent.isFreePoint()) {
-          // labelVisibility = SETTINGS.point.showLabelsOfFreePointsInitially;
-          // } else {
-          // labelVisibility =
-          //   SETTINGS.point.showLabelsOfNonFreePointsInitially;
-          // }
         } else if (this.seLabel.parent instanceof SELine) {
           labelDisplayMode = SETTINGS.line.defaultLabelMode;
-          // labelVisibility = SETTINGS.line.showLabelsInitially;
         } else if (this.seLabel.parent instanceof SESegment) {
           labelDisplayMode = SETTINGS.segment.defaultLabelMode;
-          // labelVisibility = SETTINGS.segment.showLabelsInitially;
         } else if (this.seLabel.parent instanceof SECircle) {
           labelDisplayMode = SETTINGS.circle.defaultLabelMode;
-          // labelVisibility = SETTINGS.circle.showLabelsInitially;
         } else if (this.seLabel.parent instanceof SEAngleMarker) {
           labelDisplayMode = SETTINGS.angleMarker.defaultLabelMode;
-          // labelVisibility = SETTINGS.circle.showLabelsInitially;
+        } else if (this.seLabel.parent instanceof SEParametric) {
+          labelDisplayMode = SETTINGS.parametric.defaultLabelMode;
+        } else if (this.seLabel.parent instanceof SEEllipse) {
+          labelDisplayMode = SETTINGS.ellipse.defaultLabelMode;
         }
+      }
+      // Angle Markers and polygons are exceptions which are both plottable and an expression.
+      // As expressions MUST have a name of a measurement token (ie. M###), we can't
+      // use the parent name for the short name, so to get around this we use this
+      // and the (angleMarker|polygon)Number.
+      let defaultName = "";
+      if (this.seLabel?.parent instanceof SEAngleMarker) {
+        defaultName = `Am${this.seLabel.parent.angleMarkerNumber}`;
+      } else if (this.seLabel?.parent instanceof SEPolygon) {
+        defaultName = `Po${this.seLabel.parent.polygonNumber}`;
+      } else if (this.seLabel) {
+        defaultName = this.seLabel.parent.name;
       }
       return {
         ...DEFAULT_LABEL_TEXT_STYLE,
-        labelDisplayText: this.seLabel!.parent.name,
+        labelDisplayText: defaultName,
         labelDisplayCaption: "",
         labelDisplayMode: labelDisplayMode
       };
     } else {
       //Should never be called
-      return {};
+      throw new Error(
+        "Called defaultStyleState in Label with non-Label panel."
+      );
     }
   }
 
@@ -452,23 +462,11 @@ export default class Label extends Nodule {
     const textScalePercent = labelStyle?.labelTextScalePercent ?? 100;
     this.frontText.scale = (Label.textScaleFactor * textScalePercent) / 100;
     this.backText.scale = (Label.textScaleFactor * textScalePercent) / 100;
-    // this.backText.scale =
-    //   (Label.textScaleFactor *
-    //     (this.dynamicBackStyle
-    //       ? Nodule.contrastTextScalePercent(this.textScalePercentFront)
-    //       : this.textScalePercentBack)) /
-    //   100;
 
     this.glowingFrontText.scale =
       (Label.textScaleFactor * textScalePercent) / 100;
     this.glowingBackText.scale =
       (Label.textScaleFactor * textScalePercent) / 100;
-    // this.glowingBackText.scale =
-    //   (Label.textScaleFactor *
-    //     (this.dynamicBackStyle
-    //       ? Nodule.contrastTextScalePercent(this.textScalePercentFront)
-    //       : this.textScalePercentBack)) /
-    //   100;
   }
 
   /**
@@ -493,8 +491,8 @@ export default class Label extends Nodule {
         // Properties that have no sides
         let labelText = "";
         // Compute the numerical part of the label (if any) and add it to the end of label
-        if (this.value.length > 0) {
-          if (this.seLabel!.parent instanceof SEPoint) {
+        if (this.value.length > 0 && this.seLabel !== undefined) {
+          if (this.seLabel.parent instanceof SEPoint) {
             labelText =
               "(" +
               `${this._value
@@ -503,15 +501,15 @@ export default class Label extends Nodule {
               ")";
           } else {
             let valueDisplayMode;
-            if (this.seLabel!.parent instanceof SEAngleMarker) {
-              valueDisplayMode = (this.seLabel!.parent as SEAngleMarker)
+            if (this.seLabel.parent instanceof SEAngleMarker) {
+              valueDisplayMode = (this.seLabel.parent as SEAngleMarker)
                 .valueDisplayMode;
             }
-            if (this.seLabel!.parent instanceof SEPolygon) {
-              valueDisplayMode = (this.seLabel!.parent as SEPolygon)
+            if (this.seLabel.parent instanceof SEPolygon) {
+              valueDisplayMode = (this.seLabel.parent as SEPolygon)
                 .valueDisplayMode;
-            } else if (this.seLabel!.parent instanceof SESegment) {
-              const seSegLength = this.seLabel!.parent.kids.find(
+            } else if (this.seLabel.parent instanceof SESegment) {
+              const seSegLength = this.seLabel.parent.kids.find(
                 node => node instanceof SESegmentLength
               );
               valueDisplayMode = (seSegLength as SESegmentLength)
@@ -621,7 +619,8 @@ export default class Label extends Nodule {
           labelStyle?.labelFrontFillColor ?? SETTINGS.label.fillColor.front;
         const backFillColor =
           labelStyle?.labelBackFillColor ?? SETTINGS.label.fillColor.back;
-        if (frontFillColor === "noLabelFrontFill") {
+        // console.log("front fill label", frontFillColor);
+        if (Nodule.hlsaIsNoFillOrNoStroke(frontFillColor)) {
           this.frontText.noFill();
         } else {
           this.frontText.fill = frontFillColor;
@@ -629,14 +628,21 @@ export default class Label extends Nodule {
         this.glowingFrontText.stroke = this.glowingStrokeColorFront;
 
         // BACK
-        if (labelStyle?.dynamicBackStyle) {
-          if (Nodule.contrastFillColor(frontFillColor) === "noLabelBackFill") {
+        if (
+          labelStyle?.labelDynamicBackStyle !== undefined &&
+          labelStyle?.labelDynamicBackStyle === true
+        ) {
+          if (
+            Nodule.hlsaIsNoFillOrNoStroke(
+              Nodule.contrastFillColor(frontFillColor)
+            )
+          ) {
             this.backText.noFill();
           } else {
             this.backText.fill = Nodule.contrastFillColor(frontFillColor);
           }
         } else {
-          if (backFillColor === "noLabelBackFill") {
+          if (Nodule.hlsaIsNoFillOrNoStroke(backFillColor)) {
             this.backText.noFill();
           } else {
             this.backText.fill = backFillColor;

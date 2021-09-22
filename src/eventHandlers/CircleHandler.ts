@@ -18,7 +18,6 @@ import { SEPointOnOneOrTwoDimensional } from "@/models/SEPointOnOneOrTwoDimensio
 import { AddIntersectionPointCommand } from "@/commands/AddIntersectionPointCommand";
 import { AddPointOnOneDimensionalCommand } from "@/commands/AddPointOnOneOrTwoDimensionalCommand";
 import { SEOneOrTwoDimensional, SEIntersectionReturnType } from "@/types";
-import { UpdateMode } from "@/types";
 import Label from "@/plottables/Label";
 import { SELabel } from "@/models/SELabel";
 import EventBus from "./EventBus";
@@ -427,50 +426,16 @@ export default class CircleHandler extends Highlighter {
           radius > SETTINGS.circle.minimumRadius &&
           radius < Math.PI - SETTINGS.circle.minimumRadius
         ) {
-          this.makeCircle();
+          if (!this.makeCircle()) {
+            EventBus.fire("show-alert", {
+              key: `handlers.circleCreationAttemptDuplicate`,
+              keyOptions: {},
+              type: "error"
+            });
+          }
           this.mouseLeave(_event);
-          // // Clear old points to get ready for creating the next circle.
-          // if (this.centerSEPoint) {
-          //   this.centerSEPoint.glowing = false;
-          //   this.centerSEPoint.selected = false;
-          // }
-          // this.centerSEPoint = null;
-          // this.circleSEPoint = null;
-          // this.centerSEPointOneDimensionalParent = null;
-
-          // this.makingACircle = false;
-          // // Remove the temporary objects from the scene and mark the temporary object
-          // //  not added to the scene
-          // this.temporaryCircle.removeFromLayers();
-          // this.temporaryStartMarker.removeFromLayers();
-          // this.temporaryEndMarker.removeFromLayers();
-          // this.temporaryStartMarkerAdded = false;
-          // this.temporaryEndMarkerAdded = false;
-          // this.temporaryCircleAdded = false;
-
-          // this.snapStartMarkerToTemporaryOneDimensional = null;
-          // this.snapEndMarkerToTemporaryOneDimensional = null;
-          // this.snapStartMarkerToTemporaryPoint = null;
-          // this.snapEndMarkerToTemporaryPoint = null;
-          // // call an unglow all command
-          // SEStore.unglowAllSENodules();
         }
       }
-      // else {
-      //   // Remove the temporary objects from the scene and mark the temporary object
-      //   //  not added to the scene clear snap objects
-      //   this.temporaryCircle.removeFromLayers();
-      //   this.temporaryStartMarker.removeFromLayers();
-      //   this.temporaryEndMarker.removeFromLayers();
-      //   this.temporaryStartMarkerAdded = false;
-      //   this.temporaryEndMarkerAdded = false;
-      //   this.temporaryCircleAdded = false;
-
-      //   this.snapStartMarkerToTemporaryOneDimensional = null;
-      //   this.snapEndMarkerToTemporaryOneDimensional = null;
-      //   this.snapStartMarkerToTemporaryPoint = null;
-      //   this.snapEndMarkerToTemporaryPoint = null;
-      // }
     }
   }
 
@@ -512,7 +477,7 @@ export default class CircleHandler extends Highlighter {
   /**
    * Add a new circle the user has moved the mouse far enough (but not a radius of PI)
    */
-  makeCircle(): void {
+  makeCircle(): boolean {
     // Create a command group to add the points defining the circle and the circle to the store
     // This way a single undo click will undo all (potentially three) operations.
     const circleCommandGroup = new CommandGroup();
@@ -755,6 +720,23 @@ export default class CircleHandler extends Highlighter {
     //update the display
     this.temporaryCircle.updateDisplay();
 
+    // check to make sure that this circle doesn't already exist
+    if (
+      SEStore.seCircles.some(
+        circ =>
+          this.tmpVector
+            .subVectors(
+              circ.centerSEPoint.locationVector,
+              this.centerSEPoint
+                ? this.centerSEPoint.locationVector
+                : this.tmpVector
+            )
+            .isZero() &&
+          Math.abs(this.arcRadius - circ.circleRadius) < SETTINGS.tolerance
+      )
+    ) {
+      return false;
+    }
     // Clone the current circle after the circlePoint is set
     const newCircle = this.temporaryCircle.clone();
     // Set the display to the default values
@@ -826,6 +808,7 @@ export default class CircleHandler extends Highlighter {
     );
 
     circleCommandGroup.execute();
+    return true;
   }
 
   activate(): void {
@@ -852,7 +835,8 @@ export default class CircleHandler extends Highlighter {
         // Add the last command to the group and then execute it (i.e. add the potentially two points and the circle to the store.)
         const newSECircle = new SECircle(newCircle, object1, object2);
         // Update the newSECircle so the display is correct when the command group is executed
-        newSECircle.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
+        newSECircle.markKidsOutOfDate();
+        newSECircle.update();
         const newSELabel = new SELabel(newLabel, newSECircle);
         // Set the initial label location
         this.tmpMatrix.makeRotationAxis(object1.locationVector, Math.PI / 2);

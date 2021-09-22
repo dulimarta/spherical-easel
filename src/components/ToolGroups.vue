@@ -388,6 +388,26 @@ export default class ToolGroups extends Vue {
       toolGroup: "edit"
     },
     {
+      id: 0,
+      actionModeValue: "midpoint",
+      displayedName: "CreateMidpointDisplayedName",
+      icon: "$vuetify.icons.value.midpoint",
+      toolTipMessage: "CreateMidpointToolTipMessage",
+      toolUseMessage: "CreateMidpointToolUseMessage",
+      displayToolUseMessage: false,
+      toolGroup: "construction"
+    },
+    {
+      id: 5,
+      actionModeValue: "angleBisector",
+      displayedName: "CreateAngleBisectorDisplayedName",
+      icon: "$vuetify.icons.value.angleBisector",
+      toolTipMessage: "CreateAngleBisectorToolTipMessage",
+      toolUseMessage: "CreateAngleBisectorToolUseMessage",
+      displayToolUseMessage: false,
+      toolGroup: "construction"
+    },
+    {
       id: 15,
       actionModeValue: "antipodalPoint",
       displayedName: "CreateAntipodalPointDisplayedName",
@@ -516,6 +536,36 @@ export default class ToolGroups extends Vue {
       toolUseMessage: "CreateEllipseToolUseMessage",
       displayToolUseMessage: false,
       toolGroup: "conic"
+    },
+    {
+      id: 10,
+      actionModeValue: "nSectPoint",
+      displayedName: "CreateNSectSegmentDisplayedName",
+      icon: "$vuetify.icons.value.nSectPoint",
+      toolTipMessage: "CreateNSectSegmentToolTipMessage",
+      toolUseMessage: "CreateNSectSegmentToolUseMessage",
+      displayToolUseMessage: false,
+      toolGroup: "advanced"
+    },
+    {
+      id: 15,
+      actionModeValue: "nSectLine",
+      displayedName: "CreateNSectAngleDisplayedName",
+      icon: "$vuetify.icons.value.nSectLine",
+      toolTipMessage: "CreateNSectAngleToolTipMessage",
+      toolUseMessage: "CreateNSectAngleToolUseMessage",
+      displayToolUseMessage: false,
+      toolGroup: "advanced"
+    },
+    {
+      id: 0,
+      actionModeValue: "iconFactory",
+      displayedName: "CreateIconDisplayedName",
+      icon: "mdi-plus",
+      toolTipMessage: "CreateIconToolTipMessage",
+      toolUseMessage: "CreateIconToolUseMessage",
+      displayToolUseMessage: false,
+      toolGroup: "developerOnly"
     }
     // Disable the icon factory for deployment - this for developers only
     // {

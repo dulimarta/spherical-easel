@@ -916,7 +916,10 @@ export class ExpressionParser {
           numValue = valueOf(t.rightChild ?? null);
           if (Math.abs(numValue) > 1e-4)
             return valueOf(t.leftChild ?? null) / valueOf(t.rightChild ?? null);
-          else throw new RangeError(String(i18n.t(`objectTree.divideByZero`)));
+          else {
+            console.error(String(i18n.t(`objectTree.divideByZero`)));
+            return NaN;
+          }
         case TokenType.POW:
           return Math.pow(
             valueOf(t.leftChild ?? null),

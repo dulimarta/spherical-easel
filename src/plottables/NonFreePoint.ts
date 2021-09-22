@@ -7,7 +7,7 @@ import {
   StyleOptions,
   StyleEditPanels,
   DEFAULT_NONFREEPOINT_FRONT_STYLE,
-  DEFAULT_POINT_BACK_STYLE
+  DEFAULT_NONFREEPOINT_BACK_STYLE
 } from "@/types/Styles";
 import Point from "@/plottables/Point";
 
@@ -56,7 +56,10 @@ export default class NonFreePoint extends Point {
       StyleEditPanels.Front,
       DEFAULT_NONFREEPOINT_FRONT_STYLE
     );
-    this.styleOptions.set(StyleEditPanels.Back, initialStyle);
+    this.styleOptions.set(
+      StyleEditPanels.Back,
+      DEFAULT_NONFREEPOINT_BACK_STYLE
+    );
   }
 
   /**
@@ -69,7 +72,7 @@ export default class NonFreePoint extends Point {
       case StyleEditPanels.Back:
         if (SETTINGS.point.dynamicBackStyle)
           return {
-            ...DEFAULT_POINT_BACK_STYLE,
+            ...DEFAULT_NONFREEPOINT_BACK_STYLE,
             pointRadiusPercent: Nodule.contrastPointRadiusPercent(100),
             strokeColor: Nodule.contrastStrokeColor(
               SETTINGS.point.nonFree.strokeColor.front
@@ -78,7 +81,7 @@ export default class NonFreePoint extends Point {
               SETTINGS.point.nonFree.fillColor.front
             )
           };
-        else return DEFAULT_POINT_BACK_STYLE;
+        else return DEFAULT_NONFREEPOINT_BACK_STYLE;
 
       default:
         return {};

@@ -12,10 +12,12 @@ import { SESegmentLength } from "@/models/SESegmentLength";
 import { SEPointCoordinate } from "@/models/SEPointCoordinate";
 import { SEParametric } from "@/models/SEParametric";
 import { SEPolygon } from "@/models/SEPolygon";
+import { SEStore } from "@/store";
 
 export class DeleteNoduleCommand extends Command {
   private seNodule: SENodule;
   private parentIds: number[] = [];
+
   constructor(seNodule: SENodule) {
     super();
     this.seNodule = seNodule;
@@ -44,7 +46,7 @@ export class DeleteNoduleCommand extends Command {
           `in the DeleteNoduleCommand`;
       }
     }
-    // Remove from the store and turn off the display
+    // Remove object from the store and turn off the display
     if (this.seNodule instanceof SEPoint) {
       Command.store.removePoint(this.seNodule.id);
     } else if (this.seNodule instanceof SELine) {
@@ -70,7 +72,16 @@ export class DeleteNoduleCommand extends Command {
         if (this.seNodule.seSegment.label) {
           this.seNodule.seSegment.label.ref.value = [];
         }
-      } else if (this.seNodule instanceof SEPointCoordinate) {
+      } else if (
+        this.seNodule instanceof SEPointCoordinate &&
+        SEStore.expressions
+          .filter(exp => exp instanceof SEPointCoordinate)
+          .every(
+            exp =>
+              (exp as SEPointCoordinate).point.name !==
+              (this.seNodule as SEPointCoordinate).point.name
+          )
+      ) {
         if (this.seNodule.point.label) {
           this.seNodule.point.label.ref.value = [];
         }
@@ -83,30 +94,30 @@ export class DeleteNoduleCommand extends Command {
   }
 
   restoreState(): void {
-    // Add the point to the store and turn on display
-    if (this.seNodule instanceof SEPoint) {
-      Command.store.addPoint(this.seNodule);
-    } else if (this.seNodule instanceof SELine) {
-      Command.store.addLine(this.seNodule);
-    } else if (this.seNodule instanceof SECircle) {
-      Command.store.addCircle(this.seNodule);
-    } else if (this.seNodule instanceof SEEllipse) {
-      Command.store.addEllipse(this.seNodule);
-    } else if (this.seNodule instanceof SEParametric) {
-      Command.store.addParametric(this.seNodule);
+    // Add the object to the store and turn on display
+    if (this.seNodule instanceof SEExpression) {
+      Command.store.addExpression(this.seNodule);
     } else if (this.seNodule instanceof SEPolygon) {
       Command.store.addPolygonAndExpression(this.seNodule);
-    } else if (this.seNodule instanceof SESegment) {
-      Command.store.addSegment(this.seNodule);
-    } else if (this.seNodule instanceof SELabel) {
-      Command.store.addLabel(this.seNodule);
     } else if (this.seNodule instanceof SEAngleMarker) {
       Command.store.addAngleMarkerAndExpression(this.seNodule);
-    } else if (this.seNodule instanceof SEExpression) {
-      Command.store.addExpression(this.seNodule);
+    } else if (this.seNodule instanceof SELabel) {
+      Command.store.addLabel(this.seNodule);
+    } else if (this.seNodule instanceof SESegment) {
+      Command.store.addSegment(this.seNodule);
+    } else if (this.seNodule instanceof SEParametric) {
+      Command.store.addParametric(this.seNodule);
+    } else if (this.seNodule instanceof SEEllipse) {
+      Command.store.addEllipse(this.seNodule);
+    } else if (this.seNodule instanceof SECircle) {
+      Command.store.addCircle(this.seNodule);
+    } else if (this.seNodule instanceof SELine) {
+      Command.store.addLine(this.seNodule);
+    } else if (this.seNodule instanceof SEPoint) {
+      Command.store.addPoint(this.seNodule);
     }
     // The parent array of this.seNodule is empty prior to the execution of this loop
-    for (let i = 0; i < this.parentIds.length; i++) {
+    for (let i = this.parentIds.length - 1; i > -1; i--) {
       const nodule = Command.store.getSENoduleById(this.parentIds[i]);
       if (nodule) {
         nodule.registerChild(this.seNodule);

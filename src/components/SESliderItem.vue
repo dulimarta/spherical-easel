@@ -17,7 +17,6 @@
 import Vue from "vue";
 import { Prop, Component } from "vue-property-decorator";
 import { SEExpression } from "@/models/SEExpression";
-import { SECalculation } from "../models/SECalculation";
 import { SESlider } from "@/models/SESlider";
 
 @Component

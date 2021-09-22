@@ -54,7 +54,7 @@
 <script lang="ts">
 import Vue from "vue";
 import Component from "vue-class-component";
-import { AppState, UpdateMode } from "@/types";
+import { AppState } from "@/types";
 import { SEExpression } from "@/models/SEExpression";
 import { SECalculation } from "@/models/SECalculation";
 import { AddCalculationCommand } from "@/commands/AddCalculationCommand";
@@ -132,7 +132,8 @@ export default class ExpressionForm extends Vue {
       this.calcExpression,
       calc.calculationParents
     ).execute();
-    calc.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
+    calc.markKidsOutOfDate();
+    calc.update();
     this.reset();
     this.varMap.clear();
     this.expressions.forEach((m: SEExpression) => {

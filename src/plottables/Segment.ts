@@ -595,6 +595,9 @@ export default class Segment extends Nodule {
           SETTINGS.segment.drawn.dashArray.front.forEach(v => {
             this._frontPart.dashes.push(v);
           });
+          if (SETTINGS.segment.drawn.dashArray.reverse.front) {
+            this._frontPart.dashes.reverse();
+          }
         }
 
         // FRONT EXTRA
@@ -609,6 +612,9 @@ export default class Segment extends Nodule {
           SETTINGS.segment.drawn.dashArray.front.forEach(v => {
             this._frontExtra.dashes.push(v);
           });
+          if (SETTINGS.segment.drawn.dashArray.reverse.front) {
+            this._frontExtra.dashes.reverse();
+          }
         }
         // BACK PART
         // no fill color
@@ -622,6 +628,9 @@ export default class Segment extends Nodule {
           SETTINGS.segment.drawn.dashArray.back.forEach(v => {
             this._backPart.dashes.push(v);
           });
+          if (SETTINGS.segment.drawn.dashArray.reverse.back) {
+            this._backPart.dashes.reverse();
+          }
         }
         // BACK EXTRA
         // no fill color
@@ -635,6 +644,9 @@ export default class Segment extends Nodule {
           SETTINGS.segment.drawn.dashArray.back.forEach(v => {
             this._backExtra.dashes.push(v);
           });
+          if (SETTINGS.segment.drawn.dashArray.reverse.back) {
+            this._backExtra.dashes.reverse();
+          }
         }
 
         // The temporary display is never highlighted
@@ -651,16 +663,23 @@ export default class Segment extends Nodule {
         // FRONT PART
         const frontStyle = this.styleOptions.get(StyleEditPanels.Front);
         // no fillColor
-        if (frontStyle?.strokeColor == "noStroke") {
+        if (Nodule.hlsaIsNoFillOrNoStroke(frontStyle?.strokeColor)) {
           this._frontPart.noStroke();
         } else {
           this._frontPart.stroke = frontStyle?.strokeColor as Color;
         }
         // strokeWidthPercent applied by adjustSize()
 
-        if (frontStyle?.dashArray && frontStyle.dashArray.length > 0) {
+        if (
+          frontStyle?.dashArray &&
+          frontStyle?.reverseDashArray !== undefined &&
+          frontStyle.dashArray.length > 0
+        ) {
           this._frontPart.dashes.clear();
           this._frontPart.dashes.push(...frontStyle.dashArray);
+          if (frontStyle.reverseDashArray) {
+            this._frontPart.dashes.reverse();
+          }
         } else {
           // the array length is zero and no dash array should be set
           this._frontPart.dashes.clear();
@@ -668,16 +687,23 @@ export default class Segment extends Nodule {
         }
         // FRONT EXTRA
         // no fillColor
-        if (frontStyle?.strokeColor == "noStroke") {
+        if (Nodule.hlsaIsNoFillOrNoStroke(frontStyle?.strokeColor)) {
           this._frontExtra.noStroke();
         } else {
           this._frontExtra.stroke = frontStyle?.strokeColor as Color;
         }
         // strokeWidthPercent applied by adjustSize()
 
-        if (frontStyle?.dashArray && frontStyle.dashArray.length > 0) {
+        if (
+          frontStyle?.dashArray &&
+          frontStyle?.reverseDashArray !== undefined &&
+          frontStyle.dashArray.length > 0
+        ) {
           this._frontExtra.dashes.clear();
           this._frontExtra.dashes.push(...frontStyle.dashArray);
+          if (frontStyle.reverseDashArray) {
+            this._frontExtra.dashes.reverse();
+          }
         } else {
           // the array length is zero and no dash array should be set
           this._frontExtra.dashes.clear();
@@ -690,8 +716,9 @@ export default class Segment extends Nodule {
 
         if (backStyle?.dynamicBackStyle) {
           if (
-            Nodule.contrastStrokeColor(frontStyle?.strokeColor ?? "black") ==
-            "noStroke"
+            Nodule.hlsaIsNoFillOrNoStroke(
+              Nodule.contrastStrokeColor(frontStyle?.strokeColor)
+            )
           ) {
             this._backPart.noStroke();
           } else {
@@ -700,7 +727,7 @@ export default class Segment extends Nodule {
             );
           }
         } else {
-          if (backStyle?.strokeColor == "noStroke") {
+          if (Nodule.hlsaIsNoFillOrNoStroke(backStyle?.strokeColor)) {
             this._backPart.noStroke();
           } else {
             this._backPart.stroke = backStyle?.strokeColor as Color;
@@ -708,9 +735,16 @@ export default class Segment extends Nodule {
         }
         // strokeWidthPercent applied by adjustSize()
 
-        if (backStyle?.dashArray && backStyle.dashArray.length > 0) {
+        if (
+          backStyle?.dashArray &&
+          backStyle?.reverseDashArray !== undefined &&
+          backStyle.dashArray.length > 0
+        ) {
           this._backPart.dashes.clear();
           this._backPart.dashes.push(...backStyle.dashArray);
+          if (backStyle.reverseDashArray) {
+            this._backPart.dashes.reverse();
+          }
         } else {
           // the array length is zero and no dash array should be set
           this._backPart.dashes.clear();
@@ -720,8 +754,9 @@ export default class Segment extends Nodule {
         // no fillColor
         if (backStyle?.dynamicBackStyle) {
           if (
-            Nodule.contrastStrokeColor(frontStyle?.strokeColor ?? "black") ==
-            "noStroke"
+            Nodule.hlsaIsNoFillOrNoStroke(
+              Nodule.contrastStrokeColor(frontStyle?.strokeColor)
+            )
           ) {
             this._backExtra.noStroke();
           } else {
@@ -730,7 +765,7 @@ export default class Segment extends Nodule {
             );
           }
         } else {
-          if (backStyle?.strokeColor == "noStroke") {
+          if (Nodule.hlsaIsNoFillOrNoStroke(backStyle?.strokeColor)) {
             this._backExtra.noStroke();
           } else {
             this._backExtra.stroke = backStyle?.strokeColor as Color;
@@ -738,9 +773,16 @@ export default class Segment extends Nodule {
         }
         // strokeWidthPercent applied by adjustSize()
 
-        if (backStyle?.dashArray && backStyle.dashArray.length > 0) {
+        if (
+          backStyle?.dashArray &&
+          backStyle?.reverseDashArray !== undefined &&
+          backStyle.dashArray.length > 0
+        ) {
           this._backExtra.dashes.clear();
           this._backExtra.dashes.push(...backStyle.dashArray);
+          if (backStyle.reverseDashArray) {
+            this._backExtra.dashes.reverse();
+          }
         } else {
           // the array length is zero and no dash array should be set
           this._backExtra.dashes.clear();
@@ -754,9 +796,16 @@ export default class Segment extends Nodule {
         // strokeWidthPercent applied by adjustSize()
 
         // Copy the front dash properties to the glowing object
-        if (frontStyle?.dashArray && frontStyle.dashArray.length > 0) {
+        if (
+          frontStyle?.dashArray &&
+          frontStyle?.reverseDashArray !== undefined &&
+          frontStyle.dashArray.length > 0
+        ) {
           this.glowingFrontPart.dashes.clear();
           this.glowingFrontPart.dashes.push(...frontStyle.dashArray);
+          if (frontStyle.reverseDashArray) {
+            this.glowingFrontPart.dashes.reverse();
+          }
         } else {
           // the array length is zero and no dash array should be set
           this.glowingFrontPart.dashes.clear();
@@ -769,9 +818,16 @@ export default class Segment extends Nodule {
         // strokeWidthPercent applied by adjustSize()
 
         // Copy the front dash properties to the glowing object
-        if (frontStyle?.dashArray && frontStyle.dashArray.length > 0) {
+        if (
+          frontStyle?.dashArray &&
+          frontStyle?.reverseDashArray !== undefined &&
+          frontStyle.dashArray.length > 0
+        ) {
           this.glowingFrontExtra.dashes.clear();
           this.glowingFrontExtra.dashes.push(...frontStyle.dashArray);
+          if (frontStyle.reverseDashArray) {
+            this.glowingFrontExtra.dashes.reverse();
+          }
         } else {
           // the array length is zero and no dash array should be set
           this.glowingFrontExtra.dashes.clear();
@@ -784,9 +840,16 @@ export default class Segment extends Nodule {
         // strokeWidthPercent applied by adjustSize()
 
         // Copy the back dash properties to the glowing object
-        if (backStyle?.dashArray && backStyle.dashArray.length > 0) {
+        if (
+          backStyle?.dashArray &&
+          backStyle?.reverseDashArray !== undefined &&
+          backStyle.dashArray.length > 0
+        ) {
           this.glowingBackPart.dashes.clear();
           this.glowingBackPart.dashes.push(...backStyle.dashArray);
+          if (backStyle.reverseDashArray) {
+            this.glowingBackPart.dashes.reverse();
+          }
         } else {
           // the array length is zero and no dash array should be set
           this.glowingBackPart.dashes.clear();
@@ -799,9 +862,16 @@ export default class Segment extends Nodule {
         // strokeWidthPercent applied by adjustSize()
 
         // Copy the back dash properties to the glowing object
-        if (backStyle?.dashArray && backStyle.dashArray.length > 0) {
+        if (
+          backStyle?.dashArray &&
+          backStyle?.reverseDashArray !== undefined &&
+          backStyle.dashArray.length > 0
+        ) {
           this.glowingBackExtra.dashes.clear();
           this.glowingBackExtra.dashes.push(...backStyle.dashArray);
+          if (backStyle.reverseDashArray) {
+            this.glowingBackExtra.dashes.reverse();
+          }
         } else {
           // the array length is zero and no dash array should be set
           this.glowingBackExtra.dashes.clear();

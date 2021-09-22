@@ -229,6 +229,12 @@ export default class ConstructionLoader extends Vue {
     EventBus.fire("construction-loaded", {});
     // update all
     SEStore.updateDisplay();
+
+    // set the mode to move because chances are high that the user wants this mode after loading.
+    SEStore.setActionMode({
+      id: "move",
+      name: "MoveDisplayedName"
+    });
   }
 
   doShareConstruction(event: { docId: string }): void {

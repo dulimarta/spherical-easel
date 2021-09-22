@@ -141,6 +141,7 @@ export default class IconBase extends Vue {
         parts[index] = this.removeAttribute(parts[index], "part");
       });
       this.svgSnippetAmended = parts.join(" ");
+      // console.log(this.svgSnippetAmended);
     });
   }
 

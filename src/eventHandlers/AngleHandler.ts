@@ -7,7 +7,7 @@ import { SECircle } from "@/models/SECircle";
 import { SEAngleMarker } from "@/models/SEAngleMarker";
 import EventBus from "@/eventHandlers/EventBus";
 import AngleMarker from "@/plottables/AngleMarker";
-import { OneDimensional, SEOneOrTwoDimensional, UpdateMode } from "@/types";
+import { OneDimensional, SEOneOrTwoDimensional } from "@/types";
 import Point from "@/plottables/Point";
 import { Vector3 } from "three";
 import { DisplayStyle } from "@/plottables/Nodule";
@@ -147,7 +147,7 @@ export default class AngleHandler extends Highlighter {
           .crossVectors(candidate, this.pointLocations[0])
           .isZero(SETTINGS.nearlyAntipodalIdeal)
       ) {
-        console.log("here 1", this.pointLocations.length);
+     
         EventBus.fire("show-alert", {
           key: `handlers.antipodalPointMessage`,
           keyOptions: {},
@@ -385,9 +385,7 @@ export default class AngleHandler extends Highlighter {
           // this.targetPoints/sePointOneDimensionalParent/pointLocations are equal (and equal to 1 or 2)
           if (this.hitSEPoints.length > 0) {
             // The user continued to add more points to make the angle
-            console.log("here 2.5", this.pointLocations.length);
             if (this.allowPointLocation(this.hitSEPoints[0].locationVector)) {
-              console.log("here 3", this.pointLocations.length);
               this.targetPoints.push(this.hitSEPoints[0]);
               this.sePointOneDimensionalParents.push(null);
               if (this.targetPoints.length == 2) {
@@ -583,42 +581,46 @@ export default class AngleHandler extends Highlighter {
       }
       // Check to see if we are ready to make the angle
       if (this.targetPoints.length === 3) {
-        this.makeAngleMarkerFromThreePoints();
-        EventBus.fire("show-alert", {
-          key: `handlers.newAngleAdded`,
-          keyOptions: {},
-          type: "success"
-        });
+        if (this.makeAngleMarkerFromThreePoints()) {
+          EventBus.fire("show-alert", {
+            key: `handlers.newAngleAdded`,
+            keyOptions: {},
+            type: "success"
+          });
+        }
         //clear the arrays and prepare for the next angle and remove temporary objects
         this.mouseLeave(event);
       } else if (this.targetLines.length === 2) {
-        this.makeAngleMarkerFromTwoLines();
-        EventBus.fire("show-alert", {
-          key: `handlers.newAngleAdded`,
-          keyOptions: {},
-          type: "success"
-        });
+        if (this.makeAngleMarkerFromTwoLines()) {
+          EventBus.fire("show-alert", {
+            key: `handlers.newAngleAdded`,
+            keyOptions: {},
+            type: "success"
+          });
+        }
         //clear the arrays and prepare for the next angle and remove temporary objects
         this.mouseLeave(event);
       } else if (this.targetSegments.length === 2) {
-        this.makeAngleMarkerFromTwoSegments();
-        EventBus.fire("show-alert", {
-          key: `handlers.newAngleAdded`,
-          keyOptions: {},
-          type: "success"
-        });
+        if (this.makeAngleMarkerFromTwoSegments()) {
+          EventBus.fire("show-alert", {
+            key: `handlers.newAngleAdded`,
+            keyOptions: {},
+            type: "success"
+          });
+        }
         //clear the arrays and prepare for the next angle and remove temporary objects
         this.mouseLeave(event);
       } else if (
         this.targetLines.length === 1 &&
         this.targetSegments.length === 1
       ) {
-        this.makeAngleMarkerFromLineAndSegment();
-        EventBus.fire("show-alert", {
-          key: `handlers.newAngleAdded`,
-          keyOptions: {},
-          type: "success"
-        });
+        if (this.makeAngleMarkerFromLineAndSegment()) {
+          EventBus.fire("show-alert", {
+            key: `handlers.newAngleAdded`,
+            keyOptions: {},
+            type: "success"
+          });
+        }
         //clear the arrays and prepare for the next angle and remove temporary objects
         this.mouseLeave(event);
       } else {
@@ -929,7 +931,7 @@ export default class AngleHandler extends Highlighter {
     this.snapPoint = null;
   }
 
-  private makeAngleMarkerFromThreePoints(): void {
+  private makeAngleMarkerFromThreePoints(): boolean {
     // make sure that this triple of points has not been measured already
     // this is only possible if all three points are existing points
     if (this.targetPoints.every(entry => entry !== null)) {
@@ -959,7 +961,7 @@ export default class AngleHandler extends Highlighter {
           },
           type: "error"
         });
-        return;
+        return false;
       }
     }
     // Create a command group to add the points defining the circle and the circle to the store
@@ -1076,7 +1078,8 @@ export default class AngleHandler extends Highlighter {
     const newSELabel = new SELabel(newLabel, newSEAngleMarker);
 
     // Update the display of the new angle marker (do it here so that the placement of the newLabel is correct)
-    newSEAngleMarker.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
+    newSEAngleMarker.markKidsOutOfDate();
+    newSEAngleMarker.update();
 
     // Set the initial label location near the vertex vector
     // and turn off the lable of the vertex if SETTINGS.angleMarker.turnOffVertexLabelOnCreation
@@ -1112,10 +1115,13 @@ export default class AngleHandler extends Highlighter {
     angleMarkerCommandGroup.execute();
 
     // Update the display of the new angle marker
-    newSEAngleMarker.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
+    newSEAngleMarker.markKidsOutOfDate();
+    newSEAngleMarker.update();
+
+    return true;
   }
 
-  private makeAngleMarkerFromTwoLines(): void {
+  private makeAngleMarkerFromTwoLines(): boolean {
     // make sure that this pair of lines has not been measured already
     let measurementName = "";
     if (
@@ -1141,7 +1147,7 @@ export default class AngleHandler extends Highlighter {
         },
         type: "error"
       });
-      return;
+      return false;
     }
 
     // Create a new angle marker plottable
@@ -1163,7 +1169,8 @@ export default class AngleHandler extends Highlighter {
     const newSELabel = new SELabel(newLabel, newSEAngleMarker);
 
     // Update the display of the new angle marker (do it here so that the placement of the newLabel is correct)
-    newSEAngleMarker.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
+    newSEAngleMarker.markKidsOutOfDate();
+    newSEAngleMarker.update();
 
     // Set the initial label location near the intersection on the front side of the sphere
     this.tmpVector.crossVectors(
@@ -1193,10 +1200,12 @@ export default class AngleHandler extends Highlighter {
       this.targetLines[1]
     ).execute();
     // Update the display of the new angle marker
-    newSEAngleMarker.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
+    newSEAngleMarker.markKidsOutOfDate();
+    newSEAngleMarker.update();
+    return true;
   }
 
-  private makeAngleMarkerFromTwoSegments(): void {
+  private makeAngleMarkerFromTwoSegments(): boolean {
     // make sure that this pair of segments has not been measured already
     let measurementName = "";
     if (
@@ -1222,7 +1231,7 @@ export default class AngleHandler extends Highlighter {
         },
         type: "error"
       });
-      return;
+      return false;
     }
 
     // Create a new angle marker plottable
@@ -1244,7 +1253,8 @@ export default class AngleHandler extends Highlighter {
     const newSELabel = new SELabel(newLabel, newSEAngleMarker);
 
     // Update the display of the new angle marker (do it here so that the placement of the newLabel is correct)
-    newSEAngleMarker.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
+    newSEAngleMarker.markKidsOutOfDate();
+    newSEAngleMarker.update();
 
     // Set the initial label location near the common endpoint of the segments
     // and turn off the label of the vertex point (SETTINGS.angleMarker.turnOffVertexLabelOnCreation)
@@ -1303,10 +1313,12 @@ export default class AngleHandler extends Highlighter {
     ).execute();
 
     // Update the display of the new angle marker
-    newSEAngleMarker.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
+    newSEAngleMarker.markKidsOutOfDate();
+    newSEAngleMarker.update();
+    return true;
   }
 
-  private makeAngleMarkerFromLineAndSegment(): void {
+  private makeAngleMarkerFromLineAndSegment(): boolean {
     // make sure that this segment and line has not been measured already
     let measurementName = "";
     if (this.lineSelectedFirst) {
@@ -1346,7 +1358,7 @@ export default class AngleHandler extends Highlighter {
         },
         type: "error"
       });
-      return;
+      return false;
     }
 
     // Create a new angle marker plottable
@@ -1378,7 +1390,8 @@ export default class AngleHandler extends Highlighter {
     const newSELabel = new SELabel(newLabel, newSEAngleMarker);
 
     // Update the display of the new angle marker (do it here so that the placement of the newLabel is correct)
-    newSEAngleMarker.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
+    newSEAngleMarker.markKidsOutOfDate();
+    newSEAngleMarker.update();
 
     // Set the initial label location near point of the segment that is on the line
     // and turn off the label of the vertex point (SETTINGS.angleMarker.turnOffVertexLabelOnCreation)
@@ -1444,6 +1457,8 @@ export default class AngleHandler extends Highlighter {
       this.targetSegments[0]
     ).execute();
     // Update the display of the new angle marker
-    newSEAngleMarker.update({ mode: UpdateMode.DisplayOnly, stateArray: [] });
+    newSEAngleMarker.markKidsOutOfDate();
+    newSEAngleMarker.update();
+    return true;
   }
 }

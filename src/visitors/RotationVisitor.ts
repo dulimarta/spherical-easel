@@ -5,12 +5,12 @@ import { Matrix4, Vector3, Matrix3 } from "three";
 import { SECircle } from "@/models/SECircle";
 import { SESegment } from "@/models/SESegment";
 import { SELabel } from "@/models/SELabel";
-// import { UpdateMode } from "@/types";
 import { SEPointOnOneOrTwoDimensional } from "@/models/SEPointOnOneOrTwoDimensional";
 import { SEEllipse } from "@/models/SEEllipse";
 import { SEAngleMarker } from "@/models/SEAngleMarker";
 import { SEParametric } from "@/models/SEParametric";
 import { SEPolygon } from "@/models/SEPolygon";
+import Parametric from "@/plottables/Parametric";
 
 export class RotationVisitor implements Visitor {
   private transformMatrix: Matrix4 = new Matrix4();
@@ -78,7 +78,11 @@ export class RotationVisitor implements Visitor {
   // eslint-disable-next-line
   actionOnParametric(e: SEParametric): void {
     // update the display of the plottable object. update gets the new rotation matrix directly from the store.
-    e.ref.updateDisplay();
+    let ptr: Parametric | null = e.ref;
+    while (ptr) {
+      ptr.updateDisplay();
+      ptr = ptr.next;
+    }
   }
   actionOnPolygon(p: SEPolygon): void {
     // update the display of the plottable object. update gets the new rotation matrix directly from the store.

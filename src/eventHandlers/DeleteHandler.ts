@@ -1,11 +1,7 @@
 import Two from "two.js";
 import Highlighter from "./Highlighter";
 import { SENodule } from "@/models/SENodule";
-import {
-  // isPerpendicularLineThruPointState,
-  UpdateMode,
-  UpdateStateType
-} from "@/types";
+import { ObjectState } from "@/types";
 import { CommandGroup } from "@/commands/CommandGroup";
 import { DeleteNoduleCommand } from "@/commands/DeleteNoduleCommand";
 import { SetNoduleDisplayCommand } from "@/commands/SetNoduleDisplayCommand";
@@ -21,10 +17,9 @@ export default class DeleteHandler extends Highlighter {
   /**
    * Objects that define the deleted objects (and all descendants) before deleting (for undoing delete)
    */
-  private beforeDeleteState: UpdateStateType = {
-    mode: UpdateMode.RecordStateForDelete,
-    stateArray: []
-  };
+
+  private beforeDeleteStateMap: Map<number, ObjectState> = new Map(); //number is the SENodule.id
+  private beforeDeleteSENoduleIDList: number[] = [];
 
   constructor(layers: Two.Group[]) {
     super(layers);
@@ -64,12 +59,9 @@ export default class DeleteHandler extends Highlighter {
       if (this.victim != null) {
         // Do the deletion
         this.delete(this.victim);
-        this.victim = null;
+
         // Reset the beforeDeleteState
-        this.beforeDeleteState = {
-          mode: UpdateMode.RecordStateForDelete,
-          stateArray: []
-        };
+        this.mouseLeave(event);
       }
     }
   }
@@ -115,11 +107,9 @@ export default class DeleteHandler extends Highlighter {
     super.mouseLeave(event);
     // Reset the victim in preparation for another deletion.
     this.victim = null;
-    // Reset the beforeDeleteState
-    this.beforeDeleteState = {
-      mode: UpdateMode.RecordStateForDelete,
-      stateArray: []
-    };
+    // Reset the beforeDeleteStateMap and SENoduleISList
+    this.beforeDeleteStateMap.clear();
+    this.beforeDeleteSENoduleIDList.splice(0);
   }
   activate(): void {
     // Delete all selected objects
@@ -135,21 +125,22 @@ export default class DeleteHandler extends Highlighter {
     // First mark all children of the victim out of date so that the update method does a topological sort
     victim.markKidsOutOfDate();
     //Record the state of the victim and all the SENodules that depend on it (i.e kids, grandKids, etc..).
-    victim.update(this.beforeDeleteState);
-
-    // console.debug("order of states before reverse");
-    // this.beforeDeleteState.stateArray.forEach(obj =>
-    //   console.debug(obj.object.name)
-    // );
-    // console.debug("end order");
+    victim.update(this.beforeDeleteStateMap, this.beforeDeleteSENoduleIDList);
 
     const deleteCommandGroup = new CommandGroup();
     // The update method orders the objects from the victim to the leaf (i.e objects with only in arrows)
     // To delete remove from the leaves to the victim (and to undo build from the victim to leaves -- accomplished
-    // by the command group reversing the order on restore()).  Therefore reverse the stateArray.
-    this.beforeDeleteState.stateArray.reverse();
-    this.beforeDeleteState.stateArray.forEach(element => {
-      deleteCommandGroup.addCommand(new DeleteNoduleCommand(element.object));
+    // by the command group reversing the order on restore()).  Therefore reverse the beforeDeleteSENoduleIDList.
+    this.beforeDeleteSENoduleIDList.reverse();
+    this.beforeDeleteSENoduleIDList.forEach(seNoduleID => {
+      // Get the SENodule via the beforeState
+      const seNoduleBeforeState = this.beforeDeleteStateMap.get(seNoduleID);
+
+      if (seNoduleBeforeState !== undefined) {
+        deleteCommandGroup.addCommand(
+          new DeleteNoduleCommand(seNoduleBeforeState.object)
+        );
+      }
     });
     deleteCommandGroup.execute();
   }

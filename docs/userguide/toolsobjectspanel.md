@@ -21,7 +21,7 @@ Every time an object is created it is displayed in the Sphere Canvas and then li
 - Angle Markers - See the Details Section of the [Measure Angle Tool](/tools/measurement.html#angle)
 - [Circles](/tools/basic.html#circle) (Including [Circular Arcs](/tools/advanced.html#circular-arc))
 - [Conics](/tools/conic.html)
-- [Polygons](/tools/basic.html#polygon-too-hard)
+- [Polygons](/tools/basic.html#polygon)
 - [Parametric Curves](/tools/advanced.html#parametric-curve-user-defined)
 - [Transformations](/tools/transformation.html)
 - [Text](/tools/basic.html#text)

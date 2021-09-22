@@ -11,7 +11,7 @@ import { AddSegmentCommand } from "./AddSegmentCommand";
 import { Command } from "./Command";
 import { CommandGroup } from "./CommandGroup";
 import { AddCalculationCommand } from "./AddCalculationCommand";
-import { AddLocationMeasurementCommand } from "./AddLocationMeasurementCommand";
+import { AddPointCoordinateMeasurementCommand } from "./AddPointCoordinateMeasurementCommand";
 import { AddPointDistanceMeasurementCommand } from "./AddPointDistanceMeasurementCommand";
 import { AddLengthMeasurementCommand } from "./AddLengthMeasurementCommand";
 import { ConstructionScript } from "@/types";
@@ -19,14 +19,19 @@ import { AddEllipseCommand } from "./AddEllipseCommand";
 import { AddPolarPointCommand } from "./AddPolarPointCommand";
 import { AddParametricCommand } from "./AddParametricCommand";
 import { AddParametricEndPointsCommand } from "./AddParametricEndPointsCommand";
+import { AddParametricTracePointCommand } from "./AddParametricTracePointCommand";
 import { AddAngleMarkerCommand } from "./AddAngleMarkerAndExpressionCommand";
 import { AddPolygonCommand } from "./AddPolygonAndExpressionCommand";
 import { AddTangentLineThruPointCommand } from "./AddTangentLineThruPointCommand";
+import { AddNSectLineCommand } from "./AddNSectLineCommand";
+import { AddNSectPointCommand } from "./AddNSectPointCommand";
+import { AddPolarLineCommand } from "./AddPolarLineCommand";
+import { AddSliderMeasurementCommand } from "./AddSliderMeasurementCommand";
 const noduleDictionary = new Map<string, SENodule>();
 
 function executeIndividual(command: string): Command {
-  const slashPos = command.indexOf("/");
-  if (slashPos < 0) {
+  const andPosition = command.indexOf("&");
+  if (andPosition < 0) {
     const errMsg = `Invalid command format: ${command}`;
     EventBus.fire("show-alert", {
       key: errMsg,
@@ -34,7 +39,7 @@ function executeIndividual(command: string): Command {
     });
     throw new Error(errMsg);
   }
-  const opCode = command.substring(0, slashPos);
+  const opCode = command.substring(0, andPosition);
   // Use exact comparison (and not startsWith) because a command name
   // can be a prefix of another command name
   // (example: AddPoint and AddPointOnOneDimensional)
@@ -57,6 +62,8 @@ function executeIndividual(command: string): Command {
       return AddAntipodalPointCommand.parse(command, noduleDictionary);
     case "AddPolarPoint":
       return AddPolarPointCommand.parse(command, noduleDictionary);
+    case "AddPolarLine":
+      return AddPolarLineCommand.parse(command, noduleDictionary);
     case "AddPerpendicularLineThruPoint":
       return AddPerpendicularLineThruPointCommand.parse(
         command,
@@ -68,8 +75,11 @@ function executeIndividual(command: string): Command {
       return AddAngleMarkerCommand.parse(command, noduleDictionary);
     case "AddPolygon":
       return AddPolygonCommand.parse(command, noduleDictionary);
-    case "AddLocationMeasurement":
-      return AddLocationMeasurementCommand.parse(command, noduleDictionary);
+    case "AddPointCoordinateMeasurement":
+      return AddPointCoordinateMeasurementCommand.parse(
+        command,
+        noduleDictionary
+      );
     case "AddPointDistanceMeasurement":
       return AddPointDistanceMeasurementCommand.parse(
         command,
@@ -83,6 +93,14 @@ function executeIndividual(command: string): Command {
       return AddParametricCommand.parse(command, noduleDictionary);
     case "AddParametricEndPoints":
       return AddParametricEndPointsCommand.parse(command, noduleDictionary);
+    case "AddParametricTracePoint":
+      return AddParametricTracePointCommand.parse(command, noduleDictionary);
+    case "AddNSectPoint":
+      return AddNSectPointCommand.parse(command, noduleDictionary);
+    case "AddNSectLine":
+      return AddNSectLineCommand.parse(command, noduleDictionary);
+    case "AddSliderMeasurement":
+      return AddSliderMeasurementCommand.parse(command, noduleDictionary);
     default: {
       const errMsg = `Not yet implemented: ${command}`;
       EventBus.fire("show-alert", {

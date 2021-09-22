@@ -1,5 +1,5 @@
 import { SEExpression } from "./SEExpression";
-import { UpdateStateType, UpdateMode, ExpressionState } from "@/types";
+import { ObjectState } from "@/types";
 import { ExpressionParser } from "@/expression/ExpressionParser";
 import { SEStore } from "@/store";
 import { SENodule } from "./SENodule";
@@ -117,22 +117,32 @@ export class SECalculation extends SEExpression {
     );
   }
 
-  public update(state: UpdateStateType): void {
-    // This object and any of its children has no presence on the sphere canvas, so update for move should
-    if (state.mode === UpdateMode.RecordStateForMove) return;
-    // This object is completely determined by its parents, so only record the object in state array
-    if (state.mode == UpdateMode.RecordStateForDelete) {
-      const expressionState: ExpressionState = {
-        kind: "expression",
-        object: this
-      };
-      state.stateArray.push(expressionState);
-    }
+  public update(
+    objectState?: Map<number, ObjectState>,
+    orderedSENoduleList?: number[]
+  ): void {
     if (!this.canUpdateNow()) return;
-    this.recalculate();
 
     this.setOutOfDate(false);
-    this.updateKids(state);
+
+    this.exists = this._calculationParents.every(parent => parent.exists);
+    if (this.exists) {
+      this.recalculate();
+    }
+
+    // This object and any of its children have no presence on the sphere canvas So we don't store any additional information
+    if (objectState && orderedSENoduleList) {
+      if (objectState.has(this.id)) {
+        console.log(
+          `Calculation with id ${this.id} has been visited twice proceed no further down this branch of the DAG.`
+        );
+        return;
+      }
+      orderedSENoduleList.push(this.id);
+      objectState.set(this.id, { kind: "calculation", object: this });
+    }
+
+    this.updateKids(objectState, orderedSENoduleList);
   }
 
   public customStyles = (): Set<string> => emptySet;

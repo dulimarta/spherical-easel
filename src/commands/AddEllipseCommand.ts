@@ -8,6 +8,8 @@ import Label from "@/plottables/Label";
 import SETTINGS from "@/global-settings";
 import { SEEllipse } from "@/models/SEEllipse";
 import Ellipse from "@/plottables/Ellipse";
+import { StyleEditPanels } from "@/types/Styles";
+import { SavedNames } from "@/types";
 
 export class AddEllipseCommand extends Command {
   private seEllipse: SEEllipse;
@@ -55,68 +57,128 @@ export class AddEllipseCommand extends Command {
   toOpcode(): null | string | Array<string> {
     return [
       "AddEllipse",
-      /* arg-1 */ this.seEllipse.name,
-      /* arg-2 */ this.seEllipse.a,
-      /* arg-3 */ this.seEllipse.b,
-      /* arg-4 */ this.focus1SEPoint.name,
-      /* arg-5 */ this.focus2SEPoint.name,
-      /* arg-6 */ this.ellipseSEPoint.name,
-      /* arg-7 */ this.seLabel.name,
-      /* arg-8 */ this.seEllipse.showing,
-      /* arg-9 */ this.seEllipse.exists
-    ].join("/");
+      // Any attribute that could possibly have a "= or "&" or "/" should be run through Command.symbolToASCIIDec
+      // All plottable objects have these attributes
+      "objectName=" + Command.symbolToASCIIDec(this.seEllipse.name),
+      "objectExists=" + this.seEllipse.exists,
+      "objectShowing=" + this.seEllipse.showing,
+      "objectFrontStyle=" +
+        Command.symbolToASCIIDec(
+          JSON.stringify(
+            this.seEllipse.ref.currentStyleState(StyleEditPanels.Front)
+          )
+        ),
+      "objectBackStyle=" +
+        Command.symbolToASCIIDec(
+          JSON.stringify(
+            this.seEllipse.ref.currentStyleState(StyleEditPanels.Back)
+          )
+        ),
+      // All labels have these attributes
+      "labelName=" + Command.symbolToASCIIDec(this.seLabel.name),
+      "labelStyle=" +
+        Command.symbolToASCIIDec(
+          JSON.stringify(
+            this.seLabel.ref.currentStyleState(StyleEditPanels.Label)
+          )
+        ),
+      "labelVector=" + this.seLabel.ref._locationVector.toFixed(7),
+      "labelShowing=" + this.seLabel.showing,
+      "labelExists=" + this.seLabel.exists,
+      // Object specific attributes
+      "ellipseFocus1Name=" + this.focus1SEPoint.name,
+      "ellipseFocus2Name=" + this.focus2SEPoint.name,
+      "ellipsePointOnEllipseName=" + this.ellipseSEPoint.name
+    ].join("&");
   }
 
   static parse(command: string, objMap: Map<string, SENodule>): Command {
-    const tokens = command.split("/");
-    const focus1Point = objMap.get(tokens[4]) as SEPoint | undefined;
-    const focus2Point = objMap.get(tokens[5]) as SEPoint | undefined;
-    const ellipsePoint = objMap.get(tokens[6]) as SEPoint | undefined;
-    if (focus1Point && focus2Point && ellipsePoint) {
+    // console.log(command);
+    const tokens = command.split("&");
+    const propMap = new Map<SavedNames, string>();
+    // load the tokens into the map
+    tokens.forEach((token, ind) => {
+      if (ind === 0) return; // don't put the command type in the propMap
+      const parts = token.split("=");
+      propMap.set(parts[0] as SavedNames, Command.asciiDecToSymbol(parts[1]));
+    });
+
+    // get the object specific attributes
+    const ellipseFocus1 = objMap.get(propMap.get("ellipseFocus1Name") ?? "") as
+      | SEPoint
+      | undefined;
+
+    const ellipseFocus2 = objMap.get(propMap.get("ellipseFocus2Name") ?? "") as
+      | SEPoint
+      | undefined;
+
+    const ellipsePointOnEllipse = objMap.get(
+      propMap.get("ellipsePointOnEllipseName") ?? ""
+    ) as SEPoint | undefined;
+
+    if (ellipseFocus1 && ellipseFocus2 && ellipsePointOnEllipse) {
+      //make the ellipse
       const ellipse = new Ellipse();
-      ellipse.focus1Vector = focus1Point.locationVector;
-      ellipse.focus2Vector = focus1Point.locationVector;
-      ellipse.a = Number(tokens[2]);
-      ellipse.b = Number(tokens[3]);
-      ellipse.updateDisplay();
-      ellipse.stylize(DisplayStyle.ApplyCurrentVariables);
-      ellipse.adjustSize();
       const seEllipse = new SEEllipse(
         ellipse,
-        focus1Point,
-        focus2Point,
-        ellipsePoint
+        ellipseFocus1,
+        ellipseFocus2,
+        ellipsePointOnEllipse
       );
-      seEllipse.name = tokens[1];
-      objMap.set(tokens[1], seEllipse);
-      seEllipse.showing = tokens[8] === "true";
-      seEllipse.exists = tokens[9] === "true";
-      const seLabel = new SELabel(new Label(), seEllipse);
-      const rotationMatrix = new Matrix4();
-      rotationMatrix.makeRotationAxis(ellipsePoint.locationVector, Math.PI / 2);
+      //style the ellipse
+      const ellipseFrontStyleString = propMap.get("objectFrontStyle");
+      if (ellipseFrontStyleString !== undefined)
+        ellipse.updateStyle(
+          StyleEditPanels.Front,
+          JSON.parse(ellipseFrontStyleString)
+        );
+      const ellipseBackStyleString = propMap.get("objectBackStyle");
+      if (ellipseBackStyleString !== undefined)
+        ellipse.updateStyle(
+          StyleEditPanels.Back,
+          JSON.parse(ellipseBackStyleString)
+        );
 
-      const labelPosition = new Vector3();
-      labelPosition
-        .copy(ellipsePoint.locationVector)
-        .applyMatrix4(rotationMatrix)
-        .add(new Vector3(0, SETTINGS.ellipse.initialLabelOffset, 0))
-        .normalize();
-      seLabel.locationVector = labelPosition;
-      seLabel.showing = tokens[6] === "true";
-      seLabel.exists = tokens[7] === "true";
-      seLabel.name = tokens[5];
-      objMap.set(tokens[5], seLabel);
+      //make the label and set its location
+      const label = new Label();
+      const seLabel = new SELabel(label, seEllipse);
+      const seLabelLocation = new Vector3();
+      seLabelLocation.from(propMap.get("labelVector")); // convert to Number
+      seLabel.locationVector.copy(seLabelLocation);
+      //style the label
+      const labelStyleString = propMap.get("labelStyle");
+      if (labelStyleString !== undefined)
+        label.updateStyle(StyleEditPanels.Label, JSON.parse(labelStyleString));
+
+      //put the ellipse in the object map
+      if (propMap.get("objectName") !== undefined) {
+        seEllipse.name = propMap.get("objectName") ?? "";
+        seEllipse.showing = propMap.get("objectShowing") === "true";
+        seEllipse.exists = propMap.get("objectExists") === "true";
+        objMap.set(seEllipse.name, seEllipse);
+      } else {
+        throw new Error("AddEllipse: Ellipse Name doesn't exist");
+      }
+
+      //put the label in the object map
+      if (propMap.get("labelName") !== undefined) {
+        seLabel.name = propMap.get("labelName") ?? "";
+        seLabel.showing = propMap.get("labelShowing") === "true";
+        seLabel.exists = propMap.get("labelExists") === "true";
+        objMap.set(seLabel.name, seLabel);
+      } else {
+        throw new Error("AddEllipse: Label Name doesn't exist");
+      }
       return new AddEllipseCommand(
         seEllipse,
-        focus1Point,
-        focus2Point,
-        ellipsePoint,
+        ellipseFocus1,
+        ellipseFocus2,
+        ellipsePointOnEllipse,
         seLabel
       );
-    } else {
-      throw new Error(
-        `AddEllipseCommand: focus 1 point ${tokens[4]} or focus 2 point ${tokens[5]}  or ellipse point ${tokens[6]} is undefined`
-      );
     }
+    throw new Error(
+      `AddEllipse: ${ellipseFocus1}, ${ellipseFocus2},or ${ellipsePointOnEllipse}  is undefined`
+    );
   }
 }

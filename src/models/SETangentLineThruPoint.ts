@@ -1,17 +1,9 @@
 import { SEPoint } from "./SEPoint";
-import {
-  TangentLineThruPointState,
-  SEOneDimensional,
-  SEOneDimensionalNotStraight
-} from "@/types";
-import { SEOneOrTwoDimensional } from "@/types";
-import { UpdateMode, UpdateStateType } from "@/types";
+import { SEOneDimensionalNotStraight, ObjectState } from "@/types";
 import { SELine } from "./SELine";
 import { Vector3 } from "three";
 import Line from "@/plottables/Line";
 import i18n from "@/i18n";
-import SETTINGS from "@/global-settings";
-import { SESegment } from "./SESegment";
 import { SECircle } from "./SECircle";
 import { SEEllipse } from "./SEEllipse";
 import { SEParametric } from "./SEParametric";
@@ -60,14 +52,17 @@ export class SETangentLineThruPoint extends SELine {
     this._index = index;
   }
 
-  public update(state: UpdateStateType): void {
+  public update(
+    objectState?: Map<number, ObjectState>,
+    orderedSENoduleList?: number[]
+  ): void {
     // If any one parent is not up to date, don't do anything
-    if (!this.canUpdateNow()) {
-      return;
-    }
+    if (!this.canUpdateNow()) return;
     this.setOutOfDate(false);
+
     this._exists =
       this._seParentOneDimensional.exists && this._seParentPoint.exists;
+
     if (this._exists) {
       const tVec = new Vector3();
       tVec.copy(this._normalVector);
@@ -77,13 +72,6 @@ export class SETangentLineThruPoint extends SELine {
         this._seParentPoint.locationVector,
         true
       );
-      // console.log(
-      //   "angle change with returned normals",
-      //   this.name,
-      //   normals[this._index].angleTo(this._normalVector),
-      //   this._normalVector.x
-      // );
-      // console.log(" index and normal length", this._index, normals.length);
 
       if (normals[this._index] !== undefined) {
         this._normalVector.copy(normals[this._index]);
@@ -100,12 +88,6 @@ export class SETangentLineThruPoint extends SELine {
 
         // Set the normal vector in the plottable object (the setter also calls the updateDisplay() method)
         this.ref.normalVector = this._normalVector;
-        // console.log(
-        //   "angle change",
-        //   this.name,
-        //   tVec.angleTo(this._normalVector),
-        //   this._normalVector.x
-        // );
       } else {
         this._exists = false;
       }
@@ -116,17 +98,21 @@ export class SETangentLineThruPoint extends SELine {
     } else {
       this.ref.setVisible(false);
     }
-    // Tangent Lines are completely determined by their parents and an update on the parents
-    // will cause this line to be put into the correct location. Therefore there is no need to
-    // store it in the stateArray for undo move. Store only for delete
-    if (state.mode == UpdateMode.RecordStateForDelete) {
-      const TangentLineThruPointState: TangentLineThruPointState = {
-        kind: "tangentLineThruPoint",
-        object: this
-      };
-      state.stateArray.push(TangentLineThruPointState);
+    // These tangent lines are completely determined by their parametric parents and an update on the parents
+    // will cause this line to be put into the correct location. So we don't store any additional information
+    if (objectState && orderedSENoduleList) {
+      orderedSENoduleList.push(this.id);
+      if (objectState.has(this.id)) {
+        console.log(
+          `Tangent Line Though Point with id ${this.id} has been visited twice proceed no further down this branch of the DAG.`
+        );
+        return;
+      }
+      orderedSENoduleList.push(this.id);
+      objectState.set(this.id, { kind: "tangentLineThruPoint", object: this });
     }
-    this.updateKids(state);
+
+    this.updateKids(objectState, orderedSENoduleList);
   }
 
   set glowing(b: boolean) {
