@@ -172,17 +172,26 @@ module.exports = {
         label: "English",
         // Aria Label for locale in the dropdown (this is an assistive technology item)
         ariaLabel: "Languages",
+        
         // Settings to enable the user to edit this pages in GitLab
         // full GitLab url. TODO: This doesn't work the link in the nav doesn't show
-        repo: "https://gitlab.com/hans.dulimarta/sphericalgeometryvue/",
+        //repo: "https://gitlab.com/hans.dulimarta/sphericalgeometryvue/",
+        repo: "dulimarta/spherical-easel", //assumes github see https://vuepress.vuejs.org/theme/default-theme-config.html#git-repository-and-edit-links
         // Customizing the header label
         // Defaults to "GitHub"/"GitLab"/"Bitbucket" depending on `themeConfig.repo`
+        // if your docs are in a different repo from your main project:
+        docsRepo: 'dulimarta/spherical-easel',
+        // if your docs are not at the root of the repo:
+        docsDir: 'docs',
+        // if your docs are in a specific branch (defaults to 'master'):
+        docsBranch: 'main',
+
         repoLabel: "Contribute!",
         // Invite user to edit these pages via GitLab(?), defaults to false, set to true to enable
         // TODO: This doesn't enable the "edit me" links on each page
         editLinks: true,
         // text for the edit-on-gitlab link
-        editLinkText: "Help us by editing this page on GitLab",
+        editLinkText: "Help us by editing this page on GitHub",
         //Enable searching on the the documentation using the third party aloglia https://www.algolia.com/
         //   algolia docsearch options for current locale THIS NEEDS TO BE CONFIGURED TO WORK
         //   algolia: {

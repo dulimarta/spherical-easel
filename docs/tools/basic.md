@@ -40,6 +40,8 @@ These three features are a "snap to point" assumption that Spherical Easel alway
 ::: tool-description
 Create a line.
 
+<icon-base iconSize="64" iconName="line"> </icon-base>
+
 ::: tool-details
 
 - Mouse press to declare one point on the line (this might be new free point or one that snaps to an existing point, object or intersection), then drag to a second location, and mouse release to declare a second point on the line (this might be new free point or one that snaps to an existing point, object or intersection).

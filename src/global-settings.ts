@@ -777,7 +777,8 @@ export const SETTINGS = {
       fillColor: {
         front: "hsla(0, 0%, 90%, 1)",
         back: "hsla(0, 0%, 100%, 1)"
-      }
+      },
+      emphasizeTypes: [["point", "front", "back"]]
     },
     line: {
       strokeWidth: {

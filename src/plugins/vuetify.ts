@@ -6,6 +6,7 @@ Vue.use(Vuetify);
 
 import colors from "vuetify/es5/util/colors";
 import IconBase from "../components/IconBase.vue";
+import SETTINGS from "@/global-settings";
 
 /* This allows us to set the global style variables to adjust the look and feel of the 
 app from one central place. */
@@ -18,7 +19,7 @@ const vuetify = new Vuetify({
         props: {
           iconName: "Point",
           iconFile: "/icons/iconPointPaths.svg",
-          emphasizeTypes: [["point", "front", "back"]]
+          emphasizeTypes: SETTINGS.icons.point.emphasizeTypes //[["point", "front", "back"]]
         }
       },
       line: {
