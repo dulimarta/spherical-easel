@@ -1,3 +1,7 @@
+const path = require("path");
+const { convertTypeAcquisitionFromJson } = require("typescript");
+const projectRoot = process.cwd();
+const alias = path.resolve(projectRoot, 'src');
 module.exports = {
   //Specify the output directory for vuepress build. If a relative path is specified, it will be resolved based on process.cwd().
   dest: "dist/docs",
@@ -115,7 +119,15 @@ module.exports = {
         after: "</script>",
         defaultTitle: ""
       }
-    ]
+    ],
+    ["vuepress-plugin-typescript", {
+      tsLoaderOptions: {
+        transpileOnly: true,
+        compilerOptions: {
+          target: "ES2019"
+        }
+      }
+    }]
     // [
     //   // This plug in is not used unless we use a custom theme
     //   //  see https://vuepress.vuejs.org/plugin/official/plugin-last-updated.html
@@ -376,5 +388,10 @@ module.exports = {
         searchMaxSuggestions: 10
       }
     }
+  },
+  configureWebpack(config) {
+    // Enable dev tool to allow debugging of setup issue
+    config.devtool = false;
+    config.resolve.alias["@"] - alias;
   }
 };

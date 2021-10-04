@@ -1,43 +1,48 @@
 <template>
-  <svg xmlns="http://www.w3.org/2000/svg"
-    preserveAspectRatio="xMidYMid meet"
-    :width="iconSize"
-    :height="iconSize"
-    transform="matrix(1 0 0 -1 0 0)"
-    viewBox="-250 -250 500 500"
-    :aria-labelledby="iconName"
-    role="presentation"
-    style="overflow: visible"
-    class="svg"
-    vector-effect="non-scaling-stroke">
-    <g v-html="svgSnippetAmended">
-    </g>
-  </svg>
+  <div>
+    <svg xmlns="http://www.w3.org/2000/svg"
+      preserveAspectRatio="xMidYMid meet"
+      :width="iconSize"
+      :height="iconSize"
+      transform="matrix(1 0 0 -1 0 0)"
+      viewBox="-250 -250 500 500"
+      :aria-labelledby="iconName"
+      role="presentation"
+      style="overflow: visible"
+      class="svg"
+      vector-effect="non-scaling-stroke">
+      <g v-html="svgSnippetAmended">
+      </g>
+    </svg>
+  </div>
 </template>
 
-<script>
+<script lang="ts">
+import Vue from "vue";
 import axios from "axios";
 import SETTINGS from "./iconSettings.js";
-export default {
-  // kebab-case translates to KebabCase
-  // So tikz-picture translates to TikzPicture
-  // And tik-z-picture translates to TikZPicture
-  name: "icon-base",
-  props: {
-    iconName: "",
-    iconSize: ""
-  },
-  data() {
-    return {
-      svgSnippetRaw: "",
-      svgSnippetAmended: "",
-      doneFetching: false
-    };
-  },
+import Component from "vue-class-component";
+import { Prop } from "vue-property-decorator";
+
+type ObjType =
+  | "line"
+  | "point"
+  | "segment"
+  | "circle"
+  | "angleMarker"
+  | "ellipse";
+@Component
+export default class IconBase extends Vue {
+  @Prop() readonly iconName?: string;
+  @Prop() readonly iconSize?: number;
+
+  private svgSnippetRaw = "";
+  private svgSnippetAmended = "";
+  private doneFetching = false;
 
   mounted() {
-    let filePath;
-    let emphasizeTypes;
+    let filePath: string = "";
+    let emphasizeTypes: Array<Array<string>>;
     let filePathStart = "/icons/";
     switch (this.iconName) {
       case "line":
@@ -51,7 +56,7 @@ export default {
 
     this.doneFetching = false;
 
-    function getAttribute(svgPathString, attributeString) {
+    function getAttribute(svgPathString: string, attributeString: string) {
       const attributeIndex = svgPathString.indexOf(attributeString + "=");
       if (attributeIndex === -1) {
         return undefined;
@@ -61,9 +66,9 @@ export default {
       return svgPathString.slice(startIndex, endIndex);
     }
     function setAttribute(
-      svgPathString,
-      attributeString,
-      newAttributeValueString
+      svgPathString: string,
+      attributeString: string,
+      newAttributeValueString: string
     ) {
       const attributeIndex = svgPathString.indexOf(attributeString + "=");
       if (attributeIndex === -1) {
@@ -81,10 +86,10 @@ export default {
      * "matrix(newScale 0 0 newScale xTranslate|114.678 yTranslate|27.373)"
      */
     function setTransformationScale(
-      oldTransformMatrix,
-      newScale,
-      xTranslate,
-      yTranslate
+      oldTransformMatrix: string,
+      newScale: number,
+      xTranslate?: number,
+      yTranslate?: number
     ) {
       if (oldTransformMatrix === "") {
         throw new Error(
@@ -113,7 +118,11 @@ export default {
         ")"
       );
     }
-    function getStrokeColor(objectType, emph, backFront) {
+    function getStrokeColor(
+      objectType: ObjType,
+      emph: Array<Array<string>>,
+      backFront: string
+    ) {
       let ind;
       switch (objectType) {
         case "point":
@@ -287,7 +296,11 @@ export default {
       }
       return "hsla(0, 0%, 0%, 1)";
     }
-    function getFillColor(objectType, emph, backFront) {
+    function getFillColor(
+      objectType: ObjType,
+      emph: Array<Array<string>>,
+      backFront: string
+    ) {
       let ind;
       switch (objectType) {
         case "point":
@@ -409,7 +422,11 @@ export default {
       }
       return "hsla(0, 0%, 0%, 0)";
     }
-    function getStrokeWidth(objectType, emph, backFront) {
+    function getStrokeWidth(
+      objectType: string,
+      emph: Array<Array<string>>,
+      backFront: string
+    ) {
       let ind;
       switch (objectType) {
         case "point":
@@ -583,7 +600,7 @@ export default {
       }
       return "1";
     }
-    function amendAttributes(svgPathString) {
+    function amendAttributes(svgPathString: string) {
       const type = getAttribute(svgPathString, "type");
       if (type === undefined) {
         throw new Error(
@@ -749,7 +766,7 @@ export default {
       }
       return svgPathString;
     }
-    function removeAttribute(svgPathString, attributeString) {
+    function removeAttribute(svgPathString: string, attributeString: string) {
       const attributeIndex = svgPathString.indexOf(attributeString + "=");
       if (attributeIndex === -1) {
         return svgPathString; // no changes if the attrribute is not already there
@@ -867,7 +884,7 @@ export default {
       this.svgSnippetAmended = parts.join(" ");
     });
   }
-};
+}
 </script>
 
 <style scoped>
