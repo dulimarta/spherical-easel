@@ -34,13 +34,11 @@ These three features are a "snap to point" assumption that Spherical Easel alway
 
 ::: tool-title
 
-## Line
+## Line <icon-base iconSize="64" iconName="line"> </icon-base>
 
 :::
 ::: tool-description
 Create a line.
-
-<icon-base iconSize="64" iconName="line"> </icon-base>
 
 ::: tool-details
 

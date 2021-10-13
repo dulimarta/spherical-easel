@@ -3,7 +3,7 @@
     preserveAspectRatio="xMidYMid meet"
     :width="iconSize"
     :height="iconSize"
-    transform="matrix(1 0 0 -1 0 0)"
+    :transform="newMatrix"
     viewBox="-250 -250 500 500"
     :aria-labelledby="iconName"
     role="presentation"
@@ -31,6 +31,7 @@ export default {
     return {
       svgSnippetRaw: "",
       svgSnippetAmended: "",
+      newMatrix: "",
       doneFetching: false
     };
   },
@@ -48,6 +49,8 @@ export default {
         ];
         break;
     }
+
+    this.newMatrix = "matrix(1 0 0 -1 0 0)";
 
     this.doneFetching = false;
 
@@ -872,9 +875,9 @@ export default {
 
 <style scoped>
 .svg {
-  display: inline-block;
-  vertical-align: baseline;
-  margin: 2px;
+  display: inline-flex;
+  vertical-align: middle;
+  margin: 0px;
   border: 0px solid grey;
 }
 </style>

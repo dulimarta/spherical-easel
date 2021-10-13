@@ -18,21 +18,30 @@ next: /quickstart/construct.md
 lang: en-US
 ---
 
-Spherical Easel is an interactive [Vue](https://vuejs.org/) application for exploring spherical geometry. This application allows users to draw, label, and control the behavior of spherical [points](/tools/basic.html#point), [lines](/tools/basic.html#line), [line segments](/tools/basic.html#line-segment), [circles](/tools/basic.html#circle), [conics](/tools/conic.html), [polygons](/tools/basic.html#polygon), and custom user defined [parametric curves](/tools/advanced.html#parametric-curve-user-defined) on the unit sphere. Using constructions (including [intersections](/tools/construction.html#intersection), [bisections](/tools/construction.html#angle-bisector), [tangents](/tools/construction.html#tangent), [perpendiculars](/tools/construction.html#perpendicular), and [others](/tools/construction.html)), measurements (including [distance](/tools/measurement.html#disance), [length](/tools/measurement.html#length), [angle](/tools/measurement.html#angle), [polygons](/tools/measurement.html#polygon) and others), and transformations (including [isometries](/tools/transformation.html) and [inversion](/tools/transformation.html#create-inversion)) users can create precise geometric arrangements and numerically confirm conjectures in spherical geometry. In addition to being able to customize the look and feel of the displayed objects, registered users have the ability to share, load, save, export their constructions (EPS, SVG, TikZ, animated GIFs), import certain hand-created arrangements, and control which tools are available for a saved construction (intended primarily for instructors). Non-registered users can share (i.e. generate a link to a particular construction that is only accessible with that link for ??4 months??) and export their constructions.
+<icon-base iconSize="32" iconName="line"> </icon-base><m-d-i-icon-base iconSize="32" iconName="mdi-calculator"> </m-d-i-icon-base>
+
+Spherical Easel is an interactive [Vue](https://vuejs.org/) application for exploring spherical geometry. This application allows users to draw, label, and control the behavior of spherical [points](/tools/basic.html#point), [<icon-base iconSize="22" iconName="line"> </icon-base> lines](/tools/basic.html#line), [line segments](/tools/basic.html#line-segment), [circles](/tools/basic.html#circle), [circular arcs](/tools/advanced.html#circular-arc), [conics](/tools/conic.html), [polygons](/tools/basic.html#polygon), and custom user defined [parametric curves](/tools/advanced.html#parametric-curve-user-defined) on the unit sphere. Using constructions (including [intersections](/tools/construction.html#intersection), [bisections](/tools/construction.html#angle-bisector), [tangents](/tools/construction.html#tangent), [perpendiculars](/tools/construction.html#perpendicular), and [others](/tools/construction.html)), measurements (including [distance](/tools/measurement.html#disance), [length](/tools/measurement.html#length), [angle](/tools/measurement.html#angle), [polygons](/tools/measurement.html#polygon) and [others](/tools/measurement.html)), and transformations (including [isometries](/tools/transformation.html) and [inversion](/tools/transformation.html#create-inversion) and [others](/tools/transformation.html) ) users can create precise geometric arrangements and numerically confirm conjectures in spherical geometry. In addition to being able to customize the look and feel of the displayed objects, registered users have the ability to share, load, save, export their constructions (EPS, SVG, TikZ, animated GIFs), import certain hand-created arrangements, and control which tools are available for a saved construction (intended primarily for instructors). Non-registered users can share (i.e. generate a link to a particular construction that is only accessible with that link for 6 months) and export their constructions.
+<br></br>
 
 This documentation has two major parts: a [User Manual](userguide/index.md) explaining many of the features of the application available to the user and a [Design Document](design/index.md) explaining many of the choices we made while coding this application.
+<br></br>
 
-Spherical Easel is written in Typescript. This application is open source and use of it is granted under the \*\*\* TODO: license. This is our code on GitLab: TODO insert URL. We welcome your help in making this application better and more universally accessible.
+Spherical Easel is written in Typescript. This application is open source and use of it is granted under the License agreements [CC-BY-NC-SA](https://creativecommons.org/licenses/by-nc-sa/4.0/). We welcome your help in making this application better and more universally accessible.
+<br></br>
 
 You can help by....
 
-- Helping to translate this program into another language (TODO: add a link)
-- Reporting a bug (TODO: add a link)
-- Requesting a feature (TODO: add a link)
-- Adding a lesson plan to our [repository](lessonplans/) to help students learn about spherical geometry (TODO: add a link)
-- Updating these help pages with rewrites or more description
-- Contacting us with a question (TODO: create a sphericalEasel@gvsu.edu email and link here - put a forward on this account to the three of us?)
+- Offering to help translate this program into another language.
+- Consulting on how to make this program more accessible to people with low vision.
+- Reporting a bug.
+- Requesting an enhancement or feature.
+- Adding a lesson plan to our [repository](lessonplans/) to help students learn about spherical geometry.
+- Updating these help pages with correction, rewrites or more description. (Most pages in this documentation have a link at the bottom to allow you to suggest a edit to a particular page.)
+  <br></br>
 
-We hope you enjoy our app!
+If you would like to help in any way or ask us a question please use our [GitHub repository](https://github.com/dulimarta/spherical-easel/issues/new) for reporting an issue.
+<br></br>
+
+We hope you enjoy our app! <br></br>
 
 David, Will, Hans, and Michelle
