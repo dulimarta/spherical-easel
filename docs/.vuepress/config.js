@@ -1,4 +1,4 @@
-const path = require("path");
+const path = require("path","@vuepress/utils");
 const { convertTypeAcquisitionFromJson } = require("typescript");
 const projectRoot = process.cwd();
 const alias = path.resolve(projectRoot, 'src');
@@ -121,27 +121,17 @@ module.exports = {
         defaultTitle: ""
       }
     ],
-    // ['@vuepress/register-components']
-    //[
-    //  '@vuepress/register-components',
-      // {
-      //   componentsDir: "components"
-      // }
-      // {
-      //   components: [
-      //     {
-      //       name: 'IconBase',
-      //       path: '/src/components/IconBase.vue'
-      //     }
-      //   ]
-      // }
-    //]
-    // [
-    //   '@vuepress/register-components',
-    //   {
-    //     componentsDir: path.resolve(__dirname, './components'),
-    //   },
-    // ],
+    [
+     '@vuepress/register-components',
+      {
+        components: [
+          {
+            name: 'IconBase',
+            path: '/src/components/IconBase.vue'
+          }
+        ]
+      }
+    ],
     ["vuepress-plugin-typescript", {
       tsLoaderOptions: {
         transpileOnly: true,

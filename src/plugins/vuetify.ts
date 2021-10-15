@@ -8,7 +8,7 @@ import colors from "vuetify/es5/util/colors";
 import IconBase from "../components/IconBase.vue";
 import SETTINGS from "@/global-settings";
 
-/* This allows us to set the global style variables to adjust the look and feel of the 
+/* This allows us to set the global style variables to adjust the look and feel of the
 app from one central place. */
 const vuetify = new Vuetify({
   iconfont: "mdiSvg",
@@ -17,208 +17,190 @@ const vuetify = new Vuetify({
       point: {
         component: IconBase,
         props: {
-          iconName: "Point",
-          iconFile: "/icons/iconPointPaths.svg",
-          emphasizeTypes: SETTINGS.icons.point.emphasizeTypes //[["point", "front", "back"]]
+          iconName: "point"
+          // iconFile: "/icons/iconPointPaths.svg",
+          // emphasizeTypes: SETTINGS.icons.point.emphasizeTypes //[["point", "front", "back"]]
         }
       },
       line: {
         component: IconBase,
         props: {
-          iconName: "Line",
-          iconFile: "/icons/iconLinePaths.svg",
-          emphasizeTypes: [
-            ["line", "front", "back"],
-            ["point", "front", "back"]
-          ]
+          iconName: "line"
+          // iconFile: "/icons/iconLinePaths.svg",
+          // emphasizeTypes: SETTINGS.icons.line.emphasizeTypes
         }
       },
       segment: {
         component: IconBase,
         props: {
-          iconName: "Segment",
-          iconFile: "/icons/iconSegmentPaths.svg",
-          emphasizeTypes: [
-            ["segment", "front", "back"],
-            ["point", "front", "back"]
-          ]
+          iconName: "segment"
+          // iconFile: "/icons/iconSegmentPaths.svg",
+          // emphasizeTypes: SETTINGS.icons.segment.emphasizeTypes
         }
       },
       circle: {
         component: IconBase,
         props: {
-          iconName: "Circle",
-          iconFile: "/icons/iconCirclePaths.svg",
-          emphasizeTypes: [
-            ["circle", "front", "back"],
-            ["point", "front", "back"]
-          ]
+          iconName: "circle"
+          // iconFile: "/icons/iconCirclePaths.svg",
+          // emphasizeTypes: SETTINGS.icons.circle.emphasizeTypes
         }
       },
       antipode: {
         component: IconBase,
         props: {
-          iconName: "Antipode",
-          iconFile: "/icons/iconAntipodePaths.svg",
-          emphasizeTypes: [["point", "front"]]
+          iconName: "antipode"
+          // iconFile: "/icons/iconAntipodePaths.svg",
+          // emphasizeTypes: SETTINGS.icons.antipode.emphasizeTypes
         }
       },
       polar: {
         component: IconBase,
         props: {
-          iconName: "Polar",
-          iconFile: "/icons/iconPolarPaths.svg",
-          emphasizeTypes: [
-            ["point", "front"],
-            ["line", "front"]
-          ]
+          iconName: "polar"
+          // iconFile: "/icons/iconPolarPaths.svg",
+          // emphasizeTypes: SETTINGS.icons.polar.emphasizeTypes
         }
       },
       perpendicular: {
         component: IconBase,
         props: {
-          iconName: "Perpendicular",
-          iconFile: "/icons/iconPerpendicularPaths.svg",
-          emphasizeTypes: [
-            ["point", "front"],
-            ["line", "front", "back"]
-          ]
+          iconName: "perpendicular"
+          // iconFile: "/icons/iconPerpendicularPaths.svg",
+          // emphasizeTypes: SETTINGS.icons.perpendicular.emphasizeTypes
         }
       },
       tangent: {
         component: IconBase,
         props: {
-          iconName: "Tangent",
-          iconFile: "/icons/iconTangentPaths.svg",
-          emphasizeTypes: [
-            ["point", "front"],
-            ["line", "front", "back"]
-          ]
+          iconName: "tangent"
+          // iconFile: "/icons/iconTangentPaths.svg",
+          // emphasizeTypes: SETTINGS.icons.tangent.emphasizeTypes
         }
       },
       intersection: {
         component: IconBase,
         props: {
-          iconName: "Intersection",
-          iconFile: "/icons/iconIntersectionPaths.svg",
-          emphasizeTypes: [["point", "front"]]
+          iconName: "intersection"
+          // iconFile: "/icons/iconIntersectionPaths.svg",
+          // emphasizeTypes: SETTINGS.icons.ONTEline.emphasizeTypes
         }
       },
       pointOnObject: {
         component: IconBase,
         props: {
-          iconName: "Intersection",
-          iconFile: "/icons/iconPointOnObjectPaths.svg",
-          emphasizeTypes: [["point", "front"]]
+          iconName: "pointOnObject"
+          // iconFile: "/icons/iconPointOnObjectPaths.svg",
+          // emphasizeTypes: [["point", "front"]]
         }
       },
-      angle: {
+      angleMarker: {
         component: IconBase,
         props: {
-          iconName: "Angle",
-          iconFile: "/icons/iconAngleMarkerPaths.svg",
-          emphasizeTypes: [["angleMarker", "back", "front"]]
+          iconName: "angleMarker"
+          // iconFile: "/icons/iconAngleMarkerPaths.svg",
+          // emphasizeTypes: [["angleMarker", "back", "front"]]
         }
       },
       segmentLength: {
         component: IconBase,
         props: {
-          iconName: "Segment Length",
-          iconFile: "/icons/iconSegmentLengthPaths.svg",
-          emphasizeTypes: [["segment", "back", "front"]]
+          iconName: "segmentLength"
+          // iconFile: "/icons/iconSegmentLengthPaths.svg",
+          // emphasizeTypes: [["segment", "back", "front"]]
         }
       },
       pointDistance: {
         component: IconBase,
         props: {
-          iconName: "Point Distance",
-          iconFile: "/icons/iconPointDistancePaths.svg",
-          emphasizeTypes: [["point", "front", "back"]]
+          iconName: "pointDistance"
+          // iconFile: "/icons/iconPointDistancePaths.svg",
+          // emphasizeTypes: [["point", "front", "back"]]
         }
       },
       ellipse: {
         component: IconBase,
         props: {
-          iconName: "Ellipse",
-          iconFile: "/icons/iconEllipsePaths.svg",
-          emphasizeTypes: [["point", "front", "back"]]
+          iconName: "ellipse"
+          // iconFile: "/icons/iconEllipsePaths.svg",
+          // emphasizeTypes: [["point", "front", "back"]]
         }
       },
       parametric: {
         component: IconBase,
         props: {
-          iconName: "Parametric",
-          iconFile: "/icons/iconParametricPaths.svg",
-          emphasizeTypes: [
-            ["point", "front"],
-            ["parametric", "front"]
-          ]
+          iconName: "parametric"
+          // iconFile: "/icons/iconParametricPaths.svg",
+          // emphasizeTypes: [
+          //   ["point", "front"],
+          //   ["parametric", "front"]
+          // ]
         }
       },
       measuredTriangle: {
         component: IconBase,
         props: {
-          iconName: "MeasuredTriangle",
-          iconFile: "/icons/iconMeasuredTrianglePaths.svg",
-          emphasizeTypes: [
-            ["point", "front"],
-            ["angleMarker", "back", "front"]
-          ]
+          iconName: "measuredTriangle"
+          // iconFile: "/icons/iconMeasuredTrianglePaths.svg",
+          // emphasizeTypes: [
+          //   ["point", "front"],
+          //   ["angleMarker", "back", "front"]
+          // ]
         }
       },
       measuredPolygon: {
         component: IconBase,
         props: {
-          iconName: "MeasuredPolygon",
-          iconFile: "/icons/iconMeasuredPolygonPaths.svg",
-          emphasizeTypes: [
-            ["point", "front"],
-            ["angleMarker", "back", "front"]
-          ]
+          iconName: "measuredPolygon"
+          // iconFile: "/icons/iconMeasuredPolygonPaths.svg",
+          // emphasizeTypes: [
+          //   ["point", "front"],
+          //   ["angleMarker", "back", "front"]
+          // ]
         }
       },
       midpoint: {
         component: IconBase,
         props: {
-          iconName: "Midpoint",
-          iconFile: "/icons/iconMidpointPaths.svg",
-          emphasizeTypes: [
-            ["segment", "front"],
-            ["point", "front"]
-          ]
+          iconName: "midpoint"
+          // iconFile: "/icons/iconMidpointPaths.svg",
+          // emphasizeTypes: [
+          //   ["segment", "front"],
+          //   ["point", "front"]
+          // ]
         }
       },
       nSectPoint: {
         component: IconBase,
         props: {
-          iconName: "NSectPoint",
-          iconFile: "/icons/iconNSectPointPaths.svg",
-          emphasizeTypes: [
-            ["segment", "front"],
-            ["point", "front"]
-          ]
+          iconName: "nSectPoint"
+          // iconFile: "/icons/iconNSectPointPaths.svg",
+          // emphasizeTypes: [
+          //   ["segment", "front"],
+          //   ["point", "front"]
+          // ]
         }
       },
       angleBisector: {
         component: IconBase,
         props: {
-          iconName: "AngleBisector",
-          iconFile: "/icons/iconAngleBisectorPaths.svg",
-          emphasizeTypes: [
-            ["line", "front", "back"],
-            ["angleMarker", "front"]
-          ]
+          iconName: "angleBisector"
+          // iconFile: "/icons/iconAngleBisectorPaths.svg",
+          // emphasizeTypes: [
+          //   ["line", "front", "back"],
+          //   ["angleMarker", "front"]
+          // ]
         }
       },
       nSectLine: {
         component: IconBase,
         props: {
-          iconName: "NSectLine",
-          iconFile: "/icons/iconNSectLinePaths.svg",
-          emphasizeTypes: [
-            ["line", "front", "back"],
-            ["angleMarker", "front"]
-          ]
+          iconName: "nSectLine"
+          // iconFile: "/icons/iconNSectLinePaths.svg",
+          // emphasizeTypes: [
+          //   ["line", "front", "back"],
+          //   ["angleMarker", "front"]
+          // ]
         }
       }
     }

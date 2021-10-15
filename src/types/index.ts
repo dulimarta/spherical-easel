@@ -193,6 +193,29 @@ export type SavedNames =
   | "sliderMeasurementStep"
   | "sliderMeasurementValue";
 
+export type IconNames =
+  | "point"
+  | "line"
+  | "segment"
+  | "circle"
+  | "antipode"
+  | "polar"
+  | "perpendicular"
+  | "tangent"
+  | "intersection"
+  | "pointOnObject"
+  | "angleMarker"
+  | "segmentLength"
+  | "pointDistance"
+  | "ellipse"
+  | "parametric"
+  | "measuredTriangle"
+  | "measuredPolygon"
+  | "midpoint"
+  | "nSectPoint"
+  | "angleBisector"
+  | "nSectLine";
+
 export type ActionMode =
   | "angle"
   | "antipodalPoint"

@@ -3,6 +3,8 @@
     preserveAspectRatio="xMidYMid meet"
     transform="matrix(1 0 0 -1 0 0)"
     viewBox="-250 -250 500 500"
+    :width="iconSize"
+    :height="iconSize"
     :aria-labelledby="iconName"
     role="presentation"
     style="overflow: visible"
@@ -15,28 +17,26 @@
 <script lang="ts">
 import axios from "axios";
 import { Prop, Component, Vue } from "vue-property-decorator";
-import SETTINGS from "@/global-settings";
-import Nodule from "@/plottables/Nodule";
+//import SETTINGS from "@/global-settings";
+import SETTINGS from "../../src/global-settings";
+import { IconNames } from "../../src/types/index";
 
 @Component({})
 export default class IconBase extends Vue {
-  @Prop() readonly iconName?: string;
-  @Prop() readonly iconFile!: string;
-  @Prop() readonly emphasizeTypes!: string[][];
+  @Prop() readonly iconName!: IconNames;
+  @Prop() readonly iconSize?: number;
 
   private svgSnippetRaw = "";
   private svgSnippetAmended = "";
   private doneFetching = false;
+  private emphasizeTypes: string[][] = [[]];
 
   mounted(): void {
-    // console.log("App location", window.location);
-    let filePath: string;
-    // Failed attempt to load from current directory
-    if (this.iconFile.startsWith(".") || this.iconFile.startsWith("/")) {
-      filePath = this.iconFile;
-    } else {
-      filePath = "/" + this.iconFile;
-    }
+    let upperCaseIconName =
+      this.iconName[0].toUpperCase() + this.iconName.slice(1);
+    let filePath = "../../icons/icon" + upperCaseIconName + "Paths.svg";
+    this.emphasizeTypes = SETTINGS.icons[this.iconName].emphasizeTypes;
+
     this.doneFetching = false;
     // By default, axios assumes a JSON response and the input will be parsed as JSON.
     // We want to override it to "text"

@@ -18,14 +18,8 @@ next: /quickstart/construct.md
 lang: en-US
 ---
 
-Size 56
-<IconBase icon-size="56" icon-name="line" />
-
-Size 64
-<IconBase icon-size="64" icon-name="line" />
-
-Size 96
-<IconBase icon-size="96" icon-name="line" />
+icon from src
+<IconBase  icon-size="48" icon-name="line" /> <MDIIconBase icon-size="20" icon-name="mdi-trash-can" />
 
 Spherical Easel is an interactive [Vue](https://vuejs.org/) application for exploring spherical geometry. This application allows users to draw, label, and control the behavior of spherical [points](/tools/basic.html#point), [lines](/tools/basic.html#line), [line segments](/tools/basic.html#line-segment), [circles](/tools/basic.html#circle), [conics](/tools/conic.html), [polygons](/tools/basic.html#polygon), and custom user defined [parametric curves](/tools/advanced.html#parametric-curve-user-defined) on the unit sphere. Using constructions (including [intersections](/tools/construction.html#intersection), [bisections](/tools/construction.html#angle-bisector), [tangents](/tools/construction.html#tangent), [perpendiculars](/tools/construction.html#perpendicular), and [others](/tools/construction.html)), measurements (including [distance](/tools/measurement.html#disance), [length](/tools/measurement.html#length), [angle](/tools/measurement.html#angle), [polygons](/tools/measurement.html#polygon) and others), and transformations (including [isometries](/tools/transformation.html) and [inversion](/tools/transformation.html#create-inversion)) users can create precise geometric arrangements and numerically confirm conjectures in spherical geometry. In addition to being able to customize the look and feel of the displayed objects, registered users have the ability to share, load, save, export their constructions (EPS, SVG, TikZ, animated GIFs), import certain hand-created arrangements, and control which tools are available for a saved construction (intended primarily for instructors). Non-registered users can share (i.e. generate a link to a particular construction that is only accessible with that link for ??4 months??) and export their constructions.
 

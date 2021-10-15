@@ -67,7 +67,7 @@
           <v-icon v-else-if="isSlider">mdi-arrow-left-right</v-icon>
           <v-icon v-else-if="isAngle"
             medium>
-            $vuetify.icons.value.angle</v-icon>
+            $vuetify.icons.value.angleMarker</v-icon>
           <v-icon v-else-if="isMeasuredTriangle"
             medium>
             $vuetify.icons.value.measuredTriangle</v-icon>

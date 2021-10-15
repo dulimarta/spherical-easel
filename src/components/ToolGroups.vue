@@ -82,8 +82,8 @@
       </v-btn-toggle>
     </div>
 
-    <!-- 
-      The Measurement Tool Group only shown if the user has permission to use a tool in this 
+    <!--
+      The Measurement Tool Group only shown if the user has permission to use a tool in this
       group. Note the use of the translation $t(key_value).
     -->
     <div id="MeasurementToolGroup"
@@ -104,8 +104,8 @@
       </v-btn-toggle>
     </div>
 
-    <!-- 
-      The Advanced Tool Group only shown if the user has permission to use a tool in this 
+    <!--
+      The Advanced Tool Group only shown if the user has permission to use a tool in this
       group. Note the use of the translation $t(key_value).
     -->
     <div id="AdvanceToolGroup"
@@ -127,8 +127,8 @@
       </v-btn-toggle>
     </div>
 
-    <!-- 
-      The Transformational Tool Group only shown if the user has permission to use a tool in this 
+    <!--
+      The Transformational Tool Group only shown if the user has permission to use a tool in this
       group. Note the use of the translation $t(key_value).
     -->
     <div id="TransformationalToolGroup"
@@ -149,8 +149,8 @@
       </v-btn-toggle>
     </div>
 
-    <!-- 
-      The Conice Tool Group only shown if the user has permission to use a tool in this 
+    <!--
+      The Conice Tool Group only shown if the user has permission to use a tool in this
       group. Note the use of the translation $t(key_value).
     -->
     <div id="ConicToolGroup"
@@ -222,7 +222,7 @@ export default class ToolGroups extends Vue {
   private elev = 24;
   private inProductionMode = false;
 
-  /* This is a variable that does NOT belong in the global settings but I don't know where else to 
+  /* This is a variable that does NOT belong in the global settings but I don't know where else to
   put it. This is the list of tools that should be displayed*/
   private buttonDisplayList = SETTINGS.userButtonDisplayList;
 
@@ -240,7 +240,7 @@ export default class ToolGroups extends Vue {
     return this.buttonList.filter(b => b.toolGroup === groupName).length > 0;
   }
 
-  /* This turns off all other snackbar/toolUseMessage displays so that multiple 
+  /* This turns off all other snackbar/toolUseMessage displays so that multiple
   snackbar/toolUseMessages are not displayed at the same time.  */
   displayOnlyThisToolUseMessageFunc(id: number): void {
     // Alternative solution: use Array high-order functions
@@ -491,7 +491,7 @@ export default class ToolGroups extends Vue {
       id: 10,
       actionModeValue: "angle",
       displayedName: "CreateAngleDisplayedName",
-      icon: "$vuetify.icons.value.angle",
+      icon: "$vuetify.icons.value.angleMarker",
       toolTipMessage: "CreateAngleToolTipMessage",
       toolUseMessage: "CreateAngleToolUseMessage",
       displayToolUseMessage: false,

@@ -728,6 +728,7 @@ export const SETTINGS = {
       }
     },
     angleMarker: {
+      emphasizeTypes: [["angleMarker", "back", "front"]],
       scale: {
         front: 7,
         back: 5
@@ -743,6 +744,10 @@ export const SETTINGS = {
       }
     },
     circle: {
+      emphasizeTypes: [
+        ["circle", "front", "back"],
+        ["point", "front", "back"]
+      ],
       strokeWidth: {
         front: 1,
         back: 1
@@ -754,6 +759,7 @@ export const SETTINGS = {
       }
     },
     ellipse: {
+      emphasizeTypes: [["point", "front", "back"]],
       strokeWidth: {
         front: 1,
         back: 1
@@ -781,6 +787,10 @@ export const SETTINGS = {
       emphasizeTypes: [["point", "front", "back"]]
     },
     line: {
+      emphasizeTypes: [
+        ["line", "front", "back"],
+        ["point", "front", "back"]
+      ],
       strokeWidth: {
         front: 1,
         back: 1
@@ -791,6 +801,10 @@ export const SETTINGS = {
       }
     },
     segment: {
+      emphasizeTypes: [
+        ["segment", "front", "back"],
+        ["point", "front", "back"]
+      ],
       strokeWidth: {
         front: 1,
         back: 1
@@ -799,6 +813,81 @@ export const SETTINGS = {
         front: "hsla(0, 0%, 40%, 1)",
         back: "hsla(0, 0%, 60%, 1)"
       }
+    },
+    antipode: {
+      emphasizeTypes: [["point", "front"]]
+    },
+    polar: {
+      emphasizeTypes: [
+        ["point", "front"],
+        ["line", "front"]
+      ]
+    },
+    perpendicular: {
+      emphasizeTypes: [
+        ["point", "front"],
+        ["line", "front", "back"]
+      ]
+    },
+    tangent: {
+      emphasizeTypes: [
+        ["point", "front"],
+        ["line", "front", "back"]
+      ]
+    },
+    intersection: {
+      emphasizeTypes: [["point", "front"]]
+    },
+    pointOnObject: {
+      emphasizeTypes: [["point", "front"]]
+    },
+    segmentLength: {
+      emphasizeTypes: [["segment", "back", "front"]]
+    },
+    pointDistance: {
+      emphasizeTypes: [["point", "front", "back"]]
+    },
+    parametric: {
+      emphasizeTypes: [
+        ["point", "front"],
+        ["parametric", "front"]
+      ]
+    },
+    measuredTriangle: {
+      emphasizeTypes: [
+        ["point", "front"],
+        ["angleMarker", "back", "front"]
+      ]
+    },
+    measuredPolygon: {
+      emphasizeTypes: [
+        ["point", "front"],
+        ["angleMarker", "back", "front"]
+      ]
+    },
+    midpoint: {
+      emphasizeTypes: [
+        ["segment", "front"],
+        ["point", "front"]
+      ]
+    },
+    nSectPoint: {
+      emphasizeTypes: [
+        ["segment", "front"],
+        ["point", "front"]
+      ]
+    },
+    angleBisector: {
+      emphasizeTypes: [
+        ["line", "front", "back"],
+        ["angleMarker", "front"]
+      ]
+    },
+    nSectLine: {
+      emphasizeTypes: [
+        ["line", "front", "back"],
+        ["angleMarker", "front"]
+      ]
     }
   },
   /* Controls the length of time (in ms) the tool tip are displayed */
