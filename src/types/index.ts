@@ -233,7 +233,19 @@ export type IconNames =
   | "objectsTab"
   | "constructionsTab"
   | "calculationObject"
-  | "measurementObject";
+  | "measurementObject"
+  | "stylePanel"
+  | "downloadConstruction"
+  | "shareConstruction"
+  | "deleteConstruction"
+  | "cycleNodeValueDisplayMode"
+  | "showNode"
+  | "hideNode"
+  | "showNodeLabel"
+  | "hideNodeLabel"
+  | "deleteNode"
+  | "appSettings"
+  | "clearConstruction";
 
 /**
  * Intersection Vector3 and if that intersection exists

@@ -1,12 +1,12 @@
-<!-- 
+<!--
   template is HTML for the layout for the UI of the vue application (i.e. the main
   window with everything in it), it allows for binding with the
   underlying Document Object Model. We can use this template for specifiying
-  locations in the document with the "id" class.  
+  locations in the document with the "id" class.
 -->
 
 <template>
-  <!-- 
+  <!--
     This is the main application that must contain all the vuetify components.
     There can be only one of these environments.
   -->
@@ -36,7 +36,7 @@
         </v-toolbar-title>
         <v-tooltip left>
           <template v-slot:activator="{ on }">
-            <!--- TODO: Change the URL to match the hosting site 
+            <!--- TODO: Change the URL to match the hosting site
                For instance, on GitLab use href="/sphericalgeometryvue/docs"
                Watch out for double slashes "//"
             --->
@@ -56,7 +56,7 @@
 
       <v-spacer></v-spacer>
 
-      <!-- This will open up the global settings view setting the language, decimals 
+      <!-- This will open up the global settings view setting the language, decimals
       display and other global options-->
       <template v-if="accountEnabled">
         <span>{{whoami}}</span>
@@ -75,14 +75,15 @@
         <v-icon v-if="whoami !== ''"
           :disabled="!hasObjects"
           class="mr-2"
-          @click="$refs.saveConstructionDialog.show()">mdi-share</v-icon>
+          @click="$refs.saveConstructionDialog.show()">$shareConstruction
+        </v-icon>
       </template>
       <router-link to="/settings/">
-        <v-icon>mdi-cog</v-icon>
+        <v-icon>$appSettings</v-icon>
       </router-link>
     </v-app-bar>
 
-    <!-- 
+    <!--
       This is the main window of the app. All other components are display on top of this element
       The router controls this background and it can be Easel or settings or...
     -->
@@ -143,9 +144,9 @@
   </v-app>
 </template>
 
-<!-- 
-  This section is for Typescript code (note lang="ts") for binding the output of the user 
-  actions to desired changes in the display and the rest of the app. 
+<!--
+  This section is for Typescript code (note lang="ts") for binding the output of the user
+  actions to desired changes in the display and the rest of the app.
 -->
 <script lang="ts">
 /* Import the custom components */

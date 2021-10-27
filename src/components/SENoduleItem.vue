@@ -120,7 +120,7 @@
                     v-on="on"
                     @click="cycleValueDisplayMode">
                     <v-icon small>
-                      mdi-recycle-variant
+                      $cycleNodeValueDisplayMode
                     </v-icon>
                   </div>
                 </template>
@@ -136,12 +136,12 @@
                     @click="toggleVisibility">
                     <v-icon small
                       v-if="isHidden">
-                      mdi-eye
+                      $showNode
                     </v-icon>
                     <v-icon small
                       v-else
                       style="color:gray">
-                      mdi-eye-off
+                      $hideNode
                     </v-icon>
                   </div>
                 </template>
@@ -158,12 +158,12 @@
 
                     <v-icon small
                       v-if="isLabelHidden">
-                      mdi-label-outline
+                      $showNodeLabel
                     </v-icon>
                     <v-icon small
                       v-else
                       style="color:gray">
-                      mdi-label-off-outline
+                      $hideNodeLabel
                     </v-icon>
                   </div>
                 </template>
@@ -177,7 +177,7 @@
                     v-on="on"
                     @click="deleteNode">
                     <v-icon small>
-                      mdi-trash-can-outline
+                      $deleteNode
                     </v-icon>
                   </div>
                 </template>

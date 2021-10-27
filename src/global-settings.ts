@@ -1122,6 +1122,90 @@ export const SETTINGS = {
         mdiIcon: "mdi-slide",
         filePath: ""
       }
+    },
+    stylePanel: {
+      props: {
+        emphasizeTypes: [[]],
+        mdiIcon: "mdi-palette",
+        filePath: ""
+      }
+    },
+    downloadConstruction: {
+      props: {
+        emphasizeTypes: [[]],
+        mdiIcon: "mdi-download",
+        filePath: ""
+      }
+    },
+    shareConstruction: {
+      props: {
+        emphasizeTypes: [[]],
+        mdiIcon: "mdi-share-variant",
+        filePath: ""
+      }
+    },
+    deleteConstruction: {
+      props: {
+        emphasizeTypes: [[]],
+        mdiIcon: "mdi-trash-can",
+        filePath: ""
+      }
+    },
+    cycleNodeValueDisplayMode: {
+      props: {
+        emphasizeTypes: [[]],
+        mdiIcon: "mdi-recycle-variant",
+        filePath: ""
+      }
+    },
+    showNode: {
+      props: {
+        emphasizeTypes: [[]],
+        mdiIcon: "mdi-eye",
+        filePath: ""
+      }
+    },
+    hideNode: {
+      props: {
+        emphasizeTypes: [[]],
+        mdiIcon: "mdi-eye-off",
+        filePath: ""
+      }
+    },
+    showNodeLabel: {
+      props: {
+        emphasizeTypes: [[]],
+        mdiIcon: "mdi-label-outline",
+        filePath: ""
+      }
+    },
+    hideNodeLabel: {
+      props: {
+        emphasizeTypes: [[]],
+        mdiIcon: "mdi-label-off-outline",
+        filePath: ""
+      }
+    },
+    deleteNode: {
+      props: {
+        emphasizeTypes: [[]],
+        mdiIcon: "mdi-trash-can-outline",
+        filePath: ""
+      }
+    },
+    appSettings: {
+      props: {
+        emphasizeTypes: [[]],
+        mdiIcon: "mdi-cog",
+        filePath: ""
+      }
+    },
+    clearConstruction: {
+      props: {
+        emphasizeTypes: [[]],
+        mdiIcon: "mdi-broom",
+        filePath: ""
+      }
     }
   },
   /* Controls the length of time (in ms) the tool tip are displayed */

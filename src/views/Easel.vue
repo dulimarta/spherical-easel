@@ -15,7 +15,8 @@
           </v-btn>
           <Toolbox id="toolbox"
             ref="toolbox"
-            :minified="toolboxMinified" />
+            :minified="toolboxMinified"
+            v-on:toggle-tool-box-panel="minifyToolbox" />
 
         </div>
       </v-container>
@@ -23,7 +24,7 @@
     <Pane :size="centerWidth">
 
       <!-- Use the right pane mainly for the canvas and style panel -->
-      <!-- 
+      <!--
         When minified, the style panel takes only 5% of the remaining width
         When expanded, it takes 30% of the remaining width
       -->
@@ -51,7 +52,7 @@
                   <v-tooltip bottom
                     :open-delay="toolTipOpenDelay"
                     :close-delay="toolTipCloseDelay">
-                    <!-- TODO:   
+                    <!-- TODO:
                         When not available they should be greyed out (i.e. disabled).-->
                     <template v-slot:activator="{ on }">
                       <v-btn
@@ -93,7 +94,7 @@
                         tile
                         @click="requestShare()"
                         v-on="on">
-                        <v-icon>mdi-share</v-icon>
+                        <v-icon>$shareConstruction</v-icon>
                       </v-btn>
                     </template>
                     <span>Reset sphere</span>
@@ -106,7 +107,7 @@
                         tile
                         @click="resetSphere"
                         v-on="on">
-                        <v-icon>mdi-broom</v-icon>
+                        <v-icon>$clearConstruction</v-icon>
                       </v-btn>
                     </template>
                     <span>Reset sphere</span>
@@ -122,7 +123,7 @@
                         tile
                         @click="enableZoomIn"
                         v-on="on">
-                        <v-icon>mdi-magnify-plus-outline</v-icon>
+                        <v-icon>$zoomIn</v-icon>
                       </v-btn>
                     </template>
                     <span>{{ $t("buttons.PanZoomInToolTipMessage") }}</span>
@@ -136,7 +137,7 @@
                         tile
                         @click="enableZoomOut"
                         v-on="on">
-                        <v-icon>mdi-magnify-minus-outline</v-icon>
+                        <v-icon>$zoomOut</v-icon>
                       </v-btn>
                     </template>
                     <span>{{ $t("buttons.PanZoomOutToolTipMessage") }}</span>
@@ -150,8 +151,7 @@
                         tile
                         @click="enableZoomFit"
                         v-on="on">
-                        <v-icon>mdi-magnify-scan
-                        </v-icon>
+                        <v-icon>$zoomFit </v-icon>
                       </v-btn>
                     </template>
                     <span>{{ $t("buttons.ZoomFitToolTipMessage") }}</span>
@@ -568,7 +568,7 @@ export default class Easel extends Vue {
       this.attemptedToRoute = toRoute;
       next(false); // Stay on this view
     } else {
-      /* Proceed to the next view when the canvas has no objects OR 
+      /* Proceed to the next view when the canvas has no objects OR
       user has confirmed leaving this view */
       next();
     }

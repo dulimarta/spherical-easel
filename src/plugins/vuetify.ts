@@ -241,6 +241,78 @@ const vuetify = new Vuetify({
         props: {
           iconName: "slider" // The name of the icon that is passed to IconBase, the other properties of the icon are in the global settings because in order to access them from both the src and VuePress we need to store the props there.
         }
+      },
+      stylePanel: {
+        component: IconBase,
+        props: {
+          iconName: "stylePanel" // The name of the icon that is passed to IconBase, the other properties of the icon are in the global settings because in order to access them from both the src and VuePress we need to store the props there.
+        }
+      },
+      downloadConstruction: {
+        component: IconBase,
+        props: {
+          iconName: "downloadConstruction" // The name of the icon that is passed to IconBase, the other properties of the icon are in the global settings because in order to access them from both the src and VuePress we need to store the props there.
+        }
+      },
+      shareConstruction: {
+        component: IconBase,
+        props: {
+          iconName: "shareConstruction" // The name of the icon that is passed to IconBase, the other properties of the icon are in the global settings because in order to access them from both the src and VuePress we need to store the props there.
+        }
+      },
+      deleteConstruction: {
+        component: IconBase,
+        props: {
+          iconName: "deleteConstruction" // The name of the icon that is passed to IconBase, the other properties of the icon are in the global settings because in order to access them from both the src and VuePress we need to store the props there.
+        }
+      },
+      cycleNodeValueDisplayMode: {
+        component: IconBase,
+        props: {
+          iconName: "cycleNodeValueDisplayMode" // The name of the icon that is passed to IconBase, the other properties of the icon are in the global settings because in order to access them from both the src and VuePress we need to store the props there.
+        }
+      },
+      showNode: {
+        component: IconBase,
+        props: {
+          iconName: "showNode"
+        }
+      },
+      hideNode: {
+        component: IconBase,
+        props: {
+          iconName: "hideNode"
+        }
+      },
+      showNodeLabel: {
+        component: IconBase,
+        props: {
+          iconName: "showNodeLabel"
+        }
+      },
+      hideNodeLabel: {
+        component: IconBase,
+        props: {
+          iconName: "hideNodeLabel"
+        }
+      },
+      deleteNode: {
+        component: IconBase,
+        props: {
+          iconName: "deleteNode"
+        }
+      },
+      appSettings: {
+        component: IconBase,
+        props: {
+          iconName: "appSettings"
+        }
+      },
+      clearConstruction: {
+        component: IconBase,
+        props: {
+          iconName: "clearConstruction"
+        }
       }
     }
   },

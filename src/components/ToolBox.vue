@@ -60,6 +60,7 @@
     </div>
 
     <div v-else
+      v-on:click="$emit('toggle-tool-box-panel')"
       class="mini-icons"
       key="partial">
       <v-spacer />
