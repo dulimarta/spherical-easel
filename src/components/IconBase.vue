@@ -30,10 +30,11 @@ import { IconNames } from "../../src/types/index";
 @Component({})
 export default class IconBase extends Vue {
   @Prop() readonly iconName!: IconNames;
-  @Prop() readonly emphasizeTypes!: string[][];
   @Prop() readonly iconSize?: number;
-  @Prop() readonly mdiIcon!: boolean | string;
-  @Prop() readonly filePath!: string;
+
+  private emphasizeTypes: string[][] = [[]];
+  private mdiIcon: boolean | string = false;
+  private filePath = "";
 
   private svgSnippetRaw = "";
   private svgSnippetAmended = "";
@@ -43,8 +44,11 @@ export default class IconBase extends Vue {
 
   mounted(): void {
     this.iconSizeValue = this.iconSize ?? SETTINGS.icons.defaultIconSize;
+    this.filePath = SETTINGS.icons[this.iconName].props.filePath;
+    this.emphasizeTypes = SETTINGS.icons[this.iconName].props.emphasizeTypes;
+    this.mdiIcon = SETTINGS.icons[this.iconName].props.mdiIcon;
 
-    if (this.mdiIcon === false) {
+    if (typeof this.mdiIcon !== "string") {
       this.doneFetching = false;
       // By default, axios assumes a JSON response and the input will be parsed as JSON.
       // We want to override it to "text"
@@ -158,7 +162,7 @@ export default class IconBase extends Vue {
         // console.log(this.svgSnippetAmended);
       });
     } else {
-      this.mdiIconName = this.mdiIcon as string;
+      this.mdiIconName = this.mdiIcon;
     }
   }
 

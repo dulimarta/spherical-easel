@@ -234,6 +234,7 @@ export type IconNames =
   | "constructionsTab"
   | "calculationObject"
   | "measurementObject";
+
 /**
  * Intersection Vector3 and if that intersection exists
  */

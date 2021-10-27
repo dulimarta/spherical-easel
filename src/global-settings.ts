@@ -659,6 +659,7 @@ export const SETTINGS = {
       strokeWidth: 1.5,
       color: "hsla(0, 0%, 0%, 1)"
     },
+    // These are the detail of how the icon parts (points, lines, circles, etc.) are drawn when emphasized
     emphasize: {
       angleMarker: {
         strokeWidth: {
@@ -728,6 +729,7 @@ export const SETTINGS = {
         }
       }
     },
+    // These are the detail of how the icon parts (points, lines, circles, etc.) are drawn when not emphasized
     normal: {
       angle: {
         scale: {
@@ -812,6 +814,313 @@ export const SETTINGS = {
           front: "hsla(0, 0%, 40%, 1)",
           back: "hsla(0, 0%, 60%, 1)"
         }
+      }
+    },
+    // These are the properties of the icons (mdiIcon, file path to SVG, emphasize types), These must be stored here and
+    // and not in vuetify.ts because these must be accessible to both the src code and VuePress.
+    point: {
+      props: {
+        emphasizeTypes: [["point", "front", "back"]],
+        mdiIcon: false,
+        filePath: "../../icons/iconPointPaths.svg"
+      }
+    },
+    line: {
+      props: {
+        mdiIcon: false,
+        emphasizeTypes: [
+          ["line", "front", "back"],
+          ["point", "front", "back"]
+        ],
+        filePath: "../../icons/iconLinePaths.svg"
+      }
+    },
+    segment: {
+      props: {
+        mdiIcon: false,
+        emphasizeTypes: [
+          ["segment", "front", "back"],
+          ["point", "front", "back"]
+        ],
+        filePath: "../../icons/iconSegmentPaths.svg"
+      }
+    },
+    circle: {
+      props: {
+        mdiIcon: false,
+        emphasizeTypes: [
+          ["circle", "front", "back"],
+          ["point", "front", "back"]
+        ],
+        filePath: "../../icons/iconCirclePaths.svg"
+      }
+    },
+    antipodalPoint: {
+      props: {
+        mdiIcon: false,
+        emphasizeTypes: [["point", "front"]],
+        filePath: "../../icons/iconAntipodalPointPaths.svg"
+      }
+    },
+    polar: {
+      props: {
+        mdiIcon: false,
+        emphasizeTypes: [
+          ["point", "front"],
+          ["line", "front"]
+        ],
+        filePath: "../../icons/iconPolarPaths.svg"
+      }
+    },
+    perpendicular: {
+      props: {
+        mdiIcon: false,
+        emphasizeTypes: [
+          ["point", "front"],
+          ["line", "front", "back"]
+        ],
+        filePath: "../../icons/iconPerpendicularPaths.svg"
+      }
+    },
+    tangent: {
+      props: {
+        mdiIcon: false,
+        emphasizeTypes: [
+          ["point", "front"],
+          ["line", "front", "back"]
+        ],
+        filePath: "../../icons/iconTangentPaths.svg"
+      }
+    },
+    intersect: {
+      props: {
+        mdiIcon: false,
+        emphasizeTypes: [["point", "front"]],
+        filePath: "../../icons/iconIntersectPaths.svg"
+      }
+    },
+    pointOnObject: {
+      props: {
+        mdiIcon: false,
+        emphasizeTypes: [["point", "front"]],
+        filePath: "../../icons/iconPointOnObjectPaths.svg"
+      }
+    },
+    angle: {
+      props: {
+        emphasizeTypes: [["angleMarker", "back", "front"]],
+        mdiIcon: false,
+        filePath: "../../icons/iconAnglePaths.svg"
+      }
+    },
+    segmentLength: {
+      props: {
+        mdiIcon: false,
+        emphasizeTypes: [["segment", "back", "front"]],
+        filePath: "../../icons/iconSegmentLengthPaths.svg"
+      }
+    },
+    pointDistance: {
+      props: {
+        mdiIcon: false,
+        emphasizeTypes: [["point", "front", "back"]],
+        filePath: "../../icons/iconPointDistancePaths.svg"
+      }
+    },
+    ellipse: {
+      props: {
+        mdiIcon: false,
+        emphasizeTypes: [["point", "front", "back"]],
+        filePath: "../../icons/iconEllipsePaths.svg"
+      }
+    },
+    parametric: {
+      props: {
+        mdiIcon: false,
+        emphasizeTypes: [
+          ["point", "front"],
+          ["parametric", "front"]
+        ],
+        filePath: "../../icons/iconParametricPaths.svg"
+      }
+    },
+    measureTriangle: {
+      props: {
+        mdiIcon: false,
+        emphasizeTypes: [
+          ["point", "front"],
+          ["angleMarker", "back", "front"]
+        ],
+        filePath: "../../icons/iconMeasureTrianglePaths.svg"
+      }
+    },
+    measurePolygon: {
+      props: {
+        mdiIcon: false,
+        emphasizeTypes: [
+          ["point", "front"],
+          ["angleMarker", "back", "front"]
+        ],
+        filePath: "../../icons/iconMeasurePolygonPaths.svg"
+      }
+    },
+    midpoint: {
+      props: {
+        mdiIcon: false,
+        emphasizeTypes: [
+          ["segment", "front"],
+          ["point", "front"]
+        ],
+        filePath: "../../icons/iconMidpointPaths.svg"
+      }
+    },
+    nSectPoint: {
+      props: {
+        mdiIcon: false,
+        emphasizeTypes: [
+          ["segment", "front"],
+          ["point", "front"]
+        ],
+        filePath: "../../icons/iconNSectPointPaths.svg"
+      }
+    },
+    angleBisector: {
+      props: {
+        mdiIcon: false,
+        emphasizeTypes: [
+          ["line", "front", "back"],
+          ["angleMarker", "front"]
+        ],
+        filePath: "../../icons/iconAngleBisectorPaths.svg"
+      }
+    },
+    nSectLine: {
+      props: {
+        mdiIcon: false,
+        emphasizeTypes: [
+          ["line", "front", "back"],
+          ["angleMarker", "front"]
+        ],
+        filePath: "../../icons/iconNSectLinePaths.svg"
+      }
+    },
+    coordinate: {
+      props: {
+        mdiIcon: "mdi-axis-arrow-info",
+        emphasizeTypes: [[]],
+        filePath: ""
+      }
+    },
+    delete: {
+      props: {
+        mdiIcon: "mdi-delete",
+        emphasizeTypes: [[]],
+        filePath: ""
+      }
+    },
+    hide: {
+      props: {
+        mdiIcon: "mdi-file-hidden",
+        emphasizeTypes: [[]],
+        filePath: ""
+      }
+    },
+    iconFactory: {
+      props: {
+        mdiIcon: "mdi-plus",
+        emphasizeTypes: [[]],
+        filePath: ""
+      }
+    },
+    move: {
+      props: {
+        mdiIcon: "mdi-cursor-move",
+        emphasizeTypes: [[]],
+        filePath: ""
+      }
+    },
+    rotate: {
+      props: {
+        mdiIcon: "mdi-rotate-3d-variant",
+        emphasizeTypes: [[]],
+        filePath: ""
+      }
+    },
+    select: {
+      props: {
+        mdiIcon: "mdi-cursor-pointer",
+        emphasizeTypes: [[]],
+        filePath: ""
+      }
+    },
+    toggleLabelDisplay: {
+      props: {
+        mdiIcon: "mdi-toggle-switch-off-outline",
+        emphasizeTypes: [[]],
+        filePath: ""
+      }
+    },
+    zoomFit: {
+      props: {
+        mdiIcon: "mdi-magnify-scan",
+        emphasizeTypes: [[]],
+        filePath: ""
+      }
+    },
+    zoomIn: {
+      props: {
+        mdiIcon: "mdi-magnify-plus-outline",
+        emphasizeTypes: [[]],
+        filePath: ""
+      }
+    },
+    zoomOut: {
+      props: {
+        mdiIcon: "mdi-magnify-minus-outline",
+        emphasizeTypes: [[]],
+        filePath: ""
+      }
+    },
+    toolsTab: {
+      props: {
+        emphasizeTypes: [[]],
+        mdiIcon: "mdi-tools",
+        filePath: ""
+      }
+    },
+    objectsTab: {
+      props: {
+        emphasizeTypes: [[]],
+        mdiIcon: "mdi-format-list-bulleted",
+        filePath: ""
+      }
+    },
+    constructionsTab: {
+      props: {
+        emphasizeTypes: [[]],
+        mdiIcon: "mdi-database",
+        filePath: ""
+      }
+    },
+    calculationObject: {
+      props: {
+        emphasizeTypes: [[]],
+        mdiIcon: "mdi-calculator-variant",
+        filePath: ""
+      }
+    },
+    measurementObject: {
+      props: {
+        emphasizeTypes: [[]],
+        mdiIcon: "mdi-math-compass",
+        filePath: ""
+      }
+    },
+    slider: {
+      props: {
+        emphasizeTypes: [[]],
+        mdiIcon: "mdi-slide",
+        filePath: ""
       }
     }
   },
